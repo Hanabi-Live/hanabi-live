@@ -57,3 +57,6 @@ typings/
 # dotenv environment variables file
 .env
 
+# Hanabi stuff
+database_shell.sh
+reset_database.sh
