@@ -24,12 +24,6 @@ exports.step1 = function(socket, data) {
 
     let game = globals.currentGames[data.gameID];
 
-    // Check to see if they are already spectating this game
-    if (socket.userID in game.spectators) {
-        console.error('User "' + socket.username + '" tried to spectate game #' + data.gameID + ', but they are already spectating.');
-        return;
-    }
-
     // Add them to the spectators object
     game.spectators[socket.userID] = socket;
 

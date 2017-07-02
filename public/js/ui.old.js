@@ -1,5 +1,14 @@
 "use strict";
 
+var MHGA_colorblind_mode = false;
+var MHGA_show_more_log = true;
+var MHGA_show_log_numbers = true;
+var MHGA_show_faces_in_replay = true;
+var MHGA_highlight_non_hand_cards = true;
+var MHGA_show_slot_nums = true;
+var MHGA_beep_notifications = false;
+var MHGA_show_no_clues_box = true;
+
 function HanabiUI(lobby, game_id)
 {
 
@@ -1615,18 +1624,18 @@ var Loader = function(cb) {
 
 	for (i = 0; i < basic.length; i++)
 	{
-		this.filemap[basic[i]] = "img/" + basic[i] + ".png";
+		this.filemap[basic[i]] = "public/img/" + basic[i] + ".png";
 	}
 
-	this.filemap["background"] = "img/background.jpg";
+	this.filemap["background"] = "public/img/background.jpg";
 };
 
 Loader.prototype.add_image = function(name, ext) {
-	this.filemap[name] = "img/" + name + "." + ext;
+	this.filemap[name] = "public/img/" + name + "." + ext;
 };
 
 Loader.prototype.add_alias = function(name, alias, ext) {
-	this.filemap[name] = "img/" + alias + "." + ext;
+	this.filemap[name] = "public/img/" + alias + "." + ext;
 };
 
 Loader.prototype.start = function() {

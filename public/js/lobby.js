@@ -1,6 +1,9 @@
 "use strict";
 
-// Hardcoding MHGA variables for now
+// Modifications from vanilla:
+// - Hard-coded the MHGA variables at the top of the file
+// - Changed "sounds/" to "public/sounds/"
+
 var MHGA_show_debug_messages = true;
 
 function HanabiLobby() {
@@ -1019,7 +1022,7 @@ HanabiLobby.prototype.send_notify = function(msg, tag) {
 };
 
 HanabiLobby.prototype.play_sound = function(name) {
-	var a = new Audio("sounds/" + name + ".mp3");
+	var a = new Audio("public/sounds/" + name + ".mp3");
 	a.play();
 };
 
