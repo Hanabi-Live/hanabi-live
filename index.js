@@ -9,6 +9,7 @@ const path     = require('path');
 const io       = require('socket.io')(http);
 const dotenv   = require('dotenv').config();
 const globals  = require('./globals');
+const logger   = require('./logger');
 const messages = require('./messages');
 const models   = require('./models');
 
@@ -25,7 +26,7 @@ app.use(favicon(path.join(__dirname, 'public', 'img', 'favicon.ico')));
 // Websocket handlers
 io.on('connection', function(socket) {
     let address = socket.handshake.address;
-    console.log('User connected from address "' + address + '".');
+    logger.info('User connected from address "' + address + '".');
 
     socket.on('disconnect', function(reason) {
         messages.logout.step1(socket, reason);
@@ -39,10 +40,10 @@ io.on('connection', function(socket) {
             } else {
                 log += ' from user "' + socket.username + '".';
             }
-            console.log(log);
+            logger.info(log);
             messages[data.type].step1(socket, data.resp);
         } else {
-            console.log('Recieved unrecognized command:', data.type);
+            logger.warn('Recieved unrecognized command:', data.type);
         }
     });
 });
@@ -52,12 +53,12 @@ models.games.clean(initComplete);
 
 function initComplete(error) {
     if (error !== null) {
-        console.error('Error: models.games.clean failed:', error);
+        logger.error('Error: models.games.clean failed:', error);
         return;
     }
 
     // Listen
     http.listen(port, function() {
-        console.log('keldon-hanabi server listening on port ' + port + '.');
+        logger.info('keldon-hanabi server listening on port ' + port + '.');
     });
 }

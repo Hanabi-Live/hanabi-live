@@ -15,12 +15,18 @@
 
 // Imports
 const globals  = require('../globals');
+const logger   = require('../logger');
 const models   = require('../models');
 const messages = require('../messages');
 
-exports.step1 = function(socket, data) {
+const step1 = function(socket, data) {
     // Local variables
     data.gameID = socket.atTable.id;
+
+    // Validate that this table exists
+    if (data.gameID in globals.currentGames === false) {
+        return;
+    }
     let game = globals.currentGames[data.gameID];
 
     // Get the index of this player
@@ -30,6 +36,7 @@ exports.step1 = function(socket, data) {
             break;
         }
     }
+    let player = game.players[data.index];
 
     // Validate that it is this player's turn
     if (game.turn_player_index !== data.index) {
@@ -41,7 +48,6 @@ exports.step1 = function(socket, data) {
         playerClue(data);
     } else if (data.type === 1 || data.type === 2) {
         // Remove the card from their hand
-        let player = game.players[data.index];
         for (let i = 0; i < player.hand.length; i++) {
             if (player.hand[i].order === data.target) {
                 player.hand.splice(i, 1);
@@ -66,11 +72,28 @@ exports.step1 = function(socket, data) {
     });
     notifyGameAction(data);
 
+    // Adjust the timer for the player that just took their turn
+    if (game.timed) {
+        let now = (new Date()).getTime();
+        logger.info('Timer for "' + player.username + '" started (1/3) at: ' + player.time);
+        player.time -= now - game.turn_begin_time;
+        logger.info('Timer for "' + player.username + '" reduced (2/3) to: ' + player.time);
+        player.time += globals.extraTurnTime; // A player gets an additional X seconds for making a move
+        logger.info('Timer for "' + player.username + '" with extra time (3/3) is: ' + player.time);
+        game.turn_begin_time = now;
+    }
+
     // Increment the turn
     game.turn_num++;
     game.turn_player_index++;
     if (game.turn_player_index === game.players.length) {
         game.turn_player_index = 0;
+    }
+    logger.info('- It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
+
+    // Send the new clock value
+    if (game.timed) {
+        notifyGameTime(data);
     }
 
     // Check for end game states
@@ -130,20 +153,12 @@ exports.step1 = function(socket, data) {
     //messages.join_table.notifyGameMemberChange(data);
     // (Keldon does this but it seems unnecessary; leaving it commented out for now)
 };
+exports.step1 = step1;
 
+// Type 0 - A clue
 function playerClue(data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
-
-    // Type 0 - A clue
-    let log = '- Clued ';
-    if (data.clue.type === 0) {
-        log += 'number ' + data.clue.value;
-    } else if (data.clue.type === 1) {
-        log += 'color ' + globals.suits[data.clue.value];
-    }
-    log += ' to user "' + game.players[data.target].username + '".';
-    console.log(log);
 
     // Validate that there are clues available to use
     if (game.clue_num === 0) {
@@ -168,7 +183,7 @@ function playerClue(data) {
         }
     }
     if (list.length === 0) {
-        console.error('This clue touches no cards! Something went wrong...');
+        logger.warn('This clue touches no cards! Something went wrong...');
         return;
     }
 
@@ -199,6 +214,7 @@ function playerClue(data) {
         text: text,
     });
     notifyGameAction(data);
+    logger.info('- ' + text);
 }
 
 function playerPlayCard(data) {
@@ -211,7 +227,6 @@ function playerPlayCard(data) {
     // Find out if this successfully plays
     if (card.rank === game.stacks[card.suit] + 1) {
         // Success
-        console.log('- Played card ' + suit + ' ' + card.rank + '.');
         game.score++;
         game.stacks[card.suit]++;
 
@@ -234,6 +249,7 @@ function playerPlayCard(data) {
             text: text,
         });
         notifyGameAction(data);
+        logger.info('- ' + text);
 
         // Give the team a clue if a 5 was played
         if (card.rank === 5) {
@@ -244,9 +260,6 @@ function playerPlayCard(data) {
         }
 
     } else {
-        // Failure
-        console.log('- Misplayed card ' + suit + ' ' + card.rank + '.');
-
         // Send the "notify" message about the strike
         game.strikes++;
         game.actions.push({
@@ -264,10 +277,6 @@ function playerDiscardCard(data, failed = false) {
     let game = globals.currentGames[data.gameID];
     let card = game.deck[data.target];
     let suit = (card.suit === 5 && game.variant === 3 ? globals.suits[card.suit + 1] : globals.suits[card.suit]);
-
-    if (failed === false) {
-        console.log('- Discarded card ' + suit + ' ' + card.rank + '.');
-    }
 
     game.actions.push({
         type: 'discard',
@@ -291,6 +300,7 @@ function playerDiscardCard(data, failed = false) {
         text: text,
     });
     notifyGameAction(data);
+    logger.info('- ' + text);
 }
 
 // We have to use "data.index" instead of "globals.currentGames[data.gameID].turn_player_index"
@@ -378,7 +388,7 @@ function gameEnd(data, loss) {
 
 function gameEnd2(error, data) {
     if (error !== null) {
-        console.error('Error: models.games.end failed:', error);
+        logger.error('Error: models.games.end failed:', error);
         return;
     }
 
@@ -389,19 +399,32 @@ function gameEnd2(error, data) {
 
 function gameEnd3(error, data) {
     if (error !== null) {
-        console.error('Error: models.gameActions.create failed:', error);
+        logger.error('Error: models.gameActions.create failed:', error);
         return;
     }
 
     // Local variables
     let game = globals.currentGames[data.gameID];
-    data.insertNum++;
 
+    data.insertNum++;
     if (data.insertNum < game.actions.length) {
         data.action = JSON.stringify(game.actions[data.insertNum]);
         models.gameActions.create(data, gameEnd3);
         return;
     }
+
+    // Get the num_similar for this game
+    models.games.getNumSimilar(data, gameEnd4);
+}
+
+function gameEnd4(error, data) {
+    if (error !== null) {
+        logger.error('Error: models.games.getNumSimilar failed:', error);
+        return;
+    }
+
+    // Local variables
+    let game = globals.currentGames[data.gameID];
 
     // Send a "game_history" message to all the players in the game
     for (let player of game.players) {
@@ -410,7 +433,7 @@ function gameEnd3(error, data) {
             resp: {
                 id: data.gameID,
                 num_players: game.players.length,
-                num_similar: '?',
+                num_similar: data.num_similar,
                 score: game.score,
                 variant: game.variant,
             },
@@ -418,7 +441,7 @@ function gameEnd3(error, data) {
     }
 
     // Keep track of the game ending
-    console.log('Game: #' + data.gameID + ' (' + game.name + ') ended with a score of ' + game.score + '.');
+    logger.info('Game: #' + data.gameID + ' (' + game.name + ') ended with a score of ' + game.score + '.');
     delete globals.currentGames[data.gameID];
 
     // Notify everyone that the table was deleted
@@ -472,3 +495,80 @@ function notifyGameAction(data) {
         });
     }
 }
+
+const notifyGameTime = function(data) {
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+    let newClockTime = game.players[game.turn_player_index].time;
+
+    data.userID = game.players[game.turn_player_index].userID;
+    data.turn_num = game.turn_num;
+    setTimeout(function() {
+        checkTimer(data);
+    }, newClockTime);
+
+    for (let player of game.players) {
+        player.socket.emit('message', {
+            type: 'clock',
+            resp: {
+                time: newClockTime,
+                player: game.players[game.turn_player_index].username,
+            },
+        });
+    }
+
+    for (let userID in game.spectators) {
+        if (game.spectators.hasOwnProperty(userID) === false) {
+            continue;
+        }
+
+        game.spectators[userID].emit('message', {
+            type: 'clock',
+            resp: {
+                time: newClockTime,
+            },
+        });
+    }
+
+    logger.info('Sent out a clock time of "' + newClockTime + '" for user "' + game.players[game.turn_player_index].username + '".');
+};
+exports.notifyGameTime = notifyGameTime;
+
+const checkTimer = function(data) {
+    // Check to see if the game ended already
+    if (data.gameID in globals.currentGames === false) {
+        logger.info('checkTimer - returning (game ended)');
+        return;
+    }
+
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+
+    // Check to see if we have made a move in the meanwhiled
+    if (data.turn_num !== game.turn_num) {
+        logger.info('checkTimer - returning (different turn)');
+        return;
+    }
+
+    // Get the index of this player
+    for (let i = 0; i < game.players.length; i++) {
+        if (game.players[i].userID === data.userID) {
+            data.index = i;
+            break;
+        }
+    }
+    let player = game.players[data.index];
+    logger.info('checkTimer - Time ran out for "' + player.username + '" playing game #' + data.gameID + '.');
+
+    // Discord the final card in their hand (or play it if at 8 clues)
+    data.type = (game.clue_num === 8 ? 1 : 2);
+    data.target = player.hand[0].order;
+    let fakeSocket = {
+        userID: data.userID,
+        atTable: {
+            id: data.gameID,
+        },
+    };
+    step1(fakeSocket, data);
+};
+exports.checkTimer = checkTimer;

@@ -4,7 +4,7 @@
 // - Hard-coded the MHGA variables at the top of the file
 // - Changed "sounds/" to "public/sounds/"
 
-var MHGA_show_debug_messages = true;
+var MHGA_show_debug_messages = false;
 
 function HanabiLobby() {
 	var self = this;
@@ -80,15 +80,24 @@ function HanabiLobby() {
 		var max_players = parseInt($("#create-game-players").val());
 		var variant = parseInt($("#create-game-variant").val());
 		var allow_spec = document.getElementById("create-game-allow-spec").checked;
+		var enable_timer = document.getElementById("create-game-enable-timer").checked;
 
         localStorage.setItem("table_host_max_players", max_players);
         localStorage.setItem("table_host_variant", variant);
         localStorage.setItem("table_host_allow_spec", allow_spec);
-
+		localStorage.setItem("table_host_enable_timer", enable_timer);
 
 		evt.preventDefault();
 
-		self.send_msg({type: "create_table", resp: {name: game_name, max: max_players, variant: variant, allow_spec: allow_spec}});
+		self.send_msg({
+			type: "create_table", resp: {
+				name: game_name,
+				max: max_players,
+				variant: variant,
+				allow_spec: allow_spec,
+				enable_timer: enable_timer,
+			},
+		});
 
 		self.hide_create_dialog();
 	});
@@ -152,7 +161,7 @@ function HanabiLobby() {
 	$("#settings-dialog").append(optionsButton);
     $("#show-options").on("click", function(evt) {
         evt.preventDefault();
-        chrome.runtime.sendMessage(extensionId, {action: "open-options"});
+        //chrome.runtime.sendMessage(extensionId, {action: "open-options"});
     });
 
 	var logoutButton = document.createElement("button");
@@ -164,7 +173,7 @@ function HanabiLobby() {
         deleteCookie("hanabiuser");
         deleteCookie("hanabipass");
         location.reload();
-    })
+    });
 
 
 	$(".return-table").on("click", function(evt) {
@@ -249,6 +258,8 @@ HanabiLobby.prototype.show_create_dialog = function() {
 	var allow_spec = JSON.parse(localStorage.getItem("table_host_allow_spec"));
     $("#create-game-allow-spec").prop('checked', allow_spec);
 
+	var enable_timer = JSON.parse(localStorage.getItem("table_host_enable_timer"));
+    $("#create-game-enable-timer").prop('checked', allow_spec);
 };
 
 HanabiLobby.prototype.hide_create_dialog = function() {
@@ -756,6 +767,12 @@ HanabiLobby.prototype.listen_conn = function(conn) {
 		var msgType = msg.type;
 		var msgData = msg.resp;
 
+		if (msgType === 'clock') {
+			let minutes = Math.floor((msgData.time / (1000 * 60)) % 60);
+			let seconds = Math.floor((msgData.time / 1000) % 60);
+			console.log('%cClock timer for "' + (msgData.player ? msgData.player : '?') + '" is at: ' + minutes + 'm ' + seconds + 's', 'color: orange;');
+			self.ui.timebank_seconds = msgData.time / 1000;
+		}
 		if (MHGA_show_debug_messages) {
 			console.log('%cRecieved "' + msgType + '":', 'color: blue;');
 			console.log(msgData);
@@ -901,7 +918,7 @@ HanabiLobby.prototype.set_conn = function(conn) {
 		return b;
 	})(window.location.search.substr(1).split('&'));
 
-	if (qs["user"]) this.username = qs["user"];
+	if (qs.user) this.username = qs.user;
 
 	if (this.username)
 	{
@@ -959,8 +976,10 @@ HanabiLobby.prototype.set_conn = function(conn) {
 };
 
 HanabiLobby.prototype.send_msg = function(msg) {
-	console.log('%cSent "' + msg.type + '":', 'color: green;');
-	console.log(msg.resp);
+	if (MHGA_show_debug_messages) {
+		console.log('%cSent "' + msg.type + '":', 'color: green;');
+		console.log(msg.resp);
+	}
 	this.conn.emit("message", msg);
 };
 

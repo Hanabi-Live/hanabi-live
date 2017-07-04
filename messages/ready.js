@@ -5,6 +5,7 @@
 
 // Imports
 const globals = require('../globals');
+const logger  = require('../logger');
 const models  = require('../models');
 
 // When the client has joined a game after they have initialized the UI
@@ -22,7 +23,7 @@ exports.step1 = function(socket, data) {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        console.error('Error: models.games.getActions failed:', error);
+        logger.error('Error: models.games.getActions failed:', error);
         return;
     }
 
@@ -73,4 +74,16 @@ function step2(error, socket, data) {
     socket.emit('message', {
         type: 'advanced',
     });
+
+    // Send them the current time for the clock
+    if (game.timed) {
+        let newClockTime = game.players[game.turn_player_index].time;
+        socket.emit('message', {
+            type: 'clock',
+            resp: {
+                time: newClockTime,
+                player: game.players[game.turn_player_index].username,
+            },
+        });
+    }
 }

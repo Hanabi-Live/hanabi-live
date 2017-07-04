@@ -6,11 +6,12 @@
 
 // Imports
 const globals  = require('../globals');
+const logger   = require('../logger');
 const messages = require('../messages');
 
 exports.step1 = function(socket, reason) {
     if (typeof(socket.userID) === 'undefined') {
-        console.log('Non-logged in user disconnected:', reason);
+        logger.info('Non-logged in user disconnected:', reason);
         return;
     }
 
@@ -60,7 +61,7 @@ exports.step1 = function(socket, reason) {
     // Keep track of the disconnecting user
     delete globals.connectedUsers[socket.userID];
 
-    console.log('User "' + socket.username + '" disconnected from "' + address + '". (' + Object.keys(globals.connectedUsers).length, 'users now connected.)');
+    logger.info('User "' + socket.username + '" disconnected from "' + address + '". (' + Object.keys(globals.connectedUsers).length, 'users now connected.)');
 
     // Send a "user_left" message to everyone to let them know that a user has disconnected
     for (let userID in globals.connectedUsers) {

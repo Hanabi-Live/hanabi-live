@@ -5,6 +5,7 @@
 
 // Imports
 const globals  = require('../globals');
+const logger   = require('../logger');
 const messages = require('../messages');
 
 exports.step1 = function(socket, data) {
@@ -14,14 +15,14 @@ exports.step1 = function(socket, data) {
 
     // Validate that this table exists
     if (data.gameID in globals.currentGames === false) {
-        console.log("(Table does not exist.)");
+        logger.info("(Table does not exist.)");
         return;
     }
 
     // Check to see if they are a spectator
     if (socket.atTable.spectating) {
         if (socket.userID in game.spectators === false) {
-            console.error('User "' + socket.username + '" tried to unattend game #' + data.gameID + ', but they were not in the spectators list.');
+            logger.error('User "' + socket.username + '" tried to unattend game #' + data.gameID + ', but they were not in the spectators list.');
             return;
         }
 

@@ -4,15 +4,17 @@
 // "data" example:
 /*
     {
-        allow_spec: false,
-        max: 5,
         name: "",
+        max: 5,
         variant: 0,
+        allow_spec: false,
+        enable_timer: false,
     }
 */
 
 // Imports
 const globals  = require('../globals');
+const logger   = require('../logger');
 const models   = require('../models');
 const messages = require('../messages');
 
@@ -30,11 +32,11 @@ exports.step1 = function(socket, data) {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        console.error('Error: models.games.create failed:', error);
+        logger.error('Error: models.games.create failed:', error);
         return;
     }
 
-    console.log('User "' + socket.username + '" created a new game: #' + data.gameID + ' (' + data.name + ')');
+    logger.info('User "' + socket.username + '" created a new game: #' + data.gameID + ' (' + data.name + ')');
 
     // Keep track of the current games
     globals.currentGames[data.gameID] = {
@@ -55,7 +57,8 @@ function step2(error, socket, data) {
         spectators: {},
         stacks: [],
         strikes: 0,
-        timed: false,
+        timed: data.enable_timer,
+        turn_begin_time: null,
         turn_num: 0,
         turn_player_index: 0,
         variant: data.variant,

@@ -5,6 +5,7 @@
 
 // Imports
 const globals  = require('../globals');
+const logger   = require('../logger');
 const models   = require('../models');
 const messages = require('../messages');
 
@@ -25,14 +26,14 @@ exports.step1 = step1;
 
 function step2(error, socket, data) {
     if (error !== null) {
-        console.error('Error: models.gameParticipants.delete failed:', error);
+        logger.error('Error: models.gameParticipants.delete failed:', error);
         return;
     }
 
     // Local variables
     let game = globals.currentGames[data.gameID];
 
-    console.log('User "' + socket.username + '" left game: #' + data.gameID + ' (' + game.name + ')');
+    logger.info('User "' + socket.username + '" left game: #' + data.gameID + ' (' + game.name + ')');
 
     // Find the index of this player
     let index;
@@ -77,12 +78,12 @@ function step2(error, socket, data) {
 
 function step3(error, socket, data) {
     if (error !== null) {
-        console.error('Error: models.games.delete failed:', error);
+        logger.error('Error: models.games.delete failed:', error);
         return;
     }
 
     // Keep track of the game ending
-    console.log('Ended game #' + data.gameID + '.');
+    logger.info('Ended game #' + data.gameID + '.');
     delete globals.currentGames[data.gameID];
 
     // Notify everyone that the table was deleted

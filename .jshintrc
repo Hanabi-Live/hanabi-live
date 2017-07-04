@@ -1,5 +1,15 @@
 {
     "esversion": 6,
 
-    "node":    true
+    "browser": true,
+    "devel":   true,
+    "jquery":  true,
+    "node":    true,
+
+    "globals": {
+        "constants": true,
+        "HanabiUI": true,
+        "hex_sha256": true,
+        "Kinetic": true
+    }
 }

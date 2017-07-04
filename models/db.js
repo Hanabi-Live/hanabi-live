@@ -1,7 +1,8 @@
 'use strict';
 
 // Imports
-const mysql = require('mysql');
+const mysql  = require('mysql');
+const logger = require('../logger');
 
 // Configuration
 const databaseConfig = {
@@ -17,5 +18,5 @@ var pool = mysql.createPool(databaseConfig); // Default is 10 connections
 module.exports = pool;
 
 pool.on('connection', function (connection) {
-    console.log('A new MySQL connection has been created.');
+    logger.info('A new MySQL connection has been created.');
 });

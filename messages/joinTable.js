@@ -10,6 +10,7 @@
 
 // Imports
 const globals = require('../globals');
+const logger  = require('../logger');
 const models  = require('../models');
 
 exports.step1 = function(socket, data) {
@@ -28,14 +29,14 @@ exports.step1 = function(socket, data) {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        console.error('Error: models.gameParticipants.create failed:', error);
+        logger.error('Error: models.gameParticipants.create failed:', error);
         return;
     }
 
     // Local variables
     let game = globals.currentGames[data.gameID];
 
-    console.log('User "' + socket.username + '" joined game: #' + data.gameID + ' (' + game.name + ')');
+    logger.info('User "' + socket.username + '" joined game: #' + data.gameID + ' (' + game.name + ')');
 
     // Keep track of the user that joined
     game.players.push({
@@ -44,6 +45,7 @@ function step2(error, socket, data) {
         username: socket.username,
         present: true,
         socket: socket,
+        time: globals.startingTime, // In milliseconds
     });
     socket.seated = true;
     socket.atTable = {

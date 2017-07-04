@@ -10,6 +10,7 @@
 
 // Imports
 const globals = require('../globals');
+const logger = require('../logger');
 const models  = require('../models');
 
 exports.step1 = function(socket, data) {
@@ -26,7 +27,7 @@ exports.step1 = function(socket, data) {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        console.error('Error: models.games.getVariantPlayers failed:', error);
+        logger.error('Error: models.games.getVariantPlayers failed:', error);
         return;
     }
 

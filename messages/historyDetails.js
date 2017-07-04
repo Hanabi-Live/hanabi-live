@@ -9,6 +9,7 @@
 */
 
 // Imports
+const logger = require('../logger');
 const models = require('../models');
 
 exports.step1 = function(socket, data) {
@@ -21,7 +22,7 @@ exports.step1 = function(socket, data) {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        console.error('Error: models.games.getAllDeals failed:', error);
+        logger.error('Error: models.games.getAllDeals failed:', error);
         return;
     }
 

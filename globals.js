@@ -4,5 +4,8 @@
 module.exports = {
     connectedUsers: {}, // Indexed by ID
     currentGames: {}, // Indexed by ID
+    extraTurnTime: 10 * 1000, // In milliseconds
+    startingTime: 5 * 60 * 1000, // In milliseconds
+    //startingTime: 10 * 1000, // For testing
     suits: ['Blue', 'Green', 'Yellow', 'Red', 'Purple', 'Black', 'Rainbow'],
 };

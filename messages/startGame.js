@@ -7,6 +7,7 @@
 // Imports
 const seedrandom = require('seedrandom');
 const globals    = require('../globals');
+const logger     = require('../logger');
 const models     = require('../models');
 const messages   = require('../messages');
 
@@ -50,12 +51,38 @@ exports.step1 = function(socket, data) {
         game.stacks.push(0);
     }
 
-    // Create a seed
-    // TODO find a seed that noone has played before
-    data.seed = 1;
-    game.seed = data.seed;
+    // Get a list of all the seeds that these players have played before
+    data.playerIndex = -1;
+    data.seeds = {};
+    step2(null, socket, data);
+};
 
-    // Shuffle the deck and players
+function step2(error, socket, data) {
+    if (error !== null) {
+        logger.error('Error: models.gameParticipants.getSeeds failed:', error);
+        return;
+    }
+
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+    data.playerIndex++;
+    if (data.playerIndex < game.players.length) {
+        data.userID = game.players[data.playerIndex].userID;
+        models.gameParticipants.getSeeds(socket, data, step2);
+        return;
+    }
+
+    // Find a seed that no-one has played before
+    data.seed = 1000000 * game.players.length;
+    while (data.seed in data.seeds) {
+        data.seed++;
+    }
+
+    // Set the new seed in the game object
+    game.seed = data.seed;
+    logger.info('Using seed "' + data.seed + '", timed is ' + game.timed + ', allow_spec is ' + game.allow_spec + '.');
+
+    // Shuffle the deck
     seedrandom(data.seed, {
         global: true, // So that it applies to "Math.random()"
     });
@@ -63,7 +90,7 @@ exports.step1 = function(socket, data) {
 
     // Deal the cards
     let handSize = 5;
-    if (game.players.length > 2) {
+    if (game.players.length > 3) {
         handSize = 4;
     }
     for (let i = 0; i < game.players.length; i++) {
@@ -74,28 +101,29 @@ exports.step1 = function(socket, data) {
     }
 
     // Get a random player to start first
-    let startingPlayerIndex = Math.floor(Math.random() * game.players.length);
-    game.turn_player_index = startingPlayerIndex; // Keep track of whose turn it is
-    let text = game.players[startingPlayerIndex].username + ' goes first';
+    data.startingPlayerIndex = Math.floor(Math.random() * game.players.length);
+    game.turn_player_index = data.startingPlayerIndex; // Keep track of whose turn it is
+    let text = game.players[data.startingPlayerIndex].username + ' goes first';
     game.actions.push({
         text: text,
     });
     game.actions.push({
         num: 0,
         type: 'turn',
-        who: startingPlayerIndex,
+        who: data.startingPlayerIndex,
     });
+    logger.info('- ' + text);
 
     // Set the game to running
     game.running = true;
 
     // Start the game in the database (which sets the "status", "seed", and "datetime_started" columns)
-    models.games.start(socket, data, step2);
-};
+    models.games.start(socket, data, step3);
+}
 
-function step2(error, socket, data) {
+function step3(error, socket, data) {
     if (error !== null) {
-        console.error('Error: models.games.start failed:', error);
+        logger.error('Error: models.games.start failed:', error);
         return;
     }
 
@@ -139,6 +167,18 @@ function step2(error, socket, data) {
         messages.join_table.notifyAllUserChange(player.socket);
     }
 
+    // Start the timer
+    game.turn_begin_time = (new Date()).getTime();
+    if (game.timed) {
+        data.userID = game.players[data.startingPlayerIndex].userID;
+        data.turn_num = 0;
+        setTimeout(function() {
+            messages.action.checkTimer(data);
+        }, game.players[data.startingPlayerIndex].time);
+    }
+
+    // Send the list of people who are connected
+    // (this governs if a player's name is red or not)
     notifyGameConnected(data);
 }
 

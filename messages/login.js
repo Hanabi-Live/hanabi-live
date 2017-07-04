@@ -10,9 +10,10 @@
 */
 
 // Imports
-const globals    = require('../globals');
-const models     = require('../models');
-const messages   = require('../messages');
+const globals  = require('../globals');
+const logger   = require('../logger');
+const models   = require('../models');
+const messages = require('../messages');
 
 exports.step1 = function(socket, data) {
     // Get the password (and other data) for this user
@@ -21,20 +22,20 @@ exports.step1 = function(socket, data) {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        console.error('Error: models.users.getPassword failed:', error);
+        logger.error('Error: models.users.getPassword failed:', error);
         return;
     }
 
     if (data.userID === null) {
         // This user does not exist, so create it
-        console.log('Creating user:', data.username);
+        logger.info('Creating user:', data.username);
         models.users.create(socket, data, step3);
     } else {
         // Check to see if the password matches
         if (data.password === data.realPassword) {
             step4(socket, data);
         } else {
-            console.log('User "' + data.username + '" supplied an incorrect password of:', data.password);
+            logger.info('User "' + data.username + '" supplied an incorrect password of:', data.password);
 
             // Let them know
             socket.emit('message', {
@@ -49,11 +50,11 @@ function step2(error, socket, data) {
 
 function step3(error, socket, data) {
     if (error !== null) {
-        console.error('Error: models.users.create failed:', error);
+        logger.error('Error: models.users.create failed:', error);
         return;
     }
 
-    console.log('User "' + data.username + '" created.');
+    logger.info('User "' + data.username + '" created.');
     step4(socket, data);
 }
 
@@ -74,7 +75,7 @@ function step4(socket, data) {
 
     // Check to see if this user is already logged on
     if (socket.userID in globals.connectedUsers) {
-        console.log('User "' + socket.username + '" logged in but was already connected; logging the existing user out."');
+        logger.info('User "' + socket.username + '" logged in but was already connected; logging the existing user out."');
 
         // Send the existing user a "kick" message
         globals.connectedUsers[socket.userID].emit('message', {
@@ -88,7 +89,7 @@ function step4(socket, data) {
 
     // Keep track of the connecting user
     globals.connectedUsers[data.userID] = socket;
-    console.log('User "' + data.username + '" logged in. (' + Object.keys(globals.connectedUsers).length, 'now connected.)');
+    logger.info('User "' + data.username + '" logged in. (' + Object.keys(globals.connectedUsers).length, 'now connected.)');
 
     // Check to see if this user was in any existing games
     for (let gameID in globals.currentGames) {
@@ -198,7 +199,7 @@ function step4(socket, data) {
 
 function step5(error, socket, data) {
     if (error !== null) {
-        console.error('Error: models.games.getUserHistory failed:', error);
+        logger.error('Error: models.games.getUserHistory failed:', error);
         return;
     }
 

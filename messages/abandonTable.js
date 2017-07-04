@@ -10,6 +10,7 @@
 
 // Imports
 const globals  = require('../globals');
+const logger   = require('../logger');
 const messages = require('../messages');
 
 exports.step1 = function(socket, data) {
@@ -19,7 +20,7 @@ exports.step1 = function(socket, data) {
 
     // Validate that this table exists
     if (data.gameID in globals.currentGames === false) {
-        console.log("(Table does not exist.)");
+        logger.info("(Table does not exist.)");
         return;
     }
 
@@ -36,7 +37,7 @@ exports.step1 = function(socket, data) {
     }
 
     // Keep track of the game ending
-    console.log('Game: #' + data.gameID + ' (' + game.name + ') ended with a score of ' + game.score + '.');
+    logger.info('Game: #' + data.gameID + ' (' + game.name + ') ended with a score of ' + game.score + '.');
     delete globals.currentGames[data.gameID];
 
     // Notify everyone that the table was deleted

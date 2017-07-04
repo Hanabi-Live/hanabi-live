@@ -99,6 +99,19 @@ exports.getUserHistory = function(socket, data, done) {
     });
 };
 
+exports.getNumSimilar = function(data, done) {
+    let sql = 'SELECT COUNT(id) AS num_similar FROM games WHERE seed = ?';
+    db.query(sql, [data.seed], function (error, results, fields) {
+        if (error) {
+            done(error, data);
+            return;
+        }
+
+        data.num_similar = results[0].num_similar;
+        done(null, data);
+    });
+};
+
 exports.getAllDeals = function(socket, data, done) {
     let sql = `
         SELECT
