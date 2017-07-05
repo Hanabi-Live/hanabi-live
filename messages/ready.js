@@ -79,8 +79,9 @@ function step2(error, socket, data) {
     if (game.timed) {
         let newClockTime = game.players[game.turn_player_index].time;
         socket.emit('message', {
-            type: 'clock',
+            type: 'notify',
             resp: {
+                type: 'clock',
                 time: newClockTime,
                 player: game.players[game.turn_player_index].username,
             },

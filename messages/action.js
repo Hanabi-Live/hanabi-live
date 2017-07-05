@@ -75,11 +75,8 @@ const step1 = function(socket, data) {
     // Adjust the timer for the player that just took their turn
     if (game.timed) {
         let now = (new Date()).getTime();
-        logger.info('Timer for "' + player.username + '" started (1/3) at: ' + player.time);
         player.time -= now - game.turn_begin_time;
-        logger.info('Timer for "' + player.username + '" reduced (2/3) to: ' + player.time);
         player.time += globals.extraTurnTime; // A player gets an additional X seconds for making a move
-        logger.info('Timer for "' + player.username + '" with extra time (3/3) is: ' + player.time);
         game.turn_begin_time = now;
     }
 
@@ -89,12 +86,7 @@ const step1 = function(socket, data) {
     if (game.turn_player_index === game.players.length) {
         game.turn_player_index = 0;
     }
-    logger.info('- It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
-
-    // Send the new clock value
-    if (game.timed) {
-        notifyGameTime(data);
-    }
+    logger.info('[Game ' + data.gameID + '] It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
 
     // Check for end game states
     let end = false;
@@ -150,8 +142,13 @@ const step1 = function(socket, data) {
     messages.join_table.notifyAllTableChange(data);
     // (this seems wasteful but this is apparently used so that you can see if it is your turn from the lobby)
 
-    //messages.join_table.notifyGameMemberChange(data);
-    // (Keldon does this but it seems unnecessary; leaving it commented out for now)
+    messages.join_table.notifyGameMemberChange(data);
+    // (Keldon does this but it seems unnecessary)
+
+    // Send the new clock value
+    if (game.timed) {
+        notifyGameTime(data);
+    }
 };
 exports.step1 = step1;
 
@@ -214,7 +211,7 @@ function playerClue(data) {
         text: text,
     });
     notifyGameAction(data);
-    logger.info('- ' + text);
+    logger.info('[Game ' + data.gameID + '] ' + text);
 }
 
 function playerPlayCard(data) {
@@ -249,7 +246,7 @@ function playerPlayCard(data) {
             text: text,
         });
         notifyGameAction(data);
-        logger.info('- ' + text);
+        logger.info('[Game ' + data.gameID + '] ' + text);
 
         // Give the team a clue if a 5 was played
         if (card.rank === 5) {
@@ -300,7 +297,7 @@ function playerDiscardCard(data, failed = false) {
         text: text,
     });
     notifyGameAction(data);
-    logger.info('- ' + text);
+    logger.info('[Game ' + data.gameID + '] ' + text);
 }
 
 // We have to use "data.index" instead of "globals.currentGames[data.gameID].turn_player_index"
@@ -441,7 +438,7 @@ function gameEnd4(error, data) {
     }
 
     // Keep track of the game ending
-    logger.info('Game: #' + data.gameID + ' (' + game.name + ') ended with a score of ' + game.score + '.');
+    logger.info('[Game ' + data.gameID + '] Ended with a score of ' + game.score + '.');
     delete globals.currentGames[data.gameID];
 
     // Notify everyone that the table was deleted
@@ -509,8 +506,9 @@ const notifyGameTime = function(data) {
 
     for (let player of game.players) {
         player.socket.emit('message', {
-            type: 'clock',
+            type: 'notify',
             resp: {
+                type: 'clock',
                 time: newClockTime,
                 player: game.players[game.turn_player_index].username,
             },
@@ -523,9 +521,11 @@ const notifyGameTime = function(data) {
         }
 
         game.spectators[userID].emit('message', {
-            type: 'clock',
+            type: 'notify',
             resp: {
+                type: 'clock',
                 time: newClockTime,
+                player: game.players[game.turn_player_index].username,
             },
         });
     }
@@ -537,7 +537,6 @@ exports.notifyGameTime = notifyGameTime;
 const checkTimer = function(data) {
     // Check to see if the game ended already
     if (data.gameID in globals.currentGames === false) {
-        logger.info('checkTimer - returning (game ended)');
         return;
     }
 
@@ -546,7 +545,6 @@ const checkTimer = function(data) {
 
     // Check to see if we have made a move in the meanwhiled
     if (data.turn_num !== game.turn_num) {
-        logger.info('checkTimer - returning (different turn)');
         return;
     }
 
@@ -558,7 +556,7 @@ const checkTimer = function(data) {
         }
     }
     let player = game.players[data.index];
-    logger.info('checkTimer - Time ran out for "' + player.username + '" playing game #' + data.gameID + '.');
+    logger.info('Time ran out for "' + player.username + '" playing game #' + data.gameID + '.');
 
     // Discord the final card in their hand (or play it if at 8 clues)
     data.type = (game.clue_num === 8 ? 1 : 2);

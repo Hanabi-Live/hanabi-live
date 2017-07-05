@@ -4,7 +4,7 @@
 // - Hard-coded the MHGA variables at the top of the file
 // - Changed "sounds/" to "public/sounds/"
 
-var MHGA_show_debug_messages = false;
+var MHGA_show_debug_messages = true;
 
 function HanabiLobby() {
 	var self = this;
@@ -767,12 +767,6 @@ HanabiLobby.prototype.listen_conn = function(conn) {
 		var msgType = msg.type;
 		var msgData = msg.resp;
 
-		if (msgType === 'clock') {
-			let minutes = Math.floor((msgData.time / (1000 * 60)) % 60);
-			let seconds = Math.floor((msgData.time / 1000) % 60);
-			console.log('%cClock timer for "' + (msgData.player ? msgData.player : '?') + '" is at: ' + minutes + 'm ' + seconds + 's', 'color: orange;');
-			self.ui.timebank_seconds = msgData.time / 1000;
-		}
 		if (MHGA_show_debug_messages) {
 			console.log('%cRecieved "' + msgType + '":', 'color: blue;');
 			console.log(msgData);

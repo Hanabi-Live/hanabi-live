@@ -46,8 +46,10 @@ this.learned_cards = [];
 this.activeHover = null;
 
 this.timebank_mode = true;
-this.timebank_seconds = 10;
+this.timebank_seconds = 0;
+this.our_timebank_seconds = 0;
 this.timebank_overtime = 0;
+this.current_player = null;
 this.last_timer_update_time_ms = new Date().getTime();
 
 function parse_time(timeStr) {
@@ -67,39 +69,60 @@ function pad2(num) {
 }
 
 function seconds_to_time_display(seconds) {
-    return Math.floor(seconds/60) + ":" + pad2(seconds % 60);
+    return Math.floor(seconds / 60) + ":" + pad2(seconds % 60);
 }
 
-function checkTimer(textObject) {
+function checkTimer1(textObject) {
+    if (ui.current_player !== ui.player_us) {
+        // If it is not our turn, just show a static clock of how much time we have left
+        // (we store it in memory as "our_timebank_seconds" so that we always have it)
+        textObject.setText(seconds_to_time_display(Math.ceil(ui.our_timebank_seconds)));
+    } else {
+        var time = new Date().getTime();
+        var time_elapsed = time - ui.last_timer_update_time_ms;
+        if (time_elapsed < 0) {
+            time_elapsed = 0;
+        }
+        ui.last_timer_update_time_ms = time;
+        ui.timebank_seconds -= time_elapsed / 1000;
+        textObject.setText(seconds_to_time_display(Math.ceil(ui.timebank_seconds)));
+    }
+    uilayer.draw();
+}
+
+function checkTimer2(textObject) {
     var time = new Date().getTime();
     var time_elapsed = time - ui.last_timer_update_time_ms;
+    if (time_elapsed < 0) {
+        time_elapsed = 0;
+    }
     ui.last_timer_update_time_ms = time;
     ui.timebank_seconds -= time_elapsed / 1000;
-
-    if (ui.timebank_seconds <= 0) {
-        //console.log("Timer depleted.");
-    }
     textObject.setText(seconds_to_time_display(Math.ceil(ui.timebank_seconds)));
     uilayer.draw();
 }
 
+/*
 if (lobby.game.name.indexOf("!timed") !== -1) {
     this.timebank_mode = true;
     var match_arr = lobby.game.name.match(/!bank (\d+[a-z])/);
-    if(match_arr) {
+    if (match_arr) {
         let val = match_arr[1];
         let seconds = parse_time(val);
-        if (seconds)
+        if (seconds) {
             this.timebank_seconds = seconds;
+        }
     }
     match_arr = lobby.game.name.match(/!over (\d+[a-z])/);
     if (match_arr) {
         let val = match_arr[1];
         let seconds = parse_time(val);
-        if(seconds)
+        if (seconds) {
             this.timebank_overtime = seconds;
+        }
     }
 }
+*/
 
 function image_name(card) {
     if(!card.unknown) {
@@ -2273,7 +2296,8 @@ var name_frames = [];
 var play_stacks = [], discard_stacks = [];
 var play_area, discard_area, clue_log;
 var clue_area, clue_target_group, clue_type_group, submit_clue;
-var timer_rect, timer_text;
+var timer_rect1, timer_label1, timer_text1;
+var timer_rect2, timer_label2, timer_text2;
 var no_clue_label, no_clue_box, no_discard_label;
 var replay_area, replay_bar, replay_shuttle, replay_button;
 var lobby_button, help_button;
@@ -2750,9 +2774,9 @@ this.build_ui = function() {
 
 
     no_clue_box = new Kinetic.Rect({
-        x: 0.20 * win_w,
+        x: 0.275 * win_w,
         y: 0.56 * win_h,
-        width: 0.40 * win_w,
+        width: 0.25 * win_w,
         height: 0.15 * win_h,
         cornerRadius: 0.01 * win_w,
         fill: "black",
@@ -2866,38 +2890,111 @@ this.build_ui = function() {
     clue_area.add(submit_clue);
 
     if (ui.timebank_mode) {
-        timer_rect = new Kinetic.Rect({
-            x: 0.1 * win_w,
-            y: (MHGA_show_more_log ? 0.172 : 0.195) * win_h,
+        let x = 0.155;
+        let y = (MHGA_show_more_log ? 0.592 : 0.615);
+        let x2 = 0.565;
+
+        timer_rect1 = new Kinetic.Rect({
+            x: x * win_w,
+            y: y * win_h,
             width: 0.08 * win_w,
             height: 0.051 * win_h,
             fill: "black",
             cornerRadius: 0.005 * win_h,
             opacity: 0.2
         });
+        uilayer.add(timer_rect1);
 
-        uilayer.add(timer_rect);
-
-        timer_text = new Kinetic.Text({
-            x: 0.1 * win_w,
-            y: (MHGA_show_more_log ? 0.182 : 0.205) * win_h,
+        timer_label1 = new Kinetic.Text({
+            x: x * win_w,
+            y: (y + 0.06) * win_h,
             width: 0.08 * win_w,
             height: 0.051 * win_h,
             fontSize: 0.03 * win_h,
             fontFamily: "Verdana",
             align: "center",
-            text: "00:00",
+            text: "You",
+            fill: "#d8d5ef",
+            shadowColor: "black",
+            shadowBlur: 10,
+            shadowOffset: { x: 0, y: 0 },
+            shadowOpacity: 0.9,
+        });
+        uilayer.add(timer_label1);
+
+        timer_text1 = new Kinetic.Text({
+            x: x * win_w,
+            y: (y + 0.01) * win_h,
+            width: 0.08 * win_w,
+            height: 0.051 * win_h,
+            fontSize: 0.03 * win_h,
+            fontFamily: "Verdana",
+            align: "center",
+            text: "??:??",
             fill: "#d8d5ef",
             shadowColor: "black",
             shadowBlur: 10,
             shadowOffset: { x: 0, y: 0 },
             shadowOpacity: 0.9
         });
+        uilayer.add(timer_text1);
 
-        uilayer.add(timer_text);
+        timer_rect2 = new Kinetic.Rect({
+            x: x2 * win_w,
+            y: y * win_h,
+            width: 0.08 * win_w,
+            height: 0.051 * win_h,
+            fill: "black",
+            cornerRadius: 0.005 * win_h,
+            opacity: 0.2
+        });
+        uilayer.add(timer_rect2);
+
+        timer_label2 = new Kinetic.Text({
+            x: x2 * win_w,
+            y: (y + 0.06) * win_h,
+            width: 0.08 * win_w,
+            height: 0.051 * win_h,
+            fontSize: 0.02 * win_h,
+            fontFamily: "Verdana",
+            align: "center",
+            text: "Current\nPlayer",
+            fill: "#d8d5ef",
+            shadowColor: "black",
+            shadowBlur: 10,
+            shadowOffset: { x: 0, y: 0 },
+            shadowOpacity: 0.9,
+        });
+        uilayer.add(timer_label2);
+
+        timer_text2 = new Kinetic.Text({
+            x: x2 * win_w,
+            y: (y + 0.01) * win_h,
+            width: 0.08 * win_w,
+            height: 0.051 * win_h,
+            fontSize: 0.03 * win_h,
+            fontFamily: "Verdana",
+            align: "center",
+            text: "??:??",
+            fill: "#d8d5ef",
+            shadowColor: "black",
+            shadowBlur: 10,
+            shadowOffset: { x: 0, y: 0 },
+            shadowOpacity: 0.9
+        });
+        uilayer.add(timer_text2);
+
+        // Hide it by default
+        timer_rect2.hide();
+        timer_label2.hide();
+        timer_text2.hide();
 
         window.setInterval(function() {
-            checkTimer(timer_text);
+            checkTimer1(timer_text1);
+        }, 1000);
+
+        window.setInterval(function() {
+            checkTimer2(timer_text2);
         }, 1000);
      }
 
@@ -3825,6 +3922,7 @@ this.handle_notify = function(note, performing_replay) {
         {
             name_frames[i].setActive(note.who == i);
         }
+        ui.current_player = note.who;
 
         if (!this.animate_fast) uilayer.draw();
     }
@@ -3835,6 +3933,25 @@ this.handle_notify = function(note, performing_replay) {
         replay_button.hide();
         if (!this.replay) this.enter_replay(true);
         if (!this.animate_fast) uilayer.draw();
+    }
+
+    else if (type === 'clock') {
+        let minutes = Math.floor((note.time / (1000 * 60)) % 60);
+        let seconds = Math.floor((note.time / 1000) % 60);
+        console.log('%cClock timer for "' + (note.player ? note.player : '?') + '" is at: ' + minutes + 'm ' + seconds + 's', 'color: orange;');
+
+        this.timebank_seconds = note.time / 1000;
+
+        if (this.current_player === this.player_us) {
+            this.our_timebank_seconds = this.timebank_seconds;
+            timer_rect2.hide();
+            timer_label2.hide();
+            timer_text2.hide();
+        } else {
+            timer_rect2.show();
+            timer_label2.show();
+            timer_text2.show();
+        }
     }
 };
 
@@ -3901,7 +4018,7 @@ this.handle_action = function(data) {
     else
     {
         no_clue_label.show();
-        if(MHGA_show_no_clues_box) {
+        if (MHGA_show_no_clues_box) {
             no_clue_box.show();
         }
         if (!this.animate_fast) {
@@ -4136,7 +4253,7 @@ HanabiUI.prototype.set_backend = function(backend) {
 };
 
 HanabiUI.prototype.send_msg = function(msg) {
-    if(MHGA_show_debug_messages){
+    if (MHGA_show_debug_messages) {
         console.log("out", msg);
     }
     this.backend.emit("message", msg);
