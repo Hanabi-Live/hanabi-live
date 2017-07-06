@@ -6,7 +6,7 @@
 // it can be alterting groups of users about anything
 
 // Imports
-const globals = require('../globals');
+const globals = require('./globals');
 
 /*
     Functions that notify all users
@@ -194,30 +194,30 @@ exports.gameTime = function(data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
 
-    // Go through all the players in the game
-    for (let i = 0; i < game.players.length; i++) {
-        // Prepare the clock message
-        let clockMsg = {
-            type: 'clock',
-            resp: {
-                time: game.players[i].time,
-                who: i,
-                active: (game.turn_player_index === i ? true : false),
-            },
-        };
+    // Create the clock message
+    let times = [];
+    for (let player of game.players) {
+        times.push(player.time);
+    }
+    let clockMsg = {
+        type: 'clock',
+        resp: {
+            times: times,
+            active: game.turn_player_index,
+        },
+    };
 
-        // Send the clock message for this player to all the players in the game
-        for (let player of game.players) {
-            player.socket.emit('message', clockMsg);
+    // Send the clock message for this player to all the players in the game
+    for (let player of game.players) {
+        player.socket.emit('message', clockMsg);
+    }
+
+    // Also send it to the spectators
+    for (let userID in game.spectators) {
+        if (game.spectators.hasOwnProperty(userID) === false) {
+            continue;
         }
 
-        // Also send it to the spectators
-        for (let userID in game.spectators) {
-            if (game.spectators.hasOwnProperty(userID) === false) {
-                continue;
-            }
-
-            game.spectators[userID].emit('message', clockMsg);
-        }
+        game.spectators[userID].emit('message', clockMsg);
     }
 };

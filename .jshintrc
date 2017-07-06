@@ -9,7 +9,7 @@
     "nonew": true,
     "strict": true,
     "undef": true,
-    "unused": true,
+    "unused": "vars",
 
     "esversion": 6,
 

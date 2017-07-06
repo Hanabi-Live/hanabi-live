@@ -4,6 +4,9 @@
 const mysql  = require('mysql');
 const logger = require('../logger');
 
+// Import the environment variables defined in the ".env" file
+require('dotenv').config();
+
 // Configuration
 const databaseConfig = {
     host:     process.env.DB_HOST,
