@@ -51,8 +51,6 @@ this.timebank_overtime = 0; // Unused
 this.last_timer_update_time_ms = new Date().getTime();
 
 this.player_times = [];
-this.timer1seconds = 0;
-this.timer2seconds = 0;
 this.current_player_index = null;
 
 function parse_time(timeStr) {
@@ -3964,10 +3962,10 @@ this.handle_notify = function(note, performing_replay) {
 this.handle_clock = function(note) {
     let minutes = Math.floor((note.time / (1000 * 60)) % 60);
     let seconds = Math.floor((note.time / 1000) % 60);
-    console.log('%cClock timer for "' + this.player_names[note.who] + '" is at: ' + minutes + 'm ' + seconds + 's', 'color: orange;');
+    console.log('%cClock timer for "' + ui.player_names[note.who] + '" is at: ' + minutes + 'm ' + seconds + 's', 'color: orange;');
 
     ui.player_times[note.who] = note.time / 1000; // The server gives it to us in milliseconds, so we convert it to seconds
-    if (note.active) {
+    if (note.active && ui.spectating === false) {
         // Set whose turn it is
         ui.current_player_index = note.who;
 
