@@ -94,11 +94,7 @@ function checkTimer1(textObject) {
 // The right timer that shows the current player's time; it will be hidden when it is your turn
 function checkTimer2(textObject) {
     let clockTime = ui.player_times[ui.current_player_index];
-    console.log('getting here 1:');
-    console.log(ui.player_times);
-    console.log(ui.current_player_index);
     if (typeof(clockTime) !== 'undefined') {
-        console.log('getting here 2');
         setTickingDownTime(textObject);
         uilayer.draw();
     }
