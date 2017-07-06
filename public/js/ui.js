@@ -77,7 +77,7 @@ function seconds_to_time_display(seconds) {
 function checkTimer1(textObject) {
     let clockTime = ui.player_times[ui.player_us];
     if (typeof(clockTime) !== 'undefined') {
-        if (ui.current_player_index !== ui.player_us && ui.spectating === false) {
+        if (ui.current_player_index !== ui.player_us) {
             // If it is not our turn, just show a static clock of how much time we have left
             textObject.setText(seconds_to_time_display(Math.ceil(clockTime)));
         } else {
@@ -94,7 +94,11 @@ function checkTimer1(textObject) {
 // The right timer that shows the current player's time; it will be hidden when it is your turn
 function checkTimer2(textObject) {
     let clockTime = ui.player_times[ui.current_player_index];
+    console.log('getting here 1:');
+    console.log(ui.player_times);
+    console.log(ui.current_player_index);
     if (typeof(clockTime) !== 'undefined') {
+        console.log('getting here 2');
         setTickingDownTime(textObject);
         uilayer.draw();
     }
@@ -3000,10 +3004,19 @@ this.build_ui = function() {
         });
         uilayer.add(timer_text2);
 
+        // Hide the first timer if spectating
+        if (this.spectating) {
+            timer_rect1.hide();
+            timer_label1.hide();
+            timer_text1.hide();
+        }
+
         // Hide the second timer by default
-        timer_rect2.hide();
-        timer_label2.hide();
-        timer_text2.hide();
+        if (this.spectating === false) {
+            timer_rect2.hide();
+            timer_label2.hide();
+            timer_text2.hide();
+        }
 
         checkTimer1(timer_text1);
         checkTimer2(timer_text2);
@@ -3965,23 +3978,19 @@ this.handle_clock = function(note) {
     console.log('%cClock timer for "' + ui.player_names[note.who] + '" is at: ' + minutes + 'm ' + seconds + 's', 'color: orange;');
 
     ui.player_times[note.who] = note.time / 1000; // The server gives it to us in milliseconds, so we convert it to seconds
-    if (note.active && ui.spectating === false) {
+    if (note.active) {
         // Set whose turn it is
         ui.current_player_index = note.who;
 
         // Show or hide the 2nd timer
-        if (ui.current_player_index === ui.player_us) {
-            if (timer_rect2) {
-                timer_rect2.hide();
-                timer_label2.hide();
-                timer_text2.hide();
-            }
-        } else {
-            if (timer_rect2) {
-                timer_rect2.show();
-                timer_label2.show();
-                timer_text2.show();
-            }
+        if (ui.current_player_index === ui.player_us && ui.spectating === false && timer_rect2) {
+            timer_rect2.hide();
+            timer_label2.hide();
+            timer_text2.hide();
+        } else if (timer_rect2){
+            timer_rect2.show();
+            timer_label2.show();
+            timer_text2.show();
         }
     }
 };
