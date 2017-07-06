@@ -154,16 +154,6 @@ function HanabiLobby() {
 		self.draw_history();
 	});
 
-    var optionsButton = document.createElement("button");
-    optionsButton.id = "show-options";
-    optionsButton.innerHTML = "Extension Options";
-
-	$("#settings-dialog").append(optionsButton);
-    $("#show-options").on("click", function(evt) {
-        evt.preventDefault();
-        //chrome.runtime.sendMessage(extensionId, {action: "open-options"});
-    });
-
 	var logoutButton = document.createElement("button");
     logoutButton.id = "logout";
     logoutButton.innerHTML = "Log Out";
