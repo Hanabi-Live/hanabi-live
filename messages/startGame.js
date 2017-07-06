@@ -23,6 +23,7 @@ exports.step1 = function(socket, data) {
     if (game.variant > 0) {
         suits.push(5);
     }
+    let order = 0;
     for (let suit of suits) {
         let ranks = [1, 2, 3, 4, 5];
         for (let rank of ranks) {
@@ -40,9 +41,11 @@ exports.step1 = function(socket, data) {
 
             for (let i = 0; i < amountToAdd; i++) {
                 game.deck.push({
-                    suit: suit,
-                    rank: rank,
+                    suit:  suit,
+                    rank:  rank,
+                    order: order,
                 });
+                order++;
             }
         }
     }
