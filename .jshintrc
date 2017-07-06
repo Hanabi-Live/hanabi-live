@@ -11,6 +11,8 @@
     "undef": true,
     "unused": "vars",
 
+    "loopfunc": true,
+
     "esversion": 6,
 
     "browser": true,

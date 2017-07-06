@@ -13,11 +13,10 @@
 var MHGA_show_debug_messages = true;
 var MHGA_colorblind_mode = false;
 var MHGA_show_more_log = true;
-var MHGA_show_log_numbers = true;
+var MHGA_show_log_numbers = false;
 var MHGA_show_faces_in_replay = true;
 var MHGA_highlight_non_hand_cards = true;
 var MHGA_show_slot_nums = true;
-var MHGA_beep_notifications = false;
 var MHGA_show_no_clues_box = true;
 
 function HanabiUI(lobby, game_id)
@@ -59,19 +58,10 @@ this.last_timer_update_time_ms = new Date().getTime();
 this.player_times = [];
 this.current_player_index = null;
 
-function parse_time(timeStr) {
-    var num = parseInt(timeStr);
-    if (!num) {
-        return null;
-    }
-    if (timeStr.endsWith("m")) {
-        num *= 60;
-    }
-    return num;
-}
-
 function pad2(num) {
-    if (num < 10) return "0" + num;
+    if (num < 10) {
+        return "0" + num;
+    }
     return "" + num;
 }
 
@@ -122,28 +112,6 @@ function setTickingDownTime(textObject) {
     textObject.setText(seconds_to_time_display(Math.ceil(ui.player_times[ui.current_player_index])));
 }
 
-/*
-if (lobby.game.name.indexOf("!timed") !== -1) {
-    this.timed_game = true;
-    var match_arr = lobby.game.name.match(/!bank (\d+[a-z])/);
-    if (match_arr) {
-        let val = match_arr[1];
-        let seconds = parse_time(val);
-        if (seconds) {
-            this.timebank_seconds = seconds;
-        }
-    }
-    match_arr = lobby.game.name.match(/!over (\d+[a-z])/);
-    if (match_arr) {
-        let val = match_arr[1];
-        let seconds = parse_time(val);
-        if (seconds) {
-            this.timebank_overtime = seconds;
-        }
-    }
-}
-*/
-
 function image_name(card) {
     if(!card.unknown) {
         let name = "card-";
@@ -155,13 +123,13 @@ function image_name(card) {
     var learned = ui.learned_cards[card.order];
     if (MHGA_show_faces_in_replay && learned && ui.replay) {
         let name = "card-";
-        if(learned.suit == undefined) {
+        if (learned.suit === undefined) {
             name += 6;
         } else {
             name += learned.suit;
         }
         name += "-";
-        if(learned.rank == undefined) {
+        if (learned.rank === undefined) {
             name += 6;
         } else {
             name += learned.rank;
@@ -178,18 +146,24 @@ var scale_card_image = function(context, name) {
     var am = this.getAbsoluteTransform();
     var src = card_images[name];
 
-    if (!src) return;
+    if (!src) {
+        return;
+    }
 
     var dw = Math.sqrt(am.m[0] * am.m[0] + am.m[1] * am.m[1]) * width;
     var dh = Math.sqrt(am.m[2] * am.m[2] + am.m[3] * am.m[3]) * height;
 
-    if (dw < 1 || dh < 1) return;
+    if (dw < 1 || dh < 1) {
+        return;
+    }
 
     var sw = width, sh = height;
     var scale_cvs, scale_ctx;
     var steps = 0;
 
-    if (!scale_card_images[name]) scale_card_images[name] = [];
+    if (!scale_card_images[name]) {
+        scale_card_images[name] = [];
+    }
 
     while (dw < sw / 2)
     {
@@ -225,7 +199,9 @@ var FitText = function(config) {
     this.needs_resize = true;
 
     this.setDrawFunc(function(context) {
-        if (this.needs_resize) this.resize();
+        if (this.needs_resize) {
+            this.resize();
+        }
         Kinetic.Text.prototype._sceneFunc.call(this, context);
     });
 };
@@ -307,7 +283,7 @@ var HanabiMsgLog = function(config) {
         clipWidth: 0.4 * win_w,
         clipHeight: 0.96 * win_h,
         visible: false,
-        listening: false
+        listening: false,
      };
 
     $.extend(baseConfig, config);
@@ -320,7 +296,7 @@ var HanabiMsgLog = function(config) {
         height: 0.96 * win_h,
         fill: "black",
         opacity: 0.9,
-        cornerRadius: 0.01 * win_w
+        cornerRadius: 0.01 * win_w,
     });
 
     Kinetic.Group.prototype.add.call(this,rect);
@@ -333,7 +309,7 @@ var HanabiMsgLog = function(config) {
         y: 0.01 * win_h,
         width: (MHGA_show_log_numbers? 0.35 : 0.38) * win_w,
         height: 0.94 * win_h,
-        maxLines: 38
+        maxLines: 38,
     };
 
     this.logtext = new MultiFitText(textoptions);
@@ -347,7 +323,7 @@ var HanabiMsgLog = function(config) {
         y: 0.01 * win_h,
         width: 0.03 * win_w,
         height: 0.94 * win_h,
-        maxLines: 38
+        maxLines: 38,
     };
     this.lognumbers = new MultiFitText(numbersoptions);
     if(! MHGA_show_log_numbers) {
@@ -374,7 +350,6 @@ var HanabiMsgLog = function(config) {
 Kinetic.Util.extend(HanabiMsgLog, Kinetic.Group);
 
 HanabiMsgLog.prototype.add_message = function(msg) {
-    var loggroup = this;
     var append_line = function (log, numbers, line) {
         log.setMultiText(line);
         numbers.setMultiText(drawdeck.getCount());
@@ -392,7 +367,7 @@ HanabiMsgLog.prototype.add_message = function(msg) {
 HanabiMsgLog.prototype.show_player_actions = function(player_name) {
     var player_idx;
     for (var i = 0; i < ui.player_names.length; i++) {
-        if(ui.player_names[i] == player_name) {
+        if(ui.player_names[i] === player_name) {
             player_idx = i;
         }
     }
@@ -450,13 +425,16 @@ var HanabiCard = function(config) {
     config.height = cardh;
     config.x = cardw / 2;
     config.y = cardh / 2;
-    config.offset = { x: cardw / 2, y: cardh / 2 };
+    config.offset = {
+        x: cardw / 2,
+        y: cardh / 2,
+    };
 
     Kinetic.Group.call(this, config);
 
     this.bare = new Kinetic.Image({
         width: config.width,
-        height: config.height
+        height: config.height,
     });
 
     this.bare.setDrawFunc(function(context) {
@@ -471,7 +449,10 @@ var HanabiCard = function(config) {
     this.order = config.order;
 
     if(!this.unknown) {
-        ui.learned_cards[this.order] = {suit: this.suit, rank: this.rank};
+        ui.learned_cards[this.order] = {
+            suit: this.suit,
+            rank: this.rank,
+        };
     }
 
     this.barename = "";
@@ -486,7 +467,7 @@ var HanabiCard = function(config) {
     var replayPartialPresentKnowledge = MHGA_show_faces_in_replay &&
                                         ui.replay &&
                                         this.unknown &&
-                                        ui.learned_cards[this.order] != undefined &&
+                                        ui.learned_cards[this.order] !== undefined &&
                                         !ui.learned_cards[this.order].revealed;
     this.unknownRect = new Kinetic.Rect({
         x: 0,
@@ -496,7 +477,7 @@ var HanabiCard = function(config) {
         cornerRadius: 20,
         fill: "#cccccc",
         opacity: 0.4,
-        visible: replayPartialPresentKnowledge
+        visible: replayPartialPresentKnowledge,
     });
     this.add(this.unknownRect);
 
@@ -509,7 +490,7 @@ var HanabiCard = function(config) {
         strokeWidth: 12,
         stroke: "#ccccee",
         visible: false,
-        listening: false
+        listening: false,
     });
 
     this.add(this.indicateRect);
@@ -519,7 +500,7 @@ var HanabiCard = function(config) {
         y: 0.1 * config.height,
         width: 0.4 * config.width,
         height: 0.282 * config.height,
-        visible: false
+        visible: false,
     });
 
     this.add(this.color_clue_group);
@@ -530,9 +511,18 @@ var HanabiCard = function(config) {
         stroke: "black",
         strokeWidth: 12,
         cornerRadius: 12,
-        fillLinearGradientStartPoint: {x: 0, y: 0},
-        fillLinearGradientEndPoint: {x: 0.4 * config.width, y: 0.282 * config.height},
-        fillLinearGradientColorStops: [ 0, "black" ]
+        fillLinearGradientStartPoint: {
+            x: 0,
+            y: 0,
+        },
+        fillLinearGradientEndPoint: {
+            x: 0.4 * config.width,
+            y: 0.282 * config.height,
+        },
+        fillLinearGradientColorStops: [
+            0,
+            "black",
+        ],
     });
 
     this.color_clue_group.add(this.color_clue);
@@ -548,10 +538,13 @@ var HanabiCard = function(config) {
         strokeWidth: 4,
         shadowOpacity: 0.9,
         shadowColor: "black",
-        shadowOffset: {x: 0, y: 1 },
+        shadowOffset: {
+            x: 0,
+            y: 1,
+        },
         shadowBlur: 2,
         text: "",
-        visible: MHGA_colorblind_mode
+        visible: MHGA_colorblind_mode,
     });
     this.color_clue_group.add(this.color_clue_letter);
 
@@ -568,10 +561,13 @@ var HanabiCard = function(config) {
         strokeWidth: 4,
         shadowOpacity: 0.9,
         shadowColor: "black",
-        shadowOffset: {x: 0, y: 1 },
+        shadowOffset: {
+            x: 0,
+            y: 1,
+        },
         shadowBlur: 2,
         text: "?",
-        visible: false
+        visible: false,
     });
 
     this.add(this.number_clue);
@@ -583,7 +579,7 @@ var HanabiCard = function(config) {
         fill: "white",
         stroke: "black",
         strokeWidth: 4,
-        visible: false
+        visible: false,
     });
 
     this.add(this.clue_given);
@@ -596,7 +592,7 @@ var HanabiCard = function(config) {
         fill: "white",
         stroke: "black",
         strokeWidth: 4,
-        visible: false
+        visible: false,
     });
 
     this.add(this.note_given);
@@ -605,33 +601,35 @@ var HanabiCard = function(config) {
     //there's some bug i cant figure out where it permanently draws a copy of the tag at this location, so i'll
     //work around it by setting the starting location to this
     this.tooltip = new Kinetic.Label({
-                               x: -1000,
-                               y: -1000
-                               });
+        x: -1000,
+        y: -1000,
+    });
 
     this.tooltip.add(new Kinetic.Tag({
-                             fill: '#3E4345',
-                             pointerDirection: 'left',
-                             pointerWidth: 0.02 * win_w,
-                             pointerHeight: 0.015 * win_h,
-                             lineJoin: 'round',
-                             shadowColor: 'black',
-                             shadowBlur: 10,
-                             shadowOffset: {x:3,y:3},
-                             shadowOpacity: 0.6
-                           }));
+        fill: '#3E4345',
+        pointerDirection: 'left',
+        pointerWidth: 0.02 * win_w,
+        pointerHeight: 0.015 * win_h,
+        lineJoin: 'round',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 3,
+            y: 3,
+        },
+        shadowOpacity: 0.6,
+    }));
 
-    this.tooltip.add( new FitText({
-                           fill: "white",
-                           align: "left",
-                        padding: 0.01 * win_h,
-                        fontSize: 0.04 * win_h,
-                           minFontSize: 0.02 * win_h,
-                           width: 0.12 * win_w,
-                           fontFamily: "Verdana",
-                           text: ""
-                           }));
-
+    this.tooltip.add(new FitText({
+        fill: "white",
+        align: "left",
+        padding: 0.01 * win_h,
+        fontSize: 0.04 * win_h,
+        minFontSize: 0.02 * win_h,
+        width: 0.12 * win_w,
+        fontFamily: "Verdana",
+        text: "",
+    }));
 
     tiplayer.add(this.tooltip);
 
@@ -684,10 +682,10 @@ HanabiCard.prototype.add_listeners = function() {
     });
 
     this.on("click", function(e) {
-        if(e.evt.which == 3) { //right click
+        if(e.evt.which === 3) { //right click
             var note = ui.getNote(self.order);
             var newNote = prompt("Note on card:", note);
-            if (newNote != null) {
+            if (newNote !== null) {
                 self.tooltip.getText().setText(newNote);
                 ui.setNote(self.order, newNote);
                 note = newNote;
@@ -707,7 +705,7 @@ HanabiCard.prototype.add_listeners = function() {
 };
 
 HanabiCard.prototype.setBareImage = function() {
-    if (this.unknownRect != undefined) {
+    if (this.unknownRect !== undefined) {
         var learned = ui.learned_cards[this.order];
         //if we're in a replay, we have knowledge about the card, but we don't know the ACTUAL card
         if(MHGA_show_faces_in_replay &&
@@ -744,26 +742,31 @@ HanabiCard.prototype.add_clue = function(clue) {
         ui.learned_cards[this.order] = {};
     }
 
-    if (clue.type == CLUE.SUIT)
+    if (clue.type === CLUE.SUIT)
     {
         var grad = this.color_clue.getFillLinearGradientColorStops();
-        if (grad.length == 2)
+        if (grad.length === 2)
         {
-            this.color_clue.setFillLinearGradientColorStops([0, suit_colors[clue.value], 1, suit_colors[clue.value]]);
+            this.color_clue.setFillLinearGradientColorStops([
+                0,
+                suit_colors[clue.value],
+                1,
+                suit_colors[clue.value],
+            ]);
             this.color_clue_letter.setText(suit_abbreviations[clue.value]);
         }
-        else if (grad[1] == grad[3])
+        else if (grad[1] === grad[3])
         {
             grad[3] = suit_colors[clue.value];
             this.color_clue.setFillLinearGradientColorStops(grad);
 
-            if(grad[i] != suit_colors[clue.value]) {
+            if(grad[i] !== suit_colors[clue.value]) {
                 this.color_clue_letter.setText("M");
             }
         }
         else
         {
-            if (grad[grad.length - 1] == suit_colors[clue.value])
+            if (grad[grad.length - 1] === suit_colors[clue.value])
             {
                 return;
             }
@@ -780,9 +783,9 @@ HanabiCard.prototype.add_clue = function(clue) {
 
         this.color_clue_group.show();
 
-        if (ui.learned_cards[this.order].suit == undefined) {
+        if (ui.learned_cards[this.order].suit === undefined) {
             ui.learned_cards[this.order].suit = clue.value;
-        } else if (ui.learned_cards[this.order].suit != clue.value) {
+        } else if (ui.learned_cards[this.order].suit !== clue.value) {
             ui.learned_cards[this.order].suit = 5;
         }
 
@@ -823,15 +826,23 @@ LayoutChild.prototype.add = function(child) {
     this.setHeight(child.getHeight());
 
     child.on("widthChange", function(evt) {
-        if (evt.oldVal == evt.newVal) return;
+        if (evt.oldVal === evt.newVal) {
+            return;
+        }
         self.setWidth(evt.newVal);
-        if (self.parent) self.parent.doLayout();
+        if (self.parent) {
+            self.parent.doLayout();
+        }
     });
 
     child.on("heightChange", function(evt) {
-        if (evt.oldVal == evt.newVal) return;
+        if (evt.oldVal === evt.newVal) {
+            return;
+        }
         self.setHeight(evt.newVal);
-        if (self.parent) self.parent.doLayout();
+        if (self.parent) {
+            self.parent.doLayout();
+        }
     });
 };
 
@@ -870,47 +881,55 @@ CardLayout.prototype.doLayout = function() {
     {
         node = this.children[i];
 
-        if (!node.getHeight()) continue;
+        if (!node.getHeight()) {
+            continue;
+        }
 
         scale = lh / node.getHeight();
 
         uw += scale * node.getWidth();
     }
 
-    if (n > 1) dist = (lw - uw) / (n - 1);
+    if (n > 1) {
+        dist = (lw - uw) / (n - 1);
+    }
 
-    if (dist > 10) dist = 10;
+    if (dist > 10) {
+        dist = 10;
+    }
 
     uw += dist * (n - 1);
 
-    if (this.align == "center" && uw < lw) x = (lw - uw) / 2;
+    if (this.align === "center" && uw < lw) {
+        x = (lw - uw) / 2;
+    }
 
-    if (this.reverse)
-    {
+    if (this.reverse) {
         x = lw - x;
     }
 
-    for (i = 0; i < n; i++)
-    {
+    for (i = 0; i < n; i++) {
         node = this.children[i];
 
-        if (!node.getHeight()) continue;
+        if (!node.getHeight()) {
+            continue;
+        }
 
         scale = lh / node.getHeight();
 
-        if (node.tween) node.tween.destroy();
+        if (node.tween) {
+            node.tween.destroy();
+        }
 
         if (!node.isDragging()) {
-            if (ui.animate_fast)
-            {
+            if (ui.animate_fast) {
                 node.setX(x - (this.reverse ? scale * node.getWidth() : 0));
                 node.setY(0);
                 node.setScaleX(scale);
                 node.setScaleY(scale);
                 node.setRotation(0);
-            }
-            else
-            {
+
+            } else {
                 node.tween = new Kinetic.Tween({
                     node: node,
                     duration: 0.5,
@@ -919,7 +938,7 @@ CardLayout.prototype.doLayout = function() {
                     scaleX: scale,
                     scaleY: scale,
                     rotation: 0,
-                    runonce: true
+                    runonce: true,
                 }).play();
             }
         }
@@ -936,7 +955,7 @@ var CardDeck = function(config) {
         y: 0,
         width: this.getWidth(),
         height: this.getHeight(),
-        image: card_images[config.cardback]
+        image: card_images[config.cardback],
     });
 
     this.add(this.cardback);
@@ -953,7 +972,7 @@ var CardDeck = function(config) {
         fontSize: 0.4 * this.getHeight(),
         fontFamily: "Verdana",
         fontStyle: "bold",
-        text: "0"
+        text: "0",
     });
 
     this.add(this.count);
@@ -982,11 +1001,11 @@ CardDeck.prototype.add = function(child) {
             scaleY: 0.01,
             rotation: 0,
             duration: 0.5,
-            runonce: true
+            runonce: true,
         }).play();
 
         child.tween.onFinish = function() {
-            if (child.parent == self)
+            if (child.parent === self)
             {
                 child.remove();
             }
@@ -1044,15 +1063,21 @@ CardStack.prototype.doLayout = function() {
         {
             node = self.children[i];
 
-            if (!node.tween) continue;
+            if (!node.tween) {
+                continue;
+            }
 
-            if (node.tween.isPlaying()) return;
+            if (node.tween.isPlaying()) {
+                return;
+            }
         }
         for (i = 0; i < n - 1; i++)
         {
             self.children[i].setVisible(false);
         }
-        if (n > 0) self.children[n - 1].setVisible(true);
+        if (n > 0) {
+            self.children[n - 1].setVisible(true);
+        }
     };
 
     for (i = 0; i < n; i++)
@@ -1061,7 +1086,9 @@ CardStack.prototype.doLayout = function() {
 
         scale = lh / node.getHeight();
 
-        if (node.tween) node.tween.destroy();
+        if (node.tween) {
+            node.tween.destroy();
+        }
 
         if (ui.animate_fast)
         {
@@ -1083,7 +1110,7 @@ CardStack.prototype.doLayout = function() {
                 scaleY: scale,
                 rotation: 0,
                 runonce: true,
-                onFinish: hide_under
+                onFinish: hide_under,
             }).play();
         }
     }
@@ -1104,7 +1131,7 @@ var Button = function(config) {
         listening: true,
         cornerRadius: 0.12 * h,
         fill: "black",
-        opacity: 0.6
+        opacity: 0.6,
     });
 
     this.add(background);
@@ -1122,7 +1149,7 @@ var Button = function(config) {
             fontFamily: "Verdana",
             fill: "white",
             align: "center",
-            text: config.text
+            text: config.text,
         });
 
         this.add(text);
@@ -1136,7 +1163,7 @@ var Button = function(config) {
             width: 0.6 * w,
             height: 0.6 * h,
             listening: false,
-            image: ImageLoader.get(config.image)
+            image: ImageLoader.get(config.image),
         });
 
         this.add(img);
@@ -1203,7 +1230,7 @@ var NumberButton = function(config) {
         listening: true,
         cornerRadius: 0.12 * h,
         fill: "black",
-        opacity: 0.6
+        opacity: 0.6,
     });
 
     this.add(background);
@@ -1220,7 +1247,7 @@ var NumberButton = function(config) {
         stroke: "black",
         strokeWidth: 1,
         align: "center",
-        text: config.number.toString()
+        text: config.number.toString(),
     });
 
     this.add(text);
@@ -1271,7 +1298,7 @@ var ColorButton = function(config) {
         listening: true,
         cornerRadius: 0.12 * h,
         fill: "black",
-        opacity: 0.6
+        opacity: 0.6,
     });
 
     this.add(background);
@@ -1284,7 +1311,7 @@ var ColorButton = function(config) {
         listening: false,
         cornerRadius: 0.12 * 0.8 * h,
         fill: config.color,
-        opacity: 0.9
+        opacity: 0.9,
     });
 
     this.add(color);
@@ -1302,7 +1329,7 @@ var ColorButton = function(config) {
         strokeWidth: 1,
         align: "center",
         text: config.text,
-        visible: MHGA_colorblind_mode
+        visible: MHGA_colorblind_mode,
     });
 
     this.add(text);
@@ -1358,7 +1385,7 @@ ButtonGroup.prototype.add = function(button) {
 
         for (i = 0; i < self.list.length; i++)
         {
-            if (self.list[i] != this && self.list[i].pressed)
+            if (self.list[i] !== this && self.list[i].pressed)
             {
                 self.list[i].setPressed(false);
             }
@@ -1373,7 +1400,9 @@ ButtonGroup.prototype.getPressed = function() {
 
     for (i = 0; i < this.list.length; i++)
     {
-        if (this.list[i].pressed) return this.list[i];
+        if (this.list[i].pressed) {
+            return this.list[i];
+        }
     }
 
     return null;
@@ -1384,7 +1413,9 @@ ButtonGroup.prototype.clearPressed = function() {
 
     for (i = 0; i < this.list.length; i++)
     {
-        if (this.list[i].pressed) this.list[i].setPressed(false);
+        if (this.list[i].pressed) {
+            this.list[i].setPressed(false);
+        }
     }
 };
 
@@ -1472,7 +1503,7 @@ var HanabiClueEntry = function(config) {
         height: h,
         fill: "white",
         opacity: 0.1,
-        listening: true
+        listening: true,
     });
 
     this.background = background;
@@ -1488,7 +1519,7 @@ var HanabiClueEntry = function(config) {
         fontFamily: "Verdana",
         fill: "white",
         text: config.giver,
-        listening: false
+        listening: false,
     });
 
     this.add(giver);
@@ -1502,7 +1533,7 @@ var HanabiClueEntry = function(config) {
         fontFamily: "Verdana",
         fill: "white",
         text: config.target,
-        listening: false
+        listening: false,
     });
 
     this.add(target);
@@ -1517,7 +1548,7 @@ var HanabiClueEntry = function(config) {
         fontFamily: "Verdana",
         fill: "white",
         text: config.type,
-        listening: false
+        listening: false,
     });
 
     this.add(type);
@@ -1533,7 +1564,7 @@ var HanabiClueEntry = function(config) {
         fill: "white",
         text: "✘",
         listening: false,
-        visible: false
+        visible: false,
     });
 
     this.negative_marker = negative_marker;
@@ -1554,14 +1585,18 @@ var HanabiClueEntry = function(config) {
 
         for (i = 0; i < self.list.length; i++)
         {
-            if (!self.checkValid(self.list[i])) continue;
+            if (!self.checkValid(self.list[i])) {
+                continue;
+            }
 
             ui.deck[self.list[i]].setIndicator(true);
         }
 
         for (i = 0; i < self.neglist.length; i++)
         {
-            if (!self.checkValid(self.neglist[i])) continue;
+            if (!self.checkValid(self.neglist[i])) {
+                continue;
+            }
 
             ui.deck[self.neglist[i]].setIndicator(true, true);
         }
@@ -1581,25 +1616,31 @@ var HanabiClueEntry = function(config) {
 Kinetic.Util.extend(HanabiClueEntry, Kinetic.Group);
 
 HanabiClueEntry.prototype.checkValid = function(c) {
-    if (!ui.deck[c]) return false;
+    if (!ui.deck[c]) {
+        return false;
+    }
 
-    if (!ui.deck[c].parent) return false;
+    if (!ui.deck[c].parent) {
+        return false;
+    }
 
-    return player_hands.indexOf(ui.deck[c].parent.parent) != -1;
+    return player_hands.indexOf(ui.deck[c].parent.parent) !== -1;
 };
 
 //returns number of expirations, either 0 or 1 depending on whether it expired
 HanabiClueEntry.prototype.checkExpiry = function() {
     var i;
 
-    for (i = 0; i < this.list.length; i++)
-    {
-        if (this.checkValid(this.list[i])) return 0;
+    for (i = 0; i < this.list.length; i++) {
+        if (this.checkValid(this.list[i])) {
+            return 0;
+        }
     }
 
-    for (i = 0; i < this.neglist.length; i++)
-    {
-        if (this.checkValid(this.neglist[i])) return 0;
+    for (i = 0; i < this.neglist.length; i++) {
+        if (this.checkValid(this.neglist[i])) {
+            return 0;
+        }
     }
 
     this.background.off("mouseover tap");
@@ -1616,18 +1657,14 @@ HanabiClueEntry.prototype.showMatch = function(target) {
     this.background.setFill("white");
     this.negative_marker.setVisible(false);
 
-    for (i = 0; i < this.list.length; i++)
-    {
-        if (ui.deck[this.list[i]] == target)
-        {
+    for (i = 0; i < this.list.length; i++) {
+        if (ui.deck[this.list[i]] === target) {
             this.background.setOpacity(0.4);
         }
     }
 
-    for (i = 0; i < this.neglist.length; i++)
-    {
-        if (ui.deck[this.neglist[i]] == target)
-        {
+    for (i = 0; i < this.neglist.length; i++) {
+        if (ui.deck[this.neglist[i]] === target) {
             this.background.setOpacity(0.4);
             this.background.setFill("#ff7777");
             if(MHGA_colorblind_mode) {
@@ -1653,8 +1690,11 @@ var HanabiNameFrame = function(config) {
         fill: "#d8d5ef",
         shadowColor: "black",
         shadowBlur: 5,
-        shadowOffset: { x: 0, y: 3 },
-        shadowOpacity: 0.9
+        shadowOffset: {
+            x: 0,
+            y: 3,
+        },
+        shadowOpacity: 0.9,
     });
 
     w = this.name.getWidth();
@@ -1676,27 +1716,47 @@ var HanabiNameFrame = function(config) {
     w *= 1.4;
 
     this.leftline = new Kinetic.Line({
-        points: [ 0, 0, 0, config.height / 2, config.width / 2 - w / 2, config.height / 2 ],
+        points: [
+            0,
+            0,
+            0,
+            config.height / 2,
+            config.width / 2 - w / 2,
+            config.height / 2,
+        ],
         stroke: "#d8d5ef",
         strokeWidth: 1,
         lineJoin: "round",
         shadowColor: "black",
         shadowBlur: 5,
-        shadowOffset: { x: 0, y: 3 },
-        shadowOpacity: 0
+        shadowOffset: {
+            x: 0,
+            y: 3,
+        },
+        shadowOpacity: 0,
     });
 
     this.add(this.leftline);
 
     this.rightline = new Kinetic.Line({
-        points: [ config.width / 2 + w / 2, config.height / 2, config.width, config.height / 2, config.width, 0 ],
+        points: [
+            config.width / 2 + w / 2,
+            config.height / 2,
+            config.width,
+            config.height / 2,
+            config.width,
+            0,
+        ],
         stroke: "#d8d5ef",
         strokeWidth: 1,
         lineJoin: "round",
         shadowColor: "black",
         shadowBlur: 5,
-        shadowOffset: { x: 0, y: 3 },
-        shadowOpacity: 0
+        shadowOffset: {
+            x: 0,
+            y: 3,
+        },
+        shadowOpacity: 0,
     });
 
     this.add(this.rightline);
@@ -1728,8 +1788,17 @@ var Loader = function(cb) {
 
     this.filemap = {};
 
-    var basic = [ "button", "button_pressed", "trashcan", "redx", "replay",
-                   "rewind", "forward", "rewindfull", "forwardfull" ];
+    var basic = [
+        "button",
+        "button_pressed",
+        "trashcan",
+        "redx",
+        "replay",
+        "rewind",
+        "forward",
+        "rewindfull",
+        "forwardfull",
+    ];
     var i;
 
     for (i = 0; i < basic.length; i++)
@@ -1750,7 +1819,6 @@ Loader.prototype.add_alias = function(name, alias, ext) {
 
 Loader.prototype.start = function() {
     var self = this;
-    var i;
 
     var total = Object.keys(self.filemap).length;
 
@@ -1768,7 +1836,7 @@ Loader.prototype.start = function() {
 
             self.progress(self.num_loaded, total);
 
-            if (self.num_loaded == total)
+            if (self.num_loaded === total)
             {
                 self.cb();
             }
@@ -1805,7 +1873,10 @@ var ImageLoader = new Loader(function() {
 
     ui.build_cards();
     ui.build_ui();
-    ui.send_msg({type: "ready", resp: {}});
+    ui.send_msg({
+        type: "ready",
+        resp: {},
+    });
     ui.ready = true;
 });
 
@@ -1819,7 +1890,9 @@ var show_clue_match = function(target, clue, show_neg) {
 
     for (i = 0; i < ui.player_names.length; i++)
     {
-        if (i == target) continue;
+        if (i === target) {
+            continue;
+        }
 
         for (j = 0; j < player_hands[i].children.length; j++)
         {
@@ -1833,7 +1906,9 @@ var show_clue_match = function(target, clue, show_neg) {
 
     cardlayer.batchDraw();
 
-    if (target < 0) return;
+    if (target < 0) {
+        return;
+    }
 
     for (i = 0; i < player_hands[target].children.length; i++)
     {
@@ -1841,9 +1916,9 @@ var show_clue_match = function(target, clue, show_neg) {
 
         card = child.children[0];
 
-        if ((clue.type == CLUE.RANK && clue.value == card.rank) ||
-            (clue.type == CLUE.SUIT && clue.value == card.suit) ||
-            (clue.type == CLUE.SUIT && card.suit == 5 && ui.variant == VARIANT.RAINBOW))
+        if ((clue.type === CLUE.RANK && clue.value === card.rank) ||
+            (clue.type === CLUE.SUIT && clue.value === card.suit) ||
+            (clue.type === CLUE.SUIT && card.suit === 5 && ui.variant === VARIANT.RAINBOW))
         {
             match = true;
 
@@ -1867,7 +1942,7 @@ var suit_colors = [
     "#aa0000",
     "#6600cc",
     "#111111",
-    "#cccccc"
+    "#cccccc",
 ];
 
 var card_images = {};
@@ -1881,7 +1956,9 @@ this.build_cards = function() {
     var rainbow = false, grad;
     var pathfuncs = [];
 
-    if (this.variant == VARIANT.RAINBOW) rainbow = true;
+    if (this.variant === VARIANT.RAINBOW) {
+        rainbow = true;
+    }
 
     pathfuncs[0] = function() {
         ctx.beginPath();
@@ -1979,11 +2056,9 @@ this.build_cards = function() {
     };
 
     // 0-5 are the real suits. 6 is a "white" suit for replays
-    for (i = 0; i < 7; i++)
-    {
+    for (i = 0; i < 7; i++) {
         //0 is the stack base. 1-5 are the cards 1-5. 6 is a numberless card for replays.
-        for (j = 0; j < 7; j++)
-        {
+        for (j = 0; j < 7; j++) {
             name = "card-" + i + "-" + j;
 
             cvs = document.createElement("canvas");
@@ -2003,15 +2078,13 @@ this.build_cards = function() {
             ctx.clip();
             ctx.globalAlpha = 0.2;
             ctx.strokeStyle = "black";
-            for (x = 0; x < cardw; x += 4 + Math.random() * 4)
-            {
+            for (x = 0; x < cardw; x += 4 + Math.random() * 4) {
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, cardh);
                 ctx.stroke();
             }
-            for (y = 0; y < cardh; y += 4 + Math.random() * 4)
-            {
+            for (y = 0; y < cardh; y += 4 + Math.random() * 4) {
                 ctx.beginPath();
                 ctx.moveTo(0, y);
                 ctx.lineTo(cardw, y);
@@ -2019,8 +2092,7 @@ this.build_cards = function() {
             }
             ctx.restore();
 
-            if (i == 5 && rainbow)
-            {
+            if (i === 5 && rainbow) {
                 grad = ctx.createLinearGradient(0, 0, 0, cardh);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -2050,8 +2122,7 @@ this.build_cards = function() {
 
             ctx.shadowBlur = 10;
 
-            if (i == 5 && rainbow)
-            {
+            if (i === 5 && rainbow) {
                 grad = ctx.createLinearGradient(0, 14, 0, 110);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -2064,7 +2135,7 @@ this.build_cards = function() {
             }
 
             var suit_letter = suit_abbreviations[i];
-            if(suit_letter == "K" && rainbow) {
+            if (suit_letter === "K" && rainbow) {
                 suit_letter = "M";
             }
 
@@ -2075,11 +2146,11 @@ this.build_cards = function() {
             var text_y_pos = 110;
             ctx.font = "bold 96pt Arial";
             var index_label = j.toString();
-            if(j == 6) {
+            if (j === 6) {
                 index_label = "";
             }
 
-            if(MHGA_colorblind_mode) {
+            if (MHGA_colorblind_mode) {
                 ctx.font = "bold 68pt Arial";
                 text_y_pos = 83;
                 index_label = suit_letter + index_label;
@@ -2099,8 +2170,7 @@ this.build_cards = function() {
             ctx.strokeText(index_label, 19, text_y_pos);
             ctx.restore();
 
-            if (i == 5 && rainbow)
-            {
+            if (i === 5 && rainbow) {
                 grad = ctx.createRadialGradient(75, 150, 25, 75, 150, 75);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -2113,9 +2183,8 @@ this.build_cards = function() {
             }
 
             ctx.lineWidth = 5;
-            if (i != 6) {
-                if (j == 1 || j == 3)
-                {
+            if (i !== 6) {
+                if (j === 1 || j === 3) {
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
                     ctx.scale(0.4, 0.4);
@@ -2125,8 +2194,7 @@ this.build_cards = function() {
                     ctx.restore();
                 }
 
-                if (j > 1 && j != 6)
-                {
+                if (j > 1 && j !== 6) {
                     var symbol_y_pos = 120;
                     if(MHGA_colorblind_mode) {
                         symbol_y_pos = 85;
@@ -2151,8 +2219,7 @@ this.build_cards = function() {
                     ctx.restore();
                 }
 
-                if (j > 3 && j != 6)
-                {
+                if (j > 3 && j !== 6) {
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
                     ctx.translate(-90, 0);
@@ -2173,8 +2240,7 @@ this.build_cards = function() {
                     ctx.restore();
                 }
 
-                if (j == 0)
-                {
+                if (j === 0) {
                     ctx.clearRect(0, 0, cardw, cardh);
                     if(MHGA_colorblind_mode) {
                         ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
@@ -2185,7 +2251,7 @@ this.build_cards = function() {
 
                 }
 
-                if (j == 0 || j == 5)
+                if (j === 0 || j === 5)
                 {
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
@@ -2270,8 +2336,12 @@ var size_stage = function(stage) {
     var wh = window.innerHeight;
     var cw, ch;
 
-    if (ww < 640) ww = 640;
-    if (wh < 360) wh = 360;
+    if (ww < 640) {
+        ww = 640;
+    }
+    if (wh < 360) {
+        wh = 360;
+    }
 
     var ratio = 1.777;
 
@@ -2289,15 +2359,19 @@ var size_stage = function(stage) {
     cw = Math.floor(cw);
     ch = Math.floor(ch);
 
-    if (cw > 0.98 * ww) cw = ww;
-    if (ch > 0.98 * wh) ch = wh;
+    if (cw > 0.98 * ww) {
+        cw = ww;
+    }
+    if (ch > 0.98 * wh) {
+        ch = wh;
+    }
 
     stage.setWidth(cw);
     stage.setHeight(ch);
 };
 
 var stage = new Kinetic.Stage({
-    container: "game"
+    container: "game",
 });
 
 size_stage(stage);
@@ -2324,7 +2398,7 @@ var no_clue_label, no_clue_box, no_discard_label;
 var replay_area, replay_bar, replay_shuttle, replay_button;
 var lobby_button, help_button;
 var helpgroup;
-var msglog, msgloggroup, overback;
+var msgloggroup, overback;
 var notes_written = {};
 
 this.build_ui = function() {
@@ -2334,7 +2408,9 @@ this.build_ui = function() {
     var rect, img, text, button;
     var suits = 5;
 
-    if (this.variant) suits = 6;
+    if (this.variant) {
+        suits = 6;
+    }
 
     var layers = stage.getLayers();
 
@@ -2348,7 +2424,7 @@ this.build_ui = function() {
         y: 0,
         width: win_w,
         height: win_h,
-        image: ImageLoader.get("background")
+        image: ImageLoader.get("background"),
     });
 
     bglayer.add(background);
@@ -2357,14 +2433,14 @@ this.build_ui = function() {
         x: 0.183 * win_w,
         y: 0.3 * win_h,
         width: 0.435 * win_w,
-        height: 0.189 * win_h
+        height: 0.189 * win_h,
     });
 
     discard_area = new Kinetic.Rect({
         x: 0.8 * win_w,
         y: 0.6 * win_h,
         width: 0.2 * win_w,
-        height: 0.4 * win_h
+        height: 0.4 * win_h,
     });
 
     no_discard_label = new Kinetic.Rect({
@@ -2375,7 +2451,7 @@ this.build_ui = function() {
         stroke: "#df1c2d",
         strokeWidth: 0.007 * win_w,
         cornerRadius: 0.01 * win_w,
-        visible: false
+        visible: false,
     });
 
     uilayer.add(no_discard_label);
@@ -2387,7 +2463,7 @@ this.build_ui = function() {
         height: 0.39 * win_h,
         fill: "black",
         opacity: 0.2,
-        cornerRadius: 0.01 * win_w
+        cornerRadius: 0.01 * win_w,
     });
 
     bglayer.add(rect);
@@ -2398,7 +2474,7 @@ this.build_ui = function() {
         width: 0.15 * win_w,
         height: 0.35 * win_h,
         opacity: 0.2,
-        image: ImageLoader.get("trashcan")
+        image: ImageLoader.get("trashcan"),
     });
 
     bglayer.add(img);
@@ -2411,7 +2487,7 @@ this.build_ui = function() {
         fill: "black",
         opacity: 0.3,
         cornerRadius: 0.01 * win_h,
-        listening: true
+        listening: true,
     });
 
     bglayer.add(rect);
@@ -2439,14 +2515,17 @@ this.build_ui = function() {
         fill: "#d8d5ef",
         shadowColor: "black",
         shadowBlur: 10,
-        shadowOffset: { x: 0, y: 0 },
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
         shadowOpacity: 0.9,
         listening: false,
         x: 0.21 * win_w,
         y: (MHGA_show_more_log ? 0.238 : 0.25) * win_h,
         width: 0.38 * win_w,
         height: (MHGA_show_more_log ? 0.095 : 0.03) * win_h,
-        maxLines: (MHGA_show_more_log ? 3 : 1)
+        maxLines: (MHGA_show_more_log ? 3 : 1),
     });
 
     uilayer.add(message_prompt);
@@ -2458,7 +2537,7 @@ this.build_ui = function() {
         height: win_h,
         opacity: 0.3,
         fill: "black",
-        visible: false
+        visible: false,
     });
 
     overlayer.add(overback);
@@ -2506,7 +2585,10 @@ this.build_ui = function() {
         fill: "#d8d5ef",
         shadowColor: "black",
         shadowBlur: 10,
-        shadowOffset: { x: 0, y: 0 },
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
         shadowOpacity: 0.9,
     });
 
@@ -2524,7 +2606,10 @@ this.build_ui = function() {
         fill: "#d8d5ef",
         shadowColor: "black",
         shadowBlur: 10,
-        shadowOffset: { x: 0, y: 0 },
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
         shadowOpacity: 0.9,
     });
 
@@ -2559,8 +2644,7 @@ this.build_ui = function() {
     offset = 0;
     radius = 0.006;
 
-    if (this.variant)
-    {
+    if (this.variant) {
         y = 0.04;
         width = 0.06;
         height = 0.151;
@@ -2568,8 +2652,7 @@ this.build_ui = function() {
         radius = 0.004;
     }
 
-    for (i = 0; i < suits; i++)
-    {
+    for (i = 0; i < suits; i++) {
         pileback = new Kinetic.Rect({
             fill: suit_colors[i],
             opacity: 0.4,
@@ -2577,7 +2660,7 @@ this.build_ui = function() {
             y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
             width: width * win_w,
             height: height * win_h,
-            cornerRadius: radius * win_w
+            cornerRadius: radius * win_w,
         });
 
         bglayer.add(pileback);
@@ -2599,7 +2682,7 @@ this.build_ui = function() {
             y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
             width: width * win_w,
             height: height * win_h,
-            cornerRadius: radius * win_w
+            cornerRadius: radius * win_w,
         });
 
         bglayer.add(pileback);
@@ -2608,7 +2691,7 @@ this.build_ui = function() {
             x: (0.183 + (width + 0.015) * i) * win_w,
             y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
             width: width * win_w,
-            height: height * win_h
+            height: height * win_h,
         });
 
         cardlayer.add(play_stacks[i]);
@@ -2647,86 +2730,87 @@ this.build_ui = function() {
 
     var hand_pos = {
         2: [
-            { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
-            { x: 0.19, y: 0.01, w: 0.42, h: 0.189, rot: 0 },
+            { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0, },
+            { x: 0.19, y: 0.01, w: 0.42, h: 0.189, rot: 0, },
         ],
         3: [
-            { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
-            { x: 0.01, y: 0.71, w: 0.41, h: 0.189, rot: -78 },
-            { x: 0.705, y: 0, w: 0.41, h: 0.189, rot: 78 },
+            { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0, },
+            { x: 0.01, y: 0.71, w: 0.41, h: 0.189, rot: -78, },
+            { x: 0.705, y: 0, w: 0.41, h: 0.189, rot: 78, },
         ],
         4: [
-            { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
-            { x: 0.015, y: 0.7, w: 0.34, h: 0.189, rot: -78 },
-            { x: 0.23, y: 0.01, w: 0.34, h: 0.189, rot: 0 },
-            { x: 0.715, y: 0.095, w: 0.34, h: 0.189, rot: 78 },
+            { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0, },
+            { x: 0.015, y: 0.7, w: 0.34, h: 0.189, rot: -78, },
+            { x: 0.23, y: 0.01, w: 0.34, h: 0.189, rot: 0, },
+            { x: 0.715, y: 0.095, w: 0.34, h: 0.189, rot: 78, },
         ],
         5: [
-            { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
-            { x: 0.03, y: 0.77, w: 0.301, h: 0.18, rot: -90 },
-            { x: 0.025, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
-            { x: 0.445, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
-            { x: 0.77, y: 0.22, w: 0.301, h: 0.18, rot: 90 },
-        ]
+            { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0, },
+            { x: 0.03, y: 0.77, w: 0.301, h: 0.18, rot: -90, },
+            { x: 0.025, y: 0.009, w: 0.34, h: 0.189, rot: 0, },
+            { x: 0.445, y: 0.009, w: 0.34, h: 0.189, rot: 0, },
+            { x: 0.77, y: 0.22, w: 0.301, h: 0.18, rot: 90, },
+        ],
     };
 
     var shade_pos = {
         2: [
-            { x: 0.185, y: 0.762, w: 0.43, h: 0.205, rot: 0 },
-            { x: 0.185, y: 0.002, w: 0.43, h: 0.205, rot: 0 },
+            { x: 0.185, y: 0.762, w: 0.43, h: 0.205, rot: 0, },
+            { x: 0.185, y: 0.002, w: 0.43, h: 0.205, rot: 0, },
         ],
         3: [
-            { x: 0.185, y: 0.762, w: 0.43, h: 0.205, rot: 0 },
-            { x: 0.005, y: 0.718, w: 0.42, h: 0.205, rot: -78 },
-            { x: 0.708, y: -0.008, w: 0.42, h: 0.205, rot: 78 },
+            { x: 0.185, y: 0.762, w: 0.43, h: 0.205, rot: 0, },
+            { x: 0.005, y: 0.718, w: 0.42, h: 0.205, rot: -78, },
+            { x: 0.708, y: -0.008, w: 0.42, h: 0.205, rot: 78, },
         ],
         4: [
-            { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0 },
-            { x: 0.01, y: 0.708, w: 0.35, h: 0.205, rot: -78 },
-            { x: 0.225, y: 0.002, w: 0.35, h: 0.205, rot: 0 },
-            { x: 0.718, y: 0.087, w: 0.35, h: 0.205, rot: 78 },
+            { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0, },
+            { x: 0.01, y: 0.708, w: 0.35, h: 0.205, rot: -78, },
+            { x: 0.225, y: 0.002, w: 0.35, h: 0.205, rot: 0, },
+            { x: 0.718, y: 0.087, w: 0.35, h: 0.205, rot: 78, },
         ],
         5: [
-            { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0 },
-            { x: 0.026, y: 0.775, w: 0.311, h: 0.196, rot: -90 },
-            { x: 0.02, y: 0.001, w: 0.35, h: 0.205, rot: 0 },
-            { x: 0.44, y: 0.001, w: 0.35, h: 0.205, rot: 0 },
-            { x: 0.774, y: 0.215, w: 0.311, h: 0.196, rot: 90 },
-        ]
+            { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0, },
+            { x: 0.026, y: 0.775, w: 0.311, h: 0.196, rot: -90, },
+            { x: 0.02, y: 0.001, w: 0.35, h: 0.205, rot: 0, },
+            { x: 0.44, y: 0.001, w: 0.35, h: 0.205, rot: 0, },
+            { x: 0.774, y: 0.215, w: 0.311, h: 0.196, rot: 90, },
+        ],
     };
 
     var name_pos = {
         2: [
-            { x: 0.18, y: 0.97, w: 0.44, h: 0.02 },
-            { x: 0.18, y: 0.21, w: 0.44, h: 0.02 },
+            { x: 0.18, y: 0.97, w: 0.44, h: 0.02, },
+            { x: 0.18, y: 0.21, w: 0.44, h: 0.02, },
         ],
         3: [
-            { x: 0.18, y: 0.97, w: 0.44, h: 0.02 },
-            { x: 0.01, y: 0.765, w: 0.12, h: 0.02 },
-            { x: 0.67, y: 0.765, w: 0.12, h: 0.02 },
+            { x: 0.18, y: 0.97, w: 0.44, h: 0.02, },
+            { x: 0.01, y: 0.765, w: 0.12, h: 0.02, },
+            { x: 0.67, y: 0.765, w: 0.12, h: 0.02, },
         ],
         4: [
-            { x: 0.22, y: 0.97, w: 0.36, h: 0.02 },
-            { x: 0.01, y: 0.74, w: 0.13, h: 0.02 },
-            { x: 0.22, y: 0.21, w: 0.36, h: 0.02 },
-            { x: 0.66, y: 0.74, w: 0.13, h: 0.02 },
+            { x: 0.22, y: 0.97, w: 0.36, h: 0.02, },
+            { x: 0.01, y: 0.74, w: 0.13, h: 0.02, },
+            { x: 0.22, y: 0.21, w: 0.36, h: 0.02, },
+            { x: 0.66, y: 0.74, w: 0.13, h: 0.02, },
         ],
         5: [
-            { x: 0.22, y: 0.97, w: 0.36, h: 0.02 },
-            { x: 0.025, y: 0.775, w: 0.116, h: 0.02 },
-            { x: 0.015, y: 0.199, w: 0.36, h: 0.02 },
-            { x: 0.435, y: 0.199, w: 0.36, h: 0.02 },
-            { x: 0.659, y: 0.775, w: 0.116, h: 0.02 },
-        ]
+            { x: 0.22, y: 0.97, w: 0.36, h: 0.02, },
+            { x: 0.025, y: 0.775, w: 0.116, h: 0.02, },
+            { x: 0.015, y: 0.199, w: 0.36, h: 0.02, },
+            { x: 0.435, y: 0.199, w: 0.36, h: 0.02, },
+            { x: 0.659, y: 0.775, w: 0.116, h: 0.02, },
+        ],
     };
 
     var nump = this.player_names.length;
 
-    for (i = 0; i < nump; i++)
-    {
+    for (i = 0; i < nump; i++) {
         j = i - this.player_us;
 
-        if (j < 0) j += nump;
+        if (j < 0) {
+            j += nump;
+        }
 
         player_hands[i] = new CardLayout({
             x: hand_pos[nump][j].x * win_w,
@@ -2735,7 +2819,7 @@ this.build_ui = function() {
             height: hand_pos[nump][j].h * win_h,
             rotationDeg: hand_pos[nump][j].rot,
             align: "center",
-            reverse: j == 0
+            reverse: j === 0,
         });
 
         cardlayer.add(player_hands[i]);
@@ -2748,14 +2832,29 @@ this.build_ui = function() {
             rotationDeg: shade_pos[nump][j].rot,
             cornerRadius: 0.01 * shade_pos[nump][j].w * win_w,
             opacity: 0.4,
-            fillLinearGradientStartPoint: {x: 0, y: 0},
-            fillLinearGradientEndPoint: {x: shade_pos[nump][j].w * win_w, y: 0},
-            fillLinearGradientColorStops: [ 0, "rgba(0,0,0,0)", 0.9, "white" ]
+            fillLinearGradientStartPoint: {
+                x: 0,
+                y: 0,
+            },
+            fillLinearGradientEndPoint: {
+                x: shade_pos[nump][j].w * win_w,
+                y: 0,
+            },
+            fillLinearGradientColorStops: [
+                0,
+                "rgba(0,0,0,0)",
+                0.9,
+                "white",
+            ],
         });
 
-        if (j == 0)
-        {
-            rect.setFillLinearGradientColorStops([ 1, "rgba(0,0,0,0)", 0.1, "white" ]);
+        if (j === 0) {
+            rect.setFillLinearGradientColorStops([
+                1,
+                "rgba(0,0,0,0)",
+                0.1,
+                "white",
+            ]);
         }
 
         bglayer.add(rect);
@@ -2777,7 +2876,7 @@ this.build_ui = function() {
             y: name_pos[nump][j].y * win_h,
             width: name_pos[nump][j].w * win_w,
             height: name_pos[nump][j].h * win_h,
-            name: this.player_names[i]
+            name: this.player_names[i],
         });
 
         uilayer.add(name_frames[i]);
@@ -2820,7 +2919,7 @@ this.build_ui = function() {
         align: "center",
         fill: "#df2c4d",
         stroke: "black",
-        visible: false
+        visible: false,
     });
 
     uilayer.add(no_clue_label);
@@ -2829,7 +2928,7 @@ this.build_ui = function() {
         x: 0.10 * win_w,
         y: (MHGA_show_more_log ? 0.54 : 0.51) * win_h,
         width: 0.55 * win_w,
-        height: 0.27 * win_h
+        height: 0.27 * win_h,
     });
 
     clue_target_group = new ButtonGroup();
@@ -2867,7 +2966,10 @@ this.build_ui = function() {
             width: 0.04 * win_w,
             height: 0.071 * win_h,
             number: i,
-            clue_type: {type: CLUE.RANK, value: i}
+            clue_type: {
+                type: CLUE.RANK,
+                value: i,
+            },
         });
 
         clue_area.add(button);
@@ -2878,7 +2980,7 @@ this.build_ui = function() {
     suits = 5;
     x = 0.183;
 
-    if (this.variant == VARIANT.BLACKSUIT || this.variant == VARIANT.BLACKONE)
+    if (this.variant === VARIANT.BLACKSUIT || this.variant === VARIANT.BLACKONE)
     {
         suits = 6;
         x = 0.158;
@@ -2893,7 +2995,10 @@ this.build_ui = function() {
             height: 0.071 * win_h,
             color: suit_colors[i],
             text: suit_abbreviations[i],
-            clue_type: {type: CLUE.SUIT, value: i}
+            clue_type: {
+                type: CLUE.SUIT,
+                value: i,
+            },
         });
 
         clue_area.add(button);
@@ -2906,7 +3011,7 @@ this.build_ui = function() {
         y: (MHGA_show_more_log ? 0.172 : 0.195) * win_h,
         width: 0.236 * win_w,
         height: 0.051 * win_h,
-        text: "Give Clue"
+        text: "Give Clue",
     });
 
     clue_area.add(submit_clue);
@@ -2923,7 +3028,7 @@ this.build_ui = function() {
             height: 0.051 * win_h,
             fill: "black",
             cornerRadius: 0.005 * win_h,
-            opacity: 0.2
+            opacity: 0.2,
         });
         uilayer.add(timer_rect1);
 
@@ -2939,7 +3044,10 @@ this.build_ui = function() {
             fill: "#d8d5ef",
             shadowColor: "black",
             shadowBlur: 10,
-            shadowOffset: { x: 0, y: 0 },
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
             shadowOpacity: 0.9,
         });
         uilayer.add(timer_label1);
@@ -2956,8 +3064,11 @@ this.build_ui = function() {
             fill: "#d8d5ef",
             shadowColor: "black",
             shadowBlur: 10,
-            shadowOffset: { x: 0, y: 0 },
-            shadowOpacity: 0.9
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
         });
         uilayer.add(timer_text1);
 
@@ -2968,7 +3079,7 @@ this.build_ui = function() {
             height: 0.051 * win_h,
             fill: "black",
             cornerRadius: 0.005 * win_h,
-            opacity: 0.2
+            opacity: 0.2,
         });
         uilayer.add(timer_rect2);
 
@@ -2984,7 +3095,10 @@ this.build_ui = function() {
             fill: "#d8d5ef",
             shadowColor: "black",
             shadowBlur: 10,
-            shadowOffset: { x: 0, y: 0 },
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
             shadowOpacity: 0.9,
         });
         uilayer.add(timer_label2);
@@ -3001,8 +3115,11 @@ this.build_ui = function() {
             fill: "#d8d5ef",
             shadowColor: "black",
             shadowBlur: 10,
-            shadowOffset: { x: 0, y: 0 },
-            shadowOpacity: 0.9
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
         });
         uilayer.add(timer_text2);
 
@@ -3032,7 +3149,7 @@ this.build_ui = function() {
         x: 0.15 * win_w,
         y: 0.51 * win_h,
         width: 0.5 * win_w,
-        height: 0.27 * win_h
+        height: 0.27 * win_h,
     });
 
     replay_bar = new Kinetic.Rect({
@@ -3042,7 +3159,7 @@ this.build_ui = function() {
         height: 0.01 * win_h,
         fill: "black",
         cornerRadius: 0.005 * win_h,
-        listening: false
+        listening: false,
     });
 
     replay_area.add(replay_bar);
@@ -3052,7 +3169,7 @@ this.build_ui = function() {
         y: 0,
         width: 0.5 * win_w,
         height: 0.05 * win_h,
-        opacity: 0
+        opacity: 0,
     });
 
     rect.on("click", function(evt) {
@@ -3060,8 +3177,7 @@ this.build_ui = function() {
         var w = this.getWidth();
         var step = w / self.replay_max;
         var newturn = Math.floor((x + step / 2) / step);
-        if (newturn != self.replay_turn)
-        {
+        if (newturn !== self.replay_turn) {
             self.perform_replay(newturn, true);
         }
     });
@@ -3081,17 +3197,23 @@ this.build_ui = function() {
             var w = this.getParent().getWidth() - this.getWidth();
             var y = this.getAbsolutePosition().y;
             var x = pos.x - min;
-            if (x < 0) x = 0;
-            if (x > w) x = w;
+            if (x < 0) {
+                x = 0;
+            }
+            if (x > w) {
+                x = w;
+            }
             var step = w / self.replay_max;
             var newturn = Math.floor((x + step / 2) / step);
-            if (newturn != self.replay_turn)
-            {
+            if (newturn !== self.replay_turn) {
                 self.perform_replay(newturn, true);
             }
             x = newturn * step;
-            return {x: min + x, y: y};
-        }
+            return {
+                x: min + x,
+                y: y,
+            };
+        },
     });
 
     replay_shuttle.on("dragend", function() {
@@ -3106,7 +3228,7 @@ this.build_ui = function() {
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
-        image: "rewindfull"
+        image: "rewindfull",
     });
 
     button.on("click tap", function() {
@@ -3120,7 +3242,7 @@ this.build_ui = function() {
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
-        image: "rewind"
+        image: "rewind",
     });
 
     button.on("click tap", function() {
@@ -3134,7 +3256,7 @@ this.build_ui = function() {
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
-        image: "forward"
+        image: "forward",
     });
 
     button.on("click tap", function() {
@@ -3148,7 +3270,7 @@ this.build_ui = function() {
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
-        image: "forwardfull"
+        image: "forwardfull",
     });
 
     button.on("click tap", function() {
@@ -3162,13 +3284,16 @@ this.build_ui = function() {
         y: 0.17 * win_h,
         width: 0.2 * win_w,
         height: 0.06 * win_h,
-        text: "Exit Replay"
+        text: "Exit Replay",
     });
 
     button.on("click tap", function() {
         if (self.replay_only)
         {
-            ui.send_msg({type: "unattend_table", resp: {}});
+            ui.send_msg({
+                type: "unattend_table",
+                resp: {},
+            });
             ui.lobby.game_ended();
         }
         else
@@ -3188,7 +3313,7 @@ this.build_ui = function() {
         width: 0.8 * win_w,
         height: 0.8 * win_h,
         visible: false,
-        listening: false
+        listening: false,
     });
 
     overlayer.add(helpgroup);
@@ -3200,7 +3325,7 @@ this.build_ui = function() {
         height: 0.8 * win_h,
         opacity: 0.9,
         fill: "black",
-        cornerRadius: 0.01 * win_w
+        cornerRadius: 0.01 * win_w,
     });
 
     helpgroup.add(rect);
@@ -3222,7 +3347,7 @@ this.build_ui = function() {
               "wish to give, then hit the Give Clue button.\n\n" +
               "You may mouseover a card to see what clues have " +
               "been given about it, or mouseover the clues in the " +
-              "log to see which cards it referenced."
+              "log to see which cards it referenced.",
     });
 
     helpgroup.add(text);
@@ -3233,7 +3358,7 @@ this.build_ui = function() {
         width: 0.06 * win_w,
         height: 0.06 * win_h,
         image: "replay",
-        visible: false
+        visible: false,
     });
 
     replay_button.on("click tap", function() {
@@ -3247,7 +3372,7 @@ this.build_ui = function() {
         y: 0.87 * win_h,
         width: 0.06 * win_w,
         height: 0.06 * win_h,
-        text: "Help"
+        text: "Help",
     });
 
     uilayer.add(help_button);
@@ -3273,14 +3398,17 @@ this.build_ui = function() {
         y: 0.94 * win_h,
         width: 0.06 * win_w,
         height: 0.05 * win_h,
-        text: "Lobby"
+        text: "Lobby",
     });
 
     uilayer.add(lobby_button);
 
     lobby_button.on("click tap", function() {
         lobby_button.off("click tap");
-        ui.send_msg({type: "unattend_table", resp: {}});
+        ui.send_msg({
+            type: "unattend_table",
+            resp: {},
+        });
         ui.lobby.game_ended();
     });
 
@@ -3343,19 +3471,18 @@ this.save_replay = function(msg) {
 
     this.replay_log.push(msg);
 
-    if (msgData.type == "turn")
-    {
+    if (msgData.type === "turn") {
         this.replay_max = msgData.num;
     }
-    if (msgData.type == "game_over")
-    {
+    if (msgData.type === "game_over") {
         this.replay_max++;
     }
 
-    if (!this.replay_only && this.replay_max > 0) replay_button.show();
+    if (!this.replay_only && this.replay_max > 0) {
+        replay_button.show();
+    }
 
-    if (this.replay)
-    {
+    if (this.replay) {
         this.adjust_replay_shuttle();
         uilayer.draw();
     }
@@ -3387,7 +3514,9 @@ this.enter_replay = function(enter) {
         this.replay = false;
         replay_area.hide();
 
-        if (saved_action) this.handle_action(saved_action);
+        if (saved_action) {
+            this.handle_action(saved_action);
+        }
         for (let i = 0; i < this.deck.length; ++i) {
             this.deck[i].setBareImage();
         }
@@ -3404,28 +3533,34 @@ this.perform_replay = function(target, fast) {
     var msg;
     var rewind = false;
 
-    if (target < 0) target = 0;
-    if (target > this.replay_max) target = this.replay_max;
+    if (target < 0) {
+        target = 0;
+    }
+    if (target > this.replay_max) {
+        target = this.replay_max;
+    }
 
-    if (target < this.replay_turn) rewind = true;
+    if (target < this.replay_turn) {
+        rewind = true;
+    }
 
-    if(this.replay_turn == target) {
-        return; //we're already there, nothing to do!
+    if (this.replay_turn === target) {
+        return; // we're already there, nothing to do!
     }
 
     this.replay_turn = target;
 
     this.adjust_replay_shuttle();
-    if (fast) this.animate_fast = true;
+    if (fast) {
+        this.animate_fast = true;
+    }
 
-    if (rewind)
-    {
+    if (rewind) {
         this.reset();
         this.replay_pos = 0;
     }
 
-    while (true)
-    {
+    while (true) {
         msg = this.replay_log[this.replay_pos++];
 
         if (!msg)
@@ -3433,21 +3568,17 @@ this.perform_replay = function(target, fast) {
             break;
         }
 
-        if (msg.type == "message")
-        {
+        if (msg.type === "message") {
             this.handle_text_message(msg, this.handle_message_in_replay);
         }
 
-        else if (msg.type == "notify")
-        {
+        else if (msg.type === "notify") {
             var performing_replay = true;
             this.handle_notify(msg.resp, performing_replay);
         }
 
-        if (msg.type == "notify" && msg.resp.type == "turn")
-        {
-            if (msg.resp.num == this.replay_turn)
-            {
+        if (msg.type === "notify" && msg.resp.type === "turn") {
+            if (msg.resp.num === this.replay_turn) {
                 break;
             }
         }
@@ -3475,10 +3606,11 @@ this.replay_advanced = function() {
 this.show_connected = function(list) {
     var i;
 
-    if (!this.ready) return;
+    if (!this.ready) {
+        return;
+    }
 
-    for (i = 0; i < list.length; i++)
-    {
+    for (i = 0; i < list.length; i++) {
         name_frames[i].setConnected(list[i]);
     }
 
@@ -3517,7 +3649,7 @@ function show_loading() {
         height: 0.05 * win_h,
         fontFamily: "Arial",
         fontStyle: "bold",
-        fontSize: 0.05 * win_h
+        fontSize: 0.05 * win_h,
     });
 
     loadinglayer.add(progresslabel);
@@ -3539,7 +3671,7 @@ var suit_names = [
     "Red",
     "Purple",
     "Black",
-    " "
+    " ",
 ];
 
 var suit_abbreviations = [
@@ -3549,7 +3681,7 @@ var suit_abbreviations = [
     "R",
     "P",
     "K",
-    ""
+    "",
 ];
 
 
@@ -3602,7 +3734,7 @@ this.save_slot_information = function(note) {
         for(var j = 0; j < hand.children.length; ++j) {
             var handchild = hand.children[j];
             var handcard = handchild.children[0];
-            if (handcard.order == note.which.order) {
+            if (handcard.order === note.which.order) {
                 this.movement_notify_slot(hand.children.length - j);
             }
         }
@@ -3646,18 +3778,16 @@ this.handle_notify = function(note, performing_replay) {
         //console.log(note); // (disabling this since it has spam)
     }
 
-    if (ui.activeHover)
-    {
+    if (ui.activeHover) {
         ui.activeHover.dispatchEvent(new MouseEvent("mouseout"));
         ui.activeHover = null;
     }
 
-    if (type == "draw")
-    {
+    if (type === "draw") {
         ui.deck[note.order] = new HanabiCard({
             suit: note.suit,
             rank: note.rank,
-            order: note.order
+            order: note.order,
         });
 
         child = new LayoutChild();
@@ -3669,7 +3799,10 @@ this.handle_notify = function(note, performing_replay) {
         child.setRotation(-player_hands[note.who].getRotation());
 
         scale = drawdeck.getWidth() / cardw;
-        child.setScale({x: scale, y: scale});
+        child.setScale({
+            x: scale,
+            y: scale,
+        });
 
         player_hands[note.who].add(child);
 
@@ -3736,24 +3869,27 @@ this.handle_notify = function(note, performing_replay) {
         */
     }
 
-    else if (type == "draw_size")
-    {
+    else if (type === "draw_size") {
         drawdeck.setCount(note.size);
     }
 
-    else if (type == "played")
-    {
+    else if (type === "played") {
         show_clue_match(-1);
 
         child = ui.deck[note.which.order].parent;
 
-        if(!this.replay || performing_replay)
+        if (!this.replay || performing_replay) {
             this.save_slot_information(note);
+        }
 
         ui.deck[note.which.order].suit = note.which.suit;
         ui.deck[note.which.order].rank = note.which.rank;
         ui.deck[note.which.order].unknown = false;
-        ui.learned_cards[note.which.order] = {suit: note.which.suit, rank: note.which.rank, revealed: true};
+        ui.learned_cards[note.which.order] = {
+            suit: note.which.suit,
+            rank: note.which.rank,
+            revealed: true,
+        };
         ui.deck[note.which.order].setBareImage();
         ui.deck[note.which.order].hide_clues();
 
@@ -3770,19 +3906,23 @@ this.handle_notify = function(note, performing_replay) {
         clue_log.checkExpiry();
     }
 
-    else if (type == "discard")
-    {
+    else if (type === "discard") {
         show_clue_match(-1);
 
         child = ui.deck[note.which.order].parent;
 
-        if(!this.replay || performing_replay)
+        if (!this.replay || performing_replay) {
             this.save_slot_information(note);
+        }
 
         ui.deck[note.which.order].suit = note.which.suit;
         ui.deck[note.which.order].rank = note.which.rank;
         ui.deck[note.which.order].unknown = false;
-        ui.learned_cards[note.which.order] = {suit: note.which.suit, rank: note.which.rank, revealed: true};
+        ui.learned_cards[note.which.order] = {
+            suit: note.which.suit,
+            rank: note.which.rank,
+            revealed: true,
+        };
         ui.deck[note.which.order].setBareImage();
         ui.deck[note.which.order].hide_clues();
 
@@ -3796,14 +3936,18 @@ this.handle_notify = function(note, performing_replay) {
 
         for (i = 0; i < 6; i++)
         {
-            if (discard_stacks[i]) discard_stacks[i].moveToTop();
+            if (discard_stacks[i]) {
+                discard_stacks[i].moveToTop();
+            }
         }
 
         while (1)
         {
             n = child.getZIndex();
 
-            if (!n) break;
+            if (!n) {
+                break;
+            }
 
             if (note.which.rank < child.parent.children[n - 1].children[0].rank)
             {
@@ -3818,33 +3962,34 @@ this.handle_notify = function(note, performing_replay) {
         clue_log.checkExpiry();
     }
 
-    else if (type == "reveal")
-    {
+    else if (type === "reveal") {
         child = ui.deck[note.which.order].parent;
 
         ui.deck[note.which.order].suit = note.which.suit;
         ui.deck[note.which.order].rank = note.which.rank;
         ui.deck[note.which.order].unknown = false;
-        ui.learned_cards[note.which.order] = {suit: note.which.suit, rank: note.which.rank, revealed: true};
+        ui.learned_cards[note.which.order] = {
+            suit: note.which.suit,
+            rank: note.which.rank,
+            revealed: true,
+        };
         ui.deck[note.which.order].setBareImage();
         ui.deck[note.which.order].hide_clues();
 
 
-        if (!this.animate_fast) cardlayer.draw();
+        if (!this.animate_fast) {
+            cardlayer.draw();
+        }
     }
 
-    else if (type == "clue")
-    {
+    else if (type === "clue") {
         show_clue_match(-1);
 
-        for (i = 0; i < note.list.length; i++)
-        {
+        for (i = 0; i < note.list.length; i++) {
             ui.deck[note.list[i]].setIndicator(true);
             ui.deck[note.list[i]].clue_given.show();
 
-            if (note.target == ui.player_us && !ui.replay_only &&
-                !ui.spectating)
-            {
+            if (note.target === ui.player_us && !ui.replay_only && !ui.spectating) {
                 ui.deck[note.list[i]].add_clue(note.clue);
                 ui.deck[note.list[i]].setBareImage();
             }
@@ -3858,17 +4003,14 @@ this.handle_notify = function(note, performing_replay) {
 
             order = child.children[0].order;
 
-            if (note.list.indexOf(order) < 0) neglist.push(order);
+            if (note.list.indexOf(order) < 0) {
+                neglist.push(order);
+            }
         }
 
-        //var type; // This is already defined
-
-        if (note.clue.type == CLUE.RANK)
-        {
+        if (note.clue.type === CLUE.RANK) {
             type = note.clue.value.toString();
-        }
-        else
-        {
+        } else {
             type = suit_names[note.clue.value];
         }
 
@@ -3879,7 +4021,7 @@ this.handle_notify = function(note, performing_replay) {
             target: ui.player_names[note.target],
             type: type,
             list: note.list,
-            neglist: neglist
+            neglist: neglist,
         });
 
         clue_log.add(entry);
@@ -3887,32 +4029,26 @@ this.handle_notify = function(note, performing_replay) {
         clue_log.checkExpiry();
     }
 
-    else if (type == "status")
-    {
+    else if (type === "status") {
         clue_label.setText("Clues: " + note.clues);
 
-        if (note.clues == 0)
-        {
+        if (note.clues === 0) {
             clue_label.setFill("#df1c2d");
-        }
-        else if (note.clues == 1)
-        {
+        } else if (note.clues === 1) {
             clue_label.setFill("#ef8c1d");
-        }
-        else if (note.clues == 2)
-        {
+        } else if (note.clues === 2) {
             clue_label.setFill("#efef1d");
-        }
-        else
-        {
+        } else {
             clue_label.setFill("#d8d5ef");
         }
 
         score_label.setText("Score: " + note.score);
-        if (!this.animate_fast) uilayer.draw();
+        if (!this.animate_fast) {
+            uilayer.draw();
+        }
     }
 
-    else if (type == "strike")
+    else if (type === "strike")
     {
         var x = new Kinetic.Image({
             x: (0.675 + 0.04 * (note.num - 1)) * win_w,
@@ -3920,40 +4056,37 @@ this.handle_notify = function(note, performing_replay) {
             width: 0.02 * win_w,
             height: 0.036 * win_h,
             image: ImageLoader.get("redx"),
-            opacity: 0
+            opacity: 0,
         });
 
         strikes[note.num - 1] = x;
 
         uilayer.add(x);
 
-        if (ui.animate_fast)
-        {
+        if (ui.animate_fast) {
             x.setOpacity(1.0);
         }
-        else
-        {
-            var t = new Kinetic.Tween({
+        else {
+            Kinetic.Tween({
                 node: x,
                 opacity: 1.0,
                 duration: ui.animate_fast ? 0.001 : 1.0,
-                runonce: true
+                runonce: true,
             }).play();
         }
     }
 
-    else if (type == "turn")
-    {
-        for (i = 0; i < ui.player_names.length; i++)
-        {
-            name_frames[i].setActive(note.who == i);
+    else if (type === "turn") {
+        for (i = 0; i < ui.player_names.length; i++) {
+            name_frames[i].setActive(note.who === i);
         }
 
-        if (!this.animate_fast) uilayer.draw();
+        if (!this.animate_fast) {
+            uilayer.draw();
+        }
     }
 
-    else if (type == "game_over")
-    {
+    else if (type === "game_over") {
         // Disable the timer when the game ends
         this.timed_game = false;
         if (timer_rect1) {
@@ -3969,8 +4102,12 @@ this.handle_notify = function(note, performing_replay) {
 
         this.replay_only = true;
         replay_button.hide();
-        if (!this.replay) this.enter_replay(true);
-        if (!this.animate_fast) uilayer.draw();
+        if (!this.replay) {
+            this.enter_replay(true);
+        }
+        if (!this.animate_fast) {
+            uilayer.draw();
+        }
     }
 };
 
@@ -4006,14 +4143,14 @@ this.stop_action = function(fast) {
     }
     else
     {
-        var t = new Kinetic.Tween({
+        Kinetic.Tween({
             node: clue_area,
             opacity: 0.0,
             duration: 0.5,
             runonce: true,
             onFinish: function() {
                 clue_area.hide();
-            }
+            },
         }).play();
     }
 
@@ -4044,21 +4181,20 @@ this.handle_action = function(data) {
 
     saved_action = data;
 
-    if (this.replay) return;
+    if (this.replay) {
+        return;
+    }
 
-    if (data.can_clue)
-    {
+    if (data.can_clue) {
         clue_area.show();
 
-        var t = new Kinetic.Tween({
+        Kinetic.Tween({
             node: clue_area,
             opacity: 1.0,
             duration: 0.5,
-            runonce: true
+            runonce: true,
         }).play();
-    }
-    else
-    {
+    } else {
         no_clue_label.show();
         if (MHGA_show_no_clues_box) {
             no_clue_box.show();
@@ -4068,8 +4204,7 @@ this.handle_action = function(data) {
         }
     }
 
-    if (!data.can_discard)
-    {
+    if (!data.can_discard) {
         no_discard_label.show();
         if (!this.animate_fast) {
             uilayer.draw();
@@ -4081,15 +4216,13 @@ this.handle_action = function(data) {
     clue_target_group.clearPressed();
     clue_type_group.clearPressed();
 
-    if (this.player_names.length == 2)
-    {
+    if (this.player_names.length === 2) {
         clue_target_group.list[0].setPressed(true);
     }
 
     player_hands[ui.player_us].moveToTop();
 
-    for (i = 0; i < player_hands[ui.player_us].children.length; i++)
-    {
+    for (i = 0; i < player_hands[ui.player_us].children.length; i++) {
         child = player_hands[ui.player_us].children[i];
 
         child.setDraggable(true);
@@ -4127,7 +4260,13 @@ this.handle_action = function(data) {
                  pos.y <= discard_area.getY() + discard_area.getHeight() &&
                  data.can_discard)
             {
-                ui.send_msg({type: "action", resp: {type: ACT.DISCARD, target: this.children[0].order}});
+                ui.send_msg({
+                    type: "action",
+                    resp: {
+                        type: ACT.DISCARD,
+                        target: this.children[0].order,
+                    },
+                });
                 self.stop_action();
 
                 /* this.off("dragend.reorder"); */
@@ -4169,26 +4308,33 @@ this.handle_action = function(data) {
     clue_type_group.on("change", check_clue_legal);
 
     submit_clue.on("click tap", function() {
-        if (!data.can_clue) return;
+        if (!data.can_clue) {
+            return;
+        }
 
-        if (!this.getEnabled()) return;
+        if (!this.getEnabled()) {
+            return;
+        }
 
         var target = clue_target_group.getPressed();
         var type = clue_type_group.getPressed();
 
         show_clue_match(target.target_index, {});
 
-        ui.send_msg({type: "action", resp: {type: ACT.CLUE, target: target.target_index, clue: type.clue_type}});
+        ui.send_msg({
+            type: "action",
+            resp: {
+                type: ACT.CLUE,
+                target: target.target_index,
+                clue: type.clue_type,
+            },
+        });
 
         self.stop_action();
 
         saved_action = null;
     });
 };
-
-function dragendPlay() {
-
-}
 
 this.set_message = function(msg) {
     msgloggroup.add_message(msg.text);
@@ -4232,17 +4378,15 @@ HanabiUI.prototype.handle_message = function(msg) {
     var msgType = msg.type;
     var msgData = msg.resp;
 
-    if (msgType == "message")
-    {
-        if(this.replay) {
+    if (msgType === "message") {
+        if (this.replay) {
             this.replay_log.push(msg);
         } else {
             this.handle_text_message(msg, this.handle_message_in_game);
         }
     }
 
-    if (msgType == "init")
-    {
+    if (msgType === "init") {
         this.player_us = msgData.seat;
         this.player_names = msgData.names;
         this.variant = msgData.variant;
@@ -4256,18 +4400,15 @@ HanabiUI.prototype.handle_message = function(msg) {
         this.load_images();
     }
 
-    if (msgType == "advanced")
-    {
+    if (msgType === "advanced") {
         this.replay_advanced();
     }
 
-    if (msgType == "connected")
-    {
+    if (msgType === "connected") {
         this.show_connected(msgData.list);
     }
 
-    if (msgType == "notify")
-    {
+    if (msgType === "notify") {
         this.save_replay(msg);
 
         if (!this.replay)
@@ -4276,31 +4417,24 @@ HanabiUI.prototype.handle_message = function(msg) {
         }
     }
 
-    if (msgType == "action")
-    {
+    if (msgType === "action") {
         this.handle_action.call(this, msgData);
 
-        if (this.animate_fast) return;
+        if (this.animate_fast) {
+            return;
+        }
 
-        if (this.lobby.send_turn_notify)
-        {
+        if (this.lobby.send_turn_notify) {
             this.lobby.send_notify("It's your turn", "turn");
         }
 
-        if (this.lobby.send_turn_sound)
-        {
+        if (this.lobby.send_turn_sound) {
             this.lobby.play_sound("turn");
-        }
-
-        if (MHGA_beep_notifications) {
-            // We aren't using the extension so commenting this out
-            //chrome.runtime.sendMessage(extensionId, {action: "make-beep"});
         }
     }
 
     // This is used for timed games
-    if (msgType == "clock")
-    {
+    if (msgType === "clock") {
         this.handle_clock.call(this, msgData);
     }
 };
@@ -4308,7 +4442,10 @@ HanabiUI.prototype.handle_message = function(msg) {
 HanabiUI.prototype.set_backend = function(backend) {
     this.backend = backend;
 
-    this.send_msg({type: "hello", resp: {}});
+    this.send_msg({
+        type: "hello",
+        resp: {},
+    });
 };
 
 HanabiUI.prototype.send_msg = function(msg) {
