@@ -77,14 +77,16 @@ function seconds_to_time_display(seconds) {
 
 // The left timer that shows your time
 function checkTimer1(textObject) {
-    if (ui.current_player_index !== ui.player_us) {
-        // If it is not our turn, just show a static clock of how much time we have left
-        let seconds = Math.ceil(ui.player_times[ui.player_us]);
-        textObject.setText(seconds_to_time_display(seconds));
-    } else {
-        checkTimerSetOtherPlayer(textObject);
+    let clockTime = ui.player_times[ui.player_us];
+    if (typeof(clockTime) !== 'undefined') {
+        if (ui.current_player_index !== ui.player_us) {
+            // If it is not our turn, just show a static clock of how much time we have left
+            textObject.setText(seconds_to_time_display(Math.ceil(clockTime)));
+        } else {
+            setTickingDownTime(textObject);
+        }
+        uilayer.draw();
     }
-    uilayer.draw();
 
     window.setTimeout(function() {
         checkTimer1(textObject);
@@ -93,15 +95,18 @@ function checkTimer1(textObject) {
 
 // The right timer that shows the current player's time; it will be hidden when it is your turn
 function checkTimer2(textObject) {
-    checkTimerSetOtherPlayer(textObject);
-    uilayer.draw();
+    let clockTime = ui.player_times[ui.current_player_index];
+    if (typeof(clockTime) !== 'undefined') {
+        setTickingDownTime(textObject);
+        uilayer.draw();
+    }
 
     window.setTimeout(function() {
         checkTimer2(textObject);
     }, 1000);
 }
 
-function checkTimerSetOtherPlayer(textObject) {
+function setTickingDownTime(textObject) {
     var time = new Date().getTime();
     var time_elapsed = time - ui.last_timer_update_time_ms;
     if (time_elapsed < 0) {
@@ -3936,6 +3941,19 @@ this.handle_notify = function(note, performing_replay) {
 
     else if (type == "game_over")
     {
+        // Disable the timer when the game ends
+        this.timed_game = false;
+        if (timer_rect1) {
+            timer_rect1.hide();
+            timer_label1.hide();
+            timer_text1.hide();
+        }
+        if (timer_rect2) {
+            timer_rect2.hide();
+            timer_label2.hide();
+            timer_text2.hide();
+        }
+
         this.replay_only = true;
         replay_button.hide();
         if (!this.replay) this.enter_replay(true);
@@ -3943,7 +3961,7 @@ this.handle_notify = function(note, performing_replay) {
     }
 };
 
-this.handle_clock = function(note, performing_replay) {
+this.handle_clock = function(note) {
     let minutes = Math.floor((note.time / (1000 * 60)) % 60);
     let seconds = Math.floor((note.time / 1000) % 60);
     console.log('%cClock timer for "' + this.player_names[note.who] + '" is at: ' + minutes + 'm ' + seconds + 's', 'color: orange;');
@@ -3955,13 +3973,17 @@ this.handle_clock = function(note, performing_replay) {
 
         // Show or hide the 2nd timer
         if (ui.current_player_index === ui.player_us) {
-            timer_rect2.hide();
-            timer_label2.hide();
-            timer_text2.hide();
+            if (timer_rect2) {
+                timer_rect2.hide();
+                timer_label2.hide();
+                timer_text2.hide();
+            }
         } else {
-            timer_rect2.show();
-            timer_label2.show();
-            timer_text2.show();
+            if (timer_rect2) {
+                timer_rect2.show();
+                timer_label2.show();
+                timer_text2.show();
+            }
         }
     }
 };
@@ -4210,7 +4232,7 @@ HanabiUI.prototype.handle_message = function(msg) {
             this.replay_turn = -1;
         }
         this.spectating = msgData.spectating;
-        this.timedGame = msgData.timed;
+        this.timed_game = msgData.timed;
 
         this.load_images();
     }
@@ -4272,7 +4294,8 @@ HanabiUI.prototype.set_backend = function(backend) {
 
 HanabiUI.prototype.send_msg = function(msg) {
     if (MHGA_show_debug_messages) {
-        console.log("out", msg);
+        console.log('%cSent (UI) "' + msg.type + '":', 'color: green;');
+        console.log(msg.resp);
     }
     this.backend.emit("message", msg);
 };

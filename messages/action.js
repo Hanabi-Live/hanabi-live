@@ -50,6 +50,12 @@ const step1 = function(socket, data) {
         playerClue(data);
 
     } else if (data.type === 1 || data.type === 2) {
+        // We are not allowed to discard while at 8 clues
+        // (the client should enforce this, but do a check just in case)
+        if (data.type === 2 && game.clue_num == 8) {
+            return;
+        }
+
         // Remove the card from their hand
         for (let i = 0; i < player.hand.length; i++) {
             if (player.hand[i].order === data.target) {
@@ -75,6 +81,7 @@ const step1 = function(socket, data) {
             text: text,
         });
         notifyGameAction(data);
+        logger.info('[Game ' + data.gameID + '] ' + text);
 
     } else {
         logger.error('Error: Unknown action type: ' + data.type);
@@ -103,7 +110,6 @@ const step1 = function(socket, data) {
     if (game.turn_player_index === game.players.length) {
         game.turn_player_index = 0;
     }
-    logger.info('[Game ' + data.gameID + '] It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
 
     // Check for end game states
     if (game.strikes === 3 || data.type === 2) {
@@ -115,7 +121,7 @@ const step1 = function(socket, data) {
             text: text,
         });
         notifyGameAction(data);
-
+        logger.info('[Game ' + data.gameID + '] ' + text);
 
     } else if (game.turn_num == game.end_turn_num ||
                (game.variant == 0 && game.score == 20) ||
@@ -130,6 +136,7 @@ const step1 = function(socket, data) {
             text: text,
         });
         notifyGameAction(data);
+        logger.info('[Game ' + data.gameID + '] ' + text);
     }
 
     if (end) {
@@ -144,6 +151,7 @@ const step1 = function(socket, data) {
         who: game.turn_player_index,
     });
     notifyGameAction(data);
+    logger.info('[Game ' + data.gameID + '] It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
 
     // Send the "action" message to the next player
     let i = game.turn_player_index;
@@ -158,7 +166,7 @@ const step1 = function(socket, data) {
     messages.join_table.notifyAllTableChange(data);
     // (this seems wasteful but this is apparently used so that you can see if it is your turn from the lobby)
 
-    messages.join_table.notifyGameMemberChange(data);
+    //messages.join_table.notifyGameMemberChange(data);
     // (Keldon does this but it seems unnecessary)
 
     if (game.timed) {
@@ -575,8 +583,7 @@ const checkTimer = function(data) {
     logger.info('Time ran out for "' + player.username + '" playing game #' + data.gameID + '.');
 
     // End the game
-    data.type = (game.clue_num === 8 ? 1 : 2);
-    data.target = player.hand[0].order;
+    data.type = 3;
     let fakeSocket = {
         userID: data.userID,
         atTable: {
