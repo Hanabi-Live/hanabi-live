@@ -80,11 +80,11 @@ const step1 = function(socket, data) {
     } else if (data.type === 3) {
         // We are not allowed to blind play the deck unless there is only 1 card left
         // (the client should enforce this, but do a check just in case)
-        if (data.type === 3 && game.deckIndex !== game.deck.length - 1) {
+        if (game.deckIndex !== game.deck.length - 1) {
             return;
         }
 
-        data.target = game.deck[game.deckIndex].order;
+        data.target = game.deck.length - 1;
         playerPlayCard(data);
 
     } else if (data.type === 4) {
@@ -175,6 +175,7 @@ const step1 = function(socket, data) {
         resp: {
             can_clue: (game.clue_num > 0 ? true : false),
             can_discard: (game.clue_num < 8 ? true : false),
+            can_blind_play_deck: (game.deckIndex === game.deck.length - 1 ? true : false),
         },
     });
 
@@ -324,7 +325,7 @@ function playerDiscardCard(data, failed = false) {
         type: 'discard',
         which: {
             index: data.index,
-            order: data.target,
+            order: card.order,
             rank: card.rank,
             suit: card.suit,
         },
@@ -358,10 +359,9 @@ const playerDrawCard = function(data) {
     }
 
     let card = game.deck[game.deckIndex];
-    card.order = game.deckIndex;
     game.players[data.index].hand.push(card);
     game.actions.push({
-        order: game.deckIndex,
+        order: card.order,
         rank: card.rank,
         suit: card.suit,
         type: 'draw',

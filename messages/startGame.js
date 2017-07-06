@@ -42,6 +42,7 @@ exports.step1 = function(socket, data) {
                 game.deck.push({
                     suit: suit,
                     rank: rank,
+                    order: i,
                 });
             }
         }

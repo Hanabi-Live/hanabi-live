@@ -1040,16 +1040,6 @@ CardDeck.prototype.enableDraggable = function() {
 
     // Enable the deck to be draggable
     // TODO
-
-    // When dragged on top of the play pile, send the appropriate "action" message
-    /*
-    ui.send_msg({
-        type: "action",
-        resp: {
-            type: ACT.DECKPLAY,
-        },
-    });
-    */
 };
 
 CardDeck.prototype.disableDraggable = function() {
@@ -2429,7 +2419,7 @@ var timer_rect1, timer_label1, timer_text1;
 var timer_rect2, timer_label2, timer_text2;
 var no_clue_label, no_clue_box, no_discard_label;
 var replay_area, replay_bar, replay_shuttle, replay_button;
-var lobby_button, help_button;
+var lobby_button, help_button, deck_play_button;
 var helpgroup;
 var msgloggroup, overback;
 var notes_written = {};
@@ -3450,6 +3440,25 @@ this.build_ui = function() {
         replay_area.show();
     }
 
+    deck_play_button = new Button({
+        x: 0.087 * win_w,
+        y: 0.73 * win_h,
+        width: 0.06 * win_w,
+        height: 0.06 * win_h,
+        text: "B-Play",
+    });
+    uilayer.add(deck_play_button);
+    deck_play_button.hide(); // Hide it by default
+    deck_play_button.on("click tap", function() {
+        deck_play_button.off("click tap");
+        ui.send_msg({
+            type: "action",
+            resp: {
+                type: ACT.DECKPLAY,
+            },
+        });
+    });
+
     stage.add(bglayer);
     stage.add(uilayer);
     stage.add(cardlayer);
@@ -3904,13 +3913,6 @@ this.handle_notify = function(note, performing_replay) {
 
     else if (type === "draw_size") {
         drawdeck.setCount(note.size);
-
-        // Draw a border around the deck and make it so that players can drag it onto the play pile
-        if (note.size === 1) {
-            drawdeck.enableDraggable();
-        } else {
-            drawdeck.disableDraggable();
-        }
     }
 
     else if (type === "played") {
@@ -4365,6 +4367,15 @@ this.handle_action = function(data) {
 
         saved_action = null;
     });
+
+    if (data.can_blind_play_deck) {
+        // Draw a border around the deck and make it so that players can drag it onto the play pile
+        deck_play_button.show();
+        //drawdeck.enableDraggable();
+    } else {
+        deck_play_button.hide();
+        //drawdeck.disableDraggable();
+    }
 };
 
 this.set_message = function(msg) {
@@ -4456,11 +4467,6 @@ HanabiUI.prototype.handle_message = function(msg) {
 
         if (this.lobby.send_turn_notify) {
             this.lobby.send_notify("It's your turn", "turn");
-        }
-
-        if (this.lobby.send_turn_sound) {
-            // Commenting this out since we now play sounds in the clock function
-            //this.lobby.play_sound("turn");
         }
     }
 
