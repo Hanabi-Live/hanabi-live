@@ -77,7 +77,7 @@ function seconds_to_time_display(seconds) {
 function checkTimer1(textObject) {
     let clockTime = ui.player_times[ui.player_us];
     if (typeof(clockTime) !== 'undefined') {
-        if (ui.current_player_index !== ui.player_us) {
+        if (ui.current_player_index !== ui.player_us && ui.spectating === false) {
             // If it is not our turn, just show a static clock of how much time we have left
             textObject.setText(seconds_to_time_display(Math.ceil(clockTime)));
         } else {
