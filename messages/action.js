@@ -112,7 +112,7 @@ const step1 = function(socket, data) {
     }
 
     // Check for end game states
-    if (game.strikes === 3 || data.type === 2) {
+    if (game.strikes === 3) {
         end = true;
         loss = true;
 
@@ -390,21 +390,22 @@ function gameEnd(data, loss) {
     notifyGameAction(data);
 
     // Send "reveal" messages to each player about the missing cards in their hand
-    // TODO
-    /*
-        socket.emit('message', {
-            type: 'notify',
-            resp: {
-                type: 'reveal',
-                which: {
-                    index: 25,
-                    order: 4,
-                    rank: 3,
-                    suit: 2,
+    for (let player of game.players) {
+        for (let card of player.hand) {
+            player.socket.emit('message', {
+                type: 'notify',
+                resp: {
+                    type: 'reveal',
+                    which: {
+                        index: card.index,
+                        order: card.order,
+                        rank: card.rank,
+                        suit: card.suit,
+                    },
                 },
-            },
-        });
-    */
+            });
+        }
+    }
 
     if (loss) {
         game.score = 0;
