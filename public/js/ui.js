@@ -45,12 +45,15 @@ this.learned_cards = [];
 
 this.activeHover = null;
 
-this.timebank_mode = true;
-this.timebank_seconds = 0;
-this.our_timebank_seconds = 0;
-this.timebank_overtime = 0;
-this.current_player = null;
+this.timed_game = false;
+this.timebank_seconds = 0; // Unused
+this.timebank_overtime = 0; // Unused
 this.last_timer_update_time_ms = new Date().getTime();
+
+this.player_times = [];
+this.timer1seconds = 0;
+this.timer2seconds = 0;
+this.current_player_index = null;
 
 function parse_time(timeStr) {
     var num = parseInt(timeStr);
@@ -72,39 +75,47 @@ function seconds_to_time_display(seconds) {
     return Math.floor(seconds / 60) + ":" + pad2(seconds % 60);
 }
 
+// The left timer that shows your time
 function checkTimer1(textObject) {
-    if (ui.current_player !== ui.player_us) {
+    if (ui.current_player_index !== ui.player_us) {
         // If it is not our turn, just show a static clock of how much time we have left
-        // (we store it in memory as "our_timebank_seconds" so that we always have it)
-        textObject.setText(seconds_to_time_display(Math.ceil(ui.our_timebank_seconds)));
+        let seconds = Math.ceil(ui.player_times[ui.player_us]);
+        textObject.setText(seconds_to_time_display(seconds));
     } else {
-        var time = new Date().getTime();
-        var time_elapsed = time - ui.last_timer_update_time_ms;
-        if (time_elapsed < 0) {
-            time_elapsed = 0;
-        }
-        ui.last_timer_update_time_ms = time;
-        ui.timebank_seconds -= time_elapsed / 1000;
-        textObject.setText(seconds_to_time_display(Math.ceil(ui.timebank_seconds)));
+        checkTimerSetOtherPlayer(textObject);
     }
     uilayer.draw();
+
+    window.setTimeout(function() {
+        checkTimer1(textObject);
+    }, 1000);
 }
 
+// The right timer that shows the current player's time; it will be hidden when it is your turn
 function checkTimer2(textObject) {
+    checkTimerSetOtherPlayer(textObject);
+    uilayer.draw();
+
+    window.setTimeout(function() {
+        checkTimer2(textObject);
+    }, 1000);
+}
+
+function checkTimerSetOtherPlayer(textObject) {
     var time = new Date().getTime();
     var time_elapsed = time - ui.last_timer_update_time_ms;
     if (time_elapsed < 0) {
         time_elapsed = 0;
     }
     ui.last_timer_update_time_ms = time;
-    ui.timebank_seconds -= time_elapsed / 1000;
-    textObject.setText(seconds_to_time_display(Math.ceil(ui.timebank_seconds)));
-    uilayer.draw();
+
+    ui.player_times[ui.current_player_index] -= time_elapsed / 1000;
+    textObject.setText(seconds_to_time_display(Math.ceil(ui.player_times[ui.current_player_index])));
 }
 
 /*
 if (lobby.game.name.indexOf("!timed") !== -1) {
-    this.timebank_mode = true;
+    this.timed_game = true;
     var match_arr = lobby.game.name.match(/!bank (\d+[a-z])/);
     if (match_arr) {
         let val = match_arr[1];
@@ -1774,12 +1785,14 @@ Loader.prototype.get = function(name) {
 var ImageLoader = new Loader(function() {
     notes_written = ui.load_notes();
 
+    /*
     if ("timebank" in notes_written) {
         ui.timebank_seconds = parseInt(notes_written.timebank);
         if (isNaN(ui.timebank_seconds)) {
             ui.timebank_seconds = ui.timebank_minimum;
         }
     }
+    */
 
     ui.build_cards();
     ui.build_ui();
@@ -2827,7 +2840,7 @@ this.build_ui = function() {
             width: 0.08 * win_w,
             height: 0.025 * win_h,
             text: this.player_names[j],
-            target_index: j
+            target_index: j,
         });
 
         clue_area.add(button);
@@ -2889,7 +2902,7 @@ this.build_ui = function() {
 
     clue_area.add(submit_clue);
 
-    if (ui.timebank_mode) {
+    if (ui.timed_game) {
         let x = 0.155;
         let y = (MHGA_show_more_log ? 0.592 : 0.615);
         let x2 = 0.565;
@@ -2984,18 +2997,13 @@ this.build_ui = function() {
         });
         uilayer.add(timer_text2);
 
-        // Hide it by default
+        // Hide the second timer by default
         timer_rect2.hide();
         timer_label2.hide();
         timer_text2.hide();
 
-        window.setInterval(function() {
-            checkTimer1(timer_text1);
-        }, 1000);
-
-        window.setInterval(function() {
-            checkTimer2(timer_text2);
-        }, 1000);
+        checkTimer1(timer_text1);
+        checkTimer2(timer_text2);
      }
 
     clue_area.hide();
@@ -3922,7 +3930,6 @@ this.handle_notify = function(note, performing_replay) {
         {
             name_frames[i].setActive(note.who == i);
         }
-        ui.current_player = note.who;
 
         if (!this.animate_fast) uilayer.draw();
     }
@@ -3934,16 +3941,20 @@ this.handle_notify = function(note, performing_replay) {
         if (!this.replay) this.enter_replay(true);
         if (!this.animate_fast) uilayer.draw();
     }
+};
 
-    else if (type === 'clock') {
-        let minutes = Math.floor((note.time / (1000 * 60)) % 60);
-        let seconds = Math.floor((note.time / 1000) % 60);
-        console.log('%cClock timer for "' + (note.player ? note.player : '?') + '" is at: ' + minutes + 'm ' + seconds + 's', 'color: orange;');
+this.handle_clock = function(note, performing_replay) {
+    let minutes = Math.floor((note.time / (1000 * 60)) % 60);
+    let seconds = Math.floor((note.time / 1000) % 60);
+    console.log('%cClock timer for "' + this.player_names[note.who] + '" is at: ' + minutes + 'm ' + seconds + 's', 'color: orange;');
 
-        this.timebank_seconds = note.time / 1000;
+    ui.player_times[note.who] = note.time / 1000; // The server gives it to us in milliseconds, so we convert it to seconds
+    if (note.active) {
+        // Set whose turn it is
+        ui.current_player_index = note.who;
 
-        if (this.current_player === this.player_us) {
-            this.our_timebank_seconds = this.timebank_seconds;
+        // Show or hide the 2nd timer
+        if (ui.current_player_index === ui.player_us) {
             timer_rect2.hide();
             timer_label2.hide();
             timer_text2.hide();
@@ -4195,10 +4206,11 @@ HanabiUI.prototype.handle_message = function(msg) {
         this.player_names = msgData.names;
         this.variant = msgData.variant;
         this.replay = this.replay_only = msgData.replay;
-        if(this.replay_only) {
+        if (this.replay_only) {
             this.replay_turn = -1;
         }
         this.spectating = msgData.spectating;
+        this.timedGame = msgData.timed;
 
         this.load_images();
     }
@@ -4243,6 +4255,12 @@ HanabiUI.prototype.handle_message = function(msg) {
             // We aren't using the extension so commenting this out
             //chrome.runtime.sendMessage(extensionId, {action: "make-beep"});
         }
+    }
+
+    // This is used for timed games
+    if (msgType == "clock")
+    {
+        this.handle_clock.call(this, msgData);
     }
 };
 

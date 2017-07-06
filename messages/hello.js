@@ -58,6 +58,7 @@ function step2(error, socket, data) {
             replay: socket.atTable.replay,
             seat: seat,
             spectating: socket.atTable.spectating,
+            timed: game.timed,
             variant: game.variant,
         },
     });

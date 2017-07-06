@@ -112,7 +112,7 @@ function step2(error, socket, data) {
         type: 'turn',
         who: data.startingPlayerIndex,
     });
-    logger.info('- ' + text);
+    logger.info('[Game ' + data.gameID + '] ' + text);
 
     // Set the game to running
     game.running = true;

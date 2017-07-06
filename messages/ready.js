@@ -75,16 +75,18 @@ function step2(error, socket, data) {
         type: 'advanced',
     });
 
-    // Send them the current time for the clock
+    // Send them the current time for all player's clocks
     if (game.timed) {
-        let newClockTime = game.players[game.turn_player_index].time;
-        socket.emit('message', {
-            type: 'notify',
-            resp: {
+        for (let i = 0; i < game.players.length; i++) {
+            let player = game.players[i];
+            socket.emit('message', {
                 type: 'clock',
-                time: newClockTime,
-                player: game.players[game.turn_player_index].username,
-            },
-        });
+                resp: {
+                    time: player.time,
+                    who: i,
+                    active: (game.turn_player_index === i ? true : false),
+                },
+            });
+        }
     }
 }

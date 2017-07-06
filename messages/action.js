@@ -9,7 +9,7 @@
             value: 1,
         },
         target: 1, // Either the player index of the recipient of the clue, or the card ID (e.g. the first card of the deck drawn is card #1, etc.)
-        type: 0, // 0 is a clue, 1 is a play, 2 is a discard
+        type: 0, // 0 is a clue, 1 is a play, 2 is a discard, 3 is end game (only used by the server)
     }
 */
 
@@ -22,6 +22,8 @@ const messages = require('../messages');
 const step1 = function(socket, data) {
     // Local variables
     data.gameID = socket.atTable.id;
+    let end = false;
+    let loss = false;
 
     // Validate that this table exists
     if (data.gameID in globals.currentGames === false) {
@@ -46,6 +48,7 @@ const step1 = function(socket, data) {
     // There are 3 types of actions
     if (data.type === 0) {
         playerClue(data);
+
     } else if (data.type === 1 || data.type === 2) {
         // Remove the card from their hand
         for (let i = 0; i < player.hand.length; i++) {
@@ -62,6 +65,20 @@ const step1 = function(socket, data) {
             playerDiscardCard(data);
         }
         playerDrawCard(data);
+
+    } else if (data.type === 3) {
+        // This is a special action type sent by the server to itself when a player runs out of time
+        game.strikes = 3;
+
+        let text = game.players[game.turn_player_index].username + ' ran out of time!';
+        game.actions.push({
+            text: text,
+        });
+        notifyGameAction(data);
+
+    } else {
+        logger.error('Error: Unknown action type: ' + data.type);
+        return;
     }
 
     // Send messages about the current status
@@ -89,9 +106,7 @@ const step1 = function(socket, data) {
     logger.info('[Game ' + data.gameID + '] It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
 
     // Check for end game states
-    let end = false;
-    let loss = false;
-    if (game.strikes === 3) {
+    if (game.strikes === 3 || data.type === 2) {
         end = true;
         loss = true;
 
@@ -100,6 +115,7 @@ const step1 = function(socket, data) {
             text: text,
         });
         notifyGameAction(data);
+
 
     } else if (game.turn_num == game.end_turn_num ||
                (game.variant == 0 && game.score == 20) ||
@@ -145,9 +161,17 @@ const step1 = function(socket, data) {
     messages.join_table.notifyGameMemberChange(data);
     // (Keldon does this but it seems unnecessary)
 
-    // Send the new clock value
     if (game.timed) {
+        // Send everyone new clock values
         notifyGameTime(data);
+
+        // Start the function that will check to see if the current player has run out of time
+        // (it just got to be their turn)
+        data.userID = game.players[game.turn_player_index].userID;
+        data.turn_num = game.turn_num;
+        setTimeout(function() {
+            checkTimer(data);
+        }, game.players[game.turn_player_index].time);
     }
 };
 exports.step1 = step1;
@@ -496,41 +520,33 @@ function notifyGameAction(data) {
 const notifyGameTime = function(data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
-    let newClockTime = game.players[game.turn_player_index].time;
 
-    data.userID = game.players[game.turn_player_index].userID;
-    data.turn_num = game.turn_num;
-    setTimeout(function() {
-        checkTimer(data);
-    }, newClockTime);
-
-    for (let player of game.players) {
-        player.socket.emit('message', {
-            type: 'notify',
+    // Go through all the players in the game
+    for (let i = 0; i < game.players.length; i++) {
+        // Prepare the clock message
+        let clockMsg = {
+            type: 'clock',
             resp: {
-                type: 'clock',
-                time: newClockTime,
-                player: game.players[game.turn_player_index].username,
+                time: game.players[i].time,
+                who: i,
+                active: (game.turn_player_index === i ? true : false),
             },
-        });
-    }
+        };
 
-    for (let userID in game.spectators) {
-        if (game.spectators.hasOwnProperty(userID) === false) {
-            continue;
+        // Send the clock message for this player to all the players in the game
+        for (let player of game.players) {
+            player.socket.emit('message', clockMsg);
         }
 
-        game.spectators[userID].emit('message', {
-            type: 'notify',
-            resp: {
-                type: 'clock',
-                time: newClockTime,
-                player: game.players[game.turn_player_index].username,
-            },
-        });
-    }
+        // Also send it to the spectators
+        for (let userID in game.spectators) {
+            if (game.spectators.hasOwnProperty(userID) === false) {
+                continue;
+            }
 
-    logger.info('Sent out a clock time of "' + newClockTime + '" for user "' + game.players[game.turn_player_index].username + '".');
+            game.spectators[userID].emit('message', clockMsg);
+        }
+    }
 };
 exports.notifyGameTime = notifyGameTime;
 
@@ -558,7 +574,7 @@ const checkTimer = function(data) {
     let player = game.players[data.index];
     logger.info('Time ran out for "' + player.username + '" playing game #' + data.gameID + '.');
 
-    // Discord the final card in their hand (or play it if at 8 clues)
+    // End the game
     data.type = (game.clue_num === 8 ? 1 : 2);
     data.target = player.hand[0].order;
     let fakeSocket = {
