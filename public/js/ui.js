@@ -4130,6 +4130,15 @@ this.handle_clock = function(note) {
         timer_label2.show();
         timer_text2.show();
     }
+
+    // Play a sound to indicate that a turn has passed
+    if (this.lobby.send_turn_sound) {
+        if (ui.current_player_index === ui.player_us && ui.spectating === false) {
+            this.lobby.play_sound("turn");
+        } else {
+            this.lobby.play_sound("turn2");
+        }
+    }
 };
 
 this.stop_action = function(fast) {
@@ -4427,7 +4436,8 @@ HanabiUI.prototype.handle_message = function(msg) {
         }
 
         if (this.lobby.send_turn_sound) {
-            this.lobby.play_sound("turn");
+            // Commenting this out since we now play sounds in the clock function
+            //this.lobby.play_sound("turn");
         }
     }
 

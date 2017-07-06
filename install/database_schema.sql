@@ -27,7 +27,7 @@ CREATE TABLE games (
     allow_spec         BOOLEAN       NOT NULL, /* 0 - no, 1 - yes */
     timed              BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
     status             TINYINT       NOT NULL, /* 0 - open, 1 - in progress, 2 - finished */
-    seed               INT           NULL,
+    seed               VARCHAR(15)   NULL,
     score              INT           NULL,
     datetime_created   TIMESTAMP     NOT NULL, /* Defaults to the current time */
     datetime_started   TIMESTAMP     NULL      DEFAULT NULL,

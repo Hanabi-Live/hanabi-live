@@ -74,17 +74,23 @@ function step2(error, socket, data) {
     }
 
     // Find a seed that no-one has played before
-    data.seed = 1000000 * game.players.length;
-    while (data.seed in data.seeds) {
-        data.seed++;
+    let seedPrefix = 'p' + game.players.length + 'v' + game.variant + 's';
+    let seedNum = 1;
+    let seed;
+    while (true) {
+        seed = seedPrefix + seedNum;
+        if (seed in data.seeds === false) {
+            break;
+        }
+        seedNum++;
     }
 
     // Set the new seed in the game object
-    game.seed = data.seed;
-    logger.info('Using seed "' + data.seed + '", timed is ' + game.timed + ', allow_spec is ' + game.allow_spec + '.');
+    game.seed = seed;
+    logger.info('Using seed "' + game.seed + '", allow_spec is ' + game.allow_spec + ', timed is ' + game.timed + '.');
 
     // Shuffle the deck
-    seedrandom(data.seed, {
+    seedrandom(game.seed, {
         global: true, // So that it applies to "Math.random()"
     });
     shuffle(game.deck);

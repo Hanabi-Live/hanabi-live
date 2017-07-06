@@ -376,9 +376,6 @@ HanabiLobby.prototype.draw_users = function() {
 };
 
 HanabiLobby.prototype.add_table = function(data) {
-    console.log("LOL");
-    console.log(data);
-    console.log("LOL");
     this.table_list[data.id] = {
         name:         data.name,
         num_players:  data.num_players,
