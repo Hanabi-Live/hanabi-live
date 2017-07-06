@@ -76,17 +76,16 @@ function step2(error, socket, data) {
     // Find a seed that no-one has played before
     let seedPrefix = 'p' + game.players.length + 'v' + game.variant + 's';
     let seedNum = 1;
-    let seed;
     while (true) {
-        seed = seedPrefix + seedNum;
-        if (seed in data.seeds === false) {
+        data.seed = seedPrefix + seedNum;
+        if (data.seed in data.seeds === false) {
             break;
         }
         seedNum++;
     }
 
     // Set the new seed in the game object
-    game.seed = seed;
+    game.seed = data.seed;
     logger.info('Using seed "' + game.seed + '", allow_spec is ' + game.allow_spec + ', timed is ' + game.timed + '.');
 
     // Shuffle the deck

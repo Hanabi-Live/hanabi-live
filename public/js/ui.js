@@ -3969,7 +3969,6 @@ this.handle_notify = function(note, performing_replay) {
     }
 
     else if (type === "reveal") {
-        console.log('REVEAL!!!!!!!!!!!!!!!!!!!!!!!!!');
         child = ui.deck[note.which.order].parent;
 
         ui.deck[note.which.order].suit = note.which.suit;
@@ -4089,6 +4088,15 @@ this.handle_notify = function(note, performing_replay) {
         if (!this.animate_fast) {
             uilayer.draw();
         }
+
+        // Play a sound to indicate that a turn has passed
+        if (this.lobby.send_turn_sound) {
+            if (ui.current_player_index === ui.player_us && ui.spectating === false) {
+                this.lobby.play_sound("turn");
+            } else {
+                this.lobby.play_sound("turn2");
+            }
+        }
     }
 
     else if (type === "game_over") {
@@ -4130,15 +4138,6 @@ this.handle_clock = function(note) {
         timer_rect2.show();
         timer_label2.show();
         timer_text2.show();
-    }
-
-    // Play a sound to indicate that a turn has passed
-    if (this.lobby.send_turn_sound) {
-        if (ui.current_player_index === ui.player_us && ui.spectating === false) {
-            this.lobby.play_sound("turn");
-        } else {
-            this.lobby.play_sound("turn2");
-        }
     }
 };
 
