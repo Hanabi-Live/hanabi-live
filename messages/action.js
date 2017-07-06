@@ -9,7 +9,12 @@
             value: 1,
         },
         target: 1, // Either the player index of the recipient of the clue, or the card ID (e.g. the first card of the deck drawn is card #1, etc.)
-        type: 0, // 0 is a clue, 1 is a play, 2 is a discard, 3 is end game (only used by the server)
+        type: 0,
+        // 0 is a clue
+        // 1 is a play
+        // 2 is a discard
+        // 3 is a deck blind play (added in the emulator)
+        // 4 is end game (only used by the server when enforcing a time limit)
     }
 */
 
@@ -73,6 +78,16 @@ const step1 = function(socket, data) {
         playerDrawCard(data);
 
     } else if (data.type === 3) {
+        // We are not allowed to blind play the deck unless there is only 1 card left
+        // (the client should enforce this, but do a check just in case)
+        if (data.type === 3 && game.deckIndex !== game.deck.length - 1) {
+            return;
+        }
+
+        data.target = game.deck[game.deckIndex].order;
+        playerPlayCard(data);
+
+    } else if (data.type === 4) {
         // This is a special action type sent by the server to itself when a player runs out of time
         game.strikes = 3;
 
@@ -510,7 +525,7 @@ const checkTimer = function(data) {
     logger.info('Time ran out for "' + player.username + '" playing game #' + data.gameID + '.');
 
     // End the game
-    data.type = 3;
+    data.type = 4;
     let fakeSocket = {
         userID: data.userID,
         atTable: {

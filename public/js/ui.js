@@ -3,12 +3,14 @@
 // Modifications from vanilla:
 // - Hard-coded all of the MHGA variables at the top of the file
 // - Changed "img/" to "public/img/" (4 lines)
-// - Fix seated checkbox after game is completed
-// - Blind play from bottom
-// - Sound effect for turn (inverted sound)
+// - Added timer code
+// - Added new turn sound effect code
+// - Lots of code edits so that the code passes JSHint
 
 // TODO:
 // - test reveal at end to immediately reveal your cards
+// - Fix seated checkbox after game is completed
+// - Blind play from bottom
 
 var MHGA_show_debug_messages = true;
 var MHGA_colorblind_mode = false;
@@ -3967,6 +3969,7 @@ this.handle_notify = function(note, performing_replay) {
     }
 
     else if (type === "reveal") {
+        console.log('REVEAL!!!!!!!!!!!!!!!!!!!!!!!!!');
         child = ui.deck[note.which.order].parent;
 
         ui.deck[note.which.order].suit = note.which.suit;
@@ -3979,7 +3982,6 @@ this.handle_notify = function(note, performing_replay) {
         };
         ui.deck[note.which.order].setBareImage();
         ui.deck[note.which.order].hide_clues();
-
 
         if (!this.animate_fast) {
             cardlayer.draw();
@@ -4052,8 +4054,7 @@ this.handle_notify = function(note, performing_replay) {
         }
     }
 
-    else if (type === "strike")
-    {
+    else if (type === "strike") {
         var x = new Kinetic.Image({
             x: (0.675 + 0.04 * (note.num - 1)) * win_w,
             y: 0.918 * win_h,
@@ -4418,9 +4419,8 @@ HanabiUI.prototype.handle_message = function(msg) {
     if (msgType === "notify") {
         this.save_replay(msg);
 
-        if (!this.replay)
-        {
-            this.handle_notify.call(this, msgData);
+        if (!this.replay || msgData.type === 'reveal') {
+            this.handle_notify.call(this, msgData); // asdf
         }
     }
 
