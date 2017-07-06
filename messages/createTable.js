@@ -17,6 +17,7 @@ const globals  = require('../globals');
 const logger   = require('../logger');
 const models   = require('../models');
 const messages = require('../messages');
+const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Prepare the data to feed to the model
@@ -64,7 +65,7 @@ function step2(error, socket, data) {
         variant: data.variant,
     };
 
-    messages.join_table.notifyAllTableChange(data);
+    notify.allTableChange(data);
 
     // Join the user to the new table
     data.table_id = data.gameID;

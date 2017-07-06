@@ -10,6 +10,7 @@ const globals    = require('../globals');
 const logger     = require('../logger');
 const models     = require('../models');
 const messages   = require('../messages');
+const notify     = require('../notify');
 
 // "data" contains nothing
 exports.step1 = function(socket, data) {
@@ -142,7 +143,7 @@ function step3(error, socket, data) {
 
     if (game.allow_spec) {
         // Let everyone know that the game has started, which will turn the "Join Game" button into "Spectate"
-        messages.join_table.notifyAllTableChange(data);
+        notify.allTableChange(data);
     } else {
         // Send a "table_gone" to everyone, even the people in the game
         // (the players in the game will get a new "table" message shortly)
@@ -164,7 +165,7 @@ function step3(error, socket, data) {
     // Set all of the users in the game to "playing"
     for (let player of game.players) {
         player.socket.playing = true;
-        messages.join_table.notifyAllUserChange(player.socket);
+        notify.allUserChange(player.socket);
     }
 
     // Start the timer
@@ -179,31 +180,8 @@ function step3(error, socket, data) {
 
     // Send the list of people who are connected
     // (this governs if a player's name is red or not)
-    notifyGameConnected(data);
+    notify.gameConnected(data);
 }
-
-const notifyGameConnected = function(data) {
-    // Local variables
-    let game = globals.currentGames[data.gameID];
-
-    // Make a list of who is currently connected of the players in the current game
-    let list = [];
-    for (let player of game.players) {
-        list.push(player.present);
-    }
-
-    // Send a "connected" message to all of the users in the game
-    for (let i = 0; i < game.players.length; i++) {
-        game.players[i].socket.emit('message', {
-            type: 'connected',
-            resp: {
-                list: list,
-                num_spec: game.num_spec,
-            },
-        });
-    }
-};
-exports.notifyGameConnected = notifyGameConnected;
 
 /*
     Shuffles array in place. ES6 version

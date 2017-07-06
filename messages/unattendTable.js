@@ -7,6 +7,7 @@
 const globals  = require('../globals');
 const logger   = require('../logger');
 const messages = require('../messages');
+const notify   = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Local variables
@@ -31,18 +32,19 @@ exports.step1 = function(socket, data) {
     }
 
     // Set their "present" variable to false, which will turn their name red
+    // (or set them to "AWAY" if the game has not started yet)
     for (let player of game.players) {
         if (player.userID === socket.userID) {
             player.present = false;
             break;
         }
     }
-    messages.start_game.notifyGameConnected(data);
+    notify.gameConnected(data);
 
     // Set their "seated" and "playing" variables to false, which control the checkboxes in the lobby
     socket.seated = false;
     socket.playing = false;
-    messages.join_table.notifyAllUserChange(socket);
+    notify.allUserChange(socket);
 
     // Get the index of this player
     for (let i = 0; i < game.players.length; i++) {
@@ -52,7 +54,7 @@ exports.step1 = function(socket, data) {
         }
     }
 
-    // They got sent a "table_gone" message earlier, so send them a new table message
+    // They got sent a "table_gone" message earlier (if the game started), so send them a new table message
     socket.emit('message', {
         type: 'table',
         resp: {

@@ -154,6 +154,16 @@ function HanabiLobby() {
 		self.draw_history();
 	});
 
+    var optionsButton = document.createElement("button");
+    optionsButton.id = "show-options";
+    optionsButton.innerHTML = "Extension Options";
+
+	$("#settings-dialog").append(optionsButton);
+    $("#show-options").on("click", function(evt) {
+        evt.preventDefault();
+        //chrome.runtime.sendMessage(extensionId, {action: "open-options"});
+    });
+
 	var logoutButton = document.createElement("button");
     logoutButton.id = "logout";
     logoutButton.innerHTML = "Log Out";
@@ -334,7 +344,21 @@ HanabiLobby.prototype.draw_users = function() {
 };
 
 HanabiLobby.prototype.add_table = function(data) {
-	this.table_list[data.id] = {name: data.name, num_players: data.num_players, max_players: data.max_players, variant: data.variant, joined: data.joined, allow_spec: data.allow_spec, running: data.running, our_turn: data.our_turn, owned: data.owned};
+	console.log("LOL");
+	console.log(data);
+	console.log("LOL");
+	this.table_list[data.id] = {
+		name:         data.name,
+		num_players:  data.num_players,
+		max_players:  data.max_players,
+		variant:      data.variant,
+		joined:       data.joined,
+		allow_spec:   data.allow_spec,
+		enable_timer: data.enable_timer,
+		running:      data.running,
+		our_turn:     data.our_turn,
+		owned:        data.owned,
+	};
 	this.draw_tables();
 	if(!data.running) {
 	    //sometimes the server resets the id sequence for tables. if this happens, then a player can see old notes
@@ -684,6 +708,8 @@ HanabiLobby.prototype.show_joined = function() {
 	html += "<p>Variant: " + variant_names[this.game.variant] + "</p>";
 
 	html += "<p>Allow Spectators: " + (this.game.allow_spec ? "Yes" : "No") + "</p>";
+
+	html += "<p>Timed Game: " + (this.game.timed_game ? "Yes" : "No") + "</p>";
 
 	$("#joined-desc").html(html);
 

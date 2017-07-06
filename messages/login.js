@@ -13,7 +13,7 @@
 const globals  = require('../globals');
 const logger   = require('../logger');
 const models   = require('../models');
-const messages = require('../messages');
+const notify     = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Get the password (and other data) for this user
@@ -109,7 +109,7 @@ function step4(socket, data) {
 
     // Alert everyone that a new user has logged in
     // (note that Keldon sends users a message about themselves)
-    messages.join_table.notifyAllUserChange(socket);
+    notify.allUserChange(socket);
 
     // Send a "user" message for every currently connected user
     for (let userID in globals.connectedUsers) {

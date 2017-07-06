@@ -3,6 +3,9 @@
 // Modifications from vanilla:
 // - Hard-coded all of the MHGA variables at the top of the file
 // - Changed "img/" to "public/img/" (4 lines)
+// - Fix seated checkbox after game is completed
+// - Blind play from bottom
+// - Sound effect for turn (inverted sound)
 
 // TODO:
 // - test reveal at end to immediately reveal your cards
@@ -86,7 +89,7 @@ function checkTimer1(textObject) {
         } else {
             setTickingDownTime(textObject);
         }
-        timerlayer.draw();
+        uilayer.draw();
     }
 
     window.setTimeout(function() {
@@ -99,7 +102,7 @@ function checkTimer2(textObject) {
     let clockTime = ui.player_times[ui.current_player_index];
     if (typeof(clockTime) !== 'undefined') {
         setTickingDownTime(textObject);
-        timerlayer.draw();
+        uilayer.draw();
     }
 
     window.setTimeout(function() {
@@ -2307,7 +2310,6 @@ var cardlayer = new Kinetic.Layer();
 var uilayer = new Kinetic.Layer();
 var overlayer = new Kinetic.Layer();
 var tiplayer = new Kinetic.Layer();
-var timerlayer = new Kinetic.Layer();
 
 var player_hands = [];
 var drawdeck;
@@ -2923,7 +2925,7 @@ this.build_ui = function() {
             cornerRadius: 0.005 * win_h,
             opacity: 0.2
         });
-        timerlayer.add(timer_rect1);
+        uilayer.add(timer_rect1);
 
         timer_label1 = new Kinetic.Text({
             x: x * win_w,
@@ -2940,7 +2942,7 @@ this.build_ui = function() {
             shadowOffset: { x: 0, y: 0 },
             shadowOpacity: 0.9,
         });
-        timerlayer.add(timer_label1);
+        uilayer.add(timer_label1);
 
         timer_text1 = new Kinetic.Text({
             x: x * win_w,
@@ -2957,7 +2959,7 @@ this.build_ui = function() {
             shadowOffset: { x: 0, y: 0 },
             shadowOpacity: 0.9
         });
-        timerlayer.add(timer_text1);
+        uilayer.add(timer_text1);
 
         timer_rect2 = new Kinetic.Rect({
             x: x2 * win_w,
@@ -2968,7 +2970,7 @@ this.build_ui = function() {
             cornerRadius: 0.005 * win_h,
             opacity: 0.2
         });
-        timerlayer.add(timer_rect2);
+        uilayer.add(timer_rect2);
 
         timer_label2 = new Kinetic.Text({
             x: x2 * win_w,
@@ -2985,7 +2987,7 @@ this.build_ui = function() {
             shadowOffset: { x: 0, y: 0 },
             shadowOpacity: 0.9,
         });
-        timerlayer.add(timer_label2);
+        uilayer.add(timer_label2);
 
         timer_text2 = new Kinetic.Text({
             x: x2 * win_w,
@@ -3002,7 +3004,7 @@ this.build_ui = function() {
             shadowOffset: { x: 0, y: 0 },
             shadowOpacity: 0.9
         });
-        timerlayer.add(timer_text2);
+        uilayer.add(timer_text2);
 
         // Hide the first timer if spectating
         if (this.spectating) {
@@ -3290,10 +3292,6 @@ this.build_ui = function() {
     stage.add(bglayer);
     stage.add(uilayer);
     stage.add(cardlayer);
-    if (ui.timed_game)
-    {
-        stage.add(timerlayer);
-    }
     stage.add(tiplayer);
     stage.add(overlayer);
 };
@@ -4107,7 +4105,13 @@ this.handle_action = function(data) {
                 pos.x <= play_area.getX() + play_area.getWidth() &&
                 pos.y <= play_area.getY() + play_area.getHeight())
             {
-                ui.send_msg({type: "action", resp: {type: ACT.PLAY, target: this.children[0].order}});
+                ui.send_msg({
+                    type: "action",
+                    resp: {
+                        type: ACT.PLAY,
+                        target: this.children[0].order,
+                    },
+                });
 
                 self.stop_action();
 
@@ -4181,6 +4185,10 @@ this.handle_action = function(data) {
         saved_action = null;
     });
 };
+
+function dragendPlay() {
+
+}
 
 this.set_message = function(msg) {
     msgloggroup.add_message(msg.text);

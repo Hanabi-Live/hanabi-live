@@ -8,6 +8,7 @@
 const globals  = require('../globals');
 const logger   = require('../logger');
 const messages = require('../messages');
+const notify   = require('../notify');
 
 exports.step1 = function(socket, reason) {
     if (typeof(socket.userID) === 'undefined') {
@@ -34,14 +35,14 @@ exports.step1 = function(socket, reason) {
                 if (game.running) {
                     // Set their "present" variable to false, which will turn their name red
                     player.present = false;
-                    messages.join_table.notifyGameMemberChange({
+                    notify.gameMemberChange({
                         gameID: gameID,
                     });
 
                     // Set their "seated" and "playing" variables to false, which control the checkboxes in the lobby
                     socket.seated = false;
                     socket.playing = false;
-                    messages.join_table.notifyAllUserChange(socket);
+                    notify.allUserChange(socket);
 
                 } else {
                     // The game has not started yet, so just eject them from the table

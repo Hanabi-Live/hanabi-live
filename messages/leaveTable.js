@@ -7,7 +7,7 @@
 const globals  = require('../globals');
 const logger   = require('../logger');
 const models   = require('../models');
-const messages = require('../messages');
+const notify   = require('../notify');
 
 const step1 = function(socket, data) {
     // Local variables
@@ -59,9 +59,9 @@ function step2(error, socket, data) {
         type: 'left',
     });
 
-    messages.join_table.notifyAllUserChange(socket);
-    messages.join_table.notifyAllTableChange(data);
-    messages.join_table.notifyGameMemberChange(data);
+    notify.allUserChange(socket);
+    notify.allTableChange(data);
+    notify.gameMemberChange(data);
 
     // Force everyone else to leave if it was the owner that left
     if (socket.userID === game.owner) {

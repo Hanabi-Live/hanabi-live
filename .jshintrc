@@ -1,4 +1,16 @@
 {
+    "curly": true,
+    "freeze": true,
+    "eqeqeq": true,
+    "futurehostile": true,
+    "noarg": true,
+    "nocomma": true,
+    "nonbsp": true,
+    "nonew": true,
+    "strict": true,
+    "undef": true,
+    "unused": true,
+
     "esversion": 6,
 
     "browser": true,

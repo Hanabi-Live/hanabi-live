@@ -18,7 +18,7 @@ Installation
 
 * Install Node.js.
 * Install MariaDB.
-* Create a new database user called with some password.
+* Create a new database user.
 * `git clone https://github.com/Zamiell/keldon-hanabi`
 * `cd keldon-hanabi`
 * `cp .env_defaults .env`

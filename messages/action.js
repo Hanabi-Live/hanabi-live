@@ -17,7 +17,7 @@
 const globals  = require('../globals');
 const logger   = require('../logger');
 const models   = require('../models');
-const messages = require('../messages');
+const notify   = require('../notify');
 
 const step1 = function(socket, data) {
     // Local variables
@@ -52,7 +52,7 @@ const step1 = function(socket, data) {
     } else if (data.type === 1 || data.type === 2) {
         // We are not allowed to discard while at 8 clues
         // (the client should enforce this, but do a check just in case)
-        if (data.type === 2 && game.clue_num == 8) {
+        if (data.type === 2 && game.clue_num === 8) {
             return;
         }
 
@@ -80,7 +80,7 @@ const step1 = function(socket, data) {
         game.actions.push({
             text: text,
         });
-        notifyGameAction(data);
+        notify.gameAction(data);
         logger.info('[Game ' + data.gameID + '] ' + text);
 
     } else {
@@ -94,7 +94,7 @@ const step1 = function(socket, data) {
         score: game.score,
         type: 'status',
     });
-    notifyGameAction(data);
+    notify.gameAction(data);
 
     // Adjust the timer for the player that just took their turn
     if (game.timed) {
@@ -120,14 +120,14 @@ const step1 = function(socket, data) {
         game.actions.push({
             text: text,
         });
-        notifyGameAction(data);
+        notify.gameAction(data);
         logger.info('[Game ' + data.gameID + '] ' + text);
 
-    } else if (game.turn_num == game.end_turn_num ||
-               (game.variant == 0 && game.score == 20) ||
-               (game.variant == 1 && game.score == 30) ||
-               (game.variant == 2 && game.score == 25) ||
-               (game.variant == 3 && game.score == 30)) {
+    } else if (game.turn_num === game.end_turn_num ||
+               (game.variant === 0 && game.score === 20) ||
+               (game.variant === 1 && game.score === 30) ||
+               (game.variant === 2 && game.score === 25) ||
+               (game.variant === 3 && game.score === 30)) {
 
         end = true;
 
@@ -135,7 +135,7 @@ const step1 = function(socket, data) {
         game.actions.push({
             text: text,
         });
-        notifyGameAction(data);
+        notify.gameAction(data);
         logger.info('[Game ' + data.gameID + '] ' + text);
     }
 
@@ -150,7 +150,7 @@ const step1 = function(socket, data) {
         type: 'turn',
         who: game.turn_player_index,
     });
-    notifyGameAction(data);
+    notify.gameAction(data);
     logger.info('[Game ' + data.gameID + '] It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
 
     // Send the "action" message to the next player
@@ -163,15 +163,12 @@ const step1 = function(socket, data) {
         },
     });
 
-    messages.join_table.notifyAllTableChange(data);
+    notify.allTableChange(data);
     // (this seems wasteful but this is apparently used so that you can see if it is your turn from the lobby)
-
-    //messages.join_table.notifyGameMemberChange(data);
-    // (Keldon does this but it seems unnecessary)
 
     if (game.timed) {
         // Send everyone new clock values
-        notifyGameTime(data);
+        notify.gameTime(data);
 
         // Start the function that will check to see if the current player has run out of time
         // (it just got to be their turn)
@@ -224,7 +221,7 @@ function playerClue(data) {
         target: data.target,
         type: 'clue',
     });
-    notifyGameAction(data);
+    notify.gameAction(data);
 
     // Send the "message" message about the clue
     let text = game.players[data.index].username + ' tells ';
@@ -242,14 +239,13 @@ function playerClue(data) {
     game.actions.push({
         text: text,
     });
-    notifyGameAction(data);
+    notify.gameAction(data);
     logger.info('[Game ' + data.gameID + '] ' + text);
 }
 
 function playerPlayCard(data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
-    let player = game.players[data.index];
     let card = game.deck[data.target];
     let suit = (card.suit === 5 && game.variant === 3 ? globals.suits[card.suit + 1] : globals.suits[card.suit]);
 
@@ -269,7 +265,7 @@ function playerPlayCard(data) {
                 suit: card.suit,
             },
         });
-        notifyGameAction(data);
+        notify.gameAction(data);
 
         // Send the "message" about the play
         let text = game.players[data.index].username + ' plays ';
@@ -277,7 +273,7 @@ function playerPlayCard(data) {
         game.actions.push({
             text: text,
         });
-        notifyGameAction(data);
+        notify.gameAction(data);
         logger.info('[Game ' + data.gameID + '] ' + text);
 
         // Give the team a clue if a 5 was played
@@ -295,7 +291,7 @@ function playerPlayCard(data) {
             num: game.strikes,
             type: 'strike',
         });
-        notifyGameAction(data);
+        notify.gameAction(data);
 
         playerDiscardCard(data, true);
     }
@@ -316,7 +312,7 @@ function playerDiscardCard(data, failed = false) {
             suit: card.suit,
         },
     });
-    notifyGameAction(data);
+    notify.gameAction(data);
 
     let text = game.players[data.index].username + ' ';
     if (failed) {
@@ -328,7 +324,7 @@ function playerDiscardCard(data, failed = false) {
     game.actions.push({
         text: text,
     });
-    notifyGameAction(data);
+    notify.gameAction(data);
     logger.info('[Game ' + data.gameID + '] ' + text);
 }
 
@@ -357,7 +353,7 @@ const playerDrawCard = function(data) {
     game.deckIndex++;
 
     if (game.running) {
-        notifyGameAction(data);
+        notify.gameAction(data);
     }
 
     game.actions.push({
@@ -366,7 +362,7 @@ const playerDrawCard = function(data) {
     });
 
     if (game.running) {
-        notifyGameAction(data);
+        notify.gameAction(data);
     }
 
     // Check to see if that was the last card drawn
@@ -387,7 +383,7 @@ function gameEnd(data, loss) {
         score: game.score,
         type: 'game_over',
     });
-    notifyGameAction(data);
+    notify.gameAction(data);
 
     // Send "reveal" messages to each player about the missing cards in their hand
     for (let player of game.players) {
@@ -488,76 +484,6 @@ function gameEnd4(error, data) {
         });
     }
 }
-
-function notifyGameAction(data) {
-    // Local variables
-    let game = globals.currentGames[data.gameID];
-    let lastIndex = game.actions.length - 1;
-    let action = game.actions[lastIndex];
-
-    // Send the people in the game an update about the new action
-    for (let i = 0; i < game.players.length; i++) {
-        // Scrub card info from cards if the card is in their own hand
-        let scrubbed = false;
-        let scrubbedAction;
-        if (action.type === 'draw' && action.who == i) {
-            scrubbed = true;
-            scrubbedAction = JSON.parse(JSON.stringify(action));
-            scrubbedAction.rank = undefined;
-            scrubbedAction.suit = undefined;
-        }
-
-        game.players[i].socket.emit('message', {
-            type: ('text' in action ? 'message' : 'notify'),
-            resp: (scrubbed ? scrubbedAction : action),
-        });
-    }
-
-    // Also send the spectators an update
-    for (let userID in game.spectators) {
-        if (game.spectators.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
-        game.spectators[userID].emit('message', {
-            type: ('text' in action ? 'message' : 'notify'),
-            resp: action,
-        });
-    }
-}
-
-const notifyGameTime = function(data) {
-    // Local variables
-    let game = globals.currentGames[data.gameID];
-
-    // Go through all the players in the game
-    for (let i = 0; i < game.players.length; i++) {
-        // Prepare the clock message
-        let clockMsg = {
-            type: 'clock',
-            resp: {
-                time: game.players[i].time,
-                who: i,
-                active: (game.turn_player_index === i ? true : false),
-            },
-        };
-
-        // Send the clock message for this player to all the players in the game
-        for (let player of game.players) {
-            player.socket.emit('message', clockMsg);
-        }
-
-        // Also send it to the spectators
-        for (let userID in game.spectators) {
-            if (game.spectators.hasOwnProperty(userID) === false) {
-                continue;
-            }
-
-            game.spectators[userID].emit('message', clockMsg);
-        }
-    }
-};
-exports.notifyGameTime = notifyGameTime;
 
 const checkTimer = function(data) {
     // Check to see if the game ended already

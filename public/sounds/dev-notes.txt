@@ -1,0 +1,6 @@
+To make more beeps that sound consistent, go to websynths.com and load hanabi.websynths-patch.json (the "load patch" button)
+
+If that doesnt work, try to recreate it by doing this:
+
+ elect "025: elise", set "maximum sustain time" in the middle to 0.2, set "release part 3" below that to 0.5, and set
+ "reverb mix" on the right to 2

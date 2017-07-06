@@ -11,7 +11,7 @@
 // Imports
 const globals  = require('../globals');
 const logger   = require('../logger');
-const messages = require('../messages');
+const notify   = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Local variables
@@ -33,7 +33,7 @@ exports.step1 = function(socket, data) {
             replay:     false,
             spectating: false,
         };
-        messages.join_table.notifyAllUserChange(player.socket);
+        notify.allUserChange(player.socket);
     }
 
     // Keep track of the game ending
