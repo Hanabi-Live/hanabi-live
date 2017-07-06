@@ -325,7 +325,7 @@ function playerDiscardCard(data, failed = false) {
         type: 'discard',
         which: {
             index: data.index,
-            order: card.order,
+            order: data.target,
             rank: card.rank,
             suit: card.suit,
         },
@@ -360,11 +360,13 @@ const playerDrawCard = function(data) {
 
     let card = game.deck[game.deckIndex];
     game.players[data.index].hand.push(card);
+    console.log('GAME.DECKINDEX:', game.deckIndex);
+    console.log('CARD.ORDER:', card.order);
     game.actions.push({
-        order: card.order,
+        type: 'draw',
         rank: card.rank,
         suit: card.suit,
-        type: 'draw',
+        order: game.deckIndex,
         who: data.index,
     });
     game.deckIndex++;
@@ -374,8 +376,8 @@ const playerDrawCard = function(data) {
     }
 
     game.actions.push({
-        size: game.deck.length - game.deckIndex,
         type: 'draw_size',
+        size: game.deck.length - game.deckIndex,
     });
 
     if (game.running) {
@@ -396,9 +398,9 @@ function gameEnd(data, loss) {
 
     // Send the "game_over" message
     game.actions.push({
-        loss: loss,
-        score: game.score,
         type: 'game_over',
+        score: game.score,
+        loss:  loss,
     });
     notify.gameAction(data);
 
