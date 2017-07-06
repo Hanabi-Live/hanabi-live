@@ -77,26 +77,30 @@ function step2(error, socket, data) {
 
     // Send them the current time for all player's clocks
     if (game.timed) {
+        // Create the clock message
+        let times = [];
         for (let i = 0; i < game.players.length; i++) {
-            // Prepare the clock message
-            let clockMsg = {
-                type: 'clock',
-                resp: {
-                    time: game.players[i].time,
-                    who: i,
-                    active: (game.turn_player_index === i ? true : false),
-                },
-            };
+            let time = game.players[i].time;
 
             // Since we are sending the message in the middle of someone's turn,
             // we need to account for this
-            if (clockMsg.resp.active) {
+            if (game.turn_player_index === i) {
                 let currentTime = (new Date()).getTime();
                 let elapsedTime = currentTime - game.turn_begin_time;
-                clockMsg.resp.time -= elapsedTime;
+                time -= elapsedTime;
             }
 
-            socket.emit('message', clockMsg);
+            times.push(time);
         }
+        let clockMsg = {
+            type: 'clock',
+            resp: {
+                times: times,
+                active: game.turn_player_index,
+            },
+        };
+
+        // Send the clock message
+        socket.emit('message', clockMsg);
     }
 }

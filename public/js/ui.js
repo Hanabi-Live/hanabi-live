@@ -71,11 +71,12 @@ function seconds_to_time_display(seconds) {
 
 // The left timer that shows your time
 function checkTimer1(textObject) {
-    let clockTime = ui.player_times[ui.player_us];
-    if (typeof(clockTime) !== 'undefined') {
+    if (typeof(ui.player_times[ui.player_us]) !== 'undefined') {
         if (ui.current_player_index !== ui.player_us) {
             // If it is not our turn, just show a static clock of how much time we have left
-            textObject.setText(seconds_to_time_display(Math.ceil(clockTime)));
+            let seconds = Math.ceil(ui.player_times[ui.player_us] / 1000);
+            let text = seconds_to_time_display(seconds);
+            textObject.setText(text);
         } else {
             setTickingDownTime(textObject);
         }
@@ -89,8 +90,7 @@ function checkTimer1(textObject) {
 
 // The right timer that shows the current player's time; it will be hidden when it is your turn
 function checkTimer2(textObject) {
-    let clockTime = ui.player_times[ui.current_player_index];
-    if (typeof(clockTime) !== 'undefined') {
+    if (typeof(ui.player_times[ui.current_player_index]) !== 'undefined') {
         setTickingDownTime(textObject);
         uilayer.draw();
     }
@@ -101,19 +101,23 @@ function checkTimer2(textObject) {
 }
 
 function setTickingDownTime(textObject) {
+    // Update the time in our local array
     var time = new Date().getTime();
     var time_elapsed = time - ui.last_timer_update_time_ms;
     if (time_elapsed < 0) {
         time_elapsed = 0;
     }
     ui.last_timer_update_time_ms = time;
+    ui.player_times[ui.current_player_index] -= time_elapsed;
 
-    ui.player_times[ui.current_player_index] -= time_elapsed / 1000;
-    textObject.setText(seconds_to_time_display(Math.ceil(ui.player_times[ui.current_player_index])));
+    // Display it
+    let seconds = Math.ceil(ui.player_times[ui.current_player_index] / 1000);
+    let text = seconds_to_time_display(seconds);
+    textObject.setText(text);
 }
 
 function image_name(card) {
-    if(!card.unknown) {
+    if (!card.unknown) {
         let name = "card-";
         name += card.suit + "-";
         name += card.rank;
@@ -4067,7 +4071,7 @@ this.handle_notify = function(note, performing_replay) {
             x.setOpacity(1.0);
         }
         else {
-            Kinetic.Tween({
+            new Kinetic.Tween({
                 node: x,
                 opacity: 1.0,
                 duration: ui.animate_fast ? 0.001 : 1.0,
@@ -4112,25 +4116,19 @@ this.handle_notify = function(note, performing_replay) {
 };
 
 this.handle_clock = function(note) {
-    let minutes = Math.floor((note.time / (1000 * 60)) % 60);
-    let seconds = Math.floor((note.time / 1000) % 60);
-    console.log('%cClock timer for "' + ui.player_names[note.who] + '" is at: ' + minutes + 'm ' + seconds + 's', 'color: orange;');
+    ui.player_times = note.times;
+    ui.current_player_index = note.active;
 
-    ui.player_times[note.who] = note.time / 1000; // The server gives it to us in milliseconds, so we convert it to seconds
-    if (note.active) {
-        // Set whose turn it is
-        ui.current_player_index = note.who;
-
-        // Show or hide the 2nd timer
-        if (ui.current_player_index === ui.player_us && ui.spectating === false && timer_rect2) {
-            timer_rect2.hide();
-            timer_label2.hide();
-            timer_text2.hide();
-        } else if (timer_rect2){
-            timer_rect2.show();
-            timer_label2.show();
-            timer_text2.show();
-        }
+    // Show or hide the 2nd timer
+    // (we check for "timer_rect2" in case it has not been drawn yet)
+    if (ui.current_player_index === ui.player_us && ui.spectating === false && timer_rect2) {
+        timer_rect2.hide();
+        timer_label2.hide();
+        timer_text2.hide();
+    } else if (timer_rect2){
+        timer_rect2.show();
+        timer_label2.show();
+        timer_text2.show();
     }
 };
 
@@ -4143,7 +4141,7 @@ this.stop_action = function(fast) {
     }
     else
     {
-        Kinetic.Tween({
+        new Kinetic.Tween({
             node: clue_area,
             opacity: 0.0,
             duration: 0.5,
@@ -4188,7 +4186,7 @@ this.handle_action = function(data) {
     if (data.can_clue) {
         clue_area.show();
 
-        Kinetic.Tween({
+        new Kinetic.Tween({
             node: clue_area,
             opacity: 1.0,
             duration: 0.5,
