@@ -221,3 +221,31 @@ exports.gameTime = function(data) {
         game.spectators[userID].emit('message', clockMsg);
     }
 };
+
+exports.gameSound = function(data) {
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+
+    // Send a sound notification
+    for (let i = 0; i < game.players.length; i++) {
+        let player = game.players[i];
+        player.socket.emit('message', {
+            type: 'sound',
+            resp: {
+                file: (i === game.turn_player_index ? 'turn_us' : 'turn_other'),
+            },
+        });
+    }
+    for (let userID in game.spectators) {
+        if (game.spectators.hasOwnProperty(userID) === false) {
+            continue;
+        }
+
+        game.spectators[userID].emit('message', {
+            type: 'sound',
+            resp: {
+                file: 'turn_other',
+            },
+        });
+    }
+};

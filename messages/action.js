@@ -193,6 +193,8 @@ const step1 = function(socket, data) {
             checkTimer(data);
         }, game.players[game.turn_player_index].time);
     }
+
+    notify.gameSound(data);
 };
 exports.step1 = step1;
 
@@ -497,6 +499,13 @@ function gameEnd4(error, data) {
                 id: data.gameID,
             },
         });
+    }
+
+    // Reset the "Seated" and "Playing" values for all of the users in the game
+    for (let player of game.players) {
+        player.socket.seated = false;
+        player.socket.playing = false;
+        notify.allUserChange(player.socket);
     }
 }
 

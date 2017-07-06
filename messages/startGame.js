@@ -167,7 +167,7 @@ function step3(error, socket, data) {
         }
     }
 
-    // Set all of the users in the game to "playing"
+    // Set all of the users in the game to "Playing"
     for (let player of game.players) {
         player.socket.playing = true;
         notify.allUserChange(player.socket);
@@ -186,6 +186,9 @@ function step3(error, socket, data) {
     // Send the list of people who are connected
     // (this governs if a player's name is red or not)
     notify.gameConnected(data);
+
+    // Make a sound effect
+    notify.gameSound(data);
 }
 
 /*

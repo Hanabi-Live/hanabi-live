@@ -25,6 +25,7 @@ function HanabiUI(lobby, game_id)
 {
 
 this.lobby = lobby;
+this.game_id = game_id;
 
 var cardw = 286;
 var cardh = 406;
@@ -4121,15 +4122,6 @@ this.handle_notify = function(note, performing_replay) {
         if (!this.animate_fast) {
             uilayer.draw();
         }
-
-        // Play a sound to indicate that a turn has passed
-        if (this.lobby.send_turn_sound) {
-            if (ui.current_player_index === ui.player_us && ui.spectating === false) {
-                this.lobby.play_sound("turn");
-            } else {
-                this.lobby.play_sound("turn2");
-            }
-        }
     }
 
     else if (type === "game_over") {
@@ -4159,7 +4151,6 @@ this.handle_notify = function(note, performing_replay) {
 
 this.handle_clock = function(note) {
     ui.player_times = note.times;
-    ui.current_player_index = note.active;
 
     // Show or hide the 2nd timer
     // (we check for "timer_rect2" in case it has not been drawn yet)

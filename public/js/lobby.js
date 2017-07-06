@@ -22,6 +22,7 @@ function HanabiLobby() {
     this.send_turn_sound = false;
     this.send_chat_notify = false;
     this.send_chat_sound = false;
+    this.playing_sound = false;
 
     this.game = {
         name: "",
@@ -389,7 +390,7 @@ HanabiLobby.prototype.add_table = function(data) {
         owned:        data.owned,
     };
     this.draw_tables();
-    if(!data.running) {
+    if (!data.running) {
         //sometimes the server resets the id sequence for tables. if this happens, then a player can see old notes
         //from a previous game if their new game happens to share the id of an old one. to avoid this, any time we
         //see an un-started table, we remove any notes we might have in localstorage for a table with that id.
@@ -862,96 +863,66 @@ HanabiLobby.prototype.listen_conn = function(conn) {
             console.log('%cRecieved "' + msgType + '":', 'color: blue;');
             console.log(msgData);
         }
-        if (msgType === "hello")
-        {
+        if (msgType === "hello") {
             self.hide_login();
             self.reset_lobby();
             self.show_lobby();
-        }
 
-        else if (msgType === "denied")
-        {
+        } else if (msgType === "denied") {
             self.login_failed(msgData.reason);
-        }
 
-        else if (msgType === "error")
-        {
+        } else if (msgType === "error") {
             alert("Error: " + msgData.error);
-        }
 
-        else if (msgType === "user")
-        {
+        } else if (msgType === "user") {
             self.add_user(msgData);
-        }
 
-        else if (msgType === "user_left")
-        {
+        } else if (msgType === "user_left") {
             self.remove_user(msgData);
-        }
 
-        else if (msgType === "table")
-        {
+        } else if (msgType === "table") {
             self.add_table(msgData);
-        }
 
-        else if (msgType === "table_gone")
-        {
+        } else if (msgType === "table_gone") {
             self.remove_table(msgData);
-        }
 
-        else if (msgType === "chat")
-        {
+        } else if (msgType === "chat") {
             self.add_chat(msgData);
-        }
 
-        else if (msgType === "joined")
-        {
+        } else if (msgType === "joined") {
             self.table_joined(msgData);
-        }
 
-        else if (msgType === "left")
-        {
+        } else if (msgType === "left") {
             self.table_left(msgData);
-        }
 
-        else if (msgType === "game")
-        {
+        } else if (msgType === "game") {
             self.set_game(msgData);
-        }
 
-        else if (msgType === "game_player")
-        {
+        } else if (msgType === "game_player") {
             self.set_game_player(msgData);
-        }
 
-        else if (msgType === "table_ready")
-        {
+        } else if (msgType === "table_ready") {
             self.set_table_ready(msgData);
-        }
 
-        else if (msgType === "game_start")
-        {
+        } else if (msgType === "game_start") {
             self.game_started(msgData);
-        }
 
-        else if (msgType === "game_history")
-        {
+        } else if (msgType === "game_history") {
             self.add_history(msgData);
-        }
 
-        else if (msgType === "history_detail")
-        {
+        } else if (msgType === "history_detail") {
             self.add_history_detail(msgData);
-        }
 
-        else if (msgType === "game_error")
-        {
+        } else if (msgType === "game_error") {
             alert("Server error");
             self.game_ended(msgData);
-        }
 
-        else if (self.ui)
-        {
+        } else if (msgType === "sound") {
+            if (self.send_turn_sound) {
+                self.play_sound(msgData.file);
+            }
+
+        } else if (self.ui) {
             self.ui.handle_message(msg);
         }
     });
@@ -1144,6 +1115,7 @@ HanabiLobby.prototype.send_notify = function(msg, tag) {
 };
 
 HanabiLobby.prototype.play_sound = function(name) {
+    // Don't play 2 sounds at the same time
     var a = new Audio("public/sounds/" + name + ".mp3");
     a.play();
 };
