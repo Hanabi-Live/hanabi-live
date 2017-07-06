@@ -359,14 +359,15 @@ const playerDrawCard = function(data) {
     }
 
     let card = game.deck[game.deckIndex];
-    card.order = game.deckIndex;
     game.players[data.index].hand.push(card);
+    console.log('GAME.DECKINDEX:', game.deckIndex);
+    console.log('CARD.ORDER:', card.order);
     game.actions.push({
         type:  'draw',
-        order: card.order,
+        who:   data.index,
         rank:  card.rank,
         suit:  card.suit,
-        who:   data.index,
+        order: card.order,
     });
     game.deckIndex++;
 
