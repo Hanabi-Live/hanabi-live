@@ -1033,11 +1033,29 @@ CardDeck.prototype.getCount = function() {
     return this.count.getText();
 };
 
-CardDeck.prototype.enableBorder = function() {
+CardDeck.prototype.enableDraggable = function() {
+    // Draw the golden border to indicate that the player can do something with the deck
     // TODO
+
+    // Enable the deck to be draggable
+    // TODO
+
+    // When dragged on top of the play pile, send the appropriate "action" message
+    /*
+    ui.send_msg({
+        type: "action",
+        resp: {
+            type: ACT.DECKPLAY,
+        },
+    });
+    */
 };
 
-CardDeck.prototype.disableBorder = function() {
+CardDeck.prototype.disableDraggable = function() {
+    // Disable the golden border
+    // TODO
+
+    // Stop it from being draggable
     // TODO
 };
 
@@ -4434,7 +4452,7 @@ HanabiUI.prototype.handle_message = function(msg) {
         this.save_replay(msg);
 
         if (!this.replay || msgData.type === 'reveal') {
-            this.handle_notify.call(this, msgData); // asdf
+            this.handle_notify.call(this, msgData);
         }
     }
 
