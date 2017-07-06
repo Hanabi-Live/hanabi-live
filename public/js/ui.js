@@ -1033,6 +1033,14 @@ CardDeck.prototype.getCount = function() {
     return this.count.getText();
 };
 
+CardDeck.prototype.enableBorder = function() {
+    // TODO
+};
+
+CardDeck.prototype.disableBorder = function() {
+    // TODO
+};
+
 var CardStack = function(config) {
     Kinetic.Group.call(this, config);
 };
@@ -3877,6 +3885,13 @@ this.handle_notify = function(note, performing_replay) {
 
     else if (type === "draw_size") {
         drawdeck.setCount(note.size);
+
+        // Draw a border around the deck and make it so that players can drag it onto the play pile
+        if (note.size === 1) {
+            drawdeck.enableDraggable();
+        } else {
+            drawdeck.disableDraggable();
+        }
     }
 
     else if (type === "played") {
