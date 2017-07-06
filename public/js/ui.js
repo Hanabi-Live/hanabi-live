@@ -4,6 +4,9 @@
 // - Hard-coded all of the MHGA variables at the top of the file
 // - Changed "img/" to "public/img/" (4 lines)
 
+// TODO:
+// - test reveal at end to immediately reveal your cards
+
 var MHGA_show_debug_messages = true;
 var MHGA_colorblind_mode = false;
 var MHGA_show_more_log = true;
