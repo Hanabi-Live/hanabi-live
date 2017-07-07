@@ -19,10 +19,10 @@
 */
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
-const models   = require('../models');
-const notify   = require('../notify');
+const globals = require('../globals');
+const logger  = require('../logger');
+const models  = require('../models');
+const notify  = require('../notify');
 
 const step1 = function(socket, data) {
     // Local variables

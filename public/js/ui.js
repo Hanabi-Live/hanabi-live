@@ -8,9 +8,8 @@
 // - Lots of code edits so that the code passes JSHint
 
 // TODO:
-// - test reveal at end to immediately reveal your cards
-// - Fix seated checkbox after game is completed
-// - Blind play from bottom
+// - Custom message for discarding clued card
+// - Fix bug where you join 2nd game
 
 var MHGA_show_debug_messages = true;
 var MHGA_colorblind_mode = false;
@@ -2916,7 +2915,6 @@ this.build_ui = function() {
         */
     }
 
-
     no_clue_box = new Kinetic.Rect({
         x: 0.275 * win_w,
         y: 0.56 * win_h,
@@ -3041,10 +3039,10 @@ this.build_ui = function() {
 
     deck_play_button = new Button({
         x: -0.012 * win_w,
-        y: 0.190 * win_h,
+        y: 0.210 * win_h,
         width: 0.06 * win_w,
         height: 0.06 * win_h,
-        text: "B-Play",
+        text: "D-Play",
     });
     clue_area.add(deck_play_button);
     deck_play_button.hide(); // Hide it by default

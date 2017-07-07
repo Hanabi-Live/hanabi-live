@@ -9,9 +9,8 @@
 */
 
 // Imports
-const globals  = require('../globals');
-const messages = require('../messages');
-const notify   = require('../notify');
+const globals = require('../globals');
+const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Local variables
@@ -31,7 +30,11 @@ exports.step1 = function(socket, data) {
             break;
         }
     }
-    notify.gameConnected(data);
+    if (game.running) {
+        notify.gameConnected(data);
+    } else {
+        notify.gameMemberChange(data);
+    }
 
     // Set their "seated" and "playing" variables to true, which control the checkboxes in the lobby
     socket.seated = true;

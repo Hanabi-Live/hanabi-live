@@ -4,10 +4,9 @@
 // "data" is empty
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
-const messages = require('../messages');
-const notify   = require('../notify');
+const globals = require('../globals');
+const logger  = require('../logger');
+const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Local variables
@@ -39,7 +38,11 @@ exports.step1 = function(socket, data) {
             break;
         }
     }
-    notify.gameConnected(data);
+    if (game.running) {
+        notify.gameConnected(data);
+    } else {
+        notify.gameMemberChange(data);
+    }
 
     // Set their "seated" and "playing" variables to false, which control the checkboxes in the lobby
     socket.seated = false;
@@ -58,16 +61,16 @@ exports.step1 = function(socket, data) {
     socket.emit('message', {
         type: 'table',
         resp: {
-            allow_spec: game.allow_spec,
-            id: data.gameID,
-            joined: true,
+            allow_spec:  game.allow_spec,
+            id:          data.gameID,
+            joined:      true,
             max_players: game.max_players,
-            name: game.name,
+            name:        game.name,
             num_players: game.players.length,
-            our_turn: game.turn === data.index,
-            owned: socket.userID === game.owner,
-            running: game.running,
-            variant: game.variant,
+            our_turn:    game.turn === data.index,
+            owned:       socket.userID === game.owner,
+            running:     game.running,
+            variant:     game.variant,
         },
     });
 };
