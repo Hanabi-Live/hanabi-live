@@ -82,7 +82,7 @@ function checkTimer1(textObject) {
         } else {
             setTickingDownTime(textObject);
         }
-        uilayer.draw();
+        timerlayer.draw();
     }
 
     window.setTimeout(function() {
@@ -94,7 +94,7 @@ function checkTimer1(textObject) {
 function checkTimer2(textObject) {
     if (typeof(ui.player_times[ui.active_player_index]) !== 'undefined') {
         setTickingDownTime(textObject);
-        uilayer.draw();
+        timerlayer.draw();
     }
 
     window.setTimeout(function() {
@@ -2401,11 +2401,12 @@ size_stage(stage);
 var win_w = stage.getWidth();
 var win_h = stage.getHeight();
 
-var bglayer = new Kinetic.Layer();
-var cardlayer = new Kinetic.Layer();
-var uilayer = new Kinetic.Layer();
-var overlayer = new Kinetic.Layer();
-var tiplayer = new Kinetic.Layer();
+var bglayer    = new Kinetic.Layer();
+var cardlayer  = new Kinetic.Layer();
+var uilayer    = new Kinetic.Layer();
+var overlayer  = new Kinetic.Layer();
+var tiplayer   = new Kinetic.Layer();
+var timerlayer = new Kinetic.Layer();
 
 var player_hands = [];
 var drawdeck;
@@ -3072,7 +3073,7 @@ this.build_ui = function() {
             cornerRadius: 0.005 * win_h,
             opacity: 0.2,
         });
-        uilayer.add(timer_rect1);
+        timerlayer.add(timer_rect1);
 
         timer_label1 = new Kinetic.Text({
             x: x * win_w,
@@ -3092,7 +3093,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        uilayer.add(timer_label1);
+        timerlayer.add(timer_label1);
 
         timer_text1 = new Kinetic.Text({
             x: x * win_w,
@@ -3112,7 +3113,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        uilayer.add(timer_text1);
+        timerlayer.add(timer_text1);
 
         timer_rect2 = new Kinetic.Rect({
             x: x2 * win_w,
@@ -3123,7 +3124,7 @@ this.build_ui = function() {
             cornerRadius: 0.005 * win_h,
             opacity: 0.2,
         });
-        uilayer.add(timer_rect2);
+        timerlayer.add(timer_rect2);
 
         timer_label2 = new Kinetic.Text({
             x: x2 * win_w,
@@ -3143,7 +3144,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        uilayer.add(timer_label2);
+        timerlayer.add(timer_label2);
 
         timer_text2 = new Kinetic.Text({
             x: x2 * win_w,
@@ -3163,7 +3164,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        uilayer.add(timer_text2);
+        timerlayer.add(timer_text2);
 
         // Hide the first timer if spectating
         if (this.spectating) {
@@ -3460,6 +3461,9 @@ this.build_ui = function() {
     stage.add(bglayer);
     stage.add(uilayer);
     stage.add(cardlayer);
+    if (ui.timed_game) {
+        stage.add(timerlayer);
+    }
     stage.add(tiplayer);
     stage.add(overlayer);
 };
