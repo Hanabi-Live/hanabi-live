@@ -282,7 +282,7 @@ function playerPlayCard(data) {
         let text = game.players[data.index].username + ' plays ';
         text += suit + ' ' + card.rank + ' from ';
         if (data.slot === -1) {
-            text += 'the bottom of the deck';
+            text += 'the deck';
         } else {
             text += 'slot #' + data.slot;
         }

@@ -124,7 +124,7 @@ function keyboard_clue(ui, clue_type) {
 }
 
 $(document).keydown(function(event) {
-    console.log(event.which); // Uncomment this to find out which number corresponds to the desired key
+    //console.log(event.which); // Uncomment this to find out which number corresponds to the desired key
 
     if (event.which === 49) { // "1"
         keyboard_do_action(ui, 1);
@@ -1128,6 +1128,12 @@ CardDeck.prototype.setCount = function(count) {
 
 CardDeck.prototype.getCount = function() {
     return this.count.getText();
+};
+
+CardDeck.prototype.resetPosition = function() {
+    // TODO??
+    //this.setPosition(0.08 * win_w, 0.8 * win_h);
+    // using setPosition doesn't seem to do anything
 };
 
 var CardStack = function(config) {
@@ -2855,6 +2861,10 @@ this.build_ui = function() {
             self.stop_action();
 
             this.setDraggable(false);
+
+            // We need to return the deck to its original position somehow, since it seems to stay where the user dragged it
+            // Why don't cards have this behavior?
+            this.resetPosition();
 
             deck_play_available_label.setVisible(false);
 
