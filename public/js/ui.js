@@ -14,8 +14,7 @@ var MHGA_highlight_non_hand_cards = true;
 var MHGA_show_slot_nums = false;
 var MHGA_show_no_clues_box = true;
 
-function HanabiUI(lobby, game_id)
-{
+function HanabiUI(lobby, game_id) {
 
 this.lobby = lobby;
 this.game_id = game_id;
@@ -3765,6 +3764,10 @@ this.replay_advanced = function() {
     }
 
     cardlayer.draw();
+
+    // There's a bug on the emulator where the text doesn't show upon first loading a game
+    // Doing this seems to fix it
+    uilayer.draw();
 };
 
 this.show_connected = function(list) {
@@ -3938,9 +3941,6 @@ this.handle_notify = function(note, performing_replay) {
     var child, order;
     var pos, scale, n;
     var i;
-    if (MHGA_show_debug_messages) {
-        //console.log(note); // (disabling this since it has spam)
-    }
 
     if (ui.activeHover) {
         ui.activeHover.dispatchEvent(new MouseEvent("mouseout"));
@@ -4270,6 +4270,11 @@ this.handle_notify = function(note, performing_replay) {
         if (!this.animate_fast) {
             uilayer.draw();
         }
+    }
+
+    else if (type === "boot") {
+        alert('The game was ended by: ' + note.who);
+        ui.lobby.game_ended();
     }
 };
 

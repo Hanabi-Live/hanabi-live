@@ -70,6 +70,22 @@ exports.allTableChange = function(data) {
     }
 };
 
+exports.allTableGone = function(data) {
+    // Send everyone an update about this table
+    for (let userID in globals.connectedUsers) {
+        if (globals.connectedUsers.hasOwnProperty(userID) === false) {
+            continue;
+        }
+
+        globals.connectedUsers[userID].emit('message', {
+            type: 'table_gone',
+            resp: {
+                id: data.gameID,
+            },
+        });
+    }
+};
+
 /*
     Functions that notify members of the game (and the spectators of that game)
 */
@@ -243,6 +259,32 @@ exports.gameSound = function(data) {
                 file: 'turn_other',
             },
         });
+    }
+};
+
+exports.gameBoot = function(data) {
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+
+    // Send a boot notification
+    let msg = {
+        type: 'notify',
+        resp: {
+            type: 'boot',
+            who: data.who,
+        },
+    };
+
+    for (let i = 0; i < game.players.length; i++) {
+        let player = game.players[i];
+        player.socket.emit('message', msg);
+    }
+    for (let userID in game.spectators) {
+        if (game.spectators.hasOwnProperty(userID) === false) {
+            continue;
+        }
+
+        game.spectators[userID].emit('message', msg);
     }
 };
 

@@ -505,18 +505,7 @@ function gameEnd4(error, data) {
     delete globals.currentGames[data.gameID];
 
     // Notify everyone that the table was deleted
-    for (let userID in globals.connectedUsers) {
-        if (globals.connectedUsers.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
-        globals.connectedUsers[userID].emit('message', {
-            type: 'table_gone',
-            resp: {
-                id: data.gameID,
-            },
-        });
-    }
+    notify.allTableGone(data);
 
     // Reset the "Seated" and "Playing" values for all of the users in the game
     for (let player of game.players) {

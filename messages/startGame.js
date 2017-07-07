@@ -150,21 +150,9 @@ function step3(error, socket, data) {
         // Let everyone know that the game has started, which will turn the "Join Game" button into "Spectate"
         notify.allTableChange(data);
     } else {
-        // Send a "table_gone" to everyone, even the people in the game
-        // (the players in the game will get a new "table" message shortly)
-
-        for (let userID in globals.connectedUsers) {
-            if (globals.connectedUsers.hasOwnProperty(userID) === false) {
-                continue;
-            }
-
-            globals.connectedUsers[userID].emit('message', {
-                type: 'table_gone',
-                resp: {
-                    id: data.gameID,
-                },
-            });
-        }
+        // Notify everyone that the table was deleted
+        // (even the people in the game; they will get a new "table" message shortly)
+        notify.allTableGone(data);
     }
 
     // Set all of the users in the game to "Playing"

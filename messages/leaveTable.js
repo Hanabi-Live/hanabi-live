@@ -87,16 +87,5 @@ function step3(error, socket, data) {
     delete globals.currentGames[data.gameID];
 
     // Notify everyone that the table was deleted
-    for (let userID in globals.connectedUsers) {
-        if (globals.connectedUsers.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
-        globals.connectedUsers[userID].emit('message', {
-            type: 'table_gone',
-            resp: {
-                id: data.gameID,
-            },
-        });
-    }
+    notify.allTableGone(data);
 }

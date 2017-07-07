@@ -36,21 +36,14 @@ exports.step1 = function(socket, data) {
         notify.allUserChange(player.socket);
     }
 
+    // Boot the people in the game back to the lobby screen
+    data.who = socket.username;
+    notify.gameBoot(data);
+
     // Keep track of the game ending
     logger.info('Game: #' + data.gameID + ' (' + game.name + ') ended with a score of ' + game.score + '.');
     delete globals.currentGames[data.gameID];
 
     // Notify everyone that the table was deleted
-    for (let userID in globals.connectedUsers) {
-        if (globals.connectedUsers.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
-        globals.connectedUsers[userID].emit('message', {
-            type: 'table_gone',
-            resp: {
-                id: data.gameID,
-            },
-        });
-    }
+    notify.allTableGone(data);
 };
