@@ -306,8 +306,8 @@ function playerPlayCard(data) {
         // Send the "notify" message about the strike
         game.strikes++;
         game.actions.push({
-            num: game.strikes,
             type: 'strike',
+            num:  game.strikes,
         });
         notify.gameAction(data);
 
@@ -359,15 +359,14 @@ const playerDrawCard = function(data) {
     }
 
     let card = game.deck[game.deckIndex];
+    card.order = game.deckIndex;
     game.players[data.index].hand.push(card);
-    console.log('GAME.DECKINDEX:', game.deckIndex);
-    console.log('CARD.ORDER:', card.order);
     game.actions.push({
         type:  'draw',
         who:   data.index,
         rank:  card.rank,
         suit:  card.suit,
-        order: card.order,
+        order: game.deckIndex,
     });
     game.deckIndex++;
 
@@ -399,8 +398,8 @@ function gameEnd(data, loss) {
     // Send the "game_over" message
     game.actions.push({
         type:  'game_over',
-        loss:  loss,
         score: game.score,
+        loss:  loss,
     });
     notify.gameAction(data);
 
@@ -413,9 +412,9 @@ function gameEnd(data, loss) {
                     type: 'reveal',
                     which: {
                         index: card.index,
+                        rank:  card.rank,
+                        suit:  card.suit,
                         order: card.order,
-                        rank: card.rank,
-                        suit: card.suit,
                     },
                 },
             });
@@ -476,11 +475,11 @@ function gameEnd4(error, data) {
         player.socket.emit('message', {
             type: 'game_history',
             resp: {
-                id: data.gameID,
+                id:          data.gameID,
                 num_players: game.players.length,
                 num_similar: data.num_similar,
-                score: game.score,
-                variant: game.variant,
+                score:       game.score,
+                variant:     game.variant,
             },
         });
     }

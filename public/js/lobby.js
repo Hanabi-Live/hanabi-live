@@ -384,7 +384,7 @@ HanabiLobby.prototype.add_table = function(data) {
         variant:      data.variant,
         joined:       data.joined,
         allow_spec:   data.allow_spec,
-        enable_timer: data.enable_timer,
+        timed:        data.timed,
         running:      data.running,
         our_turn:     data.our_turn,
         owned:        data.owned,
@@ -752,6 +752,7 @@ HanabiLobby.prototype.set_game = function(data) {
     this.game.variant = data.variant;
     this.game.running = data.running;
     this.game.allow_spec = data.allow_spec;
+    this.game.timed = data.timed;
 
     this.game.players.length = this.game.num_players;
 
@@ -785,7 +786,7 @@ HanabiLobby.prototype.show_joined = function() {
 
     html += "<p>Allow Spectators: " + (this.game.allow_spec ? "Yes" : "No") + "</p>";
 
-    html += "<p>Timed Game: " + (this.game.timed_game ? "Yes" : "No") + "</p>";
+    html += "<p>Timed Game: " + (this.game.timed ? "Yes" : "No") + "</p>";
 
     $("#joined-desc").html(html);
 

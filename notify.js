@@ -22,10 +22,10 @@ exports.allUserChange = function(socket) {
         globals.connectedUsers[userID].emit('message', {
             type: 'user',
             resp: {
-                id: socket.userID,
-                name: socket.username,
+                id:      socket.userID,
+                name:    socket.username,
                 playing: socket.playing,
-                seated: socket.seated,
+                seated:  socket.seated,
             },
         });
     }
@@ -43,7 +43,6 @@ exports.allTableChange = function(data) {
 
         // Find out if this player is seated at this table
         let joined = false;
-        let our_turn = false;
         for (let i = 0; i < game.players.length; i++) {
             if (game.players[i].userID === parseInt(userID, 10)) {
                 joined = true;
@@ -52,24 +51,20 @@ exports.allTableChange = function(data) {
             }
         }
 
-        // Find out if it is our turn
-        if (joined && game.turn === data.index) {
-            our_turn = true;
-        }
-
         globals.connectedUsers[userID].emit('message', {
             type: 'table',
             resp: {
-                allow_spec: game.allow_spec,
-                id: data.gameID,
-                joined: joined,
-                max_players: game.max_players,
-                name: game.name,
+                id:          data.gameID,
+                name:        game.name,
+                joined:      joined,
                 num_players: game.players.length,
-                our_turn: our_turn,
-                owned: parseInt(userID, 10) === game.owner,
-                running: game.running,
-                variant: game.variant,
+                max_players: game.max_players,
+                allow_spec:  game.allow_spec,
+                timed:       game.timed,
+                owned:       parseInt(userID, 10) === game.owner,
+                running:     game.running,
+                variant:     game.variant,
+                our_turn:    (joined && game.turn === data.index),
             },
         });
     }
@@ -88,12 +83,13 @@ exports.gameMemberChange = function(data) {
         player.socket.emit('message', {
             type: 'game',
             resp: {
-                allow_spec: game.allow_spec,
-                max_players: game.max_players,
-                name: game.name,
+                name:        game.name,
+                running:     game.running,
                 num_players: game.players.length,
-                running: game.running,
-                variant: game.variant,
+                max_players: game.max_players,
+                variant:     game.variant,
+                allow_spec:  game.allow_spec,
+                timed:       game.timed,
             },
         });
 
@@ -105,13 +101,13 @@ exports.gameMemberChange = function(data) {
             player.socket.emit('message', {
                 type: 'game_player',
                 resp: {
+                    index:      i,
+                    name:       player2.socket.username,
+                    you:        (player.userID === player2.userID),
+                    present:    game.players[i].present,
+                    started:    player2.socket.num_started,
+                    finished:   player2.socket.num_finished,
                     best_score: player2.socket.best_score,
-                    finished: player2.socket.num_finished,
-                    index: i,
-                    name: player2.socket.username,
-                    present: game.players[i].present,
-                    started: player2.socket.num_started,
-                    you: (player.userID === player2.userID),
                 },
             });
         }

@@ -59,7 +59,7 @@ this.timebank_overtime = 0; // Unused
 this.last_timer_update_time_ms = new Date().getTime();
 
 this.player_times = [];
-this.current_player_index = null;
+this.active_player_index = null;
 
 function pad2(num) {
     if (num < 10) {
@@ -75,7 +75,7 @@ function seconds_to_time_display(seconds) {
 // The left timer that shows your time
 function checkTimer1(textObject) {
     if (typeof(ui.player_times[ui.player_us]) !== 'undefined') {
-        if (ui.current_player_index !== ui.player_us) {
+        if (ui.active_player_index !== ui.player_us) {
             // If it is not our turn, just show a static clock of how much time we have left
             let seconds = Math.ceil(ui.player_times[ui.player_us] / 1000);
             let text = seconds_to_time_display(seconds);
@@ -93,7 +93,7 @@ function checkTimer1(textObject) {
 
 // The right timer that shows the current player's time; it will be hidden when it is your turn
 function checkTimer2(textObject) {
-    if (typeof(ui.player_times[ui.current_player_index]) !== 'undefined') {
+    if (typeof(ui.player_times[ui.active_player_index]) !== 'undefined') {
         setTickingDownTime(textObject);
         uilayer.draw();
     }
@@ -111,10 +111,10 @@ function setTickingDownTime(textObject) {
         time_elapsed = 0;
     }
     ui.last_timer_update_time_ms = time;
-    ui.player_times[ui.current_player_index] -= time_elapsed;
+    ui.player_times[ui.active_player_index] -= time_elapsed;
 
     // Display it
-    let seconds = Math.ceil(ui.player_times[ui.current_player_index] / 1000);
+    let seconds = Math.ceil(ui.player_times[ui.active_player_index] / 1000);
     let text = seconds_to_time_display(seconds);
     textObject.setText(text);
 }
@@ -4153,14 +4153,19 @@ this.handle_notify = function(note, performing_replay) {
 
 this.handle_clock = function(note) {
     ui.player_times = note.times;
+    ui.active_player_index = note.active; // Store this so that the timer callbacks can see whose turn it is
+
+    // Check to see if the second timer has been drawn
+    if (typeof(timer_rect2) === 'undefined') {
+        return;
+    }
 
     // Show or hide the 2nd timer
-    // (we check for "timer_rect2" in case it has not been drawn yet)
-    if (ui.current_player_index === ui.player_us && ui.spectating === false && timer_rect2) {
+    if (ui.active_player_index === ui.player_us && ui.spectating === false) {
         timer_rect2.hide();
         timer_label2.hide();
         timer_text2.hide();
-    } else if (timer_rect2){
+    } else {
         timer_rect2.show();
         timer_label2.show();
         timer_text2.show();
