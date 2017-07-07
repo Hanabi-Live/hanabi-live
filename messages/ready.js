@@ -7,6 +7,7 @@
 const globals = require('../globals');
 const logger  = require('../logger');
 const models  = require('../models');
+const notify  = require('../notify');
 
 // When the client has joined a game after they have initialized the UI
 exports.step1 = function(socket, data) {
@@ -60,13 +61,7 @@ function step2(error, socket, data) {
 
     // If it is their turn, send an "action" message
     if (game.turn_player_index === index) {
-        socket.emit('message', {
-            type: 'action',
-            resp: {
-                can_clue: (game.clue_num > 0 ? true : false),
-                can_discard: (game.clue_num < 8 ? true : false),
-            },
-        });
+        notify.playerAction(socket, data);
     }
 
     // Send an "advanced" message

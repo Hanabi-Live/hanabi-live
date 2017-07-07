@@ -24,4 +24,5 @@ Installation
 * `cp .env_defaults .env`
 * `vi .env` (fill in the values)
 * `mysql -uhanabiuser -p1234567890 < install/database_schema.sql` (to import the database)
+* `npm install`
 * `npm start`

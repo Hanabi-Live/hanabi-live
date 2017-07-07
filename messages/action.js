@@ -65,6 +65,7 @@ const step1 = function(socket, data) {
         for (let i = 0; i < player.hand.length; i++) {
             if (player.hand[i].order === data.target) {
                 player.hand.splice(i, 1);
+                data.slot = player.hand.length - i + 1; // Slot 1 is the leftmost slot, but the leftmost slot is index 5
                 break;
             }
         }
@@ -72,7 +73,7 @@ const step1 = function(socket, data) {
         if (data.type === 1) {
             playerPlayCard(data);
         } else if (data.type === 2) {
-            game.clue_num++; // We should never be discarding at 8 clues
+            game.clue_num++;
             playerDiscardCard(data);
         }
         playerDrawCard(data);
@@ -84,8 +85,7 @@ const step1 = function(socket, data) {
             return;
         }
 
-        data.target = game.deck.length - 1; // The final card
-        playerPlayCard(data);
+        playerBlindPlayDeck(data);
 
     } else if (data.type === 4) {
         // This is a special action type sent by the server to itself when a player runs out of time
@@ -169,15 +169,8 @@ const step1 = function(socket, data) {
     logger.info('[Game ' + data.gameID + '] It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
 
     // Send the "action" message to the next player
-    let i = game.turn_player_index;
-    game.players[i].socket.emit('message', {
-        type: 'action',
-        resp: {
-            can_clue:            (game.clue_num > 0 ? true : false),
-            can_discard:         (game.clue_num < 8 ? true : false),
-            can_blind_play_deck: (game.deckIndex === game.deck.length - 1 ? true : false),
-        },
-    });
+    let nextPlayerSocket = game.players[game.turn_player_index].socket;
+    notify.playerAction(nextPlayerSocket, data);
 
     notify.allTableChange(data);
     // (this seems wasteful but this is apparently used so that you can see if it is your turn from the lobby)
@@ -287,7 +280,12 @@ function playerPlayCard(data) {
 
         // Send the "message" about the play
         let text = game.players[data.index].username + ' plays ';
-        text += suit + ' ' + card.rank;
+        text += suit + ' ' + card.rank + ' from ';
+        if (data.slot === -1) {
+            text += 'the bottom of the deck';
+        } else {
+            text += 'slot #' + data.slot;
+        }
         game.actions.push({
             text: text,
         });
@@ -338,7 +336,12 @@ function playerDiscardCard(data, failed = false) {
     } else {
         text += 'discards';
     }
-    text += ' ' + suit + ' ' + card.rank;
+    text += ' ' + suit + ' ' + card.rank + ' from ';
+    if (data.slot === -1) {
+        text += 'the bottom of the deck';
+    } else {
+        text += 'slot #' + data.slot;
+    }
     game.actions.push({
         text: text,
     });
@@ -390,6 +393,19 @@ const playerDrawCard = function(data) {
     }
 };
 exports.playerDrawCard = playerDrawCard;
+
+function playerBlindPlayDeck(data) {
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+
+    // Make the player draw that card
+    playerDrawCard(data);
+
+    // Play the card freshly drawn
+    data.target = game.deck.length - 1; // The final card
+    data.slot = -1;
+    playerPlayCard(data);
+}
 
 function gameEnd(data, loss) {
     // Local variables

@@ -245,3 +245,21 @@ exports.gameSound = function(data) {
         });
     }
 };
+
+/*
+    Functions that notify a specific user/player
+*/
+
+exports.playerAction = function(socket, data) {
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+
+    socket.emit('message', {
+        type: 'action',
+        resp: {
+            can_clue:            (game.clue_num > 0 ? true : false),
+            can_discard:         (game.clue_num < 8 ? true : false),
+            can_blind_play_deck: (game.deckIndex === game.deck.length - 1 ? true : false),
+        },
+    });
+};

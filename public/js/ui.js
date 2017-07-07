@@ -15,10 +15,10 @@
 var MHGA_show_debug_messages = true;
 var MHGA_colorblind_mode = false;
 var MHGA_show_more_log = true;
-var MHGA_show_log_numbers = false;
+var MHGA_show_log_numbers = true;
 var MHGA_show_faces_in_replay = true;
 var MHGA_highlight_non_hand_cards = true;
-var MHGA_show_slot_nums = true;
+var MHGA_show_slot_nums = false;
 var MHGA_show_no_clues_box = true;
 
 function HanabiUI(lobby, game_id)
@@ -3039,6 +3039,27 @@ this.build_ui = function() {
 
     clue_area.add(submit_clue);
 
+    deck_play_button = new Button({
+        x: -0.012 * win_w,
+        y: 0.190 * win_h,
+        width: 0.06 * win_w,
+        height: 0.06 * win_h,
+        text: "B-Play",
+    });
+    clue_area.add(deck_play_button);
+    deck_play_button.hide(); // Hide it by default
+    deck_play_button.on("click tap", function() {
+        deck_play_button.off("click tap");
+        ui.send_msg({
+            type: "action",
+            resp: {
+                type: ACT.DECKPLAY,
+            },
+        });
+    });
+
+    clue_area.hide();
+
     if (ui.timed_game) {
         let x = 0.155;
         let y = (MHGA_show_more_log ? 0.592 : 0.615);
@@ -3162,9 +3183,7 @@ this.build_ui = function() {
 
         checkTimer1(timer_text1);
         checkTimer2(timer_text2);
-     }
-
-    clue_area.hide();
+    }
 
     uilayer.add(clue_area);
 
@@ -3439,25 +3458,6 @@ this.build_ui = function() {
     {
         replay_area.show();
     }
-
-    deck_play_button = new Button({
-        x: 0.087 * win_w,
-        y: 0.73 * win_h,
-        width: 0.06 * win_w,
-        height: 0.06 * win_h,
-        text: "B-Play",
-    });
-    uilayer.add(deck_play_button);
-    deck_play_button.hide(); // Hide it by default
-    deck_play_button.on("click tap", function() {
-        deck_play_button.off("click tap");
-        ui.send_msg({
-            type: "action",
-            resp: {
-                type: ACT.DECKPLAY,
-            },
-        });
-    });
 
     stage.add(bglayer);
     stage.add(uilayer);
@@ -4414,7 +4414,7 @@ HanabiUI.prototype.handle_message_in_game = function(ui, msg) {
 
 HanabiUI.prototype.handle_text_message = function(msg, callback) {
     var msgWithoutName = msg.resp.text.substr(msg.resp.text.indexOf(" ") + 1);
-    if(msgWithoutName.includes("plays") || msgWithoutName.includes("discards") || msgWithoutName.includes("fails")) {
+    if (msgWithoutName.includes("plays") || msgWithoutName.includes("discards") || msgWithoutName.includes("fails")) {
         this.movement_notify_message(msg, callback);
     } else {
         callback(this, msg);
