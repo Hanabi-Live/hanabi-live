@@ -1,16 +1,9 @@
 "use strict";
 
-// Modifications from vanilla:
-// - Hard-coded all of the MHGA variables at the top of the file
-// - Changed "img/" to "public/img/" (4 lines)
-// - Added timer code
-// - Added new turn sound effect code
-// - Lots of code edits so that the code passes JSHint
-
-// TODO:
-// - test reveal at end to immediately reveal your cards
-// - Fix seated checkbox after game is completed
-// - Blind play from bottom
+/*
+    TODO:
+    - Custom message for discarding clued card
+*/
 
 var MHGA_show_debug_messages = true;
 var MHGA_colorblind_mode = false;
@@ -186,7 +179,7 @@ function checkTimer1(textObject) {
         } else {
             setTickingDownTime(textObject);
         }
-        uilayer.draw();
+        timerlayer.draw();
     }
 
     window.setTimeout(function() {
@@ -198,7 +191,7 @@ function checkTimer1(textObject) {
 function checkTimer2(textObject) {
     if (typeof(ui.player_times[ui.active_player_index]) !== 'undefined') {
         setTickingDownTime(textObject);
-        uilayer.draw();
+        timerlayer.draw();
     }
 
     window.setTimeout(function() {
@@ -354,19 +347,19 @@ var MultiFitText = function(config) {
 Kinetic.Util.extend(MultiFitText, Kinetic.Group);
 
 MultiFitText.prototype.setMultiText = function(text) {
-    if(this.smallHistory.length >= this.maxLines) {
+    if (this.smallHistory.length >= this.maxLines) {
         this.smallHistory.shift();
     }
     this.smallHistory.push(text);
     //performance optimization: setText on the children is slow, so don't actually do it until its time to display things.
     //we also have to call refresh_text after any time we manipulate replay position
-    if(!ui.replay || !ui.animate_fast) {
+    if (!ui.replay || !ui.animate_fast) {
         this.refresh_text();
     }
 };
 
 MultiFitText.prototype.refresh_text = function() {
-    for(var i = 0; i < this.children.length; ++i) {
+    for (var i = 0; i < this.children.length; ++i) {
         var msg = this.smallHistory[i];
         if (!msg) {
             msg = "";
@@ -377,7 +370,7 @@ MultiFitText.prototype.refresh_text = function() {
 
 MultiFitText.prototype.reset = function() {
     this.smallHistory = [];
-    for(var i = 0; i < this.children.length; ++i) {
+    for (var i = 0; i < this.children.length; ++i) {
         this.children[i].setText("");
     }
 };
@@ -436,7 +429,7 @@ var HanabiMsgLog = function(config) {
         maxLines: 38,
     };
     this.lognumbers = new MultiFitText(numbersoptions);
-    if(! MHGA_show_log_numbers) {
+    if (! MHGA_show_log_numbers) {
         this.lognumbers.hide();
     }
     Kinetic.Group.prototype.add.call(this,this.lognumbers);
@@ -558,7 +551,7 @@ var HanabiCard = function(config) {
     this.rank = config.rank || 0;
     this.order = config.order;
 
-    if(!this.unknown) {
+    if (!this.unknown) {
         ui.learned_cards[this.order] = {
             suit: this.suit,
             rank: this.rank,
@@ -744,7 +737,7 @@ var HanabiCard = function(config) {
     tiplayer.add(this.tooltip);
 
     this.on("mousemove", function() {
-        if(self.note_given.visible()) {
+        if (self.note_given.visible()) {
             var mousePos = stage.getPointerPosition();
             self.tooltip.setX(mousePos.x + 15);
             self.tooltip.setY(mousePos.y + 5);
@@ -767,7 +760,7 @@ Kinetic.Util.extend(HanabiCard, Kinetic.Group);
 
 HanabiCard.prototype.reset = function() {
     this.hide_clues();
-    if(notes_written.hasOwnProperty(this.order)) {
+    if (notes_written.hasOwnProperty(this.order)) {
         var note = notes_written[this.order];
         if (note) {
             this.tooltip.getText().setText(note);
@@ -792,7 +785,7 @@ HanabiCard.prototype.add_listeners = function() {
     });
 
     this.on("click", function(e) {
-        if(e.evt.which === 3) { //right click
+        if (e.evt.which === 3) { // right click
             var note = ui.getNote(self.order);
             var newNote = prompt("Note on card:", note);
             if (newNote !== null) {
@@ -818,11 +811,12 @@ HanabiCard.prototype.setBareImage = function() {
     if (this.unknownRect !== undefined) {
         var learned = ui.learned_cards[this.order];
         //if we're in a replay, we have knowledge about the card, but we don't know the ACTUAL card
-        if(MHGA_show_faces_in_replay &&
-           ui.replay &&
-           this.unknown &&
-           learned &&
-           !learned.revealed) {
+        if (MHGA_show_faces_in_replay &&
+            ui.replay &&
+            this.unknown &&
+            learned &&
+            !learned.revealed) {
+
             this.unknownRect.setVisible(true);
         } else {
             this.unknownRect.setVisible(false);
@@ -870,7 +864,7 @@ HanabiCard.prototype.add_clue = function(clue) {
             grad[3] = suit_colors[clue.value];
             this.color_clue.setFillLinearGradientColorStops(grad);
 
-            if(grad[i] !== suit_colors[clue.value]) {
+            if (grad[i] !== suit_colors[clue.value]) {
                 this.color_clue_letter.setText("M");
             }
         }
@@ -1562,7 +1556,7 @@ HanabiClueLog.prototype.doLayout = function() {
 HanabiClueLog.prototype.checkExpiry = function() {
     var maxLength = 31;
     var childrenToRemove = this.children.length - maxLength;
-    if(childrenToRemove < 1) {
+    if (childrenToRemove < 1) {
         return;
     }
     var childrenRemoved = 0;
@@ -1777,7 +1771,7 @@ HanabiClueEntry.prototype.showMatch = function(target) {
         if (ui.deck[this.neglist[i]] === target) {
             this.background.setOpacity(0.4);
             this.background.setFill("#ff7777");
-            if(MHGA_colorblind_mode) {
+            if (MHGA_colorblind_mode) {
                 this.negative_marker.setVisible(true);
             }
         }
@@ -2306,7 +2300,7 @@ this.build_cards = function() {
 
                 if (j > 1 && j !== 6) {
                     var symbol_y_pos = 120;
-                    if(MHGA_colorblind_mode) {
+                    if (MHGA_colorblind_mode) {
                         symbol_y_pos = 85;
                     }
                     ctx.save();
@@ -2352,7 +2346,7 @@ this.build_cards = function() {
 
                 if (j === 0) {
                     ctx.clearRect(0, 0, cardw, cardh);
-                    if(MHGA_colorblind_mode) {
+                    if (MHGA_colorblind_mode) {
                         ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
                         ctx.fillText(suit_letter, 19, 83);
                         ctx.shadowColor = "rgba(0, 0, 0, 0)";
@@ -2489,11 +2483,12 @@ size_stage(stage);
 var win_w = stage.getWidth();
 var win_h = stage.getHeight();
 
-var bglayer = new Kinetic.Layer();
-var cardlayer = new Kinetic.Layer();
-var uilayer = new Kinetic.Layer();
-var overlayer = new Kinetic.Layer();
-var tiplayer = new Kinetic.Layer();
+var bglayer    = new Kinetic.Layer();
+var cardlayer  = new Kinetic.Layer();
+var uilayer    = new Kinetic.Layer();
+var overlayer  = new Kinetic.Layer();
+var tiplayer   = new Kinetic.Layer();
+var timerlayer = new Kinetic.Layer();
 
 var player_hands = [];
 var drawdeck;
@@ -2844,15 +2839,13 @@ this.build_ui = function() {
         cardback: "card-back",
     });
 
-    drawdeck.on("dragend.play", function()
-    {
+    drawdeck.on("dragend.play", function() {
         var pos = this.getAbsolutePosition();
 
         pos.x += this.getWidth() * this.getScaleX() / 2;
         pos.y += this.getHeight() * this.getScaleY() / 2;
 
-        if (overPlayArea(pos))
-        {
+        if (overPlayArea(pos)) {
             ui.send_msg({
                 type: "action",
                 resp: {
@@ -2867,9 +2860,8 @@ this.build_ui = function() {
             deck_play_available_label.setVisible(false);
 
             saved_action = null;
-        }
-        else
-        {
+
+        } else {
             new Kinetic.Tween({
                 node: this,
                 duration: 0.5,
@@ -3050,7 +3042,6 @@ this.build_ui = function() {
         */
     }
 
-
     no_clue_box = new Kinetic.Rect({
         x: 0.275 * win_w,
         y: 0.56 * win_h,
@@ -3189,7 +3180,7 @@ this.build_ui = function() {
             cornerRadius: 0.005 * win_h,
             opacity: 0.2,
         });
-        uilayer.add(timer_rect1);
+        timerlayer.add(timer_rect1);
 
         timer_label1 = new Kinetic.Text({
             x: x * win_w,
@@ -3209,7 +3200,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        uilayer.add(timer_label1);
+        timerlayer.add(timer_label1);
 
         timer_text1 = new Kinetic.Text({
             x: x * win_w,
@@ -3229,7 +3220,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        uilayer.add(timer_text1);
+        timerlayer.add(timer_text1);
 
         timer_rect2 = new Kinetic.Rect({
             x: x2 * win_w,
@@ -3240,7 +3231,7 @@ this.build_ui = function() {
             cornerRadius: 0.005 * win_h,
             opacity: 0.2,
         });
-        uilayer.add(timer_rect2);
+        timerlayer.add(timer_rect2);
 
         timer_label2 = new Kinetic.Text({
             x: x2 * win_w,
@@ -3260,7 +3251,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        uilayer.add(timer_label2);
+        timerlayer.add(timer_label2);
 
         timer_text2 = new Kinetic.Text({
             x: x2 * win_w,
@@ -3280,7 +3271,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        uilayer.add(timer_text2);
+        timerlayer.add(timer_text2);
 
         // Hide the first timer if spectating
         if (this.spectating) {
@@ -3591,6 +3582,9 @@ this.build_ui = function() {
     stage.add(uilayer);
     stage.add(cardlayer);
     stage.add(tiplayer);
+    if (ui.timed_game) {
+        stage.add(timerlayer);
+    }
     stage.add(overlayer);
 };
 
@@ -3867,10 +3861,10 @@ this.try_doing_movement_message = function() {
     if (this.current_movement_slot_num && this.current_movement_message) {
         //need to save off and restore original message or else during replays if you go back and forth it will keep adding slot info over and over.
         var original_message = this.current_movement_message.resp.text;
-        if(MHGA_show_slot_nums) {
+        if (MHGA_show_slot_nums) {
             this.current_movement_message.resp.text = this.current_movement_message.resp.text + " from slot #" + this.current_movement_slot_num;
         }
-        if(this.replay) {
+        if (this.replay) {
             this.handle_message_in_replay(this, this.current_movement_message);
         } else {
             this.handle_message_in_game(this, this.current_movement_message);
@@ -3882,7 +3876,7 @@ this.try_doing_movement_message = function() {
 };
 
 this.movement_notify_slot = function(slot_num) {
-    if(this.current_movement_slot_num) {
+    if (this.current_movement_slot_num) {
         console.log("ERROR in Make Hanabi Great Again extension: the slot number was set to " + this.current_movement_slot_num + " when I expected it to be undefined.");
     }
     this.current_movement_slot_num = slot_num;
@@ -3890,7 +3884,7 @@ this.movement_notify_slot = function(slot_num) {
 };
 
 this.movement_notify_message = function(msg, callback) {
-    if(this.current_movement_message) {
+    if (this.current_movement_message) {
         console.log("ERROR in Make Hanabi Great Again extension: the movement message was set to " + this.current_movement_message + " when I expected it to be undefined.");
     }
 
@@ -3899,9 +3893,9 @@ this.movement_notify_message = function(msg, callback) {
 };
 
 this.save_slot_information = function(note) {
-    for(var i = 0; i < player_hands.length; ++i) {
+    for (var i = 0; i < player_hands.length; ++i) {
         var hand = player_hands[i];
-        for(var j = 0; j < hand.children.length; ++j) {
+        for (var j = 0; j < hand.children.length; ++j) {
             var handchild = hand.children[j];
             var handcard = handchild.children[0];
             if (handcard.order === note.which.order) {
@@ -3917,7 +3911,7 @@ this.getNote = function(card_order) {
 };
 
 this.setNote = function(card_order, note) {
-    if(note) {
+    if (note) {
         notes_written[card_order] = note;
     } else {
         delete notes_written[card_order];
@@ -3927,7 +3921,7 @@ this.setNote = function(card_order, note) {
 
 this.load_notes = function() {
     var cookie = localStorage.getItem(game_id);
-    if(cookie) {
+    if (cookie) {
         return JSON.parse(cookie);
     } else {
         return {};
