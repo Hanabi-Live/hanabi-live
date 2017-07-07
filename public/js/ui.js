@@ -8,8 +8,9 @@
 // - Lots of code edits so that the code passes JSHint
 
 // TODO:
-// - Custom message for discarding clued card
-// - Fix bug where you join 2nd game
+// - test reveal at end to immediately reveal your cards
+// - Fix seated checkbox after game is completed
+// - Blind play from bottom
 
 var MHGA_show_debug_messages = true;
 var MHGA_colorblind_mode = false;
@@ -60,6 +61,109 @@ this.last_timer_update_time_ms = new Date().getTime();
 this.player_times = [];
 this.active_player_index = null;
 
+/*
+    Keyboard shortcuts
+*/
+
+this.keyboard_action = null;
+this.keyboard_clue_player = null;
+
+function keyboard_do_action(ui, slot) {
+    if (ui.keyboard_action === 'play') {
+        keyboard_play(ui, slot);
+        ui.keyboard_action = null;
+
+    } else if (ui.keyboard_action === 'discard') {
+        keyboard_discard(ui, slot);
+        ui.keyboard_action = null;
+
+    } else if (ui.keyboard_action === 'clue') {
+        ui.keyboard_action = 'clue_player';
+        ui.keyboard_clue_player = slot;
+
+    } else if (ui.keyboard_action === 'clue_player') {
+        keyboard_clue(ui, slot);
+    }
+}
+
+function keyboard_play(ui, slot) {
+    let ourHand = player_hands[ui.player_us].children;
+    let cardIndex = ourHand.length - slot;
+    let cardOrder = ourHand[cardIndex].children[0].order;
+
+    ui.send_msg({
+        type: "action",
+        resp: {
+            type: ACT.PLAY,
+            target: cardOrder,
+        },
+    });
+    ui.stop_action();
+}
+
+function keyboard_discard(ui, slot) {
+    let ourHand = player_hands[ui.player_us].children;
+    let cardIndex = ourHand.length - slot;
+    let cardOrder = ourHand[cardIndex].children[0].order;
+
+    ui.send_msg({
+        type: "action",
+        resp: {
+            type: ACT.DISCARD,
+            target: cardOrder,
+        },
+    });
+    ui.stop_action();
+}
+
+function keyboard_clue(ui, clue_type) {
+    ui.send_msg({
+        type: "action",
+        resp: {
+            type: ACT.CLUE,
+            target: ui.keyboard_clue_player - 1,
+            clue: {
+                type: 0,
+                value: clue_type,
+            },
+        },
+    });
+    ui.stop_action();
+}
+
+$(document).keydown(function(event) {
+    console.log(event.which); // Uncomment this to find out which number corresponds to the desired key
+
+    if (event.which === 49) { // "1"
+        keyboard_do_action(ui, 1);
+
+    } else if (event.which === 50) { // "2"
+        keyboard_do_action(ui, 2);
+
+    } else if (event.which === 51) { // "3"
+        keyboard_do_action(ui, 3);
+
+    } else if (event.which === 52) { // "4"
+        keyboard_do_action(ui, 4);
+
+    } else if (event.which === 53) { // "5"
+        keyboard_do_action(ui, 5);
+
+    } else if (event.which === 65) { // "a"
+        ui.keyboard_action = 'play';
+
+    } else if (event.which === 67) { // "c"
+        ui.keyboard_action = 'clue';
+
+    } else if (event.which === 68) { // "d"
+        ui.keyboard_action = 'discard';
+    }
+});
+
+/*
+    Misc. functions
+*/
+
 function pad2(num) {
     if (num < 10) {
         return "0" + num;
@@ -82,7 +186,7 @@ function checkTimer1(textObject) {
         } else {
             setTickingDownTime(textObject);
         }
-        timerlayer.draw();
+        uilayer.draw();
     }
 
     window.setTimeout(function() {
@@ -94,7 +198,7 @@ function checkTimer1(textObject) {
 function checkTimer2(textObject) {
     if (typeof(ui.player_times[ui.active_player_index]) !== 'undefined') {
         setTickingDownTime(textObject);
-        timerlayer.draw();
+        uilayer.draw();
     }
 
     window.setTimeout(function() {
@@ -363,7 +467,7 @@ HanabiMsgLog.prototype.add_message = function(msg) {
 
     append_line(this.logtext, this.lognumbers, msg);
     for (var i = 0; i < ui.player_names.length; i++) {
-        if(msg.startsWith(ui.player_names[i])) {
+        if (msg.startsWith(ui.player_names[i])) {
             append_line(this.player_logs[i], this.player_lognumbers[i], msg);
             break;
         }
@@ -373,14 +477,14 @@ HanabiMsgLog.prototype.add_message = function(msg) {
 HanabiMsgLog.prototype.show_player_actions = function(player_name) {
     var player_idx;
     for (var i = 0; i < ui.player_names.length; i++) {
-        if(ui.player_names[i] === player_name) {
+        if (ui.player_names[i] === player_name) {
             player_idx = i;
         }
     }
     this.logtext.hide();
     this.lognumbers.hide();
     this.player_logs[player_idx].show();
-    if(MHGA_show_log_numbers) {
+    if (MHGA_show_log_numbers) {
         this.player_lognumbers[player_idx].show();
     }
 
@@ -809,7 +913,7 @@ HanabiCard.prototype.hide_clues = function() {
     this.number_clue.hide();
     this.clue_given.hide();
     this.note_given.hide();
-    if(!MHGA_highlight_non_hand_cards) {
+    if (!MHGA_highlight_non_hand_cards) {
         this.off("mouseover tap");
         this.off("mouseout");
         clue_log.showMatches(null);
@@ -1031,22 +1135,6 @@ CardDeck.prototype.setCount = function(count) {
 
 CardDeck.prototype.getCount = function() {
     return this.count.getText();
-};
-
-CardDeck.prototype.enableDraggable = function() {
-    // Draw the golden border to indicate that the player can do something with the deck
-    // TODO
-
-    // Enable the deck to be draggable
-    // TODO
-};
-
-CardDeck.prototype.disableDraggable = function() {
-    // Disable the golden border
-    // TODO
-
-    // Stop it from being draggable
-    // TODO
 };
 
 var CardStack = function(config) {
@@ -2401,12 +2489,11 @@ size_stage(stage);
 var win_w = stage.getWidth();
 var win_h = stage.getHeight();
 
-var bglayer    = new Kinetic.Layer();
-var cardlayer  = new Kinetic.Layer();
-var uilayer    = new Kinetic.Layer();
-var overlayer  = new Kinetic.Layer();
-var tiplayer   = new Kinetic.Layer();
-var timerlayer = new Kinetic.Layer();
+var bglayer = new Kinetic.Layer();
+var cardlayer = new Kinetic.Layer();
+var uilayer = new Kinetic.Layer();
+var overlayer = new Kinetic.Layer();
+var tiplayer = new Kinetic.Layer();
 
 var player_hands = [];
 var drawdeck;
@@ -2417,12 +2504,20 @@ var play_area, discard_area, clue_log;
 var clue_area, clue_target_group, clue_type_group, submit_clue;
 var timer_rect1, timer_label1, timer_text1;
 var timer_rect2, timer_label2, timer_text2;
-var no_clue_label, no_clue_box, no_discard_label;
+var no_clue_label, no_clue_box, no_discard_label, deck_play_available_label;
 var replay_area, replay_bar, replay_shuttle, replay_button;
-var lobby_button, help_button, deck_play_button;
+var lobby_button, help_button;
 var helpgroup;
 var msgloggroup, overback;
 var notes_written = {};
+
+var overPlayArea = function(pos)
+{
+    return pos.x >= play_area.getX() &&
+           pos.y >= play_area.getY() &&
+           pos.x <= play_area.getX() + play_area.getWidth() &&
+           pos.y <= play_area.getY() + play_area.getHeight();
+};
 
 this.build_ui = function() {
     var self = this;
@@ -2749,6 +2844,45 @@ this.build_ui = function() {
         cardback: "card-back",
     });
 
+    drawdeck.on("dragend.play", function()
+    {
+        var pos = this.getAbsolutePosition();
+
+        pos.x += this.getWidth() * this.getScaleX() / 2;
+        pos.y += this.getHeight() * this.getScaleY() / 2;
+
+        if (overPlayArea(pos))
+        {
+            ui.send_msg({
+                type: "action",
+                resp: {
+                    type: ACT.DECKPLAY,
+                },
+            });
+
+            self.stop_action();
+
+            this.setDraggable(false);
+
+            deck_play_available_label.setVisible(false);
+
+            saved_action = null;
+        }
+        else
+        {
+            new Kinetic.Tween({
+                node: this,
+                duration: 0.5,
+                x: 0.08 * win_w,
+                y: 0.8 * win_h,
+                runonce: true,
+                onFinish: function() {
+                    uilayer.draw();
+                },
+            }).play();
+        }
+    });
+
     cardlayer.add(drawdeck);
 
     var hand_pos = {
@@ -2916,6 +3050,7 @@ this.build_ui = function() {
         */
     }
 
+
     no_clue_box = new Kinetic.Rect({
         x: 0.275 * win_w,
         y: 0.56 * win_h,
@@ -3038,25 +3173,6 @@ this.build_ui = function() {
 
     clue_area.add(submit_clue);
 
-    deck_play_button = new Button({
-        x: -0.012 * win_w,
-        y: 0.210 * win_h,
-        width: 0.06 * win_w,
-        height: 0.06 * win_h,
-        text: "D-Play",
-    });
-    clue_area.add(deck_play_button);
-    deck_play_button.hide(); // Hide it by default
-    deck_play_button.on("click tap", function() {
-        deck_play_button.off("click tap");
-        ui.send_msg({
-            type: "action",
-            resp: {
-                type: ACT.DECKPLAY,
-            },
-        });
-    });
-
     clue_area.hide();
 
     if (ui.timed_game) {
@@ -3073,7 +3189,7 @@ this.build_ui = function() {
             cornerRadius: 0.005 * win_h,
             opacity: 0.2,
         });
-        timerlayer.add(timer_rect1);
+        uilayer.add(timer_rect1);
 
         timer_label1 = new Kinetic.Text({
             x: x * win_w,
@@ -3093,7 +3209,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        timerlayer.add(timer_label1);
+        uilayer.add(timer_label1);
 
         timer_text1 = new Kinetic.Text({
             x: x * win_w,
@@ -3113,7 +3229,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        timerlayer.add(timer_text1);
+        uilayer.add(timer_text1);
 
         timer_rect2 = new Kinetic.Rect({
             x: x2 * win_w,
@@ -3124,7 +3240,7 @@ this.build_ui = function() {
             cornerRadius: 0.005 * win_h,
             opacity: 0.2,
         });
-        timerlayer.add(timer_rect2);
+        uilayer.add(timer_rect2);
 
         timer_label2 = new Kinetic.Text({
             x: x2 * win_w,
@@ -3144,7 +3260,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        timerlayer.add(timer_label2);
+        uilayer.add(timer_label2);
 
         timer_text2 = new Kinetic.Text({
             x: x2 * win_w,
@@ -3164,7 +3280,7 @@ this.build_ui = function() {
             },
             shadowOpacity: 0.9,
         });
-        timerlayer.add(timer_text2);
+        uilayer.add(timer_text2);
 
         // Hide the first timer if spectating
         if (this.spectating) {
@@ -3393,6 +3509,19 @@ this.build_ui = function() {
 
     helpgroup.add(text);
 
+    deck_play_available_label = new Kinetic.Rect({
+        x: 0.08 * win_w,
+        y: 0.8 * win_h,
+        width: 0.075 * win_w,
+        height: 0.189 * win_h,
+        stroke: "yellow",
+        cornerRadius: 6,
+        strokeWidth: 10,
+        visible: false,
+    });
+
+    uilayer.add(deck_play_available_label);
+
     replay_button = new Button({
         x: 0.01 * win_w,
         y: 0.8 * win_h,
@@ -3461,9 +3590,6 @@ this.build_ui = function() {
     stage.add(bglayer);
     stage.add(uilayer);
     stage.add(cardlayer);
-    if (ui.timed_game) {
-        stage.add(timerlayer);
-    }
     stage.add(tiplayer);
     stage.add(overlayer);
 };
@@ -4209,6 +4335,9 @@ this.stop_action = function(fast) {
         child.setDraggable(false);
     }
 
+    drawdeck.setDraggable(false);
+    deck_play_available_label.setVisible(false);
+
     submit_clue.off("click tap");
 };
 
@@ -4273,10 +4402,7 @@ this.handle_action = function(data) {
             pos.x += this.getWidth() * this.getScaleX() / 2;
             pos.y += this.getHeight() * this.getScaleY() / 2;
 
-            if (pos.x >= play_area.getX() &&
-                pos.y >= play_area.getY() &&
-                pos.x <= play_area.getX() + play_area.getWidth() &&
-                pos.y <= play_area.getY() + play_area.getHeight())
+            if (overPlayArea(pos))
             {
                 ui.send_msg({
                     type: "action",
@@ -4320,6 +4446,16 @@ this.handle_action = function(data) {
                 player_hands[ui.player_us].doLayout();
             }
         });
+    }
+
+    drawdeck.setDraggable(data.can_blind_play_deck);
+
+    deck_play_available_label.setVisible(data.can_blind_play_deck);
+
+    // Ensure deck blindplay is above other cards, ui elements
+    if (data.can_blind_play_deck)
+    {
+        drawdeck.moveToTop();
     }
 
     var check_clue_legal = function() {
@@ -4374,15 +4510,6 @@ this.handle_action = function(data) {
 
         saved_action = null;
     });
-
-    if (data.can_blind_play_deck) {
-        // Draw a border around the deck and make it so that players can drag it onto the play pile
-        deck_play_button.show();
-        //drawdeck.enableDraggable();
-    } else {
-        deck_play_button.hide();
-        //drawdeck.disableDraggable();
-    }
 };
 
 this.set_message = function(msg) {
