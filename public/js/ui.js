@@ -1,11 +1,5 @@
 "use strict";
 
-/*
-    TODO:
-    - Redraw window if window bounds change
-    - move layer of notes above the timer
-*/
-
 var MHGA_show_debug_messages = true;
 var MHGA_colorblind_mode = false;
 var MHGA_show_more_log = true;
@@ -171,13 +165,9 @@ function seconds_to_time_display(seconds) {
 // The left timer that shows your time
 function checkTimer1(textObject) {
     if (typeof(ui.player_times[ui.player_us]) !== 'undefined') {
-        let seconds = Math.ceil(ui.player_times[ui.player_us] / 1000);
-        if (seconds < 0) {
-            return;
-        }
-
         if (ui.active_player_index !== ui.player_us) {
             // If it is not our turn, just show a static clock of how much time we have left
+            let seconds = Math.ceil(ui.player_times[ui.player_us] / 1000);
             let text = seconds_to_time_display(seconds);
             textObject.setText(text);
         } else {
@@ -194,17 +184,6 @@ function checkTimer1(textObject) {
 // The right timer that shows the current player's time; it will be hidden when it is your turn
 function checkTimer2(textObject) {
     if (typeof(ui.player_times[ui.active_player_index]) !== 'undefined') {
-        let seconds = Math.ceil(ui.player_times[ui.active_player_index] / 1000);
-        /*
-        if (seconds < 0) {
-            return;
-        }
-        */
-
-        if ($('#timer2').is(':visible') === false) {
-            return;
-        }
-
         setTickingDownTime(textObject);
         timerlayer.draw();
     }
@@ -228,12 +207,6 @@ function setTickingDownTime(textObject) {
     let seconds = Math.ceil(ui.player_times[ui.active_player_index] / 1000);
     let text = seconds_to_time_display(seconds);
     textObject.setText(text);
-
-    // Play a sound to warn the player that they are almost out of time
-    if (lobby.send_turn_sound && ui.active_player_index === ui.player_us && seconds >= 0 && seconds <= 5) {
-        console.log('PLAYING');
-        lobby.play_sound('tone');
-    }
 }
 
 function image_name(card) {
@@ -372,9 +345,8 @@ MultiFitText.prototype.setMultiText = function(text) {
         this.smallHistory.shift();
     }
     this.smallHistory.push(text);
-
-    // performance optimization: setText on the children is slow, so don't actually do it until its time to display things.
-    // we also have to call refresh_text after any time we manipulate replay position
+    //performance optimization: setText on the children is slow, so don't actually do it until its time to display things.
+    //we also have to call refresh_text after any time we manipulate replay position
     if (!ui.replay || !ui.animate_fast) {
         this.refresh_text();
     }
@@ -424,7 +396,7 @@ var HanabiMsgLog = function(config) {
         cornerRadius: 0.01 * win_w,
     });
 
-    Kinetic.Group.prototype.add.call(this, rect);
+    Kinetic.Group.prototype.add.call(this,rect);
 
     var textoptions = {
         fontSize: 0.025 * win_h,
@@ -438,7 +410,7 @@ var HanabiMsgLog = function(config) {
     };
 
     this.logtext = new MultiFitText(textoptions);
-    Kinetic.Group.prototype.add.call(this, this.logtext);
+    Kinetic.Group.prototype.add.call(this,this.logtext);
 
     var numbersoptions = {
         fontSize: 0.025 * win_h,
@@ -454,7 +426,7 @@ var HanabiMsgLog = function(config) {
     if (! MHGA_show_log_numbers) {
         this.lognumbers.hide();
     }
-    Kinetic.Group.prototype.add.call(this, this.lognumbers);
+    Kinetic.Group.prototype.add.call(this,this.lognumbers);
 
 
     this.player_logs = [];
@@ -469,6 +441,7 @@ var HanabiMsgLog = function(config) {
         this.player_lognumbers[i].hide();
         Kinetic.Group.prototype.add.call(this,this.player_lognumbers[i]);
     }
+
 };
 
 Kinetic.Util.extend(HanabiMsgLog, Kinetic.Group);
@@ -3261,7 +3234,6 @@ this.build_ui = function() {
             fill: "black",
             cornerRadius: 0.005 * win_h,
             opacity: 0.2,
-            id: 'timer2',
         });
         timerlayer.add(timer_rect2);
 
