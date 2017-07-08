@@ -14,6 +14,12 @@ exports.step1 = function(socket, data) {
     // Local variables
     data.gameID = socket.atTable.id;
 
+    // Check to make sure this table exists
+    if (data.gameID in globals.currentGames === false) {
+        socket.atTable.id = -1;
+        return;
+    }
+
     if (socket.atTable.replay) {
         models.games.getActions(socket, data, step2);
     } else {

@@ -58,6 +58,7 @@ function step2(error, socket, data) {
         spectators: {},
         stacks: [],
         strikes: 0,
+        sound: null,
         timed: data.enable_timer,
         turn_begin_time: null,
         turn_num: 0,

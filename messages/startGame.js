@@ -40,8 +40,9 @@ exports.step1 = function(socket, data) {
 
             for (let i = 0; i < amountToAdd; i++) {
                 game.deck.push({
-                    suit:  suit,
-                    rank:  rank,
+                    suit:    suit,
+                    rank:    rank,
+                    touched: false,
                 });
             }
         }

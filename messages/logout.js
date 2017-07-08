@@ -2,7 +2,7 @@
 
 // The "logout" message is not actually sent by the client;
 // we just store the logic here for organizational purposes since
-// the login logic is stored under the login command
+// the login logic is stored under the "login" command
 
 // Imports
 const globals  = require('../globals');

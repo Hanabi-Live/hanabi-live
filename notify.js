@@ -241,24 +241,41 @@ exports.gameSound = function(data) {
     // Send a sound notification
     for (let i = 0; i < game.players.length; i++) {
         let player = game.players[i];
-        player.socket.emit('message', {
+
+        // Prepare the sound message
+        let sound = 'turn_other';
+        if (game.sound !== null) {
+            sound = game.sound;
+        } else if (i === game.turn_player_index) {
+            sound = 'turn_us';
+        }
+        let msg = {
             type: 'sound',
             resp: {
-                file: (i === game.turn_player_index ? 'turn_us' : 'turn_other'),
+                file: sound,
             },
-        });
+        };
+
+        player.socket.emit('message', msg);
     }
     for (let userID in game.spectators) {
         if (game.spectators.hasOwnProperty(userID) === false) {
             continue;
         }
 
-        game.spectators[userID].emit('message', {
+        // Prepare the sound message
+        // (the code is duplicated here because I don't want to mess with having to change the file name back to default)
+        let sound = 'turn_other';
+        if (game.sound !== null) {
+            sound = game.sound;
+        }
+        let msg = {
             type: 'sound',
             resp: {
-                file: 'turn_other',
+                file: sound,
             },
-        });
+        };
+        game.spectators[userID].emit('message', msg);
     }
 };
 

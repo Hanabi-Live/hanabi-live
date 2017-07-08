@@ -19,10 +19,10 @@
 */
 
 // Imports
-const globals = require('../globals');
-const logger  = require('../logger');
-const models  = require('../models');
-const notify  = require('../notify');
+const globals  = require('../globals');
+const logger   = require('../logger');
+const notify   = require('../notify');
+const messages = require('../messages');
 
 const step1 = function(socket, data) {
     // Local variables
@@ -51,6 +51,7 @@ const step1 = function(socket, data) {
     }
 
     // There are 3 types of actions
+    game.sound = null; // Remove the "fail" and "blind" states
     if (data.type === 0) {
         playerClue(data);
 
@@ -131,7 +132,7 @@ const step1 = function(socket, data) {
         end = true;
         loss = true;
 
-        let text = 'Players lose';
+        let text = 'Players lose!';
         game.actions.push({
             text: text,
         });
@@ -154,11 +155,6 @@ const step1 = function(socket, data) {
         logger.info('[Game ' + data.gameID + '] ' + text);
     }
 
-    if (end) {
-        gameEnd(data, loss);
-        return;
-    }
-
     // Send messages about the current turn
     game.actions.push({
         num: game.turn_num,
@@ -167,6 +163,14 @@ const step1 = function(socket, data) {
     });
     notify.gameAction(data);
     logger.info('[Game ' + data.gameID + '] It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
+
+    // Tell every client to play a sound as a notification for the action taken
+    notify.gameSound(data);
+
+    if (end) {
+        messages.end_game.step1(data, loss);
+        return;
+    }
 
     // Send the "action" message to the next player
     let nextPlayerSocket = game.players[game.turn_player_index].socket;
@@ -187,8 +191,6 @@ const step1 = function(socket, data) {
             checkTimer(data);
         }, game.players[game.turn_player_index].time);
     }
-
-    notify.gameSound(data);
 };
 exports.step1 = step1;
 
@@ -211,11 +213,13 @@ function playerClue(data) {
         if (data.clue.type === 0) { // Number clue
             if (card.rank === data.clue.value) {
                 list.push(card.order);
+                card.touched = true;
             }
         } else if (data.clue.type === 1) { // Color clue
             // Account for rainbow cards
             if (card.suit === data.clue.value || (card.suit === 5 && game.variant === 3)) {
                 list.push(card.order);
+                card.touched = true;
             }
         }
     }
@@ -279,12 +283,17 @@ function playerPlayCard(data) {
         notify.gameAction(data);
 
         // Send the "message" about the play
-        let text = game.players[data.index].username + ' plays ';
+        let text = game.players[data.index].username + ' ';
+        text += 'plays ';
         text += suit + ' ' + card.rank + ' from ';
         if (data.slot === -1) {
             text += 'the deck';
         } else {
             text += 'slot #' + data.slot;
+        }
+        if (card.touched === false) {
+            text += ' (blind)';
+            game.sound = 'blind';
         }
         game.actions.push({
             text: text,
@@ -333,6 +342,7 @@ function playerDiscardCard(data, failed = false) {
     let text = game.players[data.index].username + ' ';
     if (failed) {
         text += 'fails to play';
+        game.sound = 'fail';
     } else {
         text += 'discards';
     }
@@ -341,6 +351,9 @@ function playerDiscardCard(data, failed = false) {
         text += 'the bottom of the deck';
     } else {
         text += 'slot #' + data.slot;
+    }
+    if (failed === false && card.touched) {
+        text += ' (clued)';
     }
     game.actions.push({
         text: text,
@@ -407,114 +420,6 @@ function playerBlindPlayDeck(data) {
     playerPlayCard(data);
 }
 
-function gameEnd(data, loss) {
-    // Local variables
-    let game = globals.currentGames[data.gameID];
-
-    // Send the "game_over" message
-    game.actions.push({
-        type:  'game_over',
-        score: game.score,
-        loss:  loss,
-    });
-    notify.gameAction(data);
-
-    // Send "reveal" messages to each player about the missing cards in their hand
-    for (let player of game.players) {
-        for (let card of player.hand) {
-            player.socket.emit('message', {
-                type: 'notify',
-                resp: {
-                    type: 'reveal',
-                    which: {
-                        index: card.index,
-                        rank:  card.rank,
-                        suit:  card.suit,
-                        order: card.order,
-                    },
-                },
-            });
-        }
-    }
-
-    if (loss) {
-        game.score = 0;
-    }
-
-    // End the game in the database
-    data.score = game.score;
-    models.games.end(data, gameEnd2);
-}
-
-function gameEnd2(error, data) {
-    if (error !== null) {
-        logger.error('Error: models.games.end failed:', error);
-        return;
-    }
-
-    // Insert all of the actions taken
-    data.insertNum = -1;
-    gameEnd3(null, data);
-}
-
-function gameEnd3(error, data) {
-    if (error !== null) {
-        logger.error('Error: models.gameActions.create failed:', error);
-        return;
-    }
-
-    // Local variables
-    let game = globals.currentGames[data.gameID];
-
-    data.insertNum++;
-    if (data.insertNum < game.actions.length) {
-        data.action = JSON.stringify(game.actions[data.insertNum]);
-        models.gameActions.create(data, gameEnd3);
-        return;
-    }
-
-    // Get the num_similar for this game
-    models.games.getNumSimilar(data, gameEnd4);
-}
-
-function gameEnd4(error, data) {
-    if (error !== null) {
-        logger.error('Error: models.games.getNumSimilar failed:', error);
-        return;
-    }
-
-    // Local variables
-    let game = globals.currentGames[data.gameID];
-
-    // Send a "game_history" message to all the players in the game
-    for (let player of game.players) {
-        player.socket.emit('message', {
-            type: 'game_history',
-            resp: {
-                id:          data.gameID,
-                num_players: game.players.length,
-                num_similar: data.num_similar,
-                score:       game.score,
-                variant:     game.variant,
-            },
-        });
-    }
-
-    // Keep track of the game ending
-    logger.info('[Game ' + data.gameID + '] Ended with a score of ' + game.score + '.');
-    delete globals.currentGames[data.gameID];
-
-    // Notify everyone that the table was deleted
-    notify.allTableGone(data);
-
-    // Reset the "Seated" and "Playing" values for all of the users in the game
-    for (let player of game.players) {
-        player.socket.seated = false;
-        player.socket.playing = false;
-        notify.allUserChange(player.socket);
-    }
-}
-
 const checkTimer = function(data) {
     // Check to see if the game ended already
     if (data.gameID in globals.currentGames === false) {
@@ -537,6 +442,7 @@ const checkTimer = function(data) {
         }
     }
     let player = game.players[data.index];
+    player.time = 0;
     logger.info('Time ran out for "' + player.username + '" playing game #' + data.gameID + '.');
 
     // End the game
