@@ -15,7 +15,7 @@ exports.step1 = function(socket, data) {
     data.gameID = socket.atTable.id;
 
     // Check to make sure this table exists
-    if (data.gameID in globals.currentGames === false) {
+    if (data.gameID in globals.currentGames === false && socket.atTable.replay === false) {
         socket.atTable.id = -1;
         return;
     }
