@@ -345,8 +345,8 @@ MultiFitText.prototype.setMultiText = function(text) {
         this.smallHistory.shift();
     }
     this.smallHistory.push(text);
-    //performance optimization: setText on the children is slow, so don't actually do it until its time to display things.
-    //we also have to call refresh_text after any time we manipulate replay position
+    // performance optimization: setText on the children is slow, so don't actually do it until its time to display things.
+    // we also have to call refresh_text after any time we manipulate replay position
     if (!ui.replay || !ui.animate_fast) {
         this.refresh_text();
     }
@@ -396,7 +396,7 @@ var HanabiMsgLog = function(config) {
         cornerRadius: 0.01 * win_w,
     });
 
-    Kinetic.Group.prototype.add.call(this,rect);
+    Kinetic.Group.prototype.add.call(this, rect);
 
     var textoptions = {
         fontSize: 0.025 * win_h,
@@ -410,7 +410,7 @@ var HanabiMsgLog = function(config) {
     };
 
     this.logtext = new MultiFitText(textoptions);
-    Kinetic.Group.prototype.add.call(this,this.logtext);
+    Kinetic.Group.prototype.add.call(this, this.logtext);
 
     var numbersoptions = {
         fontSize: 0.025 * win_h,
@@ -426,7 +426,7 @@ var HanabiMsgLog = function(config) {
     if (! MHGA_show_log_numbers) {
         this.lognumbers.hide();
     }
-    Kinetic.Group.prototype.add.call(this,this.lognumbers);
+    Kinetic.Group.prototype.add.call(this, this.lognumbers);
 
 
     this.player_logs = [];
@@ -434,12 +434,12 @@ var HanabiMsgLog = function(config) {
     for (var i = 0; i < ui.player_names.length; i++) {
         this.player_logs[i] = new MultiFitText(textoptions);
         this.player_logs[i].hide();
-        Kinetic.Group.prototype.add.call(this,this.player_logs[i]);
+        Kinetic.Group.prototype.add.call(this, this.player_logs[i]);
 
 
         this.player_lognumbers[i] = new MultiFitText(numbersoptions);
         this.player_lognumbers[i].hide();
-        Kinetic.Group.prototype.add.call(this,this.player_lognumbers[i]);
+        Kinetic.Group.prototype.add.call(this, this.player_lognumbers[i]);
     }
 
 };
