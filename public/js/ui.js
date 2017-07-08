@@ -207,6 +207,11 @@ function setTickingDownTime(textObject) {
     let seconds = Math.ceil(ui.player_times[ui.active_player_index] / 1000);
     let text = seconds_to_time_display(seconds);
     textObject.setText(text);
+
+    // Play a sound to warn the player that they are almost out of time
+    if (lobby.send_turn_sound && ui.active_player_index === ui.player_us && seconds >= 0 && seconds <= 5) {
+        lobby.play_sound('tone');
+    }
 }
 
 function image_name(card) {
