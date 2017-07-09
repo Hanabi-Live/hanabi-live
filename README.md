@@ -4,7 +4,7 @@ keldon-hanabi
 Description
 -----------
 
-* This is an emulation of the [Keldon Hanabi game server](http://keldon.net/hanabi/).
+* This is an emulation of the [Keldon Hanabi game server](http://keldon.net/hanabi/), of which the source code is not published.
 * It is programmed in [Node.js](https://nodejs.org/en/) using [Socket.IO](https://socket.io/).
 * It uses a MariaDB database to store information about the users and games.
 * The main file is `index.js`, which listens for HTTP connections.
