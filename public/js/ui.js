@@ -46,7 +46,7 @@ this.timebank_overtime = 0; // Unused
 this.last_timer_update_time_ms = new Date().getTime();
 
 this.player_times = [];
-this.active_player_index = null;
+this.timerId = null;
 
 /*
     Keyboard shortcuts
@@ -158,58 +158,34 @@ function pad2(num) {
     return "" + num;
 }
 
-function seconds_to_time_display(seconds) {
+function milliseconds_to_time_display(milliseconds) {
+    let seconds = Math.ceil(milliseconds / 1000);
     return Math.floor(seconds / 60) + ":" + pad2(seconds % 60);
 }
 
-// The left timer that shows your time
-function checkTimer1(textObject) {
-    if (typeof(ui.player_times[ui.player_us]) !== 'undefined') {
-        if (ui.active_player_index !== ui.player_us) {
-            // If it is not our turn, just show a static clock of how much time we have left
-            let seconds = Math.ceil(ui.player_times[ui.player_us] / 1000);
-            let text = seconds_to_time_display(seconds);
-            textObject.setText(text);
-        } else {
-            setTickingDownTime(textObject);
-        }
-        timerlayer.draw();
-    }
-
-    window.setTimeout(function() {
-        checkTimer1(textObject);
-    }, 1000);
-}
-
-// The right timer that shows the current player's time; it will be hidden when it is your turn
-function checkTimer2(textObject) {
-    if (typeof(ui.player_times[ui.active_player_index]) !== 'undefined') {
-        setTickingDownTime(textObject);
-        timerlayer.draw();
-    }
-
-    window.setTimeout(function() {
-        checkTimer2(textObject);
-    }, 1000);
-}
-
-function setTickingDownTime(textObject) {
-    // Update the time in our local array
-    var time = new Date().getTime();
-    var time_elapsed = time - ui.last_timer_update_time_ms;
+function setTickingDownTime(textObject, active_index) {
+    // Compute elapsed time since last timer update
+    let now = new Date().getTime();
+    let time_elapsed = now - ui.last_timer_update_time_ms;
+    ui.last_timer_update_time_ms = now;
     if (time_elapsed < 0) {
-        time_elapsed = 0;
+        return;
     }
-    ui.last_timer_update_time_ms = time;
-    ui.player_times[ui.active_player_index] -= time_elapsed;
 
-    // Display it
-    let seconds = Math.ceil(ui.player_times[ui.active_player_index] / 1000);
-    let text = seconds_to_time_display(seconds);
-    textObject.setText(text);
+    // Update the time in local array to approximate server times
+    ui.player_times[active_index] -= time_elapsed;
+    if (ui.player_times[active_index] < 0) {
+        ui.player_times[active_index] = 0;
+    }
+
+    let milliseconds_left = ui.player_times[active_index];
+
+    // Update display
+    textObject.setText(milliseconds_to_time_display(milliseconds_left));
+    timerlayer.draw();
 
     // Play a sound to warn the player that they are almost out of time
-    if (lobby.send_turn_sound && ui.active_player_index === ui.player_us && seconds >= 0 && seconds <= 5) {
+    if (lobby.send_turn_sound && active_index === ui.player_us && milliseconds_left <= 5000) {
         lobby.play_sound('tone');
     }
 }
@@ -3295,9 +3271,6 @@ this.build_ui = function() {
             timer_label2.hide();
             timer_text2.hide();
         }
-
-        checkTimer1(timer_text1);
-        checkTimer2(timer_text2);
     }
 
     uilayer.add(clue_area);
@@ -4289,24 +4262,41 @@ this.handle_notify = function(note, performing_replay) {
 };
 
 this.handle_clock = function(note) {
+    if (ui.timerId !== null) {
+        window.clearInterval(ui.timerId);
+        ui.timerId = null;
+    }
+
     ui.player_times = note.times;
-    ui.active_player_index = note.active; // Store this so that the timer callbacks can see whose turn it is
 
     // Check to see if the second timer has been drawn
     if (typeof(timer_rect2) === 'undefined') {
         return;
     }
 
-    // Show or hide the 2nd timer
-    if (ui.active_player_index === ui.player_us && ui.spectating === false) {
-        timer_rect2.hide();
-        timer_label2.hide();
-        timer_text2.hide();
-    } else {
-        timer_rect2.show();
-        timer_label2.show();
-        timer_text2.show();
+    let current_user_turn = note.active === ui.player_us && ui.spectating === false;
+
+    // Update onscreen time displays
+    if (ui.spectating === false){
+        // The visibilty of this timer does not change during a game
+        timer_text1.setText(milliseconds_to_time_display(ui.player_times[ui.player_us]));
     }
+
+    if (! current_user_turn) {
+        // Update the ui with the value of the timer for the active player
+        timer_text2.setText(milliseconds_to_time_display(ui.player_times[note.active]));
+    }
+
+    timer_rect2.setVisible(! current_user_turn);
+    timer_label2.setVisible(! current_user_turn);
+    timer_text2.setVisible(! current_user_turn);
+    timerlayer.draw();
+
+    // Start local timer for active player
+    let active_timer_ui_text = current_user_turn ? timer_text1 : timer_text2;
+    ui.timerId = window.setInterval(function() {
+        setTickingDownTime(active_timer_ui_text, note.active);
+    }, 1000);
 };
 
 this.stop_action = function(fast) {
