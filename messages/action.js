@@ -140,9 +140,9 @@ const step1 = function(socket, data) {
         logger.info('[Game ' + data.gameID + '] ' + text);
 
     } else if (game.turn_num === game.end_turn_num ||
-               (game.variant === 0 && game.score === 20) ||
+               (game.variant === 0 && game.score === 25) ||
                (game.variant === 1 && game.score === 30) ||
-               (game.variant === 2 && game.score === 25) ||
+               (game.variant === 2 && game.score === 30) ||
                (game.variant === 3 && game.score === 30)) {
 
         end = true;
