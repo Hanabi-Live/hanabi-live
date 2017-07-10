@@ -185,7 +185,8 @@ function setTickingDownTime(textObject, active_index) {
     timerlayer.draw();
 
     // Play a sound to indicate that the current player is almost out of time
-    if (lobby.send_turn_sound && milliseconds_left <= 5000) {
+    // Do not play it more frequently than about once per second
+    if (lobby.send_turn_sound && milliseconds_left <= 5000 && time_elapsed > 900 && time_elapsed < 1100) {
         lobby.play_sound('tone');
     }
 }
