@@ -3425,6 +3425,12 @@ this.build_ui = function() {
                 type: "unattend_table",
                 resp: {},
             });
+
+            if (ui.timerId !== null) {
+                window.clearInterval(ui.timerId);
+                ui.timerId = null;
+            }
+
             ui.lobby.game_ended();
         }
         else
@@ -3553,6 +3559,12 @@ this.build_ui = function() {
             type: "unattend_table",
             resp: {},
         });
+
+        if (ui.timerId !== null) {
+            window.clearInterval(ui.timerId);
+            ui.timerId = null;
+        }
+
         ui.lobby.game_ended();
     });
 
@@ -4234,7 +4246,11 @@ this.handle_notify = function(note, performing_replay) {
 
     else if (type === "game_over") {
         // Disable the timer when the game ends
-        this.timed_game = false;
+        if (ui.timerId !== null) {
+            window.clearInterval(ui.timerId);
+            ui.timerId = null;
+        }
+
         if (timer_rect1) {
             timer_rect1.hide();
             timer_label1.hide();
@@ -4257,6 +4273,11 @@ this.handle_notify = function(note, performing_replay) {
     }
 
     else if (type === "boot") {
+        if (ui.timerId !== null) {
+            window.clearInterval(ui.timerId);
+            ui.timerId = null;
+        }
+
         alert('The game was ended by: ' + note.who);
         ui.lobby.game_ended();
     }
