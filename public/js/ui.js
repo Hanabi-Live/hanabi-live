@@ -4262,6 +4262,8 @@ this.handle_notify = function(note, performing_replay) {
             timer_text2.hide();
         }
 
+        timerlayer.draw();
+
         this.replay_only = true;
         replay_button.hide();
         if (!this.replay) {
