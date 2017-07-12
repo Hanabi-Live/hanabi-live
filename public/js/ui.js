@@ -4547,6 +4547,10 @@ this.set_message = function(msg) {
 
 this.destroy = function() {
     stage.destroy();
+    if (ui.timerId !== null) {
+        window.clearInterval(ui.timerId);
+        ui.timerId = null;
+    }
 };
 
 this.replay_log = [];
