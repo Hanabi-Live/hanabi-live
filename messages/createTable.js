@@ -17,7 +17,7 @@ const globals  = require('../globals');
 const logger   = require('../logger');
 const models   = require('../models');
 const messages = require('../messages');
-const notify  = require('../notify');
+const notify   = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Prepare the data to feed to the model
@@ -41,29 +41,29 @@ function step2(error, socket, data) {
 
     // Keep track of the current games
     globals.currentGames[data.gameID] = {
-        actions: [],
-        allow_spec: data.allow_spec,
-        clue_num: 8,
-        deck: [],
-        deckIndex: 0,
-        end_turn_num: null,
-        max_players: data.max,
-        name: data.name,
-        num_spec: 0,
-        owner: socket.userID,
-        players: [],
-        running: false,
-        score: 0,
-        seed: null,
-        spectators: {},
-        stacks: [],
-        strikes: 0,
-        sound: null,
-        timed: data.enable_timer,
-        turn_begin_time: null,
-        turn_num: 0,
+        actions:           [],
+        allow_spec:        data.allow_spec,
+        clue_num:          8,
+        deck:              [],
+        deckIndex:         0,
+        end_turn_num:      null,
+        max_players:       data.max,
+        name:              data.name,
+        num_spec:          0,
+        owner:             socket.userID,
+        players:           [],
+        running:           false,
+        score:             0,
+        seed:              null,
+        spectators:        {},
+        stacks:            [],
+        strikes:           0,
+        sound:             null,
+        timed:             data.enable_timer,
+        turn_begin_time:   null,
+        turn_num:          0,
         turn_player_index: 0,
-        variant: data.variant,
+        variant:           data.variant,
     };
 
     notify.allTableChange(data);

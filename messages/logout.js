@@ -19,7 +19,6 @@ exports.step1 = function(socket, reason) {
     let address = socket.handshake.address;
     let leftID = socket.userID;
 
-    // Check to see if this user was in any games
     for (let gameID in globals.currentGames) {
         if (globals.currentGames.hasOwnProperty(gameID) === false) {
             continue;
@@ -30,6 +29,7 @@ exports.step1 = function(socket, reason) {
         // Keys are strings by default, so convert it back to a number
         gameID = parseInt(gameID, 10);
 
+        // Check to see if this user is playing in any current games
         for (let player of game.players) {
             if (player.userID === socket.userID) {
                 if (game.running) {
@@ -54,7 +54,28 @@ exports.step1 = function(socket, reason) {
                     };
                     messages.leave_table.step1(socket, {});
                 }
+                break;
             }
+        }
+
+        // Check to see if this player is spectating any current games
+        for (let userID in game.spectators) {
+            if (game.spectators.hasOwnProperty(userID) === false) {
+                continue;
+            }
+
+            // Keys are strings by default, so convert it back to a number
+            userID = parseInt(userID, 10);
+
+            if (userID === socket.userID) {
+                socket.atTable = {
+                    id:         gameID,
+                    replay:     false,
+                    spectating: true,
+                };
+                messages.unattend_table.step1(socket, {});
+            }
+            break;
         }
     }
 

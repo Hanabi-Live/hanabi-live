@@ -107,6 +107,7 @@ exports.gameMemberChange = function(data) {
                 max_players: game.max_players,
                 variant:     game.variant,
                 allow_spec:  game.allow_spec,
+                num_spec:    game.num_spec,
                 timed:       game.timed,
             },
         });
@@ -201,6 +202,37 @@ exports.gameAction = function(data) {
             type: ('text' in action ? 'message' : 'notify'),
             resp: action,
         });
+    }
+};
+
+exports.gameNumSpec = function(data) {
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+
+    // Create the "num_spec" message
+    let times = [];
+    for (let player of game.players) {
+        times.push(player.time);
+    }
+    let msg = {
+        type: 'num_spec',
+        resp: {
+            num: game.num_spec,
+        },
+    };
+
+    // Send the message to all the players in the game
+    for (let player of game.players) {
+        player.socket.emit('message', msg);
+    }
+
+    // Also send it to the spectators
+    for (let userID in game.spectators) {
+        if (game.spectators.hasOwnProperty(userID) === false) {
+            continue;
+        }
+
+        game.spectators[userID].emit('message', msg);
     }
 };
 

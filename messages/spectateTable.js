@@ -26,6 +26,9 @@ exports.step1 = function(socket, data) {
 
     // Add them to the spectators object
     game.spectators[socket.userID] = socket;
+    game.num_spec++;
+    notify.gameMemberChange(data);
+    notify.gameNumSpec(data);
 
     // Set their status
     socket.status = 'Spectating';

@@ -2474,7 +2474,8 @@ var timerlayer = new Kinetic.Layer();
 
 var player_hands = [];
 var drawdeck;
-var message_prompt, clue_label, score_label, strikes = [];
+var message_prompt, clue_label, score_label, spectators_label, spectators_num_label;
+var strikes = [];
 var name_frames = [];
 var play_stacks = [], discard_stacks = [];
 var play_area, discard_area, clue_log;
@@ -2709,6 +2710,48 @@ this.build_ui = function() {
     });
 
     uilayer.add(score_label);
+
+    spectators_label = new Kinetic.Text({
+        x: 0.583 * win_w,
+        y: 0.9 * win_h,
+        width: 0.11 * win_w,
+        height: 0.03 * win_h,
+        fontSize: 0.03 * win_h,
+        fontFamily: "Verdana",
+        align: "center",
+        text: "👀",
+        fill: "#d8d5ef",
+        shadowColor: "black",
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+    });
+    uilayer.add(spectators_label);
+    spectators_label.hide(); // Hide it by default
+
+    spectators_num_label = new Kinetic.Text({
+        x: 0.583 * win_w,
+        y: 0.934 * win_h,
+        width: 0.11 * win_w,
+        height: 0.03 * win_h,
+        fontSize: 0.03 * win_h,
+        fontFamily: "Verdana",
+        align: "center",
+        text: "0",
+        fill: "#d8d5ef",
+        shadowColor: "black",
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+    });
+    uilayer.add(spectators_num_label);
+    spectators_num_label.hide(); // Hide it by default
 
     rect = new Kinetic.Rect({
         x: 0.8 * win_w,
@@ -4285,6 +4328,14 @@ this.handle_notify = function(note, performing_replay) {
     }
 };
 
+this.handle_num_spec = function(note) {
+    if (note.num === 0) {
+        console.log('HIT 0');
+    } else {
+        console.log('HIT:', note.num);
+    }
+};
+
 this.handle_clock = function(note) {
     if (ui.timerId !== null) {
         window.clearInterval(ui.timerId);
@@ -4629,6 +4680,11 @@ HanabiUI.prototype.handle_message = function(msg) {
         if (this.lobby.send_turn_notify) {
             this.lobby.send_notify("It's your turn", "turn");
         }
+    }
+
+    // This is used to update how many people are currently spectating the game
+    if (msgType === "num_spec") {
+        this.handle_num_spec.call(this, msgData);
     }
 
     // This is used for timed games

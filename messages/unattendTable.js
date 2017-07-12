@@ -31,6 +31,9 @@ exports.step1 = function(socket, data) {
         }
 
         delete game.spectators[socket.userID];
+        game.num_spec--;
+        notify.gameMemberChange(data);
+        notify.gameNumSpec(data);
         return;
     }
 
