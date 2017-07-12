@@ -1,5 +1,5 @@
 /*
-    mysql -uhanabiuser -p6PmyexGM7eHeib0deSdBCBRcQUMXLPFAcPkAW6wMcrfWG8Me5GwhigqaPE8iSKSs < install/database_schema.sql
+    mysql -uhanabiuser -p1234567890 < install/database_schema.sql
 */
 
 DROP DATABASE IF EXISTS hanabi;
