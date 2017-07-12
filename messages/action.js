@@ -113,7 +113,8 @@ const step1 = function(socket, data) {
     notify.gameAction(data);
 
     // Adjust the timer for the player that just took their turn
-    if (game.timed) {
+    // (we already set the player's time to 0 if the "checkTimer" function initiated the end of the game)
+    if (game.timed && data.type !== 4) {
         let now = (new Date()).getTime();
         player.time -= now - game.turn_begin_time;
         player.time += globals.extraTurnTime; // A player gets an additional X seconds for making a move
