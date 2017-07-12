@@ -184,6 +184,9 @@ function setTickingDownTime(textObject, active_index) {
     textObject.setText(milliseconds_to_time_display(milliseconds_left));
     timerlayer.draw();
 
+    // Also update the mouseover note
+    name_frames[active_index].tooltip.getText().setText(milliseconds_to_time_display(ui.player_times[active_index]));
+
     // Play a sound to indicate that the current player is almost out of time
     // Do not play it more frequently than about once per second
     if (lobby.send_turn_sound && milliseconds_left <= 5000 && time_elapsed > 900 && time_elapsed < 1100) {
@@ -3037,18 +3040,6 @@ this.build_ui = function() {
 
         bglayer.add(rect);
 
-        /*
-        uilayer.add(new Kinetic.Rect({
-            x: hand_pos[nump][j].x * win_w,
-            y: hand_pos[nump][j].y * win_h,
-            width: hand_pos[nump][j].w * win_w,
-            height: hand_pos[nump][j].h * win_h,
-            rotationDeg: hand_pos[nump][j].rot,
-            stroke: "black",
-            strokeWidth: 1
-        }));
-        */
-
         name_frames[i] = new HanabiNameFrame({
             x: name_pos[nump][j].x * win_w,
             y: name_pos[nump][j].y * win_h,
@@ -3059,16 +3050,59 @@ this.build_ui = function() {
 
         uilayer.add(name_frames[i]);
 
-        /*
-        uilayer.add(new Kinetic.Rect({
-            x: name_pos[nump][j].x * win_w,
-            y: name_pos[nump][j].y * win_h,
-            width: name_pos[nump][j].w * win_w,
-            height: name_pos[nump][j].h * win_h,
-            stroke: "black",
-            strokeWidth: 1
-        }));
-        */
+        // The following code is copied from HanabiCard
+        if (ui.timed_game) {
+            var self2 = name_frames[i];
+
+            self2.tooltip = new Kinetic.Label({
+                x: -1000,
+                y: -1000,
+            });
+
+            self2.tooltip.add(new Kinetic.Tag({
+                fill: '#3E4345',
+                pointerDirection: 'left',
+                pointerWidth: 0.02 * win_w,
+                pointerHeight: 0.015 * win_h,
+                lineJoin: 'round',
+                shadowColor: 'black',
+                shadowBlur: 10,
+                shadowOffset: {
+                    x: 3,
+                    y: 3,
+                },
+                shadowOpacity: 0.6,
+            }));
+
+            self2.tooltip.add(new FitText({
+                fill: "white",
+                align: "left",
+                padding: 0.01 * win_h,
+                fontSize: 0.04 * win_h,
+                minFontSize: 0.02 * win_h,
+                width: 0.075 * win_w,
+                fontFamily: "Verdana",
+                text: "??:??",
+            }));
+
+            tiplayer.add(self2.tooltip);
+
+            self2.on("mousemove", function() {
+                var mousePos = stage.getPointerPosition();
+                self2.tooltip.setX(mousePos.x + 15);
+                self2.tooltip.setY(mousePos.y + 5);
+
+                self2.tooltip.show();
+                tiplayer.draw();
+
+                ui.activeHover = this;
+            });
+
+            self2.on("mouseout", function() {
+                self2.tooltip.hide();
+                tiplayer.draw();
+            });
+        }
     }
 
     no_clue_box = new Kinetic.Rect({
@@ -4371,6 +4405,11 @@ this.handle_clock = function(note) {
     timer_label2.setVisible(! current_user_turn);
     timer_text2.setVisible(! current_user_turn);
     timerlayer.draw();
+
+    // Update the timer tooltips for each player
+    for (let i = 0; i < ui.player_times.length; i++) {
+        name_frames[i].tooltip.getText().setText(milliseconds_to_time_display(ui.player_times[i]));
+    }
 
     // Start local timer for active player
     let active_timer_ui_text = current_user_turn ? timer_text1 : timer_text2;
