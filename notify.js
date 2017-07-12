@@ -214,7 +214,7 @@ exports.gameNumSpec = function(data) {
     for (let player of game.players) {
         times.push(player.time);
     }
-    let msg = {
+    let specMsg = {
         type: 'num_spec',
         resp: {
             num: game.num_spec,
@@ -223,7 +223,7 @@ exports.gameNumSpec = function(data) {
 
     // Send the message to all the players in the game
     for (let player of game.players) {
-        player.socket.emit('message', msg);
+        player.socket.emit('message', specMsg);
     }
 
     // Also send it to the spectators
@@ -232,7 +232,7 @@ exports.gameNumSpec = function(data) {
             continue;
         }
 
-        game.spectators[userID].emit('message', msg);
+        game.spectators[userID].emit('message', specMsg);
     }
 };
 

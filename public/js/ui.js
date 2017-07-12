@@ -2720,7 +2720,7 @@ this.build_ui = function() {
         fontFamily: "Verdana",
         align: "center",
         text: "👀",
-        fill: "#d8d5ef",
+        fill: "yellow", // "#d8d5ef",
         shadowColor: "black",
         shadowBlur: 10,
         shadowOffset: {
@@ -4330,9 +4330,14 @@ this.handle_notify = function(note, performing_replay) {
 
 this.handle_num_spec = function(note) {
     if (note.num === 0) {
-        console.log('HIT 0');
+        spectators_label.hide();
+        spectators_num_label.hide();
+        uilayer.draw();
     } else {
-        console.log('HIT:', note.num);
+        spectators_label.show();
+        spectators_num_label.show();
+        spectators_num_label.setText(note.num);
+        uilayer.draw();
     }
 };
 
