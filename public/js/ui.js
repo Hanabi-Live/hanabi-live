@@ -3575,10 +3575,10 @@ this.build_ui = function() {
 
     stage.add(bglayer);
     stage.add(uilayer);
-    stage.add(cardlayer);
     if (ui.timed_game) {
         stage.add(timerlayer);
     }
+    stage.add(cardlayer);
     stage.add(tiplayer);
     stage.add(overlayer);
 };
