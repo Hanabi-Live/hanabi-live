@@ -22,7 +22,6 @@ function HanabiLobby() {
     this.send_turn_sound = false;
     this.send_chat_notify = false;
     this.send_chat_sound = false;
-    this.playing_sound = false;
 
     this.game = {
         name: "",
@@ -37,6 +36,20 @@ function HanabiLobby() {
     this.show_login();
 
     this.load_settings();
+
+    // Preload some sounds by playing them at 0 volume
+    $(document).ready(function() {
+        if (this.send_turn_sound === false) {
+            return;
+        }
+
+        let soundFiles = ['blind', 'fail', 'tone', 'turn_other', 'turn_us'];
+        for (let file of soundFiles) {
+            let audio = new Audio('public/sounds/' + file + '.mp3');
+            audio.volume = 0;
+            audio.play();
+        }
+    });
 
     $("#login-button").on("click", function(evt) {
         evt.preventDefault();
@@ -1112,14 +1125,12 @@ HanabiLobby.prototype.send_notify = function(msg, tag) {
     });
 };
 
-HanabiLobby.prototype.play_sound = function(name) {
-    // Don't play 2 sounds at the same time
-    var a = new Audio("public/sounds/" + name + ".mp3");
-    a.play();
+HanabiLobby.prototype.play_sound = function(file) {
+    var audio = new Audio("public/sounds/" + file + ".mp3");
+    audio.play();
 };
 
-function getCookie(name)
-{
+function getCookie(name) {
     if (document.cookie === undefined) {
         return;
     }
@@ -1136,8 +1147,7 @@ function getCookie(name)
     }
 }
 
-function setCookie(name, val)
-{
+function setCookie(name, val) {
     if (document.cookie === undefined) {
         return;
     }
@@ -1147,8 +1157,7 @@ function setCookie(name, val)
     document.cookie = name + "=" + cookie;
 }
 
-function deleteCookie(name)
-{
+function deleteCookie(name) {
     if (document.cookie === undefined) {
         return;
     }
