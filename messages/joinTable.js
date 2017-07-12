@@ -40,13 +40,17 @@ function step2(error, socket, data) {
     logger.info('User "' + socket.username + '" joined game: #' + data.gameID + ' (' + game.name + ')');
 
     // Keep track of the user that joined
+    let time = globals.startingTime; // In milliseconds
+    if (game.name === '!test') {
+        time = 10 * 1000; // 10 seconds for testing
+    }
     game.players.push({
         hand: [],
         userID: socket.userID,
         username: socket.username,
         present: true,
         socket: socket,
-        time: globals.startingTime, // In milliseconds
+        time: time,
     });
     socket.status = 'In Pre-Game';
     socket.atTable = {
