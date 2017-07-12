@@ -48,10 +48,6 @@ exports.step1 = function(socket, data) {
         notify.gameMemberChange(data);
     }
 
-    // Set their status
-    socket.status = 'In Lobby';
-    notify.allUserChange(socket);
-
     // Get the index of this player
     for (let i = 0; i < game.players.length; i++) {
         if (game.players[i].userID === socket.userID) {
