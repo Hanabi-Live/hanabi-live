@@ -39,9 +39,8 @@ exports.step1 = function(socket, reason) {
                         gameID: gameID,
                     });
 
-                    // Set their "seated" and "playing" variables to false, which control the checkboxes in the lobby
-                    socket.seated = false;
-                    socket.playing = false;
+                    // Set their status
+                    socket.status = 'In Lobby';
                     notify.allUserChange(socket);
 
                 } else {

@@ -48,7 +48,7 @@ function step2(error, socket, data) {
         socket: socket,
         time: globals.startingTime, // In milliseconds
     });
-    socket.seated = true;
+    socket.status = 'In Pre-Game';
     socket.atTable = {
         id:         data.gameID,
         replay:     false,

@@ -22,10 +22,9 @@ exports.allUserChange = function(socket) {
         globals.connectedUsers[userID].emit('message', {
             type: 'user',
             resp: {
-                id:      socket.userID,
-                name:    socket.username,
-                playing: socket.playing,
-                seated:  socket.seated,
+                id:     socket.userID,
+                name:   socket.username,
+                status: socket.status,
             },
         });
     }
@@ -41,10 +40,13 @@ exports.allTableChange = function(data) {
             continue;
         }
 
+        // Keys are strings by default, so convert it back to a number
+        userID = parseInt(userID, 10);
+
         // Find out if this player is seated at this table
         let joined = false;
         for (let i = 0; i < game.players.length; i++) {
-            if (game.players[i].userID === parseInt(userID, 10)) {
+            if (game.players[i].userID === userID) {
                 joined = true;
                 data.index = i;
                 break;
@@ -61,7 +63,7 @@ exports.allTableChange = function(data) {
                 max_players: game.max_players,
                 allow_spec:  game.allow_spec,
                 timed:       game.timed,
-                owned:       parseInt(userID, 10) === game.owner,
+                owned:       userID === game.owner,
                 running:     game.running,
                 variant:     game.variant,
                 our_turn:    (joined && game.turn === data.index),

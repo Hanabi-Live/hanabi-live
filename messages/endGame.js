@@ -124,10 +124,9 @@ function gameEnd4(error, data) {
     // Notify everyone that the table was deleted
     notify.allTableGone(data);
 
-    // Reset the "Seated" and "Playing" values for all of the users in the game
+    // Reset the status of the players
     for (let player of game.players) {
-        player.socket.seated = false;
-        player.socket.playing = false;
+        player.socket.status = 'In Game (Ended)';
         notify.allUserChange(player.socket);
     }
 }

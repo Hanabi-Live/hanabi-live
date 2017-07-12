@@ -36,9 +36,8 @@ exports.step1 = function(socket, data) {
         notify.gameMemberChange(data);
     }
 
-    // Set their "seated" and "playing" variables to true, which control the checkboxes in the lobby
-    socket.seated = true;
-    socket.playing = true;
+    // Set their status
+    socket.status = 'In Game';
     notify.allUserChange(socket);
 
     // Mark that they have joined the table

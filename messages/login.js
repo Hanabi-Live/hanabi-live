@@ -13,7 +13,7 @@
 const globals  = require('../globals');
 const logger   = require('../logger');
 const models   = require('../models');
-const notify     = require('../notify');
+const notify   = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Get the password (and other data) for this user
@@ -62,13 +62,12 @@ function step4(socket, data) {
     // Store information about the user inside of the socket object
     socket.userID = data.userID; // We can't use "socket.id" because Socket.IO already uses that as a unique identifier for the session
     socket.username = data.username;
-    socket.playing = false;
-    socket.seated = false;
     socket.atTable = {
         id:         -1,
         replay:     false,
         spectating: false,
     };
+    socket.status = 'In Lobby';
     socket.num_started = data.num_started;
     socket.num_finished = data.num_finished;
     socket.best_score = data.best_score;
@@ -122,13 +121,15 @@ function step4(socket, data) {
             continue;
         }
 
+        // Keys are strings by default, so convert it back to a number
+        userID = parseInt(userID, 10);
+
         socket.emit('message', {
             type: 'user',
             resp: {
-                id: parseInt(userID, 10),
-                name: globals.connectedUsers[userID].username,
-                playing: globals.connectedUsers[userID].playing,
-                seated: globals.connectedUsers[userID].seated,
+                id:     userID,
+                name:   globals.connectedUsers[userID].username,
+                status: globals.connectedUsers[userID].status,
             },
         });
     }

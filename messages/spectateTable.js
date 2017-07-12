@@ -27,8 +27,8 @@ exports.step1 = function(socket, data) {
     // Add them to the spectators object
     game.spectators[socket.userID] = socket;
 
-    // Set that they are "Seated"
-    socket.seated = true;
+    // Set their status
+    socket.status = 'Spectating';
     notify.allUserChange(socket);
 
     // Send them a "game_start" message

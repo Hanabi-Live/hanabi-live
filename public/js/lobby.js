@@ -324,8 +324,11 @@ HanabiLobby.prototype.hide_game = function() {
 HanabiLobby.prototype.add_user = function(data) {
     this.user_list[data.id] = {
         name:    data.name,
+        /*
         seated:  data.seated,
         playing: data.playing,
+        */
+        status:  data.status,
     };
     this.draw_users();
 };
@@ -338,27 +341,31 @@ HanabiLobby.prototype.remove_user = function(data) {
 HanabiLobby.prototype.draw_users = function() {
     var div = $("#user-list");
     var attrs;
-    var i;
 
     div.html("");
 
     attrs = $("<ul>");
     attrs.append($("<li>").text("Name").addClass("table-attr user-name"));
+    /*
     attrs.append($("<li>").text("Seated").addClass("table-attr user-seated"));
     attrs.append($("<li>").text("Playing").addClass("table-attr user-playing"));
+    */
+    attrs.append($("<li>").text("Status").addClass("table-attr user-status"));
 
     div.append($("<li>").addClass("table-header").append(attrs));
 
-    for (i in this.user_list)
-    {
+    for (let i in this.user_list) {
         attrs = $("<ul>");
         attrs.append($("<li>").text(this.user_list[i].name).addClass("table-attr user-name"));
+        /*
         attrs.append($("<li>").append($("<input>", {
             type: "checkbox",
         }).prop("checked", this.user_list[i].seated)).addClass("table-attr user-seated"));
         attrs.append($("<li>").append($("<input>", {
             type: "checkbox",
         }).prop("checked", this.user_list[i].playing)).addClass("table-attr user-playing"));
+        */
+        attrs.append($("<li>").append(this.user_list[i].status).addClass("table-attr user-status"));
 
         div.append($("<li>").append(attrs));
     }

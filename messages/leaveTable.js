@@ -47,7 +47,7 @@ function step2(error, socket, data) {
 
     // Keep track that the user left
     game.players.splice(index, 1);
-    socket.seated = false;
+    socket.status = 'In Lobby';
     socket.atTable = {
         id:         -1,
         replay:     false,

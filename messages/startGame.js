@@ -156,9 +156,9 @@ function step3(error, socket, data) {
         notify.allTableGone(data);
     }
 
-    // Set all of the users in the game to "Playing"
+    // Set the status for all of the users in the game
     for (let player of game.players) {
-        player.socket.playing = true;
+        player.socket.status = 'In Game';
         notify.allUserChange(player.socket);
     }
 

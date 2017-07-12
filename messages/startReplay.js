@@ -16,8 +16,8 @@ exports.step1 = function(socket, data) {
     // Local variables
     data.gameID = data.id;
 
-    // Set that they are "Seated"
-    socket.seated = true;
+    // Set their status
+    socket.status = 'In Replay';
     notify.allUserChange(socket);
 
     // Send them a "game_start" message

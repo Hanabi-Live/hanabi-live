@@ -24,10 +24,9 @@ exports.step1 = function(socket, data) {
         return;
     }
 
-    // Update everyone's "Seated" and "Playing" values
+    // Update everyone's status
     for (let player of game.players) {
-        player.socket.seated = false;
-        player.socket.playing = false;
+        player.socket.status = 'In Lobby';
         player.socket.atTable = {
             id:         -1,
             replay:     false,

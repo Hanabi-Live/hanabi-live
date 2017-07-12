@@ -238,6 +238,11 @@ ul {
 	text-align: center;
 }
 
+.user-status {
+	width: 110px;
+	text-align: center;
+}
+
 #chat-entry {
 	margin-top: 1px;
 	padding-right: 5px;

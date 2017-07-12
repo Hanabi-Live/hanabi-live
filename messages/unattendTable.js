@@ -13,6 +13,10 @@ exports.step1 = function(socket, data) {
     data.gameID = socket.atTable.id;
     let game = globals.currentGames[data.gameID];
 
+    // Set their status
+    socket.status = 'In Lobby';
+    notify.allUserChange(socket);
+
     // Validate that this table exists
     if (data.gameID in globals.currentGames === false) {
         logger.info("(Table does not exist.)");
@@ -44,9 +48,8 @@ exports.step1 = function(socket, data) {
         notify.gameMemberChange(data);
     }
 
-    // Set their "seated" and "playing" variables to false, which control the checkboxes in the lobby
-    socket.seated = false;
-    socket.playing = false;
+    // Set their status
+    socket.status = 'In Lobby';
     notify.allUserChange(socket);
 
     // Get the index of this player
