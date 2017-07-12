@@ -357,7 +357,6 @@ function playerDiscardCard(data, failed = false) {
     }
     if (failed && data.slot !== -1 && card.touched === false) {
         text += ' (blind)';
-        game.sound = 'blind';
     }
     game.actions.push({
         text: text,
