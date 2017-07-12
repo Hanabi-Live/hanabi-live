@@ -5,10 +5,10 @@
 // the start game logic is stored under the "start_game" command
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
-const models   = require('../models');
-const notify   = require('../notify');
+const globals = require('../globals');
+const logger  = require('../logger');
+const models  = require('../models');
+const notify  = require('../notify');
 
 exports.step1 = function(data, loss) {
     // Local variables

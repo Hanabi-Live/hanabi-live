@@ -355,6 +355,10 @@ function playerDiscardCard(data, failed = false) {
     if (failed === false && card.touched) {
         text += ' (clued)';
     }
+    if (failed && data.slot !== -1 && card.touched === false) {
+        text += ' (blind)';
+        game.sound = 'blind';
+    }
     game.actions.push({
         text: text,
     });
