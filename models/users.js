@@ -4,7 +4,7 @@
 const db = require('./db');
 
 exports.getUser = function(socket, data, done) {
-    let sql = 'SELECT id, password, num_started, num_finished, best_score FROM users WHERE username = ?';
+    let sql = 'SELECT id, username, password, num_started, num_finished, best_score FROM users WHERE username = ?';
     db.query(sql, [data.username], function (error, results, fields) {
         if (error) {
             done(error, socket, data, null);
@@ -19,6 +19,7 @@ exports.getUser = function(socket, data, done) {
             return;
         } else {
             data.userID = results[0].id;
+            data.username = results[0].username; // We replace the existing username in case that they submitted the wrong case
             data.realPassword = results[0].password;
             data.num_started = results[0].num_started;
             data.num_finished = results[0].num_finished;
