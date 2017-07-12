@@ -27,8 +27,6 @@ const messages = require('../messages');
 const step1 = function(socket, data) {
     // Local variables
     data.gameID = socket.atTable.id;
-    let end = false;
-    let loss = false;
 
     // Validate that this table exists
     if (data.gameID in globals.currentGames === false) {
@@ -129,26 +127,16 @@ const step1 = function(socket, data) {
     }
 
     // Check for end game states
-    if (game.strikes === 3) {
-        end = true;
-        loss = true;
-
-        let text = 'Players lose!';
-        game.actions.push({
-            text: text,
-        });
-        notify.gameAction(data);
-        logger.info('[Game ' + data.gameID + '] ' + text);
-
-    } else if (game.turn_num === game.end_turn_num ||
-               (game.variant === 0 && game.score === 25) ||
-               (game.variant === 1 && game.score === 30) ||
-               (game.variant === 2 && game.score === 30) ||
-               (game.variant === 3 && game.score === 30)) {
-
-        end = true;
-
-        let text = 'Players score ' + game.score + ' points';
+    data.end = false;
+    data.loss = false;
+    checkEnd(data);
+    if (data.end) {
+        let text;
+        if (data.loss) {
+            text = 'Players lose!';
+        } else {
+            text = 'Players score ' + game.score + ' points';
+        }
         game.actions.push({
             text: text,
         });
@@ -168,8 +156,8 @@ const step1 = function(socket, data) {
     // Tell every client to play a sound as a notification for the action taken
     notify.gameSound(data);
 
-    if (end) {
-        messages.end_game.step1(data, loss);
+    if (data.end) {
+        messages.end_game.step1(data);
         return;
     }
 
@@ -263,7 +251,7 @@ function playerPlayCard(data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
     let card = game.deck[data.target];
-    let suit = (card.suit === 5 && game.variant === 3 ? globals.suits[card.suit + 1] : globals.suits[card.suit]);
+    let suitText = (card.suit === 5 && game.variant === 3 ? globals.suits[card.suit + 1] : globals.suits[card.suit]);
 
     // Find out if this successfully plays
     if (card.rank === game.stacks[card.suit] + 1) {
@@ -286,7 +274,7 @@ function playerPlayCard(data) {
         // Send the "message" about the play
         let text = game.players[data.index].username + ' ';
         text += 'plays ';
-        text += suit + ' ' + card.rank + ' from ';
+        text += suitText + ' ' + card.rank + ' from ';
         if (data.slot === -1) {
             text += 'the deck';
         } else {
@@ -327,7 +315,10 @@ function playerDiscardCard(data, failed = false) {
     // Local variables
     let game = globals.currentGames[data.gameID];
     let card = game.deck[data.target];
-    let suit = (card.suit === 5 && game.variant === 3 ? globals.suits[card.suit + 1] : globals.suits[card.suit]);
+    let suitText = (card.suit === 5 && game.variant === 3 ? globals.suits[card.suit + 1] : globals.suits[card.suit]);
+
+    // Mark that the card is discarded
+    card.discarded = true;
 
     game.actions.push({
         type: 'discard',
@@ -347,7 +338,7 @@ function playerDiscardCard(data, failed = false) {
     } else {
         text += 'discards';
     }
-    text += ' ' + suit + ' ' + card.rank + ' from ';
+    text += ' ' + suitText + ' ' + card.rank + ' from ';
     if (data.slot === -1) {
         text += 'the bottom of the deck';
     } else {
@@ -378,8 +369,11 @@ const playerDrawCard = function(data) {
         return;
     }
 
+    // Mark the order (position in the deck) on the card
+    // (this was not done upon deck creation because the order would change after it was shuffled)
     let card = game.deck[game.deckIndex];
     card.order = game.deckIndex;
+
     game.players[data.index].hand.push(card);
     game.actions.push({
         type:  'draw',
@@ -460,3 +454,48 @@ const checkTimer = function(data) {
     step1(fakeSocket, data);
 };
 exports.checkTimer = checkTimer;
+
+function checkEnd(data) {
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+
+    // Check for 3 strikes
+    if (game.strikes === 3) {
+        data.end = true;
+        data.loss = true;
+        return;
+    }
+
+    // Check for the final go-around (initiated after the last card is played from the deck)
+    if (game.turn_num === game.end_turn_num) {
+        data.end = true;
+        return;
+    }
+
+    // Check to see if the maximum score has been reached
+    if ((game.variant === 0 && game.score === 25) ||
+        (game.variant === 1 && game.score === 30) ||
+        (game.variant === 2 && game.score === 30) ||
+        (game.variant === 3 && game.score === 30)) {
+
+        data.end = true;
+        return;
+    }
+
+    // Check to see if there are any cards remaining that can be played on the stacks
+    for (let i = 0; i < game.stacks.length; i++) {
+        // Search through the deck
+        for (let j = 0; j < game.deck.length; j++) {
+            let card = game.deck[j];
+            let neededSuit = i;
+            let neededRank = game.stacks[i] + 1;
+            if (card.suit === neededSuit && card.rank === neededRank && card.discarded === false) {
+                return;
+            }
+        }
+    }
+
+    // If we got this far, nothing can be played
+    data.end = true;
+    return;
+}

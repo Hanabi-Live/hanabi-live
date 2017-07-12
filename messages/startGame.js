@@ -40,9 +40,11 @@ exports.step1 = function(socket, data) {
 
             for (let i = 0; i < amountToAdd; i++) {
                 game.deck.push({
-                    suit:    suit,
-                    rank:    rank,
-                    touched: false,
+                    suit:      suit,
+                    rank:      rank,
+                    touched:   false,
+                    discarded: false,
+                    // We can't set the order here because the deck will be shuffled later
                 });
             }
         }

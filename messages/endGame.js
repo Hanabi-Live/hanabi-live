@@ -10,7 +10,7 @@ const logger  = require('../logger');
 const models  = require('../models');
 const notify  = require('../notify');
 
-exports.step1 = function(data, loss) {
+exports.step1 = function(data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
 
@@ -32,7 +32,7 @@ exports.step1 = function(data, loss) {
     game.actions.push({
         type:  'game_over',
         score: game.score,
-        loss:  loss,
+        loss:  data.loss,
     });
     notify.gameAction(data);
 
@@ -54,7 +54,7 @@ exports.step1 = function(data, loss) {
         }
     }
 
-    if (loss) {
+    if (data.loss) {
         game.score = 0;
     }
 
