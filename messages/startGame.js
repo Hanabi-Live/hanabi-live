@@ -160,7 +160,7 @@ function step3(error, socket, data) {
 
     // Set the status for all of the users in the game
     for (let player of game.players) {
-        player.socket.status = 'In Game';
+        player.socket.status = 'Playing';
         notify.allUserChange(player.socket);
     }
 

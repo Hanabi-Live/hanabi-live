@@ -126,7 +126,7 @@ function gameEnd4(error, data) {
 
     // Reset the status of the players
     for (let player of game.players) {
-        player.socket.status = 'In Game (Ended)';
+        player.socket.status = 'Replay';
         notify.allUserChange(player.socket);
     }
 }

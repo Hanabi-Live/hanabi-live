@@ -37,7 +37,7 @@ exports.step1 = function(socket, data) {
     }
 
     // Set their status
-    socket.status = 'In Game';
+    socket.status = 'Playing';
     notify.allUserChange(socket);
 
     // Mark that they have joined the table

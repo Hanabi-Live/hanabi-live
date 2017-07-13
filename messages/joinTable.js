@@ -52,7 +52,7 @@ function step2(error, socket, data) {
         socket: socket,
         time: time,
     });
-    socket.status = 'In Pre-Game';
+    socket.status = 'Pre-Game';
     socket.atTable = {
         id:         data.gameID,
         replay:     false,

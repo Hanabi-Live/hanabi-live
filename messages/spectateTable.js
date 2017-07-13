@@ -10,8 +10,8 @@
 */
 
 // Imports
-const globals  = require('../globals');
-const notify   = require('../notify');
+const globals = require('../globals');
+const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Local variables

@@ -4,10 +4,10 @@
 // "data" is empty
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
-const models   = require('../models');
-const notify   = require('../notify');
+const globals = require('../globals');
+const logger  = require('../logger');
+const models  = require('../models');
+const notify  = require('../notify');
 
 const step1 = function(socket, data) {
     // Local variables
@@ -47,7 +47,7 @@ function step2(error, socket, data) {
 
     // Keep track that the user left
     game.players.splice(index, 1);
-    socket.status = 'In Lobby';
+    socket.status = 'Lobby';
     socket.atTable = {
         id:         -1,
         replay:     false,

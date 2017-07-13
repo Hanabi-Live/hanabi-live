@@ -40,7 +40,7 @@ exports.step1 = function(socket, reason) {
                     });
 
                     // Set their status
-                    socket.status = 'In Lobby';
+                    socket.status = 'Lobby';
                     notify.allUserChange(socket);
 
                 } else {

@@ -10,10 +10,10 @@
 */
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
-const models   = require('../models');
-const notify   = require('../notify');
+const globals = require('../globals');
+const logger  = require('../logger');
+const models  = require('../models');
+const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Get the password (and other data) for this user
@@ -67,7 +67,7 @@ function step4(socket, data) {
         replay:     false,
         spectating: false,
     };
-    socket.status = 'In Lobby';
+    socket.status = 'Lobby';
     socket.num_started = data.num_started;
     socket.num_finished = data.num_finished;
     socket.best_score = data.best_score;

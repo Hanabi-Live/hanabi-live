@@ -14,7 +14,7 @@ exports.step1 = function(socket, data) {
     let game = globals.currentGames[data.gameID];
 
     // Set their status
-    socket.status = 'In Lobby';
+    socket.status = 'Lobby';
     notify.allUserChange(socket);
 
     // Validate that this table exists

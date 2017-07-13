@@ -10,7 +10,7 @@
 
 // Imports
 const globals = require('../globals');
-const logger = require('../logger');
+const logger  = require('../logger');
 const models  = require('../models');
 
 exports.step1 = function(socket, data) {

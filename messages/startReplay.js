@@ -17,7 +17,7 @@ exports.step1 = function(socket, data) {
     data.gameID = data.id;
 
     // Set their status
-    socket.status = 'In Replay';
+    socket.status = 'Replay';
     notify.allUserChange(socket);
 
     // Send them a "game_start" message

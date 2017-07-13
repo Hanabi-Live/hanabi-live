@@ -9,9 +9,9 @@
 */
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
-const notify   = require('../notify');
+const globals = require('../globals');
+const logger  = require('../logger');
+const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Local variables
@@ -26,7 +26,7 @@ exports.step1 = function(socket, data) {
 
     // Update everyone's status
     for (let player of game.players) {
-        player.socket.status = 'In Lobby';
+        player.socket.status = 'Lobby';
         player.socket.atTable = {
             id:         -1,
             replay:     false,
