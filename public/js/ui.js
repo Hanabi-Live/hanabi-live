@@ -163,7 +163,8 @@ function milliseconds_to_time_display(milliseconds) {
     return Math.floor(seconds / 60) + ":" + pad2(seconds % 60);
 }
 
-function setTickingDownTime(textObject, active_index) {
+// textObjects are expected to be on the timerlayer or tiplayer
+function setTickingDownTime(textObjects, active_index) {
     // Compute elapsed time since last timer update
     let now = new Date().getTime();
     let time_elapsed = now - ui.last_timer_update_time_ms;
@@ -179,13 +180,14 @@ function setTickingDownTime(textObject, active_index) {
     }
 
     let milliseconds_left = ui.player_times[active_index];
+    let display_string = milliseconds_to_time_display(milliseconds_left);
 
-    // Update display
-    textObject.setText(milliseconds_to_time_display(milliseconds_left));
+    // Update displays
+    textObjects.forEach(function (textHolder) {
+        textHolder.setText(display_string);
+    });
     timerlayer.draw();
-
-    // Also update the mouseover note
-    name_frames[active_index].tooltip.getText().setText(milliseconds_to_time_display(ui.player_times[active_index]));
+    tiplayer.draw();
 
     // Play a sound to indicate that the current player is almost out of time
     // Do not play it more frequently than about once per second
@@ -4416,8 +4418,9 @@ this.handle_clock = function(note) {
 
     // Start local timer for active player
     let active_timer_ui_text = current_user_turn ? timer_text1 : timer_text2;
+    let textUpdateTargets = [active_timer_ui_text, name_frames[note.active].tooltip.getText()];
     ui.timerId = window.setInterval(function() {
-        setTickingDownTime(active_timer_ui_text, note.active);
+        setTickingDownTime(textUpdateTargets, note.active);
     }, 1000);
 };
 
