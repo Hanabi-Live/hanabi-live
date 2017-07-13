@@ -2733,9 +2733,9 @@ this.build_ui = function() {
             y: 0,
         },
         shadowOpacity: 0.9,
+        visible: false,
     });
     uilayer.add(spectators_label);
-    spectators_label.hide(); // Hide it by default
 
     spectators_num_label = new Kinetic.Text({
         x: 0.583 * win_w,
@@ -2754,9 +2754,9 @@ this.build_ui = function() {
             y: 0,
         },
         shadowOpacity: 0.9,
+        visible: false,
     });
     uilayer.add(spectators_num_label);
-    spectators_num_label.hide(); // Hide it by default
 
     rect = new Kinetic.Rect({
         x: 0.8 * win_w,
@@ -4368,16 +4368,13 @@ this.handle_notify = function(note, performing_replay) {
 };
 
 this.handle_num_spec = function(note) {
-    if (note.num === 0) {
-        spectators_label.hide();
-        spectators_num_label.hide();
-        uilayer.draw();
-    } else {
-        spectators_label.show();
-        spectators_num_label.show();
+    let shouldShowLabel = typeof note.num === 'number' && note.num > 0;
+    spectators_label.setVisible(shouldShowLabel);
+    spectators_num_label.setVisible(shouldShowLabel);
+    if (shouldShowLabel) {
         spectators_num_label.setText(note.num);
-        uilayer.draw();
     }
+    uilayer.draw();
 };
 
 this.handle_clock = function(note) {
