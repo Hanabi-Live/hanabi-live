@@ -77,13 +77,15 @@ function step2(error, socket, data) {
     });
 
     // Send them the number of spectators
-    let specMsg = {
-        type: 'num_spec',
-        resp: {
-            num: game.num_spec,
-        },
-    };
-    socket.emit('message', specMsg);
+    if (socket.atTable.replay === false) {
+        let specMsg = {
+            type: 'num_spec',
+            resp: {
+                num: game.num_spec,
+            },
+        };
+        socket.emit('message', specMsg);
+    }
 
     // Send them the current time for all player's clocks
     if (game.timed) {
