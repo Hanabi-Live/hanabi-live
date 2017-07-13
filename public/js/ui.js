@@ -48,105 +48,6 @@ this.player_times = [];
 this.timerId = null;
 
 /*
-    Keyboard shortcuts
-*/
-
-this.keyboard_action = null;
-this.keyboard_clue_player = null;
-
-function keyboard_do_action(ui, slot) {
-    if (ui.keyboard_action === 'play') {
-        keyboard_play(ui, slot);
-        ui.keyboard_action = null;
-
-    } else if (ui.keyboard_action === 'discard') {
-        keyboard_discard(ui, slot);
-        ui.keyboard_action = null;
-
-    } else if (ui.keyboard_action === 'clue') {
-        ui.keyboard_action = 'clue_player';
-        ui.keyboard_clue_player = slot;
-
-    } else if (ui.keyboard_action === 'clue_player') {
-        keyboard_clue(ui, slot);
-    }
-}
-
-function keyboard_play(ui, slot) {
-    let ourHand = player_hands[ui.player_us].children;
-    let cardIndex = ourHand.length - slot;
-    let cardOrder = ourHand[cardIndex].children[0].order;
-
-    ui.send_msg({
-        type: "action",
-        resp: {
-            type: ACT.PLAY,
-            target: cardOrder,
-        },
-    });
-    ui.stop_action();
-}
-
-function keyboard_discard(ui, slot) {
-    let ourHand = player_hands[ui.player_us].children;
-    let cardIndex = ourHand.length - slot;
-    let cardOrder = ourHand[cardIndex].children[0].order;
-
-    ui.send_msg({
-        type: "action",
-        resp: {
-            type: ACT.DISCARD,
-            target: cardOrder,
-        },
-    });
-    ui.stop_action();
-}
-
-function keyboard_clue(ui, clue_type) {
-    ui.send_msg({
-        type: "action",
-        resp: {
-            type: ACT.CLUE,
-            target: ui.keyboard_clue_player - 1,
-            clue: {
-                type: 0,
-                value: clue_type,
-            },
-        },
-    });
-    ui.stop_action();
-}
-
-$(document).keydown(function(event) {
-    //console.log(event.which); // Uncomment this to find out which number corresponds to the desired key
-
-    if (event.which === 49) { // "1"
-        keyboard_do_action(ui, 1);
-
-    } else if (event.which === 50) { // "2"
-        keyboard_do_action(ui, 2);
-
-    } else if (event.which === 51) { // "3"
-        keyboard_do_action(ui, 3);
-
-    } else if (event.which === 52) { // "4"
-        keyboard_do_action(ui, 4);
-
-    } else if (event.which === 53) { // "5"
-        keyboard_do_action(ui, 5);
-
-    } else if (event.which === 65) { // "a"
-        ui.keyboard_action = 'play';
-
-    } else if (event.which === 67) { // "c"
-        ui.keyboard_action = 'clue';
-
-    } else if (event.which === 68) { // "d"
-        ui.keyboard_action = 'discard';
-    }
-});
-
-/*
     Misc. functions
 */
 
@@ -3618,6 +3519,133 @@ this.build_ui = function() {
     replay_area.hide();
     uilayer.add(replay_area);
 
+    /* Keyboard shortcuts */
+    let mouseClickHelper = function(elem) {
+        return function () {
+            elem.dispatchEvent(new MouseEvent("click"));
+        };
+    };
+
+    // Navigation during replays
+    let replayNavigationKeyMap = {
+        "End" : forwardfull_function,
+        "Home" : rewindfull_function,
+
+        "ArrowLeft" : backward_function,
+        "ArrowRight" : forward_function,
+
+        "[" :  backward_round,
+        "]" : forward_round,
+    };
+
+    // Keyboard interactions with clue ui
+
+    let clueKeyMap = {
+        "Enter" : mouseClickHelper(submit_clue),
+    };
+
+    for (i = 0; i <= 5; i++) {
+        clueKeyMap[i] = mouseClickHelper(rankClueButtons[i]);
+    }
+
+    Object.keys(suitClueButtons).forEach(function (key) {
+        clueKeyMap[key] = mouseClickHelper(suitClueButtons[key]);
+    });
+
+    clueKeyMap["Tab"] = function () {
+        clue_target_group.selectNextTarget();
+    };
+
+    // Keyboard actions for playing and discarding cards
+    let promptOwnHandOrder = function(actionString) {
+        let playerCards = player_hands[ui.player_us].children;
+        let maxSlotIndex = playerCards.length;
+        let msg = "Enter the slot number (1 to " + maxSlotIndex + ") of the card to " + actionString + ".";
+        let response = window.prompt(msg);
+
+        if (/^deck$/i.test(response)) {
+            return "deck";
+        }
+
+        if (! /^\d+$/.test(response)) return null;
+
+        let num_response = parseInt(response);
+        if (num_response < 1 || num_response > maxSlotIndex) {
+            return null;
+        }
+
+        return playerCards[maxSlotIndex - num_response].children[0].order;
+    };
+
+    let doKeyboardCardAction = function (tryPlay) {
+        let intendedPlay = tryPlay === true;
+        let cardOrder = promptOwnHandOrder(intendedPlay ? "play" : "discard");
+
+        if (cardOrder == null) return;
+        if (cardOrder === "deck" && !(intendedPlay && saved_action.can_blind_play_deck)) return;
+
+        let resp = {};
+        if (cardOrder === "deck") {
+            resp.type = ACT.DECKPLAY;
+        } else {
+            resp.type = intendedPlay ? ACT.PLAY : ACT.DISCARD;
+            resp.target = cardOrder;
+        }
+
+        ui.send_msg({
+            type: "action",
+            resp: resp,
+        });
+        ui.stop_action();
+        saved_action = null;
+    };
+
+    let doKeyboardCardPlay = function () {
+        doKeyboardCardAction(true);
+    };
+
+    let doKeyboardCardDiscard = function () {
+        doKeyboardCardAction(false);
+    };
+
+    let cardActionKeyMap = {};
+
+    let playKeyMap = {
+        "+"      : doKeyboardCardPlay,
+        "="      : doKeyboardCardPlay,
+        "Insert" : doKeyboardCardPlay,
+    };
+
+    let discardKeyMap = {
+        "-"      : doKeyboardCardDiscard,
+        "Delete" : doKeyboardCardDiscard,
+    };
+
+    this.keyNavigation = function (e) {
+        let currentNavigation = undefined;
+        if (replay_area.visible()) {
+            currentNavigation = replayNavigationKeyMap[e.key];
+        } else if (saved_action != null) { // current user can take an action
+            if (saved_action.can_clue) {
+                currentNavigation = clueKeyMap[e.key];
+            }
+            if (saved_action.can_discard) {
+                currentNavigation = currentNavigation || discardKeyMap[e.key];
+            }
+            currentNavigation = currentNavigation || playKeyMap[e.key];
+        }
+
+        if (currentNavigation !== undefined)
+        {
+            e.preventDefault();
+            currentNavigation();
+        }
+    };
+
+    $(document).keydown(this.keyNavigation);
+
+    /* End of keyboard shortcuts */
+
     helpgroup = new Kinetic.Group({
         x: 0.1 * win_w,
         y: 0.1 * win_h,
@@ -4740,6 +4768,7 @@ this.set_message = function(msg) {
 
 this.destroy = function() {
     stage.destroy();
+    $(document).unbind('keydown', this.keyNavigation);
     if (ui.timerId !== null) {
         window.clearInterval(ui.timerId);
         ui.timerId = null;
