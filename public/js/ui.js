@@ -4416,6 +4416,8 @@ this.handle_clock = function(note) {
         name_frames[i].tooltip.getText().setText(milliseconds_to_time_display(ui.player_times[i]));
     }
 
+    tiplayer.draw();
+
     // Start local timer for active player
     let active_timer_ui_text = current_user_turn ? timer_text1 : timer_text2;
     let textUpdateTargets = [active_timer_ui_text, name_frames[note.active].tooltip.getText()];
