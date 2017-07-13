@@ -163,7 +163,8 @@ function milliseconds_to_time_display(milliseconds) {
     return Math.floor(seconds / 60) + ":" + pad2(seconds % 60);
 }
 
-function setTickingDownTime(textObject, active_index) {
+// textObjects are expected to be on the timerlayer or tiplayer
+function setTickingDownTime(textObjects, active_index) {
     // Compute elapsed time since last timer update
     let now = new Date().getTime();
     let time_elapsed = now - ui.last_timer_update_time_ms;
@@ -179,13 +180,14 @@ function setTickingDownTime(textObject, active_index) {
     }
 
     let milliseconds_left = ui.player_times[active_index];
+    let display_string = milliseconds_to_time_display(milliseconds_left);
 
-    // Update display
-    textObject.setText(milliseconds_to_time_display(milliseconds_left));
+    // Update displays
+    textObjects.forEach(function (textHolder) {
+        textHolder.setText(display_string);
+    });
     timerlayer.draw();
-
-    // Also update the mouseover note
-    name_frames[active_index].tooltip.getText().setText(milliseconds_to_time_display(ui.player_times[active_index]));
+    tiplayer.draw();
 
     // Play a sound to indicate that the current player is almost out of time
     // Do not play it more frequently than about once per second
@@ -3052,14 +3054,12 @@ this.build_ui = function() {
 
         // The following code is copied from HanabiCard
         if (ui.timed_game) {
-            var self2 = name_frames[i];
-
-            self2.tooltip = new Kinetic.Label({
+            let frame_hover_tooltip = new Kinetic.Label({
                 x: -1000,
                 y: -1000,
             });
 
-            self2.tooltip.add(new Kinetic.Tag({
+            frame_hover_tooltip.add(new Kinetic.Tag({
                 fill: '#3E4345',
                 pointerDirection: 'left',
                 pointerWidth: 0.02 * win_w,
@@ -3074,7 +3074,7 @@ this.build_ui = function() {
                 shadowOpacity: 0.6,
             }));
 
-            self2.tooltip.add(new FitText({
+            frame_hover_tooltip.add(new FitText({
                 fill: "white",
                 align: "left",
                 padding: 0.01 * win_h,
@@ -3085,21 +3085,22 @@ this.build_ui = function() {
                 text: "??:??",
             }));
 
-            tiplayer.add(self2.tooltip);
+            tiplayer.add(frame_hover_tooltip);
+            name_frames[i].tooltip = frame_hover_tooltip;
 
-            self2.on("mousemove", function() {
+            name_frames[i].on("mousemove", function() {
                 var mousePos = stage.getPointerPosition();
-                self2.tooltip.setX(mousePos.x + 15);
-                self2.tooltip.setY(mousePos.y + 5);
+                this.tooltip.setX(mousePos.x + 15);
+                this.tooltip.setY(mousePos.y + 5);
 
-                self2.tooltip.show();
+                this.tooltip.show();
                 tiplayer.draw();
 
                 ui.activeHover = this;
             });
 
-            self2.on("mouseout", function() {
-                self2.tooltip.hide();
+            name_frames[i].on("mouseout", function() {
+                this.tooltip.hide();
                 tiplayer.draw();
             });
         }
@@ -4328,6 +4329,10 @@ this.handle_notify = function(note, performing_replay) {
             ui.timerId = null;
         }
 
+        for (let i = 0; i < this.player_names.length; i++) {
+            name_frames[i].off("mousemove");
+        }
+
         if (timer_rect1) {
             timer_rect1.hide();
             timer_label1.hide();
@@ -4411,10 +4416,13 @@ this.handle_clock = function(note) {
         name_frames[i].tooltip.getText().setText(milliseconds_to_time_display(ui.player_times[i]));
     }
 
+    tiplayer.draw();
+
     // Start local timer for active player
     let active_timer_ui_text = current_user_turn ? timer_text1 : timer_text2;
+    let textUpdateTargets = [active_timer_ui_text, name_frames[note.active].tooltip.getText()];
     ui.timerId = window.setInterval(function() {
-        setTickingDownTime(active_timer_ui_text, note.active);
+        setTickingDownTime(textUpdateTargets, note.active);
     }, 1000);
 };
 
