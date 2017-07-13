@@ -3052,14 +3052,12 @@ this.build_ui = function() {
 
         // The following code is copied from HanabiCard
         if (ui.timed_game) {
-            var self2 = name_frames[i];
-
-            self2.tooltip = new Kinetic.Label({
+            let frame_hover_tooltip = new Kinetic.Label({
                 x: -1000,
                 y: -1000,
             });
 
-            self2.tooltip.add(new Kinetic.Tag({
+            frame_hover_tooltip.add(new Kinetic.Tag({
                 fill: '#3E4345',
                 pointerDirection: 'left',
                 pointerWidth: 0.02 * win_w,
@@ -3074,7 +3072,7 @@ this.build_ui = function() {
                 shadowOpacity: 0.6,
             }));
 
-            self2.tooltip.add(new FitText({
+            frame_hover_tooltip.add(new FitText({
                 fill: "white",
                 align: "left",
                 padding: 0.01 * win_h,
@@ -3085,21 +3083,22 @@ this.build_ui = function() {
                 text: "??:??",
             }));
 
-            tiplayer.add(self2.tooltip);
+            tiplayer.add(frame_hover_tooltip);
+            name_frames[i].tooltip = frame_hover_tooltip;
 
-            self2.on("mousemove", function() {
+            name_frames[i].on("mousemove", function() {
                 var mousePos = stage.getPointerPosition();
-                self2.tooltip.setX(mousePos.x + 15);
-                self2.tooltip.setY(mousePos.y + 5);
+                this.tooltip.setX(mousePos.x + 15);
+                this.tooltip.setY(mousePos.y + 5);
 
-                self2.tooltip.show();
+                this.tooltip.show();
                 tiplayer.draw();
 
                 ui.activeHover = this;
             });
 
-            self2.on("mouseout", function() {
-                self2.tooltip.hide();
+            name_frames[i].on("mouseout", function() {
+                this.tooltip.hide();
                 tiplayer.draw();
             });
         }
