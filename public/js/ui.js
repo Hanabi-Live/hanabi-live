@@ -4327,6 +4327,10 @@ this.handle_notify = function(note, performing_replay) {
             ui.timerId = null;
         }
 
+        for (let i = 0; i < this.player_names.length; i++) {
+            name_frames[i].off("mousemove");
+        }
+
         if (timer_rect1) {
             timer_rect1.hide();
             timer_label1.hide();
