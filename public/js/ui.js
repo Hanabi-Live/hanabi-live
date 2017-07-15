@@ -3214,6 +3214,8 @@ this.build_ui = function() {
 
     clue_type_group = new ButtonGroup();
 
+    let rankClueButtons = {};
+
     //var button; // This is already defined
 
     x = 0.26 * win_w - (nump - 2) * 0.044 * win_w;
@@ -3251,6 +3253,8 @@ this.build_ui = function() {
                 value: i,
             },
         });
+
+        rankClueButtons[i] = button;
 
         clue_area.add(button);
 
