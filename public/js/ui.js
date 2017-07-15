@@ -3214,7 +3214,9 @@ this.build_ui = function() {
 
     clue_type_group = new ButtonGroup();
 
+    // Mappings from keyboard keys to buttons
     let rankClueButtons = {};
+    let suitClueButtons = {};
 
     //var button; // This is already defined
 
@@ -3257,6 +3259,10 @@ this.build_ui = function() {
         rankClueButtons[i] = button;
 
         clue_area.add(button);
+
+        if (suit_abbreviations[i].length === 1) {
+            suitClueButtons[suit_abbreviations[i].toLowerCase()] = button;
+        }
 
         clue_type_group.add(button);
     }
