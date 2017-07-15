@@ -27,6 +27,11 @@ exports.step1 = function(socket, data) {
     data.timed = false;
     data.owner = socket.userID;
 
+    // Validate that the game name is not longer than 100 characters
+    if (data.name.length > 100) {
+        return;
+    }
+
     // Create the table
     models.games.create(socket, data, step2);
 };
