@@ -1,7 +1,6 @@
 "use strict";
 
 var MHGA_show_debug_messages = true;
-var MHGA_colorblind_mode = false;
 var MHGA_show_more_log = true;
 var MHGA_show_log_numbers = true;
 var MHGA_show_faces_in_replay = true;
@@ -628,7 +627,7 @@ var HanabiCard = function(config) {
         },
         shadowBlur: 2,
         text: "",
-        visible: MHGA_colorblind_mode,
+        visible: lobby.show_colorblind_ui,
     });
     this.color_clue_group.add(this.color_clue_letter);
 
@@ -1420,7 +1419,7 @@ var ColorButton = function(config) {
         strokeWidth: 1,
         align: "center",
         text: config.text,
-        visible: MHGA_colorblind_mode,
+        visible: lobby.show_colorblind_ui,
     });
 
     this.add(text);
@@ -1758,7 +1757,7 @@ HanabiClueEntry.prototype.showMatch = function(target) {
         if (ui.deck[this.neglist[i]] === target) {
             this.background.setOpacity(0.4);
             this.background.setFill("#ff7777");
-            if (MHGA_colorblind_mode) {
+            if (lobby.show_colorblind_ui) {
                 this.negative_marker.setVisible(true);
             }
         }
@@ -2241,7 +2240,7 @@ this.build_cards = function() {
                 index_label = "";
             }
 
-            if (MHGA_colorblind_mode) {
+            if (lobby.show_colorblind_ui) {
                 ctx.font = "bold 68pt Arial";
                 text_y_pos = 83;
                 index_label = suit_letter + index_label;
@@ -2287,7 +2286,7 @@ this.build_cards = function() {
 
                 if (j > 1 && j !== 6) {
                     var symbol_y_pos = 120;
-                    if (MHGA_colorblind_mode) {
+                    if (lobby.show_colorblind_ui) {
                         symbol_y_pos = 85;
                     }
                     ctx.save();
@@ -2333,7 +2332,7 @@ this.build_cards = function() {
 
                 if (j === 0) {
                     ctx.clearRect(0, 0, cardw, cardh);
-                    if (MHGA_colorblind_mode) {
+                    if (lobby.show_colorblind_ui) {
                         ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
                         ctx.fillText(suit_letter, 19, 83);
                         ctx.shadowColor = "rgba(0, 0, 0, 0)";

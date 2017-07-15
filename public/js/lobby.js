@@ -22,6 +22,7 @@ function HanabiLobby() {
     this.send_turn_sound = false;
     this.send_chat_notify = false;
     this.send_chat_sound = false;
+    this.show_colorblind_ui = false;
 
     this.game = {
         name: "",
@@ -1066,6 +1067,7 @@ HanabiLobby.prototype.load_settings = function() {
         [ "send-turn-sound", "send_turn_sound" ],
         [ "send-chat-notification", "send_chat_notify" ],
         [ "send-chat-sound", "send_chat_sound" ],
+        [ "show-colorblind-ui", "show_colorblind_ui" ],
     ];
     var i, val;
 
