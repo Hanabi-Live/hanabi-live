@@ -3198,6 +3198,20 @@ this.build_ui = function() {
     });
 
     clue_target_group = new ButtonGroup();
+
+    clue_target_group.selectNextTarget = function () {
+        let newSelectionIndex = 0;
+        for (let i = 0; i < this.list.length; i++)
+        {
+            if (this.list[i].pressed) {
+                newSelectionIndex = (i + 1) % this.list.length;
+                break;
+            }
+        }
+
+        this.list[newSelectionIndex].dispatchEvent(new MouseEvent("click"));
+    };
+
     clue_type_group = new ButtonGroup();
 
     //var button; // This is already defined
