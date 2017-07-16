@@ -351,7 +351,14 @@ function playerPlayCard(data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
     let card = game.deck[data.target];
-    let suitText = (card.suit === 5 && game.variant === 3 ? globals.suits[card.suit + 1] : globals.suits[card.suit]);
+    let suitText = globals.suits[card.suit];
+    if (game.variant === 3 && card.suit === 5) {
+        // Change "Black" to "Rainbow"
+        suitText = globals.suits[6];
+    } else if (game.variant === 4) {
+        // Set the "Mixed Suits" text
+        suitText = globals.suits[card.suit + 7];
+    }
 
     // Find out if this successfully plays
     if (card.rank === game.stacks[card.suit] + 1) {
@@ -415,7 +422,14 @@ function playerDiscardCard(data, failed = false) {
     // Local variables
     let game = globals.currentGames[data.gameID];
     let card = game.deck[data.target];
-    let suitText = (card.suit === 5 && game.variant === 3 ? globals.suits[card.suit + 1] : globals.suits[card.suit]);
+    let suitText = globals.suits[card.suit];
+    if (game.variant === 3 && card.suit === 5) {
+        // Change "Black" to "Rainbow"
+        suitText = globals.suits[6];
+    } else if (game.variant === 4) {
+        // Set the "Mixed Suits" text
+        suitText = globals.suits[card.suit + 7];
+    }
 
     // Mark that the card is discarded
     card.discarded = true;
