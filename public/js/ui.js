@@ -3519,9 +3519,11 @@ this.build_ui = function() {
         image: "rewindfull",
     });
 
-    button.on("click tap", function() {
+    var rewindfull_function = function() {
         ui.perform_replay(0);
-    });
+    };
+
+    button.on("click tap", rewindfull_function);
 
     replay_area.add(button);
 
@@ -3533,9 +3535,11 @@ this.build_ui = function() {
         image: "rewind",
     });
 
-    button.on("click tap", function() {
+    var backward_function = function() {
         ui.perform_replay(self.replay_turn - 1, true);
-    });
+    };
+
+    button.on("click tap", backward_function);
 
     replay_area.add(button);
 
@@ -3547,9 +3551,12 @@ this.build_ui = function() {
         image: "forward",
     });
 
-    button.on("click tap", function() {
+
+    var forward_function = function() {
         ui.perform_replay(self.replay_turn + 1);
-    });
+    };
+
+    button.on("click tap", forward_function);
 
     replay_area.add(button);
 
@@ -3561,9 +3568,19 @@ this.build_ui = function() {
         image: "forwardfull",
     });
 
-    button.on("click tap", function() {
+    var forwardfull_function = function() {
         ui.perform_replay(self.replay_max, true);
-    });
+    };
+
+    button.on("click tap", forwardfull_function);
+
+    var backward_round = function () {
+        ui.perform_replay(self.replay_turn - nump, true);
+    };
+
+    var forward_round = function () {
+        ui.perform_replay(self.replay_turn + nump);
+    };
 
     replay_area.add(button);
 
