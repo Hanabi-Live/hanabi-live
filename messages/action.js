@@ -248,13 +248,13 @@ function playerClue(data) {
     // Find out what cards this clue touches
     let list = [];
     for (let card of game.players[data.target].hand) {
+        let touched = false;
         if (data.clue.type === 0) { // Number clue
             if (card.rank === data.clue.value) {
-                list.push(card.order);
-                card.touched = true;
+                touched = true;
             }
+
         } else if (data.clue.type === 1) { // Color clue
-            let touched = false;
             if (game.variant >= 0 && game.variant <= 2) { // Normal, black, and black one of each
                 if (data.clue.value === card.suit) {
                     touched = true;
@@ -290,11 +290,11 @@ function playerClue(data) {
                 }
                 // Purple clues (with a value of 4) will never touch any cards
             }
+        }
 
-            if (touched) {
-                list.push(card.order);
-                card.touched = true;
-            }
+        if (touched) {
+            list.push(card.order);
+            card.touched = true;
         }
     }
     if (list.length === 0) {

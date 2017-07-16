@@ -273,13 +273,13 @@ HanabiLobby.prototype.show_create_dialog = function() {
     $("#create-table-dialog").fadeIn(800);
 
     var players = JSON.parse(localStorage.getItem("table_host_max_players"));
-    if(typeof players !== "number" || players < 2 || players > 5) {
+    if (typeof players !== "number" || players < 2 || players > 5) {
             players = 5;
     }
     $("#create-game-players").val(players);
 
     var variant = JSON.parse(localStorage.getItem("table_host_variant"));
-    if(typeof variant !== "number" || variant < 0 || variant > 3) {
+    if (typeof variant !== "number" || variant < 0 || variant > 4) {
         variant = 0;
     }
     $("#create-game-variant").val(variant);

@@ -1981,14 +1981,12 @@ var show_clue_match = function(target, clue, show_neg) {
     var child, i, j;
     var card, match = false;
 
-    for (i = 0; i < ui.player_names.length; i++)
-    {
+    for (i = 0; i < ui.player_names.length; i++) {
         if (i === target) {
             continue;
         }
 
-        for (j = 0; j < player_hands[i].children.length; j++)
-        {
+        for (j = 0; j < player_hands[i].children.length; j++) {
             child = player_hands[i].children[j];
 
             card = child.children[0];
@@ -2003,22 +2001,60 @@ var show_clue_match = function(target, clue, show_neg) {
         return;
     }
 
-    for (i = 0; i < player_hands[target].children.length; i++)
-    {
+    for (i = 0; i < player_hands[target].children.length; i++) {
         child = player_hands[target].children[i];
-
         card = child.children[0];
 
-        if ((clue.type === CLUE.RANK && clue.value === card.rank) ||
-            (clue.type === CLUE.SUIT && clue.value === card.suit) ||
-            (clue.type === CLUE.SUIT && card.suit === 5 && ui.variant === VARIANT.RAINBOW))
-        {
-            match = true;
+        let touched = false;
+        if (clue.type === CLUE.RANK) {
+            if (clue.value === card.rank) {
+                touched = true;
+            }
 
-            card.setIndicator(true);
+        } else if (clue.type === CLUE.SUIT) {
+            if (ui.variant >= 0 && ui.variant <= 2) { // Normal, black, and black one of each
+                if (clue.value === card.suit) {
+                    touched = true;
+                }
+
+            } else if (ui.variant === VARIANT.RAINBOW) {
+                if (clue.value === card.suit || card.suit === 5) {
+                    touched = true;
+                }
+
+            } else if (ui.variant === VARIANT.MIXED) {
+                // Suits:
+                // 0 - Blue/Green
+                // 1 - Blue/Yellow
+                // 2 - Blue/Red
+                // 3 - Green/Yellow
+                // 4 - Green/Red
+                // 5 - Yellow/Red
+                if (clue.value === 0) { // Blue clue
+                    if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
+                        touched = true;
+                    }
+                } else if (clue.value === 1) { // Green clue
+                    if (card.suit === 0 || card.suit === 3 || card.suit === 4) {
+                        touched = true;
+                    }
+                } else if (clue.value === 2) { // Yellow clue
+                    if (card.suit === 1 || card.suit === 3 || card.suit === 5) {
+                        touched = true;
+                    }
+                } else if (clue.value === 3) { // Red clue
+                    if (card.suit === 2 || card.suit === 4 || card.suit === 5) {
+                        touched = true;
+                    }
+                }
+                // Purple clues (with a value of 4) will never touch any cards
+            }
         }
-        else
-        {
+
+        if (touched) {
+            match = true;
+            card.setIndicator(true);
+        } else {
             card.setIndicator(false);
         }
     }
@@ -2047,10 +2083,13 @@ this.build_cards = function() {
     var xrad = cardw * 0.08, yrad = cardh * 0.08;
     var x, y;
     var rainbow = false, grad;
+    var mixed = false;
     var pathfuncs = [];
 
     if (this.variant === VARIANT.RAINBOW) {
         rainbow = true;
+    } else if (this.variant === VARIANT.MIXED) {
+        mixed = true;
     }
 
     pathfuncs[0] = function() {
@@ -2116,8 +2155,7 @@ this.build_cards = function() {
         ctx.quadraticCurveTo(70, 140, 50, 180);
     };
 
-    if (rainbow)
-    {
+    if (rainbow) {
         pathfuncs[5] = function() {
             ctx.beginPath();
             ctx.moveTo(0, 140);
@@ -2126,6 +2164,20 @@ this.build_cards = function() {
             ctx.arc(75, 140, 25, 0, Math.PI, true);
             ctx.lineTo(0, 140);
         };
+    }
+
+    if (mixed) {
+        for (let i = 0; i <= 5; i++) {
+            pathfuncs[i] = function() {
+                ctx.beginPath();
+                ctx.moveTo(0, 140);
+                ctx.arc(75, 140, 75, Math.PI, 0, false);
+                ctx.lineTo(125, 140);
+                ctx.arc(75, 140, 25, 0, Math.PI, true);
+                ctx.lineTo(0, 140);
+            };
+            // (same as the rainbow code above, but we put it on all suits)
+        }
     }
 
     var backpath = function(p) {
