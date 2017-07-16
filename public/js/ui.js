@@ -1925,12 +1925,12 @@ var show_clue_match = function(target, clue, show_neg) {
 
             } else if (ui.variant === VARIANT.MIXED) {
                 // Suits:
-                // 0 - Yellow (Red + Green)
-                // 1 - Magenta (Red + Blue)
-                // 2 - Cyan (Blue + Green)
-                // 3 - Light Red (Red + White)
-                // 4 - Light Blue (Blue + White)
-                // 5 - Light Green (Green + White)
+                // 0 - Blue    (Blue + Clear)
+                // 1 - Red     (Red + Clear)
+                // 2 - Green   (Green + Clear)
+                // 3 - Yellow  (Red + Green)
+                // 4 - Magenta (Red + Blue)
+                // 5 - Cyan    (Blue + Green)
                 if (clue.value === 0) { // Blue clue
                     if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
                         touched = true;
@@ -1965,20 +1965,32 @@ var show_clue_match = function(target, clue, show_neg) {
     return match;
 };
 
-var suit_colors = [
-    "#0044cc",
-    "#00cc00",
-    "#ccaa22",
-    "#aa0000",
-    "#6600cc",
-    "#111111",
-    "#cccccc",
-];
-
+var suit_colors = []; // Filled in later during the "build_cards" function
 var card_images = {};
 var scale_card_images = {};
 
 this.build_cards = function() {
+    suit_colors = [
+        "#0044cc", // Blue
+        "#00cc00", // Green
+        "#ccaa22", // Yellow
+        "#aa0000", // Red
+        "#6600cc", // Purple
+        "#111111", // Black
+        "#cccccc", // Grey
+    ];
+    if (this.variant === VARIANT.MIXED) {
+        suit_colors = [
+            "#0044cc", // Blue
+            "#aa0000", // Red
+            "#00cc00", // Green
+            "#ccaa22", // Yellow
+            "#ff00ff", // Magenta
+            "#00ffff", // Cyan
+            "#cccccc", // Grey
+        ];
+    }
+
     var cvs, ctx;
     var i, j, name;
     var xrad = cardw * 0.08, yrad = cardh * 0.08;
@@ -3548,11 +3560,11 @@ this.build_ui = function() {
         clueKeyMap[i] = mouseClickHelper(rankClueButtons[i]);
     }
 
-    Object.keys(suitClueButtons).forEach(function (key) {
+    for (let key of Object.keys(suitClueButtons)) {
         clueKeyMap[key] = mouseClickHelper(suitClueButtons[key]);
-    });
+    }
 
-    clueKeyMap["Tab"] = function () {
+    clueKeyMap.Tab = function() {
         clue_target_group.selectNextTarget();
     };
 
@@ -3567,7 +3579,9 @@ this.build_ui = function() {
             return "deck";
         }
 
-        if (! /^\d+$/.test(response)) return null;
+        if (! /^\d+$/.test(response)) {
+            return null;
+        }
 
         let num_response = parseInt(response);
         if (num_response < 1 || num_response > maxSlotIndex) {
@@ -3581,8 +3595,12 @@ this.build_ui = function() {
         let intendedPlay = tryPlay === true;
         let cardOrder = promptOwnHandOrder(intendedPlay ? "play" : "discard");
 
-        if (cardOrder == null) return;
-        if (cardOrder === "deck" && !(intendedPlay && saved_action.can_blind_play_deck)) return;
+        if (cardOrder === null) {
+            return;
+        }
+        if (cardOrder === "deck" && !(intendedPlay && saved_action.can_blind_play_deck)) {
+            return;
+        }
 
         let resp = {};
         if (cardOrder === "deck") {
@@ -3608,8 +3626,6 @@ this.build_ui = function() {
         doKeyboardCardAction(false);
     };
 
-    let cardActionKeyMap = {};
-
     let playKeyMap = {
         "+"      : doKeyboardCardPlay,
         "="      : doKeyboardCardPlay,
@@ -3622,10 +3638,10 @@ this.build_ui = function() {
     };
 
     this.keyNavigation = function (e) {
-        let currentNavigation = undefined;
+        let currentNavigation;
         if (replay_area.visible()) {
             currentNavigation = replayNavigationKeyMap[e.key];
-        } else if (saved_action != null) { // current user can take an action
+        } else if (saved_action !== null) { // current user can take an action
             if (saved_action.can_clue) {
                 currentNavigation = clueKeyMap[e.key];
             }
@@ -3635,8 +3651,7 @@ this.build_ui = function() {
             currentNavigation = currentNavigation || playKeyMap[e.key];
         }
 
-        if (currentNavigation !== undefined)
-        {
+        if (currentNavigation !== undefined) {
             e.preventDefault();
             currentNavigation();
         }

@@ -265,12 +265,12 @@ function playerClue(data) {
                 }
             } else if (game.variant === 4) { // Mixed suits
                 // Suits:
-                // 0 - Blue/Green
-                // 1 - Blue/Yellow
-                // 2 - Blue/Red
-                // 3 - Green/Yellow
-                // 4 - Green/Red
-                // 5 - Yellow/Red
+                // 0 - Blue    (Blue + Clear)
+                // 1 - Red     (Red + Clear)
+                // 2 - Green   (Green + Clear)
+                // 3 - Yellow  (Red + Green)
+                // 4 - Magenta (Red + Blue)
+                // 5 - Cyan    (Blue + Green)
                 if (data.clue.value === 0) { // Blue clue
                     if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
                         touched = true;
