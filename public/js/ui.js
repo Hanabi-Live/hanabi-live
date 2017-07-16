@@ -3630,6 +3630,9 @@ this.build_ui = function() {
     };
 
     this.keyNavigation = function (e) {
+        if (e.ctrlKey || e.altKey) {
+            return;
+        }
         let currentNavigation;
         if (replay_area.visible()) {
             currentNavigation = replayNavigationKeyMap[e.key];
