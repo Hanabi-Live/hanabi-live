@@ -1925,30 +1925,29 @@ var show_clue_match = function(target, clue, show_neg) {
 
             } else if (ui.variant === VARIANT.MIXED) {
                 // Suits:
-                // 0 - Blue    (Blue + Clear)
-                // 1 - Red     (Red + Clear)
-                // 2 - Green   (Green + Clear)
+                // 0 - Red     (Clear + Red)
+                // 1 - Green   (Clear + Green)
+                // 2 - Blue    (Clear + Blue)
                 // 3 - Yellow  (Red + Green)
                 // 4 - Magenta (Red + Blue)
                 // 5 - Cyan    (Blue + Green)
-                if (clue.value === 0) { // Blue clue
+                if (clue.value === 0) { // Clear clue
                     if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
                         touched = true;
                     }
-                } else if (clue.value === 1) { // Green clue
+                } else if (clue.value === 1) { // Red clue
                     if (card.suit === 0 || card.suit === 3 || card.suit === 4) {
                         touched = true;
                     }
-                } else if (clue.value === 2) { // Yellow clue
+                } else if (clue.value === 2) { // Green clue
                     if (card.suit === 1 || card.suit === 3 || card.suit === 5) {
                         touched = true;
                     }
-                } else if (clue.value === 3) { // Red clue
+                } else if (clue.value === 3) { // Blue clue
                     if (card.suit === 2 || card.suit === 4 || card.suit === 5) {
                         touched = true;
                     }
                 }
-                // Purple clues (with a value of 4) will never touch any cards
             }
         }
 
@@ -1981,9 +1980,9 @@ this.build_cards = function() {
     ];
     if (this.variant === VARIANT.MIXED) {
         suit_colors = [
-            "#0044cc", // Blue
             "#aa0000", // Red
             "#00cc00", // Green
+            "#0044cc", // Blue
             "#ccaa22", // Yellow
             "#ff00ff", // Magenta
             "#00ffff", // Cyan
@@ -2081,20 +2080,6 @@ this.build_cards = function() {
         };
     }
 
-    if (mixed) {
-        for (let i = 0; i <= 5; i++) {
-            pathfuncs[i] = function() {
-                ctx.beginPath();
-                ctx.moveTo(0, 140);
-                ctx.arc(75, 140, 75, Math.PI, 0, false);
-                ctx.lineTo(125, 140);
-                ctx.arc(75, 140, 25, 0, Math.PI, true);
-                ctx.lineTo(0, 140);
-            };
-            // (same as the rainbow code above, but we put it on all suits)
-        }
-    }
-
     var backpath = function(p) {
         ctx.beginPath();
         ctx.moveTo(p, yrad + p);
@@ -2152,7 +2137,7 @@ this.build_cards = function() {
             }
             ctx.restore();
 
-            if ((i === 5 && rainbow) || mixed) {
+            if (i === 5 && rainbow) {
                 grad = ctx.createLinearGradient(0, 0, 0, cardh);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -2180,7 +2165,7 @@ this.build_cards = function() {
 
             ctx.shadowBlur = 10;
 
-            if ((i === 5 && rainbow) || mixed) {
+            if (i === 5 && rainbow) {
                 grad = ctx.createLinearGradient(0, 14, 0, 110);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -2228,7 +2213,7 @@ this.build_cards = function() {
             ctx.strokeText(index_label, 19, text_y_pos);
             ctx.restore();
 
-            if ((i === 5 && rainbow) || mixed) {
+            if (i === 5 && rainbow) {
                 grad = ctx.createRadialGradient(75, 150, 25, 75, 150, 75);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -3187,13 +3172,20 @@ this.build_ui = function() {
         x = 0.208;
     }
 
+    var mixed_clue_colors = [
+        '#ffffff', // White (clear)
+        "#aa0000", // Red
+        "#00cc00", // Green
+        "#0044cc", // Blue
+    ];
+
     for (i = 0; i < suits; i++) {
         button = new ColorButton({
             x: (x + i * 0.049) * win_w,
             y: (MHGA_show_more_log ? 0.1 : 0.115) * win_h,
             width: 0.04 * win_w,
             height: 0.071 * win_h,
-            color: suit_colors[i],
+            color: (this.variant === VARIANT.MIXED ? mixed_clue_colors[i] : suit_colors[i]),
             text: suit_abbreviations[i],
             clue_type: {
                 type: CLUE.SUIT,
