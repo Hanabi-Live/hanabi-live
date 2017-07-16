@@ -16,6 +16,53 @@ const models  = require('../models');
 const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
+    // Validate that they submitted a username
+    if ('username' in data === false) {
+
+        logger.info('Someone tried to log in without submitting a username.');
+
+        // Let them know
+        socket.emit('message', {
+            type: 'denied',
+            resp: {
+                reason: 'You must submit a username.',
+            },
+        });
+
+        return;
+    }
+
+    // Validate that they submitted a password
+    if ('password' in data === false) {
+
+        logger.info('Someone tried to log in without submitting a password.');
+
+        // Let them know
+        socket.emit('message', {
+            type: 'denied',
+            resp: {
+                reason: 'You must submit a password.',
+            },
+        });
+
+        return;
+    }
+
+    // Validate that the username is not blank
+    if (data.username.length === 0) {
+        logger.info('Someone tried to log in with a blank username.');
+
+        // Let them know
+        socket.emit('message', {
+            type: 'denied',
+            resp: {
+                reason: 'Username cannot be blank.',
+            },
+        });
+
+        return;
+    }
+
     // Validate that the username is not too long
     let maxLength = 15;
     if (data.username.length > maxLength) {
@@ -25,7 +72,7 @@ exports.step1 = function(socket, data) {
         socket.emit('message', {
             type: 'denied',
             resp: {
-                reason: 'Username must be ' + maxLength + ' characters or less',
+                reason: 'Username must be ' + maxLength + ' characters or less.',
             },
         });
 
