@@ -1008,10 +1008,11 @@ CardDeck.prototype.getCount = function() {
     return this.count.getText();
 };
 
-CardDeck.prototype.resetPosition = function() {
-    // TODO??
-    //this.setPosition(0.08 * win_w, 0.8 * win_h);
-    // using setPosition doesn't seem to do anything
+CardDeck.prototype.doLayout = function() {
+    this.cardback.setPosition({
+        x: 0,
+        y: 0,
+    });
 };
 
 var CardStack = function(config) {
@@ -2906,6 +2907,14 @@ this.build_ui = function() {
         pos.y += this.getHeight() * this.getScaleY() / 2;
 
         if (overPlayArea(pos)) {
+            ui.postAnimationLayout = function () {
+                drawdeck.doLayout();
+                ui.postAnimationLayout = null;
+            };
+
+            this.setDraggable(false);
+            deck_play_available_label.setVisible(false);
+
             ui.send_msg({
                 type: "action",
                 resp: {
@@ -2915,16 +2924,7 @@ this.build_ui = function() {
 
             self.stop_action();
 
-            this.setDraggable(false);
-
-            // We need to return the deck to its original position somehow, since it seems to stay where the user dragged it
-            // Why don't cards have this behavior?
-            this.resetPosition();
-
-            deck_play_available_label.setVisible(false);
-
             saved_action = null;
-
         } else {
             new Kinetic.Tween({
                 node: this,
