@@ -58,7 +58,7 @@ exports.step1 = function(socket, data) {
     }
 
     // Validate that the game name is not excessively long
-    let maxLength = 24;
+    let maxLength = 30;
     if (data.name.length > maxLength) {
         logger.warn('User "' + data.username + '" supplied an excessively long table name with a length of:', data.name.length);
 
