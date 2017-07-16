@@ -2092,6 +2092,8 @@ this.build_cards = function() {
         mixed = true;
     }
 
+    // The following code draws the symbol on the cards and the empty deck
+
     pathfuncs[0] = function() {
         ctx.beginPath();
         ctx.moveTo(75, 0);
@@ -2202,7 +2204,7 @@ this.build_cards = function() {
 
     // 0-5 are the real suits. 6 is a "white" suit for replays
     for (i = 0; i < 7; i++) {
-        //0 is the stack base. 1-5 are the cards 1-5. 6 is a numberless card for replays.
+        // 0 is the stack base. 1-5 are the cards 1-5. 6 is a numberless card for replays.
         for (j = 0; j < 7; j++) {
             name = "card-" + i + "-" + j;
 
@@ -2237,7 +2239,7 @@ this.build_cards = function() {
             }
             ctx.restore();
 
-            if (i === 5 && rainbow) {
+            if ((i === 5 && rainbow) || mixed) {
                 grad = ctx.createLinearGradient(0, 0, 0, cardh);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -2248,9 +2250,7 @@ this.build_cards = function() {
 
                 ctx.fillStyle = grad;
                 ctx.strokeStyle = grad;
-            }
-            else
-            {
+            } else {
                 ctx.fillStyle = suit_colors[i];
                 ctx.strokeStyle = suit_colors[i];
             }
@@ -2267,7 +2267,7 @@ this.build_cards = function() {
 
             ctx.shadowBlur = 10;
 
-            if (i === 5 && rainbow) {
+            if ((i === 5 && rainbow) || mixed) {
                 grad = ctx.createLinearGradient(0, 14, 0, 110);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -2315,7 +2315,7 @@ this.build_cards = function() {
             ctx.strokeText(index_label, 19, text_y_pos);
             ctx.restore();
 
-            if (i === 5 && rainbow) {
+            if ((i === 5 && rainbow) || mixed) {
                 grad = ctx.createRadialGradient(75, 150, 25, 75, 150, 75);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -3246,14 +3246,15 @@ this.build_ui = function() {
     suits = 5;
     x = 0.183;
 
-    if (this.variant === VARIANT.BLACKSUIT || this.variant === VARIANT.BLACKONE)
-    {
+    if (this.variant === VARIANT.BLACKSUIT || this.variant === VARIANT.BLACKONE) {
         suits = 6;
         x = 0.158;
+    } else if (this.variant === VARIANT.MIXED) {
+        suits = 4;
+        x = 0.208;
     }
 
-    for (i = 0; i < suits; i++)
-    {
+    for (i = 0; i < suits; i++) {
         button = new ColorButton({
             x: (x + i * 0.049) * win_w,
             y: (MHGA_show_more_log ? 0.1 : 0.115) * win_h,
@@ -3723,19 +3724,16 @@ this.reset = function() {
 
     suits = 5;
 
-    if (this.variant > 0)
-    {
+    if (this.variant > 0) {
         suits = 6;
     }
 
-    for (i = 0; i < suits; i++)
-    {
+    for (i = 0; i < suits; i++) {
         play_stacks[i].removeChildren();
         discard_stacks[i].removeChildren();
     }
 
-    for (i = 0; i < this.player_names.length; i++)
-    {
+    for (i = 0; i < this.player_names.length; i++) {
         player_hands[i].removeChildren();
     }
 
@@ -3747,8 +3745,7 @@ this.reset = function() {
     drawdeck.setCount(99);
 
 
-    for (i = 0; i < strikes.length; i++)
-    {
+    for (i = 0; i < strikes.length; i++) {
         strikes[i].remove();
     }
 
