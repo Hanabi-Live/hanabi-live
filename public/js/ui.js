@@ -3674,19 +3674,35 @@ this.build_ui = function() {
         y: 0.03 * win_h,
         width: 0.74 * win_w,
         height: 0.74 * win_h,
-        fontSize: 0.02 * win_w,
+        fontSize: 0.019 * win_w,
         fontFamily: "Verdana",
         fill: "white",
-        text: "Welcome to Hanabi!\n\nWhen it is your turn, you may " +
+        text: "Welcome to Hanabi!\n\n" +
+              "When it is your turn, you may " +
               "play a card by dragging it to the play stacks in the " +
-              "center of the screen.\n\nTo discard, drag the card " +
-              "to the discard area in the lower right.\n\nTo give " +
-              "a clue, select the player who will receive it, then " +
-              "select either the number or color of the clue you " +
-              "wish to give, then hit the Give Clue button.\n\n" +
+              "center of the screen, or press '+', '=', or 'Insert'." +
+              "\n\n" +
+              "To discard, drag a card to the discard area in the " +
+              "lower right, or press '-' or 'Delete'. When there are " +
+              "8 clues available, you are not able to discard. " +
+              "A red border will appear around the discard area." +
+              "\n\n" +
+              "To give a clue, click the button for the player who " +
+              "will receive it (or select with Tab), then select the " +
+              "button (or key) for the number or color " +
+              "(BGYRP, K for black) of the clue you wish to give, " +
+              "then the Give Clue button (or 'Enter')." +
+              "\n\n" +
               "You may mouseover a card to see what clues have " +
               "been given about it, or mouseover the clues in the " +
-              "log to see which cards it referenced.",
+              "log to see which cards it referenced." +
+              "\n\n" +
+              "You can switch to rewind mode during a game with the " +
+              "arrow button in the bottom-left. In this mode, you " +
+              "can also step between turns with the left and right " +
+              "arrow keys. Skip forward or backward by one round " +
+              "with '[', ']'. Go to the start of the game with " +
+              "'Home', or to the present with 'End'.",
     });
 
     helpgroup.add(text);
