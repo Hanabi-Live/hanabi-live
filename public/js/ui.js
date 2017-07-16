@@ -2893,7 +2893,7 @@ this.build_ui = function() {
         cardback: "card-back",
     });
 
-    drawdeck.on("dragend.play", function() {
+    drawdeck.cardback.on("dragend.play", function() {
         var pos = this.getAbsolutePosition();
 
         pos.x += this.getWidth() * this.getScaleX() / 2;
@@ -2923,8 +2923,8 @@ this.build_ui = function() {
             new Kinetic.Tween({
                 node: this,
                 duration: 0.5,
-                x: 0.08 * win_w,
-                y: 0.8 * win_h,
+                x: 0,
+                y: 0,
                 runonce: true,
                 onFinish: function() {
                     uilayer.draw();
@@ -4248,12 +4248,12 @@ this.handle_notify = function(note, performing_replay) {
         child = new LayoutChild();
         child.add(ui.deck[note.order]);
 
-        pos = drawdeck.getPosition();
+        pos = drawdeck.cardback.getAbsolutePosition();
 
         child.setAbsolutePosition(pos);
         child.setRotation(-player_hands[note.who].getRotation());
 
-        scale = drawdeck.getWidth() / cardw;
+        scale = drawdeck.cardback.getWidth() / cardw;
         child.setScale({
             x: scale,
             y: scale,
@@ -4680,7 +4680,7 @@ this.stop_action = function(fast) {
         child.setDraggable(false);
     }
 
-    drawdeck.setDraggable(false);
+    drawdeck.cardback.setDraggable(false);
     deck_play_available_label.setVisible(false);
 
     submit_clue.off("click tap");
@@ -4793,7 +4793,7 @@ this.handle_action = function(data) {
         });
     }
 
-    drawdeck.setDraggable(data.can_blind_play_deck);
+    drawdeck.cardback.setDraggable(data.can_blind_play_deck);
 
     deck_play_available_label.setVisible(data.can_blind_play_deck);
 
