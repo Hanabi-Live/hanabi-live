@@ -454,7 +454,7 @@ function playerDiscardCard(data, failed = false) {
     }
     text += ' ' + suitText + ' ' + card.rank + ' from ';
     if (data.slot === -1) {
-        text += 'the bottom of the deck';
+        text += 'the deck';
     } else {
         text += 'slot #' + data.slot;
     }

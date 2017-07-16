@@ -1925,12 +1925,12 @@ var show_clue_match = function(target, clue, show_neg) {
 
             } else if (ui.variant === VARIANT.MIXED) {
                 // Suits:
-                // 0 - Blue/Green
-                // 1 - Blue/Yellow
-                // 2 - Blue/Red
-                // 3 - Green/Yellow
-                // 4 - Green/Red
-                // 5 - Yellow/Red
+                // 0 - Yellow (Red + Green)
+                // 1 - Magenta (Red + Blue)
+                // 2 - Cyan (Blue + Green)
+                // 3 - Light Red (Red + White)
+                // 4 - Light Blue (Blue + White)
+                // 5 - Light Green (Green + White)
                 if (clue.value === 0) { // Blue clue
                     if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
                         touched = true;
