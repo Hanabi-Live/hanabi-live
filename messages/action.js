@@ -45,6 +45,16 @@ const step1 = function(socket, data) {
 
     // Validate that it is this player's turn
     if (game.turn_player_index !== data.index) {
+        logger.warn('User "' + data.username + '" tried to perform an action when it was not their turn.');
+
+        // Let them know
+        socket.emit('message', {
+            type: 'denied',
+            resp: {
+                reason: 'You cannot perform an action when it is not your turn.',
+            },
+        });
+
         return;
     }
 
@@ -84,16 +94,8 @@ const step1 = function(socket, data) {
         playerClue(data);
 
     } else if (data.type === 1) { // Play
-        // Remove the card from their hand
-        for (let i = 0; i < player.hand.length; i++) {
-            if (player.hand[i].order === data.target) {
-                player.hand.splice(i, 1);
-                data.slot = player.hand.length - i + 1; // Slot 1 is the leftmost slot, but the leftmost slot is index 5
-                break;
-            }
-        }
-
         // Play
+        playerRemoveCard(data);
         playerPlayCard(data);
         playerDrawCard(data);
 
@@ -114,17 +116,9 @@ const step1 = function(socket, data) {
             return;
         }
 
-        // Remove the card from their hand
-        for (let i = 0; i < player.hand.length; i++) {
-            if (player.hand[i].order === data.target) {
-                player.hand.splice(i, 1);
-                data.slot = player.hand.length - i + 1; // Slot 1 is the leftmost slot, but the leftmost slot is index 5
-                break;
-            }
-        }
-
         // Discard
         game.clue_num++;
+        playerRemoveCard(data);
         playerDiscardCard(data);
         playerDrawCard(data);
 
@@ -295,6 +289,21 @@ function playerClue(data) {
     });
     notify.gameAction(data);
     logger.info('[Game ' + data.gameID + '] ' + text);
+}
+
+function playerRemoveCard(data) {
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+    let player = game.players[game.turn_player_index];
+
+    // Remove the card from their hand
+    for (let i = 0; i < player.hand.length; i++) {
+        if (player.hand[i].order === data.target) {
+            player.hand.splice(i, 1);
+            data.slot = player.hand.length - i + 1; // Slot 1 is the leftmost slot, but the leftmost slot is index 5
+            break;
+        }
+    }
 }
 
 function playerPlayCard(data) {
