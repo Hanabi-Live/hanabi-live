@@ -39,6 +39,9 @@ this.learned_cards = [];
 
 this.activeHover = null;
 
+// A function called after an action from the server moves cards
+this.postAnimationLayout = null;
+
 this.timed_game = false;
 this.timebank_seconds = 0; // Unused
 this.timebank_overtime = 0; // Unused
@@ -883,6 +886,8 @@ CardLayout.prototype.doLayout = function() {
         x = lw - x;
     }
 
+    let storedPostAnimationLayout = ui.postAnimationLayout;
+
     for (i = 0; i < n; i++) {
         node = this.children[i];
 
@@ -914,6 +919,7 @@ CardLayout.prototype.doLayout = function() {
                     scaleY: scale,
                     rotation: 0,
                     runonce: true,
+                    onFinish: storedPostAnimationLayout,
                 }).play();
             }
         }
@@ -3898,6 +3904,7 @@ this.reset = function() {
     }
 
     ui.deck = [];
+    ui.postAnimationLayout = null;
 
     clue_log.clear();
     message_prompt.reset();
