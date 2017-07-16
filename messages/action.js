@@ -145,13 +145,17 @@ const step1 = function(socket, data) {
     }
 
     // Send messages about the current turn
-    game.actions.push({
-        num: game.turn_num,
-        type: 'turn',
-        who: game.turn_player_index,
-    });
-    notify.gameAction(data);
-    logger.info('[Game ' + data.gameID + '] It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
+    // (we don't need to send this if the game is over, but we send it anyway in a timed game
+    // because we want an extra separator before the times are displayed)
+    if (data.end === false || game.timed) {
+        game.actions.push({
+            num: game.turn_num,
+            type: 'turn',
+            who: game.turn_player_index,
+        });
+        notify.gameAction(data);
+        logger.info('[Game ' + data.gameID + '] It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
+    }
 
     // Tell every client to play a sound as a notification for the action taken
     notify.gameSound(data);
