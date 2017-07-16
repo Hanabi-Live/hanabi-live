@@ -4442,10 +4442,11 @@ this.stop_action = function(fast) {
         }).play();
     }
 
-        no_clue_label.hide();
-        no_clue_box.hide();
-        no_discard_label.hide();
+    no_clue_label.hide();
+    no_clue_box.hide();
+    no_discard_label.hide();
 
+    show_clue_match(-1);
     clue_target_group.off("change");
     clue_type_group.off("change");
 
