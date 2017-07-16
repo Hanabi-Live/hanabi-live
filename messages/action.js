@@ -6,7 +6,13 @@
     {
         clue: { // Not present if the type is 1 or 2
             type: 0, // 0 is a number clue, 1 is a color clue
-            value: 1,
+            value: 1, // If a number clue, corresponds to the number
+            // If a color clue:
+            // 0 is blue
+            // 1 is green
+            // 2 is yellow
+            // 3 is red
+            // 4 is purple
         },
         target: 1, // Either the player index of the recipient of the clue, or the card ID (e.g. the first card of the deck drawn is card #1, etc.)
         type: 0,
@@ -232,7 +238,6 @@ const step1 = function(socket, data) {
 };
 exports.step1 = step1;
 
-// Type 0 - A clue
 function playerClue(data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
@@ -249,8 +254,44 @@ function playerClue(data) {
                 card.touched = true;
             }
         } else if (data.clue.type === 1) { // Color clue
-            // Account for rainbow cards
-            if (card.suit === data.clue.value || (card.suit === 5 && game.variant === 3)) {
+            let touched = false;
+            if (game.variant >= 0 && game.variant <= 2) { // Normal, black, and black one of each
+                if (data.clue.value === card.suit) {
+                    touched = true;
+                }
+            } else if (game.variant === 3) { // Multi (Rainbow)
+                if (data.clue.value === card.suit || card.suit === 5) {
+                    touched = true;
+                }
+            } else if (game.variant === 4) { // Mixed suits
+                // Suits:
+                // 0 - Blue/Green
+                // 1 - Blue/Yellow
+                // 2 - Blue/Red
+                // 3 - Green/Yellow
+                // 4 - Green/Red
+                // 5 - Yellow/Red
+                if (data.clue.value === 0) { // Blue clue
+                    if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
+                        touched = true;
+                    }
+                } else if (data.clue.value === 1) { // Green clue
+                    if (card.suit === 0 || card.suit === 3 || card.suit === 4) {
+                        touched = true;
+                    }
+                } else if (data.clue.value === 2) { // Yellow clue
+                    if (card.suit === 1 || card.suit === 3 || card.suit === 5) {
+                        touched = true;
+                    }
+                } else if (data.clue.value === 3) { // Red clue
+                    if (card.suit === 2 || card.suit === 4 || card.suit === 5) {
+                        touched = true;
+                    }
+                }
+                // Purple clues (with a value of 4) will never touch any cards
+            }
+
+            if (touched) {
                 list.push(card.order);
                 card.touched = true;
             }

@@ -420,6 +420,7 @@ var variant_names = [
     "Black Suit",
     "Black Suit (one of each rank)",
     "Multi-color Suit",
+    "Mixed-color Suits",
 ];
 
 HanabiLobby.prototype.draw_tables = function() {
