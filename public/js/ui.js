@@ -2066,6 +2066,7 @@ this.build_cards = function() {
     };
 
     if (rainbow) {
+        // Change the spade symbol on the 6th stack to a rainbow
         pathfuncs[5] = function() {
             ctx.beginPath();
             ctx.moveTo(0, 140);
@@ -2133,6 +2134,7 @@ this.build_cards = function() {
             }
             ctx.restore();
 
+            // Make multi card backgrounds a gradient
             if (i === 5 && rainbow) {
                 grad = ctx.createLinearGradient(0, 0, 0, cardh);
 
@@ -2144,6 +2146,7 @@ this.build_cards = function() {
 
                 ctx.fillStyle = grad;
                 ctx.strokeStyle = grad;
+
             } else {
                 ctx.fillStyle = suit_colors[i];
                 ctx.strokeStyle = suit_colors[i];
@@ -2151,6 +2154,7 @@ this.build_cards = function() {
 
             backpath(4);
 
+            // Draw the borders and the color fill
             ctx.save();
             ctx.globalAlpha = 0.3;
             ctx.fill();
@@ -2161,6 +2165,7 @@ this.build_cards = function() {
 
             ctx.shadowBlur = 10;
 
+            // Make the color of the number on each card a gradient for multi cards
             if (i === 5 && rainbow) {
                 grad = ctx.createLinearGradient(0, 14, 0, 110);
 
@@ -2169,6 +2174,30 @@ this.build_cards = function() {
                 grad.addColorStop(0.5, suit_colors[2]);
                 grad.addColorStop(0.75, suit_colors[3]);
                 grad.addColorStop(1, suit_colors[4]);
+
+                ctx.fillStyle = grad;
+
+            } else if (i === 3 && mixed) {
+                grad = ctx.createLinearGradient(0, 14, 0, 110);
+
+                grad.addColorStop(0, suit_colors[0]);
+                grad.addColorStop(1, suit_colors[1]);
+
+                ctx.fillStyle = grad;
+
+            } else if (i === 4 && mixed) {
+                grad = ctx.createLinearGradient(0, 14, 0, 110);
+
+                grad.addColorStop(0, suit_colors[0]);
+                grad.addColorStop(1, suit_colors[2]);
+
+                ctx.fillStyle = grad;
+
+            } else if (i === 5 && mixed) {
+                grad = ctx.createLinearGradient(0, 14, 0, 110);
+
+                grad.addColorStop(0, suit_colors[1]);
+                grad.addColorStop(1, suit_colors[2]);
 
                 ctx.fillStyle = grad;
             }
@@ -2209,6 +2238,7 @@ this.build_cards = function() {
             ctx.strokeText(index_label, 19, text_y_pos);
             ctx.restore();
 
+            // Make the rainbow symbol a gradient
             if (i === 5 && rainbow) {
                 grad = ctx.createRadialGradient(75, 150, 25, 75, 150, 75);
 
@@ -2290,8 +2320,7 @@ this.build_cards = function() {
 
                 }
 
-                if (j === 0 || j === 5)
-                {
+                if (j === 0 || j === 5) {
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
                     ctx.scale(0.6, 0.6);
@@ -2321,15 +2350,13 @@ this.build_cards = function() {
     ctx.clip();
     ctx.globalAlpha = 0.2;
     ctx.strokeStyle = "black";
-    for (x = 0; x < cardw; x += 4 + Math.random() * 4)
-    {
+    for (x = 0; x < cardw; x += 4 + Math.random() * 4) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, cardh);
         ctx.stroke();
     }
-    for (y = 0; y < cardh; y += 4 + Math.random() * 4)
-    {
+    for (y = 0; y < cardh; y += 4 + Math.random() * 4) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(cardw, y);
@@ -2355,8 +2382,7 @@ this.build_cards = function() {
 
     ctx.translate(cardw / 2, cardh / 2);
 
-    for (i = 0; i < 5; i++)
-    {
+    for (i = 0; i < 5; i++) {
         ctx.save();
         ctx.translate(0, -90);
         ctx.scale(0.4, 0.4);
