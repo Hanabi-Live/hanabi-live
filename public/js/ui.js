@@ -2147,6 +2147,33 @@ this.build_cards = function() {
                 ctx.fillStyle = grad;
                 ctx.strokeStyle = grad;
 
+            } else if (i === 3 && mixed) {
+                grad = ctx.createLinearGradient(0, 14, 0, 110);
+
+                grad.addColorStop(0, suit_colors[0]);
+                grad.addColorStop(1, suit_colors[1]);
+
+                ctx.fillStyle = suit_colors[i];
+                ctx.strokeStyle = grad;
+
+            } else if (i === 4 && mixed) {
+                grad = ctx.createLinearGradient(0, 14, 0, 110);
+
+                grad.addColorStop(0, suit_colors[0]);
+                grad.addColorStop(1, suit_colors[2]);
+
+                ctx.fillStyle = suit_colors[i];
+                ctx.strokeStyle = grad;
+
+            } else if (i === 5 && mixed) {
+                grad = ctx.createLinearGradient(0, 14, 0, 110);
+
+                grad.addColorStop(0, suit_colors[1]);
+                grad.addColorStop(1, suit_colors[2]);
+
+                ctx.fillStyle = suit_colors[i];
+                ctx.strokeStyle = grad;
+
             } else {
                 ctx.fillStyle = suit_colors[i];
                 ctx.strokeStyle = suit_colors[i];
@@ -2154,7 +2181,7 @@ this.build_cards = function() {
 
             backpath(4);
 
-            // Draw the borders and the color fill
+            // Draw the borders (on visable cards) and the color fill
             ctx.save();
             ctx.globalAlpha = 0.3;
             ctx.fill();
@@ -2317,7 +2344,6 @@ this.build_cards = function() {
                         ctx.shadowColor = "rgba(0, 0, 0, 0)";
                         ctx.strokeText(suit_letter, 19, 83);
                     }
-
                 }
 
                 if (j === 0 || j === 5) {
@@ -2770,6 +2796,7 @@ this.build_ui = function() {
     }
 
     for (i = 0; i < suits; i++) {
+        // In the play area, fill in the rectangles with the fill colors for that suit
         pileback = new Kinetic.Rect({
             fill: suit_colors[i],
             opacity: 0.4,
@@ -2782,6 +2809,7 @@ this.build_ui = function() {
 
         bglayer.add(pileback);
 
+        // In the play area, draw the symbol corresponding to each suit inside the rectangle
         pileback = new Kinetic.Image({
             x: (0.183 + (width + 0.015) * i) * win_w,
             y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
@@ -2792,8 +2820,31 @@ this.build_ui = function() {
 
         bglayer.add(pileback);
 
+        // In the play area, draw borders around each stack rectangle
+        let color = suit_colors[i];
+        if (ui.variant === VARIANT.MIXED) {
+            let cvs = document.createElement("canvas");
+            let ctx = cvs.getContext("2d");
+
+            if (i === 3) {
+                color = ctx.createLinearGradient(0, 0, 0, width * win_w);
+                color.addColorStop(0, suit_colors[0]);
+                color.addColorStop(1, suit_colors[1]);
+
+            } else if (i === 4) {
+                color = ctx.createLinearGradient(0, 0, 0, width * win_w);
+                color.addColorStop(0, suit_colors[0]);
+                color.addColorStop(1, suit_colors[2]);
+
+            } else if (i === 5) {
+                color = ctx.createLinearGradient(0, 0, 0, width * win_w);
+                color.addColorStop(0, suit_colors[1]);
+                color.addColorStop(1, suit_colors[2]);
+            }
+        }
+
         pileback = new Kinetic.Rect({
-            stroke: suit_colors[i],
+            stroke: color,
             strokeWidth: 5,
             x: (0.183 + (width + 0.015) * i) * win_w,
             y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
@@ -2801,7 +2852,6 @@ this.build_ui = function() {
             height: height * win_h,
             cornerRadius: radius * win_w,
         });
-
         bglayer.add(pileback);
 
         play_stacks[i] = new CardStack({
