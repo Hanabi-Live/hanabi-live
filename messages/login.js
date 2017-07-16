@@ -4,8 +4,8 @@
 // "data" example:
 /*
     {
-        password: "23628c952a47e5b7150384548fa02e8473789bbe22f7fd5e499078bdb0fd1d15",
         username: "test",
+        password: "23628c952a47e5b7150384548fa02e8473789bbe22f7fd5e499078bdb0fd1d15",
     }
 */
 
@@ -16,6 +16,22 @@ const models  = require('../models');
 const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
+    // Validate that the username is not too long
+    let maxLength = 15;
+    if (data.username.length > maxLength) {
+        logger.info('User "' + data.username + '" supplied a really long username with a length of:', data.username.length);
+
+        // Let them know
+        socket.emit('message', {
+            type: 'denied',
+            resp: {
+                reason: 'Username must be ' + maxLength + ' characters or less',
+            },
+        });
+
+        return;
+    }
+
     // Get the password (and other data) for this user
     models.users.getUser(socket, data, step2);
 };
@@ -44,6 +60,8 @@ function step2(error, socket, data) {
                     reason: 'Incorrect password',
                 },
             });
+
+            return;
         }
     }
 }
