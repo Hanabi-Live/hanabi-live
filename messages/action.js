@@ -50,13 +50,67 @@ const step1 = function(socket, data) {
 
     // There are 3 types of actions
     game.sound = null; // Remove the "fail" and "blind" states
-    if (data.type === 0) {
+    if (data.type === 0) { // Clue
+        // Validate that the player is not giving a clue to themselves
+        if (game.turn_player_index === data.target) {
+            logger.warn('User "' + data.username + '" tried to give a clue to themself.');
+
+            // Let them know
+            socket.emit('message', {
+                type: 'denied',
+                resp: {
+                    reason: 'You cannot give a clue to yourself.',
+                },
+            });
+
+            return;
+        }
+
+        // Validate that there are clues available to use
+        if (game.clue_num === 0) {
+            logger.warn('User "' + data.username + '" tried to give a clue while at 0 clues.');
+
+            // Let them know
+            socket.emit('message', {
+                type: 'denied',
+                resp: {
+                    reason: 'You cannot give a clue when you have 0 clues available.',
+                },
+            });
+
+            return;
+        }
+
         playerClue(data);
 
-    } else if (data.type === 1 || data.type === 2) {
+    } else if (data.type === 1) { // Play
+        // Remove the card from their hand
+        for (let i = 0; i < player.hand.length; i++) {
+            if (player.hand[i].order === data.target) {
+                player.hand.splice(i, 1);
+                data.slot = player.hand.length - i + 1; // Slot 1 is the leftmost slot, but the leftmost slot is index 5
+                break;
+            }
+        }
+
+        // Play
+        playerPlayCard(data);
+        playerDrawCard(data);
+
+    } else if (data.type === 2) { // Discard
         // We are not allowed to discard while at 8 clues
         // (the client should enforce this, but do a check just in case)
-        if (data.type === 2 && game.clue_num === 8) {
+        if (game.clue_num === 8) {
+            logger.warn('User "' + data.username + '" tried to discard while at 8 clues.');
+
+            // Let them know
+            socket.emit('message', {
+                type: 'denied',
+                resp: {
+                    reason: 'You cannot give a clue when you have 0 clues available.',
+                },
+            });
+
             return;
         }
 
@@ -69,12 +123,9 @@ const step1 = function(socket, data) {
             }
         }
 
-        if (data.type === 1) {
-            playerPlayCard(data);
-        } else if (data.type === 2) {
-            game.clue_num++;
-            playerDiscardCard(data);
-        }
+        // Discard
+        game.clue_num++;
+        playerDiscardCard(data);
         playerDrawCard(data);
 
     } else if (data.type === 3) {
@@ -191,11 +242,6 @@ exports.step1 = step1;
 function playerClue(data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
-
-    // Validate that there are clues available to use
-    if (game.clue_num === 0) {
-        return;
-    }
 
     // Decrement the clues
     game.clue_num--;

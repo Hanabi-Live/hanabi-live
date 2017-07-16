@@ -3,9 +3,9 @@
 (function (exports) {
 
 exports.ACT = {
-	CLUE: 0,
-	PLAY: 1,
-	DISCARD: 2,
+	CLUE:     0,
+	PLAY:     1,
+	DISCARD:  2,
 	DECKPLAY: 3,
 };
 
@@ -15,10 +15,11 @@ exports.CLUE = {
 };
 
 exports.VARIANT = {
-	NONE: 0,
+	NONE:      0,
 	BLACKSUIT: 1,
-	BLACKONE: 2,
-	RAINBOW: 3,
+	BLACKONE:  2,
+	RAINBOW:   3,
+	MIXED:     4,
 };
 
 }(typeof exports === "undefined" ? (this.constants = {}): exports));

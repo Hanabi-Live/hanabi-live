@@ -18,7 +18,6 @@ const notify  = require('../notify');
 exports.step1 = function(socket, data) {
     // Validate that they submitted a username
     if ('username' in data === false) {
-
         logger.warn('Someone tried to log in without submitting a username.');
 
         // Let them know
@@ -34,7 +33,6 @@ exports.step1 = function(socket, data) {
 
     // Validate that they submitted a password
     if ('password' in data === false) {
-
         logger.warn('Someone tried to log in without submitting a password.');
 
         // Let them know
