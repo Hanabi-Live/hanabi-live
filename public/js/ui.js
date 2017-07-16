@@ -708,12 +708,9 @@ HanabiCard.prototype.setBareImage = function() {
 };
 
 HanabiCard.prototype.setIndicator = function(indicate, negative) {
-    if (negative)
-    {
+    if (negative) {
         this.indicateRect.setStroke("#ff7777");
-    }
-    else
-    {
+    } else {
         this.indicateRect.setStroke("#ddeecc");
     }
     this.indicateRect.setVisible(indicate);
@@ -727,41 +724,36 @@ HanabiCard.prototype.add_clue = function(clue) {
         ui.learned_cards[this.order] = {};
     }
 
-    if (clue.type === CLUE.SUIT)
-    {
+    if (clue.type === CLUE.SUIT) {
         var grad = this.color_clue.getFillLinearGradientColorStops();
-        if (grad.length === 2)
-        {
+        let color = (ui.variant === VARIANT.MIXED ? mixed_clue_colors[clue.value] : suit_colors[clue.value]);
+        if (grad.length === 2) {
             this.color_clue.setFillLinearGradientColorStops([
                 0,
-                suit_colors[clue.value],
+                color,
                 1,
-                suit_colors[clue.value],
+                color,
             ]);
             this.color_clue_letter.setText(suit_abbreviations[clue.value]);
-        }
-        else if (grad[1] === grad[3])
-        {
-            grad[3] = suit_colors[clue.value];
+
+        } else if (grad[1] === grad[3]) {
+            grad[3] = color;
             this.color_clue.setFillLinearGradientColorStops(grad);
 
-            if (grad[i] !== suit_colors[clue.value]) {
+            if (grad[i] !== color) {
                 this.color_clue_letter.setText("M");
             }
-        }
-        else
-        {
-            if (grad[grad.length - 1] === suit_colors[clue.value])
-            {
+
+        } else {
+            if (grad[grad.length - 1] === color) {
                 return;
             }
 
-            for (i = 0; i < grad.length; i += 2)
-            {
+            for (i = 0; i < grad.length; i += 2) {
                 grad[i] = 1.0 * (i / 2) / (grad.length / 2);
             }
             grad.push(1);
-            grad.push(suit_colors[clue.value]);
+            grad.push(color);
             this.color_clue.setFillLinearGradientColorStops(grad);
             this.color_clue_letter.setText("M");
         }
@@ -774,9 +766,7 @@ HanabiCard.prototype.add_clue = function(clue) {
             ui.learned_cards[this.order].suit = 5;
         }
 
-    }
-    else
-    {
+    } else {
         this.number_clue.setText(clue.value.toString());
         this.number_clue.show();
         ui.learned_cards[this.order].rank = clue.value;
@@ -1965,6 +1955,12 @@ var show_clue_match = function(target, clue, show_neg) {
 };
 
 var suit_colors = []; // Filled in later during the "build_cards" function
+var mixed_clue_colors = [
+    '#ffffff', // White (clear)
+    "#aa0000", // Red
+    "#00cc00", // Green
+    "#0044cc", // Blue
+];
 var card_images = {};
 var scale_card_images = {};
 
@@ -3171,13 +3167,6 @@ this.build_ui = function() {
         suits = 4;
         x = 0.208;
     }
-
-    var mixed_clue_colors = [
-        '#ffffff', // White (clear)
-        "#aa0000", // Red
-        "#00cc00", // Green
-        "#0044cc", // Blue
-    ];
 
     for (i = 0; i < suits; i++) {
         button = new ColorButton({
