@@ -3161,10 +3161,6 @@ this.build_ui = function() {
 
         clue_area.add(button);
 
-        if (suit_abbreviations[i].length === 1) {
-            suitClueButtons[suit_abbreviations[i].toLowerCase()] = button;
-        }
-
         clue_type_group.add(button);
     }
 
@@ -3194,6 +3190,10 @@ this.build_ui = function() {
         });
 
         clue_area.add(button);
+
+        if (suit_abbreviations[i].length === 1) {
+            suitClueButtons[suit_abbreviations[i].toLowerCase()] = button;
+        }
 
         clue_type_group.add(button);
     }
