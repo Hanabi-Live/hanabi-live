@@ -27,8 +27,49 @@ exports.step1 = function(socket, data) {
     data.timed = false;
     data.owner = socket.userID;
 
-    // Validate that the game name is not longer than 100 characters
-    if (data.name.length > 100) {
+    // Validate that they submitted a table name
+    if ('name' in data === false) {
+        logger.warn('User "' + data.username + '" created a table without sending a table name.');
+
+        // Let them know
+        socket.emit('message', {
+            type: 'denied',
+            resp: {
+                reason: 'You must submit a table name.',
+            },
+        });
+
+        return;
+    }
+
+    // Validate that the username is not blank
+    if (data.name.length === 0) {
+        logger.warn('User "' + data.username + '" created a table with a blank table name.');
+
+        // Let them know
+        socket.emit('message', {
+            type: 'denied',
+            resp: {
+                reason: 'The table name cannot be blank.',
+            },
+        });
+
+        return;
+    }
+
+    // Validate that the game name is not excessively long
+    let maxLength = 24;
+    if (data.name.length > maxLength) {
+        logger.warn('User "' + data.username + '" supplied an excessively long table name with a length of:', data.name.length);
+
+        // Let them know
+        socket.emit('message', {
+            type: 'denied',
+            resp: {
+                reason: 'The table name must be ' + maxLength + ' characters or less.',
+            },
+        });
+
         return;
     }
 
