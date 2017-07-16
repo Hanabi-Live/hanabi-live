@@ -319,7 +319,20 @@ function playerClue(data) {
     if (data.clue.type === 0) { // Number clue
         text += data.clue.value;
     } else if (data.clue.type === 1) { // Color clue
-        text += globals.suits[data.clue.value];
+        let suitText = globals.suits[data.clue.value];
+        if (game.variant === 4) {
+            // Set the "Mixed Suits" text
+            if (data.clue.value === 0) {
+                suitText = 'Clear';
+            } else if (data.clue.value === 1) {
+                suitText = 'Red';
+            } else if (data.clue.value === 2) {
+                suitText = 'Green';
+            } else if (data.clue.value === 3) {
+                suitText = 'Blue';
+            }
+        }
+        text += suitText;
     }
     if (list.length > 1) {
         text += 's';

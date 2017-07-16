@@ -4057,6 +4057,12 @@ var suit_names = [
     "Black",
     " ",
 ];
+var mixed_names = [
+    "Clear",
+    "Red",
+    "Green",
+    "Blue",
+];
 
 var suit_abbreviations = [
     "B",
@@ -4391,7 +4397,11 @@ this.handle_notify = function(note, performing_replay) {
         if (note.clue.type === CLUE.RANK) {
             type = note.clue.value.toString();
         } else {
-            type = suit_names[note.clue.value];
+            if (ui.variant === VARIANT.MIXED) {
+                type = mixed_names[note.clue.value];
+            } else {
+                type = suit_names[note.clue.value];
+            }
         }
 
         var entry = new HanabiClueEntry({
