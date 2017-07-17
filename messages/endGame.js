@@ -122,9 +122,25 @@ function gameEnd4(error, data) {
         });
     }
 
-    // Increment the score for all of the players
-    for (let player of game.players) {
-        // TODO
+    // Begin to update all of the player's stats (1/3)
+    data.insertNum = -1;
+    gameEnd5(null, data);
+}
+
+function gameEnd5(error, data) {
+    if (error !== null) {
+        logger.error('Error: models.users.updateStats failed:', error);
+        return;
+    }
+
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+
+    data.insertNum++;
+    if (data.insertNum < game.players.length) {
+        data.userID = game.players[data.insertNum].userID;
+        models.users.updateStats(data, gameEnd5);
+        return;
     }
 
     // Keep track of the game ending

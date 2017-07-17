@@ -368,7 +368,7 @@ HanabiLobby.prototype.draw_users = function() {
 
     div.append($("<li>").addClass("table-header").append(attrs));
 
-    for (let i in this.user_list) {
+    for (let i of Object.keys(this.user_list)) {
         attrs = $("<ul>");
         attrs.append($("<li>").text(this.user_list[i].name).addClass("table-attr user-name"));
         /*
@@ -431,8 +431,7 @@ HanabiLobby.prototype.draw_tables = function() {
 
     div.html("");
 
-    for (i in this.table_list)
-    {
+    for (i of Object.keys(this.table_list)) {
         table = $("<li>").addClass("table-item");
         attrs = $("<ul>");
         attrs.append($("<li>").text(this.table_list[i].name).addClass("table-attr table-name"));
@@ -443,26 +442,19 @@ HanabiLobby.prototype.draw_tables = function() {
 
         turn = "Not Started";
 
-        if (this.table_list[i].running && !this.table_list[i].joined)
-        {
+        if (this.table_list[i].running && !this.table_list[i].joined) {
             turn = "Running";
-        }
-        else if (this.table_list[i].running)
-        {
-            if (this.table_list[i].our_turn)
-            {
+        } else if (this.table_list[i].running) {
+            if (this.table_list[i].our_turn) {
                 turn = "<b>Your Turn</b>";
-            }
-            else
-            {
+            } else {
                 turn = "Waiting";
             }
         }
 
         attrs.append($("<li>").html(turn).addClass("table-attr table-turn"));
 
-        if (!this.table_list[i].joined && this.table_list[i].allow_spec && this.table_list[i].running)
-        {
+        if (!this.table_list[i].joined && this.table_list[i].allow_spec && this.table_list[i].running) {
             button = $("<button>").text("Spectate").attr("type", "button");
             button.attr("id", "spectate-" + i);
 
@@ -480,14 +472,11 @@ HanabiLobby.prototype.draw_tables = function() {
 
                 self.draw_tables();
             });
-        }
-        else if (!this.table_list[i].joined)
-        {
+        } else if (!this.table_list[i].joined) {
             button = $("<button>").text("Join").attr("type", "button");
             button.attr("id", "join-" + i);
 
-            if (this.table_list[i].num_players >= this.table_list[i].max_players)
-            {
+            if (this.table_list[i].num_players >= this.table_list[i].max_players) {
                 button.attr("disabled", "disabled");
             }
 
@@ -505,9 +494,7 @@ HanabiLobby.prototype.draw_tables = function() {
 
                 self.draw_tables();
             });
-        }
-        else
-        {
+        } else {
             button = $("<button>").text("Resume").attr("type", "button");
             button.attr("id", "resume-" + i);
 
@@ -529,8 +516,7 @@ HanabiLobby.prototype.draw_tables = function() {
 
         attrs.append($("<li>").append(button).addClass("table-attr table-join"));
 
-        if (this.table_list[i].joined && (this.table_list[i].owned || this.table_list[i].running))
-        {
+        if (this.table_list[i].joined && (this.table_list[i].owned || this.table_list[i].running)) {
             button = $("<button>").html("&nbsp;").attr("type", "button").addClass("abandon");
 
             button.attr("id", "abandon-" + i);
@@ -539,10 +525,8 @@ HanabiLobby.prototype.draw_tables = function() {
                 evt.preventDefault();
 
                 var id = parseInt(this.id.slice(8));
-                if (self.table_list[id].running)
-                {
-                    if (!confirm("Really abandon game?  This will cancel the game for all players."))
-                    {
+                if (self.table_list[id].running) {
+                    if (!confirm("Really abandon game?  This will cancel the game for all players.")) {
                         return;
                     }
                 }
@@ -775,9 +759,9 @@ HanabiLobby.prototype.set_game = function(data) {
 HanabiLobby.prototype.set_game_player = function(data) {
     this.game.players[data.index] = {
         name:          data.name,
-        num_played:    data.started,
-        average_score: data.finished,
-        loss_percent:  data.best_score,
+        num_played:    data.num_played,
+        average_score: data.average_score,
+        loss_percent:  data.loss_percent,
         present:       data.present,
     };
 

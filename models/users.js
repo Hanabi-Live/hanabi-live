@@ -45,3 +45,36 @@ exports.create = function(socket, data, done) {
         done(null, socket, data);
     });
 };
+
+exports.updateStats = function(data, done) {
+    let sql = `
+        UPDATE users
+        SET
+            num_played = (
+                SELECT COUNT(id) FROM game_participants WHERE user_id = ?
+            ),
+            average_score = (
+                SELECT AVG(games.score)
+                FROM games
+                    JOIN game_participants ON game_participants.game_id = games.id
+                WHERE game_participants.user_id = ? AND games.score != 0
+            ),
+            loss_percent = (
+                SELECT COUNT(games.id)
+                FROM games
+                    JOIN game_participants ON game_participants.game_id = games.id
+                WHERE game_participants.user_id = ? AND games.score = 0
+            ) / (
+                SELECT COUNT(id) FROM game_participants WHERE user_id = ?
+            )
+        WHERE id = ?
+    `;
+    db.query(sql, [data.userID, data.userID], function (error, results, fields) {
+        if (error) {
+            done(error, data);
+            return;
+        }
+
+        done(null, data);
+    });
+};
