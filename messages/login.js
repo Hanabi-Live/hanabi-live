@@ -131,9 +131,9 @@ function step4(socket, data) {
         spectating: false,
     };
     socket.status = 'Lobby';
-    socket.num_started = data.num_started;
-    socket.num_finished = data.num_finished;
-    socket.best_score = data.best_score;
+    socket.num_played = data.num_played;
+    socket.average_score = data.average_score;
+    socket.loss_percent = data.loss_percent;
 
     // Check to see if this user is already logged on
     if (socket.userID in globals.connectedUsers) {

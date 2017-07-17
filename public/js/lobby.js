@@ -402,10 +402,10 @@ HanabiLobby.prototype.add_table = function(data) {
     };
     this.draw_tables();
     if (!data.running) {
-        //sometimes the server resets the id sequence for tables. if this happens, then a player can see old notes
-        //from a previous game if their new game happens to share the id of an old one. to avoid this, any time we
-        //see an un-started table, we remove any notes we might have in localstorage for a table with that id.
-        //(this is the most reliable way I can see to avoid the problem without sometimes losing active game notes)
+        // sometimes the server resets the id sequence for tables. if this happens, then a player can see old notes
+        // from a previous game if their new game happens to share the id of an old one. to avoid this, any time we
+        // see an un-started table, we remove any notes we might have in localstorage for a table with that id.
+        // (this is the most reliable way I can see to avoid the problem without sometimes losing active game notes)
         localStorage.removeItem(data.id);
     }
 };
@@ -774,11 +774,11 @@ HanabiLobby.prototype.set_game = function(data) {
 
 HanabiLobby.prototype.set_game_player = function(data) {
     this.game.players[data.index] = {
-        name: data.name,
-        games_started: data.started,
-        games_finished: data.finished,
-        best_score: data.best_score,
-        present: data.present,
+        name:          data.name,
+        num_played:    data.started,
+        average_score: data.finished,
+        loss_percent:  data.best_score,
+        present:       data.present,
     };
 
     if (data.you) {
@@ -803,12 +803,10 @@ HanabiLobby.prototype.show_joined = function() {
 
     $("#joined-desc").html(html);
 
-    for (i = 0; i < 5; i++)
-    {
+    for (i = 0; i < 5; i++) {
         div = $("#show-player-" + (i + 1).toString());
 
-        if (!this.game.players[i])
-        {
+        if (!this.game.players[i]) {
             div.html("");
             continue;
         }
@@ -818,12 +816,11 @@ HanabiLobby.prototype.show_joined = function() {
         html += '<div class="player-details">';
 
         html += "<p></p>";
-        html += "<div>Games started: " + this.game.players[i].games_started + "</div>";
-        html += "<div>Games finished: " + this.game.players[i].games_finished + "</div>";
-        html += "<div>Best score: " + this.game.players[i].best_score + "</div>";
+        html += "<div>Games played: " + this.game.players[i].num_played + "</div>";
+        html += "<div>Average score: " + this.game.players[i].average_score + "</div>";
+        html += "<div>Loss rate: " + this.game.players[i].loss_percent + "%</div>";
 
-        if (!this.game.players[i].present)
-        {
+        if (!this.game.players[i].present) {
             html += "<p></p><div><b>AWAY</b></div>";
         }
 

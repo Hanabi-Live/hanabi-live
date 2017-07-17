@@ -120,13 +120,13 @@ exports.gameMemberChange = function(data) {
             player.socket.emit('message', {
                 type: 'game_player',
                 resp: {
-                    index:      i,
-                    name:       player2.socket.username,
-                    you:        (player.userID === player2.userID),
-                    present:    game.players[i].present,
-                    started:    player2.socket.num_started,
-                    finished:   player2.socket.num_finished,
-                    best_score: player2.socket.best_score,
+                    index:         i,
+                    name:          player2.socket.username,
+                    you:           (player.userID === player2.userID),
+                    present:       game.players[i].present,
+                    num_played:    player2.socket.num_played,
+                    average_score: player2.socket.average_score,
+                    loss_percent:  player2.socket.loss_percent,
                 },
             });
         }
