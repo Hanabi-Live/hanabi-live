@@ -322,15 +322,7 @@ function playerClue(data) {
         let suitText = globals.suits[data.clue.value];
         if (game.variant === 4) {
             // Set the "Mixed Suits" text
-            if (data.clue.value === 0) {
-                suitText = 'Clear';
-            } else if (data.clue.value === 1) {
-                suitText = 'Red';
-            } else if (data.clue.value === 2) {
-                suitText = 'Green';
-            } else if (data.clue.value === 3) {
-                suitText = 'Blue';
-            }
+            suitText = globals.mixedClues[data.clue.value];
         }
         text += suitText;
     }

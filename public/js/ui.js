@@ -1975,7 +1975,7 @@ var mixed_suit_colors = [
     "#ff00ff", // Magenta  (Blue / Red)
     "#3322cc", // Indigo   (Blue / Purple)
     "orange",  // Orange   (Green / Red)
-    "#2b8d46", // Forest   (Green / Purple)
+    "#1e6231", // Forest   (Green / Purple)
     "#880066", // Cardinal (Red / Purple)
 ];
 var mixed_clue_colors = [
@@ -2205,7 +2205,7 @@ this.build_cards = function() {
             if (mixed) {
                 // We want the borders to be more visible on the mixed variant because
                 // they show the "true" color of the suit
-                ctx.lineWidth = 14;
+                ctx.lineWidth = 12;
             } else {
                 ctx.lineWidth = 8;
             }
@@ -2233,7 +2233,7 @@ this.build_cards = function() {
             }
 
             // Make the mixed suit colors different on each corner (1/6)
-            // (upper left corner)
+            // (for the numbers; upper left corner)
             if (mixed && i <= 5) {
                 let suit;
                 if (i === 0) {
@@ -2277,7 +2277,7 @@ this.build_cards = function() {
             ctx.save();
 
             // Make the mixed suit colors different on each corner (2/6)
-            // (lower-right corner)
+            // (for the numbers; lower-right corner)
             if (mixed && i <= 5) {
                 let suit;
                 if (i === 0) {
@@ -2997,36 +2997,14 @@ this.build_ui = function() {
 
     for (i = 0; i < suits; i++) {
         // In the play area, fill in the rectangles with the fill colors for that suit
-        pileback = new Kinetic.Rect({
-            fill: suit_colors[i],
-            opacity: 0.4,
-            x: (0.183 + (width + 0.015) * i) * win_w,
-            y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
-            width: width * win_w,
-            height: height * win_h,
-            cornerRadius: radius * win_w,
-        });
-
-        bglayer.add(pileback);
-
-        // In the play area, draw the symbol corresponding to each suit inside the rectangle
-        pileback = new Kinetic.Image({
-            x: (0.183 + (width + 0.015) * i) * win_w,
-            y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
-            width: width * win_w,
-            height: height * win_h,
-            image: card_images["card-" + i + "-0"],
-        });
-
-        bglayer.add(pileback);
-
-        // In the play area, draw borders around each stack rectangle
-        let color = suit_colors[i];
+        let fillColor = suit_colors[i];
         if (ui.variant === VARIANT.MIXED) {
+            //fillColor = mixed_suit_colors[i];
+
             let cvs = document.createElement("canvas");
             let ctx = cvs.getContext("2d");
+            let grad = ctx.createLinearGradient(-12, -12, height * win_h, width * win_w);
 
-            color = ctx.createLinearGradient(0, 0, height * win_h, width * win_w);
             let suit1, suit2;
             if (i === 0) {
                 // 0 - Teal (Blue / Green)
@@ -3054,14 +3032,43 @@ this.build_ui = function() {
                 suit2 = 4;
             }
 
-            color.addColorStop(0, suit_colors[suit1]);
-            color.addColorStop(0.5, suit_colors[suit1]);
-            color.addColorStop(0.5, suit_colors[suit2]);
-            color.addColorStop(1, suit_colors[suit2]);
+            grad.addColorStop(0, suit_colors[suit1]);
+            grad.addColorStop(0.45, suit_colors[suit1]);
+            grad.addColorStop(0.55, suit_colors[suit2]);
+            grad.addColorStop(1, suit_colors[suit2]);
+            fillColor = grad;
+        }
+        pileback = new Kinetic.Rect({
+            fill: fillColor,
+            opacity: 0.4,
+            x: (0.183 + (width + 0.015) * i) * win_w,
+            y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
+            width: width * win_w,
+            height: height * win_h,
+            cornerRadius: radius * win_w,
+        });
+
+        bglayer.add(pileback);
+
+        // In the play area, draw the symbol corresponding to each suit inside the rectangle
+        pileback = new Kinetic.Image({
+            x: (0.183 + (width + 0.015) * i) * win_w,
+            y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
+            width: width * win_w,
+            height: height * win_h,
+            image: card_images["card-" + i + "-0"],
+        });
+
+        bglayer.add(pileback);
+
+        // In the play area, draw borders around each stack rectangle
+        let strokeColor = suit_colors[i];
+        if (ui.variant === VARIANT.MIXED) {
+            strokeColor = mixed_suit_colors[i];
         }
 
         pileback = new Kinetic.Rect({
-            stroke: color,
+            stroke: strokeColor,
             strokeWidth: 5,
             x: (0.183 + (width + 0.015) * i) * win_w,
             y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
@@ -4342,7 +4349,17 @@ var suit_names = [
     "Black",
     " ",
 ];
-var mixed_names = [
+/*
+var mixed_suit_names = [
+    "Teal",
+    "Magenta",
+    "Indigo",
+    "Orange",
+    "Forest",
+    "Cardinal",
+];
+*/
+var mixed_clue_names = [
     "Blue",
     "Green",
     "Red",
@@ -4668,8 +4685,7 @@ this.handle_notify = function(note, performing_replay) {
 
         var neglist = [];
 
-        for (i = 0; i < player_hands[note.target].children.length; i++)
-        {
+        for (i = 0; i < player_hands[note.target].children.length; i++) {
             child = player_hands[note.target].children[i];
 
             order = child.children[0].order;
@@ -4683,7 +4699,7 @@ this.handle_notify = function(note, performing_replay) {
             type = note.clue.value.toString();
         } else {
             if (ui.variant === VARIANT.MIXED) {
-                type = mixed_names[note.clue.value];
+                type = mixed_clue_names[note.clue.value];
             } else {
                 type = suit_names[note.clue.value];
             }

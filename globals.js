@@ -21,4 +21,10 @@ module.exports = {
         'Forest',
         'Cardinal',
     ],
+    mixedClues: [
+        'Blue',
+        'Green',
+        'Red',
+        'Purple',
+    ],
 };
