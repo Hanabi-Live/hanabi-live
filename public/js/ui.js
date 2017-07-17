@@ -33,8 +33,8 @@ this.spectating = false;
 this.replay_max = 0;
 this.animate_fast = true;
 this.ready = false;
-//in replays, we can show a grayed-out version of a card face if it was not known at the time, but we know it now.
-//these are cards we have "learned"
+// In replays, we can show a grayed-out version of a card face if it was not known at the time, but we know it now
+// These are cards we have "learned"
 this.learned_cards = [];
 
 this.activeHover = null;
