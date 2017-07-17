@@ -114,7 +114,7 @@ exports.gameMemberChange = function(data) {
                     present:       game.players[i].present,
                     num_played:    player2.socket.num_played,
                     average_score: player2.socket.average_score,
-                    loss_percent:  player2.socket.loss_percent,
+                    loss_rate:     player2.socket.loss_rate,
                 },
             });
         }

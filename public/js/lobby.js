@@ -759,7 +759,7 @@ HanabiLobby.prototype.set_game_player = function(data) {
         name:          data.name,
         num_played:    data.num_played,
         average_score: data.average_score,
-        loss_percent:  data.loss_percent,
+        loss_rate:     data.loss_rate,
         present:       data.present,
     };
 
@@ -798,11 +798,29 @@ HanabiLobby.prototype.show_joined = function() {
         html += '<div class="player-details">';
 
         html += "<p></p>";
-        html += "<div>Games played: " + this.game.players[i].num_played + "</div>";
-        let average_score = Math.round(this.game.players[i].average_score * 100) / 100; // Round it to 2 decimal places
-        html += "<div>Average score: " + average_score + "</div>";
-        let loss_percent = Math.round(this.game.players[i].loss_percent * 100) / 100; // Round it to 2 decimal places
-        html += "<div>Loss rate: " + loss_percent + "%</div>";
+
+        html += "<table>";
+
+        html += "<tr>";
+        html += "<td>Total played:</td>";
+        html += "<td><b>" + this.game.players[i].num_played + "</b></td>";
+        html += "</tr>";
+
+        html += "<tr>";
+        html += "<td>Avg. score:</td>";
+        let average_score = this.game.players[i].average_score;
+        average_score = Math.round(average_score * 100) / 100; // Round it to 2 decimal places
+        html += "<td><b>" + average_score + "</b></td>";
+        html += "</tr>";
+
+        html += "<tr>";
+        html += "<td>Loss rate:</td>";
+        let loss_rate = this.game.players[i].loss_rate * 100; // Turn it into a percent
+        loss_rate = Math.round(loss_rate * 100) / 100; // Round it to 2 decimal places
+        html += "<td><b>" + loss_rate + "%</b></td>";
+        html += "</tr>";
+
+        html += "</table>";
 
         if (!this.game.players[i].present) {
             html += "<p></p><div><b>AWAY</b></div>";

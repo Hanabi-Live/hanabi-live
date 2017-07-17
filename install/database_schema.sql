@@ -12,7 +12,7 @@ CREATE TABLE users (
     password          CHAR(64)      NOT NULL, /* A SHA-256 hash string is 64 characters long */
     num_played        INT           NOT NULL  DEFAULT 0,
     average_score     FLOAT         NOT NULL  DEFAULT 0,
-    loss_percent      FLOAT         NOT NULL  DEFAULT 0,
+    loss_rate         FLOAT         NOT NULL  DEFAULT 0,
     datetime_created  TIMESTAMP     NOT NULL, /* Defaults to the current time */
     last_login        TIMESTAMP     NOT NULL /* Defaults to the current time */
 );

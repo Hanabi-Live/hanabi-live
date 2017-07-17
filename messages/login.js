@@ -133,7 +133,7 @@ function step4(socket, data) {
     socket.status = 'Lobby';
     socket.num_played = data.num_played;
     socket.average_score = data.average_score;
-    socket.loss_percent = data.loss_percent;
+    socket.loss_rate = data.loss_rate;
 
     // Check to see if this user is already logged on
     if (socket.userID in globals.connectedUsers) {
