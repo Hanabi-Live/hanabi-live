@@ -2005,6 +2005,7 @@ this.build_cards = function() {
         rainbow = true;
     } else if (this.variant === VARIANT.MIXED) {
         mixed = true;
+        MHGA_show_faces_in_replay = false;
     }
 
     // The following code draws the symbol on the cards and the empty deck
