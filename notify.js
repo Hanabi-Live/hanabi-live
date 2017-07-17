@@ -249,7 +249,7 @@ exports.gameTime = function(data) {
         type: 'clock',
         resp: {
             times: times,
-            active: game.turn_player_index,
+            active: data.end ? null : game.turn_player_index,
         },
     };
 
