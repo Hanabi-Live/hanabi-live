@@ -4551,12 +4551,6 @@ this.handle_notify = function(note, performing_replay) {
     }
 
     else if (type === "game_over") {
-        // Disable the timer when the game ends
-        if (ui.timerId !== null) {
-            window.clearInterval(ui.timerId);
-            ui.timerId = null;
-        }
-
         for (let i = 0; i < this.player_names.length; i++) {
             name_frames[i].off("mousemove");
         }
@@ -4565,11 +4559,6 @@ this.handle_notify = function(note, performing_replay) {
             timer_rect1.hide();
             timer_label1.hide();
             timer_text1.hide();
-        }
-        if (timer_rect2) {
-            timer_rect2.hide();
-            timer_label2.hide();
-            timer_text2.hide();
         }
 
         timerlayer.draw();
@@ -4621,7 +4610,7 @@ this.handle_clock = function(note) {
     let current_user_turn = note.active === ui.player_us && ui.spectating === false;
 
     // Update onscreen time displays
-    if (ui.spectating === false){
+    if (ui.spectating === false) {
         // The visibilty of this timer does not change during a game
         timer_text1.setText(milliseconds_to_time_display(ui.player_times[ui.player_us]));
     }
@@ -4631,9 +4620,11 @@ this.handle_clock = function(note) {
         timer_text2.setText(milliseconds_to_time_display(ui.player_times[note.active]));
     }
 
-    timer_rect2.setVisible(! current_user_turn);
-    timer_label2.setVisible(! current_user_turn);
-    timer_text2.setVisible(! current_user_turn);
+    let shoudShowTimer2 = ! current_user_turn && note.active !== null;
+    timer_rect2.setVisible(shoudShowTimer2);
+    timer_label2.setVisible(shoudShowTimer2);
+    timer_text2.setVisible(shoudShowTimer2);
+
     timerlayer.draw();
 
     // Update the timer tooltips for each player
@@ -4642,6 +4633,11 @@ this.handle_clock = function(note) {
     }
 
     tiplayer.draw();
+
+    // If no timer is running on the server, do not configure local approximation
+    if (note.active === null) {
+        return;
+    }
 
     // Start local timer for active player
     let active_timer_ui_text = current_user_turn ? timer_text1 : timer_text2;
