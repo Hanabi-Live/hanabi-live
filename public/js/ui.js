@@ -1922,25 +1922,25 @@ var show_clue_match = function(target, clue, show_neg) {
 
             } else if (ui.variant === VARIANT.MIXED) {
                 // Suits:
-                // 0 - Red     (Clear + Red)
-                // 1 - Green   (Clear + Green)
-                // 2 - Blue    (Clear + Blue)
-                // 3 - Yellow  (Red + Green)
-                // 4 - Magenta (Red + Blue)
-                // 5 - Cyan    (Blue + Green)
-                if (clue.value === 0) { // Clear clue
+                // 0 - Teal     (Blue / Green)
+                // 1 - Magenta  (Blue / Red)
+                // 2 - Indigo   (Blue / Purple)
+                // 3 - Orange   (Green / Red)
+                // 4 - Forest   (Green / Purple)
+                // 5 - Cardinal (Red / Purple)
+                if (clue.value === 0) { // Blue clue
                     if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
                         touched = true;
                     }
-                } else if (clue.value === 1) { // Red clue
+                } else if (clue.value === 1) { // Green clue
                     if (card.suit === 0 || card.suit === 3 || card.suit === 4) {
                         touched = true;
                     }
-                } else if (clue.value === 2) { // Green clue
+                } else if (clue.value === 2) { // Red clue
                     if (card.suit === 1 || card.suit === 3 || card.suit === 5) {
                         touched = true;
                     }
-                } else if (clue.value === 3) { // Blue clue
+                } else if (clue.value === 3) { // Purple clue
                     if (card.suit === 2 || card.suit === 4 || card.suit === 5) {
                         touched = true;
                     }
@@ -1961,38 +1961,33 @@ var show_clue_match = function(target, clue, show_neg) {
     return match;
 };
 
-var suit_colors = []; // Filled in later during the "build_cards" function
-var mixed_clue_colors = [
-    '#ffffff', // White (clear)
-    "#aa0000", // Red
-    "#00cc00", // Green
+var suit_colors = [
     "#0044cc", // Blue
+    "#00cc00", // Green
+    "#ccaa22", // Yellow
+    "#aa0000", // Red
+    "#6600cc", // Purple
+    "#111111", // Black
+    "#cccccc", // Grey
+];
+var mixed_suit_colors = [
+    "#00ffff", // Teal     (Blue / Green)
+    "#ff00ff", // Magenta  (Blue / Red)
+    "#3322cc", // Indigo   (Blue / Purple)
+    "orange",  // Orange   (Green / Red)
+    "#1e6231", // Forest   (Green / Purple)
+    "#880066", // Cardinal (Red / Purple)
+];
+var mixed_clue_colors = [
+    "#0044cc", // Blue
+    "#00cc00", // Green
+    "#aa0000", // Red
+    "#6600cc", // Purple
 ];
 var card_images = {};
 var scale_card_images = {};
 
 this.build_cards = function() {
-    suit_colors = [
-        "#0044cc", // Blue
-        "#00cc00", // Green
-        "#ccaa22", // Yellow
-        "#aa0000", // Red
-        "#6600cc", // Purple
-        "#111111", // Black
-        "#cccccc", // Grey
-    ];
-    if (this.variant === VARIANT.MIXED) {
-        suit_colors = [
-            "#aa0000", // Red
-            "#00cc00", // Green
-            "#0044cc", // Blue
-            "#ccaa22", // Yellow
-            "#ff00ff", // Magenta
-            "#00ffff", // Cyan
-            "#cccccc", // Grey
-        ];
-    }
-
     var cvs, ctx;
     var i, j, name;
     var xrad = cardw * 0.08, yrad = cardh * 0.08;
@@ -2142,8 +2137,9 @@ this.build_cards = function() {
             }
             ctx.restore();
 
-            // Make multi card backgrounds a gradient
+            // Draw the background
             if (i === 5 && rainbow) {
+                // Make multi card backgrounds a gradient with all 5 colors
                 grad = ctx.createLinearGradient(0, 0, 0, cardh);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -2155,32 +2151,44 @@ this.build_cards = function() {
                 ctx.fillStyle = grad;
                 ctx.strokeStyle = grad;
 
-            } else if (i === 3 && mixed) {
-                grad = ctx.createLinearGradient(0, 14, 0, 110);
+            } else if (mixed && i <= 5) {
+                // Make mixed cards a gradient with 2 colors
+                grad = ctx.createLinearGradient(-12, -12, cardh, cardw);
 
-                grad.addColorStop(0, suit_colors[0]);
-                grad.addColorStop(1, suit_colors[1]);
+                let suit1, suit2;
+                if (i === 0) {
+                    // 0 - Teal (Blue / Green)
+                    suit1 = 0;
+                    suit2 = 1;
+                } else if (i === 1) {
+                    // 1 - Magenta (Blue / Red)
+                    suit1 = 0;
+                    suit2 = 3;
+                } else if (i === 2) {
+                    // 2 - Indigo (Blue / Purple)
+                    suit1 = 0;
+                    suit2 = 4;
+                } else if (i === 3) {
+                    // 3 - Orange (Green / Red)
+                    suit1 = 1;
+                    suit2 = 3;
+                } else if (i === 4) {
+                    // 4 - Forest (Green / Purple)
+                    suit1 = 1;
+                    suit2 = 4;
+                } else if (i === 5) {
+                    // 5 - Cardinal (Red / Purple)
+                    suit1 = 3;
+                    suit2 = 4;
+                }
 
-                ctx.fillStyle = suit_colors[i];
-                ctx.strokeStyle = grad;
+                grad.addColorStop(0, suit_colors[suit1]);
+                grad.addColorStop(0.45, suit_colors[suit1]);
+                grad.addColorStop(0.55, suit_colors[suit2]);
+                grad.addColorStop(1, suit_colors[suit2]);
 
-            } else if (i === 4 && mixed) {
-                grad = ctx.createLinearGradient(0, 14, 0, 110);
-
-                grad.addColorStop(0, suit_colors[0]);
-                grad.addColorStop(1, suit_colors[2]);
-
-                ctx.fillStyle = suit_colors[i];
-                ctx.strokeStyle = grad;
-
-            } else if (i === 5 && mixed) {
-                grad = ctx.createLinearGradient(0, 14, 0, 110);
-
-                grad.addColorStop(0, suit_colors[1]);
-                grad.addColorStop(1, suit_colors[2]);
-
-                ctx.fillStyle = suit_colors[i];
-                ctx.strokeStyle = grad;
+                ctx.fillStyle = grad;
+                ctx.strokeStyle = mixed_suit_colors[i];
 
             } else {
                 ctx.fillStyle = suit_colors[i];
@@ -2194,14 +2202,20 @@ this.build_cards = function() {
             ctx.globalAlpha = 0.3;
             ctx.fill();
             ctx.globalAlpha = 0.7;
-            ctx.lineWidth = 8;
+            if (mixed) {
+                // We want the borders to be more visible on the mixed variant because
+                // they show the "true" color of the suit
+                ctx.lineWidth = 12;
+            } else {
+                ctx.lineWidth = 8;
+            }
             ctx.stroke();
             ctx.restore();
 
             ctx.shadowBlur = 10;
 
-            // Make the color of the number on each card a gradient for multi cards
             if (i === 5 && rainbow) {
+                // Make the color of the number on each card a gradient for multi cards
                 grad = ctx.createLinearGradient(0, 14, 0, 110);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -2211,30 +2225,6 @@ this.build_cards = function() {
                 grad.addColorStop(1, suit_colors[4]);
 
                 ctx.fillStyle = grad;
-
-            } else if (i === 3 && mixed) {
-                grad = ctx.createLinearGradient(0, 14, 0, 110);
-
-                grad.addColorStop(0, suit_colors[0]);
-                grad.addColorStop(1, suit_colors[1]);
-
-                ctx.fillStyle = grad;
-
-            } else if (i === 4 && mixed) {
-                grad = ctx.createLinearGradient(0, 14, 0, 110);
-
-                grad.addColorStop(0, suit_colors[0]);
-                grad.addColorStop(1, suit_colors[2]);
-
-                ctx.fillStyle = grad;
-
-            } else if (i === 5 && mixed) {
-                grad = ctx.createLinearGradient(0, 14, 0, 110);
-
-                grad.addColorStop(0, suit_colors[1]);
-                grad.addColorStop(1, suit_colors[2]);
-
-                ctx.fillStyle = grad;
             }
 
             var suit_letter = suit_abbreviations[i];
@@ -2242,6 +2232,26 @@ this.build_cards = function() {
                 suit_letter = "M";
             }
 
+            // Make the mixed suit colors different on each corner (1/6)
+            // (for the numbers; upper left corner)
+            if (mixed && i <= 5) {
+                let suit;
+                if (i === 0) {
+                    suit = 0; // Blue
+                } else if (i === 1) {
+                    suit = 0; // Blue
+                } else if (i === 2) {
+                    suit = 0; // Blue
+                } else if (i === 3) {
+                    suit = 1; // Green
+                } else if (i === 4) {
+                    suit = 1; // Green
+                } else if (i === 5) {
+                    suit = 3; // Red
+                }
+
+                ctx.fillStyle = suit_colors[suit];
+            }
 
             ctx.strokeStyle = "black";
             ctx.lineWidth = 2;
@@ -2265,6 +2275,28 @@ this.build_cards = function() {
             ctx.strokeText(index_label, 19, text_y_pos);
 
             ctx.save();
+
+            // Make the mixed suit colors different on each corner (2/6)
+            // (for the numbers; lower-right corner)
+            if (mixed && i <= 5) {
+                let suit;
+                if (i === 0) {
+                    suit = 1; // Green
+                } else if (i === 1) {
+                    suit = 3; // Red
+                } else if (i === 2) {
+                    suit = 4; // Purple
+                } else if (i === 3) {
+                    suit = 3; // Red
+                } else if (i === 4) {
+                    suit = 4; // Purple
+                } else if (i === 5) {
+                    suit = 4; // Purple
+                }
+
+                ctx.fillStyle = suit_colors[suit];
+            }
+
             ctx.translate(cardw, cardh);
             ctx.rotate(Math.PI);
             ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
@@ -2288,7 +2320,44 @@ this.build_cards = function() {
 
             ctx.lineWidth = 5;
             if (i !== 6) {
+                // The middle for cards 2 or 4
                 if (j === 1 || j === 3) {
+                    if (mixed && i <= 5) {
+                        grad = ctx.createLinearGradient(-12, -12, 210, 210);
+
+                        let suit1, suit2;
+                        if (i === 0) {
+                            // 0 - Teal (Blue / Green)
+                            suit1 = 0;
+                            suit2 = 1;
+                        } else if (i === 1) {
+                            // 1 - Magenta (Blue / Red)
+                            suit1 = 0;
+                            suit2 = 3;
+                        } else if (i === 2) {
+                            // 2 - Indigo (Blue / Purple)
+                            suit1 = 0;
+                            suit2 = 4;
+                        } else if (i === 3) {
+                            // 3 - Orange (Green / Red)
+                            suit1 = 1;
+                            suit2 = 3;
+                        } else if (i === 4) {
+                            // 4 - Forest (Green / Purple)
+                            suit1 = 1;
+                            suit2 = 4;
+                        } else if (i === 5) {
+                            // 5 - Cardinal (Red / Purple)
+                            suit1 = 3;
+                            suit2 = 4;
+                        }
+
+                        grad.addColorStop(0, suit_colors[suit1]);
+                        grad.addColorStop(0.5, suit_colors[suit1]);
+                        grad.addColorStop(0.5, suit_colors[suit2]);
+                        grad.addColorStop(1, suit_colors[suit2]);
+                    }
+
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
                     ctx.scale(0.4, 0.4);
@@ -2298,6 +2367,28 @@ this.build_cards = function() {
                     ctx.restore();
                 }
 
+                // Make the mixed suit colors different on each corner (3/6)
+                // (top-left corner)
+                if (mixed && i <= 5) {
+                    let suit;
+                    if (i === 0) {
+                        suit = 0; // Blue
+                    } else if (i === 1) {
+                        suit = 0; // Blue
+                    } else if (i === 2) {
+                        suit = 0; // Blue
+                    } else if (i === 3) {
+                        suit = 1; // Green
+                    } else if (i === 4) {
+                        suit = 1; // Green
+                    } else if (i === 5) {
+                        suit = 3; // Red
+                    }
+
+                    ctx.fillStyle = suit_colors[suit];
+                }
+
+                // Top and bottom for cards 3, 4, 5
                 if (j > 1 && j !== 6) {
                     var symbol_y_pos = 120;
                     if (lobby.show_colorblind_ui) {
@@ -2312,6 +2403,27 @@ this.build_cards = function() {
                     drawshape();
                     ctx.restore();
 
+                    // Make the mixed suit colors different on each corner (4/6)
+                    // (bottom-right corner)
+                    if (mixed && i <= 5) {
+                        let suit;
+                        if (i === 0) {
+                            suit = 1; // Green
+                        } else if (i === 1) {
+                            suit = 3; // Red
+                        } else if (i === 2) {
+                            suit = 4; // Purple
+                        } else if (i === 3) {
+                            suit = 3; // Red
+                        } else if (i === 4) {
+                            suit = 4; // Purple
+                        } else if (i === 5) {
+                            suit = 4; // Purple
+                        }
+
+                        ctx.fillStyle = suit_colors[suit];
+                    }
+
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
                     ctx.translate(0, symbol_y_pos);
@@ -2323,7 +2435,29 @@ this.build_cards = function() {
                     ctx.restore();
                 }
 
+                // Left and right for cards 4 and 5
                 if (j > 3 && j !== 6) {
+                    // Make the mixed suit colors different on each corner (5/6)
+                    // (top-left corner)
+                    if (mixed && i <= 5) {
+                        let suit;
+                        if (i === 0) {
+                            suit = 0; // Blue
+                        } else if (i === 1) {
+                            suit = 0; // Blue
+                        } else if (i === 2) {
+                            suit = 0; // Blue
+                        } else if (i === 3) {
+                            suit = 1; // Green
+                        } else if (i === 4) {
+                            suit = 1; // Green
+                        } else if (i === 5) {
+                            suit = 3; // Red
+                        }
+
+                        ctx.fillStyle = suit_colors[suit];
+                    }
+
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
                     ctx.translate(-90, 0);
@@ -2332,6 +2466,27 @@ this.build_cards = function() {
                     pathfuncs[i]();
                     drawshape();
                     ctx.restore();
+
+                    // Make the mixed suit colors different on each corner (6/6)
+                    // (bottom-right corner)
+                    if (mixed && i <= 5) {
+                        let suit;
+                        if (i === 0) {
+                            suit = 1; // Green
+                        } else if (i === 1) {
+                            suit = 3; // Red
+                        } else if (i === 2) {
+                            suit = 4; // Purple
+                        } else if (i === 3) {
+                            suit = 3; // Red
+                        } else if (i === 4) {
+                            suit = 4; // Purple
+                        } else if (i === 5) {
+                            suit = 4; // Purple
+                        }
+
+                        ctx.fillStyle = suit_colors[suit];
+                    }
 
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
@@ -2354,7 +2509,44 @@ this.build_cards = function() {
                     }
                 }
 
+                // Colour adjustment for the central icon on cards 1 and 5
                 if (j === 0 || j === 5) {
+                    if (mixed && i <= 5) {
+                        grad = ctx.createLinearGradient(-12, -12, cardh, cardw);
+
+                        let suit1, suit2;
+                        if (i === 0) {
+                            // 0 - Teal (Blue / Green)
+                            suit1 = 0;
+                            suit2 = 1;
+                        } else if (i === 1) {
+                            // 1 - Magenta (Blue / Red)
+                            suit1 = 0;
+                            suit2 = 3;
+                        } else if (i === 2) {
+                            // 2 - Indigo (Blue / Purple)
+                            suit1 = 0;
+                            suit2 = 4;
+                        } else if (i === 3) {
+                            // 3 - Orange (Green / Red)
+                            suit1 = 1;
+                            suit2 = 3;
+                        } else if (i === 4) {
+                            // 4 - Forest (Green / Purple)
+                            suit1 = 1;
+                            suit2 = 4;
+                        } else if (i === 5) {
+                            // 5 - Cardinal (Red / Purple)
+                            suit1 = 3;
+                            suit2 = 4;
+                        }
+
+                        grad.addColorStop(0, suit_colors[suit1]);
+                        grad.addColorStop(0.5, suit_colors[suit1]);
+                        grad.addColorStop(0.5, suit_colors[suit2]);
+                        grad.addColorStop(1, suit_colors[suit2]);
+                    }
+
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
                     ctx.scale(0.6, 0.6);
@@ -2805,8 +2997,49 @@ this.build_ui = function() {
 
     for (i = 0; i < suits; i++) {
         // In the play area, fill in the rectangles with the fill colors for that suit
+        let fillColor = suit_colors[i];
+        if (ui.variant === VARIANT.MIXED) {
+            //fillColor = mixed_suit_colors[i];
+
+            let cvs = document.createElement("canvas");
+            let ctx = cvs.getContext("2d");
+            let grad = ctx.createLinearGradient(-12, -12, height * win_h, width * win_w);
+
+            let suit1, suit2;
+            if (i === 0) {
+                // 0 - Teal (Blue / Green)
+                suit1 = 0;
+                suit2 = 1;
+            } else if (i === 1) {
+                // 1 - Magenta (Blue / Red)
+                suit1 = 0;
+                suit2 = 3;
+            } else if (i === 2) {
+                // 2 - Indigo (Blue / Purple)
+                suit1 = 0;
+                suit2 = 4;
+            } else if (i === 3) {
+                // 3 - Orange (Green / Red)
+                suit1 = 1;
+                suit2 = 3;
+            } else if (i === 4) {
+                // 4 - Forest (Green / Purple)
+                suit1 = 1;
+                suit2 = 4;
+            } else if (i === 5) {
+                // 5 - Cardinal (Red / Purple)
+                suit1 = 3;
+                suit2 = 4;
+            }
+
+            grad.addColorStop(0, suit_colors[suit1]);
+            grad.addColorStop(0.45, suit_colors[suit1]);
+            grad.addColorStop(0.55, suit_colors[suit2]);
+            grad.addColorStop(1, suit_colors[suit2]);
+            fillColor = grad;
+        }
         pileback = new Kinetic.Rect({
-            fill: suit_colors[i],
+            fill: fillColor,
             opacity: 0.4,
             x: (0.183 + (width + 0.015) * i) * win_w,
             y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
@@ -2829,30 +3062,13 @@ this.build_ui = function() {
         bglayer.add(pileback);
 
         // In the play area, draw borders around each stack rectangle
-        let color = suit_colors[i];
+        let strokeColor = suit_colors[i];
         if (ui.variant === VARIANT.MIXED) {
-            let cvs = document.createElement("canvas");
-            let ctx = cvs.getContext("2d");
-
-            if (i === 3) {
-                color = ctx.createLinearGradient(0, 0, 0, width * win_w);
-                color.addColorStop(0, suit_colors[0]);
-                color.addColorStop(1, suit_colors[1]);
-
-            } else if (i === 4) {
-                color = ctx.createLinearGradient(0, 0, 0, width * win_w);
-                color.addColorStop(0, suit_colors[0]);
-                color.addColorStop(1, suit_colors[2]);
-
-            } else if (i === 5) {
-                color = ctx.createLinearGradient(0, 0, 0, width * win_w);
-                color.addColorStop(0, suit_colors[1]);
-                color.addColorStop(1, suit_colors[2]);
-            }
+            strokeColor = mixed_suit_colors[i];
         }
 
         pileback = new Kinetic.Rect({
-            stroke: color,
+            stroke: strokeColor,
             strokeWidth: 5,
             x: (0.183 + (width + 0.015) * i) * win_w,
             y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
@@ -4133,11 +4349,21 @@ var suit_names = [
     "Black",
     " ",
 ];
-var mixed_names = [
-    "Clear",
-    "Red",
-    "Green",
+/*
+var mixed_suit_names = [
+    "Teal",
+    "Magenta",
+    "Indigo",
+    "Orange",
+    "Forest",
+    "Cardinal",
+];
+*/
+var mixed_clue_names = [
     "Blue",
+    "Green",
+    "Red",
+    "Purple",
 ];
 
 var suit_abbreviations = [
@@ -4459,8 +4685,7 @@ this.handle_notify = function(note, performing_replay) {
 
         var neglist = [];
 
-        for (i = 0; i < player_hands[note.target].children.length; i++)
-        {
+        for (i = 0; i < player_hands[note.target].children.length; i++) {
             child = player_hands[note.target].children[i];
 
             order = child.children[0].order;
@@ -4474,7 +4699,7 @@ this.handle_notify = function(note, performing_replay) {
             type = note.clue.value.toString();
         } else {
             if (ui.variant === VARIANT.MIXED) {
-                type = mixed_names[note.clue.value];
+                type = mixed_clue_names[note.clue.value];
             } else {
                 type = suit_names[note.clue.value];
             }
