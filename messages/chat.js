@@ -12,15 +12,19 @@
 const globals = require('../globals');
 const logger  = require('../logger');
 const models  = require('../models');
+const discord = require('../discord');
 
 exports.step1 = function(socket, data) {
     // Validate the message
     if (typeof(data.msg) !== 'string') {
         logger.warn('Error: Malformed chat message input.');
         return;
-    } else if (data.msg.length > 150) {
-        logger.warn('Error: Chat message over 150 characters.');
-        return;
+    }
+
+    // Truncate long messages
+    let maxLength = 150;
+    if (data.msg.length > maxLength) {
+        data.msg = data.msg.substring(0, maxLength);
     }
 
     // Add the message to the database
@@ -33,16 +37,29 @@ function step2(error, socket, data) {
         return;
     }
 
-    logger.info('<' + socket.username + '> ' + data.msg);
+    if (socket.userID === 1) {
+        logger.info('DISCORD <' + socket.username + '> ' + data.msg);
+    } else {
+        logger.info('<' + socket.username + '> ' + data.msg);
+    }
 
     // Send the chat message to everyone
     for (let userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
             type: 'chat',
             resp: {
-                msg: data.msg,
-                who: socket.username,
+                msg:     data.msg,
+                who:     socket.username,
+                discord: (socket.userID === 1),
             },
         });
+    }
+
+    // Send the chat message to the Discord "#general" channel
+    // (only if it is not a server message)
+    if (socket.userID !== 1) {
+        let guild = discord.client.guilds.array()[0]; // A guild is a server in Discord
+        let channel = guild.defaultChannel;
+        channel.send('[Lobby] <' + socket.username + '> ' + data.msg);
     }
 }

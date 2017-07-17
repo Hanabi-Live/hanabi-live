@@ -234,6 +234,8 @@ function step4(socket, data) {
     }
 
     // Send the welcome chat messages
+    // (Keldon sends these, but they seem rather useless and spammy, so comment them out for now)
+    /*
     socket.emit('message', {
         type: 'chat',
         resp: {
@@ -248,6 +250,7 @@ function step4(socket, data) {
             who: null,
         },
     });
+    */
 
     // Send the user's game history
     models.games.getUserHistory(socket, data, step5);

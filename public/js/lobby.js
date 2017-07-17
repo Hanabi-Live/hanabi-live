@@ -551,15 +551,16 @@ HanabiLobby.prototype.draw_tables = function() {
 
 HanabiLobby.prototype.add_chat = function(data) {
     var chat = $("#chat");
-    var line;
+    var line = "";
 
-    if (data.who)
-    {
-        line = "<i>" + new Date().toLocaleTimeString() + "</i>&nbsp;&nbsp;<b>" + data.who + ":</b> " + $("<a>").text(data.msg).html() + "<br>";
-    }
-    else
-    {
-        line = "<b>" + $("<a>").text(data.msg).html() + "</b><br>";
+    if (data.who) {
+        line += "<i>" + new Date().toLocaleTimeString() + "</i>&nbsp;&nbsp;";
+        if (data.discord) {
+            line += "&lt;<b>D</b>&gt; ";
+        }
+        line += "<b>" + data.who + ":</b> " + $("<a>").text(data.msg).html() + "<br>";
+    } else {
+        line += "<b>" + $("<a>").text(data.msg).html() + "</b><br>";
     }
 
     chat.finish();
@@ -570,15 +571,12 @@ HanabiLobby.prototype.add_chat = function(data) {
 
     var r = new RegExp(this.username, "i");
 
-    if (data.who && r.test(data.msg))
-    {
-        if (this.send_chat_notify)
-        {
+    if (data.who && r.test(data.msg)) {
+        if (this.send_chat_notify) {
             this.send_notify(data.who + " mentioned you in chat", "chat");
         }
 
-        if (this.send_chat_sound)
-        {
+        if (this.send_chat_sound) {
             this.play_sound("chat");
         }
     }

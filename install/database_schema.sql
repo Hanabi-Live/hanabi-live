@@ -17,6 +17,7 @@ CREATE TABLE users (
     last_login        TIMESTAMP     NOT NULL /* Defaults to the current time */
 );
 CREATE INDEX users_index_username ON users (username);
+INSERT INTO users (id, username, password) VALUES (1, '[SERVER]', '');
 
 CREATE TABLE games (
     id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
