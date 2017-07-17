@@ -265,25 +265,25 @@ function playerClue(data) {
                 }
             } else if (game.variant === 4) { // Mixed suits
                 // Suits:
-                // 0 - Red     (Clear + Red)
-                // 1 - Green   (Clear + Green)
-                // 2 - Blue    (Clear + Blue)
-                // 3 - Yellow  (Red + Green)
-                // 4 - Magenta (Red + Blue)
-                // 5 - Cyan    (Blue + Green)
-                if (data.clue.value === 0) { // Clear clue
+                // 0 - Teal     (Blue / Green)
+                // 1 - Magenta  (Blue / Red)
+                // 2 - Indigo   (Blue / Purple)
+                // 3 - Orange   (Green / Red)
+                // 4 - Forest   (Green / Purple)
+                // 5 - Cardinal (Red / Purple)
+                if (data.clue.value === 0) { // Blue clue
                     if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
                         touched = true;
                     }
-                } else if (data.clue.value === 1) { // Red clue
+                } else if (data.clue.value === 1) { // Green clue
                     if (card.suit === 0 || card.suit === 3 || card.suit === 4) {
                         touched = true;
                     }
-                } else if (data.clue.value === 2) { // Green clue
+                } else if (data.clue.value === 2) { // Red clue
                     if (card.suit === 1 || card.suit === 3 || card.suit === 5) {
                         touched = true;
                     }
-                } else if (data.clue.value === 3) { // Blue clue
+                } else if (data.clue.value === 3) { // Purple clue
                     if (card.suit === 2 || card.suit === 4 || card.suit === 5) {
                         touched = true;
                     }
