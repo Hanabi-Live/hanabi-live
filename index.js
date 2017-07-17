@@ -16,7 +16,7 @@ const port = 3000;
 
 // HTTP handlers
 app.get('/', function(req, res) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/public/index.html');
 });
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(favicon(path.join(__dirname, 'public', 'img', 'favicon.ico')));
