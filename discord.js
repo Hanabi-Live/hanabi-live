@@ -27,11 +27,29 @@ client.on('ready', function() {
 
 client.on('message', function(message) {
     // Don't do anything if we are the author of the message (or if the message was created by another bot)
-    if (message.author.bot) {
+    if ('author' in message === false) {
+        return;
+    } else if ('bot' in message.author === false) {
+        return;
+    } else if (message.author.bot) {
+        return;
+    }
+
+    // Only replicate messages from the "#general" channel
+    if ('channel' in message === false) {
+        return;
+    } else if ('name' in message.channel === false) {
+        return;
+    } else if (message.channel.name !== 'general') {
         return;
     }
 
     // Replicate the message from the Discord server to the lobby
+    if ('username' in message.author === false) {
+        return;
+    } else if ('discriminator' in message.author === false) {
+        return;
+    }
     let username = message.author.username + '#' + message.author.discriminator;
     let socket = {
         userID: 1, // The first user ID is reserved for server messages
