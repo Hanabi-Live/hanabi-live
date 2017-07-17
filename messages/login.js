@@ -154,7 +154,7 @@ function step4(socket, data) {
     logger.info('User "' + data.username + '" logged in. (' + Object.keys(globals.connectedUsers).length, 'now connected.)');
 
     // Check to see if this user was in any existing games
-    for (let gameID in globals.currentGames) {
+    for (let gameID of Object.keys(globals.currentGames)) {
         let game = globals.currentGames[gameID];
         for (let player of game.players) {
             if (player.username === socket.username) {
@@ -174,11 +174,7 @@ function step4(socket, data) {
     notify.allUserChange(socket);
 
     // Send a "user" message for every currently connected user
-    for (let userID in globals.connectedUsers) {
-        if (globals.connectedUsers.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
+    for (let userID of Object.keys(globals.connectedUsers)) {
         // Skip sending a message about ourselves since we already sent that
         if (globals.connectedUsers[userID].username === socket.username) {
             continue;
@@ -198,11 +194,7 @@ function step4(socket, data) {
     }
 
     // Send a "table" message for every current table
-    for (let gameID in globals.currentGames) {
-        if (globals.currentGames.hasOwnProperty(gameID) === false) {
-            continue;
-        }
-
+    for (let gameID of Object.keys(globals.currentGames)) {
         // Keys are strings by default, so convert it back to a number
         gameID = parseInt(gameID, 10);
 

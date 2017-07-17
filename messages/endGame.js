@@ -122,6 +122,11 @@ function gameEnd4(error, data) {
         });
     }
 
+    // Increment the score for all of the players
+    for (let player of game.players) {
+        // TODO
+    }
+
     // Keep track of the game ending
     logger.info('[Game ' + data.gameID + '] Ended with a score of ' + game.score + '.');
     delete globals.currentGames[data.gameID];

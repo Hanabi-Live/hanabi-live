@@ -36,11 +36,7 @@ function step2(error, socket, data) {
     logger.info('<' + socket.username + '> ' + data.msg);
 
     // Send the chat message to everyone
-    for (let userID in globals.connectedUsers) {
-        if (globals.connectedUsers.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
+    for (let userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
             type: 'chat',
             resp: {

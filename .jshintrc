@@ -1,5 +1,6 @@
 {
     "curly": true,
+    "forin": true,
     "freeze": true,
     "eqeqeq": true,
     "futurehostile": true,

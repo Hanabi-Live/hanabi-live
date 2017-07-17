@@ -19,11 +19,7 @@ exports.step1 = function(socket, reason) {
     let address = socket.handshake.address;
     let leftID = socket.userID;
 
-    for (let gameID in globals.currentGames) {
-        if (globals.currentGames.hasOwnProperty(gameID) === false) {
-            continue;
-        }
-
+    for (let gameID of Object.keys(globals.currentGames)) {
         let game = globals.currentGames[gameID];
 
         // Keys are strings by default, so convert it back to a number
@@ -59,11 +55,7 @@ exports.step1 = function(socket, reason) {
         }
 
         // Check to see if this player is spectating any current games
-        for (let userID in game.spectators) {
-            if (game.spectators.hasOwnProperty(userID) === false) {
-                continue;
-            }
-
+        for (let userID of Object.keys(game.spectators)) {
             // Keys are strings by default, so convert it back to a number
             userID = parseInt(userID, 10);
 
@@ -85,11 +77,7 @@ exports.step1 = function(socket, reason) {
     logger.info('User "' + socket.username + '" disconnected from "' + address + '". (' + Object.keys(globals.connectedUsers).length, 'users now connected.)');
 
     // Send a "user_left" message to everyone to let them know that a user has disconnected
-    for (let userID in globals.connectedUsers) {
-        if (globals.connectedUsers.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
+    for (let userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
             type: 'user_left',
             resp: {

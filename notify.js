@@ -14,11 +14,7 @@ const globals = require('./globals');
 
 exports.allUserChange = function(socket) {
     // Send everyone an update about this user
-    for (let userID in globals.connectedUsers) {
-        if (globals.connectedUsers.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
+    for (let userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
             type: 'user',
             resp: {
@@ -35,11 +31,7 @@ exports.allTableChange = function(data) {
     let game = globals.currentGames[data.gameID];
 
     // Send everyone an update about this table
-    for (let userID in globals.connectedUsers) {
-        if (globals.connectedUsers.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
+    for (let userID of Object.keys(globals.connectedUsers)) {
         // Keys are strings by default, so convert it back to a number
         userID = parseInt(userID, 10);
 
@@ -74,11 +66,7 @@ exports.allTableChange = function(data) {
 
 exports.allTableGone = function(data) {
     // Send everyone an update about this table
-    for (let userID in globals.connectedUsers) {
-        if (globals.connectedUsers.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
+    for (let userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
             type: 'table_gone',
             resp: {
@@ -193,11 +181,7 @@ exports.gameAction = function(data) {
     }
 
     // Also send the spectators an update
-    for (let userID in game.spectators) {
-        if (game.spectators.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
+    for (let userID of Object.keys(game.spectators)) {
         game.spectators[userID].emit('message', {
             type: ('text' in action ? 'message' : 'notify'),
             resp: action,
@@ -227,11 +211,7 @@ exports.gameNumSpec = function(data) {
     }
 
     // Also send it to the spectators
-    for (let userID in game.spectators) {
-        if (game.spectators.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
+    for (let userID of Object.keys(game.spectators)) {
         game.spectators[userID].emit('message', specMsg);
     }
 };
@@ -259,11 +239,7 @@ exports.gameTime = function(data) {
     }
 
     // Also send it to the spectators
-    for (let userID in game.spectators) {
-        if (game.spectators.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
+    for (let userID of Object.keys(game.spectators)) {
         game.spectators[userID].emit('message', clockMsg);
     }
 };
@@ -292,11 +268,7 @@ exports.gameSound = function(data) {
 
         player.socket.emit('message', msg);
     }
-    for (let userID in game.spectators) {
-        if (game.spectators.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
+    for (let userID of Object.keys(game.spectators)) {
         // Prepare the sound message
         // (the code is duplicated here because I don't want to mess with having to change the file name back to default)
         let sound = 'turn_other';
@@ -330,11 +302,7 @@ exports.gameBoot = function(data) {
         let player = game.players[i];
         player.socket.emit('message', msg);
     }
-    for (let userID in game.spectators) {
-        if (game.spectators.hasOwnProperty(userID) === false) {
-            continue;
-        }
-
+    for (let userID of Object.keys(game.spectators)) {
         game.spectators[userID].emit('message', msg);
     }
 };
