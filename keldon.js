@@ -15,7 +15,7 @@ const password  = process.env.KELDON_PASS;
 // Connect
 var socket = client.connect(url);
 socket.emit('message', {
-    type: "login",
+    type: 'login',
     resp: {
         username: username,
         password: password,
@@ -29,6 +29,12 @@ socket.emit('message', {
 // Look for chat messages
 // E.g. { type: 'chat', resp: { who: 'Zamiel', msg: 'hi' } }
 socket.on('message', function(msg) {
+    // Debug
+    /*
+    console.log('Received a Keldon message:');
+    console.log(msg);
+    */
+
     // Validate that the message has a type
     if ('type' in msg === false) {
         return;
@@ -57,6 +63,11 @@ socket.on('message', function(msg) {
             return;
         }
 
+        if (msg.resp.who === process.env.KELDON_USER) {
+            // Filter out messages from ourselves
+            return;
+        }
+
         if ('msg' in msg.resp === false) {
             return;
         }
@@ -72,3 +83,14 @@ socket.on('message', function(msg) {
         discord.send('Keldon-Lobby', msg.resp.who, msg.resp.msg);
     }
 });
+
+exports.sendChat = function(msg) {
+    // Note that we can send the message, but none of the other users in the lobby will recieve our text
+    // because the IP address that is currently hosting the server is banned
+    socket.emit('message', {
+        type: 'chat',
+        resp: {
+            msg: msg,
+        },
+    });
+};

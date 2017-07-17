@@ -1,15 +1,16 @@
 'use strict';
 
 // Imports
-const discord  = require('discord.js');
+const Discord  = require('discord.js');
 const logger   = require('./logger');
 const messages = require('./messages');
+const keldon   = require('./keldon');
 
 // Import the environment variables defined in the ".env" file
 require('dotenv').config();
 
 // Create a new client, expose it to the rest of the application, and login with our application token
-const client = new discord.Client();
+const client = new Discord.Client();
 if (process.env.DISCORD_TOKEN.length !== 0) {
     client.login(process.env.DISCORD_TOKEN);
     // The token is is from: https://discordapp.com/developers/applications/me/
@@ -31,21 +32,26 @@ client.on('message', function(message) {
     }
 
     // Replicate the message from the Discord server to the lobby
+    let username = message.author.username + '#' + message.author.discriminator;
     let socket = {
         userID: 1, // The first user ID is reserved for server messages
-        username: message.author.username + '#' + message.author.discriminator,
+        username: username,
     };
     let data = {
             msg: message.content,
     };
     messages.chat.step1(socket, data);
+
+    // Also replicate the message to the Keldon lobby
+    keldon.sendChat('<' + username + '> ' + message.content);
 });
 
 exports.send = function(from, username, message) {
-    let messageString = '[*' + from + '*] <**' + username + '**> ' + message;
     // In Discord, text inside single asterisks are italicised and text inside double asterisks are bolded
+    let messageString = '[*' + from + '*] <**' + username + '**> ' + message;
 
-    let guild = discord.client.guilds.array()[0]; // A guild is a server in Discord
-    let channel = guild.defaultChannel;
+    // A guild is a server in Discord
+    // The bot should only be in one server, so it will be at array index 0
+    let channel = client.guilds.array()[0].defaultChannel;
     channel.send(messageString);
 };
