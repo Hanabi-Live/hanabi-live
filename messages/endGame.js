@@ -37,7 +37,7 @@ exports.step1 = function(data) {
     notify.gameAction(data);
 
     if (game.timed) {
-        // Send everyone null clock values, which will unregister the timer callbacks client-side
+        // Send everyone a clock message with an active value of null, which will unregister the timer callbacks client-side
         notify.gameTime(data);
     }
 
