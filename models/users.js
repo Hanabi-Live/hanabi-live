@@ -69,7 +69,7 @@ exports.updateStats = function(data, done) {
             )
         WHERE id = ?
     `;
-    db.query(sql, [data.userID, data.userID], function (error, results, fields) {
+    db.query(sql, [data.userID, data.userID, data.userID, data.userID, data.userID], function (error, results, fields) {
         if (error) {
             done(error, data);
             return;
