@@ -10,7 +10,6 @@ require('dotenv').config();
 
 // Create a new client, expose it to the rest of the application, and login with our application token
 const client = new discord.Client();
-exports.client = client;
 if (process.env.DISCORD_TOKEN.length !== 0) {
     client.login(process.env.DISCORD_TOKEN);
     // The token is is from: https://discordapp.com/developers/applications/me/
@@ -41,3 +40,12 @@ client.on('message', function(message) {
     };
     messages.chat.step1(socket, data);
 });
+
+exports.send = function(from, username, message) {
+    let messageString = '[*' + from + '*] <**' + username + '**> ' + message;
+    // In Discord, text inside single asterisks are italicised and text inside double asterisks are bolded
+
+    let guild = discord.client.guilds.array()[0]; // A guild is a server in Discord
+    let channel = guild.defaultChannel;
+    channel.send(messageString);
+};

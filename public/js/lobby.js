@@ -1028,26 +1028,17 @@ HanabiLobby.prototype.set_conn = function(conn) {
     });
 
     window.onerror = function(message, url, lineno, colno, error) {
-        try
-        {
+        try {
             conn.emit("clienterror", {
                 message: message,
                 url: url,
                 lineno: lineno,
                 colno: colno,
                 stack: error.stack,
-                /*
-                 * ATTENTION EXTENSION AUTHORS:
-                 *
-                 * Please change "modified" to true so that
-                 * I won't chase down errors that may not
-                 * exist in my code.
-                 */
                 modified: true,
             });
         }
-        catch (e)
-        {
+        catch (e) {
         }
     };
 };
@@ -1063,19 +1054,32 @@ HanabiLobby.prototype.send_msg = function(msg) {
 HanabiLobby.prototype.load_settings = function() {
     var self = this;
     var settings_list = [
-        [ "send-turn-notification", "send_turn_notify" ],
-        [ "send-turn-sound", "send_turn_sound" ],
-        [ "send-chat-notification", "send_chat_notify" ],
-        [ "send-chat-sound", "send_chat_sound" ],
-        [ "show-colorblind-ui", "show_colorblind_ui" ],
+        [
+            "send-turn-notification",
+            "send_turn_notify",
+        ],
+        [
+            "send-turn-sound",
+            "send_turn_sound",
+        ],
+        [
+            "send-chat-notification",
+            "send_chat_notify",
+        ],
+        [
+            "send-chat-sound",
+            "send_chat_sound",
+        ],
+        [
+            "show-colorblind-ui",
+            "show_colorblind_ui",
+        ],
     ];
     var i, val;
 
-    for (i = 0; i < settings_list.length; i++)
-    {
+    for (i = 0; i < settings_list.length; i++) {
         val = localStorage[settings_list[i][1]];
-        if (val !== undefined)
-        {
+        if (val !== undefined) {
             val = (val === "true");
             $("#" + settings_list[i][0]).attr("checked", val);
             this[settings_list[i][1]] = val;
@@ -1085,8 +1089,7 @@ HanabiLobby.prototype.load_settings = function() {
             var name = $(this).attr("id");
             var i;
 
-            for (i = 0; i < settings_list.length; i++)
-            {
+            for (i = 0; i < settings_list.length; i++) {
                 if (settings_list[i][0] === name)
                 {
                     self[settings_list[i][1]] = $(this).is(":checked");
@@ -1094,8 +1097,7 @@ HanabiLobby.prototype.load_settings = function() {
                 }
             }
 
-            if (self.send_turn_notify || self.send_chat_notify)
-            {
+            if (self.send_turn_notify || self.send_chat_notify) {
                 self.test_notifications();
             }
         });

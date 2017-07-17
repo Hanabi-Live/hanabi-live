@@ -58,8 +58,6 @@ function step2(error, socket, data) {
     // Send the chat message to the Discord "#general" channel
     // (only if it is not a server message)
     if (socket.userID !== 1) {
-        let guild = discord.client.guilds.array()[0]; // A guild is a server in Discord
-        let channel = guild.defaultChannel;
-        channel.send('[Lobby] <' + socket.username + '> ' + data.msg);
+        discord.send('Emulator-Lobby', socket.username, data.msg);
     }
 }

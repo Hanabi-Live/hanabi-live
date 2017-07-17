@@ -49,6 +49,9 @@ io.on('connection', function(socket) {
 // Start the Discord bot
 require('./discord');
 
+// Start the Keldon listener
+require('./keldon');
+
 // Clean up any non-started games before we start
 models.games.clean(initComplete);
 
