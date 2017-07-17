@@ -801,8 +801,10 @@ HanabiLobby.prototype.show_joined = function() {
 
         html += "<p></p>";
         html += "<div>Games played: " + this.game.players[i].num_played + "</div>";
-        html += "<div>Average score: " + this.game.players[i].average_score + "</div>";
-        html += "<div>Loss rate: " + this.game.players[i].loss_percent + "%</div>";
+        let average_score = Math.round(this.game.players[i].average_score * 100) / 100; // Round it to 2 decimal places
+        html += "<div>Average score: " + average_score + "</div>";
+        let loss_percent = Math.round(this.game.players[i].loss_percent * 100) / 100; // Round it to 2 decimal places
+        html += "<div>Loss rate: " + loss_percent + "%</div>";
 
         if (!this.game.players[i].present) {
             html += "<p></p><div><b>AWAY</b></div>";
