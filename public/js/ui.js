@@ -446,11 +446,11 @@ var HanabiCard = function(config) {
 
     this.setBareImage();
 
-    //unknownRect is a transparent white overlay box we can draw over the card.
-    //The point is that when they're in a replay, and they know things in the PRESENT about the card they're viewing
-    //in the PAST, we show them a card face. If that card face is just implied by clues, it gets a white box. If it's known
-    //by seeing the true card face in the present, we show no white box. This way people won't be mislead as much
-    //if the card is multi.
+    // unknownRect is a transparent white overlay box we can draw over the card.
+    // The point is that when they're in a replay, and they know things in the PRESENT about the card they're viewing
+    // in the PAST, we show them a card face. If that card face is just implied by clues, it gets a white box. If it's known
+    // by seeing the true card face in the present, we show no white box. This way people won't be mislead as much
+    // if the card is multi.
     var replayPartialPresentKnowledge = MHGA_show_faces_in_replay &&
                                         ui.replay &&
                                         this.unknown &&
@@ -559,6 +559,7 @@ var HanabiCard = function(config) {
 
     this.add(this.number_clue);
 
+    // Draw the circle that is the "clue indicator" on the card
     this.clue_given = new Kinetic.Circle({
         x: 0.9 * config.width,
         y: 0.1 * config.height,
@@ -585,8 +586,8 @@ var HanabiCard = function(config) {
     this.add(this.note_given);
 
 
-    //there's some bug i cant figure out where it permanently draws a copy of the tag at this location, so i'll
-    //work around it by setting the starting location to this
+    // there's some bug i cant figure out where it permanently draws a copy of the tag at this location, so i'll
+    // work around it by setting the starting location to this
     this.tooltip = new Kinetic.Label({
         x: -1000,
         y: -1000,
@@ -1816,8 +1817,7 @@ Loader.prototype.start = function() {
     this.map = {};
     this.num_loaded = 0;
 
-    for (var name in this.filemap)
-    {
+    for (var name of Object.keys(this.filemap)) {
         var img = new Image();
 
         this.map[name] = img;
@@ -1827,8 +1827,7 @@ Loader.prototype.start = function() {
 
             self.progress(self.num_loaded, total);
 
-            if (self.num_loaded === total)
-            {
+            if (self.num_loaded === total) {
                 self.cb();
             }
         };
@@ -1840,8 +1839,7 @@ Loader.prototype.start = function() {
 };
 
 Loader.prototype.progress = function(done, total) {
-    if (this.progress_callback)
-    {
+    if (this.progress_callback) {
         this.progress_callback(done, total);
     }
 };
@@ -1852,15 +1850,6 @@ Loader.prototype.get = function(name) {
 
 var ImageLoader = new Loader(function() {
     notes_written = ui.load_notes();
-
-    /*
-    if ("timebank" in notes_written) {
-        ui.timebank_seconds = parseInt(notes_written.timebank);
-        if (isNaN(ui.timebank_seconds)) {
-            ui.timebank_seconds = ui.timebank_minimum;
-        }
-    }
-    */
 
     ui.build_cards();
     ui.build_ui();
@@ -1971,12 +1960,22 @@ var suit_colors = [
     "#cccccc", // Grey
 ];
 var mixed_suit_colors = [
-    "#00ffff", // Teal     (Blue / Green)
-    "#ff00ff", // Magenta  (Blue / Red)
-    "#3322cc", // Indigo   (Blue / Purple)
-    "orange",  // Orange   (Green / Red)
-    "#1e6231", // Forest   (Green / Purple)
-    "#880066", // Cardinal (Red / Purple)
+    "#00b3b3", // Teal     (Blue / Green)
+    "#cc00cc", // Magenta  (Blue / Red)
+    "#1a0082", // Indigo   (Blue / Purple)
+    "#b37400", // Orange   (Green / Red)
+    "#0F9719", // Forest   (Green / Purple) (old was #1e6231)
+    "#810735", // Cardinal (Red / Purple) (old was #880066)
+    "#cccccc", // Grey
+];
+var mixed_suit_color_composition = [
+    // Each mixed suit is composed of two separate colors (from the "suit_colors" array)
+    [0, 1],
+    [0, 3],
+    [0, 4],
+    [1, 3],
+    [1, 4],
+    [3, 4],
 ];
 var mixed_clue_colors = [
     "#0044cc", // Blue
@@ -1994,7 +1993,7 @@ this.build_cards = function() {
     var x, y;
     var rainbow = false, grad;
     var mixed = false;
-    var pathfuncs = [];
+    var pathfuncs = []; // For the 5 different suit symbols
 
     if (this.variant === VARIANT.RAINBOW) {
         rainbow = true;
@@ -2003,7 +2002,9 @@ this.build_cards = function() {
         MHGA_show_faces_in_replay = false;
     }
 
-    // The following code draws the symbol on the cards and the empty deck
+    /*
+        The following code draws the symbol on the cards and the empty deck
+    */
 
     pathfuncs[0] = function() {
         ctx.beginPath();
@@ -2152,42 +2153,7 @@ this.build_cards = function() {
                 ctx.strokeStyle = grad;
 
             } else if (mixed && i <= 5) {
-                // Make mixed cards a gradient with 2 colors
-                grad = ctx.createLinearGradient(-12, -12, cardh, cardw);
-
-                let suit1, suit2;
-                if (i === 0) {
-                    // 0 - Teal (Blue / Green)
-                    suit1 = 0;
-                    suit2 = 1;
-                } else if (i === 1) {
-                    // 1 - Magenta (Blue / Red)
-                    suit1 = 0;
-                    suit2 = 3;
-                } else if (i === 2) {
-                    // 2 - Indigo (Blue / Purple)
-                    suit1 = 0;
-                    suit2 = 4;
-                } else if (i === 3) {
-                    // 3 - Orange (Green / Red)
-                    suit1 = 1;
-                    suit2 = 3;
-                } else if (i === 4) {
-                    // 4 - Forest (Green / Purple)
-                    suit1 = 1;
-                    suit2 = 4;
-                } else if (i === 5) {
-                    // 5 - Cardinal (Red / Purple)
-                    suit1 = 3;
-                    suit2 = 4;
-                }
-
-                grad.addColorStop(0, suit_colors[suit1]);
-                grad.addColorStop(0.45, suit_colors[suit1]);
-                grad.addColorStop(0.55, suit_colors[suit2]);
-                grad.addColorStop(1, suit_colors[suit2]);
-
-                ctx.fillStyle = grad;
+                ctx.fillStyle = mixed_suit_colors[i];
                 ctx.strokeStyle = mixed_suit_colors[i];
 
             } else {
@@ -2197,18 +2163,12 @@ this.build_cards = function() {
 
             backpath(4);
 
-            // Draw the borders (on visable cards) and the color fill
+            // Draw the borders (on visible cards) and the color fill
             ctx.save();
             ctx.globalAlpha = 0.3;
             ctx.fill();
             ctx.globalAlpha = 0.7;
-            if (mixed) {
-                // We want the borders to be more visible on the mixed variant because
-                // they show the "true" color of the suit
-                ctx.lineWidth = 12;
-            } else {
-                ctx.lineWidth = 8;
-            }
+            ctx.lineWidth = 8;
             ctx.stroke();
             ctx.restore();
 
@@ -2225,32 +2185,20 @@ this.build_cards = function() {
                 grad.addColorStop(1, suit_colors[4]);
 
                 ctx.fillStyle = grad;
+
             }
+
+            // Make the numbers on mixed cards show one of the composite colors (top-left corner)
+            let backupFill = ctx.fillStyle;
+            /*
+            if (i <= 5 && mixed) {
+                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][0]];
+            }
+            */
 
             var suit_letter = suit_abbreviations[i];
             if (suit_letter === "K" && rainbow) {
                 suit_letter = "M";
-            }
-
-            // Make the mixed suit colors different on each corner (1/6)
-            // (for the numbers; upper left corner)
-            if (mixed && i <= 5) {
-                let suit;
-                if (i === 0) {
-                    suit = 0; // Blue
-                } else if (i === 1) {
-                    suit = 0; // Blue
-                } else if (i === 2) {
-                    suit = 0; // Blue
-                } else if (i === 3) {
-                    suit = 1; // Green
-                } else if (i === 4) {
-                    suit = 1; // Green
-                } else if (i === 5) {
-                    suit = 3; // Red
-                }
-
-                ctx.fillStyle = suit_colors[suit];
             }
 
             ctx.strokeStyle = "black";
@@ -2273,29 +2221,15 @@ this.build_cards = function() {
             ctx.fillText(index_label, 19, text_y_pos);
             ctx.shadowColor = "rgba(0, 0, 0, 0)";
             ctx.strokeText(index_label, 19, text_y_pos);
-
+            ctx.fillStyle = backupFill;
             ctx.save();
 
-            // Make the mixed suit colors different on each corner (2/6)
-            // (for the numbers; lower-right corner)
+            /*
+            // Make the numbers on mixed cards show one of the composite colors (bottom-right corner)
             if (mixed && i <= 5) {
-                let suit;
-                if (i === 0) {
-                    suit = 1; // Green
-                } else if (i === 1) {
-                    suit = 3; // Red
-                } else if (i === 2) {
-                    suit = 4; // Purple
-                } else if (i === 3) {
-                    suit = 3; // Red
-                } else if (i === 4) {
-                    suit = 4; // Purple
-                } else if (i === 5) {
-                    suit = 4; // Purple
-                }
-
-                ctx.fillStyle = suit_colors[suit];
+                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][1]];
             }
+            */
 
             ctx.translate(cardw, cardh);
             ctx.rotate(Math.PI);
@@ -2305,8 +2239,56 @@ this.build_cards = function() {
             ctx.strokeText(index_label, 19, text_y_pos);
             ctx.restore();
 
-            // Make the rainbow symbol a gradient
+            // Make the special corners on cards for the mixed variant
+            if (i <= 5 && mixed) {
+                ctx.save();
+
+                let triangleSize = 80;
+                let borderSize = 8;
+
+                /*
+                // Draw the first half of the top-right triangle
+                ctx.beginPath();
+                ctx.moveTo(cardw - borderSize, borderSize); // Start at the top right-hand corner
+                ctx.lineTo(cardw - borderSize - triangleSize, borderSize); // Move left
+                ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move down and right diagonally
+                ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
+                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][0]];
+                drawshape();
+
+                // Draw the second half of the top-right triangle
+                ctx.beginPath();
+                ctx.moveTo(cardw - borderSize, borderSize); // Start at the top right-hand corner
+                ctx.lineTo(cardw - borderSize, borderSize + triangleSize); // Move down
+                ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move up and left diagonally
+                ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
+                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][1]];
+                drawshape();
+                */
+
+                // Draw the first half of the bottom-left triangle
+                ctx.beginPath();
+                ctx.moveTo(borderSize, cardh - borderSize); // Start at the bottom right-hand corner
+                ctx.lineTo(borderSize, cardh - borderSize - triangleSize); // Move up
+                ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move right and down diagonally
+                ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
+                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][0]];
+                drawshape();
+
+                // Draw the second half of the bottom-left triangle
+                ctx.beginPath();
+                ctx.moveTo(borderSize, cardh - borderSize); // Start at the bottom right-hand corner
+                ctx.lineTo(borderSize + triangleSize, cardh - borderSize); // Move right
+                ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move left and up diagonally
+                ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
+                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][1]];
+                drawshape();
+
+                ctx.restore();
+            }
+
             if (i === 5 && rainbow) {
+                // Make the rainbow symbol a gradient
                 grad = ctx.createRadialGradient(75, 150, 25, 75, 150, 75);
 
                 grad.addColorStop(0, suit_colors[0]);
@@ -2322,42 +2304,6 @@ this.build_cards = function() {
             if (i !== 6) {
                 // The middle for cards 2 or 4
                 if (j === 1 || j === 3) {
-                    if (mixed && i <= 5) {
-                        grad = ctx.createLinearGradient(-12, -12, 210, 210);
-
-                        let suit1, suit2;
-                        if (i === 0) {
-                            // 0 - Teal (Blue / Green)
-                            suit1 = 0;
-                            suit2 = 1;
-                        } else if (i === 1) {
-                            // 1 - Magenta (Blue / Red)
-                            suit1 = 0;
-                            suit2 = 3;
-                        } else if (i === 2) {
-                            // 2 - Indigo (Blue / Purple)
-                            suit1 = 0;
-                            suit2 = 4;
-                        } else if (i === 3) {
-                            // 3 - Orange (Green / Red)
-                            suit1 = 1;
-                            suit2 = 3;
-                        } else if (i === 4) {
-                            // 4 - Forest (Green / Purple)
-                            suit1 = 1;
-                            suit2 = 4;
-                        } else if (i === 5) {
-                            // 5 - Cardinal (Red / Purple)
-                            suit1 = 3;
-                            suit2 = 4;
-                        }
-
-                        grad.addColorStop(0, suit_colors[suit1]);
-                        grad.addColorStop(0.5, suit_colors[suit1]);
-                        grad.addColorStop(0.5, suit_colors[suit2]);
-                        grad.addColorStop(1, suit_colors[suit2]);
-                    }
-
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
                     ctx.scale(0.4, 0.4);
@@ -2365,27 +2311,6 @@ this.build_cards = function() {
                     pathfuncs[i]();
                     drawshape();
                     ctx.restore();
-                }
-
-                // Make the mixed suit colors different on each corner (3/6)
-                // (top-left corner)
-                if (mixed && i <= 5) {
-                    let suit;
-                    if (i === 0) {
-                        suit = 0; // Blue
-                    } else if (i === 1) {
-                        suit = 0; // Blue
-                    } else if (i === 2) {
-                        suit = 0; // Blue
-                    } else if (i === 3) {
-                        suit = 1; // Green
-                    } else if (i === 4) {
-                        suit = 1; // Green
-                    } else if (i === 5) {
-                        suit = 3; // Red
-                    }
-
-                    ctx.fillStyle = suit_colors[suit];
                 }
 
                 // Top and bottom for cards 3, 4, 5
@@ -2403,27 +2328,6 @@ this.build_cards = function() {
                     drawshape();
                     ctx.restore();
 
-                    // Make the mixed suit colors different on each corner (4/6)
-                    // (bottom-right corner)
-                    if (mixed && i <= 5) {
-                        let suit;
-                        if (i === 0) {
-                            suit = 1; // Green
-                        } else if (i === 1) {
-                            suit = 3; // Red
-                        } else if (i === 2) {
-                            suit = 4; // Purple
-                        } else if (i === 3) {
-                            suit = 3; // Red
-                        } else if (i === 4) {
-                            suit = 4; // Purple
-                        } else if (i === 5) {
-                            suit = 4; // Purple
-                        }
-
-                        ctx.fillStyle = suit_colors[suit];
-                    }
-
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
                     ctx.translate(0, symbol_y_pos);
@@ -2437,27 +2341,6 @@ this.build_cards = function() {
 
                 // Left and right for cards 4 and 5
                 if (j > 3 && j !== 6) {
-                    // Make the mixed suit colors different on each corner (5/6)
-                    // (top-left corner)
-                    if (mixed && i <= 5) {
-                        let suit;
-                        if (i === 0) {
-                            suit = 0; // Blue
-                        } else if (i === 1) {
-                            suit = 0; // Blue
-                        } else if (i === 2) {
-                            suit = 0; // Blue
-                        } else if (i === 3) {
-                            suit = 1; // Green
-                        } else if (i === 4) {
-                            suit = 1; // Green
-                        } else if (i === 5) {
-                            suit = 3; // Red
-                        }
-
-                        ctx.fillStyle = suit_colors[suit];
-                    }
-
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
                     ctx.translate(-90, 0);
@@ -2466,27 +2349,6 @@ this.build_cards = function() {
                     pathfuncs[i]();
                     drawshape();
                     ctx.restore();
-
-                    // Make the mixed suit colors different on each corner (6/6)
-                    // (bottom-right corner)
-                    if (mixed && i <= 5) {
-                        let suit;
-                        if (i === 0) {
-                            suit = 1; // Green
-                        } else if (i === 1) {
-                            suit = 3; // Red
-                        } else if (i === 2) {
-                            suit = 4; // Purple
-                        } else if (i === 3) {
-                            suit = 3; // Red
-                        } else if (i === 4) {
-                            suit = 4; // Purple
-                        } else if (i === 5) {
-                            suit = 4; // Purple
-                        }
-
-                        ctx.fillStyle = suit_colors[suit];
-                    }
 
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
@@ -2511,42 +2373,6 @@ this.build_cards = function() {
 
                 // Colour adjustment for the central icon on cards 1 and 5
                 if (j === 0 || j === 5) {
-                    if (mixed && i <= 5) {
-                        grad = ctx.createLinearGradient(-12, -12, cardh, cardw);
-
-                        let suit1, suit2;
-                        if (i === 0) {
-                            // 0 - Teal (Blue / Green)
-                            suit1 = 0;
-                            suit2 = 1;
-                        } else if (i === 1) {
-                            // 1 - Magenta (Blue / Red)
-                            suit1 = 0;
-                            suit2 = 3;
-                        } else if (i === 2) {
-                            // 2 - Indigo (Blue / Purple)
-                            suit1 = 0;
-                            suit2 = 4;
-                        } else if (i === 3) {
-                            // 3 - Orange (Green / Red)
-                            suit1 = 1;
-                            suit2 = 3;
-                        } else if (i === 4) {
-                            // 4 - Forest (Green / Purple)
-                            suit1 = 1;
-                            suit2 = 4;
-                        } else if (i === 5) {
-                            // 5 - Cardinal (Red / Purple)
-                            suit1 = 3;
-                            suit2 = 4;
-                        }
-
-                        grad.addColorStop(0, suit_colors[suit1]);
-                        grad.addColorStop(0.5, suit_colors[suit1]);
-                        grad.addColorStop(0.5, suit_colors[suit2]);
-                        grad.addColorStop(1, suit_colors[suit2]);
-                    }
-
                     ctx.save();
                     ctx.translate(cardw / 2, cardh / 2);
                     ctx.scale(0.6, 0.6);
@@ -2999,44 +2825,7 @@ this.build_ui = function() {
         // In the play area, fill in the rectangles with the fill colors for that suit
         let fillColor = suit_colors[i];
         if (ui.variant === VARIANT.MIXED) {
-            //fillColor = mixed_suit_colors[i];
-
-            let cvs = document.createElement("canvas");
-            let ctx = cvs.getContext("2d");
-            let grad = ctx.createLinearGradient(-12, -12, height * win_h, width * win_w);
-
-            let suit1, suit2;
-            if (i === 0) {
-                // 0 - Teal (Blue / Green)
-                suit1 = 0;
-                suit2 = 1;
-            } else if (i === 1) {
-                // 1 - Magenta (Blue / Red)
-                suit1 = 0;
-                suit2 = 3;
-            } else if (i === 2) {
-                // 2 - Indigo (Blue / Purple)
-                suit1 = 0;
-                suit2 = 4;
-            } else if (i === 3) {
-                // 3 - Orange (Green / Red)
-                suit1 = 1;
-                suit2 = 3;
-            } else if (i === 4) {
-                // 4 - Forest (Green / Purple)
-                suit1 = 1;
-                suit2 = 4;
-            } else if (i === 5) {
-                // 5 - Cardinal (Red / Purple)
-                suit1 = 3;
-                suit2 = 4;
-            }
-
-            grad.addColorStop(0, suit_colors[suit1]);
-            grad.addColorStop(0.45, suit_colors[suit1]);
-            grad.addColorStop(0.55, suit_colors[suit2]);
-            grad.addColorStop(1, suit_colors[suit2]);
-            fillColor = grad;
+            fillColor = mixed_suit_colors[i];
         }
         pileback = new Kinetic.Rect({
             fill: fillColor,
@@ -4367,18 +4156,17 @@ var suit_abbreviations = [
     "",
 ];
 
-
-//the idea here is we get these two events, one with the server telling us to print a message like "Bob discards Blue 1"
-//which we want to add slot information to the end of, and another message which we can use to derive slot information.
-//i'm not sure if they will always be sent in the same order, so we handle them in either order, just assuming that a
-//second pair of messages can't overlap the first.
-//"movement" here means a play or discard. (the things we want slot info for)
+// the idea here is we get these two events, one with the server telling us to print a message like "Bob discards Blue 1"
+// which we want to add slot information to the end of, and another message which we can use to derive slot information.
+// i'm not sure if they will always be sent in the same order, so we handle them in either order, just assuming that a
+// second pair of messages can't overlap the first.
+// "movement" here means a play or discard. (the things we want slot info for)
 this.current_movement_slot_num = undefined;
 this.current_movement_message = undefined;
 
 this.try_doing_movement_message = function() {
     if (this.current_movement_slot_num && this.current_movement_message) {
-        //need to save off and restore original message or else during replays if you go back and forth it will keep adding slot info over and over.
+        // need to save off and restore original message or else during replays if you go back and forth it will keep adding slot info over and over.
         var original_message = this.current_movement_message.resp.text;
         if (MHGA_show_slot_nums) {
             this.current_movement_message.resp.text = this.current_movement_message.resp.text + " from slot #" + this.current_movement_slot_num;
