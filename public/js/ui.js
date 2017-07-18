@@ -4349,16 +4349,7 @@ var suit_names = [
     "Black",
     " ",
 ];
-/*
-var mixed_suit_names = [
-    "Teal",
-    "Magenta",
-    "Indigo",
-    "Orange",
-    "Forest",
-    "Cardinal",
-];
-*/
+
 var mixed_clue_names = [
     "Blue",
     "Green",
