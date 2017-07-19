@@ -238,10 +238,10 @@ const step1 = function(socket, data) {
     // (this seems wasteful but this is apparently used so that you can see if
     // it is your turn from the lobby)
 
-    if (game.timed) {
-        // Send everyone new clock values
-        notify.gameTime(data);
+    // Send everyone new clock values
+    notify.gameTime(data);
 
+    if (game.timed) {
         // Start the function that will check to see if the current player has
         // run out of time (it just got to be their turn)
         data.userID = game.players[game.turn_player_index].userID;
