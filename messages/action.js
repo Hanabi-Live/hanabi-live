@@ -378,7 +378,7 @@ function playerPlayCard(data) {
         suitText = globals.suits[6];
     } else if (game.variant === 4) {
         // Set the "Mixed Suits" text
-        suitText = globals.suits[card.suit + 7];
+        suitText = globals.mixedSuits[card.suit];
     }
 
     // Find out if this successfully plays
@@ -449,7 +449,7 @@ function playerDiscardCard(data, failed = false) {
         suitText = globals.suits[6];
     } else if (game.variant === 4) {
         // Set the "Mixed Suits" text
-        suitText = globals.suits[card.suit + 7];
+        suitText = globals.mixedSuits[card.suit];
     }
 
     // Mark that the card is discarded
