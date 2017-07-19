@@ -3998,8 +3998,7 @@ this.adjust_replay_shuttle = function() {
 };
 
 this.enter_replay = function(enter) {
-    if (!this.replay && enter)
-    {
+    if (!this.replay && enter) {
         this.replay = true;
         this.replay_pos = this.replay_log.length;
         this.replay_turn = this.replay_max;
@@ -4011,9 +4010,7 @@ this.enter_replay = function(enter) {
         }
         uilayer.draw();
         cardlayer.draw();
-    }
-    else if (this.replay && !enter)
-    {
+    } else if (this.replay && !enter) {
         this.perform_replay(this.replay_max, true);
         this.replay = false;
         replay_area.hide();
@@ -4551,21 +4548,42 @@ this.handle_clock = function(note) {
     }, 1000);
 };
 
+// Recieves the following data:
+/*
+    {
+        order: 16,
+        notes: [
+            'm3,m2',
+            'probably m3'
+        ],
+    }
+*/
 this.handle_note = function(note) {
-    //note.order
-    //note.notes
-
     // Build the note text from the "notes" array given by the server
     let newNote = '';
     for (let i = 0; i < note.notes.length; i++) {
-        if (note.notes.length > 0) {
+        if (note.notes[i].length > 0) {
             newNote += `${ui.player_names[i]}: ${note.notes[i]}\n`;
         }
     }
-    newNote = newNote.slice(0, -1); // Chop off the trailing newline
+    if (newNote.length > 0) {
+        newNote = newNote.slice(0, -1); // Chop off the trailing newline
+    }
 
+    // Set the note
     ui.setNote(note.order, newNote);
-    tiplayer.draw();
+
+    // Search through all of the hands to find the card with the correct order
+    // TODO
+
+    // Draw (or hide) the note indicator
+    if (newNote.length > 0) {
+        //card.note_given.show(); // TODO uncomment this
+    } else {
+        //card.note_given.hide(); // TODO uncomment this
+        //card.tooltip.hide(); // TODO uncomment this
+        tiplayer.draw();
+    }
     uilayer.draw();
     cardlayer.draw();
 };
@@ -4670,8 +4688,7 @@ this.handle_action = function(data) {
             pos.x += this.getWidth() * this.getScaleX() / 2;
             pos.y += this.getHeight() * this.getScaleY() / 2;
 
-            if (overPlayArea(pos))
-            {
+            if (overPlayArea(pos)) {
                 ui.send_msg({
                     type: "action",
                     resp: {
@@ -4681,19 +4698,15 @@ this.handle_action = function(data) {
                 });
 
                 self.stop_action();
-
-                /* this.off("dragend.reorder"); */
                 this.setDraggable(false);
-
                 saved_action = null;
-            }
 
-            else if (pos.x >= discard_area.getX() &&
-                 pos.y >= discard_area.getY() &&
-                 pos.x <= discard_area.getX() + discard_area.getWidth() &&
-                 pos.y <= discard_area.getY() + discard_area.getHeight() &&
-                 data.can_discard)
-            {
+            } else if (pos.x >= discard_area.getX() &&
+                       pos.y >= discard_area.getY() &&
+                       pos.x <= discard_area.getX() + discard_area.getWidth() &&
+                       pos.y <= discard_area.getY() + discard_area.getHeight() &&
+                       data.can_discard) {
+
                 ui.send_msg({
                     type: "action",
                     resp: {
@@ -4703,14 +4716,10 @@ this.handle_action = function(data) {
                 });
                 self.stop_action();
 
-                /* this.off("dragend.reorder"); */
                 this.setDraggable(false);
-
                 saved_action = null;
-            }
 
-            else
-            {
+            } else {
                 player_hands[ui.player_us].doLayout();
             }
         });
@@ -4721,8 +4730,7 @@ this.handle_action = function(data) {
     deck_play_available_label.setVisible(data.can_blind_play_deck);
 
     // Ensure deck blindplay is above other cards, ui elements
-    if (data.can_blind_play_deck)
-    {
+    if (data.can_blind_play_deck) {
         drawdeck.moveToTop();
     }
 
