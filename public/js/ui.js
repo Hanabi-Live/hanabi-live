@@ -2188,14 +2188,6 @@ this.build_cards = function() {
 
             }
 
-            // Make the numbers on mixed cards show one of the composite colors (top-left corner)
-            let backupFill = ctx.fillStyle;
-            /*
-            if (i <= 5 && mixed) {
-                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][0]];
-            }
-            */
-
             var suit_letter = suit_abbreviations[i];
             if (suit_letter === "K" && rainbow) {
                 suit_letter = "M";
@@ -2221,15 +2213,7 @@ this.build_cards = function() {
             ctx.fillText(index_label, 19, text_y_pos);
             ctx.shadowColor = "rgba(0, 0, 0, 0)";
             ctx.strokeText(index_label, 19, text_y_pos);
-            ctx.fillStyle = backupFill;
             ctx.save();
-
-            /*
-            // Make the numbers on mixed cards show one of the composite colors (bottom-right corner)
-            if (mixed && i <= 5) {
-                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][1]];
-            }
-            */
 
             ctx.translate(cardw, cardh);
             ctx.rotate(Math.PI);
@@ -2243,10 +2227,9 @@ this.build_cards = function() {
             if (i <= 5 && mixed) {
                 ctx.save();
 
-                let triangleSize = 80;
+                let triangleSize = 60;
                 let borderSize = 8;
 
-                /*
                 // Draw the first half of the top-right triangle
                 ctx.beginPath();
                 ctx.moveTo(cardw - borderSize, borderSize); // Start at the top right-hand corner
@@ -2264,7 +2247,6 @@ this.build_cards = function() {
                 ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
                 ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][1]];
                 drawshape();
-                */
 
                 // Draw the first half of the bottom-left triangle
                 ctx.beginPath();
