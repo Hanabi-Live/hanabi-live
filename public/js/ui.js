@@ -1,7 +1,6 @@
 "use strict";
 
 var MHGA_show_debug_messages = true;
-var MHGA_show_log_numbers = true;
 var MHGA_show_faces_in_replay = true;
 var MHGA_highlight_non_hand_cards = true;
 var MHGA_show_slot_nums = false;
@@ -291,9 +290,9 @@ var HanabiMsgLog = function(config) {
         fontSize: 0.025 * win_h,
         fontFamily: "Verdana",
         fill: "white",
-        x: (MHGA_show_log_numbers? 0.04 : 0.01) * win_w,
+        x: 0.04 * win_w,
         y: 0.01 * win_h,
-        width: (MHGA_show_log_numbers? 0.35 : 0.38) * win_w,
+        width: 0.35 * win_w,
         height: 0.94 * win_h,
         maxLines: 38,
     };
@@ -312,9 +311,6 @@ var HanabiMsgLog = function(config) {
         maxLines: 38,
     };
     this.lognumbers = new MultiFitText(numbersoptions);
-    if (! MHGA_show_log_numbers) {
-        this.lognumbers.hide();
-    }
     Kinetic.Group.prototype.add.call(this, this.lognumbers);
 
 
@@ -360,9 +356,7 @@ HanabiMsgLog.prototype.show_player_actions = function(player_name) {
     this.logtext.hide();
     this.lognumbers.hide();
     this.player_logs[player_idx].show();
-    if (MHGA_show_log_numbers) {
-        this.player_lognumbers[player_idx].show();
-    }
+    this.player_lognumbers[player_idx].show();
 
     this.show();
 
@@ -376,9 +370,7 @@ HanabiMsgLog.prototype.show_player_actions = function(player_name) {
         thislog.player_lognumbers[player_idx].hide();
 
         thislog.logtext.show();
-        if (MHGA_show_log_numbers) {
-            thislog.lognumbers.show();
-        }
+        thislog.lognumbers.show();
         thislog.hide();
         overback.hide();
         overlayer.draw();
