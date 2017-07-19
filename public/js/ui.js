@@ -3,7 +3,6 @@
 var MHGA_show_debug_messages = true;
 var MHGA_show_faces_in_replay = true;
 var MHGA_highlight_non_hand_cards = true;
-var MHGA_show_no_clues_box = true;
 
 function HanabiUI(lobby, game_id) {
 
@@ -4690,9 +4689,7 @@ this.handle_action = function(data) {
         }).play();
     } else {
         no_clue_label.show();
-        if (MHGA_show_no_clues_box) {
-            no_clue_box.show();
-        }
+        no_clue_box.show();
         if (!this.animate_fast) {
             uilayer.draw();
         }
