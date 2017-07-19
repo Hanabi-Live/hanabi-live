@@ -3132,57 +3132,55 @@ this.build_ui = function() {
         uilayer.add(name_frames[i]);
 
         // The following code is copied from HanabiCard
-        if (ui.timed_game) {
-            let frame_hover_tooltip = new Kinetic.Label({
-                x: -1000,
-                y: -1000,
-            });
+        let frame_hover_tooltip = new Kinetic.Label({
+            x: -1000,
+            y: -1000,
+        });
 
-            frame_hover_tooltip.add(new Kinetic.Tag({
-                fill: '#3E4345',
-                pointerDirection: 'left',
-                pointerWidth: 0.02 * win_w,
-                pointerHeight: 0.015 * win_h,
-                lineJoin: 'round',
-                shadowColor: 'black',
-                shadowBlur: 10,
-                shadowOffset: {
-                    x: 3,
-                    y: 3,
-                },
-                shadowOpacity: 0.6,
-            }));
+        frame_hover_tooltip.add(new Kinetic.Tag({
+            fill: '#3E4345',
+            pointerDirection: 'left',
+            pointerWidth: 0.02 * win_w,
+            pointerHeight: 0.015 * win_h,
+            lineJoin: 'round',
+            shadowColor: 'black',
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 3,
+                y: 3,
+            },
+            shadowOpacity: 0.6,
+        }));
 
-            frame_hover_tooltip.add(new FitText({
-                fill: "white",
-                align: "left",
-                padding: 0.01 * win_h,
-                fontSize: 0.04 * win_h,
-                minFontSize: 0.02 * win_h,
-                width: 0.075 * win_w,
-                fontFamily: "Verdana",
-                text: "??:??",
-            }));
+        frame_hover_tooltip.add(new FitText({
+            fill: "white",
+            align: "left",
+            padding: 0.01 * win_h,
+            fontSize: 0.04 * win_h,
+            minFontSize: 0.02 * win_h,
+            width: 0.075 * win_w,
+            fontFamily: "Verdana",
+            text: "??:??",
+        }));
 
-            tiplayer.add(frame_hover_tooltip);
-            name_frames[i].tooltip = frame_hover_tooltip;
+        tiplayer.add(frame_hover_tooltip);
+        name_frames[i].tooltip = frame_hover_tooltip;
 
-            name_frames[i].on("mousemove", function() {
-                var mousePos = stage.getPointerPosition();
-                this.tooltip.setX(mousePos.x + 15);
-                this.tooltip.setY(mousePos.y + 5);
+        name_frames[i].on("mousemove", function() {
+            var mousePos = stage.getPointerPosition();
+            this.tooltip.setX(mousePos.x + 15);
+            this.tooltip.setY(mousePos.y + 5);
 
-                this.tooltip.show();
-                tiplayer.draw();
+            this.tooltip.show();
+            tiplayer.draw();
 
-                ui.activeHover = this;
-            });
+            ui.activeHover = this;
+        });
 
-            name_frames[i].on("mouseout", function() {
-                this.tooltip.hide();
-                tiplayer.draw();
-            });
-        }
+        name_frames[i].on("mouseout", function() {
+            this.tooltip.hide();
+            tiplayer.draw();
+        });
     }
 
     no_clue_box = new Kinetic.Rect({
@@ -4575,6 +4573,7 @@ this.handle_note = function(note) {
 
     // Search through all of the hands to find the card with the correct order
     // TODO
+    // let card = ?
 
     // Draw (or hide) the note indicator
     if (newNote.length > 0) {
@@ -4591,12 +4590,9 @@ this.handle_note = function(note) {
 this.stop_action = function(fast) {
     var i, child;
 
-    if (fast)
-    {
+    if (fast) {
         clue_area.hide();
-    }
-    else
-    {
+    } else {
         new Kinetic.Tween({
             node: clue_area,
             opacity: 0.0,
@@ -4616,8 +4612,7 @@ this.stop_action = function(fast) {
     clue_target_group.off("change");
     clue_type_group.off("change");
 
-    for (i = 0; i < player_hands[ui.player_us].children.length; i++)
-    {
+    for (i = 0; i < player_hands[ui.player_us].children.length; i++) {
         child = player_hands[ui.player_us].children[i];
 
         child.off("dragend.play");
