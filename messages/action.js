@@ -162,11 +162,21 @@ const step1 = function(socket, data) {
     notify.gameAction(data);
 
     // Adjust the timer for the player that just took their turn
-    // (we already set the player's time to 0 if the "checkTimer" function initiated the end of the game)
-    if (game.timed && data.type !== 4) {
+    // (if the game is over now due to a player running out of time, we don't
+    // need to adjust the timer because we already set it to 0 in the
+    // "checkTimer" function)
+    if (data.type !== 4) {
         let now = (new Date()).getTime();
         player.time -= now - game.turn_begin_time;
-        player.time += globals.extraTurnTime; // A player gets an additional X seconds for making a move
+        // (in non-timed games, "player.time" will decrement into negative
+        // numbers to show how much time they are taking)
+
+        // In timed games, a player gets an additional X seconds for making a
+        // move
+        if (game.timed) {
+            player.time += globals.extraTurnTime;
+        }
+
         game.turn_begin_time = now;
     }
 
@@ -196,8 +206,9 @@ const step1 = function(socket, data) {
     }
 
     // Send messages about the current turn
-    // (we don't need to send this if the game is over, but we send it anyway in a timed game
-    // because we want an extra separator before the times are displayed)
+    // (we don't need to send this if the game is over, but we send it anyway
+    // in a timed game because we want an extra separator before the times are
+    // displayed)
     if (data.end === false || game.timed) {
         game.actions.push({
             num: game.turn_num,
