@@ -514,6 +514,28 @@ var HanabiCard = function(config) {
 
     this.color_clue_group.add(this.color_clue);
 
+    this.color_clue_question_mark = new Kinetic.Text({
+        width: 0.4 * config.width,
+        height: 0.282 * config.height,
+        align: "center",
+        fontFamily: "Verdana",
+        fontSize: 0.2 * config.height,
+        fill: "#d8d5ef",
+        stroke: "black",
+        strokeWidth: 4,
+        shadowOpacity: 0.9,
+        shadowColor: "black",
+        shadowOffset: {
+            x: 0,
+            y: 1,
+        },
+        shadowBlur: 2,
+        text: "?",
+        visible: (ui.variant === VARIANT.MIXED),
+        y: 10, // Move it downwards a bit from the default location
+    });
+    this.color_clue_group.add(this.color_clue_question_mark);
+
     this.color_clue_letter = new Kinetic.Text({
         width: 0.4 * config.width,
         height: 0.282 * config.height,
@@ -585,7 +607,6 @@ var HanabiCard = function(config) {
     });
 
     this.add(this.note_given);
-
 
     // there's some bug i cant figure out where it permanently draws a copy of the tag at this location, so i'll
     // work around it by setting the starting location to this
@@ -730,6 +751,7 @@ HanabiCard.prototype.add_clue = function(clue) {
     }
 
     if (clue.type === CLUE.SUIT) {
+        // Draw the color squares
         var grad = this.color_clue.getFillLinearGradientColorStops();
         let color = (ui.variant === VARIANT.MIXED ? mixed_clue_colors[clue.value] : suit_colors[clue.value]);
         if (grad.length === 2) {
@@ -742,25 +764,65 @@ HanabiCard.prototype.add_clue = function(clue) {
             this.color_clue_letter.setText(suit_abbreviations[clue.value]);
 
         } else if (grad[1] === grad[3]) {
-            grad[3] = color;
-            this.color_clue.setFillLinearGradientColorStops(grad);
+            if (ui.variant === VARIANT.MIXED) {
+                // Find out the array index of these clue colors
+                let clueIndex1 = -1;
+                let clueIndex2 = -1;
+                for (let i = 0; i < suit_colors.length; i++) {
+                    // We use the "suit_colors" instead of the "mixed_clue_colors" array because
+                    // that is what the "mixed_suit_color_composition" is based off of
+                    if (grad[1] === suit_colors[i]) {
+                        clueIndex1 = i;
+                    } else if (color === suit_colors[i]) {
+                        clueIndex2 = i;
+                    }
+                }
 
-            if (grad[i] !== color) {
+                // The index will not be set above if we already changed it to the true mixed color
+                // So, do nothing if that is the case
+                if (clueIndex1 !== -1 && clueIndex2 !== -1) {
+                    // Find the index of the mixed suit that matches these two colors
+                    let suitIndex;
+                    for (let i = 0; i < mixed_suit_color_composition.length; i++) {
+                        if ((clueIndex1 === mixed_suit_color_composition[i][0] && clueIndex2 === mixed_suit_color_composition[i][1]) ||
+                            (clueIndex1 === mixed_suit_color_composition[i][1] && clueIndex2 === mixed_suit_color_composition[i][0])) {
+
+                            suitIndex = i;
+                            break;
+                        }
+                    }
+
+                    // Change the solid color of the individual clue to the solid color of the true suit
+                    grad[1] = mixed_suit_colors[suitIndex];
+                    grad[3] = mixed_suit_colors[suitIndex];
+                    this.color_clue.setFillLinearGradientColorStops(grad);
+
+                    // Get rid of the question mark
+                    this.color_clue_question_mark.hide();
+                }
+
+            } else {
+                // Change the solid color to a gradient mixing the two clues
+                grad[3] = color;
+                this.color_clue.setFillLinearGradientColorStops(grad);
                 this.color_clue_letter.setText("M");
             }
 
         } else {
-            if (grad[grad.length - 1] === color) {
-                return;
-            }
+            // We don't need to add a third (or 4th, 5th, etc.) color in the mixed variant
+            if (ui.variant !== VARIANT.MIXED) {
+                if (grad[grad.length - 1] === color) {
+                    return;
+                }
 
-            for (i = 0; i < grad.length; i += 2) {
-                grad[i] = 1.0 * (i / 2) / (grad.length / 2);
+                for (i = 0; i < grad.length; i += 2) {
+                    grad[i] = 1.0 * (i / 2) / (grad.length / 2);
+                }
+                grad.push(1);
+                grad.push(color);
+                this.color_clue.setFillLinearGradientColorStops(grad);
+                this.color_clue_letter.setText("M");
             }
-            grad.push(1);
-            grad.push(color);
-            this.color_clue.setFillLinearGradientColorStops(grad);
-            this.color_clue_letter.setText("M");
         }
 
         this.color_clue_group.show();
