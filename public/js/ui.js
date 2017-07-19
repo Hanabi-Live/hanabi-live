@@ -4259,75 +4259,12 @@ this.handle_notify = function(note, performing_replay) {
         });
 
         player_hands[note.who].add(child);
-
         player_hands[note.who].moveToTop();
 
-        /*
-        if (note.who == ui.player_us)
-        {
-            child.setDraggable(true);
-
-            child.on("dragend.reorder", function() {
-                var pos = this.getAbsolutePosition();
-
-                pos.x += this.getWidth() * this.getScaleX() / 2;
-                pos.y += this.getHeight() * this.getScaleY() / 2;
-
-                var area = player_hands[ui.player_us];
-
-                if (pos.x >= area.getX() &&
-                    pos.y >= area.getY() &&
-                    pos.x <= area.getX() + area.getWidth() &&
-                    pos.y <= area.getY() + area.getHeight())
-                {
-                    var i, x;
-
-                    while (1)
-                    {
-                        i = this.index;
-                        x = this.getX();
-
-                        if (i == 0) break;
-
-                        if (x > this.parent.children[i - 1].getX())
-                        {
-                            this.moveDown();
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    while (1)
-                    {
-                        i = this.index;
-                        x = this.getX();
-
-                        if (i == this.parent.children.length - 1) break;
-
-                        if (x < this.parent.children[i + 1].getX())
-                        {
-                            this.moveUp();
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                area.doLayout();
-            });
-        }
-        */
-    }
-
-    else if (type === "draw_size") {
+    } else if (type === "draw_size") {
         drawdeck.setCount(note.size);
-    }
 
-    else if (type === "played") {
+    } else if (type === "played") {
         show_clue_match(-1);
 
         child = ui.deck[note.which.order].parent;
@@ -4342,7 +4279,6 @@ this.handle_notify = function(note, performing_replay) {
         };
         ui.deck[note.which.order].setBareImage();
         ui.deck[note.which.order].hide_clues();
-
 
         pos = child.getAbsolutePosition();
         child.setRotation(child.parent.getRotation());
@@ -4354,9 +4290,8 @@ this.handle_notify = function(note, performing_replay) {
         play_stacks[note.which.suit].moveToTop();
 
         clue_log.checkExpiry();
-    }
 
-    else if (type === "discard") {
+    } else if (type === "discard") {
         show_clue_match(-1);
 
         child = ui.deck[note.which.order].parent;
@@ -4372,7 +4307,6 @@ this.handle_notify = function(note, performing_replay) {
         ui.deck[note.which.order].setBareImage();
         ui.deck[note.which.order].hide_clues();
 
-
         pos = child.getAbsolutePosition();
         child.setRotation(child.parent.getRotation());
         child.remove();
@@ -4380,35 +4314,29 @@ this.handle_notify = function(note, performing_replay) {
 
         discard_stacks[note.which.suit].add(child);
 
-        for (i = 0; i < 6; i++)
-        {
+        for (i = 0; i < 6; i++) {
             if (discard_stacks[i]) {
                 discard_stacks[i].moveToTop();
             }
         }
 
-        while (1)
-        {
+        while (1) {
             n = child.getZIndex();
 
             if (!n) {
                 break;
             }
 
-            if (note.which.rank < child.parent.children[n - 1].children[0].rank)
-            {
+            if (note.which.rank < child.parent.children[n - 1].children[0].rank) {
                 child.moveDown();
-            }
-            else
-            {
+            } else {
                 break;
             }
         }
 
         clue_log.checkExpiry();
-    }
 
-    else if (type === "reveal") {
+    } else if (type === "reveal") {
         child = ui.deck[note.which.order].parent;
 
         ui.deck[note.which.order].suit = note.which.suit;
@@ -4425,9 +4353,8 @@ this.handle_notify = function(note, performing_replay) {
         if (!this.animate_fast) {
             cardlayer.draw();
         }
-    }
 
-    else if (type === "clue") {
+    } else if (type === "clue") {
         show_clue_match(-1);
 
         for (i = 0; i < note.list.length; i++) {
@@ -4475,9 +4402,8 @@ this.handle_notify = function(note, performing_replay) {
         clue_log.add(entry);
 
         clue_log.checkExpiry();
-    }
 
-    else if (type === "status") {
+    } else if (type === "status") {
         clue_label.setText("Clues: " + note.clues);
 
         if (note.clues === 0) {
@@ -4494,9 +4420,8 @@ this.handle_notify = function(note, performing_replay) {
         if (!this.animate_fast) {
             uilayer.draw();
         }
-    }
 
-    else if (type === "strike") {
+    } else if (type === "strike") {
         var x = new Kinetic.Image({
             x: (0.675 + 0.04 * (note.num - 1)) * win_w,
             y: 0.918 * win_h,
@@ -4512,8 +4437,7 @@ this.handle_notify = function(note, performing_replay) {
 
         if (ui.animate_fast) {
             x.setOpacity(1.0);
-        }
-        else {
+        } else {
             new Kinetic.Tween({
                 node: x,
                 opacity: 1.0,
@@ -4521,9 +4445,8 @@ this.handle_notify = function(note, performing_replay) {
                 runonce: true,
             }).play();
         }
-    }
 
-    else if (type === "turn") {
+    } else if (type === "turn") {
         for (i = 0; i < ui.player_names.length; i++) {
             name_frames[i].setActive(note.who === i);
         }
@@ -4531,9 +4454,8 @@ this.handle_notify = function(note, performing_replay) {
         if (!this.animate_fast) {
             uilayer.draw();
         }
-    }
 
-    else if (type === "game_over") {
+    } else if (type === "game_over") {
         for (let i = 0; i < this.player_names.length; i++) {
             name_frames[i].off("mousemove");
         }
@@ -4554,9 +4476,8 @@ this.handle_notify = function(note, performing_replay) {
         if (!this.animate_fast) {
             uilayer.draw();
         }
-    }
 
-    else if (type === "boot") {
+    } else if (type === "boot") {
         if (ui.timerId !== null) {
             window.clearInterval(ui.timerId);
             ui.timerId = null;
@@ -4630,6 +4551,25 @@ this.handle_clock = function(note) {
     }, 1000);
 };
 
+this.handle_note = function(note) {
+    //note.order
+    //note.notes
+
+    // Build the note text from the "notes" array given by the server
+    let newNote = '';
+    for (let i = 0; i < note.notes.length; i++) {
+        if (note.notes.length > 0) {
+            newNote += `${ui.player_names[i]}: ${note.notes[i]}\n`;
+        }
+    }
+    newNote = newNote.slice(0, -1); // Chop off the trailing newline
+
+    ui.setNote(note.order, newNote);
+    tiplayer.draw();
+    uilayer.draw();
+    cardlayer.draw();
+};
+
 this.stop_action = function(fast) {
     var i, child;
 
@@ -4675,7 +4615,6 @@ this.stop_action = function(fast) {
 var saved_action = null;
 
 this.handle_action = function(data) {
-
     var self = this;
     var i, child;
 
@@ -4928,6 +4867,11 @@ HanabiUI.prototype.handle_message = function(msg) {
     // This is used for timed games
     if (msgType === "clock") {
         this.handle_clock.call(this, msgData);
+    }
+
+    // This is used for spectators
+    if (msgType === "note") {
+        this.handle_note.call(this, msgData);
     }
 };
 

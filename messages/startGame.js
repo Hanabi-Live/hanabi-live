@@ -43,7 +43,7 @@ exports.step1 = function(socket, data) {
                 // that each player has added to it
                 let notes = [];
                 for (let i = 0; i < game.players.length; i++) {
-                    notes.push(null);
+                    notes.push('');
                 }
 
                 // Add the card to the deck

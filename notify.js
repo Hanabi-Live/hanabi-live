@@ -320,9 +320,8 @@ exports.spectatorsNote = function(data) {
     let game = globals.currentGames[data.gameID];
 
     let msg = {
-        type: 'notify',
+        type: 'note',
         resp: {
-            type:  'note',
             order: data.order,
             notes: game.deck[data.order].notes,
         },
