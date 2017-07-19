@@ -3,7 +3,6 @@
 var MHGA_show_debug_messages = true;
 var MHGA_show_faces_in_replay = true;
 var MHGA_highlight_non_hand_cards = true;
-var MHGA_show_slot_nums = false;
 var MHGA_show_no_clues_box = true;
 
 function HanabiUI(lobby, game_id) {
@@ -4194,63 +4193,6 @@ var suit_abbreviations = [
     "",
 ];
 
-// the idea here is we get these two events, one with the server telling us to print a message like "Bob discards Blue 1"
-// which we want to add slot information to the end of, and another message which we can use to derive slot information.
-// i'm not sure if they will always be sent in the same order, so we handle them in either order, just assuming that a
-// second pair of messages can't overlap the first.
-// "movement" here means a play or discard. (the things we want slot info for)
-this.current_movement_slot_num = undefined;
-this.current_movement_message = undefined;
-
-this.try_doing_movement_message = function() {
-    if (this.current_movement_slot_num && this.current_movement_message) {
-        // need to save off and restore original message or else during replays if you go back and forth it will keep adding slot info over and over.
-        var original_message = this.current_movement_message.resp.text;
-        if (MHGA_show_slot_nums) {
-            this.current_movement_message.resp.text = this.current_movement_message.resp.text + " from slot #" + this.current_movement_slot_num;
-        }
-        if (this.replay) {
-            this.handle_message_in_replay(this, this.current_movement_message);
-        } else {
-            this.handle_message_in_game(this, this.current_movement_message);
-        }
-        this.current_movement_message.resp.text = original_message;
-        delete this.current_movement_slot_num;
-        delete this.current_movement_message;
-    }
-};
-
-this.movement_notify_slot = function(slot_num) {
-    if (this.current_movement_slot_num) {
-        console.log("ERROR in Make Hanabi Great Again extension: the slot number was set to " + this.current_movement_slot_num + " when I expected it to be undefined.");
-    }
-    this.current_movement_slot_num = slot_num;
-    this.try_doing_movement_message();
-};
-
-this.movement_notify_message = function(msg, callback) {
-    if (this.current_movement_message) {
-        console.log("ERROR in Make Hanabi Great Again extension: the movement message was set to " + this.current_movement_message + " when I expected it to be undefined.");
-    }
-
-    this.current_movement_message = msg;
-    this.try_doing_movement_message();
-};
-
-this.save_slot_information = function(note) {
-    for (var i = 0; i < player_hands.length; ++i) {
-        var hand = player_hands[i];
-        for (var j = 0; j < hand.children.length; ++j) {
-            var handchild = hand.children[j];
-            var handcard = handchild.children[0];
-            if (handcard.order === note.which.order) {
-                this.movement_notify_slot(hand.children.length - j);
-            }
-        }
-    }
-
-};
-
 this.getNote = function(card_order) {
     return notes_written[card_order];
 };
@@ -4384,10 +4326,6 @@ this.handle_notify = function(note, performing_replay) {
 
         child = ui.deck[note.which.order].parent;
 
-        if (!this.replay || performing_replay) {
-            this.save_slot_information(note);
-        }
-
         ui.deck[note.which.order].suit = note.which.suit;
         ui.deck[note.which.order].rank = note.which.rank;
         ui.deck[note.which.order].unknown = false;
@@ -4416,10 +4354,6 @@ this.handle_notify = function(note, performing_replay) {
         show_clue_match(-1);
 
         child = ui.deck[note.which.order].parent;
-
-        if (!this.replay || performing_replay) {
-            this.save_slot_information(note);
-        }
 
         ui.deck[note.which.order].suit = note.which.suit;
         ui.deck[note.which.order].rank = note.which.rank;
