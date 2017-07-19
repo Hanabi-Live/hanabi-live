@@ -2223,52 +2223,6 @@ this.build_cards = function() {
             ctx.strokeText(index_label, 19, text_y_pos);
             ctx.restore();
 
-            // Make the special corners on cards for the mixed variant
-            if (i <= 5 && mixed) {
-                ctx.save();
-
-                let triangleSize = 60;
-                let borderSize = 8;
-
-                // Draw the first half of the top-right triangle
-                ctx.beginPath();
-                ctx.moveTo(cardw - borderSize, borderSize); // Start at the top right-hand corner
-                ctx.lineTo(cardw - borderSize - triangleSize, borderSize); // Move left
-                ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move down and right diagonally
-                ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
-                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][0]];
-                drawshape();
-
-                // Draw the second half of the top-right triangle
-                ctx.beginPath();
-                ctx.moveTo(cardw - borderSize, borderSize); // Start at the top right-hand corner
-                ctx.lineTo(cardw - borderSize, borderSize + triangleSize); // Move down
-                ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move up and left diagonally
-                ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
-                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][1]];
-                drawshape();
-
-                // Draw the first half of the bottom-left triangle
-                ctx.beginPath();
-                ctx.moveTo(borderSize, cardh - borderSize); // Start at the bottom right-hand corner
-                ctx.lineTo(borderSize, cardh - borderSize - triangleSize); // Move up
-                ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move right and down diagonally
-                ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
-                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][0]];
-                drawshape();
-
-                // Draw the second half of the bottom-left triangle
-                ctx.beginPath();
-                ctx.moveTo(borderSize, cardh - borderSize); // Start at the bottom right-hand corner
-                ctx.lineTo(borderSize + triangleSize, cardh - borderSize); // Move right
-                ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move left and up diagonally
-                ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
-                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][1]];
-                drawshape();
-
-                ctx.restore();
-            }
-
             if (i === 5 && rainbow) {
                 // Make the rainbow symbol a gradient
                 grad = ctx.createRadialGradient(75, 150, 25, 75, 150, 75);
@@ -2363,6 +2317,54 @@ this.build_cards = function() {
                     drawshape();
                     ctx.restore();
                 }
+            }
+
+            // Make the special corners on cards for the mixed variant
+            if (i <= 5 && mixed) {
+                ctx.save();
+
+                ctx.lineWidth = 1;
+
+                let triangleSize = 60;
+                let borderSize = 8;
+
+                // Draw the first half of the top-right triangle
+                ctx.beginPath();
+                ctx.moveTo(cardw - borderSize, borderSize); // Start at the top right-hand corner
+                ctx.lineTo(cardw - borderSize - triangleSize, borderSize); // Move left
+                ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move down and right diagonally
+                ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
+                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][0]];
+                drawshape();
+
+                // Draw the second half of the top-right triangle
+                ctx.beginPath();
+                ctx.moveTo(cardw - borderSize, borderSize); // Start at the top right-hand corner
+                ctx.lineTo(cardw - borderSize, borderSize + triangleSize); // Move down
+                ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move up and left diagonally
+                ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
+                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][1]];
+                drawshape();
+
+                // Draw the first half of the bottom-left triangle
+                ctx.beginPath();
+                ctx.moveTo(borderSize, cardh - borderSize); // Start at the bottom right-hand corner
+                ctx.lineTo(borderSize, cardh - borderSize - triangleSize); // Move up
+                ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move right and down diagonally
+                ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
+                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][0]];
+                drawshape();
+
+                // Draw the second half of the bottom-left triangle
+                ctx.beginPath();
+                ctx.moveTo(borderSize, cardh - borderSize); // Start at the bottom right-hand corner
+                ctx.lineTo(borderSize + triangleSize, cardh - borderSize); // Move right
+                ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move left and up diagonally
+                ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
+                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][1]];
+                drawshape();
+
+                ctx.restore();
             }
         }
     }
