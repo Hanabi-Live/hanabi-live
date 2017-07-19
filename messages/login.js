@@ -19,45 +19,24 @@ exports.step1 = function(socket, data) {
     // Validate that they submitted a username
     if ('username' in data === false) {
         logger.warn('Someone tried to log in without submitting a username.');
-
-        // Let them know
-        socket.emit('message', {
-            type: 'denied',
-            resp: {
-                reason: 'You must submit a username.',
-            },
-        });
-
+        data.reason = 'You must submit a username.';
+        notify.playerDenied(socket, data);
         return;
     }
 
     // Validate that they submitted a password
     if ('password' in data === false) {
         logger.warn('Someone tried to log in without submitting a password.');
-
-        // Let them know
-        socket.emit('message', {
-            type: 'denied',
-            resp: {
-                reason: 'You must submit a password.',
-            },
-        });
-
+        data.reason = 'You must submit a password.';
+        notify.playerDenied(socket, data);
         return;
     }
 
     // Validate that the username is not blank
     if (data.username.length === 0) {
         logger.warn('Someone tried to log in with a blank username.');
-
-        // Let them know
-        socket.emit('message', {
-            type: 'denied',
-            resp: {
-                reason: 'Username cannot be blank.',
-            },
-        });
-
+        data.reason = 'Username cannot be blank.';
+        notify.playerDenied(socket, data);
         return;
     }
 
@@ -65,15 +44,8 @@ exports.step1 = function(socket, data) {
     let maxLength = 15;
     if (data.username.length > maxLength) {
         logger.warn(`User "${data.username}" supplied an excessively long username with a length of ${data.username.length}.`);
-
-        // Let them know
-        socket.emit('message', {
-            type: 'denied',
-            resp: {
-                reason: `Username must be ${maxLength} characters or less.`,
-            },
-        });
-
+        data.reason = `Username must be ${maxLength} characters or less.`;
+        notify.playerDenied(socket, data);
         return;
     }
 
@@ -97,15 +69,8 @@ function step2(error, socket, data) {
             step4(socket, data);
         } else {
             logger.info(`User "${data.username}" supplied an incorrect password of: ${data.password}`);
-
-            // Let them know
-            socket.emit('message', {
-                type: 'denied',
-                resp: {
-                    reason: 'Incorrect password',
-                },
-            });
-
+            data.reason = 'Incorrect password';
+            notify.playerDenied(socket, data);
             return;
         }
     }

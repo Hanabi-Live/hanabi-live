@@ -54,15 +54,8 @@ const step1 = function(socket, data) {
     // Validate that it is this player's turn
     if (game.turn_player_index !== data.index) {
         logger.warn(`User "${data.username}" tried to perform an action when it was not their turn.`);
-
-        // Let them know
-        socket.emit('message', {
-            type: 'denied',
-            resp: {
-                reason: 'You cannot perform an action when it is not your turn.',
-            },
-        });
-
+        data.reason = 'You cannot perform an action when it is not your turn.';
+        notify.playerDenied(socket, data);
         return;
     }
 
@@ -72,30 +65,16 @@ const step1 = function(socket, data) {
         // Validate that the player is not giving a clue to themselves
         if (game.turn_player_index === data.target) {
             logger.warn(`User "${data.username}" tried to give a clue to themself.`);
-
-            // Let them know
-            socket.emit('message', {
-                type: 'denied',
-                resp: {
-                    reason: 'You cannot give a clue to yourself.',
-                },
-            });
-
+            data.reason = 'You cannot give a clue to yourself.';
+            notify.playerDenied(socket, data);
             return;
         }
 
         // Validate that there are clues available to use
         if (game.clue_num === 0) {
             logger.warn(`User "${data.username}" tried to give a clue while at 0 clues.`);
-
-            // Let them know
-            socket.emit('message', {
-                type: 'denied',
-                resp: {
-                    reason: 'You cannot give a clue when you have 0 clues available.',
-                },
-            });
-
+            data.reason = 'You cannot give a clue when you have 0 clues available.';
+            notify.playerDenied(socket, data);
             return;
         }
 
@@ -112,15 +91,8 @@ const step1 = function(socket, data) {
         // (the client should enforce this, but do a check just in case)
         if (game.clue_num === 8) {
             logger.warn(`User "${data.username}" tried to discard while at 8 clues.`);
-
-            // Let them know
-            socket.emit('message', {
-                type: 'denied',
-                resp: {
-                    reason: 'You cannot give a clue when you have 0 clues available.',
-                },
-            });
-
+            data.reason = 'You cannot discard while at 8 clues.';
+            notify.playerDenied(socket, data);
             return;
         }
 

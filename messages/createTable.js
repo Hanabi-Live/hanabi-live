@@ -23,15 +23,8 @@ exports.step1 = function(socket, data) {
     // Validate that they submitted a table name
     if ('name' in data === false) {
         logger.warn(`User "${data.username}" created a table without sending a table name.`);
-
-        // Let them know
-        socket.emit('message', {
-            type: 'denied',
-            resp: {
-                reason: 'You must submit a table name.',
-            },
-        });
-
+        data.reason = 'You must submit a table name.';
+        notify.playerDenied(socket, data);
         return;
     }
 
@@ -44,15 +37,8 @@ exports.step1 = function(socket, data) {
     let maxLength = 30;
     if (data.name.length > maxLength) {
         logger.warn(`User "${data.username}" supplied an excessively long table name with a length of ${data.name.length}.`);
-
-        // Let them know
-        socket.emit('message', {
-            type: 'denied',
-            resp: {
-                reason: `The table name must be ${maxLength} characters or less.`,
-            },
-        });
-
+        data.reason = `The table name must be ${maxLength} characters or less.`;
+        notify.playerDenied(socket, data);
         return;
     }
 
@@ -85,6 +71,7 @@ function step2(error, socket, data) {
         running:           false,
         score:             0,
         seed:              null,
+        shared_replay:     false,
         spectators:        {},
         stacks:            [],
         strikes:           0,

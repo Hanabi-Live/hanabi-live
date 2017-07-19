@@ -366,3 +366,12 @@ exports.playerAction = function(socket, data) {
         },
     });
 };
+
+exports.playerDenied = function(socket, data) {
+    socket.emit('message', {
+        type: 'denied',
+        resp: {
+            reason: data.reason,
+        },
+    });
+};

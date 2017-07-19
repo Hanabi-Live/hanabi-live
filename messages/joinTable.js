@@ -9,39 +9,35 @@
 */
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
-const models   = require('../models');
-const messages = require('../messages');
-const notify   = require('../notify');
+const globals = require('../globals');
+const logger  = require('../logger');
+const models  = require('../models');
+const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
-    // Prepare the data to feed to the model
+    // Local variables
     data.userID = socket.userID;
     data.gameID = data.table_id;
 
-    // Check to see if this is a shared replay
-    if (data.gameID in globals.currentSharedReplays) {
-        messages.join_shared_replay(socket, data);
-        return;
-    }
-
     // Validate that this table exists
-    if (data.gameID in globals.currentGames === false) {
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else if (data.gameID in globals.currentSharedReplays) {
+        game = globals.currentSharedReplays[data.gameID];
+    } else {
+        logger.warn(`messages.join was called for game #${data.gameID}, but it does not exist.`);
+        data.reason = 'That table does not exist.';
+        notify.playerDenied(socket, data);
         return;
     }
 
     // Validate that this table does not already have the maximum amount
     // of players
-    let game = globals.currentGames[data.gameID];
     if (game.players.length === game.max_players) {
-        socket.emit('message', {
-            type: 'denied',
-            resp: {
-                reason: `That table has a maximum limit of ${game.max_players} players.`,
-            },
-        });
-
+        logger.warn(`messages.join was called for game #${data.gameID}, but it has the maximum amount of players already.`);
+        data.reason = `That table has a maximum limit of ${game.max_players} players.`;
+        notify.playerDenied(socket, data);
         return;
     }
 
