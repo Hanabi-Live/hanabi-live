@@ -8,7 +8,7 @@
         max: 5,
         variant: 0,
         allow_spec: false,
-        enable_timer: false,
+        timed: false,
     }
 */
 
@@ -24,7 +24,6 @@ exports.step1 = function(socket, data) {
     if (data.name === '') {
         data.name = `${socket.username}'s game`;
     }
-    data.timed = false;
     data.owner = socket.userID;
 
     // Validate that they submitted a table name
@@ -105,7 +104,7 @@ function step2(error, socket, data) {
         stacks:            [],
         strikes:           0,
         sound:             null,
-        timed:             data.enable_timer,
+        timed:             data.timed,
         turn_begin_time:   null,
         turn_num:          0,
         turn_player_index: 0,

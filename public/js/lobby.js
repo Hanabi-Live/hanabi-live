@@ -104,22 +104,22 @@ function HanabiLobby() {
         var max_players = parseInt($("#create-game-players").val());
         var variant = parseInt($("#create-game-variant").val());
         var allow_spec = document.getElementById("create-game-allow-spec").checked;
-        var enable_timer = document.getElementById("create-game-enable-timer").checked;
+        var timed = document.getElementById("create-game-timed").checked;
 
         localStorage.setItem("table_host_max_players", max_players);
-        localStorage.setItem("table_host_variant", variant);
-        localStorage.setItem("table_host_allow_spec", allow_spec);
-        localStorage.setItem("table_host_enable_timer", enable_timer);
+        localStorage.setItem("table_host_variant",     variant);
+        localStorage.setItem("table_host_allow_spec",  allow_spec);
+        localStorage.setItem("table_host_timed",       timed);
 
         evt.preventDefault();
 
         self.send_msg({
             type: "create_table", resp: {
-                name: game_name,
-                max: max_players,
-                variant: variant,
+                name:       game_name,
+                max:        max_players,
+                variant:    variant,
                 allow_spec: allow_spec,
-                enable_timer: enable_timer,
+                timed:      timed,
             },
         });
 
@@ -287,8 +287,8 @@ HanabiLobby.prototype.show_create_dialog = function() {
     var allow_spec = JSON.parse(localStorage.getItem("table_host_allow_spec"));
     $("#create-game-allow-spec").prop('checked', allow_spec);
 
-    var enable_timer = JSON.parse(localStorage.getItem("table_host_enable_timer"));
-    $("#create-game-enable-timer").prop('checked', enable_timer);
+    var timed = JSON.parse(localStorage.getItem("table_host_timed"));
+    $("#create-game-timed").prop('checked', timed);
 };
 
 HanabiLobby.prototype.hide_create_dialog = function() {
@@ -661,7 +661,7 @@ HanabiLobby.prototype.draw_history_details = function() {
     var self = this;
 
     var div = $("#history-details-list");
-    var detail, attrs, button;
+    var detail, attrs, button, button2;
     var variant = 0;
     var i;
 
@@ -714,6 +714,29 @@ HanabiLobby.prototype.draw_history_details = function() {
         });
 
         attrs.append($("<li>").append(button).addClass("table-attr"));
+
+        button2 = $("<button>").text("Shared Replay").attr("type", "button");
+        button2.attr("id", "replay-" + this.history_detail_list[i].id);
+
+        button2.on("click", function(evt) {
+            evt.preventDefault();
+
+            self.game_id = parseInt(this.id.slice(7));
+
+            self.send_msg({
+                type: "created_shared_replay",
+                resp: {
+                    id: self.game_id,
+                },
+            });
+
+            // Click the "Return to Tables" button
+            $("#game-history-details").hide();
+            $("#game-history").hide();
+            $("#table-area").show();
+        });
+
+        attrs.append($("<li>").append(button2).addClass("table-attr"));
 
         detail.append(attrs);
 
@@ -802,7 +825,7 @@ HanabiLobby.prototype.show_joined = function() {
         html += "<table>";
 
         html += "<tr>";
-        html += "<td>Total played:</td>";
+        html += "<td>Total games:</td>";
         html += "<td><b>" + this.game.players[i].num_played + "</b></td>";
         html += "</tr>";
 
@@ -814,7 +837,7 @@ HanabiLobby.prototype.show_joined = function() {
         html += "</tr>";
 
         html += "<tr>";
-        html += "<td>Strikeout rate:</td>";
+        html += "<td>Strikeout:</td>";
         let strikeout_rate = this.game.players[i].strikeout_rate * 100; // Turn it into a percent
         strikeout_rate = Math.round(strikeout_rate * 100) / 100; // Round it to 2 decimal places
         html += "<td><b>" + strikeout_rate + "%</b></td>";
