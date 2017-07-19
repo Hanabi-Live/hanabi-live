@@ -312,6 +312,28 @@ exports.gameBoot = function(data) {
 };
 
 /*
+    Functions that notify all spectators of the game
+*/
+
+exports.spectatorsNote = function(data) {
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+
+    let msg = {
+        type: 'notify',
+        resp: {
+            type:  'note',
+            order: data.order,
+            notes: game.deck[data.order].notes,
+        },
+    };
+
+    for (let userID of Object.keys(game.spectators)) {
+        game.spectators[userID].emit('message', msg);
+    }
+};
+
+/*
     Functions that notify a specific user/player
 */
 
