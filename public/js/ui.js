@@ -4862,33 +4862,15 @@ this.replay_turn = 0;
 
 }
 
-HanabiUI.prototype.handle_message_in_game = function(ui, msg) {
-    ui.replay_log.push(msg);
-
-    if (!ui.replay)
-    {
-        ui.set_message.call(ui, msg.resp);
-    }
-};
-
-HanabiUI.prototype.handle_text_message = function(msg, callback) {
-    var msgWithoutName = msg.resp.text.substr(msg.resp.text.indexOf(" ") + 1);
-    if (msgWithoutName.includes("plays") || msgWithoutName.includes("discards") || msgWithoutName.includes("fails")) {
-        this.movement_notify_message(msg, callback);
-    } else {
-        callback(this, msg);
-    }
-};
-
 HanabiUI.prototype.handle_message = function(msg) {
     var msgType = msg.type;
     var msgData = msg.resp;
 
     if (msgType === "message") {
-        if (this.replay) {
-            this.replay_log.push(msg);
-        } else {
-            this.handle_text_message(msg, this.handle_message_in_game);
+        this.replay_log.push(msg);
+
+        if (!this.replay) {
+            this.set_message.call(this, msgData);
         }
     }
 
