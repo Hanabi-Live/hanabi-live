@@ -756,11 +756,11 @@ HanabiLobby.prototype.set_game = function(data) {
 
 HanabiLobby.prototype.set_game_player = function(data) {
     this.game.players[data.index] = {
-        name:          data.name,
-        num_played:    data.num_played,
-        average_score: data.average_score,
-        loss_rate:     data.loss_rate,
-        present:       data.present,
+        name:           data.name,
+        num_played:     data.num_played,
+        average_score:  data.average_score,
+        strikeout_rate: data.strikeout_rate,
+        present:        data.present,
     };
 
     if (data.you) {
@@ -814,10 +814,10 @@ HanabiLobby.prototype.show_joined = function() {
         html += "</tr>";
 
         html += "<tr>";
-        html += "<td>Loss rate:</td>";
-        let loss_rate = this.game.players[i].loss_rate * 100; // Turn it into a percent
-        loss_rate = Math.round(loss_rate * 100) / 100; // Round it to 2 decimal places
-        html += "<td><b>" + loss_rate + "%</b></td>";
+        html += "<td>Strikeout rate:</td>";
+        let strikeout_rate = this.game.players[i].strikeout_rate * 100; // Turn it into a percent
+        strikeout_rate = Math.round(strikeout_rate * 100) / 100; // Round it to 2 decimal places
+        html += "<td><b>" + strikeout_rate + "%</b></td>";
         html += "</tr>";
 
         html += "</table>";

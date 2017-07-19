@@ -4,7 +4,7 @@
 const db = require('./db');
 
 exports.getUser = function(socket, data, done) {
-    let sql = 'SELECT id, username, password, num_played, average_score, loss_rate FROM users WHERE username = ?';
+    let sql = 'SELECT id, username, password, num_played, average_score, strikeout_rate FROM users WHERE username = ?';
     db.query(sql, [data.username], function (error, results, fields) {
         if (error) {
             done(error, socket, data, null);
@@ -18,12 +18,12 @@ exports.getUser = function(socket, data, done) {
             done(error, socket, data, null);
             return;
         } else {
-            data.userID        = results[0].id;
-            data.username      = results[0].username; // We replace the existing username in case that they submitted the wrong case
-            data.realPassword  = results[0].password;
-            data.num_played    = results[0].num_played;
-            data.average_score = results[0].average_score;
-            data.loss_rate     = results[0].loss_rate;
+            data.userID         = results[0].id;
+            data.username       = results[0].username; // We replace the existing username in case that they submitted the wrong case
+            data.realPassword   = results[0].password;
+            data.num_played     = results[0].num_played;
+            data.average_score  = results[0].average_score;
+            data.strikeout_rate = results[0].strikeout_rate;
         }
 
         done(null, socket, data);
@@ -38,10 +38,10 @@ exports.create = function(socket, data, done) {
             return;
         }
 
-        data.userID        = results.insertId;
-        data.num_played    = 0;
-        data.average_score = 0;
-        data.loss_rate     = 0;
+        data.userID         = results.insertId;
+        data.num_played     = 0;
+        data.average_score  = 0;
+        data.strikeout_rate = 0;
         done(null, socket, data);
     });
 };
@@ -59,7 +59,7 @@ exports.updateStats = function(data, done) {
                     JOIN game_participants ON game_participants.game_id = games.id
                 WHERE game_participants.user_id = ? AND games.score != 0
             ),
-            loss_rate = (
+            strikeout_rate = (
                 SELECT COUNT(games.id)
                 FROM games
                     JOIN game_participants ON game_participants.game_id = games.id
