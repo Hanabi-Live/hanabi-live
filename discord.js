@@ -9,12 +9,14 @@ const keldon   = require('./keldon');
 // Import the environment variables defined in the ".env" file
 require('dotenv').config();
 
-// Create a new client, expose it to the rest of the application, and login with our application token
+// Create a new client, expose it to the rest of the application, and login
+// with our application token
 const client = new Discord.Client();
 if (process.env.DISCORD_TOKEN.length !== 0) {
     client.login(process.env.DISCORD_TOKEN);
     // The token is is from: https://discordapp.com/developers/applications/me/
-    // To set up a new bot, follow these instructions: https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
+    // To set up a new bot, follow these instructions:
+    // https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
 }
 
 /*
@@ -26,7 +28,8 @@ client.on('ready', function() {
 });
 
 client.on('message', function(message) {
-    // Don't do anything if we are the author of the message (or if the message was created by another bot)
+    // Don't do anything if we are the author of the message
+    // (or if the message was created by another bot)
     if ('author' in message === false) {
         return;
     } else if ('bot' in message.author === false) {
@@ -65,7 +68,8 @@ client.on('message', function(message) {
 });
 
 exports.send = function(from, username, message) {
-    // In Discord, text inside single asterisks are italicised and text inside double asterisks are bolded
+    // In Discord, text inside single asterisks are italicised and text inside
+    // double asterisks are bolded
     let messageString = '[*' + from + '*] <**' + username + '**> ' + message;
 
     // A guild is a server in Discord

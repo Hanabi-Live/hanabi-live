@@ -40,7 +40,7 @@ exports.step1 = function(socket, data) {
     notify.gameBoot(data);
 
     // Keep track of the game ending
-    logger.info('Game: #' + data.gameID + ' (' + game.name + ') ended with a score of ' + game.score + '.');
+    logger.info(`Game: #${data.gameID} (${game.name}) ended with a score of ${game.score}.`);
     delete globals.currentGames[data.gameID];
 
     // Notify everyone that the table was deleted

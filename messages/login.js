@@ -64,13 +64,13 @@ exports.step1 = function(socket, data) {
     // Validate that the username is not excessively long
     let maxLength = 15;
     if (data.username.length > maxLength) {
-        logger.warn('User "' + data.username + '" supplied an excessively long username with a length of:', data.username.length);
+        logger.warn(`User "${data.username}" supplied an excessively long username with a length of ${data.username.length}.`);
 
         // Let them know
         socket.emit('message', {
             type: 'denied',
             resp: {
-                reason: 'Username must be ' + maxLength + ' characters or less.',
+                reason: `Username must be ${maxLength} characters or less.`,
             },
         });
 
@@ -96,7 +96,7 @@ function step2(error, socket, data) {
         if (data.password === data.realPassword) {
             step4(socket, data);
         } else {
-            logger.info('User "' + data.username + '" supplied an incorrect password of:', data.password);
+            logger.info(`User "${data.username}" supplied an incorrect password of: ${data.password}`);
 
             // Let them know
             socket.emit('message', {
@@ -117,13 +117,15 @@ function step3(error, socket, data) {
         return;
     }
 
-    logger.info('User "' + data.username + '" created.');
+    logger.info('User "${data.username}" was created in the database.');
     step4(socket, data);
 }
 
 function step4(socket, data) {
     // Store information about the user inside of the socket object
-    socket.userID   = data.userID; // We can't use "socket.id" because Socket.IO already uses that as a unique identifier for the session
+    socket.userID   = data.userID;
+    // We can't use "socket.id" because Socket.IO already uses that as a unique
+    // identifier for the session
     socket.username = data.username;
     socket.atTable  = {
         id:         -1,
@@ -137,7 +139,7 @@ function step4(socket, data) {
 
     // Check to see if this user is already logged on
     if (socket.userID in globals.connectedUsers) {
-        logger.info('User "' + socket.username + '" logged in but was already connected; logging the existing user out."');
+        logger.info(`User "${socket.username}" logged in but was already connected; logging the existing user out.`);
 
         // Send the existing user a "kick" message
         globals.connectedUsers[socket.userID].emit('message', {
@@ -151,7 +153,7 @@ function step4(socket, data) {
 
     // Keep track of the connecting user
     globals.connectedUsers[data.userID] = socket;
-    logger.info('User "' + data.username + '" logged in. (' + Object.keys(globals.connectedUsers).length, 'now connected.)');
+    logger.info(`User "${data.username}" logged in. (${Object.keys(globals.connectedUsers).length} now connected.)`);
 
     // Check to see if this user was in any existing games
     for (let gameID of Object.keys(globals.currentGames)) {
@@ -234,7 +236,8 @@ function step4(socket, data) {
     }
 
     // Send the welcome chat messages
-    // (Keldon sends these, but they seem rather useless and spammy, so comment them out for now)
+    // (Keldon sends these, but they seem rather useless and spammy, so we won't
+    // send these)
     /*
     socket.emit('message', {
         type: 'chat',

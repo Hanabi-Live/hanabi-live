@@ -100,8 +100,9 @@ exports.gameMemberChange = function(data) {
             },
         });
 
-        // Tell the client to redraw all of the lobby rectanges to account for the new player
-        // (it might be wasteful, but this is how the real server appears to work)
+        // Tell the client to redraw all of the lobby rectanges to account for
+        // the new player (it might be wasteful, but this is how the real
+        // server appears to work)
         for (let i = 0; i < game.players.length; i++) {
             let player2 = game.players[i];
 
@@ -120,7 +121,8 @@ exports.gameMemberChange = function(data) {
         }
     }
 
-    // Lastly, send the table owner whether or not the "Start Game" button should be greyed out
+    // Lastly, send the table owner whether or not the "Start Game" button
+    // should be greyed out
     for (let player of game.players) {
         if (player.userID === game.owner) {
             player.socket.emit('message', {
@@ -138,7 +140,8 @@ exports.gameConnected = function(data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
 
-    // Make a list of who is currently connected of the players in the current game
+    // Make a list of who is currently connected of the players in the
+    // current game
     let list = [];
     for (let player of game.players) {
         list.push(player.present);
@@ -270,7 +273,8 @@ exports.gameSound = function(data) {
     }
     for (let userID of Object.keys(game.spectators)) {
         // Prepare the sound message
-        // (the code is duplicated here because I don't want to mess with having to change the file name back to default)
+        // (the code is duplicated here because I don't want to mess with
+        // having to change the file name back to default)
         let sound = 'turn_other';
         if (game.sound !== null) {
             sound = game.sound;
@@ -318,9 +322,9 @@ exports.playerAction = function(socket, data) {
     socket.emit('message', {
         type: 'action',
         resp: {
-            can_clue:            (game.clue_num > 0 ? true : false),
-            can_discard:         (game.clue_num < 8 ? true : false),
-            can_blind_play_deck: (game.deckIndex === game.deck.length - 1 ? true : false),
+            can_clue:            (game.clue_num > 0),
+            can_discard:         (game.clue_num < 8),
+            can_blind_play_deck: (game.deckIndex === game.deck.length - 1),
         },
     });
 };

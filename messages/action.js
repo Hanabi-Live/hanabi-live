@@ -14,7 +14,9 @@
             // 3 is red
             // 4 is purple
         },
-        target: 1, // Either the player index of the recipient of the clue, or the card ID (e.g. the first card of the deck drawn is card #1, etc.)
+        target: 1,
+        // Either the player index of the recipient of the clue, or the card ID
+        // (e.g. the first card of the deck drawn is card #1, etc.)
         type: 0,
         // 0 is a clue
         // 1 is a play
@@ -51,7 +53,7 @@ const step1 = function(socket, data) {
 
     // Validate that it is this player's turn
     if (game.turn_player_index !== data.index) {
-        logger.warn('User "' + data.username + '" tried to perform an action when it was not their turn.');
+        logger.warn(`User "${data.username}" tried to perform an action when it was not their turn.`);
 
         // Let them know
         socket.emit('message', {
@@ -69,7 +71,7 @@ const step1 = function(socket, data) {
     if (data.type === 0) { // Clue
         // Validate that the player is not giving a clue to themselves
         if (game.turn_player_index === data.target) {
-            logger.warn('User "' + data.username + '" tried to give a clue to themself.');
+            logger.warn(`User "${data.username}" tried to give a clue to themself.`);
 
             // Let them know
             socket.emit('message', {
@@ -84,7 +86,7 @@ const step1 = function(socket, data) {
 
         // Validate that there are clues available to use
         if (game.clue_num === 0) {
-            logger.warn('User "' + data.username + '" tried to give a clue while at 0 clues.');
+            logger.warn(`User "${data.username}" tried to give a clue while at 0 clues.`);
 
             // Let them know
             socket.emit('message', {
@@ -109,7 +111,7 @@ const step1 = function(socket, data) {
         // We are not allowed to discard while at 8 clues
         // (the client should enforce this, but do a check just in case)
         if (game.clue_num === 8) {
-            logger.warn('User "' + data.username + '" tried to discard while at 8 clues.');
+            logger.warn(`User "${data.username}" tried to discard while at 8 clues.`);
 
             // Let them know
             socket.emit('message', {
@@ -138,18 +140,19 @@ const step1 = function(socket, data) {
         playerBlindPlayDeck(data);
 
     } else if (data.type === 4) {
-        // This is a special action type sent by the server to itself when a player runs out of time
+        // This is a special action type sent by the server to itself when a
+        // player runs out of time
         game.strikes = 3;
 
-        let text = game.players[game.turn_player_index].username + ' ran out of time!';
+        let text = `${game.players[game.turn_player_index].username} ran out of time!`;
         game.actions.push({
             text: text,
         });
         notify.gameAction(data);
-        logger.info('[Game ' + data.gameID + '] ' + text);
+        logger.info(`[Game ${data.gameID}] ${text}`);
 
     } else {
-        logger.error('Error: Unknown action type: ' + data.type);
+        logger.error(`Error: Unknown action type: ${data.type}`);
         return;
     }
 
@@ -196,13 +199,13 @@ const step1 = function(socket, data) {
         if (data.loss) {
             text = 'Players lose!';
         } else {
-            text = 'Players score ' + game.score + ' points';
+            text = `Players score ${game.score} points`;
         }
         game.actions.push({
             text: text,
         });
         notify.gameAction(data);
-        logger.info('[Game ' + data.gameID + '] ' + text);
+        logger.info(`[Game ${data.gameID}] ${text}`);
     }
 
     // Send messages about the current turn
@@ -216,7 +219,7 @@ const step1 = function(socket, data) {
             who: game.turn_player_index,
         });
         notify.gameAction(data);
-        logger.info('[Game ' + data.gameID + '] It is now ' + game.players[game.turn_player_index].username + '\'s turn.');
+        logger.info(`[Game ${data.gameID}] It is now ${game.players[game.turn_player_index].username}'s turn.`);
     }
 
     // Tell every client to play a sound as a notification for the action taken
@@ -232,14 +235,15 @@ const step1 = function(socket, data) {
     notify.playerAction(nextPlayerSocket, data);
 
     notify.allTableChange(data);
-    // (this seems wasteful but this is apparently used so that you can see if it is your turn from the lobby)
+    // (this seems wasteful but this is apparently used so that you can see if
+    // it is your turn from the lobby)
 
     if (game.timed) {
         // Send everyone new clock values
         notify.gameTime(data);
 
-        // Start the function that will check to see if the current player has run out of time
-        // (it just got to be their turn)
+        // Start the function that will check to see if the current player has
+        // run out of time (it just got to be their turn)
         data.userID = game.players[game.turn_player_index].userID;
         data.turn_num = game.turn_num;
         setTimeout(function() {
@@ -266,7 +270,8 @@ function playerClue(data) {
             }
 
         } else if (data.clue.type === 1) { // Color clue
-            if (game.variant >= 0 && game.variant <= 2) { // Normal, black, and black one of each
+            if (game.variant >= 0 && game.variant <= 2) {
+                // Normal, black, and black one of each
                 if (data.clue.value === card.suit) {
                     touched = true;
                 }
@@ -344,7 +349,7 @@ function playerClue(data) {
         text: text,
     });
     notify.gameAction(data);
-    logger.info('[Game ' + data.gameID + '] ' + text);
+    logger.info(`[Game ${data.gameID}] ${text}`);
 }
 
 function playerRemoveCard(data) {
@@ -356,7 +361,8 @@ function playerRemoveCard(data) {
     for (let i = 0; i < player.hand.length; i++) {
         if (player.hand[i].order === data.target) {
             player.hand.splice(i, 1);
-            data.slot = player.hand.length - i + 1; // Slot 1 is the leftmost slot, but the leftmost slot is index 5
+            data.slot = player.hand.length - i + 1;
+            // Slot 1 is the leftmost slot, but the leftmost slot is index 5
             break;
         }
     }
@@ -394,9 +400,8 @@ function playerPlayCard(data) {
         notify.gameAction(data);
 
         // Send the "message" about the play
-        let text = game.players[data.index].username + ' ';
-        text += 'plays ';
-        text += suitText + ' ' + card.rank + ' from ';
+        let text = `${game.players[data.index].username} plays `;
+        text += `${suitText} ${card.rank} from `;
         if (data.slot === -1) {
             text += 'the deck';
         } else {
@@ -410,13 +415,14 @@ function playerPlayCard(data) {
             text: text,
         });
         notify.gameAction(data);
-        logger.info('[Game ' + data.gameID + '] ' + text);
+        logger.info(`[Game ${data.gameID}] ${text}`);
 
         // Give the team a clue if a 5 was played
         if (card.rank === 5) {
             game.clue_num++;
             if (game.clue_num > 8) {
-                game.clue_num = 8; // The extra clue is wasted if they are at 8 clues already
+                // The extra clue is wasted if they are at 8 clues already
+                game.clue_num = 8;
             }
         }
 
@@ -467,7 +473,7 @@ function playerDiscardCard(data, failed = false) {
     } else {
         text += 'discards';
     }
-    text += ' ' + suitText + ' ' + card.rank + ' from ';
+    text += ` ${suitText} ${card.rank} from `;
     if (data.slot === -1) {
         text += 'the deck';
     } else {
@@ -483,7 +489,7 @@ function playerDiscardCard(data, failed = false) {
         text: text,
     });
     notify.gameAction(data);
-    logger.info('[Game ' + data.gameID + '] ' + text);
+    logger.info(`[Game ${data.gameID}] ${text}`);
 }
 
 // We have to use "data.index" instead of "globals.currentGames[data.gameID].turn_player_index"
@@ -499,7 +505,8 @@ const playerDrawCard = function(data) {
     }
 
     // Mark the order (position in the deck) on the card
-    // (this was not done upon deck creation because the order would change after it was shuffled)
+    // (this was not done upon deck creation because the order would change
+    // after it was shuffled)
     let card = game.deck[game.deckIndex];
     card.order = game.deckIndex;
 
@@ -570,7 +577,7 @@ const checkTimer = function(data) {
     }
     let player = game.players[data.index];
     player.time = 0;
-    logger.info('Time ran out for "' + player.username + '" playing game #' + data.gameID + '.');
+    logger.info(`Time ran out for "${player.username}" playing game #${data.gameID}.`);
 
     // End the game
     data.type = 4;
@@ -595,7 +602,8 @@ function checkEnd(data) {
         return;
     }
 
-    // Check for the final go-around (initiated after the last card is played from the deck)
+    // Check for the final go-around
+    // (initiated after the last card is played from the deck)
     if (game.turn_num === game.end_turn_num) {
         data.end = true;
         return;
@@ -611,14 +619,18 @@ function checkEnd(data) {
         return;
     }
 
-    // Check to see if there are any cards remaining that can be played on the stacks
+    // Check to see if there are any cards remaining that can be played on the
+    // stacks
     for (let i = 0; i < game.stacks.length; i++) {
         // Search through the deck
         for (let j = 0; j < game.deck.length; j++) {
             let card = game.deck[j];
             let neededSuit = i;
             let neededRank = game.stacks[i] + 1;
-            if (card.suit === neededSuit && card.rank === neededRank && card.discarded === false) {
+            if (card.suit === neededSuit &&
+                card.rank === neededRank &&
+                card.discarded === false) {
+
                 return;
             }
         }

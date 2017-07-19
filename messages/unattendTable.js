@@ -1,6 +1,7 @@
 'use strict';
 
-// Sent when the user clicks on the "Lobby" button while they are in the middle of a game
+// Sent when the user clicks on the "Lobby" button while they are in the middle
+// of a game
 // "data" is empty
 
 // Imports
@@ -26,7 +27,7 @@ exports.step1 = function(socket, data) {
     // Check to see if they are a spectator
     if (socket.atTable.spectating) {
         if (socket.userID in game.spectators === false) {
-            logger.error('User "' + socket.username + '" tried to unattend game #' + data.gameID + ', but they were not in the spectators list.');
+            logger.error(`User "${socket.username}" tried to unattend game #${data.gameID}, but they were not in the spectators list.`);
             return;
         }
 
@@ -59,7 +60,8 @@ exports.step1 = function(socket, data) {
         }
     }
 
-    // They got sent a "table_gone" message earlier (if the game started), so send them a new table message
+    // They got sent a "table_gone" message earlier (if the game started), so
+    // send them a new table message
     socket.emit('message', {
         type: 'table',
         resp: {

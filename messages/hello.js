@@ -5,7 +5,8 @@
 // - joins a game that has already started
 // - starts a replay
 // - starts spectating a game
-// This is sent before the UI is initialized; the client will send a "ready" message later to get more data
+// This is sent before the UI is initialized; the client will send a "ready"
+// message later to get more data
 // "data" is empty
 
 // Imports
@@ -47,8 +48,9 @@ function step2(error, socket, data) {
             break;
         }
     }
-    // If this is a replay of a game they were not in or they are spectating the game,
-    // the above if statement will never be reached, and they will be in seat 0
+    // If this is a replay of a game they were not in or they are spectating
+    // the game, the above if statement will never be reached, and they will be
+    // in seat 0
 
     // Give them an "init" message
     socket.emit('message', {

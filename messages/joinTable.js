@@ -37,7 +37,7 @@ function step2(error, socket, data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
 
-    logger.info('User "' + socket.username + '" joined game: #' + data.gameID + ' (' + game.name + ')');
+    logger.info(`User "${socket.username}" joined game: #${data.gameID} (${game.name})`);
 
     // Keep track of the user that joined
     let time = globals.startingTime; // In milliseconds

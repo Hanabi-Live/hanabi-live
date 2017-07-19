@@ -22,8 +22,8 @@ exports.step1 = function(socket, data) {
         return;
     }
 
-    // Set their "present" variable back to true, which will turn their name from red to black
-    // (or remove the "AWAY" if the game has not started yet)
+    // Set their "present" variable back to true, which will turn their name
+    // from red to black (or remove the "AWAY" if the game has not started yet)
     for (let player of game.players) {
         if (player.userID === socket.userID) {
             player.present = true;

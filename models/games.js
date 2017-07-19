@@ -4,8 +4,25 @@
 const db = require('./db');
 
 exports.create = function(socket, data, done) {
-    let sql = 'INSERT INTO games (name, max_players, variant, allow_spec, timed, owner) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(sql, [data.name, data.max, data.variant, data.allow_spec, data.timed, data.owner], function (error, results, fields) {
+    let sql = `
+        INSERT INTO games (
+            name,
+            max_players,
+            variant,
+            allow_spec,
+            timed,
+            owner
+        ) VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    let values = [
+        data.name,
+        data.max,
+        data.variant,
+        data.allow_spec,
+        data.timed,
+        data.owner,
+    ];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, socket, data);
             return;
@@ -18,7 +35,8 @@ exports.create = function(socket, data, done) {
 
 exports.delete = function(socket, data, done) {
     let sql = 'DELETE FROM games where id = ?';
-    db.query(sql, [data.gameID], function (error, results, fields) {
+    let values = [data.gameID];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, socket, data);
             return;
@@ -29,8 +47,13 @@ exports.delete = function(socket, data, done) {
 };
 
 exports.start = function(socket, data, done) {
-    let sql = 'UPDATE games SET status = 1, seed = ?, datetime_started = NOW() WHERE id = ?';
-    db.query(sql, [data.seed, data.gameID], function (error, results, fields) {
+    let sql = `
+        UPDATE games
+        SET status = 1, seed = ?, datetime_started = NOW()
+        WHERE id = ?
+    `;
+    let values = [data.seed, data.gameID];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, socket, data);
             return;
@@ -41,8 +64,13 @@ exports.start = function(socket, data, done) {
 };
 
 exports.end = function(data, done) {
-    let sql = 'UPDATE games SET status = 2, score = ?, datetime_finished = NOW() WHERE id = ?';
-    db.query(sql, [data.score, data.gameID], function (error, results, fields) {
+    let sql = `
+        UPDATE games
+        SET status = 2, score = ?, datetime_finished = NOW()
+        WHERE id = ?
+    `;
+    let values = [data.score, data.gameID];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, data);
             return;
@@ -69,8 +97,16 @@ exports.getUserHistory = function(socket, data, done) {
     let sql = `
         SELECT
             games.id AS id,
-            (SELECT COUNT(id) FROM game_participants WHERE game_id = games.id) AS num_players,
-            (SELECT COUNT(id) FROM games WHERE seed = games.seed) AS num_similar,
+            (
+                SELECT COUNT(id)
+                FROM game_participants
+                WHERE game_id = games.id
+            ) AS num_players,
+            (
+                SELECT COUNT(id)
+                FROM games
+                WHERE seed = games.seed
+            ) AS num_similar,
             games.score AS score,
             games.variant AS variant
         FROM games
@@ -78,8 +114,8 @@ exports.getUserHistory = function(socket, data, done) {
         WHERE games.status = 2 AND game_participants.user_id = ?
         ORDER BY games.id
     `;
-
-    db.query(sql, [socket.userID], function (error, results, fields) {
+    let values = [socket.userID];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, socket, data);
             return;
@@ -101,7 +137,8 @@ exports.getUserHistory = function(socket, data, done) {
 
 exports.getNumSimilar = function(data, done) {
     let sql = 'SELECT COUNT(id) AS num_similar FROM games WHERE seed = ?';
-    db.query(sql, [data.seed], function (error, results, fields) {
+    let values = [data.seed];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, data);
             return;
@@ -118,13 +155,17 @@ exports.getAllDeals = function(socket, data, done) {
             id,
             score,
             datetime_finished,
-            (SELECT COUNT(game_participants.id) FROM game_participants WHERE user_id = ? AND game_id = games.id) AS you
+            (
+                SELECT COUNT(game_participants.id)
+                FROM game_participants
+                WHERE user_id = ? AND game_id = games.id
+            ) AS you
         FROM games
         WHERE seed = (SELECT seed FROM games WHERE id = ?)
         ORDER BY id
     `;
-
-    db.query(sql, [socket.userID, data.gameID], function (error, results, fields) {
+    let values = [socket.userID, data.gameID];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, socket, data);
             return;
@@ -146,7 +187,8 @@ exports.getAllDeals = function(socket, data, done) {
     });
 };
 
-// Get the variant and the names of the players (sent after the "hello" command when starting a replay)
+// Get the variant and the names of the players
+// (sent after the "hello" command when starting a replay)
 exports.getVariantPlayers = function(socket, data, done) {
     let sql = `
         SELECT
@@ -159,7 +201,8 @@ exports.getVariantPlayers = function(socket, data, done) {
         WHERE games.id = ?
         ORDER BY game_participants.id
     `;
-    db.query(sql, [data.gameID], function (error, results, fields) {
+    let values = [data.gameID];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, socket, data);
             return;
@@ -180,7 +223,8 @@ exports.getVariantPlayers = function(socket, data, done) {
 
 exports.getActions = function(socket, data, done) {
     let sql = 'SELECT action FROM game_actions WHERE game_id = ? ORDER BY id';
-    db.query(sql, [data.gameID], function (error, results, fields) {
+    let values = [data.gameID];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, socket, data);
             return;

@@ -16,7 +16,8 @@ const databaseConfig = {
 };
 
 // Create the MySQL connection pool and export it
-// (we want to do a pool instead of a single connection so that we don't have to worry about dealing with connection timeouts)
+// (we want to do a pool instead of a single connection so that we don't have
+// to worry about dealing with connection timeouts)
 var pool = mysql.createPool(databaseConfig); // Default is 10 connections
 module.exports = pool;
 

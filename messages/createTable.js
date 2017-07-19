@@ -22,14 +22,14 @@ const notify   = require('../notify');
 exports.step1 = function(socket, data) {
     // Prepare the data to feed to the model
     if (data.name === '') {
-        data.name = socket.username + '\'s game';
+        data.name = `${socket.username}'s game`;
     }
     data.timed = false;
     data.owner = socket.userID;
 
     // Validate that they submitted a table name
     if ('name' in data === false) {
-        logger.warn('User "' + data.username + '" created a table without sending a table name.');
+        logger.warn(`User "${data.username}" created a table without sending a table name.`);
 
         // Let them know
         socket.emit('message', {
@@ -44,7 +44,7 @@ exports.step1 = function(socket, data) {
 
     // Validate that the username is not blank
     if (data.name.length === 0) {
-        logger.warn('User "' + data.username + '" created a table with a blank table name.');
+        logger.warn(`User "${data.username}" created a table with a blank table name.`);
 
         // Let them know
         socket.emit('message', {
@@ -60,13 +60,13 @@ exports.step1 = function(socket, data) {
     // Validate that the game name is not excessively long
     let maxLength = 30;
     if (data.name.length > maxLength) {
-        logger.warn('User "' + data.username + '" supplied an excessively long table name with a length of:', data.name.length);
+        logger.warn(`User "${data.username}" supplied an excessively long table name with a length of ${data.name.length}.`);
 
         // Let them know
         socket.emit('message', {
             type: 'denied',
             resp: {
-                reason: 'The table name must be ' + maxLength + ' characters or less.',
+                reason: `The table name must be ${maxLength} characters or less.`,
             },
         });
 
@@ -83,7 +83,7 @@ function step2(error, socket, data) {
         return;
     }
 
-    logger.info('User "' + socket.username + '" created a new game: #' + data.gameID + ' (' + data.name + ')');
+    logger.info(`User "${socket.username}" created a new game: #${data.gameID} (${data.name})`);
 
     // Keep track of the current games
     globals.currentGames[data.gameID] = {

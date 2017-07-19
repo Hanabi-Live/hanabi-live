@@ -17,14 +17,14 @@ exports.step1 = function(data) {
     // Send text messages showing how much time each player finished with
     if (game.timed) {
         for (let player of game.players) {
-            let text = player.username + ' finished with a time of ';
+            let text = `${player.username} finished with a time of `;
             let seconds = Math.ceil(player.time / 1000);
             text += seconds_to_time_display(seconds);
             game.actions.push({
                 text: text,
             });
             notify.gameAction(data);
-            logger.info('[Game ' + data.gameID + '] ' + text);
+            logger.info(`[Game ${data.gameID}] ${text}`);
         }
     }
 
@@ -37,7 +37,8 @@ exports.step1 = function(data) {
     notify.gameAction(data);
 
     if (game.timed) {
-        // Send everyone a clock message with an active value of null, which will unregister the timer callbacks client-side
+        // Send everyone a clock message with an active value of null, which
+        // will get rid of the timers on the client-side
         notify.gameTime(data);
     }
 
@@ -171,7 +172,7 @@ function gameEnd6(error, data) {
     }
 
     // Keep track of the game ending
-    logger.info('[Game ' + data.gameID + '] Ended with a score of ' + game.score + '.');
+    logger.info(`[Game ${data.gameID}] Ended with a score of ${game.score}.`);
     delete globals.currentGames[data.gameID];
 
     // Notify everyone that the table was deleted

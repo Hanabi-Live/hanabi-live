@@ -24,7 +24,7 @@ app.use(favicon(path.join(__dirname, 'public', 'img', 'favicon.ico')));
 // Websocket handlers
 io.on('connection', function(socket) {
     let address = socket.handshake.address;
-    logger.info('User connected from address "' + address + '".');
+    logger.info(`User connected from address "${address}".`);
 
     socket.on('disconnect', function(reason) {
         messages.logout.step1(socket, reason);
@@ -32,11 +32,11 @@ io.on('connection', function(socket) {
 
     socket.on('message', function(data) {
         if (data.type in messages) {
-            let log = 'Recieved a "' + data.type + '" message';
+            let log = `Recieved a "${data.type}" message`;
             if (data.type === 'login') {
                 log += '.';
             } else {
-                log += ' from user "' + socket.username + '".';
+                log += ` from user "${socket.username}".`;
             }
             logger.info(log);
             messages[data.type].step1(socket, data.resp);
@@ -63,6 +63,6 @@ function initComplete(error) {
 
     // Listen
     http.listen(port, function() {
-        logger.info('keldon-hanabi server listening on port ' + port + '.');
+        logger.info(`keldon-hanabi server listening on port ${port}.`);
     });
 }

@@ -16,7 +16,6 @@ exports.step1 = function(socket, reason) {
         return;
     }
 
-    let address = socket.handshake.address;
     let leftID = socket.userID;
 
     for (let gameID of Object.keys(globals.currentGames)) {
@@ -29,7 +28,8 @@ exports.step1 = function(socket, reason) {
         for (let player of game.players) {
             if (player.userID === socket.userID) {
                 if (game.running) {
-                    // Set their "present" variable to false, which will turn their name red
+                    // Set their "present" variable to false, which will turn
+                    // their name red
                     player.present = false;
                     notify.gameMemberChange({
                         gameID: gameID,
@@ -40,9 +40,11 @@ exports.step1 = function(socket, reason) {
                     notify.allUserChange(socket);
 
                 } else {
-                    // The game has not started yet, so just eject them from the table
+                    // The game has not started yet, so just eject them from
+                    // the table
                     // The "leave_table" message is sent with no data;
-                    // the server uses the "atTable" object to find out which table the user is leaving
+                    // the server uses the "atTable" object to find out which
+                    // table the user is leaving
                     socket.atTable = {
                         id:         gameID,
                         replay:     false,
@@ -74,7 +76,7 @@ exports.step1 = function(socket, reason) {
     // Keep track of the disconnecting user
     delete globals.connectedUsers[socket.userID];
 
-    logger.info('User "' + socket.username + '" disconnected from "' + address + '". (' + Object.keys(globals.connectedUsers).length, 'users now connected.)');
+    logger.info(`User "${socket.username}" disconnected. (${Object.keys(globals.connectedUsers).length} users now connected.)`);
 
     // Send a "user_left" message to everyone to let them know that a user has disconnected
     for (let userID of Object.keys(globals.connectedUsers)) {

@@ -37,11 +37,12 @@ function step2(error, socket, data) {
         return;
     }
 
+    let text = '';
     if (socket.userID === 1) {
-        logger.info('DISCORD <' + socket.username + '> ' + data.msg);
-    } else {
-        logger.info('<' + socket.username + '> ' + data.msg);
+        text += 'DISCORD ';
     }
+    text += `<${socket.username}> ${data.msg}`;
+    logger.info(text);
 
     // Send the chat message to everyone
     for (let userID of Object.keys(globals.connectedUsers)) {

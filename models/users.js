@@ -4,8 +4,19 @@
 const db = require('./db');
 
 exports.getUser = function(socket, data, done) {
-    let sql = 'SELECT id, username, password, num_played, average_score, strikeout_rate FROM users WHERE username = ?';
-    db.query(sql, [data.username], function (error, results, fields) {
+    let sql = `
+        SELECT
+            id,
+            username,
+            password,
+            num_played,
+            average_score,
+            strikeout_rate
+        FROM users
+        WHERE username = ?
+    `;
+    let values = [data.username];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, socket, data, null);
             return;
@@ -14,12 +25,14 @@ exports.getUser = function(socket, data, done) {
         if (results.length === 0) {
             data.userID = null;
         } else if (results.length !== 1) {
-            let error = new Error('Got ' + results.length + ' rows in the "users" table for: ' + data.username);
+            let error = new Error(`Got ${results.length} rows in the "users" table for: ${data.username}`);
             done(error, socket, data, null);
             return;
         } else {
             data.userID         = results[0].id;
-            data.username       = results[0].username; // We replace the existing username in case that they submitted the wrong case
+            data.username       = results[0].username;
+            // We replace the existing username in case that they submitted the
+            // wrong case
             data.realPassword   = results[0].password;
             data.num_played     = results[0].num_played;
             data.average_score  = results[0].average_score;
@@ -32,7 +45,8 @@ exports.getUser = function(socket, data, done) {
 
 exports.create = function(socket, data, done) {
     let sql = 'INSERT INTO users (username, password) VALUES (?, ?)';
-    db.query(sql, [data.username, data.password], function (error, results, fields) {
+    let values = [data.username, data.password];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, socket, data);
             return;
@@ -69,7 +83,8 @@ exports.updateStats = function(data, done) {
             )
         WHERE id = ?
     `;
-    db.query(sql, [data.userID, data.userID, data.userID, data.userID, data.userID], function (error, results, fields) {
+    let values = [data.userID, data.userID, data.userID, data.userID, data.userID];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, data);
             return;
@@ -81,19 +96,24 @@ exports.updateStats = function(data, done) {
 
 
 exports.getStats = function(data, done) {
-    let sql = 'SELECT num_played, average_score, strikeout_rate FROM users WHERE id = ?';
-    db.query(sql, [data.userID], function (error, results, fields) {
+    let sql = `
+        SELECT num_played, average_score, strikeout_rate
+        FROM users
+        WHERE id = ?
+    `;
+    let values = [data.userID];
+    db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, data, null);
             return;
         }
 
         if (results.length === 0) {
-            let error = new Error('There was no rows in the "users" table for the user ID of: ' + data.userID);
+            let error = new Error(`There was no rows in the "users" table for the user ID of: ${data.userID}`);
             done(error, data, null);
             return;
         } else if (results.length !== 1) {
-            let error = new Error('Got ' + results.length + ' rows in the "users" table for the user ID of: ' + data.userID);
+            let error = new Error(`Got ${results.length} rows in the "users" table for the user ID of: ${data.userID}`);
             done(error, data, null);
             return;
         }

@@ -33,7 +33,7 @@ function step2(error, socket, data) {
     // Local variables
     let game = globals.currentGames[data.gameID];
 
-    logger.info('User "' + socket.username + '" left game: #' + data.gameID + ' (' + game.name + ')');
+    logger.info(`User "${socket.username}" left game: #${data.gameID} (${game.name})`);
 
     // Find the index of this player
     let index;
@@ -83,7 +83,7 @@ function step3(error, socket, data) {
     }
 
     // Keep track of the game ending
-    logger.info('Ended game #' + data.gameID + '.');
+    logger.info(`Ended game #${data.gameID} because everyone left.`);
     delete globals.currentGames[data.gameID];
 
     // Notify everyone that the table was deleted

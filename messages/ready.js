@@ -15,7 +15,9 @@ exports.step1 = function(socket, data) {
     data.gameID = socket.atTable.id;
 
     // Check to make sure this table exists
-    if (data.gameID in globals.currentGames === false && socket.atTable.replay === false) {
+    if (data.gameID in globals.currentGames === false &&
+        socket.atTable.replay === false) {
+
         socket.atTable.id = -1;
         return;
     }
@@ -38,7 +40,9 @@ function step2(error, socket, data) {
 
     // Get the index of this player
     let index = -1; // Set an impossible index by default
-    if (socket.atTable.replay === false) { // We only have to worry about getting the index if we need to scrub cards
+    if (socket.atTable.replay === false) {
+        // We only have to worry about getting the index if we need to
+        // scrub cards
         for (let i = 0; i < game.players.length; i++) {
             if (game.players[i].userID === socket.userID) {
                 index = i;

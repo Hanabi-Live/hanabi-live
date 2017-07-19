@@ -44,7 +44,8 @@ exports.step1 = function(socket, data) {
                     rank:      rank,
                     touched:   false,
                     discarded: false,
-                    // We can't set the order here because the deck will be shuffled later
+                    // We can't set the order here because the deck will be
+                    // shuffled later
                 });
             }
         }
@@ -89,7 +90,7 @@ function step2(error, socket, data) {
 
     // Set the new seed in the game object
     game.seed = data.seed;
-    logger.info('Using seed "' + game.seed + '", allow_spec is ' + game.allow_spec + ', timed is ' + game.timed + '.');
+    logger.info(`Using seed ${game.seed}, allow_spec is ${game.allow_spec}, timed is ${game.timed}.`);
 
     // Shuffle the deck
     seedrandom(game.seed, {
@@ -121,12 +122,13 @@ function step2(error, socket, data) {
         type: 'turn',
         who: data.startingPlayerIndex,
     });
-    logger.info('[Game ' + data.gameID + '] ' + text);
+    logger.info(`[Game ${data.gameID}] ${text}`);
 
     // Set the game to running
     game.running = true;
 
-    // Start the game in the database (which sets the "status", "seed", and "datetime_started" columns)
+    // Start the game in the database
+    // (which sets the "status", "seed", and "datetime_started" columns)
     models.games.start(socket, data, step3);
 }
 
@@ -150,11 +152,13 @@ function step3(error, socket, data) {
     }
 
     if (game.allow_spec) {
-        // Let everyone know that the game has started, which will turn the "Join Game" button into "Spectate"
+        // Let everyone know that the game has started, which will turn the
+        // "Join Game" button into "Spectate"
         notify.allTableChange(data);
     } else {
         // Notify everyone that the table was deleted
-        // (even the people in the game; they will get a new "table" message shortly)
+        // (even the people in the game; they will get a new "table"
+        // message shortly)
         notify.allTableGone(data);
     }
 
