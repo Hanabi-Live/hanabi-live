@@ -724,7 +724,7 @@ HanabiLobby.prototype.draw_history_details = function() {
             self.game_id = parseInt(this.id.slice(7));
 
             self.send_msg({
-                type: "created_shared_replay",
+                type: "create_shared_replay",
                 resp: {
                     id: self.game_id,
                 },

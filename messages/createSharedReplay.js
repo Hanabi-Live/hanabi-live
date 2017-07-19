@@ -34,5 +34,5 @@ exports.step1 = function(socket, data) {
 
     // Join the user to the new table
     data.table_id = data.gameID;
-    messages.join_table.step1(socket, data);
+    messages.join_shared_replay.step1(socket, data);
 };

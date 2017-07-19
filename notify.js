@@ -7,6 +7,7 @@
 
 // Imports
 const globals = require('./globals');
+const logger  = require('./logger');
 
 /*
     Functions that notify all users
@@ -28,7 +29,15 @@ exports.allUserChange = function(socket) {
 
 exports.allTableChange = function(data) {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else if (data.gameID in globals.currentSharedReplays) {
+        game = globals.currentSharedReplays[data.gameID];
+    } else {
+        logger.error(`Error: notify.allTableChange was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
 
     // Send everyone an update about this table
     for (let userID of Object.keys(globals.connectedUsers)) {
@@ -82,7 +91,15 @@ exports.allTableGone = function(data) {
 
 exports.gameMemberChange = function(data) {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else if (data.gameID in globals.currentSharedReplays) {
+        game = globals.currentSharedReplays[data.gameID];
+    } else {
+        logger.error(`Error: notify.gameMemberChange was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
 
     // Send the people in the game an update about the new player
     for (let player of game.players) {

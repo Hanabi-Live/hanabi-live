@@ -9,15 +9,22 @@
 */
 
 // Imports
-const globals = require('../globals');
-const logger  = require('../logger');
-const models  = require('../models');
-const notify  = require('../notify');
+const globals  = require('../globals');
+const logger   = require('../logger');
+const models   = require('../models');
+const messages = require('../messages');
+const notify   = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Prepare the data to feed to the model
     data.userID = socket.userID;
     data.gameID = data.table_id;
+
+    // Check to see if this is a shared replay
+    if (data.gameID in globals.currentSharedReplays) {
+        messages.join_shared_replay(socket, data);
+        return;
+    }
 
     // Validate that this table exists
     if (data.gameID in globals.currentGames === false) {
