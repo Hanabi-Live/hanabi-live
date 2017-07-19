@@ -78,3 +78,30 @@ exports.updateStats = function(data, done) {
         done(null, data);
     });
 };
+
+
+exports.getStats = function(data, done) {
+    let sql = 'SELECT num_played, average_score, strikeout_rate FROM users WHERE id = ?';
+    db.query(sql, [data.userID], function (error, results, fields) {
+        if (error) {
+            done(error, data, null);
+            return;
+        }
+
+        if (results.length === 0) {
+            let error = new Error('There was no rows in the "users" table for the user ID of: ' + data.userID);
+            done(error, data, null);
+            return;
+        } else if (results.length !== 1) {
+            let error = new Error('Got ' + results.length + ' rows in the "users" table for the user ID of: ' + data.userID);
+            done(error, data, null);
+            return;
+        }
+
+        data.num_played     = results[0].num_played;
+        data.average_score  = results[0].average_score;
+        data.strikeout_rate = results[0].strikeout_rate;
+
+        done(null, data);
+    });
+};

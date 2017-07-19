@@ -532,7 +532,7 @@ var HanabiCard = function(config) {
         shadowBlur: 2,
         text: "?",
         visible: (ui.variant === VARIANT.MIXED),
-        y: 10, // Move it downwards a bit from the default location
+        y: 12, // Move it downwards a bit from the default location
     });
     this.color_clue_group.add(this.color_clue_question_mark);
 

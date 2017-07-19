@@ -122,7 +122,7 @@ function gameEnd4(error, data) {
         });
     }
 
-    // Begin to update all of the player's stats (1/3)
+    // Begin to update all of the player's stats
     data.insertNum = -1;
     gameEnd5(null, data);
 }
@@ -140,6 +140,33 @@ function gameEnd5(error, data) {
     if (data.insertNum < game.players.length) {
         data.userID = game.players[data.insertNum].userID;
         models.users.updateStats(data, gameEnd5);
+        return;
+    }
+
+    // Now that we have updated them, get the new stats for each player
+    data.insertNum = -1;
+    gameEnd6(null, data);
+}
+
+function gameEnd6(error, data) {
+    if (error !== null) {
+        logger.error('Error: models.users.getStats failed:', error);
+        return;
+    }
+
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+
+    if (data.insertNum !== -1) {
+        game.players[data.insertNum].socket.num_played     = data.num_played;
+        game.players[data.insertNum].socket.average_score  = data.average_score;
+        game.players[data.insertNum].socket.strikeout_rate = data.strikeout_rate;
+    }
+
+    data.insertNum++;
+    if (data.insertNum < game.players.length) {
+        data.userID = game.players[data.insertNum].userID;
+        models.users.getStats(data, gameEnd5);
         return;
     }
 
