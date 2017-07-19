@@ -20,12 +20,6 @@ const messages = require('../messages');
 const notify   = require('../notify');
 
 exports.step1 = function(socket, data) {
-    // Prepare the data to feed to the model
-    if (data.name === '') {
-        data.name = `${socket.username}'s game`;
-    }
-    data.owner = socket.userID;
-
     // Validate that they submitted a table name
     if ('name' in data === false) {
         logger.warn(`User "${data.username}" created a table without sending a table name.`);
@@ -41,19 +35,9 @@ exports.step1 = function(socket, data) {
         return;
     }
 
-    // Validate that the username is not blank
+    // Make a default game name if they did not provide one
     if (data.name.length === 0) {
-        logger.warn(`User "${data.username}" created a table with a blank table name.`);
-
-        // Let them know
-        socket.emit('message', {
-            type: 'denied',
-            resp: {
-                reason: 'The table name cannot be blank.',
-            },
-        });
-
-        return;
+        data.name = `${socket.username}'s game`;
     }
 
     // Validate that the game name is not excessively long
@@ -73,6 +57,7 @@ exports.step1 = function(socket, data) {
     }
 
     // Create the table
+    data.owner = socket.userID;
     models.games.create(socket, data, step2);
 };
 

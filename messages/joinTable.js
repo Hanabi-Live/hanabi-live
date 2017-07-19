@@ -24,6 +24,20 @@ exports.step1 = function(socket, data) {
         return;
     }
 
+    // Validate that this table does not already have the maximum amount
+    // of players
+    let game = globals.currentGames[data.gameID];
+    if (game.players.length === game.max_players) {
+        socket.emit('message', {
+            type: 'denied',
+            resp: {
+                reason: `That table has a maximum limit of ${game.max_players} players.`,
+            },
+        });
+
+        return;
+    }
+
     // Join the table
     models.gameParticipants.create(socket, data, step2);
 };
