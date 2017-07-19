@@ -74,11 +74,17 @@ function setTickingDownTime(textObjects, active_index) {
 
     // Update the time in local array to approximate server times
     ui.player_times[active_index] -= time_elapsed;
-    if (ui.player_times[active_index] < 0) {
+    if (ui.timed_game && ui.player_times[active_index] < 0) {
+        // Don't let the timer go into negative values, or else it will mess up the display
+        // (but in non-timed games, we want this to happen)
         ui.player_times[active_index] = 0;
     }
 
     let milliseconds_left = ui.player_times[active_index];
+    if (ui.timed_game === false) {
+        // Invert it to show how much time each player is taking
+        milliseconds_left *= -1;
+    }
     let display_string = milliseconds_to_time_display(milliseconds_left);
 
     // Update displays
@@ -90,7 +96,13 @@ function setTickingDownTime(textObjects, active_index) {
 
     // Play a sound to indicate that the current player is almost out of time
     // Do not play it more frequently than about once per second
-    if (lobby.send_turn_sound && milliseconds_left <= 5000 && time_elapsed > 900 && time_elapsed < 1100) {
+    if (ui.timed_game &&
+        lobby.send_turn_sound &&
+        milliseconds_left > 0 &&
+        milliseconds_left <= 5000 &&
+        time_elapsed > 900 &&
+        time_elapsed < 1100) {
+
         lobby.play_sound('tone');
     }
 }
@@ -4501,12 +4513,22 @@ this.handle_clock = function(note) {
     // Update onscreen time displays
     if (ui.spectating === false) {
         // The visibilty of this timer does not change during a game
-        timer_text1.setText(milliseconds_to_time_display(ui.player_times[ui.player_us]));
+        let time = ui.player_times[ui.player_us];
+        if (ui.timed_game === false) {
+            // Invert it to show how much time each player is taking
+            time *= -1;
+        }
+        timer_text1.setText(milliseconds_to_time_display(time));
     }
 
     if (! current_user_turn) {
         // Update the ui with the value of the timer for the active player
-        timer_text2.setText(milliseconds_to_time_display(ui.player_times[note.active]));
+        let time = ui.player_times[note.active];
+        if (ui.timed_game === false) {
+            // Invert it to show how much time each player is taking
+            time *= -1;
+        }
+        timer_text2.setText(milliseconds_to_time_display(time));
     }
 
     let shoudShowTimer2 = ! current_user_turn && note.active !== null;
@@ -4518,7 +4540,12 @@ this.handle_clock = function(note) {
 
     // Update the timer tooltips for each player
     for (let i = 0; i < ui.player_times.length; i++) {
-        name_frames[i].tooltip.getText().setText(milliseconds_to_time_display(ui.player_times[i]));
+        let time = ui.player_times[i];
+        if (ui.timed_game === false) {
+            // Invert it to show how much time each player is taking
+            time *= -1;
+        }
+        name_frames[i].tooltip.getText().setText(milliseconds_to_time_display(time));
     }
 
     tiplayer.draw();
@@ -4528,7 +4555,7 @@ this.handle_clock = function(note) {
         return;
     }
 
-    // Start local timer for active player
+    // Start the local timer for the active player
     let active_timer_ui_text = current_user_turn ? timer_text1 : timer_text2;
     let textUpdateTargets = [active_timer_ui_text, name_frames[note.active].tooltip.getText()];
     ui.timerId = window.setInterval(function() {
