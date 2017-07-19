@@ -1,7 +1,6 @@
 "use strict";
 
 var MHGA_show_debug_messages = true;
-var MHGA_show_more_log = true;
 var MHGA_show_log_numbers = true;
 var MHGA_show_faces_in_replay = true;
 var MHGA_highlight_non_hand_cards = true;
@@ -2655,9 +2654,9 @@ this.build_ui = function() {
 
     rect = new Kinetic.Rect({
         x: 0.2 * win_w,
-        y: (MHGA_show_more_log ? 0.235 : 0.24) * win_h,
+        y: 0.235 * win_h,
         width: 0.4 * win_w,
-        height: (MHGA_show_more_log ? 0.098 : 0.05) * win_h,
+        height: 0.098 * win_h,
         fill: "black",
         opacity: 0.3,
         cornerRadius: 0.01 * win_h,
@@ -2696,10 +2695,10 @@ this.build_ui = function() {
         shadowOpacity: 0.9,
         listening: false,
         x: 0.21 * win_w,
-        y: (MHGA_show_more_log ? 0.238 : 0.25) * win_h,
+        y: 0.238 * win_h,
         width: 0.38 * win_w,
-        height: (MHGA_show_more_log ? 0.095 : 0.03) * win_h,
-        maxLines: (MHGA_show_more_log ? 3 : 1),
+        height: 0.095 * win_h,
+        maxLines: 3,
     });
 
     uilayer.add(message_prompt);
@@ -2878,7 +2877,7 @@ this.build_ui = function() {
             fill: fillColor,
             opacity: 0.4,
             x: (0.183 + (width + 0.015) * i) * win_w,
-            y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
+            y: (0.345 + offset) * win_h,
             width: width * win_w,
             height: height * win_h,
             cornerRadius: radius * win_w,
@@ -2889,7 +2888,7 @@ this.build_ui = function() {
         // In the play area, draw the symbol corresponding to each suit inside the rectangle
         pileback = new Kinetic.Image({
             x: (0.183 + (width + 0.015) * i) * win_w,
-            y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
+            y: (0.345 + offset) * win_h,
             width: width * win_w,
             height: height * win_h,
             image: card_images["card-" + i + "-0"],
@@ -2907,7 +2906,7 @@ this.build_ui = function() {
             stroke: strokeColor,
             strokeWidth: 5,
             x: (0.183 + (width + 0.015) * i) * win_w,
-            y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
+            y: (0.345 + offset) * win_h,
             width: width * win_w,
             height: height * win_h,
             cornerRadius: radius * win_w,
@@ -2916,7 +2915,7 @@ this.build_ui = function() {
 
         play_stacks[i] = new CardStack({
             x: (0.183 + (width + 0.015) * i) * win_w,
-            y: ((MHGA_show_more_log ? 0.345 : 0.3) + offset) * win_h,
+            y: (0.345 + offset) * win_h,
             width: width * win_w,
             height: height * win_h,
         });
@@ -3221,7 +3220,7 @@ this.build_ui = function() {
 
     clue_area = new Kinetic.Group({
         x: 0.10 * win_w,
-        y: (MHGA_show_more_log ? 0.54 : 0.51) * win_h,
+        y: 0.54 * win_h,
         width: 0.55 * win_w,
         height: 0.27 * win_h,
     });
@@ -3275,7 +3274,7 @@ this.build_ui = function() {
     {
         button = new NumberButton({
             x: (0.183 + (i - 1) * 0.049) * win_w,
-            y: (MHGA_show_more_log ? 0.027 : 0.035) * win_h,
+            y: 0.027 * win_h,
             width: 0.04 * win_w,
             height: 0.071 * win_h,
             number: i,
@@ -3306,7 +3305,7 @@ this.build_ui = function() {
     for (i = 0; i < suits; i++) {
         button = new ColorButton({
             x: (x + i * 0.049) * win_w,
-            y: (MHGA_show_more_log ? 0.1 : 0.115) * win_h,
+            y: 0.1 * win_h,
             width: 0.04 * win_w,
             height: 0.071 * win_h,
             color: (this.variant === VARIANT.MIXED ? mixed_clue_colors[i] : suit_colors[i]),
@@ -3328,7 +3327,7 @@ this.build_ui = function() {
 
     submit_clue = new Button({
         x: 0.183 * win_w,
-        y: (MHGA_show_more_log ? 0.172 : 0.195) * win_h,
+        y: 0.172 * win_h,
         width: 0.236 * win_w,
         height: 0.051 * win_h,
         text: "Give Clue",
@@ -3340,7 +3339,7 @@ this.build_ui = function() {
 
     if (ui.timed_game) {
         let x = 0.155;
-        let y = (MHGA_show_more_log ? 0.592 : 0.615);
+        let y = 0.592;
         let x2 = 0.565;
 
         timer_rect1 = new Kinetic.Rect({
