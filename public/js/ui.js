@@ -2584,8 +2584,7 @@ this.build_ui = function() {
 
     var layers = stage.getLayers();
 
-    for (i = 0; i < layers.length; i++)
-    {
+    for (i = 0; i < layers.length; i++) {
         layers[i].remove();
     }
 
@@ -3245,8 +3244,7 @@ this.build_ui = function() {
 
     x = 0.26 * win_w - (nump - 2) * 0.044 * win_w;
 
-    for (i = 0; i < nump - 1; i++)
-    {
+    for (i = 0; i < nump - 1; i++) {
         j = (this.player_us + i + 1) % nump;
 
         button = new Button({
@@ -3265,8 +3263,7 @@ this.build_ui = function() {
         clue_target_group.add(button);
     }
 
-    for (i = 1; i <= 5; i++)
-    {
+    for (i = 1; i <= 5; i++) {
         button = new NumberButton({
             x: (0.183 + (i - 1) * 0.049) * win_w,
             y: 0.027 * win_h,
@@ -3332,126 +3329,124 @@ this.build_ui = function() {
 
     clue_area.hide();
 
-    if (ui.timed_game) {
-        let x = 0.155;
-        let y = 0.592;
-        let x2 = 0.565;
+    let timerX = 0.155;
+    let timerY = 0.592;
+    let timerX2 = 0.565;
 
-        timer_rect1 = new Kinetic.Rect({
-            x: x * win_w,
-            y: y * win_h,
-            width: 0.08 * win_w,
-            height: 0.051 * win_h,
-            fill: "black",
-            cornerRadius: 0.005 * win_h,
-            opacity: 0.2,
-        });
-        timerlayer.add(timer_rect1);
+    timer_rect1 = new Kinetic.Rect({
+        x: timerX * win_w,
+        y: timerY * win_h,
+        width: 0.08 * win_w,
+        height: 0.051 * win_h,
+        fill: "black",
+        cornerRadius: 0.005 * win_h,
+        opacity: 0.2,
+    });
+    timerlayer.add(timer_rect1);
 
-        timer_label1 = new Kinetic.Text({
-            x: x * win_w,
-            y: (y + 0.06) * win_h,
-            width: 0.08 * win_w,
-            height: 0.051 * win_h,
-            fontSize: 0.03 * win_h,
-            fontFamily: "Verdana",
-            align: "center",
-            text: "You",
-            fill: "#d8d5ef",
-            shadowColor: "black",
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
-        });
-        timerlayer.add(timer_label1);
+    timer_label1 = new Kinetic.Text({
+        x: timerX * win_w,
+        y: (timerY + 0.06) * win_h,
+        width: 0.08 * win_w,
+        height: 0.051 * win_h,
+        fontSize: 0.03 * win_h,
+        fontFamily: "Verdana",
+        align: "center",
+        text: "You",
+        fill: "#d8d5ef",
+        shadowColor: "black",
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+    });
+    timerlayer.add(timer_label1);
 
-        timer_text1 = new Kinetic.Text({
-            x: x * win_w,
-            y: (y + 0.01) * win_h,
-            width: 0.08 * win_w,
-            height: 0.051 * win_h,
-            fontSize: 0.03 * win_h,
-            fontFamily: "Verdana",
-            align: "center",
-            text: "??:??",
-            fill: "#d8d5ef",
-            shadowColor: "black",
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
-        });
-        timerlayer.add(timer_text1);
+    timer_text1 = new Kinetic.Text({
+        x: timerX * win_w,
+        y: (timerY + 0.01) * win_h,
+        width: 0.08 * win_w,
+        height: 0.051 * win_h,
+        fontSize: 0.03 * win_h,
+        fontFamily: "Verdana",
+        align: "center",
+        text: "??:??",
+        fill: "#d8d5ef",
+        shadowColor: "black",
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+    });
+    timerlayer.add(timer_text1);
 
-        timer_rect2 = new Kinetic.Rect({
-            x: x2 * win_w,
-            y: y * win_h,
-            width: 0.08 * win_w,
-            height: 0.051 * win_h,
-            fill: "black",
-            cornerRadius: 0.005 * win_h,
-            opacity: 0.2,
-        });
-        timerlayer.add(timer_rect2);
+    timer_rect2 = new Kinetic.Rect({
+        x: timerX2 * win_w,
+        y: timerY * win_h,
+        width: 0.08 * win_w,
+        height: 0.051 * win_h,
+        fill: "black",
+        cornerRadius: 0.005 * win_h,
+        opacity: 0.2,
+    });
+    timerlayer.add(timer_rect2);
 
-        timer_label2 = new Kinetic.Text({
-            x: x2 * win_w,
-            y: (y + 0.06) * win_h,
-            width: 0.08 * win_w,
-            height: 0.051 * win_h,
-            fontSize: 0.02 * win_h,
-            fontFamily: "Verdana",
-            align: "center",
-            text: "Current\nPlayer",
-            fill: "#d8d5ef",
-            shadowColor: "black",
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
-        });
-        timerlayer.add(timer_label2);
+    timer_label2 = new Kinetic.Text({
+        x: timerX2 * win_w,
+        y: (timerY + 0.06) * win_h,
+        width: 0.08 * win_w,
+        height: 0.051 * win_h,
+        fontSize: 0.02 * win_h,
+        fontFamily: "Verdana",
+        align: "center",
+        text: "Current\nPlayer",
+        fill: "#d8d5ef",
+        shadowColor: "black",
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+    });
+    timerlayer.add(timer_label2);
 
-        timer_text2 = new Kinetic.Text({
-            x: x2 * win_w,
-            y: (y + 0.01) * win_h,
-            width: 0.08 * win_w,
-            height: 0.051 * win_h,
-            fontSize: 0.03 * win_h,
-            fontFamily: "Verdana",
-            align: "center",
-            text: "??:??",
-            fill: "#d8d5ef",
-            shadowColor: "black",
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
-        });
-        timerlayer.add(timer_text2);
+    timer_text2 = new Kinetic.Text({
+        x: timerX2 * win_w,
+        y: (timerY + 0.01) * win_h,
+        width: 0.08 * win_w,
+        height: 0.051 * win_h,
+        fontSize: 0.03 * win_h,
+        fontFamily: "Verdana",
+        align: "center",
+        text: "??:??",
+        fill: "#d8d5ef",
+        shadowColor: "black",
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+    });
+    timerlayer.add(timer_text2);
 
-        // Hide the first timer if spectating
-        if (this.spectating) {
-            timer_rect1.hide();
-            timer_label1.hide();
-            timer_text1.hide();
-        }
+    // Hide the first timer if spectating
+    if (this.spectating) {
+        timer_rect1.hide();
+        timer_label1.hide();
+        timer_text1.hide();
+    }
 
-        // Hide the second timer by default
-        if (this.spectating === false) {
-            timer_rect2.hide();
-            timer_label2.hide();
-            timer_text2.hide();
-        }
+    // Hide the second timer by default
+    if (this.spectating === false) {
+        timer_rect2.hide();
+        timer_label2.hide();
+        timer_text2.hide();
     }
 
     uilayer.add(clue_area);
@@ -3616,8 +3611,7 @@ this.build_ui = function() {
     });
 
     button.on("click tap", function() {
-        if (self.replay_only)
-        {
+        if (self.replay_only) {
             ui.send_msg({
                 type: "unattend_table",
                 resp: {},
@@ -3629,9 +3623,7 @@ this.build_ui = function() {
             }
 
             ui.lobby.game_ended();
-        }
-        else
-        {
+        } else {
             self.enter_replay(false);
         }
     });
@@ -3641,7 +3633,10 @@ this.build_ui = function() {
     replay_area.hide();
     uilayer.add(replay_area);
 
-    /* Keyboard shortcuts */
+    /*
+        Keyboard shortcuts
+    */
+
     let mouseClickHelper = function(elem) {
         return function () {
             elem.dispatchEvent(new MouseEvent("click"));
@@ -3661,19 +3656,15 @@ this.build_ui = function() {
     };
 
     // Keyboard interactions with clue ui
-
     let clueKeyMap = {
         "Enter" : mouseClickHelper(submit_clue),
     };
-
     for (i = 0; i <= 5; i++) {
         clueKeyMap[i] = mouseClickHelper(rankClueButtons[i]);
     }
-
     for (let key of Object.keys(suitClueButtons)) {
         clueKeyMap[key] = mouseClickHelper(suitClueButtons[key]);
     }
-
     clueKeyMap.Tab = function() {
         clue_target_group.selectNextTarget();
     };
@@ -3772,7 +3763,9 @@ this.build_ui = function() {
 
     $(document).keydown(this.keyNavigation);
 
-    /* End of keyboard shortcuts */
+    /*
+        End of keyboard shortcuts
+    */
 
     helpgroup = new Kinetic.Group({
         x: 0.1 * win_w,
@@ -3914,16 +3907,13 @@ this.build_ui = function() {
         ui.lobby.game_ended();
     });
 
-    if (ui.replay)
-    {
+    if (ui.replay) {
         replay_area.show();
     }
 
     stage.add(bglayer);
     stage.add(uilayer);
-    if (ui.timed_game) {
-        stage.add(timerlayer);
-    }
+    stage.add(timerlayer);
     stage.add(cardlayer);
     stage.add(tiplayer);
     stage.add(overlayer);
