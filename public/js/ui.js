@@ -25,6 +25,7 @@ this.player_names = [];
 this.variant = 0;
 this.replay = false;
 this.shared_replay = false;
+this.shared_replay_leader = false;
 this.replay_only = false;
 this.spectating = false;
 this.replay_max = 0;
@@ -4046,7 +4047,7 @@ this.perform_replay = function(target, fast) {
         return; // we're already there, nothing to do!
     }
 
-    if (this.shared_replay) {
+    if (this.shared_replay && this.shared_replay_leader) {
         this.send_msg({
             type: "replay_action",
             resp: {
@@ -4607,6 +4608,7 @@ this.handle_note = function(note) {
 
 this.handle_replay_owner = function(note) {
     for (let i = 0; i < replay_buttons.length; i++) {
+        this.shared_replay_leader = note.owner;
         if (note.owner) {
             replay_buttons[i].show();
         } else {
@@ -4617,7 +4619,9 @@ this.handle_replay_owner = function(note) {
 };
 
 this.handle_replay_turn = function(note) {
-    this.perform_replay(note.turn);
+    if (!this.shared_replay_leader) {
+        this.perform_replay(note.turn);
+    }
 };
 
 this.handle_replay_mouse = function(note) {

@@ -32,9 +32,11 @@ exports.step1 = function(socket, data) {
 
     logger.info(`User "${socket.username}" joined shared replay: #${data.gameID}`);
 
-    // Keep track of the user that joined
+    // Add them to the spectators object
     game.spectators[socket.userID] = socket;
     notify.allTableChange(data);
+    notify.gameMemberChange(data);
+    notify.gameNumSpec(data);
 
     // Set their status
     socket.currentGame = data.gameID;
