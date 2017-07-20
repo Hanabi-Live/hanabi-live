@@ -3115,55 +3115,58 @@ this.build_ui = function() {
         uilayer.add(name_frames[i]);
 
         // The following code is copied from HanabiCard
-        let frame_hover_tooltip = new Kinetic.Label({
-            x: -1000,
-            y: -1000,
-        });
+        // We don't want the tooltips (that show the time) to appear in replays
+        if (!this.replay) {
+            let frame_hover_tooltip = new Kinetic.Label({
+                x: -1000,
+                y: -1000,
+            });
 
-        frame_hover_tooltip.add(new Kinetic.Tag({
-            fill: '#3E4345',
-            pointerDirection: 'left',
-            pointerWidth: 0.02 * win_w,
-            pointerHeight: 0.015 * win_h,
-            lineJoin: 'round',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 3,
-                y: 3,
-            },
-            shadowOpacity: 0.6,
-        }));
+            frame_hover_tooltip.add(new Kinetic.Tag({
+                fill: '#3E4345',
+                pointerDirection: 'left',
+                pointerWidth: 0.02 * win_w,
+                pointerHeight: 0.015 * win_h,
+                lineJoin: 'round',
+                shadowColor: 'black',
+                shadowBlur: 10,
+                shadowOffset: {
+                    x: 3,
+                    y: 3,
+                },
+                shadowOpacity: 0.6,
+            }));
 
-        frame_hover_tooltip.add(new FitText({
-            fill: "white",
-            align: "left",
-            padding: 0.01 * win_h,
-            fontSize: 0.04 * win_h,
-            minFontSize: 0.02 * win_h,
-            width: 0.075 * win_w,
-            fontFamily: "Verdana",
-            text: "??:??",
-        }));
+            frame_hover_tooltip.add(new FitText({
+                fill: "white",
+                align: "left",
+                padding: 0.01 * win_h,
+                fontSize: 0.04 * win_h,
+                minFontSize: 0.02 * win_h,
+                width: 0.075 * win_w,
+                fontFamily: "Verdana",
+                text: "??:??",
+            }));
 
-        tiplayer.add(frame_hover_tooltip);
-        name_frames[i].tooltip = frame_hover_tooltip;
+            tiplayer.add(frame_hover_tooltip);
+            name_frames[i].tooltip = frame_hover_tooltip;
 
-        name_frames[i].on("mousemove", function() {
-            var mousePos = stage.getPointerPosition();
-            this.tooltip.setX(mousePos.x + 15);
-            this.tooltip.setY(mousePos.y + 5);
+            name_frames[i].on("mousemove", function() {
+                var mousePos = stage.getPointerPosition();
+                this.tooltip.setX(mousePos.x + 15);
+                this.tooltip.setY(mousePos.y + 5);
 
-            this.tooltip.show();
-            tiplayer.draw();
+                this.tooltip.show();
+                tiplayer.draw();
 
-            ui.activeHover = this;
-        });
+                ui.activeHover = this;
+            });
 
-        name_frames[i].on("mouseout", function() {
-            this.tooltip.hide();
-            tiplayer.draw();
-        });
+            name_frames[i].on("mouseout", function() {
+                this.tooltip.hide();
+                tiplayer.draw();
+            });
+        }
     }
 
     no_clue_box = new Kinetic.Rect({
@@ -4568,16 +4571,13 @@ this.handle_note = function(note) {
     // Set the note
     ui.setNote(note.order, newNote);
 
-    // Search through all of the hands to find the card with the correct order
-    // TODO
-    // let card = ?
-
     // Draw (or hide) the note indicator
+    let card = ui.deck[note.order];
     if (newNote.length > 0) {
-        //card.note_given.show(); // TODO uncomment this
+        card.note_given.show();
     } else {
-        //card.note_given.hide(); // TODO uncomment this
-        //card.tooltip.hide(); // TODO uncomment this
+        card.note_given.hide();
+        card.tooltip.hide();
         tiplayer.draw();
     }
     uilayer.draw();
