@@ -98,13 +98,13 @@ exports.exists = function(socket, data, done) {
     let values = [data.gameID];
     db.query(sql, values, function (error, results, fields) {
         if (error) {
-            done(error, data);
+            done(error, socket, data);
         } else if (results.length === 0) {
             data.exists = false;
-            done(null, data);
+            done(null, socket, data);
         } else {
             data.exists = true;
-            done(null, data);
+            done(null, socket, data);
         }
     });
 };

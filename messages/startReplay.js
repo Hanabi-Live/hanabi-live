@@ -18,7 +18,6 @@ exports.step1 = function(socket, data) {
     // Local variables
     data.gameID = data.id;
 
-    /*
     // Validate that this game ID exists
     models.games.exists(socket, data, step2);
 };
@@ -28,16 +27,13 @@ function step2(error, socket, data) {
         logger.error('Error: models.games.exists failed:', error);
         return;
     }
-    */
 
-    /*
     if (!data.exists) {
         logger.warn(`messages.start_replay was called for game #${data.gameID}, but it does not exist.`);
         data.reason = `Game #${data.gameID} does not exist.`;
         notify.playerDenied(socket, data);
         return;
     }
-    */
 
     // Set their status
     socket.status = 'Replay';
