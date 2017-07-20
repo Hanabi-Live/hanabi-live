@@ -40,7 +40,7 @@ function HanabiLobby() {
 
     // Preload some sounds by playing them at 0 volume
     $(document).ready(function() {
-        if (this.send_turn_sound === false) {
+        if (!this.send_turn_sound) {
             return;
         }
 

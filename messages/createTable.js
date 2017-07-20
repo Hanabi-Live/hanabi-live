@@ -21,7 +21,7 @@ const notify   = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Validate that they submitted a table name
-    if ('name' in data === false) {
+    if (!('name' in data)) {
         logger.warn(`User "${data.username}" created a table without sending a table name.`);
         data.reason = 'You must submit a table name.';
         notify.playerDenied(socket, data);

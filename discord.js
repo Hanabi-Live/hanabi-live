@@ -30,27 +30,27 @@ client.on('ready', function() {
 client.on('message', function(message) {
     // Don't do anything if we are the author of the message
     // (or if the message was created by another bot)
-    if ('author' in message === false) {
+    if (!('author' in message)) {
         return;
-    } else if ('bot' in message.author === false) {
+    } else if (!('bot' in message.author)) {
         return;
     } else if (message.author.bot) {
         return;
     }
 
     // Only replicate messages from the "#general" channel
-    if ('channel' in message === false) {
+    if (!('channel' in message)) {
         return;
-    } else if ('name' in message.channel === false) {
+    } else if (!('name' in message.channel)) {
         return;
     } else if (message.channel.name !== 'general') {
         return;
     }
 
     // Replicate the message from the Discord server to the lobby
-    if ('username' in message.author === false) {
+    if (!('username' in message.author)) {
         return;
-    } else if ('discriminator' in message.author === false) {
+    } else if (!('discriminator' in message.author)) {
         return;
     }
     let username = message.author.username + '#' + message.author.discriminator;

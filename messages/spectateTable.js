@@ -11,6 +11,7 @@
 
 // Imports
 const globals = require('../globals');
+const logger  = require('../logger');
 const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
@@ -18,11 +19,15 @@ exports.step1 = function(socket, data) {
     data.gameID = data.table_id;
 
     // Validate that this table exists
-    if (data.gameID in globals.currentGames === false) {
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.warn(`messages.join_table was called for game #${data.gameID}, but it does not exist.`);
+        data.reason = 'That table does not exist.';
+        notify.playerDenied(socket, data);
         return;
     }
-
-    let game = globals.currentGames[data.gameID];
 
     // Add them to the spectators object
     game.spectators[socket.userID] = socket;

@@ -91,7 +91,7 @@ function step2(error, socket, data) {
     let seedNum = 1;
     while (true) {
         data.seed = seedPrefix + seedNum;
-        if (data.seed in data.seeds === false) {
+        if (!(data.seed in data.seeds)) {
             break;
         }
         seedNum++;

@@ -37,10 +37,15 @@ const step1 = function(socket, data) {
     data.gameID = socket.atTable.id;
 
     // Validate that this table exists
-    if (data.gameID in globals.currentGames === false) {
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.warn(`messages.action was called for game #${data.gameID}, but it does not exist.`);
+        data.reason = 'That table does not exist.';
+        notify.playerDenied(socket, data);
         return;
     }
-    let game = globals.currentGames[data.gameID];
 
     // Get the index of this player
     for (let i = 0; i < game.players.length; i++) {
@@ -184,7 +189,7 @@ const step1 = function(socket, data) {
     // (we don't need to send this if the game is over, but we send it anyway
     // in a timed game because we want an extra separator before the times are
     // displayed)
-    if (data.end === false || game.timed) {
+    if (!data.end || game.timed) {
         game.actions.push({
             num: game.turn_num,
             type: 'turn',
@@ -379,7 +384,7 @@ function playerPlayCard(data) {
         } else {
             text += 'slot #' + data.slot;
         }
-        if (card.touched === false) {
+        if (!card.touched) {
             text += ' (blind)';
             game.sound = 'blind';
         }
@@ -451,10 +456,10 @@ function playerDiscardCard(data, failed = false) {
     } else {
         text += 'slot #' + data.slot;
     }
-    if (failed === false && card.touched) {
+    if (!failed && card.touched) {
         text += ' (clued)';
     }
-    if (failed && data.slot !== -1 && card.touched === false) {
+    if (failed && data.slot !== -1 && !card.touched) {
         text += ' (blind)';
     }
     game.actions.push({
@@ -528,7 +533,7 @@ function playerBlindPlayDeck(data) {
 
 const checkTimer = function(data) {
     // Check to see if the game ended already
-    if (data.gameID in globals.currentGames === false) {
+    if (!(data.gameID in globals.currentGames)) {
         return;
     }
 
@@ -601,7 +606,7 @@ function checkEnd(data) {
             let neededRank = game.stacks[i] + 1;
             if (card.suit === neededSuit &&
                 card.rank === neededRank &&
-                card.discarded === false) {
+                !card.discarded) {
 
                 return;
             }

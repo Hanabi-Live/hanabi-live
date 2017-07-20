@@ -81,7 +81,7 @@ function setTickingDownTime(textObjects, active_index) {
     }
 
     let milliseconds_left = ui.player_times[active_index];
-    if (ui.timed_game === false) {
+    if (!ui.timed_game) {
         // Invert it to show how much time each player is taking
         milliseconds_left *= -1;
     }
@@ -3319,7 +3319,7 @@ this.build_ui = function() {
     */
 
     // We don't want the timer to show in replays
-    if (this.replay === false) {
+    if (!this.replay) {
         let timerX = 0.155;
         let timerY = 0.592;
         let timerX2 = 0.565;
@@ -3434,7 +3434,7 @@ this.build_ui = function() {
         }
 
         // Hide the second timer by default
-        if (this.spectating === false) {
+        if (!this.spectating) {
             timer_rect2.hide();
             timer_label2.hide();
             timer_text2.hide();
@@ -3675,7 +3675,7 @@ this.build_ui = function() {
             return "deck";
         }
 
-        if (! /^\d+$/.test(response)) {
+        if (!/^\d+$/.test(response)) {
             return null;
         }
 
@@ -3687,7 +3687,7 @@ this.build_ui = function() {
         return playerCards[maxSlotIndex - num_response].children[0].order;
     };
 
-    let doKeyboardCardAction = function (tryPlay) {
+    let doKeyboardCardAction = function(tryPlay) {
         let intendedPlay = tryPlay === true;
         let cardOrder = promptOwnHandOrder(intendedPlay ? "play" : "discard");
 
@@ -4488,30 +4488,30 @@ this.handle_clock = function(note) {
         return;
     }
 
-    let current_user_turn = note.active === ui.player_us && ui.spectating === false;
+    let current_user_turn = note.active === ui.player_us && !ui.spectating;
 
     // Update onscreen time displays
-    if (ui.spectating === false) {
+    if (!ui.spectating) {
         // The visibilty of this timer does not change during a game
         let time = ui.player_times[ui.player_us];
-        if (ui.timed_game === false) {
+        if (!ui.timed_game) {
             // Invert it to show how much time each player is taking
             time *= -1;
         }
         timer_text1.setText(milliseconds_to_time_display(time));
     }
 
-    if (! current_user_turn) {
+    if (!current_user_turn) {
         // Update the ui with the value of the timer for the active player
         let time = ui.player_times[note.active];
-        if (ui.timed_game === false) {
+        if (!ui.timed_game) {
             // Invert it to show how much time each player is taking
             time *= -1;
         }
         timer_text2.setText(milliseconds_to_time_display(time));
     }
 
-    let shoudShowTimer2 = ! current_user_turn && note.active !== null;
+    let shoudShowTimer2 = !current_user_turn && note.active !== null;
     timer_rect2.setVisible(shoudShowTimer2);
     timer_label2.setVisible(shoudShowTimer2);
     timer_text2.setVisible(shoudShowTimer2);
@@ -4521,7 +4521,7 @@ this.handle_clock = function(note) {
     // Update the timer tooltips for each player
     for (let i = 0; i < ui.player_times.length; i++) {
         let time = ui.player_times[i];
-        if (ui.timed_game === false) {
+        if (!ui.timed_game) {
             // Invert it to show how much time each player is taking
             time *= -1;
         }

@@ -18,7 +18,7 @@ exports.step1 = function(socket, data) {
     notify.allUserChange(socket);
 
     // Validate that this table exists
-    if (data.gameID in globals.currentGames === false) {
+    if (!(data.gameID in globals.currentGames)) {
         // Since games are deleted when they end, it is normal behavior for
         // players to click the "Lobby" button and get to this point
         logger.info("(Table does not exist.)");
@@ -28,7 +28,7 @@ exports.step1 = function(socket, data) {
 
     // Check to see if they are a spectator
     if (socket.atTable.spectating) {
-        if (socket.userID in game.spectators === false) {
+        if (!(socket.userID in game.spectators)) {
             logger.error(`User "${socket.username}" tried to unattend game #${data.gameID}, but they were not in the spectators list.`);
             return;
         }

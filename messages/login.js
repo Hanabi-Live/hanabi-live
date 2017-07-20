@@ -17,7 +17,7 @@ const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Validate that they submitted a username
-    if ('username' in data === false) {
+    if (!('username' in data)) {
         logger.warn('Someone tried to log in without submitting a username.');
         data.reason = 'You must submit a username.';
         notify.playerDenied(socket, data);
@@ -25,7 +25,7 @@ exports.step1 = function(socket, data) {
     }
 
     // Validate that they submitted a password
-    if ('password' in data === false) {
+    if (!('password' in data)) {
         logger.warn('Someone tried to log in without submitting a password.');
         data.reason = 'You must submit a password.';
         notify.playerDenied(socket, data);

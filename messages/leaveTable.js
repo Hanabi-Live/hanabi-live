@@ -15,7 +15,7 @@ const step1 = function(socket, data) {
     data.gameID = socket.atTable.id;
 
     // Validate that this table exists
-    if (data.gameID in globals.currentGames === false) {
+    if (!(data.gameID in globals.currentGames)) {
         return;
     }
 

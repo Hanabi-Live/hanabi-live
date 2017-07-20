@@ -36,16 +36,16 @@ socket.on('message', function(msg) {
     */
 
     // Validate that the message has a type
-    if ('type' in msg === false) {
+    if (!('type' in msg)) {
         return;
     }
 
     if (msg.type === 'chat') {
-        if ('resp' in msg === false) {
+        if (!('resp' in msg)) {
             return;
         }
 
-        if ('who' in msg.resp === false) {
+        if (!('who' in msg.resp)) {
             return;
         }
 
@@ -68,7 +68,7 @@ socket.on('message', function(msg) {
             return;
         }
 
-        if ('msg' in msg.resp === false) {
+        if (!('msg' in msg.resp)) {
             return;
         }
 

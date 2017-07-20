@@ -29,7 +29,7 @@ exports.allUserChange = function(socket) {
 
 exports.allTableChange = function(data) {
     // Validate that the game exists
-    if (data.gameID in globals.currentGames === false) {
+    if (!(data.gameID in globals.currentGames)) {
         logger.error(`Error: notify.allTableChange was called for game #${data.gameID}, but it does not exist.`);
         return;
     }

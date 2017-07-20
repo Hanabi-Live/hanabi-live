@@ -15,8 +15,8 @@ exports.step1 = function(socket, data) {
     data.gameID = socket.atTable.id;
 
     // Check to make sure this table exists
-    if (data.gameID in globals.currentGames === false &&
-        socket.atTable.replay === false) {
+    if (!(data.gameID in globals.currentGames) &&
+        !socket.atTable.replay) {
 
         socket.atTable.id = -1;
         return;
@@ -40,7 +40,7 @@ function step2(error, socket, data) {
 
     // Get the index of this player
     let index = -1; // Set an impossible index by default
-    if (socket.atTable.replay === false) {
+    if (!socket.atTable.replay) {
         // We only have to worry about getting the index if we need to
         // scrub cards
         for (let i = 0; i < game.players.length; i++) {
@@ -81,7 +81,7 @@ function step2(error, socket, data) {
     });
 
     // Send them the number of spectators
-    if (socket.atTable.replay === false) {
+    if (!socket.atTable.replay) {
         let specMsg = {
             type: 'num_spec',
             resp: {
@@ -92,7 +92,7 @@ function step2(error, socket, data) {
     }
 
     // Send them the current time for all player's clocks
-    if (socket.atTable.replay === false) {
+    if (!socket.atTable.replay) {
         let times = [];
         for (let i = 0; i < game.players.length; i++) {
             let time = game.players[i].time;
