@@ -167,7 +167,7 @@ function gameEnd6(error, data) {
     data.insertNum++;
     if (data.insertNum < game.players.length) {
         data.userID = game.players[data.insertNum].userID;
-        models.users.getStats(data, gameEnd5);
+        models.users.getStats(data, gameEnd6);
         return;
     }
 
