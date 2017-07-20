@@ -3114,8 +3114,8 @@ this.build_ui = function() {
 
         uilayer.add(name_frames[i]);
 
-        // The following code is copied from HanabiCard
-        // We don't want the tooltips (that show the time) to appear in replays
+        // Draw the tooltips on the player names that show the time
+        // (the code is copied from HanabiCard)
         if (!this.replay) {
             let frame_hover_tooltip = new Kinetic.Label({
                 x: -1000,
@@ -3143,7 +3143,7 @@ this.build_ui = function() {
                 padding: 0.01 * win_h,
                 fontSize: 0.04 * win_h,
                 minFontSize: 0.02 * win_h,
-                width: 0.075 * win_w,
+                width: 0.08 * win_w,
                 fontFamily: "Verdana",
                 text: "??:??",
             }));
