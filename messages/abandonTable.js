@@ -16,11 +16,15 @@ const notify  = require('../notify');
 exports.step1 = function(socket, data) {
     // Local variables
     data.gameID = data.table_id;
-    let game = globals.currentGames[data.gameID];
 
     // Validate that this table exists
-    if (data.gameID in globals.currentGames === false) {
-        logger.info("(Table does not exist.)");
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.warn(`messages.join_table was called for game #${data.gameID}, but it does not exist.`);
+        data.reason = 'That table does not exist.';
+        notify.playerDenied(socket, data);
         return;
     }
 

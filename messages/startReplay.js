@@ -16,6 +16,9 @@ exports.step1 = function(socket, data) {
     // Local variables
     data.gameID = data.id;
 
+    // Validate that this game ID exists
+    // TODO
+
     // Set their status
     socket.status = 'Replay';
     notify.allUserChange(socket);

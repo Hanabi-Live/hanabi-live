@@ -120,8 +120,14 @@ exports.gameMemberChange = function(data) {
 };
 
 exports.gameConnected = function(data) {
-    // Local variables
-    let game = globals.currentGames[data.gameID];
+    // Validate that the game exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.error(`Error: notify.gamesConnected was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
 
     // Make a list of who is currently connected of the players in the
     // current game
@@ -143,8 +149,16 @@ exports.gameConnected = function(data) {
 };
 
 exports.gameAction = function(data) {
+    // Validate that the game exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.error(`Error: notify.gameAction was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
+
     // Local variables
-    let game = globals.currentGames[data.gameID];
     let lastIndex = game.actions.length - 1;
     let action = game.actions[lastIndex];
 
@@ -176,8 +190,14 @@ exports.gameAction = function(data) {
 };
 
 exports.gameNumSpec = function(data) {
-    // Local variables
-    let game = globals.currentGames[data.gameID];
+    // Validate that the game exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.error(`Error: notify.gameNumSpec was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
 
     // Create the "num_spec" message
     let times = [];
@@ -203,8 +223,14 @@ exports.gameNumSpec = function(data) {
 };
 
 exports.gameTime = function(data) {
-    // Local variables
-    let game = globals.currentGames[data.gameID];
+    // Validate that the game exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.error(`Error: notify.gameTime was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
 
     // Create the clock message
     let times = [];
@@ -231,8 +257,14 @@ exports.gameTime = function(data) {
 };
 
 exports.gameSound = function(data) {
-    // Local variables
-    let game = globals.currentGames[data.gameID];
+    // Validate that the game exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.error(`Error: notify.gameSound was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
 
     // Send a sound notification
     for (let i = 0; i < game.players.length; i++) {
@@ -273,8 +305,14 @@ exports.gameSound = function(data) {
 };
 
 exports.gameBoot = function(data) {
-    // Local variables
-    let game = globals.currentGames[data.gameID];
+    // Validate that the game exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.error(`Error: notify.gameBoot was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
 
     // Send a boot notification
     let msg = {
@@ -299,14 +337,22 @@ exports.gameBoot = function(data) {
 */
 
 exports.spectatorsNote = function(data) {
-    // Local variables
-    let game = globals.currentGames[data.gameID];
+    // Validate that the game exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.error(`Error: notify.spectatorsNote was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
 
     let msg = {
         type: 'note',
         resp: {
             order: data.order,
+            // The order of the card in the deck that these notes correspond to
             notes: game.deck[data.order].notes,
+            // "notes" is an array of strings, one for each player
         },
     };
 
@@ -320,8 +366,14 @@ exports.spectatorsNote = function(data) {
 */
 
 exports.playerAction = function(socket, data) {
-    // Local variables
-    let game = globals.currentGames[data.gameID];
+    // Validate that the game exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.error(`Error: notify.playerAction was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
 
     socket.emit('message', {
         type: 'action',
@@ -339,7 +391,7 @@ const playerTable = function(socket, data) {
     if (data.gameID in globals.currentGames) {
         game = globals.currentGames[data.gameID];
     } else {
-        logger.error(`Error: notify.playerTableChange was called for game #${data.gameID}, but it does not exist.`);
+        logger.error(`Error: notify.playerTable was called for game #${data.gameID}, but it does not exist.`);
         return;
     }
 

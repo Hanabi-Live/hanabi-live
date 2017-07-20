@@ -697,6 +697,11 @@ HanabiCard.prototype.add_listeners = function() {
                 note = newNote;
             }
 
+            // Do nothing if there was no old note and no new note
+            if (typeof(note) === 'undefined') {
+                return;
+            }
+
             if (note.length > 0) {
                 self.note_given.show();
             } else {

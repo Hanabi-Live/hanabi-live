@@ -12,7 +12,6 @@ const notify  = require('../notify');
 exports.step1 = function(socket, data) {
     // Local variables
     data.gameID = socket.atTable.id;
-    let game = globals.currentGames[data.gameID];
 
     // Set their status
     socket.status = 'Lobby';
@@ -20,9 +19,12 @@ exports.step1 = function(socket, data) {
 
     // Validate that this table exists
     if (data.gameID in globals.currentGames === false) {
+        // Since games are deleted when they end, it is normal behavior for
+        // players to click the "Lobby" button and get to this point
         logger.info("(Table does not exist.)");
         return;
     }
+    let game = globals.currentGames[data.gameID];
 
     // Check to see if they are a spectator
     if (socket.atTable.spectating) {
