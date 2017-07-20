@@ -1,11 +1,14 @@
 'use strict';
 
+// Server configuration
+const port = 3000;
+
 // The object that contains all of the global variables
 module.exports = {
-    connectedUsers: {}, // Indexed by ID
-    currentGames: {}, // Indexed by ID
-    extraTurnTime: 10 * 1000, // In milliseconds
-    startingTime: 5 * 60 * 1000, // In milliseconds
+    connectedUsers:   {}, // Indexed by ID
+    currentGames:     {}, // Indexed by ID
+    extraTurnTime:    10 * 1000, // In milliseconds
+    startingTime:     5 * 60 * 1000, // In milliseconds
     suits: [
         'Blue',
         'Green',
@@ -29,4 +32,5 @@ module.exports = {
         'Red',
         'Purple',
     ],
+    port: port,
 };

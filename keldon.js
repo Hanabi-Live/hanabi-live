@@ -13,14 +13,18 @@ const username  = process.env.KELDON_USER;
 const password  = process.env.KELDON_PASS;
 
 // Connect
-var socket = client.connect(url);
-socket.emit('message', {
-    type: 'login',
-    resp: {
-        username: username,
-        password: password,
-    },
-});
+var socket;
+if (username.length > 0 && password.length > 0) {
+    socket = client.connect(url);
+
+    socket.emit('message', {
+        type: 'login',
+        resp: {
+            username: username,
+            password: password,
+        },
+    });
+}
 
 /*
     SocketIO callbacks

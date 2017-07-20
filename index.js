@@ -7,12 +7,10 @@ const app      = express();
 const http     = require('http').Server(app);
 const path     = require('path');
 const io       = require('socket.io')(http);
+const globals  = require('./globals');
 const logger   = require('./logger');
 const messages = require('./messages');
 const models   = require('./models');
-
-// Configuration
-const port = 3000;
 
 // HTTP handlers
 app.get('/', function(req, res) {
@@ -63,6 +61,6 @@ function initComplete(error) {
 
     // Listen
     http.listen(port, function() {
-        logger.info(`keldon-hanabi server listening on port ${port}.`);
+        logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
     });
 }
