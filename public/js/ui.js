@@ -116,7 +116,7 @@ function image_name(card) {
     }
 
     var learned = ui.learned_cards[card.order];
-    if (MHGA_show_faces_in_replay && learned && ui.replay) {
+    if (ui.replay && learned && (learned.revealed || MHGA_show_faces_in_replay)) {
         let name = "card-";
         if (learned.suit === undefined) {
             name += 6;
