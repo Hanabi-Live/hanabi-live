@@ -78,7 +78,7 @@ function step2(error, socket, data) {
         socket: socket,
         time: time,
     });
-    socket.status = 'Pre-Game';
+    socket.status = (game.shared_replay ? 'Pre-Replay' : 'Pre-Game');
     socket.atTable = {
         id:         data.gameID,
         replay:     false,

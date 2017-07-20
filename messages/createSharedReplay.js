@@ -28,8 +28,10 @@ exports.step1 = function(socket, data) {
 
     // Keep track of the current games
     globals.currentGames[data.gameID] = {
+        name:          'Shared replay for game #' + data.gameID,
         owner:         socket.userID,
         players:       [],
+        spectators:    [],
         running:       false,
         shared_replay: true,
     };

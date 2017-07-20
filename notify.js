@@ -29,45 +29,14 @@ exports.allUserChange = function(socket) {
 
 exports.allTableChange = function(data) {
     // Validate that the game exists
-    let game;
-    if (data.gameID in globals.currentGames) {
-        game = globals.currentGames[data.gameID];
-    } else {
+    if (data.gameID in globals.currentGames === false) {
         logger.error(`Error: notify.allTableChange was called for game #${data.gameID}, but it does not exist.`);
         return;
     }
 
     // Send everyone an update about this table
     for (let userID of Object.keys(globals.connectedUsers)) {
-        // Keys are strings by default, so convert it back to a number
-        userID = parseInt(userID, 10);
-
-        // Find out if this player is seated at this table
-        let joined = false;
-        for (let i = 0; i < game.players.length; i++) {
-            if (game.players[i].userID === userID) {
-                joined = true;
-                data.index = i;
-                break;
-            }
-        }
-
-        globals.connectedUsers[userID].emit('message', {
-            type: 'table',
-            resp: {
-                id:          data.gameID,
-                name:        game.name,
-                joined:      joined,
-                num_players: game.players.length,
-                max_players: game.max_players,
-                allow_spec:  game.allow_spec,
-                timed:       game.timed,
-                owned:       userID === game.owner,
-                running:     game.running,
-                variant:     game.variant,
-                our_turn:    (joined && game.turn === data.index),
-            },
-        });
+        playerTable(globals.connectedUsers[userID], data);
     }
 };
 
@@ -362,6 +331,46 @@ exports.playerAction = function(socket, data) {
         },
     });
 };
+
+const playerTable = function(socket, data) {
+    // Validate that the game exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.error(`Error: notify.playerTableChange was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
+
+    // Find out if this player is seated at this table
+    let joined = false;
+    for (let i = 0; i < game.players.length; i++) {
+        if (game.players[i].userID === socket.userID) {
+            joined = true;
+            data.index = i;
+            break;
+        }
+    }
+
+    socket.emit('message', {
+        type: 'table',
+        resp: {
+            id:            data.gameID,
+            name:          game.name,
+            joined:        joined,
+            num_players:   game.players.length,
+            max_players:   game.max_players,
+            allow_spec:    game.allow_spec,
+            timed:         game.timed,
+            owned:         socket.userID === game.owner,
+            running:       game.running,
+            variant:       game.variant,
+            our_turn:      (joined && game.running && game.turn_player_index === data.index),
+            shared_replay: game.shared_replay,
+        },
+    });
+};
+exports.playerTable = playerTable;
 
 exports.playerDenied = function(socket, data) {
     socket.emit('message', {

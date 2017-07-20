@@ -162,42 +162,8 @@ function step4(socket, data) {
 
     // Send a "table" message for every current table
     for (let gameID of Object.keys(globals.currentGames)) {
-        // Keys are strings by default, so convert it back to a number
-        gameID = parseInt(gameID, 10);
-
-        // Find out if this player is seated at this table
-        let game = globals.currentGames[gameID];
-        let joined = false;
-        let our_turn = false;
-        let index;
-        for (let i = 0; i < game.players.length; i++) {
-            if (game.players[i].userID === socket.userID) {
-                joined = true;
-                index = i;
-                break;
-            }
-        }
-
-        // Find out if it is our turn
-        if (joined && game.running && game.turn_player_index === index) {
-            our_turn = true;
-        }
-
-        socket.emit('message', {
-            type: 'table',
-            resp: {
-                allow_spec: game.allow_spec,
-                id: gameID,
-                joined: joined,
-                max_players: game.max_players,
-                name: game.name,
-                num_players: game.players.length,
-                our_turn: our_turn,
-                owned: (socket.userID === game.owner),
-                running: game.running,
-                variant: game.variant,
-            },
-        });
+        data.gameID = gameID;
+        notify.playerTable(socket, data);
     }
 
     // Send the welcome chat messages

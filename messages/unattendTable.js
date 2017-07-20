@@ -52,29 +52,7 @@ exports.step1 = function(socket, data) {
         notify.gameMemberChange(data);
     }
 
-    // Get the index of this player
-    for (let i = 0; i < game.players.length; i++) {
-        if (game.players[i].userID === socket.userID) {
-            data.index = i;
-            break;
-        }
-    }
-
     // They got sent a "table_gone" message earlier (if the game started), so
     // send them a new table message
-    socket.emit('message', {
-        type: 'table',
-        resp: {
-            allow_spec:  game.allow_spec,
-            id:          data.gameID,
-            joined:      true,
-            max_players: game.max_players,
-            name:        game.name,
-            num_players: game.players.length,
-            our_turn:    game.turn === data.index,
-            owned:       socket.userID === game.owner,
-            running:     game.running,
-            variant:     game.variant,
-        },
-    });
+    notify.playerTable(socket, data);
 };
