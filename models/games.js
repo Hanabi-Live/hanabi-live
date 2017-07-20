@@ -93,6 +93,22 @@ exports.clean = function(done) {
     });
 };
 
+exports.exists = function(done, data) {
+    let sql = 'SELECT id FROM games WHERE id = ?';
+    let values = [data.gameID];
+    db.query(sql, values, function (error, results, fields) {
+        if (error) {
+            done(error, data);
+        } else if (results.length === 0) {
+            data.exists = false;
+            done(null, data);
+        } else {
+            data.exists = true;
+            done(null, data);
+        }
+    });
+};
+
 exports.getUserHistory = function(socket, data, done) {
     let sql = `
         SELECT

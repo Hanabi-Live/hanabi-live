@@ -25,7 +25,7 @@ exports.step1 = function(socket, data) {
         game = globals.currentGames[data.gameID];
     } else {
         logger.warn(`messages.join_shared_replay was called for game #${data.gameID}, but it does not exist.`);
-        data.reason = 'That shared replay does not exist.';
+        data.reason = `Game #${data.gameID} does not exist.`;
         notify.playerDenied(socket, data);
         return;
     }
