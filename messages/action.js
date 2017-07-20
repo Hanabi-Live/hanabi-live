@@ -41,8 +41,8 @@ const step1 = function(socket, data) {
     if (data.gameID in globals.currentGames) {
         game = globals.currentGames[data.gameID];
     } else {
-        logger.warn(`messages.action was called for game #${data.gameID}, but it does not exist.`);
-        data.reason = 'That table does not exist.';
+        logger.warn(`Game #${data.gameID} does not exist.`);
+        data.reason = `Game #${data.gameID} does not exist.`;
         notify.playerDenied(socket, data);
         return;
     }
@@ -57,7 +57,7 @@ const step1 = function(socket, data) {
     let player = game.players[data.index];
 
     // Validate that it is this player's turn
-    if (game.turn_player_index !== data.index && data.type !== 4) {
+    if (game.turn_player_index !== data.index) {
         logger.warn(`User "${data.username}" tried to perform an action when it was not their turn.`);
         data.reason = 'You cannot perform an action when it is not your turn.';
         notify.playerDenied(socket, data);

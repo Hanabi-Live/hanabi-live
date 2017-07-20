@@ -29,7 +29,7 @@ function step2(error, socket, data) {
     }
 
     if (!data.exists) {
-        logger.warn(`messages.start_replay was called for game #${data.gameID}, but it does not exist.`);
+        logger.warn(`Game #${data.gameID} does not exist.`);
         data.reason = `Game #${data.gameID} does not exist.`;
         notify.playerDenied(socket, data);
         return;

@@ -25,8 +25,8 @@ exports.step1 = function(socket, data) {
     if (data.gameID in globals.currentGames) {
         game = globals.currentGames[data.gameID];
     } else {
-        logger.warn(`messages.join_table was called for game #${data.gameID}, but it does not exist.`);
-        data.reason = 'That table does not exist.';
+        logger.warn(`Game #${data.gameID} does not exist.`);
+        data.reason = `Game #${data.gameID} does not exist.`;
         notify.playerDenied(socket, data);
         return;
     }
