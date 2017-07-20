@@ -435,10 +435,7 @@ HanabiLobby.prototype.draw_tables = function() {
         playerText += (this.table_list[i].shared_replay ? "∞" : this.table_list[i].max_players);
         attrs.append($("<li>").text(playerText).addClass("table-attr table-players"));
 
-        let variantText = '';
-        if (!this.table_list[i].shared_replay) {
-            variantText = "Variant: " + variant_names[this.table_list[i].variant];
-        }
+        let variantText = "Variant: " + variant_names[this.table_list[i].variant];
         attrs.append($("<li>").text(variantText).addClass("table-attr table-variant"));
 
         turn = "Not Started";
@@ -455,7 +452,10 @@ HanabiLobby.prototype.draw_tables = function() {
 
         attrs.append($("<li>").html(turn).addClass("table-attr table-turn"));
 
-        if (!this.table_list[i].joined && this.table_list[i].allow_spec && this.table_list[i].running) {
+        if (!this.table_list[i].joined &&
+            this.table_list[i].allow_spec &&
+            this.table_list[i].running) {
+
             button = $("<button>").text("Spectate").attr("type", "button");
             button.attr("id", "spectate-" + i);
 
@@ -796,17 +796,10 @@ HanabiLobby.prototype.show_joined = function() {
     var div;
     var i;
 
-    html += "<p>Players: <b>" + this.game.num_players;
-    if (this.game.shared_replay === false) {
-        html += "/" + this.game.max_players;
-    }
-    html += "</b></p>";
-
-    if (this.game.shared_replay === false) {
-        html += "<p>Variant: <b>" + variant_names[this.game.variant] + "</p></b>";
-        html += "<p>Allow Spectators: <b>" + (this.game.allow_spec ? "Yes" : "No") + "</b></p>";
-        html += "<p>Timed Game: <b>" + (this.game.timed ? "Yes" : "No") + "</b></p>";
-    }
+    html += "<p>Players: <b>" + this.game.num_players + "</b>/<b>" + this.game.max_players + "</b></p>";
+    html += "<p>Variant: <b>" + variant_names[this.game.variant] + "</p></b>";
+    html += "<p>Allow Spectators: <b>" + (this.game.allow_spec ? "Yes" : "No") + "</b></p>";
+    html += "<p>Timed Game: <b>" + (this.game.timed ? "Yes" : "No") + "</b></p>";
 
     $("#joined-desc").html(html);
 

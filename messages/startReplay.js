@@ -20,6 +20,13 @@ exports.step1 = function(socket, data) {
     socket.status = 'Replay';
     notify.allUserChange(socket);
 
+    // Set that they are watching a replay (on the server-side)
+    socket.atTable = {
+        id:         data.gameID,
+        replay:     true,
+        spectating: false,
+    };
+
     // Send them a "game_start" message
     socket.emit('message', {
         type: 'game_start',
@@ -27,11 +34,4 @@ exports.step1 = function(socket, data) {
             replay: true,
         },
     });
-
-    // Set that they are watching a replay
-    socket.atTable = {
-        id:         data.gameID,
-        replay:     true,
-        spectating: false,
-    };
 };

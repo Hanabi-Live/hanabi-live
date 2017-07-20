@@ -31,8 +31,7 @@ exports.step1 = function(socket, data) {
     }
 
     // Validate that this table does not already have the maximum amount of players
-    // (shared relpays have no maximum amount of players)
-    if (game.players.length === game.max_players && game.shared_replay === false) {
+    if (game.players.length === game.max_players) {
         logger.warn(`messages.join was called for game #${data.gameID}, but it has the maximum amount of players already.`);
         data.reason = `That table has a maximum limit of ${game.max_players} players.`;
         notify.playerDenied(socket, data);
@@ -40,13 +39,7 @@ exports.step1 = function(socket, data) {
     }
 
     // Join the table
-    if (game.shared_replay) {
-        // We don't need to make a new database entry for shared replays
-        step2(null, socket, data);
-    } else {
-        models.gameParticipants.create(socket, data, step2);
-    }
-
+    models.gameParticipants.create(socket, data, step2);
 };
 
 function step2(error, socket, data) {
@@ -71,29 +64,33 @@ function step2(error, socket, data) {
         time = 0;
     }
     game.players.push({
-        hand: [],
-        userID: socket.userID,
+        hand:     [],
+        userID:   socket.userID,
         username: socket.username,
-        present: true,
-        socket: socket,
-        time: time,
+        present:  true,
+        socket:   socket,
+        time:     time,
     });
-    socket.status = (game.shared_replay ? 'Pre-Replay' : 'Pre-Game');
+    notify.allTableChange(data);
+    notify.gameMemberChange(data);
+
+    // Set their status
+    socket.status = 'Pre-Game';
+    notify.allUserChange(socket);
+
+    // Set that they have joined the game (on the server-side)
     socket.atTable = {
         id:         data.gameID,
         replay:     false,
         spectating: false,
     };
 
-    // Let the client know they successfully joined the table
+    // Send them a "joined" message
+    // (to let them know they successfully joined the table)
     socket.emit('message', {
         type: 'joined',
         resp: {
             table_id: data.gameID,
         },
     });
-
-    notify.allUserChange(socket);
-    notify.allTableChange(data);
-    notify.gameMemberChange(data);
 }

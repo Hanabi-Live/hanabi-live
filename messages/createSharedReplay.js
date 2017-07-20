@@ -12,17 +12,34 @@
 // Imports
 const globals  = require('../globals');
 const logger   = require('../logger');
+const models   = require('../models');
 const messages = require('../messages');
 const notify   = require('../notify');
 
 exports.step1 = function(socket, data) {
-    // Prepare the data to feed to the model
+    // Validate that there is not a shared replay for this game ID already
     data.gameID = data.id;
-    data.owner = socket.userID;
-    data.name = `Shared replay for game #${data.id}`;
+    if (data.gameID in globals.currentGames) {
+        data.reason = 'There is already a shared replay going on for that ID.';
+        notify.playerDenied(socket, data);
+        return;
+    }
 
     // Validate that this game ID exists in the database
-    // TODO
+    models.games.getVariant(socket, data, step2);
+};
+
+function step2(error, socket, data) {
+    if (error !== null) {
+        logger.error('Error: models.games.getVariant failed:', error);
+        return;
+    }
+
+    if (data.variant === null) {
+        logger.warn(`User "${socket.username}" requested to start a shared replay for game #${data.gameID}, which does not exist.`);
+        data.reason = 'That game ID does not exist.';
+        notify.playerDenied(socket, data);
+    }
 
     logger.info(`User "${socket.username}" created a new shared replay: #${data.gameID}`);
 
@@ -32,6 +49,7 @@ exports.step1 = function(socket, data) {
         owner:         socket.userID,
         players:       [],
         spectators:    [],
+        variant:       data.variant,
         running:       false,
         shared_replay: true,
     };
@@ -40,5 +58,5 @@ exports.step1 = function(socket, data) {
 
     // Join the user to the new table
     data.table_id = data.gameID;
-    messages.join_table.step1(socket, data);
-};
+    messages.join_shared_replay.step1(socket, data);
+}

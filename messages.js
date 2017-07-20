@@ -10,6 +10,7 @@ exports.create_table         = require('./messages/createTable');
 exports.end_game             = require('./messages/endGame'); // Not a real message
 exports.hello                = require('./messages/hello');
 exports.history_details      = require('./messages/historyDetails');
+exports.join_shared_replay   = require('./messages/joinSharedReplay');
 exports.join_table           = require('./messages/joinTable');
 exports.leave_table          = require('./messages/leaveTable');
 exports.login                = require('./messages/login');

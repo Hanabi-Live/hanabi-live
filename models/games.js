@@ -207,6 +207,10 @@ exports.getVariantPlayers = function(socket, data, done) {
             done(error, socket, data);
             return;
         }
+        if (results.length === 0) {
+            let error = new Error(`Got no rows in the "games" table for ID: ${data.gameID}`);
+            done(error, socket, data);
+        }
         data.game = {};
         data.game.variant = results[0].variant;
         data.game.players = [];
@@ -235,6 +239,24 @@ exports.getActions = function(socket, data, done) {
             data.game.actions.push(JSON.parse(row.action));
         }
 
+        done(null, socket, data);
+    });
+};
+
+// Used when creating a shared replay
+exports.getVariant = function(socket, data, done) {
+    let sql = 'SELECT variant FROM games WHERE id = ?';
+    let values = [data.gameID];
+    db.query(sql, values, function (error, results, fields) {
+        if (error) {
+            done(error, socket, data);
+            return;
+        }
+        if (results.length === 0) {
+            data.variant = null;
+        } else {
+            data.variant = results[0].variant;
+        }
         done(null, socket, data);
     });
 };
