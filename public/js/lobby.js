@@ -428,15 +428,18 @@ HanabiLobby.prototype.draw_tables = function() {
     for (i of Object.keys(this.table_list)) {
         table = $("<li>").addClass("table-item");
         attrs = $("<ul>");
+
         attrs.append($("<li>").text(this.table_list[i].name).addClass("table-attr table-name"));
 
-        let text = this.table_list[i].num_players;
-        if (this.table_list[i].shared_replay === false) {
-            text += "/" + this.table_list[i].max_players;
-        }
-        attrs.append($("<li>").text(text).addClass("table-attr table-players"));
+        let playerText = this.table_list[i].num_players + "/";
+        playerText += (this.table_list[i].shared_replay ? "∞" : this.table_list[i].max_players);
+        attrs.append($("<li>").text(playerText).addClass("table-attr table-players"));
 
-        attrs.append($("<li>").text("Variant: " + variant_names[this.table_list[i].variant]).addClass("table-attr table-variant"));
+        let variantText = '';
+        if (!this.table_list[i].shared_replay) {
+            variantText = "Variant: " + variant_names[this.table_list[i].variant];
+        }
+        attrs.append($("<li>").text(variantText).addClass("table-attr table-variant"));
 
         turn = "Not Started";
 
@@ -608,6 +611,7 @@ HanabiLobby.prototype.draw_history = function() {
         history = $("<li>").addClass("table-item");
 
         attrs = $("<ul>");
+
         attrs.append($("<li>").text("#" + ids[i]).addClass("table-attr history-id"));
 
         attrs.append($("<li>").text(this.history_list[ids[i]].num_players + " players").addClass("table-attr history-players"));
@@ -756,14 +760,15 @@ HanabiLobby.prototype.table_left = function(data) {
 };
 
 HanabiLobby.prototype.set_game = function(data) {
-    this.game.name = data.name;
-    this.game.num_players = data.num_players;
-    this.game.max_players = data.max_players;
-    this.game.variant = data.variant;
-    this.game.running = data.running;
-    this.game.allow_spec = data.allow_spec;
-    this.game.num_spec = data.num_spec;
-    this.game.timed = data.timed;
+    this.game.name          = data.name;
+    this.game.num_players   = data.num_players;
+    this.game.max_players   = data.max_players;
+    this.game.variant       = data.variant;
+    this.game.running       = data.running;
+    this.game.allow_spec    = data.allow_spec;
+    this.game.num_spec      = data.num_spec;
+    this.game.timed         = data.timed;
+    this.game.shared_replay = data.shared_replay;
 
     this.game.players.length = this.game.num_players;
 
@@ -787,7 +792,7 @@ HanabiLobby.prototype.set_game_player = function(data) {
 };
 
 HanabiLobby.prototype.show_joined = function() {
-    var html = "<p>" + $("<a>").text(this.game.name).html() + "</p>";
+    var html = "<p><b>" + $("<a>").text(this.game.name).html() + "</b></p>";
     var div;
     var i;
 

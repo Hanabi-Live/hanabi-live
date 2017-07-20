@@ -71,14 +71,15 @@ exports.gameMemberChange = function(data) {
         player.socket.emit('message', {
             type: 'game',
             resp: {
-                name:        game.name,
-                running:     game.running,
-                num_players: game.players.length,
-                max_players: game.max_players,
-                variant:     game.variant,
-                allow_spec:  game.allow_spec,
-                num_spec:    game.num_spec,
-                timed:       game.timed,
+                name:          game.name,
+                running:       game.running,
+                num_players:   game.players.length,
+                max_players:   game.max_players,
+                variant:       game.variant,
+                allow_spec:    game.allow_spec,
+                num_spec:      game.num_spec,
+                timed:         game.timed,
+                shared_replay: game.shared_replay,
             },
         });
 
