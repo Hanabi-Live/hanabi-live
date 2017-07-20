@@ -1,7 +1,7 @@
 "use strict";
 
 var MHGA_show_debug_messages = true;
-var MHGA_show_faces_in_replay = true;
+var show_replay_partial_faces = true;
 var MHGA_highlight_non_hand_cards = true;
 
 function HanabiUI(lobby, game_id) {
@@ -116,7 +116,7 @@ function image_name(card) {
     }
 
     var learned = ui.learned_cards[card.order];
-    if (ui.replay && learned && (learned.revealed || MHGA_show_faces_in_replay)) {
+    if (ui.replay && learned && (learned.revealed || show_replay_partial_faces)) {
         let name = "card-";
         if (learned.suit === undefined) {
             name += 6;
@@ -449,7 +449,7 @@ var HanabiCard = function(config) {
     // in the PAST, we show them a card face. If that card face is just implied by clues, it gets a white box. If it's known
     // by seeing the true card face in the present, we show no white box. This way people won't be mislead as much
     // if the card is multi.
-    var replayPartialPresentKnowledge = MHGA_show_faces_in_replay &&
+    var replayPartialPresentKnowledge = show_replay_partial_faces &&
                                         ui.replay &&
                                         this.unknown &&
                                         ui.learned_cards[this.order] !== undefined &&
@@ -728,7 +728,7 @@ HanabiCard.prototype.setBareImage = function() {
     if (this.unknownRect !== undefined) {
         var learned = ui.learned_cards[this.order];
         //if we're in a replay, we have knowledge about the card, but we don't know the ACTUAL card
-        if (MHGA_show_faces_in_replay &&
+        if (show_replay_partial_faces &&
             ui.replay &&
             this.unknown &&
             learned &&
@@ -2048,7 +2048,7 @@ this.build_cards = function() {
         rainbow = true;
     } else if (this.variant === VARIANT.MIXED) {
         mixed = true;
-        MHGA_show_faces_in_replay = false;
+        show_replay_partial_faces = false;
     }
 
     /*
