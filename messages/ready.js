@@ -84,13 +84,20 @@ function step2(error, socket, data) {
 
     // Send them the number of spectators
     if (socket.status !== 'Replay') {
-        let specMsg = {
+        let num_spec;
+        if (socket.status === 'Shared Replay') {
+            // We have to manually set this since the "game" object is a "fake"
+            // one provided by the model
+            num_spec = Object.keys(globals.currentGames[data.gameID].spectators).length;
+        } else {
+            num_spec = Object.keys(game.spectators).length;
+        }
+        socket.emit('message', {
             type: 'num_spec',
             resp: {
-                num: game.num_spec,
+                num: num_spec,
             },
-        };
-        socket.emit('message', specMsg);
+        });
     }
 
     // Send them the current time for all player's clocks
@@ -109,13 +116,12 @@ function step2(error, socket, data) {
 
             times.push(time);
         }
-        let clockMsg = {
+        socket.emit('message', {
             type: 'clock',
             resp: {
                 times: times,
                 active: game.turn_player_index,
             },
-        };
-        socket.emit('message', clockMsg);
+        });
     }
 }

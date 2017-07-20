@@ -14,6 +14,7 @@ exports.step1 = function(socket, data) {
     data.gameID = socket.currentGame;
 
     // Set their status
+    let oldStatus = socket.status;
     socket.status = 'Lobby';
     notify.allUserChange(socket);
 
@@ -27,16 +28,34 @@ exports.step1 = function(socket, data) {
     let game = globals.currentGames[data.gameID];
 
     // Check to see if they are a spectator
-    if (socket.status === 'Spectating') {
+    if (oldStatus === 'Spectating' || oldStatus === 'Shared Replay') {
         if (!(socket.userID in game.spectators)) {
             logger.error(`User "${socket.username}" tried to unattend game #${data.gameID}, but they were not in the spectators list.`);
             return;
         }
 
         delete game.spectators[socket.userID];
-        game.num_spec--;
         notify.gameMemberChange(data);
         notify.gameNumSpec(data);
+
+        if (game.shared_replay) {
+            if (Object.keys(game.spectators).length === 0) {
+                // This was the last person to leave the shared replay, so
+                // delete it
+                logger.info(`Ended shared replay #${data.gameID} because everyone left.`);
+                delete globals.currentGames[data.gameID];
+
+                // Notify everyone that the table was deleted
+                notify.allTableGone(data);
+
+            } else {
+                // Since the number of spectators is the number of players for
+                // shared replays, we need to notify everyone that this player
+                // left
+                notify.allTableChange(data);
+            }
+        }
+
         return;
     }
 

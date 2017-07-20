@@ -65,7 +65,6 @@ function step2(error, socket, data) {
         end_turn_num:      null,
         max_players:       data.max,
         name:              data.name,
-        num_spec:          0,
         owner:             socket.userID,
         players:           [],
         running:           false,

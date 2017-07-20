@@ -66,7 +66,7 @@ exports.gameMemberChange = function(data) {
                 max_players:   game.max_players,
                 variant:       game.variant,
                 allow_spec:    game.allow_spec,
-                num_spec:      game.num_spec,
+                num_spec:      Object.keys(game.spectators).length,
                 timed:         game.timed,
                 shared_replay: game.shared_replay,
             },
@@ -125,7 +125,7 @@ exports.gameConnected = function(data) {
             type: 'connected',
             resp: {
                 list: list,
-                num_spec: game.num_spec,
+                num_spec: Object.keys(game.spectators).length,
             },
         });
     }
@@ -176,7 +176,7 @@ exports.gameNumSpec = function(data) {
     let specMsg = {
         type: 'num_spec',
         resp: {
-            num: game.num_spec,
+            num: Object.keys(game.spectators).length,
         },
     };
 
@@ -330,7 +330,7 @@ const playerTable = function(socket, data) {
             id:            data.gameID,
             name:          game.name,
             joined:        joined,
-            num_players:   (game.shared_replay ? game.spectators.length : game.players.length),
+            num_players:   (game.shared_replay ? Object.keys(game.spectators).length : game.players.length),
             max_players:   game.max_players,
             allow_spec:    game.allow_spec,
             timed:         game.timed,

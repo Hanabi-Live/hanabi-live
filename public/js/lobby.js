@@ -712,7 +712,7 @@ HanabiLobby.prototype.draw_history_details = function() {
 
         attrs.append($("<li>").append(button).addClass("table-attr"));
 
-        button2 = $("<button>").text("Shared Replay").attr("type", "button");
+        button2 = $("<button>").text("Share Replay").attr("type", "button");
         button2.attr("id", "replay-" + this.history_detail_list[i].id);
 
         button2.on("click", function(evt) {
