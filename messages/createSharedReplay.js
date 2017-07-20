@@ -21,18 +21,22 @@ exports.step1 = function(socket, data) {
     data.owner = socket.userID;
     data.name = `Shared replay for game #${data.id}`;
 
+    // Validate that this game ID exists in the database
+    // TODO
+
     logger.info(`User "${socket.username}" created a new shared replay: #${data.gameID}`);
 
-    // Keep track of the current shared replays
-    globals.currentSharedReplays[data.gameID] = {
-        owner:   socket.userID,
-        players: [],
-        running: false,
+    // Keep track of the current games
+    globals.currentGames[data.gameID] = {
+        owner:         socket.userID,
+        players:       [],
+        running:       false,
+        shared_replay: true,
     };
 
     notify.allTableChange(data);
 
     // Join the user to the new table
     data.table_id = data.gameID;
-    messages.join_shared_replay.step1(socket, data);
+    messages.join_table.step1(socket, data);
 };

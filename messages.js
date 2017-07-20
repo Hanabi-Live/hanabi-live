@@ -5,6 +5,7 @@
 exports.abandon_table        = require('./messages/abandonTable');
 exports.action               = require('./messages/action');
 exports.chat                 = require('./messages/chat');
+exports.create_shared_replay = require('./messages/createSharedReplay');
 exports.create_table         = require('./messages/createTable');
 exports.end_game             = require('./messages/endGame'); // Not a real message
 exports.hello                = require('./messages/hello');

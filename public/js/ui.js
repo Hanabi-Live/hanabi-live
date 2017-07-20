@@ -160,14 +160,12 @@ var scale_card_image = function(context, name) {
         scale_card_images[name] = [];
     }
 
-    while (dw < sw / 2)
-    {
+    while (dw < sw / 2) {
         scale_cvs = scale_card_images[name][steps];
         sw = Math.floor(sw / 2);
         sh = Math.floor(sh / 2);
 
-        if (!scale_cvs)
-        {
+        if (!scale_cvs) {
             scale_cvs = document.createElement("canvas");
             scale_cvs.width = sw;
             scale_cvs.height = sh;
@@ -206,8 +204,7 @@ Kinetic.Util.extend(FitText, Kinetic.Text);
 FitText.prototype.resize = function() {
     this.setFontSize(this.origFontSize);
 
-    while (this._getTextSize(this.getText()).width > this.getWidth() && this.getFontSize() > 5)
-    {
+    while (this._getTextSize(this.getText()).width > this.getWidth() && this.getFontSize() > 5) {
         this.setFontSize(this.getFontSize() * 0.9);
     }
 
@@ -927,8 +924,7 @@ CardLayout.prototype.doLayout = function() {
 
     n = this.children.length;
 
-    for (i = 0; i < n; i++)
-    {
+    for (i = 0; i < n; i++) {
         node = this.children[i];
 
         if (!node.getHeight()) {
@@ -1038,10 +1034,8 @@ CardDeck.prototype.add = function(child) {
 
     Kinetic.Group.prototype.add.call(this, child);
 
-    if (child instanceof LayoutChild)
-    {
-        if (ui.animate_fast)
-        {
+    if (child instanceof LayoutChild) {
+        if (ui.animate_fast) {
             child.remove();
             return;
         }
@@ -1058,8 +1052,7 @@ CardDeck.prototype.add = function(child) {
         }).play();
 
         child.tween.onFinish = function() {
-            if (child.parent === self)
-            {
+            if (child.parent === self) {
                 child.remove();
             }
         };
@@ -1119,8 +1112,7 @@ CardStack.prototype.doLayout = function() {
     var hide_under = function() {
         var i, n, node;
         n = self.children.length;
-        for (i = 0; i < n; i++)
-        {
+        for (i = 0; i < n; i++) {
             node = self.children[i];
 
             if (!node.tween) {
@@ -1131,8 +1123,7 @@ CardStack.prototype.doLayout = function() {
                 return;
             }
         }
-        for (i = 0; i < n - 1; i++)
-        {
+        for (i = 0; i < n - 1; i++) {
             self.children[i].setVisible(false);
         }
         if (n > 0) {
@@ -1140,8 +1131,7 @@ CardStack.prototype.doLayout = function() {
         }
     };
 
-    for (i = 0; i < n; i++)
-    {
+    for (i = 0; i < n; i++) {
         node = this.children[i];
 
         scale = lh / node.getHeight();
@@ -1150,17 +1140,14 @@ CardStack.prototype.doLayout = function() {
             node.tween.destroy();
         }
 
-        if (ui.animate_fast)
-        {
+        if (ui.animate_fast) {
             node.setX(0);
             node.setY(0);
             node.setScaleX(scale);
             node.setScaleY(scale);
             node.setRotation(0);
             hide_under();
-        }
-        else
-        {
+        } else {
             node.tween = new Kinetic.Tween({
                 node: node,
                 duration: 0.8,
@@ -1196,8 +1183,7 @@ var Button = function(config) {
 
     this.add(background);
 
-    if (config.text)
-    {
+    if (config.text) {
         var text = new Kinetic.Text({
             name: "text",
             x: 0,
@@ -1213,9 +1199,8 @@ var Button = function(config) {
         });
 
         this.add(text);
-    }
-    else if (config.image)
-    {
+
+    } else if (config.image) {
         var img = new Kinetic.Image({
             name: "image",
             x: 0.2 * w,
@@ -1443,10 +1428,8 @@ ButtonGroup.prototype.add = function(button) {
 
         this.setPressed(true);
 
-        for (i = 0; i < self.list.length; i++)
-        {
-            if (self.list[i] !== this && self.list[i].pressed)
-            {
+        for (i = 0; i < self.list.length; i++) {
+            if (self.list[i] !== this && self.list[i].pressed) {
                 self.list[i].setPressed(false);
             }
         }
@@ -1458,8 +1441,7 @@ ButtonGroup.prototype.add = function(button) {
 ButtonGroup.prototype.getPressed = function() {
     var i;
 
-    for (i = 0; i < this.list.length; i++)
-    {
+    for (i = 0; i < this.list.length; i++) {
         if (this.list[i].pressed) {
             return this.list[i];
         }
@@ -1471,8 +1453,7 @@ ButtonGroup.prototype.getPressed = function() {
 ButtonGroup.prototype.clearPressed = function() {
     var i;
 
-    for (i = 0; i < this.list.length; i++)
-    {
+    for (i = 0; i < this.list.length; i++) {
         if (this.list[i].pressed) {
             this.list[i].setPressed(false);
         }
@@ -1499,8 +1480,7 @@ HanabiClueLog.prototype.doLayout = function() {
     var y = 0, i;
     var node;
 
-    for (i = 0; i < this.children.length; i++)
-    {
+    for (i = 0; i < this.children.length; i++) {
         node = this.children[i];
 
         node.setY(y);
@@ -1517,8 +1497,7 @@ HanabiClueLog.prototype.checkExpiry = function() {
     }
     var childrenRemoved = 0;
     var i;
-    for (i = 0; i < this.children.length; i++)
-    {
+    for (i = 0; i < this.children.length; i++) {
         childrenRemoved += this.children[i].checkExpiry();
         if (childrenRemoved >= childrenToRemove) {
             break;
@@ -1532,8 +1511,7 @@ HanabiClueLog.prototype.checkExpiry = function() {
 HanabiClueLog.prototype.showMatches = function(target) {
     var i;
 
-    for (i = 0; i < this.children.length; i++)
-    {
+    for (i = 0; i < this.children.length; i++) {
         this.children[i].showMatch(target);
     }
 };
@@ -1541,8 +1519,7 @@ HanabiClueLog.prototype.showMatches = function(target) {
 HanabiClueLog.prototype.clear = function() {
     var i;
 
-    for (i = this.children.length - 1; i >= 0; i--)
-    {
+    for (i = this.children.length - 1; i >= 0; i--) {
         this.children[i].remove();
     }
 
@@ -1643,8 +1620,7 @@ var HanabiClueEntry = function(config) {
 
         show_clue_match(-1);
 
-        for (i = 0; i < self.list.length; i++)
-        {
+        for (i = 0; i < self.list.length; i++) {
             if (!self.checkValid(self.list[i])) {
                 continue;
             }
@@ -1652,8 +1628,7 @@ var HanabiClueEntry = function(config) {
             ui.deck[self.list[i]].setIndicator(true);
         }
 
-        for (i = 0; i < self.neglist.length; i++)
-        {
+        for (i = 0; i < self.neglist.length; i++) {
             if (!self.checkValid(self.neglist[i])) {
                 continue;
             }
@@ -1762,8 +1737,7 @@ var HanabiNameFrame = function(config) {
 
     w = this.name.getWidth();
 
-    while (w > 0.65 * config.width && this.name.getFontSize() > 5)
-    {
+    while (w > 0.65 * config.width && this.name.getFontSize() > 5) {
         this.name.setFontSize(this.name.getFontSize() * 0.9);
 
         w = this.name.getWidth();
@@ -1864,8 +1838,7 @@ var Loader = function(cb) {
     ];
     var i;
 
-    for (i = 0; i < basic.length; i++)
-    {
+    for (i = 0; i < basic.length; i++) {
         this.filemap[basic[i]] = "public/img/" + basic[i] + ".png";
     }
 
@@ -2102,8 +2075,7 @@ this.build_cards = function() {
         ctx.translate(75, 100);
         ctx.beginPath();
         ctx.moveTo(0, -75);
-        for (i = 0; i < 5; i++)
-        {
+        for (i = 0; i < 5; i++) {
             ctx.rotate(Math.PI / 5);
             ctx.lineTo(0, -30);
             ctx.rotate(Math.PI / 5);
@@ -2517,13 +2489,10 @@ var size_stage = function(stage) {
 
     var ratio = 1.777;
 
-    if (ww < wh * ratio)
-    {
+    if (ww < wh * ratio) {
         cw = ww;
         ch = ww / ratio;
-    }
-    else
-    {
+    } else {
         ch = wh;
         cw = wh * ratio;
     }
@@ -2575,8 +2544,7 @@ var helpgroup;
 var msgloggroup, overback;
 var notes_written = {};
 
-var overPlayArea = function(pos)
-{
+var overPlayArea = function(pos) {
     return pos.x >= play_area.getX() &&
            pos.y >= play_area.getY() &&
            pos.x <= play_area.getX() + play_area.getWidth() &&
@@ -2739,8 +2707,7 @@ this.build_ui = function() {
 
     bglayer.add(rect);
 
-    for (i = 0; i < 3; i++)
-    {
+    for (i = 0; i < 3; i++) {
         rect = new Kinetic.Rect({
             x: (0.67 + 0.04 * i) * win_w,
             y: 0.91 * win_h,
@@ -3235,8 +3202,7 @@ this.build_ui = function() {
 
     clue_target_group.selectNextTarget = function () {
         let newSelectionIndex = 0;
-        for (let i = 0; i < this.list.length; i++)
-        {
+        for (let i = 0; i < this.list.length; i++) {
             if (this.list[i].pressed) {
                 newSelectionIndex = (i + 1) % this.list.length;
                 break;
@@ -4064,16 +4030,14 @@ this.perform_replay = function(target, fast) {
     while (true) {
         msg = this.replay_log[this.replay_pos++];
 
-        if (!msg)
-        {
+        if (!msg) {
             break;
         }
 
         if (msg.type === "message") {
-            this.handle_text_message(msg, this.handle_message_in_replay);
-        }
+            this.set_message(msg.resp);
 
-        else if (msg.type === "notify") {
+        } else if (msg.type === "notify") {
             var performing_replay = true;
             this.handle_notify(msg.resp, performing_replay);
         }
@@ -4096,8 +4060,7 @@ this.perform_replay = function(target, fast) {
 this.replay_advanced = function() {
     this.animate_fast = false;
 
-    if (this.replay)
-    {
+    if (this.replay) {
         this.perform_replay(0);
     }
 
@@ -4750,8 +4713,7 @@ this.handle_action = function(data) {
         var target = clue_target_group.getPressed();
         var type = clue_type_group.getPressed();
 
-        if (!target || !type)
-        {
+        if (!target || !type) {
             submit_clue.setEnabled(false);
             return;
         }
@@ -4759,8 +4721,7 @@ this.handle_action = function(data) {
         var who = target.target_index;
         var match = show_clue_match(who, type.clue_type);
 
-        if (!match)
-        {
+        if (!match) {
             submit_clue.setEnabled(false);
             return;
         }

@@ -28,12 +28,10 @@ exports.allUserChange = function(socket) {
 };
 
 exports.allTableChange = function(data) {
-    // Local variables
+    // Validate that the game exists
     let game;
     if (data.gameID in globals.currentGames) {
         game = globals.currentGames[data.gameID];
-    } else if (data.gameID in globals.currentSharedReplays) {
-        game = globals.currentSharedReplays[data.gameID];
     } else {
         logger.error(`Error: notify.allTableChange was called for game #${data.gameID}, but it does not exist.`);
         return;
@@ -90,12 +88,10 @@ exports.allTableGone = function(data) {
 */
 
 exports.gameMemberChange = function(data) {
-    // Local variables
+    // Validate that the game exists
     let game;
     if (data.gameID in globals.currentGames) {
         game = globals.currentGames[data.gameID];
-    } else if (data.gameID in globals.currentSharedReplays) {
-        game = globals.currentSharedReplays[data.gameID];
     } else {
         logger.error(`Error: notify.gameMemberChange was called for game #${data.gameID}, but it does not exist.`);
         return;

@@ -23,18 +23,16 @@ exports.step1 = function(socket, data) {
     let game;
     if (data.gameID in globals.currentGames) {
         game = globals.currentGames[data.gameID];
-    } else if (data.gameID in globals.currentSharedReplays) {
-        game = globals.currentSharedReplays[data.gameID];
     } else {
-        logger.warn(`messages.join was called for game #${data.gameID}, but it does not exist.`);
+        logger.warn(`messages.join_table was called for game #${data.gameID}, but it does not exist.`);
         data.reason = 'That table does not exist.';
         notify.playerDenied(socket, data);
         return;
     }
 
-    // Validate that this table does not already have the maximum amount
-    // of players
-    if (game.players.length === game.max_players) {
+    // Validate that this table does not already have the maximum amount of players
+    // (shared relpays have no maximum amount of players)
+    if (game.players.length === game.max_players && game.shared_replay === false) {
         logger.warn(`messages.join was called for game #${data.gameID}, but it has the maximum amount of players already.`);
         data.reason = `That table has a maximum limit of ${game.max_players} players.`;
         notify.playerDenied(socket, data);
@@ -42,7 +40,13 @@ exports.step1 = function(socket, data) {
     }
 
     // Join the table
-    models.gameParticipants.create(socket, data, step2);
+    if (game.shared_replay) {
+        // We don't need to make a new database entry for shared replays
+        step2(null, socket, data);
+    } else {
+        models.gameParticipants.create(socket, data, step2);
+    }
+
 };
 
 function step2(error, socket, data) {

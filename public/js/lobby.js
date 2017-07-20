@@ -114,7 +114,8 @@ function HanabiLobby() {
         evt.preventDefault();
 
         self.send_msg({
-            type: "create_table", resp: {
+            type: "create_table",
+            resp: {
                 name:       game_name,
                 max:        max_players,
                 variant:    variant,

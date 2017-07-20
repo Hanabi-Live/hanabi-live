@@ -15,12 +15,18 @@ const logger  = require('../logger');
 const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
-    // Prepare the data to feed to the model
+    // Local variables
     data.userID = socket.userID;
     data.gameID = data.table_id;
 
     // Validate that this table exists
-    if (data.gameID in globals.currentSharedReplays === false) {
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.warn(`messages.join was called for game #${data.gameID}, but it does not exist.`);
+        data.reason = 'That table does not exist.';
+        notify.playerDenied(socket, data);
         return;
     }
 
