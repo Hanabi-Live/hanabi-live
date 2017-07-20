@@ -93,7 +93,7 @@ exports.clean = function(done) {
     });
 };
 
-exports.exists = function(done, data) {
+exports.exists = function(socket, data, done) {
     let sql = 'SELECT id FROM games WHERE id = ?';
     let values = [data.gameID];
     db.query(sql, values, function (error, results, fields) {
