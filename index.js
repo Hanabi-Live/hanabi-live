@@ -60,7 +60,7 @@ function initComplete(error) {
     }
 
     // Listen
-    http.listen(port, function() {
+    http.listen(globals.port, function() {
         logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
     });
 }
