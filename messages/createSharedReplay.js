@@ -45,14 +45,14 @@ function step2(error, socket, data) {
 
     // Keep track of the current games
     globals.currentGames[data.gameID] = {
-        name:          'Shared replay for game #' + data.gameID,
-        owner:         socket.userID,
-        players:       [],
-        spectators:    [],
-        variant:       data.variant,
-        running:       false,
-        shared_replay: true,
-        replayActions: [],
+        name:           'Shared replay for game #' + data.gameID,
+        owner:          socket.userID,
+        players:        [],
+        spectators:     [],
+        variant:        data.variant,
+        running:        true,
+        turn_num:       0,
+        shared_replay:  true,
     };
 
     notify.allTableChange(data);

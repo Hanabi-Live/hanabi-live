@@ -18,6 +18,7 @@ exports.logout               = require('./messages/logout'); // Not a real messa
 exports.note                 = require('./messages/note');
 exports.ready                = require('./messages/ready');
 exports.reattend_table       = require('./messages/reattendTable');
+exports.replay_action        = require('./messages/replayAction');
 exports.start_game           = require('./messages/startGame');
 exports.unattend_table       = require('./messages/unattendTable');
 exports.start_replay         = require('./messages/startReplay');

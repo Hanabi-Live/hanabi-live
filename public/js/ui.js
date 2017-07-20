@@ -2545,6 +2545,7 @@ var timer_rect1, timer_label1, timer_text1;
 var timer_rect2, timer_label2, timer_text2;
 var no_clue_label, no_clue_box, no_discard_label, deck_play_available_label;
 var replay_area, replay_bar, replay_shuttle, replay_button;
+var replay_buttons = []; // The four navigational buttons
 var lobby_button, help_button;
 var helpgroup;
 var msgloggroup, overback;
@@ -3227,8 +3228,6 @@ this.build_ui = function() {
     let rankClueButtons = {};
     let suitClueButtons = {};
 
-    //var button; // This is already defined
-
     x = 0.26 * win_w - (nump - 2) * 0.044 * win_w;
 
     for (i = 0; i < nump - 1; i++) {
@@ -3469,8 +3468,6 @@ this.build_ui = function() {
 
     replay_area.add(replay_bar);
 
-    // Rewind to the beginning (the left-most button)
-
     rect = new Kinetic.Rect({
         x: 0,
         y: 0,
@@ -3479,15 +3476,17 @@ this.build_ui = function() {
         opacity: 0,
     });
 
-    rect.on("click", function(evt) {
-        var x = evt.evt.x - this.getAbsolutePosition().x;
-        var w = this.getWidth();
-        var step = w / self.replay_max;
-        var newturn = Math.floor((x + step / 2) / step);
-        if (newturn !== self.replay_turn) {
-            self.perform_replay(newturn, true);
-        }
-    });
+    if (!this.shared_replay) {
+        rect.on("click", function(evt) {
+            var x = evt.evt.x - this.getAbsolutePosition().x;
+            var w = this.getWidth();
+            var step = w / self.replay_max;
+            var newturn = Math.floor((x + step / 2) / step);
+            if (newturn !== self.replay_turn) {
+                self.perform_replay(newturn, true);
+            }
+        });
+    }
 
     replay_area.add(rect);
 
@@ -3498,7 +3497,7 @@ this.build_ui = function() {
         height: 0.03 * win_h,
         fill: "#0000cc",
         cornerRadius: 0.01 * win_w,
-        draggable: true,
+        draggable: !this.shared_replay,
         dragBoundFunc: function(pos) {
             var min = this.getParent().getAbsolutePosition().x;
             var w = this.getParent().getWidth() - this.getWidth();
@@ -3530,85 +3529,86 @@ this.build_ui = function() {
 
     replay_area.add(replay_shuttle);
 
-    button = new Button({
+    // Rewind to the beginning (the left-most button)
+    replay_buttons[0] = new Button({
         x: 0.1 * win_w,
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
         image: "rewindfull",
+        visible: !this.shared_replay,
     });
 
     var rewindfull_function = function() {
         ui.perform_replay(0);
     };
 
-    button.on("click tap", rewindfull_function);
+    replay_buttons[0].on("click tap", rewindfull_function);
 
-    replay_area.add(button);
+    replay_area.add(replay_buttons[0]);
 
-    button = new Button({
+    // Rewind one turn (the second left-most button)
+    replay_buttons[1] = new Button({
         x: 0.18 * win_w,
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
         image: "rewind",
+        visible: !this.shared_replay,
     });
 
     var backward_function = function() {
         ui.perform_replay(self.replay_turn - 1, true);
     };
 
-    button.on("click tap", backward_function);
+    replay_buttons[1].on("click tap", backward_function);
 
-    replay_area.add(button);
+    replay_area.add(replay_buttons[1]);
 
-    button = new Button({
+    // Go forward one turn (the second right-most button)
+    replay_buttons[2] = new Button({
         x: 0.26 * win_w,
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
         image: "forward",
+        visible: !this.shared_replay,
     });
-
 
     var forward_function = function() {
         ui.perform_replay(self.replay_turn + 1);
     };
 
-    button.on("click tap", forward_function);
+    replay_buttons[2].on("click tap", forward_function);
 
-    replay_area.add(button);
+    replay_area.add(replay_buttons[2]);
 
-    button = new Button({
+    // Go forward to the end (the right-most button)
+    replay_buttons[3] = new Button({
         x: 0.34 * win_w,
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
         image: "forwardfull",
+        visible: !this.shared_replay,
     });
 
     var forwardfull_function = function() {
         ui.perform_replay(self.replay_max, true);
     };
 
-    button.on("click tap", forwardfull_function);
+    replay_buttons[3].on("click tap", forwardfull_function);
 
-    var backward_round = function () {
-        ui.perform_replay(self.replay_turn - nump, true);
-    };
+    replay_area.add(replay_buttons[3]);
 
-    var forward_round = function () {
-        ui.perform_replay(self.replay_turn + nump);
-    };
-
-    replay_area.add(button);
-
+    // The "Exit Replay" button
     button = new Button({
         x: 0.15 * win_w,
         y: 0.17 * win_h,
         width: 0.2 * win_w,
         height: 0.06 * win_h,
         text: "Exit Replay",
+        visible: !this.shared_replay,
     });
 
     button.on("click tap", function() {
@@ -3637,6 +3637,14 @@ this.build_ui = function() {
     /*
         Keyboard shortcuts
     */
+
+    var backward_round = function () {
+        ui.perform_replay(self.replay_turn - nump, true);
+    };
+
+    var forward_round = function () {
+        ui.perform_replay(self.replay_turn + nump);
+    };
 
     let mouseClickHelper = function(elem) {
         return function () {
@@ -4036,6 +4044,16 @@ this.perform_replay = function(target, fast) {
 
     if (this.replay_turn === target) {
         return; // we're already there, nothing to do!
+    }
+
+    if (this.shared_replay) {
+        this.send_msg({
+            type: "replay_action",
+            resp: {
+                type: 0, // Type 0 is a new replay turn
+                turn: target,
+            },
+        });
     }
 
     this.replay_turn = target;
@@ -4587,6 +4605,25 @@ this.handle_note = function(note) {
     cardlayer.draw();
 };
 
+this.handle_replay_owner = function(note) {
+    for (let i = 0; i < replay_buttons.length; i++) {
+        if (note.owner) {
+            replay_buttons[i].show();
+        } else {
+            replay_buttons[i].hide();
+        }
+    }
+    uilayer.draw();
+};
+
+this.handle_replay_turn = function(note) {
+    this.perform_replay(note.turn);
+};
+
+this.handle_replay_mouse = function(note) {
+
+};
+
 this.stop_action = function(fast) {
     var i, child;
 
@@ -4816,9 +4853,8 @@ HanabiUI.prototype.handle_message = function(msg) {
         if (!this.replay) {
             this.set_message.call(this, msgData);
         }
-    }
 
-    if (msgType === "init") {
+    } else if (msgType === "init") {
         this.player_us = msgData.seat;
         this.player_names = msgData.names;
         this.variant = msgData.variant;
@@ -4831,25 +4867,21 @@ HanabiUI.prototype.handle_message = function(msg) {
         this.timed_game = msgData.timed;
 
         this.load_images();
-    }
 
-    if (msgType === "advanced") {
+    } else if (msgType === "advanced") {
         this.replay_advanced();
-    }
 
-    if (msgType === "connected") {
+    } else if (msgType === "connected") {
         this.show_connected(msgData.list);
-    }
 
-    if (msgType === "notify") {
+    } else if (msgType === "notify") {
         this.save_replay(msg);
 
         if (!this.replay || msgData.type === 'reveal') {
             this.handle_notify.call(this, msgData);
         }
-    }
 
-    if (msgType === "action") {
+    } else if (msgType === "action") {
         this.handle_action.call(this, msgData);
 
         if (this.animate_fast) {
@@ -4859,26 +4891,30 @@ HanabiUI.prototype.handle_message = function(msg) {
         if (this.lobby.send_turn_notify) {
             this.lobby.send_notify("It's your turn", "turn");
         }
-    }
 
-    // This is used to update how many people are currently spectating the game
-    if (msgType === "num_spec") {
+    } else if (msgType === "num_spec") {
+        // This is used to update how many people are currently spectating the game
         this.handle_num_spec.call(this, msgData);
-    }
 
-    // This is used for timed games
-    if (msgType === "clock") {
+    } else if (msgType === "clock") {
+        // This is used for timed games
         this.handle_clock.call(this, msgData);
-    }
 
-    // This is used for spectators
-    if (msgType === "note") {
+    } else if (msgType === "note") {
+        // This is used for spectators
         this.handle_note.call(this, msgData);
-    }
 
-    // This is used for shared replays
-    if (msgType === "replay_action") {
-        console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    } else if (msgType === "replay_owner") {
+        // This is used in shared replays
+        this.handle_replay_owner.call(this, msgData);
+
+    } else if (msgType === "replay_turn") {
+        // This is used in shared replays
+        this.handle_replay_turn.call(this, msgData);
+
+    } else if (msgType === "replay_mouse") {
+        // This is used in shared replays
+        this.handle_replay_mouse.call(this, msgData);
     }
 };
 

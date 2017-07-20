@@ -84,18 +84,12 @@ function step2(error, socket, data) {
 
     // Send them the number of spectators
     if (socket.status !== 'Replay') {
-        let num_spec;
-        if (socket.status === 'Shared Replay') {
-            // We have to manually set this since the "game" object is a "fake"
-            // one provided by the model
-            num_spec = Object.keys(globals.currentGames[data.gameID].spectators).length;
-        } else {
-            num_spec = Object.keys(game.spectators).length;
-        }
         socket.emit('message', {
             type: 'num_spec',
             resp: {
-                num: num_spec,
+                num: Object.keys(globals.currentGames[data.gameID].spectators).length,
+                // We can't use "game.spectators" because that property doesn't
+                // exist in the "fake" game object
             },
         });
     }
@@ -121,6 +115,30 @@ function step2(error, socket, data) {
             resp: {
                 times: times,
                 active: game.turn_player_index,
+            },
+        });
+    }
+
+    // Enable the replay controls for the leader of the review
+    if (socket.status === 'Shared Replay' &&
+        socket.userID === globals.currentGames[data.gameID].owner) {
+        // We can't use "game.owner" because that property doesn't exist in the
+        // "fake" game object
+
+        socket.emit('message', {
+            type: 'replay_owner',
+            resp: {
+                owner: true,
+            },
+        });
+    }
+
+    // Send them to the current turn that everyone else is at
+    if (socket.status === 'Shared Replay') {
+        socket.emit('message', {
+            type: 'replay_turn',
+            resp: {
+                turn: globals.currentGames[data.gameID].turn_num,
             },
         });
     }

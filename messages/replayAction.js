@@ -5,13 +5,11 @@
 // "data" example:
 /*
     {
-        type: 1,
-        // 0 is rewind to the beginning (the left-most button)
-        // 1 is rewind 1 turn (the 2nd left-most button)
-        // 2 is advance 1 turn (the 2nd right-most button)
-        // 3 is advance to the end (the right-most button)
-        // 4 is a mouse cursor move
-        coords: { // Only sent if the type is 5
+        type: 0,
+        // 0 is a turn change
+        // 1 is a mouse cursor move
+        turn: 2, // Only sent if the type is 0
+        cursor: { // Only sent if the type is 1
             x: 100,
             y: 100,
         },
@@ -19,10 +17,9 @@
 */
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
-const notify   = require('../notify');
-//const messages = require('../messages');
+const globals = require('../globals');
+const logger  = require('../logger');
+const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Local variables
@@ -39,18 +36,52 @@ exports.step1 = function(socket, data) {
         return;
     }
 
-    // Validate that this person is leading the review
-    // TODO
+    // Validate that this is a shared replay
+    if (!game.shared_replay) {
+        logger.warn(`User "${socket.username}" tried to perform a replay action on non-replay replay game #${data.gameID}.`);
+        data.reason = `You can only perform replay actions in shared replays.`;
+        notify.playerDenied(socket, data);
+        return;
+    }
 
-    // Add this action to the replay action stack
-    game.replayActions.push(data);
+    // Validate that this person is leading the review
+    if (socket.userID !== game.owner) {
+        logger.warn(`User "${socket.username}" tried to perform an action on shared replay #${data.gameID}, but they were not the owner.`);
+        data.reason = `You are not the owner of this shared replay.`;
+        notify.playerDenied(socket, data);
+        return;
+    }
+
+    // Change the current turn
+    if (data.type === 0) {
+        game.turn_num = data.turn;
+    }
 
     // Send it to everyone
-    let replayActionMsg = {
-        type: 'replay_action',
-        resp: data,
-    };
     for (let userID of Object.keys(game.spectators)) {
-        game.spectators[userID].emit('message', replayActionMsg);
+        let msg;
+        if (data.type === 0) {
+            msg = {
+                type: 'replay_turn',
+                resp: {
+                    turn: data.turn,
+                },
+            };
+        } else if (data.type === 1) {
+            msg = {
+                type: 'replay_cursor',
+                resp: {
+                    x: data.cursor.x,
+                    y: data.cursor.y,
+                },
+            };
+        } else {
+            logger.warn(`User "${socket.username}" tried to perform an invalid replay action of type "${data.type}" on shared replay #${data.gameID}.`);
+            data.reason = 'That is an inavlid replay action type.';
+            notify.playerDenied(socket, data);
+            return;
+        }
+
+        game.spectators[userID].emit('message', msg);
     }
 };
