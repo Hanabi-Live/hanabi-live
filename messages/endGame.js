@@ -36,11 +36,9 @@ exports.step1 = function(data) {
     });
     notify.gameAction(data);
 
-    if (game.timed) {
-        // Send everyone a clock message with an active value of null, which
-        // will get rid of the timers on the client-side
-        notify.gameTime(data);
-    }
+    // Send everyone a clock message with an active value of null, which
+    // will get rid of the timers on the client-side
+    notify.gameTime(data);
 
     // Send "reveal" messages to each player about the missing cards in their hand
     for (let player of game.players) {
