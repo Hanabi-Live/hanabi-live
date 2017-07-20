@@ -8,7 +8,7 @@
         type: 0,
         // 0 is a turn change
         // 1 is a mouse cursor move
-        turn: 2, // Only sent if the type is 0
+        turn: 1, // Only sent if the type is 0
         cursor: { // Only sent if the type is 1
             x: 100,
             y: 100,
@@ -69,7 +69,7 @@ exports.step1 = function(socket, data) {
             };
         } else if (data.type === 1) {
             msg = {
-                type: 'replay_cursor',
+                type: 'replay_mouse',
                 resp: {
                     x: data.cursor.x,
                     y: data.cursor.y,

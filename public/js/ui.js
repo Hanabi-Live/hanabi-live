@@ -26,6 +26,7 @@ this.variant = 0;
 this.replay = false;
 this.shared_replay = false;
 this.shared_replay_leader = false;
+this.shared_replay_last_mouse_time = new Date().getTime();
 this.replay_only = false;
 this.spectating = false;
 this.replay_max = 0;
@@ -2527,12 +2528,13 @@ size_stage(stage);
 var win_w = stage.getWidth();
 var win_h = stage.getHeight();
 
-var bglayer    = new Kinetic.Layer();
-var cardlayer  = new Kinetic.Layer();
-var uilayer    = new Kinetic.Layer();
-var overlayer  = new Kinetic.Layer();
-var tiplayer   = new Kinetic.Layer();
-var timerlayer = new Kinetic.Layer();
+var bglayer     = new Kinetic.Layer();
+var cardlayer   = new Kinetic.Layer();
+var uilayer     = new Kinetic.Layer();
+var overlayer   = new Kinetic.Layer();
+var tiplayer    = new Kinetic.Layer();
+var timerlayer  = new Kinetic.Layer();
+var cursorlayer = new Kinetic.Layer();
 
 var player_hands = [];
 var drawdeck;
@@ -2545,6 +2547,7 @@ var clue_area, clue_target_group, clue_type_group, submit_clue;
 var timer_rect1, timer_label1, timer_text1;
 var timer_rect2, timer_label2, timer_text2;
 var no_clue_label, no_clue_box, no_discard_label, deck_play_available_label;
+var shared_replay_cursor;
 var replay_area, replay_bar, replay_shuttle, replay_button;
 var replay_buttons = []; // The four navigational buttons
 var lobby_button, help_button;
@@ -3445,6 +3448,15 @@ this.build_ui = function() {
         }
     }
 
+    /*
+        Shared replay stuff
+    */
+
+    shared_replay_cursor = new Kinetic.Group({
+
+    });
+
+    cursorlayer.add(shared_replay_cursor);
 
     /*
         Draw the replay area
@@ -3750,6 +3762,9 @@ this.build_ui = function() {
 
     this.keyNavigation = function (e) {
         if (e.ctrlKey || e.altKey) {
+            return;
+        }
+        if (ui.shared_replay && !ui.shared_replay_leader) {
             return;
         }
         let currentNavigation;
@@ -4625,6 +4640,10 @@ this.handle_replay_turn = function(note) {
 };
 
 this.handle_replay_mouse = function(note) {
+    if (this.shared_replay_leader) {
+        return;
+    }
+
 
 };
 
@@ -4845,7 +4864,40 @@ this.replay_log = [];
 this.replay_pos = 0;
 this.replay_turn = 0;
 
+/*
+    Shared replay functionality
+*/
+
+uilayer.on("mousemove", function(event) {
+    if (!ui.shared_replay_leader) {
+        // We only need to track mouse movement if we are the shared replay leader
+        return;
+    }
+
+    let now = new Date().getTime();
+    if (now - ui.shared_replay_last_mouse_time < 200) {
+        // We already sent a mouse message less than 200 milliseconds ago
+        return;
+    }
+
+    ui.shared_replay_last_mouse_time = now;
+    ui.send_msg({
+        type: "replay_action",
+        resp: {
+            type: 1,
+            cursor: {
+                x: event.evt.clientX,
+                y: event.evt.clientY,
+            },
+        },
+    });
+});
+
 }
+
+/*
+    End of Hanabi UI
+*/
 
 HanabiUI.prototype.handle_message = function(msg) {
     var msgType = msg.type;
