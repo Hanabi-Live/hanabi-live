@@ -36,21 +36,10 @@ exports.step1 = function(socket, data) {
     notify.gameNumSpec(data);
 
     // Set their status
+    socket.currentGame = data.gameID;
     socket.status = 'Spectating';
     notify.allUserChange(socket);
 
     // Send them a "game_start" message
-    socket.emit('message', {
-        type: 'game_start',
-        resp: {
-            replay: false,
-        },
-    });
-
-    // Set that they are spectating (internally)
-    socket.atTable = {
-        id:         data.gameID,
-        replay:     false,
-        spectating: true,
-    };
+    notify.playerGameStart(socket);
 };

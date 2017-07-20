@@ -12,7 +12,7 @@ const notify  = require('../notify');
 const step1 = function(socket, data) {
     // Local variables
     data.userID = socket.userID;
-    data.gameID = socket.atTable.id;
+    data.gameID = socket.currentGame;
 
     // Validate that this table exists
     if (!(data.gameID in globals.currentGames)) {
@@ -47,21 +47,18 @@ function step2(error, socket, data) {
 
     // Keep track that the user left
     game.players.splice(index, 1);
+    notify.allTableChange(data);
+    notify.gameMemberChange(data);
+
+    // Set their status
+    socket.currentGame = -1;
     socket.status = 'Lobby';
-    socket.atTable = {
-        id:         -1,
-        replay:     false,
-        spectating: false,
-    };
+    notify.allUserChange(socket);
 
     // Make the client switch screens to show the current table status
     socket.emit('message', {
         type: 'left',
     });
-
-    notify.allUserChange(socket);
-    notify.allTableChange(data);
-    notify.gameMemberChange(data);
 
     // Force everyone else to leave if it was the owner that left
     if (socket.userID === game.owner) {

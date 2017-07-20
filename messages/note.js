@@ -16,7 +16,7 @@ const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Local variables
-    data.gameID = socket.atTable.id;
+    data.gameID = socket.currentGame;
     let game = globals.currentGames[data.gameID];
 
     // Get the index of this player

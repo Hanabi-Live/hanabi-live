@@ -18,13 +18,13 @@ exports.step1 = function(socket, reason) {
 
     let leftID = socket.userID;
 
+    // Check to see if this user is playing (or spectating) any current games
     for (let gameID of Object.keys(globals.currentGames)) {
         let game = globals.currentGames[gameID];
 
         // Keys are strings by default, so convert it back to a number
         gameID = parseInt(gameID, 10);
 
-        // Check to see if this user is playing in any current games
         for (let player of game.players) {
             if (player.userID === socket.userID) {
                 if (game.running) {
@@ -43,30 +43,22 @@ exports.step1 = function(socket, reason) {
                     // The game has not started yet, so just eject them from
                     // the table
                     // The "leave_table" message is sent with no data;
-                    // the server uses the "atTable" object to find out which
-                    // table the user is leaving
-                    socket.atTable = {
-                        id:         gameID,
-                        replay:     false,
-                        spectating: false,
-                    };
+                    // the server uses the "currentGame" property to find out
+                    // which table the user is leaving
+                    socket.currentGame = gameID;
                     messages.leave_table.step1(socket, {});
                 }
                 break;
             }
         }
 
-        // Check to see if this player is spectating any current games
         for (let userID of Object.keys(game.spectators)) {
             // Keys are strings by default, so convert it back to a number
             userID = parseInt(userID, 10);
 
             if (userID === socket.userID) {
-                socket.atTable = {
-                    id:         gameID,
-                    replay:     false,
-                    spectating: true,
-                };
+                socket.currentGame = gameID;
+                socket.status = 'Spectating';
                 messages.unattend_table.step1(socket, {});
             }
             break;

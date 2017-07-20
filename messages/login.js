@@ -88,15 +88,11 @@ function step3(error, socket, data) {
 
 function step4(socket, data) {
     // Store information about the user inside of the socket object
-    socket.userID   = data.userID;
+    socket.userID         = data.userID;
     // We can't use "socket.id" because Socket.IO already uses that as a unique
     // identifier for the session
-    socket.username = data.username;
-    socket.atTable  = {
-        id:         -1,
-        replay:     false,
-        spectating: false,
-    };
+    socket.username       = data.username;
+    socket.currentGame    = -1;
     socket.status         = 'Lobby';
     socket.num_played     = data.num_played;
     socket.average_score  = data.average_score;

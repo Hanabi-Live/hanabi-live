@@ -43,15 +43,9 @@ exports.step1 = function(socket, data) {
     }
 
     // Set their status
+    socket.currentGame = data.gameID;
     socket.status = 'Playing';
     notify.allUserChange(socket);
-
-    // Mark that they have joined the table
-    socket.atTable = {
-        id:         data.gameID,
-        replay:     false,
-        spectating: false,
-    };
 
     // Let the client know they successfully joined the table
     socket.emit('message', {
@@ -63,11 +57,6 @@ exports.step1 = function(socket, data) {
 
     // Make the client switch screens to show the game UI
     if (game.running) {
-        socket.emit('message', {
-            type: 'game_start',
-            resp: {
-                replay: false,
-            },
-        });
+        notify.playerGameStart(socket);
     }
 };

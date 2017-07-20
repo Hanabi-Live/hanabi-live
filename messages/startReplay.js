@@ -36,21 +36,10 @@ function step2(error, socket, data) {
     }
 
     // Set their status
+    socket.currentGame = data.gameID;
     socket.status = 'Replay';
     notify.allUserChange(socket);
 
-    // Set that they are watching a replay (on the server-side)
-    socket.atTable = {
-        id:         data.gameID,
-        replay:     true,
-        spectating: false,
-    };
-
     // Send them a "game_start" message
-    socket.emit('message', {
-        type: 'game_start',
-        resp: {
-            replay: true,
-        },
-    });
+    notify.playerGameStart(socket);
 }

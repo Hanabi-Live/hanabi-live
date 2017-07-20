@@ -365,26 +365,6 @@ exports.spectatorsNote = function(data) {
     Functions that notify a specific user/player
 */
 
-exports.playerAction = function(socket, data) {
-    // Validate that the game exists
-    let game;
-    if (data.gameID in globals.currentGames) {
-        game = globals.currentGames[data.gameID];
-    } else {
-        logger.error(`Error: notify.playerAction was called for game #${data.gameID}, but it does not exist.`);
-        return;
-    }
-
-    socket.emit('message', {
-        type: 'action',
-        resp: {
-            can_clue:            (game.clue_num > 0),
-            can_discard:         (game.clue_num < 8),
-            can_blind_play_deck: (game.deckIndex === game.deck.length - 1),
-        },
-    });
-};
-
 const playerTable = function(socket, data) {
     // Validate that the game exists
     let game;
@@ -424,6 +404,36 @@ const playerTable = function(socket, data) {
     });
 };
 exports.playerTable = playerTable;
+
+exports.playerGameStart = function(socket) {
+    socket.emit('message', {
+        type: 'game_start',
+        resp: {
+            replay:        (socket.status === 'Replay' || socket.status === 'Shared Replay'),
+            shared_replay: (socket.status === 'Shared Replay'),
+        },
+    });
+};
+
+exports.playerAction = function(socket, data) {
+    // Validate that the game exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.error(`Error: notify.playerAction was called for game #${data.gameID}, but it does not exist.`);
+        return;
+    }
+
+    socket.emit('message', {
+        type: 'action',
+        resp: {
+            can_clue:            (game.clue_num > 0),
+            can_discard:         (game.clue_num < 8),
+            can_blind_play_deck: (game.deckIndex === game.deck.length - 1),
+        },
+    });
+};
 
 exports.playerDenied = function(socket, data) {
     socket.emit('message', {

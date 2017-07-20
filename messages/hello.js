@@ -16,9 +16,9 @@ const models  = require('../models');
 
 exports.step1 = function(socket, data) {
     // Local variables
-    data.gameID = socket.atTable.id;
+    data.gameID = socket.currentGame;
 
-    if (socket.atTable.replay) {
+    if (socket.status === 'Replay' || socket.status === 'Shared Replay') {
         models.games.getVariantPlayers(socket, data, step2);
     } else {
         data.game = globals.currentGames[data.gameID];
@@ -57,11 +57,12 @@ function step2(error, socket, data) {
         type: 'init',
         resp: {
             names: names,
-            replay: socket.atTable.replay,
+            replay: (socket.status === 'Replay' || socket.status === 'Shared Replay'),
             seat: seat,
-            spectating: socket.atTable.spectating,
+            spectating: (socket.status === 'Spectating'),
             timed: game.timed,
             variant: game.variant,
+            shared_replay: (socket.status === 'Shared Replay'),
         },
     });
 }

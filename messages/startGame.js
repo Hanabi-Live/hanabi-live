@@ -15,7 +15,7 @@ const notify     = require('../notify');
 // "data" contains nothing
 exports.step1 = function(socket, data) {
     // Local variables
-    data.gameID = socket.atTable.id;
+    data.gameID = socket.currentGame;
     let game = globals.currentGames[data.gameID];
 
     // Create the deck
@@ -152,12 +152,7 @@ function step3(error, socket, data) {
 
     // Send a "game_start" message to everyone in the game
     for (let player of game.players) {
-        player.socket.emit('message', {
-            type: 'game_start',
-            resp: {
-                replay: false,
-            },
-        });
+        notify.playerGameStart(player.socket);
     }
 
     if (game.allow_spec) {

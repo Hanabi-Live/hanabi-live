@@ -224,7 +224,8 @@ exports.getVariantPlayers = function(socket, data, done) {
             return;
         }
         if (results.length === 0) {
-            let error = new Error(`Got no rows in the "games" table for ID: ${data.gameID}`);
+            let error = new Error(`Got no rows in the "games" table for ID:` +
+                                  `${data.gameID}`);
             done(error, socket, data);
         }
         data.game = {};

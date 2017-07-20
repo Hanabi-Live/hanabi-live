@@ -34,7 +34,7 @@ const messages = require('../messages');
 
 const step1 = function(socket, data) {
     // Local variables
-    data.gameID = socket.atTable.id;
+    data.gameID = socket.currentGame;
 
     // Validate that this table exists
     let game;
@@ -57,15 +57,17 @@ const step1 = function(socket, data) {
     let player = game.players[data.index];
 
     // Validate that it is this player's turn
-    if (game.turn_player_index !== data.index) {
+    if (game.turn_player_index !== data.index && data.type !== 4) {
         logger.warn(`User "${data.username}" tried to perform an action when it was not their turn.`);
         data.reason = 'You cannot perform an action when it is not your turn.';
         notify.playerDenied(socket, data);
         return;
     }
 
-    // There are 3 types of actions
-    game.sound = null; // Remove the "fail" and "blind" states
+    // Remove the "fail" and "blind" states
+    game.sound = null;
+
+    // Do different tasks depending on the action
     if (data.type === 0) { // Clue
         // Validate that the player is not giving a clue to themselves
         if (game.turn_player_index === data.target) {
@@ -560,9 +562,7 @@ const checkTimer = function(data) {
     data.type = 4;
     let fakeSocket = {
         userID: data.userID,
-        atTable: {
-            id: data.gameID,
-        },
+        currentGame: data.gameID,
     };
     step1(fakeSocket, data);
 };

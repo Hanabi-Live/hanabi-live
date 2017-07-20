@@ -11,7 +11,7 @@ const notify  = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Local variables
-    data.gameID = socket.atTable.id;
+    data.gameID = socket.currentGame;
 
     // Set their status
     socket.status = 'Lobby';
@@ -27,7 +27,7 @@ exports.step1 = function(socket, data) {
     let game = globals.currentGames[data.gameID];
 
     // Check to see if they are a spectator
-    if (socket.atTable.spectating) {
+    if (socket.status === 'Spectating') {
         if (!(socket.userID in game.spectators)) {
             logger.error(`User "${socket.username}" tried to unattend game #${data.gameID}, but they were not in the spectators list.`);
             return;

@@ -9,10 +9,11 @@
 */
 
 // Imports
-const globals = require('../globals');
-const logger  = require('../logger');
-const models  = require('../models');
-const notify  = require('../notify');
+const globals  = require('../globals');
+const logger   = require('../logger');
+const models   = require('../models');
+const messages = require('../messages');
+const notify   = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Local variables
@@ -27,6 +28,13 @@ exports.step1 = function(socket, data) {
         logger.warn(`messages.join_table was called for game #${data.gameID}, but it does not exist.`);
         data.reason = 'That table does not exist.';
         notify.playerDenied(socket, data);
+        return;
+    }
+
+    // The logic for joining shared replay is in a separate command for
+    // organizational purposes
+    if (game.shared_replay) {
+        messages.join_shared_replay.step1(socket, data);
         return;
     }
 
@@ -75,15 +83,9 @@ function step2(error, socket, data) {
     notify.gameMemberChange(data);
 
     // Set their status
+    socket.currentGame = data.gameID;
     socket.status = 'Pre-Game';
     notify.allUserChange(socket);
-
-    // Set that they have joined the game (on the server-side)
-    socket.atTable = {
-        id:         data.gameID,
-        replay:     false,
-        spectating: false,
-    };
 
     // Send them a "joined" message
     // (to let them know they successfully joined the table)

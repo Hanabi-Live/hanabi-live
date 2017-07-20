@@ -70,20 +70,28 @@ exports.updateStats = function(data, done) {
             average_score = (
                 SELECT AVG(games.score)
                 FROM games
-                    JOIN game_participants ON game_participants.game_id = games.id
+                    JOIN game_participants
+                        ON game_participants.game_id = games.id
                 WHERE game_participants.user_id = ? AND games.score != 0
             ),
             strikeout_rate = (
                 SELECT COUNT(games.id)
                 FROM games
-                    JOIN game_participants ON game_participants.game_id = games.id
+                    JOIN game_participants
+                        ON game_participants.game_id = games.id
                 WHERE game_participants.user_id = ? AND games.score = 0
             ) / (
                 SELECT COUNT(id) FROM game_participants WHERE user_id = ?
             )
         WHERE id = ?
     `;
-    let values = [data.userID, data.userID, data.userID, data.userID, data.userID];
+    let values = [
+        data.userID,
+        data.userID,
+        data.userID,
+        data.userID,
+        data.userID,
+    ];
     db.query(sql, values, function (error, results, fields) {
         if (error) {
             done(error, data);

@@ -28,14 +28,10 @@ exports.step1 = function(socket, data) {
         return;
     }
 
-    // Update everyone's status
     for (let player of game.players) {
+        // Update their status
+        player.socket.currentGame = -1;
         player.socket.status = 'Lobby';
-        player.socket.atTable = {
-            id:         -1,
-            replay:     false,
-            spectating: false,
-        };
         notify.allUserChange(player.socket);
     }
 

@@ -53,7 +53,8 @@ function step2(error, socket, data) {
         return;
     }
 
-    logger.info(`User "${socket.username}" created a new game: #${data.gameID} (${data.name})`);
+    logger.info(`User "${socket.username}" created a new game: ` +
+                `#${data.gameID} (${data.name})`);
 
     // Keep track of the current games
     globals.currentGames[data.gameID] = {

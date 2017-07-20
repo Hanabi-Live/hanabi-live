@@ -25,7 +25,7 @@ exports.step1 = function(socket, data) {
         game = globals.currentGames[data.gameID];
     } else {
         logger.warn(`messages.join_shared_replay was called for game #${data.gameID}, but it does not exist.`);
-        data.reason = `Game #${data.gameID} does not exist.`;
+        data.reason = 'That table does not exist.';
         notify.playerDenied(socket, data);
         return;
     }
@@ -42,21 +42,10 @@ exports.step1 = function(socket, data) {
     notify.allTableChange(data);
 
     // Set their status
-    socket.status = 'Replay';
+    socket.currentGame = data.gameID;
+    socket.status = 'Shared Replay';
     notify.allUserChange(socket);
 
-    // Set that they are watching a replay
-    socket.atTable = {
-        id:         data.gameID,
-        replay:     true,
-        spectating: false,
-    };
-
     // Send them a "game_start" message
-    socket.emit('message', {
-        type: 'game_start',
-        resp: {
-            replay: true,
-        },
-    });
+    notify.playerGameStart(socket);
 };
