@@ -1,9 +1,11 @@
 'use strict';
 
-// A collection of functions used to notify groups of people about something
-// (either everyone connected to the server or everyone in a game)
-// Note that notify in this sense does not mean the "notify" message;
-// it can be alterting groups of users about anything
+/*
+    This is a collection of functions used to notify groups of people about
+    something (either everyone connected to the server or everyone in a game).
+    Note that notify in this sense does not explicitly mean the "notify"
+    message; it can be alterting groups of users about anything.
+*/
 
 // Imports
 const globals = require('./globals');
@@ -328,7 +330,7 @@ const playerTable = function(socket, data) {
             id:            data.gameID,
             name:          game.name,
             joined:        joined,
-            num_players:   game.players.length,
+            num_players:   (game.shared_replay ? game.spectators.length : game.players.length),
             max_players:   game.max_players,
             allow_spec:    game.allow_spec,
             timed:         game.timed,
@@ -346,8 +348,7 @@ exports.playerGameStart = function(socket) {
     socket.emit('message', {
         type: 'game_start',
         resp: {
-            replay:        (socket.status === 'Replay' || socket.status === 'Shared Replay'),
-            shared_replay: (socket.status === 'Shared Replay'),
+            replay: (socket.status === 'Replay' || socket.status === 'Shared Replay'),
         },
     });
 };

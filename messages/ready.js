@@ -24,7 +24,7 @@ exports.step1 = function(socket, data) {
         return;
     }
 
-    if (socket.status === 'Replay') {
+    if (socket.status === 'Replay' || socket.status === 'Shared Replay') {
         models.games.getActions(socket, data, step2);
     } else {
         data.game = globals.currentGames[data.gameID];
@@ -42,7 +42,7 @@ function step2(error, socket, data) {
 
     // Get the index of this player
     let index = -1; // Set an impossible index by default
-    if (socket.status !== 'Replay') {
+    if (socket.status !== 'Replay' && socket.status !== 'Shared Replay') {
         // We only have to worry about getting the index if we need to
         // scrub cards
         for (let i = 0; i < game.players.length; i++) {
@@ -82,8 +82,8 @@ function step2(error, socket, data) {
         type: 'advanced',
     });
 
+    // Send them the number of spectators
     if (socket.status !== 'Replay') {
-        // Send them the number of spectators
         let specMsg = {
             type: 'num_spec',
             resp: {
@@ -91,8 +91,10 @@ function step2(error, socket, data) {
             },
         };
         socket.emit('message', specMsg);
+    }
 
-        // Send them the current time for all player's clocks
+    // Send them the current time for all player's clocks
+    if (socket.status !== 'Replay' && socket.status !== 'Shared Replay') {
         let times = [];
         for (let i = 0; i < game.players.length; i++) {
             let time = game.players[i].time;

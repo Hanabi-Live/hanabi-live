@@ -24,6 +24,7 @@ this.player_us = -1;
 this.player_names = [];
 this.variant = 0;
 this.replay = false;
+this.shared_replay = false;
 this.replay_only = false;
 this.spectating = false;
 this.replay_max = 0;
@@ -4820,6 +4821,7 @@ HanabiUI.prototype.handle_message = function(msg) {
         this.player_names = msgData.names;
         this.variant = msgData.variant;
         this.replay = this.replay_only = msgData.replay;
+        this.shared_replay = msgData.shared_replay;
         if (this.replay_only) {
             this.replay_turn = -1;
         }
