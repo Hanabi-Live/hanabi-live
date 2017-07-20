@@ -3307,127 +3307,139 @@ this.build_ui = function() {
 
     clue_area.hide();
 
-    let timerX = 0.155;
-    let timerY = 0.592;
-    let timerX2 = 0.565;
-
-    timer_rect1 = new Kinetic.Rect({
-        x: timerX * win_w,
-        y: timerY * win_h,
-        width: 0.08 * win_w,
-        height: 0.051 * win_h,
-        fill: "black",
-        cornerRadius: 0.005 * win_h,
-        opacity: 0.2,
-    });
-    timerlayer.add(timer_rect1);
-
-    timer_label1 = new Kinetic.Text({
-        x: timerX * win_w,
-        y: (timerY + 0.06) * win_h,
-        width: 0.08 * win_w,
-        height: 0.051 * win_h,
-        fontSize: 0.03 * win_h,
-        fontFamily: "Verdana",
-        align: "center",
-        text: "You",
-        fill: "#d8d5ef",
-        shadowColor: "black",
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-    });
-    timerlayer.add(timer_label1);
-
-    timer_text1 = new Kinetic.Text({
-        x: timerX * win_w,
-        y: (timerY + 0.01) * win_h,
-        width: 0.08 * win_w,
-        height: 0.051 * win_h,
-        fontSize: 0.03 * win_h,
-        fontFamily: "Verdana",
-        align: "center",
-        text: "??:??",
-        fill: "#d8d5ef",
-        shadowColor: "black",
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-    });
-    timerlayer.add(timer_text1);
-
-    timer_rect2 = new Kinetic.Rect({
-        x: timerX2 * win_w,
-        y: timerY * win_h,
-        width: 0.08 * win_w,
-        height: 0.051 * win_h,
-        fill: "black",
-        cornerRadius: 0.005 * win_h,
-        opacity: 0.2,
-    });
-    timerlayer.add(timer_rect2);
-
-    timer_label2 = new Kinetic.Text({
-        x: timerX2 * win_w,
-        y: (timerY + 0.06) * win_h,
-        width: 0.08 * win_w,
-        height: 0.051 * win_h,
-        fontSize: 0.02 * win_h,
-        fontFamily: "Verdana",
-        align: "center",
-        text: "Current\nPlayer",
-        fill: "#d8d5ef",
-        shadowColor: "black",
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-    });
-    timerlayer.add(timer_label2);
-
-    timer_text2 = new Kinetic.Text({
-        x: timerX2 * win_w,
-        y: (timerY + 0.01) * win_h,
-        width: 0.08 * win_w,
-        height: 0.051 * win_h,
-        fontSize: 0.03 * win_h,
-        fontFamily: "Verdana",
-        align: "center",
-        text: "??:??",
-        fill: "#d8d5ef",
-        shadowColor: "black",
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-    });
-    timerlayer.add(timer_text2);
-
-    // Hide the first timer if spectating
-    if (this.spectating) {
-        timer_rect1.hide();
-        timer_label1.hide();
-        timer_text1.hide();
-    }
-
-    // Hide the second timer by default
-    if (this.spectating === false) {
-        timer_rect2.hide();
-        timer_label2.hide();
-        timer_text2.hide();
-    }
-
     uilayer.add(clue_area);
+
+    /*
+        Draw the timer
+    */
+
+    // We don't want the timer to show in replays
+    if (this.replay === false) {
+        let timerX = 0.155;
+        let timerY = 0.592;
+        let timerX2 = 0.565;
+
+        timer_rect1 = new Kinetic.Rect({
+            x: timerX * win_w,
+            y: timerY * win_h,
+            width: 0.08 * win_w,
+            height: 0.051 * win_h,
+            fill: "black",
+            cornerRadius: 0.005 * win_h,
+            opacity: 0.2,
+        });
+        timerlayer.add(timer_rect1);
+
+        timer_label1 = new Kinetic.Text({
+            x: timerX * win_w,
+            y: (timerY + 0.06) * win_h,
+            width: 0.08 * win_w,
+            height: 0.051 * win_h,
+            fontSize: 0.03 * win_h,
+            fontFamily: "Verdana",
+            align: "center",
+            text: "You",
+            fill: "#d8d5ef",
+            shadowColor: "black",
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
+        });
+        timerlayer.add(timer_label1);
+
+        timer_text1 = new Kinetic.Text({
+            x: timerX * win_w,
+            y: (timerY + 0.01) * win_h,
+            width: 0.08 * win_w,
+            height: 0.051 * win_h,
+            fontSize: 0.03 * win_h,
+            fontFamily: "Verdana",
+            align: "center",
+            text: "??:??",
+            fill: "#d8d5ef",
+            shadowColor: "black",
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
+        });
+        timerlayer.add(timer_text1);
+
+        timer_rect2 = new Kinetic.Rect({
+            x: timerX2 * win_w,
+            y: timerY * win_h,
+            width: 0.08 * win_w,
+            height: 0.051 * win_h,
+            fill: "black",
+            cornerRadius: 0.005 * win_h,
+            opacity: 0.2,
+        });
+        timerlayer.add(timer_rect2);
+
+        timer_label2 = new Kinetic.Text({
+            x: timerX2 * win_w,
+            y: (timerY + 0.06) * win_h,
+            width: 0.08 * win_w,
+            height: 0.051 * win_h,
+            fontSize: 0.02 * win_h,
+            fontFamily: "Verdana",
+            align: "center",
+            text: "Current\nPlayer",
+            fill: "#d8d5ef",
+            shadowColor: "black",
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
+        });
+        timerlayer.add(timer_label2);
+
+        timer_text2 = new Kinetic.Text({
+            x: timerX2 * win_w,
+            y: (timerY + 0.01) * win_h,
+            width: 0.08 * win_w,
+            height: 0.051 * win_h,
+            fontSize: 0.03 * win_h,
+            fontFamily: "Verdana",
+            align: "center",
+            text: "??:??",
+            fill: "#d8d5ef",
+            shadowColor: "black",
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
+        });
+        timerlayer.add(timer_text2);
+
+        // Hide the first timer if spectating
+        if (this.spectating) {
+            timer_rect1.hide();
+            timer_label1.hide();
+            timer_text1.hide();
+        }
+
+        // Hide the second timer by default
+        if (this.spectating === false) {
+            timer_rect2.hide();
+            timer_label2.hide();
+            timer_text2.hide();
+        }
+    }
+
+
+    /*
+        Draw the replay area
+    */
 
     replay_area = new Kinetic.Group({
         x: 0.15 * win_w,
