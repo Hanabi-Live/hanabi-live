@@ -120,14 +120,21 @@ exports.gameConnected = function(data) {
     }
 
     // Send a "connected" message to all of the users in the game
+    let connMsg = {
+        type: 'connected',
+        resp: {
+            list: list,
+            num_spec: Object.keys(game.spectators).length,
+        },
+    };
+
     for (let i = 0; i < game.players.length; i++) {
-        game.players[i].socket.emit('message', {
-            type: 'connected',
-            resp: {
-                list: list,
-                num_spec: Object.keys(game.spectators).length,
-            },
-        });
+        game.players[i].socket.emit('message', connMsg);
+    }
+
+    // Also send it to the spectators
+    for (let userID of Object.keys(game.spectators)) {
+        game.spectators[userID].emit('message', connMsg);
     }
 };
 
@@ -243,6 +250,8 @@ exports.gameSound = function(data) {
 
         player.socket.emit('message', msg);
     }
+
+    // Also send it to the spectators
     for (let userID of Object.keys(game.spectators)) {
         // Prepare the sound message
         // (the code is duplicated here because I don't want to mess with
@@ -273,7 +282,6 @@ exports.gameBoot = function(data) {
             who: data.who,
         },
     };
-
     for (let i = 0; i < game.players.length; i++) {
         let player = game.players[i];
         player.socket.emit('message', msg);

@@ -58,10 +58,10 @@ exports.step1 = function(socket, reason) {
 
             if (userID === socket.userID) {
                 socket.currentGame = gameID;
-                socket.status = 'Spectating';
+                socket.status = (game.shared_replay ? 'Shared Replay' : 'Spectating');
                 messages.unattend_table.step1(socket, {});
+                break;
             }
-            break;
         }
     }
 

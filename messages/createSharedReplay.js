@@ -52,6 +52,7 @@ function step2(error, socket, data) {
         variant:       data.variant,
         running:       false,
         shared_replay: true,
+        replayActions: [],
     };
 
     notify.allTableChange(data);

@@ -3469,6 +3469,8 @@ this.build_ui = function() {
 
     replay_area.add(replay_bar);
 
+    // Rewind to the beginning (the left-most button)
+
     rect = new Kinetic.Rect({
         x: 0,
         y: 0,
@@ -4872,6 +4874,11 @@ HanabiUI.prototype.handle_message = function(msg) {
     // This is used for spectators
     if (msgType === "note") {
         this.handle_note.call(this, msgData);
+    }
+
+    // This is used for shared replays
+    if (msgType === "replay_action") {
+        console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     }
 };
 
