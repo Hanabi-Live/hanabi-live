@@ -781,11 +781,9 @@ HanabiCard.prototype.add_clue = function(clue) {
                 let clueIndex1 = -1;
                 let clueIndex2 = -1;
                 for (let i = 0; i < suit_colors.length; i++) {
-                    // We use the "suit_colors" instead of the "mixed_clue_colors" array because
-                    // that is what the "mixed_suit_color_composition" is based off of
-                    if (grad[1] === suit_colors[i]) {
+                    if (grad[1] === mixed_suit_colors[i]) {
                         clueIndex1 = i;
-                    } else if (color === suit_colors[i]) {
+                    } else if (color === mixed_suit_colors[i]) {
                         clueIndex2 = i;
                     }
                 }
@@ -2015,28 +2013,29 @@ var suit_colors = [
     "#cccccc", // Grey
 ];
 var mixed_suit_colors = [
-    "#00b3b3", // Teal     (Blue / Green)
-    "#cc00cc", // Magenta  (Blue / Red)
-    "#1a0082", // Indigo   (Blue / Purple)
-    "#b37400", // Orange   (Green / Red)
-    "#0F9719", // Forest   (Green / Purple) (old was #1e6231)
-    "#810735", // Cardinal (Red / Purple) (old was #880066)
+    "#00b3b3", // Teal     (Blue  / Green)
+    "#cc00cc", // Magenta  (Blue  / Red)
+    "#000066", // Navy     (Blue  / Black)
+    "#ccaa22", // Yellow   (Green / Red)
+    "#004d00", // Forest   (Green / Black)
+    "#660016", // Burgundy (Red   / Black)
     "#cccccc", // Grey
 ];
 var mixed_suit_color_composition = [
-    // Each mixed suit is composed of two separate colors (from the "suit_colors" array)
-    [0, 1],
-    [0, 3],
-    [0, 4],
-    [1, 3],
-    [1, 4],
-    [3, 4],
+    // Each mixed suit is composed of two separate colors
+    // (from the "mixed_clue_colors" array)
+    [0, 1], // Blue  / Green
+    [0, 2], // Blue  / Red
+    [0, 3], // Blue  / Black
+    [1, 2], // Green / Red
+    [1, 3], // Green / Black
+    [2, 3], // Red   / Black
 ];
 var mixed_clue_colors = [
     "#0044cc", // Blue
     "#00cc00", // Green
     "#aa0000", // Red
-    "#6600cc", // Purple
+    "#000000", // Black
 ];
 var card_images = {};
 var scale_card_images = {};
@@ -2388,7 +2387,7 @@ this.build_cards = function() {
                 ctx.lineTo(cardw - borderSize - triangleSize, borderSize); // Move left
                 ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move down and right diagonally
                 ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
-                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][0]];
+                ctx.fillStyle = mixed_clue_colors[mixed_suit_color_composition[i][0]];
                 drawshape();
 
                 // Draw the second half of the top-right triangle
@@ -2397,7 +2396,7 @@ this.build_cards = function() {
                 ctx.lineTo(cardw - borderSize, borderSize + triangleSize); // Move down
                 ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move up and left diagonally
                 ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
-                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][1]];
+                ctx.fillStyle = mixed_clue_colors[mixed_suit_color_composition[i][1]];
                 drawshape();
 
                 // Draw the first half of the bottom-left triangle
@@ -2406,7 +2405,7 @@ this.build_cards = function() {
                 ctx.lineTo(borderSize, cardh - borderSize - triangleSize); // Move up
                 ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move right and down diagonally
                 ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
-                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][0]];
+                ctx.fillStyle = mixed_clue_colors[mixed_suit_color_composition[i][0]];
                 drawshape();
 
                 // Draw the second half of the bottom-left triangle
@@ -2415,7 +2414,7 @@ this.build_cards = function() {
                 ctx.lineTo(borderSize + triangleSize, cardh - borderSize); // Move right
                 ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move left and up diagonally
                 ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
-                ctx.fillStyle = suit_colors[mixed_suit_color_composition[i][1]];
+                ctx.fillStyle = mixed_clue_colors[mixed_suit_color_composition[i][1]];
                 drawshape();
 
                 ctx.restore();

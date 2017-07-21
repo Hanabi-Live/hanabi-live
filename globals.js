@@ -23,8 +23,8 @@ module.exports = {
     mixedSuits: [
         'Teal',
         'Magenta',
-        'Indigo',
-        'Orange',
+        'Navy',
+        'Yellow',
         'Forest',
         'Burgundy',
     ],
@@ -32,7 +32,7 @@ module.exports = {
         'Blue',
         'Green',
         'Red',
-        'Purple',
+        'Black',
     ],
     mmSuits: [
         'Teal',
