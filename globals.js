@@ -25,7 +25,7 @@ module.exports = {
         'Magenta',
         'Navy',
         'Orange',
-        'Olive',
+        'Tan',
         'Burgundy',
     ],
     mixedClues: [

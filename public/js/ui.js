@@ -2017,7 +2017,7 @@ var mixed_suit_colors = [
     "#cc00cc", // Magenta  (Blue   / Red)
     "#000066", // Navy     (Blue   / Black)
     "#ff9900", // Orange   (Yellow / Red)
-    "#999900", // Olive    (Yellow / Black)
+    "#999900", // Tan      (Yellow / Black)
     "#660016", // Burgundy (Red    / Black)
     "#cccccc", // Grey
 ];
