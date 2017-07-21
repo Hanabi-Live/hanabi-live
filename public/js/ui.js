@@ -839,7 +839,10 @@ HanabiCard.prototype.add_clue = function(clue) {
 
         this.color_clue_group.show();
 
-        if (ui.learned_cards[this.order].suit === undefined) {
+        if (ui.variant === VARIANT.MIXED) {
+            // TODO Distinguishing suits from colors is not supported yet.
+            // ui.learned_cards[this.order].suit may be a correct suit index from a play or discard
+        } else if (ui.learned_cards[this.order].suit === undefined) {
             ui.learned_cards[this.order].suit = clue.value;
         } else if (ui.learned_cards[this.order].suit !== clue.value) {
             // Card has multiple colors; set suit to Rainbow
