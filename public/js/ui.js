@@ -4601,6 +4601,7 @@ this.handle_note = function(note) {
 
     // Draw (or hide) the note indicator
     let card = ui.deck[note.order];
+    card.tooltip.getText().setText(newNote);
     if (newNote.length > 0) {
         card.note_given.show();
     } else {
