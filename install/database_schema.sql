@@ -1,4 +1,9 @@
 /*
+    First, set up the user:
+    mysql -uroot -p
+    ?
+
+    Second, install the database:
     mysql -uhanabiuser -p1234567890 < install/database_schema.sql
 */
 

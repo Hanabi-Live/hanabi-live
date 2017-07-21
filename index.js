@@ -12,9 +12,14 @@ const logger   = require('./logger');
 const messages = require('./messages');
 const models   = require('./models');
 
+// Set the view engine to ejs
+app.set('view engine', 'ejs');
+
 // HTTP handlers
 app.get('/', function(req, res) {
-    res.sendFile(__dirname + '/public/index.html');
+    res.render('index', { // This will look for "views/index.ejs"
+        websocketURL: req.protocol + '://' + req.get('host') + req.originalUrl,
+    });
 });
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(favicon(path.join(__dirname, 'public', 'img', 'favicon.ico')));
@@ -59,7 +64,6 @@ function initComplete(error) {
         return;
     }
 
-    // Listen
     http.listen(globals.port, function() {
         logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
     });

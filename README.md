@@ -22,7 +22,10 @@ Installation
 * `git clone https://github.com/Zamiell/keldon-hanabi`
 * `cd keldon-hanabi`
 * `cp .env_defaults .env`
-* `vi .env` (fill in the values)
+* `vi .env`
+  * Fill in the values.
+  * `DISCORD_TOKEN` can be left blank if you don't want to enable Discord functionality.
+  * `KELDON_USER` and `KELDON_PASS` can be left blank if you don't want to enable the Keldon bot functionality.
 * `mysql -uhanabiuser -p1234567890 < install/database_schema.sql` (to import the database)
 * `npm install`
 * `npm start`

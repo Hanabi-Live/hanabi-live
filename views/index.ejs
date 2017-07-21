@@ -196,13 +196,13 @@ window.onload = function() {
 	window.lobby = new HanabiLobby();
 	var original = false;
 	//original = true;
-	var url;
+	var websocketURL;
 	if (original) {
-		url = 'http://keldon.net:32221/';
+		websocketURL = 'http://keldon.net:32221/';
 	} else {
-		url = 'http://isaacracing.net:3000/';
+		websocketURL = '<%= websocketURL %>';
 	}
-	var conn = io.connect(url);
+	var conn = io.connect(websocketURL);
 	window.lobby.set_conn(conn);
 };
 </script>

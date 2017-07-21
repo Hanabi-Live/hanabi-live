@@ -5,6 +5,7 @@
   "dependencies": {
     "discord.js": "^11.1.0",
     "dotenv": "^4.0.0",
+    "ejs": "^2.5.6",
     "express": "^4.15.2",
     "moment": "^2.18.1",
     "mysql": "^2.13.0",
