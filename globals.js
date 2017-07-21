@@ -21,11 +21,11 @@ module.exports = {
         'Rainbow',
     ],
     mixedSuits: [
-        'Teal',
+        'Green',
         'Magenta',
         'Navy',
-        'Yellow',
-        'Forest',
+        'Orange',
+        'Olive',
         'Burgundy',
     ],
     mixedClues: [

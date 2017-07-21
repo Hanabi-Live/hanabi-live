@@ -2013,27 +2013,27 @@ var suit_colors = [
     "#cccccc", // Grey
 ];
 var mixed_suit_colors = [
-    "#00b3b3", // Teal     (Blue  / Green)
-    "#cc00cc", // Magenta  (Blue  / Red)
-    "#000066", // Navy     (Blue  / Black)
-    "#ccaa22", // Yellow   (Green / Red)
-    "#004d00", // Forest   (Green / Black)
-    "#660016", // Burgundy (Red   / Black)
+    "#00cc00", // Green    (Blue   / Yellow)
+    "#cc00cc", // Magenta  (Blue   / Red)
+    "#000066", // Navy     (Blue   / Black)
+    "#ff9900", // Orange   (Yellow / Red)
+    "#999900", // Olive    (Yellow / Black)
+    "#660016", // Burgundy (Red    / Black)
     "#cccccc", // Grey
 ];
 var mixed_suit_color_composition = [
     // Each mixed suit is composed of two separate colors
     // (from the "mixed_clue_colors" array)
-    [0, 1], // Blue  / Green
-    [0, 2], // Blue  / Red
-    [0, 3], // Blue  / Black
-    [1, 2], // Green / Red
-    [1, 3], // Green / Black
-    [2, 3], // Red   / Black
+    [0, 1], // Blue   / Yellow
+    [0, 2], // Blue   / Red
+    [0, 3], // Blue   / Black
+    [1, 2], // Yellow / Red
+    [1, 3], // Yellow / Black
+    [2, 3], // Red    / Black
 ];
 var mixed_clue_colors = [
     "#0044cc", // Blue
-    "#00cc00", // Green
+    "#ccaa22", // Yellow
     "#aa0000", // Red
     "#000000", // Black
 ];

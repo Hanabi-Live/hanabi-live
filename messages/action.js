@@ -255,18 +255,20 @@ function playerClue(data) {
                 if (data.clue.value === card.suit) {
                     touched = true;
                 }
+
             } else if (game.variant === 3) { // Multi (Rainbow)
                 if (data.clue.value === card.suit || card.suit === 5) {
                     touched = true;
                 }
+
             } else if (game.variant === 4) { // Mixed suits
                 // Suits:
-                // 0 - Teal     (Blue / Green)
-                // 1 - Magenta  (Blue / Red)
-                // 2 - Indigo   (Blue / Purple)
-                // 3 - Orange   (Green / Red)
-                // 4 - Forest   (Green / Purple)
-                // 5 - Burgundy (Red / Purple)
+                // 0 - Green    (Blue   / Yellow)
+                // 1 - Magenta  (Blue   / Red)
+                // 2 - Navy     (Blue   / Black)
+                // 3 - Orange   (Yellow / Red)
+                // 4 - Gold     (Yellow / Black)
+                // 5 - Burgundy (Red    / Black)
                 if (data.clue.value === 0) { // Blue clue
                     if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
                         touched = true;
@@ -309,7 +311,7 @@ function playerClue(data) {
                     if (card.suit === 2 || card.suit === 3 || card.suit === 5) {
                         touched = true;
                     }
-                } else if (data.clue.value === 4) { // Purple clue
+                } else if (data.clue.value === 4) { // Black clue
                     if (card.suit === 3 || card.suit === 4 || card.suit === 5) {
                         touched = true;
                     }

@@ -1,8 +1,5 @@
 /*
-    First, set up the user:
-    mysql -uroot -p
-    ?
-
+    First, set up the database, which is covered in the README.md file.
     Second, install the database:
     mysql -uhanabiuser -p1234567890 < install/database_schema.sql
 */
