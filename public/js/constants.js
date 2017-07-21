@@ -15,11 +15,12 @@ exports.CLUE = {
 };
 
 exports.VARIANT = {
-	NONE:      0,
-	BLACKSUIT: 1,
-	BLACKONE:  2,
-	RAINBOW:   3,
-	MIXED:     4,
+	NONE:       0,
+	BLACKSUIT:  1,
+	BLACKONE:   2,
+	RAINBOW:    3,
+	MIXED:      4,
+	MM:         5,
 };
 
 }(typeof exports === "undefined" ? (this.constants = {}): exports));

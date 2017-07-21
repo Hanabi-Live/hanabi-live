@@ -13,6 +13,7 @@
             // 2 is yellow
             // 3 is red
             // 4 is purple
+            // (these mappings change in the mixed variants)
         },
         target: 1,
         // Either the player index of the recipient of the clue, or the card ID
@@ -265,7 +266,7 @@ function playerClue(data) {
                 // 2 - Indigo   (Blue / Purple)
                 // 3 - Orange   (Green / Red)
                 // 4 - Forest   (Green / Purple)
-                // 5 - Cardinal (Red / Purple)
+                // 5 - Burgundy (Red / Purple)
                 if (data.clue.value === 0) { // Blue clue
                     if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
                         touched = true;
@@ -280,6 +281,36 @@ function playerClue(data) {
                     }
                 } else if (data.clue.value === 3) { // Purple clue
                     if (card.suit === 2 || card.suit === 4 || card.suit === 5) {
+                        touched = true;
+                    }
+                }
+
+            } else if (game.variant === 5) { // Mixed and multi suits
+                // Suits:
+                // 0 - Teal     (Blue / Green)
+                // 1 - Lime     (Green / Yellow)
+                // 2 - Orange   (Yellow / Red)
+                // 3 - Burgundy (Red / Purple)
+                // 4 - Indigo   (Purple / Blue)
+                // 5 - Rainbow
+                if (data.clue.value === 0) { // Blue clue
+                    if (card.suit === 0 || card.suit === 4 || card.suit === 5) {
+                        touched = true;
+                    }
+                } else if (data.clue.value === 1) { // Green clue
+                    if (card.suit === 0 || card.suit === 1 || card.suit === 5) {
+                        touched = true;
+                    }
+                } else if (data.clue.value === 2) { // Yellow clue
+                    if (card.suit === 1 || card.suit === 2 || card.suit === 5) {
+                        touched = true;
+                    }
+                } else if (data.clue.value === 3) { // Red clue
+                    if (card.suit === 2 || card.suit === 3 || card.suit === 5) {
+                        touched = true;
+                    }
+                } else if (data.clue.value === 4) { // Purple clue
+                    if (card.suit === 3 || card.suit === 4 || card.suit === 5) {
                         touched = true;
                     }
                 }
@@ -358,6 +389,9 @@ function playerPlayCard(data) {
     } else if (game.variant === 4) {
         // Set the "Mixed Suits" text
         suitText = globals.mixedSuits[card.suit];
+    } else if (game.variant === 5) {
+        // Set the "Mixed and Multi Suits" text
+        suitText = globals.mmSuits[card.suit];
     }
 
     // Find out if this successfully plays
@@ -429,6 +463,9 @@ function playerDiscardCard(data, failed = false) {
     } else if (game.variant === 4) {
         // Set the "Mixed Suits" text
         suitText = globals.mixedSuits[card.suit];
+    } else if (game.variant === 5) {
+        // Set the "Mixed and Multi Suits" text
+        suitText = globals.mmSuits[card.suit];
     }
 
     // Mark that the card is discarded
