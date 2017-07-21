@@ -1,6 +1,7 @@
 "use strict";
 
 var MHGA_show_debug_messages = true;
+var fadeTime = 200; // Vanilla Keldon is 800
 
 function HanabiLobby() {
     var self = this;
@@ -259,7 +260,7 @@ HanabiLobby.prototype.hide_login = function() {
 };
 
 HanabiLobby.prototype.show_lobby = function() {
-    $("#lobby").fadeIn(800);
+    $("#lobby").fadeIn(fadeTime);
 };
 
 HanabiLobby.prototype.hide_lobby = function() {
@@ -267,7 +268,7 @@ HanabiLobby.prototype.hide_lobby = function() {
 };
 
 HanabiLobby.prototype.show_create_dialog = function() {
-    $("#create-table-dialog").fadeIn(800);
+    $("#create-table-dialog").fadeIn(fadeTime);
 
     $("#create-game-name").val(this.random_name);
     console.log(this.random_name);
@@ -292,23 +293,23 @@ HanabiLobby.prototype.show_create_dialog = function() {
 };
 
 HanabiLobby.prototype.hide_create_dialog = function() {
-    $("#create-table-dialog").fadeOut(800);
+    $("#create-table-dialog").fadeOut(fadeTime);
 };
 
 HanabiLobby.prototype.show_resources = function() {
-    $("#resources-dialog").fadeIn(800);
+    $("#resources-dialog").fadeIn(fadeTime);
 };
 
 HanabiLobby.prototype.hide_resources = function() {
-    $("#resources-dialog").fadeOut(800);
+    $("#resources-dialog").fadeOut(fadeTime);
 };
 
 HanabiLobby.prototype.show_settings = function() {
-    $("#settings-dialog").fadeIn(800);
+    $("#settings-dialog").fadeIn(fadeTime);
 };
 
 HanabiLobby.prototype.hide_settings = function() {
-    $("#settings-dialog").fadeOut(800);
+    $("#settings-dialog").fadeOut(fadeTime);
 };
 
 HanabiLobby.prototype.show_history_details = function() {
@@ -320,7 +321,7 @@ HanabiLobby.prototype.show_history_details = function() {
 };
 
 HanabiLobby.prototype.show_pregame = function() {
-    $("#pregame").fadeIn(800);
+    $("#pregame").fadeIn(fadeTime);
 };
 
 HanabiLobby.prototype.hide_pregame = function() {
@@ -328,7 +329,7 @@ HanabiLobby.prototype.hide_pregame = function() {
 };
 
 HanabiLobby.prototype.show_game = function() {
-    $("#game").fadeIn(800);
+    $("#game").fadeIn(fadeTime);
 };
 
 HanabiLobby.prototype.hide_game = function() {

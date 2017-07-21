@@ -84,37 +84,48 @@
 		</div>
 	</div>
 	<div id="create-table-dialog" title="Create Table">
-		<div>
-			Game Name:
-			<input type="text" id="create-game-name">
-		</div>
-		<div>
-			Max Players:
-			<select id="create-game-players">
-				<option value="2">2</option>
-				<option value="3">3</option>
-				<option value="4">4</option>
-				<option value="5" selected>5</option>
-			</select>
-		</div>
-		<div>
-			Variant:
-			<select id="create-game-variant">
-				<!-- This is filled in with all of the variant options in the "lobby.js" file -->
-			</select>
-		</div>
-		<div>
-			Allow Spectators:
-			<input type="checkbox" id="create-game-allow-spec">
-		</div>
-		<div>
-			Timed Game:
-			<input type="checkbox" id="create-game-timed">
-		</div>
-		<div>
+		<table>
+			<tr>
+				<td>Game Name:</td>
+				<td>
+					<input type="text" id="create-game-name" class="create-table-dialog-col2">
+				</td>
+			</tr>
+			<tr>
+				<td>Max Players:</td>
+				<td>
+					<select id="create-game-players">
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>
+						<option value="5" selected>5</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Variant:</td>
+				<td>
+					<select id="create-game-variant" class="create-table-dialog-col2"></select>
+					<!-- This is filled in with all of the variant options in the "lobby.js" file -->
+				</td>
+			</tr>
+			<tr>
+				<td>Allow Spectators:</td>
+				<td>
+					<input type="checkbox" id="create-game-allow-spec">
+				</td>
+			</tr>
+			<tr>
+				<td>Timed Game:</td>
+				<td>
+					<input type="checkbox" id="create-game-timed">
+				</td>
+			</tr>
+		</table>
+		<center><div>
 			<button type="button" id="create-game-submit">Create Game</button>
 			<button type="button" id="create-game-cancel">Cancel</button>
-		</div>
+		</div></center>
 	</div>
 	<div id="resources-dialog" title="Other Resources">
 		<h1>Other Resources</h1>

@@ -256,8 +256,8 @@ ul {
 	display: none;
 
 	position: absolute;
-	width: 300px;
-	height: 205px;
+	width: 400px;
+	height: 215px;
 	top: 45px;
 	left: 300px;
 	z-index: 100;
@@ -266,6 +266,10 @@ ul {
 	background-color: rgba(255, 255, 255, 0.9);
 	border: 3px solid #444;
 	border-radius: 5px;
+}
+
+.create-table-dialog-col2 {
+	width: 260px;
 }
 
 #resources-dialog {
