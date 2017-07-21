@@ -10,10 +10,11 @@
 */
 
 // Imports
-const globals = require('../globals');
-const logger  = require('../logger');
-const models  = require('../models');
-const notify  = require('../notify');
+const globals  = require('../globals');
+const logger   = require('../logger');
+const models   = require('../models');
+const messages = require('../messages');
+const notify   = require('../notify');
 
 exports.step1 = function(socket, data) {
     // Validate that they submitted a username
@@ -126,6 +127,9 @@ function step4(socket, data) {
             }
         }
     }
+
+    // Send them a random name
+    messages.get_name.step1(socket, data);
 
     // They have successfully logged in, so send initial messages to the client
     socket.emit('message', {

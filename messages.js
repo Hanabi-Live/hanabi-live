@@ -8,6 +8,7 @@ exports.chat                 = require('./messages/chat');
 exports.create_shared_replay = require('./messages/createSharedReplay');
 exports.create_table         = require('./messages/createTable');
 exports.end_game             = require('./messages/endGame'); // Not a real message
+exports.get_name             = require('./messages/getName');
 exports.hello                = require('./messages/hello');
 exports.history_details      = require('./messages/historyDetails');
 exports.join_shared_replay   = require('./messages/joinSharedReplay');

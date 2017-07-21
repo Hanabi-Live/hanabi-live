@@ -7,10 +7,10 @@ const extraTurnTime = 10 * 1000; // In milliseconds
 
 // The object that contains all of the global variables
 module.exports = {
-    connectedUsers:   {}, // Indexed by ID
-    currentGames:     {}, // Indexed by ID
-    extraTurnTime:    extraTurnTime,
-    startingTime:     startingTime,
+    connectedUsers: {}, // Indexed by ID
+    currentGames:   {}, // Indexed by ID
+    extraTurnTime:  extraTurnTime,
+    startingTime:   startingTime,
     suits: [
         'Blue',
         'Green',
@@ -42,5 +42,6 @@ module.exports = {
         'Indigo',
         'Rainbow',
     ],
-    port: port,
+    port:     port,
+    wordList: null, // Set in the "index.js" file
 };

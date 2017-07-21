@@ -14,6 +14,7 @@ function HanabiLobby() {
     this.pass = null;
 
     this.game_id = null;
+    this.random_name = '';
     this.send_turn_notify = false;
     this.send_turn_sound = false;
     this.send_chat_notify = false;
@@ -268,6 +269,9 @@ HanabiLobby.prototype.hide_lobby = function() {
 HanabiLobby.prototype.show_create_dialog = function() {
     $("#create-table-dialog").fadeIn(800);
 
+    $("#create-game-name").val(this.random_name);
+    console.log(this.random_name);
+
     var players = JSON.parse(localStorage.getItem("table_host_max_players"));
     if (typeof players !== "number" || players < 2 || players > 5) {
             players = 5;
@@ -356,10 +360,6 @@ HanabiLobby.prototype.draw_users = function() {
 
     attrs = $("<ul>");
     attrs.append($("<li>").text("Name").addClass("table-attr user-name"));
-    /*
-    attrs.append($("<li>").text("Seated").addClass("table-attr user-seated"));
-    attrs.append($("<li>").text("Playing").addClass("table-attr user-playing"));
-    */
     attrs.append($("<li>").text("Status").addClass("table-attr user-status"));
 
     div.append($("<li>").addClass("table-header").append(attrs));
@@ -367,14 +367,6 @@ HanabiLobby.prototype.draw_users = function() {
     for (let i of Object.keys(this.user_list)) {
         attrs = $("<ul>");
         attrs.append($("<li>").text(this.user_list[i].name).addClass("table-attr user-name"));
-        /*
-        attrs.append($("<li>").append($("<input>", {
-            type: "checkbox",
-        }).prop("checked", this.user_list[i].seated)).addClass("table-attr user-seated"));
-        attrs.append($("<li>").append($("<input>", {
-            type: "checkbox",
-        }).prop("checked", this.user_list[i].playing)).addClass("table-attr user-playing"));
-        */
         attrs.append($("<li>").append(this.user_list[i].status).addClass("table-attr user-status"));
 
         div.append($("<li>").append(attrs));
@@ -891,6 +883,7 @@ HanabiLobby.prototype.listen_conn = function(conn) {
             console.log('%cRecieved "' + msgType + '":', 'color: blue;');
             console.log(msgData);
         }
+
         if (msgType === "hello") {
             self.hide_login();
             self.reset_lobby();
@@ -949,6 +942,9 @@ HanabiLobby.prototype.listen_conn = function(conn) {
             if (self.send_turn_sound) {
                 self.play_sound(msgData.file);
             }
+
+        } else if (msgType === "name") {
+            self.random_name = msgData.name;
 
         } else if (self.ui) {
             self.ui.handle_message(msg);
