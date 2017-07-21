@@ -1,9 +1,5 @@
 "use strict";
 
-// Modifications from vanilla:
-// - Hard-coded the MHGA variables at the top of the file
-// - Changed "sounds/" to "public/sounds/"
-
 var MHGA_show_debug_messages = true;
 
 function HanabiLobby() {
@@ -99,11 +95,11 @@ function HanabiLobby() {
     $("#create-table").removeAttr("disabled");
 
     $("#create-game-submit").on("click", function(evt) {
-        var game_name = $("#create-game-name").val();
+        var game_name   = $("#create-game-name").val();
         var max_players = parseInt($("#create-game-players").val());
-        var variant = parseInt($("#create-game-variant").val());
-        var allow_spec = document.getElementById("create-game-allow-spec").checked;
-        var timed = document.getElementById("create-game-timed").checked;
+        var variant     = parseInt($("#create-game-variant").val());
+        var allow_spec  = document.getElementById("create-game-allow-spec").checked;
+        var timed       = document.getElementById("create-game-timed").checked;
 
         localStorage.setItem("table_host_max_players", max_players);
         localStorage.setItem("table_host_variant",     variant);
@@ -279,7 +275,7 @@ HanabiLobby.prototype.show_create_dialog = function() {
     $("#create-game-players").val(players);
 
     var variant = JSON.parse(localStorage.getItem("table_host_variant"));
-    if (typeof variant !== "number" || variant < 0 || variant > 4) {
+    if (typeof variant !== "number" || variant < 0 || variant > 5) {
         variant = 0;
     }
     $("#create-game-variant").val(variant);
@@ -415,6 +411,7 @@ var variant_names = [
     "Black Suit (one of each rank)",
     "Multi-color Suit",
     "Mixed-color Suits",
+    "Mixed and Multi-color Suits"
 ];
 
 HanabiLobby.prototype.draw_tables = function() {
