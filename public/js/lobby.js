@@ -271,7 +271,11 @@ HanabiLobby.prototype.show_create_dialog = function() {
     $("#create-table-dialog").fadeIn(fadeTime);
 
     $("#create-game-name").val(this.random_name);
-    console.log(this.random_name);
+
+    // Get a new random name from the server for the next time we click the button
+    this.send_msg({
+        type: "get_name",
+    });
 
     var players = JSON.parse(localStorage.getItem("table_host_max_players"));
     if (typeof players !== "number" || players < 2 || players > 5) {
