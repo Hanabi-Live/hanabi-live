@@ -20,21 +20,25 @@ These instructions assume you are running Linux. Some adjustment will be needed 
 
 * Install Node.js (using Node Version Manager):
   * `curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash`
+  * `export NVM_DIR="$HOME/.nvm"`
+  * `[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"`
+  * `[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"`
   * `nvm install node`
 * Install MariaDB and set up a user:
-  * `apt-get install mariadb-server`
-  * `mysql_secure_installation`
+  * `sudo apt install mariadb-server -y`
+  * `sudo mysql_secure_installation`
     * Follow the prompts.
-  * `mysql -u root -p`
-    * `CREATE DATABASE hanabi`
-    * `GRANT ALL ON hanabi to 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
+  * `sudo mysql -u root -p`
+    * `CREATE DATABASE hanabi;`
+    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
+    * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
 * Clone the server:
   * `git clone https://github.com/Zamiell/keldon-hanabi`
   * `cd keldon-hanabi`
 * Set up environment variables:
   * `cp .env_defaults .env`
   * `nano .env`
-    * Fill in the values.
+    * Change the values accordingly (assuming you modified the commands above).
     * `DISCORD_TOKEN` can be left blank if you don't want to enable Discord functionality.
     * `KELDON_USER` and `KELDON_PASS` can be left blank if you don't want to enable the Keldon bot functionality.
 * Import the database:

@@ -1,13 +1,16 @@
 /*
-    First, set up the database, which is covered in the README.md file.
-    Second, install the database:
-    mysql -uhanabiuser -p1234567890 < install/database_schema.sql
+    Setting up the database is covered in the README.md file
 */
 
-DROP DATABASE IF EXISTS hanabi;
-CREATE DATABASE hanabi;
 USE hanabi;
 
+/*
+    We have to disable foreign key checks so that we can drop the tables;
+    this will only disable it for the current session
+ */
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id                INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
     username          NVARCHAR(19)  NOT NULL  UNIQUE, /* MySQL is case insensitive by default, which is what we want */
@@ -21,6 +24,7 @@ CREATE TABLE users (
 CREATE INDEX users_index_username ON users (username);
 INSERT INTO users (id, username, password) VALUES (1, '[SERVER]', '');
 
+DROP TABLE IF EXISTS games;
 CREATE TABLE games (
     id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
     name               NVARCHAR(50)  NOT NULL,
@@ -39,6 +43,7 @@ CREATE TABLE games (
 );
 CREATE INDEX games_index_status ON games (status);
 
+DROP TABLE IF EXISTS game_participants;
 CREATE TABLE game_participants (
     id               INT        NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
     user_id          INT        NOT NULL,
@@ -52,6 +57,7 @@ CREATE INDEX game_participants_index_user_id ON game_participants (user_id);
 CREATE INDEX game_participants_index_game_id ON game_participants (game_id);
 CREATE INDEX game_participants_index_datetime_joined ON game_participants (datetime_joined);
 
+DROP TABLE IF EXISTS game_actions;
 CREATE TABLE game_actions (
     id               INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
     game_id          INT           NOT NULL,
@@ -62,6 +68,7 @@ CREATE TABLE game_actions (
 );
 CREATE INDEX game_actions_index_game_id ON game_actions (game_id);
 
+DROP TABLE IF EXISTS chat_log;
 CREATE TABLE chat_log (
     id               INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
     user_id          INT            NOT NULL,
