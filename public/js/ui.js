@@ -842,6 +842,7 @@ HanabiCard.prototype.add_clue = function(clue) {
         if (ui.learned_cards[this.order].suit === undefined) {
             ui.learned_cards[this.order].suit = clue.value;
         } else if (ui.learned_cards[this.order].suit !== clue.value) {
+            // Card has multiple colors; set suit to Rainbow
             ui.learned_cards[this.order].suit = 5;
         }
 
