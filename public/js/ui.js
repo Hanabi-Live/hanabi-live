@@ -26,7 +26,6 @@ this.variant = 0;
 this.replay = false;
 this.shared_replay = false;
 this.shared_replay_leader = false;
-this.shared_replay_last_mouse_time = new Date().getTime();
 this.replay_only = false;
 this.spectating = false;
 this.replay_max = 0;
@@ -2534,7 +2533,6 @@ var uilayer     = new Kinetic.Layer();
 var overlayer   = new Kinetic.Layer();
 var tiplayer    = new Kinetic.Layer();
 var timerlayer  = new Kinetic.Layer();
-var cursorlayer = new Kinetic.Layer();
 
 var player_hands = [];
 var drawdeck;
@@ -2547,7 +2545,6 @@ var clue_area, clue_target_group, clue_type_group, submit_clue;
 var timer_rect1, timer_label1, timer_text1;
 var timer_rect2, timer_label2, timer_text2;
 var no_clue_label, no_clue_box, no_discard_label, deck_play_available_label;
-var shared_replay_cursor;
 var replay_area, replay_bar, replay_shuttle, replay_button;
 var replay_buttons = []; // The four navigational buttons
 var lobby_button, help_button;
@@ -3447,16 +3444,6 @@ this.build_ui = function() {
             timer_text2.hide();
         }
     }
-
-    /*
-        Shared replay stuff
-    */
-
-    shared_replay_cursor = new Kinetic.Group({
-
-    });
-
-    cursorlayer.add(shared_replay_cursor);
 
     /*
         Draw the replay area
@@ -4639,14 +4626,6 @@ this.handle_replay_turn = function(note) {
     }
 };
 
-this.handle_replay_mouse = function(note) {
-    if (this.shared_replay_leader) {
-        return;
-    }
-
-
-};
-
 this.stop_action = function(fast) {
     var i, child;
 
@@ -4864,35 +4843,6 @@ this.replay_log = [];
 this.replay_pos = 0;
 this.replay_turn = 0;
 
-/*
-    Shared replay functionality
-*/
-
-uilayer.on("mousemove", function(event) {
-    if (!ui.shared_replay_leader) {
-        // We only need to track mouse movement if we are the shared replay leader
-        return;
-    }
-
-    let now = new Date().getTime();
-    if (now - ui.shared_replay_last_mouse_time < 200) {
-        // We already sent a mouse message less than 200 milliseconds ago
-        return;
-    }
-
-    ui.shared_replay_last_mouse_time = now;
-    ui.send_msg({
-        type: "replay_action",
-        resp: {
-            type: 1,
-            cursor: {
-                x: event.evt.clientX,
-                y: event.evt.clientY,
-            },
-        },
-    });
-});
-
 }
 
 /*
@@ -4911,16 +4861,17 @@ HanabiUI.prototype.handle_message = function(msg) {
         }
 
     } else if (msgType === "init") {
-        this.player_us = msgData.seat;
-        this.player_names = msgData.names;
-        this.variant = msgData.variant;
-        this.replay = this.replay_only = msgData.replay;
+        this.player_us     = msgData.seat;
+        this.player_names  = msgData.names;
+        this.variant       = msgData.variant;
+        this.replay        = this.replay_only = msgData.replay;
+        this.spectating    = msgData.spectating;
+        this.timed_game    = msgData.timed;
         this.shared_replay = msgData.shared_replay;
+
         if (this.replay_only) {
             this.replay_turn = -1;
         }
-        this.spectating = msgData.spectating;
-        this.timed_game = msgData.timed;
 
         this.load_images();
 
@@ -4967,10 +4918,6 @@ HanabiUI.prototype.handle_message = function(msg) {
     } else if (msgType === "replay_turn") {
         // This is used in shared replays
         this.handle_replay_turn.call(this, msgData);
-
-    } else if (msgType === "replay_mouse") {
-        // This is used in shared replays
-        this.handle_replay_mouse.call(this, msgData);
     }
 };
 
