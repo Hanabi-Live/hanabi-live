@@ -65,10 +65,20 @@ exports.step1 = function(socket, data) {
         game.stacks.push(0);
     }
 
-    // Get a list of all the seeds that these players have played before
-    data.playerIndex = -1;
-    data.seeds = {};
-    step2(null, socket, data);
+    let m = game.name.match(/^!seed (\d+)$/);
+    if (m) {
+        // Parse the game name to see if the players want to play a specific seed
+        let seed = m[1];
+        let seedPrefix = 'p' + game.players.length + 'v' + game.variant + 's';
+        game.seed = seedPrefix + seed;
+        step3(socket, data);
+        // We skip step 2 because we do not have to find an unplayed seed
+    } else {
+        // Get a list of all the seeds that these players have played before
+        data.playerIndex = -1;
+        data.seeds = {};
+        step2(null, socket, data);
+    }
 };
 
 function step2(error, socket, data) {
@@ -79,6 +89,7 @@ function step2(error, socket, data) {
 
     // Local variables
     let game = globals.currentGames[data.gameID];
+
     data.playerIndex++;
     if (data.playerIndex < game.players.length) {
         data.userID = game.players[data.playerIndex].userID;
@@ -99,6 +110,13 @@ function step2(error, socket, data) {
 
     // Set the new seed in the game object
     game.seed = data.seed;
+    step3(socket, data);
+}
+
+function step3(socket, data) {
+    // Local variables
+    let game = globals.currentGames[data.gameID];
+
     logger.info(`Using seed ${game.seed}, allow_spec is ${game.allow_spec}, timed is ${game.timed}.`);
 
     // Shuffle the deck
@@ -141,7 +159,7 @@ function step2(error, socket, data) {
     models.games.start(socket, data, step3);
 }
 
-function step3(error, socket, data) {
+function step4(error, socket, data) {
     if (error !== null) {
         logger.error('Error: models.games.start failed:', error);
         return;
