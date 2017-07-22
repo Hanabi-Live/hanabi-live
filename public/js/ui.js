@@ -721,7 +721,7 @@ HanabiCard.prototype.add_listeners = function() {
             cardlayer.draw();
 
             // Also send the note to the server
-            if (!this.replay_only) {
+            if (!ui.replay_only) {
                 // Update the spectators about the new note
                 ui.send_msg({
                     type: "note",
@@ -4911,7 +4911,8 @@ HanabiUI.prototype.handle_message = function(msg) {
         this.player_us     = msgData.seat;
         this.player_names  = msgData.names;
         this.variant       = msgData.variant;
-        this.replay        = this.replay_only = msgData.replay;
+        this.replay        = msgData.replay;
+        this.replay_only   = msgData.replay;
         this.spectating    = msgData.spectating;
         this.timed_game    = msgData.timed;
         this.shared_replay = msgData.shared_replay;
