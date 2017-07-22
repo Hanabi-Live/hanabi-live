@@ -118,12 +118,14 @@ function step2(error, socket, data) {
         });
 
         // Send them any notes that they have previously made
-        socket.emit('message', {
-            type: 'notes',
-            resp: {
-                notes: game.players[index].notes,
-            },
-        });
+        if (index !== -1) { // We don't want to send any notes to spectators
+            socket.emit('message', {
+                type: 'notes',
+                resp: {
+                    notes: game.players[index].notes,
+                },
+            });
+        }
     }
 
     // Enable the replay controls for the leader of the review
