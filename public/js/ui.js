@@ -1,4 +1,4 @@
-"use strict";
+/* eslint-disable */
 
 var MHGA_show_debug_messages = true;
 var show_replay_partial_faces = true;

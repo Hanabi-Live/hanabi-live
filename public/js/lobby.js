@@ -1,4 +1,4 @@
-"use strict";
+/* eslint-disable */
 
 var MHGA_show_debug_messages = true;
 var fadeTime = 200; // Vanilla Keldon is 800
