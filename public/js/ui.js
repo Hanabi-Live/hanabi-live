@@ -4628,6 +4628,8 @@ this.handle_notes = function(note) {
     notes_written = note.notes;
 
     for (const order of Object.keys(notes_written)) {
+        // The following code is mosly copied from the "handle_note" function
+
         // Set the note
         const newNote = notes_written[order];
         ui.setNote(order, newNote);

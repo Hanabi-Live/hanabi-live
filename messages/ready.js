@@ -93,8 +93,8 @@ function step2(error, socket, data) {
         });
     }
 
-    // Send them the current time for all player's clocks
     if (socket.status !== 'Replay' && socket.status !== 'Shared Replay') {
+        // Send them the current time for all player's clocks
         const times = [];
         for (let i = 0; i < game.players.length; i++) {
             let time = game.players[i].time;
@@ -116,15 +116,15 @@ function step2(error, socket, data) {
                 active: game.turn_player_index,
             },
         });
-    }
 
-    // Send them any notes that they have previously made
-    socket.emit('message', {
-        type: 'notes',
-        resp: {
-            notes: game.players[index].notes,
-        },
-    });
+        // Send them any notes that they have previously made
+        socket.emit('message', {
+            type: 'notes',
+            resp: {
+                notes: game.players[index].notes,
+            },
+        });
+    }
 
     // Enable the replay controls for the leader of the review
     if (socket.status === 'Shared Replay' &&
