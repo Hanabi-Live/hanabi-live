@@ -531,7 +531,7 @@ var HanabiCard = function(config) {
         },
         shadowBlur: 2,
         text: "?",
-        visible: (ui.variant === VARIANT.MIXED),
+        visible: (ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM),
         y: 12, // Move it downwards a bit from the default location
     });
     this.color_clue_group.add(this.color_clue_question_mark);
@@ -584,7 +584,7 @@ var HanabiCard = function(config) {
     // Draw the circle that is the "clue indicator" on the card
     this.clue_given = new Kinetic.Circle({
         x: 0.9 * config.width,
-        y: (ui.variant === VARIANT.MIXED ? 0.2 : 0.1) * config.height,
+        y: (ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM ? 0.2 : 0.1) * config.height,
         radius: 0.05 * config.width,
         fill: "white",
         stroke: "black",
@@ -597,7 +597,7 @@ var HanabiCard = function(config) {
     // Define the "note indicator" square
     this.note_given = new Kinetic.Rect({
         x: 0.854 * config.width,
-        y: (ui.variant === VARIANT.MIXED ? 0.26 : 0.165) * config.height,
+        y: (ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM ? 0.26 : 0.165) * config.height,
         width: 0.09 * config.width,
         height: 0.09 * config.width,
         fill: "white",
@@ -854,7 +854,7 @@ HanabiCard.prototype.add_clue = function(clue) {
 
         this.color_clue_group.show();
 
-        if (ui.variant === VARIANT.MIXED) {
+        if (ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM) {
             // TODO Distinguishing suits from colors is not supported yet.
             // ui.learned_cards[this.order].suit may be a correct suit index from a play or discard
         } else if (ui.learned_cards[this.order].suit === undefined) {
@@ -1980,13 +1980,6 @@ var show_clue_match = function(target, clue, show_neg) {
                 }
 
             } else if (ui.variant === VARIANT.MIXED) {
-                // Suits:
-                // 0 - Teal     (Blue / Green)
-                // 1 - Magenta  (Blue / Red)
-                // 2 - Indigo   (Blue / Purple)
-                // 3 - Orange   (Green / Red)
-                // 4 - Forest   (Green / Purple)
-                // 5 - Cardinal (Red / Purple)
                 if (clue.value === 0) { // Blue clue
                     if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
                         touched = true;
@@ -1999,8 +1992,35 @@ var show_clue_match = function(target, clue, show_neg) {
                     if (card.suit === 1 || card.suit === 3 || card.suit === 5) {
                         touched = true;
                     }
-                } else if (clue.value === 3) { // Purple clue
+                } else if (clue.value === 3) { // Black clue
                     if (card.suit === 2 || card.suit === 4 || card.suit === 5) {
+                        touched = true;
+                    }
+                }
+
+            } else if (ui.variant === VARIANT.MM) {
+                if (card.suit === 5) {
+                    // Rainbow cards are always touched by color clues
+                    touched = true;
+
+                } else if (clue.value === 0) { // Blue clue
+                    if (card.suit === 0 || card.suit === 4) {
+                        touched = true;
+                    }
+                } else if (clue.value === 1) { // Green clue
+                    if (card.suit === 0 || card.suit === 1) {
+                        touched = true;
+                    }
+                } else if (clue.value === 2) { // Yellow clue
+                    if (card.suit === 1 || card.suit === 2) {
+                        touched = true;
+                    }
+                } else if (clue.value === 3) { // Red clue
+                    if (card.suit === 2 || card.suit === 3) {
+                        touched = true;
+                    }
+                } else if (clue.value === 4) { // Purple clue
+                    if (card.suit === 3 || card.suit === 4) {
                         touched = true;
                     }
                 }
@@ -2027,7 +2047,7 @@ var suit_colors = [
     "#aa0000", // Red
     "#6600cc", // Purple
     "#111111", // Black
-    "#cccccc", // Grey
+    "#cccccc", // Grey (for the card backs)
 ];
 var mixed_suit_colors = [
     "#00cc00", // Green    (Blue   / Yellow)
@@ -2036,7 +2056,7 @@ var mixed_suit_colors = [
     "#ff9900", // Orange   (Yellow / Red)
     "#999900", // Tan      (Yellow / Black)
     "#660016", // Burgundy (Red    / Black)
-    "#cccccc", // Grey
+    "#cccccc", // Grey     (for the card backs)
 ];
 var mixed_suit_color_composition = [
     // Each mixed suit is composed of two separate colors
@@ -2054,6 +2074,24 @@ var mixed_clue_colors = [
     "#aa0000", // Red
     "#000000", // Black
 ];
+var mm_suit_colors = [
+    "#00b3b3", // Teal     (Blue   / Green)
+    "#80c000", // Lime     (Green  / Yellow)
+    "#ff9900", // Orange   (Yellow / Red)
+    "#660016", // Burgundy (Red    / Purple)
+    "#1a0082", // Indigo   (Purple / Blue)
+    "#111111", // Multi    (will be replaced later)
+    "#cccccc", // Grey     (for the card backs)
+];
+var mm_color_composition = [
+    // Each mixed suit is composed of two separate colors
+    // (from the "suit_colors" array)
+    [0, 1], // Blue   / Green
+    [1, 2], // Green  / Yellow
+    [2, 3], // Yellow / Red
+    [3, 4], // Red    / Purple
+    [4, 0], // Purple / Blue
+];
 var card_images = {};
 var scale_card_images = {};
 
@@ -2064,6 +2102,7 @@ this.build_cards = function() {
     var x, y;
     var rainbow = false, grad;
     var mixed = false;
+    var mm = false;
     var pathfuncs = []; // For the 5 different suit symbols
 
     if (this.variant === VARIANT.RAINBOW) {
@@ -2071,6 +2110,9 @@ this.build_cards = function() {
     } else if (this.variant === VARIANT.MIXED) {
         mixed = true;
         show_replay_partial_faces = false;
+    } else if (this.variant === VARIANT.MM) {
+        rainbow = true;
+        mm = true;
     }
 
     /*
@@ -2225,6 +2267,10 @@ this.build_cards = function() {
             } else if (mixed && i <= 5) {
                 ctx.fillStyle = mixed_suit_colors[i];
                 ctx.strokeStyle = mixed_suit_colors[i];
+
+            } else if (mm && i <= 4) {
+                ctx.fillStyle = mm_suit_colors[i];
+                ctx.strokeStyle = mm_suit_colors[i];
 
             } else {
                 ctx.fillStyle = suit_colors[i];
@@ -2390,7 +2436,17 @@ this.build_cards = function() {
             }
 
             // Make the special corners on cards for the mixed variant
-            if (i <= 5 && mixed) {
+            if ((i <= 5 && mixed) || (i <= 4 && mm)) {
+                let color1;
+                let color2;
+                if (mixed) {
+                    color1 = mixed_clue_colors[mixed_suit_color_composition[i][0]];
+                    color2 = mixed_clue_colors[mixed_suit_color_composition[i][1]];
+                } else if (mm) {
+                    color1 = suit_colors[mm_color_composition[i][0]];
+                    color2 = suit_colors[mm_color_composition[i][1]];
+                }
+
                 ctx.save();
 
                 ctx.lineWidth = 1;
@@ -2404,7 +2460,7 @@ this.build_cards = function() {
                 ctx.lineTo(cardw - borderSize - triangleSize, borderSize); // Move left
                 ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move down and right diagonally
                 ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
-                ctx.fillStyle = mixed_clue_colors[mixed_suit_color_composition[i][0]];
+                ctx.fillStyle = color1;
                 drawshape();
 
                 // Draw the second half of the top-right triangle
@@ -2413,7 +2469,7 @@ this.build_cards = function() {
                 ctx.lineTo(cardw - borderSize, borderSize + triangleSize); // Move down
                 ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move up and left diagonally
                 ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
-                ctx.fillStyle = mixed_clue_colors[mixed_suit_color_composition[i][1]];
+                ctx.fillStyle = color2;
                 drawshape();
 
                 // Draw the first half of the bottom-left triangle
@@ -2422,7 +2478,7 @@ this.build_cards = function() {
                 ctx.lineTo(borderSize, cardh - borderSize - triangleSize); // Move up
                 ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move right and down diagonally
                 ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
-                ctx.fillStyle = mixed_clue_colors[mixed_suit_color_composition[i][0]];
+                ctx.fillStyle = color1;
                 drawshape();
 
                 // Draw the second half of the bottom-left triangle
@@ -2431,7 +2487,7 @@ this.build_cards = function() {
                 ctx.lineTo(borderSize + triangleSize, cardh - borderSize); // Move right
                 ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move left and up diagonally
                 ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
-                ctx.fillStyle = mixed_clue_colors[mixed_suit_color_composition[i][1]];
+                ctx.fillStyle = color2;
                 drawshape();
 
                 ctx.restore();
@@ -2875,6 +2931,8 @@ this.build_ui = function() {
         let fillColor = suit_colors[i];
         if (ui.variant === VARIANT.MIXED) {
             fillColor = mixed_suit_colors[i];
+        } else if (ui.variant === VARIANT.MM) {
+            fillColor = mm_suit_colors[i];
         }
         pileback = new Kinetic.Rect({
             fill: fillColor,
@@ -4208,9 +4266,9 @@ var suit_names = [
 
 var mixed_clue_names = [
     "Blue",
-    "Green",
+    "Yellow",
     "Red",
-    "Purple",
+    "Black",
 ];
 
 var suit_abbreviations = [
