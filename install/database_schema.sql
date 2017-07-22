@@ -27,17 +27,17 @@ INSERT INTO users (id, username, password) VALUES (1, '[SERVER]', '');
 DROP TABLE IF EXISTS games;
 CREATE TABLE games (
     id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    name               NVARCHAR(50)  NOT NULL,
-    owner              INT           NOT NULL,
-    max_players        TINYINT       NOT NULL, /* 2-5 */
-    variant            TINYINT       NOT NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
-    allow_spec         BOOLEAN       NOT NULL, /* 0 - no, 1 - yes */
-    timed              BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
+    name               NVARCHAR(50)  NULL,
+    owner              INT           NULL,
+    max_players        TINYINT       NULL, /* 2-5 */
+    variant            TINYINT       NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
+    allow_spec         BOOLEAN       NULL, /* 0 - no, 1 - yes */
+    timed              BOOLEAN       NULL, /* 0 - not timed, 1 - timed */
     seed               VARCHAR(15)   NULL,
     score              INT           NULL,
-    datetime_created   TIMESTAMP     NULL      DEFAULT NULL,
+    datetime_created   TIMESTAMP     NOT NULL, /* Defaults to the current time */
     datetime_started   TIMESTAMP     NULL      DEFAULT NULL,
-    datetime_finished  TIMESTAMP     NOT NULL, /* Defaults to the current time */
+    datetime_finished  TIMESTAMP     NULL      DEFAULT NULL,
     FOREIGN KEY (owner) REFERENCES users (id)
 );
 CREATE INDEX games_index_status ON games (status);

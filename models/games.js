@@ -2,32 +2,8 @@
 const db = require('./db');
 
 exports.create = (socket, data, done) => {
-    const sql = `
-        INSERT INTO games (
-            name,
-            owner,
-            max_players,
-            variant,
-            allow_spec,
-            timed,
-            seed,
-            score,
-            datetime_created,
-            datetime_started
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    const values = [
-        data.name,
-        data.owner,
-        data.max_players,
-        data.variant,
-        data.allow_spec,
-        data.timed,
-        data.seed,
-        data.score,
-        data.datetime_created,
-        data.datetime_started,
-    ];
+    const sql = 'INSERT INTO games (owner) VALUES (?)';
+    const values = [data.owner];
     db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
@@ -39,8 +15,64 @@ exports.create = (socket, data, done) => {
     });
 };
 
+exports.delete = (data, done) => {
+    const sql = 'DELETE FROM games where id = ?';
+    const values = [data.gameID];
+    db.query(sql, values, (error, results, fields) => {
+        if (error) {
+            done(error, data);
+            return;
+        }
+
+        done(null, data);
+    });
+};
+
+exports.end = (data, done) => {
+    const sql = `
+        UPDATE games
+        SET
+            name = ?,
+            owner = ?,
+            max_players = ?,
+            variant = ?,
+            allow_spec = ?,
+            timed = ?,
+            seed = ?,
+            score = ?,
+            datetime_started = ?,
+            datetime_finished = NOW()
+        WHERE id = ?
+    `;
+    const values = [
+        data.name,
+        data.owner,
+        data.max_players,
+        data.variant,
+        data.allow_spec,
+        data.timed,
+        data.seed,
+        data.score,
+        data.datetime_started,
+        data.gameID,
+    ];
+    db.query(sql, values, (error, results, fields) => {
+        if (error) {
+            done(error, data);
+            return;
+        }
+
+        done(null, data);
+    });
+};
+
+// Used by the "start_replay" function
 exports.exists = (socket, data, done) => {
-    const sql = 'SELECT id FROM games WHERE id = ?';
+    const sql = `
+        SELECT id
+        FROM games
+        WHERE id = ? AND datetime_finished IS NOT NULL
+    `;
     const values = [data.gameID];
     db.query(sql, values, (error, results, fields) => {
         if (error) {
@@ -73,7 +105,7 @@ exports.getUserHistory = (socket, data, done) => {
             games.variant AS variant
         FROM games
             JOIN game_participants ON game_participants.game_id = games.id
-        WHERE game_participants.user_id = ?
+        WHERE game_participants.user_id = ? AND datetime_finished IS NOT NULL
         ORDER BY games.id
     `;
     const values = [socket.userID];
@@ -98,7 +130,11 @@ exports.getUserHistory = (socket, data, done) => {
 };
 
 exports.getNumSimilar = (data, done) => {
-    const sql = 'SELECT COUNT(id) AS num_similar FROM games WHERE seed = ?';
+    const sql = `
+        SELECT COUNT(id) AS num_similar
+        FROM games
+        WHERE seed = ? AND datetime_finished IS NOT NULL
+    `;
     const values = [data.seed];
     db.query(sql, values, (error, results, fields) => {
         if (error) {
@@ -124,6 +160,7 @@ exports.getAllDeals = (socket, data, done) => {
             ) AS you
         FROM games
         WHERE seed = (SELECT seed FROM games WHERE id = ?)
+        AND datetime_finished IS NOT NULL
         ORDER BY id
     `;
     const values = [socket.userID, data.gameID];
@@ -149,12 +186,12 @@ exports.getAllDeals = (socket, data, done) => {
     });
 };
 
-exports.getSeeds = (socket, data, done) => {
+exports.getPlayerSeeds = (socket, data, done) => {
     const sql = `
         SELECT games.seed AS seed
         FROM games
-            JOIN game_participants ON games.id = game_participants.games_id
-        WHERE game_participants.user_id = ? AND games.status = 2
+            JOIN game_participants ON games.id = game_participants.game_id
+        WHERE game_participants.user_id = ? AND datetime_finished IS NOT NULL
     `;
     const values = [data.userID];
     db.query(sql, values, (error, results, fields) => {
@@ -181,7 +218,7 @@ exports.getVariantPlayers = (socket, data, done) => {
         FROM games
             JOIN game_participants ON games.id = game_participants.game_id
             JOIN users ON game_participants.user_id = users.id
-        WHERE games.id = ?
+        WHERE games.id = ? AND datetime_finished IS NOT NULL
         ORDER BY game_participants.id
     `;
     const values = [data.gameID];
@@ -208,27 +245,13 @@ exports.getVariantPlayers = (socket, data, done) => {
     });
 };
 
-exports.getActions = (socket, data, done) => {
-    const sql = 'SELECT action FROM game_actions WHERE game_id = ? ORDER BY id';
-    const values = [data.gameID];
-    db.query(sql, values, (error, results, fields) => {
-        if (error) {
-            done(error, socket, data);
-            return;
-        }
-        data.game = {};
-        data.game.actions = [];
-        for (const row of results) {
-            data.game.actions.push(JSON.parse(row.action));
-        }
-
-        done(null, socket, data);
-    });
-};
-
 // Used when creating a shared replay
 exports.getVariant = (socket, data, done) => {
-    const sql = 'SELECT variant FROM games WHERE id = ?';
+    const sql = `
+        SELECT variant
+        FROM games
+        WHERE id = ? AND datetime_finished IS NOT NULL
+    `;
     const values = [data.gameID];
     db.query(sql, values, (error, results, fields) => {
         if (error) {
@@ -241,5 +264,18 @@ exports.getVariant = (socket, data, done) => {
             data.variant = results[0].variant;
         }
         done(null, socket, data);
+    });
+};
+
+// Clean up any races that were either not started yet or were not finished
+exports.clean = (done) => {
+    const sql = 'DELETE FROM games WHERE datetime_finished IS NULL';
+    db.query(sql, [], (error, results, fields) => {
+        if (error) {
+            done(error);
+            return;
+        }
+
+        done(null);
     });
 };

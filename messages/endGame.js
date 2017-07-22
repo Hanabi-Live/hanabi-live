@@ -73,13 +73,14 @@ exports.step1 = (data) => {
         datetime_created: game.datetime_created,
         datetime_started: game.datetime_started,
         // datetime_finished will automatically be set by MariaDB
+        gameID: data.gameID,
     };
-    models.games.create(data, step2);
+    models.games.end(data, step2);
 };
 
 function step2(error, data) {
     if (error !== null) {
-        logger.error(`models.games.create failed: ${error}`);
+        logger.error(`models.games.end failed: ${error}`);
         return;
     }
 
@@ -99,8 +100,7 @@ function step3(error, data) {
 
     data.insertNum += 1;
     if (data.insertNum < game.players.length) {
-        const player = game.players.length[data.insertNum];
-        data.userID = player.userID;
+        data.userID = game.players[data.insertNum].userID;
         models.gameParticipants.create(data, step3);
         return;
     }

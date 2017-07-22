@@ -28,7 +28,7 @@ module.exports = {
     ],
     mixedClues: [
         'Blue',
-        'Green',
+        'Yellow',
         'Red',
         'Black',
     ],

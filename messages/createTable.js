@@ -11,17 +11,14 @@
 */
 
 // Imports
-const moment = require('moment');
 const globals = require('../globals');
 const logger = require('../logger');
+const models = require('../models');
 const messages = require('../messages');
 const notify = require('../notify');
 
+// Perform some validation before creating the game
 exports.step1 = (socket, data) => {
-    /*
-        Validation
-    */
-
     // Validate that they submitted all of the required data
     if (!('name' in data)) {
         logger.warn(`User "${data.username}" created a table without sending a "name" value.`);
@@ -56,7 +53,7 @@ exports.step1 = (socket, data) => {
     }
 
     // Validate that the game name is not excessively long
-    const maxLength = 30;
+    const maxLength = 35;
     if (data.name.length > maxLength) {
         logger.warn(`User "${data.username}" supplied an excessively long table name with a length of ${data.name.length}.`);
         data.reason = `The table name must be ${maxLength} characters or less.`;
@@ -64,9 +61,16 @@ exports.step1 = (socket, data) => {
         return;
     }
 
-    /*
-        Creation
-    */
+    // Create the table
+    data.owner = socket.userID;
+    models.games.create(socket, data, step2);
+};
+
+function step2(error, socket, data) {
+    if (error !== null) {
+        logger.error(`models.games.create failed: ${error}`);
+        return;
+    }
 
     logger.info(`User "${socket.username}" created a new game: #${data.gameID} (${data.name})`);
 
@@ -77,7 +81,6 @@ exports.step1 = (socket, data) => {
         clue_num: 8,
         datetime_created: null,
         datetime_finished: null,
-        datetime_started: moment().format('YYYY-MM-DD HH:mm:ss'), // This is the MariaDB format
         deck: [],
         deckIndex: 0,
         end_turn_num: null,
@@ -105,4 +108,4 @@ exports.step1 = (socket, data) => {
     // Join the user to the new table
     data.table_id = data.gameID;
     messages.join_table.step1(socket, data);
-};
+}

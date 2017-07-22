@@ -23,7 +23,7 @@ exports.step1 = (socket, data) => {
     }
     let randomlyGeneratedName = '';
     for (let i = 0; i < numWords; i++) {
-        randomlyGeneratedName += wordList[`${randomNumbers[i]} `];
+        randomlyGeneratedName += `${wordList[randomNumbers[i]]} `;
     }
     randomlyGeneratedName = randomlyGeneratedName.slice(0, -1);
     // Chop off the trailing space

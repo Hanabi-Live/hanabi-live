@@ -4,12 +4,18 @@ const favicon = require('serve-favicon');
 const path = require('path');
 const globals = require('./globals');
 const logger = require('./logger');
+const models = require('./models');
 const messages = require('./messages');
 
 // Express and Socket.IO
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+
+// Welcome message
+logger.info('+--------------------------+');
+logger.info('| Keldon Emulator starting |');
+logger.info('+--------------------------+');
 
 // Set the view engine to ejs
 app.set('view engine', 'ejs');
@@ -54,6 +60,16 @@ require('./discord');
 // Start the Keldon listener
 require('./keldon');
 
-http.listen(globals.port, () => {
-    logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
-});
+// Clean up any non-started games before we start
+models.games.clean(initComplete);
+
+function initComplete(error) {
+    if (error !== null) {
+        logger.error(`models.games.clean failed: ${error}`);
+        return;
+    }
+
+    http.listen(globals.port, () => {
+        logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
+    });
+}

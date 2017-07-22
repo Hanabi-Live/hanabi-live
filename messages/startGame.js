@@ -82,7 +82,7 @@ exports.step1 = (socket, data) => {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        logger.error(`models.games.getSeeds failed: ${error}`);
+        logger.error(`models.games.getPlayerSeeds failed: ${error}`);
         return;
     }
 
@@ -92,7 +92,7 @@ function step2(error, socket, data) {
     data.playerIndex += 1;
     if (data.playerIndex < game.players.length) {
         data.userID = game.players[data.playerIndex].userID;
-        models.games.getSeeds(socket, data, step2);
+        models.games.getPlayerSeeds(socket, data, step2);
         return;
     }
 

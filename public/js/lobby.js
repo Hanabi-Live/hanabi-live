@@ -482,6 +482,7 @@ HanabiLobby.prototype.draw_tables = function() {
             button.on("click", function(evt) {
                 evt.preventDefault();
 
+                console.log(this.id);
                 self.game_id = parseInt(this.id.slice(5));
 
                 self.send_msg({

@@ -23,7 +23,7 @@ exports.step1 = (socket, data) => {
     }
 
     if (socket.status === 'Replay' || socket.status === 'Shared Replay') {
-        models.games.getActions(socket, data, step2);
+        models.gameActions.getAll(socket, data, step2);
     } else {
         data.game = globals.currentGames[data.gameID];
         step2(null, socket, data);
@@ -32,7 +32,7 @@ exports.step1 = (socket, data) => {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        logger.error(`models.games.getActions failed: ${error}`);
+        logger.error(`models.gameActions.getAll failed: ${error}`);
         return;
     }
 
