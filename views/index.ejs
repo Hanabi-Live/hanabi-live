@@ -20,8 +20,18 @@
 <div id="pregame">
 	<div id="login">
 		<h1>Login</h1>
-		<div>Username: <input type="text" id="user"></div>
-		<div>Password: <input type="password" id="pass"></div>
+		<table>
+			<tr>
+				<td>Username:</td>
+				<td style="width: 1em;"></td><!-- Padding -->
+				<td><input type="text" id="user"></td>
+			</tr>
+			<tr>
+				<td>Password:</td>
+				<td></td>
+				<td><input type="password" id="pass"></td>
+			</tr>
+		</table>
 		<div id="connecting"><img src="public/img/logging.gif"></div>
 		<div id="login-container"><button type="button" id="login-button">Login</button></div>
 		<div id="login-result"></div>
