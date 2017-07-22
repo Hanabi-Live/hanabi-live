@@ -15,7 +15,7 @@ const discord = require('../discord');
 exports.step1 = (socket, data) => {
     // Validate the message
     if (typeof data.msg !== 'string') {
-        logger.warn('Error: Malformed chat message input.');
+        logger.error('Malformed chat message input.');
         return;
     }
 
@@ -31,7 +31,7 @@ exports.step1 = (socket, data) => {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        logger.error('Error: models.games.create failed:', error);
+        logger.error(`models.games.create failed: ${error}`);
         return;
     }
 

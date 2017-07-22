@@ -29,7 +29,7 @@ exports.step1 = (socket, data) => {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        logger.error('Error: models.games.getVariant failed:', error);
+        logger.error(`models.games.getVariant failed: ${error}`);
         return;
     }
 

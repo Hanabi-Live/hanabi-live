@@ -73,7 +73,7 @@ exports.getUserHistory = (socket, data, done) => {
             games.variant AS variant
         FROM games
             JOIN game_participants ON game_participants.game_id = games.id
-        WHERE games.status = 2 AND game_participants.user_id = ?
+        WHERE game_participants.user_id = ?
         ORDER BY games.id
     `;
     const values = [socket.userID];

@@ -125,7 +125,7 @@ const step1 = (socket, data) => {
         notify.gameAction(data);
         logger.info(`[Game ${data.gameID}] ${text}`);
     } else {
-        logger.error(`Error: Unknown action type: ${data.type}`);
+        logger.error(`Unknown action type: ${data.type}`);
         return;
     }
 

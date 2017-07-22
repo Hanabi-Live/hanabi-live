@@ -6,6 +6,7 @@ const globals = require('./globals');
 const logger = require('./logger');
 const messages = require('./messages');
 
+// Express and Socket.IO
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);

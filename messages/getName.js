@@ -18,7 +18,7 @@ exports.step1 = (socket, data) => {
         let randomNumber;
         do {
             randomNumber = getRandomNumber(0, wordList.length - 1);
-        } while (randomNumbers.indexOf(randomNumber) === -1);
+        } while (randomNumbers.indexOf(randomNumber) !== -1);
         randomNumbers.push(randomNumber);
     }
     let randomlyGeneratedName = '';

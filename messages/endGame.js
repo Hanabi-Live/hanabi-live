@@ -79,7 +79,7 @@ exports.step1 = (data) => {
 
 function step2(error, data) {
     if (error !== null) {
-        logger.error('Error: models.games.create failed:', error);
+        logger.error(`models.games.create failed: ${error}`);
         return;
     }
 
@@ -90,7 +90,7 @@ function step2(error, data) {
 
 function step3(error, data) {
     if (error !== null) {
-        logger.error('Error: models.gameParticipants.create failed:', error);
+        logger.error(`models.gameParticipants.create failed: ${error}`);
         return;
     }
 
@@ -112,7 +112,7 @@ function step3(error, data) {
 
 function step4(error, data) {
     if (error !== null) {
-        logger.error('Error: models.gameActions.create failed:', error);
+        logger.error(`models.gameActions.create failed: ${error}`);
         return;
     }
 
@@ -132,7 +132,7 @@ function step4(error, data) {
 
 function step5(error, data) {
     if (error !== null) {
-        logger.error('Error: models.games.getNumSimilar failed:', error);
+        logger.error(`models.games.getNumSimilar failed: ${error}`);
         return;
     }
 
@@ -160,7 +160,7 @@ function step5(error, data) {
 
 function step6(error, data) {
     if (error !== null) {
-        logger.error('Error: models.users.updateStats failed:', error);
+        logger.error(`models.users.updateStats failed: ${error}`);
         return;
     }
 
@@ -181,7 +181,7 @@ function step6(error, data) {
 
 function step7(error, data) {
     if (error !== null) {
-        logger.error('Error: models.users.getStats failed:', error);
+        logger.error(`models.users.getStats failed: ${error}`);
         return;
     }
 

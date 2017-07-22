@@ -20,7 +20,7 @@ exports.step1 = (socket, data) => {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        logger.error('Error: models.games.getAllDeals failed:', error);
+        logger.error(`models.games.getAllDeals failed: ${error}`);
         return;
     }
 

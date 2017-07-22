@@ -82,7 +82,7 @@ exports.step1 = (socket, data) => {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        logger.error('Error: models.games.getSeeds failed:', error);
+        logger.error(`models.games.getSeeds failed: ${error}`);
         return;
     }
 

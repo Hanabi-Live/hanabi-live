@@ -54,7 +54,7 @@ exports.step1 = (socket, data) => {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        logger.error('Error: models.users.getPassword failed:', error);
+        logger.error(`models.users.getPassword failed: ${error}`);
         return;
     }
 
@@ -74,7 +74,7 @@ function step2(error, socket, data) {
 
 function step3(error, socket, data) {
     if (error !== null) {
-        logger.error('Error: models.users.create failed:', error);
+        logger.error(`models.users.create failed: ${error}`);
         return;
     }
 
@@ -187,7 +187,7 @@ function step4(socket, data) {
 
 function step5(error, socket, data) {
     if (error !== null) {
-        logger.error('Error: models.games.getUserHistory failed:', error);
+        logger.error(`models.games.getUserHistory failed: ${error}`);
         return;
     }
 

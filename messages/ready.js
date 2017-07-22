@@ -32,7 +32,7 @@ exports.step1 = (socket, data) => {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        logger.error('Error: models.games.getActions failed:', error);
+        logger.error(`models.games.getActions failed: ${error}`);
         return;
     }
 
