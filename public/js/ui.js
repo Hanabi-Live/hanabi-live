@@ -715,13 +715,15 @@ HanabiCard.prototype.add_listeners = function() {
             cardlayer.draw();
 
             // Also send the note to the server
-            ui.send_msg({
-                type: "note",
-                resp: {
-                    order: self.order,
-                    note: note,
-                },
-            });
+            if (!this.replay_only) {
+                ui.send_msg({
+                    type: "note",
+                    resp: {
+                        order: self.order,
+                        note: note,
+                    },
+                });
+            }
         }
     });
 };

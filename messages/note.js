@@ -10,12 +10,23 @@
 
 // Imports
 const globals = require('../globals');
+const logger = require('../logger');
 const notify = require('../notify');
 
 exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = socket.currentGame;
-    const game = globals.currentGames[data.gameID];
+
+    // Validate that this table exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.warn(`Game #${data.gameID} does not exist.`);
+        data.reason = `Game #${data.gameID} does not exist.`;
+        notify.playerDenied(socket, data);
+        return;
+    }
 
     // Get the index of this player
     for (let i = 0; i < game.players.length; i++) {
