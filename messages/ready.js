@@ -118,6 +118,14 @@ function step2(error, socket, data) {
         });
     }
 
+    // Send them any notes that they have previously made
+    socket.emit('message', {
+        type: 'notes',
+        resp: {
+            notes: game.players[index].notes,
+        },
+    });
+
     // Enable the replay controls for the leader of the review
     if (socket.status === 'Shared Replay' &&
         socket.userID === globals.currentGames[data.gameID].owner) {

@@ -716,6 +716,7 @@ HanabiCard.prototype.add_listeners = function() {
 
             // Also send the note to the server
             if (!this.replay_only) {
+                // Update the spectators about the new note
                 ui.send_msg({
                     type: "note",
                     resp: {
@@ -723,6 +724,14 @@ HanabiCard.prototype.add_listeners = function() {
                         note: note,
                     },
                 });
+
+                // Also send the server a new copy of all of our notes
+                ui.send_msg({
+                    type: "notes",
+                    resp: {
+                        notes: notes_written,
+                    }
+                })
             }
         }
     });
@@ -4614,6 +4623,30 @@ this.handle_note = function(note) {
     cardlayer.draw();
 };
 
+this.handle_notes = function(note) {
+    // We recieved a new copy of all of our notes from the server
+    notes_written = note.notes;
+
+    for (const order of Object.keys(notes_written)) {
+        // Set the note
+        const newNote = notes_written[order];
+        ui.setNote(order, newNote);
+
+        // Draw (or hide) the note indicator
+        let card = ui.deck[order];
+        card.tooltip.getText().setText(newNote);
+        if (newNote.length > 0) {
+            card.note_given.show();
+        } else {
+            card.note_given.hide();
+            card.tooltip.hide();
+        }
+    }
+    tiplayer.draw();
+    uilayer.draw();
+    cardlayer.draw();
+};
+
 this.handle_replay_owner = function(note) {
     for (let i = 0; i < replay_buttons.length; i++) {
         this.shared_replay_leader = note.owner;
@@ -4916,6 +4949,10 @@ HanabiUI.prototype.handle_message = function(msg) {
     } else if (msgType === "note") {
         // This is used for spectators
         this.handle_note.call(this, msgData);
+
+    } else if (msgType === "notes") {
+        // This is a list of all of your notes, sent upon reconnecting to a game
+        this.handle_notes.call(this, msgData);
 
     } else if (msgType === "replay_owner") {
         // This is used in shared replays

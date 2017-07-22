@@ -86,6 +86,7 @@ exports.step1 = (socket, data) => {
         present: true,
         socket,
         time,
+        notes: {}, // All of the player's notes, indexed by card order
     });
     notify.allTableChange(data);
     notify.gameMemberChange(data);
