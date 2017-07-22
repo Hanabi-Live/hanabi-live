@@ -1,5 +1,3 @@
-'use strict';
-
 // Sent when the user:
 // - is in a game that is starting
 // - joins a game that has already started
@@ -11,10 +9,10 @@
 
 // Imports
 const globals = require('../globals');
-const logger  = require('../logger');
-const models  = require('../models');
+const logger = require('../logger');
+const models = require('../models');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = socket.currentGame;
 
@@ -32,11 +30,12 @@ function step2(error, socket, data) {
         return;
     }
 
-    let game = data.game;
+    // Local variables
+    const game = data.game;
 
     // Create a list of names of the users in this game
-    let names = [];
-    for (let player of game.players) {
+    const names = [];
+    for (const player of game.players) {
         names.push(player.username);
     }
 
@@ -56,9 +55,9 @@ function step2(error, socket, data) {
     socket.emit('message', {
         type: 'init',
         resp: {
-            names: names,
+            names,
             replay: (socket.status === 'Replay' || socket.status === 'Shared Replay'),
-            seat: seat,
+            seat,
             spectating: (socket.status === 'Spectating'),
             timed: game.timed,
             variant: game.variant,

@@ -1,25 +1,23 @@
-'use strict';
-
 // Sent when the user has joined a game and the UI has been initialized
 // "data" is empty
 
 // Imports
 const globals = require('../globals');
-const logger  = require('../logger');
-const models  = require('../models');
-const notify  = require('../notify');
+const logger = require('../logger');
+const models = require('../models');
+const notify = require('../notify');
 
 // When the client has joined a game after they have initialized the UI
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = socket.currentGame;
 
     // Check to make sure this table exists
     if (!(data.gameID in globals.currentGames) &&
-        socket.status !== 'Replay') {
+        socket.status !== 'Replay') { /* eslint-disable padded-blocks */
 
         logger.warn(`User "${data.username}" tried to ready for game #${data.gameID} with status ${socket.status}, but that game does not exist.`);
-        data.reason = `That game does not exist.`;
+        data.reason = 'That game does not exist.';
         notify.playerDenied(socket, data);
         return;
     }
@@ -38,7 +36,8 @@ function step2(error, socket, data) {
         return;
     }
 
-    let game = data.game;
+    // Local variables
+    const game = data.game;
 
     // Get the index of this player
     let index = -1; // Set an impossible index by default
@@ -54,7 +53,7 @@ function step2(error, socket, data) {
     }
 
     // Send a "notify" or "message" message for every game action of the deal
-    for (let action of game.actions) {
+    for (const action of game.actions) {
         // Scrub card info from cards if the card is in their own hand
         let scrubbed = false;
         let scrubbedAction;
@@ -96,15 +95,15 @@ function step2(error, socket, data) {
 
     // Send them the current time for all player's clocks
     if (socket.status !== 'Replay' && socket.status !== 'Shared Replay') {
-        let times = [];
+        const times = [];
         for (let i = 0; i < game.players.length; i++) {
             let time = game.players[i].time;
 
             // Since we are sending the message in the middle of someone's turn,
             // we need to account for this
             if (game.turn_player_index === i) {
-                let currentTime = (new Date()).getTime();
-                let elapsedTime = currentTime - game.turn_begin_time;
+                const currentTime = (new Date()).getTime();
+                const elapsedTime = currentTime - game.turn_begin_time;
                 time -= elapsedTime;
             }
 
@@ -113,7 +112,7 @@ function step2(error, socket, data) {
         socket.emit('message', {
             type: 'clock',
             resp: {
-                times: times,
+                times,
                 active: game.turn_player_index,
             },
         });

@@ -1,5 +1,3 @@
-'use strict';
-
 // Sent when the user clicks on the "Compare Scores" button
 // "data" example:
 /*
@@ -12,7 +10,7 @@
 const logger = require('../logger');
 const models = require('../models');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = data.id;
 
@@ -26,7 +24,7 @@ function step2(error, socket, data) {
         return;
     }
 
-    for (let game of data.gameList) {
+    for (const game of data.gameList) {
         socket.emit('message', {
             type: 'history_detail',
             resp: {

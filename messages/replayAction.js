@@ -1,5 +1,3 @@
-'use strict';
-
 // Sent when the user performs an action in a shared replay
 // (this is new functionality and not present in the vanilla Keldon server)
 // "data" example:
@@ -18,10 +16,10 @@
 
 // Imports
 const globals = require('../globals');
-const logger  = require('../logger');
-const notify  = require('../notify');
+const logger = require('../logger');
+const notify = require('../notify');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = socket.currentGame;
 
@@ -39,7 +37,7 @@ exports.step1 = function(socket, data) {
     // Validate that this is a shared replay
     if (!game.shared_replay) {
         logger.warn(`User "${socket.username}" tried to perform a replay action on non-replay replay game #${data.gameID}.`);
-        data.reason = `You can only perform replay actions in shared replays.`;
+        data.reason = 'You can only perform replay actions in shared replays.';
         notify.playerDenied(socket, data);
         return;
     }
@@ -47,7 +45,7 @@ exports.step1 = function(socket, data) {
     // Validate that this person is leading the review
     if (socket.userID !== game.owner) {
         logger.warn(`User "${socket.username}" tried to perform an action on shared replay #${data.gameID}, but they were not the owner.`);
-        data.reason = `You are not the owner of this shared replay.`;
+        data.reason = 'You are not the owner of this shared replay.';
         notify.playerDenied(socket, data);
         return;
     }
@@ -58,7 +56,7 @@ exports.step1 = function(socket, data) {
     }
 
     // Send it to everyone
-    for (let userID of Object.keys(game.spectators)) {
+    for (const userID of Object.keys(game.spectators)) {
         let msg;
         if (data.type === 0) {
             msg = {

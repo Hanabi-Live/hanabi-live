@@ -1,10 +1,8 @@
-'use strict';
-
 // Imports
 const db = require('./db');
 
-exports.create = function(socket, data, done) {
-    let sql = `
+exports.create = (socket, data, done) => {
+    const sql = `
         INSERT INTO games (
             name,
             max_players,
@@ -14,7 +12,7 @@ exports.create = function(socket, data, done) {
             owner
         ) VALUES (?, ?, ?, ?, ?, ?)
     `;
-    let values = [
+    const values = [
         data.name,
         data.max,
         data.variant,
@@ -22,7 +20,7 @@ exports.create = function(socket, data, done) {
         data.timed,
         data.owner,
     ];
-    db.query(sql, values, function (error, results, fields) {
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
             return;
@@ -33,10 +31,10 @@ exports.create = function(socket, data, done) {
     });
 };
 
-exports.delete = function(socket, data, done) {
-    let sql = 'DELETE FROM games where id = ?';
-    let values = [data.gameID];
-    db.query(sql, values, function (error, results, fields) {
+exports.delete = (socket, data, done) => {
+    const sql = 'DELETE FROM games where id = ?';
+    const values = [data.gameID];
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
             return;
@@ -46,14 +44,14 @@ exports.delete = function(socket, data, done) {
     });
 };
 
-exports.start = function(socket, data, done) {
-    let sql = `
+exports.start = (socket, data, done) => {
+    const sql = `
         UPDATE games
         SET status = 1, seed = ?, datetime_started = NOW()
         WHERE id = ?
     `;
-    let values = [data.seed, data.gameID];
-    db.query(sql, values, function (error, results, fields) {
+    const values = [data.seed, data.gameID];
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
             return;
@@ -63,14 +61,14 @@ exports.start = function(socket, data, done) {
     });
 };
 
-exports.end = function(data, done) {
-    let sql = `
+exports.end = (data, done) => {
+    const sql = `
         UPDATE games
         SET status = 2, score = ?, datetime_finished = NOW()
         WHERE id = ?
     `;
-    let values = [data.score, data.gameID];
-    db.query(sql, values, function (error, results, fields) {
+    const values = [data.score, data.gameID];
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, data);
             return;
@@ -81,9 +79,9 @@ exports.end = function(data, done) {
 };
 
 // Clean up any races that were either not started yet or were not finished
-exports.clean = function(done) {
-    let sql = 'DELETE FROM games WHERE status != 2';
-    db.query(sql, [], function (error, results, fields) {
+exports.clean = (done) => {
+    const sql = 'DELETE FROM games WHERE status != 2';
+    db.query(sql, [], (error, results, fields) => {
         if (error) {
             done(error);
             return;
@@ -93,10 +91,10 @@ exports.clean = function(done) {
     });
 };
 
-exports.exists = function(socket, data, done) {
-    let sql = 'SELECT id FROM games WHERE id = ?';
-    let values = [data.gameID];
-    db.query(sql, values, function (error, results, fields) {
+exports.exists = (socket, data, done) => {
+    const sql = 'SELECT id FROM games WHERE id = ?';
+    const values = [data.gameID];
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
         } else if (results.length === 0) {
@@ -109,8 +107,8 @@ exports.exists = function(socket, data, done) {
     });
 };
 
-exports.getUserHistory = function(socket, data, done) {
-    let sql = `
+exports.getUserHistory = (socket, data, done) => {
+    const sql = `
         SELECT
             games.id AS id,
             (
@@ -130,14 +128,14 @@ exports.getUserHistory = function(socket, data, done) {
         WHERE games.status = 2 AND game_participants.user_id = ?
         ORDER BY games.id
     `;
-    let values = [socket.userID];
-    db.query(sql, values, function (error, results, fields) {
+    const values = [socket.userID];
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
             return;
         }
         data.gameHistory = [];
-        for (let row of results) {
+        for (const row of results) {
             data.gameHistory.push({
                 id: row.id,
                 num_players: row.num_players,
@@ -151,10 +149,10 @@ exports.getUserHistory = function(socket, data, done) {
     });
 };
 
-exports.getNumSimilar = function(data, done) {
-    let sql = 'SELECT COUNT(id) AS num_similar FROM games WHERE seed = ?';
-    let values = [data.seed];
-    db.query(sql, values, function (error, results, fields) {
+exports.getNumSimilar = (data, done) => {
+    const sql = 'SELECT COUNT(id) AS num_similar FROM games WHERE seed = ?';
+    const values = [data.seed];
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, data);
             return;
@@ -165,8 +163,8 @@ exports.getNumSimilar = function(data, done) {
     });
 };
 
-exports.getAllDeals = function(socket, data, done) {
-    let sql = `
+exports.getAllDeals = (socket, data, done) => {
+    const sql = `
         SELECT
             id,
             score,
@@ -180,16 +178,16 @@ exports.getAllDeals = function(socket, data, done) {
         WHERE seed = (SELECT seed FROM games WHERE id = ?)
         ORDER BY id
     `;
-    let values = [socket.userID, data.gameID];
-    db.query(sql, values, function (error, results, fields) {
+    const values = [socket.userID, data.gameID];
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
             return;
         }
         data.gameList = [];
-        for (let row of results) {
+        for (const row of results) {
             // Convert the MySQL bool to a JavaScript boolean
-            row.you = (row.you > 0 ? true : false);
+            row.you = (row.you > 0);
 
             data.gameList.push({
                 id: row.id,
@@ -205,8 +203,8 @@ exports.getAllDeals = function(socket, data, done) {
 
 // Get the variant and the names of the players
 // (sent after the "hello" command when starting a replay)
-exports.getVariantPlayers = function(socket, data, done) {
-    let sql = `
+exports.getVariantPlayers = (socket, data, done) => {
+    const sql = `
         SELECT
             games.variant AS variant,
             users.id AS user_id,
@@ -217,23 +215,22 @@ exports.getVariantPlayers = function(socket, data, done) {
         WHERE games.id = ?
         ORDER BY game_participants.id
     `;
-    let values = [data.gameID];
-    db.query(sql, values, function (error, results, fields) {
+    const values = [data.gameID];
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
             return;
         }
         if (results.length === 0) {
-            let error = new Error(`Got no rows in the "games" table for ID:` +
-                                  `${data.gameID}`);
+            error = new Error(`Got no rows in the "games" table for ID: ${data.gameID}`);
             done(error, socket, data);
         }
         data.game = {};
         data.game.variant = results[0].variant;
         data.game.players = [];
-        for (let row of results) {
+        for (const row of results) {
             data.game.players.push({
-                userID:   row.user_id,
+                userID: row.user_id,
                 username: row.username,
             });
         }
@@ -242,17 +239,17 @@ exports.getVariantPlayers = function(socket, data, done) {
     });
 };
 
-exports.getActions = function(socket, data, done) {
-    let sql = 'SELECT action FROM game_actions WHERE game_id = ? ORDER BY id';
-    let values = [data.gameID];
-    db.query(sql, values, function (error, results, fields) {
+exports.getActions = (socket, data, done) => {
+    const sql = 'SELECT action FROM game_actions WHERE game_id = ? ORDER BY id';
+    const values = [data.gameID];
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
             return;
         }
         data.game = {};
         data.game.actions = [];
-        for (let row of results) {
+        for (const row of results) {
             data.game.actions.push(JSON.parse(row.action));
         }
 
@@ -261,10 +258,10 @@ exports.getActions = function(socket, data, done) {
 };
 
 // Used when creating a shared replay
-exports.getVariant = function(socket, data, done) {
-    let sql = 'SELECT variant FROM games WHERE id = ?';
-    let values = [data.gameID];
-    db.query(sql, values, function (error, results, fields) {
+exports.getVariant = (socket, data, done) => {
+    const sql = 'SELECT variant FROM games WHERE id = ?';
+    const values = [data.gameID];
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
             return;

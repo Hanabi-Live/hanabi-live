@@ -1,12 +1,10 @@
-'use strict';
-
 // Imports
 const db = require('./db');
 
-exports.create = function(data, done) {
-    let sql = 'INSERT INTO game_actions (game_id, action) VALUES (?, ?)';
-    let values = [data.gameID, data.action];
-    db.query(sql, values, function (error, results, fields) {
+exports.create = (data, done) => {
+    const sql = 'INSERT INTO game_actions (game_id, action) VALUES (?, ?)';
+    const values = [data.gameID, data.action];
+    db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, data);
             return;

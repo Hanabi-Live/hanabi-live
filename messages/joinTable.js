@@ -1,5 +1,3 @@
-'use strict';
-
 // Sent when the user clicks on the "Join" button in the lobby
 // "data" example:
 /*
@@ -9,13 +7,13 @@
 */
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
-const models   = require('../models');
+const globals = require('../globals');
+const logger = require('../logger');
+const models = require('../models');
 const messages = require('../messages');
-const notify   = require('../notify');
+const notify = require('../notify');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Local variables
     data.userID = socket.userID;
     data.gameID = data.table_id;
@@ -57,7 +55,7 @@ function step2(error, socket, data) {
     }
 
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     logger.info(`User "${socket.username}" joined game: #${data.gameID} (${game.name})`);
 
@@ -72,12 +70,12 @@ function step2(error, socket, data) {
         time = 0;
     }
     game.players.push({
-        hand:     [],
-        userID:   socket.userID,
+        hand: [],
+        userID: socket.userID,
         username: socket.username,
-        present:  true,
-        socket:   socket,
-        time:     time,
+        present: true,
+        socket,
+        time,
     });
     notify.allTableChange(data);
     notify.gameMemberChange(data);

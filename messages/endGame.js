@@ -1,27 +1,25 @@
-'use strict';
-
 // The "end_game" message is not actually sent by the client;
 // we just store the logic here for organizational purposes since
 // the start game logic is stored under the "start_game" command
 
 // Imports
 const globals = require('../globals');
-const logger  = require('../logger');
-const models  = require('../models');
-const notify  = require('../notify');
+const logger = require('../logger');
+const models = require('../models');
+const notify = require('../notify');
 
-exports.step1 = function(data) {
+exports.step1 = (data) => {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     // Send text messages showing how much time each player finished with
     if (game.timed) {
-        for (let player of game.players) {
+        for (const player of game.players) {
             let text = `${player.username} finished with a time of `;
-            let seconds = Math.ceil(player.time / 1000);
-            text += seconds_to_time_display(seconds);
+            const seconds = Math.ceil(player.time / 1000);
+            text += secondsToTimeDisplay(seconds);
             game.actions.push({
-                text: text,
+                text,
             });
             notify.gameAction(data);
             logger.info(`[Game ${data.gameID}] ${text}`);
@@ -30,9 +28,9 @@ exports.step1 = function(data) {
 
     // Send the "game_over" message
     game.actions.push({
-        type:  'game_over',
+        type: 'game_over',
         score: game.score,
-        loss:  data.loss,
+        loss: data.loss,
     });
     notify.gameAction(data);
 
@@ -41,16 +39,16 @@ exports.step1 = function(data) {
     notify.gameTime(data);
 
     // Send "reveal" messages to each player about the missing cards in their hand
-    for (let player of game.players) {
-        for (let card of player.hand) {
+    for (const player of game.players) {
+        for (const card of player.hand) {
             player.socket.emit('message', {
                 type: 'notify',
                 resp: {
                     type: 'reveal',
                     which: {
                         index: card.index,
-                        rank:  card.rank,
-                        suit:  card.suit,
+                        rank: card.rank,
+                        suit: card.suit,
                         order: card.order,
                     },
                 },
@@ -85,9 +83,9 @@ function gameEnd3(error, data) {
     }
 
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
-    data.insertNum++;
+    data.insertNum += 1;
     if (data.insertNum < game.actions.length) {
         data.action = JSON.stringify(game.actions[data.insertNum]);
         models.gameActions.create(data, gameEnd3);
@@ -105,18 +103,18 @@ function gameEnd4(error, data) {
     }
 
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     // Send a "game_history" message to all the players in the game
-    for (let player of game.players) {
+    for (const player of game.players) {
         player.socket.emit('message', {
             type: 'game_history',
             resp: {
-                id:          data.gameID,
+                id: data.gameID,
                 num_players: game.players.length,
                 num_similar: data.num_similar,
-                score:       game.score,
-                variant:     game.variant,
+                score: game.score,
+                variant: game.variant,
             },
         });
     }
@@ -133,9 +131,9 @@ function gameEnd5(error, data) {
     }
 
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
-    data.insertNum++;
+    data.insertNum += 1;
     if (data.insertNum < game.players.length) {
         data.userID = game.players[data.insertNum].userID;
         models.users.updateStats(data, gameEnd5);
@@ -154,15 +152,15 @@ function gameEnd6(error, data) {
     }
 
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     if (data.insertNum !== -1) {
-        game.players[data.insertNum].socket.num_played     = data.num_played;
-        game.players[data.insertNum].socket.average_score  = data.average_score;
+        game.players[data.insertNum].socket.num_played = data.num_played;
+        game.players[data.insertNum].socket.average_score = data.average_score;
         game.players[data.insertNum].socket.strikeout_rate = data.strikeout_rate;
     }
 
-    data.insertNum++;
+    data.insertNum += 1;
     if (data.insertNum < game.players.length) {
         data.userID = game.players[data.insertNum].userID;
         models.users.getStats(data, gameEnd6);
@@ -177,19 +175,19 @@ function gameEnd6(error, data) {
     notify.allTableGone(data);
 
     // Reset the status of the players
-    for (let player of game.players) {
+    for (const player of game.players) {
         player.socket.status = 'Replay';
         notify.allUserChange(player.socket);
     }
 }
 
-function seconds_to_time_display(seconds) {
-    return Math.floor(seconds / 60) + ":" + pad2(seconds % 60);
+function secondsToTimeDisplay(seconds) {
+    return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
 }
 
 function pad2(num) {
     if (num < 10) {
-        return "0" + num;
+        return `0${num}`;
     }
-    return "" + num;
+    return `${num}`;
 }

@@ -1,5 +1,3 @@
-'use strict';
-
 // Sent when the user clicks on the "Watch Replay" button
 // (the client will send a "hello" message after getting "game_start")
 // "data" example:
@@ -14,7 +12,7 @@ const logger = require('../logger');
 const models = require('../models');
 const notify = require('../notify');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = data.id;
 

@@ -1,15 +1,13 @@
-'use strict';
-
 // Sent when the user clicks on the "Leave Game" button in the lobby
 // "data" is empty
 
 // Imports
 const globals = require('../globals');
-const logger  = require('../logger');
-const models  = require('../models');
-const notify  = require('../notify');
+const logger = require('../logger');
+const models = require('../models');
+const notify = require('../notify');
 
-const step1 = function(socket, data) {
+const step1 = (socket, data) => {
     // Local variables
     data.userID = socket.userID;
     data.gameID = socket.currentGame;
@@ -31,14 +29,14 @@ function step2(error, socket, data) {
     }
 
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     logger.info(`User "${socket.username}" left game: #${data.gameID} (${game.name})`);
 
     // Find the index of this player
     let index;
     for (let i = 0; i < game.players.length; i++) {
-        let player = game.players[i];
+        const player = game.players[i];
         if (player.userID === socket.userID) {
             index = i;
             break;
@@ -62,7 +60,7 @@ function step2(error, socket, data) {
 
     // Force everyone else to leave if it was the owner that left
     if (socket.userID === game.owner) {
-        for (let player of game.players) {
+        for (const player of game.players) {
             step1(player.socket, data);
         }
     }

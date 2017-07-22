@@ -1,20 +1,18 @@
-'use strict';
-
 // Sent when the user clicks on the "Lobby" button while they are in the middle
 // of a game
 // "data" is empty
 
 // Imports
 const globals = require('../globals');
-const logger  = require('../logger');
-const notify  = require('../notify');
+const logger = require('../logger');
+const notify = require('../notify');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = socket.currentGame;
 
     // Set their status
-    let oldStatus = socket.status;
+    const oldStatus = socket.status;
     socket.status = 'Lobby';
     notify.allUserChange(socket);
 
@@ -22,10 +20,10 @@ exports.step1 = function(socket, data) {
     if (!(data.gameID in globals.currentGames)) {
         // Since games are deleted when they end, it is normal behavior for
         // players to click the "Lobby" button and get to this point
-        logger.info("(Table does not exist.)");
+        logger.info('(Table does not exist.)');
         return;
     }
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     // Check to see if they are a spectator
     if (oldStatus === 'Spectating' || oldStatus === 'Shared Replay') {
@@ -47,7 +45,6 @@ exports.step1 = function(socket, data) {
 
                 // Notify everyone that the table was deleted
                 notify.allTableGone(data);
-
             } else {
                 // Since the number of spectators is the number of players for
                 // shared replays, we need to notify everyone that this player
@@ -61,7 +58,7 @@ exports.step1 = function(socket, data) {
 
     // Set their "present" variable to false, which will turn their name red
     // (or set them to "AWAY" if the game has not started yet)
-    for (let player of game.players) {
+    for (const player of game.players) {
         if (player.userID === socket.userID) {
             player.present = false;
             break;

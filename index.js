@@ -1,39 +1,38 @@
-'use strict';
-
 // Imports
-const express  = require('express');
-const favicon  = require('serve-favicon');
-const app      = express();
-const http     = require('http').Server(app);
-const path     = require('path');
-const io       = require('socket.io')(http);
-const globals  = require('./globals');
-const logger   = require('./logger');
+const express = require('express');
+const favicon = require('serve-favicon');
+const path = require('path');
+const globals = require('./globals');
+const logger = require('./logger');
 const messages = require('./messages');
-const models   = require('./models');
+const models = require('./models');
+
+const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 
 // Set the view engine to ejs
 app.set('view engine', 'ejs');
 
 // HTTP handlers
-app.get('/', function(req, res) {
+app.get('/', (req, res) => {
     res.render('index', { // This will look for "views/index.ejs"
-        websocketURL: req.protocol + '://' + req.get('host') + req.originalUrl,
+        websocketURL: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
     });
 });
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(favicon(path.join(__dirname, 'public', 'img', 'favicon.ico')));
 
 // Websocket handlers
-io.on('connection', function(socket) {
-    let address = socket.handshake.address;
+io.on('connection', (socket) => {
+    const address = socket.handshake.address;
     logger.info(`User connected from address "${address}".`);
 
-    socket.on('disconnect', function(reason) {
+    socket.on('disconnect', (reason) => {
         messages.logout.step1(socket, reason);
     });
 
-    socket.on('message', function(data) {
+    socket.on('message', (data) => {
         if (data.type in messages) {
             let log = `Recieved a "${data.type}" message`;
             if (data.type === 'login') {
@@ -64,7 +63,7 @@ function initComplete(error) {
         return;
     }
 
-    http.listen(globals.port, function() {
+    http.listen(globals.port, () => {
         logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
     });
 }

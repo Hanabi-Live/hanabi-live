@@ -1,5 +1,3 @@
-'use strict';
-
 // Sent when the user sends a text message to the lobby by pressing enter
 // "data" example:
 /*
@@ -10,19 +8,19 @@
 
 // Imports
 const globals = require('../globals');
-const logger  = require('../logger');
-const models  = require('../models');
+const logger = require('../logger');
+const models = require('../models');
 const discord = require('../discord');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Validate the message
-    if (typeof(data.msg) !== 'string') {
+    if (typeof data.msg !== 'string') {
         logger.warn('Error: Malformed chat message input.');
         return;
     }
 
     // Truncate long messages
-    let maxLength = 150;
+    const maxLength = 150;
     if (data.msg.length > maxLength) {
         data.msg = data.msg.substring(0, maxLength);
     }
@@ -45,12 +43,12 @@ function step2(error, socket, data) {
     logger.info(text);
 
     // Send the chat message to everyone
-    for (let userID of Object.keys(globals.connectedUsers)) {
+    for (const userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
             type: 'chat',
             resp: {
-                msg:     data.msg,
-                who:     socket.username,
+                msg: data.msg,
+                who: socket.username,
                 discord: (socket.userID === 1),
             },
         });

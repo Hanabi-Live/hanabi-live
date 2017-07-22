@@ -1,5 +1,3 @@
-'use strict';
-
 // The "join_shared_replay" message is not actually sent by the client;
 // we just store the logic here for organizational purposes
 // "data" example:
@@ -11,10 +9,10 @@
 
 // Imports
 const globals = require('../globals');
-const logger  = require('../logger');
-const notify  = require('../notify');
+const logger = require('../logger');
+const notify = require('../notify');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Local variables
     data.userID = socket.userID;
     data.gameID = data.table_id;

@@ -1,31 +1,27 @@
-'use strict';
-
 // Imports
-const client  = require('socket.io-client');
+const client = require('socket.io-client');
 const discord = require('./discord');
 
 // Import the environment variables defined in the ".env" file
 require('dotenv').config();
 
 // Configuration
-const url       = 'http://keldon.net:32221/';
-const username  = process.env.KELDON_USER;
-const password  = process.env.KELDON_PASS;
+const url = 'http://keldon.net:32221/';
+const username = process.env.KELDON_USER;
+const password = process.env.KELDON_PASS;
 
 // Connect
-let socket;
-let keldonEnabled = false;
+let socket = null;
 
 // Only connect if the user has specified values in the .env file
 if (username.length > 0 && password.length > 0) {
-    keldonEnabled = true;
     socket = client.connect(url);
 
     socket.emit('message', {
         type: 'login',
         resp: {
-            username: username,
-            password: password,
+            username,
+            password,
         },
     });
 
@@ -35,7 +31,7 @@ if (username.length > 0 && password.length > 0) {
 
     // Look for chat messages
     // E.g. { type: 'chat', resp: { who: 'Zamiel', msg: 'hi' } }
-    socket.on('message', function(msg) {
+    socket.on('message', (msg) => {
         // Debug
         /*
         console.log('Received a Keldon message:');
@@ -62,7 +58,7 @@ if (username.length > 0 && password.length > 0) {
                 return;
             }
 
-            if (typeof(msg.resp.who) !== 'string') {
+            if (typeof msg.resp.who !== 'string') {
                 return;
             }
 
@@ -79,7 +75,7 @@ if (username.length > 0 && password.length > 0) {
                 return;
             }
 
-            if (typeof(msg.resp.msg) !== 'string') {
+            if (typeof msg.resp.msg !== 'string') {
                 return;
             }
 
@@ -92,8 +88,8 @@ if (username.length > 0 && password.length > 0) {
     });
 }
 
-exports.sendChat = function(msg) {
-    if (!keldonEnabled) {
+exports.sendChat = (msg) => {
+    if (socket === null) {
         return;
     }
 
@@ -103,7 +99,7 @@ exports.sendChat = function(msg) {
     socket.emit('message', {
         type: 'chat',
         resp: {
-            msg: msg,
+            msg,
         },
     });
 };

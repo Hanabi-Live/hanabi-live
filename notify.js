@@ -1,5 +1,3 @@
-'use strict';
-
 /*
     This is a collection of functions used to notify groups of people about
     something (either everyone connected to the server or everyone in a game).
@@ -14,30 +12,30 @@ const globals = require('./globals');
     Functions that notify all users
 */
 
-exports.allUserChange = function(socket) {
+exports.allUserChange = (socket) => {
     // Send everyone an update about this user
-    for (let userID of Object.keys(globals.connectedUsers)) {
+    for (const userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
             type: 'user',
             resp: {
-                id:     socket.userID,
-                name:   socket.username,
+                id: socket.userID,
+                name: socket.username,
                 status: socket.status,
             },
         });
     }
 };
 
-exports.allTableChange = function(data) {
+exports.allTableChange = (data) => {
     // Send everyone an update about this table
-    for (let userID of Object.keys(globals.connectedUsers)) {
+    for (const userID of Object.keys(globals.connectedUsers)) {
         playerTable(globals.connectedUsers[userID], data);
     }
 };
 
-exports.allTableGone = function(data) {
+exports.allTableGone = (data) => {
     // Send everyone an update about this table
-    for (let userID of Object.keys(globals.connectedUsers)) {
+    for (const userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
             type: 'table_gone',
             resp: {
@@ -51,23 +49,23 @@ exports.allTableGone = function(data) {
     Functions that notify members of the game (and the spectators of that game)
 */
 
-exports.gameMemberChange = function(data) {
+exports.gameMemberChange = (data) => {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     // Send the people in the game an update about the new player
-    for (let player of game.players) {
+    for (const player of game.players) {
         player.socket.emit('message', {
             type: 'game',
             resp: {
-                name:          game.name,
-                running:       game.running,
-                num_players:   game.players.length,
-                max_players:   game.max_players,
-                variant:       game.variant,
-                allow_spec:    game.allow_spec,
-                num_spec:      Object.keys(game.spectators).length,
-                timed:         game.timed,
+                name: game.name,
+                running: game.running,
+                num_players: game.players.length,
+                max_players: game.max_players,
+                variant: game.variant,
+                allow_spec: game.allow_spec,
+                num_spec: Object.keys(game.spectators).length,
+                timed: game.timed,
                 shared_replay: game.shared_replay,
             },
         });
@@ -76,17 +74,17 @@ exports.gameMemberChange = function(data) {
         // the new player (it might be wasteful, but this is how the real
         // server appears to work)
         for (let i = 0; i < game.players.length; i++) {
-            let player2 = game.players[i];
+            const player2 = game.players[i];
 
             player.socket.emit('message', {
                 type: 'game_player',
                 resp: {
-                    index:          i,
-                    name:           player2.socket.username,
-                    you:            (player.userID === player2.userID),
-                    present:        game.players[i].present,
-                    num_played:     player2.socket.num_played,
-                    average_score:  player2.socket.average_score,
+                    index: i,
+                    name: player2.socket.username,
+                    you: (player.userID === player2.userID),
+                    present: game.players[i].present,
+                    num_played: player2.socket.num_played,
+                    average_score: player2.socket.average_score,
                     strikeout_rate: player2.socket.strikeout_rate,
                 },
             });
@@ -95,7 +93,7 @@ exports.gameMemberChange = function(data) {
 
     // Lastly, send the table owner whether or not the "Start Game" button
     // should be greyed out
-    for (let player of game.players) {
+    for (const player of game.players) {
         if (player.userID === game.owner) {
             player.socket.emit('message', {
                 type: 'table_ready',
@@ -108,22 +106,22 @@ exports.gameMemberChange = function(data) {
     }
 };
 
-exports.gameConnected = function(data) {
+exports.gameConnected = (data) => {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     // Make a list of who is currently connected of the players in the
     // current game
-    let list = [];
-    for (let player of game.players) {
+    const list = [];
+    for (const player of game.players) {
         list.push(player.present);
     }
 
     // Send a "connected" message to all of the users in the game
-    let connMsg = {
+    const connMsg = {
         type: 'connected',
         resp: {
-            list: list,
+            list,
             num_spec: Object.keys(game.spectators).length,
         },
     };
@@ -133,16 +131,16 @@ exports.gameConnected = function(data) {
     }
 
     // Also send it to the spectators
-    for (let userID of Object.keys(game.spectators)) {
+    for (const userID of Object.keys(game.spectators)) {
         game.spectators[userID].emit('message', connMsg);
     }
 };
 
-exports.gameAction = function(data) {
+exports.gameAction = (data) => {
     // Local variables
-    let game = globals.currentGames[data.gameID];
-    let lastIndex = game.actions.length - 1;
-    let action = game.actions[lastIndex];
+    const game = globals.currentGames[data.gameID];
+    const lastIndex = game.actions.length - 1;
+    const action = game.actions[lastIndex];
 
     // Send the people in the game an update about the new action
     for (let i = 0; i < game.players.length; i++) {
@@ -163,7 +161,7 @@ exports.gameAction = function(data) {
     }
 
     // Also send the spectators an update
-    for (let userID of Object.keys(game.spectators)) {
+    for (const userID of Object.keys(game.spectators)) {
         game.spectators[userID].emit('message', {
             type: ('text' in action ? 'message' : 'notify'),
             resp: action,
@@ -171,16 +169,16 @@ exports.gameAction = function(data) {
     }
 };
 
-exports.gameNumSpec = function(data) {
+exports.gameNumSpec = (data) => {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     // Create the "num_spec" message
-    let times = [];
-    for (let player of game.players) {
+    const times = [];
+    for (const player of game.players) {
         times.push(player.time);
     }
-    let specMsg = {
+    const specMsg = {
         type: 'num_spec',
         resp: {
             num: Object.keys(game.spectators).length,
@@ -188,51 +186,51 @@ exports.gameNumSpec = function(data) {
     };
 
     // Send the message to all the players in the game
-    for (let player of game.players) {
+    for (const player of game.players) {
         player.socket.emit('message', specMsg);
     }
 
     // Also send it to the spectators
-    for (let userID of Object.keys(game.spectators)) {
+    for (const userID of Object.keys(game.spectators)) {
         game.spectators[userID].emit('message', specMsg);
     }
 };
 
-exports.gameTime = function(data) {
+exports.gameTime = (data) => {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     // Create the clock message
-    let times = [];
-    for (let player of game.players) {
+    const times = [];
+    for (const player of game.players) {
         times.push(player.time);
     }
-    let clockMsg = {
+    const clockMsg = {
         type: 'clock',
         resp: {
-            times: times,
+            times,
             active: data.end ? null : game.turn_player_index,
         },
     };
 
     // Send the clock message for this player to all the players in the game
-    for (let player of game.players) {
+    for (const player of game.players) {
         player.socket.emit('message', clockMsg);
     }
 
     // Also send it to the spectators
-    for (let userID of Object.keys(game.spectators)) {
+    for (const userID of Object.keys(game.spectators)) {
         game.spectators[userID].emit('message', clockMsg);
     }
 };
 
-exports.gameSound = function(data) {
+exports.gameSound = (data) => {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     // Send a sound notification
     for (let i = 0; i < game.players.length; i++) {
-        let player = game.players[i];
+        const player = game.players[i];
 
         // Prepare the sound message
         let sound = 'turn_other';
@@ -241,7 +239,7 @@ exports.gameSound = function(data) {
         } else if (i === game.turn_player_index) {
             sound = 'turn_us';
         }
-        let msg = {
+        const msg = {
             type: 'sound',
             resp: {
                 file: sound,
@@ -252,7 +250,7 @@ exports.gameSound = function(data) {
     }
 
     // Also send it to the spectators
-    for (let userID of Object.keys(game.spectators)) {
+    for (const userID of Object.keys(game.spectators)) {
         // Prepare the sound message
         // (the code is duplicated here because I don't want to mess with
         // having to change the file name back to default)
@@ -260,7 +258,7 @@ exports.gameSound = function(data) {
         if (game.sound !== null) {
             sound = game.sound;
         }
-        let msg = {
+        const msg = {
             type: 'sound',
             resp: {
                 file: sound,
@@ -270,12 +268,12 @@ exports.gameSound = function(data) {
     }
 };
 
-exports.gameBoot = function(data) {
+exports.gameBoot = (data) => {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     // Send a boot notification
-    let msg = {
+    const msg = {
         type: 'notify',
         resp: {
             type: 'boot',
@@ -283,10 +281,10 @@ exports.gameBoot = function(data) {
         },
     };
     for (let i = 0; i < game.players.length; i++) {
-        let player = game.players[i];
+        const player = game.players[i];
         player.socket.emit('message', msg);
     }
-    for (let userID of Object.keys(game.spectators)) {
+    for (const userID of Object.keys(game.spectators)) {
         game.spectators[userID].emit('message', msg);
     }
 };
@@ -295,11 +293,11 @@ exports.gameBoot = function(data) {
     Functions that notify all spectators of the game
 */
 
-exports.spectatorsNote = function(data) {
+exports.spectatorsNote = (data) => {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
-    let msg = {
+    const msg = {
         type: 'note',
         resp: {
             order: data.order,
@@ -309,7 +307,7 @@ exports.spectatorsNote = function(data) {
         },
     };
 
-    for (let userID of Object.keys(game.spectators)) {
+    for (const userID of Object.keys(game.spectators)) {
         game.spectators[userID].emit('message', msg);
     }
 };
@@ -318,9 +316,9 @@ exports.spectatorsNote = function(data) {
     Functions that notify a specific user/player
 */
 
-const playerTable = function(socket, data) {
+const playerTable = (socket, data) => {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     // Find out if this player is seated at this table
     let joined = false;
@@ -335,24 +333,24 @@ const playerTable = function(socket, data) {
     socket.emit('message', {
         type: 'table',
         resp: {
-            id:            data.gameID,
-            name:          game.name,
-            joined:        joined,
-            num_players:   (game.shared_replay ? Object.keys(game.spectators).length : game.players.length),
-            max_players:   game.max_players,
-            allow_spec:    game.allow_spec,
-            timed:         game.timed,
-            owned:         socket.userID === game.owner,
-            running:       game.running,
-            variant:       game.variant,
-            our_turn:      (joined && game.running && game.turn_player_index === data.index),
+            id: data.gameID,
+            name: game.name,
+            joined,
+            num_players: (game.shared_replay ? Object.keys(game.spectators).length : game.players.length),
+            max_players: game.max_players,
+            allow_spec: game.allow_spec,
+            timed: game.timed,
+            owned: socket.userID === game.owner,
+            running: game.running,
+            variant: game.variant,
+            our_turn: (joined && game.running && game.turn_player_index === data.index),
             shared_replay: game.shared_replay,
         },
     });
 };
 exports.playerTable = playerTable;
 
-exports.playerGameStart = function(socket) {
+exports.playerGameStart = (socket) => {
     socket.emit('message', {
         type: 'game_start',
         resp: {
@@ -361,21 +359,21 @@ exports.playerGameStart = function(socket) {
     });
 };
 
-exports.playerAction = function(socket, data) {
+exports.playerAction = (socket, data) => {
     // Local variables
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     socket.emit('message', {
         type: 'action',
         resp: {
-            can_clue:            (game.clue_num > 0),
-            can_discard:         (game.clue_num < 8),
+            can_clue: (game.clue_num > 0),
+            can_discard: (game.clue_num < 8),
             can_blind_play_deck: (game.deckIndex === game.deck.length - 1),
         },
     });
 };
 
-exports.playerDenied = function(socket, data) {
+exports.playerDenied = (socket, data) => {
     socket.emit('message', {
         type: 'denied',
         resp: {

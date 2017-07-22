@@ -1,5 +1,3 @@
-'use strict';
-
 // Sent when the user clicks the "X" button next to the table in the lobby
 // "data" example:
 /*
@@ -10,10 +8,10 @@
 
 // Imports
 const globals = require('../globals');
-const logger  = require('../logger');
-const notify  = require('../notify');
+const logger = require('../logger');
+const notify = require('../notify');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = data.table_id;
 
@@ -28,7 +26,7 @@ exports.step1 = function(socket, data) {
         return;
     }
 
-    for (let player of game.players) {
+    for (const player of game.players) {
         // Update their status
         player.socket.currentGame = -1;
         player.socket.status = 'Lobby';

@@ -1,5 +1,3 @@
-'use strict';
-
 // Sent when the user clicks on the "Login" button
 // "data" example:
 /*
@@ -10,13 +8,13 @@
 */
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
-const models   = require('../models');
+const globals = require('../globals');
+const logger = require('../logger');
+const models = require('../models');
 const messages = require('../messages');
-const notify   = require('../notify');
+const notify = require('../notify');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Validate that they submitted a username
     if (!('username' in data)) {
         logger.warn('Someone tried to log in without submitting a username.');
@@ -42,7 +40,7 @@ exports.step1 = function(socket, data) {
     }
 
     // Validate that the username is not excessively long
-    let maxLength = 15;
+    const maxLength = 15;
     if (data.username.length > maxLength) {
         logger.warn(`User "${data.username}" supplied an excessively long username with a length of ${data.username.length}.`);
         data.reason = `Username must be ${maxLength} characters or less.`;
@@ -64,16 +62,13 @@ function step2(error, socket, data) {
         // This user does not exist, so create it
         logger.info('Creating user:', data.username);
         models.users.create(socket, data, step3);
-    } else {
+    } else if (data.password === data.realPassword) {
         // Check to see if the password matches
-        if (data.password === data.realPassword) {
-            step4(socket, data);
-        } else {
-            logger.info(`User "${data.username}" supplied an incorrect password of: ${data.password}`);
-            data.reason = 'Incorrect password';
-            notify.playerDenied(socket, data);
-            return;
-        }
+        step4(socket, data);
+    } else {
+        logger.info(`User "${data.username}" supplied an incorrect password of: ${data.password}`);
+        data.reason = 'Incorrect password';
+        notify.playerDenied(socket, data);
     }
 }
 
@@ -83,20 +78,20 @@ function step3(error, socket, data) {
         return;
     }
 
-    logger.info('User "${data.username}" was created in the database.');
+    logger.info(`User "${data.username}" was created in the database.`);
     step4(socket, data);
 }
 
 function step4(socket, data) {
     // Store information about the user inside of the socket object
-    socket.userID         = data.userID;
+    socket.userID = data.userID;
     // We can't use "socket.id" because Socket.IO already uses that as a unique
     // identifier for the session
-    socket.username       = data.username;
-    socket.currentGame    = -1;
-    socket.status         = 'Lobby';
-    socket.num_played     = data.num_played;
-    socket.average_score  = data.average_score;
+    socket.username = data.username;
+    socket.currentGame = -1;
+    socket.status = 'Lobby';
+    socket.num_played = data.num_played;
+    socket.average_score = data.average_score;
     socket.strikeout_rate = data.strikeout_rate;
 
     // Check to see if this user is already logged on
@@ -108,7 +103,7 @@ function step4(socket, data) {
             type: 'kick',
             resp: {
                 reason: 'new login',
-            }
+            },
         });
         globals.connectedUsers[socket.userID].disconnect(true);
     }
@@ -118,9 +113,9 @@ function step4(socket, data) {
     logger.info(`User "${data.username}" logged in. (${Object.keys(globals.connectedUsers).length} now connected.)`);
 
     // Check to see if this user was in any existing games
-    for (let gameID of Object.keys(globals.currentGames)) {
-        let game = globals.currentGames[gameID];
-        for (let player of game.players) {
+    for (const gameID of Object.keys(globals.currentGames)) {
+        const game = globals.currentGames[gameID];
+        for (const player of game.players) {
             if (player.username === socket.username) {
                 // Update their socket with the new socket
                 player.socket = socket;
@@ -153,15 +148,15 @@ function step4(socket, data) {
         socket.emit('message', {
             type: 'user',
             resp: {
-                id:     userID,
-                name:   globals.connectedUsers[userID].username,
+                id: userID,
+                name: globals.connectedUsers[userID].username,
                 status: globals.connectedUsers[userID].status,
             },
         });
     }
 
     // Send a "table" message for every current table
-    for (let gameID of Object.keys(globals.currentGames)) {
+    for (const gameID of Object.keys(globals.currentGames)) {
         data.gameID = gameID;
         notify.playerTable(socket, data);
     }
@@ -196,7 +191,7 @@ function step5(error, socket, data) {
         return;
     }
 
-    for (let game of data.gameHistory) {
+    for (const game of data.gameHistory) {
         socket.emit('message', {
             type: 'game_history',
             resp: {

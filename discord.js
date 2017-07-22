@@ -1,10 +1,8 @@
-'use strict';
-
 // Imports
-const Discord  = require('discord.js');
-const logger   = require('./logger');
+const Discord = require('discord.js');
+const logger = require('./logger');
 const messages = require('./messages');
-const keldon   = require('./keldon');
+const keldon = require('./keldon');
 
 // Import the environment variables defined in the ".env" file
 require('dotenv').config();
@@ -23,11 +21,11 @@ if (process.env.DISCORD_TOKEN.length !== 0) {
     Event callbacks
 */
 
-client.on('ready', function() {
-  logger.info('Discord bot has connected.');
+client.on('ready', () => {
+    logger.info('Discord bot has connected.');
 });
 
-client.on('message', function(message) {
+client.on('message', (message) => {
     // Don't do anything if we are the author of the message
     // (or if the message was created by another bot)
     if (!('author' in message)) {
@@ -53,27 +51,27 @@ client.on('message', function(message) {
     } else if (!('discriminator' in message.author)) {
         return;
     }
-    let username = message.author.username + '#' + message.author.discriminator;
-    let socket = {
+    const username = `${message.author.username}#${message.author.discriminator}`;
+    const socket = {
         userID: 1, // The first user ID is reserved for server messages
-        username: username,
+        username,
     };
-    let data = {
-            msg: message.content,
+    const data = {
+        msg: message.content,
     };
     messages.chat.step1(socket, data);
 
     // Also replicate the message to the Keldon lobby
-    keldon.sendChat('<' + username + '> ' + message.content);
+    keldon.sendChat(`<${username}> ${message.content}`);
 });
 
-exports.send = function(from, username, message) {
+exports.send = (from, username, message) => {
     // In Discord, text inside single asterisks are italicised and text inside
     // double asterisks are bolded
-    let messageString = '[*' + from + '*] <**' + username + '**> ' + message;
+    const messageString = `[*${from}*] <**${username}**> ${message}`;
 
     // A guild is a server in Discord
     // The bot should only be in one server, so it will be at array index 0
-    let channel = client.guilds.array()[0].defaultChannel;
+    const channel = client.guilds.array()[0].defaultChannel;
     channel.send(messageString);
 };

@@ -1,5 +1,3 @@
-'use strict';
-
 // Sent when the user clicks on the "Shared Replay" button
 // (this is new functionality and not present in the vanilla Keldon server)
 // "data" example:
@@ -10,13 +8,13 @@
 */
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
-const models   = require('../models');
+const globals = require('../globals');
+const logger = require('../logger');
+const models = require('../models');
 const messages = require('../messages');
-const notify   = require('../notify');
+const notify = require('../notify');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Validate that there is not a shared replay for this game ID already
     data.gameID = data.id;
     if (data.gameID in globals.currentGames) {
@@ -43,16 +41,19 @@ function step2(error, socket, data) {
 
     logger.info(`User "${socket.username}" created a new shared replay: #${data.gameID}`);
 
+    // Define a standard naming scheme for shared replays
+    const name = `Shared replay for game #${data.gameID}`;
+
     // Keep track of the current games
     globals.currentGames[data.gameID] = {
-        name:           'Shared replay for game #' + data.gameID,
-        owner:          socket.userID,
-        players:        [],
-        spectators:     [],
-        variant:        data.variant,
-        running:        true,
-        turn_num:       0,
-        shared_replay:  true,
+        name,
+        owner: socket.userID,
+        players: [],
+        spectators: [],
+        variant: data.variant,
+        running: true,
+        turn_num: 0,
+        shared_replay: true,
     };
 
     notify.allTableChange(data);

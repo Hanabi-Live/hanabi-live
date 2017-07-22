@@ -1,44 +1,39 @@
-'use strict';
-
 // The "logout" message is not actually sent by the client;
 // we just store the logic here for organizational purposes since
 // the login logic is stored under the "login" command
 
 // Imports
-const globals  = require('../globals');
-const logger   = require('../logger');
+const globals = require('../globals');
+const logger = require('../logger');
 const messages = require('../messages');
-const notify   = require('../notify');
+const notify = require('../notify');
 
-exports.step1 = function(socket, reason) {
-    if (typeof(socket.userID) === 'undefined') {
+exports.step1 = (socket, reason) => {
+    if (typeof socket.userID === 'undefined') {
         logger.info('Non-logged in user disconnected:', reason);
         return;
     }
 
-    let leftID = socket.userID;
-
     // Check to see if this user is playing (or spectating) any current games
     for (let gameID of Object.keys(globals.currentGames)) {
-        let game = globals.currentGames[gameID];
+        const game = globals.currentGames[gameID];
 
         // Keys are strings by default, so convert it back to a number
         gameID = parseInt(gameID, 10);
 
-        for (let player of game.players) {
+        for (const player of game.players) {
             if (player.userID === socket.userID) {
                 if (game.running) {
                     // Set their "present" variable to false, which will turn
                     // their name red
                     player.present = false;
                     notify.gameMemberChange({
-                        gameID: gameID,
+                        gameID,
                     });
 
                     // Set their status
                     socket.status = 'Lobby';
                     notify.allUserChange(socket);
-
                 } else {
                     // The game has not started yet, so just eject them from
                     // the table
@@ -71,11 +66,11 @@ exports.step1 = function(socket, reason) {
     logger.info(`User "${socket.username}" disconnected. (${Object.keys(globals.connectedUsers).length} users now connected.)`);
 
     // Send a "user_left" message to everyone to let them know that a user has disconnected
-    for (let userID of Object.keys(globals.connectedUsers)) {
+    for (const userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
             type: 'user_left',
             resp: {
-                id: leftID,
+                id: socket.userID,
             },
         });
     }

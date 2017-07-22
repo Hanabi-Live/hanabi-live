@@ -1,5 +1,3 @@
-'use strict';
-
 // Sent when the user writes a note
 // (this is new functionality and not present in the vanilla Keldon server)
 // "data" example:
@@ -12,12 +10,12 @@
 
 // Imports
 const globals = require('../globals');
-const notify  = require('../notify');
+const notify = require('../notify');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = socket.currentGame;
-    let game = globals.currentGames[data.gameID];
+    const game = globals.currentGames[data.gameID];
 
     // Get the index of this player
     for (let i = 0; i < game.players.length; i++) {

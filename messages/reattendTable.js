@@ -1,5 +1,3 @@
-'use strict';
-
 // Sent when the user clicks on the "Resume" button in the lobby
 // "data" example:
 /*
@@ -10,10 +8,10 @@
 
 // Imports
 const globals = require('../globals');
-const logger  = require('../logger');
-const notify  = require('../notify');
+const logger = require('../logger');
+const notify = require('../notify');
 
-exports.step1 = function(socket, data) {
+exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = data.table_id;
 
@@ -30,7 +28,7 @@ exports.step1 = function(socket, data) {
 
     // Set their "present" variable back to true, which will turn their name
     // from red to black (or remove the "AWAY" if the game has not started yet)
-    for (let player of game.players) {
+    for (const player of game.players) {
         if (player.userID === socket.userID) {
             player.present = true;
             break;
