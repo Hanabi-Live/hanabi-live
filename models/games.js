@@ -96,10 +96,11 @@ exports.getUserHistory = (socket, data, done) => {
                 FROM game_participants
                 WHERE game_id = games.id
             ) AS num_players,
+            games.seed AS seed_original,
             (
                 SELECT COUNT(id)
                 FROM games
-                WHERE seed = games.seed
+                WHERE seed = seed_original
             ) AS num_similar,
             games.score AS score,
             games.variant AS variant
@@ -129,6 +130,7 @@ exports.getUserHistory = (socket, data, done) => {
     });
 };
 
+// Used in the "end_game" function
 exports.getNumSimilar = (data, done) => {
     const sql = `
         SELECT COUNT(id) AS num_similar

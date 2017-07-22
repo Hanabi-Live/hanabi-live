@@ -18,13 +18,13 @@ Installation
 
 These instructions assume you are running Linux. Some adjustment will be needed for Windows installations.
 
-* Install Node.js (using Node Version Manager):
+* Install [Node.js](https://nodejs.org/en/) (using [Node Version Manager](https://github.com/creationix/nvm)):
   * `curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash`
   * `export NVM_DIR="$HOME/.nvm"`
   * `[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"`
   * `[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"`
   * `nvm install node`
-* Install MariaDB and set up a user:
+* Install [MariaDB](https://mariadb.org/) and set up a user:
   * `sudo apt install mariadb-server -y`
   * `sudo mysql_secure_installation`
     * Follow the prompts.
@@ -41,7 +41,7 @@ These instructions assume you are running Linux. Some adjustment will be needed 
     * Change the values accordingly (assuming you modified the commands above).
     * `DISCORD_TOKEN` can be left blank if you don't want to enable Discord functionality.
     * `KELDON_USER` and `KELDON_PASS` can be left blank if you don't want to enable the Keldon bot functionality.
-* Import the database:
+* Import the database schema:
   * `mysql -uhanabiuser -p1234567890 < install/database_schema.sql`
 * Install the Node.js modules:
   * `npm install`

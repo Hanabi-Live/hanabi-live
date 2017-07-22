@@ -28,7 +28,7 @@ DROP TABLE IF EXISTS games;
 CREATE TABLE games (
     id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
     name               NVARCHAR(50)  NULL,
-    owner              INT           NULL,
+    owner              INT           NOT NULL,
     max_players        TINYINT       NULL, /* 2-5 */
     variant            TINYINT       NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
     allow_spec         BOOLEAN       NULL, /* 0 - no, 1 - yes */
