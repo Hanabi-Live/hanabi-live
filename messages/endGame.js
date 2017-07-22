@@ -60,23 +60,57 @@ exports.step1 = (data) => {
         game.score = 0;
     }
 
-    // End the game in the database
-    data.score = game.score;
-    models.games.end(data, gameEnd2);
+    // Record the game in the database
+    data = {
+        name: game.name,
+        owner: game.owner,
+        max_players: game.max_players,
+        variant: game.variant,
+        allow_spec: game.allow_spec,
+        timed: game.timed,
+        seed: game.seed,
+        score: game.score,
+        datetime_created: game.datetime_created,
+        datetime_started: game.datetime_started,
+        // datetime_finished will automatically be set by MariaDB
+    };
+    models.games.create(data, step2);
 };
 
-function gameEnd2(error, data) {
+function step2(error, data) {
     if (error !== null) {
-        logger.error('Error: models.games.end failed:', error);
+        logger.error('Error: models.games.create failed:', error);
+        return;
+    }
+
+    // Add all of the participants
+    data.insertNum = -1;
+    step3(null, data);
+}
+
+function step3(error, data) {
+    if (error !== null) {
+        logger.error('Error: models.gameParticipants.create failed:', error);
+        return;
+    }
+
+    // Local variables
+    const game = globals.currentGames[data.gameID];
+
+    data.insertNum += 1;
+    if (data.insertNum < game.players.length) {
+        const player = game.players.length[data.insertNum];
+        data.userID = player.userID;
+        models.gameParticipants.create(data, step3);
         return;
     }
 
     // Insert all of the actions taken
     data.insertNum = -1;
-    gameEnd3(null, data);
+    step4(null, data);
 }
 
-function gameEnd3(error, data) {
+function step4(error, data) {
     if (error !== null) {
         logger.error('Error: models.gameActions.create failed:', error);
         return;
@@ -88,15 +122,15 @@ function gameEnd3(error, data) {
     data.insertNum += 1;
     if (data.insertNum < game.actions.length) {
         data.action = JSON.stringify(game.actions[data.insertNum]);
-        models.gameActions.create(data, gameEnd3);
+        models.gameActions.create(data, step4);
         return;
     }
 
     // Get the num_similar for this game
-    models.games.getNumSimilar(data, gameEnd4);
+    models.games.getNumSimilar(data, step5);
 }
 
-function gameEnd4(error, data) {
+function step5(error, data) {
     if (error !== null) {
         logger.error('Error: models.games.getNumSimilar failed:', error);
         return;
@@ -121,10 +155,10 @@ function gameEnd4(error, data) {
 
     // Begin to update all of the player's stats
     data.insertNum = -1;
-    gameEnd5(null, data);
+    step6(null, data);
 }
 
-function gameEnd5(error, data) {
+function step6(error, data) {
     if (error !== null) {
         logger.error('Error: models.users.updateStats failed:', error);
         return;
@@ -136,16 +170,16 @@ function gameEnd5(error, data) {
     data.insertNum += 1;
     if (data.insertNum < game.players.length) {
         data.userID = game.players[data.insertNum].userID;
-        models.users.updateStats(data, gameEnd5);
+        models.users.updateStats(data, step6);
         return;
     }
 
     // Now that we have updated them, get the new stats for each player
     data.insertNum = -1;
-    gameEnd6(null, data);
+    step7(null, data);
 }
 
-function gameEnd6(error, data) {
+function step7(error, data) {
     if (error !== null) {
         logger.error('Error: models.users.getStats failed:', error);
         return;
@@ -163,7 +197,7 @@ function gameEnd6(error, data) {
     data.insertNum += 1;
     if (data.insertNum < game.players.length) {
         data.userID = game.players[data.insertNum].userID;
-        models.users.getStats(data, gameEnd6);
+        models.users.getStats(data, step7);
         return;
     }
 
@@ -180,6 +214,10 @@ function gameEnd6(error, data) {
         notify.allUserChange(player.socket);
     }
 }
+
+/*
+    Miscellaneous functions
+*/
 
 function secondsToTimeDisplay(seconds) {
     return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;

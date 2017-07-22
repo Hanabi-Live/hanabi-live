@@ -9,7 +9,6 @@
 // Imports
 const globals = require('../globals');
 const logger = require('../logger');
-const models = require('../models');
 const messages = require('../messages');
 const notify = require('../notify');
 
@@ -17,6 +16,10 @@ exports.step1 = (socket, data) => {
     // Local variables
     data.userID = socket.userID;
     data.gameID = data.table_id;
+
+    /*
+        Validation
+    */
 
     // Validate that this table exists
     let game;
@@ -29,14 +32,30 @@ exports.step1 = (socket, data) => {
         return;
     }
 
-    // The logic for joining shared replay is in a separate command for
+    // The logic for joining shared replay is in a separate file for
     // organizational purposes
     if (game.shared_replay) {
         messages.join_shared_replay.step1(socket, data);
         return;
     }
 
-    // Validate that this table does not already have the maximum amount of players
+    // Validate that the player is not already joined to this table
+    let found = false;
+    for (const player of game.players) {
+        if (player.userID === socket.userID) {
+            found = true;
+            break;
+        }
+    }
+    if (found) {
+        logger.warn(`This player is already in game #${data.gameID}.`);
+        data.reason = `You are already in game #${data.gameID}.`;
+        notify.playerDenied(socket, data);
+        return;
+    }
+
+    // Validate that this table does not already have the maximum amount of
+    // players
     if (game.players.length === game.max_players) {
         logger.warn(`messages.join was called for game #${data.gameID}, but it has the maximum amount of players already.`);
         data.reason = `That table has a maximum limit of ${game.max_players} players.`;
@@ -44,18 +63,9 @@ exports.step1 = (socket, data) => {
         return;
     }
 
-    // Join the table
-    models.gameParticipants.create(socket, data, step2);
-};
-
-function step2(error, socket, data) {
-    if (error !== null) {
-        logger.error('Error: models.gameParticipants.create failed:', error);
-        return;
-    }
-
-    // Local variables
-    const game = globals.currentGames[data.gameID];
+    /*
+        Join
+    */
 
     logger.info(`User "${socket.username}" joined game: #${data.gameID} (${game.name})`);
 
@@ -93,4 +103,4 @@ function step2(error, socket, data) {
             table_id: data.gameID,
         },
     });
-}
+};

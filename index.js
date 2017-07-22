@@ -5,7 +5,6 @@ const path = require('path');
 const globals = require('./globals');
 const logger = require('./logger');
 const messages = require('./messages');
-const models = require('./models');
 
 const app = express();
 const http = require('http').Server(app);
@@ -54,16 +53,6 @@ require('./discord');
 // Start the Keldon listener
 require('./keldon');
 
-// Clean up any non-started games before we start
-models.games.clean(initComplete);
-
-function initComplete(error) {
-    if (error !== null) {
-        logger.error('Error: models.games.clean failed:', error);
-        return;
-    }
-
-    http.listen(globals.port, () => {
-        logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
-    });
-}
+http.listen(globals.port, () => {
+    logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
+});

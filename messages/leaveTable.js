@@ -4,7 +4,6 @@
 // Imports
 const globals = require('../globals');
 const logger = require('../logger');
-const models = require('../models');
 const notify = require('../notify');
 
 const step1 = (socket, data) => {
@@ -12,36 +11,42 @@ const step1 = (socket, data) => {
     data.userID = socket.userID;
     data.gameID = socket.currentGame;
 
+    /*
+        Validation
+    */
+
     // Validate that this table exists
-    if (!(data.gameID in globals.currentGames)) {
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.warn(`Game #${data.gameID} does not exist.`);
+        data.reason = `Game #${data.gameID} does not exist.`;
+        notify.playerDenied(socket, data);
         return;
     }
 
-    // Leave the table
-    models.gameParticipants.delete(socket, data, step2);
-};
-exports.step1 = step1;
-
-function step2(error, socket, data) {
-    if (error !== null) {
-        logger.error('Error: models.gameParticipants.delete failed:', error);
-        return;
-    }
-
-    // Local variables
-    const game = globals.currentGames[data.gameID];
-
-    logger.info(`User "${socket.username}" left game: #${data.gameID} (${game.name})`);
-
-    // Find the index of this player
-    let index;
+    // Validate that the player is joined to this table
+    let index = -1;
     for (let i = 0; i < game.players.length; i++) {
-        const player = game.players[i];
+        const player = game.players.length[i];
         if (player.userID === socket.userID) {
             index = i;
             break;
         }
     }
+    if (index === -1) {
+        logger.warn(`This player is not in game #${data.gameID}.`);
+        data.reason = `You are not in game #${data.gameID}.`;
+        notify.playerDenied(socket, data);
+        return;
+    }
+
+    /*
+        Leave
+    */
+
+    logger.info(`User "${socket.username}" left game: #${data.gameID} (${game.name})`);
 
     // Keep track that the user left
     game.players.splice(index, 1);
@@ -67,20 +72,10 @@ function step2(error, socket, data) {
 
     // Delete the game if there is no-one left
     if (game.players.length === 0) {
-        models.games.delete(socket, data, step3);
+        logger.info(`Ended game #${data.gameID} because everyone left.`);
+        delete globals.currentGames[data.gameID];
+
+        // Notify everyone that the table was deleted
+        notify.allTableGone(data);
     }
-}
-
-function step3(error, socket, data) {
-    if (error !== null) {
-        logger.error('Error: models.games.delete failed:', error);
-        return;
-    }
-
-    // Keep track of the game ending
-    logger.info(`Ended game #${data.gameID} because everyone left.`);
-    delete globals.currentGames[data.gameID];
-
-    // Notify everyone that the table was deleted
-    notify.allTableGone(data);
-}
+};

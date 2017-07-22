@@ -33,12 +33,11 @@ CREATE TABLE games (
     variant            TINYINT       NOT NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
     allow_spec         BOOLEAN       NOT NULL, /* 0 - no, 1 - yes */
     timed              BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
-    status             TINYINT       NOT NULL, /* 0 - open, 1 - in progress, 2 - finished */
     seed               VARCHAR(15)   NULL,
     score              INT           NULL,
-    datetime_created   TIMESTAMP     NOT NULL, /* Defaults to the current time */
+    datetime_created   TIMESTAMP     NULL      DEFAULT NULL,
     datetime_started   TIMESTAMP     NULL      DEFAULT NULL,
-    datetime_finished  TIMESTAMP     NULL      DEFAULT NULL,
+    datetime_finished  TIMESTAMP     NOT NULL, /* Defaults to the current time */
     FOREIGN KEY (owner) REFERENCES users (id)
 );
 CREATE INDEX games_index_status ON games (status);
@@ -48,7 +47,6 @@ CREATE TABLE game_participants (
     id               INT        NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
     user_id          INT        NOT NULL,
     game_id          INT        NOT NULL,
-    datetime_joined  TIMESTAMP  NOT NULL, /* Defaults to the current time */
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the game participant rows */

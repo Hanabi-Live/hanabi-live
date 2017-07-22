@@ -30,7 +30,7 @@ function step2(error, socket, data) {
         return;
     }
 
-    // Local variables
+    // This is either from "globals.currentGames" or built by the database
     const game = data.game;
 
     // Create a list of names of the users in this game

@@ -4,6 +4,7 @@
 
 // Imports
 const seedrandom = require('seedrandom');
+const moment = require('moment');
 const globals = require('../globals');
 const logger = require('../logger');
 const models = require('../models');
@@ -81,7 +82,7 @@ exports.step1 = (socket, data) => {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        logger.error('Error: models.gameParticipants.getSeeds failed:', error);
+        logger.error('Error: models.games.getSeeds failed:', error);
         return;
     }
 
@@ -91,7 +92,7 @@ function step2(error, socket, data) {
     data.playerIndex += 1;
     if (data.playerIndex < game.players.length) {
         data.userID = game.players[data.playerIndex].userID;
-        models.gameParticipants.getSeeds(socket, data, step2);
+        models.games.getSeeds(socket, data, step2);
         return;
     }
 
@@ -148,20 +149,7 @@ function step3(socket, data) {
 
     // Set the game to running
     game.running = true;
-
-    // Start the game in the database
-    // (which sets the "status", "seed", and "datetime_started" columns)
-    models.games.start(socket, data, step4);
-}
-
-function step4(error, socket, data) {
-    if (error !== null) {
-        logger.error('Error: models.games.start failed:', error);
-        return;
-    }
-
-    // Local variables
-    const game = globals.currentGames[data.gameID];
+    game.datetime_started = moment().format('YYYY-MM-DD HH:mm:ss'); // This is the MariaDB format
 
     // Send a "game_start" message to everyone in the game
     for (const player of game.players) {

@@ -14,7 +14,7 @@ exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = data.id;
 
-    // Send the user's game history
+    // Get information about all of the games played on this seed
     models.games.getAllDeals(socket, data, step2);
 };
 

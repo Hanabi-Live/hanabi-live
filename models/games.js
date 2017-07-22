@@ -5,20 +5,28 @@ exports.create = (socket, data, done) => {
     const sql = `
         INSERT INTO games (
             name,
+            owner,
             max_players,
             variant,
             allow_spec,
             timed,
-            owner
-        ) VALUES (?, ?, ?, ?, ?, ?)
+            seed,
+            score,
+            datetime_created,
+            datetime_started
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const values = [
         data.name,
-        data.max,
+        data.owner,
+        data.max_players,
         data.variant,
         data.allow_spec,
         data.timed,
-        data.owner,
+        data.seed,
+        data.score,
+        data.datetime_created,
+        data.datetime_started,
     ];
     db.query(sql, values, (error, results, fields) => {
         if (error) {
@@ -28,66 +36,6 @@ exports.create = (socket, data, done) => {
 
         data.gameID = results.insertId;
         done(null, socket, data);
-    });
-};
-
-exports.delete = (socket, data, done) => {
-    const sql = 'DELETE FROM games where id = ?';
-    const values = [data.gameID];
-    db.query(sql, values, (error, results, fields) => {
-        if (error) {
-            done(error, socket, data);
-            return;
-        }
-
-        done(null, socket, data);
-    });
-};
-
-exports.start = (socket, data, done) => {
-    const sql = `
-        UPDATE games
-        SET status = 1, seed = ?, datetime_started = NOW()
-        WHERE id = ?
-    `;
-    const values = [data.seed, data.gameID];
-    db.query(sql, values, (error, results, fields) => {
-        if (error) {
-            done(error, socket, data);
-            return;
-        }
-
-        done(null, socket, data);
-    });
-};
-
-exports.end = (data, done) => {
-    const sql = `
-        UPDATE games
-        SET status = 2, score = ?, datetime_finished = NOW()
-        WHERE id = ?
-    `;
-    const values = [data.score, data.gameID];
-    db.query(sql, values, (error, results, fields) => {
-        if (error) {
-            done(error, data);
-            return;
-        }
-
-        done(null, data);
-    });
-};
-
-// Clean up any races that were either not started yet or were not finished
-exports.clean = (done) => {
-    const sql = 'DELETE FROM games WHERE status != 2';
-    db.query(sql, [], (error, results, fields) => {
-        if (error) {
-            done(error);
-            return;
-        }
-
-        done(null);
     });
 };
 
@@ -197,6 +145,27 @@ exports.getAllDeals = (socket, data, done) => {
             });
         }
 
+        done(null, socket, data);
+    });
+};
+
+exports.getSeeds = (socket, data, done) => {
+    const sql = `
+        SELECT games.seed AS seed
+        FROM games
+            JOIN game_participants ON games.id = game_participants.games_id
+        WHERE game_participants.user_id = ? AND games.status = 2
+    `;
+    const values = [data.userID];
+    db.query(sql, values, (error, results, fields) => {
+        if (error) {
+            done(error, socket, data);
+            return;
+        }
+
+        for (const row of results) {
+            data.seeds[row.seed] = true;
+        }
         done(null, socket, data);
     });
 };

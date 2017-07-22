@@ -36,7 +36,7 @@ function step2(error, socket, data) {
         return;
     }
 
-    // Local variables
+    // This is either from "globals.currentGames" or built by the database
     const game = data.game;
 
     // Get the index of this player

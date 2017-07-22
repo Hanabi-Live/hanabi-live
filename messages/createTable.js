@@ -11,17 +11,41 @@
 */
 
 // Imports
+const moment = require('moment');
 const globals = require('../globals');
 const logger = require('../logger');
-const models = require('../models');
 const messages = require('../messages');
 const notify = require('../notify');
 
 exports.step1 = (socket, data) => {
-    // Validate that they submitted a table name
+    /*
+        Validation
+    */
+
+    // Validate that they submitted all of the required data
     if (!('name' in data)) {
-        logger.warn(`User "${data.username}" created a table without sending a table name.`);
-        data.reason = 'You must submit a table name.';
+        logger.warn(`User "${data.username}" created a table without sending a "name" value.`);
+        data.reason = 'You must submit a value of "name".';
+        notify.playerDenied(socket, data);
+        return;
+    } else if (!('max' in data)) {
+        logger.warn(`User "${data.username}" created a table without sending a "max" value.`);
+        data.reason = 'You must submit a value of "max".';
+        notify.playerDenied(socket, data);
+        return;
+    } else if (!('variant' in data)) {
+        logger.warn(`User "${data.username}" created a table without sending a "variant" value.`);
+        data.reason = 'You must submit a value of "variant".';
+        notify.playerDenied(socket, data);
+        return;
+    } else if (!('allow_spec' in data)) {
+        logger.warn(`User "${data.username}" created a table without sending a "allow_spec" value.`);
+        data.reason = 'You must submit a value of "allow_spec".';
+        notify.playerDenied(socket, data);
+        return;
+    } else if (!('timed' in data)) {
+        logger.warn(`User "${data.username}" created a table without sending a "timed" value.`);
+        data.reason = 'You must submit a value of "timed".';
         notify.playerDenied(socket, data);
         return;
     }
@@ -40,16 +64,9 @@ exports.step1 = (socket, data) => {
         return;
     }
 
-    // Create the table
-    data.owner = socket.userID;
-    models.games.create(socket, data, step2);
-};
-
-function step2(error, socket, data) {
-    if (error !== null) {
-        logger.error('Error: models.games.create failed:', error);
-        return;
-    }
+    /*
+        Creation
+    */
 
     logger.info(`User "${socket.username}" created a new game: #${data.gameID} (${data.name})`);
 
@@ -58,6 +75,9 @@ function step2(error, socket, data) {
         actions: [],
         allow_spec: data.allow_spec,
         clue_num: 8,
+        datetime_created: null,
+        datetime_finished: null,
+        datetime_started: moment().format('YYYY-MM-DD HH:mm:ss'), // This is the MariaDB format
         deck: [],
         deckIndex: 0,
         end_turn_num: null,
@@ -85,4 +105,4 @@ function step2(error, socket, data) {
     // Join the user to the new table
     data.table_id = data.gameID;
     messages.join_table.step1(socket, data);
-}
+};
