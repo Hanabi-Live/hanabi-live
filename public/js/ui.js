@@ -608,12 +608,14 @@ var HanabiCard = function(config) {
 
     this.add(this.note_given);
 
-    // there's some bug i cant figure out where it permanently draws a copy of the tag at this location, so i'll
-    // work around it by setting the starting location to this
+    // Create the note tooltip
     this.tooltip = new Kinetic.Label({
         x: -1000,
         y: -1000,
     });
+    // (there's a bug that Hyphen cant figure out where it permanently draws a
+    // copy of the tag at this location, so we can work around it by setting the
+    // starting location to be off screen)
 
     this.tooltip.add(new Kinetic.Tag({
         fill: '#3E4345',
@@ -630,13 +632,17 @@ var HanabiCard = function(config) {
         shadowOpacity: 0.6,
     }));
 
-    this.tooltip.add(new FitText({
+    // Hyphen originally programmed this with "FitText" instead of
+    // "Kinetic.Text", so that the tooltips would remain the same size;
+    // however, this leads to really small text on long notes. It is much better
+    // to just let the tooltip grow bigger for bigger notes.
+    this.tooltip.add(new Kinetic.Text({
         fill: "white",
         align: "left",
         padding: 0.01 * win_h,
         fontSize: 0.04 * win_h,
         minFontSize: 0.02 * win_h,
-        width: 0.12 * win_w,
+        width: 0.15 * win_w,
         fontFamily: "Verdana",
         text: "",
     }));
