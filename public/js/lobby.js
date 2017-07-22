@@ -50,13 +50,17 @@ function HanabiLobby() {
         }
     });
 
-    $("#login-button").on("click", function(evt) {
-        evt.preventDefault();
-
+    var perform_login = function() {
         var user = $("#user").val();
         var pass = $("#pass").val();
 
-        if (!user || !pass) {
+        if (!user) {
+            $("#login-result").html("You must provide a username.");
+            return;
+        }
+
+        if (!pass) {
+            $("#login-result").html("You must provide a password.");
             return;
         }
 
@@ -69,6 +73,18 @@ function HanabiLobby() {
         self.pass = shapass;
 
         self.send_login();
+    };
+
+    $("#login-button").on("click", function(evt) {
+        evt.preventDefault();
+        perform_login();
+    });
+
+    $("#login-form").on("keypress", function(evt) {
+        if (evt.key === "Enter") {
+            evt.preventDefault();
+            perform_login();
+        }
     });
 
     var input = $("#chat-input");
