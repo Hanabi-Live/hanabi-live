@@ -182,16 +182,15 @@ const step1 = (socket, data) => {
     }
 
     // Send messages about the current turn
-    // (we don't need to send this if the game is over, but we send it anyway
-    // in a timed game because we want an extra separator before the times are
-    // displayed)
-    if (!data.end || game.timed) {
-        game.actions.push({
-            num: game.turn_num,
-            type: 'turn',
-            who: game.turn_player_index,
-        });
-        notify.gameAction(data);
+    // (we advance a turn even if the game is over so that we have an extra
+    // separator before the finishing times are displayed)
+    game.actions.push({
+        num: game.turn_num,
+        type: 'turn',
+        who: game.turn_player_index,
+    });
+    notify.gameAction(data);
+    if (!data.end) {
         logger.info(`[Game ${data.gameID}] It is now ${game.players[game.turn_player_index].username}'s turn.`);
     }
 

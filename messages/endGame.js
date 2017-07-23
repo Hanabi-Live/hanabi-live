@@ -13,17 +13,18 @@ exports.step1 = (data) => {
     const game = globals.currentGames[data.gameID];
 
     // Send text messages showing how much time each player finished with
-    if (game.timed) {
-        for (const player of game.players) {
-            let text = `${player.username} finished with a time of `;
-            const seconds = Math.ceil(player.time / 1000);
-            text += secondsToTimeDisplay(seconds);
-            game.actions.push({
-                text,
-            });
-            notify.gameAction(data);
-            logger.info(`[Game ${data.gameID}] ${text}`);
+    for (const player of game.players) {
+        let text = `${player.username} finished with a time of `;
+        let seconds = Math.ceil(player.time / 1000);
+        if (!game.timed) {
+            seconds *= -1;
         }
+        text += secondsToTimeDisplay(seconds);
+        game.actions.push({
+            text,
+        });
+        notify.gameAction(data);
+        logger.info(`[Game ${data.gameID}] ${text}`);
     }
 
     // Send the "game_over" message
