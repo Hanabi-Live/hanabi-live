@@ -3747,9 +3747,9 @@ this.build_ui = function() {
     };
 
     // Add "12345" to the map (for number clues)
-    for (i = 1; i <= 5; i++) {
+    for (i = 0; i < rankClueButtons.length; i++) {
         // The button for "1" is at array index 0, etc.
-        clueKeyMap[i] = mouseClickHelper(rankClueButtons[i] - 1);
+        clueKeyMap[i + 1] = mouseClickHelper(rankClueButtons[i]);
     }
 
     // Add "qwert" (for color clues)
