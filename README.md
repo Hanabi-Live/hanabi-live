@@ -92,6 +92,7 @@ List of Changes & Improvements over the Original Server
 * Replays of other games will no longer show "Alice", "Bob", etc., and will instead show the real player names. This way, if you have a question about what they did, you can actually message them and ask.
 * The ambiguous checkboxes in the lobby have been converted to a "Status" indicator, showing exactly what the person is doing.
   * The possible statuses are as follows: Lobby, Pre-Game, Playing, Replay, Shared Replay, Spectating
+* You can see in the bottom right-hand corner how many people are currently spectating the game.
 * You can now press enter to login on the login screen.
 * When you create a game, the server will suggest a randomly generated table name for you.
 * The UI has been cleaned up a little to make it look less cramped.

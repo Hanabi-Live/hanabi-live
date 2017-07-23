@@ -1,3 +1,10 @@
+/*
+    A Keldon Hanabi Server Emulator
+    by Zamiel
+
+    Configuration constants are located in the "globals.js" file.
+*/
+
 // Imports
 const express = require('express');
 const favicon = require('serve-favicon');

@@ -31,11 +31,16 @@ exports.step1 = (socket, data) => {
     }
 
     // Get the index of this player
+    data.index = -1;
     for (let i = 0; i < game.players.length; i++) {
         if (game.players[i].userID === socket.userID) {
             data.index = i;
             break;
         }
+    }
+    if (data.index === -1) {
+        // We don't want to replicate notes from spectators
+        return;
     }
 
     // Update the array that contains all of their notes
