@@ -52,8 +52,26 @@ List of Changes & Improvements over the Original Server
 * Color-blind mode
   * For players who are color-blind, this mode will make the game much easier to play by drawing the letters of the color on top of the card.
 * Keyboard Shortcuts
-  * You can now completely play the game using the keyboard.
-  * You can see the documentation for the hotkeys by clicking the "Help" button while in a game.
+  * For the lobby:
+    * Create a table: `Alt + C`
+    * Show history: `Alt + H`
+    * Leave a table: `Alt + L`
+    * Return to tables: `Alt + R`
+  * For in-game:
+    * Play a card: `a` or `+` (will prompt an alert for the slot number)
+    * Discard a card: `d` or `-` (will prompt an alert for the slot number)
+    * Clue:
+        * `Tab` to select a player
+        * `1`, `2`, `3`, `4`, `5` for a number clue
+        * Or `Q`, `W`, `E`, `R`, `T` for a color clue
+        * Then `Enter` to submit
+  * For in a replay:
+    * Rewind back one turn: `Left`
+    * Fast-forward one turn: `Right`
+    * Rewind one full rotation: `[`
+    * Fast-forward one full rotation: `]`
+    * Go to the beginning: `Home`
+    * Go to the end: `End`
 * Discord Integration
   * All lobby chat will be replicated to (and from) the Hanabi Discord server.
   * You can join the Hanabi Discord server here: https://discord.gg/FADvkJp

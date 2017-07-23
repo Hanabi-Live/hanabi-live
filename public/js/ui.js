@@ -3835,8 +3835,8 @@ this.build_ui = function() {
         "-": doKeyboardCardDiscard, // For numpad users
     };
 
-    this.keyNavigation = function (e) {
-        if (e.ctrlKey || e.altKey) {
+    this.keyNavigation = (event) => {
+        if (event.ctrlKey || event.altKey) {
             return;
         }
         if (ui.shared_replay && !ui.shared_replay_leader) {
@@ -3844,19 +3844,19 @@ this.build_ui = function() {
         }
         let currentNavigation;
         if (replay_area.visible()) {
-            currentNavigation = replayNavigationKeyMap[e.key];
+            currentNavigation = replayNavigationKeyMap[event.key];
         } else if (saved_action !== null) { // current user can take an action
             if (saved_action.can_clue) {
-                currentNavigation = clueKeyMap[e.key];
+                currentNavigation = clueKeyMap[event.key];
             }
             if (saved_action.can_discard) {
-                currentNavigation = currentNavigation || discardKeyMap[e.key];
+                currentNavigation = currentNavigation || discardKeyMap[event.key];
             }
-            currentNavigation = currentNavigation || playKeyMap[e.key];
+            currentNavigation = currentNavigation || playKeyMap[event.key];
         }
 
         if (currentNavigation !== undefined) {
-            e.preventDefault();
+            event.preventDefault();
             currentNavigation();
         }
     };

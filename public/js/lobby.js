@@ -75,14 +75,14 @@ function HanabiLobby() {
         self.send_login();
     };
 
-    $("#login-button").on("click", function(evt) {
-        evt.preventDefault();
+    $("#login-button").on("click", function(event) {
+        event.preventDefault();
         perform_login();
     });
 
-    $("#login-form").on("keypress", function(evt) {
-        if (evt.key === "Enter") {
-            evt.preventDefault();
+    $("#login-form").on("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
             perform_login();
         }
     });
@@ -111,6 +111,13 @@ function HanabiLobby() {
     });
 
     $("#create-table").removeAttr("disabled");
+
+    $("#create-table-dialog").on("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            $("#create-game-submit").click();
+        }
+    });
 
     $("#create-game-submit").on("click", function(evt) {
         var game_name   = $("#create-game-name").val();
@@ -228,7 +235,25 @@ function HanabiLobby() {
         $("#game-history").show();
     });
 
-    $("body").on("contextmenu", "#game", function(e) { return false; });
+    $("body").on("contextmenu", "#game", function(e) {
+        return false;
+    });
+
+    $(document).keydown((event) => {
+        if (event.altKey && event.key === 'c') {
+            // Click the "Create Table" button
+            $("#create-table").click();
+        } else if (event.altKey && event.key === 'h') {
+            // Click the "Show History" button
+            $("#show-history").click();
+        } else if (event.altKey && event.key === 'l') {
+            // Click on the "Leave Game" button
+            $("#leave-game").click();
+        } else if (event.altKey && event.key === 'r') {
+            // Click on the "Return to Tables" button
+            $("#unattend-table").click();
+        }
+    });
 }
 
 HanabiLobby.prototype.reset_lobby = function() {
@@ -310,6 +335,9 @@ HanabiLobby.prototype.show_create_dialog = function() {
 
     var timed = JSON.parse(localStorage.getItem("table_host_timed"));
     $("#create-game-timed").prop('checked', timed);
+
+    // Autofocus the "Game Name" field
+    $("#create-game-name").focus();
 };
 
 HanabiLobby.prototype.hide_create_dialog = function() {
