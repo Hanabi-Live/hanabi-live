@@ -3303,9 +3303,12 @@ this.build_ui = function() {
 
     clue_type_group = new ButtonGroup();
 
-    // Mappings from keyboard keys to buttons
-    let rankClueButtons = {};
-    let suitClueButtons = {};
+    // Store each button inside an array for later
+    // (so that we can press them with keyboard hotkeys)
+    let rankClueButtons = [0];
+    // We initialize a 0th object here so that each number will just correspond
+    // to its array index
+    let suitClueButtons = [];
 
     x = 0.26 * win_w - (nump - 2) * 0.044 * win_w;
 
@@ -3341,7 +3344,8 @@ this.build_ui = function() {
             },
         });
 
-        rankClueButtons[i] = button;
+        // Add it to the tracking array (for keyboard hotkeys)
+        rankClueButtons.push(button);
 
         clue_area.add(button);
 
@@ -3375,9 +3379,8 @@ this.build_ui = function() {
 
         clue_area.add(button);
 
-        if (suit_abbreviations[i].length === 1) {
-            suitClueButtons[suit_abbreviations[i].toLowerCase()] = button;
-        }
+        // Add it to the tracking array (for keyboard hotkeys)
+        suitClueButtons.push(button);
 
         clue_type_group.add(button);
     }
@@ -3736,19 +3739,34 @@ this.build_ui = function() {
         "]" : forward_round,
     };
 
-    // Keyboard interactions with clue ui
-    let clueKeyMap = {
-        "Enter" : mouseClickHelper(submit_clue),
-    };
-    for (i = 0; i <= 5; i++) {
-        clueKeyMap[i] = mouseClickHelper(rankClueButtons[i]);
-    }
-    for (let key of Object.keys(suitClueButtons)) {
-        clueKeyMap[key] = mouseClickHelper(suitClueButtons[key]);
-    }
+    // Build an object that contains all of the keyboard hotkeys along with
+    // how they should interact with clue UI
+    let clueKeyMap = {};
+
+    // Add "Tab" for player selection
     clueKeyMap.Tab = function() {
         clue_target_group.selectNextTarget();
     };
+
+    // Add "12345" to the map (for number clues)
+    for (i = 1; i <= 5; i++) {
+        clueKeyMap[i] = mouseClickHelper(rankClueButtons[i]);
+    }
+
+    // Add "qwert" (for color clues)
+    // (we want to use qwert since they are conviently next to 12345, and also
+    // because the clue colors can change between different variants)
+    clueKeyMap.q = mouseClickHelper(suitClueButtons[0]);
+    clueKeyMap.w = mouseClickHelper(suitClueButtons[1]);
+    clueKeyMap.e = mouseClickHelper(suitClueButtons[2]);
+    clueKeyMap.r = mouseClickHelper(suitClueButtons[3]);
+    if (suitClueButtons.length > 4) {
+        // There may not be a 5th clue type, depending on the variant
+        clueKeyMap.t = mouseClickHelper(suitClueButtons[4]);
+    }
+
+    // Add "Enter" for pressing the "Give Clue" button
+    clueKeyMap.Enter = mouseClickHelper(submit_clue);
 
     // Keyboard actions for playing and discarding cards
     let promptOwnHandOrder = function(actionString) {
@@ -3809,14 +3827,13 @@ this.build_ui = function() {
     };
 
     let playKeyMap = {
-        "+"      : doKeyboardCardPlay,
-        "="      : doKeyboardCardPlay,
-        "Insert" : doKeyboardCardPlay,
+        "a": doKeyboardCardPlay, // The main play hotkey
+        "+": doKeyboardCardPlay, // For numpad users
     };
 
     let discardKeyMap = {
-        "-"      : doKeyboardCardDiscard,
-        "Delete" : doKeyboardCardDiscard,
+        "d": doKeyboardCardDiscard, // The main discard hotkey
+        "-": doKeyboardCardDiscard, // For numpad users
     };
 
     this.keyNavigation = function (e) {
@@ -3874,6 +3891,23 @@ this.build_ui = function() {
 
     helpgroup.add(rect);
 
+    let helpText = `Welcome to Hanabi!
+
+When it is your turn, you may play a card by dragging it to the play stacks in the center of the screen.
+
+To discard, drag a card to the discard area in the lower right. However, note that you are not allowed to discard when there are 8 clues available. (A red border will appear around the discard area to signify this.)
+
+To give a clue, use the boxes in the center of the screen. You may mouseover a card to see what clues have been given about it. You can also mouseover the clues in the log to see which cards it referenced.
+
+You can rewind the game state with the arrow button in the bottom-left.
+
+Keyboard hotkeys:
+- Play: "a" or "+"
+- Discard: "d" or "-"
+- Clue: "Tab", then 1/2/3/4/5 or Q/W/E/R/T, then "Enter"
+- Rewind: "Left", or "[" for a full rotation, or "Home" for the beginning
+- Fast-forward: "Right", or "]" for a full rotation, or "End" for the end`;
+
     text = new Kinetic.Text({
         x: 0.03 * win_w,
         y: 0.03 * win_h,
@@ -3882,32 +3916,7 @@ this.build_ui = function() {
         fontSize: 0.019 * win_w,
         fontFamily: "Verdana",
         fill: "white",
-        text: "Welcome to Hanabi!\n\n" +
-              "When it is your turn, you may " +
-              "play a card by dragging it to the play stacks in the " +
-              "center of the screen, or press '+', '=', or 'Insert'." +
-              "\n\n" +
-              "To discard, drag a card to the discard area in the " +
-              "lower right, or press '-' or 'Delete'. When there are " +
-              "8 clues available, you are not able to discard. " +
-              "A red border will appear around the discard area." +
-              "\n\n" +
-              "To give a clue, click the button for the player who " +
-              "will receive it (or select with Tab), then select the " +
-              "button (or key) for the number or color " +
-              "(BGYRP, K for black) of the clue you wish to give, " +
-              "then the Give Clue button (or 'Enter')." +
-              "\n\n" +
-              "You may mouseover a card to see what clues have " +
-              "been given about it, or mouseover the clues in the " +
-              "log to see which cards it referenced." +
-              "\n\n" +
-              "You can switch to rewind mode during a game with the " +
-              "arrow button in the bottom-left. In this mode, you " +
-              "can also step between turns with the left and right " +
-              "arrow keys. Skip forward or backward by one round " +
-              "with '[', ']'. Go to the start of the game with " +
-              "'Home', or to the present with 'End'.",
+        text: helpText,
     });
 
     helpgroup.add(text);

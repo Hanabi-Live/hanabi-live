@@ -46,6 +46,9 @@ List of Changes & Improvements over the Original Server
   * Everyone's notes are combined and shown to spectators, which is fun to see.
 * Color-blind mode
   * For players who are color-blind, this mode will make the game much easier to play by drawing the letters of the color on top of the card.
+* Keyboard Shortcuts
+  * You can now completely play the game using the keyboard.
+  * You can see the documentation for the hotkeys by clicking the "Help" button while in a game.
 * Discord Integration
   * All lobby chat will be replicated to (and from) the Hanabi Discord server.
   * You can join the Hanabi Discord server here: https://discord.gg/FADvkJp
@@ -59,6 +62,7 @@ List of Changes & Improvements over the Original Server
   * It will shows "(clued)" when discarding clued cards.
   * It will show 3 actions instead of 1.
   * It will show how many cards were left in the deck at the start of each message. (This only occurs when you click on it to see the full log.)
+  * At the end of the game, it will show how much time each player had left. Or, in non-timed games, it will show how much time they took in total.
 * The clue log will still continue to function if you mouse over played and discarded cards.
 * The "No Clues" indicator is much easier to see.
 * In-game replays will show card faces based on your current knowledge of the card.
