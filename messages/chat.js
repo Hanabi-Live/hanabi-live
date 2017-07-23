@@ -42,6 +42,15 @@ function step2(error, socket, data) {
     text += `<${socket.username}> ${data.msg}`;
     logger.info(text);
 
+    // Check for debug commands
+    if (data.msg === '!debug') {
+        logger.debug('globals.connectedUsers:');
+        logger.debug(globals.connectedUsers);
+        logger.debug('globals.currentGames:');
+        logger.debug(globals.currentGames);
+        return;
+    }
+
     // Send the chat message to everyone
     for (const userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
