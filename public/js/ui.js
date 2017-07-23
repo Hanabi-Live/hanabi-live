@@ -3305,9 +3305,7 @@ this.build_ui = function() {
 
     // Store each button inside an array for later
     // (so that we can press them with keyboard hotkeys)
-    let rankClueButtons = [0];
-    // We initialize a 0th object here so that each number will just correspond
-    // to its array index
+    let rankClueButtons = [];
     let suitClueButtons = [];
 
     x = 0.26 * win_w - (nump - 2) * 0.044 * win_w;
@@ -3750,7 +3748,8 @@ this.build_ui = function() {
 
     // Add "12345" to the map (for number clues)
     for (i = 1; i <= 5; i++) {
-        clueKeyMap[i] = mouseClickHelper(rankClueButtons[i]);
+        // The button for "1" is at array index 0, etc.
+        clueKeyMap[i] = mouseClickHelper(rankClueButtons[i] - 1);
     }
 
     // Add "qwert" (for color clues)
