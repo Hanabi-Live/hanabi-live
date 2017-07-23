@@ -18,6 +18,10 @@ List of Changes & Improvements over the Original Server
 
 ### New Features
 
+* Bottom Deck Plays
+  * If there is 1 card left in the deck, a player is allowed to blind play the last card in the deck on their turn.
+  * A golden border will appear around the deck when there is 1 card left in order to signify this.
+  * This feature prevents stupid losses that occur from being "bottom decked" by a 3 or a 4 that was impossible to save in the early or mid-game.
 * Shared Replays
   * You can turn any replay into a shared replay, upon which an unlimited number of people can join.
   * When in a shared replay, the creator can control what turn is being shown to everyone in the replay.
