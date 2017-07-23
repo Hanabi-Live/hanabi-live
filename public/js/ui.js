@@ -3554,17 +3554,15 @@ this.build_ui = function() {
         opacity: 0,
     });
 
-    if (!this.shared_replay) {
-        rect.on("click", function(evt) {
-            var x = evt.evt.x - this.getAbsolutePosition().x;
-            var w = this.getWidth();
-            var step = w / self.replay_max;
-            var newturn = Math.floor((x + step / 2) / step);
-            if (newturn !== self.replay_turn) {
-                self.perform_replay(newturn, true);
-            }
-        });
-    }
+    rect.on("click", function(evt) {
+        var x = evt.evt.x - this.getAbsolutePosition().x;
+        var w = this.getWidth();
+        var step = w / self.replay_max;
+        var newturn = Math.floor((x + step / 2) / step);
+        if (newturn !== self.replay_turn) {
+            self.perform_replay(newturn, true);
+        }
+    });
 
     replay_area.add(rect);
 
@@ -3575,7 +3573,7 @@ this.build_ui = function() {
         height: 0.03 * win_h,
         fill: "#0000cc",
         cornerRadius: 0.01 * win_w,
-        draggable: !this.shared_replay,
+        draggable: true,
         dragBoundFunc: function(pos) {
             var min = this.getParent().getAbsolutePosition().x;
             var w = this.getParent().getWidth() - this.getWidth();
@@ -3614,7 +3612,6 @@ this.build_ui = function() {
         width: 0.06 * win_w,
         height: 0.08 * win_h,
         image: "rewindfull",
-        visible: !this.shared_replay,
     });
 
     var rewindfull_function = function() {
@@ -3632,7 +3629,6 @@ this.build_ui = function() {
         width: 0.06 * win_w,
         height: 0.08 * win_h,
         image: "rewind",
-        visible: !this.shared_replay,
     });
 
     var backward_function = function() {
@@ -3650,7 +3646,6 @@ this.build_ui = function() {
         width: 0.06 * win_w,
         height: 0.08 * win_h,
         image: "forward",
-        visible: !this.shared_replay,
     });
 
     var forward_function = function() {
@@ -3668,7 +3663,6 @@ this.build_ui = function() {
         width: 0.06 * win_w,
         height: 0.08 * win_h,
         image: "forwardfull",
-        visible: !this.shared_replay,
     });
 
     var forwardfull_function = function() {
@@ -3686,7 +3680,7 @@ this.build_ui = function() {
         width: 0.2 * win_w,
         height: 0.06 * win_h,
         text: "Exit Replay",
-        visible: !this.shared_replay,
+        visible: !this.replay_only,
     });
 
     button.on("click tap", function() {
