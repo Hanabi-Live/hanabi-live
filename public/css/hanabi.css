@@ -261,7 +261,7 @@ ul {
 
 	position: absolute;
 	width: 400px;
-	height: 215px;
+	/* We don't need to specify the height explicitly */
 	top: 45px;
 	left: 300px;
 	z-index: 100;
