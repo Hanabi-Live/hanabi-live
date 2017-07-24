@@ -42,7 +42,11 @@ exports.step1 = (socket, data) => {
 
     // Set their status
     socket.currentGame = data.gameID;
-    socket.status = 'Playing';
+    if (game.running) {
+        socket.status = 'Playing';
+    } else {
+        socket.status = 'Pre-Game';
+    }
     notify.allUserChange(socket);
 
     // Let the client know they successfully joined the table
