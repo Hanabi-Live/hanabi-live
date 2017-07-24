@@ -2615,6 +2615,7 @@ var player_hands = [];
 var drawdeck;
 var message_prompt, clue_label, score_label;
 var spectators_label, spectators_num_label, spectators_label_tooltip;
+var shared_replay_leader_label;
 var strikes = [];
 var name_frames = [];
 var play_stacks = [], discard_stacks = [];
@@ -2862,7 +2863,7 @@ this.build_ui = function() {
         fontFamily: "Verdana",
         align: "center",
         text: "👀",
-        fill: "yellow", // "#d8d5ef",
+        fill: "yellow",
         shadowColor: "black",
         shadowBlur: 10,
         shadowOffset: {
@@ -2928,6 +2929,10 @@ this.build_ui = function() {
         tiplayer.draw();
     });
 
+    /*
+        End tooltip
+    */
+
     spectators_num_label = new Kinetic.Text({
         x: 0.583 * win_w,
         y: 0.934 * win_h,
@@ -2948,6 +2953,89 @@ this.build_ui = function() {
         visible: false,
     });
     uilayer.add(spectators_num_label);
+
+    /*
+        Shared replay leader indicator
+    */
+
+    shared_replay_leader_label = new Kinetic.Text({
+        x: 0.583 * win_w,
+        y: 0.85 * win_h,
+        width: 0.11 * win_w,
+        height: 0.03 * win_h,
+        fontSize: 0.03 * win_h,
+        fontFamily: "Verdana",
+        align: "center",
+        text: "👑",
+        fill: "yellow",
+        shadowColor: "black",
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+        visible: false,
+    });
+    uilayer.add(shared_replay_leader_label);
+
+    /*
+        Tooltip for the crown
+    */
+
+    shared_replay_leader_label_tooltip = new Kinetic.Label({
+        x: -1000,
+        y: -1000,
+    });
+
+    shared_replay_leader_label_tooltip.add(new Kinetic.Tag({
+        fill: '#3E4345',
+        pointerDirection: 'left',
+        pointerWidth: 0.02 * win_w,
+        pointerHeight: 0.015 * win_h,
+        lineJoin: 'round',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 3,
+            y: 3,
+        },
+        shadowOpacity: 0.6,
+    }));
+
+    shared_replay_leader_label_tooltip.add(new Kinetic.Text({
+        fill: "white",
+        align: "left",
+        padding: 0.01 * win_h,
+        fontSize: 0.04 * win_h,
+        minFontSize: 0.02 * win_h,
+        width: 0.2 * win_w,
+        fontFamily: "Verdana",
+        text: "",
+    }));
+
+    tiplayer.add(shared_replay_leader_label_tooltip);
+    shared_replay_leader_label.tooltip = shared_replay_leader_label_tooltip;
+
+    shared_replay_leader_label.on("mousemove", function() {
+        var mousePos = stage.getPointerPosition();
+        this.tooltip.setX(mousePos.x + 15);
+        this.tooltip.setY(mousePos.y + 5);
+
+        this.tooltip.show();
+        tiplayer.draw();
+
+        ui.activeHover = this;
+    });
+
+    shared_replay_leader_label.on("mouseout", function() {
+        this.tooltip.hide();
+        tiplayer.draw();
+    });
+
+    /*
+        End tooltip
+    */
 
     /*
         End of spectator / shared replay stuff
@@ -4660,7 +4748,7 @@ this.handle_spectators = function(note) {
         spectators_num_label.setText(note.names.length);
 
         // Build the string that shows all the names
-        let tooltipString = '';
+        let tooltipString = 'Spectators:\n';
         for (let i = 0; i < note.names.length; i++) {
             tooltipString += `${i + 1}) ${note.names[i]}\n`;
         }
@@ -4806,11 +4894,17 @@ this.handle_notes = function(note) {
 
 this.handle_replay_leader = function(note) {
     this.shared_replay_leader = note.name;
+
+    shared_replay_leader_label.show();
+    let text = `Leader: ${this.shared_replay_leader}`;
+    shared_replay_leader_label_tooltip.getText().setText(text);
+
     if (this.shared_replay_leader === lobby.username) {
         go_to_shared_turn_button.hide();
     } else {
         go_to_shared_turn_button.show();
     }
+
     uilayer.draw();
 };
 
