@@ -41,6 +41,5 @@ function getRandomNumber(min, max) {
     // Get a random number between minNumber and maxNumber
     min = parseInt(min, 10);
     max = parseInt(max, 10);
-    /* eslint-disable no-mixed-operators */
-    return Math.floor(Math.random() * (max - min + 1) + min);
+    return Math.floor((Math.random() * (max - (min + 1))) + min);
 }
