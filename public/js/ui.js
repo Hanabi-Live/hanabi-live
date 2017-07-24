@@ -2613,7 +2613,8 @@ var timerlayer  = new Kinetic.Layer();
 
 var player_hands = [];
 var drawdeck;
-var message_prompt, clue_label, score_label, spectators_label, spectators_num_label;
+var message_prompt, clue_label, score_label;
+var spectators_label, spectators_num_label, spectators_label_tooltip;
 var strikes = [];
 var name_frames = [];
 var play_stacks = [], discard_stacks = [];
@@ -2848,6 +2849,10 @@ this.build_ui = function() {
 
     uilayer.add(score_label);
 
+    /*
+        The "eyes" symbol to show that one or more people are spectating the game
+    */
+
     spectators_label = new Kinetic.Text({
         x: 0.583 * win_w,
         y: 0.9 * win_h,
@@ -2869,6 +2874,60 @@ this.build_ui = function() {
     });
     uilayer.add(spectators_label);
 
+    /*
+        Tooltip for the eyes
+    */
+
+    spectators_label_tooltip = new Kinetic.Label({
+        x: -1000,
+        y: -1000,
+    });
+
+    spectators_label_tooltip.add(new Kinetic.Tag({
+        fill: '#3E4345',
+        pointerDirection: 'left',
+        pointerWidth: 0.02 * win_w,
+        pointerHeight: 0.015 * win_h,
+        lineJoin: 'round',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 3,
+            y: 3,
+        },
+        shadowOpacity: 0.6,
+    }));
+
+    spectators_label_tooltip.add(new Kinetic.Text({
+        fill: "white",
+        align: "left",
+        padding: 0.01 * win_h,
+        fontSize: 0.04 * win_h,
+        minFontSize: 0.02 * win_h,
+        width: 0.2 * win_w,
+        fontFamily: "Verdana",
+        text: "",
+    }));
+
+    tiplayer.add(spectators_label_tooltip);
+    spectators_label.tooltip = spectators_label_tooltip;
+
+    spectators_label.on("mousemove", function() {
+        var mousePos = stage.getPointerPosition();
+        this.tooltip.setX(mousePos.x + 15);
+        this.tooltip.setY(mousePos.y + 5);
+
+        this.tooltip.show();
+        tiplayer.draw();
+
+        ui.activeHover = this;
+    });
+
+    spectators_label.on("mouseout", function() {
+        this.tooltip.hide();
+        tiplayer.draw();
+    });
+
     spectators_num_label = new Kinetic.Text({
         x: 0.583 * win_w,
         y: 0.934 * win_h,
@@ -2889,6 +2948,10 @@ this.build_ui = function() {
         visible: false,
     });
     uilayer.add(spectators_num_label);
+
+    /*
+        End of spectator / shared replay stuff
+    */
 
     rect = new Kinetic.Rect({
         x: 0.8 * win_w,
@@ -4595,6 +4658,15 @@ this.handle_spectators = function(note) {
     spectators_num_label.setVisible(shouldShowLabel);
     if (shouldShowLabel) {
         spectators_num_label.setText(note.names.length);
+
+        // Build the string that shows all the names
+        let tooltipString = '';
+        for (let i = 0; i < note.names.length; i++) {
+            tooltipString += `${i + 1}) ${note.names[i]}\n`;
+        }
+        tooltipString = tooltipString.slice(0, -1); // Chop off the trailing newline
+
+        spectators_label_tooltip.getText().setText(tooltipString)
     }
     uilayer.draw();
 };
