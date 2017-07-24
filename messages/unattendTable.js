@@ -34,7 +34,7 @@ exports.step1 = (socket, data) => {
 
         delete game.spectators[socket.userID];
         notify.gameMemberChange(data);
-        notify.gameNumSpec(data);
+        notify.gameSpectators(data);
 
         if (game.shared_replay) {
             if (Object.keys(game.spectators).length === 0) {

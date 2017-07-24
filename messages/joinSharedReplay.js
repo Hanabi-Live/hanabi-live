@@ -34,7 +34,7 @@ exports.step1 = (socket, data) => {
     game.spectators[socket.userID] = socket;
     notify.allTableChange(data);
     notify.gameMemberChange(data);
-    notify.gameNumSpec(data);
+    notify.gameSpectators(data);
 
     // Set their status
     socket.currentGame = data.gameID;

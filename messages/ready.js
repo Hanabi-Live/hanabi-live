@@ -83,14 +83,7 @@ function step2(error, socket, data) {
 
     // Send them the number of spectators
     if (socket.status !== 'Replay') {
-        socket.emit('message', {
-            type: 'num_spec',
-            resp: {
-                num: Object.keys(globals.currentGames[data.gameID].spectators).length,
-                // We can't use "game.spectators" because that property doesn't
-                // exist in the "fake" game object
-            },
-        });
+        notify.playerSpectators(socket, data);
     }
 
     if (socket.status !== 'Replay' && socket.status !== 'Shared Replay') {

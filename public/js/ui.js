@@ -4572,12 +4572,12 @@ this.handle_notify = function(note, performing_replay) {
     }
 };
 
-this.handle_num_spec = function(note) {
-    let shouldShowLabel = typeof note.num === 'number' && note.num > 0;
+this.handle_spectators = function(note) {
+    let shouldShowLabel = note.names.length > 0;
     spectators_label.setVisible(shouldShowLabel);
     spectators_num_label.setVisible(shouldShowLabel);
     if (shouldShowLabel) {
-        spectators_num_label.setText(note.num);
+        spectators_num_label.setText(note.names.length);
     }
     uilayer.draw();
 };
@@ -5007,9 +5007,9 @@ HanabiUI.prototype.handle_message = function(msg) {
             this.lobby.send_notify("It's your turn", "turn");
         }
 
-    } else if (msgType === "num_spec") {
-        // This is used to update how many people are currently spectating the game
-        this.handle_num_spec.call(this, msgData);
+    } else if (msgType === "spectators") {
+        // This is used to update the names of the people currently spectating the game
+        this.handle_spectators.call(this, msgData);
 
     } else if (msgType === "clock") {
         // This is used for timed games

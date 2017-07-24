@@ -64,7 +64,6 @@ exports.gameMemberChange = (data) => {
                 max_players: game.max_players,
                 variant: game.variant,
                 allow_spec: game.allow_spec,
-                num_spec: Object.keys(game.spectators).length,
                 timed: game.timed,
                 shared_replay: game.shared_replay,
             },
@@ -122,7 +121,6 @@ exports.gameConnected = (data) => {
         type: 'connected',
         resp: {
             list,
-            num_spec: Object.keys(game.spectators).length,
         },
     };
 
@@ -169,30 +167,18 @@ exports.gameAction = (data) => {
     }
 };
 
-exports.gameNumSpec = (data) => {
+exports.gameSpectators = (data) => {
     // Local variables
     const game = globals.currentGames[data.gameID];
 
-    // Create the "num_spec" message
-    const times = [];
-    for (const player of game.players) {
-        times.push(player.time);
-    }
-    const specMsg = {
-        type: 'num_spec',
-        resp: {
-            num: Object.keys(game.spectators).length,
-        },
-    };
-
     // Send the message to all the players in the game
     for (const player of game.players) {
-        player.socket.emit('message', specMsg);
+        playerSpectators(player.socket, data);
     }
 
     // Also send it to the spectators
     for (const userID of Object.keys(game.spectators)) {
-        game.spectators[userID].emit('message', specMsg);
+        playerSpectators(game.spectators[userID], data);
     }
 };
 
@@ -372,6 +358,26 @@ exports.playerAction = (socket, data) => {
         },
     });
 };
+
+const playerSpectators = (socket, data) => {
+    // Local variables
+    const game = globals.currentGames[data.gameID];
+
+    // Build an array with the names of all of the spectators
+    const names = [];
+    for (const userID of Object.keys(game.spectators)) {
+        names.push(game.spectators[userID].username);
+    }
+
+    // Send it
+    socket.emit('message', {
+        type: 'spectators',
+        resp: {
+            names,
+        },
+    });
+};
+exports.playerSpectators = playerSpectators;
 
 exports.playerDenied = (socket, data) => {
     socket.emit('message', {

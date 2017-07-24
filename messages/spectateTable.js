@@ -30,7 +30,7 @@ exports.step1 = (socket, data) => {
     // Add them to the spectators object
     game.spectators[socket.userID] = socket;
     notify.gameMemberChange(data);
-    notify.gameNumSpec(data);
+    notify.gameSpectators(data);
 
     // Set their status
     socket.currentGame = data.gameID;

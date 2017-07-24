@@ -808,7 +808,6 @@ HanabiLobby.prototype.set_game = function(data) {
     this.game.variant       = data.variant;
     this.game.running       = data.running;
     this.game.allow_spec    = data.allow_spec;
-    this.game.num_spec      = data.num_spec;
     this.game.timed         = data.timed;
     this.game.shared_replay = data.shared_replay;
 
