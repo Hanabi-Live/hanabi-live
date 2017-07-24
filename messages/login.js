@@ -129,6 +129,13 @@ function step4(socket, data) {
     // They have successfully logged in, so send initial messages to the client
     socket.emit('message', {
         type: 'hello',
+        resp: {
+            // We have to send the username back to the client because they may
+            // have logged in with the wrong case, and the client needs to know
+            // their exact username or various bugs will creep up
+            // (on vanilla Keldon, this hello message is empty)
+            username: socket.username,
+        },
     });
 
     // Alert everyone that a new user has logged in

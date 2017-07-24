@@ -933,6 +933,7 @@ HanabiLobby.prototype.listen_conn = function(conn) {
         }
 
         if (msgType === "hello") {
+            self.username = msgData.username;
             self.hide_login();
             self.reset_lobby();
             self.show_lobby();
