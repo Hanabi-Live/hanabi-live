@@ -53,7 +53,6 @@ CREATE TABLE game_participants (
 );
 CREATE INDEX game_participants_index_user_id ON game_participants (user_id);
 CREATE INDEX game_participants_index_game_id ON game_participants (game_id);
-CREATE INDEX game_participants_index_datetime_joined ON game_participants (datetime_joined);
 
 DROP TABLE IF EXISTS game_actions;
 CREATE TABLE game_actions (
