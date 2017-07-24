@@ -122,17 +122,8 @@ function step2(error, socket, data) {
     }
 
     // Enable the replay controls for the leader of the review
-    if (socket.status === 'Shared Replay' &&
-        socket.userID === globals.currentGames[data.gameID].owner) {
-        // We can't use "game.owner" because that property doesn't exist in the
-        // "fake" game object
-
-        socket.emit('message', {
-            type: 'replay_owner',
-            resp: {
-                owner: true,
-            },
-        });
+    if (socket.status === 'Shared Replay') {
+        notify.playerReplayLeader(socket, data);
     }
 
     // Send them to the current turn that everyone else is at

@@ -379,6 +379,19 @@ const playerSpectators = (socket, data) => {
 };
 exports.playerSpectators = playerSpectators;
 
+exports.playerReplayLeader = (socket, data) => {
+    // Local variables
+    const game = globals.currentGames[data.gameID];
+    const name = game.spectators[game.owner].username;
+
+    socket.emit('message', {
+        type: 'replay_leader',
+        resp: {
+            name,
+        },
+    });
+};
+
 exports.playerDenied = (socket, data) => {
     socket.emit('message', {
         type: 'denied',

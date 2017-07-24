@@ -25,7 +25,8 @@ this.player_names = [];
 this.variant = 0;
 this.replay = false;
 this.shared_replay = false;
-this.shared_replay_leader = false;
+this.shared_replay_leader = ''; // Equal to the username of the shared replay leader
+this.shared_replay_turn = -1;
 this.replay_only = false;
 this.spectating = false;
 this.replay_max = 0;
@@ -2622,7 +2623,7 @@ var timer_rect1, timer_label1, timer_text1;
 var timer_rect2, timer_label2, timer_text2;
 var no_clue_label, no_clue_box, no_discard_label, deck_play_available_label;
 var replay_area, replay_bar, replay_shuttle, replay_button;
-var replay_buttons = []; // The four navigational buttons
+var go_to_shared_turn_button; // Used in shared replays
 var lobby_button, help_button;
 var helpgroup;
 var msgloggroup, overback;
@@ -3607,7 +3608,7 @@ this.build_ui = function() {
     replay_area.add(replay_shuttle);
 
     // Rewind to the beginning (the left-most button)
-    replay_buttons[0] = new Button({
+    button = new Button({
         x: 0.1 * win_w,
         y: 0.07 * win_h,
         width: 0.06 * win_w,
@@ -3619,12 +3620,12 @@ this.build_ui = function() {
         ui.perform_replay(0);
     };
 
-    replay_buttons[0].on("click tap", rewindfull_function);
+    button.on("click tap", rewindfull_function);
 
-    replay_area.add(replay_buttons[0]);
+    replay_area.add(button);
 
     // Rewind one turn (the second left-most button)
-    replay_buttons[1] = new Button({
+    button = new Button({
         x: 0.18 * win_w,
         y: 0.07 * win_h,
         width: 0.06 * win_w,
@@ -3636,12 +3637,12 @@ this.build_ui = function() {
         ui.perform_replay(self.replay_turn - 1, true);
     };
 
-    replay_buttons[1].on("click tap", backward_function);
+    button.on("click tap", backward_function);
 
-    replay_area.add(replay_buttons[1]);
+    replay_area.add(button);
 
     // Go forward one turn (the second right-most button)
-    replay_buttons[2] = new Button({
+    button = new Button({
         x: 0.26 * win_w,
         y: 0.07 * win_h,
         width: 0.06 * win_w,
@@ -3653,12 +3654,12 @@ this.build_ui = function() {
         ui.perform_replay(self.replay_turn + 1);
     };
 
-    replay_buttons[2].on("click tap", forward_function);
+    button.on("click tap", forward_function);
 
-    replay_area.add(replay_buttons[2]);
+    replay_area.add(button);
 
     // Go forward to the end (the right-most button)
-    replay_buttons[3] = new Button({
+    button = new Button({
         x: 0.34 * win_w,
         y: 0.07 * win_h,
         width: 0.06 * win_w,
@@ -3670,9 +3671,9 @@ this.build_ui = function() {
         ui.perform_replay(self.replay_max, true);
     };
 
-    replay_buttons[3].on("click tap", forwardfull_function);
+    button.on("click tap", forwardfull_function);
 
-    replay_area.add(replay_buttons[3]);
+    replay_area.add(button);
 
     // The "Exit Replay" button
     button = new Button({
@@ -3703,6 +3704,22 @@ this.build_ui = function() {
     });
 
     replay_area.add(button);
+
+    // The "Go to Shared Turn" button
+    go_to_shared_turn_button = new Button({
+        x: 0.15 * win_w,
+        y: 0.17 * win_h,
+        width: 0.2 * win_w,
+        height: 0.06 * win_h,
+        text: "Go to Shared Turn",
+        visible: false,
+    });
+
+    go_to_shared_turn_button.on("click tap", function() {
+        ui.perform_replay(ui.shared_replay_turn);
+    });
+
+    replay_area.add(go_to_shared_turn_button);
 
     replay_area.hide();
     uilayer.add(replay_area);
@@ -3839,7 +3856,7 @@ this.build_ui = function() {
         if (event.ctrlKey || event.altKey) {
             return;
         }
-        if (ui.shared_replay && !ui.shared_replay_leader) {
+        if (ui.shared_replay && ui.shared_replay_leader !== lobby.username) {
             return;
         }
         let currentNavigation;
@@ -4129,7 +4146,7 @@ this.perform_replay = function(target, fast) {
         return; // we're already there, nothing to do!
     }
 
-    if (this.shared_replay && this.shared_replay_leader) {
+    if (this.shared_replay && this.shared_replay_leader === lobby.username) {
         this.send_msg({
             type: "replay_action",
             resp: {
@@ -4715,21 +4732,20 @@ this.handle_notes = function(note) {
     cardlayer.draw();
 };
 
-this.handle_replay_owner = function(note) {
-    for (let i = 0; i < replay_buttons.length; i++) {
-        this.shared_replay_leader = note.owner;
-        if (note.owner) {
-            replay_buttons[i].show();
-        } else {
-            replay_buttons[i].hide();
-        }
+this.handle_replay_leader = function(note) {
+    this.shared_replay_leader = note.name;
+    if (this.shared_replay_leader === lobby.username) {
+        go_to_shared_turn_button.hide();
+    } else {
+        go_to_shared_turn_button.show();
     }
     uilayer.draw();
 };
 
 this.handle_replay_turn = function(note) {
-    if (!this.shared_replay_leader) {
-        this.perform_replay(note.turn);
+    this.shared_replay_turn = note.turn;
+    if (this.shared_replay_leader !== lobby.username) {
+        this.perform_replay(this.shared_replay_turn);
     }
 };
 
@@ -5023,9 +5039,9 @@ HanabiUI.prototype.handle_message = function(msg) {
         // This is a list of all of your notes, sent upon reconnecting to a game
         this.handle_notes.call(this, msgData);
 
-    } else if (msgType === "replay_owner") {
+    } else if (msgType === "replay_leader") {
         // This is used in shared replays
-        this.handle_replay_owner.call(this, msgData);
+        this.handle_replay_leader.call(this, msgData);
 
     } else if (msgType === "replay_turn") {
         // This is used in shared replays
