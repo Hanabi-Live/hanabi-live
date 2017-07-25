@@ -454,10 +454,12 @@ var variant_names = [
     "Mixed-color Suits",
     "Mixed and Multi-color Suits"
 ];
-for (let i = 0; i < variant_names.length; i++) {
-    var option = new Option(variant_names[i], i);
-    $("#create-game-variant").append($(option));
-}
+$(document).ready(() => {
+    for (let i = 0; i < variant_names.length; i++) {
+        var option = new Option(variant_names[i], i);
+        $("#create-game-variant").append($(option));
+    }
+});
 
 HanabiLobby.prototype.draw_tables = function() {
     var self = this;
