@@ -2886,7 +2886,7 @@ this.build_ui = function() {
 
     spectators_label_tooltip.add(new Kinetic.Tag({
         fill: '#3E4345',
-        pointerDirection: 'left',
+        pointerDirection: 'down',
         pointerWidth: 0.02 * win_w,
         pointerHeight: 0.015 * win_h,
         lineJoin: 'round',
@@ -2905,7 +2905,7 @@ this.build_ui = function() {
         padding: 0.01 * win_h,
         fontSize: 0.04 * win_h,
         minFontSize: 0.02 * win_h,
-        width: 0.2 * win_w,
+        width: 0.225 * win_w,
         fontFamily: "Verdana",
         text: "",
     }));
@@ -4005,9 +4005,6 @@ this.build_ui = function() {
 
     this.keyNavigation = (event) => {
         if (event.ctrlKey || event.altKey) {
-            return;
-        }
-        if (ui.shared_replay && ui.shared_replay_leader !== lobby.username) {
             return;
         }
         let currentNavigation;
