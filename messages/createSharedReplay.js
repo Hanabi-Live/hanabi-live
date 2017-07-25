@@ -42,7 +42,7 @@ function step2(error, socket, data) {
     logger.info(`User "${socket.username}" created a new shared replay: #${data.gameID}`);
 
     // Define a standard naming scheme for shared replays
-    const name = `Shared replay for game #${data.gameID}`;
+    const name = `${socket.username}'s shared replay for game #${data.gameID}`;
 
     // Keep track of the current games
     globals.currentGames[data.gameID] = {
@@ -54,6 +54,7 @@ function step2(error, socket, data) {
         running: true,
         turn_num: 0,
         shared_replay: true,
+        leader: socket.username,
     };
 
     notify.allTableChange(data);
