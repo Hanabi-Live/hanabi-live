@@ -124,6 +124,7 @@ function step3(socket, data) {
     // Log the deal (so that it can be distributed to others if necessary)
     logger.info('------------------------------');
     logger.info(`Deal for seed: ${game.seed} (from top to bottom)`);
+    logger.info('(cards are dealt to a player until their hand fills up before moving on to the next one)');
     for (let i = 0; i < game.deck.length; i++) {
         const card = game.deck[i];
         data.target = i; // The "getSuitText" needs this
