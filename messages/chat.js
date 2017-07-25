@@ -11,6 +11,7 @@ const globals = require('../globals');
 const logger = require('../logger');
 const models = require('../models');
 const discord = require('../discord');
+const debug = require('../debug');
 
 exports.step1 = (socket, data) => {
     // Validate the message
@@ -44,10 +45,7 @@ function step2(error, socket, data) {
 
     // Check for debug commands
     if (data.msg === '!debug') {
-        logger.debug('globals.connectedUsers:');
-        logger.debug(globals.connectedUsers);
-        logger.debug('globals.currentGames:');
-        logger.debug(globals.currentGames);
+        debug.step1(socket, data);
         return;
     }
 
