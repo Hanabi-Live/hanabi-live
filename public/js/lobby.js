@@ -246,6 +246,9 @@ function HanabiLobby() {
         } else if (event.altKey && event.key === 'h') {
             // Click the "Show History" button
             $("#show-history").click();
+        } else if (event.altKey && event.key === 's') {
+            // Click on the "Start Game" button
+            $("#start-game").click();
         } else if (event.altKey && event.key === 'l') {
             // Click on the "Leave Game" button
             $("#leave-game").click();

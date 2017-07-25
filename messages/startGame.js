@@ -121,6 +121,27 @@ function step3(socket, data) {
     });
     shuffle(game.deck);
 
+    // Log the deal (so that it can be distributed to others if necessary)
+    logger.info('------------------------------');
+    logger.info(`Deal for seed: ${game.seed}`);
+    for (let i = 0; i < game.deck.length; i++) {
+        const card = game.deck[i];
+        let suitText = globals.suits[card.suit];
+        if (game.variant === 3 && card.suit === 5) {
+            // Change "Black" to "Rainbow"
+            suitText = globals.suits[6];
+        } else if (game.variant === 4) {
+            // Set the "Mixed Suits" text
+            suitText = globals.mixedSuits[card.suit];
+        } else if (game.variant === 5) {
+            // Set the "Mixed and Multi Suits" text
+            suitText = globals.mmSuits[card.suit];
+        }
+
+        logger.info(`${i + 1}) ${suitText} ${card.rank}`);
+    }
+    logger.info('------------------------------');
+
     // Deal the cards
     let handSize = 5;
     if (game.players.length > 3) {
