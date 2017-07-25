@@ -2967,7 +2967,7 @@ this.build_ui = function() {
         fontFamily: "Verdana",
         align: "center",
         text: "👑",
-        fill: "yellow",
+        fill: "#d8d5ef",
         shadowColor: "black",
         shadowBlur: 10,
         shadowOffset: {
@@ -4898,6 +4898,7 @@ this.handle_replay_leader = function(note) {
 
     if (this.shared_replay_leader === lobby.username) {
         go_to_shared_turn_button.hide();
+        shared_replay_leader_label.fill('yellow');
     } else {
         go_to_shared_turn_button.show();
     }
