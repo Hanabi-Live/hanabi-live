@@ -335,12 +335,7 @@ function playerClue(data) {
     if (data.clue.type === 0) { // Number clue
         text += data.clue.value;
     } else if (data.clue.type === 1) { // Color clue
-        let suitText = globals.suits[data.clue.value];
-        if (game.variant === 4) {
-            // Set the "Mixed Suits" text
-            suitText = globals.mixedClues[data.clue.value];
-        }
-        text += suitText;
+        text += getClueText(data);
     }
     if (list.length > 1) {
         text += 's';
@@ -372,17 +367,7 @@ function playerPlayCard(data) {
     // Local variables
     const game = globals.currentGames[data.gameID];
     const card = game.deck[data.target];
-    let suitText = globals.suits[card.suit];
-    if (game.variant === 3 && card.suit === 5) {
-        // Change "Black" to "Rainbow"
-        suitText = globals.suits[6];
-    } else if (game.variant === 4) {
-        // Set the "Mixed Suits" text
-        suitText = globals.mixedSuits[card.suit];
-    } else if (game.variant === 5) {
-        // Set the "Mixed and Multi Suits" text
-        suitText = globals.mmSuits[card.suit];
-    }
+    const suitText = getSuitText(data);
 
     // Find out if this successfully plays
     if (card.rank === game.stacks[card.suit] + 1) {
@@ -445,17 +430,7 @@ function playerDiscardCard(data, failed = false) {
     // Local variables
     const game = globals.currentGames[data.gameID];
     const card = game.deck[data.target];
-    let suitText = globals.suits[card.suit];
-    if (game.variant === 3 && card.suit === 5) {
-        // Change "Black" to "Rainbow"
-        suitText = globals.suits[6];
-    } else if (game.variant === 4) {
-        // Set the "Mixed Suits" text
-        suitText = globals.mixedSuits[card.suit];
-    } else if (game.variant === 5) {
-        // Set the "Mixed and Multi Suits" text
-        suitText = globals.mmSuits[card.suit];
-    }
+    const suitText = getSuitText(data);
 
     // Mark that the card is discarded
     card.discarded = true;
@@ -641,4 +616,38 @@ function checkEnd(data) {
 
     // If we got this far, nothing can be played
     data.end = true;
+}
+
+const getSuitText = (data) => {
+    // Local variables
+    const game = globals.currentGames[data.gameID];
+    const card = game.deck[data.target];
+
+    let suitText = globals.suits[card.suit];
+    if (game.variant === 3 && card.suit === 5) {
+        // Change "Black" to "Rainbow"
+        suitText = globals.suits[6];
+    } else if (game.variant === 4) {
+        // Set the "Mixed Suits" text
+        suitText = globals.mixedSuits[card.suit];
+    } else if (game.variant === 5) {
+        // Set the "Mixed and Multi Suits" text
+        suitText = globals.mmSuits[card.suit];
+    }
+
+    return suitText;
+};
+exports.getSuitText = getSuitText;
+
+function getClueText(data) {
+    // Local variables
+    const game = globals.currentGames[data.gameID];
+
+    let clueText = globals.suits[data.clue.value];
+    if (game.variant === 4) {
+        // Set the "Mixed Suits" text
+        clueText = globals.mixedClues[data.clue.value];
+    }
+
+    return clueText;
 }
