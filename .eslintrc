@@ -19,6 +19,12 @@
     // in some situations, it introduces unneeded complexity to break up a line
     "max-len": ["off"],
 
+    // The browser JavaScript makes use of tasteful alerts
+    "no-alert": ["off"],
+
+    // We need this for debugging
+    "no-console": ["off"],
+
     // Proper use of continues can reduce indentation for long blocks of code
     "no-continue": ["off"],
 
@@ -47,5 +53,9 @@
     // https://blog.javascripting.com/2015/09/07/fine-tuning-airbnbs-eslint-config/
     // (airbnb doesn't include this by default for some reason)
     "quote-props": ["warn", "consistent-as-needed"],
+  },
+  "globals": {
+      "hex_sha256": true,
+      "HanabiUI": true,
   },
 }

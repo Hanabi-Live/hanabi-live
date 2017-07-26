@@ -1,58 +1,56 @@
-/* eslint-disable */
-
-var MHGA_show_debug_messages = true;
-var fadeTime = 200; // Vanilla Keldon is 800
+const showDebugMessages = true;
+const fadeTime = 200; // Vanilla Keldon is 800
 
 function HanabiLobby() {
-    var self = this;
+    const self = this;
 
-    this.user_list = {};
-    this.table_list = {};
-    this.history_list = {};
-    this.history_detail_list = [];
+    this.userList = {};
+    this.tableList = {};
+    this.historyList = {};
+    this.historyDetailList = [];
 
     this.username = null;
     this.pass = null;
 
-    this.game_id = null;
-    this.random_name = '';
-    this.send_turn_notify = false;
-    this.send_turn_sound = false;
-    this.send_chat_notify = false;
-    this.send_chat_sound = false;
-    this.show_colorblind_ui = false;
+    this.gameID = null;
+    this.randomName = '';
+    this.sendTurnNotify = false;
+    this.sendTurnSound = false;
+    this.sendChatNotify = false;
+    this.sendChatSound = false;
+    this.showColorblindUI = false;
 
     this.game = {
         name: '',
-        num_players: 0,
-        max_players: 0,
-        our_index: 0,
+        numPlayers: 0,
+        maxPlayers: 0,
+        ourIndex: 0,
         players: [],
     };
 
-    this.hide_lobby();
-    this.hide_create_dialog();
-    this.show_login();
+    this.hideLobby();
+    this.hideCreateDialog();
+    this.showLogin();
 
-    this.load_settings();
+    this.loadSettings();
 
     // Preload some sounds by playing them at 0 volume
-    $(document).ready(function() {
-        if (!this.send_turn_sound) {
+    $(document).ready(() => {
+        if (!self.sendTurnSound) {
             return;
         }
 
-        let soundFiles = ['blind', 'fail', 'tone', 'turn_other', 'turn_us'];
-        for (let file of soundFiles) {
-            let audio = new Audio('public/sounds/' + file + '.mp3');
+        const soundFiles = ['blind', 'fail', 'tone', 'turn_other', 'turn_us'];
+        for (const file of soundFiles) {
+            const audio = new Audio(`public/sounds/${file}.mp3`);
             audio.volume = 0;
             audio.play();
         }
     });
 
-    var perform_login = function() {
-        var user = $('#user').val();
-        var pass = $('#pass').val();
+    const performLogin = () => {
+        const user = $('#user').val();
+        const pass = $('#pass').val();
 
         if (!user) {
             $('#login-result').html('You must provide a username.');
@@ -64,33 +62,33 @@ function HanabiLobby() {
             return;
         }
 
-        var shapass = hex_sha256('Hanabi password ' + pass);
+        const hash = hex_sha256(`Hanabi password ${pass}`);
 
         setCookie('hanabiuser', user);
-        setCookie('hanabipass', shapass);
+        setCookie('hanabipass', hash);
 
         self.username = user;
-        self.pass = shapass;
+        self.pass = hash;
 
-        self.send_login();
+        self.sendLogin();
     };
 
-    $('#login-button').on('click', function(event) {
+    $('#login-button').on('click', (event) => {
         event.preventDefault();
-        perform_login();
+        performLogin();
     });
 
-    $('#login-form').on('keypress', function(event) {
+    $('#login-form').on('keypress', (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
-            perform_login();
+            performLogin();
         }
     });
 
-    var input = $('#chat-input');
+    const input = $('#chat-input');
 
-    input.on('keypress', function(evt) {
-        if (evt.keyCode === 13) {
+    input.on('keypress', (event) => {
+        if (event.keyCode === 13) {
             if (!input.val()) {
                 return;
             }
@@ -104,76 +102,76 @@ function HanabiLobby() {
         }
     });
 
-    $('#create-table').on('click', function(evt) {
-        evt.preventDefault();
+    $('#create-table').on('click', (event) => {
+        event.preventDefault();
 
-        self.show_create_dialog();
+        self.showCreateDialog();
     });
 
     $('#create-table').removeAttr('disabled');
 
-    $('#create-table-dialog').on('keypress', function(event) {
+    $('#create-table-dialog').on('keypress', (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
             $('#create-game-submit').click();
         }
     });
 
-    $('#create-game-submit').on('click', function(evt) {
-        var game_name     = $('#create-game-name').val();
-        var max_players   = parseInt($('#create-game-players').val());
-        var variant       = parseInt($('#create-game-variant').val());
-        var allow_spec    = document.getElementById('create-game-allow-spec').checked;
-        var timed         = document.getElementById('create-game-timed').checked;
-        var reorder_cards = document.getElementById('create-game-reorder-cards').checked;
+    $('#create-game-submit').on('click', (event) => {
+        const gameName = $('#create-game-name').val();
+        const maxPlayers = parseInt($('#create-game-players').val(), 10);
+        const variant = parseInt($('#create-game-variant').val(), 10);
+        const allowSpec = document.getElementById('create-game-allow-spec').checked;
+        const timed = document.getElementById('create-game-timed').checked;
+        const reorderCards = document.getElementById('create-game-reorder-cards').checked;
 
-        localStorage.setItem('table_host_max_players', max_players);
-        localStorage.setItem('table_host_variant',     variant);
-        localStorage.setItem('table_host_allow_spec',  allow_spec);
-        localStorage.setItem('table_host_timed',       timed);
-        localStorage.setItem('table_reorder_cards',    reorder_cards);
+        localStorage.setItem('createTableMaxPlayers', maxPlayers);
+        localStorage.setItem('createTableVariant', variant);
+        localStorage.setItem('createTableAllowSpec', allowSpec);
+        localStorage.setItem('createTableTimed', timed);
+        localStorage.setItem('createTableReorderCards', reorderCards);
 
-        evt.preventDefault();
+        event.preventDefault();
 
         self.send_msg({
             type: 'create_table',
             resp: {
-                name:          game_name,
-                max:           max_players,
-                variant:       variant,
-                allow_spec:    allow_spec,
-                timed:         timed,
-                reorder_cards: reorder_cards,
+                name: gameName,
+                max: maxPlayers,
+                variant,
+                allow_spec: allowSpec,
+                timed,
+                reorder_cards: reorderCards,
             },
         });
 
-        self.hide_create_dialog();
+        self.hideCreateDialog();
     });
 
-    $('#show-resources').on('click', function(evt) {
+    $('#show-resources').on('click', (event) => {
         self.show_resources();
     });
 
-    $('#close-resources').on('click', function(evt) {
+    $('#close-resources').on('click', (event) => {
         self.hide_resources();
     });
 
-    $('#show-settings').on('click', function(evt) {
+    $('#show-settings').on('click', (event) => {
         self.show_settings();
     });
 
-    $('#close-settings').on('click', function(evt) {
+    $('#close-settings').on('click', (event) => {
         self.hide_settings();
     });
 
-    $('#create-game-cancel').on('click', function(evt) {
-        evt.preventDefault();
+    $('#create-game-cancel').on('click', (event) => {
+        event.preventDefault();
 
-        self.hide_create_dialog();
+        self.hideCreateDialog();
     });
 
-    $('#start-game').on('click', function(evt) {
-        evt.preventDefault();
+    $('#start-game').on('click', (event) => {
+        event.preventDefault();
 
         self.send_msg({
             type: 'start_game',
@@ -181,8 +179,8 @@ function HanabiLobby() {
         });
     });
 
-    $('#leave-game').on('click', function(evt) {
-        evt.preventDefault();
+    $('#leave-game').on('click', (event) => {
+        event.preventDefault();
 
         self.send_msg({
             type: 'leave_table',
@@ -190,8 +188,8 @@ function HanabiLobby() {
         });
     });
 
-    $('#unattend-table').on('click', function(evt) {
-        evt.preventDefault();
+    $('#unattend-table').on('click', (event) => {
+        event.preventDefault();
 
         $('#joined-table').hide();
         $('#table-area').show();
@@ -202,45 +200,43 @@ function HanabiLobby() {
         });
     });
 
-    $('#show-history').on('click', function(evt) {
-        evt.preventDefault();
+    $('#show-history').on('click', (event) => {
+        event.preventDefault();
 
         $('#table-area').hide();
         $('#game-history').show();
 
-        self.draw_history();
+        self.drawHistory();
     });
 
-    var logoutButton = document.createElement('button');
+    const logoutButton = document.createElement('button');
     logoutButton.id = 'logout';
     logoutButton.innerHTML = 'Log Out';
 
     $('#show-history').parent().append(logoutButton);
-    $('#logout').on('click', function(evt) {
+    $('#logout').on('click', (event) => {
         deleteCookie('hanabiuser');
         deleteCookie('hanabipass');
         location.reload();
     });
 
 
-    $('.return-table').on('click', function(evt) {
-        evt.preventDefault();
+    $('.return-table').on('click', (event) => {
+        event.preventDefault();
 
         $('#game-history-details').hide();
         $('#game-history').hide();
         $('#table-area').show();
     });
 
-    $('#return-history').on('click', function(evt) {
-        evt.preventDefault();
+    $('#return-history').on('click', (event) => {
+        event.preventDefault();
 
         $('#game-history-details').hide();
         $('#game-history').show();
     });
 
-    $('body').on('contextmenu', '#game', function(e) {
-        return false;
-    });
+    $('body').on('contextmenu', '#game', () => false);
 
     $(document).keydown((event) => {
         if (event.altKey && event.key === 'c') {
@@ -262,16 +258,16 @@ function HanabiLobby() {
     });
 }
 
-HanabiLobby.prototype.reset_lobby = function() {
-    this.user_list = {};
-    this.table_list = {};
-    this.history_list = {};
-    this.history_detail_list = [];
-    this.draw_users();
-    this.draw_tables();
+HanabiLobby.prototype.resetLobby = function resetLobby() {
+    this.userList = {};
+    this.tableList = {};
+    this.historyList = {};
+    this.historyDetailList = [];
+    this.drawUsers();
+    this.drawTables();
 };
 
-HanabiLobby.prototype.send_login = function() {
+HanabiLobby.prototype.sendLogin = function sendLogin() {
     $('#login-container').hide();
     $('#connecting').show();
 
@@ -284,238 +280,247 @@ HanabiLobby.prototype.send_login = function() {
     });
 };
 
-HanabiLobby.prototype.login_failed = function(reason) {
+HanabiLobby.prototype.loginFailed = (reason) => {
     $('#login-container').show();
     $('#connecting').hide();
 
-    $('#login-result').html('Login failed: ' + reason);
+    $('#login-result').html(`Login failed: ${reason}`);
 };
 
-HanabiLobby.prototype.reset_login = function() {
+HanabiLobby.prototype.reset_login = () => {
     $('#login-container').show();
     $('#connecting').hide();
 
     $('#login-result').html('');
 };
 
-HanabiLobby.prototype.show_login = function() {
+HanabiLobby.prototype.showLogin = () => {
     $('#login').show();
 };
 
-HanabiLobby.prototype.hide_login = function() {
+HanabiLobby.prototype.hide_login = () => {
     $('#login').hide();
 };
 
-HanabiLobby.prototype.show_lobby = function() {
+HanabiLobby.prototype.show_lobby = () => {
     $('#lobby').fadeIn(fadeTime);
 };
 
-HanabiLobby.prototype.hide_lobby = function() {
+HanabiLobby.prototype.hideLobby = () => {
     $('#lobby').hide();
 };
 
-HanabiLobby.prototype.show_create_dialog = function() {
+HanabiLobby.prototype.showCreateDialog = function showCreateDialog() {
     $('#create-table-dialog').fadeIn(fadeTime);
 
-    $('#create-game-name').val(this.random_name);
+    $('#create-game-name').val(this.randomName);
 
     // Get a new random name from the server for the next time we click the button
     this.send_msg({
         type: 'get_name',
     });
 
-    var players = JSON.parse(localStorage.getItem('table_host_max_players'));
+    let players = JSON.parse(localStorage.getItem('createTableMaxPlayers'));
     if (typeof players !== 'number' || players < 2 || players > 5) {
-            players = 5;
+        players = 5;
     }
     $('#create-game-players').val(players);
 
-    var variant = JSON.parse(localStorage.getItem('table_host_variant'));
+    let variant = JSON.parse(localStorage.getItem('createTableVariant'));
     if (typeof variant !== 'number' || variant < 0 || variant > 5) {
         variant = 0;
     }
     $('#create-game-variant').val(variant);
 
-    var allow_spec = JSON.parse(localStorage.getItem('table_host_allow_spec'));
-    $('#create-game-allow-spec').prop('checked', allow_spec);
+    const allowSpec = JSON.parse(localStorage.getItem('createTableAllowSpec'));
+    $('#create-game-allow-spec').prop('checked', allowSpec);
 
-    var timed = JSON.parse(localStorage.getItem('table_host_timed'));
+    const timed = JSON.parse(localStorage.getItem('createTableTimed'));
     $('#create-game-timed').prop('checked', timed);
 
-    var reorder_cards = JSON.parse(localStorage.getItem('table_reorder_cards'));
-    $('#create-game-reorder-cards').prop('checked', reorder_cards);
+    const reorderCards = JSON.parse(localStorage.getItem('createTableReorderCards'));
+    $('#create-game-reorder-cards').prop('checked', reorderCards);
 
     // Autofocus the "Game Name" field
     $('#create-game-name').focus();
 };
 
-HanabiLobby.prototype.hide_create_dialog = function() {
+HanabiLobby.prototype.hideCreateDialog = () => {
     $('#create-table-dialog').fadeOut(fadeTime);
 };
 
-HanabiLobby.prototype.show_resources = function() {
+HanabiLobby.prototype.show_resources = () => {
     $('#resources-dialog').fadeIn(fadeTime);
 };
 
-HanabiLobby.prototype.hide_resources = function() {
+HanabiLobby.prototype.hide_resources = () => {
     $('#resources-dialog').fadeOut(fadeTime);
 };
 
-HanabiLobby.prototype.show_settings = function() {
+HanabiLobby.prototype.show_settings = () => {
     $('#settings-dialog').fadeIn(fadeTime);
 };
 
-HanabiLobby.prototype.hide_settings = function() {
+HanabiLobby.prototype.hide_settings = () => {
     $('#settings-dialog').fadeOut(fadeTime);
 };
 
-HanabiLobby.prototype.show_history_details = function() {
+HanabiLobby.prototype.show_history_details = () => {
     $('#game-history').hide();
     $('#game-history-details').show();
 
-    this.history_detail_list = [];
-    this.draw_history_details();
+    this.historyDetailList = [];
+    this.drawHistory_details();
 };
 
-HanabiLobby.prototype.show_pregame = function() {
+HanabiLobby.prototype.show_pregame = () => {
     $('#pregame').fadeIn(fadeTime);
 };
 
-HanabiLobby.prototype.hide_pregame = function() {
+HanabiLobby.prototype.hide_pregame = () => {
     $('#pregame').hide();
 };
 
-HanabiLobby.prototype.show_game = function() {
+HanabiLobby.prototype.show_game = () => {
     $('#game').fadeIn(fadeTime);
 };
 
-HanabiLobby.prototype.hide_game = function() {
+HanabiLobby.prototype.hide_game = () => {
     $('#game').hide();
 };
 
-HanabiLobby.prototype.add_user = function(data) {
-    this.user_list[data.id] = {
-        name:    data.name,
-        /*
-        seated:  data.seated,
-        playing: data.playing,
-        */
-        status:  data.status,
+HanabiLobby.prototype.addUser = function addUser(data) {
+    this.userList[data.id] = {
+        name: data.name,
+        status: data.status,
     };
-    this.draw_users();
+    this.drawUsers();
 };
 
-HanabiLobby.prototype.remove_user = function(data) {
-    delete this.user_list[data.id];
-    this.draw_users();
+HanabiLobby.prototype.removeUser = function removeUser(data) {
+    delete this.userList[data.id];
+    this.drawUsers();
 };
 
-HanabiLobby.prototype.draw_users = function() {
-    var div = $('#user-list');
-    var attrs;
+HanabiLobby.prototype.drawUsers = function drawUsers() {
+    const div = $('#user-list');
 
     div.html('');
 
-    attrs = $('<ul>');
-    attrs.append($('<li>').text('Name').addClass('table-attr user-name'));
-    attrs.append($('<li>').text('Status').addClass('table-attr user-status'));
+    const attrs = $('<ul>')
+        .append($('<li>')
+            .text('Name')
+            .addClass('table-attr user-name'))
+        .append($('<li>')
+            .text('Status')
+            .addClass('table-attr user-status'));
 
     div.append($('<li>').addClass('table-header').append(attrs));
 
-    for (let i of Object.keys(this.user_list)) {
-        attrs = $('<ul>');
-        attrs.append($('<li>').text(this.user_list[i].name).addClass('table-attr user-name'));
-        attrs.append($('<li>').append(this.user_list[i].status).addClass('table-attr user-status'));
-
-        div.append($('<li>').append(attrs));
+    for (const userID of Object.keys(this.userList)) {
+        const attrs2 = $('<ul>')
+            .append($('<li>')
+                .text(this.userList[userID].name)
+                .addClass('table-attr user-name'))
+            .append($('<li>')
+                .append(this.userList[userID].status)
+                .addClass('table-attr user-status'));
+        div.append($('<li>').append(attrs2));
     }
 
-    $('#user-list :checkbox').click(function(e) { e.preventDefault(); });
+    $('#user-list :checkbox').click((event) => {
+        event.preventDefault();
+    });
 };
 
-HanabiLobby.prototype.add_table = function(data) {
-    this.table_list[data.id] = {
-        name:          data.name,
-        num_players:   data.num_players,
-        max_players:   data.max_players,
-        variant:       data.variant,
-        joined:        data.joined,
-        allow_spec:    data.allow_spec,
-        running:       data.running,
-        our_turn:      data.our_turn,
-        owned:         data.owned,
+HanabiLobby.prototype.addTable = function addTable(data) {
+    this.tableList[data.id] = {
+        name: data.name,
+        numPlayers: data.num_players,
+        maxPlayers: data.max_players,
+        variant: data.variant,
+        joined: data.joined,
+        allowSpec: data.allowSpec,
+        running: data.running,
+        our_turn: data.our_turn,
+        owned: data.owned,
         shared_replay: data.shared_replay,
     };
-    this.draw_tables();
+    this.drawTables();
 };
 
-HanabiLobby.prototype.remove_table = function(data) {
-    delete this.table_list[data.id];
-    this.draw_tables();
+HanabiLobby.prototype.removeTable = function removeTable(data) {
+    delete this.tableList[data.id];
+    this.drawTables();
 };
 
-var variant_names = [
+const variantNames = [
     'None',
     'Black Suit',
     'Black Suit (one of each rank)',
     'Multi-color Suit',
     'Mixed-color Suits',
-    'Mixed and Multi-color Suits'
+    'Mixed and Multi-color Suits',
 ];
 $(document).ready(() => {
-    for (let i = 0; i < variant_names.length; i++) {
-        var option = new Option(variant_names[i], i);
+    for (let i = 0; i < variantNames.length; i++) {
+        const option = new Option(variantNames[i], i);
         $('#create-game-variant').append($(option));
     }
 });
 
-HanabiLobby.prototype.draw_tables = function() {
-    var self = this;
-    var div = $('#table-list');
-    var table, attrs, button, turn;
-    var i;
+HanabiLobby.prototype.drawTables = function drawTables() {
+    const self = this;
+    const div = $('#table-list');
 
     div.html('');
 
-    for (i of Object.keys(this.table_list)) {
-        table = $('<li>').addClass('table-item');
-        attrs = $('<ul>');
+    for (const gameID of Object.keys(this.tableList)) {
+        const table = $('<li>').addClass('table-item');
+        const attrs = $('<ul>')
+            .append($('<li>')
+                .text(this.tableList[gameID].name)
+                .addClass('table-attr table-name'));
 
-        attrs.append($('<li>').text(this.table_list[i].name).addClass('table-attr table-name'));
+        let playerText = `${this.tableList[gameID].numPlayers}/`;
+        playerText += (this.tableList[gameID].shared_replay ? '∞' : this.tableList[gameID].maxPlayers);
+        attrs
+            .append($('<li>')
+                .text(playerText)
+                .addClass('table-attr table-players'))
+            .append($('<li>')
+                .text(`Variant: ${variantNames[this.tableList[gameID].variant]}`)
+                .addClass('table-attr table-variant'));
 
-        let playerText = this.table_list[i].num_players + '/';
-        playerText += (this.table_list[i].shared_replay ? '∞' : this.table_list[i].max_players);
-        attrs.append($('<li>').text(playerText).addClass('table-attr table-players'));
-
-        let variantText = 'Variant: ' + variant_names[this.table_list[i].variant];
-        attrs.append($('<li>').text(variantText).addClass('table-attr table-variant'));
-
-        turn = 'Not Started';
-
-        if (this.table_list[i].running && !this.table_list[i].joined) {
-            turn = 'Running';
-        } else if (this.table_list[i].running) {
-            if (this.table_list[i].our_turn) {
-                turn = '<b>Your Turn</b>';
+        let status = 'Not Started';
+        if (this.tableList[gameID].running && !this.tableList[gameID].joined) {
+            status = 'Running';
+        } else if (this.tableList[gameID].running) {
+            if (this.tableList[gameID].our_turn) {
+                status = '<b>Your Turn</b>';
             } else {
-                turn = 'Waiting';
+                status = 'Waiting';
             }
         }
+        attrs
+            .append($('<li>')
+                .html(status)
+                .addClass('table-attr table-status'));
 
-        attrs.append($('<li>').html(turn).addClass('table-attr table-turn'));
-
-        if (!this.table_list[i].joined &&
-            this.table_list[i].allow_spec &&
-            this.table_list[i].running) {
-
+        let button;
+        if (
+            !this.tableList[gameID].joined &&
+            this.tableList[gameID].allowSpec &&
+            this.tableList[gameID].running
+        ) {
             button = $('<button>').text('Spectate').attr('type', 'button');
-            button.attr('id', 'spectate-' + i);
+            button.attr('id', `spectate-${gameID}`);
 
-            button.on('click', function(evt) {
-                evt.preventDefault();
+            button.on('click', (event) => {
+                event.preventDefault();
 
-                var id = parseInt(this.id.slice(9));
-                self.game_id = id;
+                const id = parseInt(this.id.slice(9), 10);
+                self.gameID = id;
                 self.send_msg({
                     type: 'spectate_table',
                     resp: {
@@ -523,75 +528,80 @@ HanabiLobby.prototype.draw_tables = function() {
                     },
                 });
 
-                self.draw_tables();
+                self.drawTables();
             });
-        } else if (!this.table_list[i].joined) {
+        } else if (!this.tableList[gameID].joined) {
             button = $('<button>').text('Join').attr('type', 'button');
-            button.attr('id', 'join-' + i);
+            button.attr('id', `join-${gameID}`);
 
-            if (this.table_list[i].num_players >= this.table_list[i].max_players) {
+            if (this.tableList[gameID].numPlayers >= this.tableList[gameID].maxPlayers) {
                 button.attr('disabled', 'disabled');
             }
 
-            button.on('click', function(evt) {
-                evt.preventDefault();
+            button.on('click', (event) => {
+                event.preventDefault();
 
-                self.game_id = parseInt(this.id.slice(5));
+                self.gameID = parseInt(this.id.slice(5), 10);
 
                 self.send_msg({
                     type: 'join_table',
                     resp: {
-                        table_id: self.game_id,
+                        table_id: self.gameID,
                     },
                 });
 
-                self.draw_tables();
+                self.drawTables();
             });
         } else {
             button = $('<button>').text('Resume').attr('type', 'button');
-            button.attr('id', 'resume-' + i);
+            button.attr('id', `resume-${gameID}`);
 
-            button.on('click', function(evt) {
-                evt.preventDefault();
+            button.on('click', function reattendTableClick(event) {
+                event.preventDefault();
 
-                self.game_id = parseInt(this.id.slice(7));
+                self.gameID = parseInt(this.id.slice(7), 10);
 
                 self.send_msg({
                     type: 'reattend_table',
                     resp: {
-                        table_id: self.game_id,
+                        table_id: self.gameID,
                     },
                 });
 
-                self.draw_tables();
+                self.drawTables();
             });
         }
 
-        attrs.append($('<li>').append(button).addClass('table-attr table-join'));
+        attrs
+            .append($('<li>')
+            .append(button)
+                .addClass('table-attr table-join'));
 
-        if (this.table_list[i].joined && (this.table_list[i].owned || this.table_list[i].running)) {
+        if (
+            this.tableList[gameID].joined &&
+            (this.tableList[gameID].owned || this.tableList[gameID].running)
+        ) {
             button = $('<button>').html('&nbsp;').attr('type', 'button').addClass('abandon');
 
-            button.attr('id', 'abandon-' + i);
+            button.attr('id', `abandon-${gameID}`);
 
-            button.on('click', function(evt) {
-                evt.preventDefault();
+            button.on('click', (event) => {
+                event.preventDefault();
 
-                var id = parseInt(this.id.slice(8));
-                if (self.table_list[id].running) {
+                const id = parseInt(this.id.slice(8), 10);
+                if (self.tableList[id].running) {
                     if (!confirm('Really abandon game?  This will cancel the game for all players.')) {
                         return;
                     }
                 }
 
-                self.game_id = null;
+                self.gameID = null;
                 self.send_msg({
                     type: 'abandon_table',
                     resp: {
                         table_id: id,
                     },
                 });
-
             });
 
             attrs.append($('<li>').append(button).addClass('table-attr table-abandon'));
@@ -602,18 +612,18 @@ HanabiLobby.prototype.draw_tables = function() {
     }
 };
 
-HanabiLobby.prototype.add_chat = function(data) {
-    var chat = $('#chat');
-    var line = '';
+HanabiLobby.prototype.add_chat = function addChat(data) {
+    const chat = $('#chat');
 
+    let line = '';
     if (data.who) {
-        line += '<i>' + new Date().toLocaleTimeString() + '</i>&nbsp;&nbsp;';
+        line += `<i>${new Date().toLocaleTimeString()}</i>&nbsp;&nbsp;`;
         if (data.discord) {
             line += '&lt;<b>D</b>&gt; ';
         }
-        line += '<b>' + data.who + ':</b> ' + $('<a>').text(data.msg).html() + '<br>';
+        line += `<b>${data.who}:</b> ${$('<a>').text(data.msg).html()}<br />`;
     } else {
-        line += '<b>' + $('<a>').text(data.msg).html() + '</b><br>';
+        line += `<b>${$('<a>').text(data.msg).html()}</b><br />`;
     }
 
     chat.finish();
@@ -622,77 +632,90 @@ HanabiLobby.prototype.add_chat = function(data) {
         scrollTop: chat[0].scrollHeight,
     }, 1000);
 
-    var r = new RegExp(this.username, 'i');
+    const r = new RegExp(this.username, 'i');
 
     if (data.who && r.test(data.msg)) {
-        if (this.send_chat_notify) {
-            this.send_notify(data.who + ' mentioned you in chat', 'chat');
+        if (this.sendChatNotify) {
+            this.sendNotify(`${data.who} mentioned you in chat`, 'chat');
         }
 
-        if (this.send_chat_sound) {
-            this.play_sound('chat');
+        if (this.sendChatSound) {
+            this.playSound('chat');
         }
     }
 };
 
-HanabiLobby.prototype.add_history = function(data) {
-    this.history_list[data.id] = {
+HanabiLobby.prototype.addHistory = function addHistory(data) {
+    this.historyList[data.id] = {
         id: data.id,
-        num_players: data.num_players,
+        numPlayers: data.num_players,
         score: data.score,
         variant: data.variant,
         num_scores: data.num_similar,
     };
 };
 
-HanabiLobby.prototype.draw_history = function() {
-    var self = this;
-    var ids;
+HanabiLobby.prototype.drawHistory = function drawHistory() {
+    const self = this;
 
-    var div = $('#history-list');
-    var history, attrs, button;
-    var i;
+    const div = $('#history-list');
+    let history;
+    let i;
 
     div.html('');
 
-    ids = Object.keys(this.history_list);
-    ids.sort(function(a, b) { return parseInt(a) - parseInt(b); });
+    const ids = Object.keys(this.historyList);
+    ids.sort(
+        (a, b) => parseInt(a, 10) - parseInt(b, 10),
+    );
     ids.reverse();
 
     for (i = 0; i < ids.length; i++) {
         history = $('<li>').addClass('table-item');
 
-        attrs = $('<ul>');
+        const attrs = $('<ul>')
+            .append($('<li>')
+                .text(`#${ids[i]}`)
+                .addClass('table-attr history-id'))
+            .append($('<li>')
+                .text(`${this.historyList[ids[i]].numPlayers} players`)
+                .addClass('table-attr history-players'));
 
-        attrs.append($('<li>').text('#' + ids[i]).addClass('table-attr history-id'));
+        const score = this.historyList[ids[i]].score;
+        const maxScore = (this.historyList[ids[i]].variant ? 30 : 25);
+        attrs
+            .append($('<li>')
+                .text(`${score}/${maxScore} points`)
+                .addClass('table-attr history-score'))
+            .append($('<li>')
+                .text(`Variant: ${variantNames[this.historyList[ids[i]].variant]}`)
+                .addClass('table-attr history-variant'))
+            .append($('<li>')
+                .text(`Other scores: ${this.historyList[ids[i]].num_scores - 1}`)
+                .addClass('table-attr history-others'));
 
-        attrs.append($('<li>').text(this.history_list[ids[i]].num_players + ' players').addClass('table-attr history-players'));
+        const button = $('<button>').text('Compare Scores').attr('type', 'button');
+        button.attr('id', `history-details-${ids[i]}`);
 
-        attrs.append($('<li>').text(this.history_list[ids[i]].score + '/' + (this.history_list[ids[i]].variant ? 30 : 25) + ' points').addClass('table-attr history-score'));
+        button.on('click', (event) => {
+            event.preventDefault();
 
-        attrs.append($('<li>').text('Variant: ' + variant_names[this.history_list[ids[i]].variant]).addClass('table-attr history-variant'));
-
-        attrs.append($('<li>').text('Other scores: ' + (this.history_list[ids[i]].num_scores - 1)).addClass('table-attr history-others'));
-
-        button = $('<button>').text('Compare Scores').attr('type', 'button');
-        button.attr('id', 'history-details-' + ids[i]);
-
-        button.on('click', function(evt) {
-            evt.preventDefault();
-
-            self.game_id = parseInt(this.id.slice(16));
+            self.gameID = parseInt(this.id.slice(16), 10);
 
             self.send_msg({
                 type: 'history_details',
                 resp: {
-                    id: self.game_id,
+                    id: self.gameID,
                 },
             });
 
             self.show_history_details();
         });
 
-        attrs.append($('<li>').append(button).addClass('table-attr'));
+        attrs
+            .append($('<li>')
+            .append(button)
+                .addClass('table-attr'));
 
         history.append(attrs);
 
@@ -700,82 +723,84 @@ HanabiLobby.prototype.draw_history = function() {
     }
 };
 
-HanabiLobby.prototype.add_history_detail = function(data) {
-    this.history_detail_list.push({
+HanabiLobby.prototype.addHistoryDetail = function addHistoryDetail(data) {
+    this.historyDetailList.push({
         id: data.id,
         score: data.score,
         us: data.you,
         ts: data.ts.split('T')[0],
     });
-    this.draw_history_details();
+    this.drawHistory_details();
 };
 
-HanabiLobby.prototype.draw_history_details = function() {
-    var self = this;
+HanabiLobby.prototype.drawHistory_details = function drawHistoryDetails() {
+    const self = this;
 
-    var div = $('#history-details-list');
-    var detail, attrs, button, button2;
-    var variant = 0;
-    var i;
+    const div = $('#history-details-list');
 
-    if (!this.history_detail_list.length) {
+    if (!this.historyDetailList.length) {
         div.html('<li>Loading...</li>');
         return;
     }
 
     div.html('');
 
-    for (i = 0; i < this.history_detail_list.length; i++) {
-        if (this.history_list[this.history_detail_list[i].id]) {
-            variant = this.history_list[this.history_detail_list[i].id].variant;
+    let variant = 0;
+    for (let i = 0; i < this.historyDetailList.length; i++) {
+        if (this.historyList[this.historyDetailList[i].id]) {
+            variant = this.historyList[this.historyDetailList[i].id].variant;
         }
     }
 
-    for (i = 0; i < this.history_detail_list.length; i++) {
-        detail = $('<li>').addClass('table-item');
+    for (let i = 0; i < this.historyDetailList.length; i++) {
+        const detail = $('<li>').addClass('table-item');
+        const attrs = $('<ul>');
 
-        attrs = $('<ul>');
-
-        if (this.history_detail_list[i].us) {
+        if (this.historyDetailList[i].us) {
             attrs.addClass('detail-us');
         }
 
-        attrs.append($('<li>').text('#' + this.history_detail_list[i].id).addClass('table-attr history-id'));
+        attrs
+            .append($('<li>')
+                .text(`#${this.historyDetailList[i].id}`)
+                .addClass('table-attr history-id'))
+            .append($('<li>')
+                .text(`${this.historyDetailList[i].score}/${(variant ? 30 : 25)} points`)
+                .addClass('table-attr history-score'))
+            .append($('<li>')
+                .text(this.historyDetailList[i].ts)
+                .addClass('table-attr history-ts'));
 
-        attrs.append($('<li>').text(this.history_detail_list[i].score + '/' + (variant ? 30 : 25) + ' points').addClass('table-attr history-score'));
+        const button = $('<button>').text('Watch Replay').attr('type', 'button');
+        button.attr('id', `replay-${this.historyDetailList[i].id}`);
 
-        attrs.append($('<li>').text(this.history_detail_list[i].ts).addClass('table-attr history-ts'));
+        button.on('click', function startReplayClick(event) {
+            event.preventDefault();
 
-        button = $('<button>').text('Watch Replay').attr('type', 'button');
-        button.attr('id', 'replay-' + this.history_detail_list[i].id);
-
-        button.on('click', function(evt) {
-            evt.preventDefault();
-
-            self.game_id = parseInt(this.id.slice(7));
+            self.gameID = parseInt(this.id.slice(7), 10);
 
             self.send_msg({
                 type: 'start_replay',
                 resp: {
-                    id: self.game_id,
+                    id: self.gameID,
                 },
             });
         });
 
         attrs.append($('<li>').append(button).addClass('table-attr'));
 
-        button2 = $('<button>').text('Share Replay').attr('type', 'button');
-        button2.attr('id', 'replay-' + this.history_detail_list[i].id);
+        const button2 = $('<button>').text('Share Replay').attr('type', 'button');
+        button2.attr('id', `replay-${this.historyDetailList[i].id}`);
 
-        button2.on('click', function(evt) {
-            evt.preventDefault();
+        button2.on('click', function createSharedReplayClick(event) {
+            event.preventDefault();
 
-            self.game_id = parseInt(this.id.slice(7));
+            self.gameID = parseInt(this.id.slice(7), 10);
 
             self.send_msg({
                 type: 'create_shared_replay',
                 resp: {
-                    id: self.game_id,
+                    id: self.gameID,
                 },
             });
 
@@ -793,71 +818,69 @@ HanabiLobby.prototype.draw_history_details = function() {
     }
 };
 
-HanabiLobby.prototype.table_joined = function(data) {
-    this.draw_tables();
+HanabiLobby.prototype.tableJoined = function tableJoined(data) {
+    this.drawTables();
 
     $('#table-area').hide();
     $('#joined-table').show();
 
-    this.show_joined();
+    this.showJoined();
 
-    this.game_id = data.table_id;
+    this.gameID = data.table_id;
 };
 
-HanabiLobby.prototype.table_left = function(data) {
-    this.draw_tables();
+HanabiLobby.prototype.tableLeft = function tableLeft(data) {
+    this.drawTables();
 
     $('#table-area').show();
     $('#joined-table').hide();
 };
 
-HanabiLobby.prototype.set_game = function(data) {
-    this.game.name          = data.name;
-    this.game.num_players   = data.num_players;
-    this.game.max_players   = data.max_players;
-    this.game.variant       = data.variant;
-    this.game.running       = data.running;
-    this.game.allow_spec    = data.allow_spec;
-    this.game.timed         = data.timed;
-    this.reorder_cards      = data.reorder_cards;
+HanabiLobby.prototype.setGame = function setGame(data) {
+    this.game.name = data.name;
+    this.game.numPlayers = data.num_players;
+    this.game.maxPlayers = data.max_players;
+    this.game.variant = data.variant;
+    this.game.running = data.running;
+    this.game.allowSpec = data.allowSpec;
+    this.game.timed = data.timed;
+    this.reorderCards = data.reorderCards;
     this.game.shared_replay = data.shared_replay;
 
-    this.game.players.length = this.game.num_players;
+    this.game.players.length = this.game.numPlayers;
 
-    this.show_joined();
+    this.showJoined();
 };
 
-HanabiLobby.prototype.set_game_player = function(data) {
+HanabiLobby.prototype.setGamePlayer = function setGamePlayer(data) {
     this.game.players[data.index] = {
-        name:           data.name,
-        num_played:     data.num_played,
-        average_score:  data.average_score,
-        strikeout_rate: data.strikeout_rate,
-        present:        data.present,
+        name: data.name,
+        num_played: data.num_played,
+        averageScore: data.average_score,
+        strikeoutRate: data.strikeout_rate,
+        present: data.present,
     };
 
     if (data.you) {
-        this.game.our_index = data.index;
+        this.game.ourIndex = data.index;
     }
 
-    this.show_joined();
+    this.showJoined();
 };
 
-HanabiLobby.prototype.show_joined = function() {
-    var html = '<p><b>' + $('<a>').text(this.game.name).html() + '</b></p>';
-    var div;
-    var i;
+HanabiLobby.prototype.showJoined = function showJoined() {
+    let html = `<p><b>${$('<a>').text(this.game.name).html()}</b></p>`;
 
-    html += '<p>Players: <b>' + this.game.num_players + '</b>/<b>' + this.game.max_players + '</b></p>';
-    html += '<p>Variant: <b>' + variant_names[this.game.variant] + '</p></b>';
-    html += '<p>Allow Spectators: <b>' + (this.game.allow_spec ? 'Yes' : 'No') + '</b></p>';
-    html += '<p>Timed Game: <b>' + (this.game.timed ? 'Yes' : 'No') + '</b></p>';
-    html += '<p>Reorder Cards: <b>' + (this.game.reorder_cards ? 'Yes' : 'No') + '</b></p>';
+    html += `<p>Players: <b>${this.game.numPlayers}</b>/<b>${this.game.maxPlayers}</b></p>`;
+    html += `<p>Variant: <b>${variantNames[this.game.variant]}</p></b>`;
+    html += `<p>Allow Spectators: <b>${(this.game.allowSpec ? 'Yes' : 'No')}</b></p>`;
+    html += `<p>Timed Game: <b>${(this.game.timed ? 'Yes' : 'No')}</b></p>`;
+    html += `<p>Reorder Cards: <b>${(this.game.reorderCards ? 'Yes' : 'No')}</b></p>`;
 
     $('#joined-desc').html(html);
 
-    for (i = 0; i < 5; i++) {
-        div = $('#show-player-' + (i + 1).toString());
+    for (let i = 0; i < 5; i++) {
+        const div = $(`#show-player-${(i + 1).toString()}`);
 
         if (!this.game.players[i]) {
             div.html('');
@@ -879,16 +902,16 @@ HanabiLobby.prototype.show_joined = function() {
 
         html += '<tr>';
         html += '<td>Avg. score:</td>';
-        let average_score = this.game.players[i].average_score;
-        average_score = Math.round(average_score * 100) / 100; // Round it to 2 decimal places
-        html += '<td><b>' + average_score + '</b></td>';
+        let averageScore = this.game.players[i].averageScore;
+        averageScore = Math.round(averageScore * 100) / 100; // Round it to 2 decimal places
+        html += `<td><b>${averageScore}</b></td>`;
         html += '</tr>';
 
         html += '<tr>';
         html += '<td>Strikeout:</td>';
-        let strikeout_rate = this.game.players[i].strikeout_rate * 100; // Turn it into a percent
-        strikeout_rate = Math.round(strikeout_rate * 100) / 100; // Round it to 2 decimal places
-        html += '<td><b>' + strikeout_rate + '%</b></td>';
+        let strikeoutRate = this.game.players[i].strikeoutRate * 100; // Turn it into a percent
+        strikeoutRate = Math.round(strikeoutRate * 100) / 100; // Round it to 2 decimal places
+        html += `<td><b>${strikeoutRate}%</b></td>`;
         html += '</tr>';
 
         html += '</table>';
@@ -901,7 +924,7 @@ HanabiLobby.prototype.show_joined = function() {
     }
 };
 
-HanabiLobby.prototype.set_table_ready = function(data) {
+HanabiLobby.prototype.setTableReady = (data) => {
     if (data.ready) {
         $('#start-game').removeAttr('disabled');
     } else {
@@ -909,7 +932,7 @@ HanabiLobby.prototype.set_table_ready = function(data) {
     }
 };
 
-HanabiLobby.prototype.game_started = function(data) {
+HanabiLobby.prototype.gameStarted = function gameStarted(data) {
     if (!data.replay) {
         $('#joined-table').hide();
         $('#table-area').show();
@@ -918,12 +941,12 @@ HanabiLobby.prototype.game_started = function(data) {
     this.hide_pregame();
     this.show_game();
 
-    this.ui = new HanabiUI(this, this.game_id);
+    this.ui = new HanabiUI(this, this.gameID);
 
     this.ui.set_backend(this.conn);
 };
 
-HanabiLobby.prototype.game_ended = function(data) {
+HanabiLobby.prototype.gameEnded = function gameEnded(data) {
     this.ui.destroy();
 
     this.hide_game();
@@ -932,14 +955,14 @@ HanabiLobby.prototype.game_ended = function(data) {
     this.ui = null;
 };
 
-HanabiLobby.prototype.listen_conn = function(conn) {
-    var self = this;
+HanabiLobby.prototype.listenConn = function listConn(conn) {
+    const self = this;
 
-    conn.on('message', function(msg) {
-        var msgType = msg.type;
-        var msgData = msg.resp;
+    conn.on('message', (msg) => {
+        const msgType = msg.type;
+        const msgData = msg.resp;
 
-        if (MHGA_show_debug_messages) {
+        if (showDebugMessages) {
             console.log(`%cRecieved ${msgType}:`, 'color: blue;');
             console.log(msgData);
         }
@@ -947,113 +970,95 @@ HanabiLobby.prototype.listen_conn = function(conn) {
         if (msgType === 'hello') {
             self.username = msgData.username;
             self.hide_login();
-            self.reset_lobby();
+            self.resetLobby();
             self.show_lobby();
-
         } else if (msgType === 'denied') {
-            self.login_failed(msgData.reason);
-
+            self.loginFailed(msgData.reason);
         } else if (msgType === 'error') {
-            alert('Error: ' + msgData.error);
-
+            alert(`Error: ${msgData.error}`);
         } else if (msgType === 'user') {
-            self.add_user(msgData);
-
+            self.addUser(msgData);
         } else if (msgType === 'user_left') {
-            self.remove_user(msgData);
-
+            self.removeUser(msgData);
         } else if (msgType === 'table') {
-            self.add_table(msgData);
-
+            self.addTable(msgData);
         } else if (msgType === 'table_gone') {
-            self.remove_table(msgData);
-
+            self.removeTable(msgData);
         } else if (msgType === 'chat') {
             self.add_chat(msgData);
-
         } else if (msgType === 'joined') {
-            self.table_joined(msgData);
-
+            self.tableJoined(msgData);
         } else if (msgType === 'left') {
-            self.table_left(msgData);
-
+            self.tableLeft(msgData);
         } else if (msgType === 'game') {
-            self.set_game(msgData);
-
+            self.setGame(msgData);
         } else if (msgType === 'game_player') {
-            self.set_game_player(msgData);
-
+            self.setGamePlayer(msgData);
         } else if (msgType === 'table_ready') {
-            self.set_table_ready(msgData);
-
+            self.setTableReady(msgData);
         } else if (msgType === 'game_start') {
-            self.game_started(msgData);
-
+            self.gameStarted(msgData);
         } else if (msgType === 'game_history') {
-            self.add_history(msgData);
-
+            self.addHistory(msgData);
         } else if (msgType === 'history_detail') {
-            self.add_history_detail(msgData);
-
+            self.addHistoryDetail(msgData);
         } else if (msgType === 'game_error') {
             alert('Server error');
-            self.game_ended(msgData);
-
+            self.gameEnded(msgData);
         } else if (msgType === 'sound') {
-            if (self.send_turn_sound) {
-                self.play_sound(msgData.file);
+            if (self.sendTurnSound) {
+                self.playSound(msgData.file);
             }
-
         } else if (msgType === 'name') {
-            self.random_name = msgData.name;
-
+            self.randomName = msgData.name;
         } else if (self.ui) {
             self.ui.handle_message(msg);
         }
     });
 };
 
-HanabiLobby.prototype.set_conn = function(conn) {
-    var self = this;
+HanabiLobby.prototype.setConn = function setConn(conn) {
+    const self = this;
 
     this.conn = conn;
 
-    this.listen_conn(conn);
+    this.listenConn(conn);
 
-    conn.on('connecting', function() {
-        console.log('attempting to connect');
+    conn.on('connecting', () => {
+        console.log('Attempting to connect.');
     });
 
-    conn.on('connect_failed', function() {
+    conn.on('connect_failed', () => {
         alert('Failed to connect to server');
     });
 
-    conn.on('reconnect_failed', function() {
+    conn.on('reconnect_failed', () => {
         alert('Lost connection to server, could not reconnect');
     });
 
-    conn.on('error', function() {
+    conn.on('error', (err) => {
+        console.err('SocketIO error:', err);
     });
 
-    conn.on('disconnect', function() {
-        self.hide_lobby();
+    conn.on('disconnect', () => {
+        self.hideLobby();
         self.hide_game();
-        self.hide_create_dialog();
+        self.hideCreateDialog();
         self.show_pregame();
         self.reset_login();
-        self.show_login();
+        self.showLogin();
     });
 
     this.username = getCookie('hanabiuser');
     this.pass = getCookie('hanabipass');
 
-    var qs = (function(a) {
+    const qs = ((a) => {
         if (a === '') {
             return {};
         }
-        var b = {};
-        for (var i = 0; i < a.length; ++i) {
-            var p=a[i].split('=');
+        const b = {};
+        for (let i = 0; i < a.length; ++i) {
+            const p = a[i].split('=');
             if (p.length !== 2) {
                 continue;
             }
@@ -1070,105 +1075,102 @@ HanabiLobby.prototype.set_conn = function(conn) {
         $('#user').val(this.username);
     }
 
-    var ready_login = function() {
+    const readyLogin = () => {
         if (!document.hidden) {
-            self.send_login();
-            document.removeEventListener('visibilitychange', ready_login, false);
+            self.sendLogin();
+            document.removeEventListener('visibilitychange', readyLogin, false);
         }
     };
 
     if (this.username && this.pass) {
         if (!document.hidden) {
-            this.send_login();
+            this.sendLogin();
         } else {
-            document.addEventListener('visibilitychange', ready_login, false);
+            document.addEventListener('visibilitychange', readyLogin, false);
         }
     }
 
-    conn.on('reconnect', function() {
+    conn.on('reconnect', () => {
         console.log('attempting to reconnect');
         if (self.username && self.pass) {
-            self.send_login();
+            self.sendLogin();
         }
     });
 
-    window.onerror = function(message, url, lineno, colno, error) {
+    window.onerror = (message, url, lineno, colno, error) => {
         try {
             conn.emit('clienterror', {
-                message: message,
-                url: url,
-                lineno: lineno,
-                colno: colno,
+                message,
+                url,
+                lineno,
+                colno,
                 stack: error.stack,
                 modified: true,
             });
-        }
-        catch (e) {
+        } catch (err) {
+            console.err('Recieved error:', err);
         }
     };
 };
 
-HanabiLobby.prototype.send_msg = function(msg) {
-    if (MHGA_show_debug_messages) {
+HanabiLobby.prototype.send_msg = function sendMsg(msg) {
+    if (showDebugMessages) {
         console.log(`%cSent ${msg.type}:`, 'color: green;');
         console.log(msg.resp);
     }
     this.conn.emit('message', msg);
 };
 
-HanabiLobby.prototype.load_settings = function() {
-    var self = this;
-    var settings_list = [
+HanabiLobby.prototype.loadSettings = function loadSettings() {
+    const self = this;
+    const settingsList = [
         [
             'send-turn-notification',
-            'send_turn_notify',
+            'sendTurnNotify',
         ],
         [
             'send-turn-sound',
-            'send_turn_sound',
+            'sendTurnSound',
         ],
         [
             'send-chat-notification',
-            'send_chat_notify',
+            'sendChatNotify',
         ],
         [
             'send-chat-sound',
-            'send_chat_sound',
+            'sendChatSound',
         ],
         [
             'show-colorblind-ui',
-            'show_colorblind_ui',
+            'showColorblindUI',
         ],
     ];
-    var i, val;
 
-    for (i = 0; i < settings_list.length; i++) {
-        val = localStorage[settings_list[i][1]];
+    for (let i = 0; i < settingsList.length; i++) {
+        let val = localStorage[settingsList[i][1]];
         if (val !== undefined) {
             val = (val === 'true');
-            $('#' + settings_list[i][0]).attr('checked', val);
-            this[settings_list[i][1]] = val;
+            $(`#${settingsList[i][0]}`).attr('checked', val);
+            this[settingsList[i][1]] = val;
         }
 
-        $('#' + settings_list[i][0]).change(function() {
-            var name = $(this).attr('id');
-            var i;
-
-            for (i = 0; i < settings_list.length; i++) {
-                if (settings_list[i][0] === name) {
-                    self[settings_list[i][1]] = $(this).is(':checked');
-                    localStorage[settings_list[i][1]] = $(this).is(':checked');
+        $(`#${settingsList[i][0]}`).change(function changeSettingsList() {
+            const name = $(this).attr('id');
+            for (let j = 0; i < settingsList.length; i++) {
+                if (settingsList[j][0] === name) {
+                    self[settingsList[j][1]] = $(this).is(':checked');
+                    localStorage[settingsList[j][1]] = $(this).is(':checked');
                 }
             }
 
-            if (self.send_turn_notify || self.send_chat_notify) {
+            if (self.sendTurnNotify || self.sendChatNotify) {
                 self.test_notifications();
             }
         });
     }
 };
 
-HanabiLobby.prototype.test_notifications = function() {
+HanabiLobby.prototype.test_notifications = () => {
     if (!('Notification' in window)) {
         return;
     }
@@ -1180,7 +1182,7 @@ HanabiLobby.prototype.test_notifications = function() {
     Notification.requestPermission();
 };
 
-HanabiLobby.prototype.send_notify = function(msg, tag) {
+HanabiLobby.prototype.sendNotify = (msg, tag) => {
     if (!('Notification' in window)) {
         return;
     }
@@ -1189,48 +1191,50 @@ HanabiLobby.prototype.send_notify = function(msg, tag) {
         return;
     }
 
-    Notification('Hanabi: ' + msg, {
-        tag: tag,
+    Notification(`Hanabi: ${msg}`, {
+        tag,
     });
 };
 
-HanabiLobby.prototype.play_sound = function(file) {
-    var audio = new Audio('public/sounds/' + file + '.mp3');
+HanabiLobby.prototype.playSound = (file) => {
+    const audio = new Audio(`public/sounds/${file}.mp3`);
     audio.play();
 };
 
 function getCookie(name) {
     if (document.cookie === undefined) {
-        return;
+        return '';
     }
-    var i, x, y, cookies = document.cookie.split(';');
 
-    for (i = 0; i < cookies.length; i++) {
-        x = cookies[i].substr(0, cookies[i].indexOf('='));
-        y = cookies[i].substr(cookies[i].indexOf('=') + 1);
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        let x = cookies[i].substr(0, cookies[i].indexOf('='));
         x = x.replace(/^\s+|\s+$/g, '');
+        const y = cookies[i].substr(cookies[i].indexOf('=') + 1);
         if (x === name) {
             return decodeURIComponent(y);
         }
     }
+
+    return '';
 }
 
 function setCookie(name, val) {
     if (document.cookie === undefined) {
         return;
     }
-    var expire = new Date();
+    const expire = new Date();
     expire.setDate(expire.getDate() + 365);
-    var cookie = encodeURIComponent(val) + '; expires=' + expire.toUTCString();
-    document.cookie = name + '=' + cookie;
+    const cookie = `${encodeURIComponent(val)}; expires=${expire.toUTCString()}`;
+    document.cookie = `${name}=${cookie}`;
 }
 
 function deleteCookie(name) {
     if (document.cookie === undefined) {
         return;
     }
-    var expire = new Date();
+    const expire = new Date();
     expire.setDate(expire.getDate() - 1);
-    var cookie = '; expires=' + expire.toUTCString();
-    document.cookie = name + '=' + cookie;
+    const cookie = `; expires=${expire.toUTCString()}`;
+    document.cookie = `${name}=${cookie}`;
 }

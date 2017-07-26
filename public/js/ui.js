@@ -138,13 +138,13 @@ function setTickingDownTime(textObjects, active_index) {
     // Play a sound to indicate that the current player is almost out of time
     // Do not play it more frequently than about once per second
     if (ui.timed_game &&
-        lobby.send_turn_sound &&
+        lobby.sendTurnSound &&
         milliseconds_left > 0 &&
         milliseconds_left <= 5000 &&
         time_elapsed > 900 &&
         time_elapsed < 1100) {
 
-        lobby.play_sound('tone');
+        lobby.playSound('tone');
     }
 }
 
@@ -597,7 +597,7 @@ var HanabiCard = function(config) {
         },
         shadowBlur: 2,
         text: '',
-        visible: lobby.show_colorblind_ui,
+        visible: lobby.showColorblindUI,
     });
     this.color_clue_group.add(this.color_clue_letter);
 
@@ -1435,7 +1435,7 @@ var ColorButton = function(config) {
         strokeWidth: 1,
         align: 'center',
         text: config.text,
-        visible: lobby.show_colorblind_ui,
+        visible: lobby.showColorblindUI,
     });
 
     this.add(text);
@@ -1766,7 +1766,7 @@ HanabiClueEntry.prototype.showMatch = function(target) {
         if (ui.deck[this.neglist[i]] === target) {
             this.background.setOpacity(0.4);
             this.background.setFill('#ff7777');
-            if (lobby.show_colorblind_ui) {
+            if (lobby.showColorblindUI) {
                 this.negative_marker.setVisible(true);
             }
         }
@@ -2113,7 +2113,7 @@ this.build_cards = function() {
                     index_label = '';
                 }
 
-                if (lobby.show_colorblind_ui) {
+                if (lobby.showColorblindUI) {
                     ctx.font = 'bold 68pt Arial';
                     text_y_pos = 83;
                     index_label = suit_letter + index_label;
@@ -2152,7 +2152,7 @@ this.build_cards = function() {
                     // Top and bottom for cards 3, 4, 5
                     if (j > 1 && j !== 6) {
                         var symbol_y_pos = 120;
-                        if (lobby.show_colorblind_ui) {
+                        if (lobby.showColorblindUI) {
                             symbol_y_pos = 85;
                         }
                         ctx.save();
@@ -2199,7 +2199,7 @@ this.build_cards = function() {
 
                     if (j === 0) {
                         ctx.clearRect(0, 0, CARDW, CARDH);
-                        if (lobby.show_colorblind_ui) {
+                        if (lobby.showColorblindUI) {
                             ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
                             ctx.fillText(suit_letter, 19, 83);
                             ctx.shadowColor = 'rgba(0, 0, 0, 0)';
@@ -3626,7 +3626,7 @@ this.build_ui = function() {
                 ui.timerId = null;
             }
 
-            ui.lobby.game_ended();
+            ui.lobby.gameEnded();
         } else {
             self.enter_replay(false);
         }
@@ -3939,7 +3939,7 @@ Keyboard hotkeys:
             ui.timerId = null;
         }
 
-        ui.lobby.game_ended();
+        ui.lobby.gameEnded();
     });
 
     if (ui.replay) {
@@ -4503,7 +4503,7 @@ this.handle_notify = function(note, performing_replay) {
         }
 
         alert('The game was ended by: ' + note.who);
-        ui.lobby.game_ended();
+        ui.lobby.gameEnded();
     }
 };
 
@@ -4954,8 +4954,8 @@ HanabiUI.prototype.handle_message = function(msg) {
             return;
         }
 
-        if (this.lobby.send_turn_notify) {
-            this.lobby.send_notify('It\'s your turn', 'turn');
+        if (this.lobby.sendTurnNotify) {
+            this.lobby.sendNotify('It\'s your turn', 'turn');
         }
 
     } else if (msgType === 'spectators') {
