@@ -365,7 +365,7 @@ HanabiLobby.prototype.hideSettings = () => {
     $('#settings-dialog').fadeOut(fadeTime);
 };
 
-HanabiLobby.prototype.showHistoryDetails = () => {
+HanabiLobby.prototype.showHistoryDetails = function showHistoryDetails() {
     $('#game-history').hide();
     $('#game-history-details').show();
 
@@ -697,7 +697,7 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
         const button = $('<button>').text('Compare Scores').attr('type', 'button');
         button.attr('id', `history-details-${ids[i]}`);
 
-        button.on('click', (event) => {
+        button.on('click', function buttonClick(event) {
             event.preventDefault();
 
             self.gameID = parseInt(this.id.slice(16), 10);

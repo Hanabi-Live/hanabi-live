@@ -5,7 +5,7 @@
     const Color = function Color(name, abbreviation, hexCode, index) {
         this.name = name;
         this.abbreviation = abbreviation;
-        this.hex_code = hexCode;
+        this.hexCode = hexCode;
         this.index = index;
     };
 
@@ -230,7 +230,7 @@
         const grad = ctx.createLinearGradient(...args);
         const nColors = colors.length;
         for (let i = 0; i < nColors; ++i) {
-            grad.addColorStop(i / (nColors - 1), colors[i].hex_code);
+            grad.addColorStop(i / (nColors - 1), colors[i].hexCode);
         }
         return grad;
     };
@@ -241,7 +241,7 @@
         const grad = ctx.createRadialGradient(...args);
         const nColors = colors.length;
         for (let i = 0; i < nColors; ++i) {
-            grad.addColorStop(i / (nColors - 1), colors[i].hex_code);
+            grad.addColorStop(i / (nColors - 1), colors[i].hexCode);
         }
         return grad;
     };
@@ -267,7 +267,7 @@
 
         if (fillType === exports.fillType.SOLID) {
             // "colors" in this case should be a single color, not an array
-            return colors.hex_code;
+            return colors.hexCode;
         } else if (fillType === exports.fillType.LINEAR_GRADIENT) {
             return evenLinearGradient(ctx, colors, fillSpec.args);
         } else if (fillType === exports.fillType.RADIAL_GRADIENT) {
