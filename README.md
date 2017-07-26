@@ -6,7 +6,7 @@ Description
 
 * This is an emulation of the [Keldon Hanabi game server](http://keldon.net/hanabi/), of which the source code is not published.
 * It is programmed in [Node.js](https://nodejs.org/en/) using [Socket.IO](https://socket.io/).
-* It uses a MariaDB database to store information about the users and games.
+* It uses a [MariaDB](https://mariadb.org/) database to store information about the users and games.
 * The main file is `index.js`, which listens for HTTP connections.
 * Handlers for messages (commands) recieved from the client are located in the `messages` subdirectory.
 * All database logic is in the `models` subdirectory.
@@ -53,17 +53,18 @@ List of Changes & Improvements over the Original Server
   * For players who are color-blind, this mode will make the game much easier to play by drawing the letters of the color on top of the card.
 * Keyboard Shortcuts
   * For the lobby:
-    * Create a table: `Alt + C`
-    * Show history: `Alt + H`
-    * Leave a table: `Alt + L`
-    * Return to tables: `Alt + R`
+    * Create a table: `Alt + c`
+    * Show history: `Alt + h`
+    * Start a game: `Alt + s`
+    * Leave a table: `Alt + l`
+    * Return to tables: `Alt + r`
   * For in-game:
     * Play a card: `a` or `+` (will prompt an alert for the slot number)
     * Discard a card: `d` or `-` (will prompt an alert for the slot number)
     * Clue:
         * `Tab` to select a player
         * `1`, `2`, `3`, `4`, `5` for a number clue
-        * Or `Q`, `W`, `E`, `R`, `T` for a color clue
+        * Or `q`, `w`, `e`, `r`, `t` for a color clue
         * Then `Enter` to submit
   * For in a replay:
     * Rewind back one turn: `Left`
