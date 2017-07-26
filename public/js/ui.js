@@ -3273,13 +3273,14 @@ function HanabiUI(lobby, gameID) {
 
             clueButtonGroup.add(button);
         }
-
-        x = 0.183;
-
-        if (this.variant === VARIANT.BLACKSUIT || this.variant === VARIANT.BLACKONE) {
-            x = 0.158;
-        } else if (this.variant === VARIANT.MIXED) {
+        const clueColors = this.variant.clueColors;
+        const nClueColors = clueColors.length;
+        if (nClueColors === 4) {
             x = 0.208;
+        } else if (nClueColors === 5) {
+            x = 0.183;
+        } else { // nClueColors === 6
+            x = 0.158;
         }
 
         {

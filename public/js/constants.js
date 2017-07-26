@@ -170,7 +170,15 @@
         exports.COLOR.GREEN,
         exports.COLOR.YELLOW,
         exports.COLOR.RED,
+        exports.COLOR.PURPLE
+    ]);
+    const baseColorsPlusBlack = Object.freeze([
+        exports.COLOR.BLUE,
+        exports.COLOR.GREEN,
+        exports.COLOR.YELLOW,
+        exports.COLOR.RED,
         exports.COLOR.PURPLE,
+        exports.COLOR.BLACK
     ]);
 
     // Specify between solid color and gradients, along with additional args in
@@ -327,7 +335,7 @@
             exports.COLOR.BLACK,
             basicCardFillSpec,
             exports.SHAPE.SPADE,
-            [],
+            [exports.COLOR.BLACK],
         ),
         // Green for mixed variant, which has different properties than green
         // for original variants
@@ -512,7 +520,7 @@
                 exports.SUIT.PURPLE,
                 exports.SUIT.BLACK,
             ],
-            baseColors,
+            baseColorsPlusBlack,
         ),
         BLACKONE: new Variant(
             [
@@ -523,7 +531,7 @@
                 exports.SUIT.PURPLE,
                 exports.SUIT.BLACK,
             ],
-            baseColors,
+            baseColorsPlusBlack,
         ),
         RAINBOW: new Variant(
             [
