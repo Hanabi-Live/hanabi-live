@@ -2250,7 +2250,7 @@ function HanabiUI(lobby, gameID) {
                         ctx.lineTo(borderSize + triangleSize, CARDH - borderSize); // Move right
                         ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2)); // Move left and up diagonally
                         ctx.moveTo(borderSize, CARDH - borderSize); // Move back to the beginning
-                        ctx.fillStyle = clueColor1.hex_code;
+                        ctx.fillStyle = clueColor2.hex_code;
                         drawshape(ctx);
 
                         ctx.restore();
