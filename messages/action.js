@@ -87,8 +87,20 @@ const step1 = (socket, data) => {
             // Add it to the end (the left-most position)
             player.hand.push(chopCard);
 
+            // Make an array that represents the order of the player's hand
+            const handOrder = [];
+            for (let i = 0; i < player.hand.length; i++) {
+                const card = player.hand[i];
+                handOrder.push(card.order);
+            }
+
             // Notify everyone about the reordering
-            notify.gameReorderCards(data);
+            game.actions.push({
+                type: 'reorder',
+                target: data.index,
+                hand_order: handOrder,
+            });
+            notify.gameAction(data);
         }
     }
 
