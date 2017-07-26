@@ -4726,6 +4726,10 @@ this.handle_notify = function(note, performing_replay) {
             uilayer.draw();
         }
 
+    } else if (type === "reorder") {
+        // TODO
+        // add a method to the "CardLayout" class???
+
     } else if (type === "boot") {
         if (ui.timerId !== null) {
             window.clearInterval(ui.timerId);

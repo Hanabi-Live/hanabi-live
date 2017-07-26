@@ -131,6 +131,7 @@ function HanabiLobby() {
         localStorage.setItem("table_host_variant",     variant);
         localStorage.setItem("table_host_allow_spec",  allow_spec);
         localStorage.setItem("table_host_timed",       timed);
+        localStorage.setItem("table_reorder_cards",    reorder_cards);
 
         evt.preventDefault();
 

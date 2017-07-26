@@ -255,6 +255,28 @@ exports.gameSound = (data) => {
     }
 };
 
+exports.gameReorderCards = (data) => {
+    // Local variables
+    const game = globals.currentGames[data.gameID];
+
+    // Send the card reordering notification
+    const msg = {
+        type: 'notify',
+        resp: {
+            type: 'reorder',
+            who: data.who,
+            hand: data.hand,
+        },
+    };
+    for (let i = 0; i < game.players.length; i++) {
+        const player = game.players[i];
+        player.socket.emit('message', msg);
+    }
+    for (const userID of Object.keys(game.spectators)) {
+        game.spectators[userID].emit('message', msg);
+    }
+};
+
 exports.gameBoot = (data) => {
     // Local variables
     const game = globals.currentGames[data.gameID];
