@@ -516,7 +516,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
             button = $('<button>').text('Spectate').attr('type', 'button');
             button.attr('id', `spectate-${gameID}`);
 
-            button.on('click', (event) => {
+            button.on('click', function buttonClick(event) {
                 event.preventDefault();
 
                 const id = parseInt(this.id.slice(9), 10);
@@ -538,7 +538,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 button.attr('disabled', 'disabled');
             }
 
-            button.on('click', (event) => {
+            button.on('click', function buttonClick(event) {
                 event.preventDefault();
 
                 self.gameID = parseInt(this.id.slice(5), 10);
@@ -585,7 +585,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
             button.attr('id', `abandon-${gameID}`);
 
-            button.on('click', (event) => {
+            button.on('click', function buttonClick(event) {
                 event.preventDefault();
 
                 const id = parseInt(this.id.slice(8), 10);
