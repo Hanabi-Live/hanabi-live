@@ -244,19 +244,19 @@ function HanabiLobby() {
 
     $(document).keydown((event) => {
         if (event.altKey && event.key === 'c') {
-            // Click the 'Create Table' button
+            // Click the "Create Table" button
             $('#create-table').click();
         } else if (event.altKey && event.key === 'h') {
-            // Click the 'Show History' button
+            // Click the "Show History" button
             $('#show-history').click();
         } else if (event.altKey && event.key === 's') {
-            // Click on the 'Start Game' button
+            // Click on the "Start Game" button
             $('#start-game').click();
         } else if (event.altKey && event.key === 'l') {
-            // Click on the 'Leave Game' button
+            // Click on the "Leave Game" button
             $('#leave-game').click();
         } else if (event.altKey && event.key === 'r') {
-            // Click on the 'Return to Tables' button
+            // Click on the "Return to Tables" button
             $('#unattend-table').click();
         }
     });
@@ -345,7 +345,7 @@ HanabiLobby.prototype.show_create_dialog = function() {
     var reorder_cards = JSON.parse(localStorage.getItem('table_reorder_cards'));
     $('#create-game-reorder-cards').prop('checked', reorder_cards);
 
-    // Autofocus the 'Game Name' field
+    // Autofocus the "Game Name" field
     $('#create-game-name').focus();
 };
 
@@ -779,7 +779,7 @@ HanabiLobby.prototype.draw_history_details = function() {
                 },
             });
 
-            // Click the 'Return to Tables' button
+            // Click the "Return to Tables" button
             $('#game-history-details').hide();
             $('#game-history').hide();
             $('#table-area').show();
@@ -864,9 +864,9 @@ HanabiLobby.prototype.show_joined = function() {
             continue;
         }
 
-        html = '<div class='player-name'>' + this.game.players[i].name + '</div>';
+        html = `<div class="player-name">${this.game.players[i].name}</div>`;
 
-        html += '<div class='player-details'>';
+        html += '<div class="player-details">';
 
         html += '<p></p>';
 
@@ -874,7 +874,7 @@ HanabiLobby.prototype.show_joined = function() {
 
         html += '<tr>';
         html += '<td>Total games:</td>';
-        html += '<td><b>' + this.game.players[i].num_played + '</b></td>';
+        html += `<td><b>${this.game.players[i].num_played}</b></td>`;
         html += '</tr>';
 
         html += '<tr>';
@@ -940,7 +940,7 @@ HanabiLobby.prototype.listen_conn = function(conn) {
         var msgData = msg.resp;
 
         if (MHGA_show_debug_messages) {
-            console.log('%cRecieved '' + msgType + '':', 'color: blue;');
+            console.log(`%cRecieved ${msgType}:`, 'color: blue;');
             console.log(msgData);
         }
 
@@ -1110,7 +1110,7 @@ HanabiLobby.prototype.set_conn = function(conn) {
 
 HanabiLobby.prototype.send_msg = function(msg) {
     if (MHGA_show_debug_messages) {
-        console.log('%cSent '' + msg.type + '':', 'color: green;');
+        console.log(`%cSent ${msg.type}:`, 'color: green;');
         console.log(msg.resp);
     }
     this.conn.emit('message', msg);
