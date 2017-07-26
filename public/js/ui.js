@@ -66,7 +66,7 @@ var clue_to_msg_clue = function clue_to_msg_data(clue, variant) {
     let msg_clue_value;
     if (clue_type === CLUE_TYPE.COLOR) {
         let clue_color = clue_value;
-        msg_clue_value = variant.clue_colors.findIndex((color) => {return color === clue_color;});
+        msg_clue_value = variant.clueColors.findIndex((color) => {return color === clue_color;});
     }
     else { // rank clue
         msg_clue_value = clue_value;
@@ -78,7 +78,7 @@ var msg_clue_to_clue = function msg_clue_to_clue(msg_clue, variant) {
     let {type: clue_type, value: msg_clue_value} = msg_clue;
     let clue_value;
     if (clue_type === CLUE_TYPE.COLOR) {
-        clue_value = variant.clue_colors[msg_clue_value];
+        clue_value = variant.clueColors[msg_clue_value];
     }
     else { // rank clue
         clue_value = msg_clue_value;
@@ -838,16 +838,16 @@ HanabiCard.prototype.add_clue = function(clue) {
         } else if (grad[1] === grad[3]) {
             if (ui.variant === VARIANT.MIXED) {
                 // Find out the array index of these clue colors
-                let clue_color_1 = ui.variant.clue_colors.find((color) => {return color.hex_code === grad[1];});
-                let clue_color_2 = ui.variant.clue_colors.find((color) => {return color.hex_code === grad[3];});
+                let clue_color_1 = ui.variant.clueColors.find((color) => {return color.hex_code === grad[1];});
+                let clue_color_2 = ui.variant.clueColors.find((color) => {return color.hex_code === grad[3];});
 
                 // The index will not be set above if we already changed it to the true mixed color
                 // So, do nothing if that is the case
                 if (clue_color_1 && clue_color_2 && (clue_color_1 !== clue_color_2)) {
                     // Find the index of the mixed suit that matches these two colors
                     for (let suit of ui.variant.suits) {
-                        let clue_colors = suit.clue_colors;
-                        if (clue_colors.includes(clue_color_1) || clue_colors.includes(clue_color_2)) {
+                        let clueColors = suit.clueColors;
+                        if (clueColors.includes(clue_color_1) || clueColors.includes(clue_color_2)) {
                             grad[1] = suit.fill_color.hex_code;
                             grad[3] = suit.fill_color.hex_code;
                             this.color_clue.setFillLinearGradientColorStops(grad);
@@ -885,7 +885,7 @@ HanabiCard.prototype.add_clue = function(clue) {
 
         this.color_clue_group.show();
 
-        let suit_corresponding_to_color = ui.variant.suits.find((suit) => {return suit.clue_colors.includes(clue.value);});
+        let suit_corresponding_to_color = ui.variant.suits.find((suit) => {return suit.clueColors.includes(clue.value);});
         if (ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM) {
             // TODO Distinguishing suits from colors is not supported yet.
             // ui.learned_cards[this.order].suit may be a correct suit index from a play or discard
@@ -2002,7 +2002,7 @@ var show_clue_match = function(target, clue, show_neg) {
 
         } else { // color clue
             let clue_color = clue.value;
-            if (card.suit === SUIT.MULTI || card.suit.clue_colors.includes(clue_color)) {
+            if (card.suit === SUIT.MULTI || card.suit.clueColors.includes(clue_color)) {
                 touched = true;
             }
         }
@@ -2217,9 +2217,9 @@ this.build_cards = function() {
                 }
 
                 // Make the special corners on cards for the mixed variant
-                let clue_colors = suit.clue_colors;
-                if (clue_colors.length === 2) {
-                    let [clue_color_1, clue_color_2] = suit.clue_colors;
+                let clueColors = suit.clueColors;
+                if (clueColors.length === 2) {
+                    let [clue_color_1, clue_color_2] = suit.clueColors;
 
                     ctx.save();
 
@@ -3289,7 +3289,7 @@ this.build_ui = function() {
 
     {
         let i = 0;
-        for (let color of this.variant.clue_colors) {
+        for (let color of this.variant.clueColors) {
             button = new ColorButton({
                 x: (x + i * 0.049) * win_w,
                 y: 0.1 * win_h,

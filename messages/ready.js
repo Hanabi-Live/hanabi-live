@@ -13,9 +13,10 @@ exports.step1 = (socket, data) => {
     data.gameID = socket.currentGame;
 
     // Check to make sure this table exists
-    if (!(data.gameID in globals.currentGames) &&
-        socket.status !== 'Replay') { /* eslint-disable padded-blocks */
-
+    if (
+        !(data.gameID in globals.currentGames) &&
+        socket.status !== 'Replay'
+    ) {
         logger.warn(`User "${data.username}" tried to ready for game #${data.gameID} with status ${socket.status}, but that game does not exist.`);
         data.reason = 'That game does not exist.';
         notify.playerDenied(socket, data);

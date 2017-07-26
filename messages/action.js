@@ -638,11 +638,12 @@ function checkEnd(data) {
     }
 
     // Check to see if the maximum score has been reached
-    if ((game.variant === 0 && game.score === 25) ||
+    if (
+        (game.variant === 0 && game.score === 25) ||
         (game.variant === 1 && game.score === 30) ||
         (game.variant === 2 && game.score === 30) ||
-        (game.variant === 3 && game.score === 30)) { /* eslint-disable padded-blocks */
-
+        (game.variant === 3 && game.score === 30)
+    ) {
         data.end = true;
         return;
     }
@@ -655,10 +656,11 @@ function checkEnd(data) {
             const card = game.deck[j];
             const neededSuit = i;
             const neededRank = game.stacks[i] + 1;
-            if (card.suit === neededSuit &&
+            if (
+                card.suit === neededSuit &&
                 card.rank === neededRank &&
-                !card.discarded) {
-
+                !card.discarded
+            ) {
                 return;
             }
         }
