@@ -2406,10 +2406,10 @@ function HanabiUI(lobby, gameID) {
     let notesWritten = {};
 
     const overPlayArea = pos => (
-            pos.x >= playArea.getX() &&
-            pos.y >= playArea.getY() &&
-            pos.x <= playArea.getX() + playArea.getWidth() &&
-            pos.y <= playArea.getY() + playArea.getHeight()
+        pos.x >= playArea.getX() &&
+        pos.y >= playArea.getY() &&
+        pos.x <= playArea.getX() + playArea.getWidth() &&
+        pos.y <= playArea.getY() + playArea.getHeight()
     );
 
     this.buildUI = function buildUI() {
