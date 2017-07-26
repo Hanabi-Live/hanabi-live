@@ -2615,7 +2615,7 @@ var player_hands = [];
 var drawdeck;
 var message_prompt, clue_label, score_label;
 var spectators_label, spectators_num_label, spectators_label_tooltip;
-var shared_replay_leader_label;
+var shared_replay_leader_label, shared_replay_leader_label_tooltip;
 var strikes = [];
 var name_frames = [];
 var play_stacks = [], discard_stacks = [];
