@@ -1940,7 +1940,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     const ImageLoader = new Loader(() => {
-        notesWritten = ui.load_notes();
+        notesWritten = ui.loadNotes();
 
         ui.buildCards();
         ui.buildUI();
@@ -4036,10 +4036,6 @@ function HanabiUI(lobby, gameID) {
         }
     };
 
-    this.handleMessage_in_replay = (ui, msg) => {
-        ui.setMessage(msg.resp);
-    };
-
     this.performReplay = function performReplay(target, fast) {
         let rewind = false;
 
@@ -4091,7 +4087,7 @@ function HanabiUI(lobby, gameID) {
             if (msg.type === 'message') {
                 this.setMessage(msg.resp);
             } else if (msg.type === 'notify') {
-                this.handle_notify(msg.resp, true);
+                this.handleNotify(msg.resp, true);
             }
         } while (
             msg.type !== 'notify' ||
@@ -4135,7 +4131,7 @@ function HanabiUI(lobby, gameID) {
     function showLoading() {
         const loadinglayer = new Kinetic.Layer();
 
-        var loadinglabel = new Kinetic.Text({
+        const loadinglabel = new Kinetic.Text({
             fill: '#d8d5ef',
             stroke: '#747278',
             strokeWidth: 1,
@@ -4152,7 +4148,7 @@ function HanabiUI(lobby, gameID) {
 
         loadinglayer.add(loadinglabel);
 
-        var progresslabel = new Kinetic.Text({
+        const progresslabel = new Kinetic.Text({
             fill: '#d8d5ef',
             stroke: '#747278',
             strokeWidth: 1,
@@ -4169,8 +4165,8 @@ function HanabiUI(lobby, gameID) {
 
         loadinglayer.add(progresslabel);
 
-        ImageLoader.progress_callback = function(done, total) {
-            progresslabel.setText(done.toString() + ' / ' + total.toString());
+        ImageLoader.progress_callback = (done, total) => {
+            progresslabel.setText(`${done}/${total}`);
             loadinglayer.draw();
         };
 
@@ -4179,60 +4175,55 @@ function HanabiUI(lobby, gameID) {
 
     showLoading();
 
-    this.getNote = function(card_order) {
-        return notesWritten[card_order];
-    };
+    this.getNote = cardOrder => notesWritten[cardOrder];
 
-    this.setNote = function(card_order, note) {
+    this.setNote = function setNote(cardOrder, note) {
         if (note) {
-            notesWritten[card_order] = note;
+            notesWritten[cardOrder] = note;
         } else {
-            delete notesWritten[card_order];
+            delete notesWritten[cardOrder];
         }
-        this.save_notes();
+        this.saveNotes();
     };
 
-    this.load_notes = function() {
-        var cookie = localStorage.getItem(gameID);
+    this.loadNotes = () => {
+        const cookie = localStorage.getItem(gameID);
         if (cookie) {
             return JSON.parse(cookie);
-        } else {
-            return {};
         }
+
+        return {};
     };
 
-    this.save_notes = function() {
-        var cookie = JSON.stringify(notesWritten);
+    this.saveNotes = () => {
+        const cookie = JSON.stringify(notesWritten);
         localStorage.setItem(gameID, cookie);
     };
 
-    this.handle_notify = function(note, performingReplay) {
-        var type = note.type;
-        var child, order;
-        var pos, scale, n;
-        var i;
+    this.handleNotify = function handleNotify(note, performingReplay) {
+        const type = note.type;
         if (ui.activeHover) {
             ui.activeHover.dispatchEvent(new MouseEvent('mouseout'));
             ui.activeHover = null;
         }
 
         if (type === 'draw') {
-            let suit = msgSuitToSuit(note.suit, ui.variant);
+            const suit = msgSuitToSuit(note.suit, ui.variant);
             ui.deck[note.order] = new HanabiCard({
-                suit: suit,
+                suit,
                 rank: note.rank,
                 order: note.order,
             });
 
-            child = new LayoutChild();
+            const child = new LayoutChild();
             child.add(ui.deck[note.order]);
 
-            pos = drawDeck.cardback.getAbsolutePosition();
+            const pos = drawDeck.cardback.getAbsolutePosition();
 
             child.setAbsolutePosition(pos);
             child.setRotation(-playerHands[note.who].getRotation());
 
-            scale = drawDeck.cardback.getWidth() / CARDW;
+            const scale = drawDeck.cardback.getWidth() / CARDW;
             child.setScale({
                 x: scale,
                 y: scale,
@@ -4240,28 +4231,26 @@ function HanabiUI(lobby, gameID) {
 
             playerHands[note.who].add(child);
             playerHands[note.who].moveToTop();
-
         } else if (type === 'draw_size') {
             drawDeck.setCount(note.size);
-
         } else if (type === 'played') {
-            let suit = msgSuitToSuit(note.which.suit, ui.variant);
+            const suit = msgSuitToSuit(note.which.suit, ui.variant);
             showClueMatch(-1);
 
-            child = ui.deck[note.which.order].parent;
+            const child = ui.deck[note.which.order].parent;
 
             ui.deck[note.which.order].suit = suit;
             ui.deck[note.which.order].rank = note.which.rank;
             ui.deck[note.which.order].unknown = false;
             ui.learnedCards[note.which.order] = {
-                suit: suit,
+                suit,
                 rank: note.which.rank,
                 revealed: true,
             };
             ui.deck[note.which.order].setBareImage();
             ui.deck[note.which.order].hideClues();
 
-            pos = child.getAbsolutePosition();
+            const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
             child.remove();
             child.setAbsolutePosition(pos);
@@ -4270,39 +4259,39 @@ function HanabiUI(lobby, gameID) {
             playStacks.get(suit).moveToTop();
 
             clueLog.checkExpiry();
-
         } else if (type === 'discard') {
-            let suit = msgSuitToSuit(note.which.suit, ui.variant);
+            const suit = msgSuitToSuit(note.which.suit, ui.variant);
             showClueMatch(-1);
 
-            child = ui.deck[note.which.order].parent;
+            const child = ui.deck[note.which.order].parent;
 
             ui.deck[note.which.order].suit = suit;
             ui.deck[note.which.order].rank = note.which.rank;
             ui.deck[note.which.order].unknown = false;
             ui.learnedCards[note.which.order] = {
-                suit: suit,
+                suit,
                 rank: note.which.rank,
                 revealed: true,
             };
             ui.deck[note.which.order].setBareImage();
             ui.deck[note.which.order].hideClues();
 
-            pos = child.getAbsolutePosition();
+            const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
             child.remove();
             child.setAbsolutePosition(pos);
 
             discardStacks.get(suit).add(child);
 
-            for (let [_, discard_stack] of discardStacks) {
-                if (discard_stack) {
-                    discard_stack.moveToTop();
+            for (const discardStack of discardStacks) {
+                if (discardStack[1]) {
+                    discardStack[1].moveToTop();
                 }
             }
 
-            while (1) {
-                n = child.getZIndex();
+            let finished = false;
+            do {
+                const n = child.getZIndex();
 
                 if (!n) {
                     break;
@@ -4311,21 +4300,19 @@ function HanabiUI(lobby, gameID) {
                 if (note.which.rank < child.parent.children[n - 1].children[0].rank) {
                     child.moveDown();
                 } else {
-                    break;
+                    finished = true;
                 }
-            }
+            } while (!finished);
 
             clueLog.checkExpiry();
-
         } else if (type === 'reveal') {
-            let suit = msgSuitToSuit(note.which.suit, ui.variant);
-            child = ui.deck[note.which.order].parent;
+            const suit = msgSuitToSuit(note.which.suit, ui.variant);
 
             ui.deck[note.which.order].suit = suit;
             ui.deck[note.which.order].rank = note.which.rank;
             ui.deck[note.which.order].unknown = false;
             ui.learnedCards[note.which.order] = {
-                suit: suit,
+                suit,
                 rank: note.which.rank,
                 revealed: true,
             };
@@ -4335,12 +4322,11 @@ function HanabiUI(lobby, gameID) {
             if (!this.animateFast) {
                 cardLayer.draw();
             }
-
         } else if (type === 'clue') {
-            let clue = msgClueToClue(note.clue, ui.variant);
+            const clue = msgClueToClue(note.clue, ui.variant);
             showClueMatch(-1);
 
-            for (i = 0; i < note.list.length; i++) {
+            for (let i = 0; i < note.list.length; i++) {
                 ui.deck[note.list[i]].setIndicator(true);
                 ui.deck[note.list[i]].clue_given.show();
 
@@ -4350,12 +4336,12 @@ function HanabiUI(lobby, gameID) {
                 }
             }
 
-            var neglist = [];
+            const neglist = [];
 
-            for (i = 0; i < playerHands[note.target].children.length; i++) {
-                child = playerHands[note.target].children[i];
+            for (let i = 0; i < playerHands[note.target].children.length; i++) {
+                const child = playerHands[note.target].children[i];
 
-                order = child.children[0].order;
+                const order = child.children[0].order;
 
                 if (note.list.indexOf(order) < 0) {
                     neglist.push(order);
@@ -4369,7 +4355,7 @@ function HanabiUI(lobby, gameID) {
                 clueName = clue.value.name;
             }
 
-            var entry = new HanabiClueEntry({
+            const entry = new HanabiClueEntry({
                 width: clueLog.getWidth(),
                 height: 0.017 * winH,
                 giver: ui.playerNames[note.giver],
@@ -4424,7 +4410,7 @@ function HanabiUI(lobby, gameID) {
                 }).play();
             }
         } else if (type === 'turn') {
-            for (i = 0; i < ui.playerNames.length; i++) {
+            for (let i = 0; i < ui.playerNames.length; i++) {
                 nameFrames[i].setActive(note.who === i);
             }
 
@@ -4458,19 +4444,19 @@ function HanabiUI(lobby, gameID) {
 
             // Get the LayoutChild objects in the hand and put them in the right order in a temporary array
             const newChildOrder = [];
-            var handSize = hand.children.length;
-            for (i = 0; i < handSize; ++i) {
-                var order = note.hand_order[i];
-                var child = ui.deck[order].parent;
+            const handSize = hand.children.length;
+            for (let i = 0; i < handSize; ++i) {
+                const order = note.hand_order[i];
+                const child = ui.deck[order].parent;
                 newChildOrder.push(child);
 
                 // Take them out of the hand itself
-                child.remove()
+                child.remove();
             }
 
             // Put them back into the hand in the new order
-            for (i = 0; i < handSize; ++i) {
-                var child = newChildOrder[i];
+            for (let i = 0; i < handSize; ++i) {
+                const child = newChildOrder[i];
                 hand.add(child);
             }
         } else if (type === 'boot') {
@@ -4485,7 +4471,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handle_spectators = (note) => {
-        let shouldShowLabel = note.names.length > 0;
+        const shouldShowLabel = note.names.length > 0;
         spectatorsLabel.setVisible(shouldShowLabel);
         spectatorsNumLabel.setVisible(shouldShowLabel);
         if (shouldShowLabel) {
@@ -4512,11 +4498,11 @@ function HanabiUI(lobby, gameID) {
         ui.playerTimes = note.times;
 
         // Check to see if the second timer has been drawn
-        if (typeof(timerRect2) === 'undefined') {
+        if (typeof timerRect2 === 'undefined') {
             return;
         }
 
-        let current_user_turn = note.active === ui.playerUs && !ui.spectating;
+        const currentUserTurn = note.active === ui.playerUs && !ui.spectating;
 
         // Update onscreen time displays
         if (!ui.spectating) {
@@ -4529,7 +4515,7 @@ function HanabiUI(lobby, gameID) {
             timerText1.setText(millisecondsToTimeDisplay(time));
         }
 
-        if (!current_user_turn) {
+        if (!currentUserTurn) {
             // Update the ui with the value of the timer for the active player
             let time = ui.playerTimes[note.active];
             if (!ui.timedGame) {
@@ -4539,7 +4525,7 @@ function HanabiUI(lobby, gameID) {
             timerText2.setText(millisecondsToTimeDisplay(time));
         }
 
-        let shoudShowTimer2 = !current_user_turn && note.active !== null;
+        const shoudShowTimer2 = !currentUserTurn && note.active !== null;
         timerRect2.setVisible(shoudShowTimer2);
         timerLabel2.setVisible(shoudShowTimer2);
         timerText2.setVisible(shoudShowTimer2);
@@ -4564,9 +4550,9 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Start the local timer for the active player
-        let active_timer_ui_text = current_user_turn ? timerText1 : timerText2;
-        let textUpdateTargets = [active_timer_ui_text, nameFrames[note.active].tooltip.getText()];
-        ui.timerID = window.setInterval(function() {
+        const activeTimerUIText = currentUserTurn ? timerText1 : timerText2;
+        const textUpdateTargets = [activeTimerUIText, nameFrames[note.active].tooltip.getText()];
+        ui.timerID = window.setInterval(() => {
             setTickingDownTime(textUpdateTargets, note.active);
         }, 1000);
     };
@@ -4581,7 +4567,7 @@ function HanabiUI(lobby, gameID) {
             ],
         }
     */
-    this.handle_note = function(note) {
+    this.handle_note = (note) => {
         // Build the note text from the "notes" array given by the server
         let newNote = '';
         for (let i = 0; i < note.notes.length; i++) {
@@ -4597,7 +4583,7 @@ function HanabiUI(lobby, gameID) {
         ui.setNote(note.order, newNote);
 
         // Draw (or hide) the note indicator
-        let card = ui.deck[note.order];
+        const card = ui.deck[note.order];
         card.tooltip.getText().setText(newNote);
         if (newNote.length > 0) {
             card.note_given.show();
@@ -4610,7 +4596,7 @@ function HanabiUI(lobby, gameID) {
         cardLayer.draw();
     };
 
-    this.handle_notes = function(note) {
+    this.handle_notes = (note) => {
         // We recieved a new copy of all of our notes from the server
         notesWritten = note.notes;
 
@@ -4622,7 +4608,7 @@ function HanabiUI(lobby, gameID) {
             ui.setNote(order, newNote);
 
             // Draw (or hide) the note indicator
-            let card = ui.deck[order];
+            const card = ui.deck[order];
             card.tooltip.getText().setText(newNote);
             if (newNote.length > 0) {
                 card.note_given.show();
@@ -4636,11 +4622,11 @@ function HanabiUI(lobby, gameID) {
         cardLayer.draw();
     };
 
-    this.handle_replay_leader = function(note) {
+    this.handleReplayLeader = function handleReplayLeader(note) {
         this.sharedReplay_leader = note.name;
 
         sharedReplayLeaderLabel.show();
-        let text = `Leader: ${this.sharedReplay_leader}`;
+        const text = `Leader: ${this.sharedReplay_leader}`;
         sharedReplayLeaderLabelTooltip.getText().setText(text);
 
         if (this.sharedReplay_leader === lobby.username) {
@@ -4696,7 +4682,7 @@ function HanabiUI(lobby, gameID) {
         submitClue.off('click tap');
     };
 
-    var savedAction = null;
+    let savedAction = null;
 
     this.handleAction = function handleAction(data) {
         const self = this;
@@ -4747,6 +4733,7 @@ function HanabiUI(lobby, gameID) {
 
             child.setDraggable(true);
 
+            /* eslint-disable no-loop-func */
             child.on('dragend.play', function dragendPlay() {
                 const pos = this.getAbsolutePosition();
 
@@ -4787,6 +4774,7 @@ function HanabiUI(lobby, gameID) {
                     playerHands[ui.playerUs].doLayout();
                 }
             });
+            /* eslint-enable no-loop-func */
         }
 
         drawDeck.cardback.setDraggable(data.can_blind_play_deck);
@@ -4798,17 +4786,17 @@ function HanabiUI(lobby, gameID) {
             drawDeck.moveToTop();
         }
 
-        const checkClueLegal = function() {
-            var target = clueTargetButtonGroup.getPressed();
-            var clueButton = clueButtonGroup.getPressed();
+        const checkClueLegal = () => {
+            const target = clueTargetButtonGroup.getPressed();
+            const clueButton = clueButtonGroup.getPressed();
 
             if (!target || !clueButton) {
                 submitClue.setEnabled(false);
                 return;
             }
 
-            var who = target.target_index;
-            var match = showClueMatch(who, clueButton.clue);
+            const who = target.target_index;
+            const match = showClueMatch(who, clueButton.clue);
 
             if (!match) {
                 submitClue.setEnabled(false);
@@ -4912,7 +4900,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
         this.saveReplay(msg);
 
         if (!this.replay || msgData.type === 'reveal') {
-            this.handle_notify.call(this, msgData);
+            this.handleNotify.call(this, msgData);
         }
     } else if (msgType === 'action') {
         this.handleAction.call(this, msgData);
@@ -4938,7 +4926,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
         this.handle_notes.call(this, msgData);
     } else if (msgType === 'replay_leader') {
         // This is used in shared replays
-        this.handle_replay_leader.call(this, msgData);
+        this.handleReplayLeader.call(this, msgData);
     } else if (msgType === 'replayTurn') {
         // This is used in shared replays
         this.handleReplayTurn.call(this, msgData);
