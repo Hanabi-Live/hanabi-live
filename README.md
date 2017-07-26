@@ -49,6 +49,9 @@ List of Changes & Improvements over the Original Server
   * Since notes are tracked by the server, you can switch computers mid-game and keep your notes.
   * Your notes will persist into the replay.
   * Everyone's notes are combined and shown to spectators, which is fun to see.
+* Card-reordering mode
+  * If enabled, each player will automatically reorder their cards in the following algorithmic fashion:
+    * After you discard or clue, if all the people between you and the last person who discarded played cards, then you move your right-most unclued card to the left-most position.
 * Color-blind mode
   * For players who are color-blind, this mode will make the game much easier to play by drawing the letters of the color on top of the card.
 * Keyboard Shortcuts
