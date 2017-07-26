@@ -38,7 +38,7 @@ this.replay_max = 0;
 this.animate_fast = true;
 this.ready = false;
 // In replays, we can show a grayed-out version of a card face if it was not known at the time, but we know it now
-// These are cards we have "learned"
+// These are cards we have 'learned'
 this.learned_cards = [];
 
 this.activeHover = null;
@@ -95,14 +95,14 @@ var msg_suit_to_suit = function msg_suit_to_suit(msg_suit, variant) {
 
 function pad2(num) {
     if (num < 10) {
-        return "0" + num;
+        return '0' + num;
     }
-    return "" + num;
+    return '' + num;
 }
 
 function milliseconds_to_time_display(milliseconds) {
     let seconds = Math.ceil(milliseconds / 1000);
-    return Math.floor(seconds / 60) + ":" + pad2(seconds % 60);
+    return Math.floor(seconds / 60) + ':' + pad2(seconds % 60);
 }
 
 // textObjects are expected to be on the timerlayer or tiplayer
@@ -152,8 +152,8 @@ function setTickingDownTime(textObjects, active_index) {
 
 function image_name(card) {
     if (!card.unknown) {
-        let name = "card-";
-        name += ui.variant.suits.findIndex((suit) => {return suit === card.suit;}) + "-";
+        let name = 'card-';
+        name += ui.variant.suits.findIndex((suit) => {return suit === card.suit;}) + '-';
         name += card.rank;
         return name;
     }
@@ -161,7 +161,7 @@ function image_name(card) {
     // TODO: name
     var learned = ui.learned_cards[card.order];
     if (ui.replay && learned && (learned.revealed || show_replay_partial_faces)) {
-        let name = "card-";
+        let name = 'card-';
         if (learned.suit === undefined) {
             // Gray suit
             // TODO: need to change this if we ever add a 7th suit
@@ -169,7 +169,7 @@ function image_name(card) {
         } else {
             name += ui.variant.suits.findIndex((suit) => {return suit === learned.suit;});
         }
-        name += "-";
+        name += '-';
         if (learned.rank === undefined) {
             name += 6;
         } else {
@@ -178,7 +178,7 @@ function image_name(card) {
         return name;
     }
 
-    return "card-back";
+    return 'card-back';
 }
 
 var scale_card_image = function(context, name) {
@@ -212,11 +212,11 @@ var scale_card_image = function(context, name) {
         sh = Math.floor(sh / 2);
 
         if (!scale_cvs) {
-            scale_cvs = document.createElement("canvas");
+            scale_cvs = document.createElement('canvas');
             scale_cvs.width = sw;
             scale_cvs.height = sh;
 
-            scale_ctx = scale_cvs.getContext("2d");
+            scale_ctx = scale_cvs.getContext('2d');
 
             scale_ctx.drawImage(src, 0, 0, sw, sh);
 
@@ -297,7 +297,7 @@ MultiFitText.prototype.refresh_text = function() {
     for (var i = 0; i < this.children.length; ++i) {
         var msg = this.smallHistory[i];
         if (!msg) {
-            msg = "";
+            msg = '';
         }
         this.children[i].setText(msg);
     }
@@ -306,7 +306,7 @@ MultiFitText.prototype.refresh_text = function() {
 MultiFitText.prototype.reset = function() {
     this.smallHistory = [];
     for (var i = 0; i < this.children.length; ++i) {
-        this.children[i].setText("");
+        this.children[i].setText('');
     }
 };
 
@@ -332,7 +332,7 @@ var HanabiMsgLog = function(config) {
         y: 0,
         width: 0.4 * win_w,
         height: 0.96 * win_h,
-        fill: "black",
+        fill: 'black',
         opacity: 0.9,
         cornerRadius: 0.01 * win_w,
     });
@@ -341,8 +341,8 @@ var HanabiMsgLog = function(config) {
 
     var textoptions = {
         fontSize: 0.025 * win_h,
-        fontFamily: "Verdana",
-        fill: "white",
+        fontFamily: 'Verdana',
+        fill: 'white',
         x: 0.04 * win_w,
         y: 0.01 * win_h,
         width: 0.35 * win_w,
@@ -355,8 +355,8 @@ var HanabiMsgLog = function(config) {
 
     var numbersoptions = {
         fontSize: 0.025 * win_h,
-        fontFamily: "Verdana",
-        fill: "lightgrey",
+        fontFamily: 'Verdana',
+        fill: 'lightgrey',
         x: 0.01 * win_w,
         y: 0.01 * win_h,
         width: 0.03 * win_w,
@@ -417,8 +417,8 @@ HanabiMsgLog.prototype.show_player_actions = function(player_name) {
     overlayer.draw();
 
     var thislog = this;
-    overback.on("click tap", function() {
-        overback.off("click tap");
+    overback.on('click tap', function() {
+        overback.off('click tap');
         thislog.player_logs[player_idx].hide();
         thislog.player_lognumbers[player_idx].hide();
 
@@ -486,7 +486,7 @@ var HanabiCard = function(config) {
         };
     }
 
-    this.barename = "";
+    this.barename = '';
 
     this.setBareImage();
 
@@ -506,7 +506,7 @@ var HanabiCard = function(config) {
         width: config.width,
         height: config.height,
         cornerRadius: 20,
-        fill: "#cccccc",
+        fill: '#cccccc',
         opacity: 0.4,
         visible: replayPartialPresentKnowledge,
     });
@@ -519,7 +519,7 @@ var HanabiCard = function(config) {
         height: config.height,
         cornerRadius: 6,
         strokeWidth: 12,
-        stroke: "#ccccee",
+        stroke: '#ccccee',
         visible: false,
         listening: false,
     });
@@ -539,7 +539,7 @@ var HanabiCard = function(config) {
     this.color_clue = new Kinetic.Rect({
         width: 0.4 * config.width,
         height: 0.282 * config.height,
-        stroke: "black",
+        stroke: 'black',
         strokeWidth: 12,
         cornerRadius: 12,
         fillLinearGradientStartPoint: {
@@ -552,7 +552,7 @@ var HanabiCard = function(config) {
         },
         fillLinearGradientColorStops: [
             0,
-            "black",
+            'black',
         ],
     });
 
@@ -561,20 +561,20 @@ var HanabiCard = function(config) {
     this.color_clue_question_mark = new Kinetic.Text({
         width: 0.4 * config.width,
         height: 0.282 * config.height,
-        align: "center",
-        fontFamily: "Verdana",
+        align: 'center',
+        fontFamily: 'Verdana',
         fontSize: 0.2 * config.height,
-        fill: "#d8d5ef",
-        stroke: "black",
+        fill: '#d8d5ef',
+        stroke: 'black',
         strokeWidth: 4,
         shadowOpacity: 0.9,
-        shadowColor: "black",
+        shadowColor: 'black',
         shadowOffset: {
             x: 0,
             y: 1,
         },
         shadowBlur: 2,
-        text: "?",
+        text: '?',
         visible: (ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM),
         y: 12, // Move it downwards a bit from the default location
     });
@@ -583,20 +583,20 @@ var HanabiCard = function(config) {
     this.color_clue_letter = new Kinetic.Text({
         width: 0.4 * config.width,
         height: 0.282 * config.height,
-        align: "center",
-        fontFamily: "Verdana",
+        align: 'center',
+        fontFamily: 'Verdana',
         fontSize: 0.25 * config.height,
-        fill: "#d8d5ef",
-        stroke: "black",
+        fill: '#d8d5ef',
+        stroke: 'black',
         strokeWidth: 4,
         shadowOpacity: 0.9,
-        shadowColor: "black",
+        shadowColor: 'black',
         shadowOffset: {
             x: 0,
             y: 1,
         },
         shadowBlur: 2,
-        text: "",
+        text: '',
         visible: lobby.show_colorblind_ui,
     });
     this.color_clue_group.add(this.color_clue_letter);
@@ -606,46 +606,46 @@ var HanabiCard = function(config) {
         y: 0.5 * config.height,
         width: 0.4 * config.width,
         height: 0.282 * config.height,
-        align: "center",
-        fontFamily: "Verdana",
+        align: 'center',
+        fontFamily: 'Verdana',
         fontSize: 0.282 * config.height,
-        fill: "#d8d5ef",
-        stroke: "black",
+        fill: '#d8d5ef',
+        stroke: 'black',
         strokeWidth: 4,
         shadowOpacity: 0.9,
-        shadowColor: "black",
+        shadowColor: 'black',
         shadowOffset: {
             x: 0,
             y: 1,
         },
         shadowBlur: 2,
-        text: "?",
+        text: '?',
         visible: false,
     });
 
     this.add(this.number_clue);
 
-    // Draw the circle that is the "clue indicator" on the card
+    // Draw the circle that is the 'clue indicator' on the card
     this.clue_given = new Kinetic.Circle({
         x: 0.9 * config.width,
         y: (ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM ? 0.2 : 0.1) * config.height,
         radius: 0.05 * config.width,
-        fill: "white",
-        stroke: "black",
+        fill: 'white',
+        stroke: 'black',
         strokeWidth: 4,
         visible: false,
     });
 
     this.add(this.clue_given);
 
-    // Define the "note indicator" square
+    // Define the 'note indicator' square
     this.note_given = new Kinetic.Rect({
         x: 0.854 * config.width,
         y: (ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM ? 0.26 : 0.165) * config.height,
         width: 0.09 * config.width,
         height: 0.09 * config.width,
-        fill: "white",
-        stroke: "black",
+        fill: 'white',
+        stroke: 'black',
         strokeWidth: 4,
         visible: false,
     });
@@ -676,24 +676,24 @@ var HanabiCard = function(config) {
         shadowOpacity: 0.6,
     }));
 
-    // Hyphen originally programmed this with "FitText" instead of
-    // "Kinetic.Text", so that the tooltips would remain the same size;
+    // Hyphen originally programmed this with 'FitText' instead of
+    // 'Kinetic.Text', so that the tooltips would remain the same size;
     // however, this leads to really small text on long notes. It is much better
     // to just let the tooltip grow bigger for bigger notes.
     this.tooltip.add(new Kinetic.Text({
-        fill: "white",
-        align: "left",
+        fill: 'white',
+        align: 'left',
         padding: 0.01 * win_h,
         fontSize: 0.04 * win_h,
         minFontSize: 0.02 * win_h,
         width: 0.15 * win_w,
-        fontFamily: "Verdana",
-        text: "",
+        fontFamily: 'Verdana',
+        text: '',
     }));
 
     tiplayer.add(this.tooltip);
 
-    this.on("mousemove", function() {
+    this.on('mousemove', function() {
         if (self.note_given.visible()) {
             var mousePos = stage.getPointerPosition();
             self.tooltip.setX(mousePos.x + 15);
@@ -705,7 +705,7 @@ var HanabiCard = function(config) {
         ui.activeHover = this;
     });
 
-    this.on("mouseout", function() {
+    this.on('mouseout', function() {
         self.tooltip.hide();
         tiplayer.draw();
     });
@@ -729,20 +729,20 @@ HanabiCard.prototype.reset = function() {
 HanabiCard.prototype.add_listeners = function() {
     var self = this;
 
-    this.on("mousemove tap", function() {
+    this.on('mousemove tap', function() {
         clue_log.showMatches(self);
         uilayer.draw();
     });
 
-    this.on("mouseout", function() {
+    this.on('mouseout', function() {
         clue_log.showMatches(null);
         uilayer.draw();
     });
 
-    this.on("click", function(e) {
+    this.on('click', function(e) {
         if (e.evt.which === 3) { // Right click
             var note = ui.getNote(self.order);
-            var newNote = prompt("Note on card:", note);
+            var newNote = prompt('Note on card:', note);
             if (newNote !== null) {
                 self.tooltip.getText().setText(newNote);
                 ui.setNote(self.order, newNote);
@@ -768,7 +768,7 @@ HanabiCard.prototype.add_listeners = function() {
             if (!ui.replay_only) {
                 // Update the spectators about the new note
                 ui.send_msg({
-                    type: "note",
+                    type: 'note',
                     resp: {
                         order: self.order,
                         note: note,
@@ -777,7 +777,7 @@ HanabiCard.prototype.add_listeners = function() {
 
                 // Also send the server a new copy of all of our notes
                 ui.send_msg({
-                    type: "notes",
+                    type: 'notes',
                     resp: {
                         notes: notes_written,
                     }
@@ -808,9 +808,9 @@ HanabiCard.prototype.setBareImage = function() {
 
 HanabiCard.prototype.setIndicator = function(indicate, negative) {
     if (negative) {
-        this.indicateRect.setStroke("#ff7777");
+        this.indicateRect.setStroke('#ff7777');
     } else {
-        this.indicateRect.setStroke("#ddeecc");
+        this.indicateRect.setStroke('#ddeecc');
     }
     this.indicateRect.setVisible(indicate);
     this.getLayer().batchDraw();
@@ -863,7 +863,7 @@ HanabiCard.prototype.add_clue = function(clue) {
                 // Change the solid color to a gradient mixing the two clues
                 grad[3] = color.hex_code;
                 this.color_clue.setFillLinearGradientColorStops(grad);
-                this.color_clue_letter.setText("M");
+                this.color_clue_letter.setText('M');
             }
 
         } else {
@@ -879,7 +879,7 @@ HanabiCard.prototype.add_clue = function(clue) {
                 grad.push(1);
                 grad.push(color);
                 this.color_clue.setFillLinearGradientColorStops(grad);
-                this.color_clue_letter.setText("M");
+                this.color_clue_letter.setText('M');
             }
         }
 
@@ -909,8 +909,8 @@ HanabiCard.prototype.hide_clues = function() {
     this.clue_given.hide();
     this.note_given.hide();
     if (!MHGA_highlight_non_hand_cards) {
-        this.off("mouseover tap");
-        this.off("mouseout");
+        this.off('mouseover tap');
+        this.off('mouseout');
         clue_log.showMatches(null);
     }
 };
@@ -930,7 +930,7 @@ LayoutChild.prototype.add = function(child) {
     this.setWidth(child.getWidth());
     this.setHeight(child.getHeight());
 
-    child.on("widthChange", function(evt) {
+    child.on('widthChange', function(evt) {
         if (evt.oldVal === evt.newVal) {
             return;
         }
@@ -940,7 +940,7 @@ LayoutChild.prototype.add = function(child) {
         }
     });
 
-    child.on("heightChange", function(evt) {
+    child.on('heightChange', function(evt) {
         if (evt.oldVal === evt.newVal) {
             return;
         }
@@ -954,7 +954,7 @@ LayoutChild.prototype.add = function(child) {
 var CardLayout = function(config) {
     Kinetic.Group.call(this, config);
 
-    this.align = (config.align || "left");
+    this.align = (config.align || 'left');
     this.reverse = (config.reverse || false);
 };
 
@@ -1004,7 +1004,7 @@ CardLayout.prototype.doLayout = function() {
 
     uw += dist * (n - 1);
 
-    if (this.align === "center" && uw < lw) {
+    if (this.align === 'center' && uw < lw) {
         x = (lw - uw) / 2;
     }
 
@@ -1068,18 +1068,18 @@ var CardDeck = function(config) {
     this.add(this.cardback);
 
     this.count = new Kinetic.Text({
-        fill: "white",
-        stroke: "black",
+        fill: 'white',
+        stroke: 'black',
         strokeWidth: 1,
-        align: "center",
+        align: 'center',
         x: 0,
         y: 0.3 * this.getHeight(),
         width: this.getWidth(),
         height: 0.4 * this.getHeight(),
         fontSize: 0.4 * this.getHeight(),
-        fontFamily: "Verdana",
-        fontStyle: "bold",
-        text: "0",
+        fontFamily: 'Verdana',
+        fontStyle: 'bold',
+        text: '0',
     });
 
     this.add(this.count);
@@ -1228,14 +1228,14 @@ var Button = function(config) {
     var h = this.getHeight();
 
     var background = new Kinetic.Rect({
-        name: "background",
+        name: 'background',
         x: 0,
         y: 0,
         width: w,
         height: h,
         listening: true,
         cornerRadius: 0.12 * h,
-        fill: "black",
+        fill: 'black',
         opacity: 0.6,
     });
 
@@ -1243,16 +1243,16 @@ var Button = function(config) {
 
     if (config.text) {
         var text = new Kinetic.Text({
-            name: "text",
+            name: 'text',
             x: 0,
             y: 0.2 * h,
             width: w,
             height: 0.6 * h,
             listening: false,
             fontSize: 0.5 * h,
-            fontFamily: "Verdana",
-            fill: "white",
-            align: "center",
+            fontFamily: 'Verdana',
+            fill: 'white',
+            align: 'center',
             text: config.text,
         });
 
@@ -1260,7 +1260,7 @@ var Button = function(config) {
 
     } else if (config.image) {
         var img = new Kinetic.Image({
-            name: "image",
+            name: 'image',
             x: 0.2 * w,
             y: 0.2 * h,
             width: 0.6 * w,
@@ -1277,20 +1277,20 @@ var Button = function(config) {
 
     this.target_index = config.target_index;
 
-    background.on("mousedown", function() {
-        background.setFill("#888888");
+    background.on('mousedown', function() {
+        background.setFill('#888888');
         background.getLayer().draw();
 
         var reset_button = function() {
-            background.setFill("black");
+            background.setFill('black');
             background.getLayer().draw();
 
-            background.off("mouseup");
-            background.off("mouseout");
+            background.off('mouseup');
+            background.off('mouseout');
         };
 
-        background.on("mouseout", function() { reset_button(); });
-        background.on("mouseup", function() { reset_button(); });
+        background.on('mouseout', function() { reset_button(); });
+        background.on('mouseup', function() { reset_button(); });
     });
 };
 
@@ -1299,9 +1299,9 @@ Kinetic.Util.extend(Button, Kinetic.Group);
 Button.prototype.setEnabled = function(enabled) {
     this.enabled = enabled;
 
-    this.get(".text")[0].setFill(enabled ? "white" : "#444444");
+    this.get('.text')[0].setFill(enabled ? 'white' : '#444444');
 
-    this.get(".background")[0].setListening(enabled);
+    this.get('.background')[0].setListening(enabled);
 
     this.getLayer().draw();
 };
@@ -1313,7 +1313,7 @@ Button.prototype.getEnabled = function() {
 Button.prototype.setPressed = function(pressed) {
     this.pressed = pressed;
 
-    this.get(".background")[0].setFill(pressed ? "#cccccc" : "black");
+    this.get('.background')[0].setFill(pressed ? '#cccccc' : 'black');
 
     this.getLayer().batchDraw();
 };
@@ -1325,14 +1325,14 @@ var NumberButton = function(config) {
     var h = this.getHeight();
 
     var background = new Kinetic.Rect({
-        name: "background",
+        name: 'background',
         x: 0,
         y: 0,
         width: w,
         height: h,
         listening: true,
         cornerRadius: 0.12 * h,
-        fill: "black",
+        fill: 'black',
         opacity: 0.6,
     });
 
@@ -1345,11 +1345,11 @@ var NumberButton = function(config) {
         height: 0.6 * h,
         listening: false,
         fontSize: 0.5 * h,
-        fontFamily: "Verdana",
-        fill: "white",
-        stroke: "black",
+        fontFamily: 'Verdana',
+        fill: 'white',
+        stroke: 'black',
         strokeWidth: 1,
-        align: "center",
+        align: 'center',
         text: config.number.toString(),
     });
 
@@ -1359,20 +1359,20 @@ var NumberButton = function(config) {
 
     this.clue = config.clue;
 
-    background.on("mousedown", function() {
-        background.setFill("#888888");
+    background.on('mousedown', function() {
+        background.setFill('#888888');
         background.getLayer().draw();
 
         var reset_button = function() {
-            background.setFill("black");
+            background.setFill('black');
             background.getLayer().draw();
 
-            background.off("mouseup");
-            background.off("mouseout");
+            background.off('mouseup');
+            background.off('mouseout');
         };
 
-        background.on("mouseout", function() { reset_button(); });
-        background.on("mouseup", function() { reset_button(); });
+        background.on('mouseout', function() { reset_button(); });
+        background.on('mouseup', function() { reset_button(); });
     });
 };
 
@@ -1381,7 +1381,7 @@ Kinetic.Util.extend(NumberButton, Kinetic.Group);
 NumberButton.prototype.setPressed = function(pressed) {
     this.pressed = pressed;
 
-    this.get(".background")[0].setFill(pressed ? "#cccccc" : "black");
+    this.get('.background')[0].setFill(pressed ? '#cccccc' : 'black');
 
     this.getLayer().batchDraw();
 };
@@ -1393,14 +1393,14 @@ var ColorButton = function(config) {
     var h = this.getHeight();
 
     var background = new Kinetic.Rect({
-        name: "background",
+        name: 'background',
         x: 0,
         y: 0,
         width: w,
         height: h,
         listening: true,
         cornerRadius: 0.12 * h,
-        fill: "black",
+        fill: 'black',
         opacity: 0.6,
     });
 
@@ -1426,11 +1426,11 @@ var ColorButton = function(config) {
         height: 0.6 * h,
         listening: false,
         fontSize: 0.5 * h,
-        fontFamily: "Verdana",
-        fill: "white",
-        stroke: "black",
+        fontFamily: 'Verdana',
+        fill: 'white',
+        stroke: 'black',
         strokeWidth: 1,
-        align: "center",
+        align: 'center',
         text: config.text,
         visible: lobby.show_colorblind_ui,
     });
@@ -1441,20 +1441,20 @@ var ColorButton = function(config) {
 
     this.clue = config.clue;
 
-    background.on("mousedown", function() {
-        background.setFill("#888888");
+    background.on('mousedown', function() {
+        background.setFill('#888888');
         background.getLayer().draw();
 
         var reset_button = function() {
-            background.setFill("black");
+            background.setFill('black');
             background.getLayer().draw();
 
-            background.off("mouseup");
-            background.off("mouseout");
+            background.off('mouseup');
+            background.off('mouseout');
         };
 
-        background.on("mouseout", function() { reset_button(); });
-        background.on("mouseup", function() { reset_button(); });
+        background.on('mouseout', function() { reset_button(); });
+        background.on('mouseup', function() { reset_button(); });
     });
 };
 
@@ -1463,7 +1463,7 @@ Kinetic.Util.extend(ColorButton, Kinetic.Group);
 ColorButton.prototype.setPressed = function(pressed) {
     this.pressed = pressed;
 
-    this.get(".background")[0].setFill(pressed ? "#cccccc" : "black");
+    this.get('.background')[0].setFill(pressed ? '#cccccc' : 'black');
 
     this.getLayer().batchDraw();
 };
@@ -1481,7 +1481,7 @@ ButtonGroup.prototype.add = function(button) {
 
     this.list.push(button);
 
-    button.on("click tap", function() {
+    button.on('click tap', function() {
         var i;
 
         this.setPressed(true);
@@ -1492,7 +1492,7 @@ ButtonGroup.prototype.add = function(button) {
             }
         }
 
-        self.fire("change");
+        self.fire('change');
     });
 };
 
@@ -1596,7 +1596,7 @@ var HanabiClueEntry = function(config) {
         y: 0,
         width: w,
         height: h,
-        fill: "white",
+        fill: 'white',
         opacity: 0.1,
         listening: true,
     });
@@ -1611,8 +1611,8 @@ var HanabiClueEntry = function(config) {
         width: 0.3 * w,
         height: h,
         fontSize: 0.9 * h,
-        fontFamily: "Verdana",
-        fill: "white",
+        fontFamily: 'Verdana',
+        fill: 'white',
         text: config.giver,
         listening: false,
     });
@@ -1625,8 +1625,8 @@ var HanabiClueEntry = function(config) {
         width: 0.3 * w,
         height: h,
         fontSize: 0.9 * h,
-        fontFamily: "Verdana",
-        fill: "white",
+        fontFamily: 'Verdana',
+        fill: 'white',
         text: config.target,
         listening: false,
     });
@@ -1638,10 +1638,10 @@ var HanabiClueEntry = function(config) {
         y: 0,
         width: 0.2 * w,
         height: h,
-        align: "center",
+        align: 'center',
         fontSize: 0.9 * h,
-        fontFamily: "Verdana",
-        fill: "white",
+        fontFamily: 'Verdana',
+        fill: 'white',
         text: config.clue_name,
         listening: false,
     });
@@ -1653,11 +1653,11 @@ var HanabiClueEntry = function(config) {
         y: 0,
         width: 0.2 * w,
         height: h,
-        align: "center",
+        align: 'center',
         fontSize: 0.9 * h,
-        fontFamily: "Verdana",
-        fill: "white",
-        text: "✘",
+        fontFamily: 'Verdana',
+        fill: 'white',
+        text: '✘',
         listening: false,
         visible: false,
     });
@@ -1668,7 +1668,7 @@ var HanabiClueEntry = function(config) {
     this.list = config.list;
     this.neglist = config.neglist;
 
-    background.on("mousemove tap", function() {
+    background.on('mousemove tap', function() {
         var i;
 
         clue_log.showMatches(null);
@@ -1698,7 +1698,7 @@ var HanabiClueEntry = function(config) {
         ui.activeHover = this;
     });
 
-    background.on("mouseout", function() {
+    background.on('mouseout', function() {
         background.setOpacity(0.1);
         let background_layer = background.getLayer();
         if (background_layer) {
@@ -1739,8 +1739,8 @@ HanabiClueEntry.prototype.checkExpiry = function() {
         }
     }
 
-    this.background.off("mouseover tap");
-    this.background.off("mouseout");
+    this.background.off('mouseover tap');
+    this.background.off('mouseout');
 
     this.remove();
     return 1;
@@ -1750,7 +1750,7 @@ HanabiClueEntry.prototype.showMatch = function(target) {
     var i;
 
     this.background.setOpacity(0.1);
-    this.background.setFill("white");
+    this.background.setFill('white');
     this.negative_marker.setVisible(false);
 
     for (i = 0; i < this.list.length; i++) {
@@ -1762,7 +1762,7 @@ HanabiClueEntry.prototype.showMatch = function(target) {
     for (i = 0; i < this.neglist.length; i++) {
         if (ui.deck[this.neglist[i]] === target) {
             this.background.setOpacity(0.4);
-            this.background.setFill("#ff7777");
+            this.background.setFill('#ff7777');
             if (lobby.show_colorblind_ui) {
                 this.negative_marker.setVisible(true);
             }
@@ -1779,12 +1779,12 @@ var HanabiNameFrame = function(config) {
         x: config.width / 2,
         y: 0,
         height: config.height,
-        align: "center",
-        fontFamily: "Verdana",
+        align: 'center',
+        fontFamily: 'Verdana',
         fontSize: config.height,
         text: config.name,
-        fill: "#d8d5ef",
-        shadowColor: "black",
+        fill: '#d8d5ef',
+        shadowColor: 'black',
         shadowBlur: 5,
         shadowOffset: {
             x: 0,
@@ -1803,7 +1803,7 @@ var HanabiNameFrame = function(config) {
 
     this.name.setOffsetX(w / 2);
     var nameTextObject = this.name;
-    this.name.on("click tap", function() {
+    this.name.on('click tap', function() {
         msgloggroup.show_player_actions(nameTextObject.getText());
     });
     this.add(this.name);
@@ -1819,10 +1819,10 @@ var HanabiNameFrame = function(config) {
             config.width / 2 - w / 2,
             config.height / 2,
         ],
-        stroke: "#d8d5ef",
+        stroke: '#d8d5ef',
         strokeWidth: 1,
-        lineJoin: "round",
-        shadowColor: "black",
+        lineJoin: 'round',
+        shadowColor: 'black',
         shadowBlur: 5,
         shadowOffset: {
             x: 0,
@@ -1842,10 +1842,10 @@ var HanabiNameFrame = function(config) {
             config.width,
             0,
         ],
-        stroke: "#d8d5ef",
+        stroke: '#d8d5ef',
         strokeWidth: 1,
-        lineJoin: "round",
-        shadowColor: "black",
+        lineJoin: 'round',
+        shadowColor: 'black',
         shadowBlur: 5,
         shadowOffset: {
             x: 0,
@@ -1867,11 +1867,11 @@ HanabiNameFrame.prototype.setActive = function(active) {
     this.leftline.setShadowOpacity(active ? 0.6 : 0);
     this.rightline.setShadowOpacity(active ? 0.6 : 0);
 
-    this.name.setFontStyle(active ? "bold" : "normal");
+    this.name.setFontStyle(active ? 'bold' : 'normal');
 };
 
 HanabiNameFrame.prototype.setConnected = function(connected) {
-    var color = connected ? "#d8d5ef" : "#e8233d";
+    var color = connected ? '#d8d5ef' : '#e8233d';
 
     this.leftline.setStroke(color);
     this.rightline.setStroke(color);
@@ -1884,31 +1884,31 @@ var Loader = function(cb) {
     this.filemap = {};
 
     var basic = [
-        "button",
-        "button_pressed",
-        "trashcan",
-        "redx",
-        "replay",
-        "rewind",
-        "forward",
-        "rewindfull",
-        "forwardfull",
+        'button',
+        'button_pressed',
+        'trashcan',
+        'redx',
+        'replay',
+        'rewind',
+        'forward',
+        'rewindfull',
+        'forwardfull',
     ];
     var i;
 
     for (i = 0; i < basic.length; i++) {
-        this.filemap[basic[i]] = "public/img/" + basic[i] + ".png";
+        this.filemap[basic[i]] = 'public/img/' + basic[i] + '.png';
     }
 
-    this.filemap.background = "public/img/background.jpg";
+    this.filemap.background = 'public/img/background.jpg';
 };
 
 Loader.prototype.add_image = function(name, ext) {
-    this.filemap[name] = "public/img/" + name + "." + ext;
+    this.filemap[name] = 'public/img/' + name + '.' + ext;
 };
 
 Loader.prototype.add_alias = function(name, alias, ext) {
-    this.filemap[name] = "public/img/" + alias + "." + ext;
+    this.filemap[name] = 'public/img/' + alias + '.' + ext;
 };
 
 Loader.prototype.start = function() {
@@ -1956,7 +1956,7 @@ var ImageLoader = new Loader(function() {
     ui.build_cards();
     ui.build_ui();
     ui.send_msg({
-        type: "ready",
+        type: 'ready',
         resp: {},
     });
     ui.ready = true;
@@ -2040,33 +2040,33 @@ this.build_cards = function() {
         mm = true;
     }
 
-    // 0-5 are the real suits. 6 is a "white" suit for replays
+    // 0-5 are the real suits. 6 is a 'white' suit for replays
     let suits = this.variant.suits.concat(SUIT.GRAY);
     {
         let i = 0;
         for (let suit of suits) {
             // 0 is the stack base. 1-5 are the cards 1-5. 6 is a numberless card for replays.
             for (let j = 0; j < 7; j++) {
-                cvs = document.createElement("canvas");
+                cvs = document.createElement('canvas');
                 cvs.width = CARDW;
                 cvs.height = CARDH;
 
                 // will this be erroneous for novariant since it has only 5
                 // suits?
-                let name = "card-" + i + "-" + j;
+                let name = 'card-' + i + '-' + j;
                 card_images[name] = cvs;
 
-                ctx = cvs.getContext("2d");
+                ctx = cvs.getContext('2d');
 
                 backpath(ctx, 4, xrad, yrad);
 
-                ctx.fillStyle = "white";
+                ctx.fillStyle = 'white';
                 ctx.fill();
 
                 ctx.save();
                 ctx.clip();
                 ctx.globalAlpha = 0.2;
-                ctx.strokeStyle = "black";
+                ctx.strokeStyle = 'black';
                 for (let x = 0; x < CARDW; x += 4 + Math.random() * 4) {
                     ctx.beginPath();
                     ctx.moveTo(x, 0);
@@ -2100,33 +2100,33 @@ this.build_cards = function() {
                 ctx.fillStyle = suit.style(ctx, CARD_AREA.NUMBER);
 
                 var suit_letter = suit.abbreviation;
-                ctx.strokeStyle = "black";
+                ctx.strokeStyle = 'black';
                 ctx.lineWidth = 2;
-                ctx.lineJoin = "round";
+                ctx.lineJoin = 'round';
                 var text_y_pos = 110;
-                ctx.font = "bold 96pt Arial";
+                ctx.font = 'bold 96pt Arial';
                 var index_label = j.toString();
                 if (j === 6) {
-                    index_label = "";
+                    index_label = '';
                 }
 
                 if (lobby.show_colorblind_ui) {
-                    ctx.font = "bold 68pt Arial";
+                    ctx.font = 'bold 68pt Arial';
                     text_y_pos = 83;
                     index_label = suit_letter + index_label;
                 }
 
-                ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
                 ctx.fillText(index_label, 19, text_y_pos);
-                ctx.shadowColor = "rgba(0, 0, 0, 0)";
+                ctx.shadowColor = 'rgba(0, 0, 0, 0)';
                 ctx.strokeText(index_label, 19, text_y_pos);
                 ctx.save();
 
                 ctx.translate(CARDW, CARDH);
                 ctx.rotate(Math.PI);
-                ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
                 ctx.fillText(index_label, 19, text_y_pos);
-                ctx.shadowColor = "rgba(0, 0, 0, 0)";
+                ctx.shadowColor = 'rgba(0, 0, 0, 0)';
                 ctx.strokeText(index_label, 19, text_y_pos);
                 ctx.restore();
 
@@ -2197,9 +2197,9 @@ this.build_cards = function() {
                     if (j === 0) {
                         ctx.clearRect(0, 0, CARDW, CARDH);
                         if (lobby.show_colorblind_ui) {
-                            ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+                            ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
                             ctx.fillText(suit_letter, 19, 83);
-                            ctx.shadowColor = "rgba(0, 0, 0, 0)";
+                            ctx.shadowColor = 'rgba(0, 0, 0, 0)';
                             ctx.strokeText(suit_letter, 19, 83);
                         }
                     }
@@ -2271,23 +2271,23 @@ this.build_cards = function() {
         }
     }
 
-    cvs = document.createElement("canvas");
+    cvs = document.createElement('canvas');
     cvs.width = CARDW;
     cvs.height = CARDH;
 
-    ctx = cvs.getContext("2d");
+    ctx = cvs.getContext('2d');
 
-    card_images["card-back"] = cvs;
+    card_images['card-back'] = cvs;
 
     backpath(ctx, 4, xrad, yrad);
 
-    ctx.fillStyle = "white";
+    ctx.fillStyle = 'white';
     ctx.fill();
 
     ctx.save();
     ctx.clip();
     ctx.globalAlpha = 0.2;
-    ctx.strokeStyle = "black";
+    ctx.strokeStyle = 'black';
     for (let x = 0; x < CARDW; x += 4 + Math.random() * 4) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
@@ -2302,7 +2302,7 @@ this.build_cards = function() {
     }
     ctx.restore();
 
-    ctx.fillStyle = "black";
+    ctx.fillStyle = 'black';
 
     backpath(ctx, 4, xrad, yrad);
 
@@ -2314,9 +2314,9 @@ this.build_cards = function() {
     ctx.stroke();
     ctx.restore();
 
-    ctx.fillStyle = "#444444";
+    ctx.fillStyle = '#444444';
     ctx.lineWidth = 8;
-    ctx.lineJoin = "round";
+    ctx.lineJoin = 'round';
 
     ctx.translate(CARDW / 2, CARDH / 2);
 
@@ -2376,7 +2376,7 @@ var size_stage = function(stage) {
 };
 
 var stage = new Kinetic.Stage({
-    container: "game",
+    container: 'game',
 });
 
 size_stage(stage);
@@ -2439,7 +2439,7 @@ this.build_ui = function() {
         y: 0,
         width: win_w,
         height: win_h,
-        image: ImageLoader.get("background"),
+        image: ImageLoader.get('background'),
     });
 
     bglayer.add(background);
@@ -2463,7 +2463,7 @@ this.build_ui = function() {
         y: 0.6 * win_h,
         width: 0.19 * win_w,
         height: 0.39 * win_h,
-        stroke: "#df1c2d",
+        stroke: '#df1c2d',
         strokeWidth: 0.007 * win_w,
         cornerRadius: 0.01 * win_w,
         visible: false,
@@ -2476,7 +2476,7 @@ this.build_ui = function() {
         y: 0.6 * win_h,
         width: 0.19 * win_w,
         height: 0.39 * win_h,
-        fill: "black",
+        fill: 'black',
         opacity: 0.2,
         cornerRadius: 0.01 * win_w,
     });
@@ -2489,7 +2489,7 @@ this.build_ui = function() {
         width: 0.15 * win_w,
         height: 0.35 * win_h,
         opacity: 0.2,
-        image: ImageLoader.get("trashcan"),
+        image: ImageLoader.get('trashcan'),
     });
 
     bglayer.add(img);
@@ -2499,7 +2499,7 @@ this.build_ui = function() {
         y: 0.235 * win_h,
         width: 0.4 * win_w,
         height: 0.098 * win_h,
-        fill: "black",
+        fill: 'black',
         opacity: 0.3,
         cornerRadius: 0.01 * win_h,
         listening: true,
@@ -2507,14 +2507,14 @@ this.build_ui = function() {
 
     bglayer.add(rect);
 
-    rect.on("click tap", function() {
+    rect.on('click tap', function() {
         msgloggroup.show();
         overback.show();
 
         overlayer.draw();
 
-        overback.on("click tap", function() {
-            overback.off("click tap");
+        overback.on('click tap', function() {
+            overback.off('click tap');
 
             msgloggroup.hide();
             overback.hide();
@@ -2524,11 +2524,11 @@ this.build_ui = function() {
     });
 
     message_prompt = new MultiFitText({
-        align: "center",
+        align: 'center',
         fontSize: 0.028 * win_h,
-        fontFamily: "Verdana",
-        fill: "#d8d5ef",
-        shadowColor: "black",
+        fontFamily: 'Verdana',
+        fill: '#d8d5ef',
+        shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
             x: 0,
@@ -2551,7 +2551,7 @@ this.build_ui = function() {
         width: win_w,
         height: win_h,
         opacity: 0.3,
-        fill: "black",
+        fill: 'black',
         visible: false,
     });
 
@@ -2566,7 +2566,7 @@ this.build_ui = function() {
         y: 0.81 * win_h,
         width: 0.13 * win_w,
         height: 0.18 * win_h,
-        fill: "black",
+        fill: 'black',
         opacity: 0.2,
         cornerRadius: 0.01 * win_w,
     });
@@ -2579,7 +2579,7 @@ this.build_ui = function() {
             y: 0.91 * win_h,
             width: 0.03 * win_w,
             height: 0.053 * win_h,
-            fill: "black",
+            fill: 'black',
             opacity: 0.6,
             cornerRadius: 0.003 * win_w,
         });
@@ -2593,11 +2593,11 @@ this.build_ui = function() {
         width: 0.11 * win_w,
         height: 0.03 * win_h,
         fontSize: 0.03 * win_h,
-        fontFamily: "Verdana",
-        align: "center",
-        text: "Clues: 8",
-        fill: "#d8d5ef",
-        shadowColor: "black",
+        fontFamily: 'Verdana',
+        align: 'center',
+        text: 'Clues: 8',
+        fill: '#d8d5ef',
+        shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
             x: 0,
@@ -2614,11 +2614,11 @@ this.build_ui = function() {
         width: 0.11 * win_w,
         height: 0.03 * win_h,
         fontSize: 0.03 * win_h,
-        fontFamily: "Verdana",
-        align: "center",
-        text: "Score: 0",
-        fill: "#d8d5ef",
-        shadowColor: "black",
+        fontFamily: 'Verdana',
+        align: 'center',
+        text: 'Score: 0',
+        fill: '#d8d5ef',
+        shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
             x: 0,
@@ -2630,7 +2630,7 @@ this.build_ui = function() {
     uilayer.add(score_label);
 
     /*
-        The "eyes" symbol to show that one or more people are spectating the game
+        The 'eyes' symbol to show that one or more people are spectating the game
     */
 
     spectators_label = new Kinetic.Text({
@@ -2639,11 +2639,11 @@ this.build_ui = function() {
         width: 0.11 * win_w,
         height: 0.03 * win_h,
         fontSize: 0.03 * win_h,
-        fontFamily: "Verdana",
-        align: "center",
-        text: "👀",
-        fill: "yellow",
-        shadowColor: "black",
+        fontFamily: 'Verdana',
+        align: 'center',
+        text: '👀',
+        fill: 'yellow',
+        shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
             x: 0,
@@ -2679,20 +2679,20 @@ this.build_ui = function() {
     }));
 
     spectators_label_tooltip.add(new Kinetic.Text({
-        fill: "white",
-        align: "left",
+        fill: 'white',
+        align: 'left',
         padding: 0.01 * win_h,
         fontSize: 0.04 * win_h,
         minFontSize: 0.02 * win_h,
         width: 0.225 * win_w,
-        fontFamily: "Verdana",
-        text: "",
+        fontFamily: 'Verdana',
+        text: '',
     }));
 
     tiplayer.add(spectators_label_tooltip);
     spectators_label.tooltip = spectators_label_tooltip;
 
-    spectators_label.on("mousemove", function() {
+    spectators_label.on('mousemove', function() {
         var mousePos = stage.getPointerPosition();
         this.tooltip.setX(mousePos.x + 15);
         this.tooltip.setY(mousePos.y + 5);
@@ -2703,7 +2703,7 @@ this.build_ui = function() {
         ui.activeHover = this;
     });
 
-    spectators_label.on("mouseout", function() {
+    spectators_label.on('mouseout', function() {
         this.tooltip.hide();
         tiplayer.draw();
     });
@@ -2718,11 +2718,11 @@ this.build_ui = function() {
         width: 0.11 * win_w,
         height: 0.03 * win_h,
         fontSize: 0.03 * win_h,
-        fontFamily: "Verdana",
-        align: "center",
-        text: "0",
-        fill: "#d8d5ef",
-        shadowColor: "black",
+        fontFamily: 'Verdana',
+        align: 'center',
+        text: '0',
+        fill: '#d8d5ef',
+        shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
             x: 0,
@@ -2743,11 +2743,11 @@ this.build_ui = function() {
         width: 0.11 * win_w,
         height: 0.03 * win_h,
         fontSize: 0.03 * win_h,
-        fontFamily: "Verdana",
-        align: "center",
-        text: "👑",
-        fill: "#d8d5ef",
-        shadowColor: "black",
+        fontFamily: 'Verdana',
+        align: 'center',
+        text: '👑',
+        fill: '#d8d5ef',
+        shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
             x: 0,
@@ -2783,20 +2783,20 @@ this.build_ui = function() {
     }));
 
     shared_replay_leader_label_tooltip.add(new Kinetic.Text({
-        fill: "white",
-        align: "left",
+        fill: 'white',
+        align: 'left',
         padding: 0.01 * win_h,
         fontSize: 0.04 * win_h,
         minFontSize: 0.02 * win_h,
         width: 0.2 * win_w,
-        fontFamily: "Verdana",
-        text: "",
+        fontFamily: 'Verdana',
+        text: '',
     }));
 
     tiplayer.add(shared_replay_leader_label_tooltip);
     shared_replay_leader_label.tooltip = shared_replay_leader_label_tooltip;
 
-    shared_replay_leader_label.on("mousemove", function() {
+    shared_replay_leader_label.on('mousemove', function() {
         var mousePos = stage.getPointerPosition();
         this.tooltip.setX(mousePos.x + 15);
         this.tooltip.setY(mousePos.y + 5);
@@ -2807,7 +2807,7 @@ this.build_ui = function() {
         ui.activeHover = this;
     });
 
-    shared_replay_leader_label.on("mouseout", function() {
+    shared_replay_leader_label.on('mouseout', function() {
         this.tooltip.hide();
         tiplayer.draw();
     });
@@ -2825,7 +2825,7 @@ this.build_ui = function() {
         y: 0.01 * win_h,
         width: 0.19 * win_w,
         height: 0.58 * win_h,
-        fill: "black",
+        fill: 'black',
         opacity: 0.2,
         cornerRadius: 0.01 * win_w,
     });
@@ -2865,7 +2865,7 @@ this.build_ui = function() {
 
             // I guess we can't use a gradient here? So much for my design
             let ctx = null;
-            let fillColor = (suit === SUIT.MULTI) ? "#111111" : suit.style(ctx, CARD_AREA.BACKGROUND);
+            let fillColor = (suit === SUIT.MULTI) ? '#111111' : suit.style(ctx, CARD_AREA.BACKGROUND);
             pileback = new Kinetic.Rect({
                 fill: fillColor,
                 opacity: 0.4,
@@ -2884,7 +2884,7 @@ this.build_ui = function() {
                 y: (0.345 + offset) * win_h,
                 width: width * win_w,
                 height: height * win_h,
-                image: card_images["card-" + i + "-0"],
+                image: card_images['card-' + i + '-0'],
             });
 
             bglayer.add(pileback);
@@ -2930,7 +2930,7 @@ this.build_ui = function() {
         y: 0.8 * win_h,
         width: 0.075 * win_w,
         height: 0.189 * win_h,
-        fill: "black",
+        fill: 'black',
         opacity: 0.2,
         cornerRadius: 0.006 * win_w,
     });
@@ -2942,10 +2942,10 @@ this.build_ui = function() {
         y: 0.8 * win_h,
         width: 0.075 * win_w,
         height: 0.189 * win_h,
-        cardback: "card-back",
+        cardback: 'card-back',
     });
 
-    drawdeck.cardback.on("dragend.play", function() {
+    drawdeck.cardback.on('dragend.play', function() {
         var pos = this.getAbsolutePosition();
 
         pos.x += this.getWidth() * this.getScaleX() / 2;
@@ -2961,7 +2961,7 @@ this.build_ui = function() {
             deck_play_available_label.setVisible(false);
 
             ui.send_msg({
-                type: "action",
+                type: 'action',
                 resp: {
                     type: ACT.DECKPLAY,
                 },
@@ -3076,7 +3076,7 @@ this.build_ui = function() {
             width: hand_pos[nump][j].w * win_w,
             height: hand_pos[nump][j].h * win_h,
             rotationDeg: hand_pos[nump][j].rot,
-            align: "center",
+            align: 'center',
             reverse: j === 0,
         });
 
@@ -3100,18 +3100,18 @@ this.build_ui = function() {
             },
             fillLinearGradientColorStops: [
                 0,
-                "rgba(0,0,0,0)",
+                'rgba(0,0,0,0)',
                 0.9,
-                "white",
+                'white',
             ],
         });
 
         if (j === 0) {
             rect.setFillLinearGradientColorStops([
                 1,
-                "rgba(0,0,0,0)",
+                'rgba(0,0,0,0)',
                 0.1,
-                "white",
+                'white',
             ]);
         }
 
@@ -3151,20 +3151,20 @@ this.build_ui = function() {
             }));
 
             frame_hover_tooltip.add(new FitText({
-                fill: "white",
-                align: "left",
+                fill: 'white',
+                align: 'left',
                 padding: 0.01 * win_h,
                 fontSize: 0.04 * win_h,
                 minFontSize: 0.02 * win_h,
                 width: 0.08 * win_w,
-                fontFamily: "Verdana",
-                text: "??:??",
+                fontFamily: 'Verdana',
+                text: '??:??',
             }));
 
             tiplayer.add(frame_hover_tooltip);
             name_frames[i].tooltip = frame_hover_tooltip;
 
-            name_frames[i].on("mousemove", function() {
+            name_frames[i].on('mousemove', function() {
                 var mousePos = stage.getPointerPosition();
                 this.tooltip.setX(mousePos.x + 15);
                 this.tooltip.setY(mousePos.y + 5);
@@ -3175,7 +3175,7 @@ this.build_ui = function() {
                 ui.activeHover = this;
             });
 
-            name_frames[i].on("mouseout", function() {
+            name_frames[i].on('mouseout', function() {
                 this.tooltip.hide();
                 tiplayer.draw();
             });
@@ -3188,7 +3188,7 @@ this.build_ui = function() {
         width: 0.25 * win_w,
         height: 0.15 * win_h,
         cornerRadius: 0.01 * win_w,
-        fill: "black",
+        fill: 'black',
         opacity: 0.5,
         visible: false,
     });
@@ -3200,13 +3200,13 @@ this.build_ui = function() {
         y: 0.585 * win_h,
         width: 0.5 * win_w,
         height: 0.19 * win_h,
-        fontFamily: "Verdana",
+        fontFamily: 'Verdana',
         fontSize: 0.08 * win_h,
         strokeWidth: 1,
-        text: "No Clues",
-        align: "center",
-        fill: "#df2c4d",
-        stroke: "black",
+        text: 'No Clues',
+        align: 'center',
+        fill: '#df2c4d',
+        stroke: 'black',
         visible: false,
     });
 
@@ -3230,7 +3230,7 @@ this.build_ui = function() {
             }
         }
 
-        this.list[newSelectionIndex].dispatchEvent(new MouseEvent("click"));
+        this.list[newSelectionIndex].dispatchEvent(new MouseEvent('click'));
     };
 
     clue_button_group = new ButtonGroup();
@@ -3315,7 +3315,7 @@ this.build_ui = function() {
         y: 0.172 * win_h,
         width: 0.236 * win_w,
         height: 0.051 * win_h,
-        text: "Give Clue",
+        text: 'Give Clue',
     });
 
     clue_area.add(submit_clue);
@@ -3339,7 +3339,7 @@ this.build_ui = function() {
             y: timerY * win_h,
             width: 0.08 * win_w,
             height: 0.051 * win_h,
-            fill: "black",
+            fill: 'black',
             cornerRadius: 0.005 * win_h,
             opacity: 0.2,
         });
@@ -3351,11 +3351,11 @@ this.build_ui = function() {
             width: 0.08 * win_w,
             height: 0.051 * win_h,
             fontSize: 0.03 * win_h,
-            fontFamily: "Verdana",
-            align: "center",
-            text: "You",
-            fill: "#d8d5ef",
-            shadowColor: "black",
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: 'You',
+            fill: '#d8d5ef',
+            shadowColor: 'black',
             shadowBlur: 10,
             shadowOffset: {
                 x: 0,
@@ -3371,11 +3371,11 @@ this.build_ui = function() {
             width: 0.08 * win_w,
             height: 0.051 * win_h,
             fontSize: 0.03 * win_h,
-            fontFamily: "Verdana",
-            align: "center",
-            text: "??:??",
-            fill: "#d8d5ef",
-            shadowColor: "black",
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: '??:??',
+            fill: '#d8d5ef',
+            shadowColor: 'black',
             shadowBlur: 10,
             shadowOffset: {
                 x: 0,
@@ -3390,7 +3390,7 @@ this.build_ui = function() {
             y: timerY * win_h,
             width: 0.08 * win_w,
             height: 0.051 * win_h,
-            fill: "black",
+            fill: 'black',
             cornerRadius: 0.005 * win_h,
             opacity: 0.2,
         });
@@ -3402,11 +3402,11 @@ this.build_ui = function() {
             width: 0.08 * win_w,
             height: 0.051 * win_h,
             fontSize: 0.02 * win_h,
-            fontFamily: "Verdana",
-            align: "center",
-            text: "Current\nPlayer",
-            fill: "#d8d5ef",
-            shadowColor: "black",
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: 'Current\nPlayer',
+            fill: '#d8d5ef',
+            shadowColor: 'black',
             shadowBlur: 10,
             shadowOffset: {
                 x: 0,
@@ -3422,11 +3422,11 @@ this.build_ui = function() {
             width: 0.08 * win_w,
             height: 0.051 * win_h,
             fontSize: 0.03 * win_h,
-            fontFamily: "Verdana",
-            align: "center",
-            text: "??:??",
-            fill: "#d8d5ef",
-            shadowColor: "black",
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: '??:??',
+            fill: '#d8d5ef',
+            shadowColor: 'black',
             shadowBlur: 10,
             shadowOffset: {
                 x: 0,
@@ -3467,7 +3467,7 @@ this.build_ui = function() {
         y: 0.0425 * win_h,
         width: 0.5 * win_w,
         height: 0.01 * win_h,
-        fill: "black",
+        fill: 'black',
         cornerRadius: 0.005 * win_h,
         listening: false,
     });
@@ -3482,7 +3482,7 @@ this.build_ui = function() {
         opacity: 0,
     });
 
-    rect.on("click", function(evt) {
+    rect.on('click', function(evt) {
         var x = evt.evt.x - this.getAbsolutePosition().x;
         var w = this.getWidth();
         var step = w / self.replay_max;
@@ -3499,7 +3499,7 @@ this.build_ui = function() {
         y: 0.0325 * win_h,
         width: 0.03 * win_w,
         height: 0.03 * win_h,
-        fill: "#0000cc",
+        fill: '#0000cc',
         cornerRadius: 0.01 * win_w,
         draggable: true,
         dragBoundFunc: function(pos) {
@@ -3526,7 +3526,7 @@ this.build_ui = function() {
         },
     });
 
-    replay_shuttle.on("dragend", function() {
+    replay_shuttle.on('dragend', function() {
         cardlayer.draw();
         uilayer.draw();
     });
@@ -3539,14 +3539,14 @@ this.build_ui = function() {
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
-        image: "rewindfull",
+        image: 'rewindfull',
     });
 
     var rewindfull_function = function() {
         ui.perform_replay(0);
     };
 
-    button.on("click tap", rewindfull_function);
+    button.on('click tap', rewindfull_function);
 
     replay_area.add(button);
 
@@ -3556,14 +3556,14 @@ this.build_ui = function() {
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
-        image: "rewind",
+        image: 'rewind',
     });
 
     var backward_function = function() {
         ui.perform_replay(self.replay_turn - 1, true);
     };
 
-    button.on("click tap", backward_function);
+    button.on('click tap', backward_function);
 
     replay_area.add(button);
 
@@ -3573,14 +3573,14 @@ this.build_ui = function() {
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
-        image: "forward",
+        image: 'forward',
     });
 
     var forward_function = function() {
         ui.perform_replay(self.replay_turn + 1);
     };
 
-    button.on("click tap", forward_function);
+    button.on('click tap', forward_function);
 
     replay_area.add(button);
 
@@ -3590,31 +3590,31 @@ this.build_ui = function() {
         y: 0.07 * win_h,
         width: 0.06 * win_w,
         height: 0.08 * win_h,
-        image: "forwardfull",
+        image: 'forwardfull',
     });
 
     var forwardfull_function = function() {
         ui.perform_replay(self.replay_max, true);
     };
 
-    button.on("click tap", forwardfull_function);
+    button.on('click tap', forwardfull_function);
 
     replay_area.add(button);
 
-    // The "Exit Replay" button
+    // The 'Exit Replay' button
     button = new Button({
         x: 0.15 * win_w,
         y: 0.17 * win_h,
         width: 0.2 * win_w,
         height: 0.06 * win_h,
-        text: "Exit Replay",
+        text: 'Exit Replay',
         visible: !this.replay_only,
     });
 
-    button.on("click tap", function() {
+    button.on('click tap', function() {
         if (self.replay_only) {
             ui.send_msg({
-                type: "unattend_table",
+                type: 'unattend_table',
                 resp: {},
             });
 
@@ -3631,17 +3631,17 @@ this.build_ui = function() {
 
     replay_area.add(button);
 
-    // The "Go to Shared Turn" button
+    // The 'Go to Shared Turn' button
     go_to_shared_turn_button = new Button({
         x: 0.15 * win_w,
         y: 0.17 * win_h,
         width: 0.2 * win_w,
         height: 0.06 * win_h,
-        text: "Go to Shared Turn",
+        text: 'Go to Shared Turn',
         visible: false,
     });
 
-    go_to_shared_turn_button.on("click tap", function() {
+    go_to_shared_turn_button.on('click tap', function() {
         ui.perform_replay(ui.shared_replay_turn);
     });
 
@@ -3664,38 +3664,38 @@ this.build_ui = function() {
 
     let mouseClickHelper = function(elem) {
         return function () {
-            elem.dispatchEvent(new MouseEvent("click"));
+            elem.dispatchEvent(new MouseEvent('click'));
         };
     };
 
     // Navigation during replays
     let replayNavigationKeyMap = {
-        "End" : forwardfull_function,
-        "Home" : rewindfull_function,
+        'End' : forwardfull_function,
+        'Home' : rewindfull_function,
 
-        "ArrowLeft" : backward_function,
-        "ArrowRight" : forward_function,
+        'ArrowLeft' : backward_function,
+        'ArrowRight' : forward_function,
 
-        "[" :  backward_round,
-        "]" : forward_round,
+        '[' :  backward_round,
+        ']' : forward_round,
     };
 
     // Build an object that contains all of the keyboard hotkeys along with
     // how they should interact with clue UI
     let clueKeyMap = {};
 
-    // Add "Tab" for player selection
+    // Add 'Tab' for player selection
     clueKeyMap.Tab = function() {
         clue_target_button_group.selectNextTarget();
     };
 
-    // Add "12345" to the map (for number clues)
+    // Add '12345' to the map (for number clues)
     for (let i = 0; i < rankClueButtons.length; i++) {
-        // The button for "1" is at array index 0, etc.
+        // The button for '1' is at array index 0, etc.
         clueKeyMap[i + 1] = mouseClickHelper(rankClueButtons[i]);
     }
 
-    // Add "qwert" (for color clues)
+    // Add 'qwert' (for color clues)
     // (we want to use qwert since they are conviently next to 12345, and also
     // because the clue colors can change between different variants)
     clueKeyMap.q = mouseClickHelper(suitClueButtons[0]);
@@ -3707,18 +3707,18 @@ this.build_ui = function() {
         clueKeyMap.t = mouseClickHelper(suitClueButtons[4]);
     }
 
-    // Add "Enter" for pressing the "Give Clue" button
+    // Add 'Enter' for pressing the 'Give Clue' button
     clueKeyMap.Enter = mouseClickHelper(submit_clue);
 
     // Keyboard actions for playing and discarding cards
     let promptOwnHandOrder = function(actionString) {
         let playerCards = player_hands[ui.player_us].children;
         let maxSlotIndex = playerCards.length;
-        let msg = "Enter the slot number (1 to " + maxSlotIndex + ") of the card to " + actionString + ".";
+        let msg = 'Enter the slot number (1 to ' + maxSlotIndex + ') of the card to ' + actionString + '.';
         let response = window.prompt(msg);
 
         if (/^deck$/i.test(response)) {
-            return "deck";
+            return 'deck';
         }
 
         if (!/^\d+$/.test(response)) {
@@ -3735,17 +3735,17 @@ this.build_ui = function() {
 
     let doKeyboardCardAction = function(tryPlay) {
         let intendedPlay = tryPlay === true;
-        let cardOrder = promptOwnHandOrder(intendedPlay ? "play" : "discard");
+        let cardOrder = promptOwnHandOrder(intendedPlay ? 'play' : 'discard');
 
         if (cardOrder === null) {
             return;
         }
-        if (cardOrder === "deck" && !(intendedPlay && saved_action.can_blind_play_deck)) {
+        if (cardOrder === 'deck' && !(intendedPlay && saved_action.can_blind_play_deck)) {
             return;
         }
 
         let resp = {};
-        if (cardOrder === "deck") {
+        if (cardOrder === 'deck') {
             resp.type = ACT.DECKPLAY;
         } else {
             resp.type = intendedPlay ? ACT.PLAY : ACT.DISCARD;
@@ -3753,7 +3753,7 @@ this.build_ui = function() {
         }
 
         ui.send_msg({
-            type: "action",
+            type: 'action',
             resp: resp,
         });
         ui.stop_action();
@@ -3769,13 +3769,13 @@ this.build_ui = function() {
     };
 
     let playKeyMap = {
-        "a": doKeyboardCardPlay, // The main play hotkey
-        "+": doKeyboardCardPlay, // For numpad users
+        'a': doKeyboardCardPlay, // The main play hotkey
+        '+': doKeyboardCardPlay, // For numpad users
     };
 
     let discardKeyMap = {
-        "d": doKeyboardCardDiscard, // The main discard hotkey
-        "-": doKeyboardCardDiscard, // For numpad users
+        'd': doKeyboardCardDiscard, // The main discard hotkey
+        '-': doKeyboardCardDiscard, // For numpad users
     };
 
     this.keyNavigation = (event) => {
@@ -3824,7 +3824,7 @@ this.build_ui = function() {
         width: 0.8 * win_w,
         height: 0.8 * win_h,
         opacity: 0.9,
-        fill: "black",
+        fill: 'black',
         cornerRadius: 0.01 * win_w,
     });
 
@@ -3841,11 +3841,11 @@ To give a clue, use the boxes in the center of the screen. You may mouseover a c
 You can rewind the game state with the arrow button in the bottom-left.
 
 Keyboard hotkeys:
-- Play: "a" or "+"
-- Discard: "d" or "-"
-- Clue: "Tab", then 1/2/3/4/5 or Q/W/E/R/T, then "Enter"
-- Rewind: "Left", or "[" for a full rotation, or "Home" for the beginning
-- Fast-forward: "Right", or "]" for a full rotation, or "End" for the end`;
+- Play: 'a' or '+'
+- Discard: 'd' or '-'
+- Clue: 'Tab', then 1/2/3/4/5 or Q/W/E/R/T, then 'Enter'
+- Rewind: 'Left', or '[' for a full rotation, or 'Home' for the beginning
+- Fast-forward: 'Right', or ']' for a full rotation, or 'End' for the end`;
 
     text = new Kinetic.Text({
         x: 0.03 * win_w,
@@ -3853,8 +3853,8 @@ Keyboard hotkeys:
         width: 0.74 * win_w,
         height: 0.74 * win_h,
         fontSize: 0.019 * win_w,
-        fontFamily: "Verdana",
-        fill: "white",
+        fontFamily: 'Verdana',
+        fill: 'white',
         text: helpText,
     });
 
@@ -3865,7 +3865,7 @@ Keyboard hotkeys:
         y: 0.8 * win_h,
         width: 0.075 * win_w,
         height: 0.189 * win_h,
-        stroke: "yellow",
+        stroke: 'yellow',
         cornerRadius: 6,
         strokeWidth: 10,
         visible: false,
@@ -3878,11 +3878,11 @@ Keyboard hotkeys:
         y: 0.8 * win_h,
         width: 0.06 * win_w,
         height: 0.06 * win_h,
-        image: "replay",
+        image: 'replay',
         visible: false,
     });
 
-    replay_button.on("click tap", function() {
+    replay_button.on('click tap', function() {
         self.enter_replay(!self.replay);
     });
 
@@ -3893,19 +3893,19 @@ Keyboard hotkeys:
         y: 0.87 * win_h,
         width: 0.06 * win_w,
         height: 0.06 * win_h,
-        text: "Help",
+        text: 'Help',
     });
 
     uilayer.add(help_button);
 
-    help_button.on("click tap", function() {
+    help_button.on('click tap', function() {
         helpgroup.show();
         overback.show();
 
         overlayer.draw();
 
-        overback.on("click tap", function() {
-            overback.off("click tap");
+        overback.on('click tap', function() {
+            overback.off('click tap');
 
             helpgroup.hide();
             overback.hide();
@@ -3919,15 +3919,15 @@ Keyboard hotkeys:
         y: 0.94 * win_h,
         width: 0.06 * win_w,
         height: 0.05 * win_h,
-        text: "Lobby",
+        text: 'Lobby',
     });
 
     uilayer.add(lobby_button);
 
-    lobby_button.on("click tap", function() {
-        lobby_button.off("click tap");
+    lobby_button.on('click tap', function() {
+        lobby_button.off('click tap');
         ui.send_msg({
-            type: "unattend_table",
+            type: 'unattend_table',
             resp: {},
         });
 
@@ -3954,7 +3954,7 @@ Keyboard hotkeys:
 this.reset = function() {
     var i, suits;
 
-    message_prompt.setMultiText("");
+    message_prompt.setMultiText('');
     msgloggroup.reset();
 
     suits = this.variant.suits;
@@ -3991,10 +3991,10 @@ this.save_replay = function(msg) {
 
     this.replay_log.push(msg);
 
-    if (msgData.type === "turn") {
+    if (msgData.type === 'turn') {
         this.replay_max = msgData.num;
     }
-    if (msgData.type === "game_over") {
+    if (msgData.type === 'game_over') {
         this.replay_max++;
     }
 
@@ -4067,7 +4067,7 @@ this.perform_replay = function(target, fast) {
 
     if (this.shared_replay && this.shared_replay_leader === lobby.username) {
         this.send_msg({
-            type: "replay_action",
+            type: 'replay_action',
             resp: {
                 type: 0, // Type 0 is a new replay turn
                 turn: target,
@@ -4094,15 +4094,15 @@ this.perform_replay = function(target, fast) {
             break;
         }
 
-        if (msg.type === "message") {
+        if (msg.type === 'message') {
             this.set_message(msg.resp);
 
-        } else if (msg.type === "notify") {
+        } else if (msg.type === 'notify') {
             var performing_replay = true;
             this.handle_notify(msg.resp, performing_replay);
         }
 
-        if (msg.type === "notify" && msg.resp.type === "turn") {
+        if (msg.type === 'notify' && msg.resp.type === 'turn') {
             if (msg.resp.num === this.replay_turn) {
                 break;
             }
@@ -4149,41 +4149,41 @@ function show_loading() {
     var loadinglayer = new Kinetic.Layer();
 
     var loadinglabel = new Kinetic.Text({
-        fill: "#d8d5ef",
-        stroke: "#747278",
+        fill: '#d8d5ef',
+        stroke: '#747278',
         strokeWidth: 1,
-        text: "Loading...",
-        align: "center",
+        text: 'Loading...',
+        align: 'center',
         x: 0,
         y: 0.7 * win_h,
         width: win_w,
         height: 0.05 * win_h,
-        fontFamily: "Arial",
-        fontStyle: "bold",
+        fontFamily: 'Arial',
+        fontStyle: 'bold',
         fontSize: 0.05 * win_h,
     });
 
     loadinglayer.add(loadinglabel);
 
     var progresslabel = new Kinetic.Text({
-        fill: "#d8d5ef",
-        stroke: "#747278",
+        fill: '#d8d5ef',
+        stroke: '#747278',
         strokeWidth: 1,
-        text: "0 / 0",
-        align: "center",
+        text: '0 / 0',
+        align: 'center',
         x: 0,
         y: 0.8 * win_h,
         width: win_w,
         height: 0.05 * win_h,
-        fontFamily: "Arial",
-        fontStyle: "bold",
+        fontFamily: 'Arial',
+        fontStyle: 'bold',
         fontSize: 0.05 * win_h,
     });
 
     loadinglayer.add(progresslabel);
 
     ImageLoader.progress_callback = function(done, total) {
-        progresslabel.setText(done.toString() + " / " + total.toString());
+        progresslabel.setText(done.toString() + ' / ' + total.toString());
         loadinglayer.draw();
     };
 
@@ -4225,11 +4225,11 @@ this.handle_notify = function(note, performing_replay) {
     var pos, scale, n;
     var i;
     if (ui.activeHover) {
-        ui.activeHover.dispatchEvent(new MouseEvent("mouseout"));
+        ui.activeHover.dispatchEvent(new MouseEvent('mouseout'));
         ui.activeHover = null;
     }
 
-    if (type === "draw") {
+    if (type === 'draw') {
         let suit = msg_suit_to_suit(note.suit, ui.variant);
         ui.deck[note.order] = new HanabiCard({
             suit: suit,
@@ -4254,10 +4254,10 @@ this.handle_notify = function(note, performing_replay) {
         player_hands[note.who].add(child);
         player_hands[note.who].moveToTop();
 
-    } else if (type === "draw_size") {
+    } else if (type === 'draw_size') {
         drawdeck.setCount(note.size);
 
-    } else if (type === "played") {
+    } else if (type === 'played') {
         let suit = msg_suit_to_suit(note.which.suit, ui.variant);
         show_clue_match(-1);
 
@@ -4284,7 +4284,7 @@ this.handle_notify = function(note, performing_replay) {
 
         clue_log.checkExpiry();
 
-    } else if (type === "discard") {
+    } else if (type === 'discard') {
         let suit = msg_suit_to_suit(note.which.suit, ui.variant);
         show_clue_match(-1);
 
@@ -4330,7 +4330,7 @@ this.handle_notify = function(note, performing_replay) {
 
         clue_log.checkExpiry();
 
-    } else if (type === "reveal") {
+    } else if (type === 'reveal') {
         let suit = msg_suit_to_suit(note.which.suit, ui.variant);
         child = ui.deck[note.which.order].parent;
 
@@ -4349,7 +4349,7 @@ this.handle_notify = function(note, performing_replay) {
             cardlayer.draw();
         }
 
-    } else if (type === "clue") {
+    } else if (type === 'clue') {
         let clue = msg_clue_to_clue(note.clue, ui.variant);
         show_clue_match(-1);
 
@@ -4396,31 +4396,31 @@ this.handle_notify = function(note, performing_replay) {
 
         clue_log.checkExpiry();
 
-    } else if (type === "status") {
-        clue_label.setText("Clues: " + note.clues);
+    } else if (type === 'status') {
+        clue_label.setText('Clues: ' + note.clues);
 
         if (note.clues === 0) {
-            clue_label.setFill("#df1c2d");
+            clue_label.setFill('#df1c2d');
         } else if (note.clues === 1) {
-            clue_label.setFill("#ef8c1d");
+            clue_label.setFill('#ef8c1d');
         } else if (note.clues === 2) {
-            clue_label.setFill("#efef1d");
+            clue_label.setFill('#efef1d');
         } else {
-            clue_label.setFill("#d8d5ef");
+            clue_label.setFill('#d8d5ef');
         }
 
-        score_label.setText("Score: " + note.score);
+        score_label.setText('Score: ' + note.score);
         if (!this.animate_fast) {
             uilayer.draw();
         }
 
-    } else if (type === "strike") {
+    } else if (type === 'strike') {
         var x = new Kinetic.Image({
             x: (0.675 + 0.04 * (note.num - 1)) * win_w,
             y: 0.918 * win_h,
             width: 0.02 * win_w,
             height: 0.036 * win_h,
-            image: ImageLoader.get("redx"),
+            image: ImageLoader.get('redx'),
             opacity: 0,
         });
 
@@ -4439,7 +4439,7 @@ this.handle_notify = function(note, performing_replay) {
             }).play();
         }
 
-    } else if (type === "turn") {
+    } else if (type === 'turn') {
         for (i = 0; i < ui.player_names.length; i++) {
             name_frames[i].setActive(note.who === i);
         }
@@ -4448,9 +4448,9 @@ this.handle_notify = function(note, performing_replay) {
             uilayer.draw();
         }
 
-    } else if (type === "game_over") {
+    } else if (type === 'game_over') {
         for (let i = 0; i < this.player_names.length; i++) {
-            name_frames[i].off("mousemove");
+            name_frames[i].off('mousemove');
         }
 
         if (timer_rect1) {
@@ -4470,7 +4470,7 @@ this.handle_notify = function(note, performing_replay) {
             uilayer.draw();
         }
 
-    } else if (type === "reorder") {
+    } else if (type === 'reorder') {
         const hand = player_hands[note.target];
         // TODO: Throw an error if hand and note.hand dont have the same numbers in them
 
@@ -4493,7 +4493,7 @@ this.handle_notify = function(note, performing_replay) {
             hand.add(child);
         }
 
-    } else if (type === "boot") {
+    } else if (type === 'boot') {
         if (ui.timerId !== null) {
             window.clearInterval(ui.timerId);
             ui.timerId = null;
@@ -4602,7 +4602,7 @@ this.handle_clock = function(note) {
     }
 */
 this.handle_note = function(note) {
-    // Build the note text from the "notes" array given by the server
+    // Build the note text from the 'notes' array given by the server
     let newNote = '';
     for (let i = 0; i < note.notes.length; i++) {
         if (note.notes[i].length > 0) {
@@ -4635,7 +4635,7 @@ this.handle_notes = function(note) {
     notes_written = note.notes;
 
     for (const order of Object.keys(notes_written)) {
-        // The following code is mosly copied from the "handle_note" function
+        // The following code is mosly copied from the 'handle_note' function
 
         // Set the note
         const newNote = notes_written[order];
@@ -4702,20 +4702,20 @@ this.stop_action = function(fast) {
     no_discard_label.hide();
 
     show_clue_match(-1);
-    clue_target_button_group.off("change");
-    clue_button_group.off("change");
+    clue_target_button_group.off('change');
+    clue_button_group.off('change');
 
     for (i = 0; i < player_hands[ui.player_us].children.length; i++) {
         child = player_hands[ui.player_us].children[i];
 
-        child.off("dragend.play");
+        child.off('dragend.play');
         child.setDraggable(false);
     }
 
     drawdeck.cardback.setDraggable(false);
     deck_play_available_label.setVisible(false);
 
-    submit_clue.off("click tap");
+    submit_clue.off('click tap');
 };
 
 var saved_action = null;
@@ -4770,7 +4770,7 @@ this.handle_action = function(data) {
 
         child.setDraggable(true);
 
-        child.on("dragend.play", function() {
+        child.on('dragend.play', function() {
             var pos = this.getAbsolutePosition();
 
             pos.x += this.getWidth() * this.getScaleX() / 2;
@@ -4778,7 +4778,7 @@ this.handle_action = function(data) {
 
             if (overPlayArea(pos)) {
                 ui.send_msg({
-                    type: "action",
+                    type: 'action',
                     resp: {
                         type: ACT.PLAY,
                         target: this.children[0].order,
@@ -4796,7 +4796,7 @@ this.handle_action = function(data) {
                        data.can_discard) {
 
                 ui.send_msg({
-                    type: "action",
+                    type: 'action',
                     resp: {
                         type: ACT.DISCARD,
                         target: this.children[0].order,
@@ -4842,10 +4842,10 @@ this.handle_action = function(data) {
         submit_clue.setEnabled(true);
     };
 
-    clue_target_button_group.on("change", check_clue_legal);
-    clue_button_group.on("change", check_clue_legal);
+    clue_target_button_group.on('change', check_clue_legal);
+    clue_button_group.on('change', check_clue_legal);
 
-    submit_clue.on("click tap", function() {
+    submit_clue.on('click tap', function() {
         if (!data.can_clue) {
             return;
         }
@@ -4860,7 +4860,7 @@ this.handle_action = function(data) {
         show_clue_match(target.target_index, {});
 
         ui.send_msg({
-            type: "action",
+            type: 'action',
             resp: {
                 type: ACT.CLUE,
                 target: target.target_index,
@@ -4907,14 +4907,14 @@ HanabiUI.prototype.handle_message = function(msg) {
     var msgType = msg.type;
     var msgData = msg.resp;
 
-    if (msgType === "message") {
+    if (msgType === 'message') {
         this.replay_log.push(msg);
 
         if (!this.replay) {
             this.set_message.call(this, msgData);
         }
 
-    } else if (msgType === "init") {
+    } else if (msgType === 'init') {
         this.player_us     = msgData.seat;
         this.player_names  = msgData.names;
         this.variant = constants.VARIANT_INTEGER_MAPPING[msgData.variant];
@@ -4931,20 +4931,20 @@ HanabiUI.prototype.handle_message = function(msg) {
 
         this.load_images();
 
-    } else if (msgType === "advanced") {
+    } else if (msgType === 'advanced') {
         this.replay_advanced();
 
-    } else if (msgType === "connected") {
+    } else if (msgType === 'connected') {
         this.show_connected(msgData.list);
 
-    } else if (msgType === "notify") {
+    } else if (msgType === 'notify') {
         this.save_replay(msg);
 
         if (!this.replay || msgData.type === 'reveal') {
             this.handle_notify.call(this, msgData);
         }
 
-    } else if (msgType === "action") {
+    } else if (msgType === 'action') {
         this.handle_action.call(this, msgData);
 
         if (this.animate_fast) {
@@ -4952,30 +4952,30 @@ HanabiUI.prototype.handle_message = function(msg) {
         }
 
         if (this.lobby.send_turn_notify) {
-            this.lobby.send_notify("It's your turn", "turn");
+            this.lobby.send_notify('It\'s your turn', 'turn');
         }
 
-    } else if (msgType === "spectators") {
+    } else if (msgType === 'spectators') {
         // This is used to update the names of the people currently spectating the game
         this.handle_spectators.call(this, msgData);
 
-    } else if (msgType === "clock") {
+    } else if (msgType === 'clock') {
         // This is used for timed games
         this.handle_clock.call(this, msgData);
 
-    } else if (msgType === "note") {
+    } else if (msgType === 'note') {
         // This is used for spectators
         this.handle_note.call(this, msgData);
 
-    } else if (msgType === "notes") {
+    } else if (msgType === 'notes') {
         // This is a list of all of your notes, sent upon reconnecting to a game
         this.handle_notes.call(this, msgData);
 
-    } else if (msgType === "replay_leader") {
+    } else if (msgType === 'replay_leader') {
         // This is used in shared replays
         this.handle_replay_leader.call(this, msgData);
 
-    } else if (msgType === "replay_turn") {
+    } else if (msgType === 'replay_turn') {
         // This is used in shared replays
         this.handle_replay_turn.call(this, msgData);
     }
@@ -4985,15 +4985,15 @@ HanabiUI.prototype.set_backend = function(backend) {
     this.backend = backend;
 
     this.send_msg({
-        type: "hello",
+        type: 'hello',
         resp: {},
     });
 };
 
 HanabiUI.prototype.send_msg = function(msg) {
     if (MHGA_show_debug_messages) {
-        console.log('%cSent (UI) "' + msg.type + '":', 'color: green;');
+        console.log(`%cSent (UI) ${msg.type}:`, 'color: green;');
         console.log(msg.resp);
     }
-    this.backend.emit("message", msg);
+    this.backend.emit('message', msg);
 };
