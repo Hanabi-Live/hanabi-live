@@ -7,6 +7,7 @@
         variant: 0,
         allow_spec: false,
         timed: false,
+        reorder_cards: false,
     }
 */
 
@@ -43,6 +44,11 @@ exports.step1 = (socket, data) => {
     } else if (!('timed' in data)) {
         logger.warn(`User "${data.username}" created a table without sending a "timed" value.`);
         data.reason = 'You must submit a value of "timed".';
+        notify.playerDenied(socket, data);
+        return;
+    } else if (!('reorder_cards' in data)) {
+        logger.warn(`User "${data.username}" created a table without sending a "reorder_cards" value.`);
+        data.reason = 'You must submit a value of "reorder_cards".';
         notify.playerDenied(socket, data);
         return;
     }
@@ -95,6 +101,7 @@ function step2(error, socket, data) {
         name: data.name,
         owner: socket.userID,
         players: [],
+        reorder_cards: data.reorder_cards,
         running: false,
         score: 0,
         seed: null,

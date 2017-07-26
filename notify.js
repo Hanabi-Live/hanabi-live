@@ -65,6 +65,7 @@ exports.gameMemberChange = (data) => {
                 variant: game.variant,
                 allow_spec: game.allow_spec,
                 timed: game.timed,
+                reorder_cards: game.reorder_cards,
                 shared_replay: game.shared_replay,
             },
         });
@@ -325,7 +326,6 @@ const playerTable = (socket, data) => {
             num_players: (game.shared_replay ? Object.keys(game.spectators).length : game.players.length),
             max_players: game.max_players,
             allow_spec: game.allow_spec,
-            timed: game.timed,
             owned: socket.userID === game.owner,
             running: game.running,
             variant: game.variant,

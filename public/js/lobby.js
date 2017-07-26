@@ -120,11 +120,12 @@ function HanabiLobby() {
     });
 
     $("#create-game-submit").on("click", function(evt) {
-        var game_name   = $("#create-game-name").val();
-        var max_players = parseInt($("#create-game-players").val());
-        var variant     = parseInt($("#create-game-variant").val());
-        var allow_spec  = document.getElementById("create-game-allow-spec").checked;
-        var timed       = document.getElementById("create-game-timed").checked;
+        var game_name     = $("#create-game-name").val();
+        var max_players   = parseInt($("#create-game-players").val());
+        var variant       = parseInt($("#create-game-variant").val());
+        var allow_spec    = document.getElementById("create-game-allow-spec").checked;
+        var timed         = document.getElementById("create-game-timed").checked;
+        var reorder_cards = document.getElementById("create-game-reorder-cards").checked;
 
         localStorage.setItem("table_host_max_players", max_players);
         localStorage.setItem("table_host_variant",     variant);
@@ -136,11 +137,12 @@ function HanabiLobby() {
         self.send_msg({
             type: "create_table",
             resp: {
-                name:       game_name,
-                max:        max_players,
-                variant:    variant,
-                allow_spec: allow_spec,
-                timed:      timed,
+                name:          game_name,
+                max:           max_players,
+                variant:       variant,
+                allow_spec:    allow_spec,
+                timed:         timed,
+                reorder_cards: reorder_cards,
             },
         });
 
@@ -339,6 +341,9 @@ HanabiLobby.prototype.show_create_dialog = function() {
     var timed = JSON.parse(localStorage.getItem("table_host_timed"));
     $("#create-game-timed").prop('checked', timed);
 
+    var reorder_cards = JSON.parse(localStorage.getItem("table_reorder_cards"));
+    $("#create-game-reorder-cards").prop('checked', reorder_cards);
+
     // Autofocus the "Game Name" field
     $("#create-game-name").focus();
 };
@@ -435,7 +440,6 @@ HanabiLobby.prototype.add_table = function(data) {
         variant:       data.variant,
         joined:        data.joined,
         allow_spec:    data.allow_spec,
-        timed:         data.timed,
         running:       data.running,
         our_turn:      data.our_turn,
         owned:         data.owned,
@@ -814,6 +818,7 @@ HanabiLobby.prototype.set_game = function(data) {
     this.game.running       = data.running;
     this.game.allow_spec    = data.allow_spec;
     this.game.timed         = data.timed;
+    this.reorder_cards      = data.reorder_cards;
     this.game.shared_replay = data.shared_replay;
 
     this.game.players.length = this.game.num_players;
@@ -846,6 +851,7 @@ HanabiLobby.prototype.show_joined = function() {
     html += "<p>Variant: <b>" + variant_names[this.game.variant] + "</p></b>";
     html += "<p>Allow Spectators: <b>" + (this.game.allow_spec ? "Yes" : "No") + "</b></p>";
     html += "<p>Timed Game: <b>" + (this.game.timed ? "Yes" : "No") + "</b></p>";
+    html += "<p>Reorder Cards: <b>" + (this.game.reorder_cards ? "Yes" : "No") + "</b></p>";
 
     $("#joined-desc").html(html);
 
