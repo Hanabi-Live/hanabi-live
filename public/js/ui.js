@@ -67,8 +67,7 @@ var clue_to_msg_clue = function clue_to_msg_data(clue, variant) {
     if (clue_type === CLUE_TYPE.COLOR) {
         let clue_color = clue_value;
         msg_clue_value = variant.clueColors.findIndex((color) => {return color === clue_color;});
-    }
-    else { // rank clue
+    } else { // Rank clue
         msg_clue_value = clue_value;
     }
     return { type: clue_type, value: msg_clue_value };
@@ -79,8 +78,7 @@ var msg_clue_to_clue = function msg_clue_to_clue(msg_clue, variant) {
     let clue_value;
     if (clue_type === CLUE_TYPE.COLOR) {
         clue_value = variant.clueColors[msg_clue_value];
-    }
-    else { // rank clue
+    }  else { // Rank clue
         clue_value = msg_clue_value;
     }
     return new Clue(clue_type, clue_value);
@@ -3978,9 +3976,9 @@ this.reset = function() {
 
     clue_log.clear();
     message_prompt.reset();
-    //this should always be overridden before it gets displayed
-    drawdeck.setCount(99);
 
+    // This should always be overridden before it gets displayed
+    drawdeck.setCount(99);
 
     for (i = 0; i < strikes.length; i++) {
         strikes[i].remove();
