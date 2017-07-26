@@ -28,6 +28,9 @@
     // Proper use of continues can reduce indentation for long blocks of code
     "no-continue": ["off"],
 
+    // KineticJS's API has functions that are prefixed with an underscore
+    "no-underscore-dangle": ["off"],
+
     // We need to disable this because the server passes data around in a "data" object
     "no-param-reassign": ["off"],
 
@@ -39,6 +42,9 @@
 
     // Clean code can arise from for-of statements if used properly
     "no-restricted-syntax": ["off", "ForOfStatement"],
+
+    // Most people turn off this setting
+    "no-mixed-operators": ["off"],
 
     // It can be bad to remove unused arguments from a function copied an API example
     "no-unused-vars": ["warn", {
