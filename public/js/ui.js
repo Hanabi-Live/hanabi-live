@@ -4192,33 +4192,6 @@ function show_loading() {
 
 show_loading();
 
-//var suit_names = [
-//    "Blue",
-//    "Green",
-//    "Yellow",
-//    "Red",
-//    "Purple",
-//    "Black",
-//    " ",
-//];
-//
-//var mixed_clue_names = [
-//    "Blue",
-//    "Yellow",
-//    "Red",
-//    "Black",
-//];
-//
-//var suit_abbreviations = [
-//    "B",
-//    "G",
-//    "Y",
-//    "R",
-//    "P",
-//    "K",
-//    "",
-//];
-
 this.getNote = function(card_order) {
     return notes_written[card_order];
 };
