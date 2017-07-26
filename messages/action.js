@@ -68,11 +68,16 @@ const step1 = (socket, data) => {
 
     // Handle card-reordering
     // (it doesn't happen on a play or a deck-play)
-    if (game.discard_signal_outstanding && data.type !== 1 && data.type !== 3) {
+    if (game.reorder_cards &&
+        game.discard_signal_outstanding &&
+        data.type !== 1 &&
+        data.type !== 3) { /* eslint-disable padded-blocks */
+
         // Find the chop card
         const chopIndex = getChopIndex(data);
 
-        // We don't need to reorder anything if the chop is slot 1 (the left-most card)
+        // We don't need to reorder anything if the chop is slot 1
+        // (the left-most card)
         if (chopIndex !== player.hand.length - 1) {
             const chopCard = player.hand[chopIndex];
 
