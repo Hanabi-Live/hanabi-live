@@ -97,6 +97,7 @@ function step2(error, socket, data) {
         deck: [],
         deckIndex: 0,
         discard_signal_outstanding: false, // This is for the "Reorder Cards" feature
+        discard_signal_turn_expiration: -1, // This is for the "Reorder Cards" feature
         end_turn_num: null,
         max_players: data.max,
         name: data.name,

@@ -67,12 +67,15 @@ const step1 = (socket, data) => {
     game.sound = null;
 
     // Handle card-reordering
-    // (it doesn't happen on a play or a deck-play)
-    if (game.reorder_cards &&
+    if (game.turn_num >= game.discard_signal_turn_expiration) {
+        game.discard_signal_outstanding = false;
+    }
+    if (
+        game.reorder_cards &&
         game.discard_signal_outstanding &&
-        data.type !== 1 &&
-        data.type !== 3) { /* eslint-disable padded-blocks */
-
+        data.type !== 1 && // (it doesn't happen on a play or a deck-play)
+        data.type !== 3
+    ) {
         // Find the chop card
         const chopIndex = getChopIndex(data);
 
@@ -477,6 +480,7 @@ function playerDiscardCard(data, failed = false) {
     // Keep track that someone discarded
     // (used for the "Reorder Cards" feature)
     game.discard_signal_outstanding = true;
+    game.discard_signal_turn_expiration = game.turn_num + (game.players.length - 1);
 
     // Mark that the card is discarded
     card.discarded = true;
