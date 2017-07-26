@@ -4727,8 +4727,30 @@ this.handle_notify = function(note, performing_replay) {
         }
 
     } else if (type === "reorder") {
-        // TODO
-        // add a method to the "CardLayout" class???
+        const hand = player_hands[note.target];
+        // TODO: Throw an error if hand and note.hand dont have the same numbers in them
+
+        const newChildOrder = [];
+
+        // Get the LayoutChild objects in the hand and put them in the right order in this temp array
+        var handSize = hand.children.length;
+        for (i = 0; i < handSize; ++i) {
+            var order = note.hand_order[i];
+            var child = ui.deck[order].parent;
+            newChildOrder.push(child);
+            child.remove()
+        }
+
+        // Take them out of the hand itself
+        //hand.removeChildren();
+        console.log(newChildOrder);
+
+        // Put them back into the hand in the new order
+        for (i = 0; i < handSize; ++i) {
+            var child = newChildOrder[i];
+            hand.add(child);
+            console.log("Added card back to the hand, hand size is now:", hand.children.length);
+        }
 
     } else if (type === "boot") {
         if (ui.timerId !== null) {
