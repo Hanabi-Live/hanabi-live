@@ -38,7 +38,7 @@ this.replay_max = 0;
 this.animate_fast = true;
 this.ready = false;
 // In replays, we can show a grayed-out version of a card face if it was not known at the time, but we know it now
-// These are cards we have 'learned'
+// These are cards we have "learned"
 this.learned_cards = [];
 
 this.activeHover = null;
@@ -286,8 +286,10 @@ MultiFitText.prototype.setMultiText = function(text) {
         this.smallHistory.shift();
     }
     this.smallHistory.push(text);
-    // performance optimization: setText on the children is slow, so don't actually do it until its time to display things.
-    // we also have to call refresh_text after any time we manipulate replay position
+    // Performance optimization: setText on the children is slow, so don't
+    // actually do it until its time to display things.
+    // We also have to call refresh_text after any time we manipulate replay
+    // position
     if (!ui.replay || !ui.animate_fast) {
         this.refresh_text();
     }
@@ -625,7 +627,7 @@ var HanabiCard = function(config) {
 
     this.add(this.number_clue);
 
-    // Draw the circle that is the 'clue indicator' on the card
+    // Draw the circle that is the "clue indicator" on the card
     this.clue_given = new Kinetic.Circle({
         x: 0.9 * config.width,
         y: (ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM ? 0.2 : 0.1) * config.height,
@@ -638,7 +640,7 @@ var HanabiCard = function(config) {
 
     this.add(this.clue_given);
 
-    // Define the 'note indicator' square
+    // Define the "note indicator" square
     this.note_given = new Kinetic.Rect({
         x: 0.854 * config.width,
         y: (ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM ? 0.26 : 0.165) * config.height,
@@ -657,7 +659,7 @@ var HanabiCard = function(config) {
         x: -1000,
         y: -1000,
     });
-    // (there's a bug that Hyphen cant figure out where it permanently draws a
+    // (there's a bug that Hyphen can't figure out where it permanently draws a
     // copy of the tag at this location, so we can work around it by setting the
     // starting location to be off screen)
 
@@ -676,10 +678,12 @@ var HanabiCard = function(config) {
         shadowOpacity: 0.6,
     }));
 
-    // Hyphen originally programmed this with 'FitText' instead of
-    // 'Kinetic.Text', so that the tooltips would remain the same size;
-    // however, this leads to really small text on long notes. It is much better
-    // to just let the tooltip grow bigger for bigger notes.
+    /*
+        Hyphen originally programmed this with "FitText" instead of
+        "Kinetic.Text", so that the tooltips would remain the same size;
+        however, this leads to really small text on long notes. It is much
+        better to just let the tooltip grow bigger for bigger notes.
+    */
     this.tooltip.add(new Kinetic.Text({
         fill: 'white',
         align: 'left',
@@ -790,7 +794,8 @@ HanabiCard.prototype.add_listeners = function() {
 HanabiCard.prototype.setBareImage = function() {
     if (this.unknownRect !== undefined) {
         var learned = ui.learned_cards[this.order];
-        //if we're in a replay, we have knowledge about the card, but we don't know the ACTUAL card
+        // If we're in a replay, we have knowledge about the card, but we don't
+        // know the ACTUAL card
         if (show_replay_partial_faces &&
             ui.replay &&
             this.unknown &&
@@ -2040,7 +2045,7 @@ this.build_cards = function() {
         mm = true;
     }
 
-    // 0-5 are the real suits. 6 is a 'white' suit for replays
+    // 0-5 are the real suits; 6 is a "white" suit for replays
     let suits = this.variant.suits.concat(SUIT.GRAY);
     {
         let i = 0;
@@ -3601,7 +3606,7 @@ this.build_ui = function() {
 
     replay_area.add(button);
 
-    // The 'Exit Replay' button
+    // The "Exit Replay" button
     button = new Button({
         x: 0.15 * win_w,
         y: 0.17 * win_h,
@@ -3631,7 +3636,7 @@ this.build_ui = function() {
 
     replay_area.add(button);
 
-    // The 'Go to Shared Turn' button
+    // The "Go to Shared Turn" button
     go_to_shared_turn_button = new Button({
         x: 0.15 * win_w,
         y: 0.17 * win_h,
@@ -3684,18 +3689,18 @@ this.build_ui = function() {
     // how they should interact with clue UI
     let clueKeyMap = {};
 
-    // Add 'Tab' for player selection
+    // Add "Tab" for player selection
     clueKeyMap.Tab = function() {
         clue_target_button_group.selectNextTarget();
     };
 
-    // Add '12345' to the map (for number clues)
+    // Add "12345" to the map (for number clues)
     for (let i = 0; i < rankClueButtons.length; i++) {
-        // The button for '1' is at array index 0, etc.
+        // The button for "1" is at array index 0, etc.
         clueKeyMap[i + 1] = mouseClickHelper(rankClueButtons[i]);
     }
 
-    // Add 'qwert' (for color clues)
+    // Add "qwert" (for color clues)
     // (we want to use qwert since they are conviently next to 12345, and also
     // because the clue colors can change between different variants)
     clueKeyMap.q = mouseClickHelper(suitClueButtons[0]);
@@ -3707,7 +3712,7 @@ this.build_ui = function() {
         clueKeyMap.t = mouseClickHelper(suitClueButtons[4]);
     }
 
-    // Add 'Enter' for pressing the 'Give Clue' button
+    // Add "Enter" for pressing the 'Give Clue' button
     clueKeyMap.Enter = mouseClickHelper(submit_clue);
 
     // Keyboard actions for playing and discarding cards
@@ -3841,11 +3846,11 @@ To give a clue, use the boxes in the center of the screen. You may mouseover a c
 You can rewind the game state with the arrow button in the bottom-left.
 
 Keyboard hotkeys:
-- Play: 'a' or '+'
-- Discard: 'd' or '-'
-- Clue: 'Tab', then 1/2/3/4/5 or Q/W/E/R/T, then 'Enter'
-- Rewind: 'Left', or '[' for a full rotation, or 'Home' for the beginning
-- Fast-forward: 'Right', or ']' for a full rotation, or 'End' for the end`;
+- Play: "a" or "+"
+- Discard: "d" or "-"
+- Clue: "Tab", then 1/2/3/4/5 or Q/W/E/R/T, then "Enter"
+- Rewind: "Left", or "[" for a full rotation, or "Home" for the beginning
+- Fast-forward: "Right", or "]" for a full rotation, or "End" for the end`;
 
     text = new Kinetic.Text({
         x: 0.03 * win_w,
@@ -4062,7 +4067,7 @@ this.perform_replay = function(target, fast) {
     }
 
     if (this.replay_turn === target) {
-        return; // we're already there, nothing to do!
+        return; // We're already there, nothing to do!
     }
 
     if (this.shared_replay && this.shared_replay_leader === lobby.username) {
@@ -4126,8 +4131,8 @@ this.replay_advanced = function() {
 
     cardlayer.draw();
 
-    // There's a bug on the emulator where the text doesn't show upon first loading a game
-    // Doing this seems to fix it
+    // There's a bug on the emulator where the text doesn't show upon first
+    // loading a game; doing this seems to fix it
     uilayer.draw();
 };
 
@@ -4602,7 +4607,7 @@ this.handle_clock = function(note) {
     }
 */
 this.handle_note = function(note) {
-    // Build the note text from the 'notes' array given by the server
+    // Build the note text from the "notes" array given by the server
     let newNote = '';
     for (let i = 0; i < note.notes.length; i++) {
         if (note.notes[i].length > 0) {
@@ -4635,7 +4640,7 @@ this.handle_notes = function(note) {
     notes_written = note.notes;
 
     for (const order of Object.keys(notes_written)) {
-        // The following code is mosly copied from the 'handle_note' function
+        // The following code is mosly copied from the "handle_note" function
 
         // Set the note
         const newNote = notes_written[order];
