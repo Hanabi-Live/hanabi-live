@@ -2000,7 +2000,7 @@ var show_clue_match = function(target, clue, show_neg) {
                 touched = true;
             }
 
-        } else { // color clue 
+        } else { // color clue
             let clue_color = clue.value;
             if (card.suit === SUIT.MULTI || card.suit.clue_colors.includes(clue_color)) {
                 touched = true;
@@ -2410,7 +2410,6 @@ var lobby_button, help_button;
 var helpgroup;
 var msgloggroup, overback;
 var notes_written = {};
-var shared_replay_leader_label_tooltip;
 
 var overPlayArea = function(pos) {
     return pos.x >= play_area.getX() &&
