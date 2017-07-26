@@ -232,6 +232,7 @@ exports.getVariantPlayers = (socket, data, done) => {
         if (results.length === 0) {
             error = new Error(`Got no rows in the "games" table for ID: ${data.gameID}`);
             done(error, socket, data);
+            return;
         }
         data.game = {};
         data.game.variant = results[0].variant;
