@@ -9,14 +9,19 @@ function HanabiUI(lobby, game_id) {
 this.lobby = lobby;
 this.game_id = game_id;
 
-var cardw = 286;
-var cardh = 406;
-
 var ui = this;
 
 var ACT = constants.ACT;
-var CLUE = constants.CLUE;
+var CLUE_TYPE = constants.CLUE_TYPE;
 var VARIANT = constants.VARIANT;
+var SHAPE = constants.SHAPE;
+var SUIT = constants.SUIT;
+var CARD_AREA = constants.CARD_AREA;
+var CARDH = constants.CARDH;
+var CARDW = constants.CARDW;
+var PATHFUNC = constants.PATHFUNC;
+var backpath = constants.backpath;
+var drawshape = constants.drawshape;
 
 this.deck = [];
 
@@ -49,6 +54,41 @@ this.last_timer_update_time_ms = new Date().getTime();
 this.player_times = [];
 this.timerId = null;
 
+var Clue = function Clue(type, value) {
+    this.type = type;
+    this.value = value;
+};
+// Convert a clue to the format used by the server, which is identical but for
+// the color value; for the client it is a rich object and for the server
+// a simple integer mapping
+var clue_to_msg_clue = function clue_to_msg_data(clue, variant) {
+    let {type: clue_type, value: clue_value} = clue;
+    let msg_clue_value;
+    if (clue_type === CLUE_TYPE.COLOR) {
+        let clue_color = clue_value;
+        msg_clue_value = variant.clue_colors.findIndex((color) => {return color === clue_color;});
+    }
+    else { // rank clue
+        msg_clue_value = clue_value;
+    }
+    return { type: clue_type, value: msg_clue_value };
+};
+
+var msg_clue_to_clue = function msg_clue_to_clue(msg_clue, variant) {
+    let {type: clue_type, value: msg_clue_value} = msg_clue;
+    let clue_value;
+    if (clue_type === CLUE_TYPE.COLOR) {
+        clue_value = variant.clue_colors[msg_clue_value];
+    }
+    else { // rank clue
+        clue_value = msg_clue_value;
+    }
+    return new Clue(clue_type, clue_value);
+};
+
+var msg_suit_to_suit = function msg_suit_to_suit(msg_suit, variant) {
+    return variant.suits[msg_suit];
+};
 /*
     Misc. functions
 */
@@ -113,18 +153,21 @@ function setTickingDownTime(textObjects, active_index) {
 function image_name(card) {
     if (!card.unknown) {
         let name = "card-";
-        name += card.suit + "-";
+        name += ui.variant.suits.findIndex((suit) => {return suit === card.suit;}) + "-";
         name += card.rank;
         return name;
     }
 
+    // TODO: name
     var learned = ui.learned_cards[card.order];
     if (ui.replay && learned && (learned.revealed || show_replay_partial_faces)) {
         let name = "card-";
         if (learned.suit === undefined) {
+            // Gray suit
+            // TODO: need to change this if we ever add a 7th suit
             name += 6;
         } else {
-            name += learned.suit;
+            name += ui.variant.suits.findIndex((suit) => {return suit === learned.suit;});
         }
         name += "-";
         if (learned.rank === undefined) {
@@ -409,13 +452,13 @@ HanabiMsgLog.prototype.reset = function() {
 var HanabiCard = function(config) {
     var self = this;
 
-    config.width = cardw;
-    config.height = cardh;
-    config.x = cardw / 2;
-    config.y = cardh / 2;
+    config.width = CARDW;
+    config.height = CARDH;
+    config.x = CARDW / 2;
+    config.y = CARDH / 2;
     config.offset = {
-        x: cardw / 2,
-        y: cardh / 2,
+        x: CARDW / 2,
+        y: CARDH / 2,
     };
 
     Kinetic.Group.call(this, config);
@@ -738,7 +781,7 @@ HanabiCard.prototype.add_listeners = function() {
                     resp: {
                         notes: notes_written,
                     }
-                })
+                });
             }
         }
     });
@@ -774,56 +817,43 @@ HanabiCard.prototype.setIndicator = function(indicate, negative) {
 };
 
 HanabiCard.prototype.add_clue = function(clue) {
-    var i;
-
     if (!ui.learned_cards[this.order]) {
         ui.learned_cards[this.order] = {};
     }
 
-    if (clue.type === CLUE.SUIT) {
+    if (clue.type === CLUE_TYPE.COLOR) {
         // Draw the color squares
         var grad = this.color_clue.getFillLinearGradientColorStops();
-        let color = (ui.variant === VARIANT.MIXED ? mixed_clue_colors[clue.value] : suit_colors[clue.value]);
+        let color = clue.value;
+        let color_code = clue.value.hex_code;
         if (grad.length === 2) {
             this.color_clue.setFillLinearGradientColorStops([
                 0,
-                color,
+                color_code,
                 1,
-                color,
+                color_code,
             ]);
-            this.color_clue_letter.setText(suit_abbreviations[clue.value]);
+            this.color_clue_letter.setText(color.abbreviation);
 
         } else if (grad[1] === grad[3]) {
             if (ui.variant === VARIANT.MIXED) {
                 // Find out the array index of these clue colors
-                let clueIndex1 = -1;
-                let clueIndex2 = -1;
-                for (let i = 0; i < suit_colors.length; i++) {
-                    if (grad[1] === mixed_suit_colors[i]) {
-                        clueIndex1 = i;
-                    } else if (color === mixed_suit_colors[i]) {
-                        clueIndex2 = i;
-                    }
-                }
+                let clue_color_1 = ui.variant.clue_colors.find((color) => {return color.hex_code === grad[1];});
+                let clue_color_2 = ui.variant.clue_colors.find((color) => {return color.hex_code === grad[3];});
 
                 // The index will not be set above if we already changed it to the true mixed color
                 // So, do nothing if that is the case
-                if (clueIndex1 !== -1 && clueIndex2 !== -1) {
+                if (clue_color_1 && clue_color_2 && (clue_color_1 !== clue_color_2)) {
                     // Find the index of the mixed suit that matches these two colors
-                    let suitIndex;
-                    for (let i = 0; i < mixed_suit_color_composition.length; i++) {
-                        if ((clueIndex1 === mixed_suit_color_composition[i][0] && clueIndex2 === mixed_suit_color_composition[i][1]) ||
-                            (clueIndex1 === mixed_suit_color_composition[i][1] && clueIndex2 === mixed_suit_color_composition[i][0])) {
-
-                            suitIndex = i;
+                    for (let suit of ui.variant.suits) {
+                        let clue_colors = suit.clue_colors;
+                        if (clue_colors.includes(clue_color_1) || clue_colors.includes(clue_color_2)) {
+                            grad[1] = suit.fill_color.hex_code;
+                            grad[3] = suit.fill_color.hex_code;
+                            this.color_clue.setFillLinearGradientColorStops(grad);
                             break;
                         }
                     }
-
-                    // Change the solid color of the individual clue to the solid color of the true suit
-                    grad[1] = mixed_suit_colors[suitIndex];
-                    grad[3] = mixed_suit_colors[suitIndex];
-                    this.color_clue.setFillLinearGradientColorStops(grad);
 
                     // Get rid of the question mark
                     this.color_clue_question_mark.hide();
@@ -831,7 +861,7 @@ HanabiCard.prototype.add_clue = function(clue) {
 
             } else {
                 // Change the solid color to a gradient mixing the two clues
-                grad[3] = color;
+                grad[3] = color.hex_code;
                 this.color_clue.setFillLinearGradientColorStops(grad);
                 this.color_clue_letter.setText("M");
             }
@@ -843,7 +873,7 @@ HanabiCard.prototype.add_clue = function(clue) {
                     return;
                 }
 
-                for (i = 0; i < grad.length; i += 2) {
+                for (let i = 0; i < grad.length; i += 2) {
                     grad[i] = 1.0 * (i / 2) / (grad.length / 2);
                 }
                 grad.push(1);
@@ -855,14 +885,15 @@ HanabiCard.prototype.add_clue = function(clue) {
 
         this.color_clue_group.show();
 
+        let suit_corresponding_to_color = ui.variant.suits.find((suit) => {return suit.clue_colors.includes(clue.value);});
         if (ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM) {
             // TODO Distinguishing suits from colors is not supported yet.
             // ui.learned_cards[this.order].suit may be a correct suit index from a play or discard
         } else if (ui.learned_cards[this.order].suit === undefined) {
-            ui.learned_cards[this.order].suit = clue.value;
-        } else if (ui.learned_cards[this.order].suit !== clue.value) {
+            ui.learned_cards[this.order].suit = suit_corresponding_to_color;
+        } else if (ui.learned_cards[this.order].suit !== suit_corresponding_to_color) {
             // Card has multiple colors; set suit to Rainbow
-            ui.learned_cards[this.order].suit = 5;
+            ui.learned_cards[this.order].suit = SUIT.MULTI;
         }
 
     } else {
@@ -1326,7 +1357,7 @@ var NumberButton = function(config) {
 
     this.pressed = false;
 
-    this.clue_type = config.clue_type;
+    this.clue = config.clue;
 
     background.on("mousedown", function() {
         background.setFill("#888888");
@@ -1408,7 +1439,7 @@ var ColorButton = function(config) {
 
     this.pressed = false;
 
-    this.clue_type = config.clue_type;
+    this.clue = config.clue;
 
     background.on("mousedown", function() {
         background.setFill("#888888");
@@ -1602,7 +1633,7 @@ var HanabiClueEntry = function(config) {
 
     this.add(target);
 
-    var type = new Kinetic.Text({
+    var name = new Kinetic.Text({
         x: 0.75 * w,
         y: 0,
         width: 0.2 * w,
@@ -1611,11 +1642,11 @@ var HanabiClueEntry = function(config) {
         fontSize: 0.9 * h,
         fontFamily: "Verdana",
         fill: "white",
-        text: config.type,
+        text: config.clue_name,
         listening: false,
     });
 
-    this.add(type);
+    this.add(name);
 
     var negative_marker = new Kinetic.Text({
         x: 0.88 * w,
@@ -1936,15 +1967,15 @@ this.load_images = function() {
 };
 
 var show_clue_match = function(target, clue, show_neg) {
-    var child, i, j;
+    var child;
     var card, match = false;
 
-    for (i = 0; i < ui.player_names.length; i++) {
+    for (let i = 0; i < ui.player_names.length; i++) {
         if (i === target) {
             continue;
         }
 
-        for (j = 0; j < player_hands[i].children.length; j++) {
+        for (let j = 0; j < player_hands[i].children.length; j++) {
             child = player_hands[i].children[j];
 
             card = child.children[0];
@@ -1959,72 +1990,20 @@ var show_clue_match = function(target, clue, show_neg) {
         return;
     }
 
-    for (i = 0; i < player_hands[target].children.length; i++) {
+    for (let i = 0; i < player_hands[target].children.length; i++) {
         child = player_hands[target].children[i];
         card = child.children[0];
 
         let touched = false;
-        if (clue.type === CLUE.RANK) {
+        if (clue.type === CLUE_TYPE.RANK) {
             if (clue.value === card.rank) {
                 touched = true;
             }
 
-        } else if (clue.type === CLUE.SUIT) {
-            if (ui.variant >= 0 && ui.variant <= 2) { // Normal, black, and black one of each
-                if (clue.value === card.suit) {
-                    touched = true;
-                }
-
-            } else if (ui.variant === VARIANT.RAINBOW) {
-                if (clue.value === card.suit || card.suit === 5) {
-                    touched = true;
-                }
-
-            } else if (ui.variant === VARIANT.MIXED) {
-                if (clue.value === 0) { // Blue clue
-                    if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
-                        touched = true;
-                    }
-                } else if (clue.value === 1) { // Green clue
-                    if (card.suit === 0 || card.suit === 3 || card.suit === 4) {
-                        touched = true;
-                    }
-                } else if (clue.value === 2) { // Red clue
-                    if (card.suit === 1 || card.suit === 3 || card.suit === 5) {
-                        touched = true;
-                    }
-                } else if (clue.value === 3) { // Black clue
-                    if (card.suit === 2 || card.suit === 4 || card.suit === 5) {
-                        touched = true;
-                    }
-                }
-
-            } else if (ui.variant === VARIANT.MM) {
-                if (card.suit === 5) {
-                    // Rainbow cards are always touched by color clues
-                    touched = true;
-
-                } else if (clue.value === 0) { // Blue clue
-                    if (card.suit === 0 || card.suit === 4) {
-                        touched = true;
-                    }
-                } else if (clue.value === 1) { // Green clue
-                    if (card.suit === 0 || card.suit === 1) {
-                        touched = true;
-                    }
-                } else if (clue.value === 2) { // Yellow clue
-                    if (card.suit === 1 || card.suit === 2) {
-                        touched = true;
-                    }
-                } else if (clue.value === 3) { // Red clue
-                    if (card.suit === 2 || card.suit === 3) {
-                        touched = true;
-                    }
-                } else if (clue.value === 4) { // Purple clue
-                    if (card.suit === 3 || card.suit === 4) {
-                        touched = true;
-                    }
-                }
+        } else { // color clue 
+            let clue_color = clue.value;
+            if (card.suit === SUIT.MULTI || card.suit.clue_colors.includes(clue_color)) {
+                touched = true;
             }
         }
 
@@ -2041,70 +2020,15 @@ var show_clue_match = function(target, clue, show_neg) {
     return match;
 };
 
-var suit_colors = [
-    "#0044cc", // Blue
-    "#00cc00", // Green
-    "#ccaa22", // Yellow
-    "#aa0000", // Red
-    "#6600cc", // Purple
-    "#111111", // Black
-    "#cccccc", // Grey (for the card backs)
-];
-var mixed_suit_colors = [
-    "#00cc00", // Green    (Blue   / Yellow)
-    "#cc00cc", // Magenta  (Blue   / Red)
-    "#000066", // Navy     (Blue   / Black)
-    "#ff9900", // Orange   (Yellow / Red)
-    "#999900", // Tan      (Yellow / Black)
-    "#660016", // Burgundy (Red    / Black)
-    "#cccccc", // Grey     (for the card backs)
-];
-var mixed_suit_color_composition = [
-    // Each mixed suit is composed of two separate colors
-    // (from the "mixed_clue_colors" array)
-    [0, 1], // Blue   / Yellow
-    [0, 2], // Blue   / Red
-    [0, 3], // Blue   / Black
-    [1, 2], // Yellow / Red
-    [1, 3], // Yellow / Black
-    [2, 3], // Red    / Black
-];
-var mixed_clue_colors = [
-    "#0044cc", // Blue
-    "#ccaa22", // Yellow
-    "#aa0000", // Red
-    "#000000", // Black
-];
-var mm_suit_colors = [
-    "#00b3b3", // Teal     (Blue   / Green)
-    "#80c000", // Lime     (Green  / Yellow)
-    "#ff9900", // Orange   (Yellow / Red)
-    "#660016", // Burgundy (Red    / Purple)
-    "#1a0082", // Indigo   (Purple / Blue)
-    "#111111", // Multi    (will be replaced later)
-    "#cccccc", // Grey     (for the card backs)
-];
-var mm_color_composition = [
-    // Each mixed suit is composed of two separate colors
-    // (from the "suit_colors" array)
-    [0, 1], // Blue   / Green
-    [1, 2], // Green  / Yellow
-    [2, 3], // Yellow / Red
-    [3, 4], // Red    / Purple
-    [4, 0], // Purple / Blue
-];
 var card_images = {};
 var scale_card_images = {};
 
 this.build_cards = function() {
     var cvs, ctx;
-    var i, j, name;
-    var xrad = cardw * 0.08, yrad = cardh * 0.08;
-    var x, y;
-    var rainbow = false, grad;
+    var xrad = CARDW * 0.08, yrad = CARDH * 0.08;
+    var rainbow = false;
     var mixed = false;
     var mm = false;
-    var pathfuncs = []; // For the 5 different suit symbols
 
     if (this.variant === VARIANT.RAINBOW) {
         rainbow = true;
@@ -2116,395 +2040,246 @@ this.build_cards = function() {
         mm = true;
     }
 
-    /*
-        The following code draws the symbol on the cards and the empty deck
-    */
-
-    pathfuncs[0] = function() {
-        ctx.beginPath();
-        ctx.moveTo(75, 0);
-        ctx.quadraticCurveTo(110, 60, 150, 100);
-        ctx.quadraticCurveTo(110, 140, 75, 200);
-        ctx.quadraticCurveTo(40, 140, 0, 100);
-        ctx.quadraticCurveTo(40, 60, 75, 0);
-    };
-
-    pathfuncs[1] = function() {
-        ctx.beginPath();
-        ctx.moveTo(50, 180);
-        ctx.lineTo(100, 180);
-        ctx.quadraticCurveTo(80, 140, 75, 120);
-        ctx.arc(110, 110, 35, 2.6779, 4.712, true);
-        ctx.arc(75, 50, 35, 1, 2.1416, true);
-        ctx.arc(40, 110, 35, 4.712, 0.4636, true);
-        ctx.quadraticCurveTo(70, 140, 50, 180);
-    };
-
-    pathfuncs[2] = function() {
-        var i;
-        ctx.translate(75, 100);
-        ctx.beginPath();
-        ctx.moveTo(0, -75);
-        for (i = 0; i < 5; i++) {
-            ctx.rotate(Math.PI / 5);
-            ctx.lineTo(0, -30);
-            ctx.rotate(Math.PI / 5);
-            ctx.lineTo(0, -75);
-        }
-    };
-
-    pathfuncs[3] = function() {
-        ctx.beginPath();
-        ctx.moveTo(75, 65);
-        ctx.bezierCurveTo(75, 57, 70, 45, 50, 45);
-        ctx.bezierCurveTo(20, 45, 20, 82, 20, 82);
-        ctx.bezierCurveTo(20, 100, 40, 122, 75, 155);
-        ctx.bezierCurveTo(110, 122, 130, 100, 130, 82);
-        ctx.bezierCurveTo(130, 82, 130, 45, 100, 45);
-        ctx.bezierCurveTo(85, 45, 75, 57, 75, 65);
-    };
-
-    pathfuncs[4] = function() {
-        ctx.beginPath();
-        ctx.arc(75, 100, 75, 3, 4.3, true);
-        ctx.arc(48, 83, 52, 5, 2.5, false);
-    };
-
-    pathfuncs[5] = function() {
-        ctx.beginPath();
-        ctx.beginPath();
-        ctx.moveTo(50, 180);
-        ctx.lineTo(100, 180);
-        ctx.quadraticCurveTo(80, 140, 75, 120);
-        ctx.arc(110, 110, 35, 2.6779, 5.712, true);
-        ctx.lineTo(75, 0);
-        ctx.arc(40, 110, 35, 3.712, 0.4636, true);
-        ctx.quadraticCurveTo(70, 140, 50, 180);
-    };
-
-    if (rainbow) {
-        // Change the spade symbol on the 6th stack to a rainbow
-        pathfuncs[5] = function() {
-            ctx.beginPath();
-            ctx.moveTo(0, 140);
-            ctx.arc(75, 140, 75, Math.PI, 0, false);
-            ctx.lineTo(125, 140);
-            ctx.arc(75, 140, 25, 0, Math.PI, true);
-            ctx.lineTo(0, 140);
-        };
-    }
-
-    var backpath = function(p) {
-        ctx.beginPath();
-        ctx.moveTo(p, yrad + p);
-        ctx.lineTo(p, cardh - yrad - p);
-        ctx.quadraticCurveTo(0, cardh, xrad + p, cardh - p);
-        ctx.lineTo(cardw - xrad - p, cardh - p);
-        ctx.quadraticCurveTo(cardw, cardh, cardw - p, cardh - yrad - p);
-        ctx.lineTo(cardw - p, yrad + p);
-        ctx.quadraticCurveTo(cardw, 0, cardw - xrad - p, p);
-        ctx.lineTo(xrad + p, p);
-        ctx.quadraticCurveTo(0, 0, p, yrad + p);
-    };
-
-    var drawshape = function() {
-        ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-        ctx.fill();
-        ctx.shadowColor = "rgba(0, 0, 0, 0)";
-        ctx.stroke();
-    };
-
     // 0-5 are the real suits. 6 is a "white" suit for replays
-    for (i = 0; i < 7; i++) {
-        // 0 is the stack base. 1-5 are the cards 1-5. 6 is a numberless card for replays.
-        for (j = 0; j < 7; j++) {
-            name = "card-" + i + "-" + j;
+    let suits = this.variant.suits.concat(SUIT.GRAY);
+    {
+        let i = 0;
+        for (let suit of suits) {
+            // 0 is the stack base. 1-5 are the cards 1-5. 6 is a numberless card for replays.
+            for (let j = 0; j < 7; j++) {
+                cvs = document.createElement("canvas");
+                cvs.width = CARDW;
+                cvs.height = CARDH;
 
-            cvs = document.createElement("canvas");
-            cvs.width = cardw;
-            cvs.height = cardh;
+                // will this be erroneous for novariant since it has only 5
+                // suits?
+                let name = "card-" + i + "-" + j;
+                card_images[name] = cvs;
 
-            ctx = cvs.getContext("2d");
+                ctx = cvs.getContext("2d");
 
-            card_images[name] = cvs;
+                backpath(ctx, 4, xrad, yrad);
 
-            backpath(4);
-
-            ctx.fillStyle = "white";
-            ctx.fill();
-
-            ctx.save();
-            ctx.clip();
-            ctx.globalAlpha = 0.2;
-            ctx.strokeStyle = "black";
-            for (x = 0; x < cardw; x += 4 + Math.random() * 4) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, cardh);
-                ctx.stroke();
-            }
-            for (y = 0; y < cardh; y += 4 + Math.random() * 4) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(cardw, y);
-                ctx.stroke();
-            }
-            ctx.restore();
-
-            // Draw the background
-            if (i === 5 && rainbow) {
-                // Make multi card backgrounds a gradient with all 5 colors
-                grad = ctx.createLinearGradient(0, 0, 0, cardh);
-
-                grad.addColorStop(0, suit_colors[0]);
-                grad.addColorStop(0.25, suit_colors[1]);
-                grad.addColorStop(0.5, suit_colors[2]);
-                grad.addColorStop(0.75, suit_colors[3]);
-                grad.addColorStop(1, suit_colors[4]);
-
-                ctx.fillStyle = grad;
-                ctx.strokeStyle = grad;
-
-            } else if (mixed && i <= 5) {
-                ctx.fillStyle = mixed_suit_colors[i];
-                ctx.strokeStyle = mixed_suit_colors[i];
-
-            } else if (mm && i <= 4) {
-                ctx.fillStyle = mm_suit_colors[i];
-                ctx.strokeStyle = mm_suit_colors[i];
-
-            } else {
-                ctx.fillStyle = suit_colors[i];
-                ctx.strokeStyle = suit_colors[i];
-            }
-
-            backpath(4);
-
-            // Draw the borders (on visible cards) and the color fill
-            ctx.save();
-            ctx.globalAlpha = 0.3;
-            ctx.fill();
-            ctx.globalAlpha = 0.7;
-            ctx.lineWidth = 8;
-            ctx.stroke();
-            ctx.restore();
-
-            ctx.shadowBlur = 10;
-
-            if (i === 5 && rainbow) {
-                // Make the color of the number on each card a gradient for multi cards
-                grad = ctx.createLinearGradient(0, 14, 0, 110);
-
-                grad.addColorStop(0, suit_colors[0]);
-                grad.addColorStop(0.25, suit_colors[1]);
-                grad.addColorStop(0.5, suit_colors[2]);
-                grad.addColorStop(0.75, suit_colors[3]);
-                grad.addColorStop(1, suit_colors[4]);
-
-                ctx.fillStyle = grad;
-
-            }
-
-            var suit_letter = suit_abbreviations[i];
-            if (suit_letter === "K" && rainbow) {
-                suit_letter = "M";
-            }
-
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 2;
-            ctx.lineJoin = "round";
-            var text_y_pos = 110;
-            ctx.font = "bold 96pt Arial";
-            var index_label = j.toString();
-            if (j === 6) {
-                index_label = "";
-            }
-
-            if (lobby.show_colorblind_ui) {
-                ctx.font = "bold 68pt Arial";
-                text_y_pos = 83;
-                index_label = suit_letter + index_label;
-            }
-
-            ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-            ctx.fillText(index_label, 19, text_y_pos);
-            ctx.shadowColor = "rgba(0, 0, 0, 0)";
-            ctx.strokeText(index_label, 19, text_y_pos);
-            ctx.save();
-
-            ctx.translate(cardw, cardh);
-            ctx.rotate(Math.PI);
-            ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-            ctx.fillText(index_label, 19, text_y_pos);
-            ctx.shadowColor = "rgba(0, 0, 0, 0)";
-            ctx.strokeText(index_label, 19, text_y_pos);
-            ctx.restore();
-
-            if (i === 5 && rainbow) {
-                // Make the rainbow symbol a gradient
-                grad = ctx.createRadialGradient(75, 150, 25, 75, 150, 75);
-
-                grad.addColorStop(0, suit_colors[0]);
-                grad.addColorStop(0.25, suit_colors[1]);
-                grad.addColorStop(0.5, suit_colors[2]);
-                grad.addColorStop(0.75, suit_colors[3]);
-                grad.addColorStop(1, suit_colors[4]);
-
-                ctx.fillStyle = grad;
-            }
-
-            ctx.lineWidth = 5;
-            if (i !== 6) {
-                // The middle for cards 2 or 4
-                if (j === 1 || j === 3) {
-                    ctx.save();
-                    ctx.translate(cardw / 2, cardh / 2);
-                    ctx.scale(0.4, 0.4);
-                    ctx.translate(-75, -100);
-                    pathfuncs[i]();
-                    drawshape();
-                    ctx.restore();
-                }
-
-                // Top and bottom for cards 3, 4, 5
-                if (j > 1 && j !== 6) {
-                    var symbol_y_pos = 120;
-                    if (lobby.show_colorblind_ui) {
-                        symbol_y_pos = 85;
-                    }
-                    ctx.save();
-                    ctx.translate(cardw / 2, cardh / 2);
-                    ctx.translate(0, -symbol_y_pos);
-                    ctx.scale(0.4, 0.4);
-                    ctx.translate(-75, -100);
-                    pathfuncs[i]();
-                    drawshape();
-                    ctx.restore();
-
-                    ctx.save();
-                    ctx.translate(cardw / 2, cardh / 2);
-                    ctx.translate(0, symbol_y_pos);
-                    ctx.scale(0.4, 0.4);
-                    ctx.rotate(Math.PI);
-                    ctx.translate(-75, -100);
-                    pathfuncs[i]();
-                    drawshape();
-                    ctx.restore();
-                }
-
-                // Left and right for cards 4 and 5
-                if (j > 3 && j !== 6) {
-                    ctx.save();
-                    ctx.translate(cardw / 2, cardh / 2);
-                    ctx.translate(-90, 0);
-                    ctx.scale(0.4, 0.4);
-                    ctx.translate(-75, -100);
-                    pathfuncs[i]();
-                    drawshape();
-                    ctx.restore();
-
-                    ctx.save();
-                    ctx.translate(cardw / 2, cardh / 2);
-                    ctx.translate(90, 0);
-                    ctx.scale(0.4, 0.4);
-                    ctx.rotate(Math.PI);
-                    ctx.translate(-75, -100);
-                    pathfuncs[i]();
-                    drawshape();
-                    ctx.restore();
-                }
-
-                if (j === 0) {
-                    ctx.clearRect(0, 0, cardw, cardh);
-                    if (lobby.show_colorblind_ui) {
-                        ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-                        ctx.fillText(suit_letter, 19, 83);
-                        ctx.shadowColor = "rgba(0, 0, 0, 0)";
-                        ctx.strokeText(suit_letter, 19, 83);
-                    }
-                }
-
-                // Colour adjustment for the central icon on cards 1 and 5
-                if (j === 0 || j === 5) {
-                    ctx.save();
-                    ctx.translate(cardw / 2, cardh / 2);
-                    ctx.scale(0.6, 0.6);
-                    ctx.translate(-75, -100);
-                    pathfuncs[i]();
-                    drawshape();
-                    ctx.restore();
-                }
-            }
-
-            // Make the special corners on cards for the mixed variant
-            if ((i <= 5 && mixed) || (i <= 4 && mm)) {
-                let color1;
-                let color2;
-                if (mixed) {
-                    color1 = mixed_clue_colors[mixed_suit_color_composition[i][0]];
-                    color2 = mixed_clue_colors[mixed_suit_color_composition[i][1]];
-                } else if (mm) {
-                    color1 = suit_colors[mm_color_composition[i][0]];
-                    color2 = suit_colors[mm_color_composition[i][1]];
-                }
+                ctx.fillStyle = "white";
+                ctx.fill();
 
                 ctx.save();
-
-                ctx.lineWidth = 1;
-
-                let triangleSize = 50;
-                let borderSize = 8;
-
-                // Draw the first half of the top-right triangle
-                ctx.beginPath();
-                ctx.moveTo(cardw - borderSize, borderSize); // Start at the top right-hand corner
-                ctx.lineTo(cardw - borderSize - triangleSize, borderSize); // Move left
-                ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move down and right diagonally
-                ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
-                ctx.fillStyle = color1;
-                drawshape();
-
-                // Draw the second half of the top-right triangle
-                ctx.beginPath();
-                ctx.moveTo(cardw - borderSize, borderSize); // Start at the top right-hand corner
-                ctx.lineTo(cardw - borderSize, borderSize + triangleSize); // Move down
-                ctx.lineTo(cardw - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move up and left diagonally
-                ctx.moveTo(cardw - borderSize, borderSize); // Move back to the beginning
-                ctx.fillStyle = color2;
-                drawshape();
-
-                // Draw the first half of the bottom-left triangle
-                ctx.beginPath();
-                ctx.moveTo(borderSize, cardh - borderSize); // Start at the bottom right-hand corner
-                ctx.lineTo(borderSize, cardh - borderSize - triangleSize); // Move up
-                ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move right and down diagonally
-                ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
-                ctx.fillStyle = color1;
-                drawshape();
-
-                // Draw the second half of the bottom-left triangle
-                ctx.beginPath();
-                ctx.moveTo(borderSize, cardh - borderSize); // Start at the bottom right-hand corner
-                ctx.lineTo(borderSize + triangleSize, cardh - borderSize); // Move right
-                ctx.lineTo(borderSize + (triangleSize / 2), cardh - borderSize - (triangleSize / 2)); // Move left and up diagonally
-                ctx.moveTo(borderSize, cardh - borderSize); // Move back to the beginning
-                ctx.fillStyle = color2;
-                drawshape();
-
+                ctx.clip();
+                ctx.globalAlpha = 0.2;
+                ctx.strokeStyle = "black";
+                for (let x = 0; x < CARDW; x += 4 + Math.random() * 4) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, CARDH);
+                    ctx.stroke();
+                }
+                for (let y = 0; y < CARDH; y += 4 + Math.random() * 4) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(CARDW, y);
+                    ctx.stroke();
+                }
                 ctx.restore();
+
+                // Draw the background
+                ctx.fillStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
+                ctx.strokeStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
+
+                backpath(ctx, 4, xrad, yrad);
+                ctx.save();
+
+                // Draw the borders (on visible cards) and the color fill
+                ctx.globalAlpha = 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 0.7;
+                ctx.lineWidth = 8;
+                ctx.stroke();
+                ctx.restore();
+
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = suit.style(ctx, CARD_AREA.NUMBER);
+
+                var suit_letter = suit.abbreviation;
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 2;
+                ctx.lineJoin = "round";
+                var text_y_pos = 110;
+                ctx.font = "bold 96pt Arial";
+                var index_label = j.toString();
+                if (j === 6) {
+                    index_label = "";
+                }
+
+                if (lobby.show_colorblind_ui) {
+                    ctx.font = "bold 68pt Arial";
+                    text_y_pos = 83;
+                    index_label = suit_letter + index_label;
+                }
+
+                ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+                ctx.fillText(index_label, 19, text_y_pos);
+                ctx.shadowColor = "rgba(0, 0, 0, 0)";
+                ctx.strokeText(index_label, 19, text_y_pos);
+                ctx.save();
+
+                ctx.translate(CARDW, CARDH);
+                ctx.rotate(Math.PI);
+                ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+                ctx.fillText(index_label, 19, text_y_pos);
+                ctx.shadowColor = "rgba(0, 0, 0, 0)";
+                ctx.strokeText(index_label, 19, text_y_pos);
+                ctx.restore();
+
+                ctx.fillStyle = suit.style(ctx, CARD_AREA.SYMBOL);
+
+                ctx.lineWidth = 5;
+                if (suit !== SUIT.GRAY) {
+                    let pathfunc = PATHFUNC.get(suit.shape);
+                    // The middle for cards 2 or 4
+                    if (j === 1 || j === 3) {
+                        ctx.save();
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.scale(0.4, 0.4);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
+                        drawshape(ctx);
+                        ctx.restore();
+                    }
+
+                    // Top and bottom for cards 3, 4, 5
+                    if (j > 1 && j !== 6) {
+                        var symbol_y_pos = 120;
+                        if (lobby.show_colorblind_ui) {
+                            symbol_y_pos = 85;
+                        }
+                        ctx.save();
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.translate(0, -symbol_y_pos);
+                        ctx.scale(0.4, 0.4);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
+                        drawshape(ctx);
+                        ctx.restore();
+
+                        ctx.save();
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.translate(0, symbol_y_pos);
+                        ctx.scale(0.4, 0.4);
+                        ctx.rotate(Math.PI);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
+                        drawshape(ctx);
+                        ctx.restore();
+                    }
+
+                    // Left and right for cards 4 and 5
+                    if (j > 3 && j !== 6) {
+                        ctx.save();
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.translate(-90, 0);
+                        ctx.scale(0.4, 0.4);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
+                        drawshape(ctx);
+                        ctx.restore();
+
+                        ctx.save();
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.translate(90, 0);
+                        ctx.scale(0.4, 0.4);
+                        ctx.rotate(Math.PI);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
+                        drawshape(ctx);
+                        ctx.restore();
+                    }
+
+                    if (j === 0) {
+                        ctx.clearRect(0, 0, CARDW, CARDH);
+                        if (lobby.show_colorblind_ui) {
+                            ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+                            ctx.fillText(suit_letter, 19, 83);
+                            ctx.shadowColor = "rgba(0, 0, 0, 0)";
+                            ctx.strokeText(suit_letter, 19, 83);
+                        }
+                    }
+
+                    // Colour adjustment for the central icon on cards 1 and 5
+                    if (j === 0 || j === 5) {
+                        ctx.save();
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.scale(0.6, 0.6);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
+                        drawshape(ctx);
+                        ctx.restore();
+                    }
+                }
+
+                // Make the special corners on cards for the mixed variant
+                let clue_colors = suit.clue_colors;
+                if (clue_colors.length === 2) {
+                    let [clue_color_1, clue_color_2] = suit.clue_colors;
+
+                    ctx.save();
+
+                    ctx.lineWidth = 1;
+
+                    let triangleSize = 50;
+                    let borderSize = 8;
+
+                    // Draw the first half of the top-right triangle
+                    ctx.beginPath();
+                    ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top right-hand corner
+                    ctx.lineTo(CARDW - borderSize - triangleSize, borderSize); // Move left
+                    ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move down and right diagonally
+                    ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
+                    ctx.fillStyle = clue_color_1.hex_code;
+                    drawshape(ctx);
+
+                    // Draw the second half of the top-right triangle
+                    ctx.beginPath();
+                    ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top right-hand corner
+                    ctx.lineTo(CARDW - borderSize, borderSize + triangleSize); // Move down
+                    ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move up and left diagonally
+                    ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
+                    ctx.fillStyle = clue_color_2.hex_code;
+                    drawshape(ctx);
+
+                    // Draw the first half of the bottom-left triangle
+                    ctx.beginPath();
+                    ctx.moveTo(borderSize, CARDH - borderSize); // Start at the bottom right-hand corner
+                    ctx.lineTo(borderSize, CARDH - borderSize - triangleSize); // Move up
+                    ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2)); // Move right and down diagonally
+                    ctx.moveTo(borderSize, CARDH - borderSize); // Move back to the beginning
+                    ctx.fillStyle = clue_color_1.hex_code;
+                    drawshape(ctx);
+
+                    // Draw the second half of the bottom-left triangle
+                    ctx.beginPath();
+                    ctx.moveTo(borderSize, CARDH - borderSize); // Start at the bottom right-hand corner
+                    ctx.lineTo(borderSize + triangleSize, CARDH - borderSize); // Move right
+                    ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2)); // Move left and up diagonally
+                    ctx.moveTo(borderSize, CARDH - borderSize); // Move back to the beginning
+                    ctx.fillStyle = clue_color_1.hex_code;
+                    drawshape(ctx);
+
+                    ctx.restore();
+                }
             }
+            ++i;
         }
     }
 
     cvs = document.createElement("canvas");
-    cvs.width = cardw;
-    cvs.height = cardh;
+    cvs.width = CARDW;
+    cvs.height = CARDH;
 
     ctx = cvs.getContext("2d");
 
     card_images["card-back"] = cvs;
 
-    backpath(4);
+    backpath(ctx, 4, xrad, yrad);
 
     ctx.fillStyle = "white";
     ctx.fill();
@@ -2513,23 +2288,23 @@ this.build_cards = function() {
     ctx.clip();
     ctx.globalAlpha = 0.2;
     ctx.strokeStyle = "black";
-    for (x = 0; x < cardw; x += 4 + Math.random() * 4) {
+    for (let x = 0; x < CARDW; x += 4 + Math.random() * 4) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
-        ctx.lineTo(x, cardh);
+        ctx.lineTo(x, CARDH);
         ctx.stroke();
     }
-    for (y = 0; y < cardh; y += 4 + Math.random() * 4) {
+    for (let y = 0; y < CARDH; y += 4 + Math.random() * 4) {
         ctx.beginPath();
         ctx.moveTo(0, y);
-        ctx.lineTo(cardw, y);
+        ctx.lineTo(CARDW, y);
         ctx.stroke();
     }
     ctx.restore();
 
     ctx.fillStyle = "black";
 
-    backpath(4);
+    backpath(ctx, 4, xrad, yrad);
 
     ctx.save();
     ctx.globalAlpha = 0.5;
@@ -2543,19 +2318,24 @@ this.build_cards = function() {
     ctx.lineWidth = 8;
     ctx.lineJoin = "round";
 
-    ctx.translate(cardw / 2, cardh / 2);
+    ctx.translate(CARDW / 2, CARDH / 2);
 
-    for (i = 0; i < 5; i++) {
-        ctx.save();
-        ctx.translate(0, -90);
-        ctx.scale(0.4, 0.4);
-        ctx.rotate(-i * Math.PI * 2 / 5);
-        ctx.translate(-75, -100);
-        pathfuncs[i]();
-        drawshape();
-        ctx.restore();
+    // Draw the shapes on the gray cardback
+    {
+        let i = 0;
+        for (let shape of [SHAPE.DIAMOND, SHAPE.CLUB, SHAPE.STAR, SHAPE.HEART, SHAPE.CRESCENT]) {
+            ctx.save();
+            ctx.translate(0, -90);
+            ctx.scale(0.4, 0.4);
+            ctx.rotate(-i * Math.PI * 2 / 5);
+            ctx.translate(-75, -100);
+            PATHFUNC.get(shape)(ctx);
+            drawshape(ctx);
+            ctx.restore();
 
-        ctx.rotate(Math.PI * 2 / 5);
+            ctx.rotate(Math.PI * 2 / 5);
+            ++i;
+        }
     }
 };
 
@@ -2618,9 +2398,9 @@ var spectators_label, spectators_num_label, spectators_label_tooltip;
 var shared_replay_leader_label, shared_replay_leader_label_tooltip;
 var strikes = [];
 var name_frames = [];
-var play_stacks = [], discard_stacks = [];
+var play_stacks = new Map(), discard_stacks = new Map();
 var play_area, discard_area, clue_log;
-var clue_area, clue_target_group, clue_type_group, submit_clue;
+var clue_area, clue_target_button_group, clue_button_group, submit_clue;
 var timer_rect1, timer_label1, timer_text1;
 var timer_rect2, timer_label2, timer_text2;
 var no_clue_label, no_clue_box, no_discard_label, deck_play_available_label;
@@ -2630,6 +2410,7 @@ var lobby_button, help_button;
 var helpgroup;
 var msgloggroup, overback;
 var notes_written = {};
+var shared_replay_leader_label_tooltip;
 
 var overPlayArea = function(pos) {
     return pos.x >= play_area.getX() &&
@@ -2641,17 +2422,16 @@ var overPlayArea = function(pos) {
 this.build_ui = function() {
     var self = this;
     var x, y, width, height, offset, radius;
-    var i, j;
     var rect, img, text, button;
     var suits = 5;
 
-    if (this.variant) {
+    if (this.variant !== VARIANT.NONE) {
         suits = 6;
     }
 
     var layers = stage.getLayers();
 
-    for (i = 0; i < layers.length; i++) {
+    for (let i = 0; i < layers.length; i++) {
         layers[i].remove();
     }
 
@@ -2794,7 +2574,7 @@ this.build_ui = function() {
 
     bglayer.add(rect);
 
-    for (i = 0; i < 3; i++) {
+    for (let i = 0; i < 3; i++) {
         rect = new Kinetic.Rect({
             x: (0.67 + 0.04 * i) * win_w,
             y: 0.91 * win_h,
@@ -3064,85 +2844,86 @@ this.build_ui = function() {
 
     var pileback;
 
-    y = 0.05;
-    width = 0.075;
-    height = 0.189;
-    offset = 0;
-    radius = 0.006;
-
-    if (this.variant) {
+    if (this.variant.suits.length === 6) {
         y = 0.04;
         width = 0.06;
         height = 0.151;
         offset = 0.019;
         radius = 0.004;
+    } else { // 5 stacks
+        y = 0.05;
+        width = 0.075;
+        height = 0.189;
+        offset = 0;
+        radius = 0.006;
     }
 
-    for (i = 0; i < suits; i++) {
-        // In the play area, fill in the rectangles with the fill colors for that suit
-        let fillColor = suit_colors[i];
-        if (ui.variant === VARIANT.MIXED) {
-            fillColor = mixed_suit_colors[i];
-        } else if (ui.variant === VARIANT.MM) {
-            fillColor = mm_suit_colors[i];
+    // TODO: move blocks like this into their own functions
+    {
+        let i = 0;
+        for (let suit of this.variant.suits) {
+            // In the play area, fill in the rectangles with the fill colors for that suit
+
+            // I guess we can't use a gradient here? So much for my design
+            let ctx = null;
+            let fillColor = (suit === SUIT.MULTI) ? "#111111" : suit.style(ctx, CARD_AREA.BACKGROUND);
+            pileback = new Kinetic.Rect({
+                fill: fillColor,
+                opacity: 0.4,
+                x: (0.183 + (width + 0.015) * i) * win_w,
+                y: (0.345 + offset) * win_h,
+                width: width * win_w,
+                height: height * win_h,
+                cornerRadius: radius * win_w,
+            });
+
+            bglayer.add(pileback);
+
+            // In the play area, draw the symbol corresponding to each suit inside the rectangle
+            pileback = new Kinetic.Image({
+                x: (0.183 + (width + 0.015) * i) * win_w,
+                y: (0.345 + offset) * win_h,
+                width: width * win_w,
+                height: height * win_h,
+                image: card_images["card-" + i + "-0"],
+            });
+
+            bglayer.add(pileback);
+
+            // In the play area, draw borders around each stack rectangle
+            let strokeColor = fillColor;
+
+            pileback = new Kinetic.Rect({
+                stroke: strokeColor,
+                strokeWidth: 5,
+                x: (0.183 + (width + 0.015) * i) * win_w,
+                y: (0.345 + offset) * win_h,
+                width: width * win_w,
+                height: height * win_h,
+                cornerRadius: radius * win_w,
+            });
+            bglayer.add(pileback);
+
+            let this_suit_play_stack = new CardStack({
+                x: (0.183 + (width + 0.015) * i) * win_w,
+                y: (0.345 + offset) * win_h,
+                width: width * win_w,
+                height: height * win_h,
+            });
+            play_stacks.set(suit, this_suit_play_stack);
+            cardlayer.add(this_suit_play_stack);
+
+            let this_suit_discard_stack = new CardLayout({
+                x: 0.81 * win_w,
+                y: (0.61 + y * i) * win_h,
+                width: 0.17 * win_w,
+                height: 0.17 * win_h,
+            });
+            discard_stacks.set(suit, this_suit_discard_stack);
+            cardlayer.add(this_suit_discard_stack);
+
+            ++i;
         }
-        pileback = new Kinetic.Rect({
-            fill: fillColor,
-            opacity: 0.4,
-            x: (0.183 + (width + 0.015) * i) * win_w,
-            y: (0.345 + offset) * win_h,
-            width: width * win_w,
-            height: height * win_h,
-            cornerRadius: radius * win_w,
-        });
-
-        bglayer.add(pileback);
-
-        // In the play area, draw the symbol corresponding to each suit inside the rectangle
-        pileback = new Kinetic.Image({
-            x: (0.183 + (width + 0.015) * i) * win_w,
-            y: (0.345 + offset) * win_h,
-            width: width * win_w,
-            height: height * win_h,
-            image: card_images["card-" + i + "-0"],
-        });
-
-        bglayer.add(pileback);
-
-        // In the play area, draw borders around each stack rectangle
-        let strokeColor = suit_colors[i];
-        if (ui.variant === VARIANT.MIXED) {
-            strokeColor = mixed_suit_colors[i];
-        }
-
-        pileback = new Kinetic.Rect({
-            stroke: strokeColor,
-            strokeWidth: 5,
-            x: (0.183 + (width + 0.015) * i) * win_w,
-            y: (0.345 + offset) * win_h,
-            width: width * win_w,
-            height: height * win_h,
-            cornerRadius: radius * win_w,
-        });
-        bglayer.add(pileback);
-
-        play_stacks[i] = new CardStack({
-            x: (0.183 + (width + 0.015) * i) * win_w,
-            y: (0.345 + offset) * win_h,
-            width: width * win_w,
-            height: height * win_h,
-        });
-
-        cardlayer.add(play_stacks[i]);
-
-        discard_stacks[i] = new CardLayout({
-            x: 0.81 * win_w,
-            y: (0.61 + y * i) * win_h,
-            width: 0.17 * win_w,
-            height: 0.17 * win_h,
-        });
-
-        cardlayer.add(discard_stacks[i]);
     }
 
     rect = new Kinetic.Rect({
@@ -3283,8 +3064,8 @@ this.build_ui = function() {
 
     var nump = this.player_names.length;
 
-    for (i = 0; i < nump; i++) {
-        j = i - this.player_us;
+    for (let i = 0; i < nump; i++) {
+        let j = i - this.player_us;
 
         if (j < 0) {
             j += nump;
@@ -3439,9 +3220,9 @@ this.build_ui = function() {
         height: 0.27 * win_h,
     });
 
-    clue_target_group = new ButtonGroup();
+    clue_target_button_group = new ButtonGroup();
 
-    clue_target_group.selectNextTarget = function () {
+    clue_target_button_group.selectNextTarget = function () {
         let newSelectionIndex = 0;
         for (let i = 0; i < this.list.length; i++) {
             if (this.list[i].pressed) {
@@ -3453,7 +3234,7 @@ this.build_ui = function() {
         this.list[newSelectionIndex].dispatchEvent(new MouseEvent("click"));
     };
 
-    clue_type_group = new ButtonGroup();
+    clue_button_group = new ButtonGroup();
 
     // Store each button inside an array for later
     // (so that we can press them with keyboard hotkeys)
@@ -3462,8 +3243,8 @@ this.build_ui = function() {
 
     x = 0.26 * win_w - (nump - 2) * 0.044 * win_w;
 
-    for (i = 0; i < nump - 1; i++) {
-        j = (this.player_us + i + 1) % nump;
+    for (let i = 0; i < nump - 1; i++) {
+        let j = (this.player_us + i + 1) % nump;
 
         button = new Button({
             x: x,
@@ -3478,20 +3259,17 @@ this.build_ui = function() {
 
         x += 0.0875 * win_w;
 
-        clue_target_group.add(button);
+        clue_target_button_group.add(button);
     }
 
-    for (i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 5; i++) {
         button = new NumberButton({
             x: (0.183 + (i - 1) * 0.049) * win_w,
             y: 0.027 * win_h,
             width: 0.04 * win_w,
             height: 0.071 * win_h,
             number: i,
-            clue_type: {
-                type: CLUE.RANK,
-                value: i,
-            },
+            clue: new Clue(CLUE_TYPE.RANK, i)
         });
 
         // Add it to the tracking array (for keyboard hotkeys)
@@ -3499,40 +3277,38 @@ this.build_ui = function() {
 
         clue_area.add(button);
 
-        clue_type_group.add(button);
+        clue_button_group.add(button);
     }
 
-    suits = 5;
     x = 0.183;
 
     if (this.variant === VARIANT.BLACKSUIT || this.variant === VARIANT.BLACKONE) {
-        suits = 6;
         x = 0.158;
     } else if (this.variant === VARIANT.MIXED) {
-        suits = 4;
         x = 0.208;
     }
 
-    for (i = 0; i < suits; i++) {
-        button = new ColorButton({
-            x: (x + i * 0.049) * win_w,
-            y: 0.1 * win_h,
-            width: 0.04 * win_w,
-            height: 0.071 * win_h,
-            color: (this.variant === VARIANT.MIXED ? mixed_clue_colors[i] : suit_colors[i]),
-            text: suit_abbreviations[i],
-            clue_type: {
-                type: CLUE.SUIT,
-                value: i,
-            },
-        });
+    {
+        let i = 0;
+        for (let color of this.variant.clue_colors) {
+            button = new ColorButton({
+                x: (x + i * 0.049) * win_w,
+                y: 0.1 * win_h,
+                width: 0.04 * win_w,
+                height: 0.071 * win_h,
+                color: color.hex_code,
+                text: color.abbreviation,
+                clue: new Clue(CLUE_TYPE.COLOR, color)
+            });
 
-        clue_area.add(button);
+            clue_area.add(button);
 
         // Add it to the tracking array (for keyboard hotkeys)
         suitClueButtons.push(button);
 
-        clue_type_group.add(button);
+            clue_button_group.add(button);
+            ++i;
+        }
     }
 
     submit_clue = new Button({
@@ -3911,11 +3687,11 @@ this.build_ui = function() {
 
     // Add "Tab" for player selection
     clueKeyMap.Tab = function() {
-        clue_target_group.selectNextTarget();
+        clue_target_button_group.selectNextTarget();
     };
 
     // Add "12345" to the map (for number clues)
-    for (i = 0; i < rankClueButtons.length; i++) {
+    for (let i = 0; i < rankClueButtons.length; i++) {
         // The button for "1" is at array index 0, etc.
         clueKeyMap[i + 1] = mouseClickHelper(rankClueButtons[i]);
     }
@@ -4182,15 +3958,11 @@ this.reset = function() {
     message_prompt.setMultiText("");
     msgloggroup.reset();
 
-    suits = 5;
+    suits = this.variant.suits;
 
-    if (this.variant > 0) {
-        suits = 6;
-    }
-
-    for (i = 0; i < suits; i++) {
-        play_stacks[i].removeChildren();
-        discard_stacks[i].removeChildren();
+    for (let suit of suits) {
+        play_stacks.get(suit).removeChildren();
+        discard_stacks.get(suit).removeChildren();
     }
 
     for (i = 0; i < this.player_names.length; i++) {
@@ -4421,32 +4193,32 @@ function show_loading() {
 
 show_loading();
 
-var suit_names = [
-    "Blue",
-    "Green",
-    "Yellow",
-    "Red",
-    "Purple",
-    "Black",
-    " ",
-];
-
-var mixed_clue_names = [
-    "Blue",
-    "Yellow",
-    "Red",
-    "Black",
-];
-
-var suit_abbreviations = [
-    "B",
-    "G",
-    "Y",
-    "R",
-    "P",
-    "K",
-    "",
-];
+//var suit_names = [
+//    "Blue",
+//    "Green",
+//    "Yellow",
+//    "Red",
+//    "Purple",
+//    "Black",
+//    " ",
+//];
+//
+//var mixed_clue_names = [
+//    "Blue",
+//    "Yellow",
+//    "Red",
+//    "Black",
+//];
+//
+//var suit_abbreviations = [
+//    "B",
+//    "G",
+//    "Y",
+//    "R",
+//    "P",
+//    "K",
+//    "",
+//];
 
 this.getNote = function(card_order) {
     return notes_written[card_order];
@@ -4480,15 +4252,15 @@ this.handle_notify = function(note, performing_replay) {
     var child, order;
     var pos, scale, n;
     var i;
-
     if (ui.activeHover) {
         ui.activeHover.dispatchEvent(new MouseEvent("mouseout"));
         ui.activeHover = null;
     }
 
     if (type === "draw") {
+        let suit = msg_suit_to_suit(note.suit, ui.variant);
         ui.deck[note.order] = new HanabiCard({
-            suit: note.suit,
+            suit: suit,
             rank: note.rank,
             order: note.order,
         });
@@ -4501,7 +4273,7 @@ this.handle_notify = function(note, performing_replay) {
         child.setAbsolutePosition(pos);
         child.setRotation(-player_hands[note.who].getRotation());
 
-        scale = drawdeck.cardback.getWidth() / cardw;
+        scale = drawdeck.cardback.getWidth() / CARDW;
         child.setScale({
             x: scale,
             y: scale,
@@ -4514,15 +4286,16 @@ this.handle_notify = function(note, performing_replay) {
         drawdeck.setCount(note.size);
 
     } else if (type === "played") {
+        let suit = msg_suit_to_suit(note.which.suit, ui.variant);
         show_clue_match(-1);
 
         child = ui.deck[note.which.order].parent;
 
-        ui.deck[note.which.order].suit = note.which.suit;
+        ui.deck[note.which.order].suit = suit;
         ui.deck[note.which.order].rank = note.which.rank;
         ui.deck[note.which.order].unknown = false;
         ui.learned_cards[note.which.order] = {
-            suit: note.which.suit,
+            suit: suit,
             rank: note.which.rank,
             revealed: true,
         };
@@ -4534,22 +4307,22 @@ this.handle_notify = function(note, performing_replay) {
         child.remove();
         child.setAbsolutePosition(pos);
 
-        play_stacks[note.which.suit].add(child);
-
-        play_stacks[note.which.suit].moveToTop();
+        play_stacks.get(suit).add(child);
+        play_stacks.get(suit).moveToTop();
 
         clue_log.checkExpiry();
 
     } else if (type === "discard") {
+        let suit = msg_suit_to_suit(note.which.suit, ui.variant);
         show_clue_match(-1);
 
         child = ui.deck[note.which.order].parent;
 
-        ui.deck[note.which.order].suit = note.which.suit;
+        ui.deck[note.which.order].suit = suit;
         ui.deck[note.which.order].rank = note.which.rank;
         ui.deck[note.which.order].unknown = false;
         ui.learned_cards[note.which.order] = {
-            suit: note.which.suit,
+            suit: suit,
             rank: note.which.rank,
             revealed: true,
         };
@@ -4561,11 +4334,11 @@ this.handle_notify = function(note, performing_replay) {
         child.remove();
         child.setAbsolutePosition(pos);
 
-        discard_stacks[note.which.suit].add(child);
+        discard_stacks.get(suit).add(child);
 
-        for (i = 0; i < 6; i++) {
-            if (discard_stacks[i]) {
-                discard_stacks[i].moveToTop();
+        for (let [_, discard_stack] of discard_stacks) {
+            if (discard_stack) {
+                discard_stack.moveToTop();
             }
         }
 
@@ -4586,13 +4359,14 @@ this.handle_notify = function(note, performing_replay) {
         clue_log.checkExpiry();
 
     } else if (type === "reveal") {
+        let suit = msg_suit_to_suit(note.which.suit, ui.variant);
         child = ui.deck[note.which.order].parent;
 
-        ui.deck[note.which.order].suit = note.which.suit;
+        ui.deck[note.which.order].suit = suit;
         ui.deck[note.which.order].rank = note.which.rank;
         ui.deck[note.which.order].unknown = false;
         ui.learned_cards[note.which.order] = {
-            suit: note.which.suit,
+            suit: suit,
             rank: note.which.rank,
             revealed: true,
         };
@@ -4604,6 +4378,7 @@ this.handle_notify = function(note, performing_replay) {
         }
 
     } else if (type === "clue") {
+        let clue = msg_clue_to_clue(note.clue, ui.variant);
         show_clue_match(-1);
 
         for (i = 0; i < note.list.length; i++) {
@@ -4611,7 +4386,7 @@ this.handle_notify = function(note, performing_replay) {
             ui.deck[note.list[i]].clue_given.show();
 
             if (note.target === ui.player_us && !ui.replay_only && !ui.spectating) {
-                ui.deck[note.list[i]].add_clue(note.clue);
+                ui.deck[note.list[i]].add_clue(clue);
                 ui.deck[note.list[i]].setBareImage();
             }
         }
@@ -4628,14 +4403,11 @@ this.handle_notify = function(note, performing_replay) {
             }
         }
 
-        if (note.clue.type === CLUE.RANK) {
-            type = note.clue.value.toString();
+        let clue_name;
+        if (note.clue.type === CLUE_TYPE.RANK) {
+            clue_name = clue.value.toString();
         } else {
-            if (ui.variant === VARIANT.MIXED) {
-                type = mixed_clue_names[note.clue.value];
-            } else {
-                type = suit_names[note.clue.value];
-            }
+            clue_name = clue.value.name;
         }
 
         var entry = new HanabiClueEntry({
@@ -4643,7 +4415,7 @@ this.handle_notify = function(note, performing_replay) {
             height: 0.017 * win_h,
             giver: ui.player_names[note.giver],
             target: ui.player_names[note.target],
-            type: type,
+            clue_name: clue_name,
             list: note.list,
             neglist: neglist,
         });
@@ -4774,7 +4546,7 @@ this.handle_spectators = function(note) {
         }
         tooltipString = tooltipString.slice(0, -1); // Chop off the trailing newline
 
-        spectators_label_tooltip.getText().setText(tooltipString)
+        spectators_label_tooltip.getText().setText(tooltipString);
     }
     uilayer.draw();
 };
@@ -4958,8 +4730,8 @@ this.stop_action = function(fast) {
     no_discard_label.hide();
 
     show_clue_match(-1);
-    clue_target_group.off("change");
-    clue_type_group.off("change");
+    clue_target_button_group.off("change");
+    clue_button_group.off("change");
 
     for (i = 0; i < player_hands[ui.player_us].children.length; i++) {
         child = player_hands[ui.player_us].children[i];
@@ -5012,11 +4784,11 @@ this.handle_action = function(data) {
 
     submit_clue.setEnabled(false);
 
-    clue_target_group.clearPressed();
-    clue_type_group.clearPressed();
+    clue_target_button_group.clearPressed();
+    clue_button_group.clearPressed();
 
     if (this.player_names.length === 2) {
-        clue_target_group.list[0].setPressed(true);
+        clue_target_button_group.list[0].setPressed(true);
     }
 
     player_hands[ui.player_us].moveToTop();
@@ -5079,16 +4851,16 @@ this.handle_action = function(data) {
     }
 
     var check_clue_legal = function() {
-        var target = clue_target_group.getPressed();
-        var type = clue_type_group.getPressed();
+        var target = clue_target_button_group.getPressed();
+        var clue_button = clue_button_group.getPressed();
 
-        if (!target || !type) {
+        if (!target || !clue_button) {
             submit_clue.setEnabled(false);
             return;
         }
 
         var who = target.target_index;
-        var match = show_clue_match(who, type.clue_type);
+        var match = show_clue_match(who, clue_button.clue);
 
         if (!match) {
             submit_clue.setEnabled(false);
@@ -5098,8 +4870,8 @@ this.handle_action = function(data) {
         submit_clue.setEnabled(true);
     };
 
-    clue_target_group.on("change", check_clue_legal);
-    clue_type_group.on("change", check_clue_legal);
+    clue_target_button_group.on("change", check_clue_legal);
+    clue_button_group.on("change", check_clue_legal);
 
     submit_clue.on("click tap", function() {
         if (!data.can_clue) {
@@ -5110,8 +4882,8 @@ this.handle_action = function(data) {
             return;
         }
 
-        var target = clue_target_group.getPressed();
-        var type = clue_type_group.getPressed();
+        var target = clue_target_button_group.getPressed();
+        var clue_button = clue_button_group.getPressed();
 
         show_clue_match(target.target_index, {});
 
@@ -5120,7 +4892,7 @@ this.handle_action = function(data) {
             resp: {
                 type: ACT.CLUE,
                 target: target.target_index,
-                clue: type.clue_type,
+                clue: clue_to_msg_clue(clue_button.clue, ui.variant),
             },
         });
 
@@ -5153,7 +4925,7 @@ this.replay_log = [];
 this.replay_pos = 0;
 this.replay_turn = 0;
 
-}
+};
 
 /*
     End of Hanabi UI
@@ -5173,7 +4945,7 @@ HanabiUI.prototype.handle_message = function(msg) {
     } else if (msgType === "init") {
         this.player_us     = msgData.seat;
         this.player_names  = msgData.names;
-        this.variant       = msgData.variant;
+        this.variant = constants.VARIANT_INTEGER_MAPPING[msgData.variant];
         this.replay        = msgData.replay;
         this.replay_only   = msgData.replay;
         this.spectating    = msgData.spectating;
