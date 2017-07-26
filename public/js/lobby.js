@@ -92,7 +92,7 @@ function HanabiLobby() {
             if (!input.val()) {
                 return;
             }
-            self.send_msg({
+            self.sendMsg({
                 type: 'chat',
                 resp: {
                     msg: input.val(),
@@ -133,7 +133,7 @@ function HanabiLobby() {
 
         event.preventDefault();
 
-        self.send_msg({
+        self.sendMsg({
             type: 'create_table',
             resp: {
                 name: gameName,
@@ -149,19 +149,19 @@ function HanabiLobby() {
     });
 
     $('#show-resources').on('click', (event) => {
-        self.show_resources();
+        self.showResources();
     });
 
     $('#close-resources').on('click', (event) => {
-        self.hide_resources();
+        self.hideResources();
     });
 
     $('#show-settings').on('click', (event) => {
-        self.show_settings();
+        self.showSettings();
     });
 
     $('#close-settings').on('click', (event) => {
-        self.hide_settings();
+        self.hideSettings();
     });
 
     $('#create-game-cancel').on('click', (event) => {
@@ -173,7 +173,7 @@ function HanabiLobby() {
     $('#start-game').on('click', (event) => {
         event.preventDefault();
 
-        self.send_msg({
+        self.sendMsg({
             type: 'start_game',
             resp: {},
         });
@@ -182,7 +182,7 @@ function HanabiLobby() {
     $('#leave-game').on('click', (event) => {
         event.preventDefault();
 
-        self.send_msg({
+        self.sendMsg({
             type: 'leave_table',
             resp: {},
         });
@@ -194,7 +194,7 @@ function HanabiLobby() {
         $('#joined-table').hide();
         $('#table-area').show();
 
-        self.send_msg({
+        self.sendMsg({
             type: 'unattend_table',
             resp: {},
         });
@@ -271,7 +271,7 @@ HanabiLobby.prototype.sendLogin = function sendLogin() {
     $('#login-container').hide();
     $('#connecting').show();
 
-    this.send_msg({
+    this.sendMsg({
         type: 'login',
         resp: {
             username: this.username,
@@ -287,7 +287,7 @@ HanabiLobby.prototype.loginFailed = (reason) => {
     $('#login-result').html(`Login failed: ${reason}`);
 };
 
-HanabiLobby.prototype.reset_login = () => {
+HanabiLobby.prototype.resetLogin = () => {
     $('#login-container').show();
     $('#connecting').hide();
 
@@ -298,11 +298,11 @@ HanabiLobby.prototype.showLogin = () => {
     $('#login').show();
 };
 
-HanabiLobby.prototype.hide_login = () => {
+HanabiLobby.prototype.hideLogin = () => {
     $('#login').hide();
 };
 
-HanabiLobby.prototype.show_lobby = () => {
+HanabiLobby.prototype.showLobby = () => {
     $('#lobby').fadeIn(fadeTime);
 };
 
@@ -316,7 +316,7 @@ HanabiLobby.prototype.showCreateDialog = function showCreateDialog() {
     $('#create-game-name').val(this.randomName);
 
     // Get a new random name from the server for the next time we click the button
-    this.send_msg({
+    this.sendMsg({
         type: 'get_name',
     });
 
@@ -349,43 +349,43 @@ HanabiLobby.prototype.hideCreateDialog = () => {
     $('#create-table-dialog').fadeOut(fadeTime);
 };
 
-HanabiLobby.prototype.show_resources = () => {
+HanabiLobby.prototype.showResources = () => {
     $('#resources-dialog').fadeIn(fadeTime);
 };
 
-HanabiLobby.prototype.hide_resources = () => {
+HanabiLobby.prototype.hideResources = () => {
     $('#resources-dialog').fadeOut(fadeTime);
 };
 
-HanabiLobby.prototype.show_settings = () => {
+HanabiLobby.prototype.showSettings = () => {
     $('#settings-dialog').fadeIn(fadeTime);
 };
 
-HanabiLobby.prototype.hide_settings = () => {
+HanabiLobby.prototype.hideSettings = () => {
     $('#settings-dialog').fadeOut(fadeTime);
 };
 
-HanabiLobby.prototype.show_history_details = () => {
+HanabiLobby.prototype.showHistoryDetails = () => {
     $('#game-history').hide();
     $('#game-history-details').show();
 
     this.historyDetailList = [];
-    this.drawHistory_details();
+    this.drawHistoryDetails();
 };
 
-HanabiLobby.prototype.show_pregame = () => {
+HanabiLobby.prototype.showPregame = () => {
     $('#pregame').fadeIn(fadeTime);
 };
 
-HanabiLobby.prototype.hide_pregame = () => {
+HanabiLobby.prototype.hidePregame = () => {
     $('#pregame').hide();
 };
 
-HanabiLobby.prototype.show_game = () => {
+HanabiLobby.prototype.showGame = () => {
     $('#game').fadeIn(fadeTime);
 };
 
-HanabiLobby.prototype.hide_game = () => {
+HanabiLobby.prototype.hideGame = () => {
     $('#game').hide();
 };
 
@@ -442,9 +442,9 @@ HanabiLobby.prototype.addTable = function addTable(data) {
         joined: data.joined,
         allowSpec: data.allowSpec,
         running: data.running,
-        our_turn: data.our_turn,
+        ourTurn: data.our_turn,
         owned: data.owned,
-        shared_replay: data.shared_replay,
+        sharedReplay: data.shared_replay,
     };
     this.drawTables();
 };
@@ -483,7 +483,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 .addClass('table-attr table-name'));
 
         let playerText = `${this.tableList[gameID].numPlayers}/`;
-        playerText += (this.tableList[gameID].shared_replay ? '∞' : this.tableList[gameID].maxPlayers);
+        playerText += (this.tableList[gameID].sharedReplay ? '∞' : this.tableList[gameID].maxPlayers);
         attrs
             .append($('<li>')
                 .text(playerText)
@@ -496,7 +496,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         if (this.tableList[gameID].running && !this.tableList[gameID].joined) {
             status = 'Running';
         } else if (this.tableList[gameID].running) {
-            if (this.tableList[gameID].our_turn) {
+            if (this.tableList[gameID].ourTurn) {
                 status = '<b>Your Turn</b>';
             } else {
                 status = 'Waiting';
@@ -521,7 +521,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
                 const id = parseInt(this.id.slice(9), 10);
                 self.gameID = id;
-                self.send_msg({
+                self.sendMsg({
                     type: 'spectate_table',
                     resp: {
                         table_id: id,
@@ -543,7 +543,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
                 self.gameID = parseInt(this.id.slice(5), 10);
 
-                self.send_msg({
+                self.sendMsg({
                     type: 'join_table',
                     resp: {
                         table_id: self.gameID,
@@ -561,7 +561,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
                 self.gameID = parseInt(this.id.slice(7), 10);
 
-                self.send_msg({
+                self.sendMsg({
                     type: 'reattend_table',
                     resp: {
                         table_id: self.gameID,
@@ -596,7 +596,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 }
 
                 self.gameID = null;
-                self.send_msg({
+                self.sendMsg({
                     type: 'abandon_table',
                     resp: {
                         table_id: id,
@@ -612,7 +612,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
     }
 };
 
-HanabiLobby.prototype.add_chat = function addChat(data) {
+HanabiLobby.prototype.addChat = function addChat(data) {
     const chat = $('#chat');
 
     let line = '';
@@ -651,7 +651,7 @@ HanabiLobby.prototype.addHistory = function addHistory(data) {
         numPlayers: data.num_players,
         score: data.score,
         variant: data.variant,
-        num_scores: data.num_similar,
+        numSimilar: data.num_similar,
     };
 };
 
@@ -691,7 +691,7 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .text(`Variant: ${variantNames[this.historyList[ids[i]].variant]}`)
                 .addClass('table-attr history-variant'))
             .append($('<li>')
-                .text(`Other scores: ${this.historyList[ids[i]].num_scores - 1}`)
+                .text(`Other scores: ${this.historyList[ids[i]].numSimilar - 1}`)
                 .addClass('table-attr history-others'));
 
         const button = $('<button>').text('Compare Scores').attr('type', 'button');
@@ -702,14 +702,14 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
 
             self.gameID = parseInt(this.id.slice(16), 10);
 
-            self.send_msg({
+            self.sendMsg({
                 type: 'history_details',
                 resp: {
                     id: self.gameID,
                 },
             });
 
-            self.show_history_details();
+            self.showHistoryDetails();
         });
 
         attrs
@@ -730,10 +730,10 @@ HanabiLobby.prototype.addHistoryDetail = function addHistoryDetail(data) {
         us: data.you,
         ts: data.ts.split('T')[0],
     });
-    this.drawHistory_details();
+    this.drawHistoryDetails();
 };
 
-HanabiLobby.prototype.drawHistory_details = function drawHistoryDetails() {
+HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
     const self = this;
 
     const div = $('#history-details-list');
@@ -779,7 +779,7 @@ HanabiLobby.prototype.drawHistory_details = function drawHistoryDetails() {
 
             self.gameID = parseInt(this.id.slice(7), 10);
 
-            self.send_msg({
+            self.sendMsg({
                 type: 'start_replay',
                 resp: {
                     id: self.gameID,
@@ -797,7 +797,7 @@ HanabiLobby.prototype.drawHistory_details = function drawHistoryDetails() {
 
             self.gameID = parseInt(this.id.slice(7), 10);
 
-            self.send_msg({
+            self.sendMsg({
                 type: 'create_shared_replay',
                 resp: {
                     id: self.gameID,
@@ -844,8 +844,8 @@ HanabiLobby.prototype.setGame = function setGame(data) {
     this.game.running = data.running;
     this.game.allowSpec = data.allowSpec;
     this.game.timed = data.timed;
-    this.reorderCards = data.reorderCards;
-    this.game.shared_replay = data.shared_replay;
+    this.game.reorderCards = data.reorderCards;
+    this.game.sharedReplay = data.shared_replay;
 
     this.game.players.length = this.game.numPlayers;
 
@@ -855,7 +855,7 @@ HanabiLobby.prototype.setGame = function setGame(data) {
 HanabiLobby.prototype.setGamePlayer = function setGamePlayer(data) {
     this.game.players[data.index] = {
         name: data.name,
-        num_played: data.num_played,
+        numPlayed: data.num_played,
         averageScore: data.average_score,
         strikeoutRate: data.strikeout_rate,
         present: data.present,
@@ -897,7 +897,7 @@ HanabiLobby.prototype.showJoined = function showJoined() {
 
         html += '<tr>';
         html += '<td>Total games:</td>';
-        html += `<td><b>${this.game.players[i].num_played}</b></td>`;
+        html += `<td><b>${this.game.players[i].numPlayed}</b></td>`;
         html += '</tr>';
 
         html += '<tr>';
@@ -938,19 +938,19 @@ HanabiLobby.prototype.gameStarted = function gameStarted(data) {
         $('#table-area').show();
     }
 
-    this.hide_pregame();
-    this.show_game();
+    this.hidePregame();
+    this.showGame();
 
     this.ui = new HanabiUI(this, this.gameID);
 
-    this.ui.set_backend(this.conn);
+    this.ui.setBackend(this.conn);
 };
 
 HanabiLobby.prototype.gameEnded = function gameEnded(data) {
     this.ui.destroy();
 
-    this.hide_game();
-    this.show_pregame();
+    this.hideGame();
+    this.showPregame();
 
     this.ui = null;
 };
@@ -969,9 +969,9 @@ HanabiLobby.prototype.listenConn = function listConn(conn) {
 
         if (msgType === 'hello') {
             self.username = msgData.username;
-            self.hide_login();
+            self.hideLogin();
             self.resetLobby();
-            self.show_lobby();
+            self.showLobby();
         } else if (msgType === 'denied') {
             self.loginFailed(msgData.reason);
         } else if (msgType === 'error') {
@@ -985,7 +985,7 @@ HanabiLobby.prototype.listenConn = function listConn(conn) {
         } else if (msgType === 'table_gone') {
             self.removeTable(msgData);
         } else if (msgType === 'chat') {
-            self.add_chat(msgData);
+            self.addChat(msgData);
         } else if (msgType === 'joined') {
             self.tableJoined(msgData);
         } else if (msgType === 'left') {
@@ -1012,7 +1012,7 @@ HanabiLobby.prototype.listenConn = function listConn(conn) {
         } else if (msgType === 'name') {
             self.randomName = msgData.name;
         } else if (self.ui) {
-            self.ui.handle_message(msg);
+            self.ui.handleMessage(msg);
         }
     });
 };
@@ -1042,10 +1042,10 @@ HanabiLobby.prototype.setConn = function setConn(conn) {
 
     conn.on('disconnect', () => {
         self.hideLobby();
-        self.hide_game();
+        self.hideGame();
         self.hideCreateDialog();
-        self.show_pregame();
-        self.reset_login();
+        self.showPregame();
+        self.resetLogin();
         self.showLogin();
     });
 
@@ -1113,7 +1113,7 @@ HanabiLobby.prototype.setConn = function setConn(conn) {
     };
 };
 
-HanabiLobby.prototype.send_msg = function sendMsg(msg) {
+HanabiLobby.prototype.sendMsg = function sendMsg(msg) {
     if (showDebugMessages) {
         console.log(`%cSent ${msg.type}:`, 'color: green;');
         console.log(msg.resp);
@@ -1164,13 +1164,13 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
             }
 
             if (self.sendTurnNotify || self.sendChatNotify) {
-                self.test_notifications();
+                self.testNotifications();
             }
         });
     }
 };
 
-HanabiLobby.prototype.test_notifications = () => {
+HanabiLobby.prototype.testNotifications = () => {
     if (!('Notification' in window)) {
         return;
     }

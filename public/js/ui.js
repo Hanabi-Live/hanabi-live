@@ -1,27 +1,23 @@
-/* eslint-disable */
-
-var MHGA_show_debug_messages = true;
 var show_replay_partial_faces = true;
-var MHGA_highlight_non_hand_cards = true;
 
-function HanabiUI(lobby, game_id) {
+function HanabiUI(lobby, gameID) {
 
 this.lobby = lobby;
-this.game_id = game_id;
+this.gameID = gameID;
 
-var ui = this;
+const ui = this;
 
-var ACT = constants.ACT;
-var CLUE_TYPE = constants.CLUE_TYPE;
-var VARIANT = constants.VARIANT;
-var SHAPE = constants.SHAPE;
-var SUIT = constants.SUIT;
-var CARD_AREA = constants.CARD_AREA;
-var CARDH = constants.CARDH;
-var CARDW = constants.CARDW;
-var PATHFUNC = constants.PATHFUNC;
-var backpath = constants.backpath;
-var drawshape = constants.drawshape;
+const ACT = constants.ACT;
+const CLUE_TYPE = constants.CLUE_TYPE;
+const VARIANT = constants.VARIANT;
+const SHAPE = constants.SHAPE;
+const SUIT = constants.SUIT;
+const CARD_AREA = constants.CARD_AREA;
+const CARDH = constants.CARDH;
+const CARDW = constants.CARDW;
+const PATHFUNC = constants.PATHFUNC;
+const backpath = constants.backpath;
+const drawshape = constants.drawshape;
 
 this.deck = [];
 
@@ -718,7 +714,7 @@ var HanabiCard = function(config) {
 Kinetic.Util.extend(HanabiCard, Kinetic.Group);
 
 HanabiCard.prototype.reset = function() {
-    this.hide_clues();
+    this.hideClues();
     if (this.order in notes_written) {
         let note = notes_written[this.order];
         this.tooltip.getText().setText(note);
@@ -741,10 +737,10 @@ HanabiCard.prototype.add_listeners = function() {
         uilayer.draw();
     });
 
-    this.on('click', function(e) {
-        if (e.evt.which === 3) { // Right click
-            var note = ui.getNote(self.order);
-            var newNote = prompt('Note on card:', note);
+    this.on('click', function(event) {
+        if (event.evt.which === 3) { // Right click
+            let note = ui.getNote(self.order);
+            const newNote = prompt('Note on card:', note);
             if (newNote !== null) {
                 self.tooltip.getText().setText(newNote);
                 ui.setNote(self.order, newNote);
@@ -752,7 +748,7 @@ HanabiCard.prototype.add_listeners = function() {
             }
 
             // Do nothing if there was no old note and no new note
-            if (typeof(note) === 'undefined') {
+            if (typeof note === 'undefined') {
                 return;
             }
 
@@ -769,16 +765,16 @@ HanabiCard.prototype.add_listeners = function() {
             // Also send the note to the server
             if (!ui.replay_only) {
                 // Update the spectators about the new note
-                ui.send_msg({
+                ui.sendMsg({
                     type: 'note',
                     resp: {
                         order: self.order,
-                        note: note,
+                        note,
                     },
                 });
 
                 // Also send the server a new copy of all of our notes
-                ui.send_msg({
+                ui.sendMsg({
                     type: 'notes',
                     resp: {
                         notes: notes_written,
@@ -906,16 +902,11 @@ HanabiCard.prototype.add_clue = function(clue) {
     }
 };
 
-HanabiCard.prototype.hide_clues = function() {
+HanabiCard.prototype.hideClues = function hideClues() {
     this.color_clue_group.hide();
     this.number_clue.hide();
     this.clue_given.hide();
     this.note_given.hide();
-    if (!MHGA_highlight_non_hand_cards) {
-        this.off('mouseover tap');
-        this.off('mouseout');
-        clue_log.showMatches(null);
-    }
 };
 
 var LayoutChild = function(config) {
@@ -927,27 +918,27 @@ var LayoutChild = function(config) {
 Kinetic.Util.extend(LayoutChild, Kinetic.Group);
 
 LayoutChild.prototype.add = function(child) {
-    var self = this;
+    const self = this;
 
     Kinetic.Group.prototype.add.call(this, child);
     this.setWidth(child.getWidth());
     this.setHeight(child.getHeight());
 
-    child.on('widthChange', function(evt) {
-        if (evt.oldVal === evt.newVal) {
+    child.on('widthChange', function(event) {
+        if (event.oldVal === event.newVal) {
             return;
         }
-        self.setWidth(evt.newVal);
+        self.setWidth(event.newVal);
         if (self.parent) {
             self.parent.doLayout();
         }
     });
 
-    child.on('heightChange', function(evt) {
-        if (evt.oldVal === evt.newVal) {
+    child.on('heightChange', function(event) {
+        if (event.oldVal === event.newVal) {
             return;
         }
-        self.setHeight(evt.newVal);
+        self.setHeight(event.newVal);
         if (self.parent) {
             self.parent.doLayout();
         }
@@ -1958,7 +1949,7 @@ var ImageLoader = new Loader(function() {
 
     ui.build_cards();
     ui.build_ui();
-    ui.send_msg({
+    ui.sendMsg({
         type: 'ready',
         resp: {},
     });
@@ -2963,7 +2954,7 @@ this.build_ui = function() {
             this.setDraggable(false);
             deck_play_available_label.setVisible(false);
 
-            ui.send_msg({
+            ui.sendMsg({
                 type: 'action',
                 resp: {
                     type: ACT.DECKPLAY,
@@ -3485,8 +3476,8 @@ this.build_ui = function() {
         opacity: 0,
     });
 
-    rect.on('click', function(evt) {
-        var x = evt.evt.x - this.getAbsolutePosition().x;
+    rect.on('click', function(event) {
+        var x = event.evt.x - this.getAbsolutePosition().x;
         var w = this.getWidth();
         var step = w / self.replay_max;
         var newturn = Math.floor((x + step / 2) / step);
@@ -3616,7 +3607,7 @@ this.build_ui = function() {
 
     button.on('click tap', function() {
         if (self.replay_only) {
-            ui.send_msg({
+            ui.sendMsg({
                 type: 'unattend_table',
                 resp: {},
             });
@@ -3755,7 +3746,7 @@ this.build_ui = function() {
             resp.target = cardOrder;
         }
 
-        ui.send_msg({
+        ui.sendMsg({
             type: 'action',
             resp: resp,
         });
@@ -3929,7 +3920,7 @@ Keyboard hotkeys:
 
     lobby_button.on('click tap', function() {
         lobby_button.off('click tap');
-        ui.send_msg({
+        ui.sendMsg({
             type: 'unattend_table',
             resp: {},
         });
@@ -4045,8 +4036,8 @@ this.enter_replay = function(enter) {
     }
 };
 
-this.handle_message_in_replay = function(ui, msg) {
-    ui.set_message(msg.resp);
+this.handleMessage_in_replay = function(ui, msg) {
+    ui.setMessage(msg.resp);
 };
 
 this.perform_replay = function(target, fast) {
@@ -4069,7 +4060,7 @@ this.perform_replay = function(target, fast) {
     }
 
     if (this.shared_replay && this.shared_replay_leader === lobby.username) {
-        this.send_msg({
+        this.sendMsg({
             type: 'replay_action',
             resp: {
                 type: 0, // Type 0 is a new replay turn
@@ -4098,7 +4089,7 @@ this.perform_replay = function(target, fast) {
         }
 
         if (msg.type === 'message') {
-            this.set_message(msg.resp);
+            this.setMessage(msg.resp);
 
         } else if (msg.type === 'notify') {
             var performing_replay = true;
@@ -4209,7 +4200,7 @@ this.setNote = function(card_order, note) {
 };
 
 this.load_notes = function() {
-    var cookie = localStorage.getItem(game_id);
+    var cookie = localStorage.getItem(gameID);
     if (cookie) {
         return JSON.parse(cookie);
     } else {
@@ -4219,7 +4210,7 @@ this.load_notes = function() {
 
 this.save_notes = function() {
     var cookie = JSON.stringify(notes_written);
-    localStorage.setItem(game_id, cookie);
+    localStorage.setItem(gameID, cookie);
 };
 
 this.handle_notify = function(note, performing_replay) {
@@ -4275,7 +4266,7 @@ this.handle_notify = function(note, performing_replay) {
             revealed: true,
         };
         ui.deck[note.which.order].setBareImage();
-        ui.deck[note.which.order].hide_clues();
+        ui.deck[note.which.order].hideClues();
 
         pos = child.getAbsolutePosition();
         child.setRotation(child.parent.getRotation());
@@ -4302,7 +4293,7 @@ this.handle_notify = function(note, performing_replay) {
             revealed: true,
         };
         ui.deck[note.which.order].setBareImage();
-        ui.deck[note.which.order].hide_clues();
+        ui.deck[note.which.order].hideClues();
 
         pos = child.getAbsolutePosition();
         child.setRotation(child.parent.getRotation());
@@ -4346,7 +4337,7 @@ this.handle_notify = function(note, performing_replay) {
             revealed: true,
         };
         ui.deck[note.which.order].setBareImage();
-        ui.deck[note.which.order].hide_clues();
+        ui.deck[note.which.order].hideClues();
 
         if (!this.animate_fast) {
             cardlayer.draw();
@@ -4780,7 +4771,7 @@ this.handle_action = function(data) {
             pos.y += this.getHeight() * this.getScaleY() / 2;
 
             if (overPlayArea(pos)) {
-                ui.send_msg({
+                ui.sendMsg({
                     type: 'action',
                     resp: {
                         type: ACT.PLAY,
@@ -4798,7 +4789,7 @@ this.handle_action = function(data) {
                        pos.y <= discard_area.getY() + discard_area.getHeight() &&
                        data.can_discard) {
 
-                ui.send_msg({
+                ui.sendMsg({
                     type: 'action',
                     resp: {
                         type: ACT.DISCARD,
@@ -4862,7 +4853,7 @@ this.handle_action = function(data) {
 
         show_clue_match(target.target_index, {});
 
-        ui.send_msg({
+        ui.sendMsg({
             type: 'action',
             resp: {
                 type: ACT.CLUE,
@@ -4877,7 +4868,7 @@ this.handle_action = function(data) {
     });
 };
 
-this.set_message = function(msg) {
+this.setMessage = function(msg) {
     msgloggroup.add_message(msg.text);
 
     message_prompt.setMultiText(msg.text);
@@ -4887,7 +4878,7 @@ this.set_message = function(msg) {
     }
 };
 
-this.destroy = function() {
+this.destroy = function destroy() {
     stage.destroy();
     $(document).unbind('keydown', this.keyNavigation);
     if (ui.timerId !== null) {
@@ -4906,25 +4897,24 @@ this.replay_turn = 0;
     End of Hanabi UI
 */
 
-HanabiUI.prototype.handle_message = function(msg) {
-    var msgType = msg.type;
-    var msgData = msg.resp;
+HanabiUI.prototype.handleMessage = function handleMessage(msg) {
+    const msgType = msg.type;
+    const msgData = msg.resp;
 
     if (msgType === 'message') {
         this.replay_log.push(msg);
 
         if (!this.replay) {
-            this.set_message.call(this, msgData);
+            this.setMessage.call(this, msgData);
         }
-
     } else if (msgType === 'init') {
-        this.player_us     = msgData.seat;
-        this.player_names  = msgData.names;
+        this.player_us = msgData.seat;
+        this.player_names = msgData.names;
         this.variant = constants.VARIANT_INTEGER_MAPPING[msgData.variant];
-        this.replay        = msgData.replay;
-        this.replay_only   = msgData.replay;
-        this.spectating    = msgData.spectating;
-        this.timed_game    = msgData.timed;
+        this.replay = msgData.replay;
+        this.replay_only = msgData.replay;
+        this.spectating = msgData.spectating;
+        this.timed_game = msgData.timed;
         this.shared_replay = msgData.shared_replay;
         this.reorder_cards = msgData.reorder_cards;
 
@@ -4933,20 +4923,16 @@ HanabiUI.prototype.handle_message = function(msg) {
         }
 
         this.load_images();
-
     } else if (msgType === 'advanced') {
         this.replay_advanced();
-
     } else if (msgType === 'connected') {
         this.show_connected(msgData.list);
-
     } else if (msgType === 'notify') {
         this.save_replay(msg);
 
         if (!this.replay || msgData.type === 'reveal') {
             this.handle_notify.call(this, msgData);
         }
-
     } else if (msgType === 'action') {
         this.handle_action.call(this, msgData);
 
@@ -4957,44 +4943,38 @@ HanabiUI.prototype.handle_message = function(msg) {
         if (this.lobby.sendTurnNotify) {
             this.lobby.sendNotify('It\'s your turn', 'turn');
         }
-
     } else if (msgType === 'spectators') {
         // This is used to update the names of the people currently spectating the game
         this.handle_spectators.call(this, msgData);
-
     } else if (msgType === 'clock') {
         // This is used for timed games
         this.handle_clock.call(this, msgData);
-
     } else if (msgType === 'note') {
         // This is used for spectators
         this.handle_note.call(this, msgData);
-
     } else if (msgType === 'notes') {
         // This is a list of all of your notes, sent upon reconnecting to a game
         this.handle_notes.call(this, msgData);
-
     } else if (msgType === 'replay_leader') {
         // This is used in shared replays
         this.handle_replay_leader.call(this, msgData);
-
     } else if (msgType === 'replay_turn') {
         // This is used in shared replays
         this.handle_replay_turn.call(this, msgData);
     }
 };
 
-HanabiUI.prototype.set_backend = function(backend) {
+HanabiUI.prototype.setBackend = function setBackend(backend) {
     this.backend = backend;
 
-    this.send_msg({
+    this.sendMsg({
         type: 'hello',
         resp: {},
     });
 };
 
-HanabiUI.prototype.send_msg = function(msg) {
-    if (MHGA_show_debug_messages) {
+HanabiUI.prototype.sendMsg = function sendMsg(msg) {
+    if (showDebugMessages) {
         console.log(`%cSent (UI) ${msg.type}:`, 'color: green;');
         console.log(msg.resp);
     }

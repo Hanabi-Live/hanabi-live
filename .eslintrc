@@ -55,7 +55,9 @@
     "quote-props": ["warn", "consistent-as-needed"],
   },
   "globals": {
-      "hex_sha256": true,
       "HanabiUI": true,
+      "constants": true,
+      "Kinetic": true,
+      "hex_sha256": true,
   },
 }
