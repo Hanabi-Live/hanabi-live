@@ -96,6 +96,7 @@ function step2(error, socket, data) {
         datetime_finished: null,
         deck: [],
         deckIndex: 0,
+        discard_signal_outstanding: false, // This is for the "Reorder Cards" feature
         end_turn_num: null,
         max_players: data.max,
         name: data.name,

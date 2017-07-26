@@ -60,6 +60,7 @@ function step2(error, socket, data) {
             seat,
             spectating: (socket.status === 'Spectating'),
             timed: game.timed,
+            reorder_cards: game.reorder_cards,
             variant: game.variant,
             shared_replay: (socket.status === 'Shared Replay'),
         },

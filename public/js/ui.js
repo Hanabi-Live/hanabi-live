@@ -5160,7 +5160,7 @@ HanabiUI.prototype.handle_message = function(msg) {
         this.spectating    = msgData.spectating;
         this.timed_game    = msgData.timed;
         this.shared_replay = msgData.shared_replay;
-        time.reorder_cards = msgData.reorder_cards;
+        this.reorder_cards = msgData.reorder_cards;
 
         if (this.replay_only) {
             this.replay_turn = -1;

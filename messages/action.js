@@ -66,6 +66,27 @@ const step1 = (socket, data) => {
     // Remove the "fail" and "blind" states
     game.sound = null;
 
+    // Handle card-reordering
+    // (it doesn't happen on a play or a deck-play)
+    if (game.discard_signal_outstanding && data.type !== 1 && data.type !== 3) {
+        // Find the chop card
+        const chopIndex = getChopIndex(data);
+
+        // We don't need to reorder anything if the chop is slot 1 (the left-most card)
+        if (chopIndex !== player.hand.length - 1) {
+            const chopCard = player.hand[chopIndex];
+
+            // Remove the chop card from their hand
+            player.hand.splice(chopIndex, 1);
+
+            // Add it to the end (the left-most position)
+            player.hand.push(chopCard);
+
+            // Notify everyone about the reordering
+            notify.gameReorderCards(data);
+        }
+    }
+
     // Do different tasks depending on the action
     if (data.type === 0) { // Clue
         // Validate that the player is not giving a clue to themselves
@@ -231,6 +252,10 @@ function playerClue(data) {
 
     // Decrement the clues
     game.clue_num -= 1;
+
+    // Keep track that someone discarded
+    // (used for the "Reorder Cards" feature)
+    game.discard_signal_outstanding = false;
 
     // Find out what cards this clue touches
     const list = [];
@@ -431,6 +456,10 @@ function playerDiscardCard(data, failed = false) {
     const game = globals.currentGames[data.gameID];
     const card = game.deck[data.target];
     const suitText = getSuitText(data);
+
+    // Keep track that someone discarded
+    // (used for the "Reorder Cards" feature)
+    game.discard_signal_outstanding = true;
 
     // Mark that the card is discarded
     card.discarded = true;
@@ -650,4 +679,25 @@ function getClueText(data) {
     }
 
     return clueText;
+}
+
+function getChopIndex(data) {
+    // Local variables
+    const game = globals.currentGames[data.gameID];
+    const player = game.players[data.index];
+
+    // Go through their hand
+    let chopIndex = -1;
+    for (let i = player.hand.length - 1; i >= 0; i--) {
+        const card = player.hand[i];
+        if (!card.touched) {
+            chopIndex = i;
+        }
+    }
+    if (chopIndex === -1) {
+        // Their hand is filled with clued cards, so their chop is considered to be their first card
+        chopIndex = player.hand.length - 1;
+    }
+
+    return chopIndex;
 }

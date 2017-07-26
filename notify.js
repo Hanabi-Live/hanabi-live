@@ -258,14 +258,22 @@ exports.gameSound = (data) => {
 exports.gameReorderCards = (data) => {
     // Local variables
     const game = globals.currentGames[data.gameID];
+    const hand = game.players[data.index].hand;
+
+    // Make an array that represents the order of the player's hand
+    const handOrder = [];
+    for (let i = 0; i < hand.length; i++) {
+        const card = hand[i];
+        handOrder.push(card.order);
+    }
 
     // Send the card reordering notification
     const msg = {
         type: 'notify',
         resp: {
             type: 'reorder',
-            who: data.who,
-            hand: data.hand,
+            who: data.index,
+            hand: handOrder,
         },
     };
     for (let i = 0; i < game.players.length; i++) {
