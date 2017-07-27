@@ -453,10 +453,6 @@ HanabiLobby.prototype.addTable = function addTable(data) {
 
     // Automatically resume any games that we are currently in
     if (data.joined && data.running && !this.automaticallyResumedGame) {
-        // We only want to automatically resume once;
-        // if we don't keep track of this, it will automatically resume again
-        // after going to the labby manually
-        this.automaticallyResumedGame = true;
         $(`#resume-${data.id}`).click();
     }
 };
@@ -570,6 +566,11 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
             button.on('click', function reattendTableClick(event) {
                 event.preventDefault();
+
+                // We only want to automatically resume once;
+                // if we don't keep track of this, it will automatically resume again
+                // after going to the labby manually
+                self.automaticallyResumedGame = true;
 
                 self.gameID = parseInt(this.id.slice(7), 10);
 
