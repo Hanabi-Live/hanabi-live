@@ -3692,13 +3692,9 @@ function HanabiUI(lobby, gameID) {
         // Add "qwert" (for color clues)
         // (we want to use qwert since they are conviently next to 12345, and also
         // because the clue colors can change between different variants)
-        clueKeyMap.q = mouseClickHelper(suitClueButtons[0]);
-        clueKeyMap.w = mouseClickHelper(suitClueButtons[1]);
-        clueKeyMap.e = mouseClickHelper(suitClueButtons[2]);
-        clueKeyMap.r = mouseClickHelper(suitClueButtons[3]);
-        if (suitClueButtons.length > 4) {
-            // There may not be a 5th clue type, depending on the variant
-            clueKeyMap.t = mouseClickHelper(suitClueButtons[4]);
+        const clueKeyRow = ['q', 'w', 'e', 'r', 't', 'y', 'u'];
+        for (let i = 0; i < suitClueButtons.length; i++) {
+            clueKeyMap[clueKeyRow[i]] = mouseClickHelper(suitClueButtons[i]);
         }
 
         // Add "Enter" for pressing the 'Give Clue' button
