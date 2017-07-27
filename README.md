@@ -25,7 +25,9 @@ List of Changes & Improvements over the Original Server
   * This feature prevents stupid losses that occur from being "bottom decked" by a 3 or a 4 that was impossible to save in the early or mid-game.
 * Shared Replays
   * You can turn any replay into a shared replay. Once created, an unlimited number of people can join it.
-  * When in a shared replay, the creator can control what turn is being shown to everyone in the replay.
+  * When in a shared replay, the leader can control what turn is being shown to everyone in the replay.
+  * The creator can move a shared cursor by right clicking.
+  * You can see who the leader of the replay is by hovering over the "👑" in the bottom right-hand corner.
   * You can use this feature to share a past game with a friend who was not in that game.
 * New variant: Mixed-color Suits
   * This has 6 new suits: Green, Magenta, Navy, Orange, Tan, and Burgundy.

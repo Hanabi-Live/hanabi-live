@@ -661,8 +661,6 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
     const self = this;
 
     const div = $('#history-list');
-    let history;
-    let i;
 
     div.html('');
 
@@ -672,8 +670,8 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
     );
     ids.reverse();
 
-    for (i = 0; i < ids.length; i++) {
-        history = $('<li>').addClass('table-item');
+    for (let i = 0; i < ids.length; i++) {
+        const history = $('<li>').addClass('table-item');
 
         const attrs = $('<ul>')
             .append($('<li>')

@@ -2308,8 +2308,6 @@ function HanabiUI(lobby, gameID) {
     const sizeStage = (stage) => {
         let ww = window.innerWidth;
         let wh = window.innerHeight;
-        let cw;
-        let ch;
 
         if (ww < 640) {
             ww = 640;
@@ -2320,6 +2318,8 @@ function HanabiUI(lobby, gameID) {
 
         const ratio = 1.777;
 
+        let cw;
+        let ch;
         if (ww < wh * ratio) {
             cw = ww;
             ch = ww / ratio;
@@ -2358,6 +2358,7 @@ function HanabiUI(lobby, gameID) {
     const textLayer = new Kinetic.Layer();
     const tipLayer = new Kinetic.Layer();
     const timerLayer = new Kinetic.Layer();
+    const cursorLayer = new Kinetic.Layer();
 
     const playerHands = [];
     let drawDeck;
@@ -2390,6 +2391,7 @@ function HanabiUI(lobby, gameID) {
     let noClueBox;
     let noDiscardLabel;
     let deckPlayAvailableLabel;
+    let sharedReplayCursor;
     let replayArea;
     let replayBar;
     let replayShuttle;
@@ -2809,6 +2811,33 @@ function HanabiUI(lobby, gameID) {
         */
 
         /*
+            Shared replay cursor
+        */
+
+        /*
+        sharedReplayCursor = new Kinetic.Text({
+            x: 0.4 * winW,
+            y: 0.4 * winH,
+            width: 0.11 * winW,
+            height: 0.03 * winH,
+            fontSize: 0.03 * winH,
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: '👑',
+            fill: '#ff0000',
+            shadowColor: 'black',
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
+            visible: false,
+        });
+        UILayer.add(sharedReplayCursor);
+        */
+
+        /*
             End of spectator / shared replay stuff
         */
 
@@ -2913,9 +2942,9 @@ function HanabiUI(lobby, gameID) {
                 discardStacks.set(suit, thisSuitDiscardStack);
                 cardLayer.add(thisSuitDiscardStack);
 
-                // Add a text description of the suit
+                // Draw the text description of the suit
                 const text = new FitText({
-                    x: (0.173 + (width + 0.015) * i) * winW,
+                    x: (0.173 + (width + 0.015) * i) * winW, // (this.variant === VARIANT.NONE
                     y: (0.45 + offset) * winH,
                     width: 0.08 * winW,
                     height: 0.051 * winH,
@@ -4660,11 +4689,18 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleReplayTurn = function handleReplayTurn(note) {
-        console.log('--------------------------------------------------');
         this.sharedReplayTurn = note.turn;
         if (this.sharedReplayLeader !== lobby.username) {
             this.performReplay(this.sharedReplayTurn);
         }
+    };
+
+    this.handleReplayMouse = (note) => {
+        if (this.sharedReplayLeader) {
+            return;
+        }
+
+        console.log(ui.sharedReplayCursor);
     };
 
     this.stopAction = (fast) => {
@@ -4951,6 +4987,9 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
     } else if (msgType === 'replayTurn') {
         // This is used in shared replays
         this.handleReplayTurn.call(this, msgData);
+    } else if (msgType === 'replayMouse') {
+        // This is used in shared replays
+        this.handleReplayMouse.call(this, msgData);
     }
 };
 
