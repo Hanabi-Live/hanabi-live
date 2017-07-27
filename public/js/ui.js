@@ -3690,7 +3690,7 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Add "qwert" (for color clues)
-        // (we want to use qwert since they are conviently next to 12345, and also
+        // (we want to use qwert since they are conveniently next to 12345, and also
         // because the clue colors can change between different variants)
         const clueKeyRow = ['q', 'w', 'e', 'r', 't', 'y', 'u'];
         for (let i = 0; i < suitClueButtons.length; i++) {
