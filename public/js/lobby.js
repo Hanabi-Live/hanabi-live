@@ -14,6 +14,7 @@ function HanabiLobby() {
 
     this.gameID = null;
     this.randomName = '';
+    this.automaticallyResumedGame = false;
 
     // The lobby settings found in the gear sub-menu
     this.sendTurnNotify = false;
@@ -449,6 +450,15 @@ HanabiLobby.prototype.addTable = function addTable(data) {
         sharedReplay: data.sharedReplay,
     };
     this.drawTables();
+
+    // Automatically resume any games that we are currently in
+    if (data.joined && data.running && !this.automaticallyResumedGame) {
+        // We only want to automatically resume once;
+        // if we don't keep track of this, it will automatically resume again
+        // after going to the labby manually
+        this.automaticallyResumedGame = true;
+        $(`#resume-${data.id}`).click();
+    }
 };
 
 HanabiLobby.prototype.removeTable = function removeTable(data) {
