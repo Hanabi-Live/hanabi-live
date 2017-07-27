@@ -170,7 +170,7 @@
         exports.COLOR.GREEN,
         exports.COLOR.YELLOW,
         exports.COLOR.RED,
-        exports.COLOR.PURPLE
+        exports.COLOR.PURPLE,
     ]);
     const baseColorsPlusBlack = Object.freeze([
         exports.COLOR.BLUE,
@@ -178,7 +178,7 @@
         exports.COLOR.YELLOW,
         exports.COLOR.RED,
         exports.COLOR.PURPLE,
-        exports.COLOR.BLACK
+        exports.COLOR.BLACK,
     ]);
 
     // Specify between solid color and gradients, along with additional args in
@@ -465,7 +465,7 @@
         // Recommend not to access these values for the multi suit, but rather use
         // special cases e.g. `if (suit === SUIT.MULTI, color_match = true)`
         MULTI: new Suit(
-            'Multi',
+            'Rainbow',
             'M',
             baseColors,
             multiCardFillSpec,

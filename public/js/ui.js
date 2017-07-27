@@ -108,7 +108,7 @@ function HanabiUI(lobby, gameID) {
         return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
     }
 
-    // textObjects are expected to be on the timerlayer or tipLayer
+    // textObjects are expected to be on the timerLayer or tipLayer
     function setTickingDownTime(textObjects, activeIndex) {
         // Compute elapsed time since last timer update
         const now = new Date().getTime();
@@ -137,7 +137,7 @@ function HanabiUI(lobby, gameID) {
         textObjects.forEach((textHolder) => {
             textHolder.setText(displayString);
         });
-        timerlayer.draw();
+        timerLayer.draw();
         tipLayer.draw();
 
         // Play a sound to indicate that the current player is almost out of time
@@ -2359,8 +2359,9 @@ function HanabiUI(lobby, gameID) {
     const cardLayer = new Kinetic.Layer();
     const UILayer = new Kinetic.Layer();
     const overLayer = new Kinetic.Layer();
+    const textLayer = new Kinetic.Layer();
     const tipLayer = new Kinetic.Layer();
-    const timerlayer = new Kinetic.Layer();
+    const timerLayer = new Kinetic.Layer();
 
     const playerHands = [];
     let drawDeck;
@@ -2916,6 +2917,27 @@ function HanabiUI(lobby, gameID) {
                 discardStacks.set(suit, thisSuitDiscardStack);
                 cardLayer.add(thisSuitDiscardStack);
 
+                // Add a text description of the suit
+                const text = new FitText({
+                    x: (0.173 + (width + 0.015) * i) * winW,
+                    y: (0.45 + offset) * winH,
+                    width: 0.08 * winW,
+                    height: 0.051 * winH,
+                    fontSize: 0.02 * winH,
+                    fontFamily: 'Verdana',
+                    align: 'center',
+                    text: suit.name,
+                    fill: '#d8d5ef',
+                    shadowColor: 'black',
+                    shadowBlur: 10,
+                    shadowOffset: {
+                        x: 0,
+                        y: 0,
+                    },
+                    shadowOpacity: 0.9,
+                });
+                textLayer.add(text);
+
                 i += 1;
             }
         }
@@ -3339,7 +3361,7 @@ function HanabiUI(lobby, gameID) {
                 cornerRadius: 0.005 * winH,
                 opacity: 0.2,
             });
-            timerlayer.add(timerRect1);
+            timerLayer.add(timerRect1);
 
             timerLabel1 = new Kinetic.Text({
                 x: timerX * winW,
@@ -3359,7 +3381,7 @@ function HanabiUI(lobby, gameID) {
                 },
                 shadowOpacity: 0.9,
             });
-            timerlayer.add(timerLabel1);
+            timerLayer.add(timerLabel1);
 
             timerText1 = new Kinetic.Text({
                 x: timerX * winW,
@@ -3379,7 +3401,7 @@ function HanabiUI(lobby, gameID) {
                 },
                 shadowOpacity: 0.9,
             });
-            timerlayer.add(timerText1);
+            timerLayer.add(timerText1);
 
             timerRect2 = new Kinetic.Rect({
                 x: timerX2 * winW,
@@ -3390,7 +3412,7 @@ function HanabiUI(lobby, gameID) {
                 cornerRadius: 0.005 * winH,
                 opacity: 0.2,
             });
-            timerlayer.add(timerRect2);
+            timerLayer.add(timerRect2);
 
             timerLabel2 = new Kinetic.Text({
                 x: timerX2 * winW,
@@ -3410,7 +3432,7 @@ function HanabiUI(lobby, gameID) {
                 },
                 shadowOpacity: 0.9,
             });
-            timerlayer.add(timerLabel2);
+            timerLayer.add(timerLabel2);
 
             timerText2 = new Kinetic.Text({
                 x: timerX2 * winW,
@@ -3430,7 +3452,7 @@ function HanabiUI(lobby, gameID) {
                 },
                 shadowOpacity: 0.9,
             });
-            timerlayer.add(timerText2);
+            timerLayer.add(timerText2);
 
             // Hide the first timer if spectating
             if (this.spectating) {
@@ -3936,8 +3958,9 @@ function HanabiUI(lobby, gameID) {
 
         stage.add(bgLayer);
         stage.add(UILayer);
-        stage.add(timerlayer);
+        stage.add(timerLayer);
         stage.add(cardLayer);
+        stage.add(textLayer);
         stage.add(tipLayer);
         stage.add(overLayer);
     };
@@ -4429,7 +4452,7 @@ function HanabiUI(lobby, gameID) {
                 timerText1.hide();
             }
 
-            timerlayer.draw();
+            timerLayer.draw();
 
             this.replayOnly = true;
             replayButton.hide();
@@ -4531,7 +4554,7 @@ function HanabiUI(lobby, gameID) {
         timerLabel2.setVisible(shoudShowTimer2);
         timerText2.setVisible(shoudShowTimer2);
 
-        timerlayer.draw();
+        timerLayer.draw();
 
         // Update the timer tooltips for each player
         for (let i = 0; i < ui.playerTimes.length; i++) {

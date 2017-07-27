@@ -1162,7 +1162,7 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
             // If the cookie doesn't exist (or it is corrupt), write a default value
             cookieValue = this[cookieKey];
             localStorage.setItem(cookieKey, cookieValue);
-            console.log(`Wrote a new "${cookieKey}" cookie of: ${cookieValue}`);
+            console.log(`Wrote a brand new "${cookieKey}" cookie of: ${cookieValue}`);
         } else {
             // Convert it from a string to a boolean
             // (all values in cookies are strings)
@@ -1178,8 +1178,6 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
             for (let j = 0; j < settingsList.length; j++) {
                 const thisHtmlID = settingsList[j][0];
                 const thisCookieKey = settingsList[j][1];
-                console.log(thisHtmlID);
-                console.log($(this).attr('id'));
                 if (thisHtmlID === $(this).attr('id')) {
                     const checked = $(this).is(':checked');
 
