@@ -18,7 +18,7 @@
         BLACK: new Color('Black', 'K', '#111111', null),
         GRAY: new Color('Gray', 'G', '#cccccc', null),
         MAGENTA: new Color('Magenta', 'M', '#cc00cc', null),
-        NAVY: new Color('Navy', 'N', '', null),
+        NAVY: new Color('Navy', 'N', '#000066', null),
         ORANGE: new Color('Orange', 'O', '#ff9900', null),
         TAN: new Color('Tan', 'T', '#999900', null),
         BURGUNDY: new Color('Burgundy', 'B', '#660016', null),
@@ -362,9 +362,9 @@
             ],
         ),
         NAVY: new Suit(
-            'Indigo',
-            'I',
-            exports.COLOR.INDIGO,
+            'Navy',
+            'N',
+            exports.COLOR.NAVY,
             basicCardFillSpec,
             exports.SHAPE.STAR,
             [
