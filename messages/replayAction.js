@@ -35,7 +35,7 @@ exports.step1 = (socket, data) => {
     }
 
     // Validate that this is a shared replay
-    if (!game.shared_replay) {
+    if (!game.sharedReplay) {
         logger.warn(`User "${socket.username}" tried to perform a replay action on non-replay replay game #${data.gameID}.`);
         data.reason = 'You can only perform replay actions in shared replays.';
         notify.playerDenied(socket, data);
@@ -52,7 +52,7 @@ exports.step1 = (socket, data) => {
 
     // Change the current turn
     if (data.type === 0) {
-        game.turn_num = data.turn;
+        game.turnNum = data.turn;
     }
 
     // Send it to everyone
@@ -60,14 +60,14 @@ exports.step1 = (socket, data) => {
         let msg;
         if (data.type === 0) {
             msg = {
-                type: 'replay_turn',
+                type: 'replayTurn',
                 resp: {
                     turn: data.turn,
                 },
             };
         } else if (data.type === 1) {
             msg = {
-                type: 'replay_mouse',
+                type: 'replayMouse',
                 resp: {
                     x: data.cursor.x,
                     y: data.cursor.y,

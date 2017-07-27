@@ -1,5 +1,5 @@
 // Sent when the owner of a table clicks on the "Start Game" button
-// (the client will send a "hello" message after getting "game_start")
+// (the client will send a "hello" message after getting "gameStart")
 // "data" is empty
 
 // Imports
@@ -113,7 +113,7 @@ function step3(socket, data) {
     // Local variables
     const game = globals.currentGames[data.gameID];
 
-    logger.info(`Using seed ${game.seed}, allow_spec is ${game.allow_spec}, timed is ${game.timed}.`);
+    logger.info(`Using seed ${game.seed}, allowSpec is ${game.allowSpec}, timed is ${game.timed}.`);
 
     // Shuffle the deck
     seedrandom(game.seed, {
@@ -147,7 +147,7 @@ function step3(socket, data) {
 
     // Get a random player to start first
     data.startingPlayerIndex = Math.floor(Math.random() * game.players.length);
-    game.turn_player_index = data.startingPlayerIndex; // Keep track of whose turn it is
+    game.turnPlayerIndex = data.startingPlayerIndex; // Keep track of whose turn it is
     const text = `${game.players[data.startingPlayerIndex].username} goes first`;
     game.actions.push({
         text,
@@ -161,14 +161,14 @@ function step3(socket, data) {
 
     // Set the game to running
     game.running = true;
-    game.datetime_started = moment().format('YYYY-MM-DD HH:mm:ss'); // This is the MariaDB format
+    game.datetimeStarted = moment().format('YYYY-MM-DD HH:mm:ss'); // This is the MariaDB format
 
-    // Send a "game_start" message to everyone in the game
+    // Send a "gameStart" message to everyone in the game
     for (const player of game.players) {
         notify.playerGameStart(player.socket);
     }
 
-    if (game.allow_spec) {
+    if (game.allowSpec) {
         // Let everyone know that the game has started, which will turn the
         // "Join Game" button into "Spectate"
         notify.allTableChange(data);
@@ -186,10 +186,10 @@ function step3(socket, data) {
     }
 
     // Start the timer
-    game.turn_begin_time = (new Date()).getTime();
+    game.turnBeginTime = (new Date()).getTime();
     if (game.timed) {
         data.userID = game.players[data.startingPlayerIndex].userID;
-        data.turn_num = 0;
+        data.turnNum = 0;
         setTimeout(() => {
             messages.action.checkTimer(data);
         }, game.players[data.startingPlayerIndex].time);

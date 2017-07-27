@@ -37,11 +37,11 @@ exports.step1 = (socket, reason) => {
                 } else {
                     // The game has not started yet, so just eject them from
                     // the table
-                    // The "leave_table" message is sent with no data;
+                    // The "leaveTable" message is sent with no data;
                     // the server uses the "currentGame" property to find out
                     // which table the user is leaving
                     socket.currentGame = gameID;
-                    messages.leave_table.step1(socket, {});
+                    messages.leaveTable.step1(socket, {});
                 }
                 break;
             }
@@ -53,8 +53,8 @@ exports.step1 = (socket, reason) => {
 
             if (userID === socket.userID) {
                 socket.currentGame = gameID;
-                socket.status = (game.shared_replay ? 'Shared Replay' : 'Spectating');
-                messages.unattend_table.step1(socket, {});
+                socket.status = (game.sharedReplay ? 'Shared Replay' : 'Spectating');
+                messages.unattendTable.step1(socket, {});
                 break;
             }
         }
@@ -65,10 +65,10 @@ exports.step1 = (socket, reason) => {
 
     logger.info(`User "${socket.username}" disconnected. (${Object.keys(globals.connectedUsers).length} users now connected.)`);
 
-    // Send a "user_left" message to everyone to let them know that a user has disconnected
+    // Send a "userLeft" message to everyone to let them know that a user has disconnected
     for (const userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
-            type: 'user_left',
+            type: 'userLeft',
             resp: {
                 id: socket.userID,
             },

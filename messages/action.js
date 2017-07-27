@@ -56,7 +56,7 @@ const step1 = (socket, data) => {
     const player = game.players[data.index];
 
     // Validate that it is this player's turn
-    if (game.turn_player_index !== data.index) {
+    if (game.turnPlayerIndex !== data.index) {
         logger.warn(`User "${data.username}" tried to perform an action when it was not their turn.`);
         data.reason = 'You cannot perform an action when it is not your turn.';
         notify.playerDenied(socket, data);
@@ -67,12 +67,12 @@ const step1 = (socket, data) => {
     game.sound = null;
 
     // Handle card-reordering
-    if (game.turn_num >= game.discard_signal_turn_expiration) {
-        game.discard_signal_outstanding = false;
+    if (game.turnNum >= game.discardSignalTurnExpiration) {
+        game.discardSignalOutstanding = false;
     }
     if (
-        game.reorder_cards &&
-        game.discard_signal_outstanding &&
+        game.reorderCards &&
+        game.discardSignalOutstanding &&
         data.type !== 1 && // (it doesn't happen on a play or a deck-play)
         data.type !== 3
     ) {
@@ -101,7 +101,7 @@ const step1 = (socket, data) => {
             game.actions.push({
                 type: 'reorder',
                 target: data.index,
-                hand_order: handOrder,
+                handOrder,
             });
             notify.gameAction(data);
         }
@@ -110,7 +110,7 @@ const step1 = (socket, data) => {
     // Do different tasks depending on the action
     if (data.type === 0) { // Clue
         // Validate that the player is not giving a clue to themselves
-        if (game.turn_player_index === data.target) {
+        if (game.turnPlayerIndex === data.target) {
             logger.warn(`User "${data.username}" tried to give a clue to themself.`);
             data.reason = 'You cannot give a clue to yourself.';
             notify.playerDenied(socket, data);
@@ -118,7 +118,7 @@ const step1 = (socket, data) => {
         }
 
         // Validate that there are clues available to use
-        if (game.clue_num === 0) {
+        if (game.clueNum === 0) {
             logger.warn(`User "${data.username}" tried to give a clue while at 0 clues.`);
             data.reason = 'You cannot give a clue when you have 0 clues available.';
             notify.playerDenied(socket, data);
@@ -134,7 +134,7 @@ const step1 = (socket, data) => {
     } else if (data.type === 2) { // Discard
         // We are not allowed to discard while at 8 clues
         // (the client should enforce this, but do a check just in case)
-        if (game.clue_num === 8) {
+        if (game.clueNum === 8) {
             logger.warn(`User "${data.username}" tried to discard while at 8 clues.`);
             data.reason = 'You cannot discard while at 8 clues.';
             notify.playerDenied(socket, data);
@@ -142,7 +142,7 @@ const step1 = (socket, data) => {
         }
 
         // Discard
-        game.clue_num += 1;
+        game.clueNum += 1;
         playerRemoveCard(data);
         playerDiscardCard(data);
         playerDrawCard(data);
@@ -159,7 +159,7 @@ const step1 = (socket, data) => {
         // player runs out of time
         game.strikes = 3;
 
-        const text = `${game.players[game.turn_player_index].username} ran out of time!`;
+        const text = `${game.players[game.turnPlayerIndex].username} ran out of time!`;
         game.actions.push({
             text,
         });
@@ -172,7 +172,7 @@ const step1 = (socket, data) => {
 
     // Send messages about the current status
     game.actions.push({
-        clues: game.clue_num,
+        clues: game.clueNum,
         score: game.score,
         type: 'status',
     });
@@ -184,7 +184,7 @@ const step1 = (socket, data) => {
     // "checkTimer" function)
     if (data.type !== 4) {
         const now = (new Date()).getTime();
-        player.time -= now - game.turn_begin_time;
+        player.time -= now - game.turnBeginTime;
         // (in non-timed games, "player.time" will decrement into negative
         // numbers to show how much time they are taking)
 
@@ -194,14 +194,14 @@ const step1 = (socket, data) => {
             player.time += globals.extraTurnTime;
         }
 
-        game.turn_begin_time = now;
+        game.turnBeginTime = now;
     }
 
     // Increment the turn
-    game.turn_num += 1;
-    game.turn_player_index += 1;
-    if (game.turn_player_index === game.players.length) {
-        game.turn_player_index = 0;
+    game.turnNum += 1;
+    game.turnPlayerIndex += 1;
+    if (game.turnPlayerIndex === game.players.length) {
+        game.turnPlayerIndex = 0;
     }
 
     // Check for end game states
@@ -226,25 +226,25 @@ const step1 = (socket, data) => {
     // (we advance a turn even if the game is over so that we have an extra
     // separator before the finishing times are displayed)
     game.actions.push({
-        num: game.turn_num,
+        num: game.turnNum,
         type: 'turn',
-        who: game.turn_player_index,
+        who: game.turnPlayerIndex,
     });
     notify.gameAction(data);
     if (!data.end) {
-        logger.info(`[Game ${data.gameID}] It is now ${game.players[game.turn_player_index].username}'s turn.`);
+        logger.info(`[Game ${data.gameID}] It is now ${game.players[game.turnPlayerIndex].username}'s turn.`);
     }
 
     // Tell every client to play a sound as a notification for the action taken
     notify.gameSound(data);
 
     if (data.end) {
-        messages.end_game.step1(data);
+        messages.endGame.step1(data);
         return;
     }
 
     // Send the "action" message to the next player
-    const nextPlayerSocket = game.players[game.turn_player_index].socket;
+    const nextPlayerSocket = game.players[game.turnPlayerIndex].socket;
     notify.playerAction(nextPlayerSocket, data);
 
     notify.allTableChange(data);
@@ -257,11 +257,11 @@ const step1 = (socket, data) => {
     if (game.timed) {
         // Start the function that will check to see if the current player has
         // run out of time (it just got to be their turn)
-        data.userID = game.players[game.turn_player_index].userID;
-        data.turn_num = game.turn_num;
+        data.userID = game.players[game.turnPlayerIndex].userID;
+        data.turnNum = game.turnNum;
         setTimeout(() => {
             checkTimer(data);
-        }, game.players[game.turn_player_index].time);
+        }, game.players[game.turnPlayerIndex].time);
     }
 };
 exports.step1 = step1;
@@ -271,11 +271,11 @@ function playerClue(data) {
     const game = globals.currentGames[data.gameID];
 
     // Decrement the clues
-    game.clue_num -= 1;
+    game.clueNum -= 1;
 
     // Keep track that someone discarded
     // (used for the "Reorder Cards" feature)
-    game.discard_signal_outstanding = false;
+    game.discardSignalOutstanding = false;
 
     // Find out what cards this clue touches
     const list = [];
@@ -395,7 +395,7 @@ function playerClue(data) {
 function playerRemoveCard(data) {
     // Local variables
     const game = globals.currentGames[data.gameID];
-    const player = game.players[game.turn_player_index];
+    const player = game.players[game.turnPlayerIndex];
 
     // Remove the card from their hand
     for (let i = 0; i < player.hand.length; i++) {
@@ -452,10 +452,10 @@ function playerPlayCard(data) {
 
         // Give the team a clue if a 5 was played
         if (card.rank === 5) {
-            game.clue_num += 1;
-            if (game.clue_num > 8) {
+            game.clueNum += 1;
+            if (game.clueNum > 8) {
                 // The extra clue is wasted if they are at 8 clues already
-                game.clue_num = 8;
+                game.clueNum = 8;
             }
         }
     } else {
@@ -479,8 +479,8 @@ function playerDiscardCard(data, failed = false) {
 
     // Keep track that someone discarded
     // (used for the "Reorder Cards" feature)
-    game.discard_signal_outstanding = true;
-    game.discard_signal_turn_expiration = game.turn_num + (game.players.length - 1);
+    game.discardSignalOutstanding = true;
+    game.discardSignalTurnExpiration = game.turnNum + (game.players.length - 1);
 
     // Mark that the card is discarded
     card.discarded = true;
@@ -522,7 +522,7 @@ function playerDiscardCard(data, failed = false) {
     logger.info(`[Game ${data.gameID}] ${text}`);
 }
 
-// We have to use "data.index" instead of "globals.currentGames[data.gameID].turn_player_index"
+// We have to use "data.index" instead of "globals.currentGames[data.gameID].turnPlayerIndex"
 // because this is used before the game starts
 const playerDrawCard = (data) => {
     // Local variables
@@ -555,7 +555,7 @@ const playerDrawCard = (data) => {
     }
 
     game.actions.push({
-        type: 'draw_size',
+        type: 'drawSize',
         size: game.deck.length - game.deckIndex,
     });
 
@@ -566,7 +566,7 @@ const playerDrawCard = (data) => {
     // Check to see if that was the last card drawn
     if (game.deckIndex >= game.deck.length) {
         // Mark the turn upon which the game will end
-        game.end_turn_num = game.turn_num + game.players.length + 1;
+        game.endTurnNum = game.turnNum + game.players.length + 1;
     }
 };
 exports.playerDrawCard = playerDrawCard;
@@ -594,7 +594,7 @@ const checkTimer = (data) => {
     const game = globals.currentGames[data.gameID];
 
     // Check to see if we have made a move in the meanwhiled
-    if (data.turn_num !== game.turn_num) {
+    if (data.turnNum !== game.turnNum) {
         return;
     }
 
@@ -632,7 +632,7 @@ function checkEnd(data) {
 
     // Check for the final go-around
     // (initiated after the last card is played from the deck)
-    if (game.turn_num === game.end_turn_num) {
+    if (game.turnNum === game.endTurnNum) {
         data.end = true;
         return;
     }

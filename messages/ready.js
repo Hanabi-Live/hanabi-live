@@ -72,7 +72,7 @@ function step2(error, socket, data) {
     }
 
     // If it is their turn, send an "action" message
-    if (game.turn_player_index === index) {
+    if (game.turnPlayerIndex === index) {
         notify.playerAction(socket, data);
     }
 
@@ -95,9 +95,9 @@ function step2(error, socket, data) {
 
             // Since we are sending the message in the middle of someone's turn,
             // we need to account for this
-            if (game.turn_player_index === i) {
+            if (game.turnPlayerIndex === i) {
                 const currentTime = (new Date()).getTime();
-                const elapsedTime = currentTime - game.turn_begin_time;
+                const elapsedTime = currentTime - game.turnBeginTime;
                 time -= elapsedTime;
             }
 
@@ -107,7 +107,7 @@ function step2(error, socket, data) {
             type: 'clock',
             resp: {
                 times,
-                active: game.turn_player_index,
+                active: game.turnPlayerIndex,
             },
         });
 
@@ -130,9 +130,9 @@ function step2(error, socket, data) {
     // Send them to the current turn that everyone else is at
     if (socket.status === 'Shared Replay') {
         socket.emit('message', {
-            type: 'replay_turn',
+            type: 'replayTurn',
             resp: {
-                turn: globals.currentGames[data.gameID].turn_num,
+                turn: game.turnNum,
             },
         });
     }

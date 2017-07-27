@@ -37,7 +37,7 @@ exports.allTableGone = (data) => {
     // Send everyone an update about this table
     for (const userID of Object.keys(globals.connectedUsers)) {
         globals.connectedUsers[userID].emit('message', {
-            type: 'table_gone',
+            type: 'tableGone',
             resp: {
                 id: data.gameID,
             },
@@ -60,13 +60,13 @@ exports.gameMemberChange = (data) => {
             resp: {
                 name: game.name,
                 running: game.running,
-                num_players: game.players.length,
-                max_players: game.max_players,
+                numPlayers: game.players.length,
+                maxPlayers: game.maxPlayers,
                 variant: game.variant,
-                allow_spec: game.allow_spec,
+                allowSpec: game.allowSpec,
                 timed: game.timed,
-                reorder_cards: game.reorder_cards,
-                shared_replay: game.shared_replay,
+                reorderCards: game.reorderCards,
+                sharedReplay: game.sharedReplay,
             },
         });
 
@@ -77,15 +77,15 @@ exports.gameMemberChange = (data) => {
             const player2 = game.players[i];
 
             player.socket.emit('message', {
-                type: 'game_player',
+                type: 'gamePlayer',
                 resp: {
                     index: i,
                     name: player2.socket.username,
                     you: (player.userID === player2.userID),
                     present: game.players[i].present,
-                    num_played: player2.socket.num_played,
-                    average_score: player2.socket.average_score,
-                    strikeout_rate: player2.socket.strikeout_rate,
+                    numPlayed: player2.socket.numPlayed,
+                    averageScore: player2.socket.averageScore,
+                    strikeoutRate: player2.socket.strikeoutRate,
                 },
             });
         }
@@ -96,7 +96,7 @@ exports.gameMemberChange = (data) => {
     for (const player of game.players) {
         if (player.userID === game.owner) {
             player.socket.emit('message', {
-                type: 'table_ready',
+                type: 'tableReady',
                 resp: {
                     ready: (game.players.length >= 2),
                 },
@@ -196,7 +196,7 @@ exports.gameTime = (data) => {
         type: 'clock',
         resp: {
             times,
-            active: data.end ? null : game.turn_player_index,
+            active: data.end ? null : game.turnPlayerIndex,
         },
     };
 
@@ -223,7 +223,7 @@ exports.gameSound = (data) => {
         let sound = 'turn_other';
         if (game.sound !== null) {
             sound = game.sound;
-        } else if (i === game.turn_player_index) {
+        } else if (i === game.turnPlayerIndex) {
             sound = 'turn_us';
         }
         const msg = {
@@ -323,14 +323,14 @@ const playerTable = (socket, data) => {
             id: data.gameID,
             name: game.name,
             joined,
-            num_players: (game.shared_replay ? Object.keys(game.spectators).length : game.players.length),
-            max_players: game.max_players,
-            allow_spec: game.allow_spec,
+            numPlayers: (game.sharedReplay ? Object.keys(game.spectators).length : game.players.length),
+            maxPlayers: game.maxPlayers,
+            allowSpec: game.allowSpec,
             owned: socket.userID === game.owner,
             running: game.running,
             variant: game.variant,
-            our_turn: (joined && game.running && game.turn_player_index === data.index),
-            shared_replay: game.shared_replay,
+            ourTurn: (joined && game.running && game.turnPlayerIndex === data.index),
+            sharedReplay: game.sharedReplay,
         },
     });
 };
@@ -338,7 +338,7 @@ exports.playerTable = playerTable;
 
 exports.playerGameStart = (socket) => {
     socket.emit('message', {
-        type: 'game_start',
+        type: 'gameStart',
         resp: {
             replay: (socket.status === 'Replay' || socket.status === 'Shared Replay'),
         },
@@ -352,9 +352,9 @@ exports.playerAction = (socket, data) => {
     socket.emit('message', {
         type: 'action',
         resp: {
-            can_clue: (game.clue_num > 0),
-            can_discard: (game.clue_num < 8),
-            can_blind_play_deck: (game.deckIndex === game.deck.length - 1),
+            canClue: (game.clueNum > 0),
+            canDiscard: (game.clueNum < 8),
+            canBlindPlayDeck: (game.deckIndex === game.deck.length - 1),
         },
     });
 };
@@ -384,7 +384,7 @@ exports.playerReplayLeader = (socket, data) => {
     const game = globals.currentGames[data.gameID];
 
     socket.emit('message', {
-        type: 'replay_leader',
+        type: 'replayLeader',
         resp: {
             name: game.leader,
         },

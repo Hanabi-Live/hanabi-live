@@ -5,9 +5,9 @@
         name: "",
         max: 5,
         variant: 0,
-        allow_spec: false,
+        allowSpec: false,
         timed: false,
-        reorder_cards: false,
+        reorderCards: false,
     }
 */
 
@@ -36,9 +36,9 @@ exports.step1 = (socket, data) => {
         data.reason = 'You must submit a value of "variant".';
         notify.playerDenied(socket, data);
         return;
-    } else if (!('allow_spec' in data)) {
-        logger.warn(`User "${data.username}" created a table without sending a "allow_spec" value.`);
-        data.reason = 'You must submit a value of "allow_spec".';
+    } else if (!('allowSpec' in data)) {
+        logger.warn(`User "${data.username}" created a table without sending a "allowSpec" value.`);
+        data.reason = 'You must submit a value of "allowSpec".';
         notify.playerDenied(socket, data);
         return;
     } else if (!('timed' in data)) {
@@ -46,9 +46,9 @@ exports.step1 = (socket, data) => {
         data.reason = 'You must submit a value of "timed".';
         notify.playerDenied(socket, data);
         return;
-    } else if (!('reorder_cards' in data)) {
-        logger.warn(`User "${data.username}" created a table without sending a "reorder_cards" value.`);
-        data.reason = 'You must submit a value of "reorder_cards".';
+    } else if (!('reorderCards' in data)) {
+        logger.warn(`User "${data.username}" created a table without sending a "reorderCards" value.`);
+        data.reason = 'You must submit a value of "reorderCards".';
         notify.playerDenied(socket, data);
         return;
     }
@@ -90,38 +90,37 @@ function step2(error, socket, data) {
     // Keep track of the current games
     globals.currentGames[data.gameID] = {
         actions: [],
-        allow_spec: data.allow_spec,
-        clue_num: 8,
-        datetime_created: null,
-        datetime_finished: null,
+        allowSpec: data.allowSpec,
+        clueNum: 8,
+        datetimeCreated: null,
+        datetimeFinished: null,
         deck: [],
         deckIndex: 0,
-        discard_signal_outstanding: false, // This is for the "Reorder Cards" feature
-        discard_signal_turn_expiration: -1, // This is for the "Reorder Cards" feature
-        end_turn_num: null,
-        max_players: data.max,
+        discardSignalOutstanding: false, // This is for the "Reorder Cards" feature
+        discardSignalTurnExpiration: -1, // This is for the "Reorder Cards" feature
+        endTurnNum: null,
+        maxPlayers: data.max,
         name: data.name,
         owner: socket.userID,
         players: [],
-        reorder_cards: data.reorder_cards,
+        reorderCards: data.reorderCards,
         running: false,
         score: 0,
         seed: null,
-        shared_replay: false,
+        sharedReplay: false,
         spectators: {},
         stacks: [],
         strikes: 0,
         sound: null,
         timed: data.timed,
-        turn_begin_time: null,
-        turn_num: 0,
-        turn_player_index: 0,
+        turnBeginTime: null,
+        turnNum: 0,
+        turnPlayerIndex: 0,
         variant: data.variant,
     };
 
     notify.allTableChange(data);
 
     // Join the user to the new table
-    data.table_id = data.gameID;
-    messages.join_table.step1(socket, data);
+    messages.joinTable.step1(socket, data);
 }

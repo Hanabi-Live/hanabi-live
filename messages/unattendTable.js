@@ -36,7 +36,7 @@ exports.step1 = (socket, data) => {
         notify.gameMemberChange(data);
         notify.gameSpectators(data);
 
-        if (game.shared_replay) {
+        if (game.sharedReplay) {
             if (Object.keys(game.spectators).length === 0) {
                 // This was the last person to leave the shared replay, so
                 // delete it
@@ -70,7 +70,7 @@ exports.step1 = (socket, data) => {
         notify.gameMemberChange(data);
     }
 
-    // They got sent a "table_gone" message earlier (if the game started), so
+    // They got sent a "tableGone" message earlier (if the game started), so
     // send them a new table message
     notify.playerTable(socket, data);
 };

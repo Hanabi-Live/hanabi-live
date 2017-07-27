@@ -1,9 +1,9 @@
 // Sent when the user clicks on the "Spectate" button in the lobby
-// (the client will send a "hello" message after getting "game_start")
+// (the client will send a "hello" message after getting "gameStart")
 // "data" example:
 /*
     {
-        table_id: 15103,
+        gameID: 15103,
     }
 */
 
@@ -13,9 +13,6 @@ const logger = require('../logger');
 const notify = require('../notify');
 
 exports.step1 = (socket, data) => {
-    // Local variables
-    data.gameID = data.table_id;
-
     // Validate that this table exists
     let game;
     if (data.gameID in globals.currentGames) {
@@ -37,6 +34,6 @@ exports.step1 = (socket, data) => {
     socket.status = 'Spectating';
     notify.allUserChange(socket);
 
-    // Send them a "game_start" message
+    // Send them a "gameStart" message
     notify.playerGameStart(socket);
 };

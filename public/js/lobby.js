@@ -14,8 +14,10 @@ function HanabiLobby() {
 
     this.gameID = null;
     this.randomName = '';
+
+    // The lobby settings found in the gear sub-menu
     this.sendTurnNotify = false;
-    this.sendTurnSound = false;
+    this.sendTurnSound = true; // We want sounds by default
     this.sendChatNotify = false;
     this.sendChatSound = false;
     this.showColorblindUI = false;
@@ -134,14 +136,14 @@ function HanabiLobby() {
         event.preventDefault();
 
         self.sendMsg({
-            type: 'create_table',
+            type: 'createTable',
             resp: {
                 name: gameName,
                 max: maxPlayers,
                 variant,
-                allow_spec: allowSpec,
+                allowSpec,
                 timed,
-                reorder_cards: reorderCards,
+                reorderCards,
             },
         });
 
@@ -174,7 +176,7 @@ function HanabiLobby() {
         event.preventDefault();
 
         self.sendMsg({
-            type: 'start_game',
+            type: 'startGame',
             resp: {},
         });
     });
@@ -183,7 +185,7 @@ function HanabiLobby() {
         event.preventDefault();
 
         self.sendMsg({
-            type: 'leave_table',
+            type: 'leaveTable',
             resp: {},
         });
     });
@@ -195,7 +197,7 @@ function HanabiLobby() {
         $('#table-area').show();
 
         self.sendMsg({
-            type: 'unattend_table',
+            type: 'unattendTable',
             resp: {},
         });
     });
@@ -317,7 +319,7 @@ HanabiLobby.prototype.showCreateDialog = function showCreateDialog() {
 
     // Get a new random name from the server for the next time we click the button
     this.sendMsg({
-        type: 'get_name',
+        type: 'getName',
     });
 
     let players = JSON.parse(localStorage.getItem('createTableMaxPlayers'));
@@ -436,15 +438,15 @@ HanabiLobby.prototype.drawUsers = function drawUsers() {
 HanabiLobby.prototype.addTable = function addTable(data) {
     this.tableList[data.id] = {
         name: data.name,
-        numPlayers: data.num_players,
-        maxPlayers: data.max_players,
+        numPlayers: data.numPlayers,
+        maxPlayers: data.maxPlayers,
         variant: data.variant,
         joined: data.joined,
         allowSpec: data.allowSpec,
         running: data.running,
-        ourTurn: data.our_turn,
+        ourTurn: data.ourTurn,
         owned: data.owned,
-        sharedReplay: data.shared_replay,
+        sharedReplay: data.sharedReplay,
     };
     this.drawTables();
 };
@@ -522,9 +524,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 const id = parseInt(this.id.slice(9), 10);
                 self.gameID = id;
                 self.sendMsg({
-                    type: 'spectate_table',
+                    type: 'spectateTable',
                     resp: {
-                        table_id: id,
+                        gameID: id,
                     },
                 });
 
@@ -544,9 +546,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 self.gameID = parseInt(this.id.slice(5), 10);
 
                 self.sendMsg({
-                    type: 'join_table',
+                    type: 'joinTable',
                     resp: {
-                        table_id: self.gameID,
+                        gameID: self.gameID,
                     },
                 });
 
@@ -562,9 +564,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 self.gameID = parseInt(this.id.slice(7), 10);
 
                 self.sendMsg({
-                    type: 'reattend_table',
+                    type: 'reattendTable',
                     resp: {
-                        table_id: self.gameID,
+                        gameID: self.gameID,
                     },
                 });
 
@@ -597,9 +599,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
                 self.gameID = null;
                 self.sendMsg({
-                    type: 'abandon_table',
+                    type: 'abandonTable',
                     resp: {
-                        table_id: id,
+                        gameID: id,
                     },
                 });
             });
@@ -648,10 +650,10 @@ HanabiLobby.prototype.addChat = function addChat(data) {
 HanabiLobby.prototype.addHistory = function addHistory(data) {
     this.historyList[data.id] = {
         id: data.id,
-        numPlayers: data.num_players,
+        numPlayers: data.numPlayers,
         score: data.score,
         variant: data.variant,
-        numSimilar: data.num_similar,
+        numSimilar: data.numSimilar,
     };
 };
 
@@ -703,9 +705,9 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
             self.gameID = parseInt(this.id.slice(16), 10);
 
             self.sendMsg({
-                type: 'history_details',
+                type: 'historyDetails',
                 resp: {
-                    id: self.gameID,
+                    gameID: self.gameID,
                 },
             });
 
@@ -780,9 +782,9 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
             self.gameID = parseInt(this.id.slice(7), 10);
 
             self.sendMsg({
-                type: 'start_replay',
+                type: 'startReplay',
                 resp: {
-                    id: self.gameID,
+                    gameID: self.gameID,
                 },
             });
         });
@@ -798,9 +800,9 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
             self.gameID = parseInt(this.id.slice(7), 10);
 
             self.sendMsg({
-                type: 'create_shared_replay',
+                type: 'createSharedReplay',
                 resp: {
-                    id: self.gameID,
+                    gameID: self.gameID,
                 },
             });
 
@@ -826,7 +828,7 @@ HanabiLobby.prototype.tableJoined = function tableJoined(data) {
 
     this.showJoined();
 
-    this.gameID = data.table_id;
+    this.gameID = data.gameID;
 };
 
 HanabiLobby.prototype.tableLeft = function tableLeft(data) {
@@ -838,14 +840,14 @@ HanabiLobby.prototype.tableLeft = function tableLeft(data) {
 
 HanabiLobby.prototype.setGame = function setGame(data) {
     this.game.name = data.name;
-    this.game.numPlayers = data.num_players;
-    this.game.maxPlayers = data.max_players;
+    this.game.numPlayers = data.numPlayers;
+    this.game.maxPlayers = data.maxPlayers;
     this.game.variant = data.variant;
     this.game.running = data.running;
     this.game.allowSpec = data.allowSpec;
     this.game.timed = data.timed;
     this.game.reorderCards = data.reorderCards;
-    this.game.sharedReplay = data.shared_replay;
+    this.game.sharedReplay = data.sharedReplay;
 
     this.game.players.length = this.game.numPlayers;
 
@@ -855,9 +857,9 @@ HanabiLobby.prototype.setGame = function setGame(data) {
 HanabiLobby.prototype.setGamePlayer = function setGamePlayer(data) {
     this.game.players[data.index] = {
         name: data.name,
-        numPlayed: data.num_played,
-        averageScore: data.average_score,
-        strikeoutRate: data.strikeout_rate,
+        numPlayed: data.numPlayed,
+        averageScore: data.averageScore,
+        strikeoutRate: data.strikeoutRate,
         present: data.present,
     };
 
@@ -978,11 +980,11 @@ HanabiLobby.prototype.listenConn = function listConn(conn) {
             alert(`Error: ${msgData.error}`);
         } else if (msgType === 'user') {
             self.addUser(msgData);
-        } else if (msgType === 'user_left') {
+        } else if (msgType === 'userLeft') {
             self.removeUser(msgData);
         } else if (msgType === 'table') {
             self.addTable(msgData);
-        } else if (msgType === 'table_gone') {
+        } else if (msgType === 'tableGone') {
             self.removeTable(msgData);
         } else if (msgType === 'chat') {
             self.addChat(msgData);
@@ -992,17 +994,17 @@ HanabiLobby.prototype.listenConn = function listConn(conn) {
             self.tableLeft(msgData);
         } else if (msgType === 'game') {
             self.setGame(msgData);
-        } else if (msgType === 'game_player') {
+        } else if (msgType === 'gamePlayer') {
             self.setGamePlayer(msgData);
-        } else if (msgType === 'table_ready') {
+        } else if (msgType === 'tableReady') {
             self.setTableReady(msgData);
-        } else if (msgType === 'game_start') {
+        } else if (msgType === 'gameStart') {
             self.gameStarted(msgData);
-        } else if (msgType === 'game_history') {
+        } else if (msgType === 'gameHistory') {
             self.addHistory(msgData);
-        } else if (msgType === 'history_detail') {
+        } else if (msgType === 'historyDetail') {
             self.addHistoryDetail(msgData);
-        } else if (msgType === 'game_error') {
+        } else if (msgType === 'gameError') {
             alert('Server error');
             self.gameEnded(msgData);
         } else if (msgType === 'sound') {
@@ -1091,7 +1093,7 @@ HanabiLobby.prototype.setConn = function setConn(conn) {
     }
 
     conn.on('reconnect', () => {
-        console.log('attempting to reconnect');
+        console.log('Attempting to reconnect...');
         if (self.username && self.pass) {
             self.sendLogin();
         }
@@ -1123,6 +1125,9 @@ HanabiLobby.prototype.sendMsg = function sendMsg(msg) {
 
 HanabiLobby.prototype.loadSettings = function loadSettings() {
     const self = this;
+
+    // Element 0 is the HTML ID
+    // Element 1 is the cookie key
     const settingsList = [
         [
             'send-turn-notification',
@@ -1147,19 +1152,45 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
     ];
 
     for (let i = 0; i < settingsList.length; i++) {
-        let val = localStorage[settingsList[i][1]];
-        if (val !== undefined) {
-            val = (val === 'true');
-            $(`#${settingsList[i][0]}`).attr('checked', val);
-            this[settingsList[i][1]] = val;
-        }
+        const htmlID = settingsList[i][0];
+        const cookieKey = settingsList[i][1];
 
-        $(`#${settingsList[i][0]}`).change(function changeSettingsList() {
-            const name = $(this).attr('id');
-            for (let j = 0; i < settingsList.length; i++) {
-                if (settingsList[j][0] === name) {
-                    self[settingsList[j][1]] = $(this).is(':checked');
-                    localStorage[settingsList[j][1]] = $(this).is(':checked');
+        // Get this setting from local storage
+        let cookieValue = localStorage.getItem(cookieKey);
+
+        if (typeof cookieValue === 'undefined' || typeof cookieValue !== 'string') {
+            // If the cookie doesn't exist (or it is corrupt), write a default value
+            cookieValue = this[cookieKey];
+            localStorage.setItem(cookieKey, cookieValue);
+            console.log(`Wrote a new "${cookieKey}" cookie of: ${cookieValue}`);
+        } else {
+            // Convert it from a string to a boolean
+            // (all values in cookies are strings)
+            cookieValue = (cookieValue === 'true');
+
+            // Write the value of the cookie to our local variable
+            this[cookieKey] = cookieValue;
+        }
+        $(`#${htmlID}`).attr('checked', cookieValue);
+
+        $(`#${htmlID}`).change(function changeSettingsList() {
+            // Find the local variable name that is associated with this HTML ID
+            for (let j = 0; j < settingsList.length; j++) {
+                const thisHtmlID = settingsList[j][0];
+                const thisCookieKey = settingsList[j][1];
+                console.log(thisHtmlID);
+                console.log($(this).attr('id'));
+                if (thisHtmlID === $(this).attr('id')) {
+                    const checked = $(this).is(':checked');
+
+                    // Write the new value to our local variable
+                    self[thisCookieKey] = checked;
+
+                    // Also store the new value in localstorage
+                    localStorage.setItem(thisCookieKey, checked);
+
+                    console.log(`Wrote a "${thisCookieKey}" cookie of: ${checked}`);
+                    break;
                 }
             }
 
@@ -1238,3 +1269,5 @@ function deleteCookie(name) {
     const cookie = `; expires=${expire.toUTCString()}`;
     document.cookie = `${name}=${cookie}`;
 }
+
+setCookie('test', 'poop');

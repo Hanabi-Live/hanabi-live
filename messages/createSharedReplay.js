@@ -3,7 +3,7 @@
 // "data" example:
 /*
     {
-        id: 123,
+        gameID: 123,
     }
 */
 
@@ -16,7 +16,6 @@ const notify = require('../notify');
 
 exports.step1 = (socket, data) => {
     // Validate that there is not a shared replay for this game ID already
-    data.gameID = data.id;
     if (data.gameID in globals.currentGames) {
         data.reason = 'There is already a shared replay going on for that ID.';
         notify.playerDenied(socket, data);
@@ -52,14 +51,13 @@ function step2(error, socket, data) {
         spectators: [],
         variant: data.variant,
         running: true,
-        turn_num: 0,
-        shared_replay: true,
+        turnNum: 0,
+        sharedReplay: true,
         leader: socket.username,
     };
 
     notify.allTableChange(data);
 
     // Join the user to the new table
-    data.table_id = data.gameID;
-    messages.join_shared_replay.step1(socket, data);
+    messages.joinSharedReplay.step1(socket, data);
 }

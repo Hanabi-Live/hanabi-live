@@ -2,7 +2,7 @@
 // "data" example:
 /*
     {
-        table_id: 594,
+        tableID: 594,
     }
 */
 
@@ -12,9 +12,6 @@ const logger = require('../logger');
 const notify = require('../notify');
 
 exports.step1 = (socket, data) => {
-    // Local variables
-    data.gameID = data.table_id;
-
     // Validate that this table exists
     let game;
     if (data.gameID in globals.currentGames) {

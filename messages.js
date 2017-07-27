@@ -1,25 +1,28 @@
-// The exports key name has to exactly match the incoming message type
-// (Keldon uses underscores instead of camel case)
-exports.abandon_table = require('./messages/abandonTable');
+/*
+    The exports key name has to exactly match the incoming message type
+    (Keldon originally used underscores for these messages instead of camel
+    case, but they have since been converted)
+*/
+exports.abandonTable = require('./messages/abandonTable');
 exports.action = require('./messages/action');
 exports.chat = require('./messages/chat');
-exports.create_shared_replay = require('./messages/createSharedReplay');
-exports.create_table = require('./messages/createTable');
-exports.end_game = require('./messages/endGame'); // Not a real message
-exports.get_name = require('./messages/getName');
+exports.createSharedReplay = require('./messages/createSharedReplay');
+exports.createTable = require('./messages/createTable');
+exports.endGame = require('./messages/endGame'); // Not a real message
+exports.getName = require('./messages/getName');
 exports.hello = require('./messages/hello');
-exports.history_details = require('./messages/historyDetails');
-exports.join_shared_replay = require('./messages/joinSharedReplay');
-exports.join_table = require('./messages/joinTable');
-exports.leave_table = require('./messages/leaveTable');
+exports.historyDetails = require('./messages/historyDetails');
+exports.joinSharedReplay = require('./messages/joinSharedReplay');
+exports.joinTable = require('./messages/joinTable');
+exports.leaveTable = require('./messages/leaveTable');
 exports.login = require('./messages/login');
 exports.logout = require('./messages/logout'); // Not a real message
 exports.note = require('./messages/note');
 exports.notes = require('./messages/notes');
 exports.ready = require('./messages/ready');
-exports.reattend_table = require('./messages/reattendTable');
-exports.replay_action = require('./messages/replayAction');
-exports.start_game = require('./messages/startGame');
-exports.unattend_table = require('./messages/unattendTable');
-exports.start_replay = require('./messages/startReplay');
-exports.spectate_table = require('./messages/spectateTable');
+exports.reattendTable = require('./messages/reattendTable');
+exports.replayAction = require('./messages/replayAction');
+exports.startGame = require('./messages/startGame');
+exports.unattendTable = require('./messages/unattendTable');
+exports.startReplay = require('./messages/startReplay');
+exports.spectateTable = require('./messages/spectateTable');

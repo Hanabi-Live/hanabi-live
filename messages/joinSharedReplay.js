@@ -1,9 +1,9 @@
-// The "join_shared_replay" message is not actually sent by the client;
+// The "joinSharedReplay" message is not actually sent by the client;
 // we just store the logic here for organizational purposes
 // "data" example:
 /*
     {
-        table_id: 15103,
+        gameID: 15103,
     }
 */
 
@@ -15,7 +15,6 @@ const notify = require('../notify');
 exports.step1 = (socket, data) => {
     // Local variables
     data.userID = socket.userID;
-    data.gameID = data.table_id;
 
     // Validate that this table exists
     let game;
@@ -41,6 +40,6 @@ exports.step1 = (socket, data) => {
     socket.status = 'Shared Replay';
     notify.allUserChange(socket);
 
-    // Send them a "game_start" message
+    // Send them a "gameStart" message
     notify.playerGameStart(socket);
 };

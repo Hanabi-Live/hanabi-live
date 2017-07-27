@@ -47,13 +47,13 @@ exports.end = (data, done) => {
     const values = [
         data.name,
         data.owner,
-        data.max_players,
+        data.maxPlayers,
         data.variant,
-        data.allow_spec,
+        data.allowSpec,
         data.timed,
         data.seed,
         data.score,
-        data.datetime_started,
+        data.datetimeStarted,
         data.gameID,
     ];
     db.query(sql, values, (error, results, fields) => {
@@ -66,7 +66,7 @@ exports.end = (data, done) => {
     });
 };
 
-// Used by the "start_replay" function
+// Used by the "startReplay" function
 exports.exists = (socket, data, done) => {
     const sql = `
         SELECT id
@@ -119,8 +119,8 @@ exports.getUserHistory = (socket, data, done) => {
         for (const row of results) {
             data.gameHistory.push({
                 id: row.id,
-                num_players: row.num_players,
-                num_similar: row.num_similar,
+                numPlayers: row.num_players,
+                numSimilar: row.num_similar,
                 score: row.score,
                 variant: row.variant,
             });
@@ -130,7 +130,7 @@ exports.getUserHistory = (socket, data, done) => {
     });
 };
 
-// Used in the "end_game" function
+// Used in the "endGame" function
 exports.getNumSimilar = (data, done) => {
     const sql = `
         SELECT COUNT(id) AS num_similar
@@ -144,7 +144,7 @@ exports.getNumSimilar = (data, done) => {
             return;
         }
 
-        data.num_similar = results[0].num_similar;
+        data.numSimilar = results[0].num_similar;
         done(null, data);
     });
 };

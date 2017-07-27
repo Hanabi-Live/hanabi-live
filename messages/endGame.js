@@ -1,6 +1,6 @@
-// The "end_game" message is not actually sent by the client;
+// The "endGame" message is not actually sent by the client;
 // we just store the logic here for organizational purposes since
-// the start game logic is stored under the "start_game" command
+// the start game logic is stored under the "startGame" command
 
 // Imports
 const globals = require('../globals');
@@ -27,9 +27,9 @@ exports.step1 = (data) => {
         logger.info(`[Game ${data.gameID}] ${text}`);
     }
 
-    // Send the "game_over" message
+    // Send the "gameOver" message
     game.actions.push({
-        type: 'game_over',
+        type: 'gameOver',
         score: game.score,
         loss: data.loss,
     });
@@ -65,15 +65,15 @@ exports.step1 = (data) => {
     data = {
         name: game.name,
         owner: game.owner,
-        max_players: game.max_players,
+        maxPlayers: game.maxPlayers,
         variant: game.variant,
-        allow_spec: game.allow_spec,
+        allowSpec: game.allowSpec,
         timed: game.timed,
         seed: game.seed,
         score: game.score,
-        datetime_created: game.datetime_created,
-        datetime_started: game.datetime_started,
-        // datetime_finished will automatically be set by MariaDB
+        datetimeCreated: game.datetimeCreated,
+        datetimeStarted: game.datetimeStarted,
+        // datetimeFinished will automatically be set by MariaDB
         gameID: data.gameID,
     };
     models.games.end(data, step2);
@@ -127,7 +127,7 @@ function step4(error, data) {
         return;
     }
 
-    // Get the num_similar for this game
+    // Get the numSimilar for this game
     models.games.getNumSimilar(data, step5);
 }
 
@@ -140,14 +140,14 @@ function step5(error, data) {
     // Local variables
     const game = globals.currentGames[data.gameID];
 
-    // Send a "game_history" message to all the players in the game
+    // Send a "gameHistory" message to all the players in the game
     for (const player of game.players) {
         player.socket.emit('message', {
-            type: 'game_history',
+            type: 'gameHistory',
             resp: {
                 id: data.gameID,
-                num_players: game.players.length,
-                num_similar: data.num_similar,
+                numPlayers: game.players.length,
+                numSimilar: data.numSimilar,
                 score: game.score,
                 variant: game.variant,
             },
@@ -190,9 +190,9 @@ function step7(error, data) {
     const game = globals.currentGames[data.gameID];
 
     if (data.insertNum !== -1) {
-        game.players[data.insertNum].socket.num_played = data.num_played;
-        game.players[data.insertNum].socket.average_score = data.average_score;
-        game.players[data.insertNum].socket.strikeout_rate = data.strikeout_rate;
+        game.players[data.insertNum].socket.numPlayed = data.numPlayed;
+        game.players[data.insertNum].socket.averageScore = data.averageScore;
+        game.players[data.insertNum].socket.strikeoutRate = data.strikeoutRate;
     }
 
     data.insertNum += 1;

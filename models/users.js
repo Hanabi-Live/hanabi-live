@@ -31,9 +31,9 @@ exports.getUser = (socket, data, done) => {
             data.username = results[0].username;
             // We replace the existing username in case they submitted the wrong case
             data.realPassword = results[0].password;
-            data.num_played = results[0].num_played;
-            data.average_score = results[0].average_score;
-            data.strikeout_rate = results[0].strikeout_rate;
+            data.numPlayed = results[0].num_played;
+            data.averageScore = results[0].average_score;
+            data.strikeoutRate = results[0].strikeout_rate;
         }
 
         done(null, socket, data);
@@ -50,9 +50,9 @@ exports.create = (socket, data, done) => {
         }
 
         data.userID = results.insertId;
-        data.num_played = 0;
-        data.average_score = 0;
-        data.strikeout_rate = 0;
+        data.numPlayed = 0;
+        data.averageScore = 0;
+        data.strikeoutRate = 0;
         done(null, socket, data);
     });
 };
@@ -123,9 +123,9 @@ exports.getStats = (data, done) => {
             return;
         }
 
-        data.num_played = results[0].num_played;
-        data.average_score = results[0].average_score;
-        data.strikeout_rate = results[0].strikeout_rate;
+        data.numPlayed = results[0].num_played;
+        data.averageScore = results[0].average_score;
+        data.strikeoutRate = results[0].strikeout_rate;
 
         done(null, data);
     });

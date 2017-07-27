@@ -2,7 +2,7 @@
 // "data" example:
 /*
     {
-        table_id: 15103,
+        gameID: 15103,
     }
 */
 
@@ -15,7 +15,6 @@ const notify = require('../notify');
 exports.step1 = (socket, data) => {
     // Local variables
     data.userID = socket.userID;
-    data.gameID = data.table_id;
 
     /*
         Validation
@@ -34,8 +33,8 @@ exports.step1 = (socket, data) => {
 
     // The logic for joining shared replay is in a separate file for
     // organizational purposes
-    if (game.shared_replay) {
-        messages.join_shared_replay.step1(socket, data);
+    if (game.sharedReplay) {
+        messages.joinSharedReplay.step1(socket, data);
         return;
     }
 
@@ -56,9 +55,9 @@ exports.step1 = (socket, data) => {
 
     // Validate that this table does not already have the maximum amount of
     // players
-    if (game.players.length === game.max_players) {
+    if (game.players.length === game.maxPlayers) {
         logger.warn(`messages.join was called for game #${data.gameID}, but it has the maximum amount of players already.`);
-        data.reason = `That table has a maximum limit of ${game.max_players} players.`;
+        data.reason = `That table has a maximum limit of ${game.maxPlayers} players.`;
         notify.playerDenied(socket, data);
         return;
     }
@@ -101,7 +100,7 @@ exports.step1 = (socket, data) => {
     socket.emit('message', {
         type: 'joined',
         resp: {
-            table_id: data.gameID,
+            gameID: data.gameID,
         },
     });
 };

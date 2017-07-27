@@ -1272,7 +1272,7 @@ function HanabiUI(lobby, gameID) {
         this.enabled = true;
         this.pressed = false;
 
-        this.target_index = config.target_index;
+        this.targetIndex = config.targetIndex;
 
         background.on('mousedown', () => {
             background.setFill('#888888');
@@ -3246,7 +3246,7 @@ function HanabiUI(lobby, gameID) {
                 width: 0.08 * winW,
                 height: 0.025 * winH,
                 text: this.playerNames[j],
-                target_index: j,
+                targetIndex: j,
             });
 
             clueArea.add(button);
@@ -3610,7 +3610,7 @@ function HanabiUI(lobby, gameID) {
         button.on('click tap', () => {
             if (self.replayOnly) {
                 ui.sendMsg({
-                    type: 'unattend_table',
+                    type: 'unattendTable',
                     resp: {},
                 });
 
@@ -3730,7 +3730,7 @@ function HanabiUI(lobby, gameID) {
             if (cardOrder === null) {
                 return;
             }
-            if (cardOrder === 'deck' && !(intendedPlay && savedAction.can_blind_play_deck)) {
+            if (cardOrder === 'deck' && !(intendedPlay && savedAction.canBlindPlayDeck)) {
                 return;
             }
 
@@ -3776,10 +3776,10 @@ function HanabiUI(lobby, gameID) {
             if (replayArea.visible()) {
                 currentNavigation = replayNavigationKeyMap[event.key];
             } else if (savedAction !== null) { // current user can take an action
-                if (savedAction.can_clue) {
+                if (savedAction.canClue) {
                     currentNavigation = clueKeyMap[event.key];
                 }
-                if (savedAction.can_discard) {
+                if (savedAction.canDiscard) {
                     currentNavigation = currentNavigation || discardKeyMap[event.key];
                 }
                 currentNavigation = currentNavigation || playKeyMap[event.key];
@@ -3917,7 +3917,7 @@ function HanabiUI(lobby, gameID) {
         lobbyButton.on('click tap', () => {
             lobbyButton.off('click tap');
             ui.sendMsg({
-                type: 'unattend_table',
+                type: 'unattendTable',
                 resp: {},
             });
 
@@ -3982,7 +3982,7 @@ function HanabiUI(lobby, gameID) {
         if (msgData.type === 'turn') {
             this.replayMax = msgData.num;
         }
-        if (msgData.type === 'game_over') {
+        if (msgData.type === 'gameOver') {
             this.replayMax += 1;
         }
 
@@ -4050,7 +4050,7 @@ function HanabiUI(lobby, gameID) {
 
         if (this.sharedReplay && this.sharedReplayLeader === lobby.username) {
             this.sendMsg({
-                type: 'replay_action',
+                type: 'replayAction',
                 resp: {
                     type: 0, // Type 0 is a new replay turn
                     turn: target,
@@ -4231,7 +4231,7 @@ function HanabiUI(lobby, gameID) {
 
             playerHands[note.who].add(child);
             playerHands[note.who].moveToTop();
-        } else if (type === 'draw_size') {
+        } else if (type === 'drawSize') {
             drawDeck.setCount(note.size);
         } else if (type === 'played') {
             const suit = msgSuitToSuit(note.which.suit, ui.variant);
@@ -4417,7 +4417,7 @@ function HanabiUI(lobby, gameID) {
             if (!this.animateFast) {
                 UILayer.draw();
             }
-        } else if (type === 'game_over') {
+        } else if (type === 'gameOver') {
             for (let i = 0; i < this.playerNames.length; i++) {
                 nameFrames[i].off('mousemove');
             }
@@ -4446,7 +4446,7 @@ function HanabiUI(lobby, gameID) {
             const newChildOrder = [];
             const handSize = hand.children.length;
             for (let i = 0; i < handSize; ++i) {
-                const order = note.hand_order[i];
+                const order = note.handOrder[i];
                 const child = ui.deck[order].parent;
                 newChildOrder.push(child);
 
@@ -4693,7 +4693,7 @@ function HanabiUI(lobby, gameID) {
             return;
         }
 
-        if (data.can_clue) {
+        if (data.canClue) {
             clueArea.show();
 
             new Kinetic.Tween({
@@ -4710,7 +4710,7 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
-        if (!data.can_discard) {
+        if (!data.canDiscard) {
             noDiscardLabel.show();
             if (!this.animateFast) {
                 UILayer.draw();
@@ -4757,7 +4757,7 @@ function HanabiUI(lobby, gameID) {
                     pos.y >= discardArea.getY() &&
                     pos.x <= discardArea.getX() + discardArea.getWidth() &&
                     pos.y <= discardArea.getY() + discardArea.getHeight() &&
-                    data.can_discard
+                    data.canDiscard
                 ) {
                     ui.sendMsg({
                         type: 'action',
@@ -4777,12 +4777,12 @@ function HanabiUI(lobby, gameID) {
             /* eslint-enable no-loop-func */
         }
 
-        drawDeck.cardback.setDraggable(data.can_blind_play_deck);
+        drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
 
-        deckPlayAvailableLabel.setVisible(data.can_blind_play_deck);
+        deckPlayAvailableLabel.setVisible(data.canBlindPlayDeck);
 
         // Ensure deck blindplay is above other cards, ui elements
-        if (data.can_blind_play_deck) {
+        if (data.canBlindPlayDeck) {
             drawDeck.moveToTop();
         }
 
@@ -4795,7 +4795,7 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            const who = target.target_index;
+            const who = target.targetIndex;
             const match = showClueMatch(who, clueButton.clue);
 
             if (!match) {
@@ -4810,7 +4810,7 @@ function HanabiUI(lobby, gameID) {
         clueButtonGroup.on('change', checkClueLegal);
 
         submitClue.on('click tap', function submitClueClick() {
-            if (!data.can_clue) {
+            if (!data.canClue) {
                 return;
             }
 
@@ -4821,13 +4821,13 @@ function HanabiUI(lobby, gameID) {
             const target = clueTargetButtonGroup.getPressed();
             const clueButton = clueButtonGroup.getPressed();
 
-            showClueMatch(target.target_index, {});
+            showClueMatch(target.targetIndex, {});
 
             ui.sendMsg({
                 type: 'action',
                 resp: {
                     type: ACT.CLUE,
-                    target: target.target_index,
+                    target: target.targetIndex,
                     clue: clueToMsgClue(clueButton.clue, ui.variant),
                 },
             });
@@ -4885,7 +4885,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
         this.spectating = msgData.spectating;
         this.timedGame = msgData.timed;
         this.sharedReplay = msgData.sharedReplay;
-        this.reorder_cards = msgData.reorder_cards;
+        this.reorderCards = msgData.reorderCards;
 
         if (this.replayOnly) {
             this.replayTurn = -1;

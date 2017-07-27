@@ -60,9 +60,9 @@ function step2(error, socket, data) {
             seat,
             spectating: (socket.status === 'Spectating'),
             timed: game.timed,
-            reorder_cards: game.reorder_cards,
+            reorderCards: game.reorderCards,
             variant: game.variant,
-            shared_replay: (socket.status === 'Shared Replay'),
+            sharedReplay: (socket.status === 'Shared Replay'),
         },
     });
 }

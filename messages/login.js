@@ -90,9 +90,9 @@ function step4(socket, data) {
     socket.username = data.username;
     socket.currentGame = -1;
     socket.status = 'Lobby';
-    socket.num_played = data.num_played;
-    socket.average_score = data.average_score;
-    socket.strikeout_rate = data.strikeout_rate;
+    socket.numPlayed = data.numPlayed;
+    socket.averageScore = data.averageScore;
+    socket.strikeoutRate = data.strikeoutRate;
 
     // Check to see if this user is already logged on
     if (socket.userID in globals.connectedUsers) {
@@ -124,7 +124,7 @@ function step4(socket, data) {
     }
 
     // Send them a random name
-    messages.get_name.step1(socket, data);
+    messages.getName.step1(socket, data);
 
     // They have successfully logged in, so send initial messages to the client
     socket.emit('message', {
@@ -170,7 +170,7 @@ function step4(socket, data) {
 
     // Send the welcome chat messages
     // (Keldon sends these, but they seem rather useless and spammy, so we won't
-    // send these)
+    // bother)
     /*
     socket.emit('message', {
         type: 'chat',
@@ -200,11 +200,11 @@ function step5(error, socket, data) {
 
     for (const game of data.gameHistory) {
         socket.emit('message', {
-            type: 'game_history',
+            type: 'gameHistory',
             resp: {
                 id: game.id,
-                num_players: game.num_players,
-                num_similar: game.num_similar,
+                numPlayers: game.numPlayers,
+                numSimilar: game.numSimilar,
                 score: game.score,
                 variant: game.variant,
             },
