@@ -2884,6 +2884,7 @@ function HanabiUI(lobby, gameID) {
         }
 
         // TODO: move blocks like this into their own functions
+        const playAreaY = 0.327;
         {
             let i = 0;
             for (const suit of this.variant.suits) {
@@ -2896,7 +2897,7 @@ function HanabiUI(lobby, gameID) {
                     fill: fillColor,
                     opacity: 0.4,
                     x: (0.183 + (width + 0.015) * i) * winW,
-                    y: (0.345 + offset) * winH,
+                    y: (playAreaY + offset) * winH,
                     width: width * winW,
                     height: height * winH,
                     cornerRadius: radius * winW,
@@ -2907,7 +2908,7 @@ function HanabiUI(lobby, gameID) {
                 // In the play area, draw the symbol corresponding to each suit inside the rectangle
                 pileback = new Kinetic.Image({
                     x: (0.183 + (width + 0.015) * i) * winW,
-                    y: (0.345 + offset) * winH,
+                    y: (playAreaY + offset) * winH,
                     width: width * winW,
                     height: height * winH,
                     image: cardImages[`card-${i}-0`],
@@ -2922,7 +2923,7 @@ function HanabiUI(lobby, gameID) {
                     stroke: strokeColor,
                     strokeWidth: 5,
                     x: (0.183 + (width + 0.015) * i) * winW,
-                    y: (0.345 + offset) * winH,
+                    y: (playAreaY + offset) * winH,
                     width: width * winW,
                     height: height * winH,
                     cornerRadius: radius * winW,
@@ -2931,7 +2932,7 @@ function HanabiUI(lobby, gameID) {
 
                 const thisSuitPlayStack = new CardStack({
                     x: (0.183 + (width + 0.015) * i) * winW,
-                    y: (0.345 + offset) * winH,
+                    y: (playAreaY + offset) * winH,
                     width: width * winW,
                     height: height * winH,
                 });
@@ -2947,10 +2948,11 @@ function HanabiUI(lobby, gameID) {
                 discardStacks.set(suit, thisSuitDiscardStack);
                 cardLayer.add(thisSuitDiscardStack);
 
-                // Draw the text description of the suit
+                // Draw the suit name next to each suit
+                // (a text description of the suit)
                 const text = new FitText({
                     x: (0.173 + (width + 0.015) * i) * winW, // (this.variant === VARIANT.NONE
-                    y: (0.45 + offset) * winH,
+                    y: (playAreaY + 0.155 + offset) * winH,
                     width: 0.08 * winW,
                     height: 0.051 * winH,
                     fontSize: 0.02 * winH,
@@ -2958,13 +2960,6 @@ function HanabiUI(lobby, gameID) {
                     align: 'center',
                     text: suit.name,
                     fill: '#d8d5ef',
-                    shadowColor: 'black',
-                    shadowBlur: 10,
-                    shadowOffset: {
-                        x: 0,
-                        y: 0,
-                    },
-                    shadowOpacity: 0.9,
                 });
                 textLayer.add(text);
 
