@@ -325,7 +325,7 @@ function playerClue(data) {
                 // 0 - Teal     (Blue / Green)
                 // 1 - Lime     (Green / Yellow)
                 // 2 - Orange   (Yellow / Red)
-                // 3 - Burgundy (Red / Purple)
+                // 3 - Cardinal (Red / Purple)
                 // 4 - Indigo   (Purple / Blue)
                 // 5 - Rainbow
                 if (data.clue.value === 0) { // Blue clue

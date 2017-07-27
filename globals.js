@@ -36,7 +36,7 @@ module.exports = {
         'Teal',
         'Lime',
         'Orange',
-        'Burgundy',
+        'Cardinal',
         'Indigo',
         'Rainbow',
     ],
