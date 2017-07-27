@@ -544,7 +544,7 @@ function HanabiUI(lobby, gameID) {
 
         this.add(this.colorClueGroup);
 
-        this.colorClue = new Kinetic.Rect({
+        this.colorSquare = new Kinetic.Rect({
             width: 0.4 * config.width,
             height: 0.282 * config.height,
             stroke: 'black',
@@ -564,7 +564,7 @@ function HanabiUI(lobby, gameID) {
             ],
         });
 
-        this.colorClueGroup.add(this.colorClue);
+        this.colorClueGroup.add(this.colorSquare);
 
         this.colorClueQuestionMark = new Kinetic.Text({
             width: 0.4 * config.width,
@@ -835,11 +835,12 @@ function HanabiUI(lobby, gameID) {
 
         if (clue.type === CLUE_TYPE.COLOR) {
             // Draw the color squares
-            const grad = this.colorClue.getFillLinearGradientColorStops();
+            const grad = this.colorSquare.getFillLinearGradientColorStops();
             const clueColor = clue.value;
             const clueColorCode = clue.value.hexCode;
+            // No colors yet
             if (grad.length === 2) {
-                this.colorClue.setFillLinearGradientColorStops([
+                this.colorSquare.setFillLinearGradientColorStops([
                     0,
                     clueColorCode,
                     1,
@@ -848,35 +849,30 @@ function HanabiUI(lobby, gameID) {
                 this.colorClueLetter.setText(clueColor.abbreviation);
             } else if (grad[1] === grad[3]) {
                 if (ui.variant === VARIANT.MIXED) {
-                    // Find out the array index of these clue colors
-                    const clueColor1 = ui.variant.clueColors.find(
+                    const existingColor = ui.variant.clueColors.find(
                         color => color.hexCode === grad[1],
                     );
-                    const clueColor2 = ui.variant.clueColors.find(
-                        color => color.hexCode === grad[3],
-                    );
+                    // True color hasn't been found yet
+                    if (ui.variant.clueColors.includes(clueColor)) {
+                        // If this is a new color being introduced to the card
+                        if (existingColor !== clueColor) {
+                            const trueSuit = VARIANT.MIXED.suits.find(
+                                suit => suit.clueColors.includes(existingColor) && suit.clueColors.includes(clueColor),
+                            );
+                            // fillColors for a mixed suit is just one color
+                            const trueFillColor = trueSuit.fillColors.hexCode;
+                            grad[1] = trueFillColor;
+                            grad[3] = trueFillColor;
+                            this.colorSquare.setFillLinearGradientColorStops(grad);
 
-                    // The index will not be set above if we already changed it to the true mixed color
-                    // So, do nothing if that is the case
-                    if (clueColor1 && clueColor2 && (clueColor1 !== clueColor2)) {
-                        // Find the index of the mixed suit that matches these two colors
-                        for (const suit of ui.variant.suits) {
-                            const clueColors = suit.clueColors;
-                            if (clueColors.includes(clueColor1) || clueColors.includes(clueColor2)) {
-                                grad[1] = suit.fill_color.hexCode;
-                                grad[3] = suit.fill_color.hexCode;
-                                this.colorClue.setFillLinearGradientColorStops(grad);
-                                break;
-                            }
+                            // Get rid of the question mark
+                            this.colorClueQuestionMark.hide();
                         }
-
-                        // Get rid of the question mark
-                        this.colorClueQuestionMark.hide();
                     }
                 } else {
                     // Change the solid color to a gradient mixing the two clues
                     grad[3] = clueColor.hexCode;
-                    this.colorClue.setFillLinearGradientColorStops(grad);
+                    this.colorSquare.setFillLinearGradientColorStops(grad);
                     this.colorClueLetter.setText('M');
                 }
             } else if (ui.variant !== VARIANT.MIXED) {
@@ -890,7 +886,7 @@ function HanabiUI(lobby, gameID) {
                 }
                 grad.push(1);
                 grad.push(clueColor);
-                this.colorClue.setFillLinearGradientColorStops(grad);
+                this.colorSquare.setFillLinearGradientColorStops(grad);
                 this.colorClueLetter.setText('M');
             }
 
