@@ -565,7 +565,7 @@
                 exports.SUIT.TEAL,
                 exports.SUIT.LIME,
                 exports.SUIT.SORANGE,
-                exports.SUIT.BURGUNDY,
+                exports.SUIT.CARDINAL,
                 exports.SUIT.INDIGO,
                 exports.SUIT.MULTI,
             ],
