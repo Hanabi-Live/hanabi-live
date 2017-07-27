@@ -750,49 +750,59 @@ function HanabiUI(lobby, gameID) {
         });
 
         this.on('click', (event) => {
-            if (event.evt.which === 3) { // Right click
-                let note = ui.getNote(self.order);
-                const newNote = prompt('Note on card:', note);
-                if (newNote !== null) {
-                    self.tooltip.getText().setText(newNote);
-                    ui.setNote(self.order, newNote);
-                    note = newNote;
-                }
+            if (ui.sharedReplayLeader === lobby.username) {
+                // Don't popup the alert for shared replay leaders;
+                // we want right click to be dedicated to sending the cursor
+                // position to the other people in the replay
+                return;
+            }
 
-                // Do nothing if there was no old note and no new note
-                if (typeof note === 'undefined') {
-                    return;
-                }
+            if (event.evt.which !== 3) { // Right click
+                // We only care about right clicks
+                return;
+            }
 
-                if (note.length > 0) {
-                    self.noteGiven.show();
-                } else {
-                    self.noteGiven.hide();
-                    self.tooltip.hide();
-                    tipLayer.draw();
-                }
-                UILayer.draw();
-                cardLayer.draw();
+            let note = ui.getNote(self.order);
+            const newNote = prompt('Note on card:', note);
+            if (newNote !== null) {
+                self.tooltip.getText().setText(newNote);
+                ui.setNote(self.order, newNote);
+                note = newNote;
+            }
 
-                // Also send the note to the server
-                if (!ui.replayOnly) {
-                    // Update the spectators about the new note
-                    ui.sendMsg({
-                        type: 'note',
-                        resp: {
-                            order: self.order,
-                            note,
-                        },
-                    });
+            // Do nothing if there was no old note and no new note
+            if (typeof note === 'undefined') {
+                return;
+            }
 
-                    // Also send the server a new copy of all of our notes
-                    ui.sendMsg({
-                        type: 'notes',
-                        resp: {
-                            notes: notesWritten,
-                        },
-                    });
-                }
+            if (note.length > 0) {
+                self.noteGiven.show();
+            } else {
+                self.noteGiven.hide();
+                self.tooltip.hide();
+                tipLayer.draw();
+            }
+            UILayer.draw();
+            cardLayer.draw();
+
+            // Also send the note to the server
+            if (!ui.replayOnly) {
+                // Update the spectators about the new note
+                ui.sendMsg({
+                    type: 'note',
+                    resp: {
+                        order: self.order,
+                        note,
+                    },
+                });
+
+                // Also send the server a new copy of all of our notes
+                ui.sendMsg({
+                    type: 'notes',
+                    resp: {
+                        notes: notesWritten,
+                    },
+                });
             }
         });
     };
@@ -2814,28 +2824,23 @@ function HanabiUI(lobby, gameID) {
             Shared replay cursor
         */
 
-        /*
-        sharedReplayCursor = new Kinetic.Text({
-            x: 0.4 * winW,
-            y: 0.4 * winH,
-            width: 0.11 * winW,
-            height: 0.03 * winH,
-            fontSize: 0.03 * winH,
-            fontFamily: 'Verdana',
-            align: 'center',
-            text: '👑',
-            fill: '#ff0000',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
-            visible: false,
-        });
-        UILayer.add(sharedReplayCursor);
-        */
+        const cursor = new Image();
+        cursor.src = 'public/img/cursor.png';
+        cursor.onload = () => {
+            sharedReplayCursor = new Kinetic.Image({
+                x: -1000,
+                y: -1000,
+                image: cursor,
+                shadowColor: 'black',
+                shadowBlur: 10,
+                shadowOffset: {
+                    x: 0,
+                    y: 0,
+                },
+                shadowOpacity: 0.9,
+            });
+            cursorLayer.add(sharedReplayCursor);
+        };
 
         /*
             End of spectator / shared replay stuff
@@ -3988,6 +3993,7 @@ function HanabiUI(lobby, gameID) {
         stage.add(textLayer);
         stage.add(tipLayer);
         stage.add(overLayer);
+        stage.add(cursorLayer);
     };
 
     this.reset = function reset() {
@@ -4696,11 +4702,16 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleReplayMouse = (note) => {
-        if (this.sharedReplayLeader) {
+        if (this.sharedReplayLeader === lobby.username) {
+            // We only want to move the mouse if we are not the leader
             return;
         }
 
-        console.log(ui.sharedReplayCursor);
+        // Draw the cursor so that we can see what the replay leader is clicking
+        // on
+        sharedReplayCursor.setX(note.x);
+        sharedReplayCursor.setY(note.y);
+        cursorLayer.draw();
     };
 
     this.stopAction = (fast) => {
@@ -4917,6 +4928,34 @@ function HanabiUI(lobby, gameID) {
     this.replayLog = [];
     this.replayPos = 0;
     this.replayTurn = 0;
+
+    /*
+        Shared replay cursor functionality
+    */
+
+
+    stage.on('click', (event) => {
+        if (ui.sharedReplayLeader !== lobby.username) {
+            // We only need to track mouse movement if we are the shared replay leader
+            return;
+        }
+
+        if (event.evt.which !== 3) { // Right click
+            // We only want to track right clicks, not left clicks
+            return;
+        }
+
+        ui.sendMsg({
+            type: 'replayAction',
+            resp: {
+                type: 1,
+                cursor: {
+                    x: event.evt.clientX,
+                    y: event.evt.clientY,
+                },
+            },
+        });
+    });
 }
 
 /*
