@@ -599,11 +599,16 @@ const checkTimer = (data) => {
     }
 
     // Get the index of this player
+    data.index = -1;
     for (let i = 0; i < game.players.length; i++) {
         if (game.players[i].userID === data.userID) {
             data.index = i;
             break;
         }
+    }
+    if (data.index === -1) {
+        logger.error(`Tried to end timed game #${data.gameID}, but the player index could not be found.`);
+        return;
     }
     const player = game.players[data.index];
     player.time = 0;

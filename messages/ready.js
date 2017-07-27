@@ -132,7 +132,9 @@ function step2(error, socket, data) {
         socket.emit('message', {
             type: 'replayTurn',
             resp: {
-                turn: game.turnNum,
+                // We can't use "game.turnNum", because that is a "fake" object
+                // given by the model
+                turn: globals.currentGames[data.gameID].turnNum,
             },
         });
     }
