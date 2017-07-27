@@ -9,7 +9,7 @@
         this.index = index;
     };
 
-    exports.COLOR = Object.freeze({
+    exports.COLOR = {
         BLUE: new Color('Blue', 'B', '#0044cc', 0),
         GREEN: new Color('Green', 'G', '#00cc00', 1),
         YELLOW: new Color('Yellow', 'Y', '#ccaa22', 2),
@@ -26,9 +26,9 @@
         LIME: new Color('Lime', 'L', '#80c000', null),
         CARDINAL: new Color('Cardinal', 'C', '#810735', null),
         INDIGO: new Color('Indigo', 'I', '#1a0082', null),
-    });
+    };
 
-    exports.SHAPE = Object.freeze({
+    exports.SHAPE = {
         DIAMOND: 'diamond',
         CLUB: 'club',
         STAR: 'star',
@@ -36,7 +36,7 @@
         CRESCENT: 'crescent',
         SPADE: 'spade',
         RAINBOW: 'rainbow',
-    });
+    };
 
     exports.PATHFUNC = new Map();
     exports.PATHFUNC.set(
@@ -123,7 +123,6 @@
             ctx.lineTo(0, 140);
         },
     );
-    Object.freeze(exports.PATHFUNC);
 
     /*
         TODO: these functinos obviously belong somewhere else
@@ -141,7 +140,6 @@
         ctx.lineTo(xrad + p, p);
         ctx.quadraticCurveTo(0, 0, p, yrad + p);
     };
-    Object.freeze(exports.backpath);
 
     exports.drawshape = (ctx) => {
         ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
@@ -149,7 +147,6 @@
         ctx.shadowColor = 'rgba(0, 0, 0, 0)';
         ctx.stroke();
     };
-    Object.freeze(exports.drawshape);
 
     exports.draw_shape = (ctx) => {
         ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
@@ -157,29 +154,28 @@
         ctx.shadowColor = 'rgba(0, 0, 0, 0)';
         ctx.stroke();
     };
-    Object.freeze(exports.draw_shape);
 
-    exports.fillType = Object.freeze({
+    exports.fillType = {
         SOLID: 'solid',
         LINEAR_GRADIENT: 'linear_gradient',
         RADIAL_GRADIENT: 'radial_gradient',
-    });
+    };
 
-    const baseColors = Object.freeze([
+    const baseColors = [
         exports.COLOR.BLUE,
         exports.COLOR.GREEN,
         exports.COLOR.YELLOW,
         exports.COLOR.RED,
         exports.COLOR.PURPLE,
-    ]);
-    const baseColorsPlusBlack = Object.freeze([
+    ];
+    const baseColorsPlusBlack = [
         exports.COLOR.BLUE,
         exports.COLOR.GREEN,
         exports.COLOR.YELLOW,
         exports.COLOR.RED,
         exports.COLOR.PURPLE,
         exports.COLOR.BLACK,
-    ]);
+    ];
 
     // Specify between solid color and gradients, along with additional args in
     // the case of gradients
@@ -188,19 +184,19 @@
         this.args = args;
     };
 
-    const solidFillSpec = Object.freeze(new FillSpec(exports.fillType.SOLID));
-    const multiBkgFillSpec = Object.freeze(new FillSpec(
+    const solidFillSpec = new FillSpec(exports.fillType.SOLID);
+    const multiBkgFillSpec = new FillSpec(
         exports.fillType.LINEAR_GRADIENT,
         [0, 0, 0, exports.CARDH],
-    ));
-    const multiNumberFillSpec = Object.freeze(new FillSpec(
+    );
+    const multiNumberFillSpec = new FillSpec(
         exports.fillType.LINEAR_GRADIENT,
         [0, 14, 0, 110],
-    ));
-    const multiSymbolFillSpec = Object.freeze(new FillSpec(
+    );
+    const multiSymbolFillSpec = new FillSpec(
         exports.fillType.RADIAL_GRADIENT,
         [75, 150, 25, 75, 150, 75],
-    ));
+    );
 
     exports.CARD_AREA = {
         BACKGROUND: 'background',
@@ -221,16 +217,16 @@
             [exports.CARD_AREA.SYMBOL, symbolFillSpec],
         ]);
     };
-    const basicCardFillSpec = Object.freeze(BuildCardFillSpec(
+    const basicCardFillSpec = BuildCardFillSpec(
         solidFillSpec,
         solidFillSpec,
         solidFillSpec,
-    ));
-    const multiCardFillSpec = Object.freeze(BuildCardFillSpec(
+    );
+    const multiCardFillSpec = BuildCardFillSpec(
         multiBkgFillSpec,
         multiNumberFillSpec,
         multiSymbolFillSpec,
-    ));
+    );
 
     // Generates a vertical gradient that is evenly distributed between its
     // component colors
@@ -288,7 +284,7 @@
     // It probably isn't design-necessary to define this list of suits, but it
     // will only hurt if we have a lot of instances of suits that vary in
     // property between variants
-    exports.SUIT = Object.freeze({
+    exports.SUIT = {
         BLUE: new Suit(
             'Blue',
             'B',
@@ -481,26 +477,26 @@
             null,
             [],
         ),
-    });
+    };
 
-    exports.ACT = Object.freeze({
+    exports.ACT = {
         CLUE: 0,
         PLAY: 1,
         DISCARD: 2,
         DECKPLAY: 3,
-    });
+    };
 
-    exports.CLUE_TYPE = Object.freeze({
+    exports.CLUE_TYPE = {
         RANK: 0,
         COLOR: 1,
-    });
+    };
 
     const Variant = function Variant(suits, clueColors) {
         this.suits = suits;
         this.clueColors = clueColors;
     };
 
-    exports.VARIANT = Object.freeze({
+    exports.VARIANT = {
         NONE: new Variant(
             [
                 exports.SUIT.BLUE,
@@ -571,7 +567,7 @@
             ],
             baseColors,
         ),
-    });
+    };
 
     // This is the mapping that the server uses
     exports.VARIANT_INTEGER_MAPPING = [
@@ -582,4 +578,9 @@
         exports.VARIANT.MIXED,
         exports.VARIANT.MM,
     ];
+    // This only freezes one layer deep; to do any better, we should likely
+    // involve a library like immutablejs. But probably not worth bothering with.
+    for (const property of Object.keys(exports)) {
+        Object.freeze(property);
+    }
 }(typeof exports === 'undefined' ? (this.constants = {}) : exports));
