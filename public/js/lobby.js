@@ -14,7 +14,7 @@ function HanabiLobby() {
 
     this.gameID = null;
     this.randomName = '';
-    this.automaticallyResumedGame = false;
+    this.automaticallyResumedGame = true;
 
     // The lobby settings found in the gear sub-menu
     this.sendTurnNotify = false;
@@ -26,7 +26,6 @@ function HanabiLobby() {
     this.game = {
         name: '',
         numPlayers: 0,
-        maxPlayers: 0,
         ourIndex: 0,
         players: [],
     };
@@ -122,15 +121,11 @@ function HanabiLobby() {
 
     $('#create-game-submit').on('click', (event) => {
         const gameName = $('#create-game-name').val();
-        const maxPlayers = parseInt($('#create-game-players').val(), 10);
         const variant = parseInt($('#create-game-variant').val(), 10);
-        const allowSpec = document.getElementById('create-game-allow-spec').checked;
         const timed = document.getElementById('create-game-timed').checked;
         const reorderCards = document.getElementById('create-game-reorder-cards').checked;
 
-        localStorage.setItem('createTableMaxPlayers', maxPlayers);
         localStorage.setItem('createTableVariant', variant);
-        localStorage.setItem('createTableAllowSpec', allowSpec);
         localStorage.setItem('createTableTimed', timed);
         localStorage.setItem('createTableReorderCards', reorderCards);
 
@@ -140,9 +135,7 @@ function HanabiLobby() {
             type: 'createTable',
             resp: {
                 name: gameName,
-                max: maxPlayers,
                 variant,
-                allowSpec,
                 timed,
                 reorderCards,
             },
@@ -323,20 +316,11 @@ HanabiLobby.prototype.showCreateDialog = function showCreateDialog() {
         type: 'getName',
     });
 
-    let players = JSON.parse(localStorage.getItem('createTableMaxPlayers'));
-    if (typeof players !== 'number' || players < 2 || players > 5) {
-        players = 5;
-    }
-    $('#create-game-players').val(players);
-
     let variant = JSON.parse(localStorage.getItem('createTableVariant'));
     if (typeof variant !== 'number' || variant < 0 || variant > 5) {
         variant = 0;
     }
     $('#create-game-variant').val(variant);
-
-    const allowSpec = JSON.parse(localStorage.getItem('createTableAllowSpec'));
-    $('#create-game-allow-spec').prop('checked', allowSpec);
 
     const timed = JSON.parse(localStorage.getItem('createTableTimed'));
     $('#create-game-timed').prop('checked', timed);
@@ -440,10 +424,8 @@ HanabiLobby.prototype.addTable = function addTable(data) {
     this.tableList[data.id] = {
         name: data.name,
         numPlayers: data.numPlayers,
-        maxPlayers: data.maxPlayers,
         variant: data.variant,
         joined: data.joined,
-        allowSpec: data.allowSpec,
         running: data.running,
         ourTurn: data.ourTurn,
         owned: data.owned,
@@ -488,13 +470,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         const attrs = $('<ul>')
             .append($('<li>')
                 .text(this.tableList[gameID].name)
-                .addClass('table-attr table-name'));
-
-        let playerText = `${this.tableList[gameID].numPlayers}/`;
-        playerText += (this.tableList[gameID].sharedReplay ? '∞' : this.tableList[gameID].maxPlayers);
-        attrs
+                .addClass('table-attr table-name'))
             .append($('<li>')
-                .text(playerText)
+                .text(`${this.tableList[gameID].numPlayers}p`)
                 .addClass('table-attr table-players'))
             .append($('<li>')
                 .text(`Variant: ${variantNames[this.tableList[gameID].variant]}`)
@@ -518,7 +496,6 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         let button;
         if (
             !this.tableList[gameID].joined &&
-            this.tableList[gameID].allowSpec &&
             this.tableList[gameID].running
         ) {
             button = $('<button>').text('Spectate').attr('type', 'button');
@@ -542,7 +519,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
             button = $('<button>').text('Join').attr('type', 'button');
             button.attr('id', `join-${gameID}`);
 
-            if (this.tableList[gameID].numPlayers >= this.tableList[gameID].maxPlayers) {
+            if (this.tableList[gameID].numPlayers >= 5) {
                 button.attr('disabled', 'disabled');
             }
 
@@ -850,10 +827,8 @@ HanabiLobby.prototype.tableLeft = function tableLeft(data) {
 HanabiLobby.prototype.setGame = function setGame(data) {
     this.game.name = data.name;
     this.game.numPlayers = data.numPlayers;
-    this.game.maxPlayers = data.maxPlayers;
     this.game.variant = data.variant;
     this.game.running = data.running;
-    this.game.allowSpec = data.allowSpec;
     this.game.timed = data.timed;
     this.game.reorderCards = data.reorderCards;
     this.game.sharedReplay = data.sharedReplay;
@@ -882,9 +857,8 @@ HanabiLobby.prototype.setGamePlayer = function setGamePlayer(data) {
 HanabiLobby.prototype.showJoined = function showJoined() {
     let html = `<p><b>${$('<a>').text(this.game.name).html()}</b></p>`;
 
-    html += `<p>Players: <b>${this.game.numPlayers}</b>/<b>${this.game.maxPlayers}</b></p>`;
+    html += `<p>Players: <b>${this.game.numPlayers}</b></p>`;
     html += `<p>Variant: <b>${variantNames[this.game.variant]}</p></b>`;
-    html += `<p>Allow Spectators: <b>${(this.game.allowSpec ? 'Yes' : 'No')}</b></p>`;
     html += `<p>Timed Game: <b>${(this.game.timed ? 'Yes' : 'No')}</b></p>`;
     html += `<p>Reorder Cards: <b>${(this.game.reorderCards ? 'Yes' : 'No')}</b></p>`;
 

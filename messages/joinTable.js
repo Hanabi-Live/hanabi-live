@@ -53,11 +53,10 @@ exports.step1 = (socket, data) => {
         return;
     }
 
-    // Validate that this table does not already have the maximum amount of
-    // players
-    if (game.players.length === game.maxPlayers) {
-        logger.warn(`messages.join was called for game #${data.gameID}, but it has the maximum amount of players already.`);
-        data.reason = `That table has a maximum limit of ${game.maxPlayers} players.`;
+    // Validate that this table does not already have the 5 players
+    if (game.players.length > 5) {
+        logger.warn(`messages.join was called for game #${data.gameID}, but it has 5 players already.`);
+        data.reason = 'You cannot join a table that already has 5 players.';
         notify.playerDenied(socket, data);
         return;
     }

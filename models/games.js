@@ -34,9 +34,7 @@ exports.end = (data, done) => {
         SET
             name = ?,
             owner = ?,
-            max_players = ?,
             variant = ?,
-            allow_spec = ?,
             timed = ?,
             seed = ?,
             score = ?,
@@ -47,9 +45,7 @@ exports.end = (data, done) => {
     const values = [
         data.name,
         data.owner,
-        data.maxPlayers,
         data.variant,
-        data.allowSpec,
         data.timed,
         data.seed,
         data.score,

@@ -3988,10 +3988,10 @@ function HanabiUI(lobby, gameID) {
         }
 
         stage.add(bgLayer);
+        stage.add(textLayer);
         stage.add(UILayer);
         stage.add(timerLayer);
         stage.add(cardLayer);
-        stage.add(textLayer);
         stage.add(tipLayer);
         stage.add(overLayer);
         stage.add(cursorLayer);

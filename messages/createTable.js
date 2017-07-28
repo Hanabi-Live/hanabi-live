@@ -3,9 +3,7 @@
 /*
     {
         name: "",
-        max: 5,
         variant: 0,
-        allowSpec: false,
         timed: false,
         reorderCards: false,
     }
@@ -26,19 +24,9 @@ exports.step1 = (socket, data) => {
         data.reason = 'You must submit a value of "name".';
         notify.playerDenied(socket, data);
         return;
-    } else if (!('max' in data)) {
-        logger.warn(`User "${data.username}" created a table without sending a "max" value.`);
-        data.reason = 'You must submit a value of "max".';
-        notify.playerDenied(socket, data);
-        return;
     } else if (!('variant' in data)) {
         logger.warn(`User "${data.username}" created a table without sending a "variant" value.`);
         data.reason = 'You must submit a value of "variant".';
-        notify.playerDenied(socket, data);
-        return;
-    } else if (!('allowSpec' in data)) {
-        logger.warn(`User "${data.username}" created a table without sending a "allowSpec" value.`);
-        data.reason = 'You must submit a value of "allowSpec".';
         notify.playerDenied(socket, data);
         return;
     } else if (!('timed' in data)) {
@@ -90,7 +78,6 @@ function step2(error, socket, data) {
     // Keep track of the current games
     globals.currentGames[data.gameID] = {
         actions: [],
-        allowSpec: data.allowSpec,
         clueNum: 8,
         datetimeCreated: null,
         datetimeFinished: null,
@@ -99,7 +86,6 @@ function step2(error, socket, data) {
         discardSignalOutstanding: false, // This is for the "Reorder Cards" feature
         discardSignalTurnExpiration: -1, // This is for the "Reorder Cards" feature
         endTurnNum: null,
-        maxPlayers: data.max,
         name: data.name,
         owner: socket.userID,
         players: [],

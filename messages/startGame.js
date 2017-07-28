@@ -113,7 +113,7 @@ function step3(socket, data) {
     // Local variables
     const game = globals.currentGames[data.gameID];
 
-    logger.info(`Using seed ${game.seed}, allowSpec is ${game.allowSpec}, timed is ${game.timed}.`);
+    logger.info(`Using seed ${game.seed}, timed is ${game.timed}, reorderCards is ${game.reorderCards}.`);
 
     // Shuffle the deck
     seedrandom(game.seed, {
@@ -168,16 +168,9 @@ function step3(socket, data) {
         notify.playerGameStart(player.socket);
     }
 
-    if (game.allowSpec) {
-        // Let everyone know that the game has started, which will turn the
-        // "Join Game" button into "Spectate"
-        notify.allTableChange(data);
-    } else {
-        // Notify everyone that the table was deleted
-        // (even the people in the game; they will get a new "table"
-        // message shortly)
-        notify.allTableGone(data);
-    }
+    // Let everyone know that the game has started, which will turn the
+    // "Join Game" button into "Spectate"
+    notify.allTableChange(data);
 
     // Set the status for all of the users in the game
     for (const player of game.players) {

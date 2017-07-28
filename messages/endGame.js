@@ -65,9 +65,7 @@ exports.step1 = (data) => {
     data = {
         name: game.name,
         owner: game.owner,
-        maxPlayers: game.maxPlayers,
         variant: game.variant,
-        allowSpec: game.allowSpec,
         timed: game.timed,
         seed: game.seed,
         score: game.score,
