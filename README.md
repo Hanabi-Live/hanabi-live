@@ -100,6 +100,8 @@ List of Changes & Improvements over the Original Server
 * The "No Clues" indicator is much easier to see.
 * In-game replays will show card faces based on your current knowledge of the card.
 * Replays of other games will no longer show "Alice", "Bob", etc., and will instead show the real player names. This way, if you have a question about what they did, you can actually message them and ask.
+* Upon refreshing the page, if you are in the middle of the game, you will be automatically taken into that game from the lobby.
+* Each suit name is now listed below the stack in the middle of the screen.
 * The ambiguous checkboxes in the lobby have been converted to a "Status" indicator, showing exactly what the person is doing.
   * The possible statuses are as follows: Lobby, Pre-Game, Playing, Replay, Shared Replay, Spectating
 * During a game, you can mouse over the "👀" icon in the bottom right-hand corner to see who is spectating the game.
