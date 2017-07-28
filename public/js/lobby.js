@@ -14,7 +14,7 @@ function HanabiLobby() {
 
     this.gameID = null;
     this.randomName = '';
-    this.automaticallyResumedGame = true;
+    this.beenInAtLeast1Game = false;
 
     // The lobby settings found in the gear sub-menu
     this.sendTurnNotify = false;
@@ -434,7 +434,7 @@ HanabiLobby.prototype.addTable = function addTable(data) {
     this.drawTables();
 
     // Automatically resume any games that we are currently in
-    if (data.joined && data.running && !this.automaticallyResumedGame) {
+    if (data.joined && data.running && !this.beenInAtLeast1Game) {
         $(`#resume-${data.id}`).click();
     }
 };
@@ -543,11 +543,6 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
             button.on('click', function reattendTableClick(event) {
                 event.preventDefault();
-
-                // We only want to automatically resume once;
-                // if we don't keep track of this, it will automatically resume again
-                // after going to the labby manually
-                self.automaticallyResumedGame = true;
 
                 self.gameID = parseInt(this.id.slice(7), 10);
 
@@ -856,8 +851,7 @@ HanabiLobby.prototype.setGamePlayer = function setGamePlayer(data) {
 
 HanabiLobby.prototype.showJoined = function showJoined() {
     let html = `<p><b>${$('<a>').text(this.game.name).html()}</b></p>`;
-
-    html += `<p>Players: <b>${this.game.numPlayers}</b></p>`;
+    html += '<p>&nbsp;</p>';
     html += `<p>Variant: <b>${variantNames[this.game.variant]}</p></b>`;
     html += `<p>Timed Game: <b>${(this.game.timed ? 'Yes' : 'No')}</b></p>`;
     html += `<p>Reorder Cards: <b>${(this.game.reorderCards ? 'Yes' : 'No')}</b></p>`;
@@ -926,6 +920,7 @@ HanabiLobby.prototype.gameStarted = function gameStarted(data) {
     this.hidePregame();
     this.showGame();
 
+    this.beenInAtLeast1Game = true;
     this.ui = new HanabiUI(this, this.gameID);
 
     this.ui.setBackend(this.conn);
