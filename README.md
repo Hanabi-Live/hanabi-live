@@ -4,6 +4,7 @@ keldon-hanabi
 Description
 -----------
 
+* This is the source code for my [Hanabi game server](http://isaacracing.net:3000/).
 * This is an emulation of the [Keldon Hanabi game server](http://keldon.net/hanabi/), of which the source code is not published.
 * It is programmed in [Node.js](https://nodejs.org/en/) using [Socket.IO](https://socket.io/).
 * It uses a [MariaDB](https://mariadb.org/) database to store information about the users and games.
@@ -147,6 +148,23 @@ These instructions assume you are running Linux. Some adjustment will be needed 
   * `npm install`
 * Start the server:
   * `npm start`
+
+<br />
+
+Installation for Client-Side Development Only
+---------------------------------------------
+
+If you are just looking to update the client JavaScript, then you do not need to install the server.
+
+These instructions assume you are running Linux. Some adjustment will be needed for Windows installations.
+
+* Clone the server:
+  * `git clone https://github.com/Zamiell/keldon-hanabi`
+  * `cd keldon-hanabi`
+* Fix the `index.ejs` file:
+  * `mv views/index.ejs index.html`
+  * `sed --in-place 's/<%= websocketURL %>/http://isaacracing.net:3000/g' index.html`
+* Open `index.html` in your browser, and everything should work as it would as if you were connecting to the real server.
 
 <br />
 
