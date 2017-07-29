@@ -87,7 +87,7 @@ List of Changes & Improvements over the Original Server
 * Games will no longer randomly crash if there are too many spectators.
 * Your hand will be properly revealed at the end of the game.
 
-### Quality of Live Improvements
+### Quality of Life Improvements
 
 * The action log is improved:
   * It will show what slot a player played or discarded from.
@@ -108,6 +108,7 @@ List of Changes & Improvements over the Original Server
 * The username box on the login box will now be automatically focused and you can press enter to login.
 * When you create a game, the server will suggest a randomly generated table name for you.
 * The fade time has been shortened to 200 milliseconds (from 800 milliseconds) in order to make the UI snappier.
+* Your name will be bolded in the user list.
 * The UI has been cleaned up a little to make it look less cramped.
 
 <br />

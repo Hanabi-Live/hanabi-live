@@ -4126,9 +4126,8 @@ function HanabiUI(lobby, gameID) {
             this.replayPos = 0;
         }
 
-        /* eslint-disable no-constant-condition */
         let msg;
-        while (true) {
+        while (true) { // eslint-disable-line no-constant-condition
             msg = this.replayLog[this.replayPos];
             this.replayPos += 1;
 
@@ -4149,7 +4148,6 @@ function HanabiUI(lobby, gameID) {
                 }
             }
         }
-        /* eslint-disable no-constant-condition */
 
         this.animateFast = false;
         msgLogGroup.refreshText();
@@ -4802,7 +4800,7 @@ function HanabiUI(lobby, gameID) {
 
             child.setDraggable(true);
 
-            /* eslint-disable no-loop-func */
+            // eslint-disable-next-line no-loop-func
             child.on('dragend.play', function dragendPlay() {
                 const pos = this.getAbsolutePosition();
 
@@ -4843,7 +4841,6 @@ function HanabiUI(lobby, gameID) {
                     playerHands[ui.playerUs].doLayout();
                 }
             });
-            /* eslint-enable no-loop-func */
         }
 
         drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
