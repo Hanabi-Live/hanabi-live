@@ -65,7 +65,17 @@ const step1 = (socket, data) => {
 
     // Force everyone else to leave if it was the owner that left
     if (socket.userID === game.owner) {
+        logger.info('Owner left; ejecting all other players.');
+
+        // Make a list of all of the players we need to boot
+        // (we have to do this first or else the array ordering will get messed up)
+        const bootedPlayers = [];
         for (const player of game.players) {
+            bootedPlayers.push(player);
+        }
+
+        // Boot them all
+        for (const player of bootedPlayers) {
             step1(player.socket, data);
         }
     }

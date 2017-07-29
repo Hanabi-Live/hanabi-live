@@ -27,7 +27,7 @@ List of Changes & Improvements over the Original Server
   * You can turn any replay into a shared replay. Once created, an unlimited number of people can join it.
   * When in a shared replay, the leader can control what turn is being shown to everyone in the replay.
   * The creator can move a shared cursor by right clicking.
-  * You can see who the leader of the replay is by hovering over the "👑" in the bottom right-hand corner.
+  * You can see who the leader of the replay is by hovering over the "👑" icon in the bottom right-hand corner.
   * You can use this feature to share a past game with a friend who was not in that game.
 * New variant: Mixed-color Suits
   * This has 6 new suits: Green, Magenta, Navy, Orange, Tan, and Burgundy.
@@ -153,5 +153,5 @@ These instructions assume you are running Linux. Some adjustment will be needed 
 Credits
 -------
 
-* [Keldon Jones](keldon.net) was the original creator of this amazing software. The client is around 6000 lines of code, so it must have taken a long time to make.
+* [Keldon Jones](http://keldon.net/) was the original creator of this amazing software. The client is around 6000 lines of code, so it must have taken a long time to make.
 * [Hyphen-ated](https://github.com/Hyphen-ated/) created the extremely useful Chrome extension called [Make Hanabi Great Again](https://github.com/Hyphen-ated/MakeHanabiGreatAgain), which extended the features of the original site. MHGA is seamlessly integrated into the emulator.
