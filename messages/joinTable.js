@@ -33,6 +33,9 @@ exports.step1 = (socket, data) => {
 
     // The logic for joining shared replay is in a separate file for
     // organizational purposes
+    // (users should see a "Spectate" button for shared replays and not a "Join
+    // Game" button, so this code block should never execute; keep it here just
+    // in case)
     if (game.sharedReplay) {
         messages.joinSharedReplay.step1(socket, data);
         return;

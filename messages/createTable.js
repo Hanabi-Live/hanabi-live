@@ -57,7 +57,7 @@ exports.step1 = (socket, data) => {
 
     // Validate that the player is not joined to another game
     if (socket.currentGame !== -1) {
-        data.reason = `You cannot join game #${data.gameID} because you are already in game #${socket.currentGame}.`;
+        data.reason = `You cannot create a new game because you are already in game #${socket.currentGame}.`;
         notify.playerError(socket, data);
         return;
     }

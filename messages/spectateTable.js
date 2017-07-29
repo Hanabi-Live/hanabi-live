@@ -10,6 +10,7 @@
 // Imports
 const globals = require('../globals');
 const logger = require('../logger');
+const messages = require('../messages');
 const notify = require('../notify');
 
 exports.step1 = (socket, data) => {
@@ -21,6 +22,14 @@ exports.step1 = (socket, data) => {
         logger.warn(`Game #${data.gameID} does not exist.`);
         data.reason = `Game #${data.gameID} does not exist.`;
         notify.playerError(socket, data);
+        return;
+    }
+
+    // The logic for joining shared replay is in a separate file for
+    // organizational purposes
+    // (users should see a "Spectate" button for shared replays)
+    if (game.sharedReplay) {
+        messages.joinSharedReplay.step1(socket, data);
         return;
     }
 

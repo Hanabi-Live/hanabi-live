@@ -402,7 +402,7 @@ exports.playerError = (socket, data) => {
     socket.emit('message', {
         type: 'error',
         resp: {
-            reason: data.reason,
+            error: data.reason,
         },
     });
 };
