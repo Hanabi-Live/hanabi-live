@@ -387,9 +387,20 @@ exports.playerReplayLeader = (socket, data) => {
     });
 };
 
+// When a user fails to log in
 exports.playerDenied = (socket, data) => {
     socket.emit('message', {
         type: 'denied',
+        resp: {
+            reason: data.reason,
+        },
+    });
+};
+
+// When a user does something they are not allowed to
+exports.playerError = (socket, data) => {
+    socket.emit('message', {
+        type: 'error',
         resp: {
             reason: data.reason,
         },

@@ -42,7 +42,7 @@ const step1 = (socket, data) => {
     } else {
         logger.warn(`Game #${data.gameID} does not exist.`);
         data.reason = `Game #${data.gameID} does not exist.`;
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 
@@ -59,7 +59,7 @@ const step1 = (socket, data) => {
     if (game.turnPlayerIndex !== data.index) {
         logger.warn(`User "${data.username}" tried to perform an action when it was not their turn.`);
         data.reason = 'You cannot perform an action when it is not your turn.';
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 
@@ -113,7 +113,7 @@ const step1 = (socket, data) => {
         if (game.turnPlayerIndex === data.target) {
             logger.warn(`User "${data.username}" tried to give a clue to themself.`);
             data.reason = 'You cannot give a clue to yourself.';
-            notify.playerDenied(socket, data);
+            notify.playerError(socket, data);
             return;
         }
 
@@ -121,7 +121,7 @@ const step1 = (socket, data) => {
         if (game.clueNum === 0) {
             logger.warn(`User "${data.username}" tried to give a clue while at 0 clues.`);
             data.reason = 'You cannot give a clue when you have 0 clues available.';
-            notify.playerDenied(socket, data);
+            notify.playerError(socket, data);
             return;
         }
 
@@ -137,7 +137,7 @@ const step1 = (socket, data) => {
         if (game.clueNum === 8) {
             logger.warn(`User "${data.username}" tried to discard while at 8 clues.`);
             data.reason = 'You cannot discard while at 8 clues.';
-            notify.playerDenied(socket, data);
+            notify.playerError(socket, data);
             return;
         }
 

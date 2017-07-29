@@ -26,7 +26,7 @@ function step2(error, socket, data) {
     if (!data.exists) {
         logger.warn(`Game #${data.gameID} does not exist.`);
         data.reason = `Game #${data.gameID} does not exist.`;
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 

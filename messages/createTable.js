@@ -22,22 +22,22 @@ exports.step1 = (socket, data) => {
     if (!('name' in data)) {
         logger.warn(`User "${data.username}" created a table without sending a "name" value.`);
         data.reason = 'You must submit a value of "name".';
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     } else if (!('variant' in data)) {
         logger.warn(`User "${data.username}" created a table without sending a "variant" value.`);
         data.reason = 'You must submit a value of "variant".';
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     } else if (!('timed' in data)) {
         logger.warn(`User "${data.username}" created a table without sending a "timed" value.`);
         data.reason = 'You must submit a value of "timed".';
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     } else if (!('reorderCards' in data)) {
         logger.warn(`User "${data.username}" created a table without sending a "reorderCards" value.`);
         data.reason = 'You must submit a value of "reorderCards".';
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 
@@ -51,7 +51,14 @@ exports.step1 = (socket, data) => {
     if (data.name.length > maxLength) {
         logger.warn(`User "${data.username}" supplied an excessively long table name with a length of ${data.name.length}.`);
         data.reason = `The table name must be ${maxLength} characters or less.`;
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
+        return;
+    }
+
+    // Validate that the player is not joined to another game
+    if (socket.currentGame !== -1) {
+        data.reason = `You cannot join game #${data.gameID} because you are already in game #${socket.currentGame}.`;
+        notify.playerError(socket, data);
         return;
     }
 

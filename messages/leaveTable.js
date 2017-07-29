@@ -23,7 +23,7 @@ const step1 = (socket, data) => {
     } else {
         logger.warn(`Game #${data.gameID} does not exist.`);
         data.reason = `Game #${data.gameID} does not exist.`;
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 
@@ -38,7 +38,7 @@ const step1 = (socket, data) => {
     if (index === -1) {
         logger.warn(`This player is not in game #${data.gameID}.`);
         data.reason = `You are not in game #${data.gameID}.`;
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 

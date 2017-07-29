@@ -30,7 +30,7 @@ exports.step1 = (socket, data) => {
     } else {
         logger.warn(`Game #${data.gameID} does not exist.`);
         data.reason = `Game #${data.gameID} does not exist.`;
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 
@@ -38,7 +38,7 @@ exports.step1 = (socket, data) => {
     if (!game.sharedReplay) {
         logger.warn(`User "${socket.username}" tried to perform a replay action on non-replay replay game #${data.gameID}.`);
         data.reason = 'You can only perform replay actions in shared replays.';
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 
@@ -46,7 +46,7 @@ exports.step1 = (socket, data) => {
     if (socket.userID !== game.owner) {
         logger.warn(`User "${socket.username}" tried to perform an action on shared replay #${data.gameID}, but they were not the owner.`);
         data.reason = 'You are not the owner of this shared replay.';
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 
@@ -76,7 +76,7 @@ exports.step1 = (socket, data) => {
         } else {
             logger.warn(`User "${socket.username}" tried to perform an invalid replay action of type "${data.type}" on shared replay #${data.gameID}.`);
             data.reason = 'That is an inavlid replay action type.';
-            notify.playerDenied(socket, data);
+            notify.playerError(socket, data);
             return;
         }
 

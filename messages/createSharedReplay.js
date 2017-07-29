@@ -18,7 +18,7 @@ exports.step1 = (socket, data) => {
     // Validate that there is not a shared replay for this game ID already
     if (data.gameID in globals.currentGames) {
         data.reason = 'There is already a shared replay going on for that ID.';
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 
@@ -35,7 +35,7 @@ function step2(error, socket, data) {
     if (data.variant === null) {
         logger.warn(`User "${socket.username}" requested to start a shared replay for game #${data.gameID}, which does not exist.`);
         data.reason = 'That game ID does not exist.';
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
     }
 
     logger.info(`User "${socket.username}" created a new shared replay: #${data.gameID}`);

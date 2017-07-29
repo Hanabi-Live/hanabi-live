@@ -27,7 +27,7 @@ exports.step1 = (socket, data) => {
     } else {
         logger.warn(`Game #${data.gameID} does not exist.`);
         data.reason = `Game #${data.gameID} does not exist.`;
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 
@@ -49,7 +49,14 @@ exports.step1 = (socket, data) => {
     if (found) {
         logger.warn(`This player is already in game #${data.gameID}.`);
         data.reason = `You are already in game #${data.gameID}.`;
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
+        return;
+    }
+
+    // Validate that the player is not joined to another game
+    if (socket.currentGame !== -1) {
+        data.reason = `You cannot join game #${data.gameID} because you are already in game #${socket.currentGame}.`;
+        notify.playerError(socket, data);
         return;
     }
 
@@ -57,7 +64,7 @@ exports.step1 = (socket, data) => {
     if (game.players.length > 5) {
         logger.warn(`messages.join was called for game #${data.gameID}, but it has 5 players already.`);
         data.reason = 'You cannot join a table that already has 5 players.';
-        notify.playerDenied(socket, data);
+        notify.playerError(socket, data);
         return;
     }
 
