@@ -26,7 +26,7 @@ button:disabled {
 }
 
 button.abandon {
-	background: url(/public/img/redx.png) no-repeat;
+	background: url(../img/redx.png) no-repeat;
 	background-size: contain;
 	width: 46px;
 	height: 46px;
@@ -41,7 +41,7 @@ button.abandon {
 }
 
 #show-settings {
-	background-image: url(/public/img/gear.png);
+	background-image: url(../img/gear.png);
 	background-repeat: no-repeat;
 	background-size: contain;
 	width: 50px;
@@ -62,7 +62,7 @@ ul {
 }
 
 #pregame {
-	background: url(/public/img/background.jpg) no-repeat center center fixed;
+	background: url(../img/background.jpg) no-repeat center center fixed;
 	-webkit-background-size: cover;
 	-moz-background-size: cover;
 	-o-background-size: cover;
