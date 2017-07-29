@@ -2686,7 +2686,7 @@ function HanabiUI(lobby, gameID) {
             fill: 'white',
             align: 'left',
             padding: 0.01 * winH,
-            fontSize: 0.04 * winH,
+            fontSize: 0.025 * winH,
             minFontSize: 0.02 * winH,
             width: 0.225 * winW,
             fontFamily: 'Verdana',
