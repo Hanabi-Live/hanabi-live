@@ -2884,10 +2884,10 @@ function HanabiUI(lobby, gameID) {
         }
 
         // TODO: move blocks like this into their own functions
-        let playAreaY = 0.327;
-        if (this.variant === VARIANT.NONE) {
-            // We won't draw the text below the suits when there is no variant
-            playAreaY = 0.345;
+        let playAreaY = 0.345;
+        if (this.variant === VARIANT.MIXED || this.variant === VARIANT.MM) {
+            // We draw the text below the suits for confusing variants
+            playAreaY = 0.327;
         }
         {
             let i = 0;
@@ -2954,7 +2954,7 @@ function HanabiUI(lobby, gameID) {
 
                 // Draw the suit name next to each suit
                 // (a text description of the suit)
-                if (this.variant !== VARIANT.NONE) {
+                if (this.variant === VARIANT.MIXED || this.variant === VARIANT.MM) {
                     const text = new FitText({
                         x: (0.173 + (width + 0.015) * i) * winW, //
                         y: (playAreaY + 0.155 + offset) * winH,
