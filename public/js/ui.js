@@ -2698,8 +2698,8 @@ function HanabiUI(lobby, gameID) {
 
         spectatorsLabel.on('mousemove', function spectatorsLabelMouseMove() {
             const mousePos = stage.getPointerPosition();
-            this.tooltip.setX(mousePos.x + 15);
-            this.tooltip.setY(mousePos.y + 5);
+            this.tooltip.setX(mousePos.x);
+            this.tooltip.setY(mousePos.y - 5);
 
             this.tooltip.show();
             tipLayer.draw();
