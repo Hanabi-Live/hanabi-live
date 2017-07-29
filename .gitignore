@@ -63,3 +63,6 @@ reset_database.sh
 restart.sh
 stop.sh
 logs
+
+# Test file for client-only modifications
+index.html
