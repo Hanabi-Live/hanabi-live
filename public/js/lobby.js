@@ -405,10 +405,9 @@ HanabiLobby.prototype.drawUsers = function drawUsers() {
     div.append($('<li>').addClass('table-header').append(attrs));
 
     for (const userID of Object.keys(this.userList)) {
-        console.log(this.username);
         const attrs2 = $('<ul>')
             .append($('<li>')
-                .html(this.userList[userID].name === this.username ? `<b>${this.userList[userID].name}</b>` : this.userList[userID].name)
+                .html(this.userList[userID].name === this.username ? `<i>${this.userList[userID].name}</i>` : this.userList[userID].name)
                 .addClass('table-attr user-name'))
             .append($('<li>')
                 .append(this.userList[userID].status)
