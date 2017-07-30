@@ -10,6 +10,7 @@ function HanabiUI(lobby, gameID) {
 
     const ACT = constants.ACT;
     const CLUE_TYPE = constants.CLUE_TYPE;
+    const COLOR = constants.COLOR;
     const VARIANT = constants.VARIANT;
     const SHAPE = constants.SHAPE;
     const SUIT = constants.SUIT;
@@ -2058,7 +2059,7 @@ function HanabiUI(lobby, gameID) {
 
                     // Draw the background
                     ctx.fillStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
-                    ctx.strokeStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
+                    ctx.strokeStyle = (ctx.fillStyle === COLOR.WHITE.hexCode) ? COLOR.BLACK.hex_code : suit.style(ctx, CARD_AREA.BACKGROUND);
 
                     backpath(ctx, 4, xrad, yrad);
                     ctx.save();
