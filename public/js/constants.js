@@ -587,6 +587,7 @@
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
                 exports.SUIT.YELLOW,
+                exports.SUIT.RED,
                 exports.SUIT.WHITE,
                 exports.SUIT.MULTI,
             ],
