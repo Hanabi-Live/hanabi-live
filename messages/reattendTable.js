@@ -23,14 +23,24 @@ exports.step1 = (socket, data) => {
         return;
     }
 
-    // Set their "present" variable back to true, which will turn their name
-    // from red to black (or remove the "AWAY" if the game has not started yet)
-    for (const player of game.players) {
-        if (player.userID === socket.userID) {
-            player.present = true;
+    // Validate that the player is joined to this table
+    let index = -1;
+    for (let i = 0; i < game.players.length; i++) {
+        if (game.players[i].userID === socket.userID) {
+            index = i;
             break;
         }
     }
+    if (index === -1) {
+        logger.warn(`This player is not in game #${data.gameID}.`);
+        data.reason = `You are not in game #${data.gameID}.`;
+        notify.playerError(socket, data);
+        return;
+    }
+
+    // Set their "present" variable back to true, which will turn their name
+    // from red to black (or remove the "AWAY" if the game has not started yet)
+    game.players[index].present = true;
     if (game.running) {
         notify.gameConnected(data);
     } else {
@@ -38,7 +48,6 @@ exports.step1 = (socket, data) => {
     }
 
     // Set their status
-    socket.currentGame = data.gameID;
     if (game.running) {
         socket.status = 'Playing';
     } else {

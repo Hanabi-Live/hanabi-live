@@ -32,6 +32,9 @@ exports.step1 = (socket, data) => {
             return;
         }
 
+        // We only want to reset this for players who are not in the actual game
+        socket.currentGame = -1;
+
         delete game.spectators[socket.userID];
         notify.gameMemberChange(data);
         notify.gameSpectators(data);

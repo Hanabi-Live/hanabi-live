@@ -113,12 +113,21 @@ function step4(socket, data) {
     logger.info(`User "${data.username}" logged in. (${Object.keys(globals.connectedUsers).length} now connected.)`);
 
     // Check to see if this user was in any existing games
-    for (const gameID of Object.keys(globals.currentGames)) {
+    for (let gameID of Object.keys(globals.currentGames)) {
+        // Keys are strings by default, so convert it back to a number
+        gameID = parseInt(gameID, 10);
+
         const game = globals.currentGames[gameID];
         for (const player of game.players) {
             if (player.username === socket.username) {
-                // Update their socket with the new socket
+                // Update the player object with the new socket
                 player.socket = socket;
+
+                // This was initialized to -1 earlier, so we need to update it
+                socket.currentGame = gameID;
+
+                // We can safely break here because the player can only be in one game at a time
+                break;
             }
         }
     }

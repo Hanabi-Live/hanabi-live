@@ -209,6 +209,7 @@ function step7(error, data) {
 
     // Reset the status of the players
     for (const player of game.players) {
+        player.socket.currntGame = -1;
         player.socket.status = 'Replay';
         notify.allUserChange(player.socket);
     }
