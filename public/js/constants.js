@@ -2,31 +2,30 @@
     exports.CARDW = 286;
     exports.CARDH = 406;
 
-    const Color = function Color(name, abbreviation, hexCode, index) {
+    const Color = function Color(name, abbreviation, hexCode) {
         this.name = name;
         this.abbreviation = abbreviation;
         this.hexCode = hexCode;
-        this.index = index;
     };
 
     exports.COLOR = {
-        BLUE: new Color('Blue', 'B', '#0044cc', 0),
-        GREEN: new Color('Green', 'G', '#00cc00', 1),
-        YELLOW: new Color('Yellow', 'Y', '#ccaa22', 2),
-        RED: new Color('Red', 'R', '#aa0000', 3),
-        PURPLE: new Color('Purple', 'P', '#6600cc', 4),
-        BLACK: new Color('Black', 'K', '#111111', null),
-        WHITE: new Color('White', 'W', '#d9d9d9', null),
-        GRAY: new Color('Gray', 'G', '#cccccc', null),
-        MAGENTA: new Color('Magenta', 'M', '#8b008b', null),
-        NAVY: new Color('Navy', 'N', '#000066', null),
-        ORANGE: new Color('Orange', 'O', '#ff9900', null),
-        TAN: new Color('Tan', 'T', '#999900', null),
-        BURGUNDY: new Color('Burgundy', 'B', '#660016', null),
-        TEAL: new Color('Teal', 'T', '#00b3b3', null),
-        LIME: new Color('Lime', 'L', '#80c000', null),
-        CARDINAL: new Color('Cardinal', 'C', '#810735', null),
-        INDIGO: new Color('Indigo', 'I', '#1a0082', null),
+        BLUE: new Color('Blue', 'B', '#0044cc'),
+        GREEN: new Color('Green', 'G', '#00cc00'),
+        YELLOW: new Color('Yellow', 'Y', '#ccaa22'),
+        RED: new Color('Red', 'R', '#aa0000'),
+        PURPLE: new Color('Purple', 'P', '#6600cc'),
+        BLACK: new Color('Black', 'K', '#111111'),
+        WHITE: new Color('White', 'W', '#d9d9d9'),
+        GRAY: new Color('Gray', 'G', '#cccccc'),
+        MAGENTA: new Color('Magenta', 'M', '#8b008b'),
+        NAVY: new Color('Navy', 'N', '#000066'),
+        ORANGE: new Color('Orange', 'O', '#ff9900'),
+        TAN: new Color('Tan', 'T', '#999900'),
+        BURGUNDY: new Color('Burgundy', 'B', '#660016'),
+        TEAL: new Color('Teal', 'T', '#00b3b3'),
+        LIME: new Color('Lime', 'L', '#80c000'),
+        CARDINAL: new Color('Cardinal', 'C', '#810735'),
+        INDIGO: new Color('Indigo', 'I', '#1a0082'),
     };
 
     exports.SHAPE = {
@@ -258,14 +257,13 @@
     };
 
     // Pair each suit name with the color(s) that correspond(s) to it
-    const Suit = function Suit(name, abbreviation, fillColors, cardFillSpec, shape, clueColors, index) {
+    const Suit = function Suit(name, abbreviation, fillColors, cardFillSpec, shape, clueColors) {
         this.name = name;
         this.abbreviation = abbreviation;
         this.fillColors = fillColors;
         this.cardFillSpec = cardFillSpec;
         this.shape = shape;
         this.clueColors = clueColors;
-        this.index = index;
         // For compatibility with the existing card naming scheme
     };
 
