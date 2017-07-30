@@ -665,9 +665,8 @@ function HanabiUI(lobby, gameID) {
             x: -1000,
             y: -1000,
         });
-        // (there's a bug that Hyphen can't figure out where it permanently draws a
-        // copy of the tag at this location, so we can work around it by setting the
-        // starting location to be off screen)
+        // An elusive bug permanently draws a copy of the tag at this location.
+        // We work around it by setting the starting location to be offscreen.
 
         this.tooltip.add(new Kinetic.Tag({
             fill: '#3E4345',
@@ -3747,7 +3746,7 @@ function HanabiUI(lobby, gameID) {
         // (we want to use qwert since they are conveniently next to 12345, and also
         // because the clue colors can change between different variants)
         const clueKeyRow = ['q', 'w', 'e', 'r', 't', 'y', 'u'];
-        for (let i = 0; i < suitClueButtons.length; i++) {
+        for (let i = 0; i < suitClueButtons.length && i < clueKeyRow.length; i++) {
             clueKeyMap[clueKeyRow[i]] = mouseClickHelper(suitClueButtons[i]);
         }
 
