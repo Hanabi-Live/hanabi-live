@@ -2364,11 +2364,18 @@ function HanabiUI(lobby, gameID) {
     const cardLayer = new Kinetic.Layer();
     const UILayer = new Kinetic.Layer();
     const overLayer = new Kinetic.Layer();
-    const textLayer = new Kinetic.Layer({listening:false});
-    const tipLayer = new Kinetic.Layer({listening:false});
-    const timerLayer = new Kinetic.Layer({listening:false});
-    const cursorLayer = new Kinetic.Layer({listening:false});
-
+    const textLayer = new Kinetic.Layer({
+        listening: false,
+    });
+    const tipLayer = new Kinetic.Layer({
+        listening: false,
+    });
+    const timerLayer = new Kinetic.Layer({
+        listening: false,
+    });
+    const cursorLayer = new Kinetic.Layer({
+        listening: false,
+    });
     const playerHands = [];
     let drawDeck;
     let messagePrompt;
