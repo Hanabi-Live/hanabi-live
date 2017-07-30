@@ -30,6 +30,9 @@ List of Changes & Improvements over the Original Server
   * The creator can move a shared cursor by right clicking.
   * You can see who the leader of the replay is by hovering over the "👑" icon in the bottom right-hand corner.
   * You can use this feature to share a past game with a friend who was not in that game.
+* New variant: White Suit and Multi-color Suit
+  * This is like the "Multi-color Suit" variant, but purple is replaced with white.
+  * No color clues touch the white suit.
 * New variant: Mixed-color Suits
   * This has 6 new suits: Green, Magenta, Navy, Orange, Tan, and Burgundy.
   * There are only 4 types of clues: Blue, Yellow, Red, and Black.
