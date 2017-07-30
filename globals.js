@@ -17,6 +17,7 @@ module.exports = {
         'Purple',
         'Black',
         'Rainbow',
+        'White',
     ],
     mixedSuits: [
         'Green',

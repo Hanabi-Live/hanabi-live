@@ -16,6 +16,7 @@
         RED: new Color('Red', 'R', '#aa0000', 3),
         PURPLE: new Color('Purple', 'P', '#6600cc', 4),
         BLACK: new Color('Black', 'K', '#111111', null),
+        WHITE: new Color('White', 'W', '#000000', null),
         GRAY: new Color('Gray', 'G', '#cccccc', null),
         MAGENTA: new Color('Magenta', 'M', '#8b008b', null),
         NAVY: new Color('Navy', 'N', '#000066', null),
@@ -474,6 +475,14 @@
             exports.SHAPE.RAINBOW,
             Object.values(exports.COLOR),
         ),
+        WHITE: new Suit(
+            'Colorless',
+            'W',
+            exports.COLOR.WHITE,
+            basicCardFillSpec,
+            exports.SHAPE.CRESCENT,
+            [exports.COLOR.WHITE],
+        ),
         // Gray suit is for replays
         GRAY: new Suit(
             'Gray',
@@ -573,12 +582,12 @@
             ],
             baseColors,
         ),
-        COLORLESS: new Variant(
+        WHITEMULTI: new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
                 exports.SUIT.YELLOW,
-                exports.SUIT.COLORLESS,
+                exports.SUIT.WHITE,
                 exports.SUIT.MULTI,
             ],
             baseColorsMinusPurple,
@@ -593,7 +602,7 @@
         exports.VARIANT.RAINBOW,
         exports.VARIANT.MIXED,
         exports.VARIANT.MM,
-        exports.VARIANT.COLORLESS,
+        exports.VARIANT.WHITEMULTI,
     ];
 
     // This only freezes one layer deep; to do any better, we should likely

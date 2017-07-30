@@ -292,7 +292,7 @@ function playerClue(data) {
                     touched = true;
                 }
             } else if (game.variant === 3 || game.variant === 6) {
-                // Multi (Rainbow) and Multi + Colorless
+                // Multi (Rainbow) and White + Multi
                 if (data.clue.value === card.suit || card.suit === 5) {
                     touched = true;
                 }
@@ -691,6 +691,12 @@ const getSuitText = (data) => {
     } else if (game.variant === 5) {
         // Set the "Mixed and Multi Suits" text
         suitText = globals.mmSuits[card.suit];
+    } else if (game.variant === 6 && card.suit === 4) {
+        // Change "Purple" to "White"
+        suitText = globals.suits[7];
+    } else if (game.variant === 6 && card.suit === 5) {
+        // Change "Black" to "Rainbow"
+        suitText = globals.suits[6];
     }
 
     return suitText;

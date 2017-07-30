@@ -451,7 +451,7 @@ const variantNames = [
     'Multi-color Suit',
     'Mixed-color Suits',
     'Mixed & Multi-color Suits',
-    'Multi-color & Colorless Suit',
+    'White Suit & Multi-color Suit',
 ];
 $(document).ready(() => {
     for (let i = 0; i < variantNames.length; i++) {
