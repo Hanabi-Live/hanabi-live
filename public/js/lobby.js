@@ -317,7 +317,7 @@ HanabiLobby.prototype.showCreateDialog = function showCreateDialog() {
     });
 
     let variant = JSON.parse(localStorage.getItem('createTableVariant'));
-    if (typeof variant !== 'number' || variant < 0 || variant > 5) {
+    if (typeof variant !== 'number' || variant < 0 || variant >= variantNames.length) {
         variant = 0;
     }
     $('#create-game-variant').val(variant);
@@ -450,7 +450,8 @@ const variantNames = [
     'Black Suit (one of each rank)',
     'Multi-color Suit',
     'Mixed-color Suits',
-    'Mixed and Multi-color Suits',
+    'Mixed & Multi-color Suits',
+    'Multi-color & Colorless Suit',
 ];
 $(document).ready(() => {
     for (let i = 0; i < variantNames.length; i++) {

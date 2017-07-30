@@ -176,6 +176,12 @@
         exports.COLOR.PURPLE,
         exports.COLOR.BLACK,
     ];
+    const baseColorsMinusPurple = [
+        exports.COLOR.BLUE,
+        exports.COLOR.GREEN,
+        exports.COLOR.YELLOW,
+        exports.COLOR.RED,
+    ];
 
     // Specify between solid color and gradients, along with additional args in
     // the case of gradients
@@ -567,6 +573,16 @@
             ],
             baseColors,
         ),
+        COLORLESS: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.COLORLESS,
+                exports.SUIT.MULTI,
+            ],
+            baseColorsMinusPurple,
+        ),
     };
 
     // This is the mapping that the server uses
@@ -577,7 +593,9 @@
         exports.VARIANT.RAINBOW,
         exports.VARIANT.MIXED,
         exports.VARIANT.MM,
+        exports.VARIANT.COLORLESS,
     ];
+
     // This only freezes one layer deep; to do any better, we should likely
     // involve a library like immutablejs. But probably not worth bothering with.
     for (const property of Object.keys(exports)) {

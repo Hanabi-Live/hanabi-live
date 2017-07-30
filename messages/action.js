@@ -291,7 +291,8 @@ function playerClue(data) {
                 if (data.clue.value === card.suit) {
                     touched = true;
                 }
-            } else if (game.variant === 3) { // Multi (Rainbow)
+            } else if (game.variant === 3 || game.variant === 6) {
+                // Multi (Rainbow) and Multi + Colorless
                 if (data.clue.value === card.suit || card.suit === 5) {
                     touched = true;
                 }
