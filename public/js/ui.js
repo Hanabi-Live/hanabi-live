@@ -10,7 +10,6 @@ function HanabiUI(lobby, gameID) {
 
     const ACT = constants.ACT;
     const CLUE_TYPE = constants.CLUE_TYPE;
-    const COLOR = constants.COLOR;
     const VARIANT = constants.VARIANT;
     const SHAPE = constants.SHAPE;
     const SUIT = constants.SUIT;
@@ -2059,7 +2058,7 @@ function HanabiUI(lobby, gameID) {
 
                     // Draw the background
                     ctx.fillStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
-                    ctx.strokeStyle = (ctx.fillStyle === COLOR.WHITE.hexCode) ? COLOR.BLACK.hex_code : suit.style(ctx, CARD_AREA.BACKGROUND);
+                    ctx.strokeStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
 
                     backpath(ctx, 4, xrad, yrad);
                     ctx.save();
@@ -2645,9 +2644,9 @@ function HanabiUI(lobby, gameID) {
         */
 
         spectatorsLabel = new Kinetic.Text({
-            x: 0.623 * winW,
+            x: 0.583 * winW,
             y: 0.9 * winH,
-            width: 0.03 * winW,
+            width: 0.11 * winW,
             height: 0.03 * winH,
             fontSize: 0.03 * winH,
             fontFamily: 'Verdana',
@@ -2749,9 +2748,9 @@ function HanabiUI(lobby, gameID) {
         */
 
         sharedReplayLeaderLabel = new Kinetic.Text({
-            x: 0.623 * winW,
+            x: 0.583 * winW,
             y: 0.85 * winH,
-            width: 0.03 * winW,
+            width: 0.11 * winW,
             height: 0.03 * winH,
             fontSize: 0.03 * winH,
             fontFamily: 'Verdana',
@@ -4432,7 +4431,7 @@ function HanabiUI(lobby, gameID) {
         } else if (type === 'status') {
             clueLabel.setText(`Clues: ${note.clues}`);
 
-            if (note.clues === 0) {
+            if (note.clues === 0 || note.clues === 8) {
                 clueLabel.setFill('#df1c2d');
             } else if (note.clues === 1) {
                 clueLabel.setFill('#ef8c1d');
