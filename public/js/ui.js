@@ -2644,9 +2644,9 @@ function HanabiUI(lobby, gameID) {
         */
 
         spectatorsLabel = new Kinetic.Text({
-            x: 0.583 * winW,
+            x: 0.623 * winW,
             y: 0.9 * winH,
-            width: 0.11 * winW,
+            width: 0.03 * winW,
             height: 0.03 * winH,
             fontSize: 0.03 * winH,
             fontFamily: 'Verdana',
