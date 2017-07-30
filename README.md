@@ -164,7 +164,7 @@ These instructions assume you are running Linux. Some adjustment will be needed 
 * Fix the `index.ejs` file:
   * `mv views/index.ejs index.html`
   * `sed --in-place 's/<%= websocketURL %>/http://isaacracing.net:3000/g' index.html`
-* Open `index.html` in your browser, and everything should work as it would as if you were connecting to the real server.
+* Open `index.html` in a browser, which will load the local scripts but connect to the real server
 
 <br />
 
