@@ -25,6 +25,13 @@ exports.step1 = (socket, data) => {
         return;
     }
 
+    // Validate that the player is not joined to another game
+    if (socket.currentGame !== -1) {
+        data.reason = `You cannot join game #${data.gameID} because you are already in game #${socket.currentGame}.`;
+        notify.playerError(socket, data);
+        return;
+    }
+
     // The logic for joining shared replay is in a separate file for
     // organizational purposes
     // (users should see a "Spectate" button for shared replays)

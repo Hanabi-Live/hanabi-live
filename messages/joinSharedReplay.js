@@ -16,16 +16,8 @@ exports.step1 = (socket, data) => {
     // Local variables
     data.userID = socket.userID;
 
-    // Validate that this table exists
-    let game;
-    if (data.gameID in globals.currentGames) {
-        game = globals.currentGames[data.gameID];
-    } else {
-        logger.warn(`Game #${data.gameID} does not exist.`);
-        data.reason = `Game #${data.gameID} does not exist.`;
-        notify.playerError(socket, data);
-        return;
-    }
+    // Validation was performed in the previous function (spectateTable)
+    const game = globals.currentGames[data.gameID];
 
     logger.info(`User "${socket.username}" joined shared replay: #${data.gameID}`);
 
