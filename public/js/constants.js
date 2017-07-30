@@ -17,7 +17,7 @@
         PURPLE: new Color('Purple', 'P', '#6600cc', 4),
         BLACK: new Color('Black', 'K', '#111111', null),
         GRAY: new Color('Gray', 'G', '#cccccc', null),
-        MAGENTA: new Color('Magenta', 'M', '#cc00cc', null),
+        MAGENTA: new Color('Magenta', 'M', '#8b008b', null),
         NAVY: new Color('Navy', 'N', '#000066', null),
         ORANGE: new Color('Orange', 'O', '#ff9900', null),
         TAN: new Color('Tan', 'T', '#999900', null),
