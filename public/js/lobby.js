@@ -1018,7 +1018,7 @@ HanabiLobby.prototype.setConn = function setConn(conn) {
     });
 
     conn.on('error', (err) => {
-        console.err('SocketIO error:', err);
+        console.error('SocketIO error:', err);
     });
 
     conn.on('disconnect', () => {
@@ -1089,7 +1089,7 @@ HanabiLobby.prototype.setConn = function setConn(conn) {
                 modified: true,
             });
         } catch (err) {
-            console.err('Recieved error:', err);
+            console.error('Recieved error:', err);
         }
     };
 };
