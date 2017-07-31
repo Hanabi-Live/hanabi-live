@@ -209,9 +209,15 @@ function step7(error, data) {
 
     // Reset the status of the players
     for (const player of game.players) {
-        player.socket.currntGame = -1;
+        player.socket.currentGame = -1;
         player.socket.status = 'Replay';
         notify.allUserChange(player.socket);
+    }
+    for (const userID of Object.keys(game.spectators)) {
+        const spectator = game.spectators[userID];
+        spectator.currentGame = -1;
+        spectator.status = 'Replay';
+        notify.allUserChange(spectator);
     }
 }
 
