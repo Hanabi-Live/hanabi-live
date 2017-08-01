@@ -346,6 +346,7 @@ ul {
 
 .table-attr {
 	display: inline-block;
+	vertical-align: middle;
 }
 
 .table-name {
