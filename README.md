@@ -14,6 +14,8 @@ Description
 
 <br />
 
+
+
 List of Changes & Improvements over the Original Server
 -------------------------------------------------------
 
@@ -28,7 +30,7 @@ List of Changes & Improvements over the Original Server
   * You can turn any replay into a shared replay. Once created, an unlimited number of people can join it.
   * When in a shared replay, the leader can control what turn is being shown to everyone in the replay.
   * The creator can move a shared cursor by right clicking.
-  * You can see who the leader of the replay is by hovering over the "👑" icon in the bottom right-hand corner.
+  * You can see who the leader of the replay is by hovering over the "ðŸ‘‘" icon in the bottom right-hand corner.
   * You can use this feature to share a past game with a friend who was not in that game.
 * New variant: White Suit and Multi-color Suit
   * This is like the "Multi-color Suit" variant, but purple is replaced with white.
@@ -110,7 +112,7 @@ List of Changes & Improvements over the Original Server
 * Each suit name is listed below the stack in the middle of the screen during games with the multi-color variants.
 * The ambiguous checkboxes in the lobby have been converted to a "Status" indicator, showing exactly what the person is doing.
   * The possible statuses are as follows: Lobby, Pre-Game, Playing, Replay, Shared Replay, Spectating
-* During a game, you can mouse over the "👀" icon in the bottom right-hand corner to see who is spectating the game.
+* During a game, you can mouse over the "ðŸ‘€" icon in the bottom right-hand corner to see who is spectating the game.
 * The username box on the login box will now be automatically focused and you can press enter to login.
 * When you create a game, the server will suggest a randomly generated table name for you.
 * The fade time has been shortened to 200 milliseconds (from 800 milliseconds) in order to make the UI snappier.
@@ -119,10 +121,31 @@ List of Changes & Improvements over the Original Server
 
 <br />
 
-Installation
-------------
 
-These instructions assume you are running Linux. Some adjustment will be needed for Windows installations.
+
+Installation (for Client-Side Development Only)
+-----------------------------------------------
+
+If you are just looking to update the client JavaScript, then you do not need to install the server.
+
+These instructions assume you are running OS X or Linux. Some adjustment will be needed for Windows installations.
+
+* Clone the server:
+  * `git clone https://github.com/Zamiell/keldon-hanabi`
+  * `cd keldon-hanabi`
+* Fix the `index.ejs` file:
+  * `mv views/index.ejs index.html`
+  * `sed --in-place 's/<%= websocketURL %>/http://isaacracing.net:3000/g' index.html`
+* Open `index.html` in a browser, which will load the local scripts but connect to the real server.
+
+<br />
+
+
+
+Installation (Full)
+-------------------
+
+These instructions assume you are running Linux. Some adjustment will be needed for OS X or Windows installations.
 
 * Install [Node.js](https://nodejs.org/en/) (using [Node Version Manager](https://github.com/creationix/nvm)):
   * `curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash`
@@ -156,25 +179,11 @@ These instructions assume you are running Linux. Some adjustment will be needed 
 
 <br />
 
-Installation for Client-Side Development Only
----------------------------------------------
 
-If you are just looking to update the client JavaScript, then you do not need to install the server.
-
-These instructions assume you are running Linux. Some adjustment will be needed for Windows installations.
-
-* Clone the server:
-  * `git clone https://github.com/Zamiell/keldon-hanabi`
-  * `cd keldon-hanabi`
-* Fix the `index.ejs` file:
-  * `mv views/index.ejs index.html`
-  * `sed --in-place 's/<%= websocketURL %>/http://isaacracing.net:3000/g' index.html`
-* Open `index.html` in a browser, which will load the local scripts but connect to the real server
-
-<br />
 
 Credits
 -------
 
 * [Keldon Jones](http://keldon.net/) was the original creator of this amazing software. The client is around 6000 lines of code, so it must have taken a long time to make.
 * [Hyphen-ated](https://github.com/Hyphen-ated/) created the extremely useful Chrome extension called [Make Hanabi Great Again](https://github.com/Hyphen-ated/MakeHanabiGreatAgain), which extended the features of the original site. MHGA is seamlessly integrated into the emulator.
+
