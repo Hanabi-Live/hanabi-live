@@ -20,6 +20,7 @@ exports.step1 = (socket, data) => {
     if (!(data.gameID in globals.currentGames)) {
         // Since games are deleted when they end, it is normal behavior for
         // players to click the "Lobby" button and get to this point
+        socket.currentGame = -1; // This will be set to the game ID of the ended game or the game ID of the replay
         logger.info('(Table does not exist.)');
         return;
     }
