@@ -57,10 +57,10 @@ function HanabiUI(lobby, gameID) {
 
     // This below code block deals with automatic resizing
     // Start listening to resize events and draw canvas.
-    window.addEventListener('resize', resizeCanvas, false); 
- 
+    window.addEventListener('resize', resizeCanvas, false);
+
     function redraw() {
-        var self = lobby.ui;
+        const self = lobby.ui;
 
         // Unbind duplicateable keybindings
         $(document).off('keydown');
@@ -83,8 +83,8 @@ function HanabiUI(lobby, gameID) {
 
         self.reset();
 
-        // This shit resets all the msgs so that everything shows up again, 
-        // since the server doesn't replay them and the client only draws streamed 
+        // This shit resets all the msgs so that everything shows up again,
+        // since the server doesn't replay them and the client only draws streamed
         // information and doesn't maintain a full game state.
 
         // Rebuilds for a replay.
@@ -92,12 +92,14 @@ function HanabiUI(lobby, gameID) {
             let msg;
             // Iterate over the replay, stop at the current turn or at the end
             self.replayPos = 0;
-            while (true) {
+            while (true) { // eslint-disable-line no-constant-condition
                 msg = self.replayLog[self.replayPos];
                 self.replayPos += 1;
 
                 // Stop at end of replay
-                if (!msg) { break; }
+                if (!msg) {
+                    break;
+                }
 
                 // Rebuild all messages and notifies - this will correctly position cards and text
                 if (msg.type === 'message') {
@@ -117,10 +119,10 @@ function HanabiUI(lobby, gameID) {
         // Rebuilds for a game
         } else {
             let msg;
-            var whoseTurn = 0;
+            let whoseTurn = 0;
 
             // Iterate over all moves to date.
-            for (var i = 0; i < self.replayLog.length; i++) {
+            for (let i = 0; i < self.replayLog.length; i++) {
                 msg = self.replayLog[i];
 
                 // Rebuild all messages and notifies - this will correctly position cards and text
@@ -131,13 +133,13 @@ function HanabiUI(lobby, gameID) {
                     // Correctly record and handle whose turn it is
                     if (msg.resp.type === 'turn') {
                         whoseTurn = msg.resp.who;
-                    };
+                    }
                 }
             }
             // If it's your turn, setup the clue area
             if (whoseTurn === self.playerUs && !self.spectating) {
                 self.handleAction.call(self, self.lastAction);
-            };
+            }
             // Setup the timers
             self.handleClock.call(self, self.lastClock);
         }
@@ -149,8 +151,10 @@ function HanabiUI(lobby, gameID) {
         if (!self.replayOnly && self.replayMax > 0) { replayButton.show(); }
 
         // Restore Shared Replay Button if applicable
-        if (self.sharedReplay) { 
-            self.handleReplayLeader({ name:self.sharedReplayLeader });
+        if (self.sharedReplay) {
+            self.handleReplayLeader({
+                name: self.sharedReplayLeader,
+            });
         }
 
         // Restore Spectator Icon if applicable
@@ -171,17 +175,17 @@ function HanabiUI(lobby, gameID) {
         tipLayer.draw();
         overLayer.draw();
         cursorLayer.draw();
-    };
- 
+    }
+
     // Runs each time the DOM window resize event fires.
     // Resets the canvas dimensions to match window,
     // then draws the new borders accordingly.
     function resizeCanvas() {
-        $( "canvas" ).each(function(index, canvas) {
+        $('canvas').each((index, canvas) => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            $(canvas).css("width", window.innerWidth)
-            $(canvas).css("height", window.innerHeight)
+            $(canvas).css('width', window.innerWidth);
+            $(canvas).css('height', window.innerHeight);
         });
         redraw();
     }
@@ -2487,14 +2491,14 @@ function HanabiUI(lobby, gameID) {
         stage.setHeight(ch);
     };
 
-    var stage = new Kinetic.Stage({
+    let stage = new Kinetic.Stage({
         container: 'game',
     });
 
     sizeStage(stage);
 
-    var winW = stage.getWidth();
-    var winH = stage.getHeight();
+    let winW = stage.getWidth();
+    let winH = stage.getHeight();
 
     const bgLayer = new Kinetic.Layer();
     const cardLayer = new Kinetic.Layer();
@@ -2562,6 +2566,22 @@ function HanabiUI(lobby, gameID) {
         pos.x <= playArea.getX() + playArea.getWidth() &&
         pos.y <= playArea.getY() + playArea.getHeight()
     );
+
+    function nameFramesMouseMove() {
+        const mousePos = stage.getPointerPosition();
+        this.tooltip.setX(mousePos.x + 15);
+        this.tooltip.setY(mousePos.y + 5);
+
+        this.tooltip.show();
+        tipLayer.draw();
+
+        ui.activeHover = this;
+    }
+
+    function nameFramesMouseOut() {
+        this.tooltip.hide();
+        tipLayer.draw();
+    }
 
     this.buildUI = function buildUI() {
         const self = this;
@@ -3354,21 +3374,9 @@ function HanabiUI(lobby, gameID) {
                 tipLayer.add(frameHoverTooltip);
                 nameFrames[i].tooltip = frameHoverTooltip;
 
-                nameFrames[i].on('mousemove', function nameFramesMouseMove() {
-                    const mousePos = stage.getPointerPosition();
-                    this.tooltip.setX(mousePos.x + 15);
-                    this.tooltip.setY(mousePos.y + 5);
+                nameFrames[i].on('mousemove', nameFramesMouseMove);
 
-                    this.tooltip.show();
-                    tipLayer.draw();
-
-                    ui.activeHover = this;
-                });
-
-                nameFrames[i].on('mouseout', function nameFramesMouseOut() {
-                    this.tooltip.hide();
-                    tipLayer.draw();
-                });
+                nameFrames[i].on('mouseout', nameFramesMouseOut);
             }
         }
 

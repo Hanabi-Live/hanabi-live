@@ -36,10 +36,6 @@ function HanabiLobby() {
 
     this.loadSettings();
 
-    // $( window ).resize(function() {
-    //     self.resizeCanvas();
-    // });
-
     // Preload some sounds by playing them at 0 volume
     $(document).ready(() => {
         if (!self.sendTurnSound) {
@@ -935,7 +931,7 @@ HanabiLobby.prototype.resizeCanvas = function resizeCanvas() {
     this.ui.destroy();
     this.ui = new HanabiUI(this, this.gameID);
     this.ui.setBackend(this.conn);
-}
+};
 
 HanabiLobby.prototype.gameEnded = function gameEnded(data) {
     this.ui.destroy();

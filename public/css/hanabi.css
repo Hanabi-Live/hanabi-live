@@ -251,9 +251,9 @@ ul {
 }
 
 #chat-entry {
-    position: absolute;
-    bottom: 5px;
-    width: 98%;
+	position: absolute;
+	bottom: 5px;
+	width: 98%;
 }
 
 #chat-input {
@@ -392,19 +392,19 @@ ul {
 }
 
 #show-options {
-    position: relative;
-    bottom: 2px;
-    width: 200px;
-    font-size: 21px;
+	position: relative;
+	bottom: 2px;
+	width: 200px;
+	font-size: 21px;
 }
 
 #logout {
-    position: absolute;
-    right: 25px;
-    top: 1px;
-    font-size: 16px;
-    height: 21px;
-    width: 80px;
+	position: absolute;
+	right: 25px;
+	top: 1px;
+	font-size: 16px;
+	height: 21px;
+	width: 80px;
 }
 
 #game {
