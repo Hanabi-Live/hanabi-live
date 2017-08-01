@@ -309,8 +309,7 @@ function HanabiUI(lobby, gameID) {
             let name = 'card-';
             if (learned.suit === undefined) {
                 // Gray suit
-                // TODO: need to change this if we ever add a 7th suit
-                name += 6;
+                name += ui.variant.suits.length;
             } else {
                 name += ui.variant.suits.findIndex(
                     suit => suit === learned.suit,
@@ -2165,8 +2164,6 @@ function HanabiUI(lobby, gameID) {
                     cvs.width = CARDW;
                     cvs.height = CARDH;
 
-                    // will this be erroneous for novariant since it has only 5
-                    // suits?
                     const name = `card-${i}-${j}`;
                     cardImages[name] = cvs;
 
