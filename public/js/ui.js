@@ -71,7 +71,6 @@ function HanabiUI(lobby, gameID) {
         var self = lobby.ui;
 
         // Unbind duplicateable keybindings
-        $(document).keydown(this.keyNavigation);
         $(document).off('keydown');
 
         // Remove drawn elements to prep for a redraw
