@@ -57,16 +57,8 @@ function HanabiUI(lobby, gameID) {
 
     // This below code block deals with automatic resizing
     // Start listening to resize events and draw canvas.
-    initialize();
+    window.addEventListener('resize', resizeCanvas, false); 
  
-    function initialize() {
-       // Register an event listener to call the resizeCanvas() function 
-       // each time the window is resized.
-       window.addEventListener('resize', resizeCanvas, false);
-    }
- 
-    // // Display custom canvas. In this case it's a blue, 5 pixel 
-    // // border that resizes along with the browser window.
     function redraw() {
         var self = lobby.ui;
 
@@ -94,9 +86,10 @@ function HanabiUI(lobby, gameID) {
         // This shit resets all the msgs so that everything shows up again, 
         // since the server doesn't replay them and the client only draws streamed 
         // information and doesn't maintain a full game state.
-        let msg;
+
         // Rebuilds for a replay.
         if (self.replay) {
+            let msg;
             // Iterate over the replay, stop at the current turn or at the end
             self.replayPos = 0;
             while (true) {
@@ -123,6 +116,7 @@ function HanabiUI(lobby, gameID) {
             }
         // Rebuilds for a game
         } else {
+            let msg;
             var whoseTurn = 0;
 
             // Iterate over all moves to date.
@@ -160,7 +154,9 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Restore Spectator Icon if applicable
-        self.handleSpectators(self.lastSpectators);
+        if (self.lastSpectators) {
+            self.handleSpectators(self.lastSpectators);
+        }
 
         // Restore message text and prompts
         msgLogGroup.refreshText();
