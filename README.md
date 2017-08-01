@@ -105,6 +105,7 @@ List of Changes & Improvements over the Original Server
 * In-game replays will show card faces based on your current knowledge of the card.
 * Replays of other games will no longer show "Alice", "Bob", etc., and will instead show the real player names. This way, if you have a question about what they did, you can actually message them and ask.
 * Upon refreshing the page, if you are in the middle of the game, you will be automatically taken into that game from the lobby.
+* You will no longer have to refresh the page after resizing the browser window.
 * The "Clues" text on the game UI will be red while at 8 clues.
 * Each suit name is listed below the stack in the middle of the screen during games with the multi-color variants.
 * The ambiguous checkboxes in the lobby have been converted to a "Status" indicator, showing exactly what the person is doing.
