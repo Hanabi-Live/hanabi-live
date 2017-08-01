@@ -599,7 +599,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 };
 
 HanabiLobby.prototype.addChat = function addChat(data) {
-    const chat = $('#chat');
+    const chat = $('#chat-contents');
 
     let line = '';
     if (data.who) {

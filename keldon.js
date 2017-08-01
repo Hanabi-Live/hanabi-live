@@ -1,5 +1,6 @@
 // Imports
 const client = require('socket.io-client');
+const globals = require('./globals');
 const discord = require('./discord');
 
 // Import the environment variables defined in the ".env" file
@@ -14,7 +15,7 @@ const password = process.env.KELDON_PASS;
 let socket = null;
 
 // Only connect if the user has specified values in the .env file
-if (username.length > 0 && password.length > 0) {
+if (username.length > 0 && password.length > 0 && globals.useKeldonBot) {
     socket = client.connect(url);
 
     socket.emit('message', {
