@@ -1,8 +1,10 @@
-body {
+html, body {
 	width: 100%;
 	height: 100%;
 	margin: 0px;
+	border: 0;
 	background-color: black;
+	overflow: hidden;
 }
 
 button {
@@ -37,7 +39,7 @@ button.abandon {
 
 #show-resources {
 	position: absolute;
-	right: 60px;
+	right: 85px;
 }
 
 #show-settings {
@@ -47,7 +49,7 @@ button.abandon {
 	width: 50px;
 
 	position: absolute;
-	right: 0px;
+	right: 25px;
 }
 
 ul {
@@ -59,6 +61,7 @@ ul {
 #lobby {
 	display: none;
 	height: 100%;
+	padding-right: 20px;
 }
 
 #pregame {
@@ -70,13 +73,11 @@ ul {
 
 	position: absolute;
 	clear: both;
-	width: 1000px;
-	height: 600px;
-	top: 50%;
-	left: 50%;
-	margin-top: -300px;
-	margin-left: -500px;
-	padding: 5px;
+	width: 100%;
+	height: 100%;
+	min-width: 1000px;
+	min-height: 600px;
+	padding: 10px;
 
 	color: black;
 }
@@ -216,6 +217,8 @@ ul {
 
 	border: 1px solid #444;
 	border-radius: 5px;
+
+	position: relative;
 }
 
 #user-list-div {
@@ -248,8 +251,9 @@ ul {
 }
 
 #chat-entry {
-	margin-top: 1px;
-	padding-right: 5px;
+    position: absolute;
+    bottom: 5px;
+    width: 98%;
 }
 
 #chat-input {
@@ -396,9 +400,15 @@ ul {
 
 #logout {
     position: absolute;
-    right: 1px;
+    right: 25px;
     top: 1px;
     font-size: 16px;
     height: 21px;
     width: 80px;
+}
+
+#game {
+	width: 100%;
+	height: 100%;
+	margin: 0px;
 }

@@ -50,6 +50,149 @@ function HanabiUI(lobby, gameID) {
     this.playerTimes = [];
     this.timerID = null;
 
+    // Stored variables for rebuilding the game state
+    this.lastAction = null;
+    this.lastClock = [];
+    this.lastSpectators = null;
+
+    // This below code block deals with automatic resizing
+    // Start listening to resize events and draw canvas.
+    initialize();
+ 
+    function initialize() {
+       // Register an event listener to call the resizeCanvas() function 
+       // each time the window is resized.
+       window.addEventListener('resize', resizeCanvas, false);
+    }
+ 
+    // // Display custom canvas. In this case it's a blue, 5 pixel 
+    // // border that resizes along with the browser window.
+    function redraw() {
+        var self = lobby.ui;
+
+        // Unbind duplicateable keybindings
+        $(document).keydown(this.keyNavigation);
+        $(document).off('keydown');
+
+        // Remove drawn elements to prep for a redraw
+        stage.destroy();
+        stage = new Kinetic.Stage({
+            container: 'game',
+        });
+
+        // Reset stage to new window size
+        sizeStage(stage);
+
+        winW = stage.getWidth();
+        winH = stage.getHeight();
+
+        // Rebuild UI elements and cards to new scaling
+        self.buildUI();
+        self.buildCards();
+
+        self.reset();
+
+        // This shit resets all the msgs so that everything shows up again, 
+        // since the server doesn't replay them and the client only draws streamed 
+        // information and doesn't maintain a full game state.
+        let msg;
+        // Rebuilds for a replay.
+        if (self.replay) {
+            // Iterate over the replay, stop at the current turn or at the end
+            self.replayPos = 0;
+            while (true) {
+                msg = self.replayLog[self.replayPos];
+                self.replayPos += 1;
+
+                // Stop at end of replay
+                if (!msg) { break; }
+
+                // Rebuild all messages and notifies - this will correctly position cards and text
+                if (msg.type === 'message') {
+                    self.setMessage(msg.resp);
+                } else if (msg.type === 'notify') {
+                    const performingReplay = true;
+                    self.handleNotify(msg.resp, performingReplay);
+                }
+
+                // Stop if you're at the current turn
+                if (msg.type === 'notify' && msg.resp.type === 'turn') {
+                    if (msg.resp.num === self.replayTurn) {
+                        break;
+                    }
+                }
+            }
+        // Rebuilds for a game
+        } else {
+            var whoseTurn = 0;
+
+            // Iterate over all moves to date.
+            for (var i = 0; i < self.replayLog.length; i++) {
+                msg = self.replayLog[i];
+
+                // Rebuild all messages and notifies - this will correctly position cards and text
+                if (msg.type === 'message') {
+                    self.setMessage(msg.resp);
+                } else if (msg.type === 'notify') {
+                    self.handleNotify(msg.resp, false);
+                    // Correctly record and handle whose turn it is
+                    if (msg.resp.type === 'turn') {
+                        whoseTurn = msg.resp.who;
+                    };
+                }
+            }
+            // If it's your turn, setup the clue area
+            if (whoseTurn === self.playerUs && !self.spectating) {
+                self.handleAction.call(self, self.lastAction);
+            };
+            // Setup the timers
+            self.handleClock.call(self, self.lastClock);
+        }
+
+        // Restore Drag and Drop Functionality
+        self.animateFast = false;
+
+        // Restore Replay Button if applicable
+        if (!self.replayOnly && self.replayMax > 0) { replayButton.show(); }
+
+        // Restore Shared Replay Button if applicable
+        if (self.sharedReplay) { 
+            self.handleReplayLeader({ name:self.sharedReplayLeader });
+        }
+
+        // Restore Spectator Icon if applicable
+        self.handleSpectators(self.lastSpectators);
+
+        // Restore message text and prompts
+        msgLogGroup.refreshText();
+        messagePrompt.refreshText();
+
+        // Redraw all layers
+        bgLayer.draw();
+        textLayer.draw();
+        UILayer.draw();
+        timerLayer.draw();
+        cardLayer.draw();
+        tipLayer.draw();
+        overLayer.draw();
+        cursorLayer.draw();
+    };
+ 
+    // Runs each time the DOM window resize event fires.
+    // Resets the canvas dimensions to match window,
+    // then draws the new borders accordingly.
+    function resizeCanvas() {
+        $( "canvas" ).each(function(index, canvas) {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            $(canvas).css("width", window.innerWidth)
+            $(canvas).css("height", window.innerHeight)
+        });
+        redraw();
+    }
+    // End Block
+
+
     const Clue = function Clue(type, value) {
         this.type = type;
         this.value = value;
@@ -2352,14 +2495,14 @@ function HanabiUI(lobby, gameID) {
         stage.setHeight(ch);
     };
 
-    const stage = new Kinetic.Stage({
+    var stage = new Kinetic.Stage({
         container: 'game',
     });
 
     sizeStage(stage);
 
-    const winW = stage.getWidth();
-    const winH = stage.getHeight();
+    var winW = stage.getWidth();
+    var winH = stage.getHeight();
 
     const bgLayer = new Kinetic.Layer();
     const cardLayer = new Kinetic.Layer();
@@ -5004,6 +5147,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
             this.handleNotify.call(this, msgData);
         }
     } else if (msgType === 'action') {
+        this.lastAction = msgData;
         this.handleAction.call(this, msgData);
 
         if (this.animateFast) {
@@ -5014,9 +5158,11 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
             this.lobby.sendNotify('It\'s your turn', 'turn');
         }
     } else if (msgType === 'spectators') {
+        this.lastSpectators = msgData;
         // This is used to update the names of the people currently spectating the game
         this.handleSpectators.call(this, msgData);
     } else if (msgType === 'clock') {
+        this.lastClock = msgData;
         // This is used for timed games
         this.handleClock.call(this, msgData);
     } else if (msgType === 'note') {
