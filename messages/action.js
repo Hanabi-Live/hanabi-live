@@ -302,7 +302,7 @@ function playerClue(data) {
                 // 1 - Magenta  (Blue   / Red)
                 // 2 - Navy     (Blue   / Black)
                 // 3 - Orange   (Yellow / Red)
-                // 4 - Gold     (Yellow / Black)
+                // 4 - Tan      (Yellow / Black)
                 // 5 - Burgundy (Red    / Black)
                 if (data.clue.value === 0) { // Blue clue
                     if (card.suit === 0 || card.suit === 1 || card.suit === 2) {
@@ -347,6 +347,31 @@ function playerClue(data) {
                     }
                 } else if (data.clue.value === 4) { // Black clue
                     if (card.suit === 3 || card.suit === 4 || card.suit === 5) {
+                        touched = true;
+                    }
+                }
+            } else if (game.variant === 7) { // Crazy
+                // Suits:
+                // 0 - Green   (Blue   / Yellow)
+                // 1 - Magenta (Blue   / Red)
+                // 2 - Orange  (Yellow / Red)
+                // 3 - White
+                // 4 - Rainbow
+                // 5 - Black
+                if (data.clue.value === 0) { // Blue clue
+                    if (card.suit === 0 || card.suit === 1 || card.suit === 4) {
+                        touched = true;
+                    }
+                } else if (data.clue.value === 1) { // Yellow clue
+                    if (card.suit === 0 || card.suit === 2 || card.suit === 4) {
+                        touched = true;
+                    }
+                } else if (data.clue.value === 2) { // Red clue
+                    if (card.suit === 1 || card.suit === 2 || card.suit === 4) {
+                        touched = true;
+                    }
+                } else if (data.clue.value === 3) { // Black clue
+                    if (card.suit === 4 || card.suit === 5) {
                         touched = true;
                     }
                 }
@@ -697,6 +722,9 @@ const getSuitText = (data) => {
     } else if (game.variant === 6 && card.suit === 5) {
         // Change "Black" to "Rainbow"
         suitText = globals.suits[6];
+    } else if (game.variant === 7) {
+        // Set the "Crazy" suits text
+        suitText = globals.crazySuits[6];
     }
 
     return suitText;
@@ -708,7 +736,7 @@ function getClueText(data) {
     const game = globals.currentGames[data.gameID];
 
     let clueText = globals.suits[data.clue.value];
-    if (game.variant === 4) {
+    if (game.variant === 4 || game.variant === 7) {
         // Set the "Mixed Suits" text
         clueText = globals.mixedClues[data.clue.value];
     }

@@ -2,7 +2,7 @@
 const port = 3000;
 const startingTime = 5 * 60 * 1000; // In milliseconds
 const extraTurnTime = 10 * 1000; // In milliseconds
-const enableDiscordBot = false;
+const enableDiscordBot = true;
 const enableKeldonBot = true;
 
 // The object that contains all of the global variables
@@ -44,6 +44,14 @@ module.exports = {
         'Cardinal',
         'Indigo',
         'Rainbow',
+    ],
+    crazySuits: [
+        'Green',
+        'Magenta',
+        'Orange',
+        'White',
+        'Rainbow',
+        'Black',
     ],
     port,
     wordList: null, // Set in the "index.js" file

@@ -474,7 +474,7 @@
             Object.values(exports.COLOR),
         ),
         WHITE: new Suit(
-            'Colorless',
+            'White',
             'W',
             exports.COLOR.WHITE,
             basicCardFillSpec,
@@ -555,12 +555,12 @@
         ),
         MIXED: new Variant(
             [
-                exports.SUIT.MGREEN,
-                exports.SUIT.MAGENTA,
-                exports.SUIT.NAVY,
-                exports.SUIT.ORANGE,
-                exports.SUIT.TAN,
-                exports.SUIT.BURGUNDY,
+                exports.SUIT.MGREEN, // Blue + Yellow
+                exports.SUIT.MAGENTA, // Blue + Red
+                exports.SUIT.NAVY, // Blue + Black
+                exports.SUIT.ORANGE, // Yellow + Red
+                exports.SUIT.TAN, // Yellow + Black
+                exports.SUIT.BURGUNDY, // Red + Black
             ],
             [
                 exports.COLOR.BLUE,
@@ -571,11 +571,11 @@
         ),
         MM: new Variant(
             [
-                exports.SUIT.TEAL,
-                exports.SUIT.LIME,
-                exports.SUIT.SORANGE,
-                exports.SUIT.CARDINAL,
-                exports.SUIT.INDIGO,
+                exports.SUIT.TEAL, // Blue + Green
+                exports.SUIT.LIME, // Green + Yellow
+                exports.SUIT.SORANGE, // Yellow + Red
+                exports.SUIT.CARDINAL, // Red + Purple
+                exports.SUIT.INDIGO, // Purple + Blue
                 exports.SUIT.MULTI,
             ],
             baseColors,
@@ -591,6 +591,22 @@
             ],
             baseColorsMinusPurple,
         ),
+        CRAZY: new Variant(
+            [
+                exports.SUIT.MGREEN, // Blue + Yellow
+                exports.SUIT.MAGENTA, // Blue + Red
+                exports.SUIT.ORANGE, // Yellow + Red
+                exports.SUIT.WHITE,
+                exports.SUIT.MULTI,
+                exports.SUIT.BLACK,
+            ],
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.YELLOW,
+                exports.COLOR.RED,
+                exports.COLOR.BLACK,
+            ],
+        ),
     };
 
     // This is the mapping that the server uses
@@ -602,6 +618,7 @@
         exports.VARIANT.MIXED,
         exports.VARIANT.MM,
         exports.VARIANT.WHITEMULTI,
+        exports.VARIANT.CRAZY,
     ];
 
     // This only freezes one layer deep; to do any better, we should likely

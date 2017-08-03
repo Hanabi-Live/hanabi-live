@@ -448,10 +448,11 @@ const variantNames = [
     'None',
     'Black Suit',
     'Black Suit (one of each rank)',
-    'Multi-color Suit',
-    'Mixed-color Suits',
-    'Mixed & Multi-color Suits',
-    'White Suit & Multi-color Suit',
+    'Rainbow Suit (all colors)',
+    'Dual-color Suits',
+    'Dual-color & Rainbow Suits',
+    'White Suit (colorless) & Rainbow Suit',
+    'Wild and Crazy',
 ];
 $(document).ready(() => {
     for (let i = 0; i < variantNames.length; i++) {

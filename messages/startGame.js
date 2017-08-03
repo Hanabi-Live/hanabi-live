@@ -26,8 +26,8 @@ exports.step1 = (socket, data) => {
         const ranks = [1, 2, 3, 4, 5];
         for (const rank of ranks) {
             let amountToAdd;
-            if (suit === 5 && game.variant === 2) {
-                // Black one of each
+            if (suit === 5 && (game.variant === 2 || game.variant === 7)) {
+                // Black one of each or Crazy (which includes black one of each)
                 amountToAdd = 1;
             } else if (rank === 1) {
                 amountToAdd = 3;

@@ -3116,7 +3116,11 @@ function HanabiUI(lobby, gameID) {
 
                 // Draw the suit name next to each suit
                 // (a text description of the suit)
-                if (this.variant === VARIANT.MIXED || this.variant === VARIANT.MM) {
+                if (
+                    this.variant === VARIANT.MIXED ||
+                    this.variant === VARIANT.MM ||
+                    this.variant === VARIANT.CRAZY
+                ) {
                     const text = new FitText({
                         x: (0.173 + (width + 0.015) * i) * winW, //
                         y: (playAreaY + 0.155 + offset) * winH,
