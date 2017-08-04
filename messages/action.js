@@ -724,7 +724,7 @@ const getSuitText = (data) => {
         suitText = globals.suits[6];
     } else if (game.variant === 7) {
         // Set the "Crazy" suits text
-        suitText = globals.crazySuits[6];
+        suitText = globals.crazySuits[card.suit];
     }
 
     return suitText;
