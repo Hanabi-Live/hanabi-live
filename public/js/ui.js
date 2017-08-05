@@ -988,7 +988,7 @@ function HanabiUI(lobby, gameID) {
             // Draw the color squares
             const grad = this.colorSquare.getFillLinearGradientColorStops();
             const clueColor = clue.value;
-            const clueColorCode = clue.value.hexCode;
+            const clueColorCode = clueColor.hexCode;
             // No colors yet
             if (grad.length === 2) {
                 this.colorSquare.setFillLinearGradientColorStops([
@@ -998,7 +998,9 @@ function HanabiUI(lobby, gameID) {
                     clueColorCode,
                 ]);
                 this.colorClueLetter.setText(clueColor.abbreviation);
+            // exactly one color
             } else if (grad[1] === grad[3]) {
+                // In mixed variant, finds the true suit corresponding to a pair of colors
                 if (ui.variant === VARIANT.MIXED) {
                     const existingColor = ui.variant.clueColors.find(
                         color => color.hexCode === grad[1],
@@ -1008,7 +1010,9 @@ function HanabiUI(lobby, gameID) {
                         // If this is a new color being introduced to the card
                         if (existingColor !== clueColor) {
                             const trueSuit = VARIANT.MIXED.suits.find(
-                                suit => suit.clueColors.includes(existingColor) && suit.clueColors.includes(clueColor),
+                                suit =>
+                                    suit.clueColors.includes(existingColor) &&
+                                    suit.clueColors.includes(clueColor),
                             );
                             // fillColors for a mixed suit is just one color
                             const trueFillColor = trueSuit.fillColors.hexCode;
@@ -1016,18 +1020,20 @@ function HanabiUI(lobby, gameID) {
                             grad[3] = trueFillColor;
                             this.colorSquare.setFillLinearGradientColorStops(grad);
 
-                            // Get rid of the question mark
+                            // Gets rid of the question mark
                             this.colorClueQuestionMark.hide();
                         }
                     }
+                // In variants with rainbow suit, changes the solid color to a gradient mixing the
+                // two colors
                 } else {
-                    // Change the solid color to a gradient mixing the two clues
-                    grad[3] = clueColor.hexCode;
+                    grad[3] = clueColorCode;
                     this.colorSquare.setFillLinearGradientColorStops(grad);
                     this.colorClueLetter.setText('M');
                 }
+            // If there are already two colors or more in the gradient; not applicable to mixed
+            // variant
             } else if (ui.variant !== VARIANT.MIXED) {
-                // We don't need to add a third (or 4th, 5th, etc.) color in the mixed variant
                 if (grad[grad.length - 1] === clueColorCode) {
                     return;
                 }
