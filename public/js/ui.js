@@ -1028,21 +1028,21 @@ function HanabiUI(lobby, gameID) {
                 }
             } else if (ui.variant !== VARIANT.MIXED) {
                 // We don't need to add a third (or 4th, 5th, etc.) color in the mixed variant
-                if (grad[grad.length - 1] === clueColor) {
+                if (grad[grad.length - 1] === clueColorCode) {
                     return;
                 }
-
                 for (let i = 0; i < grad.length; i += 2) {
                     grad[i] = 1.0 * (i / 2) / (grad.length / 2);
                 }
                 grad.push(1);
-                grad.push(clueColor);
+                grad.push(clueColorCode);
                 this.colorSquare.setFillLinearGradientColorStops(grad);
                 this.colorClueLetter.setText('M');
             }
 
             this.colorClueGroup.show();
 
+            // finds the first suit in the list that corresponds to the color
             const suitCorrespondingToColor = ui.variant.suits.find(
                 suit => suit.clueColors.includes(clue.value),
             );
