@@ -15,7 +15,25 @@ const notify = require('../notify');
 exports.step1 = (socket, data) => {
     // Local variables
     data.gameID = socket.currentGame;
-    const game = globals.currentGames[data.gameID];
+
+    // Validate that this table exists
+    let game;
+    if (data.gameID in globals.currentGames) {
+        game = globals.currentGames[data.gameID];
+    } else {
+        logger.warn(`Game #${data.gameID} does not exist.`);
+        data.reason = `Game #${data.gameID} does not exist.`;
+        notify.playerError(socket, data);
+        return;
+    }
+
+    // Validate that the game has at least 2 players
+    if (game.players.length < 2) {
+        logger.warn(`messages.startGame was called for game #${data.gameID}, but it does not have at least 2 players.`);
+        data.reason = 'You need at least 2 players to start a game.';
+        notify.playerError(socket, data);
+        return;
+    }
 
     // Create the deck
     const suits = [0, 1, 2, 3, 4];
