@@ -299,25 +299,17 @@ function HanabiUI(lobby, gameID) {
 
     function imageName(card) {
         if (!card.unknown) {
-            let name = 'card-';
-            name += ui.variant.suits.findIndex(
-                suit => suit === card.suit,
-            );
-            name += `-${card.rank}`;
-            return name;
+            return `card-${card.suit.name}-${card.rank}`;
         }
 
-        // TODO: name
         const learned = ui.learnedCards[card.order];
         if (ui.replay && learned && (learned.revealed || showReplayPartialFaces)) {
             let name = 'card-';
             if (learned.suit === undefined) {
                 // Gray suit
-                name += ui.variant.suits.length;
+                name += SUIT.GRAY.name;
             } else {
-                name += ui.variant.suits.findIndex(
-                    suit => suit === learned.suit,
-                );
+                name += learned.suit.name;
             }
             name += '-';
             if (learned.rank === undefined) {
@@ -2165,8 +2157,6 @@ function HanabiUI(lobby, gameID) {
 
         // 0-5 are the real suits; 6 is a "white" suit for replays
         const suits = this.variant.suits.concat(SUIT.GRAY);
-        {
-            let i = 0;
             for (const suit of suits) {
                 // 0 is the stack base. 1-5 are the cards 1-5. 6 is a numberless card for replays.
                 for (let j = 0; j < 7; j++) {
@@ -2174,7 +2164,7 @@ function HanabiUI(lobby, gameID) {
                     cvs.width = CARDW;
                     cvs.height = CARDH;
 
-                    const name = `card-${i}-${j}`;
+                    const name = `card-${suit.name}-${j}`;
                     cardImages[name] = cvs;
 
                     ctx = cvs.getContext('2d');
@@ -2388,8 +2378,6 @@ function HanabiUI(lobby, gameID) {
                         ctx.restore();
                     }
                 }
-                i += 1;
-            }
         }
 
         cvs = document.createElement('canvas');
@@ -3083,7 +3071,7 @@ function HanabiUI(lobby, gameID) {
                     y: (playAreaY + offset) * winH,
                     width: width * winW,
                     height: height * winH,
-                    image: cardImages[`card-${i}-0`],
+                    image: cardImages[`card-${suit.name}-0`],
                 });
 
                 bgLayer.add(pileback);
