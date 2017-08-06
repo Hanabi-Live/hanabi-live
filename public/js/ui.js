@@ -2157,227 +2157,227 @@ function HanabiUI(lobby, gameID) {
 
         // 0-5 are the real suits; 6 is a "white" suit for replays
         const suits = this.variant.suits.concat(SUIT.GRAY);
-            for (const suit of suits) {
-                // 0 is the stack base. 1-5 are the cards 1-5. 6 is a numberless card for replays.
-                for (let j = 0; j < 7; j++) {
-                    cvs = document.createElement('canvas');
-                    cvs.width = CARDW;
-                    cvs.height = CARDH;
+        for (const suit of suits) {
+            // 0 is the stack base. 1-5 are the cards 1-5. 6 is a numberless card for replays.
+            for (let j = 0; j < 7; j++) {
+                cvs = document.createElement('canvas');
+                cvs.width = CARDW;
+                cvs.height = CARDH;
 
-                    const name = `card-${suit.name}-${j}`;
-                    cardImages[name] = cvs;
+                const name = `card-${suit.name}-${j}`;
+                cardImages[name] = cvs;
 
-                    ctx = cvs.getContext('2d');
+                ctx = cvs.getContext('2d');
 
-                    backpath(ctx, 4, xrad, yrad);
+                backpath(ctx, 4, xrad, yrad);
 
-                    ctx.fillStyle = 'white';
-                    ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.fill();
 
-                    ctx.save();
-                    ctx.clip();
-                    ctx.globalAlpha = 0.2;
-                    ctx.strokeStyle = 'black';
-                    for (let x = 0; x < CARDW; x += 4 + Math.random() * 4) {
-                        ctx.beginPath();
-                        ctx.moveTo(x, 0);
-                        ctx.lineTo(x, CARDH);
-                        ctx.stroke();
-                    }
-                    for (let y = 0; y < CARDH; y += 4 + Math.random() * 4) {
-                        ctx.beginPath();
-                        ctx.moveTo(0, y);
-                        ctx.lineTo(CARDW, y);
-                        ctx.stroke();
-                    }
-                    ctx.restore();
-
-                    // Draw the background
-                    ctx.fillStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
-                    ctx.strokeStyle = (ctx.fillStyle === COLOR.WHITE.hexCode) ? COLOR.BLACK.hex_code : suit.style(ctx, CARD_AREA.BACKGROUND);
-
-                    backpath(ctx, 4, xrad, yrad);
-                    ctx.save();
-
-                    // Draw the borders (on visible cards) and the color fill
-                    ctx.globalAlpha = 0.3;
-                    ctx.fill();
-                    ctx.globalAlpha = 0.7;
-                    ctx.lineWidth = 8;
+                ctx.save();
+                ctx.clip();
+                ctx.globalAlpha = 0.2;
+                ctx.strokeStyle = 'black';
+                for (let x = 0; x < CARDW; x += 4 + Math.random() * 4) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, CARDH);
                     ctx.stroke();
-                    ctx.restore();
+                }
+                for (let y = 0; y < CARDH; y += 4 + Math.random() * 4) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(CARDW, y);
+                    ctx.stroke();
+                }
+                ctx.restore();
 
-                    ctx.shadowBlur = 10;
-                    ctx.fillStyle = suit.style(ctx, CARD_AREA.NUMBER);
+                // Draw the background
+                ctx.fillStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
+                ctx.strokeStyle = (ctx.fillStyle === COLOR.WHITE.hexCode) ? COLOR.BLACK.hex_code : suit.style(ctx, CARD_AREA.BACKGROUND);
 
-                    const suitLetter = suit.abbreviation;
-                    ctx.strokeStyle = 'black';
-                    ctx.lineWidth = 2;
-                    ctx.lineJoin = 'round';
-                    let textYPos = 110;
-                    ctx.font = 'bold 96pt Arial';
-                    let indexLabel = j.toString();
-                    if (j === 6) {
-                        indexLabel = '';
+                backpath(ctx, 4, xrad, yrad);
+                ctx.save();
+
+                // Draw the borders (on visible cards) and the color fill
+                ctx.globalAlpha = 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 0.7;
+                ctx.lineWidth = 8;
+                ctx.stroke();
+                ctx.restore();
+
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = suit.style(ctx, CARD_AREA.NUMBER);
+
+                const suitLetter = suit.abbreviation;
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.lineJoin = 'round';
+                let textYPos = 110;
+                ctx.font = 'bold 96pt Arial';
+                let indexLabel = j.toString();
+                if (j === 6) {
+                    indexLabel = '';
+                }
+
+                if (lobby.showColorblindUI) {
+                    ctx.font = 'bold 68pt Arial';
+                    textYPos = 83;
+                    indexLabel = suitLetter + indexLabel;
+                }
+
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                ctx.fillText(indexLabel, 19, textYPos);
+                ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+                ctx.strokeText(indexLabel, 19, textYPos);
+                ctx.save();
+
+                ctx.translate(CARDW, CARDH);
+                ctx.rotate(Math.PI);
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                ctx.fillText(indexLabel, 19, textYPos);
+                ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+                ctx.strokeText(indexLabel, 19, textYPos);
+                ctx.restore();
+
+                ctx.fillStyle = suit.style(ctx, CARD_AREA.SYMBOL);
+
+                ctx.lineWidth = 5;
+                if (suit !== SUIT.GRAY) {
+                    const pathfunc = PATHFUNC.get(suit.shape);
+                    // The middle for cards 2 or 4
+                    if (j === 1 || j === 3) {
+                        ctx.save();
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.scale(0.4, 0.4);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
+                        drawshape(ctx);
+                        ctx.restore();
                     }
 
-                    if (lobby.showColorblindUI) {
-                        ctx.font = 'bold 68pt Arial';
-                        textYPos = 83;
-                        indexLabel = suitLetter + indexLabel;
-                    }
-
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-                    ctx.fillText(indexLabel, 19, textYPos);
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-                    ctx.strokeText(indexLabel, 19, textYPos);
-                    ctx.save();
-
-                    ctx.translate(CARDW, CARDH);
-                    ctx.rotate(Math.PI);
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-                    ctx.fillText(indexLabel, 19, textYPos);
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-                    ctx.strokeText(indexLabel, 19, textYPos);
-                    ctx.restore();
-
-                    ctx.fillStyle = suit.style(ctx, CARD_AREA.SYMBOL);
-
-                    ctx.lineWidth = 5;
-                    if (suit !== SUIT.GRAY) {
-                        const pathfunc = PATHFUNC.get(suit.shape);
-                        // The middle for cards 2 or 4
-                        if (j === 1 || j === 3) {
-                            ctx.save();
-                            ctx.translate(CARDW / 2, CARDH / 2);
-                            ctx.scale(0.4, 0.4);
-                            ctx.translate(-75, -100);
-                            pathfunc(ctx);
-                            drawshape(ctx);
-                            ctx.restore();
+                    // Top and bottom for cards 3, 4, 5
+                    if (j > 1 && j !== 6) {
+                        let symbolYPos = 120;
+                        if (lobby.showColorblindUI) {
+                            symbolYPos = 85;
                         }
-
-                        // Top and bottom for cards 3, 4, 5
-                        if (j > 1 && j !== 6) {
-                            let symbolYPos = 120;
-                            if (lobby.showColorblindUI) {
-                                symbolYPos = 85;
-                            }
-                            ctx.save();
-                            ctx.translate(CARDW / 2, CARDH / 2);
-                            ctx.translate(0, -symbolYPos);
-                            ctx.scale(0.4, 0.4);
-                            ctx.translate(-75, -100);
-                            pathfunc(ctx);
-                            drawshape(ctx);
-                            ctx.restore();
-
-                            ctx.save();
-                            ctx.translate(CARDW / 2, CARDH / 2);
-                            ctx.translate(0, symbolYPos);
-                            ctx.scale(0.4, 0.4);
-                            ctx.rotate(Math.PI);
-                            ctx.translate(-75, -100);
-                            pathfunc(ctx);
-                            drawshape(ctx);
-                            ctx.restore();
-                        }
-
-                        // Left and right for cards 4 and 5
-                        if (j > 3 && j !== 6) {
-                            ctx.save();
-                            ctx.translate(CARDW / 2, CARDH / 2);
-                            ctx.translate(-90, 0);
-                            ctx.scale(0.4, 0.4);
-                            ctx.translate(-75, -100);
-                            pathfunc(ctx);
-                            drawshape(ctx);
-                            ctx.restore();
-
-                            ctx.save();
-                            ctx.translate(CARDW / 2, CARDH / 2);
-                            ctx.translate(90, 0);
-                            ctx.scale(0.4, 0.4);
-                            ctx.rotate(Math.PI);
-                            ctx.translate(-75, -100);
-                            pathfunc(ctx);
-                            drawshape(ctx);
-                            ctx.restore();
-                        }
-
-                        if (j === 0) {
-                            ctx.clearRect(0, 0, CARDW, CARDH);
-                            if (lobby.showColorblindUI) {
-                                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-                                ctx.fillText(suitLetter, 19, 83);
-                                ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-                                ctx.strokeText(suitLetter, 19, 83);
-                            }
-                        }
-
-                        // Colour adjustment for the central icon on cards 1 and 5
-                        if (j === 0 || j === 5) {
-                            ctx.save();
-                            ctx.translate(CARDW / 2, CARDH / 2);
-                            ctx.scale(0.6, 0.6);
-                            ctx.translate(-75, -100);
-                            pathfunc(ctx);
-                            drawshape(ctx);
-                            ctx.restore();
-                        }
-                    }
-
-                    // Make the special corners on cards for the mixed variant
-                    const clueColors = suit.clueColors;
-                    if (clueColors.length === 2) {
-                        const [clueColor1, clueColor2] = suit.clueColors;
+                        ctx.save();
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.translate(0, -symbolYPos);
+                        ctx.scale(0.4, 0.4);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
+                        drawshape(ctx);
+                        ctx.restore();
 
                         ctx.save();
-
-                        ctx.lineWidth = 1;
-
-                        const triangleSize = 50;
-                        const borderSize = 8;
-
-                        // Draw the first half of the top-right triangle
-                        ctx.beginPath();
-                        ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top right-hand corner
-                        ctx.lineTo(CARDW - borderSize - triangleSize, borderSize); // Move left
-                        ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move down and right diagonally
-                        ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
-                        ctx.fillStyle = clueColor1.hexCode;
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.translate(0, symbolYPos);
+                        ctx.scale(0.4, 0.4);
+                        ctx.rotate(Math.PI);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
                         drawshape(ctx);
+                        ctx.restore();
+                    }
 
-                        // Draw the second half of the top-right triangle
-                        ctx.beginPath();
-                        ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top right-hand corner
-                        ctx.lineTo(CARDW - borderSize, borderSize + triangleSize); // Move down
-                        ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move up and left diagonally
-                        ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
-                        ctx.fillStyle = clueColor2.hexCode;
+                    // Left and right for cards 4 and 5
+                    if (j > 3 && j !== 6) {
+                        ctx.save();
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.translate(-90, 0);
+                        ctx.scale(0.4, 0.4);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
                         drawshape(ctx);
+                        ctx.restore();
 
-                        // Draw the first half of the bottom-left triangle
-                        ctx.beginPath();
-                        ctx.moveTo(borderSize, CARDH - borderSize); // Start at the bottom right-hand corner
-                        ctx.lineTo(borderSize, CARDH - borderSize - triangleSize); // Move up
-                        ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2)); // Move right and down diagonally
-                        ctx.moveTo(borderSize, CARDH - borderSize); // Move back to the beginning
-                        ctx.fillStyle = clueColor1.hexCode;
+                        ctx.save();
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.translate(90, 0);
+                        ctx.scale(0.4, 0.4);
+                        ctx.rotate(Math.PI);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
                         drawshape(ctx);
+                        ctx.restore();
+                    }
 
-                        // Draw the second half of the bottom-left triangle
-                        ctx.beginPath();
-                        ctx.moveTo(borderSize, CARDH - borderSize); // Start at the bottom right-hand corner
-                        ctx.lineTo(borderSize + triangleSize, CARDH - borderSize); // Move right
-                        ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2)); // Move left and up diagonally
-                        ctx.moveTo(borderSize, CARDH - borderSize); // Move back to the beginning
-                        ctx.fillStyle = clueColor2.hexCode;
+                    if (j === 0) {
+                        ctx.clearRect(0, 0, CARDW, CARDH);
+                        if (lobby.showColorblindUI) {
+                            ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                            ctx.fillText(suitLetter, 19, 83);
+                            ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+                            ctx.strokeText(suitLetter, 19, 83);
+                        }
+                    }
+
+                    // Colour adjustment for the central icon on cards 1 and 5
+                    if (j === 0 || j === 5) {
+                        ctx.save();
+                        ctx.translate(CARDW / 2, CARDH / 2);
+                        ctx.scale(0.6, 0.6);
+                        ctx.translate(-75, -100);
+                        pathfunc(ctx);
                         drawshape(ctx);
-
                         ctx.restore();
                     }
                 }
+
+                // Make the special corners on cards for the mixed variant
+                const clueColors = suit.clueColors;
+                if (clueColors.length === 2) {
+                    const [clueColor1, clueColor2] = suit.clueColors;
+
+                    ctx.save();
+
+                    ctx.lineWidth = 1;
+
+                    const triangleSize = 50;
+                    const borderSize = 8;
+
+                    // Draw the first half of the top-right triangle
+                    ctx.beginPath();
+                    ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top right-hand corner
+                    ctx.lineTo(CARDW - borderSize - triangleSize, borderSize); // Move left
+                    ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move down and right diagonally
+                    ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
+                    ctx.fillStyle = clueColor1.hexCode;
+                    drawshape(ctx);
+
+                    // Draw the second half of the top-right triangle
+                    ctx.beginPath();
+                    ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top right-hand corner
+                    ctx.lineTo(CARDW - borderSize, borderSize + triangleSize); // Move down
+                    ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move up and left diagonally
+                    ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
+                    ctx.fillStyle = clueColor2.hexCode;
+                    drawshape(ctx);
+
+                    // Draw the first half of the bottom-left triangle
+                    ctx.beginPath();
+                    ctx.moveTo(borderSize, CARDH - borderSize); // Start at the bottom right-hand corner
+                    ctx.lineTo(borderSize, CARDH - borderSize - triangleSize); // Move up
+                    ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2)); // Move right and down diagonally
+                    ctx.moveTo(borderSize, CARDH - borderSize); // Move back to the beginning
+                    ctx.fillStyle = clueColor1.hexCode;
+                    drawshape(ctx);
+
+                    // Draw the second half of the bottom-left triangle
+                    ctx.beginPath();
+                    ctx.moveTo(borderSize, CARDH - borderSize); // Start at the bottom right-hand corner
+                    ctx.lineTo(borderSize + triangleSize, CARDH - borderSize); // Move right
+                    ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2)); // Move left and up diagonally
+                    ctx.moveTo(borderSize, CARDH - borderSize); // Move back to the beginning
+                    ctx.fillStyle = clueColor2.hexCode;
+                    drawshape(ctx);
+
+                    ctx.restore();
+                }
+            }
         }
 
         cvs = document.createElement('canvas');
