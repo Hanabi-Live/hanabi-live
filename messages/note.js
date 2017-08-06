@@ -28,6 +28,14 @@ exports.step1 = (socket, data) => {
         return;
     }
 
+    // Validate that the game is started
+    if (!game.running) {
+        logger.warn(`messages.action was called for game #${data.gameID}, but it is not started yet.`);
+        data.reason = `Game #${data.gameID} is not started.`;
+        notify.playerError(socket, data);
+        return;
+    }
+
     // Get the index of this player
     data.index = -1;
     for (let i = 0; i < game.players.length; i++) {

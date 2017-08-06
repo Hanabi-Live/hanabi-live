@@ -60,6 +60,14 @@ exports.step1 = (socket, data) => {
         return;
     }
 
+    // Validate that the game is not started yet
+    if (game.running) {
+        logger.warn(`messages.join was called for game #${data.gameID}, but it was already started.`);
+        data.reason = `Game #${data.gameID} is already started.`;
+        notify.playerError(socket, data);
+        return;
+    }
+
     /*
         Join
     */
