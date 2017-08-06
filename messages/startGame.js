@@ -36,7 +36,7 @@ exports.step1 = (socket, data) => {
     }
 
     // Validate that the game is not started yet
-    if (game.started) {
+    if (game.running) {
         logger.warn(`messages.startGame was called for game #${data.gameID}, but it was already started.`);
         data.reason = `Game #${data.gameID} is already started.`;
         notify.playerError(socket, data);
