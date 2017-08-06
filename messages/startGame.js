@@ -35,6 +35,14 @@ exports.step1 = (socket, data) => {
         return;
     }
 
+    // Validate that the game is not started yet
+    if (game.started) {
+        logger.warn(`messages.startGame was called for game #${data.gameID}, but it was already started.`);
+        data.reason = `Game #${data.gameID} is already started.`;
+        notify.playerError(socket, data);
+        return;
+    }
+
     // Create the deck
     const suits = [0, 1, 2, 3, 4];
     if (game.variant > 0) {
