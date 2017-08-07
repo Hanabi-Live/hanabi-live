@@ -105,8 +105,7 @@ function HanabiUI(lobby, gameID) {
                 if (msg.type === 'message') {
                     self.setMessage(msg.resp);
                 } else if (msg.type === 'notify') {
-                    const performingReplay = true;
-                    self.handleNotify(msg.resp, performingReplay);
+                    self.handleNotify(msg.resp);
                 }
 
                 // Stop if you're at the current turn
@@ -129,7 +128,7 @@ function HanabiUI(lobby, gameID) {
                 if (msg.type === 'message') {
                     self.setMessage(msg.resp);
                 } else if (msg.type === 'notify') {
-                    self.handleNotify(msg.resp, false);
+                    self.handleNotify(msg.resp);
                     // Correctly record and handle whose turn it is
                     if (msg.resp.type === 'turn') {
                         whoseTurn = msg.resp.who;
@@ -4286,8 +4285,7 @@ function HanabiUI(lobby, gameID) {
             if (msg.type === 'message') {
                 this.setMessage(msg.resp);
             } else if (msg.type === 'notify') {
-                const performingReplay = true;
-                this.handleNotify(msg.resp, performingReplay);
+                this.handleNotify(msg.resp);
             }
 
             if (msg.type === 'notify' && msg.resp.type === 'turn') {
@@ -4402,7 +4400,7 @@ function HanabiUI(lobby, gameID) {
         localStorage.setItem(gameID, cookie);
     };
 
-    this.handleNotify = function handleNotify(note, performingReplay) {
+    this.handleNotify = function handleNotify(note) {
         const type = note.type;
         if (ui.activeHover) {
             ui.activeHover.dispatchEvent(new MouseEvent('mouseout'));
@@ -5142,7 +5140,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
         this.saveReplay(msg);
 
         if (!this.replay || msgData.type === 'reveal') {
-            this.handleNotify.call(this, msgData);
+            this.handleNotify(msgData);
         }
     } else if (msgType === 'action') {
         this.lastAction = msgData;
