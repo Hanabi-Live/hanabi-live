@@ -264,7 +264,6 @@
         this.cardFillSpec = cardFillSpec;
         this.shape = shape;
         this.clueColors = clueColors;
-        // For compatibility with the existing card naming scheme
     };
 
     // Returns the style (color, gradient, etc.) for a given card area
