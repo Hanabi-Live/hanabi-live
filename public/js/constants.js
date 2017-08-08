@@ -504,9 +504,11 @@
         COLOR: 1,
     };
 
-    const Variant = function Variant(suits, clueColors) {
+    const Variant = function Variant(suits, clueColors, showSuitNames) {
         this.suits = suits;
         this.clueColors = clueColors;
+        // We draw the text below the suits for confusing variants
+        this.showSuitNames = showSuitNames;
     };
 
     exports.VARIANT = {
@@ -568,6 +570,7 @@
                 exports.COLOR.RED,
                 exports.COLOR.BLACK,
             ],
+            true,
         ),
         MM: new Variant(
             [
@@ -579,6 +582,7 @@
                 exports.SUIT.MULTI,
             ],
             baseColors,
+            true,
         ),
         WHITEMULTI: new Variant(
             [
@@ -606,6 +610,7 @@
                 exports.COLOR.RED,
                 exports.COLOR.BLACK,
             ],
+            true,
         ),
     };
 
