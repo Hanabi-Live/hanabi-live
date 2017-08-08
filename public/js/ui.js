@@ -793,6 +793,21 @@ function HanabiUI(lobby, gameID) {
 
         this.add(this.noteGiven);
 
+        // Add a slight pulse to the note marker to demonstrate that it has new info
+        this.notePulse = new Kinetic.Tween({
+            node: this.noteGiven,
+            scaleX: 1.1,
+            scaleY: 1.1,
+            duration: 0.5,
+            easing: Kinetic.Easings.BounceEaseIn,
+            onFinish: () => {
+                this.notePulse.reset();
+                this.notePulse.play();
+            },
+        });
+
+        this.notePulse.anim.addLayer(cardLayer);
+
         // Create the note tooltip
         this.tooltip = new Kinetic.Label({
             x: -1000,
@@ -842,6 +857,9 @@ function HanabiUI(lobby, gameID) {
                 self.tooltip.setY(mousePos.y + 5);
 
                 self.tooltip.show();
+
+                self.notePulse.reset();
+
                 tipLayer.draw();
             }
             ui.activeHover = this;
@@ -909,6 +927,7 @@ function HanabiUI(lobby, gameID) {
 
             if (note.length > 0) {
                 self.noteGiven.show();
+                self.notePulse.play();
             } else {
                 self.noteGiven.hide();
                 self.tooltip.hide();
@@ -4753,11 +4772,13 @@ function HanabiUI(lobby, gameID) {
         card.tooltip.getText().setText(newNote);
         if (newNote.length > 0) {
             card.noteGiven.show();
+            card.notePulse.play();
         } else {
             card.noteGiven.hide();
             card.tooltip.hide();
             tipLayer.draw();
         }
+
         UILayer.draw();
         cardLayer.draw();
     };
@@ -4778,6 +4799,7 @@ function HanabiUI(lobby, gameID) {
             card.tooltip.getText().setText(newNote);
             if (newNote.length > 0) {
                 card.noteGiven.show();
+                card.notePulse.play();
             } else {
                 card.noteGiven.hide();
                 card.tooltip.hide();
