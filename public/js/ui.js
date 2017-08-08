@@ -769,7 +769,7 @@ function HanabiUI(lobby, gameID) {
         // Draw the circle that is the "clue indicator" on the card
         this.clueGiven = new Kinetic.Circle({
             x: 0.9 * config.width,
-            y: ((ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM || ui.variant === VARIANT.CRAZY) ? 0.2 : 0.1) * config.height,
+            y: (ui.variant.offsetCardIndicators ? 0.2 : 0.1) * config.height,
             radius: 0.05 * config.width,
             fill: 'white',
             stroke: 'black',
@@ -782,7 +782,7 @@ function HanabiUI(lobby, gameID) {
         // Define the "note indicator" square
         this.noteGiven = new Kinetic.Rect({
             x: 0.854 * config.width,
-            y: ((ui.variant === VARIANT.MIXED || ui.variant === VARIANT.MM || ui.variant === VARIANT.CRAZY) ? 0.26 : 0.165) * config.height,
+            y: (ui.variant.offsetCardIndicators ? 0.26 : 0.165) * config.height,
             width: 0.09 * config.width,
             height: 0.09 * config.width,
             fill: 'white',
