@@ -2170,24 +2170,30 @@ function HanabiUI(lobby, gameID) {
 
                 backpath(ctx, 4, xrad, yrad);
 
-                ctx.fillStyle = 'white';
-                ctx.fill();
+                // Gives cards a white background
+                if (j > 0) {
+                    ctx.fillStyle = 'white';
+                    ctx.fill();
+                }
 
                 ctx.save();
                 ctx.clip();
                 ctx.globalAlpha = 0.2;
                 ctx.strokeStyle = 'black';
-                for (let x = 0; x < CARDW; x += 4 + Math.random() * 4) {
-                    ctx.beginPath();
-                    ctx.moveTo(x, 0);
-                    ctx.lineTo(x, CARDH);
-                    ctx.stroke();
-                }
-                for (let y = 0; y < CARDH; y += 4 + Math.random() * 4) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(CARDW, y);
-                    ctx.stroke();
+                // Draws the texture lines on cards
+                if (j > 0) {
+                    for (let x = 0; x < CARDW; x += 4 + Math.random() * 4) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x, CARDH);
+                        ctx.stroke();
+                    }
+                    for (let y = 0; y < CARDH; y += 4 + Math.random() * 4) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(CARDW, y);
+                        ctx.stroke();
+                    }
                 }
                 ctx.restore();
 
@@ -2203,6 +2209,10 @@ function HanabiUI(lobby, gameID) {
                 ctx.fill();
                 ctx.globalAlpha = 0.7;
                 ctx.lineWidth = 8;
+                // The borders should be more opaque for the stack base.
+                if (j === 0) {
+                    ctx.globalAlpha = 1.0;
+                }
                 ctx.stroke();
                 ctx.restore();
 
@@ -2225,20 +2235,22 @@ function HanabiUI(lobby, gameID) {
                     textYPos = 83;
                     indexLabel = suitLetter + indexLabel;
                 }
+                // Draws numbers on top left and bottom right of the cards
+                if (j > 0)  {
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                    ctx.fillText(indexLabel, 19, textYPos);
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+                    ctx.strokeText(indexLabel, 19, textYPos);
+                    ctx.save();
 
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-                ctx.fillText(indexLabel, 19, textYPos);
-                ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-                ctx.strokeText(indexLabel, 19, textYPos);
-                ctx.save();
-
-                ctx.translate(CARDW, CARDH);
-                ctx.rotate(Math.PI);
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-                ctx.fillText(indexLabel, 19, textYPos);
-                ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-                ctx.strokeText(indexLabel, 19, textYPos);
-                ctx.restore();
+                    ctx.translate(CARDW, CARDH);
+                    ctx.rotate(Math.PI);
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                    ctx.fillText(indexLabel, 19, textYPos);
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+                    ctx.strokeText(indexLabel, 19, textYPos);
+                    ctx.restore();
+                }
 
                 ctx.fillStyle = suit.style(ctx, CARD_AREA.SYMBOL);
 
@@ -2256,7 +2268,7 @@ function HanabiUI(lobby, gameID) {
                         ctx.restore();
                     }
 
-                    // Top and bottom for cards 3, 4, 5
+                    // Top and bottom for cards 2, 3, 4, 5
                     if (j > 1 && j !== 6) {
                         let symbolYPos = 120;
                         if (lobby.showColorblindUI) {
@@ -2304,18 +2316,9 @@ function HanabiUI(lobby, gameID) {
                         ctx.restore();
                     }
 
-                    if (j === 0) {
-                        ctx.clearRect(0, 0, CARDW, CARDH);
-                        if (lobby.showColorblindUI) {
-                            ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-                            ctx.fillText(suitLetter, 19, 83);
-                            ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-                            ctx.strokeText(suitLetter, 19, 83);
-                        }
-                    }
-
-                    // Colour adjustment for the central icon on cards 1 and 5
+                    // Size, position, and alpha adjustment for the central icon on stack base and 5
                     if (j === 0 || j === 5) {
+                        ctx.globalAlpha = 1.0;
                         ctx.save();
                         ctx.translate(CARDW / 2, CARDH / 2);
                         ctx.scale(0.6, 0.6);
@@ -3046,24 +3049,6 @@ function HanabiUI(lobby, gameID) {
         {
             let i = 0;
             for (const suit of this.variant.suits) {
-                // In the play area, fill in the rectangles with the fill colors for that suit
-
-                // I guess we can't use a gradient here? So much for my design (Libster)
-                const ctx = null;
-                const fillColor = (suit === SUIT.MULTI ? '#111111' : suit.style(ctx, CARD_AREA.BACKGROUND));
-                pileback = new Kinetic.Rect({
-                    fill: fillColor,
-                    opacity: 0.4,
-                    x: (0.183 + (width + 0.015) * i) * winW,
-                    y: (playAreaY + offset) * winH,
-                    width: width * winW,
-                    height: height * winH,
-                    cornerRadius: radius * winW,
-                });
-
-                bgLayer.add(pileback);
-
-                // In the play area, draw the symbol corresponding to each suit inside the rectangle
                 pileback = new Kinetic.Image({
                     x: (0.183 + (width + 0.015) * i) * winW,
                     y: (playAreaY + offset) * winH,
@@ -3072,20 +3057,6 @@ function HanabiUI(lobby, gameID) {
                     image: cardImages[`card-${suit.name}-0`],
                 });
 
-                bgLayer.add(pileback);
-
-                // In the play area, draw borders around each stack rectangle
-                const strokeColor = fillColor;
-
-                pileback = new Kinetic.Rect({
-                    stroke: strokeColor,
-                    strokeWidth: 5,
-                    x: (0.183 + (width + 0.015) * i) * winW,
-                    y: (playAreaY + offset) * winH,
-                    width: width * winW,
-                    height: height * winH,
-                    cornerRadius: radius * winW,
-                });
                 bgLayer.add(pileback);
 
                 const thisSuitPlayStack = new CardStack({
