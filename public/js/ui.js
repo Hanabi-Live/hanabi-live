@@ -2255,7 +2255,7 @@ function HanabiUI(lobby, gameID) {
                     indexLabel = suitLetter + indexLabel;
                 }
                 // Draws numbers on top left and bottom right of the cards
-                if (j > 0)  {
+                if (j > 0) {
                     ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
                     ctx.fillText(indexLabel, 19, textYPos);
                     ctx.shadowColor = 'rgba(0, 0, 0, 0)';
@@ -2605,7 +2605,6 @@ function HanabiUI(lobby, gameID) {
         let width;
         let height;
         let offset;
-        let radius;
         let rect;
         let button;
 
@@ -3051,13 +3050,11 @@ function HanabiUI(lobby, gameID) {
             width = 0.06;
             height = 0.151;
             offset = 0.019;
-            radius = 0.004;
         } else { // 5 stacks
             y = 0.05;
             width = 0.075;
             height = 0.189;
             offset = 0;
-            radius = 0.006;
         }
 
         // TODO: move blocks like this into their own functions
