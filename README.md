@@ -41,6 +41,9 @@ List of Changes & Improvements over the Original Server
 * New variant: Mixed and Multi-color Suits
   * This has 5 new suits, with Rainbow as the 6th suit: Teal, Lime, Orange, Burgundy, and Indigo.
   * The standard clue types are available.
+* New variant: Crazy
+  * This has 3 mixed suits, a white suit, a rainbow suit, and a black suit.
+  * There are only 4 types of clues: Blue, Yellow, Red, and Black.
 * New game option: Timer
   * Similar to chess, each player has a bank of time that decreases only during their turn.
   * By default, each player starts with 5 minutes.
@@ -186,4 +189,3 @@ Credits
 
 * [Keldon Jones](http://keldon.net/) was the original creator of this amazing software. The client is around 6000 lines of code, so it must have taken a long time to make.
 * [Hyphen-ated](https://github.com/Hyphen-ated/) created the extremely useful Chrome extension called [Make Hanabi Great Again](https://github.com/Hyphen-ated/MakeHanabiGreatAgain), which extended the features of the original site. MHGA is seamlessly integrated into the emulator.
-
