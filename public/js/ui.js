@@ -302,19 +302,19 @@ function HanabiUI(lobby, gameID) {
         }
 
         const learnedCard = ui.learnedCards[card.order];
-        if (ui.replay && learnedCard && (learnedCard.revealed || showReplayPartialFaces)) {
+        if (learnedCard && (learnedCard.revealed || showReplayPartialFaces)) {
             let name = 'card-';
-            if (learnedCard.trueSuit === undefined) {
+            if (learnedCard.suit === undefined) {
                 // Gray suit
                 name += SUIT.GRAY.name;
             } else {
-                name += learnedCard.trueSuit.name;
+                name += learnedCard.suit.name;
             }
             name += '-';
-            if (learnedCard.trueRank === undefined) {
+            if (learnedCard.rank === undefined) {
                 name += 6;
             } else {
-                name += learnedCard.trueRank;
+                name += learnedCard.rank;
             }
             return name;
         }
@@ -771,7 +771,7 @@ function HanabiUI(lobby, gameID) {
             ],
         });
 
-        this.colorClueGroup.add(this.colorSquare);
+        // this.colorClueGroup.add(this.colorSquare);
 
         this.colorClueQuestionMark = new Kinetic.Text({
             width: 0.4 * config.width,
@@ -1041,7 +1041,6 @@ function HanabiUI(lobby, gameID) {
             // know the ACTUAL card
             if (
                 showReplayPartialFaces &&
-                ui.replay &&
                 !this.identityKnown &&
                 learned &&
                 !learned.revealed
@@ -1066,7 +1065,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     // TODO: refactor addNegativeClue and addClue into one function to avoid repeating code
-    HanabiCard.prototype.addNegativeClue = function addClue(clue) {
+    HanabiCard.prototype.addNegativeClue = function addNegativeClue(clue) {
         if (clue.type === CLUE_TYPE.COLOR) {
             const clueColor = clue.value;
             this.possibleSuits = this.possibleSuits.filter((suit) => {
@@ -1185,11 +1184,11 @@ function HanabiUI(lobby, gameID) {
             }
         } else {
             this.rankPips.hide();
-            this.numberClue.setText(clue.value.toString());
-            this.numberClue.show();
+            // this.numberClue.setText(clue.value.toString());
+            // this.numberClue.show();
             const clueRank = clue.value;
             this.trueRank = clueRank;
-            ui.learnedCards[this.order].trueRank = clueRank;
+            ui.learnedCards[this.order].rank = clueRank;
         }
     };
 
