@@ -43,6 +43,7 @@ List of Changes & Improvements over the Original Server
   * The standard clue types are available.
 * New variant: Crazy
   * This has 3 mixed suits, a white suit, a rainbow suit, and a black suit.
+  * The black suit is one of each.
   * There are only 4 types of clues: Blue, Yellow, Red, and Black.
 * New game option: Timer
   * Similar to chess, each player has a bank of time that decreases only during their turn.
