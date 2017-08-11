@@ -12,7 +12,7 @@ function HanabiUI(lobby, gameID) {
     const CLUE_TYPE = constants.CLUE_TYPE;
     const COLOR = constants.COLOR;
     const VARIANT = constants.VARIANT;
-    const SHAPE = constants.SHAPE;
+    // const SHAPE = constants.SHAPE;
     const SUIT = constants.SUIT;
     const CARD_AREA = constants.CARD_AREA;
     const CARDH = constants.CARDH;
@@ -297,24 +297,24 @@ function HanabiUI(lobby, gameID) {
     }
 
     function imageName(card) {
-        if (!card.unknown) {
-            return `card-${card.suit.name}-${card.rank}`;
+        if (card.identityKnown()) {
+            return `card-${card.trueSuit.name}-${card.trueRank}`;
         }
 
-        const learned = ui.learnedCards[card.order];
-        if (ui.replay && learned && (learned.revealed || showReplayPartialFaces)) {
+        const learnedCard = ui.learnedCards[card.order];
+        if (ui.replay && learnedCard && (learnedCard.revealed || showReplayPartialFaces)) {
             let name = 'card-';
-            if (learned.suit === undefined) {
+            if (learnedCard.trueSuit === undefined) {
                 // Gray suit
                 name += SUIT.GRAY.name;
             } else {
-                name += learned.suit.name;
+                name += learnedCard.trueSuit.name;
             }
             name += '-';
-            if (learned.rank === undefined) {
+            if (learnedCard.trueRank === undefined) {
                 name += 6;
             } else {
-                name += learned.rank;
+                name += learnedCard.trueRank;
             }
             return name;
         }
@@ -347,6 +347,7 @@ function HanabiUI(lobby, gameID) {
             scaleCardImages[name] = [];
         }
 
+        // Scaling the card down in steps of half in each dimension presumably improves the scaling?
         while (dw < sw / 2) {
             let scaleCanvas = scaleCardImages[name][steps];
             sw = Math.floor(sw / 2);
@@ -613,15 +614,88 @@ function HanabiUI(lobby, gameID) {
 
         this.add(this.bare);
 
-        this.unknown = (config.suit === undefined);
-        this.suit = config.suit || 0;
-        this.rank = config.rank || 0;
+        this.trueSuit = config.suit || undefined;
+        this.trueRank = config.rank || undefined;
+        this.suitKnown = function suitKnown() {
+            return this.trueSuit !== undefined;
+        };
+        this.rankKnown = function rankKnown() {
+            return this.trueRank !== undefined;
+        };
+        this.identityKnown = function identityKnown() {
+            return this.suitKnown() && this.rankKnown();
+        };
         this.order = config.order;
+        // possible suits and ranks (based on clues given) are tracked separately from knowledge of
+        // the true suit and rank
+        this.possibleSuits = config.suits;
+        this.possibleRanks = [1, 2, 3, 4, 5];
+        this.rankPips = new Kinetic.Group({
+            x: Math.floor(CARDW * 0.8),
+            y: 0,
+            width: Math.floor(CARDW * 0.2),
+            height: CARDH,
+        });
+        this.suitPips = new Kinetic.Group({
+            x: 0, // Math.floor(CARDW * 0.1),
+            y: 0, // Math.floor(CARDH * 0.2),
+            width: Math.floor(CARDW * 0.6),
+            height: Math.floor(CARDH * 0.6),
+        });
+        this.add(this.rankPips);
+        this.add(this.suitPips);
+        if (!this.rankKnown()) {
+            for (let i = 0; i < 5; i++) {
+                const rankPip = new Kinetic.Rect({
+                    x: 0,
+                    y: Math.floor(CARDH * 0.05 + i * CARDH * 0.18),
+                    width: Math.floor(CARDW * 0.15),
+                    height: Math.floor(CARDH * 0.15),
+                    fill: 'black',
+                    stroke: 'black',
+                    name: (i + 1).toString(),
+                });
+                this.rankPips.add(rankPip);
+            }
+        }
+        if (!this.suitKnown()) {
+            const nSuits = this.possibleSuits.length;
+            let i = 0;
+            for (const suit of this.possibleSuits) {
+                // const suitPip = new Kinetic.Image({
+                //     x: 0,
+                //     y: Math.floor(CARDH * 0.05 + i * CARDH * 0.18),
+                //     width: Math.floor(CARDW * 0.15),
+                //     height: Math.floor(CARDH * 0.15),
+                //     rotation: -i * Math.PI * 2 / nSuits,
+                //     offset: [-75, -100],
+                //     fill: suit.color.hexCode,
+                //     stroke: 'black',
+                //     name: (i + 1).toString(),
+                // });
+                // suitPip.setDrawFunc(
+                const suitPip = new Kinetic.Rect({
+                    x: Math.floor(CARDW * 0.4),
+                    y: Math.floor(CARDH * 0.5),
+                    width: Math.floor(CARDW * 0.15),
+                    height: Math.floor(CARDW * 0.15),
+                    // rotation: -i * Math.PI * 2 / nSuits,
+                    rotation: -i * 360 / nSuits,
+                    offsetY: Math.floor(CARDW * 0.3),
+                    offsetX: Math.floor(CARDW * 0.075),
+                    fill: (suit === SUIT.MULTI ? 'black' : suit.fillColors.hexCode),
+                    stroke: 'black',
+                    name: suit.name,
+                });
+                this.suitPips.add(suitPip);
+                i += 1;
+            }
+        }
 
-        if (!this.unknown) {
+        if (this.identityKnown()) {
             ui.learnedCards[this.order] = {
-                suit: this.suit,
-                rank: this.rank,
+                suit: this.trueSuit,
+                rank: this.trueRank,
             };
         }
 
@@ -637,7 +711,7 @@ function HanabiUI(lobby, gameID) {
         const replayPartialPresentKnowledge = (
             showReplayPartialFaces &&
             ui.replay &&
-            this.unknown &&
+            !this.identityKnown &&
             ui.learnedCards[this.order] !== undefined &&
             !ui.learnedCards[this.order].revealed
         );
@@ -968,7 +1042,7 @@ function HanabiUI(lobby, gameID) {
             if (
                 showReplayPartialFaces &&
                 ui.replay &&
-                this.unknown &&
+                !this.identityKnown &&
                 learned &&
                 !learned.revealed
             ) {
@@ -991,6 +1065,32 @@ function HanabiUI(lobby, gameID) {
         this.getLayer().batchDraw();
     };
 
+    // TODO: refactor addNegativeClue and addClue into one function to avoid repeating code
+    HanabiCard.prototype.addNegativeClue = function addClue(clue) {
+        if (clue.type === CLUE_TYPE.COLOR) {
+            const clueColor = clue.value;
+            this.possibleSuits = this.possibleSuits.filter((suit) => {
+                const remove = suit.clueColors.includes(clueColor);
+                if (remove) this.suitPips.find(`.${suit.name}`).hide();
+                return !remove;
+            });
+            if (this.possibleSuits.length === 1) {
+                this.trueSuit = this.possibleSuits[0];
+                this.suitPips.hide();
+            }
+        } else {
+            const clueRank = clue.value;
+            this.rankPips.find(`.${clueRank}`).hide();
+            this.possibleRanks = this.possibleRanks.filter(
+                rank => rank !== clueRank,
+            );
+            if (this.possibleRanks.length === 1) {
+                this.trueRank = this.possibleRanks[0];
+                this.rankPips.hide();
+            }
+        }
+    };
+
     HanabiCard.prototype.addClue = function addClue(clue) {
         if (!ui.learnedCards[this.order]) {
             ui.learnedCards[this.order] = {};
@@ -998,10 +1098,20 @@ function HanabiUI(lobby, gameID) {
 
         if (clue.type === CLUE_TYPE.COLOR) {
             // Draw the color squares
-            const grad = this.colorSquare.getFillLinearGradientColorStops();
             const clueColor = clue.value;
-            const clueColorCode = clueColor.hexCode;
+            this.possibleSuits = this.possibleSuits.filter((suit) => {
+                const remove = !suit.clueColors.includes(clueColor);
+                if (remove) this.suitPips.find(`.${suit.name}`).hide();
+                return !remove;
+            });
+            if (this.possibleSuits.length === 1) {
+                this.trueSuit = this.possibleSuits[0];
+                this.suitPips.hide();
+            }
+            // TODO: tear this out and replace with clue pips
             // No colors yet
+            const grad = this.colorSquare.getFillLinearGradientColorStops();
+            const clueColorCode = clueColor.hexCode;
             if (grad.length === 2) {
                 this.colorSquare.setFillLinearGradientColorStops([
                     0,
@@ -1074,9 +1184,12 @@ function HanabiUI(lobby, gameID) {
                 ui.learnedCards[this.order].suit = SUIT.MULTI;
             }
         } else {
+            this.rankPips.hide();
             this.numberClue.setText(clue.value.toString());
             this.numberClue.show();
-            ui.learnedCards[this.order].rank = clue.value;
+            const clueRank = clue.value;
+            this.trueRank = clueRank;
+            ui.learnedCards[this.order].trueRank = clueRank;
         }
     };
 
@@ -2144,12 +2257,12 @@ function HanabiUI(lobby, gameID) {
 
             let touched = false;
             if (clue.type === CLUE_TYPE.RANK) {
-                if (clue.value === card.rank) {
+                if (clue.value === card.trueRank) {
                     touched = true;
                 }
             } else if (clue.type === CLUE_TYPE.COLOR) {
                 const clueColor = clue.value;
-                if (card.suit === SUIT.MULTI || card.suit.clueColors.includes(clueColor)) {
+                if (card.trueSuit === SUIT.MULTI || card.trueSuit.clueColors.includes(clueColor)) {
                     touched = true;
                 }
             }
@@ -2454,22 +2567,22 @@ function HanabiUI(lobby, gameID) {
         ctx.translate(CARDW / 2, CARDH / 2);
 
         // Draw the shapes on the gray cardback
-        {
-            let i = 0;
-            for (const shape of [SHAPE.DIAMOND, SHAPE.CLUB, SHAPE.STAR, SHAPE.HEART, SHAPE.CRESCENT]) {
-                ctx.save();
-                ctx.translate(0, -90);
-                ctx.scale(0.4, 0.4);
-                ctx.rotate(-i * Math.PI * 2 / 5);
-                ctx.translate(-75, -100);
-                PATHFUNC.get(shape)(ctx);
-                drawshape(ctx);
-                ctx.restore();
+        // {
+        //     let i = 0;
+        //     for (const shape of [SHAPE.DIAMOND, SHAPE.CLUB, SHAPE.STAR, SHAPE.HEART, SHAPE.CRESCENT]) {
+        //         ctx.save();
+        //         ctx.translate(0, -90);
+        //         ctx.scale(0.4, 0.4);
+        //         ctx.rotate(-i * Math.PI * 2 / 5);
+        //         ctx.translate(-75, -100);
+        //         PATHFUNC.get(shape)(ctx);
+        //         drawshape(ctx);
+        //         ctx.restore();
 
-                ctx.rotate(Math.PI * 2 / 5);
-                i += 1;
-            }
-        }
+        //         ctx.rotate(Math.PI * 2 / 5);
+        //         i += 1;
+        //     }
+        // }
     };
 
     const sizeStage = (stage) => {
@@ -4398,6 +4511,7 @@ function HanabiUI(lobby, gameID) {
                 suit,
                 rank: note.rank,
                 order: note.order,
+                suits: this.variant.suits,
             });
 
             const child = new LayoutChild();
@@ -4424,9 +4538,8 @@ function HanabiUI(lobby, gameID) {
 
             const child = ui.deck[note.which.order].parent;
 
-            ui.deck[note.which.order].suit = suit;
-            ui.deck[note.which.order].rank = note.which.rank;
-            ui.deck[note.which.order].unknown = false;
+            ui.deck[note.which.order].trueSuit = suit;
+            ui.deck[note.which.order].trueRank = note.which.rank;
             ui.learnedCards[note.which.order] = {
                 suit,
                 rank: note.which.rank,
@@ -4450,9 +4563,8 @@ function HanabiUI(lobby, gameID) {
 
             const child = ui.deck[note.which.order].parent;
 
-            ui.deck[note.which.order].suit = suit;
-            ui.deck[note.which.order].rank = note.which.rank;
-            ui.deck[note.which.order].unknown = false;
+            ui.deck[note.which.order].trueSuit = suit;
+            ui.deck[note.which.order].trueRank = note.which.rank;
             ui.learnedCards[note.which.order] = {
                 suit,
                 rank: note.which.rank,
@@ -4482,7 +4594,7 @@ function HanabiUI(lobby, gameID) {
                     break;
                 }
 
-                if (note.which.rank < child.parent.children[n - 1].children[0].rank) {
+                if (note.which.rank < child.parent.children[n - 1].children[0].trueRank) {
                     child.moveDown();
                 } else {
                     finished = true;
@@ -4493,9 +4605,8 @@ function HanabiUI(lobby, gameID) {
         } else if (type === 'reveal') {
             const suit = msgSuitToSuit(note.which.suit, ui.variant);
 
-            ui.deck[note.which.order].suit = suit;
-            ui.deck[note.which.order].rank = note.which.rank;
-            ui.deck[note.which.order].unknown = false;
+            ui.deck[note.which.order].trueSuit = suit;
+            ui.deck[note.which.order].trueRank = note.which.rank;
             ui.learnedCards[note.which.order] = {
                 suit,
                 rank: note.which.rank,
@@ -4526,10 +4637,12 @@ function HanabiUI(lobby, gameID) {
             for (let i = 0; i < playerHands[note.target].children.length; i++) {
                 const child = playerHands[note.target].children[i];
 
-                const order = child.children[0].order;
+                const card = child.children[0];
+                const order = card.order;
 
                 if (note.list.indexOf(order) < 0) {
                     neglist.push(order);
+                    card.addNegativeClue(clue);
                 }
             }
 
