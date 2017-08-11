@@ -927,7 +927,9 @@ function HanabiUI(lobby, gameID) {
 
             if (note.length > 0) {
                 self.noteGiven.show();
-                self.notePulse.play();
+                if (self.spectating) {
+                    self.notePulse.play();
+                }
             } else {
                 self.noteGiven.hide();
                 self.tooltip.hide();
@@ -4769,7 +4771,9 @@ function HanabiUI(lobby, gameID) {
         card.tooltip.getText().setText(newNote);
         if (newNote.length > 0) {
             card.noteGiven.show();
-            card.notePulse.play();
+            if (ui.spectating) {
+                card.notePulse.play();
+            }
         } else {
             card.noteGiven.hide();
             card.tooltip.hide();
@@ -4796,7 +4800,9 @@ function HanabiUI(lobby, gameID) {
             card.tooltip.getText().setText(newNote);
             if (newNote.length > 0) {
                 card.noteGiven.show();
-                card.notePulse.play();
+                if (ui.spectating) {
+                    card.notePulse.play();
+                }
             } else {
                 card.noteGiven.hide();
                 card.tooltip.hide();
