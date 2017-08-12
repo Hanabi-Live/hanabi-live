@@ -623,8 +623,8 @@ function HanabiUI(lobby, gameID) {
             height: Math.floor(CARDH * 0.15),
         });
         this.suitPips = new Kinetic.Group({
-            x: 0, // Math.floor(CARDW * 0.1),
-            y: 0, // Math.floor(CARDH * 0.2),
+            x: 0,
+            y: 0,
             width: Math.floor(CARDW),
             height: Math.floor(CARDH),
         });
@@ -648,26 +648,45 @@ function HanabiUI(lobby, gameID) {
             const nSuits = this.possibleSuits.length;
             let i = 0;
             for (const suit of this.possibleSuits) {
-                const suitPip = new Kinetic.Rect({
+                const suitPip = new Kinetic.Shape({
                     x: Math.floor(CARDW * 0.5),
                     y: Math.floor(CARDH * 0.5),
-                    width: Math.floor(CARDW * 0.15),
-                    height: Math.floor(CARDW * 0.15),
-                    // rotation: -i * Math.PI * 2 / nSuits,
-                    rotation: -i * 360 / nSuits,
-                    offsetY: Math.floor(CARDW * 0.3),
-                    offsetX: Math.floor(CARDW * 0.075),
+                    // Scale numbers are magic
+                    scale: {
+                        x: 0.4,
+                        y: 0.4,
+                    },
+                    // Transform polar to cartesian coordinates
+                    // The magic number added to the offset is needed to center things properly;
+                    // I don't know why it's needed... perhaps something to do with the pathfuncs
+                    offset: {
+                        x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25),
+                        y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3),
+                    },
                     fill: (suit === SUIT.MULTI ? undefined : suit.fillColors.hexCode),
                     stroke: 'black',
                     name: suit.name,
+                    drawFunc: (ctx) => {
+                        PATHFUNC.get(suit.shape)(ctx);
+                        ctx.closePath();
+                        ctx.fillStrokeShape(suitPip);
+                    },
                 });
+                // Gradient numbers are magic
                 if (suit === SUIT.MULTI) {
-                    suitPip.fillLinearGradientColorStops([0, 'blue', 0.25, 'green', 0.5, 'yellow', 0.75, 'red', 1, 'purple']);
-                    suitPip.fillLinearGradientStartPointX(0);
-                    suitPip.fillLinearGradientStartPointY(0);
-                    suitPip.fillLinearGradientEndPointX(0);
-                    suitPip.fillLinearGradientEndPointY(Math.floor(CARDW * 0.15));
+                    suitPip.fillRadialGradientColorStops([0.3, 'blue', 0.425, 'green', 0.65, 'yellow', 0.875, 'red', 1, 'purple']);
+                    suitPip.fillRadialGradientStartPoint({
+                        x: 75,
+                        y: 140,
+                    });
+                    suitPip.fillRadialGradientEndPoint({
+                        x: 75,
+                        y: 140,
+                    });
+                    suitPip.fillRadialGradientStartRadius(0);
+                    suitPip.fillRadialGradientEndRadius(Math.floor(CARDW * 0.25));
                 }
+                suitPip.rotation(0);
                 this.suitPips.add(suitPip);
                 i += 1;
             }
@@ -2350,24 +2369,6 @@ function HanabiUI(lobby, gameID) {
         };
         imageObj.src = 'https://s-media-cache-ak0.pinimg.com/736x/46/12/cd/4612cd78132d4ab5f4d17b0f4e91d63d--fireworks-pics-fireworks-cake.jpg';
         ctx.save();
-
-        // Draw the shapes on the gray cardback
-        // {
-        //     let i = 0;
-        //     for (const shape of [SHAPE.DIAMOND, SHAPE.CLUB, SHAPE.STAR, SHAPE.HEART, SHAPE.CRESCENT]) {
-        //         ctx.save();
-        //         ctx.translate(0, -90);
-        //         ctx.scale(0.4, 0.4);
-        //         ctx.rotate(-i * Math.PI * 2 / 5);
-        //         ctx.translate(-75, -100);
-        //         PATHFUNC.get(shape)(ctx);
-        //         drawshape(ctx);
-        //         ctx.restore();
-
-        //         ctx.rotate(Math.PI * 2 / 5);
-        //         i += 1;
-        //     }
-        // }
     };
 
     const sizeStage = (stage) => {
