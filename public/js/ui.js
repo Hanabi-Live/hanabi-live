@@ -4322,6 +4322,9 @@ function HanabiUI(lobby, gameID) {
 
             const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
+            const card = child.children[0];
+            card.suitPips.hide();
+            card.rankPips.hide();
             child.remove();
             child.setAbsolutePosition(pos);
 
@@ -4347,6 +4350,9 @@ function HanabiUI(lobby, gameID) {
 
             const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
+            const card = child.children[0];
+            card.suitPips.hide();
+            card.rankPips.hide();
             child.remove();
             child.setAbsolutePosition(pos);
 
