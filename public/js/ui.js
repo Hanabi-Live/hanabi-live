@@ -620,26 +620,26 @@ function HanabiUI(lobby, gameID) {
         this.possibleSuits = config.suits;
         this.possibleRanks = [1, 2, 3, 4, 5];
         this.rankPips = new Kinetic.Group({
-            x: Math.floor(CARDW * 0.8),
-            y: 0,
-            width: Math.floor(CARDW * 0.2),
-            height: CARDH,
+            x: 0,
+            y: Math.floor(CARDH * 0.85),
+            width: CARDW,
+            height: Math.floor(CARDH * 0.15),
         });
         this.suitPips = new Kinetic.Group({
             x: 0, // Math.floor(CARDW * 0.1),
             y: 0, // Math.floor(CARDH * 0.2),
-            width: Math.floor(CARDW * 0.6),
-            height: Math.floor(CARDH * 0.6),
+            width: Math.floor(CARDW),
+            height: Math.floor(CARDH),
         });
         this.add(this.rankPips);
         this.add(this.suitPips);
         if (!this.rankKnown()) {
             for (let i = 0; i < 5; i++) {
                 const rankPip = new Kinetic.Rect({
-                    x: 0,
-                    y: Math.floor(CARDH * 0.05 + i * CARDH * 0.18),
+                    x: Math.floor(CARDW * 0.05 + i * CARDW * 0.19),
+                    y: 0,
                     width: Math.floor(CARDW * 0.15),
-                    height: Math.floor(CARDH * 0.15),
+                    height: Math.floor(CARDH * 0.10),
                     fill: 'black',
                     stroke: 'black',
                     name: (i + 1).toString(),
@@ -652,7 +652,7 @@ function HanabiUI(lobby, gameID) {
             let i = 0;
             for (const suit of this.possibleSuits) {
                 const suitPip = new Kinetic.Rect({
-                    x: Math.floor(CARDW * 0.4),
+                    x: Math.floor(CARDW * 0.5),
                     y: Math.floor(CARDH * 0.5),
                     width: Math.floor(CARDW * 0.15),
                     height: Math.floor(CARDW * 0.15),
