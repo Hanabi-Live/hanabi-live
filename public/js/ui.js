@@ -1251,6 +1251,7 @@ function HanabiUI(lobby, gameID) {
             fontFamily: 'Verdana',
             fontStyle: 'bold',
             text: '0',
+            listening: false,
         });
 
         this.add(this.count);
