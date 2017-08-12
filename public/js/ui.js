@@ -305,9 +305,6 @@ function HanabiUI(lobby, gameID) {
             if (card.suitKnown()) suitName = card.trueSuit.name;
             if (card.rankKnown()) rank = card.trueRank;
         }
-        if (suitName === SUIT.GRAY.name && rank === 6) {
-            return 'card-back';
-        }
         return `${prefix}-${suitName}-${rank}`;
     }
 
@@ -2295,7 +2292,7 @@ function HanabiUI(lobby, gameID) {
 
         ctx = cvs.getContext('2d');
 
-        cardImages['card-back'] = cvs;
+        cardImages['card-Gray-6'] = cvs;
 
         backpath(ctx, 4, xrad, yrad);
 
@@ -2337,6 +2334,22 @@ function HanabiUI(lobby, gameID) {
         ctx.lineJoin = 'round';
 
         ctx.translate(CARDW / 2, CARDH / 2);
+
+        cvs = document.createElement('canvas');
+        cvs.width = CARDW;
+        cvs.height = CARDH;
+
+        // Deck back image
+        ctx = cvs.getContext('2d');
+        cardImages['deck-back'] = cvs;
+        ctx = cvs.getContext('2d');
+        const imageObj = new Image();
+
+        imageObj.onload = function loadImg() {
+            ctx.drawImage(imageObj, -30, -10);
+        };
+        imageObj.src = 'https://s-media-cache-ak0.pinimg.com/736x/46/12/cd/4612cd78132d4ab5f4d17b0f4e91d63d--fireworks-pics-fireworks-cake.jpg';
+        ctx.save();
 
         // Draw the shapes on the gray cardback
         // {
@@ -3019,7 +3032,7 @@ function HanabiUI(lobby, gameID) {
             y: 0.8 * winH,
             width: 0.075 * winW,
             height: 0.189 * winH,
-            cardback: 'card-back',
+            cardback: 'deck-back',
         });
 
         drawDeck.cardback.on('dragend.play', function drawDeckDragendPlay() {
