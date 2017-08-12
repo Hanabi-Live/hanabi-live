@@ -2367,7 +2367,7 @@ function HanabiUI(lobby, gameID) {
         imageObj.onload = function loadImg() {
             ctx.drawImage(imageObj, -30, -10);
         };
-        imageObj.src = 'https://s-media-cache-ak0.pinimg.com/736x/46/12/cd/4612cd78132d4ab5f4d17b0f4e91d63d--fireworks-pics-fireworks-cake.jpg';
+        imageObj.src = 'public/img/fireworks.jpg';
         ctx.save();
     };
 
