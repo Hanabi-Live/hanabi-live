@@ -708,6 +708,9 @@ function HanabiUI(lobby, gameID) {
                     });
                     suitPip.fillRadialGradientStartRadius(0);
                     suitPip.fillRadialGradientEndRadius(Math.floor(CARDW * 0.25));
+                // Makes the yellow pip more distinctive against revealed (faded) card faces
+                } else if (suit === SUIT.YELLOW) {
+                    suitPip.fill('#ffff00');
                 }
                 suitPip.rotation(0);
                 this.suitPips.add(suitPip);
