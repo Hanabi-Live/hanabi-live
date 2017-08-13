@@ -601,16 +601,6 @@ function HanabiUI(lobby, gameID) {
         this.add(this.bare);
 
         // unknownRect is a transparent white overlay box we can draw over the card.
-        // The point is that when they're in a replay, and they know things in the PRESENT about the card they're viewing
-        // in the PAST, we show them a card face. If that card face is just implied by clues, it gets a white box. If it's known
-        // by seeing the true card face in the present, we show no white box. This way people won't be mislead as much
-        // if the card is multi.
-        const replayPartialPresentKnowledge = (
-            ui.replay &&
-            ui.learnedCards[this.order] &&
-            ui.learnedCards[this.order].suit
-        );
-
         this.unknownRect = new Kinetic.Rect({
             x: 0,
             y: 0,
@@ -619,7 +609,7 @@ function HanabiUI(lobby, gameID) {
             cornerRadius: 20,
             fill: '#cccccc',
             opacity: 0.5,
-            visible: replayPartialPresentKnowledge,
+            visible: false,
         });
         this.add(this.unknownRect);
 
