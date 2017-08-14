@@ -667,7 +667,7 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .addClass('table-attr history-players'));
 
         const score = this.historyList[ids[i]].score;
-        const maxScore = (this.historyList[ids[i]].variant ? 30 : 25);
+        const maxScore = constants.VARIANT_INTEGER_MAPPING[this.historyList[ids[i]].variant].maxScore;
         attrs
             .append($('<li>')
                 .text(`${score}/${maxScore} points`)
@@ -730,12 +730,10 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
 
     div.html('');
 
-    let variant = 0;
-    for (let i = 0; i < this.historyDetailList.length; i++) {
-        if (this.historyList[this.historyDetailList[i].id]) {
-            variant = this.historyList[this.historyDetailList[i].id].variant;
-        }
-    }
+    const variant = this.historyDetailList
+        .filter(g => g.id in this.historyList)
+        .map(g => this.historyList[g.id].variant)
+        .map(v => constants.VARIANT_INTEGER_MAPPING[v])[0];
 
     for (let i = 0; i < this.historyDetailList.length; i++) {
         const detail = $('<li>').addClass('table-item');
@@ -750,7 +748,7 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
                 .text(`#${this.historyDetailList[i].id}`)
                 .addClass('table-attr history-id'))
             .append($('<li>')
-                .text(`${this.historyDetailList[i].score}/${(variant ? 30 : 25)} points`)
+                .text(`${this.historyDetailList[i].score}/${variant.maxScore} points`)
                 .addClass('table-attr history-score'))
             .append($('<li>')
                 .text(this.historyDetailList[i].ts)

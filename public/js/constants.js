@@ -509,6 +509,7 @@
         // We draw the text below the suits for confusing variants
         this.showSuitNames = showSuitNames;
         this.offsetCardIndicators = suits.some(s => s !== exports.SUIT.MULTI && s.clueColors.length > 1);
+        this.maxScore = suits.length * 5;
     };
 
     exports.VARIANT = {
