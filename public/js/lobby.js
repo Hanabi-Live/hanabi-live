@@ -683,6 +683,8 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
     ids.reverse();
 
     for (let i = 0; i < ids.length; i++) {
+        const gameData = this.historyList[ids[i]];
+        const maxScore = constants.VARIANT_INTEGER_MAPPING[gameData.variant].maxScore;
         const history = $('<li>').addClass('table-item');
 
         const attrs = $('<ul>')
@@ -690,20 +692,16 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .text(`#${ids[i]}`)
                 .addClass('table-attr history-id'))
             .append($('<li>')
-                .text(`${this.historyList[ids[i]].numPlayers} players`)
-                .addClass('table-attr history-players'));
-
-        const score = this.historyList[ids[i]].score;
-        const maxScore = constants.VARIANT_INTEGER_MAPPING[this.historyList[ids[i]].variant].maxScore;
-        attrs
+                .text(`${gameData.numPlayers} players`)
+                .addClass('table-attr history-players'))
             .append($('<li>')
-                .text(`${score}/${maxScore} points`)
+                .text(`${gameData.score}/${maxScore} points`)
                 .addClass('table-attr history-score'))
             .append($('<li>')
-                .text(`Variant: ${variantNames[this.historyList[ids[i]].variant]}`)
+                .text(`Variant: ${variantNames[gameData.variant]}`)
                 .addClass('table-attr history-variant'))
             .append($('<li>')
-                .text(`Other scores: ${this.historyList[ids[i]].numSimilar - 1}`)
+                .text(`Other scores: ${gameData.numSimilar - 1}`)
                 .addClass('table-attr history-others'));
 
         const button = $('<button>').text('Compare Scores').attr('type', 'button');
