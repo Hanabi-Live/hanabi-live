@@ -642,6 +642,33 @@ HanabiLobby.prototype.addHistory = function addHistory(data) {
     };
 };
 
+HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msgType, returnsToLobby) {
+    const self = this;
+    const button = $('<button>').text(text).attr('type', 'button');
+    button.attr('id', `replay-${id}`);
+
+    button.on('click', function startReplayClick(event) {
+        event.preventDefault();
+
+        self.gameID = id;
+
+        self.sendMsg({
+            type: msgType,
+            resp: {
+                gameID: self.gameID,
+            },
+        });
+
+        if (returnsToLobby) {
+            $('#game-history-details').hide();
+            $('#game-history').hide();
+            $('#table-area').show();
+        }
+    });
+
+    return button;
+};
+
 HanabiLobby.prototype.drawHistory = function drawHistory() {
     const self = this;
 
@@ -763,44 +790,11 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
                 .text(this.historyDetailList[i].ts)
                 .addClass('table-attr history-ts'));
 
-        const button = $('<button>').text('Watch Replay').attr('type', 'button');
-        button.attr('id', `replay-${this.historyDetailList[i].id}`);
-
-        button.on('click', function startReplayClick(event) {
-            event.preventDefault();
-
-            self.gameID = parseInt(this.id.slice(7), 10);
-
-            self.sendMsg({
-                type: 'startReplay',
-                resp: {
-                    gameID: self.gameID,
-                },
-            });
-        });
+        const button = this.makeReplayButton(this.historyDetailList[i].id, 'Watch Replay', 'startReplay', false);
 
         attrs.append($('<li>').append(button).addClass('table-attr'));
 
-        const button2 = $('<button>').text('Share Replay').attr('type', 'button');
-        button2.attr('id', `replay-${this.historyDetailList[i].id}`);
-
-        button2.on('click', function createSharedReplayClick(event) {
-            event.preventDefault();
-
-            self.gameID = parseInt(this.id.slice(7), 10);
-
-            self.sendMsg({
-                type: 'createSharedReplay',
-                resp: {
-                    gameID: self.gameID,
-                },
-            });
-
-            // Click the "Return to Tables" button
-            $('#game-history-details').hide();
-            $('#game-history').hide();
-            $('#table-area').show();
-        });
+        const button2 = this.makeReplayButton(this.historyDetailList[i].id, 'Share Replay', 'createSharedReplay', true);
 
         attrs.append($('<li>').append(button2).addClass('table-attr'));
 
