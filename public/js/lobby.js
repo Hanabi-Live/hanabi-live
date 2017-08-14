@@ -645,6 +645,8 @@ HanabiLobby.prototype.addHistory = function addHistory(data) {
 HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msgType, returnsToLobby) {
     const self = this;
     const button = $('<button>').text(text).attr('type', 'button');
+    button.addClass('history-table');
+    button.addClass('enter-history-game');
     button.attr('id', `replay-${id}`);
 
     button.on('click', function startReplayClick(event) {
@@ -705,6 +707,7 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .addClass('table-attr history-others'));
 
         const button = $('<button>').text('Compare Scores').attr('type', 'button');
+        button.addClass('history-table');
         button.attr('id', `history-details-${ids[i]}`);
 
         button.on('click', function buttonClick(event) {
@@ -724,7 +727,13 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
 
         attrs
             .append($('<li>')
-            .append(button)
+                .append(button)
+                .addClass('table-attr'))
+            .append($('<li>')
+                .append(this.makeReplayButton(ids[i], 'Watch Replay', 'startReplay', false))
+                .addClass('table-attr'))
+            .append($('<li>')
+                .append(this.makeReplayButton(ids[i], 'Share Replay', 'createSharedReplay', true))
                 .addClass('table-attr'));
 
         history.append(attrs);

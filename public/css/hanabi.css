@@ -38,6 +38,15 @@ button.abandon {
 	border: none;
 }
 
+button.history-table {
+	height: 30px;
+	font-size: 18px;
+}
+
+button.enter-history-game {
+	width: unset;
+}
+
 #show-resources {
 	position: absolute;
 	right: 85px;
