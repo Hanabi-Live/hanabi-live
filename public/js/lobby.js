@@ -671,6 +671,33 @@ HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msg
     return button;
 };
 
+HanabiLobby.prototype.makeHistoryDetailsButton = function makeHistoryDetailsButton(id, gameCount) {
+    const self = this;
+    const button = $('<button>')
+        .text(`Other scores: ${gameCount - 1}`)
+        .attr('type', 'button');
+    button.addClass('history-table');
+    button.addClass('history-others');
+    button.attr('id', `history-details-${id}`);
+
+    button.on('click', function startHistoryDetailClick(event) {
+        event.preventDefault();
+
+        self.gameID = id;
+
+        self.sendMsg({
+            type: 'historyDetails',
+            resp: {
+                gameID: self.gameID,
+            },
+        });
+
+        self.showHistoryDetails();
+    });
+
+    return button;
+};
+
 HanabiLobby.prototype.drawHistory = function drawHistory() {
     const self = this;
 
@@ -701,30 +728,7 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .addClass('table-attr history-score'))
             .append($('<li>')
                 .text(`Variant: ${variantNames[gameData.variant]}`)
-                .addClass('table-attr history-variant'));
-
-        const button = $('<button>')
-            .text(`Other scores: ${gameData.numSimilar - 1}`)
-            .attr('type', 'button');
-        button.addClass('history-table');
-        button.attr('id', `history-details-${ids[i]}`);
-
-        button.on('click', function buttonClick(event) {
-            event.preventDefault();
-
-            self.gameID = parseInt(this.id.slice(16), 10);
-
-            self.sendMsg({
-                type: 'historyDetails',
-                resp: {
-                    gameID: self.gameID,
-                },
-            });
-
-            self.showHistoryDetails();
-        });
-
-        attrs
+                .addClass('table-attr history-variant'))
             .append($('<li>')
                 .append(this.makeReplayButton(ids[i], 'Watch Replay', 'startReplay', false))
                 .addClass('table-attr'))
@@ -732,7 +736,7 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .append(this.makeReplayButton(ids[i], 'Share Replay', 'createSharedReplay', true))
                 .addClass('table-attr'))
             .append($('<li>')
-                .append(button)
+                .append(this.makeHistoryDetailsButton(ids[i], gameData.numSimilar))
                 .addClass('table-attr'));
 
         history.append(attrs);

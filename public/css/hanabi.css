@@ -47,6 +47,10 @@ button.enter-history-game {
 	width: unset;
 }
 
+button.history-others {
+	width: 165px;
+}
+
 #show-resources {
 	position: absolute;
 	right: 85px;
