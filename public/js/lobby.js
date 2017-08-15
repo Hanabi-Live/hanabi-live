@@ -718,6 +718,8 @@ HanabiLobby.prototype.addHistoryDetail = function addHistoryDetail(data) {
     this.drawHistoryDetails();
 };
 
+// This function is called once for each new history element received from the server
+// The last message is not marked, so each iteration redraws all historyDetailList items
 HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
     const self = this;
 
@@ -730,10 +732,17 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
 
     div.html('');
 
+    // The game played by the user will also include its variant
     const variant = this.historyDetailList
         .filter(g => g.id in this.historyList)
         .map(g => this.historyList[g.id].variant)
         .map(v => constants.VARIANT_INTEGER_MAPPING[v])[0];
+
+    // The game played by the user might not have been sent by the server yet
+    if (variant === undefined) {
+        // If not, the variant is not known yet, so defer drawing
+        return;
+    }
 
     for (let i = 0; i < this.historyDetailList.length; i++) {
         const detail = $('<li>').addClass('table-item');
