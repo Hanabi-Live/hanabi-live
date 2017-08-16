@@ -395,7 +395,9 @@ ul {
 }
 
 .history-score {
-	width: 120px;
+	width: 100px;
+	padding-right: 10px;
+	text-align: right;
 }
 
 .history-ts {
