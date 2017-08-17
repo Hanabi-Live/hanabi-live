@@ -38,6 +38,19 @@ button.abandon {
 	border: none;
 }
 
+button.history-table {
+	height: 30px;
+	font-size: 18px;
+}
+
+button.enter-history-game {
+	width: unset;
+}
+
+button.history-others {
+	width: 165px;
+}
+
 #show-resources {
 	position: absolute;
 	right: 85px;
@@ -382,7 +395,9 @@ ul {
 }
 
 .history-score {
-	width: 120px;
+	width: 100px;
+	padding-right: 10px;
+	text-align: right;
 }
 
 .history-ts {
@@ -391,10 +406,6 @@ ul {
 
 .history-variant {
 	width: 250px;
-}
-
-.history-others {
-	width: 150px
 }
 
 #show-options {

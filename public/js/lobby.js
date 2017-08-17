@@ -642,6 +642,62 @@ HanabiLobby.prototype.addHistory = function addHistory(data) {
     };
 };
 
+HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msgType, returnsToLobby) {
+    const self = this;
+    const button = $('<button>').text(text).attr('type', 'button');
+    button.addClass('history-table');
+    button.addClass('enter-history-game');
+    button.attr('id', `replay-${id}`);
+
+    button.on('click', function startReplayClick(event) {
+        event.preventDefault();
+
+        self.gameID = id;
+
+        self.sendMsg({
+            type: msgType,
+            resp: {
+                gameID: self.gameID,
+            },
+        });
+
+        if (returnsToLobby) {
+            $('#game-history-details').hide();
+            $('#game-history').hide();
+            $('#table-area').show();
+        }
+    });
+
+    return button;
+};
+
+HanabiLobby.prototype.makeHistoryDetailsButton = function makeHistoryDetailsButton(id, gameCount) {
+    const self = this;
+    const button = $('<button>')
+        .text(`Other scores: ${gameCount - 1}`)
+        .attr('type', 'button');
+    button.addClass('history-table');
+    button.addClass('history-others');
+    button.attr('id', `history-details-${id}`);
+
+    button.on('click', function startHistoryDetailClick(event) {
+        event.preventDefault();
+
+        self.gameID = id;
+
+        self.sendMsg({
+            type: 'historyDetails',
+            resp: {
+                gameID: self.gameID,
+            },
+        });
+
+        self.showHistoryDetails();
+    });
+
+    return button;
+};
+
 HanabiLobby.prototype.drawHistory = function drawHistory() {
     const self = this;
 
@@ -656,6 +712,8 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
     ids.reverse();
 
     for (let i = 0; i < ids.length; i++) {
+        const gameData = this.historyList[ids[i]];
+        const maxScore = constants.VARIANT_INTEGER_MAPPING[gameData.variant].maxScore;
         const history = $('<li>').addClass('table-item');
 
         const attrs = $('<ul>')
@@ -663,43 +721,22 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .text(`#${ids[i]}`)
                 .addClass('table-attr history-id'))
             .append($('<li>')
-                .text(`${this.historyList[ids[i]].numPlayers} players`)
-                .addClass('table-attr history-players'));
-
-        const score = this.historyList[ids[i]].score;
-        const maxScore = constants.VARIANT_INTEGER_MAPPING[this.historyList[ids[i]].variant].maxScore;
-        attrs
+                .text(`${gameData.numPlayers} players`)
+                .addClass('table-attr history-players'))
             .append($('<li>')
-                .text(`${score}/${maxScore} points`)
+                .text(`${gameData.score}/${maxScore} points`)
                 .addClass('table-attr history-score'))
             .append($('<li>')
-                .text(`Variant: ${variantNames[this.historyList[ids[i]].variant]}`)
+                .text(`Variant: ${variantNames[gameData.variant]}`)
                 .addClass('table-attr history-variant'))
             .append($('<li>')
-                .text(`Other scores: ${this.historyList[ids[i]].numSimilar - 1}`)
-                .addClass('table-attr history-others'));
-
-        const button = $('<button>').text('Compare Scores').attr('type', 'button');
-        button.attr('id', `history-details-${ids[i]}`);
-
-        button.on('click', function buttonClick(event) {
-            event.preventDefault();
-
-            self.gameID = parseInt(this.id.slice(16), 10);
-
-            self.sendMsg({
-                type: 'historyDetails',
-                resp: {
-                    gameID: self.gameID,
-                },
-            });
-
-            self.showHistoryDetails();
-        });
-
-        attrs
+                .append(this.makeReplayButton(ids[i], 'Watch Replay', 'startReplay', false))
+                .addClass('table-attr'))
             .append($('<li>')
-            .append(button)
+                .append(this.makeReplayButton(ids[i], 'Share Replay', 'createSharedReplay', true))
+                .addClass('table-attr'))
+            .append($('<li>')
+                .append(this.makeHistoryDetailsButton(ids[i], gameData.numSimilar))
                 .addClass('table-attr'));
 
         history.append(attrs);
@@ -763,44 +800,11 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
                 .text(this.historyDetailList[i].ts)
                 .addClass('table-attr history-ts'));
 
-        const button = $('<button>').text('Watch Replay').attr('type', 'button');
-        button.attr('id', `replay-${this.historyDetailList[i].id}`);
-
-        button.on('click', function startReplayClick(event) {
-            event.preventDefault();
-
-            self.gameID = parseInt(this.id.slice(7), 10);
-
-            self.sendMsg({
-                type: 'startReplay',
-                resp: {
-                    gameID: self.gameID,
-                },
-            });
-        });
+        const button = this.makeReplayButton(this.historyDetailList[i].id, 'Watch Replay', 'startReplay', false);
 
         attrs.append($('<li>').append(button).addClass('table-attr'));
 
-        const button2 = $('<button>').text('Share Replay').attr('type', 'button');
-        button2.attr('id', `replay-${this.historyDetailList[i].id}`);
-
-        button2.on('click', function createSharedReplayClick(event) {
-            event.preventDefault();
-
-            self.gameID = parseInt(this.id.slice(7), 10);
-
-            self.sendMsg({
-                type: 'createSharedReplay',
-                resp: {
-                    gameID: self.gameID,
-                },
-            });
-
-            // Click the "Return to Tables" button
-            $('#game-history-details').hide();
-            $('#game-history').hide();
-            $('#table-area').show();
-        });
+        const button2 = this.makeReplayButton(this.historyDetailList[i].id, 'Share Replay', 'createSharedReplay', true);
 
         attrs.append($('<li>').append(button2).addClass('table-attr'));
 
