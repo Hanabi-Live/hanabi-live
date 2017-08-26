@@ -1027,6 +1027,10 @@ function HanabiUI(lobby, gameID) {
         this.noteGiven.hide();
     };
 
+    HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
+        return playerHands.indexOf(this.parent.parent) !== -1;
+    };
+
     const LayoutChild = function LayoutChild(config) {
         Kinetic.Group.call(this, config);
 
@@ -1819,7 +1823,7 @@ function HanabiUI(lobby, gameID) {
             return false;
         }
 
-        return playerHands.indexOf(ui.deck[c].parent.parent) !== -1;
+        return ui.deck[c].isInPlayerHand();
     };
 
     // Returns number of expirations, either 0 or 1 depending on whether it expired
@@ -4754,6 +4758,19 @@ function HanabiUI(lobby, gameID) {
         }
     };
 
+    this.handleReplayIndicator = (note) => {
+        if (this.sharedReplayLeader === lobby.username) {
+            // We only want to set the indicator if we are not the leader
+            return;
+        }
+
+        const indicated = ui.deck[note.order];
+        if (indicated && indicated.isInPlayerHand()) {
+            showClueMatch(-1);
+            indicated.setIndicator(true);
+        }
+    };
+
     this.stopAction = (fast) => {
         if (fast) {
             clueArea.hide();
@@ -5040,6 +5057,9 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
     } else if (msgType === 'replayTurn') {
         // This is used in shared replays
         this.handleReplayTurn.call(this, msgData);
+    } else if (msgType === 'replayIndicator') {
+        // This is used in shared replays
+        this.handleReplayIndicator.call(this, msgData);
     }
 };
 
