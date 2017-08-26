@@ -4145,7 +4145,7 @@ function HanabiUI(lobby, gameID) {
                 type: 'replayAction',
                 resp: {
                     type: 0, // Type 0 is a new replay turn
-                    turn: target,
+                    value: target,
                 },
             });
         }
