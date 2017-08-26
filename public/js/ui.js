@@ -877,6 +877,11 @@ function HanabiUI(lobby, gameID) {
                     },
                 });
 
+                // Draw the indicator for the user
+                ui.handleReplayIndicator({
+                    order: self.order,
+                });
+
                 return;
             }
 
