@@ -866,10 +866,17 @@ function HanabiUI(lobby, gameID) {
         });
 
         this.on('click', (event) => {
-            if (ui.sharedReplayLeader === lobby.username) {
-                // Don't popup the alert for shared replay leaders;
-                // we want right click to be dedicated to sending the cursor
-                // position to the other people in the replay
+            if (ui.sharedReplay && event.evt.which === 1 && ui.sharedReplayLeader === lobby.username) {
+                // In a replay that is shared, the leader left-clicks a card to draw attention to it
+
+                ui.sendMsg({
+                    type: 'replayAction',
+                    resp: {
+                        type: 1,
+                        value: self.order,
+                    },
+                });
+
                 return;
             }
 
