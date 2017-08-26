@@ -75,7 +75,7 @@ exports.step1 = (socket, data) => {
             };
         } else {
             logger.warn(`User "${socket.username}" tried to perform an invalid replay action of type "${data.type}" on shared replay #${data.gameID}.`);
-            data.reason = 'That is an inavlid replay action type.';
+            data.reason = 'That is an invalid replay action type.';
             notify.playerError(socket, data);
             return;
         }
