@@ -169,7 +169,6 @@ function HanabiUI(lobby, gameID) {
         cardLayer.draw();
         tipLayer.draw();
         overLayer.draw();
-        cursorLayer.draw();
     }
 
     // Runs each time the DOM window resize event fires.
@@ -867,10 +866,17 @@ function HanabiUI(lobby, gameID) {
         });
 
         this.on('click', (event) => {
-            if (ui.sharedReplayLeader === lobby.username) {
-                // Don't popup the alert for shared replay leaders;
-                // we want right click to be dedicated to sending the cursor
-                // position to the other people in the replay
+            if (ui.sharedReplay && event.evt.which === 1 && ui.sharedReplayLeader === lobby.username) {
+                // In a replay that is shared, the leader left-clicks a card to draw attention to it
+
+                ui.sendMsg({
+                    type: 'replayAction',
+                    resp: {
+                        type: 1,
+                        value: self.order,
+                    },
+                });
+
                 return;
             }
 
@@ -1019,6 +1025,10 @@ function HanabiUI(lobby, gameID) {
     HanabiCard.prototype.hideClues = function hideClues() {
         this.clueGiven.hide();
         this.noteGiven.hide();
+    };
+
+    HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
+        return playerHands.indexOf(this.parent.parent) !== -1;
     };
 
     const LayoutChild = function LayoutChild(config) {
@@ -1813,7 +1823,7 @@ function HanabiUI(lobby, gameID) {
             return false;
         }
 
-        return playerHands.indexOf(ui.deck[c].parent.parent) !== -1;
+        return ui.deck[c].isInPlayerHand();
     };
 
     // Returns number of expirations, either 0 or 1 depending on whether it expired
@@ -2463,9 +2473,6 @@ function HanabiUI(lobby, gameID) {
     const timerLayer = new Kinetic.Layer({
         listening: false,
     });
-    const cursorLayer = new Kinetic.Layer({
-        listening: false,
-    });
     const playerHands = [];
     let drawDeck;
     let messagePrompt;
@@ -2497,7 +2504,6 @@ function HanabiUI(lobby, gameID) {
     let noClueBox;
     let noDiscardLabel;
     let deckPlayAvailableLabel;
-    let sharedReplayCursor;
     let replayArea;
     let replayBar;
     let replayShuttle;
@@ -2930,28 +2936,6 @@ function HanabiUI(lobby, gameID) {
         /*
             End tooltip
         */
-
-        /*
-            Shared replay cursor
-        */
-
-        const cursor = new Image();
-        cursor.src = 'public/img/cursor.png';
-        cursor.onload = () => {
-            sharedReplayCursor = new Kinetic.Image({
-                x: -1000,
-                y: -1000,
-                image: cursor,
-                shadowColor: 'black',
-                shadowBlur: 10,
-                shadowOffset: {
-                    x: 0,
-                    y: 0,
-                },
-                shadowOpacity: 0.9,
-            });
-            cursorLayer.add(sharedReplayCursor);
-        };
 
         /*
             End of spectator / shared replay stuff
@@ -4058,7 +4042,6 @@ function HanabiUI(lobby, gameID) {
         stage.add(cardLayer);
         stage.add(tipLayer);
         stage.add(overLayer);
-        stage.add(cursorLayer);
     };
 
     this.reset = function reset() {
@@ -4173,7 +4156,7 @@ function HanabiUI(lobby, gameID) {
                 type: 'replayAction',
                 resp: {
                     type: 0, // Type 0 is a new replay turn
-                    turn: target,
+                    value: target,
                 },
             });
         }
@@ -4775,17 +4758,17 @@ function HanabiUI(lobby, gameID) {
         }
     };
 
-    this.handleReplayMouse = (note) => {
+    this.handleReplayIndicator = (note) => {
         if (this.sharedReplayLeader === lobby.username) {
-            // We only want to move the mouse if we are not the leader
+            // We only want to set the indicator if we are not the leader
             return;
         }
 
-        // Draw the cursor so that we can see what the replay leader is clicking
-        // on
-        sharedReplayCursor.setX(note.x);
-        sharedReplayCursor.setY(note.y);
-        cursorLayer.draw();
+        const indicated = ui.deck[note.order];
+        if (indicated && indicated.isInPlayerHand()) {
+            showClueMatch(-1);
+            indicated.setIndicator(true);
+        }
     };
 
     this.stopAction = (fast) => {
@@ -5001,34 +4984,6 @@ function HanabiUI(lobby, gameID) {
     this.replayLog = [];
     this.replayPos = 0;
     this.replayTurn = 0;
-
-    /*
-        Shared replay cursor functionality
-    */
-
-
-    stage.on('click', (event) => {
-        if (ui.sharedReplayLeader !== lobby.username) {
-            // We only need to track mouse movement if we are the shared replay leader
-            return;
-        }
-
-        if (event.evt.which !== 3) { // Right click
-            // We only want to track right clicks, not left clicks
-            return;
-        }
-
-        ui.sendMsg({
-            type: 'replayAction',
-            resp: {
-                type: 1,
-                cursor: {
-                    x: event.evt.clientX,
-                    y: event.evt.clientY,
-                },
-            },
-        });
-    });
 }
 
 /*
@@ -5102,9 +5057,9 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
     } else if (msgType === 'replayTurn') {
         // This is used in shared replays
         this.handleReplayTurn.call(this, msgData);
-    } else if (msgType === 'replayMouse') {
+    } else if (msgType === 'replayIndicator') {
         // This is used in shared replays
-        this.handleReplayMouse.call(this, msgData);
+        this.handleReplayIndicator.call(this, msgData);
     }
 };
 

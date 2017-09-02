@@ -5,12 +5,8 @@
     {
         type: 0,
         // 0 is a turn change
-        // 1 is a mouse cursor move
-        turn: 1, // Only sent if the type is 0
-        cursor: { // Only sent if the type is 1
-            x: 100,
-            y: 100,
-        },
+        // 1 is a manual card order indication
+        value: 10,
     }
 */
 
@@ -50,36 +46,51 @@ exports.step1 = (socket, data) => {
         return;
     }
 
-    // Change the current turn
-    if (data.type === 0) {
-        game.turnNum = data.turn;
+    // Validate type of message
+    if (!Number.isInteger(data.type) || data.type < 0 || data.type > 1) {
+        logger.warn(`User "${socket.username}" tried to perform an invalid replay action of type "${data.type}" on shared replay #${data.gameID}.`);
+        data.reason = 'That is an invalid replay action type.';
+        notify.playerError(socket, data);
+        return;
     }
 
-    // Send it to everyone
-    for (const userID of Object.keys(game.spectators)) {
-        let msg;
-        if (data.type === 0) {
+    // Validate numeric value
+    if (!Number.isInteger(data.value) || data.value < 0) {
+        logger.warn(`User "${socket.username}" tried to specify an invalid replay action with value "${data.value}" on shared replay #${data.gameID}.`);
+        data.reason = 'That is an invalid replay action value.';
+        notify.playerError(socket, data);
+        return;
+    }
+
+    // Apply action
+
+    // Change the current turn
+    if (data.type === 0) {
+        game.turnNum = data.value;
+    }
+
+    // Send message to everyone
+    let msg;
+    switch (data.type) {
+        case 0:
             msg = {
                 type: 'replayTurn',
                 resp: {
-                    turn: data.turn,
+                    turn: data.value,
                 },
             };
-        } else if (data.type === 1) {
+            break;
+        case 1:
             msg = {
-                type: 'replayMouse',
+                type: 'replayIndicator',
                 resp: {
-                    x: data.cursor.x,
-                    y: data.cursor.y,
+                    order: data.value,
                 },
             };
-        } else {
-            logger.warn(`User "${socket.username}" tried to perform an invalid replay action of type "${data.type}" on shared replay #${data.gameID}.`);
-            data.reason = 'That is an invalid replay action type.';
-            notify.playerError(socket, data);
-            return;
-        }
+            break;
+    }
 
+    for (const userID of Object.keys(game.spectators)) {
         game.spectators[userID].emit('message', msg);
     }
 };

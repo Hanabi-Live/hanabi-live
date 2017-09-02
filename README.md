@@ -27,9 +27,9 @@ List of Changes & Improvements over the Original Server
   * A golden border will appear around the deck when there is 1 card left in order to signify that this is possible.
   * This feature prevents stupid losses that occur from being "bottom decked" by a 3 or a 4 that was impossible to save in the early or mid-game.
 * Shared Replays
-  * You can turn any replay into a shared replay. Once created, an unlimited number of people can join it.
+  * Any replay can be started as a 'shared' replay. Once created, an unlimited number of people can join it.
   * When in a shared replay, the leader can control what turn is being shown to everyone in the replay.
-  * The creator can move a shared cursor by right clicking.
+  * The leader can highlight a card by clicking it.
   * You can see who the leader of the replay is by hovering over the "👑" icon in the bottom right-hand corner.
   * You can use this feature to share a past game with a friend who was not in that game.
 * New variant: White Suit and Multi-color Suit
