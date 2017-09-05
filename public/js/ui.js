@@ -4611,6 +4611,7 @@ function HanabiUI(lobby, gameID) {
             spectatorsLabelTooltip.getText().setText(tooltipString);
         }
         UILayer.draw();
+        tipLayer.batchDraw();
     };
 
     this.handleClock = (note) => {
