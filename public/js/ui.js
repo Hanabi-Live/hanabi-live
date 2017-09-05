@@ -4598,6 +4598,7 @@ function HanabiUI(lobby, gameID) {
         const shouldShowLabel = note.names.length > 0;
         spectatorsLabel.setVisible(shouldShowLabel);
         spectatorsNumLabel.setVisible(shouldShowLabel);
+        spectatorsLabelTooltip.setVisible(shouldShowLabel);
         if (shouldShowLabel) {
             spectatorsNumLabel.setText(note.names.length);
 
