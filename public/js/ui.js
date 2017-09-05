@@ -4603,11 +4603,7 @@ function HanabiUI(lobby, gameID) {
             spectatorsNumLabel.setText(note.names.length);
 
             // Build the string that shows all the names
-            let tooltipString = 'Spectators:\n';
-            for (let i = 0; i < note.names.length; i++) {
-                tooltipString += `${i + 1}) ${note.names[i]}\n`;
-            }
-            tooltipString = tooltipString.slice(0, -1); // Chop off the trailing newline
+            const tooltipString = 'Spectators:\n' + note.names.map((name, i) => `${i + 1}) ${name}`).join('\n');
 
             spectatorsLabelTooltip.getText().setText(tooltipString);
         }
