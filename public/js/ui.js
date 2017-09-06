@@ -729,6 +729,7 @@ function HanabiUI(lobby, gameID) {
             visible: false,
             listening: false,
         });
+        this.indicateRect.setDash([30, 15]);
 
         this.add(this.indicateRect);
 
@@ -959,12 +960,13 @@ function HanabiUI(lobby, gameID) {
         this.barename = imageName(this);
     };
 
-    HanabiCard.prototype.setIndicator = function setIndicator(indicate, negative) {
+    HanabiCard.prototype.setIndicator = function setIndicator(indicate, negative, dashed) {
         if (negative) {
             this.indicateRect.setStroke('#ff7777');
         } else {
             this.indicateRect.setStroke('#ddeecc');
         }
+        this.indicateRect.setDashEnabled(dashed);
         this.indicateRect.setVisible(indicate);
         this.getLayer().batchDraw();
     };
@@ -4765,7 +4767,7 @@ function HanabiUI(lobby, gameID) {
         const indicated = ui.deck[note.order];
         if (indicated && indicated.isInPlayerHand()) {
             showClueMatch(-1);
-            indicated.setIndicator(true);
+            indicated.setIndicator(true, false, true);
         }
     };
 
