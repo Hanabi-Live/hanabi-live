@@ -4753,17 +4753,10 @@ function HanabiUI(lobby, gameID) {
 
     this.handleReplayTurn = function handleReplayTurn(note) {
         this.sharedReplayTurn = note.turn;
-        if (this.sharedReplayLeader !== lobby.username) {
-            this.performReplay(this.sharedReplayTurn);
-        }
+        this.performReplay(this.sharedReplayTurn);
     };
 
     this.handleReplayIndicator = (note) => {
-        if (this.sharedReplayLeader === lobby.username) {
-            // We only want to set the indicator if we are not the leader
-            return;
-        }
-
         const indicated = ui.deck[note.order];
         if (indicated && indicated.isInPlayerHand()) {
             showClueMatch(-1);

@@ -69,7 +69,7 @@ exports.step1 = (socket, data) => {
         game.turnNum = data.value;
     }
 
-    // Send message to everyone
+    // Send message to everyone else
     let msg;
     switch (data.type) {
         case 0:
@@ -90,7 +90,7 @@ exports.step1 = (socket, data) => {
             break;
     }
 
-    for (const userID of Object.keys(game.spectators)) {
+    for (const userID of Object.keys(game.spectators).filter(id => Number(id) !== game.owner)) {
         game.spectators[userID].emit('message', msg);
     }
 };
