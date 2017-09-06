@@ -4679,7 +4679,7 @@ function HanabiUI(lobby, gameID) {
         }, 1000);
     };
 
-    // Recieves the following data:
+    // Receives the following data:
     /*
         {
             order: 16,
@@ -4723,7 +4723,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleNotes = (note) => {
-        // We recieved a new copy of all of our notes from the server
+        // We received a new copy of all of our notes from the server
         notesWritten = note.notes;
 
         for (const order of Object.keys(notesWritten)) {

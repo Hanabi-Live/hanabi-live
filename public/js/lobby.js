@@ -962,7 +962,7 @@ HanabiLobby.prototype.listenConn = function listConn(conn) {
         const msgData = msg.resp;
 
         if (showDebugMessages) {
-            console.log(`%cRecieved ${msgType}:`, 'color: blue;');
+            console.log(`%cReceived ${msgType}:`, 'color: blue;');
             console.log(msgData);
         }
 
@@ -1107,7 +1107,7 @@ HanabiLobby.prototype.setConn = function setConn(conn) {
                 modified: true,
             });
         } catch (err) {
-            console.error('Recieved error:', err);
+            console.error('received error:', err);
         }
     };
 };

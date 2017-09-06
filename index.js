@@ -47,7 +47,7 @@ io.on('connection', (socket) => {
 
     socket.on('message', (data) => {
         if (data.type in messages) {
-            let log = `Recieved a "${data.type}" message`;
+            let log = `Received a "${data.type}" message`;
             if (data.type === 'login') {
                 log += '.';
             } else {
@@ -56,7 +56,7 @@ io.on('connection', (socket) => {
             logger.info(log);
             messages[data.type].step1(socket, data.resp);
         } else {
-            logger.warn('Recieved unrecognized command:', data.type);
+            logger.warn('Received unrecognized command:', data.type);
         }
     });
 });

@@ -95,7 +95,7 @@ exports.sendChat = (msg) => {
     }
 
     // Note that we can send the message, but none of the other users in the
-    // lobby will recieve our text because the IP address that is currently
+    // lobby will receive our text because the IP address that is currently
     // hosting the server is banned
     socket.emit('message', {
         type: 'chat',
