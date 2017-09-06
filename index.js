@@ -46,17 +46,24 @@ io.on('connection', (socket) => {
     });
 
     socket.on('message', (data) => {
-        if (data.type in messages) {
-            let log = `Received a "${data.type}" message`;
-            if (data.type === 'login') {
-                log += '.';
+        try {
+            if (data.type in messages) {
+                let log = `Received a "${data.type}" message`;
+                if (data.type === 'login') {
+                    log += '.';
+                } else {
+                    log += ` from user "${socket.username}".`;
+                }
+                logger.info(log);
+                messages[data.type].step1(socket, data.resp);
             } else {
-                log += ` from user "${socket.username}".`;
+                logger.warn('Received unrecognized command:', data.type);
             }
-            logger.info(log);
-            messages[data.type].step1(socket, data.resp);
-        } else {
-            logger.warn('Received unrecognized command:', data.type);
+        } catch (err) {
+            logger.warn('Encoutered an error while processing message.', err.message);
+            if (hasOwnProperty.call(err, 'stack')) {
+                logger.warn('Stack trace:\n', err.stack);
+            }
         }
     });
 });
