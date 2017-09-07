@@ -4744,8 +4744,7 @@ function HanabiUI(lobby, gameID) {
         this.sharedReplayLeader = note.name;
 
         sharedReplayLeaderLabel.show();
-        const text = `Leader: ${this.sharedReplayLeader}`;
-        sharedReplayLeaderLabelTooltip.getText().setText(text);
+        sharedReplayLeaderLabelTooltip.getText().setText(`Leader: ${this.sharedReplayLeader}`);
 
         if (this.sharedReplayLeader === lobby.username) {
             goToSharedTurnButton.hide();
