@@ -4586,7 +4586,6 @@ function HanabiUI(lobby, gameID) {
         const shouldShowLabel = note.names.length > 0;
         spectatorsLabel.setVisible(shouldShowLabel);
         spectatorsNumLabel.setVisible(shouldShowLabel);
-        spectatorsLabelTooltip.setVisible(shouldShowLabel);
         if (shouldShowLabel) {
             spectatorsNumLabel.setText(note.names.length);
 
@@ -4594,6 +4593,8 @@ function HanabiUI(lobby, gameID) {
             const tooltipString = 'Spectators:\n' + note.names.map((name, i) => `${i + 1}) ${name}`).join('\n');
 
             spectatorsLabelTooltip.getText().setText(tooltipString);
+        } else {
+            spectatorsLabelTooltip.hide();
         }
         UILayer.batchDraw();
         tipLayer.batchDraw();
