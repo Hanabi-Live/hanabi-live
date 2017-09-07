@@ -1387,8 +1387,6 @@ function HanabiUI(lobby, gameID) {
         this.enabled = true;
         this.pressed = false;
 
-        this.targetIndex = config.targetIndex;
-
         background.on('mousedown', () => {
             background.setFill('#888888');
             background.getLayer().draw();
@@ -1433,6 +1431,13 @@ function HanabiUI(lobby, gameID) {
 
         this.getLayer().batchDraw();
     };
+
+    const ClueRecipientButton = function ClueRecipientButton(config) {
+        Button.call(this, config);
+        this.targetIndex = config.targetIndex;
+    }
+
+    Kinetic.Util.extend(ClueRecipientButton, Button);
 
     const NumberButton = function NumberButton(config) {
         Kinetic.Group.call(this, config);
@@ -3346,7 +3351,7 @@ function HanabiUI(lobby, gameID) {
         for (let i = 0; i < nump - 1; i++) {
             const j = (this.playerUs + i + 1) % nump;
 
-            button = new Button({
+            button = new ClueRecipientButton({
                 x,
                 y: 0,
                 width: 0.08 * winW,
