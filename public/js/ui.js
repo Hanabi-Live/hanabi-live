@@ -3795,6 +3795,9 @@ function HanabiUI(lobby, gameID) {
             if (ui.applyReplayActions) {
                 if (ui.sharedReplayLeader === lobby.username) {
                     shareCurrentTurn(ui.replayTurn);
+                } else {
+                    console.log('Going to shared turn:', ui.sharedReplayTurn);
+                    ui.performReplay(ui.sharedReplayTurn);
                 }
             }
         });
@@ -4805,12 +4808,14 @@ function HanabiUI(lobby, gameID) {
 
     this.handleReplayTurn = function handleReplayTurn(note) {
         this.sharedReplayTurn = note.turn;
-        this.performReplay(this.sharedReplayTurn);
+        if (ui.applyReplayActions) {
+            this.performReplay(this.sharedReplayTurn);
+        }
     };
 
     this.handleReplayIndicator = (note) => {
         const indicated = ui.deck[note.order];
-        if (indicated && indicated.isInPlayerHand()) {
+        if (indicated && indicated.isInPlayerHand() && ui.applyReplayActions) {
             showClueMatch(-1);
             indicated.setIndicator(true, false, true);
         }
