@@ -4595,7 +4595,7 @@ function HanabiUI(lobby, gameID) {
 
             spectatorsLabelTooltip.getText().setText(tooltipString);
         }
-        UILayer.draw();
+        UILayer.batchDraw();
         tipLayer.batchDraw();
     };
 
