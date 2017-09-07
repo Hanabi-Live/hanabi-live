@@ -26,6 +26,7 @@ function HanabiUI(lobby, gameID) {
     this.sharedReplay = false;
     this.sharedReplayLeader = ''; // Equal to the username of the shared replay leader
     this.sharedReplayTurn = -1;
+    this.applyReplayActions = true;
     this.replayOnly = false;
     this.spectating = false;
     this.replayMax = 0;
@@ -868,18 +869,20 @@ function HanabiUI(lobby, gameID) {
             if (ui.sharedReplay && event.evt.which === 1 && ui.sharedReplayLeader === lobby.username) {
                 // In a replay that is shared, the leader left-clicks a card to draw attention to it
 
-                ui.sendMsg({
-                    type: 'replayAction',
-                    resp: {
-                        type: 1,
-                        value: self.order,
-                    },
-                });
+                if (ui.applyReplayActions) {
+                    ui.sendMsg({
+                        type: 'replayAction',
+                        resp: {
+                            type: 1,
+                            value: self.order,
+                        },
+                    });
 
-                // Draw the indicator for the user
-                ui.handleReplayIndicator({
-                    order: self.order,
-                });
+                    // Draw the indicator for the user
+                    ui.handleReplayIndicator({
+                        order: self.order,
+                    });
+                }
 
                 return;
             }
@@ -2567,6 +2570,19 @@ function HanabiUI(lobby, gameID) {
         tipLayer.draw();
     }
 
+    const shareCurrentTurn = (target) => {
+        if (ui.sharedReplayTurn !== target) {
+            ui.sendMsg({
+                type: 'replayAction',
+                resp: {
+                    type: 0, // Type 0 is a new replay turn
+                    value: target,
+                },
+            });
+            ui.sharedReplayTurn = target;
+        }
+    };
+
     this.buildUI = function buildUI() {
         const self = this;
         let x;
@@ -3774,6 +3790,15 @@ function HanabiUI(lobby, gameID) {
             visible: false,
         });
 
+        toggleSharedTurnButton.on('click tap', () => {
+            ui.applyReplayActions = !ui.applyReplayActions;
+            if (ui.applyReplayActions) {
+                if (ui.sharedReplayLeader === lobby.username) {
+                    shareCurrentTurn(ui.replayTurn);
+                }
+            }
+        });
+
         replayArea.add(toggleSharedTurnButton);
 
         replayArea.hide();
@@ -4182,15 +4207,12 @@ function HanabiUI(lobby, gameID) {
             return; // We're already there, nothing to do!
         }
 
-        if (this.sharedReplay && this.sharedReplayLeader === lobby.username) {
-            this.sendMsg({
-                type: 'replayAction',
-                resp: {
-                    type: 0, // Type 0 is a new replay turn
-                    value: target,
-                },
-            });
-            this.sharedReplayTurn = target;
+        if (
+            this.sharedReplay &&
+            this.sharedReplayLeader === lobby.username &&
+            this.applyReplayActions
+        ) {
+            shareCurrentTurn(target);
         }
 
         this.replayTurn = target;
