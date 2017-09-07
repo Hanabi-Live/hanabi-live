@@ -245,7 +245,6 @@ function HanabiUI(lobby, gameID) {
         return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
     }
 
-    // textObjects are expected to be on the timerLayer or tipLayer
     function setTickingDownTime(textObjects, activeIndex) {
         // Compute elapsed time since last timer update
         const now = new Date().getTime();
@@ -273,9 +272,8 @@ function HanabiUI(lobby, gameID) {
         // Update displays
         textObjects.forEach((textHolder) => {
             textHolder.setText(displayString);
+            textHolder.getLayer().batchDraw();
         });
-        timerLayer.draw();
-        tipLayer.draw();
 
         // Play a sound to indicate that the current player is almost out of time
         // Do not play it more frequently than about once per second
