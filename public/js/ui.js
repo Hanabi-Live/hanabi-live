@@ -1369,6 +1369,8 @@ function HanabiUI(lobby, gameID) {
                 text: config.text,
             });
 
+            this.setText = (display) => text.setText(display);
+
             this.add(text);
         } else if (config.image) {
             const img = new Kinetic.Image({
@@ -1596,6 +1598,22 @@ function HanabiUI(lobby, gameID) {
 
         this.getLayer().batchDraw();
     };
+
+    // A simple two-state button with text for each state
+    const ToggleButton = function ToggleButton(config) {
+        Button.call(this, config);
+        let toggleState = false;
+
+        const toggle = () => {
+            toggleState = !toggleState;
+            this.setText(toggleState ? config.alternateText : config.text);
+            this.getLayer().batchDraw();
+        };
+
+        this.on('click tap', toggle);
+    }
+
+    Kinetic.Util.extend(ToggleButton, Button);
 
     const ButtonGroup = function ButtonGroup(config) {
         Kinetic.Node.call(this, config);
@@ -3746,19 +3764,14 @@ function HanabiUI(lobby, gameID) {
 
         replayArea.add(button);
 
-        // The "Go to Shared Turn" button
-        toggleSharedTurnButton = new Button({
+        toggleSharedTurnButton = new ToggleButton({
             x: 0.15 * winW,
             y: 0.17 * winH,
             width: 0.2 * winW,
             height: 0.06 * winH,
-            text: 'Go to Shared Turn',
+            text: 'Pause Shared Turns',
+            alternateText: 'Use Shared Turns',
             visible: false,
-        });
-
-        toggleSharedTurnButton.on('click tap', () => {
-            console.log('Going to shared turn:', ui.sharedReplayTurn);
-            ui.performReplay(ui.sharedReplayTurn);
         });
 
         replayArea.add(toggleSharedTurnButton);
