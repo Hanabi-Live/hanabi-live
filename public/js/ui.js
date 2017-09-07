@@ -964,7 +964,7 @@ function HanabiUI(lobby, gameID) {
         } else {
             this.indicateRect.setStroke('#ddeecc');
         }
-        this.indicateRect.setDashEnabled(dashed);
+        this.indicateRect.setDashEnabled(dashed || false);
         this.indicateRect.setVisible(indicate);
         this.getLayer().batchDraw();
     };
