@@ -2518,7 +2518,7 @@ function HanabiUI(lobby, gameID) {
     let replayBar;
     let replayShuttle;
     let replayButton;
-    let goToSharedTurnButton; // Used in shared replays
+    let toggleSharedTurnButton; // Used in shared replays
     let lobbyButton;
     let helpButton;
     let helpGroup;
@@ -3747,7 +3747,7 @@ function HanabiUI(lobby, gameID) {
         replayArea.add(button);
 
         // The "Go to Shared Turn" button
-        goToSharedTurnButton = new Button({
+        toggleSharedTurnButton = new Button({
             x: 0.15 * winW,
             y: 0.17 * winH,
             width: 0.2 * winW,
@@ -3756,12 +3756,12 @@ function HanabiUI(lobby, gameID) {
             visible: false,
         });
 
-        goToSharedTurnButton.on('click tap', () => {
+        toggleSharedTurnButton.on('click tap', () => {
             console.log('Going to shared turn:', ui.sharedReplayTurn);
             ui.performReplay(ui.sharedReplayTurn);
         });
 
-        replayArea.add(goToSharedTurnButton);
+        replayArea.add(toggleSharedTurnButton);
 
         replayArea.hide();
         UILayer.add(replayArea);
@@ -4764,7 +4764,7 @@ function HanabiUI(lobby, gameID) {
             sharedReplayLeaderLabel.fill('yellow');
         }
 
-        goToSharedTurnButton.show();
+        toggleSharedTurnButton.show();
         UILayer.draw();
     };
 
