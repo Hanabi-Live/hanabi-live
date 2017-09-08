@@ -4177,6 +4177,7 @@ function HanabiUI(lobby, gameID) {
                     value: target,
                 },
             });
+            this.sharedReplayTurn = target;
         }
 
         this.replayTurn = target;
