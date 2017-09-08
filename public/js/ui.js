@@ -3640,6 +3640,8 @@ function HanabiUI(lobby, gameID) {
 
         replayArea.add(replayShuttle);
 
+        ui.adjustReplayShuttle();
+
         // Rewind to the beginning (the left-most button)
         button = new Button({
             x: 0.1 * winW,
