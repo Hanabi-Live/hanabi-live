@@ -1614,6 +1614,12 @@ function HanabiUI(lobby, gameID) {
         };
 
         this.on('click tap', toggle);
+
+        this.ensureState = (newState) => {
+            if (toggleState !== newState) {
+                toggle();
+            }
+        };
     }
 
     Kinetic.Util.extend(ToggleButton, Button);
@@ -3602,6 +3608,13 @@ function HanabiUI(lobby, gameID) {
             Draw the replay area
         */
 
+        const inferSharedReplayMode = () => {
+            if (ui.sharedReplay && ui.sharedReplayLeader !== lobby.username) {
+                ui.applyReplayActions = false;
+                toggleSharedTurnButton.ensureState(!ui.applyReplayActions);
+            }
+        };
+
         replayArea = new Kinetic.Group({
             x: 0.15 * winW,
             y: 0.51 * winH,
@@ -3635,6 +3648,7 @@ function HanabiUI(lobby, gameID) {
             const step = w / self.replayMax;
             const newTurn = Math.floor((rectX + step / 2) / step);
             if (newTurn !== self.replayTurn) {
+                inferSharedReplayMode();
                 self.performReplay(newTurn, true);
             }
         });
@@ -3663,6 +3677,7 @@ function HanabiUI(lobby, gameID) {
                 const step = w / self.replayMax;
                 const newTurn = Math.floor((shuttleX + step / 2) / step);
                 if (newTurn !== self.replayTurn) {
+                    inferSharedReplayMode();
                     self.performReplay(newTurn, true);
                 }
                 shuttleX = newTurn * step;
@@ -3691,7 +3706,9 @@ function HanabiUI(lobby, gameID) {
             image: 'rewindfull',
         });
 
+
         const rewindFullFunction = () => {
+            inferSharedReplayMode();
             ui.performReplay(0);
         };
 
@@ -3709,6 +3726,7 @@ function HanabiUI(lobby, gameID) {
         });
 
         const backwardFunction = () => {
+            inferSharedReplayMode();
             ui.performReplay(self.replayTurn - 1, true);
         };
 
@@ -3726,6 +3744,7 @@ function HanabiUI(lobby, gameID) {
         });
 
         const forwardFunction = () => {
+            inferSharedReplayMode();
             ui.performReplay(self.replayTurn + 1);
         };
 
@@ -3743,6 +3762,7 @@ function HanabiUI(lobby, gameID) {
         });
 
         const forwardFullFunction = () => {
+            inferSharedReplayMode();
             ui.performReplay(self.replayMax, true);
         };
 
@@ -3812,10 +3832,12 @@ function HanabiUI(lobby, gameID) {
         */
 
         const backwardRound = () => {
+            inferSharedReplayMode();
             ui.performReplay(self.replayTurn - nump, true);
         };
 
         const forwardRound = () => {
+            inferSharedReplayMode();
             ui.performReplay(self.replayTurn + nump);
         };
 
