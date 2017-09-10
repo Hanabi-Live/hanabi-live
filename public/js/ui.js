@@ -1615,12 +1615,6 @@ function HanabiUI(lobby, gameID) {
 
         this.on('click tap', toggle);
 
-        this.ensureState = (newState) => {
-            if (toggleState !== newState) {
-                toggle();
-            }
-        };
-
         if (config.initialState) {
             toggle();
         }
@@ -3614,11 +3608,15 @@ function HanabiUI(lobby, gameID) {
             Draw the replay area
         */
 
+        // Navigating as a follower in a shared replay disables replay actions
         const inferSharedReplayMode = () => {
-            if (ui.sharedReplay && ui.sharedReplayLeader !== lobby.username) {
-                ui.applyReplayActions = false;
-                toggleSharedTurnButton.ensureState(!ui.applyReplayActions);
-                replayShuttleShared.setVisible(!ui.applyReplayActions);
+            if (
+                ui.sharedReplay &&
+                ui.sharedReplayLeader !== lobby.username &&
+                ui.applyReplayActions
+            ) {
+                // replay actions currently enabled, so disable them
+                toggleSharedTurnButton.dispatchEvent(new MouseEvent('click'));
             }
         };
 
