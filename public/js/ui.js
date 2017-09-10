@@ -3247,7 +3247,7 @@ function HanabiUI(lobby, gameID) {
 
             // Draw the tooltips on the player names that show the time
             // (the code is copied from HanabiCard)
-            if (!this.replay) {
+            if (!this.replayOnly) {
                 const frameHoverTooltip = new Kinetic.Label({
                     x: -1000,
                     y: -1000,
@@ -3435,8 +3435,14 @@ function HanabiUI(lobby, gameID) {
             Draw the timer
         */
 
+        if (ui.timerID !== null) {
+            // The callback has references to older copies of ui elements in its closure
+            window.clearInterval(ui.timerID);
+            ui.timerID = null;
+        }
+
         // We don't want the timer to show in replays
-        if (!this.replay) {
+        if (!this.replayOnly) {
             const timerX = 0.155;
             const timerY = 0.592;
             const timerX2 = 0.565;
