@@ -2547,6 +2547,7 @@ function HanabiUI(lobby, gameID) {
     let deckPlayAvailableLabel;
     let replayArea;
     let replayBar;
+    let replayShuttleShared;
     let replayShuttle;
     let replayButton;
     let toggleSharedTurnButton; // Used in shared replays
@@ -2590,6 +2591,7 @@ function HanabiUI(lobby, gameID) {
                 },
             });
             ui.sharedReplayTurn = target;
+            ui.adjustReplayShuttle();
         }
     };
 
@@ -3616,6 +3618,7 @@ function HanabiUI(lobby, gameID) {
             if (ui.sharedReplay && ui.sharedReplayLeader !== lobby.username) {
                 ui.applyReplayActions = false;
                 toggleSharedTurnButton.ensureState(!ui.applyReplayActions);
+                replayShuttleShared.setVisible(!ui.applyReplayActions);
             }
         };
 
@@ -3658,6 +3661,23 @@ function HanabiUI(lobby, gameID) {
         });
 
         replayArea.add(rect);
+
+        replayShuttleShared = new Kinetic.Rect({
+            x: 0,
+            y: 0.0325 * winH,
+            width: 0.03 * winW,
+            height: 0.03 * winH,
+            cornerRadius: 0.01 * winW,
+            fill: '#d1d1d1',
+            visible: !ui.applyReplayActions,
+        });
+
+        replayShuttleShared.on('click tap', () => {
+            console.log('Going to shared turn:', ui.sharedReplayTurn);
+            ui.performReplay(ui.sharedReplayTurn, true);
+        });
+
+        replayArea.add(replayShuttleShared);
 
         replayShuttle = new Kinetic.Rect({
             x: 0,
@@ -3817,11 +3837,12 @@ function HanabiUI(lobby, gameID) {
 
         toggleSharedTurnButton.on('click tap', () => {
             ui.applyReplayActions = !ui.applyReplayActions;
+            replayShuttleShared.setVisible(!ui.applyReplayActions);
             if (ui.applyReplayActions) {
                 if (ui.sharedReplayLeader === lobby.username) {
                     shareCurrentTurn(ui.replayTurn);
                 } else {
-                    console.log('Going to shared turn:', ui.sharedReplayTurn);
+                    console.log('Returning to shared replay at turn:', ui.sharedReplayTurn);
                     ui.performReplay(ui.sharedReplayTurn);
                 }
             }
@@ -4185,9 +4206,14 @@ function HanabiUI(lobby, gameID) {
         }
     };
 
+    const positionReplayShuttle = (shuttle, turn) => {
+        const w = shuttle.getParent().getWidth() - shuttle.getWidth();
+        shuttle.setX(turn * w / this.replayMax);
+    };
+
     this.adjustReplayShuttle = () => {
-        const w = replayShuttle.getParent().getWidth() - replayShuttle.getWidth();
-        replayShuttle.setX(this.replayTurn * w / this.replayMax);
+        positionReplayShuttle(replayShuttle, this.replayTurn);
+        positionReplayShuttle(replayShuttleShared, this.sharedReplayTurn);
     };
 
     this.enterReplay = function enterReplay(enter) {
@@ -4835,8 +4861,11 @@ function HanabiUI(lobby, gameID) {
 
     this.handleReplayTurn = function handleReplayTurn(note) {
         this.sharedReplayTurn = note.turn;
+        this.adjustReplayShuttle();
         if (ui.applyReplayActions) {
             this.performReplay(this.sharedReplayTurn);
+        } else {
+            replayShuttleShared.getLayer().batchDraw();
         }
     };
 
