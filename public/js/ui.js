@@ -85,7 +85,7 @@ function HanabiUI(lobby, gameID) {
         // information and doesn't maintain a full game state.
 
         // Rebuilds for a replay.
-        if (self.replay) {
+        if (self.replayOnly) {
             let msg;
             // Iterate over the replay, stop at the current turn or at the end
             self.replayPos = 0;
