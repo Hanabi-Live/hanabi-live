@@ -1103,7 +1103,7 @@ HanabiLobby.prototype.setConn = function setConn(conn) {
                 url,
                 lineno,
                 colno,
-                stack: error.stack,
+                stack: error && error.stack,
                 modified: true,
             });
         } catch (err) {
