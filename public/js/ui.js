@@ -1610,7 +1610,7 @@ function HanabiUI(lobby, gameID) {
         const toggle = () => {
             toggleState = !toggleState;
             this.setText(toggleState ? config.alternateText : config.text);
-            this.getLayer().batchDraw();
+            this.getLayer() && this.getLayer().batchDraw();
         };
 
         this.on('click tap', toggle);
@@ -1620,6 +1620,10 @@ function HanabiUI(lobby, gameID) {
                 toggle();
             }
         };
+
+        if (config.initialState) {
+            toggle();
+        }
     }
 
     Kinetic.Util.extend(ToggleButton, Button);
@@ -3807,6 +3811,7 @@ function HanabiUI(lobby, gameID) {
             height: 0.06 * winH,
             text: 'Pause Shared Turns',
             alternateText: 'Use Shared Turns',
+            initialState: !ui.applyReplayActions,
             visible: false,
         });
 
