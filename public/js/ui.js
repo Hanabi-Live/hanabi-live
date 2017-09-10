@@ -2533,12 +2533,8 @@ function HanabiUI(lobby, gameID) {
     let clueTargetButtonGroup;
     let clueButtonGroup;
     let submitClue;
-    let timerRect1;
-    let timerLabel1;
-    let timerText1;
-    let timerRect2;
-    let timerLabel2;
-    let timerText2;
+    let timer1;
+    let timer2;
     let noClueLabel;
     let noClueBox;
     let noDiscardLabel;
@@ -3483,125 +3479,36 @@ function HanabiUI(lobby, gameID) {
 
         // We don't want the timer to show in replays
         if (!this.replayOnly) {
-            const timerX = 0.155;
             const timerY = 0.592;
-            const timerX2 = 0.565;
 
-            timerRect1 = new Kinetic.Rect({
-                x: timerX * winW,
+            timer1 = new TimerDisplay({
+                x: 0.155 * winW,
                 y: timerY * winH,
                 width: 0.08 * winW,
                 height: 0.051 * winH,
-                fill: 'black',
+                fontSize: 0.03 * winH,
                 cornerRadius: 0.005 * winH,
-                opacity: 0.2,
+                spaceH: 0.01 * winH,
+                label: 'You',
+                visible: !this.spectating,
             });
-            timerLayer.add(timerRect1);
 
-            timerLabel1 = new Kinetic.Text({
-                x: timerX * winW,
-                y: (timerY + 0.06) * winH,
-                width: 0.08 * winW,
-                height: 0.051 * winH,
-                fontSize: 0.03 * winH,
-                fontFamily: 'Verdana',
-                align: 'center',
-                text: 'You',
-                fill: '#d8d5ef',
-                shadowColor: 'black',
-                shadowBlur: 10,
-                shadowOffset: {
-                    x: 0,
-                    y: 0,
-                },
-                shadowOpacity: 0.9,
-            });
-            timerLayer.add(timerLabel1);
+            timerLayer.add(timer1);
 
-            timerText1 = new Kinetic.Text({
-                x: timerX * winW,
-                y: (timerY + 0.01) * winH,
-                width: 0.08 * winW,
-                height: 0.051 * winH,
-                fontSize: 0.03 * winH,
-                fontFamily: 'Verdana',
-                align: 'center',
-                text: '??:??',
-                fill: '#d8d5ef',
-                shadowColor: 'black',
-                shadowBlur: 10,
-                shadowOffset: {
-                    x: 0,
-                    y: 0,
-                },
-                shadowOpacity: 0.9,
-            });
-            timerLayer.add(timerText1);
-
-            timerRect2 = new Kinetic.Rect({
-                x: timerX2 * winW,
+            timer2 = new TimerDisplay({
+                x: 0.565 * winW,
                 y: timerY * winH,
                 width: 0.08 * winW,
                 height: 0.051 * winH,
-                fill: 'black',
-                cornerRadius: 0.005 * winH,
-                opacity: 0.2,
-            });
-            timerLayer.add(timerRect2);
-
-            timerLabel2 = new Kinetic.Text({
-                x: timerX2 * winW,
-                y: (timerY + 0.06) * winH,
-                width: 0.08 * winW,
-                height: 0.051 * winH,
-                fontSize: 0.02 * winH,
-                fontFamily: 'Verdana',
-                align: 'center',
-                text: 'Current\nPlayer',
-                fill: '#d8d5ef',
-                shadowColor: 'black',
-                shadowBlur: 10,
-                shadowOffset: {
-                    x: 0,
-                    y: 0,
-                },
-                shadowOpacity: 0.9,
-            });
-            timerLayer.add(timerLabel2);
-
-            timerText2 = new Kinetic.Text({
-                x: timerX2 * winW,
-                y: (timerY + 0.01) * winH,
-                width: 0.08 * winW,
-                height: 0.051 * winH,
                 fontSize: 0.03 * winH,
-                fontFamily: 'Verdana',
-                align: 'center',
-                text: '??:??',
-                fill: '#d8d5ef',
-                shadowColor: 'black',
-                shadowBlur: 10,
-                shadowOffset: {
-                    x: 0,
-                    y: 0,
-                },
-                shadowOpacity: 0.9,
+                labelFontSize: 0.02 * winH,
+                cornerRadius: 0.005 * winH,
+                spaceH: 0.01 * winH,
+                label: 'Current\nPlayer',
+                visible: false,
             });
-            timerLayer.add(timerText2);
 
-            // Hide the first timer if spectating
-            if (this.spectating) {
-                timerRect1.hide();
-                timerLabel1.hide();
-                timerText1.hide();
-            }
-
-            // Hide the second timer by default
-            if (!this.spectating) {
-                timerRect2.hide();
-                timerLabel2.hide();
-                timerText2.hide();
-            }
+            timerLayer.add(timer2);
         }
 
         /*
@@ -4647,10 +4554,8 @@ function HanabiUI(lobby, gameID) {
                 nameFrames[i].off('mousemove');
             }
 
-            if (timerRect1) {
-                timerRect1.hide();
-                timerLabel1.hide();
-                timerText1.hide();
+            if (timer1) {
+                timer1.hide();
             }
 
             timerLayer.draw();
@@ -4716,7 +4621,7 @@ function HanabiUI(lobby, gameID) {
         this.stopLocalTimer();
 
         // Check to see if the second timer has been drawn
-        if (typeof timerRect2 === 'undefined') {
+        if (typeof timer2 === 'undefined') {
             return;
         }
 
@@ -4730,7 +4635,7 @@ function HanabiUI(lobby, gameID) {
                 // Invert it to show how much time each player is taking
                 time *= -1;
             }
-            timerText1.setText(millisecondsToTimeDisplay(time));
+            timer1.setText(millisecondsToTimeDisplay(time));
         }
 
         if (!currentUserTurn) {
@@ -4740,13 +4645,11 @@ function HanabiUI(lobby, gameID) {
                 // Invert it to show how much time each player is taking
                 time *= -1;
             }
-            timerText2.setText(millisecondsToTimeDisplay(time));
+            timer2.setText(millisecondsToTimeDisplay(time));
         }
 
         const shoudShowTimer2 = !currentUserTurn && activeIndex !== null;
-        timerRect2.setVisible(shoudShowTimer2);
-        timerLabel2.setVisible(shoudShowTimer2);
-        timerText2.setVisible(shoudShowTimer2);
+        timer2.setVisible(shoudShowTimer2);
 
         timerLayer.draw();
 
@@ -4768,7 +4671,7 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Start the local timer for the active player
-        const activeTimerUIText = currentUserTurn ? timerText1 : timerText2;
+        const activeTimerUIText = currentUserTurn ? timer1 : timer2;
         const textUpdateTargets = [activeTimerUIText, nameFrames[activeIndex].tooltip.getText()];
         ui.timerID = window.setInterval(() => {
             setTickingDownTime(textUpdateTargets, activeIndex);
