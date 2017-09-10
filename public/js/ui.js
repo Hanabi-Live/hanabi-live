@@ -56,6 +56,13 @@ function HanabiUI(lobby, gameID) {
     // Start listening to resize events and draw canvas.
     window.addEventListener('resize', resizeCanvas, false);
 
+    this.stopLocalTimer = function stopLocalTimer() {
+        if (ui.timerID !== null) {
+            window.clearInterval(ui.timerID);
+            ui.timerID = null;
+        }
+    }
+
     function redraw() {
         const self = lobby.ui;
 
@@ -3475,11 +3482,7 @@ function HanabiUI(lobby, gameID) {
             Draw the timer
         */
 
-        if (ui.timerID !== null) {
-            // The callback has references to older copies of ui elements in its closure
-            window.clearInterval(ui.timerID);
-            ui.timerID = null;
-        }
+        this.stopLocalTimer();
 
         // We don't want the timer to show in replays
         if (!this.replayOnly) {
@@ -3809,10 +3812,7 @@ function HanabiUI(lobby, gameID) {
                     resp: {},
                 });
 
-                if (ui.timerID !== null) {
-                    window.clearInterval(ui.timerID);
-                    ui.timerID = null;
-                }
+                this.stopLocalTimer();
 
                 ui.lobby.gameEnded();
             } else {
@@ -4128,10 +4128,7 @@ function HanabiUI(lobby, gameID) {
                 resp: {},
             });
 
-            if (ui.timerID !== null) {
-                window.clearInterval(ui.timerID);
-                ui.timerID = null;
-            }
+            this.stopLocalTimer();
 
             ui.lobby.gameEnded();
         });
@@ -4645,6 +4642,7 @@ function HanabiUI(lobby, gameID) {
 
             timerLayer.draw();
 
+            this.stopLocalTimer();
             this.replayOnly = true;
             replayButton.hide();
             if (!this.replay) {
@@ -4675,10 +4673,7 @@ function HanabiUI(lobby, gameID) {
                 hand.add(child);
             }
         } else if (type === 'boot') {
-            if (ui.timerID !== null) {
-                window.clearInterval(ui.timerID);
-                ui.timerID = null;
-            }
+            this.stopLocalTimer();
 
             alert(`The game was ended by: ${note.who}`);
             ui.lobby.gameEnded();
@@ -4704,10 +4699,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleClock = (activeIndex) => {
-        if (ui.timerID !== null) {
-            window.clearInterval(ui.timerID);
-            ui.timerID = null;
-        }
+        this.stopLocalTimer();
 
         // Check to see if the second timer has been drawn
         if (typeof timerRect2 === 'undefined') {
@@ -5077,10 +5069,7 @@ function HanabiUI(lobby, gameID) {
     this.destroy = function destroy() {
         stage.destroy();
         $(document).unbind('keydown', this.keyNavigation);
-        if (ui.timerID !== null) {
-            window.clearInterval(ui.timerID);
-            ui.timerID = null;
-        }
+        this.stopLocalTimer();
     };
 
     this.replayLog = [];
@@ -5145,6 +5134,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
         this.handleSpectators.call(this, msgData);
     } else if (msgType === 'clock') {
         // This is used for timed games
+        this.stopLocalTimer();
         this.playerTimes = msgData.times;
         this.activeClockIndex = msgData.active;
         this.handleClock.call(this, msgData.active);
