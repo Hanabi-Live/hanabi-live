@@ -49,7 +49,7 @@ function HanabiUI(lobby, gameID) {
 
     // Stored variables for rebuilding the game state
     this.lastAction = null;
-    this.lastClock = [];
+    this.activeClockIndex = null;
     this.lastSpectators = null;
 
     // This below code block deals with automatic resizing
@@ -137,7 +137,7 @@ function HanabiUI(lobby, gameID) {
                 self.handleAction.call(self, self.lastAction);
             }
             // Setup the timers
-            self.handleClock.call(self, self.lastClock);
+            self.handleClock.call(self, self.activeClockIndex);
         }
 
         // Restore Drag and Drop Functionality
@@ -4703,20 +4703,18 @@ function HanabiUI(lobby, gameID) {
         tipLayer.batchDraw();
     };
 
-    this.handleClock = (note) => {
+    this.handleClock = (activeIndex) => {
         if (ui.timerID !== null) {
             window.clearInterval(ui.timerID);
             ui.timerID = null;
         }
-
-        ui.playerTimes = note.times;
 
         // Check to see if the second timer has been drawn
         if (typeof timerRect2 === 'undefined') {
             return;
         }
 
-        const currentUserTurn = note.active === ui.playerUs && !ui.spectating;
+        const currentUserTurn = activeIndex === ui.playerUs && !ui.spectating;
 
         // Update onscreen time displays
         if (!ui.spectating) {
@@ -4731,7 +4729,7 @@ function HanabiUI(lobby, gameID) {
 
         if (!currentUserTurn) {
             // Update the ui with the value of the timer for the active player
-            let time = ui.playerTimes[note.active];
+            let time = ui.playerTimes[activeIndex];
             if (!ui.timedGame) {
                 // Invert it to show how much time each player is taking
                 time *= -1;
@@ -4739,7 +4737,7 @@ function HanabiUI(lobby, gameID) {
             timerText2.setText(millisecondsToTimeDisplay(time));
         }
 
-        const shoudShowTimer2 = !currentUserTurn && note.active !== null;
+        const shoudShowTimer2 = !currentUserTurn && activeIndex !== null;
         timerRect2.setVisible(shoudShowTimer2);
         timerLabel2.setVisible(shoudShowTimer2);
         timerText2.setVisible(shoudShowTimer2);
@@ -4759,15 +4757,15 @@ function HanabiUI(lobby, gameID) {
         tipLayer.draw();
 
         // If no timer is running on the server, do not configure local approximation
-        if (note.active === null) {
+        if (activeIndex === null) {
             return;
         }
 
         // Start the local timer for the active player
         const activeTimerUIText = currentUserTurn ? timerText1 : timerText2;
-        const textUpdateTargets = [activeTimerUIText, nameFrames[note.active].tooltip.getText()];
+        const textUpdateTargets = [activeTimerUIText, nameFrames[activeIndex].tooltip.getText()];
         ui.timerID = window.setInterval(() => {
-            setTickingDownTime(textUpdateTargets, note.active);
+            setTickingDownTime(textUpdateTargets, activeIndex);
         }, 1000);
     };
 
@@ -5146,9 +5144,10 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
         // This is used to update the names of the people currently spectating the game
         this.handleSpectators.call(this, msgData);
     } else if (msgType === 'clock') {
-        this.lastClock = msgData;
         // This is used for timed games
-        this.handleClock.call(this, msgData);
+        this.playerTimes = msgData.times;
+        this.activeClockIndex = msgData.active;
+        this.handleClock.call(this, msgData.active);
     } else if (msgType === 'note') {
         // This is used for spectators
         this.handleNote.call(this, msgData);
