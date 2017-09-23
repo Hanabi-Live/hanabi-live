@@ -19,6 +19,7 @@ function HanabiLobby() {
     // The lobby settings found in the gear sub-menu
     this.sendTurnNotify = false;
     this.sendTurnSound = true; // We want sounds by default
+    this.sendTimerSound = true;
     this.sendChatNotify = false;
     this.sendChatSound = false;
     this.showColorblindUI = false;
@@ -1133,6 +1134,10 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
         [
             'send-turn-sound',
             'sendTurnSound',
+        ],
+        [
+            'send-timer-sound',
+            'sendTimerSound',
         ],
         [
             'send-chat-notification',

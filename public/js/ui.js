@@ -287,7 +287,7 @@ function HanabiUI(lobby, gameID) {
         // Do not play it more frequently than about once per second
         if (
             ui.timedGame &&
-            lobby.sendTurnSound &&
+            lobby.sendTimerSound &&
             millisecondsLeft > 0 &&
             millisecondsLeft <= 5000 &&
             timeElapsed > 900 &&
