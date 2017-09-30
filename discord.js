@@ -1,15 +1,32 @@
 // Imports
 const Discord = require('discord.js');
 const logger = require('./logger');
-const globals = require('./globals');
 const messages = require('./messages');
 const keldon = require('./keldon');
 
 // Import the environment variables defined in the ".env" file
+// (this has to be in every file that accesses any environment varaibles)
 require('dotenv').config();
 
+// Local variables
 let client = null;
-if (process.env.DISCORD_TOKEN.length !== 0 && globals.enableDiscordBot) {
+let listenChannelIDs = '';
+
+discordInit();
+
+function discordInit() {
+    // Don't enable the bot is the token is not specified
+    if (process.env.DISCORD_TOKEN.length === 0) {
+        return;
+    }
+
+    // Find out which channels to listen to
+    listenChannelIDs = process.env.DISCORD_LISTEN_CHANNEL_IDS;
+    if (listenChannelIDs === '') {
+        return;
+    }
+    listenChannelIDs = listenChannelIDs.split(',');
+
     // Create a new client, expose it to the rest of the application, and login
     // with our application token
     client = new Discord.Client();
@@ -18,57 +35,67 @@ if (process.env.DISCORD_TOKEN.length !== 0 && globals.enableDiscordBot) {
     // To set up a new bot, follow these instructions:
     // https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
 
-    /*
-        Event callbacks
-    */
-
+    // Specify client callbacks
     client.on('ready', () => {
         logger.info('Discord bot has connected.');
     });
+    client.on('message', discordMessage);
+}
 
-    client.on('message', (message) => {
-        // Don't do anything if we are the author of the message
-        // (or if the message was created by another bot)
-        if (!('author' in message)) {
-            return;
-        } else if (!('bot' in message.author)) {
-            return;
-        } else if (message.author.bot) {
-            return;
-        }
+function discordMessage(message) {
+    // Validate that the message has some basic properties
+    if (!('author' in message)) {
+        logger.error('Failed to parse the "author" field from the Discord message.');
+        return;
+    } else if (!('channel' in message)) {
+        logger.error('Failed to parse the "channel" field from the Discord message.');
+        return;
+    } else if (!('id' in message.channel)) {
+        logger.error('Failed to parse the "channel.id" field from the Discord message.');
+        return;
+    } else if (!('username' in message.author)) {
+        logger.error('Failed to parse the "author.username" field from the Discord message.');
+        return;
+    } else if (!('discriminator' in message.author)) {
+        logger.error('Failed to parse the "author.discriminator" field from the Discord message.');
+        return;
+    } else if (!('bot' in message.author)) {
+        logger.error('Failed to parse the "author.bot" field from the Discord message.');
+        return;
+    } else if (!('content' in message)) {
+        logger.error('Failed to parse the "content" field from the Discord message.');
+        return;
+    }
 
-        // Only replicate messages from the "#general" channel
-        if (!('channel' in message)) {
-            return;
-        } else if (!('name' in message.channel)) {
-            return;
-        } else if (message.channel.name !== 'general') {
-            return;
-        }
+    // Don't do anything if we are the author of the message
+    // (or if the message was created by another bot)
+    if (message.author.bot) {
+        return;
+    }
 
-        // Replicate the message from the Discord server to the lobby
-        if (!('username' in message.author)) {
-            return;
-        } else if (!('discriminator' in message.author)) {
-            return;
-        }
-        const username = `${message.author.username}#${message.author.discriminator}`;
-        const socket = {
-            userID: 1, // The first user ID is reserved for server messages
-            username,
-        };
-        const data = {
-            msg: message.content,
-        };
-        messages.chat.step1(socket, data);
+    // Only replicate messages from the listed channels
+    if (listenChannelIDs.indexOf(message.channel.id) === -1) {
+        return;
+    }
 
-        // Also replicate the message to the Keldon lobby
-        keldon.sendChat(`<${username}> ${message.content}`);
-    });
+    // Replicate the message from the Discord server to the lobby
+    const username = `${message.author.username}#${message.author.discriminator}`;
+    const socket = {
+        userID: 1, // The first user ID is reserved for server messages
+        username,
+    };
+    const data = {
+        msg: message.content,
+    };
+    messages.chat.step1(socket, data);
+
+    // Also replicate the message to the Keldon lobby
+    keldon.sendChat(`<${username}> ${message.content}`);
 }
 
 exports.send = (from, username, message) => {
-    if (client === null) {
+    const outputChannelID = process.env.DISCORD_OUTPUT_CHANNEL_ID;
+    if (outputChannelID.length === 0) {
         return;
     }
 
@@ -78,6 +105,8 @@ exports.send = (from, username, message) => {
 
     // A guild is a server in Discord
     // The bot should only be in one server, so it will be at array index 0
-    const channel = client.guilds.array()[0].defaultChannel;
-    channel.send(messageString);
+    const channel = client.guilds.array()[0].channels.get(outputChannelID);
+    if (channel) {
+        channel.send(messageString);
+    }
 };

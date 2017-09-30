@@ -2,14 +2,12 @@
 const port = 3000;
 const startingTime = 5 * 60 * 1000; // In milliseconds
 const extraTurnTime = 10 * 1000; // In milliseconds
-const enableDiscordBot = true;
 const enableKeldonBot = true;
 
 // The object that contains all of the global variables
 module.exports = {
     connectedUsers: {}, // Indexed by ID
     currentGames: {}, // Indexed by ID
-    enableDiscordBot,
     enableKeldonBot,
     extraTurnTime,
     startingTime,
