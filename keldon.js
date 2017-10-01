@@ -4,6 +4,7 @@ const globals = require('./globals');
 const discord = require('./discord');
 
 // Import the environment variables defined in the ".env" file
+// (this has to be in every file that accesses any environment varaibles)
 require('dotenv').config();
 
 // Configuration
@@ -11,7 +12,7 @@ const url = 'http://keldon.net:32221/';
 const username = process.env.KELDON_USER;
 const password = process.env.KELDON_PASS;
 
-// Connect
+// Local variables
 let socket = null;
 
 // Only connect if the user has specified values in the .env file
@@ -32,61 +33,63 @@ if (username.length > 0 && password.length > 0 && globals.useKeldonBot) {
 
     // Look for chat messages
     // E.g. { type: 'chat', resp: { who: 'Zamiel', msg: 'hi' } }
-    socket.on('message', (msg) => {
-        // Debug
-        /*
-        console.log('Received a Keldon message:');
-        console.log(msg);
-        */
+    socket.on('message', keldonMessage);
+}
 
-        // Validate that the message has a type
-        if (!('type' in msg)) {
+function keldonMessage(msg) {
+    /*
+    // Uncomment this when debugging
+    console.log('Received a Keldon message:');
+    console.log(msg);
+    */
+
+    // Validate that the message has a type
+    if (!('type' in msg)) {
+        return;
+    }
+
+    if (msg.type === 'chat') {
+        if (!('resp' in msg)) {
             return;
         }
 
-        if (msg.type === 'chat') {
-            if (!('resp' in msg)) {
-                return;
-            }
-
-            if (!('who' in msg.resp)) {
-                return;
-            }
-
-            if (msg.resp.who === null) {
-                // Filter out server messages
-                // E.g. "Welcome to Hanabi"
-                return;
-            }
-
-            if (typeof msg.resp.who !== 'string') {
-                return;
-            }
-
-            if (msg.resp.who.length === 0) {
-                return;
-            }
-
-            if (msg.resp.who === process.env.KELDON_USER) {
-                // Filter out messages from ourselves
-                return;
-            }
-
-            if (!('msg' in msg.resp)) {
-                return;
-            }
-
-            if (typeof msg.resp.msg !== 'string') {
-                return;
-            }
-
-            if (msg.resp.msg.length === 0) {
-                return;
-            }
-
-            discord.send('Keldon-Lobby', msg.resp.who, msg.resp.msg);
+        if (!('who' in msg.resp)) {
+            return;
         }
-    });
+
+        if (msg.resp.who === null) {
+            // Filter out server messages
+            // E.g. "Welcome to Hanabi"
+            return;
+        }
+
+        if (typeof msg.resp.who !== 'string') {
+            return;
+        }
+
+        if (msg.resp.who.length === 0) {
+            return;
+        }
+
+        if (msg.resp.who === process.env.KELDON_USER) {
+            // Filter out messages from ourselves
+            return;
+        }
+
+        if (!('msg' in msg.resp)) {
+            return;
+        }
+
+        if (typeof msg.resp.msg !== 'string') {
+            return;
+        }
+
+        if (msg.resp.msg.length === 0) {
+            return;
+        }
+
+        discord.send('Keldon-Lobby', msg.resp.who, msg.resp.msg);
+    }
 }
 
 exports.sendChat = (msg) => {

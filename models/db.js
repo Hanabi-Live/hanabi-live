@@ -3,6 +3,7 @@ const mysql = require('mysql');
 const logger = require('../logger');
 
 // Import the environment variables defined in the ".env" file
+// (this has to be in every file that accesses any environment varaibles)
 require('dotenv').config();
 
 // Configuration
