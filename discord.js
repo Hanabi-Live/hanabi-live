@@ -10,22 +10,21 @@ require('dotenv').config();
 
 // Local variables
 let client = null;
-let listenChannelIDs = '';
+let listenChannelIDs = null;
 
 discordInit();
 
 function discordInit() {
-    // Don't enable the bot is the token is not specified
+    // Enable the bot only if the token is specified
     if (process.env.DISCORD_TOKEN.length === 0) {
         return;
     }
 
     // Find out which channels to listen to
-    listenChannelIDs = process.env.DISCORD_LISTEN_CHANNEL_IDS;
-    if (listenChannelIDs === '') {
+    if (process.env.DISCORD_LISTEN_CHANNEL_IDS === '') {
         return;
     }
-    listenChannelIDs = listenChannelIDs.split(',');
+    listenChannelIDs = process.env.DISCORD_LISTEN_CHANNEL_IDS.split(',');
 
     // Create a new client, expose it to the rest of the application, and login
     // with our application token
