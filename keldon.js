@@ -1,6 +1,5 @@
 // Imports
 const client = require('socket.io-client');
-const globals = require('./globals');
 const discord = require('./discord');
 
 // Import the environment variables defined in the ".env" file
@@ -16,7 +15,7 @@ const password = process.env.KELDON_PASS;
 let socket = null;
 
 // Only connect if the user has specified values in the .env file
-if (username.length > 0 && password.length > 0 && globals.useKeldonBot) {
+if (username.length > 0 && password.length > 0) {
     socket = client.connect(url);
 
     socket.emit('message', {
@@ -48,48 +47,52 @@ function keldonMessage(msg) {
         return;
     }
 
-    if (msg.type === 'chat') {
-        if (!('resp' in msg)) {
-            return;
-        }
-
-        if (!('who' in msg.resp)) {
-            return;
-        }
-
-        if (msg.resp.who === null) {
-            // Filter out server messages
-            // E.g. "Welcome to Hanabi"
-            return;
-        }
-
-        if (typeof msg.resp.who !== 'string') {
-            return;
-        }
-
-        if (msg.resp.who.length === 0) {
-            return;
-        }
-
-        if (msg.resp.who === process.env.KELDON_USER) {
-            // Filter out messages from ourselves
-            return;
-        }
-
-        if (!('msg' in msg.resp)) {
-            return;
-        }
-
-        if (typeof msg.resp.msg !== 'string') {
-            return;
-        }
-
-        if (msg.resp.msg.length === 0) {
-            return;
-        }
-
-        discord.send('Keldon-Lobby', msg.resp.who, msg.resp.msg);
+    // We only care about chat messages
+    // (there are other types of messages, such when people create a new table, and so forth)
+    if (msg.type !== 'chat') {
+        return;
     }
+
+    if (!('resp' in msg)) {
+        return;
+    }
+
+    if (!('who' in msg.resp)) {
+        return;
+    }
+
+    if (msg.resp.who === null) {
+        // Filter out server messages
+        // E.g. "Welcome to Hanabi"
+        return;
+    }
+
+    if (typeof msg.resp.who !== 'string') {
+        return;
+    }
+
+    if (msg.resp.who.length === 0) {
+        return;
+    }
+
+    if (msg.resp.who === process.env.KELDON_USER) {
+        // Filter out messages from ourselves
+        return;
+    }
+
+    if (!('msg' in msg.resp)) {
+        return;
+    }
+
+    if (typeof msg.resp.msg !== 'string') {
+        return;
+    }
+
+    if (msg.resp.msg.length === 0) {
+        return;
+    }
+
+    discord.send('Keldon-Lobby', msg.resp.who, msg.resp.msg);
 }
 
 exports.sendChat = (msg) => {
