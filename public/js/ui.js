@@ -61,7 +61,7 @@ function HanabiUI(lobby, gameID) {
             window.clearInterval(ui.timerID);
             ui.timerID = null;
         }
-    }
+    };
 
     function redraw() {
         const self = lobby.ui;
@@ -1447,7 +1447,7 @@ function HanabiUI(lobby, gameID) {
     const ClueRecipientButton = function ClueRecipientButton(config) {
         Button.call(this, config);
         this.targetIndex = config.targetIndex;
-    }
+    };
 
     Kinetic.Util.extend(ClueRecipientButton, Button);
 
@@ -1625,7 +1625,7 @@ function HanabiUI(lobby, gameID) {
         if (config.initialState) {
             toggle();
         }
-    }
+    };
 
     Kinetic.Util.extend(ToggleButton, Button);
 
