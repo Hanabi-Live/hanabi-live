@@ -1379,7 +1379,7 @@ function HanabiUI(lobby, gameID) {
                 text: config.text,
             });
 
-            this.setText = (display) => text.setText(display);
+            this.setText = display => text.setText(display);
 
             this.add(text);
         } else if (config.image) {
