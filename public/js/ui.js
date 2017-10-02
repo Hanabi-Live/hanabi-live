@@ -320,6 +320,7 @@ function HanabiUI(lobby, gameID) {
         let src = cardImages[name];
 
         if (!src) {
+            console.error(`The image '${name}' was not generated.`);
             return;
         }
 
