@@ -302,14 +302,16 @@ function HanabiUI(lobby, gameID) {
         let suitName = SUIT.GRAY.name;
         let rank = 6;
         const learnedCard = ui.learnedCards[card.order];
-        const isLearnedCard = (ui.replay && learnedCard);
-        if (isLearnedCard) {
+        const showLearnedCards = ui.replay;
+
+        if (showLearnedCards) {
             if (learnedCard.suit) suitName = learnedCard.suit.name;
             if (learnedCard.rank) rank = learnedCard.rank;
         } else {
             if (card.suitKnown()) suitName = card.trueSuit.name;
             if (card.rankKnown()) rank = card.trueRank;
         }
+
         return `${prefix}-${suitName}-${rank}`;
     }
 
@@ -634,7 +636,7 @@ function HanabiUI(lobby, gameID) {
         // possible suits and ranks (based on clues given) are tracked separately from knowledge of
         // the true suit and rank
         this.possibleSuits = config.suits;
-        this.possibleRanks = [1, 2, 3, 4, 5];
+        this.possibleRanks = config.ranks;
         this.rankPips = new Kinetic.Group({
             x: 0,
             y: Math.floor(CARDH * 0.85),
@@ -715,10 +717,10 @@ function HanabiUI(lobby, gameID) {
         }
 
         if (this.identityKnown()) {
-            ui.learnedCards[this.order] = {
-                suit: this.trueSuit,
-                rank: this.trueRank,
-            };
+            ui.learnedCards[this.order].suit = this.trueSuit;
+            ui.learnedCards[this.order].possibleSuits = [this.trueSuit];
+            ui.learnedCards[this.order].rank = this.trueRank;
+            ui.learnedCards[this.order].possibleRanks = [this.trueRank];
         }
 
         this.barename = '';
@@ -955,7 +957,6 @@ function HanabiUI(lobby, gameID) {
             // know the ACTUAL card
             if (
                 ui.replay &&
-                learned &&
                 // whether or not the true suit or rank is known in the present but not at this
                 // point in the replay
                 ((!this.suitKnown() && learned.suit) || (!this.rankKnown() && learned.rank))
@@ -980,34 +981,41 @@ function HanabiUI(lobby, gameID) {
         this.getLayer().batchDraw();
     };
 
-    HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
-        if (!ui.learnedCards[this.order]) {
-            ui.learnedCards[this.order] = {};
+    const filterInPlace = function filterInPlace(values, predicate) {
+        const removed = [];
+        let i = values.length - 1;
+        while (i >= 0) {
+            if (!predicate(values[i], i)) {
+                removed.unshift(values.splice(i, 1)[0]);
+            }
+            i -= 1;
         }
+        return removed;
+    };
+
+    HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
         if (clue.type === CLUE_TYPE.COLOR) {
             const clueColor = clue.value;
-            this.possibleSuits = this.possibleSuits.filter((suit) => {
-                const remove = suit.clueColors.includes(clueColor) !== positive;
-                if (remove) this.suitPips.find(`.${suit.name}`).hide();
-                return !remove;
-            });
+            const removed = filterInPlace(this.possibleSuits, suit => suit.clueColors.includes(clueColor) === positive);
+            removed.forEach(suit => this.suitPips.find(`.${suit.name}`).hide());
             if (this.possibleSuits.length === 1) {
                 this.trueSuit = this.possibleSuits[0];
                 this.suitPips.hide();
                 ui.learnedCards[this.order].suit = this.trueSuit;
             }
+            // Ensure that the learned card data is not overwritten with less recent information
+            filterInPlace(ui.learnedCards[this.order].possibleSuits, s => this.possibleSuits.includes(s));
         } else {
             const clueRank = clue.value;
-            this.possibleRanks = this.possibleRanks.filter((rank) => {
-                const remove = (rank === clueRank) !== positive;
-                if (remove) this.rankPips.find(`.${rank}`).hide();
-                return !remove;
-            });
+            const removed = filterInPlace(this.possibleRanks, rank => (rank === clueRank) === positive);
+            removed.forEach(rank => this.rankPips.find(`.${rank}`).hide());
             if (this.possibleRanks.length === 1) {
                 this.trueRank = this.possibleRanks[0];
                 this.rankPips.hide();
                 ui.learnedCards[this.order].rank = this.trueRank;
             }
+            // Ensure that the learned card data is not overwritten with less recent information
+            filterInPlace(ui.learnedCards[this.order].possibleRanks, s => this.possibleRanks.includes(s));
         }
     };
 
@@ -4390,11 +4398,18 @@ function HanabiUI(lobby, gameID) {
 
         if (type === 'draw') {
             const suit = msgSuitToSuit(note.suit, ui.variant);
+            if (!ui.learnedCards[note.order]) {
+                ui.learnedCards[note.order] = {
+                    possibleSuits: this.variant.suits.slice(),
+                    possibleRanks: this.variant.ranks.slice(),
+                };
+            }
             ui.deck[note.order] = new HanabiCard({
                 suit,
                 rank: note.rank,
                 order: note.order,
-                suits: this.variant.suits,
+                suits: this.variant.suits.slice(),
+                ranks: this.variant.ranks.slice(),
             });
 
             const child = new LayoutChild();
@@ -4421,14 +4436,16 @@ function HanabiUI(lobby, gameID) {
 
             const child = ui.deck[note.which.order].parent;
 
+            ui.learnedCards[note.which.order].suit = suit;
+            ui.learnedCards[note.which.order].rank = note.which.rank;
+            ui.learnedCards[note.which.order].possibleSuits = [suit];
+            ui.learnedCards[note.which.order].possibleRanks = [note.which.rank];
+            ui.learnedCards[note.which.order].revealed = true;
+
             ui.deck[note.which.order].trueSuit = suit;
             ui.deck[note.which.order].trueRank = note.which.rank;
-            ui.learnedCards[note.which.order] = {
-                suit,
-                rank: note.which.rank,
-                revealed: true,
-            };
             ui.deck[note.which.order].setBareImage();
+
             ui.deck[note.which.order].hideClues();
 
             const pos = child.getAbsolutePosition();
@@ -4449,14 +4466,16 @@ function HanabiUI(lobby, gameID) {
 
             const child = ui.deck[note.which.order].parent;
 
+            ui.learnedCards[note.which.order].suit = suit;
+            ui.learnedCards[note.which.order].rank = note.which.rank;
+            ui.learnedCards[note.which.order].possibleSuits = [suit];
+            ui.learnedCards[note.which.order].possibleRanks = [note.which.rank];
+            ui.learnedCards[note.which.order].revealed = true;
+
             ui.deck[note.which.order].trueSuit = suit;
             ui.deck[note.which.order].trueRank = note.which.rank;
-            ui.learnedCards[note.which.order] = {
-                suit,
-                rank: note.which.rank,
-                revealed: true,
-            };
             ui.deck[note.which.order].setBareImage();
+
             ui.deck[note.which.order].hideClues();
 
             const pos = child.getAbsolutePosition();
@@ -4495,16 +4514,17 @@ function HanabiUI(lobby, gameID) {
             const suit = msgSuitToSuit(note.which.suit, ui.variant);
             const card = ui.deck[note.which.order];
 
+            ui.learnedCards[note.which.order].suit = suit;
+            ui.learnedCards[note.which.order].rank = note.which.rank;
+            ui.learnedCards[note.which.order].possibleSuits = [suit];
+            ui.learnedCards[note.which.order].possibleRanks = [note.which.rank];
+            ui.learnedCards[note.which.order].revealed = true;
+
             card.trueSuit = suit;
             card.trueRank = note.which.rank;
-            ui.learnedCards[note.which.order] = {
-                suit,
-                rank: note.which.rank,
-                revealed: true,
-            };
             card.setBareImage();
-            card.hideClues();
 
+            card.hideClues();
             card.suitPips.hide();
             card.rankPips.hide();
 

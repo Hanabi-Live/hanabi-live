@@ -505,6 +505,7 @@
 
     const Variant = function Variant(suits, clueColors, showSuitNames) {
         this.suits = suits;
+        this.ranks = [1, 2, 3, 4, 5];
         this.clueColors = clueColors;
         // We draw the text below the suits for confusing variants
         this.showSuitNames = showSuitNames;
