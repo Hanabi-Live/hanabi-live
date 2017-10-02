@@ -980,15 +980,14 @@ function HanabiUI(lobby, gameID) {
         this.getLayer().batchDraw();
     };
 
-    // TODO: refactor addNegativeClue and addClue into one function to avoid repeating code
-    HanabiCard.prototype.addNegativeClue = function addNegativeClue(clue) {
+    HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
         if (!ui.learnedCards[this.order]) {
             ui.learnedCards[this.order] = {};
         }
         if (clue.type === CLUE_TYPE.COLOR) {
             const clueColor = clue.value;
             this.possibleSuits = this.possibleSuits.filter((suit) => {
-                const remove = suit.clueColors.includes(clueColor);
+                const remove = suit.clueColors.includes(clueColor) !== positive;
                 if (remove) this.suitPips.find(`.${suit.name}`).hide();
                 return !remove;
             });
@@ -999,42 +998,16 @@ function HanabiUI(lobby, gameID) {
             }
         } else {
             const clueRank = clue.value;
-            this.rankPips.find(`.${clueRank}`).hide();
-            this.possibleRanks = this.possibleRanks.filter(
-                rank => rank !== clueRank,
-            );
+            this.possibleRanks = this.possibleRanks.filter((rank) => {
+                const remove = (rank === clueRank) !== positive;
+                if (remove) this.rankPips.find(`.${rank}`).hide();
+                return !remove;
+            });
             if (this.possibleRanks.length === 1) {
                 this.trueRank = this.possibleRanks[0];
                 this.rankPips.hide();
                 ui.learnedCards[this.order].rank = this.trueRank;
             }
-        }
-    };
-
-    // TODO: add in color letters for colorblind mode
-    HanabiCard.prototype.addClue = function addClue(clue) {
-        if (!ui.learnedCards[this.order]) {
-            ui.learnedCards[this.order] = {};
-        }
-
-        if (clue.type === CLUE_TYPE.COLOR) {
-            // Draw the color squares
-            const clueColor = clue.value;
-            this.possibleSuits = this.possibleSuits.filter((suit) => {
-                const remove = !suit.clueColors.includes(clueColor);
-                if (remove) this.suitPips.find(`.${suit.name}`).hide();
-                return !remove;
-            });
-            if (this.possibleSuits.length === 1) {
-                this.trueSuit = this.possibleSuits[0];
-                this.suitPips.hide();
-                ui.learnedCards[this.order].suit = this.trueSuit;
-            }
-        } else {
-            this.rankPips.hide();
-            const clueRank = clue.value;
-            this.trueRank = clueRank;
-            ui.learnedCards[this.order].rank = clueRank;
         }
     };
 
@@ -4547,7 +4520,7 @@ function HanabiUI(lobby, gameID) {
                 ui.deck[note.list[i]].clueGiven.show();
 
                 if (note.target === ui.playerUs && !ui.replayOnly && !ui.spectating) {
-                    ui.deck[note.list[i]].addClue(clue);
+                    ui.deck[note.list[i]].applyClue(clue, true);
                     ui.deck[note.list[i]].setBareImage();
                 }
             }
@@ -4562,7 +4535,7 @@ function HanabiUI(lobby, gameID) {
 
                 if (note.list.indexOf(order) < 0) {
                     neglist.push(order);
-                    card.addNegativeClue(clue);
+                    card.applyClue(clue, false);
                     card.setBareImage();
                 }
             }
