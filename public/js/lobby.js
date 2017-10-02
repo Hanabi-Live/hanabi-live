@@ -700,8 +700,6 @@ HanabiLobby.prototype.makeHistoryDetailsButton = function makeHistoryDetailsButt
 };
 
 HanabiLobby.prototype.drawHistory = function drawHistory() {
-    const self = this;
-
     const div = $('#history-list');
 
     div.html('');
@@ -759,8 +757,6 @@ HanabiLobby.prototype.addHistoryDetail = function addHistoryDetail(data) {
 // This function is called once for each new history element received from the server
 // The last message is not marked, so each iteration redraws all historyDetailList items
 HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
-    const self = this;
-
     const div = $('#history-details-list');
 
     if (!this.historyDetailList.length) {
