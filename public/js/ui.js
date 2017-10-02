@@ -1617,7 +1617,9 @@ function HanabiUI(lobby, gameID) {
         const toggle = () => {
             toggleState = !toggleState;
             this.setText(toggleState ? config.alternateText : config.text);
-            this.getLayer() && this.getLayer().batchDraw();
+            if (this.getLayer()) {
+                this.getLayer().batchDraw();
+            }
         };
 
         this.on('click tap', toggle);
