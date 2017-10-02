@@ -650,7 +650,7 @@ HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msg
     button.addClass('enter-history-game');
     button.attr('id', `replay-${id}`);
 
-    button.on('click', function startReplayClick(event) {
+    button.on('click', (event) => {
         event.preventDefault();
 
         self.gameID = id;
@@ -681,7 +681,7 @@ HanabiLobby.prototype.makeHistoryDetailsButton = function makeHistoryDetailsButt
     button.addClass('history-others');
     button.attr('id', `history-details-${id}`);
 
-    button.on('click', function startHistoryDetailClick(event) {
+    button.on('click', (event) => {
         event.preventDefault();
 
         self.gameID = id;
