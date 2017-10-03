@@ -4519,16 +4519,20 @@ function HanabiUI(lobby, gameID) {
             clueLog.checkExpiry();
         } else if (type === 'reveal') {
             const suit = msgSuitToSuit(note.which.suit, ui.variant);
+            const card = ui.deck[note.which.order];
 
-            ui.deck[note.which.order].trueSuit = suit;
-            ui.deck[note.which.order].trueRank = note.which.rank;
+            card.trueSuit = suit;
+            card.trueRank = note.which.rank;
             ui.learnedCards[note.which.order] = {
                 suit,
                 rank: note.which.rank,
                 revealed: true,
             };
-            ui.deck[note.which.order].setBareImage();
-            ui.deck[note.which.order].hideClues();
+            card.setBareImage();
+            card.hideClues();
+
+            card.suitPips.hide();
+            card.rankPips.hide();
 
             if (!this.animateFast) {
                 cardLayer.draw();
