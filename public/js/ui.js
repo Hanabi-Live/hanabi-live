@@ -32,8 +32,8 @@ function HanabiUI(lobby, gameID) {
     this.replayMax = 0;
     this.animateFast = true;
     this.ready = false;
-    // In replays, we can show a grayed-out version of a card face if it was not
-    // known at the time, but we know it now; these are cards we have "learned"
+    // In replays, we can show information about a card that was not
+    // known at the time, but is known now; these are cards we have "learned"
     this.learnedCards = [];
 
     this.activeHover = null;
@@ -2164,7 +2164,7 @@ function HanabiUI(lobby, gameID) {
         const xrad = CARDW * 0.08;
         const yrad = CARDH * 0.08;
 
-        // 0-5 are the real suits; 6 is a "white" suit for replays
+        // The Gray suit represents cards of unknown suit
         const suits = this.variant.suits.concat(SUIT.GRAY);
         for (const suit of suits) {
             // 0 is the stack base. 1-5 are the cards 1-5. 6 is a numberless card for replays.

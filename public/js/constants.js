@@ -480,7 +480,7 @@
             exports.SHAPE.CRESCENT,
             [exports.COLOR.WHITE],
         ),
-        // Gray suit is for replays
+        // Gray suit represents cards of unknown suit. It must not be included in variants.
         GRAY: new Suit(
             'Gray',
             '',
