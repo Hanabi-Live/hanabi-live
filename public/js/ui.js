@@ -662,6 +662,9 @@ function HanabiUI(lobby, gameID) {
                     stroke: 'black',
                     name: i.toString(),
                 });
+                if (!ui.learnedCards[this.order].possibleRanks.includes(i)) {
+                    rankPip.setOpacity(0.3);
+                }
                 this.rankPips.add(rankPip);
             }
         }
@@ -711,6 +714,9 @@ function HanabiUI(lobby, gameID) {
                     suitPip.fill('#ffff00');
                 }
                 suitPip.rotation(0);
+                if (!ui.learnedCards[this.order].possibleSuits.includes(suit)) {
+                    suitPip.setOpacity(0.4);
+                }
                 this.suitPips.add(suitPip);
                 i += 1;
             }
