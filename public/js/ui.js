@@ -969,13 +969,13 @@ function HanabiUI(lobby, gameID) {
         this.barename = imageName(this);
     };
 
-    HanabiCard.prototype.setIndicator = function setIndicator(indicate, negative, dashed) {
+    HanabiCard.prototype.setIndicator = function setIndicator(indicate, negative = false, dashed = false) {
         if (negative) {
             this.indicateRect.setStroke('#ff7777');
         } else {
             this.indicateRect.setStroke('#ddeecc');
         }
-        this.indicateRect.setDashEnabled(dashed || false);
+        this.indicateRect.setDashEnabled(dashed);
         this.indicateRect.setVisible(indicate);
         this.getLayer().batchDraw();
     };
