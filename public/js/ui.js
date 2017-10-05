@@ -608,19 +608,6 @@ function HanabiUI(lobby, gameID) {
 
         this.add(this.bare);
 
-        // unknownRect is a transparent white overlay box we can draw over the card.
-        this.unknownRect = new Kinetic.Rect({
-            x: 0,
-            y: 0,
-            width: config.width,
-            height: config.height,
-            cornerRadius: 20,
-            fill: '#cccccc',
-            opacity: 0.5,
-            visible: false,
-        });
-        this.add(this.unknownRect);
-
         this.trueSuit = config.suit || undefined;
         this.trueRank = config.rank || undefined;
         this.suitKnown = function suitKnown() {
@@ -962,22 +949,6 @@ function HanabiUI(lobby, gameID) {
     };
 
     HanabiCard.prototype.setBareImage = function setBareImage() {
-        if (this.unknownRect !== undefined) {
-            const learned = ui.learnedCards[this.order];
-            // If we're in a replay, we have knowledge about the card, but we don't
-            // know the ACTUAL card
-            if (
-                ui.replay &&
-                // whether or not the true suit or rank is known in the present but not at this
-                // point in the replay
-                ((!this.suitKnown() && learned.suit) || (!this.rankKnown() && learned.rank))
-            ) {
-                this.unknownRect.setVisible(true);
-            } else {
-                this.unknownRect.setVisible(false);
-            }
-        }
-
         this.barename = imageName(this);
     };
 
