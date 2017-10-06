@@ -714,9 +714,14 @@ function HanabiUI(lobby, gameID) {
                     suitPip.fill('#ffff00');
                 }
                 suitPip.rotation(0);
+
+                // Reduce opactity of eliminated suits and outline remaining suits
                 if (!ui.learnedCards[this.order].possibleSuits.includes(suit)) {
                     suitPip.setOpacity(0.4);
+                } else if (ui.learnedCards[this.order].possibleSuits.length < this.possibleSuits.length) {
+                    suitPip.setStrokeWidth(5);
                 }
+
                 this.suitPips.add(suitPip);
                 i += 1;
             }
