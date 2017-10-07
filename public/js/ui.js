@@ -652,15 +652,15 @@ function HanabiUI(lobby, gameID) {
         this.add(this.rankPips);
         this.add(this.suitPips);
         if (!this.rankKnown()) {
-            for (let i = 0; i < 5; i++) {
+            for (let i = 1; i <= 5; i++) {
                 const rankPip = new Kinetic.Rect({
-                    x: Math.floor(CARDW * 0.05 + i * CARDW * 0.19),
+                    x: Math.floor(CARDW * (i * 0.19 - 0.14)),
                     y: 0,
                     width: Math.floor(CARDW * 0.15),
                     height: Math.floor(CARDH * 0.10),
                     fill: 'black',
                     stroke: 'black',
-                    name: (i + 1).toString(),
+                    name: i.toString(),
                 });
                 this.rankPips.add(rankPip);
             }
