@@ -720,7 +720,7 @@ function HanabiUI(lobby, gameID) {
                 // Reduce opactity of eliminated suits and outline remaining suits
                 if (!ui.learnedCards[this.order].possibleSuits.includes(suit)) {
                     suitPip.setOpacity(0.4);
-                } else if (ui.learnedCards[this.order].possibleSuits.length < this.possibleSuits.length) {
+                } else {
                     suitPip.setStrokeWidth(5);
                 }
 
