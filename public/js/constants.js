@@ -42,15 +42,19 @@
     exports.PATHFUNC.set(
         exports.SHAPE.DIAMOND,
         (ctx) => {
-            const w = 75;
-            const h = 100;
+            const w = 70;
+            const h = 80;
+
+            // Expected bounding box requires these offsets
+            const offsetX = 75 - w;
+            const offsetY = 100 - h;
             const points = [
                 [1, 0],
                 [2, 1],
                 [1, 2],
                 [0, 1],
             ]
-            .map(point => [point[0] * w, point[1] * h]);
+            .map(point => [point[0] * w + offsetX, point[1] * h + offsetY]);
             const curveX = 1.46;
             const curveY = 0.6;
             const interps = [
@@ -60,8 +64,8 @@
                 [1, 0],
             ]
             .map(v => [
-                [curveX, 2 - curveX][v[0]] * w,
-                [curveY, 2 - curveY][v[1]] * h,
+                [curveX, 2 - curveX][v[0]] * w + offsetX,
+                [curveY, 2 - curveY][v[1]] * h + offsetY,
             ]);
 
             ctx.beginPath();
