@@ -936,12 +936,6 @@ HanabiLobby.prototype.gameStarted = function gameStarted(data) {
     this.ui.setBackend(this.conn);
 };
 
-HanabiLobby.prototype.resizeCanvas = function resizeCanvas() {
-    this.ui.destroy();
-    this.ui = new HanabiUI(this, this.gameID);
-    this.ui.setBackend(this.conn);
-};
-
 HanabiLobby.prototype.gameEnded = function gameEnded(data) {
     this.ui.destroy();
 

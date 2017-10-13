@@ -5083,6 +5083,7 @@ function HanabiUI(lobby, gameID) {
 
     this.destroy = function destroy() {
         stage.destroy();
+        window.removeEventListener('resize', resizeCanvas, false);
         $(document).unbind('keydown', this.keyNavigation);
         this.stopLocalTimer();
     };
