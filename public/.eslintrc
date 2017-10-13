@@ -1,0 +1,14 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "jquery": true,
+  },
+
+  "globals": {
+      "HanabiUI": true,
+      "constants": true,
+      "Kinetic": true,
+      "hex_sha256": true,
+  },
+}
