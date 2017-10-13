@@ -42,12 +42,38 @@
     exports.PATHFUNC.set(
         exports.SHAPE.DIAMOND,
         (ctx) => {
+            const w = 70;
+            const h = 80;
+
+            // Expected bounding box requires these offsets
+            const offsetX = 75 - w;
+            const offsetY = 100 - h;
+            const points = [
+                [1, 0],
+                [2, 1],
+                [1, 2],
+                [0, 1],
+            ]
+            .map(point => [point[0] * w + offsetX, point[1] * h + offsetY]);
+            const curveX = 1.46;
+            const curveY = 0.6;
+            const interps = [
+                [0, 0],
+                [0, 1],
+                [1, 1],
+                [1, 0],
+            ]
+            .map(v => [
+                [curveX, 2 - curveX][v[0]] * w + offsetX,
+                [curveY, 2 - curveY][v[1]] * h + offsetY,
+            ]);
+
             ctx.beginPath();
-            ctx.moveTo(75, 0);
-            ctx.quadraticCurveTo(110, 60, 150, 100);
-            ctx.quadraticCurveTo(110, 140, 75, 200);
-            ctx.quadraticCurveTo(40, 140, 0, 100);
-            ctx.quadraticCurveTo(40, 60, 75, 0);
+            ctx.moveTo(...points[0]);
+            ctx.quadraticCurveTo(...interps[0], ...points[1]);
+            ctx.quadraticCurveTo(...interps[1], ...points[2]);
+            ctx.quadraticCurveTo(...interps[2], ...points[3]);
+            ctx.quadraticCurveTo(...interps[3], ...points[0]);
         },
     );
     exports.PATHFUNC.set(
