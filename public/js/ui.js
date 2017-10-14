@@ -320,10 +320,9 @@ function HanabiUI(lobby, gameID) {
 
         // Do not select an image with pips while the dynamic suit pips are shown
         if (
-            rank &&
             !card.suitKnown()
         ) {
-            if (!card.rankKnown()) {
+            if (!card.rankKnown() && rank) {
                 prefix = 'Index';
             } else {
                 prefix = 'NoPip';
@@ -2450,7 +2449,7 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
-        cardImages['Card-Gray-6'] = makeUnknownCardImage();
+        cardImages['NoPip-Gray-6'] = makeUnknownCardImage();
         cardImages['deck-back'] = makeDeckBack();
     };
 
