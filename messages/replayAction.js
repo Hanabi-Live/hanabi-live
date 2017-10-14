@@ -72,22 +72,25 @@ exports.step1 = (socket, data) => {
     // Send message to everyone else
     let msg;
     switch (data.type) {
-        case 0:
-            msg = {
-                type: 'replayTurn',
-                resp: {
-                    turn: data.value,
-                },
-            };
-            break;
-        case 1:
-            msg = {
-                type: 'replayIndicator',
-                resp: {
-                    order: data.value,
-                },
-            };
-            break;
+    case 0:
+        msg = {
+            type: 'replayTurn',
+            resp: {
+                turn: data.value,
+            },
+        };
+        break;
+    case 1:
+        msg = {
+            type: 'replayIndicator',
+            resp: {
+                order: data.value,
+            },
+        };
+        break;
+    default:
+        logger.error('The type for the "replayAction" command was not 0 or 1.');
+        return;
     }
 
     for (const userID of Object.keys(game.spectators).filter(id => Number(id) !== game.owner)) {

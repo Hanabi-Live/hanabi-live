@@ -6,16 +6,18 @@ function HanabiUI(lobby, gameID) {
 
     const ui = this;
 
-    const ACT = constants.ACT;
-    const CLUE_TYPE = constants.CLUE_TYPE;
-    const COLOR = constants.COLOR;
-    const SUIT = constants.SUIT;
-    const CARD_AREA = constants.CARD_AREA;
-    const CARDH = constants.CARDH;
-    const CARDW = constants.CARDW;
-    const PATHFUNC = constants.PATHFUNC;
-    const backpath = constants.backpath;
-    const drawshape = constants.drawshape;
+    const {
+        ACT,
+        CLUE_TYPE,
+        COLOR,
+        SUIT,
+        CARD_AREA,
+        CARDH,
+        CARDW,
+        PATHFUNC,
+        backpath,
+        drawshape,
+    } = constants;
 
     this.deck = [];
 

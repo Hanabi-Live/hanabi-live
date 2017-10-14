@@ -717,7 +717,7 @@ const getSuitText = (data) => {
     let suitText = globals.suits[card.suit];
     if (game.variant === 3 && card.suit === 5) {
         // Change "Black" to "Rainbow"
-        suitText = globals.suits[6];
+        suitText = globals.suits[6]; // eslint-disable-line
     } else if (game.variant === 4) {
         // Set the "Mixed Suits" text
         suitText = globals.mixedSuits[card.suit];
@@ -726,10 +726,10 @@ const getSuitText = (data) => {
         suitText = globals.mmSuits[card.suit];
     } else if (game.variant === 6 && card.suit === 4) {
         // Change "Purple" to "White"
-        suitText = globals.suits[7];
+        suitText = globals.suits[7]; // eslint-disable-line
     } else if (game.variant === 6 && card.suit === 5) {
         // Change "Black" to "Rainbow"
-        suitText = globals.suits[6];
+        suitText = globals.suits[6]; // eslint-disable-line
     } else if (game.variant === 7) {
         // Set the "Crazy" suits text
         suitText = globals.crazySuits[card.suit];

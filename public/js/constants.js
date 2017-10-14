@@ -296,7 +296,7 @@
     // (bkg, number, symbol)
     Suit.prototype.style = function style(ctx, cardArea) {
         const fillSpec = this.cardFillSpec.get(cardArea);
-        const fillType = fillSpec.fillType;
+        const { fillType } = fillSpec;
         const colors = this.fillColors;
 
         if (fillType === exports.fillType.SOLID) {

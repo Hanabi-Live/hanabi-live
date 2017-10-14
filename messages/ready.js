@@ -38,7 +38,7 @@ function step2(error, socket, data) {
     }
 
     // This is either from "globals.currentGames" or built by the database
-    const game = data.game;
+    const { game } = data;
 
     // Get the index of this player
     let index = -1; // Set an impossible index by default
@@ -91,7 +91,7 @@ function step2(error, socket, data) {
         // Send them the current time for all player's clocks
         const times = [];
         for (let i = 0; i < game.players.length; i++) {
-            let time = game.players[i].time;
+            let { time } = game.players[i];
 
             // Since we are sending the message in the middle of someone's turn,
             // we need to account for this

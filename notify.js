@@ -220,7 +220,7 @@ exports.gameSound = (data) => {
         // Prepare the sound message
         let sound = 'turn_other';
         if (game.sound !== null) {
-            sound = game.sound;
+            ({ sound } = game);
         } else if (i === game.turnPlayerIndex) {
             sound = 'turn_us';
         }
@@ -241,7 +241,7 @@ exports.gameSound = (data) => {
         // having to change the file name back to default)
         let sound = 'turn_other';
         if (game.sound !== null) {
-            sound = game.sound;
+            ({ sound } = game);
         }
         const msg = {
             type: 'sound',

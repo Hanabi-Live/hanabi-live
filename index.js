@@ -38,7 +38,7 @@ app.use(favicon(path.join(__dirname, 'public', 'img', 'favicon.ico')));
 
 // Websocket handlers
 io.on('connection', (socket) => {
-    const address = socket.handshake.address;
+    const { address } = socket.handshake;
     logger.info(`User connected from address "${address}".`);
 
     socket.on('disconnect', (reason) => {

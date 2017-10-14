@@ -31,7 +31,7 @@ function step2(error, socket, data) {
     }
 
     // This is either from "globals.currentGames" or built by the database
-    const game = data.game;
+    const { game } = data;
 
     // Create a list of names of the users in this game
     const names = [];
