@@ -307,8 +307,8 @@ function HanabiUI(lobby, gameID) {
 
     function imageName(card) {
         let prefix = 'Card';
-        let suitName = SUIT.GRAY.name;
-        let rank = 6;
+        let suitName;
+        let rank;
         const learnedCard = ui.learnedCards[card.order];
         const showLearnedCards = true;
 
@@ -320,7 +320,7 @@ function HanabiUI(lobby, gameID) {
 
         // Do not select an image with pips while the dynamic suit pips are shown
         if (
-            rank !== 6 &&
+            rank &&
             !card.suitKnown()
         ) {
             if (!card.rankKnown()) {
@@ -330,7 +330,7 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
-        return `${prefix}-${suitName}-${rank}`;
+        return `${prefix}-${suitName || SUIT.GRAY.name}-${rank || 6}`;
     }
 
     const scaleCardImage = function scaleCardImage(context, name) {
