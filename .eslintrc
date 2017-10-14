@@ -6,9 +6,8 @@
   "root": "true",
 
   "env": {
-    "node": true,
     "es6": true,
-    "jquery": true,
+    "node": true,
   },
 
   // We modify the base for some specific things
