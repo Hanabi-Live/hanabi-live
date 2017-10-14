@@ -2262,7 +2262,7 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Top and bottom for cards 2, 3, 4, 5
-        if (rank > 1) {
+        if (rank > 1 && rank <= 5) {
             const symbolYPos = lobby.showColorblindUI ? 85 : 120;
             ctx.save();
             ctx.translate(CARDW / 2, CARDH / 2);
@@ -2285,7 +2285,7 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Left and right for cards 4 and 5
-        if (rank > 3) {
+        if (rank === 4 || rank === 5) {
             ctx.save();
             ctx.translate(CARDW / 2, CARDH / 2);
             ctx.translate(-90, 0);
@@ -2312,6 +2312,18 @@ function HanabiUI(lobby, gameID) {
             ctx.save();
             ctx.translate(CARDW / 2, CARDH / 2);
             ctx.scale(scale * 3 / 2, scale * 3 / 2);
+            ctx.translate(-75, -100);
+            pathfunc(ctx);
+            drawshape(ctx);
+            ctx.restore();
+        }
+
+        // Unknown rank, so draw large faint suit
+        if (rank === 6) {
+            ctx.save();
+            ctx.globalAlpha = lobby.showColorblindUI ? 0.4 : 0.1;
+            ctx.translate(CARDW / 2, CARDH / 2);
+            ctx.scale(scale * 3, scale * 3);
             ctx.translate(-75, -100);
             pathfunc(ctx);
             drawshape(ctx);
@@ -2438,7 +2450,7 @@ function HanabiUI(lobby, gameID) {
                     cardImages[`NoPip-${suit.name}-${rank}`] = cloneCanvas(cvs);
                 }
 
-                if (rank < 6 && suit !== SUIT.GRAY) {
+                if (suit !== SUIT.GRAY) {
                     drawSuitPips(ctx, rank, suit.shape);
                 }
 
