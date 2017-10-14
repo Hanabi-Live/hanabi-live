@@ -214,7 +214,7 @@ function HanabiLobby() {
     $('#logout').on('click', (event) => {
         deleteCookie('hanabiuser');
         deleteCookie('hanabipass');
-        location.reload();
+        window.location.reload();
     });
 
 
@@ -562,7 +562,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
         attrs
             .append($('<li>')
-            .append(button)
+                .append(button)
                 .addClass('table-attr table-join'));
 
         if (
@@ -578,7 +578,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
                 const id = parseInt(this.id.slice(8), 10);
                 if (self.tableList[id].running) {
-                    if (!confirm('Really abandon game?  This will cancel the game for all players.')) {
+                    if (!window.confirm('Really abandon game?  This will cancel the game for all players.')) {
                         return;
                     }
                 }
@@ -705,14 +705,12 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
     div.html('');
 
     const ids = Object.keys(this.historyList);
-    ids.sort(
-        (a, b) => parseInt(a, 10) - parseInt(b, 10),
-    );
+    ids.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
     ids.reverse();
 
     for (let i = 0; i < ids.length; i++) {
         const gameData = this.historyList[ids[i]];
-        const maxScore = constants.VARIANT_INTEGER_MAPPING[gameData.variant].maxScore;
+        const { maxScore } = constants.VARIANT_INTEGER_MAPPING[gameData.variant];
         const history = $('<li>').addClass('table-item');
 
         const attrs = $('<ul>')
@@ -891,7 +889,7 @@ HanabiLobby.prototype.showJoined = function showJoined() {
 
         html += '<tr>';
         html += '<td>Avg. score:</td>';
-        let averageScore = this.game.players[i].averageScore;
+        let { averageScore } = this.game.players[i];
         averageScore = Math.round(averageScore * 100) / 100; // Round it to 2 decimal places
         html += `<td><b>${averageScore}</b></td>`;
         html += '</tr>';

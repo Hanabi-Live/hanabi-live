@@ -219,9 +219,7 @@ function HanabiUI(lobby, gameID) {
         let msgClueValue;
         if (clueType === CLUE_TYPE.COLOR) {
             const clueColor = clueValue;
-            msgClueValue = variant.clueColors.findIndex(
-                color => color === clueColor,
-            );
+            msgClueValue = variant.clueColors.findIndex(color => color === clueColor);
         } else if (clueType === CLUE_TYPE.RANK) {
             msgClueValue = clueValue;
         }
@@ -314,11 +312,17 @@ function HanabiUI(lobby, gameID) {
         const learnedCard = ui.learnedCards[card.order];
         const showLearnedCards = true;
 
-        if (showLearnedCards && learnedCard.rank) rank = learnedCard.rank;
-        else if (card.rankKnown()) rank = card.trueRank;
+        if (showLearnedCards && learnedCard.rank) {
+            ({ rank } = learnedCard);
+        } else if (card.rankKnown()) {
+            rank = card.trueRank;
+        }
 
-        if (showLearnedCards && learnedCard.suit) suitName = learnedCard.suit.name;
-        else if (card.suitKnown()) suitName = card.trueSuit.name;
+        if (showLearnedCards && learnedCard.suit) {
+            suitName = learnedCard.suit.name;
+        } else if (card.suitKnown()) {
+            suitName = card.trueSuit.name;
+        }
 
         // Do not select an image with pips while the dynamic suit pips are shown
         if (
@@ -997,7 +1001,7 @@ function HanabiUI(lobby, gameID) {
             const removed = filterInPlace(this.possibleSuits, suit => suit.clueColors.includes(clueColor) === positive);
             removed.forEach(suit => this.suitPips.find(`.${suit.name}`).hide());
             if (this.possibleSuits.length === 1) {
-                this.trueSuit = this.possibleSuits[0];
+                [this.trueSuit] = this.possibleSuits;
                 this.suitPips.hide();
                 ui.learnedCards[this.order].suit = this.trueSuit;
             }
@@ -1008,7 +1012,7 @@ function HanabiUI(lobby, gameID) {
             const removed = filterInPlace(this.possibleRanks, rank => (rank === clueRank) === positive);
             removed.forEach(rank => this.rankPips.find(`.${rank}`).hide());
             if (this.possibleRanks.length === 1) {
-                this.trueRank = this.possibleRanks[0];
+                [this.trueRank] = this.possibleRanks;
                 this.rankPips.hide();
                 ui.learnedCards[this.order].rank = this.trueRank;
             }
@@ -3160,76 +3164,314 @@ function HanabiUI(lobby, gameID) {
 
         const handPos = {
             2: [
-                { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
-                { x: 0.19, y: 0.01, w: 0.42, h: 0.189, rot: 0 },
+                {
+                    x: 0.19,
+                    y: 0.77,
+                    w: 0.42,
+                    h: 0.189,
+                    rot: 0,
+                },
+                {
+                    x: 0.19,
+                    y: 0.01,
+                    w: 0.42,
+                    h: 0.189,
+                    rot: 0,
+                },
             ],
             3: [
-                { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
-                { x: 0.01, y: 0.71, w: 0.41, h: 0.189, rot: -78 },
-                { x: 0.705, y: 0, w: 0.41, h: 0.189, rot: 78 },
+                {
+                    x: 0.19,
+                    y: 0.77,
+                    w: 0.42,
+                    h: 0.189,
+                    rot: 0,
+                },
+                {
+                    x: 0.01,
+                    y: 0.71,
+                    w: 0.41,
+                    h: 0.189,
+                    rot: -78,
+                },
+                {
+                    x: 0.705,
+                    y: 0,
+                    w: 0.41,
+                    h: 0.189,
+                    rot: 78,
+                },
             ],
             4: [
-                { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
-                { x: 0.015, y: 0.7, w: 0.34, h: 0.189, rot: -78 },
-                { x: 0.23, y: 0.01, w: 0.34, h: 0.189, rot: 0 },
-                { x: 0.715, y: 0.095, w: 0.34, h: 0.189, rot: 78 },
+                {
+                    x: 0.23,
+                    y: 0.77,
+                    w: 0.34,
+                    h: 0.189,
+                    rot: 0,
+                },
+                {
+                    x: 0.015,
+                    y: 0.7,
+                    w: 0.34,
+                    h: 0.189,
+                    rot: -78,
+                },
+                {
+                    x: 0.23,
+                    y: 0.01,
+                    w: 0.34,
+                    h: 0.189,
+                    rot: 0,
+                },
+                {
+                    x: 0.715,
+                    y: 0.095,
+                    w: 0.34,
+                    h: 0.189,
+                    rot: 78,
+                },
             ],
             5: [
-                { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
-                { x: 0.03, y: 0.77, w: 0.301, h: 0.18, rot: -90 },
-                { x: 0.025, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
-                { x: 0.445, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
-                { x: 0.77, y: 0.22, w: 0.301, h: 0.18, rot: 90 },
+                {
+                    x: 0.23,
+                    y: 0.77,
+                    w: 0.34,
+                    h: 0.189,
+                    rot: 0,
+                },
+                {
+                    x: 0.03,
+                    y: 0.77,
+                    w: 0.301,
+                    h: 0.18,
+                    rot: -90,
+                },
+                {
+                    x: 0.025,
+                    y: 0.009,
+                    w: 0.34,
+                    h: 0.189,
+                    rot: 0,
+                },
+                {
+                    x: 0.445,
+                    y: 0.009,
+                    w: 0.34,
+                    h: 0.189,
+                    rot: 0,
+                },
+                {
+                    x: 0.77,
+                    y: 0.22,
+                    w: 0.301,
+                    h: 0.18,
+                    rot: 90,
+                },
             ],
         };
 
         const shadePos = {
             2: [
-                { x: 0.185, y: 0.762, w: 0.43, h: 0.205, rot: 0 },
-                { x: 0.185, y: 0.002, w: 0.43, h: 0.205, rot: 0 },
+                {
+                    x: 0.185,
+                    y: 0.762,
+                    w: 0.43,
+                    h: 0.205,
+                    rot: 0,
+                },
+                {
+                    x: 0.185,
+                    y: 0.002,
+                    w: 0.43,
+                    h: 0.205,
+                    rot: 0,
+                },
             ],
             3: [
-                { x: 0.185, y: 0.762, w: 0.43, h: 0.205, rot: 0 },
-                { x: 0.005, y: 0.718, w: 0.42, h: 0.205, rot: -78 },
-                { x: 0.708, y: -0.008, w: 0.42, h: 0.205, rot: 78 },
+                {
+                    x: 0.185,
+                    y: 0.762,
+                    w: 0.43,
+                    h: 0.205,
+                    rot: 0,
+                },
+                {
+                    x: 0.005,
+                    y: 0.718,
+                    w: 0.42,
+                    h: 0.205,
+                    rot: -78,
+                },
+                {
+                    x: 0.708,
+                    y: -0.008,
+                    w: 0.42,
+                    h: 0.205,
+                    rot: 78,
+                },
             ],
             4: [
-                { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0 },
-                { x: 0.01, y: 0.708, w: 0.35, h: 0.205, rot: -78 },
-                { x: 0.225, y: 0.002, w: 0.35, h: 0.205, rot: 0 },
-                { x: 0.718, y: 0.087, w: 0.35, h: 0.205, rot: 78 },
+                {
+                    x: 0.225,
+                    y: 0.762,
+                    w: 0.35,
+                    h: 0.205,
+                    rot: 0,
+                },
+                {
+                    x: 0.01,
+                    y: 0.708,
+                    w: 0.35,
+                    h: 0.205,
+                    rot: -78,
+                },
+                {
+                    x: 0.225,
+                    y: 0.002,
+                    w: 0.35,
+                    h: 0.205,
+                    rot: 0,
+                },
+                {
+                    x: 0.718,
+                    y: 0.087,
+                    w: 0.35,
+                    h: 0.205,
+                    rot: 78,
+                },
             ],
             5: [
-                { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0 },
-                { x: 0.026, y: 0.775, w: 0.311, h: 0.196, rot: -90 },
-                { x: 0.02, y: 0.001, w: 0.35, h: 0.205, rot: 0 },
-                { x: 0.44, y: 0.001, w: 0.35, h: 0.205, rot: 0 },
-                { x: 0.774, y: 0.215, w: 0.311, h: 0.196, rot: 90 },
+                {
+                    x: 0.225,
+                    y: 0.762,
+                    w: 0.35,
+                    h: 0.205,
+                    rot: 0,
+                },
+                {
+                    x: 0.026,
+                    y: 0.775,
+                    w: 0.311,
+                    h: 0.196,
+                    rot: -90,
+                },
+                {
+                    x: 0.02,
+                    y: 0.001,
+                    w: 0.35,
+                    h: 0.205,
+                    rot: 0,
+                },
+                {
+                    x: 0.44,
+                    y: 0.001,
+                    w: 0.35,
+                    h: 0.205,
+                    rot: 0,
+                },
+                {
+                    x: 0.774,
+                    y: 0.215,
+                    w: 0.311,
+                    h: 0.196,
+                    rot: 90,
+                },
             ],
         };
 
         const namePos = {
             2: [
-                { x: 0.18, y: 0.97, w: 0.44, h: 0.02 },
-                { x: 0.18, y: 0.21, w: 0.44, h: 0.02 },
+                {
+                    x: 0.18,
+                    y: 0.97,
+                    w: 0.44,
+                    h: 0.02,
+                },
+                {
+                    x: 0.18,
+                    y: 0.21,
+                    w: 0.44,
+                    h: 0.02,
+                },
             ],
             3: [
-                { x: 0.18, y: 0.97, w: 0.44, h: 0.02 },
-                { x: 0.01, y: 0.765, w: 0.12, h: 0.02 },
-                { x: 0.67, y: 0.765, w: 0.12, h: 0.02 },
+                {
+                    x: 0.18,
+                    y: 0.97,
+                    w: 0.44,
+                    h: 0.02,
+                },
+                {
+                    x: 0.01,
+                    y: 0.765,
+                    w: 0.12,
+                    h: 0.02,
+                },
+                {
+                    x: 0.67,
+                    y: 0.765,
+                    w: 0.12,
+                    h: 0.02,
+                },
             ],
             4: [
-                { x: 0.22, y: 0.97, w: 0.36, h: 0.02 },
-                { x: 0.01, y: 0.74, w: 0.13, h: 0.02 },
-                { x: 0.22, y: 0.21, w: 0.36, h: 0.02 },
-                { x: 0.66, y: 0.74, w: 0.13, h: 0.02 },
+                {
+                    x: 0.22,
+                    y: 0.97,
+                    w: 0.36,
+                    h: 0.02,
+                },
+                {
+                    x: 0.01,
+                    y: 0.74,
+                    w: 0.13,
+                    h: 0.02,
+                },
+                {
+                    x: 0.22,
+                    y: 0.21,
+                    w: 0.36,
+                    h: 0.02,
+                },
+                {
+                    x: 0.66,
+                    y: 0.74,
+                    w: 0.13,
+                    h: 0.02,
+                },
             ],
             5: [
-                { x: 0.22, y: 0.97, w: 0.36, h: 0.02 },
-                { x: 0.025, y: 0.775, w: 0.116, h: 0.02 },
-                { x: 0.015, y: 0.199, w: 0.36, h: 0.02 },
-                { x: 0.435, y: 0.199, w: 0.36, h: 0.02 },
-                { x: 0.659, y: 0.775, w: 0.116, h: 0.02 },
+                {
+                    x: 0.22,
+                    y: 0.97,
+                    w: 0.36,
+                    h: 0.02,
+                },
+                {
+                    x: 0.025,
+                    y: 0.775,
+                    w: 0.116,
+                    h: 0.02,
+                },
+                {
+                    x: 0.015,
+                    y: 0.199,
+                    w: 0.36,
+                    h: 0.02,
+                },
+                {
+                    x: 0.435,
+                    y: 0.199,
+                    w: 0.36,
+                    h: 0.02,
+                },
+                {
+                    x: 0.659,
+                    y: 0.775,
+                    w: 0.116,
+                    h: 0.02,
+                },
             ],
         };
 
@@ -3438,7 +3680,7 @@ function HanabiUI(lobby, gameID) {
 
             clueButtonGroup.add(button);
         }
-        const clueColors = this.variant.clueColors;
+        const { clueColors } = this.variant;
         const nClueColors = clueColors.length;
         if (nClueColors === 4) {
             x = 0.208;
@@ -4068,7 +4310,7 @@ function HanabiUI(lobby, gameID) {
         messagePrompt.setMultiText('');
         msgLogGroup.reset();
 
-        const suits = this.variant.suits;
+        const { suits } = this.variant;
 
         for (const suit of suits) {
             playStacks.get(suit).removeChildren();
@@ -4324,7 +4566,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleNotify = function handleNotify(note) {
-        const type = note.type;
+        const { type } = note;
         if (ui.activeHover) {
             ui.activeHover.dispatchEvent(new MouseEvent('mouseout'));
             ui.activeHover = null;
@@ -4485,7 +4727,7 @@ function HanabiUI(lobby, gameID) {
                 const child = playerHands[note.target].children[i];
 
                 const card = child.children[0];
-                const order = card.order;
+                const { order } = card;
 
                 if (note.list.indexOf(order) < 0) {
                     neglist.push(order);

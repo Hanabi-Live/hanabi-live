@@ -3,8 +3,6 @@
   // https://github.com/airbnb/javascript
   "extends": "airbnb-base",
 
-  "root": "true",
-
   "env": {
     "es6": true,
     "node": true,
@@ -59,7 +57,5 @@
     // https://blog.javascripting.com/2015/09/07/fine-tuning-airbnbs-eslint-config/
     // (airbnb doesn't include this by default for some reason)
     "quote-props": ["warn", "consistent-as-needed"],
-  },
-  "globals": {
   },
 }
