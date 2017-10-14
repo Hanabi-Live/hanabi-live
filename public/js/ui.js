@@ -307,16 +307,13 @@ function HanabiUI(lobby, gameID) {
 
     function imageName(card) {
         let prefix = 'Card';
-        let rank;
 
         const learnedCard = ui.learnedCards[card.order];
         const showLearnedCards = true;
 
-        if (showLearnedCards && learnedCard.rank) {
-            ({ rank } = learnedCard);
-        } else if (card.rankKnown()) {
-            rank = card.trueRank;
-        }
+        const rank =
+            (showLearnedCards && learnedCard.rank) ||
+            (card.rankKnown() && card.trueRank);
 
         const suit =
             (showLearnedCards && learnedCard.suit) ||
