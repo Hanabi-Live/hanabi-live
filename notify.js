@@ -361,7 +361,7 @@ const playerSpectators = (socket, data) => {
 
     // Build an array with the names of all of the spectators
     const names = [];
-    for (const userID of Object.keys(game.spectators)) {
+    for (const userID of Object.keys(game.spectators).filter(id => Number(id) !== socket.userID)) {
         names.push(game.spectators[userID].username);
     }
 
