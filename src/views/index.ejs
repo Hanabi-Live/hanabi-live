@@ -215,6 +215,7 @@
 				} else {
 					websocketURL = '<%= websocketURL %>';
 				}
+ 				console.log('Connecting to websocket URL:', websocketURL);
 				var conn = io.connect(websocketURL);
 				window.lobby.setConn(conn);
 			};
