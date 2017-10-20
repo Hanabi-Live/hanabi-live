@@ -27,14 +27,17 @@ logger.info('+--------------------------+');
 // Set the view engine to ejs
 app.set('view engine', 'ejs');
 
+// By default, the views directory is "./views", but we need it to be "./src/views"
+app.set('views', path.join(__dirname, 'views'));
+
 // HTTP handlers
 app.get('/', (req, res) => {
     res.render('index', { // This will look for "views/index.ejs"
         websocketURL: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
     });
 });
-app.use('/public', express.static(path.join(__dirname, 'public')));
-app.use(favicon(path.join(__dirname, 'public', 'img', 'favicon.ico')));
+app.use('/public', express.static(path.join(__dirname, '..', 'public'))); // The public directory is located in the root of the repository
+app.use(favicon(path.join(__dirname, '..', 'public', 'img', 'favicon.ico')));
 
 // Websocket handlers
 io.on('connection', (socket) => {

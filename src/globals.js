@@ -1,5 +1,5 @@
 // Server configuration
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000; // In Heroku, the PORT environment variable will be specified
 const startingTime = 5 * 60 * 1000; // In milliseconds
 const extraTurnTime = 10 * 1000; // In milliseconds
 
