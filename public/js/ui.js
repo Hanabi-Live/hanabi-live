@@ -4966,7 +4966,7 @@ function HanabiUI(lobby, gameID) {
             // Draw (or hide) the note indicator
             const card = ui.deck[order];
             if (note === null) {
-                card.tooltip.getText().setText('asdf');
+                card.tooltip.getText().setText('');
                 card.noteGiven.hide();
                 card.tooltip.hide();
             } else {
