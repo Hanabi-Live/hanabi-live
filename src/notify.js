@@ -280,12 +280,18 @@ exports.spectatorsNote = (data) => {
     // Local variables
     const game = globals.currentGames[data.gameID];
 
+    // Make an array that contains the notes for just this card
+    const cardNotes = [];
+    for (const player of game.players) {
+        cardNotes.push(player.notes[data.order]);
+    }
+
     const msg = {
         type: 'note',
         resp: {
             order: data.order,
             // The order of the card in the deck that these notes correspond to
-            notes: game.deck[data.order].notes,
+            notes: cardNotes,
             // "notes" is an array of strings, one for each player
         },
     };

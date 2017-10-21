@@ -87,6 +87,9 @@ function step2(error, socket, data) {
         notify.playerSpectators(socket, data);
     }
 
+    // Send the spectators all of the existing notes
+    // TODO
+
     if (socket.status !== 'Replay' && socket.status !== 'Shared Replay') {
         // Send them the current time for all player's clocks
         const times = [];

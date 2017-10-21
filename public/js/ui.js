@@ -832,7 +832,9 @@ function HanabiUI(lobby, gameID) {
             padding: 0.01 * winH,
             fontSize: 0.04 * winH,
             minFontSize: 0.02 * winH,
-            width: 0.15 * winW,
+            width: 0.3 * winW,
+            // This needs to be fairly wide so that it doesn't wrap for spectators
+            // (spectators will have the player name as a prefix for the note)
             fontFamily: 'Verdana',
             text: '',
         }));
@@ -867,7 +869,6 @@ function HanabiUI(lobby, gameID) {
     HanabiCard.prototype.reset = function reset() {
         this.hideClues();
         const note = ui.getNote(this.order);
-        console.log('NOTE:', note);
         if (note !== null) {
             this.tooltip.getText().setText(note);
             this.tooltip.getTag().setWidth();
@@ -917,6 +918,9 @@ function HanabiUI(lobby, gameID) {
             }
 
             let note = ui.getNote(self.order);
+            if (note === null) {
+                note = '';
+            }
             const newNote = window.prompt('Note on card:', note);
             if (newNote === null) {
                 // The user clicked the "cancel" button, so do nothing else
@@ -3819,7 +3823,6 @@ function HanabiUI(lobby, gameID) {
         });
 
         replayShuttleShared.on('click tap', () => {
-            console.log('Going to shared turn:', ui.sharedReplayTurn);
             ui.performReplay(ui.sharedReplayTurn, true);
         });
 
@@ -3985,7 +3988,6 @@ function HanabiUI(lobby, gameID) {
                 if (ui.sharedReplayLeader === lobby.username) {
                     shareCurrentTurn(ui.replayTurn);
                 } else {
-                    console.log('Returning to shared replay at turn:', ui.sharedReplayTurn);
                     ui.performReplay(ui.sharedReplayTurn);
                 }
             }
@@ -4923,7 +4925,7 @@ function HanabiUI(lobby, gameID) {
         // Build the note text from the "notes" array given by the server
         let newNote = '';
         for (let i = 0; i < data.notes.length; i++) {
-            if (data.notes[i].length > 0) {
+            if (data.notes[i] !== null) {
                 newNote += `${ui.playerNames[i]}: ${data.notes[i]}\n`;
             }
         }
@@ -4963,11 +4965,12 @@ function HanabiUI(lobby, gameID) {
             // The following code is mosly copied from the "handleNote" function
             // Draw (or hide) the note indicator
             const card = ui.deck[order];
-            card.tooltip.getText().setText((note === null ? '' : note));
             if (note === null) {
+                card.tooltip.getText().setText('asdf');
                 card.noteGiven.hide();
                 card.tooltip.hide();
             } else {
+                card.tooltip.getText().setText(note);
                 card.noteGiven.show();
                 if (ui.spectating) {
                     card.notePulse.play();

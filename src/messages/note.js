@@ -50,7 +50,11 @@ exports.step1 = (socket, data) => {
     }
 
     // Update the array that contains all of their notes
-    game.players[data.index].notes[data.order] = data.note;
+    if (data.note === '') {
+        game.players[data.index].notes[data.order] = null;
+    } else {
+        game.players[data.index].notes[data.order] = data.note;
+    }
 
     // Let all of the spectators know that there is a new note
     notify.spectatorsNote(data);
