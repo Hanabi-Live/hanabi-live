@@ -422,16 +422,7 @@ HanabiLobby.prototype.drawUsers = function drawUsers() {
 };
 
 HanabiLobby.prototype.addTable = function addTable(data) {
-    this.tableList[data.id] = {
-        name: data.name,
-        numPlayers: data.numPlayers,
-        variant: data.variant,
-        joined: data.joined,
-        running: data.running,
-        ourTurn: data.ourTurn,
-        owned: data.owned,
-        sharedReplay: data.sharedReplay,
-    };
+    this.tableList[data.id] = data;
     this.drawTables();
 
     // Automatically resume any games that we are currently in
@@ -462,6 +453,9 @@ $(document).ready(() => {
     }
 });
 
+const timedDescription = 'Timed Game';
+const reorderCardsDescription = 'Forced Chop Rotation';
+
 HanabiLobby.prototype.drawTables = function drawTables() {
     const self = this;
     const div = $('#table-list');
@@ -470,6 +464,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
     for (const gameID of Object.keys(this.tableList)) {
         const table = $('<li>').addClass('table-item');
+
         const attrs = $('<ul>')
             .append($('<li>')
                 .text(this.tableList[gameID].name)
@@ -480,6 +475,28 @@ HanabiLobby.prototype.drawTables = function drawTables() {
             .append($('<li>')
                 .text(`Variant: ${variantNames[this.tableList[gameID].variant]}`)
                 .addClass('table-attr table-variant'));
+
+        const optionTexts = {
+            timed: {
+                symbol: '⏰',
+                title: timedDescription,
+            },
+            reorderCards: {
+                symbol: '⤨',
+                title: reorderCardsDescription,
+            },
+        };
+
+        Object.keys(optionTexts).forEach((option) => {
+            const elem = $('<li>')
+                .text(optionTexts[option].symbol)
+                .prop('title', optionTexts[option].title)
+                .addClass('table-attr table-icon');
+            if (!this.tableList[gameID][option]) {
+                elem.css('visibility', 'hidden');
+            }
+            attrs.append(elem);
+        });
 
         let status = 'Not Started';
         if (this.tableList[gameID].running && !this.tableList[gameID].joined) {
@@ -860,8 +877,8 @@ HanabiLobby.prototype.showJoined = function showJoined() {
     let html = `<p><b>${$('<a>').text(this.game.name).html()}</b></p>`;
     html += '<p>&nbsp;</p>';
     html += `<p>Variant: <b>${variantNames[this.game.variant]}</p></b>`;
-    html += `<p>Timed Game: <b>${(this.game.timed ? 'Yes' : 'No')}</b></p>`;
-    html += `<p>Forced Chop Rotation: <b>${(this.game.reorderCards ? 'Yes' : 'No')}</b></p>`;
+    html += `<p>${timedDescription}: <b>${(this.game.timed ? 'Yes' : 'No')}</b></p>`;
+    html += `<p>${reorderCardsDescription}: <b>${(this.game.reorderCards ? 'Yes' : 'No')}</b></p>`;
 
     $('#joined-desc').html(html);
 
