@@ -221,6 +221,7 @@ function step5(error, socket, data) {
                 numPlayers: game.numPlayers,
                 numSimilar: game.numSimilar,
                 score: game.score,
+                ts: game.ts,
                 variant: game.variant,
             },
         });

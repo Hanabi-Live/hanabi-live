@@ -99,6 +99,7 @@ exports.getUserHistory = (socket, data, done) => {
                 WHERE seed = seed_original
             ) AS num_similar,
             games.score AS score,
+            datetime_finished,
             games.variant AS variant
         FROM games
             JOIN game_participants ON game_participants.game_id = games.id
@@ -118,6 +119,7 @@ exports.getUserHistory = (socket, data, done) => {
                 numPlayers: row.num_players,
                 numSimilar: row.num_similar,
                 score: row.score,
+                ts: row.datetime_finished,
                 variant: row.variant,
             });
         }
