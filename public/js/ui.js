@@ -4532,36 +4532,36 @@ function HanabiUI(lobby, gameID) {
         }
     };
 
-    this.handleNotify = function handleNotify(note) {
-        const { type } = note;
+    this.handleNotify = function handleNotify(data) {
+        const { type } = data;
         if (ui.activeHover) {
             ui.activeHover.dispatchEvent(new MouseEvent('mouseout'));
             ui.activeHover = null;
         }
 
         if (type === 'draw') {
-            const suit = msgSuitToSuit(note.suit, ui.variant);
-            if (!ui.learnedCards[note.order]) {
-                ui.learnedCards[note.order] = {
+            const suit = msgSuitToSuit(data.suit, ui.variant);
+            if (!ui.learnedCards[data.order]) {
+                ui.learnedCards[data.order] = {
                     possibleSuits: this.variant.suits.slice(),
                     possibleRanks: this.variant.ranks.slice(),
                 };
             }
-            ui.deck[note.order] = new HanabiCard({
+            ui.deck[data.order] = new HanabiCard({
                 suit,
-                rank: note.rank,
-                order: note.order,
+                rank: data.rank,
+                order: data.order,
                 suits: this.variant.suits.slice(),
                 ranks: this.variant.ranks.slice(),
             });
 
             const child = new LayoutChild();
-            child.add(ui.deck[note.order]);
+            child.add(ui.deck[data.order]);
 
             const pos = drawDeck.cardback.getAbsolutePosition();
 
             child.setAbsolutePosition(pos);
-            child.setRotation(-playerHands[note.who].getRotation());
+            child.setRotation(-playerHands[data.who].getRotation());
 
             const scale = drawDeck.cardback.getWidth() / CARDW;
             child.setScale({
@@ -4569,27 +4569,28 @@ function HanabiUI(lobby, gameID) {
                 y: scale,
             });
 
-            playerHands[note.who].add(child);
-            playerHands[note.who].moveToTop();
+            playerHands[data.who].add(child);
+            playerHands[data.who].moveToTop();
         } else if (type === 'drawSize') {
-            drawDeck.setCount(note.size);
+            drawDeck.setCount(data.size);
         } else if (type === 'played') {
-            const suit = msgSuitToSuit(note.which.suit, ui.variant);
+            const suit = msgSuitToSuit(data.which.suit, ui.variant);
             showClueMatch(-1);
 
-            const child = ui.deck[note.which.order].parent;
+            const child = ui.deck[data.which.order].parent;
 
-            ui.learnedCards[note.which.order].suit = suit;
-            ui.learnedCards[note.which.order].rank = note.which.rank;
-            ui.learnedCards[note.which.order].possibleSuits = [suit];
-            ui.learnedCards[note.which.order].possibleRanks = [note.which.rank];
-            ui.learnedCards[note.which.order].revealed = true;
+            const learnedCard = ui.learnedCards[data.which.order];
+            learnedCard.suit = suit;
+            learnedCard.rank = data.which.rank;
+            learnedCard.possibleSuits = [suit];
+            learnedCard.possibleRanks = [data.which.rank];
+            learnedCard.revealed = true;
 
-            ui.deck[note.which.order].trueSuit = suit;
-            ui.deck[note.which.order].trueRank = note.which.rank;
-            ui.deck[note.which.order].setBareImage();
+            ui.deck[data.which.order].trueSuit = suit;
+            ui.deck[data.which.order].trueRank = data.which.rank;
+            ui.deck[data.which.order].setBareImage();
 
-            ui.deck[note.which.order].hideClues();
+            ui.deck[data.which.order].hideClues();
 
             const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
@@ -4604,22 +4605,23 @@ function HanabiUI(lobby, gameID) {
 
             clueLog.checkExpiry();
         } else if (type === 'discard') {
-            const suit = msgSuitToSuit(note.which.suit, ui.variant);
+            const suit = msgSuitToSuit(data.which.suit, ui.variant);
             showClueMatch(-1);
 
-            const child = ui.deck[note.which.order].parent;
+            const child = ui.deck[data.which.order].parent;
 
-            ui.learnedCards[note.which.order].suit = suit;
-            ui.learnedCards[note.which.order].rank = note.which.rank;
-            ui.learnedCards[note.which.order].possibleSuits = [suit];
-            ui.learnedCards[note.which.order].possibleRanks = [note.which.rank];
-            ui.learnedCards[note.which.order].revealed = true;
+            const learnedCard = ui.learnedCards[data.which.order];
+            learnedCard.suit = suit;
+            learnedCard.rank = data.which.rank;
+            learnedCard.possibleSuits = [suit];
+            learnedCard.possibleRanks = [data.which.rank];
+            learnedCard.revealed = true;
 
-            ui.deck[note.which.order].trueSuit = suit;
-            ui.deck[note.which.order].trueRank = note.which.rank;
-            ui.deck[note.which.order].setBareImage();
+            ui.deck[data.which.order].trueSuit = suit;
+            ui.deck[data.which.order].trueRank = data.which.rank;
+            ui.deck[data.which.order].setBareImage();
 
-            ui.deck[note.which.order].hideClues();
+            ui.deck[data.which.order].hideClues();
 
             const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
@@ -4645,7 +4647,7 @@ function HanabiUI(lobby, gameID) {
                     break;
                 }
 
-                if (note.which.rank < child.parent.children[n - 1].children[0].trueRank) {
+                if (data.which.rank < child.parent.children[n - 1].children[0].trueRank) {
                     child.moveDown();
                 } else {
                     finished = true;
@@ -4654,17 +4656,18 @@ function HanabiUI(lobby, gameID) {
 
             clueLog.checkExpiry();
         } else if (type === 'reveal') {
-            const suit = msgSuitToSuit(note.which.suit, ui.variant);
-            const card = ui.deck[note.which.order];
+            const suit = msgSuitToSuit(data.which.suit, ui.variant);
+            const card = ui.deck[data.which.order];
 
-            ui.learnedCards[note.which.order].suit = suit;
-            ui.learnedCards[note.which.order].rank = note.which.rank;
-            ui.learnedCards[note.which.order].possibleSuits = [suit];
-            ui.learnedCards[note.which.order].possibleRanks = [note.which.rank];
-            ui.learnedCards[note.which.order].revealed = true;
+            const learnedCard = ui.learnedCards[data.which.order];
+            learnedCard.suit = suit;
+            learnedCard.rank = data.which.rank;
+            learnedCard.possibleSuits = [suit];
+            learnedCard.possibleRanks = [data.which.rank];
+            learnedCard.revealed = true;
 
             card.trueSuit = suit;
-            card.trueRank = note.which.rank;
+            card.trueRank = data.which.rank;
             card.setBareImage();
 
             card.hideClues();
@@ -4675,28 +4678,28 @@ function HanabiUI(lobby, gameID) {
                 cardLayer.draw();
             }
         } else if (type === 'clue') {
-            const clue = msgClueToClue(note.clue, ui.variant);
+            const clue = msgClueToClue(data.clue, ui.variant);
             showClueMatch(-1);
 
-            for (let i = 0; i < note.list.length; i++) {
-                ui.deck[note.list[i]].setIndicator(true);
-                ui.deck[note.list[i]].clueGiven.show();
+            for (let i = 0; i < data.list.length; i++) {
+                ui.deck[data.list[i]].setIndicator(true);
+                ui.deck[data.list[i]].clueGiven.show();
 
-                if (note.target === ui.playerUs && !ui.replayOnly && !ui.spectating) {
-                    ui.deck[note.list[i]].applyClue(clue, true);
-                    ui.deck[note.list[i]].setBareImage();
+                if (data.target === ui.playerUs && !ui.replayOnly && !ui.spectating) {
+                    ui.deck[data.list[i]].applyClue(clue, true);
+                    ui.deck[data.list[i]].setBareImage();
                 }
             }
 
             const neglist = [];
 
-            for (let i = 0; i < playerHands[note.target].children.length; i++) {
-                const child = playerHands[note.target].children[i];
+            for (let i = 0; i < playerHands[data.target].children.length; i++) {
+                const child = playerHands[data.target].children[i];
 
                 const card = child.children[0];
                 const { order } = card;
 
-                if (note.list.indexOf(order) < 0) {
+                if (data.list.indexOf(order) < 0) {
                     neglist.push(order);
                     card.applyClue(clue, false);
                     card.setBareImage();
@@ -4704,7 +4707,7 @@ function HanabiUI(lobby, gameID) {
             }
 
             let clueName;
-            if (note.clue.type === CLUE_TYPE.RANK) {
+            if (data.clue.type === CLUE_TYPE.RANK) {
                 clueName = clue.value.toString();
             } else {
                 clueName = clue.value.name;
@@ -4713,10 +4716,10 @@ function HanabiUI(lobby, gameID) {
             const entry = new HanabiClueEntry({
                 width: clueLog.getWidth(),
                 height: 0.017 * winH,
-                giver: ui.playerNames[note.giver],
-                target: ui.playerNames[note.target],
+                giver: ui.playerNames[data.giver],
+                target: ui.playerNames[data.target],
                 clueName,
-                list: note.list,
+                list: data.list,
                 neglist,
             });
 
@@ -4724,25 +4727,25 @@ function HanabiUI(lobby, gameID) {
 
             clueLog.checkExpiry();
         } else if (type === 'status') {
-            clueLabel.setText(`Clues: ${note.clues}`);
+            clueLabel.setText(`Clues: ${data.clues}`);
 
-            if (note.clues === 0 || note.clues === 8) {
+            if (data.clues === 0 || data.clues === 8) {
                 clueLabel.setFill('#df1c2d');
-            } else if (note.clues === 1) {
+            } else if (data.clues === 1) {
                 clueLabel.setFill('#ef8c1d');
-            } else if (note.clues === 2) {
+            } else if (data.clues === 2) {
                 clueLabel.setFill('#efef1d');
             } else {
                 clueLabel.setFill('#d8d5ef');
             }
 
-            scoreLabel.setText(`Score: ${note.score}`);
+            scoreLabel.setText(`Score: ${data.score}`);
             if (!this.animateFast) {
                 UILayer.draw();
             }
         } else if (type === 'strike') {
             const x = new Kinetic.Image({
-                x: (0.675 + 0.04 * (note.num - 1)) * winW,
+                x: (0.675 + 0.04 * (data.num - 1)) * winW,
                 y: 0.918 * winH,
                 width: 0.02 * winW,
                 height: 0.036 * winH,
@@ -4750,7 +4753,7 @@ function HanabiUI(lobby, gameID) {
                 opacity: 0,
             });
 
-            strikes[note.num - 1] = x;
+            strikes[data.num - 1] = x;
 
             UILayer.add(x);
 
@@ -4766,7 +4769,7 @@ function HanabiUI(lobby, gameID) {
             }
         } else if (type === 'turn') {
             for (let i = 0; i < ui.playerNames.length; i++) {
-                nameFrames[i].setActive(note.who === i);
+                nameFrames[i].setActive(data.who === i);
             }
 
             if (!this.animateFast) {
@@ -4793,14 +4796,14 @@ function HanabiUI(lobby, gameID) {
                 UILayer.draw();
             }
         } else if (type === 'reorder') {
-            const hand = playerHands[note.target];
+            const hand = playerHands[data.target];
             // TODO: Throw an error if hand and note.hand dont have the same numbers in them
 
             // Get the LayoutChild objects in the hand and put them in the right order in a temporary array
             const newChildOrder = [];
             const handSize = hand.children.length;
             for (let i = 0; i < handSize; ++i) {
-                const order = note.handOrder[i];
+                const order = data.handOrder[i];
                 const child = ui.deck[order].parent;
                 newChildOrder.push(child);
 
@@ -4816,20 +4819,20 @@ function HanabiUI(lobby, gameID) {
         } else if (type === 'boot') {
             this.stopLocalTimer();
 
-            alert(`The game was ended by: ${note.who}`);
+            alert(`The game was ended by: ${data.who}`);
             ui.lobby.gameEnded();
         }
     };
 
-    this.handleSpectators = (note) => {
-        const shouldShowLabel = note.names.length > 0;
+    this.handleSpectators = (data) => {
+        const shouldShowLabel = data.names.length > 0;
         spectatorsLabel.setVisible(shouldShowLabel);
         spectatorsNumLabel.setVisible(shouldShowLabel);
         if (shouldShowLabel) {
-            spectatorsNumLabel.setText(note.names.length);
+            spectatorsNumLabel.setText(data.names.length);
 
             // Build the string that shows all the names
-            const nameEntries = note.names.map((name, i) => `${i + 1}) ${name}`).join('\n');
+            const nameEntries = data.names.map((name, i) => `${i + 1}) ${name}`).join('\n');
             const tooltipString = `Spectators:\n${nameEntries}`;
 
             spectatorsLabelTooltip.getText().setText(tooltipString);
@@ -4911,12 +4914,12 @@ function HanabiUI(lobby, gameID) {
             ],
         }
     */
-    this.handleNote = (note) => {
+    this.handleNote = (data) => {
         // Build the note text from the "notes" array given by the server
         let newNote = '';
-        for (let i = 0; i < note.notes.length; i++) {
-            if (note.notes[i].length > 0) {
-                newNote += `${ui.playerNames[i]}: ${note.notes[i]}\n`;
+        for (let i = 0; i < data.notes.length; i++) {
+            if (data.notes[i].length > 0) {
+                newNote += `${ui.playerNames[i]}: ${data.notes[i]}\n`;
             }
         }
         if (newNote.length > 0) {
@@ -4924,10 +4927,10 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Set the note
-        ui.setNote(note.order, newNote);
+        ui.setNote(data.order, newNote);
 
         // Draw (or hide) the note indicator
-        const card = ui.deck[note.order];
+        const card = ui.deck[data.order];
         card.tooltip.getText().setText(newNote);
         if (newNote.length > 0) {
             card.noteGiven.show();
@@ -4944,9 +4947,9 @@ function HanabiUI(lobby, gameID) {
         cardLayer.draw();
     };
 
-    this.handleNotes = (note) => {
+    this.handleNotes = (data) => {
         // We received a new copy of all of our notes from the server
-        notesWritten = note.notes;
+        notesWritten = data.notes;
 
         for (const order of Object.keys(notesWritten)) {
             // The following code is mosly copied from the "handleNote" function
@@ -4973,8 +4976,8 @@ function HanabiUI(lobby, gameID) {
         cardLayer.draw();
     };
 
-    this.handleReplayLeader = function handleReplayLeader(note) {
-        this.sharedReplayLeader = note.name;
+    this.handleReplayLeader = function handleReplayLeader(data) {
+        this.sharedReplayLeader = data.name;
 
         sharedReplayLeaderLabel.show();
         sharedReplayLeaderLabelTooltip.getText().setText(`Leader: ${this.sharedReplayLeader}`);
@@ -4987,8 +4990,8 @@ function HanabiUI(lobby, gameID) {
         UILayer.draw();
     };
 
-    this.handleReplayTurn = function handleReplayTurn(note) {
-        this.sharedReplayTurn = note.turn;
+    this.handleReplayTurn = function handleReplayTurn(data) {
+        this.sharedReplayTurn = data.turn;
         this.adjustReplayShuttle();
         if (ui.applyReplayActions) {
             this.performReplay(this.sharedReplayTurn);
@@ -4997,8 +5000,8 @@ function HanabiUI(lobby, gameID) {
         }
     };
 
-    this.handleReplayIndicator = (note) => {
-        const indicated = ui.deck[note.order];
+    this.handleReplayIndicator = (data) => {
+        const indicated = ui.deck[data.order];
         if (indicated && indicated.isInPlayerHand() && ui.applyReplayActions) {
             showClueMatch(-1);
             indicated.setIndicator(true, false, true);
