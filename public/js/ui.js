@@ -866,8 +866,9 @@ function HanabiUI(lobby, gameID) {
 
     HanabiCard.prototype.reset = function reset() {
         this.hideClues();
-        const note = notesWritten[this.order];
-        if (note !== '') {
+        const note = ui.getNote(this.order);
+        console.log('NOTE:', note);
+        if (note !== null) {
             this.tooltip.getText().setText(note);
             this.tooltip.getTag().setWidth();
             this.noteGiven.show();
@@ -2552,8 +2553,7 @@ function HanabiUI(lobby, gameID) {
     let helpGroup;
     let msgLogGroup;
     let overback;
-    let notesWritten = Array(70).fill(''); // An array containing all of the player's notes, indexed by card order
-    // (we initialize it to size 70 because that is that is the maximum deck size)
+    let notesWritten = []; // An array containing all of the player's notes, indexed by card order
 
     const overPlayArea = pos => (
         pos.x >= playArea.getX() &&
@@ -4525,12 +4525,15 @@ function HanabiUI(lobby, gameID) {
 
     showLoading();
 
-    this.getNote = cardOrder => notesWritten[cardOrder];
-
-    this.setNote = function setNote(cardOrder, note) {
-        if (note) {
-            notesWritten[cardOrder] = note;
+    this.getNote = (cardOrder) => {
+        if (cardOrder > notesWritten.length - 1) {
+            return null;
         }
+        return notesWritten[cardOrder];
+    };
+
+    this.setNote = function setNote(order, note) {
+        notesWritten[order] = note;
     };
 
     this.handleNotify = function handleNotify(data) {
@@ -4905,13 +4908,14 @@ function HanabiUI(lobby, gameID) {
         }, 1000);
     };
 
-    // Receives the following data:
+    // Recieved by the client when spectating a game
+    // Has the following data:
     /*
         {
             order: 16,
             notes: [
-                'm3,m2',
-                'probably m3'
+                'm3,m2', // Player 1's note
+                'probably m3', // Player 2's note
             ],
         }
     */
@@ -4949,15 +4953,9 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleNotes = (data) => {
-        // We received a new copy of all of our notes from the server
+        // We reconnected in the middle of a game and
+        // recieved a new copy of all of our notes from the server
         notesWritten = data.notes;
-
-        // socket.io truncates the array for some reason,
-        // and we need it to be at least the size of the deck to avoid array
-        // indexing errors
-        while (notesWritten.length < this.deck.length) {
-            notesWritten.push('');
-        }
 
         for (let order = 0; order < notesWritten.length; order++) {
             const note = notesWritten[order];
@@ -4965,15 +4963,15 @@ function HanabiUI(lobby, gameID) {
             // The following code is mosly copied from the "handleNote" function
             // Draw (or hide) the note indicator
             const card = ui.deck[order];
-            card.tooltip.getText().setText(note);
-            if (note.length > 0) {
+            card.tooltip.getText().setText((note === null ? '' : note));
+            if (note === null) {
+                card.noteGiven.hide();
+                card.tooltip.hide();
+            } else {
                 card.noteGiven.show();
                 if (ui.spectating) {
                     card.notePulse.play();
                 }
-            } else {
-                card.noteGiven.hide();
-                card.tooltip.hide();
             }
         }
         tipLayer.draw();

@@ -107,7 +107,7 @@ function step2(error, socket, data) {
         socket, // A reference to their socket object
         time,
         stats: data.stats,
-        notes: Array(game.deck.length).fill(''), // An array containing all of the player's notes, indexed by card order
+        notes: [], // An array containing all of the player's notes, indexed by card order
     });
     notify.allTableChange(data);
     notify.gameMemberChange(data);
