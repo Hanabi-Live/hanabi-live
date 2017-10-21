@@ -9,6 +9,7 @@
 // Imports
 const globals = require('../globals');
 const logger = require('../logger');
+const models = require('../models');
 const notify = require('../notify');
 
 exports.step1 = (socket, data) => {
@@ -74,6 +75,20 @@ exports.step1 = (socket, data) => {
 
     logger.info(`User "${socket.username}" joined game: #${data.gameID} (${game.name})`);
 
+    // Get the stats for this player
+    data.socket = socket;
+    models.users.getStats(data, step2);
+};
+
+function step2(error, data) {
+    if (error !== null) {
+        logger.error(`models.users.getStats failed: ${error}`);
+        return;
+    }
+
+    // Local variables
+    const game = globals.currentGames[data.gameID];
+
     // Keep track of the user that joined
     let time = globals.startingTime; // In milliseconds
     if (game.timed && game.name === '!test') {
@@ -86,27 +101,33 @@ exports.step1 = (socket, data) => {
     }
     game.players.push({
         hand: [],
-        userID: socket.userID,
-        username: socket.username,
+        userID: data.socket.userID,
+        username: data.socket.username,
         present: true,
-        socket,
+        socket: data.socket, // A reference to their socket object
         time,
+        stats: {
+            numPlayed: data.numPlayed,
+            numPlayedVariant: data.numPlayedVariant,
+            averageScoreVariant: data.averageScoreVariant,
+            strikeoutRateVariant: data.strikeoutRateVariant,
+        },
         notes: {}, // All of the player's notes, indexed by card order
     });
     notify.allTableChange(data);
     notify.gameMemberChange(data);
 
     // Set their status
-    socket.currentGame = data.gameID;
-    socket.status = 'Pre-Game';
-    notify.allUserChange(socket);
+    data.socket.currentGame = data.gameID;
+    data.socket.status = 'Pre-Game';
+    notify.allUserChange(data.socket);
 
     // Send them a "joined" message
     // (to let them know they successfully joined the table)
-    socket.emit('message', {
+    data.socket.emit('message', {
         type: 'joined',
         resp: {
             gameID: data.gameID,
         },
     });
-};
+}

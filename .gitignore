@@ -1,3 +1,8 @@
+# --------------------------------------------------------------
+# .gitignore template from GitHub
+# https://github.com/github/gitignore/blob/master/Node.gitignore
+# --------------------------------------------------------------
+
 # Logs
 logs
 *.log
@@ -57,12 +62,12 @@ typings/
 # dotenv environment variables file
 .env
 
-# Hanabi stuff
+# -----------------------
+# Hanabi server additions
+# -----------------------
+
 database_shell.sh
 reset_database.sh
 restart.sh
 stop.sh
 logs
-
-# Test file for client-only modifications
-index.html

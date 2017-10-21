@@ -90,9 +90,6 @@ function step4(socket, data) {
     socket.username = data.username;
     socket.currentGame = -1;
     socket.status = 'Lobby';
-    socket.numPlayed = data.numPlayed;
-    socket.averageScore = data.averageScore;
-    socket.strikeoutRate = data.strikeoutRate;
 
     // Check to see if this user is already logged on
     if (socket.userID in globals.connectedUsers) {

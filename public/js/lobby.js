@@ -845,9 +845,8 @@ HanabiLobby.prototype.setGamePlayer = function setGamePlayer(data) {
     this.game.players[data.index] = {
         name: data.name,
         numPlayed: data.numPlayed,
-        averageScore: data.averageScore,
-        strikeoutRate: data.strikeoutRate,
         present: data.present,
+        stats: data.stats,
     };
 
     if (data.you) {
@@ -882,23 +881,37 @@ HanabiLobby.prototype.showJoined = function showJoined() {
 
         html += '<table>';
 
+        const {
+            numPlayed,
+            numPlayedVariant,
+        } = this.game.players[i].stats;
+        let {
+            averageScoreVariant,
+            strikeoutRateVariant,
+        } = this.game.players[i].stats;
+        averageScoreVariant = Math.round(averageScoreVariant * 100) / 100; // Round it to 2 decimal places
+        strikeoutRateVariant *= 100; // Turn it into a percent
+        strikeoutRateVariant = Math.round(strikeoutRateVariant * 100) / 100; // Round it to 2 decimal places
+
         html += '<tr>';
         html += '<td>Total games:</td>';
-        html += `<td><b>${this.game.players[i].numPlayed}</b></td>`;
+        html += `<td><b>${numPlayed}</b></td>`;
         html += '</tr>';
 
         html += '<tr>';
-        html += '<td>Avg. score:</td>';
-        let { averageScore } = this.game.players[i];
-        averageScore = Math.round(averageScore * 100) / 100; // Round it to 2 decimal places
-        html += `<td><b>${averageScore}</b></td>`;
+        html += '<td>Total games (this variant):</td>';
+        html += `<td><b>${numPlayedVariant}</b></td>`;
+        html += '</tr>';
+
+
+        html += '<tr>';
+        html += '<td>Average score (this variant):</td>';
+        html += `<td><b>${averageScoreVariant}</b></td>`;
         html += '</tr>';
 
         html += '<tr>';
-        html += '<td>Strikeout:</td>';
-        let strikeoutRate = this.game.players[i].strikeoutRate * 100; // Turn it into a percent
-        strikeoutRate = Math.round(strikeoutRate * 100) / 100; // Round it to 2 decimal places
-        html += `<td><b>${strikeoutRate}%</b></td>`;
+        html += '<td>Strikeout rate (this variant):</td>';
+        html += `<td><b>${strikeoutRateVariant}%</b></td>`;
         html += '</tr>';
 
         html += '</table>';

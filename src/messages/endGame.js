@@ -152,53 +152,13 @@ function step5(error, data) {
         });
     }
 
-    // Begin to update all of the player's stats
-    data.insertNum = -1;
-    step6(null, data);
+    // Do the final steps in closing the game
+    step6(data);
 }
 
-function step6(error, data) {
-    if (error !== null) {
-        logger.error(`models.users.updateStats failed: ${error}`);
-        return;
-    }
-
+function step6(data) {
     // Local variables
     const game = globals.currentGames[data.gameID];
-
-    data.insertNum += 1;
-    if (data.insertNum < game.players.length) {
-        data.userID = game.players[data.insertNum].userID;
-        models.users.updateStats(data, step6);
-        return;
-    }
-
-    // Now that we have updated them, get the new stats for each player
-    data.insertNum = -1;
-    step7(null, data);
-}
-
-function step7(error, data) {
-    if (error !== null) {
-        logger.error(`models.users.getStats failed: ${error}`);
-        return;
-    }
-
-    // Local variables
-    const game = globals.currentGames[data.gameID];
-
-    if (data.insertNum !== -1) {
-        game.players[data.insertNum].socket.numPlayed = data.numPlayed;
-        game.players[data.insertNum].socket.averageScore = data.averageScore;
-        game.players[data.insertNum].socket.strikeoutRate = data.strikeoutRate;
-    }
-
-    data.insertNum += 1;
-    if (data.insertNum < game.players.length) {
-        data.userID = game.players[data.insertNum].userID;
-        models.users.getStats(data, step7);
-        return;
-    }
 
     // Keep track of the game ending
     logger.info(`[Game ${data.gameID}] Ended with a score of ${game.score}.`);

@@ -15,9 +15,6 @@ CREATE TABLE users (
     id                INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
     username          NVARCHAR(19)  NOT NULL  UNIQUE, /* MySQL is case insensitive by default, which is what we want */
     password          CHAR(64)      NOT NULL, /* A SHA-256 hash string is 64 characters long */
-    num_played        INT           NOT NULL  DEFAULT 0,
-    average_score     FLOAT         NOT NULL  DEFAULT 0,
-    strikeout_rate    FLOAT         NOT NULL  DEFAULT 0,
     datetime_created  TIMESTAMP     NOT NULL, /* Defaults to the current time */
     last_login        TIMESTAMP     NOT NULL /* Defaults to the current time */
 );
