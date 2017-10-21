@@ -113,10 +113,11 @@ function step2(error, socket, data) {
 
         // Send them any notes that they have previously made
         if (index !== -1) { // We don't want to send any notes to spectators
+            // Compile a list of only their notes
             socket.emit('message', {
                 type: 'notes',
                 resp: {
-                    notes: game.players[index].notes,
+                    notes: game.notes[index],
                 },
             });
         }

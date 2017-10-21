@@ -866,8 +866,8 @@ function HanabiUI(lobby, gameID) {
 
     HanabiCard.prototype.reset = function reset() {
         this.hideClues();
-        if (notesWritten[this.order] !== '') {
-            const note = notesWritten[this.order];
+        const note = notesWritten[this.order];
+        if (note !== '') {
             this.tooltip.getText().setText(note);
             this.tooltip.getTag().setWidth();
             this.noteGiven.show();
@@ -2062,8 +2062,6 @@ function HanabiUI(lobby, gameID) {
     };
 
     const ImageLoader = new Loader(() => {
-        notesWritten = ui.loadNotes();
-
         ui.buildCards();
         ui.buildUI();
         ui.sendMsg({
@@ -4526,6 +4524,14 @@ function HanabiUI(lobby, gameID) {
     }
 
     showLoading();
+
+    this.getNote = cardOrder => notesWritten[cardOrder];
+
+    this.setNote = function setNote(cardOrder, note) {
+        if (note) {
+            notesWritten[cardOrder] = note;
+        }
+    };
 
     this.handleNotify = function handleNotify(note) {
         const { type } = note;
