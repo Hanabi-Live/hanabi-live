@@ -869,7 +869,7 @@ function HanabiUI(lobby, gameID) {
     HanabiCard.prototype.reset = function reset() {
         this.hideClues();
         const note = ui.getNote(this.order);
-        if (note !== null) {
+        if (note !== null && note !== undefined) {
             this.tooltip.getText().setText(note);
             this.tooltip.getTag().setWidth();
             this.noteGiven.show();
