@@ -4952,17 +4952,14 @@ function HanabiUI(lobby, gameID) {
         // We received a new copy of all of our notes from the server
         notesWritten = data.notes;
 
-        for (const order of Object.keys(notesWritten)) {
+        for (let order = 0; order < notesWritten.length; order++) {
+            const note = notesWritten[order];
+
             // The following code is mosly copied from the "handleNote" function
-
-            // Set the note
-            const newNote = notesWritten[order];
-            ui.setNote(order, newNote);
-
             // Draw (or hide) the note indicator
             const card = ui.deck[order];
-            card.tooltip.getText().setText(newNote);
-            if (newNote.length > 0) {
+            card.tooltip.getText().setText(note);
+            if (note.length > 0) {
                 card.noteGiven.show();
                 if (ui.spectating) {
                     card.notePulse.play();
