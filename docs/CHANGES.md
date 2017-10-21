@@ -1,24 +1,28 @@
-List of Changes & Improvements over the Original Server
-=======================================================
+List of Changes & Improvements
+==============================
+
+This server attempts to emulate the original Keldon server. However, it also contains many new features, bug fixes, and quality of life improvements.
+
+<br />
 
 ## New Variants
 
-### White Suit and Multi-color Suit
+#### White Suit and Multi-color Suit
 
 * This is like the "Multi-color Suit" variant, but purple is replaced with white.
 * No color clues touch the white suit.
 
-### Mixed-color Suits
+#### Mixed-color Suits
 
 * This has 6 new suits: Green, Magenta, Navy, Orange, Tan, and Burgundy.
 * There are only 4 types of clues: Blue, Yellow, Red, and Black.
 
-### Mixed and Multi-color Suits
+#### Mixed and Multi-color Suits
 
 * This has 5 new suits, with Rainbow as the 6th suit: Teal, Lime, Orange, Burgundy, and Indigo.
 * The standard clue types are available.
 
-### Crazy
+#### Crazy
 
 * This has 3 mixed suits, a white suit, a rainbow suit, and a black suit.
 * The black suit is one of each.
@@ -28,14 +32,14 @@ List of Changes & Improvements over the Original Server
 
 ## New Major Features
 
-### Bottom Deck Blind Plays
+#### Bottom Deck Blind Plays
 
 * On your turn, if there is 1 card left in the deck, you are allowed to blind play it.
 * This is done by dragging the deck on to the play area.
 * A golden border will appear around the deck when there is 1 card left in order to signify that this is possible.
 * This feature prevents stupid losses that occur from being "bottom decked" by a 3 or a 4 that was impossible to save in the early or mid-game.
 
-### Shared Replays
+#### Shared Replays
 
 * Any replay can be started as a 'shared' replay. Once created, an unlimited number of people can join it.
 * When in a shared replay, the leader can control what turn is being shown to everyone in the replay.
@@ -43,7 +47,7 @@ List of Changes & Improvements over the Original Server
 * You can see who the leader of the replay is by hovering over the "👑" icon in the bottom right-hand corner.
 * You can use this feature to share a past game with a friend who was not in that game.
 
-### Timed Games
+#### Timed Games
 
 * Each game now has the option to be created with as a "Timed Game".
 * Similar to chess, each player has a bank of time that decreases only during their turn.
@@ -52,20 +56,20 @@ List of Changes & Improvements over the Original Server
 * If time runs out for any player, the game immediately ends.
 * In non-timed games, the timers will still show, but they will count up instead of down to show how long each player is taking.
 
-### Notes
+#### Notes
 
 * You can right-click a card to add a note to it.
 * Since notes are tracked by the server, you can switch computers mid-game and keep your notes.
 * Your notes will persist into the replay.
 * Everyone's notes are combined and shown to spectators, which is fun to see.
 
-## Forced Chop Rotation
+#### Forced Chop Rotation
 
 * Each game now has the option to be created with as "Forced Chop Rotation".
 * If enabled, each player will automatically reorder their cards in the following algorithmic fashion:
   * After you discard or clue, if all the people between you and the last person who discarded played cards, then you move your right-most unclued card to the left-most position.
 
-## Color-Blind Mode
+#### Color-Blind Mode
 
 * Each player can toggle
 * For players who are color-blind, this mode will make the game much easier to play by drawing the letters of the color on top of the card.

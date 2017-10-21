@@ -844,7 +844,6 @@ HanabiLobby.prototype.setGame = function setGame(data) {
 HanabiLobby.prototype.setGamePlayer = function setGamePlayer(data) {
     this.game.players[data.index] = {
         name: data.name,
-        numPlayed: data.numPlayed,
         present: data.present,
         stats: data.stats,
     };
