@@ -747,7 +747,7 @@ HanabiLobby.prototype.addHistoryDetail = function addHistoryDetail(data) {
         id: data.id,
         score: data.score,
         us: data.you,
-        ts: data.ts.split('T')[0],
+        ts: data.ts,
     });
     this.drawHistoryDetails();
 };
@@ -792,7 +792,7 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
                 .text(`${this.historyDetailList[i].score}/${variant.maxScore} points`)
                 .addClass('table-attr history-score'))
             .append($('<li>')
-                .text(this.historyDetailList[i].ts)
+                .text(this.historyDetailList[i].ts.split('T')[0])
                 .addClass('table-attr history-ts'));
 
         const button = this.makeReplayButton(this.historyDetailList[i].id, 'Watch Replay', 'startReplay', false);
