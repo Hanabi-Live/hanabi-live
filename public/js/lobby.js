@@ -877,8 +877,14 @@ HanabiLobby.prototype.showJoined = function showJoined() {
     let html = `<p><b>${$('<a>').text(this.game.name).html()}</b></p>`;
     html += '<p>&nbsp;</p>';
     html += `<p>Variant: <b>${variantNames[this.game.variant]}</p></b>`;
-    html += `<p>${timedDescription}: <b>${(this.game.timed ? 'Yes' : 'No')}</b></p>`;
-    html += `<p>${reorderCardsDescription}: <b>${(this.game.reorderCards ? 'Yes' : 'No')}</b></p>`;
+
+    if (this.game.timed) {
+        html += `<p>${timedDescription}</p>`;
+    }
+
+    if (this.game.reorderCards) {
+        html += `<p>${reorderCardsDescription}</p>`;
+    }
 
     $('#joined-desc').html(html);
 
