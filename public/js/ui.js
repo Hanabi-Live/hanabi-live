@@ -916,17 +916,16 @@ function HanabiUI(lobby, gameID) {
             }
 
             let note = ui.getNote(self.order);
-            const newNote = prompt('Note on card:', note);
-            if (newNote !== null) {
-                self.tooltip.getText().setText(newNote);
-                ui.setNote(self.order, newNote);
-                note = newNote;
-            }
-
-            // Do nothing if there was no old note and no new note
-            if (typeof note === 'undefined') {
+            const newNote = window.prompt('Note on card:', note);
+            if (newNote === null) {
+                // The user clicked the "cancel" button, so do nothing else
                 return;
             }
+
+            // The user clicked "OK", regardless of whether they changed the existing note or not
+            self.tooltip.getText().setText(newNote);
+            ui.setNote(self.order, newNote);
+            note = newNote;
 
             if (note.length > 0) {
                 self.noteGiven.show();
