@@ -16,6 +16,12 @@ exports.step1 = (socket, data) => {
     socket.status = 'Lobby';
     notify.allUserChange(socket);
 
+    // Check to see if they are in a (solo) replay
+    if (oldStatus === 'Replay') {
+        socket.currentGame = -1;
+        return;
+    }
+
     // Validate that this table exists
     if (!(data.gameID in globals.currentGames)) {
         // Since games are deleted when they end, it is normal behavior for
