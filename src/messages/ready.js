@@ -117,7 +117,7 @@ function step2(error, socket, data) {
             socket.emit('message', {
                 type: 'notes',
                 resp: {
-                    notes: game.notes[index],
+                    notes: game.players[index].notes,
                 },
             });
         }

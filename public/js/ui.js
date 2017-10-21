@@ -2552,7 +2552,8 @@ function HanabiUI(lobby, gameID) {
     let helpGroup;
     let msgLogGroup;
     let overback;
-    let notesWritten = [];
+    console.log('Deck size is:', this.deck.size);
+    let notesWritten = Array(this.deck.size).fill(''); // An array containing all of the player's notes, indexed by card order
 
     const overPlayArea = pos => (
         pos.x >= playArea.getX() &&
