@@ -4952,6 +4952,13 @@ function HanabiUI(lobby, gameID) {
         // We received a new copy of all of our notes from the server
         notesWritten = data.notes;
 
+        // socket.io truncates the array for some reason,
+        // and we need it to be at least the size of the deck to avoid array
+        // indexing errors
+        while (notesWritten.length < this.deck.length) {
+            notesWritten.push('');
+        }
+
         for (let order = 0; order < notesWritten.length; order++) {
             const note = notesWritten[order];
 
