@@ -49,8 +49,8 @@ exports.step1 = (socket, data) => {
         return;
     }
 
-    // Add their note to the card
-    game.deck[data.order].notes[data.index] = data.note;
+    // Update the array that contains all of their notes
+    game.players[data.index].notes[data.order] = data.note;
 
     // Let all of the spectators know that there is a new note
     notify.spectatorsNote(data);

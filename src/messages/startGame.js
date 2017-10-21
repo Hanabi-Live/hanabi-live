@@ -64,20 +64,12 @@ exports.step1 = (socket, data) => {
             }
 
             for (let i = 0; i < amountToAdd; i++) {
-                // Each card will have an array of notes, based on the note
-                // that each player has added to it
-                const notes = [];
-                for (let j = 0; j < game.players.length; j++) {
-                    notes.push('');
-                }
-
                 // Add the card to the deck
                 game.deck.push({
                     suit,
                     rank,
                     touched: false,
                     discarded: false,
-                    notes,
                     // We can't set the order here because the deck will be
                     // shuffled later
                 });

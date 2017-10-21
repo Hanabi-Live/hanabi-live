@@ -10,7 +10,7 @@ These instructions assume you are running OS X or Linux. Some adjustment will be
   * `cd keldon-hanabi`
 * Fix the `index.ejs` file:
   * `mv views/index.ejs index.html`
-  * `sed --in-place 's/<%= websocketURL %>/http://hanabi.live/g' index.html`
+  * `sed --in-place 's/<%= websocketURL %>/http://www.hanabi.live/g' index.html`
 * Open `index.html` in a browser, which will load the local scripts but connect to the real server.
 
 <br />

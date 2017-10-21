@@ -18,7 +18,6 @@ exports.leaveTable = require('./messages/leaveTable');
 exports.login = require('./messages/login');
 exports.logout = require('./messages/logout'); // Not a real message
 exports.note = require('./messages/note');
-exports.notes = require('./messages/notes');
 exports.ready = require('./messages/ready');
 exports.reattendTable = require('./messages/reattendTable');
 exports.replayAction = require('./messages/replayAction');

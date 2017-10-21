@@ -866,7 +866,7 @@ function HanabiUI(lobby, gameID) {
 
     HanabiCard.prototype.reset = function reset() {
         this.hideClues();
-        if (this.order in notesWritten) {
+        if (notesWritten[this.order] !== '') {
             const note = notesWritten[this.order];
             this.tooltip.getText().setText(note);
             this.tooltip.getTag().setWidth();
@@ -949,14 +949,6 @@ function HanabiUI(lobby, gameID) {
                     resp: {
                         order: self.order,
                         note,
-                    },
-                });
-
-                // Also send the server a new copy of all of our notes
-                ui.sendMsg({
-                    type: 'notes',
-                    resp: {
-                        notes: notesWritten,
                     },
                 });
             }
@@ -2563,7 +2555,7 @@ function HanabiUI(lobby, gameID) {
     let helpGroup;
     let msgLogGroup;
     let overback;
-    let notesWritten = {};
+    let notesWritten = [];
 
     const overPlayArea = pos => (
         pos.x >= playArea.getX() &&
@@ -4534,31 +4526,6 @@ function HanabiUI(lobby, gameID) {
     }
 
     showLoading();
-
-    this.getNote = cardOrder => notesWritten[cardOrder];
-
-    this.setNote = function setNote(cardOrder, note) {
-        if (note) {
-            notesWritten[cardOrder] = note;
-        } else {
-            delete notesWritten[cardOrder];
-        }
-        this.saveNotes();
-    };
-
-    this.loadNotes = () => {
-        const cookie = localStorage.getItem(gameID);
-        if (cookie) {
-            return JSON.parse(cookie);
-        }
-
-        return {};
-    };
-
-    this.saveNotes = () => {
-        const cookie = JSON.stringify(notesWritten);
-        localStorage.setItem(gameID, cookie);
-    };
 
     this.handleNotify = function handleNotify(note) {
         const { type } = note;
