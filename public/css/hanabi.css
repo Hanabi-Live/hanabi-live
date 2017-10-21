@@ -415,7 +415,8 @@ ul {
 }
 
 .history-ts {
-	width: 150px;
+	width: fit-content;
+	padding-right: 20px;
 }
 
 .history-variant {

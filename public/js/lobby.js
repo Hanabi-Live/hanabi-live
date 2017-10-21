@@ -651,13 +651,7 @@ HanabiLobby.prototype.addChat = function addChat(data) {
 };
 
 HanabiLobby.prototype.addHistory = function addHistory(data) {
-    this.historyList[data.id] = {
-        id: data.id,
-        numPlayers: data.numPlayers,
-        score: data.score,
-        variant: data.variant,
-        numSimilar: data.numSimilar,
-    };
+    this.historyList[data.id] = data;
 };
 
 HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msgType, returnsToLobby) {
@@ -743,6 +737,9 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
             .append($('<li>')
                 .text(`Variant: ${variantNames[gameData.variant]}`)
                 .addClass('table-attr history-variant'))
+            .append($('<li>')
+                .text(gameData.ts.split('T')[0])
+                .addClass('table-attr history-ts'))
             .append($('<li>')
                 .append(this.makeReplayButton(ids[i], 'Watch Replay', 'startReplay', false))
                 .addClass('table-attr'))
