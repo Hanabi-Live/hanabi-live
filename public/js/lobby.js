@@ -422,16 +422,7 @@ HanabiLobby.prototype.drawUsers = function drawUsers() {
 };
 
 HanabiLobby.prototype.addTable = function addTable(data) {
-    this.tableList[data.id] = {
-        name: data.name,
-        numPlayers: data.numPlayers,
-        variant: data.variant,
-        joined: data.joined,
-        running: data.running,
-        ourTurn: data.ourTurn,
-        owned: data.owned,
-        sharedReplay: data.sharedReplay,
-    };
+    this.tableList[data.id] = data;
     this.drawTables();
 
     // Automatically resume any games that we are currently in
