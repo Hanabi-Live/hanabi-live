@@ -76,11 +76,11 @@ exports.step1 = (socket, data) => {
     logger.info(`User "${socket.username}" joined game: #${data.gameID} (${game.name})`);
 
     // Get the stats for this player
-    data.socket = socket;
-    models.users.getStats(data, step2);
+    data.variant = game.variant;
+    models.users.getStats(socket, data, step2);
 };
 
-function step2(error, data) {
+function step2(error, socket, data) {
     if (error !== null) {
         logger.error(`models.users.getStats failed: ${error}`);
         return;
@@ -101,30 +101,25 @@ function step2(error, data) {
     }
     game.players.push({
         hand: [],
-        userID: data.socket.userID,
-        username: data.socket.username,
+        userID: socket.userID,
+        username: socket.username,
         present: true,
-        socket: data.socket, // A reference to their socket object
+        socket, // A reference to their socket object
         time,
-        stats: {
-            numPlayed: data.numPlayed,
-            numPlayedVariant: data.numPlayedVariant,
-            averageScoreVariant: data.averageScoreVariant,
-            strikeoutRateVariant: data.strikeoutRateVariant,
-        },
+        stats: data.stats,
         notes: {}, // All of the player's notes, indexed by card order
     });
     notify.allTableChange(data);
     notify.gameMemberChange(data);
 
     // Set their status
-    data.socket.currentGame = data.gameID;
-    data.socket.status = 'Pre-Game';
-    notify.allUserChange(data.socket);
+    socket.currentGame = data.gameID;
+    socket.status = 'Pre-Game';
+    notify.allUserChange(socket);
 
     // Send them a "joined" message
     // (to let them know they successfully joined the table)
-    data.socket.emit('message', {
+    socket.emit('message', {
         type: 'joined',
         resp: {
             gameID: data.gameID,

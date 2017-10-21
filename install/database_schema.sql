@@ -28,7 +28,7 @@ CREATE TABLE games (
     owner              INT           NOT NULL,
     variant            TINYINT       NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
     timed              BOOLEAN       NULL, /* 0 - not timed, 1 - timed */
-    seed               VARCHAR(15)   NULL,
+    seed               VARCHAR(15)   NULL, /* like "p2v0s1" */
     score              INT           NULL,
     datetime_created   TIMESTAMP     NOT NULL, /* Defaults to the current time */
     datetime_started   TIMESTAMP     NULL      DEFAULT NULL,

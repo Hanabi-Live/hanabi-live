@@ -51,11 +51,13 @@ exports.create = (socket, data, done) => {
     });
 };
 
-exports.getStats = (data, done) => {
+exports.getStats = (socket, data, done) => {
     const sql = `
         SELECT
             (
-                SELECT COUNT(id) FROM game_participants WHERE user_id = ?
+                SELECT COUNT(id)
+                FROM game_participants
+                WHERE user_id = ?
             ) AS num_played,
             (
                 SELECT COUNT(games.id)
@@ -65,6 +67,33 @@ exports.getStats = (data, done) => {
                 WHERE game_participants.user_id = ?
                 AND games.variant = ?
             ) AS num_played_variant,
+            (
+                SELECT IFNULL(MAX(games.score), 0)
+                FROM games
+                    JOIN game_participants
+                        ON game_participants.game_id = games.id
+                WHERE game_participants.user_id = ?
+                    AND games.variant = ?
+                    AND SUBSTRING(games.seed, 2, 1) = "3"
+            ) AS best_score_variant_3,
+            (
+                SELECT IFNULL(MAX(games.score), 0)
+                FROM games
+                    JOIN game_participants
+                        ON game_participants.game_id = games.id
+                WHERE game_participants.user_id = ?
+                    AND games.variant = ?
+                    AND SUBSTRING(games.seed, 2, 1) = "4"
+            ) AS best_score_variant_4,
+            (
+                SELECT IFNULL(MAX(games.score), 0)
+                FROM games
+                    JOIN game_participants
+                        ON game_participants.game_id = games.id
+                WHERE game_participants.user_id = ?
+                    AND games.variant = ?
+                    AND SUBSTRING(games.seed, 2, 1) = "5"
+            ) AS best_score_variant_5,
             (
                 SELECT AVG(games.score)
                 FROM games
@@ -83,40 +112,57 @@ exports.getStats = (data, done) => {
                     AND games.score = 0
                     AND games.variant = ?
             ) / (
-                SELECT COUNT(id) FROM game_participants WHERE user_id = ?
+                SELECT COUNT(games.id)
+                FROM games
+                    JOIN game_participants
+                        ON game_participants.game_id = games.id
+                WHERE game_participants.user_id = ?
+                    AND games.variant = ?
             ) AS strikeout_rate_variant
     `;
     const values = [
-        data.userID,
-        data.userID,
+        data.userID, // num_played
+        data.userID, // num_played_variant
+        data.variant,
+        data.userID, // best_score_variant_3
+        data.variant,
+        data.userID, // best_score_variant_4
+        data.variant,
+        data.userID, // best_score_variant_5
+        data.variant,
+        data.userID, // average_score_variant
+        data.variant,
+        data.userID, // strikeout_rate_variant
         data.variant,
         data.userID,
         data.variant,
-        data.userID,
-        data.variant,
-        data.userID,
     ];
     db.query(sql, values, (error, results, fields) => {
         if (error) {
-            done(error, data, null);
+            done(error, socket, data);
             return;
         }
 
         if (results.length === 0) {
             error = new Error(`There was no rows in the "users" table for the user ID of: ${data.userID}`);
-            done(error, data, null);
+            done(error, socket, data);
             return;
         } else if (results.length !== 1) {
             error = new Error(`Got ${results.length} rows in the "users" table for the user ID of: ${data.userID}`);
-            done(error, data, null);
+            done(error, socket, data);
             return;
         }
 
-        data.numPlayed = results[0].num_played;
-        data.numPlayedVariant = results[0].num_played_variant;
-        data.averageScoreVariant = results[0].average_score_variant;
-        data.strikeoutRateVariant = results[0].strikeout_rate_variant;
+        data.stats = {
+            numPlayed: results[0].num_played,
+            numPlayedVariant: results[0].num_played_variant,
+            bestScoreVariant3: results[0].best_score_variant_3,
+            bestScoreVariant4: results[0].best_score_variant_4,
+            bestScoreVariant5: results[0].best_score_variant_5,
+            averageScoreVariant: results[0].average_score_variant,
+            strikeoutRateVariant: results[0].strikeout_rate_variant,
+        };
 
-        done(null, data);
+        done(null, socket, data);
     });
 };

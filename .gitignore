@@ -66,8 +66,12 @@ typings/
 # Hanabi server additions
 # -----------------------
 
+# Local scripts
 database_shell.sh
 reset_database.sh
 restart.sh
 stop.sh
-logs
+
+# A test file used by developers doing client-side only work
+# (so that they don't have to run the server)
+index.html

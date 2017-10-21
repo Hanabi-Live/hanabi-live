@@ -81,12 +81,7 @@ exports.gameMemberChange = (data) => {
                     name: player2.socket.username,
                     you: (player.userID === player2.userID),
                     present: game.players[i].present,
-                    stats: {
-                        numPlayed: player2.stats.numPlayed,
-                        numPlayedVariant: player2.stats.numPlayedVariant,
-                        averageScoreVariant: player2.stats.averageScoreVariant,
-                        strikeoutRateVariant: player2.stats.strikeoutRateVariant,
-                    },
+                    stats: player2.stats, // Defined in the "users" model
                 },
             });
         }

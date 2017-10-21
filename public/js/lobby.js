@@ -883,6 +883,9 @@ HanabiLobby.prototype.showJoined = function showJoined() {
         const {
             numPlayed,
             numPlayedVariant,
+            bestScoreVariant3,
+            bestScoreVariant4,
+            bestScoreVariant5,
         } = this.game.players[i].stats;
         let {
             averageScoreVariant,
@@ -902,6 +905,20 @@ HanabiLobby.prototype.showJoined = function showJoined() {
         html += `<td><b>${numPlayedVariant}</b></td>`;
         html += '</tr>';
 
+        html += '<tr>';
+        html += '<td>Best score (this variant, 3p):</td>';
+        html += `<td><b>${bestScoreVariant3}</b></td>`;
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<td>Best score (this variant, 4p):</td>';
+        html += `<td><b>${bestScoreVariant4}</b></td>`;
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<td>Best score (this variant, 5p):</td>';
+        html += `<td><b>${bestScoreVariant5}</b></td>`;
+        html += '</tr>';
 
         html += '<tr>';
         html += '<td>Average score (this variant):</td>';
