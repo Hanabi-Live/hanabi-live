@@ -777,29 +777,30 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
     }
 
     for (let i = 0; i < this.historyDetailList.length; i++) {
+        const gameData = this.historyDetailList[i];
         const detail = $('<li>').addClass('table-item');
         const attrs = $('<ul>');
 
-        if (this.historyDetailList[i].us) {
+        if (gameData.us) {
             attrs.addClass('detail-us');
         }
 
         attrs
             .append($('<li>')
-                .text(`#${this.historyDetailList[i].id}`)
+                .text(`#${gameData.id}`)
                 .addClass('table-attr history-id'))
             .append($('<li>')
-                .text(`${this.historyDetailList[i].score}/${variant.maxScore} points`)
+                .text(`${gameData.score}/${variant.maxScore} points`)
                 .addClass('table-attr history-score'))
             .append($('<li>')
-                .text(this.historyDetailList[i].ts.split('T')[0])
+                .text(gameData.ts.split('T')[0])
                 .addClass('table-attr history-ts'));
 
-        const button = this.makeReplayButton(this.historyDetailList[i].id, 'Watch Replay', 'startReplay', false);
+        const button = this.makeReplayButton(gameData.id, 'Watch Replay', 'startReplay', false);
 
         attrs.append($('<li>').append(button).addClass('table-attr'));
 
-        const button2 = this.makeReplayButton(this.historyDetailList[i].id, 'Share Replay', 'createSharedReplay', true);
+        const button2 = this.makeReplayButton(gameData.id, 'Share Replay', 'createSharedReplay', true);
 
         attrs.append($('<li>').append(button2).addClass('table-attr'));
 
