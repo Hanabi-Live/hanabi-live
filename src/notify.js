@@ -329,6 +329,8 @@ const playerTable = (socket, data) => {
             owned: socket.userID === game.owner,
             running: game.running,
             variant: game.variant,
+            timed: game.timed,
+            reorderCards: game.reorderCards,
             ourTurn: (joined && game.running && game.turnPlayerIndex === data.index),
             sharedReplay: game.sharedReplay,
         },
