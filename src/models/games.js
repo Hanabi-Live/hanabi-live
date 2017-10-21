@@ -39,7 +39,7 @@ exports.end = (data, done) => {
             seed = ?,
             score = ?,
             datetime_started = ?,
-            datetime_finished = NOW()
+            datetime_finished = ?
         WHERE id = ?
     `;
     const values = [
@@ -50,6 +50,7 @@ exports.end = (data, done) => {
         data.seed,
         data.score,
         data.datetimeStarted,
+        data.datetimeFinished,
         data.gameID,
     ];
     db.query(sql, values, (error, results, fields) => {
