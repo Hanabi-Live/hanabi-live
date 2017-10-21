@@ -54,7 +54,7 @@
                 [1, 2],
                 [0, 1],
             ]
-            .map(point => [point[0] * w + offsetX, point[1] * h + offsetY]);
+                .map(point => [point[0] * w + offsetX, point[1] * h + offsetY]);
             const curveX = 1.46;
             const curveY = 0.6;
             const interps = [
@@ -63,10 +63,10 @@
                 [1, 1],
                 [1, 0],
             ]
-            .map(v => [
-                [curveX, 2 - curveX][v[0]] * w + offsetX,
-                [curveY, 2 - curveY][v[1]] * h + offsetY,
-            ]);
+                .map(v => [
+                    [curveX, 2 - curveX][v[0]] * w + offsetX,
+                    [curveY, 2 - curveY][v[1]] * h + offsetY,
+                ]);
 
             ctx.beginPath();
             ctx.moveTo(...points[0]);

@@ -44,6 +44,9 @@ exports.step1 = (socket, data) => {
     }
 
     // Create the deck
+    // (it will have 60 cards if playing no variant,
+    // 65 cards if playing a one of each variant,
+    // and 70 cards when playing the other variants)
     const suits = [0, 1, 2, 3, 4];
     if (game.variant > 0) {
         suits.push(5);
