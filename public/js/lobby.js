@@ -901,32 +901,34 @@ HanabiLobby.prototype.showJoined = function showJoined() {
         html += '</tr>';
 
         html += '<tr>';
-        html += '<td>Total games (this variant):</td>';
+        html += '<td>...of this variant:</td>';
         html += `<td><b>${numPlayedVariant}</b></td>`;
         html += '</tr>';
 
         html += '<tr>';
-        html += '<td>Best score (this variant, 3p):</td>';
+        html += '<td>Best scores of this variant with</td>';
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<td>...three players:</td>';
         html += `<td><b>${bestScoreVariant3}</b></td>`;
         html += '</tr>';
 
         html += '<tr>';
-        html += '<td>Best score (this variant, 4p):</td>';
+        html += '<td>...four players:</td>';
         html += `<td><b>${bestScoreVariant4}</b></td>`;
         html += '</tr>';
 
         html += '<tr>';
-        html += '<td>Best score (this variant, 5p):</td>';
+        html += '<td>...five players:</td>';
         html += `<td><b>${bestScoreVariant5}</b></td>`;
         html += '</tr>';
-
-        html += '<tr>';
-        html += '<td>Average score (this variant):</td>';
+        html += '<td>Average score:</td>';
         html += `<td><b>${averageScoreVariant}</b></td>`;
         html += '</tr>';
 
         html += '<tr>';
-        html += '<td>Strikeout rate (this variant):</td>';
+        html += '<td>Strikeout rate:</td>';
         html += `<td><b>${strikeoutRateVariant}%</b></td>`;
         html += '</tr>';
 

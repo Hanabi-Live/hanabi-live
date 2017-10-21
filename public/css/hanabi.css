@@ -172,6 +172,10 @@ ul {
 	border-radius: 5px;
 }
 
+.player-details > table > tbody > tr > td:nth-child(2) {
+	text-align: right;
+}
+
 #game-history {
 	display: none;
 
