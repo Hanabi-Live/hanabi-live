@@ -869,7 +869,7 @@ function HanabiUI(lobby, gameID) {
     HanabiCard.prototype.reset = function reset() {
         this.hideClues();
         const note = ui.getNote(this.order);
-        if (note !== null && note !== undefined) {
+        if (note !== null) {
             this.tooltip.getText().setText(note);
             this.tooltip.getTag().setWidth();
             this.noteGiven.show();
@@ -4528,10 +4528,11 @@ function HanabiUI(lobby, gameID) {
     showLoading();
 
     this.getNote = (cardOrder) => {
-        if (cardOrder > notesWritten.length - 1) {
+        const note = notesWritten[cardOrder];
+        if (typeof note === 'undefined') {
             return null;
         }
-        return notesWritten[cardOrder];
+        return note;
     };
 
     this.setNote = function setNote(order, note) {
