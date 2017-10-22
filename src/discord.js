@@ -85,6 +85,7 @@ function discordMessage(message) {
     };
     const data = {
         msg: message.content,
+        discord: true,
     };
     messages.chat.step1(socket, data);
 
@@ -93,6 +94,12 @@ function discordMessage(message) {
 }
 
 exports.send = (from, username, message) => {
+    // Enable Discord sending only if the token is specified
+    if (process.env.DISCORD_TOKEN.length === 0) {
+        return;
+    }
+
+    // Find out which channels to output to
     const outputChannelID = process.env.DISCORD_OUTPUT_CHANNEL_ID;
     if (outputChannelID.length === 0) {
         return;

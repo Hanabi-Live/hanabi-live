@@ -37,10 +37,13 @@ function step2(error, socket, data) {
     }
 
     let text = '';
-    if (socket.userID === 1) {
+    if (data.discord) {
         text += 'DISCORD ';
     }
-    text += `<${socket.username}> ${data.msg}`;
+    if (socket.userID !== 1 || data.discord) {
+        text += `<${socket.username}> `;
+    }
+    text += data.msg;
     logger.info(text);
 
     // Check for debug commands
