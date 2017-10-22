@@ -4916,7 +4916,7 @@ function HanabiUI(lobby, gameID) {
     /*
         {
             order: 16,
-            notes: [
+            note: [
                 'm3,m2', // Player 1's note
                 'probably m3', // Player 2's note
             ],
@@ -4955,9 +4955,23 @@ function HanabiUI(lobby, gameID) {
         cardLayer.draw();
     };
 
+    // Recieved by the client when:
+    // - joining a replay (will get all notes)
+    // - joining a shared replay (will get all notes)
+    // - joining an existing game as a spectator (will get all notes)
+    // - reconnecting an existing game as a player (will only get your own notes)
+    // Has the following data:
+    /*
+        {
+            notes: [
+                null,
+                null,
+                null,
+                zamiel: 'g1\nsankala: g1/g2',
+            ],
+        }
+    */
     this.handleNotes = (data) => {
-        // We reconnected in the middle of a game and
-        // recieved a new copy of all of our notes from the server
         notesWritten = data.notes;
 
         for (let order = 0; order < notesWritten.length; order++) {
