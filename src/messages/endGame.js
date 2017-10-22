@@ -70,6 +70,37 @@ exports.step1 = (data) => {
         game.score = 0;
     }
 
+    // Log the game ending
+    logger.info(`[Game ${data.gameID}] Ended with a score of ${game.score}.`);
+
+    // Notify everyone that the table was deleted
+    notify.allTableGone(data);
+
+    // Reset the status of the players
+    for (const player of game.players) {
+        player.socket.currentGame = -1;
+        player.socket.status = 'Replay';
+        notify.allUserChange(player.socket);
+    }
+    for (const userID of Object.keys(game.spectators)) {
+        const spectator = game.spectators[userID];
+        spectator.currentGame = -1;
+        spectator.status = 'Replay';
+        notify.allUserChange(spectator);
+    }
+
+    // Send a chat message describing the game that was finished
+    const socket = {
+        userID: 1, // The first user ID is reserved for server messages
+    };
+    data.msg = `Game #${data.gameID} finished with a score of ${game.score}. (`;
+    for (const player of game.players) {
+        data.msg += `${player.username}, `;
+    }
+    data.msg = data.msg.slice(0, -2); // Chop off the trailing ", "
+    data.msg += ')';
+    messages.chat.step1(socket, data);
+
     // Record the game in the database
     data = {
         name: game.name,
@@ -165,36 +196,7 @@ function step5(error, data) {
     }
 
     // Keep track of the game ending
-    logger.info(`[Game ${data.gameID}] Ended with a score of ${game.score}.`);
     delete globals.currentGames[data.gameID];
-
-    // Notify everyone that the table was deleted
-    notify.allTableGone(data);
-
-    // Reset the status of the players
-    for (const player of game.players) {
-        player.socket.currentGame = -1;
-        player.socket.status = 'Replay';
-        notify.allUserChange(player.socket);
-    }
-    for (const userID of Object.keys(game.spectators)) {
-        const spectator = game.spectators[userID];
-        spectator.currentGame = -1;
-        spectator.status = 'Replay';
-        notify.allUserChange(spectator);
-    }
-
-    // Send a chat message describing the game that was finished
-    const socket = {
-        userID: 1, // The first user ID is reserved for server messages
-    };
-    data.msg = `Game #${data.gameID} finished with a score of ${game.score}. (`;
-    for (const player of game.players) {
-        data.msg += `${player.username}, `;
-    }
-    data.msg = data.msg.slice(0, -2); // Chop off the trailing ", "
-    data.msg += ')';
-    messages.chat.step1(socket, data);
 }
 
 /*
