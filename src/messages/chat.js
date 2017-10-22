@@ -66,6 +66,6 @@ function step2(error, socket, data) {
     // Send the chat message to the Discord "#general" channel
     // (but don't send Discord messages that we are already replicating)
     if (!data.discord) {
-        discord.send('Emulator-Lobby', socket.username, data.msg);
+        discord.send('Hanabi Live', socket.username, data.msg);
     }
 }

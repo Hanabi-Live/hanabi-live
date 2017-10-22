@@ -92,7 +92,7 @@ function keldonMessage(msg) {
         return;
     }
 
-    discord.send('Keldon-Lobby', msg.resp.who, msg.resp.msg);
+    discord.send('Keldon', msg.resp.who, msg.resp.msg);
 }
 
 exports.sendChat = (msg) => {

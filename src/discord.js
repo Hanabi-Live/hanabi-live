@@ -107,7 +107,11 @@ exports.send = (from, username, message) => {
 
     // In Discord, text inside single asterisks are italicised and text inside
     // double asterisks are bolded
-    const messageString = `[*${from}*] <**${username}**> ${message}`;
+    let messageString = `[*${from}*] `;
+    if (typeof username !== 'undefined') {
+        messageString += `<**${username}**> `;
+    }
+    messageString += message;
 
     // A guild is a server in Discord
     // The bot should only be in one server, so it will be at array index 0
