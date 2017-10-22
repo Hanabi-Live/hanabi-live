@@ -13,6 +13,8 @@ exports.step1 = (data) => {
     const game = globals.currentGames[data.gameID];
 
     // Send text messages showing how much time each player finished with
+    // (commented out since we want to clearly see the final turn of the game without having to rewind)
+    /*
     for (const player of game.players) {
         let text = `${player.username} finished with a time of `;
         let seconds = Math.ceil(player.time / 1000);
@@ -26,6 +28,7 @@ exports.step1 = (data) => {
         notify.gameAction(data);
         logger.info(`[Game ${data.gameID}] ${text}`);
     }
+    */
 
     // Send the "gameOver" message
     game.actions.push({
@@ -185,6 +188,7 @@ function step6(data) {
     Miscellaneous functions
 */
 
+/*
 function secondsToTimeDisplay(seconds) {
     return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
 }
@@ -195,3 +199,4 @@ function pad2(num) {
     }
     return `${num}`;
 }
+*/

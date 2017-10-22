@@ -228,18 +228,14 @@ const step1 = (socket, data) => {
         });
         notify.gameAction(data);
         logger.info(`[Game ${data.gameID}] ${text}`);
-    }
-
-    // Send messages about the current turn
-    // (we advance a turn even if the game is over so that we have an extra
-    // separator before the finishing times are displayed)
-    game.actions.push({
-        num: game.turnNum,
-        type: 'turn',
-        who: game.turnPlayerIndex,
-    });
-    notify.gameAction(data);
-    if (!data.end) {
+    } else {
+        // Send messages about the current turn
+        game.actions.push({
+            num: game.turnNum,
+            type: 'turn',
+            who: game.turnPlayerIndex,
+        });
+        notify.gameAction(data);
         logger.info(`[Game ${data.gameID}] It is now ${game.players[game.turnPlayerIndex].username}'s turn.`);
     }
 
