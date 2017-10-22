@@ -12,9 +12,30 @@ exports.step1 = (data) => {
     // Local variables
     const game = globals.currentGames[data.gameID];
 
+    // If this is a timed game, we want to show the finishing times
+    // But do it in 3 seconds so that it does not interfere with the final move of the game
+    if (game.timed) {
+        setTimeout(() => {
+            step2(data);
+        }, 3000);
+    } else {
+        step3(data);
+    }
+};
+
+function step2(data) {
+    // Local variables
+    const game = globals.currentGames[data.gameID];
+
+    // Advance a turn so that we have an extra separator before the finishing times
+    game.actions.push({
+        num: game.turnNum,
+        type: 'turn',
+        who: game.turnPlayerIndex,
+    });
+    notify.gameAction(data);
+
     // Send text messages showing how much time each player finished with
-    // (commented out since we want to clearly see the final turn of the game without having to rewind)
-    /*
     for (const player of game.players) {
         let text = `${player.username} finished with a time of `;
         let seconds = Math.ceil(player.time / 1000);
@@ -28,7 +49,13 @@ exports.step1 = (data) => {
         notify.gameAction(data);
         logger.info(`[Game ${data.gameID}] ${text}`);
     }
-    */
+
+    step3(data);
+}
+
+function step3(data) {
+    // Local variables
+    const game = globals.currentGames[data.gameID];
 
     // Send the "gameOver" message
     game.actions.push({
@@ -77,10 +104,10 @@ exports.step1 = (data) => {
         // datetimeFinished will automatically be set by MariaDB
         gameID: data.gameID,
     };
-    models.games.end(data, step2);
-};
+    models.games.end(data, step4);
+}
 
-function step2(error, data) {
+function step4(error, data) {
     if (error !== null) {
         logger.error(`models.games.end failed: ${error}`);
         return;
@@ -88,10 +115,10 @@ function step2(error, data) {
 
     // Add all of the participants
     data.insertNum = -1;
-    step3(null, data);
+    step5(null, data);
 }
 
-function step3(error, data) {
+function step5(error, data) {
     if (error !== null) {
         logger.error(`models.gameParticipants.create failed: ${error}`);
         return;
@@ -103,16 +130,16 @@ function step3(error, data) {
     data.insertNum += 1;
     if (data.insertNum < game.players.length) {
         data.userID = game.players[data.insertNum].userID;
-        models.gameParticipants.create(data, step3);
+        models.gameParticipants.create(data, step5);
         return;
     }
 
     // Insert all of the actions taken
     data.insertNum = -1;
-    step4(null, data);
+    step6(null, data);
 }
 
-function step4(error, data) {
+function step6(error, data) {
     if (error !== null) {
         logger.error(`models.gameActions.create failed: ${error}`);
         return;
@@ -124,15 +151,15 @@ function step4(error, data) {
     data.insertNum += 1;
     if (data.insertNum < game.actions.length) {
         data.action = JSON.stringify(game.actions[data.insertNum]);
-        models.gameActions.create(data, step4);
+        models.gameActions.create(data, step6);
         return;
     }
 
     // Get the numSimilar for this game
-    models.games.getNumSimilar(data, step5);
+    models.games.getNumSimilar(data, step7);
 }
 
-function step5(error, data) {
+function step7(error, data) {
     if (error !== null) {
         logger.error(`models.games.getNumSimilar failed: ${error}`);
         return;
@@ -156,10 +183,10 @@ function step5(error, data) {
     }
 
     // Do the final steps in closing the game
-    step6(data);
+    step8(data);
 }
 
-function step6(data) {
+function step8(data) {
     // Local variables
     const game = globals.currentGames[data.gameID];
 
@@ -188,7 +215,6 @@ function step6(data) {
     Miscellaneous functions
 */
 
-/*
 function secondsToTimeDisplay(seconds) {
     return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
 }
@@ -199,4 +225,3 @@ function pad2(num) {
     }
     return `${num}`;
 }
-*/
