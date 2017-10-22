@@ -266,6 +266,36 @@ exports.getVariant = (socket, data, done) => {
     });
 };
 
+// Used in the "ready" command
+exports.getNotes = (socket, data, done) => {
+    const sql = `
+        SELECT
+            users.username AS username,
+            game_participants.notes AS notes
+        FROM games
+            JOIN game_participants ON game_participants.game_id = games.id
+            JOIN users ON users.id = game_participants.user_id
+        WHERE games.id = ?
+        ORDER BY game_participants.id
+    `;
+    const values = [data.gameID];
+    db.query(sql, values, (error, results, fields) => {
+        if (error) {
+            done(error, socket, data);
+            return;
+        }
+        data.game.players = [];
+        for (const row of results) {
+            data.game.players.push({
+                username: row.username,
+                notes: JSON.parse(row.notes),
+            });
+        }
+
+        done(null, socket, data);
+    });
+};
+
 // Clean up any races that were either not started yet or were not finished
 exports.clean = (done) => {
     const sql = 'DELETE FROM games WHERE datetime_finished IS NULL';

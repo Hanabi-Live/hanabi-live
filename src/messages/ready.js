@@ -24,6 +24,7 @@ exports.step1 = (socket, data) => {
     }
 
     if (socket.status === 'Replay' || socket.status === 'Shared Replay') {
+        // Fill out the "data.games" object with all of the actions taken
         models.gameActions.getAll(socket, data, step2);
     } else {
         data.game = globals.currentGames[data.gameID];
@@ -34,6 +35,21 @@ exports.step1 = (socket, data) => {
 function step2(error, socket, data) {
     if (error !== null) {
         logger.error(`models.gameActions.getAll failed: ${error}`);
+        return;
+    }
+
+    if (socket.status === 'Replay' || socket.status === 'Shared Replay') {
+        // Fill out the "data.games" object with the players and their notes
+        models.games.getNotes(socket, data, step3);
+    } else {
+        // data.game was already copied in the previous step
+        step3(null, socket, data);
+    }
+}
+
+function step3(error, socket, data) {
+    if (error !== null) {
+        logger.error(`models.games.getNotes failed: ${error}`);
         return;
     }
 
@@ -72,7 +88,11 @@ function step2(error, socket, data) {
     }
 
     // If it is their turn, send an "action" message
-    if (game.turnPlayerIndex === index) {
+    if (
+        socket.status !== 'Replay' &&
+        socket.status !== 'Shared Replay' &&
+        game.turnPlayerIndex === index
+    ) {
         notify.playerAction(socket, data);
     }
 
@@ -82,15 +102,11 @@ function step2(error, socket, data) {
         type: 'advanced',
     });
 
-    // Send them the number of spectators
-    if (socket.status !== 'Replay') {
-        notify.playerSpectators(socket, data);
-    }
-
-    // Send the spectators all of the existing notes
-    // TODO
-
-    if (socket.status !== 'Replay' && socket.status !== 'Shared Replay') {
+    // Check if the game is still in progress
+    if (socket.status === 'Replay' || socket.status === 'Shared Replay') {
+        // Since the game is over, send them the notes from everyone in the game
+        sendAllNotes(socket, data);
+    } else {
         // Send them the current time for all player's clocks
         const times = [];
         for (let i = 0; i < game.players.length; i++) {
@@ -114,9 +130,11 @@ function step2(error, socket, data) {
             },
         });
 
-        // Send them any notes that they have previously made
-        if (index !== -1) { // We don't want to send any notes to spectators
-            // Compile a list of only their notes
+        if (index === -1) {
+            // They are a spectator, so send them the notes from all players
+            sendAllNotes(socket, data);
+        } else {
+            // Send them a list of only their notes
             socket.emit('message', {
                 type: 'notes',
                 resp: {
@@ -126,13 +144,16 @@ function step2(error, socket, data) {
         }
     }
 
-    // Enable the replay controls for the leader of the review
-    if (socket.status === 'Shared Replay') {
-        notify.playerReplayLeader(socket, data);
+    // Send them the number of spectators
+    if (socket.status !== 'Replay') {
+        notify.playerSpectators(socket, data);
     }
 
-    // Send them to the current turn that everyone else is at
     if (socket.status === 'Shared Replay') {
+        // Enable the replay controls for the leader of the review
+        notify.playerReplayLeader(socket, data);
+
+        // Send them to the current turn that everyone else is at
         socket.emit('message', {
             type: 'replayTurn',
             resp: {
@@ -142,4 +163,39 @@ function step2(error, socket, data) {
             },
         });
     }
+}
+
+function sendAllNotes(socket, data) {
+    // This is either from "globals.currentGames" or built by the database
+    const { game } = data;
+
+    // Compile all of the notes together
+    const notes = [];
+    for (let i = 0; i < game.players.length; i++) {
+        const player = game.players[i];
+        for (let j = 0; j < player.notes.length; j++) {
+            const note = player.notes[j];
+            if (typeof note !== 'undefined' && note !== null) {
+                if (typeof notes[j] === 'undefined') {
+                    notes[j] = '';
+                }
+                notes[j] += `${player.username}: ${note}\n`;
+            }
+        }
+    }
+
+    // Chop off all of the trailing newlines
+    for (let i = 0; i < notes.length; i++) {
+        if (typeof notes[i] !== 'undefined' && notes[i] !== null && notes[i].length > 0) {
+            notes[i] = notes[i].slice(0, -1);
+        }
+    }
+
+    // Send it
+    socket.emit('message', {
+        type: 'notes',
+        resp: {
+            notes,
+        },
+    });
 }
