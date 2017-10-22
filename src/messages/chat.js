@@ -59,14 +59,13 @@ function step2(error, socket, data) {
             resp: {
                 msg: data.msg,
                 who: socket.username,
-                discord: (socket.userID === 1),
             },
         });
     }
 
     // Send the chat message to the Discord "#general" channel
-    // (only if it is not a server message)
-    if (socket.userID !== 1) {
+    // (but don't send Discord messages that we are already replicating)
+    if (!data.discord) {
         discord.send('Emulator-Lobby', socket.username, data.msg);
     }
 }
