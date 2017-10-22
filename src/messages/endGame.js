@@ -83,6 +83,8 @@ exports.step1 = (data) => {
         // datetimeFinished will automatically be set by MariaDB
         gameID: data.gameID,
     };
+
+    logger.info('Database - filling in the "games" row.');
     models.games.end(data, step2);
 };
 
@@ -92,7 +94,7 @@ function step2(error, data) {
         return;
     }
 
-    // Add all of the participants
+    logger.info('Database - Inserting the participants.');
     data.insertNum = -1;
     step3(null, data);
 }
@@ -114,7 +116,7 @@ function step3(error, data) {
         return;
     }
 
-    // Insert all of the actions taken
+    logger.info('Database - Inserting the actions taken.');
     data.insertNum = -1;
     step4(null, data);
 }
@@ -135,7 +137,7 @@ function step4(error, data) {
         return;
     }
 
-    // Get the numSimilar for this game
+    logger.info('Database - Getting "numSimilar" for this game.');
     models.games.getNumSimilar(data, step5);
 }
 
@@ -161,14 +163,6 @@ function step5(error, data) {
             },
         });
     }
-
-    // Do the final steps in closing the game
-    step6(data);
-}
-
-function step6(data) {
-    // Local variables
-    const game = globals.currentGames[data.gameID];
 
     // Keep track of the game ending
     logger.info(`[Game ${data.gameID}] Ended with a score of ${game.score}.`);
