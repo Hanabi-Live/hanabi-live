@@ -6,12 +6,15 @@
 const globals = require('../globals');
 const logger = require('../logger');
 const models = require('../models');
+const moment = require('moment');
 const notify = require('../notify');
 const messages = require('../messages');
 
 exports.step1 = (data) => {
     // Local variables
     const game = globals.currentGames[data.gameID];
+
+    game.datetimeFinished = moment().format('YYYY-MM-DD HH:mm:ss'); // This is the MariaDB format
 
     // Advance a turn so that we have an extra separator before the finishing times
     game.actions.push({
@@ -111,7 +114,7 @@ exports.step1 = (data) => {
         score: game.score,
         datetimeCreated: game.datetimeCreated,
         datetimeStarted: game.datetimeStarted,
-        // datetimeFinished will automatically be set by MariaDB
+        datetimeFinished: game.datetimeFinished,
         gameID: data.gameID,
     };
 
@@ -190,6 +193,7 @@ function step5(error, data) {
                 numPlayers: game.players.length,
                 numSimilar: data.numSimilar,
                 score: game.score,
+                ts: game.datetimeFinished,
                 variant: game.variant,
             },
         });
