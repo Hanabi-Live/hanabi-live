@@ -48,6 +48,15 @@ exports.step1 = (socket, data) => {
         return;
     }
 
+    // Validate that the username is not excessively short
+    const minLength = 3;
+    if (data.username.length > minLength) {
+        logger.warn(`User "${data.username}" supplied an excessively short username with a length of ${data.username.length}.`);
+        data.reason = `Username must be at least ${minLength} characters.`;
+        notify.playerDenied(socket, data);
+        return;
+    }
+
     // Get the password (and other data) for this user
     models.users.getUser(socket, data, step2);
 };
