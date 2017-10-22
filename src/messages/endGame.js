@@ -92,17 +92,7 @@ exports.step1 = (data) => {
         notify.allUserChange(spectator);
     }
 
-    // Send a chat message describing the game that was finished
-    const socket = {
-        userID: 1, // The first user ID is reserved for server messages
-    };
-    data.msg = `Game #${data.gameID} finished with a score of ${game.score}. (`;
-    for (const player of game.players) {
-        data.msg += `${player.username}, `;
-    }
-    data.msg = data.msg.slice(0, -2); // Chop off the trailing ", "
-    data.msg += ')';
-    messages.chat.step1(socket, data);
+    announceGameResult(data.gameID);
 
     // Record the game in the database
     data = {
@@ -201,6 +191,22 @@ function step5(error, data) {
 
     // Keep track of the game ending
     delete globals.currentGames[data.gameID];
+}
+
+// Send a chat message with the game result and players
+function announceGameResult(gameID) {
+    const game = globals.currentGames[gameID];
+    const socket = {
+        userID: 1, // The first user ID is reserved for server messages
+    };
+    const nameList = game.players.map(p => p.username);
+    const listEnd = `${game.players.length > 2 ? ',' : ''} and ${nameList.pop()}`;
+    const listBeginning = nameList.join(', '); // final name was removed above
+    const msg = `${listBeginning}${listEnd} finished game #${gameID} with a score of ${game.score}.`;
+    const data = {
+        msg,
+    };
+    messages.chat.step1(socket, data);
 }
 
 /*
