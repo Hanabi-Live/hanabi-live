@@ -39,9 +39,10 @@ CREATE INDEX games_index_datetime_finished ON games (datetime_finished);
 
 DROP TABLE IF EXISTS game_participants;
 CREATE TABLE game_participants (
-    id               INT        NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    user_id          INT        NOT NULL,
-    game_id          INT        NOT NULL,
+    id               INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
+    user_id          INT            NOT NULL,
+    game_id          INT            NOT NULL,
+    notes            NVARCHAR(500)  NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the game participant rows */

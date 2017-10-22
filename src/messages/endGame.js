@@ -130,6 +130,7 @@ function step5(error, data) {
     data.insertNum += 1;
     if (data.insertNum < game.players.length) {
         data.userID = game.players[data.insertNum].userID;
+        data.notes = JSON.stringify(game.players[data.insertNum].notes);
         models.gameParticipants.create(data, step5);
         return;
     }

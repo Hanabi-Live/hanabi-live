@@ -6,10 +6,7 @@ exports.getUser = (socket, data, done) => {
         SELECT
             id,
             username,
-            password,
-            num_played,
-            average_score,
-            strikeout_rate
+            password
         FROM users
         WHERE username = ?
     `;
