@@ -71,6 +71,7 @@ database_shell.sh
 reset_database.sh
 restart.sh
 stop.sh
+check_releases.sh
 
 # A test file used by developers doing client-side only work
 # (so that they don't have to run the server)
