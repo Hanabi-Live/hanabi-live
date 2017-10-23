@@ -197,6 +197,7 @@ function step5(error, data) {
 
     // Keep track of the game ending
     delete globals.currentGames[data.gameID];
+    logger.info('Finished database actions for the end of the game.');
 }
 
 /*
