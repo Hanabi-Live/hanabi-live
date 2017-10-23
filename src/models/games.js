@@ -291,7 +291,7 @@ exports.getNotes = (socket, data, done) => {
         for (const row of results) {
             data.game.players.push({
                 username: row.username,
-                notes: JSON.parse(row.notes),
+                notes: (row.notes === null ? [] : JSON.parse(row.notes)),
             });
         }
 
