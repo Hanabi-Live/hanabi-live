@@ -2,8 +2,13 @@
 const db = require('./db');
 
 exports.create = (data, done) => {
-    const sql = 'INSERT INTO game_actions (game_id, action) VALUES (?, ?)';
-    const values = [data.gameID, data.action];
+    const sql = `
+        INSERT INTO game_actions (game_id, action)
+        VALUES ?
+    `;
+    // "gameActions" is a two dimensional array to allow for a bulk import
+    // of all of the actions at once
+    const values = [data.gameActions];
     db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, data);

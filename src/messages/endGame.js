@@ -118,9 +118,21 @@ function step2(error, data) {
         return;
     }
 
+    // Local variables
+    const game = globals.currentGames[data.gameID];
+
+    // Next, we have to insert rows for each of the participants
+    // So create a big array to hold all of the data (used in a bulk insert)
+    data.gameParticipants = [];
+    for (const player of game.players) {
+        data.gameParticipants.push([
+            player.userID,
+            data.gameID,
+            JSON.stringify(player.notes),
+        ]);
+    }
     logger.info('Database - Inserting the participants.');
-    data.insertNum = -1;
-    step3(null, data);
+    models.gameParticipants.create(data, step3);
 }
 
 function step3(error, data) {
@@ -132,32 +144,22 @@ function step3(error, data) {
     // Local variables
     const game = globals.currentGames[data.gameID];
 
-    data.insertNum += 1;
-    if (data.insertNum < game.players.length) {
-        data.userID = game.players[data.insertNum].userID;
-        data.notes = JSON.stringify(game.players[data.insertNum].notes);
-        models.gameParticipants.create(data, step3);
-        return;
+    // Next, we have to insert rows for each of the actions
+    // So create a big array to hold all of the data (used in a bulk insert)
+    data.gameActions = [];
+    for (const action of game.actions) {
+        data.gameActions.push([
+            data.gameID,
+            JSON.stringify(action),
+        ]);
     }
-
     logger.info('Database - Inserting the actions taken.');
-    data.insertNum = -1;
-    step4(null, data);
+    models.gameActions.create(data, step4);
 }
 
 function step4(error, data) {
     if (error !== null) {
         logger.error(`models.gameActions.create failed: ${error}`);
-        return;
-    }
-
-    // Local variables
-    const game = globals.currentGames[data.gameID];
-
-    data.insertNum += 1;
-    if (data.insertNum < game.actions.length) {
-        data.action = JSON.stringify(game.actions[data.insertNum]);
-        models.gameActions.create(data, step4);
         return;
     }
 

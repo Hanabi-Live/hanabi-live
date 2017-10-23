@@ -72,6 +72,10 @@ reset_database.sh
 restart.sh
 stop.sh
 check_releases.sh
+backup_db.sh
+
+# Database backups
+backups
 
 # A test file used by developers doing client-side only work
 # (so that they don't have to run the server)
