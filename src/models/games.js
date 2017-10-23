@@ -160,14 +160,21 @@ exports.getNumSimilar = (data, done) => {
 exports.getAllDeals = (socket, data, done) => {
     const sql = `
         SELECT
-            id,
+            id AS id_original,
             score,
             datetime_finished,
             (
                 SELECT COUNT(game_participants.id)
                 FROM game_participants
                 WHERE user_id = ? AND game_id = games.id
-            ) AS you
+            ) AS you,
+            (
+                SELECT GROUP_CONCAT(users.username SEPARATOR ', ')
+                FROM game_participants
+                    JOIN users ON users.id = game_participants.user_id
+                WHERE game_participants.game_id = id_original
+                ORDER BY game_participants.id
+            ) AS otherPlayerNames
         FROM games
         WHERE seed = (SELECT seed FROM games WHERE id = ?)
         AND datetime_finished IS NOT NULL
@@ -185,7 +192,8 @@ exports.getAllDeals = (socket, data, done) => {
             row.you = (row.you > 0);
 
             data.gameList.push({
-                id: row.id,
+                id: row.id_original,
+                otherPlayerNames: row.otherPlayerNames,
                 score: row.score,
                 ts: row.datetime_finished,
                 you: row.you,
