@@ -51,13 +51,13 @@ module.exports = {
     ],
     port,
     variants: [
-        'None',
+        'No Variant',
         'Black Suit',
-        'Black Suit (one of each rank)',
-        'Rainbow Suit (all colors)',
+        'Black Suit 1OE',
+        'Rainbow Suit',
         'Dual-color Suits',
         'Dual-color & Rainbow Suits',
-        'White Suit (colorless) & Rainbow Suit',
+        'White Suit & Rainbow Suit',
         'Wild and Crazy',
     ],
     wordList: null, // Set in the "index.js" file
