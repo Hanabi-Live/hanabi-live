@@ -406,6 +406,9 @@ ul {
 
 .table-otherPlayerNames {
 	padding-left: 15px;
+}
+
+.table-otherPlayerNames-compact {
 	font-size: small;
 }
 

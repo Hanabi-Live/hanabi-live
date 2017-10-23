@@ -764,7 +764,7 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .addClass('table-attr'))
             .append($('<li>')
                 .text(gameData.otherPlayerNames)
-                .addClass('table-attr table-otherPlayerNames'));
+                .addClass('table-attr table-otherPlayerNames table-otherPlayerNames-compact'));
 
         history.append(attrs);
 
