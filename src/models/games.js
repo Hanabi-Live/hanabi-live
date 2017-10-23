@@ -173,6 +173,7 @@ exports.getAllDeals = (socket, data, done) => {
                 FROM game_participants
                     JOIN users ON users.id = game_participants.user_id
                 WHERE game_participants.game_id = id_original
+                    AND game_participants.user_id != ?
                 ORDER BY game_participants.id
             ) AS otherPlayerNames
         FROM games
@@ -180,7 +181,7 @@ exports.getAllDeals = (socket, data, done) => {
         AND datetime_finished IS NOT NULL
         ORDER BY id
     `;
-    const values = [socket.userID, data.gameID];
+    const values = [socket.userID, socket.userID, data.gameID];
     db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
