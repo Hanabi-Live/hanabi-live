@@ -58,7 +58,7 @@ module.exports = {
         'Dual-color Suits',
         'Dual-color & Rainbow Suits',
         'White Suit & Rainbow Suit',
-        'Wild and Crazy',
+        'Wild & Crazy',
     ],
     wordList: null, // Set in the "index.js" file
 };

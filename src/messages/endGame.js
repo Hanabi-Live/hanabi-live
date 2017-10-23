@@ -206,7 +206,7 @@ function announceGameResult(gameID) {
     const nameList = game.players.map(p => p.username);
     const listEnd = `${game.players.length > 2 ? ',' : ''} and ${nameList.pop()}`;
     const listBeginning = nameList.join(', '); // final name was removed above
-    const msg = `${listBeginning}${listEnd} finished game #${gameID} with a score of ${game.score} (${globals.variants[game.variant]}).`;
+    const msg = `${listBeginning}${listEnd} finished a ${globals.variants[game.variant].toLowerCase()} game #${gameID} with a score of ${game.score}.`;
     const data = {
         msg,
     };

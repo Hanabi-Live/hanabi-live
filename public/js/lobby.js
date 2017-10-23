@@ -444,7 +444,7 @@ const variantNames = [
     'Dual-color Suits',
     'Dual-color & Rainbow Suits',
     'White Suit (colorless) & Rainbow Suit',
-    'Wild and Crazy',
+    'Wild & Crazy',
 ];
 $(document).ready(() => {
     for (let i = 0; i < variantNames.length; i++) {
