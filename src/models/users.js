@@ -35,8 +35,11 @@ exports.getUser = (socket, data, done) => {
 };
 
 exports.create = (socket, data, done) => {
-    const sql = 'INSERT INTO users (username, password) VALUES (?, ?)';
-    const values = [data.username, data.password];
+    const sql = `
+        INSERT INTO users (username, password, last_ip)
+        VALUES (?, ?, ?)
+    `;
+    const values = [data.username, data.password, data.ip];
     db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
@@ -44,6 +47,25 @@ exports.create = (socket, data, done) => {
         }
 
         data.userID = results.insertId;
+        done(null, socket, data);
+    });
+};
+
+exports.update = (socket, data, done) => {
+    const sql = `
+        UPDATE users
+        SET
+            last_ip = ?,
+            datetime_last_login = NOW()
+        WHERE id = ?
+    `;
+    const values = [data.ip, data.userID];
+    db.query(sql, values, (error, results, fields) => {
+        if (error) {
+            done(error, socket, data);
+            return;
+        }
+
         done(null, socket, data);
     });
 };

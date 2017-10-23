@@ -63,17 +63,26 @@ exports.step1 = (socket, data) => {
 
 function step2(error, socket, data) {
     if (error !== null) {
-        logger.error(`models.users.getPassword failed: ${error}`);
+        logger.error(`models.users.getUser failed: ${error}`);
         return;
     }
 
+    // Get the IP of the client
+    // https://stackoverflow.com/questions/6458083/get-the-clients-ip-address-in-socket-io
+    data.ip = socket.handshake.headers['x-forwarded-for'] || socket.request.connection.remoteAddress;
+    // "socket.handshake.address.address" doesn't work
+    // "socket.conn.transport.socket._socket.remoteAddress" doesn't work
+    // "socket.request.connection.remoteAddress" gives a 10.X.X.X address on Heroku
+    // "x-forwarded-for" is added by Hoerku; note that it has to be in lowercase
+    // https://devcenter.heroku.com/articles/http-routing
+
     if (data.userID === null) {
         // This user does not exist, so create it
-        logger.info('Creating user:', data.username);
-        models.users.create(socket, data, step3);
+        logger.info('Creating user "${data.username}".');
+        models.users.create(socket, data, step3create);
     } else if (data.password === data.realPassword) {
-        // Check to see if the password matches
-        step4(socket, data);
+        // The user exists and the the password matches
+        models.users.update(socket, data, step3update);
     } else {
         logger.info(`User "${data.username}" supplied an incorrect password of: ${data.password}`);
         data.reason = 'Incorrect password';
@@ -81,13 +90,22 @@ function step2(error, socket, data) {
     }
 }
 
-function step3(error, socket, data) {
+function step3create(error, socket, data) {
     if (error !== null) {
         logger.error(`models.users.create failed: ${error}`);
         return;
     }
 
     logger.info(`User "${data.username}" was created in the database.`);
+    step4(socket, data);
+}
+
+function step3update(error, socket, data) {
+    if (error !== null) {
+        logger.error(`models.users.update failed: ${error}`);
+        return;
+    }
+
     step4(socket, data);
 }
 
@@ -116,7 +134,7 @@ function step4(socket, data) {
 
     // Keep track of the connecting user
     globals.connectedUsers[data.userID] = socket;
-    logger.info(`User "${data.username}" logged in. (${Object.keys(globals.connectedUsers).length} now connected.)`);
+    logger.info(`User "${data.username}" logged in from IP "${data.ip}". (${Object.keys(globals.connectedUsers).length} now connected.)`);
 
     // Check to see if this user was in any existing games
     for (let gameID of Object.keys(globals.currentGames)) {
