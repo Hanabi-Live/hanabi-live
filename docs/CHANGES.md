@@ -22,7 +22,7 @@ This server attempts to emulate the original Keldon server. However, it also con
 * This has 5 new suits, with Rainbow as the 6th suit: Teal, Lime, Orange, Burgundy, and Indigo.
 * The standard clue types are available.
 
-#### Crazy
+#### Wild & Crazy
 
 * This has 3 mixed suits, a white suit, a rainbow suit, and a black suit.
 * The black suit is one of each.
