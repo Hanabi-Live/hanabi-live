@@ -654,6 +654,12 @@
         exports.VARIANT.CRAZY,
     ];
 
+    exports.INDICATOR = {
+        POSITIVE: '#ffffff',
+        NEGATIVE: '#ff7777',
+        REPLAY_LEADER: '#ffdf00',
+    };
+
     // This only freezes one layer deep; to do any better, we should likely
     // involve a library like immutablejs. But probably not worth bothering with.
     for (const property of Object.keys(exports)) {

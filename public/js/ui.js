@@ -17,6 +17,7 @@ function HanabiUI(lobby, gameID) {
         PATHFUNC,
         backpath,
         drawshape,
+        INDICATOR,
     } = constants;
 
     this.deck = [];
@@ -604,6 +605,7 @@ function HanabiUI(lobby, gameID) {
     const HanabiCard = function HanabiCard(config) {
         const self = this;
 
+        this.holder = config.holder;
         config.width = CARDW;
         config.height = CARDH;
         config.x = CARDW / 2;
@@ -740,33 +742,42 @@ function HanabiUI(lobby, gameID) {
 
         this.setBareImage();
 
-        this.indicateRect = new Kinetic.Rect({
-            x: 0,
-            y: 0,
-            width: config.width,
-            height: config.height,
+        this.cluedBorder = new Kinetic.Rect({
+            x: 5,
+            y: 5,
+            width: config.width - 10,
+            height: config.height - 10,
             cornerRadius: 6,
             strokeWidth: 12,
-            stroke: '#ccccee',
+            stroke: '#ffdf00',
             visible: false,
             listening: false,
         });
-        this.indicateRect.setDash([30, 15]);
 
-        this.add(this.indicateRect);
+        this.add(this.cluedBorder);
 
-        // Draw the circle that is the "clue indicator" on the card
-        this.clueGiven = new Kinetic.Circle({
-            x: 0.9 * config.width,
-            y: (ui.variant.offsetCardIndicators ? 0.2 : 0.1) * config.height,
-            radius: 0.05 * config.width,
-            fill: 'white',
-            stroke: 'black',
-            strokeWidth: 4,
+        this.indicatorArrow = new Kinetic.Text({
+            x: ((this.holder === ui.playerUs) ? 0.7 : 0.3) * config.width,
+            y: ((this.holder === ui.playerUs) ? 0.18 : 0.82) * config.height,
+            width: 0.4 * config.width,
+            height: 0.5 * config.height,
+            fontSize: 0.2 * winH,
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: '⬆',
+            rotation: (this.holder === ui.playerUs) ? 180 : 0,
+            fill: '#ffffff',
+            shadowColor: 'black',
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
             visible: false,
         });
 
-        this.add(this.clueGiven);
+        this.add(this.indicatorArrow);
 
         // Define the "note indicator" square
         this.noteGiven = new Kinetic.Rect({
@@ -963,14 +974,10 @@ function HanabiUI(lobby, gameID) {
         this.barename = imageName(this);
     };
 
-    HanabiCard.prototype.setIndicator = function setIndicator(indicate, negative = false, dashed = false) {
-        if (negative) {
-            this.indicateRect.setStroke('#ff7777');
-        } else {
-            this.indicateRect.setStroke('#ddeecc');
-        }
-        this.indicateRect.setDashEnabled(dashed);
-        this.indicateRect.setVisible(indicate);
+    HanabiCard.prototype.setIndicator = function setIndicator(visible, type = INDICATOR.POSITIVE) {
+        this.indicatorArrow.setStroke('#000000');
+        this.indicatorArrow.setFill(type);
+        this.indicatorArrow.setVisible(visible);
         this.getLayer().batchDraw();
     };
 
@@ -1013,7 +1020,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     HanabiCard.prototype.hideClues = function hideClues() {
-        this.clueGiven.hide();
+        this.cluedBorder.hide();
         this.noteGiven.hide();
     };
 
@@ -1813,7 +1820,7 @@ function HanabiUI(lobby, gameID) {
                     continue;
                 }
 
-                ui.deck[self.neglist[i]].setIndicator(true, true);
+                ui.deck[self.neglist[i]].setIndicator(true, INDICATOR.NEGATIVE);
             }
 
             cardLayer.batchDraw();
@@ -4560,6 +4567,7 @@ function HanabiUI(lobby, gameID) {
                 order: data.order,
                 suits: this.variant.suits.slice(),
                 ranks: this.variant.ranks.slice(),
+                holder: data.who,
             });
 
             const child = new LayoutChild();
@@ -4690,7 +4698,7 @@ function HanabiUI(lobby, gameID) {
 
             for (let i = 0; i < data.list.length; i++) {
                 ui.deck[data.list[i]].setIndicator(true);
-                ui.deck[data.list[i]].clueGiven.show();
+                ui.deck[data.list[i]].cluedBorder.show();
 
                 if (data.target === ui.playerUs && !ui.replayOnly && !ui.spectating) {
                     ui.deck[data.list[i]].applyClue(clue, true);
@@ -5025,7 +5033,7 @@ function HanabiUI(lobby, gameID) {
         const indicated = ui.deck[data.order];
         if (indicated && indicated.isInPlayerHand() && ui.applyReplayActions) {
             showClueMatch(-1);
-            indicated.setIndicator(true, false, true);
+            indicated.setIndicator(true, INDICATOR.REPLAY_LEADER);
         }
     };
 
