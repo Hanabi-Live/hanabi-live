@@ -742,6 +742,20 @@ function HanabiUI(lobby, gameID) {
 
         this.setBareImage();
 
+        this.cluedBorder = new Kinetic.Rect({
+            x: 0,
+            y: 0,
+            width: config.width,
+            height: config.height,
+            cornerRadius: 6,
+            strokeWidth: 12,
+            stroke: '#ffdf00',
+            visible: false,
+            listening: false,
+        });
+
+        this.add(this.cluedBorder);
+
         this.indicatorArrow = new Kinetic.Text({
             x: ((this.holder === ui.playerUs) ? 0.7 : 0.3) * config.width,
             y: ((this.holder === ui.playerUs) ? 0.18 : 0.82) * config.height,
@@ -764,19 +778,6 @@ function HanabiUI(lobby, gameID) {
         });
 
         this.add(this.indicatorArrow);
-
-        // Draw the circle that is the "clue indicator" on the card
-        this.clueGiven = new Kinetic.Circle({
-            x: 0.9 * config.width,
-            y: (ui.variant.offsetCardIndicators ? 0.2 : 0.1) * config.height,
-            radius: 0.05 * config.width,
-            fill: 'white',
-            stroke: 'black',
-            strokeWidth: 4,
-            visible: false,
-        });
-
-        this.add(this.clueGiven);
 
         // Define the "note indicator" square
         this.noteGiven = new Kinetic.Rect({
@@ -1019,7 +1020,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     HanabiCard.prototype.hideClues = function hideClues() {
-        this.clueGiven.hide();
+        this.cluedBorder.hide();
         this.noteGiven.hide();
     };
 
@@ -4697,7 +4698,7 @@ function HanabiUI(lobby, gameID) {
 
             for (let i = 0; i < data.list.length; i++) {
                 ui.deck[data.list[i]].setIndicator(true);
-                ui.deck[data.list[i]].clueGiven.show();
+                ui.deck[data.list[i]].cluedBorder.show();
 
                 if (data.target === ui.playerUs && !ui.replayOnly && !ui.spectating) {
                     ui.deck[data.list[i]].applyClue(clue, true);
