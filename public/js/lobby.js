@@ -761,7 +761,10 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .addClass('table-attr'))
             .append($('<li>')
                 .append(this.makeHistoryDetailsButton(ids[i], gameData.numSimilar))
-                .addClass('table-attr'));
+                .addClass('table-attr'))
+            .append($('<li>')
+                .text(gameData.otherPlayerNames)
+                .addClass('table-attr table-otherPlayerNames'));
 
         history.append(attrs);
 
@@ -775,6 +778,7 @@ HanabiLobby.prototype.addHistoryDetail = function addHistoryDetail(data) {
         score: data.score,
         us: data.you,
         ts: data.ts,
+        otherPlayerNames: data.otherPlayerNames,
     });
     this.drawHistoryDetails();
 };
@@ -830,6 +834,11 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
         const button2 = this.makeReplayButton(gameData.id, 'Share Replay', 'createSharedReplay', true);
 
         attrs.append($('<li>').append(button2).addClass('table-attr'));
+
+        attrs
+            .append($('<li>')
+                .text(gameData.otherPlayerNames)
+                .addClass('table-attr table-otherPlayerNames'));
 
         detail.append(attrs);
 
