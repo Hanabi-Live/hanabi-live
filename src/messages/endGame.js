@@ -193,6 +193,10 @@ function step5(error, data) {
     delete globals.currentGames[data.gameID];
 }
 
+/*
+    Subroutines
+*/
+
 // Send a chat message with the game result and players
 function announceGameResult(gameID) {
     const game = globals.currentGames[gameID];
@@ -202,7 +206,7 @@ function announceGameResult(gameID) {
     const nameList = game.players.map(p => p.username);
     const listEnd = `${game.players.length > 2 ? ',' : ''} and ${nameList.pop()}`;
     const listBeginning = nameList.join(', '); // final name was removed above
-    const msg = `${listBeginning}${listEnd} finished game #${gameID} with a score of ${game.score}.`;
+    const msg = `${listBeginning}${listEnd} finished game #${gameID} with a score of ${game.score} (${globals.variant[game.variant]}).`;
     const data = {
         msg,
     };
