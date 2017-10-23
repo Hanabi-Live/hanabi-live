@@ -26,6 +26,7 @@ function step2(error, socket, data) {
             type: 'historyDetail',
             resp: {
                 id: game.id,
+                otherPlayerNames: game.otherPlayerNames,
                 score: game.score,
                 ts: game.ts,
                 you: game.you,

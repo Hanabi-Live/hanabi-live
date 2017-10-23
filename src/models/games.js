@@ -87,7 +87,7 @@ exports.exists = (socket, data, done) => {
 exports.getUserHistory = (socket, data, done) => {
     const sql = `
         SELECT
-            games.id AS id,
+            games.id AS id_original,
             (
                 SELECT COUNT(id)
                 FROM game_participants
@@ -101,13 +101,21 @@ exports.getUserHistory = (socket, data, done) => {
             ) AS num_similar,
             games.score AS score,
             datetime_finished,
-            games.variant AS variant
+            games.variant AS variant,
+            (
+                SELECT GROUP_CONCAT(users.username SEPARATOR ', ')
+                FROM game_participants
+                    JOIN users ON users.id = game_participants.user_id
+                WHERE game_participants.game_id = id_original
+                    AND game_participants.user_id != ?
+                ORDER BY game_participants.id
+            ) AS otherPlayerNames
         FROM games
             JOIN game_participants ON game_participants.game_id = games.id
         WHERE game_participants.user_id = ? AND datetime_finished IS NOT NULL
         ORDER BY games.id
     `;
-    const values = [socket.userID];
+    const values = [socket.userID, socket.userID];
     db.query(sql, values, (error, results, fields) => {
         if (error) {
             done(error, socket, data);
@@ -116,9 +124,10 @@ exports.getUserHistory = (socket, data, done) => {
         data.gameHistory = [];
         for (const row of results) {
             data.gameHistory.push({
-                id: row.id,
+                id: row.id_original,
                 numPlayers: row.num_players,
                 numSimilar: row.num_similar,
+                otherPlayerNames: row.otherPlayerNames,
                 score: row.score,
                 ts: row.datetime_finished,
                 variant: row.variant,
@@ -151,14 +160,21 @@ exports.getNumSimilar = (data, done) => {
 exports.getAllDeals = (socket, data, done) => {
     const sql = `
         SELECT
-            id,
+            id AS id_original,
             score,
             datetime_finished,
             (
                 SELECT COUNT(game_participants.id)
                 FROM game_participants
                 WHERE user_id = ? AND game_id = games.id
-            ) AS you
+            ) AS you,
+            (
+                SELECT GROUP_CONCAT(users.username SEPARATOR ', ')
+                FROM game_participants
+                    JOIN users ON users.id = game_participants.user_id
+                WHERE game_participants.game_id = id_original
+                ORDER BY game_participants.id
+            ) AS otherPlayerNames
         FROM games
         WHERE seed = (SELECT seed FROM games WHERE id = ?)
         AND datetime_finished IS NOT NULL
@@ -176,7 +192,8 @@ exports.getAllDeals = (socket, data, done) => {
             row.you = (row.you > 0);
 
             data.gameList.push({
-                id: row.id,
+                id: row.id_original,
+                otherPlayerNames: row.otherPlayerNames,
                 score: row.score,
                 ts: row.datetime_finished,
                 you: row.you,

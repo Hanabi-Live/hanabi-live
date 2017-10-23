@@ -220,6 +220,7 @@ function step5(error, socket, data) {
                 id: game.id,
                 numPlayers: game.numPlayers,
                 numSimilar: game.numSimilar,
+                otherPlayerNames: game.otherPlayerNames,
                 score: game.score,
                 ts: game.ts,
                 variant: game.variant,

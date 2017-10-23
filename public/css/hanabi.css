@@ -404,6 +404,11 @@ ul {
 	width: 55px;
 }
 
+.table-otherPlayerNames {
+	padding-left: 15px;
+	font-size: small;
+}
+
 .history-id {
 	width: 75px;
 }
