@@ -291,7 +291,9 @@ exports.getNotes = (socket, data, done) => {
         for (const row of results) {
             data.game.players.push({
                 username: row.username,
-                notes: (row.notes === null ? [] : JSON.parse(row.notes)),
+                // Games before October 2017 do not have notes associated with them in the database
+                // Thus, we need to check for empty strings to avoid JSON parsing errors
+                notes: (row.notes === '' ? [] : JSON.parse(row.notes)),
             });
         }
 
