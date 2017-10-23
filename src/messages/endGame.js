@@ -185,6 +185,10 @@ function step5(error, data) {
                 score: game.score,
                 ts: game.datetimeFinished,
                 variant: game.variant,
+                otherPlayerNames: game.players
+                    .filter(p => p.userID !== player.userID)
+                    .map(p => p.username)
+                    .join(', '),
             },
         });
     }
