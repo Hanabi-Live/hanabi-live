@@ -17,7 +17,6 @@
         BLACK: new Color('Black', 'K', '#111111'),
         WHITE: new Color('White', 'W', '#d9d9d9'),
         GRAY: new Color('Gray', 'G', '#cccccc'),
-        MAGENTA: new Color('Magenta', 'M', '#8b008b'),
         NAVY: new Color('Navy', 'N', '#000066'),
         ORANGE: new Color('Orange', 'O', '#ff9900'),
         TAN: new Color('Tan', 'T', '#999900'),
@@ -376,10 +375,10 @@
                 exports.COLOR.YELLOW,
             ],
         ),
-        MAGENTA: new Suit(
-            'Magenta',
-            'M',
-            exports.COLOR.MAGENTA,
+        MPURPLE: new Suit(
+            'Purple',
+            'P',
+            exports.COLOR.PURPLE,
             basicCardFillSpec,
             exports.SHAPE.CLUB,
             [
@@ -586,7 +585,7 @@
         MIXED: new Variant(
             [
                 exports.SUIT.MGREEN, // Blue + Yellow
-                exports.SUIT.MAGENTA, // Blue + Red
+                exports.SUIT.MPURPLE, // Blue + Red
                 exports.SUIT.NAVY, // Blue + Black
                 exports.SUIT.ORANGE, // Yellow + Red
                 exports.SUIT.TAN, // Yellow + Black
@@ -626,7 +625,7 @@
         CRAZY: new Variant(
             [
                 exports.SUIT.MGREEN, // Blue + Yellow
-                exports.SUIT.MAGENTA, // Blue + Red
+                exports.SUIT.MPURPLE, // Blue + Red
                 exports.SUIT.ORANGE, // Yellow + Red
                 exports.SUIT.WHITE,
                 exports.SUIT.MULTI,
