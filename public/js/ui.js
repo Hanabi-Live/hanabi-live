@@ -735,13 +735,6 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
-        if (this.identityKnown()) {
-            ui.learnedCards[this.order].suit = this.trueSuit;
-            ui.learnedCards[this.order].possibleSuits = [this.trueSuit];
-            ui.learnedCards[this.order].rank = this.trueRank;
-            ui.learnedCards[this.order].possibleRanks = [this.trueRank];
-        }
-
         this.barename = '';
 
         this.setBareImage();
