@@ -852,6 +852,14 @@ function HanabiUI(lobby, gameID) {
 
         tipLayer.add(this.tooltip);
 
+        {
+            const note = ui.getNote(this.order);
+            if (note !== null) {
+                this.tooltip.getText().setText(note);
+                this.noteGiven.show();
+            }
+        }
+
         this.on('mousemove', () => {
             if (self.noteGiven.visible()) {
                 const mousePos = stage.getPointerPosition();
@@ -871,25 +879,6 @@ function HanabiUI(lobby, gameID) {
             self.tooltip.hide();
             tipLayer.draw();
         });
-
-        this.reset();
-    };
-
-    Kinetic.Util.extend(HanabiCard, Kinetic.Group);
-
-    HanabiCard.prototype.reset = function reset() {
-        this.hideClues();
-        const note = ui.getNote(this.order);
-        if (note !== null) {
-            this.tooltip.getText().setText(note);
-            this.tooltip.getTag().setWidth();
-            this.noteGiven.show();
-        }
-        this.addListeners();
-    };
-
-    HanabiCard.prototype.addListeners = function addListeners() {
-        const self = this;
 
         this.on('mousemove tap', () => {
             clueLog.showMatches(self);
@@ -928,26 +917,18 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            let note = ui.getNote(self.order);
+            const note = window.prompt('Note on card:', ui.getNote(self.order) || '');
             if (note === null) {
-                note = '';
-            }
-            const newNote = window.prompt('Note on card:', note);
-            if (newNote === null) {
                 // The user clicked the "cancel" button, so do nothing else
                 return;
             }
 
             // The user clicked "OK", regardless of whether they changed the existing note or not
-            self.tooltip.getText().setText(newNote);
-            ui.setNote(self.order, newNote);
-            note = newNote;
+            self.tooltip.getText().setText(note);
+            ui.setNote(self.order, note);
 
             if (note.length > 0) {
                 self.noteGiven.show();
-                if (self.spectating) {
-                    self.notePulse.play();
-                }
             } else {
                 self.noteGiven.hide();
                 self.tooltip.hide();
@@ -969,6 +950,8 @@ function HanabiUI(lobby, gameID) {
             }
         });
     };
+
+    Kinetic.Util.extend(HanabiCard, Kinetic.Group);
 
     HanabiCard.prototype.setBareImage = function setBareImage() {
         this.barename = imageName(this);
