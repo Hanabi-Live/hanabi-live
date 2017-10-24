@@ -782,7 +782,7 @@ function HanabiUI(lobby, gameID) {
         // Define the "note indicator" square
         this.noteGiven = new Kinetic.Rect({
             x: 0.854 * config.width,
-            y: (ui.variant.offsetCardIndicators ? 0.26 : 0.165) * config.height,
+            y: (ui.variant.offsetCardIndicators ? 0.16 : 0.065) * config.height,
             width: 0.09 * config.width,
             height: 0.09 * config.width,
             fill: 'white',
