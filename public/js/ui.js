@@ -314,15 +314,16 @@ function HanabiUI(lobby, gameID) {
 
         const rank =
             (showLearnedCards && learnedCard.rank) ||
-            (card.rankKnown() && card.trueRank);
+            (!card.showOnlyLearned && card.rankKnown() && card.trueRank);
 
         const suit =
             (showLearnedCards && learnedCard.suit) ||
-            (card.suitKnown() && card.trueSuit);
+            (!card.showOnlyLearned && card.suitKnown() && card.trueSuit);
 
         // Do not select an image with pips while the dynamic suit pips are shown
         if (
-            !card.suitKnown()
+            !card.suitKnown() ||
+            (card.showOnlyLearned && card.possibleSuits.length > 1)
         ) {
             if (!card.rankKnown() && rank) {
                 prefix = 'Index';
@@ -743,6 +744,7 @@ function HanabiUI(lobby, gameID) {
         }
 
         this.barename = undefined;
+        this.showOnlyLearned = false;
 
         this.setBareImage();
 
@@ -4628,6 +4630,7 @@ function HanabiUI(lobby, gameID) {
             learnedCard.possibleRanks = [data.which.rank];
             learnedCard.revealed = true;
 
+            ui.deck[data.which.order].showOnlyLearned = false;
             ui.deck[data.which.order].trueSuit = suit;
             ui.deck[data.which.order].trueRank = data.which.rank;
             ui.deck[data.which.order].setBareImage();
@@ -4659,6 +4662,7 @@ function HanabiUI(lobby, gameID) {
             learnedCard.possibleRanks = [data.which.rank];
             learnedCard.revealed = true;
 
+            ui.deck[data.which.order].showOnlyLearned = false;
             ui.deck[data.which.order].trueSuit = suit;
             ui.deck[data.which.order].trueRank = data.which.rank;
             ui.deck[data.which.order].setBareImage();
@@ -4708,6 +4712,7 @@ function HanabiUI(lobby, gameID) {
             learnedCard.possibleRanks = [data.which.rank];
             learnedCard.revealed = true;
 
+            card.showOnlyLearned = false;
             card.trueSuit = suit;
             card.trueRank = data.which.rank;
             card.setBareImage();
