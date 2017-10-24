@@ -891,6 +891,22 @@ function HanabiUI(lobby, gameID) {
             UILayer.draw();
         });
 
+        // Hide clue arrows ahead of user dragging their card
+        if (config.holder === ui.playerUs && !ui.replayOnly && !ui.spectating) {
+            this.on('mousedown', (event) => {
+                if (
+                    event.evt.which !== 1 || // dragging uses left click
+                    ui.replay ||
+                    !this.indicatorArrow.isVisible()
+                ) {
+                    return;
+                }
+
+                showClueMatch(-1);
+                // Do not prevent default since the other event is starting
+            });
+        }
+
         this.on('click', (event) => {
             if (ui.sharedReplay && event.evt.which === 1 && ui.sharedReplayLeader === lobby.username) {
                 // In a replay that is shared, the leader left-clicks a card to draw attention to it
