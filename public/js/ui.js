@@ -659,7 +659,7 @@ function HanabiUI(lobby, gameID) {
         this.add(this.rankPips);
         this.add(this.suitPips);
         if (!this.rankKnown()) {
-            for (let i = 1; i <= 5; i++) {
+            for (const i of config.ranks) {
                 const rankPip = new Kinetic.Rect({
                     x: Math.floor(CARDW * (i * 0.19 - 0.14)),
                     y: 0,
@@ -676,9 +676,9 @@ function HanabiUI(lobby, gameID) {
             }
         }
         if (!this.suitKnown()) {
-            const nSuits = this.possibleSuits.length;
+            const nSuits = config.suits.length;
             let i = 0;
-            for (const suit of this.possibleSuits) {
+            for (const suit of config.suits) {
                 const suitPip = new Kinetic.Shape({
                     x: Math.floor(CARDW * 0.5),
                     y: Math.floor(CARDH * 0.5),
