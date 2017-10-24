@@ -603,6 +603,9 @@ function HanabiUI(lobby, gameID) {
         }
     };
 
+    // dynamically adjusted known cards, to be restored by event
+    const toggledHolderViewCards = [];
+
     const HanabiCard = function HanabiCard(config) {
         const self = this;
 
@@ -867,6 +870,9 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
+        // Define event handlers
+        // Multiple handlers may set activeHover
+
         this.on('mousemove', () => {
             if (self.noteGiven.visible()) {
                 const mousePos = stage.getPointerPosition();
@@ -896,6 +902,33 @@ function HanabiUI(lobby, gameID) {
             clueLog.showMatches(null);
             UILayer.draw();
         });
+
+        // Show teammate view of their hand
+
+        const toggleHolderViewOnCard = (c, enabled) => {
+            c.rankPips.setVisible(enabled);
+            c.suitPips.setVisible(enabled);
+            c.showOnlyLearned = enabled;
+            c.setBareImage();
+        };
+
+        const endHolderViewOnCard = function endHolderViewOnCard() {
+            const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
+            cardsToReset.forEach(c => toggleHolderViewOnCard(c, false));
+            cardLayer.batchDraw();
+        };
+
+        const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
+            if (toggledHolderViewCards.length > 0) {
+                return; // data race with stop
+            }
+
+            toggledHolderViewCards.splice(0, 0, ...cards);
+            cards.forEach(c => toggleHolderViewOnCard(c, true));
+            cardLayer.batchDraw();
+        };
+
+        // General mouse click handler
 
         // Hide clue arrows ahead of user dragging their card
         if (config.holder === ui.playerUs && !ui.replayOnly && !ui.spectating) {
