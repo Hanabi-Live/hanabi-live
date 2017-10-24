@@ -649,33 +649,35 @@ function HanabiUI(lobby, gameID) {
             y: Math.floor(CARDH * 0.85),
             width: CARDW,
             height: Math.floor(CARDH * 0.15),
+            visible: !this.rankKnown(),
         });
         this.suitPips = new Kinetic.Group({
             x: 0,
             y: 0,
             width: Math.floor(CARDW),
             height: Math.floor(CARDH),
+            visible: !this.suitKnown(),
         });
         this.add(this.rankPips);
         this.add(this.suitPips);
-        if (!this.rankKnown()) {
-            for (const i of config.ranks) {
-                const rankPip = new Kinetic.Rect({
-                    x: Math.floor(CARDW * (i * 0.19 - 0.14)),
-                    y: 0,
-                    width: Math.floor(CARDW * 0.15),
-                    height: Math.floor(CARDH * 0.10),
-                    fill: 'black',
-                    stroke: 'black',
-                    name: i.toString(),
-                });
-                if (!ui.learnedCards[this.order].possibleRanks.includes(i)) {
-                    rankPip.setOpacity(0.3);
-                }
-                this.rankPips.add(rankPip);
+
+        for (const i of config.ranks) {
+            const rankPip = new Kinetic.Rect({
+                x: Math.floor(CARDW * (i * 0.19 - 0.14)),
+                y: 0,
+                width: Math.floor(CARDW * 0.15),
+                height: Math.floor(CARDH * 0.10),
+                fill: 'black',
+                stroke: 'black',
+                name: i.toString(),
+            });
+            if (!ui.learnedCards[this.order].possibleRanks.includes(i)) {
+                rankPip.setOpacity(0.3);
             }
+            this.rankPips.add(rankPip);
         }
-        if (!this.suitKnown()) {
+
+        {
             const nSuits = config.suits.length;
             let i = 0;
             for (const suit of config.suits) {
