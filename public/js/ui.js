@@ -928,6 +928,25 @@ function HanabiUI(lobby, gameID) {
             cardLayer.batchDraw();
         };
 
+        if (config.holder !== ui.playerUs || ui.replayOnly || ui.spectating) {
+            const mouseButton = 1;
+            this.on('mousedown', (event) => {
+                if (event.evt.which !== mouseButton || !this.isInPlayerHand()
+                ) {
+                    return;
+                }
+                const cards = this.parent.parent.children.map(c => c.children[0]);
+                beginHolderViewOnCard(cards);
+                ui.activeHover = this;
+            });
+            this.on('mouseup mouseout', (event) => {
+                if (event.type === 'mouseup' && event.evt.which !== mouseButton) {
+                    return;
+                }
+                endHolderViewOnCard();
+            });
+        }
+
         // General mouse click handler
 
         // Hide clue arrows ahead of user dragging their card
