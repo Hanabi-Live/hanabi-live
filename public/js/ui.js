@@ -4700,10 +4700,8 @@ function HanabiUI(lobby, gameID) {
                 ui.deck[data.list[i]].setIndicator(true);
                 ui.deck[data.list[i]].cluedBorder.show();
 
-                if (data.target === ui.playerUs && !ui.replayOnly && !ui.spectating) {
-                    ui.deck[data.list[i]].applyClue(clue, true);
-                    ui.deck[data.list[i]].setBareImage();
-                }
+                ui.deck[data.list[i]].applyClue(clue, true);
+                ui.deck[data.list[i]].setBareImage();
             }
 
             const neglist = [];
