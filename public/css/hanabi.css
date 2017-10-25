@@ -417,11 +417,11 @@ ul {
 }
 
 .history-players {
-	width: 75px;
+	width: 30px;
 }
 
 .history-score {
-	width: 100px;
+	width: 50px;
 	padding-right: 10px;
 	text-align: right;
 }
@@ -432,7 +432,7 @@ ul {
 }
 
 .history-variant {
-	width: 250px;
+	width: 140px;
 	padding-right: 25px;
 }
 

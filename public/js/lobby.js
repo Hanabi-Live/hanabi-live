@@ -446,6 +446,16 @@ const variantNames = [
     'White Suit (colorless) & Rainbow Suit',
     'Wild & Crazy',
 ];
+const variantNamesShort = [
+    'No Variant',
+    'Black',
+    'Black (OoE)',
+    'Rainbow',
+    'Dual-color',
+    'Dual-color & Rainbow',
+    'White & Rainbow',
+    'Wild & Crazy',
+];
 $(document).ready(() => {
     for (let i = 0; i < variantNames.length; i++) {
         const option = new Option(variantNames[i], i);
@@ -595,7 +605,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
                 const id = parseInt(this.id.slice(8), 10);
                 if (self.tableList[id].running) {
-                    if (!window.confirm('Really abandon game?  This will cancel the game for all players.')) {
+                    if (!window.confirm('Really abandon game? This will cancel the game for all players.')) {
                         return;
                     }
                 }
@@ -742,13 +752,13 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .text(`#${ids[i]}`)
                 .addClass('table-attr history-id'))
             .append($('<li>')
-                .text(`${gameData.numPlayers} players`)
+                .text(`${gameData.numPlayers}p`)
                 .addClass('table-attr history-players'))
             .append($('<li>')
-                .text(`${gameData.score}/${maxScore} points`)
+                .text(`${gameData.score}/${maxScore}`)
                 .addClass('table-attr history-score'))
             .append($('<li>')
-                .text(`Variant: ${variantNames[gameData.variant]}`)
+                .text(`${variantNamesShort[gameData.variant]}`)
                 .addClass('table-attr history-variant'))
             .append($('<li>')
                 .text(dateTimeFormatter.format(new Date(gameData.ts)))
