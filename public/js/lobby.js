@@ -206,6 +206,7 @@ function HanabiLobby() {
         self.drawHistory();
     });
 
+    // "Log Out" button
     const logoutButton = document.createElement('button');
     logoutButton.id = 'logout';
     logoutButton.innerHTML = 'Log Out';
@@ -217,6 +218,27 @@ function HanabiLobby() {
         window.location.reload();
     });
 
+    // "Watch Replay by ID" button
+    const watchReplayByIDButton = document.createElement('button');
+    watchReplayByIDButton.id = 'watch-replay-by-id';
+    watchReplayByIDButton.innerHTML = 'Watch Replay by ID';
+
+    $('#show-history').parent().append(watchReplayByIDButton);
+    $('#watch-replay-by-id').on('click', (event) => {
+        const replayID = window.prompt('What is the ID of the replay that you want to view?');
+        if (replayID === null) {
+            // The user clicked the "cancel" button, so do nothing else
+            return;
+        }
+
+        self.sendMsg({
+            type: 'startReplay',
+            resp: {
+                gameID: replayID,
+            },
+        });
+
+    });
 
     $('.return-table').on('click', (event) => {
         event.preventDefault();
