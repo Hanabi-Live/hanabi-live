@@ -452,9 +452,18 @@ ul {
 	width: 80px;
 }
 
-#watch-replay-by-id {
+#share-replay-by-id {
 	position: absolute;
 	right: 125px;
+	top: 1px;
+	font-size: 16px;
+	height: 21px;
+	width: 160px;
+}
+
+#watch-replay-by-id {
+	position: absolute;
+	right: 305px;
 	top: 1px;
 	font-size: 16px;
 	height: 21px;
