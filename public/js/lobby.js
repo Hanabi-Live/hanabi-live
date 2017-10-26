@@ -491,13 +491,14 @@ const variantNames = [
 const variantNamesShort = [
     'No Variant',
     'Black',
-    'Black (OoE)',
+    'Black (1oE)',
     'Rainbow',
     'Dual-color',
     'Dual-color & Rainbow',
     'White & Rainbow',
     'Wild & Crazy',
 ];
+
 $(document).ready(() => {
     for (let i = 0; i < variantNames.length; i++) {
         const option = new Option(variantNames[i], i);
