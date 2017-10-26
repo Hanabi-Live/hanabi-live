@@ -2564,7 +2564,7 @@ function HanabiUI(lobby, gameID) {
     let helpGroup;
     let msgLogGroup;
     let overback;
-    let notesWritten = []; // An array containing all of the player's notes, indexed by card order
+    const notesWritten = []; // An array containing all of the player's notes, indexed by card order
 
     const overPlayArea = pos => (
         pos.x >= playArea.getX() &&
@@ -4947,8 +4947,11 @@ function HanabiUI(lobby, gameID) {
 
         // Draw (or hide) the note indicator
         const card = ui.deck[data.order];
+        if (!card) {
+            return;
+        }
         card.tooltip.getText().setText(newNote);
-        if (newNote.length > 0) {
+        if (newNote.length > 0 && card.isInPlayerHand()) {
             card.noteGiven.show();
             if (ui.spectating) {
                 card.notePulse.play();
@@ -4980,20 +4983,22 @@ function HanabiUI(lobby, gameID) {
         }
     */
     this.handleNotes = (data) => {
-        notesWritten = data.notes;
+        for (let order = 0; order < data.notes.length; order++) {
+            const note = data.notes[order];
 
-        for (let order = 0; order < notesWritten.length; order++) {
-            const note = notesWritten[order];
+            // Set the note
+            ui.setNote(order, note);
 
             // The following code is mosly copied from the "handleNote" function
             // Draw (or hide) the note indicator
             const card = ui.deck[order];
-            if (note === null) {
-                card.tooltip.getText().setText('');
-                card.noteGiven.hide();
-                card.tooltip.hide();
-            } else {
+            if (!card) {
+                continue;
+            }
+            if (note !== null) {
                 card.tooltip.getText().setText(note);
+            }
+            if (note !== null && card.isInPlayerHand()) {
                 card.noteGiven.show();
                 if (ui.spectating) {
                     card.notePulse.play();
