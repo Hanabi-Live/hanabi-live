@@ -4962,7 +4962,6 @@ function HanabiUI(lobby, gameID) {
             tipLayer.draw();
         }
 
-        UILayer.draw();
         cardLayer.draw();
     };
 
@@ -5006,7 +5005,6 @@ function HanabiUI(lobby, gameID) {
             }
         }
         tipLayer.draw();
-        UILayer.draw();
         cardLayer.draw();
     };
 
