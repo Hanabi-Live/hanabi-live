@@ -218,42 +218,16 @@ function HanabiLobby() {
         window.location.reload();
     });
 
-    // "Watch Replay by ID" button
-    const watchReplayByIDButton = document.createElement('button');
-    watchReplayByIDButton.id = 'watch-replay-by-id';
-    watchReplayByIDButton.innerHTML = 'Watch Replay by ID';
-
-    $('#show-history').parent().append(watchReplayByIDButton);
-    $('#watch-replay-by-id').on('click', (event) => {
-        const replayID = window.prompt('What is the ID of the game for which you want to view the replay?');
+    // Watch/Share Replay by ID buttons
+    $('.custom-replay-start').on('click', (event) => {
+        const replayID = window.prompt('What is the ID of the game you want?');
         if (replayID === null) {
             // The user clicked the "cancel" button, so do nothing else
             return;
         }
 
         self.sendMsg({
-            type: 'startReplay',
-            resp: {
-                gameID: replayID,
-            },
-        });
-    });
-
-    // "Share Replay by ID" button
-    const shareReplayByIDButton = document.createElement('button');
-    shareReplayByIDButton.id = 'share-replay-by-id';
-    shareReplayByIDButton.innerHTML = 'Share Replay by ID';
-
-    $('#show-history').parent().append(shareReplayByIDButton);
-    $('#share-replay-by-id').on('click', (event) => {
-        const replayID = window.prompt('What is the ID of the game for which you want to start a shared replay?');
-        if (replayID === null) {
-            // The user clicked the "cancel" button, so do nothing else
-            return;
-        }
-
-        self.sendMsg({
-            type: 'createSharedReplay',
+            type: event.currentTarget.getAttribute('data-replayType'),
             resp: {
                 gameID: replayID,
             },
