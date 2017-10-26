@@ -4959,10 +4959,10 @@ function HanabiUI(lobby, gameID) {
         } else {
             card.noteGiven.hide();
             card.tooltip.hide();
-            tipLayer.draw();
         }
 
-        cardLayer.draw();
+        tipLayer.batchDraw();
+        cardLayer.batchDraw();
     };
 
     // Recieved by the client when:
@@ -5004,8 +5004,9 @@ function HanabiUI(lobby, gameID) {
                 }
             }
         }
-        tipLayer.draw();
-        cardLayer.draw();
+
+        tipLayer.batchDraw();
+        cardLayer.batchDraw();
     };
 
     this.handleReplayLeader = function handleReplayLeader(data) {
