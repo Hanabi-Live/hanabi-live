@@ -843,7 +843,7 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
                 .text(`#${gameData.id}`)
                 .addClass('table-attr history-id'))
             .append($('<li>')
-                .text(`${gameData.score}/${variant.maxScore} points`)
+                .text(`${gameData.score}/${variant.maxScore}`)
                 .addClass('table-attr history-score'))
             .append($('<li>')
                 .text(dateTimeFormatter.format(new Date(gameData.ts)))
