@@ -207,11 +207,6 @@ function HanabiLobby() {
     });
 
     // "Log Out" button
-    const logoutButton = document.createElement('button');
-    logoutButton.id = 'logout';
-    logoutButton.innerHTML = 'Log Out';
-
-    $('#show-history').parent().append(logoutButton);
     $('#logout').on('click', (event) => {
         deleteCookie('hanabiuser');
         deleteCookie('hanabipass');
