@@ -957,7 +957,7 @@ function HanabiUI(lobby, gameID) {
             cardLayer.draw();
 
             // Also send the note to the server
-            if (!ui.replayOnly) {
+            if (!ui.replayOnly && !ui.spectating) {
                 // Update the spectators about the new note
                 ui.sendMsg({
                     type: 'note',
