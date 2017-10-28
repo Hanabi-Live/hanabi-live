@@ -1799,7 +1799,7 @@ function HanabiUI(lobby, gameID) {
         this.list = config.list;
         this.neglist = config.neglist;
 
-        background.on('mousemove tap', () => {
+        this.on('mousemove tap', () => {
             clueLog.showMatches(null);
 
             background.setOpacity(0.4);
@@ -1827,7 +1827,7 @@ function HanabiUI(lobby, gameID) {
             ui.activeHover = this;
         });
 
-        background.on('mouseout', () => {
+        this.on('mouseout', () => {
             background.setOpacity(0.1);
             const backgroundLayer = background.getLayer();
             if (backgroundLayer) {
@@ -1866,8 +1866,8 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
-        this.background.off('mouseover tap');
-        this.background.off('mouseout');
+        this.off('mouseover tap');
+        this.off('mouseout');
 
         this.remove();
         return 1;
