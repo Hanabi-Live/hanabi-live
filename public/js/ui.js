@@ -4543,6 +4543,9 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.setNote = function setNote(order, note) {
+        if (note === '') {
+            note = undefined;
+        }
         notesWritten[order] = note;
     };
 
