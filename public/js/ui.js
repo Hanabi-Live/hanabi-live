@@ -775,6 +775,7 @@ function HanabiUI(lobby, gameID) {
             },
             shadowOpacity: 0.9,
             visible: false,
+            listening: false,
         });
 
         this.add(this.indicatorArrow);
