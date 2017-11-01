@@ -450,11 +450,11 @@ HanabiLobby.prototype.removeTable = function removeTable(data) {
 const variantNames = [
     'None',
     'Black Suit',
-    'Black Suit (one of each rank)',
+    'Black Suit (one of each)',
     'Rainbow Suit (all colors)',
     'Dual-color Suits',
     'Dual-color & Rainbow Suits',
-    'White Suit (colorless) & Rainbow Suit',
+    'Colorless & Rainbow Suits',
     'Wild & Crazy',
 ];
 const variantNamesShort = [
