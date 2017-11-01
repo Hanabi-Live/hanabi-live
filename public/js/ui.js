@@ -757,9 +757,9 @@ function HanabiUI(lobby, gameID) {
         this.add(this.cluedBorder);
 
         this.indicatorArrow = new Kinetic.Text({
-            x: ((this.holder === ui.playerUs) ? 0.7 : 0.3) * config.width,
+            x: ((this.holder === ui.playerUs) ? config.width * 1.01 : 0),
             y: ((this.holder === ui.playerUs) ? 0.18 : 0.82) * config.height,
-            width: 0.4 * config.width,
+            width: config.width,
             height: 0.5 * config.height,
             fontSize: 0.2 * winH,
             fontFamily: 'Verdana',
