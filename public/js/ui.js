@@ -623,6 +623,10 @@ function HanabiUI(lobby, gameID) {
 
         this.doRotations = function doRotations(inverted = false) {
             this.setRotation(inverted ? 180 : 0);
+
+            this.bare.setRotation(inverted ? 180 : 0);
+            this.bare.setX(inverted ? config.width : 0);
+            this.bare.setY(inverted ? config.height : 0);
         };
 
         this.bare.setDrawFunc(function setDrawFunc(context) {
