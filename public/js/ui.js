@@ -605,7 +605,6 @@ function HanabiUI(lobby, gameID) {
     const HanabiCard = function HanabiCard(config) {
         const self = this;
 
-        this.holder = config.holder;
         config.width = CARDW;
         config.height = CARDH;
         config.x = CARDW / 2;
@@ -621,6 +620,10 @@ function HanabiUI(lobby, gameID) {
             width: config.width,
             height: config.height,
         });
+
+        this.doRotations = function doRotations(inverted = false) {
+            this.setRotation(inverted ? 180 : 0);
+        };
 
         this.bare.setDrawFunc(function setDrawFunc(context) {
             scaleCardImage.call(this, context, self.barename);
@@ -754,15 +757,15 @@ function HanabiUI(lobby, gameID) {
         this.add(this.cluedBorder);
 
         this.indicatorArrow = new Kinetic.Text({
-            x: ((this.holder === ui.playerUs) ? config.width * 1.01 : 0),
-            y: ((this.holder === ui.playerUs) ? 0.18 : 0.82) * config.height,
+            x: config.width * 1.01,
+            y: config.height * 0.18,
             width: config.width,
             height: 0.5 * config.height,
             fontSize: 0.2 * winH,
             fontFamily: 'Verdana',
             align: 'center',
             text: '⬆',
-            rotation: (this.holder === ui.playerUs) ? 180 : 0,
+            rotation: 180,
             fill: '#ffffff',
             shadowColor: 'black',
             shadowBlur: 10,
@@ -1070,11 +1073,17 @@ function HanabiUI(lobby, gameID) {
 
         this.align = (config.align || 'left');
         this.reverse = (config.reverse || false);
+        this.invertCards = (config.invertCards || false);
     };
 
     Kinetic.Util.extend(CardLayout, Kinetic.Group);
 
     CardLayout.prototype.add = function add(child) {
+        child.children.forEach((c) => {
+            if (c.doRotations) {
+                c.doRotations(this.invertCards);
+            }
+        });
         const pos = child.getAbsolutePosition();
         Kinetic.Group.prototype.add.call(this, child);
         child.setAbsolutePosition(pos);
@@ -1259,6 +1268,11 @@ function HanabiUI(lobby, gameID) {
     Kinetic.Util.extend(CardStack, Kinetic.Group);
 
     CardStack.prototype.add = function add(child) {
+        child.children.forEach((c) => {
+            if (c.doRotations) {
+                c.doRotations(false);
+            }
+        });
         const pos = child.getAbsolutePosition();
         Kinetic.Group.prototype.add.call(this, child);
         child.setAbsolutePosition(pos);
@@ -3489,6 +3503,7 @@ function HanabiUI(lobby, gameID) {
                 rotationDeg: handPos[nump][j].rot,
                 align: 'center',
                 reverse: j === 0,
+                invertCards: i !== this.playerUs,
             });
 
             cardLayer.add(playerHands[i]);
