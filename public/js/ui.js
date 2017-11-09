@@ -670,6 +670,7 @@ function HanabiUI(lobby, gameID) {
                 fill: 'black',
                 stroke: 'black',
                 name: i.toString(),
+                listening: false,
             });
             if (!ui.learnedCards[this.order].possibleRanks.includes(i)) {
                 rankPip.setOpacity(0.3);
@@ -699,6 +700,7 @@ function HanabiUI(lobby, gameID) {
                     fill: (suit === SUIT.MULTI ? undefined : suit.fillColors.hexCode),
                     stroke: 'black',
                     name: suit.name,
+                    listening: false,
                     drawFunc: (ctx) => {
                         PATHFUNC.get(suit.shape)(ctx);
                         ctx.closePath();
