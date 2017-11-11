@@ -92,7 +92,7 @@ function step2(error, socket, data) {
     // Keep track of the user that joined
     let time = globals.startingTime; // In milliseconds
     if (game.timed && game.name === '!test') {
-        time = 10 * 1000; // 10 seconds for testing
+        time = 60 * 1000; // 60 seconds for testing
     } else if (!game.timed) {
         // In non-timed games, start each player with 0 "time left"
         // It will decrement into negative numbers to show how much time they
