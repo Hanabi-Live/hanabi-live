@@ -307,14 +307,20 @@ exports.getNotes = (socket, data, done) => {
         }
         data.game.players = [];
         for (const row of results) {
-            let notes = [];
+            let { notes } = row;
+
             // Games before October 2017 do not have notes associated with them in the database
             // Thus, we need to check for empty strings to avoid JSON parsing errors
-            if (row.notes !== '') {
+            if (notes === '') {
+                notes = [];
+            } else {
+                // Games between October 2017 and November 2017 may have
+                // corrupted notes if they were longer than 500 characters;
+                // thus we need to check to see if the JSON correctly parses
                 try {
                     notes = JSON.parse(row.notes);
                 } catch (err) {
-                    logger.warn(`Unable to deserialize notes for ${row.username} in ${data.gameID}.`);
+                    notes = [];
                 }
             }
             data.game.players.push({
