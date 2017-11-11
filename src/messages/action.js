@@ -303,7 +303,7 @@ function playerClue(data) {
             } else if (game.variant === 4) { // Mixed suits
                 // Suits:
                 // 0 - Green    (Blue   / Yellow)
-                // 1 - Magenta  (Blue   / Red)
+                // 1 - Purple   (Blue   / Red)
                 // 2 - Navy     (Blue   / Black)
                 // 3 - Orange   (Yellow / Red)
                 // 4 - Tan      (Yellow / Black)
@@ -357,7 +357,7 @@ function playerClue(data) {
             } else if (game.variant === 7) { // Crazy
                 // Suits:
                 // 0 - Green   (Blue   / Yellow)
-                // 1 - Magenta (Blue   / Red)
+                // 1 - Purple  (Blue   / Red)
                 // 2 - Orange  (Yellow / Red)
                 // 3 - White
                 // 4 - Rainbow

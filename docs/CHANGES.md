@@ -14,7 +14,7 @@ This server attempts to emulate the original Keldon server. However, it also con
 
 #### Mixed-color Suits
 
-* This has 6 new suits: Green, Magenta, Navy, Orange, Tan, and Burgundy.
+* This has 6 new suits: Green, Purple, Navy, Orange, Tan, and Burgundy.
 * There are only 4 types of clues: Blue, Yellow, Red, and Black.
 
 #### Mixed and Multi-color Suits

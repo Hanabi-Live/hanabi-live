@@ -21,7 +21,7 @@ module.exports = {
     ],
     mixedSuits: [
         'Green',
-        'Magenta',
+        'Purple',
         'Navy',
         'Orange',
         'Tan',
@@ -43,7 +43,7 @@ module.exports = {
     ],
     crazySuits: [
         'Green',
-        'Magenta',
+        'Purple',
         'Orange',
         'White',
         'Rainbow',
