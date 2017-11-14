@@ -89,16 +89,27 @@ function step2(error, socket, data) {
     // Local variables
     const game = globals.currentGames[data.gameID];
 
-    // Keep track of the user that joined
+    // Find out what the time limit for the game should be
     let time = globals.startingTime; // In milliseconds
-    if (game.timed && game.name === '!test') {
-        time = 60 * 1000; // 60 seconds for testing
+    if (game.timed && game.name.startsWith('t=')) {
+        // The user entered a custom time limit for the game
+        // (if what they entered was somehow invalid, we will keep the default
+        // time from above)
+        const m = game.name.match(/t=(.+)\s*/);
+        if (m) {
+            const [, minutes] = m;
+            if (!Number.isNaN(time)) {
+                time = 1000 * 60 * minutes;
+            }
+        }
     } else if (!game.timed) {
         // In non-timed games, start each player with 0 "time left"
         // It will decrement into negative numbers to show how much time they
         // are taking
         time = 0;
     }
+
+    // Keep track of the user that joined
     game.players.push({
         hand: [],
         userID: socket.userID,
