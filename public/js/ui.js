@@ -735,7 +735,7 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
-        this.barename = '';
+        this.barename = undefined;
 
         this.setBareImage();
 
