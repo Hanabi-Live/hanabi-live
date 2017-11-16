@@ -966,8 +966,8 @@ function HanabiUI(lobby, gameID) {
         }
 
         this.on('click', (event) => {
-            if (ui.sharedReplay && event.evt.which === 1 && ui.sharedReplayLeader === lobby.username) {
-                // In a replay that is shared, the leader left-clicks a card to draw attention to it
+            if (ui.sharedReplay && event.evt.which === 3 && ui.sharedReplayLeader === lobby.username) {
+                // In a replay that is shared, the leader clicks a card to draw attention to it
 
                 if (ui.applyReplayActions) {
                     ui.sendMsg({
