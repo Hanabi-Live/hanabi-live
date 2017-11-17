@@ -934,6 +934,10 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
+            if (ui.sharedReplay) {
+                return;
+            }
+
             const note = window.prompt('Note on card:', ui.getNote(self.order) || '');
             if (note === null) {
                 // The user clicked the "cancel" button, so do nothing else
