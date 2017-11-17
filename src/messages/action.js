@@ -610,6 +610,7 @@ function playerBlindPlayDeck(data) {
 
     // Play the card freshly drawn
     data.target = game.deck.length - 1; // The final card
+    playerRemoveCard(data);
     data.slot = -1;
     playerPlayCard(data);
 }
