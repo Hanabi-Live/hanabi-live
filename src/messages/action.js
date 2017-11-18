@@ -691,10 +691,10 @@ function checkEnd(data) {
     // stacks
     for (let i = 0; i < game.stacks.length; i++) {
         // Search through the deck
+        const neededSuit = i;
+        const neededRank = game.stacks[i] + 1;
         for (let j = 0; j < game.deck.length; j++) {
             const card = game.deck[j];
-            const neededSuit = i;
-            const neededRank = game.stacks[i] + 1;
             if (
                 card.suit === neededSuit &&
                 card.rank === neededRank &&
