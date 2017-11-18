@@ -33,12 +33,12 @@ app.set('views', path.join(__dirname, 'views'));
 // HTTP handlers
 app.get('/', (req, res) => {
     res.render('index', { // This will look for "src/views/index.ejs"
-	// The SocketIO websocket server address should be the same thing as the website
-	// Instead of hardcoding it, we can derive it from the request variable
-	// For example, if the website is "https://hanabi.live/", then the websocket URL will be "https://hanabi.live/"
-	// Also note that on Heroku, "req.protocol" will be "http" because a load balancer terminates the HTTPS connection
-	// We can determine if the original request was on HTTPS by looking at the "X-Forwarded-Proto" header:
-	// https://devcenter.heroku.com/articles/http-routing
+    // The SocketIO websocket server address should be the same thing as the website
+    // Instead of hardcoding it, we can derive it from the request variable
+    // For example, if the website is "https://hanabi.live/", then the websocket URL will be "https://hanabi.live/"
+    // Also note that on Heroku, "req.protocol" will be "http" because a load balancer terminates the HTTPS connection
+    // We can determine if the original request was on HTTPS by looking at the "X-Forwarded-Proto" header:
+    // https://devcenter.heroku.com/articles/http-routing
         websocketURL: `${req.protocol}${(req.get('X-Forwarded-Proto') === 'https' ? 's' : '')}://${req.get('host')}${req.originalUrl}`,
     });
 });
