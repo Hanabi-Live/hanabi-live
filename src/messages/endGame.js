@@ -108,7 +108,7 @@ exports.step1 = (data) => {
         gameID: data.gameID,
     };
 
-    logger.info('Database - filling in the "games" row.');
+    logger.info('Database: Filling in the "games" row.');
     models.games.end(data, step2);
 };
 
@@ -131,7 +131,7 @@ function step2(error, data) {
             JSON.stringify(player.notes),
         ]);
     }
-    logger.info('Database - Inserting the participants.');
+    logger.info('Database: Inserting the participants.');
     models.gameParticipants.create(data, step3);
 }
 
@@ -153,7 +153,7 @@ function step3(error, data) {
             JSON.stringify(action),
         ]);
     }
-    logger.info('Database - Inserting the actions taken.');
+    logger.info('Database: Inserting the actions taken.');
     models.gameActions.create(data, step4);
 }
 
@@ -163,7 +163,7 @@ function step4(error, data) {
         return;
     }
 
-    logger.info('Database - Getting "numSimilar" for this game.');
+    logger.info('Database: Getting "numSimilar" for this game.');
     models.games.getNumSimilar(data, step5);
 }
 

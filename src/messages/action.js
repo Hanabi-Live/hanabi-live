@@ -661,6 +661,7 @@ function checkEnd(data) {
 
     // Check for 3 strikes
     if (game.strikes === 3) {
+        logger.info('3 strike maximum reached; ending the game.');
         data.end = true;
         data.loss = true;
         return;
@@ -669,6 +670,7 @@ function checkEnd(data) {
     // Check for the final go-around
     // (initiated after the last card is played from the deck)
     if (game.turnNum === game.endTurnNum) {
+        logger.info('Final turn reached; ending the game.');
         data.end = true;
         return;
     }
@@ -680,6 +682,7 @@ function checkEnd(data) {
         (game.variant === 2 && game.score === 30) ||
         (game.variant === 3 && game.score === 30)
     ) {
+        logger.info('Maximum score reached; ending the game.');
         data.end = true;
         return;
     }
@@ -703,6 +706,7 @@ function checkEnd(data) {
     }
 
     // If we got this far, nothing can be played
+    logger.info('No remaining cards can be played; ending the game.');
     data.end = true;
 }
 
