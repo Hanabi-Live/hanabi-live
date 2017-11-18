@@ -78,7 +78,7 @@ function step2(error, socket, data) {
 
     if (data.userID === null) {
         // This user does not exist, so create it
-        logger.info('Creating user "${data.username}".');
+        logger.info(`Creating user "${data.username}".`);
         models.users.create(socket, data, step3create);
     } else if (data.password === data.realPassword) {
         // The user exists and the the password matches
