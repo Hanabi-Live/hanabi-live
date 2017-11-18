@@ -740,12 +740,12 @@ function HanabiUI(lobby, gameID) {
         this.setBareImage();
 
         this.cluedBorder = new Kinetic.Rect({
-            x: 5,
-            y: 5,
-            width: config.width - 10,
-            height: config.height - 10,
+            x: 3,
+            y: 3,
+            width: config.width - 6,
+            height: config.height - 6,
             cornerRadius: 6,
-            strokeWidth: 12,
+            strokeWidth: 16,
             stroke: '#ffdf00',
             visible: false,
             listening: false,
