@@ -8,20 +8,20 @@
     "ejs": "^2.5.7",
     "express": "^4.16.2",
     "fs-extra": "^4.0.2",
-    "moment": "^2.19.1",
+    "moment": "^2.19.2",
     "mysql": "^2.15.0",
     "seedrandom": "^2.4.3",
     "serve-favicon": "^2.4.5",
-    "socket.io": "^2.0.3",
-    "socket.io-client": "^2.0.3",
+    "socket.io": "^2.0.4",
+    "socket.io-client": "^2.0.4",
     "winston": "^2.4.0"
   },
   "scripts": {
     "start": "node src/index.js"
   },
   "devDependencies": {
-    "eslint": "^4.8.0",
-    "eslint-config-airbnb-base": "^12.0.2",
+    "eslint": "^4.9.0",
+    "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.7.0"
   }
 }
