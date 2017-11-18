@@ -697,8 +697,10 @@ function checkEnd(data) {
         // Search through the deck
         const neededSuit = i;
         const neededRank = game.stacks[i] + 1;
+        // logger.info(`The next card for stack #${i} is: ${globals.suits[neededSuit]} ${neededRank}`);
         for (let j = 0; j < game.deck.length; j++) {
             const card = game.deck[j];
+            // logger.info(`Card #${j} in the deck is: ${globals.suits[card.suit]} ${card.rank} (discarded: ${card.discarded})`);
             if (
                 card.suit === neededSuit &&
                 card.rank === neededRank &&

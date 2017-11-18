@@ -3,6 +3,8 @@
 // "data" is empty
 
 // Imports
+const fs = require('fs');
+const path = require('path');
 const seedrandom = require('seedrandom');
 const moment = require('moment');
 const globals = require('../globals');
@@ -85,10 +87,69 @@ exports.step1 = (socket, data) => {
         game.stacks.push(0);
     }
 
-    const m = game.name.match(/^!seed (\d+)$/);
+    // Check to see if this is a game with a preset deal
+    data.shuffle = true;
+    const m = game.name.match(/^!preset (.+)$/);
     if (m) {
+        // Parse the game name to see the specific preset deal that they want
+        const preset = m[1];
+        const gameFilePath = path.join(__dirname, '..', '..', 'specific-deals', `${preset}.txt`);
+        try {
+            if (fs.existsSync(gameFilePath)) {
+                // Read the file
+                logger.info(`Using a preset deal of: ${preset}`);
+                const gameFile = fs.readFileSync(gameFilePath, 'utf8').split('\n');
+                for (let i = 0; i < gameFile.length; i++) {
+                    const line = gameFile[i];
+                    if (line === '') {
+                        continue;
+                    }
+                    const m2 = line.match(/^(\w)(\d)$/);
+                    if (m2) {
+                        // Change the suit of all of the cards in the deck
+                        let suit = m2[1];
+                        if (suit === 'b') {
+                            suit = 0;
+                        } else if (suit === 'g') {
+                            suit = 1;
+                        } else if (suit === 'y') {
+                            suit = 2;
+                        } else if (suit === 'r') {
+                            suit = 3;
+                        } else if (suit === 'p') {
+                            suit = 4;
+                        } else if (suit === 'm') {
+                            suit = 5;
+                        } else {
+                            logger.error(`Failed to parse the suit on line ${i}: ${suit}`);
+                            break;
+                        }
+                        game.deck[i].suit = suit;
+
+                        // Change the rank of all of the cards in the deck
+                        const rank = m2[2];
+                        game.deck[i].rank = Number.parseInt(rank, 10);
+                    } else {
+                        logger.error(`Failed to parse line ${i}: ${line}`);
+                        break;
+                    }
+                }
+
+                data.shuffle = false;
+                game.seed = preset;
+                step3(socket, data);
+                // We skip step 2 because we do not have to find an unplayed seed
+                return; // We can skip the rest of this function
+            }
+        } catch (err) {
+            logger.error(`Failed to read the "${gameFilePath}" file: ${err}`);
+        }
+    }
+
+    const m2 = game.name.match(/^!seed (\d+)$/);
+    if (m2) {
         // Parse the game name to see if the players want to play a specific seed
-        const seed = m[1];
+        const seed = m2[1];
         const seedPrefix = `p${game.players.length}v${game.variant}s`;
         game.seed = seedPrefix + seed;
         step3(socket, data);
@@ -127,6 +188,7 @@ function step2(error, socket, data) {
 
     // Set the new seed in the game object
     game.seed = data.seed;
+
     step3(socket, data);
 }
 
@@ -137,10 +199,12 @@ function step3(socket, data) {
     logger.info(`Using seed ${game.seed}, timed is ${game.timed}, reorderCards is ${game.reorderCards}.`);
 
     // Shuffle the deck
-    seedrandom(game.seed, {
-        global: true, // So that it applies to "Math.random()"
-    });
-    shuffle(game.deck);
+    if (data.shuffle) {
+        seedrandom(game.seed, {
+            global: true, // So that it applies to "Math.random()"
+        });
+        shuffle(game.deck);
+    }
 
     // Log the deal (so that it can be distributed to others if necessary)
     logger.info('------------------------------');
@@ -166,8 +230,13 @@ function step3(socket, data) {
         }
     }
 
-    // Get a random player to start first
-    data.startingPlayerIndex = Math.floor(Math.random() * game.players.length);
+    if (data.shuffle) {
+        // Get a random player to start first
+        data.startingPlayerIndex = Math.floor(Math.random() * game.players.length);
+    } else {
+        // Set the starting player to be an arbitrary position that matches how the intended game should be played out
+        data.startingPlayerIndex = game.players.length - 1;
+    }
     game.turnPlayerIndex = data.startingPlayerIndex; // Keep track of whose turn it is
     const text = `${game.players[data.startingPlayerIndex].username} goes first`;
     game.actions.push({
