@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
     });
 });
 app.use('/public', express.static(path.join(__dirname, '..', 'public'))); // The public directory is located in the root of the repository
-app.use(favicon(path.join(__dirname, '..', 'public', 'img', 'favicon.ico')));
+app.use(favicon(path.join(__dirname, '..', 'public', 'img', 'favicon.png')));
 
 // Websocket handlers
 io.on('connection', (socket) => {
