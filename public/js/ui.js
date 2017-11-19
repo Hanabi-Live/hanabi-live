@@ -3156,18 +3156,28 @@ function HanabiUI(lobby, gameID) {
                 // Draw the suit name next to each suit
                 // (a text description of the suit)
                 if (this.variant.showSuitNames) {
-                    const text = new FitText({
-                        x: (0.173 + (width + 0.015) * i) * winW, //
+                    let text = suit.name;
+                    if (
+                        lobby.showColorblindUI &&
+                        suit.clueColors.length > 1 &&
+                        suit !== SUIT.MULTI
+                    ) {
+                        const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
+                        text += ` [${colorList}]`;
+                    }
+
+                    const suitLabelText = new FitText({
+                        x: (0.173 + (width + 0.015) * i) * winW,
                         y: (playAreaY + 0.155 + offset) * winH,
                         width: 0.08 * winW,
                         height: 0.051 * winH,
                         fontSize: 0.02 * winH,
                         fontFamily: 'Verdana',
                         align: 'center',
-                        text: suit.name,
+                        text,
                         fill: '#d8d5ef',
                     });
-                    textLayer.add(text);
+                    textLayer.add(suitLabelText);
                 }
 
                 i += 1;
