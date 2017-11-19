@@ -314,15 +314,16 @@ function HanabiUI(lobby, gameID) {
 
         const rank =
             (showLearnedCards && learnedCard.rank) ||
-            (card.rankKnown() && card.trueRank);
+            (!card.showOnlyLearned && card.rankKnown() && card.trueRank);
 
         const suit =
             (showLearnedCards && learnedCard.suit) ||
-            (card.suitKnown() && card.trueSuit);
+            (!card.showOnlyLearned && card.suitKnown() && card.trueSuit);
 
         // Do not select an image with pips while the dynamic suit pips are shown
         if (
-            !card.suitKnown()
+            !card.suitKnown() ||
+            (card.showOnlyLearned && card.possibleSuits.length > 1)
         ) {
             if (!card.rankKnown() && rank) {
                 prefix = 'Index';
@@ -602,10 +603,12 @@ function HanabiUI(lobby, gameID) {
         }
     };
 
+    // dynamically adjusted known cards, to be restored by event
+    const toggledHolderViewCards = [];
+
     const HanabiCard = function HanabiCard(config) {
         const self = this;
 
-        this.holder = config.holder;
         config.width = CARDW;
         config.height = CARDH;
         config.x = CARDW / 2;
@@ -621,6 +624,14 @@ function HanabiUI(lobby, gameID) {
             width: config.width,
             height: config.height,
         });
+
+        this.doRotations = function doRotations(inverted = false) {
+            this.setRotation(inverted ? 180 : 0);
+
+            this.bare.setRotation(inverted ? 180 : 0);
+            this.bare.setX(inverted ? config.width : 0);
+            this.bare.setY(inverted ? config.height : 0);
+        };
 
         this.bare.setDrawFunc(function setDrawFunc(context) {
             scaleCardImage.call(this, context, self.barename);
@@ -736,6 +747,7 @@ function HanabiUI(lobby, gameID) {
         }
 
         this.barename = undefined;
+        this.showOnlyLearned = false;
 
         this.setBareImage();
 
@@ -754,15 +766,15 @@ function HanabiUI(lobby, gameID) {
         this.add(this.cluedBorder);
 
         this.indicatorArrow = new Kinetic.Text({
-            x: ((this.holder === ui.playerUs) ? config.width * 1.01 : 0),
-            y: ((this.holder === ui.playerUs) ? 0.18 : 0.82) * config.height,
+            x: config.width * 1.01,
+            y: config.height * 0.18,
             width: config.width,
             height: 0.5 * config.height,
             fontSize: 0.2 * winH,
             fontFamily: 'Verdana',
             align: 'center',
             text: '⬆',
-            rotation: (this.holder === ui.playerUs) ? 180 : 0,
+            rotation: 180,
             fill: '#ffffff',
             shadowColor: 'black',
             shadowBlur: 10,
@@ -858,6 +870,9 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
+        // Define event handlers
+        // Multiple handlers may set activeHover
+
         this.on('mousemove', () => {
             if (self.noteGiven.visible()) {
                 const mousePos = stage.getPointerPosition();
@@ -888,6 +903,52 @@ function HanabiUI(lobby, gameID) {
             UILayer.draw();
         });
 
+        // Show teammate view of their hand
+
+        const toggleHolderViewOnCard = (c, enabled) => {
+            c.rankPips.setVisible(enabled);
+            c.suitPips.setVisible(enabled);
+            c.showOnlyLearned = enabled;
+            c.setBareImage();
+        };
+
+        const endHolderViewOnCard = function endHolderViewOnCard() {
+            const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
+            cardsToReset.forEach(c => toggleHolderViewOnCard(c, false));
+            cardLayer.batchDraw();
+        };
+
+        const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
+            if (toggledHolderViewCards.length > 0) {
+                return; // data race with stop
+            }
+
+            toggledHolderViewCards.splice(0, 0, ...cards);
+            cards.forEach(c => toggleHolderViewOnCard(c, true));
+            cardLayer.batchDraw();
+        };
+
+        if (config.holder !== ui.playerUs || ui.replayOnly || ui.spectating) {
+            const mouseButton = 1;
+            this.on('mousedown', (event) => {
+                if (event.evt.which !== mouseButton || !this.isInPlayerHand()
+                ) {
+                    return;
+                }
+                const cards = this.parent.parent.children.map(c => c.children[0]);
+                beginHolderViewOnCard(cards);
+                ui.activeHover = this;
+            });
+            this.on('mouseup mouseout', (event) => {
+                if (event.type === 'mouseup' && event.evt.which !== mouseButton) {
+                    return;
+                }
+                endHolderViewOnCard();
+            });
+        }
+
+        // General mouse click handler
+
         // Hide clue arrows ahead of user dragging their card
         if (config.holder === ui.playerUs && !ui.replayOnly && !ui.spectating) {
             this.on('mousedown', (event) => {
@@ -905,8 +966,8 @@ function HanabiUI(lobby, gameID) {
         }
 
         this.on('click', (event) => {
-            if (ui.sharedReplay && event.evt.which === 1 && ui.sharedReplayLeader === lobby.username) {
-                // In a replay that is shared, the leader left-clicks a card to draw attention to it
+            if (ui.sharedReplay && event.evt.which === 3 && ui.sharedReplayLeader === lobby.username) {
+                // In a replay that is shared, the leader clicks a card to draw attention to it
 
                 if (ui.applyReplayActions) {
                     ui.sendMsg({
@@ -928,6 +989,10 @@ function HanabiUI(lobby, gameID) {
 
             if (event.evt.which !== 3) { // Right click
                 // We only care about right clicks
+                return;
+            }
+
+            if (ui.sharedReplay) {
                 return;
             }
 
@@ -993,10 +1058,12 @@ function HanabiUI(lobby, gameID) {
     HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
         if (clue.type === CLUE_TYPE.COLOR) {
             const clueColor = clue.value;
+            const findPipElement = suit => this.suitPips.find(`.${suit.name}`);
             const removed = filterInPlace(this.possibleSuits, suit => suit.clueColors.includes(clueColor) === positive);
-            removed.forEach(suit => this.suitPips.find(`.${suit.name}`).hide());
+            removed.forEach(suit => findPipElement(suit).hide());
             if (this.possibleSuits.length === 1) {
                 [this.trueSuit] = this.possibleSuits;
+                findPipElement(this.trueSuit).hide();
                 this.suitPips.hide();
                 ui.learnedCards[this.order].suit = this.trueSuit;
             }
@@ -1004,10 +1071,12 @@ function HanabiUI(lobby, gameID) {
             filterInPlace(ui.learnedCards[this.order].possibleSuits, s => this.possibleSuits.includes(s));
         } else {
             const clueRank = clue.value;
+            const findPipElement = rank => this.rankPips.find(`.${rank}`);
             const removed = filterInPlace(this.possibleRanks, rank => (rank === clueRank) === positive);
-            removed.forEach(rank => this.rankPips.find(`.${rank}`).hide());
+            removed.forEach(rank => findPipElement(rank).hide());
             if (this.possibleRanks.length === 1) {
                 [this.trueRank] = this.possibleRanks;
+                findPipElement(this.trueRank).hide();
                 this.rankPips.hide();
                 ui.learnedCards[this.order].rank = this.trueRank;
             }
@@ -1066,11 +1135,17 @@ function HanabiUI(lobby, gameID) {
 
         this.align = (config.align || 'left');
         this.reverse = (config.reverse || false);
+        this.invertCards = (config.invertCards || false);
     };
 
     Kinetic.Util.extend(CardLayout, Kinetic.Group);
 
     CardLayout.prototype.add = function add(child) {
+        child.children.forEach((c) => {
+            if (c.doRotations) {
+                c.doRotations(this.invertCards);
+            }
+        });
         const pos = child.getAbsolutePosition();
         Kinetic.Group.prototype.add.call(this, child);
         child.setAbsolutePosition(pos);
@@ -1255,6 +1330,11 @@ function HanabiUI(lobby, gameID) {
     Kinetic.Util.extend(CardStack, Kinetic.Group);
 
     CardStack.prototype.add = function add(child) {
+        child.children.forEach((c) => {
+            if (c.doRotations) {
+                c.doRotations(false);
+            }
+        });
         const pos = child.getAbsolutePosition();
         Kinetic.Group.prototype.add.call(this, child);
         child.setAbsolutePosition(pos);
@@ -3485,6 +3565,7 @@ function HanabiUI(lobby, gameID) {
                 rotationDeg: handPos[nump][j].rot,
                 align: 'center',
                 reverse: j === 0,
+                invertCards: i !== this.playerUs,
             });
 
             cardLayer.add(playerHands[i]);
@@ -4601,6 +4682,7 @@ function HanabiUI(lobby, gameID) {
             learnedCard.possibleRanks = [data.which.rank];
             learnedCard.revealed = true;
 
+            ui.deck[data.which.order].showOnlyLearned = false;
             ui.deck[data.which.order].trueSuit = suit;
             ui.deck[data.which.order].trueRank = data.which.rank;
             ui.deck[data.which.order].setBareImage();
@@ -4632,6 +4714,7 @@ function HanabiUI(lobby, gameID) {
             learnedCard.possibleRanks = [data.which.rank];
             learnedCard.revealed = true;
 
+            ui.deck[data.which.order].showOnlyLearned = false;
             ui.deck[data.which.order].trueSuit = suit;
             ui.deck[data.which.order].trueRank = data.which.rank;
             ui.deck[data.which.order].setBareImage();
@@ -4681,6 +4764,7 @@ function HanabiUI(lobby, gameID) {
             learnedCard.possibleRanks = [data.which.rank];
             learnedCard.revealed = true;
 
+            card.showOnlyLearned = false;
             card.trueSuit = suit;
             card.trueRank = data.which.rank;
             card.setBareImage();
