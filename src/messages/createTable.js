@@ -96,6 +96,7 @@ function step2(error, socket, data) {
         name: data.name,
         owner: socket.userID,
         players: [],
+        progress: 0,
         reorderCards: data.reorderCards,
         running: false,
         score: 0,

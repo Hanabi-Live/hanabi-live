@@ -333,6 +333,7 @@ const playerTable = (socket, data) => {
             reorderCards: game.reorderCards,
             ourTurn: (joined && game.running && game.turnPlayerIndex === data.index),
             sharedReplay: game.sharedReplay,
+            progress: game.progress,
         },
     });
 };

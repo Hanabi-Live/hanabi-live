@@ -251,9 +251,10 @@ const step1 = (socket, data) => {
     const nextPlayerSocket = game.players[game.turnPlayerIndex].socket;
     notify.playerAction(nextPlayerSocket, data);
 
+    // Send every user connected an update about this table
+    // (this is sort of wasteful but is necessary for users to see if it is
+    // their turn from the lobby and also to see the progress of other games)
     notify.allTableChange(data);
-    // (this seems wasteful but this is apparently used so that you can see if
-    // it is your turn from the lobby)
 
     // Send everyone new clock values
     notify.gameTime(data);
@@ -488,6 +489,10 @@ function playerPlayCard(data) {
                 game.clueNum = 8;
             }
         }
+
+        // Update the progress
+        const maxScore = game.stacks.length * 5;
+        game.progress = Math.round((game.score / maxScore) * 100); // In percent
     } else {
         // Send the "notify" message about the strike
         game.strikes += 1;

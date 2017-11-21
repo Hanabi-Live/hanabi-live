@@ -495,7 +495,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 .text(`${this.tableList[gameID].numPlayers}p`)
                 .addClass('table-attr table-players'))
             .append($('<li>')
-                .text(`Variant: ${variantNames[this.tableList[gameID].variant]}`)
+                .text(`Variant: ${variantNamesShort[this.tableList[gameID].variant]}`)
                 .addClass('table-attr table-variant'));
 
         const optionTexts = {
@@ -523,6 +523,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         let status = 'Not Started';
         if (this.tableList[gameID].running && !this.tableList[gameID].joined) {
             status = 'Running';
+            if (!this.tableList[gameID].sharedReplay) {
+                status += ` (${this.tableList[gameID].progress}%)`;
+            }
         } else if (this.tableList[gameID].running) {
             if (this.tableList[gameID].ourTurn) {
                 status = '<b>Your Turn</b>';
