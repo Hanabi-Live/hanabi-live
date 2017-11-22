@@ -83,16 +83,6 @@ require('./discord');
 // Start the Keldon listener
 require('./keldon');
 
-// Clean up any non-started games before we start
-models.games.clean(initComplete);
-
-function initComplete(error) {
-    if (error !== null) {
-        logger.error(`models.games.clean failed: ${error}`);
-        return;
-    }
-
-    http.listen(globals.port, () => {
-        logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
-    });
-}
+http.listen(globals.port, () => {
+    logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
+});

@@ -5383,7 +5383,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msg) {
     } else if (msgType === 'notify') {
         this.saveReplay(msg);
 
-        if (!this.replay || msgData.type === 'reveal') {
+        if (!this.replay || msgData.type === 'reveal' || msgData.type === 'boot') {
             this.handleNotify(msgData);
         }
     } else if (msgType === 'action') {

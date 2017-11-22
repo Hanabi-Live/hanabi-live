@@ -2,7 +2,7 @@
 // "data" example:
 /*
     {
-        tableID: 594,
+        gameID: 594,
     }
 */
 
@@ -10,6 +10,7 @@
 const globals = require('../globals');
 const logger = require('../logger');
 const notify = require('../notify');
+const messages = require('../messages');
 
 exports.step1 = (socket, data) => {
     // Validate that this table exists
@@ -23,21 +24,15 @@ exports.step1 = (socket, data) => {
         return;
     }
 
-    for (const player of game.players) {
-        // Update their status
-        player.socket.currentGame = -1;
-        player.socket.status = 'Lobby';
-        notify.allUserChange(player.socket);
-    }
+    // End the game and write it to the database
+    const text = `${socket.username} terminated the game.`;
+    game.actions.push({
+        text,
+    });
+    notify.gameAction(data);
+    messages.endGame.step1(data);
 
     // Boot the people in the game back to the lobby screen
     data.who = socket.username;
     notify.gameBoot(data);
-
-    // Keep track of the game ending
-    logger.info(`Game: #${data.gameID} (${game.name}) ended with a score of ${game.score}.`);
-    delete globals.currentGames[data.gameID];
-
-    // Notify everyone that the table was deleted
-    notify.allTableGone(data);
 };

@@ -313,16 +313,3 @@ exports.getNotes = (socket, data, done) => {
         done(null, socket, data);
     });
 };
-
-// Clean up any races that were either not started yet or were not finished
-exports.clean = (done) => {
-    const sql = 'DELETE FROM games WHERE datetime_finished IS NULL';
-    db.query(sql, [], (error, results, fields) => {
-        if (error) {
-            done(error);
-            return;
-        }
-
-        done(null);
-    });
-};
