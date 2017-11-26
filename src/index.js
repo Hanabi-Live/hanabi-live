@@ -6,23 +6,52 @@
 */
 
 // Imports
+const fs = require('fs');
+const path = require('path');
+const http = require('http');
+const https = require('https');
+
 const express = require('express');
 const favicon = require('serve-favicon');
-const path = require('path');
+const socketIO = require('socket.io');
+
 const globals = require('./globals');
 const logger = require('./logger');
-const models = require('./models');
 const messages = require('./messages');
-
-// Express and Socket.IO
-const app = express();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
 
 // Welcome message
 logger.info('+--------------------------+');
 logger.info('| Keldon Emulator starting |');
 logger.info('+--------------------------+');
+
+// Initialize Express (HTTP framework) and Socket.IO (websocket framework)
+const app = express();
+let httpServer;
+let port;
+if (process.env.TLS_CERT_FILE) {
+    const credentials = {
+        cert: fs.readFileSync(process.env.TLS_CERT_FILE),
+        key: fs.readFileSync(process.env.TLS_KEY_FILE),
+    };
+    httpServer = https.createServer(credentials, app);
+    port = 443;
+
+    // Create an HTTP to HTTPS redirect
+    const redirectApp = express();
+    const redirectServer = http.createServer(redirectApp);
+    redirectServer.listen(80);
+    redirectApp.get('*', (req, res) => {
+        res.redirect(`https:${req.headers.host}${req.url}`);
+    });
+} else {
+    httpServer = http.createServer(app);
+    port = 80;
+}
+if (process.env.PORT) {
+    // In Heroku, the PORT environment variable will be specified
+    port = process.env.PORT;
+}
+const websocketServer = socketIO(httpServer);
 
 // Set the view engine to ejs
 app.set('view engine', 'ejs');
@@ -46,7 +75,7 @@ app.use('/public', express.static(path.join(__dirname, '..', 'public'))); // The
 app.use(favicon(path.join(__dirname, '..', 'public', 'img', 'favicon.png')));
 
 // Websocket handlers
-io.on('connection', (socket) => {
+websocketServer.on('connection', (socket) => {
     const { address } = socket.handshake;
     logger.info(`User connected from address "${address}".`);
 
@@ -83,6 +112,6 @@ require('./discord');
 // Start the Keldon listener
 require('./keldon');
 
-http.listen(globals.port, () => {
+httpServer.listen(port, () => {
     logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
 });

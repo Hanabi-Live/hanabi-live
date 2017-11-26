@@ -51,3 +51,24 @@ These instructions assume you are running Linux. Some adjustment will be needed 
   * `npm start`
 
 <br />
+
+Install HTTPS (optional)
+------------------------
+
+* `sudo apt install letsencrypt -y`
+* `letsencrypt certonly --standalone -d hanabi.live -d www.hanabi.live` (this creates "/etc/letsencrypt/live/hanabi.live/")
+
+<br />
+
+Install as a service (optional)
+-------------------------------
+
+* `npm install pm2 -g`
+* `pm2 start "/root/keldon-hanabi/src/index.js" --name keldon-hanabi --merge-logs --log="/root/keldon-hanabi/logs/keldon-hanabi.log"`
+* `pm2 save`
+* `pm2 startup`
+
+<br />
+
+
+<br />
