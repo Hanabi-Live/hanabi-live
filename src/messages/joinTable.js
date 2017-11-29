@@ -89,26 +89,11 @@ function step2(error, socket, data) {
     // Local variables
     const game = globals.currentGames[data.gameID];
 
-    // Find out what the time limit for the game should be
-    let baseTime = globals.baseTimeDefault; // In milliseconds
-    if (game.timed) {
-        if (game.name.startsWith('t=')) {
-            // The user entered a custom time limit for the game
-            // (if what they entered was somehow invalid, we will keep the default
-            // time from above)
-            const m = game.name.match(/t=(.+)\s*/);
-            if (m) {
-                const [, minutes] = m;
-                if (!Number.isNaN(minutes)) {
-                    baseTime = minutes * 60 * 1000;
-                }
-            }
-        }
-        if (game.baseTime) baseTime = game.baseTime;
-    } else if (!game.timed) {
-        // In non-timed games, start each player with 0 "time left"
-        // It will decrement into negative numbers to show how much time they
-        // are taking
+    // In non-timed games, start each player with 0 "time left"
+    // It will decrement into negative numbers to show how much time they
+    // are taking
+    let baseTime = game.baseTime;
+    if (!game.timed) {
         baseTime = 0;
     }
 
