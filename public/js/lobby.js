@@ -900,6 +900,8 @@ HanabiLobby.prototype.setGame = function setGame(data) {
     this.game.variant = data.variant;
     this.game.running = data.running;
     this.game.timed = data.timed;
+    this.game.baseTime = data.baseTime;
+    this.game.timePerTurn = data.timePerTurn;
     this.game.reorderCards = data.reorderCards;
     this.game.sharedReplay = data.sharedReplay;
 
@@ -928,7 +930,7 @@ HanabiLobby.prototype.showJoined = function showJoined() {
     html += `<p>Variant: <b>${variantNames[this.game.variant]}</p></b>`;
 
     if (this.game.timed) {
-        html += `<p>${timedDescription}</p>`;
+        html += `<p>${timedDescription}: ${this.game.baseTime / (60 * 1000)} min + ${this.game.timePerTurn / 1000} s/turn </p>`;
     }
 
     if (this.game.reorderCards) {
