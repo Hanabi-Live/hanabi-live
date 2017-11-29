@@ -38,7 +38,7 @@ These instructions assume you are running Linux. Some adjustment will be needed 
   * `git clone https://github.com/Zamiell/keldon-hanabi`
   * `cd keldon-hanabi`
 * Set up environment variables:
-  * `cp .env_defaults .env`
+  * `cp .env_template .env`
   * `nano .env`
     * Change the values accordingly (assuming you modified the commands above).
     * `DISCORD_TOKEN` can be left blank if you don't want to enable Discord functionality.
