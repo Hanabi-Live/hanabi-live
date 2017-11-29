@@ -1,6 +1,8 @@
 // Server configuration
-const startingTime = 5 * 60 * 1000; // In milliseconds
-const extraTurnTime = 10 * 1000; // In milliseconds
+const baseTimeMinutes = 5;
+const timePerTurnSeconds = 10;
+const baseTimeDefault = baseTimeMinutes * 60 * 1000; // In milliseconds
+const timePerTurnDefault = timePerTurnSeconds * 1000; // In milliseconds
 
 // The object that contains all of the global variables
 module.exports = {
@@ -11,8 +13,8 @@ module.exports = {
     id: 1, // Start at 1 and increment for every game created
 
     // Configuration constants
-    startingTime,
-    extraTurnTime,
+    baseTimeDefault,
+    timePerTurnDefault,
 
     // Text definitions
     suits: [

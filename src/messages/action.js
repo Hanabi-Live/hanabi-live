@@ -196,10 +196,9 @@ const step1 = (socket, data) => {
         // (in non-timed games, "player.time" will decrement into negative
         // numbers to show how much time they are taking)
 
-        // In timed games, a player gets an additional X seconds for making a
-        // move
+        // In timed games, a player gains additional time per action
         if (game.timed) {
-            player.time += globals.extraTurnTime;
+            player.time += game.timePerTurn;
         }
 
         game.turnBeginTime = now;
