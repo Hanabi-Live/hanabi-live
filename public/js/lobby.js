@@ -23,6 +23,7 @@ function HanabiLobby() {
     this.sendChatNotify = false;
     this.sendChatSound = false;
     this.showColorblindUI = false;
+    this.hideTimerInUntimed = false;
 
     this.game = {
         name: '',
@@ -1237,6 +1238,10 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
         [
             'show-colorblind-ui',
             'showColorblindUI',
+        ],
+        [
+            'hide-timer-in-untimed',
+            'hideTimerInUntimed',
         ],
     ];
 
