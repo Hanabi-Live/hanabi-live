@@ -125,6 +125,8 @@ function HanabiLobby() {
         const gameName = $('#create-game-name').val();
         const variant = parseInt($('#create-game-variant').val(), 10);
         const timed = document.getElementById('create-game-timed').checked;
+        const baseTimeMinutes = $('#base-time-minutes').val();
+        const timePerTurnSeconds = $('#time-per-turn-seconds').val();
         const reorderCards = document.getElementById('create-game-reorder-cards').checked;
 
         localStorage.setItem('createTableVariant', variant);
@@ -139,6 +141,8 @@ function HanabiLobby() {
                 name: gameName,
                 variant,
                 timed,
+                baseTimeMinutes,
+                timePerTurnSeconds,
                 reorderCards,
             },
         });

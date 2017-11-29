@@ -70,9 +70,24 @@ exports.step1 = (socket, data) => {
     globals.id += 1;
     logger.info(`User "${socket.username}" created a new game: #${data.gameID} (${data.name})`);
 
+    // Use user-specified timer rules if they're "valid", otherwise defaults
+    // N.B. "valid" is the minimum imaginable check: is not empty string and not isNaN
+    //   (thanks to the joys of weak typing, empty string is considered a number)
+    let baseTime = globals.baseTimeDefault;
+    const specifiedBaseTimeMinutes = data.baseTimeMinutes;
+    if (specifiedBaseTimeMinutes && !isNaN(specifiedBaseTimeMinutes)) {
+        baseTime = specifiedBaseTimeMinutes * 60 * 1000;
+    }
+    let timePerTurn = globals.timePerTurnDefault;
+    const specifiedTimePerTurnSeconds = data.timePerTurnSeconds;
+    if (specifiedTimePerTurnSeconds && !isNaN(specifiedTimePerTurnSeconds)) {
+        timePerTurn = specifiedTimePerTurnSeconds * 1000;
+    }
+
     // Keep track of the current games
     globals.currentGames[data.gameID] = {
         actions: [],
+        baseTime,
         clueNum: 8,
         datetimeCreated: moment().format('YYYY-MM-DD HH:mm:ss'), // This is the MariaDB format
         datetimeFinished: null,
@@ -95,6 +110,7 @@ exports.step1 = (socket, data) => {
         strikes: 0,
         sound: null,
         timed: data.timed,
+        timePerTurn,
         turnBeginTime: null,
         turnNum: 0,
         turnPlayerIndex: 0,
