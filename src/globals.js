@@ -5,10 +5,18 @@ const extraTurnTime = 10 * 1000; // In milliseconds
 
 // The object that contains all of the global variables
 module.exports = {
+    // Data structures and variables
     connectedUsers: {}, // Indexed by ID
     currentGames: {}, // Indexed by ID
-    extraTurnTime,
+    wordList: null, // Set in the "index.js" file
+    id: 1, // Start at 1 and increment for every game created
+
+    // Configuration constants
+    port,
     startingTime,
+    extraTurnTime,
+
+    // Text definitions
     suits: [
         'Blue',
         'Green',
@@ -49,7 +57,6 @@ module.exports = {
         'Rainbow',
         'Black',
     ],
-    port,
     variants: [
         'No Variant',
         'Black Suit',
@@ -60,5 +67,4 @@ module.exports = {
         'White Suit & Rainbow Suit',
         'Wild & Crazy',
     ],
-    wordList: null, // Set in the "index.js" file
 };

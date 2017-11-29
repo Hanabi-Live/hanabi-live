@@ -4,7 +4,6 @@
 // Imports
 const globals = require('../globals');
 const logger = require('../logger');
-const models = require('../models');
 const notify = require('../notify');
 
 const step1 = (socket, data) => {
@@ -82,20 +81,11 @@ const step1 = (socket, data) => {
 
     // Delete the game if there is no-one left
     if (game.players.length === 0) {
-        models.games.delete(data, step2);
+        logger.info(`Ended game #${data.gameID} because everyone left.`);
+        delete globals.currentGames[data.gameID];
+
+        // Notify everyone that the table was deleted
+        notify.allTableGone(data);
     }
 };
 exports.step1 = step1;
-
-function step2(error, data) {
-    if (error !== null) {
-        logger.error(`models.games.delete failed: ${error}`);
-        return;
-    }
-
-    logger.info(`Ended game #${data.gameID} because everyone left.`);
-    delete globals.currentGames[data.gameID];
-
-    // Notify everyone that the table was deleted
-    notify.allTableGone(data);
-}

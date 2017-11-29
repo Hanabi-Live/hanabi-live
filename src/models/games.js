@@ -1,46 +1,27 @@
 // Imports
 const db = require('./db');
 
-exports.create = (socket, data, done) => {
-    const sql = 'INSERT INTO games (owner) VALUES (?)';
-    const values = [data.owner];
-    db.query(sql, values, (error, results, fields) => {
-        if (error) {
-            done(error, socket, data);
-            return;
-        }
-
-        data.gameID = results.insertId;
-        done(null, socket, data);
-    });
-};
-
-exports.delete = (data, done) => {
-    const sql = 'DELETE FROM games where id = ?';
-    const values = [data.gameID];
-    db.query(sql, values, (error, results, fields) => {
-        if (error) {
-            done(error, data);
-            return;
-        }
-
-        done(null, data);
-    });
-};
-
-exports.end = (data, done) => {
+exports.create = (data, done) => {
     const sql = `
-        UPDATE games
-        SET
-            name = ?,
-            owner = ?,
-            variant = ?,
-            timed = ?,
-            seed = ?,
-            score = ?,
-            datetime_started = ?,
-            datetime_finished = ?
-        WHERE id = ?
+        INSERT INTO games (
+            name,
+            owner,
+            variant,
+            timed,
+            seed,
+            score,
+            datetime_created,
+            datetime_started
+        ) VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?
+        )
     `;
     const values = [
         data.name,
@@ -49,9 +30,8 @@ exports.end = (data, done) => {
         data.timed,
         data.seed,
         data.score,
+        data.datetimeCreated,
         data.datetimeStarted,
-        data.datetimeFinished,
-        data.gameID,
     ];
     db.query(sql, values, (error, results, fields) => {
         if (error) {
@@ -59,6 +39,7 @@ exports.end = (data, done) => {
             return;
         }
 
+        data.databaseID = results.insertId;
         done(null, data);
     });
 };

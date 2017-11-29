@@ -92,10 +92,9 @@ exports.step1 = (data) => {
         notify.allUserChange(spectator);
     }
 
-    announceGameResult(data.gameID);
-
     // Record the game in the database
     data = {
+        gameID: data.gameID,
         name: game.name,
         owner: game.owner,
         variant: game.variant,
@@ -104,12 +103,10 @@ exports.step1 = (data) => {
         score: game.score,
         datetimeCreated: game.datetimeCreated,
         datetimeStarted: game.datetimeStarted,
-        datetimeFinished: game.datetimeFinished,
-        gameID: data.gameID,
     };
 
     logger.info('Database: Filling in the "games" row.');
-    models.games.end(data, step2);
+    models.games.create(data, step2);
 };
 
 function step2(error, data) {
@@ -127,7 +124,7 @@ function step2(error, data) {
     for (const player of game.players) {
         data.gameParticipants.push([
             player.userID,
-            data.gameID,
+            data.databaseID,
             JSON.stringify(player.notes),
         ]);
     }
@@ -149,7 +146,7 @@ function step3(error, data) {
     data.gameActions = [];
     for (const action of game.actions) {
         data.gameActions.push([
-            data.gameID,
+            data.databaseID,
             JSON.stringify(action),
         ]);
     }
@@ -181,7 +178,7 @@ function step5(error, data) {
         player.socket.emit('message', {
             type: 'gameHistory',
             resp: {
-                id: data.gameID,
+                id: data.databaseID,
                 numPlayers: game.players.length,
                 numSimilar: data.numSimilar,
                 score: game.score,
@@ -195,6 +192,9 @@ function step5(error, data) {
         });
     }
 
+    // Send a chat message with the game result and players
+    announceGameResult(data);
+
     // Keep track of the game ending
     delete globals.currentGames[data.gameID];
     logger.info('Finished database actions for the end of the game.');
@@ -205,18 +205,15 @@ function step5(error, data) {
 */
 
 // Send a chat message with the game result and players
-function announceGameResult(gameID) {
-    const game = globals.currentGames[gameID];
+function announceGameResult(data) {
+    const game = globals.currentGames[data.gameID];
     const socket = {
         userID: 1, // The first user ID is reserved for server messages
     };
     const nameList = game.players.map(p => p.username);
     const listEnd = `${game.players.length > 2 ? ',' : ''} and ${nameList.pop()}`;
     const listBeginning = nameList.join(', '); // The final name was removed above
-    const msg = `[${listBeginning}${listEnd}] finished a ${globals.variants[game.variant].toLowerCase()} game with a score of ${game.score}. (#${gameID} - ${game.name})`;
-    const data = {
-        msg,
-    };
+    data.msg = `[${listBeginning}${listEnd}] finished a ${globals.variants[game.variant].toLowerCase()} game with a score of ${game.score}. (#${data.databaseID} - ${game.name})`;
     messages.chat.step1(socket, data);
 }
 

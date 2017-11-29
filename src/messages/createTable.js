@@ -10,9 +10,9 @@
 */
 
 // Imports
+const moment = require('moment');
 const globals = require('../globals');
 const logger = require('../logger');
-const models = require('../models');
 const messages = require('../messages');
 const notify = require('../notify');
 
@@ -62,31 +62,19 @@ exports.step1 = (socket, data) => {
         return;
     }
 
-    // Create the table
-    data.owner = socket.userID;
-    models.games.create(socket, data, step2);
-    // We could defer writing games to the database at all until they are
-    // finished; however, we don't want to do that for several reasons:
-    // 1) We can store it in "globals.currentGames" object using the unique ID
-    //    from the database as the key, instead of having to come up with some
-    //    other scheme
-    // 2) We want the player's notes to persist into the replay; notes are tied
-    //    to the game ID
-};
+    /*
+        Create
+    */
 
-function step2(error, socket, data) {
-    if (error !== null) {
-        logger.error(`models.games.create failed: ${error}`);
-        return;
-    }
-
+    data.gameID = globals.id;
+    globals.id += 1;
     logger.info(`User "${socket.username}" created a new game: #${data.gameID} (${data.name})`);
 
     // Keep track of the current games
     globals.currentGames[data.gameID] = {
         actions: [],
         clueNum: 8,
-        datetimeCreated: null,
+        datetimeCreated: moment().format('YYYY-MM-DD HH:mm:ss'), // This is the MariaDB format
         datetimeFinished: null,
         deck: [],
         deckIndex: 0,
@@ -117,4 +105,4 @@ function step2(error, socket, data) {
 
     // Join the user to the new table
     messages.joinTable.step1(socket, data);
-}
+};

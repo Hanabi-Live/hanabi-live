@@ -25,15 +25,15 @@ INSERT INTO users (id, username, password) VALUES (1, '[SERVER]', '');
 DROP TABLE IF EXISTS games;
 CREATE TABLE games (
     id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    name               NVARCHAR(50)  NULL,
+    name               NVARCHAR(50)  NOT NULL,
     owner              INT           NOT NULL,
-    variant            TINYINT       NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
-    timed              BOOLEAN       NULL, /* 0 - not timed, 1 - timed */
-    seed               VARCHAR(15)   NULL, /* like "p2v0s1" */
-    score              INT           NULL,
-    datetime_created   TIMESTAMP     NOT NULL  DEFAULT NOW(),
-    datetime_started   TIMESTAMP     NULL      DEFAULT NULL,
-    datetime_finished  TIMESTAMP     NULL      DEFAULT NULL,
+    variant            TINYINT       NOT NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
+    timed              BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
+    seed               VARCHAR(15)   NOT NULL, /* like "p2v0s1" */
+    score              INT           NOT NULL,
+    datetime_created   TIMESTAMP     NOT NULL,
+    datetime_started   TIMESTAMP     NOT NULL,
+    datetime_finished  TIMESTAMP     NOT NULL  DEFAULT NOW(),
     FOREIGN KEY (owner) REFERENCES users (id)
 );
 CREATE INDEX games_index_datetime_finished ON games (datetime_finished);
