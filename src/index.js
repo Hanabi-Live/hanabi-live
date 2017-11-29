@@ -15,7 +15,6 @@ const express = require('express');
 const favicon = require('serve-favicon');
 const socketIO = require('socket.io');
 
-const globals = require('./globals');
 const logger = require('./logger');
 const messages = require('./messages');
 
@@ -113,5 +112,5 @@ require('./discord');
 require('./keldon');
 
 httpServer.listen(port, () => {
-    logger.info(`keldon-hanabi server listening on port ${globals.port}.`);
+    logger.info(`keldon-hanabi server listening on port ${port}.`);
 });
