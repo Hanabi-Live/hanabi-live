@@ -483,6 +483,15 @@ $(document).ready(() => {
 const timedDescription = 'Timed Game';
 const reorderCardsDescription = 'Forced Chop Rotation';
 
+const timerFormatter = function timerFormatter(milliseconds) {
+    const time = new Date();
+    time.setHours(0, 0, 0, milliseconds);
+    const minutes = time.getMinutes();
+    const seconds = time.getSeconds();
+    const secondsFormatted = seconds < 10 ? `0${seconds}` : seconds;
+    return `${minutes}:${secondsFormatted}`;
+};
+
 HanabiLobby.prototype.drawTables = function drawTables() {
     const self = this;
     const div = $('#table-list');
@@ -503,14 +512,16 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 .text(`Variant: ${variantNamesShort[this.tableList[gameID].variant]}`)
                 .addClass('table-attr table-variant'));
 
+        const game = this.tableList[gameID];
+        const timerRules = `${timerFormatter(game.baseTime)} + ${timerFormatter(game.timePerTurn)}`;
         const optionTexts = {
-            timed: {
-                symbol: '⏰',
-                title: timedDescription,
-            },
             reorderCards: {
                 symbol: '⤨',
                 title: reorderCardsDescription,
+            },
+            timed: {
+                symbol: `⏰ (${timerRules})`,
+                title: timedDescription,
             },
         };
 
@@ -930,7 +941,8 @@ HanabiLobby.prototype.showJoined = function showJoined() {
     html += `<p>Variant: <b>${variantNames[this.game.variant]}</p></b>`;
 
     if (this.game.timed) {
-        html += `<p>${timedDescription}: ${this.game.baseTime / (60 * 1000)} min + ${this.game.timePerTurn / 1000} s/turn </p>`;
+        const timerRules = `${timerFormatter(this.game.baseTime)} + ${timerFormatter(this.game.timePerTurn)}`;
+        html += `<p>${timedDescription}: ${timerRules}</p>`;
     }
 
     if (this.game.reorderCards) {
