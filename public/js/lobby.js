@@ -484,6 +484,7 @@ const timedDescription = 'Timed Game';
 const reorderCardsDescription = 'Forced Chop Rotation';
 
 const timerFormatter = function timerFormatter(milliseconds) {
+    if (!milliseconds) milliseconds = 0;
     const time = new Date();
     time.setHours(0, 0, 0, milliseconds);
     const minutes = time.getMinutes();
