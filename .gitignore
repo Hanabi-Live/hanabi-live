@@ -1,3 +1,7 @@
+# --------------------------
+# GitHub .gitignore Template
+# --------------------------
+
 # Binaries for programs and plugins
 *.exe
 *.dll
@@ -12,3 +16,21 @@
 
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
+
+# -----------------
+# Hanabi Live stuff
+# -----------------
+
+# Contains secrets
+.env
+
+# Directories
+logs
+backups
+
+# The compiled binary
+isaac-racing-server
+
+# Helper scripts
+database_shell.sh
+make_database_dump.sh

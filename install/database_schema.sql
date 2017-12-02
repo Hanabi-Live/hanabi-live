@@ -29,8 +29,11 @@ CREATE TABLE games (
     owner              INT           NOT NULL,
     variant            TINYINT       NOT NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
     timed              BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
+    time_base          INT           NOT NULL, /* in seconds */
+    time_per_turn      INT           NOT NULL, /* in seconds */
     seed               VARCHAR(15)   NOT NULL, /* like "p2v0s1" */
     score              INT           NOT NULL,
+    end_condition      INT           NOT NULL, /* 0 - normal, 1 - strikeout, 2 - timeout, 3 - abandoned */
     datetime_created   TIMESTAMP     NOT NULL,
     datetime_started   TIMESTAMP     NOT NULL,
     datetime_finished  TIMESTAMP     NOT NULL  DEFAULT NOW(),
@@ -66,8 +69,7 @@ CREATE TABLE chat_log (
     id               INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
     user_id          INT            NOT NULL,
     message          NVARCHAR(150)  NOT NULL,
-    datetime_sent    TIMESTAMP      NOT NULL, /* Defaults to the current time */
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    datetime_sent    TIMESTAMP      NOT NULL  DEFAULT NOW(),
 );
 CREATE INDEX chat_log_index_user_id ON chat_log (user_id);
 CREATE INDEX chat_log_index_datetime_sent ON chat_log (datetime_sent);
