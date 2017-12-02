@@ -1,4 +1,3 @@
-keldon-hanabi
 =============
 
 ## Description
@@ -36,3 +35,6 @@ See the [installation documentation](https://github.com/Zamiell/keldon-hanabi/tr
 
 * [Keldon Jones](http://keldon.net/) was the original creator of this amazing software. The client is around 6000 lines of code, so it must have taken a long time to make.
 * [Hyphen-ated](https://github.com/Hyphen-ated/) created the extremely useful Chrome extension called [Make Hanabi Great Again](https://github.com/Hyphen-ated/MakeHanabiGreatAgain), which extended the features of the original site. MHGA is seamlessly integrated into the emulator.
+=======
+# hanabi-live
+A web server that allows people to play Hanabi, a cooperative card game of logic and reasoning.
