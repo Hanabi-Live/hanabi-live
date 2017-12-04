@@ -69,7 +69,7 @@ CREATE TABLE chat_log (
     id               INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT, /* PRIMARY KEY automatically creates a UNIQUE constraint */
     user_id          INT            NOT NULL,
     message          NVARCHAR(150)  NOT NULL,
-    datetime_sent    TIMESTAMP      NOT NULL  DEFAULT NOW(),
+    datetime_sent    TIMESTAMP      NOT NULL  DEFAULT NOW()
 );
 CREATE INDEX chat_log_index_user_id ON chat_log (user_id);
 CREATE INDEX chat_log_index_datetime_sent ON chat_log (datetime_sent);
