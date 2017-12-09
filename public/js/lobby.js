@@ -1,6 +1,62 @@
 const showDebugMessages = true;
 const fadeTime = 200; // Vanilla Keldon is 800
 
+$(document).ready(() => {
+    /*
+        Define login handlers
+    */
+
+    window.lobby = new HanabiLobby();
+    /*
+    console.log('Connecting to websocket URL:', websocketURL);
+    var conn = io.connect(websocketURL);
+    window.lobby.setConn(conn);
+    */
+});
+
+/*
+function login() {
+    // Send a request to the Racing+ server
+    globals.log.info('Sending a login request to the Racing+ server.');
+    const postData = {
+        steamID: globals.steam.id,
+        ticket: globals.steam.ticket, // This will be verified on the server via the Steam web API
+        version: globals.version,
+    };
+    if (process.platform === 'darwin') { // macOS
+        // Normally, the server will not allow clients to login if they are running old versions
+        // However, on macOS, there is no auto-update mechanism currently
+        // Thus, we allow macOS users to login with older versions
+        postData.version = 'macOS';
+    }
+    const url = `${globals.websiteURL}/login`;
+
+    const request = $.ajax({
+        url,
+        type: 'POST',
+        data: postData,
+    });
+    request.done((data) => {
+        data = data.trim();
+        if (data === 'Accepted') {
+            // If the server gives us "Accepeted", then our Steam credentials are valid, but we don't have an account on the server yet
+            // Let the user pick their username
+            registerScreen.show();
+        } else {
+            // We successfully got a cookie; attempt to establish a WebSocket connection
+            websocket.init();
+        }
+    });
+    request.fail((jqXHR) => {
+        // Show the error screen (and don't bother reporting this to Sentry)
+        globals.log.info('Login failed.');
+        globals.log.info(jqXHR);
+        const error = misc.findAjaxError(jqXHR);
+        misc.errorShow(error, false);
+    });
+}
+*/
+
 function HanabiLobby() {
     const self = this;
 
@@ -52,17 +108,24 @@ function HanabiLobby() {
         }
     });
 
-    const performLogin = () => {
-        const user = $('#user').val();
-        const pass = $('#pass').val();
+    $('#poop-form').submit((event) => {
+        console.log('hi2');
+    });
+
+    $('#login-form').submit((event) => {
+        // By default, the form will reload the page, so stop this from happening
+        event.preventDefault();
+
+        const user = $('#login-username').val();
+        const pass = $('#login-password').val();
 
         if (!user) {
-            $('#login-result').html('You must provide a username.');
+            loginFormError('You must provide a username.');
             return;
         }
 
         if (!pass) {
-            $('#login-result').html('You must provide a password.');
+            loginFormError('You must provide a password.');
             return;
         }
 
@@ -75,49 +138,44 @@ function HanabiLobby() {
         self.pass = hash;
 
         self.sendLogin();
+    });
+
+    const loginFormError = (msg) => {
+        $('#login-result').html(msg);
+        $('#ajax-error').fadeIn(350);
     };
-
-    $('#login-button').on('click', (event) => {
-        event.preventDefault();
-        performLogin();
-    });
-
-    $('#login-form').on('keypress', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            performLogin();
-        }
-    });
 
     const input = $('#chat-input');
 
     input.on('keypress', (event) => {
-        if (event.keyCode === 13) {
-            if (!input.val()) {
-                return;
-            }
-
-            // Clear the chat box
-            const msg = input.val();
-            input.val('');
-
-            // Check for special commands
-            if (msg === '/debug') {
-                self.sendMsg({
-                    type: 'debug',
-                    resp: {},
-                });
-                return;
-            }
-
-            // It is a normal chat message
-            self.sendMsg({
-                type: 'chat',
-                resp: {
-                    msg,
-                },
-            });
+        if (event.key !== 'Enter') {
+            return;
         }
+
+        if (!input.val()) {
+            return;
+        }
+
+        // Clear the chat box
+        const msg = input.val();
+        input.val('');
+
+        // Check for special commands
+        if (msg === '/debug') {
+            self.sendMsg({
+                type: 'debug',
+                resp: {},
+            });
+            return;
+        }
+
+        // It is a normal chat message
+        self.sendMsg({
+            type: 'chat',
+            resp: {
+                msg,
+            },
+        });
     });
 
     $('#create-table').on('click', (event) => {
@@ -296,7 +354,7 @@ HanabiLobby.prototype.resetLobby = function resetLobby() {
 
 HanabiLobby.prototype.sendLogin = function sendLogin() {
     $('#login-container').hide();
-    $('#connecting').show();
+    $('#ajax-gif').show();
 
     this.sendMsg({
         type: 'login',
@@ -309,14 +367,14 @@ HanabiLobby.prototype.sendLogin = function sendLogin() {
 
 HanabiLobby.prototype.loginFailed = (reason) => {
     $('#login-container').show();
-    $('#connecting').hide();
+    $('#ajax-gif').hide();
 
     $('#login-result').html(`Login failed: ${reason}`);
 };
 
 HanabiLobby.prototype.resetLogin = () => {
     $('#login-container').show();
-    $('#connecting').hide();
+    $('#ajax-gif').hide();
 
     $('#login-result').html('');
 };
@@ -498,7 +556,9 @@ const timedDescription = 'Timed Game';
 const reorderCardsDescription = 'Forced Chop Rotation';
 
 const timerFormatter = function timerFormatter(milliseconds) {
-    if (!milliseconds) milliseconds = 0;
+    if (!milliseconds) {
+        milliseconds = 0;
+    }
     const time = new Date();
     time.setHours(0, 0, 0, milliseconds);
     const minutes = time.getMinutes();
@@ -1394,5 +1454,3 @@ function deleteCookie(name) {
     const cookie = `; expires=${expire.toUTCString()}`;
     document.cookie = `${name}=${cookie}`;
 }
-
-setCookie('test', 'poop');

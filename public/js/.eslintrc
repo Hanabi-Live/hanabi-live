@@ -30,6 +30,9 @@
     // KineticJS's API has functions that are prefixed with an underscore
     "no-underscore-dangle": ["off"],
 
+    // We make sure light use of parameter reassigning where appropriate
+    "no-param-reassign": ["off"],
+
     // airbnb disallows these because it can lead to errors with minified code;
     // we don't have to worry about this in for loops though
     "no-plusplus": ["error", {
@@ -52,6 +55,9 @@
     // https://blog.javascripting.com/2015/09/07/fine-tuning-airbnbs-eslint-config/
     // (airbnb doesn't include this by default for some reason)
     "quote-props": ["warn", "consistent-as-needed"],
+
+    // Keldon's original code does this and it would be tricky to refactor
+    "no-use-before-define": ["off"],
   },
 
   "globals": {

@@ -1,0 +1,10 @@
+{
+  "name": "hanabi-live-client",
+  "version": "0.0.1",
+  "description": "The JavaScript client for the Hanabi Live server",
+  "devDependencies": {
+    "eslint": "^4.9.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.7.0"
+  }
+}

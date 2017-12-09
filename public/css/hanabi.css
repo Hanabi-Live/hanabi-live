@@ -96,14 +96,6 @@ ul {
 	color: black;
 }
 
-#login {
-	font-size: large;
-}
-
-#login-container {
-	padding-bottom: 1em;
-}
-
 #connecting {
 	display: none;
 }
