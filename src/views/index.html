@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name=viewport content="width=1010, initial-scale=1">
+        <title>Hanabi</title>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.4/socket.io.min.js"></script>
+        <script type="text/javascript" src="public/js/lib/kinetic-v5.1.1.min.js"></script>
+        <script type="text/javascript" src="public/js/lib/sha256.js"></script>
+        <script type="text/javascript" src="public/js/constants.js"></script>
+        <script type="text/javascript" src="public/js/ui/timer.js"></script>
+        <script type="text/javascript" src="public/js/ui.js"></script>
+        <script type="text/javascript" src="public/js/lobby.js"></script>
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="public/css/hanabi.css">
+        <link rel="shortcut icon" href="public/img/favicon.png" type="image/x-icon">
+        <link rel="icon" href="public/img/favicon.ico" type="image/x-icon">
+        </head>
+    <body>
+        <div id="pregame">
+            <div id="login">
+                <h1>Login</h1>
+                <table id="login-form">
+                    <tr>
+                        <td>Username:</td>
+                        <td style="width: 1em;"></td><!-- Padding -->
+                        <td><input type="text" id="user" autofocus></td>
+                    </tr>
+                    <tr>
+                        <td>Password:</td>
+                        <td></td>
+                        <td><input type="password" id="pass"></td>
+                    </tr>
+                </table>
+                <br />
+                <div id="connecting"><img src="public/img/ajax.gif"></div>
+                <div id="login-container"><button type="button" id="login-button">Login</button></div>
+                <div id="login-result"></div>
+                <p>Registration is not required. To create a new account, simply login with a new username and select a password.</p>
+            </div>
+            <div id="lobby">
+                <div id="table-area">
+                    <div id="table-list-div">
+                        <div class="white">Open Tables</div>
+                        <ul id="table-list" class="lobby-element">
+                        </ul>
+                    </div>
+                    <div class="control-buttons">
+                        <button type="button" id="create-table">Create Table</button>
+                        <button type="button" id="show-history">Show History</button>
+                        <button type="button" id="show-resources">Resources</button>
+                        <button type="button" id="show-settings"></button>
+                        <button id="logout">Log Out</button>
+                    </div>
+                </div>
+                <div id="joined-table" class="lobby-element">
+                    <div id="joined-desc"></div>
+                    <div id="show-player-1" class="show-player"></div>
+                    <div id="show-player-2" class="show-player"></div>
+                    <div id="show-player-3" class="show-player"></div>
+                    <div id="show-player-4" class="show-player"></div>
+                    <div id="show-player-5" class="show-player"></div>
+                    <button type="button" id="start-game" disabled>Start Game</button>
+                    <button type="button" id="leave-game">Leave Game</button>
+                    <button type="button" id="unattend-table">Return to Tables</button>
+                </div>
+                <div id="game-history">
+                    <div id="history-list-div">
+                        <div class="white">Your Game History</div>
+                        <ul id="history-list" class="lobby-element">
+                        </ul>
+                    </div>
+                    <div class="control-buttons">
+                        <button type="button" class="return-table">Return to Tables</button>
+                        <button type="button" class="custom-replay-start" data-replayType="startReplay">Watch Replay by ID</button>
+                        <button type="button" class="custom-replay-start" data-replayType="createSharedReplay">Share Replay by ID</button>
+                    </div>
+                </div>
+                <div id="game-history-details">
+                    <div id="history-details-list-div">
+                        <div class="white">All Games Played with the Same Deal</div>
+                        <ul id="history-details-list" class="lobby-element">
+                        </ul>
+                    </div>
+                    <div class="control-buttons">
+                        <button type="button" class="return-table">Return to Tables</button>
+                        <button type="button" id="return-history">Return to History</button>
+                    </div>
+                </div>
+                <div id="chat" class="lobby-element">
+                    <div id="chat-contents"></div>
+                    <div id="chat-entry">
+                        <input type="text" id="chat-input" data-lpignore="true">
+                    </div>
+                </div>
+                <div id="user-list-div" class="lobby-element">
+                    <ul id="user-list">
+                    </ul>
+                </div>
+            </div>
+            <div id="create-table-dialog" title="Create Table">
+                <table>
+                    <tr>
+                        <td>Game Name:</td>
+                        <td>
+                            <input type="text" id="create-game-name" class="create-table-dialog-col2">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Variant:</td>
+                        <td>
+                            <select id="create-game-variant" class="create-table-dialog-col2" style="width: 264px"></select>
+                            <!-- This is filled in with all of the variant options in the "lobby.js" file -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Timed Game:</td>
+                        <td>
+                            <input type="checkbox" id="create-game-timed">
+                            <input type="number" id="base-time-minutes" title="Base Time in minutes (default: 5)" placeholder = "Base Time [min]" style="width: 114px;">
+                            <input type="number" id="time-per-turn-seconds" title="Time per Turn in seconds (default: 10)" placeholder = "Time per Turn [s]" style="width: 114px;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Forced Chop Rotation:</td>
+                        <td>
+                            <input type="checkbox" id="create-game-reorder-cards">
+                        </td>
+                    </tr>
+                </table>
+                <center><div>
+                    <button type="button" id="create-game-submit">Create Game</button>
+                    <button type="button" id="create-game-cancel">Cancel</button>
+                </div></center>
+            </div>
+            <div id="resources-dialog" title="Other Resources">
+                <h1>Other Resources</h1>
+                <p>
+                    <a href="https://discord.gg/FADvkJp" target="_blank">The Hanabi Discord Server</a><br />
+                    A place to find teammates and discuss strategy.
+                </p>
+                <p>
+                    <a href="https://github.com/Zamiell/keldon-hanabi">The GitHub Code Repository</a><br />
+                    This client and server are open-source, hosted on GitHub.
+                </p>
+                <p>
+                    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" id="donateform">
+                        <input type="hidden" name="cmd" value="_s-xclick">
+                        <input type="hidden" name="hosted_button_id" value="GFKEQ9MTFJRUL">
+                        <a href="#" onclick="document.getElementById('donateform').submit()">Donate (via PayPal) to Keldon</a>
+                    </form>
+                    Keldon was the original creator of this amazing software.
+                </p>
+                <p>
+                    <a href="http://keldon.net/hanabi/">The Original Hanabi Site</a><br />
+                    This is the original, closed-source version of the game designed and hosted by Keldon.
+                </p>
+
+                <button type="button" id="close-resources">Close</button>
+            </div>
+            <div id="settings-dialog" title="Settings">
+                <h1>Settings</h1>
+                <h2>Game Notifications</h2>
+                <ul>
+                    <li>
+                        <label>
+                            <input type="checkbox" id="send-turn-notification">
+                            Show desktop notification on your turn
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" id="send-turn-sound">
+                            Play sound when someone makes a move
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" id="send-timer-sound">
+                            Play ticking sound for a timer below 5 seconds
+                        </label>
+                    </li>
+                </ul>
+                <h2>Lobby Notifications</h2>
+                <ul>
+                    <li>
+                        <label>
+                            <input type="checkbox" id="send-chat-notification">
+                            Receive notification when your name is mentioned in chat
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" id="send-chat-sound">
+                            Play sound when your name is mentioned in chat
+                        </label>
+                    </li>
+                </ul>
+                <h2>Appearance</h2>
+                <ul>
+                    <li>
+                        <label>
+                            <input type="checkbox" id="show-colorblind-ui">
+                            Enable colorblind mode
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" id="hide-timer-in-untimed">
+                            Hide the turn timers that tick up in untimed games
+                        </label>
+                    </li>
+                </ul>
+                <button type="button" id="close-settings">Close</button>
+            </div>
+        </div>
+        <div id="game"></div>
+    </body>
+</html>
