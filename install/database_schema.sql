@@ -20,7 +20,6 @@ CREATE TABLE users (
     datetime_last_login  TIMESTAMP     NOT NULL  DEFAULT NOW()
 );
 CREATE INDEX users_index_username ON users (username);
-INSERT INTO users (id, username, password) VALUES (1, '[SERVER]', '');
 
 DROP TABLE IF EXISTS games;
 CREATE TABLE games (

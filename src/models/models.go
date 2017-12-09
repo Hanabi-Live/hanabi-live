@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"os"
 
@@ -60,7 +61,17 @@ func Init() (*Models, error) {
 	return &Models{}, nil
 }
 
-// Close expose the ability to close the underlying database connection
+// Close exposes the ability to close the underlying database connection
 func (*Models) Close() {
 	db.Close()
+}
+
+/*
+	Miscellaneous functions
+*/
+
+// From: https://stackoverflow.com/questions/22128282/easy-way-to-check-string-is-in-json-format-in-golang
+func isJSON(s string) bool {
+	var js json.RawMessage
+	return json.Unmarshal([]byte(s), &js) == nil
 }

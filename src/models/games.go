@@ -1,6 +1,8 @@
 package models
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 type Games struct{}
 
@@ -266,11 +268,11 @@ type Player struct {
 	Username string
 }
 
+// Used in the "hello" command
 func (*Games) GetPlayers(databaseID int) ([]Player, error) {
 	var rows *sql.Rows
 	if v, err := db.Query(`
 		SELECT
-			games.variant AS variant,
 			users.id AS user_id,
 			users.username AS username
 		FROM games
@@ -278,21 +280,66 @@ func (*Games) GetPlayers(databaseID int) ([]Player, error) {
 			JOIN users ON game_participants.user_id = users.id
 		WHERE games.id = ?
 			AND datetime_finished IS NOT NULL
-		ORDER BY game_participants.id	`, userID); err != nil {
+		ORDER BY game_participants.id
+	`, databaseID); err != nil {
 		return nil, err
 	} else {
 		rows = v
 	}
 	defer rows.Close()
 
-	seeds := make([]string, 0)
+	players := make([]Player, 0)
 	for rows.Next() {
-		var seed string
-		if err := rows.Scan(&seed); err != nil {
+		var player Player
+		if err := rows.Scan(&player.ID, &player.Username); err != nil {
 			return nil, err
 		}
-		seeds = append(seeds, seed)
+		players = append(players, player)
 	}
 
-	return seeds, nil
+	return players, nil
+}
+
+type PlayerNote struct {
+	Username string
+	Notes    string
+}
+
+// Used in the "ready" command
+func (*Games) GetNotes(databaseID int) ([]PlayerNote, error) {
+	var rows *sql.Rows
+	if v, err := db.Query(`
+		SELECT
+			users.username AS username,
+			game_participants.notes AS notes
+		FROM games
+			JOIN game_participants ON game_participants.game_id = games.id
+			JOIN users ON users.id = game_participants.user_id
+		WHERE games.id = ?
+		ORDER BY game_participants.id
+	`, databaseID); err != nil {
+		return nil, err
+	} else {
+		rows = v
+	}
+	defer rows.Close()
+
+	notes := make([]PlayerNote, 0)
+	for rows.Next() {
+		// Each "note" here is actually a JSON array of all of a player's notes for that game
+		var note PlayerNote
+		if err := rows.Scan(&note.Username, &note.Notes); err != nil {
+			return nil, err
+		}
+
+		// If the notes are longer than the maximum size of the column in the database, then they will be truncated, resulting in invalid JSON
+		// So, check to see if it is valid JSON before proceeding
+		if !isJSON(note.Notes) {
+			note.Notes = "[]"
+		}
+
+		notes = append(notes, note)
+	}
+
+	return notes, nil
 }
