@@ -2,60 +2,9 @@ const showDebugMessages = true;
 const fadeTime = 200; // Vanilla Keldon is 800
 
 $(document).ready(() => {
-    /*
-        Define login handlers
-    */
-
+    // Initialize the lobby code
     window.lobby = new HanabiLobby();
-    /*
-    console.log('Connecting to websocket URL:', websocketURL);
-    var conn = io.connect(websocketURL);
-    window.lobby.setConn(conn);
-    */
 });
-
-/*
-function login() {
-    // Send a request to the Racing+ server
-    globals.log.info('Sending a login request to the Racing+ server.');
-    const postData = {
-        steamID: globals.steam.id,
-        ticket: globals.steam.ticket, // This will be verified on the server via the Steam web API
-        version: globals.version,
-    };
-    if (process.platform === 'darwin') { // macOS
-        // Normally, the server will not allow clients to login if they are running old versions
-        // However, on macOS, there is no auto-update mechanism currently
-        // Thus, we allow macOS users to login with older versions
-        postData.version = 'macOS';
-    }
-    const url = `${globals.websiteURL}/login`;
-
-    const request = $.ajax({
-        url,
-        type: 'POST',
-        data: postData,
-    });
-    request.done((data) => {
-        data = data.trim();
-        if (data === 'Accepted') {
-            // If the server gives us "Accepeted", then our Steam credentials are valid, but we don't have an account on the server yet
-            // Let the user pick their username
-            registerScreen.show();
-        } else {
-            // We successfully got a cookie; attempt to establish a WebSocket connection
-            websocket.init();
-        }
-    });
-    request.fail((jqXHR) => {
-        // Show the error screen (and don't bother reporting this to Sentry)
-        globals.log.info('Login failed.');
-        globals.log.info(jqXHR);
-        const error = misc.findAjaxError(jqXHR);
-        misc.errorShow(error, false);
-    });
-}
-*/
 
 function HanabiLobby() {
     const self = this;
@@ -91,27 +40,9 @@ function HanabiLobby() {
     this.hideLobby();
     this.hideCreateDialog();
     this.showLogin();
-
     this.loadSettings();
 
-    // Preload some sounds by playing them at 0 volume
-    $(document).ready(() => {
-        if (!self.sendTurnSound) {
-            return;
-        }
-
-        const soundFiles = ['blind', 'fail', 'tone', 'turn_other', 'turn_us'];
-        for (const file of soundFiles) {
-            const audio = new Audio(`public/sounds/${file}.mp3`);
-            audio.volume = 0;
-            audio.play();
-        }
-    });
-
-    $('#poop-form').submit((event) => {
-        console.log('hi2');
-    });
-
+    // Handle logging in from the home page
     $('#login-form').submit((event) => {
         // By default, the form will reload the page, so stop this from happening
         event.preventDefault();
@@ -120,12 +51,12 @@ function HanabiLobby() {
         const pass = $('#login-password').val();
 
         if (!user) {
-            loginFormError('You must provide a username.');
+            self.loginFormError('You must provide a username.');
             return;
         }
 
         if (!pass) {
-            loginFormError('You must provide a password.');
+            self.loginFormError('You must provide a password.');
             return;
         }
 
@@ -140,13 +71,8 @@ function HanabiLobby() {
         self.sendLogin();
     });
 
-    const loginFormError = (msg) => {
-        $('#login-result').html(msg);
-        $('#ajax-error').fadeIn(350);
-    };
-
+    // Handle chatting in the lobby once logged in
     const input = $('#chat-input');
-
     input.on('keypress', (event) => {
         if (event.key !== 'Enter') {
             return;
@@ -162,7 +88,7 @@ function HanabiLobby() {
 
         // Check for special commands
         if (msg === '/debug') {
-            self.sendMsg({
+            self.connSend({
                 type: 'debug',
                 resp: {},
             });
@@ -170,7 +96,7 @@ function HanabiLobby() {
         }
 
         // It is a normal chat message
-        self.sendMsg({
+        self.connSend({
             type: 'chat',
             resp: {
                 msg,
@@ -207,7 +133,7 @@ function HanabiLobby() {
 
         event.preventDefault();
 
-        self.sendMsg({
+        self.connSend({
             type: 'createTable',
             resp: {
                 name: gameName,
@@ -247,7 +173,7 @@ function HanabiLobby() {
     $('#start-game').on('click', (event) => {
         event.preventDefault();
 
-        self.sendMsg({
+        self.connSend({
             type: 'startGame',
             resp: {},
         });
@@ -256,7 +182,7 @@ function HanabiLobby() {
     $('#leave-game').on('click', (event) => {
         event.preventDefault();
 
-        self.sendMsg({
+        self.connSend({
             type: 'leaveTable',
             resp: {},
         });
@@ -268,7 +194,7 @@ function HanabiLobby() {
         $('#joined-table').hide();
         $('#table-area').show();
 
-        self.sendMsg({
+        self.connSend({
             type: 'unattendTable',
             resp: {},
         });
@@ -298,7 +224,7 @@ function HanabiLobby() {
             return;
         }
 
-        self.sendMsg({
+        self.connSend({
             type: event.currentTarget.getAttribute('data-replayType'),
             resp: {
                 gameID: replayID,
@@ -341,7 +267,42 @@ function HanabiLobby() {
             $('#unattend-table').click();
         }
     });
+
+    $(document).ready(() => {
+        self.preloadSounds();
+        self.automaticallyLogin();
+    });
 }
+
+HanabiLobby.prototype.preloadSounds = function preloadSounds() {
+    // Preload some sounds by playing them at 0 volume
+    if (!this.sendTurnSound) {
+        return;
+    }
+
+    const soundFiles = ['blind', 'fail', 'tone', 'turn_other', 'turn_us'];
+    for (const file of soundFiles) {
+        const audio = new Audio(`public/sounds/${file}.mp3`);
+        audio.volume = 0;
+        audio.play();
+    }
+};
+
+HanabiLobby.prototype.automaticallyLogin = function automaticallyLogin() {
+    // Automatically sign in to the WebSocket server if we have cached credentials
+    this.username = getCookie('hanabiuser');
+    this.pass = getCookie('hanabipass');
+    if (this.username) {
+        $('#login-username').val(this.username);
+        $('#login-password').focus();
+    }
+
+    if (!this.username || !this.pass) {
+        return;
+    }
+    console.log('Automatically logging in from cookie credentials.');
+    this.sendLogin();
+};
 
 HanabiLobby.prototype.resetLobby = function resetLobby() {
     this.userList = {};
@@ -353,30 +314,57 @@ HanabiLobby.prototype.resetLobby = function resetLobby() {
 };
 
 HanabiLobby.prototype.sendLogin = function sendLogin() {
-    $('#login-container').hide();
+    $('#login-button').addClass('disabled');
+    $('#login-explanation').hide();
     $('#ajax-gif').show();
 
-    this.sendMsg({
-        type: 'login',
-        resp: {
-            username: this.username,
-            password: this.pass,
-        },
+    // Send a login request to the server; if successful, we will get a cookie back
+    let url = `${window.location.protocol}//${window.location.hostname}`;
+    if (window.location.port !== '') {
+        url += `:${window.location.port}`;
+    }
+    url += '/login';
+    const postData = {
+        username: this.username,
+        password: this.pass,
+    };
+    const request = $.ajax({
+        url,
+        type: 'POST',
+        data: postData,
+    });
+    console.log(`Sent a login request to: ${url}`);
+
+    request.done((data) => {
+        console.log(data);
+        // We successfully got a cookie; attempt to establish a WebSocket connection
+        this.connSet();
+    });
+    request.fail((jqXHR) => {
+        this.loginFailed(getAjaxError(jqXHR));
     });
 };
 
-HanabiLobby.prototype.loginFailed = (reason) => {
-    $('#login-container').show();
-    $('#ajax-gif').hide();
+HanabiLobby.prototype.loginFailed = function loginFailed(reason) {
+    this.loginFormError(`Login failed: ${reason}`);
+};
 
-    $('#login-result').html(`Login failed: ${reason}`);
+HanabiLobby.prototype.loginFormError = (msg) => {
+    // For some reason this has to be invoked asycnronously to work, JavaScript sucks
+    setTimeout(() => {
+        $('#ajax-gif').hide();
+        $('#login-button').removeClass('disabled');
+
+        $('#login-result').html(msg);
+        $('#ajax-error').fadeIn(350);
+    }, 0);
 };
 
 HanabiLobby.prototype.resetLogin = () => {
-    $('#login-container').show();
+    $('#login-button').removeClass('disabled');
     $('#ajax-gif').hide();
-
     $('#login-result').html('');
+    $('#ajax-error').hide();
 };
 
 HanabiLobby.prototype.showLogin = () => {
@@ -401,7 +389,7 @@ HanabiLobby.prototype.showCreateDialog = function showCreateDialog() {
     $('#create-game-name').val(this.randomName);
 
     // Get a new random name from the server for the next time we click the button
-    this.sendMsg({
+    this.connSend({
         type: 'getName',
     });
 
@@ -642,7 +630,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
                 const id = parseInt(this.id.slice(9), 10);
                 self.gameID = id;
-                self.sendMsg({
+                self.connSend({
                     type: 'spectateTable',
                     resp: {
                         gameID: id,
@@ -664,7 +652,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
                 self.gameID = parseInt(this.id.slice(5), 10);
 
-                self.sendMsg({
+                self.connSend({
                     type: 'joinTable',
                     resp: {
                         gameID: self.gameID,
@@ -682,7 +670,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
                 self.gameID = parseInt(this.id.slice(7), 10);
 
-                self.sendMsg({
+                self.connSend({
                     type: 'reattendTable',
                     resp: {
                         gameID: self.gameID,
@@ -717,7 +705,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 }
 
                 self.gameID = null;
-                self.sendMsg({
+                self.connSend({
                     type: 'abandonTable',
                     resp: {
                         gameID: id,
@@ -782,7 +770,7 @@ HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msg
 
         self.gameID = id;
 
-        self.sendMsg({
+        self.connSend({
             type: msgType,
             resp: {
                 gameID: self.gameID,
@@ -813,7 +801,7 @@ HanabiLobby.prototype.makeHistoryDetailsButton = function makeHistoryDetailsButt
 
         self.gameID = id;
 
-        self.sendMsg({
+        self.connSend({
             type: 'historyDetails',
             resp: {
                 gameID: self.gameID,
@@ -1136,7 +1124,83 @@ HanabiLobby.prototype.gameEnded = function gameEnded(data) {
     this.ui = null;
 };
 
-HanabiLobby.prototype.listenConn = function listConn(conn) {
+HanabiLobby.prototype.connSet = function connSet(conn) {
+    // Connect to the WebSocket server
+    let websocketURL = 'ws';
+    if (window.location.protocol === 'https:') {
+        websocketURL += 's';
+    }
+    websocketURL += '://';
+    websocketURL += window.location.hostname;
+    if (window.location.port !== '') {
+        websocketURL += ':';
+        websocketURL += window.location.port;
+    }
+    websocketURL += '/ws';
+    console.log('Connecting to websocket URL:', websocketURL);
+    this.conn = new golem.Connection(websocketURL, true);
+
+    // Define event handlers
+    this.connOpen(this.conn);
+    this.connClose(this.conn);
+    this.connError(this.conn); // socketError a.k.a. WebSocket.onerror
+    this.connMessage(this.conn);
+    this.connClientError(this.conn); // window.onerror
+};
+
+HanabiLobby.prototype.connOpen = function connOpen(conn) {
+    conn.on('open', (event) => {
+        console.log('WebSocket connection established.');
+
+        // Transition to lobby
+        // TODO
+    });
+};
+
+HanabiLobby.prototype.connClose = function connClose(conn) {
+    const self = this;
+
+    conn.on('close', (event) => {
+        console.log('WebSocket connection closed.');
+
+        // Go back to the login screen
+        self.hideLobby();
+        self.hideGame();
+        self.hideCreateDialog();
+        self.showPregame();
+        self.resetLogin();
+        self.showLogin();
+
+        // TODO SHOW ERROR MESSAGE AND REFRESH
+    });
+};
+
+HanabiLobby.prototype.connError = function connError(conn) {
+    // "socketError" is defined in "golem.js" as mapping to the WebSocket "onerror" event
+    conn.on('socketError', (event) => {
+        console.error('WebSocket error:', event);
+
+        if ($('#loginbox').is(':visible')) {
+            this.loginFormError('Failed to connect to the WebSocket server. The server might be down!');
+        } else {
+            // const error = 'Encountered a WebSocket error. The server might be down!';
+            // TODO
+        }
+    });
+};
+
+HanabiLobby.prototype.connSend = function connSend(msg) {
+    const command = msg.type;
+    const data = msg.resp;
+
+    if (showDebugMessages) {
+        console.log(`%cSent ${command}:`, 'color: green;');
+        console.log(data);
+    }
+    this.conn.emit(command, data);
+};
+
+HanabiLobby.prototype.connMessage = function connMessage(conn) {
     const self = this;
 
     conn.on('message', (msg) => {
@@ -1198,89 +1262,16 @@ HanabiLobby.prototype.listenConn = function listConn(conn) {
     });
 };
 
-HanabiLobby.prototype.setConn = function setConn(conn) {
-    const self = this;
-
-    this.conn = conn;
-
-    this.listenConn(conn);
-
-    conn.on('connecting', () => {
-        console.log('Attempting to connect.');
-    });
-
-    conn.on('connect_failed', () => {
-        alert('Failed to connect to server');
-    });
-
-    conn.on('reconnect_failed', () => {
-        alert('Lost connection to server, could not reconnect');
-    });
-
-    conn.on('error', (err) => {
-        console.error('SocketIO error:', err);
-    });
-
-    conn.on('disconnect', () => {
-        self.hideLobby();
-        self.hideGame();
-        self.hideCreateDialog();
-        self.showPregame();
-        self.resetLogin();
-        self.showLogin();
-    });
-
-    this.username = getCookie('hanabiuser');
-    this.pass = getCookie('hanabipass');
-
-    const qs = ((a) => {
-        if (a === '') {
-            return {};
-        }
-        const b = {};
-        for (let i = 0; i < a.length; ++i) {
-            const p = a[i].split('=');
-            if (p.length !== 2) {
-                continue;
-            }
-            b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, ' '));
-        }
-        return b;
-    })(window.location.search.substr(1).split('&'));
-
-    if (qs.user) {
-        this.username = qs.user;
-    }
-
-    if (this.username) {
-        $('#user').val(this.username);
-    }
-
-    const readyLogin = () => {
-        if (!document.hidden) {
-            self.sendLogin();
-            document.removeEventListener('visibilitychange', readyLogin, false);
-        }
-    };
-
-    if (this.username && this.pass) {
-        if (!document.hidden) {
-            this.sendLogin();
-        } else {
-            document.addEventListener('visibilitychange', readyLogin, false);
-        }
-    }
-
-    conn.on('reconnect', () => {
-        console.log('Attempting to reconnect...');
-        if (self.username && self.pass) {
-            self.sendLogin();
-        }
-    });
-
+HanabiLobby.prototype.connClientError = function connClientError(conn) {
+    // Send any client errors to the server for tracking purposes
     window.onerror = (message, url, lineno, colno, error) => {
+        // We don't want to report errors if someone is doing local development
+        if (window.location.hostname === 'localhost') {
+            return;
+        }
+
         try {
-            conn.emit('clienterror', {
+            conn.emit('clientError', {
                 message,
                 url,
                 lineno,
@@ -1289,17 +1280,9 @@ HanabiLobby.prototype.setConn = function setConn(conn) {
                 modified: true,
             });
         } catch (err) {
-            console.error('received error:', err);
+            console.error('Failed to transmit the error to the server:', err);
         }
     };
-};
-
-HanabiLobby.prototype.sendMsg = function sendMsg(msg) {
-    if (showDebugMessages) {
-        console.log(`%cSent ${msg.type}:`, 'color: green;');
-        console.log(msg.resp);
-    }
-    this.conn.emit('message', msg);
 };
 
 HanabiLobby.prototype.loadSettings = function loadSettings() {
@@ -1453,4 +1436,14 @@ function deleteCookie(name) {
     expire.setDate(expire.getDate() - 1);
     const cookie = `; expires=${expire.toUTCString()}`;
     document.cookie = `${name}=${cookie}`;
+}
+
+function getAjaxError(jqXHR) {
+    if (jqXHR.readyState === 0) {
+        return 'A network error occured. The server might be down!';
+    } else if (jqXHR.responseText === '') {
+        return 'An unknown error occured.';
+    }
+
+    return jqXHR.responseText;
 }

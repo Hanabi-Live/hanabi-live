@@ -12,13 +12,16 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
-        <!-- KineticJS -->
+        <!-- KineticJS (a graphics library)-->
         <script type="text/javascript" src="public/js/lib/kinetic-v5.1.1.min.js"></script>
 
-        <!-- SHA256 -->
+        <!-- SHA256 (for hashing the password before sending it to the server)-->
         <script type="text/javascript" src="public/js/lib/sha256.js"></script>
 
-        <!-- Hanabi Live Code -->
+        <!-- Golem (a WebSocket client) -->
+        <script type="text/javascript" src="public/js/lib/golem.js"></script>
+
+        <!-- Hanabi Live code -->
         <script type="text/javascript" src="public/js/constants.js"></script>
         <script type="text/javascript" src="public/js/ui/timer.js"></script>
         <script type="text/javascript" src="public/js/ui.js"></script>
@@ -79,7 +82,7 @@
                                             <table>
                                                 <tr>
                                                     <td>
-                                                        <input class="btn btn-success" type="submit" value="Sign In" />
+                                                        <input id="login-button" class="btn btn-success" type="submit" value="Sign In" />
                                                     </td>
                                                     <td style="min-width: 1em;"></td><!-- Spacing -->
                                                     <td>
@@ -92,22 +95,22 @@
                                         </div>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div id="login-explanation" class="form-group">
                                         <div class="col-md-12 control">
                                             <div style="border-top: 1px solid#888; padding-top:15px; font-size:85%" >
-                                                To create a new account, simply login with a new username and select a password.
-                                                Do <strong>NOT</strong> reuse any passwords!
+                                                To create a new account, simply login with a new username and select a password.<br />
+                                                Do <strong>NOT</strong> reuse any of your previous passwords!
                                             </div>
                                         </div>
                                     </div>
                                 </form>
                             </div>
                         </div>
+                    </div>
 
-                        <div id="ajax-error" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2" style="margin-bottom: 1em; display: none;">
-                            <div class="panel panel-default">
-                                <div id="login-result" class="panel-body" style="color: red;">
-                                </div>
+                    <div id="ajax-error" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2" style="margin-bottom: 1em; display: none; text-align: center;">
+                        <div class="panel panel-default">
+                            <div id="login-result" class="panel-body" style="color: red;">
                             </div>
                         </div>
                     </div>

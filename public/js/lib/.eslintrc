@@ -1,4 +1,0 @@
-{
-    // Disable eslint for external libraries
-    "root": true
-}
