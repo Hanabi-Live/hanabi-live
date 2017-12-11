@@ -96,13 +96,27 @@ function HanabiLobby() {
             if (!input.val()) {
                 return;
             }
+
+            // Clear the chat box
+            const msg = input.val();
+            input.val('');
+
+            // Check for special commands
+            if (msg === '/debug') {
+                self.sendMsg({
+                    type: 'debug',
+                    resp: {},
+                });
+                return;
+            }
+
+            // It is a normal chat message
             self.sendMsg({
                 type: 'chat',
                 resp: {
-                    msg: input.val(),
+                    msg,
                 },
             });
-            input.val('');
         }
     });
 
