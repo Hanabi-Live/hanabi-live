@@ -50,7 +50,7 @@
         "args": "none",
     }],
 
-    // I need to disable this because I'm not quite sure how to refactor around it
+    // Keldon's original code does this and it would be tricky to refactor
     "no-use-before-define": ["off"],
 
     // This is recommended here:
