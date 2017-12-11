@@ -146,7 +146,7 @@ exports.step1 = (socket, data) => {
         }
     }
 
-    const m2 = game.name.match(/^!seed (\d+)$/);
+    const m2 = game.name.match(/^!seed (.+)$/);
     if (m2) {
         // Parse the game name to see if the players want to play a specific seed
         const seed = m2[1];
