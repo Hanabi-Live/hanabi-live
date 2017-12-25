@@ -28,9 +28,9 @@ func main() {
 	logging.SetBackend(loggingBackendFormatted)
 
 	// Welcome message
-	log.Info("+----------------------+")
-	log.Info("| Starting hanab-live. |")
-	log.Info("+----------------------+")
+	log.Info("+-----------------------+")
+	log.Info("| Starting hanabi-live. |")
+	log.Info("+-----------------------+")
 
 	// Load the ".env" file which contains environment variables with secret values
 	if err := godotenv.Load(path.Join(projectPath, ".env")); err != nil {

@@ -16,6 +16,7 @@ var (
 
 // Models contains a list of objects representing database tables
 type Models struct {
+	BannedIPs
 	ChatLog
 	GameActions
 	GameParticipants

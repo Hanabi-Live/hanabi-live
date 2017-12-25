@@ -1217,8 +1217,6 @@ HanabiLobby.prototype.connMessage = function connMessage(conn) {
             self.hideLogin();
             self.resetLobby();
             self.showLobby();
-        } else if (msgType === 'denied') {
-            self.loginFailed(msgData.reason);
         } else if (msgType === 'error') {
             alert(`Error: ${msgData.error}`);
         } else if (msgType === 'user') {
