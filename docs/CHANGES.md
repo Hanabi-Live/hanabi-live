@@ -1,9 +1,11 @@
 List of Changes & Improvements
 ==============================
 
-This server attempts to emulate the original Keldon server. However, it also contains many new features, bug fixes, and quality of life improvements.
+This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/hanabi/). However, it also contains many new features, bug fixes, and quality of life improvements.
 
 <br />
+
+
 
 ## New Variants
 
@@ -30,6 +32,8 @@ This server attempts to emulate the original Keldon server. However, it also con
 
 <br />
 
+
+
 ## New Major Features
 
 #### Bottom Deck Blind Plays
@@ -43,7 +47,7 @@ This server attempts to emulate the original Keldon server. However, it also con
 
 * Any replay can be started as a 'shared' replay. Once created, an unlimited number of people can join it.
 * When in a shared replay, the leader can control what turn is being shown to everyone in the replay.
-* The leader can highlight a card by clicking it.
+* The leader can click a card to highlight it with a red arrow.
 * You can see who the leader of the replay is by hovering over the "👑" icon in the bottom right-hand corner.
 * You can use this feature to share a past game with a friend who was not in that game.
 
@@ -76,6 +80,8 @@ This server attempts to emulate the original Keldon server. However, it also con
 
 <br />
 
+
+
 ## New Sounds
 
 * The sound for reaching your turn is improved.
@@ -84,6 +90,8 @@ This server attempts to emulate the original Keldon server. However, it also con
 * There is a custom sound for a blind play.
 
 <br />
+
+
 
 ## Keyboard Shortcuts
 
@@ -111,6 +119,8 @@ This server attempts to emulate the original Keldon server. However, it also con
 
 <br />
 
+
+
 ## Bug Fixes
 
 * Games will no longer randomly crash if there are too many spectators.
@@ -118,8 +128,14 @@ This server attempts to emulate the original Keldon server. However, it also con
 
 <br />
 
+
+
 ## Quality of Life Improvements
 
+* The way clues are represented on cards has been changed:
+  * The cards that will be affected by a clue are represented by white arrows.
+  * When a card has been touched by one or more clues, it will have a yellow border.
+  * The possibilities of what a card can be are directly shown on the card.
 * The action log is improved:
   * It will show what slot a player played or discarded from.
   * It will show "(blind)" for blind plays.

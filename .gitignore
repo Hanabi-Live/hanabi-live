@@ -29,8 +29,12 @@ logs
 backups
 
 # The compiled binary
-isaac-racing-server
+hanabi-live
 
 # Helper scripts
 database_shell.sh
 make_database_dump.sh
+run.sh
+start.sh
+stop.sh
+restart.sh

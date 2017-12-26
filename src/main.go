@@ -1,3 +1,8 @@
+/*
+	TODO
+	- grep for "race"
+*/
+
 package main // In Go, executable commands must always use package main
 
 import (
@@ -47,9 +52,6 @@ func main() {
 
 	// Start the Discord bot (in discord.go)
 	//discordInit()
-
-	// Start the Keldon bot (in keldon.go)
-	//keldonInit()
 
 	// Initialize a WebSocket router using the Melody framework
 	// (in websocket.go)

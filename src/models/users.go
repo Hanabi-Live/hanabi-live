@@ -6,29 +6,45 @@ import (
 
 type Users struct{}
 
-func (*Users) Insert(username string, password string, ip string) error {
+type User struct {
+	ID       int
+	Username string
+	Password string
+}
+
+func (*Users) Insert(username string, password string) (User, error) {
+	var user User
+
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`
-		INSERT INTO users (username, password, last_ip)
-		VALUES (?, ?, ?)
+		INSERT INTO users (username, password)
+		VALUES (?, ?)
 	`); err != nil {
-		return err
+		return user, err
 	} else {
 		stmt = v
 	}
 	defer stmt.Close()
 
-	if _, err := stmt.Exec(username, password, ip); err != nil {
-		return err
+	var res sql.Result
+	if v, err := stmt.Exec(username, password); err != nil {
+		return user, err
+	} else {
+		res = v
 	}
 
-	return nil
-}
+	var id int
+	if v, err := res.LastInsertId(); err != nil {
+		return user, err
+	} else {
+		id = int(v)
+	}
 
-type User struct {
-	ID       int
-	Username string
-	Password string
+	return User{
+		ID:       id,
+		Username: username,
+		Password: password,
+	}, nil
 }
 
 // We get the existing username in case they submitted the wrong case

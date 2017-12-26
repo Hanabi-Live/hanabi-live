@@ -134,7 +134,7 @@ function HanabiLobby() {
         event.preventDefault();
 
         self.connSend({
-            type: 'createTable',
+            type: 'gameCreate',
             resp: {
                 name: gameName,
                 variant,
@@ -174,7 +174,7 @@ function HanabiLobby() {
         event.preventDefault();
 
         self.connSend({
-            type: 'startGame',
+            type: 'gameStart',
             resp: {},
         });
     });
@@ -183,7 +183,7 @@ function HanabiLobby() {
         event.preventDefault();
 
         self.connSend({
-            type: 'leaveTable',
+            type: 'gameLeave',
             resp: {},
         });
     });
@@ -195,7 +195,7 @@ function HanabiLobby() {
         $('#table-area').show();
 
         self.connSend({
-            type: 'unattendTable',
+            type: 'gameUnattend',
             resp: {},
         });
     });
@@ -631,7 +631,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 const id = parseInt(this.id.slice(9), 10);
                 self.gameID = id;
                 self.connSend({
-                    type: 'spectateTable',
+                    type: 'gameSpectate',
                     resp: {
                         gameID: id,
                     },
@@ -653,7 +653,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 self.gameID = parseInt(this.id.slice(5), 10);
 
                 self.connSend({
-                    type: 'joinTable',
+                    type: 'gameJoin',
                     resp: {
                         gameID: self.gameID,
                     },
@@ -671,7 +671,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 self.gameID = parseInt(this.id.slice(7), 10);
 
                 self.connSend({
-                    type: 'reattendTable',
+                    type: 'gameReattend',
                     resp: {
                         gameID: self.gameID,
                     },
@@ -706,7 +706,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
                 self.gameID = null;
                 self.connSend({
-                    type: 'abandonTable',
+                    type: 'gameAbandon',
                     resp: {
                         gameID: id,
                     },
@@ -858,10 +858,10 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .text(dateTimeFormatter.format(new Date(gameData.ts)))
                 .addClass('table-attr history-ts'))
             .append($('<li>')
-                .append(this.makeReplayButton(ids[i], 'Watch Replay', 'startReplay', false))
+                .append(this.makeReplayButton(ids[i], 'Watch Replay', 'replayCreate', false))
                 .addClass('table-attr'))
             .append($('<li>')
-                .append(this.makeReplayButton(ids[i], 'Share Replay', 'createSharedReplay', true))
+                .append(this.makeReplayButton(ids[i], 'Share Replay', 'sharedReplayCreate', true))
                 .addClass('table-attr'))
             .append($('<li>')
                 .append(this.makeHistoryDetailsButton(ids[i], gameData.numSimilar))
@@ -931,11 +931,11 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
                 .text(dateTimeFormatter.format(new Date(gameData.ts)))
                 .addClass('table-attr history-ts'));
 
-        const button = this.makeReplayButton(gameData.id, 'Watch Replay', 'startReplay', false);
+        const button = this.makeReplayButton(gameData.id, 'Watch Replay', 'replayCreate', false);
 
         attrs.append($('<li>').append(button).addClass('table-attr'));
 
-        const button2 = this.makeReplayButton(gameData.id, 'Share Replay', 'createSharedReplay', true);
+        const button2 = this.makeReplayButton(gameData.id, 'Share Replay', 'sharedReplayCreate', true);
 
         attrs.append($('<li>').append(button2).addClass('table-attr'));
 

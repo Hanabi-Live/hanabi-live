@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/gin-contrib/sessions"
+	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +14,7 @@ const (
 )
 
 var (
-	sessionStore sessions.CookieStore
+	sessionStore gsessions.CookieStore
 )
 
 func httpInit() {
@@ -42,8 +42,8 @@ func httpInit() {
 	}
 
 	// Create a session store
-	sessionStore = sessions.NewCookieStore([]byte(sessionSecret))
-	options := sessions.Options{
+	sessionStore = gsessions.NewCookieStore([]byte(sessionSecret))
+	options := gsessions.Options{
 		Path:   "/",
 		Domain: domain,
 		MaxAge: 5, // 5 seconds
@@ -61,7 +61,7 @@ func httpInit() {
 		options.Secure = false
 	}
 	sessionStore.Options(options)
-	httpRouter.Use(sessions.Sessions(sessionName, sessionStore))
+	httpRouter.Use(gsessions.Sessions(sessionName, sessionStore))
 
 	// Path handlers (for the WebSocket server)
 	httpRouter.POST("/login", httpLogin)
