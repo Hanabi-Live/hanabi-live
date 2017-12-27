@@ -1,7 +1,14 @@
 package main
 
 type CommandData struct {
-	ID int `json:"gameID"`
+	ID     int  `json:"gameID"`
+	Clue   Clue `json:"clue"`
+	Target int  `json:"target"`
+	Type   int  `json:"type"`
+}
+type Clue struct {
+	Type  int `json:"type"`
+	Value int `json:"value"`
 }
 
 var (

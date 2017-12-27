@@ -1,12 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
-	"path"
-	"sort"
-	"strconv"
-	"time"
-
+	"github.com/Zamiell/hanabi-live/src/models"
 	melody "gopkg.in/olahol/melody.v1"
 )
 
@@ -49,157 +44,71 @@ func websocketConnect(ms *melody.Session) {
 	sessions[s.UserID()] = s
 	log.Info("User \""+s.Username()+"\" connected;", len(sessions), "user(s) now connected.")
 
-	/*
-
-	   // Check to see if this user was in any existing games
-	   for (let gameID of Object.keys(globals.currentGames)) {
-	       // Keys are strings by default, so convert it back to a number
-	       gameID = parseInt(gameID, 10);
-
-	       const game = globals.currentGames[gameID];
-	       for (const player of game.players) {
-	           if (player.username === socket.username) {
-	               // Update the player object with the new socket
-	               player.socket = socket;
-
-	               // This was initialized to -1 earlier, so we need to update it
-	               socket.currentGame = gameID;
-
-	               // We can safely break here because the player can only be in one game at a time
-	               break;
-	           }
-	       }
-	   }
-
-	   // Send them a random name
-	   messages.getName.step1(socket, data);
-
-	   // They have successfully logged in, so send initial messages to the client
-	   socket.emit('message', {
-	       type: 'hello',
-	       resp: {
-	           // We have to send the username back to the client because they may
-	           // have logged in with the wrong case, and the client needs to know
-	           // their exact username or various bugs will creep up
-	           // (on vanilla Keldon, this hello message is empty)
-	           username: socket.username,
-	       },
-	   });
-
-	   // Alert everyone that a new user has logged in
-	   // (note that Keldon sends users a message about themselves)
-	   notify.allUserChange(socket);
-
-	   // Send a "user" message for every currently connected user
-	   for (let userID of Object.keys(globals.connectedUsers)) {
-	       // Skip sending a message about ourselves since we already sent that
-	       if (globals.connectedUsers[userID].username === socket.username) {
-	           continue;
-	       }
-
-	       // Keys are strings by default, so convert it back to a number
-	       userID = parseInt(userID, 10);
-
-	       socket.emit('message', {
-	           type: 'user',
-	           resp: {
-	               id: userID,
-	               name: globals.connectedUsers[userID].username,
-	               status: globals.connectedUsers[userID].status,
-	           },
-	       });
-	   }
-
-	   // Send a "table" message for every current table
-	   for (const gameID of Object.keys(globals.currentGames)) {
-	       data.gameID = gameID;
-	       notify.playerTable(socket, data);
-	   }
-
-	   // Send past chat messages
-	   // TODO
-
-	   // Send the user's game history
-	   models.games.getUserHistory(socket, data, step5);
-	*/
-
-	// Prepare some data about all of the ongoing races to send to the newly
-	// connected user
-	// (we only want to send the client a subset of the race information in
-	// order to conserve bandwidth and hide some things that they don't need to
-	// see)
-	// https://stackoverflow.com/questions/18342784/how-to-iterate-through-a-map-in-golang-in-order/18342865
-	raceIDs := make([]int, 0)
-	for id := range races {
-		raceIDs = append(raceIDs, id)
+	// They have successfully logged in, so send initial messages to the client
+	type HelloMessage struct {
+		Username string `json:"username"`
 	}
-	sort.Ints(raceIDs)
-	raceListMessage := make([]RaceCreatedMessage, 0)
-	for _, id := range raceIDs {
-		race := races[id]
-		msg := RaceCreatedMessage{
-			ID:              race.ID,
-			Name:            race.Name,
-			Status:          race.Status,
-			Ruleset:         race.Ruleset,
-			Captain:         race.Captain,
-			DatetimeCreated: race.DatetimeCreated,
-			DatetimeStarted: race.DatetimeStarted,
-		}
-		racers := make([]string, 0)
-		for racerName := range race.Racers {
-			racers = append(racers, racerName)
-		}
-		msg.Racers = racers
+	s.Emit("hello", &HelloMessage{
+		// We have to send the username back to the client because they may
+		// have logged in with the wrong case, and the client needs to know
+		// their exact username or various bugs will creep up
+		Username: s.Username(),
+	})
 
-		raceListMessage = append(raceListMessage, msg)
-	}
+	// Send them a random name
+	commandGetName(s, nil)
 
-	// Send it to the user
-	websocketEmit(s, "raceList", raceListMessage)
+	// Send past chat messages
+	// TODO
 
-	// Check to see if this user is in any ongoing races
-	for _, id := range raceIDs {
-		race := races[id]
-		if _, ok := race.Racers[username]; !ok {
-			// They are not in this race
+	// Send them the message(s) of the day
+	msg := "[Server Notice] If you need to find other players, most people hang out in the Discord chat: https://discord.gg/JzbhWQb"
+	s.NotifyChat(msg, "")
+
+	// Alert everyone that a new user has logged in
+	// (note that Keldon sends users a message about themselves)
+	notifyAllUser(s)
+
+	// Send a "user" message for every currently connected user
+	for _, s2 := range sessions {
+		// Skip sending a message about ourselves since we already sent that
+		if s2.UserID() == s.UserID() {
 			continue
 		}
 
-		// Join the user to the chat room coresponding to this race
-		d.Room = "_race_" + strconv.Itoa(race.ID)
-		websocketRoomJoinSub(s, d)
-
-		// Send them all the information about the racers in this race
-		racerListMessage(s, race)
-
-		// If the race is currently in the 10 second countdown
-		if race.Status == "starting" {
-			// Get the time 10 seconds in the future
-			startTime := time.Now().Add(10*time.Second).UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
-			// This will technically put them behind the other racers by some amount of seconds, but it gives them 10 seconds to get ready after a disconnect
-
-			// Send them a message describing exactly when it will start
-			websocketEmit(s, "raceStart", &RaceStartMessage{
-				race.ID,
-				startTime,
-			})
-		}
+		s.NotifyUser(s2)
 	}
 
-	// Send them the message(s) of the day
-	websocketEmit(s, "adminMessage", &AdminMessageMessage{
-		"[Server Notice] Most racers hang out in the Isaac Discord chat: https://discord.gg/JzbhWQb",
-	})
-	messageRaw, err := ioutil.ReadFile(path.Join(projectPath, "message_of_the_day.txt"))
-	if err != nil {
-		log.Error("Failed to read the \"message_of_the_day.txt\" file:", err)
+	// Send a "table" message for every current table
+	for _, g := range games {
+		s.NotifyTable(g)
+	}
+
+	// Send the user's game history
+	var history []models.GameHistory
+	if v, err := db.Games.GetUserHistory(s.UserID()); err != nil {
+		log.Error("Failed to get the history for user \""+s.Username()+"\":", err)
 		return
+	} else {
+		history = v
 	}
-	message := string(messageRaw)
-	if len(message) > 0 {
-		websocketEmit(s, "adminMessage", &AdminMessageMessage{
-			string(messageRaw),
-		})
+	for _, h := range history {
+		s.NotifyGameHistory(h)
+	}
+
+	// Check to see if this user was in any existing games
+	for _, g := range games {
+		for _, p := range g.Players {
+			if p.Name == s.Username() {
+				// Update the player object with the new socket
+				p.Session = s
+
+				// This was initialized to -1 earlier, so we need to update it
+				s.Set("currentGame", g.ID)
+
+				// We can break here because the player can only be in one game at a time
+				break
+			}
+		}
 	}
 }

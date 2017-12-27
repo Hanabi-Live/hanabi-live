@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"path"
 	"strconv"
 
 	gsessions "github.com/gin-contrib/sessions"
@@ -24,21 +25,36 @@ func httpInit() {
 
 	// Read some HTTP server configuration values from environment variables
 	// (they were loaded from the .env file in main.go)
-	sessionSecret := os.Getenv("SESSION_SECRET")
-	if len(sessionSecret) == 0 {
-		log.Info("The \"SESSION_SECRET\" environment variable is blank; aborting HTTP initalization.")
-		return
-	}
 	domain := os.Getenv("DOMAIN")
 	if len(domain) == 0 {
 		log.Info("The \"DOMAIN\" environment variable is blank; aborting HTTP initalization.")
 		return
 	}
+	sessionSecret := os.Getenv("SESSION_SECRET")
+	if len(sessionSecret) == 0 {
+		log.Info("The \"SESSION_SECRET\" environment variable is blank; aborting HTTP initalization.")
+		return
+	}
+	portString := os.Getenv("PORT")
+	var port int
+	if len(portString) == 0 {
+		port = 80
+	} else {
+		if v, err := strconv.Atoi(portString); err != nil {
+			log.Fatal("Failed to convert the \"PORT\" environment variable to a number.")
+			return
+		} else {
+			port = v
+		}
+	}
 	tlsCertFile := os.Getenv("TLS_CERT_FILE")
 	tlsKeyFile := os.Getenv("TLS_KEY_FILE")
-	useTLS := true
-	if len(tlsCertFile) == 0 || len(tlsKeyFile) == 0 {
-		useTLS = false
+	useTLS := false
+	if len(tlsCertFile) != 0 && len(tlsKeyFile) != 0 {
+		useTLS = true
+		if port == 80 {
+			port = 443
+		}
 	}
 
 	// Create a session store
@@ -69,11 +85,10 @@ func httpInit() {
 
 	// Path handlers (for the website)
 	httpRouter.GET("/", httpHome)
-	httpRouter.Static("/public", "../public")
+	httpRouter.Static("/public", path.Join(projectPath, "public"))
 
-	// Figure out the port that we are using for the HTTP server
-	var port int
-	if useTLS {
+	// Don't use an HTTP redirect if we are listening on a custom port
+	if useTLS && port != 443 {
 		// We want all HTTP requests to be redirected to HTTPS
 		// (but make an exception for Let's Encrypt)
 		// The Gin router is using the default serve mux, so we need to create a
@@ -87,14 +102,8 @@ func httpInit() {
 		// ListenAndServe is blocking, so start listening on a new goroutine
 		go func() {
 			http.ListenAndServe(":80", HTTPServeMux) // Nothing before the colon implies 0.0.0.0
-			log.Fatal("http.ListenAndServe ended for port 80.", nil)
+			log.Fatal("http.ListenAndServe ended for port 80.")
 		}()
-
-		// 443 is the default port for HTTPS
-		port = 443
-	} else {
-		// 80 is the defeault port for HTTP
-		port = 80
 	}
 
 	// Start listening and serving requests (which is blocking)
@@ -108,7 +117,7 @@ func httpInit() {
 		); err != nil {
 			log.Fatal("http.ListenAndServeTLS failed:", err)
 		}
-		log.Fatal("http.ListenAndServeTLS ended prematurely.", nil)
+		log.Fatal("http.ListenAndServeTLS ended prematurely.")
 	} else {
 		// Listen and serve (HTTP)
 		if err := http.ListenAndServe(
@@ -117,6 +126,6 @@ func httpInit() {
 		); err != nil {
 			log.Fatal("http.ListenAndServe failed:", err)
 		}
-		log.Fatal("http.ListenAndServe ended prematurely.", nil)
+		log.Fatal("http.ListenAndServe ended prematurely.")
 	}
 }

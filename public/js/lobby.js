@@ -855,7 +855,7 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
                 .text(`${variantNamesShort[gameData.variant]}`)
                 .addClass('table-attr history-variant'))
             .append($('<li>')
-                .text(dateTimeFormatter.format(new Date(gameData.ts)))
+                .text(dateTimeFormatter.format(new Date(gameData.datetime)))
                 .addClass('table-attr history-ts'))
             .append($('<li>')
                 .append(this.makeReplayButton(ids[i], 'Watch Replay', 'replayCreate', false))
@@ -881,7 +881,7 @@ HanabiLobby.prototype.addHistoryDetail = function addHistoryDetail(data) {
         id: data.id,
         score: data.score,
         us: data.you,
-        ts: data.ts,
+        datetime: data.datetime,
         otherPlayerNames: data.otherPlayerNames,
     });
     this.drawHistoryDetails();
@@ -928,7 +928,7 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
                 .text(`${gameData.score}/${variant.maxScore}`)
                 .addClass('table-attr history-score'))
             .append($('<li>')
-                .text(dateTimeFormatter.format(new Date(gameData.ts)))
+                .text(dateTimeFormatter.format(new Date(gameData.datetime)))
                 .addClass('table-attr history-ts'));
 
         const button = this.makeReplayButton(gameData.id, 'Watch Replay', 'replayCreate', false);

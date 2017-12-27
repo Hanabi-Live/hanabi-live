@@ -12,7 +12,7 @@ func commandGameLeave(s *Session, d *CommandData) {
 
 	// Validate that the game exists
 	var g *Game
-	if v, ok := games[d.ID]; !ok {
+	if v, ok := games[s.CurrentGame()]; !ok {
 		return
 	} else {
 		g = v

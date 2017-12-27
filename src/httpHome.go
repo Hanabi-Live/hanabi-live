@@ -12,6 +12,6 @@ func httpHome(c *gin.Context) {
 	r := c.Request
 	w := c.Writer
 
-	index := path.Join("views", "index.html")
+	index := path.Join(projectPath, "src", "views", "index.html")
 	http.ServeFile(w, r, index)
 }

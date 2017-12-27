@@ -6,8 +6,10 @@
 package main // In Go, executable commands must always use package main
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/Zamiell/hanabi-live/src/models"
 	"github.com/joho/godotenv"
@@ -19,6 +21,7 @@ var (
 	log         *logging.Logger
 	db          *models.Models
 	games       = make(map[int]*Game) // In "dataTypes.go"
+	wordList    []string
 )
 
 func main() {
@@ -49,6 +52,16 @@ func main() {
 		db = v
 	}
 	defer db.Close()
+
+	// Initialize the word list
+	wordListPath := path.Join(projectPath, "src", "assets", "wordList.txt")
+	if v, err := ioutil.ReadFile(wordListPath); err != nil {
+		log.Fatal("Failed to read the \""+wordListPath+"\" file:", err)
+		return
+	} else {
+		wordListString := string(v)
+		wordList = strings.Split(wordListString, "\n")
+	}
 
 	// Start the Discord bot (in discord.go)
 	//discordInit()
