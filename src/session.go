@@ -111,7 +111,7 @@ func (s *Session) NotifyUser(u *Session) {
 
 // Notify a user about a new game or a change in an existing game
 func (s *Session) NotifyTable(g *Game) {
-	i := g.GetIndex(s.Username())
+	i := g.GetIndex(s.UserID())
 	joined := false
 	if i != -1 {
 		joined = true
@@ -150,7 +150,7 @@ func (s *Session) NotifyTable(g *Game) {
 		BaseTime:     g.Options.TimeBase,
 		TimePerTurn:  g.Options.TimePerTurn,
 		ReorderCards: g.Options.ReorderCards,
-		OurTurn:      joined && g.Running && g.PlayerIndex == i,
+		OurTurn:      joined && g.Running && g.ActivePlayer == i,
 		SharedReplay: g.SharedReplay,
 		Progress:     g.Progress,
 	})

@@ -25,14 +25,14 @@ type Game struct {
 	DeckIndex     int
 	Stacks        []int
 	Turn          int
-	PlayerIndex   int
+	ActivePlayer  int
 	Clues         int
 	Score         int
 	Progress      int
 	Strikes       int
 	Actions       []*Action
 	DiscardSignal *DiscardSignal
-	CurrentSound  string
+	Sound         string
 	TurnBeginTime time.Time
 	EndTurn       int
 }
@@ -45,24 +45,30 @@ type Options struct {
 	ReorderCards bool
 }
 
-type Card struct {
-	Order   int
-	Suit    int
-	Rank    int
-	Touched bool
+type Action struct {
+	Type      string `json:"type"`
+	Who       int    `json:"who"`
+	Rank      int    `json:"rank"`
+	Suit      int    `json:"suit"`
+	Text      string `json:"text"`
+	Target    int    `json:"target"`
+	HandOrder []int  `json:"handOrder"`
+	Clue      Clue   `json:"clue"`
+	Giver     int    `json:"giver"`
+	List      []int  `json:"list"`
+	Which     Which  `json:"which"`
+	Num       int    `json:"num"`
+	Order     int    `json:"order"`
+	Size      int    `json:"size"`
+	Clues     int    `json:"clues"`
+	Score     int    `json:"score"`
 }
 
-type Action struct {
-	Type      string
-	Who       int
-	Rank      int
-	Suit      int
-	Text      string
-	Target    int
-	HandOrder []int
-	Clue      Clue
-	Giver     int
-	List      []int
+type Which struct {
+	Index int `json:"index"`
+	Rank  int `json:"rank"`
+	Suit  int `json:"suit"`
+	Order int `json:"order"`
 }
 
 type DiscardSignal struct {
@@ -75,12 +81,12 @@ type DiscardSignal struct {
 */
 
 func (g *Game) GetName() string {
-	return "#" + strconv.Itoa(g.ID) + " (" + g.Name + ")"
+	return "Game #" + strconv.Itoa(g.ID) + " (" + g.Name + ") - "
 }
 
-func (g *Game) GetIndex(name string) int {
+func (g *Game) GetIndex(id int) int {
 	for i, p := range g.Players {
-		if p.Name == name {
+		if p.ID == id {
 			return i
 		}
 	}
@@ -216,14 +222,14 @@ func (g *Game) NotifySpectators() {
 func (g *Game) NotifyTime() {
 	// Create the clock message
 	type ClockMessage struct {
-		Times  []int `json:"times"`
-		Active int   `json:"active"`
+		Times  []time.Duration `json:"times"`
+		Active int             `json:"active"`
 	}
-	var times []int
+	var times []time.Duration
 	for _, p := range g.Players {
 		times = append(times, p.Time)
 	}
-	active := g.PlayerIndex
+	active := g.ActivePlayer
 	if g.EndCondition > 0 {
 		active = -1
 	}
@@ -250,9 +256,9 @@ func (g *Game) NotifySound() {
 	for i, p := range g.Players {
 		// Prepare the sound message
 		sound := "turn_other"
-		if g.CurrentSound != "" {
-			sound = g.CurrentSound
-		} else if i == g.PlayerIndex {
+		if g.Sound != "" {
+			sound = g.Sound
+		} else if i == g.ActivePlayer {
 			sound = "turn_us"
 		}
 		data := &SoundMessage{
@@ -267,8 +273,8 @@ func (g *Game) NotifySound() {
 		// (the code is duplicated here because I don't want to mess with
 		// having to change the file name back to default)
 		sound := "turn_other"
-		if g.CurrentSound != "" {
-			sound = g.CurrentSound
+		if g.Sound != "" {
+			sound = g.Sound
 		}
 		data := &SoundMessage{
 			File: sound,
@@ -320,6 +326,77 @@ func (g *Game) NotifySpectatorsNote(order int) {
 	Other major functions
 */
 
-func (g *Game) End() {
+func (g *Game) CheckTimer(turn int, p *Player) {
+	// Sleep until the active player runs out of time
+	time.Sleep(p.Time)
+	commandMutex.Lock()
+	defer commandMutex.Unlock()
 
+	// Check to see if the game ended already
+	if g.EndCondition > 0 {
+		return
+	}
+
+	// Check to see if we have made a move in the meanwhile
+	if turn != g.Turn {
+		return
+	}
+
+	p.Time = 0
+	log.Info(g.GetName() + "Time ran out for \"" + p.Name + "\".")
+
+	// End the game
+	d := &CommandData{
+		Type: 4,
+	}
+	commandAction(p.Session, d)
+}
+
+func (g *Game) CheckEnd() bool {
+	// Check for 3 strikes
+	if g.Strikes == 3 {
+		log.Info(g.GetName() + "3 strike maximum reached; ending the game.")
+		g.EndCondition = 2
+		return true
+	}
+
+	// Check for the final go-around
+	// (initiated after the last card is played from the deck)
+	if g.Turn == g.EndTurn {
+		log.Info(g.GetName() + "Final turn reached; ending the game.")
+		g.EndCondition = 1
+		return true
+	}
+
+	// Check to see if the maximum score has been reached
+	maxScore := len(g.Stacks) * 5
+	if g.Score == maxScore {
+		log.Info(g.GetName() + "Maximum score reached; ending the game.")
+		g.EndCondition = 1
+		return true
+	}
+
+	// Check to see if there are any cards remaining that can be played on the stacks
+	for i, stackLen := range g.Stacks {
+		// Search through the deck
+		neededSuit := i
+		neededRank := stackLen + 1
+		for _, c := range g.Deck {
+			if c.Suit == neededSuit &&
+				c.Rank == neededRank &&
+				!c.Discarded {
+
+				return false
+			}
+		}
+	}
+
+	// If we got this far, nothing can be played
+	log.Info(g.GetName() + "No remaining cards can be played; ending the game.")
+	g.EndCondition = 1
+	return true
+}
+
+func (g *Game) End() {
+	// TODO
 }

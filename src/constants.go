@@ -44,7 +44,7 @@ var (
 	variants = []string{
 		"No Variant",
 		"Black Suit",
-		"Black Suit 1OE",
+		"Black Suit 1oE",
 		"Rainbow Suit",
 		"Dual-color Suits",
 		"Dual-color & Rainbow Suits",

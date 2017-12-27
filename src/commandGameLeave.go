@@ -24,7 +24,7 @@ func commandGameLeave(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game
-	i := g.GetIndex(s.Username())
+	i := g.GetIndex(s.UserID())
 	if i == -1 {
 		return
 	}
@@ -39,6 +39,11 @@ func commandGameLeave(s *Session, d *CommandData) {
 	g.Players = append(g.Players[:i], g.Players[i+1:]...)
 	notifyAllTable(g)
 	g.NotifyPlayerChange()
+
+	// Fix the indexes for the remaining players
+	for j, p := range g.Players {
+		p.Index = j
+	}
 
 	// Set their status
 	s.Set("currentGame", -1)
