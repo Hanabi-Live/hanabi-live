@@ -25,7 +25,7 @@
 .env
 
 # Directories
-logs
+logs/*.log
 backups
 
 # The compiled binary
