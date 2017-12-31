@@ -53,6 +53,10 @@
                 const data = this.protocol.unpack(evt.data);
                 if (this.callbacks[data[0]]) {
                     const obj = this.protocol.unmarshal(data[1]);
+                    if (this.debug) {
+                        console.log(`%cReceived ${data[0]}:`, 'color: blue;');
+                        console.log(obj);
+                    }
                     this.callbacks[data[0]](obj);
                 } else if (this.debug) {
                     console.error('Recieved WebSocket message with no callback:', data[0], JSON.parse(data[1]));

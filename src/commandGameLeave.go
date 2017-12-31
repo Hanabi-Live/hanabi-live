@@ -5,14 +5,18 @@
 
 package main
 
+import "strconv"
+
 func commandGameLeave(s *Session, d *CommandData) {
 	/*
 		Validation
 	*/
 
 	// Validate that the game exists
+	gameID := s.CurrentGame()
 	var g *Game
-	if v, ok := games[s.CurrentGame()]; !ok {
+	if v, ok := games[gameID]; !ok {
+		s.NotifyError("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
 		g = v
@@ -20,12 +24,14 @@ func commandGameLeave(s *Session, d *CommandData) {
 
 	// Validate that the game has not started
 	if g.Running {
+		s.NotifyError("That game has already started, so you cannot leave it.")
 		return
 	}
 
 	// Validate that they are in the game
 	i := g.GetIndex(s.UserID())
 	if i == -1 {
+		s.NotifyError("You are not in this game, so you cannot leave it.")
 		return
 	}
 
@@ -63,7 +69,7 @@ func commandGameLeave(s *Session, d *CommandData) {
 
 	if len(g.Players) == 0 {
 		// Delete the game if this is the last person to leave
-		delete(games, d.ID)
+		delete(games, gameID)
 		notifyAllTableGone(g)
 	}
 }

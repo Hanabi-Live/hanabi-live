@@ -1,10 +1,34 @@
 package main
 
 type CommandData struct {
-	ID     int  `json:"gameID"`
+	// misc.
+	ID int `json:"gameID"`
+
+	// chat
+	Msg string `json:"msg"`
+
+	// gameCreate
+	Name         string `json:"name"`
+	Variant      int    `json:"variant"`
+	Timed        bool   `json:"timed"`
+	ReorderCards bool   `json:"reorderCards"`
+
+	// action
 	Clue   Clue `json:"clue"`
 	Target int  `json:"target"`
 	Type   int  `json:"type"`
+
+	// note
+	Note  string `json:"note"`
+	Order int    `json:"order"`
+
+	// sharedReplay
+	Value int `json:"value"`
+
+	// Used internally
+	Username string
+	Discord  bool
+	Server   bool
 }
 type Clue struct {
 	Type  int `json:"type"`
@@ -39,7 +63,4 @@ func commandInit() {
 	commandMap["action"] = commandAction
 	commandMap["note"] = commandNote
 	commandMap["replayAction"] = commandReplayAction
-
-	// Misc. commands
-	commandMap["debug"] = commandDebug
 }

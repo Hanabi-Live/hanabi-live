@@ -10,6 +10,24 @@
 
 package main
 
-func commandReplayCreate(s *Session, d *CommandData) {
+import "strconv"
 
+func commandReplayCreate(s *Session, d *CommandData) {
+	gameID := d.ID
+	if exists, err := db.Games.Exists(gameID); err != nil {
+		log.Error("Failed to check to see if game "+strconv.Itoa(gameID)+" exists:", err)
+		s.NotifyError("Failed to initialize the game. Please contact an administrator.")
+		return
+	} else if !exists {
+		s.NotifyError("Game #" + strconv.Itoa(gameID) + " does not exist.")
+		return
+	}
+
+	// Set their status
+	s.Set("currentGame", gameID)
+	s.Set("status", "Replay")
+	notifyAllUser(s)
+
+	// Send them a "gameStart" message
+	s.NotifyGameStart()
 }

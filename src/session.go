@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"strings"
+	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
 	melody "gopkg.in/olahol/melody.v1"
@@ -10,6 +12,11 @@ import (
 type Session struct {
 	*melody.Session
 }
+
+var (
+	// We keep track of all WebSocket sessions
+	sessions = make(map[int]*Session)
+)
 
 /*
 	Functions to return session values
@@ -156,7 +163,7 @@ func (s *Session) NotifyTable(g *Game) {
 	})
 }
 
-func (s *Session) NotifyGameStart(g *Game) {
+func (s *Session) NotifyGameStart() {
 	type GameStartMessage struct {
 		Replay bool `json:"replay"`
 	}
@@ -179,27 +186,31 @@ func (s *Session) NotifyTableGone(g *Game) {
 	})
 }
 
-func (s *Session) NotifyChat(msg string, who string) {
+func (s *Session) NotifyChat(msg string, who string, discord bool, server bool) {
 	type ChatMessage struct {
-		Msg string `json:"msg"`
-		Who string `json:"who"`
+		Msg     string `json:"msg"`
+		Who     string `json:"who"`
+		Discord bool   `json:"discord"`
+		Server  bool   `json:"server"`
 	}
 	s.Emit("chat", &ChatMessage{
-		Msg: msg,
-		Who: who,
+		Msg:     msg,
+		Who:     who,
+		Discord: discord,
+		Server:  server,
 	})
 }
 
 // Add a game to a user's game history
 func (s *Session) NotifyGameHistory(h models.GameHistory) {
 	type GameHistoryMessage struct {
-		ID               int    `json:"id"`
-		NumPlayers       int    `json:"numPlayers"`
-		NumSimilar       int    `json:"numSimilar"`
-		OtherPlayerNames string `json:"otherPlayerNames"`
-		Score            int    `json:"score"`
-		DatetimeFinished int64  `json:"datetime"`
-		Variant          int    `json:"variant"`
+		ID               int       `json:"id"`
+		NumPlayers       int       `json:"numPlayers"`
+		NumSimilar       int       `json:"numSimilar"`
+		OtherPlayerNames string    `json:"otherPlayerNames"`
+		Score            int       `json:"score"`
+		DatetimeFinished time.Time `json:"datetime"`
+		Variant          int       `json:"variant"`
 	}
 	s.Emit("gameHistory", &GameHistoryMessage{
 		ID:               h.ID,
@@ -230,7 +241,7 @@ func (s *Session) NotifySpectators(g *Game) {
 	// Build an array with the names of all of the spectators
 	var names []string
 	for _, s := range g.Spectators {
-		names = append(names, s.Name)
+		names = append(names, s.Username())
 	}
 
 	type SpectatorsMessage struct {
@@ -246,8 +257,8 @@ func (s *Session) NotifyReplayLeader(g *Game) {
 	// (the "Owner" field is used to store the leader of the shared replay)
 	var name string
 	for _, s := range g.Spectators {
-		if s.ID == g.Owner {
-			name = s.Name
+		if s.UserID() == g.Owner {
+			name = s.Username()
 			break
 		}
 	}
@@ -258,5 +269,59 @@ func (s *Session) NotifyReplayLeader(g *Game) {
 	}
 	s.Emit("replayLeader", &ReplayLeaderMessage{
 		Name: name,
+	})
+}
+
+func (s *Session) NotifyGameAction(a Action, g *Game) {
+	i := g.GetIndex(s.UserID())
+
+	msgType := "notify"
+	if a.Text != "" {
+		msgType = "message"
+	}
+
+	// Scrub card info from cards if the card is in their own hand
+	if a.Type == "draw" && a.Who == i {
+		a.Rank = -1
+		a.Suit = -1
+	}
+
+	s.Emit(msgType, a)
+}
+
+func (s *Session) NotifyAllNotes(playerNotes []models.PlayerNote) {
+	// Compile all of the notes together
+	combinedNotes := make([]string, 0)
+	for _, playerNote := range playerNotes {
+		for i, note := range playerNote.Notes {
+			line := playerNote.Name + ": " + note + "\n"
+			if len(combinedNotes) == i {
+				combinedNotes = append(combinedNotes, line)
+			} else {
+				combinedNotes[i] += line
+			}
+		}
+	}
+
+	// Chop off all of the trailing newlines
+	for i, _ := range combinedNotes {
+		combinedNotes[i] = strings.TrimSuffix(combinedNotes[i], "\n")
+	}
+
+	// Send it
+	type NotesMessage struct {
+		Notes []string
+	}
+	s.Emit("notes", &NotesMessage{
+		Notes: combinedNotes,
+	})
+}
+
+func (s *Session) NotifyError(msg string) {
+	type ErrorMessage struct {
+		Error string `json:"error"`
+	}
+	s.Emit("error", &ErrorMessage{
+		Error: msg,
 	})
 }

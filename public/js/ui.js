@@ -5351,9 +5351,10 @@ function HanabiUI(lobby, gameID) {
     End of Hanabi UI
 */
 
-HanabiUI.prototype.handleMessage = function handleMessage(msg) {
-    const msgType = msg.type;
-    const msgData = msg.resp;
+HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
+    const msg = {};
+    msg.type = msgType;
+    msg.resp = msgData;
 
     if (msgType === 'message') {
         this.replayLog.push(msg);

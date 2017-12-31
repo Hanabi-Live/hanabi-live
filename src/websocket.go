@@ -10,9 +10,6 @@ var (
 	// This is the Melody WebSocket router
 	m *melody.Melody
 
-	// We keep track of all WebSocket sessions
-	sessions = make(map[int]*Session)
-
 	// The WebSocket server needs to processes one action at a time;
 	// otherwise, there would be chaos
 	commandMutex = new(sync.Mutex)

@@ -13,11 +13,11 @@ type Game struct {
 	Owner           int
 	Options         *Options
 	Players         []*Player
-	Spectators      map[string]*Player
+	Spectators      map[int]*Session
 	Running         bool
 	SharedReplay    bool
-	DatetimeCreated int64
-	DatetimeStarted int64
+	DatetimeCreated time.Time
+	DatetimeStarted time.Time
 	EndCondition    int
 
 	Seed          string
@@ -62,6 +62,7 @@ type Action struct {
 	Size      int    `json:"size"`
 	Clues     int    `json:"clues"`
 	Score     int    `json:"score"`
+	Loss      bool   `json:"loss"`
 }
 
 type Which struct {
@@ -173,39 +174,21 @@ func (g *Game) NotifyConnected() {
 
 	// Also send it to the spectators
 	for _, s := range g.Spectators {
-		s.Session.Emit("connected", data)
+		s.Emit("connected", data)
 	}
 }
 
 // Send the people in the game an update about the new action
 func (g *Game) NotifyAction() {
-	action := g.Actions[len(g.Actions)-1] // The last action
-	msgType := "notify"
-	if action.Text != "" {
-		msgType = "message"
-	}
+	a := g.Actions[len(g.Actions)-1] // The last action
 
-	for i, p := range g.Players {
-		// Scrub card info from cards if the card is in their own hand
-		scrubbed := false
-		var scrubbedAction *Action
-		if action.Type == "draw" && action.Who == i {
-			scrubbed = true
-			scrubbedAction = &Action{
-				Rank: -1,
-				Suit: -1,
-			}
-		}
-		if scrubbed {
-			action = scrubbedAction
-		}
-		p.Session.Emit(msgType, action)
-
+	for _, p := range g.Players {
+		p.Session.NotifyGameAction(*a, g)
 	}
 
 	// Also send the spectators an update
 	for _, s := range g.Spectators {
-		s.Session.Emit(msgType, action)
+		s.NotifyGameAction(*a, g)
 	}
 }
 
@@ -215,27 +198,41 @@ func (g *Game) NotifySpectators() {
 	}
 
 	for _, s := range g.Spectators {
-		s.Session.NotifySpectators(g)
+		s.NotifySpectators(g)
 	}
 }
 
 func (g *Game) NotifyTime() {
 	// Create the clock message
-	type ClockMessage struct {
-		Times  []time.Duration `json:"times"`
-		Active int             `json:"active"`
-	}
-	var times []time.Duration
-	for _, p := range g.Players {
-		times = append(times, p.Time)
-	}
 	active := g.ActivePlayer
+	var data interface{}
 	if g.EndCondition > 0 {
-		active = -1
-	}
-	data := &ClockMessage{
-		Times:  times,
-		Active: active,
+		// The game is over, so send all nulls in order to reset the client-side clock
+		type NullClockMessage struct {
+			Times  []interface{} `json:"times"`
+			Active int           `json:"active"`
+		}
+		data = &NullClockMessage{
+			Times:  make([]interface{}, len(g.Players)),
+			Active: active,
+		}
+	} else {
+		var times []time.Duration
+		for _, p := range g.Players {
+			times = append(times, p.Time)
+		}
+		if g.EndCondition > 0 {
+			active = -1
+		}
+
+		type ClockMessage struct {
+			Times  []time.Duration `json:"times"`
+			Active int             `json:"active"`
+		}
+		data = &ClockMessage{
+			Times:  times,
+			Active: active,
+		}
 	}
 
 	for _, p := range g.Players {
@@ -243,7 +240,7 @@ func (g *Game) NotifyTime() {
 	}
 
 	for _, s := range g.Spectators {
-		s.Session.Emit("clock", data)
+		s.Emit("clock", data)
 	}
 }
 
@@ -279,14 +276,14 @@ func (g *Game) NotifySound() {
 		data := &SoundMessage{
 			File: sound,
 		}
-		s.Session.Emit("sound", data)
+		s.Emit("sound", data)
 	}
 }
 
-func (g *Game) NotifyBoot(who int) {
+func (g *Game) NotifyBoot(who string) {
 	// Send a boot notification
 	type BootMessage struct {
-		Who int `json:"who"`
+		Who string `json:"who"`
 	}
 	data := &BootMessage{
 		Who: who,
@@ -297,7 +294,7 @@ func (g *Game) NotifyBoot(who int) {
 	}
 
 	for _, s := range g.Spectators {
-		s.Session.Emit("boot", data)
+		s.Emit("boot", data)
 	}
 }
 
@@ -318,7 +315,7 @@ func (g *Game) NotifySpectatorsNote(order int) {
 	}
 
 	for _, s := range g.Spectators {
-		s.Session.Emit("note", data)
+		s.Emit("note", data)
 	}
 }
 
@@ -395,8 +392,4 @@ func (g *Game) CheckEnd() bool {
 	log.Info(g.GetName() + "No remaining cards can be played; ending the game.")
 	g.EndCondition = 1
 	return true
-}
-
-func (g *Game) End() {
-	// TODO
 }

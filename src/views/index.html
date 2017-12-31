@@ -33,7 +33,7 @@
         <link rel="stylesheet" type="text/css" href="public/css/hanabi.css">
         <link rel="shortcut icon" href="public/img/favicon.png" type="image/x-icon">
         <link rel="icon" href="public/img/favicon.png" type="image/x-icon">
-        </head>
+    </head>
     <body>
         <div id="pregame">
             <div id="login">
@@ -114,6 +114,12 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="col-md-12" style="text-align: center;">
+                        <a href="https://discord.gg/FADvkJp">
+                            <img src="public/img/discord.png" style="width: 7em;" />
+                        </a>
+                    </div>
                 </div>
             </div>
             <div id="lobby">
@@ -177,26 +183,13 @@
                 </div>
             </div>
             <div id="create-table-dialog" title="Create Table">
-                <table>
-                    <tr>
-                        <td>Game Name:</td>
-                        <td>
-                            <input type="text" id="create-game-name" class="create-table-dialog-col2">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Variant:</td>
-                        <td>
-                            <select id="create-game-variant" class="create-table-dialog-col2" style="width: 264px"></select>
-                            <!-- This is filled in with all of the variant options in the "lobby.js" file -->
-                        </td>
-                    </tr>
+                <!--
                     <tr>
                         <td>Timed Game:</td>
                         <td>
-                            <input type="checkbox" id="create-game-timed">
-                            <input type="number" id="base-time-minutes" title="Base Time in minutes (default: 5)" placeholder = "Base Time [min]" style="width: 114px;">
-                            <input type="number" id="time-per-turn-seconds" title="Time per Turn in seconds (default: 10)" placeholder = "Time per Turn [s]" style="width: 114px;">
+                            <input type="checkbox" >
+                            <input type="number" id="" title="Base Time in minutes (default: 5)" placeholder = "Base Time [min]" style="width: 114px;">
+                            <input type="number" id="" title="Time per Turn in seconds (default: 10)" placeholder = "Time per Turn [s]" style="width: 114px;">
                         </td>
                     </tr>
                     <tr>
@@ -206,6 +199,45 @@
                         </td>
                     </tr>
                 </table>
+                -->
+
+                <h2>Create a New Table</h2>
+                <br />
+
+                <div class="form-group">
+                    <label for="create-game-name">Game Name:</label>
+                    <input id="create-game-name" class="form-control" type="text" placeholder="Game Name">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="create-game-variant">Variant:</label>
+                    <select id="create-game-variant" class="form-control" data-live-search="true">
+                        <!-- This is filled in with all of the variant options in the "lobby.js" file -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="base-time-minutes">Base Time [min]:</label>
+                    <input id="base-time-minutes" class="form-control" type="text" placeholder="Base Time [min]" value="2">
+                </div>
+
+                <div class="form-group">
+                    <label for="time-per-turn-seconds">Time per Turn [sec]:</label>
+                    <input id="time-per-turn-seconds" class="form-control" type="text" placeholder="Time per Turn [sec]" value="20">
+                </div>
+
+                <div class="checkbox">
+                    <label><input type="checkbox" id="create-game-timed">Timed Game</label>
+                </div>
+
+                <div class="checkbox">
+                    <label><input type="checkbox" id="create-game-reorder-cards">Forced Chop Rotation</label>
+                </div>
+
+                <div class="padding0p5"></div>
+                <div class="padding0p5"></div>
+
                 <center><div>
                     <button type="button" id="create-game-submit">Create Game</button>
                     <button type="button" id="create-game-cancel">Cancel</button>
@@ -213,32 +245,35 @@
             </div>
             <div id="resources-dialog" title="Other Resources">
                 <h1>Other Resources</h1>
-                <p>
-                    <a href="https://discord.gg/FADvkJp" target="_blank">The Hanabi Discord Server</a><br />
-                    A place to find teammates and discuss strategy.
-                </p>
-                <p>
-                    <a href="https://github.com/Zamiell/keldon-hanabi">The GitHub Code Repository</a><br />
-                    This client and server are open-source, hosted on GitHub.
-                </p>
-                <p>
-                    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" id="donateform">
-                        <input type="hidden" name="cmd" value="_s-xclick">
-                        <input type="hidden" name="hosted_button_id" value="GFKEQ9MTFJRUL">
-                        <a href="#" onclick="document.getElementById('donateform').submit()">Donate (via PayPal) to Keldon</a>
-                    </form>
-                    Keldon was the original creator of this amazing software.
-                </p>
-                <p>
-                    <a href="http://keldon.net/hanabi/">The Original Hanabi Site</a><br />
-                    This is the original, closed-source version of the game designed and hosted by Keldon.
-                </p>
+                <ul>
+                    <li>
+                        <a href="https://discord.gg/FADvkJp" target="_blank">The Hanabi Discord Server</a><br />
+                        A place to find teammates and discuss strategy.<br />
+                    </li>
+                    <li>
+                        <a href="https://github.com/Zamiell/hanabi-live">The GitHub Code Repository</a><br />
+                        This client and server are open-source, hosted on GitHub.
+                    </li>
+                    <li>
+                        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" id="donateform">
+                            <input type="hidden" name="cmd" value="_s-xclick">
+                            <input type="hidden" name="hosted_button_id" value="GFKEQ9MTFJRUL">
+                            <a href="#" onclick="document.getElementById('donateform').submit()">Donate (via PayPal) to Keldon</a>
+                        </form>
+                        Keldon was the original creator of this amazing software.
+                    </li>
+                    <li>
+                        <a href="http://keldon.net/hanabi/">The Original Hanabi Site</a><br />
+                        This is the original, closed-source version of the game designed and hosted by Keldon.
+                    </li>
+                </ul>
 
                 <button type="button" id="close-resources">Close</button>
             </div>
             <div id="settings-dialog" title="Settings">
                 <h1>Settings</h1>
-                <h2>Game Notifications</h2>
+
+                <h3>Game Notifications</h3>
                 <ul>
                     <li>
                         <label>
@@ -259,7 +294,8 @@
                         </label>
                     </li>
                 </ul>
-                <h2>Lobby Notifications</h2>
+
+                <h3>Lobby Notifications</h3>
                 <ul>
                     <li>
                         <label>
@@ -274,7 +310,8 @@
                         </label>
                     </li>
                 </ul>
-                <h2>Appearance</h2>
+
+                <h3>Appearance</h3>
                 <ul>
                     <li>
                         <label>

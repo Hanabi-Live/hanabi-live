@@ -71,7 +71,7 @@ DROP TABLE IF EXISTS chat_log;
 CREATE TABLE chat_log (
     id               INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    user_id          INT            NOT NULL,
+    user_id          INT            NOT NULL, /* 0 is a Discord message */
     message          NVARCHAR(150)  NOT NULL,
     datetime_sent    TIMESTAMP      NOT NULL  DEFAULT NOW()
 );

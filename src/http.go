@@ -23,7 +23,7 @@ func httpInit() {
 	gin.SetMode(gin.ReleaseMode) // Comment this out to debug HTTP stuff
 	httpRouter := gin.Default()
 
-	// Read some HTTP server configuration values from environment variables
+	// Read some configuration values from environment variables
 	// (they were loaded from the .env file in main.go)
 	domain := os.Getenv("DOMAIN")
 	if len(domain) == 0 {

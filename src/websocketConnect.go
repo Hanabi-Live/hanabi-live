@@ -62,8 +62,8 @@ func websocketConnect(ms *melody.Session) {
 	// TODO
 
 	// Send them the message(s) of the day
-	msg := "[Server Notice] If you need to find other players, most people hang out in the Discord chat: https://discord.gg/JzbhWQb"
-	s.NotifyChat(msg, "")
+	msg := "Find teammates and discuss strategy in the <a href=\"https://discord.gg/JzbhWQb\">Hanabi Discord chat</a>."
+	s.NotifyChat(msg, "", false, true)
 
 	// Alert everyone that a new user has logged in
 	// (note that Keldon sends users a message about themselves)

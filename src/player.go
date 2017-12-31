@@ -279,7 +279,7 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 	// Update the progress
 	maxScore := len(g.Stacks) * 5
 	progress := float64(g.Score) / float64(maxScore) * 100 // In percent
-	g.Progress = int(Round(progress, 1))                   // Round it to the nearest integer
+	g.Progress = int(round(progress, 1))                   // Round it to the nearest integer
 	// TODO replace with this native Math.round in Go 1.10
 	// https://github.com/golang/go/issues/20100
 }

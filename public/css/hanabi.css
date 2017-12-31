@@ -8,6 +8,10 @@ html, body {
 	overflow: hidden;
 }
 
+a:link {
+	text-decoration: underline;
+}
+
 button {
 	background-color: rgba(0, 0, 0, 0.6);
 	width: 280px;
@@ -91,9 +95,11 @@ ul {
 	height: 100%;
 	min-width: 1000px;
 	min-height: 600px;
-	padding: 10px;
+	padding: 1em 0em 1em 1em;
+	margin: 0 0 0 0; /* Necessary with Bootstrap 3 */
 
 	color: black;
+	font-size: 1.2em;
 }
 
 #connecting {
@@ -271,6 +277,14 @@ ul {
 	overflow-y: auto;
 }
 
+#chat-contents a:link {
+	color: blue;
+}
+
+#chat-contents a:visited {
+	color: blue;
+}
+
 #chat-entry {
 	position: absolute;
 	bottom: 5px;
@@ -292,7 +306,7 @@ ul {
 	z-index: 100;
 	padding: 5px;
 
-	background-color: rgba(255, 255, 255, 0.9);
+	background-color: rgba(255, 255, 255, 1);
 	border: 3px solid #444;
 	border-radius: 5px;
 }
@@ -306,15 +320,24 @@ ul {
 
 	position: absolute;
 	width: 500px;
-	height: 400px;
+	height: 450px;
 	top: 45px;
 	left: 200px;
 	z-index: 100;
 	padding: 5px;
 
-	background-color: rgba(255, 255, 255, 0.9);
+	background-color: rgba(255, 255, 255, 1);
 	border: 3px solid #444;
 	border-radius: 5px;
+}
+
+#resources-dialog ul {
+	list-style-type: disc;
+	margin: 1.5em;
+}
+
+#resources-dialog li {
+	padding-bottom: 1em;
 }
 
 #close-resources {
@@ -327,15 +350,19 @@ ul {
 
 	position: absolute;
 	width: 500px;
-	height: 475px;
+	height: 525px;
 	top: 45px;
 	left: 200px;
 	z-index: 100;
 	padding: 5px;
 
-	background-color: rgba(255, 255, 255, 0.9);
+	background-color: rgba(255, 255, 255, 1);
 	border: 3px solid #444;
 	border-radius: 5px;
+}
+
+#settings-dialog label {
+	font-weight: 100 !important; /* 100 is the lightest; Bootstrap gives it a value of 700 */
 }
 
 #close-settings {
@@ -451,4 +478,8 @@ ul {
 
 .white {
 	color: white;
+}
+
+.padding0p5 {
+	padding-bottom: 0.5em;
 }

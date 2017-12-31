@@ -336,7 +336,6 @@ HanabiLobby.prototype.sendLogin = function sendLogin() {
     console.log(`Sent a login request to: ${url}`);
 
     request.done((data) => {
-        console.log(data);
         // We successfully got a cookie; attempt to establish a WebSocket connection
         this.connSet();
     });
@@ -725,12 +724,16 @@ HanabiLobby.prototype.addChat = function addChat(data) {
     const chat = $('#chat-contents');
 
     let line = '';
-    if (data.who) {
+    if (data.server) {
+        line += '<b>[SERVER NOTICE]</b> ';
+        line += data.msg;
+    } else if (data.who) {
         line += `<i>${new Date().toLocaleTimeString()}</i>&nbsp;&nbsp;`;
         if (data.discord) {
             line += '&lt;<b>D</b>&gt; ';
         }
-        line += `<b>${data.who}:</b> ${$('<a>').text(data.msg).html()}<br />`;
+        line += `<b>${data.who}:</b> `;
+        line += `${$('<a>').text(data.msg).html()}<br />`;
     } else {
         line += `<b>${$('<a>').text(data.msg).html()}</b><br />`;
     }
@@ -1139,21 +1142,21 @@ HanabiLobby.prototype.connSet = function connSet(conn) {
     websocketURL += '/ws';
     console.log('Connecting to websocket URL:', websocketURL);
     this.conn = new golem.Connection(websocketURL, true);
+    // This will automatically use the cookie that we recieved earlier from the POST
+    // If the second argument is true, debugging is turned on
 
     // Define event handlers
     this.connOpen(this.conn);
     this.connClose(this.conn);
     this.connError(this.conn); // socketError a.k.a. WebSocket.onerror
-    this.connMessage(this.conn);
+    this.connCommands(this.conn);
     this.connClientError(this.conn); // window.onerror
 };
 
 HanabiLobby.prototype.connOpen = function connOpen(conn) {
     conn.on('open', (event) => {
+        // We will show the lobby upon recieving the "hello" command
         console.log('WebSocket connection established.');
-
-        // Transition to lobby
-        // TODO
     });
 };
 
@@ -1191,7 +1194,10 @@ HanabiLobby.prototype.connError = function connError(conn) {
 
 HanabiLobby.prototype.connSend = function connSend(msg) {
     const command = msg.type;
-    const data = msg.resp;
+    let data = msg.resp;
+    if (typeof data === 'undefined') {
+        data = {};
+    }
 
     if (showDebugMessages) {
         console.log(`%cSent ${command}:`, 'color: green;');
@@ -1200,63 +1206,158 @@ HanabiLobby.prototype.connSend = function connSend(msg) {
     this.conn.emit(command, data);
 };
 
-HanabiLobby.prototype.connMessage = function connMessage(conn) {
+HanabiLobby.prototype.connCommands = function connCommands(conn) {
     const self = this;
 
-    conn.on('message', (msg) => {
-        const msgType = msg.type;
-        const msgData = msg.resp;
+    conn.on('hello', (data) => {
+        self.username = data.username;
+        self.hideLogin();
+        self.resetLobby();
+        self.showLobby();
+    });
 
-        if (showDebugMessages) {
-            console.log(`%cReceived ${msgType}:`, 'color: blue;');
-            console.log(msgData);
-        }
+    conn.on('user', (data) => {
+        self.addUser(data);
+    });
 
-        if (msgType === 'hello') {
-            self.username = msgData.username;
-            self.hideLogin();
-            self.resetLobby();
-            self.showLobby();
-        } else if (msgType === 'error') {
-            alert(`Error: ${msgData.error}`);
-        } else if (msgType === 'user') {
-            self.addUser(msgData);
-        } else if (msgType === 'userLeft') {
-            self.removeUser(msgData);
-        } else if (msgType === 'table') {
-            self.addTable(msgData);
-        } else if (msgType === 'tableGone') {
-            self.removeTable(msgData);
-        } else if (msgType === 'chat') {
-            self.addChat(msgData);
-        } else if (msgType === 'joined') {
-            self.tableJoined(msgData);
-        } else if (msgType === 'left') {
-            self.tableLeft(msgData);
-        } else if (msgType === 'game') {
-            self.setGame(msgData);
-        } else if (msgType === 'gamePlayer') {
-            self.setGamePlayer(msgData);
-        } else if (msgType === 'tableReady') {
-            self.setTableReady(msgData);
-        } else if (msgType === 'gameStart') {
-            self.gameStarted(msgData);
-        } else if (msgType === 'gameHistory') {
-            self.addHistory(msgData);
-        } else if (msgType === 'historyDetail') {
-            self.addHistoryDetail(msgData);
-        } else if (msgType === 'gameError') {
-            alert('Server error');
-            self.gameEnded(msgData);
-        } else if (msgType === 'sound') {
-            if (self.sendTurnSound) {
-                self.playSound(msgData.file);
-            }
-        } else if (msgType === 'name') {
-            self.randomName = msgData.name;
-        } else if (self.ui) {
-            self.ui.handleMessage(msg);
+    conn.on('userLeft', (data) => {
+        self.removeUser(data);
+    });
+
+    conn.on('table', (data) => {
+        self.addTable(data);
+    });
+
+    conn.on('tableGone', (data) => {
+        self.removeTable(data);
+    });
+
+    conn.on('chat', (data) => {
+        self.addChat(data);
+    });
+
+    conn.on('joined', (data) => {
+        self.tableJoined(data);
+    });
+
+    conn.on('left', (data) => {
+        self.tableLeft(data);
+    });
+
+    conn.on('game', (data) => {
+        self.setGame(data);
+    });
+
+    conn.on('gamePlayer', (data) => {
+        self.setGamePlayer(data);
+    });
+
+    conn.on('tableReady', (data) => {
+        self.setTableReady(data);
+    });
+
+    conn.on('gameStart', (data) => {
+        self.gameStarted(data);
+    });
+
+    conn.on('gameHistory', (data) => {
+        self.addHistory(data);
+    });
+
+    conn.on('historyDetail', (data) => {
+        self.addHistoryDetail(data);
+    });
+
+    conn.on('sound', (data) => {
+        if (self.sendTurnSound) {
+            self.playSound(data.file);
         }
+    });
+
+    conn.on('name', (data) => {
+        self.randomName = data.name;
+    });
+
+    conn.on('message', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('message', data);
+        }
+    });
+
+    conn.on('init', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('init', data);
+        }
+    });
+
+    conn.on('advanced', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('advanced', data);
+        }
+    });
+
+    conn.on('connected', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('connected', data);
+        }
+    });
+
+    conn.on('notify', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('notify', data);
+        }
+    });
+
+    conn.on('action', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('action', data);
+        }
+    });
+
+    conn.on('spectators', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('spectators', data);
+        }
+    });
+
+    conn.on('clock', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('clock', data);
+        }
+    });
+
+    conn.on('note', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('note', data);
+        }
+    });
+
+    conn.on('notes', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('notes', data);
+        }
+    });
+
+    conn.on('replayLeader', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('replayLeader', data);
+        }
+    });
+
+    conn.on('replayTurn', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('replayTurn', data);
+        }
+    });
+
+    conn.on('replayIndicator', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('replayIndicator', data);
+        }
+    });
+
+    conn.on('error', (data) => {
+        alert(`Error: ${data.error}`);
     });
 };
 

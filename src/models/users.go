@@ -64,13 +64,13 @@ func (*Users) Get(username string) (bool, User, error) {
 }
 
 type Stats struct {
-	NumPlayed            int
-	NumPlayedVariant     int
-	BestScoreVariant3    int
-	BestScoreVariant4    int
-	BestScoreVariant5    int
-	AverageScoreVariant  float64
-	StrikeoutRateVariant float64
+	NumPlayed            int     `json:"numPlayed"`
+	NumPlayedVariant     int     `json:"numPlayedVariant"`
+	BestScoreVariant3    int     `json:"bestScoreVariant3"`
+	BestScoreVariant4    int     `json:"bestScoreVariant4"`
+	BestScoreVariant5    int     `json:"bestScoreVariant5"`
+	AverageScoreVariant  float64 `json:"averageScoreVariant"`
+	StrikeoutRateVariant float64 `json:"strikeoutRateVariant"`
 }
 
 func (*Users) GetStats(userID int, variant int) (Stats, error) {
@@ -119,7 +119,7 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 						AND SUBSTRING(games.seed, 2, 1) = "5"
 				) AS best_score_variant_5,
 				(
-					SELECT AVG(games.score)
+					SELECT IFNULL(AVG(games.score), 0)
 					FROM games
 						JOIN game_participants
 							ON game_participants.game_id = games.id
@@ -127,7 +127,7 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 						AND games.score != 0
 						AND games.variant = ?
 				) AS average_score_variant,
-				(
+				IFNULL((
 					SELECT COUNT(games.id)
 					FROM games
 						JOIN game_participants
@@ -142,7 +142,7 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 							ON game_participants.game_id = games.id
 					WHERE game_participants.user_id = ?
 						AND games.variant = ?
-				) AS strikeout_rate_variant
+				), 0) AS strikeout_rate_variant
 		`,
 		userID, // num_played
 		userID, // num_played_variant
