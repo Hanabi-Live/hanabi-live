@@ -13,15 +13,28 @@ func websocketDisconnect(ms *melody.Session) {
 	s := &Session{ms}
 
 	// Eject this player from any games that have not started yet
-	for _, game := range games {
-		if game.Running {
+	for _, g := range games {
+		if g.Running {
 			continue
 		}
 
-		for _, p := range game.Players {
-			if p.Name == s.Username() {
+		for _, p := range g.Players {
+			if p.ID == s.UserID() {
+				log.Info(g.GetName() + "Ejecting user \"" + s.Username() + "\" from an unstarted game since they are re-logging in.")
 				commandGameLeave(s, nil)
 			}
+		}
+	}
+
+	// Eject this player from any shared replays
+	for _, g := range games {
+		if !g.SharedReplay {
+			continue
+		}
+
+		if _, ok := g.Spectators[s.UserID()]; ok {
+			log.Info(g.GetName() + "Ejecting user \"" + s.Username() + "\" from a shared replay since they are re-logging in.")
+			commandGameUnattend(s, nil)
 		}
 	}
 

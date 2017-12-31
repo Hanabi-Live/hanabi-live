@@ -24,8 +24,10 @@
 # Contains secrets
 .env
 
-# Directories
+# Log files
 logs/*.log
+
+# Directories
 backups
 
 # The compiled binary

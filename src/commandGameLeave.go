@@ -39,12 +39,12 @@ func commandGameLeave(s *Session, d *CommandData) {
 		Leave
 	*/
 
-	log.Info(g.GetName() + "User \"" + s.Username() + "\" left.")
-
 	// Remove the player
 	g.Players = append(g.Players[:i], g.Players[i+1:]...)
 	notifyAllTable(g)
 	g.NotifyPlayerChange()
+
+	log.Info(g.GetName() + "User \"" + s.Username() + "\" left. (" + strconv.Itoa(len(g.Players)) + " players remaining.)")
 
 	// Fix the indexes for the remaining players
 	for j, p := range g.Players {
@@ -60,7 +60,7 @@ func commandGameLeave(s *Session, d *CommandData) {
 	s.Emit("left", nil)
 
 	// Force everyone else to leave if it was the owner that left
-	if s.UserID() == g.Owner {
+	if s.UserID() == g.Owner && len(g.Players) > 1 {
 		for _, p := range g.Players {
 			commandGameLeave(p.Session, d)
 		}

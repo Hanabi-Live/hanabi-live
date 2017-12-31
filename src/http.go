@@ -89,8 +89,7 @@ func httpInit() {
 	httpRouter.GET("/", httpHome)
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
 
-	// Don't use an HTTP redirect if we are listening on a custom port
-	if useTLS && port != 443 {
+	if useTLS {
 		// We want all HTTP requests to be redirected to HTTPS
 		// (but make an exception for Let's Encrypt)
 		// The Gin router is using the default serve mux, so we need to create a

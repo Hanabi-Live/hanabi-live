@@ -52,5 +52,6 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 	notifyAllTable(g)
 
 	// Join the user to the new table
+	// (in the "commandGameSpectate.go" file)
 	joinSharedReplay(s, d, g)
 }

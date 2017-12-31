@@ -65,7 +65,7 @@ func commandGameSpectate(s *Session, d *CommandData) {
 }
 
 func joinSharedReplay(s *Session, d *CommandData, g *Game) {
-	log.Info("User \"" + s.Username() + "\" joined shared replay: " + g.GetName())
+	log.Info(g.GetName() + "User \"" + s.Username() + "\" joined.")
 
 	// Add them to the spectators object
 	g.Spectators[s.UserID()] = s

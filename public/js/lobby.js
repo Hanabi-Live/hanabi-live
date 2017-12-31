@@ -527,7 +527,7 @@ const variantNamesShort = [
     'Black (1oE)',
     'Rainbow',
     'Dual-color',
-    'Dual-color & Rainbow',
+    'Dual & Rainbow',
     'White & Rainbow',
     'Wild & Crazy',
 ];

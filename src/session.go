@@ -320,7 +320,10 @@ func (s *Session) NotifyAllNotes(playerNotes []models.PlayerNote) {
 	combinedNotes := make([]string, 0)
 	for _, playerNote := range playerNotes {
 		for i, note := range playerNote.Notes {
-			line := playerNote.Name + ": " + note + "\n"
+			var line string
+			if note != "" {
+				line = playerNote.Name + ": " + note + "\n"
+			}
 			if len(combinedNotes) == i {
 				combinedNotes = append(combinedNotes, line)
 			} else {
