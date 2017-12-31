@@ -24,7 +24,7 @@ Find teammates to play games with at [the Hanabi Discord server](https://discord
 
 ## List of Changes & Improvements
 
-See the [changes documentation](https://github.com/Zamiell/keldon-hanabi/tree/master/docs/CHANGES.md).
+See the [changes documentation](https://github.com/Zamiell/hanabi-live/tree/master/docs/CHANGES.md).
 
 <br />
 
@@ -32,7 +32,7 @@ See the [changes documentation](https://github.com/Zamiell/keldon-hanabi/tree/ma
 
 ## Installation
 
-See the [installation documentation](https://github.com/Zamiell/keldon-hanabi/tree/master/docs/INSTALL.md).
+See the [installation documentation](https://github.com/Zamiell/hanabi-live/tree/master/docs/INSTALL.md).
 
 <br />
 
