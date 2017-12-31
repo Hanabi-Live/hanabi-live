@@ -38,7 +38,7 @@ func commandGameAbandon(s *Session, d *CommandData) {
 	*/
 
 	// End the game and write it to the database
-	text := s.Username() + " terminated the game."
+	text := s.Username() + " terminated the game!"
 	action := &Action{
 		Text: text,
 	}

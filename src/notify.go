@@ -5,8 +5,8 @@ package main
 */
 
 func notifyAllUser(s *Session) {
-	for _, s := range sessions {
-		s.NotifyUser(s)
+	for _, s2 := range sessions {
+		s2.NotifyUser(s)
 	}
 }
 

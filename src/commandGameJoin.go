@@ -59,7 +59,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 		Join
 	*/
 
-	log.Info("User \"" + s.Username() + "\" joined game: " + g.GetName())
+	log.Info(g.GetName() + "User \"" + s.Username() + "\" joined.")
 
 	// Get the stats for this player
 	var stats models.Stats
@@ -86,6 +86,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 		Present: true,
 		Stats:   stats,
 		Time:    baseTime,
+		Notes:   make([]string, 0),
 		Session: s,
 	}
 	g.Players = append(g.Players, p)

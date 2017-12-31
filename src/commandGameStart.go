@@ -20,7 +20,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	*/
 
 	// Validate that the game exists
-	gameID := d.ID
+	gameID := s.CurrentGame()
 	var g *Game
 	if v, ok := games[gameID]; !ok {
 		s.NotifyError("Game " + strconv.Itoa(gameID) + " does not exist.")
@@ -88,6 +88,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Check to see if this is a game with a preset deal
 	shuffle := true
 	/*
+		TODO
 		const m = game.name.match(/^!preset (.+)$/);
 		if (m) {
 			// Parse the game name to see the specific preset deal that they want
@@ -264,7 +265,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Start the timer
 	g.TurnBeginTime = time.Now()
 	if g.Options.Timed {
-		g.CheckTimer(0, g.Players[g.ActivePlayer])
+		go g.CheckTimer(0, g.Players[g.ActivePlayer])
 	}
 
 	// Send the list of people who are connected

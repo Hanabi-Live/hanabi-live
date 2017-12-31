@@ -36,7 +36,7 @@ func commandHistoryDetails(s *Session, d *CommandData) {
 		}
 		s.Emit("historyDetail", &HistoryDetailMessage{
 			ID:               deal.ID,
-			OtherPlayerNames: deal.OtherPlayerNames,
+			OtherPlayerNames: deal.OtherPlayerNames, // The SQL query calculates these
 			Score:            deal.Score,
 			Datetime:         deal.DatetimeFinished,
 			You:              deal.You,

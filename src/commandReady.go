@@ -8,7 +8,6 @@ package main
 import (
 	"encoding/json"
 	"strconv"
-	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
 )
@@ -101,26 +100,7 @@ func commandReady(s *Session, d *CommandData) {
 		s.NotifyAllNotes(notes)
 	} else {
 		// Send them the current time for all player's clocks
-		times := make([]time.Duration, 0)
-		for _, p := range g.Players {
-			// Since we are sending the message in the middle of someone's turn,
-			// we need to account for this
-			timeLeft := p.Time
-			if g.ActivePlayer == i {
-				elapsedTime := time.Now().Sub(g.TurnBeginTime)
-				timeLeft = elapsedTime
-			}
-
-			times = append(times, timeLeft)
-		}
-		type ClockMessage struct {
-			Times  []time.Duration `json:"times"`
-			Active int             `json:"active"`
-		}
-		s.Emit("clock", &ClockMessage{
-			Times:  times,
-			Active: g.ActivePlayer,
-		})
+		s.NotifyClock(g)
 
 		if i == -1 {
 			// They are a spectator, so send them the notes from all players

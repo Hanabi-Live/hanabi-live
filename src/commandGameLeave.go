@@ -39,7 +39,7 @@ func commandGameLeave(s *Session, d *CommandData) {
 		Leave
 	*/
 
-	log.Info("User \"" + s.Username() + "\" left game: " + g.GetName())
+	log.Info(g.GetName() + "User \"" + s.Username() + "\" left.")
 
 	// Remove the player
 	g.Players = append(g.Players[:i], g.Players[i+1:]...)

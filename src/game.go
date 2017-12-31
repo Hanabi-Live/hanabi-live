@@ -8,17 +8,18 @@ import (
 )
 
 type Game struct {
-	ID              int
-	Name            string
-	Owner           int
-	Options         *Options
-	Players         []*Player
-	Spectators      map[int]*Session
-	Running         bool
-	SharedReplay    bool
-	DatetimeCreated time.Time
-	DatetimeStarted time.Time
-	EndCondition    int
+	ID               int
+	Name             string
+	Owner            int
+	Options          *Options
+	Players          []*Player
+	Spectators       map[int]*Session
+	Running          bool
+	SharedReplay     bool
+	DatetimeCreated  time.Time
+	DatetimeStarted  time.Time
+	DatetimeFinished time.Time
+	EndCondition     int
 
 	Seed          string
 	Deck          []*Card
@@ -86,6 +87,11 @@ func (g *Game) GetName() string {
 }
 
 func (g *Game) GetIndex(id int) int {
+	// If this function is called for a replay, the game will be nil, so account for this
+	if g == nil {
+		return -1
+	}
+
 	for i, p := range g.Players {
 		if p.ID == id {
 			return i
@@ -203,44 +209,12 @@ func (g *Game) NotifySpectators() {
 }
 
 func (g *Game) NotifyTime() {
-	// Create the clock message
-	active := g.ActivePlayer
-	var data interface{}
-	if g.EndCondition > 0 {
-		// The game is over, so send all nulls in order to reset the client-side clock
-		type NullClockMessage struct {
-			Times  []interface{} `json:"times"`
-			Active int           `json:"active"`
-		}
-		data = &NullClockMessage{
-			Times:  make([]interface{}, len(g.Players)),
-			Active: active,
-		}
-	} else {
-		var times []time.Duration
-		for _, p := range g.Players {
-			times = append(times, p.Time)
-		}
-		if g.EndCondition > 0 {
-			active = -1
-		}
-
-		type ClockMessage struct {
-			Times  []time.Duration `json:"times"`
-			Active int             `json:"active"`
-		}
-		data = &ClockMessage{
-			Times:  times,
-			Active: active,
-		}
-	}
-
 	for _, p := range g.Players {
-		p.Session.Emit("clock", data)
+		p.Session.NotifyClock(g)
 	}
 
 	for _, s := range g.Spectators {
-		s.Emit("clock", data)
+		s.NotifyClock(g)
 	}
 }
 
@@ -323,6 +297,7 @@ func (g *Game) NotifySpectatorsNote(order int) {
 	Other major functions
 */
 
+// This function is meant to be called in a new goroutine
 func (g *Game) CheckTimer(turn int, p *Player) {
 	// Sleep until the active player runs out of time
 	time.Sleep(p.Time)

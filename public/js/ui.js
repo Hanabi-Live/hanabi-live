@@ -2084,8 +2084,6 @@ function HanabiUI(lobby, gameID) {
         this.filemap = {};
 
         const basic = [
-            'button',
-            'button_pressed',
             'trashcan',
             'redx',
             'replay',
@@ -4052,7 +4050,7 @@ function HanabiUI(lobby, gameID) {
         button.on('click tap', () => {
             if (self.replayOnly) {
                 ui.sendMsg({
-                    type: 'unattendTable',
+                    type: 'gameUnattend',
                     resp: {},
                 });
 
@@ -4367,7 +4365,7 @@ function HanabiUI(lobby, gameID) {
         lobbyButton.on('click tap', () => {
             lobbyButton.off('click tap');
             ui.sendMsg({
-                type: 'unattendTable',
+                type: 'gameUnattend',
                 resp: {},
             });
 
@@ -4646,6 +4644,12 @@ function HanabiUI(lobby, gameID) {
         }
 
         if (type === 'draw') {
+            if (data.suit === -1) {
+                delete data.suit;
+            }
+            if (data.rank === -1) {
+                delete data.rank;
+            }
             const suit = msgSuitToSuit(data.suit, ui.variant);
             if (!ui.learnedCards[data.order]) {
                 ui.learnedCards[data.order] = {
@@ -5404,6 +5408,10 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         // This is used to update the names of the people currently spectating the game
         this.handleSpectators.call(this, msgData);
     } else if (msgType === 'clock') {
+        if (msgData.active === -1) {
+            msgData.active = null;
+        }
+
         // This is used for timed games
         this.stopLocalTimer();
         this.playerTimes = msgData.times;
@@ -5437,9 +5445,15 @@ HanabiUI.prototype.setBackend = function setBackend(backend) {
 };
 
 HanabiUI.prototype.sendMsg = function sendMsg(msg) {
-    if (this.showDebugMessages) {
-        console.log(`%cSent (UI) ${msg.type}:`, 'color: green;');
-        console.log(msg.resp);
+    const command = msg.type;
+    let data = msg.resp;
+    if (typeof data === 'undefined') {
+        data = {};
     }
-    this.backend.emit('message', msg);
+
+    if (this.showDebugMessages) {
+        console.log(`%cSent (UI) ${command}:`, 'color: green;');
+        console.log(data);
+    }
+    this.backend.emit(command, data);
 };

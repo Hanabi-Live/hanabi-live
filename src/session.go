@@ -13,11 +13,6 @@ type Session struct {
 	*melody.Session
 }
 
-var (
-	// We keep track of all WebSocket sessions
-	sessions = make(map[int]*Session)
-)
-
 /*
 	Functions to return session values
 */
@@ -105,7 +100,7 @@ func (s *Session) Error(message string) {
 // Notify a user about a new user that connected or a change in an existing user
 func (s *Session) NotifyUser(u *Session) {
 	type UserMessage struct {
-		ID     int    `json:"int"`
+		ID     int    `json:"id"`
 		Name   string `json:"name"`
 		Status string `json:"status"`
 	}
@@ -239,7 +234,7 @@ func (s *Session) NotifyAction(g *Game) {
 
 func (s *Session) NotifySpectators(g *Game) {
 	// Build an array with the names of all of the spectators
-	var names []string
+	names := make([]string, 0)
 	for _, s := range g.Spectators {
 		names = append(names, s.Username())
 	}
@@ -289,6 +284,37 @@ func (s *Session) NotifyGameAction(a Action, g *Game) {
 	s.Emit(msgType, a)
 }
 
+func (s *Session) NotifyClock(g *Game) {
+	// Create the clock message
+	times := make([]int64, 0)
+	for i, p := range g.Players {
+		// We could be sending the message in the middle of someone's turn, so account for this
+		timeLeft := p.Time
+		if g.ActivePlayer == i {
+			elapsedTime := time.Now().Sub(g.TurnBeginTime)
+			timeLeft -= elapsedTime
+		}
+
+		// JavaScript expects time in milliseconds
+		milliseconds := int64(timeLeft / time.Millisecond)
+		times = append(times, milliseconds)
+	}
+
+	active := g.ActivePlayer
+	if g.EndCondition > 0 {
+		active = -1
+	}
+
+	type ClockMessage struct {
+		Times  []int64 `json:"times"`
+		Active int     `json:"active"`
+	}
+	s.Emit("clock", &ClockMessage{
+		Times:  times,
+		Active: active,
+	})
+}
+
 func (s *Session) NotifyAllNotes(playerNotes []models.PlayerNote) {
 	// Compile all of the notes together
 	combinedNotes := make([]string, 0)
@@ -310,7 +336,7 @@ func (s *Session) NotifyAllNotes(playerNotes []models.PlayerNote) {
 
 	// Send it
 	type NotesMessage struct {
-		Notes []string
+		Notes []string `json:"notes"`
 	}
 	s.Emit("notes", &NotesMessage{
 		Notes: combinedNotes,

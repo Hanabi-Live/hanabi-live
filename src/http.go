@@ -21,7 +21,9 @@ var (
 func httpInit() {
 	// Create a new Gin HTTP router
 	gin.SetMode(gin.ReleaseMode) // Comment this out to debug HTTP stuff
-	httpRouter := gin.Default()
+	httpRouter := gin.New()
+	httpRouter.Use(gin.Recovery())
+	//httpRouter.Use(gin.Logger()) // Uncomment this out to enable HTTP request logging
 
 	// Read some configuration values from environment variables
 	// (they were loaded from the .env file in main.go)

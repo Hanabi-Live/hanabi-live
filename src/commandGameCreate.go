@@ -54,8 +54,13 @@ func commandGameCreate(s *Session, d *CommandData) {
 			Timed:        d.Timed,
 			ReorderCards: d.ReorderCards,
 		},
+		Players:         make([]*Player, 0),
+		Spectators:      make(map[int]*Session),
 		Clues:           8,
 		DatetimeCreated: time.Now(),
+		Deck:            make([]*Card, 0),
+		Stacks:          make([]int, 0),
+		Actions:         make([]*Action, 0),
 		DiscardSignal: &DiscardSignal{
 			TurnExpiration: -1,
 		},

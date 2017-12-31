@@ -733,10 +733,11 @@ HanabiLobby.prototype.addChat = function addChat(data) {
             line += '&lt;<b>D</b>&gt; ';
         }
         line += `<b>${data.who}:</b> `;
-        line += `${$('<a>').text(data.msg).html()}<br />`;
+        line += `${$('<a>').text(data.msg).html()}`;
     } else {
-        line += `<b>${$('<a>').text(data.msg).html()}</b><br />`;
+        line += `<b>${$('<a>').text(data.msg).html()}</b>`;
     }
+    line += '<br />';
 
     chat.finish();
     chat.append(line);
@@ -776,7 +777,7 @@ HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msg
         self.connSend({
             type: msgType,
             resp: {
-                gameID: self.gameID,
+                gameID: parseInt(self.gameID, 10), // The server expects this as an integer
             },
         });
 
@@ -1353,6 +1354,12 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
     conn.on('replayIndicator', (data) => {
         if (self.ui) {
             self.ui.handleMessage('replayIndicator', data);
+        }
+    });
+
+    conn.on('boot', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('boot', data);
         }
     });
 

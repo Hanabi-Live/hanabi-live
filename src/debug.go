@@ -1,5 +1,22 @@
 package main
 
-func debug(s *Session, d *CommandData) {
+import (
+	"strconv"
+)
 
+func debug(s *Session, d *CommandData) {
+	// Print out all of the current games
+	log.Debug("---------------------------------------------------------------")
+	log.Debug("Current games:")
+	for i, g := range games { // This is a map[int]*Game
+		log.Debug(strconv.Itoa(i) + " - " + g.Name)
+	}
+
+	// Print out all of the current users
+	log.Debug("---------------------------------------------------------------")
+	log.Debug("Current users:")
+	for i, s2 := range sessions { // This is a map[int]*Session
+		log.Debug(strconv.Itoa(i) + " - " + s2.Username() + " - " + s2.Status())
+	}
+	log.Debug("---------------------------------------------------------------")
 }

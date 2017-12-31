@@ -38,7 +38,7 @@ func (*ChatLog) Get(room string, count int) ([]ChatMessage, error) {
 		SELECT
 			users.username,
 			chat_log.message,
-			UNIX_TIMESTAMP(chat_log.datetime_sent)
+			chat_log.datetime_sent
 		FROM
 			chat_log
 		JOIN

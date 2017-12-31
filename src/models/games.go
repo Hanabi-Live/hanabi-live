@@ -20,11 +20,11 @@ type GameRow struct {
 	Seed            string
 	Score           int
 	EndCondition    int
-	DatetimeCreated int64
-	DatetimeStarted int64
+	DatetimeCreated time.Time
+	DatetimeStarted time.Time
 }
 
-func (*Games) Insert(gameRow GameRow) error {
+func (*Games) Insert(gameRow GameRow) (int, error) {
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`
 		INSERT INTO games (
@@ -53,13 +53,14 @@ func (*Games) Insert(gameRow GameRow) error {
 			?
 		)
 	`); err != nil {
-		return err
+		return -1, err
 	} else {
 		stmt = v
 	}
 	defer stmt.Close()
 
-	if _, err := stmt.Exec(
+	var res sql.Result
+	if v, err := stmt.Exec(
 		gameRow.Name,
 		gameRow.Owner,
 		gameRow.Variant,
@@ -72,10 +73,19 @@ func (*Games) Insert(gameRow GameRow) error {
 		gameRow.DatetimeCreated,
 		gameRow.DatetimeStarted,
 	); err != nil {
-		return err
+		return -1, err
+	} else {
+		res = v
 	}
 
-	return nil
+	var id int
+	if v, err := res.LastInsertId(); err != nil {
+		return -1, err
+	} else {
+		id = int(v)
+	}
+
+	return id, nil
 }
 
 func (*Games) Exists(databaseID int) (bool, error) {
@@ -99,6 +109,7 @@ type GameHistory struct {
 	Score            int
 	Variant          int
 	DatetimeFinished time.Time
+	Seed             string
 	NumSimilar       int
 	OtherPlayerNames string
 	You              bool
@@ -116,7 +127,7 @@ func (*Games) GetUserHistory(userID int) ([]GameHistory, error) {
 			) AS num_players,
 			games.score AS score,
 			games.variant AS variant,
-			UNIX_TIMESTAMP(datetime_finished),
+			datetime_finished,
 			games.seed AS seed_original,
 			(
 				SELECT COUNT(id)
@@ -151,6 +162,7 @@ func (*Games) GetUserHistory(userID int) ([]GameHistory, error) {
 			&game.Score,
 			&game.Variant,
 			&game.DatetimeFinished,
+			&game.Seed,
 			&game.NumSimilar,
 			&game.OtherPlayerNames,
 		); err != nil {
@@ -163,13 +175,13 @@ func (*Games) GetUserHistory(userID int) ([]GameHistory, error) {
 }
 
 // Used in the "endGame" function
-func (*Games) GetNumSimilar(databaseID int) (int, error) {
+func (*Games) GetNumSimilar(seed string) (int, error) {
 	var count int
 	if err := db.QueryRow(`
 		SELECT COUNT(id) AS num_similar
 		FROM games
 		WHERE seed = ?
-	`, databaseID).Scan(&count); err != nil {
+	`, seed).Scan(&count); err != nil {
 		return 0, err
 	}
 
@@ -333,7 +345,7 @@ func (*Games) GetNotes(databaseID int) ([]PlayerNote, error) {
 		// Each "note" here is actually a JSON array of all of a player's notes for that game
 		var note PlayerNote
 		var notesJSON string
-		if err := rows.Scan(&note.ID, &note.Name, notesJSON); err != nil {
+		if err := rows.Scan(&note.ID, &note.Name, &notesJSON); err != nil {
 			return nil, err
 		}
 
