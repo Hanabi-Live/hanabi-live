@@ -64,7 +64,7 @@ func httpInit() {
 	options := gsessions.Options{
 		Path:   "/",
 		Domain: domain,
-		MaxAge: 5, // 5 seconds
+		MaxAge: 1, // in seconds
 		// After getting a cookie via "/login", the client will immediately
 		// establish a WebSocket connection via "/ws", so the cookie only needs
 		// to exist for that time frame
