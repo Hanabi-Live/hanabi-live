@@ -1,3 +1,9 @@
+/*
+	This is part 2 of logging in. The user must already have performed a POST to "/login"
+	and received a cookie before getting here. (The logic for that is contained in the
+	"httpLogin.go" file.)
+*/
+
 package main
 
 import (
@@ -92,9 +98,7 @@ func websocketConnect(ms *melody.Session) {
 	} else {
 		history = v
 	}
-	for _, h := range history {
-		s.NotifyGameHistory(h)
-	}
+	s.NotifyGameHistory(history)
 
 	// Check to see if this user was in any existing games
 	for _, g := range games {

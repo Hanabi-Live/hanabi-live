@@ -31,7 +31,7 @@ type Game struct {
 	Score         int
 	Progress      int
 	Strikes       int
-	Actions       []*Action
+	Actions       []Action // We don't want this to be a pointer because this simplifies scrubbing
 	DiscardSignal *DiscardSignal
 	Sound         string
 	TurnBeginTime time.Time
@@ -41,36 +41,9 @@ type Game struct {
 type Options struct {
 	Variant      int
 	Timed        bool
-	TimeBase     int
+	TimeBase     float64
 	TimePerTurn  int
 	ReorderCards bool
-}
-
-type Action struct {
-	Type      string `json:"type"`
-	Who       int    `json:"who"`
-	Rank      int    `json:"rank"`
-	Suit      int    `json:"suit"`
-	Text      string `json:"text"`
-	Target    int    `json:"target"`
-	HandOrder []int  `json:"handOrder"`
-	Clue      Clue   `json:"clue"`
-	Giver     int    `json:"giver"`
-	List      []int  `json:"list"`
-	Which     Which  `json:"which"`
-	Num       int    `json:"num"`
-	Order     int    `json:"order"`
-	Size      int    `json:"size"`
-	Clues     int    `json:"clues"`
-	Score     int    `json:"score"`
-	Loss      bool   `json:"loss"`
-}
-
-type Which struct {
-	Index int `json:"index"`
-	Rank  int `json:"rank"`
-	Suit  int `json:"suit"`
-	Order int `json:"order"`
 }
 
 type DiscardSignal struct {
@@ -108,15 +81,15 @@ func (g *Game) GetIndex(id int) int {
 func (g *Game) NotifyPlayerChange() {
 	for _, p := range g.Players {
 		type GameMessage struct {
-			Name         string `json:"name"`
-			Running      bool   `json:"running"`
-			NumPlayers   int    `json:"numPlayers"`
-			Variant      int    `json:"variant"`
-			Timed        bool   `json:"timed"`
-			BaseTime     int    `json:"baseTime"`
-			TimePerTurn  int    `json:"timePerTurn"`
-			ReorderCards bool   `json:"reorderCards"`
-			SharedReplay bool   `json:"sharedReplay"`
+			Name         string  `json:"name"`
+			Running      bool    `json:"running"`
+			NumPlayers   int     `json:"numPlayers"`
+			Variant      int     `json:"variant"`
+			Timed        bool    `json:"timed"`
+			BaseTime     float64 `json:"baseTime"`
+			TimePerTurn  int     `json:"timePerTurn"`
+			ReorderCards bool    `json:"reorderCards"`
+			SharedReplay bool    `json:"sharedReplay"`
 		}
 		p.Session.Emit("game", GameMessage{
 			Name:         g.Name,
@@ -189,12 +162,12 @@ func (g *Game) NotifyAction() {
 	a := g.Actions[len(g.Actions)-1] // The last action
 
 	for _, p := range g.Players {
-		p.Session.NotifyGameAction(*a, g)
+		p.Session.NotifyGameAction(a, g)
 	}
 
 	// Also send the spectators an update
 	for _, s := range g.Spectators {
-		s.NotifyGameAction(*a, g)
+		s.NotifyGameAction(a, g)
 	}
 }
 

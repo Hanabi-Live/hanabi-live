@@ -139,8 +139,8 @@ function HanabiLobby() {
                 name: gameName,
                 variant,
                 timed,
-                baseTimeMinutes,
-                timePerTurnSeconds,
+                baseTimeMinutes: parseFloat(baseTimeMinutes), // The server expects this as an float64
+                timePerTurnSeconds: parseInt(timePerTurnSeconds, 10), // The server expects this as an integer
                 reorderCards,
             },
         });
@@ -497,6 +497,12 @@ HanabiLobby.prototype.drawUsers = function drawUsers() {
 };
 
 HanabiLobby.prototype.addTable = function addTable(data) {
+    // The baseTime comes in minutes, so convert it to milliseconds
+    data.baseTime = data.baseTime * 1000 * 60
+
+    // The timePerTurn comes in seconds, so convert it to milliseconds
+    data.timePerTurn = data.timePerTurn * 1000
+
     this.tableList[data.id] = data;
     this.drawTables();
 
@@ -978,8 +984,8 @@ HanabiLobby.prototype.setGame = function setGame(data) {
     this.game.variant = data.variant;
     this.game.running = data.running;
     this.game.timed = data.timed;
-    this.game.baseTime = data.baseTime;
-    this.game.timePerTurn = data.timePerTurn;
+    this.game.baseTime = data.baseTime * 1000 * 60; // Convert minutes to milliseconds
+    this.game.timePerTurn = data.timePerTurn * 1000; // Convert seconds to milliseconds
     this.game.reorderCards = data.reorderCards;
     this.game.sharedReplay = data.sharedReplay;
 
@@ -1262,7 +1268,10 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
     });
 
     conn.on('gameHistory', (data) => {
-        self.addHistory(data);
+        // data will be an array of all of the games that we have previously played
+        for (const history of data) {
+            self.addHistory(history);
+        }
     });
 
     conn.on('historyDetail', (data) => {
@@ -1300,6 +1309,19 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
     conn.on('connected', (data) => {
         if (self.ui) {
             self.ui.handleMessage('connected', data);
+        }
+    });
+
+    conn.on('notifyList', (data) => {
+        if (self.ui) {
+            // When the server has a bunch of notify actions to send, it will send them all in one array
+            for (const action of data) {
+                if (action.type === '') {
+                    self.ui.handleMessage('message', action);
+                } else {
+                    self.ui.handleMessage('notify', action);
+                }
+            }
         }
     });
 

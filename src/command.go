@@ -8,10 +8,12 @@ type CommandData struct {
 	Msg string `json:"msg"`
 
 	// gameCreate
-	Name         string `json:"name"`
-	Variant      int    `json:"variant"`
-	Timed        bool   `json:"timed"`
-	ReorderCards bool   `json:"reorderCards"`
+	Name               string  `json:"name"`
+	Variant            int     `json:"variant"`
+	Timed              bool    `json:"timed"`
+	BaseTimeMinutes    float64 `json:"baseTimeMinutes"`
+	TimePerTurnSeconds int     `json:"timePerTurnSeconds"`
+	ReorderCards       bool    `json:"reorderCards"`
 
 	// action
 	Clue   Clue `json:"clue"`

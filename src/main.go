@@ -1,8 +1,3 @@
-/*
-	TODO
-	- grep for "race"
-*/
-
 package main // In Go, executable commands must always use package main
 
 import (
@@ -30,7 +25,7 @@ func main() {
 	log = logging.MustGetLogger("hanabi-live")
 	loggingBackend := logging.NewLogBackend(os.Stdout, "", 0)
 	logFormat := logging.MustStringFormatter( // https://golang.org/pkg/time/#Time.Format
-		`%{time:Mon Jan 2 15:04:05 MST 2006} - %{level:.4s} - %{shortfile} - %{message}`,
+		`%{time:Mon Jan 02 15:04:05 MST 2006} - %{level:.4s} - %{shortfile} - %{message}`,
 	)
 	loggingBackendFormatted := logging.NewBackendFormatter(loggingBackend, logFormat)
 	logging.SetBackend(loggingBackendFormatted)
@@ -64,7 +59,7 @@ func main() {
 	}
 
 	// Start the Discord bot (in discord.go)
-	//discordInit()
+	discordInit()
 
 	// Initialize a WebSocket router using the Melody framework
 	// (in websocket.go)

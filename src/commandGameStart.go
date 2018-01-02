@@ -212,6 +212,12 @@ func commandGameStart(s *Session, d *CommandData) {
 	}
 	log.Info("--------------------------------------------------")
 
+	// Now that we have finished building the deck,
+	// initialize all of the players notes based on the number of cards in the deck
+	for _, p := range g.Players {
+		p.Notes = make([]string, len(g.Deck))
+	}
+
 	// Deal the cards
 	handSize := 5
 	if len(g.Players) > 3 {
@@ -231,16 +237,14 @@ func commandGameStart(s *Session, d *CommandData) {
 		g.ActivePlayer = len(g.Players) - 1
 	}
 	text := g.Players[g.ActivePlayer].Name + " goes first"
-	action := &Action{
+	g.Actions = append(g.Actions, Action{
 		Text: text,
-	}
-	g.Actions = append(g.Actions, action)
-	action2 := &Action{
+	})
+	g.Actions = append(g.Actions, Action{
 		Type: "turn",
 		Num:  0,
 		Who:  g.ActivePlayer,
-	}
-	g.Actions = append(g.Actions, action2)
+	})
 	log.Info(g.GetName() + text)
 
 	// Set the game to running

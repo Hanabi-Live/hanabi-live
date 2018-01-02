@@ -19,7 +19,7 @@ func commandNote(s *Session, d *CommandData) {
 	*/
 
 	// Validate that the game exists
-	gameID := d.ID
+	gameID := s.CurrentGame()
 	var g *Game
 	if v, ok := games[gameID]; !ok {
 		s.NotifyError("Game " + strconv.Itoa(gameID) + " does not exist.")

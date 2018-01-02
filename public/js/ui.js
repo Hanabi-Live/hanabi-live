@@ -5091,10 +5091,10 @@ function HanabiUI(lobby, gameID) {
             if (!card) {
                 continue;
             }
-            if (note !== null) {
+            if (note !== null && note !== '') {
                 card.tooltip.getText().setText(note);
             }
-            if (note !== null && card.isInPlayerHand()) {
+            if (note !== null && note !== '' && card.isInPlayerHand()) {
                 card.noteGiven.show();
                 if (ui.spectating) {
                     card.notePulse.play();

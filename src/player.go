@@ -153,14 +153,13 @@ func (p *Player) GiveClue(g *Game, d *CommandData) {
 	g.Clues--
 
 	// Send the "notify" message about the clue
-	action := &Action{
+	g.Actions = append(g.Actions, Action{
 		Clue:   d.Clue,
 		Giver:  p.Index,
 		List:   list,
 		Target: d.Target,
 		Type:   "clue",
-	}
-	g.Actions = append(g.Actions, action)
+	})
 	g.NotifyAction()
 
 	// Send the "message" message about the clue
@@ -188,10 +187,9 @@ func (p *Player) GiveClue(g *Game, d *CommandData) {
 	if len(list) > 1 {
 		text += "s"
 	}
-	action2 := &Action{
+	g.Actions = append(g.Actions, Action{
 		Text: text,
-	}
-	g.Actions = append(g.Actions, action2)
+	})
 	g.NotifyAction()
 }
 
@@ -204,7 +202,7 @@ func (p *Player) RemoveCard(target int) *Card {
 
 			// Mark what the "slot" number is
 			// e.g. slot 1 is the newest (left-most) card, which is index 5 (in a 3 player game)
-			removedCard.Slot = len(p.Hand) - i + 1
+			removedCard.Slot = len(p.Hand) - i
 
 			p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
 			break
@@ -222,11 +220,10 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 		g.Strikes += 1
 
 		// Send the "notify" message about the strike
-		action := &Action{
+		g.Actions = append(g.Actions, Action{
 			Type: "strike",
 			Num:  g.Strikes,
-		}
-		g.Actions = append(g.Actions, action)
+		})
 		g.NotifyAction()
 
 		p.DiscardCard(g, c)
@@ -238,7 +235,7 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 	g.Stacks[c.Suit]++
 
 	// Send the "notify" message about the play
-	action := &Action{
+	g.Actions = append(g.Actions, Action{
 		Type: "played",
 		Which: Which{
 			Index: p.Index,
@@ -246,8 +243,7 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 			Suit:  c.Suit,
 			Order: c.Order,
 		},
-	}
-	g.Actions = append(g.Actions, action)
+	})
 	g.NotifyAction()
 
 	// Send the "message" about the play
@@ -261,10 +257,9 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 		text += " (blind)"
 		g.Sound = "blind"
 	}
-	action2 := &Action{
+	g.Actions = append(g.Actions, Action{
 		Text: text,
-	}
-	g.Actions = append(g.Actions, action2)
+	})
 	g.NotifyAction()
 
 	// Give the team a clue if a 5 was played
@@ -293,7 +288,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 	// Mark that the card is discarded
 	c.Discarded = true
 
-	action := &Action{
+	g.Actions = append(g.Actions, Action{
 		Type: "discard",
 		Which: Which{
 			Index: p.Index,
@@ -301,8 +296,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 			Suit:  c.Suit,
 			Order: c.Order,
 		},
-	}
-	g.Actions = append(g.Actions, action)
+	})
 	g.NotifyAction()
 
 	text := p.Name + " "
@@ -325,10 +319,9 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 		text += " (blind)"
 	}
 
-	action2 := &Action{
+	g.Actions = append(g.Actions, Action{
 		Text: text,
-	}
-	g.Actions = append(g.Actions, action2)
+	})
 	g.NotifyAction()
 }
 
@@ -347,23 +340,21 @@ func (p *Player) DrawCard(g *Game) {
 	// Put it in the player's hand
 	p.Hand = append(p.Hand, c)
 
-	action := &Action{
+	g.Actions = append(g.Actions, Action{
 		Type:  "draw",
 		Who:   p.Index,
 		Rank:  c.Rank,
 		Suit:  c.Suit,
 		Order: c.Order,
-	}
-	g.Actions = append(g.Actions, action)
+	})
 	if g.Running {
 		g.NotifyAction()
 	}
 
-	action2 := &Action{
+	g.Actions = append(g.Actions, Action{
 		Type: "drawSize",
 		Size: len(g.Deck) - g.DeckIndex,
-	}
-	g.Actions = append(g.Actions, action2)
+	})
 	if g.Running {
 		g.NotifyAction()
 	}

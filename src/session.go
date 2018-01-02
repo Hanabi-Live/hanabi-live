@@ -125,20 +125,20 @@ func (s *Session) NotifyTable(g *Game) {
 	}
 
 	type TableMessage struct {
-		ID           int    `json:"id"`
-		Name         string `json:"name"`
-		Joined       bool   `json:"joined"`
-		NumPlayers   int    `json:"numPlayers"`
-		Owned        bool   `json:"owned"`
-		Running      bool   `json:"running"`
-		Variant      int    `json:"variant"`
-		Timed        bool   `json:"timed"`
-		BaseTime     int    `json:"baseTime"`
-		TimePerTurn  int    `json:"timePerTurn"`
-		ReorderCards bool   `json:"reorderCards"`
-		OurTurn      bool   `json:"ourTurn"`
-		SharedReplay bool   `json:"sharedReplay"`
-		Progress     int    `json:"gameProgress"`
+		ID           int     `json:"id"`
+		Name         string  `json:"name"`
+		Joined       bool    `json:"joined"`
+		NumPlayers   int     `json:"numPlayers"`
+		Owned        bool    `json:"owned"`
+		Running      bool    `json:"running"`
+		Variant      int     `json:"variant"`
+		Timed        bool    `json:"timed"`
+		BaseTime     float64 `json:"baseTime"`
+		TimePerTurn  int     `json:"timePerTurn"`
+		ReorderCards bool    `json:"reorderCards"`
+		OurTurn      bool    `json:"ourTurn"`
+		SharedReplay bool    `json:"sharedReplay"`
+		Progress     int     `json:"progress"`
 	}
 	s.Emit("table", &TableMessage{
 		ID:           g.ID,
@@ -196,8 +196,8 @@ func (s *Session) NotifyChat(msg string, who string, discord bool, server bool) 
 	})
 }
 
-// Add a game to a user's game history
-func (s *Session) NotifyGameHistory(h models.GameHistory) {
+// Send a user all of their past games
+func (s *Session) NotifyGameHistory(h []models.GameHistory) {
 	type GameHistoryMessage struct {
 		ID               int       `json:"id"`
 		NumPlayers       int       `json:"numPlayers"`
@@ -207,15 +207,19 @@ func (s *Session) NotifyGameHistory(h models.GameHistory) {
 		DatetimeFinished time.Time `json:"datetime"`
 		Variant          int       `json:"variant"`
 	}
-	s.Emit("gameHistory", &GameHistoryMessage{
-		ID:               h.ID,
-		NumPlayers:       h.NumPlayers,
-		NumSimilar:       h.NumSimilar,
-		OtherPlayerNames: h.OtherPlayerNames,
-		Score:            h.Score,
-		DatetimeFinished: h.DatetimeFinished,
-		Variant:          h.Variant,
-	})
+	m := make([]*GameHistoryMessage, 0)
+	for _, g := range h {
+		m = append(m, &GameHistoryMessage{
+			ID:               g.ID,
+			NumPlayers:       g.NumPlayers,
+			NumSimilar:       g.NumSimilar,
+			OtherPlayerNames: g.OtherPlayerNames,
+			Score:            g.Score,
+			DatetimeFinished: g.DatetimeFinished,
+			Variant:          g.Variant,
+		})
+	}
+	s.Emit("gameHistory", &m)
 }
 
 // Once it is a player's turn, they recieve an "action" message which lists the allowed actions on this turn
@@ -268,14 +272,14 @@ func (s *Session) NotifyReplayLeader(g *Game) {
 }
 
 func (s *Session) NotifyGameAction(a Action, g *Game) {
-	i := g.GetIndex(s.UserID())
-
 	msgType := "notify"
 	if a.Text != "" {
 		msgType = "message"
 	}
 
-	// Scrub card info from cards if the card is in their own hand
+	// We need to scrub the action of information so that we don't reveal
+	// to the client anything about the cards that they are drawing
+	i := g.GetIndex(s.UserID())
 	if a.Type == "draw" && a.Who == i {
 		a.Rank = -1
 		a.Suit = -1

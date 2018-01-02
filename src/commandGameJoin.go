@@ -73,20 +73,21 @@ func commandGameJoin(s *Session, d *CommandData) {
 
 	// In non-timed games, start each player with 0 "time left"
 	// It will decrement into negative numbers to show how much time they are taking
-	baseTime := time.Duration(0)
+	timeBase := time.Duration(0)
 	if g.Options.Timed {
-		baseTime = startingTime
+		numSeconds := g.Options.TimeBase * 60
+		timeBase = time.Duration(numSeconds) * time.Second
 	}
+	log.Debug("Each player now has:", timeBase)
 
-	// Keep track of the user that joined
 	p := &Player{
 		ID:      s.UserID(),
 		Name:    s.Username(),
 		Index:   len(g.Players),
 		Present: true,
 		Stats:   stats,
-		Time:    baseTime,
-		Notes:   make([]string, 0),
+		Time:    timeBase,
+		// Notes will get initialized after the deck is created in "commandGameStart.go"
 		Session: s,
 	}
 	g.Players = append(g.Players, p)

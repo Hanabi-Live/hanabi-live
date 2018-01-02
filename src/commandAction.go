@@ -106,12 +106,11 @@ func commandAction(s *Session, d *CommandData) {
 			}
 
 			// Notify everyone about the reordering
-			action := &Action{
+			g.Actions = append(g.Actions, Action{
 				Type:      "reorder",
 				Target:    i,
 				HandOrder: handOrder,
-			}
-			g.Actions = append(g.Actions, action)
+			})
 			g.NotifyAction()
 		}
 	}
@@ -160,22 +159,20 @@ func commandAction(s *Session, d *CommandData) {
 		// This is a special action type sent by the server to itself when a player runs out of time
 		g.Strikes = 3
 
-		action := &Action{
+		g.Actions = append(g.Actions, Action{
 			Text: p.Name + " ran out of time!",
-		}
-		g.Actions = append(g.Actions, action)
+		})
 		g.NotifyAction()
 	} else {
 		return
 	}
 
 	// Send messages about the current status
-	action := &Action{
+	g.Actions = append(g.Actions, Action{
 		Type:  "status",
 		Clues: g.Clues,
 		Score: g.Score,
-	}
-	g.Actions = append(g.Actions, action)
+	})
 	g.NotifyAction()
 
 	// Adjust the timer for the player that just took their turn
@@ -210,20 +207,18 @@ func commandAction(s *Session, d *CommandData) {
 		} else {
 			text = "Players score " + strconv.Itoa(g.Score) + " points"
 		}
-		action := &Action{
+		g.Actions = append(g.Actions, Action{
 			Text: text,
-		}
-		g.Actions = append(g.Actions, action)
+		})
 		g.NotifyAction()
 		log.Info(g.GetName() + " " + text)
 	} else {
 		// Send messages about the current turn
-		action := &Action{
+		g.Actions = append(g.Actions, Action{
 			Type: "turn",
 			Num:  g.Turn,
 			Who:  g.ActivePlayer,
-		}
-		g.Actions = append(g.Actions, action)
+		})
 		g.NotifyAction()
 		log.Info(g.GetName() + " It is now " + np.Name + "'s turn.")
 	}

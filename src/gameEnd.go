@@ -15,7 +15,7 @@ func (g *Game) End() {
 	// Send text messages showing how much time each player finished with
 	if g.Options.Timed {
 		// Advance a turn so that we have an extra separator before the finishing times
-		g.Actions = append(g.Actions, &Action{
+		g.Actions = append(g.Actions, Action{
 			Type: "turn",
 			Num:  g.Turn,
 			Who:  g.ActivePlayer,
@@ -24,7 +24,7 @@ func (g *Game) End() {
 
 		for _, p := range g.Players {
 			text := p.Name + " finished with a time of " + durationToString(p.Time)
-			g.Actions = append(g.Actions, &Action{
+			g.Actions = append(g.Actions, Action{
 				Text: text,
 			})
 			// But don't notify the players; the finishing times will only appear in the replay
@@ -37,7 +37,7 @@ func (g *Game) End() {
 	if g.EndCondition > 1 {
 		loss = true
 	}
-	g.Actions = append(g.Actions, &Action{
+	g.Actions = append(g.Actions, Action{
 		Type:  "gameOver",
 		Score: g.Score,
 		Loss:  loss,
@@ -91,7 +91,7 @@ func (g *Game) End() {
 		Name:            g.Name,
 		Owner:           g.Owner,
 		Variant:         g.Options.Variant,
-		TimeBase:        g.Options.TimeBase,
+		TimeBase:        int(g.Options.TimeBase),
 		TimePerTurn:     g.Options.TimePerTurn,
 		Seed:            g.Seed,
 		Score:           g.Score,
@@ -149,7 +149,8 @@ func (g *Game) End() {
 		}
 		otherPlayerNames = strings.TrimSuffix(otherPlayerNames, ", ")
 
-		p.Session.NotifyGameHistory(models.GameHistory{
+		h := make([]models.GameHistory, 0)
+		h = append(h, models.GameHistory{
 			ID:               databaseID,
 			NumPlayers:       len(g.Players),
 			NumSimilar:       numSimilar,
@@ -158,6 +159,7 @@ func (g *Game) End() {
 			Variant:          g.Options.Variant,
 			OtherPlayerNames: otherPlayerNames,
 		})
+		p.Session.NotifyGameHistory(h)
 	}
 
 	// Send a chat message with the game result and players

@@ -35,7 +35,7 @@ func commandReady(s *Session, d *CommandData) {
 
 	i := g.GetIndex(s.UserID())
 
-	var actions []*Action
+	var actions []Action
 	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
 		actionStrings := make([]string, 0)
 		if v, err := db.GameActions.GetAll(gameID); err != nil {
@@ -54,7 +54,7 @@ func commandReady(s *Session, d *CommandData) {
 				s.NotifyError("Failed to initialize the game. Please contact an administrator.")
 				return
 			}
-			actions = append(actions, &action)
+			actions = append(actions, action)
 		}
 	} else {
 		actions = g.Actions
@@ -80,10 +80,22 @@ func commandReady(s *Session, d *CommandData) {
 		}
 	}
 
-	// Send a "notify" or "message" message for every game action of the deal
-	for _, a := range actions {
-		s.NotifyGameAction(*a, g)
+	// Scrub actions
+	var scrubbedActions []Action
+	if s.Status() == "Playing" {
+		for _, a := range actions {
+			if a.Type == "draw" && a.Who == i {
+				a.Rank = -1
+				a.Suit = -1
+			}
+			scrubbedActions = append(scrubbedActions, a)
+		}
+	} else {
+		scrubbedActions = actions
 	}
+
+	// Send a "notify" or "message" message for every game action of the deal
+	s.Emit("notifyList", &scrubbedActions)
 
 	// If it is their turn, send an "action" message
 	if s.Status() != "Replay" && s.Status() != "Shared Replay" && g.ActivePlayer == i {

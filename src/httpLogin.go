@@ -1,3 +1,12 @@
+/*
+	This is only part 1 of 2 for login authentication.
+	The user must POST to "/login" with the values of "username" and "password".
+	If successful, then they will recieve a cookie from the server with an expiry of 5 seconds.
+	The client will then attempt to make a WebSocket connection; JavaScript will automatiaclly
+	use any current cookies for the website when establishing a WebSocket connection.
+	The logic for opening a websocket connection is contained in the "websocketConnect.go" file.
+*/
+
 package main
 
 import (

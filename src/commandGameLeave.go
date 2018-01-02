@@ -60,7 +60,7 @@ func commandGameLeave(s *Session, d *CommandData) {
 	s.Emit("left", nil)
 
 	// Force everyone else to leave if it was the owner that left
-	if s.UserID() == g.Owner && len(g.Players) > 1 {
+	if s.UserID() == g.Owner && len(g.Players) > 0 {
 		for _, p := range g.Players {
 			commandGameLeave(p.Session, d)
 		}
