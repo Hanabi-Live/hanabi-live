@@ -498,10 +498,10 @@ HanabiLobby.prototype.drawUsers = function drawUsers() {
 
 HanabiLobby.prototype.addTable = function addTable(data) {
     // The baseTime comes in minutes, so convert it to milliseconds
-    data.baseTime = data.baseTime * 1000 * 60
+    data.baseTime *= 1000 * 60;
 
     // The timePerTurn comes in seconds, so convert it to milliseconds
-    data.timePerTurn = data.timePerTurn * 1000
+    data.timePerTurn *= 1000;
 
     this.tableList[data.id] = data;
     this.drawTables();
