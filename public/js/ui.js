@@ -322,6 +322,9 @@ function HanabiUI(lobby, gameID) {
 
         // Do not select an image with pips while the dynamic suit pips are shown
         if (
+            // the !suit condition is necessary for unclued cards with certain rank or suit in
+            // other players' hands to display properly with empathy
+            !suit ||
             !card.suitKnown() ||
             (card.showOnlyLearned && card.possibleSuits.length > 1)
         ) {
@@ -1061,7 +1064,9 @@ function HanabiUI(lobby, gameID) {
             const findPipElement = suit => this.suitPips.find(`.${suit.name}`);
             const removed = filterInPlace(this.possibleSuits, suit => suit.clueColors.includes(clueColor) === positive);
             removed.forEach(suit => findPipElement(suit).hide());
-            if (this.possibleSuits.length === 1) {
+            // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
+            // display a non-grey card face
+            if (this.possibleSuits.length === 1 && (!this.isInPlayerHand() || this.cluedBorder.visible())) {
                 [this.trueSuit] = this.possibleSuits;
                 findPipElement(this.trueSuit).hide();
                 this.suitPips.hide();
@@ -1074,7 +1079,9 @@ function HanabiUI(lobby, gameID) {
             const findPipElement = rank => this.rankPips.find(`.${rank}`);
             const removed = filterInPlace(this.possibleRanks, rank => (rank === clueRank) === positive);
             removed.forEach(rank => findPipElement(rank).hide());
-            if (this.possibleRanks.length === 1) {
+            // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
+            // display a non-grey card face
+            if (this.possibleRanks.length === 1 && (!this.isInPlayerHand() || this.cluedBorder.visible())) {
                 [this.trueRank] = this.possibleRanks;
                 findPipElement(this.trueRank).hide();
                 this.rankPips.hide();
