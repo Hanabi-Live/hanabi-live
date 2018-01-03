@@ -1518,7 +1518,8 @@ HanabiLobby.prototype.sendNotify = (msg, tag) => {
         return;
     }
 
-    Notification(`Hanabi: ${msg}`, {
+    /* eslint-disable no-new */
+    new Notification(`Hanabi: ${msg}`, {
         tag,
     });
 };
