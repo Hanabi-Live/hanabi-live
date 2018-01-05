@@ -227,7 +227,7 @@ function HanabiLobby() {
         self.connSend({
             type: event.currentTarget.getAttribute('data-replayType'),
             resp: {
-                gameID: replayID,
+                gameID: parseInt(replayID, 10),
             },
         });
     });
