@@ -21,16 +21,10 @@ func commandGameAbandon(s *Session, d *CommandData) {
 	gameID := d.ID
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		s.NotifyError("Game " + strconv.Itoa(gameID) + " does not exist.")
+		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
 		g = v
-	}
-
-	// Validate that the game has started
-	if !g.Running {
-		s.NotifyError("Game " + strconv.Itoa(gameID) + " has not started yet.")
-		return
 	}
 
 	/*

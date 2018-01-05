@@ -23,7 +23,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		s.NotifyError("Game " + strconv.Itoa(gameID) + " does not exist.")
+		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
 		g = v
@@ -31,13 +31,13 @@ func commandGameStart(s *Session, d *CommandData) {
 
 	// Validate that the game has at least 2 players
 	if len(g.Players) < 2 {
-		s.NotifyError("You need at least 2 players before you can start a game.")
+		s.Error("You need at least 2 players before you can start a game.")
 		return
 	}
 
 	// Validate that the game is not started yet
 	if g.Running {
-		s.NotifyError("That game has already started, so you cannot start it.")
+		s.Error("That game has already started, so you cannot start it.")
 		return
 	}
 
@@ -150,7 +150,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	var seedRegExp *regexp.Regexp
 	if v, err := regexp.Compile(`^!seed (.+)$`); err != nil {
 		log.Error("Failed to create the seed regular expression:", err)
-		s.NotifyError("Failed to create the game. Please contact an administrator.")
+		s.Error("Failed to create the game. Please contact an administrator.")
 		return
 	} else {
 		seedRegExp = v
@@ -168,7 +168,7 @@ func commandGameStart(s *Session, d *CommandData) {
 			var seeds []string
 			if v, err := db.Games.GetPlayerSeeds(p.ID); err != nil {
 				log.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
-				s.NotifyError("Failed to create the game. Please contact an administrator.")
+				s.Error("Failed to create the game. Please contact an administrator.")
 				return
 			} else {
 				seeds = v

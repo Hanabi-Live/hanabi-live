@@ -78,7 +78,6 @@ func (s *Session) Emit(command string, d interface{}) {
 }
 
 // Sent to the client if either their command was unsuccessful or something else went wrong
-// (client-side, this will cause a WebSocket disconnect and the program to completely restart)
 func (s *Session) Error(message string) {
 	// Specify a default error message
 	if message == "" {
@@ -86,7 +85,7 @@ func (s *Session) Error(message string) {
 	}
 
 	type ErrorMessage struct {
-		Message string `json:"message"`
+		Error string `json:"error"`
 	}
 	s.Emit("error", &ErrorMessage{
 		message,
@@ -347,14 +346,5 @@ func (s *Session) NotifyAllNotes(playerNotes []models.PlayerNote) {
 	}
 	s.Emit("notes", &NotesMessage{
 		Notes: combinedNotes,
-	})
-}
-
-func (s *Session) NotifyError(msg string) {
-	type ErrorMessage struct {
-		Error string `json:"error"`
-	}
-	s.Emit("error", &ErrorMessage{
-		Error: msg,
 	})
 }

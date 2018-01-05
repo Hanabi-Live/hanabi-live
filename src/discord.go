@@ -12,7 +12,8 @@ var (
 	discord               *discordgo.Session
 	discordToken          string
 	discordListenChannels []string
-	discordOutputChannel  string
+	discordLobbyChannel   string
+	discordBotChannel     string
 	discordBotID          string
 )
 
@@ -30,9 +31,14 @@ func discordInit() {
 		return
 	}
 	discordListenChannels = strings.Split(discordListenChannelsString, ",")
-	discordOutputChannel = os.Getenv("DISCORD_OUTPUT_CHANNEL_ID")
-	if len(discordOutputChannel) == 0 {
-		log.Info("The \"DISCORD_OUTPUT_CHANNEL_ID\" environment variable is blank; aborting Discord initalization.")
+	discordLobbyChannel = os.Getenv("DISCORD_LOBBY_CHANNEL_ID")
+	if len(discordLobbyChannel) == 0 {
+		log.Info("The \"DISCORD_LOBBY_CHANNEL_ID\" environment variable is blank; aborting Discord initalization.")
+		return
+	}
+	discordBotChannel = os.Getenv("DISCORD_BOT_CHANNEL_ID")
+	if len(discordBotChannel) == 0 {
+		log.Info("The \"DISCORD_BOT_CHANNEL_ID\" environment variable is blank; aborting Discord initalization.")
 		return
 	}
 
@@ -58,8 +64,12 @@ func discordConnect() {
 	}
 
 	// Announce that the server has started
-	msg := "The server has successfully started at: " + time.Now().Format("Mon Jan 2 15:04:05 MST 2006")
-	discordSend("Server Notice", "", msg)
+	msg := "The server has successfully started at: " + time.Now().Format("Mon Jan 02 15:04:05 MST 2006")
+	d := &CommandData{
+		Msg:    msg,
+		Server: true,
+	}
+	commandChat(nil, d)
 }
 
 /*
@@ -83,7 +93,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// Get the name of the channel
+	// Get the channel
 	var channel *discordgo.Channel
 	if v, err := discord.Channel(m.ChannelID); err != nil {
 		log.Error("Failed to get the Discord channel of \""+m.ChannelID+"\":", err)
@@ -105,19 +115,19 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	commandChat(nil, d)
 }
 
-func discordSend(from string, username string, msg string) {
+func discordSend(to string, username string, msg string) {
 	if discord == nil {
 		return
 	}
 
-	// In Discord, text inside single asterisks are italicised and text inside double asterisks are bolded
-	fullMsg := "[*" + from + "*] "
+	var fullMsg string
 	if username != "" {
+		// Text inside double asterisks are bolded
 		fullMsg += "<**" + username + "**> "
 	}
 	fullMsg += msg
 
-	if _, err := discord.ChannelMessageSend(discordOutputChannel, fullMsg); err != nil {
+	if _, err := discord.ChannelMessageSend(to, fullMsg); err != nil {
 		log.Error("Failed to send \""+fullMsg+"\" to Discord:", err)
 	}
 }

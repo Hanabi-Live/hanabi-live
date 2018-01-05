@@ -729,16 +729,22 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 HanabiLobby.prototype.addChat = function addChat(data) {
     const chat = $('#chat-contents');
 
-    let line = '';
+    // Get the hours and minutes from the time
+    let date = new Date();
+    let hours = date.getHours();
+    if (hours < 10) {
+        hours = `0${hours}`;
+    }
+    let minutes = date.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`;
+    }
+
+    let line = `[${hours}:${minutes}]&nbsp; `;
     if (data.server) {
-        line += '<b>[SERVER NOTICE]</b> ';
         line += data.msg;
     } else if (data.who) {
-        line += `<i>${new Date().toLocaleTimeString()}</i>&nbsp;&nbsp;`;
-        if (data.discord) {
-            line += '&lt;<b>D</b>&gt; ';
-        }
-        line += `<b>${data.who}:</b> `;
+        line += `&lt;<b>${data.who}</b>&gt;&nbsp; `;
         line += `${$('<a>').text(data.msg).html()}`;
     } else {
         line += `<b>${$('<a>').text(data.msg).html()}</b>`;

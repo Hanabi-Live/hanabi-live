@@ -22,7 +22,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		s.NotifyError("Game " + strconv.Itoa(gameID) + " does not exist.")
+		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
 		g = v
@@ -30,19 +30,19 @@ func commandReplayAction(s *Session, d *CommandData) {
 
 	// Validate that this is a shared replay
 	if !g.SharedReplay {
-		s.NotifyError("Game " + strconv.Itoa(gameID) + " is not a shared replay, so you cannot send a shared replay action.")
+		s.Error("Game " + strconv.Itoa(gameID) + " is not a shared replay, so you cannot send a shared replay action.")
 		return
 	}
 
 	// Validate that this person is leading the review
 	if s.UserID() != g.Owner {
-		s.NotifyError("You cannot send a shared replay action unless you are the leader.")
+		s.Error("You cannot send a shared replay action unless you are the leader.")
 		return
 	}
 
 	// Validate numeric value
 	if d.Value < 0 {
-		s.NotifyError("That is an invalid value for the shared replay action.")
+		s.Error("That is an invalid value for the shared replay action.")
 		return
 	}
 
@@ -75,7 +75,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 			})
 		}
 	} else {
-		s.NotifyError("That is an invalid type of shared replay action.")
+		s.Error("That is an invalid type of shared replay action.")
 		return
 	}
 }

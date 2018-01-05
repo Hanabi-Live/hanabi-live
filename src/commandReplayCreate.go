@@ -16,10 +16,10 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	gameID := d.ID
 	if exists, err := db.Games.Exists(gameID); err != nil {
 		log.Error("Failed to check to see if game "+strconv.Itoa(gameID)+" exists:", err)
-		s.NotifyError("Failed to initialize the game. Please contact an administrator.")
+		s.Error("Failed to initialize the game. Please contact an administrator.")
 		return
 	} else if !exists {
-		s.NotifyError("Game #" + strconv.Itoa(gameID) + " does not exist.")
+		s.Error("Game #" + strconv.Itoa(gameID) + " does not exist.")
 		return
 	}
 

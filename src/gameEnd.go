@@ -163,23 +163,27 @@ func (g *Game) End() {
 	}
 
 	// Send a chat message with the game result and players
-	announceGameResult(g)
+	announceGameResult(g, databaseID)
 
 	// Keep track of the game ending
 	delete(games, g.ID)
 	log.Info("Finished database actions for the end of the game.")
 }
 
-func announceGameResult(g *Game) {
-	// TODO
-	/*
-		const socket = {
-			userID: 1, // The first user ID is reserved for server messages
-		};
-		const nameList = game.players.map(p => p.username);
-		const listEnd = `${game.players.length > 2 ? ',' : ''} and ${nameList.pop()}`;
-		const listBeginning = nameList.join(', '); // The final name was removed above
-		data.msg = `[${listBeginning}${listEnd}] finished a ${globals.variants[game.variant].toLowerCase()} game with a score of ${game.score}. (#${data.databaseID} - ${game.name})`;
-		messages.chat.step1(socket, data);
-	*/
+func announceGameResult(g *Game, databaseID int) {
+	// Make the list of names
+	playerList := make([]string, 0)
+	for _, p := range g.Players {
+		playerList = append(playerList, p.Name)
+	}
+	msg := "[" + strings.Join(playerList, ", ") + "] "
+	msg += "finished a " + strings.ToLower(variantsShort[g.Options.Variant]) + " "
+	msg += "game with a score of " + strconv.Itoa(g.Score) + ". "
+	msg += "(#" + strconv.Itoa(databaseID) + " - " + g.Name + ")"
+
+	d := &CommandData{
+		Server: true,
+		Msg:    msg,
+	}
+	commandChat(nil, d)
 }

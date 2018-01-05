@@ -16,7 +16,7 @@ func commandGameLeave(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		s.NotifyError("Game " + strconv.Itoa(gameID) + " does not exist.")
+		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
 		g = v
@@ -24,14 +24,14 @@ func commandGameLeave(s *Session, d *CommandData) {
 
 	// Validate that the game has not started
 	if g.Running {
-		s.NotifyError("That game has already started, so you cannot leave it.")
+		s.Error("That game has already started, so you cannot leave it.")
 		return
 	}
 
 	// Validate that they are in the game
 	i := g.GetIndex(s.UserID())
 	if i == -1 {
-		s.NotifyError("You are not in this game, so you cannot leave it.")
+		s.Error("You are not in this game, so you cannot leave it.")
 		return
 	}
 

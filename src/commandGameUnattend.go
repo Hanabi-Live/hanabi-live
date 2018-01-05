@@ -68,7 +68,7 @@ func commandGameUnattend(s *Session, d *CommandData) {
 	// (or set them to "AWAY" if the game has not started yet)
 	i := g.GetIndex(s.UserID())
 	if i == -1 {
-		s.NotifyError("You are in not game " + strconv.Itoa(gameID) + ", so you cannot unattend it.")
+		s.Error("You are in not game " + strconv.Itoa(gameID) + ", so you cannot unattend it.")
 		return
 	}
 	p := g.Players[i]

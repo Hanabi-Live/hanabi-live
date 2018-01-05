@@ -27,7 +27,7 @@ func websocketConnect(ms *melody.Session) {
 	if s2, ok := sessions[s.UserID()]; ok {
 		log.Info("Closing existing connection for user \"" + s.Username() + "\".")
 		s2.Error("You have logged on from somewhere else, so you have been disconnected here.")
-		if err := s.Close(); err != nil {
+		if err := s2.Close(); err != nil {
 			log.Error("Attempted to manually close a WebSocket connection, but it failed.")
 		} else {
 			log.Info("Successfully terminated a WebSocket connection.")
@@ -37,7 +37,7 @@ func websocketConnect(ms *melody.Session) {
 		commandMutex.Unlock()
 		for {
 			commandMutex.Lock()
-			_, ok := sessions[s.UserID()]
+			_, ok := sessions[s2.UserID()]
 			commandMutex.Unlock()
 			if !ok {
 				break

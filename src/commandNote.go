@@ -22,7 +22,7 @@ func commandNote(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		s.NotifyError("Game " + strconv.Itoa(gameID) + " does not exist.")
+		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
 		g = v
@@ -30,14 +30,14 @@ func commandNote(s *Session, d *CommandData) {
 
 	// Validate that the game has started
 	if !g.Running {
-		s.NotifyError("Game " + strconv.Itoa(gameID) + " has not started yet.")
+		s.Error("Game " + strconv.Itoa(gameID) + " has not started yet.")
 		return
 	}
 
 	// Validate that they are in the game
 	i := g.GetIndex(s.UserID())
 	if i == -1 {
-		s.NotifyError("You are in not game " + strconv.Itoa(gameID) + ", so you cannot send a note.")
+		s.Error("You are in not game " + strconv.Itoa(gameID) + ", so you cannot send a note.")
 		return
 	}
 	p := g.Players[i]

@@ -26,13 +26,13 @@ func commandGameCreate(s *Session, d *CommandData) {
 
 	// Validate that the game name is not excessively long
 	if len(d.Name) > maxGameLength {
-		s.NotifyError("You cannot have a game name be longer than " + strconv.Itoa(maxGameLength) + " characters.")
+		s.Error("You cannot have a game name be longer than " + strconv.Itoa(maxGameLength) + " characters.")
 		return
 	}
 
 	// Validate that the player is not joined to another game
 	if s.CurrentGame() != -1 {
-		s.NotifyError("You cannot create a new game when you are already in one.")
+		s.Error("You cannot create a new game when you are already in one.")
 		return
 	}
 

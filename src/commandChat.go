@@ -15,13 +15,13 @@ const (
 func commandChat(s *Session, d *CommandData) {
 	// Local variables
 	var userID int
-	if d.Discord {
+	if d.Discord || d.Server {
 		userID = 0
 	} else {
 		userID = s.UserID()
 	}
 	var username string
-	if d.Username != "" {
+	if d.Username != "" || d.Server {
 		username = d.Username
 	} else {
 		username = s.Username()
@@ -33,7 +33,9 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Validate the message
 	if d.Msg == "" {
-		s.NotifyError("You cannot send a blank message.")
+		if s != nil {
+			s.Error("You cannot send a blank message.")
+		}
 		return
 	}
 
@@ -49,15 +51,14 @@ func commandChat(s *Session, d *CommandData) {
 	// Add the message to the database
 	if err := db.ChatLog.Insert(userID, d.Msg); err != nil {
 		log.Error("Failed to insert a chat message into the database:", err)
-		s.NotifyError("Failed to insert a chat message into the database. Please contact an administrator.")
+		if s != nil {
+			s.Error("Failed to insert a chat message into the database. Please contact an administrator.")
+		}
 		return
 	}
 
-	// Create the string to display on the client
+	// Log the message
 	text := ""
-	if d.Discord {
-		text += "DISCORD "
-	}
 	if !d.Server || d.Discord {
 		text += "<" + username + "> "
 	}
@@ -66,7 +67,9 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Check for debug commands
 	if d.Msg == "!debug" {
-		debug(s, d)
+		if s != nil {
+			debug(s, d)
+		}
 		return
 	}
 
@@ -75,9 +78,15 @@ func commandChat(s *Session, d *CommandData) {
 		s2.NotifyChat(d.Msg, username, d.Discord, d.Server)
 	}
 
-	// Send the chat message to the Discord "#general" channel
-	// (but don't send Discord messages that we are already replicating)
+	// Send the chat message to the Discord "#general" channel if we are replicating a message
+	to := discordLobbyChannel
+	if d.Server {
+		// Send server messages to a separate channel
+		to = discordBotChannel
+	}
+
+	// Don't send Discord messages that we are already replicating
 	if !d.Discord {
-		discordSend("Hanabi Live", username, d.Msg)
+		discordSend(to, username, d.Msg)
 	}
 }

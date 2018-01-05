@@ -26,7 +26,7 @@ func commandHello(s *Session, d *CommandData) {
 		var variant int
 		if v, err := db.Games.GetVariant(gameID); err != nil {
 			log.Error("Failed to get the variant from the database for game "+strconv.Itoa(gameID)+":", err)
-			s.NotifyError("Failed to initialize the game. Please contact an administrator.")
+			s.Error("Failed to initialize the game. Please contact an administrator.")
 			return
 		} else {
 			variant = v
@@ -35,7 +35,7 @@ func commandHello(s *Session, d *CommandData) {
 		var dbPlayers []models.Player
 		if v, err := db.Games.GetPlayers(gameID); err != nil {
 			log.Error("Failed to get the players from the database for game "+strconv.Itoa(gameID)+":", err)
-			s.NotifyError("Failed to initialize the game. Please contact an administrator.")
+			s.Error("Failed to initialize the game. Please contact an administrator.")
 			return
 		} else {
 			dbPlayers = v
@@ -58,7 +58,7 @@ func commandHello(s *Session, d *CommandData) {
 	} else {
 		// Validate that the game exists
 		if v, ok := games[gameID]; !ok {
-			s.NotifyError("Game " + strconv.Itoa(gameID) + " does not exist.")
+			s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
 			return
 		} else {
 			g = v

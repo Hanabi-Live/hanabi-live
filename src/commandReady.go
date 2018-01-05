@@ -22,7 +22,7 @@ func commandReady(s *Session, d *CommandData) {
 	var g *Game
 	if s.Status() != "Replay" {
 		if v, ok := games[gameID]; !ok {
-			s.NotifyError("Game " + strconv.Itoa(gameID) + " does not exist.")
+			s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
 			return
 		} else {
 			g = v
@@ -40,7 +40,7 @@ func commandReady(s *Session, d *CommandData) {
 		actionStrings := make([]string, 0)
 		if v, err := db.GameActions.GetAll(gameID); err != nil {
 			log.Error("Failed to get the actions from the database for game "+strconv.Itoa(gameID)+":", err)
-			s.NotifyError("Failed to initialize the game. Please contact an administrator.")
+			s.Error("Failed to initialize the game. Please contact an administrator.")
 			return
 		} else {
 			actionStrings = v
@@ -51,7 +51,7 @@ func commandReady(s *Session, d *CommandData) {
 			var action Action
 			if err := json.Unmarshal([]byte(actionString), &action); err != nil {
 				log.Error("Failed to unmarshal an action:", err)
-				s.NotifyError("Failed to initialize the game. Please contact an administrator.")
+				s.Error("Failed to initialize the game. Please contact an administrator.")
 				return
 			}
 			actions = append(actions, action)
@@ -64,7 +64,7 @@ func commandReady(s *Session, d *CommandData) {
 	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
 		if v, err := db.Games.GetNotes(gameID); err != nil {
 			log.Error("Failed to get the notes from the database for game "+strconv.Itoa(gameID)+":", err)
-			s.NotifyError("Failed to initialize the game. Please contact an administrator.")
+			s.Error("Failed to initialize the game. Please contact an administrator.")
 			return
 		} else {
 			notes = v

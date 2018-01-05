@@ -20,7 +20,7 @@ func commandHistoryDetails(s *Session, d *CommandData) {
 	var deals []models.GameHistory
 	if v, err := db.Games.GetAllDeals(s.UserID(), gameID); err != nil {
 		log.Error("Failed to get the deals from the database for game "+strconv.Itoa(gameID)+":", err)
-		s.NotifyError("Failed to get the deals for game " + strconv.Itoa(gameID) + ". Please contact an administrator.")
+		s.Error("Failed to get the deals for game " + strconv.Itoa(gameID) + ". Please contact an administrator.")
 		return
 	} else {
 		deals = v

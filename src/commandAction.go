@@ -41,7 +41,7 @@ func commandAction(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		s.NotifyError("Game " + strconv.Itoa(gameID) + " does not exist.")
+		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
 		g = v
@@ -49,20 +49,20 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Validate that the game has started
 	if !g.Running {
-		s.NotifyError("Game " + strconv.Itoa(gameID) + " has not started yet.")
+		s.Error("Game " + strconv.Itoa(gameID) + " has not started yet.")
 		return
 	}
 
 	// Validate that they are in the game
 	i := g.GetIndex(s.UserID())
 	if i == -1 {
-		s.NotifyError("You are in not game " + strconv.Itoa(gameID) + ", so you cannot send an action.")
+		s.Error("You are in not game " + strconv.Itoa(gameID) + ", so you cannot send an action.")
 		return
 	}
 
 	// Validate that it is this player's turn
 	if g.ActivePlayer != i {
-		s.NotifyError("It is not your turn, so you cannot perform an action.")
+		s.Error("It is not your turn, so you cannot perform an action.")
 		return
 	}
 
@@ -119,13 +119,13 @@ func commandAction(s *Session, d *CommandData) {
 	if d.Type == 0 { // Clue
 		// Validate that the player is not giving a clue to themselves
 		if g.ActivePlayer == d.Target {
-			s.NotifyError("You cannot give a clue to yourself.")
+			s.Error("You cannot give a clue to yourself.")
 			return
 		}
 
 		// Validate that there are clues available to use
 		if g.Clues == 0 {
-			s.NotifyError("You cannot give a clue when the team has 0 clues left.")
+			s.Error("You cannot give a clue when the team has 0 clues left.")
 			return
 		}
 
@@ -138,7 +138,7 @@ func commandAction(s *Session, d *CommandData) {
 		// We are not allowed to discard while at 8 clues
 		// (the client should enforce this, but do a check just in case)
 		if g.Clues == 8 {
-			s.NotifyError("You cannot discard while the team has 8 clues.")
+			s.Error("You cannot discard while the team has 8 clues.")
 			return
 		}
 
@@ -150,7 +150,7 @@ func commandAction(s *Session, d *CommandData) {
 		// We are not allowed to blind play the deck unless there is only 1 card left
 		// (the client should enforce this, but do a check just in case)
 		if g.DeckIndex != len(g.Deck)-1 {
-			s.NotifyError("You cannot blind play the deck until there is only 1 card left.")
+			s.Error("You cannot blind play the deck until there is only 1 card left.")
 			return
 		}
 

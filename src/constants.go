@@ -58,4 +58,14 @@ var (
 		"White Suit & Rainbow Suit",
 		"Wild & Crazy",
 	}
+	variantsShort = []string{
+		"No Variant",
+		"Black",
+		"Black (1oE)",
+		"Rainbow",
+		"Dual-color",
+		"Dual & Rainbow",
+		"White & Rainbow",
+		"Wild & Crazy",
+	}
 )
