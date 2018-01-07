@@ -71,18 +71,13 @@ func (g *Game) End() {
 	// Log the game ending
 	log.Info(g.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
-	// Notify everyone that the table was deleted
-	notifyAllTableGone(g)
-
 	// Reset the status of the players
 	for _, p := range g.Players {
-		p.Session.Set("currentGame", -1)
-		p.Session.Set("session", "Replay")
+		p.Session.Set("session", "Shared Replay")
 		notifyAllUser(p.Session)
 	}
 	for _, s := range g.Spectators {
-		s.Set("currentGame", -1)
-		s.Set("session", "Replay")
+		s.Set("session", "Shared Replay")
 		notifyAllUser(s)
 	}
 
@@ -165,12 +160,32 @@ func (g *Game) End() {
 	// Send a chat message with the game result and players
 	announceGameResult(g, databaseID)
 
-	// Keep track of the game ending
-	delete(games, g.ID)
 	log.Info("Finished database actions for the end of the game.")
+
+	// Turn the game into a shared replay
+	g.SharedReplay = true
+	for _, p := range g.Players {
+		// Add them to the spectators object only if they are still there
+		if !p.Present {
+			continue
+		}
+
+		g.Spectators[p.Session.UserID()] = p.Session
+		// (the status was already set above)
+
+		// Activate the Replay Leader label
+		p.Session.NotifyReplayLeader(g)
+	}
+	notifyAllTable(g)
+	g.NotifyPlayerChange()
+	g.NotifySpectators()
 }
 
 func announceGameResult(g *Game, databaseID int) {
+	// Emote definitions
+	pogChamp := "<:PogChamp:254683883033853954>"
+	bibleThump := "<:BibleThump:254683882601840641>"
+
 	// Make the list of names
 	playerList := make([]string, 0)
 	for _, p := range g.Players {
@@ -179,11 +194,17 @@ func announceGameResult(g *Game, databaseID int) {
 	msg := "[" + strings.Join(playerList, ", ") + "] "
 	msg += "finished a " + strings.ToLower(variantsShort[g.Options.Variant]) + " "
 	msg += "game with a score of " + strconv.Itoa(g.Score) + ". "
+	if g.Score == g.MaxScore() {
+		msg += pogChamp + " "
+	} else if g.Score == 0 {
+		msg += bibleThump + " "
+	}
 	msg += "(#" + strconv.Itoa(databaseID) + " - " + g.Name + ")"
 
 	d := &CommandData{
 		Server: true,
 		Msg:    msg,
+		Room:   "lobby",
 	}
 	commandChat(nil, d)
 }

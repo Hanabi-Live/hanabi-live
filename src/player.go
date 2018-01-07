@@ -255,7 +255,14 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 	}
 	if !c.Touched {
 		text += " (blind)"
-		g.Sound = "blind"
+		g.BlindPlays++
+		if g.BlindPlays > 4 {
+			// There isn't a sound effect for more than 4 blind plays in a row
+			g.BlindPlays = 4
+		}
+		g.Sound = "blind" + strconv.Itoa(g.BlindPlays)
+	} else {
+		g.BlindPlays = 0
 	}
 	g.Actions = append(g.Actions, Action{
 		Text: text,
@@ -272,9 +279,8 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 	}
 
 	// Update the progress
-	maxScore := len(g.Stacks) * 5
-	progress := float64(g.Score) / float64(maxScore) * 100 // In percent
-	g.Progress = int(round(progress, 1))                   // Round it to the nearest integer
+	progress := float64(g.Score) / float64(g.MaxScore()) * 100 // In percent
+	g.Progress = int(round(progress, 1))                       // Round it to the nearest integer
 	// TODO replace with this native Math.round in Go 1.10
 	// https://github.com/golang/go/issues/20100
 }

@@ -36,8 +36,8 @@ CREATE TABLE games (
     seed               VARCHAR(15)   NOT NULL, /* like "p2v0s1" */
     score              INT           NOT NULL,
     end_condition      INT           NOT NULL, /* 0 - in progress, 1 - normal, 2 - strikeout, 3 - timeout, 4 - abandoned */
-    datetime_created   TIMESTAMP     NOT NULL,
-    datetime_started   TIMESTAMP     NOT NULL,
+    datetime_created   TIMESTAMP     NOT NULL  DEFAULT '0000-00-00 00:00:00',
+    datetime_started   TIMESTAMP     NOT NULL  DEFAULT '0000-00-00 00:00:00',
     datetime_finished  TIMESTAMP     NOT NULL  DEFAULT NOW(),
     FOREIGN KEY (owner) REFERENCES users (id)
 );

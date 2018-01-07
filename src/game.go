@@ -10,7 +10,7 @@ import (
 type Game struct {
 	ID               int
 	Name             string
-	Owner            int
+	Owner            int // The user ID of the person who started the game or the current leader of the shared replay
 	Options          *Options
 	Players          []*Player
 	Spectators       map[int]*Session
@@ -19,7 +19,7 @@ type Game struct {
 	DatetimeCreated  time.Time
 	DatetimeStarted  time.Time
 	DatetimeFinished time.Time
-	EndCondition     int
+	EndCondition     int // See "database_schema.sql" for mappings
 
 	Seed          string
 	Deck          []*Card
@@ -36,6 +36,7 @@ type Game struct {
 	Sound         string
 	TurnBeginTime time.Time
 	EndTurn       int
+	BlindPlays    int // The number of consecutive blind plays
 }
 
 type Options struct {
@@ -71,6 +72,10 @@ func (g *Game) GetIndex(id int) int {
 		}
 	}
 	return -1
+}
+
+func (g *Game) MaxScore() int {
+	return len(g.Stacks) * 5
 }
 
 /*
@@ -249,7 +254,8 @@ func (g *Game) NotifySpectatorsNote(order int) {
 	// Make an array that contains the notes for just this card
 	var notes []string
 	for _, p := range g.Players {
-		notes = append(notes, p.Notes[order])
+		note := p.Notes[order]
+		notes = append(notes, note)
 	}
 
 	type NoteMessage struct {
@@ -314,8 +320,7 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// Check to see if the maximum score has been reached
-	maxScore := len(g.Stacks) * 5
-	if g.Score == maxScore {
+	if g.Score == g.MaxScore() {
 		log.Info(g.GetName() + "Maximum score reached; ending the game.")
 		g.EndCondition = 1
 		return true

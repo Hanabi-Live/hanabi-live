@@ -55,6 +55,12 @@ function HanabiUI(lobby, gameID) {
     this.activeClockIndex = null;
     this.lastSpectators = null;
 
+    /*
+        Initialize tooltips
+    */
+
+
+
     // This below code block deals with automatic resizing
     // Start listening to resize events and draw canvas.
     window.addEventListener('resize', resizeCanvas, false);
@@ -818,7 +824,6 @@ function HanabiUI(lobby, gameID) {
                 this.notePulse.play();
             },
         });
-
         this.notePulse.anim.addLayer(cardLayer);
 
         // Create the note tooltip
@@ -2009,8 +2014,13 @@ function HanabiUI(lobby, gameID) {
 
         this.name.setOffsetX(w / 2);
         const nameTextObject = this.name;
-        this.name.on('click tap', () => {
-            msgLogGroup.showPlayerActions(nameTextObject.getText());
+        this.name.on('click tap', (event) => {
+            const username = nameTextObject.getText();
+            if (event.evt.which === 1) { // Left-click
+                msgLogGroup.showPlayerActions(username);
+            } else if (event.evt.which === 3) { // Right-click
+                 this.giveLeader(username);
+            }
         });
         this.add(this.name);
 
@@ -2064,6 +2074,32 @@ function HanabiUI(lobby, gameID) {
     };
 
     Kinetic.Util.extend(HanabiNameFrame, Kinetic.Group);
+
+    // Transfer leadership of the shared replay to another player
+    HanabiNameFrame.prototype.giveLeader = function giveLeader(username) {
+        // Only proceed if we are in a shared replay
+        if (!ui.sharedReplay) {
+            return;
+        }
+
+        // Only proceed if we are the replay leader
+        if (ui.sharedReplayLeader !== lobby.username) {
+            return;
+        }
+
+        // Only proceed if we didn't right-click on ourselves
+        if (username === lobby.username) {
+            return;
+        }
+
+        ui.sendMsg({
+            type: 'replayAction',
+            resp: {
+                type: 2, // Type 2 is a leader transfer
+                name: username,
+            },
+        });
+    };
 
     HanabiNameFrame.prototype.setActive = function setActive(active) {
         this.leftline.setStrokeWidth(active ? 3 : 1);
@@ -2616,6 +2652,7 @@ function HanabiUI(lobby, gameID) {
     let spectatorsNumLabel;
     let spectatorsLabelTooltip;
     let sharedReplayLeaderLabel;
+    let sharedReplayLeaderLabelPulse;
     let sharedReplayLeaderLabelTooltip;
     let strikes = [];
     const nameFrames = [];
@@ -3023,6 +3060,21 @@ function HanabiUI(lobby, gameID) {
             visible: false,
         });
         UILayer.add(sharedReplayLeaderLabel);
+
+        // Add an animation to alert everyone when shared replay leadership has been transfered
+        sharedReplayLeaderLabelPulse = new Kinetic.Tween({
+            node: sharedReplayLeaderLabel,
+            scaleX: 2,
+            scaleY: 2,
+            offsetX: 12,
+            offsetY: 10,
+            duration: 0.5,
+            easing: Kinetic.Easings.EaseInOut,
+            onFinish: () => {
+                sharedReplayLeaderLabelPulse.reverse();
+            },
+        });
+        sharedReplayLeaderLabelPulse.anim.addLayer(UILayer);
 
         /*
             Tooltip for the crown
@@ -3667,7 +3719,6 @@ function HanabiUI(lobby, gameID) {
                 nameFrames[i].tooltip = frameHoverTooltip;
 
                 nameFrames[i].on('mousemove', nameFramesMouseMove);
-
                 nameFrames[i].on('mouseout', nameFramesMouseOut);
             }
         }
@@ -4044,6 +4095,8 @@ function HanabiUI(lobby, gameID) {
         replayArea.add(button);
 
         // The "Exit Replay" button
+        // (commented out since it is pointless with the "Lobby" button)
+        /*
         button = new Button({
             x: 0.15 * winW,
             y: 0.17 * winH,
@@ -4069,6 +4122,7 @@ function HanabiUI(lobby, gameID) {
         });
 
         replayArea.add(button);
+        */
 
         toggleSharedTurnButton = new ToggleButton({
             x: 0.15 * winW,
@@ -5037,7 +5091,8 @@ function HanabiUI(lobby, gameID) {
         // Build the note text from the "notes" array given by the server
         let newNote = '';
         for (let i = 0; i < data.notes.length; i++) {
-            if (data.notes[i] !== null) {
+            const note = data.notes[i];
+            if (note !== null && note !== '') {
                 newNote += `${ui.playerNames[i]}: ${data.notes[i]}\n`;
             }
         }
@@ -5113,6 +5168,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleReplayLeader = function handleReplayLeader(data) {
+        this.sharedReplay = true; // Necessary because we might be getting here after a game just ended
         this.sharedReplayLeader = data.name;
 
         sharedReplayLeaderLabel.show();
@@ -5120,7 +5176,10 @@ function HanabiUI(lobby, gameID) {
 
         if (this.sharedReplayLeader === lobby.username) {
             sharedReplayLeaderLabel.fill('yellow');
+        } else {
+            sharedReplayLeaderLabel.fill('white');
         }
+        sharedReplayLeaderLabelPulse.play();
 
         toggleSharedTurnButton.show();
         UILayer.draw();

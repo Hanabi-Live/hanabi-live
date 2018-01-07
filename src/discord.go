@@ -112,6 +112,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		Username: m.Author.Username + "#" + m.Author.Discriminator,
 		Msg:      m.Content,
 		Discord:  true,
+		Room:     "lobby",
 	}
 	commandChat(nil, d)
 }

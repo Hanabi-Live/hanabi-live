@@ -113,6 +113,14 @@ function HanabiLobby() {
         }, 1);
     });
 
+    discordContent = 'Discord is a voice and text chat application that you can run in a browser.<br />If the server is down, you can probably find out why in the Hanabi server / chat room.';
+    $('#title-discord').tooltipster({
+        theme: 'tooltipster-shadow',
+        delay: 0,
+        content: discordContent,
+        contentAsHTML: true,
+    });
+
     /*
         Display the login screen
     */
@@ -374,7 +382,16 @@ HanabiLobby.prototype.preloadSounds = function preloadSounds() {
         return;
     }
 
-    const soundFiles = ['blind', 'fail', 'tone', 'turn_other', 'turn_us'];
+    const soundFiles = [
+        'blind1',
+        'blind2',
+        'blind3',
+        'blind4',
+        'fail',
+        'tone',
+        'turn_other',
+        'turn_us',
+    ];
     for (const file of soundFiles) {
         const audio = new Audio(`public/sounds/${file}.mp3`);
         audio.volume = 0;
@@ -467,14 +484,18 @@ HanabiLobby.prototype.hideLogin = () => {
     $('#login').hide();
 };
 
-HanabiLobby.prototype.showLobby = function showLobby() {
-    $('#lobby').fadeIn(fadeTime);
+HanabiLobby.prototype.showLobby = function showLobby(fast) {
+    $('#lobby').show();
     this.showNav('games');
     $('#lobby-chat-input').focus();
 };
 
-HanabiLobby.prototype.hideLobby = function hideLobby() {
-    $('#lobby').hide();
+HanabiLobby.prototype.hideLobby = function hideLobby(fast) {
+    // This has to be in a timeout to work for some reason
+    setTimeout(() => {
+        $('#lobby').hide();
+    }, 1);
+
     this.showNav('nothing');
 };
 
@@ -763,6 +784,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 HanabiLobby.prototype.addChat = function addChat(data) {
     const chat = $('#lobby-chat-text');
 
+    // Convert any Discord emotes
+    data.msg = this.fillEmotes(data.msg)
+
     // Get the hours and minutes from the time
     const datetime = dateTimeFormatter2.format(new Date(data.datetime))
 
@@ -783,8 +807,11 @@ HanabiLobby.prototype.addChat = function addChat(data) {
         scrollTop: chat[0].scrollHeight,
     }, fadeTime);
 
-    const r = new RegExp(this.username, 'i');
+    if (data.previous) {
+        return;
+    }
 
+    const r = new RegExp(this.username, 'i');
     if (data.who && r.test(data.msg)) {
         if (this.sendChatNotify) {
             this.sendNotify(`${data.who} mentioned you in chat`, 'chat');
@@ -795,6 +822,25 @@ HanabiLobby.prototype.addChat = function addChat(data) {
         }
     }
 };
+
+HanabiLobby.prototype.fillEmotes = function fillEmotes(message) {
+    const emoteMapping = {
+        '<:BibleThump:254683882601840641>': 'BibleThump',
+        '<:PogChamp:254683883033853954>': 'PogChamp',
+    }
+
+    // Search through the text for each emote
+    for (const emote of Object.keys(emoteMapping)) {
+        if (message.indexOf(emote) === -1) {
+            continue;
+        }
+
+        const emoteTag = `<img src="public/img/emotes/${emoteMapping[emote]}.png" title="${emoteMapping[emote]}" />`;
+        message = message.replace(emote, emoteTag);
+    }
+
+    return message;
+}
 
 HanabiLobby.prototype.addHistory = function addHistory(data) {
     this.historyList[data.id] = data;
@@ -1317,6 +1363,7 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
         data.reverse();
 
         for (const line of data) {
+            line.previous = true;
             self.addChat(line);
         }
     });

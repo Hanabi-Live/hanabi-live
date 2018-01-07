@@ -31,12 +31,21 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		Abandon
 	*/
 
+	if !g.Running {
+		// Delete the game and don't write it to the database
+		delete(games, gameID)
+		notifyAllTableGone(g)
+		return
+	}
+
 	// End the game and write it to the database
 	text := s.Username() + " terminated the game!"
 	g.Actions = append(g.Actions, Action{
 		Text: text,
 	})
 	g.NotifyAction()
+	g.EndCondition = 4
+	g.Score = 0
 	g.End()
 
 	// Boot the people in the game back to the lobby screen

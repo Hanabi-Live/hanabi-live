@@ -80,13 +80,13 @@
                 <ul id="nav-buttons-history" class="hidden">
                     <li>
                         <a class="button nav-buttons-history-by-id" data-replayType="replayCreate">
-                            <i class="fas fa-share nav-icon"></i>
+                            <i class="fas fa-eye nav-icon"></i>
                             <span class="nav-hotkey-indicator">W</span>atch Replay by ID
                         </a>
                     </li>
                     <li>
                         <a class="button nav-buttons-history-by-id" data-replayType="sharedReplayCreate">
-                            <i class="fas fa-eye nav-icon"></i>
+                            <i class="fas fa-share-alt nav-icon"></i>
                             Share Replay by ID
                         </a>
                     </li>
@@ -182,7 +182,7 @@
             </section>
         </div>
 
-        <div id="lobby" class="container">
+        <div id="lobby" class="container hidden">
             <!-- The "games" table (all current games) -->
             <div class="row 100%">
                 <div class="12u">
@@ -318,9 +318,10 @@
         </div>
 
         <!-- Alpha (the HTML5 template) -->
-        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
-        <script src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
+        <script src="public/js/lib/fa-solid.min.js"></script>
+        <script src="public/js/lib/fontawesome.min.js"></script><!-- The Font Awesome CDN is pretty slow -->
         <script src="public/js/lib/alpha.js"></script>
 
         <!-- Tooltipster (a tooltip library) -->
