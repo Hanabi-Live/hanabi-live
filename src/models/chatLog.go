@@ -2,15 +2,16 @@ package models
 
 import (
 	"database/sql"
+	"time"
 )
 
 type ChatLog struct{}
 
-func (*ChatLog) Insert(userID int, message string) error {
+func (*ChatLog) Insert(userID int, message string, room string) error {
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`
-		INSERT INTO chat_log (user_id, message)
-		VALUES (?, ?)
+		INSERT INTO chat_log (user_id, message, room)
+		VALUES (?, ?, ?)
 	`); err != nil {
 		return err
 	} else {
@@ -18,7 +19,26 @@ func (*ChatLog) Insert(userID int, message string) error {
 	}
 	defer stmt.Close()
 
-	if _, err := stmt.Exec(userID, message); err != nil {
+	if _, err := stmt.Exec(userID, message, room); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (*ChatLog) InsertDiscord(discordName string, message string) error {
+	var stmt *sql.Stmt
+	if v, err := db.Prepare(`
+		INSERT INTO chat_log (user_id, discord_name, message, room)
+		VALUES (0, ?, ?, "lobby")
+	`); err != nil {
+		return err
+	} else {
+		stmt = v
+	}
+	defer stmt.Close()
+
+	if _, err := stmt.Exec(discordName, message); err != nil {
 		return err
 	}
 
@@ -26,23 +46,27 @@ func (*ChatLog) Insert(userID int, message string) error {
 }
 
 type ChatMessage struct {
-	Name     string `json:"name"`
-	Message  string `json:"message"`
-	Datetime int64  `json:"datetime"`
+	Name        string         `json:"name"`
+	DiscordName sql.NullString `json:"discordName"`
+	Message     string         `json:"message"`
+	Datetime    time.Time      `json:"datetime"`
 }
 
-// Get the past messages sent in this room
+// Get the past messages sent in the lobby
 func (*ChatLog) Get(room string, count int) ([]ChatMessage, error) {
 	var rows *sql.Rows
 	if v, err := db.Query(`
 		SELECT
-			users.username,
+			IFNULL(users.username, "__server"),
+			chat_log.discord_name,
 			chat_log.message,
 			chat_log.datetime_sent
 		FROM
 			chat_log
-		JOIN
+		LEFT JOIN
 			users ON users.id = chat_log.user_id
+		WHERE
+			room = ?
 		ORDER BY
 			chat_log.datetime_sent DESC
 		LIMIT
@@ -59,6 +83,7 @@ func (*ChatLog) Get(room string, count int) ([]ChatMessage, error) {
 		var message ChatMessage
 		if err := rows.Scan(
 			&message.Name,
+			&message.DiscordName,
 			&message.Message,
 			&message.Datetime,
 		); err != nil {

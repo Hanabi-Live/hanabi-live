@@ -10,6 +10,7 @@ type User struct {
 	ID       int
 	Username string
 	Password string
+	Admin    int
 }
 
 func (*Users) Insert(username string, password string) (User, error) {
@@ -51,10 +52,10 @@ func (*Users) Insert(username string, password string) (User, error) {
 func (*Users) Get(username string) (bool, User, error) {
 	var user User
 	if err := db.QueryRow(`
-		SELECT id, username, password
+		SELECT id, username, password, admin
 		FROM users
 		WHERE username = ?
-	`, username).Scan(&user.ID, &user.Username, &user.Password); err == sql.ErrNoRows {
+	`, username).Scan(&user.ID, &user.Username, &user.Password, &user.Admin); err == sql.ErrNoRows {
 		return false, user, nil
 	} else if err != nil {
 		return false, user, err

@@ -133,7 +133,6 @@ function HanabiLobby() {
         }
     });
     $('#login-form').submit((event) => {
-        console.debug('Form submitted.');
         // By default, the form will reload the page, so stop this from happening
         event.preventDefault();
 
@@ -176,22 +175,18 @@ function HanabiLobby() {
         const msg = input.val();
         input.val('');
 
-        // Check for special commands
-        if (msg === '/debug') {
-            self.connSend({
-                type: 'debug',
-                resp: {},
-            });
-            return;
-        }
-
         // It is a normal chat message
         self.connSend({
             type: 'chat',
             resp: {
                 msg,
+                room: 'lobby',
             },
         });
+    });
+    $('#lobby-chat-form').submit((event) => {
+        // By default, the form will reload the page, so stop this from happening
+        event.preventDefault();
     });
 
     /*
@@ -475,6 +470,7 @@ HanabiLobby.prototype.hideLogin = () => {
 HanabiLobby.prototype.showLobby = function showLobby() {
     $('#lobby').fadeIn(fadeTime);
     this.showNav('games');
+    $('#lobby-chat-input').focus();
 };
 
 HanabiLobby.prototype.hideLobby = function hideLobby() {
@@ -768,17 +764,9 @@ HanabiLobby.prototype.addChat = function addChat(data) {
     const chat = $('#lobby-chat-text');
 
     // Get the hours and minutes from the time
-    let date = new Date();
-    let hours = date.getHours();
-    if (hours < 10) {
-        hours = `0${hours}`;
-    }
-    let minutes = date.getMinutes();
-    if (minutes < 10) {
-        minutes = `0${minutes}`;
-    }
+    const datetime = dateTimeFormatter2.format(new Date(data.datetime))
 
-    let line = `[${hours}:${minutes}]&nbsp; `;
+    let line = `[${datetime}]&nbsp; `;
     if (data.server) {
         line += data.msg;
     } else if (data.who) {
@@ -881,6 +869,14 @@ const dateTimeFormatter = new Intl.DateTimeFormat(
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
+    },
+);
+const dateTimeFormatter2 = new Intl.DateTimeFormat(
+    undefined,
+    {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
     },
 );
 
@@ -1266,9 +1262,6 @@ HanabiLobby.prototype.connError = function connError(conn) {
 
         if ($('#loginbox').is(':visible')) {
             this.loginFormError('Failed to connect to the WebSocket server. The server might be down!');
-        } else {
-            // const error = 'Encountered a WebSocket error. The server might be down!';
-            // TODO
         }
     });
 };
@@ -1315,6 +1308,17 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
 
     conn.on('chat', (data) => {
         self.addChat(data);
+    });
+
+    conn.on('chatList', (data) => {
+        // Reverse the order of the chat messages
+    	// (it is queried from the database from newest to oldest,
+    	// but we want the oldest message to appear first)
+        data.reverse();
+
+        for (const line of data) {
+            self.addChat(line);
+        }
     });
 
     conn.on('joined', (data) => {

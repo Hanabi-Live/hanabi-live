@@ -124,6 +124,7 @@ func httpLogin(c *gin.Context) {
 	// Save the information to the session
 	session.Set("userID", user.ID)
 	session.Set("username", user.Username)
+	session.Set("admin", user.Admin)
 	session.Save()
 
 	// Log the login request

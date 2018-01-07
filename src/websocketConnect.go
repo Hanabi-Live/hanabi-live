@@ -7,6 +7,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/Zamiell/hanabi-live/src/models"
 	melody "gopkg.in/olahol/melody.v1"
 )
@@ -65,13 +67,36 @@ func websocketConnect(ms *melody.Session) {
 	commandGetName(s, nil)
 
 	// Send past chat messages
-	// TODO
+	var rawMsgs []models.ChatMessage
+	if v, err := db.ChatLog.Get("lobby", 50); err != nil {
+		log.Error("Failed to get the history for user \""+s.Username()+"\":", err)
+		return
+	} else {
+		rawMsgs = v
+	}
+
+	msgs := make([]*ChatMessage, 0)
+	for _, rawMsg := range rawMsgs {
+		discord := false
+		server := false
+		if rawMsg.Name == "__server" {
+			server = true
+		}
+		if rawMsg.DiscordName.Valid {
+			server = false
+			discord = true
+			rawMsg.Name = rawMsg.DiscordName.String
+		}
+		msg := chatMakeMessage(rawMsg.Message, rawMsg.Name, discord, server, rawMsg.Datetime)
+		msgs = append(msgs, msg)
+	}
+	s.Emit("chatList", msgs)
 
 	// Send them the message(s) of the day
 	msg := "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\">Hanabi Discord chat</a>."
-	s.NotifyChat(msg, "", false, true)
+	s.NotifyChat(msg, "", false, true, time.Now())
 	msg = "Welcome to the new lobby! Make sure you do a Ctrl + F5 to fully reload CSS files."
-	s.NotifyChat(msg, "", false, true)
+	s.NotifyChat(msg, "", false, true, time.Now())
 
 	// Alert everyone that a new user has logged in
 	// (note that Keldon sends users a message about themselves)

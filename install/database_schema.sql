@@ -17,6 +17,7 @@ CREATE TABLE users (
     username             NVARCHAR(19)  NOT NULL  UNIQUE, /* MySQL is case insensitive by default, which is what we want */
     password             CHAR(64)      NOT NULL, /* A SHA-256 hash string is 64 characters long */
     last_ip              VARCHAR(40)   NULL, /* This will be set immediately after insertion */
+    admin                INT           NOT NULL  DEFAULT 0,
     datetime_created     TIMESTAMP     NOT NULL  DEFAULT NOW(),
     datetime_last_login  TIMESTAMP     NOT NULL  DEFAULT NOW()
 );
@@ -44,11 +45,11 @@ CREATE INDEX games_index_datetime_finished ON games (datetime_finished);
 
 DROP TABLE IF EXISTS game_participants;
 CREATE TABLE game_participants (
-    id               INT              NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    id       INT              NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    user_id          INT              NOT NULL,
-    game_id          INT              NOT NULL,
-    notes            NVARCHAR(10000)  NOT NULL,
+    user_id  INT              NOT NULL,
+    game_id  INT              NOT NULL,
+    notes    NVARCHAR(10000)  NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the game participant rows */
@@ -58,10 +59,10 @@ CREATE INDEX game_participants_index_game_id ON game_participants (game_id);
 
 DROP TABLE IF EXISTS game_actions;
 CREATE TABLE game_actions (
-    id               INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    id       INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    game_id          INT           NOT NULL,
-    action           VARCHAR(500)  NOT NULL, /* JSON */
+    game_id  INT           NOT NULL,
+    action   VARCHAR(500)  NOT NULL, /* JSON */
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the game action rows */
 );
@@ -69,11 +70,13 @@ CREATE INDEX game_actions_index_game_id ON game_actions (game_id);
 
 DROP TABLE IF EXISTS chat_log;
 CREATE TABLE chat_log (
-    id               INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    id             INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    user_id          INT            NOT NULL, /* 0 is a Discord message */
-    message          NVARCHAR(150)  NOT NULL,
-    datetime_sent    TIMESTAMP      NOT NULL  DEFAULT NOW()
+    user_id        INT            NOT NULL, /* 0 is a Discord message */
+    discord_name   NVARCHAR(150)  NULL, /* only used if it is a Discord message */
+    room           NVARCHAR(50)   NOT NULL, /* either "lobby" or "game-####" */
+    message        NVARCHAR(150)  NOT NULL,
+    datetime_sent  TIMESTAMP      NOT NULL  DEFAULT NOW()
 );
 CREATE INDEX chat_log_index_user_id ON chat_log (user_id);
 CREATE INDEX chat_log_index_datetime_sent ON chat_log (datetime_sent);

@@ -35,6 +35,22 @@ func (s *Session) Username() string {
 	}
 }
 
+func (s *Session) Admin() bool {
+	var admin int
+	if v, exists := s.Get("admin"); !exists {
+		log.Error("Failed to get \"admin\" from a session.")
+		return false
+	} else {
+		admin = v.(int)
+	}
+
+	if admin == 1 {
+		return true
+	} else {
+		return false
+	}
+}
+
 func (s *Session) CurrentGame() int {
 	if v, exists := s.Get("currentGame"); !exists {
 		log.Error("Failed to get \"currentGame\" from a session.")
@@ -180,19 +196,8 @@ func (s *Session) NotifyTableGone(g *Game) {
 	})
 }
 
-func (s *Session) NotifyChat(msg string, who string, discord bool, server bool) {
-	type ChatMessage struct {
-		Msg     string `json:"msg"`
-		Who     string `json:"who"`
-		Discord bool   `json:"discord"`
-		Server  bool   `json:"server"`
-	}
-	s.Emit("chat", &ChatMessage{
-		Msg:     msg,
-		Who:     who,
-		Discord: discord,
-		Server:  server,
-	})
+func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, datetime time.Time) {
+	s.Emit("chat", chatMakeMessage(msg, who, discord, server, datetime))
 }
 
 // Send a user all of their past games

@@ -78,7 +78,6 @@ func commandGameJoin(s *Session, d *CommandData) {
 		numSeconds := g.Options.TimeBase * 60
 		timeBase = time.Duration(numSeconds) * time.Second
 	}
-	log.Debug("Each player now has:", timeBase)
 
 	p := &Player{
 		ID:      s.UserID(),

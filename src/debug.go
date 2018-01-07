@@ -5,6 +5,11 @@ import (
 )
 
 func debug(s *Session, d *CommandData) {
+	// Validate that they are an administrator
+	if !s.Admin() {
+		return
+	}
+
 	// Print out all of the current games
 	log.Debug("---------------------------------------------------------------")
 	log.Debug("Current games:")

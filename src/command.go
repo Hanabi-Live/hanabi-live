@@ -5,7 +5,8 @@ type CommandData struct {
 	ID int `json:"gameID"`
 
 	// chat
-	Msg string `json:"msg"`
+	Msg  string `json:"msg"`
+	Room string `json:"room"`
 
 	// gameCreate
 	Name               string  `json:"name"`

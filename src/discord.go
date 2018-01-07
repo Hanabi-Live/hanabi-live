@@ -67,6 +67,7 @@ func discordConnect() {
 	msg := "The server has successfully started at: " + time.Now().Format("Mon Jan 02 15:04:05 MST 2006")
 	d := &CommandData{
 		Msg:    msg,
+		Room:   "lobby",
 		Server: true,
 	}
 	commandChat(nil, d)
