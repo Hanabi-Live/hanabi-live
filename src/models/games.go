@@ -145,7 +145,8 @@ func (*Games) GetUserHistory(userID int) ([]GameHistory, error) {
 		FROM games
 			JOIN game_participants ON game_participants.game_id = games.id
 		WHERE game_participants.user_id = ?
-		ORDER BY games.id
+		ORDER BY games.id DESC
+		LIMIT 50
 	`, userID, userID); err != nil {
 		return nil, err
 	} else {

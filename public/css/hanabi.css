@@ -1,485 +1,230 @@
-html, body {
-	font-family: 'Roboto', sans-serif;
-	width: 100%;
-	height: 100%;
-	margin: 0px;
-	border: 0;
-	background-color: black;
-	overflow: hidden;
-}
-
-a:link {
-	text-decoration: underline;
-}
-
-button {
-	background-color: rgba(0, 0, 0, 0.6);
-	width: 280px;
-	height: 38px;
-	margin: 5px;
-
-	border: none;
-	border-radius: 6px;
-	font-size: 27px;
-	color: white;
-}
-
-button:active {
-	background-color: rgba(136, 136, 136, 0.6);
-}
-
-button:disabled {
-	color: rgb(108, 108, 108);
-}
-
-button.abandon {
-	background: url(../img/redx.png) no-repeat;
-	background-size: contain;
-	width: 46px;
-	height: 46px;
-	margin: 2px;
-
-	border: none;
-}
-
-button.history-table {
-	height: 30px;
-	font-size: 18px;
-}
-
-button.enter-history-game {
-	width: unset;
-}
-
-button.history-others {
-	width: 165px;
-}
-
-#show-resources {
-	position: absolute;
-	right: 85px;
-}
-
-#show-settings {
-	background-image: url(../img/gear.png);
-	background-repeat: no-repeat;
-	background-size: contain;
-	width: 50px;
-
-	position: absolute;
-	right: 25px;
-}
-
-ul {
-	list-style-type: none;
-	margin: 0;
-	padding: 0;
-}
-
-#lobby {
-	display: none;
-	height: 100%;
-	padding-right: 20px;
-}
-
-#pregame {
-	background: url(../img/background.jpg) no-repeat center center fixed;
-	-webkit-background-size: cover;
-	-moz-background-size: cover;
-	-o-background-size: cover;
-	background-size: cover;
-
-	position: absolute;
-	clear: both;
-	width: 100%;
-	height: 100%;
-	min-width: 1000px;
-	min-height: 600px;
-	padding: 1em 0em 1em 1em;
-	margin: 0 0 0 0; /* Necessary with Bootstrap 3 */
-
-	color: black;
-	font-size: 1.2em;
-}
-
-#connecting {
-	display: none;
-}
-
-#table-area {
-	height: 50%;
-	width: 100%;
-}
-
-#table-list-div {
-	height: 80%;
-	margin: 5px 0px 0px 0px;
-}
-
-#table-list {
-	height: 85%;
-	overflow-y: auto;
-	white-space: nowrap;
-
-	border: 1px solid #444;
-	border-radius: 5px;
-}
-
-#joined-table {
-	display: none;
-
-	height: 50%;
-	width: 100%;
-
-	border: 1px solid #444;
-	border-radius: 5px;
-}
-
-#joined-desc {
-	float: left;
-	width: 20%;
-	height: 80%;
-}
-
-#joined-desc > p {
-	padding-left: 5px;
-}
-
-.show-player {
-	float: left;
-	width: 16%;
-	height: 80%;
-}
-
-.deck-select {
-	height: 25px;
-	overflow-y: hidden;
-	font-size: 80%;
-}
-
-#choose-deck {
-	max-width: 95%;
-}
-
-.player-name {
-	font-weight: bold;
-}
-
-.player-details {
-	overflow-y: auto;
-	height: 80%;
-	margin: 2px;
-	padding: 2px;
-
-	border: 1px solid #444;
-	border-radius: 5px;
-}
-
-.player-details > table > tbody > tr > td:nth-child(2) {
-	text-align: right;
-}
-
-#game-history {
-	display: none;
-
-	height: 50%;
-	width: 100%;
-}
-
-#history-list-div {
-	height: 80%;
-	margin: 5px 0px 0px 0px;
-}
-
-#history-list {
-	height: 85%;
-	overflow-y: auto;
-
-	border: 1px solid #444;
-	border-radius: 5px;
-
-	white-space: nowrap;
-}
-
-#game-history-details {
-	display: none;
-
-	height: 50%;
-	width: 100%;
-}
-
-#history-details-list-div {
-	height: 80%;
-	margin: 5px 0px 0px 0px;
-}
-
-#history-details-list {
-	height: 85%;
-	overflow-y: auto;
-
-	border: 1px solid #444;
-	border-radius: 5px;
-}
-
-.detail-us {
-	font-weight: bold;
-}
+/*
+    Common
+*/
 
-.control-buttons {
-	margin: 0px auto;
+body {
+    background: url(../img/background2.jpg) no-repeat center center fixed;
 }
 
-#chat {
-	float: left;
-	height: 42%;
-	width: 72%;
-	padding: 5px;
-	margin-top: 5px;
-	margin-right: 10px;
-
-	border: 1px solid #444;
-	border-radius: 5px;
-
-	position: relative;
-}
-
-#user-list-div {
-	overflow-y: auto;
-	height: 42%;
-	padding: 5px;
-	margin-top: 5px;
-
-	border: 1px solid #444;
-	border-radius: 5px;
-}
-
-.user-name {
-	width: 100px;
-}
-
-.user-seated {
-	width: 60px;
-	text-align: center;
-}
-
-.user-playing {
-	width: 50px;
-	text-align: center;
-}
-
-.user-status {
-	width: 120px;
-	text-align: center;
-}
-
-#chat-contents {
-	height: 93%;
-	overflow-y: auto;
-}
-
-#chat-contents a:link {
-	color: blue;
-}
-
-#chat-contents a:visited {
-	color: blue;
-}
-
-#chat-entry {
-	position: absolute;
-	bottom: 5px;
-	width: 98%;
-}
-
-#chat-input {
-	width: 100%;
-}
-
-#create-table-dialog {
-	display: none;
-
-	position: absolute;
-	width: 400px;
-	/* We don't need to specify the height explicitly */
-	top: 45px;
-	left: 300px;
-	z-index: 100;
-	padding: 5px;
-
-	background-color: rgba(255, 255, 255, 1);
-	border: 3px solid #444;
-	border-radius: 5px;
-}
-
-.create-table-dialog-col2 {
-	width: 260px;
-}
-
-#resources-dialog {
-	display: none;
-
-	position: absolute;
-	width: 500px;
-	height: 450px;
-	top: 45px;
-	left: 200px;
-	z-index: 100;
-	padding: 5px;
-
-	background-color: rgba(255, 255, 255, 1);
-	border: 3px solid #444;
-	border-radius: 5px;
-}
-
-#resources-dialog ul {
-	list-style-type: disc;
-	margin: 1.5em;
-}
-
-#resources-dialog li {
-	padding-bottom: 1em;
-}
-
-#close-resources {
-	position: absolute;
-	bottom: 15px;
-}
-
-#settings-dialog {
-	display: none;
-
-	position: absolute;
-	width: 500px;
-	height: 525px;
-	top: 45px;
-	left: 200px;
-	z-index: 100;
-	padding: 5px;
-
-	background-color: rgba(255, 255, 255, 1);
-	border: 3px solid #444;
-	border-radius: 5px;
-}
-
-#settings-dialog label {
-	font-weight: 100 !important; /* 100 is the lightest; Bootstrap gives it a value of 700 */
-}
-
-#close-settings {
-	position: absolute;
-	bottom: 15px;
-}
-
-.lobby-element {
-	background-color: rgba(255, 255, 255, 0.2);
-}
-
-.table-header {
-	font-weight: bold;
-	border-bottom: 1px solid #444;
-}
-
-.table-item {
-	border-bottom: 1px solid #444;
-}
-
-.table-item:last-child {
-	border-bottom: none;
-}
-
-.table-attr {
-	display: inline-block;
-	vertical-align: middle;
-}
-
-.table-icon {
-	width: fit-content;
-	padding-right: 10px;
-}
-
-.table-name {
-	width: 240px;
-	white-space: normal;
-}
-
-.table-players {
-	width: 50px;
-}
-
-.table-variant {
-	width: 260px;
-}
-
-.table-status {
-	width: 130px;
-}
-
-.table-player {
-	width: 305px;
-}
-
-.table-abandon {
-	width: 55px;
-}
-
-.table-otherPlayerNames {
-	padding-left: 15px;
-}
-
-.table-otherPlayerNames-compact {
-	font-size: small;
-}
-
-.history-id {
-	width: 75px;
-}
-
-.history-players {
-	width: 30px;
-}
-
-.history-score {
-	width: 50px;
-	padding-right: 10px;
-	text-align: right;
-}
 
-.history-ts {
-	width: fit-content;
-	padding-right: 20px;
+/* The "align-center" class will do horizontal centering (in "alpha.css").
+   The "align-center-v" class will do vertical centering. */
+.align-center-v {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.history-variant {
-	width: 140px;
-	padding-right: 25px;
+.hidden {
+    display: none;
 }
 
-#show-options {
-	position: relative;
-	bottom: 2px;
-	width: 200px;
-	font-size: 21px;
+.margin0 {
+    margin: 0 !important;
 }
 
-#logout {
-	position: absolute;
-	right: 25px;
-	top: 1px;
-	font-size: 16px;
-	height: 21px;
-	width: 80px;
+.margin1 {
+    margin-bottom: 1em;
 }
 
-#game {
-	width: 100%;
-	height: 100%;
-	margin: 0px;
+.margin4 {
+    margin-bottom: 4em;
 }
 
-.white {
-	color: white;
+.padding0 {
+    padding: 0 !important;
 }
 
 .padding0p5 {
-	padding-bottom: 0.5em;
+    padding-bottom: 0.5em;
+}
+
+.padding-top1 {
+    padding-top: 1em !important;
+}
+
+.padding-top1p5 {
+    padding-top: 1.5em !important;
+}
+
+.slim-table {
+    margin-bottom: 0.5em;
+}
+
+.slim-table td {
+    padding: 0.25em 0.25em; /* vanilla is 0.75em 0.75em */
+}
+
+/* For text input labels */
+.input-text {
+    position: relative;
+    top: 1em;
+}
+
+/* For text input labels with 2 lines */
+.input-text2 {
+    position: relative;
+    top: 0.5em;
+}
+
+/* For checkbox labels */
+.label-text {
+    position: relative;
+    top: 0.25em;
+}
+
+/*
+    Nav
+*/
+
+.nav-icon {
+    position: relative;
+    top: 0.05em;
+    right: 0.3em;
+}
+
+.nav-hotkey-indicator {
+    border-bottom: dotted 1px;
+}
+
+/*
+    Title
+*/
+
+#title-h {
+    height: 1.75em;
+}
+
+#title-text {
+    color: white;
+    position: relative;
+    top: 0.1em;
+}
+
+#title-sub {
+    color: #f2f2f2 !important;
+}
+
+#title-sub strong {
+    color: white !important;
+}
+
+.login-icon {
+    position: relative;
+    top: 0.275em;
+    right: 0.5em;
+}
+
+#login-ajax {
+    position: relative;
+    bottom: 0.25em;
+    height: 3em;
+}
+
+/* Based on the Bootstrap alert color */
+#login-alert {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+    padding: 15px;
+    margin-bottom: 0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+#title-discord {
+    margin-top: 3em;
+    width: 5em;
+}
+
+/*
+    Lobby
+*/
+
+.lobby-box {
+    padding: 1.5em;
+}
+
+.lobby-top-box {
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    height: 45vh;
+}
+
+.lobby-users-box-container {
+    padding-left: 1.5em !important;
+}
+
+.lobby-table-container {
+    overflow-y: auto;
+    height: 40vh;
+}
+
+#lobby-chat {
+    margin-bottom: 0;
+    height: 39vh;
+}
+
+#lobby-chat-text {
+    height: 27vh;
+    overflow-y: auto;
+    overflow-wrap: break-word;
+    border-style: solid !important;
+    border-color: #e5e5e5 !important;
+    border: 1px;
+    margin-bottom: 1em;
+    padding: 0 0.5em 0 0.5em;
+}
+
+#lobby-users {
+    margin-bottom: 0;
+    height: 39vh;
+}
+
+#lobby-users-title {
+    font-size: 1.3em;
+}
+
+#lobby-users-container {
+    overflow-y: auto;
+    height: 28vh;
+}
+
+.lobby-game-player {
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 1em;
+}
+
+.lobby-game-player-away {
+    margin-top: 1em;
+    margin-bottom: 0;
+}
+
+.lobby-button-icon {
+    font-size: 2em;
+    position: relative;
+    top: 0.22em;
+}
+
+/*
+    Create Game Tooltip
+*/
+
+#create-game-tooltip-title {
+    width: 11em;
+}
+
+#create-game-timed-label {
+    position: relative;
+    top: 1.75em;
+}
+
+#create-game-timed-container {
+    position: relative;
+    top: 0.5em;
+}
+
+#create-game-submit {
+    font-size: 1em;
 }

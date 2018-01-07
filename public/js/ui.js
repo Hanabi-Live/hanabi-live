@@ -934,8 +934,7 @@ function HanabiUI(lobby, gameID) {
         if (config.holder !== ui.playerUs || ui.replayOnly || ui.spectating) {
             const mouseButton = 1;
             this.on('mousedown', (event) => {
-                if (event.evt.which !== mouseButton || !this.isInPlayerHand()
-                ) {
+                if (event.evt.which !== mouseButton || !this.isInPlayerHand()) {
                     return;
                 }
                 const cards = this.parent.parent.children.map(c => c.children[0]);

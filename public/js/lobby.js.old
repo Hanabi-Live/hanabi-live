@@ -37,100 +37,14 @@ function HanabiLobby() {
         players: [],
     };
 
-    /*
-        Initialize the tooltips
-    */
-
-    this.tooltips = [
-        'create-game',
-        'resources',
-        'settings',
-    ];
-
-    const tooltipsterOptions = {
-        theme: 'tooltipster-shadow',
-        trigger: 'click',
-        interactive: true,
-        delay: 0,
-        functionBefore: () => {
-            $('#lobby').fadeTo(fadeTime, 0.4);
-        },
-    };
-
-    const tooltipsterClose = () => {
-        // We want to fade in the background as soon as we start the tooltip closing animation,
-        // so we have to hook to the "close" event
-        // Furthermore, we don't want to fade in the background if we click from one tooltip to the other,
-        // so we have to check to see how many tooltips are open
-        // If one tooltip is open, then it is the one currently closing
-        // If two tooltips are open, then we are clicking from one to the next
-        let tooltipsOpen = 0;
-        for (const tooltip of self.tooltips) {
-            if ($(`#nav-buttons-games-${tooltip}`).tooltipster('status').open) {
-                tooltipsOpen += 1;
-            }
-        }
-        if (tooltipsOpen <= 1) {
-            $('#lobby').fadeTo(fadeTime, 1);
-        }
-    };
-
-    // The "close" event will not fire if we initialize this on the tooltip class for some reason, so we initialize all 3 individually
-    for (const tooltip of this.tooltips) {
-        $(`#nav-buttons-games-${tooltip}`).tooltipster(tooltipsterOptions).tooltipster('instance').on('close', tooltipsterClose);
-    }
-
-    $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', () => {
-        // Fill in the "Name" box
-        $('#create-game-name').val(self.randomName);
-
-        // Get a new random name from the server for the next time we click the button
-        self.connSend({
-            type: 'getName',
-        });
-
-        // Fill in the "Variant" dropdown
-        let variant = JSON.parse(localStorage.getItem('createTableVariant'));
-        if (typeof variant !== 'number' || variant < 0 || variant >= variantNames.length) {
-            variant = 0;
-        }
-        $('#create-game-variant').val(variant);
-
-        // Fill in the "Timed" checkbox
-        const timed = JSON.parse(localStorage.getItem('createTableTimed'));
-        console.log(timed);
-        $('#create-game-timed').prop('checked', timed);
-        $('#create-game-timed').change();
-
-        // Fill in the "Reorder Cards" checkbox
-        const reorderCards = JSON.parse(localStorage.getItem('createTableReorderCards'));
-        $('#create-game-reorder-cards').prop('checked', reorderCards);
-
-        // Focus the "Name" box
-        // (we have to wait 1 millisecond or it won't work due to the nature of the above code)
-        setTimeout(() => {
-            $('#create-game-name').focus();
-        }, 1);
-    });
-
-    /*
-        Display the login screen
-    */
-
     this.hideLobby();
-    this.closeAllTooltips();
+    this.hideCreateDialog();
     this.showLogin();
     this.loadSettings();
 
     // Handle logging in from the home page
     $('#login-button').click(() => {
         $('#login-form').submit();
-    });
-    $('#login-form').on('keypress', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            $('#login-form').submit();
-        }
     });
     $('#login-form').submit((event) => {
         console.debug('Form submitted.');
@@ -162,7 +76,7 @@ function HanabiLobby() {
     });
 
     // Handle chatting in the lobby once logged in
-    const input = $('#lobby-chat-input');
+    const input = $('#chat-input');
     input.on('keypress', (event) => {
         if (event.key !== 'Enter') {
             return;
@@ -194,30 +108,15 @@ function HanabiLobby() {
         });
     });
 
-    /*
-        Create a new game
-    */
+    $('#create-table').on('click', (event) => {
+        event.preventDefault();
 
-    $('#create-game-timed').change((data) => {
-        if ($('#create-game-timed').prop('checked')) {
-            $('#create-game-timed-option-1').show();
-            $('#create-game-timed-option-2').show();
-            $('#create-game-timed-option-3').show();
-            $('#create-game-timed-option-4').show();
-            $('#create-game-timed-option-padding').hide();
-        } else {
-            $('#create-game-timed-option-1').hide();
-            $('#create-game-timed-option-2').hide();
-            $('#create-game-timed-option-3').hide();
-            $('#create-game-timed-option-4').hide();
-            $('#create-game-timed-option-padding').show();
-        }
-
-        // Redraw the tooltip so that the new elements will fit better
-        $('#nav-buttons-games-create-game').tooltipster('reposition');
+        self.showCreateDialog();
     });
 
-    $('#create-game-tooltip').on('keypress', (event) => {
+    $('#create-table').removeAttr('disabled');
+
+    $('#create-table-dialog').on('keypress', (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
             $('#create-game-submit').click();
@@ -250,10 +149,32 @@ function HanabiLobby() {
             },
         });
 
-        self.closeAllTooltips();
+        self.hideCreateDialog();
     });
 
-    $('#nav-buttons-game-start').on('click', (event) => {
+    $('#show-resources').on('click', (event) => {
+        self.showResources();
+    });
+
+    $('#close-resources').on('click', (event) => {
+        self.hideResources();
+    });
+
+    $('#show-settings').on('click', (event) => {
+        self.showSettings();
+    });
+
+    $('#close-settings').on('click', (event) => {
+        self.hideSettings();
+    });
+
+    $('#create-game-cancel').on('click', (event) => {
+        event.preventDefault();
+
+        self.hideCreateDialog();
+    });
+
+    $('#start-game').on('click', (event) => {
         event.preventDefault();
 
         self.connSend({
@@ -262,7 +183,7 @@ function HanabiLobby() {
         });
     });
 
-    $('#nav-buttons-game-leave').on('click', (event) => {
+    $('#leave-game').on('click', (event) => {
         event.preventDefault();
 
         self.connSend({
@@ -271,12 +192,11 @@ function HanabiLobby() {
         });
     });
 
-    $('#nav-buttons-game-unattend').on('click', (event) => {
+    $('#unattend-table').on('click', (event) => {
         event.preventDefault();
 
-        $('#lobby-game').hide();
+        $('#joined-table').hide();
         $('#lobby-games').show();
-        self.showNav('games');
 
         self.connSend({
             type: 'gameUnattend',
@@ -284,25 +204,24 @@ function HanabiLobby() {
         });
     });
 
-    $('#nav-buttons-games-history').on('click', (event) => {
+    $('#show-history').on('click', (event) => {
         event.preventDefault();
 
         $('#lobby-games').hide();
-        $('#lobby-history').show();
-        self.showNav('history');
+        $('#game-history').show();
 
         self.drawHistory();
     });
 
-    $('#nav-buttons-games-sign-out').on('click', (event) => {
-        // Logout / Log out
+    // "Log Out" button
+    $('#logout').on('click', (event) => {
         deleteCookie('hanabiuser');
         deleteCookie('hanabipass');
         window.location.reload();
     });
 
-    // "Watch Replay by ID" and "Share Replay by ID" buttons
-    $('.nav-buttons-history-by-id').on('click', (event) => {
+    // Watch/Share Replay by ID buttons
+    $('.custom-replay-start').on('click', (event) => {
         const replayID = window.prompt('What is the ID of the game you want?');
         if (replayID === null) {
             // The user clicked the "cancel" button, so do nothing else
@@ -317,53 +236,39 @@ function HanabiLobby() {
         });
     });
 
-    $('.nav-return-table').on('click', (event) => {
+    $('.return-table').on('click', (event) => {
         event.preventDefault();
 
-        $('#lobby-history-details').hide();
-        $('#lobby-history').hide();
+        $('#game-history-details').hide();
+        $('#game-history').hide();
         $('#lobby-games').show();
-        self.showNav('games');
     });
 
     $('#return-history').on('click', (event) => {
         event.preventDefault();
 
-        $('#lobby-history-details').hide();
-        $('#lobby-history').show();
+        $('#game-history-details').hide();
+        $('#game-history').show();
     });
 
     $('body').on('contextmenu', '#game', () => false);
 
     $(document).keydown((event) => {
-        if (event.altKey && event.key === 'c') { // Alt + c
-            // Click the "Create Game" button
-            $('#nav-buttons-games-create-game').click();
-        } else if (event.altKey && event.key === 'h') { // Alt + h
+        if (event.altKey && event.key === 'c') {
+            // Click the "Create Table" button
+            $('#create-table').click();
+        } else if (event.altKey && event.key === 'h') {
             // Click the "Show History" button
-            $('#nav-buttons-games-history').click();
-        } else if (event.altKey && event.key === 't') { // Alt + t
-            // Click the "Settings" button
-            $('#nav-buttons-games-settings').click();
-        } else if (event.altKey && event.key === 'o') { // Alt + o
-            // Click the "Sign Out" button
-            $('#nav-buttons-games-sign-out').click();
-        } else if (event.altKey && event.key === 's') { // Alt + s
+            $('#show-history').click();
+        } else if (event.altKey && event.key === 's') {
             // Click on the "Start Game" button
-            $('#nav-buttons-game-start').click();
-        } else if (event.altKey && event.key === 'l') { // Alt + l
+            $('#start-game').click();
+        } else if (event.altKey && event.key === 'l') {
             // Click on the "Leave Game" button
-            $('#nav-buttons-game-leave').click();
-        } else if (event.altKey && event.key === 'r') { // Alt + r
-            // Click on the "Return to Lobby" button
-            // (either at the "game" screen or the "history" screen or the "scores" screen)
-            if ($('#nav-buttons-game-unattend').is(':visible')) {
-                $('#nav-buttons-game-unattend').click();
-            } else if ($('#nav-buttons-history-return').is(':visible')) {
-                $('#nav-buttons-history-return').click();
-            } else if ($('#nav-buttons-return-table').is(':visible')) {
-                $('#nav-buttons-return-table').click();
-            }
+            $('#leave-game').click();
+        } else if (event.altKey && event.key === 'r') {
+            // Click on the "Return to Tables" button
+            $('#unattend-table').click();
         }
     });
 
@@ -472,53 +377,84 @@ HanabiLobby.prototype.hideLogin = () => {
     $('#login').hide();
 };
 
-HanabiLobby.prototype.showLobby = function showLobby() {
+HanabiLobby.prototype.showLobby = () => {
     $('#lobby').fadeIn(fadeTime);
-    this.showNav('games');
+    $('#nav-buttons').fadeIn(fadeTime);
 };
 
-HanabiLobby.prototype.hideLobby = function hideLobby() {
+HanabiLobby.prototype.hideLobby = () => {
     $('#lobby').hide();
-    this.showNav('nothing');
+    $('#nav-buttons').fadeOut(fadeTime);
 };
 
-HanabiLobby.prototype.closeAllTooltips = function closeAllTooltips() {
-    for (const tooltip of this.tooltips) {
-        const tooltipID = `#nav-buttons-games-${tooltip}`;
-        if ($(tooltipID).hasClass('tooltipstered')) {
-            $(`#nav-buttons-games-${tooltip}`).tooltipster('close');
-        }
+HanabiLobby.prototype.showCreateDialog = function showCreateDialog() {
+    $('#create-table-dialog').fadeIn(fadeTime);
+
+    $('#create-game-name').val(this.randomName);
+
+    // Get a new random name from the server for the next time we click the button
+    this.connSend({
+        type: 'getName',
+    });
+
+    let variant = JSON.parse(localStorage.getItem('createTableVariant'));
+    if (typeof variant !== 'number' || variant < 0 || variant >= variantNames.length) {
+        variant = 0;
     }
+    $('#create-game-variant').val(variant);
+
+    const timed = JSON.parse(localStorage.getItem('createTableTimed'));
+    $('#create-game-timed').prop('checked', timed);
+
+    const reorderCards = JSON.parse(localStorage.getItem('createTableReorderCards'));
+    $('#create-game-reorder-cards').prop('checked', reorderCards);
+
+    // Autofocus the "Game Name" field
+    $('#create-game-name').focus();
+};
+
+HanabiLobby.prototype.hideCreateDialog = () => {
+    $('#create-table-dialog').fadeOut(fadeTime);
+};
+
+HanabiLobby.prototype.showResources = () => {
+    $('#resources-dialog').fadeIn(fadeTime);
+};
+
+HanabiLobby.prototype.hideResources = () => {
+    $('#resources-dialog').fadeOut(fadeTime);
+};
+
+HanabiLobby.prototype.showSettings = () => {
+    $('#settings-dialog').fadeIn(fadeTime);
+};
+
+HanabiLobby.prototype.hideSettings = () => {
+    $('#settings-dialog').fadeOut(fadeTime);
 };
 
 HanabiLobby.prototype.showHistoryDetails = function showHistoryDetails() {
-    $('#lobby-history').hide();
-    $('#lobby-history-details').show();
+    $('#game-history').hide();
+    $('#game-history-details').show();
 
     this.historyDetailList = [];
     this.drawHistoryDetails();
 };
 
 HanabiLobby.prototype.showPregame = () => {
-    $('#page-wrapper').fadeIn(fadeTime);
+    $('#pregame').fadeIn(fadeTime);
 };
 
 HanabiLobby.prototype.hidePregame = () => {
-    $('#page-wrapper').hide();
+    $('#pregame').hide();
 };
 
 HanabiLobby.prototype.showGame = () => {
     $('#game').fadeIn(fadeTime);
-
-    // The scroll bars appear for some reason when showing the game, which is annoying and wastes space
-    $('body').css('overflow', 'hidden');
 };
 
 HanabiLobby.prototype.hideGame = () => {
     $('#game').hide();
-
-    // Change the scroll bars for the page back to the default value
-    $('body').css('overflow', 'visible');
 };
 
 HanabiLobby.prototype.addUser = function addUser(data) {
@@ -535,28 +471,34 @@ HanabiLobby.prototype.removeUser = function removeUser(data) {
 };
 
 HanabiLobby.prototype.drawUsers = function drawUsers() {
-    $('#lobby-users-num').text(Object.keys(this.userList).length)
+    const div = $('#user-list');
 
-    const tbody = $('#lobby-users-table-tbody');
+    div.html('');
 
-    // Clear all of the existing rows
-    tbody.html('');
+    const attrs = $('<ul>')
+        .append($('<li>')
+            .text('Name')
+            .addClass('table-attr user-name'))
+        .append($('<li>')
+            .text('Status')
+            .addClass('table-attr user-status'));
 
-    // Add all of the users
-    for (const user of Object.values(this.userList)) {
-        const row = $('<tr>');
+    div.append($('<li>').addClass('table-header').append(attrs));
 
-        let name = user.name;
-        if (name === this.username) {
-            name = `<strong>${name}</strong>`;
-        }
-        $('<td>').html(name).appendTo(row);
-
-        const status = user.status;
-        $('<td>').html(status).appendTo(row)
-
-        row.appendTo(tbody);
+    for (const userID of Object.keys(this.userList)) {
+        const attrs2 = $('<ul>')
+            .append($('<li>')
+                .html(this.userList[userID].name === this.username ? `<i>${this.userList[userID].name}</i>` : this.userList[userID].name)
+                .addClass('table-attr user-name'))
+            .append($('<li>')
+                .append(this.userList[userID].status)
+                .addClass('table-attr user-status'));
+        div.append($('<li>').append(attrs2));
     }
+
+    $('#user-list :checkbox').click((event) => {
+        event.preventDefault();
+    });
 };
 
 HanabiLobby.prototype.addTable = function addTable(data) {
@@ -625,125 +567,148 @@ const timerFormatter = function timerFormatter(milliseconds) {
 
 HanabiLobby.prototype.drawTables = function drawTables() {
     const self = this;
-    const tbody = $('#lobby-games-table-tbody');
+    const div = $('#table-list');
 
-    // Clear all of the existing rows
-    tbody.html('');
+    div.html('');
 
-    if (Object.keys(this.tableList).length === 0) {
-        $('#lobby-games-no').show();
-        $('#lobby-games').addClass('align-center-v');
-        $('#lobby-games-table-container').hide();
-        return;
-    }
-    $('#lobby-games-no').hide();
-    $('#lobby-games').removeClass('align-center-v');
-    $('#lobby-games-table-container').show();
+    for (const gameID of Object.keys(this.tableList)) {
+        const table = $('<li>').addClass('table-item');
 
-    // Add all of the games
-    for (const game of Object.values(this.tableList)) {
-        const row = $('<tr>');
+        const attrs = $('<ul>')
+            .append($('<li>')
+                .text(this.tableList[gameID].name)
+                .addClass('table-attr table-name'))
+            .append($('<li>')
+                .text(`${this.tableList[gameID].numPlayers}p`)
+                .addClass('table-attr table-players'))
+            .append($('<li>')
+                .text(`Variant: ${variantNamesShort[this.tableList[gameID].variant]}`)
+                .addClass('table-attr table-variant'));
 
-        // Column 1 - Name
-        $('<td>').html(game.name).appendTo(row);
+        const game = this.tableList[gameID];
+        const timerRules = `${timerFormatter(game.baseTime)} + ${timerFormatter(game.timePerTurn)}`;
+        const optionTexts = {
+            reorderCards: {
+                symbol: '⤨',
+                title: reorderCardsDescription,
+            },
+            timed: {
+                symbol: `⏰ (${timerRules})`,
+                title: timedDescription,
+            },
+        };
 
-        // Column 2 - # of Players
-        $('<td>').html(game.numPlayers).appendTo(row);
-
-        // Column 3 - Variant
-        $('<td>').html(variantNamesShort[game.variant]).appendTo(row);
-
-        // Column 4 - Timed
-        let timed = 'No';
-        if (game.timed) {
-            timed = '<i class="far fa-clock"></i>&nbsp; ';
-            timed += `(${timerFormatter(game.baseTime)} + ${timerFormatter(game.timePerTurn)})`;
-        }
-        $('<td>').html(timed).appendTo(row);
-
-        // Column 5 - Status
-        let status = 'Not Started';
-        if (game.running && !game.joined) {
-            status = 'Running';
-            if (!game.sharedReplay) {
-                status += ` (${game.progress}%)`;
+        Object.keys(optionTexts).forEach((option) => {
+            const elem = $('<li>')
+                .text(optionTexts[option].symbol)
+                .prop('title', optionTexts[option].title)
+                .addClass('table-attr table-icon');
+            if (!this.tableList[gameID][option]) {
+                elem.css('visibility', 'hidden');
             }
-        } else if (game.running) {
-            if (game.ourTurn) {
-                status = '<strong>Your Turn</strong>';
+            attrs.append(elem);
+        });
+
+        let status = 'Not Started';
+        if (this.tableList[gameID].running && !this.tableList[gameID].joined) {
+            status = 'Running';
+            if (!this.tableList[gameID].sharedReplay) {
+                status += ` (${this.tableList[gameID].progress}%)`;
+            }
+        } else if (this.tableList[gameID].running) {
+            if (this.tableList[gameID].ourTurn) {
+                status = '<b>Your Turn</b>';
             } else {
                 status = 'Waiting';
             }
         }
-        $('<td>').html(status).appendTo(row);
+        attrs
+            .append($('<li>')
+                .html(status)
+                .addClass('table-attr table-status'));
 
-        // Column 6 - Action
-        let button = $('<button>').attr('type', 'button').addClass('button fit margin0');
-        if (!game.joined && game.running) {
-            button.html('<i class="fas fa-eye lobby-button-icon"></i>&nbsp; Spectate');
-            button.attr('id', `spectate-${game.id}`);
+        let button;
+        if (
+            !this.tableList[gameID].joined &&
+            this.tableList[gameID].running
+        ) {
+            button = $('<button>').text('Spectate').attr('type', 'button');
+            button.attr('id', `spectate-${gameID}`);
+
             button.on('click', function buttonClick(event) {
                 event.preventDefault();
 
-                self.gameID = game.id;
+                const id = parseInt(this.id.slice(9), 10);
+                self.gameID = id;
                 self.connSend({
                     type: 'gameSpectate',
                     resp: {
-                        gameID: game.id,
+                        gameID: id,
                     },
                 });
 
                 self.drawTables();
             });
-        } else if (!game.joined) {
-            button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>&nbsp; Join');
-            button.attr('id', `join-${game.id}`);
-            if (game.numPlayers >= 5) {
-                button.addClass('disabled');
+        } else if (!this.tableList[gameID].joined) {
+            button = $('<button>').text('Join').attr('type', 'button');
+            button.attr('id', `join-${gameID}`);
+
+            if (this.tableList[gameID].numPlayers >= 5) {
+                button.attr('disabled', 'disabled');
             }
+
             button.on('click', function buttonClick(event) {
                 event.preventDefault();
 
-                self.gameID = game.id;
+                self.gameID = parseInt(this.id.slice(5), 10);
+
                 self.connSend({
                     type: 'gameJoin',
                     resp: {
-                        gameID: game.id,
+                        gameID: self.gameID,
                     },
                 });
 
                 self.drawTables();
             });
         } else {
-            button.html('<i class="fas fa-play lobby-button-icon"></i>&nbsp; Resume');
-            button.attr('id', `resume-${game.id}`);
+            button = $('<button>').text('Resume').attr('type', 'button');
+            button.attr('id', `resume-${gameID}`);
 
             button.on('click', function reattendTableClick(event) {
                 event.preventDefault();
 
-                self.gameID = game.id;
+                self.gameID = parseInt(this.id.slice(7), 10);
+
                 self.connSend({
                     type: 'gameReattend',
                     resp: {
-                        gameID: game.id,
+                        gameID: self.gameID,
                     },
                 });
 
                 self.drawTables();
             });
         }
-        $('<td>').html(button).appendTo(row);
 
-        // Column 7 - Abandon
-        button2 = 'n/a';
-        if (game.joined && (game.owned || game.running)) {
-            button2 = $('<button>').attr('type', 'button').addClass('button fit margin0');
-            button2.html('<i class="fas fa-times lobby-button-icon"></i>&nbsp; Abandon');
-            button2.attr('id', `abandon-${game.id}`);
-            button2.on('click', function buttonClick(event) {
+        attrs
+            .append($('<li>')
+                .append(button)
+                .addClass('table-attr table-join'));
+
+        if (
+            this.tableList[gameID].joined &&
+            (this.tableList[gameID].owned || this.tableList[gameID].running)
+        ) {
+            button = $('<button>').html('&nbsp;').attr('type', 'button').addClass('abandon');
+
+            button.attr('id', `abandon-${gameID}`);
+
+            button.on('click', function buttonClick(event) {
                 event.preventDefault();
 
-                if (game.running) {
+                const id = parseInt(this.id.slice(8), 10);
+                if (self.tableList[id].running) {
                     if (!window.confirm('Really abandon game? This will cancel the game for all players.')) {
                         return;
                     }
@@ -753,19 +718,21 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 self.connSend({
                     type: 'gameAbandon',
                     resp: {
-                        gameID: game.id,
+                        gameID: id,
                     },
                 });
             });
-        }
-        $('<td>').html(button2).appendTo(row);
 
-        row.appendTo(tbody);
+            attrs.append($('<li>').append(button).addClass('table-attr table-abandon'));
+        }
+
+        table.append(attrs);
+        div.append(table);
     }
 };
 
 HanabiLobby.prototype.addChat = function addChat(data) {
-    const chat = $('#lobby-chat-text');
+    const chat = $('#chat-contents');
 
     // Get the hours and minutes from the time
     let date = new Date();
@@ -793,7 +760,7 @@ HanabiLobby.prototype.addChat = function addChat(data) {
     chat.append(line);
     chat.animate({
         scrollTop: chat[0].scrollHeight,
-    }, fadeTime);
+    }, 1000);
 
     const r = new RegExp(this.username, 'i');
 
@@ -814,13 +781,7 @@ HanabiLobby.prototype.addHistory = function addHistory(data) {
 
 HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msgType, returnsToLobby) {
     const self = this;
-    const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
-    if (text == 'Watch Replay') {
-        text = '<i class="fas fa-eye lobby-button-icon"></i>';
-    } else if (text === 'Share Replay') {
-        text = '<i class="fas fa-share-alt lobby-button-icon"></i>';
-    }
-    button.html(text)
+    const button = $('<button>').text(text).attr('type', 'button');
     button.addClass('history-table');
     button.addClass('enter-history-game');
     button.attr('id', `replay-${id}`);
@@ -838,10 +799,9 @@ HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msg
         });
 
         if (returnsToLobby) {
-            $('#lobby-history-details').hide();
-            $('#lobby-history').hide();
+            $('#game-history-details').hide();
+            $('#game-history').hide();
             $('#lobby-games').show();
-            self.showNav('games');
         }
     });
 
@@ -850,11 +810,11 @@ HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msg
 
 HanabiLobby.prototype.makeHistoryDetailsButton = function makeHistoryDetailsButton(id, gameCount) {
     const self = this;
-    const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
-    button.html(`<i class="fas fa-chart-bar lobby-button-icon"></i>&nbsp; ${gameCount - 1}`);
-    if (gameCount - 1 === 0) {
-        button.addClass('disabled');
-    }
+    const button = $('<button>')
+        .text(`Other scores: ${gameCount - 1}`)
+        .attr('type', 'button');
+    button.addClass('history-table');
+    button.addClass('history-others');
     button.attr('id', `history-details-${id}`);
 
     button.on('click', (event) => {
@@ -881,60 +841,59 @@ const dateTimeFormatter = new Intl.DateTimeFormat(
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
     },
 );
 
 HanabiLobby.prototype.drawHistory = function drawHistory() {
-    const tbody = $('#lobby-history-table-tbody');
+    const div = $('#history-list');
 
-    // Clear all of the existing rows
-    tbody.html('');
+    div.html('');
 
-    // Sort the game IDs in reverse order
-    // (so that the most recent ones are near the top)
     const ids = Object.keys(this.historyList);
     ids.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
     ids.reverse();
 
-    // Add all of the history
     for (let i = 0; i < ids.length; i++) {
         const gameData = this.historyList[ids[i]];
         const { maxScore } = constants.VARIANT_INTEGER_MAPPING[gameData.variant];
+        const history = $('<li>').addClass('table-item');
 
-        const row = $('<tr>');
+        const attrs = $('<ul>')
+            .append($('<li>')
+                .text(`#${ids[i]}`)
+                .addClass('table-attr history-id'))
+            .append($('<li>')
+                .text(`${gameData.numPlayers}p`)
+                .addClass('table-attr history-players'))
+            .append($('<li>')
+                .text(`${gameData.score}/${maxScore}`)
+                .addClass('table-attr history-score'))
+            .append($('<li>')
+                .text(`${variantNamesShort[gameData.variant]}`)
+                .addClass('table-attr history-variant'))
+            .append($('<li>')
+                .text(dateTimeFormatter.format(new Date(gameData.datetime)))
+                .addClass('table-attr history-ts'))
+            .append($('<li>')
+                .append(this.makeReplayButton(ids[i], 'Watch Replay', 'replayCreate', false))
+                .addClass('table-attr'))
+            .append($('<li>')
+                .append(this.makeReplayButton(ids[i], 'Share Replay', 'sharedReplayCreate', true))
+                .addClass('table-attr'))
+            .append($('<li>')
+                .append(this.makeHistoryDetailsButton(ids[i], gameData.numSimilar))
+                .addClass('table-attr'))
+            .append($('<li>')
+                .text(gameData.otherPlayerNames)
+                .addClass('table-attr table-otherPlayerNames table-otherPlayerNames-compact'));
 
-        // Column 1 - Game ID
-        $('<td>').html(`#${ids[i]}`).appendTo(row);
+        history.append(attrs);
 
-        // Column 2 - # of Players
-        $('<td>').html(gameData.numPlayers).appendTo(row);
-
-        // Column 3 - Score
-        $('<td>').html(`${gameData.score}/${maxScore}`).appendTo(row);
-
-        // Column 4 - Variant
-        $('<td>').html(variantNamesShort[gameData.variant]).appendTo(row);
-
-        // Column 5 - Time Completed
-        const timeCompleted = dateTimeFormatter.format(new Date(gameData.datetime))
-        $('<td>').html(timeCompleted).appendTo(row);
-
-        // Column 6 - Watch Replay
-        const watchReplayButton = this.makeReplayButton(ids[i], 'Watch Replay', 'replayCreate', false)
-        $('<td>').html(watchReplayButton).appendTo(row);
-
-        // Column 7 - Share Replay
-        const shareReplayButton = this.makeReplayButton(ids[i], 'Share Replay', 'sharedReplayCreate', true)
-        $('<td>').html(shareReplayButton).appendTo(row);
-
-        // Column 8 - Other Scores
-        const otherScoresButton = this.makeHistoryDetailsButton(ids[i], gameData.numSimilar)
-        $('<td>').html(otherScoresButton).appendTo(row);
-
-        // Column 9 - Other Players
-        $('<td>').html(gameData.otherPlayerNames).appendTo(row);
-
-        row.appendTo(tbody);
+        div.append(history);
     }
 };
 
@@ -952,16 +911,14 @@ HanabiLobby.prototype.addHistoryDetail = function addHistoryDetail(data) {
 // This function is called once for each new history element received from the server
 // The last message is not marked, so each iteration redraws all historyDetailList items
 HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
-    const tbody = $('#lobby-history-details-table-tbody');
+    const div = $('#history-details-list');
 
     if (!this.historyDetailList.length) {
-        tbody.text('Loading...');
+        div.html('<li>Loading...</li>');
         return;
     }
 
-
-    // Clear all of the existing rows
-    tbody.html('');
+    div.html('');
 
     // The game played by the user will also include its variant
     const variant = this.historyDetailList
@@ -975,49 +932,42 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
         return;
     }
 
-    // Add all of the games
     for (let i = 0; i < this.historyDetailList.length; i++) {
         const gameData = this.historyDetailList[i];
+        const detail = $('<li>').addClass('table-item');
+        const attrs = $('<ul>');
 
-        const row = $('<tr>');
-
-        // Column 1 - Game ID
-        let id = `#${gameData.id}`;
         if (gameData.us) {
-            id = `<strong>${id}</strong>`;
+            attrs.addClass('detail-us');
         }
-        $('<td>').html(id).appendTo(row);
 
-        // Column 2 - Score
-        let score = `${gameData.score}/${variant.maxScore}`;
-        if (gameData.us) {
-            score = `<strong>${score}</strong>`;
-        }
-        $('<td>').html(score).appendTo(row);
+        attrs
+            .append($('<li>')
+                .text(`#${gameData.id}`)
+                .addClass('table-attr history-id'))
+            .append($('<li>')
+                .text(`${gameData.score}/${variant.maxScore}`)
+                .addClass('table-attr history-score'))
+            .append($('<li>')
+                .text(dateTimeFormatter.format(new Date(gameData.datetime)))
+                .addClass('table-attr history-ts'));
 
-        // Column 3 - Time Completed
-        let dateTime = dateTimeFormatter.format(new Date(gameData.datetime));
-        if (gameData.us) {
-            dateTime = `<strong>${dateTime}</strong>`;
-        }
-        $('<td>').html(dateTime).appendTo(row);
+        const button = this.makeReplayButton(gameData.id, 'Watch Replay', 'replayCreate', false);
 
-        // Column 4 - Watch Replay
-        let watchReplayButton = this.makeReplayButton(gameData.id, 'Watch Replay', 'replayCreate', false);
-        $('<td>').html(watchReplayButton).appendTo(row);
+        attrs.append($('<li>').append(button).addClass('table-attr'));
 
-        // Column 5 - Share Replay
-        let shareReplayButton = this.makeReplayButton(gameData.id, 'Share Replay', 'sharedReplayCreate', false);
-        $('<td>').html(shareReplayButton).appendTo(row);
+        const button2 = this.makeReplayButton(gameData.id, 'Share Replay', 'sharedReplayCreate', true);
 
-        // Column 6 - Other Players
-        let otherPlayers = gameData.otherPlayerNames;
-        if (gameData.us) {
-            otherPlayers = `<strong>${this.username}, ${otherPlayers}</strong>`;
-        }
-        $('<td>').html(otherPlayers).appendTo(row);
+        attrs.append($('<li>').append(button2).addClass('table-attr'));
 
-        row.appendTo(tbody);
+        attrs
+            .append($('<li>')
+                .text(gameData.otherPlayerNames)
+                .addClass('table-attr table-otherPlayerNames'));
+
+        detail.append(attrs);
+
+        div.append(detail);
     }
 };
 
@@ -1025,8 +975,7 @@ HanabiLobby.prototype.tableJoined = function tableJoined(data) {
     this.drawTables();
 
     $('#lobby-games').hide();
-    $('#lobby-game').show();
-    this.showNav('game');
+    $('#joined-table').show();
 
     this.showJoined();
 
@@ -1036,9 +985,8 @@ HanabiLobby.prototype.tableJoined = function tableJoined(data) {
 HanabiLobby.prototype.tableLeft = function tableLeft(data) {
     this.drawTables();
 
-    $('#lobby-game').hide();
     $('#lobby-games').show();
-    this.showNav('games');
+    $('#joined-table').hide();
 };
 
 HanabiLobby.prototype.setGame = function setGame(data) {
@@ -1072,100 +1020,93 @@ HanabiLobby.prototype.setGamePlayer = function setGamePlayer(data) {
 };
 
 HanabiLobby.prototype.showJoined = function showJoined() {
-    // Update the "Start Game" button
-    $('#nav-buttons-game-start').addClass('disabled');
+    let html = `<p><b>${$('<a>').text(this.game.name).html()}</b></p>`;
+    html += '<p>&nbsp;</p>';
+    html += `<p>Variant: <b>${variantNames[this.game.variant]}</p></b>`;
 
-    // Update the information on the left-hand side of the screen
-    $('#lobby-game-name').text(this.game.name);
-    $('#lobby-game-variant').text(variantNames[this.game.variant]);
-    let timed = 'No';
     if (this.game.timed) {
-        timed = `Yes (${timerFormatter(this.game.baseTime)} + ${timerFormatter(this.game.timePerTurn)})`;
+        const timerRules = `${timerFormatter(this.game.baseTime)} + ${timerFormatter(this.game.timePerTurn)}`;
+        html += `<p>${timedDescription}: ${timerRules}</p>`;
     }
-    $('#lobby-game-timed').text(timed);
 
-    // Draw the 5 players
+    if (this.game.reorderCards) {
+        html += `<p>${reorderCardsDescription}</p>`;
+    }
+
+    $('#joined-desc').html(html);
+
     for (let i = 0; i < 5; i++) {
-        const div = $(`#lobby-game-player-${(i + 1)}`);
+        const div = $(`#show-player-${(i + 1).toString()}`);
 
-        const player = this.game.players[i];
-        if (!player) {
+        if (!this.game.players[i]) {
             div.html('');
-            div.hide();
             continue;
         }
 
-        div.show();
+        html = `<div class="player-name">${this.game.players[i].name}</div>`;
 
-        // Calculate some stats
-        let averageScoreVariant = Math.round(player.stats.averageScoreVariant * 100) / 100; // Round it to 2 decimal places
-        let strikeoutRateVariant = player.stats.strikeoutRateVariant * 100; // Turn it into a percent
+        html += '<div class="player-details">';
+
+        html += '<p></p>';
+
+        html += '<table>';
+
+        const {
+            numPlayed,
+            numPlayedVariant,
+            bestScoreVariant3,
+            bestScoreVariant4,
+            bestScoreVariant5,
+        } = this.game.players[i].stats;
+        let {
+            averageScoreVariant,
+            strikeoutRateVariant,
+        } = this.game.players[i].stats;
+        averageScoreVariant = Math.round(averageScoreVariant * 100) / 100; // Round it to 2 decimal places
+        strikeoutRateVariant *= 100; // Turn it into a percent
         strikeoutRateVariant = Math.round(strikeoutRateVariant * 100) / 100; // Round it to 2 decimal places
 
-        html = `
-            <p class="margin0 padding0p5">
-                <strong>${player.name}</strong>
-            </p>
-            <div class="row 100%">
-                <div class="10u">
-                    Total games:
-                </div>
-                <div class="2u align-right padding0">
-                    ${player.stats.numPlayed}
-                </div>
-            </div>
-            <div class="row 100%">
-                <div class="10u">
-                    ...of this variant:
-                </div>
-                <div class="2u align-right padding0">
-                    ${player.stats.numPlayedVariant}
-                </div>
-            </div>
-            Best scores with:
-            <div class="row 100%">
-                <div class="10u">
-                    ...3 players:
-                </div>
-                <div class="2u align-right padding0">
-                    ${player.stats.bestScoreVariant3}
-                </div>
-            </div>
-            <div class="row 100%">
-                <div class="10u">
-                    ...4 players:
-                </div>
-                <div class="2u align-right padding0">
-                    ${player.stats.bestScoreVariant4}
-                </div>
-            </div>
-            <div class="row 100%">
-                <div class="10u">
-                    ...5 players:
-                </div>
-                <div class="2u align-right padding0">
-                    ${player.stats.bestScoreVariant5}
-                </div>
-            </div>
-            <div class="row 100%">
-                <div class="10u">
-                    Average score:
-                </div>
-                <div class="2u align-right padding0">
-                    ${averageScoreVariant}
-                </div>
-            </div>
-            <div class="row 100%">
-                <div class="10u">
-                    Strikeout rate:
-                </div>
-                <div class="2u align-right padding0">
-                    ${strikeoutRateVariant}
-                </div>
-            </div>
-        `;
-        if (!player.present) {
-            html += '<p class="lobby-game-player-away"><strong>AWAY</strong></p>';
+        html += '<tr>';
+        html += '<td>Total games:</td>';
+        html += `<td><b>${numPlayed}</b></td>`;
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<td>...of this variant:</td>';
+        html += `<td><b>${numPlayedVariant}</b></td>`;
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<td>Best scores of this variant with</td>';
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<td>...three players:</td>';
+        html += `<td><b>${bestScoreVariant3}</b></td>`;
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<td>...four players:</td>';
+        html += `<td><b>${bestScoreVariant4}</b></td>`;
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<td>...five players:</td>';
+        html += `<td><b>${bestScoreVariant5}</b></td>`;
+        html += '</tr>';
+        html += '<td>Average score:</td>';
+        html += `<td><b>${averageScoreVariant}</b></td>`;
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<td>Strikeout rate:</td>';
+        html += `<td><b>${strikeoutRateVariant}%</b></td>`;
+        html += '</tr>';
+
+        html += '</table>';
+
+        if (!this.game.players[i].present) {
+            html += '<p></p><div><b>AWAY</b></div>';
         }
 
         div.html(html);
@@ -1174,17 +1115,16 @@ HanabiLobby.prototype.showJoined = function showJoined() {
 
 HanabiLobby.prototype.setTableReady = (data) => {
     if (data.ready) {
-        $('#nav-buttons-game-start').removeClass('disabled');
+        $('#start-game').removeAttr('disabled');
     } else {
-        $('#nav-buttons-game-start').addClass('disabled');
+        $('#start-game').attr('disabled', 'disabled');
     }
 };
 
 HanabiLobby.prototype.gameStarted = function gameStarted(data) {
     if (!data.replay) {
-        $('#lobby-game').hide();
+        $('#joined-table').hide();
         $('#lobby-games').show();
-        this.showNav('games');
     }
 
     this.hidePregame();
@@ -1242,20 +1182,17 @@ HanabiLobby.prototype.connClose = function connClose(conn) {
     const self = this;
 
     conn.on('close', (event) => {
-        console.log('WebSocket connection disconnected / closed.');
+        console.log('WebSocket connection closed.');
 
-        alert('Disconnected from the server. Either your Internet hiccuped or the server restarted.')
-        window.location.reload();
-
-        /*
         // Go back to the login screen
         self.hideLobby();
         self.hideGame();
-        self.closeAllTooltips();
+        self.hideCreateDialog();
         self.showPregame();
         self.resetLogin();
         self.showLogin();
-        */
+
+        // TODO SHOW ERROR MESSAGE AND REFRESH
     });
 };
 
@@ -1601,22 +1538,6 @@ HanabiLobby.prototype.sendNotify = (msg, tag) => {
 HanabiLobby.prototype.playSound = (file) => {
     const audio = new Audio(`public/sounds/${file}.mp3`);
     audio.play();
-};
-
-HanabiLobby.prototype.showNav = (target) => {
-    const navTypes = [
-        'games',
-        'game',
-        'history',
-        'return',
-    ];
-    for (const navType of navTypes) {
-        $(`#nav-buttons-${navType}`).hide();
-    }
-
-    if (target !== 'nothing') {
-        $(`#nav-buttons-${target}`).show();
-    }
 };
 
 function getCookie(name) {

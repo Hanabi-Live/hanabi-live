@@ -87,6 +87,7 @@ func httpInit() {
 
 	// Path handlers (for the website)
 	httpRouter.GET("/", httpHome)
+	httpRouter.GET("/dev", httpHomeDev)
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
 
 	if useTLS {

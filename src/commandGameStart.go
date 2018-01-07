@@ -41,6 +41,12 @@ func commandGameStart(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that this is the owner of the game
+	if g.Owner != s.UserID() {
+		s.Error("Only the owner of a game can start it.")
+		return
+	}
+
 	/*
 		Start
 	*/

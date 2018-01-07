@@ -1,334 +1,529 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
+<!--
+    Alpha by HTML5 UP
+    html5up.net | @ajlkn
+    Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
 <html>
-    <head>
-        <meta charset="utf-8"/>
-        <meta name=viewport content="width=1010, initial-scale=1">
-        <title>Hanabi</title>
 
-        <!-- jQuery -->
-        <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<head>
+    <title>Hanabi Live</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="public/css/alpha.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tooltipster@4.2.5/dist/css/tooltipster.bundle.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tooltipster@4.2.5/dist/css/plugins/tooltipster/sideTip/themes/tooltipster-sideTip-shadow.min.css" />
+    <link rel="stylesheet" href="public/css/hanabi.css" />
+    <link rel="icon" href="public/img/favicon.png" type="image/x-icon">
+</head>
 
-        <!-- Bootstrap 3 -->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<body>
+    <!-- Pregame elements (the lobby) -->
+    <div id="page-wrapper">
 
-        <!-- KineticJS (a graphics library)-->
-        <script type="text/javascript" src="public/js/lib/kinetic-v5.1.1.min.js"></script>
-
-        <!-- SHA256 (for hashing the password before sending it to the server)-->
-        <script type="text/javascript" src="public/js/lib/sha256.js"></script>
-
-        <!-- Golem (a WebSocket client) -->
-        <script type="text/javascript" src="public/js/lib/golem.js"></script>
-
-        <!-- Hanabi Live code -->
-        <script type="text/javascript" src="public/js/constants.js"></script>
-        <script type="text/javascript" src="public/js/ui/timer.js"></script>
-        <script type="text/javascript" src="public/js/ui.js"></script>
-        <script type="text/javascript" src="public/js/lobby.js"></script>
-
-        <!-- Misc -->
-        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css?family=Dosis" rel="stylesheet">
-        <link rel="stylesheet" type="text/css" href="public/css/hanabi.css">
-        <link rel="shortcut icon" href="public/img/favicon.png" type="image/x-icon">
-        <link rel="icon" href="public/img/favicon.png" type="image/x-icon">
-    </head>
-    <body>
-        <div id="pregame">
-            <div id="login">
-                <div class="container">
-                    <div style="text-align: center;">
-                        <p style="font-family: 'Dosis', sans-serif; font-weight: bold; text-decoration: underline; margin-bottom: 3.5em;">
-                            <img src="public/img/hanabi-logo.png" />
-                            <span style="font-size: 3.5em; position: relative; top: 22px;">anabi Live</span>
-                        </p>
-                    </div>
-
-                    <div class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2" style="margin-bottom: 1em;">
-                        <div class="panel panel-default">
-                            <div class="panel-body" style="text-align: center;">
-                                <p style="font-family: 'Dosis', sans-serif; font-size: 2.25em;">
-                                    Play Hanabi online!
-                                </p>
-                                <p>
-                                    <a href="https://en.wikipedia.org/wiki/Hanabi_(card_game)">Hanabi</a> is a fantastic cooperative card game of logic and reasoning designed by <a href="https://boardgamegeek.com/boardgamedesigner/9714/antoine-bauza">Antoine Bauza</a>.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="loginbox" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2" style="margin-bottom: 1em;">
-                        <div class="panel panel-info">
-                            <div class="panel-heading">
-                                <div class="panel-title">Sign In / Create Account</div>
-                            </div>
-
-                            <div style="padding-top: 30px;" class="panel-body">
-                                <div style="display: none;" id="login-alert" class="alert alert-danger col-sm-12"></div>
-                                <form id="login-form" class="form-horizontal" role="form">
-                                    <div style="margin-bottom: 25px" class="input-group">
-                                        <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                                        <input id="login-username" type="text" class="form-control" name="username" value="" placeholder="Username" autofocus>
-                                    </div>
-
-                                    <div style="margin-bottom: 25px" class="input-group">
-                                        <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
-                                        <input id="login-password" type="password" class="form-control" name="password" placeholder="Password">
-                                    </div>
-
-                                    <div style="margin-top:10px" class="form-group">
-                                        <div class="col-sm-12 controls">
-                                            <table>
-                                                <tr>
-                                                    <td>
-                                                        <input id="login-button" class="btn btn-success" type="submit" value="Sign In" />
-                                                    </td>
-                                                    <td style="min-width: 1em;"></td><!-- Spacing -->
-                                                    <td>
-                                                        <div id="ajax-gif" style="display: none;">
-                                                            <img src="public/img/ajax.gif">
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </div>
-                                    </div>
-
-                                    <div id="login-explanation" class="form-group">
-                                        <div class="col-md-12 control">
-                                            <div style="border-top: 1px solid#888; padding-top:15px; font-size:85%" >
-                                                To create a new account, simply login with a new username and select a password.<br />
-                                                Do <strong>NOT</strong> reuse any of your previous passwords!
-                                            </div>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="ajax-error" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2" style="margin-bottom: 1em; display: none; text-align: center;">
-                        <div class="panel panel-default">
-                            <div id="login-result" class="panel-body" style="color: red;">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-12" style="text-align: center;">
-                        <a href="https://discord.gg/FADvkJp">
-                            <img src="public/img/discord.png" style="width: 7em;" />
+        <!-- Header -->
+        <header id="header">
+            <h1>Hanabi Live</h1>
+            <nav id="nav">
+                <ul id="nav-buttons-games" class="hidden">
+                    <li>
+                        <a id="nav-buttons-games-create-game" class="button tooltip" data-tooltip-content="#create-game-tooltip">
+                            <i class="fas fa-plus nav-icon"></i>
+                            <span class="nav-hotkey-indicator">C</span>reate Game
                         </a>
-                    </div>
-                </div>
-            </div>
-            <div id="lobby">
-                <div id="table-area">
-                    <div id="table-list-div">
-                        <div class="white">Open Tables</div>
-                        <ul id="table-list" class="lobby-element">
-                        </ul>
-                    </div>
-                    <div class="control-buttons">
-                        <button type="button" id="create-table">Create Table</button>
-                        <button type="button" id="show-history">Show History</button>
-                        <button type="button" id="show-resources">Resources</button>
-                        <button type="button" id="show-settings"></button>
-                        <button id="logout">Log Out</button>
-                    </div>
-                </div>
-                <div id="joined-table" class="lobby-element">
-                    <div id="joined-desc"></div>
-                    <div id="show-player-1" class="show-player"></div>
-                    <div id="show-player-2" class="show-player"></div>
-                    <div id="show-player-3" class="show-player"></div>
-                    <div id="show-player-4" class="show-player"></div>
-                    <div id="show-player-5" class="show-player"></div>
-                    <button type="button" id="start-game" disabled>Start Game</button>
-                    <button type="button" id="leave-game">Leave Game</button>
-                    <button type="button" id="unattend-table">Return to Tables</button>
-                </div>
-                <div id="game-history">
-                    <div id="history-list-div">
-                        <div class="white">Your Game History</div>
-                        <ul id="history-list" class="lobby-element">
-                        </ul>
-                    </div>
-                    <div class="control-buttons">
-                        <button type="button" class="return-table">Return to Tables</button>
-                        <button type="button" class="custom-replay-start" data-replayType="replayCreate">Watch Replay by ID</button>
-                        <button type="button" class="custom-replay-start" data-replayType="sharedReplayCreate">Share Replay by ID</button>
-                    </div>
-                </div>
-                <div id="game-history-details">
-                    <div id="history-details-list-div">
-                        <div class="white">All Games Played with the Same Deal</div>
-                        <ul id="history-details-list" class="lobby-element">
-                        </ul>
-                    </div>
-                    <div class="control-buttons">
-                        <button type="button" class="return-table">Return to Tables</button>
-                        <button type="button" id="return-history">Return to History</button>
-                    </div>
-                </div>
-                <div id="chat" class="lobby-element">
-                    <div id="chat-contents"></div>
-                    <div id="chat-entry">
-                        <input type="text" id="chat-input" data-lpignore="true">
-                    </div>
-                </div>
-                <div id="user-list-div" class="lobby-element">
-                    <ul id="user-list">
-                    </ul>
-                </div>
-            </div>
-            <div id="create-table-dialog" title="Create Table">
-                <!--
-                    <tr>
-                        <td>Timed Game:</td>
-                        <td>
-                            <input type="checkbox" >
-                            <input type="number" id="" title="Base Time in minutes (default: 5)" placeholder = "Base Time [min]" style="width: 114px;">
-                            <input type="number" id="" title="Time per Turn in seconds (default: 10)" placeholder = "Time per Turn [s]" style="width: 114px;">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Forced Chop Rotation:</td>
-                        <td>
-                            <input type="checkbox" id="create-game-reorder-cards">
-                        </td>
-                    </tr>
-                </table>
-                -->
-
-                <h2>Create a New Table</h2>
-                <br />
-
-                <div class="form-group">
-                    <label for="create-game-name">Game Name:</label>
-                    <input id="create-game-name" class="form-control" type="text" placeholder="Game Name">
-                </div>
-
-
-                <div class="form-group">
-                    <label for="create-game-variant">Variant:</label>
-                    <select id="create-game-variant" class="form-control" data-live-search="true">
-                        <!-- This is filled in with all of the variant options in the "lobby.js" file -->
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="base-time-minutes">Base Time [min]:</label>
-                    <input id="base-time-minutes" class="form-control" type="text" placeholder="Base Time [min]" value="2">
-                </div>
-
-                <div class="form-group">
-                    <label for="time-per-turn-seconds">Time per Turn [sec]:</label>
-                    <input id="time-per-turn-seconds" class="form-control" type="text" placeholder="Time per Turn [sec]" value="20">
-                </div>
-
-                <div class="checkbox">
-                    <label><input type="checkbox" id="create-game-timed">Timed Game</label>
-                </div>
-
-                <div class="checkbox">
-                    <label><input type="checkbox" id="create-game-reorder-cards">Forced Chop Rotation</label>
-                </div>
-
-                <div class="padding0p5"></div>
-                <div class="padding0p5"></div>
-
-                <center><div>
-                    <button type="button" id="create-game-submit">Create Game</button>
-                    <button type="button" id="create-game-cancel">Cancel</button>
-                </div></center>
-            </div>
-            <div id="resources-dialog" title="Other Resources">
-                <h1>Other Resources</h1>
-                <ul>
-                    <li>
-                        <a href="https://discord.gg/FADvkJp" target="_blank">The Hanabi Discord Server</a><br />
-                        A place to find teammates and discuss strategy.<br />
                     </li>
                     <li>
-                        <a href="https://github.com/Zamiell/hanabi-live">The GitHub Code Repository</a><br />
-                        This client and server are open-source, hosted on GitHub.
+                        <a id="nav-buttons-games-history" class="button">
+                            <i class="fas fa-history nav-icon"></i>
+                            Show <span class="nav-hotkey-indicator">H</span>istory
+                        </a>
                     </li>
                     <li>
-                        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" id="donateform">
-                            <input type="hidden" name="cmd" value="_s-xclick">
-                            <input type="hidden" name="hosted_button_id" value="GFKEQ9MTFJRUL">
-                            <a href="#" onclick="document.getElementById('donateform').submit()">Donate (via PayPal) to Keldon</a>
+                        <a id="nav-buttons-games-resources" class="button tooltip" data-tooltip-content="#resources-tooltip">
+                            <i class="fas fa-link nav-icon"></i>
+                            Resources
+                        </a>
+                    </li>
+                    <li>
+                        <a id="nav-buttons-games-settings" class="button tooltip" data-tooltip-content="#settings-tooltip">
+                            <i class="fas fa-cog nav-icon"></i>
+                            Se<span class="nav-hotkey-indicator">t</span>tings
+                        </a>
+                    </li>
+                    <li>
+                        <a id="nav-buttons-games-sign-out" class="button">
+                            <i class="fas fa-sign-out-alt nav-icon"></i>
+                            Sign <span class="nav-hotkey-indicator">O</span>ut
+                        </a>
+                    </li>
+                </ul>
+                <ul id="nav-buttons-game" class="hidden">
+                    <li>
+                        <a id="nav-buttons-game-start" class="button">
+                            <i class="fas fa-play nav-icon"></i>
+                            <span class="nav-hotkey-indicator">S</span>tart Game
+                        </a>
+                    </li>
+                    <li>
+                        <a id="nav-buttons-game-unattend" class="button">
+                            <i class="fas fa-pause nav-icon"></i>
+                            <span class="nav-hotkey-indicator">R</span>eturn to Lobby
+                        </a>
+                    </li>
+                    <li>
+                        <a id="nav-buttons-game-leave" class="button">
+                            <i class="fas fa-times nav-icon"></i>
+                            <span class="nav-hotkey-indicator">L</span>eave Game
+                        </a>
+                    </li>
+                </ul>
+                <ul id="nav-buttons-history" class="hidden">
+                    <li>
+                        <a class="button nav-buttons-history-by-id" data-replayType="replayCreate">
+                            <i class="fas fa-share nav-icon"></i>
+                            <span class="nav-hotkey-indicator">W</span>atch Replay by ID
+                        </a>
+                    </li>
+                    <li>
+                        <a class="button nav-buttons-history-by-id" data-replayType="sharedReplayCreate">
+                            <i class="fas fa-eye nav-icon"></i>
+                            Share Replay by ID
+                        </a>
+                    </li>
+                    <li>
+                        <a id="nav-buttons-history-return" class="button nav-return-table">
+                            <i class="fas fa-home nav-icon"></i>
+                            <span class="nav-hotkey-indicator">R</span>eturn to Lobby
+                        </a>
+                    </li>
+                </ul>
+                <ul id="nav-buttons-return" class="hidden">
+                    <li>
+                        <a id="nav-buttons-return-table" class="button nav-return-table">
+                            <i class="fas fa-home nav-icon"></i>
+                            <span class="nav-hotkey-indicator">R</span>eturn to Lobby
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+
+        <!-- Main -->
+        <div id="login">
+            <section id="main" class="container">
+                <header>
+                    <h2 class="align-center-v">
+                        <img id="title-h" src="public/img/hanabi-logo-large.png" />
+                        <span id="title-text">anabi Live</span>
+                    </h2>
+                    <p id="title-sub">
+                        A place to play <strong>Hanabi</strong> online,<br />
+                        a cooperative card game of logic and reasoning
+                    </p>
+                </header>
+                <div class="row uniform 100%">
+                    <div class="3u 12u">
+                    </div>
+
+                    <div class="6u 12u">
+
+                        <!-- Text -->
+                        <section class="box align-center">
+                            <h3>Sign In / Create Account</h3>
+                            <p>To create a new account, simply login with a new username and select a password. Do <strong>NOT</strong> reuse any of your previous passwords!</p>
+                            <form id="login-form">
+                                <div class="row uniform 100%">
+                                    <div class="2u 12u"></div>
+                                    <div class="1u 12u">
+                                        <i class="fas fa-user fa-2x login-icon"></i>
+                                    </div>
+                                    <div class="7u 12u(mobilep)">
+                                        <input id="login-username" type="text" placeholder="Username" autofocus />
+                                    </div>
+                                </div>
+                                <div class="row uniform 100%">
+                                    <div class="2u 12u"></div>
+                                    <div class="1u 12u padding-top1">
+                                        <i class="fas fa-key fa-2x login-icon"></i>
+                                    </div>
+                                    <div class="7u 12u(mobilep) padding-top1">
+                                        <input id="login-password" type="password" placeholder="Password" />
+                                    </div>
+                                </div>
+                                <center>
+                                <div class="row uniform 100%">
+                                    <div class="3u 12u padding-top1p5">
+                                    </div>
+                                    <div class="6u 12u padding-top1p5">
+                                        <ul class="actions">
+                                            <li>
+                                                <a id="login-button" class="button fit icon fa-sign-in">Sign In</a>
+                                            </li>
+                                            <li>
+                                                <img id="login-ajax" class="hidden" src="public/img/ajax.gif">
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="row uniform 100%">
+                                    <div class="12u padding-top1">
+                                        <p id="login-alert" class="hidden"></p>
+                                    </div>
+                                </div>
+                            </form>
+                        </section>
+                    </div>
+                </div>
+                <div class="align-center">
+                    <a href="https://discord.gg/FADvkJp">
+                        <img id="title-discord" src="public/img/discord.png" />
+                    </a>
+                </div>
+            </section>
+        </div>
+
+        <div id="lobby" class="container">
+            <!-- The "games" table (all current games) -->
+            <div class="row 100%">
+                <div class="12u">
+                    <section id="lobby-games" class="box lobby-box lobby-top-box align-center-v">
+                        <h3 id="lobby-games-no">
+                            No current games.
+                        </h3>
+                        <div id="lobby-games-table-container" class="hidden lobby-table-container">
+                            <table id="lobby-games-table" class="alt">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th># of Players</th>
+                                        <th>Variant</th>
+                                        <th>Timed</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                        <th>Abandon</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lobby-games-table-tbody"></tbody>
+                            </table>
+                        </table>
+                    </section>
+                </div>
+            </div>
+
+            <!-- The "game" table (the current unstarted game) -->
+            <div class="row 100%">
+                <div class="12u">
+                    <section id="lobby-game" class="box lobby-box lobby-top-box hidden">
+                        <div class="row 100%">
+                            <div class="2u">
+                                <h4 class="padding0p5">
+                                    <strong>Game name:</strong><br />
+                                    <span id="lobby-game-name"></span>
+                                </h4>
+                                <h4 class="padding0p5">
+                                    <strong>Variant:</strong><br />
+                                    <span id="lobby-game-variant"></span>
+                                </h4>
+                                <h4 class="padding0p5">
+                                    <strong>Timed:</strong><br />
+                                    <span id="lobby-game-timed"></span>
+                                </h4>
+                            </div>
+                            <div id="lobby-game-player-1" class="2u lobby-game-player"></div>
+                            <div id="lobby-game-player-2" class="2u lobby-game-player"></div>
+                            <div id="lobby-game-player-3" class="2u lobby-game-player"></div>
+                            <div id="lobby-game-player-4" class="2u lobby-game-player"></div>
+                            <div id="lobby-game-player-5" class="2u lobby-game-player"></div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- The history table (all played games) -->
+            <div class="row 100%">
+                <div class="12u">
+                    <section id="lobby-history" class="box lobby-box lobby-top-box hidden">
+                        <div class="lobby-table-container">
+                            <table class="alt">
+                                <thead>
+                                    <tr>
+                                        <th>Game ID</th>
+                                        <th># of Players</th>
+                                        <th>Score</th>
+                                        <th>Variant</th>
+                                        <th>Date Completed</th>
+                                        <th>Watch Replay</th>
+                                        <th>Share Replay</th>
+                                        <th>Other Scores</th>
+                                        <th>Other Players</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lobby-history-table-tbody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- The history details table (all games on a specific seed) -->
+            <div class="row 100%">
+                <div class="12u">
+                    <section id="lobby-history-details" class="box lobby-box lobby-top-box hidden">
+                        <div class="lobby-table-container">
+                            <table class="alt">
+                                <thead>
+                                    <tr>
+                                        <th>Game ID</th>
+                                        <th>Score</th>
+                                        <th>Date Completed</th>
+                                        <th>Watch Replay</th>
+                                        <th>Share Replay</th>
+                                        <th>Players</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lobby-history-details-table-tbody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Lobby chat -->
+            <div class="row 100%">
+                <div class="8u">
+                    <section id="lobby-chat" class="box lobby-box">
+                        <div id="lobby-chat-text"></div>
+                        <form id="lobby-chat-form">
+                            <input id="lobby-chat-input" type="text" placeholder="Chat" lang="en" />
                         </form>
-                        Keldon was the original creator of this amazing software.
-                    </li>
-                    <li>
-                        <a href="http://keldon.net/hanabi/">The Original Hanabi Site</a><br />
-                        This is the original, closed-source version of the game designed and hosted by Keldon.
-                    </li>
-                </ul>
-
-                <button type="button" id="close-resources">Close</button>
-            </div>
-            <div id="settings-dialog" title="Settings">
-                <h1>Settings</h1>
-
-                <h3>Game Notifications</h3>
-                <ul>
-                    <li>
-                        <label>
-                            <input type="checkbox" id="send-turn-notification">
-                            Show desktop notification on your turn
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            <input type="checkbox" id="send-turn-sound">
-                            Play sound when someone makes a move
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            <input type="checkbox" id="send-timer-sound">
-                            Play ticking sound for a timer below 5 seconds
-                        </label>
-                    </li>
-                </ul>
-
-                <h3>Lobby Notifications</h3>
-                <ul>
-                    <li>
-                        <label>
-                            <input type="checkbox" id="send-chat-notification">
-                            Receive notification when your name is mentioned in chat
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            <input type="checkbox" id="send-chat-sound">
-                            Play sound when your name is mentioned in chat
-                        </label>
-                    </li>
-                </ul>
-
-                <h3>Appearance</h3>
-                <ul>
-                    <li>
-                        <label>
-                            <input type="checkbox" id="show-colorblind-ui">
-                            Enable colorblind mode
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            <input type="checkbox" id="hide-timer-in-untimed">
-                            Hide the turn timers that tick up in untimed games
-                        </label>
-                    </li>
-                </ul>
-                <button type="button" id="close-settings">Close</button>
+                    </section>
+                </div>
+                <div class="4u lobby-users-box-container">
+                    <section id="lobby-users" class="box lobby-box">
+                        <h3 id="lobby-users-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
+                        <div id="lobby-users-container">
+                            <table id="lobby-users-table" class="slim-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lobby-users-table-tbody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
             </div>
         </div>
-        <div id="game"></div>
-    </body>
+
+        <!-- Alpha (the HTML5 template) -->
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
+        <script src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
+        <script src="public/js/lib/alpha.js"></script>
+
+        <!-- Tooltipster (a tooltip library) -->
+        <script src="https://cdn.jsdelivr.net/npm/tooltipster@4.2.5/dist/js/tooltipster.bundle.min.js"></script>
+
+        <!-- KineticJS (a graphics library) -->
+        <script src="public/js/lib/kinetic-v5.1.1.min.js"></script>
+
+        <!-- SHA256 (for hashing the password before sending it to the server) -->
+        <script src="public/js/lib/sha256.js"></script>
+
+        <!-- Golem (a WebSocket client) -->
+        <script src="public/js/lib/golem.js"></script>
+
+        <!-- Hanabi Live code -->
+        <script src="public/js/constants.js"></script>
+        <script src="public/js/ui/timer.js"></script>
+        <script src="public/js/ui.js"></script>
+        <script src="public/js/lobby.js"></script>
+    </div>
+
+    <!-- Tooltips -->
+    <div class="hidden">
+        <div id="create-game-tooltip">
+            <h2 id="create-game-tooltip-title">Create a New Game</h2>
+
+            <div class="row uniform 100%">
+                <div class="2u 12u input-text align-right">
+                    Name
+                </div>
+                <div class="9u 12u">
+                    <input id="create-game-name" type="text" placeholder="Name" />
+                </div>
+            </div>
+
+            <div class="row uniform 100%">
+                <div class="2u 12u input-text align-right">
+                    Variant
+                </div>
+                <div class="9u 12u">
+                    <div class="select-wrapper">
+                        <select id="create-game-variant">
+                            <!-- This is filled in with all of the variant options in the "lobby.js" file -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row uniform 100%">
+                <div id="create-game-timed-label" class="2u 12u padding-top1 align-right">
+                    Timed
+                </div>
+                <div id="create-game-timed-container" class="1u 12u padding-top1">
+                    <input id="create-game-timed" type="checkbox" />
+                    <label for="create-game-timed"></label>
+                </div>
+                <div id="create-game-timed-option-1" class="2u 12u input-text2 align-right">
+                    Base Time<br />
+                    (in minutes)
+                </div>
+                <div id="create-game-timed-option-2" class="2u 12u">
+                    <input id="base-time-minutes" type="text" placeholder="Base Time [min]" value="2">
+                </div>
+                <div id="create-game-timed-option-3" class="2u 12u input-text2 align-right">
+                    Time per Turn<br />
+                    (in seconds)
+                </div>
+                <div id="create-game-timed-option-4" class="2u 12u">
+                    <input id="time-per-turn-seconds" type="text" placeholder="Base Time [min]" value="20">
+                </div>
+            </div>
+
+            <div class="row uniform 100% hidden">
+                <div class="3u 12u align-right">
+                    Forced Chop Rotation
+                </div>
+                <div class="8u 12u padding-top1">
+                    <input id="create-game-reorder-cards" type="checkbox" />
+                    <label for="create-game-reorder-cards"></label>
+                </div>
+            </div>
+
+            <div id="create-game-timed-option-padding" class="margin4"></div>
+
+            <div class="row uniform 100%">
+                <div class="2u 12u"></div>
+                <div class="6u 12u">
+                </div>
+            </div>
+
+            <button id="create-game-submit" class="button fit" type="submit">
+                <i class="fas fa-check"></i>&nbsp;
+                Create
+            </button>
+        </div>
+
+        <div id="resources-tooltip">
+            <h2>Resources</h2>
+            <ul>
+                <li>
+                    <a href="https://discord.gg/FADvkJp" target="_blank">The Hanabi Discord Server</a><br />
+                    A place to find teammates and discuss strategy.
+                </li>
+                <br />
+                <li>
+                    <a href="https://github.com/Zamiell/hanabi-live">The GitHub Code Repository</a><br />
+                    This client and server are open-source, hosted on GitHub.
+                </li>
+                <br />
+                <li>
+                    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" id="donateform" style="margin-bottom: 0;">
+                        <input type="hidden" name="cmd" value="_s-xclick">
+                        <input type="hidden" name="hosted_button_id" value="GFKEQ9MTFJRUL">
+                        <a href="#" onclick="document.getElementById('donateform').submit()">Donate (via PayPal) to Keldon</a>
+                    </form>
+                    Keldon was the original creator of the well-designed JavaScript client.
+                </li>
+                <br />
+                <li>
+                    <a href="http://keldon.net/hanabi/">The Original Hanabi Site</a><br />
+                    This is the Keldon's original website; this site is based on his.
+                </li>
+                <br />
+            </ul>
+        </div>
+
+        <div id="settings-tooltip">
+            <h2>Settings</h2>
+
+            <p class="margin1"><strong>Game Notifications</strong></p>
+
+            <input id="send-turn-notification" type="checkbox" />
+            <label for="send-turn-notification">
+                <span class="label-text">
+                    Show desktop notifications when it reaches your turn
+                </span>
+            </label>
+
+            <br />
+
+            <input id="send-turn-sound" type="checkbox">
+            <label for="send-turn-sound">
+                <span class="label-text">
+                    Play sounds when a move is made
+                </span>
+            </label>
+
+            <br />
+
+            <input id="send-timer-sound" type="checkbox">
+            <label for="send-timer-sound">
+                <span class="label-text">
+                    Play ticking sounds when timers are below 5 seconds
+                </span>
+            </label>
+
+            <br /><br /><br />
+
+            <p class="margin1"><strong>Lobby Notifications</strong></p>
+
+            <input id="send-chat-notification" type="checkbox">
+            <label for="send-chat-notification">
+                <span class="label-text">
+                    Receive notifications when your name is mentioned in chat
+                </span>
+            </label>
+
+            <br />
+
+            <input id="send-chat-sound" type="checkbox">
+            <label for="send-chat-sound">
+                <span class="label-text">
+                    Play a sound when your name is mentioned in chat
+                </span>
+            </label>
+
+            <br /><br /><br />
+
+            <p class="margin1"><strong>Appearance</strong></p>
+
+            <input id="show-colorblind-ui" type="checkbox">
+            <label for="show-colorblind-ui">
+                <span class="label-text">
+                    Enable colorblind mode
+                </span>
+            </label>
+
+            <br />
+
+            <input id="hide-timer-in-untimed" type="checkbox">
+            <label for="hide-timer-in-untimed">
+                <span class="label-text">
+                    Hide the turn timers that tick up in untimed games
+                </span>
+            </label>
+
+            <br /><br /><br />
+        </div>
+    </div>
+
+    <!-- Game (the UI when playing a game) -->
+    <div id="game"></div>
+
+</body>
+
 </html>
