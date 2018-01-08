@@ -23,9 +23,7 @@ func commandGameUnattend(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		// Since games are deleted when they end, it is normal behavior for
-		// players to click the "Lobby" button and get to this point
-		// (normally, we would send an error message)
+		// Since the player could be in a solo replay, it is normal behavior for the game to not exist
 		s.Set("currentGame", -1)
 		return
 	} else {
@@ -68,7 +66,7 @@ func commandGameUnattend(s *Session, d *CommandData) {
 	// (or set them to "AWAY" if the game has not started yet)
 	i := g.GetIndex(s.UserID())
 	if i == -1 {
-		s.Error("You are in not game " + strconv.Itoa(gameID) + ", so you cannot unattend it.")
+		s.Error("You are not in game " + strconv.Itoa(gameID) + ", so you cannot unattend it.")
 		return
 	}
 	p := g.Players[i]

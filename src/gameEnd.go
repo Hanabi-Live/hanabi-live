@@ -71,15 +71,9 @@ func (g *Game) End() {
 	// Log the game ending
 	log.Info(g.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
-	// Reset the status of the players
-	for _, p := range g.Players {
-		p.Session.Set("session", "Shared Replay")
-		notifyAllUser(p.Session)
-	}
-	for _, s := range g.Spectators {
-		s.Set("session", "Shared Replay")
-		notifyAllUser(s)
-	}
+	// Notify everyone that the table was deleted
+	// (we will send a new table message later for the shared replay)
+	notifyAllTableGone(g)
 
 	// Record the game in the database
 	row := models.GameRow{
@@ -163,19 +157,54 @@ func (g *Game) End() {
 	log.Info("Finished database actions for the end of the game.")
 
 	// Turn the game into a shared replay
+	if _, ok := games[databaseID]; ok {
+		log.Error("Failed to turn the game into a shared replay since there already exists a game with an ID of " + strconv.Itoa(databaseID) + ".")
+		return
+	}
+	delete(games, g.ID)
+	g.ID = databaseID
+	games[g.ID] = g
 	g.SharedReplay = true
+
+	// Get the notes from all of the players
+	notes := make([]models.PlayerNote, 0)
 	for _, p := range g.Players {
-		// Add them to the spectators object only if they are still there
+		note := models.PlayerNote{
+			ID:    p.ID,
+			Name:  p.Name,
+			Notes: p.Notes,
+		}
+		notes = append(notes, note)
+	}
+
+	// Turn the players into spectators
+	for _, p := range g.Players {
+		// Skip offline players;
+		// if they re-login, then they will just stay in the lobby
 		if !p.Present {
 			continue
 		}
 
 		g.Spectators[p.Session.UserID()] = p.Session
-		// (the status was already set above)
+	}
+
+	// Empty the players
+	// (this is necessary so that "joined" is equal to false in the upcoming table message)
+	g.Players = make([]*Player, 0)
+
+	for _, s := range g.Spectators {
+		// Reset everyone's status (both players and spectators are now spectators)
+		s.Set("currentGame", g.ID)
+		s.Set("status", "Shared Replay")
+		notifyAllUser(s)
 
 		// Activate the Replay Leader label
-		p.Session.NotifyReplayLeader(g)
+		s.NotifyReplayLeader(g)
+
+		// Send them the notes from all players
+		s.NotifyAllNotes(notes)
 	}
+
 	notifyAllTable(g)
 	g.NotifyPlayerChange()
 	g.NotifySpectators()

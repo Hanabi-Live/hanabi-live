@@ -59,7 +59,7 @@ function HanabiUI(lobby, gameID) {
         Initialize tooltips
     */
 
-
+    // TODO
 
     // This below code block deals with automatic resizing
     // Start listening to resize events and draw canvas.
@@ -2676,6 +2676,7 @@ function HanabiUI(lobby, gameID) {
     let replayShuttleShared;
     let replayShuttle;
     let replayButton;
+    let replayExitButton;
     let toggleSharedTurnButton; // Used in shared replays
     let lobbyButton;
     let helpButton;
@@ -4095,18 +4096,16 @@ function HanabiUI(lobby, gameID) {
         replayArea.add(button);
 
         // The "Exit Replay" button
-        // (commented out since it is pointless with the "Lobby" button)
-        /*
-        button = new Button({
+        replayExitButton = new Button({
             x: 0.15 * winW,
             y: 0.17 * winH,
             width: 0.2 * winW,
             height: 0.06 * winH,
             text: 'Exit Replay',
-            visible: !this.replayOnly,
+            visible: !this.replayOnly && !this.sharedReplay,
         });
 
-        button.on('click tap', () => {
+        replayExitButton.on('click tap', () => {
             if (self.replayOnly) {
                 ui.sendMsg({
                     type: 'gameUnattend',
@@ -4121,8 +4120,7 @@ function HanabiUI(lobby, gameID) {
             }
         });
 
-        replayArea.add(button);
-        */
+        replayArea.add(replayExitButton);
 
         toggleSharedTurnButton = new ToggleButton({
             x: 0.15 * winW,
@@ -5168,9 +5166,14 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleReplayLeader = function handleReplayLeader(data) {
-        this.sharedReplay = true; // Necessary because we might be getting here after a game just ended
+        // We might be getting here after a game just ended
+        this.sharedReplay = true;
+        replayExitButton.hide();
+
+        // Update the stored replay leader
         this.sharedReplayLeader = data.name;
 
+        // Update the UI
         sharedReplayLeaderLabel.show();
         sharedReplayLeaderLabelTooltip.getText().setText(`Leader: ${this.sharedReplayLeader}`);
 

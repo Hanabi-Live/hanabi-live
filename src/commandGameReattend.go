@@ -28,7 +28,7 @@ func commandGameReattend(s *Session, d *CommandData) {
 	// Validate that they are in the game
 	i := g.GetIndex(s.UserID())
 	if i == -1 {
-		s.Error("You are not in this game, so you cannot leave it.")
+		s.Error("You are not in game " + strconv.Itoa(gameID) + ", so you cannot leave it.")
 		return
 	}
 

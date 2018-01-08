@@ -98,9 +98,19 @@ function HanabiLobby() {
 
         // Fill in the "Timed" checkbox
         const timed = JSON.parse(localStorage.getItem('createTableTimed'));
-        console.log(timed);
         $('#create-game-timed').prop('checked', timed);
         $('#create-game-timed').change();
+
+        // Fill in the "Timed" checkbox
+        const timed = JSON.parse(localStorage.getItem('createTableTimed'));
+        $('#create-game-timed').prop('checked', timed);
+        $('#create-game-timed').change();
+
+        // Fill in the "Timed" checkbox
+        const timed = JSON.parse(localStorage.getItem('createTableTimed'));
+        $('#create-game-timed').prop('checked', timed);
+        $('#create-game-timed').change();
+
 
         // Fill in the "Reorder Cards" checkbox
         const reorderCards = JSON.parse(localStorage.getItem('createTableReorderCards'));
@@ -228,18 +238,24 @@ function HanabiLobby() {
     });
 
     $('#create-game-submit').on('click', (event) => {
-        const gameName = $('#create-game-name').val();
-        const variant = parseInt($('#create-game-variant').val(), 10);
-        const timed = document.getElementById('create-game-timed').checked;
-        const baseTimeMinutes = $('#base-time-minutes').val();
-        const timePerTurnSeconds = $('#time-per-turn-seconds').val();
-        const reorderCards = document.getElementById('create-game-reorder-cards').checked;
-
-        localStorage.setItem('createTableVariant', variant);
-        localStorage.setItem('createTableTimed', timed);
-        localStorage.setItem('createTableReorderCards', reorderCards);
-
         event.preventDefault();
+
+        const gameName = $('#create-game-name').val();
+
+        const variant = parseInt($('#create-game-variant').val(), 10);
+        localStorage.setItem('createTableVariant', variant);
+
+        const timed = document.getElementById('create-game-timed').checked;
+        localStorage.setItem('createTableTimed', timed);
+
+        const baseTimeMinutes = $('#base-time-minutes').val();
+        localStorage.setItem('baseTimeMinutes', baseTimeMinutes);
+
+        const timePerTurnSeconds = $('#time-per-turn-seconds').val();
+        localStorage.setItem('timePerTurnSeconds', timePerTurnSeconds);
+
+        const reorderCards = document.getElementById('create-game-reorder-cards').checked;
+        localStorage.setItem('createTableReorderCards', reorderCards);
 
         self.connSend({
             type: 'gameCreate',
@@ -1545,30 +1561,37 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
     // Element 1 is the cookie key
     const settingsList = [
         [
+            // Show desktop notifications when it reaches your turn
             'send-turn-notification',
             'sendTurnNotify',
         ],
         [
+            // Play sounds when a move is made
             'send-turn-sound',
             'sendTurnSound',
         ],
         [
+            // Play ticking sounds when timers are below 5 seconds
             'send-timer-sound',
             'sendTimerSound',
         ],
         [
+            // Receive notifications when your name is mentioned in chat
             'send-chat-notification',
             'sendChatNotify',
         ],
         [
+            // Play a sound when your name is mentioned in chat
             'send-chat-sound',
             'sendChatSound',
         ],
         [
+            // Enable colorblind mode
             'show-colorblind-ui',
             'showColorblindUI',
         ],
         [
+            // Hide the turn timers that tick up in untimed games
             'hide-timer-in-untimed',
             'hideTimerInUntimed',
         ],
