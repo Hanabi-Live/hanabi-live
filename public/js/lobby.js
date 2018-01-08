@@ -101,16 +101,13 @@ function HanabiLobby() {
         $('#create-game-timed').prop('checked', timed);
         $('#create-game-timed').change();
 
-        // Fill in the "Timed" checkbox
-        const timed = JSON.parse(localStorage.getItem('createTableTimed'));
-        $('#create-game-timed').prop('checked', timed);
-        $('#create-game-timed').change();
+        // Fill in the "Base Time" box
+        const baseTime = JSON.parse(localStorage.getItem('baseTime'));
+        $('#base-time-minutes').val(baseTime)
 
-        // Fill in the "Timed" checkbox
-        const timed = JSON.parse(localStorage.getItem('createTableTimed'));
-        $('#create-game-timed').prop('checked', timed);
-        $('#create-game-timed').change();
-
+        // Fill in the "Time Per Turn" box
+        const timePerTurnSeconds = JSON.parse(localStorage.getItem('timePerTurnSeconds'));
+        $('#time-per-turn-seconds').val(timePerTurnSeconds)
 
         // Fill in the "Reorder Cards" checkbox
         const reorderCards = JSON.parse(localStorage.getItem('createTableReorderCards'));
