@@ -2019,7 +2019,7 @@ function HanabiUI(lobby, gameID) {
             if (event.evt.which === 1) { // Left-click
                 msgLogGroup.showPlayerActions(username);
             } else if (event.evt.which === 3) { // Right-click
-                 this.giveLeader(username);
+                this.giveLeader(username);
             }
         });
         this.add(this.name);

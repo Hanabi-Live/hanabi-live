@@ -103,11 +103,11 @@ function HanabiLobby() {
 
         // Fill in the "Base Time" box
         const baseTime = JSON.parse(localStorage.getItem('baseTime'));
-        $('#base-time-minutes').val(baseTime)
+        $('#base-time-minutes').val(baseTime);
 
         // Fill in the "Time Per Turn" box
         const timePerTurnSeconds = JSON.parse(localStorage.getItem('timePerTurnSeconds'));
-        $('#time-per-turn-seconds').val(timePerTurnSeconds)
+        $('#time-per-turn-seconds').val(timePerTurnSeconds);
 
         // Fill in the "Reorder Cards" checkbox
         const reorderCards = JSON.parse(localStorage.getItem('createTableReorderCards'));
@@ -120,7 +120,7 @@ function HanabiLobby() {
         }, 1);
     });
 
-    discordContent = 'Discord is a voice and text chat application that you can run in a browser.<br />If the server is down, you can probably find out why in the Hanabi server / chat room.';
+    const discordContent = 'Discord is a voice and text chat application that you can run in a browser.<br />If the server is down, you can probably find out why in the Hanabi server / chat room.';
     $('#title-discord').tooltipster({
         theme: 'tooltipster-shadow',
         delay: 0,
@@ -565,7 +565,7 @@ HanabiLobby.prototype.removeUser = function removeUser(data) {
 };
 
 HanabiLobby.prototype.drawUsers = function drawUsers() {
-    $('#lobby-users-num').text(Object.keys(this.userList).length)
+    $('#lobby-users-num').text(Object.keys(this.userList).length);
 
     const tbody = $('#lobby-users-table-tbody');
 
@@ -576,14 +576,14 @@ HanabiLobby.prototype.drawUsers = function drawUsers() {
     for (const user of Object.values(this.userList)) {
         const row = $('<tr>');
 
-        let name = user.name;
+        let { name } = user;
         if (name === this.username) {
             name = `<strong>${name}</strong>`;
         }
         $('<td>').html(name).appendTo(row);
 
-        const status = user.status;
-        $('<td>').html(status).appendTo(row)
+        const { status } = user;
+        $('<td>').html(status).appendTo(row);
 
         row.appendTo(tbody);
     }
@@ -637,9 +637,6 @@ $(document).ready(() => {
         $('#create-game-variant').append($(option));
     }
 });
-
-const timedDescription = 'Timed Game';
-const reorderCardsDescription = 'Forced Chop Rotation';
 
 const timerFormatter = function timerFormatter(milliseconds) {
     if (!milliseconds) {
@@ -708,11 +705,11 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         $('<td>').html(status).appendTo(row);
 
         // Column 6 - Action
-        let button = $('<button>').attr('type', 'button').addClass('button fit margin0');
+        const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
         if (!game.joined && game.running) {
             button.html('<i class="fas fa-eye lobby-button-icon"></i>&nbsp; Spectate');
             button.attr('id', `spectate-${game.id}`);
-            button.on('click', function buttonClick(event) {
+            button.on('click', (event) => {
                 event.preventDefault();
 
                 self.gameID = game.id;
@@ -731,7 +728,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
             if (game.numPlayers >= 5) {
                 button.addClass('disabled');
             }
-            button.on('click', function buttonClick(event) {
+            button.on('click', (event) => {
                 event.preventDefault();
 
                 self.gameID = game.id;
@@ -748,7 +745,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
             button.html('<i class="fas fa-play lobby-button-icon"></i>&nbsp; Resume');
             button.attr('id', `resume-${game.id}`);
 
-            button.on('click', function reattendTableClick(event) {
+            button.on('click', (event) => {
                 event.preventDefault();
 
                 self.gameID = game.id;
@@ -765,12 +762,12 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         $('<td>').html(button).appendTo(row);
 
         // Column 7 - Abandon
-        button2 = 'n/a';
+        let button2 = 'n/a';
         if (game.joined && (game.owned || game.running)) {
             button2 = $('<button>').attr('type', 'button').addClass('button fit margin0');
             button2.html('<i class="fas fa-times lobby-button-icon"></i>&nbsp; Abandon');
             button2.attr('id', `abandon-${game.id}`);
-            button2.on('click', function buttonClick(event) {
+            button2.on('click', (event) => {
                 event.preventDefault();
 
                 if (game.running) {
@@ -798,10 +795,10 @@ HanabiLobby.prototype.addChat = function addChat(data) {
     const chat = $('#lobby-chat-text');
 
     // Convert any Discord emotes
-    data.msg = this.fillEmotes(data.msg)
+    data.msg = this.fillEmotes(data.msg);
 
     // Get the hours and minutes from the time
-    const datetime = dateTimeFormatter2.format(new Date(data.datetime))
+    const datetime = dateTimeFormatter2.format(new Date(data.datetime));
 
     let line = `[${datetime}]&nbsp; `;
     if (data.server) {
@@ -840,7 +837,7 @@ HanabiLobby.prototype.fillEmotes = function fillEmotes(message) {
     const emoteMapping = {
         '<:BibleThump:254683882601840641>': 'BibleThump',
         '<:PogChamp:254683883033853954>': 'PogChamp',
-    }
+    };
 
     // Search through the text for each emote
     for (const emote of Object.keys(emoteMapping)) {
@@ -853,7 +850,7 @@ HanabiLobby.prototype.fillEmotes = function fillEmotes(message) {
     }
 
     return message;
-}
+};
 
 HanabiLobby.prototype.addHistory = function addHistory(data) {
     this.historyList[data.id] = data;
@@ -862,12 +859,12 @@ HanabiLobby.prototype.addHistory = function addHistory(data) {
 HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msgType, returnsToLobby) {
     const self = this;
     const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
-    if (text == 'Watch Replay') {
+    if (text === 'Watch Replay') {
         text = '<i class="fas fa-eye lobby-button-icon"></i>';
     } else if (text === 'Share Replay') {
         text = '<i class="fas fa-share-alt lobby-button-icon"></i>';
     }
-    button.html(text)
+    button.html(text);
     button.addClass('history-table');
     button.addClass('enter-history-game');
     button.attr('id', `replay-${id}`);
@@ -971,19 +968,19 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
         $('<td>').html(variantNamesShort[gameData.variant]).appendTo(row);
 
         // Column 5 - Time Completed
-        const timeCompleted = dateTimeFormatter.format(new Date(gameData.datetime))
+        const timeCompleted = dateTimeFormatter.format(new Date(gameData.datetime));
         $('<td>').html(timeCompleted).appendTo(row);
 
         // Column 6 - Watch Replay
-        const watchReplayButton = this.makeReplayButton(ids[i], 'Watch Replay', 'replayCreate', false)
+        const watchReplayButton = this.makeReplayButton(ids[i], 'Watch Replay', 'replayCreate', false);
         $('<td>').html(watchReplayButton).appendTo(row);
 
         // Column 7 - Share Replay
-        const shareReplayButton = this.makeReplayButton(ids[i], 'Share Replay', 'sharedReplayCreate', true)
+        const shareReplayButton = this.makeReplayButton(ids[i], 'Share Replay', 'sharedReplayCreate', true);
         $('<td>').html(shareReplayButton).appendTo(row);
 
         // Column 8 - Other Scores
-        const otherScoresButton = this.makeHistoryDetailsButton(ids[i], gameData.numSimilar)
+        const otherScoresButton = this.makeHistoryDetailsButton(ids[i], gameData.numSimilar);
         $('<td>').html(otherScoresButton).appendTo(row);
 
         // Column 9 - Other Players
@@ -1058,11 +1055,11 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
         $('<td>').html(dateTime).appendTo(row);
 
         // Column 4 - Watch Replay
-        let watchReplayButton = this.makeReplayButton(gameData.id, 'Watch Replay', 'replayCreate', false);
+        const watchReplayButton = this.makeReplayButton(gameData.id, 'Watch Replay', 'replayCreate', false);
         $('<td>').html(watchReplayButton).appendTo(row);
 
         // Column 5 - Share Replay
-        let shareReplayButton = this.makeReplayButton(gameData.id, 'Share Replay', 'sharedReplayCreate', false);
+        const shareReplayButton = this.makeReplayButton(gameData.id, 'Share Replay', 'sharedReplayCreate', false);
         $('<td>').html(shareReplayButton).appendTo(row);
 
         // Column 6 - Other Players
@@ -1153,11 +1150,11 @@ HanabiLobby.prototype.showJoined = function showJoined() {
         div.show();
 
         // Calculate some stats
-        let averageScoreVariant = Math.round(player.stats.averageScoreVariant * 100) / 100; // Round it to 2 decimal places
+        const averageScoreVariant = Math.round(player.stats.averageScoreVariant * 100) / 100; // Round it to 2 decimal places
         let strikeoutRateVariant = player.stats.strikeoutRateVariant * 100; // Turn it into a percent
         strikeoutRateVariant = Math.round(strikeoutRateVariant * 100) / 100; // Round it to 2 decimal places
 
-        html = `
+        let html = `
             <p class="margin0 padding0p5">
                 <strong>${player.name}</strong>
             </p>
@@ -1294,23 +1291,11 @@ HanabiLobby.prototype.connOpen = function connOpen(conn) {
 };
 
 HanabiLobby.prototype.connClose = function connClose(conn) {
-    const self = this;
-
     conn.on('close', (event) => {
         console.log('WebSocket connection disconnected / closed.');
 
-        alert('Disconnected from the server. Either your Internet hiccuped or the server restarted.')
+        alert('Disconnected from the server. Either your Internet hiccuped or the server restarted.');
         window.location.reload();
-
-        /*
-        // Go back to the login screen
-        self.hideLobby();
-        self.hideGame();
-        self.closeAllTooltips();
-        self.showPregame();
-        self.resetLogin();
-        self.showLogin();
-        */
     });
 };
 
@@ -1371,8 +1356,8 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
 
     conn.on('chatList', (data) => {
         // Reverse the order of the chat messages
-    	// (it is queried from the database from newest to oldest,
-    	// but we want the oldest message to appear first)
+        // (it is queried from the database from newest to oldest,
+        // but we want the oldest message to appear first)
         data.reverse();
 
         for (const line of data) {
