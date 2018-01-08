@@ -47,6 +47,10 @@ body {
     padding-top: 1.5em !important;
 }
 
+.padding-right1 {
+    padding-right: 1em;
+}
+
 .slim-table {
     margin-bottom: 0.5em;
 }

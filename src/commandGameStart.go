@@ -197,7 +197,7 @@ func commandGameStart(s *Session, d *CommandData) {
 		}
 	}
 
-	log.Info("Using seed \"" + g.Seed + "\", timed is " + strconv.FormatBool(g.Options.Timed) + ".")
+	log.Info(g.GetName() + "Using seed \"" + g.Seed + "\", timed is " + strconv.FormatBool(g.Options.Timed) + ".")
 
 	// Shuffle the deck
 	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go

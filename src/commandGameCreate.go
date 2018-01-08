@@ -67,7 +67,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 			TurnExpiration: -1,
 		},
 	}
-	log.Info("User \"" + s.Username() + "\" created a new game: " + g.GetName())
+	log.Info(g.GetName() + "User \"" + s.Username() + "\" created.")
 
 	// Add it to the map
 	games[gameID] = g

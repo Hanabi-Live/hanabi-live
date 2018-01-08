@@ -192,6 +192,12 @@ func (g *Game) End() {
 	// (this is necessary so that "joined" is equal to false in the upcoming table message)
 	g.Players = make([]*Player, 0)
 
+	// End the shared replay if no-one is left
+	if len(g.Spectators) == 0 {
+		delete(games, g.ID)
+		return
+	}
+
 	for _, s := range g.Spectators {
 		// Reset everyone's status (both players and spectators are now spectators)
 		s.Set("currentGame", g.ID)

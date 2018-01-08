@@ -89,28 +89,66 @@ function HanabiLobby() {
             type: 'getName',
         });
 
+
         // Fill in the "Variant" dropdown
-        let variant = JSON.parse(localStorage.getItem('createTableVariant'));
+        let variant;
+        try {
+            variant = JSON.parse(localStorage.getItem('createTableVariant'));
+        } catch (err) {
+            variant = 0;
+        }
         if (typeof variant !== 'number' || variant < 0 || variant >= variantNames.length) {
             variant = 0;
         }
         $('#create-game-variant').val(variant);
 
         // Fill in the "Timed" checkbox
-        const timed = JSON.parse(localStorage.getItem('createTableTimed'));
+        let timed;
+        try {
+            timed = JSON.parse(localStorage.getItem('createTableTimed'));
+        } catch (err) {
+            timed = false;
+        }
+        if (typeof timed !== 'boolean') {
+            timed = false;
+        }
         $('#create-game-timed').prop('checked', timed);
         $('#create-game-timed').change();
 
         // Fill in the "Base Time" box
-        const baseTime = JSON.parse(localStorage.getItem('baseTime'));
-        $('#base-time-minutes').val(baseTime);
+        let baseTimeMinutes;
+        try {
+            baseTimeMinutes = JSON.parse(localStorage.getItem('baseTimeMinutes'));
+        } catch (err) {
+            baseTimeMinutes = 2;
+        }
+        if (typeof baseTimeMinutes !== 'number' || baseTimeMinutes < 0) {
+            baseTimeMinutes = 2;
+        }
+        $('#base-time-minutes').val(baseTimeMinutes);
 
         // Fill in the "Time Per Turn" box
-        const timePerTurnSeconds = JSON.parse(localStorage.getItem('timePerTurnSeconds'));
+        let timePerTurnSeconds;
+        try {
+            timePerTurnSeconds = JSON.parse(localStorage.getItem('timePerTurnSeconds'));
+        } catch (err) {
+            timePerTurnSeconds = 20;
+        }
+        if (typeof timePerTurnSeconds !== 'number' || timePerTurnSeconds < 0) {
+            timePerTurnSeconds = 20;
+        }
         $('#time-per-turn-seconds').val(timePerTurnSeconds);
 
         // Fill in the "Reorder Cards" checkbox
-        const reorderCards = JSON.parse(localStorage.getItem('createTableReorderCards'));
+        let reorderCards;
+        try {
+            reorderCards = JSON.parse(localStorage.getItem('createTableReorderCards'));
+        } catch (err) {
+            reorderCards = false;
+        }
+        if (typeof timed !== 'boolean') {
+            timed = false;
+        }
         $('#create-game-reorder-cards').prop('checked', reorderCards);
 
         // Focus the "Name" box

@@ -216,6 +216,7 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 	// Find out if this successfully plays
 	if c.Rank != g.Stacks[c.Suit]+1 {
 		// The card does not play
+		g.BlindPlays = 0
 		c.Failed = true
 		g.Strikes += 1
 

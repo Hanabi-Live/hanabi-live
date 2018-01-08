@@ -129,6 +129,7 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
+		g.BlindPlays = 0
 		p.GiveClue(g, d)
 	} else if d.Type == 1 { // Play
 		c := p.RemoveCard(d.Target)
@@ -142,6 +143,7 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
+		g.BlindPlays = 0
 		g.Clues++
 		c := p.RemoveCard(d.Target)
 		p.DiscardCard(g, c)
