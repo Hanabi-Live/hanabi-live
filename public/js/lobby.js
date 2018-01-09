@@ -735,7 +735,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         let timed = 'No';
         if (game.timed) {
             timed = '<i class="far fa-clock"></i>&nbsp; ';
-            timed += `(${timerFormatter(game.baseTime)} + ${timerFormatter(game.timePerTurn)})`;
+            timed += `${timerFormatter(game.baseTime)} + ${timerFormatter(game.timePerTurn)}`;
         }
         $('<td>').html(timed).appendTo(row);
 
