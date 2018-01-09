@@ -67,9 +67,11 @@ func (g *Game) End() {
 	for _, p := range g.Players {
 		for _, c := range p.Hand {
 			type RevealMessage struct {
+				Type  string `json:"type"`
 				Which *Which `json:"which"`
 			}
 			p.Session.Emit("notify", &RevealMessage{
+				Type: "reveal",
 				Which: &Which{
 					Rank:  c.Rank,
 					Suit:  c.Suit,
