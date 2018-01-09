@@ -8,7 +8,9 @@
 
 package main
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func commandGameReattend(s *Session, d *CommandData) {
 	/*

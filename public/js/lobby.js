@@ -14,6 +14,11 @@ function HanabiLobby() {
     this.historyList = {};
     this.historyDetailList = [];
 
+    // Upon connecting, the server will only send us the last 10 games that we played
+    // If the user clicks on the "Show More History" button,
+    // then the server will send all of their games, and this will get set to true
+    this.historyAll = false;
+
     this.username = null;
     this.pass = null;
 
@@ -385,6 +390,14 @@ function HanabiLobby() {
 
         $('#lobby-history-details').hide();
         $('#lobby-history').show();
+    });
+
+    $('#lobby-history-show-more').on('click', (event) => {
+        self.connSend({
+            type: 'historyGetAll',
+            resp: {},
+        });
+        self.historyAll = true;
     });
 
     $('body').on('contextmenu', '#game', () => false);
@@ -825,6 +838,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         }
         $('<td>').html(button2).appendTo(row);
 
+        // Column 8 - Players
+        $('<td>').html(game.players).appendTo(row);
+
         row.appendTo(tbody);
     }
 };
@@ -1025,6 +1041,16 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
         $('<td>').html(gameData.otherPlayerNames).appendTo(row);
 
         row.appendTo(tbody);
+    }
+
+    // Don't show the "Show More History" button if we have already clicked it
+    // or if we don't have 10 or more games played
+    // (there is a small bug here where if a user has exactly 10 games played
+    // then the button will erroneously show and not do anything when clicked)
+    if (this.historyAll || ids.length < 10) {
+        $('#lobby-history-show-more').hide();
+    } else {
+        $('#lobby-history-show-more').show();
     }
 };
 
@@ -1432,6 +1458,12 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
         // data will be an array of all of the games that we have previously played
         for (const history of data) {
             self.addHistory(history);
+        }
+
+        // The server sent us every single game played because
+        // we clicked on the "Show More History" button
+        if (self.historyAll) {
+            self.drawHistory();
         }
     });
 

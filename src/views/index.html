@@ -35,15 +35,15 @@
                         </a>
                     </li>
                     <li>
-                        <a id="nav-buttons-games-history" class="button">
-                            <i class="fas fa-history nav-icon"></i>
-                            Show <span class="nav-hotkey-indicator">H</span>istory
+                        <a id="nav-buttons-games-notify" class="button disabled">
+                            <i class="fas fa-exclamation nav-icon"></i>
+                            Queue for Next Game
                         </a>
                     </li>
                     <li>
-                        <a id="nav-buttons-games-notify" class="button disabled">
-                            <i class="fas fa-exclamation nav-icon"></i>
-                            New Game Notification
+                        <a id="nav-buttons-games-history" class="button">
+                            <i class="fas fa-history nav-icon"></i>
+                            Show <span class="nav-hotkey-indicator">H</span>istory
                         </a>
                     </li>
                     <li>
@@ -209,6 +209,7 @@
                                         <th>Status</th>
                                         <th>Action</th>
                                         <th>Abandon</th>
+                                        <th>Players</th>
                                     </tr>
                                 </thead>
                                 <tbody id="lobby-games-table-tbody"></tbody>
@@ -268,6 +269,13 @@
                                 </thead>
                                 <tbody id="lobby-history-table-tbody"></tbody>
                             </table>
+
+                            <div class="align-center">
+                                <button id="lobby-history-show-more" class="button align-center" type="submit">
+                                    <i class="fas fa-chevron-circle-down"></i>&nbsp;
+                                    Show More History
+                                </button>
+                            </div>
                         </div>
                     </section>
                 </div>

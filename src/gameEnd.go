@@ -13,6 +13,7 @@ func (g *Game) End() {
 	g.DatetimeFinished = time.Now()
 
 	// Send text messages showing how much time each player finished with
+	// (even show them in non-timed games in case people are going for a speedrun)
 	if g.Options.Timed {
 		// Advance a turn so that we have an extra separator before the finishing times
 		g.Actions = append(g.Actions, Action{
@@ -30,6 +31,19 @@ func (g *Game) End() {
 			// But don't notify the players; the finishing times will only appear in the replay
 			log.Info(g.GetName() + text)
 		}
+	} else {
+		// Get the total time
+		var totalTime time.Duration
+		for _, p := range g.Players {
+			totalTime += p.Time
+		}
+
+		text := "The total game duration was: " + durationToString(totalTime)
+		g.Actions = append(g.Actions, Action{
+			Text: text,
+		})
+		// But don't notify the players; the finishing times will only appear in the replay
+		log.Info(g.GetName() + text)
 	}
 
 	// Send the "gameOver" message

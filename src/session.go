@@ -139,6 +139,12 @@ func (s *Session) NotifyTable(g *Game) {
 		numPlayers = len(g.Spectators)
 	}
 
+	names := make([]string, 0)
+	for _, p := range g.Players {
+		names = append(names, p.Name)
+	}
+	players := strings.Join(names, ", ")
+
 	type TableMessage struct {
 		ID           int     `json:"id"`
 		Name         string  `json:"name"`
@@ -154,6 +160,7 @@ func (s *Session) NotifyTable(g *Game) {
 		OurTurn      bool    `json:"ourTurn"`
 		SharedReplay bool    `json:"sharedReplay"`
 		Progress     int     `json:"progress"`
+		Players      string  `json:"players"`
 	}
 	s.Emit("table", &TableMessage{
 		ID:           g.ID,
@@ -170,6 +177,7 @@ func (s *Session) NotifyTable(g *Game) {
 		OurTurn:      joined && g.Running && g.ActivePlayer == i,
 		SharedReplay: g.SharedReplay,
 		Progress:     g.Progress,
+		Players:      players,
 	})
 }
 

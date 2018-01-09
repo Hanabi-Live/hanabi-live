@@ -115,9 +115,8 @@ type GameHistory struct {
 	You              bool
 }
 
-func (*Games) GetUserHistory(userID int) ([]GameHistory, error) {
-	var rows *sql.Rows
-	if v, err := db.Query(`
+func (*Games) GetUserHistory(userID int, limit bool) ([]GameHistory, error) {
+	SQLString := `
 		SELECT
 			games.id AS id_original,
 			(
@@ -146,8 +145,13 @@ func (*Games) GetUserHistory(userID int) ([]GameHistory, error) {
 			JOIN game_participants ON game_participants.game_id = games.id
 		WHERE game_participants.user_id = ?
 		ORDER BY games.id DESC
-		LIMIT 50
-	`, userID, userID); err != nil {
+	`
+	if limit {
+		SQLString += "LIMIT 10"
+	}
+
+	var rows *sql.Rows
+	if v, err := db.Query(SQLString, userID, userID); err != nil {
 		return nil, err
 	} else {
 		rows = v

@@ -69,7 +69,7 @@ func websocketConnect(ms *melody.Session) {
 	// Send past chat messages
 	var rawMsgs []models.ChatMessage
 	if v, err := db.ChatLog.Get("lobby", 50); err != nil {
-		log.Error("Failed to get the history for user \""+s.Username()+"\":", err)
+		log.Error("Failed to get the lobby chat history for user \""+s.Username()+"\":", err)
 		return
 	} else {
 		rawMsgs = v
@@ -118,8 +118,9 @@ func websocketConnect(ms *melody.Session) {
 	}
 
 	// Send the user's game history
+	// (only the last 10 games to prevent on wasted bandwidth)
 	var history []models.GameHistory
-	if v, err := db.Games.GetUserHistory(s.UserID()); err != nil {
+	if v, err := db.Games.GetUserHistory(s.UserID(), true); err != nil {
 		log.Error("Failed to get the history for user \""+s.Username()+"\":", err)
 		return
 	} else {
