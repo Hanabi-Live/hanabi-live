@@ -14,6 +14,7 @@ type Game struct {
 	Options          *Options
 	Players          []*Player
 	Spectators       map[int]*Session
+	DisconSpectators map[int]bool
 	Running          bool
 	SharedReplay     bool
 	DatetimeCreated  time.Time

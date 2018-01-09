@@ -34,6 +34,7 @@ func websocketDisconnect(ms *melody.Session) {
 
 		if _, ok := g.Spectators[s.UserID()]; ok {
 			log.Info(g.GetName() + "Ejecting user \"" + s.Username() + "\" from a shared replay since they are re-logging in.")
+			g.DisconSpectators[s.UserID()] = true
 			commandGameUnattend(s, nil)
 		}
 	}

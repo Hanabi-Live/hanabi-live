@@ -42,10 +42,11 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 		Options: &Options{
 			Variant: variant,
 		},
-		Spectators:   make(map[int]*Session),
-		Running:      true,
-		SharedReplay: true,
-		Owner:        s.UserID(),
+		Spectators:       make(map[int]*Session),
+		DisconSpectators: make(map[int]bool),
+		Running:          true,
+		SharedReplay:     true,
+		Owner:            s.UserID(),
 	}
 	games[gameID] = g
 

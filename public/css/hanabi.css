@@ -166,11 +166,11 @@ body {
 
 #lobby-chat {
     margin-bottom: 0;
-    height: 39vh;
+    height: 41vh;
 }
 
 #lobby-chat-text {
-    height: 27vh;
+    height: 29vh;
     overflow-y: auto;
     overflow-wrap: break-word;
     border-style: solid !important;
@@ -182,7 +182,7 @@ body {
 
 #lobby-users {
     margin-bottom: 0;
-    height: 39vh;
+    height: 41vh;
 }
 
 #lobby-users-title {
@@ -191,7 +191,7 @@ body {
 
 #lobby-users-container {
     overflow-y: auto;
-    height: 28vh;
+    height: 30vh;
 }
 
 .lobby-game-player {

@@ -96,13 +96,13 @@ function HanabiUI(lobby, gameID) {
 
         self.reset();
 
-        // This shit resets all the msgs so that everything shows up again,
+        // This resets all the msgs so that everything shows up again,
         // since the server doesn't replay them and the client only draws streamed
         // information and doesn't maintain a full game state.
-
-        // Rebuilds for a replay.
         if (self.replayOnly) {
+            // Rebuilds for a replay.
             let msg;
+
             // Iterate over the replay, stop at the current turn or at the end
             self.replayPos = 0;
             while (true) { // eslint-disable-line no-constant-condition
@@ -128,8 +128,8 @@ function HanabiUI(lobby, gameID) {
                     }
                 }
             }
-        // Rebuilds for a game
         } else {
+            // Rebuilds for a game
             let msg;
             let whoseTurn = 0;
 
@@ -699,17 +699,20 @@ function HanabiUI(lobby, gameID) {
         }
 
         {
-            const nSuits = config.suits.length;
+            const { suits } = config;
+            const nSuits = suits.length;
             let i = 0;
-            for (const suit of config.suits) {
+            for (const suit of suits) {
                 const suitPip = new Kinetic.Shape({
                     x: Math.floor(CARDW * 0.5),
                     y: Math.floor(CARDH * 0.5),
+
                     // Scale numbers are magic
                     scale: {
                         x: 0.4,
                         y: 0.4,
                     },
+
                     // Transform polar to cartesian coordinates
                     // The magic number added to the offset is needed to center things properly;
                     // I don't know why it's needed... perhaps something to do with the pathfuncs
@@ -727,6 +730,7 @@ function HanabiUI(lobby, gameID) {
                         ctx.fillStrokeShape(suitPip);
                     },
                 });
+
                 // Gradient numbers are magic
                 if (suit === SUIT.MULTI) {
                     suitPip.fillRadialGradientColorStops([0.3, 'blue', 0.425, 'green', 0.65, 'yellow', 0.875, 'red', 1, 'purple']);
@@ -2481,18 +2485,30 @@ function HanabiUI(lobby, gameID) {
     };
 
     const makeDeckBack = function makeDeckBack() {
-        const cvs = document.createElement('canvas');
-        cvs.width = CARDW;
-        cvs.height = CARDH;
-
-        // Deck back image
+        const cvs = makeUnknownCardImage();
         const ctx = cvs.getContext('2d');
-        const imageObj = new Image();
 
-        imageObj.onload = function loadImg() {
-            ctx.drawImage(imageObj, -30, -10);
-        };
-        imageObj.src = 'public/img/fireworks.jpg';
+        const nSuits = ui.variant.suits.length;
+        let i = 0;
+        for (const suit of ui.variant.suits) {
+            ctx.resetTransform();
+            ctx.scale(0.4, 0.4);
+
+            let x = Math.floor(CARDW * 1.25);
+            let y = Math.floor(CARDH * 1.25);
+
+            // Transform polar to cartesian coordinates
+            // The magic number added to the offset is needed to center things properly
+            x -= 1.05 * Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25);
+            y -= 1.05 * Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3);
+            ctx.translate(x, y);
+
+            PATHFUNC.get(suit.shape)(ctx);
+            drawshape(ctx);
+
+            i += 1;
+        }
+
         ctx.save();
 
         return cvs;
@@ -3259,6 +3275,7 @@ function HanabiUI(lobby, gameID) {
             width: 0.075 * winW,
             height: 0.189 * winH,
             cardback: 'deck-back',
+            suits: this.variant.suits,
         });
 
         drawDeck.cardback.on('dragend.play', function drawDeckDragendPlay() {

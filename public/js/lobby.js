@@ -734,8 +734,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         // Column 4 - Timed
         let timed = 'No';
         if (game.timed) {
-            timed = '<i class="far fa-clock"></i>&nbsp; ';
-            timed += `${timerFormatter(game.baseTime)} + ${timerFormatter(game.timePerTurn)}`;
+            timed = `${timerFormatter(game.baseTime)} + ${timerFormatter(game.timePerTurn)}`;
         }
         $('<td>').html(timed).appendTo(row);
 
@@ -916,7 +915,7 @@ HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msg
     if (text === 'Watch Replay') {
         text = '<i class="fas fa-eye lobby-button-icon"></i>';
     } else if (text === 'Share Replay') {
-        text = '<i class="fas fa-share-alt lobby-button-icon"></i>';
+        text = '<i class="fas fa-users lobby-button-icon"></i>';
     }
     button.html(text);
     button.addClass('history-table');

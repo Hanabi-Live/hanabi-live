@@ -143,4 +143,26 @@ func websocketConnect(ms *melody.Session) {
 			}
 		}
 	}
+
+	// Check to see if this user was in any existing shared replays
+	for _, g := range games {
+		if !g.SharedReplay {
+			continue
+		}
+
+		for id := range g.DisconSpectators {
+			if id == s.UserID() {
+				// Add the player back to the shared replay
+				g.Spectators[s.UserID()] = s
+				delete(g.DisconSpectators, s.UserID())
+				d := &CommandData{
+					ID: g.ID,
+				}
+				commandGameSpectate(s, d)
+
+				// We can break here because the player can only be in one game at a time
+				break
+			}
+		}
+	}
 }
