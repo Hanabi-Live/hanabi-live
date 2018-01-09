@@ -36,6 +36,13 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 
 ## New Major Features
 
+#### Improved Clue Indication
+
+* The cards last touched by a clue are now indicated by arrows.
+* Yellow borders around a card signify that it has been "touched" by one or more clue on it.
+* Color pips (that match the suits of the stack) and black boxes (that match the number possibilities) will appear on cards in your hand. The pips and boxes will automatically disappear as you learn more information about the card.
+* You can left-click on someone else's card to see how it appears to them. (This is referred to as "empathy".)
+
 #### Bottom Deck Blind Plays
 
 * On your turn, if there is 1 card left in the deck, you are allowed to blind play it.
