@@ -17,18 +17,27 @@ func debug(s *Session, d *CommandData) {
 		log.Debug(strconv.Itoa(i) + " - " + g.Name)
 		log.Debug("   ", g)
 		log.Debug("    Options:")
-		log.Debug("   ", g.Options)
+		log.Debug("       ", g.Options)
 		log.Debug("    Players:")
-		for j, p := range g.Players {
-			log.Debug("    " + strconv.Itoa(j) + " - " + p.Name)
+		for j, p := range g.Players { // This is a map[int]*Player
+			log.Debug("        " + strconv.Itoa(j) + " - " + p.Name)
+		}
+		if len(g.Players) == 0 {
+			log.Debug("        [no players]")
 		}
 		log.Debug("    Spectators:")
-		for j, s := range g.Spectators {
-			log.Debug("    " + strconv.Itoa(j) + " - " + s.Username())
+		for j, s := range g.Spectators { // This is a map[int]*Session
+			log.Debug("        " + strconv.Itoa(j) + " - " + s.Username())
+		}
+		if len(g.Players) == 0 {
+			log.Debug("        [no spectators]")
 		}
 		log.Debug("    DisconSpectators:")
-		for j := range g.DisconSpectators {
-			log.Debug("    " + strconv.Itoa(j))
+		for j := range g.DisconSpectators { // This is a map[int]*bool
+			log.Debug("        " + strconv.Itoa(j))
+		}
+		if len(g.Players) == 0 {
+			log.Debug("        [no disconnected spectators]")
 		}
 	}
 

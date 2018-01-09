@@ -37,6 +37,7 @@ func (g *Game) End() {
 		for _, p := range g.Players {
 			totalTime += p.Time
 		}
+		totalTime *= -1 // The duration will be negative since the clocks start at 0
 
 		text := "The total game duration was: " + durationToString(totalTime)
 		g.Actions = append(g.Actions, Action{

@@ -24,7 +24,6 @@ function HanabiLobby() {
 
     this.gameID = null;
     this.randomName = '';
-    this.beenInAtLeast1Game = false;
 
     // The lobby settings found in the gear sub-menu
     this.sendTurnNotify = false;
@@ -649,11 +648,6 @@ HanabiLobby.prototype.addTable = function addTable(data) {
 
     this.tableList[data.id] = data;
     this.drawTables();
-
-    // Automatically resume any games that we are currently in
-    if (data.joined && data.running && !this.beenInAtLeast1Game) {
-        $(`#resume-${data.id}`).click();
-    }
 };
 
 HanabiLobby.prototype.removeTable = function removeTable(data) {
@@ -1305,7 +1299,6 @@ HanabiLobby.prototype.gameStarted = function gameStarted(data) {
     this.hidePregame();
     this.showGame();
 
-    this.beenInAtLeast1Game = true;
     this.ui = new HanabiUI(this, this.gameID);
 
     this.ui.setBackend(this.conn);

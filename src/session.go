@@ -140,8 +140,14 @@ func (s *Session) NotifyTable(g *Game) {
 	}
 
 	names := make([]string, 0)
-	for _, p := range g.Players {
-		names = append(names, p.Name)
+	if g.SharedReplay {
+		for _, s2 := range g.Spectators {
+			names = append(names, s2.Username())
+		}
+	} else {
+		for _, p := range g.Players {
+			names = append(names, p.Name)
+		}
 	}
 	players := strings.Join(names, ", ")
 

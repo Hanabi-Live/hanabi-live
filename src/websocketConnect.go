@@ -134,9 +134,14 @@ func websocketConnect(ms *melody.Session) {
 			if p.Name == s.Username() {
 				// Update the player object with the new socket
 				p.Session = s
-
-				// This was initialized to -1 earlier, so we need to update it
 				s.Set("currentGame", g.ID)
+
+				// Add the player back to the game
+				log.Info(g.GetName() + "Automatically reattending player \"" + s.Username() + "\".")
+				d := &CommandData{
+					ID: g.ID,
+				}
+				commandGameReattend(s, d)
 
 				// We can break here because the player can only be in one game at a time
 				break
@@ -152,9 +157,10 @@ func websocketConnect(ms *melody.Session) {
 
 		for id := range g.DisconSpectators {
 			if id == s.UserID() {
-				// Add the player back to the shared replay
-				g.Spectators[s.UserID()] = s
 				delete(g.DisconSpectators, s.UserID())
+
+				// Add the player back to the shared replay
+				log.Info(g.GetName() + "Automatically respectating player \"" + s.Username() + "\".")
 				d := &CommandData{
 					ID: g.ID,
 				}
