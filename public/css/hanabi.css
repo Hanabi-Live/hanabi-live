@@ -6,6 +6,10 @@ body {
     background: url(../img/background2.jpg) no-repeat center center fixed;
 }
 
+table td {
+    /* In Chrome, middle is default, but in Firefox, bottom is default */
+    vertical-align: middle;
+}
 
 /* The "align-center" class will do horizontal centering (in "alpha.css").
    The "align-center-v" class will do vertical centering. */

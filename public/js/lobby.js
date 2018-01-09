@@ -1068,7 +1068,6 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
         return;
     }
 
-
     // Clear all of the existing rows
     tbody.html('');
 

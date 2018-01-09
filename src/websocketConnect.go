@@ -134,6 +134,9 @@ func websocketConnect(ms *melody.Session) {
 			if p.Name == s.Username() {
 				// Update the player object with the new socket
 				p.Session = s
+
+				// This was initialized to -1 earlier, so we need to update it
+				// (it is not updated in the "commandGameReattend()" function)
 				s.Set("currentGame", g.ID)
 
 				// Add the player back to the game
