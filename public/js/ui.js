@@ -432,7 +432,7 @@ function HanabiUI(lobby, gameID) {
         Kinetic.Group.call(this, config);
         this.maxLines = config.maxLines;
         this.smallHistory = [];
-        for (let i = 0; i < this.maxLines; ++i) {
+        for (let i = 0; i < this.maxLines; i++) {
             const newConfig = $.extend({}, config);
 
             newConfig.height = config.height / this.maxLines;
@@ -461,7 +461,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     MultiFitText.prototype.refreshText = function refreshText() {
-        for (let i = 0; i < this.children.length; ++i) {
+        for (let i = 0; i < this.children.length; i++) {
             let msg = this.smallHistory[i];
             if (!msg) {
                 msg = '';
@@ -472,7 +472,7 @@ function HanabiUI(lobby, gameID) {
 
     MultiFitText.prototype.reset = function reset() {
         this.smallHistory = [];
-        for (let i = 0; i < this.children.length; ++i) {
+        for (let i = 0; i < this.children.length; i++) {
             this.children[i].setText('');
         }
     };
@@ -4531,11 +4531,10 @@ function HanabiUI(lobby, gameID) {
         if (!this.replay && enter) {
             this.replay = true;
             this.replayPos = this.replayLog.length;
-            this.replayTurn = this.replayMax;
             this.adjustReplayShuttle();
             this.stopAction(true);
             replayArea.show();
-            for (let i = 0; i < this.deck.length; ++i) {
+            for (let i = 0; i < this.deck.length; i++) {
                 this.deck[i].setBareImage();
             }
             UILayer.draw();
@@ -4548,7 +4547,7 @@ function HanabiUI(lobby, gameID) {
             if (savedAction) {
                 this.handleAction(savedAction);
             }
-            for (let i = 0; i < this.deck.length; ++i) {
+            for (let i = 0; i < this.deck.length; i++) {
                 this.deck[i].setBareImage();
             }
             UILayer.draw();
@@ -4974,11 +4973,21 @@ function HanabiUI(lobby, gameID) {
             timerLayer.draw();
 
             this.stopLocalTimer();
-            this.replayOnly = true;
-            replayButton.hide();
+
+            // If the game just finished for the players,
+            // start the process of transforming it into a shared replay
+            if (!this.replayOnly) {
+                this.replayOnly = true;
+                this.replayTurn = this.replayMax;
+                this.sharedReplayTurn = this.replayTurn;
+            }
+
+            // We could be in the middle of an in-game replay when the game ends,
+            // so don't jerk them out of the in-game replay
             if (!this.replay) {
                 this.enterReplay(true);
             }
+
             if (!this.animateFast) {
                 UILayer.draw();
             }
@@ -4989,7 +4998,7 @@ function HanabiUI(lobby, gameID) {
             // Get the LayoutChild objects in the hand and put them in the right order in a temporary array
             const newChildOrder = [];
             const handSize = hand.children.length;
-            for (let i = 0; i < handSize; ++i) {
+            for (let i = 0; i < handSize; i++) {
                 const order = data.handOrder[i];
                 const child = ui.deck[order].parent;
                 newChildOrder.push(child);
@@ -4999,7 +5008,7 @@ function HanabiUI(lobby, gameID) {
             }
 
             // Put them back into the hand in the new order
-            for (let i = 0; i < handSize; ++i) {
+            for (let i = 0; i < handSize; i++) {
                 const child = newChildOrder[i];
                 hand.add(child);
             }

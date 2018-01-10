@@ -1268,7 +1268,7 @@ HanabiLobby.prototype.showJoined = function showJoined() {
                     Strikeout rate:
                 </div>
                 <div class="2u align-right padding0">
-                    ${strikeoutRateVariant}
+                    ${strikeoutRateVariant}%
                 </div>
             </div>
         `;
