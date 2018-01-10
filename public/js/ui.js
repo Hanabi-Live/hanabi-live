@@ -330,9 +330,15 @@ function HanabiUI(lobby, gameID) {
         if (
             // the !suit condition is necessary for unclued cards with certain rank or suit in
             // other players' hands to display properly with empathy
-            !suit ||
-            !card.suitKnown() ||
-            (card.showOnlyLearned && card.possibleSuits.length > 1)
+            (
+                !suit ||
+                !card.suitKnown() ||
+                (card.showOnlyLearned && card.possibleSuits.length > 1)
+            ) && (
+                // Cards are always known in a shared replay,
+                // but we want to preserve the Empathy feature
+                !ui.replayOnly || card.showOnlyLearned
+            )
         ) {
             if (!card.rankKnown() && rank) {
                 prefix = 'Index';
@@ -680,6 +686,10 @@ function HanabiUI(lobby, gameID) {
         });
         this.add(this.rankPips);
         this.add(this.suitPips);
+        if (ui.replayOnly) {
+            this.rankPips.visible(false);
+            this.suitPips.visible(false);
+        }
 
         for (const i of config.ranks) {
             const rankPip = new Kinetic.Rect({
