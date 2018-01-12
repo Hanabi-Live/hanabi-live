@@ -273,7 +273,7 @@
                             <div class="align-center">
                                 <button id="lobby-history-show-more" class="button align-center" type="submit">
                                     <i class="fas fa-chevron-circle-down"></i>&nbsp;
-                                    Show More History
+                                    Show More History (this will freeze your browser for a while)
                                 </button>
                             </div>
                         </div>
@@ -542,12 +542,12 @@
     <div id="game"></div>
 
     <!-- Game tooltips -->
-    <div id="tooltip-player-1-time" class="tooltip-game"></div>
-    <div id="tooltip-player-2-time" class="tooltip-game"></div>
-    <div id="tooltip-player-3-time" class="tooltip-game"></div>
-    <div id="tooltip-player-4-time" class="tooltip-game"></div>
-    <div id="tooltip-player-5-time" class="tooltip-game"></div>
-    <div id="tooltip-card-note" class="tooltip-game"></div>
+    <div id="game-tooltips">
+        <!-- "tooltip-player-#" is added in "ui.js" -->
+        <div id="tooltip-spectators"></div>
+        <div id="tooltip-leader"></div>
+        <!-- "tooltip-card-#" is added in "ui.js" -->
+    </div>
 </body>
 
 </html>

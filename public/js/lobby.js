@@ -79,6 +79,14 @@ function HanabiLobby() {
         }
     };
 
+    // Map the escape key to close all tooltips
+    $(document).keydown((event) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            this.closeAllTooltips();
+        }
+    });
+
     // The "close" event will not fire if we initialize this on the tooltip class for some reason, so we initialize all 3 individually
     for (const tooltip of this.tooltips) {
         $(`#nav-buttons-games-${tooltip}`).tooltipster(tooltipsterOptions).tooltipster('instance').on('close', tooltipsterClose);

@@ -3,8 +3,8 @@
 */
 
 body {
-    background-color: rgb(25, 57, 20);
-    /* The same color as the background image so that it won't show white while the image is loading*/
+    background-color: rgb(34, 79, 39);
+    /* The same color as the background image so that it won't show white while the image is loading */
     background-image: url(../img/background2.jpg);
     background-repeat: no-repeat;
     background-position: center center;
@@ -246,13 +246,18 @@ table td {
     In-game tooltips
 */
 
-.tooltip-game {
+#game-tooltips > div {
     position: absolute;
 }
 
-.tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-customized .tooltipster-content {
+.tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-big .tooltipster-content {
     font-size: 1.5em;
     padding: 0.5em;
     line-height: 1em;
-    text-align: center;
+}
+
+.game-tooltips-ol {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+    padding-left: 0.9em;
 }

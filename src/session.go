@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
+	"github.com/microcosm-cc/bluemonday"
 	melody "gopkg.in/olahol/melody.v1"
 )
 
@@ -344,7 +345,12 @@ func (s *Session) NotifyAllNotes(playerNotes []models.PlayerNote) {
 		for i, note := range playerNote.Notes {
 			var line string
 			if note != "" {
-				line = playerNote.Name + ": " + note + "\n"
+				// Sanitize the note using the bluemonday library to stop
+				// various attacks against other players reading the notes
+				p := bluemonday.StrictPolicy()
+				note = p.Sanitize(note)
+
+				line = "<strong>" + playerNote.Name + ":</strong> " + note + "<br />"
 			}
 			if len(combinedNotes) == i {
 				combinedNotes = append(combinedNotes, line)

@@ -55,23 +55,32 @@ function HanabiUI(lobby, gameID) {
     this.activeClockIndex = null;
     this.lastSpectators = null;
 
-    /*
-        Initialize tooltips
-    */
-
+    // Initialize tooltips
+    const tooltipThemes = [
+        'tooltipster-shadow',
+        'tooltipster-shadow-big',
+    ];
     const tooltipOptions = {
-        theme: ['tooltipster-shadow', 'tooltipster-shadow-customized'],
+        theme: tooltipThemes,
         delay: 0,
         trigger: 'custom',
         contentAsHTML: true,
-        distance: 12,
         animation: 'grow',
         updateAnimation: null,
     };
-    for (let i = 1; i <= 5; i++) {
-        $(`#tooltip-player-${i}-time`).tooltipster(tooltipOptions);
+    for (let i = 0; i < 5; i++) {
+        $('#game-tooltips').append(`<div id="tooltip-player-${i}"></div>`);
+        $(`#tooltip-player-${i}`).tooltipster(tooltipOptions);
+        const newThemes = tooltipThemes.slice();
+        newThemes.push('align-center');
+        $(`#tooltip-player-${i}`).tooltipster('instance').option('theme', newThemes);
     }
-    $('#tooltip-card-note').tooltipster(tooltipOptions);
+    $('#tooltip-spectators').tooltipster(tooltipOptions);
+    $('#tooltip-leader').tooltipster(tooltipOptions);
+    for (let i = 0; i < 60; i++) { // Matches card.order
+        $('#game-tooltips').append(`<div id="tooltip-card-${i}"></div>`);
+        $(`#tooltip-card-${i}`).tooltipster(tooltipOptions);
+    }
 
     // This below code block deals with automatic resizing
     // Start listening to resize events and draw canvas.
@@ -181,7 +190,7 @@ function HanabiUI(lobby, gameID) {
             });
         }
 
-        // Restore Spectator Icon if applicable
+        // Restore the spectator icon
         if (self.lastSpectators) {
             self.handleSpectators(self.lastSpectators);
         }
@@ -196,7 +205,6 @@ function HanabiUI(lobby, gameID) {
         UILayer.draw();
         timerLayer.draw();
         cardLayer.draw();
-        tipLayer.draw();
         overLayer.draw();
     }
 
@@ -338,7 +346,7 @@ function HanabiUI(lobby, gameID) {
         content += ':<br /><strong>';
         content += millisecondsToTimeDisplay(time);
         content += '</strong>';
-        $(`#tooltip-player-${i + 1}-time`).tooltipster('instance').content(content);
+        $(`#tooltip-player-${i}`).tooltipster('instance').content(content);
     }
 
     function imageName(card) {
@@ -889,16 +897,32 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
+            const tooltip = $(`#tooltip-card-${this.order}`);
+            const tooltipInstance = tooltip.tooltipster('instance');
+
+            // Figure out where to place the tooltip
+            // We want the tooltip to appear above the card by default
+            // Make the tooltip appear below the card if the player who has the card is sitting directly opposite us
             const pos = this.getAbsolutePosition();
-            const posY = pos.y - (this.getPosition().x / 2);
-            $('#tooltip-card-note').css('left', pos.x);
-            $('#tooltip-card-note').css('top', posY);
-            $('#tooltip-card-note').tooltipster('instance').content(this.note);
-            $('#tooltip-card-note').tooltipster('open');
+            let posY;
+            if (this.parent.parent.acrossTheTable) {
+                posY = pos.y + (this.getHeight() * this.parent.scale().y / 2);
+                tooltipInstance.option('side', 'bottom');
+            } else {
+                posY = pos.y - (this.getHeight() * this.parent.scale().y / 2)
+                tooltipInstance.option('side', 'top');
+            }
+
+            // Update the tooltip and open it
+            tooltip.css('left', pos.x);
+            tooltip.css('top', posY);
+            tooltipInstance.content(this.note);
+            tooltip.tooltipster('open');
         });
 
-        this.on('mouseout', () => {
-            $('#tooltip-card-note').tooltipster('close');
+        this.on('mouseout', function cardMouseOut() {
+            const tooltip = $(`#tooltip-card-${this.order}`);
+            tooltip.tooltipster('close');
         });
 
         this.on('mousemove tap', () => {
@@ -954,8 +978,6 @@ function HanabiUI(lobby, gameID) {
             });
         }
 
-        // General mouse click handler
-
         // Hide clue arrows ahead of user dragging their card
         if (config.holder === ui.playerUs && !ui.replayOnly && !ui.spectating) {
             this.on('mousedown', (event) => {
@@ -972,6 +994,7 @@ function HanabiUI(lobby, gameID) {
             });
         }
 
+        // General mouse click handler
         this.on('click', (event) => {
             if (ui.sharedReplay && event.evt.which === 3 && ui.sharedReplayLeader === lobby.username) {
                 // In a replay that is shared, the leader clicks a card to draw attention to it
@@ -1011,15 +1034,14 @@ function HanabiUI(lobby, gameID) {
 
             // The user clicked "OK", regardless of whether they changed the existing note or not
             self.note = note;
-            $('#tooltip-card-note').tooltipster('instance').content(note);
+            const tooltip = $(`#tooltip-card-${self.order}`);
+            tooltip.tooltipster('instance').content(note);
             ui.setNote(self.order, note);
 
             if (note.length > 0) {
                 self.noteGiven.show();
             } else {
                 self.noteGiven.hide();
-                self.tooltip.hide();
-                tipLayer.draw();
             }
             UILayer.draw();
             cardLayer.draw();
@@ -1148,6 +1170,7 @@ function HanabiUI(lobby, gameID) {
         this.align = (config.align || 'left');
         this.reverse = (config.reverse || false);
         this.invertCards = (config.invertCards || false);
+        this.acrossTheTable = config.acrossTheTable; // A bool used for tooltip reversal
     };
 
     Kinetic.Util.extend(CardLayout, Kinetic.Group);
@@ -2650,9 +2673,6 @@ function HanabiUI(lobby, gameID) {
     const textLayer = new Kinetic.Layer({
         listening: false,
     });
-    const tipLayer = new Kinetic.Layer({
-        listening: false,
-    });
     const timerLayer = new Kinetic.Layer({
         listening: false,
     });
@@ -2663,10 +2683,8 @@ function HanabiUI(lobby, gameID) {
     let scoreLabel;
     let spectatorsLabel;
     let spectatorsNumLabel;
-    let spectatorsLabelTooltip;
     let sharedReplayLeaderLabel;
     let sharedReplayLeaderLabelPulse;
-    let sharedReplayLeaderLabelTooltip;
     let strikes = [];
     const nameFrames = [];
     const playStacks = new Map();
@@ -2955,63 +2973,16 @@ function HanabiUI(lobby, gameID) {
         });
         UILayer.add(spectatorsLabel);
 
-        /*
-            Tooltip for the eyes
-        */
-
-        spectatorsLabelTooltip = new Kinetic.Label({
-            x: -1000,
-            y: -1000,
-        });
-
-        spectatorsLabelTooltip.add(new Kinetic.Tag({
-            fill: '#3E4345',
-            pointerDirection: 'down',
-            pointerWidth: 0.02 * winW,
-            pointerHeight: 0.015 * winH,
-            lineJoin: 'round',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 3,
-                y: 3,
-            },
-            shadowOpacity: 0.6,
-        }));
-
-        spectatorsLabelTooltip.add(new Kinetic.Text({
-            fill: 'white',
-            align: 'left',
-            padding: 0.01 * winH,
-            fontSize: 0.025 * winH,
-            minFontSize: 0.02 * winH,
-            width: 0.225 * winW,
-            fontFamily: 'Verdana',
-            text: '',
-        }));
-
-        tipLayer.add(spectatorsLabelTooltip);
-        spectatorsLabel.tooltip = spectatorsLabelTooltip;
-
+        // Tooltip for the eyes
         spectatorsLabel.on('mousemove', function spectatorsLabelMouseMove() {
-            const mousePos = stage.getPointerPosition();
-            this.tooltip.setX(mousePos.x);
-            this.tooltip.setY(mousePos.y - 5);
-
-            this.tooltip.show();
-            tipLayer.draw();
-
-            ui.activeHover = this;
+            const tooltipX = this.attrs.x + this.getWidth() / 2;
+            $('#tooltip-spectators').css('left', tooltipX);
+            $('#tooltip-spectators').css('top', this.attrs.y);
+            $('#tooltip-spectators').tooltipster('open');
         });
-
-        spectatorsLabel.on('mouseout', function spectatorsLabelMouseOut() {
-            this.tooltip.hide();
-            tipLayer.draw();
+        spectatorsLabel.on('mouseout', () => {
+            $('#tooltip-spectators').tooltipster('close');
         });
-
-        /*
-            End tooltip
-        */
 
         spectatorsNumLabel = new Kinetic.Text({
             x: 0.583 * winW,
@@ -3034,10 +3005,7 @@ function HanabiUI(lobby, gameID) {
         });
         UILayer.add(spectatorsNumLabel);
 
-        /*
-            Shared replay leader indicator
-        */
-
+        // Shared replay leader indicator
         sharedReplayLeaderLabel = new Kinetic.Text({
             x: 0.623 * winW,
             y: 0.85 * winH,
@@ -3074,63 +3042,16 @@ function HanabiUI(lobby, gameID) {
         });
         sharedReplayLeaderLabelPulse.anim.addLayer(UILayer);
 
-        /*
-            Tooltip for the crown
-        */
-
-        sharedReplayLeaderLabelTooltip = new Kinetic.Label({
-            x: -1000,
-            y: -1000,
-        });
-
-        sharedReplayLeaderLabelTooltip.add(new Kinetic.Tag({
-            fill: '#3E4345',
-            pointerDirection: 'left',
-            pointerWidth: 0.02 * winW,
-            pointerHeight: 0.015 * winH,
-            lineJoin: 'round',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 3,
-                y: 3,
-            },
-            shadowOpacity: 0.6,
-        }));
-
-        sharedReplayLeaderLabelTooltip.add(new Kinetic.Text({
-            fill: 'white',
-            align: 'left',
-            padding: 0.01 * winH,
-            fontSize: 0.04 * winH,
-            minFontSize: 0.02 * winH,
-            width: 0.2 * winW,
-            fontFamily: 'Verdana',
-            text: '',
-        }));
-
-        tipLayer.add(sharedReplayLeaderLabelTooltip);
-        sharedReplayLeaderLabel.tooltip = sharedReplayLeaderLabelTooltip;
-
+        // Tooltip for the crown
         sharedReplayLeaderLabel.on('mousemove', function sharedReplayLeaderLabelMouseMove() {
-            const mousePos = stage.getPointerPosition();
-            this.tooltip.setX(mousePos.x + 15);
-            this.tooltip.setY(mousePos.y + 5);
-
-            this.tooltip.show();
-            tipLayer.draw();
-
-            ui.activeHover = this;
+            const tooltipX = this.attrs.x + this.getWidth() / 2;
+            $('#tooltip-leader').css('left', tooltipX);
+            $('#tooltip-leader').css('top', this.attrs.y);
+            $('#tooltip-leader').tooltipster('open');
         });
-
-        sharedReplayLeaderLabel.on('mouseout', function sharedReplayLeaderLabelMouseOut() {
-            this.tooltip.hide();
-            tipLayer.draw();
+        sharedReplayLeaderLabel.on('mouseout', () => {
+            $('#tooltip-leader').tooltipster('close');
         });
-
-        /*
-            End tooltip
-        */
 
         /*
             End of spectator / shared replay stuff
@@ -3622,6 +3543,21 @@ function HanabiUI(lobby, gameID) {
                 j += nump;
             }
 
+            // Find out if this player is sitting across the table from us
+            let acrossTheTable = false;
+            if (
+                // 2 player game on player 2
+                (nump === 2 && j === 1) ||
+                // 4 player game on player 3
+                (nump === 4 && j === 2) ||
+                // 5 player game on player 3
+                (nump === 5 && j === 2) ||
+                // 5 player game on player 4
+                (nump === 5 && j === 3)
+            ) {
+                acrossTheTable = true;
+            }
+
             playerHands[i] = new CardLayout({
                 x: handPos[nump][j].x * winW,
                 y: handPos[nump][j].y * winH,
@@ -3631,6 +3567,7 @@ function HanabiUI(lobby, gameID) {
                 align: 'center',
                 reverse: j === 0,
                 invertCards: i !== this.playerUs,
+                acrossTheTable,
             });
 
             cardLayer.add(playerHands[i]);
@@ -3683,48 +3620,16 @@ function HanabiUI(lobby, gameID) {
             // Draw the tooltips on the player names that show the time
             // (the code is copied from HanabiCard)
             if (!this.replayOnly) {
-                const frameHoverTooltip = new Kinetic.Label({
-                    x: -1000,
-                    y: -1000,
-                });
-
-                frameHoverTooltip.add(new Kinetic.Tag({
-                    fill: '#3E4345',
-                    pointerDirection: 'left',
-                    pointerWidth: 0.02 * winW,
-                    pointerHeight: 0.015 * winH,
-                    lineJoin: 'round',
-                    shadowColor: 'black',
-                    shadowBlur: 10,
-                    shadowOffset: {
-                        x: 3,
-                        y: 3,
-                    },
-                    shadowOpacity: 0.6,
-                }));
-
-                frameHoverTooltip.add(new FitText({
-                    fill: 'white',
-                    align: 'left',
-                    padding: 0.01 * winH,
-                    fontSize: 0.04 * winH,
-                    minFontSize: 0.02 * winH,
-                    width: 0.08 * winW,
-                    fontFamily: 'Verdana',
-                    text: '??:??',
-                }));
-
-                tipLayer.add(frameHoverTooltip);
-                nameFrames[i].tooltip = frameHoverTooltip;
-
                 nameFrames[i].on('mousemove', function nameFramesMouseMove() {
-                    const tooltipX = this.attrs.width / 2 + this.attrs.x;
-                    $(`#tooltip-player-${i + 1}-time`).css('left', tooltipX);
-                    $(`#tooltip-player-${i + 1}-time`).css('top', this.attrs.y);
-                    $(`#tooltip-player-${i + 1}-time`).tooltipster('open');
+                    const tooltipX = this.getWidth() / 2 + this.attrs.x;
+                    const tooltip = $(`#tooltip-player-${i}`);
+                    tooltip.css('left', tooltipX);
+                    tooltip.css('top', this.attrs.y);
+                    tooltip.tooltipster('open');
                 });
                 nameFrames[i].on('mouseout', () => {
-                    $(`#tooltip-player-${i + 1}-time`).tooltipster('close');
+                    const tooltip = $(`#tooltip-player-${i}`);
+                    tooltip.tooltipster('close');
                 });
             }
         }
@@ -4446,7 +4351,6 @@ function HanabiUI(lobby, gameID) {
         stage.add(UILayer);
         stage.add(timerLayer);
         stage.add(cardLayer);
-        stage.add(tipLayer);
         stage.add(overLayer);
     };
 
@@ -5016,15 +4920,13 @@ function HanabiUI(lobby, gameID) {
             spectatorsNumLabel.setText(data.names.length);
 
             // Build the string that shows all the names
-            const nameEntries = data.names.map((name, i) => `${i + 1}) ${name}`).join('\n');
-            const tooltipString = `Spectators:\n${nameEntries}`;
-
-            spectatorsLabelTooltip.getText().setText(tooltipString);
+            const nameEntries = data.names.map((name, i) => `<li>${name}</li>`).join('');
+            const content = `<strong>Spectators:</strong><ol class="game-tooltips-ol">${nameEntries}</ol>`;
+            $('#tooltip-spectators').tooltipster('instance').content(content);
         } else {
-            spectatorsLabelTooltip.hide();
+            $('#tooltip-spectators').tooltipster('close');
         }
         UILayer.batchDraw();
-        tipLayer.batchDraw();
     };
 
     this.handleClock = (activeIndex) => {
@@ -5060,16 +4962,12 @@ function HanabiUI(lobby, gameID) {
 
         const shoudShowTimer2 = !currentUserTurn && activeIndex !== null;
         timer2.setVisible(shoudShowTimer2);
-
         timerLayer.draw();
 
         // Update the timer tooltips for each player
-
         for (let i = 0; i < ui.playerTimes.length; i++) {
             setTickingDownTimeTooltip(i);
         }
-
-        tipLayer.draw();
 
         // If no timer is running on the server, do not configure local approximation
         if (activeIndex === null) {
@@ -5127,7 +5025,6 @@ function HanabiUI(lobby, gameID) {
             card.tooltip.hide();
         }
 
-        tipLayer.batchDraw();
         cardLayer.batchDraw();
     };
 
@@ -5171,7 +5068,6 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
-        tipLayer.batchDraw();
         cardLayer.batchDraw();
     };
 
@@ -5185,7 +5081,8 @@ function HanabiUI(lobby, gameID) {
 
         // Update the UI
         sharedReplayLeaderLabel.show();
-        sharedReplayLeaderLabelTooltip.getText().setText(`Leader: ${this.sharedReplayLeader}`);
+        const content = `<strong>Leader:</strong> ${this.sharedReplayLeader}`;
+        $('#tooltip-leader').tooltipster('instance').content(content);
 
         if (this.sharedReplayLeader === lobby.username) {
             sharedReplayLeaderLabel.fill('yellow');

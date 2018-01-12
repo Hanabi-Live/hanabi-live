@@ -196,6 +196,10 @@ func (g *Game) End() {
 
 	// Turn the players into spectators
 	for _, p := range g.Players {
+		// Reset everyone's current game
+		// (this is necessary for players who happen to be offline or in the lobby)
+		p.Session.Set("currentGame", -1)
+
 		// Skip offline players;
 		// if they re-login, then they will just stay in the lobby
 		if !p.Present {
