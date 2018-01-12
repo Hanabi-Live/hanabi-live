@@ -67,6 +67,7 @@ function HanabiUI(lobby, gameID) {
         contentAsHTML: true,
         animation: 'grow',
         updateAnimation: null,
+        interactive: true, /* So that users can update their notes */
     };
     for (let i = 0; i < 5; i++) {
         $('#game-tooltips').append(`<div id="tooltip-player-${i}"></div>`);
@@ -886,30 +887,32 @@ function HanabiUI(lobby, gameID) {
                 this.noteGiven.show();
             }
         }
+        this.editingNote = false;
 
-        // Define event handlers
-        // Multiple handlers may set activeHover
+        /*
+            Define event handlers
+            Multiple handlers may set activeHover
+        */
 
-        this.on('mousemove', function cardMouseMove() {
-            ui.activeHover = this;
+        const cardTooltipOpen = () => {
+            const tooltip = $(`#tooltip-card-${self.order}`);
+            const tooltipInstance = tooltip.tooltipster('instance');
 
-            if (!self.noteGiven.visible()) {
+            // Do nothing if the tooltip is already open
+            if (tooltip.tooltipster('status').open) {
                 return;
             }
-
-            const tooltip = $(`#tooltip-card-${this.order}`);
-            const tooltipInstance = tooltip.tooltipster('instance');
 
             // Figure out where to place the tooltip
             // We want the tooltip to appear above the card by default
             // Make the tooltip appear below the card if the player who has the card is sitting directly opposite us
-            const pos = this.getAbsolutePosition();
+            const pos = self.getAbsolutePosition();
             let posY;
-            if (this.parent.parent.acrossTheTable) {
-                posY = pos.y + (this.getHeight() * this.parent.scale().y / 2);
+            if (self.parent.parent.acrossTheTable) {
+                posY = pos.y + (self.getHeight() * self.parent.scale().y / 2);
                 tooltipInstance.option('side', 'bottom');
             } else {
-                posY = pos.y - (this.getHeight() * this.parent.scale().y / 2)
+                posY = pos.y - (self.getHeight() * self.parent.scale().y / 2)
                 tooltipInstance.option('side', 'top');
             }
 
@@ -918,11 +921,23 @@ function HanabiUI(lobby, gameID) {
             tooltip.css('top', posY);
             tooltipInstance.content(this.note);
             tooltip.tooltipster('open');
+        }
+
+        this.on('mousemove', function cardMouseMove() {
+            ui.activeHover = this;
+
+            if (!self.noteGiven.visible()) {
+                return;
+            }
+
+            cardTooltipOpen();
         });
 
-        this.on('mouseout', function cardMouseOut() {
-            const tooltip = $(`#tooltip-card-${this.order}`);
-            tooltip.tooltipster('close');
+        this.on('mouseout', () => {
+            if (!self.editingNote) {
+                const tooltip = $(`#tooltip-card-${self.order}`);
+                tooltip.tooltipster('close');
+            }
         });
 
         this.on('mousemove tap', () => {
@@ -936,20 +951,17 @@ function HanabiUI(lobby, gameID) {
         });
 
         // Show teammate view of their hand
-
         const toggleHolderViewOnCard = (c, enabled) => {
             c.rankPips.setVisible(enabled);
             c.suitPips.setVisible(enabled);
             c.showOnlyLearned = enabled;
             c.setBareImage();
         };
-
         const endHolderViewOnCard = function endHolderViewOnCard() {
             const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
             cardsToReset.forEach(c => toggleHolderViewOnCard(c, false));
             cardLayer.batchDraw();
         };
-
         const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
             if (toggledHolderViewCards.length > 0) {
                 return; // data race with stop
@@ -959,16 +971,16 @@ function HanabiUI(lobby, gameID) {
             cards.forEach(c => toggleHolderViewOnCard(c, true));
             cardLayer.batchDraw();
         };
-
         if (config.holder !== ui.playerUs || ui.replayOnly || ui.spectating) {
             const mouseButton = 1;
             this.on('mousedown', (event) => {
                 if (event.evt.which !== mouseButton || !this.isInPlayerHand()) {
                     return;
                 }
+
+                ui.activeHover = this;
                 const cards = this.parent.parent.children.map(c => c.children[0]);
                 beginHolderViewOnCard(cards);
-                ui.activeHover = this;
             });
             this.on('mouseup mouseout', (event) => {
                 if (event.type === 'mouseup' && event.evt.which !== mouseButton) {
@@ -994,11 +1006,9 @@ function HanabiUI(lobby, gameID) {
             });
         }
 
-        // General mouse click handler
         this.on('click', (event) => {
             if (ui.sharedReplay && event.evt.which === 3 && ui.sharedReplayLeader === lobby.username) {
                 // In a replay that is shared, the leader clicks a card to draw attention to it
-
                 if (ui.applyReplayActions) {
                     ui.sendMsg({
                         type: 'replayAction',
@@ -1026,37 +1036,59 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            const note = window.prompt('Note on card:', ui.getNote(self.order) || '');
+            cardTooltipOpen();
+
+            self.editingNote = true;
+            let note = ui.getNote(self.order);
             if (note === null) {
-                // The user clicked the "cancel" button, so do nothing else
-                return;
+                note = '';
             }
-
-            // The user clicked "OK", regardless of whether they changed the existing note or not
-            self.note = note;
             const tooltip = $(`#tooltip-card-${self.order}`);
-            tooltip.tooltipster('instance').content(note);
-            ui.setNote(self.order, note);
+            const tooltipInstance = tooltip.tooltipster('instance');
+            tooltipInstance.content(`<input id="tooltip-card-${self.order}-input" type="text" value="${note}"/>`);
 
-            if (note.length > 0) {
-                self.noteGiven.show();
-            } else {
-                self.noteGiven.hide();
-            }
-            UILayer.draw();
-            cardLayer.draw();
+            $(`#tooltip-card-${self.order}-input`).on('keydown', (event) => {
+                if (event.key !== 'Enter' && event.key !== 'Escape') {
+                    return;
+                }
 
-            // Also send the note to the server
-            if (!ui.replayOnly && !ui.spectating) {
-                // Update the spectators about the new note
-                ui.sendMsg({
-                    type: 'note',
-                    resp: {
-                        order: self.order,
-                        note,
-                    },
-                });
-            }
+                if (event.key === 'Escape') {
+                    note = self.note;
+                } else {
+                    note = $(`#tooltip-card-${self.order}-input`).val();
+                }
+
+                self.editingNote = false;
+                self.note = note;
+                ui.setNote(self.order, note);
+                tooltipInstance.content(note);
+
+                if (note.length > 0) {
+                    self.noteGiven.show();
+                } else {
+                    self.noteGiven.hide();
+                }
+                UILayer.draw();
+                cardLayer.draw();
+
+                // Also send the note to the server
+                if (!ui.replayOnly && !ui.spectating) {
+                    // Update the spectators about the new note
+                    ui.sendMsg({
+                        type: 'note',
+                        resp: {
+                            order: self.order,
+                            note,
+                        },
+                    });
+                }
+            });
+
+            // Automatically focus the new text input box
+            $(`#tooltip-card-${self.order}-input`).focus();
+
+            // Move the cursor to the end
+            $(`#tooltip-card-${self.order}-input`)[0].setSelectionRange(note.length, note.length);
         });
     };
 
@@ -1912,6 +1944,8 @@ function HanabiUI(lobby, gameID) {
         this.neglist = config.neglist;
 
         this.on('mousemove tap', () => {
+            ui.activeHover = this;
+
             clueLog.showMatches(null);
 
             background.setOpacity(0.4);
@@ -1936,7 +1970,6 @@ function HanabiUI(lobby, gameID) {
             }
 
             cardLayer.batchDraw();
-            ui.activeHover = this;
         });
 
         this.on('mouseout', () => {
@@ -2975,6 +3008,8 @@ function HanabiUI(lobby, gameID) {
 
         // Tooltip for the eyes
         spectatorsLabel.on('mousemove', function spectatorsLabelMouseMove() {
+            ui.activeHover = this;
+
             const tooltipX = this.attrs.x + this.getWidth() / 2;
             $('#tooltip-spectators').css('left', tooltipX);
             $('#tooltip-spectators').css('top', this.attrs.y);
@@ -3044,6 +3079,8 @@ function HanabiUI(lobby, gameID) {
 
         // Tooltip for the crown
         sharedReplayLeaderLabel.on('mousemove', function sharedReplayLeaderLabelMouseMove() {
+            ui.activeHover = this;
+
             const tooltipX = this.attrs.x + this.getWidth() / 2;
             $('#tooltip-leader').css('left', tooltipX);
             $('#tooltip-leader').css('top', this.attrs.y);
@@ -3621,6 +3658,8 @@ function HanabiUI(lobby, gameID) {
             // (the code is copied from HanabiCard)
             if (!this.replayOnly) {
                 nameFrames[i].on('mousemove', function nameFramesMouseMove() {
+                    ui.activeHover = this;
+
                     const tooltipX = this.getWidth() / 2 + this.attrs.x;
                     const tooltip = $(`#tooltip-player-${i}`);
                     tooltip.css('left', tooltipX);
@@ -4207,7 +4246,8 @@ function HanabiUI(lobby, gameID) {
             }
         };
 
-        $(document).keydown(this.keyNavigation);
+        // Commenting this out for now since it interferes with note creation
+        // $(document).keydown(this.keyNavigation);
 
         /*
             End of keyboard shortcuts
