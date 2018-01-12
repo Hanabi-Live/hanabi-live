@@ -59,7 +59,19 @@ function HanabiUI(lobby, gameID) {
         Initialize tooltips
     */
 
-    // TODO
+    const tooltipOptions = {
+        theme: ['tooltipster-shadow', 'tooltipster-shadow-customized'],
+        delay: 0,
+        trigger: 'custom',
+        contentAsHTML: true,
+        distance: 12,
+        animation: 'grow',
+        updateAnimation: null,
+    };
+    for (let i = 1; i <= 5; i++) {
+        $(`#tooltip-player-${i}-time`).tooltipster(tooltipOptions);
+    }
+    $('#tooltip-card-note').tooltipster(tooltipOptions);
 
     // This below code block deals with automatic resizing
     // Start listening to resize events and draw canvas.
@@ -268,7 +280,7 @@ function HanabiUI(lobby, gameID) {
         return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
     }
 
-    function setTickingDownTime(textObjects, activeIndex) {
+    function setTickingDownTime(text, activeIndex) {
         // Compute elapsed time since last timer update
         const now = new Date().getTime();
         const timeElapsed = now - ui.lastTimerUpdateTimeMS;
@@ -292,11 +304,9 @@ function HanabiUI(lobby, gameID) {
         }
         const displayString = millisecondsToTimeDisplay(millisecondsLeft);
 
-        // Update displays
-        textObjects.forEach((textHolder) => {
-            textHolder.setText(displayString);
-            textHolder.getLayer().batchDraw();
-        });
+        // Update display
+        text.setText(displayString);
+        text.getLayer().batchDraw();
 
         // Play a sound to indicate that the current player is almost out of time
         // Do not play it more frequently than about once per second
@@ -310,6 +320,25 @@ function HanabiUI(lobby, gameID) {
         ) {
             lobby.playSound('tone');
         }
+    }
+
+    function setTickingDownTimeTooltip(i) {
+        let time = ui.playerTimes[i];
+        if (!ui.timedGame) {
+            // Invert it to show how much time each player is taking
+            time *= -1;
+        }
+
+        let content = 'Time ';
+        if (ui.timedGame) {
+            content += 'remaining';
+        } else {
+            content += 'taken';
+        }
+        content += ':<br /><strong>';
+        content += millisecondsToTimeDisplay(time);
+        content += '</strong>';
+        $(`#tooltip-player-${i + 1}-time`).tooltipster('instance').content(content);
     }
 
     function imageName(card) {
@@ -840,54 +869,12 @@ function HanabiUI(lobby, gameID) {
         });
         this.notePulse.anim.addLayer(cardLayer);
 
-        // Create the note tooltip
-        this.tooltip = new Kinetic.Label({
-            x: -1000,
-            y: -1000,
-        });
-        // An elusive bug permanently draws a copy of the tag at this location.
-        // We work around it by setting the starting location to be offscreen.
-
-        this.tooltip.add(new Kinetic.Tag({
-            fill: '#3E4345',
-            pointerDirection: 'left',
-            pointerWidth: 0.02 * winW,
-            pointerHeight: 0.015 * winH,
-            lineJoin: 'round',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 3,
-                y: 3,
-            },
-            shadowOpacity: 0.6,
-        }));
-
-        /*
-            Hyphen originally programmed this with "FitText" instead of
-            "Kinetic.Text", so that the tooltips would remain the same size;
-            however, this leads to really small text on long notes. It is much
-            better to just let the tooltip grow bigger for bigger notes.
-        */
-        this.tooltip.add(new Kinetic.Text({
-            fill: 'white',
-            align: 'left',
-            padding: 0.01 * winH,
-            fontSize: 0.04 * winH,
-            minFontSize: 0.02 * winH,
-            width: 0.3 * winW,
-            // This needs to be fairly wide so that it doesn't wrap for spectators
-            // (spectators will have the player name as a prefix for the note)
-            fontFamily: 'Verdana',
-            text: '',
-        }));
-
-        tipLayer.add(this.tooltip);
-
+        // Iniitalize the user's note for this particular card
+        this.note = '';
         {
             const note = ui.getNote(this.order);
             if (note !== null) {
-                this.tooltip.getText().setText(note);
+                this.note = note;
                 this.noteGiven.show();
             }
         }
@@ -895,24 +882,23 @@ function HanabiUI(lobby, gameID) {
         // Define event handlers
         // Multiple handlers may set activeHover
 
-        this.on('mousemove', () => {
-            if (self.noteGiven.visible()) {
-                const mousePos = stage.getPointerPosition();
-                self.tooltip.setX(mousePos.x + 15);
-                self.tooltip.setY(mousePos.y + 5);
-
-                self.tooltip.show();
-
-                self.notePulse.reset();
-
-                tipLayer.draw();
-            }
+        this.on('mousemove', function cardMouseMove() {
             ui.activeHover = this;
+
+            if (!self.noteGiven.visible()) {
+                return;
+            }
+
+            const pos = this.getAbsolutePosition();
+            const posY = pos.y - (this.getPosition().x / 2);
+            $('#tooltip-card-note').css('left', pos.x);
+            $('#tooltip-card-note').css('top', posY);
+            $('#tooltip-card-note').tooltipster('instance').content(this.note);
+            $('#tooltip-card-note').tooltipster('open');
         });
 
         this.on('mouseout', () => {
-            self.tooltip.hide();
-            tipLayer.draw();
+            $('#tooltip-card-note').tooltipster('close');
         });
 
         this.on('mousemove tap', () => {
@@ -1024,7 +1010,8 @@ function HanabiUI(lobby, gameID) {
             }
 
             // The user clicked "OK", regardless of whether they changed the existing note or not
-            self.tooltip.getText().setText(note);
+            self.note = note;
+            $('#tooltip-card-note').tooltipster('instance').content(note);
             ui.setNote(self.order, note);
 
             if (note.length > 0) {
@@ -2718,22 +2705,6 @@ function HanabiUI(lobby, gameID) {
         pos.y <= playArea.getY() + playArea.getHeight()
     );
 
-    function nameFramesMouseMove() {
-        const mousePos = stage.getPointerPosition();
-        this.tooltip.setX(mousePos.x + 15);
-        this.tooltip.setY(mousePos.y + 5);
-
-        this.tooltip.show();
-        tipLayer.draw();
-
-        ui.activeHover = this;
-    }
-
-    function nameFramesMouseOut() {
-        this.tooltip.hide();
-        tipLayer.draw();
-    }
-
     const shareCurrentTurn = (target) => {
         if (ui.sharedReplayTurn !== target) {
             ui.sendMsg({
@@ -3746,8 +3717,15 @@ function HanabiUI(lobby, gameID) {
                 tipLayer.add(frameHoverTooltip);
                 nameFrames[i].tooltip = frameHoverTooltip;
 
-                nameFrames[i].on('mousemove', nameFramesMouseMove);
-                nameFrames[i].on('mouseout', nameFramesMouseOut);
+                nameFrames[i].on('mousemove', function nameFramesMouseMove() {
+                    const tooltipX = this.attrs.width / 2 + this.attrs.x;
+                    $(`#tooltip-player-${i + 1}-time`).css('left', tooltipX);
+                    $(`#tooltip-player-${i + 1}-time`).css('top', this.attrs.y);
+                    $(`#tooltip-player-${i + 1}-time`).tooltipster('open');
+                });
+                nameFrames[i].on('mouseout', () => {
+                    $(`#tooltip-player-${i + 1}-time`).tooltipster('close');
+                });
             }
         }
 
@@ -5086,13 +5064,9 @@ function HanabiUI(lobby, gameID) {
         timerLayer.draw();
 
         // Update the timer tooltips for each player
+
         for (let i = 0; i < ui.playerTimes.length; i++) {
-            let time = ui.playerTimes[i];
-            if (!ui.timedGame) {
-                // Invert it to show how much time each player is taking
-                time *= -1;
-            }
-            nameFrames[i].tooltip.getText().setText(millisecondsToTimeDisplay(time));
+            setTickingDownTimeTooltip(i);
         }
 
         tipLayer.draw();
@@ -5103,10 +5077,10 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Start the local timer for the active player
-        const activeTimerUIText = currentUserTurn ? timer1 : timer2;
-        const textUpdateTargets = [activeTimerUIText, nameFrames[activeIndex].tooltip.getText()];
+        const activeTimerUIText = (currentUserTurn ? timer1 : timer2);
         ui.timerID = window.setInterval(() => {
-            setTickingDownTime(textUpdateTargets, activeIndex);
+            setTickingDownTime(activeTimerUIText, activeIndex);
+            setTickingDownTimeTooltip(activeIndex);
         }, 1000);
     };
 
@@ -5187,7 +5161,7 @@ function HanabiUI(lobby, gameID) {
                 continue;
             }
             if (note !== null && note !== '') {
-                card.tooltip.getText().setText(note);
+                card.note = note;
             }
             if (note !== null && note !== '' && card.isInPlayerHand()) {
                 card.noteGiven.show();

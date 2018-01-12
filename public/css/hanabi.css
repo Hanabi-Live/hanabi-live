@@ -3,7 +3,12 @@
 */
 
 body {
-    background: url(../img/background2.jpg) no-repeat center center fixed;
+    background-color: rgb(25, 57, 20);
+    /* The same color as the background image so that it won't show white while the image is loading*/
+    background-image: url(../img/background2.jpg);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
 }
 
 table td {
@@ -235,4 +240,19 @@ table td {
 
 #create-game-submit {
     font-size: 1em;
+}
+
+/*
+    In-game tooltips
+*/
+
+.tooltip-game {
+    position: absolute;
+}
+
+.tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-customized .tooltipster-content {
+    font-size: 1.5em;
+    padding: 0.5em;
+    line-height: 1em;
+    text-align: center;
 }
