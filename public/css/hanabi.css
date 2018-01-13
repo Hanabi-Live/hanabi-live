@@ -173,6 +173,10 @@ table td {
     height: 40vh;
 }
 
+#lobby-games-table {
+    margin-bottom: 0;
+}
+
 #lobby-chat {
     margin-bottom: 0;
     height: 41vh;
