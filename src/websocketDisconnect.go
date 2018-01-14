@@ -20,7 +20,7 @@ func websocketDisconnect(ms *melody.Session) {
 
 		for _, p := range g.Players {
 			if p.ID == s.UserID() {
-				log.Info(g.GetName() + "Ejecting user \"" + s.Username() + "\" from an unstarted game since they are re-logging in.")
+				log.Info(g.GetName() + "Ejecting player \"" + s.Username() + "\" from an unstarted game since they are re-logging in.")
 				commandGameLeave(s, nil)
 			}
 		}
@@ -28,12 +28,8 @@ func websocketDisconnect(ms *melody.Session) {
 
 	// Eject this player from any shared replays
 	for _, g := range games {
-		if !g.SharedReplay {
-			continue
-		}
-
 		if _, ok := g.Spectators[s.UserID()]; ok {
-			log.Info(g.GetName() + "Ejecting user \"" + s.Username() + "\" from a shared replay since they are re-logging in.")
+			log.Info(g.GetName() + "Ejecting spectator \"" + s.Username() + "\" since they are re-logging in.")
 			g.DisconSpectators[s.UserID()] = true
 			commandGameUnattend(s, nil)
 		}
