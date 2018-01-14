@@ -1058,12 +1058,8 @@ function HanabiUI(lobby, gameID) {
                 self.editingNote = false;
                 ui.setNote(self.order, note);
                 tooltipInstance.content(note);
+                self.noteGiven.setVisible(note.length > 0);
 
-                if (note.length > 0) {
-                    self.noteGiven.show();
-                } else {
-                    self.noteGiven.hide();
-                }
                 UILayer.draw();
                 cardLayer.draw();
 
