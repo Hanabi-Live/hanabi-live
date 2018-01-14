@@ -878,14 +878,8 @@ function HanabiUI(lobby, gameID) {
         });
         this.notePulse.anim.addLayer(cardLayer);
 
-        // Iniitalize the user's note for this particular card
-        this.note = '';
-        {
-            const note = ui.getNote(this.order);
-            if (note !== null) {
-                this.note = note;
-                this.noteGiven.show();
-            }
+        if (ui.getNote(this.order)) {
+            this.noteGiven.show();
         }
         this.editingNote = false;
 
@@ -912,16 +906,16 @@ function HanabiUI(lobby, gameID) {
                 posY = pos.y + (self.getHeight() * self.parent.scale().y / 2);
                 tooltipInstance.option('side', 'bottom');
             } else {
-                posY = pos.y - (self.getHeight() * self.parent.scale().y / 2)
+                posY = pos.y - (self.getHeight() * self.parent.scale().y / 2);
                 tooltipInstance.option('side', 'top');
             }
 
             // Update the tooltip and open it
             tooltip.css('left', pos.x);
             tooltip.css('top', posY);
-            tooltipInstance.content(this.note);
+            tooltipInstance.content(ui.getNote(self.order) || '');
             tooltip.tooltipster('open');
-        }
+        };
 
         this.on('mousemove', function cardMouseMove() {
             ui.activeHover = this;
@@ -1047,41 +1041,39 @@ function HanabiUI(lobby, gameID) {
             const tooltipInstance = tooltip.tooltipster('instance');
             tooltipInstance.content(`<input id="tooltip-card-${self.order}-input" type="text" value="${note}"/>`);
 
-            $(`#tooltip-card-${self.order}-input`).on('keydown', (event) => {
-                if (event.key !== 'Enter' && event.key !== 'Escape') {
+            $(`#tooltip-card-${self.order}-input`).on('keydown', (keyEvent) => {
+                if (keyEvent.key !== 'Enter' && keyEvent.key !== 'Escape') {
                     return;
                 }
 
-                if (event.key === 'Escape') {
-                    note = self.note;
+                self.editingNote = false;
+
+                if (keyEvent.key === 'Escape') {
+                    note = ui.getNote(self.order);
+                    if (note === null) {
+                        note = '';
+                    }
                 } else {
                     note = $(`#tooltip-card-${self.order}-input`).val();
+                    ui.setNote(self.order, note);
+
+                    // Also send the note to the server
+                    if (!ui.replayOnly && !ui.spectating) {
+                        ui.sendMsg({
+                            type: 'note',
+                            resp: {
+                                order: self.order,
+                                note,
+                            },
+                        });
+                    }
                 }
 
-                self.editingNote = false;
-                self.note = note;
-                ui.setNote(self.order, note);
                 tooltipInstance.content(note);
+                self.noteGiven.setVisible(note.length > 0);
 
-                if (note.length > 0) {
-                    self.noteGiven.show();
-                } else {
-                    self.noteGiven.hide();
-                }
                 UILayer.draw();
                 cardLayer.draw();
-
-                // Also send the note to the server
-                if (!ui.replayOnly && !ui.spectating) {
-                    // Update the spectators about the new note
-                    ui.sendMsg({
-                        type: 'note',
-                        resp: {
-                            order: self.order,
-                            note,
-                        },
-                    });
-                }
             });
 
             // Automatically focus the new text input box
