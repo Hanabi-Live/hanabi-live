@@ -878,14 +878,8 @@ function HanabiUI(lobby, gameID) {
         });
         this.notePulse.anim.addLayer(cardLayer);
 
-        // Iniitalize the user's note for this particular card
-        this.note = '';
-        {
-            const note = ui.getNote(this.order);
-            if (note !== null) {
-                this.note = note;
-                this.noteGiven.show();
-            }
+        if (ui.getNote(this.order)) {
+            this.noteGiven.show();
         }
         this.editingNote = false;
 
@@ -919,7 +913,7 @@ function HanabiUI(lobby, gameID) {
             // Update the tooltip and open it
             tooltip.css('left', pos.x);
             tooltip.css('top', posY);
-            tooltipInstance.content(this.note);
+            tooltipInstance.content(ui.getNote(self.order) || '');
             tooltip.tooltipster('open');
         };
 
@@ -1053,13 +1047,15 @@ function HanabiUI(lobby, gameID) {
                 }
 
                 if (event.key === 'Escape') {
-                    note = self.note;
+                    note = ui.getNote(self.order);
+                    if (note === null) {
+                        note = '';
+                    }
                 } else {
                     note = $(`#tooltip-card-${self.order}-input`).val();
                 }
 
                 self.editingNote = false;
-                self.note = note;
                 ui.setNote(self.order, note);
                 tooltipInstance.content(note);
 
