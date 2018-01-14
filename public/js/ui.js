@@ -1046,6 +1046,8 @@ function HanabiUI(lobby, gameID) {
                     return;
                 }
 
+                self.editingNote = false;
+
                 if (event.key === 'Escape') {
                     note = ui.getNote(self.order);
                     if (note === null) {
@@ -1053,27 +1055,25 @@ function HanabiUI(lobby, gameID) {
                     }
                 } else {
                     note = $(`#tooltip-card-${self.order}-input`).val();
+                    ui.setNote(self.order, note);
+
+                    // Also send the note to the server
+                    if (!ui.replayOnly && !ui.spectating) {
+                        ui.sendMsg({
+                            type: 'note',
+                            resp: {
+                                order: self.order,
+                                note,
+                            },
+                        });
+                    }
                 }
 
-                self.editingNote = false;
-                ui.setNote(self.order, note);
                 tooltipInstance.content(note);
                 self.noteGiven.setVisible(note.length > 0);
 
                 UILayer.draw();
                 cardLayer.draw();
-
-                // Also send the note to the server
-                if (!ui.replayOnly && !ui.spectating) {
-                    // Update the spectators about the new note
-                    ui.sendMsg({
-                        type: 'note',
-                        resp: {
-                            order: self.order,
-                            note,
-                        },
-                    });
-                }
             });
 
             // Automatically focus the new text input box
