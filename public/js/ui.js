@@ -912,7 +912,7 @@ function HanabiUI(lobby, gameID) {
                 posY = pos.y + (self.getHeight() * self.parent.scale().y / 2);
                 tooltipInstance.option('side', 'bottom');
             } else {
-                posY = pos.y - (self.getHeight() * self.parent.scale().y / 2)
+                posY = pos.y - (self.getHeight() * self.parent.scale().y / 2);
                 tooltipInstance.option('side', 'top');
             }
 
@@ -921,7 +921,7 @@ function HanabiUI(lobby, gameID) {
             tooltip.css('top', posY);
             tooltipInstance.content(this.note);
             tooltip.tooltipster('open');
-        }
+        };
 
         this.on('mousemove', function cardMouseMove() {
             ui.activeHover = this;
