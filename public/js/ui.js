@@ -1041,14 +1041,14 @@ function HanabiUI(lobby, gameID) {
             const tooltipInstance = tooltip.tooltipster('instance');
             tooltipInstance.content(`<input id="tooltip-card-${self.order}-input" type="text" value="${note}"/>`);
 
-            $(`#tooltip-card-${self.order}-input`).on('keydown', (event) => {
-                if (event.key !== 'Enter' && event.key !== 'Escape') {
+            $(`#tooltip-card-${self.order}-input`).on('keydown', (keyEvent) => {
+                if (keyEvent.key !== 'Enter' && keyEvent.key !== 'Escape') {
                     return;
                 }
 
                 self.editingNote = false;
 
-                if (event.key === 'Escape') {
+                if (keyEvent.key === 'Escape') {
                     note = ui.getNote(self.order);
                     if (note === null) {
                         note = '';
