@@ -56,7 +56,7 @@ function HanabiUI(lobby, gameID) {
     this.lastSpectators = null;
 
     // Users can only update one note at a time to prevent bugs
-    this.editingNote = false;
+    this.editingNote = null; // Equal to the card order number or null
 
     // Initialize tooltips
     const tooltipThemes = [
@@ -918,20 +918,28 @@ function HanabiUI(lobby, gameID) {
         };
 
         this.on('mousemove', function cardMouseMove() {
-            ui.activeHover = this;
-
+            // Don't do anything if there is not a note on this card
             if (!self.noteGiven.visible()) {
                 return;
             }
 
+            // Don't open any more note tooltips if the user is currently editing a note
+            if (ui.editingNote !== null) {
+                return;
+            }
+
+            ui.activeHover = this;
             cardTooltipOpen();
         });
 
         this.on('mouseout', () => {
-            if (!ui.editingNote) {
-                const tooltip = $(`#tooltip-card-${self.order}`);
-                tooltip.tooltipster('close');
+            // Don't close the tooltip if we are currently editing a note
+            if (ui.editingNote !== null) {
+                return;
             }
+
+            const tooltip = $(`#tooltip-card-${self.order}`);
+            tooltip.tooltipster('close');
         });
 
         this.on('mousemove tap', () => {
@@ -1032,13 +1040,13 @@ function HanabiUI(lobby, gameID) {
             }
 
             // Don't open the edit tooltip if there is already some other edit tooltip open
-            if (ui.editingNote) {
+            if (ui.editingNote !== null) {
                 return;
             }
 
             cardTooltipOpen();
 
-            ui.editingNote = true;
+            ui.editingNote = self.order;
             let note = ui.getNote(self.order);
             if (note === null) {
                 note = '';
@@ -1052,7 +1060,7 @@ function HanabiUI(lobby, gameID) {
                     return;
                 }
 
-                ui.editingNote = false;
+                ui.editingNote = null;
 
                 if (keyEvent.key === 'Escape') {
                     note = ui.getNote(self.order);
@@ -3656,7 +3664,6 @@ function HanabiUI(lobby, gameID) {
             UILayer.add(nameFrames[i]);
 
             // Draw the tooltips on the player names that show the time
-            // (the code is copied from HanabiCard)
             if (!this.replayOnly) {
                 nameFrames[i].on('mousemove', function nameFramesMouseMove() {
                     ui.activeHover = this;
@@ -4644,12 +4651,20 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleNotify = function handleNotify(data) {
-        const { type } = data;
+        // If an action in the game happens, cancel any notes that are currently being edited
+        if (ui.editingNote !== null) {
+            const evt = jQuery.Event('keydown');
+            evt.key = 'Escape';
+            $(`#tooltip-card-${ui.editingNote}-input`).trigger(evt);
+        }
+
+        // Automatically disable any tooltips once an action in the game happens
         if (ui.activeHover) {
             ui.activeHover.dispatchEvent(new MouseEvent('mouseout'));
             ui.activeHover = null;
         }
 
+        const { type } = data;
         if (type === 'draw') {
             if (data.suit === -1) {
                 delete data.suit;
@@ -5113,7 +5128,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleReplayLeader = function handleReplayLeader(data) {
-        // We might be getting here after a game just ended
+        // We might be entering this function after a game just ended
         this.sharedReplay = true;
         replayExitButton.hide();
 
