@@ -8,7 +8,7 @@
 package main
 
 import (
-	"hash/fnv"
+	"hash/crc64"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -203,11 +203,11 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Shuffle the deck
 	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
 	if shuffle {
-		// Convert a string to an int64 using the FNV hash function
-		// https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
-		hashOfSeed := fnv.New64()
-		hashOfSeed.Write([]byte(g.Seed))
-		intSeed := hashOfSeed.Sum64()
+		// Convert the string to an uint64 (seeding with negative numbers will not work)
+		// We use the CRC64 hash function to do this
+		// https://www.socketloop.com/references/golang-hash-crc64-checksum-and-maketable-functions-example
+		crc64Table := crc64.MakeTable(crc64.ECMA)
+		intSeed := crc64.Checksum([]byte(g.Seed), crc64Table)
 		rand.Seed(int64(intSeed))
 
 		for i := range g.Deck {

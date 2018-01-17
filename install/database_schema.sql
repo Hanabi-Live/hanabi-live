@@ -18,6 +18,7 @@ CREATE TABLE users (
     password             CHAR(64)      NOT NULL, /* A SHA-256 hash string is 64 characters long */
     last_ip              VARCHAR(40)   NULL, /* This will be set immediately after insertion */
     admin                INT           NOT NULL  DEFAULT 0,
+    tester               INT           NOT NULL  DEFAULT 0,
     datetime_created     TIMESTAMP     NOT NULL  DEFAULT NOW(),
     datetime_last_login  TIMESTAMP     NOT NULL  DEFAULT NOW()
 );
