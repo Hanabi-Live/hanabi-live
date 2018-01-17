@@ -1093,11 +1093,14 @@ function HanabiUI(lobby, gameID) {
                 cardLayer.draw();
             });
 
+            // Automatically highlight all of the existing text when a note input box is focused
+            $(`#tooltip-card-${self.order}-input`).focus(function tooltipCardInputFocus() {
+                $(this).select();
+            });
+
             // Automatically focus the new text input box
             $(`#tooltip-card-${self.order}-input`).focus();
 
-            // Move the cursor to the end
-            $(`#tooltip-card-${self.order}-input`)[0].setSelectionRange(note.length, note.length);
         });
     };
 
