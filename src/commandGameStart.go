@@ -8,6 +8,7 @@
 package main
 
 import (
+	"hash/fnv"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -202,8 +203,14 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Shuffle the deck
 	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
 	if shuffle {
+		// Convert a string to an int64 using the FNV hash function
+		// https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+		hashOfSeed := fnv.New64()
+		hashOfSeed.Write([]byte(g.Seed))
+		intSeed := hashOfSeed.Sum64()
+		rand.Seed(int64(intSeed))
+
 		for i := range g.Deck {
-			rand.Seed(time.Now().UnixNano())
 			j := rand.Intn(i + 1)
 			g.Deck[i], g.Deck[j] = g.Deck[j], g.Deck[i]
 		}

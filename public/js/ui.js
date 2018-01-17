@@ -55,6 +55,9 @@ function HanabiUI(lobby, gameID) {
     this.activeClockIndex = null;
     this.lastSpectators = null;
 
+    // Users can only update one note at a time to prevent bugs
+    this.editingNote = false;
+
     // Initialize tooltips
     const tooltipThemes = [
         'tooltipster-shadow',
@@ -861,8 +864,10 @@ function HanabiUI(lobby, gameID) {
             strokeWidth: 4,
             visible: false,
         });
-
         this.add(this.noteGiven);
+        if (ui.getNote(this.order)) {
+            this.noteGiven.show();
+        }
 
         // Add a slight pulse to the note marker to demonstrate that it has new info
         this.notePulse = new Kinetic.Tween({
@@ -877,11 +882,6 @@ function HanabiUI(lobby, gameID) {
             },
         });
         this.notePulse.anim.addLayer(cardLayer);
-
-        if (ui.getNote(this.order)) {
-            this.noteGiven.show();
-        }
-        this.editingNote = false;
 
         /*
             Define event handlers
@@ -928,7 +928,7 @@ function HanabiUI(lobby, gameID) {
         });
 
         this.on('mouseout', () => {
-            if (!self.editingNote) {
+            if (!ui.editingNote) {
                 const tooltip = $(`#tooltip-card-${self.order}`);
                 tooltip.tooltipster('close');
             }
@@ -1021,18 +1021,24 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            if (event.evt.which !== 3) { // Right click
+            if (event.evt.which !== 3) { // Right-click
                 // We only care about right clicks
                 return;
             }
 
+            // Don't edit any notes in shared replays
             if (ui.sharedReplay) {
+                return;
+            }
+
+            // Don't open the edit tooltip if there is already some other edit tooltip open
+            if (ui.editingNote) {
                 return;
             }
 
             cardTooltipOpen();
 
-            self.editingNote = true;
+            ui.editingNote = true;
             let note = ui.getNote(self.order);
             if (note === null) {
                 note = '';
@@ -1046,7 +1052,7 @@ function HanabiUI(lobby, gameID) {
                     return;
                 }
 
-                self.editingNote = false;
+                ui.editingNote = false;
 
                 if (keyEvent.key === 'Escape') {
                     note = ui.getNote(self.order);
