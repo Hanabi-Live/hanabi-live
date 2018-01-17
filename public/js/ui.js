@@ -897,21 +897,15 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            // Figure out where to place the tooltip
             // We want the tooltip to appear above the card by default
-            // Make the tooltip appear below the card if the player who has the card is sitting directly opposite us
-            // or it is the top card in a 3 player game
             const pos = self.getAbsolutePosition();
-            let posY;
-            console.log(self);
-            if (
-                self.parent.parent.acrossTheTable
-            ) {
+            let posY = pos.y - (self.getHeight() * self.parent.scale().y / 2);
+            tooltipInstance.option('side', 'top');
+
+            // Flip the tooltip if it is too close to the top of the screen
+            if (posY < 20) { // 20 is just an arbitrary threshold that seems to be big enough for 1080p at least
                 posY = pos.y + (self.getHeight() * self.parent.scale().y / 2);
                 tooltipInstance.option('side', 'bottom');
-            } else {
-                posY = pos.y - (self.getHeight() * self.parent.scale().y / 2);
-                tooltipInstance.option('side', 'top');
             }
 
             // Update the tooltip and open it
@@ -1218,7 +1212,6 @@ function HanabiUI(lobby, gameID) {
         this.align = (config.align || 'left');
         this.reverse = (config.reverse || false);
         this.invertCards = (config.invertCards || false);
-        this.acrossTheTable = config.acrossTheTable; // A bool used for tooltip reversal
     };
 
     Kinetic.Util.extend(CardLayout, Kinetic.Group);
@@ -3596,22 +3589,6 @@ function HanabiUI(lobby, gameID) {
                 j += nump;
             }
 
-            // Find out if this player is sitting across the table from us
-            // (used in determining how to draw note tooltips)
-            let acrossTheTable = false;
-            if (
-                // 2 player game on player 2
-                (nump === 2 && j === 1) ||
-                // 4 player game on player 3
-                (nump === 4 && j === 2) ||
-                // 5 player game on player 3
-                (nump === 5 && j === 2) ||
-                // 5 player game on player 4
-                (nump === 5 && j === 3)
-            ) {
-                acrossTheTable = true;
-            }
-
             playerHands[i] = new CardLayout({
                 x: handPos[nump][j].x * winW,
                 y: handPos[nump][j].y * winH,
@@ -3621,7 +3598,6 @@ function HanabiUI(lobby, gameID) {
                 align: 'center',
                 reverse: j === 0,
                 invertCards: i !== this.playerUs,
-                acrossTheTable,
             });
 
             cardLayer.add(playerHands[i]);
@@ -4240,9 +4216,17 @@ function HanabiUI(lobby, gameID) {
         };
 
         this.keyNavigation = (event) => {
+            // Don't do anything if we are currently editing a note,
+            // as we will be typing keystrokes into the input box
+            if (ui.editingNote) {
+                return;
+            }
+
+            // Don't interfere with other kinds of hotkeys
             if (event.ctrlKey || event.altKey) {
                 return;
             }
+
             let currentNavigation;
             if (replayArea.visible()) {
                 currentNavigation = replayNavigationKeyMap[event.key];
@@ -4262,8 +4246,7 @@ function HanabiUI(lobby, gameID) {
             }
         };
 
-        // Commenting this out for now since it interferes with note creation
-        // $(document).keydown(this.keyNavigation);
+        $(document).keydown(this.keyNavigation);
 
         /*
             End of keyboard shortcuts
