@@ -87,6 +87,20 @@ table td {
 }
 
 /*
+    Modals
+*/
+
+.modal {
+    position: absolute;
+    z-index: 1;
+    top: 5em;
+    left: 5em;
+    right: 5em;
+    bottom: 5em;
+    overflow: auto;
+}
+
+/*
     Nav
 */
 

@@ -571,12 +571,11 @@ HanabiLobby.prototype.hideLobby = function hideLobby(fast) {
 };
 
 HanabiLobby.prototype.closeAllTooltips = function closeAllTooltips() {
-    for (const tooltip of this.tooltips) {
-        const tooltipID = `#nav-buttons-games-${tooltip}`;
-        if ($(tooltipID).hasClass('tooltipstered')) {
-            $(`#nav-buttons-games-${tooltip}`).tooltipster('close');
-        }
-    }
+    // From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
+    const instances = $.tooltipster.instances();
+    $.each(instances, function(i, instance) {
+        instance.close();
+    });
 };
 
 HanabiLobby.prototype.showHistoryDetails = function showHistoryDetails() {
@@ -1596,8 +1595,6 @@ HanabiLobby.prototype.connClientError = function connClientError(conn) {
                 url,
                 lineno,
                 colno,
-                stack: error && error.stack,
-                modified: true,
             });
         } catch (err) {
             console.error('Failed to transmit the error to the server:', err);

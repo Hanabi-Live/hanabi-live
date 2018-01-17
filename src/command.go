@@ -28,6 +28,12 @@ type CommandData struct {
 	// sharedReplay
 	Value int `json:"value"`
 
+	// clientError
+	Message string `json:"message"`
+	URL     string `json:"url"`
+	LineNum int    `json:"lineno"`
+	ColNum  int    `json:"colno"`
+
 	// Used internally
 	Username string
 	Discord  bool
@@ -67,4 +73,7 @@ func commandInit() {
 	commandMap["action"] = commandAction
 	commandMap["note"] = commandNote
 	commandMap["replayAction"] = commandReplayAction
+
+	// Misc commands
+	commandMap["clientError"] = commandClientError
 }
