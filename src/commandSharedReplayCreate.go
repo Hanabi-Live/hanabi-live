@@ -33,7 +33,7 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 	log.Info("User \"" + s.Username() + "\" created a new shared replay: #" + strconv.Itoa(gameID))
 
 	// Define a standard naming scheme for shared replays
-	name := s.Username() + "'s shared replay (#" + strconv.Itoa(gameID) + ")"
+	name := "Shared replay for game #" + strconv.Itoa(gameID)
 
 	// Keep track of the current games
 	g := &Game{

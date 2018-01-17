@@ -182,6 +182,7 @@ func (g *Game) End() {
 	g.ID = databaseID
 	games[g.ID] = g
 	g.SharedReplay = true
+	g.Name = "Shared replay for game #" + strconv.Itoa(g.ID)
 
 	// Get the notes from all of the players
 	notes := make([]models.PlayerNote, 0)
