@@ -923,6 +923,9 @@ function HanabiUI(lobby, gameID) {
         };
 
         this.on('mousemove', function cardMouseMove() {
+            // If the note pulse animation is playing, stop it
+            self.notePulse.reset();
+
             // Don't do anything if there is not a note on this card
             if (!self.noteGiven.visible()) {
                 return;
