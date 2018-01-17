@@ -750,7 +750,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         $('<td>').html(timed).appendTo(row);
 
         // Column 5 - Status
-        let status = 'Not Started';
+        let status;
         if (game.running && !game.joined) {
             if (game.sharedReplay) {
                 status += 'Shared Replay'
@@ -763,6 +763,8 @@ HanabiLobby.prototype.drawTables = function drawTables() {
             } else {
                 status = 'Waiting';
             }
+        } else {
+            status = 'Not Started';
         }
         $('<td>').html(status).appendTo(row);
 

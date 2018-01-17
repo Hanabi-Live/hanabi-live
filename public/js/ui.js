@@ -899,6 +899,7 @@ function HanabiUI(lobby, gameID) {
 
             // We want the tooltip to appear above the card by default
             const pos = self.getAbsolutePosition();
+            let posX = pos.x;
             let posY = pos.y - (self.getHeight() * self.parent.scale().y / 2);
             tooltipInstance.option('side', 'top');
 
@@ -908,8 +909,14 @@ function HanabiUI(lobby, gameID) {
                 tooltipInstance.option('side', 'bottom');
             }
 
+            // If there is an clue arrow showing, it will overlap with the tooltip arrow,
+            // so move it over to the right a little bit
+            if (self.indicatorArrow.visible()) {
+                posX = pos.x + ((self.getWidth() * self.parent.scale().x / 2) / 2.5)
+            }
+
             // Update the tooltip and open it
-            tooltip.css('left', pos.x);
+            tooltip.css('left', posX);
             tooltip.css('top', posY);
             tooltipInstance.content(ui.getNote(self.order) || '');
             tooltip.tooltipster('open');
