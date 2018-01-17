@@ -41,6 +41,16 @@ function HanabiLobby() {
         players: [],
     };
 
+    this.errorOccured = false;
+
+    /*
+        Initialize the modals
+    */
+
+    $('#error-modal-button').click(() => {
+        window.location.reload();
+    });
+
     /*
         Initialize the tooltips
     */
@@ -1355,9 +1365,7 @@ HanabiLobby.prototype.connOpen = function connOpen(conn) {
 HanabiLobby.prototype.connClose = function connClose(conn) {
     conn.on('close', (event) => {
         console.log('WebSocket connection disconnected / closed.');
-
-        alert('Disconnected from the server. Either your Internet hiccuped or the server restarted.');
-        window.location.reload();
+        this.errorShow('Disconnected from the server. Either your Internet hiccuped or the server restarted.');
     });
 };
 
@@ -1577,7 +1585,12 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
     });
 
     conn.on('error', (data) => {
-        alert(`Error: ${data.error}`);
+        // Disconnect from the server, if connected
+        if (!self.conn) {
+            self.conn.close();
+        }
+
+        self.errorShow(data.error);
     });
 };
 
@@ -1601,6 +1614,31 @@ HanabiLobby.prototype.connClientError = function connClientError(conn) {
         }
     };
 };
+
+// Show the error modal
+HanabiLobby.prototype.errorShow = function errorShow(msg) {
+    // Do nothing if we are already showing the error modal
+    if (this.errorOccured) {
+        return;
+    }
+    this.errorOccured = true;
+
+    this.closeAllTooltips();
+
+    $('#nav').fadeOut(fadeTime);
+
+    function fadeInModal() {
+        $('#error-modal').fadeIn(fadeTime);
+    }
+
+    $('#error-modal-description').html(msg);
+    if ($('#lobby').is(':visible')) {
+        $('#lobby').fadeTo(fadeTime, 0.1, fadeInModal);
+    }
+    if ($('#game').is(':visible')) {
+        $('#game').fadeTo(fadeTime, 0.1, fadeInModal);
+    }
+}
 
 HanabiLobby.prototype.loadSettings = function loadSettings() {
     const self = this;

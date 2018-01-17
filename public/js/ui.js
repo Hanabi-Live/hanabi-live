@@ -900,9 +900,13 @@ function HanabiUI(lobby, gameID) {
             // Figure out where to place the tooltip
             // We want the tooltip to appear above the card by default
             // Make the tooltip appear below the card if the player who has the card is sitting directly opposite us
+            // or it is the top card in a 3 player game
             const pos = self.getAbsolutePosition();
             let posY;
-            if (self.parent.parent.acrossTheTable) {
+            console.log(self);
+            if (
+                self.parent.parent.acrossTheTable
+            ) {
                 posY = pos.y + (self.getHeight() * self.parent.scale().y / 2);
                 tooltipInstance.option('side', 'bottom');
             } else {
@@ -3593,6 +3597,7 @@ function HanabiUI(lobby, gameID) {
             }
 
             // Find out if this player is sitting across the table from us
+            // (used in determining how to draw note tooltips)
             let acrossTheTable = false;
             if (
                 // 2 player game on player 2

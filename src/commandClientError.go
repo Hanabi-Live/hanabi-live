@@ -2,11 +2,10 @@
 	Sent when the user gets a JavaScript error.
 	"data" example:
 	{
-		message: 'asdf',
-		url: '',
-		lineno: '123',
-		colno: '123',
-		stack: '',
+		message: 'Uncaught ReferenceError: asdf is not defined',
+		url: 'https://hanabi.live/public/js/ui.js',
+		lineno: 892,
+		colno: 13,
 	}
 */
 
