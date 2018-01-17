@@ -5068,15 +5068,13 @@ function HanabiUI(lobby, gameID) {
         if (!card) {
             return;
         }
-        card.tooltip.getText().setText(newNote);
+
+        // Show or hide the white square
         if (newNote.length > 0 && card.isInPlayerHand()) {
             card.noteGiven.show();
-            if (ui.spectating) {
-                card.notePulse.play();
-            }
+            card.notePulse.play();
         } else {
             card.noteGiven.hide();
-            card.tooltip.hide();
         }
 
         cardLayer.batchDraw();
