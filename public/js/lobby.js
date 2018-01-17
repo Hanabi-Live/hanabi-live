@@ -752,9 +752,10 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         // Column 5 - Status
         let status = 'Not Started';
         if (game.running && !game.joined) {
-            status = 'Running';
-            if (!game.sharedReplay) {
-                status += ` (${game.progress}%)`;
+            if (game.sharedReplay) {
+                status += 'Shared Replay'
+            } else {
+                status = `Running (${game.progress}%)`;
             }
         } else if (game.running) {
             if (game.ourTurn) {
