@@ -869,20 +869,6 @@ function HanabiUI(lobby, gameID) {
             this.noteGiven.show();
         }
 
-        // Add a slight pulse to the note marker to demonstrate that it has new info
-        this.notePulse = new Kinetic.Tween({
-            node: this.noteGiven,
-            scaleX: 1.1,
-            scaleY: 1.1,
-            duration: 0.5,
-            easing: Kinetic.Easings.BounceEaseIn,
-            onFinish: () => {
-                this.notePulse.reset();
-                this.notePulse.play();
-            },
-        });
-        this.notePulse.anim.addLayer(cardLayer);
-
         /*
             Define event handlers
             Multiple handlers may set activeHover
@@ -923,13 +909,13 @@ function HanabiUI(lobby, gameID) {
         };
 
         this.on('mousemove', function cardMouseMove() {
-            // If the note pulse animation is playing, stop it
-            self.notePulse.reset();
-
             // Don't do anything if there is not a note on this card
             if (!self.noteGiven.visible()) {
                 return;
             }
+
+            // If we are spectating and there is an new note, mark it as seen
+            self.noteGiven.setFill('white')
 
             // Don't open any more note tooltips if the user is currently editing a note
             if (ui.editingNote !== null) {
@@ -5075,7 +5061,7 @@ function HanabiUI(lobby, gameID) {
         // Show or hide the white square
         if (newNote.length > 0 && card.isInPlayerHand()) {
             card.noteGiven.show();
-            card.notePulse.play();
+            card.noteGiven.setFill('yellow');
         } else {
             card.noteGiven.hide();
         }
@@ -5118,7 +5104,7 @@ function HanabiUI(lobby, gameID) {
             if (note !== null && note !== '' && card.isInPlayerHand()) {
                 card.noteGiven.show();
                 if (ui.spectating) {
-                    card.notePulse.play();
+                    card.noteGiven.setFill('yellow');
                 }
             }
         }
