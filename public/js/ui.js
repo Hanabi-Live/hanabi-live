@@ -1077,6 +1077,9 @@ function HanabiUI(lobby, gameID) {
 
                 tooltipInstance.content(note);
                 self.noteGiven.setVisible(note.length > 0);
+                if (note.length === 0) {
+                    tooltip.tooltipster('close');
+                }
 
                 UILayer.draw();
                 cardLayer.draw();
