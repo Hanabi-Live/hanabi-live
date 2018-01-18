@@ -444,8 +444,8 @@
 
             <p class="margin1"><strong>Game Notifications</strong></p>
 
-            <input id="send-turn-notification" type="checkbox" />
-            <label for="send-turn-notification">
+            <input id="settings-tooltip-send-turn-notification" type="checkbox" />
+            <label for="settings-tooltip-send-turn-notification">
                 <span class="label-text">
                     Show desktop notifications when it reaches your turn
                 </span>
@@ -453,8 +453,8 @@
 
             <br />
 
-            <input id="send-turn-sound" type="checkbox">
-            <label for="send-turn-sound">
+            <input id="settings-tooltip-send-turn-sound" type="checkbox">
+            <label for="settings-tooltip-send-turn-sound">
                 <span class="label-text">
                     Play sounds when a move is made
                 </span>
@@ -462,8 +462,8 @@
 
             <br />
 
-            <input id="send-timer-sound" type="checkbox">
-            <label for="send-timer-sound">
+            <input id="settings-tooltip-send-timer-sound" type="checkbox">
+            <label for="settings-tooltip-send-timer-sound">
                 <span class="label-text">
                     Play ticking sounds when timers are below 5 seconds
                 </span>
@@ -473,8 +473,8 @@
 
             <p class="margin1"><strong>Lobby Notifications</strong></p>
 
-            <input id="send-chat-notification" type="checkbox">
-            <label for="send-chat-notification">
+            <input id="settings-tooltip-send-chat-notification" type="checkbox">
+            <label for="settings-tooltip-send-chat-notification">
                 <span class="label-text">
                     Receive notifications when your name is mentioned in chat
                 </span>
@@ -482,8 +482,8 @@
 
             <br />
 
-            <input id="send-chat-sound" type="checkbox">
-            <label for="send-chat-sound">
+            <input id="settings-tooltip-send-chat-sound" type="checkbox">
+            <label for="settings-tooltip-send-chat-sound">
                 <span class="label-text">
                     Play a sound when your name is mentioned in chat
                 </span>
@@ -493,8 +493,8 @@
 
             <p class="margin1"><strong>Appearance</strong></p>
 
-            <input id="show-colorblind-ui" type="checkbox">
-            <label for="show-colorblind-ui">
+            <input id="settings-tooltip-show-colorblind-ui" type="checkbox">
+            <label for="settings-tooltip-show-colorblind-ui">
                 <span class="label-text">
                     Enable colorblind mode
                 </span>
@@ -502,8 +502,8 @@
 
             <br />
 
-            <input id="hide-timer-in-untimed" type="checkbox">
-            <label for="hide-timer-in-untimed">
+            <input id="settings-tooltip-hide-timer-in-untimed" type="checkbox">
+            <label for="settings-tooltip-hide-timer-in-untimed">
                 <span class="label-text">
                     Hide the turn timers that tick up in untimed games
                 </span>
@@ -547,20 +547,8 @@
     <!-- Tooltipster (a tooltip library) -->
     <script src="public/js/lib/tooltipster.bundle.min.js"></script>
 
-    <!-- KineticJS (a graphics library) -->
-    <script src="public/js/lib/kinetic-v5.1.1.min.js"></script>
-
-    <!-- SHA256 (for hashing the password before sending it to the server) -->
-    <script src="public/js/lib/sha256.js"></script>
-
-    <!-- Golem (a WebSocket client) -->
-    <script src="public/js/lib/golem.js"></script>
-
-    <!-- Hanabi Live code -->
-    <script src="public/js/constants.js"></script>
-    <script src="public/js/ui/timer.js"></script>
-    <script src="public/js/ui.js"></script>
-    <script src="public/js/lobby.js"></script>
+    <!-- Other JavaScript is bundled using Browserify -->
+    <script src="public/js/main.js"></script>
 </body>
 
 </html>

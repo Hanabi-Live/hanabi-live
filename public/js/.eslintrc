@@ -62,6 +62,7 @@
 
   "globals": {
       "HanabiUI": true,
+      "GameUI": true,
       "constants": true,
       "golem": true,
       "Kinetic": true,

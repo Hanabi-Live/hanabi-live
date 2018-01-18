@@ -583,7 +583,7 @@ HanabiLobby.prototype.hideLobby = function hideLobby(fast) {
 HanabiLobby.prototype.closeAllTooltips = function closeAllTooltips() {
     // From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
     const instances = $.tooltipster.instances();
-    $.each(instances, function(i, instance) {
+    $.each(instances, (i, instance) => {
         instance.close();
     });
 };
@@ -753,7 +753,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         let status;
         if (game.running && !game.joined) {
             if (game.sharedReplay) {
-                status = 'Shared Replay'
+                status = 'Shared Replay';
             } else {
                 status = `Running (${game.progress}%)`;
             }
@@ -1319,7 +1319,6 @@ HanabiLobby.prototype.gameStarted = function gameStarted(data) {
     this.showGame();
 
     this.ui = new HanabiUI(this, this.gameID);
-
     this.ui.setBackend(this.conn);
 };
 
@@ -1628,7 +1627,7 @@ HanabiLobby.prototype.errorShow = function errorShow(msg) {
 
     this.closeAllTooltips();
 
-    $('#nav').fadeOut(fadeTime);
+    this.showNav('nothing');
 
     function fadeInModal() {
         $('#error-modal').fadeIn(fadeTime);
@@ -1641,7 +1640,7 @@ HanabiLobby.prototype.errorShow = function errorShow(msg) {
     if ($('#game').is(':visible')) {
         $('#game').fadeTo(fadeTime, 0.1, fadeInModal);
     }
-}
+};
 
 HanabiLobby.prototype.loadSettings = function loadSettings() {
     const self = this;

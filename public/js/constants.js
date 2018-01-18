@@ -208,8 +208,8 @@
         exports.COLOR.RED,
     ];
 
-    // Specify between solid color and gradients, along with additional args in
-    // the case of gradients
+    // Specify between solid color and gradients,
+    // along with additional args in the case of gradients
     const FillSpec = function FillSpec(fillType, args = null) {
         this.fillType = fillType;
         this.args = args;
@@ -235,8 +235,8 @@
         SYMBOL: 'symbol',
     };
 
-    // Bundles fill specs together for all the card attributes (background, number,
-    // symbol)
+    // Bundles fill specs together for all the card attributes
+    // (background, number, symbol)
     const BuildCardFillSpec = function BuildCardFillSpec(
         backgroundFillSpec,
         numberFillSpec,
@@ -528,12 +528,14 @@
         COLOR: 1,
     };
 
-    const Variant = function Variant(suits, clueColors, showSuitNames) {
+    const Variant = function Variant(suits, clueColors, showSuitNames, name, nameShort) {
         this.suits = suits;
         this.ranks = [1, 2, 3, 4, 5];
         this.clueColors = clueColors;
         // We draw the text below the suits for confusing variants
         this.showSuitNames = showSuitNames;
+        this.name = name;
+        this.nameShort = nameShort;
         this.offsetCardIndicators = suits.some(s => s !== exports.SUIT.MULTI && s.clueColors.length > 1);
         this.maxScore = suits.length * 5;
     };
@@ -548,6 +550,8 @@
                 exports.SUIT.PURPLE,
             ],
             baseColors,
+            'None',
+            'No Variant',
         ),
         BLACKSUIT: new Variant(
             [
@@ -559,6 +563,8 @@
                 exports.SUIT.BLACK,
             ],
             baseColorsPlusBlack,
+            'Black Suit',
+            'Black',
         ),
         BLACKONE: new Variant(
             [
@@ -570,6 +576,8 @@
                 exports.SUIT.BLACK,
             ],
             baseColorsPlusBlack,
+            'Black Suit (one of each)',
+            'Black (1oE)',
         ),
         RAINBOW: new Variant(
             [
@@ -581,6 +589,8 @@
                 exports.SUIT.MULTI,
             ],
             baseColors,
+            'Rainbow Suit (all colors)',
+            'Rainbow',
         ),
         MIXED: new Variant(
             [
@@ -598,6 +608,8 @@
                 exports.COLOR.BLACK,
             ],
             true,
+            'Dual-color Suits',
+            'Dual-color',
         ),
         MM: new Variant(
             [
@@ -610,6 +622,8 @@
             ],
             baseColors,
             true,
+            'Dual-color & Rainbow Suits',
+            'Dual & Rainbow',
         ),
         WHITEMULTI: new Variant(
             [
@@ -621,6 +635,8 @@
                 exports.SUIT.MULTI,
             ],
             baseColorsMinusPurple,
+            'Colorless & Rainbow Suits',
+            'White & Rainbow',
         ),
         CRAZY: new Variant(
             [
@@ -638,6 +654,8 @@
                 exports.COLOR.BLACK,
             ],
             true,
+            'Wild & Crazy',
+            'Wild & Crazy',
         ),
     };
 
