@@ -27,4 +27,5 @@ exports.hide = hide;
 exports.end = () => {
     hide();
     $('#page-wrapper').fadeIn(globals.fadeTime);
+    globals.currentScreen = 'lobby';
 };
