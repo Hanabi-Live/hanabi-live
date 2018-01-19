@@ -9,6 +9,7 @@ require('./modals');
 require('./keyboard');
 const cookie = require('./cookie');
 require('./lobby/main');
+const login = require('./lobby/login');
 
 $(document).ready(() => {
     preloadSounds();
@@ -17,7 +18,7 @@ $(document).ready(() => {
 
 const preloadSounds = () => {
     // Preload some sounds by playing them at 0 volume
-    if (!this.sendTurnSound) {
+    if (!globals.settings.sendTurnSound) {
         return;
     }
 
@@ -47,9 +48,9 @@ const automaticallyLogin = () => {
         $('#login-password').focus();
     }
 
-    if (!this.username || !this.password) {
+    if (!globals.username || !globals.password) {
         return;
     }
     console.log('Automatically logging in from cookie credentials.');
-    this.sendLogin();
+    login.send();
 };

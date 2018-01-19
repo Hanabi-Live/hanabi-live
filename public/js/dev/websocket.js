@@ -9,6 +9,7 @@ const misc = require('./misc');
 const modals = require('./modals');
 const lobby = require('./lobby/main');
 const nav = require('./lobby/nav');
+const login = require('./lobby/login');
 const history = require('./lobby/history');
 const game = require('./game/main');
 const gameCommands = require('./game/commands');
@@ -50,7 +51,7 @@ exports.set = () => {
         console.error('WebSocket error:', event);
 
         if ($('#loginbox').is(':visible')) {
-            this.loginFormError('Failed to connect to the WebSocket server. The server might be down!');
+            login.formError('Failed to connect to the WebSocket server. The server might be down!');
         }
     });
 
@@ -101,7 +102,7 @@ const initCommands = () => {
     });
 
     globals.conn.on('userLeft', (data) => {
-        delete this.userList[data.id];
+        delete globals.userList[data.id];
         lobby.drawUsers();
     });
 
@@ -159,7 +160,7 @@ const initCommands = () => {
         globals.game = data;
         globals.game.baseTime = data.baseTime * 1000 * 60; // Convert minutes to milliseconds
         globals.game.timePerTurn = data.timePerTurn * 1000; // Convert seconds to milliseconds
-        globals.game.players.length = this.game.numPlayers;
+        globals.game.players.length = globals.game.numPlayers;
 
         lobby.showJoined();
     });

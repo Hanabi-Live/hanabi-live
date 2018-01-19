@@ -5,7 +5,6 @@
 const globals = require('../globals');
 const misc = require('../misc');
 const cookie = require('../cookie');
-const nav = require('./nav');
 const createGame = require('./createGame');
 const history = require('./history');
 
@@ -50,7 +49,7 @@ $(document).ready(() => {
     $('#nav-buttons-game-unattend').on('click', (event) => {
         $('#lobby-game').hide();
         $('#lobby-games').show();
-        nav.show('games');
+        show('games');
 
         globals.conn.send('gameUnattend');
     });
@@ -66,7 +65,7 @@ $(document).ready(() => {
         $('#lobby-history-details').hide();
         $('#lobby-history').hide();
         $('#lobby-games').show();
-        nav.show('games');
+        show('games');
     });
 
     // "Watch Replay by ID" and "Share Replay by ID" buttons
@@ -121,14 +120,13 @@ const initTooltips = () => {
     // Map the escape key to close all tooltips
     $(document).keydown((event) => {
         if (event.key === 'Escape') {
-            event.preventDefault();
             misc.closeAllTooltips();
         }
     });
 
     // The "close" event will not fire if we initialize this on the tooltip class for some reason,
     // so we initialize all 3 individually
-    for (const tooltip of this.tooltips) {
+    for (const tooltip of tooltips) {
         $(`#nav-buttons-games-${tooltip}`).tooltipster(tooltipsterOptions).tooltipster('instance').on('close', tooltipsterClose);
     }
 };
@@ -148,3 +146,4 @@ const show = (target) => {
         $(`#nav-buttons-${target}`).show();
     }
 };
+exports.show = show;

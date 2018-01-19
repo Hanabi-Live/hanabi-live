@@ -4,17 +4,10 @@
 
 const shajs = require('sha.js');
 const globals = require('../globals');
-const misc = require('../misc');
 const cookie = require('../cookie');
 const websocket = require('../websocket');
-const lobby = require('./main');
 
 $(document).ready(() => {
-    // Display the login screen automatically by default
-    lobby.hide();
-    misc.closeAllTooltips();
-    $('#login').show();
-
     // Handle logging in
     $('#login-button').click(() => {
         $('#login-form').submit();
@@ -26,6 +19,9 @@ $(document).ready(() => {
         }
     });
     $('#login-form').submit((event) => {
+        // By default, the form will reload the page, so stop this from happening
+        event.preventDefault();
+
         const user = $('#login-username').val();
         const pass = $('#login-password').val();
 
@@ -46,8 +42,7 @@ $(document).ready(() => {
 
         globals.username = user;
         globals.password = hash;
-
-        sendLogin();
+        send();
     });
 
     // Make the tooltip for the Discord icon at the bottom of the screen
@@ -69,8 +64,9 @@ const formError = (msg) => {
         $('#login-alert').fadeIn(globals.fadeTime);
     }, 0);
 };
+exports.formError = formError;
 
-const sendLogin = () => {
+const send = () => {
     $('#login-button').addClass('disabled');
     $('#login-explanation').hide();
     $('#login-ajax').show();
@@ -100,6 +96,7 @@ const sendLogin = () => {
         formError(`Login failed: ${getAjaxError(jqXHR)}`);
     });
 };
+exports.send = send;
 
 const getAjaxError = (jqXHR) => {
     if (jqXHR.readyState === 0) {

@@ -56,7 +56,7 @@ $(document).ready(() => {
 
         if (typeof cookieValue === 'undefined' || typeof cookieValue !== 'string') {
             // If the cookie doesn't exist (or it is corrupt), write a default value
-            cookieValue = this[cookieKey];
+            cookieValue = globals.settings[cookieKey];
             localStorage.setItem(cookieKey, cookieValue);
             console.log(`Wrote a brand new "${cookieKey}" cookie of: ${cookieValue}`);
         } else {

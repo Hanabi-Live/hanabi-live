@@ -4,6 +4,8 @@
 */
 
 const globals = require('../globals');
+const misc = require('../misc');
+const notifications = require('../notifications');
 require('./login');
 const nav = require('./nav');
 
@@ -41,6 +43,7 @@ exports.show = () => {
 };
 
 exports.hide = () => {
+    console.log('GETTING HERE')
     // This has to be in a timeout to work for some reason
     setTimeout(() => {
         $('#lobby').fadeOut(globals.fadeTime);
@@ -61,7 +64,7 @@ exports.resetLobby = () => {
 
 // Draw the "Users" box in the bottom-right-hand corner
 const drawUsers = () => {
-    $('#lobby-users-num').text(Object.keys(this.userList).length);
+    $('#lobby-users-num').text(Object.keys(globals.userList).length);
 
     const tbody = $('#lobby-users-table-tbody');
 
@@ -69,11 +72,11 @@ const drawUsers = () => {
     tbody.html('');
 
     // Add all of the users
-    for (const user of Object.values(this.userList)) {
+    for (const user of Object.values(globals.userList)) {
         const row = $('<tr>');
 
         let { name } = user;
-        if (name === this.username) {
+        if (name === globals.username) {
             name = `<strong>${name}</strong>`;
         }
         $('<td>').html(name).appendTo(row);
@@ -84,16 +87,16 @@ const drawUsers = () => {
         row.appendTo(tbody);
     }
 };
+exports.drawUsers = drawUsers;
 
 // Draw the "Current Games" box in the top half
 const drawTables = () => {
-    const self = this;
     const tbody = $('#lobby-games-table-tbody');
 
     // Clear all of the existing rows
     tbody.html('');
 
-    if (Object.keys(this.tableList).length === 0) {
+    if (Object.keys(globals.tableList).length === 0) {
         $('#lobby-games-no').show();
         $('#lobby-games').addClass('align-center-v');
         $('#lobby-games-table-container').hide();
@@ -104,7 +107,7 @@ const drawTables = () => {
     $('#lobby-games-table-container').show();
 
     // Add all of the games
-    for (const game of Object.values(this.tableList)) {
+    for (const game of Object.values(globals.tableList)) {
         const row = $('<tr>');
 
         // Column 1 - Name
@@ -149,17 +152,12 @@ const drawTables = () => {
             button.html('<i class="fas fa-eye lobby-button-icon"></i>&nbsp; Spectate');
             button.attr('id', `spectate-${game.id}`);
             button.on('click', (event) => {
-                event.preventDefault();
-
-                self.gameID = game.id;
-                self.connSend({
-                    type: 'gameSpectate',
-                    resp: {
-                        gameID: game.id,
-                    },
+                globals.gameID = game.id;
+                globals.conn.send('gameSpectate', {
+                    gameID: game.id,
                 });
 
-                self.drawTables();
+                drawTables();
             });
         } else if (!game.joined) {
             button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>&nbsp; Join');
@@ -170,15 +168,12 @@ const drawTables = () => {
             button.on('click', (event) => {
                 event.preventDefault();
 
-                self.gameID = game.id;
-                self.connSend({
-                    type: 'gameJoin',
-                    resp: {
-                        gameID: game.id,
-                    },
+                globals.gameID = game.id;
+                globals.conn.send('gameJoin', {
+                    gameID: game.id,
                 });
 
-                self.drawTables();
+                drawTables();
             });
         } else {
             button.html('<i class="fas fa-play lobby-button-icon"></i>&nbsp; Resume');
@@ -187,15 +182,12 @@ const drawTables = () => {
             button.on('click', (event) => {
                 event.preventDefault();
 
-                self.gameID = game.id;
-                self.connSend({
-                    type: 'gameReattend',
-                    resp: {
-                        gameID: game.id,
-                    },
+                globals.gameID = game.id;
+                globals.conn.send('gameReattend', {
+                    gameID: game.id,
                 });
 
-                self.drawTables();
+                drawTables();
             });
         }
         $('<td>').html(button).appendTo(row);
@@ -215,12 +207,9 @@ const drawTables = () => {
                     }
                 }
 
-                self.gameID = null;
-                self.connSend({
-                    type: 'gameAbandon',
-                    resp: {
-                        gameID: game.id,
-                    },
+                globals.gameID = null;
+                globals.conn.send('gameAbandon', {
+                    gameID: game.id,
                 });
             });
         }
@@ -232,6 +221,7 @@ const drawTables = () => {
         row.appendTo(tbody);
     }
 };
+exports.drawTables = drawTables;
 
 exports.addChat = (data) => {
     const chat = $('#lobby-chat-text');
@@ -263,14 +253,14 @@ exports.addChat = (data) => {
         return;
     }
 
-    const r = new RegExp(this.username, 'i');
+    const r = new RegExp(globals.username, 'i');
     if (data.who && r.test(data.msg)) {
-        if (this.sendChatNotify) {
-            this.sendNotify(`${data.who} mentioned you in chat`, 'chat');
+        if (globals.settings.sendChatNotify) {
+            notifications.send(`${data.who} mentioned you in chat`, 'chat');
         }
 
-        if (this.sendChatSound) {
-            this.playSound('chat');
+        if (globals.settings.sendChatSound) {
+            misc.playSound('chat');
         }
     }
 };
@@ -299,12 +289,12 @@ exports.showJoined = () => {
     $('#nav-buttons-game-start').addClass('disabled');
 
     // Update the information on the left-hand side of the screen
-    $('#lobby-game-name').text(this.game.name);
-    const name = constants.VARIANT_INTEGER_MAPPING[this.game.variant].nameShort;
+    $('#lobby-game-name').text(globals.game.name);
+    const name = constants.VARIANT_INTEGER_MAPPING[globals.game.variant].nameShort;
     $('#lobby-game-variant').text(name);
     let timed = 'No';
-    if (this.game.timed) {
-        timed = `Yes (${timerFormatter(this.game.baseTime)} + ${timerFormatter(this.game.timePerTurn)})`;
+    if (globals.game.timed) {
+        timed = `Yes (${timerFormatter(globals.game.baseTime)} + ${timerFormatter(globals.game.timePerTurn)})`;
     }
     $('#lobby-game-timed').text(timed);
 
@@ -312,7 +302,7 @@ exports.showJoined = () => {
     for (let i = 0; i < 5; i++) {
         const div = $(`#lobby-game-player-${(i + 1)}`);
 
-        const player = this.game.players[i];
+        const player = globals.game.players[i];
         if (!player) {
             div.html('');
             div.hide();
