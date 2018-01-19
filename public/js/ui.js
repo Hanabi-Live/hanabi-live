@@ -4457,6 +4457,7 @@ function HanabiUI(lobby, gameID) {
         if (!this.replay && enter) {
             this.replay = true;
             this.replayPos = this.replayLog.length;
+            this.replayTurn = this.replayMax;
             this.adjustReplayShuttle();
             this.stopAction(true);
             replayArea.show();
