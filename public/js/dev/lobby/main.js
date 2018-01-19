@@ -43,7 +43,6 @@ exports.show = () => {
 };
 
 exports.hide = () => {
-    console.log('GETTING HERE')
     // This has to be in a timeout to work for some reason
     setTimeout(() => {
         $('#lobby').fadeOut(globals.fadeTime);
