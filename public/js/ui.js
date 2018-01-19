@@ -898,7 +898,7 @@ function HanabiUI(lobby, gameID) {
             // If there is an clue arrow showing, it will overlap with the tooltip arrow,
             // so move it over to the right a little bit
             if (self.indicatorArrow.visible()) {
-                posX = pos.x + ((self.getWidth() * self.parent.scale().x / 2) / 2.5)
+                posX = pos.x + ((self.getWidth() * self.parent.scale().x / 2) / 2.5);
             }
 
             // Update the tooltip and open it
@@ -915,7 +915,7 @@ function HanabiUI(lobby, gameID) {
             }
 
             // If we are spectating and there is an new note, mark it as seen
-            self.noteGiven.setFill('white')
+            self.noteGiven.setFill('white');
 
             // Don't open any more note tooltips if the user is currently editing a note
             if (ui.editingNote !== null) {
@@ -1094,7 +1094,6 @@ function HanabiUI(lobby, gameID) {
 
             // Automatically focus the new text input box
             $(`#tooltip-card-${self.order}-input`).focus();
-
         });
     };
 
