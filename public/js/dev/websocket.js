@@ -191,7 +191,6 @@ const initCommands = () => {
 
         $('#page-wrapper').hide();
         game.show();
-        globals.currentScreen = 'game';
     });
 
     globals.conn.on('gameHistory', (dataArray) => {

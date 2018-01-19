@@ -1,2 +1,8 @@
+# NPM modules are not typically included in a repository
 node_modules
-./main.bundled.js
+
+# This is the Browserified JavaScript file
+/main.bundled.js
+
+# This is the temporary Watchify JavaScript file
+/main.bundled.js~

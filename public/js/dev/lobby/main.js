@@ -3,6 +3,7 @@
     (current games, chat, and the user list)
 */
 
+const constants = require('../constants');
 const globals = require('../globals');
 const misc = require('../misc');
 const notifications = require('../notifications');
@@ -40,6 +41,11 @@ exports.show = () => {
     $('#lobby').show();
     nav.show('games');
     $('#lobby-chat-input').focus();
+
+    // FOR TESTING, TODO REMOVE
+    globals.conn.send('replayCreate', {
+        gameID: 2915,
+    });
 };
 
 exports.hide = () => {

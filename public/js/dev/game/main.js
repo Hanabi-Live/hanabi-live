@@ -2,6 +2,7 @@
     The Hanabi game UI
 */
 
+const pixi = require('pixi.js');
 const globals = require('../globals');
 
 $(document).ready(() => {
@@ -10,16 +11,18 @@ $(document).ready(() => {
 });
 
 exports.show = () => {
+    globals.currentScreen = 'game';
     $('#game').fadeIn(globals.fadeTime);
 
     // The scroll bars appear for some reason when showing the game, which is annoying and wastes space
     $('body').css('overflow', 'hidden');
 
-    // Draw some crap on the canvas
+    // Initialize the canvas
     init();
 };
-asdf
+
 const hide = () => {
+    $('#game').html('');
     $('#game').hide();
 
     // Change the scroll bars for the page back to the default value
@@ -28,12 +31,12 @@ const hide = () => {
 exports.hide = hide;
 
 const init = () => {
-    let app = new PIXI.Application({width: 256, height: 256});
-
+    const app = new pixi.Application(window.innerWidth, window.innerHeight);
+    $('#game').append(app.view);
 };
 
 exports.end = () => {
     hide();
-    $('#page-wrapper').fadeIn(globals.fadeTime);
     globals.currentScreen = 'lobby';
+    $('#page-wrapper').fadeIn(globals.fadeTime);
 };
