@@ -4,9 +4,9 @@
   "description": "The JavaScript client for the Hanabi Live server",
   "devDependencies": {
     "browserify": "^15.2.0",
-    "eslint": "^4.15.0",
+    "eslint": "^4.9.0",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.8.0"
+    "eslint-plugin-import": "^2.7.0"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,6 @@
     "sha.js": "^2.4.9"
   },
   "scripts": {
-    "build": "browserify dev/main.js > main.js"
+    "build": "browserify dev/main.js > main.bundled.js"
   }
 }

@@ -18,7 +18,7 @@ exports.show = () => {
     // Draw some crap on the canvas
     init();
 };
-
+asdf
 const hide = () => {
     $('#game').hide();
 
