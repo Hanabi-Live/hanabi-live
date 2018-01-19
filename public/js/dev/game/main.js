@@ -4,10 +4,18 @@
 
 const pixi = require('pixi.js');
 const globals = require('../globals');
+const scaleToWindow = require('./scaleToWindow');
 
 $(document).ready(() => {
     // Disable the context menu that appears when a user right-clicks
     $('body').on('contextmenu', '#game', () => false);
+
+    // Automatically resize the game canvas if the window is resized
+    window.addEventListener('resize', () => {
+        if (globals.currentScreen === 'game') {
+            scaleToWindow(globals.app.view);
+        }
+    });
 });
 
 exports.show = () => {
@@ -22,7 +30,7 @@ exports.show = () => {
 };
 
 const hide = () => {
-    $('#game').html('');
+    destroy();
     $('#game').hide();
 
     // Change the scroll bars for the page back to the default value
@@ -31,8 +39,18 @@ const hide = () => {
 exports.hide = hide;
 
 const init = () => {
-    const app = new pixi.Application(window.innerWidth, window.innerHeight);
-    $('#game').append(app.view);
+    globals.app = new pixi.Application({
+        width: window.innerWidth,
+        height: window.innerHeight,
+    });
+    $('#game').append(globals.app.view);
+
+    const backgroundTexture = pixi.Texture.fromImage('public/img/background.jpg');
+};
+
+const destroy = () => {
+    // http://pixijs.download/release/docs/PIXI.Application.html#destroy
+    globals.app.destroy(true);
 };
 
 exports.end = () => {

@@ -8,6 +8,7 @@ require('./keyboard');
 const cookie = require('./cookie');
 require('./lobby/main');
 const login = require('./lobby/login');
+require('./game/main');
 
 $(document).ready(() => {
     preloadSounds();

@@ -189,7 +189,7 @@ const initCommands = () => {
             nav.show('games');
         }
 
-        $('#page-wrapper').hide();
+        lobby.hide();
         game.show();
     });
 

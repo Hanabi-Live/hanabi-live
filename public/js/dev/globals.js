@@ -33,4 +33,6 @@ module.exports = {
 
     currentScreen: 'login',
     errorOccured: false,
+
+    app: null, // This is initialized in "game/main.js"
 };

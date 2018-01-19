@@ -49,12 +49,11 @@ exports.show = () => {
 };
 
 exports.hide = () => {
-    // This has to be in a timeout to work for some reason
-    setTimeout(() => {
-        $('#lobby').fadeOut(globals.fadeTime);
-    }, 1);
+    $('#page-wrapper').hide();
 
-    nav.show('nothing');
+    // The Alpha custom nav for tiny resolutions
+    $('#navPanel').hide();
+    $('#navButton').hide();
 };
 
 // "reset" is a reserved word in JavaScript
