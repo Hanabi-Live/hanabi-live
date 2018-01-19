@@ -532,8 +532,7 @@
         this.suits = suits;
         this.ranks = [1, 2, 3, 4, 5];
         this.clueColors = clueColors;
-        // We draw the text below the suits for confusing variants
-        this.showSuitNames = showSuitNames;
+        this.showSuitNames = showSuitNames; // We draw the text below the suits for confusing variants
         this.name = name;
         this.nameShort = nameShort;
         this.offsetCardIndicators = suits.some(s => s !== exports.SUIT.MULTI && s.clueColors.length > 1);
@@ -550,6 +549,7 @@
                 exports.SUIT.PURPLE,
             ],
             baseColors,
+            false,
             'None',
             'No Variant',
         ),
@@ -563,6 +563,7 @@
                 exports.SUIT.BLACK,
             ],
             baseColorsPlusBlack,
+            false,
             'Black Suit',
             'Black',
         ),
@@ -576,6 +577,7 @@
                 exports.SUIT.BLACK,
             ],
             baseColorsPlusBlack,
+            false,
             'Black Suit (one of each)',
             'Black (1oE)',
         ),
@@ -589,6 +591,7 @@
                 exports.SUIT.MULTI,
             ],
             baseColors,
+            false,
             'Rainbow Suit (all colors)',
             'Rainbow',
         ),
@@ -635,6 +638,7 @@
                 exports.SUIT.MULTI,
             ],
             baseColorsMinusPurple,
+            false,
             'Colorless & Rainbow Suits',
             'White & Rainbow',
         ),
