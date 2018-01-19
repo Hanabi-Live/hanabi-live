@@ -1,8 +1,6 @@
-// Pixi4 (a graphics library)
-// const pixi = require('pixi.js');
-
-// Golem (a WebSocket client)
-// const golem = require('../lib/golem2');
+/*
+    The main entry point for the Hanabi client code
+*/
 
 const globals = require('./globals');
 require('./modals');

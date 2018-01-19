@@ -42,3 +42,6 @@ stop.sh
 restart.sh
 pull.sh
 tail.sh
+
+# Atom FTP plugin
+.ftpconfig

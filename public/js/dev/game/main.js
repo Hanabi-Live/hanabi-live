@@ -14,6 +14,9 @@ exports.show = () => {
 
     // The scroll bars appear for some reason when showing the game, which is annoying and wastes space
     $('body').css('overflow', 'hidden');
+
+    // Draw some crap on the canvas
+    init();
 };
 
 const hide = () => {
@@ -23,6 +26,11 @@ const hide = () => {
     $('body').css('overflow', 'visible');
 };
 exports.hide = hide;
+
+const init = () => {
+    let app = new PIXI.Application({width: 256, height: 256});
+
+};
 
 exports.end = () => {
     hide();
