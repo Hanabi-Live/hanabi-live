@@ -387,6 +387,11 @@ function HanabiUI(lobby, gameID) {
                 prefix = 'NoPip';
             }
         }
+        // the previous huge 'if' expression isn't quite right, so sometimes it tries to call
+        // for Card-Gray-6, when it should always ask for NoPip-Gray-6. This is a lazy fix.
+        if ((!suit || suit === SUIT.GRAY) && (!rank || rank === 6)) {
+            prefix = 'NoPip';
+        }
 
         return `${prefix}-${(suit || SUIT.GRAY).name}-${rank || 6}`;
     }
