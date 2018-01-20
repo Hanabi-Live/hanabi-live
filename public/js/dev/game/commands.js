@@ -3,6 +3,7 @@
 */
 
 const globals = require('../globals');
+const init = require('./init');
 
 exports.init = () => {
     globals.conn.on('message', (data) => {
@@ -13,7 +14,14 @@ exports.init = () => {
 
     globals.conn.on('init', (data) => {
         if (globals.currentScreen === 'game') {
-            // self.ui.handleMessage('init', data);
+            // Store the meta-data for the game we just entered
+            globals.init = data;
+
+            // Draw the player names, create the cards for this particular variant, and so forth
+            init.layout();
+
+            // Report to the server that the next batch of things has been loaded
+            globals.conn.send('ready');
         }
     });
 

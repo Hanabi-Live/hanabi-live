@@ -2,9 +2,9 @@
     The Hanabi game UI
 */
 
-const pixi = require('pixi.js');
 const globals = require('../globals');
 const scaleToWindow = require('./scaleToWindow');
+const init = require('./init');
 
 $(document).ready(() => {
     // Disable the context menu that appears when a user right-clicks
@@ -20,13 +20,12 @@ $(document).ready(() => {
 
 exports.show = () => {
     globals.currentScreen = 'game';
-    $('#game').fadeIn(globals.fadeTime);
+    $('#game').show();
 
     // The scroll bars appear for some reason when showing the game, which is annoying and wastes space
     $('body').css('overflow', 'hidden');
 
-    // Initialize the canvas
-    init();
+    init.canvas();
 };
 
 const hide = () => {
@@ -38,19 +37,9 @@ const hide = () => {
 };
 exports.hide = hide;
 
-const init = () => {
-    globals.app = new pixi.Application({
-        width: window.innerWidth,
-        height: window.innerHeight,
-    });
-    $('#game').append(globals.app.view);
-
-    const backgroundTexture = pixi.Texture.fromImage('public/img/background.jpg');
-};
-
 const destroy = () => {
     // http://pixijs.download/release/docs/PIXI.Application.html#destroy
-    globals.app.destroy(true);
+    globals.app.destroy(true); // And remove it from the DOM
 };
 
 exports.end = () => {
