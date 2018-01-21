@@ -2356,7 +2356,7 @@ function HanabiUI(lobby, gameID) {
     const drawCardBase = function drawCardBase(ctx, suit, rank) {
         // Draw the background
         ctx.fillStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
-        ctx.strokeStyle = (ctx.fillStyle === COLOR.WHITE.hexCode) ? COLOR.BLACK.hex_code : suit.style(ctx, CARD_AREA.BACKGROUND);
+        ctx.strokeStyle = (ctx.fillStyle === COLOR.WHITE.hexCode) ? COLOR.BLACK.hexCode : suit.style(ctx, CARD_AREA.BACKGROUND);
 
         backpath(ctx, 4, xrad, yrad);
 
