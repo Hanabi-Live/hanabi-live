@@ -173,13 +173,6 @@
         ctx.stroke();
     };
 
-    exports.draw_shape = (ctx) => {
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-        ctx.fill();
-        ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-        ctx.stroke();
-    };
-
     exports.fillType = {
         SOLID: 'solid',
         LINEAR_GRADIENT: 'linear_gradient',
