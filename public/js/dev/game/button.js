@@ -5,40 +5,39 @@ function Button(config) {
     const button = new pixi.Container();
     button.x = config.x;
     button.y = config.y;
+    button.interactive = true;
 
+    // First, draw the black background
     const background = new pixi.Graphics();
-    background.beginFill(0, 0.6); // Black with some transparency
-    background.drawRoundedRect(
+    const drawArgs = [
         0,
         0,
         config.width,
         config.height,
         0.12 * config.height,
-    );
-    background.endFill();
-    background.interactive = true;
+    ];
+    const resetButton = (evt) => {
+        // Draw the original black fill
+        background.clear();
+        background.beginFill(0, 0.6); // Black with some transparency
+        background.drawRoundedRect(...drawArgs);
+        background.endFill();
+    };
+    resetButton();
     button.addChild(background);
 
+    // Add either text or an image, depending on what kind of button it is
     if (config.text) {
-        /*
-        const text = new Kinetic.Text({
-            name: 'text',
-            x: 0,
-            y: 0.2 * h,
-            width: w,
-            height: 0.6 * h,
-            listening: false,
-            fontSize: 0.5 * h,
+        const text = new pixi.Text(config.text, new pixi.TextStyle({
             fontFamily: 'Verdana',
+            fontSize: 0.5 * config.height,
             fill: 'white',
-            align: 'center',
-            text: config.text,
-        });
-
-        this.setText = display => text.setText(display);
-
-        this.add(text);
-        */
+        }));
+        const textSprite = new pixi.Sprite(globals.app.renderer.generateTexture(text));
+        textSprite.x = (config.width / 2) - (textSprite.width / 2);
+        textSprite.y = 0.2 * config.height;
+        textSprite.height = 0.6 * config.height;
+        button.addChild(textSprite);
     } else if (config.image) {
         const img = new pixi.Sprite(globals.resources[config.image].texture);
         img.x = 0.2 * config.width;
@@ -48,56 +47,19 @@ function Button(config) {
         button.addChild(img);
     }
 
-    /*
-    this.enabled = true;
-    this.pressed = false;
+    // Event handlers
+    button.on('pointerdown', (evt) => {
+        // Draw a white-ish color fill
+        background.clear();
+        background.beginFill(0x888888, 0.6);
+        background.drawRoundedRect(...drawArgs);
+        background.endFill();
 
-    background.on('mousedown', () => {
-        background.setFill('#888888');
-        background.getLayer().draw();
-
-        const resetButton = () => {
-            background.setFill('black');
-            background.getLayer().draw();
-
-            background.off('mouseup');
-            background.off('mouseout');
-        };
-
-        background.on('mouseout', () => {
-            resetButton();
-        });
-        background.on('mouseup', () => {
-            resetButton();
-        });
+        config.clickFunc();
     });
-    */
+    button.on('pointerout', resetButton);
+    button.on('pointerup', resetButton);
 
     return button;
 }
-
-/*
-Button.prototype.setEnabled = function setEnabled(enabled) {
-    this.enabled = enabled;
-
-    this.get('.text')[0].setFill(enabled ? 'white' : '#444444');
-
-    this.get('.background')[0].setListening(enabled);
-
-    this.getLayer().draw();
-};
-
-Button.prototype.getEnabled = function getEnabled() {
-    return this.enabled;
-};
-
-Button.prototype.setPressed = function setPressed(pressed) {
-    this.pressed = pressed;
-
-    this.get('.background')[0].setFill(pressed ? '#cccccc' : 'black');
-
-    this.getLayer().batchDraw();
-};
-*/
-
 module.exports = Button;

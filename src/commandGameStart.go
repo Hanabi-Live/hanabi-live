@@ -276,7 +276,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Set the status for all of the users in the game
 	for _, p := range g.Players {
 		p.Session.Set("status", "Playing")
-		notifyAllUser(s)
+		notifyAllUser(p.Session)
 	}
 
 	// Start the timer

@@ -50,6 +50,8 @@ $(document).keydown((event) => {
             return;
         }
 
+        // TODO
+        /*
         let keyHandler;
         if (globals.ui.objects.replayArea.visible) {
             keyHandler = replayNavigationKeyMap[event.key];
@@ -69,6 +71,7 @@ $(document).keydown((event) => {
             event.preventDefault();
             keyHandler();
         }
+        */
     }
 });
 

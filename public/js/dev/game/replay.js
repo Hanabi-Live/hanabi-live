@@ -3,6 +3,7 @@
 */
 
 const globals = require('../globals');
+const actions = require('./actions');
 
 const goto = (target, fast) => {
     // Validate the input
@@ -94,6 +95,35 @@ function positionReplayShuttle(shuttle, turn) {
 /*
     Button handlers
 */
+
+exports.enter = () => {
+    globals.ui.replayActivated = true;
+    globals.ui.replayTurn = globals.ui.replayMax;
+    positionReplayShuttles();
+    actions.hide(true);
+    globals.ui.objects.replayArea.visible = true;
+    // TODO CHANGE TURN AND DRAW
+};
+
+// This exits the in-game replay,
+// bringing them back to the present moment in the running game
+exports.exit = () => {
+    goto(this.replayMax, true);
+    globals.ui.replayActivated = false;
+    globals.ui.objects.replayArea.visible = false;
+
+    // TODO
+    /*
+    if (globals.ui.lastAction !== null) {
+        this.handleAction(globals.ui.lastAction);
+    }
+    for (let i = 0; i < this.deck.length; i++) {
+        this.deck[i].setBareImage();
+    }
+    UILayer.draw();
+    cardLayer.draw();
+    */
+};
 
 // Rewind one turn (the second left-most button)
 const rewind = () => {

@@ -17,10 +17,10 @@ exports.init = () => {
             // Store the meta-data for the game we just entered
             globals.init = data;
 
-            // Draw the player names, create the cards for this particular variant, and so forth
-            init.layout();
+            // Initialize the canvas
+            init();
 
-            // Report to the server that the next batch of things has been loaded
+            // Report to the server that everything has been loaded
             globals.conn.send('ready');
         }
     });

@@ -146,37 +146,6 @@ exports.PATHFUNC.set(
     },
 );
 
-/*
-    TODO: these functions obviously belong somewhere else
-*/
-
-exports.backpath = function backpath(ctx, p, xrad, yrad) {
-    ctx.beginPath();
-    ctx.moveTo(p, yrad + p);
-    ctx.lineTo(p, exports.CARDH - yrad - p);
-    ctx.quadraticCurveTo(0, exports.CARDH, xrad + p, exports.CARDH - p);
-    ctx.lineTo(exports.CARDW - xrad - p, exports.CARDH - p);
-    ctx.quadraticCurveTo(exports.CARDW, exports.CARDH, exports.CARDW - p, exports.CARDH - yrad - p);
-    ctx.lineTo(exports.CARDW - p, yrad + p);
-    ctx.quadraticCurveTo(exports.CARDW, 0, exports.CARDW - xrad - p, p);
-    ctx.lineTo(xrad + p, p);
-    ctx.quadraticCurveTo(0, 0, p, yrad + p);
-};
-
-exports.drawshape = (ctx) => {
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-    ctx.fill();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-    ctx.stroke();
-};
-
-exports.draw_shape = (ctx) => {
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-    ctx.fill();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-    ctx.stroke();
-};
-
 exports.fillType = {
     SOLID: 'solid',
     LINEAR_GRADIENT: 'linear_gradient',

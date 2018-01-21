@@ -116,8 +116,8 @@ function HanabiUI(lobby, gameID) {
         winH = stage.getHeight();
 
         // Rebuild UI elements and cards to new scaling
-        self.buildUI();
         self.buildCards();
+        self.buildUI();
 
         self.reset();
 

@@ -1,10 +1,12 @@
 const pixi = require('pixi.js');
-// const constants = require('./constants');
+const constants = require('../constants');
 const globals = require('../globals');
-const replay = require('./replay');
 const Button = require('./button');
+const cards = require('./cards');
+const scoreArea = require('./scoreArea');
+const replay = require('./replay');
 
-exports.canvas = () => {
+module.exports = () => {
     // Initialize some global varaibles
     globals.ui = {
         // Canvas size (initialized below)
@@ -17,6 +19,7 @@ exports.canvas = () => {
         editingNote: false,
 
         // Replay varaibles
+        replayActivated: false,
         replayTurn: 0,
         replayMax: 0,
 
@@ -27,6 +30,7 @@ exports.canvas = () => {
 
         // A collection of all of the drawn objects
         objects: {},
+        cards: {},
     };
 
     // Create the canvas (as a Pixi application) and append it to the DOM
@@ -57,10 +61,7 @@ exports.canvas = () => {
         globals.resources = resources;
 
         // Now that all the images have loaded, draw everything
-        canvas2();
-
-        // Report to the server that everything has loaded
-        globals.conn.send('hello');
+        draw();
     });
 };
 
@@ -101,420 +102,44 @@ const getCanvasSize = () => {
     return [cw, ch];
 };
 
-const canvas2 = () => {
+const draw = () => {
+    // Create images for all of the cards
+    cards.init();
+
     // Apply the green background first
     const background = new pixi.Sprite(globals.resources.background.texture);
     background.width = globals.ui.w;
     background.height = globals.ui.h;
     globals.app.stage.addChild(background);
 
+    // Fade everything when a modal is open
+    const fade = new pixi.Graphics();
+    fade.beginFill(0, 0.3); // Faded black
+    fade.drawRect(
+        0,
+        0,
+        globals.ui.w,
+        globals.ui.h,
+    );
+    fade.endFill();
+    fade.visible = false;
+    globals.app.stage.addChild(fade);
+    globals.ui.objects.fade = fade;
+
+    drawMessageArea();
+    drawStacks();
+    drawClueHistoryArea();
+    drawDeck();
+    drawScoreArea();
+    drawDiscardPile();
+
+    // TODO this is the fullscreen message log
     /*
-    playArea = new Kinetic.Rect({
-        x: 0.183 * globals.ui.w,
-        y: 0.3 * globals.ui.h,
-        width: 0.435 * globals.ui.w,
-        height: 0.189 * globals.ui.h,
-    });
-
-    discardArea = new Kinetic.Rect({
-        x: 0.8 * globals.ui.w,
-        y: 0.6 * globals.ui.h,
-        width: 0.2 * globals.ui.w,
-        height: 0.4 * globals.ui.h,
-    });
-
-    noDiscardLabel = new Kinetic.Rect({
-        x: 0.8 * globals.ui.w,
-        y: 0.6 * globals.ui.h,
-        width: 0.19 * globals.ui.w,
-        height: 0.39 * globals.ui.h,
-        stroke: '#df1c2d',
-        strokeWidth: 0.007 * globals.ui.w,
-        cornerRadius: 0.01 * globals.ui.w,
-        visible: false,
-    });
-
-    UILayer.add(noDiscardLabel);
-
-    rect = new Kinetic.Rect({
-        x: 0.8 * globals.ui.w,
-        y: 0.6 * globals.ui.h,
-        width: 0.19 * globals.ui.w,
-        height: 0.39 * globals.ui.h,
-        fill: 'black',
-        opacity: 0.2,
-        cornerRadius: 0.01 * globals.ui.w,
-    });
-
-    bgLayer.add(rect);
-
-    const img = new Kinetic.Image({
-        x: 0.82 * globals.ui.w,
-        y: 0.62 * globals.ui.h,
-        width: 0.15 * globals.ui.w,
-        height: 0.35 * globals.ui.h,
-        opacity: 0.2,
-        image: ImageLoader.get('trashcan'),
-    });
-
-    bgLayer.add(img);
-
-    rect = new Kinetic.Rect({
-        x: 0.2 * globals.ui.w,
-        y: 0.235 * globals.ui.h,
-        width: 0.4 * globals.ui.w,
-        height: 0.098 * globals.ui.h,
-        fill: 'black',
-        opacity: 0.3,
-        cornerRadius: 0.01 * globals.ui.h,
-        listening: true,
-    });
-
-    bgLayer.add(rect);
-
-    rect.on('click tap', () => {
-        msgLogGroup.show();
-        overback.show();
-
-        overLayer.draw();
-
-        overback.on('click tap', () => {
-            overback.off('click tap');
-
-            msgLogGroup.hide();
-            overback.hide();
-
-            overLayer.draw();
-        });
-    });
-
-    messagePrompt = new MultiFitText({
-        align: 'center',
-        fontSize: 0.028 * globals.ui.h,
-        fontFamily: 'Verdana',
-        fill: '#d8d5ef',
-        shadowColor: 'black',
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-        listening: false,
-        x: 0.21 * globals.ui.w,
-        y: 0.238 * globals.ui.h,
-        width: 0.38 * globals.ui.w,
-        height: 0.095 * globals.ui.h,
-        maxLines: 3,
-    });
-
-    UILayer.add(messagePrompt);
-
-    overback = new Kinetic.Rect({
-        x: 0,
-        y: 0,
-        width: globals.ui.w,
-        height: globals.ui.h,
-        opacity: 0.3,
-        fill: 'black',
-        visible: false,
-    });
-
-    overLayer.add(overback);
-
     msgLogGroup = new HanabiMsgLog();
-
     overLayer.add(msgLogGroup);
+    */
 
-    rect = new Kinetic.Rect({
-        x: 0.66 * globals.ui.w,
-        y: 0.81 * globals.ui.h,
-        width: 0.13 * globals.ui.w,
-        height: 0.18 * globals.ui.h,
-        fill: 'black',
-        opacity: 0.2,
-        cornerRadius: 0.01 * globals.ui.w,
-    });
-
-    bgLayer.add(rect);
-
-    for (let i = 0; i < 3; i++) {
-        rect = new Kinetic.Rect({
-            x: (0.67 + 0.04 * i) * globals.ui.w,
-            y: 0.91 * globals.ui.h,
-            width: 0.03 * globals.ui.w,
-            height: 0.053 * globals.ui.h,
-            fill: 'black',
-            opacity: 0.6,
-            cornerRadius: 0.003 * globals.ui.w,
-        });
-
-        bgLayer.add(rect);
-    }
-
-    clueLabel = new Kinetic.Text({
-        x: 0.67 * globals.ui.w,
-        y: 0.83 * globals.ui.h,
-        width: 0.11 * globals.ui.w,
-        height: 0.03 * globals.ui.h,
-        fontSize: 0.03 * globals.ui.h,
-        fontFamily: 'Verdana',
-        align: 'center',
-        text: 'Clues: 8',
-        fill: '#d8d5ef',
-        shadowColor: 'black',
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-    });
-
-    UILayer.add(clueLabel);
-
-    scoreLabel = new Kinetic.Text({
-        x: 0.67 * globals.ui.w,
-        y: 0.87 * globals.ui.h,
-        width: 0.11 * globals.ui.w,
-        height: 0.03 * globals.ui.h,
-        fontSize: 0.03 * globals.ui.h,
-        fontFamily: 'Verdana',
-        align: 'center',
-        text: 'Score: 0',
-        fill: '#d8d5ef',
-        shadowColor: 'black',
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-    });
-
-    UILayer.add(scoreLabel);
-
-    // The 'eyes' symbol to show that one or more people are spectating the game
-    spectatorsLabel = new Kinetic.Text({
-        x: 0.623 * globals.ui.w,
-        y: 0.9 * globals.ui.h,
-        width: 0.03 * globals.ui.w,
-        height: 0.03 * globals.ui.h,
-        fontSize: 0.03 * globals.ui.h,
-        fontFamily: 'Verdana',
-        align: 'center',
-        text: '👀',
-        fill: 'yellow',
-        shadowColor: 'black',
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-        visible: false,
-    });
-    UILayer.add(spectatorsLabel);
-
-    // Tooltip for the eyes
-    spectatorsLabel.on('mousemove', function spectatorsLabelMouseMove() {
-        ui.activeHover = this;
-
-        const tooltipX = this.attrs.x + this.getWidth() / 2;
-        $('#tooltip-spectators').css('left', tooltipX);
-        $('#tooltip-spectators').css('top', this.attrs.y);
-        $('#tooltip-spectators').tooltipster('open');
-    });
-    spectatorsLabel.on('mouseout', () => {
-        $('#tooltip-spectators').tooltipster('close');
-    });
-
-    spectatorsNumLabel = new Kinetic.Text({
-        x: 0.583 * globals.ui.w,
-        y: 0.934 * globals.ui.h,
-        width: 0.11 * globals.ui.w,
-        height: 0.03 * globals.ui.h,
-        fontSize: 0.03 * globals.ui.h,
-        fontFamily: 'Verdana',
-        align: 'center',
-        text: '0',
-        fill: '#d8d5ef',
-        shadowColor: 'black',
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-        visible: false,
-    });
-    UILayer.add(spectatorsNumLabel);
-
-    // Shared replay leader indicator
-    sharedReplayLeaderLabel = new Kinetic.Text({
-        x: 0.623 * globals.ui.w,
-        y: 0.85 * globals.ui.h,
-        width: 0.03 * globals.ui.w,
-        height: 0.03 * globals.ui.h,
-        fontSize: 0.03 * globals.ui.h,
-        fontFamily: 'Verdana',
-        align: 'center',
-        text: '👑',
-        fill: '#d8d5ef',
-        shadowColor: 'black',
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-        visible: false,
-    });
-    UILayer.add(sharedReplayLeaderLabel);
-
-    // Add an animation to alert everyone when shared replay leadership has been transfered
-    sharedReplayLeaderLabelPulse = new Kinetic.Tween({
-        node: sharedReplayLeaderLabel,
-        scaleX: 2,
-        scaleY: 2,
-        offsetX: 12,
-        offsetY: 10,
-        duration: 0.5,
-        easing: Kinetic.Easings.EaseInOut,
-        onFinish: () => {
-            sharedReplayLeaderLabelPulse.reverse();
-        },
-    });
-    sharedReplayLeaderLabelPulse.anim.addLayer(UILayer);
-
-    // Tooltip for the crown
-    sharedReplayLeaderLabel.on('mousemove', function sharedReplayLeaderLabelMouseMove() {
-        ui.activeHover = this;
-
-        const tooltipX = this.attrs.x + this.getWidth() / 2;
-        $('#tooltip-leader').css('left', tooltipX);
-        $('#tooltip-leader').css('top', this.attrs.y);
-        $('#tooltip-leader').tooltipster('open');
-    });
-    sharedReplayLeaderLabel.on('mouseout', () => {
-        $('#tooltip-leader').tooltipster('close');
-    });
-
-    // ???
-    rect = new Kinetic.Rect({
-        x: 0.8 * globals.ui.w,
-        y: 0.01 * globals.ui.h,
-        width: 0.19 * globals.ui.w,
-        height: 0.58 * globals.ui.h,
-        fill: 'black',
-        opacity: 0.2,
-        cornerRadius: 0.01 * globals.ui.w,
-    });
-
-    bgLayer.add(rect);
-
-    clueLog = new HanabiClueLog({
-        x: 0.81 * globals.ui.w,
-        y: 0.02 * globals.ui.h,
-        width: 0.17 * globals.ui.w,
-        height: 0.56 * globals.ui.h,
-    });
-
-    UILayer.add(clueLog);
-
-    let pileback;
-
-    if (this.variant.suits.length === 6) {
-        y = 0.04;
-        width = 0.06;
-        height = 0.151;
-        offset = 0.019;
-    } else { // 5 stacks
-        y = 0.05;
-        width = 0.075;
-        height = 0.189;
-        offset = 0;
-    }
-
-    // TODO: move blocks like this into their own functions
-    let playAreaY = 0.345;
-    if (this.variant.showSuitNames) {
-        playAreaY = 0.327;
-    }
-    {
-        let i = 0;
-        for (const suit of this.variant.suits) {
-            pileback = new Kinetic.Image({
-                x: (0.183 + (width + 0.015) * i) * globals.ui.w,
-                y: (playAreaY + offset) * globals.ui.h,
-                width: width * globals.ui.w,
-                height: height * globals.ui.h,
-                image: cardImages[`Card-${suit.name}-0`],
-            });
-
-            bgLayer.add(pileback);
-
-            const thisSuitPlayStack = new CardStack({
-                x: (0.183 + (width + 0.015) * i) * globals.ui.w,
-                y: (playAreaY + offset) * globals.ui.h,
-                width: width * globals.ui.w,
-                height: height * globals.ui.h,
-            });
-            playStacks.set(suit, thisSuitPlayStack);
-            cardLayer.add(thisSuitPlayStack);
-
-            const thisSuitDiscardStack = new CardLayout({
-                x: 0.81 * globals.ui.w,
-                y: (0.61 + y * i) * globals.ui.h,
-                width: 0.17 * globals.ui.w,
-                height: 0.17 * globals.ui.h,
-            });
-            discardStacks.set(suit, thisSuitDiscardStack);
-            cardLayer.add(thisSuitDiscardStack);
-
-            // Draw the suit name next to each suit
-            // (a text description of the suit)
-            if (this.variant.showSuitNames) {
-                let text = suit.name;
-                if (
-                    lobby.showColorblindUI &&
-                    suit.clueColors.length > 1 &&
-                    suit !== SUIT.MULTI
-                ) {
-                    const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
-                    text += ` [${colorList}]`;
-                }
-
-                const suitLabelText = new FitText({
-                    x: (0.173 + (width + 0.015) * i) * globals.ui.w,
-                    y: (playAreaY + 0.155 + offset) * globals.ui.h,
-                    width: 0.08 * globals.ui.w,
-                    height: 0.051 * globals.ui.h,
-                    fontSize: 0.02 * globals.ui.h,
-                    fontFamily: 'Verdana',
-                    align: 'center',
-                    text,
-                    fill: '#d8d5ef',
-                });
-                textLayer.add(suitLabelText);
-            }
-
-            i += 1;
-        }
-    }
-
-    rect = new Kinetic.Rect({
-        x: 0.08 * globals.ui.w,
-        y: 0.8 * globals.ui.h,
-        width: 0.075 * globals.ui.w,
-        height: 0.189 * globals.ui.h,
-        fill: 'black',
-        opacity: 0.2,
-        cornerRadius: 0.006 * globals.ui.w,
-    });
-
-    bgLayer.add(rect);
-
+    /*
     drawDeck = new CardDeck({
         x: 0.08 * globals.ui.w,
         y: 0.8 * globals.ui.h,
@@ -831,16 +456,533 @@ const canvas2 = () => {
     }
     */
 
+    drawReplayUI();
+    drawHelpModal();
+
     /*
-        The replay UI
+    deckPlayAvailableLabel = new Kinetic.Rect({
+        x: 0.08 * globals.ui.w,
+        y: 0.8 * globals.ui.h,
+        width: 0.075 * globals.ui.w,
+        height: 0.189 * globals.ui.h,
+        stroke: 'yellow',
+        cornerRadius: 6,
+        strokeWidth: 10,
+        visible: false,
+    });
+
+    UILayer.add(deckPlayAvailableLabel);
+
+    replayButton = new Button({
+        x: 0.01 * globals.ui.w,
+        y: 0.8 * globals.ui.h,
+        width: 0.06 * globals.ui.w,
+        height: 0.06 * globals.ui.h,
+        image: 'replay',
+        visible: false,
+    });
+
+    replayButton.on('click tap', () => {
+        self.enterReplay(!self.replay);
+    });
+
+    UILayer.add(replayButton);
+
+    helpButton = new Button({
+        x: 0.01 * globals.ui.w,
+        y: 0.87 * globals.ui.h,
+        width: 0.06 * globals.ui.w,
+        height: 0.06 * globals.ui.h,
+        text: 'Help',
+    });
+
+    UILayer.add(helpButton);
+
+    helpButton.on('click tap', () => {
+        helpGroup.show();
+        overback.show();
+
+        overLayer.draw();
+
+        overback.on('click tap', () => {
+            overback.off('click tap');
+
+            helpGroup.hide();
+            overback.hide();
+
+            overLayer.draw();
+        });
+    });
+
+    lobbyButton = new Button({
+        x: 0.01 * globals.ui.w,
+        y: 0.94 * globals.ui.h,
+        width: 0.06 * globals.ui.w,
+        height: 0.05 * globals.ui.h,
+        text: 'Lobby',
+    });
+
+    UILayer.add(lobbyButton);
+
+    lobbyButton.on('click tap', () => {
+        lobbyButton.off('click tap');
+        ui.sendMsg({
+            type: 'gameUnattend',
+            resp: {},
+        });
+
+        this.stopLocalTimer();
+
+        ui.lobby.gameEnded();
+    });
+
+    if (ui.replay) {
+        replayArea.show();
+    }
     */
 
+    // TODO
+    /*
+    // The 'eyes' symbol to show that one or more people are spectating the game
+    // https://fontawesome.com/icons/eye?style=solid
+    const spectatorsText = new pixi.Text('\uf06e', new pixi.TextStyle({
+        fontFamily: 'fontawesome',
+        // fill: 'grey',
+        fontSize: 0.04 * globals.ui.h,
+    }));
+    const spectatorsTextSprite = new pixi.Sprite(globals.app.renderer.generateTexture(spectatorsText));
+    spectatorsTextSprite.x = 0.623 * globals.ui.w;
+    spectatorsTextSprite.y = 0.9 * globals.ui.h;
+    // spectatorsTextSprite.width = 0.03 * globals.ui.w;
+    // spectatorsTextSprite.height = 0.03 * globals.ui.h;
+    globals.app.stage.addChild(spectatorsTextSprite);
+
+    spectatorsLabel = new Kinetic.Text({
+        text: '👀',
+        fill: 'yellow',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+        visible: false,
+    });
+    UILayer.add(spectatorsLabel);
+
+    // Tooltip for the eyes
+    spectatorsLabel.on('mousemove', function spectatorsLabelMouseMove() {
+        ui.activeHover = this;
+
+        const tooltipX = this.attrs.x + this.getWidth() / 2;
+        $('#tooltip-spectators').css('left', tooltipX);
+        $('#tooltip-spectators').css('top', this.attrs.y);
+        $('#tooltip-spectators').tooltipster('open');
+    });
+    spectatorsLabel.on('mouseout', () => {
+        $('#tooltip-spectators').tooltipster('close');
+    });
+
+    spectatorsNumLabel = new Kinetic.Text({
+        x: 0.583 * globals.ui.w,
+        y: 0.934 * globals.ui.h,
+        width: 0.11 * globals.ui.w,
+        height: 0.03 * globals.ui.h,
+        fontSize: 0.03 * globals.ui.h,
+        fontFamily: 'Verdana',
+        align: 'center',
+        text: '0',
+        fill: '#d8d5ef',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+        visible: false,
+    });
+    UILayer.add(spectatorsNumLabel);
+
+    // Shared replay leader indicator
+    sharedReplayLeaderLabel = new Kinetic.Text({
+        x: 0.623 * globals.ui.w,
+        y: 0.85 * globals.ui.h,
+        width: 0.03 * globals.ui.w,
+        height: 0.03 * globals.ui.h,
+        fontSize: 0.03 * globals.ui.h,
+        fontFamily: 'Verdana',
+        align: 'center',
+        text: '👑',
+        fill: '#d8d5ef',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+        visible: false,
+    });
+    UILayer.add(sharedReplayLeaderLabel);
+
+    // Add an animation to alert everyone when shared replay leadership has been transfered
+    sharedReplayLeaderLabelPulse = new Kinetic.Tween({
+        node: sharedReplayLeaderLabel,
+        scaleX: 2,
+        scaleY: 2,
+        offsetX: 12,
+        offsetY: 10,
+        duration: 0.5,
+        easing: Kinetic.Easings.EaseInOut,
+        onFinish: () => {
+            sharedReplayLeaderLabelPulse.reverse();
+        },
+    });
+    sharedReplayLeaderLabelPulse.anim.addLayer(UILayer);
+
+    // Tooltip for the crown
+    sharedReplayLeaderLabel.on('mousemove', function sharedReplayLeaderLabelMouseMove() {
+        ui.activeHover = this;
+
+        const tooltipX = this.attrs.x + this.getWidth() / 2;
+        $('#tooltip-leader').css('left', tooltipX);
+        $('#tooltip-leader').css('top', this.attrs.y);
+        $('#tooltip-leader').tooltipster('open');
+    });
+    sharedReplayLeaderLabel.on('mouseout', () => {
+        $('#tooltip-leader').tooltipster('close');
+    });
+    */
+};
+
+// The message area is near the top-center of the screen and shows the last three actions taken
+function drawMessageArea() {
+    const messageArea = new pixi.Container();
+    messageArea.x = 0.2 * globals.ui.w;
+    messageArea.y = 0.235 * globals.ui.h;
+    messageArea.interactive = true;
+    globals.app.stage.addChild(messageArea);
+
+    messageArea.on('pointerdown', (evt) => {
+        // TODO
+        /*
+        msgLogGroup.show();
+        overback.show();
+
+        overLayer.draw();
+
+        overback.on('click tap', () => {
+            overback.off('click tap');
+
+            msgLogGroup.hide();
+            overback.hide();
+
+            overLayer.draw();
+        });
+        */
+    });
+
+    const messageAreaBackground = new pixi.Graphics();
+    messageAreaBackground.beginFill(0, 0.3);
+    messageAreaBackground.drawRoundedRect(
+        0,
+        0,
+        0.4 * globals.ui.w,
+        0.098 * globals.ui.h,
+        0.01 * globals.ui.h,
+    );
+    messageAreaBackground.endFill();
+    messageArea.addChild(messageAreaBackground);
+
+    /*
+    messagePrompt = new MultiFitText({
+        align: 'center',
+        fontSize: 0.028 * globals.ui.h,
+        fontFamily: 'Verdana',
+        fill: '#d8d5ef',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+        listening: false,
+        x: 0.21 * globals.ui.w,
+        y: 0.238 * globals.ui.h,
+        width: 0.38 * globals.ui.w,
+        height: 0.095 * globals.ui.h,
+        maxLines: 3,
+    });
+    UILayer.add(messagePrompt);
+    */
+}
+
+// The play area is in the center of the screen (it contains the stacks)
+function drawStacks() {
+    // The play area is an invisible rectangle that defines where the user can drag a card to in order to play it
+    const playArea = new pixi.Graphics();
+    playArea.beginFill(0, 0); // An alpha of 0 makes it invisible
+    playArea.drawRect(
+        0.183 * globals.ui.w,
+        0.3 * globals.ui.h,
+        0.435 * globals.ui.w,
+        0.189 * globals.ui.h,
+    );
+    playArea.endFill();
+    // We don't have to add this to the stage
+    globals.ui.objects.playArea = playArea;
+
+    // The size of each stack will be slightly smaller if there are 6 stacks instead of 5
+    const variant = constants.VARIANT_INTEGER_MAPPING[globals.init.variant];
+    let y;
+    let width;
+    let height;
+    let offset;
+    if (variant.suits.length === 6) {
+        // 6 stacks
+        y = 0.04;
+        width = 0.06;
+        height = 0.151;
+        offset = 0.019;
+    } else {
+        // 5 stacks
+        y = 0.05;
+        width = 0.075;
+        height = 0.189;
+        offset = 0;
+    }
+
+    let playAreaY = 0.345;
+    if (variant.showSuitNames) {
+        playAreaY = 0.327;
+    }
+
+    for (let i = 0; i < variant.suits.length; i++) {
+        const suit = variant.suits[i];
+
+        const stackBackTexture = pixi.Texture.fromCanvas(globals.ui.cards[`Card-${suit.name}-0`]);
+        const stackBack = new pixi.Sprite(stackBackTexture);
+        stackBack.x = (0.183 + (width + 0.015) * i) * globals.ui.w;
+        stackBack.y = (playAreaY + offset) * globals.ui.h;
+        stackBack.width = width * globals.ui.w;
+        stackBack.height = height * globals.ui.h;
+        globals.app.stage.addChild(stackBack);
+
+        /*
+        const thisSuitPlayStack = new CardStack({
+            x: (0.183 + (width + 0.015) * i) * globals.ui.w,
+            y: (playAreaY + offset) * globals.ui.h,
+            width: width * globals.ui.w,
+            height: height * globals.ui.h,
+        });
+        playStacks.set(suit, thisSuitPlayStack);
+        cardLayer.add(thisSuitPlayStack);
+
+        const thisSuitDiscardStack = new CardLayout({
+            x: 0.81 * globals.ui.w,
+            y: (0.61 + y * i) * globals.ui.h,
+            width: 0.17 * globals.ui.w,
+            height: 0.17 * globals.ui.h,
+        });
+        discardStacks.set(suit, thisSuitDiscardStack);
+        cardLayer.add(thisSuitDiscardStack);
+
+        // Draw the suit name next to each suit
+        // (a text description of the suit)
+        if (variant.showSuitNames) {
+            let text = suit.name;
+            if (
+                lobby.showColorblindUI &&
+                suit.clueColors.length > 1 &&
+                suit !== SUIT.MULTI
+            ) {
+                const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
+                text += ` [${colorList}]`;
+            }
+
+            const suitLabelText = new FitText({
+                x: (0.173 + (width + 0.015) * i) * globals.ui.w,
+                y: (playAreaY + 0.155 + offset) * globals.ui.h,
+                width: 0.08 * globals.ui.w,
+                height: 0.051 * globals.ui.h,
+                fontSize: 0.02 * globals.ui.h,
+                fontFamily: 'Verdana',
+                align: 'center',
+                text,
+                fill: '#d8d5ef',
+            });
+            textLayer.add(suitLabelText);
+        }
+        */
+    }
+}
+
+function drawClueHistoryArea() {
+    const clueHistoryArea = new pixi.Container();
+    clueHistoryArea.x = 0.8 * globals.ui.w;
+    clueHistoryArea.y = 0.01 * globals.ui.h;
+    globals.app.stage.addChild(clueHistoryArea);
+
+    // The faded rectangle that highlights the clue history area
+    const clueHistoryAreaBackground = new pixi.Graphics();
+    clueHistoryAreaBackground.beginFill(0, 0.2); // Faded black
+    clueHistoryAreaBackground.drawRoundedRect(
+        0,
+        0,
+        0.19 * globals.ui.w,
+        0.58 * globals.ui.h,
+        0.01 * globals.ui.w,
+    );
+    clueHistoryAreaBackground.endFill();
+    clueHistoryArea.addChild(clueHistoryAreaBackground);
+
+    // TODO
+    /*
+    clueLog = new HanabiClueLog({
+        x: 0.81 * globals.ui.w,
+        y: 0.02 * globals.ui.h,
+        width: 0.17 * globals.ui.w,
+        height: 0.56 * globals.ui.h,
+    });
+    UILayer.add(clueLog);
+    */
+}
+
+// The deck is in the bottom left-hand-corner of the screen to the right of the buttons
+function drawDeck() {
+    const deckArea = new pixi.Container();
+    deckArea.x = 0.08 * globals.ui.w;
+    deckArea.y = 0.8 * globals.ui.h;
+    globals.app.stage.addChild(deckArea);
+
+    // The faded rectangle that highlights the deck area
+    const deckAreaBackground = new pixi.Graphics();
+    deckAreaBackground.beginFill(0, 0.2); // Faded black
+    deckAreaBackground.drawRoundedRect(
+        0,
+        0,
+        0.075 * globals.ui.w,
+        0.189 * globals.ui.h,
+        0.006 * globals.ui.w,
+    );
+    deckAreaBackground.endFill();
+    deckArea.addChild(deckAreaBackground);
+}
+
+// The score area is in the bottom-right-hand corner of the screen to the left of the discard pile
+function drawScoreArea() {
+    const scoreAreaContainer = new pixi.Container();
+    scoreAreaContainer.x = 0.66 * globals.ui.w;
+    scoreAreaContainer.y = 0.81 * globals.ui.h;
+    globals.app.stage.addChild(scoreAreaContainer);
+
+    // The faded rectangle that highlights the score area
+    const scoreAreaBackground = new pixi.Graphics();
+    scoreAreaBackground.beginFill(0, 0.2); // Faded black
+    scoreAreaBackground.drawRoundedRect(
+        0,
+        0,
+        0.13 * globals.ui.w,
+        0.18 * globals.ui.h,
+        0.01 * globals.ui.w,
+    );
+    scoreAreaBackground.endFill();
+    scoreAreaContainer.addChild(scoreAreaBackground);
+
+    // 3 boxes that fill up when the team accrues strikes (bombs)
+    for (let i = 0; i < 3; i++) {
+        const strikeBackground = new pixi.Graphics();
+        strikeBackground.beginFill(0, 0.6); // Faded black
+        strikeBackground.drawRoundedRect(
+            (0.01 + 0.04 * i) * globals.ui.w,
+            0.106 * globals.ui.h,
+            0.03 * globals.ui.w,
+            0.053 * globals.ui.h,
+            0.003 * globals.ui.w,
+        );
+        strikeBackground.endFill();
+        scoreAreaContainer.addChild(strikeBackground);
+    }
+
+    // The score area has text that shows how many clues are left
+    const scoreAreaClues = new pixi.Sprite();
+    scoreAreaContainer.addChild(scoreAreaClues);
+    globals.ui.objects.scoreAreaClues = scoreAreaClues;
+    scoreArea.drawClues(8);
+
+    // The score area has text that shows what the current score is
+    const scoreAreaScore = new pixi.Sprite();
+    scoreAreaContainer.addChild(scoreAreaScore);
+    globals.ui.objects.scoreAreaScore = scoreAreaScore;
+    scoreArea.drawScore(0);
+}
+
+// The discard pile is in the bottom-right-hand corner of the screen
+function drawDiscardPile() {
+    // The discard area is an invisible rectangle that defines where the user can drag a card to in order to discard it
+    const discardArea = new pixi.Graphics();
+    discardArea.beginFill(0, 0); // An alpha of 0 makes it invisible
+    discardArea.drawRect(
+        0.8 * globals.ui.w,
+        0.6 * globals.ui.h,
+        0.2 * globals.ui.w,
+        0.4 * globals.ui.h,
+    );
+    discardArea.endFill();
+    // We don't have to add this to the stage
+    globals.ui.objects.discardArea = discardArea;
+
+    // This is a border around the discard area that appears when the team is at 8 clues
+    // in order to signify that it is not possible to discard on this turn
+    const discardPileBorder = new pixi.Graphics();
+    discardPileBorder.lineStyle(0.007 * globals.ui.w, 0xDF1C2D, 1);
+    discardPileBorder.beginFill(0, 0); // An alpha of 0 makes it invisible
+    discardPileBorder.drawRoundedRect(
+        0.8 * globals.ui.w,
+        0.6 * globals.ui.h,
+        0.19 * globals.ui.w,
+        0.39 * globals.ui.h,
+        0.01 * globals.ui.w,
+    );
+    discardPileBorder.endFill();
+    discardPileBorder.visible = false;
+    globals.app.stage.addChild(discardPileBorder);
+    globals.ui.objects.discardPileBorder = discardPileBorder;
+
+    // The faded rectangle that highlights the discard pile
+    const discardPileBackground = new pixi.Graphics();
+    discardPileBackground.beginFill(0, 0.2); // Faded black
+    discardPileBackground.drawRoundedRect(
+        0.8 * globals.ui.w,
+        0.6 * globals.ui.h,
+        0.19 * globals.ui.w,
+        0.39 * globals.ui.h,
+        0.01 * globals.ui.w,
+    );
+    discardPileBackground.endFill();
+    globals.app.stage.addChild(discardPileBackground);
+
+    // The trash can graphic
+    const trashCan = new pixi.Sprite(globals.resources.trashcan.texture);
+    trashCan.x = 0.82 * globals.ui.w;
+    trashCan.y = 0.62 * globals.ui.h;
+    trashCan.width = 0.15 * globals.ui.w;
+    trashCan.height = 0.35 * globals.ui.h;
+    trashCan.alpha = 0.2;
+    globals.app.stage.addChild(trashCan);
+}
+
+// The replay UI is the progress bar, the 4 arrow buttons, and the 3 big buttons
+function drawReplayUI() {
     const replayArea = new pixi.Container();
     replayArea.x = 0.15 * globals.ui.w;
     replayArea.y = 0.51 * globals.ui.h;
     replayArea.width = 0.5 * globals.ui.w;
     replayArea.height = 0.27 * globals.ui.h;
-    // replayArea.visible = false; // The replay UI is hidden by default
+    replayArea.visible = false; // The replay UI is hidden by default
     globals.app.stage.addChild(replayArea);
     globals.ui.objects.replayArea = replayArea;
 
@@ -946,246 +1088,140 @@ const canvas2 = () => {
     });
 
     // Rewind to the beginning (the left-most button)
-    const button1 = new Button({
+    const replayRewindBeginningButton = new Button({
         x: 0.1 * globals.ui.w,
         y: 0.07 * globals.ui.h,
         width: 0.06 * globals.ui.w,
         height: 0.08 * globals.ui.h,
         image: 'rewindfull',
+        clickFunc: replay.rewindBeginning,
     });
-    replayArea.addChild(button1);
+    replayArea.addChild(replayRewindBeginningButton);
+    globals.ui.objects.replayRewindBeginningButton = replayRewindBeginningButton;
 
-    /*
     // Rewind one turn (the second left-most button)
-    button = new Button({
+    const replayRewindButton = new Button({
         x: 0.18 * globals.ui.w,
         y: 0.07 * globals.ui.h,
         width: 0.06 * globals.ui.w,
         height: 0.08 * globals.ui.h,
         image: 'rewind',
+        clickFunc: replay.rewind,
     });
-    button.on('click tap', replay.rewind);
-
-    replayArea.add(button);
+    replayArea.addChild(replayRewindButton);
+    globals.ui.objects.replayRewindButton = replayRewindButton;
 
     // Go forward one turn (the second right-most button)
-    button = new Button({
+    const replayForwardButton = new Button({
         x: 0.26 * globals.ui.w,
         y: 0.07 * globals.ui.h,
         width: 0.06 * globals.ui.w,
         height: 0.08 * globals.ui.h,
         image: 'forward',
+        clickFunc: replay.forward,
     });
-
-    button.on('click tap', replay.forward);
-
-    replayArea.add(button);
+    replayArea.addChild(replayForwardButton);
+    globals.ui.objects.replayForwardButton = replayForwardButton;
 
     // Go forward to the end (the right-most button)
-    button = new Button({
+    const replayForwardEndButton = new Button({
         x: 0.34 * globals.ui.w,
         y: 0.07 * globals.ui.h,
         width: 0.06 * globals.ui.w,
         height: 0.08 * globals.ui.h,
         image: 'forwardfull',
+        clickFunc: replay.forwardEnd,
     });
-
-    button.on('click tap', replay.forwardEnd);
-
-    replayArea.add(button);
+    replayArea.addChild(replayForwardEndButton);
+    globals.ui.objects.replayForwardEndButton = replayForwardEndButton;
 
     // The "Exit Replay" button
-    replayExitButton = new Button({
+    const replayExitButton = new Button({
         x: 0.15 * globals.ui.w,
         y: 0.17 * globals.ui.h,
         width: 0.2 * globals.ui.w,
         height: 0.06 * globals.ui.h,
         text: 'Exit Replay',
-        visible: !this.replayOnly && !this.sharedReplay,
+        clickFunc: () => {
+            replay.exit(false);
+        },
     });
+    replayArea.addChild(replayExitButton);
+    globals.ui.objects.replayExitButton = replayExitButton;
 
-    replayExitButton.on('click tap', () => {
-        if (self.replayOnly) {
-            ui.sendMsg({
-                type: 'gameUnattend',
-                resp: {},
-            });
-
-            this.stopLocalTimer();
-
-            ui.lobby.gameEnded();
-        } else {
-            self.enterReplay(false);
-        }
-    });
-
-    replayArea.add(replayExitButton);
-
-    toggleSharedTurnButton = new ToggleButton({
+    // The "Pause Shared Turns" button
+    const pauseSharedTurnsButton = new Button({
         x: 0.15 * globals.ui.w,
         y: 0.17 * globals.ui.h,
         width: 0.2 * globals.ui.w,
         height: 0.06 * globals.ui.h,
         text: 'Pause Shared Turns',
-        alternateText: 'Use Shared Turns',
-        initialState: !ui.useSharedTurns,
-        visible: false,
+        clickFunc: () => {
+        },
     });
+    pauseSharedTurnsButton.visible = false;
+    replayArea.addChild(pauseSharedTurnsButton);
+    globals.ui.objects.pauseSharedTurnsButton = pauseSharedTurnsButton;
 
-    toggleSharedTurnButton.on('click tap', () => {
-
+    // The "Use Shared Turns" button
+    const useSharedTurnsButton = new Button({
+        x: 0.15 * globals.ui.w,
+        y: 0.17 * globals.ui.h,
+        width: 0.2 * globals.ui.w,
+        height: 0.06 * globals.ui.h,
+        text: 'Use Shared Turns',
+        clickFunc: () => {
+        },
     });
+    useSharedTurnsButton.visible = false;
+    replayArea.addChild(useSharedTurnsButton);
+    globals.ui.objects.useSharedTurnsButton = useSharedTurnsButton;
+}
 
-    replayArea.add(toggleSharedTurnButton);
+// The help modal appears after clicking on the "Help" button
+function drawHelpModal() {
+    const helpModal = new pixi.Container();
+    helpModal.x = 0.1 * globals.ui.w;
+    helpModal.y = 0.1 * globals.ui.h;
+    helpModal.visible = false; // The help UI is hidden by default
+    globals.app.stage.addChild(helpModal);
+    globals.ui.objects.helpModal = helpModal;
 
-    replayArea.hide();
-    UILayer.add(replayArea);
-    */
+    const helpModalBox = new pixi.Graphics();
+    helpModalBox.beginFill(0, 0.9); // Faded black
+    helpModalBox.drawRoundedRect(
+        0,
+        0,
+        0.8 * globals.ui.w,
+        0.8 * globals.ui.h,
+        0.01 * globals.ui.w,
+    );
+    helpModalBox.endFill();
+    helpModal.addChild(helpModalBox);
 
-    /*
-    helpGroup = new Kinetic.Group({
-        x: 0.1 * globals.ui.w,
-        y: 0.1 * globals.ui.h,
-        width: 0.8 * globals.ui.w,
-        height: 0.8 * globals.ui.h,
-        visible: false,
-        listening: false,
-    });
+    let msg = 'Welcome to Hanabi Live!\n\n';
+    msg += 'When it is your turn, you may play a card by dragging it to the play stacks in the center of the screen.\n\n';
+    msg += 'To discard, drag a card to the discard area in the lower right. However, note that you are not allowed to discard when there are 8 clues available. (A red border will appear around the discard area to signify this.)\n\n';
+    msg += 'To give a clue, use the boxes in the center of the screen. You may mouseover a card to see what clues have been given about it (in the top-right-hand corner).\n\n';
+    msg += 'You can double-check what happened in the past by clicking on the replay button (in the bottom-left-hand corner).\n\n';
+    msg += 'Keyboard hotkeys:\n';
+    msg += '- Play: "a" or "+"\n';
+    msg += '- Discard: "d" or "-"\n';
+    msg += '- Clue: "Tab", then 1/2/3/4/5 or q/w/e/r/t, then "Enter"\n';
+    msg += '- Rewind: "Left", or "[" for a full rotation, or "Home" for the beginning\n';
+    msg += '- Fast-forward: "Right", or "]" for a full rotation, or "End" for the end';
 
-    overLayer.add(helpGroup);
-
-    rect = new Kinetic.Rect({
-        x: 0,
-        y: 0,
-        width: 0.8 * globals.ui.w,
-        height: 0.8 * globals.ui.h,
-        opacity: 0.9,
-        fill: 'black',
-        cornerRadius: 0.01 * globals.ui.w,
-    });
-
-    helpGroup.add(rect);
-
-    const helpText = `Welcome to Hanabi!
-
-When it is your turn, you may play a card by dragging it to the play stacks in the center of the screen.
-
-To discard, drag a card to the discard area in the lower right. However, note that you are not allowed to discard when there are 8 clues available. (A red border will appear around the discard area to signify this.)
-
-To give a clue, use the boxes in the center of the screen. You may mouseover a card to see what clues have been given about it. You can also mouseover the clues in the log to see which cards it referenced.
-
-You can rewind the game state with the arrow button in the bottom-left.
-
-Keyboard hotkeys:
-- Play: "a" or "+"
-- Discard: "d" or "-"
-- Clue: "Tab", then 1/2/3/4/5 or Q/W/E/R/T, then "Enter"
-- Rewind: "Left", or "[" for a full rotation, or "Home" for the beginning
-- Fast-forward: "Right", or "]" for a full rotation, or "End" for the end`;
-
-    const text = new Kinetic.Text({
-        x: 0.03 * globals.ui.w,
-        y: 0.03 * globals.ui.h,
-        width: 0.74 * globals.ui.w,
-        height: 0.74 * globals.ui.h,
-        fontSize: 0.019 * globals.ui.w,
+    const textMargin = 0.03 * globals.ui.w;
+    const text = new pixi.Text(msg, new pixi.TextStyle({
         fontFamily: 'Verdana',
+        fontSize: 0.017 * globals.ui.w,
         fill: 'white',
-        text: helpText,
-    });
-
-    helpGroup.add(text);
-
-    deckPlayAvailableLabel = new Kinetic.Rect({
-        x: 0.08 * globals.ui.w,
-        y: 0.8 * globals.ui.h,
-        width: 0.075 * globals.ui.w,
-        height: 0.189 * globals.ui.h,
-        stroke: 'yellow',
-        cornerRadius: 6,
-        strokeWidth: 10,
-        visible: false,
-    });
-
-    UILayer.add(deckPlayAvailableLabel);
-
-    replayButton = new Button({
-        x: 0.01 * globals.ui.w,
-        y: 0.8 * globals.ui.h,
-        width: 0.06 * globals.ui.w,
-        height: 0.06 * globals.ui.h,
-        image: 'replay',
-        visible: false,
-    });
-
-    replayButton.on('click tap', () => {
-        self.enterReplay(!self.replay);
-    });
-
-    UILayer.add(replayButton);
-
-    helpButton = new Button({
-        x: 0.01 * globals.ui.w,
-        y: 0.87 * globals.ui.h,
-        width: 0.06 * globals.ui.w,
-        height: 0.06 * globals.ui.h,
-        text: 'Help',
-    });
-
-    UILayer.add(helpButton);
-
-    helpButton.on('click tap', () => {
-        helpGroup.show();
-        overback.show();
-
-        overLayer.draw();
-
-        overback.on('click tap', () => {
-            overback.off('click tap');
-
-            helpGroup.hide();
-            overback.hide();
-
-            overLayer.draw();
-        });
-    });
-
-    lobbyButton = new Button({
-        x: 0.01 * globals.ui.w,
-        y: 0.94 * globals.ui.h,
-        width: 0.06 * globals.ui.w,
-        height: 0.05 * globals.ui.h,
-        text: 'Lobby',
-    });
-
-    UILayer.add(lobbyButton);
-
-    lobbyButton.on('click tap', () => {
-        lobbyButton.off('click tap');
-        ui.sendMsg({
-            type: 'gameUnattend',
-            resp: {},
-        });
-
-        this.stopLocalTimer();
-
-        ui.lobby.gameEnded();
-    });
-
-    if (ui.replay) {
-        replayArea.show();
-    }
-
-    stage.add(bgLayer);
-    stage.add(textLayer);
-    stage.add(UILayer);
-    stage.add(timerLayer);
-    stage.add(cardLayer);
-    stage.add(overLayer);
-    */
-};
-
-exports.layout = () => {
-    // TODO
-    // Set player names etc
-};
+        wordWrap: true,
+        wordWrapWidth: helpModalBox.width - (textMargin * 2),
+        leading: -2, // The space between lines
+    }));
+    const textSprite = new pixi.Sprite(globals.app.renderer.generateTexture(text));
+    textSprite.x = textMargin;
+    textSprite.y = textMargin;
+    helpModal.addChild(textSprite);
+}
