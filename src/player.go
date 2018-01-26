@@ -22,10 +22,6 @@ type Player struct {
 }
 
 func (p *Player) GiveClue(g *Game, d *CommandData) {
-	// Keep track that someone discarded
-	// (used for the "Reorder Cards" feature)
-	g.DiscardSignal.Outstanding = false
-
 	// Find out what cards this clue touches
 	list := make([]int, 0)
 	for _, c := range g.Players[d.Target].Hand {
@@ -150,7 +146,9 @@ func (p *Player) GiveClue(g *Game, d *CommandData) {
 		return
 	}
 
+	// Keep track that someone clued
 	g.Clues--
+	g.DiscardSignal.Outstanding = false
 
 	// Send the "notify" message about the clue
 	g.Actions = append(g.Actions, Action{
@@ -191,6 +189,7 @@ func (p *Player) GiveClue(g *Game, d *CommandData) {
 		Text: text,
 	})
 	g.NotifyAction()
+	log.Info(g.GetName() + text)
 }
 
 func (p *Player) RemoveCard(target int) *Card {
@@ -269,6 +268,7 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 		Text: text,
 	})
 	g.NotifyAction()
+	log.Info(g.GetName() + text)
 
 	// Give the team a clue if a 5 was played
 	if c.Rank == 5 {
@@ -291,6 +291,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 	// (used for the "Reorder Cards" feature)
 	g.DiscardSignal.Outstanding = true
 	g.DiscardSignal.TurnExpiration = g.Turn + len(g.Players) - 1
+	log.Info("Discard signal outstanding, expiring on turn:", g.DiscardSignal.TurnExpiration)
 
 	// Mark that the card is discarded
 	c.Discarded = true
@@ -330,6 +331,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 		Text: text,
 	})
 	g.NotifyAction()
+	log.Info(g.GetName() + text)
 }
 
 func (p *Player) DrawCard(g *Game) {

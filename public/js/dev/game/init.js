@@ -5,6 +5,7 @@ const Button = require('./button');
 const cards = require('./cards');
 const scoreArea = require('./scoreArea');
 const replay = require('./replay');
+const canvas = require('./canvas');
 
 module.exports = () => {
     // Initialize some global varaibles
@@ -17,6 +18,7 @@ module.exports = () => {
         lastAction: null, // Changed whenever the client recieves an "action" message, TODO change this
         animateFast: false,
         editingNote: false,
+        activeHover: null,
 
         // Replay varaibles
         replayActivated: false,
@@ -29,7 +31,12 @@ module.exports = () => {
         useSharedTurns: true,
 
         // A collection of all of the drawn objects
-        objects: {},
+        objects: {
+            playStacks: new Map(),
+            discardStacks: new Map(),
+        },
+
+        // A collection of canvases to be turned into Pixi sprites
         cards: {},
     };
 
@@ -126,6 +133,7 @@ const draw = () => {
     globals.app.stage.addChild(fade);
     globals.ui.objects.fade = fade;
 
+    drawPlayers();
     drawMessageArea();
     drawStacks();
     drawClueHistoryArea();
@@ -140,141 +148,6 @@ const draw = () => {
     */
 
     /*
-    drawDeck = new CardDeck({
-        x: 0.08 * globals.ui.w,
-        y: 0.8 * globals.ui.h,
-        width: 0.075 * globals.ui.w,
-        height: 0.189 * globals.ui.h,
-        cardback: 'deck-back',
-        suits: this.variant.suits,
-    });
-
-    drawDeck.cardback.on('dragend.play', function drawDeckDragendPlay() {
-        const pos = this.getAbsolutePosition();
-
-        pos.x += this.getWidth() * this.getScaleX() / 2;
-        pos.y += this.getHeight() * this.getScaleY() / 2;
-
-        if (overPlayArea(pos)) {
-            ui.postAnimationLayout = () => {
-                drawDeck.doLayout();
-                ui.postAnimationLayout = null;
-            };
-
-            this.setDraggable(false);
-            deckPlayAvailableLabel.setVisible(false);
-
-            ui.sendMsg({
-                type: 'action',
-                resp: {
-                    type: ACT.DECKPLAY,
-                },
-            });
-
-            self.stopAction();
-
-            savedAction = null;
-        } else {
-            new Kinetic.Tween({
-                node: this,
-                duration: 0.5,
-                x: 0,
-                y: 0,
-                runonce: true,
-                onFinish: () => {
-                    UILayer.draw();
-                },
-            }).play();
-        }
-    });
-
-    cardLayer.add(drawDeck);
-
-    const nump = this.playerNames.length;
-
-    for (let i = 0; i < nump; i++) {
-        let j = i - this.playerUs;
-
-        if (j < 0) {
-            j += nump;
-        }
-
-        playerHands[i] = new CardLayout({
-            x: handPos[nump][j].x * globals.ui.w,
-            y: handPos[nump][j].y * globals.ui.h,
-            width: handPos[nump][j].w * globals.ui.w,
-            height: handPos[nump][j].h * globals.ui.h,
-            rotationDeg: handPos[nump][j].rot,
-            align: 'center',
-            reverse: j === 0,
-            invertCards: i !== this.playerUs,
-        });
-
-        cardLayer.add(playerHands[i]);
-
-        rect = new Kinetic.Rect({
-            x: shadePos[nump][j].x * globals.ui.w,
-            y: shadePos[nump][j].y * globals.ui.h,
-            width: shadePos[nump][j].w * globals.ui.w,
-            height: shadePos[nump][j].h * globals.ui.h,
-            rotationDeg: shadePos[nump][j].rot,
-            cornerRadius: 0.01 * shadePos[nump][j].w * globals.ui.w,
-            opacity: 0.4,
-            fillLinearGradientStartPoint: {
-                x: 0,
-                y: 0,
-            },
-            fillLinearGradientEndPoint: {
-                x: shadePos[nump][j].w * globals.ui.w,
-                y: 0,
-            },
-            fillLinearGradientColorStops: [
-                0,
-                'rgba(0,0,0,0)',
-                0.9,
-                'white',
-            ],
-        });
-
-        if (j === 0) {
-            rect.setFillLinearGradientColorStops([
-                1,
-                'rgba(0,0,0,0)',
-                0.1,
-                'white',
-            ]);
-        }
-
-        bgLayer.add(rect);
-
-        nameFrames[i] = new HanabiNameFrame({
-            x: namePos[nump][j].x * globals.ui.w,
-            y: namePos[nump][j].y * globals.ui.h,
-            width: namePos[nump][j].w * globals.ui.w,
-            height: namePos[nump][j].h * globals.ui.h,
-            name: this.playerNames[i],
-        });
-
-        UILayer.add(nameFrames[i]);
-
-        // Draw the tooltips on the player names that show the time
-        if (!this.replayOnly) {
-            nameFrames[i].on('mousemove', function nameFramesMouseMove() {
-                ui.activeHover = this;
-
-                const tooltipX = this.getWidth() / 2 + this.attrs.x;
-                const tooltip = $(`#tooltip-player-${i}`);
-                tooltip.css('left', tooltipX);
-                tooltip.css('top', this.attrs.y);
-                tooltip.tooltipster('open');
-            });
-            nameFrames[i].on('mouseout', () => {
-                const tooltip = $(`#tooltip-player-${i}`);
-                tooltip.tooltipster('close');
-            });
-        }
-    }
-
     noClueBox = new Kinetic.Rect({
         x: 0.275 * globals.ui.w,
         y: 0.56 * globals.ui.h,
@@ -541,6 +414,7 @@ const draw = () => {
     }
     */
 
+
     // TODO
     /*
     // The 'eyes' symbol to show that one or more people are spectating the game
@@ -655,7 +529,141 @@ const draw = () => {
         $('#tooltip-leader').tooltipster('close');
     });
     */
+
+    // Report to the server that everything has been loaded
+    globals.conn.send('ready');
 };
+
+// Each player is signified by a text frame, distributed equally around the table
+function drawPlayers() {
+    const nump = globals.init.names.length;
+
+    for (let i = 0; i < nump; i++) {
+        let j = i - globals.init.seat;
+
+        if (j < 0) {
+            j += nump;
+        }
+
+        /*
+        playerHands[i] = new CardLayout({
+            x: handPos[nump][j].x * globals.ui.w,
+            y: handPos[nump][j].y * globals.ui.h,
+            width: handPos[nump][j].w * globals.ui.w,
+            height: handPos[nump][j].h * globals.ui.h,
+            rotationDeg: handPos[nump][j].rot,
+            align: 'center',
+            reverse: j === 0,
+            invertCards: i !== this.playerUs,
+        });
+        */
+
+        const cvs = document.createElement('canvas');
+        const width = constants.SHADE_POS[nump][j].w * globals.ui.w;
+        const height = constants.SHADE_POS[nump][j].h * globals.ui.h;
+        cvs.width = width;
+        cvs.height = height;
+        const ctx = cvs.getContext('2d');
+        const cornerRadius = 0.02 * constants.SHADE_POS[nump][j].w * globals.ui.w;
+        canvas.roundRect(ctx, 0, 0, width, height, cornerRadius, false, false);
+        // ctx.fillRect(0, 0, width, height);
+
+        /*
+        const gradient = ctx.createLinearGradient(0, 0, 0, 50);
+        gradient.addColorStop(0, 'white');
+        gradient.addColorStop(1, 'white');
+        ctx.fillStyle = gradient;
+        */
+
+        const sprite = new pixi.Sprite(pixi.Texture.fromCanvas(cvs));
+        sprite.x = constants.SHADE_POS[nump][j].x * globals.ui.w;
+        sprite.y = constants.SHADE_POS[nump][j].y * globals.ui.h;
+        globals.app.stage.addChild(sprite);
+
+        // TODO HOW DO GRADIENTS?
+        // https://stackoverflow.com/questions/48370902/pixi-js-draw-rectangle-with-gradient-fill
+
+        /*
+        const rect = new pixi.Graphics();
+        rect.beginFill(0, 0.4); // Faded black
+        rect.drawRoundedRect(
+            ,
+            ,
+            ,
+            ,
+            0.01 * constants.SHADE_POS[nump][j].w * globals.ui.w,
+        );
+        rect.endFill();
+        globals.app.stage.addChild(rect);
+
+        const cvs = document.createElement('canvas');
+        cvs.width = constants.SHADE_POS[nump][j].w * globals.ui.w;
+        cvs.height = constants.SHADE_POS[nump][j].h * globals.ui.h;
+        const ctx = cvs.getContext('2d');
+        */
+
+
+        /*
+        rect = new Kinetic.Rect({
+            rotationDeg: constants.SHADE_POS[nump][j].rot,
+            fillLinearGradientStartPoint: {
+                x: 0,
+                y: 0,
+            },
+            fillLinearGradientEndPoint: {
+                x: constants.SHADE_POS[nump][j].w * globals.ui.w,
+                y: 0,
+            },
+            fillLinearGradientColorStops: [
+                0,
+                'rgba(0,0,0,0)',
+                0.9,
+                'white',
+            ],
+        });
+        */
+
+        /*
+        if (j === 0) {
+            rect.setFillLinearGradientColorStops([
+                1,
+                'rgba(0,0,0,0)',
+                0.1,
+                'white',
+            ]);
+        }
+        */
+
+        /*
+        nameFrames[i] = new HanabiNameFrame({
+            x: namePos[nump][j].x * globals.ui.w,
+            y: namePos[nump][j].y * globals.ui.h,
+            width: namePos[nump][j].w * globals.ui.w,
+            height: namePos[nump][j].h * globals.ui.h,
+            name: this.playerNames[i],
+        });
+
+        UILayer.add(nameFrames[i]);
+
+        // Draw the tooltips on the player names that show the time
+        if (!this.replayOnly) {
+            nameFrames[i].on('mousemove', function nameFramesMouseMove() {
+                ui.activeHover = this;
+
+                const tooltipX = this.getWidth() / 2 + this.attrs.x;
+                const tooltip = $(`#tooltip-player-${i}`);
+                tooltip.css('left', tooltipX);
+                tooltip.css('top', this.attrs.y);
+                tooltip.tooltipster('open');
+            });
+            nameFrames[i].on('mouseout', () => {
+                const tooltip = $(`#tooltip-player-${i}`);
+                tooltip.tooltipster('close');
+            });
+        }
+        */
+    }
+}
 
 // The message area is near the top-center of the screen and shows the last three actions taken
 function drawMessageArea() {
@@ -720,7 +728,7 @@ function drawMessageArea() {
     */
 }
 
-// The play area is in the center of the screen (it contains the stacks)
+// The stacks (card piles) are in the center of the screen
 function drawStacks() {
     // The play area is an invisible rectangle that defines where the user can drag a card to in order to play it
     const playArea = new pixi.Graphics();
@@ -737,19 +745,16 @@ function drawStacks() {
 
     // The size of each stack will be slightly smaller if there are 6 stacks instead of 5
     const variant = constants.VARIANT_INTEGER_MAPPING[globals.init.variant];
-    let y;
     let width;
     let height;
     let offset;
     if (variant.suits.length === 6) {
         // 6 stacks
-        y = 0.04;
         width = 0.06;
         height = 0.151;
         offset = 0.019;
     } else {
         // 5 stacks
-        y = 0.05;
         width = 0.075;
         height = 0.189;
         offset = 0;
@@ -763,44 +768,40 @@ function drawStacks() {
     for (let i = 0; i < variant.suits.length; i++) {
         const suit = variant.suits[i];
 
+        const stackX = (0.183 + (width + 0.015) * i) * globals.ui.w;
+        const stackY = (playAreaY + offset) * globals.ui.h;
+        const stackWidth = width * globals.ui.w;
+        const stackHeight = height * globals.ui.h;
+
         const stackBackTexture = pixi.Texture.fromCanvas(globals.ui.cards[`Card-${suit.name}-0`]);
         const stackBack = new pixi.Sprite(stackBackTexture);
-        stackBack.x = (0.183 + (width + 0.015) * i) * globals.ui.w;
-        stackBack.y = (playAreaY + offset) * globals.ui.h;
-        stackBack.width = width * globals.ui.w;
-        stackBack.height = height * globals.ui.h;
+        stackBack.x = stackX;
+        stackBack.y = stackY;
+        stackBack.width = stackWidth;
+        stackBack.height = stackHeight;
         globals.app.stage.addChild(stackBack);
 
-        /*
-        const thisSuitPlayStack = new CardStack({
-            x: (0.183 + (width + 0.015) * i) * globals.ui.w,
-            y: (playAreaY + offset) * globals.ui.h,
-            width: width * globals.ui.w,
-            height: height * globals.ui.h,
-        });
-        playStacks.set(suit, thisSuitPlayStack);
-        cardLayer.add(thisSuitPlayStack);
+        const playStack = new pixi.Container();
+        playStack.x = stackX;
+        playStack.y = stackY;
+        globals.ui.objects.playStacks.set(suit, playStack);
 
-        const thisSuitDiscardStack = new CardLayout({
-            x: 0.81 * globals.ui.w,
-            y: (0.61 + y * i) * globals.ui.h,
-            width: 0.17 * globals.ui.w,
-            height: 0.17 * globals.ui.h,
-        });
-        discardStacks.set(suit, thisSuitDiscardStack);
-        cardLayer.add(thisSuitDiscardStack);
-
-        // Draw the suit name next to each suit
-        // (a text description of the suit)
+        // Draw the suit name next to each suit (a text description of the suit)
+        // (but only do it for the more complicated variants)
         if (variant.showSuitNames) {
+            // TODO
+            /*
             let text = suit.name;
+
+            // In color-blind mode, append the abbreviations of the color compositions
+            // e.g. Green --> Green (B/Y)
             if (
-                lobby.showColorblindUI &&
+                globals.settings.showColorblindUI &&
                 suit.clueColors.length > 1 &&
-                suit !== SUIT.MULTI
+                suit !== constants.SUIT.MULTI
             ) {
                 const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
-                text += ` [${colorList}]`;
+                text += ` (${colorList})`;
             }
 
             const suitLabelText = new FitText({
@@ -815,8 +816,8 @@ function drawStacks() {
                 fill: '#d8d5ef',
             });
             textLayer.add(suitLabelText);
+            */
         }
-        */
     }
 }
 
@@ -857,6 +858,11 @@ function drawDeck() {
     deckArea.x = 0.08 * globals.ui.w;
     deckArea.y = 0.8 * globals.ui.h;
     globals.app.stage.addChild(deckArea);
+    globals.ui.objects.deckArea = deckArea;
+
+    // Local constants
+    const width = 0.075 * globals.ui.w;
+    const height = 0.189 * globals.ui.h;
 
     // The faded rectangle that highlights the deck area
     const deckAreaBackground = new pixi.Graphics();
@@ -864,12 +870,26 @@ function drawDeck() {
     deckAreaBackground.drawRoundedRect(
         0,
         0,
-        0.075 * globals.ui.w,
-        0.189 * globals.ui.h,
+        width,
+        height,
         0.006 * globals.ui.w,
     );
     deckAreaBackground.endFill();
     deckArea.addChild(deckAreaBackground);
+
+    // Add the graphic for the back of a card
+    const deckBackTexture = pixi.Texture.fromCanvas(globals.ui.cards['deck-back']);
+    const deckBack = new pixi.Sprite(deckBackTexture);
+    deckBack.x = 0;
+    deckBack.y = 0;
+    deckBack.width = width;
+    deckBack.height = height;
+    deckArea.addChild(deckBack);
+
+    // The deck has text that shows how many cards are left
+    const deckCount = new pixi.Sprite();
+    deckArea.addChild(deckCount);
+    globals.ui.objects.deckCount = deckCount;
 }
 
 // The score area is in the bottom-right-hand corner of the screen to the left of the discard pile
@@ -911,13 +931,13 @@ function drawScoreArea() {
     const scoreAreaClues = new pixi.Sprite();
     scoreAreaContainer.addChild(scoreAreaClues);
     globals.ui.objects.scoreAreaClues = scoreAreaClues;
-    scoreArea.drawClues(8);
+    scoreArea.setClues(8);
 
     // The score area has text that shows what the current score is
     const scoreAreaScore = new pixi.Sprite();
     scoreAreaContainer.addChild(scoreAreaScore);
     globals.ui.objects.scoreAreaScore = scoreAreaScore;
-    scoreArea.drawScore(0);
+    scoreArea.setScore(0);
 }
 
 // The discard pile is in the bottom-right-hand corner of the screen
@@ -973,6 +993,24 @@ function drawDiscardPile() {
     trashCan.height = 0.35 * globals.ui.h;
     trashCan.alpha = 0.2;
     globals.app.stage.addChild(trashCan);
+
+    // The size of each stack will be slightly smaller if there are 6 stacks instead of 5
+    const variant = constants.VARIANT_INTEGER_MAPPING[globals.init.variant];
+    let y;
+    if (variant.suits.length === 6) {
+        // 6 stacks
+        y = 0.04;
+    } else {
+        // 5 stacks
+        y = 0.05;
+    }
+    for (let i = 0; i < variant.suits.length; i++) {
+        const suit = variant.suits[i];
+        const discardStack = new pixi.Container();
+        discardStack.x = 0.81 * globals.ui.w;
+        discardStack.y = (0.66 + y * i) * globals.ui.h;
+        globals.ui.objects.discardStacks.set(suit, discardStack);
+    }
 }
 
 // The replay UI is the progress bar, the 4 arrow buttons, and the 3 big buttons

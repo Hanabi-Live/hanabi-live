@@ -43,10 +43,7 @@ function HanabiLobby() {
 
     this.errorOccured = false;
 
-    /*
-        Initialize the modals
-    */
-
+    // Initialize the modals
     $('#error-modal-button').click(() => {
         window.location.reload();
     });

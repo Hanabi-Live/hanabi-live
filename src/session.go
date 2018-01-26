@@ -244,14 +244,16 @@ func (s *Session) NotifyGameHistory(h []models.GameHistory) {
 // Once it is a player's turn, they recieve an "action" message which lists the allowed actions on this turn
 func (s *Session) NotifyAction(g *Game) {
 	type ActionMessage struct {
-		CanClue          bool `json:"canClue"`
-		CanDiscard       bool `json:"canDiscard"`
-		CanBlindPlayDeck bool `json:"canBlindPlayDeck"`
+		CanClue                  bool `json:"canClue"`
+		CanDiscard               bool `json:"canDiscard"`
+		CanBlindPlayDeck         bool `json:"canBlindPlayDeck"`
+		DiscardSignalOutstanding bool `json:"discardSignalOutstanding"`
 	}
 	s.Emit("action", &ActionMessage{
-		CanClue:          g.Clues > 0,
-		CanDiscard:       g.Clues < 8,
-		CanBlindPlayDeck: g.DeckIndex == len(g.Deck)-1,
+		CanClue:                  g.Clues > 0,
+		CanDiscard:               g.Clues < 8,
+		CanBlindPlayDeck:         g.DeckIndex == len(g.Deck)-1,
+		DiscardSignalOutstanding: g.DiscardSignal.Outstanding,
 	})
 }
 

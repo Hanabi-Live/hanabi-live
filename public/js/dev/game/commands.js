@@ -4,6 +4,7 @@
 
 const globals = require('../globals');
 const init = require('./init');
+const notify = require('./notify');
 
 exports.init = () => {
     globals.conn.on('message', (data) => {
@@ -19,9 +20,6 @@ exports.init = () => {
 
             // Initialize the canvas
             init();
-
-            // Report to the server that everything has been loaded
-            globals.conn.send('ready');
         }
     });
 
@@ -42,9 +40,9 @@ exports.init = () => {
             // When the server has a bunch of notify actions to send, it will send them all in one array
             for (const action of data) {
                 if (action.type === '') {
-                    // self.ui.handleMessage('message', action);
+                    // message(action);
                 } else {
-                    // self.ui.handleMessage('notify', action);
+                    notify(action);
                 }
             }
         }

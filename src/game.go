@@ -58,7 +58,7 @@ type DiscardSignal struct {
 */
 
 func (g *Game) GetName() string {
-	return "Game #" + strconv.Itoa(g.ID) + " (" + g.Name + ") - "
+	return "Game #" + strconv.Itoa(g.ID) + " (" + g.Name + ") - Turn " + strconv.Itoa(g.Turn) + " - "
 }
 
 func (g *Game) GetIndex(id int) int {

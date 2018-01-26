@@ -58,6 +58,8 @@ function HanabiUI(lobby, gameID) {
     // Users can only update one note at a time to prevent bugs
     this.editingNote = null; // Equal to the card order number or null
 
+    this.reorderCards = false;
+
     // Initialize tooltips
     const tooltipThemes = [
         'tooltipster-shadow',
@@ -81,6 +83,8 @@ function HanabiUI(lobby, gameID) {
     }
     $('#tooltip-spectators').tooltipster(tooltipOptions);
     $('#tooltip-leader').tooltipster(tooltipOptions);
+    $('#tooltip-signal').tooltipster(tooltipOptions);
+    $('#tooltip-signal').tooltipster('instance').content('The discard signal is outstanding.');
     for (let i = 0; i < 60; i++) { // Matches card.order
         $('#game-tooltips').append(`<div id="tooltip-card-${i}"></div>`);
         $(`#tooltip-card-${i}`).tooltipster(tooltipOptions);
@@ -2727,6 +2731,7 @@ function HanabiUI(lobby, gameID) {
     let spectatorsNumLabel;
     let sharedReplayLeaderLabel;
     let sharedReplayLeaderLabelPulse;
+    let discardSignalLabel;
     let strikes = [];
     const nameFrames = [];
     const playStacks = new Map();
@@ -3097,6 +3102,40 @@ function HanabiUI(lobby, gameID) {
         });
         sharedReplayLeaderLabel.on('mouseout', () => {
             $('#tooltip-leader').tooltipster('close');
+        });
+
+        // Discard signal indicator
+        discardSignalLabel = new Kinetic.Text({
+            x: 0.623 * winW,
+            y: 0.85 * winH,
+            width: 0.03 * winW,
+            height: 0.03 * winH,
+            fontSize: 0.03 * winH,
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: '👋',
+            fill: '#d8d5ef',
+            shadowColor: 'black',
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
+            visible: false,
+        });
+        UILayer.add(discardSignalLabel);
+
+        discardSignalLabel.on('mousemove', function discardSignalLabelMouseMove() {
+            ui.activeHover = this;
+
+            const tooltipX = this.attrs.x + this.getWidth() / 2;
+            $('#tooltip-signal').css('left', tooltipX);
+            $('#tooltip-signal').css('top', this.attrs.y);
+            $('#tooltip-signal').tooltipster('open');
+        });
+        discardSignalLabel.on('mouseout', () => {
+            $('#tooltip-signal').tooltipster('close');
         });
 
         /*
@@ -5230,6 +5269,13 @@ function HanabiUI(lobby, gameID) {
             if (!this.animateFast) {
                 UILayer.draw();
             }
+        }
+
+        let content;
+        if (data.discardSignalOutstanding) {
+            discardSignalLabel.setVisible(true);
+        } else {
+            discardSignalLabel.setVisible(false);
         }
 
         submitClue.setEnabled(false);

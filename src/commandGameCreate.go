@@ -68,7 +68,16 @@ func commandGameCreate(s *Session, d *CommandData) {
 			TurnExpiration: -1,
 		},
 	}
-	log.Info(g.GetName() + "User \"" + s.Username() + "\" created.")
+	msg := g.GetName() + "User \"" + s.Username() + "\" created"
+	if g.Options.Timed && g.Options.ReorderCards {
+		msg += " (timed / reorder)"
+	} else if g.Options.Timed {
+		msg += " (timed)"
+	} else if g.Options.ReorderCards {
+		msg += " (reorder)"
+	}
+	msg += "."
+	log.Info(msg)
 
 	// Add it to the map
 	games[gameID] = g

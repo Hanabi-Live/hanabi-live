@@ -77,13 +77,13 @@ func commandAction(s *Session, d *CommandData) {
 	g.Sound = ""
 
 	// Handle card-reordering
-	if g.Turn >= g.DiscardSignal.TurnExpiration {
+	if g.Turn > g.DiscardSignal.TurnExpiration {
 		g.DiscardSignal.Outstanding = false
 	}
 	if g.Options.ReorderCards &&
 		g.DiscardSignal.Outstanding &&
-		d.Type != 1 && // (it doesn't happen on a play or a deck-play)
-		d.Type != 3 {
+		d.Type != 1 && // It doesn't happen on a play
+		d.Type != 3 { // It doesn't happen on a deck blind-play
 
 		// Find the chop card
 		chopIndex := g.Players[i].GetChopIndex()
@@ -112,6 +112,7 @@ func commandAction(s *Session, d *CommandData) {
 				HandOrder: handOrder,
 			})
 			g.NotifyAction()
+			log.Info("Reordered the cards for player:", p.Name)
 		}
 	}
 
