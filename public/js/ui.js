@@ -5272,7 +5272,7 @@ function HanabiUI(lobby, gameID) {
         }
 
         let content;
-        if (data.discardSignalOutstanding) {
+        if (data.discardSignalOutstanding && this.reorderCards) {
             discardSignalLabel.setVisible(true);
         } else {
             discardSignalLabel.setVisible(false);
