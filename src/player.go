@@ -34,7 +34,7 @@ func (p *Player) GiveClue(g *Game, d *CommandData) {
 		} else if d.Clue.Type == 1 {
 			// Color clue
 			if g.Options.Variant >= 0 && g.Options.Variant <= 2 {
-				// Normal, black, and black one of each
+				// Normal, orange, and black
 				if d.Clue.Value == c.Suit {
 					touched = true
 				}
@@ -176,7 +176,11 @@ func (p *Player) GiveClue(g *Game, d *CommandData) {
 		text += strconv.Itoa(d.Clue.Value)
 	} else if d.Clue.Type == 1 {
 		// Color clue
-		if g.Options.Variant == 4 || g.Options.Variant == 7 {
+		if g.Options.Variant == 1 && d.Clue.Value == 5 {
+			// Orange
+			text += suits[8]
+		} else if g.Options.Variant == 4 || g.Options.Variant == 7 {
+			// Dual-color or Wild & Crazy
 			text += mixedClues[d.Clue.Value]
 		} else {
 			text += suits[d.Clue.Value]

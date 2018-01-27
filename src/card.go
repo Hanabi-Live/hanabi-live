@@ -13,7 +13,10 @@ type Card struct {
 func (c *Card) SuitName(g *Game) string {
 	name := suits[c.Suit]
 
-	if g.Options.Variant == 3 && c.Suit == 5 {
+	if g.Options.Variant == 1 && c.Suit == 5 {
+		// Change "Black" to "Orange"
+		name = suits[8]
+	} else if g.Options.Variant == 3 && c.Suit == 5 {
 		// Change "Black" to "Rainbow"
 		name = suits[6]
 	} else if g.Options.Variant == 4 {

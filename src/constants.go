@@ -17,6 +17,7 @@ var (
 		"Black",
 		"Rainbow",
 		"White",
+		"Orange",
 	}
 	mixedSuits = []string{
 		"Green",
@@ -60,7 +61,7 @@ var (
 	}
 	variantsShort = []string{
 		"No Variant",
-		"Black",
+		"Orange",
 		"Black (1oE)",
 		"Rainbow",
 		"Dual-color",
