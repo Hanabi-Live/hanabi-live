@@ -51,16 +51,6 @@ var (
 	}
 	variants = []string{
 		"No Variant",
-		"Black Suit",
-		"Black Suit 1oE",
-		"Rainbow Suit",
-		"Dual-color Suits",
-		"Dual-color & Rainbow Suits",
-		"White Suit & Rainbow Suit",
-		"Wild & Crazy",
-	}
-	variantsShort = []string{
-		"No Variant",
 		"Orange",
 		"Black (1oE)",
 		"Rainbow",

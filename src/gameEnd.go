@@ -249,7 +249,7 @@ func announceGameResult(g *Game, databaseID int) {
 		playerList = append(playerList, p.Name)
 	}
 	msg := "[" + strings.Join(playerList, ", ") + "] "
-	msg += "finished a " + strings.ToLower(variantsShort[g.Options.Variant]) + " "
+	msg += "finished a " + strings.ToLower(variants[g.Options.Variant]) + " "
 	msg += "game with a score of " + strconv.Itoa(g.Score) + ". "
 	if g.Score == g.MaxScore() {
 		msg += pogChamp + " "
