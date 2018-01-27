@@ -671,7 +671,7 @@ HanabiLobby.prototype.removeTable = function removeTable(data) {
 
 const variantNames = [
     'None',
-    'Black Suit',
+    'Orange Suit',
     'Black Suit (one of each)',
     'Rainbow Suit (all colors)',
     'Dual-color Suits',
@@ -681,7 +681,7 @@ const variantNames = [
 ];
 const variantNamesShort = [
     'No Variant',
-    'Black',
+    'Orange',
     'Black (1oE)',
     'Rainbow',
     'Dual-color',

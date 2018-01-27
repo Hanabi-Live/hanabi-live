@@ -18,7 +18,7 @@
         WHITE: new Color('White', 'W', '#d9d9d9'),
         GRAY: new Color('Gray', 'G', '#cccccc'),
         NAVY: new Color('Navy', 'N', '#000066'),
-        ORANGE: new Color('Orange', 'O', '#ff9900'),
+        ORANGE: new Color('Orange', 'O', '#ff8800'),
         TAN: new Color('Tan', 'T', '#999900'),
         BURGUNDY: new Color('Burgundy', 'B', '#660016'),
         TEAL: new Color('Teal', 'T', '#00b3b3'),
@@ -186,6 +186,14 @@
         exports.COLOR.RED,
         exports.COLOR.PURPLE,
     ];
+    const baseColorsPlusOrange = [
+        exports.COLOR.BLUE,
+        exports.COLOR.GREEN,
+        exports.COLOR.YELLOW,
+        exports.COLOR.RED,
+        exports.COLOR.PURPLE,
+        exports.COLOR.ORANGE,
+    ];
     const baseColorsPlusBlack = [
         exports.COLOR.BLUE,
         exports.COLOR.GREEN,
@@ -347,6 +355,14 @@
             exports.SHAPE.CRESCENT,
             [exports.COLOR.PURPLE],
         ),
+        ORANGE: new Suit(
+            'Orange',
+            'O',
+            exports.COLOR.ORANGE,
+            basicCardFillSpec,
+            exports.SHAPE.SPADE,
+            [exports.COLOR.ORANGE],
+        ),
         BLACK: new Suit(
             'Black',
             'K',
@@ -390,7 +406,7 @@
                 exports.COLOR.BLACK,
             ],
         ),
-        ORANGE: new Suit(
+        MORANGE: new Suit(
             'Orange',
             'O',
             exports.COLOR.ORANGE,
@@ -546,16 +562,16 @@
             'None',
             'No Variant',
         ),
-        BLACKSUIT: new Variant(
+        ORANGESUIT: new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
                 exports.SUIT.YELLOW,
                 exports.SUIT.RED,
                 exports.SUIT.PURPLE,
-                exports.SUIT.BLACK,
+                exports.SUIT.ORANGE,
             ],
-            baseColorsPlusBlack,
+            baseColorsPlusOrange,
             false,
             'Black Suit',
             'Black',
@@ -593,7 +609,7 @@
                 exports.SUIT.MGREEN, // Blue + Yellow
                 exports.SUIT.MPURPLE, // Blue + Red
                 exports.SUIT.NAVY, // Blue + Black
-                exports.SUIT.ORANGE, // Yellow + Red
+                exports.SUIT.MORANGE, // Yellow + Red
                 exports.SUIT.TAN, // Yellow + Black
                 exports.SUIT.BURGUNDY, // Red + Black
             ],
@@ -639,7 +655,7 @@
             [
                 exports.SUIT.MGREEN, // Blue + Yellow
                 exports.SUIT.MPURPLE, // Blue + Red
-                exports.SUIT.ORANGE, // Yellow + Red
+                exports.SUIT.MORANGE, // Yellow + Red
                 exports.SUIT.WHITE,
                 exports.SUIT.MULTI,
                 exports.SUIT.BLACK,
@@ -659,7 +675,7 @@
     // This is the mapping that the server uses
     exports.VARIANT_INTEGER_MAPPING = [
         exports.VARIANT.NONE,
-        exports.VARIANT.BLACKSUIT,
+        exports.VARIANT.ORANGESUIT,
         exports.VARIANT.BLACKONE,
         exports.VARIANT.RAINBOW,
         exports.VARIANT.MIXED,
