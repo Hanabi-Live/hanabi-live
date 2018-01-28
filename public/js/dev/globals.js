@@ -33,6 +33,25 @@ const globals = {
     gameID: null,
     game: {}, // Equal to the data for the "game" command
     init: {}, // Equal to the data for the "init" command
+    /*
+        e.g.
+        {
+           names: [
+              "test",
+              "test2"
+           ],
+           replay: true,
+           seat: 0,
+           spectating: false,
+           timed: false,
+           reorderCards: false,
+           variant: 0,
+           sharedReplay: false
+        }
+    */
+    state: { // Variables that represent the current game state
+        activeIndex: 0,
+    },
 
     currentScreen: 'login',
     errorOccured: false,

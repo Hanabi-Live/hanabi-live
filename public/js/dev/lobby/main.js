@@ -44,7 +44,7 @@ exports.show = () => {
 
     // FOR TESTING, TODO REMOVE
     globals.conn.send('replayCreate', {
-        gameID: 2915,
+        gameID: 2902,
     });
 };
 
@@ -294,7 +294,7 @@ exports.showJoined = () => {
 
     // Update the information on the left-hand side of the screen
     $('#lobby-game-name').text(globals.game.name);
-    const name = constants.VARIANT_INTEGER_MAPPING[globals.game.variant].nameShort;
+    const name = constants.VARIANT_INTEGER_MAPPING[globals.init.variant].nameShort;
     $('#lobby-game-variant').text(name);
     let timed = 'No';
     if (globals.game.timed) {

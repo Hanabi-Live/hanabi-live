@@ -1,11 +1,13 @@
 const pixi = require('pixi.js');
 const constants = require('../constants');
 const globals = require('../globals');
+const misc = require('../misc');
 const Button = require('./button');
 const cards = require('./cards');
 const scoreArea = require('./scoreArea');
 const replay = require('./replay');
-const canvas = require('./canvas');
+const players = require('./players');
+require('./canvas');
 
 module.exports = () => {
     // Initialize some global varaibles
@@ -69,11 +71,14 @@ module.exports = () => {
 
         // Now that all the images have loaded, draw everything
         draw();
+
+        // Report to the server that everything has been loaded
+        globals.conn.send('ready');
     });
 };
 
 // Taken from Keldon's "ui.js"
-const getCanvasSize = () => {
+function getCanvasSize() {
     let ww = window.innerWidth;
     let wh = window.innerHeight;
 
@@ -107,9 +112,9 @@ const getCanvasSize = () => {
     }
 
     return [cw, ch];
-};
+}
 
-const draw = () => {
+function draw() {
     // Create images for all of the cards
     cards.init();
 
@@ -136,10 +141,13 @@ const draw = () => {
     drawPlayers();
     drawMessageArea();
     drawStacks();
+    drawClueUI();
     drawClueHistoryArea();
+    drawButtons();
     drawDeck();
     drawScoreArea();
     drawDiscardPile();
+    drawTimer();
 
     // TODO this is the fullscreen message log
     /*
@@ -147,273 +155,8 @@ const draw = () => {
     overLayer.add(msgLogGroup);
     */
 
-    /*
-    noClueBox = new Kinetic.Rect({
-        x: 0.275 * globals.ui.w,
-        y: 0.56 * globals.ui.h,
-        width: 0.25 * globals.ui.w,
-        height: 0.15 * globals.ui.h,
-        cornerRadius: 0.01 * globals.ui.w,
-        fill: 'black',
-        opacity: 0.5,
-        visible: false,
-    });
-
-    UILayer.add(noClueBox);
-
-    noClueLabel = new Kinetic.Text({
-        x: 0.15 * globals.ui.w,
-        y: 0.585 * globals.ui.h,
-        width: 0.5 * globals.ui.w,
-        height: 0.19 * globals.ui.h,
-        fontFamily: 'Verdana',
-        fontSize: 0.08 * globals.ui.h,
-        strokeWidth: 1,
-        text: 'No Clues',
-        align: 'center',
-        fill: '#df2c4d',
-        stroke: 'black',
-        visible: false,
-    });
-
-    UILayer.add(noClueLabel);
-
-    clueArea = new Kinetic.Group({
-        x: 0.10 * globals.ui.w,
-        y: 0.54 * globals.ui.h,
-        width: 0.55 * globals.ui.w,
-        height: 0.27 * globals.ui.h,
-    });
-
-    clueTargetButtonGroup = new ButtonGroup();
-
-    clueTargetButtonGroup.selectNextTarget = function selectNextTarget() {
-        let newSelectionIndex = 0;
-        for (let i = 0; i < this.list.length; i++) {
-            if (this.list[i].pressed) {
-                newSelectionIndex = (i + 1) % this.list.length;
-                break;
-            }
-        }
-
-        this.list[newSelectionIndex].dispatchEvent(new MouseEvent('click'));
-    };
-
-    clueButtonGroup = new ButtonGroup();
-
-    // Store each button inside an array for later
-    // (so that we can press them with keyboard hotkeys)
-    const rankClueButtons = [];
-    const suitClueButtons = [];
-
-    x = 0.26 * globals.ui.w - (nump - 2) * 0.044 * globals.ui.w;
-
-    for (let i = 0; i < nump - 1; i++) {
-        const j = (this.playerUs + i + 1) % nump;
-
-        button = new ClueRecipientButton({
-            x,
-            y: 0,
-            width: 0.08 * globals.ui.w,
-            height: 0.025 * globals.ui.h,
-            text: this.playerNames[j],
-            targetIndex: j,
-        });
-
-        clueArea.add(button);
-
-        x += 0.0875 * globals.ui.w;
-
-        clueTargetButtonGroup.add(button);
-    }
-
-    for (let i = 1; i <= 5; i++) {
-        button = new NumberButton({
-            x: (0.183 + (i - 1) * 0.049) * globals.ui.w,
-            y: 0.027 * globals.ui.h,
-            width: 0.04 * globals.ui.w,
-            height: 0.071 * globals.ui.h,
-            number: i,
-            clue: new Clue(CLUE_TYPE.RANK, i),
-        });
-
-        // Add it to the tracking array (for keyboard hotkeys)
-        rankClueButtons.push(button);
-
-        clueArea.add(button);
-
-        clueButtonGroup.add(button);
-    }
-    const { clueColors } = this.variant;
-    const nClueColors = clueColors.length;
-    if (nClueColors === 4) {
-        x = 0.208;
-    } else if (nClueColors === 5) {
-        x = 0.183;
-    } else { // nClueColors === 6
-        x = 0.158;
-    }
-
-    {
-        let i = 0;
-        for (const color of this.variant.clueColors) {
-            button = new ColorButton({
-                x: (x + i * 0.049) * globals.ui.w,
-                y: 0.1 * globals.ui.h,
-                width: 0.04 * globals.ui.w,
-                height: 0.071 * globals.ui.h,
-                color: color.hexCode,
-                text: color.abbreviation,
-                clue: new Clue(CLUE_TYPE.COLOR, color),
-            });
-
-            clueArea.add(button);
-
-            // Add it to the tracking array (for keyboard hotkeys)
-            suitClueButtons.push(button);
-
-            clueButtonGroup.add(button);
-            i += 1;
-        }
-    }
-
-    submitClue = new Button({
-        x: 0.183 * globals.ui.w,
-        y: 0.172 * globals.ui.h,
-        width: 0.236 * globals.ui.w,
-        height: 0.051 * globals.ui.h,
-        text: 'Give Clue',
-    });
-
-    clueArea.add(submitClue);
-
-    clueArea.hide();
-
-    UILayer.add(clueArea);
-
-    // Draw the timer
-    this.stopLocalTimer();
-    // We don't want the timer to show in replays
-    const showTimer = !this.replayOnly && (ui.timedGame || !lobby.hideTimerInUntimed);
-    if (showTimer) {
-        const timerY = 0.592;
-
-        timer1 = new TimerDisplay({
-            x: 0.155 * globals.ui.w,
-            y: timerY * globals.ui.h,
-            width: 0.08 * globals.ui.w,
-            height: 0.051 * globals.ui.h,
-            fontSize: 0.03 * globals.ui.h,
-            cornerRadius: 0.005 * globals.ui.h,
-            spaceH: 0.01 * globals.ui.h,
-            label: 'You',
-            visible: !this.spectating,
-        });
-
-        timerLayer.add(timer1);
-
-        timer2 = new TimerDisplay({
-            x: 0.565 * globals.ui.w,
-            y: timerY * globals.ui.h,
-            width: 0.08 * globals.ui.w,
-            height: 0.051 * globals.ui.h,
-            fontSize: 0.03 * globals.ui.h,
-            labelFontSize: 0.02 * globals.ui.h,
-            cornerRadius: 0.005 * globals.ui.h,
-            spaceH: 0.01 * globals.ui.h,
-            label: 'Current\nPlayer',
-            visible: false,
-        });
-
-        timerLayer.add(timer2);
-    }
-    */
-
     drawReplayUI();
     drawHelpModal();
-
-    /*
-    deckPlayAvailableLabel = new Kinetic.Rect({
-        x: 0.08 * globals.ui.w,
-        y: 0.8 * globals.ui.h,
-        width: 0.075 * globals.ui.w,
-        height: 0.189 * globals.ui.h,
-        stroke: 'yellow',
-        cornerRadius: 6,
-        strokeWidth: 10,
-        visible: false,
-    });
-
-    UILayer.add(deckPlayAvailableLabel);
-
-    replayButton = new Button({
-        x: 0.01 * globals.ui.w,
-        y: 0.8 * globals.ui.h,
-        width: 0.06 * globals.ui.w,
-        height: 0.06 * globals.ui.h,
-        image: 'replay',
-        visible: false,
-    });
-
-    replayButton.on('click tap', () => {
-        self.enterReplay(!self.replay);
-    });
-
-    UILayer.add(replayButton);
-
-    helpButton = new Button({
-        x: 0.01 * globals.ui.w,
-        y: 0.87 * globals.ui.h,
-        width: 0.06 * globals.ui.w,
-        height: 0.06 * globals.ui.h,
-        text: 'Help',
-    });
-
-    UILayer.add(helpButton);
-
-    helpButton.on('click tap', () => {
-        helpGroup.show();
-        overback.show();
-
-        overLayer.draw();
-
-        overback.on('click tap', () => {
-            overback.off('click tap');
-
-            helpGroup.hide();
-            overback.hide();
-
-            overLayer.draw();
-        });
-    });
-
-    lobbyButton = new Button({
-        x: 0.01 * globals.ui.w,
-        y: 0.94 * globals.ui.h,
-        width: 0.06 * globals.ui.w,
-        height: 0.05 * globals.ui.h,
-        text: 'Lobby',
-    });
-
-    UILayer.add(lobbyButton);
-
-    lobbyButton.on('click tap', () => {
-        lobbyButton.off('click tap');
-        ui.sendMsg({
-            type: 'gameUnattend',
-            resp: {},
-        });
-
-        this.stopLocalTimer();
-
-        ui.lobby.gameEnded();
-    });
-
-    if (ui.replay) {
-        replayArea.show();
-    }
-    */
-
 
     // TODO
     /*
@@ -529,140 +272,77 @@ const draw = () => {
         $('#tooltip-leader').tooltipster('close');
     });
     */
+}
 
-    // Report to the server that everything has been loaded
-    globals.conn.send('ready');
-};
-
-// Each player is signified by a text frame, distributed equally around the table
+// Each player is signified by a text frame, equally distributed around the table
 function drawPlayers() {
     const nump = globals.init.names.length;
 
+    globals.ui.objects.nameFrames = [];
     for (let i = 0; i < nump; i++) {
         let j = i - globals.init.seat;
-
         if (j < 0) {
             j += nump;
         }
 
-        /*
-        playerHands[i] = new CardLayout({
-            x: handPos[nump][j].x * globals.ui.w,
-            y: handPos[nump][j].y * globals.ui.h,
-            width: handPos[nump][j].w * globals.ui.w,
-            height: handPos[nump][j].h * globals.ui.h,
-            rotationDeg: handPos[nump][j].rot,
-            align: 'center',
-            reverse: j === 0,
-            invertCards: i !== this.playerUs,
-        });
-        */
+        // Initialize the name frames
+        // (they will get filled in later)
+        const nameFrame = new pixi.Container();
+        nameFrame.x = constants.NAME_POS[nump][j].x * globals.ui.w;
+        nameFrame.y = constants.NAME_POS[nump][j].y * globals.ui.h;
+        globals.app.stage.addChild(nameFrame);
+        globals.ui.objects.nameFrames.push(nameFrame);
 
+        // For each player, draw the faded shade that shows where the "new" side of the hand is
+        // We can't draw gradients natively in Pixi.js:
+        // http://www.html5gamedevs.com/topic/28295-how-to-draw-gradient-color/?tab=comments#comment-162594
         const cvs = document.createElement('canvas');
         const width = constants.SHADE_POS[nump][j].w * globals.ui.w;
         const height = constants.SHADE_POS[nump][j].h * globals.ui.h;
         cvs.width = width;
         cvs.height = height;
         const ctx = cvs.getContext('2d');
-        const cornerRadius = 0.02 * constants.SHADE_POS[nump][j].w * globals.ui.w;
-        canvas.roundRect(ctx, 0, 0, width, height, cornerRadius, false, false);
-        // ctx.fillRect(0, 0, width, height);
 
-        /*
-        const gradient = ctx.createLinearGradient(0, 0, 0, 50);
-        gradient.addColorStop(0, 'white');
-        gradient.addColorStop(1, 'white');
+        const gradient = ctx.createLinearGradient(0, 0, width, 0);
+        const color1 = 'rgba(255, 255, 255, 0.6)'; // Faded white
+        const color2 = 'rgba(0, 0, 0, 0)'; // Completely transparent
+        // On Keldon this was 0.4 instead of 0.6, but we want to make it more prominent / noticeable
+        if (j === 0) {
+            gradient.addColorStop(0, color1);
+            gradient.addColorStop(0.9, color2);
+        } else {
+            gradient.addColorStop(0, color2);
+            gradient.addColorStop(0.9, color1);
+        }
         ctx.fillStyle = gradient;
-        */
+
+        const cornerRadius = 0.02 * constants.SHADE_POS[nump][j].w * globals.ui.w;
+        ctx.roundRect(0, 0, width, height, cornerRadius).fill();
 
         const sprite = new pixi.Sprite(pixi.Texture.fromCanvas(cvs));
         sprite.x = constants.SHADE_POS[nump][j].x * globals.ui.w;
         sprite.y = constants.SHADE_POS[nump][j].y * globals.ui.h;
+        sprite.rotation = misc.toRadians(constants.SHADE_POS[nump][j].rot);
+        // Rotation is specified in degrees in the constants, but Pixi.js needs it in radians
         globals.app.stage.addChild(sprite);
 
-        // TODO HOW DO GRADIENTS?
-        // https://stackoverflow.com/questions/48370902/pixi-js-draw-rectangle-with-gradient-fill
-
+        // TODO
         /*
-        const rect = new pixi.Graphics();
-        rect.beginFill(0, 0.4); // Faded black
-        rect.drawRoundedRect(
-            ,
-            ,
-            ,
-            ,
-            0.01 * constants.SHADE_POS[nump][j].w * globals.ui.w,
-        );
-        rect.endFill();
-        globals.app.stage.addChild(rect);
-
-        const cvs = document.createElement('canvas');
-        cvs.width = constants.SHADE_POS[nump][j].w * globals.ui.w;
-        cvs.height = constants.SHADE_POS[nump][j].h * globals.ui.h;
-        const ctx = cvs.getContext('2d');
-        */
-
-
-        /*
-        rect = new Kinetic.Rect({
-            rotationDeg: constants.SHADE_POS[nump][j].rot,
-            fillLinearGradientStartPoint: {
-                x: 0,
-                y: 0,
-            },
-            fillLinearGradientEndPoint: {
-                x: constants.SHADE_POS[nump][j].w * globals.ui.w,
-                y: 0,
-            },
-            fillLinearGradientColorStops: [
-                0,
-                'rgba(0,0,0,0)',
-                0.9,
-                'white',
-            ],
+        playerHands[i] = new CardLayout({
+            x: constants.HAND_POS[nump][j].x * globals.ui.w,
+            y: constants.HAND_POS[nump][j].y * globals.ui.h,
+            width: constants.HAND_POS[nump][j].w * globals.ui.w,
+            height: constants.HAND_POS[nump][j].h * globals.ui.h,
+            rotationDeg: constants.HAND_POS[nump][j].rot,
+            align: 'center',
+            reverse: j === 0,
+            invertCards: i !== this.playerUs,
         });
-        */
-
-        /*
-        if (j === 0) {
-            rect.setFillLinearGradientColorStops([
-                1,
-                'rgba(0,0,0,0)',
-                0.1,
-                'white',
-            ]);
-        }
-        */
-
-        /*
-        nameFrames[i] = new HanabiNameFrame({
-            x: namePos[nump][j].x * globals.ui.w,
-            y: namePos[nump][j].y * globals.ui.h,
-            width: namePos[nump][j].w * globals.ui.w,
-            height: namePos[nump][j].h * globals.ui.h,
-            name: this.playerNames[i],
-        });
-
-        UILayer.add(nameFrames[i]);
-
-        // Draw the tooltips on the player names that show the time
-        if (!this.replayOnly) {
-            nameFrames[i].on('mousemove', function nameFramesMouseMove() {
-                ui.activeHover = this;
-
-                const tooltipX = this.getWidth() / 2 + this.attrs.x;
-                const tooltip = $(`#tooltip-player-${i}`);
-                tooltip.css('left', tooltipX);
-                tooltip.css('top', this.attrs.y);
-                tooltip.tooltipster('open');
-            });
-            nameFrames[i].on('mouseout', () => {
-                const tooltip = $(`#tooltip-player-${i}`);
-                tooltip.tooltipster('close');
-            });
-        }
         */
     }
+
+    // Fill in the name frames
+    players.draw();
 }
 
 // The message area is near the top-center of the screen and shows the last three actions taken
@@ -821,6 +501,244 @@ function drawStacks() {
     }
 }
 
+// The clue UI is in the center of the screen below the stacks
+// It only will appear during your turn
+function drawClueUI() {
+    const nump = globals.init.names.length;
+
+    const clueArea = new pixi.Container();
+    clueArea.x = 0.10 * globals.ui.w;
+    clueArea.y = 0.54 * globals.ui.h;
+    clueArea.visible = false; // The clue UI is hidden by default
+    globals.app.stage.addChild(clueArea);
+
+    // const width = 0.55 * globals.ui.w;
+    // const height = 0.27 * globals.ui.h;
+
+    /*
+    // TODO
+    clueTargetButtonGroup.selectNextTarget = function selectNextTarget() {
+        let newSelectionIndex = 0;
+        for (let i = 0; i < this.list.length; i++) {
+            if (this.list[i].pressed) {
+                newSelectionIndex = (i + 1) % this.list.length;
+                break;
+            }
+        }
+
+        this.list[newSelectionIndex].dispatchEvent(new MouseEvent('click'));
+    };
+    */
+
+    let x = 0.26 * globals.ui.w - (nump - 2) * 0.044 * globals.ui.w;
+
+    const clueRecipientButtons = [];
+    for (let i = 0; i < nump - 1; i++) {
+        const j = (globals.init.seat + i + 1) % nump;
+
+        const clueRecipientButton = new Button({
+            x,
+            y: 0,
+            width: 0.08 * globals.ui.w,
+            height: 0.025 * globals.ui.h,
+            text: globals.init.names[j],
+            stayPressed: true,
+            clickFunc: () => {
+                // Reset the state of all of the other buttons
+                for (let k = 0; k < nump - 1; k++) {
+                    // Don't reset the one that we just clicked
+                    if (k !== i) {
+                        globals.ui.objects.clueRecipientButtons[k].__reset();
+                    }
+                }
+            },
+        });
+        clueArea.addChild(clueRecipientButton);
+        clueRecipientButtons.push(clueRecipientButton);
+
+        x += 0.0875 * globals.ui.w;
+    }
+    globals.ui.objects.clueRecipientButtons = clueRecipientButtons;
+
+    const rankClueButtons = [null]; // The 0th element will be null so that the number will match the index
+    for (let i = 1; i <= 5; i++) {
+        const numberButton = new Button({
+            x: (0.183 + (i - 1) * 0.049) * globals.ui.w,
+            y: 0.027 * globals.ui.h,
+            width: 0.04 * globals.ui.w,
+            height: 0.071 * globals.ui.h,
+            text: i,
+            stayPressed: true,
+            clickFunc: () => {
+                // Reset the state of all of the other buttons
+                for (let j = 1; j <= 5; j++) {
+                    // Don't reset the one that we just clicked
+                    if (j !== i) {
+                        globals.ui.objects.rankClueButtons[j].__reset();
+                    }
+                }
+            },
+        });
+        clueArea.addChild(numberButton);
+        rankClueButtons.push(numberButton);
+    }
+    globals.ui.objects.rankClueButtons = rankClueButtons;
+
+    const variant = constants.VARIANT_INTEGER_MAPPING[globals.init.variant];
+    if (variant.clueColors.length === 4) {
+        x = 0.208;
+    } else if (variant.clueColors.length === 5) {
+        x = 0.183;
+    } else {
+        // The default is 6 clue colors
+        x = 0.158;
+    }
+
+    const colorClueButtons = [];
+    for (let i = 0; i < variant.clueColors.length; i++) {
+        const color = variant.clueColors[i];
+
+        // Hex codes are stored as "#0044cc" in the constants; Pixi.js takes numbers
+        // So trim the "#" prefix and convert it to a number
+        const hexCode = parseInt(color.hexCode.substring(1), 16);
+
+        const colorButton = new Button({
+            x: (x + i * 0.049) * globals.ui.w,
+            y: 0.1 * globals.ui.h,
+            width: 0.04 * globals.ui.w,
+            height: 0.071 * globals.ui.h,
+            color: hexCode,
+            text: color.abbreviation,
+            stayPressed: true,
+            clickFunc: () => {
+                // Reset the state of all of the other buttons
+                for (let j = 0; j < variant.clueColors.length; j++) {
+                    // Don't reset the one that we just clicked
+                    if (j !== i) {
+                        globals.ui.objects.colorClueButtons[j].__reset();
+                    }
+                }
+            },
+        });
+        clueArea.addChild(colorButton);
+        colorClueButtons.push(colorButton);
+    }
+    globals.ui.objects.colorClueButtons = colorClueButtons;
+
+    const submitClueButton = new Button({
+        x: 0.183 * globals.ui.w,
+        y: 0.172 * globals.ui.h,
+        width: 0.236 * globals.ui.w,
+        height: 0.051 * globals.ui.h,
+        text: 'Give Clue',
+        clickFunc: () => {
+        },
+    });
+    clueArea.addChild(submitClueButton);
+    globals.ui.objects.submitClueButton = submitClueButton;
+
+    // Show a warning when there are no clues left (and hide the clue UI)
+    const noClues = new pixi.Container();
+    noClues.x = 0.275 * globals.ui.w;
+    noClues.y = 0.56 * globals.ui.h;
+    noClues.visible = false;
+    globals.app.stage.addChild(noClues);
+
+    // The faded rectangle that highlights the warning text
+    const noCluesBackground = new pixi.Graphics();
+    noCluesBackground.beginFill(0, 0.5); // Faded back
+    noCluesBackground.drawRoundedRect(
+        0,
+        0,
+        0.25 * globals.ui.w,
+        0.15 * globals.ui.h,
+        0.01 * globals.ui.w,
+    );
+    noCluesBackground.endFill();
+    noClues.addChild(noCluesBackground);
+
+    const text = new pixi.Text('No Clues', new pixi.TextStyle({
+        fontFamily: 'Verdana',
+        fontSize: 0.08 * globals.ui.h,
+        fill: 0xDF2C4D,
+        dropShadow: true,
+        dropShadowAlpha: 0.5,
+        dropShadowBlur: 10,
+        dropShadowDistance: 3,
+    }));
+
+    const textSprite = new pixi.Sprite(globals.app.renderer.generateTexture(text));
+    textSprite.x = (noClues.width / 2) - (textSprite.width / 2);
+    textSprite.y = (noClues.height / 2) - (textSprite.height / 2);
+    noClues.addChild(textSprite);
+}
+
+// Several buttons are drawn to the left of the deck in the bottom-left-hand corner of the screen
+function drawButtons() {
+    const inGameReplayButton = new Button({
+        x: 0.01 * globals.ui.w,
+        y: 0.8 * globals.ui.h,
+        width: 0.06 * globals.ui.w,
+        height: 0.06 * globals.ui.h,
+        image: 'replay',
+        clickFunc: () => {
+            // self.enterReplay(!self.replay);
+        },
+    });
+    // inGameReplayButton.visible = false; // The in-game replay button is hidden by default
+    globals.app.stage.addChild(inGameReplayButton);
+    globals.ui.objects.inGameReplayButton = inGameReplayButton;
+
+    const helpButton = new Button({
+        x: 0.01 * globals.ui.w,
+        y: 0.87 * globals.ui.h,
+        width: 0.06 * globals.ui.w,
+        height: 0.06 * globals.ui.h,
+        text: 'Help',
+        clickFunc: () => {
+            /*
+            helpGroup.show();
+            overback.show();
+
+            overLayer.draw();
+
+            overback.on('click tap', () => {
+                overback.off('click tap');
+
+                helpGroup.hide();
+                overback.hide();
+
+                overLayer.draw();
+            });
+            */
+        },
+    });
+    globals.app.stage.addChild(helpButton);
+
+    const lobbyButton = new Button({
+        x: 0.01 * globals.ui.w,
+        y: 0.94 * globals.ui.h,
+        width: 0.06 * globals.ui.w,
+        height: 0.05 * globals.ui.h,
+        text: 'Lobby',
+        clickFunc: () => {
+            /*
+            lobbyButton.off('click tap');
+            ui.sendMsg({
+                type: 'gameUnattend',
+                resp: {},
+            });
+
+            this.stopLocalTimer();
+
+            ui.lobby.gameEnded();
+            */
+        },
+    });
+    globals.app.stage.addChild(lobbyButton);
+}
+
+// The clue history is listed line by line in the top-right-hand corner of the screen
 function drawClueHistoryArea() {
     const clueHistoryArea = new pixi.Container();
     clueHistoryArea.x = 0.8 * globals.ui.w;
@@ -885,11 +803,28 @@ function drawDeck() {
     deckBack.width = width;
     deckBack.height = height;
     deckArea.addChild(deckBack);
+    globals.ui.objects.deckBack = deckBack;
 
     // The deck has text that shows how many cards are left
     const deckCount = new pixi.Sprite();
     deckArea.addChild(deckCount);
     globals.ui.objects.deckCount = deckCount;
+
+    // When there is one card left, a yellow border appears around the deck to signify that a deck blind play is possible
+    const deckBorder = new pixi.Graphics();
+    deckBorder.lineStyle(5, 0xFFFF00);
+    deckBorder.beginFill(0, 0); // An alpha of 0 makes it invisible
+    deckBorder.drawRoundedRect(
+        0,
+        0,
+        width,
+        height,
+        6,
+    );
+    deckBorder.endFill();
+    deckBorder.visible = false;
+    deckArea.addChild(deckBorder);
+    globals.ui.objects.deckBorder = deckBorder;
 }
 
 // The score area is in the bottom-right-hand corner of the screen to the left of the discard pile
@@ -1013,6 +948,49 @@ function drawDiscardPile() {
     }
 }
 
+// There are two timers; one for you (on the left-hand side),
+// and one for the active player (on the right-hand side)
+function drawTimer() {
+    /*
+    // Draw the timer
+    this.stopLocalTimer();
+    // We don't want the timer to show in replays
+    const showTimer = !this.replayOnly && (ui.timedGame || !lobby.hideTimerInUntimed);
+    if (showTimer) {
+        const timerY = 0.592;
+
+        timer1 = new TimerDisplay({
+            x: 0.155 * globals.ui.w,
+            y: timerY * globals.ui.h,
+            width: 0.08 * globals.ui.w,
+            height: 0.051 * globals.ui.h,
+            fontSize: 0.03 * globals.ui.h,
+            cornerRadius: 0.005 * globals.ui.h,
+            spaceH: 0.01 * globals.ui.h,
+            label: 'You',
+            visible: !this.spectating,
+        });
+
+        timerLayer.add(timer1);
+
+        timer2 = new TimerDisplay({
+            x: 0.565 * globals.ui.w,
+            y: timerY * globals.ui.h,
+            width: 0.08 * globals.ui.w,
+            height: 0.051 * globals.ui.h,
+            fontSize: 0.03 * globals.ui.h,
+            labelFontSize: 0.02 * globals.ui.h,
+            cornerRadius: 0.005 * globals.ui.h,
+            spaceH: 0.01 * globals.ui.h,
+            label: 'Current\nPlayer',
+            visible: false,
+        });
+
+        timerLayer.add(timer2);
+    }
+    */
+}
+
 // The replay UI is the progress bar, the 4 arrow buttons, and the 3 big buttons
 function drawReplayUI() {
     const replayArea = new pixi.Container();
@@ -1020,7 +998,8 @@ function drawReplayUI() {
     replayArea.y = 0.51 * globals.ui.h;
     replayArea.width = 0.5 * globals.ui.w;
     replayArea.height = 0.27 * globals.ui.h;
-    replayArea.visible = false; // The replay UI is hidden by default
+    replayArea.visible = globals.init.replay;
+
     globals.app.stage.addChild(replayArea);
     globals.ui.objects.replayArea = replayArea;
 

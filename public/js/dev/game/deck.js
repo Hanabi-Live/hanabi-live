@@ -14,8 +14,10 @@ exports.setCount = (count) => {
     textSprite.texture = globals.app.renderer.generateTexture(text);
 
     // Center the text on the deck
-    textSprite.x = (globals.ui.objects.deckArea.width / 2) - (textSprite.width / 2);
-    textSprite.y = (globals.ui.objects.deckArea.height / 2) - (textSprite.height / 2);
+    // (we use "deckBack" instead of "deckArea" because
+    // it will misalign if the yellow border is showing)
+    textSprite.x = (globals.ui.objects.deckBack.width / 2) - (textSprite.width / 2);
+    textSprite.y = (globals.ui.objects.deckBack.height / 2) - (textSprite.height / 2);
 };
 
 /*

@@ -3641,6 +3641,7 @@ function HanabiUI(lobby, gameID) {
 
             cardLayer.add(playerHands[i]);
 
+            // Draw the faded shade that shows where the "new" side of the hand is
             rect = new Kinetic.Rect({
                 x: shadePos[nump][j].x * winW,
                 y: shadePos[nump][j].y * winH,
