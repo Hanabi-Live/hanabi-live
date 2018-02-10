@@ -9,9 +9,13 @@ package main
 
 import (
 	"hash/crc64"
+	"io/ioutil"
 	"math/rand"
+	"os"
+	"path"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -92,117 +96,141 @@ func commandGameStart(s *Session, d *CommandData) {
 		g.Stacks = append(g.Stacks, 0)
 	}
 
-	// Check to see if this is a game with a preset deal
-	shuffle := true
-	/*
-		TODO
-		const m = game.name.match(/^!preset (.+)$/);
-		if (m) {
-			// Parse the game name to see the specific preset deal that they want
-			const preset = m[1];
-			const gameFilePath = path.join(__dirname, '..', '..', 'specific-deals', `${preset}.txt`);
-			try {
-				if (fs.existsSync(gameFilePath)) {
-					// Read the file
-					logger.info(`Using a preset deal of: ${preset}`);
-					const gameFile = fs.readFileSync(gameFilePath, 'utf8').split('\n');
-					for (let i = 0; i < gameFile.length; i++) {
-						const line = gameFile[i];
-						if (line === '') {
-							continue;
-						}
-						const m2 = line.match(/^(\w)(\d)$/);
-						if (m2) {
-							// Change the suit of all of the cards in the deck
-							let suit = m2[1];
-							if (suit === 'b') {
-								suit = 0;
-							} else if (suit === 'g') {
-								suit = 1;
-							} else if (suit === 'y') {
-								suit = 2;
-							} else if (suit === 'r') {
-								suit = 3;
-							} else if (suit === 'p') {
-								suit = 4;
-							} else if (suit === 'm') {
-								suit = 5;
-							} else {
-								logger.error(`Failed to parse the suit on line ${i}: ${suit}`);
-								break;
-							}
-							game.deck[i].suit = suit;
-
-							// Change the rank of all of the cards in the deck
-							const rank = m2[2];
-							game.deck[i].rank = Number.parseInt(rank, 10);
-						} else {
-							logger.error(`Failed to parse line ${i}: ${line}`);
-							break;
-						}
-					}
-
-					data.shuffle = false;
-					game.seed = preset;
-					step3(socket, data);
-					// We skip step 2 because we do not have to find an unplayed seed
-					return; // We can skip the rest of this function
-				}
-			} catch (err) {
-				logger.error(`Failed to read the "${gameFilePath}" file: ${err}`);
-			}
-		}
-	*/
-
-	var seedRegExp *regexp.Regexp
-	if v, err := regexp.Compile(`^!seed (.+)$`); err != nil {
-		log.Error("Failed to create the seed regular expression:", err)
+	// Parse the game name to see if the players want to play a specific deal (read from a text file)
+	var presetRegExp *regexp.Regexp
+	if v, err := regexp.Compile(`^!preset (.+)$`); err != nil {
+		log.Error("Failed to create the preset regular expression:", err)
 		s.Error("Failed to create the game. Please contact an administrator.")
 		return
 	} else {
-		seedRegExp = v
+		presetRegExp = v
 	}
 
-	seedPrefix := "p" + strconv.Itoa(len(g.Players)) + "v" + strconv.Itoa(g.Options.Variant) + "s"
-	match := seedRegExp.FindStringSubmatch(g.Name)
-	if match != nil {
-		// Parse the game name to see if the players want to play a specific seed
-		g.Seed = seedPrefix + match[1]
-	} else {
-		// Get a list of all the seeds that these players have played before
-		seedMap := make(map[string]bool)
-		for _, p := range g.Players {
-			var seeds []string
-			if v, err := db.Games.GetPlayerSeeds(p.ID); err != nil {
-				log.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
+	match1 := presetRegExp.FindStringSubmatch(g.Name)
+	if match1 != nil {
+		// The players want to play a specific deal, so don't bother getting a seed or shuffling the deck
+		g.Seed = match1[1]
+		filePath := path.Join(projectPath, "specific-deals", g.Seed+".txt")
+
+		if _, err := os.Stat(filePath); err != nil {
+			s.Error("That preset deal does not exist on the server.")
+			return
+		}
+
+		var lines []string
+		if v, err := ioutil.ReadFile(filePath); err != nil {
+			log.Error("Failed to read \""+filePath+"\":", err)
+			s.Error("Failed to create the game. Please contact an administrator.")
+			return
+		} else {
+			lines = strings.Split(string(v), "\n")
+		}
+
+		log.Info("Using a preset deal of:", g.Seed)
+
+		var cardRegExp *regexp.Regexp
+		if v, err := regexp.Compile(`^(\w)(\d)$`); err != nil {
+			log.Error("Failed to create the card regular expression:", err)
+			s.Error("Failed to create the game. Please contact an administrator.")
+			return
+		} else {
+			cardRegExp = v
+		}
+
+		for i, line := range lines {
+			if line == "" {
+				continue
+			}
+
+			match2 := cardRegExp.FindStringSubmatch(line)
+			if match2 == nil {
+				log.Error("Failed to parse line "+strconv.Itoa(i+1)+":", line)
+				s.Error("Failed to create the game. Please contact an administrator.")
+				return
+			}
+
+			// Change the suit of all of the cards in the deck
+			suit := match2[1]
+			newSuit := -1
+			if suit == "b" {
+				newSuit = 0
+			} else if suit == "g" {
+				newSuit = 1
+			} else if suit == "y" {
+				newSuit = 2
+			} else if suit == "r" {
+				newSuit = 3
+			} else if suit == "p" {
+				newSuit = 4
+			} else if suit == "m" {
+				newSuit = 5
+			} else {
+				log.Error("Failed to parse the suit on line "+strconv.Itoa(i+1)+":", suit)
+				s.Error("Failed to create the game. Please contact an administrator.")
+				return
+			}
+			g.Deck[i].Suit = newSuit
+
+			// Change the rank of all of the cards in the deck
+			rank := match2[2]
+			newRank := -1
+			if v, err := strconv.Atoi(rank); err != nil {
+				log.Error("Failed to parse the rank on line "+strconv.Itoa(i+1)+":", rank)
 				s.Error("Failed to create the game. Please contact an administrator.")
 				return
 			} else {
-				seeds = v
+				newRank = v
+			}
+			g.Deck[i].Rank = newRank
+		}
+	} else {
+		// We are not playing on a preset deal
+		// Parse the game name to see if the players want to play a specific seed
+		var seedRegExp *regexp.Regexp
+		if v, err := regexp.Compile(`^!seed (.+)$`); err != nil {
+			log.Error("Failed to create the seed regular expression:", err)
+			s.Error("Failed to create the game. Please contact an administrator.")
+			return
+		} else {
+			seedRegExp = v
+		}
+
+		seedPrefix := "p" + strconv.Itoa(len(g.Players)) + "v" + strconv.Itoa(g.Options.Variant) + "s"
+		match2 := seedRegExp.FindStringSubmatch(g.Name)
+		if match2 != nil {
+			g.Seed = seedPrefix + match2[1]
+		} else {
+			// Get a list of all the seeds that these players have played before
+			seedMap := make(map[string]bool)
+			for _, p := range g.Players {
+				var seeds []string
+				if v, err := db.Games.GetPlayerSeeds(p.ID); err != nil {
+					log.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
+					s.Error("Failed to create the game. Please contact an administrator.")
+					return
+				} else {
+					seeds = v
+				}
+
+				for _, v := range seeds {
+					seedMap[v] = true
+				}
 			}
 
-			for _, v := range seeds {
-				seedMap[v] = true
+			// Find a seed that no-one has played before
+			seedNum := 0
+			looking := true
+			for looking {
+				seedNum++
+				g.Seed = seedPrefix + strconv.Itoa(seedNum)
+				if !seedMap[g.Seed] {
+					looking = false
+				}
 			}
 		}
 
-		// Find a seed that no-one has played before
-		seedNum := 0
-		looking := true
-		for looking {
-			seedNum++
-			g.Seed = seedPrefix + strconv.Itoa(seedNum)
-			if !seedMap[g.Seed] {
-				looking = false
-			}
-		}
-	}
-
-	log.Info(g.GetName() + "Using seed \"" + g.Seed + "\", timed is " + strconv.FormatBool(g.Options.Timed) + ".")
-
-	// Shuffle the deck
-	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
-	if shuffle {
+		// Shuffle the deck
+		// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
 		// Convert the string to an uint64 (seeding with negative numbers will not work)
 		// We use the CRC64 hash function to do this
 		// https://www.socketloop.com/references/golang-hash-crc64-checksum-and-maketable-functions-example
@@ -215,6 +243,8 @@ func commandGameStart(s *Session, d *CommandData) {
 			g.Deck[i], g.Deck[j] = g.Deck[j], g.Deck[i]
 		}
 	}
+
+	log.Info(g.GetName() + "Using seed \"" + g.Seed + "\", timed is " + strconv.FormatBool(g.Options.Timed) + ".")
 
 	// Log the deal (so that it can be distributed to others if necessary)
 	log.Info("--------------------------------------------------")
@@ -242,13 +272,8 @@ func commandGameStart(s *Session, d *CommandData) {
 		}
 	}
 
-	if shuffle {
-		// Get a random player to start first
-		g.ActivePlayer = rand.Intn(len(g.Players))
-	} else {
-		// Set the starting player to be an arbitrary position that matches how the intended game should be played out
-		g.ActivePlayer = len(g.Players) - 1
-	}
+	// Get a random player to start first
+	g.ActivePlayer = rand.Intn(len(g.Players))
 	text := g.Players[g.ActivePlayer].Name + " goes first"
 	g.Actions = append(g.Actions, Action{
 		Text: text,
