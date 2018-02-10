@@ -407,7 +407,7 @@ function HanabiUI(lobby, gameID) {
         let src = cardImages[name];
 
         if (!src) {
-            console.error(`The image '${name}' was not generated.`);
+            console.error(`The image "${name}" was not generated.`);
             return;
         }
 
@@ -4288,7 +4288,8 @@ function HanabiUI(lobby, gameID) {
             }
         };
 
-        $(document).keydown(this.keyNavigation);
+        // Commenting this out since there is a bug with the noteActive variable
+        // $(document).keydown(this.keyNavigation);
 
         /*
             End of keyboard shortcuts

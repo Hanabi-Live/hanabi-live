@@ -1,9 +1,10 @@
-const pixi = require('pixi.js');
+const PIXI = require('pixi.js');
 const constants = require('../constants');
 const globals = require('../globals');
 const misc = require('../misc');
 const Button = require('./button');
 const cards = require('./cards');
+const CardLayout = require('./cardLayout');
 const scoreArea = require('./scoreArea');
 const replay = require('./replay');
 const players = require('./players');
@@ -36,15 +37,24 @@ module.exports = () => {
         objects: {
             playStacks: new Map(),
             discardStacks: new Map(),
+            hands: [],
         },
 
-        // A collection of canvases to be turned into Pixi sprites
-        cards: {},
+        state: {
+            deck: [],
+            hands: [], // A two-dimensional array
+        }, // The current game state
+        states: [], // An array of game states, indexed by turn
+        cards: {}, // A collection of canvases to be turned into Pixi sprites
     };
+    for (let i = 0; i < globals.init.names.length; i++) {
+        // Initialize each hand to a blank arrays so that a push will work later on
+        globals.ui.state.hands.push([]);
+    }
 
     // Create the canvas (as a Pixi application) and append it to the DOM
     [globals.ui.w, globals.ui.h] = getCanvasSize();
-    globals.app = new pixi.Application({
+    globals.app = new PIXI.Application({
         width: globals.ui.w,
         height: globals.ui.h,
         antialias: true, // The default is false, but rounded corners look like shit unless this is turned on
@@ -63,9 +73,9 @@ module.exports = () => {
         ['forwardfull', 'public/img/forwardfull.png'],
     ];
     for (const image of images) {
-        pixi.loader.add(image[0], image[1]);
+        PIXI.loader.add(image[0], image[1]);
     }
-    pixi.loader.load((loader, resources) => {
+    PIXI.loader.load((loader, resources) => {
         // Store a copy of the loaded graphics
         globals.resources = resources;
 
@@ -119,13 +129,13 @@ function draw() {
     cards.init();
 
     // Apply the green background first
-    const background = new pixi.Sprite(globals.resources.background.texture);
+    const background = new PIXI.Sprite(globals.resources.background.texture);
     background.width = globals.ui.w;
     background.height = globals.ui.h;
     globals.app.stage.addChild(background);
 
     // Fade everything when a modal is open
-    const fade = new pixi.Graphics();
+    const fade = new PIXI.Graphics();
     fade.beginFill(0, 0.3); // Faded black
     fade.drawRect(
         0,
@@ -162,12 +172,12 @@ function draw() {
     /*
     // The 'eyes' symbol to show that one or more people are spectating the game
     // https://fontawesome.com/icons/eye?style=solid
-    const spectatorsText = new pixi.Text('\uf06e', new pixi.TextStyle({
+    const spectatorsText = new PIXI.Text('\uf06e', new PIXI.TextStyle({
         fontFamily: 'fontawesome',
         // fill: 'grey',
         fontSize: 0.04 * globals.ui.h,
     }));
-    const spectatorsTextSprite = new pixi.Sprite(globals.app.renderer.generateTexture(spectatorsText));
+    const spectatorsTextSprite = new PIXI.Sprite(globals.app.renderer.generateTexture(spectatorsText));
     spectatorsTextSprite.x = 0.623 * globals.ui.w;
     spectatorsTextSprite.y = 0.9 * globals.ui.h;
     // spectatorsTextSprite.width = 0.03 * globals.ui.w;
@@ -287,7 +297,7 @@ function drawPlayers() {
 
         // Initialize the name frames
         // (they will get filled in later)
-        const nameFrame = new pixi.Container();
+        const nameFrame = new PIXI.Container();
         nameFrame.x = constants.NAME_POS[nump][j].x * globals.ui.w;
         nameFrame.y = constants.NAME_POS[nump][j].y * globals.ui.h;
         globals.app.stage.addChild(nameFrame);
@@ -319,26 +329,26 @@ function drawPlayers() {
         const cornerRadius = 0.02 * constants.SHADE_POS[nump][j].w * globals.ui.w;
         ctx.roundRect(0, 0, width, height, cornerRadius).fill();
 
-        const sprite = new pixi.Sprite(pixi.Texture.fromCanvas(cvs));
+        const sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(cvs));
         sprite.x = constants.SHADE_POS[nump][j].x * globals.ui.w;
         sprite.y = constants.SHADE_POS[nump][j].y * globals.ui.h;
         sprite.rotation = misc.toRadians(constants.SHADE_POS[nump][j].rot);
         // Rotation is specified in degrees in the constants, but Pixi.js needs it in radians
         globals.app.stage.addChild(sprite);
 
-        // TODO
-        /*
-        playerHands[i] = new CardLayout({
+        // For each player, initialize the card layout object that will
+        // automatically handle the spacing between the cards and tweening
+        const layout = new CardLayout({
             x: constants.HAND_POS[nump][j].x * globals.ui.w,
             y: constants.HAND_POS[nump][j].y * globals.ui.h,
             width: constants.HAND_POS[nump][j].w * globals.ui.w,
             height: constants.HAND_POS[nump][j].h * globals.ui.h,
-            rotationDeg: constants.HAND_POS[nump][j].rot,
+            rotation: constants.HAND_POS[nump][j].rot,
             align: 'center',
             reverse: j === 0,
-            invertCards: i !== this.playerUs,
+            invertCards: i !== globals.init.seat,
         });
-        */
+        globals.ui.objects.hands.push(layout);
     }
 
     // Fill in the name frames
@@ -347,7 +357,7 @@ function drawPlayers() {
 
 // The message area is near the top-center of the screen and shows the last three actions taken
 function drawMessageArea() {
-    const messageArea = new pixi.Container();
+    const messageArea = new PIXI.Container();
     messageArea.x = 0.2 * globals.ui.w;
     messageArea.y = 0.235 * globals.ui.h;
     messageArea.interactive = true;
@@ -372,7 +382,7 @@ function drawMessageArea() {
         */
     });
 
-    const messageAreaBackground = new pixi.Graphics();
+    const messageAreaBackground = new PIXI.Graphics();
     messageAreaBackground.beginFill(0, 0.3);
     messageAreaBackground.drawRoundedRect(
         0,
@@ -411,7 +421,7 @@ function drawMessageArea() {
 // The stacks (card piles) are in the center of the screen
 function drawStacks() {
     // The play area is an invisible rectangle that defines where the user can drag a card to in order to play it
-    const playArea = new pixi.Graphics();
+    const playArea = new PIXI.Graphics();
     playArea.beginFill(0, 0); // An alpha of 0 makes it invisible
     playArea.drawRect(
         0.183 * globals.ui.w,
@@ -453,15 +463,15 @@ function drawStacks() {
         const stackWidth = width * globals.ui.w;
         const stackHeight = height * globals.ui.h;
 
-        const stackBackTexture = pixi.Texture.fromCanvas(globals.ui.cards[`Card-${suit.name}-0`]);
-        const stackBack = new pixi.Sprite(stackBackTexture);
+        const stackBackTexture = PIXI.Texture.fromCanvas(globals.ui.cards[`Card-${suit.name}-0`]);
+        const stackBack = new PIXI.Sprite(stackBackTexture);
         stackBack.x = stackX;
         stackBack.y = stackY;
         stackBack.width = stackWidth;
         stackBack.height = stackHeight;
         globals.app.stage.addChild(stackBack);
 
-        const playStack = new pixi.Container();
+        const playStack = new PIXI.Container();
         playStack.x = stackX;
         playStack.y = stackY;
         globals.ui.objects.playStacks.set(suit, playStack);
@@ -506,7 +516,7 @@ function drawStacks() {
 function drawClueUI() {
     const nump = globals.init.names.length;
 
-    const clueArea = new pixi.Container();
+    const clueArea = new PIXI.Container();
     clueArea.x = 0.10 * globals.ui.w;
     clueArea.y = 0.54 * globals.ui.h;
     clueArea.visible = false; // The clue UI is hidden by default
@@ -638,14 +648,14 @@ function drawClueUI() {
     globals.ui.objects.submitClueButton = submitClueButton;
 
     // Show a warning when there are no clues left (and hide the clue UI)
-    const noClues = new pixi.Container();
+    const noClues = new PIXI.Container();
     noClues.x = 0.275 * globals.ui.w;
     noClues.y = 0.56 * globals.ui.h;
     noClues.visible = false;
     globals.app.stage.addChild(noClues);
 
     // The faded rectangle that highlights the warning text
-    const noCluesBackground = new pixi.Graphics();
+    const noCluesBackground = new PIXI.Graphics();
     noCluesBackground.beginFill(0, 0.5); // Faded back
     noCluesBackground.drawRoundedRect(
         0,
@@ -657,7 +667,7 @@ function drawClueUI() {
     noCluesBackground.endFill();
     noClues.addChild(noCluesBackground);
 
-    const text = new pixi.Text('No Clues', new pixi.TextStyle({
+    const text = new PIXI.Text('No Clues', new PIXI.TextStyle({
         fontFamily: 'Verdana',
         fontSize: 0.08 * globals.ui.h,
         fill: 0xDF2C4D,
@@ -667,7 +677,7 @@ function drawClueUI() {
         dropShadowDistance: 3,
     }));
 
-    const textSprite = new pixi.Sprite(globals.app.renderer.generateTexture(text));
+    const textSprite = new PIXI.Sprite(globals.app.renderer.generateTexture(text));
     textSprite.x = (noClues.width / 2) - (textSprite.width / 2);
     textSprite.y = (noClues.height / 2) - (textSprite.height / 2);
     noClues.addChild(textSprite);
@@ -740,13 +750,13 @@ function drawButtons() {
 
 // The clue history is listed line by line in the top-right-hand corner of the screen
 function drawClueHistoryArea() {
-    const clueHistoryArea = new pixi.Container();
+    const clueHistoryArea = new PIXI.Container();
     clueHistoryArea.x = 0.8 * globals.ui.w;
     clueHistoryArea.y = 0.01 * globals.ui.h;
     globals.app.stage.addChild(clueHistoryArea);
 
     // The faded rectangle that highlights the clue history area
-    const clueHistoryAreaBackground = new pixi.Graphics();
+    const clueHistoryAreaBackground = new PIXI.Graphics();
     clueHistoryAreaBackground.beginFill(0, 0.2); // Faded black
     clueHistoryAreaBackground.drawRoundedRect(
         0,
@@ -772,7 +782,7 @@ function drawClueHistoryArea() {
 
 // The deck is in the bottom left-hand-corner of the screen to the right of the buttons
 function drawDeck() {
-    const deckArea = new pixi.Container();
+    const deckArea = new PIXI.Container();
     deckArea.x = 0.08 * globals.ui.w;
     deckArea.y = 0.8 * globals.ui.h;
     globals.app.stage.addChild(deckArea);
@@ -783,7 +793,7 @@ function drawDeck() {
     const height = 0.189 * globals.ui.h;
 
     // The faded rectangle that highlights the deck area
-    const deckAreaBackground = new pixi.Graphics();
+    const deckAreaBackground = new PIXI.Graphics();
     deckAreaBackground.beginFill(0, 0.2); // Faded black
     deckAreaBackground.drawRoundedRect(
         0,
@@ -796,8 +806,8 @@ function drawDeck() {
     deckArea.addChild(deckAreaBackground);
 
     // Add the graphic for the back of a card
-    const deckBackTexture = pixi.Texture.fromCanvas(globals.ui.cards['deck-back']);
-    const deckBack = new pixi.Sprite(deckBackTexture);
+    const deckBackTexture = PIXI.Texture.fromCanvas(globals.ui.cards['deck-back']);
+    const deckBack = new PIXI.Sprite(deckBackTexture);
     deckBack.x = 0;
     deckBack.y = 0;
     deckBack.width = width;
@@ -806,12 +816,12 @@ function drawDeck() {
     globals.ui.objects.deckBack = deckBack;
 
     // The deck has text that shows how many cards are left
-    const deckCount = new pixi.Sprite();
+    const deckCount = new PIXI.Sprite();
     deckArea.addChild(deckCount);
     globals.ui.objects.deckCount = deckCount;
 
     // When there is one card left, a yellow border appears around the deck to signify that a deck blind play is possible
-    const deckBorder = new pixi.Graphics();
+    const deckBorder = new PIXI.Graphics();
     deckBorder.lineStyle(5, 0xFFFF00);
     deckBorder.beginFill(0, 0); // An alpha of 0 makes it invisible
     deckBorder.drawRoundedRect(
@@ -829,13 +839,13 @@ function drawDeck() {
 
 // The score area is in the bottom-right-hand corner of the screen to the left of the discard pile
 function drawScoreArea() {
-    const scoreAreaContainer = new pixi.Container();
+    const scoreAreaContainer = new PIXI.Container();
     scoreAreaContainer.x = 0.66 * globals.ui.w;
     scoreAreaContainer.y = 0.81 * globals.ui.h;
     globals.app.stage.addChild(scoreAreaContainer);
 
     // The faded rectangle that highlights the score area
-    const scoreAreaBackground = new pixi.Graphics();
+    const scoreAreaBackground = new PIXI.Graphics();
     scoreAreaBackground.beginFill(0, 0.2); // Faded black
     scoreAreaBackground.drawRoundedRect(
         0,
@@ -849,7 +859,7 @@ function drawScoreArea() {
 
     // 3 boxes that fill up when the team accrues strikes (bombs)
     for (let i = 0; i < 3; i++) {
-        const strikeBackground = new pixi.Graphics();
+        const strikeBackground = new PIXI.Graphics();
         strikeBackground.beginFill(0, 0.6); // Faded black
         strikeBackground.drawRoundedRect(
             (0.01 + 0.04 * i) * globals.ui.w,
@@ -863,13 +873,13 @@ function drawScoreArea() {
     }
 
     // The score area has text that shows how many clues are left
-    const scoreAreaClues = new pixi.Sprite();
+    const scoreAreaClues = new PIXI.Sprite();
     scoreAreaContainer.addChild(scoreAreaClues);
     globals.ui.objects.scoreAreaClues = scoreAreaClues;
     scoreArea.setClues(8);
 
     // The score area has text that shows what the current score is
-    const scoreAreaScore = new pixi.Sprite();
+    const scoreAreaScore = new PIXI.Sprite();
     scoreAreaContainer.addChild(scoreAreaScore);
     globals.ui.objects.scoreAreaScore = scoreAreaScore;
     scoreArea.setScore(0);
@@ -878,7 +888,7 @@ function drawScoreArea() {
 // The discard pile is in the bottom-right-hand corner of the screen
 function drawDiscardPile() {
     // The discard area is an invisible rectangle that defines where the user can drag a card to in order to discard it
-    const discardArea = new pixi.Graphics();
+    const discardArea = new PIXI.Graphics();
     discardArea.beginFill(0, 0); // An alpha of 0 makes it invisible
     discardArea.drawRect(
         0.8 * globals.ui.w,
@@ -892,7 +902,7 @@ function drawDiscardPile() {
 
     // This is a border around the discard area that appears when the team is at 8 clues
     // in order to signify that it is not possible to discard on this turn
-    const discardPileBorder = new pixi.Graphics();
+    const discardPileBorder = new PIXI.Graphics();
     discardPileBorder.lineStyle(0.007 * globals.ui.w, 0xDF1C2D, 1);
     discardPileBorder.beginFill(0, 0); // An alpha of 0 makes it invisible
     discardPileBorder.drawRoundedRect(
@@ -908,7 +918,7 @@ function drawDiscardPile() {
     globals.ui.objects.discardPileBorder = discardPileBorder;
 
     // The faded rectangle that highlights the discard pile
-    const discardPileBackground = new pixi.Graphics();
+    const discardPileBackground = new PIXI.Graphics();
     discardPileBackground.beginFill(0, 0.2); // Faded black
     discardPileBackground.drawRoundedRect(
         0.8 * globals.ui.w,
@@ -921,7 +931,7 @@ function drawDiscardPile() {
     globals.app.stage.addChild(discardPileBackground);
 
     // The trash can graphic
-    const trashCan = new pixi.Sprite(globals.resources.trashcan.texture);
+    const trashCan = new PIXI.Sprite(globals.resources.trashcan.texture);
     trashCan.x = 0.82 * globals.ui.w;
     trashCan.y = 0.62 * globals.ui.h;
     trashCan.width = 0.15 * globals.ui.w;
@@ -941,7 +951,7 @@ function drawDiscardPile() {
     }
     for (let i = 0; i < variant.suits.length; i++) {
         const suit = variant.suits[i];
-        const discardStack = new pixi.Container();
+        const discardStack = new PIXI.Container();
         discardStack.x = 0.81 * globals.ui.w;
         discardStack.y = (0.66 + y * i) * globals.ui.h;
         globals.ui.objects.discardStacks.set(suit, discardStack);
@@ -993,7 +1003,7 @@ function drawTimer() {
 
 // The replay UI is the progress bar, the 4 arrow buttons, and the 3 big buttons
 function drawReplayUI() {
-    const replayArea = new pixi.Container();
+    const replayArea = new PIXI.Container();
     replayArea.x = 0.15 * globals.ui.w;
     replayArea.y = 0.51 * globals.ui.h;
     replayArea.width = 0.5 * globals.ui.w;
@@ -1004,7 +1014,7 @@ function drawReplayUI() {
     globals.ui.objects.replayArea = replayArea;
 
     // The black bar that shows the progress of the replay
-    const replayBar = new pixi.Graphics();
+    const replayBar = new PIXI.Graphics();
     replayBar.beginFill(0); // Black
     replayBar.drawRoundedRect(
         0,
@@ -1019,7 +1029,7 @@ function drawReplayUI() {
 
     // The black bar is quite narrow,
     // so draw a second invisible rectangle overtop of it to catch clicks
-    const replayBarClick = new pixi.Graphics();
+    const replayBarClick = new PIXI.Graphics();
     replayBarClick.beginFill(0, 0); // An alpha of 0 makes it invisible
     replayBarClick.drawRect(
         0,
@@ -1042,7 +1052,7 @@ function drawReplayUI() {
     });
 
     // The replay shuttle (the oval that shows where in the replay you are)
-    const replayShuttle = new pixi.Graphics();
+    const replayShuttle = new PIXI.Graphics();
     replayShuttle.beginFill(0x0000cc);
     replayShuttle.drawRoundedRect(
         0,
@@ -1085,7 +1095,7 @@ function drawReplayUI() {
 
     // The replay shuttle for shared replays
     // (it shows where the rest of the team is at if you are currently detatched)
-    const replayShuttleShared = new pixi.Graphics();
+    const replayShuttleShared = new PIXI.Graphics();
     replayShuttleShared.beginFill(0xd1d1d1);
     replayShuttleShared.drawRoundedRect(
         0,
@@ -1197,14 +1207,14 @@ function drawReplayUI() {
 
 // The help modal appears after clicking on the "Help" button
 function drawHelpModal() {
-    const helpModal = new pixi.Container();
+    const helpModal = new PIXI.Container();
     helpModal.x = 0.1 * globals.ui.w;
     helpModal.y = 0.1 * globals.ui.h;
     helpModal.visible = false; // The help UI is hidden by default
     globals.app.stage.addChild(helpModal);
     globals.ui.objects.helpModal = helpModal;
 
-    const helpModalBox = new pixi.Graphics();
+    const helpModalBox = new PIXI.Graphics();
     helpModalBox.beginFill(0, 0.9); // Faded black
     helpModalBox.drawRoundedRect(
         0,
@@ -1229,7 +1239,7 @@ function drawHelpModal() {
     msg += '- Fast-forward: "Right", or "]" for a full rotation, or "End" for the end';
 
     const textMargin = 0.03 * globals.ui.w;
-    const text = new pixi.Text(msg, new pixi.TextStyle({
+    const text = new PIXI.Text(msg, new PIXI.TextStyle({
         fontFamily: 'Verdana',
         fontSize: 0.017 * globals.ui.w,
         fill: 'white',
@@ -1237,7 +1247,7 @@ function drawHelpModal() {
         wordWrapWidth: helpModalBox.width - (textMargin * 2),
         leading: -2, // The space between lines
     }));
-    const textSprite = new pixi.Sprite(globals.app.renderer.generateTexture(text));
+    const textSprite = new PIXI.Sprite(globals.app.renderer.generateTexture(text));
     textSprite.x = textMargin;
     textSprite.y = textMargin;
     helpModal.addChild(textSprite);

@@ -15,6 +15,7 @@
   "license": "AGPL-3.0-only",
   "dependencies": {
     "jquery": "^3.2.1",
+    "pixi-tween": "^0.2.0",
     "pixi.js": "^4.7.0",
     "sha.js": "^2.4.9"
   },

@@ -5,17 +5,17 @@
     we don't interfere with any Pixi.js variables/methods.
 */
 
-const pixi = require('pixi.js');
+const PIXI = require('pixi.js');
 const globals = require('../globals');
 
-function Button(config) {
-    const button = new pixi.Container();
+module.exports = function Button(config) {
+    const button = new PIXI.Container();
     button.x = config.x;
     button.y = config.y;
     button.interactive = true;
 
     // Define the two different background states for the button
-    const background = new pixi.Graphics();
+    const background = new PIXI.Graphics();
     const drawArgs = [
         0,
         0,
@@ -48,7 +48,7 @@ function Button(config) {
 
     // Add either color, text, or an image, depending on what kind of button it is
     if (config.color && !globals.settings.showColorblindUI) {
-        const color = new pixi.Graphics();
+        const color = new PIXI.Graphics();
         color.beginFill(config.color, 0.9); // Slightly faded color
         color.drawRoundedRect(
             0.1 * config.width,
@@ -60,18 +60,18 @@ function Button(config) {
         color.endFill();
         button.addChild(color);
     } else if (config.text) {
-        const text = new pixi.Text(config.text, new pixi.TextStyle({
+        const text = new PIXI.Text(config.text, new PIXI.TextStyle({
             fontFamily: 'Verdana',
             fontSize: 0.5 * config.height,
             fill: 'white',
         }));
-        const textSprite = new pixi.Sprite(globals.app.renderer.generateTexture(text));
+        const textSprite = new PIXI.Sprite(globals.app.renderer.generateTexture(text));
         textSprite.x = (config.width / 2) - (textSprite.width / 2);
         textSprite.y = 0.2 * config.height;
         textSprite.height = 0.6 * config.height;
         button.addChild(textSprite);
     } else if (config.image) {
-        const img = new pixi.Sprite(globals.resources[config.image].texture);
+        const img = new PIXI.Sprite(globals.resources[config.image].texture);
         img.x = 0.2 * config.width;
         img.y = 0.2 * config.height;
         img.width = 0.6 * config.width;
@@ -97,5 +97,4 @@ function Button(config) {
     }
 
     return button;
-}
-module.exports = Button;
+};

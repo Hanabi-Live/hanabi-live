@@ -1,5 +1,8 @@
+const PIXI = require('pixi.js');
+const constants = require('../constants');
 const globals = require('../globals');
 const deck = require('./deck');
+const Card = require('./card');
 
 module.exports = (data) => {
     // If an action in the game happens, cancel any notes that are currently being edited
@@ -10,6 +13,7 @@ module.exports = (data) => {
     }
 
     // Automatically disable any tooltips once an action in the game happens
+    // TODO replace this will closeAllTooltips
     if (globals.ui.activeHover !== null) {
         globals.ui.activeHover.dispatchEvent(new MouseEvent('mouseout'));
         globals.ui.activeHover = null;
@@ -18,33 +22,44 @@ module.exports = (data) => {
     const { type } = data;
     if (type === 'draw') {
         /*
-        if (data.suit === -1) {
-            delete data.suit;
-        }
-        if (data.rank === -1) {
-            delete data.rank;
-        }
-        const suit = msgSuitToSuit(data.suit, ui.variant);
         if (!ui.learnedCards[data.order]) {
             ui.learnedCards[data.order] = {
                 possibleSuits: this.variant.suits.slice(),
                 possibleRanks: this.variant.ranks.slice(),
             };
         }
-        ui.deck[data.order] = new HanabiCard({
+        */
+
+        // Create the card and add it to the current game state
+        const variant = constants.VARIANT_INTEGER_MAPPING[globals.init.variant];
+        const suit = variant.suits[data.suit];
+        const card = new Card({
             suit,
             rank: data.rank,
             order: data.order,
-            suits: this.variant.suits.slice(),
-            ranks: this.variant.ranks.slice(),
+            possibleSuits: variant.suits.slice(),
+            possibleRanks: variant.ranks.slice(),
             holder: data.who,
         });
+        globals.ui.state.deck[data.order] = card;
+        globals.ui.state.hands[data.who].push(card);
 
-        const child = new LayoutChild();
-        child.add(ui.deck[data.order]);
+        // Draw the card on the board
+        const cardTexture = PIXI.Texture.fromCanvas(globals.ui.cards[`Card-${suit.name}-${data.rank}`]);
+        const cardSprite = new PIXI.Sprite(cardTexture);
+        cardSprite.x = globals.ui.objects.deckArea.x;
+        cardSprite.y = globals.ui.objects.deckArea.y;
+        cardSprite.width = globals.ui.objects.deckArea.width;
+        cardSprite.height = globals.ui.objects.deckArea.height;
+        globals.app.stage.addChild(cardSprite);
 
+        // Add the card to the CardLayout object for the respective player
+        // (this will automatically tween)
+        globals.ui.objects.hands[data.who].add(cardSprite);
+
+        // TODO
+        /*
         const pos = drawDeck.cardback.getAbsolutePosition();
-
         child.setAbsolutePosition(pos);
         child.setRotation(-playerHands[data.who].getRotation());
 

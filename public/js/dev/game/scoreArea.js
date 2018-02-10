@@ -1,8 +1,8 @@
-const pixi = require('pixi.js');
+const PIXI = require('pixi.js');
 const globals = require('../globals');
 
 exports.setClues = (clues) => {
-    const text = new pixi.Text(`Clues: ${clues}`, new pixi.TextStyle({
+    const text = new PIXI.Text(`Clues: ${clues}`, new PIXI.TextStyle({
         fontFamily: 'Verdana',
         fontSize: 0.03 * globals.ui.h,
         fill: 'white',
@@ -22,7 +22,7 @@ exports.setClues = (clues) => {
 };
 
 exports.setScore = (score) => {
-    const text = new pixi.Text(`Score: ${score}`, new pixi.TextStyle({
+    const text = new PIXI.Text(`Score: ${score}`, new PIXI.TextStyle({
         fontFamily: 'Verdana',
         fontSize: 0.03 * globals.ui.h,
         fill: 'white',

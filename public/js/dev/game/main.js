@@ -2,9 +2,10 @@
     The Hanabi game UI
 */
 
+require('pixi.js'); // pixi-tween is added automatically to the PIXI namespace
+require('pixi-tween'); // pixi-tween is added automatically to the PIXI namespace
 const globals = require('../globals');
 const scaleToWindow = require('./scaleToWindow');
-const init = require('./init');
 
 $(document).ready(() => {
     // Disable the context menu that appears when a user right-clicks

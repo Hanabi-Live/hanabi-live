@@ -1,4 +1,4 @@
-const pixi = require('pixi.js');
+const PIXI = require('pixi.js');
 const constants = require('../constants');
 const globals = require('../globals');
 
@@ -18,7 +18,7 @@ exports.draw = (seat) => {
         const height = constants.NAME_POS[nump][j].h * globals.ui.h;
         const activePlayer = globals.state.activeIndex === i;
 
-        const text = new pixi.Text(globals.init.names[i], new pixi.TextStyle({
+        const text = new PIXI.Text(globals.init.names[i], new PIXI.TextStyle({
             fontFamily: 'Verdana',
             fontSize: height,
             fill: 0xD8D5EF,
@@ -28,7 +28,7 @@ exports.draw = (seat) => {
             dropShadowBlur: 10,
             dropShadowDistance: 3,
         }));
-        const textSprite = new pixi.Sprite(globals.app.renderer.generateTexture(text));
+        const textSprite = new PIXI.Sprite(globals.app.renderer.generateTexture(text));
         textSprite.x = (width / 2) - (textSprite.width / 2);
         globals.ui.objects.nameFrames[i].addChild(textSprite);
 
@@ -59,14 +59,14 @@ exports.draw = (seat) => {
         }
         const spacing = (textSprite.width / 2) * 1.4;
 
-        const leftLine = new pixi.Graphics();
+        const leftLine = new PIXI.Graphics();
         leftLine.lineStyle(lineThickness, 0xD8D5EF);
         leftLine.moveTo(0, 0);
         leftLine.lineTo(0, height / 2);
         leftLine.lineTo(width / 2 - spacing, height / 2);
         globals.ui.objects.nameFrames[i].addChild(leftLine);
 
-        const rightLine = new pixi.Graphics();
+        const rightLine = new PIXI.Graphics();
         rightLine.lineStyle(lineThickness, 0xD8D5EF);
         rightLine.moveTo(width / 2 + spacing, height / 2);
         rightLine.lineTo(width, height / 2);

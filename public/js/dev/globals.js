@@ -51,6 +51,7 @@ const globals = {
     */
     state: { // Variables that represent the current game state
         activeIndex: 0,
+        deck: [],
     },
 
     currentScreen: 'login',

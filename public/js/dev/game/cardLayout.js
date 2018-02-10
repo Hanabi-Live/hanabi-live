@@ -1,16 +1,30 @@
-
 /*
-const CardLayout = function CardLayout(config) {
-    Kinetic.Group.call(this, config);
+    For each player's hand and the discard pile, we group cards into CardLayouts.
+    This object will automatically handle the spacing between the cards and tweening.
+*/
 
+const PIXI = require('pixi.js');
+const misc = require('../misc');
+const tween = require('./tween');
+
+function CardLayout(config) {
+    this.x = config.x;
+    this.y = config.y;
+    this.width = config.width;
+    this.height = config.height;
+
+    this.rotation = (config.rotation || 0);
     this.align = (config.align || 'left');
     this.reverse = (config.reverse || false);
     this.invertCards = (config.invertCards || false);
-};
 
-Kinetic.Util.extend(CardLayout, Kinetic.Group);
+    this.cards = []; // An array of card sprites
+}
 
-CardLayout.prototype.add = function add(child) {
+CardLayout.prototype.add = function add(card) {
+    this.cards.push(card);
+
+    /*
     child.children.forEach((c) => {
         if (c.doRotations) {
             c.doRotations(this.invertCards);
@@ -19,11 +33,8 @@ CardLayout.prototype.add = function add(child) {
     const pos = child.getAbsolutePosition();
     Kinetic.Group.prototype.add.call(this, child);
     child.setAbsolutePosition(pos);
-    this.doLayout();
-};
+    */
 
-CardLayout.prototype._setChildrenIndices = function _setChildrenIndices() {
-    Kinetic.Group.prototype._setChildrenIndices.call(this);
     this.doLayout();
 };
 
@@ -32,21 +43,15 @@ CardLayout.prototype.doLayout = function doLayout() {
     let dist = 0;
     let x = 0;
 
-    const lw = this.getWidth();
-    const lh = this.getHeight();
+    const lw = this.width;
+    const lh = this.height;
 
-    const n = this.children.length;
+    const n = this.cards.length;
 
     for (let i = 0; i < n; i++) {
-        const node = this.children[i];
-
-        if (!node.getHeight()) {
-            continue;
-        }
-
-        const scale = lh / node.getHeight();
-
-        uw += scale * node.getWidth();
+        const card = this.cards[i];
+        const scale = lh / card.height;
+        uw += scale * card.width;
     }
 
     if (n > 1) {
@@ -67,44 +72,58 @@ CardLayout.prototype.doLayout = function doLayout() {
         x = lw - x;
     }
 
-    const storedPostAnimationLayout = ui.postAnimationLayout;
-
     for (let i = 0; i < n; i++) {
-        const node = this.children[i];
+        const card = this.cards[i];
+        const scale = lh / card.height;
 
-        if (!node.getHeight()) {
-            continue;
+        // TODO
+        /*
+        if (card.tween) {
+            card.tween.destroy();
         }
+        */
 
-        const scale = lh / node.getHeight();
+        /*
+        if (ui.animateFast) {
+            card.x = x - (this.reverse ? scale * card.width : 0);
+            card.y = 0;
+            card.setScaleX(scale);
+            card.setScaleY(scale);
+            card.setRotation(0);
+        } else {
+        */
 
-        if (node.tween) {
-            node.tween.destroy();
-        }
+        const drawTween = PIXI.tweenManager.createTween(card);
+        drawTween.stop().clear();
 
-        if (!node.isDragging()) {
-            if (ui.animateFast) {
-                node.setX(x - (this.reverse ? scale * node.getWidth() : 0));
-                node.setY(0);
-                node.setScaleX(scale);
-                node.setScaleY(scale);
-                node.setRotation(0);
-            } else {
-                node.tween = new Kinetic.Tween({
-                    node,
-                    duration: 0.5,
-                    x: x - (this.reverse ? scale * node.getWidth() : 0),
-                    y: 0,
-                    scaleX: scale,
-                    scaleY: scale,
-                    rotation: 0,
-                    runonce: true,
-                    onFinish: storedPostAnimationLayout,
-                }).play();
-            }
-        }
+        drawTween.time = 500;
+        drawTween.easing = PIXI.tween.Easing.linear();
+        drawTween.to({
+            x: this.x - x - (this.reverse ? scale * card.width : 0),
+            y: this.y,
+            rotation: misc.toRadians(this.rotation),
+        });
+        drawTween.start();
+        tween.animate();
 
-        x += (scale * node.getWidth() + dist) * (this.reverse ? -1 : 1);
+        // OLD
+        /*
+        node.tween = new Kinetic.Tween({
+            node,
+            duration: 0.5,
+            x: ,
+            y: 0,
+            scaleX: scale,
+            scaleY: scale,
+            rotation: 0,
+            runonce: true,
+        }).play();
+        */
+
+        // }
+
+        x += (scale * card.width + dist) * (this.reverse ? -1 : 1);
     }
 };
-*/
+
+module.exports = CardLayout;

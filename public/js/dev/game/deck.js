@@ -1,8 +1,8 @@
-const pixi = require('pixi.js');
+const PIXI = require('pixi.js');
 const globals = require('../globals');
 
 exports.setCount = (count) => {
-    const text = new pixi.Text(count, new pixi.TextStyle({
+    const text = new PIXI.Text(count, new PIXI.TextStyle({
         fontFamily: 'Verdana',
         fontSize: 0.4 * globals.ui.objects.deckArea.height,
         fill: 'white',
