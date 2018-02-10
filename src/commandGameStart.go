@@ -138,10 +138,25 @@ func commandGameStart(s *Session, d *CommandData) {
 		}
 
 		for i, line := range lines {
+			// The first line is a number that signifies which player will go first
+			if i == 0 {
+				if v, err := strconv.Atoi(line); err != nil {
+					log.Error("Failed to parse the first line (that signifies which player will go first):", line)
+					s.Error("Failed to create the game. Please contact an administrator.")
+					return
+				} else {
+					// Player 1 would be equal to the player at index 0
+					g.ActivePlayer = v - 1
+				}
+				continue
+			}
+
+			// Ignore empty lines (the last line of the file might be empty)
 			if line == "" {
 				continue
 			}
 
+			// Parse the line for the suit and the rank
 			match2 := cardRegExp.FindStringSubmatch(line)
 			if match2 == nil {
 				log.Error("Failed to parse line "+strconv.Itoa(i+1)+":", line)
@@ -242,6 +257,9 @@ func commandGameStart(s *Session, d *CommandData) {
 			j := rand.Intn(i + 1)
 			g.Deck[i], g.Deck[j] = g.Deck[j], g.Deck[i]
 		}
+
+		// Get a random player to start first
+		g.ActivePlayer = rand.Intn(len(g.Players))
 	}
 
 	log.Info(g.GetName() + "Using seed \"" + g.Seed + "\", timed is " + strconv.FormatBool(g.Options.Timed) + ".")
@@ -272,8 +290,6 @@ func commandGameStart(s *Session, d *CommandData) {
 		}
 	}
 
-	// Get a random player to start first
-	g.ActivePlayer = rand.Intn(len(g.Players))
 	text := g.Players[g.ActivePlayer].Name + " goes first"
 	g.Actions = append(g.Actions, Action{
 		Text: text,
