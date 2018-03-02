@@ -43,8 +43,8 @@ func commandGameJoin(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that this table does not already have the 5 players
-	if len(g.Players) > 5 {
+	// Validate that this table does not already have 5 players
+	if len(g.Players) >= 5 {
 		s.Error("That game already has 5 players.")
 		return
 	}

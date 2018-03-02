@@ -34,7 +34,7 @@ CREATE TABLE games (
     timed              BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
     time_base          INT           NOT NULL, /* in seconds */
     time_per_turn      INT           NOT NULL, /* in seconds */
-    seed               VARCHAR(15)   NOT NULL, /* like "p2v0s1" */
+    seed               VARCHAR(50)   NOT NULL, /* like "p2v0s1" */
     score              INT           NOT NULL,
     end_condition      INT           NOT NULL, /* 0 - in progress, 1 - normal, 2 - strikeout, 3 - timeout, 4 - abandoned */
     datetime_created   TIMESTAMP     NOT NULL  DEFAULT '0000-00-00 00:00:00',

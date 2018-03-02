@@ -25,6 +25,16 @@
         LIME: new Color('Lime', 'L', '#80c000'),
         CARDINAL: new Color('Cardinal', 'C', '#810735'),
         INDIGO: new Color('Indigo', 'I', '#1a0082'),
+        LBLUE: new Color('Sky', 'S', '#1a66ff'),
+        DBLUE: new Color('Navy', 'N', '#002b80'),
+        LGREEN: new Color('Lime', 'L', '#1aff1a'),
+        DGREEN: new Color('Forest', 'F', '#008000'),
+        LRED: new Color('Tomato', 'T', '#e60000'),
+        DRED: new Color('Burgundy', 'B', '#660000'),
+        BLUE1: new Color('Sky', 'S', '#4d88ff'),
+        BLUE3: new Color('Navy', 'N', '#001a4d'),
+        RED1: new Color('Tomato', 'T', '#ff1a1a'),
+        RED3: new Color('Mahogany', 'M', '#330000'),
     };
 
     exports.SHAPE = {
@@ -323,6 +333,7 @@
             exports.SHAPE.DIAMOND,
             [exports.COLOR.BLUE],
         ),
+
         GREEN: new Suit(
             'Green',
             'G',
@@ -331,6 +342,7 @@
             exports.SHAPE.CLUB,
             [exports.COLOR.GREEN],
         ),
+
         YELLOW: new Suit(
             'Yellow',
             'Y',
@@ -339,6 +351,7 @@
             exports.SHAPE.STAR,
             [exports.COLOR.YELLOW],
         ),
+
         RED: new Suit(
             'Red',
             'R',
@@ -347,6 +360,7 @@
             exports.SHAPE.HEART,
             [exports.COLOR.RED],
         ),
+
         PURPLE: new Suit(
             'Purple',
             'P',
@@ -355,6 +369,7 @@
             exports.SHAPE.CRESCENT,
             [exports.COLOR.PURPLE],
         ),
+
         ORANGE: new Suit(
             'Orange',
             'O',
@@ -363,6 +378,7 @@
             exports.SHAPE.SPADE,
             [exports.COLOR.ORANGE],
         ),
+
         BLACK: new Suit(
             'Black',
             'K',
@@ -371,6 +387,7 @@
             exports.SHAPE.SPADE,
             [exports.COLOR.BLACK],
         ),
+
         // Green for mixed variant, which has different properties than green
         // for original variants
         MGREEN: new Suit(
@@ -384,6 +401,7 @@
                 exports.COLOR.YELLOW,
             ],
         ),
+
         MPURPLE: new Suit(
             'Purple',
             'P',
@@ -395,6 +413,7 @@
                 exports.COLOR.RED,
             ],
         ),
+
         NAVY: new Suit(
             'Navy',
             'N',
@@ -406,6 +425,7 @@
                 exports.COLOR.BLACK,
             ],
         ),
+
         MORANGE: new Suit(
             'Orange',
             'O',
@@ -417,6 +437,7 @@
                 exports.COLOR.RED,
             ],
         ),
+
         TAN: new Suit(
             'Tan',
             'T',
@@ -428,6 +449,7 @@
                 exports.COLOR.BLACK,
             ],
         ),
+
         BURGUNDY: new Suit(
             'Burgundy',
             'B',
@@ -439,6 +461,7 @@
                 exports.COLOR.BLACK,
             ],
         ),
+
         TEAL: new Suit(
             'Teal',
             'T',
@@ -450,6 +473,7 @@
                 exports.COLOR.GREEN,
             ],
         ),
+
         LIME: new Suit(
             'Lime',
             'L',
@@ -461,6 +485,7 @@
                 exports.COLOR.YELLOW,
             ],
         ),
+
         // Orange with a star pattern, for MM variant
         SORANGE: new Suit(
             'Orange',
@@ -473,6 +498,7 @@
                 exports.COLOR.RED,
             ],
         ),
+
         CARDINAL: new Suit(
             'Cardinal',
             'C',
@@ -484,6 +510,7 @@
                 exports.COLOR.PURPLE,
             ],
         ),
+
         INDIGO: new Suit(
             'Indigo',
             'I',
@@ -495,6 +522,7 @@
                 exports.COLOR.PURPLE,
             ],
         ),
+
         // Color ordering not guaranteed to be the same as declaration order
         // Recommend not to access these values for the multi suit, but rather use
         // special cases e.g. `if (suit === SUIT.MULTI, color_match = true)`
@@ -506,6 +534,7 @@
             exports.SHAPE.RAINBOW,
             Object.values(exports.COLOR),
         ),
+
         WHITE: new Suit(
             'White',
             'W',
@@ -514,6 +543,7 @@
             exports.SHAPE.CRESCENT,
             [exports.COLOR.WHITE],
         ),
+
         // Gray suit represents cards of unknown suit. It must not be included in variants.
         GRAY: new Suit(
             'Gray',
@@ -522,6 +552,168 @@
             basicCardFillSpec,
             null,
             [],
+        ),
+
+        LBLUE: new Suit(
+            'Sky',
+            'S',
+            exports.COLOR.LBLUE,
+            basicCardFillSpec,
+            exports.SHAPE.DIAMOND,
+            [exports.COLOR.BLUE],
+        ),
+
+        DBLUE: new Suit(
+            'Navy',
+            'N',
+            exports.COLOR.DBLUE,
+            basicCardFillSpec,
+            exports.SHAPE.CLUB,
+            [exports.COLOR.BLUE],
+        ),
+
+        LGREEN: new Suit(
+            'Lime',
+            'L',
+            exports.COLOR.LGREEN,
+            basicCardFillSpec,
+            exports.SHAPE.STAR,
+            [exports.COLOR.GREEN],
+        ),
+
+        DGREEN: new Suit(
+            'Forest',
+            'F',
+            exports.COLOR.DGREEN,
+            basicCardFillSpec,
+            exports.SHAPE.HEART,
+            [exports.COLOR.GREEN],
+        ),
+
+        LRED: new Suit(
+            'Tomato',
+            'T',
+            exports.COLOR.LRED,
+            basicCardFillSpec,
+            exports.SHAPE.CRESCENT,
+            [exports.COLOR.RED],
+        ),
+
+        DRED: new Suit(
+            'Burgundy',
+            'B',
+            exports.COLOR.DRED,
+            basicCardFillSpec,
+            exports.SHAPE.SPADE,
+            [exports.COLOR.RED],
+        ),
+
+        BLUE1: new Suit(
+            'Sky',
+            'S',
+            exports.COLOR.BLUE1,
+            basicCardFillSpec,
+            exports.SHAPE.DIAMOND,
+            [exports.COLOR.BLUE],
+        ),
+
+        BLUE2: new Suit(
+            'Berry',
+            'B',
+            exports.COLOR.BLUE,
+            basicCardFillSpec,
+            exports.SHAPE.CLUB,
+            [exports.COLOR.BLUE],
+        ),
+
+        BLUE3: new Suit(
+            'Navy',
+            'N',
+            exports.COLOR.BLUE3,
+            basicCardFillSpec,
+            exports.SHAPE.STAR,
+            [exports.COLOR.BLUE],
+        ),
+
+        RED1: new Suit(
+            'Tomato',
+            'T',
+            exports.COLOR.RED1,
+            basicCardFillSpec,
+            exports.SHAPE.HEART,
+            [exports.COLOR.RED],
+        ),
+
+        RED2: new Suit(
+            'Ruby',
+            'R',
+            exports.COLOR.RED,
+            basicCardFillSpec,
+            exports.SHAPE.CRESCENT,
+            [exports.COLOR.RED],
+        ),
+
+        RED3: new Suit(
+            'Mahogany',
+            'M',
+            exports.COLOR.RED3,
+            basicCardFillSpec,
+            exports.SHAPE.SPADE,
+            [exports.COLOR.RED],
+        ),
+
+        AT_BLUE: new Suit(
+            'Blue',
+            'B',
+            exports.COLOR.BLUE,
+            basicCardFillSpec,
+            exports.SHAPE.DIAMOND,
+            Object.values(exports.COLOR),
+        ),
+
+        AT_GREEN: new Suit(
+            'Green',
+            'G',
+            exports.COLOR.GREEN,
+            basicCardFillSpec,
+            exports.SHAPE.CLUB,
+            Object.values(exports.COLOR),
+        ),
+
+        AT_YELLOW: new Suit(
+            'Yellow',
+            'Y',
+            exports.COLOR.YELLOW,
+            basicCardFillSpec,
+            exports.SHAPE.STAR,
+            Object.values(exports.COLOR),
+        ),
+
+        AT_RED: new Suit(
+            'Red',
+            'R',
+            exports.COLOR.RED,
+            basicCardFillSpec,
+            exports.SHAPE.HEART,
+            Object.values(exports.COLOR),
+        ),
+
+        AT_PURPLE: new Suit(
+            'Purple',
+            'P',
+            exports.COLOR.PURPLE,
+            basicCardFillSpec,
+            exports.SHAPE.CRESCENT,
+            Object.values(exports.COLOR),
+        ),
+
+        AT_ORANGE: new Suit(
+            'Orange',
+            'O',
+            exports.COLOR.ORANGE,
+            basicCardFillSpec,
+            exports.SHAPE.SPADE,
+            Object.values(exports.COLOR),
         ),
     };
 
@@ -562,6 +754,7 @@
             'None',
             'No Variant',
         ),
+
         ORANGESUIT: new Variant(
             [
                 exports.SUIT.BLUE,
@@ -576,6 +769,7 @@
             'Black Suit',
             'Black',
         ),
+
         BLACKONE: new Variant(
             [
                 exports.SUIT.BLUE,
@@ -590,6 +784,7 @@
             'Black Suit (one of each)',
             'Black (1oE)',
         ),
+
         RAINBOW: new Variant(
             [
                 exports.SUIT.BLUE,
@@ -604,6 +799,7 @@
             'Rainbow Suit (all colors)',
             'Rainbow',
         ),
+
         MIXED: new Variant(
             [
                 exports.SUIT.MGREEN, // Blue + Yellow
@@ -623,6 +819,7 @@
             'Dual-color Suits',
             'Dual-color',
         ),
+
         MM: new Variant(
             [
                 exports.SUIT.TEAL, // Blue + Green
@@ -637,6 +834,7 @@
             'Dual-color & Rainbow Suits',
             'Dual & Rainbow',
         ),
+
         WHITEMULTI: new Variant(
             [
                 exports.SUIT.BLUE,
@@ -651,6 +849,7 @@
             'Colorless & Rainbow Suits',
             'White & Rainbow',
         ),
+
         CRAZY: new Variant(
             [
                 exports.SUIT.MGREEN, // Blue + Yellow
@@ -670,6 +869,60 @@
             'Wild & Crazy',
             'Wild & Crazy',
         ),
+
+        AMBIGUOUS: new Variant(
+            [
+                // L stands for light
+                // D stands for dark
+                exports.SUIT.LBLUE,
+                exports.SUIT.DBLUE,
+                exports.SUIT.LGREEN,
+                exports.SUIT.DGREEN,
+                exports.SUIT.LRED,
+                exports.SUIT.DRED,
+            ],
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.GREEN,
+                exports.COLOR.RED,
+            ],
+            true,
+            'Ambiguous Suits',
+            'Ambiguous',
+        ),
+
+        BLUERED: new Variant(
+            [
+                exports.SUIT.BLUE1,
+                exports.SUIT.BLUE2,
+                exports.SUIT.BLUE3,
+                exports.SUIT.RED1,
+                exports.SUIT.RED2,
+                exports.SUIT.RED3,
+            ],
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.RED,
+            ],
+            true,
+            'Blue & Red Suits',
+            'Blue & Red',
+        ),
+
+        ACIDTRIP: new Variant(
+            [
+                exports.SUIT.AT_BLUE,
+                exports.SUIT.AT_GREEN,
+                exports.SUIT.AT_YELLOW,
+                exports.SUIT.AT_RED,
+                exports.SUIT.AT_PURPLE,
+                exports.SUIT.AT_ORANGE,
+            ],
+            baseColorsPlusOrange,
+            false,
+            'Acid Trip',
+            'Acid Trip',
+        ),
     };
 
     // This is the mapping that the server uses
@@ -682,6 +935,9 @@
         exports.VARIANT.MM,
         exports.VARIANT.WHITEMULTI,
         exports.VARIANT.CRAZY,
+        exports.VARIANT.AMBIGUOUS,
+        exports.VARIANT.BLUERED,
+        exports.VARIANT.ACIDTRIP,
     ];
 
     exports.INDICATOR = {

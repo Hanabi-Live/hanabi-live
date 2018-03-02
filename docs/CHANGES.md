@@ -9,26 +9,88 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 
 ## New Variants
 
-#### White Suit and Multi-color Suit
+#### Orange Suit
 
-* This is like the "Multi-color Suit" variant, but purple is replaced with white.
+* The old "black" variant (with more than one of each card) was changed to orange in order to disambiguate it from the "black one of each" variant.
+
+#### White Suit (colorless) and Rainbow Suit (all-colors)
+
+* This is like the "Rainbow" variant, but purple is replaced with white.
 * No color clues touch the white suit.
 
-#### Mixed-color Suits
+#### Dual-color Suits
 
-* This has 6 new suits: Green, Purple, Navy, Orange, Tan, and Burgundy.
-* There are only 4 types of clues: Blue, Yellow, Red, and Black.
+* This has 6 new suits:
+  1. Green (blue / yellow)
+  2. Purple (blue / red)
+  3. Navy (blue / black)
+  4. Orange (yellow / red)
+  5. Tan (yellow / black)
+  6. Burgundy (red / black)
+* There are only 4 types of clues:
+  1. Blue
+  2. Yellow
+  3. Red
+  4. Black
 
-#### Mixed and Multi-color Suits
+#### Dual-color and Rainbow Suits
 
-* This has 5 new suits, with Rainbow as the 6th suit: Teal, Lime, Orange, Burgundy, and Indigo.
+* This has 5 new suits and 1 old suit:
+  1. Teal (blue / green)
+  2. Lime (green / yellow)
+  3. Orange (yellow / red)
+  4. Cardinal (red / purple)
+  5. Indigo (blue / purple)
+  6. Rainbow (all colors)
 * The standard clue types are available.
 
 #### Wild & Crazy
 
-* This has 3 mixed suits, a white suit, a rainbow suit, and a black suit.
-* The black suit is one of each.
-* There are only 4 types of clues: Blue, Yellow, Red, and Black.
+* This has 4 new suits and 2 old suits:
+  1. Green (blue / yellow)
+  2. Purple (blue / red)
+  3. Orange (yellow / red)
+  4. White (colorless)
+  5. Rainbow (all colors)
+  6. Black (one of each)
+* There are 4 types of clues
+  1. Blue
+  2. Yellow
+  3. Red
+  4. Black
+
+#### Ambiguous Suits
+
+* This has 6 new suits:
+  1. Sky (blue)
+  2. Navy (blue)
+  3. Lime (green)
+  4. Forest (green)
+  5. Tomato (red)
+  6. Burgundy (red)
+* There are 3 types of clues:
+  1. Blue
+  2. Green
+  3. Red
+
+#### Red & Blue
+
+* This has 6 new suits:
+  1. Sky (blue)
+  2. Berry (blue)
+  3. Navy (blue)
+  4. Tomato (red)
+  5. Ruby (red)
+  6. Mahogany (red)
+* There are 2 types of clues:
+  1. Blue
+  2. Red
+
+#### Acid Trip
+
+* This has the same 6 suits as the "orange" variant.
+* This has the same 6 clues available as the "orange" variant.
+* All color clues touch all cards.
 
 <br />
 

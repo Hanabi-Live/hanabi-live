@@ -13,7 +13,7 @@ type Card struct {
 func (c *Card) SuitName(g *Game) string {
 	name := suits[c.Suit]
 
-	if g.Options.Variant == 1 && c.Suit == 5 {
+	if (g.Options.Variant == 1 || g.Options.Variant == 10) && c.Suit == 5 {
 		// Change "Black" to "Orange"
 		name = suits[8]
 	} else if g.Options.Variant == 3 && c.Suit == 5 {
@@ -23,7 +23,7 @@ func (c *Card) SuitName(g *Game) string {
 		// Set the "Mixed Suits" text
 		name = mixedSuits[c.Suit]
 	} else if g.Options.Variant == 5 {
-		// Set the "Mixed and Multi Suits" text
+		// Set the "Dual & Rainbow Suits" text
 		name = mmSuits[c.Suit]
 	} else if g.Options.Variant == 6 && c.Suit == 4 {
 		// Change "Purple" to "White"
@@ -32,8 +32,14 @@ func (c *Card) SuitName(g *Game) string {
 		// Change "Black" to "Rainbow"
 		name = suits[6]
 	} else if g.Options.Variant == 7 {
-		// Set the "Crazy" suits text
+		// Set the "Wild & Crazy" suits text
 		name = crazySuits[c.Suit]
+	} else if g.Options.Variant == 8 {
+		// Set the "Ambiguous Suits" text
+		name = ambiguousSuits[c.Suit]
+	} else if g.Options.Variant == 9 {
+		// Set the "Blue & Red Suits" text
+		name = blueRedSuits[c.Suit]
 	}
 
 	return name

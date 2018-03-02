@@ -49,6 +49,31 @@ var (
 		"Rainbow",
 		"Black",
 	}
+	ambiguousSuits = []string{
+		"Sky",
+		"Navy",
+		"Lime",
+		"Forest",
+		"Tomato",
+		"Burgundy",
+	}
+	ambiguousClues = []string{
+		"Blue",
+		"Green",
+		"Red",
+	}
+	blueRedSuits = []string{
+		"Sky",
+		"Berry",
+		"Navy",
+		"Tomato",
+		"Ruby",
+		"Mahogany",
+	}
+	blueRedClues = []string{
+		"Blue",
+		"Red",
+	}
 	variants = []string{
 		"No Variant",
 		"Orange",
@@ -58,5 +83,8 @@ var (
 		"Dual & Rainbow",
 		"White & Rainbow",
 		"Wild & Crazy",
+		"Ambiguous",
+		"Blue & Red",
+		"Acid Trip",
 	}
 )

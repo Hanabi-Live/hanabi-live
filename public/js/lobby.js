@@ -678,6 +678,9 @@ const variantNames = [
     'Dual-color & Rainbow Suits',
     'Colorless & Rainbow Suits',
     'Wild & Crazy',
+    'Ambiguous Suits',
+    'Red & Blue Suits',
+    'Acid Trip',
 ];
 const variantNamesShort = [
     'No Variant',
@@ -688,6 +691,9 @@ const variantNamesShort = [
     'Dual & Rainbow',
     'White & Rainbow',
     'Wild & Crazy',
+    'Ambiguous',
+    'Red & Blue',
+    'Acid Trip',
 ];
 
 $(document).ready(() => {

@@ -27,11 +27,23 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		g = v
 	}
 
+	// Validate that they are in the game
+	i := g.GetIndex(s.UserID())
+	if i == -1 {
+		s.Error("You are in not game " + strconv.Itoa(gameID) + ", so you cannot abandon it.")
+		return
+	}
+
 	/*
 		Abandon
 	*/
 
 	if !g.Running {
+		// Set their status
+		s.Set("currentGame", -1)
+		s.Set("status", "Lobby")
+		notifyAllUser(s)
+
 		// Delete the game and don't write it to the database
 		delete(games, gameID)
 		notifyAllTableGone(g)

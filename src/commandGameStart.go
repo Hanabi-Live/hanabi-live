@@ -184,7 +184,7 @@ func commandGameStart(s *Session, d *CommandData) {
 				s.Error("Failed to create the game. Please contact an administrator.")
 				return
 			}
-			g.Deck[i].Suit = newSuit
+			g.Deck[i-1].Suit = newSuit // The first line is the number of players, so we have to subtract one
 
 			// Change the rank of all of the cards in the deck
 			rank := match2[2]
@@ -196,7 +196,7 @@ func commandGameStart(s *Session, d *CommandData) {
 			} else {
 				newRank = v
 			}
-			g.Deck[i].Rank = newRank
+			g.Deck[i-1].Rank = newRank // The first line is the number of players, so we have to subtract one
 		}
 	} else {
 		// We are not playing on a preset deal

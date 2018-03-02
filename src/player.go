@@ -107,7 +107,7 @@ func (p *Player) GiveClue(g *Game, d *CommandData) {
 					}
 				}
 			} else if g.Options.Variant == 7 {
-				// Crazy
+				// Wild & Crazy
 				// 0 - Green   (Blue   / Yellow)
 				// 1 - Purple  (Blue   / Red)
 				// 2 - Orange  (Yellow / Red)
@@ -135,6 +135,45 @@ func (p *Player) GiveClue(g *Game, d *CommandData) {
 						touched = true
 					}
 				}
+			} else if g.Options.Variant == 8 {
+				// Ambiguous Suits
+				// 0 - Blue
+				// 1 - Green
+				// 2 - Blue
+				if d.Clue.Value == 0 {
+					// Blue clue
+					if c.Suit == 0 || c.Suit == 1 {
+						touched = true
+					}
+				} else if d.Clue.Value == 1 {
+					// Green clue
+					if c.Suit == 2 || c.Suit == 3 {
+						touched = true
+					}
+				} else if d.Clue.Value == 2 {
+					// Red clue
+					if c.Suit == 4 || c.Suit == 5 {
+						touched = true
+					}
+				}
+			} else if g.Options.Variant == 9 {
+				// Blue & Red Suits
+				// 0 - Blue
+				// 1 - Red
+				if d.Clue.Value == 0 {
+					// Blue clue
+					if c.Suit == 0 || c.Suit == 1 || c.Suit == 2 {
+						touched = true
+					}
+				} else if d.Clue.Value == 1 {
+					// Green clue
+					if c.Suit == 3 || c.Suit == 4 || c.Suit == 5 {
+						touched = true
+					}
+				}
+			} else if g.Options.Variant == 10 {
+				// Acid Trip
+				touched = true
 			}
 		}
 		if touched {
@@ -176,12 +215,16 @@ func (p *Player) GiveClue(g *Game, d *CommandData) {
 		text += strconv.Itoa(d.Clue.Value)
 	} else if d.Clue.Type == 1 {
 		// Color clue
-		if g.Options.Variant == 1 && d.Clue.Value == 5 {
+		if (g.Options.Variant == 1 || g.Options.Variant == 10) && d.Clue.Value == 5 {
 			// Orange
 			text += suits[8]
 		} else if g.Options.Variant == 4 || g.Options.Variant == 7 {
 			// Dual-color or Wild & Crazy
 			text += mixedClues[d.Clue.Value]
+		} else if g.Options.Variant == 8 {
+			text += ambiguousClues[d.Clue.Value]
+		} else if g.Options.Variant == 9 {
+			text += blueRedClues[d.Clue.Value]
 		} else {
 			text += suits[d.Clue.Value]
 		}
