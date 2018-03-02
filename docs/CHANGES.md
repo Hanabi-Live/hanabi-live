@@ -115,21 +115,21 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 
 #### Shared Replays
 
-* Any replay can be started as a "shared" replay. Once created, an unlimited number of people can join it.
-* When in a shared replay, the leader can control what turn is being shown to everyone in the replay.
-* The leader can right-click on a card to highlight it with a red arrow.
+* At the end of a game, you will automatically be put into a shared replay with everyone who played the game.
+* Furthermore, any replay can be started as a "shared" replay. Once created, an unlimited number of people can join it.
+* When in a shared replay, the leader can control what turn is being shown to everyone in the replay. By default, the leader will be the person who created the game or created the shared replay.
+* The leader can right-click on a card to highlight it with a red arrow (to point out things to the other players).
 * You can see who the leader of the replay is by hovering over the "👑" icon in the bottom right-hand corner.
-* You can use this feature to share a past game with a friend who was not in that game.
+* You can use this feature to show a past game with a friend who was not in that game.
 * You can transfer the leader role by right clicking on a player's name.
 
 #### Timed Games
 
 * Each game now has the option to be created with as a "Timed Game".
 * Similar to chess, each player has a bank of time that decreases only during their turn.
-* By default, each player starts with 5 minutes.
-* Upon performing a move, each player will add 10 seconds to their clock.
-* If time runs out for any player, the game immediately ends.
-* In non-timed games, the timers will still show, but they will count up instead of down to show how long each player is taking.
+* By default, each player starts with 2 minutes and adds 20 seconds to their clock after performing each move.
+* If time runs out for any player, the game immediately ends and a score of 0 will be achieved.
+* In non-timed games, there is an option to show the timers anyway. They will count up instead of down to show how long each player is taking.
 
 #### Notes
 
@@ -158,6 +158,7 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 * There is a new sound whenever someone else performs an action.
 * There is a custom sound for a failed play.
 * There is a custom sound for a blind play.
+* There is a custom sound for multiple blind plays in a row (up to 4).
 
 <br />
 
@@ -202,17 +203,13 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 
 ## Quality of Life Improvements
 
-* The way clues are represented on cards has been changed:
-  * The cards that will be affected by a clue are represented by white arrows.
-  * When a card has been touched by one or more clues, it will have a yellow border.
-  * The possibilities of what a card can be are directly shown on the card.
 * The action log is improved:
   * It will show what slot a player played or discarded from.
   * It will show "(blind)" for blind plays.
   * It will shows "(clued)" when discarding clued cards.
   * It will show 3 actions instead of 1.
-  * It will show how many cards were left in the deck at the start of each message. (This only occurs when you click on it to see the full log.)
-  * At the end of the game, it will show how much time each player had left. Or, in non-timed games, it will show how much time they took in total.
+  * It will show how many cards were left in the deck at the start of each message. (This only occurs when you click the action log to see the full log.)
+  * At the end of the game, in timed games, it will show how much time each player had left. In non-timed games, it will show how much time that the game took in total.
 * The clue log will still continue to function if you mouse over played and discarded cards.
 * The "No Clues" indicator is much easier to see.
 * In-game replays will show card faces based on your current knowledge of the card.
@@ -222,13 +219,13 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 * The "Clues" text on the game UI will be red while at 8 clues.
 * Each suit name is listed below the stack in the middle of the screen during games with the multi-color variants.
 * All lobby chat will be replicated to (and from) the Hanabi Discord server.
-* The ambiguous checkboxes in the lobby have been converted to a "Status" indicator, showing exactly what the person is doing.
-  * The possible statuses are as follows: Lobby, Pre-Game, Playing, Replay, Shared Replay, Spectating
-* During a game, you can mouse over the "👀" icon in the bottom right-hand corner to see who is spectating the game.
-* The username box on the login box will now be automatically focused and you can press enter to login.
+* The lobby has been completely rehauled:
+  * The nice-looking user interface is [Alpha from HTML5UP](https://html5up.net/alpha).
+  * The username box on the login box will now be automatically focused and you can press enter to login.
+  * Your name will be bolded in the user list.
+  * The ambiguous checkboxes in the lobby have been converted to a "Status" indicator, showing exactly what the person is doing.
+* You can now view a replay (or share a replay) by ID number.
 * When you create a game, the server will suggest a randomly generated table name for you.
-* The fade time has been shortened to 200 milliseconds (from 800 milliseconds) in order to make the UI snappier.
-* Your name will be bolded in the user list.
-* The UI has been cleaned up a little to make it look less cramped.
+* During a game, you can mouse over the "👀" icon in the bottom right-hand corner to see who is spectating the game.
 
 <br />
