@@ -107,18 +107,20 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 
 #### Bottom Deck Blind Plays
 
-* On your turn, if there is 1 card left in the deck, you are allowed to blind play it.
+* As an added "house" rule, on your turn, if there is 1 card left in the deck, you are allowed to blind play it.
 * This is done by dragging the deck on to the play area.
 * A golden border will appear around the deck when there is 1 card left in order to signify that this is possible.
 * This feature prevents stupid losses that occur from being "bottom decked" by a 3 or a 4 that was impossible to save in the early or mid-game.
+* This feature is enabled by default. If you don't want to use this rule, then simply have your team agree to not use the feature beforehand.
 
 #### Shared Replays
 
-* Any replay can be started as a 'shared' replay. Once created, an unlimited number of people can join it.
+* Any replay can be started as a "shared" replay. Once created, an unlimited number of people can join it.
 * When in a shared replay, the leader can control what turn is being shown to everyone in the replay.
-* The leader can click a card to highlight it with a red arrow.
+* The leader can right-click on a card to highlight it with a red arrow.
 * You can see who the leader of the replay is by hovering over the "👑" icon in the bottom right-hand corner.
 * You can use this feature to share a past game with a friend who was not in that game.
+* You can transfer the leader role by right clicking on a player's name.
 
 #### Timed Games
 
@@ -144,8 +146,7 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 
 #### Color-Blind Mode
 
-* Each player can toggle
-* For players who are color-blind, this mode will make the game much easier to play by drawing the letters of the color on top of the card.
+* Each player has the option to toggle a color-blind mode that will add a letter to each card that signifies which suit it is.
 
 <br />
 
