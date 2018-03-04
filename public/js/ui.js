@@ -1872,8 +1872,6 @@ function HanabiUI(lobby, gameID) {
     };
 
     const HanabiClueEntry = function HanabiClueEntry(config) {
-        const self = this;
-
         Kinetic.Group.call(this, config);
 
         const w = config.width;
@@ -1955,45 +1953,6 @@ function HanabiUI(lobby, gameID) {
 
         this.list = config.list;
         this.neglist = config.neglist;
-
-        this.on('mousemove tap', () => {
-            ui.activeHover = this;
-
-            clueLog.showMatches(null);
-
-            background.setOpacity(0.4);
-            background.getLayer().batchDraw();
-
-            showClueMatch(-1);
-
-            for (let i = 0; i < self.list.length; i++) {
-                if (!self.checkValid(self.list[i])) {
-                    continue;
-                }
-
-                ui.deck[self.list[i]].setIndicator(true);
-            }
-
-            for (let i = 0; i < self.neglist.length; i++) {
-                if (!self.checkValid(self.neglist[i])) {
-                    continue;
-                }
-
-                ui.deck[self.neglist[i]].setIndicator(true, INDICATOR.NEGATIVE);
-            }
-
-            cardLayer.batchDraw();
-        });
-
-        this.on('mouseout', () => {
-            background.setOpacity(0.1);
-            const backgroundLayer = background.getLayer();
-            if (backgroundLayer) {
-                backgroundLayer.batchDraw();
-            }
-
-            showClueMatch(-1);
-        });
     };
 
     Kinetic.Util.extend(HanabiClueEntry, Kinetic.Group);
@@ -2274,7 +2233,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     const showClueMatch = (target, clue, showNeg) => {
-        let match = false;
+        // Hide all of the existing arrows on the cards
         for (let i = 0; i < ui.playerNames.length; i++) {
             if (i === target) {
                 continue;
@@ -2286,9 +2245,11 @@ function HanabiUI(lobby, gameID) {
                 card.setIndicator(false);
             }
         }
-
         cardLayer.batchDraw();
 
+        // We supply this function with an argument of "-1" if we just want to
+        // clear the existing arrows and nothing else
+        let match = false;
         if (target < 0) {
             return match;
         }
@@ -2298,20 +2259,23 @@ function HanabiUI(lobby, gameID) {
             const card = child.children[0];
 
             let touched = false;
+            let color;
             if (clue.type === CLUE_TYPE.RANK) {
                 if (clue.value === card.trueRank) {
                     touched = true;
+                    color = INDICATOR.POSITIVE;
                 }
             } else if (clue.type === CLUE_TYPE.COLOR) {
                 const clueColor = clue.value;
                 if (card.trueSuit === SUIT.MULTI || card.trueSuit.clueColors.includes(clueColor)) {
                     touched = true;
+                    color = clueColor.hexCode;
                 }
             }
 
             if (touched) {
                 match = true;
-                card.setIndicator(true);
+                card.setIndicator(true, color);
             } else {
                 card.setIndicator(false);
             }
@@ -4851,13 +4815,22 @@ function HanabiUI(lobby, gameID) {
         } else if (type === 'clue') {
             const clue = msgClueToClue(data.clue, ui.variant);
             showClueMatch(-1);
+            console.log(clue);
 
             for (let i = 0; i < data.list.length; i++) {
-                ui.deck[data.list[i]].setIndicator(true);
-                ui.deck[data.list[i]].cluedBorder.show();
-
-                ui.deck[data.list[i]].applyClue(clue, true);
-                ui.deck[data.list[i]].setBareImage();
+                const card = ui.deck[data.list[i]];
+                let color;
+                if (clue.type === 0) {
+                    // Number (rank) clues
+                    color = INDICATOR.POSITIVE;
+                } else {
+                    // Color clues
+                    color = clue.value.hexCode;
+                }
+                card.setIndicator(true, color);
+                card.cluedBorder.show();
+                card.applyClue(clue, true);
+                card.setBareImage();
             }
 
             const neglist = [];
