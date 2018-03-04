@@ -2691,6 +2691,7 @@ function HanabiUI(lobby, gameID) {
     let messagePrompt;
     let clueLabel;
     let scoreLabel;
+    let turnLabel;
     let spectatorsLabel;
     let spectatorsNumLabel;
     let sharedReplayLeaderLabel;
@@ -2903,26 +2904,33 @@ function HanabiUI(lobby, gameID) {
 
         bgLayer.add(rect);
 
-        for (let i = 0; i < 3; i++) {
-            rect = new Kinetic.Rect({
-                x: (0.67 + 0.04 * i) * winW,
-                y: 0.91 * winH,
-                width: 0.03 * winW,
-                height: 0.053 * winH,
-                fill: 'black',
-                opacity: 0.6,
-                cornerRadius: 0.003 * winW,
-            });
+        turnLabel = new Kinetic.Text({
+            x: 0.67 * winW,
+            y: 0.82 * winH,
+            width: 0.11 * winW,
+            height: 0.03 * winH,
+            fontSize: 0.025 * winH,
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: 'Turn: 1',
+            fill: '#d8d5ef',
+            shadowColor: 'black',
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
+        });
 
-            bgLayer.add(rect);
-        }
+        UILayer.add(turnLabel);
 
         clueLabel = new Kinetic.Text({
             x: 0.67 * winW,
-            y: 0.83 * winH,
+            y: 0.855 * winH,
             width: 0.11 * winW,
             height: 0.03 * winH,
-            fontSize: 0.03 * winH,
+            fontSize: 0.025 * winH,
             fontFamily: 'Verdana',
             align: 'center',
             text: 'Clues: 8',
@@ -2940,10 +2948,10 @@ function HanabiUI(lobby, gameID) {
 
         scoreLabel = new Kinetic.Text({
             x: 0.67 * winW,
-            y: 0.87 * winH,
+            y: 0.89 * winH,
             width: 0.11 * winW,
             height: 0.03 * winH,
-            fontSize: 0.03 * winH,
+            fontSize: 0.025 * winH,
             fontFamily: 'Verdana',
             align: 'center',
             text: 'Score: 0',
@@ -2958,6 +2966,21 @@ function HanabiUI(lobby, gameID) {
         });
 
         UILayer.add(scoreLabel);
+
+        // Draw the 3 strike (bomb) indicators
+        for (let i = 0; i < 3; i++) {
+            rect = new Kinetic.Rect({
+                x: (0.67 + 0.04 * i) * winW,
+                y: 0.925 * winH,
+                width: 0.03 * winW,
+                height: 0.053 * winH,
+                fill: 'black',
+                opacity: 0.6,
+                cornerRadius: 0.003 * winW,
+            });
+
+            bgLayer.add(rect);
+        }
 
         /*
             The 'eyes' symbol to show that one or more people are spectating the game
@@ -4815,7 +4838,6 @@ function HanabiUI(lobby, gameID) {
         } else if (type === 'clue') {
             const clue = msgClueToClue(data.clue, ui.variant);
             showClueMatch(-1);
-            console.log(clue);
 
             for (let i = 0; i < data.list.length; i++) {
                 const card = ui.deck[data.list[i]];
@@ -4888,7 +4910,7 @@ function HanabiUI(lobby, gameID) {
         } else if (type === 'strike') {
             const x = new Kinetic.Image({
                 x: (0.675 + 0.04 * (data.num - 1)) * winW,
-                y: 0.918 * winH,
+                y: 0.935 * winH,
                 width: 0.02 * winW,
                 height: 0.036 * winH,
                 image: ImageLoader.get('redx'),
@@ -4917,6 +4939,8 @@ function HanabiUI(lobby, gameID) {
             if (!this.animateFast) {
                 UILayer.draw();
             }
+
+            turnLabel.setText(`Turn: ${data.num + 1}`);
         } else if (type === 'gameOver') {
             for (let i = 0; i < this.playerNames.length; i++) {
                 nameFrames[i].off('mousemove');
