@@ -60,6 +60,10 @@ function HanabiUI(lobby, gameID) {
 
     this.reorderCards = false;
 
+    // Used for the pre-move feature
+    this.ourTurn = false;
+    this.queuedAction = null;
+
     // Initialize tooltips
     const tooltipThemes = [
         'tooltipster-shadow',
@@ -189,7 +193,9 @@ function HanabiUI(lobby, gameID) {
         self.animateFast = false;
 
         // Restore Replay Button if applicable
-        if (!self.replayOnly && self.replayMax > 0) { replayButton.show(); }
+        if (!self.replayOnly && self.replayMax > 0) {
+            replayButton.show();
+        }
 
         // Restore Shared Replay Button if applicable
         if (self.sharedReplay) {
@@ -3278,6 +3284,7 @@ function HanabiUI(lobby, gameID) {
 
                 savedAction = null;
             } else {
+                // The card was dragged to an invalid location, so animate the card back to where it was
                 new Kinetic.Tween({
                     node: this,
                     duration: 0.5,
@@ -3790,12 +3797,19 @@ function HanabiUI(lobby, gameID) {
         }
         const { clueColors } = this.variant;
         const nClueColors = clueColors.length;
-        if (nClueColors === 4) {
+        if (nClueColors === 2) {
+            x = 0.258;
+        } else if (nClueColors === 3) {
+            x = 0.233;
+        } else if (nClueColors === 4) {
             x = 0.208;
         } else if (nClueColors === 5) {
             x = 0.183;
-        } else { // nClueColors === 6
+        } else if (nClueColors === 6) {
             x = 0.158;
+        } else {
+            x = 0;
+            console.log('Error: Invalid number of clue colors.');
         }
 
         {
@@ -4174,7 +4188,7 @@ function HanabiUI(lobby, gameID) {
         // Add "Enter" for pressing the 'Give Clue' button
         // (commented out because it can lead to mistakenly given clues
         // when the user accidently hits enter twice after settting a note)
-        // clueKeyMap.Enter = mouseClickHelper(submitClue);
+        // clueKeyMap.Enter = mouseClickHelper(submitClue); // Speedrun
 
         // Keyboard actions for playing and discarding cards
         const promptOwnHandOrder = (actionString) => {
@@ -4247,7 +4261,7 @@ function HanabiUI(lobby, gameID) {
         this.keyNavigation = (event) => {
             // Don't do anything if we are currently editing a note,
             // as we will be typing keystrokes into the input box
-            if (ui.editingNote) {
+            if (ui.editingNote !== null) {
                 return;
             }
 
@@ -4276,7 +4290,7 @@ function HanabiUI(lobby, gameID) {
         };
 
         // Commenting this out since there is a bug with the noteActive variable
-        // $(document).keydown(this.keyNavigation);
+        // $(document).keydown(this.keyNavigation); // Speedrun
 
         /*
             End of keyboard shortcuts
@@ -4724,6 +4738,10 @@ function HanabiUI(lobby, gameID) {
                 y: scale,
             });
 
+            // Adding speedrun code; make all cards draggable from the get-go
+            child.setDraggable(true);
+            child.on('dragend.play', dragendPlay);
+
             playerHands[data.who].add(child);
             playerHands[data.who].moveToTop();
         } else if (type === 'drawSize') {
@@ -4932,6 +4950,13 @@ function HanabiUI(lobby, gameID) {
                 }).play();
             }
         } else if (type === 'turn') {
+            // Keep track of whether or not it is our turn (speedrun)
+            this.ourTurn = (data.who === this.playerUs);
+            if (!this.ourTurn) {
+                // Adding this here to avoid bugs with pre-moves
+                clueArea.hide();
+            }
+
             for (let i = 0; i < ui.playerNames.length; i++) {
                 nameFrames[i].setActive(data.who === i);
             }
@@ -4941,6 +4966,14 @@ function HanabiUI(lobby, gameID) {
             }
 
             turnLabel.setText(`Turn: ${data.num + 1}`);
+
+            if (this.queuedAction !== null) {
+                console.log('Sending queued action...');
+                ui.sendMsg(this.queuedAction);
+                ui.stopAction();
+
+                this.queuedAction = null;
+            }
         } else if (type === 'gameOver') {
             for (let i = 0; i < this.playerNames.length; i++) {
                 nameFrames[i].off('mousemove');
@@ -5200,6 +5233,8 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.stopAction = (fast) => {
+        // This animation is dumb so lets comment it out
+        /*
         if (fast) {
             clueArea.hide();
         } else {
@@ -5213,6 +5248,11 @@ function HanabiUI(lobby, gameID) {
                 },
             }).play();
         }
+        */
+
+        // Never hide the clue UI (speedrun)
+        // (re-enabled)
+        clueArea.hide();
 
         noClueLabel.hide();
         noClueBox.hide();
@@ -5222,24 +5262,25 @@ function HanabiUI(lobby, gameID) {
         clueTargetButtonGroup.off('change');
         clueButtonGroup.off('change');
 
+        // We want cards to always be draggable for the pre-move feature (speedrun)
+        /*
         for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
             const child = playerHands[ui.playerUs].children[i];
-
             child.off('dragend.play');
             child.setDraggable(false);
         }
+        */
 
         drawDeck.cardback.setDraggable(false);
         deckPlayAvailableLabel.setVisible(false);
 
-        submitClue.off('click tap');
+        // We want the "Give Clue" button to always work (speedrun)
+        // submitClue.off('click tap');
     };
 
     let savedAction = null;
 
     this.handleAction = function handleAction(data) {
-        const self = this;
-
         savedAction = data;
 
         if (this.replay) {
@@ -5247,14 +5288,19 @@ function HanabiUI(lobby, gameID) {
         }
 
         if (data.canClue) {
+            // Show the clue UI
             clueArea.show();
+            console.log('XXXXXXXXXX SHOWN');
 
+            // This animation is dumb so lets comment it out
+            /*
             new Kinetic.Tween({
                 node: clueArea,
                 opacity: 1.0,
                 duration: 0.5,
                 runonce: true,
             }).play();
+            */
         } else {
             noClueLabel.show();
             noClueBox.show();
@@ -5276,64 +5322,32 @@ function HanabiUI(lobby, gameID) {
             discardSignalLabel.setVisible(false);
         }
 
-        submitClue.setEnabled(false);
+        // Always keep the "Submit Clue" button enabled (speedrun)
+        // (re-disabled)
+        // submitClue.setEnabled(false);
 
+        // Don't reset the clue UI when it becomes our turn
+        /*
         clueTargetButtonGroup.clearPressed();
         clueButtonGroup.clearPressed();
+        */
+        UILayer.draw(); // If we don't reset it, we have to draw it to avoid a bug
 
         if (this.playerNames.length === 2) {
+            // Default the clue recipient button to the only other player available
             clueTargetButtonGroup.list[0].setPressed(true);
         }
 
         playerHands[ui.playerUs].moveToTop();
 
+        // All cards are initially set to being draggable now
+        /*
         for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
             const child = playerHands[ui.playerUs].children[i];
-
             child.setDraggable(true);
-
-            // eslint-disable-next-line no-loop-func
-            child.on('dragend.play', function dragendPlay() {
-                const pos = this.getAbsolutePosition();
-
-                pos.x += this.getWidth() * this.getScaleX() / 2;
-                pos.y += this.getHeight() * this.getScaleY() / 2;
-
-                if (overPlayArea(pos)) {
-                    ui.sendMsg({
-                        type: 'action',
-                        resp: {
-                            type: ACT.PLAY,
-                            target: this.children[0].order,
-                        },
-                    });
-
-                    self.stopAction();
-                    this.setDraggable(false);
-                    savedAction = null;
-                } else if (
-                    pos.x >= discardArea.getX() &&
-                    pos.y >= discardArea.getY() &&
-                    pos.x <= discardArea.getX() + discardArea.getWidth() &&
-                    pos.y <= discardArea.getY() + discardArea.getHeight() &&
-                    data.canDiscard
-                ) {
-                    ui.sendMsg({
-                        type: 'action',
-                        resp: {
-                            type: ACT.DISCARD,
-                            target: this.children[0].order,
-                        },
-                    });
-                    self.stopAction();
-
-                    this.setDraggable(false);
-                    savedAction = null;
-                } else {
-                    playerHands[ui.playerUs].doLayout();
-                }
-            });
+            child.on('dragend.play', dragendPlay);
         }
+        */
 
         drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
 
@@ -5381,19 +5395,72 @@ function HanabiUI(lobby, gameID) {
 
             showClueMatch(target.targetIndex, {});
 
-            ui.sendMsg({
+            const action = {
                 type: 'action',
                 resp: {
                     type: ACT.CLUE,
                     target: target.targetIndex,
                     clue: clueToMsgClue(clueButton.clue, ui.variant),
                 },
-            });
+            };
+            if (ui.ourTurn) {
+                ui.sendMsg(action);
+                ui.stopAction();
+                savedAction = null;
+            } else {
+                ui.queuedAction = action;
+            }
 
-            self.stopAction();
-
-            savedAction = null;
         });
+    };
+
+    const dragendPlay = function dragendPlay() {
+        const pos = this.getAbsolutePosition();
+
+        pos.x += this.getWidth() * this.getScaleX() / 2;
+        pos.y += this.getHeight() * this.getScaleY() / 2;
+
+        // Figure out if it currently our turn
+        if (overPlayArea(pos)) {
+            const action = {
+                type: 'action',
+                resp: {
+                    type: ACT.PLAY,
+                    target: this.children[0].order,
+                },
+            };
+            if (ui.ourTurn) {
+                ui.sendMsg(action);
+                ui.stopAction();
+                this.setDraggable(false);
+                savedAction = null;
+            } else {
+                ui.queuedAction = action;
+            }
+        } else if (
+            pos.x >= discardArea.getX() &&
+            pos.y >= discardArea.getY() &&
+            pos.x <= discardArea.getX() + discardArea.getWidth() &&
+            pos.y <= discardArea.getY() + discardArea.getHeight()
+        ) {
+            const action = {
+                type: 'action',
+                resp: {
+                    type: ACT.DISCARD,
+                    target: this.children[0].order,
+                },
+            };
+            if (ui.ourTurn) {
+                ui.sendMsg(action);
+                ui.stopAction();
+                this.setDraggable(false);
+                savedAction = null;
+            } else {
+                ui.queuedAction = action;
+            }
+        } else {
+            playerHands[ui.playerUs].doLayout();
+        }
     };
 
     this.setMessage = (msg) => {
