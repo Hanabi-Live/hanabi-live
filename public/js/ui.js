@@ -3797,20 +3797,7 @@ function HanabiUI(lobby, gameID) {
         }
         const { clueColors } = this.variant;
         const nClueColors = clueColors.length;
-        if (nClueColors === 2) {
-            x = 0.258;
-        } else if (nClueColors === 3) {
-            x = 0.233;
-        } else if (nClueColors === 4) {
-            x = 0.208;
-        } else if (nClueColors === 5) {
-            x = 0.183;
-        } else if (nClueColors === 6) {
-            x = 0.158;
-        } else {
-            x = 0;
-            console.log('Error: Invalid number of clue colors.');
-        }
+        x = 0.158 + ((6 - nClueColors) * 0.025);
 
         {
             let i = 0;
@@ -5395,7 +5382,6 @@ function HanabiUI(lobby, gameID) {
 
             showClueMatch(target.targetIndex, {});
 
-            console.log('SUBMIT CLUE CLICKED');
             const action = {
                 type: 'action',
                 resp: {
@@ -5405,12 +5391,10 @@ function HanabiUI(lobby, gameID) {
                 },
             };
             if (ui.ourTurn) {
-                console.log('NOT PREMOVE - SENDING ACTION');
                 ui.sendMsg(action);
                 ui.stopAction();
                 savedAction = null;
             } else {
-                console.log('PREMOVE - QUEUED');
                 ui.queuedAction = action;
             }
 
