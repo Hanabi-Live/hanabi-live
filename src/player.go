@@ -255,6 +255,10 @@ func (p *Player) RemoveCard(target int) *Card {
 		}
 	}
 
+	if removedCard == nil {
+		log.Fatal("The target of " + strconv.Itoa(target) + " is not in the hand of " + p.Name + ".")
+	}
+
 	return removedCard
 }
 
@@ -451,4 +455,14 @@ func (p *Player) GetChopIndex() int {
 	}
 
 	return chopIndex
+}
+
+func (p *Player) InHand(order int) bool {
+	for _, c := range p.Hand {
+		if c.Order == order {
+			return true
+		}
+	}
+
+	return false
 }

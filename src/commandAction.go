@@ -133,11 +133,23 @@ func commandAction(s *Session, d *CommandData) {
 		g.BlindPlays = 0
 		p.GiveClue(g, d)
 	} else if d.Type == 1 { // Play
+		// Validate that the card is in their hand
+		if !p.InHand(d.Target) {
+			s.Error("You cannot play a card that is not in your hand.")
+			return
+		}
+
 		c := p.RemoveCard(d.Target)
 		p.PlayCard(g, c)
 		p.DrawCard(g)
 	} else if d.Type == 2 { // Discard
-		// We are not allowed to discard while at 8 clues
+		// Validate that the card is in their hand
+		if !p.InHand(d.Target) {
+			s.Error("You cannot play a card that is not in your hand.")
+			return
+		}
+
+		// Validate that the team is not at 8 clues
 		// (the client should enforce this, but do a check just in case)
 		if g.Clues == 8 {
 			s.Error("You cannot discard while the team has 8 clues.")
@@ -150,7 +162,7 @@ func commandAction(s *Session, d *CommandData) {
 		p.DiscardCard(g, c)
 		p.DrawCard(g)
 	} else if d.Type == 3 { // Deck play
-		// We are not allowed to blind play the deck unless there is only 1 card left
+		// Validate that there is only 1 card left
 		// (the client should enforce this, but do a check just in case)
 		if g.DeckIndex != len(g.Deck)-1 {
 			s.Error("You cannot blind play the deck until there is only 1 card left.")

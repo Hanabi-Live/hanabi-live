@@ -4738,12 +4738,14 @@ function HanabiUI(lobby, gameID) {
                 y: scale,
             });
 
-            // Adding speedrun code; make all cards draggable from the get-go
-            child.setDraggable(true);
-            child.on('dragend.play', dragendPlay);
-
             playerHands[data.who].add(child);
             playerHands[data.who].moveToTop();
+
+            if (data.who === ui.playerUs) {
+                // Adding speedrun code; make all cards in our hand draggable from the get-go
+                child.setDraggable(true);
+                child.on('dragend.play', dragendPlay);
+            }
         } else if (type === 'drawSize') {
             drawDeck.setCount(data.size);
         } else if (type === 'played') {
@@ -5274,8 +5276,8 @@ function HanabiUI(lobby, gameID) {
         drawDeck.cardback.setDraggable(false);
         deckPlayAvailableLabel.setVisible(false);
 
-        // We want the "Give Clue" button to always work (speedrun)
-        // submitClue.off('click tap');
+        // This is necessary to prevent multiple messages being sent from one click of the "Submit Clue" button
+        submitClue.off('click tap');
     };
 
     let savedAction = null;
@@ -5290,7 +5292,6 @@ function HanabiUI(lobby, gameID) {
         if (data.canClue) {
             // Show the clue UI
             clueArea.show();
-            console.log('XXXXXXXXXX SHOWN');
 
             // This animation is dumb so lets comment it out
             /*
@@ -5323,7 +5324,6 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Always keep the "Submit Clue" button enabled (speedrun)
-        // (re-disabled)
         // submitClue.setEnabled(false);
 
         // Don't reset the clue UI when it becomes our turn
@@ -5395,6 +5395,7 @@ function HanabiUI(lobby, gameID) {
 
             showClueMatch(target.targetIndex, {});
 
+            console.log('SUBMIT CLUE CLICKED');
             const action = {
                 type: 'action',
                 resp: {
@@ -5404,10 +5405,12 @@ function HanabiUI(lobby, gameID) {
                 },
             };
             if (ui.ourTurn) {
+                console.log('NOT PREMOVE - SENDING ACTION');
                 ui.sendMsg(action);
                 ui.stopAction();
                 savedAction = null;
             } else {
+                console.log('PREMOVE - QUEUED');
                 ui.queuedAction = action;
             }
 
