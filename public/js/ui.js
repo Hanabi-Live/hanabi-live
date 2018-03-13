@@ -3795,9 +3795,7 @@ function HanabiUI(lobby, gameID) {
 
             clueButtonGroup.add(button);
         }
-        const { clueColors } = this.variant;
-        const nClueColors = clueColors.length;
-        x = 0.158 + ((6 - nClueColors) * 0.025);
+        x = 0.158 + ((6 - this.variant.clueColors.length) * 0.025);
 
         {
             let i = 0;
@@ -5397,7 +5395,6 @@ function HanabiUI(lobby, gameID) {
             } else {
                 ui.queuedAction = action;
             }
-
         });
     };
 
