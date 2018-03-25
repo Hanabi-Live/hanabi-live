@@ -21,7 +21,7 @@ type Player struct {
 	Session *Session
 }
 
-func (p *Player) GiveClue(g *Game, d *CommandData) {
+func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 	// Find out what cards this clue touches
 	list := make([]int, 0)
 	for _, c := range g.Players[d.Target].Hand {
@@ -182,7 +182,7 @@ func (p *Player) GiveClue(g *Game, d *CommandData) {
 		}
 	}
 	if len(list) == 0 {
-		return
+		return false
 	}
 
 	// Keep track that someone clued
@@ -237,6 +237,8 @@ func (p *Player) GiveClue(g *Game, d *CommandData) {
 	})
 	g.NotifyAction()
 	log.Info(g.GetName() + text)
+
+	return true
 }
 
 func (p *Player) RemoveCard(target int) *Card {

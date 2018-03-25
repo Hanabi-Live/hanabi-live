@@ -130,8 +130,12 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
+		if p.GiveClue(g, d) == false {
+			s.Error("You cannot give a clue that touches 0 cards in the hand.")
+			return
+		}
+
 		g.BlindPlays = 0
-		p.GiveClue(g, d)
 	} else if d.Type == 1 { // Play
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
@@ -156,11 +160,12 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
-		g.BlindPlays = 0
 		g.Clues++
 		c := p.RemoveCard(d.Target)
 		p.DiscardCard(g, c)
 		p.DrawCard(g)
+
+		g.BlindPlays = 0
 	} else if d.Type == 3 { // Deck play
 		// Validate that there is only 1 card left
 		// (the client should enforce this, but do a check just in case)

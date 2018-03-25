@@ -4954,12 +4954,14 @@ function HanabiUI(lobby, gameID) {
 
             turnLabel.setText(`Turn: ${data.num + 1}`);
 
-            if (this.queuedAction !== null) {
-                console.log('Sending queued action...');
-                ui.sendMsg(this.queuedAction);
-                ui.stopAction();
+            if (this.queuedAction !== null && this.ourTurn) {
+                setTimeout(() => {
+                    console.log('Sending queued action...');
+                    ui.sendMsg(this.queuedAction);
+                    ui.stopAction();
 
-                this.queuedAction = null;
+                    this.queuedAction = null;
+                }, 250);
             }
         } else if (type === 'gameOver') {
             for (let i = 0; i < this.playerNames.length; i++) {
