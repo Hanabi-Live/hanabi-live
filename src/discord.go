@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -61,6 +62,7 @@ func discordConnect() {
 	// Open the websocket and begin listening
 	if err := discord.Open(); err != nil {
 		log.Error("Failed to open the Discord session:", err)
+		return
 	}
 
 	// Announce that the server has started
@@ -98,6 +100,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	var channel *discordgo.Channel
 	if v, err := discord.Channel(m.ChannelID); err != nil {
 		log.Error("Failed to get the Discord channel of \""+m.ChannelID+"\":", err)
+		return
 	} else {
 		channel = v
 	}
@@ -115,6 +118,43 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		Room:     "lobby",
 	}
 	commandChat(nil, d)
+
+	// Check for special commands
+	if strings.HasPrefix(d.Msg, "/random ") {
+		msg := strings.TrimPrefix(d.Msg, "/random ")
+		args := strings.Split(msg, " ")
+		if len(args) != 2 {
+			return
+		}
+
+		var min int
+		if v, err := strconv.Atoi(args[0]); err != nil {
+			return
+		} else {
+			min = v
+		}
+
+		var max int
+		if v, err := strconv.Atoi(args[1]); err != nil {
+			return
+		} else {
+			max = v
+		}
+
+		randNum := getRandom(min, max)
+		msg = "Random number between " + args[0] + " and " + args[1] + ":\n**" + strconv.Itoa(randNum) + "**"
+		discordSend(m.ChannelID, "", msg)
+
+		/*
+			d = &CommandData{
+				Username: "poop",
+				Msg:      msg,
+				Discord:  true,
+				Room:     "lobby",
+			}
+			commandChat(nil, d)
+		*/
+	}
 }
 
 func discordSend(to string, username string, msg string) {
@@ -131,5 +171,6 @@ func discordSend(to string, username string, msg string) {
 
 	if _, err := discord.ChannelMessageSend(to, fullMsg); err != nil {
 		log.Error("Failed to send \""+fullMsg+"\" to Discord:", err)
+		return
 	}
 }

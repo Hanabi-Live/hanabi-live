@@ -8,7 +8,9 @@
 
 package main
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	maxChatLength = 150
@@ -82,7 +84,7 @@ func commandChat(s *Session, d *CommandData) {
 	text += d.Msg
 	log.Info(text)
 
-	// Check for special commands
+	// Check for special commands (that should not be echoed)
 	if s != nil {
 		if d.Msg == "/debug" {
 			debug(s, d)

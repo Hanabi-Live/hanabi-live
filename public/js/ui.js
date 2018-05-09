@@ -63,6 +63,7 @@ function HanabiUI(lobby, gameID) {
     // Used for the pre-move feature
     this.ourTurn = false;
     this.queuedAction = null;
+    this.currentClues = 8;
 
     // Initialize tooltips
     const tooltipThemes = [
@@ -4912,6 +4913,8 @@ function HanabiUI(lobby, gameID) {
             if (!this.animateFast) {
                 UILayer.draw();
             }
+
+            this.currentClues = data.clues;
         } else if (type === 'strike') {
             const x = new Kinetic.Image({
                 x: (0.675 + 0.04 * (data.num - 1)) * winW,
@@ -5427,7 +5430,8 @@ function HanabiUI(lobby, gameID) {
             pos.x >= discardArea.getX() &&
             pos.y >= discardArea.getY() &&
             pos.x <= discardArea.getX() + discardArea.getWidth() &&
-            pos.y <= discardArea.getY() + discardArea.getHeight()
+            pos.y <= discardArea.getY() + discardArea.getHeight() &&
+            ui.currentClues !== 8
         ) {
             const action = {
                 type: 'action',

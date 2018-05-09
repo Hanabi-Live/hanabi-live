@@ -18,7 +18,7 @@
         WHITE: new Color('White', 'W', '#d9d9d9'),
         GRAY: new Color('Gray', 'G', '#cccccc'),
         NAVY: new Color('Navy', 'N', '#000066'),
-        ORANGE: new Color('Orange', 'O', '#ff8800'),
+        ORANGE: new Color('Orange', 'O', '#ff8800'), // ff8800 is orange, ff33cc is pink, ff00ff is magenta
         TAN: new Color('Tan', 'T', '#999900'),
         BURGUNDY: new Color('Burgundy', 'B', '#660016'),
         TEAL: new Color('Teal', 'T', '#00b3b3'),
