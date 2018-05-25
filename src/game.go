@@ -7,6 +7,10 @@ import (
 	"github.com/Zamiell/hanabi-live/src/models"
 )
 
+const (
+	idleTimeout = time.Minute * 30
+)
+
 type Game struct {
 	ID                 int
 	Name               string
@@ -351,20 +355,50 @@ func (g *Game) CheckEnd() bool {
 
 // This function is meant to be called in a new goroutine
 func (g *Game) CheckIdle() {
-	// Sleep until the active player runs out of time
-	time.Sleep(30 * time.Minute)
+	// Set the last action
+	commandMutex.Lock()
+	g.DatetimeLastAction = time.Now()
+	commandMutex.Unlock()
+
+	// We want to clean up idle games, so sleep for a reasonable amount of time
+	time.Sleep(idleTimeout + time.Second)
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
 
+	// Don't do anything if there has been an action in the meantime
+	if time.Since(g.DatetimeLastAction) < idleTimeout {
+		return
+	}
+
+	// Check to see if the game still exists
+	if _, ok := games[g.ID]; !ok {
+		return
+	}
+
+	// The game still exists and the idle timeout has elapsed
+	// Boot all of the spectators, if any
+	for _, s := range g.Spectators {
+		commandGameUnattend(s, nil)
+	}
+
+	// If this is a shared replay, we should not have to do anything else
 	if g.SharedReplay {
-
-	} else if g.Running {
-
+		return
 	}
 
-	// End the game
-	d := &CommandData{
-		Type: 5,
+	if g.Running {
+		// We need to end a game that has started
+		d := &CommandData{
+			Type: 5, // Idle timeout
+		}
+		commandAction(nil, d)
+	} else {
+		// We need to end a game that hasn't started yet
+		// Force the owner to leave, which should subsequently eject everyone else
+		for _, p := range g.Players {
+			if p.Session.UserID() == g.Owner {
+				commandGameLeave(p.Session, nil)
+			}
+		}
 	}
-	commandAction(nil, d)
 }

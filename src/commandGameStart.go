@@ -56,6 +56,11 @@ func commandGameStart(s *Session, d *CommandData) {
 		Start
 	*/
 
+	log.Info(g.GetName() + "Starting the game.")
+
+	// Start the idle timeout
+	go g.CheckIdle()
+
 	// Create the deck
 	// (it will have 60 cards if playing no variant,
 	// 65 cards if playing a one of each variant,

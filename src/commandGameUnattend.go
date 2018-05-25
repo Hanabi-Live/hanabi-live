@@ -23,12 +23,15 @@ func commandGameUnattend(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		// Since the player could be in a solo replay, it is normal behavior for the game to not exist
-		s.Set("currentGame", -1)
+		log.Error("User \"" + s.Username() + "\" tried to unattend, but the game does not exist and they were not in the a solo replay.")
+		s.Error("Game " + strconv.Itoa(gameID) + " does not exist, so you cannot unattend it.")
 		return
 	} else {
 		g = v
 	}
+
+	// Start the idle timeout
+	go g.CheckIdle()
 
 	// Check to see if they are a spectator
 	if oldStatus == "Spectating" || oldStatus == "Shared Replay" {

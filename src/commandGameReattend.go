@@ -38,6 +38,11 @@ func commandGameReattend(s *Session, d *CommandData) {
 		Reattend
 	*/
 
+	log.Info(g.GetName() + "User \"" + s.Username() + "\" reattended.")
+
+	// Start the idle timeout
+	go g.CheckIdle()
+
 	// Set their "present" variable back to true, which will turn their name
 	// from red to black (or remove the "AWAY" if the game has not started yet)
 	p := g.Players[i]

@@ -59,7 +59,10 @@ func commandGameJoin(s *Session, d *CommandData) {
 		Join
 	*/
 
-	log.Info(g.GetName() + "User \"" + s.Username() + "\" joined.")
+	log.Info(g.GetName() + "User \"" + s.Username() + "\" joined. (There are now " + strconv.Itoa(len(g.Players)+1) + " players.)")
+
+	// Start the idle timeout
+	go g.CheckIdle()
 
 	// Get the stats for this player
 	var stats models.Stats

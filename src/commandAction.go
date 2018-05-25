@@ -21,8 +21,8 @@
 		// 1 is a play
 		// 2 is a discard
 		// 3 is a deck blind play
-		// 4 is time limit reached (only used by the server)
-		// 5 is 30 minute idle limit reached (only used by the server)
+		// 4 is a timer limit reached (only used by the server)
+		// 5 is a idle limit reached (only used by the server)
 	}
 */
 
@@ -76,6 +76,12 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Remove the "fail" and "blind" states
 	g.Sound = ""
+
+	// Start the idle timeout
+	// (but don't update the idle variable if we are ending the game due to idleness)
+	if d.Type == 5 {
+		go g.CheckIdle()
+	}
 
 	// Handle card-reordering
 	if g.Turn > g.DiscardSignal.TurnExpiration {
@@ -179,9 +185,15 @@ func commandAction(s *Session, d *CommandData) {
 	} else if d.Type == 4 {
 		// This is a special action type sent by the server to itself when a player runs out of time
 		g.Strikes = 3
-
 		g.Actions = append(g.Actions, Action{
 			Text: p.Name + " ran out of time!",
+		})
+		g.NotifyAction()
+	} else if d.Type == 5 {
+		// This is a special action type sent by the server to itself when the game has been idle for too long
+		g.Strikes = 3
+		g.Actions = append(g.Actions, Action{
+			Text: p.Name + " was idle for too long.",
 		})
 		g.NotifyAction()
 	} else {

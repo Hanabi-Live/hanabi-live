@@ -52,6 +52,9 @@ func commandReplayAction(s *Session, d *CommandData) {
 		Replay action
 	*/
 
+	// Start the idle timeout
+	go g.CheckIdle()
+
 	// Change the current turn
 	if d.Type == 0 {
 		g.Turn = d.Value

@@ -203,12 +203,20 @@ func (g *Game) End() {
 
 		// Skip offline players;
 		// if they re-login, then they will just stay in the lobby
-		if p.Present {
-			g.Spectators[p.Session.UserID()] = p.Session
-			log.Info("Converted " + p.Name + " to a spectator.")
-		} else {
+		if !p.Present {
 			log.Info("Skipped converting " + p.Name + " to a spectator since they are not seated.")
+			continue
 		}
+
+		// If this game was ended due to idleness,
+		// skip conversion so that the shared replay gets deleted below
+		if time.Since(g.DatetimeLastAction) < idleTimeout {
+			log.Info("Skipped converting " + p.Name + " to a spectator since the game ended due to idleness.")
+			continue
+		}
+
+		g.Spectators[p.Session.UserID()] = p.Session
+		log.Info("Converted " + p.Name + " to a spectator.")
 	}
 
 	// Empty the players

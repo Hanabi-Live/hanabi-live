@@ -10,7 +10,9 @@
 
 package main
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func commandReplayCreate(s *Session, d *CommandData) {
 	gameID := d.ID
