@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"time"
 )
 
 func commandSharedReplayCreate(s *Session, d *CommandData) {
@@ -42,11 +43,13 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 		Options: &Options{
 			Variant: variant,
 		},
-		Spectators:       make(map[int]*Session),
-		DisconSpectators: make(map[int]bool),
-		Running:          true,
-		SharedReplay:     true,
-		Owner:            s.UserID(),
+		Spectators:         make(map[int]*Session),
+		DisconSpectators:   make(map[int]bool),
+		Running:            true,
+		SharedReplay:       true,
+		DatetimeCreated:    time.Now(),
+		DatetimeLastAction: time.Now(),
+		Owner:              s.UserID(),
 	}
 	games[gameID] = g
 

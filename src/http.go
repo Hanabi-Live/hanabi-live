@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	gsessions "github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +16,7 @@ const (
 )
 
 var (
-	sessionStore gsessions.CookieStore
+	sessionStore gsessions.Store
 )
 
 func httpInit() {
@@ -60,7 +61,7 @@ func httpInit() {
 	}
 
 	// Create a session store
-	sessionStore = gsessions.NewCookieStore([]byte(sessionSecret))
+	sessionStore = cookie.NewStore([]byte(sessionSecret))
 	options := gsessions.Options{
 		Path:   "/",
 		Domain: domain,

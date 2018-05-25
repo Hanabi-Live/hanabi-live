@@ -20,8 +20,9 @@
 		// 0 is a clue
 		// 1 is a play
 		// 2 is a discard
-		// 3 is a deck blind play (added in the emulator)
-		// 4 is end game (only used by the server when enforcing a time limit)
+		// 3 is a deck blind play
+		// 4 is time limit reached (only used by the server)
+		// 5 is 30 minute idle limit reached (only used by the server)
 	}
 */
 

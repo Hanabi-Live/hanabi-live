@@ -203,11 +203,12 @@ func (g *Game) End() {
 
 		// Skip offline players;
 		// if they re-login, then they will just stay in the lobby
-		if !p.Present {
-			continue
+		if p.Present {
+			g.Spectators[p.Session.UserID()] = p.Session
+			log.Info("Converted " + p.Name + " to a spectator.")
+		} else {
+			log.Info("Skipped converting " + p.Name + " to a spectator since they are not seated.")
 		}
-
-		g.Spectators[p.Session.UserID()] = p.Session
 	}
 
 	// Empty the players

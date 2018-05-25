@@ -8,19 +8,20 @@ import (
 )
 
 type Game struct {
-	ID               int
-	Name             string
-	Owner            int // The user ID of the person who started the game or the current leader of the shared replay
-	Options          *Options
-	Players          []*Player
-	Spectators       map[int]*Session
-	DisconSpectators map[int]bool
-	Running          bool
-	SharedReplay     bool
-	DatetimeCreated  time.Time
-	DatetimeStarted  time.Time
-	DatetimeFinished time.Time
-	EndCondition     int // See "database_schema.sql" for mappings
+	ID                 int
+	Name               string
+	Owner              int // The user ID of the person who started the game or the current leader of the shared replay
+	Options            *Options
+	Players            []*Player
+	Spectators         map[int]*Session
+	DisconSpectators   map[int]bool
+	Running            bool
+	SharedReplay       bool
+	DatetimeCreated    time.Time
+	DatetimeLastAction time.Time
+	DatetimeStarted    time.Time
+	DatetimeFinished   time.Time
+	EndCondition       int // See "database_schema.sql" for mappings
 
 	Seed          string
 	Deck          []*Card
@@ -346,4 +347,24 @@ func (g *Game) CheckEnd() bool {
 	log.Info(g.GetName() + "No remaining cards can be played; ending the game.")
 	g.EndCondition = 1
 	return true
+}
+
+// This function is meant to be called in a new goroutine
+func (g *Game) CheckIdle() {
+	// Sleep until the active player runs out of time
+	time.Sleep(30 * time.Minute)
+	commandMutex.Lock()
+	defer commandMutex.Unlock()
+
+	if g.SharedReplay {
+
+	} else if g.Running {
+
+	}
+
+	// End the game
+	d := &CommandData{
+		Type: 5,
+	}
+	commandAction(nil, d)
 }
