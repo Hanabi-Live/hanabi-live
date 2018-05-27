@@ -16,8 +16,10 @@ func debug(s *Session, d *CommandData) {
 	for i, g := range games { // This is a map[int]*Game
 		log.Debug(strconv.Itoa(i) + " - " + g.Name)
 		log.Debug("   ", g)
+		log.Debug("    LastAction:", g.DatetimeLastAction)
 		log.Debug("    Options:")
 		log.Debug("       ", g.Options)
+
 		log.Debug("    Players:")
 		for j, p := range g.Players { // This is a map[int]*Player
 			log.Debug("        " + strconv.Itoa(j) + " - " + p.Name)
