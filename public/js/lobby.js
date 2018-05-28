@@ -137,11 +137,12 @@ function HanabiLobby() {
         // Fill in the "Base Time" box
         let baseTimeMinutes;
         try {
-            baseTimeMinutes = JSON.parse(localStorage.getItem('baseTimeMinutes'));
+            // We don't want to do "JSON.parse()" here because it may not be a whole number
+            baseTimeMinutes = localStorage.getItem('baseTimeMinutes');
         } catch (err) {
             baseTimeMinutes = 2;
         }
-        if (typeof baseTimeMinutes !== 'number' || baseTimeMinutes < 0) {
+        if (baseTimeMinutes < 0) {
             baseTimeMinutes = 2;
         }
         $('#base-time-minutes').val(baseTimeMinutes);

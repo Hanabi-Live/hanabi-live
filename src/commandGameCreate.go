@@ -36,6 +36,16 @@ func commandGameCreate(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that the time controls are sane
+	if d.Timed && d.BaseTimeMinutes <= 0 {
+		s.Error("That is not a valid value for \"Base Time\".")
+		return
+	}
+	if d.Timed && d.TimePerTurnSeconds <= 0 {
+		s.Error("That is not a valid value for \"Time per Turn\".")
+		return
+	}
+
 	/*
 		Create
 	*/

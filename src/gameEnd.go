@@ -196,6 +196,7 @@ func (g *Game) End() {
 	}
 
 	// Turn the players into spectators
+	ownerOffline := false
 	for _, p := range g.Players {
 		// Reset everyone's current game
 		// (this is necessary for players who happen to be offline or in the lobby)
@@ -205,6 +206,10 @@ func (g *Game) End() {
 		// if they re-login, then they will just stay in the lobby
 		if !p.Present {
 			log.Info("Skipped converting " + p.Name + " to a spectator since they are not seated.")
+			if p.ID == g.Owner {
+				ownerOffline = true
+				log.Info(p.Name + " was the owner of the game and they are offline; passing the leader to someone else.")
+			}
 			continue
 		}
 
@@ -227,6 +232,15 @@ func (g *Game) End() {
 	if len(g.Spectators) == 0 {
 		delete(games, g.ID)
 		return
+	}
+
+	// If the owner of the game is not present, then make someone else the shared replay leader
+	if ownerOffline {
+		for id, s := range g.Spectators {
+			g.Owner = id
+			log.Info("Set the new leader to be:", s.Username())
+			break
+		}
 	}
 
 	for _, s := range g.Spectators {

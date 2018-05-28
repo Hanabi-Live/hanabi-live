@@ -386,19 +386,23 @@ func (g *Game) CheckIdle() {
 		return
 	}
 
+	// Get the session of the owner
+	var s *Session
+	for _, p := range g.Players {
+		if p.Session.UserID() == g.Owner {
+			s = p.Session
+		}
+	}
+
 	if g.Running {
 		// We need to end a game that has started
 		d := &CommandData{
 			Type: 5, // Idle timeout
 		}
-		commandAction(nil, d)
+		commandAction(s, d)
 	} else {
 		// We need to end a game that hasn't started yet
 		// Force the owner to leave, which should subsequently eject everyone else
-		for _, p := range g.Players {
-			if p.Session.UserID() == g.Owner {
-				commandGameLeave(p.Session, nil)
-			}
-		}
+		commandGameLeave(s, nil)
 	}
 }
