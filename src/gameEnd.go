@@ -210,7 +210,7 @@ func (g *Game) End() {
 
 		// If this game was ended due to idleness,
 		// skip conversion so that the shared replay gets deleted below
-		if time.Since(g.DatetimeLastAction) < idleTimeout {
+		if time.Since(g.DatetimeLastAction) > idleTimeout {
 			log.Info("Skipped converting " + p.Name + " to a spectator since the game ended due to idleness.")
 			continue
 		}
