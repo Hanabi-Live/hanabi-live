@@ -342,9 +342,11 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 func (p *Player) DiscardCard(g *Game, c *Card) {
 	// Keep track that someone discarded
 	// (used for the "Reorder Cards" feature)
-	g.DiscardSignal.Outstanding = true
-	g.DiscardSignal.TurnExpiration = g.Turn + len(g.Players) - 1
-	log.Info("Discard signal outstanding, expiring on turn:", g.DiscardSignal.TurnExpiration)
+	if g.Options.ReorderCards {
+		g.DiscardSignal.Outstanding = true
+		g.DiscardSignal.TurnExpiration = g.Turn + len(g.Players) - 1
+		log.Info("Discard signal outstanding, expiring on turn:", g.DiscardSignal.TurnExpiration)
+	}
 
 	// Mark that the card is discarded
 	c.Discarded = true

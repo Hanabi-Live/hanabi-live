@@ -357,7 +357,9 @@ func (g *Game) CheckEnd() bool {
 func (g *Game) CheckIdle() {
 	// Set the last action
 	commandMutex.Lock()
-	g.DatetimeLastAction = time.Now()
+	now := time.Now()
+	g.DatetimeLastAction = now
+	log.Info("Setting DatetimeLastAction to:", now)
 	commandMutex.Unlock()
 
 	// We want to clean up idle games, so sleep for a reasonable amount of time
@@ -366,6 +368,8 @@ func (g *Game) CheckIdle() {
 	defer commandMutex.Unlock()
 
 	// Don't do anything if there has been an action in the meantime
+	timeSinceLastAction := time.Since(g.DatetimeLastAction)
+	log.Info("Time since last action:", timeSinceLastAction)
 	if time.Since(g.DatetimeLastAction) > idleTimeout {
 		return
 	}
@@ -375,7 +379,8 @@ func (g *Game) CheckIdle() {
 		return
 	}
 
-	// The game still exists and the idle timeout has elapsed
+	log.Info("Idle timeout has elapsed; ending the game.")
+
 	// Boot all of the spectators, if any
 	for _, s := range g.Spectators {
 		commandGameUnattend(s, nil)
@@ -391,6 +396,7 @@ func (g *Game) CheckIdle() {
 	for _, p := range g.Players {
 		if p.Session.UserID() == g.Owner {
 			s = p.Session
+			break
 		}
 	}
 

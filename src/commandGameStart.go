@@ -267,7 +267,9 @@ func commandGameStart(s *Session, d *CommandData) {
 		g.ActivePlayer = rand.Intn(len(g.Players))
 	}
 
-	log.Info(g.GetName() + "Using seed \"" + g.Seed + "\", timed is " + strconv.FormatBool(g.Options.Timed) + ".")
+	log.Info(g.GetName()+"Using seed:", g.Seed)
+	log.Info(g.GetName()+"Timed:", g.Options.Timed)
+	log.Info(g.GetName()+"Chop rotation:", g.Options.ReorderCards)
 
 	// Log the deal (so that it can be distributed to others if necessary)
 	log.Info("--------------------------------------------------")
