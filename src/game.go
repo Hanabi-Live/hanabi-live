@@ -366,7 +366,7 @@ func (g *Game) CheckIdle() {
 	defer commandMutex.Unlock()
 
 	// Don't do anything if there has been an action in the meantime
-	if time.Since(g.DatetimeLastAction) < idleTimeout {
+	if time.Since(g.DatetimeLastAction) > idleTimeout {
 		return
 	}
 
