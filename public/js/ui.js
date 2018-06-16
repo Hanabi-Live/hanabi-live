@@ -25,6 +25,8 @@ function HanabiUI(lobby, gameID) {
     this.playerUs = -1;
     this.playerNames = [];
     this.variant = 0;
+    this.cardsGotten = 0;
+    this.cluesSpent = 0;
     this.replay = false;
     this.sharedReplay = false;
     this.sharedReplayLeader = ''; // Equal to the username of the shared replay leader
@@ -4529,6 +4531,8 @@ function HanabiUI(lobby, gameID) {
 
         if (target < this.replayTurn) {
             rewind = true;
+            this.cardsGotten = 0;
+            this.cluesSpent = 0;
         }
 
         if (this.replayTurn === target) {
@@ -4739,6 +4743,8 @@ function HanabiUI(lobby, gameID) {
             showClueMatch(-1);
 
             const child = ui.deck[data.which.order].parent;
+            const card = child.children[0];
+            if (!card.cluedBorder.visible()) this.cardsGotten += 1;
 
             const learnedCard = ui.learnedCards[data.which.order];
             learnedCard.suit = suit;
@@ -4756,7 +4762,6 @@ function HanabiUI(lobby, gameID) {
 
             const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
-            const card = child.children[0];
             card.suitPips.hide();
             card.rankPips.hide();
             child.remove();
@@ -4771,6 +4776,8 @@ function HanabiUI(lobby, gameID) {
             showClueMatch(-1);
 
             const child = ui.deck[data.which.order].parent;
+            const card = child.children[0];
+            if (card.cluedBorder.visible()) this.cardsGotten -= 1;
 
             const learnedCard = ui.learnedCards[data.which.order];
             learnedCard.suit = suit;
@@ -4788,7 +4795,6 @@ function HanabiUI(lobby, gameID) {
 
             const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
-            const card = child.children[0];
             card.suitPips.hide();
             card.rankPips.hide();
             child.remove();
@@ -4842,11 +4848,13 @@ function HanabiUI(lobby, gameID) {
                 cardLayer.draw();
             }
         } else if (type === 'clue') {
+            this.cluesSpent += 1;
             const clue = msgClueToClue(data.clue, ui.variant);
             showClueMatch(-1);
 
             for (let i = 0; i < data.list.length; i++) {
                 const card = ui.deck[data.list[i]];
+                if (!card.cluedBorder.visible()) this.cardsGotten += 1;
                 let color;
                 if (clue.type === 0) {
                     // Number (rank) clues
@@ -4916,6 +4924,7 @@ function HanabiUI(lobby, gameID) {
 
             this.currentClues = data.clues;
         } else if (type === 'strike') {
+            this.cardsGotten -= 1;
             const x = new Kinetic.Image({
                 x: (0.675 + 0.04 * (data.num - 1)) * winW,
                 y: 0.935 * winH,
