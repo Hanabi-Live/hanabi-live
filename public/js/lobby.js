@@ -1687,6 +1687,11 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
             'hide-timer-in-untimed',
             'hideTimerInUntimed',
         ],
+        [
+            // Show efficiency statistics (cards gotten and clues spent)
+            'show-eff-stats',
+            'showEffStats',
+        ],
     ];
 
     for (let i = 0; i < settingsList.length; i++) {

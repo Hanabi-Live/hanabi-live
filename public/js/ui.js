@@ -3007,8 +3007,6 @@ function HanabiUI(lobby, gameID) {
             shadowOpacity: 0.9,
         });
 
-        UILayer.add(cardsGottenLabel);
-
         cluesSpentLabel = new Kinetic.Text({
             x: 0.84 * winW,
             y: 0.535 * winH,
@@ -3027,8 +3025,6 @@ function HanabiUI(lobby, gameID) {
             },
             shadowOpacity: 0.9,
         });
-
-        UILayer.add(cluesSpentLabel);
 
         efficiencyLabel = new Kinetic.Text({
             x: 0.84 * winW,
@@ -3049,7 +3045,11 @@ function HanabiUI(lobby, gameID) {
             shadowOpacity: 0.9,
         });
 
-        UILayer.add(efficiencyLabel);
+        if (lobby.showEffStats) {
+            UILayer.add(cardsGottenLabel);
+            UILayer.add(cluesSpentLabel);
+            UILayer.add(efficiencyLabel);
+        }
 
         // Draw the 3 strike (bomb) indicators
         for (let i = 0; i < 3; i++) {
