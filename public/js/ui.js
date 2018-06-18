@@ -1113,6 +1113,15 @@ function HanabiUI(lobby, gameID) {
             // Automatically focus the new text input box
             $(`#tooltip-card-${self.order}-input`).focus();
         });
+        this.isClued = function isClued() {
+            return this.cluedBorder.visible();
+        };
+        this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
+            ui.cardsGotten += cardsGottenDelta;
+            cardsGottenLabel.setText(`Cards Gotten: ${ui.cardsGotten}`);
+            ui.efficiency = ui.cardsGotten / ui.cluesSpent;
+            efficiencyLabel.setText(`Efficiency: ${ui.efficiency.toFixed(2)}`);
+        };
     };
 
     Kinetic.Util.extend(HanabiCard, Kinetic.Group);
@@ -1148,7 +1157,7 @@ function HanabiUI(lobby, gameID) {
             removed.forEach(suit => findPipElement(suit).hide());
             // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
             // display a non-grey card face
-            if (this.possibleSuits.length === 1 && (!this.isInPlayerHand() || this.cluedBorder.visible())) {
+            if (this.possibleSuits.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
                 [this.trueSuit] = this.possibleSuits;
                 findPipElement(this.trueSuit).hide();
                 this.suitPips.hide();
@@ -1163,7 +1172,7 @@ function HanabiUI(lobby, gameID) {
             removed.forEach(rank => findPipElement(rank).hide());
             // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
             // display a non-grey card face
-            if (this.possibleRanks.length === 1 && (!this.isInPlayerHand() || this.cluedBorder.visible())) {
+            if (this.possibleRanks.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
                 [this.trueRank] = this.possibleRanks;
                 findPipElement(this.trueRank).hide();
                 this.rankPips.hide();
@@ -2701,6 +2710,9 @@ function HanabiUI(lobby, gameID) {
     let clueLabel;
     let scoreLabel;
     let turnLabel;
+    let cardsGottenLabel;
+    let cluesSpentLabel;
+    let efficiencyLabel;
     let spectatorsLabel;
     let spectatorsNumLabel;
     let sharedReplayLeaderLabel;
@@ -2975,6 +2987,69 @@ function HanabiUI(lobby, gameID) {
         });
 
         UILayer.add(scoreLabel);
+
+        cardsGottenLabel = new Kinetic.Text({
+            x: 0.84 * winW,
+            y: 0.51 * winH,
+            width: 0.13 * winW,
+            height: 0.03 * winH,
+            fontSize: 0.025 * winH,
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: 'Cards Gotten: 0',
+            fill: '#d8d5ef',
+            shadowColor: 'black',
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
+        });
+
+        UILayer.add(cardsGottenLabel);
+
+        cluesSpentLabel = new Kinetic.Text({
+            x: 0.84 * winW,
+            y: 0.535 * winH,
+            width: 0.13 * winW,
+            height: 0.03 * winH,
+            fontSize: 0.025 * winH,
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: 'Clues Spent: 0',
+            fill: '#d8d5ef',
+            shadowColor: 'black',
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
+        });
+
+        UILayer.add(cluesSpentLabel);
+
+        efficiencyLabel = new Kinetic.Text({
+            x: 0.84 * winW,
+            y: 0.56 * winH,
+            width: 0.13 * winW,
+            height: 0.03 * winH,
+            fontSize: 0.025 * winH,
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: 'Efficiency: -',
+            fill: '#d8d5ef',
+            shadowColor: 'black',
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
+        });
+
+        UILayer.add(efficiencyLabel);
 
         // Draw the 3 strike (bomb) indicators
         for (let i = 0; i < 3; i++) {
@@ -4519,6 +4594,17 @@ function HanabiUI(lobby, gameID) {
         }
     };
 
+    // This function is necessary because the server does not send a 'status'
+    // message for the initial configuration of cards
+    this.resetLabels = function resetLabels() {
+        clueLabel.setText('Clues: 8');
+        clueLabel.setFill('#df1c2d');
+        scoreLabel.setText('Score: 0');
+        cardsGottenLabel.setText('Cards Gotten: 0');
+        cluesSpentLabel.setText('Clues Spent: 0');
+        efficiencyLabel.setText('Efficiency: -');
+    };
+
     this.performReplay = function performReplay(target, fast) {
         let rewind = false;
 
@@ -4531,6 +4617,7 @@ function HanabiUI(lobby, gameID) {
 
         if (target < this.replayTurn) {
             rewind = true;
+            this.resetLabels();
             this.cardsGotten = 0;
             this.cluesSpent = 0;
         }
@@ -4744,7 +4831,9 @@ function HanabiUI(lobby, gameID) {
 
             const child = ui.deck[data.which.order].parent;
             const card = child.children[0];
-            if (!card.cluedBorder.visible()) this.cardsGotten += 1;
+            if (!card.isClued()) {
+                card.handleEfficiency(+1);
+            }
 
             const learnedCard = ui.learnedCards[data.which.order];
             learnedCard.suit = suit;
@@ -4777,7 +4866,9 @@ function HanabiUI(lobby, gameID) {
 
             const child = ui.deck[data.which.order].parent;
             const card = child.children[0];
-            if (card.cluedBorder.visible()) this.cardsGotten -= 1;
+            if (card.isClued()) {
+                card.handleEfficiency(-1);
+            }
 
             const learnedCard = ui.learnedCards[data.which.order];
             learnedCard.suit = suit;
@@ -4849,12 +4940,15 @@ function HanabiUI(lobby, gameID) {
             }
         } else if (type === 'clue') {
             this.cluesSpent += 1;
+            cluesSpentLabel.setText(`Clues Spent: ${this.cluesSpent}`);
             const clue = msgClueToClue(data.clue, ui.variant);
             showClueMatch(-1);
 
             for (let i = 0; i < data.list.length; i++) {
                 const card = ui.deck[data.list[i]];
-                if (!card.cluedBorder.visible()) this.cardsGotten += 1;
+                if (!card.isClued()) {
+                    card.handleEfficiency(+1);
+                }
                 let color;
                 if (clue.type === 0) {
                     // Number (rank) clues
