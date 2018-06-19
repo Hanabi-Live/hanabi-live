@@ -1118,9 +1118,9 @@ function HanabiUI(lobby, gameID) {
         };
         this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
             ui.cardsGotten += cardsGottenDelta;
-            cardsGottenLabel.setText(`Cards Gotten: ${ui.cardsGotten}`);
+            cardsGottenNumberLabel.setText(`${ui.cardsGotten}`);
             ui.efficiency = ui.cardsGotten / ui.cluesSpent;
-            efficiencyLabel.setText(`Efficiency: ${ui.efficiency.toFixed(2)}`);
+            efficiencyNumberLabel.setText(`${ui.efficiency.toFixed(2)}`);
         };
     };
 
@@ -2707,12 +2707,20 @@ function HanabiUI(lobby, gameID) {
     const playerHands = [];
     let drawDeck;
     let messagePrompt;
-    let clueLabel;
-    let scoreLabel;
-    let turnLabel;
-    let cardsGottenLabel;
-    let cluesSpentLabel;
-    let efficiencyLabel;
+
+    let cluesTextLabel;
+    let cluesNumberLabel;
+    let scoreTextLabel;
+    let scoreNumberLabel;
+    let turnTextLabel;
+    let turnNumberLabel;
+    let cardsGottenTextLabel;
+    let cardsGottenNumberLabel;
+    let cluesSpentTextLabel;
+    let cluesSpentNumberLabel;
+    let efficiencyTextLabel;
+    let efficiencyNumberLabel;
+
     let spectatorsLabel;
     let spectatorsNumLabel;
     let sharedReplayLeaderLabel;
@@ -2925,15 +2933,15 @@ function HanabiUI(lobby, gameID) {
 
         bgLayer.add(rect);
 
-        turnLabel = new Kinetic.Text({
+        const basicTextLabel = new Kinetic.Text({
             x: 0.67 * winW,
             y: 0.82 * winH,
             width: 0.11 * winW,
             height: 0.03 * winH,
             fontSize: 0.025 * winH,
             fontFamily: 'Verdana',
-            align: 'center',
-            text: 'Turn: 1',
+            align: 'left',
+            text: 'Placeholder text',
             fill: '#d8d5ef',
             shadowColor: 'black',
             shadowBlur: 10,
@@ -2944,111 +2952,85 @@ function HanabiUI(lobby, gameID) {
             shadowOpacity: 0.9,
         });
 
-        UILayer.add(turnLabel);
+        const basicNumberLabel = basicTextLabel.clone().setText('0').setWidth(0.03 * winW).align('right');
 
-        clueLabel = new Kinetic.Text({
-            x: 0.67 * winW,
+        turnTextLabel = basicTextLabel.clone({
+            text: 'Turn',
+            x: 0.6925 * winW,
+            y: 0.82 * winH,
+        });
+        turnNumberLabel = basicNumberLabel.clone({
+            text: '1',
+            x: 0.7275 * winW,
+            y: 0.82 * winH,
+        });
+        scoreTextLabel = basicTextLabel.clone({
+            text: 'Score',
+            x: 0.6925 * winW,
             y: 0.855 * winH,
-            width: 0.11 * winW,
-            height: 0.03 * winH,
-            fontSize: 0.025 * winH,
-            fontFamily: 'Verdana',
-            align: 'center',
-            text: 'Clues: 8',
-            fill: '#d8d5ef',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
         });
-
-        UILayer.add(clueLabel);
-
-        scoreLabel = new Kinetic.Text({
-            x: 0.67 * winW,
+        scoreNumberLabel = basicNumberLabel.clone({
+            text: '0',
+            x: 0.7275 * winW,
+            y: 0.855 * winH,
+        });
+        cluesTextLabel = basicTextLabel.clone({
+            text: 'Clues',
+            x: 0.6925 * winW,
             y: 0.89 * winH,
-            width: 0.11 * winW,
-            height: 0.03 * winH,
-            fontSize: 0.025 * winH,
-            fontFamily: 'Verdana',
-            align: 'center',
-            text: 'Score: 0',
-            fill: '#d8d5ef',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
+        });
+        cluesNumberLabel = basicNumberLabel.clone({
+            text: '8',
+            x: 0.7275 * winW,
+            y: 0.89 * winH,
         });
 
-        UILayer.add(scoreLabel);
+        UILayer.add(turnTextLabel);
+        UILayer.add(turnNumberLabel);
+        UILayer.add(scoreTextLabel);
+        UILayer.add(scoreNumberLabel);
+        UILayer.add(cluesTextLabel);
+        UILayer.add(cluesNumberLabel);
 
-        cardsGottenLabel = new Kinetic.Text({
-            x: 0.84 * winW,
+        cardsGottenTextLabel = basicTextLabel.clone({
+            text: 'Cards Gotten',
+            x: 0.83 * winW,
             y: 0.51 * winH,
-            width: 0.13 * winW,
-            height: 0.03 * winH,
-            fontSize: 0.025 * winH,
-            fontFamily: 'Verdana',
-            align: 'center',
-            text: 'Cards Gotten: 0',
-            fill: '#d8d5ef',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
         });
-
-        cluesSpentLabel = new Kinetic.Text({
-            x: 0.84 * winW,
+        cardsGottenNumberLabel = basicNumberLabel.clone({
+            text: '0',
+            x: 0.925 * winW,
+            y: 0.51 * winH,
+        });
+        cluesSpentTextLabel = basicTextLabel.clone({
+            text: 'Clues Spent',
+            x: 0.83 * winW,
             y: 0.535 * winH,
-            width: 0.13 * winW,
-            height: 0.03 * winH,
-            fontSize: 0.025 * winH,
-            fontFamily: 'Verdana',
-            align: 'center',
-            text: 'Clues Spent: 0',
-            fill: '#d8d5ef',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
         });
-
-        efficiencyLabel = new Kinetic.Text({
-            x: 0.84 * winW,
+        cluesSpentNumberLabel = basicNumberLabel.clone({
+            text: '0',
+            x: 0.925 * winW,
+            y: 0.535 * winH,
+        });
+        efficiencyTextLabel = basicTextLabel.clone({
+            text: 'Efficiency',
+            x: 0.83 * winW,
             y: 0.56 * winH,
-            width: 0.13 * winW,
-            height: 0.03 * winH,
-            fontSize: 0.025 * winH,
-            fontFamily: 'Verdana',
-            align: 'center',
-            text: 'Efficiency: -',
-            fill: '#d8d5ef',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
+        });
+        efficiencyNumberLabel = basicNumberLabel.clone({
+            text: '-',
+            x: 0.915 * winW,
+            y: 0.56 * winH,
+            width: 0.04 * winW,
         });
 
         if (lobby.showEffStats) {
-            UILayer.add(cardsGottenLabel);
-            UILayer.add(cluesSpentLabel);
-            UILayer.add(efficiencyLabel);
+            UILayer.add(cardsGottenTextLabel);
+            UILayer.add(cluesSpentTextLabel);
+            UILayer.add(efficiencyTextLabel);
+            UILayer.add(cardsGottenNumberLabel);
+            UILayer.add(cluesSpentNumberLabel);
+            UILayer.add(efficiencyNumberLabel);
         }
 
         // Draw the 3 strike (bomb) indicators
@@ -4597,12 +4579,12 @@ function HanabiUI(lobby, gameID) {
     // This function is necessary because the server does not send a 'status'
     // message for the initial configuration of cards
     this.resetLabels = function resetLabels() {
-        clueLabel.setText('Clues: 8');
-        clueLabel.setFill('#df1c2d');
-        scoreLabel.setText('Score: 0');
-        cardsGottenLabel.setText('Cards Gotten: 0');
-        cluesSpentLabel.setText('Clues Spent: 0');
-        efficiencyLabel.setText('Efficiency: -');
+        cluesNumberLabel.setText('8');
+        cluesNumberLabel.setFill('#df1c2d');
+        scoreNumberLabel.setText('0');
+        cardsGottenNumberLabel.setText('0');
+        cluesSpentNumberLabel.setText('0');
+        efficiencyNumberLabel.setText('-');
     };
 
     this.performReplay = function performReplay(target, fast) {
@@ -4940,7 +4922,7 @@ function HanabiUI(lobby, gameID) {
             }
         } else if (type === 'clue') {
             this.cluesSpent += 1;
-            cluesSpentLabel.setText(`Clues Spent: ${this.cluesSpent}`);
+            cluesSpentNumberLabel.setText(`${this.cluesSpent}`);
             const clue = msgClueToClue(data.clue, ui.variant);
             showClueMatch(-1);
 
@@ -4999,19 +4981,19 @@ function HanabiUI(lobby, gameID) {
 
             clueLog.checkExpiry();
         } else if (type === 'status') {
-            clueLabel.setText(`Clues: ${data.clues}`);
+            cluesNumberLabel.setText(`${data.clues}`);
 
             if (data.clues === 0 || data.clues === 8) {
-                clueLabel.setFill('#df1c2d');
+                cluesNumberLabel.setFill('#df1c2d');
             } else if (data.clues === 1) {
-                clueLabel.setFill('#ef8c1d');
+                cluesNumberLabel.setFill('#ef8c1d');
             } else if (data.clues === 2) {
-                clueLabel.setFill('#efef1d');
+                cluesNumberLabel.setFill('#efef1d');
             } else {
-                clueLabel.setFill('#d8d5ef');
+                cluesNumberLabel.setFill('#d8d5ef');
             }
 
-            scoreLabel.setText(`Score: ${data.score}`);
+            scoreNumberLabel.setText(`${data.score}`);
             if (!this.animateFast) {
                 UILayer.draw();
             }
@@ -5058,7 +5040,7 @@ function HanabiUI(lobby, gameID) {
                 UILayer.draw();
             }
 
-            turnLabel.setText(`Turn: ${data.num + 1}`);
+            turnNumberLabel.setText(`${data.num + 1}`);
 
             if (this.queuedAction !== null && this.ourTurn) {
                 setTimeout(() => {
