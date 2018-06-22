@@ -15,22 +15,22 @@ func (c *Card) SuitName(g *Game) string {
 
 	if (g.Options.Variant == 1 || g.Options.Variant == 10) && c.Suit == 5 {
 		// Change "Black" to "Orange"
+		// (for "Orange" and "Acid Trip")
 		name = suits[8]
-	} else if g.Options.Variant == 3 && c.Suit == 5 {
+	} else if (g.Options.Variant == 3 || g.Options.Variant == 6 || g.Options.Variant == 11) && c.Suit == 5 {
 		// Change "Black" to "Rainbow"
+		// (for "Rainbow", "White & Rainbow", and "Rainbow (1oE)")
 		name = suits[6]
 	} else if g.Options.Variant == 4 {
-		// Set the "Mixed Suits" text
-		name = mixedSuits[c.Suit]
+		// Set the "Dual Color" text
+		name = dcSuits[c.Suit]
 	} else if g.Options.Variant == 5 {
-		// Set the "Dual & Rainbow Suits" text
-		name = mmSuits[c.Suit]
+		// Set the "Dual & Rainbow" text
+		name = dcrSuits[c.Suit]
 	} else if g.Options.Variant == 6 && c.Suit == 4 {
 		// Change "Purple" to "White"
+		// (for "White & Rainbow")
 		name = suits[7]
-	} else if (g.Options.Variant == 6 || g.Options.Variant == 11) && c.Suit == 5 {
-		// Change "Black" to "Rainbow"
-		name = suits[6]
 	} else if g.Options.Variant == 7 {
 		// Set the "Wild & Crazy" suits text
 		name = crazySuits[c.Suit]

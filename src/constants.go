@@ -19,7 +19,7 @@ var (
 		"White",
 		"Orange",
 	}
-	mixedSuits = []string{
+	dcSuits = []string{
 		"Green",
 		"Purple",
 		"Navy",
@@ -27,13 +27,13 @@ var (
 		"Tan",
 		"Burgundy",
 	}
-	mixedClues = []string{
+	dcClues = []string{
 		"Blue",
 		"Yellow",
 		"Red",
 		"Black",
 	}
-	mmSuits = []string{
+	dcrSuits = []string{
 		"Teal",
 		"Lime",
 		"Orange",

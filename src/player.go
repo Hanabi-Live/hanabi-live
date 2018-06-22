@@ -216,14 +216,16 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 	} else if d.Clue.Type == 1 {
 		// Color clue
 		if (g.Options.Variant == 1 || g.Options.Variant == 10) && d.Clue.Value == 5 {
-			// Orange
+			// For "Orange" and "Acid Trip"
 			text += suits[8]
 		} else if g.Options.Variant == 4 || g.Options.Variant == 7 {
-			// Dual-color or Wild & Crazy
-			text += mixedClues[d.Clue.Value]
+			// For "Dual-color" or "Wild & Crazy"
+			text += dcClues[d.Clue.Value]
 		} else if g.Options.Variant == 8 {
+			// For "Ambiguous"
 			text += ambiguousClues[d.Clue.Value]
 		} else if g.Options.Variant == 9 {
+			// For "Blue & Red"
 			text += blueRedClues[d.Clue.Value]
 		} else {
 			text += suits[d.Clue.Value]
