@@ -33,6 +33,7 @@ function HanabiLobby() {
     this.sendChatSound = false;
     this.showColorblindUI = false;
     this.hideTimerInUntimed = false;
+    this.showEffStats = false;
     this.reverseHands = false;
 
     this.game = {
