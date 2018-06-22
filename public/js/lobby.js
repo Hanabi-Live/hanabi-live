@@ -475,7 +475,7 @@ HanabiLobby.prototype.preloadSounds = function preloadSounds() {
     ];
     for (const file of soundFiles) {
         const audio = new Audio(`public/sounds/${file}.mp3`);
-        audio.volume = 0;
+        audio.muted = true;
         audio.play();
     }
 };
