@@ -33,8 +33,6 @@ function HanabiLobby() {
     this.sendChatSound = false;
     this.showColorblindUI = false;
     this.hideTimerInUntimed = false;
-    this.showEffStats = false;
-    this.reverseHands = false;
 
     this.game = {
         name: '',
@@ -469,6 +467,7 @@ HanabiLobby.prototype.preloadSounds = function preloadSounds() {
         'blind3',
         'blind4',
         'fail',
+        'sad',
         'tone',
         'turn_other',
         'turn_us',
@@ -1688,16 +1687,6 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
             // Hide the turn timers that tick up in untimed games
             'hide-timer-in-untimed',
             'hideTimerInUntimed',
-        ],
-        [
-            // Show efficiency statistics (cards gotten and clues spent)
-            'show-eff-stats',
-            'showEffStats',
-        ],
-        [
-            // Reverse the order of cards relative to a hand
-            'reverse-hands',
-            'reverseHands'
         ],
     ];
 

@@ -16,7 +16,7 @@ func (c *Card) SuitName(g *Game) string {
 	if (g.Options.Variant == 1 || g.Options.Variant == 10) && c.Suit == 5 {
 		// Change "Black" to "Orange"
 		name = suits[8]
-	} else if g.Options.Variant == 3 && c.Suit == 5 {
+	} else if (g.Options.Variant == 3 || g.Options.Variant == 11) && c.Suit == 5 {
 		// Change "Black" to "Rainbow"
 		name = suits[6]
 	} else if g.Options.Variant == 4 {
@@ -28,7 +28,7 @@ func (c *Card) SuitName(g *Game) string {
 	} else if g.Options.Variant == 6 && c.Suit == 4 {
 		// Change "Purple" to "White"
 		name = suits[7]
-	} else if (g.Options.Variant == 6 || g.Options.Variant == 11) && c.Suit == 5 {
+	} else if g.Options.Variant == 6 && c.Suit == 5 {
 		// Change "Black" to "Rainbow"
 		name = suits[6]
 	} else if g.Options.Variant == 7 {
