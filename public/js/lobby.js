@@ -469,6 +469,7 @@ HanabiLobby.prototype.preloadSounds = function preloadSounds() {
         'blind3',
         'blind4',
         'fail',
+        'sad',
         'tone',
         'turn_other',
         'turn_us',
