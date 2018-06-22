@@ -3720,7 +3720,7 @@ function HanabiUI(lobby, gameID) {
                 ],
             });
 
-            if (j === 0) {
+            if (j === 0 !== lobby.reverseHands) {
                 rect.setFillLinearGradientColorStops([
                     1,
                     'rgba(0,0,0,0)',
