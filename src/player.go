@@ -390,13 +390,18 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 	log.Info(g.GetName() + text)
 
 	// Find out if this was a discard of a "critical" card
-	if !c.Failed { // If it was a discard (as opposed to a misplay)
+	if !c.Failed { // Ignore misplays
 		// Search through the deck
 		critical := true
 		for _, deckCard := range g.Deck {
-			if deckCard.Suit == c.Suit && deckCard.Rank == c.Rank && !c.Discarded {
+			if deckCard.Order == c.Order {
+				// Skip over the card that was just discarded
+				continue
+			}
+
+			if deckCard.Suit == c.Suit && deckCard.Rank == c.Rank && !deckCard.Discarded {
 				critical = false
-				log.Info("This discard was not a critical card.")
+				log.Info("The card that was discarded is not critical.")
 				break
 			}
 		}
@@ -404,9 +409,10 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 		if critical {
 			// Play a sad sound because this discard just lost the game
 			g.Sound = "sad"
-			log.Info("This discard was a critical card.")
+			log.Info("The card that was discarded is critical.")
 		}
 	}
+
 }
 
 func (p *Player) DrawCard(g *Game) {
