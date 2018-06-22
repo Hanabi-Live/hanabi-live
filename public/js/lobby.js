@@ -33,6 +33,7 @@ function HanabiLobby() {
     this.sendChatSound = false;
     this.showColorblindUI = false;
     this.hideTimerInUntimed = false;
+    this.reverseHands = false;
 
     this.game = {
         name: '',
@@ -1691,6 +1692,11 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
             // Show efficiency statistics (cards gotten and clues spent)
             'show-eff-stats',
             'showEffStats',
+        ],
+        [
+            // Reverse the order of cards relative to a hand
+            'reverse-hands',
+            'reverseHands'
         ],
     ];
 

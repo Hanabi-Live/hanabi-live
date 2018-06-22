@@ -3689,7 +3689,7 @@ function HanabiUI(lobby, gameID) {
                 height: handPos[nump][j].h * winH,
                 rotationDeg: handPos[nump][j].rot,
                 align: 'center',
-                reverse: j === 0,
+                reverse: j === 0 !== lobby.reverseHands,
                 invertCards: i !== this.playerUs,
             });
 
