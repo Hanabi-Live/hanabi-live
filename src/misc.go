@@ -26,12 +26,6 @@ func stringInSlice(a string, slice []string) bool {
 	return false
 }
 
-// From: https://stackoverflow.com/questions/39544571/golang-round-to-nearest-0-05/39544897#39544897
-// Replace with standard library: https://github.com/golang/go/issues/20100
-func round(x, unit float64) float64 {
-	return float64(int64(x/unit+0.5)) * unit
-}
-
 // From: https://stackoverflow.com/questions/47341278/how-to-format-a-duration-in-golang
 func durationToString(d time.Duration) string {
 	m := d / time.Minute
