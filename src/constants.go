@@ -75,17 +75,16 @@ var (
 		"Red",
 	}
 	variants = []string{
-		"No Variant",      // 0
-		"Orange",          // 1
-		"Black (1oE)",     // 2
-		"Rainbow",         // 3
-		"Dual-color",      // 4
-		"Dual & Rainbow",  // 5
-		"White & Rainbow", // 6
-		"Wild & Crazy",    // 7
-		"Ambiguous",       // 8
-		"Blue & Red",      // 9
-		"Acid Trip",       // 10
-		"Rainbow (1oE)",   // 11
+		"No Variant",
+		"Orange",
+		"Black (1oE)",
+		"Rainbow",
+		"Dual-color",
+		"Dual & Rainbow",
+		"White & Rainbow",
+		"Wild & Crazy",
+		"Ambiguous",
+		"Blue & Red",
+		"Acid Trip",
 	}
 )
