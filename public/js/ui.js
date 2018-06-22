@@ -1232,7 +1232,7 @@ function HanabiUI(lobby, gameID) {
         Kinetic.Group.call(this, config);
 
         this.align = (config.align || 'left');
-        this.reverse = (config.reverse || false);
+        this.reverse = ( lobby.reverseHands ? (config.reverse || false) : !config.reverse);
         this.invertCards = (config.invertCards || false);
     };
 

@@ -800,6 +800,20 @@
             'Rainbow',
         ),
 
+		
+		MULTISINGLERAINBOW: new Variant(
+		[
+			exports.SUIT.BLUE,
+			exports.SUIT.GREEN,
+			exports.SUIT.YELLOW,
+			exports.SUIT.RED,
+			exports.SUIT.PURPLE,
+			exports.SUIT.MULTI,
+		],
+		baseColors,
+		false,
+		'Rainbow Suit (all colors, 1 each)',
+            
         MIXED: new Variant(
             [
                 exports.SUIT.MGREEN, // Blue + Yellow
@@ -938,6 +952,7 @@
         exports.VARIANT.AMBIGUOUS,
         exports.VARIANT.BLUERED,
         exports.VARIANT.ACIDTRIP,
+	exports.VARIANT.MULTISINGLERAINBOW,
     ];
 
     exports.INDICATOR = {

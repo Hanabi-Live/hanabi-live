@@ -345,7 +345,7 @@ function drawPlayers() {
             height: constants.HAND_POS[nump][j].h * globals.ui.h,
             rotation: constants.HAND_POS[nump][j].rot,
             align: 'center',
-            reverse: j === 0,
+            reverse: (lobby.reverseHand ? j != 0 : j === 0),
             invertCards: i !== globals.init.seat,
         });
         globals.ui.objects.hands.push(layout);
