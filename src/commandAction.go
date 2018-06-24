@@ -62,7 +62,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Validate that it is this player's turn
-	if g.ActivePlayer != i {
+	if g.ActivePlayer != i && d.Type != 5 { // Make an exception for idle timeouts
 		s.Error("It is not your turn, so you cannot perform an action.")
 		return
 	}
@@ -193,7 +193,7 @@ func commandAction(s *Session, d *CommandData) {
 		// This is a special action type sent by the server to itself when the game has been idle for too long
 		g.Strikes = 3
 		g.Actions = append(g.Actions, Action{
-			Text: p.Name + " was idle for too long.",
+			Text: "Players were idle for too long.",
 		})
 		g.NotifyAction()
 	} else {

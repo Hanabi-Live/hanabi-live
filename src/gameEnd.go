@@ -202,11 +202,12 @@ func (g *Game) End() {
 		// (this is necessary for players who happen to be offline or in the lobby)
 		p.Session.Set("currentGame", -1)
 
-		// Skip offline players;
+		// Skip offline players and players in the lobby;
 		// if they re-login, then they will just stay in the lobby
-		if p.Session.IsClosed() {
-			log.Info("Skipped converting " + p.Name + " to a spectator since they are offline.")
-			if p.ID == g.Owner {
+		if !p.Present {
+			log.Info("Skipped converting " + p.Name + " to a spectator since they are not present.")
+			if p.ID == g.Owner && p.Session.IsClosed() {
+				// We don't want to pass the replay leader away if they are still in the lobby (as opposed to being offline)
 				ownerOffline = true
 				log.Info(p.Name + " was the owner of the game and they are offline; passing the leader to someone else.")
 			}
@@ -217,6 +218,9 @@ func (g *Game) End() {
 		// skip conversion so that the shared replay gets deleted below
 		if time.Since(g.DatetimeLastAction) > idleTimeout {
 			log.Info("Skipped converting " + p.Name + " to a spectator since the game ended due to idleness.")
+
+			// Send this player a message that will boot them back to the lobby
+			// TODO
 			continue
 		}
 

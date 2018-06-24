@@ -160,7 +160,7 @@
     );
 
     /*
-        TODO: these functinos obviously belong somewhere else
+        TODO: these functions obviously belong somewhere else
     */
 
     exports.backpath = function backpath(ctx, p, xrad, yrad) {
@@ -217,6 +217,13 @@
         exports.COLOR.GREEN,
         exports.COLOR.YELLOW,
         exports.COLOR.RED,
+    ];
+    const baseColorsMinusPurplePlusBlack = [
+        exports.COLOR.BLUE,
+        exports.COLOR.GREEN,
+        exports.COLOR.YELLOW,
+        exports.COLOR.RED,
+        exports.COLOR.BLACK,
     ];
 
     // Specify between solid color and gradients,
@@ -800,7 +807,7 @@
             'Rainbow',
         ),
 
-        MULTISINGLERAINBOW: new Variant(
+        SINGLERAINBOW: new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
@@ -811,8 +818,23 @@
             ],
             baseColors,
             false,
-            'Rainbow Suit (1 each)',
+            'Rainbow Suit (1 of each)',
             'Rainbow (1oE)',
+        ),
+
+        SINGLERAINBOWBLACK: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.BLACK,
+                exports.SUIT.MULTI,
+            ],
+            baseColorsMinusPurplePlusBlack,
+            false,
+            'Rainbow & Black Suits (1 of each)',
+            'Rainbow & Black (1oE)',
         ),
 
         MIXED: new Variant(
@@ -953,7 +975,8 @@
         exports.VARIANT.AMBIGUOUS,
         exports.VARIANT.BLUERED,
         exports.VARIANT.ACIDTRIP,
-        exports.VARIANT.MULTISINGLERAINBOW,
+        exports.VARIANT.SINGLERAINBOW,
+        exports.VARIANT.SINGLERAINBOWBLACK,
     ];
 
     exports.INDICATOR = {

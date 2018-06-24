@@ -39,8 +39,8 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 				if d.Clue.Value == c.Suit {
 					touched = true
 				}
-			} else if g.Options.Variant == 3 || g.Options.Variant == 6 {
-				// Multi (Rainbow) and White + Multi
+			} else if g.Options.Variant == 3 || g.Options.Variant == 6 || g.Options.Variant == 11 || g.Options.Variant == 12 {
+				// Rainbow, White & Rainbow, Rainbow (1oE), Black & Rainbow (1oE)
 				if d.Clue.Value == c.Suit || c.Suit == 5 {
 					touched = true
 				}
@@ -228,6 +228,9 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 		} else if g.Options.Variant == 9 {
 			// For "Blue & Red"
 			text += blueRedClues[d.Clue.Value]
+		} else if g.Options.Variant == 12 && d.Clue.Value == 4 {
+			// For "Black & Rainbow (1oE)"
+			text += suits[5]
 		} else {
 			text += suits[d.Clue.Value]
 		}
@@ -401,7 +404,6 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 
 			if deckCard.Suit == c.Suit && deckCard.Rank == c.Rank && !deckCard.Discarded {
 				critical = false
-				log.Info("The card that was discarded is not critical.")
 				break
 			}
 		}
@@ -409,7 +411,6 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 		if critical {
 			// Play a sad sound because this discard just lost the game
 			g.Sound = "sad"
-			log.Info("The card that was discarded is critical.")
 		}
 	}
 

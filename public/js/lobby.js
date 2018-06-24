@@ -685,6 +685,8 @@ const variantNames = [
     'Ambiguous Suits',
     'Red & Blue Suits',
     'Acid Trip',
+    'Rainbow Suit (one of each)',
+    'Rainbow & Black Suits (one of each)',
 ];
 const variantNamesShort = [
     'No Variant',
@@ -698,6 +700,8 @@ const variantNamesShort = [
     'Ambiguous',
     'Red & Blue',
     'Acid Trip',
+    'Rainbow (1oE)',
+    'Rainbow & Black (1oE)',
 ];
 
 $(document).ready(() => {
@@ -1594,12 +1598,19 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
     });
 
     conn.on('error', (data) => {
+        // Log the error message
+        console.error(data.error);
+
+        /*
+        Let all errors happen silently so that the user does not have to restart their browser
+
         // Disconnect from the server, if connected
         if (!self.conn) {
             self.conn.close();
         }
 
         self.errorShow(data.error);
+        */
     });
 };
 

@@ -40,6 +40,15 @@ func (c *Card) SuitName(g *Game) string {
 	} else if g.Options.Variant == 9 {
 		// Set the "Blue & Red Suits" text
 		name = blueRedSuits[c.Suit]
+	} else if g.Options.Variant == 12 {
+		// Set the "Black & Rainbow (1oE)" text
+		if c.Suit == 4 {
+			// Change "Purple" to "Black"
+			name = suits[5]
+		} else if c.Suit == 5 {
+			// Change "Black" to "Rainbow"
+			name = suits[6]
+		}
 	}
 
 	return name

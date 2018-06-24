@@ -7,10 +7,6 @@ import (
 	"github.com/Zamiell/hanabi-live/src/models"
 )
 
-const (
-	idleTimeout = time.Minute * 30
-)
-
 type Game struct {
 	ID                 int
 	Name               string
