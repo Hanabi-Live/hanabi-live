@@ -214,6 +214,9 @@ func (g *Game) End() {
 			continue
 		}
 
+		// Make all players be present (meaning that their name will not be red)
+		p.Present = true
+
 		// If this game was ended due to idleness,
 		// skip conversion so that the shared replay gets deleted below
 		if time.Since(g.DatetimeLastAction) > idleTimeout {
@@ -227,6 +230,9 @@ func (g *Game) End() {
 		g.Spectators[p.Session.UserID()] = p.Session
 		log.Info("Converted " + p.Name + " to a spectator.")
 	}
+
+	// Ensure that all player names are not red/away in the client
+	g.NotifyConnected()
 
 	// Empty the players
 	// (this is necessary so that "joined" is equal to false in the upcoming table message)

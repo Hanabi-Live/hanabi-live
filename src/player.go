@@ -306,7 +306,7 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 	g.NotifyAction()
 
 	// Send the "message" about the play
-	text := p.Name + " plays " + c.SuitName(g) + " " + strconv.Itoa(c.Rank) + " from "
+	text := p.Name + " plays " + c.Name(g) + " from "
 	if c.Slot == -1 {
 		text += "the deck"
 	} else {
@@ -373,7 +373,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 	} else {
 		text += "discards"
 	}
-	text += " " + c.SuitName(g) + " " + strconv.Itoa(c.Rank) + " from "
+	text += " " + c.Name(g) + " from "
 	if c.Slot == -1 {
 		text += "the deck"
 	} else {
@@ -397,13 +397,17 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 		// Search through the deck
 		critical := true
 		for _, deckCard := range g.Deck {
+			log.Info("Comparing " + c.Name(g) + " to " + deckCard.Name(g) + ".")
+
 			if deckCard.Order == c.Order {
 				// Skip over the card that was just discarded
+				log.Info("(Skipping over the same card.)")
 				continue
 			}
 
 			if deckCard.Suit == c.Suit && deckCard.Rank == c.Rank && !deckCard.Discarded {
 				critical = false
+				log.Info("Discarded card is NOT critical.")
 				break
 			}
 		}
@@ -411,6 +415,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 		if critical {
 			// Play a sad sound because this discard just lost the game
 			g.Sound = "sad"
+			log.Info("Discarded card is CRITICAL.")
 		}
 	}
 

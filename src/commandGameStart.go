@@ -279,7 +279,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	log.Info("Deal for seed: " + g.Seed + " (from top to bottom)")
 	log.Info("(cards are dealt to a player until their hand fills up before moving on to the next one)")
 	for i, c := range g.Deck {
-		log.Info(strconv.Itoa(i+1) + ") " + c.SuitName(g) + " " + strconv.Itoa(c.Rank))
+		log.Info(strconv.Itoa(i+1) + ") " + c.Name(g))
 	}
 	log.Info("--------------------------------------------------")
 

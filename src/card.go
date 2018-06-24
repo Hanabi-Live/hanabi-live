@@ -1,5 +1,7 @@
 package main
 
+import "strconv"
+
 type Card struct {
 	Order     int
 	Suit      int
@@ -52,4 +54,8 @@ func (c *Card) SuitName(g *Game) string {
 	}
 
 	return name
+}
+
+func (c *Card) Name(g *Game) string {
+	return c.SuitName(g) + " " + strconv.Itoa(c.Rank)
 }
