@@ -395,8 +395,9 @@
             [exports.COLOR.BLACK],
         ),
 
-        // Green for mixed variant, which has different properties than green
-        // for original variants
+        // Green for the dual-color variants
+        // (in no-variant, it is a single color, but in the dual-color variants,
+        // it is composed of two different colors)
         MGREEN: new Suit(
             'Green',
             'G',
@@ -531,9 +532,9 @@
         ),
 
         // Color ordering not guaranteed to be the same as declaration order
-        // Recommend not to access these values for the multi suit, but rather use
-        // special cases e.g. `if (suit === SUIT.MULTI, color_match = true)`
-        MULTI: new Suit(
+        // Recommend not to access these values for the rainbow suit, but rather use
+        // special cases e.g. `if (suit === SUIT.RAINBOW, color_match = true)`
+        RAINBOW: new Suit(
             'Rainbow',
             'M',
             baseColors,
@@ -743,7 +744,7 @@
         this.showSuitNames = showSuitNames; // We draw the text below the suits for confusing variants
         this.name = name;
         this.nameShort = nameShort;
-        this.offsetCardIndicators = suits.some(s => s !== exports.SUIT.MULTI && s.clueColors.length > 1);
+        this.offsetCardIndicators = suits.some(s => s !== exports.SUIT.RAINBOW && s.clueColors.length > 1);
         this.maxScore = suits.length * 5;
     };
 
@@ -762,7 +763,7 @@
             'No Variant',
         ),
 
-        ORANGESUIT: new Variant(
+        ORANGE: new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
@@ -773,11 +774,11 @@
             ],
             baseColorsPlusOrange,
             false,
-            'Black Suit',
-            'Black',
+            'Orange Suit',
+            'Orange',
         ),
 
-        BLACKONE: new Variant(
+        BLACK: new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
@@ -799,7 +800,7 @@
                 exports.SUIT.YELLOW,
                 exports.SUIT.RED,
                 exports.SUIT.PURPLE,
-                exports.SUIT.MULTI,
+                exports.SUIT.RAINBOW,
             ],
             baseColors,
             false,
@@ -807,37 +808,7 @@
             'Rainbow',
         ),
 
-        SINGLERAINBOW: new Variant(
-            [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RED,
-                exports.SUIT.PURPLE,
-                exports.SUIT.MULTI,
-            ],
-            baseColors,
-            false,
-            'Rainbow Suit (1 of each)',
-            'Rainbow (1oE)',
-        ),
-
-        SINGLERAINBOWBLACK: new Variant(
-            [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RED,
-                exports.SUIT.BLACK,
-                exports.SUIT.MULTI,
-            ],
-            baseColorsMinusPurplePlusBlack,
-            false,
-            'Rainbow & Black Suits (1 of each)',
-            'Rainbow & Black (1oE)',
-        ),
-
-        MIXED: new Variant(
+        DUAL: new Variant(
             [
                 exports.SUIT.MGREEN, // Blue + Yellow
                 exports.SUIT.MPURPLE, // Blue + Red
@@ -857,14 +828,14 @@
             'Dual-color',
         ),
 
-        MM: new Variant(
+        DUALRAINBOW: new Variant(
             [
                 exports.SUIT.TEAL, // Blue + Green
                 exports.SUIT.LIME, // Green + Yellow
                 exports.SUIT.SORANGE, // Yellow + Red
                 exports.SUIT.CARDINAL, // Red + Purple
                 exports.SUIT.INDIGO, // Purple + Blue
-                exports.SUIT.MULTI,
+                exports.SUIT.RAINBOW,
             ],
             baseColors,
             true,
@@ -872,14 +843,14 @@
             'Dual & Rainbow',
         ),
 
-        WHITEMULTI: new Variant(
+        WHITERAINBOW: new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
                 exports.SUIT.YELLOW,
                 exports.SUIT.RED,
                 exports.SUIT.WHITE,
-                exports.SUIT.MULTI,
+                exports.SUIT.RAINBOW,
             ],
             baseColorsMinusPurple,
             false,
@@ -893,7 +864,7 @@
                 exports.SUIT.MPURPLE, // Blue + Red
                 exports.SUIT.MORANGE, // Yellow + Red
                 exports.SUIT.WHITE,
-                exports.SUIT.MULTI,
+                exports.SUIT.RAINBOW,
                 exports.SUIT.BLACK,
             ],
             [
@@ -960,17 +931,47 @@
             'Acid Trip',
             'Acid Trip',
         ),
+
+        SINGLERAINBOW: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors,
+            false,
+            'Rainbow Suit (one of each)',
+            'Rainbow (1oE)',
+        ),
+
+        SINGLERAINBOWBLACK: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.BLACK,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColorsMinusPurplePlusBlack,
+            false,
+            'Rainbow & Black Suits (one of each)',
+            'Rainbow & Black (1oE)',
+        ),
     };
 
     // This is the mapping that the server uses
     exports.VARIANT_INTEGER_MAPPING = [
         exports.VARIANT.NONE,
-        exports.VARIANT.ORANGESUIT,
-        exports.VARIANT.BLACKONE,
+        exports.VARIANT.ORANGE,
+        exports.VARIANT.BLACK,
         exports.VARIANT.RAINBOW,
-        exports.VARIANT.MIXED,
-        exports.VARIANT.MM,
-        exports.VARIANT.WHITEMULTI,
+        exports.VARIANT.DUAL,
+        exports.VARIANT.DUALRAINBOW,
+        exports.VARIANT.WHITERAINBOW,
         exports.VARIANT.CRAZY,
         exports.VARIANT.AMBIGUOUS,
         exports.VARIANT.BLUERED,

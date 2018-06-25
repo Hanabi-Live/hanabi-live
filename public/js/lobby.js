@@ -673,36 +673,14 @@ HanabiLobby.prototype.removeTable = function removeTable(data) {
     this.drawTables();
 };
 
-const variantNames = [
-    'None',
-    'Orange Suit',
-    'Black Suit (one of each)',
-    'Rainbow Suit (all colors)',
-    'Dual-color Suits',
-    'Dual-color & Rainbow Suits',
-    'Colorless & Rainbow Suits',
-    'Wild & Crazy',
-    'Ambiguous Suits',
-    'Red & Blue Suits',
-    'Acid Trip',
-    'Rainbow Suit (one of each)',
-    'Rainbow & Black Suits (one of each)',
-];
-const variantNamesShort = [
-    'No Variant',
-    'Orange',
-    'Black (1oE)',
-    'Rainbow',
-    'Dual-color',
-    'Dual & Rainbow',
-    'White & Rainbow',
-    'Wild & Crazy',
-    'Ambiguous',
-    'Red & Blue',
-    'Acid Trip',
-    'Rainbow (1oE)',
-    'Rainbow & Black (1oE)',
-];
+// Populate all of the variant names, which are used in a few places in the code
+// (there is a full and short name for each variant)
+const variantNames = [];
+const variantNamesShort = [];
+for (const variant of Object.values(constants.VARIANT)) {
+    variantNames.push(variant.name);
+    variantNamesShort.push(variant.nameShort);
+}
 
 $(document).ready(() => {
     for (let i = 0; i < variantNames.length; i++) {
