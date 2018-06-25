@@ -315,21 +315,3 @@ func variantGetClueName(variant int, clue int) string {
 		return suits[clue]
 	}
 }
-
-func variantIsSuitCritical(variant int, suit int) bool {
-	if variant == 2 && suit == 5 {
-		// Black in Black (1oE)
-		return true
-	} else if variant == 7 && suit == 5 {
-		// Black in Wild & Crazy
-		return true
-	} else if variant == 11 && suit == 5 {
-		// Rainbow in Rainbow (1oE)
-		return true
-	} else if variant == 12 && (suit == 4 || suit == 5) {
-		// Black & Rainbow in Black & Rainbow (1oE)
-		return true
-	}
-
-	return false
-}

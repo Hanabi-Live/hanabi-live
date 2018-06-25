@@ -264,7 +264,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 				if i > 1 {
 					totalCardsNotDiscarded = 2
 				}
-				if variantIsSuitCritical(g.Options.Variant, c.Suit) {
+				if variantIsSuit1oE(g.Options.Variant, c.Suit) {
 					totalCardsNotDiscarded = 1
 				}
 				for _, deckCard := range g.Deck {
