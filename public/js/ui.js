@@ -59,6 +59,7 @@ function HanabiUI(lobby, gameID) {
 
     // Users can only update one note at a time to prevent bugs
     this.editingNote = null; // Equal to the card order number or null
+    this.editingNoteActionOccured = false; // Equal to true if something happened when the note box happens to be open
 
     this.reorderCards = false;
 
@@ -1079,7 +1080,7 @@ function HanabiUI(lobby, gameID) {
                     if (note === null) {
                         note = '';
                     }
-                } else {
+                } else if (keyEvent.key === 'Enter') {
                     note = $(`#tooltip-card-${self.order}-input`).val();
                     ui.setNote(self.order, note);
 
@@ -1092,6 +1093,12 @@ function HanabiUI(lobby, gameID) {
                                 note,
                             },
                         });
+                    }
+
+                    // Check to see if an event happened while we were editing this note
+                    if (ui.editingNoteActionOccured) {
+                        ui.editingNoteActionOccured = false;
+                        tooltip.tooltipster('close');
                     }
                 }
 
@@ -4310,6 +4317,9 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
+            console.log('LOL!!!!!!!!');
+            console.log(document.activeElement);
+
             // Don't interfere with other kinds of hotkeys
             if (event.ctrlKey || event.altKey) {
                 return;
@@ -4755,6 +4765,11 @@ function HanabiUI(lobby, gameID) {
             $(`#tooltip-card-${ui.editingNote}-input`).trigger(evt);
         }
         */
+
+        // If an action in the game happens, mark to make the tooltip go away after the user has finished entering their note
+        if (ui.editingNote !== null) {
+            ui.editingNoteActionOccured = true;
+        }
 
         // Automatically disable any tooltips once an action in the game happens
         if (ui.activeHover) {
