@@ -256,6 +256,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 			// Also check to see if the suit is "dead"
 			// (meaning that the discarded card is trash and not actually critical)
 			for i := 1; i < c.Rank; i++ {
+				// Start with the 1s, then the 2s, etc., checking to see if they are all discarded
 				totalCardsNotDiscarded := 3
 				if i > 1 {
 					totalCardsNotDiscarded = 2

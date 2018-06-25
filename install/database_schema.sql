@@ -29,6 +29,7 @@ CREATE TABLE games (
     id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
     name               NVARCHAR(50)  NOT NULL,
+    num_players        TINYINT       NOT NULL  DEFAULT 2,
     owner              INT           NOT NULL,
     variant            TINYINT       NOT NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
     timed              BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
