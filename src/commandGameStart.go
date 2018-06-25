@@ -73,18 +73,15 @@ func commandGameStart(s *Session, d *CommandData) {
 		ranks := []int{1, 2, 3, 4, 5}
 		for _, rank := range ranks {
 			var amountToAdd int
-			if suit == 5 && (g.Options.Variant == 2 || g.Options.Variant == 7 || g.Options.Variant == 11) {
-				// "Black (1oE)" or "Wild & Crazy" (which includes black one of each)
-				amountToAdd = 1
-			} else if (suit == 4 || suit == 5) && g.Options.Variant == 12 {
-				// Black & Rainbow (1oE)
-				amountToAdd = 1
-			} else if rank == 1 {
+			if rank == 1 {
 				amountToAdd = 3
 			} else if rank == 5 {
 				amountToAdd = 1
 			} else {
 				amountToAdd = 2
+			}
+			if variantIsSuit1oE(g.Options.Variant, suit) {
+				amountToAdd = 1
 			}
 
 			for i := 0; i < amountToAdd; i++ {

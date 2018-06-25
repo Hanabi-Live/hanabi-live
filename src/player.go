@@ -34,146 +34,7 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 			}
 		} else if d.Clue.Type == 1 {
 			// Color clue
-			if g.Options.Variant >= 0 && g.Options.Variant <= 2 {
-				// Normal, orange, and black
-				if d.Clue.Value == c.Suit {
-					touched = true
-				}
-			} else if g.Options.Variant == 3 || g.Options.Variant == 6 || g.Options.Variant == 11 || g.Options.Variant == 12 {
-				// Rainbow, White & Rainbow, Rainbow (1oE), Black & Rainbow (1oE)
-				if d.Clue.Value == c.Suit || c.Suit == 5 {
-					touched = true
-				}
-			} else if g.Options.Variant == 4 {
-				// Mixed suits
-				// 0 - Green    (Blue   / Yellow)
-				// 1 - Purple   (Blue   / Red)
-				// 2 - Navy     (Blue   / Black)
-				// 3 - Orange   (Yellow / Red)
-				// 4 - Tan      (Yellow / Black)
-				// 5 - Burgundy (Red    / Black)
-				if d.Clue.Value == 0 {
-					// Blue clue
-					if c.Suit == 0 || c.Suit == 1 || c.Suit == 2 {
-						touched = true
-					}
-				} else if d.Clue.Value == 1 {
-					// Green clue
-					if c.Suit == 0 || c.Suit == 3 || c.Suit == 4 {
-						touched = true
-					}
-				} else if d.Clue.Value == 2 {
-					// Red clue
-					if c.Suit == 1 || c.Suit == 3 || c.Suit == 5 {
-						touched = true
-					}
-				} else if d.Clue.Value == 3 {
-					// Purple clue
-					if c.Suit == 2 || c.Suit == 4 || c.Suit == 5 {
-						touched = true
-					}
-				}
-			} else if g.Options.Variant == 5 {
-				// Mixed and multi suits
-				// 0 - Teal     (Blue / Green)
-				// 1 - Lime     (Green / Yellow)
-				// 2 - Orange   (Yellow / Red)
-				// 3 - Cardinal (Red / Purple)
-				// 4 - Indigo   (Purple / Blue)
-				// 5 - Rainbow
-				if d.Clue.Value == 0 {
-					// Blue clue
-					if c.Suit == 0 || c.Suit == 4 || c.Suit == 5 {
-						touched = true
-					}
-				} else if d.Clue.Value == 1 {
-					// Green clue
-					if c.Suit == 0 || c.Suit == 1 || c.Suit == 5 {
-						touched = true
-					}
-				} else if d.Clue.Value == 2 {
-					// Yellow clue
-					if c.Suit == 1 || c.Suit == 2 || c.Suit == 5 {
-						touched = true
-					}
-				} else if d.Clue.Value == 3 {
-					// Red clue
-					if c.Suit == 2 || c.Suit == 3 || c.Suit == 5 {
-						touched = true
-					}
-				} else if d.Clue.Value == 4 {
-					// Black clue
-					if c.Suit == 3 || c.Suit == 4 || c.Suit == 5 {
-						touched = true
-					}
-				}
-			} else if g.Options.Variant == 7 {
-				// Wild & Crazy
-				// 0 - Green   (Blue   / Yellow)
-				// 1 - Purple  (Blue   / Red)
-				// 2 - Orange  (Yellow / Red)
-				// 3 - White
-				// 4 - Rainbow
-				// 5 - Black
-				if d.Clue.Value == 0 {
-					// Blue clue
-					if c.Suit == 0 || c.Suit == 1 || c.Suit == 4 {
-						touched = true
-					}
-				} else if d.Clue.Value == 1 {
-					// Yellow clue
-					if c.Suit == 0 || c.Suit == 2 || c.Suit == 4 {
-						touched = true
-					}
-				} else if d.Clue.Value == 2 {
-					// Red clue
-					if c.Suit == 1 || c.Suit == 2 || c.Suit == 4 {
-						touched = true
-					}
-				} else if d.Clue.Value == 3 {
-					// Black clue
-					if c.Suit == 4 || c.Suit == 5 {
-						touched = true
-					}
-				}
-			} else if g.Options.Variant == 8 {
-				// Ambiguous Suits
-				// 0 - Blue
-				// 1 - Green
-				// 2 - Blue
-				if d.Clue.Value == 0 {
-					// Blue clue
-					if c.Suit == 0 || c.Suit == 1 {
-						touched = true
-					}
-				} else if d.Clue.Value == 1 {
-					// Green clue
-					if c.Suit == 2 || c.Suit == 3 {
-						touched = true
-					}
-				} else if d.Clue.Value == 2 {
-					// Red clue
-					if c.Suit == 4 || c.Suit == 5 {
-						touched = true
-					}
-				}
-			} else if g.Options.Variant == 9 {
-				// Blue & Red Suits
-				// 0 - Blue
-				// 1 - Red
-				if d.Clue.Value == 0 {
-					// Blue clue
-					if c.Suit == 0 || c.Suit == 1 || c.Suit == 2 {
-						touched = true
-					}
-				} else if d.Clue.Value == 1 {
-					// Green clue
-					if c.Suit == 3 || c.Suit == 4 || c.Suit == 5 {
-						touched = true
-					}
-				}
-			} else if g.Options.Variant == 10 {
-				// Acid Trip
+			if variantIsCardTouched(g.Options.Variant, d.Clue.Value, c.Suit) {
 				touched = true
 			}
 		}
@@ -216,24 +77,7 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 		text += strconv.Itoa(d.Clue.Value)
 	} else if d.Clue.Type == 1 {
 		// Color clue
-		if (g.Options.Variant == 1 || g.Options.Variant == 10) && d.Clue.Value == 5 {
-			// For "Orange" and "Acid Trip"
-			text += suits[8]
-		} else if g.Options.Variant == 4 || g.Options.Variant == 7 {
-			// For "Dual-color" or "Wild & Crazy"
-			text += dcClues[d.Clue.Value]
-		} else if g.Options.Variant == 8 {
-			// For "Ambiguous"
-			text += ambiguousClues[d.Clue.Value]
-		} else if g.Options.Variant == 9 {
-			// For "Blue & Red"
-			text += blueRedClues[d.Clue.Value]
-		} else if g.Options.Variant == 12 && d.Clue.Value == 4 {
-			// For "Black & Rainbow (1oE)"
-			text += suits[5]
-		} else {
-			text += suits[d.Clue.Value]
-		}
+		text += variantGetClueName(g.Options.Variant, d.Clue.Value)
 	}
 	if len(list) > 1 {
 		text += "s"
@@ -419,6 +263,9 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 				totalCardsNotDiscarded := 3
 				if i > 1 {
 					totalCardsNotDiscarded = 2
+				}
+				if variantIsSuitCritical(g.Options.Variant, c.Suit) {
+					totalCardsNotDiscarded = 1
 				}
 				for _, deckCard := range g.Deck {
 					if deckCard.Suit == c.Suit && deckCard.Rank == i && deckCard.Discarded {
