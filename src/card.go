@@ -13,5 +13,5 @@ type Card struct {
 }
 
 func (c *Card) Name(g *Game) string {
-	return variantGetSuitName(g.Options.Variant, c.Suit) + " " + strconv.Itoa(c.Rank) + " (O" + strconv.Itoa(c.Order) + ")"
+	return variantGetSuitName(g.Options.Variant, c.Suit) + " " + strconv.Itoa(c.Rank)
 }
