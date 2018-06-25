@@ -34,18 +34,6 @@ func websocketConnect(ms *melody.Session) {
 		} else {
 			log.Info("Successfully terminated a WebSocket connection.")
 		}
-
-		// Wait until the existing connection is terminated
-		commandMutex.Unlock()
-		for {
-			commandMutex.Lock()
-			_, ok := sessions[s2.UserID()]
-			commandMutex.Unlock()
-			if !ok {
-				break
-			}
-		}
-		commandMutex.Lock()
 	}
 
 	// Add the connection to a session map so that we can keep track of all of the connections
