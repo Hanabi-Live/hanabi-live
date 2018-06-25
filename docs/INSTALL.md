@@ -5,7 +5,7 @@ If you are just looking to update the client JavaScript, then you do not need to
 
 These instructions assume you are running macOS or Linux. Some adjustment will be needed for Windows installations.
 
-* TODO
+* TODO - YOU HAVE TO DO A FULL INSTALLATION FOR NOW
 
 <br />
 

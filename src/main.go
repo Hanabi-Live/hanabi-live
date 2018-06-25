@@ -35,6 +35,11 @@ func main() {
 	log.Info("| Starting hanabi-live. |")
 	log.Info("+-----------------------+")
 
+	// Check to see if the project path exists
+	if _, err := os.Stat(projectPath); os.IsNotExist(err) {
+		log.Fatal("The project path of \"" + projectPath + "\" does not exist. Check to see if your GOPATH environment variable is set properly.")
+	}
+
 	// Load the ".env" file which contains environment variables with secret values
 	if err := godotenv.Load(path.Join(projectPath, ".env")); err != nil {
 		log.Fatal("Failed to load .env file:", err)
