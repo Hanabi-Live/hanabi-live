@@ -79,7 +79,7 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Start the idle timeout
 	// (but don't update the idle variable if we are ending the game due to idleness)
-	if d.Type == 5 {
+	if d.Type != 5 {
 		go g.CheckIdle()
 	}
 

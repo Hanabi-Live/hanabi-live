@@ -4747,11 +4747,14 @@ function HanabiUI(lobby, gameID) {
 
     this.handleNotify = function handleNotify(data) {
         // If an action in the game happens, cancel any notes that are currently being edited
+        // (this is commented out because it is disruptive)
+        /*
         if (ui.editingNote !== null) {
             const evt = jQuery.Event('keydown');
             evt.key = 'Escape';
             $(`#tooltip-card-${ui.editingNote}-input`).trigger(evt);
         }
+        */
 
         // Automatically disable any tooltips once an action in the game happens
         if (ui.activeHover) {
@@ -5104,8 +5107,6 @@ function HanabiUI(lobby, gameID) {
             }
         } else if (type === 'boot') {
             this.stopLocalTimer();
-
-            alert(`The game was ended by: ${data.who}`);
             ui.lobby.gameEnded();
         }
     };

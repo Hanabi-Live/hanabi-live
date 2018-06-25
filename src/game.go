@@ -234,21 +234,21 @@ func (g *Game) NotifySound() {
 	}
 }
 
-func (g *Game) NotifyBoot(who string) {
-	// Send a boot notification
+func (g *Game) NotifyBoot() {
+	// Boot the people in the game and/or shared replay back to the lobby screen
 	type BootMessage struct {
-		Who string `json:"who"`
+		Type string `json:"type"`
 	}
-	data := &BootMessage{
-		Who: who,
+	msg := &BootMessage{
+		Type: "boot",
 	}
 
 	for _, p := range g.Players {
-		p.Session.Emit("boot", data)
+		p.Session.Emit("notify", msg)
 	}
 
 	for _, s := range g.Spectators {
-		s.Emit("boot", data)
+		s.Emit("notify", msg)
 	}
 }
 
@@ -355,7 +355,6 @@ func (g *Game) CheckIdle() {
 	commandMutex.Lock()
 	now := time.Now()
 	g.DatetimeLastAction = now
-	log.Info("Setting DatetimeLastAction to:", now)
 	commandMutex.Unlock()
 
 	// We want to clean up idle games, so sleep for a reasonable amount of time
@@ -363,27 +362,30 @@ func (g *Game) CheckIdle() {
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
 
-	// Don't do anything if there has been an action in the meantime
-	timeSinceLastAction := time.Since(g.DatetimeLastAction)
-	log.Info("Time since last action:", timeSinceLastAction)
-	if time.Since(g.DatetimeLastAction) > idleTimeout {
-		return
-	}
-
 	// Check to see if the game still exists
 	if _, ok := games[g.ID]; !ok {
 		return
 	}
 
+	// Don't do anything if there has been an action in the meantime
+	if time.Since(g.DatetimeLastAction) < idleTimeout {
+		return
+	}
+
 	log.Info("Idle timeout has elapsed; ending the game.")
+
+	if g.SharedReplay {
+		// If this is a shared replay, we want to send a message to the client that will take them back to the lobby
+		g.NotifyBoot()
+	}
 
 	// Boot all of the spectators, if any
 	for _, s := range g.Spectators {
 		commandGameUnattend(s, nil)
 	}
 
-	// If this is a shared replay, we should not have to do anything else
 	if g.SharedReplay {
+		// If this is a shared replay, then we are done; the shared should automatically end now that all of the spectators have left
 		return
 	}
 
@@ -398,6 +400,7 @@ func (g *Game) CheckIdle() {
 
 	if g.Running {
 		// We need to end a game that has started
+		// (this will put everyone in a non-shared replay of the idle game)
 		d := &CommandData{
 			Type: 5, // Idle timeout
 		}
@@ -405,6 +408,7 @@ func (g *Game) CheckIdle() {
 	} else {
 		// We need to end a game that hasn't started yet
 		// Force the owner to leave, which should subsequently eject everyone else
+		// (this will send everyone back to the main lobby screen)
 		commandGameLeave(s, nil)
 	}
 }

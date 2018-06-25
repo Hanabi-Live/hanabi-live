@@ -66,7 +66,4 @@ func commandGameAbandon(s *Session, d *CommandData) {
 	g.EndCondition = 4
 	g.Score = 0
 	g.End()
-
-	// Boot the people in the game back to the lobby screen
-	g.NotifyBoot(s.Username())
 }
