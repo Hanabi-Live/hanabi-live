@@ -95,6 +95,7 @@ func (g *Game) End() {
 	// Record the game in the database
 	row := models.GameRow{
 		Name:            g.Name,
+		NumPlayers:      len(g.Players),
 		Owner:           g.Owner,
 		Variant:         g.Options.Variant,
 		TimeBase:        int(g.Options.TimeBase),

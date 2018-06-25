@@ -12,6 +12,7 @@ type Games struct{}
 // (it contains a subset of the information in the Game struct)
 type GameRow struct {
 	Name            string
+	NumPlayers      int
 	Owner           int
 	Variant         int
 	Timed           bool
@@ -29,6 +30,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 	if v, err := db.Prepare(`
 		INSERT INTO games (
 			name,
+			num_players,
 			owner,
 			variant,
 			timed,
@@ -40,6 +42,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			datetime_created,
 			datetime_started
 		) VALUES (
+			?,
 			?,
 			?,
 			?,
@@ -62,6 +65,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 	var res sql.Result
 	if v, err := stmt.Exec(
 		gameRow.Name,
+		gameRow.NumPlayers,
 		gameRow.Owner,
 		gameRow.Variant,
 		gameRow.Timed,
