@@ -57,5 +57,5 @@ func (c *Card) SuitName(g *Game) string {
 }
 
 func (c *Card) Name(g *Game) string {
-	return c.SuitName(g) + " " + strconv.Itoa(c.Rank)
+	return c.SuitName(g) + " " + strconv.Itoa(c.Rank) + " (O" + strconv.Itoa(c.Order) + ")"
 }

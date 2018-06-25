@@ -270,6 +270,11 @@ func commandGameStart(s *Session, d *CommandData) {
 		g.ActivePlayer = rand.Intn(len(g.Players))
 	}
 
+	// Mark the order of all of the cards in the deck
+	for i, c := range g.Deck {
+		c.Order = i
+	}
+
 	log.Info(g.GetName()+"Using seed:", g.Seed)
 	log.Info(g.GetName()+"Timed:", g.Options.Timed)
 	log.Info(g.GetName()+"Chop rotation:", g.Options.ReorderCards)

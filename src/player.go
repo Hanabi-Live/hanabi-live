@@ -413,6 +413,28 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 		}
 
 		if critical {
+			// Also check to see if the suit is "dead"
+			// (meaning that the discarded card is trash and not actually critical)
+			for i := 1; i < c.Rank; i++ {
+				totalCardsNotDiscarded := 3
+				if i > 1 {
+					totalCardsNotDiscarded = 2
+				}
+				for _, deckCard := range g.Deck {
+					if deckCard.Suit == c.Suit && deckCard.Rank == i && deckCard.Discarded {
+						totalCardsNotDiscarded--
+					}
+				}
+				if totalCardsNotDiscarded == 0 {
+					// The suit is "dead"
+					critical = false
+					log.Info("Discarded card is NOT critical (because the suit is dead).")
+					break
+				}
+			}
+		}
+
+		if critical {
 			// Play a sad sound because this discard just lost the game
 			g.Sound = "sad"
 			log.Info("Discarded card is CRITICAL.")
@@ -427,13 +449,9 @@ func (p *Player) DrawCard(g *Game) {
 		return
 	}
 
-	// Mark the order (position in the deck) on the card
-	// (this was not done upon deck creation because the order would change after it was shuffled)
-	c := g.Deck[g.DeckIndex]
-	c.Order = g.DeckIndex
-	g.DeckIndex++
-
 	// Put it in the player's hand
+	c := g.Deck[g.DeckIndex]
+	g.DeckIndex++
 	p.Hand = append(p.Hand, c)
 
 	g.Actions = append(g.Actions, Action{
