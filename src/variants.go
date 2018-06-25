@@ -294,21 +294,23 @@ var (
 )
 
 func variantGetClueName(variant int, clue int) string {
-	if (variant == 1 || variant == 10) && clue == 5 {
-		// For "Orange" and "Acid Trip"
-		return suits[8]
+	if variant == 2 && clue == 5 {
+		// "Black (1oE)"
+		// Change "Orange" to "Black"
+		return suits[6]
 	} else if variant == 4 || variant == 7 {
-		// For "Dual-color" or "Wild & Crazy"
+		// "Dual-color" & "Wild & Crazy"
 		return dcClues[clue]
 	} else if variant == 8 {
-		// For "Ambiguous"
+		// "Ambiguous"
 		return ambiguousClues[clue]
 	} else if variant == 9 {
-		// For "Blue & Red"
+		// "Blue & Red"
 		return blueRedClues[clue]
 	} else if variant == 12 && clue == 4 {
-		// For "Black & Rainbow (1oE)"
-		return suits[5]
+		// "Black & Rainbow (1oE)"
+		// Change "Purple" to "Black"
+		return suits[6]
 	} else {
 		return suits[clue]
 	}
