@@ -34,6 +34,13 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that they are the owner of the game
+	if g.Owner != s.UserID() {
+		// Just make them leave the game instead
+		commandGameLeave(s, d)
+		return
+	}
+
 	/*
 		Abandon
 	*/
