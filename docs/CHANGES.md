@@ -1,7 +1,7 @@
 List of Changes & Improvements
 ==============================
 
-This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/hanabi/). However, it also contains many new features, bug fixes, and quality of life improvements.
+This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/hanabi/). However, it also contains many new features, bug fixes, and quality of life improvements. It also contains new variants, which are listed on [a separate page](https://github.com/Zamiell/hanabi-live/tree/master/docs/VARIANTS.md).
 
 <br />
 
@@ -59,6 +59,15 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 
 * Each player has the option to toggle a color-blind mode that will add a letter to each card that signifies which suit it is.
 
+#### Efficiency Statistics
+
+* Each player has the option to toggle efficiency statistics about the current game at the bottom of the clue log.
+
+#### Reverse Hand Direction
+
+* Each player has the option to toggle a "reverse hand direction" option, in which the user interface will display the hand from right-to-left instead of from left-to-right.
+* This is useful for players that are used to drawing cards from the right side instead of from the left.
+
 <br />
 
 
@@ -70,6 +79,7 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 * There is a custom sound for a failed play.
 * There is a custom sound for a blind play.
 * There is a custom sound for multiple blind plays in a row (up to 4).
+* There is a custom sound for discarding a critical card.
 
 <br />
 
@@ -138,5 +148,6 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 * You can now view a replay (or share a replay) by ID number.
 * When you create a game, the server will suggest a randomly generated table name for you.
 * During a game, you can mouse over the "👀" icon in the bottom right-hand corner to see who is spectating the game.
+* Idle games and idle shared replays will automatically be ended by the server after 30 minutes.
 
 <br />
