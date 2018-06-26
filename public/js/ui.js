@@ -1074,6 +1074,7 @@ function HanabiUI(lobby, gameID) {
             tooltipInstance.content(`<input id="tooltip-card-${self.order}-input" type="text" value="${note}"/>`);
 
             $(`#tooltip-card-${self.order}-input`).on('keydown', (keyEvent) => {
+                keyEvent.stopPropagation();
                 if (keyEvent.key !== 'Enter' && keyEvent.key !== 'Escape') {
                     return;
                 }
@@ -4325,18 +4326,9 @@ function HanabiUI(lobby, gameID) {
         };
 
         this.keyNavigation = (event) => {
-            // Get the id of the active HTML element
-            let id = $(document.activeElement).attr('id') || ''; // Default to an empty string if it is undefined
-
-            // Don't do anything if we are currently editing a note,
-            // as we will be typing keystrokes into the input box
-            if (id.startsWith('tooltip-card-') &&  id.endsWith('-input')) {
-                return
-            }
-
-            // Also, just in case the above code does not work for some reason,
             // make sure that the editing note variable is not set
             if (ui.editingNote !== null) {
+                console.error("BUG: keyNavigation ran while a note was open. Please report this.");
                 return;
             }
 
