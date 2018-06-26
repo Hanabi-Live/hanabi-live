@@ -127,16 +127,22 @@ func (g *Game) NotifyPlayerChange() {
 				Stats:   p2.Stats,
 			})
 		}
+	}
+}
 
-		// Lastly, send the table owner whether or not the "Start Game" button should be greyed out
-		if p.ID == g.Owner {
-			type TableReadyMessage struct {
-				Ready bool `json:"ready"`
-			}
-			p.Session.Emit("tableReady", &TableReadyMessage{
-				Ready: len(g.Players) >= 2,
-			})
+func (g *Game) NotifyTableReady() {
+	for _, p := range g.Players {
+		if p.ID != g.Owner {
+			continue
 		}
+
+		type TableReadyMessage struct {
+			Ready bool `json:"ready"`
+		}
+		p.Session.Emit("tableReady", &TableReadyMessage{
+			Ready: len(g.Players) >= 2,
+		})
+		break
 	}
 }
 

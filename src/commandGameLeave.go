@@ -74,5 +74,9 @@ func commandGameLeave(s *Session, d *CommandData) {
 		// Delete the game if this is the last person to leave
 		delete(games, gameID)
 		notifyAllTableGone(g)
+		return
 	}
+
+	// Send the table owner whether or not the "Start Game" button should be greyed out
+	g.NotifyTableReady()
 }

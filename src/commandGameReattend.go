@@ -69,8 +69,11 @@ func commandGameReattend(s *Session, d *CommandData) {
 		ID: gameID,
 	})
 
-	// Make the client switch screens to show the game UI
 	if g.Running {
+		// Make the client switch screens to show the game UI
 		s.NotifyGameStart()
+	} else {
+		// Send the table owner whether or not the "Start Game" button should be greyed out
+		g.NotifyTableReady()
 	}
 }

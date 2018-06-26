@@ -109,4 +109,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 	s.Emit("joined", &JoinedMessage{
 		GameID: gameID,
 	})
+
+	// Send the table owner whether or not the "Start Game" button should be greyed out
+	g.NotifyTableReady()
 }

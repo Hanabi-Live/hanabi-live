@@ -68,6 +68,9 @@ function HanabiUI(lobby, gameID) {
     this.queuedAction = null;
     this.currentClues = 8;
 
+    // Used to prevent giving an accidental clue after clicking the "Exit Replay" button or pressing enter to submit a note
+    this.accidentalClueTimer = Date.now();
+
     // Initialize tooltips
     const tooltipThemes = [
         'tooltipster-shadow',
@@ -1100,6 +1103,10 @@ function HanabiUI(lobby, gameID) {
                         ui.editingNoteActionOccured = false;
                         tooltip.tooltipster('close');
                     }
+
+                    // Mark the time that we submitted the note
+                    // (so that we can avoid an accidental double enter press)
+                    ui.accidentalClueTimer = Date.now();
                 }
 
                 tooltipInstance.content(note);
@@ -4150,6 +4157,10 @@ function HanabiUI(lobby, gameID) {
 
                 ui.lobby.gameEnded();
             } else {
+                // Mark the time that the user clicked the "Exit Replay" button
+                // (so that we can avoid an accidental "Give Clue" double-click)
+                ui.accidentalClueTimer = Date.now();
+
                 self.enterReplay(false);
             }
         });
@@ -4240,7 +4251,7 @@ function HanabiUI(lobby, gameID) {
         // Add "Enter" for pressing the 'Give Clue' button
         // (commented out because it can lead to mistakenly given clues
         // when the user accidently hits enter twice after settting a note)
-        // clueKeyMap.Enter = mouseClickHelper(submitClue); // Speedrun
+        clueKeyMap.Enter = mouseClickHelper(submitClue);
 
         // Keyboard actions for playing and discarding cards
         const promptOwnHandOrder = (actionString) => {
@@ -4311,14 +4322,20 @@ function HanabiUI(lobby, gameID) {
         };
 
         this.keyNavigation = (event) => {
+            // Get the id of the active HTML element
+            let id = $(document.activeElement).attr('id') || ''; // Default to an empty string if it is undefined
+
             // Don't do anything if we are currently editing a note,
             // as we will be typing keystrokes into the input box
+            if (id.startsWith('tooltip-card-') &&  id.endsWith('-input')) {
+                return
+            }
+
+            // Also, just in case the above code does not work for some reason,
+            // make sure that the editing note variable is not set
             if (ui.editingNote !== null) {
                 return;
             }
-
-            console.log('LOL!!!!!!!!');
-            console.log(document.activeElement);
 
             // Don't interfere with other kinds of hotkeys
             if (event.ctrlKey || event.altKey) {
@@ -4344,8 +4361,7 @@ function HanabiUI(lobby, gameID) {
             }
         };
 
-        // Commenting this out since there is a bug with the noteActive variable
-        // $(document).keydown(this.keyNavigation); // Speedrun
+         $(document).keydown(this.keyNavigation);
 
         /*
             End of keyboard shortcuts
@@ -4756,16 +4772,6 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleNotify = function handleNotify(data) {
-        // If an action in the game happens, cancel any notes that are currently being edited
-        // (this is commented out because it is disruptive)
-        /*
-        if (ui.editingNote !== null) {
-            const evt = jQuery.Event('keydown');
-            evt.key = 'Escape';
-            $(`#tooltip-card-${ui.editingNote}-input`).trigger(evt);
-        }
-        */
-
         // If an action in the game happens, mark to make the tooltip go away after the user has finished entering their note
         if (ui.editingNote !== null) {
             ui.editingNoteActionOccured = true;
@@ -4818,7 +4824,7 @@ function HanabiUI(lobby, gameID) {
             playerHands[data.who].add(child);
             playerHands[data.who].moveToTop();
 
-            if (data.who === ui.playerUs) {
+            if (data.who === ui.playerUs && !this.replayOnly) {
                 // Adding speedrun code; make all cards in our hand draggable from the get-go
                 child.setDraggable(true);
                 child.on('dragend.play', dragendPlay);
@@ -5326,25 +5332,6 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.stopAction = (fast) => {
-        // This animation is dumb so lets comment it out
-        /*
-        if (fast) {
-            clueArea.hide();
-        } else {
-            new Kinetic.Tween({
-                node: clueArea,
-                opacity: 0.0,
-                duration: 0.5,
-                runonce: true,
-                onFinish: () => {
-                    clueArea.hide();
-                },
-            }).play();
-        }
-        */
-
-        // Never hide the clue UI (speedrun)
-        // (re-enabled)
         clueArea.hide();
 
         noClueLabel.hide();
@@ -5357,6 +5344,7 @@ function HanabiUI(lobby, gameID) {
 
         // We want cards to always be draggable for the pre-move feature (speedrun)
         /*
+        // Make all of the cards in our hand not draggable
         for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
             const child = playerHands[ui.playerUs].children[i];
             child.off('dragend.play');
@@ -5414,15 +5402,8 @@ function HanabiUI(lobby, gameID) {
             discardSignalLabel.setVisible(false);
         }
 
-        // Always keep the "Submit Clue" button enabled (speedrun)
-        // submitClue.setEnabled(false);
-
-        // Don't reset the clue UI when it becomes our turn
-        /*
-        clueTargetButtonGroup.clearPressed();
-        clueButtonGroup.clearPressed();
-        */
-        UILayer.draw(); // If we don't reset it, we have to draw it to avoid a bug
+        // We have to redraw the UI layer to avoid a bug with the clue UI
+        UILayer.draw();
 
         if (this.playerNames.length === 2) {
             // Default the clue recipient button to the only other player available
@@ -5433,6 +5414,7 @@ function HanabiUI(lobby, gameID) {
 
         // All cards are initially set to being draggable now
         /*
+        // Set our hand to being draggable
         for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
             const child = playerHands[ui.playerUs].children[i];
             child.setDraggable(true);
@@ -5481,8 +5463,20 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
+            // Prevent the user from accidentally giving a clue in certain situations
+            if (Date.now() - ui.accidentalClueTimer < 1000) {
+                console.log('Preventing an accidental clue from being given.');
+                return;
+            }
+
             const target = clueTargetButtonGroup.getPressed();
+            if (!target) {
+                return;
+            }
             const clueButton = clueButtonGroup.getPressed();
+            if (!clueButton) {
+                return;
+            }
 
             showClueMatch(target.targetIndex, {});
 
