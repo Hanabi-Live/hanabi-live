@@ -260,15 +260,14 @@ func (g *Game) NotifyBoot() {
 
 func (g *Game) NotifySpectatorsNote(order int) {
 	// Make an array that contains the notes for just this card
-	var notes []string
+	notes := ""
 	for _, p := range g.Players {
-		note := p.Notes[order]
-		notes = append(notes, note)
+		notes += noteFormat(p.Name, p.Notes[order])
 	}
 
 	type NoteMessage struct {
-		Order int      `json:"order"` // The order of the card in the deck that these notes correspond to
-		Notes []string `json:"notes"` // One element for each player
+		Order int    `json:"order"` // The order of the card in the deck that these notes correspond to
+		Notes string `json:"notes"` // The combined notes for all the players, formatted by the server
 	}
 	data := &NoteMessage{
 		Order: order,

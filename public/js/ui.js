@@ -5224,27 +5224,12 @@ function HanabiUI(lobby, gameID) {
     /*
         {
             order: 16,
-            note: [
-                'm3,m2', // Player 1's note
-                'probably m3', // Player 2's note
-            ],
+            note: '<strong>Zamiel:</strong> note1<br /><strong>Duneaught:</strong> note2<br />',
         }
     */
     this.handleNote = (data) => {
-        // Build the note text from the "notes" array given by the server
-        let newNote = '';
-        for (let i = 0; i < data.notes.length; i++) {
-            const note = data.notes[i];
-            if (note !== null && note !== '') {
-                newNote += `${ui.playerNames[i]}: ${data.notes[i]}\n`;
-            }
-        }
-        if (newNote.length > 0) {
-            newNote = newNote.slice(0, -1); // Chop off the trailing newline
-        }
-
         // Set the note
-        ui.setNote(data.order, newNote);
+        ui.setNote(data.order, data.note);
 
         // Draw (or hide) the note indicator
         const card = ui.deck[data.order];
@@ -5253,7 +5238,7 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Show or hide the white square
-        if (newNote.length > 0 && card.isInPlayerHand()) {
+        if (data.note.length > 0 && card.isInPlayerHand()) {
             card.noteGiven.show();
             card.noteGiven.setFill('yellow');
         } else {
