@@ -21,6 +21,12 @@ func commandGameUnattend(s *Session, d *CommandData) {
 
 	// Validate that the game exists
 	gameID := s.CurrentGame()
+	if gameID == -1 {
+		// The user may be returning from a shared replay that was ended due to idleness,
+		// or perhaps they lagged and sent two gameUnattend messages, with this one being the second one
+		log.Info("User \"" + s.Username() + "\" tried to unattend, but their game ID was set to -1.")
+		return
+	}
 	var g *Game
 	if v, ok := games[gameID]; !ok {
 		log.Error("User \"" + s.Username() + "\" tried to unattend, but the game does not exist and they were not in the a solo replay.")
