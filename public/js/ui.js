@@ -4820,8 +4820,14 @@ function HanabiUI(lobby, gameID) {
             playerHands[data.who].add(child);
             playerHands[data.who].moveToTop();
 
-            if (data.who === ui.playerUs && !this.replayOnly) {
+            if (
+                data.who === ui.playerUs &&
+                !this.replayOnly &&
+                !ui.learnedCards[data.order].revealed
+            ) {
                 // Adding speedrun code; make all cards in our hand draggable from the get-go
+                // except for cards we have already played or discarded
+
                 child.setDraggable(true);
                 child.on('dragend.play', dragendPlay);
             }
