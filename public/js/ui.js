@@ -5141,7 +5141,13 @@ function HanabiUI(lobby, gameID) {
 
             // Build the string that shows all the names
             const nameEntries = data.names.map((name, i) => `<li>${name}</li>`).join('');
-            const content = `<strong>Spectators:</strong><ol class="game-tooltips-ol">${nameEntries}</ol>`;
+            let content = '<strong>';
+            if (this.replayOnly) {
+                content += 'Shared Replay Viewers';
+            } else {
+                content += 'Spectators';
+            }
+            content += `:</strong><ol class="game-tooltips-ol">${nameEntries}</ol>`;
             $('#tooltip-spectators').tooltipster('instance').content(content);
         } else {
             $('#tooltip-spectators').tooltipster('close');
