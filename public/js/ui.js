@@ -2832,6 +2832,7 @@ function HanabiUI(lobby, gameID) {
             height: 0.4 * winH,
         });
 
+        // The red border that surrounds the discard pile when the team is at 8 clues
         noDiscardLabel = new Kinetic.Rect({
             x: 0.8 * winW,
             y: 0.6 * winH,
@@ -5017,6 +5018,15 @@ function HanabiUI(lobby, gameID) {
                 cluesNumberLabel.setFill('#d8d5ef');
             }
 
+            // Ensure that the red border around the discard pile shows for all players
+            // (to reinforce the fact that being at 8 clues is a special situation)
+            if (data.clues === 8) {
+                noDiscardLabel.show();
+            } else {
+                noDiscardLabel.hide();
+            }
+
+            // Update the number of clues in the bottom-right hand corner of the screen
             scoreNumberLabel.setText(`${data.score}`);
             if (!this.animateFast) {
                 UILayer.draw();
@@ -5390,13 +5400,6 @@ function HanabiUI(lobby, gameID) {
         } else {
             noClueLabel.show();
             noClueBox.show();
-            if (!this.animateFast) {
-                UILayer.draw();
-            }
-        }
-
-        if (!data.canDiscard) {
-            noDiscardLabel.show();
             if (!this.animateFast) {
                 UILayer.draw();
             }
