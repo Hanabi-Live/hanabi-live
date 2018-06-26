@@ -374,21 +374,43 @@ function HanabiUI(lobby, gameID) {
         let prefix = 'Card';
 
         const learnedCard = ui.learnedCards[card.order];
+        const showLearnedCards = true;
 
-        const rank = (!card.showOnlyLearned && card.trueRank);
-        const empathyPastRankUncertain = card.showOnlyLearned && card.possibleRanks.length > 1;
+        const rank =
+            (showLearnedCards && learnedCard.rank) ||
+            (!card.showOnlyLearned && card.rankKnown() && card.trueRank);
 
-        const suit = (!card.showOnlyLearned && card.trueSuit);
-        const empathyPastSuitUncertain = card.showOnlyLearned && card.possibleSuits.length > 1;
+        const suit =
+            (showLearnedCards && learnedCard.suit) ||
+            (!card.showOnlyLearned && card.suitKnown() && card.trueSuit);
 
-        const suitToShow = (empathyPastSuitUncertain) ? SUIT.GRAY : (suit || learnedCard.suit || SUIT.GRAY);
-
-        // For whatever reason, Card-Gray is never created, so use NoPip-Gray
-        if ((suitToShow === SUIT.GRAY)) {
+        // Do not select an image with pips while the dynamic suit pips are shown
+        if (
+            // the !suit condition is necessary for unclued cards with certain rank or suit in
+            // other players' hands to display properly with empathy
+            (
+                !suit ||
+                !card.suitKnown() ||
+                (card.showOnlyLearned && card.possibleSuits.length > 1)
+            ) && (
+                // Cards are always known in a shared replay,
+                // but we want to preserve the Empathy feature
+                !ui.replayOnly || card.showOnlyLearned
+            )
+        ) {
+            if (!card.rankKnown() && rank) {
+                prefix = 'Index';
+            } else {
+                prefix = 'NoPip';
+            }
+        }
+        // the previous huge 'if' expression isn't quite right, so sometimes it tries to call
+        // for Card-Gray-6, when it should always ask for NoPip-Gray-6. This is a lazy fix.
+        if ((!suit || suit === SUIT.GRAY) && (!rank || rank === 6)) {
             prefix = 'NoPip';
         }
 
-        return `${prefix}-${suitToShow.name}-${empathyPastRankUncertain ? 6 : (rank || learnedCard.rank || 6)}`;
+        return `${prefix}-${(suit || SUIT.GRAY).name}-${rank || 6}`;
     }
 
     const scaleCardImage = function scaleCardImage(context, name) {
@@ -727,13 +749,6 @@ function HanabiUI(lobby, gameID) {
         });
         this.add(this.rankPips);
         this.add(this.suitPips);
-        const cardPresentKnowledge = ui.learnedCards[this.order];
-        if (cardPresentKnowledge.rank) {
-            this.rankPips.visible(false);
-        }
-        if (cardPresentKnowledge.suit) {
-            this.suitPips.visible(false);
-        }
         if (ui.replayOnly) {
             this.rankPips.visible(false);
             this.suitPips.visible(false);
@@ -953,45 +968,29 @@ function HanabiUI(lobby, gameID) {
             UILayer.draw();
         });
 
-        // Empathy feature
-        // Show teammate view of their hand, or past view of your own hand
-        // Pips visibility state is tracked so it can be restored for your own hand during a game
-        const toggleHolderViewOnCard = (c, enabled, togglePips) => {
-            const toggledPips = [0, 0];
-            if (c.rankPips.visible() !== enabled && togglePips[0] === 1) {
-                c.rankPips.setVisible(enabled);
-                toggledPips[0] = 1;
-            }
-            if (c.suitPips.visible() !== enabled && togglePips[1] === 1) {
-                c.suitPips.setVisible(enabled);
-                toggledPips[1] = 1;
-            }
+        // Show teammate view of their hand
+        const toggleHolderViewOnCard = (c, enabled) => {
+            c.rankPips.setVisible(enabled);
+            c.suitPips.setVisible(enabled);
             c.showOnlyLearned = enabled;
             c.setBareImage();
-            return toggledPips;
         };
-        const endHolderViewOnCard = function endHolderViewOnCard(toggledPips) {
+        const endHolderViewOnCard = function endHolderViewOnCard() {
             const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
-            cardsToReset.map(
-                (card, index) => { // eslint-disable-line arrow-body-style 
-                    return toggleHolderViewOnCard(card, false, toggledPips[index]);
-                },
-            );
+            cardsToReset.forEach(c => toggleHolderViewOnCard(c, false));
             cardLayer.batchDraw();
         };
         const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
             if (toggledHolderViewCards.length > 0) {
-                return undefined; // data race with stop
+                return; // data race with stop
             }
 
             toggledHolderViewCards.splice(0, 0, ...cards);
-            const toggledPips = cards.map(c => toggleHolderViewOnCard(c, true, [1, 1]));
+            cards.forEach(c => toggleHolderViewOnCard(c, true));
             cardLayer.batchDraw();
-            return toggledPips;
         };
-        if (config.holder !== ui.playerUs || ui.replay || ui.spectating) {
+        if (config.holder !== ui.playerUs || ui.replayOnly || ui.spectating) {
             const mouseButton = 1;
-            let toggledPips = [];
             this.on('mousedown', (event) => {
                 if (event.evt.which !== mouseButton || !this.isInPlayerHand()) {
                     return;
@@ -999,13 +998,13 @@ function HanabiUI(lobby, gameID) {
 
                 ui.activeHover = this;
                 const cards = this.parent.parent.children.map(c => c.children[0]);
-                toggledPips = beginHolderViewOnCard(cards);
+                beginHolderViewOnCard(cards);
             });
             this.on('mouseup mouseout', (event) => {
                 if (event.type === 'mouseup' && event.evt.which !== mouseButton) {
                     return;
                 }
-                endHolderViewOnCard(toggledPips);
+                endHolderViewOnCard();
             });
         }
 
@@ -5229,7 +5228,7 @@ function HanabiUI(lobby, gameID) {
     */
     this.handleNote = (data) => {
         // Set the note
-        ui.setNote(data.order, data.note);
+        ui.setNote(data.order, data.notes);
 
         // Draw (or hide) the note indicator
         const card = ui.deck[data.order];
@@ -5238,7 +5237,7 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Show or hide the white square
-        if (data.note.length > 0 && card.isInPlayerHand()) {
+        if (data.notes.length > 0 && card.isInPlayerHand()) {
             card.noteGiven.show();
             card.noteGiven.setFill('yellow');
         } else {
