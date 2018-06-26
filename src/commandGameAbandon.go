@@ -34,26 +34,13 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that they are the owner of the game
-	if g.Owner != s.UserID() {
-		// Just make them leave the game instead
-		commandGameLeave(s, d)
-		return
-	}
-
 	/*
 		Abandon
 	*/
 
 	if !g.Running {
-		// Set their status
-		s.Set("currentGame", -1)
-		s.Set("status", "Lobby")
-		notifyAllUser(s)
-
-		// Delete the game and don't write it to the database
-		delete(games, gameID)
-		notifyAllTableGone(g)
+		// Just make them leave the game instead
+		commandGameLeave(s, d)
 		return
 	}
 
