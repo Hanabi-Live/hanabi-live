@@ -26,7 +26,7 @@ function HanabiUI(lobby, gameID) {
     this.playerNames = [];
     this.variant = 0;
     this.cardsGotten = 0;
-    this.cluesSpent = 0;
+    this.cluesSpentPlusStrikes = 0;
     this.replay = false;
     this.sharedReplay = false;
     this.sharedReplayLeader = ''; // Equal to the username of the shared replay leader
@@ -1132,12 +1132,6 @@ function HanabiUI(lobby, gameID) {
         });
         this.isClued = function isClued() {
             return this.cluedBorder.visible();
-        };
-        this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
-            ui.cardsGotten += cardsGottenDelta;
-            cardsGottenNumberLabel.setText(`${ui.cardsGotten}`);
-            ui.efficiency = ui.cardsGotten / ui.cluesSpent;
-            efficiencyNumberLabel.setText(`${ui.efficiency.toFixed(2)}`);
         };
     };
 
@@ -2733,8 +2727,8 @@ function HanabiUI(lobby, gameID) {
     let turnNumberLabel;
     let cardsGottenTextLabel;
     let cardsGottenNumberLabel;
-    let cluesSpentTextLabel;
-    let cluesSpentNumberLabel;
+    let cluesSpentPlusStrikesTextLabel;
+    let cluesSpentPlusStrikesNumberLabel;
     let efficiencyTextLabel;
     let efficiencyNumberLabel;
 
@@ -3020,12 +3014,12 @@ function HanabiUI(lobby, gameID) {
             x: 0.925 * winW,
             y: 0.51 * winH,
         });
-        cluesSpentTextLabel = basicTextLabel.clone({
-            text: 'Clues Spent',
+        cluesSpentPlusStrikesTextLabel = basicTextLabel.clone({
+            text: 'Clues+Strikes',
             x: 0.83 * winW,
             y: 0.535 * winH,
         });
-        cluesSpentNumberLabel = basicNumberLabel.clone({
+        cluesSpentPlusStrikesNumberLabel = basicNumberLabel.clone({
             text: '0',
             x: 0.925 * winW,
             y: 0.535 * winH,
@@ -3044,12 +3038,19 @@ function HanabiUI(lobby, gameID) {
 
         if (lobby.showEffStats) {
             UILayer.add(cardsGottenTextLabel);
-            UILayer.add(cluesSpentTextLabel);
+            UILayer.add(cluesSpentPlusStrikesTextLabel);
             UILayer.add(efficiencyTextLabel);
             UILayer.add(cardsGottenNumberLabel);
-            UILayer.add(cluesSpentNumberLabel);
+            UILayer.add(cluesSpentPlusStrikesNumberLabel);
             UILayer.add(efficiencyNumberLabel);
         }
+
+        this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
+            this.cardsGotten += cardsGottenDelta;
+            cardsGottenNumberLabel.setText(`${this.cardsGotten}`);
+            this.efficiency = this.cardsGotten / this.cluesSpentPlusStrikes;
+            efficiencyNumberLabel.setText(`${this.efficiency.toFixed(2)}`);
+        };
 
         // Draw the 3 strike (bomb) indicators
         for (let i = 0; i < 3; i++) {
@@ -4604,7 +4605,7 @@ function HanabiUI(lobby, gameID) {
         cluesNumberLabel.setFill('#df1c2d');
         scoreNumberLabel.setText('0');
         cardsGottenNumberLabel.setText('0');
-        cluesSpentNumberLabel.setText('0');
+        cluesSpentPlusStrikesNumberLabel.setText('0');
         efficiencyNumberLabel.setText('-');
     };
 
@@ -4622,7 +4623,7 @@ function HanabiUI(lobby, gameID) {
             rewind = true;
             this.resetLabels();
             this.cardsGotten = 0;
-            this.cluesSpent = 0;
+            this.cluesSpentPlusStrikes = 0;
         }
 
         if (this.replayTurn === target) {
@@ -4833,7 +4834,7 @@ function HanabiUI(lobby, gameID) {
             const child = ui.deck[data.which.order].parent;
             const card = child.children[0];
             if (!card.isClued()) {
-                card.handleEfficiency(+1);
+                this.handleEfficiency(+1);
             }
 
             const learnedCard = ui.learnedCards[data.which.order];
@@ -4868,7 +4869,7 @@ function HanabiUI(lobby, gameID) {
             const child = ui.deck[data.which.order].parent;
             const card = child.children[0];
             if (card.isClued()) {
-                card.handleEfficiency(-1);
+                this.handleEfficiency(-1);
             }
 
             const learnedCard = ui.learnedCards[data.which.order];
@@ -4940,17 +4941,17 @@ function HanabiUI(lobby, gameID) {
                 cardLayer.draw();
             }
         } else if (type === 'clue') {
-            this.cluesSpent += 1;
-            cluesSpentNumberLabel.setText(`${this.cluesSpent}`);
+            this.cluesSpentPlusStrikes += 1;
+            cluesSpentPlusStrikesNumberLabel.setText(`${this.cluesSpentPlusStrikes}`);
             const clue = msgClueToClue(data.clue, ui.variant);
             showClueMatch(-1);
 
             for (let i = 0; i < data.list.length; i++) {
                 const card = ui.deck[data.list[i]];
                 if (!card.isClued()) {
-                    card.handleEfficiency(+1);
+                    this.handleEfficiency(+1);
                 } else {
-                    card.handleEfficiency(0);
+                    this.handleEfficiency(0);
                 }
                 let color;
                 if (clue.type === 0) {
@@ -5030,7 +5031,10 @@ function HanabiUI(lobby, gameID) {
 
             this.currentClues = data.clues;
         } else if (type === 'strike') {
-            this.cardsGotten -= 1;
+            this.cluesSpentPlusStrikes += 1;
+            cluesSpentPlusStrikesNumberLabel.setText(`${this.cluesSpentPlusStrikes}`);
+            this.handleEfficiency(0);
+            console.log(this.efficiency);
             const x = new Kinetic.Image({
                 x: (0.675 + 0.04 * (data.num - 1)) * winW,
                 y: 0.935 * winH,
