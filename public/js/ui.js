@@ -1037,7 +1037,8 @@ function HanabiUI(lobby, gameID) {
                         },
                     });
 
-                    // Draw the indicator for the user
+                    // Draw the indicator for the user manually so that
+                    // we don't have to wait for the client to server round-trip
                     ui.handleReplayIndicator({
                         order: self.order,
                     });
@@ -5329,8 +5330,10 @@ function HanabiUI(lobby, gameID) {
     this.handleReplayIndicator = (data) => {
         const indicated = ui.deck[data.order];
         if (indicated && indicated.isInPlayerHand() && ui.useSharedTurns) {
+            // Either show or hide the arrow (if it is already visible)
+            let visible = !indicated.indicatorArrow.visible();
             showClueMatch(-1);
-            indicated.setIndicator(true, INDICATOR.REPLAY_LEADER);
+            indicated.setIndicator(visible, INDICATOR.REPLAY_LEADER);
         }
     };
 
@@ -5646,6 +5649,12 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleReplayTurn.call(this, msgData);
     } else if (msgType === 'replayIndicator') {
         // This is used in shared replays
+        if (this.sharedReplayLeader === lobby.username) {
+            // We don't have to draw any arrows;
+            // we already did it manually immediately after sending the "replayAction" message
+            return;
+        }
+
         this.handleReplayIndicator.call(this, msgData);
     }
 };
