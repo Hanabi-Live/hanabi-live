@@ -12,40 +12,11 @@ import (
 func (g *Game) End() {
 	g.DatetimeFinished = time.Now()
 
-	// Send text messages showing how much time each player finished with
-	// (even show them in non-timed games in case people are going for a speedrun)
-	if g.Options.Timed {
-		// Advance a turn so that we have an extra separator before the finishing times
-		g.Actions = append(g.Actions, Action{
-			Type: "turn",
-			Num:  g.Turn,
-			Who:  g.ActivePlayer,
-		})
-		// But don't notify the players; the finishing times will only appear in the replay
-
-		for _, p := range g.Players {
-			text := p.Name + " finished with a time of " + durationToString(p.Time)
-			g.Actions = append(g.Actions, Action{
-				Text: text,
-			})
-			// But don't notify the players; the finishing times will only appear in the replay
-			log.Info(g.GetName() + text)
-		}
-	} else {
-		// Get the total time
-		var totalTime time.Duration
-		for _, p := range g.Players {
-			totalTime += p.Time
-		}
-		totalTime *= -1 // The duration will be negative since the clocks start at 0
-
-		text := "The total game duration was: " + durationToString(totalTime)
-		g.Actions = append(g.Actions, Action{
-			Text: text,
-		})
-		// But don't notify the players; the finishing times will only appear in the replay
-		log.Info(g.GetName() + text)
+	// Log the game ending
+	if g.EndCondition > 1 {
+		g.Score = 0
 	}
+	log.Info(g.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
 	// Send the "gameOver" message
 	loss := false
@@ -81,12 +52,41 @@ func (g *Game) End() {
 		}
 	}
 
-	if g.EndCondition > 1 {
-		g.Score = 0
-	}
+	// Send text messages showing how much time each player finished with
+	// In non-timed games, show the total time taken for the entire game
+	// (this won't appear unless the user clicks back and then forward again)
+	if g.Options.Timed {
+		// Advance a turn so that we have an extra separator before the finishing times
+		g.Actions = append(g.Actions, Action{
+			Type: "turn",
+			Num:  g.Turn,
+			Who:  g.ActivePlayer,
+		})
+		g.NotifyAction()
 
-	// Log the game ending
-	log.Info(g.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
+		for _, p := range g.Players {
+			text := p.Name + " finished with a time of " + durationToString(p.Time)
+			g.Actions = append(g.Actions, Action{
+				Text: text,
+			})
+			g.NotifyAction()
+			log.Info(g.GetName() + text)
+		}
+	} else {
+		// Get the total time
+		var totalTime time.Duration
+		for _, p := range g.Players {
+			totalTime += p.Time
+		}
+		totalTime *= -1 // The duration will be negative since the clocks start at 0
+
+		text := "The total game duration was: " + durationToString(totalTime)
+		g.Actions = append(g.Actions, Action{
+			Text: text,
+		})
+		g.NotifyAction()
+		log.Info(g.GetName() + text)
+	}
 
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)
