@@ -384,7 +384,7 @@ function HanabiUI(lobby, gameID) {
         const suitToShow = (empathyPastSuitUncertain) ? SUIT.GRAY : (suit || learnedCard.suit || SUIT.GRAY);
 
         // For whatever reason, Card-Gray is never created, so use NoPip-Gray
-        if ((suitToShow === SUIT.GRAY)) {
+        if (suitToShow === SUIT.GRAY) {
             prefix = 'NoPip';
         }
 
@@ -4328,7 +4328,7 @@ function HanabiUI(lobby, gameID) {
         this.keyNavigation = (event) => {
             // make sure that the editing note variable is not set
             if (ui.editingNote !== null) {
-                console.error("BUG: keyNavigation ran while a note was open. Please report this.");
+                console.error('BUG: keyNavigation ran while a note was open. Please report this.');
                 return;
             }
 
