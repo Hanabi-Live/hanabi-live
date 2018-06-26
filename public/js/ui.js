@@ -973,7 +973,7 @@ function HanabiUI(lobby, gameID) {
         const endHolderViewOnCard = function endHolderViewOnCard(toggledPips) {
             const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
             cardsToReset.map(
-                (card, index) => { // eslint-disable-line arrow-body-style 
+                (card, index) => { // eslint-disable-line arrow-body-style
                     return toggleHolderViewOnCard(card, false, toggledPips[index]);
                 },
             );
@@ -5229,7 +5229,8 @@ function HanabiUI(lobby, gameID) {
     */
     this.handleNote = (data) => {
         // Set the note
-        ui.setNote(data.order, data.note);
+        // (which is the combined notes from all of the players, formatted by the server)
+        ui.setNote(data.order, data.notes);
 
         // Draw (or hide) the note indicator
         const card = ui.deck[data.order];
@@ -5238,7 +5239,7 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Show or hide the white square
-        if (data.note.length > 0 && card.isInPlayerHand()) {
+        if (data.notes.length > 0 && card.isInPlayerHand()) {
             card.noteGiven.show();
             card.noteGiven.setFill('yellow');
         } else {
