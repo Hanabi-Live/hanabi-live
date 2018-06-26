@@ -79,11 +79,14 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 	if err := db.QueryRow(
 		`
 			SELECT
+				/* NumPlayed */
 				(
 					SELECT COUNT(id)
 					FROM game_participants
 					WHERE user_id = ?
 				) AS num_played,
+
+				/* NumPlayedVariant */
 				(
 					SELECT COUNT(games.id)
 					FROM games
@@ -92,6 +95,8 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 					WHERE game_participants.user_id = ?
 						AND games.variant = ?
 				) AS num_played_variant,
+
+				/* BestScoreVariant3 */
 				(
 					SELECT IFNULL(MAX(games.score), 0)
 					FROM games
@@ -99,8 +104,10 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 							ON game_participants.game_id = games.id
 					WHERE game_participants.user_id = ?
 						AND games.variant = ?
-						AND SUBSTRING(games.seed, 2, 1) = "3"
+						AND games.num_players = 3
 				) AS best_score_variant_3,
+
+				/* BestScoreVariant4 */
 				(
 					SELECT IFNULL(MAX(games.score), 0)
 					FROM games
@@ -108,8 +115,10 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 							ON game_participants.game_id = games.id
 					WHERE game_participants.user_id = ?
 						AND games.variant = ?
-						AND SUBSTRING(games.seed, 2, 1) = "4"
+						AND games.num_players = 4
 				) AS best_score_variant_4,
+
+				/* BestScoreVariant5 */
 				(
 					SELECT IFNULL(MAX(games.score), 0)
 					FROM games
@@ -117,8 +126,10 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 							ON game_participants.game_id = games.id
 					WHERE game_participants.user_id = ?
 						AND games.variant = ?
-						AND SUBSTRING(games.seed, 2, 1) = "5"
+						AND games.num_players = 5
 				) AS best_score_variant_5,
+
+				/* AverageScoreVariant */
 				(
 					SELECT IFNULL(AVG(games.score), 0)
 					FROM games
@@ -128,6 +139,8 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 						AND games.score != 0
 						AND games.variant = ?
 				) AS average_score_variant,
+
+				/* StrikeoutRateVariant */
 				IFNULL((
 					SELECT COUNT(games.id)
 					FROM games
