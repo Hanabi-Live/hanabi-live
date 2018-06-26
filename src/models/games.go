@@ -123,11 +123,7 @@ func (*Games) GetUserHistory(userID int, limit bool) ([]GameHistory, error) {
 	SQLString := `
 		SELECT
 			games.id AS id_original,
-			(
-				SELECT COUNT(id)
-				FROM game_participants
-				WHERE game_id = games.id
-			) AS num_players,
+			games.num_players AS num_players,
 			games.score AS score,
 			games.variant AS variant,
 			datetime_finished,
