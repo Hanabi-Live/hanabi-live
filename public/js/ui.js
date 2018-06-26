@@ -4949,6 +4949,8 @@ function HanabiUI(lobby, gameID) {
                 const card = ui.deck[data.list[i]];
                 if (!card.isClued()) {
                     card.handleEfficiency(+1);
+                } else {
+                    card.handleEfficiency(0);
                 }
                 let color;
                 if (clue.type === 0) {
