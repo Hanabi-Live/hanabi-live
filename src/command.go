@@ -26,7 +26,9 @@ type CommandData struct {
 	Order int    `json:"order"`
 
 	// sharedReplay
-	Value int `json:"value"`
+	Turn int `json:"turn"`
+	Rank int `json:"rank"`
+	Suit int `json:"suit"`
 
 	// clientError
 	Message string `json:"message"`

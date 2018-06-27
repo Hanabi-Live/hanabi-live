@@ -1568,6 +1568,12 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
         }
     });
 
+    conn.on('replayMorph', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('replayMorph', data);
+        }
+    });
+
     conn.on('boot', (data) => {
         if (self.ui) {
             self.ui.handleMessage('boot', data);

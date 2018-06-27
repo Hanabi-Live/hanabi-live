@@ -993,6 +993,11 @@ function HanabiUI(lobby, gameID) {
             const mouseButton = 1;
             let toggledPips = [];
             this.on('mousedown', (event) => {
+                // Do nothing if control is being held
+                if (window.event.ctrlKey) {
+                    return;
+                }
+
                 if (event.evt.which !== mouseButton || !this.isInPlayerHand()) {
                     return;
                 }
@@ -1026,6 +1031,11 @@ function HanabiUI(lobby, gameID) {
         }
 
         this.on('click', (event) => {
+            // Do nothing if control is being held
+            if (window.event.ctrlKey) {
+                return;
+            }
+
             if (ui.sharedReplay && event.evt.which === 3 && ui.sharedReplayLeader === lobby.username) {
                 // In a shared replay, the leader right-clicks a card to draw attention to it
                 if (ui.useSharedTurns) {
@@ -1033,7 +1043,7 @@ function HanabiUI(lobby, gameID) {
                         type: 'replayAction',
                         resp: {
                             type: 1,
-                            value: self.order,
+                            order: self.order,
                         },
                     });
 
@@ -1130,6 +1140,73 @@ function HanabiUI(lobby, gameID) {
             // Automatically focus the new text input box
             $(`#tooltip-card-${self.order}-input`).focus();
         });
+
+        // Catch clicks for making arbitrary cards (for hypothetical situation creation)
+        this.on('mousedown', (event) => {
+            // Do nothing if control is not being held
+            if (!window.event.ctrlKey) {
+                return;
+            }
+
+            // Only allow this feature in replays
+            if (!ui.replayOnly) {
+                return;
+            }
+
+            let card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "11", "65")');
+            if (card.length !== 2) {
+                return;
+            }
+            let suitLetter = card[0];
+            let suit;
+            if (suitLetter === 'b' || suitLetter === '1') {
+                suit = 0;
+            } else if (suitLetter === 'g' || suitLetter === '2') {
+                suit = 1;
+            } else if (suitLetter === 'y' || suitLetter === '3') {
+                suit = 2;
+            } else if (suitLetter === 'r' || suitLetter === '4') {
+                suit = 3;
+            } else if (suitLetter === 'p' || suitLetter === '5') {
+                suit = 4;
+            } else if (suitLetter === 'k' || suitLetter === 'm' || suitLetter === '6') {
+                suit = 5;
+            } else if (suitLetter === 'm') {
+                suit = 6;
+            } else {
+                return;
+            }
+            let rank = parseInt(card[1], 10);
+            if (isNaN(rank)) {
+                return;
+            }
+
+            // Tell the server that we are doing a hypothetical
+            if (ui.sharedReplayLeader === lobby.username) {
+                ui.sendMsg({
+                    type: 'replayAction',
+                    resp: {
+                        type: 3,
+                        order: self.order,
+                        suit,
+                        rank,
+                    },
+                });
+            }
+
+            // Send the reveal message manually so that
+            // we don't have to wait for the client to server round-trip
+            let revealMsg = {
+                type: 'reveal',
+                which: {
+                    order: self.order,
+                    rank,
+                    suit,
+                },
+            };
+            ui.handleNotify(revealMsg);
+        });
+
         this.isClued = function isClued() {
             return this.cluedBorder.visible();
         };
@@ -2781,7 +2858,7 @@ function HanabiUI(lobby, gameID) {
                 type: 'replayAction',
                 resp: {
                     type: 0, // Type 0 is a new replay turn
-                    value: target,
+                    turn: target,
                 },
             });
             ui.sharedReplayTurn = target;
@@ -4820,14 +4897,13 @@ function HanabiUI(lobby, gameID) {
             playerHands[data.who].add(child);
             playerHands[data.who].moveToTop();
 
+            // Adding speedrun code; make all cards in our hand draggable from the get-go
+            // except for cards we have already played or discarded
             if (
                 data.who === ui.playerUs &&
                 !this.replayOnly &&
                 !ui.learnedCards[data.order].revealed
             ) {
-                // Adding speedrun code; make all cards in our hand draggable from the get-go
-                // except for cards we have already played or discarded
-
                 child.setDraggable(true);
                 child.on('dragend.play', dragendPlay);
             }
@@ -4924,6 +5000,17 @@ function HanabiUI(lobby, gameID) {
 
             clueLog.checkExpiry();
         } else if (type === 'reveal') {
+            // Has the following data:
+            /*
+                {
+                    type: 'reveal',
+                    which: {
+                        order: 5,
+                        rank: 2,
+                        suit: 1,
+                    },
+                }
+            */
             const suit = msgSuitToSuit(data.which.suit, ui.variant);
             const card = ui.deck[data.which.order];
 
@@ -5336,6 +5423,7 @@ function HanabiUI(lobby, gameID) {
         if (indicated && indicated.isInPlayerHand() && ui.useSharedTurns) {
             // Either show or hide the arrow (if it is already visible)
             let visible = !(indicated.indicatorArrow.visible() && indicated.indicatorArrow.getFill() === INDICATOR.REPLAY_LEADER);
+            // (if the arrow is showing but is a different kind of arrow, then just overwrite the existing arrow)
             showClueMatch(-1);
             indicated.setIndicator(visible, INDICATOR.REPLAY_LEADER);
         }
@@ -5660,6 +5748,23 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         }
 
         this.handleReplayIndicator.call(this, msgData);
+    } else if (msgType === 'replayMorph') {
+        // This is used in shared replays to make hypothetical game states
+        if (this.sharedReplayLeader === lobby.username) {
+            // We don't have to reveal anything;
+            // we already did it manually immediately after sending the "replayAction" message
+            return;
+        }
+
+        let revealMsg = {
+            type: 'reveal',
+            which: {
+                order: msgData.order,
+                rank: msgData.rank,
+                suit: msgData.suit,
+            },
+        };
+        this.handleNotify(revealMsg);
     }
 };
 

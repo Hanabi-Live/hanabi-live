@@ -4,8 +4,9 @@
 	{
 		type: 0,
 		// 0 is a turn change
-		// 1 is a manual card order indication
+		// 1 is a card arrow indication
 		// 2 is a leader transfer
+		// 3 is a "hypothetical" card morph
 		value: 10,
 		name: 'Zamiel',
 	}
@@ -42,12 +43,6 @@ func commandReplayAction(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate numeric value
-	if d.Value < 0 {
-		s.Error("That is an invalid value for the shared replay action.")
-		return
-	}
-
 	/*
 		Replay action
 	*/
@@ -57,29 +52,32 @@ func commandReplayAction(s *Session, d *CommandData) {
 
 	// Change the current turn
 	if d.Type == 0 {
-		g.Turn = d.Value
+		g.Turn = d.Turn
 	}
 
 	// Send the message to everyone else
 	if d.Type == 0 {
+		// A turn change
 		for _, sp := range g.Spectators {
 			type ReplayTurnMessage struct {
 				Turn int `json:"turn"`
 			}
 			sp.Emit("replayTurn", &ReplayTurnMessage{
-				Turn: d.Value,
+				Turn: d.Turn,
 			})
 		}
 	} else if d.Type == 1 {
+		// A card arrow indication
 		for _, sp := range g.Spectators {
 			type ReplayIndicatorMessage struct {
 				Order int `json:"order"`
 			}
 			sp.Emit("replayIndicator", &ReplayIndicatorMessage{
-				Order: d.Value,
+				Order: d.Order,
 			})
 		}
 	} else if d.Type == 2 {
+		// A leader transfer
 		// Validate that the person that they are passing off the leader to actually exists in the game
 		newLeaderID := -1
 		for _, sp := range g.Spectators {
@@ -100,6 +98,20 @@ func commandReplayAction(s *Session, d *CommandData) {
 		// (which will enable the replay controls for the leader)
 		for _, sp := range g.Spectators {
 			sp.NotifyReplayLeader(g)
+		}
+	} else if d.Type == 3 {
+		// A "hypothetical" card morph
+		for _, sp := range g.Spectators {
+			type ReplayMorphMessage struct {
+				Order int `json:"order"`
+				Suit  int `json:"suit"`
+				Rank  int `json:"rank"`
+			}
+			sp.Emit("replayMorph", &ReplayMorphMessage{
+				Order: d.Order,
+				Suit:  d.Suit,
+				Rank:  d.Rank,
+			})
 		}
 	} else {
 		s.Error("That is an invalid type of shared replay action.")
