@@ -5335,7 +5335,7 @@ function HanabiUI(lobby, gameID) {
         const indicated = ui.deck[data.order];
         if (indicated && indicated.isInPlayerHand() && ui.useSharedTurns) {
             // Either show or hide the arrow (if it is already visible)
-            let visible = !indicated.indicatorArrow.visible();
+            let visible = !(indicated.indicatorArrow.visible() && indicated.indicatorArrow.getFill() === INDICATOR.REPLAY_LEADER);
             showClueMatch(-1);
             indicated.setIndicator(visible, INDICATOR.REPLAY_LEADER);
         }
