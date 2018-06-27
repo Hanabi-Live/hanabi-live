@@ -4902,6 +4902,7 @@ function HanabiUI(lobby, gameID) {
             if (
                 data.who === ui.playerUs &&
                 !this.replayOnly &&
+                !this.spectating &&
                 !ui.learnedCards[data.order].revealed
             ) {
                 child.setDraggable(true);
