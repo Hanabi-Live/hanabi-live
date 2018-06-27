@@ -993,8 +993,8 @@ function HanabiUI(lobby, gameID) {
             const mouseButton = 1;
             let toggledPips = [];
             this.on('mousedown', (event) => {
-                // Do nothing if control is being held
-                if (window.event.ctrlKey) {
+                // Do nothing if shift is being held
+                if (window.event.shiftKey) {
                     return;
                 }
 
@@ -1031,8 +1031,8 @@ function HanabiUI(lobby, gameID) {
         }
 
         this.on('click', (event) => {
-            // Do nothing if control is being held
-            if (window.event.ctrlKey) {
+            // Do nothing if shift is being held
+            if (window.event.shiftKey) {
                 return;
             }
 
@@ -1143,8 +1143,8 @@ function HanabiUI(lobby, gameID) {
 
         // Catch clicks for making arbitrary cards (for hypothetical situation creation)
         this.on('mousedown', (event) => {
-            // Do nothing if control is not being held
-            if (!window.event.ctrlKey) {
+            // Do nothing if shift is not being held
+            if (!window.event.shiftKey) {
                 return;
             }
 
@@ -4411,7 +4411,7 @@ function HanabiUI(lobby, gameID) {
             }
 
             // Don't interfere with other kinds of hotkeys
-            if (event.ctrlKey || event.altKey) {
+            if (event.ctrlKey || event.altKey || event.shiftKey) {
                 return;
             }
 
