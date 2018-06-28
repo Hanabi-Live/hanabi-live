@@ -188,6 +188,36 @@ function HanabiLobby() {
         contentAsHTML: true,
     });
 
+    // Initialize tooltips for the card notes in-game
+    const tooltipThemes = [
+        'tooltipster-shadow',
+        'tooltipster-shadow-big',
+    ];
+    const tooltipOptions = {
+        theme: tooltipThemes,
+        delay: 0,
+        trigger: 'custom',
+        contentAsHTML: true,
+        animation: 'grow',
+        updateAnimation: null,
+        interactive: true, /* So that users can update their notes */
+    };
+    for (let i = 0; i < 5; i++) {
+        $('#game-tooltips').append(`<div id="tooltip-player-${i}"></div>`);
+        $(`#tooltip-player-${i}`).tooltipster(tooltipOptions);
+        const newThemes = tooltipThemes.slice();
+        newThemes.push('align-center');
+        $(`#tooltip-player-${i}`).tooltipster('instance').option('theme', newThemes);
+    }
+    $('#tooltip-spectators').tooltipster(tooltipOptions);
+    $('#tooltip-leader').tooltipster(tooltipOptions);
+    $('#tooltip-signal').tooltipster(tooltipOptions);
+    $('#tooltip-signal').tooltipster('instance').content('The discard signal is outstanding.');
+    for (let i = 0; i < 60; i++) { // Matches card.order
+        $('#game-tooltips').append(`<div id="tooltip-card-${i}"></div>`);
+        $(`#tooltip-card-${i}`).tooltipster(tooltipOptions);
+    }
+
     /*
         Display the login screen
     */
