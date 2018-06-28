@@ -64,21 +64,6 @@ func (*Users) Get(username string) (bool, User, error) {
 	return true, user, nil
 }
 
-func (*Users) Exists(username string) (bool, int, error) {
-	var id int
-	if err := db.QueryRow(`
-		SELECT id
-		FROM users
-		WHERE username = ?
-	`, username).Scan(&id); err == sql.ErrNoRows {
-		return false, 0, nil
-	} else if err != nil {
-		return false, 0, err
-	}
-
-	return true, id, nil
-}
-
 type Stats struct {
 	NumPlayed            int     `json:"numPlayed"`
 	NumPlayedVariant     int     `json:"numPlayedVariant"`

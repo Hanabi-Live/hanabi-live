@@ -22,13 +22,13 @@ func httpProfile(c *gin.Context) {
 	}
 
 	// Check if the player exists
-	var playerID int
-	if exists, v, err := db.Users.Exists(player); err != nil {
+	var user models.User
+	if exists, v, err := db.Users.Get(player); err != nil {
 		log.Error("Failed to check to see if player \""+player+"\" exists:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else if exists {
-		playerID = v
+		user = v
 	} else {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -38,7 +38,7 @@ func httpProfile(c *gin.Context) {
 	text := ""
 
 	// Get the stats for this player
-	title := "Hanabi.live Statistics for " + player
+	title := "Hanabi.live Statistics for " + user.Username
 	text += "+-"
 	for i := 0; i < len(title); i++ {
 		text += "-"
@@ -54,8 +54,8 @@ func httpProfile(c *gin.Context) {
 
 	for i, variant := range variants {
 		var stats models.Stats
-		if v, err := db.Users.GetStats(playerID, 0); err != nil {
-			log.Error("Failed to get the stats for player \""+player+"\":", err)
+		if v, err := db.Users.GetStats(user.ID, i); err != nil {
+			log.Error("Failed to get the stats for player \""+user.Username+"\":", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		} else {
@@ -84,8 +84,8 @@ func httpProfile(c *gin.Context) {
 
 	// Get the player's entire game history
 	var history []models.GameHistory
-	if v, err := db.Games.GetUserHistory(playerID, 0, 0, true); err != nil {
-		log.Error("Failed to get the history for player \""+player+"\":", err)
+	if v, err := db.Games.GetUserHistory(user.ID, 0, 0, true); err != nil {
+		log.Error("Failed to get the history for player \""+user.Username+"\":", err)
 		return
 	} else {
 		history = v
@@ -106,9 +106,9 @@ func httpProfile(c *gin.Context) {
 		text += "- " + strconv.Itoa(g.NumPlayers) + " players\n"
 		text += "- Score: " + strconv.Itoa(g.Score) + "\n"
 		text += "- Variant: " + variants[g.Variant] + "\n"
-		text += "- Date: " + g.DatetimeFinished.Format("Thu Jun 28 20:50:00 UTC 2018") + "\n" // Same as the Linux date command
+		text += "- Date: " + g.DatetimeFinished.Format("Mon Jan 02 15:04:05 MST 2006") + "\n" // Same as the Linux date command
 		text += "- Other players: " + g.OtherPlayerNames + "\n"
-		text += "- Other scores:" + strconv.Itoa(g.NumSimilar) + "\n"
+		text += "- Other scores: " + strconv.Itoa(g.NumSimilar) + "\n"
 		text += "\n"
 	}
 
