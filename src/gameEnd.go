@@ -61,32 +61,26 @@ func (g *Game) End() {
 	}
 
 	// Send text messages showing how much time each player finished with
-	// In non-timed games, show the total time taken for the entire game
 	// (this won't appear unless the user clicks back and then forward again)
 	if g.Options.Timed {
 		for _, p := range g.Players {
-			text := p.Name + " finished with a time of " + durationToString(p.Time)
+			text := p.Name + " finished with " + durationToString(p.Time) + " time left"
 			g.Actions = append(g.Actions, Action{
 				Text: text,
 			})
 			g.NotifyAction()
 			log.Info(g.GetName() + text)
 		}
-	} else {
-		// Get the total time
-		var totalTime time.Duration
-		for _, p := range g.Players {
-			totalTime += p.Time
-		}
-		totalTime *= -1 // The duration will be negative since the clocks start at 0
-
-		text := "The total game duration was: " + durationToString(totalTime)
-		g.Actions = append(g.Actions, Action{
-			Text: text,
-		})
-		g.NotifyAction()
-		log.Info(g.GetName() + text)
 	}
+
+	// Send a text message showing how much time the game took in total
+	totalTime := g.DatetimeFinished.Sub(g.DatetimeStarted)
+	text := "The total game duration was: " + durationToString(totalTime)
+	g.Actions = append(g.Actions, Action{
+		Text: text,
+	})
+	g.NotifyAction()
+	log.Info(g.GetName() + text)
 
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)
