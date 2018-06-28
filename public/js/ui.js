@@ -5152,8 +5152,6 @@ function HanabiUI(lobby, gameID) {
                 }).play();
             }
         } else if (type === 'turn') {
-            console.log('GOT TO TURN', data.num, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-
             // Keep track of whether or not it is our turn (speedrun)
             this.ourTurn = (data.who === this.playerUs);
             if (!this.ourTurn) {
@@ -5679,7 +5677,6 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
 
     if (msgType === 'message') {
         this.replayLog.push(msg);
-        console.log('GOT MESSAGE!!!!!!!!!!!!')
         if (!this.replay) {
             this.setMessage.call(this, msgData);
         }
