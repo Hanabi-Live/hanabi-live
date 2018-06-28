@@ -52,18 +52,19 @@ func (g *Game) End() {
 		}
 	}
 
+	// Advance a turn so that we have an extra separator before the finishing times
+	g.Turn++
+	g.Actions = append(g.Actions, Action{
+		Type: "turn",
+		Num:  g.Turn,
+		Who:  g.ActivePlayer,
+	})
+	g.NotifyAction()
+
 	// Send text messages showing how much time each player finished with
 	// In non-timed games, show the total time taken for the entire game
 	// (this won't appear unless the user clicks back and then forward again)
 	if g.Options.Timed {
-		// Advance a turn so that we have an extra separator before the finishing times
-		g.Actions = append(g.Actions, Action{
-			Type: "turn",
-			Num:  g.Turn,
-			Who:  g.ActivePlayer,
-		})
-		g.NotifyAction()
-
 		for _, p := range g.Players {
 			text := p.Name + " finished with a time of " + durationToString(p.Time)
 			g.Actions = append(g.Actions, Action{

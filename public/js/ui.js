@@ -5128,7 +5128,6 @@ function HanabiUI(lobby, gameID) {
             this.cluesSpentPlusStrikes += 1;
             cluesSpentPlusStrikesNumberLabel.setText(`${this.cluesSpentPlusStrikes}`);
             this.handleEfficiency(0);
-            console.log(this.efficiency);
             const x = new Kinetic.Image({
                 x: (0.675 + 0.04 * (data.num - 1)) * winW,
                 y: 0.935 * winH,
@@ -5153,6 +5152,8 @@ function HanabiUI(lobby, gameID) {
                 }).play();
             }
         } else if (type === 'turn') {
+            console.log('GOT TO TURN', data.num, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+
             // Keep track of whether or not it is our turn (speedrun)
             this.ourTurn = (data.who === this.playerUs);
             if (!this.ourTurn) {
@@ -5237,6 +5238,11 @@ function HanabiUI(lobby, gameID) {
     };
 
     this.handleSpectators = (data) => {
+        if (!spectatorsLabel) {
+            // Sometimes we can get here without the spectators label being initiated yet
+            return;
+        }
+
         const shouldShowLabel = data.names.length > 0;
         spectatorsLabel.setVisible(shouldShowLabel);
         spectatorsNumLabel.setVisible(shouldShowLabel);
@@ -5673,7 +5679,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
 
     if (msgType === 'message') {
         this.replayLog.push(msg);
-
+        console.log('GOT MESSAGE!!!!!!!!!!!!')
         if (!this.replay) {
             this.setMessage.call(this, msgData);
         }
