@@ -32,8 +32,6 @@ func websocketDisconnect(ms *melody.Session) {
 			log.Info(g.GetName() + "Ejecting spectator \"" + s.Username() + "\" since they disconnected.")
 			g.DisconSpectators[s.UserID()] = true
 			commandGameUnattend(s, nil)
-		} else {
-			log.Info(g.GetName() + s.Username() + " was not a spectator.")
 		}
 	}
 

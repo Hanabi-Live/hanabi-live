@@ -82,6 +82,7 @@ func (*Users) Exists(username string) (bool, int, error) {
 type Stats struct {
 	NumPlayed            int     `json:"numPlayed"`
 	NumPlayedVariant     int     `json:"numPlayedVariant"`
+	BestScoreVariant2    int     `json:"bestScoreVariant2"`
 	BestScoreVariant3    int     `json:"bestScoreVariant3"`
 	BestScoreVariant4    int     `json:"bestScoreVariant4"`
 	BestScoreVariant5    int     `json:"bestScoreVariant5"`
@@ -110,6 +111,17 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 					WHERE game_participants.user_id = ?
 						AND games.variant = ?
 				) AS num_played_variant,
+
+				/* BestScoreVariant2 */
+				(
+					SELECT IFNULL(MAX(games.score), 0)
+					FROM games
+						JOIN game_participants
+							ON game_participants.game_id = games.id
+					WHERE game_participants.user_id = ?
+						AND games.variant = ?
+						AND games.num_players = 2
+				) AS best_score_variant_2,
 
 				/* BestScoreVariant3 */
 				(
@@ -176,6 +188,8 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 		userID, // num_played
 		userID, // num_played_variant
 		variant,
+		userID, // best_score_variant_2
+		variant,
 		userID, // best_score_variant_3
 		variant,
 		userID, // best_score_variant_4
@@ -191,6 +205,7 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 	).Scan(
 		&stats.NumPlayed,
 		&stats.NumPlayedVariant,
+		&stats.BestScoreVariant2,
 		&stats.BestScoreVariant3,
 		&stats.BestScoreVariant4,
 		&stats.BestScoreVariant5,
