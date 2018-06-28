@@ -30,6 +30,10 @@ type CommandData struct {
 	Rank int `json:"rank"`
 	Suit int `json:"suit"`
 
+	// historyGet
+	Offset int `json:"offset"`
+	Amount int `json:"amount"`
+
 	// clientError
 	Message string `json:"message"`
 	URL     string `json:"url"`
@@ -65,6 +69,7 @@ func commandInit() {
 	commandMap["getName"] = commandGetName
 	commandMap["historyDetails"] = commandHistoryDetails
 	commandMap["historyGetAll"] = commandHistoryGetAll
+	commandMap["historyGet"] = commandHistoryGet
 	commandMap["gameStart"] = commandGameStart
 	commandMap["replayCreate"] = commandReplayCreate
 	commandMap["sharedReplayCreate"] = commandSharedReplayCreate

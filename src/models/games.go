@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"encoding/json"
+	"strconv"
 	"time"
 )
 
@@ -119,7 +120,7 @@ type GameHistory struct {
 	You              bool
 }
 
-func (*Games) GetUserHistory(userID int, limit bool) ([]GameHistory, error) {
+func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]GameHistory, error) {
 	SQLString := `
 		SELECT
 			games.id AS id_original,
@@ -146,8 +147,8 @@ func (*Games) GetUserHistory(userID int, limit bool) ([]GameHistory, error) {
 		WHERE game_participants.user_id = ?
 		ORDER BY games.id DESC
 	`
-	if limit {
-		SQLString += "LIMIT 10"
+	if !all {
+		SQLString += "LIMIT " + strconv.Itoa(offset) + "," + strconv.Itoa(amount)
 	}
 
 	var rows *sql.Rows
