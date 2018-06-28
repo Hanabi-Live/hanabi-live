@@ -677,7 +677,8 @@ HanabiLobby.prototype.drawUsers = function drawUsers() {
         const row = $('<tr>');
 
         let { name } = user;
-        if (name === this.username) {
+        name = `<a href="/profile/${name}" target="_new">${name}</a>`
+        if (user.name === this.username) {
             name = `<strong>${name}</strong>`;
         }
         $('<td>').html(name).appendTo(row);
