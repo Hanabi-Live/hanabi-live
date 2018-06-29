@@ -78,7 +78,7 @@ func httpProfile(c *gin.Context) {
 		text += "- Best 4-player score: " + strconv.Itoa(stats.BestScoreVariant4) + "\n"
 		text += "- Best 5-player score: " + strconv.Itoa(stats.BestScoreVariant5) + "\n"
 		text += "- Average score: " + strconv.Itoa(int((math.Round(stats.AverageScoreVariant)))) + "\n"
-		text += "- Strikeout rate: " + strconv.Itoa(int(math.Round(stats.StrikeoutRateVariant))) + "%%\n" // We must escape the percent sign here
+		text += "- Strikeout rate: " + strconv.Itoa(int(math.Round(stats.StrikeoutRateVariant * 100))) + "%%\n" // We must escape the percent sign here
 		text += "\n"
 	}
 
