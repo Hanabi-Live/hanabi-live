@@ -3085,7 +3085,7 @@ function HanabiUI(lobby, gameID) {
             y: 0.52 * winH,
         });
         cluesSpentPlusStrikesTextLabel = paceTextLabel.clone({
-            text: 'Clues+Strikes',
+            text: 'Clues + Strikes',
             x: 0.83 * winW,
             y: 0.54 * winH,
         });

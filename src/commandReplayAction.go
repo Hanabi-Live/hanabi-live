@@ -51,14 +51,10 @@ func commandReplayAction(s *Session, d *CommandData) {
 	// Start the idle timeout
 	go g.CheckIdle()
 
-	// Change the current turn
-	if d.Type == 0 {
-		g.Turn = d.Turn
-	}
-
 	// Send the message to everyone else
 	if d.Type == 0 {
 		// A turn change
+		g.Turn = d.Turn
 		for _, sp := range g.Spectators {
 			type ReplayTurnMessage struct {
 				Turn int `json:"turn"`
