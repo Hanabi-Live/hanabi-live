@@ -568,7 +568,7 @@ function HanabiUI(lobby, gameID) {
     HanabiMsgLog.prototype.addMessage = function addMessage(msg) {
         const appendLine = (log, numbers, line) => {
             log.setMultiText(line);
-            numbers.setMultiText(drawDeck.getCount());
+            numbers.setMultiText(drawDeck.getCountAsString());
         };
 
         appendLine(this.logtext, this.lognumbers, msg);
@@ -1468,8 +1468,11 @@ function HanabiUI(lobby, gameID) {
         this.cardback.setVisible(count > 0);
     };
 
-    CardDeck.prototype.getCount = function getCount() {
+    CardDeck.prototype.getCountAsString = function getCountAsString() {
         return this.count.getText();
+    };
+    CardDeck.prototype.getCountAsInt = function getCountAsInt() {
+        return parseInt(this.getCountAsString(), 10);
     };
 
     CardDeck.prototype.doLayout = function doLayout() {
@@ -2778,6 +2781,14 @@ function HanabiUI(lobby, gameID) {
     let cluesSpentPlusStrikesNumberLabel;
     let efficiencyTextLabel;
     let efficiencyNumberLabel;
+    // Pace is a limit on the maximum score.
+    // It is the score that would be achieved if every turn were spent
+    // successfully playing a card, in a universe where every card in the deck
+    // is always playable.
+    // Pace can be used to determine how many more discards may be done without
+    // sacrificing points.
+    let paceTextLabel;
+    let paceNumberLabel;
 
     let spectatorsLabel;
     let spectatorsNumLabel;
@@ -2997,7 +3008,7 @@ function HanabiUI(lobby, gameID) {
             y: 0.82 * winH,
             width: 0.11 * winW,
             height: 0.03 * winH,
-            fontSize: 0.025 * winH,
+            fontSize: 0.026 * winH,
             fontFamily: 'Verdana',
             align: 'left',
             text: 'Placeholder text',
@@ -3015,32 +3026,32 @@ function HanabiUI(lobby, gameID) {
 
         turnTextLabel = basicTextLabel.clone({
             text: 'Turn',
-            x: 0.6925 * winW,
+            x: 0.69 * winW,
             y: 0.82 * winH,
         });
         turnNumberLabel = basicNumberLabel.clone({
             text: '1',
-            x: 0.7275 * winW,
+            x: 0.73 * winW,
             y: 0.82 * winH,
         });
         scoreTextLabel = basicTextLabel.clone({
             text: 'Score',
-            x: 0.6925 * winW,
+            x: 0.69 * winW,
             y: 0.855 * winH,
         });
         scoreNumberLabel = basicNumberLabel.clone({
             text: '0',
-            x: 0.7275 * winW,
+            x: 0.73 * winW,
             y: 0.855 * winH,
         });
         cluesTextLabel = basicTextLabel.clone({
             text: 'Clues',
-            x: 0.6925 * winW,
+            x: 0.69 * winW,
             y: 0.89 * winH,
         });
         cluesNumberLabel = basicNumberLabel.clone({
             text: '8',
-            x: 0.7275 * winW,
+            x: 0.73 * winW,
             y: 0.89 * winH,
         });
 
@@ -3051,32 +3062,44 @@ function HanabiUI(lobby, gameID) {
         UILayer.add(cluesTextLabel);
         UILayer.add(cluesNumberLabel);
 
-        cardsGottenTextLabel = basicTextLabel.clone({
+        paceTextLabel = basicTextLabel.clone({
+            text: 'Pace',
+            x: 0.83 * winW,
+            y: 0.50 * winH,
+            fontSize: 0.020 * winH,
+        });
+        paceNumberLabel = basicNumberLabel.clone({
+            text: '-',
+            x: 0.925 * winW,
+            y: 0.50 * winH,
+            fontSize: 0.020 * winH,
+        });
+        cardsGottenTextLabel = paceTextLabel.clone({
             text: 'Cards Gotten',
             x: 0.83 * winW,
-            y: 0.51 * winH,
+            y: 0.52 * winH,
         });
-        cardsGottenNumberLabel = basicNumberLabel.clone({
+        cardsGottenNumberLabel = paceNumberLabel.clone({
             text: '0',
             x: 0.925 * winW,
-            y: 0.51 * winH,
+            y: 0.52 * winH,
         });
-        cluesSpentPlusStrikesTextLabel = basicTextLabel.clone({
+        cluesSpentPlusStrikesTextLabel = paceTextLabel.clone({
             text: 'Clues+Strikes',
             x: 0.83 * winW,
-            y: 0.535 * winH,
+            y: 0.54 * winH,
         });
-        cluesSpentPlusStrikesNumberLabel = basicNumberLabel.clone({
+        cluesSpentPlusStrikesNumberLabel = paceNumberLabel.clone({
             text: '0',
             x: 0.925 * winW,
-            y: 0.535 * winH,
+            y: 0.54 * winH,
         });
-        efficiencyTextLabel = basicTextLabel.clone({
+        efficiencyTextLabel = paceTextLabel.clone({
             text: 'Efficiency',
             x: 0.83 * winW,
             y: 0.56 * winH,
         });
-        efficiencyNumberLabel = basicNumberLabel.clone({
+        efficiencyNumberLabel = paceNumberLabel.clone({
             text: '-',
             x: 0.915 * winW,
             y: 0.56 * winH,
@@ -3090,6 +3113,8 @@ function HanabiUI(lobby, gameID) {
             UILayer.add(cardsGottenNumberLabel);
             UILayer.add(cluesSpentPlusStrikesNumberLabel);
             UILayer.add(efficiencyNumberLabel);
+            UILayer.add(paceTextLabel);
+            UILayer.add(paceNumberLabel);
         }
 
         this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
@@ -4656,6 +4681,8 @@ function HanabiUI(lobby, gameID) {
         cluesNumberLabel.setText('8');
         cluesNumberLabel.setFill('#df1c2d');
         scoreNumberLabel.setText('0');
+        // The deck count hasn't updated yet, and I'm too lazy to make it work
+        paceNumberLabel.setText('-');
         cardsGottenNumberLabel.setText('0');
         cluesSpentPlusStrikesNumberLabel.setText('0');
         efficiencyNumberLabel.setText('-');
@@ -5094,6 +5121,7 @@ function HanabiUI(lobby, gameID) {
 
             // Update the number of clues in the bottom-right hand corner of the screen
             scoreNumberLabel.setText(`${data.score}`);
+            paceNumberLabel.setText(`${data.score + drawDeck.getCountAsInt() + this.playerNames.length}`);
             if (!this.animateFast) {
                 UILayer.draw();
             }
