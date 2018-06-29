@@ -501,6 +501,7 @@ HanabiLobby.prototype.preloadSounds = function preloadSounds() {
         'blind2',
         'blind3',
         'blind4',
+        'buzz',
         'fail',
         'sad',
         'tone',

@@ -4374,9 +4374,14 @@ function HanabiUI(lobby, gameID) {
         };
 
         this.keyNavigation = (event) => {
-            // make sure that the editing note variable is not set
+            // Make sure that the editing note variable is not set
             if (ui.editingNote !== null) {
                 console.error('BUG: keyNavigation ran while a note was open. Please report this.');
+                return;
+            }
+
+            if (event.key === 'B') {
+                lobby.playSound('buzz');
                 return;
             }
 
