@@ -1123,11 +1123,11 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            let card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "11", "65")');
+            const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "11", "65")');
             if (card.length !== 2) {
                 return;
             }
-            let suitLetter = card[0];
+            const suitLetter = card[0];
             let suit;
             if (suitLetter === 'b' || suitLetter === '1') {
                 suit = 0;
@@ -1146,7 +1146,7 @@ function HanabiUI(lobby, gameID) {
             } else {
                 return;
             }
-            let rank = parseInt(card[1], 10);
+            const rank = parseInt(card[1], 10);
             if (isNaN(rank)) {
                 return;
             }
@@ -1166,7 +1166,7 @@ function HanabiUI(lobby, gameID) {
 
             // Send the reveal message manually so that
             // we don't have to wait for the client to server round-trip
-            let revealMsg = {
+            const revealMsg = {
                 type: 'reveal',
                 which: {
                     order: self.order,
@@ -4404,7 +4404,7 @@ function HanabiUI(lobby, gameID) {
             }
         };
 
-         $(document).keydown(this.keyNavigation);
+        $(document).keydown(this.keyNavigation);
 
         /*
             End of keyboard shortcuts
@@ -5397,7 +5397,7 @@ function HanabiUI(lobby, gameID) {
         const indicated = ui.deck[data.order];
         if (indicated && indicated.isInPlayerHand() && ui.useSharedTurns) {
             // Either show or hide the arrow (if it is already visible)
-            let visible = !(indicated.indicatorArrow.visible() && indicated.indicatorArrow.getFill() === INDICATOR.REPLAY_LEADER);
+            const visible = !(indicated.indicatorArrow.visible() && indicated.indicatorArrow.getFill() === INDICATOR.REPLAY_LEADER);
             // (if the arrow is showing but is a different kind of arrow, then just overwrite the existing arrow)
             showClueMatch(-1);
             indicated.setIndicator(visible, INDICATOR.REPLAY_LEADER);
@@ -5715,7 +5715,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleReplayTurn.call(this, msgData);
     } else if (msgType === 'replayIndicator') {
         // This is used in shared replays
-        if (this.sharedReplayLeader === lobby.username) {
+        if (this.sharedReplayLeader === this.lobby.username) {
             // We don't have to draw any arrows;
             // we already did it manually immediately after sending the "replayAction" message
             return;
@@ -5724,13 +5724,13 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleReplayIndicator.call(this, msgData);
     } else if (msgType === 'replayMorph') {
         // This is used in shared replays to make hypothetical game states
-        if (this.sharedReplayLeader === lobby.username) {
+        if (this.sharedReplayLeader === this.lobby.username) {
             // We don't have to reveal anything;
             // we already did it manually immediately after sending the "replayAction" message
             return;
         }
 
-        let revealMsg = {
+        const revealMsg = {
             type: 'reveal',
             which: {
                 order: msgData.order,
