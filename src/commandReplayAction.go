@@ -7,6 +7,7 @@
 		// 1 is a card arrow indication
 		// 2 is a leader transfer
 		// 3 is a "hypothetical" card morph
+		// 4 is a sound effect
 		value: 10,
 		name: 'Zamiel',
 	}
@@ -111,6 +112,16 @@ func commandReplayAction(s *Session, d *CommandData) {
 				Order: d.Order,
 				Suit:  d.Suit,
 				Rank:  d.Rank,
+			})
+		}
+	} else if d.Type == 4 {
+		// A sound effect
+		for _, sp := range g.Spectators {
+			type ReplaySoundMessage struct {
+				Sound string `json:"sound"`
+			}
+			sp.Emit("replaySound", &ReplaySoundMessage{
+				Sound: d.Sound,
 			})
 		}
 	} else {

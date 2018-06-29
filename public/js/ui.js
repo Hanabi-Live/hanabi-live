@@ -1006,7 +1006,7 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            if (ui.sharedReplay && event.evt.which === 3 && ui.sharedReplayLeader === lobby.username) {
+            if (ui.sharedReplay && event.evt.which === 3 && ui.sharedReplayLeader === this.lobby.username) {
                 // In a shared replay, the leader right-clicks a card to draw attention to it
                 if (ui.useSharedTurns) {
                     ui.sendMsg({
@@ -1152,7 +1152,7 @@ function HanabiUI(lobby, gameID) {
             }
 
             // Tell the server that we are doing a hypothetical
-            if (ui.sharedReplayLeader === lobby.username) {
+            if (ui.sharedReplayLeader === this.lobby.username) {
                 ui.sendMsg({
                     type: 'replayAction',
                     resp: {
@@ -2191,12 +2191,12 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Only proceed if we are the replay leader
-        if (ui.sharedReplayLeader !== lobby.username) {
+        if (ui.sharedReplayLeader !== this.lobby.username) {
             return;
         }
 
         // Only proceed if we didn't right-click on ourselves
-        if (username === lobby.username) {
+        if (username === this.lobby.username) {
             return;
         }
 
@@ -4034,7 +4034,7 @@ function HanabiUI(lobby, gameID) {
         const inferSharedReplayMode = () => {
             if (
                 ui.sharedReplay &&
-                ui.sharedReplayLeader !== lobby.username &&
+                ui.sharedReplayLeader !== this.lobby.username &&
                 ui.useSharedTurns
             ) {
                 // Replay actions currently enabled, so disable them
@@ -4259,7 +4259,7 @@ function HanabiUI(lobby, gameID) {
             ui.useSharedTurns = !ui.useSharedTurns;
             replayShuttleShared.setVisible(!ui.useSharedTurns);
             if (ui.useSharedTurns) {
-                if (ui.sharedReplayLeader === lobby.username) {
+                if (ui.sharedReplayLeader === this.lobby.username) {
                     shareCurrentTurn(ui.replayTurn);
                 } else {
                     ui.performReplay(ui.sharedReplayTurn);
@@ -4406,7 +4406,7 @@ function HanabiUI(lobby, gameID) {
             }
 
             if (event.key === 'B') {
-                lobby.playSound('buzz');
+                this.sharedReplaySendSound('buzz');
                 return;
             }
 
@@ -4439,6 +4439,31 @@ function HanabiUI(lobby, gameID) {
         /*
             End of keyboard shortcuts
         */
+
+        this.sharedReplaySendSound = (sound) => {
+            // Only enable sound effects in a shared replay
+            if (!this.replayOnly || !this.sharedReplay) {
+                return;
+            }
+
+            // Only enable sound effects for shared replay leaders
+            if (this.sharedReplayLeader !== this.lobby.username) {
+                return
+            }
+
+            // Send it
+            ui.sendMsg({
+                type: 'replayAction',
+                resp: {
+                    type: 4,
+                    sound,
+                },
+            });
+
+            // Play the sound effect manually so that
+            // we don't have to wait for the client to server round-trip
+            lobby.playSound(sound);
+        }
 
         helpGroup = new Kinetic.Group({
             x: 0.1 * winW,
@@ -4711,7 +4736,7 @@ function HanabiUI(lobby, gameID) {
 
         if (
             this.sharedReplay &&
-            this.sharedReplayLeader === lobby.username &&
+            this.sharedReplayLeader === this.lobby.username &&
             this.useSharedTurns
         ) {
             shareCurrentTurn(target);
@@ -5405,7 +5430,7 @@ function HanabiUI(lobby, gameID) {
         const content = `<strong>Leader:</strong> ${this.sharedReplayLeader}`;
         $('#tooltip-leader').tooltipster('instance').content(content);
 
-        if (this.sharedReplayLeader === lobby.username) {
+        if (this.sharedReplayLeader === this.lobby.username) {
             sharedReplayLeaderLabel.fill('yellow');
         } else {
             sharedReplayLeaderLabel.fill('white');
@@ -5772,6 +5797,15 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
             },
         };
         this.handleNotify(revealMsg);
+    } else if (msgType === 'replaySound') {
+        // This is used in shared replays to make fun sounds
+        if (this.sharedReplayLeader === this.lobby.username) {
+            // We don't have to play anything;
+            // we already did it manually immediately after sending the "replayAction" message
+            return;
+        }
+
+        lobby.playSound(msgData.sound);
     }
 };
 

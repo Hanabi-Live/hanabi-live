@@ -1609,6 +1609,12 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
         }
     });
 
+    conn.on('replaySound', (data) => {
+        if (self.ui) {
+            self.ui.handleMessage('replaySound', data);
+        }
+    });
+
     conn.on('boot', (data) => {
         if (self.ui) {
             self.ui.handleMessage('boot', data);

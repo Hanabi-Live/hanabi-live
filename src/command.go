@@ -26,9 +26,10 @@ type CommandData struct {
 	Order int    `json:"order"`
 
 	// sharedReplay
-	Turn int `json:"turn"`
-	Rank int `json:"rank"`
-	Suit int `json:"suit"`
+	Turn  int    `json:"turn"`
+	Rank  int    `json:"rank"`
+	Suit  int    `json:"suit"`
+	Sound string `json:"sound"`
 
 	// historyGet
 	Offset int `json:"offset"`
