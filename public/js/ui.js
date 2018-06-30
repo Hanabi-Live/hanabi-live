@@ -2775,10 +2775,10 @@ function HanabiUI(lobby, gameID) {
     let scoreNumberLabel;
     let turnTextLabel;
     let turnNumberLabel;
-    let cardsGottenTextLabel;
-    let cardsGottenNumberLabel;
-    let cluesSpentPlusStrikesTextLabel;
-    let cluesSpentPlusStrikesNumberLabel;
+    //let cardsGottenTextLabel;
+    //let cardsGottenNumberLabel;
+    //let cluesSpentPlusStrikesTextLabel;
+    //let cluesSpentPlusStrikesNumberLabel;
     let efficiencyTextLabel;
     let efficiencyNumberLabel;
     // Pace is a limit on the maximum score.
@@ -3124,7 +3124,7 @@ function HanabiUI(lobby, gameID) {
 
         this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
             this.cardsGotten += cardsGottenDelta;
-            cardsGottenNumberLabel.setText(`${this.cardsGotten}`);
+            //cardsGottenNumberLabel.setText(`${this.cardsGotten}`);
             this.efficiency = this.cardsGotten / this.cluesSpentPlusStrikes;
             efficiencyNumberLabel.setText(`${this.efficiency.toFixed(2)}`);
         };
@@ -4713,8 +4713,8 @@ function HanabiUI(lobby, gameID) {
         scoreNumberLabel.setText('0');
         // The deck count hasn't updated yet, and I'm too lazy to make it work
         paceNumberLabel.setText('-');
-        cardsGottenNumberLabel.setText('0');
-        cluesSpentPlusStrikesNumberLabel.setText('0');
+        //cardsGottenNumberLabel.setText('0');
+        //cluesSpentPlusStrikesNumberLabel.setText('0');
         efficiencyNumberLabel.setText('-');
     };
 
@@ -5068,7 +5068,7 @@ function HanabiUI(lobby, gameID) {
             }
         } else if (type === 'clue') {
             this.cluesSpentPlusStrikes += 1;
-            cluesSpentPlusStrikesNumberLabel.setText(`${this.cluesSpentPlusStrikes}`);
+            //cluesSpentPlusStrikesNumberLabel.setText(`${this.cluesSpentPlusStrikes}`);
             const clue = msgClueToClue(data.clue, ui.variant);
             showClueMatch(-1);
 
@@ -5159,7 +5159,7 @@ function HanabiUI(lobby, gameID) {
             this.currentClues = data.clues;
         } else if (type === 'strike') {
             this.cluesSpentPlusStrikes += 1;
-            cluesSpentPlusStrikesNumberLabel.setText(`${this.cluesSpentPlusStrikes}`);
+            //cluesSpentPlusStrikesNumberLabel.setText(`${this.cluesSpentPlusStrikes}`);
             this.handleEfficiency(0);
             const x = new Kinetic.Image({
                 x: (0.675 + 0.04 * (data.num - 1)) * winW,
