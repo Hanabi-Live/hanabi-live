@@ -5,6 +5,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Zamiell/hanabi-live/src/models"
 	"github.com/gin-gonic/gin"
@@ -52,6 +53,8 @@ func httpProfile(c *gin.Context) {
 	text += "-+\n"
 	text += "\n"
 
+	totalMaxScoresNumerator := 0
+	totalMaxScoresDenominator := 0
 	for i, variant := range variants {
 		var stats models.Stats
 		if v, err := db.Users.GetStats(user.ID, i); err != nil {
@@ -63,7 +66,9 @@ func httpProfile(c *gin.Context) {
 		}
 
 		if i == 0 {
-			text += "Total games played: " + strconv.Itoa(stats.NumPlayed) + "\n\n"
+			text += "Total games played: " + strconv.Itoa(stats.NumPlayed) + "\n"
+			text += "Total max scores:\n"
+			text += "\n"
 		}
 
 		if i == 0 {
@@ -78,9 +83,31 @@ func httpProfile(c *gin.Context) {
 		text += "- Best 4-player score: " + strconv.Itoa(stats.BestScoreVariant4) + "\n"
 		text += "- Best 5-player score: " + strconv.Itoa(stats.BestScoreVariant5) + "\n"
 		text += "- Average score: " + strconv.Itoa(int((math.Round(stats.AverageScoreVariant)))) + "\n"
-		text += "- Strikeout rate: " + strconv.Itoa(int(math.Round(stats.StrikeoutRateVariant * 100))) + "%%\n" // We must escape the percent sign here
+		text += "- Strikeout rate: " + strconv.Itoa(int(math.Round(stats.StrikeoutRateVariant*100))) + "%%\n" // We must escape the percent sign here
 		text += "\n"
+
+		maxScore := 25
+		if i > 0 {
+			maxScore = 30
+		}
+		if stats.BestScoreVariant2 == maxScore {
+			totalMaxScoresNumerator++
+		}
+		if stats.BestScoreVariant3 == maxScore {
+			totalMaxScoresNumerator++
+		}
+		if stats.BestScoreVariant4 == maxScore {
+			totalMaxScoresNumerator++
+		}
+		if stats.BestScoreVariant5 == maxScore {
+			totalMaxScoresNumerator++
+		}
+		totalMaxScoresDenominator += 4
 	}
+
+	// Edit in the max scores
+	totalMaxScores := strconv.Itoa(totalMaxScoresNumerator) + " / " + strconv.Itoa(totalMaxScoresDenominator)
+	text = strings.Replace(text, "Total max scores:", "Total max scores: "+totalMaxScores, 1)
 
 	// Get the player's entire game history
 	var history []models.GameHistory
