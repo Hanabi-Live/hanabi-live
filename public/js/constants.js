@@ -35,6 +35,11 @@
         BLUE3: new Color('Navy', 'N', '#001a4d'),
         RED1: new Color('Tomato', 'T', '#ff1a1a'),
         RED3: new Color('Mahogany', 'M', '#330000'),
+        SINGLERAINBOW_B: new Color('', '', '#000555'),
+        SINGLERAINBOW_G: new Color('', '', '#005505'),
+        SINGLERAINBOW_Y: new Color('', '', '#555500'),
+        SINGLERAINBOW_R: new Color('', '', '#5F0000'),
+        SINGLERAINBOW_P: new Color('', '', '#550055'),
     };
 
     exports.SHAPE = {
@@ -224,6 +229,13 @@
         exports.COLOR.YELLOW,
         exports.COLOR.RED,
         exports.COLOR.BLACK,
+    ];
+    const baseColorsSingleRainbow = [
+        exports.COLOR.SINGLERAINBOW_B,
+        exports.COLOR.SINGLERAINBOW_G,
+        exports.COLOR.SINGLERAINBOW_Y,
+        exports.COLOR.SINGLERAINBOW_R,
+        exports.COLOR.SINGLERAINBOW_P,
     ];
 
     // Specify between solid color and gradients,
@@ -538,6 +550,15 @@
             'Rainbow',
             'M',
             baseColors,
+            multiCardFillSpec,
+            exports.SHAPE.RAINBOW,
+            Object.values(exports.COLOR),
+        ),
+
+        SINGLERAINBOW: new Suit(
+            'Rainbow',
+            'M',
+            baseColorsSingleRainbow,
             multiCardFillSpec,
             exports.SHAPE.RAINBOW,
             Object.values(exports.COLOR),
@@ -939,7 +960,7 @@
                 exports.SUIT.YELLOW,
                 exports.SUIT.RED,
                 exports.SUIT.PURPLE,
-                exports.SUIT.RAINBOW,
+                exports.SUIT.SINGLERAINBOW,
             ],
             baseColors,
             false,
@@ -954,7 +975,7 @@
                 exports.SUIT.YELLOW,
                 exports.SUIT.RED,
                 exports.SUIT.BLACK,
-                exports.SUIT.RAINBOW,
+                exports.SUIT.SINGLERAINBOW,
             ],
             baseColorsMinusPurplePlusBlack,
             false,

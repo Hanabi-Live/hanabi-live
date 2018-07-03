@@ -748,7 +748,7 @@ function HanabiUI(lobby, gameID) {
                         x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25),
                         y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3),
                     },
-                    fill: (suit === SUIT.RAINBOW ? undefined : suit.fillColors.hexCode),
+                    fill: ((suit === SUIT.RAINBOW || suit === SUIT.SINGLERAINBOW) ? undefined : suit.fillColors.hexCode),
                     stroke: 'black',
                     name: suit.name,
                     listening: false,
@@ -760,8 +760,8 @@ function HanabiUI(lobby, gameID) {
                 });
 
                 // Gradient numbers are magic
-                if (suit === SUIT.RAINBOW) {
-                    suitPip.fillRadialGradientColorStops([0.3, 'blue', 0.425, 'green', 0.65, 'yellow', 0.875, 'red', 1, 'purple']);
+                if (suit === SUIT.RAINBOW || suit === SUIT.SINGLERAINBOW) {
+                    suitPip.fillRadialGradientColorStops([0.3, suit.fillColors[0], 0.425, suit.fillColors[1], 0.65, suit.fillColors[2], 0.875, suit.fillColors[3], 1, suit.fillColors[4]]);
                     suitPip.fillRadialGradientStartPoint({
                         x: 75,
                         y: 140,
@@ -2346,7 +2346,11 @@ function HanabiUI(lobby, gameID) {
                 }
             } else if (clue.type === CLUE_TYPE.COLOR) {
                 const clueColor = clue.value;
-                if (card.trueSuit === SUIT.RAINBOW || card.trueSuit.clueColors.includes(clueColor)) {
+                if (
+                    card.trueSuit === SUIT.RAINBOW ||
+                    card.trueSuit === SUIT.SINGLERAINBOW ||
+                    card.trueSuit.clueColors.includes(clueColor)
+                ) {
                     touched = true;
                     color = clueColor.hexCode;
                 }
@@ -3369,7 +3373,8 @@ function HanabiUI(lobby, gameID) {
                     if (
                         lobby.showColorblindUI &&
                         suit.clueColors.length > 1 &&
-                        suit !== SUIT.RAINBOW
+                        suit !== SUIT.RAINBOW &&
+                        suit !== SUIT.SINGLERAINBOW
                     ) {
                         const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
                         text += ` [${colorList}]`;
