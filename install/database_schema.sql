@@ -43,7 +43,7 @@ CREATE TABLE games (
     datetime_finished  TIMESTAMP     NOT NULL  DEFAULT NOW(),
     FOREIGN KEY (owner) REFERENCES users (id)
 );
-CREATE INDEX games_index_datetime_finished ON games (datetime_finished);
+CREATE INDEX games_index_seed ON games (seed);
 
 DROP TABLE IF EXISTS game_participants;
 CREATE TABLE game_participants (
