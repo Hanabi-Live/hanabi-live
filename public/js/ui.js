@@ -4336,9 +4336,8 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Add "Enter" for pressing the 'Give Clue' button
-        // (commented out because it can lead to mistakenly given clues
-        // when the user accidently hits enter twice after settting a note)
-        clueKeyMap.Enter = mouseClickHelper(submitClue);
+        // (commented out because it can lead to mistakenly given clues)
+        // clueKeyMap.Enter = mouseClickHelper(submitClue);
 
         // Keyboard actions for playing and discarding cards
         const promptOwnHandOrder = (actionString) => {
