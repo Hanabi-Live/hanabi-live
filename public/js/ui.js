@@ -761,7 +761,13 @@ function HanabiUI(lobby, gameID) {
 
                 // Gradient numbers are magic
                 if (suit === SUIT.RAINBOW || suit === SUIT.SINGLERAINBOW) {
-                    suitPip.fillRadialGradientColorStops([0.3, suit.fillColors[0], 0.425, suit.fillColors[1], 0.65, suit.fillColors[2], 0.875, suit.fillColors[3], 1, suit.fillColors[4]]);
+                    suitPip.fillRadialGradientColorStops([
+                        0.3, suit.fillColors[0].hexCode,
+                        0.425, suit.fillColors[1].hexCode,
+                        0.65, suit.fillColors[2].hexCode,
+                        0.875, suit.fillColors[3].hexCode,
+                        1, suit.fillColors[4].hexCode,
+                    ]);
                     suitPip.fillRadialGradientStartPoint({
                         x: 75,
                         y: 140,
