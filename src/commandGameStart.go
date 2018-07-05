@@ -302,6 +302,17 @@ func commandGameStart(s *Session, d *CommandData) {
 		}
 	}
 
+	// Send messages about the current status
+	// (the client knows that the game starts with 8 clues and a score of 0;
+	// however, sending this message ensures that it will draw the red border
+	// around the discard pile to indicate that discarding is not possible)
+	g.Actions = append(g.Actions, Action{
+		Type:  "status",
+		Clues: g.Clues,
+		Score: g.Score,
+	})
+	g.NotifyAction()
+
 	text := g.Players[g.ActivePlayer].Name + " goes first"
 	g.Actions = append(g.Actions, Action{
 		Text: text,
