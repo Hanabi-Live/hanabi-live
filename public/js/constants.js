@@ -697,7 +697,7 @@
             exports.COLOR.BLUE,
             basicCardFillSpec,
             exports.SHAPE.DIAMOND,
-            Object.values(exports.COLOR),
+            [],
         ),
 
         AT_GREEN: new Suit(
@@ -706,7 +706,7 @@
             exports.COLOR.GREEN,
             basicCardFillSpec,
             exports.SHAPE.CLUB,
-            Object.values(exports.COLOR),
+            [],
         ),
 
         AT_YELLOW: new Suit(
@@ -715,7 +715,7 @@
             exports.COLOR.YELLOW,
             basicCardFillSpec,
             exports.SHAPE.STAR,
-            Object.values(exports.COLOR),
+            [],
         ),
 
         AT_RED: new Suit(
@@ -724,7 +724,7 @@
             exports.COLOR.RED,
             basicCardFillSpec,
             exports.SHAPE.HEART,
-            Object.values(exports.COLOR),
+            [],
         ),
 
         AT_PURPLE: new Suit(
@@ -733,7 +733,7 @@
             exports.COLOR.PURPLE,
             basicCardFillSpec,
             exports.SHAPE.CRESCENT,
-            Object.values(exports.COLOR),
+            [],
         ),
 
         AT_ORANGE: new Suit(
@@ -742,7 +742,7 @@
             exports.COLOR.ORANGE,
             basicCardFillSpec,
             exports.SHAPE.SPADE,
-            Object.values(exports.COLOR),
+            [],
         ),
     };
 
