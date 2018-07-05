@@ -2038,6 +2038,38 @@ function HanabiUI(lobby, gameID) {
 
         this.list = config.list;
         this.neglist = config.neglist;
+
+        // Add a mouseover highlighting effect
+        background.on("mouseover tap", function() {
+            let i;
+
+            clueLog.showMatches(null);
+
+            background.setOpacity(0.4);
+            background.getLayer().batchDraw();
+        });
+        background.on("mouseout", function() {
+            // Fix the bug where the mouseout can happen after the clue has been destroyed
+            if (background.getLayer() === null) {
+                return;
+            }
+
+            background.setOpacity(0.1);
+            background.getLayer().batchDraw();
+        });
+
+        // Store the turn that the clue occured inside this object for later
+        this.turn = config.turn;
+
+        // Click an entry in the clue log to go to that turn in the replay
+        background.on("click", () => {
+            if (this.replayOnly) {
+                ui.inferSharedReplayMode();
+            } else {
+                ui.enterReplay(!self.replay);
+            }
+            ui.performReplay(this.turn + 1, true);
+        });
     };
 
     Kinetic.Util.extend(HanabiClueEntry, Kinetic.Group);
@@ -2457,7 +2489,7 @@ function HanabiUI(lobby, gameID) {
 
         // Draw the first half of the top-right triangle
         ctx.beginPath();
-        ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top right-hand corner
+        ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top-right-hand corner
         ctx.lineTo(CARDW - borderSize - triangleSize, borderSize); // Move left
         ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move down and right diagonally
         ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
@@ -2466,7 +2498,7 @@ function HanabiUI(lobby, gameID) {
 
         // Draw the second half of the top-right triangle
         ctx.beginPath();
-        ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top right-hand corner
+        ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top-right-hand corner
         ctx.lineTo(CARDW - borderSize, borderSize + triangleSize); // Move down
         ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move up and left diagonally
         ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
@@ -4055,6 +4087,7 @@ function HanabiUI(lobby, gameID) {
         // Navigating as a follower in a shared replay disables replay actions
         const inferSharedReplayMode = () => {
             if (
+                ui.replayOnly &&
                 ui.sharedReplay &&
                 ui.sharedReplayLeader !== lobby.username &&
                 ui.useSharedTurns
@@ -4063,6 +4096,7 @@ function HanabiUI(lobby, gameID) {
                 toggleSharedTurnButton.dispatchEvent(new MouseEvent('click'));
             }
         };
+        this.inferSharedReplayMode = inferSharedReplayMode; // Make it available os that we can use it elsewhere in the code
 
         replayArea = new Kinetic.Group({
             x: 0.15 * winW,
@@ -5139,6 +5173,7 @@ function HanabiUI(lobby, gameID) {
                 clueName,
                 list: data.list,
                 neglist,
+                turn: data.turn,
             });
 
             clueLog.add(entry);

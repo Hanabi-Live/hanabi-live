@@ -61,6 +61,7 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 		List:   list,
 		Target: d.Target,
 		Type:   "clue",
+		Turn:   g.Turn,
 	})
 	g.NotifyAction()
 

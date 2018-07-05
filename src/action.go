@@ -11,6 +11,7 @@ type Action struct {
 	Clue      Clue   `json:"clue"`
 	Giver     int    `json:"giver"`
 	List      []int  `json:"list"`
+	Turn      int    `json:"turn"`
 	Which     Which  `json:"which"`
 	Num       int    `json:"num"`
 	Order     int    `json:"order"`
