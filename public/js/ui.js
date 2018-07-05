@@ -2339,7 +2339,8 @@ function HanabiUI(lobby, gameID) {
         }
 
         // Make an exception for the "Acid Trip" variant
-        if (this.variant === 10) {
+        // (all color clues touch all cards, so don't show the arrows for simplicity)
+        if (this.variant.name === 'Acid Trip' && clue.type === CLUE_TYPE.COLOR) {
             return true;
         }
 
