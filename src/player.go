@@ -66,8 +66,8 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 
 	// Send the "message" message about the clue
 	text := p.Name + " tells " + g.Players[d.Target].Name + " "
-	if d.Clue.Type != 1 || g.Options.Variant != 10 {
-		text := "about "
+	if len(list) != 0 {
+		text += "about "
 		words := []string{
 			"one",
 			"two",
