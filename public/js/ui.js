@@ -2334,11 +2334,16 @@ function HanabiUI(lobby, gameID) {
 
         // We supply this function with an argument of "-1" if we just want to
         // clear the existing arrows and nothing else
-        let match = false;
         if (target < 0) {
-            return match;
+            return false;
         }
 
+        // Make an exception for the "Acid Trip" variant
+        if (this.variant === 10) {
+            return true;
+        }
+
+        let match = false;
         for (let i = 0; i < playerHands[target].children.length; i++) {
             const child = playerHands[target].children[i];
             const card = child.children[0];
