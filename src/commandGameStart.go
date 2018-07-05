@@ -303,7 +303,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	}
 
 	// Send messages about the current status
-	// (the client knows that the game starts with 8 clues and a score of 0;
+	// (the client already knows that the game starts with 8 clues and a score of 0;
 	// however, sending this message ensures that it will draw the red border
 	// around the discard pile to indicate that discarding is not possible)
 	g.Actions = append(g.Actions, Action{
@@ -324,7 +324,6 @@ func commandGameStart(s *Session, d *CommandData) {
 	})
 	log.Info(g.GetName() + text)
 
-	// Set the game to running
 	g.Running = true
 	g.DatetimeStarted = time.Now()
 

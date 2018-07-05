@@ -154,6 +154,10 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 			commandChat(nil, d)
 		*/
+	} else if d.Msg == "/next" {
+		msg := m.Author.Username + ", I will ping you when the next game starts."
+		discordSend(m.ChannelID, "", msg)
+		waitingList = append(waitingList, m.Author.Mention())
 	}
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -99,4 +100,16 @@ func commandGameCreate(s *Session, d *CommandData) {
 	// Join the user to the new table
 	d.ID = gameID
 	commandGameJoin(s, d)
+
+	// Alert all of the people on the waiting list
+	if len(waitingList) == 0 {
+		return
+	}
+
+	alert := strings.Join(waitingList, " ") + "\n"
+	alert += "**" + s.Username() + "** has created a new Hanabi table. (" + variants[g.Options.Variant] + ")"
+	discordSend(discordListenChannels[0], "", alert) // Assume that the first channel listed in the "discordListenChannels" slice is the main channel
+
+	// Empty the waiting list
+	waitingList = make([]string, 0)
 }
