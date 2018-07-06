@@ -1012,8 +1012,12 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            if (ui.sharedReplay && event.evt.which === 3 && ui.sharedReplayLeader === lobby.username) {
-                // In a shared replay, the leader right-clicks a card to draw attention to it
+            // In a shared replay, the leader right-clicks a card to draw attention to it
+            if (
+                ui.sharedReplay &&
+                event.evt.which === 3 &&
+                ui.sharedReplayLeader === lobby.username ||
+            ) {
                 if (ui.useSharedTurns) {
                     ui.sendMsg({
                         type: 'replayAction',
@@ -1030,6 +1034,14 @@ function HanabiUI(lobby, gameID) {
                     });
                 }
 
+                return;
+            }
+
+            // In a non-shared replay, a user might still want to draw an arrow on a card for demonstration purposes
+            if (window.event.ctrlKey) {
+                ui.handleReplayIndicator({
+                    order: self.order,
+                });
                 return;
             }
 
