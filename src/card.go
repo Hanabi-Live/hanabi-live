@@ -27,7 +27,7 @@ func (c *Card) IsAlreadyPlayed(g *Game) bool {
 			continue
 		}
 
-		if deckCard.Suit == c.Suit && deckCard.Rank == c.Rank && c.Played {
+		if deckCard.Suit == c.Suit && deckCard.Rank == c.Rank && deckCard.Played {
 			return true
 		}
 	}

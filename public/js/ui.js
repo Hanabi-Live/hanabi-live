@@ -27,6 +27,7 @@ function HanabiUI(lobby, gameID) {
     this.variant = 0;
     this.cardsGotten = 0;
     this.cluesSpentPlusStrikes = 0;
+    this.maxScore = 0;
     this.replay = false;
     this.sharedReplay = false;
     this.sharedReplayLeader = ''; // Equal to the username of the shared replay leader
@@ -3145,29 +3146,6 @@ function HanabiUI(lobby, gameID) {
             y: 0.54 * winH,
             fontSize: 0.020 * winH,
         });
-        // TODO for Libster: transfer this to a tooltip
-        /*
-        cardsGottenTextLabel = paceTextLabel.clone({
-            text: 'Cards Gotten',
-            x: 0.83 * winW,
-            y: 0.52 * winH,
-        });
-        cardsGottenNumberLabel = paceNumberLabel.clone({
-            text: '0',
-            x: 0.925 * winW,
-            y: 0.52 * winH,
-        });
-        cluesSpentPlusStrikesTextLabel = paceTextLabel.clone({
-            text: 'Clues + Strikes',
-            x: 0.83 * winW,
-            y: 0.54 * winH,
-        });
-        cluesSpentPlusStrikesNumberLabel = paceNumberLabel.clone({
-            text: '0',
-            x: 0.925 * winW,
-            y: 0.54 * winH,
-        });
-        */
         efficiencyTextLabel = paceTextLabel.clone({
             text: 'Efficiency',
             x: 0.83 * winW,
@@ -4797,6 +4775,7 @@ function HanabiUI(lobby, gameID) {
             this.resetLabels();
             this.cardsGotten = 0;
             this.cluesSpentPlusStrikes = 0;
+            this.maxScore = 0;
         }
 
         if (this.replayTurn === target) {
@@ -5193,8 +5172,12 @@ function HanabiUI(lobby, gameID) {
 
             clueLog.checkExpiry();
         } else if (type === 'status') {
-            cluesNumberLabel.setText(`${data.clues}`);
+            // Update internal state variables
+            this.currentClues = data.clues; // Used for the pre-move feature
+            this.maxScore = data.maxScore; // Used for efficiency statistics calculation
 
+            // Update the number of clues in the bottom-right hand corner of the screen
+            cluesNumberLabel.setText(`${data.clues}`);
             if (data.clues === 0 || data.clues === 8) {
                 cluesNumberLabel.setFill('#df1c2d');
             } else if (data.clues === 1) {
@@ -5220,14 +5203,17 @@ function HanabiUI(lobby, gameID) {
                 noDoubleDiscardLabel.hide();
             }
 
-            // Update the number of clues in the bottom-right hand corner of the screen
-            scoreNumberLabel.setText(`${data.score}`);
-            paceNumberLabel.setText(`${data.score + drawDeck.getCountAsInt() + this.playerNames.length}`);
+            scoreNumberLabel.setText(data.score);
+            const pace = data.score + drawDeck.getCountAsInt() + this.playerNames.length - this.maxScore;
+            let paceText = pace.toString();
+            if (pace > 0) {
+                paceText = `+${pace}`;
+            }
+            paceNumberLabel.setText(paceText);
+
             if (!this.animateFast) {
                 UILayer.draw();
             }
-
-            this.currentClues = data.clues;
         } else if (type === 'strike') {
             this.cluesSpentPlusStrikes += 1;
             this.handleEfficiency(0);
