@@ -176,7 +176,7 @@ func commandAction(s *Session, d *CommandData) {
 		g.BlindPlays = 0
 
 		// Find out if this is a "double discard" situation`
-		doubleDiscard = !c.IsCritical(g) && !c.IsAlreadyPlayed(g)
+		doubleDiscard = c.Rank != 1 && !c.IsCritical(g) && !c.IsAlreadyPlayed(g)
 	} else if d.Type == 3 { // Deck play
 		// Validate that there is only 1 card left
 		// (the client should enforce this, but do a check just in case)

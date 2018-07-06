@@ -177,7 +177,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 		}
 
-		msg := username + ", I will ping you when the next game starts."
+		msg := username + ", I will ping you when the next table opens."
 		discordSend(m.ChannelID, "", msg)
 		waitingList = append(waitingList, m.Author.Mention())
 	}

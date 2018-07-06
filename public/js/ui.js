@@ -2957,11 +2957,11 @@ function HanabiUI(lobby, gameID) {
             y: 0.6 * winH,
             width: 0.19 * winW,
             height: 0.39 * winH,
-            stroke: '#df1c2d',
-            strokeWidth: 0.007 * winW,
+            stroke: 'yellow',
+            strokeWidth: 0.004 * winW,
             cornerRadius: 0.01 * winW,
             visible: false,
-            opacity: 0.25,
+            opacity: 0.75,
         });
 
         UILayer.add(noDoubleDiscardLabel);
