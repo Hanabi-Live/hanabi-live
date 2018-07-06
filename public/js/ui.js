@@ -1016,7 +1016,7 @@ function HanabiUI(lobby, gameID) {
             if (
                 ui.sharedReplay &&
                 event.evt.which === 3 &&
-                ui.sharedReplayLeader === lobby.username ||
+                ui.sharedReplayLeader === lobby.username
             ) {
                 if (ui.useSharedTurns) {
                     ui.sendMsg({
@@ -1055,9 +1055,10 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            // Don't open the edit tooltip if there is already some other edit tooltip open
+            // Close any existing note tooltips
             if (ui.editingNote !== null) {
-                return;
+                const tooltip = $(`#tooltip-card-${ui.editingNote}`);
+                tooltip.tooltipster('close');
             }
 
             cardTooltipOpen();
@@ -1165,7 +1166,7 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
             const rank = parseInt(card[1], 10);
-            if (isNaN(rank)) {
+            if (Number.isNaN(rank)) {
                 return;
             }
 
@@ -2052,15 +2053,13 @@ function HanabiUI(lobby, gameID) {
         this.neglist = config.neglist;
 
         // Add a mouseover highlighting effect
-        background.on("mouseover tap", function() {
-            let i;
-
+        background.on('mouseover tap', () => {
             clueLog.showMatches(null);
 
             background.setOpacity(0.4);
             background.getLayer().batchDraw();
         });
-        background.on("mouseout", function() {
+        background.on('mouseout', () => {
             // Fix the bug where the mouseout can happen after the clue has been destroyed
             if (background.getLayer() === null) {
                 return;
@@ -2074,11 +2073,11 @@ function HanabiUI(lobby, gameID) {
         this.turn = config.turn;
 
         // Click an entry in the clue log to go to that turn in the replay
-        background.on("click", () => {
+        background.on('click', () => {
             if (this.replayOnly) {
                 ui.inferSharedReplayMode();
             } else {
-                ui.enterReplay(!self.replay);
+                ui.enterReplay(!this.replay);
             }
             ui.performReplay(this.turn + 1, true);
         });
@@ -2835,10 +2834,6 @@ function HanabiUI(lobby, gameID) {
     let scoreNumberLabel;
     let turnTextLabel;
     let turnNumberLabel;
-    //let cardsGottenTextLabel;
-    //let cardsGottenNumberLabel;
-    //let cluesSpentPlusStrikesTextLabel;
-    //let cluesSpentPlusStrikesNumberLabel;
     let efficiencyTextLabel;
     let efficiencyNumberLabel;
     // Pace is a limit on the maximum score.
@@ -3186,12 +3181,6 @@ function HanabiUI(lobby, gameID) {
         });
 
         if (lobby.showEffStats) {
-            /*
-            UILayer.add(cardsGottenTextLabel);
-            UILayer.add(cardsGottenNumberLabel);
-            UILayer.add(cluesSpentPlusStrikesTextLabel);
-            UILayer.add(cluesSpentPlusStrikesNumberLabel);
-            */
             UILayer.add(efficiencyTextLabel);
             UILayer.add(efficiencyNumberLabel);
             UILayer.add(paceTextLabel);
@@ -3200,7 +3189,6 @@ function HanabiUI(lobby, gameID) {
 
         this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
             this.cardsGotten += cardsGottenDelta;
-            //cardsGottenNumberLabel.setText(`${this.cardsGotten}`);
             this.efficiency = this.cardsGotten / this.cluesSpentPlusStrikes;
             efficiencyNumberLabel.setText(`${this.efficiency.toFixed(2)}`);
         };
@@ -4531,7 +4519,7 @@ function HanabiUI(lobby, gameID) {
 
             // Only enable sound effects for shared replay leaders
             if (this.sharedReplayLeader !== lobby.username) {
-                return
+                return;
             }
 
             // Send it
@@ -4546,7 +4534,7 @@ function HanabiUI(lobby, gameID) {
             // Play the sound effect manually so that
             // we don't have to wait for the client to server round-trip
             lobby.playSound(sound);
-        }
+        };
 
         helpGroup = new Kinetic.Group({
             x: 0.1 * winW,
@@ -4791,8 +4779,6 @@ function HanabiUI(lobby, gameID) {
         scoreNumberLabel.setText('0');
         // The deck count hasn't updated yet, and I'm too lazy to make it work
         paceNumberLabel.setText('-');
-        //cardsGottenNumberLabel.setText('0');
-        //cluesSpentPlusStrikesNumberLabel.setText('0');
         efficiencyNumberLabel.setText('-');
     };
 
@@ -5146,7 +5132,6 @@ function HanabiUI(lobby, gameID) {
             }
         } else if (type === 'clue') {
             this.cluesSpentPlusStrikes += 1;
-            //cluesSpentPlusStrikesNumberLabel.setText(`${this.cluesSpentPlusStrikes}`);
             const clue = msgClueToClue(data.clue, ui.variant);
             showClueMatch(-1);
 
@@ -5245,7 +5230,6 @@ function HanabiUI(lobby, gameID) {
             this.currentClues = data.clues;
         } else if (type === 'strike') {
             this.cluesSpentPlusStrikes += 1;
-            //cluesSpentPlusStrikesNumberLabel.setText(`${this.cluesSpentPlusStrikes}`);
             this.handleEfficiency(0);
             const x = new Kinetic.Image({
                 x: (0.675 + 0.04 * (data.num - 1)) * winW,
@@ -5865,7 +5849,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleReplayTurn.call(this, msgData);
     } else if (msgType === 'replayIndicator') {
         // This is used in shared replays
-        if (this.sharedReplayLeader === lobby.username) {
+        if (this.sharedReplayLeader === this.lobby.username) {
             // We don't have to draw any arrows;
             // we already did it manually immediately after sending the "replayAction" message
             return;
@@ -5874,7 +5858,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleReplayIndicator.call(this, msgData);
     } else if (msgType === 'replayMorph') {
         // This is used in shared replays to make hypothetical game states
-        if (this.sharedReplayLeader === lobby.username) {
+        if (this.sharedReplayLeader === this.lobby.username) {
             // We don't have to reveal anything;
             // we already did it manually immediately after sending the "replayAction" message
             return;
@@ -5891,13 +5875,13 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleNotify(revealMsg);
     } else if (msgType === 'replaySound') {
         // This is used in shared replays to make fun sounds
-        if (this.sharedReplayLeader === lobby.username) {
+        if (this.sharedReplayLeader === this.lobby.username) {
             // We don't have to play anything;
             // we already did it manually immediately after sending the "replayAction" message
             return;
         }
 
-        lobby.playSound(msgData.sound);
+        this.lobby.playSound(msgData.sound);
     }
 };
 

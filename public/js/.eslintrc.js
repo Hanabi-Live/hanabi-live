@@ -58,6 +58,9 @@ module.exports = {
 
     // Keldon's original code does this and it would be tricky to refactor
     "no-use-before-define": ["off"],
+
+    // This is ugly
+    "operator-linebreak": ["off"],
   },
 
   "globals": {
