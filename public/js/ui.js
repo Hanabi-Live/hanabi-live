@@ -27,7 +27,6 @@ function HanabiUI(lobby, gameID) {
     this.variant = 0;
     this.cardsGotten = 0;
     this.cluesSpentPlusStrikes = 0;
-    this.maxScore = 0;
     this.replay = false;
     this.sharedReplay = false;
     this.sharedReplayLeader = ''; // Equal to the username of the shared replay leader
@@ -4775,7 +4774,6 @@ function HanabiUI(lobby, gameID) {
             this.resetLabels();
             this.cardsGotten = 0;
             this.cluesSpentPlusStrikes = 0;
-            this.maxScore = 0;
         }
 
         if (this.replayTurn === target) {
@@ -5174,18 +5172,17 @@ function HanabiUI(lobby, gameID) {
         } else if (type === 'status') {
             // Update internal state variables
             this.currentClues = data.clues; // Used for the pre-move feature
-            this.maxScore = data.maxScore; // Used for efficiency statistics calculation
 
             // Update the number of clues in the bottom-right hand corner of the screen
             cluesNumberLabel.setText(`${data.clues}`);
             if (data.clues === 0 || data.clues === 8) {
-                cluesNumberLabel.setFill('#df1c2d');
+                cluesNumberLabel.setFill('#df1c2d'); // Red
             } else if (data.clues === 1) {
-                cluesNumberLabel.setFill('#ef8c1d');
+                cluesNumberLabel.setFill('#ef8c1d'); // Orange
             } else if (data.clues === 2) {
-                cluesNumberLabel.setFill('#efef1d');
+                cluesNumberLabel.setFill('#efef1d'); // Yellow
             } else {
-                cluesNumberLabel.setFill('#d8d5ef');
+                cluesNumberLabel.setFill('#d8d5ef'); // White
             }
 
             if (data.clues === 8) {
@@ -5203,13 +5200,35 @@ function HanabiUI(lobby, gameID) {
                 noDoubleDiscardLabel.hide();
             }
 
+            // Update the score (in the bottom-right-hand corner)
             scoreNumberLabel.setText(data.score);
-            const pace = data.score + drawDeck.getCountAsInt() + this.playerNames.length - this.maxScore;
+
+            // Calculate some "End-Game" metrics
+            const endGameThreshold1 = data.score + drawDeck.getCountAsInt() - data.maxScore; // Formula derived by Hyphen-ated; a conservative estimate of "End-Game"
+            const endGameThreshold2 = endGameThreshold1 + Math.ceil(this.playerNames.length / 2); // Formula derived by Florrat; a less conservative estimate of "End-Game" that tries to account for the number of players
+            const pace = endGameThreshold1 + this.playerNames.length; // Formula derived by Libster; the adjusted score if a card is played on every remaining turn in the game
+
+            // Update the pace (part of the efficiency statistics on the right-hand side of the screen)
             let paceText = pace.toString();
             if (pace > 0) {
                 paceText = `+${pace}`;
             }
             paceNumberLabel.setText(paceText);
+
+            // Color the pace label depending on how "risky" it would be to discard (approximately)
+            if (pace <= 0) {
+                // No more discards can occur in order to get a maximum score
+                paceNumberLabel.setFill('#df1c2d'); // Red
+            } else if (endGameThreshold2 <= 0) {
+                // It would probably be risky to discard
+                paceNumberLabel.setFill('#ef8c1d'); // Orange
+            } else if (endGameThreshold1 <= 0) {
+                // It might be risky to discard
+                paceNumberLabel.setFill('#efef1d'); // Yellow
+            } else {
+                // We are not even close to the "End-Game", so give it the default color
+                paceNumberLabel.setFill('#d8d5ef'); // White
+            }
 
             if (!this.animateFast) {
                 UILayer.draw();
