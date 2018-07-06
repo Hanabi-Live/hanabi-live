@@ -106,8 +106,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	alert := strings.Join(waitingList, " ") + "\n"
-	alert += "**" + s.Username() + "** has created a new Hanabi table. (" + variants[g.Options.Variant] + ")"
+	alert := "**" + s.Username() + "** created a table. (" + variants[g.Options.Variant] + ")\n" + strings.Join(waitingList, " ")
 	discordSend(discordListenChannels[0], "", alert) // Assume that the first channel listed in the "discordListenChannels" slice is the main channel
 
 	// Empty the waiting list
