@@ -126,6 +126,16 @@ func (s *Session) NotifyUser(u *Session) {
 	})
 }
 
+// Notify a user about a user that disconnected
+func (s *Session) NotifyUserLeft(u *Session) {
+	type UserLeftMessage struct {
+		ID int `json:"id"`
+	}
+	s.Emit("userLeft", &UserLeftMessage{
+		ID: u.UserID(),
+	})
+}
+
 // Notify a user about a new game or a change in an existing game
 func (s *Session) NotifyTable(g *Game) {
 	i := g.GetIndex(s.UserID())

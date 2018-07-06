@@ -10,6 +10,12 @@ func notifyAllUser(s *Session) {
 	}
 }
 
+func notifyAllUserLeft(s *Session) {
+	for _, s2 := range sessions {
+		s2.NotifyUserLeft(s)
+	}
+}
+
 func notifyAllTable(g *Game) {
 	for _, s := range sessions {
 		s.NotifyTable(g)
