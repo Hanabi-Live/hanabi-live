@@ -2836,12 +2836,6 @@ function HanabiUI(lobby, gameID) {
     let turnNumberLabel;
     let efficiencyTextLabel;
     let efficiencyNumberLabel;
-    // Pace is a limit on the maximum score.
-    // It is the score that would be achieved if every turn were spent
-    // successfully playing a card, in a universe where every card in the deck
-    // is always playable.
-    // Pace can be used to determine how many more discards may be done without
-    // sacrificing points.
     let paceTextLabel;
     let paceNumberLabel;
 
@@ -3145,16 +3139,18 @@ function HanabiUI(lobby, gameID) {
             y: 0.54 * winH,
             fontSize: 0.020 * winH,
         });
-        efficiencyTextLabel = paceTextLabel.clone({
+        efficiencyTextLabel = basicTextLabel.clone({
             text: 'Efficiency',
             x: 0.83 * winW,
             y: 0.56 * winH,
+            fontSize: 0.020 * winH,
         });
-        efficiencyNumberLabel = paceNumberLabel.clone({
+        efficiencyNumberLabel = basicNumberLabel.clone({
             text: '-',
             x: 0.915 * winW,
             y: 0.56 * winH,
             width: 0.04 * winW,
+            fontSize: 0.020 * winH,
         });
 
         if (lobby.showEffStats) {
@@ -4754,9 +4750,8 @@ function HanabiUI(lobby, gameID) {
         cluesNumberLabel.setText('8');
         cluesNumberLabel.setFill('#df1c2d');
         scoreNumberLabel.setText('0');
-        // The deck count hasn't updated yet, and I'm too lazy to make it work
-        paceNumberLabel.setText('-');
-        efficiencyNumberLabel.setText('-');
+        paceNumberLabel.setText('-'); // The deck count hasn't updated yet, so just set this to a default value
+        efficiencyNumberLabel.setText('-'); // Since no clues have been given yet, we can't divide by 0
     };
 
     this.performReplay = function performReplay(target, fast) {
@@ -5203,26 +5198,37 @@ function HanabiUI(lobby, gameID) {
             // Update the score (in the bottom-right-hand corner)
             scoreNumberLabel.setText(data.score);
 
-            // Calculate some "End-Game" metrics
-            const endGameThreshold1 = data.score + drawDeck.getCountAsInt() - data.maxScore; // Formula derived by Hyphen-ated; a conservative estimate of "End-Game"
-            const endGameThreshold2 = endGameThreshold1 + Math.ceil(this.playerNames.length / 2); // Formula derived by Florrat; a less conservative estimate of "End-Game" that tries to account for the number of players
-            const pace = endGameThreshold1 + this.playerNames.length; // Formula derived by Libster; the adjusted score if a card is played on every remaining turn in the game
+            /*
+                Calculate some "End-Game" metrics
+            */
+
+            const adjustedScorePlusDeck = data.score + drawDeck.getCountAsInt() - data.maxScore;
+
+            // Formula derived by Libster; the number of discards that can happen while still getting the maximum number of points
+            // (this is represented to the user as "Pace" on the user interface)
+            const endGameThreshold1 = adjustedScorePlusDeck + this.playerNames.length;
+
+            // Formula derived by Florrat; a strategical estimate of "End-Game" that tries to account for the number of players
+            const endGameThreshold2 = adjustedScorePlusDeck + Math.ceil(this.playerNames.length / 2);
+
+            // Formula derived by Hyphen-ated; a more conservative estimate of "End-Game" that does not account for the number of players
+            const endGameThreshold3 = adjustedScorePlusDeck;
 
             // Update the pace (part of the efficiency statistics on the right-hand side of the screen)
-            let paceText = pace.toString();
-            if (pace > 0) {
-                paceText = `+${pace}`;
+            let paceText = endGameThreshold1.toString();
+            if (endGameThreshold1 > 0) {
+                paceText = `+${endGameThreshold1}`;
             }
             paceNumberLabel.setText(paceText);
 
             // Color the pace label depending on how "risky" it would be to discard (approximately)
-            if (pace <= 0) {
+            if (endGameThreshold1 <= 0) {
                 // No more discards can occur in order to get a maximum score
                 paceNumberLabel.setFill('#df1c2d'); // Red
             } else if (endGameThreshold2 <= 0) {
                 // It would probably be risky to discard
                 paceNumberLabel.setFill('#ef8c1d'); // Orange
-            } else if (endGameThreshold1 <= 0) {
+            } else if (endGameThreshold3 <= 0) {
                 // It might be risky to discard
                 paceNumberLabel.setFill('#efef1d'); // Yellow
             } else {
