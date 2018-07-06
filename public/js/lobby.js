@@ -28,12 +28,12 @@ function HanabiLobby() {
     // The lobby settings found in the gear sub-menu
     this.sendTurnNotify = false;
     this.sendTurnSound = true; // We want sounds by default
-    this.sendTimerSound = true;
+    this.sendTimerSound = true; // We want sounds by default
     this.sendChatNotify = false;
     this.sendChatSound = false;
     this.showColorblindUI = false;
     this.hideTimerInUntimed = false;
-    this.showEffStats = false;
+    this.showEffStats = true; // We want efficiency stats by default
     this.reverseHands = false;
 
     this.game = {
@@ -678,7 +678,7 @@ HanabiLobby.prototype.drawUsers = function drawUsers() {
         const row = $('<tr>');
 
         let { name } = user;
-        name = `<a href="/profile/${name}" target="_new">${name}</a>`
+        name = `<a href="/profile/${name}" target="_new">${name}</a>`;
         if (user.name === this.username) {
             name = `<strong>${name}</strong>`;
         }
@@ -1733,7 +1733,7 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
         [
             // Reverse the order of cards relative to a hand
             'reverse-hands',
-            'reverseHands'
+            'reverseHands',
         ],
     ];
 
@@ -1874,7 +1874,9 @@ function deleteCookie(name) {
 function getAjaxError(jqXHR) {
     if (jqXHR.readyState === 0) {
         return 'A network error occured. The server might be down!';
-    } else if (jqXHR.responseText === '') {
+    }
+
+    if (jqXHR.responseText === '') {
         return 'An unknown error occured.';
     }
 

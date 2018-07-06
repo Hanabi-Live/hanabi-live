@@ -18,9 +18,9 @@ type Action struct {
 	Size          int    `json:"size"`
 	Clues         int    `json:"clues"`
 	Score         int    `json:"score"`
+	MaxScore      int    `json:"maxScore"`
 	Loss          bool   `json:"loss"`
 	DoubleDiscard bool   `json:"doubleDiscard"`
-	MaxScore      int    `json:"maxScore"`
 }
 
 type Which struct {
