@@ -5538,7 +5538,7 @@ function HanabiUI(lobby, gameID) {
 
     this.handleReplayIndicator = (data) => {
         const indicated = ui.deck[data.order];
-        if (indicated && indicated.isInPlayerHand() && ui.useSharedTurns) {
+        if (indicated && indicated.isInPlayerHand()) {
             // Either show or hide the arrow (if it is already visible)
             const visible = !(indicated.indicatorArrow.visible() && indicated.indicatorArrow.getFill() === INDICATOR.REPLAY_LEADER);
             // (if the arrow is showing but is a different kind of arrow, then just overwrite the existing arrow)
