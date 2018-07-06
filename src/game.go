@@ -31,6 +31,7 @@ type Game struct {
 	ActivePlayer  int
 	Clues         int
 	Score         int
+	MaxScore      int
 	Progress      int
 	Strikes       int
 	Actions       []Action // We don't want this to be a pointer because this simplifies scrubbing
@@ -74,10 +75,6 @@ func (g *Game) GetIndex(id int) int {
 		}
 	}
 	return -1
-}
-
-func (g *Game) MaxScore() int {
-	return len(g.Stacks) * 5
 }
 
 /*
@@ -327,7 +324,7 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// Check to see if the maximum score has been reached
-	if g.Score == g.MaxScore() {
+	if g.Score == g.MaxScore {
 		log.Info(g.GetName() + "Maximum score reached; ending the game.")
 		g.EndCondition = 1
 		return true

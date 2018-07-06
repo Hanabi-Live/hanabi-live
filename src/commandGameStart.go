@@ -100,6 +100,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	for i := 0; i < len(suits); i++ {
 		g.Stacks = append(g.Stacks, 0)
 	}
+	g.MaxScore = len(g.Stacks) * 5 // Assuming that there are 5 points per stack
 
 	// Parse the game name to see if the players want to play a specific deal (read from a text file)
 	var presetRegExp *regexp.Regexp
@@ -310,6 +311,7 @@ func commandGameStart(s *Session, d *CommandData) {
 		Type:          "status",
 		Clues:         g.Clues,
 		Score:         g.Score,
+		MaxScore:      g.MaxScore,
 		DoubleDiscard: false,
 	})
 	g.NotifyAction()

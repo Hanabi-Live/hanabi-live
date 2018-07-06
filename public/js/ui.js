@@ -5274,7 +5274,6 @@ function HanabiUI(lobby, gameID) {
 
             if (this.queuedAction !== null && this.ourTurn) {
                 setTimeout(() => {
-                    console.log('Sending queued action...');
                     ui.sendMsg(this.queuedAction);
                     ui.stopAction();
 
@@ -5665,7 +5664,6 @@ function HanabiUI(lobby, gameID) {
 
             // Prevent the user from accidentally giving a clue in certain situations
             if (Date.now() - ui.accidentalClueTimer < 1000) {
-                console.log('Preventing an accidental clue from being given.');
                 return;
             }
 

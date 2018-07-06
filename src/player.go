@@ -191,8 +191,8 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 	}
 
 	// Update the progress
-	progress := float64(g.Score) / float64(g.MaxScore()) * 100 // In percent
-	g.Progress = int(math.Round(progress))                     // Round it to the nearest integer
+	progress := float64(g.Score) / float64(g.MaxScore) * 100 // In percent
+	g.Progress = int(math.Round(progress))                   // Round it to the nearest integer
 }
 
 func (p *Player) DiscardCard(g *Game, c *Card) {
@@ -246,10 +246,12 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 
 	// Find out if this was a discard of a "critical" card
 	if c.IsCritical(g) && !c.IsDead(g) && !c.Failed { // Ignore misplays
-		// Play a sad sound because this discard just lost the game
+		// Play a sad sound because this discard just reduced the maximum score, "losing" the game
 		g.Sound = "sad"
-	}
 
+		// Decrease the maximum score possible for this game
+		g.MaxScore -= 6 - c.Rank
+	}
 }
 
 func (p *Player) DrawCard(g *Game) {

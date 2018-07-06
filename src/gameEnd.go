@@ -267,10 +267,6 @@ func (g *Game) End() {
 }
 
 func announceGameResult(g *Game, databaseID int) {
-	// Emote definitions
-	pogChamp := "<:PogChamp:254683883033853954>"
-	bibleThump := "<:BibleThump:254683882601840641>"
-
 	// Make the list of names
 	playerList := make([]string, 0)
 	for _, p := range g.Players {
@@ -279,7 +275,7 @@ func announceGameResult(g *Game, databaseID int) {
 	msg := "[" + strings.Join(playerList, ", ") + "] "
 	msg += "finished a " + strings.ToLower(variants[g.Options.Variant]) + " "
 	msg += "game with a score of " + strconv.Itoa(g.Score) + ". "
-	if g.Score == g.MaxScore() {
+	if g.Score == len(g.Stacks)*5 { // This is the theoretical perfect score for this variant (assuming that there are 5 points per stack)
 		msg += pogChamp + " "
 	} else if g.Score == 0 {
 		msg += bibleThump + " "

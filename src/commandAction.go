@@ -209,6 +209,7 @@ func commandAction(s *Session, d *CommandData) {
 		Type:          "status",
 		Clues:         g.Clues,
 		Score:         g.Score,
+		MaxScore:      g.MaxScore,
 		DoubleDiscard: doubleDiscard,
 	})
 	g.NotifyAction()
