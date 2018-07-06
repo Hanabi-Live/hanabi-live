@@ -38,6 +38,9 @@ func websocketDisconnect(ms *melody.Session) {
 	// Delete the connection from the session map
 	delete(sessions, s.UserID())
 
+	// Alert everyone that a new user has logged out
+	notifyAllUser(s)
+
 	// Log the disconnection
 	log.Info("User \""+s.Username()+"\" disconnected;", len(sessions), "user(s) now connected.")
 }

@@ -39,7 +39,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 
 	// Validate that the player is not joined to another game
 	if s.CurrentGame() != -1 {
-		s.Error("You cannot be in more than one game at a time. (You are already in game " + strconv.Itoa(s.CurrentGame()) + ".)")
+		s.Error("You cannot be in more than one game at a time. (You are already in game #" + strconv.Itoa(s.CurrentGame()) + ".)")
 		return
 	}
 
