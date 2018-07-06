@@ -44,7 +44,10 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 		}
 	}
 	if len(list) == 0 {
-		return false
+		// Make an exception for color clues in the "Acid Trip" variant
+		if d.Clue.Type != 1 || g.Options.Variant != 10 {
+			return false
+		}
 	}
 
 	// Keep track that someone clued
@@ -62,15 +65,18 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 	g.NotifyAction()
 
 	// Send the "message" message about the clue
-	text := p.Name + " tells " + g.Players[d.Target].Name + " about "
-	words := []string{
-		"one",
-		"two",
-		"three",
-		"four",
-		"five",
+	text := p.Name + " tells " + g.Players[d.Target].Name + " "
+	if len(list) != 0 {
+		text += "about "
+		words := []string{
+			"one",
+			"two",
+			"three",
+			"four",
+			"five",
+		}
+		text += words[len(list)-1] + " "
 	}
-	text += words[len(list)-1] + " "
 
 	if d.Clue.Type == 0 {
 		// Number clue

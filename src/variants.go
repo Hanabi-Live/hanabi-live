@@ -171,7 +171,7 @@ func variantIsCardTouched(variant int, clue int, suit int) bool {
 		}
 	} else if variant == 10 {
 		// Acid Trip
-		return true
+		return false
 	}
 
 	return false
