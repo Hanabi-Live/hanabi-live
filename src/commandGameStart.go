@@ -307,9 +307,10 @@ func commandGameStart(s *Session, d *CommandData) {
 	// however, sending this message ensures that it will draw the red border
 	// around the discard pile to indicate that discarding is not possible)
 	g.Actions = append(g.Actions, Action{
-		Type:  "status",
-		Clues: g.Clues,
-		Score: g.Score,
+		Type:          "status",
+		Clues:         g.Clues,
+		Score:         g.Score,
+		DoubleDiscard: false,
 	})
 	g.NotifyAction()
 

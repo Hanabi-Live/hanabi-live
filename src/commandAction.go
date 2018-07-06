@@ -201,10 +201,12 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Send messages about the current status
+	doubleDiscard := false
 	g.Actions = append(g.Actions, Action{
-		Type:  "status",
-		Clues: g.Clues,
-		Score: g.Score,
+		Type:          "status",
+		Clues:         g.Clues,
+		Score:         g.Score,
+		DoubleDiscard: doubleDiscard,
 	})
 	g.NotifyAction()
 

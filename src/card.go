@@ -1,6 +1,8 @@
 package main
 
-import "strconv"
+import (
+	"strconv"
+)
 
 type Card struct {
 	Order     int
@@ -10,6 +12,7 @@ type Card struct {
 	Slot      int // Written/assigned after the deck is shuffled
 	Failed    bool
 	Discarded bool
+	Played    bool
 }
 
 func (c *Card) Name(g *Game) string {

@@ -141,6 +141,7 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 	}
 
 	// Success; the card plays
+	c.Played = true
 	g.Score++
 	g.Stacks[c.Suit]++
 
