@@ -245,50 +245,9 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 	log.Info(g.GetName() + text)
 
 	// Find out if this was a discard of a "critical" card
-	if !c.Failed { // Ignore misplays
-		// Search through the deck
-		critical := true
-		for _, deckCard := range g.Deck {
-			if deckCard.Order == c.Order {
-				// Skip over the card that was just discarded
-				continue
-			}
-
-			if deckCard.Suit == c.Suit && deckCard.Rank == c.Rank && !deckCard.Discarded {
-				critical = false
-				break
-			}
-		}
-
-		if critical {
-			// Also check to see if the suit is "dead"
-			// (meaning that the discarded card is trash and not actually critical)
-			for i := 1; i < c.Rank; i++ {
-				// Start with the 1s, then the 2s, etc., checking to see if they are all discarded
-				totalCardsNotDiscarded := 3
-				if i > 1 {
-					totalCardsNotDiscarded = 2
-				}
-				if variantIsSuit1oE(g.Options.Variant, c.Suit) {
-					totalCardsNotDiscarded = 1
-				}
-				for _, deckCard := range g.Deck {
-					if deckCard.Suit == c.Suit && deckCard.Rank == i && deckCard.Discarded {
-						totalCardsNotDiscarded--
-					}
-				}
-				if totalCardsNotDiscarded == 0 {
-					// The suit is "dead"
-					critical = false
-					break
-				}
-			}
-		}
-
-		if critical {
-			// Play a sad sound because this discard just lost the game
-			g.Sound = "sad"
-		}
+	if c.IsCritical(g) && !c.IsDead(g) && !c.Failed { // Ignore misplays
+		// Play a sad sound because this discard just lost the game
+		g.Sound = "sad"
 	}
 
 }

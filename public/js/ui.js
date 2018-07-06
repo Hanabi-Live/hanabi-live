@@ -2859,6 +2859,7 @@ function HanabiUI(lobby, gameID) {
     let noClueLabel;
     let noClueBox;
     let noDiscardLabel;
+    let noDoubleDiscardLabel;
     let deckPlayAvailableLabel;
     let replayArea;
     let replayBar;
@@ -2948,6 +2949,21 @@ function HanabiUI(lobby, gameID) {
         });
 
         UILayer.add(noDiscardLabel);
+
+        // The faded red border that surrounds the discard pile when it is a "Double Discard" situation
+        noDoubleDiscardLabel = new Kinetic.Rect({
+            x: 0.8 * winW,
+            y: 0.6 * winH,
+            width: 0.19 * winW,
+            height: 0.39 * winH,
+            stroke: '#df1c2d',
+            strokeWidth: 0.007 * winW,
+            cornerRadius: 0.01 * winW,
+            visible: false,
+            opacity: 0.25,
+        });
+
+        UILayer.add(noDoubleDiscardLabel);
 
         rect = new Kinetic.Rect({
             x: 0.8 * winW,
@@ -5192,12 +5208,19 @@ function HanabiUI(lobby, gameID) {
                 cluesNumberLabel.setFill('#d8d5ef');
             }
 
-            // Ensure that the red border around the discard pile shows for all players
-            // (to reinforce the fact that being at 8 clues is a special situation)
             if (data.clues === 8) {
+                // Show the red border around the discard pile
+                // (to reinforce the fact that being at 8 clues is a special situation)
                 noDiscardLabel.show();
+                noDoubleDiscardLabel.hide();
+            } else if (data.doubleDiscard) {
+                // Show a faded red border around the discard pile
+                // (to reinforce that this is a "Double Discard" situation)
+                noDiscardLabel.hide();
+                noDoubleDiscardLabel.show();
             } else {
                 noDiscardLabel.hide();
+                noDoubleDiscardLabel.hide();
             }
 
             // Update the number of clues in the bottom-right hand corner of the screen
@@ -5524,6 +5547,7 @@ function HanabiUI(lobby, gameID) {
         noClueLabel.hide();
         noClueBox.hide();
         noDiscardLabel.hide();
+        noDoubleDiscardLabel.hide();
 
         showClueMatch(-1);
         clueTargetButtonGroup.off('change');

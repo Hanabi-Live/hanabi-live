@@ -124,6 +124,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Do different tasks depending on the action
+	doubleDiscard := false
 	if d.Type == 0 { // Clue
 		// Validate that the player is not giving a clue to themselves
 		if g.ActivePlayer == d.Target {
@@ -173,6 +174,9 @@ func commandAction(s *Session, d *CommandData) {
 		p.DrawCard(g)
 
 		g.BlindPlays = 0
+
+		// Find out if this is a "double discard" situation`
+		doubleDiscard = !c.IsCritical(g) && !c.IsAlreadyPlayed(g)
 	} else if d.Type == 3 { // Deck play
 		// Validate that there is only 1 card left
 		// (the client should enforce this, but do a check just in case)
@@ -201,7 +205,6 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Send messages about the current status
-	doubleDiscard := false
 	g.Actions = append(g.Actions, Action{
 		Type:          "status",
 		Clues:         g.Clues,
