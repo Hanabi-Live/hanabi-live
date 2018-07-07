@@ -5209,7 +5209,7 @@ function HanabiUI(lobby, gameID) {
             const endGameThreshold1 = adjustedScorePlusDeck + this.playerNames.length;
 
             // Formula derived by Florrat; a strategical estimate of "End-Game" that tries to account for the number of players
-            const endGameThreshold2 = adjustedScorePlusDeck + Math.ceil(this.playerNames.length / 2);
+            const endGameThreshold2 = adjustedScorePlusDeck + Math.floor(this.playerNames.length / 2);
 
             // Formula derived by Hyphen-ated; a more conservative estimate of "End-Game" that does not account for the number of players
             const endGameThreshold3 = adjustedScorePlusDeck;
