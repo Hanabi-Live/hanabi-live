@@ -244,13 +244,16 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 	g.NotifyAction()
 	log.Info(g.GetName() + text)
 
-	// Find out if this was a discard of a "critical" card
-	if c.IsCritical(g) && !c.IsDead(g) && !c.Failed { // Ignore misplays
-		// Play a sad sound because this discard just reduced the maximum score, "losing" the game
-		g.Sound = "sad"
-
+	// Find out if this was a misplay or discard of a "critical" card
+	if c.IsCritical(g) && !c.IsDead(g) {
 		// Decrease the maximum score possible for this game
 		g.MaxScore -= 6 - c.Rank
+
+		if !c.Failed { // Ignore misplays
+			// Play a sad sound because this discard just reduced the maximum score, "losing" the game
+			// (don't play the custom sound on a misplay, since the misplay sound will already indicate that an error occured)
+			g.Sound = "sad"
+		}
 	}
 }
 

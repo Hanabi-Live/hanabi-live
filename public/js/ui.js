@@ -5225,10 +5225,10 @@ function HanabiUI(lobby, gameID) {
             if (endGameThreshold1 <= 0) {
                 // No more discards can occur in order to get a maximum score
                 paceNumberLabel.setFill('#df1c2d'); // Red
-            } else if (endGameThreshold2 <= 0) {
+            } else if (endGameThreshold2 < 0) {
                 // It would probably be risky to discard
                 paceNumberLabel.setFill('#ef8c1d'); // Orange
-            } else if (endGameThreshold3 <= 0) {
+            } else if (endGameThreshold3 < 0) {
                 // It might be risky to discard
                 paceNumberLabel.setFill('#efef1d'); // Yellow
             } else {
