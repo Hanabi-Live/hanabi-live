@@ -782,9 +782,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
             }
         } else if (game.running) {
             if (game.ourTurn) {
-                status = '<strong>Your Turn</strong>';
+                status = `<strong>Your Turn</strong> (${game.progress}%)`;
             } else {
-                status = 'Waiting';
+                status = `Waiting (${game.progress}%)`;
             }
         } else {
             status = 'Not Started';
