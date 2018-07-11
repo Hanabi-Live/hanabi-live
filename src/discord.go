@@ -177,6 +177,15 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 		}
 
+		// Search through the waiting list to see if they are already on it
+		for _, mention := range waitingList {
+			if mention == m.Author.Mention() {
+				msg := username + ", you are already on the waiting list."
+				discordSend(m.ChannelID, "", msg)
+				return
+			}
+		}
+
 		msg := username + ", I will ping you when the next table opens."
 		discordSend(m.ChannelID, "", msg)
 		waitingList = append(waitingList, m.Author.Mention())
