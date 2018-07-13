@@ -948,11 +948,11 @@ function HanabiUI(lobby, gameID) {
         };
         const endHolderViewOnCard = function endHolderViewOnCard(toggledPips) {
             const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
-            cardsToReset.map(
+            cardsToReset.map( // eslint-disable-line function-paren-newline
                 (card, index) => { // eslint-disable-line arrow-body-style
                     return toggleHolderViewOnCard(card, false, toggledPips[index]);
                 },
-            );
+            ); // eslint-disable-line function-paren-newline
             cardLayer.batchDraw();
         };
         const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
