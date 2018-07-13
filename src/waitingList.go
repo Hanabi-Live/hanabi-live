@@ -74,6 +74,10 @@ func waitingListTimeout(oldWaiter *Waiter) {
 	// Delay for a reasonable amount of time
 	time.Sleep(idleWaitingListTimeout)
 
+	// Prevent race conditions
+	commandMutex.Lock()
+	defer commandMutex.Unlock()
+
 	// See if they are still on the waiting list
 	for i, waiter := range waitingList {
 		if waiter == oldWaiter {
