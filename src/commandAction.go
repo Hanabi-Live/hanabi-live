@@ -152,7 +152,7 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		c := p.RemoveCard(d.Target)
-		p.PlayCard(g, c)
+		doubleDiscard = p.PlayCard(g, c)
 		p.DrawCard(g)
 	} else if d.Type == 2 { // Discard
 		// Validate that the card is in their hand
@@ -170,13 +170,10 @@ func commandAction(s *Session, d *CommandData) {
 
 		g.Clues++
 		c := p.RemoveCard(d.Target)
-		p.DiscardCard(g, c)
+		doubleDiscard = p.DiscardCard(g, c)
 		p.DrawCard(g)
 
 		g.BlindPlays = 0
-
-		// Find out if this is a "double discard" situation`
-		doubleDiscard = c.Rank != 1 && !c.IsCritical(g) && !c.IsAlreadyPlayed(g)
 	} else if d.Type == 3 { // Deck play
 		// Validate that there is only 1 card left
 		// (the client should enforce this, but do a check just in case)

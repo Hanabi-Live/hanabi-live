@@ -121,7 +121,9 @@ func (p *Player) RemoveCard(target int) *Card {
 	return removedCard
 }
 
-func (p *Player) PlayCard(g *Game, c *Card) {
+// PlayCard returns true if it is a "double discard" situation
+// (which can only occur if the card blind-plays)
+func (p *Player) PlayCard(g *Game, c *Card) bool {
 	// Find out if this successfully plays
 	if c.Rank != g.Stacks[c.Suit]+1 {
 		// The card does not play
@@ -136,8 +138,7 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 		})
 		g.NotifyAction()
 
-		p.DiscardCard(g, c)
-		return
+		return p.DiscardCard(g, c)
 	}
 
 	// Success; the card plays
@@ -193,9 +194,12 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 	// Update the progress
 	progress := float64(g.Score) / float64(g.MaxScore) * 100 // In percent
 	g.Progress = int(math.Round(progress))                   // Round it to the nearest integer
+
+	return false
 }
 
-func (p *Player) DiscardCard(g *Game, c *Card) {
+// DiscardCard returns true if it is a "double discard" situation
+func (p *Player) DiscardCard(g *Game, c *Card) bool {
 	// Keep track that someone discarded
 	// (used for the "Reorder Cards" feature)
 	if g.Options.ReorderCards {
@@ -255,6 +259,9 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 			g.Sound = "sad"
 		}
 	}
+
+	// Find out if this is a "double discard" situation
+	return c.Rank != 1 && !c.IsCritical(g) && !c.IsAlreadyPlayed(g)
 }
 
 func (p *Player) DrawCard(g *Game) {
