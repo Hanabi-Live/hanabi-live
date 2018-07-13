@@ -24,7 +24,7 @@ func httpWS(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		log.Error("Failed to parse the IP address in the login function:", err)
+		log.Error("Failed to parse the IP address in the WebSocket function:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {

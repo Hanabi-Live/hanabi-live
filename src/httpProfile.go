@@ -139,5 +139,9 @@ func httpProfile(c *gin.Context) {
 		text += "\n"
 	}
 
-	fmt.Fprintf(w, text)
+	if _, err := fmt.Fprintf(w, text); err != nil {
+		log.Error("Failed to write out the profile text:", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 }

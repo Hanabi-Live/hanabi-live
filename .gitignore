@@ -36,12 +36,6 @@ hanabi-live
 # Helper scripts
 database_shell.sh
 make_database_dump.sh
-run.sh
-start.sh
-stop.sh
-restart.sh
-pull.sh
-tail.sh
 watch.sh
 
 # Atom FTP plugin
