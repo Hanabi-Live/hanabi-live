@@ -1156,8 +1156,6 @@ function HanabiUI(lobby, gameID) {
                 suit = 4;
             } else if (suitLetter === 'k' || suitLetter === 'm' || suitLetter === '6') {
                 suit = 5;
-            } else if (suitLetter === 'm') {
-                suit = 6;
             } else {
                 return;
             }
