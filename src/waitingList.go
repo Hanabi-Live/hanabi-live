@@ -10,9 +10,8 @@ import (
 // Waiter is a person who is on the waiting list for the next game
 // (they used the "/next" Discord command)
 type Waiter struct {
-	Username          string
-	DiscordMention    string
-	DatetimeRequested time.Time
+	DiscordMention  string
+	DatetimeExpired time.Time
 }
 
 func waitingListAlert(g *Game, creator string) {
@@ -23,7 +22,9 @@ func waitingListAlert(g *Game, creator string) {
 	// Build a list of everyone on the waiting list
 	mentionList := ""
 	for _, waiter := range waitingList {
-		mentionList += waiter.DiscordMention + ", "
+		if waiter.DatetimeExpired.After(time.Now()) {
+			mentionList += waiter.DiscordMention + ", "
+		}
 	}
 	mentionList = strings.TrimSuffix(mentionList, ", ")
 
@@ -58,34 +59,24 @@ func waitingListAdd(m *discordgo.MessageCreate) {
 		}
 	}
 
+	// Search through the waiting list to see if they are already on it
+	for _, waiter := range waitingList {
+		if waiter.DiscordMention == m.Author.Mention() {
+			// Update their expiry time
+			waiter.DatetimeExpired = time.Now().Add(idleWaitingListTimeout)
+
+			// Let them know
+			msg := username + ", you are already on the waiting list."
+			discordSend(m.ChannelID, "", msg)
+			return
+		}
+	}
+
 	msg := username + ", I will ping you when the next table opens."
 	discordSend(m.ChannelID, "", msg)
 	waiter := &Waiter{
-		Username:          username,
-		DiscordMention:    m.Author.Mention(),
-		DatetimeRequested: time.Now(),
+		DiscordMention:  m.Author.Mention(),
+		DatetimeExpired: time.Now().Add(idleWaitingListTimeout),
 	}
 	waitingList = append(waitingList, waiter)
-
-	// Remove them from the waiting list if a game has not started
-	go waitingListTimeout(waiter)
-}
-
-func waitingListTimeout(oldWaiter *Waiter) {
-	// Delay for a reasonable amount of time
-	time.Sleep(idleWaitingListTimeout)
-
-	// Prevent race conditions
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
-
-	// See if they are still on the waiting list
-	for i, waiter := range waitingList {
-		if waiter == oldWaiter {
-			// They are still on the waiting list, so remove them
-			waitingList = append(waitingList[:i], waitingList[i+1:]...)
-			log.Info("Removed " + waiter.Username + " from the waiting list since the waiting timeout has elapsed.")
-			break
-		}
-	}
 }
