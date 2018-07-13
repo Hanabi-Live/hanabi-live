@@ -17,7 +17,7 @@ var (
 	db          *models.Models
 	games       = make(map[int]*Game) // Defined in "game.go"
 	wordList    = make([]string, 0)   // For storing all of the random words (used for random table names)
-	waitingList = make([]string, 0)   // For storing the players who are waiting for the next game to start
+	waitingList = make([]*Waiter, 0)  // For storing the players who are waiting for the next game to start
 )
 
 func main() {

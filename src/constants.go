@@ -6,7 +6,10 @@ import (
 
 const (
 	// The amount of time that a game is inactive before it is killed by the server
-	idleTimeout = time.Minute * 30
+	idleGameTimeout = time.Minute * 30
+
+	// The amount of time that someone can be on the waiting list
+	idleWaitingListTimeout = time.Hour * 8
 
 	// Emote definitions
 	pogChamp   = "<:PogChamp:254683883033853954>"

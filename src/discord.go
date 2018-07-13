@@ -121,74 +121,9 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Check for special commands
 	if strings.HasPrefix(d.Msg, "/random ") {
-		msg := strings.TrimPrefix(d.Msg, "/random ")
-		args := strings.Split(msg, " ")
-		if len(args) != 2 {
-			return
-		}
-
-		var min int
-		if v, err := strconv.Atoi(args[0]); err != nil {
-			return
-		} else {
-			min = v
-		}
-
-		var max int
-		if v, err := strconv.Atoi(args[1]); err != nil {
-			return
-		} else {
-			max = v
-		}
-
-		randNum := getRandom(min, max)
-		msg = "Random number between " + args[0] + " and " + args[1] + ":\n**" + strconv.Itoa(randNum) + "**"
-		discordSend(m.ChannelID, "", msg)
-
-		/*
-			d = &CommandData{
-				Username: "poop",
-				Msg:      msg,
-				Discord:  true,
-				Room:     "lobby",
-			}
-			commandChat(nil, d)
-		*/
+		discordRandom(m)
 	} else if d.Msg == "/next" {
-		// Get the Discord guild object
-		var guild *discordgo.Guild
-		if v, err := discord.Guild(discordListenChannels[0]); err != nil { // Assume that the first channel ID is the same as the server ID
-			log.Error("Failed to get the Discord guild.")
-		} else {
-			guild = v
-		}
-
-		// Get their custom nickname for the Discord server, if any
-		var username string
-		for _, member := range guild.Members {
-			if member.User.ID != m.Author.ID {
-				continue
-			}
-
-			if member.Nick == "" {
-				username = member.User.Username
-			} else {
-				username = member.Nick
-			}
-		}
-
-		// Search through the waiting list to see if they are already on it
-		for _, mention := range waitingList {
-			if mention == m.Author.Mention() {
-				msg := username + ", you are already on the waiting list."
-				discordSend(m.ChannelID, "", msg)
-				return
-			}
-		}
-
-		msg := username + ", I will ping you when the next table opens."
-		discordSend(m.ChannelID, "", msg)
-		waitingList = append(waitingList, m.Author.Mention())
+		waitingListAdd(m)
 	}
 }
 
@@ -208,4 +143,40 @@ func discordSend(to string, username string, msg string) {
 		log.Error("Failed to send \""+fullMsg+"\" to Discord:", err)
 		return
 	}
+}
+
+func discordRandom(m *discordgo.MessageCreate) {
+	msg := strings.TrimPrefix(m.Content, "/random ")
+	args := strings.Split(msg, " ")
+	if len(args) != 2 {
+		return
+	}
+
+	var min int
+	if v, err := strconv.Atoi(args[0]); err != nil {
+		return
+	} else {
+		min = v
+	}
+
+	var max int
+	if v, err := strconv.Atoi(args[1]); err != nil {
+		return
+	} else {
+		max = v
+	}
+
+	randNum := getRandom(min, max)
+	msg = "Random number between " + args[0] + " and " + args[1] + ":\n**" + strconv.Itoa(randNum) + "**"
+	discordSend(m.ChannelID, "", msg)
+
+	/*
+		d = &CommandData{
+			Username: "poop",
+			Msg:      msg,
+			Discord:  true,
+			Room:     "lobby",
+		}
+		commandChat(nil, d)
+	*/
 }

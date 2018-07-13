@@ -2,7 +2,6 @@ package main
 
 import (
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -101,10 +100,6 @@ func commandGameCreate(s *Session, d *CommandData) {
 	d.ID = gameID
 	commandGameJoin(s, d)
 
-	// Alert all of the people on the waiting list
-	if len(waitingList) != 0 {
-		alert := s.Username() + " created a table. (" + variants[g.Options.Variant] + ")\n" + strings.Join(waitingList, " ")
-		discordSend(discordListenChannels[0], "", alert) // Assume that the first channel listed in the "discordListenChannels" slice is the main channel
-		waitingList = make([]string, 0)                  // Empty the waiting list
-	}
+	// Alert the people on the waiting list, if any
+	waitingListAlert(g, s.Username())
 }

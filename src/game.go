@@ -360,7 +360,7 @@ func (g *Game) CheckIdle() {
 	commandMutex.Unlock()
 
 	// We want to clean up idle games, so sleep for a reasonable amount of time
-	time.Sleep(idleTimeout + time.Second)
+	time.Sleep(idleGameTimeout + time.Second)
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
 
@@ -370,7 +370,7 @@ func (g *Game) CheckIdle() {
 	}
 
 	// Don't do anything if there has been an action in the meantime
-	if time.Since(g.DatetimeLastAction) < idleTimeout {
+	if time.Since(g.DatetimeLastAction) < idleGameTimeout {
 		return
 	}
 
