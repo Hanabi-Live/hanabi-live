@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"os"
 
 	// This is the documented way to use the driver
@@ -64,7 +65,9 @@ func Init() (*Models, error) {
 
 // Close exposes the ability to close the underlying database connection
 func (*Models) Close() {
-	db.Close()
+	if err := db.Close(); err != nil {
+		log.Fatal("Failed to close the database connection:", err)
+	}
 }
 
 /*

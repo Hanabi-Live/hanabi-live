@@ -30,12 +30,12 @@ func httpInit() {
 	// (they were loaded from the .env file in main.go)
 	domain := os.Getenv("DOMAIN")
 	if len(domain) == 0 {
-		log.Info("The \"DOMAIN\" environment variable is blank; aborting HTTP initalization.")
+		log.Info("The \"DOMAIN\" environment variable is blank; aborting HTTP initialization.")
 		return
 	}
 	sessionSecret := os.Getenv("SESSION_SECRET")
 	if len(sessionSecret) == 0 {
-		log.Info("The \"SESSION_SECRET\" environment variable is blank; aborting HTTP initalization.")
+		log.Info("The \"SESSION_SECRET\" environment variable is blank; aborting HTTP initialization.")
 		return
 	}
 	portString := os.Getenv("PORT")
@@ -106,7 +106,10 @@ func httpInit() {
 
 		// ListenAndServe is blocking, so start listening on a new goroutine
 		go func() {
-			http.ListenAndServe(":80", HTTPServeMux) // Nothing before the colon implies 0.0.0.0
+			// Nothing before the colon implies 0.0.0.0
+			if err := http.ListenAndServe(":80", HTTPServeMux); err != nil {
+				log.Fatal("http.ListenAndServe failed to start on 80.")
+			}
 			log.Fatal("http.ListenAndServe ended for port 80.")
 		}()
 	}

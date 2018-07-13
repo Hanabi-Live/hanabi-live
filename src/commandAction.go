@@ -138,7 +138,7 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
-		if p.GiveClue(g, d) == false {
+		if !p.GiveClue(g, d) {
 			s.Error("You cannot give a clue that touches 0 cards in the hand.")
 			return
 		}
@@ -219,7 +219,7 @@ func commandAction(s *Session, d *CommandData) {
 	// need to adjust the timer because we already set it to 0 in the
 	// "checkTimer" function)
 	if d.Type != 4 {
-		p.Time -= time.Now().Sub(g.TurnBeginTime)
+		p.Time -= time.Since(g.TurnBeginTime)
 		// (in non-timed games, "Time" will decrement into negative numbers to show how much time they are taking)
 
 		// In timed games, a player gains additional time after performing an action

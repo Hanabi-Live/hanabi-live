@@ -42,7 +42,7 @@ func commandGameSpectate(s *Session, d *CommandData) {
 	// The logic for joining a shared replay is in a separate function for organizational purposes
 	// (users should see a "Spectate" button for shared replays)
 	if g.SharedReplay {
-		joinSharedReplay(s, d, g)
+		joinSharedReplay(s, g)
 		return
 	}
 
@@ -69,7 +69,7 @@ func commandGameSpectate(s *Session, d *CommandData) {
 	s.NotifyGameStart()
 }
 
-func joinSharedReplay(s *Session, d *CommandData, g *Game) {
+func joinSharedReplay(s *Session, g *Game) {
 	log.Info(g.GetName() + "User \"" + s.Username() + "\" joined.")
 
 	// Start the idle timeout

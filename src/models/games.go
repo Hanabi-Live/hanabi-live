@@ -9,7 +9,7 @@ import (
 
 type Games struct{}
 
-// This mirrors the "games" table row
+// GameRow mirrors the "games" table row
 // (it contains a subset of the information in the Game struct)
 type GameRow struct {
 	Name            string
@@ -61,7 +61,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close()
+	defer stmt.Close() // nolint: errcheck
 
 	var res sql.Result
 	if v, err := stmt.Exec(
@@ -157,7 +157,7 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]Ga
 	} else {
 		rows = v
 	}
-	defer rows.Close()
+	defer rows.Close() // nolint: errcheck
 
 	games := make([]GameHistory, 0)
 	for rows.Next() {
@@ -180,7 +180,7 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]Ga
 	return games, nil
 }
 
-// Used in the "endGame" function
+// GetNumSimilar is used in the "endGame" function
 func (*Games) GetNumSimilar(seed string) (int, error) {
 	var count int
 	if err := db.QueryRow(`
@@ -223,7 +223,7 @@ func (*Games) GetAllDeals(userID int, databaseID int) ([]GameHistory, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close()
+	defer rows.Close() // nolint: errcheck
 
 	games := make([]GameHistory, 0)
 	for rows.Next() {
@@ -255,7 +255,7 @@ func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close()
+	defer rows.Close() // nolint: errcheck
 
 	seeds := make([]string, 0)
 	for rows.Next() {
@@ -271,16 +271,13 @@ func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
 
 func (*Games) GetVariant(databaseID int) (int, error) {
 	var variant int
-	if err := db.QueryRow(`
+	err := db.QueryRow(`
 		SELECT
 			variant
 		FROM games
 		WHERE games.id = ?
-	`, databaseID).Scan(&variant); err != nil {
-		return variant, err
-	}
-
-	return variant, nil
+	`, databaseID).Scan(&variant)
+	return variant, err
 }
 
 type Player struct {
@@ -288,7 +285,7 @@ type Player struct {
 	Name string
 }
 
-// Used in the "hello" command
+// GetPlayers is used in the "hello" command
 func (*Games) GetPlayers(databaseID int) ([]Player, error) {
 	var rows *sql.Rows
 	if v, err := db.Query(`
@@ -306,7 +303,7 @@ func (*Games) GetPlayers(databaseID int) ([]Player, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close()
+	defer rows.Close() // nolint: errcheck
 
 	players := make([]Player, 0)
 	for rows.Next() {
@@ -326,7 +323,7 @@ type PlayerNote struct {
 	Notes []string
 }
 
-// Used in the "ready" command
+// GetNotes is used in the "ready" command
 func (*Games) GetNotes(databaseID int) ([]PlayerNote, error) {
 	var rows *sql.Rows
 	if v, err := db.Query(`
@@ -344,7 +341,7 @@ func (*Games) GetNotes(databaseID int) ([]PlayerNote, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close()
+	defer rows.Close() // nolint: errcheck
 
 	notes := make([]PlayerNote, 0)
 	for rows.Next() {

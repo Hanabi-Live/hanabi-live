@@ -1,0 +1,9 @@
+{
+  "Enable": [
+    "golint"
+  ],
+  "Exclude": [
+    "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment or be unexported",
+    "if block ends with a return statement, so drop this else and outdent its block"
+  ]
+}

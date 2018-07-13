@@ -127,7 +127,7 @@ func (p *Player) PlayCard(g *Game, c *Card) {
 		// The card does not play
 		g.BlindPlays = 0
 		c.Failed = true
-		g.Strikes += 1
+		g.Strikes++
 
 		// Send the "notify" message about the strike
 		g.Actions = append(g.Actions, Action{
@@ -251,7 +251,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) {
 
 		if !c.Failed { // Ignore misplays
 			// Play a sad sound because this discard just reduced the maximum score, "losing" the game
-			// (don't play the custom sound on a misplay, since the misplay sound will already indicate that an error occured)
+			// (don't play the custom sound on a misplay, since the misplay sound will already indicate that an error occurred)
 			g.Sound = "sad"
 		}
 	}
@@ -304,7 +304,7 @@ func (p *Player) PlayDeck(g *Game) {
 	p.PlayCard(g, c)
 }
 
-// The "chop" is the oldest (right-most) unclued card
+// GetChopIndex gets the index of the oldest (right-most) unclued card
 // (used for the "Reorder Cards" feature)
 func (p *Player) GetChopIndex() int {
 	chopIndex := -1

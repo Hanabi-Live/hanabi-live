@@ -81,7 +81,7 @@ func (g *Game) GetIndex(id int) int {
 	Notify functions
 */
 
-// Send the people in the game an update about the new amount of players
+// NotifyPlayerChange sends the people in the game an update about the new amount of players
 func (g *Game) NotifyPlayerChange() {
 	for _, p := range g.Players {
 		type GameMessage struct {
@@ -167,7 +167,7 @@ func (g *Game) NotifyConnected() {
 	}
 }
 
-// Send the people in the game an update about the new action
+// NotifyAction sends the people in the game an update about the new action
 func (g *Game) NotifyAction() {
 	a := g.Actions[len(g.Actions)-1] // The last action
 
@@ -280,7 +280,7 @@ func (g *Game) NotifySpectatorsNote(order int) {
 	Other major functions
 */
 
-// This function is meant to be called in a new goroutine
+// CheckTimer is meant to be called in a new goroutine
 func (g *Game) CheckTimer(turn int, p *Player) {
 	// Sleep until the active player runs out of time
 	time.Sleep(p.Time)
@@ -351,7 +351,7 @@ func (g *Game) CheckEnd() bool {
 	return true
 }
 
-// This function is meant to be called in a new goroutine
+// CheckIdle is meant to be called in a new goroutine
 func (g *Game) CheckIdle() {
 	// Set the last action
 	commandMutex.Lock()

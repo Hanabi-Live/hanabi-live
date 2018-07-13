@@ -7,7 +7,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// A person who is on the waiting list for the next game by using the "/next" Discord command
+// Waiter is a person who is on the waiting list for the next game
+// (they used the "/next" Discord command)
 type Waiter struct {
 	Username          string
 	DiscordMention    string
@@ -24,7 +25,7 @@ func waitingListAlert(g *Game, creator string) {
 	for _, waiter := range waitingList {
 		mentionList += waiter.DiscordMention + ", "
 	}
-	strings.TrimSuffix(mentionList, ", ")
+	mentionList = strings.TrimSuffix(mentionList, ", ")
 
 	// Empty the waiting list
 	waitingList = make([]*Waiter, 0)

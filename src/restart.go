@@ -16,7 +16,7 @@ func restart(s *Session, d *CommandData) {
 }
 
 func execute(script string) {
-	cmd := exec.Command(path.Join(projectPath, script))
+	cmd := exec.Command(path.Join(projectPath, script)) // nolint: gas
 	if output, err := cmd.Output(); err != nil {
 		log.Error("Failed to execute \""+script+"\":", err)
 	} else {

@@ -17,13 +17,10 @@ func (*ChatLog) Insert(userID int, message string, room string) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close()
+	defer stmt.Close() // nolint: errcheck
 
-	if _, err := stmt.Exec(userID, message, room); err != nil {
-		return err
-	}
-
-	return nil
+	_, err := stmt.Exec(userID, message, room)
+	return err
 }
 
 func (*ChatLog) InsertDiscord(discordName string, message string) error {
@@ -36,13 +33,10 @@ func (*ChatLog) InsertDiscord(discordName string, message string) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close()
+	defer stmt.Close() // nolint: errcheck
 
-	if _, err := stmt.Exec(discordName, message); err != nil {
-		return err
-	}
-
-	return nil
+	_, err := stmt.Exec(discordName, message)
+	return err
 }
 
 type ChatMessage struct {
@@ -76,7 +70,7 @@ func (*ChatLog) Get(room string, count int) ([]ChatMessage, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close()
+	defer rows.Close() // nolint: errcheck
 
 	chatMessages := make([]ChatMessage, 0)
 	for rows.Next() {

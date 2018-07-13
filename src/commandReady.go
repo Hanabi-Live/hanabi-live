@@ -37,7 +37,7 @@ func commandReady(s *Session, d *CommandData) {
 
 	var actions []Action
 	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
-		actionStrings := make([]string, 0)
+		var actionStrings []string
 		if v, err := db.GameActions.GetAll(gameID); err != nil {
 			log.Error("Failed to get the actions from the database for game "+strconv.Itoa(gameID)+":", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")

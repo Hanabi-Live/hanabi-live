@@ -16,7 +16,7 @@ const (
 // Generate a random table name
 func commandGetName(s *Session, d *CommandData) {
 	words := make([]string, 0)
-	for len(words) < 3 {
+	for len(words) < numWords {
 		i := getRandom(0, len(wordList)-1)
 		word := wordList[i]
 

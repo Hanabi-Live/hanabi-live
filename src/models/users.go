@@ -25,7 +25,7 @@ func (*Users) Insert(username string, password string) (User, error) {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close()
+	defer stmt.Close() // nolint: errcheck
 
 	var res sql.Result
 	if v, err := stmt.Exec(username, password); err != nil {
@@ -48,7 +48,8 @@ func (*Users) Insert(username string, password string) (User, error) {
 	}, nil
 }
 
-// We get the existing username in case they submitted the wrong case
+// Get is used when a user is logging in
+// We need to get the existing username in case they submitted the wrong case
 func (*Users) Get(username string) (bool, User, error) {
 	var user User
 	if err := db.QueryRow(`
@@ -77,7 +78,7 @@ type Stats struct {
 
 func (*Users) GetStats(userID int, variant int) (Stats, error) {
 	var stats Stats
-	if err := db.QueryRow(
+	err := db.QueryRow(
 		`
 			SELECT
 				/* NumPlayed */
@@ -196,11 +197,8 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 		&stats.BestScoreVariant5,
 		&stats.AverageScoreVariant,
 		&stats.StrikeoutRateVariant,
-	); err != nil {
-		return stats, err
-	}
-
-	return stats, nil
+	)
+	return stats, err
 }
 
 func (*Users) Update(userID int, lastIP string) error {
@@ -214,11 +212,8 @@ func (*Users) Update(userID int, lastIP string) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close()
+	defer stmt.Close() // nolint: errcheck
 
-	if _, err := stmt.Exec(lastIP, userID); err != nil {
-		return err
-	}
-
-	return nil
+	_, err := stmt.Exec(lastIP, userID)
+	return err
 }

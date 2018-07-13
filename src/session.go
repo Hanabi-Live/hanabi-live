@@ -73,7 +73,7 @@ func (s *Session) Status() string {
 	General purpose functions
 */
 
-// Send a message to a client using the Golem-style protocol described above
+// Emit sends a message to a client using the Golem-style protocol described above
 func (s *Session) Emit(command string, d interface{}) {
 	// Convert the data to JSON
 	var ds string
@@ -112,7 +112,7 @@ func (s *Session) Error(message string) {
 	Notify functions
 */
 
-// Notify a user about a new user that connected or a change in an existing user
+// NotifyUser will notify someone about a new user that connected or a change in an existing user
 func (s *Session) NotifyUser(u *Session) {
 	type UserMessage struct {
 		ID     int    `json:"id"`
@@ -126,7 +126,7 @@ func (s *Session) NotifyUser(u *Session) {
 	})
 }
 
-// Notify a user about a user that disconnected
+// NotifyUserLeft will notify someone about a user that disconnected
 func (s *Session) NotifyUserLeft(u *Session) {
 	type UserLeftMessage struct {
 		ID int `json:"id"`
@@ -136,7 +136,7 @@ func (s *Session) NotifyUserLeft(u *Session) {
 	})
 }
 
-// Notify a user about a new game or a change in an existing game
+// NotifyTable will notify a user about a new game or a change in an existing game
 func (s *Session) NotifyTable(g *Game) {
 	i := g.GetIndex(s.UserID())
 	joined := false
@@ -210,7 +210,7 @@ func (s *Session) NotifyGameStart() {
 	})
 }
 
-// Notify a user about a game that ended
+// NotifyTableGone will notify someone about a game that ended
 func (s *Session) NotifyTableGone(g *Game) {
 	type TableGoneMessage struct {
 		ID int `json:"id"`
@@ -224,7 +224,7 @@ func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, 
 	s.Emit("chat", chatMakeMessage(msg, who, discord, server, datetime))
 }
 
-// Send a user all of their past games
+// NotifyGameHistory will send a user all of their past games
 func (s *Session) NotifyGameHistory(h []models.GameHistory) {
 	type GameHistoryMessage struct {
 		ID               int       `json:"id"`
@@ -250,7 +250,8 @@ func (s *Session) NotifyGameHistory(h []models.GameHistory) {
 	s.Emit("gameHistory", &m)
 }
 
-// Once it is a player's turn, they recieve an "action" message which lists the allowed actions on this turn
+// NotifyAction will send someone an "action" message
+// This is sent at the beginning of their turn and lists the allowed actions on this turn
 func (s *Session) NotifyAction(g *Game) {
 	type ActionMessage struct {
 		CanClue                  bool `json:"canClue"`
@@ -325,7 +326,7 @@ func (s *Session) NotifyClock(g *Game) {
 		// We could be sending the message in the middle of someone's turn, so account for this
 		timeLeft := p.Time
 		if g.ActivePlayer == i {
-			elapsedTime := time.Now().Sub(g.TurnBeginTime)
+			elapsedTime := time.Since(g.TurnBeginTime)
 			timeLeft -= elapsedTime
 		}
 
@@ -364,7 +365,7 @@ func (s *Session) NotifyAllNotes(playerNotes []models.PlayerNote) {
 	}
 
 	// Chop off all of the trailing newlines
-	for i, _ := range combinedNotes {
+	for i := range combinedNotes {
 		combinedNotes[i] = strings.TrimSuffix(combinedNotes[i], "\n")
 	}
 

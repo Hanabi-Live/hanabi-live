@@ -1,7 +1,7 @@
 /*
 	This is only part 1 of 2 for login authentication.
 	The user must POST to "/login" with the values of "username" and "password".
-	If successful, then they will recieve a cookie from the server with an expiry of 5 seconds.
+	If successful, then they will receive a cookie from the server with an expiry of 5 seconds.
 	The client will then attempt to make a WebSocket connection; JavaScript will automatiaclly
 	use any current cookies for the website when establishing a WebSocket connection.
 	The logic for opening a websocket connection is contained in the "websocketConnect.go" file.
@@ -28,7 +28,16 @@ func httpLogin(c *gin.Context) {
 	// Local variables
 	r := c.Request
 	w := c.Writer
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+
+	// Parse the IP address
+	var ip string
+	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
+		log.Error("Failed to parse the IP address in the login function:", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	} else {
+		ip = v
+	}
 
 	/*
 		Validation
@@ -121,11 +130,15 @@ func httpLogin(c *gin.Context) {
 		return
 	}
 
-	// Save the information to the session
+	// Save the information to the session cookie
 	session.Set("userID", user.ID)
 	session.Set("username", user.Username)
 	session.Set("admin", user.Admin)
-	session.Save()
+	if err := session.Save(); err != nil {
+		log.Error("Failed to write to the login cookie for user \""+user.Username+"\":", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 
 	// Log the login request
 	log.Info("User \""+user.Username+"\" logged in from:", ip)

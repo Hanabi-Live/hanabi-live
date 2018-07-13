@@ -23,23 +23,23 @@ func discordInit() {
 	// (they were loaded from the .env file in main.go)
 	discordToken = os.Getenv("DISCORD_TOKEN")
 	if len(discordToken) == 0 {
-		log.Info("The \"DISCORD_TOKEN\" environment variable is blank; aborting Discord initalization.")
+		log.Info("The \"DISCORD_TOKEN\" environment variable is blank; aborting Discord initialization.")
 		return
 	}
 	discordListenChannelsString := os.Getenv("DISCORD_LISTEN_CHANNEL_IDS")
 	if len(discordListenChannelsString) == 0 {
-		log.Info("The \"DISCORD_LISTEN_CHANNEL_IDS\" environment variable is blank; aborting Discord initalization.")
+		log.Info("The \"DISCORD_LISTEN_CHANNEL_IDS\" environment variable is blank; aborting Discord initialization.")
 		return
 	}
 	discordListenChannels = strings.Split(discordListenChannelsString, ",")
 	discordLobbyChannel = os.Getenv("DISCORD_LOBBY_CHANNEL_ID")
 	if len(discordLobbyChannel) == 0 {
-		log.Info("The \"DISCORD_LOBBY_CHANNEL_ID\" environment variable is blank; aborting Discord initalization.")
+		log.Info("The \"DISCORD_LOBBY_CHANNEL_ID\" environment variable is blank; aborting Discord initialization.")
 		return
 	}
 	discordBotChannel = os.Getenv("DISCORD_BOT_CHANNEL_ID")
 	if len(discordBotChannel) == 0 {
-		log.Info("The \"DISCORD_BOT_CHANNEL_ID\" environment variable is blank; aborting Discord initalization.")
+		log.Info("The \"DISCORD_BOT_CHANNEL_ID\" environment variable is blank; aborting Discord initialization.")
 		return
 	}
 

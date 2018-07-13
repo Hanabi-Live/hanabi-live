@@ -16,13 +16,10 @@ func (*GameActions) Insert(gameID int, action string) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close()
+	defer stmt.Close() // nolint: errcheck
 
-	if _, err := stmt.Exec(gameID, action); err != nil {
-		return err
-	}
-
-	return nil
+	_, err := stmt.Exec(gameID, action)
+	return err
 }
 
 func (*GameActions) GetAll(databaseID int) ([]string, error) {
@@ -37,7 +34,7 @@ func (*GameActions) GetAll(databaseID int) ([]string, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close()
+	defer rows.Close() // nolint: errcheck
 
 	// Iterate over all of the actions and add them to a slice
 	actions := make([]string, 0)

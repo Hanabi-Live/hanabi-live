@@ -8,11 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type SessionValues struct {
-	UserID   int
-	Username string
-}
-
 /*
 	Validate that they have logged in before opening a WebSocket connection
 
@@ -25,7 +20,16 @@ func httpWS(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 	r := c.Request
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+
+	// Parse the IP address
+	var ip string
+	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
+		log.Error("Failed to parse the IP address in the login function:", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	} else {
+		ip = v
+	}
 
 	// Check to see if their IP is banned
 	if userIsBanned, err := db.BannedIPs.Check(ip); err != nil {
@@ -38,7 +42,7 @@ func httpWS(c *gin.Context) {
 		return
 	}
 
-	// If they have logged in, their cookie should have values matching the SessionValues struct
+	// If they have logged in, their cookie should have values that we set in httpLogin.go
 	session := gsessions.Default(c)
 	var userID int
 	if v := session.Get("userID"); v == nil {
@@ -90,5 +94,9 @@ func httpWS(c *gin.Context) {
 	keys["status"] = "Lobby" // By default, the user is in the lobby
 
 	// Validation succeeded, so establish the WebSocket connection
-	m.HandleRequestWithKeys(w, r, keys)
+	if err := m.HandleRequestWithKeys(w, r, keys); err != nil {
+		log.Error("Failed to establish the WebSocket connection for user \""+username+"\":", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 }

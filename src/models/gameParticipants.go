@@ -24,11 +24,8 @@ func (*GameParticipants) Insert(userID int, gameID int, notes []string) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close()
+	defer stmt.Close() // nolint: errcheck
 
-	if _, err := stmt.Exec(userID, gameID, notesString); err != nil {
-		return err
-	}
-
-	return nil
+	_, err := stmt.Exec(userID, gameID, notesString)
+	return err
 }
