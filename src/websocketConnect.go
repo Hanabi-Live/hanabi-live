@@ -81,7 +81,7 @@ func websocketConnect(ms *melody.Session) {
 	s.Emit("chatList", msgs)
 
 	// Send them the message(s) of the day
-	msg := "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\">Hanabi Discord chat</a>."
+	msg := "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Hanabi Discord chat</a>."
 	s.NotifyChat(msg, "", false, true, time.Now())
 
 	// Alert everyone that a new user has logged in
