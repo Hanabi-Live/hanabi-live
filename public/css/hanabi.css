@@ -243,8 +243,7 @@ a {
 }
 
 #lobby-users-table-tbody a {
-    border-bottom: 1px solid;
-    text-decoration: none;
+    text-decoration-skip-ink: none;
 }
 
 /*
