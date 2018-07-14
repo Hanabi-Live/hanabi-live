@@ -238,8 +238,12 @@ table td {
     top: 0.22em;
 }
 
+a {
+    color: blue;
+}
+
 #lobby-users-table-tbody a {
-    color: black;
+    border-bottom: 1px solid;
     text-decoration: none;
 }
 
