@@ -238,6 +238,11 @@ table td {
     top: 0.22em;
 }
 
+#lobby-users-table-tbody a {
+    color: black;
+    text-decoration: none;
+}
+
 /*
     Create Game Tooltip
 */
