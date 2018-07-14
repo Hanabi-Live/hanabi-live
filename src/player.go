@@ -195,6 +195,7 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	progress := float64(g.Score) / float64(g.MaxScore) * 100 // In percent
 	g.Progress = int(math.Round(progress))                   // Round it to the nearest integer
 
+	// This is not a "double discard" situation, since the card successfully played
 	return false
 }
 
