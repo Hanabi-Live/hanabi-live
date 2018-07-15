@@ -111,6 +111,15 @@ func commandChat(s *Session, d *CommandData) {
 	if !d.Discord {
 		discordSend(to, username, d.Msg)
 	}
+
+	if d.Msg == "/next" && !d.Discord {
+		d := &CommandData{
+			Server: true,
+			Msg:    "Sorry, but you can only perform the \"/next\" command from Discord.",
+			Room:   d.Room,
+		}
+		commandChat(nil, d)
+	}
 }
 
 type ChatMessage struct {
