@@ -4446,6 +4446,9 @@ function HanabiUI(lobby, gameID) {
             if (event.key === 'B') {
                 this.sharedReplaySendSound('buzz');
                 return;
+            } else if (event.key === 'Z') {
+                lobby.playSound('turn_us');
+                return;
             }
 
             // Don't interfere with other kinds of hotkeys
