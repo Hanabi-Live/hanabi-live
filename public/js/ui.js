@@ -5212,25 +5212,31 @@ function HanabiUI(lobby, gameID) {
             const endGameThreshold3 = adjustedScorePlusDeck;
 
             // Update the pace (part of the efficiency statistics on the right-hand side of the screen)
-            let paceText = endGameThreshold1.toString();
-            if (endGameThreshold1 > 0) {
-                paceText = `+${endGameThreshold1}`;
-            }
-            paceNumberLabel.setText(paceText);
-
-            // Color the pace label depending on how "risky" it would be to discard (approximately)
-            if (endGameThreshold1 <= 0) {
-                // No more discards can occur in order to get a maximum score
-                paceNumberLabel.setFill('#df1c2d'); // Red
-            } else if (endGameThreshold2 < 0) {
-                // It would probably be risky to discard
-                paceNumberLabel.setFill('#ef8c1d'); // Orange
-            } else if (endGameThreshold3 < 0) {
-                // It might be risky to discard
-                paceNumberLabel.setFill('#efef1d'); // Yellow
-            } else {
-                // We are not even close to the "End-Game", so give it the default color
+            // If there are no cards left in the deck, pace is meaningless
+            if (drawDeck.getCountAsInt() === 0) {
+                paceNumberLabel.setText('-');
                 paceNumberLabel.setFill('#d8d5ef'); // White
+            } else {
+                let paceText = endGameThreshold1.toString();
+                if (endGameThreshold1 > 0) {
+                    paceText = `+${endGameThreshold1}`;
+                }
+                paceNumberLabel.setText(paceText);
+
+                // Color the pace label depending on how "risky" it would be to discard (approximately)
+                if (endGameThreshold1 <= 0) {
+                    // No more discards can occur in order to get a maximum score
+                    paceNumberLabel.setFill('#df1c2d'); // Red
+                } else if (endGameThreshold2 < 0) {
+                    // It would probably be risky to discard
+                    paceNumberLabel.setFill('#ef8c1d'); // Orange
+                } else if (endGameThreshold3 < 0) {
+                    // It might be risky to discard
+                    paceNumberLabel.setFill('#efef1d'); // Yellow
+                } else {
+                    // We are not even close to the "End-Game", so give it the default color
+                    paceNumberLabel.setFill('#d8d5ef'); // White
+                }
             }
 
             if (!this.animateFast) {
