@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	maxGameLength = 45
+	maxGameNameLength = 45
 )
 
 var (
@@ -25,7 +25,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 	}
 
 	// Validate that the game name is not excessively long
-	if len(d.Name) > maxGameLength {
+	if len(d.Name) > maxGameNameLength {
 		s.Error("You cannot have a game name be longer than " + strconv.Itoa(maxGameLength) + " characters.")
 		return
 	}

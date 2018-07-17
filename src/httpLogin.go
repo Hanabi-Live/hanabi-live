@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	minUsernameLength = 3
+	minUsernameLength = 2
 	maxUsernameLength = 15
 )
 

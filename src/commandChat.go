@@ -2,7 +2,8 @@
 	Sent when the user sends a text message to the lobby by pressing enter
 	"data" example:
 	{
-		msg: "hi",
+		msg: 'hi',
+		room: 'lobby',
 	}
 */
 
