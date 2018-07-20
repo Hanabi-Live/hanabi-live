@@ -40,10 +40,10 @@ func waitingListAlert(g *Game, creator string) {
 
 func waitingListGetNum() string {
 	msg := "There "
-	if len(waitingList) > 1 {
-		msg += "are " + strconv.Itoa(len(waitingList)) + " people"
+	if len(waitingList) == 1 {
+		msg += "is 1 person"
 	} else {
-		msg += "is " + strconv.Itoa(len(waitingList)) + " person"
+		msg += "are " + strconv.Itoa(len(waitingList)) + " people"
 	}
 	msg += " on the waiting list."
 	return msg
