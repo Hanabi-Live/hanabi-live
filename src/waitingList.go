@@ -71,3 +71,23 @@ func waitingListAdd(m *discordgo.MessageCreate) {
 	msg += " on the waiting list.)"
 	discordSend(m.ChannelID, "", msg)
 }
+
+func waitingListRemove(m *discordgo.MessageCreate) {
+	username := discordGetNickname(m)
+
+	// Search through the waiting list to see if they are already on it
+	for i, waiter := range waitingList {
+		if waiter.DiscordMention == m.Author.Mention() {
+			// Remove them
+			waitingList = append(waitingList[:i], waitingList[i+1:]...)
+
+			// Let them know
+			msg := username + ", you have been removed from the waiting list."
+			discordSend(m.ChannelID, "", msg)
+			return
+		}
+	}
+
+	msg := username + ", you are not on the waiting list."
+	discordSend(m.ChannelID, "", msg)
+}

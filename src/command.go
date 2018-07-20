@@ -45,6 +45,7 @@ type CommandData struct {
 	Username string
 	Discord  bool
 	Server   bool
+	Echo     bool // True if this is a server message but it should still go to the main channels
 }
 type Clue struct {
 	Type  int `json:"type"`

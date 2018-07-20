@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -16,7 +15,12 @@ var (
 	discordLobbyChannel   string
 	discordBotChannel     string
 	discordBotID          string
+	discordCommandMap     = make(map[string]func(*discordgo.MessageCreate))
 )
+
+/*
+	Initialization functions
+*/
 
 func discordInit() {
 	// Read some configuration values from environment variables
@@ -43,6 +47,14 @@ func discordInit() {
 		return
 	}
 
+	// Initialize the Discord command map
+	discordCommandMap["/help"] = discordHelp
+	discordCommandMap["/commands"] = discordHelp
+	discordCommandMap["/?"] = discordHelp
+	discordCommandMap["/next"] = waitingListAdd
+	discordCommandMap["/unnext"] = waitingListRemove
+
+	// Start the Discord bot in a new goroutine
 	go discordConnect()
 }
 
@@ -119,13 +131,15 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 	commandChat(nil, d)
 
-	// Check for special commands
-	if strings.HasPrefix(d.Msg, "/random ") {
-		discordRandom(m)
-	} else if d.Msg == "/next" {
-		waitingListAdd(m)
+	// Check for special Discord-only commands
+	if discordCommandFunction, ok := discordCommandMap[d.Msg]; ok {
+		discordCommandFunction(m)
 	}
 }
+
+/*
+	Miscellaneous functions
+*/
 
 func discordSend(to string, username string, msg string) {
 	if discord == nil {
@@ -170,38 +184,21 @@ func discordGetNickname(m *discordgo.MessageCreate) string {
 	return "[no user found]"
 }
 
-func discordRandom(m *discordgo.MessageCreate) {
-	msg := strings.TrimPrefix(m.Content, "/random ")
-	args := strings.Split(msg, " ")
-	if len(args) != 2 {
-		return
-	}
+/*
+	Command handlers
+*/
 
-	var min int
-	if v, err := strconv.Atoi(args[0]); err != nil {
-		return
-	} else {
-		min = v
-	}
-
-	var max int
-	if v, err := strconv.Atoi(args[1]); err != nil {
-		return
-	} else {
-		max = v
-	}
-
-	randNum := getRandom(min, max)
-	msg = "Random number between " + args[0] + " and " + args[1] + ":\n**" + strconv.Itoa(randNum) + "**"
+func discordHelp(m *discordgo.MessageCreate) {
+	msg := "Here is a list of commands:\n"
+	msg += "```\n"
+	msg += "Command               Description\n"
+	msg += "--------------------------------------------------------\n"
+	msg += "/next                 Put yourself on the waiting list\n"
+	msg += "/unnext               Take yourself off the waiting list\n"
+	msg += "/random [min] [max]   Get a random number\n"
+	msg += "/rand [min] [max]     Get a random number\n"
+	msg += "/restart              Run \"pull.sh\" and \"restart.sh\" (admin-only)\n"
+	msg += "/debug                Print out some server-side info (admin-only)\n"
+	msg += "```"
 	discordSend(m.ChannelID, "", msg)
-
-	/*
-		d = &CommandData{
-			Username: "poop",
-			Msg:      msg,
-			Discord:  true,
-			Room:     "lobby",
-		}
-		commandChat(nil, d)
-	*/
 }

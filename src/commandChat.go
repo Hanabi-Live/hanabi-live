@@ -10,6 +10,7 @@
 package main
 
 import (
+	"strings"
 	"time"
 )
 
@@ -23,6 +24,10 @@ func commandChat(s *Session, d *CommandData) {
 	if d.Discord || d.Server {
 		userID = 0
 	} else {
+		if s == nil {
+			log.Error("Failed to send a chat message because the sender's session was nil.")
+			return
+		}
 		userID = s.UserID()
 	}
 	var username string
@@ -85,17 +90,6 @@ func commandChat(s *Session, d *CommandData) {
 	text += d.Msg
 	log.Info(text)
 
-	// Check for special commands (that should not be echoed)
-	if s != nil {
-		if d.Msg == "/debug" {
-			debug(s, d)
-			return
-		} else if d.Msg == "/restart" {
-			restart(s, d)
-			return
-		}
-	}
-
 	// Send the chat message to everyone
 	for _, s2 := range sessions {
 		s2.NotifyChat(d.Msg, username, d.Discord, d.Server, time.Now())
@@ -103,7 +97,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Send the chat message to the Discord "#general" channel if we are replicating a message
 	to := discordLobbyChannel
-	if d.Server {
+	if d.Server && !d.Echo {
 		// Send server messages to a separate channel
 		to = discordBotChannel
 	}
@@ -113,30 +107,42 @@ func commandChat(s *Session, d *CommandData) {
 		discordSend(to, username, d.Msg)
 	}
 
-	if d.Msg == "/next" && !d.Discord {
-		d := &CommandData{
+	// Check for commands
+	if !strings.HasPrefix(d.Msg, "/") {
+		return
+	}
+
+	// First, check for Discord-only commands
+	if _, ok := discordCommandMap[d.Msg]; ok {
+		if d.Discord {
+			// Do nothing, because the command was already handled in the "discord.go" file
+			return
+		} else {
+			d := &CommandData{
+				Msg:    "Sorry, but you can only perform the \"" + d.Msg + "\" command from Discord.",
+				Room:   d.Room,
+				Server: true,
+				Echo:   true,
+			}
+			commandChat(nil, d)
+			return
+		}
+	}
+
+	// Second, check for commands that will work either in the lobby or from Discord
+	if strings.HasPrefix(d.Msg, "/random ") || strings.HasPrefix(d.Msg, "/rand ") {
+		chatRandom(s, d)
+	} else if d.Msg == "/debug" {
+		debug(s, d)
+	} else if d.Msg == "/restart" {
+		restart(s, d)
+	} else {
+		d = &CommandData{
+			Msg:    "That is not a valid command.",
+			Room:   "lobby",
 			Server: true,
-			Msg:    "Sorry, but you can only perform the \"/next\" command from Discord.",
-			Room:   d.Room,
+			Echo:   true,
 		}
 		commandChat(nil, d)
-	}
-}
-
-type ChatMessage struct {
-	Msg      string    `json:"msg"`
-	Who      string    `json:"who"`
-	Discord  bool      `json:"discord"`
-	Server   bool      `json:"server"`
-	Datetime time.Time `json:"datetime"`
-}
-
-func chatMakeMessage(msg string, who string, discord bool, server bool, datetime time.Time) *ChatMessage {
-	return &ChatMessage{
-		Msg:      msg,
-		Who:      who,
-		Discord:  discord,
-		Server:   server,
-		Datetime: datetime,
 	}
 }

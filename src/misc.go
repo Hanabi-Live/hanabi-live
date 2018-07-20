@@ -13,6 +13,10 @@ import (
 // From: http://golangcookbook.blogspot.com/2012/11/generate-random-number-in-given-range.html
 func getRandom(min int, max int) int {
 	max++
+	if max-min <= 0 {
+		log.Error("getRandom was given invalid arguments.")
+		return 0
+	}
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
 }
