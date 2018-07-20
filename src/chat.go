@@ -56,7 +56,7 @@ func chatRandom(s *Session, d *CommandData) {
 	}
 
 	randNum := getRandom(min, max)
-	msg = "Random integer between " + args[0] + " and " + args[1] + ": **" + strconv.Itoa(randNum) + "**"
+	msg = "Random number between " + args[0] + " and " + args[1] + ": **" + strconv.Itoa(randNum) + "**"
 	// This is formatted for Discord, so it will look a little weird in the lobby
 	d = &CommandData{
 		Msg:    msg,
