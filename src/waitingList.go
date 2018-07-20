@@ -11,6 +11,7 @@ import (
 // Waiter is a person who is on the waiting list for the next game
 // (they used the "/next" Discord command)
 type Waiter struct {
+	Username        string
 	DiscordMention  string
 	DatetimeExpired time.Time
 }
@@ -37,6 +38,17 @@ func waitingListAlert(g *Game, creator string) {
 	discordSend(discordListenChannels[0], "", alert) // Assume that the first channel listed in the "discordListenChannels" slice is the main channel
 }
 
+func waitingListGetNum() string {
+	msg := "There "
+	if len(waitingList) > 1 {
+		msg += "are " + strconv.Itoa(len(waitingList)) + " people"
+	} else {
+		msg += "is " + strconv.Itoa(len(waitingList)) + " person"
+	}
+	msg += " on the waiting list."
+	return msg
+}
+
 func waitingListAdd(m *discordgo.MessageCreate) {
 	username := discordGetNickname(m)
 
@@ -55,6 +67,7 @@ func waitingListAdd(m *discordgo.MessageCreate) {
 
 	// Add them to the list
 	waiter := &Waiter{
+		Username:        username,
 		DiscordMention:  m.Author.Mention(),
 		DatetimeExpired: time.Now().Add(idleWaitingListTimeout),
 	}
@@ -62,13 +75,7 @@ func waitingListAdd(m *discordgo.MessageCreate) {
 
 	// Announce it
 	msg := username + ", I will ping you when the next table opens.\n"
-	msg += "(There "
-	if len(waitingList) > 1 {
-		msg += "are " + strconv.Itoa(len(waitingList)) + " people"
-	} else {
-		msg += "is " + strconv.Itoa(len(waitingList)) + " person"
-	}
-	msg += " on the waiting list.)"
+	msg += "(" + waitingListGetNum() + ")"
 	discordSend(m.ChannelID, "", msg)
 }
 
@@ -89,5 +96,14 @@ func waitingListRemove(m *discordgo.MessageCreate) {
 	}
 
 	msg := username + ", you are not on the waiting list."
+	discordSend(m.ChannelID, "", msg)
+}
+
+func waitingListList(m *discordgo.MessageCreate) {
+	msg := waitingListGetNum() + ":\n"
+	for _, waiter := range waitingList {
+		msg += waiter.Username + ", "
+	}
+	msg = strings.TrimSuffix(msg, ", ")
 	discordSend(m.ChannelID, "", msg)
 }

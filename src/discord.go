@@ -53,6 +53,7 @@ func discordInit() {
 	discordCommandMap["/?"] = discordHelp
 	discordCommandMap["/next"] = waitingListAdd
 	discordCommandMap["/unnext"] = waitingListRemove
+	discordCommandMap["/list"] = waitingListList
 
 	// Start the Discord bot in a new goroutine
 	go discordConnect()
