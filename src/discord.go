@@ -193,7 +193,7 @@ func discordHelp(m *discordgo.MessageCreate) {
 	msg := "Here is a list of commands:\n"
 	msg += "```\n"
 	msg += "Command               Description\n"
-	msg += "--------------------------------------------------------\n"
+	msg += "----------------------------------------------------------------------------------\n"
 	msg += "/next                 Put yourself on the waiting list (Discord-only)\n"
 	msg += "/unnext               Take yourself off the waiting list (Discord-only)\n"
 	msg += "/list                 Show the people on the waiting list (Discord-only)\n"
