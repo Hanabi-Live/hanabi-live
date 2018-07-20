@@ -196,6 +196,7 @@ func discordHelp(m *discordgo.MessageCreate) {
 	msg += "--------------------------------------------------------\n"
 	msg += "/next                 Put yourself on the waiting list (Discord-only)\n"
 	msg += "/unnext               Take yourself off the waiting list (Discord-only)\n"
+	msg += "/list                 Show the people on the waiting list (Discord-only)\n"
 	msg += "/random [min] [max]   Get a random number\n"
 	msg += "/rand [min] [max]     Get a random number\n"
 	msg += "/restart              Run \"pull.sh\" and \"restart.sh\" (lobby-only & admin-only)\n"

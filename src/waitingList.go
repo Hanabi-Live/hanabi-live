@@ -45,7 +45,7 @@ func waitingListGetNum() string {
 	} else {
 		msg += "are " + strconv.Itoa(len(waitingList)) + " people"
 	}
-	msg += " on the waiting list."
+	msg += " on the waiting list"
 	return msg
 }
 
@@ -75,7 +75,7 @@ func waitingListAdd(m *discordgo.MessageCreate) {
 
 	// Announce it
 	msg := username + ", I will ping you when the next table opens.\n"
-	msg += "(" + waitingListGetNum() + ")"
+	msg += "(" + waitingListGetNum() + ".)"
 	discordSend(m.ChannelID, "", msg)
 }
 
@@ -100,10 +100,16 @@ func waitingListRemove(m *discordgo.MessageCreate) {
 }
 
 func waitingListList(m *discordgo.MessageCreate) {
-	msg := waitingListGetNum() + ":\n"
-	for _, waiter := range waitingList {
-		msg += waiter.Username + ", "
+	msg := waitingListGetNum()
+	if len(waitingList) == 0 {
+		msg += "."
+	} else {
+		msg += ":\n"
+		for _, waiter := range waitingList {
+			msg += waiter.Username + ", "
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+
 	}
-	msg = strings.TrimSuffix(msg, ", ")
 	discordSend(m.ChannelID, "", msg)
 }
