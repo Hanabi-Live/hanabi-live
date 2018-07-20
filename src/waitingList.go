@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
@@ -72,11 +73,21 @@ func waitingListAdd(m *discordgo.MessageCreate) {
 		}
 	}
 
-	msg := username + ", I will ping you when the next table opens."
-	discordSend(m.ChannelID, "", msg)
+	// Add them to the list
 	waiter := &Waiter{
 		DiscordMention:  m.Author.Mention(),
 		DatetimeExpired: time.Now().Add(idleWaitingListTimeout),
 	}
 	waitingList = append(waitingList, waiter)
+
+	// Announce it
+	msg := username + ", I will ping you when the next table opens.\n"
+	msg += "(There "
+	if len(waitingList) > 1 {
+		msg += "are " + strconv.Itoa(len(waitingList)) + " people"
+	} else {
+		msg += "is " + strconv.Itoa(len(waitingList)) + " person"
+	}
+	msg += " on the waiting list.)"
+	discordSend(m.ChannelID, "", msg)
 }
