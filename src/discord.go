@@ -191,14 +191,13 @@ func discordGetNickname(m *discordgo.MessageCreate) string {
 func discordHelp(m *discordgo.MessageCreate) {
 	msg := "Here is a list of commands:\n"
 	msg += "```\n"
-	msg += "Command               Description\n"
-	msg += "--------------------------------------------------------\n"
-	msg += "/next                 Put yourself on the waiting list\n"
-	msg += "/unnext               Take yourself off the waiting list\n"
-	msg += "/random [min] [max]   Get a random number\n"
-	msg += "/rand [min] [max]     Get a random number\n"
-	msg += "/restart              Run \"pull.sh\" and \"restart.sh\" (admin-only)\n"
-	msg += "/debug                Print out some server-side info (admin-only)\n"
+	msg += "Command                       Description\n"
+	msg += "----------------------------------------------------------------\n"
+	msg += "/next                         Put yourself on the waiting list\n"
+	msg += "/unnext                       Take yourself off the waiting list\n"
+	msg += "{/random,/rand} [min] [max]   Get a random integer\n"
+	msg += "/restart                      Run \"pull.sh\" and \"restart.sh\" (admin-only)\n"
+	msg += "/debug                        Print out some server-side info (admin-only)\n"
 	msg += "```"
 	discordSend(m.ChannelID, "", msg)
 }
