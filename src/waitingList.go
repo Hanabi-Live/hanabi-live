@@ -38,27 +38,7 @@ func waitingListAlert(g *Game, creator string) {
 }
 
 func waitingListAdd(m *discordgo.MessageCreate) {
-	// Get the Discord guild object
-	var guild *discordgo.Guild
-	if v, err := discord.Guild(discordListenChannels[0]); err != nil { // Assume that the first channel ID is the same as the server ID
-		log.Error("Failed to get the Discord guild.")
-	} else {
-		guild = v
-	}
-
-	// Get their custom nickname for the Discord server, if any
-	var username string
-	for _, member := range guild.Members {
-		if member.User.ID != m.Author.ID {
-			continue
-		}
-
-		if member.Nick == "" {
-			username = member.User.Username
-		} else {
-			username = member.Nick
-		}
-	}
+	username := discordGetNickname(m)
 
 	// Search through the waiting list to see if they are already on it
 	for _, waiter := range waitingList {
