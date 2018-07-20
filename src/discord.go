@@ -194,12 +194,12 @@ func discordHelp(m *discordgo.MessageCreate) {
 	msg += "```\n"
 	msg += "Command               Description\n"
 	msg += "--------------------------------------------------------\n"
-	msg += "/next                 Put yourself on the waiting list\n"
-	msg += "/unnext               Take yourself off the waiting list\n"
+	msg += "/next                 Put yourself on the waiting list (Discord-only)\n"
+	msg += "/unnext               Take yourself off the waiting list (Discord-only)\n"
 	msg += "/random [min] [max]   Get a random number\n"
 	msg += "/rand [min] [max]     Get a random number\n"
-	msg += "/restart              Run \"pull.sh\" and \"restart.sh\" (admin-only)\n"
-	msg += "/debug                Print out some server-side info (admin-only)\n"
+	msg += "/restart              Run \"pull.sh\" and \"restart.sh\" (lobby-only & admin-only)\n"
+	msg += "/debug                Print out some server-side info (lobby-only & admin-only)\n"
 	msg += "```"
 	discordSend(m.ChannelID, "", msg)
 }

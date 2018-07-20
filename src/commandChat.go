@@ -132,17 +132,26 @@ func commandChat(s *Session, d *CommandData) {
 	// Second, check for commands that will work either in the lobby or from Discord
 	if strings.HasPrefix(d.Msg, "/random ") || strings.HasPrefix(d.Msg, "/rand ") {
 		chatRandom(s, d)
-	} else if d.Msg == "/debug" {
-		debug(s, d)
-	} else if d.Msg == "/restart" {
-		restart(s, d)
-	} else {
-		d = &CommandData{
-			Msg:    "That is not a valid command.",
-			Room:   "lobby",
-			Server: true,
-			Echo:   true,
-		}
-		commandChat(nil, d)
+		return
 	}
+
+	// Third, check for commands that will only work from the lobby
+	if !d.Discord {
+		if d.Msg == "/debug" {
+			debug(s, d)
+			return
+		} else if d.Msg == "/restart" {
+			restart(s, d)
+			return
+		}
+	}
+
+	// If we have gotten this far, this is an invalid command
+	d = &CommandData{
+		Msg:    "That is not a valid command.",
+		Room:   "lobby",
+		Server: true,
+		Echo:   true,
+	}
+	commandChat(nil, d)
 }
