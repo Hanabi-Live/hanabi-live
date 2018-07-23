@@ -24,6 +24,19 @@ func chatMakeMessage(msg string, who string, discord bool, server bool, datetime
 	}
 }
 
+func chatHere(s *Session) {
+	// Check to see if enough time has passed from the last @here
+
+	d := &CommandData{
+		Msg:    "@here",
+		Room:   "lobby",
+		Server: true,
+		Echo:   true,
+	}
+	commandChat(nil, d)
+
+}
+
 func chatRandom(s *Session, d *CommandData) {
 	var prefix string
 	if strings.HasPrefix(d.Msg, "/random ") {

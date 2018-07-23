@@ -14,7 +14,7 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id                   INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    username             NVARCHAR(19)  NOT NULL  UNIQUE, /* MySQL is case insensitive by default, which is what we want */
+    username             NVARCHAR(20)  NOT NULL  UNIQUE, /* MySQL is case insensitive by default, which is what we want */
     password             CHAR(64)      NOT NULL, /* A SHA-256 hash string is 64 characters long */
     last_ip              VARCHAR(40)   NULL, /* This will be set immediately after insertion */
     admin                INT           NOT NULL  DEFAULT 0,
@@ -43,6 +43,8 @@ CREATE TABLE games (
     datetime_finished  TIMESTAMP     NOT NULL  DEFAULT NOW(),
     FOREIGN KEY (owner) REFERENCES users (id)
 );
+CREATE INDEX games_index_num_players ON games (num_players);
+CREATE INDEX games_index_variant ON games (variant);
 CREATE INDEX games_index_seed ON games (seed);
 
 DROP TABLE IF EXISTS game_participants;
@@ -97,4 +99,20 @@ CREATE TABLE banned_ips (
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
     /* If the user is deleted, automatically delete the banned_ips entry */
     FOREIGN KEY(admin_responsible) REFERENCES users(id)
+);
+
+DROP TABLE IF EXISTS discord_metadata;
+CREATE TABLE discord_metadata (
+    id     INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    name   VARCHAR(20)    NOT NULL,
+    value  NVARCHAR(100)  NOT NULL
+);
+INSERT INTO discord_metadata (name, value) VALUES ('last_at_here', NOW());
+
+DROP TABLE IF EXISTS discord_waiters;
+CREATE TABLE discord_waiters (
+    id                INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    username          NVARCHAR(30)  NOT NULL,
+    discord_mention   VARCHAR(30)   NOT NULL,
+    datetime_expired  TIMESTAMP     NOT NULL
 );

@@ -133,6 +133,9 @@ func commandChat(s *Session, d *CommandData) {
 	if strings.HasPrefix(d.Msg, "/random ") || strings.HasPrefix(d.Msg, "/rand ") {
 		chatRandom(s, d)
 		return
+	} else if d.Msg == "/here" {
+		chatHere(s)
+		return
 	}
 
 	// Third, check for commands that will only work from the lobby

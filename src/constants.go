@@ -14,4 +14,7 @@ const (
 	// Emote definitions
 	pogChamp   = "<:PogChamp:254683883033853954>"
 	bibleThump = "<:BibleThump:254683882601840641>"
+
+	// The amount of time in between allowed @here Discord alerts
+	discordAtHereTimeout = time.Hour * 2
 )

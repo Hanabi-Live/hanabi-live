@@ -16,6 +16,7 @@ var (
 	discordBotChannel     string
 	discordBotID          string
 	discordCommandMap     = make(map[string]func(*discordgo.MessageCreate))
+	discordLastAtHere     = time.Now().Add(-discordAtHereTimeout)
 )
 
 /*
@@ -194,6 +195,7 @@ func discordHelp(m *discordgo.MessageCreate) {
 	msg += "```\n"
 	msg += "Command               Description\n"
 	msg += "----------------------------------------------------------------------------------\n"
+	msg += "/here                 Ping online people to try and get people together for a game\n"
 	msg += "/next                 Put yourself on the waiting list (Discord-only)\n"
 	msg += "/unnext               Take yourself off the waiting list (Discord-only)\n"
 	msg += "/list                 Show the people on the waiting list (Discord-only)\n"
