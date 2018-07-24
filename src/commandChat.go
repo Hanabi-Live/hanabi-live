@@ -118,13 +118,13 @@ func commandChat(s *Session, d *CommandData) {
 			// Do nothing, because the command was already handled in the "discord.go" file
 			return
 		} else {
-			d := &CommandData{
+			d2 := &CommandData{
 				Msg:    "Sorry, but you can only perform the \"" + d.Msg + "\" command from Discord.",
 				Room:   d.Room,
 				Server: true,
 				Echo:   true,
 			}
-			commandChat(nil, d)
+			commandChat(nil, d2)
 			return
 		}
 	}

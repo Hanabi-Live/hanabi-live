@@ -26,7 +26,7 @@ func chatMakeMessage(msg string, who string, discord bool, server bool, datetime
 
 func chatHere(s *Session) {
 	// Check to see if enough time has passed from the last @here
-
+	// TODO
 	d := &CommandData{
 		Msg:    "@here",
 		Room:   "lobby",

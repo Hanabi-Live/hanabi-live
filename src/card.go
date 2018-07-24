@@ -16,7 +16,7 @@ type Card struct {
 }
 
 func (c *Card) Name(g *Game) string {
-	return variantGetSuitName(g.Options.Variant, c.Suit) + " " + strconv.Itoa(c.Rank)
+	return variants[g.Options.Variant].Suits[c.Suit].Name + " " + strconv.Itoa(c.Rank)
 }
 
 func (c *Card) IsAlreadyPlayed(g *Game) bool {

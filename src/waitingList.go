@@ -34,7 +34,7 @@ func waitingListAlert(g *Game, creator string) {
 	waitingList = make([]*Waiter, 0)
 
 	// Alert all of the people on the waiting list
-	alert := creator + " created a table. (" + variants[g.Options.Variant] + ")\n" + mentionList
+	alert := creator + " created a table. (" + variants[g.Options.Variant].Name + ")\n" + mentionList
 	discordSend(discordListenChannels[0], "", alert) // Assume that the first channel listed in the "discordListenChannels" slice is the main channel
 }
 

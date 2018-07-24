@@ -84,7 +84,7 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 		text += strconv.Itoa(d.Clue.Value)
 	} else if d.Clue.Type == 1 {
 		// Color clue
-		text += variantGetClueName(g.Options.Variant, d.Clue.Value)
+		text += variants[g.Options.Variant].Clues[d.Clue.Value].Name
 	}
 	if len(list) > 1 {
 		text += "s"

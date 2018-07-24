@@ -74,7 +74,7 @@ func httpProfile(c *gin.Context) {
 		if i == 0 {
 			text += "No Variant\n"
 		} else {
-			text += "Variant " + strconv.Itoa(i) + " - " + variant + "\n"
+			text += "Variant " + strconv.Itoa(i) + " - " + variant.Name + "\n"
 		}
 
 		text += "- Total games played: " + strconv.Itoa(stats.NumPlayedVariant) + "\n"
@@ -132,7 +132,7 @@ func httpProfile(c *gin.Context) {
 		text += "Game #" + strconv.Itoa(g.ID) + "\n"
 		text += "- " + strconv.Itoa(g.NumPlayers) + " players\n"
 		text += "- Score: " + strconv.Itoa(g.Score) + "\n"
-		text += "- Variant: " + variants[g.Variant] + "\n"
+		text += "- Variant: " + variants[g.Variant].Name + "\n"
 		text += "- Date: " + g.DatetimeFinished.Format("Mon Jan 02 15:04:05 MST 2006") + "\n" // Same as the Linux date command
 		text += "- Other players: " + g.OtherPlayerNames + "\n"
 		text += "- Other scores: " + strconv.Itoa(g.NumSimilar) + "\n"

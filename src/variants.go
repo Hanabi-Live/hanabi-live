@@ -1,14 +1,8 @@
 package main
 
-type ColorClue struct {
-	Name string
-}
-
-type Suit struct {
-	Name            string
-	ColorsTouchedBy []ColorClue
-	IsOneOfEach     bool // defaults to false
-}
+/*
+	Data types
+*/
 
 type Variant struct {
 	Name  string
@@ -16,17 +10,36 @@ type Variant struct {
 	Clues []ColorClue
 }
 
-// For backward compatibility. We could change other code to get the names and not need this.
-// This must generate a slice where the order matches the order in the client.
-func GetVariantNames(list []Variant) []string {
-	var rv []string
-	for _, variant := range list {
-		rv = append(rv, variant.Name)
-	}
-	return rv
+type Suit struct {
+	Name            string
+	ColorsTouchedBy []ColorClue
+	IsOneOfEach     bool
 }
 
-// CLUES... if you introduce a new color clue, add it here
+type ColorClue struct {
+	Name string
+}
+
+func NewSuit(name string, colorsTouchedBy []ColorClue) Suit {
+	return Suit{
+		Name:            name,
+		ColorsTouchedBy: colorsTouchedBy,
+		IsOneOfEach:     false,
+	}
+}
+
+func NewSuit1oE(name string, colorsTouchedBy []ColorClue) Suit {
+	return Suit{
+		Name:            name,
+		ColorsTouchedBy: colorsTouchedBy,
+		IsOneOfEach:     true,
+	}
+}
+
+/*
+	Clues
+*/
+
 var (
 	BlueClue   = ColorClue{Name: "Blue"}
 	GreenClue  = ColorClue{Name: "Green"}
@@ -35,127 +48,157 @@ var (
 	PurpleClue = ColorClue{Name: "Purple"}
 	OrangeClue = ColorClue{Name: "Orange"}
 	BlackClue  = ColorClue{Name: "Black"}
-	// Helpers used for Rainbow and White/Acid
-	all_color_clues = []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue, BlackClue}
-	not_touched     = []ColorClue{}
+
+	// Helpers used for "Rainbow", "Colorless & Rainbow", and "Acid Trip"
+	allColorClues = []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue, BlackClue}
+	notTouched    = []ColorClue{}
 )
 
-// SUITS - add new suits here
-// Can use not_touched or all_color_clues if desired. IsOneOfEach defaults to false.
+/*
+	Suits
+*/
+
+// Can use "allColorClues" or "notTouched" as the second argument for brevity
 var (
-	BlueSuit     = Suit{Name: "Blue", ColorsTouchedBy: []ColorClue{BlueClue}}
-	AcidBlueSuit = Suit{Name: "Blue", ColorsTouchedBy: not_touched}
+	// For "No Variant"
+	BlueSuit   = NewSuit("Blue", []ColorClue{BlueClue})
+	GreenSuit  = NewSuit("Green", []ColorClue{GreenClue})
+	YellowSuit = NewSuit("Yellow", []ColorClue{YellowClue})
+	RedSuit    = NewSuit("Red", []ColorClue{RedClue})
+	PurpleSuit = NewSuit("Purple", []ColorClue{PurpleClue})
 
-	GreenSuit     = Suit{Name: "Green", ColorsTouchedBy: []ColorClue{GreenClue}}
-	GreenDualSuit = Suit{Name: "Green", ColorsTouchedBy: []ColorClue{BlueClue, YellowClue}}
-	AcidGreenSuit = Suit{Name: "Green", ColorsTouchedBy: not_touched}
+	// For "Orange Suit"
+	OrangeSuit = NewSuit("Orange", []ColorClue{OrangeClue})
 
-	YellowSuit     = Suit{Name: "Yellow", ColorsTouchedBy: []ColorClue{YellowClue}}
-	AcidYellowSuit = Suit{Name: "Yellow", ColorsTouchedBy: not_touched}
+	// For "Black Suit (one of each)", "Wild & Crazy", and "Rainbow & Black Suits (1 of each)"
+	BlackSuit = NewSuit1oE("Black", []ColorClue{BlackClue})
 
-	RedSuit     = Suit{Name: "Red", ColorsTouchedBy: []ColorClue{RedClue}}
-	AcidRedSuit = Suit{Name: "Red", ColorsTouchedBy: not_touched}
+	// For "Rainbow Suit (all colors)"
+	RainbowSuit = NewSuit("Rainbow", allColorClues)
 
-	PurpleSuit     = Suit{Name: "Purple", ColorsTouchedBy: []ColorClue{PurpleClue}}
-	PurpleDualSuit = Suit{Name: "Purple", ColorsTouchedBy: []ColorClue{RedClue, BlueClue}}
-	AcidPurpleSuit = Suit{Name: "Purple", ColorsTouchedBy: not_touched}
+	// For "Dual-color Suits"
+	GreenDualSuit    = NewSuit("Green", []ColorClue{BlueClue, YellowClue})
+	PurpleDualSuit   = NewSuit("Purple", []ColorClue{RedClue, BlueClue})
+	NavyDualSuit     = NewSuit("Navy", []ColorClue{BlackClue, BlueClue})
+	OrangeDualSuit   = NewSuit("Orange", []ColorClue{YellowClue, RedClue})
+	TanDualSuit      = NewSuit("Tan", []ColorClue{BlackClue, YellowClue})
+	BurgundyDualSuit = NewSuit("Burgundy", []ColorClue{BlackClue, RedClue})
 
-	OrangeSuit     = Suit{Name: "Orange", ColorsTouchedBy: []ColorClue{OrangeClue}}
-	OrangeDualSuit = Suit{Name: "Orange", ColorsTouchedBy: []ColorClue{YellowClue, RedClue}}
-	AcidOrangeSuit = Suit{Name: "Orange", ColorsTouchedBy: not_touched}
+	// For "Dual-color & Rainbow Suits"
+	TealDualSuit = NewSuit("Teal", []ColorClue{BlueClue, GreenClue})
+	LimeDualSuit = NewSuit("Lime", []ColorClue{YellowClue, GreenClue})
+	// OrangeDual is reused
+	CardinalDualSuit = NewSuit("Cardinal", []ColorClue{RedClue, PurpleClue})
+	IndigoDualSuit   = NewSuit("Indigo", []ColorClue{BlueClue, PurpleClue})
 
-	BlackSuit = Suit{Name: "Black", ColorsTouchedBy: []ColorClue{BlackClue}, IsOneOfEach: true}
+	// For "Colorless & Rainbow Suits"
+	WhiteSuit = NewSuit("White", notTouched)
 
-	RainbowSuit  = Suit{Name: "Rainbow", ColorsTouchedBy: all_color_clues}
-	Rainbow1Suit = Suit{Name: "Rainbow", ColorsTouchedBy: all_color_clues, IsOneOfEach: true}
+	// For "Ambiguous Suits"
+	SkySuit      = NewSuit("Sky", []ColorClue{BlueClue})
+	NavySuit     = NewSuit("Navy", []ColorClue{BlueClue})
+	LimeSuit     = NewSuit("Lime", []ColorClue{GreenClue})
+	ForestSuit   = NewSuit("Forest", []ColorClue{GreenClue})
+	TomatoSuit   = NewSuit("Tomato", []ColorClue{RedClue})
+	MohaganySuit = NewSuit("Mohagany", []ColorClue{RedClue})
 
-	WhiteSuit = Suit{Name: "White", ColorsTouchedBy: not_touched}
+	// For "Blue & Red Suits"
+	BerrySuit = NewSuit("Berry", []ColorClue{BlueClue})
+	RubySuit  = NewSuit("Ruby", []ColorClue{RedClue})
 
-	NavySuit     = Suit{Name: "Navy", ColorsTouchedBy: []ColorClue{BlackClue, BlueClue}}
-	TanSuit      = Suit{Name: "Tan", ColorsTouchedBy: []ColorClue{BlackClue, YellowClue}}
-	BurgundySuit = Suit{Name: "Burgundy", ColorsTouchedBy: []ColorClue{BlackClue, RedClue}}
-	TealSuit     = Suit{Name: "Teal", ColorsTouchedBy: []ColorClue{BlueClue, GreenClue}}
-	LimeSuit     = Suit{Name: "Lime", ColorsTouchedBy: []ColorClue{YellowClue, GreenClue}}
-	CardinalSuit = Suit{Name: "Cardinal", ColorsTouchedBy: []ColorClue{RedClue, PurpleClue}}
-	IndigoSuit   = Suit{Name: "Indigo", ColorsTouchedBy: []ColorClue{BlueClue, PurpleClue}}
+	// For "Acid Trip"
+	AcidBlueSuit   = NewSuit("Blue", notTouched)
+	AcidGreenSuit  = NewSuit("Green", notTouched)
+	AcidYellowSuit = NewSuit("Yellow", notTouched)
+	AcidRedSuit    = NewSuit("Red", notTouched)
+	AcidPurpleSuit = NewSuit("Purple", notTouched)
+	AcidOrangeSuit = NewSuit("Orange", notTouched)
 
-	SkySuit      = Suit{Name: "Sky", ColorsTouchedBy: []ColorClue{BlueClue}}
-	ForestSuit   = Suit{Name: "Forest", ColorsTouchedBy: []ColorClue{GreenClue}}
-	TomatoSuit   = Suit{Name: "Tomato", ColorsTouchedBy: []ColorClue{RedClue}}
-	BerrySuit    = Suit{Name: "Berry", ColorsTouchedBy: []ColorClue{BlueClue}}
-	RubySuit     = Suit{Name: "Ruby", ColorsTouchedBy: []ColorClue{RedClue}}
-	MohaganySuit = Suit{Name: "Mohagany", ColorsTouchedBy: []ColorClue{RedClue}}
+	// For "Rainbow & Black Suits (1 of each)"
+	Rainbow1oESuit = NewSuit1oE("Rainbow", allColorClues)
 )
 
-// VARIANTS: What suits are used and what clues can be given
+/*
+	Variants
+*/
+
+// The order of variants must match the client order
+// (in the "constants.js" file)
 var (
-	None = Variant{Name: "No Variant",
-		Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
-		Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue}}
-
-	Orange = Variant{Name: "Orange",
-		Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
-		Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue}}
-
-	Rainbow = Variant{Name: "Rainbow",
-		Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, RainbowSuit},
-		Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue}}
-
-	DualColor = Variant{Name: "Dual-color",
-		Suits: []Suit{GreenDualSuit, PurpleDualSuit, NavySuit, OrangeDualSuit, TanSuit, BurgundySuit},
-		Clues: []ColorClue{BlueClue, YellowClue, RedClue, BlackClue}}
-
-	Black = Variant{Name: "Black (1oE)",
-		Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, BlackSuit},
-		Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, BlackClue}}
-
-	DualAndRainbow = Variant{Name: "Dual & Rainbow",
-		Suits: []Suit{TealSuit, LimeSuit, OrangeDualSuit, CardinalSuit, IndigoSuit},
-		Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue}}
-
-	WhiteAndRainbow = Variant{Name: "White & Rainbow",
-		Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit, RainbowSuit},
-		Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue}}
-
-	WildAndCrazy = Variant{Name: "Wild & Crazy",
-		Suits: []Suit{GreenDualSuit, PurpleDualSuit, OrangeDualSuit, WhiteSuit, Rainbow1Suit, BlackSuit},
-		Clues: []ColorClue{BlueClue, YellowClue, RedClue, BlackClue}}
-
-	Ambiguous = Variant{Name: "Ambiguous",
-		Suits: []Suit{SkySuit, NavySuit, LimeSuit, ForestSuit, TomatoSuit, BurgundySuit},
-		Clues: []ColorClue{BlueClue, GreenClue, RedClue}}
-
-	BlueRed = Variant{Name: "Blue & Red",
-		Suits: []Suit{SkySuit, BerrySuit, NavySuit, TomatoSuit, RubySuit, MohaganySuit},
-		Clues: []ColorClue{BlueClue, RedClue}}
-
-	AcidTrip = Variant{Name: "Acid Trip",
-		Suits: []Suit{AcidBlueSuit, AcidGreenSuit, AcidYellowSuit, AcidRedSuit, AcidPurpleSuit, AcidOrangeSuit},
-		Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue}}
-
-	RainbowSingle = Variant{Name: "Rainbow (1oE)",
-		Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, Rainbow1Suit},
-		Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue}}
-
-	BlackRainbowSingle = Variant{Name: "Black & Rainbow (1oE)",
-		Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BlackSuit, Rainbow1Suit},
-		Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue}}
-
-	// Used for backward compatibility. The order of variants MUST match the client order, therefore
-	// this slice must match the order of the client.
-	all_variants = []Variant{None, Orange, Black, Rainbow, DualColor, DualAndRainbow, WhiteAndRainbow, WildAndCrazy, Ambiguous, BlueRed, AcidTrip, RainbowSingle, BlackRainbowSingle}
-	variants     = GetVariantNames(all_variants)
+	variants = []Variant{
+		Variant{
+			Name:  "No Variant",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Orange",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
+		},
+		Variant{
+			Name:  "Black (1oE)",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, BlackSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, BlackClue},
+		},
+		Variant{
+			Name:  "Rainbow",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, RainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Dual-color",
+			Suits: []Suit{GreenDualSuit, PurpleDualSuit, NavyDualSuit, OrangeDualSuit, TanDualSuit, BurgundyDualSuit},
+			Clues: []ColorClue{BlueClue, YellowClue, RedClue, BlackClue},
+		},
+		Variant{
+			Name:  "Dual & Rainbow",
+			Suits: []Suit{TealDualSuit, LimeDualSuit, OrangeDualSuit, CardinalDualSuit, IndigoDualSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "White & Rainbow",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit, RainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		Variant{
+			Name:  "Wild & Crazy",
+			Suits: []Suit{GreenDualSuit, PurpleDualSuit, OrangeDualSuit, WhiteSuit, Rainbow1oESuit, BlackSuit},
+			Clues: []ColorClue{BlueClue, YellowClue, RedClue, BlackClue},
+		},
+		Variant{
+			Name:  "Ambiguous",
+			Suits: []Suit{SkySuit, NavySuit, LimeSuit, ForestSuit, TomatoSuit, MohaganySuit},
+			Clues: []ColorClue{BlueClue, GreenClue, RedClue},
+		},
+		Variant{
+			Name:  "Blue & Red",
+			Suits: []Suit{SkySuit, BerrySuit, NavySuit, TomatoSuit, RubySuit, MohaganySuit},
+			Clues: []ColorClue{BlueClue, RedClue},
+		},
+		Variant{
+			Name:  "Acid Trip",
+			Suits: []Suit{AcidBlueSuit, AcidGreenSuit, AcidYellowSuit, AcidRedSuit, AcidPurpleSuit, AcidOrangeSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
+		},
+		Variant{
+			Name:  "Rainbow (1oE)",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, Rainbow1oESuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Black & Rainbow (1oE)",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BlackSuit, Rainbow1oESuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
+		},
+	}
 )
 
-// variantIsSuit1oE takes in a variant int identifier and a suit and returns if the suit
-// should have only 1 of each suit.
 func variantIsSuit1oE(variant int, suit int) bool {
-	return all_variants[variant].Suits[suit].IsOneOfEach
+	return variants[variant].Suits[suit].IsOneOfEach
 }
 
-// isCluedBy takes a slice of ColorClues and a ColorClue and returns true if
-// the ColorClue is in the list or false otherwise. Why go doesn't have such
-// a feature built is beyond my scope of knowledge of the language...
+// isCluedBy returns true if the ColorClue is in the list
 func isCluedBy(list []ColorClue, item ColorClue) bool {
 	if len(list) == 0 {
 		return false
@@ -168,21 +211,8 @@ func isCluedBy(list []ColorClue, item ColorClue) bool {
 	return false
 }
 
-// variantIsCardTouched takes the variant int identifier, the clue int identifier, and the suit int identifier
-// and looks up if the clue touches the suit in this particular variant. For example, a Yellow clue will touch
-// a green card in dual suit, but not in normal.
+// variantIsCardTouched returns true if a color clue will touch a particular suit
+// For example, a yellow clue will not touch a green card in "No Variant", but it will in "Dual-color Suits"
 func variantIsCardTouched(variant int, clue int, suit int) bool {
-	return isCluedBy(all_variants[variant].Suits[suit].ColorsTouchedBy, all_variants[variant].Clues[clue])
-}
-
-// variantGetSuitName gets the name for a suit (given as an int identifier) in a variant (also given as an int identifier)
-func variantGetSuitName(variant int, suit int) string {
-	return all_variants[variant].Suits[suit].Name
-}
-
-// variantGetClueName gets the display name of a clue(given as an int identifier)
-// that can be given in a variant(given as an int identifier)
-func variantGetClueName(variant int, clue int) string {
-	return all_variants[variant].Clues[clue].Name
-
+	return isCluedBy(variants[variant].Suits[suit].ColorsTouchedBy, variants[variant].Clues[clue])
 }
