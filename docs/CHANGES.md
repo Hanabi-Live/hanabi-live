@@ -1,13 +1,17 @@
-List of Changes & Improvements
-==============================
+List of Features
+================
 
-This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/hanabi/). However, it also contains many new features, bug fixes, and quality of life improvements. It also contains new variants, which are listed on [a separate page](https://github.com/Zamiell/hanabi-live/tree/master/docs/VARIANTS.md).
+The server was originally an attempt to emulate the [Keldon Hanabi server](http://keldon.net/hanabi/) and was written in Node.js. Since then, it has been completely rewritten in Go. This page mainly shows the differences between Hanabi.live and Keldon's site.
 
 <br />
 
 
 
 ## New Major Features
+
+#### New Variants
+
+* The server implements several official and unofficial Hanabi variants, which are listed on [a separate page](https://github.com/Zamiell/hanabi-live/tree/master/docs/VARIANTS.md).
 
 #### Improved Clue Indication
 
@@ -21,7 +25,7 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 * As an added "house" rule, on your turn, if there is 1 card left in the deck, you are allowed to blind play it.
 * This is done by dragging the deck on to the play area.
 * A golden border will appear around the deck when there is 1 card left in order to signify that this is possible.
-* This feature prevents stupid losses that occur from being "bottom decked" by a 3 or a 4 that was impossible to save in the early or mid-game.
+* This feature prevents losses that occur from being "bottom decked" by a 3 or a 4 that was impossible to save in the early or mid-game.
 * This feature is enabled by default. If you don't want to use this rule, then simply have your team agree to not use the feature beforehand.
 
 #### Shared Replays
@@ -30,6 +34,7 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 * Furthermore, any replay can be started as a "shared" replay. Once created, an unlimited number of people can join it.
 * When in a shared replay, the leader can control what turn is being shown to everyone in the replay. By default, the leader will be the person who created the game or created the shared replay.
 * The leader can right-click on a card to highlight it with a red arrow (to point out things to the other players).
+* The leader can shift + left-click on a card to morph it into an arbitrary card.
 * You can see who the leader of the replay is by hovering over the "👑" icon in the bottom right-hand corner.
 * You can use this feature to show a past game with a friend who was not in that game.
 * You can transfer the leader role by right clicking on a player's name.
@@ -61,7 +66,7 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 
 #### Efficiency Statistics
 
-* Each player has the option to toggle efficiency statistics about the current game at the bottom of the clue log.
+* Each player has the option to toggle efficiency statistics about the current game. They are shown at the bottom of the clue log.
 
 #### Reverse Hand Direction
 
@@ -113,7 +118,7 @@ This server attempts to emulate the [Keldon Hanabi server](http://keldon.net/han
 
 
 
-## Bug Fixes
+## Bug Fixes (from Keldon's server)
 
 * Games will no longer randomly crash if there are too many spectators.
 * Your hand will be properly revealed at the end of the game.
