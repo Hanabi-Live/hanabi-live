@@ -5,16 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Zamiell/hanabi-live/src/models"
 	"github.com/bwmarrin/discordgo"
 )
-
-// Waiter is a person who is on the waiting list for the next game
-// (they used the "/next" Discord command)
-type Waiter struct {
-	Username        string
-	DiscordMention  string
-	DatetimeExpired time.Time
-}
 
 func waitingListAlert(g *Game, creator string) {
 	if len(waitingList) == 0 {
@@ -31,7 +24,7 @@ func waitingListAlert(g *Game, creator string) {
 	mentionList = strings.TrimSuffix(mentionList, ", ")
 
 	// Empty the waiting list
-	waitingList = make([]*Waiter, 0)
+	waitingList = make([]*models.Waiter, 0)
 
 	// Alert all of the people on the waiting list
 	alert := creator + " created a table. (" + variants[g.Options.Variant].Name + ")\n" + mentionList
@@ -66,7 +59,7 @@ func waitingListAdd(m *discordgo.MessageCreate) {
 	}
 
 	// Add them to the list
-	waiter := &Waiter{
+	waiter := &models.Waiter{
 		Username:        username,
 		DiscordMention:  m.Author.Mention(),
 		DatetimeExpired: time.Now().Add(idleWaitingListTimeout),
