@@ -51,14 +51,14 @@ var (
 
 	// Helpers used for "Rainbow", "Colorless & Rainbow", and "Acid Trip"
 	allColorClues = []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue, BlackClue}
-	notTouched    = []ColorClue{}
+	noColorClues  = []ColorClue{}
 )
 
 /*
 	Suits
 */
 
-// Can use "allColorClues" or "notTouched" as the second argument for brevity
+// Can use "allColorClues" or "noColorClues" as the second argument for brevity
 var (
 	// For "No Variant"
 	BlueSuit   = NewSuit("Blue", []ColorClue{BlueClue})
@@ -70,7 +70,7 @@ var (
 	// For "Orange Suit"
 	OrangeSuit = NewSuit("Orange", []ColorClue{OrangeClue})
 
-	// For "Black Suit (one of each)", "Wild & Crazy", and "Rainbow & Black Suits (1 of each)"
+	// For "Black Suit (one of each)"
 	BlackSuit = NewSuit1oE("Black", []ColorClue{BlackClue})
 
 	// For "Rainbow Suit (all colors)"
@@ -87,12 +87,12 @@ var (
 	// For "Dual-color & Rainbow Suits"
 	TealDualSuit = NewSuit("Teal", []ColorClue{BlueClue, GreenClue})
 	LimeDualSuit = NewSuit("Lime", []ColorClue{YellowClue, GreenClue})
-	// OrangeDual is reused
+	// OrangeDualSuit is reused
 	CardinalDualSuit = NewSuit("Cardinal", []ColorClue{RedClue, PurpleClue})
 	IndigoDualSuit   = NewSuit("Indigo", []ColorClue{BlueClue, PurpleClue})
 
 	// For "Colorless & Rainbow Suits"
-	WhiteSuit = NewSuit("White", notTouched)
+	WhiteSuit = NewSuit("White", noColorClues)
 
 	// For "Ambiguous Suits"
 	SkySuit      = NewSuit("Sky", []ColorClue{BlueClue})
@@ -107,12 +107,12 @@ var (
 	RubySuit  = NewSuit("Ruby", []ColorClue{RedClue})
 
 	// For "Acid Trip"
-	AcidBlueSuit   = NewSuit("Blue", notTouched)
-	AcidGreenSuit  = NewSuit("Green", notTouched)
-	AcidYellowSuit = NewSuit("Yellow", notTouched)
-	AcidRedSuit    = NewSuit("Red", notTouched)
-	AcidPurpleSuit = NewSuit("Purple", notTouched)
-	AcidOrangeSuit = NewSuit("Orange", notTouched)
+	AcidBlueSuit   = NewSuit("Blue", noColorClues)
+	AcidGreenSuit  = NewSuit("Green", noColorClues)
+	AcidYellowSuit = NewSuit("Yellow", noColorClues)
+	AcidRedSuit    = NewSuit("Red", noColorClues)
+	AcidPurpleSuit = NewSuit("Purple", noColorClues)
+	AcidOrangeSuit = NewSuit("Orange", noColorClues)
 
 	// For "Rainbow & Black Suits (1 of each)"
 	Rainbow1oESuit = NewSuit1oE("Rainbow", allColorClues)
@@ -194,8 +194,10 @@ var (
 	}
 )
 
-func variantIsSuit1oE(variant int, suit int) bool {
-	return variants[variant].Suits[suit].IsOneOfEach
+// variantIsCardTouched returns true if a color clue will touch a particular suit
+// For example, a yellow clue will not touch a green card in "No Variant", but it will in "Dual-color Suits"
+func variantIsCardTouched(variant int, clue int, suit int) bool {
+	return isCluedBy(variants[variant].Suits[suit].ColorsTouchedBy, variants[variant].Clues[clue])
 }
 
 // isCluedBy returns true if the ColorClue is in the list
@@ -209,10 +211,4 @@ func isCluedBy(list []ColorClue, item ColorClue) bool {
 		}
 	}
 	return false
-}
-
-// variantIsCardTouched returns true if a color clue will touch a particular suit
-// For example, a yellow clue will not touch a green card in "No Variant", but it will in "Dual-color Suits"
-func variantIsCardTouched(variant int, clue int, suit int) bool {
-	return isCluedBy(variants[variant].Suits[suit].ColorsTouchedBy, variants[variant].Clues[clue])
 }

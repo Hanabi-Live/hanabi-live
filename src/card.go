@@ -60,7 +60,7 @@ func (c *Card) IsDead(g *Game) bool {
 		if i > 1 {
 			totalCardsNotDiscarded = 2
 		}
-		if variantIsSuit1oE(g.Options.Variant, c.Suit) {
+		if variants[g.Options.Variant].Suits[c.Suit].IsOneOfEach {
 			totalCardsNotDiscarded = 1
 		}
 		for _, deckCard := range g.Deck {
