@@ -16,7 +16,7 @@ var (
 	discordBotChannel     string
 	discordBotID          string
 	discordCommandMap     = make(map[string]func(*discordgo.MessageCreate))
-	discordLastAtHere     = time.Now().Add(-discordAtHereTimeout)
+	discordLastAtHere     time.Time
 )
 
 /*
@@ -55,6 +55,19 @@ func discordInit() {
 	discordCommandMap["/next"] = waitingListAdd
 	discordCommandMap["/unnext"] = waitingListRemove
 	discordCommandMap["/list"] = waitingListList
+
+	// Get the last time a "@here" ping was sent
+	var timeAsString string
+	if v, err := db.DiscordMetadata.Get("last_at_here"); err != nil {
+		log.Fatal("Failed to retrieve the \"last_at_here\" value from the database:", err)
+	} else {
+		timeAsString = v
+	}
+	if v, err := time.Parse(time.RFC3339, timeAsString); err != nil {
+		log.Fatal("Failed to parse the \"last_at_here\" value from the database:", err)
+	} else {
+		discordLastAtHere = v
+	}
 
 	// Start the Discord bot in a new goroutine
 	go discordConnect()
@@ -100,6 +113,14 @@ func discordReady(s *discordgo.Session, event *discordgo.Ready) {
 
 // Copy messages from Discord to the lobby
 func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+	// Record the time of any "@here" pings that occur
+	if strings.Contains(m.Content, "@here") {
+		if err := db.DiscordMetadata.Put("last_at_here", time.Now().Format(time.RFC3339)); err != nil {
+			log.Error("Failed to update the database for the last @here:", err)
+			return
+		}
+	}
+
 	// Ignore all messages created by the bot itself
 	if m.Author.ID == discordBotID {
 		return

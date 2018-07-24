@@ -104,10 +104,12 @@ CREATE TABLE banned_ips (
 DROP TABLE IF EXISTS discord_metadata;
 CREATE TABLE discord_metadata (
     id     INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
-    name   VARCHAR(20)    NOT NULL,
+    name   VARCHAR(20)    NOT NULL  UNIQUE,
     value  NVARCHAR(100)  NOT NULL
 );
-INSERT INTO discord_metadata (name, value) VALUES ('last_at_here', NOW());
+CREATE INDEX discord_metadata_index_name ON discord_metadata (name);
+INSERT INTO discord_metadata (name, value) VALUES ('last_at_here', '2006-01-02T15:04:05Z07:00');
+/* The "last_at_here" value is stored as a RFC3339 string */
 
 DROP TABLE IF EXISTS discord_waiters;
 CREATE TABLE discord_waiters (

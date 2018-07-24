@@ -1,5 +1,7 @@
 package models
 
+import "database/sql"
+
 type DiscordMetadata struct{}
 
 func (*DiscordMetadata) Get(name string) (string, error) {
@@ -13,4 +15,21 @@ func (*DiscordMetadata) Get(name string) (string, error) {
 	}
 
 	return value, nil
+}
+
+func (*DiscordMetadata) Put(name string, value string) error {
+	var stmt *sql.Stmt
+	if v, err := db.Prepare(`
+		UPDATE discord_metadata
+		SET value = ?
+		WHERE name = ?
+	`); err != nil {
+		return err
+	} else {
+		stmt = v
+	}
+	defer stmt.Close() // nolint: errcheck
+
+	_, err := stmt.Exec(value, name)
+	return err
 }
