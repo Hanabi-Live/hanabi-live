@@ -1,5 +1,7 @@
-hanabi-live
-===========
+<p align="center">
+    <img src="https://raw.githubusercontent.com/Zamiell/hanabi-live/master/public/img/hanabi-logo-full.png" height=280 alt="Hanabi.live Logo" title="Hanabi.live Logo" />
+</p>
+<br />
 
 ## Description
 
