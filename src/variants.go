@@ -153,7 +153,7 @@ var (
 		},
 		Variant{
 			Name:  "Dual & Rainbow",
-			Suits: []Suit{TealDualSuit, LimeDualSuit, OrangeDualSuit, CardinalDualSuit, IndigoDualSuit},
+			Suits: []Suit{TealDualSuit, LimeDualSuit, OrangeDualSuit, CardinalDualSuit, IndigoDualSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
 		Variant{
