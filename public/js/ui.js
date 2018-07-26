@@ -4443,10 +4443,10 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            if (event.key === 'B') {
+            if (event.key === 'Z') {
                 this.sharedReplaySendSound('buzz');
                 return;
-            } else if (event.key === 'Z') {
+            } else if (event.key === 'X') {
                 lobby.playSound('turn_us');
                 return;
             }
