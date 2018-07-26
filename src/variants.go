@@ -163,7 +163,7 @@ var (
 		},
 		Variant{
 			Name:  "Wild & Crazy",
-			Suits: []Suit{GreenDualSuit, PurpleDualSuit, OrangeDualSuit, WhiteSuit, Rainbow1oESuit, BlackSuit},
+			Suits: []Suit{GreenDualSuit, PurpleDualSuit, OrangeDualSuit, WhiteSuit, RainbowSuit, BlackSuit},
 			Clues: []ColorClue{BlueClue, YellowClue, RedClue, BlackClue},
 		},
 		Variant{
