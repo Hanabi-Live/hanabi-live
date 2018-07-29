@@ -2071,7 +2071,7 @@ function HanabiUI(lobby, gameID) {
             if (ui.replayOnly) {
                 ui.inferSharedReplayMode();
             } else {
-                ui.enterReplay(!this.replay);
+                ui.enterReplay(true);
             }
             ui.performReplay(this.turn + 1, true);
         });
