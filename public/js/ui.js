@@ -2068,7 +2068,7 @@ function HanabiUI(lobby, gameID) {
 
         // Click an entry in the clue log to go to that turn in the replay
         background.on('click', () => {
-            if (this.replayOnly) {
+            if (ui.replayOnly) {
                 ui.inferSharedReplayMode();
             } else {
                 ui.enterReplay(!this.replay);
