@@ -28,6 +28,11 @@ func waitingListAlert(g *Game, creator string) {
 
 	// Alert all of the people on the waiting list
 	alert := creator + " created a table. (" + variants[g.Options.Variant].Name + ")\n" + mentionList
+
+	for _, s := range sessions {
+		s.NotifyChat(alert, "", false, true, time.Now())
+	}
+
 	discordSend(discordListenChannels[0], "", alert) // Assume that the first channel listed in the "discordListenChannels" slice is the main channel
 }
 
