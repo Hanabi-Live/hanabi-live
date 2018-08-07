@@ -43,11 +43,11 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 			c.Touched = true
 		}
 	}
-	if len(list) == 0 {
-		// Make an exception for color clues in the "Acid Trip" variant
-		if d.Clue.Type != 1 || g.Options.Variant != 10 {
-			return false
-		}
+	if len(list) == 0 &&
+		(d.Clue.Type != 1 || g.Options.Variant != 10) && // Make an exception for color clues in the "Acid Trip" variant
+		!g.Options.EmptyClues { // Allow empty clues if the optional setting is enabled
+
+		return false
 	}
 
 	// Keep track that someone clued

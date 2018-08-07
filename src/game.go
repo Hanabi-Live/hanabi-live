@@ -48,6 +48,7 @@ type Options struct {
 	TimeBase     float64
 	TimePerTurn  int
 	ReorderCards bool
+	EmptyClues   bool
 }
 
 type DiscardSignal struct {
