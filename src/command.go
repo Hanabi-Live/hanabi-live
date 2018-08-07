@@ -15,6 +15,7 @@ type CommandData struct {
 	BaseTimeMinutes    float64 `json:"baseTimeMinutes"`
 	TimePerTurnSeconds int     `json:"timePerTurnSeconds"`
 	ReorderCards       bool    `json:"reorderCards"`
+	EmptyClues         bool    `json:"emptyClues"`
 
 	// action
 	Clue   Clue `json:"clue"`

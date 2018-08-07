@@ -62,6 +62,7 @@ function HanabiUI(lobby, gameID) {
     this.editingNoteActionOccured = false; // Equal to true if something happened when the note box happens to be open
 
     this.reorderCards = false;
+    this.emptyClues = false;
 
     // Used for the pre-move feature
     this.ourTurn = false;
@@ -5656,7 +5657,9 @@ function HanabiUI(lobby, gameID) {
             const who = target.targetIndex;
             const match = showClueMatch(who, clueButton.clue);
 
-            if (!match) {
+            if (!match && !ui.emptyClues) {
+                // Disable the "Submit Clue" button if the given clue will touch no cards
+                // (but allow all clues if they have the optional setting for "Empty Clues" turned on)
                 submitClue.setEnabled(false);
                 return;
             }
@@ -5806,6 +5809,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.timedGame = msgData.timed;
         this.sharedReplay = msgData.sharedReplay;
         this.reorderCards = msgData.reorderCards;
+        this.emptyClues = msgData.emptyClues;
 
         if (this.replayOnly) {
             this.replayTurn = -1;

@@ -168,10 +168,22 @@ function HanabiLobby() {
         } catch (err) {
             reorderCards = false;
         }
-        if (typeof timed !== 'boolean') {
-            timed = false;
+        if (typeof reorderCards !== 'boolean') {
+            reorderCards = false;
         }
         $('#create-game-reorder-cards').prop('checked', reorderCards);
+
+        // Fill in the "Allow Empty Clues" checkbox
+        let emptyClues;
+        try {
+            emptyClues = JSON.parse(localStorage.getItem('createTableEmptyClues'));
+        } catch (err) {
+            emptyClues = false;
+        }
+        if (typeof emptyClues !== 'boolean') {
+            emptyClues = false;
+        }
+        $('#create-game-empty-clues').prop('checked', emptyClues);
 
         // Focus the "Name" box
         // (we have to wait 1 millisecond or it won't work due to the nature of the above code)
@@ -344,6 +356,9 @@ function HanabiLobby() {
         const reorderCards = document.getElementById('create-game-reorder-cards').checked;
         localStorage.setItem('createTableReorderCards', reorderCards);
 
+        const emptyClues = document.getElementById('create-game-empty-clues').checked;
+        localStorage.setItem('createTableEmptyClues', emptyClues);
+
         self.connSend({
             type: 'gameCreate',
             resp: {
@@ -353,6 +368,7 @@ function HanabiLobby() {
                 baseTimeMinutes: parseFloat(baseTimeMinutes), // The server expects this as an float64
                 timePerTurnSeconds: parseInt(timePerTurnSeconds, 10), // The server expects this as an integer
                 reorderCards,
+                emptyClues,
             },
         });
 

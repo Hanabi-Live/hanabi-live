@@ -66,6 +66,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 			TimeBase:     d.BaseTimeMinutes,
 			TimePerTurn:  d.TimePerTurnSeconds,
 			ReorderCards: d.ReorderCards,
+			EmptyClues:   d.EmptyClues,
 		},
 		Players:            make([]*Player, 0),
 		Spectators:         make(map[int]*Session),
