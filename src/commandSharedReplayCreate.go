@@ -31,6 +31,15 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 		variant = v
 	}
 
+	var numTurns int
+	if v, err := db.Games.GetNumTurns(gameID); err != nil {
+		log.Error("Failed to get the number of turns from the database for game "+strconv.Itoa(gameID)+":", err)
+		s.Error("Failed to initialize the game. Please contact an administrator.")
+		return
+	} else {
+		numTurns = v
+	}
+
 	log.Info("User \"" + s.Username() + "\" created a new shared replay: #" + strconv.Itoa(gameID))
 
 	// Define a standard naming scheme for shared replays
@@ -38,8 +47,9 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 
 	// Keep track of the current games
 	g := &Game{
-		ID:   gameID,
-		Name: name,
+		ID:    gameID,
+		Name:  name,
+		Owner: s.UserID(),
 		Options: &Options{
 			Variant: variant,
 		},
@@ -49,7 +59,8 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 		SharedReplay:       true,
 		DatetimeCreated:    time.Now(),
 		DatetimeLastAction: time.Now(),
-		Owner:              s.UserID(),
+		Turn:               0,
+		EndTurn:            numTurns,
 	}
 	games[gameID] = g
 

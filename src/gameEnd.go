@@ -99,6 +99,7 @@ func (g *Game) End() {
 		EndCondition:    g.EndCondition,
 		DatetimeCreated: g.DatetimeCreated,
 		DatetimeStarted: g.DatetimeStarted,
+		NumTurns:        g.Turn,
 	}
 	var databaseID int
 	if v, err := db.Games.Insert(row); err != nil {
@@ -178,6 +179,8 @@ func (g *Game) End() {
 	games[g.ID] = g
 	g.SharedReplay = true
 	g.Name = "Shared replay for game #" + strconv.Itoa(g.ID)
+	g.EndTurn = g.Turn // In shared replays, the final turn of the game is stored in the "EndTurn" variable
+	g.Progress = 100
 
 	// Get the notes from all of the players
 	notes := make([]models.PlayerNote, 0)

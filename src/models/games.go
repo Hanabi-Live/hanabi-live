@@ -21,6 +21,7 @@ type GameRow struct {
 	TimePerTurn     int
 	Seed            string
 	Score           int
+	NumTurns        int
 	EndCondition    int
 	DatetimeCreated time.Time
 	DatetimeStarted time.Time
@@ -39,10 +40,12 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			time_per_turn,
 			seed,
 			score,
+			num_turns,
 			end_condition,
 			datetime_created,
 			datetime_started
 		) VALUES (
+			?,
 			?,
 			?,
 			?,
@@ -74,6 +77,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 		gameRow.TimePerTurn,
 		gameRow.Seed,
 		gameRow.Score,
+		gameRow.NumTurns,
 		gameRow.EndCondition,
 		gameRow.DatetimeCreated,
 		gameRow.DatetimeStarted,
@@ -272,12 +276,21 @@ func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
 func (*Games) GetVariant(databaseID int) (int, error) {
 	var variant int
 	err := db.QueryRow(`
-		SELECT
-			variant
+		SELECT variant
 		FROM games
 		WHERE games.id = ?
 	`, databaseID).Scan(&variant)
 	return variant, err
+}
+
+func (*Games) GetNumTurns(databaseID int) (int, error) {
+	var numTurns int
+	err := db.QueryRow(`
+		SELECT num_turns
+		FROM games
+		WHERE games.id = ?
+	`, databaseID).Scan(&numTurns)
+	return numTurns, err
 }
 
 type Player struct {

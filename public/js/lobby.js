@@ -794,14 +794,16 @@ HanabiLobby.prototype.drawTables = function drawTables() {
             if (game.sharedReplay) {
                 status = 'Shared Replay';
             } else {
-                status = `Running (${game.progress}%)`;
+                status = 'Running';
             }
+            status += ` (${game.progress}%)`;
         } else if (game.running) {
             if (game.ourTurn) {
-                status = `<strong>Your Turn</strong> (${game.progress}%)`;
+                status = '<strong>Your Turn</strong>';
             } else {
-                status = `Waiting (${game.progress}%)`;
+                status = 'Waiting';
             }
+            status += ` (${game.progress}%)`;
         } else {
             status = 'Not Started';
         }

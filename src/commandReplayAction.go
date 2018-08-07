@@ -15,7 +15,10 @@
 
 package main
 
-import "strconv"
+import (
+	"math"
+	"strconv"
+)
 
 func commandReplayAction(s *Session, d *CommandData) {
 	/*
@@ -63,6 +66,19 @@ func commandReplayAction(s *Session, d *CommandData) {
 				Turn: d.Turn,
 			})
 		}
+
+		// Update the progress
+		progress := float64(g.Turn) / float64(g.EndTurn) * 100 // In percent
+		g.Progress = int(math.Round(progress))                 // Round it to the nearest integer
+		if g.Progress > 100 {
+			// It is possible to go past the last turn,
+			// since an extra turn is appended to the end of every game with timing information
+			g.Progress = 100
+		}
+
+		// Send every user connected an update about this table
+		// (this is sort of wasteful but is necessary for users to see the progress of the replay from the lobby)
+		notifyAllTable(g)
 	} else if d.Type == 1 {
 		// A card arrow indication
 		for _, sp := range g.Spectators {
