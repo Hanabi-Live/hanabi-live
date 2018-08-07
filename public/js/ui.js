@@ -3487,6 +3487,21 @@ function HanabiUI(lobby, gameID) {
             }
         });
 
+        drawDeck.cardback.on('click', (event) => {
+            // Do nothing if this is not a right-click
+            if (event.evt.which !== 3) {
+                return;
+            }
+
+            const turn = parseInt(window.prompt('Which turn do you want to go to?'), 10);
+            if (ui.replayOnly) {
+                ui.inferSharedReplayMode();
+            } else {
+                ui.enterReplay(true);
+            }
+            ui.performReplay(turn, true);
+        });
+
         cardLayer.add(drawDeck);
 
         const handPos = {
@@ -5563,9 +5578,9 @@ function HanabiUI(lobby, gameID) {
         clueTargetButtonGroup.off('change');
         clueButtonGroup.off('change');
 
-        // We want cards to always be draggable for the pre-move feature (speedrun)
         /*
         // Make all of the cards in our hand not draggable
+        // (commented out for speedrun purposes)
         for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
             const child = playerHands[ui.playerUs].children[i];
             child.off('dragend.play');
@@ -5626,21 +5641,18 @@ function HanabiUI(lobby, gameID) {
 
         playerHands[ui.playerUs].moveToTop();
 
-        // All cards are initially set to being draggable now
-        /*
         // Set our hand to being draggable
         for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
             const child = playerHands[ui.playerUs].children[i];
             child.setDraggable(true);
             child.on('dragend.play', dragendPlay);
         }
-        */
 
         drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
 
         deckPlayAvailableLabel.setVisible(data.canBlindPlayDeck);
 
-        // Ensure deck blindplay is above other cards, ui elements
+        // Ensure the deck is above other cards and UI elements
         if (data.canBlindPlayDeck) {
             drawDeck.moveToTop();
         }
