@@ -1367,6 +1367,10 @@ HanabiLobby.prototype.gameEnded = function gameEnded(data) {
     this.showPregame();
 
     this.ui = null;
+
+    // Scroll to the bottom of the lobby
+    const chat = document.getElementById('lobby-chat-text');
+    chat.scrollTop = chat.scrollHeight;
 };
 
 HanabiLobby.prototype.connSet = function connSet(conn) {
