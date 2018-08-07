@@ -61,16 +61,20 @@ func (g *Game) End() {
 	}
 
 	// Send text messages showing how much time each player finished with
-	// (this won't appear unless the user clicks back and then forward again)
-	if g.Options.Timed {
-		for _, p := range g.Players {
-			text := p.Name + " finished with " + durationToString(p.Time) + " time left"
-			g.Actions = append(g.Actions, Action{
-				Text: text,
-			})
-			g.NotifyAction()
-			log.Info(g.GetName() + text)
+	// (this won't appear initially unless the user clicks back and then forward again)
+	for _, p := range g.Players {
+		text := p.Name + " "
+		if g.Options.Timed {
+			text += "had " + durationToString(p.Time) + " left"
+		} else {
+			// Player times are negative in untimed games
+			text += "took " + durationToString(p.Time*-1)
 		}
+		g.Actions = append(g.Actions, Action{
+			Text: text,
+		})
+		g.NotifyAction()
+		log.Info(g.GetName() + text)
 	}
 
 	// Send a text message showing how much time the game took in total

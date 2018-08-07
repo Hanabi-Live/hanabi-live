@@ -5578,9 +5578,9 @@ function HanabiUI(lobby, gameID) {
         clueTargetButtonGroup.off('change');
         clueButtonGroup.off('change');
 
-        /*
         // Make all of the cards in our hand not draggable
         // (commented out for speedrun purposes)
+        /*
         for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
             const child = playerHands[ui.playerUs].children[i];
             child.off('dragend.play');
@@ -5642,11 +5642,14 @@ function HanabiUI(lobby, gameID) {
         playerHands[ui.playerUs].moveToTop();
 
         // Set our hand to being draggable
+        // (commented out since the hand is never not made draggable for speedrun purposes)
+        /*
         for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
             const child = playerHands[ui.playerUs].children[i];
             child.setDraggable(true);
             child.on('dragend.play', dragendPlay);
         }
+        */
 
         drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
 
