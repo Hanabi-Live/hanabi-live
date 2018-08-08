@@ -58,5 +58,13 @@ func debug(s *Session, d *CommandData) {
 	for i, s2 := range sessions { // This is a map[int]*Session
 		log.Debug(strconv.Itoa(i) + " - " + s2.Username() + " - " + s2.Status() + " - " + strconv.Itoa(s2.CurrentGame()))
 	}
+
+	// Print out the waiting list
+	log.Debug("---------------------------------------------------------------")
+	log.Debug("Waiting list:")
+	for i, p := range waitingList { // This is a []*models.Waiter
+		log.Debug(strconv.Itoa(i) + " - " + p.Username + " - " + p.DiscordMention + " - " + p.DatetimeExpired.String())
+	}
+
 	log.Debug("---------------------------------------------------------------")
 }
