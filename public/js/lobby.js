@@ -32,7 +32,7 @@ function HanabiLobby() {
     this.sendChatNotify = false;
     this.sendChatSound = false;
     this.showColorblindUI = false;
-    this.hideTimerInUntimed = false;
+    this.showTimerInUntimed = false;
     this.reverseHands = false;
 
     this.game = {
@@ -1826,8 +1826,8 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
         ],
         [
             // Hide the turn timers that tick up in untimed games
-            'hide-timer-in-untimed',
-            'hideTimerInUntimed',
+            'show-timer-in-untimed',
+            'showTimerInUntimed',
         ],
         [
             // Reverse the order of cards relative to a hand

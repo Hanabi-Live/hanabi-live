@@ -4079,8 +4079,7 @@ function HanabiUI(lobby, gameID) {
         this.stopLocalTimer();
 
         // We don't want the timer to show in replays
-        const showTimer = !this.replayOnly && (ui.timedGame || !lobby.hideTimerInUntimed);
-        if (showTimer) {
+        if (!this.replayOnly && (ui.timedGame || lobby.showTimerInUntimed)) {
             const timerY = 0.592;
 
             timer1 = new TimerDisplay({
