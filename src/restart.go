@@ -49,6 +49,7 @@ func gracefulWait() {
 			// Wait 10 seconds so that the players are not immediately booted upon finishing
 			time.Sleep(time.Second * 10)
 
+			log.Info("Restarting now.")
 			restart2()
 			break
 		}

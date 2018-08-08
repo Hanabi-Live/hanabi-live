@@ -9,45 +9,12 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func waitingListAlert(g *Game, creator string) {
-	if len(waitingList) == 0 {
-		return
-	}
-
-	// Build a list of everyone on the waiting list
-	mentionList := ""
-	for _, waiter := range waitingList {
-		if waiter.DatetimeExpired.After(time.Now()) {
-			mentionList += waiter.DiscordMention + ", "
-		}
-	}
-	mentionList = strings.TrimSuffix(mentionList, ", ")
-
-	// Empty the waiting list
-	waitingList = make([]*models.Waiter, 0)
-
-	// Alert all of the people on the waiting list
-	alert := creator + " created a table. (" + variants[g.Options.Variant].Name + ")\n" + mentionList
-
-	for _, s := range sessions {
-		s.NotifyChat(alert, "", false, true, time.Now())
-	}
-
-	discordSend(discordListenChannels[0], "", alert) // Assume that the first channel listed in the "discordListenChannels" slice is the main channel
-}
-
-func waitingListGetNum() string {
-	msg := "There "
-	if len(waitingList) == 1 {
-		msg += "is 1 person"
-	} else {
-		msg += "are " + strconv.Itoa(len(waitingList)) + " people"
-	}
-	msg += " on the waiting list"
-	return msg
-}
+/*
+	Main functions
+*/
 
 func waitingListAdd(m *discordgo.MessageCreate) {
+	waitingListPurgeOld()
 	username := discordGetNickname(m)
 
 	// Search through the waiting list to see if they are already on it
@@ -78,6 +45,7 @@ func waitingListAdd(m *discordgo.MessageCreate) {
 }
 
 func waitingListRemove(m *discordgo.MessageCreate) {
+	waitingListPurgeOld()
 	username := discordGetNickname(m)
 
 	// Search through the waiting list to see if they are already on it
@@ -98,6 +66,7 @@ func waitingListRemove(m *discordgo.MessageCreate) {
 }
 
 func waitingListList(m *discordgo.MessageCreate) {
+	waitingListPurgeOld()
 	msg := waitingListGetNum()
 	if len(waitingList) == 0 {
 		msg += "."
@@ -110,4 +79,64 @@ func waitingListList(m *discordgo.MessageCreate) {
 
 	}
 	discordSend(m.ChannelID, "", msg)
+}
+
+func waitingListAlert(g *Game, creator string) {
+	waitingListPurgeOld()
+	if len(waitingList) == 0 {
+		return
+	}
+
+	// Build a list of everyone on the waiting list
+	mentionList := ""
+	for _, waiter := range waitingList {
+		if waiter.DatetimeExpired.After(time.Now()) {
+			mentionList += waiter.DiscordMention + ", "
+		}
+	}
+	mentionList = strings.TrimSuffix(mentionList, ", ")
+
+	// Empty the waiting list
+	waitingList = make([]*models.Waiter, 0)
+
+	// Alert all of the people on the waiting list
+	alert := creator + " created a table. (" + variants[g.Options.Variant].Name + ")\n" + mentionList
+
+	for _, s := range sessions {
+		s.NotifyChat(alert, "", false, true, time.Now())
+	}
+
+	// Assume that the first channel listed in the "discordListenChannels" slice is the main channel
+	discordSend(discordListenChannels[0], "", alert)
+}
+
+/*
+	Subroutines
+*/
+
+func waitingListPurgeOld() {
+	for {
+		deleted := false
+		for i, waiter := range waitingList {
+			if waiter.DatetimeExpired.After(time.Now()) {
+				deleted = true
+				waitingList = append(waitingList[:i], waitingList[i+1:]...)
+				break
+			}
+		}
+		if !deleted {
+			break
+		}
+	}
+}
+
+func waitingListGetNum() string {
+	msg := "There "
+	if len(waitingList) == 1 {
+		msg += "is 1 person"
+	} else {
+		msg += "are " + strconv.Itoa(len(waitingList)) + " people"
+	}
+	msg += " on the waiting list"
+	return msg
 }
