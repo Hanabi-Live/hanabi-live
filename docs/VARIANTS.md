@@ -3,7 +3,7 @@ List of Variants
 
 ### No Variant
 
-* This is the "base" game, with 5 suits. Unlike some real-life versions of the game, Hanabi.live uses the following five suit colors:
+* This is the "base" game, with 5 suits. Unlike some real-life versions of the game, Hanabi Live uses the following five suit colors:
   * Blue
   * Green
   * Yellow
@@ -89,7 +89,7 @@ List of Variants
   2. Green
   3. Red
 
-### Red & Blue
+### Blue & Red Suits
 
 * Three suits share a color. The suits are as follows:
   1. Sky (blue)
@@ -106,7 +106,7 @@ List of Variants
 
 * This has the same 6 suits as the "Orange Suit" variant.
 * This has the same 6 clues available as the "Orange Suit" variant.
-* All color clues touch all suits.
+* Color clues touch no suits. (Empty color clues are allowed.)
 
 ### Rainbow Suit (one of each)
 
