@@ -906,7 +906,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 event.preventDefault();
 
                 if (game.running) {
-                    if (!window.confirm('Really abandon game? This will cancel the game for all players.')) {
+                    if (!window.confirm('Are you sure? This will cancel the game for all players.')) {
                         return;
                     }
                 }
