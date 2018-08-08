@@ -3,6 +3,7 @@ package main
 import (
 	"os/exec"
 	"path"
+	"strconv"
 	"time"
 )
 
@@ -12,6 +13,7 @@ func restart(s *Session, d *CommandData) {
 		return
 	}
 
+	log.Info("Initiating a server restart.")
 	restart2()
 }
 
@@ -26,8 +28,14 @@ func graceful(s *Session, d *CommandData) {
 		return
 	}
 
-	shutdownMode = 1
-	go gracefulWait()
+	numGames := countActiveGames()
+	log.Info("Initiating a graceful server restart (with " + strconv.Itoa(numGames) + " active games).")
+	if numGames == 0 {
+		restart2()
+	} else {
+		shutdownMode = 1
+		go gracefulWait()
+	}
 }
 
 func gracefulWait() {
@@ -37,18 +45,7 @@ func gracefulWait() {
 			break
 		}
 
-		// Check to see if all games are finished
-		numGames := 0
-		for _, g := range games {
-			if !g.Running {
-				continue
-			}
-			if g.SharedReplay {
-				continue
-			}
-			numGames++
-		}
-		if numGames == 0 {
+		if countActiveGames() == 0 {
 			// Wait 10 seconds so that the players are not immediately booted upon finishing
 			time.Sleep(time.Second * 10)
 
@@ -58,6 +55,21 @@ func gracefulWait() {
 
 		time.Sleep(time.Second)
 	}
+}
+
+func countActiveGames() int {
+	numGames := 0
+	for _, g := range games {
+		if !g.Running {
+			continue
+		}
+		if g.SharedReplay {
+			continue
+		}
+		numGames++
+	}
+
+	return numGames
 }
 
 func execute(script string) {
