@@ -11,7 +11,7 @@ type Game struct {
 	ID                 int
 	Name               string
 	Owner              int    // The user ID of the person who started the game or the current leader of the shared replay
-	Password           string // This is a salted SHA512
+	Password           string // This is a salted SHA512 hash
 	Options            *Options
 	Players            []*Player
 	Spectators         map[int]*Session

@@ -63,9 +63,10 @@ func commandGameCreate(s *Session, d *CommandData) {
 
 	// Create the game object
 	g := &Game{
-		ID:    gameID,
-		Name:  d.Name,
-		Owner: s.UserID(),
+		ID:       gameID,
+		Name:     d.Name,
+		Owner:    s.UserID(),
+		Password: d.Password,
 		Options: &Options{
 			Variant:      d.Variant,
 			Timed:        d.Timed,

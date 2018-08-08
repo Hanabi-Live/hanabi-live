@@ -55,6 +55,12 @@ func commandGameJoin(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that they entered the correct password
+	if g.Password != "" && d.Password != g.Password {
+		s.Warning("That is not the correct password for this game.")
+		return
+	}
+
 	/*
 		Join
 	*/
