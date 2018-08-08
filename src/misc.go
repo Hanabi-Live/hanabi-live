@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -36,4 +37,9 @@ func durationToString(d time.Duration) string {
 	d -= m * time.Minute
 	s := d / time.Second
 	return fmt.Sprintf("%02d:%02d", m, s)
+}
+
+// From: https://stackoverflow.com/questions/19101419/go-golang-formatfloat-convert-float-number-to-string
+func floatToString(f float64) string {
+	return strconv.FormatFloat(f, 'f', 6, 64)
 }

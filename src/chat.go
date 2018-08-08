@@ -26,15 +26,28 @@ func chatMakeMessage(msg string, who string, discord bool, server bool, datetime
 
 func chatHere(s *Session) {
 	// Check to see if enough time has passed from the last @here
-	// TODO
+	msg := ""
+	if time.Since(discordLastAtHere) < discordAtHereTimeout {
+		timeCanPingAgain := discordLastAtHere.Add(discordAtHereTimeout)
+		minutesLeft := time.Until(timeCanPingAgain).Minutes()
+		msg += "You need to wait another " + floatToString(minutesLeft) + " minutes before you can send out another mass ping."
+	} else {
+		msg += "@here"
+	}
+	if len(waitingList) > 0 {
+		msg += "\n"
+		for _, waiter := range waitingList {
+			msg += waiter.DiscordMention + ", "
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+	}
 	d := &CommandData{
-		Msg:    "@here",
+		Msg:    msg,
 		Room:   "lobby",
 		Server: true,
 		Echo:   true,
 	}
 	commandChat(nil, d)
-
 }
 
 func chatRandom(s *Session, d *CommandData) {
