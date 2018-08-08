@@ -408,6 +408,15 @@
             </div>
 
             <div class="row uniform 100%">
+                <div class="2u 12u input-text align-right">
+                    Password
+                </div>
+                <div class="9u 12u">
+                    <input id="create-game-password" type="text" placeholder="Password (optional)" />
+                </div>
+            </div>
+
+            <div class="row uniform 100%">
                 <div class="2u 12u"></div>
                 <div class="6u 12u">
                 </div>
@@ -557,6 +566,22 @@
         <div id="tooltip-leader"></div>
         <!-- "tooltip-card-#" is added in "ui.js" -->
         <div id="tooltip-signal"></div><!-- For the "Reorder Cards" feature -->
+    </div>
+
+    <!-- Password modal -->
+    <div id="password-modal" class="modal hidden">
+        <section class="box">
+            <h3>Enter Password</h3>
+            <p>Enter the password for this game:</p>
+            <input id="password-modal-id" type="hidden" />
+            <input id="password-modal-password" type="text" placeholder="Password" />
+            <br />
+            <ul class="actions">
+                <li>
+                    <button id="password-modal-button" class="button small">Submit</button>
+                </li>
+            </ul>
+        </section>
     </div>
 
     <!-- Warning modal -->

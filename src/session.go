@@ -187,6 +187,7 @@ func (s *Session) NotifyTable(g *Game) {
 	type TableMessage struct {
 		ID           int     `json:"id"`
 		Name         string  `json:"name"`
+		Password     string  `json:"password"`
 		Joined       bool    `json:"joined"`
 		NumPlayers   int     `json:"numPlayers"`
 		Owned        bool    `json:"owned"`
@@ -204,6 +205,7 @@ func (s *Session) NotifyTable(g *Game) {
 	s.Emit("table", &TableMessage{
 		ID:           g.ID,
 		Name:         g.Name,
+		Password:     g.Password,
 		Joined:       joined,
 		NumPlayers:   numPlayers,
 		Owned:        s.UserID() == g.Owner,

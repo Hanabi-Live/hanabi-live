@@ -46,6 +46,20 @@ function HanabiLobby() {
     this.errorOccured = false;
 
     // Initialize the modals
+    $('#password-modal-button').click(() => {
+        $('#password-modal').fadeOut(fadeTime);
+        $('#lobby').fadeTo(fadeTime, 1);
+        const gameID = parseInt($('#password-modal-id').val(), 10); // The server expects this as a number
+        const passwordPlaintext = $('#password-modal-password').val();
+        const password = hex_sha256(`Hanabi game password ${passwordPlaintext}`);
+        self.connSend({
+            type: 'gameJoin',
+            resp: {
+                gameID,
+                password,
+            },
+        });
+    });
     $('#warning-modal-button').click(() => {
         $('#warning-modal').fadeOut(fadeTime);
         if ($('#lobby').is(':visible')) {
@@ -118,7 +132,6 @@ function HanabiLobby() {
         self.connSend({
             type: 'getName',
         });
-
 
         // Fill in the "Variant" dropdown
         let variant;
@@ -193,6 +206,10 @@ function HanabiLobby() {
             emptyClues = false;
         }
         $('#create-game-empty-clues').prop('checked', emptyClues);
+
+        // Fill in the "Password" box
+        const password = localStorage.getItem('createTablePassword');
+        $('#create-game-password').val(password);
 
         // Focus the "Name" box
         // (we have to wait 1 millisecond or it won't work due to the nature of the above code)
@@ -348,7 +365,7 @@ function HanabiLobby() {
     $('#create-game-submit').on('click', (event) => {
         event.preventDefault();
 
-        const gameName = $('#create-game-name').val();
+        const name = $('#create-game-name').val();
 
         const variant = parseInt($('#create-game-variant').val(), 10);
         localStorage.setItem('createTableVariant', variant);
@@ -368,16 +385,21 @@ function HanabiLobby() {
         const emptyClues = document.getElementById('create-game-empty-clues').checked;
         localStorage.setItem('createTableEmptyClues', emptyClues);
 
+        const passwordPlaintext = $('#create-game-password').val();
+        localStorage.setItem('createTablePassword', passwordPlaintext);
+        const password = hex_sha256(`Hanabi game password ${passwordPlaintext}`);
+
         self.connSend({
             type: 'gameCreate',
             resp: {
-                name: gameName,
+                name,
                 variant,
                 timed,
                 baseTimeMinutes: parseFloat(baseTimeMinutes), // The server expects this as an float64
                 timePerTurnSeconds: parseInt(timePerTurnSeconds, 10), // The server expects this as an integer
                 reorderCards,
                 emptyClues,
+                password,
             },
         });
 
@@ -664,7 +686,9 @@ HanabiLobby.prototype.closeAllTooltips = function closeAllTooltips() {
     // From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
     const instances = $.tooltipster.instances();
     $.each(instances, (i, instance) => {
-        instance.close();
+        if (instance.status().open) {
+            instance.close();
+        }
     });
 };
 
@@ -866,15 +890,19 @@ HanabiLobby.prototype.drawTables = function drawTables() {
             button.on('click', (event) => {
                 event.preventDefault();
 
-                self.gameID = game.id;
-                self.connSend({
-                    type: 'gameJoin',
-                    resp: {
-                        gameID: game.id,
-                    },
-                });
+                if (game.password === '') {
+                    self.gameID = game.id;
+                    self.connSend({
+                        type: 'gameJoin',
+                        resp: {
+                            gameID: game.id,
+                        },
+                    });
 
-                self.drawTables();
+                    self.drawTables();
+                } else {
+                    self.passwordShow(game.id);
+                }
             });
         } else {
             button.html('<i class="fas fa-play lobby-button-icon"></i>&nbsp; Resume');
@@ -1669,10 +1697,10 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
 
     conn.on('warning', (data) => {
         // Log the warning message
-        console.warning(data.warning);
+        console.warn(data.warning);
 
         // Show the warning modal
-        self.warningShow(data.error);
+        self.warningShow(data.warning);
     });
 
     conn.on('error', (data) => {
@@ -1713,17 +1741,26 @@ HanabiLobby.prototype.connClientError = function connClientError(conn) {
     };
 };
 
+// Show the password modal
+HanabiLobby.prototype.passwordShow = function passwordShow(gameID) {
+    $('#password-modal-id').val(gameID);
+    $('#password-modal').fadeIn(fadeTime);
+    $('#lobby').fadeTo(fadeTime, 0.25);
+    this.closeAllTooltips();
+    $('#password-modal-password').focus();
+};
+
 // Show a warning
 HanabiLobby.prototype.warningShow = function warningShow(msg) {
-    this.closeAllTooltips();
     $('#warning-modal-description').html(msg);
     $('#warning-modal').fadeIn(fadeTime);
     if ($('#lobby').is(':visible')) {
-        $('#lobby').fadeTo(fadeTime, 0.5);
+        $('#lobby').fadeTo(fadeTime, 0.25);
     }
     if ($('#game').is(':visible')) {
-        $('#game').fadeTo(fadeTime, 0.5);
+        $('#game').fadeTo(fadeTime, 0.25);
     }
+    this.closeAllTooltips();
 };
 
 // Show the error modal
@@ -1734,21 +1771,18 @@ HanabiLobby.prototype.errorShow = function errorShow(msg) {
     }
     this.errorOccured = true;
 
-    this.closeAllTooltips();
-
+    // Clear out the top navigation buttons
     this.showNav('nothing');
 
-    function fadeInModal() {
-        $('#error-modal').fadeIn(fadeTime);
-    }
-
     $('#error-modal-description').html(msg);
+    $('#error-modal').fadeIn(fadeTime);
     if ($('#lobby').is(':visible')) {
-        $('#lobby').fadeTo(fadeTime, 0.1, fadeInModal);
+        $('#lobby').fadeTo(fadeTime, 0.1);
     }
     if ($('#game').is(':visible')) {
-        $('#game').fadeTo(fadeTime, 0.1, fadeInModal);
+        $('#game').fadeTo(fadeTime, 0.1);
     }
+    this.closeAllTooltips();
 };
 
 HanabiLobby.prototype.loadSettings = function loadSettings() {
