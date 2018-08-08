@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	maxChatLength = 250
+	maxChatLength = 300
 )
 
 func commandChat(s *Session, d *CommandData) {

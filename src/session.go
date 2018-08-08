@@ -172,22 +172,22 @@ func (s *Session) NotifyTable(g *Game) {
 		numPlayers = len(g.Spectators)
 	}
 
-	names := make([]string, 0)
-	if g.SharedReplay {
-		for _, s2 := range g.Spectators {
-			names = append(names, s2.Username())
-		}
-	} else {
-		for _, p := range g.Players {
-			names = append(names, p.Name)
-		}
+	playerNames := make([]string, 0)
+	for _, p := range g.Players {
+		playerNames = append(playerNames, p.Name)
 	}
-	players := strings.Join(names, ", ")
+	players := strings.Join(playerNames, ", ")
+
+	spectatorNames := make([]string, 0)
+	for _, s2 := range g.Spectators {
+		spectatorNames = append(spectatorNames, s2.Username())
+	}
+	spectators := strings.Join(playerNames, ", ")
 
 	type TableMessage struct {
 		ID           int     `json:"id"`
 		Name         string  `json:"name"`
-		Password     string  `json:"password"`
+		Password     bool    `json:"password"`
 		Joined       bool    `json:"joined"`
 		NumPlayers   int     `json:"numPlayers"`
 		Owned        bool    `json:"owned"`
@@ -201,11 +201,12 @@ func (s *Session) NotifyTable(g *Game) {
 		SharedReplay bool    `json:"sharedReplay"`
 		Progress     int     `json:"progress"`
 		Players      string  `json:"players"`
+		Spectators   string  `json:"spectators"`
 	}
 	s.Emit("table", &TableMessage{
 		ID:           g.ID,
 		Name:         g.Name,
-		Password:     g.Password,
+		Password:     len(g.Password) > 0,
 		Joined:       joined,
 		NumPlayers:   numPlayers,
 		Owned:        s.UserID() == g.Owner,
@@ -219,6 +220,7 @@ func (s *Session) NotifyTable(g *Game) {
 		SharedReplay: g.SharedReplay,
 		Progress:     g.Progress,
 		Players:      players,
+		Spectators:   spectators,
 	})
 }
 

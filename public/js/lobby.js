@@ -385,9 +385,11 @@ function HanabiLobby() {
         const emptyClues = document.getElementById('create-game-empty-clues').checked;
         localStorage.setItem('createTableEmptyClues', emptyClues);
 
-        const passwordPlaintext = $('#create-game-password').val();
-        localStorage.setItem('createTablePassword', passwordPlaintext);
-        const password = hex_sha256(`Hanabi game password ${passwordPlaintext}`);
+        let password = $('#create-game-password').val();
+        localStorage.setItem('createTablePassword', password);
+        if (password !== '') {
+            password = hex_sha256(`Hanabi game password ${password}`);
+        }
 
         self.connSend({
             type: 'gameCreate',
@@ -864,9 +866,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         $('<td>').html(status).appendTo(row);
 
         // Column 6 - Action
-        const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
+        const button = $('<button>').attr('type', 'button').addClass('button small margin0');
         if (!game.joined && game.running) {
-            button.html('<i class="fas fa-eye lobby-button-icon"></i>&nbsp; Spectate');
+            button.html('<i class="fas fa-eye lobby-button-icon"></i>');
             button.attr('id', `spectate-${game.id}`);
             button.on('click', (event) => {
                 event.preventDefault();
@@ -882,7 +884,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 self.drawTables();
             });
         } else if (!game.joined) {
-            button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>&nbsp; Join');
+            button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>');
             button.attr('id', `join-${game.id}`);
             if (game.numPlayers >= 5) {
                 button.addClass('disabled');
@@ -890,7 +892,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
             button.on('click', (event) => {
                 event.preventDefault();
 
-                if (game.password === '') {
+                if (game.password) {
+                    self.passwordShow(game.id);
+                } else {
                     self.gameID = game.id;
                     self.connSend({
                         type: 'gameJoin',
@@ -900,12 +904,10 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                     });
 
                     self.drawTables();
-                } else {
-                    self.passwordShow(game.id);
                 }
             });
         } else {
-            button.html('<i class="fas fa-play lobby-button-icon"></i>&nbsp; Resume');
+            button.html('<i class="fas fa-play lobby-button-icon"></i>');
             button.attr('id', `resume-${game.id}`);
 
             button.on('click', (event) => {
@@ -927,8 +929,8 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         // Column 7 - Abandon
         let button2 = 'n/a';
         if (game.joined && (game.owned || game.running)) {
-            button2 = $('<button>').attr('type', 'button').addClass('button fit margin0');
-            button2.html('<i class="fas fa-times lobby-button-icon"></i>&nbsp; Abandon');
+            button2 = $('<button>').attr('type', 'button').addClass('button small margin0');
+            button2.html('<i class="fas fa-times lobby-button-icon"></i>');
             button2.attr('id', `abandon-${game.id}`);
             button2.on('click', (event) => {
                 event.preventDefault();
@@ -952,6 +954,9 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
         // Column 8 - Players
         $('<td>').html(game.players).appendTo(row);
+
+        // Column 9 - Spectators
+        $('<td>').html(game.spectators).appendTo(row);
 
         row.appendTo(tbody);
     }
