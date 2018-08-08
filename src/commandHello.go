@@ -90,6 +90,7 @@ func commandHello(s *Session, d *CommandData) {
 		Spectating   bool     `json:"spectating"`
 		Timed        bool     `json:"timed"`
 		ReorderCards bool     `json:"reorderCards"`
+		DeckPlays    bool     `json:"deckPlays"`
 		EmptyClues   bool     `json:"emptyClues"`
 		Variant      int      `json:"variant"`
 		SharedReplay bool     `json:"sharedReplay"`
@@ -113,6 +114,7 @@ func commandHello(s *Session, d *CommandData) {
 		Spectating:   spectating,
 		Timed:        g.Options.Timed,
 		ReorderCards: g.Options.ReorderCards,
+		DeckPlays:    g.Options.DeckPlays,
 		EmptyClues:   g.Options.EmptyClues,
 		Variant:      g.Options.Variant,
 		SharedReplay: sharedReplay,

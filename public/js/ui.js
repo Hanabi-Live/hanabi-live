@@ -62,6 +62,7 @@ function HanabiUI(lobby, gameID) {
     this.editingNoteActionOccured = false; // Equal to true if something happened when the note box happens to be open
 
     this.reorderCards = false;
+    this.deckPlays = false;
     this.emptyClues = false;
 
     // Used for the pre-move feature
@@ -2468,7 +2469,7 @@ function HanabiUI(lobby, gameID) {
         ctx.fill();
         ctx.globalAlpha = 0.7;
         ctx.lineWidth = 8;
-        // The borders should be more opaque for the stack base.
+        // The borders should be more opaque for the stack base
         if (rank === 0) {
             ctx.globalAlpha = 1.0;
         }
@@ -2947,7 +2948,7 @@ function HanabiUI(lobby, gameID) {
 
         UILayer.add(noDiscardLabel);
 
-        // The faded red border that surrounds the discard pile when it is a "Double Discard" situation
+        // The yellow border that surrounds the discard pile when it is a "Double Discard" situation
         noDoubleDiscardLabel = new Kinetic.Rect({
             x: 0.8 * winW,
             y: 0.6 * winH,
@@ -5232,7 +5233,7 @@ function HanabiUI(lobby, gameID) {
                 noDiscardLabel.show();
                 noDoubleDiscardLabel.hide();
             } else if (data.doubleDiscard) {
-                // Show a faded red border around the discard pile
+                // Show a yellow border around the discard pile
                 // (to reinforce that this is a "Double Discard" situation)
                 noDiscardLabel.hide();
                 noDoubleDiscardLabel.show();
@@ -5684,13 +5685,14 @@ function HanabiUI(lobby, gameID) {
         }
         */
 
-        drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
+        if (ui.deckPlays) {
+            drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
+            deckPlayAvailableLabel.setVisible(data.canBlindPlayDeck);
 
-        deckPlayAvailableLabel.setVisible(data.canBlindPlayDeck);
-
-        // Ensure the deck is above other cards and UI elements
-        if (data.canBlindPlayDeck) {
-            drawDeck.moveToTop();
+            // Ensure the deck is above other cards and UI elements
+            if (data.canBlindPlayDeck) {
+                drawDeck.moveToTop();
+            }
         }
 
         const checkClueLegal = () => {
@@ -5857,6 +5859,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.timedGame = msgData.timed;
         this.sharedReplay = msgData.sharedReplay;
         this.reorderCards = msgData.reorderCards;
+        this.deckPlays = msgData.deckPlays;
         this.emptyClues = msgData.emptyClues;
 
         if (this.replayOnly) {
