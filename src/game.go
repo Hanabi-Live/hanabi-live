@@ -49,6 +49,7 @@ type Options struct {
 	TimeBase     float64
 	TimePerTurn  int
 	ReorderCards bool
+	DeckPlays    bool
 	EmptyClues   bool
 }
 

@@ -19,6 +19,7 @@ type GameRow struct {
 	Timed           bool
 	TimeBase        int
 	TimePerTurn     int
+	DeckPlays       bool
 	EmptyClues      bool
 	Seed            string
 	Score           int

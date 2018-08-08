@@ -35,6 +35,7 @@ CREATE TABLE games (
     timed              BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
     time_base          INT           NOT NULL, /* in seconds */
     time_per_turn      INT           NOT NULL, /* in seconds */
+    deck_plays         BOOLEAN       NOT NULL,
     empty_clues        BOOLEAN       NOT NULL,
     seed               VARCHAR(50)   NOT NULL, /* like "p2v0s1" */
     score              INT           NOT NULL,

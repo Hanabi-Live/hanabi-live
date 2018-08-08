@@ -128,18 +128,18 @@ func commandAction(s *Session, d *CommandData) {
 	if d.Type == 0 { // Clue
 		// Validate that the player is not giving a clue to themselves
 		if g.ActivePlayer == d.Target {
-			s.Error("You cannot give a clue to yourself.")
+			s.Warning("You cannot give a clue to yourself.")
 			return
 		}
 
 		// Validate that there are clues available to use
 		if g.Clues == 0 {
-			s.Error("You cannot give a clue when the team has 0 clues left.")
+			s.Warning("You cannot give a clue when the team has 0 clues left.")
 			return
 		}
 
 		if !p.GiveClue(g, d) {
-			s.Error("You cannot give a clue that touches 0 cards in the hand.")
+			s.Warning("You cannot give a clue that touches 0 cards in the hand.")
 			return
 		}
 
@@ -147,7 +147,7 @@ func commandAction(s *Session, d *CommandData) {
 	} else if d.Type == 1 { // Play
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
-			s.Error("You cannot play a card that is not in your hand.")
+			s.Warning("You cannot play a card that is not in your hand.")
 			return
 		}
 
@@ -157,14 +157,14 @@ func commandAction(s *Session, d *CommandData) {
 	} else if d.Type == 2 { // Discard
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
-			s.Error("You cannot play a card that is not in your hand.")
+			s.Warning("You cannot play a card that is not in your hand.")
 			return
 		}
 
 		// Validate that the team is not at 8 clues
 		// (the client should enforce this, but do a check just in case)
 		if g.Clues == 8 {
-			s.Error("You cannot discard while the team has 8 clues.")
+			s.Warning("You cannot discard while the team has 8 clues.")
 			return
 		}
 
@@ -175,10 +175,16 @@ func commandAction(s *Session, d *CommandData) {
 
 		g.BlindPlays = 0
 	} else if d.Type == 3 { // Deck play
+		// Validate that the game type allows deck plays
+		if !g.Options.DeckPlays {
+			s.Warning("Deck plays are disabled for this game.")
+			return
+		}
+
 		// Validate that there is only 1 card left
 		// (the client should enforce this, but do a check just in case)
 		if g.DeckIndex != len(g.Deck)-1 {
-			s.Error("You cannot blind play the deck until there is only 1 card left.")
+			s.Warning("You cannot blind play the deck until there is only 1 card left.")
 			return
 		}
 

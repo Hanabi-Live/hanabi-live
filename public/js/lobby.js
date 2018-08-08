@@ -194,6 +194,18 @@ function HanabiLobby() {
         }
         $('#create-game-reorder-cards').prop('checked', reorderCards);
 
+        // Fill in the "Allow Bottom-Deck Blind Plays" checkbox
+        let deckPlays;
+        try {
+            deckPlays = JSON.parse(localStorage.getItem('createTableDeckPlays'));
+        } catch (err) {
+            deckPlays = false;
+        }
+        if (typeof deckPlays !== 'boolean') {
+            deckPlays = false;
+        }
+        $('#create-game-deck-plays').prop('checked', deckPlays);
+
         // Fill in the "Allow Empty Clues" checkbox
         let emptyClues;
         try {
@@ -237,7 +249,7 @@ function HanabiLobby() {
         contentAsHTML: true,
         animation: 'grow',
         updateAnimation: null,
-        interactive: true, /* So that users can update their notes */
+        interactive: true, // So that users can update their notes
     };
     for (let i = 0; i < 5; i++) {
         $('#game-tooltips').append(`<div id="tooltip-player-${i}"></div>`);
@@ -381,6 +393,9 @@ function HanabiLobby() {
         const reorderCards = document.getElementById('create-game-reorder-cards').checked;
         localStorage.setItem('createTableReorderCards', reorderCards);
 
+        const deckPlays = document.getElementById('create-game-deck-plays').checked;
+        localStorage.setItem('createTableDeckPlays', deckPlays);
+
         const emptyClues = document.getElementById('create-game-empty-clues').checked;
         localStorage.setItem('createTableEmptyClues', emptyClues);
 
@@ -399,6 +414,7 @@ function HanabiLobby() {
                 baseTimeMinutes: parseFloat(baseTimeMinutes), // The server expects this as an float64
                 timePerTurnSeconds: parseInt(timePerTurnSeconds, 10), // The server expects this as an integer
                 reorderCards,
+                deckPlays,
                 emptyClues,
                 password,
             },
@@ -1710,16 +1726,12 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
         // Log the error message
         console.error(data.error);
 
-        /*
-        Let all errors happen silently so that the user does not have to restart their browser
-
         // Disconnect from the server, if connected
         if (!self.conn) {
             self.conn.close();
         }
 
         self.errorShow(data.error);
-        */
     });
 };
 
