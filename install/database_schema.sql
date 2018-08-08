@@ -29,18 +29,19 @@ CREATE TABLE games (
     id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
     name               NVARCHAR(50)  NOT NULL,
-    num_players        TINYINT       NOT NULL  DEFAULT 2,
+    num_players        TINYINT       NOT NULL,
     owner              INT           NOT NULL,
     variant            TINYINT       NOT NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
     timed              BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
     time_base          INT           NOT NULL, /* in seconds */
     time_per_turn      INT           NOT NULL, /* in seconds */
+    empty_clues        BOOLEAN       NOT NULL,
     seed               VARCHAR(50)   NOT NULL, /* like "p2v0s1" */
     score              INT           NOT NULL,
     num_turns          INT           NOT NULL,
     end_condition      INT           NOT NULL, /* 0 - in progress, 1 - normal, 2 - strikeout, 3 - timeout, 4 - abandoned */
-    datetime_created   TIMESTAMP     NOT NULL  DEFAULT '0000-00-00 00:00:00',
-    datetime_started   TIMESTAMP     NOT NULL  DEFAULT '0000-00-00 00:00:00',
+    datetime_created   TIMESTAMP     NOT NULL,
+    datetime_started   TIMESTAMP     NOT NULL,
     datetime_finished  TIMESTAMP     NOT NULL  DEFAULT NOW(),
     FOREIGN KEY (owner) REFERENCES users (id)
 );

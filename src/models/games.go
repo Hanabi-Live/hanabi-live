@@ -19,6 +19,7 @@ type GameRow struct {
 	Timed           bool
 	TimeBase        int
 	TimePerTurn     int
+	EmptyClues      bool
 	Seed            string
 	Score           int
 	NumTurns        int
@@ -38,6 +39,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			timed,
 			time_base,
 			time_per_turn,
+			empty_clues,
 			seed,
 			score,
 			num_turns,
@@ -45,6 +47,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			datetime_created,
 			datetime_started
 		) VALUES (
+			?,
 			?,
 			?,
 			?,
@@ -75,6 +78,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 		gameRow.Timed,
 		gameRow.TimeBase,
 		gameRow.TimePerTurn,
+		gameRow.EmptyClues,
 		gameRow.Seed,
 		gameRow.Score,
 		gameRow.NumTurns,

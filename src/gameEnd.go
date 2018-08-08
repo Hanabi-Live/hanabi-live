@@ -98,6 +98,7 @@ func (g *Game) End() {
 		Variant:         g.Options.Variant,
 		TimeBase:        int(g.Options.TimeBase),
 		TimePerTurn:     g.Options.TimePerTurn,
+		EmptyClues:      g.Options.EmptyClues,
 		Seed:            g.Seed,
 		Score:           g.Score,
 		EndCondition:    g.EndCondition,
