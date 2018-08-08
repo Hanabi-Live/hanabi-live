@@ -17,6 +17,15 @@ type Session struct {
 	Functions to return session values
 */
 
+func (s *Session) ID() int {
+	if v, exists := s.Get("ID"); !exists {
+		log.Error("Failed to get \"ID\" from a session.")
+		return -1
+	} else {
+		return v.(int)
+	}
+}
+
 func (s *Session) UserID() int {
 	if v, exists := s.Get("userID"); !exists {
 		log.Error("Failed to get \"userID\" from a session.")

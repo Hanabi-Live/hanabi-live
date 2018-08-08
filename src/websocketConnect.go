@@ -34,6 +34,10 @@ func websocketConnect(ms *melody.Session) {
 		} else {
 			log.Info("Successfully terminated a WebSocket connection.")
 		}
+
+		// The connection is now closed, but the disconnect event will be fired in another goroutine
+		// Thus, we need to manually call the function now to ensure that the user is removed from existing games and so forth
+		websocketDisconnect2(s2)
 	}
 
 	// Add the connection to a session map so that we can keep track of all of the connections
@@ -98,11 +102,6 @@ func websocketConnect(ms *melody.Session) {
 		s.NotifyUser(s2)
 	}
 
-	// Send a "table" message for every current table
-	for _, g := range games {
-		s.NotifyTable(g)
-	}
-
 	// Send the user's game history
 	// (only the last 10 games to prevent on wasted bandwidth)
 	var history []models.GameHistory
@@ -159,5 +158,10 @@ func websocketConnect(ms *melody.Session) {
 				break
 			}
 		}
+	}
+
+	// Send a "table" message for every current table
+	for _, g := range games {
+		s.NotifyTable(g)
 	}
 }

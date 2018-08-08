@@ -12,6 +12,24 @@ func websocketDisconnect(ms *melody.Session) {
 	// Turn the Melody session into a custom session
 	s := &Session{ms}
 
+	// We have to do the work in a separate function so that we can call it manually in the "websocketConnect()" function
+	websocketDisconnect2(s)
+}
+
+func websocketDisconnect2(s *Session) {
+	// Check to see if the existing session is different
+	// (this occurs after a forced discumight occur during a reconnect, for example)
+	if s2, ok := sessions[s.UserID()]; !ok {
+		log.Info("User \"" + s.Username() + "\" disconnected, but their session was already deleted. (This should never happen.")
+		return
+	} else if s2.ID() != s.ID() {
+		log.Info("The orphaned session for user \"" + s.Username() + "\" successfully disconnected.")
+		return
+	}
+
+	// Delete the connection from the session map
+	delete(sessions, s.UserID())
+
 	// Look for the disconnecting player in all the games
 	for _, g := range games {
 		// They could be one of the players (1/2)
@@ -34,9 +52,6 @@ func websocketDisconnect(ms *melody.Session) {
 			commandGameUnattend(s, nil)
 		}
 	}
-
-	// Delete the connection from the session map
-	delete(sessions, s.UserID())
 
 	// Alert everyone that a user has logged out
 	notifyAllUserLeft(s)

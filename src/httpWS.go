@@ -16,6 +16,11 @@ import (
 	less than 5 seconds ago. But we also do a few other checks to be thorough.
 */
 
+var (
+	// Start at 1 and increment for every session created
+	sessionID = 1
+)
+
 func httpWS(c *gin.Context) {
 	// Local variables
 	w := c.Writer
@@ -87,6 +92,8 @@ func httpWS(c *gin.Context) {
 	// If they got this far, they are a valid user
 	// Transfer the values from the login cookie into WebSocket session variables
 	keys := make(map[string]interface{})
+	keys["ID"] = sessionID // This is independent of the user and used for disconnection purposes
+	sessionID++
 	keys["userID"] = userID
 	keys["username"] = username
 	keys["admin"] = admin
