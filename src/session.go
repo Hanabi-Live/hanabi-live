@@ -177,12 +177,18 @@ func (s *Session) NotifyTable(g *Game) {
 		playerNames = append(playerNames, p.Name)
 	}
 	players := strings.Join(playerNames, ", ")
+	if players == "" {
+		players = "-"
+	}
 
 	spectatorNames := make([]string, 0)
 	for _, s2 := range g.Spectators {
 		spectatorNames = append(spectatorNames, s2.Username())
 	}
-	spectators := strings.Join(playerNames, ", ")
+	spectators := strings.Join(spectatorNames, ", ")
+	if spectators == "" {
+		spectators = "-"
+	}
 
 	type TableMessage struct {
 		ID           int     `json:"id"`
