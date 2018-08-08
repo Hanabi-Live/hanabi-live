@@ -53,8 +53,12 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Sanitize the message using the bluemonday library to stop
 	// various attacks against other players
-	p := bluemonday.StrictPolicy()
-	d.Msg = p.Sanitize(d.Msg)
+	if !d.Server {
+		// Make an exception for messages coming directly from the server
+		// (sanitization will break Discord emotes, for example)
+		p := bluemonday.StrictPolicy()
+		d.Msg = p.Sanitize(d.Msg)
+	}
 
 	// Truncate long messages
 	if len(d.Msg) > maxChatLength {
