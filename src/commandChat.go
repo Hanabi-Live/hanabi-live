@@ -12,6 +12,8 @@ package main
 import (
 	"strings"
 	"time"
+
+	"github.com/microcosm-cc/bluemonday"
 )
 
 const (
@@ -48,6 +50,11 @@ func commandChat(s *Session, d *CommandData) {
 		}
 		return
 	}
+
+	// Sanitize the message using the bluemonday library to stop
+	// various attacks against other players
+	p := bluemonday.StrictPolicy()
+	d.Msg = p.Sanitize(d.Msg)
 
 	// Truncate long messages
 	if len(d.Msg) > maxChatLength {

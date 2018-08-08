@@ -943,9 +943,9 @@ HanabiLobby.prototype.addChat = function addChat(data) {
         line += data.msg;
     } else if (data.who) {
         line += `&lt;<b>${data.who}</b>&gt;&nbsp; `;
-        line += `${$('<a>').text(data.msg).html()}`;
+        line += `${$('<a>').text(data.msg).text()}`;
     } else {
-        line += `<b>${$('<a>').text(data.msg).html()}</b>`;
+        line += `<b>${$('<a>').text(data.msg).text()}</b>`;
     }
     line += '<br />';
 
@@ -972,19 +972,13 @@ HanabiLobby.prototype.addChat = function addChat(data) {
 };
 
 HanabiLobby.prototype.fillEmotes = function fillEmotes(message) {
-    const emoteMapping = {
-        '<:BibleThump:254683882601840641>': 'BibleThump',
-        '<:PogChamp:254683883033853954>': 'PogChamp',
-    };
-
-    // Search through the text for each emote
-    for (const emote of Object.keys(emoteMapping)) {
-        if (message.indexOf(emote) === -1) {
-            continue;
+    while (true) {
+        const match = message.match(/<:(.+?):(\d+?)>/);
+        if (!match) {
+            break;
         }
-
-        const emoteTag = `<img src="public/img/emotes/${emoteMapping[emote]}.png" title="${emoteMapping[emote]}" />`;
-        message = message.replace(emote, emoteTag);
+        const emoteTag = `<img src="https://cdn.discordapp.com/emojis/${match[2]}.png" title="${match[1]}" height=28 />`;
+        message = message.replace(match[0], emoteTag);
     }
 
     return message;
