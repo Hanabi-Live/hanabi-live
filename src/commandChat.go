@@ -175,7 +175,7 @@ func commandChat(s *Session, d *CommandData) {
 		chatRandom(s, d)
 		return
 	} else if d.Msg == "/here" {
-		chatHere(s)
+		chatHere(s, d)
 		return
 	}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,15 +12,19 @@ import (
 	Chat command functions
 */
 
-func chatHere(s *Session) {
+func chatHere(s *Session, d *CommandData) {
 	// Check to see if enough time has passed from the last @here
 	msg := ""
 	if time.Since(discordLastAtHere) < discordAtHereTimeout {
 		timeCanPingAgain := discordLastAtHere.Add(discordAtHereTimeout)
-		minutesLeft := time.Until(timeCanPingAgain).Minutes()
-		msg += "You need to wait another " + floatToString(minutesLeft) + " minutes before you can send out another mass ping."
+		minutesLeft := int(math.Ceil(time.Until(timeCanPingAgain).Minutes()))
+		msg += "In order to prevent spam, you need to wait another " + strconv.Itoa(minutesLeft) + " minutes before you can send out another mass ping."
 	} else {
-		msg += s.Username() + " wants to play. Anyone @here?"
+		// If the command was sent from the lobby, "d.Username" will be blank
+		if d.Username == "" && s != nil {
+			d.Username = s.Username()
+		}
+		msg += d.Username + " wants to play. Anyone @here?"
 	}
 	if len(waitingList) > 0 {
 		msg += "\n"
@@ -28,13 +33,13 @@ func chatHere(s *Session) {
 		}
 		msg = strings.TrimSuffix(msg, ", ")
 	}
-	d := &CommandData{
+	d2 := &CommandData{
 		Msg:    msg,
 		Room:   "lobby",
 		Server: true,
 		Echo:   true,
 	}
-	commandChat(nil, d)
+	commandChat(nil, d2)
 }
 
 func chatRandom(s *Session, d *CommandData) {
