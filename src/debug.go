@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"reflect"
 	"strconv"
 )
 
@@ -15,11 +17,18 @@ func debug(s *Session, d *CommandData) {
 	log.Debug("Current games:")
 	for i, g := range games { // This is a map[int]*Game
 		log.Debug(strconv.Itoa(i) + " - " + g.Name)
-		log.Debug("   ", g)
-		log.Debug("    LastAction:", g.DatetimeLastAction)
-		log.Debug("    Options:")
-		log.Debug("       ", g.Options)
 
+		// Print out all of the fields
+		// From: https://stackoverflow.com/questions/24512112/how-to-print-struct-variables-in-console
+		s := reflect.ValueOf(g).Elem()
+		typeOfT := s.Type()
+		for i := 0; i < s.NumField(); i++ {
+			f := s.Field(i)
+			line := fmt.Sprintf("    %s\t= %v\n", typeOfT.Field(i).Name, f.Interface())
+			log.Debug(line)
+		}
+
+		// Manually enumerate the slices and maps
 		log.Debug("    Players:")
 		for j, p := range g.Players { // This is a map[int]*Player
 			log.Debug("        " + strconv.Itoa(j) + " - " + p.Name)
