@@ -38,7 +38,17 @@ func gracefulWait() {
 		}
 
 		// Check to see if all games are finished
-		if len(games) == 0 {
+		numGames := 0
+		for _, g := range games {
+			if !g.Running {
+				continue
+			}
+			if g.SharedReplay {
+				continue
+			}
+			numGames++
+		}
+		if numGames == 0 {
 			// Wait 10 seconds so that the players are not immediately booted upon finishing
 			time.Sleep(time.Second * 10)
 
