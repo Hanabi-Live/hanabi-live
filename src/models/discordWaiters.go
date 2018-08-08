@@ -48,3 +48,35 @@ func (*DiscordWaiters) GetAll() ([]*Waiter, error) {
 
 	return waiters, nil
 }
+
+func (*DiscordWaiters) Insert(waiter *Waiter) error {
+	var stmt *sql.Stmt
+	if v, err := db.Prepare(`
+		INSERT INTO discord_waiters (username, discord_mention, datetime_expired)
+		VALUES (?, ?, ?)
+	`); err != nil {
+		return err
+	} else {
+		stmt = v
+	}
+	defer stmt.Close() // nolint: errcheck
+
+	_, err := stmt.Exec(waiter.Username, waiter.DiscordMention, waiter.DatetimeExpired)
+	return err
+}
+
+func (*DiscordWaiters) Delete(username string) error {
+	var stmt *sql.Stmt
+	if v, err := db.Prepare(`
+		DELETE FROM discord_waiters
+		WHERE username = ?
+	`); err != nil {
+		return err
+	} else {
+		stmt = v
+	}
+	defer stmt.Close() // nolint: errcheck
+
+	_, err := stmt.Exec(username)
+	return err
+}

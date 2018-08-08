@@ -13,6 +13,14 @@ import (
 	Main functions
 */
 
+func waitingListInit() {
+	if v, err := db.DiscordWaiters.GetAll(); err != nil {
+		log.Fatal("Failed to get the Discord waiters from the database:", err)
+	} else {
+		waitingList = v
+	}
+}
+
 func waitingListAdd(m *discordgo.MessageCreate) {
 	waitingListPurgeOld()
 	username := discordGetNickname(m)
@@ -30,12 +38,13 @@ func waitingListAdd(m *discordgo.MessageCreate) {
 		}
 	}
 
-	// Add them to the list
+	// Add them to the database and the slice in memory
 	waiter := &models.Waiter{
 		Username:        username,
 		DiscordMention:  m.Author.Mention(),
 		DatetimeExpired: time.Now().Add(idleWaitingListTimeout),
 	}
+	db.DiscordWaiters.Insert(waiter)
 	waitingList = append(waitingList, waiter)
 
 	// Announce it
@@ -52,7 +61,7 @@ func waitingListRemove(m *discordgo.MessageCreate) {
 	for i, waiter := range waitingList {
 		if waiter.DiscordMention == m.Author.Mention() {
 			// Remove them
-			waitingList = append(waitingList[:i], waitingList[i+1:]...)
+			waitingListRemoveSub(i)
 
 			// Let them know
 			msg := username + ", you have been removed from the waiting list."
@@ -90,9 +99,7 @@ func waitingListAlert(g *Game, creator string) {
 	// Build a list of everyone on the waiting list
 	mentionList := ""
 	for _, waiter := range waitingList {
-		if waiter.DatetimeExpired.After(time.Now()) {
-			mentionList += waiter.DiscordMention + ", "
-		}
+		mentionList += waiter.DiscordMention + ", "
 	}
 	mentionList = strings.TrimSuffix(mentionList, ", ")
 
@@ -114,13 +121,21 @@ func waitingListAlert(g *Game, creator string) {
 	Subroutines
 */
 
+func waitingListRemoveSub(i int) {
+	// Remove them from the the database
+	db.DiscordWaiters.Delete(waitingList[i].Username)
+
+	// Remove it to the slice in memory
+	waitingList = append(waitingList[:i], waitingList[i+1:]...)
+}
+
 func waitingListPurgeOld() {
 	for {
 		deleted := false
 		for i, waiter := range waitingList {
 			if waiter.DatetimeExpired.After(time.Now()) {
 				deleted = true
-				waitingList = append(waitingList[:i], waitingList[i+1:]...)
+				waitingListRemoveSub(i)
 				break
 			}
 		}
