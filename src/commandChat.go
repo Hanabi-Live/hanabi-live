@@ -10,6 +10,7 @@
 package main
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
@@ -45,9 +46,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Validate the message
 	if d.Msg == "" {
-		if s != nil {
-			s.Warning("You cannot send a blank message.")
-		}
+		s.Warning("You cannot send a blank message.")
 		return
 	}
 
@@ -66,7 +65,7 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	// Validate the room
-	if d.Room != "lobby" {
+	if d.Room != "lobby" && !strings.HasPrefix(d.Room, "game") {
 		s.Warning("That is not a valid room.")
 	}
 
@@ -76,19 +75,15 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Add the message to the database
 	if d.Discord {
-		if err := db.ChatLog.InsertDiscord(username, d.Msg); err != nil {
+		if err := db.ChatLog.InsertDiscord(username, d.Msg, d.Room); err != nil {
 			log.Error("Failed to insert a Discord chat message into the database:", err)
-			if s != nil {
-				s.Error("Failed to insert a Discord chat message into the database. Please contact an administrator.")
-			}
+			s.Error("")
 			return
 		}
 	} else {
 		if err := db.ChatLog.Insert(userID, d.Msg, d.Room); err != nil {
 			log.Error("Failed to insert a chat message into the database:", err)
-			if s != nil {
-				s.Error("Failed to insert a chat message into the database. Please contact an administrator.")
-			}
+			s.Error("")
 			return
 		}
 	}
@@ -101,9 +96,41 @@ func commandChat(s *Session, d *CommandData) {
 	text += d.Msg
 	log.Info(text)
 
-	// Send the chat message to everyone
+	if d.Room != "lobby" {
+		// Parse the game ID from the room name
+		gameIDstring := strings.TrimPrefix(d.Room, "game")
+		var gameID int
+		if v, err := strconv.Atoi(gameIDstring); err != nil {
+			log.Error("Failed to parse the game ID from the room name:", err)
+			s.Error("")
+			return
+		} else {
+			gameID = v
+		}
+
+		// Get the corresponding game
+		var g *Game
+		if v, ok := games[gameID]; !ok {
+			s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+			return
+		} else {
+			g = v
+		}
+
+		// Send it to all of the players and spectators
+		for _, p := range g.Players {
+			p.Session.NotifyChat(d.Msg, username, d.Discord, d.Server, time.Now(), d.Room)
+		}
+		for _, s2 := range g.Spectators {
+			s2.NotifyChat(d.Msg, username, d.Discord, d.Server, time.Now(), d.Room)
+		}
+
+		return
+	}
+
+	// Lobby messages go to everyone
 	for _, s2 := range sessions {
-		s2.NotifyChat(d.Msg, username, d.Discord, d.Server, time.Now())
+		s2.NotifyChat(d.Msg, username, d.Discord, d.Server, time.Now(), d.Room)
 	}
 
 	// Send the chat message to the Discord "#general" channel if we are replicating a message

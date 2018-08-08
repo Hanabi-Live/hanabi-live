@@ -110,7 +110,7 @@ func waitingListAlert(g *Game, creator string) {
 	alert := creator + " created a table. (" + variants[g.Options.Variant].Name + ")\n" + mentionList
 
 	for _, s := range sessions {
-		s.NotifyChat(alert, "", false, true, time.Now())
+		s.NotifyChat(alert, "", false, true, time.Now(), "lobby")
 	}
 
 	// Assume that the first channel listed in the "discordListenChannels" slice is the main channel

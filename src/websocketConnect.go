@@ -79,14 +79,14 @@ func websocketConnect(ms *melody.Session) {
 			discord = true
 			rawMsg.Name = rawMsg.DiscordName.String
 		}
-		msg := chatMakeMessage(rawMsg.Message, rawMsg.Name, discord, server, rawMsg.Datetime)
+		msg := chatMakeMessage(rawMsg.Message, rawMsg.Name, discord, server, rawMsg.Datetime, "lobby")
 		msgs = append(msgs, msg)
 	}
 	s.Emit("chatList", msgs)
 
 	// Send them the message(s) of the day
 	msg := "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Hanabi Discord chat</a>."
-	s.NotifyChat(msg, "", false, true, time.Now())
+	s.NotifyChat(msg, "", false, true, time.Now(), "lobby")
 
 	// Alert everyone that a new user has logged in
 	// (note that Keldon sends users a message about themselves)

@@ -12,15 +12,17 @@ type ChatMessage struct {
 	Discord  bool      `json:"discord"`
 	Server   bool      `json:"server"`
 	Datetime time.Time `json:"datetime"`
+	Room     string    `json:"room"`
 }
 
-func chatMakeMessage(msg string, who string, discord bool, server bool, datetime time.Time) *ChatMessage {
+func chatMakeMessage(msg string, who string, discord bool, server bool, datetime time.Time, room string) *ChatMessage {
 	return &ChatMessage{
 		Msg:      msg,
 		Who:      who,
 		Discord:  discord,
 		Server:   server,
 		Datetime: datetime,
+		Room:     room,
 	}
 }
 

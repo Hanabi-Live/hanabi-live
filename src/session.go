@@ -257,8 +257,8 @@ func (s *Session) NotifyTableGone(g *Game) {
 	})
 }
 
-func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, datetime time.Time) {
-	s.Emit("chat", chatMakeMessage(msg, who, discord, server, datetime))
+func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, datetime time.Time, room string) {
+	s.Emit("chat", chatMakeMessage(msg, who, discord, server, datetime, room))
 }
 
 // NotifyGameHistory will send a user all of their past games

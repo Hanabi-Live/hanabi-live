@@ -23,11 +23,11 @@ func (*ChatLog) Insert(userID int, message string, room string) error {
 	return err
 }
 
-func (*ChatLog) InsertDiscord(discordName string, message string) error {
+func (*ChatLog) InsertDiscord(discordName string, message string, room string) error {
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`
 		INSERT INTO chat_log (user_id, discord_name, message, room)
-		VALUES (0, ?, ?, "lobby")
+		VALUES (0, ?, ?, ?)
 	`); err != nil {
 		return err
 	} else {
@@ -35,7 +35,7 @@ func (*ChatLog) InsertDiscord(discordName string, message string) error {
 	}
 	defer stmt.Close() // nolint: errcheck
 
-	_, err := stmt.Exec(discordName, message)
+	_, err := stmt.Exec(discordName, message, room)
 	return err
 }
 
