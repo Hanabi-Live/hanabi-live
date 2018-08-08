@@ -103,16 +103,16 @@ func commandGameStart(s *Session, d *CommandData) {
 	g.MaxScore = len(g.Stacks) * 5 // Assuming that there are 5 points per stack
 
 	// Parse the game name to see if the players want to play a specific deal (read from a text file)
-	var presetRegExp *regexp.Regexp
-	if v, err := regexp.Compile(`^!preset (.+)$`); err != nil {
+	var dealRegExp *regexp.Regexp
+	if v, err := regexp.Compile(`^!deal (.+)$`); err != nil {
 		log.Error("Failed to create the preset regular expression:", err)
 		s.Error("Failed to create the game. Please contact an administrator.")
 		return
 	} else {
-		presetRegExp = v
+		dealRegExp = v
 	}
 
-	match1 := presetRegExp.FindStringSubmatch(g.Name)
+	match1 := dealRegExp.FindStringSubmatch(g.Name)
 	if match1 != nil {
 		// The players want to play a specific deal, so don't bother getting a seed or shuffling the deck
 		g.Seed = match1[1]
