@@ -147,7 +147,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
 	d := &CommandData{
-		Username: discordGetNickname(m) + "#" + m.Author.Discriminator,
+		Username: discordGetNickname(m.Author.ID) + "#" + m.Author.Discriminator,
 		Msg:      m.Content,
 		Discord:  true,
 		Room:     "lobby",
@@ -182,7 +182,7 @@ func discordSend(to string, username string, msg string) {
 	}
 }
 
-func discordGetNickname(m *discordgo.MessageCreate) string {
+func discordGetNickname(discordID string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild
 	if v, err := discord.Guild(discordListenChannels[0]); err != nil { // Assume that the first channel ID is the same as the server ID
@@ -193,7 +193,7 @@ func discordGetNickname(m *discordgo.MessageCreate) string {
 
 	// Get their custom nickname for the Discord server, if any
 	for _, member := range guild.Members {
-		if member.User.ID != m.Author.ID {
+		if member.User.ID != discordID {
 			continue
 		}
 

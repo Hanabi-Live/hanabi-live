@@ -1,30 +1,15 @@
 package main
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
-type ChatMessage struct {
-	Msg      string    `json:"msg"`
-	Who      string    `json:"who"`
-	Discord  bool      `json:"discord"`
-	Server   bool      `json:"server"`
-	Datetime time.Time `json:"datetime"`
-	Room     string    `json:"room"`
-}
-
-func chatMakeMessage(msg string, who string, discord bool, server bool, datetime time.Time, room string) *ChatMessage {
-	return &ChatMessage{
-		Msg:      msg,
-		Who:      who,
-		Discord:  discord,
-		Server:   server,
-		Datetime: datetime,
-		Room:     room,
-	}
-}
+/*
+	Chat command functions
+*/
 
 func chatHere(s *Session) {
 	// Check to see if enough time has passed from the last @here
@@ -93,4 +78,52 @@ func chatRandom(s *Session, d *CommandData) {
 		Echo:   true,
 	}
 	commandChat(nil, d)
+}
+
+/*
+	Subroutines
+*/
+
+type ChatMessage struct {
+	Msg      string    `json:"msg"`
+	Who      string    `json:"who"`
+	Discord  bool      `json:"discord"`
+	Server   bool      `json:"server"`
+	Datetime time.Time `json:"datetime"`
+	Room     string    `json:"room"`
+}
+
+func chatMakeMessage(msg string, who string, discord bool, server bool, datetime time.Time, room string) *ChatMessage {
+	return &ChatMessage{
+		Msg:      msg,
+		Who:      who,
+		Discord:  discord,
+		Server:   server,
+		Datetime: datetime,
+		Room:     room,
+	}
+}
+
+func chatFillMentions(msg string) string {
+	// Discord mentions are in the form of "<@71242588694249472>"
+	// (by the time the message gets here, it will be sanitized to "&lt;@71242588694249472&gt;")
+	// We want to convert this to the username, so that the lobby displays messages in a manner similar to the Discord client
+	var mentionRegExp *regexp.Regexp
+	if v, err := regexp.Compile(`&lt;@(\d+)?&gt;`); err != nil {
+		log.Error("Failed to create the Discord mention regular expression:", err)
+		return msg
+	} else {
+		mentionRegExp = v
+	}
+
+	for {
+		match := mentionRegExp.FindStringSubmatch(msg)
+		if match == nil || len(match) < 2 {
+			break
+		}
+		discordID := match[1]
+		username := discordGetNickname(discordID)
+		msg = strings.Replace(msg, "&lt;@"+discordID+"&gt;", "@"+username, -1)
+	}
+	return msg
 }

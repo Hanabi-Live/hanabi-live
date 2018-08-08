@@ -23,7 +23,7 @@ func waitingListInit() {
 
 func waitingListAdd(m *discordgo.MessageCreate) {
 	waitingListPurgeOld()
-	username := discordGetNickname(m)
+	username := discordGetNickname(m.Author.ID)
 
 	// Search through the waiting list to see if they are already on it
 	for _, waiter := range waitingList {
@@ -55,7 +55,7 @@ func waitingListAdd(m *discordgo.MessageCreate) {
 
 func waitingListRemove(m *discordgo.MessageCreate) {
 	waitingListPurgeOld()
-	username := discordGetNickname(m)
+	username := discordGetNickname(m.Author.ID)
 
 	// Search through the waiting list to see if they are already on it
 	for i, waiter := range waitingList {

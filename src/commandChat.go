@@ -128,9 +128,12 @@ func commandChat(s *Session, d *CommandData) {
 		return
 	}
 
+	// Transform Discord mentions from number to username
+	msg := chatFillMentions(d.Msg)
+
 	// Lobby messages go to everyone
 	for _, s2 := range sessions {
-		s2.NotifyChat(d.Msg, username, d.Discord, d.Server, time.Now(), d.Room)
+		s2.NotifyChat(msg, username, d.Discord, d.Server, time.Now(), d.Room)
 	}
 
 	// Send the chat message to the Discord "#general" channel if we are replicating a message
