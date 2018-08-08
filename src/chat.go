@@ -32,7 +32,7 @@ func chatHere(s *Session) {
 		minutesLeft := time.Until(timeCanPingAgain).Minutes()
 		msg += "You need to wait another " + floatToString(minutesLeft) + " minutes before you can send out another mass ping."
 	} else {
-		msg += "@here"
+		msg += s.Username() + " wants to play. Anyone @here?"
 	}
 	if len(waitingList) > 0 {
 		msg += "\n"
