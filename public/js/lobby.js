@@ -472,30 +472,15 @@ function HanabiLobby() {
     });
 
     // "Watch Replay by ID" and "Share Replay by ID" buttons
-    $('#nav-buttons-watch-replay-by-id').on('click', (event) => {
-        const replayID = window.prompt('What is the ID of the game you want to watch?');
+    $('.nav-buttons-history-by-id').on('click', (event) => {
+        const replayID = window.prompt('What is the ID of the game you want?');
         if (replayID === null) {
             // The user clicked the "cancel" button, so do nothing else
             return;
         }
 
         self.connSend({
-            type: 'replayCreate',
-            resp: {
-                gameID: parseInt(replayID, 10),
-            },
-        });
-    });
-
-    $('#nav-buttons-share-replay-by-id').on('click', (event) => {
-        const replayID = window.prompt('What is the ID of the game you want to share?');
-        if (replayID === null) {
-            // The user clicked the "cancel" button, so do nothing else
-            return;
-        }
-
-        self.connSend({
-            type: 'sharedReplayCreate',
+            type: event.currentTarget.getAttribute('data-replayType'),
             resp: {
                 gameID: parseInt(replayID, 10),
             },
@@ -560,12 +545,6 @@ function HanabiLobby() {
             } else if ($('#nav-buttons-return-table').is(':visible')) {
                 $('#nav-buttons-return-table').click();
             }
-        } else if (event.altKey && event.key === 'w') { // Alt + w
-            // Click on the "Watch Replay by ID" button
-            $('#nav-buttons-watch-replay-by-id').click();
-        } else if (event.altKey && event.key === 'e') { // Alt + e
-            // Click on the "Share Replay by ID" button
-            $('#nav-buttons-share-replay-by-id').click();
         }
     });
 
