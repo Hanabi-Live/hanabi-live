@@ -316,7 +316,8 @@ function HanabiUI(lobby, gameID) {
             millisecondsLeft > 0 &&
             millisecondsLeft <= 5000 &&
             timeElapsed > 900 &&
-            timeElapsed < 1100
+            timeElapsed < 1100 &&
+            !lobby.errorOccured
         ) {
             lobby.playSound('tone');
         }
