@@ -2240,7 +2240,7 @@ function HanabiUI(lobby, gameID) {
             return;
         }
 
-        // Only proceed if we didn't right-click on ourselves
+        // Only proceed if we chose someone else
         if (username === lobby.username) {
             return;
         }
@@ -3284,6 +3284,41 @@ function HanabiUI(lobby, gameID) {
         });
         sharedReplayLeaderLabel.on('mouseout', () => {
             $('#tooltip-leader').tooltipster('close');
+        });
+
+        // The user can right-click on the crown to pass the replay leader to an arbitrary person
+        sharedReplayLeaderLabel.on('click', (event) => {
+            // Do nothing if this is not a right-click
+            if (event.evt.which !== 3) {
+                return;
+            }
+
+            // Do nothing if we are not the shared replay leader
+            if (ui.sharedReplayLeader !== lobby.username) {
+                return;
+            }
+
+            let msg = 'What is the number of the person that you want to pass the replay leader to?\n\n';
+            msg += ui.lastSpectators.names.map((name, i) => `${i + 1} - ${name}\n`).join('');
+            let target = window.prompt(msg);
+            if (Number.isNaN(target)) {
+                return;
+            }
+            target -= 1;
+            target = ui.lastSpectators.names[target];
+
+            // Only proceed if we chose someone else
+            if (target === lobby.username) {
+                return;
+            }
+
+            ui.sendMsg({
+                type: 'replayAction',
+                resp: {
+                    type: 2, // Type 2 is a leader transfer
+                    name: target,
+                },
+            });
         });
 
         // Discard signal indicator
