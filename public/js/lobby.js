@@ -473,7 +473,8 @@ function HanabiLobby() {
 
     // "Watch Replay by ID" and "Share Replay by ID" buttons
     $('.nav-buttons-history-by-id').on('click', (event) => {
-        const replayID = window.prompt('What is the ID of the game you want?');
+        const subtype = event.currentTarget.getAttribute('data-display');
+        const replayID = window.prompt(`What is the ID of the game you want to ${subtype}?`);
         if (replayID === null) {
             // The user clicked the "cancel" button, so do nothing else
             return;
