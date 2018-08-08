@@ -433,7 +433,7 @@ function HanabiLobby() {
     });
 
     // "Watch Replay by ID" and "Share Replay by ID" buttons
-    $('.nav-buttons-watch-replay-by-id').on('click', (event) => {
+    $('#nav-buttons-watch-replay-by-id').on('click', (event) => {
         const replayID = window.prompt('What is the ID of the game you want to watch?');
         if (replayID === null) {
             // The user clicked the "cancel" button, so do nothing else
@@ -448,7 +448,7 @@ function HanabiLobby() {
         });
     });
 
-    $('.nav-buttons-share-replay-by-id').on('click', (event) => {
+    $('#nav-buttons-share-replay-by-id').on('click', (event) => {
         const replayID = window.prompt('What is the ID of the game you want to share?');
         if (replayID === null) {
             // The user clicked the "cancel" button, so do nothing else
