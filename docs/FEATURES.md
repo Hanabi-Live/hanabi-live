@@ -1,7 +1,7 @@
 List of Features
 ================
 
-The server was originally an attempt to emulate the [Keldon Hanabi server](http://keldon.net/hanabi/) and was written in Node.js. Since then, it has been completely rewritten in Go. This page mainly shows the differences between Hanabi.live and Keldon's site.
+The server was originally an attempt to emulate the [Keldon Hanabi server](http://keldon.net/hanabi/) and was written in Node.js. Since then, it has been completely rewritten in Go.
 
 <br />
 
@@ -18,7 +18,8 @@ The server was originally an attempt to emulate the [Keldon Hanabi server](http:
 
 #### Notes
 
-* Players can right-click on any card to add a note to it.
+* Players can right-click on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
+* This is useful for storing contextual information about a card for later.
 * Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
 * Notes are saved in the database and will persist into the replay.
 * Everyone's notes are combined and shown to spectators, which is fun to see.
@@ -45,7 +46,7 @@ The server was originally an attempt to emulate the [Keldon Hanabi server](http:
 * Any past game can be viewed as a replay or a shared replay.
 * Similar to an in-game replay, in a post-game replay, you can review the game turn by turn.
 
-### Shared Replays
+#### Shared Replays
 
 * A shared replay is similar to a normal replay, but others can join to have a coordinated review session.
 * At the end of each game, you will automatically be put into a shared replay with everyone who played the game.
