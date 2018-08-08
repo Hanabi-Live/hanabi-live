@@ -76,13 +76,13 @@ CREATE INDEX game_actions_index_game_id ON game_actions (game_id);
 
 DROP TABLE IF EXISTS chat_log;
 CREATE TABLE chat_log (
-    id             INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    id             INT             NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    user_id        INT            NOT NULL, /* 0 is a Discord message */
-    discord_name   NVARCHAR(150)  NULL, /* only used if it is a Discord message */
-    room           NVARCHAR(50)   NOT NULL, /* either "lobby" or "game-####" */
-    message        NVARCHAR(150)  NOT NULL,
-    datetime_sent  TIMESTAMP      NOT NULL  DEFAULT NOW()
+    user_id        INT             NOT NULL, /* 0 is a Discord message */
+    discord_name   NVARCHAR(150)   NULL, /* only used if it is a Discord message */
+    room           NVARCHAR(50)    NOT NULL, /* either "lobby" or "game-####" */
+    message        NVARCHAR(1000)  NOT NULL,
+    datetime_sent  TIMESTAMP       NOT NULL  DEFAULT NOW()
 );
 CREATE INDEX chat_log_index_user_id ON chat_log (user_id);
 CREATE INDEX chat_log_index_datetime_sent ON chat_log (datetime_sent);
