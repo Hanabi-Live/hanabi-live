@@ -61,6 +61,9 @@ module.exports = {
 
     // This is ugly
     "operator-linebreak": ["off"],
+
+    // I like using these
+    "no-constant-condition": ["off"],
   },
 
   "globals": {
