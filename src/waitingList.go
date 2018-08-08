@@ -103,7 +103,8 @@ func waitingListAlert(g *Game, creator string) {
 	}
 	mentionList = strings.TrimSuffix(mentionList, ", ")
 
-	// Empty the waiting list
+	// Empty the waiting list in the database and in memory
+	db.DiscordWaiters.DeleteAll()
 	waitingList = make([]*models.Waiter, 0)
 
 	// Alert all of the people on the waiting list
@@ -125,7 +126,7 @@ func waitingListRemoveSub(i int) {
 	// Remove them from the the database
 	db.DiscordWaiters.Delete(waitingList[i].Username)
 
-	// Remove it to the slice in memory
+	// Remove it from the slice in memory
 	waitingList = append(waitingList[:i], waitingList[i+1:]...)
 }
 

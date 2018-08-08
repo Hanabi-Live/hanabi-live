@@ -80,3 +80,18 @@ func (*DiscordWaiters) Delete(username string) error {
 	_, err := stmt.Exec(username)
 	return err
 }
+
+func (*DiscordWaiters) DeleteAll() error {
+	var stmt *sql.Stmt
+	if v, err := db.Prepare(`
+		DELETE FROM discord_waiters
+	`); err != nil {
+		return err
+	} else {
+		stmt = v
+	}
+	defer stmt.Close() // nolint: errcheck
+
+	_, err := stmt.Exec()
+	return err
+}
