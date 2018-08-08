@@ -302,8 +302,8 @@ type Player struct {
 	Name string
 }
 
-// GetPlayers is used in the "hello" command
-func (*Games) GetPlayers(databaseID int) ([]Player, error) {
+// GetPlayers is used in the "hello" and the "commandSharedReplayCreate" commands
+func (*Games) GetPlayers(databaseID int) ([]*Player, error) {
 	var rows *sql.Rows
 	if v, err := db.Query(`
 		SELECT
@@ -322,13 +322,13 @@ func (*Games) GetPlayers(databaseID int) ([]Player, error) {
 	}
 	defer rows.Close() // nolint: errcheck
 
-	players := make([]Player, 0)
+	players := make([]*Player, 0)
 	for rows.Next() {
 		var player Player
 		if err := rows.Scan(&player.ID, &player.Name); err != nil {
 			return nil, err
 		}
-		players = append(players, player)
+		players = append(players, &player)
 	}
 
 	return players, nil

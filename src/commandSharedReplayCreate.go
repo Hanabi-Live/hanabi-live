@@ -3,6 +3,8 @@ package main
 import (
 	"strconv"
 	"time"
+
+	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 func commandSharedReplayCreate(s *Session, d *CommandData) {
@@ -31,6 +33,23 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 		variant = v
 	}
 
+	var dbPlayers []*models.Player
+	if v, err := db.Games.GetPlayers(gameID); err != nil {
+		log.Error("Failed to get the players from the database for game "+strconv.Itoa(gameID)+":", err)
+		s.Error("Failed to initialize the game. Please contact an administrator.")
+		return
+	} else {
+		dbPlayers = v
+	}
+	var players []*Player
+	for _, p := range dbPlayers {
+		player := &Player{
+			ID:   p.ID,
+			Name: p.Name,
+		}
+		players = append(players, player)
+	}
+
 	var numTurns int
 	if v, err := db.Games.GetNumTurns(gameID); err != nil {
 		log.Error("Failed to get the number of turns from the database for game "+strconv.Itoa(gameID)+":", err)
@@ -53,6 +72,7 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 		Options: &Options{
 			Variant: variant,
 		},
+		Players:            players,
 		Spectators:         make(map[int]*Session),
 		DisconSpectators:   make(map[int]bool),
 		Running:            true,

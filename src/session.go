@@ -84,6 +84,10 @@ func (s *Session) Status() string {
 
 // Emit sends a message to a client using the Golem-style protocol described above
 func (s *Session) Emit(command string, d interface{}) {
+	if s == nil {
+		return
+	}
+
 	// Convert the data to JSON
 	var ds string
 	if dj, err := json.Marshal(d); err != nil {

@@ -78,7 +78,6 @@ func joinSharedReplay(s *Session, g *Game) {
 	// Add them to the spectators object
 	g.Spectators[s.UserID()] = s
 	notifyAllTable(g)
-	g.NotifyPlayerChange()
 	g.NotifySpectators()
 
 	// Set their status

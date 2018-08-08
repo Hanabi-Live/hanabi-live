@@ -32,7 +32,7 @@ func commandHello(s *Session, d *CommandData) {
 			variant = v
 		}
 
-		var dbPlayers []models.Player
+		var dbPlayers []*models.Player
 		if v, err := db.Games.GetPlayers(gameID); err != nil {
 			log.Error("Failed to get the players from the database for game "+strconv.Itoa(gameID)+":", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")

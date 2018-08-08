@@ -825,81 +825,80 @@ HanabiLobby.prototype.drawTables = function drawTables() {
     $('#lobby-games-table-container').show();
 
     // Add all of the games
-    for (const game of Object.values(this.tableList)) {
+    for (const table of Object.values(this.tableList)) {
         const row = $('<tr>');
 
         // Column 1 - Name
-        $('<td>').html(game.name).appendTo(row);
+        $('<td>').html(table.name).appendTo(row);
 
         // Column 2 - # of Players
-        $('<td>').html(game.numPlayers).appendTo(row);
+        $('<td>').html(table.numPlayers).appendTo(row);
 
         // Column 3 - Variant
-        $('<td>').html(variantNamesShort[game.variant]).appendTo(row);
+        $('<td>').html(variantNamesShort[table.variant]).appendTo(row);
 
         // Column 4 - Timed
         let timed = 'No';
-        if (game.timed) {
-            timed = `${timerFormatter(game.baseTime)} + ${timerFormatter(game.timePerTurn)}`;
+        if (table.timed) {
+            timed = `${timerFormatter(table.baseTime)} + ${timerFormatter(table.timePerTurn)}`;
         }
         $('<td>').html(timed).appendTo(row);
 
         // Column 5 - Status
         let status;
-        if (game.running && !game.joined) {
-            if (game.sharedReplay) {
-                status = 'Shared Replay';
-            } else {
-                status = 'Running';
-            }
-            status += ` (${game.progress}%)`;
-        } else if (game.running) {
-            if (game.ourTurn) {
+        if (table.sharedReplay) {
+            status = 'Shared Replay';
+        } else if (table.running && table.joined) {
+            if (table.ourTurn) {
                 status = '<strong>Your Turn</strong>';
             } else {
                 status = 'Waiting';
             }
-            status += ` (${game.progress}%)`;
+        } else if (table.running) {
+            status = 'Running';
         } else {
             status = 'Not Started';
+        }
+        if (status !== 'Not Started') {
+            status += ` (${table.progress}%)`;
         }
         $('<td>').html(status).appendTo(row);
 
         // Column 6 - Action
         const button = $('<button>').attr('type', 'button').addClass('button small margin0');
-        if (!game.joined && game.running) {
+        if (table.sharedReplay || (!table.joined && table.running)) {
             button.html('<i class="fas fa-eye lobby-button-icon"></i>');
-            button.attr('id', `spectate-${game.id}`);
+            button.attr('id', `spectate-${table.id}`);
             button.on('click', (event) => {
                 event.preventDefault();
 
-                self.gameID = game.id;
+                self.gameID = table.id;
                 self.connSend({
                     type: 'gameSpectate',
                     resp: {
-                        gameID: game.id,
+                        gameID: table.id,
                     },
                 });
 
                 self.drawTables();
             });
-        } else if (!game.joined) {
+        } else if (!table.joined) {
             button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>');
-            button.attr('id', `join-${game.id}`);
-            if (game.numPlayers >= 5) {
+            button.attr('id', `join-${table.id}`);
+            if (table.numPlayers >= 5) {
                 button.addClass('disabled');
             }
             button.on('click', (event) => {
                 event.preventDefault();
 
-                if (game.password) {
-                    self.passwordShow(game.id);
+                if (table.password) {
+                    self.passwordShow(table.id);
                 } else {
-                    self.gameID = game.id;
+                    self.gameID = table.id;
                     self.connSend({
                         type: 'gameJoin',
                         resp: {
-                            gameID: game.id,
+                            gameID: table.id,
                         },
                     });
 
@@ -908,16 +907,16 @@ HanabiLobby.prototype.drawTables = function drawTables() {
             });
         } else {
             button.html('<i class="fas fa-play lobby-button-icon"></i>');
-            button.attr('id', `resume-${game.id}`);
+            button.attr('id', `resume-${table.id}`);
 
             button.on('click', (event) => {
                 event.preventDefault();
 
-                self.gameID = game.id;
+                self.gameID = table.id;
                 self.connSend({
                     type: 'gameReattend',
                     resp: {
-                        gameID: game.id,
+                        gameID: table.id,
                     },
                 });
 
@@ -928,14 +927,14 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 
         // Column 7 - Abandon
         let button2 = 'n/a';
-        if (game.joined && (game.owned || game.running)) {
+        if (table.joined && (table.owned || table.running) && !table.sharedReplay) {
             button2 = $('<button>').attr('type', 'button').addClass('button small margin0');
             button2.html('<i class="fas fa-times lobby-button-icon"></i>');
-            button2.attr('id', `abandon-${game.id}`);
+            button2.attr('id', `abandon-${table.id}`);
             button2.on('click', (event) => {
                 event.preventDefault();
 
-                if (game.running) {
+                if (table.running) {
                     if (!window.confirm('Are you sure? This will cancel the game for all players.')) {
                         return;
                     }
@@ -945,7 +944,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
                 self.connSend({
                     type: 'gameAbandon',
                     resp: {
-                        gameID: game.id,
+                        gameID: table.id,
                     },
                 });
             });
@@ -953,10 +952,10 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         $('<td>').html(button2).appendTo(row);
 
         // Column 8 - Players
-        $('<td>').html(game.players).appendTo(row);
+        $('<td>').html(table.players).appendTo(row);
 
         // Column 9 - Spectators
-        $('<td>').html(game.spectators).appendTo(row);
+        $('<td>').html(table.spectators).appendTo(row);
 
         row.appendTo(tbody);
     }

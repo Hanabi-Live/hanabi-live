@@ -237,10 +237,6 @@ func (g *Game) End() {
 	// Ensure that all player names are not red/away in the client
 	g.NotifyConnected()
 
-	// Empty the players
-	// (this is necessary so that "joined" is equal to false in the upcoming table message)
-	g.Players = make([]*Player, 0)
-
 	// End the shared replay if no-one is left
 	if len(g.Spectators) == 0 {
 		delete(games, g.ID)

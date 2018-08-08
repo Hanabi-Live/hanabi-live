@@ -116,24 +116,30 @@ func websocketConnect(ms *melody.Session) {
 	// Check to see if this user was in any existing games
 	for _, g := range games {
 		for _, p := range g.Players {
-			if p.Name == s.Username() {
-				// Update the player object with the new socket
-				p.Session = s
-
-				// This was initialized to -1 earlier, so we need to update it
-				// (it is not updated in the "commandGameReattend()" function)
-				s.Set("currentGame", g.ID)
-
-				// Add the player back to the game
-				log.Info(g.GetName() + "Automatically reattending player \"" + s.Username() + "\".")
-				d := &CommandData{
-					ID: g.ID,
-				}
-				commandGameReattend(s, d)
-
-				// We can break here because the player can only be in one game at a time
-				break
+			if p.Name != s.Username() {
+				continue
 			}
+
+			if g.SharedReplay {
+				continue
+			}
+
+			// Update the player object with the new socket
+			p.Session = s
+
+			// This was initialized to -1 earlier, so we need to update it
+			// (it is not updated in the "commandGameReattend()" function)
+			s.Set("currentGame", g.ID)
+
+			// Add the player back to the game
+			log.Info(g.GetName() + "Automatically reattending player \"" + s.Username() + "\".")
+			d := &CommandData{
+				ID: g.ID,
+			}
+			commandGameReattend(s, d)
+
+			// We can break here because the player can only be in one game at a time
+			break
 		}
 	}
 

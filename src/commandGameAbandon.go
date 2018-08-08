@@ -34,6 +34,12 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that it is not a shared replay
+	if g.SharedReplay {
+		s.Warning("You can not abandon a shared replay.")
+		return
+	}
+
 	/*
 		Abandon
 	*/

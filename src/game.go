@@ -110,21 +110,23 @@ func (g *Game) NotifyPlayerChange() {
 		})
 
 		// Tell the client to redraw all of the lobby rectanges to account for the new player
-		for j, p2 := range g.Players {
-			type GamePlayerMessage struct {
-				Index   int          `json:"index"`
-				Name    string       `json:"name"`
-				You     bool         `json:"you"`
-				Present bool         `json:"present"`
-				Stats   models.Stats `json:"stats"`
+		if !g.Running {
+			for j, p2 := range g.Players {
+				type GamePlayerMessage struct {
+					Index   int          `json:"index"`
+					Name    string       `json:"name"`
+					You     bool         `json:"you"`
+					Present bool         `json:"present"`
+					Stats   models.Stats `json:"stats"`
+				}
+				p.Session.Emit("gamePlayer", &GamePlayerMessage{
+					Index:   j,
+					Name:    p2.Name,
+					You:     p.ID == p2.ID,
+					Present: p2.Present,
+					Stats:   p2.Stats,
+				})
 			}
-			p.Session.Emit("gamePlayer", &GamePlayerMessage{
-				Index:   j,
-				Name:    p2.Name,
-				You:     p.ID == p2.ID,
-				Present: p2.Present,
-				Stats:   p2.Stats,
-			})
 		}
 	}
 }
