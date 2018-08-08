@@ -3149,12 +3149,10 @@ function HanabiUI(lobby, gameID) {
             fontSize: 0.020 * winH,
         });
 
-        if (lobby.showEffStats) {
-            UILayer.add(efficiencyTextLabel);
-            UILayer.add(efficiencyNumberLabel);
-            UILayer.add(paceTextLabel);
-            UILayer.add(paceNumberLabel);
-        }
+        UILayer.add(efficiencyTextLabel);
+        UILayer.add(efficiencyNumberLabel);
+        UILayer.add(paceTextLabel);
+        UILayer.add(paceNumberLabel);
 
         this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
             this.cardsGotten += cardsGottenDelta;

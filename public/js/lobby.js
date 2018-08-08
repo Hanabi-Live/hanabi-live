@@ -33,7 +33,6 @@ function HanabiLobby() {
     this.sendChatSound = false;
     this.showColorblindUI = false;
     this.hideTimerInUntimed = false;
-    this.showEffStats = true; // We want efficiency stats by default
     this.reverseHands = false;
 
     this.game = {
@@ -1829,11 +1828,6 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
             // Hide the turn timers that tick up in untimed games
             'hide-timer-in-untimed',
             'hideTimerInUntimed',
-        ],
-        [
-            // Show efficiency statistics (cards gotten and clues spent)
-            'show-eff-stats',
-            'showEffStats',
         ],
         [
             // Reverse the order of cards relative to a hand
