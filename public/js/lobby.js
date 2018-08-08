@@ -545,6 +545,12 @@ function HanabiLobby() {
             } else if ($('#nav-buttons-return-table').is(':visible')) {
                 $('#nav-buttons-return-table').click();
             }
+        } else if (event.altKey && event.key === 'w') { // Alt + w
+            // Click on the "Watch Replay by ID" button
+            $('a.nav-buttons-history-by-id[data-replayType="replayCreate"]').click();
+        } else if (event.altKey && event.key === 'e') { // Alt + e
+            // Click on the "Share Replay by ID" button
+            $('a.nav-buttons-history-by-id[data-replayType="sharedReplayCreate"]').click();
         }
     });
 
