@@ -102,6 +102,20 @@ func (s *Session) Emit(command string, d interface{}) {
 	}
 }
 
+func (s *Session) Warning(message string) {
+	// Specify a default warning message
+	if message == "" {
+		message = "Something went wrong. Please contact an administrator."
+	}
+
+	type WarningMessage struct {
+		Warning string `json:"warning"`
+	}
+	s.Emit("warning", &WarningMessage{
+		message,
+	})
+}
+
 // Sent to the client if either their command was unsuccessful or something else went wrong
 func (s *Session) Error(message string) {
 	// Specify a default error message

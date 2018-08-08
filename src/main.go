@@ -12,12 +12,13 @@ import (
 )
 
 var (
-	projectPath = path.Join(os.Getenv("GOPATH"), "src", "github.com", "Zamiell", "hanabi-live")
-	log         *logging.Logger
-	db          *models.Models
-	games       = make(map[int]*Game)       // Defined in "game.go"
-	wordList    = make([]string, 0)         // For storing all of the random words (used for random table names)
-	waitingList = make([]*models.Waiter, 0) // For storing the players who are waiting for the next game to start
+	projectPath  = path.Join(os.Getenv("GOPATH"), "src", "github.com", "Zamiell", "hanabi-live")
+	log          *logging.Logger
+	db           *models.Models
+	games        = make(map[int]*Game)       // Defined in "game.go"
+	wordList     = make([]string, 0)         // For storing all of the random words (used for random table names)
+	waitingList  = make([]*models.Waiter, 0) // For storing the players who are waiting for the next game to start
+	shutdownMode = 0                         // 0 is normal, 1 is shutdown after all games are finished
 )
 
 func main() {

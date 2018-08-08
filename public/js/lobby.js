@@ -46,6 +46,15 @@ function HanabiLobby() {
     this.errorOccured = false;
 
     // Initialize the modals
+    $('#warning-modal-button').click(() => {
+        $('#warning-modal').fadeOut(fadeTime);
+        if ($('#lobby').is(':visible')) {
+            $('#lobby').fadeTo(fadeTime, 1);
+        }
+        if ($('#game').is(':visible')) {
+            $('#game').fadeTo(fadeTime, 1);
+        }
+    });
     $('#error-modal-button').click(() => {
         window.location.reload();
     });
@@ -1664,6 +1673,14 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
         }
     });
 
+    conn.on('warning', (data) => {
+        // Log the warning message
+        console.warning(data.warning);
+
+        // Show the warning modal
+        self.warningShow(data.error);
+    });
+
     conn.on('error', (data) => {
         // Log the error message
         console.error(data.error);
@@ -1700,6 +1717,19 @@ HanabiLobby.prototype.connClientError = function connClientError(conn) {
             console.error('Failed to transmit the error to the server:', err);
         }
     };
+};
+
+// Show a warning
+HanabiLobby.prototype.warningShow = function warningShow(msg) {
+    this.closeAllTooltips();
+    $('#warning-modal-description').html(msg);
+    $('#warning-modal').fadeIn(fadeTime);
+    if ($('#lobby').is(':visible')) {
+        $('#lobby').fadeTo(fadeTime, 0.5);
+    }
+    if ($('#game').is(':visible')) {
+        $('#game').fadeTo(fadeTime, 0.5);
+    }
 };
 
 // Show the error modal

@@ -146,6 +146,9 @@ func commandChat(s *Session, d *CommandData) {
 		} else if d.Msg == "/restart" {
 			restart(s, d)
 			return
+		} else if d.Msg == "/graceful" {
+			graceful(s, d) // This is in the "restart.go" file
+			return
 		}
 	}
 

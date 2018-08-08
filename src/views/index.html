@@ -310,7 +310,7 @@
                     <section id="lobby-chat" class="box lobby-box">
                         <div id="lobby-chat-text"></div>
                         <form id="lobby-chat-form">
-                            <input id="lobby-chat-input" type="text" placeholder="Chat" lang="en" />
+                            <input id="lobby-chat-input" type="text" placeholder="Chat" />
                         </form>
                     </section>
                 </div>
@@ -428,18 +428,18 @@
                 </li>
                 <br />
                 <li>
-                    <a href="https://github.com/Zamiell/hanabi-conventions">Strategies and Conventions</a><br />
+                    <a href="https://github.com/Zamiell/hanabi-conventions" target="_blank">Strategies and Conventions</a><br />
                     This is a document that lists some possible strategies and conventions.<br />
                     (You don't have to use it if you don't want to.)
                 </li>
                 <br />
                 <li>
-                    <a href="https://github.com/Zamiell/hanabi-live">The GitHub Code Repository</a><br />
+                    <a href="https://github.com/Zamiell/hanabi-live" target="_blank">The GitHub Code Repository</a><br />
                     This client and server are open-source, hosted on GitHub.
                 </li>
                 <br />
                 <li>
-                    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" id="donateform" style="margin-bottom: 0;">
+                    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" id="donateform" style="margin-bottom: 0;">
                         <input type="hidden" name="cmd" value="_s-xclick">
                         <input type="hidden" name="hosted_button_id" value="GFKEQ9MTFJRUL">
                         <a href="#" onclick="document.getElementById('donateform').submit()">Donate (via PayPal) to Keldon</a>
@@ -448,7 +448,7 @@
                 </li>
                 <br />
                 <li>
-                    <a href="http://keldon.net/hanabi/">The Original Hanabi Site</a><br />
+                    <a href="http://keldon.net/hanabi/" target="_blank">The Original Hanabi Site</a><br />
                     This is the Keldon's original website; this site is based on his.
                 </li>
                 <br />
@@ -559,14 +559,27 @@
         <div id="tooltip-signal"></div><!-- For the "Reorder Cards" feature -->
     </div>
 
+    <!-- Warning modal -->
+    <div id="warning-modal" class="modal hidden">
+        <section class="box">
+            <h3>Warning</h3>
+            <p id="warning-modal-description"></p>
+            <ul class="actions">
+                <li>
+                    <button id="warning-modal-button" class="button small">Close</button>
+                </li>
+            </ul>
+        </section>
+    </div>
+
     <!-- Error modal -->
     <div id="error-modal" class="modal hidden">
         <section class="box">
-            <h3 id="error-modal-title"><span lang="en">Error</span></h3>
-            <p id="error-modal-description" lang="en"></p>
+            <h3>Error</h3>
+            <p id="error-modal-description"></p>
             <ul class="actions">
                 <li>
-                    <button id="error-modal-button" class="button small" lang="en">Reload</button>
+                    <button id="error-modal-button" class="button small">Reload</button>
                 </li>
             </ul>
         </section>

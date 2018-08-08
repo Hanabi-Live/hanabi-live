@@ -20,6 +20,12 @@ func commandGameCreate(s *Session, d *CommandData) {
 		Validate
 	*/
 
+	// Validate that the server is not in shutdown mode
+	if shutdownMode > 0 {
+		s.Warning("The server is restarting soon (when all ongoing games have finished). You cannot start any new games for the time being.")
+		return
+	}
+
 	// Make a default game name if they did not provide one
 	if len(d.Name) == 0 {
 		d.Name = s.Username() + "'s game"
