@@ -21,7 +21,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		s.Error("Failed to initialize the game. Please contact an administrator.")
 		return
 	} else if !exists {
-		s.Error("Game #" + strconv.Itoa(gameID) + " does not exist.")
+		s.Warning("Game #" + strconv.Itoa(gameID) + " does not exist in the database.")
 		return
 	}
 

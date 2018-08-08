@@ -28,7 +28,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
+		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
 		g = v
@@ -36,19 +36,19 @@ func commandGameStart(s *Session, d *CommandData) {
 
 	// Validate that the game has at least 2 players
 	if len(g.Players) < 2 {
-		s.Error("You need at least 2 players before you can start a game.")
+		s.Warning("You need at least 2 players before you can start a game.")
 		return
 	}
 
 	// Validate that the game is not started yet
 	if g.Running {
-		s.Error("That game has already started, so you cannot start it.")
+		s.Warning("That game has already started, so you cannot start it.")
 		return
 	}
 
 	// Validate that this is the owner of the game
 	if g.Owner != s.UserID() {
-		s.Error("Only the owner of a game can start it.")
+		s.Warning("Only the owner of a game can start it.")
 		return
 	}
 

@@ -24,7 +24,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 	gameID := d.ID
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
+		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
 		g = v
@@ -33,25 +33,25 @@ func commandGameJoin(s *Session, d *CommandData) {
 	// Validate that the player is not already joined to this table
 	i := g.GetIndex(s.UserID())
 	if i != -1 {
-		s.Error("You have already joined this game.")
+		s.Warning("You have already joined this game.")
 		return
 	}
 
 	// Validate that the player is not joined to another game
 	if s.CurrentGame() != -1 {
-		s.Error("You cannot be in more than one game at a time. (You are already in game #" + strconv.Itoa(s.CurrentGame()) + ".)")
+		s.Warning("You cannot be in more than one game at a time. (You are already in game #" + strconv.Itoa(s.CurrentGame()) + ".)")
 		return
 	}
 
 	// Validate that this table does not already have 5 players
 	if len(g.Players) >= 5 {
-		s.Error("That game already has 5 players.")
+		s.Warning("That game already has 5 players.")
 		return
 	}
 
 	// Validate that the game is not started yet
 	if g.Running {
-		s.Error("That game has already started, so you cannot join it.")
+		s.Warning("That game has already started, so you cannot join it.")
 		return
 	}
 

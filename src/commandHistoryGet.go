@@ -16,11 +16,11 @@ import (
 func commandHistoryGet(s *Session, d *CommandData) {
 	// Validate that they sent a valid offset and amount value
 	if d.Offset < 0 {
-		s.Error("That is not a valid start value.")
+		s.Warning("That is not a valid start value.")
 		return
 	}
 	if d.Amount < 0 {
-		s.Error("That is not a valid end value.")
+		s.Warning("That is not a valid end value.")
 		return
 	}
 

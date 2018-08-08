@@ -21,7 +21,7 @@ func commandGameAbandon(s *Session, d *CommandData) {
 	gameID := d.ID
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
+		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
 		g = v
@@ -30,7 +30,7 @@ func commandGameAbandon(s *Session, d *CommandData) {
 	// Validate that they are in the game
 	i := g.GetIndex(s.UserID())
 	if i == -1 {
-		s.Error("You are in not game " + strconv.Itoa(gameID) + ", so you cannot abandon it.")
+		s.Warning("You are in not game " + strconv.Itoa(gameID) + ", so you cannot abandon it.")
 		return
 	}
 

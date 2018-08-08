@@ -22,7 +22,7 @@ func commandReady(s *Session, d *CommandData) {
 	var g *Game
 	if s.Status() != "Replay" {
 		if v, ok := games[gameID]; !ok {
-			s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
+			s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
 			return
 		} else {
 			g = v

@@ -30,7 +30,7 @@ func commandGameUnattend(s *Session, d *CommandData) {
 	var g *Game
 	if v, ok := games[gameID]; !ok {
 		log.Error("User \"" + s.Username() + "\" tried to unattend, but the game does not exist and they were not in the a solo replay.")
-		s.Error("Game " + strconv.Itoa(gameID) + " does not exist, so you cannot unattend it.")
+		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist, so you cannot unattend it.")
 		return
 	} else {
 		g = v

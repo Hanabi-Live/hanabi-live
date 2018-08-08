@@ -46,7 +46,7 @@ func commandChat(s *Session, d *CommandData) {
 	// Validate the message
 	if d.Msg == "" {
 		if s != nil {
-			s.Error("You cannot send a blank message.")
+			s.Warning("You cannot send a blank message.")
 		}
 		return
 	}
@@ -67,7 +67,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Validate the room
 	if d.Room != "lobby" {
-		s.Error("That is not a valid room.")
+		s.Warning("That is not a valid room.")
 	}
 
 	/*

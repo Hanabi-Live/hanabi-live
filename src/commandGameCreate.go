@@ -33,23 +33,23 @@ func commandGameCreate(s *Session, d *CommandData) {
 
 	// Validate that the game name is not excessively long
 	if len(d.Name) > maxGameNameLength {
-		s.Error("You cannot have a game name be longer than " + strconv.Itoa(maxGameNameLength) + " characters.")
+		s.Warning("You cannot have a game name be longer than " + strconv.Itoa(maxGameNameLength) + " characters.")
 		return
 	}
 
 	// Validate that the player is not joined to another game
 	if s.CurrentGame() != -1 {
-		s.Error("You cannot create a new game when you are already in one.")
+		s.Warning("You cannot create a new game when you are already in one.")
 		return
 	}
 
 	// Validate that the time controls are sane
 	if d.Timed && d.BaseTimeMinutes <= 0 {
-		s.Error("That is not a valid value for \"Base Time\".")
+		s.Warning("That is not a valid value for \"Base Time\".")
 		return
 	}
 	if d.Timed && d.TimePerTurnSeconds <= 0 {
-		s.Error("That is not a valid value for \"Time per Turn\".")
+		s.Warning("That is not a valid value for \"Time per Turn\".")
 		return
 	}
 
