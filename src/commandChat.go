@@ -33,11 +33,8 @@ func commandChat(s *Session, d *CommandData) {
 		}
 		userID = s.UserID()
 	}
-	var username string
-	if d.Username != "" || d.Server {
-		username = d.Username
-	} else {
-		username = s.Username()
+	if d.Username != "" && s != nil {
+		d.Username = s.Username()
 	}
 
 	/*
@@ -75,7 +72,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Add the message to the database
 	if d.Discord {
-		if err := db.ChatLog.InsertDiscord(username, d.Msg, d.Room); err != nil {
+		if err := db.ChatLog.InsertDiscord(d.Username, d.Msg, d.Room); err != nil {
 			log.Error("Failed to insert a Discord chat message into the database:", err)
 			s.Error("")
 			return
@@ -91,7 +88,11 @@ func commandChat(s *Session, d *CommandData) {
 	// Log the message
 	text := ""
 	if !d.Server || d.Discord {
-		text += "<" + username + "> "
+		text += "<" + d.Username
+		if d.DiscordDiscriminator != "" {
+			text += "#" + d.DiscordDiscriminator
+		}
+		text += "> "
 	}
 	text += d.Msg
 	log.Info(text)
@@ -119,10 +120,10 @@ func commandChat(s *Session, d *CommandData) {
 
 		// Send it to all of the players and spectators
 		for _, p := range g.Players {
-			p.Session.NotifyChat(d.Msg, username, d.Discord, d.Server, time.Now(), d.Room)
+			p.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
 		}
 		for _, s2 := range g.Spectators {
-			s2.NotifyChat(d.Msg, username, d.Discord, d.Server, time.Now(), d.Room)
+			s2.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
 		}
 
 		return
@@ -133,7 +134,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Lobby messages go to everyone
 	for _, s2 := range sessions {
-		s2.NotifyChat(msg, username, d.Discord, d.Server, time.Now(), d.Room)
+		s2.NotifyChat(msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
 	}
 
 	// Send the chat message to the Discord "#general" channel if we are replicating a message
@@ -145,7 +146,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Don't send Discord messages that we are already replicating
 	if !d.Discord {
-		discordSend(to, username, d.Msg)
+		discordSend(to, d.Username, d.Msg)
 	}
 
 	// Check for commands
@@ -159,46 +160,43 @@ func commandChat(s *Session, d *CommandData) {
 			// Do nothing, because the command was already handled in the "discord.go" file
 			return
 		} else {
-			d2 := &CommandData{
-				Msg:    "Sorry, but you can only perform the \"" + d.Msg + "\" command from Discord.",
-				Room:   d.Room,
-				Server: true,
-				Echo:   true,
-			}
-			commandChat(nil, d2)
+			chatServerSend("Sorry, but you can only perform the \"" + d.Msg + "\" command from Discord.")
 			return
 		}
 	}
 
 	// Second, check for commands that will work either in the lobby or from Discord
-	if strings.HasPrefix(d.Msg, "/random ") || strings.HasPrefix(d.Msg, "/rand ") {
-		chatRandom(s, d)
-		return
-	} else if d.Msg == "/here" {
+	if d.Msg == "/here" {
 		chatHere(s, d)
+		return
+	} else if d.Msg == "/next" {
+		waitingListAdd(s, d)
+		return
+	} else if d.Msg == "/unnext" {
+		waitingListRemove(s, d)
+		return
+	} else if d.Msg == "/list" {
+		waitingListList()
+		return
+	} else if strings.HasPrefix(d.Msg, "/random ") || strings.HasPrefix(d.Msg, "/rand ") {
+		chatRandom(s, d)
 		return
 	}
 
 	// Third, check for commands that will only work from the lobby
 	if !d.Discord {
-		if d.Msg == "/debug" {
-			debug(s, d)
-			return
-		} else if d.Msg == "/restart" {
+		if d.Msg == "/restart" {
 			restart(s, d)
 			return
 		} else if d.Msg == "/graceful" {
 			graceful(s, d) // This is in the "restart.go" file
 			return
+		} else if d.Msg == "/debug" {
+			debug(s, d)
+			return
 		}
 	}
 
 	// If we have gotten this far, this is an invalid command
-	d = &CommandData{
-		Msg:    "That is not a valid command.",
-		Room:   "lobby",
-		Server: true,
-		Echo:   true,
-	}
-	commandChat(nil, d)
+	chatServerSend("That is not a valid command.")
 }

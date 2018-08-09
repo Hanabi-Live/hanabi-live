@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
-	"github.com/bwmarrin/discordgo"
 )
 
 /*
@@ -21,61 +20,81 @@ func waitingListInit() {
 	}
 }
 
-func waitingListAdd(m *discordgo.MessageCreate) {
+func waitingListAdd(s *Session, d *CommandData) {
 	waitingListPurgeOld()
-	username := discordGetNickname(m.Author.ID)
+
+	// If they did the command through the lobby, then we need to find out their Discord ID
+	if d.DiscordID == "" {
+		d.DiscordID = discordGetID(d.Username)
+		if d.DiscordID == "" {
+			chatServerSend("There is not a Discord account matching your username, so you cannot use this command.")
+			return
+		}
+	}
+
+	// Compile their Discord mention, which is in the format of "<@1234567890>"
+	discordMention := "<@" + d.DiscordID + ">"
 
 	// Search through the waiting list to see if they are already on it
 	for _, waiter := range waitingList {
-		if waiter.DiscordMention == m.Author.Mention() {
+		if waiter.DiscordMention == discordMention {
 			// Update their expiry time
 			waiter.DatetimeExpired = time.Now().Add(idleWaitingListTimeout)
 
 			// Let them know
-			msg := username + ", you are already on the waiting list."
-			discordSend(m.ChannelID, "", msg)
+			chatServerSend(d.Username + ", you are already on the waiting list.")
 			return
 		}
 	}
 
 	// Add them to the database and the slice in memory
 	waiter := &models.Waiter{
-		Username:        username,
-		DiscordMention:  m.Author.Mention(),
+		Username:        d.Username,
+		DiscordMention:  discordMention,
 		DatetimeExpired: time.Now().Add(idleWaitingListTimeout),
 	}
 	db.DiscordWaiters.Insert(waiter)
 	waitingList = append(waitingList, waiter)
 
 	// Announce it
-	msg := username + ", I will ping you when the next table opens.\n"
+	msg := d.Username + ", I will ping you when the next table opens.\n"
 	msg += "(" + waitingListGetNum() + ".)"
-	discordSend(m.ChannelID, "", msg)
+	chatServerSend(msg)
 }
 
-func waitingListRemove(m *discordgo.MessageCreate) {
+func waitingListRemove(s *Session, d *CommandData) {
 	waitingListPurgeOld()
-	username := discordGetNickname(m.Author.ID)
 
-	// Search through the waiting list to see if they are already on it
-	for i, waiter := range waitingList {
-		if waiter.DiscordMention == m.Author.Mention() {
-			// Remove them
-			waitingListRemoveSub(i)
-
-			// Let them know
-			msg := username + ", you have been removed from the waiting list."
-			discordSend(m.ChannelID, "", msg)
+	// If they did the command through the lobby, then we need to find out their Discord ID
+	if d.DiscordID == "" {
+		d.DiscordID = discordGetID(d.Username)
+		if d.DiscordID == "" {
+			chatServerSend("There is not a Discord account matching your username, so you cannot use this command.")
 			return
 		}
 	}
 
-	msg := username + ", you are not on the waiting list."
-	discordSend(m.ChannelID, "", msg)
+	// Compile their Discord mention, which is in the format of "<@1234567890>"
+	discordMention := "<@" + d.DiscordID + ">"
+
+	// Search through the waiting list to see if they are already on it
+	for i, waiter := range waitingList {
+		if waiter.DiscordMention == discordMention {
+			// Remove them
+			waitingListRemoveSub(i)
+
+			// Let them know
+			chatServerSend(d.Username + ", you have been removed from the waiting list.")
+			return
+		}
+	}
+
+	chatServerSend(d.Username + ", you are not on the waiting list.")
 }
 
-func waitingListList(m *discordgo.MessageCreate) {
+func waitingListList() {
 	waitingListPurgeOld()
+
 	msg := waitingListGetNum()
 	if len(waitingList) == 0 {
 		msg += "."
@@ -85,9 +104,8 @@ func waitingListList(m *discordgo.MessageCreate) {
 			msg += waiter.Username + ", "
 		}
 		msg = strings.TrimSuffix(msg, ", ")
-
 	}
-	discordSend(m.ChannelID, "", msg)
+	chatServerSend(msg)
 }
 
 func waitingListAlert(g *Game, creator string) {

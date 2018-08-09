@@ -52,9 +52,6 @@ func discordInit() {
 	discordCommandMap["/help"] = discordHelp
 	discordCommandMap["/commands"] = discordHelp
 	discordCommandMap["/?"] = discordHelp
-	discordCommandMap["/next"] = waitingListAdd
-	discordCommandMap["/unnext"] = waitingListRemove
-	discordCommandMap["/list"] = waitingListList
 
 	// Get the last time a "@here" ping was sent
 	var timeAsString string
@@ -147,10 +144,12 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
 	d := &CommandData{
-		Username: discordGetNickname(m.Author.ID) + "#" + m.Author.Discriminator,
-		Msg:      m.Content,
-		Discord:  true,
-		Room:     "lobby",
+		Username:             discordGetNickname(m.Author.ID),
+		Msg:                  m.Content,
+		Discord:              true,
+		Room:                 "lobby",
+		DiscordID:            m.Author.ID,            // Pass through the ID in case we need it for a custom command
+		DiscordDiscriminator: m.Author.Discriminator, // Pass through the discriminator so we can append it to the username
 	}
 	commandChat(nil, d)
 
@@ -186,7 +185,8 @@ func discordGetNickname(discordID string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild
 	if v, err := discord.Guild(discordListenChannels[0]); err != nil { // Assume that the first channel ID is the same as the server ID
-		log.Error("Failed to get the Discord guild.")
+		log.Error("Failed to get the Discord guild:", err)
+		return ""
 	} else {
 		guild = v
 	}
@@ -204,7 +204,27 @@ func discordGetNickname(discordID string) string {
 		return member.Nick
 	}
 
-	return "[no user found]"
+	return ""
+}
+
+func discordGetID(username string) string {
+	// Get the Discord guild object
+	var guild *discordgo.Guild
+	if v, err := discord.Guild(discordListenChannels[0]); err != nil { // Assume that the first channel ID is the same as the server ID
+		log.Error("Failed to get the Discord guild:", err)
+		return ""
+	} else {
+		guild = v
+	}
+
+	// Find the ID that corresponds to this username
+	for _, member := range guild.Members {
+		if member.Nick == username || member.User.Username == username {
+			return member.User.ID
+		}
+	}
+
+	return ""
 }
 
 /*
@@ -212,18 +232,24 @@ func discordGetNickname(discordID string) string {
 */
 
 func discordHelp(m *discordgo.MessageCreate) {
-	msg := "Here is a list of commands:\n"
+	msg := "General commands:\n"
 	msg += "```\n"
 	msg += "Command               Description\n"
 	msg += "----------------------------------------------------------------------------------\n"
 	msg += "/here                 Ping online people to try and get people together for a game\n"
-	msg += "/next                 Put yourself on the waiting list (Discord-only)\n"
-	msg += "/unnext               Take yourself off the waiting list (Discord-only)\n"
-	msg += "/list                 Show the people on the waiting list (Discord-only)\n"
+	msg += "/next                 Put yourself on the waiting list\n"
+	msg += "/unnext               Take yourself off the waiting list\n"
+	msg += "/list                 Show the people on the waiting list\n"
 	msg += "/random [min] [max]   Get a random number\n"
 	msg += "/rand [min] [max]     Get a random number\n"
-	msg += "/restart              Run \"pull.sh\" and \"restart.sh\" (lobby-only & admin-only)\n"
-	msg += "/debug                Print out some server-side info (lobby-only & admin-only)\n"
+	msg += "```\n"
+	msg += "Admin-only commands (from the lobby only):\n"
+	msg += "```\n"
+	msg += "Command               Description\n"
+	msg += "----------------------------------------------------------------------------------\n"
+	msg += "/restart              Restart the server\n"
+	msg += "/graceful             Gracefully restart the server\n"
+	msg += "/debug                Print out some server-side info\n"
 	msg += "```"
 	discordSend(m.ChannelID, "", msg)
 }

@@ -45,10 +45,12 @@ type CommandData struct {
 	ColNum  int    `json:"colno"`
 
 	// Used internally
-	Username string
-	Discord  bool
-	Server   bool
-	Echo     bool // True if this is a server message but it should still go to the main channels
+	Username             string
+	Discord              bool
+	Server               bool
+	Echo                 bool   // True if this is a server message but it should still go to the main channels
+	DiscordID            string // Used when echoing a message from Discord to the lobby
+	DiscordDiscriminator string // Used when echoing a message from Discord to the lobby
 }
 type Clue struct {
 	Type  int `json:"type"`

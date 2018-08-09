@@ -33,13 +33,7 @@ func chatHere(s *Session, d *CommandData) {
 		}
 		msg = strings.TrimSuffix(msg, ", ")
 	}
-	d2 := &CommandData{
-		Msg:    msg,
-		Room:   "lobby",
-		Server: true,
-		Echo:   true,
-	}
-	commandChat(nil, d2)
+	chatServerSend(msg)
 }
 
 func chatRandom(s *Session, d *CommandData) {
@@ -76,13 +70,7 @@ func chatRandom(s *Session, d *CommandData) {
 	randNum := getRandom(min, max)
 	msg = "Random number between " + args[0] + " and " + args[1] + ": **" + strconv.Itoa(randNum) + "**"
 	// This is formatted for Discord, so it will look a little weird in the lobby
-	d = &CommandData{
-		Msg:    msg,
-		Room:   "lobby",
-		Server: true,
-		Echo:   true,
-	}
-	commandChat(nil, d)
+	chatServerSend(msg)
 }
 
 /*
@@ -107,6 +95,19 @@ func chatMakeMessage(msg string, who string, discord bool, server bool, datetime
 		Datetime: datetime,
 		Room:     room,
 	}
+}
+
+// chatServerSend is a helper function to give feedback to a user after they type a command
+// It will go to the #general channel instead of the #hanabi-live-bot channel
+// (since we set "Echo" equal to true)
+func chatServerSend(msg string) {
+	d := &CommandData{
+		Msg:    msg,
+		Room:   "lobby",
+		Server: true,
+		Echo:   true,
+	}
+	commandChat(nil, d)
 }
 
 func chatFillMentions(msg string) string {
