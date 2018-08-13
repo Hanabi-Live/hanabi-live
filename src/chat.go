@@ -36,6 +36,13 @@ func chatHere(s *Session, d *CommandData) {
 	chatServerSend(msg)
 }
 
+func chatLast() {
+	// Get the time elapsed since the last @here
+	elapsedMinutes := int(math.Ceil(time.Since(discordLastAtHere).Minutes()))
+	msg := "It has been " + strconv.Itoa(elapsedMinutes) + " minutes since the last mass ping."
+	chatServerSend(msg)
+}
+
 func chatRandom(s *Session, d *CommandData) {
 	var prefix string
 	if strings.HasPrefix(d.Msg, "/random ") {
