@@ -15,7 +15,6 @@ var (
 	discordLobbyChannel   string
 	discordBotChannel     string
 	discordBotID          string
-	discordCommandMap     = make(map[string]func(*discordgo.MessageCreate))
 	discordLastAtHere     time.Time
 )
 
@@ -47,11 +46,6 @@ func discordInit() {
 		log.Info("The \"DISCORD_BOT_CHANNEL_ID\" environment variable is blank; aborting Discord initialization.")
 		return
 	}
-
-	// Initialize the Discord command map
-	discordCommandMap["/help"] = discordHelp
-	discordCommandMap["/commands"] = discordHelp
-	discordCommandMap["/?"] = discordHelp
 
 	// Get the last time a "@here" ping was sent
 	var timeAsString string
@@ -152,11 +146,6 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		DiscordDiscriminator: m.Author.Discriminator, // Pass through the discriminator so we can append it to the username
 	}
 	commandChat(nil, d)
-
-	// Check for special Discord-only commands
-	if discordCommandFunction, ok := discordCommandMap[d.Msg]; ok {
-		discordCommandFunction(m)
-	}
 }
 
 /*
@@ -225,31 +214,4 @@ func discordGetID(username string) string {
 	}
 
 	return ""
-}
-
-/*
-	Command handlers
-*/
-
-func discordHelp(m *discordgo.MessageCreate) {
-	msg := "General commands:\n"
-	msg += "```\n"
-	msg += "Command               Description\n"
-	msg += "----------------------------------------------------------------------------------\n"
-	msg += "/here                 Ping online people to try and get people together for a game\n"
-	msg += "/next                 Put yourself on the waiting list\n"
-	msg += "/unnext               Take yourself off the waiting list\n"
-	msg += "/list                 Show the people on the waiting list\n"
-	msg += "/random [min] [max]   Get a random number\n"
-	msg += "/rand [min] [max]     Get a random number\n"
-	msg += "```\n"
-	msg += "Admin-only commands (from the lobby only):\n"
-	msg += "```\n"
-	msg += "Command               Description\n"
-	msg += "----------------------------------------------------------------------------------\n"
-	msg += "/restart              Restart the server\n"
-	msg += "/graceful             Gracefully restart the server\n"
-	msg += "/debug                Print out some server-side info\n"
-	msg += "```"
-	discordSend(m.ChannelID, "", msg)
 }

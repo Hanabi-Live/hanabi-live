@@ -150,53 +150,5 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	// Check for commands
-	if !strings.HasPrefix(d.Msg, "/") {
-		return
-	}
-
-	// First, check for Discord-only commands
-	if _, ok := discordCommandMap[d.Msg]; ok {
-		if d.Discord {
-			// Do nothing, because the command was already handled in the "discord.go" file
-			return
-		} else {
-			chatServerSend("Sorry, but you can only perform the \"" + d.Msg + "\" command from Discord.")
-			return
-		}
-	}
-
-	// Second, check for commands that will work either in the lobby or from Discord
-	if d.Msg == "/here" {
-		chatHere(s, d)
-		return
-	} else if d.Msg == "/next" {
-		waitingListAdd(s, d)
-		return
-	} else if d.Msg == "/unnext" {
-		waitingListRemove(s, d)
-		return
-	} else if d.Msg == "/list" {
-		waitingListList()
-		return
-	} else if strings.HasPrefix(d.Msg, "/random ") || strings.HasPrefix(d.Msg, "/rand ") {
-		chatRandom(s, d)
-		return
-	}
-
-	// Third, check for commands that will only work from the lobby
-	if !d.Discord {
-		if d.Msg == "/restart" {
-			restart(s, d)
-			return
-		} else if d.Msg == "/graceful" {
-			graceful(s, d) // This is in the "restart.go" file
-			return
-		} else if d.Msg == "/debug" {
-			debug(s, d)
-			return
-		}
-	}
-
-	// If we have gotten this far, this is an invalid command
-	chatServerSend("That is not a valid command.")
+	commandChatCommand(s, d)
 }
