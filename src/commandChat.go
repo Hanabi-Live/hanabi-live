@@ -150,5 +150,5 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	// Check for commands
-	commandChatCommand(s, d)
+	chatCommand(s, d)
 }

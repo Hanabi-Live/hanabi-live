@@ -92,7 +92,7 @@ func waitingListRemove(s *Session, d *CommandData) {
 	chatServerSend(d.Username + ", you are not on the waiting list.")
 }
 
-func waitingListList() {
+func waitingListList(s *Session, d *CommandData) {
 	waitingListPurgeOld()
 
 	msg := waitingListGetNum()

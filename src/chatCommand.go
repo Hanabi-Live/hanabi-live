@@ -16,7 +16,6 @@ func chatHelp(s *Session, d *CommandData) {
 		msg += "/unnext               Take yourself off the waiting list\n"
 		msg += "/list                 Show the people on the waiting list\n"
 		msg += "/random [min] [max]   Get a random number\n"
-		msg += "/rand [min] [max]     Get a random number\n"
 		msg += "```\n"
 		msg += "Admin-only commands (from the lobby only):\n"
 		msg += "```\n"
@@ -33,50 +32,44 @@ func chatHelp(s *Session, d *CommandData) {
 	}
 }
 
-func commandChatCommand(s *Session, d *CommandData) {
-	// All commands start with a forward slash
-	if !strings.HasPrefix(d.Msg, "/") {
+var (
+	// Used to store all of the functions that handle each command
+	chatCommandMap = make(map[string]func(*Session, *CommandData))
+)
+
+func chatCommandInit() {
+	// General commands
+	chatCommandMap["help"] = chatHelp
+	chatCommandMap["commands"] = chatHelp
+	chatCommandMap["?"] = chatHelp
+	chatCommandMap["here"] = chatHere
+	chatCommandMap["last"] = chatLast
+	chatCommandMap["next"] = waitingListAdd
+	chatCommandMap["unnext"] = waitingListRemove
+	chatCommandMap["list"] = waitingListList
+	chatCommandMap["random"] = chatRandom
+
+	// Admin-only commands (from the lobby only)
+	chatCommandMap["restart"] = restart
+	chatCommandMap["graceful"] = graceful // This is in the "restart.go" file
+	chatCommandMap["debug"] = debug
+}
+
+func chatCommand(s *Session, d *CommandData) {
+	// Commands will start with a "!", so we can ignore everything else
+	args := strings.Split(d.Msg, " ")
+	command := args[0]
+	args = args[1:] // This will be an empty slice if there is nothing after the command
+	if !strings.HasPrefix(command, "/") {
 		return
 	}
+	command = strings.TrimPrefix(command, "/")
+	command = strings.ToLower(command) // Commands are case-insensitive
 
-	// First, check for commands that will work either in the lobby or from Discord
-	if d.Msg == "/help" || d.Msg == "/commands" || d.Msg == "/?" {
-		chatHelp(s, d)
-		return
-	} else if d.Msg == "/here" {
-		chatHere(s, d)
-		return
-	} else if d.Msg == "/last" {
-		chatLast()
-		return
-	} else if d.Msg == "/next" {
-		waitingListAdd(s, d)
-		return
-	} else if d.Msg == "/unnext" {
-		waitingListRemove(s, d)
-		return
-	} else if d.Msg == "/list" {
-		waitingListList()
-		return
-	} else if strings.HasPrefix(d.Msg, "/random ") || strings.HasPrefix(d.Msg, "/rand ") {
-		chatRandom(s, d)
+	// Check to see if there is a command handler for this command
+	if _, ok := chatCommandMap[command]; !ok {
+		chatServerSend("That is not a valid command.")
 		return
 	}
-
-	// Second, check for commands that will only work from the lobby
-	if !d.Discord {
-		if d.Msg == "/restart" {
-			restart(s, d)
-			return
-		} else if d.Msg == "/graceful" {
-			graceful(s, d) // This is in the "restart.go" file
-			return
-		} else if d.Msg == "/debug" {
-			debug(s, d)
-			return
-		}
-	}
-
-	// If we have gotten this far, this is an invalid command
-	chatServerSend("That is not a valid command.")
+	chatCommandMap[command](s, d)
 }
