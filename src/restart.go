@@ -9,7 +9,7 @@ import (
 
 func restart(s *Session, d *CommandData) {
 	// Validate that this message was sent from the lobby
-	if !d.Discord {
+	if d.Discord {
 		return
 	}
 
@@ -29,7 +29,7 @@ func restart2() {
 
 func graceful(s *Session, d *CommandData) {
 	// Validate that this message was sent from the lobby
-	if !d.Discord {
+	if d.Discord {
 		return
 	}
 
@@ -45,6 +45,7 @@ func graceful(s *Session, d *CommandData) {
 	} else {
 		shutdownMode = 1
 		go gracefulWait()
+		chatServerSend("The server will restart when all ongoing games have finished. New game creation has been disabled.")
 	}
 }
 

@@ -8,7 +8,7 @@ import (
 
 func debug(s *Session, d *CommandData) {
 	// Validate that this message was sent from the lobby
-	if !d.Discord {
+	if d.Discord {
 		return
 	}
 
