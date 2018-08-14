@@ -221,6 +221,10 @@ table td {
     height: 30vh;
 }
 
+#lobby-game-left {
+    font-size: 0.85em;
+}
+
 .lobby-game-player {
     border: 1px solid black;
     border-radius: 5px;
@@ -230,6 +234,14 @@ table td {
 .lobby-game-player-away {
     margin-top: 1em;
     margin-bottom: 0;
+}
+
+#lobby-game-options {
+    padding-left: 1em;
+}
+
+#lobby-game-options > li {
+    padding-left: 0;
 }
 
 .lobby-button-icon {

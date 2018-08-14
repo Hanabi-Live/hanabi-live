@@ -96,6 +96,9 @@ func (g *Game) NotifyPlayerChange() {
 			BaseTime     float64 `json:"baseTime"`
 			TimePerTurn  int     `json:"timePerTurn"`
 			ReorderCards bool    `json:"reorderCards"`
+			DeckPlays    bool    `json:"deckPlays"`
+			EmptyClues   bool    `json:"emptyClues"`
+			Password     bool    `json:"password"`
 			SharedReplay bool    `json:"sharedReplay"`
 		}
 		p.Session.Emit("game", GameMessage{
@@ -107,6 +110,9 @@ func (g *Game) NotifyPlayerChange() {
 			BaseTime:     g.Options.TimeBase,
 			TimePerTurn:  g.Options.TimePerTurn,
 			ReorderCards: g.Options.ReorderCards,
+			DeckPlays:    g.Options.DeckPlays,
+			EmptyClues:   g.Options.EmptyClues,
+			Password:     g.Password != "",
 			SharedReplay: g.SharedReplay,
 		})
 

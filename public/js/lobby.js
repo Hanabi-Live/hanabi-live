@@ -35,12 +35,7 @@ function HanabiLobby() {
     this.showTimerInUntimed = false;
     this.reverseHands = false;
 
-    this.game = {
-        name: '',
-        numPlayers: 0,
-        ourIndex: 0,
-        players: [],
-    };
+    this.game = {}; // Set in the "setGame()" function after receiving a "game" message
 
     this.errorOccured = false;
 
@@ -1271,16 +1266,17 @@ HanabiLobby.prototype.tableLeft = function tableLeft(data) {
 };
 
 HanabiLobby.prototype.setGame = function setGame(data) {
-    this.game.name = data.name;
-    this.game.numPlayers = data.numPlayers;
-    this.game.variant = data.variant;
-    this.game.running = data.running;
-    this.game.timed = data.timed;
-    this.game.baseTime = data.baseTime * 1000 * 60; // Convert minutes to milliseconds
-    this.game.timePerTurn = data.timePerTurn * 1000; // Convert seconds to milliseconds
-    this.game.reorderCards = data.reorderCards;
-    this.game.sharedReplay = data.sharedReplay;
+    this.game = data;
 
+    // This comes from the server in minutes, so convert it to milliseconds
+    this.game.baseTime = data.baseTime * 1000 * 60;
+
+    // This comes from the server in seconds, so convert it to milliseconds
+    this.game.timePerTurn = data.timePerTurn * 1000;
+
+    // Reset some client-side variables that do not come in the vanilla "game" object
+    this.game.ourIndex = 0;
+    this.game.players = [];
     this.game.players.length = this.game.numPlayers;
 
     this.showJoined();
@@ -1307,11 +1303,34 @@ HanabiLobby.prototype.showJoined = function showJoined() {
     // Update the information on the left-hand side of the screen
     $('#lobby-game-name').text(this.game.name);
     $('#lobby-game-variant').text(variantNames[this.game.variant]);
-    let timed = 'No';
+
+    const optionsTitle = $('#lobby-game-options-title');
+    optionsTitle.text('Options:');
+    const options = $('#lobby-game-options');
+    options.text('');
     if (this.game.timed) {
-        timed = `Yes (${timerFormatter(this.game.baseTime)} + ${timerFormatter(this.game.timePerTurn)})`;
+        const text = `Timed (${timerFormatter(this.game.baseTime)} + ${timerFormatter(this.game.timePerTurn)})`;
+        $('<li>').html(text).appendTo(options);
     }
-    $('#lobby-game-timed').text(timed);
+    if (this.game.reorderCards) {
+        const text = 'Forced Chop Rotation';
+        $('<li>').html(text).appendTo(options);
+    }
+    if (this.game.deckPlays) {
+        const text = 'Bottom-deck Blind Plays';
+        $('<li>').html(text).appendTo(options);
+    }
+    if (this.game.emptyClues) {
+        const text = 'Empty Clues';
+        $('<li>').html(text).appendTo(options);
+    }
+    if (this.game.password) {
+        const text = 'Password-protected';
+        $('<li>').html(text).appendTo(options);
+    }
+    if (options.text() === '') {
+        optionsTitle.text('');
+    }
 
     // Draw the 5 players
     for (let i = 0; i < 5; i++) {
