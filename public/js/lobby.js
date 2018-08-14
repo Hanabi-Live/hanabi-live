@@ -37,7 +37,7 @@ function HanabiLobby() {
 
     this.game = {
         // Set in the "setGame()" function after receiving a "game" message
-        // All we need to do is initialize the players to an empty object to avoid some errors elsewhere
+        // All we need to do is initialize the players to an empty array to avoid some errors elsewhere
         players: [],
     };
 
