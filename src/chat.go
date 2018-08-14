@@ -26,11 +26,11 @@ func chatHere(s *Session, d *CommandData) {
 		}
 		msg += d.Username + " wants to play. Anyone @here?"
 		if len(d.Args) > 0 && d.Args[0] != "" {
-			msg += " " + strings.Join(d.Args, "")
+			msg += " " + strings.Join(d.Args, " ")
 		}
 	}
 	if len(waitingList) > 0 {
-		msg += "\n"
+		msg += "\nThe people are on the waiting list are as follows:\n"
 		for _, waiter := range waitingList {
 			msg += waiter.DiscordMention + ", "
 		}

@@ -56,10 +56,13 @@ func chatCommandInit() {
 }
 
 func chatCommand(s *Session, d *CommandData) {
-	// Commands will start with a "!", so we can ignore everything else
+	// Parse the command
 	args := strings.Split(d.Msg, " ")
 	command := args[0]
-	args = args[1:] // This will be an empty slice if there is nothing after the command
+	d.Args = args[1:] // This will be an empty slice if there is nothing after the command
+	// (we need to pass the arguments through to the command handler)
+
+	// Commands will start with a "!", so we can ignore everything else
 	if !strings.HasPrefix(command, "/") {
 		return
 	}
