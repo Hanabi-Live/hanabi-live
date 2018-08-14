@@ -1280,7 +1280,6 @@ HanabiLobby.prototype.setGame = function setGame(data) {
 
     // Reset some client-side variables that do not come in the vanilla "game" object
     this.game.ourIndex = 0;
-    this.game.players = [];
     this.game.players.length = this.game.numPlayers;
 
     this.showJoined();
