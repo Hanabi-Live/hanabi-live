@@ -74,6 +74,9 @@ func commandReplayAction(s *Session, d *CommandData) {
 			// It is possible to go past the last turn,
 			// since an extra turn is appended to the end of every game with timing information
 			g.Progress = 100
+		} else if g.Progress < 0 {
+			// This can happen if the maximum turn is 0
+			g.Progress = 0
 		}
 
 		// Send every user connected an update about this table
