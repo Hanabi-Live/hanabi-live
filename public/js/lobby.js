@@ -87,7 +87,10 @@ function HanabiLobby() {
         trigger: 'click',
         interactive: true,
         delay: 0,
-        plugins: ['sideTip', 'scrollableTip'], // From: https://github.com/louisameline/tooltipster-scrollableTip
+        // The "create-game" tooltip is too large for very small resolutions and will wrap off the screen
+        // We can use a Tooltipster plugin to automatically create a scroll bar for it
+        // From: https://github.com/louisameline/tooltipster-scrollableTip
+        plugins: ['sideTip', 'scrollableTip'],
         functionBefore: () => {
             $('#lobby').fadeTo(fadeTime, 0.4);
         },

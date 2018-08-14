@@ -5363,6 +5363,7 @@ function HanabiUI(lobby, gameID) {
                 this.replayOnly = true;
                 this.replayTurn = this.replayMax;
                 this.sharedReplayTurn = this.replayTurn;
+                replayButton.hide(); // Hide the in-game replay button in the bottom-left-hand corner
             }
 
             // We could be in the middle of an in-game replay when the game ends,
