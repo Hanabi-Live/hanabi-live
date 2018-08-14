@@ -27,7 +27,7 @@ func chatHelp(s *Session, d *CommandData) {
 		msg += "```"
 		discordSend(discordLobbyChannel, "", msg)
 	} else {
-		msg := "You can see the full list of commands here: https://github.com/Zamiell/hanabi-live/blob/master/src/commandChat.go"
+		msg := "You can see the full list of commands here: https://github.com/Zamiell/hanabi-live/blob/master/src/chatCommand.go"
 		chatServerSend(msg)
 	}
 }
