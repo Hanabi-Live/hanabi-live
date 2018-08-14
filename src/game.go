@@ -87,6 +87,10 @@ func (g *Game) GetIndex(id int) int {
 // NotifyPlayerChange sends the people in the game an update about the new amount of players
 func (g *Game) NotifyPlayerChange() {
 	for _, p := range g.Players {
+		if !p.Present {
+			continue
+		}
+
 		type GameMessage struct {
 			Name         string  `json:"name"`
 			Running      bool    `json:"running"`
@@ -119,6 +123,10 @@ func (g *Game) NotifyPlayerChange() {
 		// Tell the client to redraw all of the lobby rectanges to account for the new player
 		if !g.Running {
 			for j, p2 := range g.Players {
+				if !p.Present {
+					continue
+				}
+
 				type GamePlayerMessage struct {
 					Index   int          `json:"index"`
 					Name    string       `json:"name"`
@@ -141,6 +149,10 @@ func (g *Game) NotifyPlayerChange() {
 func (g *Game) NotifyTableReady() {
 	for _, p := range g.Players {
 		if p.ID != g.Owner {
+			continue
+		}
+
+		if !p.Present {
 			continue
 		}
 
@@ -169,6 +181,10 @@ func (g *Game) NotifyConnected() {
 		List: list,
 	}
 	for _, p := range g.Players {
+		if !p.Present {
+			continue
+		}
+
 		p.Session.Emit("connected", data)
 	}
 
@@ -183,6 +199,10 @@ func (g *Game) NotifyAction() {
 	a := g.Actions[len(g.Actions)-1] // The last action
 
 	for _, p := range g.Players {
+		if !p.Present {
+			continue
+		}
+
 		p.Session.NotifyGameAction(a, g)
 	}
 
@@ -194,6 +214,10 @@ func (g *Game) NotifyAction() {
 
 func (g *Game) NotifySpectators() {
 	for _, p := range g.Players {
+		if !p.Present {
+			continue
+		}
+
 		p.Session.NotifySpectators(g)
 	}
 
@@ -204,6 +228,10 @@ func (g *Game) NotifySpectators() {
 
 func (g *Game) NotifyTime() {
 	for _, p := range g.Players {
+		if !p.Present {
+			continue
+		}
+
 		p.Session.NotifyClock(g)
 	}
 
@@ -219,6 +247,10 @@ func (g *Game) NotifySound() {
 
 	// Send a sound notification
 	for i, p := range g.Players {
+		if !p.Present {
+			continue
+		}
+
 		// Prepare the sound message
 		sound := "turn_other"
 		if g.Sound != "" {
@@ -258,6 +290,10 @@ func (g *Game) NotifyBoot() {
 	}
 
 	for _, p := range g.Players {
+		if !p.Present {
+			continue
+		}
+
 		p.Session.Emit("notify", msg)
 	}
 

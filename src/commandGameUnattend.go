@@ -5,7 +5,9 @@
 
 package main
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func commandGameUnattend(s *Session, d *CommandData) {
 	// Set their status
