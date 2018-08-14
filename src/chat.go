@@ -115,9 +115,10 @@ func chatServerSend(msg string) {
 func chatFillMentions(msg string) string {
 	// Discord mentions are in the form of "<@71242588694249472>"
 	// (by the time the message gets here, it will be sanitized to "&lt;@71242588694249472&gt;")
+	// They can also be in the form of "<@!71242588694249472>" if a nickname is set for that person
 	// We want to convert this to the username, so that the lobby displays messages in a manner similar to the Discord client
 	var mentionRegExp *regexp.Regexp
-	if v, err := regexp.Compile(`&lt;@(\d+)?&gt;`); err != nil {
+	if v, err := regexp.Compile(`&lt;@!*(\d+)?&gt;`); err != nil {
 		log.Error("Failed to create the Discord mention regular expression:", err)
 		return msg
 	} else {
@@ -132,6 +133,7 @@ func chatFillMentions(msg string) string {
 		discordID := match[1]
 		username := discordGetNickname(discordID)
 		msg = strings.Replace(msg, "&lt;@"+discordID+"&gt;", "@"+username, -1)
+		msg = strings.Replace(msg, "&lt;@!"+discordID+"&gt;", "@"+username, -1)
 	}
 	return msg
 }
