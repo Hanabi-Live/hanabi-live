@@ -25,6 +25,9 @@ func chatHere(s *Session, d *CommandData) {
 			d.Username = s.Username()
 		}
 		msg += d.Username + " wants to play. Anyone @here?"
+		if len(d.Args) > 0 && d.Args[0] != "" {
+			msg += " " + strings.Join(d.Args, "")
+		}
 	}
 	if len(waitingList) > 0 {
 		msg += "\n"
