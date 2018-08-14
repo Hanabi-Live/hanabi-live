@@ -27,12 +27,6 @@ func commandGameSpectate(s *Session, d *CommandData) {
 		g = v
 	}
 
-	// Validate that the player is not joined to another game
-	if s.CurrentGame() != -1 {
-		s.Warning("You cannot be in more than one game at a time. (You are already in game " + strconv.Itoa(s.CurrentGame()) + ".)")
-		return
-	}
-
 	// Validate that the game has started
 	if !g.Running {
 		s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")

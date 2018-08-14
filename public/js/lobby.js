@@ -35,7 +35,11 @@ function HanabiLobby() {
     this.showTimerInUntimed = false;
     this.reverseHands = false;
 
-    this.game = {}; // Set in the "setGame()" function after receiving a "game" message
+    this.game = {
+        // Set in the "setGame()" function after receiving a "game" message
+        // All we need to do is initialize the players to an empty object to avoid some errors elsewhere
+        players: [],
+    };
 
     this.errorOccured = false;
 

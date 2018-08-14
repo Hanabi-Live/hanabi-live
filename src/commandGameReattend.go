@@ -54,6 +54,7 @@ func commandGameReattend(s *Session, d *CommandData) {
 	}
 
 	// Set their status
+	s.Set("currentGame", gameID)
 	if g.Running {
 		s.Set("status", "Playing")
 	} else {
