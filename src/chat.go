@@ -36,7 +36,7 @@ func chatHere(s *Session, d *CommandData) {
 	chatServerSend(msg)
 }
 
-func chatLast() {
+func chatLast(s *Session, d *CommandData) {
 	// Get the time elapsed since the last @here
 	elapsedMinutes := int(math.Ceil(time.Since(discordLastAtHere).Minutes()))
 	msg := "It has been " + strconv.Itoa(elapsedMinutes) + " minutes since the last mass ping."
@@ -44,27 +44,19 @@ func chatLast() {
 }
 
 func chatRandom(s *Session, d *CommandData) {
-	var prefix string
-	if strings.HasPrefix(d.Msg, "/random ") {
-		prefix = "/random "
-	} else if strings.HasPrefix(d.Msg, "/rand ") {
-		prefix = "/rand "
-	}
-	msg := strings.TrimPrefix(d.Msg, prefix)
-	args := strings.Split(msg, " ")
-	if len(args) != 2 {
+	if len(d.Args) != 2 {
 		return
 	}
 
 	var min int
-	if v, err := strconv.Atoi(args[0]); err != nil {
+	if v, err := strconv.Atoi(d.Args[0]); err != nil {
 		return
 	} else {
 		min = v
 	}
 
 	var max int
-	if v, err := strconv.Atoi(args[1]); err != nil {
+	if v, err := strconv.Atoi(d.Args[1]); err != nil {
 		return
 	} else {
 		max = v
@@ -75,7 +67,7 @@ func chatRandom(s *Session, d *CommandData) {
 	}
 
 	randNum := getRandom(min, max)
-	msg = "Random number between " + args[0] + " and " + args[1] + ": **" + strconv.Itoa(randNum) + "**"
+	msg := "Random number between " + d.Args[0] + " and " + d.Args[1] + ": **" + strconv.Itoa(randNum) + "**"
 	// This is formatted for Discord, so it will look a little weird in the lobby
 	chatServerSend(msg)
 }
