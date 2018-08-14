@@ -87,6 +87,7 @@ function HanabiLobby() {
         trigger: 'click',
         interactive: true,
         delay: 0,
+        plugins: ['sideTip', 'scrollableTip'], // From: https://github.com/louisameline/tooltipster-scrollableTip
         functionBefore: () => {
             $('#lobby').fadeTo(fadeTime, 0.4);
         },
