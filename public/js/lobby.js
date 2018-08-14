@@ -971,16 +971,16 @@ HanabiLobby.prototype.addChat = function addChat(data) {
     // Get the hours and minutes from the time
     const datetime = dateTimeFormatter2.format(new Date(data.datetime));
 
-    let line = `[${datetime}]&nbsp; `;
+    let line = `<span>[${datetime}]&nbsp; `;
     if (data.server) {
         line += data.msg;
     } else if (data.who) {
-        line += `&lt;<b>${data.who}</b>&gt;&nbsp; `;
-        line += `${$('<a>').text(data.msg).text()}`;
+        line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
+        line += `${$('<a>').html(data.msg).html()}`;
     } else {
-        line += `<b>${$('<a>').text(data.msg).text()}</b>`;
+        line += `<strong>${$('<a>').html(data.msg).html()}</strong>`;
     }
-    line += '<br />';
+    line += '</span><br />';
 
     chat.finish();
     chat.append(line);

@@ -47,15 +47,6 @@ func commandChat(s *Session, d *CommandData) {
 		return
 	}
 
-	// Sanitize the message using the bluemonday library to stop
-	// various attacks against other players
-	if !d.Server {
-		// Make an exception for messages coming directly from the server
-		// (sanitization will break Discord emotes, for example)
-		p := bluemonday.StrictPolicy()
-		d.Msg = p.Sanitize(d.Msg)
-	}
-
 	// Truncate long messages
 	if len(d.Msg) > maxChatLength {
 		d.Msg = d.Msg[0 : maxChatLength-1]
@@ -66,19 +57,29 @@ func commandChat(s *Session, d *CommandData) {
 		s.Warning("That is not a valid room.")
 	}
 
+	// Sanitize the message using the bluemonday library to stop
+	// various attacks against other players
+	msg := d.Msg
+	if !d.Server {
+		// Make an exception for messages coming directly from the server
+		// (sanitization will break Discord emotes, for example)
+		p := bluemonday.StrictPolicy()
+		msg = p.Sanitize(d.Msg)
+	}
+
 	/*
 		Chat
 	*/
 
 	// Add the message to the database
 	if d.Discord {
-		if err := db.ChatLog.InsertDiscord(d.Username, d.Msg, d.Room); err != nil {
+		if err := db.ChatLog.InsertDiscord(d.Username, msg, d.Room); err != nil {
 			log.Error("Failed to insert a Discord chat message into the database:", err)
 			s.Error("")
 			return
 		}
 	} else {
-		if err := db.ChatLog.Insert(userID, d.Msg, d.Room); err != nil {
+		if err := db.ChatLog.Insert(userID, msg, d.Room); err != nil {
 			log.Error("Failed to insert a chat message into the database:", err)
 			s.Error("")
 			return
@@ -94,7 +95,7 @@ func commandChat(s *Session, d *CommandData) {
 		}
 		text += "> "
 	}
-	text += d.Msg
+	text += msg
 	log.Info(text)
 
 	if d.Room != "lobby" {
@@ -120,17 +121,17 @@ func commandChat(s *Session, d *CommandData) {
 
 		// Send it to all of the players and spectators
 		for _, p := range g.Players {
-			p.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
+			p.Session.NotifyChat(msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
 		}
 		for _, s2 := range g.Spectators {
-			s2.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
+			s2.NotifyChat(msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
 		}
 
 		return
 	}
 
 	// Transform Discord mentions from number to username
-	msg := chatFillMentions(d.Msg)
+	msg = chatFillMentions(msg)
 
 	// Lobby messages go to everyone
 	for _, s2 := range sessions {
@@ -146,7 +147,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Don't send Discord messages that we are already replicating
 	if !d.Discord {
-		discordSend(to, d.Username, d.Msg)
+		discordSend(to, d.Username, msg)
 	}
 
 	// Check for commands
