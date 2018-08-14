@@ -33,7 +33,7 @@ func commandChat(s *Session, d *CommandData) {
 		}
 		userID = s.UserID()
 	}
-	if d.Username != "" && s != nil {
+	if d.Username == "" && s != nil {
 		d.Username = s.Username()
 	}
 
@@ -147,7 +147,9 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Don't send Discord messages that we are already replicating
 	if !d.Discord {
-		discordSend(to, d.Username, msg)
+		// We use "d.Msg" instead of "msg" because we want to send the unsanitized message
+		// The bluemonday library is intended for HTML rendering, and Discord can handle any special characters
+		discordSend(to, d.Username, d.Msg)
 	}
 
 	// Check for commands
