@@ -252,7 +252,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 	// Find out if this was a misplay or discard of a "critical" card
 	if c.IsCritical(g) && !c.IsDead(g) {
 		// Decrease the maximum score possible for this game
-		g.MaxScore -= 6 - c.Rank
+		g.UpdateMaxScore()
 
 		if !c.Failed { // Ignore misplays
 			// Play a sad sound because this discard just reduced the maximum score, "losing" the game

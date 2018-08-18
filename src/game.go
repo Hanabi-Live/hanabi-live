@@ -80,6 +80,27 @@ func (g *Game) GetIndex(id int) int {
 	return -1
 }
 
+func (g *Game) UpdateMaxScore() {
+	g.MaxScore = 0
+	for suit := range g.Stacks {
+		for rank := 1; rank <= 5; rank++ {
+			// Search through the deck to see if all the coipes of this card are discarded already
+			cardAlive := false
+			for _, c := range g.Deck {
+				if c.Suit == suit && c.Rank == rank && !c.Discarded {
+					cardAlive = true
+					break
+				}
+			}
+			if cardAlive {
+				g.MaxScore++
+			} else {
+				break
+			}
+		}
+	}
+}
+
 /*
 	Notify functions
 */
