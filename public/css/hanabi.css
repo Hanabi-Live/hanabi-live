@@ -172,6 +172,10 @@ table td {
     padding: 1.5em;
 }
 
+.lobby-bottom-box {
+    margin-bottom: 1.5em; /* testing */
+}
+
 .lobby-top-box {
     margin-top: 1.5em;
     margin-bottom: 1.5em;
@@ -192,12 +196,12 @@ table td {
 }
 
 #lobby-chat {
-    margin-bottom: 0;
+    /* margin-bottom: 0; */
     height: 41vh;
 }
 
 #lobby-chat-text {
-    height: 29vh;
+    height: calc(100% - 3.5em);
     overflow-y: auto;
     overflow-wrap: break-word;
     border-style: solid !important;
@@ -208,7 +212,7 @@ table td {
 }
 
 #lobby-users {
-    margin-bottom: 0;
+    /* margin-bottom: 0; */
     height: 41vh;
 }
 

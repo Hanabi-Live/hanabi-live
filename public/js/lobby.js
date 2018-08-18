@@ -674,6 +674,7 @@ HanabiLobby.prototype.hideLogin = () => {
 };
 
 HanabiLobby.prototype.showLobby = function showLobby(fast) {
+    $('body').css('overflow', 'hidden');
     $('#lobby').show();
     this.showNav('games');
     $('#lobby-chat-input').focus();
@@ -682,10 +683,10 @@ HanabiLobby.prototype.showLobby = function showLobby(fast) {
 HanabiLobby.prototype.hideLobby = function hideLobby(fast) {
     // This has to be in a timeout to work for some reason
     setTimeout(() => {
+        $('body').css('overflow', 'visible');
         $('#lobby').hide();
+        this.showNav('nothing');
     }, 1);
-
-    this.showNav('nothing');
 };
 
 HanabiLobby.prototype.closeAllTooltips = function closeAllTooltips() {
@@ -1280,6 +1281,7 @@ HanabiLobby.prototype.setGame = function setGame(data) {
 
     // Reset some client-side variables that do not come in the vanilla "game" object
     this.game.ourIndex = 0;
+    this.game.players = [];
     this.game.players.length = this.game.numPlayers;
 
     this.showJoined();
