@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/Zamiell/hanabi-live/blob/master/docs/2.png?raw=true" height=280 alt="Hanabi Live Logo" title="Hanabi Live Logo" />
+    <img src="https://github.com/Zamiell/hanabi-live/blob/master/docs/2.png?raw=true" height=200 alt="Hanabi Live Logo" title="Hanabi Live Logo" />
 </p>
 <br />
 
