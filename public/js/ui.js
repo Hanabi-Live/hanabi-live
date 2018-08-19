@@ -5151,6 +5151,8 @@ function HanabiUI(lobby, gameID) {
             }
         } else if (type === 'clue') {
             this.cluesSpentPlusStrikes += 1;
+            this.handleEfficiency(0);
+
             const clue = msgClueToClue(data.clue, ui.variant);
             showClueMatch(-1);
 
