@@ -1,4 +1,13 @@
 /*
+    Alpha edits
+*/
+
+#main > header p {
+    border-top: 0;
+    margin-top: 0;
+}
+
+/*
     Common
 */
 
@@ -117,10 +126,6 @@ table td {
 /*
     Title
 */
-
-#title-h {
-    height: 1.75em;
-}
 
 #title-text {
     color: white;
