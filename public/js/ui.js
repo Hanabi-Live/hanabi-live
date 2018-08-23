@@ -3528,7 +3528,7 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            const turn = parseInt(window.prompt('Which turn do you want to go to?'), 10);
+            let turn = parseInt(window.prompt('Which turn do you want to go to?'), 10);
 
             // We need to decrement the turn because the turn show to the user is always one greater than the real turn
             turn -= 1;
