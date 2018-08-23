@@ -94,17 +94,7 @@ func waitingListRemove(s *Session, d *CommandData) {
 
 func waitingListList(s *Session, d *CommandData) {
 	waitingListPurgeOld()
-
-	msg := waitingListGetNum()
-	if len(waitingList) == 0 {
-		msg += "."
-	} else {
-		msg += ":\n"
-		for _, waiter := range waitingList {
-			msg += waiter.Username + ", "
-		}
-		msg = strings.TrimSuffix(msg, ", ")
-	}
+	msg := waitingListGet()
 	chatServerSend(msg)
 }
 
@@ -163,6 +153,21 @@ func waitingListPurgeOld() {
 			break
 		}
 	}
+}
+
+func waitingListGet() string {
+	msg := waitingListGetNum()
+	if len(waitingList) == 0 {
+		msg += "."
+	} else {
+		msg += ":\n"
+		for _, waiter := range waitingList {
+			msg += waiter.Username + ", "
+		}
+		msg = strings.TrimSuffix(msg, ", ")
+	}
+
+	return msg
 }
 
 func waitingListGetNum() string {

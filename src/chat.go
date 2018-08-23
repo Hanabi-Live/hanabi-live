@@ -35,7 +35,7 @@ func chatHere(s *Session, d *CommandData) {
 		}
 	}
 	if len(waitingList) > 0 {
-		msg += "\nThe people are on the waiting list are as follows:\n"
+		msg += "\n" + waitingListGetNum() + ":\n"
 		for _, waiter := range waitingList {
 			msg += waiter.DiscordMention + ", "
 		}
