@@ -47,30 +47,49 @@ func chatLast(s *Session, d *CommandData) {
 }
 
 func chatRandom(s *Session, d *CommandData) {
-	if len(d.Args) != 2 {
+	errorMsg := "That is not a correct usage of the /random command."
+
+	// We expect something like "/random 2" or "/random 1 2"
+	if len(d.Args) != 1 && len(d.Args) != 2 {
+		chatServerSend(errorMsg)
 		return
 	}
 
-	var min int
+	// Ensure that both arguments are numbers
+	var arg1, arg2 int
 	if v, err := strconv.Atoi(d.Args[0]); err != nil {
+		chatServerSend(errorMsg)
 		return
 	} else {
-		min = v
+		arg1 = v
+	}
+	if len(d.Args) == 2 {
+		if v, err := strconv.Atoi(d.Args[1]); err != nil {
+			chatServerSend(errorMsg)
+			return
+		} else {
+			arg2 = v
+		}
 	}
 
-	var max int
-	if v, err := strconv.Atoi(d.Args[1]); err != nil {
-		return
-	} else {
-		max = v
+	// Assign min and max, depending on how many arguments were passed
+	var min, max int
+	if len(d.Args) == 1 {
+		min = 1
+		max = arg1
+	} else if len(d.Args) == 2 {
+		min = arg1
+		max = arg2
 	}
 
+	// Do a sanity check
 	if max-min <= 0 {
+		chatServerSend(errorMsg)
 		return
 	}
 
 	randNum := getRandom(min, max)
-	msg := "Random number between " + d.Args[0] + " and " + d.Args[1] + ": **" + strconv.Itoa(randNum) + "**"
+	msg := "Random number between " + d.Args[0] + " and " + d.Args[1] + ": " + strconv.Itoa(randNum)
 	// This is formatted for Discord, so it will look a little weird in the lobby
 	chatServerSend(msg)
 }
