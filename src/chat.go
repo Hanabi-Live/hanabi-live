@@ -24,8 +24,13 @@ func chatHere(s *Session, d *CommandData) {
 		if d.Username == "" && s != nil {
 			d.Username = s.Username()
 		}
-		msg += d.Username + " wants to play. Anyone @here?"
-		if len(d.Args) > 0 && d.Args[0] != "" {
+		msg += d.Username + " wants to play. Anyone "
+		if len(d.Args) > 0 && d.Args[0] == "test" {
+			msg += "here? (This is just a test.)"
+		} else {
+			msg += "@here?"
+		}
+		if len(d.Args) > 0 && d.Args[0] != "" && d.Args[0] != "test" {
 			msg += " " + strings.Join(d.Args, " ")
 		}
 	}
