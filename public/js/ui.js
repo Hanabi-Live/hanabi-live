@@ -5068,7 +5068,12 @@ function HanabiUI(lobby, gameID) {
             const suit = msgSuitToSuit(data.which.suit, ui.variant);
             showClueMatch(-1);
 
-            const child = ui.deck[data.which.order].parent;
+            const cardObject = ui.deck[data.which.order];
+            if (typeof cardObject === 'undefined') {
+                console.error(`Failed to find card ${data.which.order} in the deck. (There are ${ui.deck.length} cards in the deck.)`);
+                return;
+            }
+            const child = cardObject.parent;
             const card = child.children[0];
             if (card.isClued()) {
                 this.handleEfficiency(-1);
