@@ -1010,7 +1010,7 @@ HanabiLobby.prototype.addChat = function addChat(data) {
 
 HanabiLobby.prototype.fillEmotes = function fillEmotes(message) {
     while (true) {
-        const match = message.match(/<:(.+?):(\d+?)>/);
+        const match = message.match(/&lt;:(.+?):(\d+?)&gt;/);
         if (!match) {
             break;
         }
@@ -1271,7 +1271,7 @@ HanabiLobby.prototype.tableLeft = function tableLeft(data) {
 };
 
 HanabiLobby.prototype.setGame = function setGame(data) {
-    this.game = data;
+    this.game = JSON.parse(JSON.stringify(data));
 
     // This comes from the server in minutes, so convert it to milliseconds
     this.game.baseTime = data.baseTime * 1000 * 60;
@@ -1288,11 +1288,7 @@ HanabiLobby.prototype.setGame = function setGame(data) {
 };
 
 HanabiLobby.prototype.setGamePlayer = function setGamePlayer(data) {
-    this.game.players[data.index] = {
-        name: data.name,
-        present: data.present,
-        stats: data.stats,
-    };
+    this.game.players[data.index] = JSON.parse(JSON.stringify(data));
 
     if (data.you) {
         this.game.ourIndex = data.index;

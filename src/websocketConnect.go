@@ -79,6 +79,7 @@ func websocketConnect(ms *melody.Session) {
 			discord = true
 			rawMsg.Name = rawMsg.DiscordName.String
 		}
+		rawMsg.Message = chatFillMentions(rawMsg.Message)
 		msg := chatMakeMessage(rawMsg.Message, rawMsg.Name, discord, server, rawMsg.Datetime, "lobby")
 		msgs = append(msgs, msg)
 	}

@@ -60,12 +60,8 @@ func commandChat(s *Session, d *CommandData) {
 	// Sanitize the message using the bluemonday library to stop
 	// various attacks against other players
 	msg := d.Msg
-	if !d.Server {
-		// Make an exception for messages coming directly from the server
-		// (sanitization will break Discord emotes, for example)
-		p := bluemonday.StrictPolicy()
-		msg = p.Sanitize(d.Msg)
-	}
+	p := bluemonday.StrictPolicy()
+	msg = p.Sanitize(d.Msg)
 
 	/*
 		Chat
@@ -130,7 +126,7 @@ func commandChat(s *Session, d *CommandData) {
 		return
 	}
 
-	// Transform Discord mentions from number to username
+	// Convert Discord mentions from number to username
 	msg = chatFillMentions(msg)
 
 	// Lobby messages go to everyone
