@@ -70,6 +70,7 @@ func debug(s *Session, d *CommandData) {
 	for i, p := range waitingList { // This is a []*models.Waiter
 		log.Debug(strconv.Itoa(i) + " - " + p.Username + " - " + p.DiscordMention + " - " + p.DatetimeExpired.String())
 	}
+	log.Debug("discordLastAtHere:", discordLastAtHere)
 
 	log.Debug("---------------------------------------------------------------")
 }

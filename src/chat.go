@@ -15,6 +15,10 @@ import (
 func chatHere(s *Session, d *CommandData) {
 	// Check to see if enough time has passed from the last @here
 	msg := ""
+	log.Debug("DEBUG:")
+	log.Debug("time.Now():", time.Now())
+	log.Debug("discordLastAtHere:", discordLastAtHere)
+	log.Debug("since:", time.Since(discordLastAtHere))
 	if time.Since(discordLastAtHere) < discordAtHereTimeout {
 		timeCanPingAgain := discordLastAtHere.Add(discordAtHereTimeout)
 		minutesLeft := int(math.Ceil(time.Until(timeCanPingAgain).Minutes()))
