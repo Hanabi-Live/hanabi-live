@@ -27,6 +27,12 @@ func commandReady(s *Session, d *CommandData) {
 		} else {
 			g = v
 		}
+
+		// Validate that the game has started
+		if !g.Running {
+			s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
+			return
+		}
 	}
 
 	/*
