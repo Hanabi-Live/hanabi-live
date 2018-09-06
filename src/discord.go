@@ -107,7 +107,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Record the time of any "@here" pings that occur
 	if strings.Contains(m.Content, "@here") {
 		discordLastAtHere = time.Now()
-		if err := db.DiscordMetadata.Put("last_at_here", time.Now().Format(time.RFC3339)); err != nil {
+		if err := db.DiscordMetadata.Put("last_at_here", discordLastAtHere.Format(time.RFC3339)); err != nil {
 			log.Error("Failed to update the database for the last @here:", err)
 			return
 		}
