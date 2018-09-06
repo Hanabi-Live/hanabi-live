@@ -285,7 +285,7 @@ func announceGameResult(g *Game, databaseID int) {
 	} else if g.Score == 0 {
 		msg += bibleThump + " "
 	}
-	msg += "(#" + strconv.Itoa(databaseID) + " - " + g.Name + ")"
+	msg += "(#" + strconv.Itoa(databaseID) + ", seed " + g.Seed + ")"
 
 	d := &CommandData{
 		Server: true,
