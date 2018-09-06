@@ -37,6 +37,13 @@ func commandGameCreate(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that the game name does not contain any special characters
+	// (this mitigates XSS-style attacks)
+	if !isAlphanumericSpaces(d.Name)  {
+		s.Warning("Game names can only contain English letters and numbers.")
+		return
+	}
+
 	// Validate that the player is not joined to another game
 	if s.CurrentGame() != -1 {
 		s.Warning("You cannot create a new game when you are already in one.")

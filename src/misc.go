@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -43,3 +44,6 @@ func durationToString(d time.Duration) string {
 func floatToString(f float64) string {
 	return strconv.FormatFloat(f, 'f', 6, 64)
 }
+
+// From: https://stackoverflow.com/questions/38554353/how-to-check-if-a-string-only-contains-alphabetic-characters-in-go
+var isAlphanumericSpaces = regexp.MustCompile(`^[a-zA-Z0-9 ]+$`).MatchString
