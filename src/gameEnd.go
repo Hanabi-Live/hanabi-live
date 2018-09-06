@@ -218,9 +218,6 @@ func (g *Game) End() {
 			continue
 		}
 
-		// Make all players be present (meaning that their name will not be red)
-		p.Present = true
-
 		// If this game was ended due to idleness,
 		// skip conversion so that the shared replay gets deleted below
 		if time.Since(g.DatetimeLastAction) > idleGameTimeout {
@@ -235,9 +232,6 @@ func (g *Game) End() {
 		log.Info("Converted " + p.Name + " to a spectator.")
 	}
 
-	// Ensure that all player names are not red/away in the client
-	g.NotifyConnected()
-
 	// End the shared replay if no-one is left
 	if len(g.Spectators) == 0 {
 		delete(games, g.ID)
@@ -247,11 +241,19 @@ func (g *Game) End() {
 	// If the owner of the game is not present, then make someone else the shared replay leader
 	if ownerOffline {
 		for id, s := range g.Spectators {
+			// Default to making the first spectator the shared replay leader
 			g.Owner = id
 			log.Info("Set the new leader to be:", s.Username())
 			break
 		}
 	}
+
+	// In a shared replay, we don't want any of the player names to be red, because it does not matter if they are present or not
+	// So manually make everyone present and then send out an update
+	for _, p := range g.Players {
+		p.Present = true
+	}
+	g.NotifyConnected()
 
 	for _, s := range g.Spectators {
 		// Reset everyone's status (both players and spectators are now spectators)
@@ -267,7 +269,6 @@ func (g *Game) End() {
 	}
 
 	notifyAllTable(g)
-	g.NotifyPlayerChange()
 	g.NotifySpectators()
 }
 

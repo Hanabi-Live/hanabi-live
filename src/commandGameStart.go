@@ -57,6 +57,8 @@ func commandGameStart(s *Session, d *CommandData) {
 	*/
 
 	log.Info(g.GetName() + "Starting the game.")
+	g.Running = true
+	g.DatetimeStarted = time.Now()
 
 	// Start the idle timeout
 	go g.CheckIdle()
@@ -105,7 +107,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Parse the game name to see if the players want to play a specific deal (read from a text file)
 	var dealRegExp *regexp.Regexp
 	if v, err := regexp.Compile(`^!deal (.+)$`); err != nil {
-		log.Error("Failed to create the preset regular expression:", err)
+		log.Error("Failed to create the deal regular expression:", err)
 		s.Error("Failed to create the game. Please contact an administrator.")
 		return
 	} else {
@@ -326,9 +328,6 @@ func commandGameStart(s *Session, d *CommandData) {
 		Who:  g.ActivePlayer,
 	})
 	log.Info(g.GetName() + text)
-
-	g.Running = true
-	g.DatetimeStarted = time.Now()
 
 	// Send a "gameStart" message to everyone in the game
 	for _, p := range g.Players {

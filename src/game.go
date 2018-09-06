@@ -219,12 +219,16 @@ func (g *Game) NotifyConnected() {
 	data := &ConnectedMessage{
 		List: list,
 	}
-	for _, p := range g.Players {
-		if !p.Present {
-			continue
-		}
 
-		p.Session.Emit("connected", data)
+	// If this is a shared replay, then all of the players are also spectators, so we do not want to send them a duplicate message
+	if !g.SharedReplay {
+		for _, p := range g.Players {
+			if !p.Present {
+				continue
+			}
+
+			p.Session.Emit("connected", data)
+		}
 	}
 
 	// Also send it to the spectators
@@ -237,7 +241,7 @@ func (g *Game) NotifyConnected() {
 // This is only called in situations where the game has started
 func (g *Game) NotifyAction() {
 	if !g.Running {
-		log.Error("The \"NotifyConnected()\" function was called on a game that has not started yet.")
+		log.Error("The \"NotifyAction()\" function was called on a game that has not started yet.")
 		return
 	}
 
