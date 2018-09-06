@@ -51,7 +51,7 @@ func httpWS(c *gin.Context) {
 	session := gsessions.Default(c)
 	var userID int
 	if v := session.Get("userID"); v == nil {
-		log.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed userID check).")
+		log.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed userID check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	} else {
@@ -59,7 +59,7 @@ func httpWS(c *gin.Context) {
 	}
 	var username string
 	if v := session.Get("username"); v == nil {
-		log.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed username check).")
+		log.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed username check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	} else {
@@ -67,7 +67,7 @@ func httpWS(c *gin.Context) {
 	}
 	var admin int
 	if v := session.Get("admin"); v == nil {
-		log.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed admin check).")
+		log.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed admin check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	} else {
