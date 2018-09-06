@@ -111,5 +111,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 	commandGameJoin(s, d)
 
 	// Alert the people on the waiting list, if any
-	waitingListAlert(g, s.Username())
+	if g.Password == "" {
+		waitingListAlert(g, s.Username())
+	}
 }
