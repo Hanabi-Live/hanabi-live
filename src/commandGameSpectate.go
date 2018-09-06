@@ -51,7 +51,6 @@ func commandGameSpectate(s *Session, d *CommandData) {
 
 	// Add them to the spectators object
 	g.Spectators[s.UserID()] = s
-	g.NotifyPlayerChange()
 	g.NotifySpectators()
 
 	// Set their status

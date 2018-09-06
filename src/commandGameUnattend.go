@@ -52,7 +52,6 @@ func commandGameUnattend(s *Session, d *CommandData) {
 		s.Set("currentGame", -1)
 
 		delete(g.Spectators, s.UserID())
-		g.NotifyPlayerChange()
 		g.NotifySpectators()
 
 		if g.SharedReplay {

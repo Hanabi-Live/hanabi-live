@@ -105,8 +105,14 @@ func (g *Game) UpdateMaxScore() {
 	Notify functions
 */
 
-// NotifyPlayerChange sends the people in the game an update about the new amount of players
+// NotifyPlayerChange sends the people in the pre-game an update about the new amount of players
+// This is only called in situations where the game has not started yet
 func (g *Game) NotifyPlayerChange() {
+	if g.Running {
+		log.Error("The \"NotifyPlayerChange()\" function was called on a game that has already started.")
+		return
+	}
+
 	for _, p := range g.Players {
 		if !p.Present {
 			continue
@@ -142,32 +148,37 @@ func (g *Game) NotifyPlayerChange() {
 		})
 
 		// Tell the client to redraw all of the lobby rectanges to account for the new player
-		if !g.Running {
-			for j, p2 := range g.Players {
-				if !p.Present {
-					continue
-				}
-
-				type GamePlayerMessage struct {
-					Index   int          `json:"index"`
-					Name    string       `json:"name"`
-					You     bool         `json:"you"`
-					Present bool         `json:"present"`
-					Stats   models.Stats `json:"stats"`
-				}
-				p.Session.Emit("gamePlayer", &GamePlayerMessage{
-					Index:   j,
-					Name:    p2.Name,
-					You:     p.ID == p2.ID,
-					Present: p2.Present,
-					Stats:   p2.Stats,
-				})
+		for j, p2 := range g.Players {
+			if !p.Present {
+				continue
 			}
+
+			type GamePlayerMessage struct {
+				Index   int          `json:"index"`
+				Name    string       `json:"name"`
+				You     bool         `json:"you"`
+				Present bool         `json:"present"`
+				Stats   models.Stats `json:"stats"`
+			}
+			p.Session.Emit("gamePlayer", &GamePlayerMessage{
+				Index:   j,
+				Name:    p2.Name,
+				You:     p.ID == p2.ID,
+				Present: p2.Present,
+				Stats:   p2.Stats,
+			})
 		}
 	}
 }
 
+// NotifyTableReady disables or enables the "Start Game" button on the client
+// This is only called in situations where the game has not started yet
 func (g *Game) NotifyTableReady() {
+	if g.Running {
+		log.Error("The \"NotifyTableReady()\" function was called on a game that has already started.")
+		return
+	}
+
 	for _, p := range g.Players {
 		if p.ID != g.Owner {
 			continue
@@ -187,7 +198,14 @@ func (g *Game) NotifyTableReady() {
 	}
 }
 
+// NotifyConnected will change the player name-tags different colors to indicate whether or not they are currently connected
+// This is only called in situations where the game has started
 func (g *Game) NotifyConnected() {
+	if !g.Running {
+		log.Error("The \"NotifyConnected()\" function was called on a game that has not started yet.")
+		return
+	}
+
 	// Make a list of who is currently connected of the players in the current game
 	list := make([]bool, 0)
 	for _, p := range g.Players {
@@ -216,8 +234,15 @@ func (g *Game) NotifyConnected() {
 }
 
 // NotifyAction sends the people in the game an update about the new action
+// This is only called in situations where the game has started
 func (g *Game) NotifyAction() {
-	a := g.Actions[len(g.Actions)-1] // The last action
+	if !g.Running {
+		log.Error("The \"NotifyConnected()\" function was called on a game that has not started yet.")
+		return
+	}
+
+	// Get the last action of the game
+	a := g.Actions[len(g.Actions)-1]
 
 	for _, p := range g.Players {
 		if !p.Present {
@@ -234,12 +259,15 @@ func (g *Game) NotifyAction() {
 }
 
 func (g *Game) NotifySpectators() {
-	for _, p := range g.Players {
-		if !p.Present {
-			continue
-		}
+	// If this is a shared replay, then all of the players are also spectators, so we do not want to send them a duplicate message
+	if !g.SharedReplay {
+		for _, p := range g.Players {
+			if !p.Present {
+				continue
+			}
 
-		p.Session.NotifySpectators(g)
+			p.Session.NotifySpectators(g)
+		}
 	}
 
 	for _, s := range g.Spectators {
