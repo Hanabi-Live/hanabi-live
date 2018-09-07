@@ -135,6 +135,10 @@ function HanabiLobby() {
             type: 'getName',
         });
 
+        if (this.username.startsWith('test')) {
+            $('#create-game-name').val('test game');
+        }
+
         // Fill in the "Variant" dropdown
         let variant;
         try {
