@@ -34,6 +34,7 @@ function HanabiLobby() {
     this.showColorblindUI = false;
     this.showTimerInUntimed = false;
     this.reverseHands = false;
+    this.speedrunHotkeys = false;
 
     this.game = {
         // Set in the "setGame()" function after receiving a "game" message
@@ -1859,6 +1860,11 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
             // Reverse the order of cards relative to a hand
             'reverse-hands',
             'reverseHands',
+        ],
+        [
+            // Enable speedrun hotkeys
+            'speedrun-hotkeys',
+            'speedrunHotkeys',
         ],
     ];
 
