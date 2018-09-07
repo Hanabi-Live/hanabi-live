@@ -3528,10 +3528,8 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            let turn = parseInt(window.prompt('Which turn do you want to go to?'), 10);
-
+            const turn = parseInt(window.prompt('Which turn do you want to go to?'), 10) - 1;
             // We need to decrement the turn because the turn show to the user is always one greater than the real turn
-            turn -= 1;
 
             if (ui.replayOnly) {
                 ui.inferSharedReplayMode();
