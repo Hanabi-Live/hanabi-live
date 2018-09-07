@@ -222,9 +222,6 @@ func (g *Game) End() {
 		// skip conversion so that the shared replay gets deleted below
 		if time.Since(g.DatetimeLastAction) > idleGameTimeout {
 			log.Info("Skipped converting " + p.Name + " to a spectator since the game ended due to idleness.")
-
-			// Send this player a message that will boot them back to the lobby
-			// TODO
 			continue
 		}
 
