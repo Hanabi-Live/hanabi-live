@@ -4493,10 +4493,12 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            if (event.key === 'Z') {
+            if (event.key === 'Z') { // Shift + z
+                // This is used for fun in shared replays
                 this.sharedReplaySendSound('buzz');
                 return;
-            } else if (event.key === 'X') {
+            } else if (event.key === 'X') { // Shift + x
+                // This is used as a sound test
                 lobby.playSound('turn_us');
                 return;
             } else if (event.ctrlKey && event.key === 'Enter') { // Ctrl + Enter
