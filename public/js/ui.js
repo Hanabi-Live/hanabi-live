@@ -4416,9 +4416,7 @@ function HanabiUI(lobby, gameID) {
             clueKeyMap[clueKeyRow[i]] = mouseClickHelper(suitClueButtons[i]);
         }
 
-        // Add "Enter" for pressing the 'Give Clue' button
-        // (commented out because it can lead to mistakenly given clues)
-        // clueKeyMap.Enter = mouseClickHelper(submitClue);
+        // The hotkey for giving a clue is enabled separately in the "keyNavigation()" function
 
         // Keyboard actions for playing and discarding cards
         const promptOwnHandOrder = (actionString) => {
@@ -4501,6 +4499,9 @@ function HanabiUI(lobby, gameID) {
             } else if (event.key === 'X') {
                 lobby.playSound('turn_us');
                 return;
+            } else if (event.ctrlKey && event.key === 'Enter') { // Ctrl + Enter
+                // Click on the 'Give Clue' button
+                submitClue.dispatchEvent(new MouseEvent('click'));
             }
 
             // Don't interfere with other kinds of hotkeys
