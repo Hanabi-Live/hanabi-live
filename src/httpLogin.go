@@ -13,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Zamiell/hanabi-live/src/models"
 	gsessions "github.com/gin-contrib/sessions"
@@ -88,6 +89,14 @@ func httpLogin(c *gin.Context) {
 	if len(username) > maxUsernameLength {
 		log.Info("User from IP \"" + ip + "\" tried to log in with a username of \"" + username + "\", but it is longer than " + strconv.Itoa(maxUsernameLength) + " characters.")
 		http.Error(w, "Usernames must be "+strconv.Itoa(maxUsernameLength)+" characters or less.", http.StatusUnauthorized)
+		return
+	}
+
+	// Validate that the username does not have any special characters in it
+	// (other than underscores, hyphens, and periods)
+	if strings.ContainsAny(username, "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?") {
+		log.Info("User from IP \"" + ip + "\" tried to log in with a username of \"" + username + "\", but it has illegal special characters in it.")
+		http.Error(w, "Usernames must not contain any special characters other than underscores, hyphens, and periods.", http.StatusUnauthorized)
 		return
 	}
 
