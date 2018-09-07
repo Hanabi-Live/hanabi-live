@@ -41,7 +41,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 	// Validate that the game name does not contain any special characters
 	// (this mitigates XSS-style attacks)
 	if !isAlphanumericSpaces(d.Name) {
-		s.Warning("Game names can only contain English letters and numbers.")
+		s.Warning("Game names can only contain English letters, numbers, and spaces.")
 		return
 	}
 
