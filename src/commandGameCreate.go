@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -39,7 +40,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 
 	// Validate that the game name does not contain any special characters
 	// (this mitigates XSS-style attacks)
-	if !isAlphanumericSpaces(d.Name)  {
+	if !isAlphanumericSpaces(d.Name) {
 		s.Warning("Game names can only contain English letters and numbers.")
 		return
 	}
@@ -118,7 +119,8 @@ func commandGameCreate(s *Session, d *CommandData) {
 	commandGameJoin(s, d)
 
 	// Alert the people on the waiting list, if any
-	if g.Password == "" {
+	if g.Password == "" && !strings.HasPrefix(g.Name, "test") {
+		// We don't want to alert on password-protected games or test games
 		waitingListAlert(g, s.Username())
 	}
 }
