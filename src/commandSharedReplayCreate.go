@@ -73,7 +73,7 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 			Variant: variant,
 		},
 		Players:            players,
-		Spectators:         make(map[int]*Session),
+		Spectators:         make([]*Session, 0),
 		DisconSpectators:   make(map[int]bool),
 		Running:            true,
 		SharedReplay:       true,

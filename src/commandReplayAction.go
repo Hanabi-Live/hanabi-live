@@ -58,11 +58,11 @@ func commandReplayAction(s *Session, d *CommandData) {
 	if d.Type == 0 {
 		// A turn change
 		g.Turn = d.Turn
-		for _, sp := range g.Spectators {
+		for _, s2 := range g.Spectators {
 			type ReplayTurnMessage struct {
 				Turn int `json:"turn"`
 			}
-			sp.Emit("replayTurn", &ReplayTurnMessage{
+			s2.Emit("replayTurn", &ReplayTurnMessage{
 				Turn: d.Turn,
 			})
 		}
@@ -84,11 +84,11 @@ func commandReplayAction(s *Session, d *CommandData) {
 		notifyAllTable(g)
 	} else if d.Type == 1 {
 		// A card arrow indication
-		for _, sp := range g.Spectators {
+		for _, s2 := range g.Spectators {
 			type ReplayIndicatorMessage struct {
 				Order int `json:"order"`
 			}
-			sp.Emit("replayIndicator", &ReplayIndicatorMessage{
+			s2.Emit("replayIndicator", &ReplayIndicatorMessage{
 				Order: d.Order,
 			})
 		}
@@ -96,9 +96,9 @@ func commandReplayAction(s *Session, d *CommandData) {
 		// A leader transfer
 		// Validate that the person that they are passing off the leader to actually exists in the game
 		newLeaderID := -1
-		for _, sp := range g.Spectators {
-			if sp.Username() == d.Name {
-				newLeaderID = sp.UserID()
+		for _, s2 := range g.Spectators {
+			if s2.Username() == d.Name {
+				newLeaderID = s2.UserID()
 				break
 			}
 		}
@@ -112,18 +112,18 @@ func commandReplayAction(s *Session, d *CommandData) {
 
 		// Tell everyone about the new leader
 		// (which will enable the replay controls for the leader)
-		for _, sp := range g.Spectators {
-			sp.NotifyReplayLeader(g)
+		for _, s2 := range g.Spectators {
+			s2.NotifyReplayLeader(g)
 		}
 	} else if d.Type == 3 {
 		// A "hypothetical" card morph
-		for _, sp := range g.Spectators {
+		for _, s2 := range g.Spectators {
 			type ReplayMorphMessage struct {
 				Order int `json:"order"`
 				Suit  int `json:"suit"`
 				Rank  int `json:"rank"`
 			}
-			sp.Emit("replayMorph", &ReplayMorphMessage{
+			s2.Emit("replayMorph", &ReplayMorphMessage{
 				Order: d.Order,
 				Suit:  d.Suit,
 				Rank:  d.Rank,
@@ -131,11 +131,11 @@ func commandReplayAction(s *Session, d *CommandData) {
 		}
 	} else if d.Type == 4 {
 		// A sound effect
-		for _, sp := range g.Spectators {
+		for _, s2 := range g.Spectators {
 			type ReplaySoundMessage struct {
 				Sound string `json:"sound"`
 			}
-			sp.Emit("replaySound", &ReplaySoundMessage{
+			s2.Emit("replaySound", &ReplaySoundMessage{
 				Sound: d.Sound,
 			})
 		}

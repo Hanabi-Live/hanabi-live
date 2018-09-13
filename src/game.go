@@ -14,7 +14,7 @@ type Game struct {
 	Password           string // This is a salted SHA512 hash sent by the client, but it can technically be any string at all
 	Options            *Options
 	Players            []*Player
-	Spectators         map[int]*Session
+	Spectators         []*Session
 	DisconSpectators   map[int]bool
 	Running            bool
 	SharedReplay       bool
@@ -66,7 +66,7 @@ func (g *Game) GetName() string {
 	return "Game #" + strconv.Itoa(g.ID) + " (" + g.Name + ") - Turn " + strconv.Itoa(g.Turn) + " - "
 }
 
-func (g *Game) GetIndex(id int) int {
+func (g *Game) GetPlayerIndex(id int) int {
 	// If this function is called for a replay, the game will be nil, so account for this
 	if g == nil {
 		return -1
@@ -74,6 +74,20 @@ func (g *Game) GetIndex(id int) int {
 
 	for i, p := range g.Players {
 		if p.ID == id {
+			return i
+		}
+	}
+	return -1
+}
+
+func (g *Game) GetSpectatorIndex(id int) int {
+	// If this function is called for a replay, the game will be nil, so account for this
+	if g == nil {
+		return -1
+	}
+
+	for i, s := range g.Spectators {
+		if s.UserID() == id {
 			return i
 		}
 	}
@@ -474,7 +488,7 @@ func (g *Game) CheckIdle() {
 		return
 	}
 
-	log.Info("Idle timeout has elapsed; ending the game.")
+	log.Info(g.GetName() + " Idle timeout has elapsed; ending the game.")
 
 	if g.SharedReplay {
 		// If this is a shared replay, we want to send a message to the client that will take them back to the lobby

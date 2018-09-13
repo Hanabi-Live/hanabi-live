@@ -165,7 +165,7 @@ func (s *Session) NotifyUserLeft(u *Session) {
 
 // NotifyTable will notify a user about a new game or a change in an existing game
 func (s *Session) NotifyTable(g *Game) {
-	i := g.GetIndex(s.UserID())
+	i := g.GetPlayerIndex(s.UserID())
 	joined := false
 	if i != -1 {
 		joined = true
@@ -347,7 +347,7 @@ func (s *Session) NotifyGameAction(a Action, g *Game) {
 
 	// We need to scrub the action of information so that we don't reveal
 	// to the client anything about the cards that they are drawing
-	i := g.GetIndex(s.UserID())
+	i := g.GetPlayerIndex(s.UserID())
 	if a.Type == "draw" && a.Who == i {
 		a.Rank = -1
 		a.Suit = -1

@@ -43,7 +43,9 @@ func commandGameUnattend(s *Session, d *CommandData) {
 
 	// Check to see if they are a spectator
 	if oldStatus == "Spectating" || oldStatus == "Shared Replay" {
-		if _, ok := g.Spectators[s.UserID()]; !ok {
+		// Check to see if they are in the spectators list
+		i := g.GetSpectatorIndex(s.UserID())
+		if i == -1 {
 			log.Error("User \"" + s.Username() + "\" tried to unattend game " + strconv.Itoa(gameID) + ", but they were not in the spectators list.")
 			return
 		}
@@ -51,7 +53,8 @@ func commandGameUnattend(s *Session, d *CommandData) {
 		// We only want to reset this for players who are not in the actual game
 		s.Set("currentGame", -1)
 
-		delete(g.Spectators, s.UserID())
+		// Remove them from the slice
+		g.Spectators = append(g.Spectators[:i], g.Spectators[i+1:]...)
 		g.NotifySpectators()
 
 		if g.SharedReplay {
@@ -74,7 +77,7 @@ func commandGameUnattend(s *Session, d *CommandData) {
 
 	// Set their "present" variable to false, which will turn their name red
 	// (or set them to "AWAY" if the game has not started yet)
-	i := g.GetIndex(s.UserID())
+	i := g.GetPlayerIndex(s.UserID())
 	if i == -1 {
 		s.Error("You are not in game " + strconv.Itoa(gameID) + ", so you cannot unattend it.")
 		return

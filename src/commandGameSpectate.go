@@ -50,7 +50,7 @@ func commandGameSpectate(s *Session, d *CommandData) {
 	go g.CheckIdle()
 
 	// Add them to the spectators object
-	g.Spectators[s.UserID()] = s
+	g.Spectators = append(g.Spectators, s)
 	g.NotifySpectators()
 
 	// Set their status
@@ -69,7 +69,7 @@ func joinSharedReplay(s *Session, g *Game) {
 	go g.CheckIdle()
 
 	// Add them to the spectators object
-	g.Spectators[s.UserID()] = s
+	g.Spectators = append(g.Spectators, s)
 	notifyAllTable(g)
 	g.NotifySpectators()
 

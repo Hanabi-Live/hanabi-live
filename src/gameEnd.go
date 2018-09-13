@@ -225,7 +225,7 @@ func (g *Game) End() {
 			continue
 		}
 
-		g.Spectators[p.Session.UserID()] = p.Session
+		g.Spectators = append(g.Spectators, p.Session)
 		log.Info("Converted " + p.Name + " to a spectator.")
 	}
 
@@ -237,12 +237,9 @@ func (g *Game) End() {
 
 	// If the owner of the game is not present, then make someone else the shared replay leader
 	if ownerOffline {
-		for id, s := range g.Spectators {
-			// Default to making the first spectator the shared replay leader
-			g.Owner = id
-			log.Info("Set the new leader to be:", s.Username())
-			break
-		}
+		// Default to making the first spectator the shared replay leader
+		g.Owner = g.Spectators[0].UserID()
+		log.Info("Set the new leader to be:", g.Spectators[0].Username())
 	}
 
 	// In a shared replay, we don't want any of the player names to be red, because it does not matter if they are present or not

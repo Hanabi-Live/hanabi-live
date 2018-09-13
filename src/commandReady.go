@@ -39,7 +39,7 @@ func commandReady(s *Session, d *CommandData) {
 		Ready
 	*/
 
-	i := g.GetIndex(s.UserID())
+	i := g.GetPlayerIndex(s.UserID())
 
 	var actions []Action
 	if s.Status() == "Replay" || s.Status() == "Shared Replay" {

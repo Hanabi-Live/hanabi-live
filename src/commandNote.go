@@ -35,7 +35,7 @@ func commandNote(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game
-	i := g.GetIndex(s.UserID())
+	i := g.GetPlayerIndex(s.UserID())
 	if i == -1 {
 		s.Warning("You are in not game " + strconv.Itoa(gameID) + ", so you cannot send a note.")
 		return

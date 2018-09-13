@@ -31,7 +31,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 	}
 
 	// Validate that the player is not already joined to this table
-	i := g.GetIndex(s.UserID())
+	i := g.GetPlayerIndex(s.UserID())
 	if i != -1 {
 		s.Warning("You have already joined this game.")
 		return

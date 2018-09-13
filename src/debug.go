@@ -35,14 +35,14 @@ func debug(s *Session, d *CommandData) {
 
 		// Manually enumerate the slices and maps
 		log.Debug("    Players:")
-		for j, p := range g.Players { // This is a map[int]*Player
+		for j, p := range g.Players { // This is a []*Player
 			log.Debug("        " + strconv.Itoa(j) + " - " + p.Name)
 		}
 		if len(g.Players) == 0 {
 			log.Debug("        [no players]")
 		}
 		log.Debug("    Spectators:")
-		for j, s := range g.Spectators { // This is a map[int]*Session
+		for j, s := range g.Spectators { // This is a []*Session
 			log.Debug("        " + strconv.Itoa(j) + " - " + s.Username())
 		}
 		if len(g.Spectators) == 0 {
