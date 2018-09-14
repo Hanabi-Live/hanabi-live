@@ -32,6 +32,7 @@ func debug(s *Session, d *CommandData) {
 			line := fmt.Sprintf("    %s\t= %v\n", typeOfT.Field(i).Name, f.Interface())
 			log.Debug(line)
 		}
+		log.Debug("\n")
 
 		// Manually enumerate the slices and maps
 		log.Debug("    Players:")

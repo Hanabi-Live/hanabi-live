@@ -18,9 +18,9 @@ func websocketDisconnect(ms *melody.Session) {
 
 func websocketDisconnect2(s *Session) {
 	// Check to see if the existing session is different
-	// (this occurs after a forced discumight occur during a reconnect, for example)
+	// (this occurs during a reconnect, for example)
 	if s2, ok := sessions[s.UserID()]; !ok {
-		log.Info("User \"" + s.Username() + "\" disconnected, but their session was already deleted. (This should never happen.")
+		log.Info("User \"" + s.Username() + "\" disconnected, but their session was already deleted.")
 		return
 	} else if s2.ID() != s.ID() {
 		log.Info("The orphaned session for user \"" + s.Username() + "\" successfully disconnected.")
@@ -36,9 +36,11 @@ func websocketDisconnect2(s *Session) {
 		if g.GetPlayerIndex(s.UserID()) != -1 {
 			if g.Running {
 				log.Info(g.GetName() + "Unattending player \"" + s.Username() + "\" since they disconnected.")
+				s.Set("currentGame", g.ID)
 				commandGameUnattend(s, nil)
 			} else {
 				log.Info(g.GetName() + "Ejecting player \"" + s.Username() + "\" from an unstarted game since they disconnected.")
+				s.Set("currentGame", g.ID)
 				commandGameLeave(s, nil)
 			}
 		}
@@ -47,6 +49,7 @@ func websocketDisconnect2(s *Session) {
 		if g.GetSpectatorIndex(s.UserID()) != -1 {
 			log.Info(g.GetName() + "Ejecting spectator \"" + s.Username() + "\" since they disconnected.")
 			g.DisconSpectators[s.UserID()] = true
+			s.Set("currentGame", g.ID)
 			commandGameUnattend(s, nil)
 		}
 	}
