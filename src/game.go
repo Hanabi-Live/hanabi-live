@@ -418,6 +418,7 @@ func (g *Game) CheckTimer(turn int, p *Player) {
 	d := &CommandData{
 		Type: 4,
 	}
+	p.Session.Set("currentGame", g.ID)
 	commandAction(p.Session, d)
 }
 
@@ -497,6 +498,7 @@ func (g *Game) CheckIdle() {
 
 	// Boot all of the spectators, if any
 	for _, s := range g.Spectators {
+		s.Set("currentGame", g.ID)
 		commandGameUnattend(s, nil)
 	}
 
@@ -520,11 +522,13 @@ func (g *Game) CheckIdle() {
 		d := &CommandData{
 			Type: 5, // Idle timeout
 		}
+		s.Set("currentGame", g.ID)
 		commandAction(s, d)
 	} else {
 		// We need to end a game that hasn't started yet
 		// Force the owner to leave, which should subsequently eject everyone else
 		// (this will send everyone back to the main lobby screen)
+		s.Set("currentGame", g.ID)
 		commandGameLeave(s, nil)
 	}
 }

@@ -128,15 +128,12 @@ func websocketConnect(ms *melody.Session) {
 			// Update the player object with the new socket
 			p.Session = s
 
-			// This was initialized to -1 earlier, so we need to update it
-			// (it is not updated in the "commandGameReattend()" function)
-			s.Set("currentGame", g.ID)
-
 			// Add the player back to the game
 			log.Info(g.GetName() + "Automatically reattending player \"" + s.Username() + "\".")
 			d := &CommandData{
 				ID: g.ID,
 			}
+			s.Set("currentGame", g.ID)
 			commandGameReattend(s, d)
 
 			// We can break here because the player can only be in one game at a time
@@ -159,6 +156,7 @@ func websocketConnect(ms *melody.Session) {
 				d := &CommandData{
 					ID: g.ID,
 				}
+				s.Set("currentGame", g.ID)
 				commandGameSpectate(s, d)
 
 				// We can break here because the player can only be in one game at a time

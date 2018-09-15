@@ -46,6 +46,7 @@ func commandGameAbandon(s *Session, d *CommandData) {
 
 	if !g.Running {
 		// Just make them leave the game instead
+		s.Set("currentGame", g.ID)
 		commandGameLeave(s, d)
 		return
 	}

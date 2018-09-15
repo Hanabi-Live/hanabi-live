@@ -28,6 +28,7 @@ func websocketDisconnect2(s *Session) {
 	}
 
 	// Delete the connection from the session map
+	// (we do this first so that we don't bother sending them any more notifications)
 	delete(sessions, s.UserID())
 
 	// Look for the disconnecting player in all the games
