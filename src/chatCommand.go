@@ -46,6 +46,7 @@ func chatCommandInit() {
 	chatCommandMap["last"] = chatLast
 	chatCommandMap["next"] = waitingListAdd
 	chatCommandMap["unnext"] = waitingListRemove
+	chatCommandMap["removenext"] = waitingListRemove
 	chatCommandMap["list"] = waitingListList
 	chatCommandMap["random"] = chatRandom
 
