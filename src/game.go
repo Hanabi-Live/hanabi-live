@@ -470,8 +470,8 @@ func (g *Game) CheckEnd() bool {
 func (g *Game) CheckIdle() {
 	// Set the last action
 	commandMutex.Lock()
-	now := time.Now()
-	g.DatetimeLastAction = now
+	g.DatetimeLastAction = time.Now()
+	log.Debug(g.GetName() + " Set last action to:", g.DatetimeLastAction)
 	commandMutex.Unlock()
 
 	// We want to clean up idle games, so sleep for a reasonable amount of time
@@ -485,6 +485,8 @@ func (g *Game) CheckIdle() {
 	}
 
 	// Don't do anything if there has been an action in the meantime
+	log.Debug(g.GetName() + " DatetimeLastAction:", g.DatetimeLastAction)
+	log.Debug(g.GetName() + " TimeSince:", time.Since(g.DatetimeLastAction))
 	if time.Since(g.DatetimeLastAction) < idleGameTimeout {
 		return
 	}
