@@ -46,4 +46,4 @@ func floatToString(f float64) string {
 }
 
 // From: https://stackoverflow.com/questions/38554353/how-to-check-if-a-string-only-contains-alphabetic-characters-in-go
-var isAlphanumericSpaces = regexp.MustCompile(`^[a-zA-Z0-9 ]+$`).MatchString
+var isAlphanumericSpacesAndSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !-]+$`).MatchString
