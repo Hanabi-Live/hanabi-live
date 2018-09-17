@@ -132,6 +132,12 @@ func commandAction(s *Session, d *CommandData) {
 	// Do different tasks depending on the action
 	doubleDiscard := false
 	if d.Type == 0 { // Clue
+		// Validate that the target of the clue is sane
+		if d.Target < 0 || d.Target > len(g.Players) - 1 {
+			s.Warning("That is an invalid clue target.")
+			return
+		}
+
 		// Validate that the player is not giving a clue to themselves
 		if g.ActivePlayer == d.Target {
 			s.Warning("You cannot give a clue to yourself.")
@@ -144,11 +150,31 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
+		// Validate that the clue type is sane
+		if d.Clue.Type < 0 || d.Clue.Type > 1 {
+			s.Warning("That is an invalid clue type.")
+			return
+		}
+
+		// If it is a number clue, validate that the number clue is valid
+		if d.Clue.Type == 0 && (d.Clue.Value < 0 || d.Clue.Value > 5) {
+			s.Warning("That is an invalid number clue.")
+			return
+		}
+
+		// If it is a color clue, validate that the color clue is valid
+		if d.Clue.Type == 1 && (d.Clue.Value < 0 || d.Clue.Value > len(g.Stacks) - 1) {
+			s.Warning("That is an invalid color clue.")
+			return
+		}
+
+		// The "GiveClue()" method will return false if the clue touches 0 cards in the hand
 		if !p.GiveClue(g, d) {
 			s.Warning("You cannot give a clue that touches 0 cards in the hand.")
 			return
 		}
 
+		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
 	} else if d.Type == 1 { // Play
 		// Validate that the card is in their hand
@@ -179,6 +205,7 @@ func commandAction(s *Session, d *CommandData) {
 		doubleDiscard = p.DiscardCard(g, c)
 		p.DrawCard(g)
 
+		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
 	} else if d.Type == 3 { // Deck play
 		// Validate that the game type allows deck plays
