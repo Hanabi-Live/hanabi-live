@@ -9,11 +9,13 @@ import (
 func debug(s *Session, d *CommandData) {
 	// Validate that this message was sent from the lobby
 	if d.Discord {
+		chatServerSend("You can only perform that command from the lobby.")
 		return
 	}
 
 	// Validate that they are an administrator
 	if !s.Admin() {
+		chatServerSend("You can only perform that command if you are an administrator.")
 		return
 	}
 
