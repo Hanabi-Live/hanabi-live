@@ -509,7 +509,8 @@ func (g *Game) CheckIdle() {
 	}
 
 	// Boot all of the spectators, if any
-	for _, s := range g.Spectators {
+	for len(g.Spectators) > 0 {
+		s := g.Spectators[0]
 		s.Set("currentGame", g.ID)
 		s.Set("status", "Spectating")
 		commandGameUnattend(s, nil)
