@@ -505,7 +505,8 @@ func (g *Game) CheckIdle() {
 	}
 
 	if g.SharedReplay {
-		// If this is a shared replay, then we are done; the shared should automatically end now that all of the spectators have left
+		// If this is a shared replay, then we are done;
+		// the shared should automatically end now that all of the spectators have left
 		return
 	}
 
