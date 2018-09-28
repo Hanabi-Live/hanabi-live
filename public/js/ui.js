@@ -2997,6 +2997,7 @@ function HanabiUI(lobby, gameID) {
         if (lobby.showBGAUI) {
             actionLogValues.x = 0.01;
             actionLogValues.y = 0.01;
+            actionLogValues.h = 0.25;
         }
         const actionLog = new Kinetic.Group({
             x: actionLogValues.x * winW,
@@ -3035,6 +3036,10 @@ function HanabiUI(lobby, gameID) {
         });
 
         // The action log
+        let maxLines = 3;
+        if (lobby.showBGAUI) {
+            maxLines = 8;
+        }
         messagePrompt = new MultiFitText({
             align: 'center',
             fontSize: 0.028 * winH,
@@ -3052,7 +3057,7 @@ function HanabiUI(lobby, gameID) {
             y: 0.003 * winH,
             width: (actionLogValues.w - 0.02) * winW,
             height: (actionLogValues.h - 0.003) * winH,
-            maxLines: 3,
+            maxLines,
         });
         actionLog.add(messagePrompt);
 
@@ -3466,7 +3471,7 @@ function HanabiUI(lobby, gameID) {
         };
         if (lobby.showBGAUI) {
             playStackValues.x = actionLogValues.x;
-            playStackValues.y = actionLogValues.y + 0.125;
+            playStackValues.y = actionLogValues.y + actionLogValues.h + 0.02;
             playStackValues.spacing = 0.006;
         }
         {
@@ -3673,11 +3678,11 @@ function HanabiUI(lobby, gameID) {
         // Set the hand positions for 4-player and 5-player
         // (with 4 cards in the hand)
         const handPosBGAValuesSmall = {
-            x: 0.44,
-            y: 0.01,
+            x: 0.47,
+            y: handPosBGAValues.y,
             w: 0.27,
-            h: 0.16,
-            rot: 0,
+            h: handPosBGAValues.h,
+            rot: handPosBGAValues.rot,
             spacing: 0.195,
         };
         for (let i = 4; i <= 5; i++) {
@@ -3808,6 +3813,16 @@ function HanabiUI(lobby, gameID) {
                 playerHandPos = handPosBGA;
             }
 
+            let invertCards = false;
+            if (i !== this.playerUs) {
+                // We want to flip the cards for other players
+                invertCards = true;
+            }
+            if (lobby.showBGAUI) {
+                // On the BGA layout, all the hands should not be flipped
+                invertCards = false;
+            }
+
             playerHands[i] = new CardLayout({
                 x: playerHandPos[nump][j].x * winW,
                 y: playerHandPos[nump][j].y * winH,
@@ -3816,7 +3831,7 @@ function HanabiUI(lobby, gameID) {
                 rotationDeg: playerHandPos[nump][j].rot,
                 align: 'center',
                 reverse: isHandReversed(j),
-                invertCards: i !== this.playerUs,
+                invertCards,
             });
 
             cardLayer.add(playerHands[i]);
@@ -3903,7 +3918,7 @@ function HanabiUI(lobby, gameID) {
             h: 0.27,
         };
         if (lobby.showBGAUI) {
-            clueAreaValues.x = playStackValues.x - 0.424;
+            clueAreaValues.x = playStackValues.x - 0.102;
             clueAreaValues.y = playStackValues.y + 0.22;
         }
         clueArea = new Kinetic.Group({
@@ -4009,9 +4024,17 @@ function HanabiUI(lobby, gameID) {
 
         UILayer.add(clueArea);
 
+        const noClueBoxValues = {
+            x: 0.275,
+            y: 0.56,
+        };
+        if (lobby.showBGAUI) {
+            noClueBoxValues.x = clueAreaValues.x + 0.178;
+            noClueBoxValues.y = clueAreaValues.y;
+        }
         noClueBox = new Kinetic.Rect({
-            x: 0.275 * winW,
-            y: 0.56 * winH,
+            x: noClueBoxValues.x * winW,
+            y: noClueBoxValues.y * winH,
             width: 0.25 * winW,
             height: 0.15 * winH,
             cornerRadius: 0.01 * winW,
@@ -4021,9 +4044,13 @@ function HanabiUI(lobby, gameID) {
         });
         UILayer.add(noClueBox);
 
+        const noClueLabelValues = {
+            x: noClueBoxValues.x - 0.125,
+            y: noClueBoxValues.y + 0.025,
+        };
         noClueLabel = new Kinetic.Text({
-            x: 0.15 * winW,
-            y: 0.585 * winH,
+            x: noClueLabelValues.x * winW,
+            y: noClueLabelValues.y * winH,
             width: 0.5 * winW,
             height: 0.19 * winH,
             fontFamily: 'Verdana',
@@ -4106,17 +4133,27 @@ function HanabiUI(lobby, gameID) {
         };
         this.inferSharedReplayMode = inferSharedReplayMode; // Make it available os that we can use it elsewhere in the code
 
+        const replayAreaValues = {
+            x: 0.15,
+            y: 0.51,
+            w: 0.5,
+        };
+        if (lobby.showBGAUI) {
+            replayAreaValues.x = 0.01;
+            replayAreaValues.y = 0.49;
+            replayAreaValues.w = 0.4;
+        }
         replayArea = new Kinetic.Group({
-            x: 0.15 * winW,
-            y: 0.51 * winH,
-            width: 0.5 * winW,
+            x: replayAreaValues.x * winW,
+            y: replayAreaValues.y * winH,
+            width: replayAreaValues.w * winW,
             height: 0.27 * winH,
         });
 
         replayBar = new Kinetic.Rect({
             x: 0,
             y: 0.0425 * winH,
-            width: 0.5 * winW,
+            width: replayAreaValues.w * winW,
             height: 0.01 * winH,
             fill: 'black',
             cornerRadius: 0.005 * winH,
@@ -4128,7 +4165,7 @@ function HanabiUI(lobby, gameID) {
         rect = new Kinetic.Rect({
             x: 0,
             y: 0,
-            width: 0.5 * winW,
+            width: replayAreaValues.w * winW,
             height: 0.05 * winH,
             opacity: 0,
         });
@@ -4194,99 +4231,91 @@ function HanabiUI(lobby, gameID) {
                 };
             },
         });
-
         replayShuttle.on('dragend', () => {
             cardLayer.draw();
             UILayer.draw();
         });
-
         replayArea.add(replayShuttle);
-
         ui.adjustReplayShuttle();
+
+        const replayButtonValues = {
+            x: 0.1,
+            y: 0.07,
+            spacing: 0.08,
+        };
+        if (lobby.showBGAUI) {
+            replayButtonValues.x = 0.05;
+        }
 
         // Rewind to the beginning (the left-most button)
         button = new Button({
-            x: 0.1 * winW,
+            x: replayButtonValues.x * winW,
             y: 0.07 * winH,
             width: 0.06 * winW,
             height: 0.08 * winH,
             image: 'rewindfull',
         });
-
-
         const rewindFullFunction = () => {
             inferSharedReplayMode();
             ui.performReplay(0);
         };
-
         button.on('click tap', rewindFullFunction);
-
         replayArea.add(button);
 
         // Rewind one turn (the second left-most button)
         button = new Button({
-            x: 0.18 * winW,
+            x: (replayButtonValues.x + replayButtonValues.spacing) * winW,
             y: 0.07 * winH,
             width: 0.06 * winW,
             height: 0.08 * winH,
             image: 'rewind',
         });
-
         const backwardFunction = () => {
             inferSharedReplayMode();
             ui.performReplay(self.replayTurn - 1, true);
         };
-
         button.on('click tap', backwardFunction);
-
         replayArea.add(button);
 
         // Go forward one turn (the second right-most button)
         button = new Button({
-            x: 0.26 * winW,
+            x: (replayButtonValues.x + replayButtonValues.spacing * 2) * winW,
             y: 0.07 * winH,
             width: 0.06 * winW,
             height: 0.08 * winH,
             image: 'forward',
         });
-
         const forwardFunction = () => {
             inferSharedReplayMode();
             ui.performReplay(self.replayTurn + 1);
         };
-
         button.on('click tap', forwardFunction);
-
         replayArea.add(button);
 
         // Go forward to the end (the right-most button)
         button = new Button({
-            x: 0.34 * winW,
+            x: (replayButtonValues.x + replayButtonValues.spacing * 3) * winW,
             y: 0.07 * winH,
             width: 0.06 * winW,
             height: 0.08 * winH,
             image: 'forwardfull',
         });
-
         const forwardFullFunction = () => {
             inferSharedReplayMode();
             ui.performReplay(self.replayMax, true);
         };
-
         button.on('click tap', forwardFullFunction);
-
         replayArea.add(button);
 
         // The "Exit Replay" button
         replayExitButton = new Button({
-            x: 0.15 * winW,
+            x: (replayButtonValues.x + 0.05) * winW,
             y: 0.17 * winH,
             width: 0.2 * winW,
             height: 0.06 * winH,
             text: 'Exit Replay',
             visible: !this.replayOnly && !this.sharedReplay,
         });
-
         replayExitButton.on('click tap', () => {
             if (self.replayOnly) {
                 ui.sendMsg({
@@ -4295,21 +4324,19 @@ function HanabiUI(lobby, gameID) {
                 });
 
                 this.stopLocalTimer();
-
                 ui.lobby.gameEnded();
             } else {
                 // Mark the time that the user clicked the "Exit Replay" button
                 // (so that we can avoid an accidental "Give Clue" double-click)
                 ui.accidentalClueTimer = Date.now();
-
                 self.enterReplay(false);
             }
         });
-
         replayArea.add(replayExitButton);
 
+        // The "Pause Shared Turns"  / "Use Shared Turns" button
         toggleSharedTurnButton = new ToggleButton({
-            x: 0.15 * winW,
+            x: (replayButtonValues.x + 0.05) * winW,
             y: 0.17 * winH,
             width: 0.2 * winW,
             height: 0.06 * winH,
@@ -4318,7 +4345,6 @@ function HanabiUI(lobby, gameID) {
             initialState: !ui.useSharedTurns,
             visible: false,
         });
-
         toggleSharedTurnButton.on('click tap', () => {
             ui.useSharedTurns = !ui.useSharedTurns;
             replayShuttleShared.setVisible(!ui.useSharedTurns);
@@ -4330,7 +4356,6 @@ function HanabiUI(lobby, gameID) {
                 }
             }
         });
-
         replayArea.add(toggleSharedTurnButton);
 
         replayArea.hide();
