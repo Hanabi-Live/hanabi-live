@@ -2859,6 +2859,7 @@ function HanabiUI(lobby, gameID) {
     let noDiscardLabel;
     let noDoubleDiscardLabel;
     let deckPlayAvailableLabel;
+    let scoreArea;
     let replayArea;
     let replayBar;
     let replayShuttleShared;
@@ -3086,7 +3087,7 @@ function HanabiUI(lobby, gameID) {
             scoreAreaValues.x = 0.168;
             scoreAreaValues.y = 0.81;
         }
-        const scoreArea = new Kinetic.Group({
+        scoreArea = new Kinetic.Group({
             x: scoreAreaValues.x * winW,
             y: scoreAreaValues.y * winH,
         });
@@ -3522,8 +3523,9 @@ function HanabiUI(lobby, gameID) {
                     }
 
                     const suitLabelText = new FitText({
-                        x: (0.173 + (width + 0.015) * i) * winW,
-                        y: (playAreaY + 0.155 + yOffset) * winH,
+                        x: (playStackValues.x - 0.01 + (width + playStackValues.spacing) * i) * winW,
+                        //y: (playAreaY + 0.155 + yOffset) * winH,
+                        y: (playStackValues.y + 0.155) * winH,
                         width: 0.08 * winW,
                         height: 0.051 * winH,
                         fontSize: 0.02 * winH,
@@ -4073,7 +4075,7 @@ function HanabiUI(lobby, gameID) {
         // We don't want the timer to show in replays
         if (!this.replayOnly && (ui.timedGame || lobby.showTimerInUntimed)) {
             const timerValues = {
-                x1: 0.1,
+                x1: 0.155,
                 x2: 0.565,
                 y1: 0.592,
                 y2: 0.592,
@@ -5438,8 +5440,8 @@ function HanabiUI(lobby, gameID) {
             this.cluesSpentPlusStrikes += 1;
             this.handleEfficiency(0);
             const x = new Kinetic.Image({
-                x: (0.675 + 0.04 * (data.num - 1)) * winW,
-                y: 0.935 * winH,
+                x: (0.015 + 0.04 * (data.num - 1)) * winW,
+                y: 0.125 * winH,
                 width: 0.02 * winW,
                 height: 0.036 * winH,
                 image: ImageLoader.get('redx'),
@@ -5448,7 +5450,7 @@ function HanabiUI(lobby, gameID) {
 
             strikes[data.num - 1] = x;
 
-            UILayer.add(x);
+            scoreArea.add(x);
 
             if (ui.animateFast) {
                 x.setOpacity(1.0);
