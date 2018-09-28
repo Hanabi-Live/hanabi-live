@@ -5786,16 +5786,6 @@ function HanabiUI(lobby, gameID) {
         if (data.canClue) {
             // Show the clue UI
             clueArea.show();
-
-            // This animation is dumb so lets comment it out
-            /*
-            new Kinetic.Tween({
-                node: clueArea,
-                opacity: 1.0,
-                duration: 0.5,
-                runonce: true,
-            }).play();
-            */
         } else {
             noClueLabel.show();
             noClueBox.show();
