@@ -40,3 +40,6 @@ watch.sh
 
 # Atom FTP plugin
 .ftpconfig
+
+# VS Code stuff
+.vscode
