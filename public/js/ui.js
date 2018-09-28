@@ -2945,7 +2945,6 @@ function HanabiUI(lobby, gameID) {
             cornerRadius: 0.01 * winW,
             visible: false,
         });
-
         UILayer.add(noDiscardLabel);
 
         // The yellow border that surrounds the discard pile when it is a "Double Discard" situation
@@ -2960,9 +2959,9 @@ function HanabiUI(lobby, gameID) {
             visible: false,
             opacity: 0.75,
         });
-
         UILayer.add(noDoubleDiscardLabel);
 
+        // The faded rectange around the trash can
         rect = new Kinetic.Rect({
             x: 0.8 * winW,
             y: 0.6 * winH,
@@ -2972,9 +2971,9 @@ function HanabiUI(lobby, gameID) {
             opacity: 0.2,
             cornerRadius: 0.01 * winW,
         });
-
         bgLayer.add(rect);
 
+        // The icon over the discard pile
         const img = new Kinetic.Image({
             x: 0.82 * winW,
             y: 0.62 * winH,
@@ -2983,9 +2982,9 @@ function HanabiUI(lobby, gameID) {
             opacity: 0.2,
             image: ImageLoader.get('trashcan'),
         });
-
         bgLayer.add(img);
 
+        // The faded rectange around the action log
         rect = new Kinetic.Rect({
             x: 0.2 * winW,
             y: 0.235 * winH,
@@ -2996,9 +2995,9 @@ function HanabiUI(lobby, gameID) {
             cornerRadius: 0.01 * winH,
             listening: true,
         });
-
         bgLayer.add(rect);
 
+        // Clicking on the action log
         rect.on('click tap', () => {
             msgLogGroup.show();
             overback.show();
@@ -3015,6 +3014,7 @@ function HanabiUI(lobby, gameID) {
             });
         });
 
+        // The action log
         messagePrompt = new MultiFitText({
             align: 'center',
             fontSize: 0.028 * winH,
@@ -3034,9 +3034,9 @@ function HanabiUI(lobby, gameID) {
             height: 0.095 * winH,
             maxLines: 3,
         });
-
         UILayer.add(messagePrompt);
 
+        // The dark overlay that appears when you click on the "Help" button
         overback = new Kinetic.Rect({
             x: 0,
             y: 0,
@@ -3046,28 +3046,45 @@ function HanabiUI(lobby, gameID) {
             fill: 'black',
             visible: false,
         });
-
         overLayer.add(overback);
 
+        // The full action log (that appears when you click on the action log)
         msgLogGroup = new HanabiMsgLog();
-
         overLayer.add(msgLogGroup);
 
+        // The rectangle that holds the turn, score, and clue count
+        const scoreAreaValues = {
+            x: 0.66,
+            y: 0.81,
+        };
+        if (lobby.showBGAUI) {
+            /*
+            TODO
+            scoreAreaValues.x = 0.4;
+            scoreAreaValues.y = 0.81;
+            */
+        }
+        const scoreArea = new Kinetic.Group({
+            x: scoreAreaValues.x * winW,
+            y: scoreAreaValues.y * winH,
+        });
+        UILayer.add(scoreArea);
+
+        // The faded rectangle around the score area
         rect = new Kinetic.Rect({
-            x: 0.66 * winW,
-            y: 0.81 * winH,
+            x: 0,
+            y: 0,
             width: 0.13 * winW,
             height: 0.18 * winH,
             fill: 'black',
             opacity: 0.2,
             cornerRadius: 0.01 * winW,
         });
-
-        bgLayer.add(rect);
+        scoreArea.add(rect);
 
         const basicTextLabel = new Kinetic.Text({
-            x: 0.67 * winW,
-            y: 0.82 * winH,
+            x: 0.01 * winW,
+            y: 0.01 * winH,
             width: 0.11 * winW,
             height: 0.03 * winH,
             fontSize: 0.026 * winH,
@@ -3088,84 +3105,51 @@ function HanabiUI(lobby, gameID) {
 
         turnTextLabel = basicTextLabel.clone({
             text: 'Turn',
-            x: 0.69 * winW,
-            y: 0.82 * winH,
+            x: 0.03 * winW,
+            y: 0.01 * winH,
         });
+        scoreArea.add(turnTextLabel);
+
         turnNumberLabel = basicNumberLabel.clone({
             text: '1',
-            x: 0.73 * winW,
-            y: 0.82 * winH,
+            x: 0.07 * winW,
+            y: 0.01 * winH,
         });
+        scoreArea.add(turnNumberLabel);
+
         scoreTextLabel = basicTextLabel.clone({
             text: 'Score',
-            x: 0.69 * winW,
-            y: 0.855 * winH,
+            x: 0.03 * winW,
+            y: 0.045 * winH,
         });
+        scoreArea.add(scoreTextLabel);
+
         scoreNumberLabel = basicNumberLabel.clone({
             text: '0',
-            x: 0.73 * winW,
-            y: 0.855 * winH,
+            x: 0.07 * winW,
+            y: 0.045 * winH,
         });
+        scoreArea.add(scoreNumberLabel);
+
         cluesTextLabel = basicTextLabel.clone({
             text: 'Clues',
-            x: 0.69 * winW,
-            y: 0.89 * winH,
+            x: 0.03 * winW,
+            y: 0.08 * winH,
         });
+        scoreArea.add(cluesTextLabel);
+
         cluesNumberLabel = basicNumberLabel.clone({
             text: '8',
-            x: 0.73 * winW,
-            y: 0.89 * winH,
+            x: 0.07 * winW,
+            y: 0.08 * winH,
         });
-
-        UILayer.add(turnTextLabel);
-        UILayer.add(turnNumberLabel);
-        UILayer.add(scoreTextLabel);
-        UILayer.add(scoreNumberLabel);
-        UILayer.add(cluesTextLabel);
-        UILayer.add(cluesNumberLabel);
-
-        paceTextLabel = basicTextLabel.clone({
-            text: 'Pace',
-            x: 0.83 * winW,
-            y: 0.54 * winH,
-            fontSize: 0.020 * winH,
-        });
-        paceNumberLabel = basicNumberLabel.clone({
-            text: '-',
-            x: 0.925 * winW,
-            y: 0.54 * winH,
-            fontSize: 0.020 * winH,
-        });
-        efficiencyTextLabel = basicTextLabel.clone({
-            text: 'Efficiency',
-            x: 0.83 * winW,
-            y: 0.56 * winH,
-            fontSize: 0.020 * winH,
-        });
-        efficiencyNumberLabel = basicNumberLabel.clone({
-            text: '-',
-            x: 0.915 * winW,
-            y: 0.56 * winH,
-            width: 0.04 * winW,
-            fontSize: 0.020 * winH,
-        });
-
-        UILayer.add(efficiencyTextLabel);
-        UILayer.add(efficiencyNumberLabel);
-        UILayer.add(paceTextLabel);
-        UILayer.add(paceNumberLabel);
-
-        this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
-            this.cardsGotten += cardsGottenDelta;
-            this.efficiency = this.cardsGotten / this.cluesSpentPlusStrikes;
-            efficiencyNumberLabel.setText(`${this.efficiency.toFixed(2)}`);
-        };
+        scoreArea.add(cluesNumberLabel);
 
         // Draw the 3 strike (bomb) indicators
         for (let i = 0; i < 3; i++) {
             rect = new Kinetic.Rect({
-                x: (0.67 + 0.04 * i) * winW,
-                y: 0.925 * winH,
+                x: (0.01 + 0.04 * i) * winW,
+                y: 0.115 * winH,
                 width: 0.03 * winW,
                 height: 0.053 * winH,
                 fill: 'black',
@@ -3173,8 +3157,51 @@ function HanabiUI(lobby, gameID) {
                 cornerRadius: 0.003 * winW,
             });
 
-            bgLayer.add(rect);
+            scoreArea.add(rect);
         }
+
+        /*
+            Statistics shown on the right-hand side of the screen (at the bottom of the clue log)
+        */
+
+        paceTextLabel = basicTextLabel.clone({
+            text: 'Pace',
+            x: 0.83 * winW,
+            y: 0.54 * winH,
+            fontSize: 0.020 * winH,
+        });
+        UILayer.add(paceTextLabel);
+
+        paceNumberLabel = basicNumberLabel.clone({
+            text: '-',
+            x: 0.925 * winW,
+            y: 0.54 * winH,
+            fontSize: 0.020 * winH,
+        });
+        UILayer.add(paceNumberLabel);
+
+        efficiencyTextLabel = basicTextLabel.clone({
+            text: 'Efficiency',
+            x: 0.83 * winW,
+            y: 0.56 * winH,
+            fontSize: 0.020 * winH,
+        });
+        UILayer.add(efficiencyTextLabel);
+
+        efficiencyNumberLabel = basicNumberLabel.clone({
+            text: '-',
+            x: 0.915 * winW,
+            y: 0.56 * winH,
+            width: 0.04 * winW,
+            fontSize: 0.020 * winH,
+        });
+        UILayer.add(efficiencyNumberLabel);
+
+        this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
+            this.cardsGotten += cardsGottenDelta;
+            this.efficiency = this.cardsGotten / this.cluesSpentPlusStrikes;
+            efficiencyNumberLabel.setText(`${this.efficiency.toFixed(2)}`);
+        };
 
         /*
             The 'eyes' symbol to show that one or more people are spectating the game
@@ -3542,10 +3569,56 @@ function HanabiUI(lobby, gameID) {
         cardLayer.add(drawDeck);
 
         /* eslint-disable object-curly-newline */
+
         const handPos = {
             2: [
                 { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
                 { x: 0.19, y: 0.01, w: 0.42, h: 0.189, rot: 0 },
+            ],
+            3: [
+                { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
+                { x: 0.01, y: 0.71, w: 0.41, h: 0.189, rot: -78 },
+                { x: 0.705, y: 0, w: 0.41, h: 0.189, rot: 78 },
+            ],
+            4: [
+                { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
+                { x: 0.015, y: 0.7, w: 0.34, h: 0.189, rot: -78 },
+                { x: 0.23, y: 0.01, w: 0.34, h: 0.189, rot: 0 },
+                { x: 0.715, y: 0.095, w: 0.34, h: 0.189, rot: 78 },
+            ],
+            5: [
+                { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
+                { x: 0.03, y: 0.77, w: 0.301, h: 0.18, rot: -90 },
+                { x: 0.025, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
+                { x: 0.445, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
+                { x: 0.77, y: 0.22, w: 0.301, h: 0.18, rot: 90 },
+            ],
+        };
+
+        const handPosBGAValues = {
+            x: 0.017,
+            y: 0.01,
+            yMod: 0.25,
+            w: 0.42,
+            h: 0.189,
+            rot: 0,
+        };
+        const handPosBGA = {
+            2: [
+                {
+                    x: handPosBGAValues.x,
+                    y: handPosBGAValues.y,
+                    w: handPosBGAValues.w,
+                    h: handPosBGAValues.h,
+                    rot: handPosBGAValues.rot,
+                },
+                {
+                    x: handPosBGAValues.x,
+                    y: handPosBGAValues.y + handPosBGAValues.yMod,
+                    w: handPosBGAValues.w,
+                    h: handPosBGAValues.h,
+                    rot: handPosBGAValues.rot,
+                },
             ],
             3: [
                 { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
@@ -3592,6 +3665,50 @@ function HanabiUI(lobby, gameID) {
             ],
         };
 
+        const shadePosBGAMod = {
+            x: 0,
+            y: -0.008,
+            w: 0.01,
+            h: 0.016,
+            rot: 0,
+        };
+        const shadePosBGA = {
+            2: [
+                {
+                    x: handPosBGA[2][0].x + shadePosBGAMod.x,
+                    y: handPosBGA[2][0].y + shadePosBGAMod.y,
+                    w: handPosBGA[2][0].w + shadePosBGAMod.w,
+                    h: handPosBGA[2][0].h + shadePosBGAMod.h,
+                    rot: shadePosBGAMod.rot,
+                },
+                {
+                    x: handPosBGA[2][1].x + shadePosBGAMod.x,
+                    y: handPosBGA[2][1].y + shadePosBGAMod.y,
+                    w: handPosBGA[2][1].w + shadePosBGAMod.w,
+                    h: handPosBGA[2][1].h + shadePosBGAMod.h,
+                    rot: shadePosBGAMod.rot,
+                },
+            ],
+            3: [
+                { x: 0.185, y: 0.762, w: 0.43, h: 0.205, rot: 0 },
+                { x: 0.005, y: 0.718, w: 0.42, h: 0.205, rot: -78 },
+                { x: 0.708, y: -0.008, w: 0.42, h: 0.205, rot: 78 },
+            ],
+            4: [
+                { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0 },
+                { x: 0.01, y: 0.708, w: 0.35, h: 0.205, rot: -78 },
+                { x: 0.225, y: 0.002, w: 0.35, h: 0.205, rot: 0 },
+                { x: 0.718, y: 0.087, w: 0.35, h: 0.205, rot: 78 },
+            ],
+            5: [
+                { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0 },
+                { x: 0.026, y: 0.775, w: 0.311, h: 0.196, rot: -90 },
+                { x: 0.02, y: 0.001, w: 0.35, h: 0.205, rot: 0 },
+                { x: 0.44, y: 0.001, w: 0.35, h: 0.205, rot: 0 },
+                { x: 0.774, y: 0.215, w: 0.311, h: 0.196, rot: 90 },
+            ],
+        };
+
         const namePos = {
             2: [
                 { x: 0.18, y: 0.97, w: 0.44, h: 0.02 },
@@ -3616,9 +3733,72 @@ function HanabiUI(lobby, gameID) {
                 { x: 0.659, y: 0.775, w: 0.116, h: 0.02 },
             ],
         };
+
+        const namePosBGAMod = {
+            x: -0.01,
+            y: 0.2,
+            w: 0.02,
+            h: -0.169,
+        };
+        const namePosBGA = {
+            2: [
+                {
+                    x: handPosBGA[2][0].x + namePosBGAMod.x,
+                    y: handPosBGA[2][0].y + namePosBGAMod.y,
+                    w: handPosBGA[2][0].w + namePosBGAMod.w,
+                    h: handPosBGA[2][0].h + namePosBGAMod.h,
+                },
+                {
+                    x: handPosBGA[2][1].x + namePosBGAMod.x,
+                    y: handPosBGA[2][1].y + namePosBGAMod.y,
+                    w: handPosBGA[2][1].w + namePosBGAMod.w,
+                    h: handPosBGA[2][1].h + namePosBGAMod.h,
+                },
+            ],
+            3: [
+                { x: 0.18, y: 0.97, w: 0.44, h: 0.02 },
+                { x: 0.01, y: 0.765, w: 0.12, h: 0.02 },
+                { x: 0.67, y: 0.765, w: 0.12, h: 0.02 },
+            ],
+            4: [
+                { x: 0.22, y: 0.97, w: 0.36, h: 0.02 },
+                { x: 0.01, y: 0.74, w: 0.13, h: 0.02 },
+                { x: 0.22, y: 0.21, w: 0.36, h: 0.02 },
+                { x: 0.66, y: 0.74, w: 0.13, h: 0.02 },
+            ],
+            5: [
+                { x: 0.22, y: 0.97, w: 0.36, h: 0.02 },
+                { x: 0.025, y: 0.775, w: 0.116, h: 0.02 },
+                { x: 0.015, y: 0.199, w: 0.36, h: 0.02 },
+                { x: 0.435, y: 0.199, w: 0.36, h: 0.02 },
+                { x: 0.659, y: 0.775, w: 0.116, h: 0.02 },
+            ],
+        };
+
         /* eslint-enable object-curly-newline */
 
         const nump = this.playerNames.length;
+
+        const isHandReversed = (j) => {
+            // By default, the hand is not reversed
+            let reverse = false;
+
+            if (j === 0) {
+                // Reverse the ordering of the cards for our own hand
+                // (for our hand, the oldest card is the first card, which should be on the right)
+                reverse = true;
+            }
+            if (lobby.showBGAUI) {
+                // If Board Game Arena mode is on, then we need to reverse every hand
+                reverse = true;
+            }
+            if (lobby.reverseHands) {
+                // If the "Reverse hand direction" option is turned on, then we need to flip the direction of every hand
+                reverse = !reverse;
+            }
+
+            return reverse;
+        };
 
         for (let i = 0; i < nump; i++) {
             let j = i - this.playerUs;
@@ -3627,34 +3807,43 @@ function HanabiUI(lobby, gameID) {
                 j += nump;
             }
 
+            let playerHandPos = handPos;
+            if (lobby.showBGAUI) {
+                playerHandPos = handPosBGA;
+            }
+
             playerHands[i] = new CardLayout({
-                x: handPos[nump][j].x * winW,
-                y: handPos[nump][j].y * winH,
-                width: handPos[nump][j].w * winW,
-                height: handPos[nump][j].h * winH,
-                rotationDeg: handPos[nump][j].rot,
+                x: playerHandPos[nump][j].x * winW,
+                y: playerHandPos[nump][j].y * winH,
+                width: playerHandPos[nump][j].w * winW,
+                height: playerHandPos[nump][j].h * winH,
+                rotationDeg: playerHandPos[nump][j].rot,
                 align: 'center',
-                reverse: j === 0 !== lobby.reverseHands,
+                reverse: isHandReversed(j),
                 invertCards: i !== this.playerUs,
             });
 
             cardLayer.add(playerHands[i]);
 
             // Draw the faded shade that shows where the "new" side of the hand is
+            let playerShadePos = shadePos;
+            if (lobby.showBGAUI) {
+                playerShadePos = shadePosBGA;
+            }
             rect = new Kinetic.Rect({
-                x: shadePos[nump][j].x * winW,
-                y: shadePos[nump][j].y * winH,
-                width: shadePos[nump][j].w * winW,
-                height: shadePos[nump][j].h * winH,
-                rotationDeg: shadePos[nump][j].rot,
-                cornerRadius: 0.01 * shadePos[nump][j].w * winW,
+                x: playerShadePos[nump][j].x * winW,
+                y: playerShadePos[nump][j].y * winH,
+                width: playerShadePos[nump][j].w * winW,
+                height: playerShadePos[nump][j].h * winH,
+                rotationDeg: playerShadePos[nump][j].rot,
+                cornerRadius: 0.01 * playerShadePos[nump][j].w * winW,
                 opacity: 0.4,
                 fillLinearGradientStartPoint: {
                     x: 0,
                     y: 0,
                 },
                 fillLinearGradientEndPoint: {
-                    x: shadePos[nump][j].w * winW,
+                    x: playerShadePos[nump][j].w * winW,
                     y: 0,
                 },
                 fillLinearGradientColorStops: [
@@ -3665,7 +3854,7 @@ function HanabiUI(lobby, gameID) {
                 ],
             });
 
-            if (j === 0 !== lobby.reverseHands) {
+            if (isHandReversed(j)) {
                 rect.setFillLinearGradientColorStops([
                     1,
                     'rgba(0,0,0,0)',
@@ -3676,11 +3865,15 @@ function HanabiUI(lobby, gameID) {
 
             bgLayer.add(rect);
 
+            let playerNamePos = namePos;
+            if (lobby.showBGAUI) {
+                playerNamePos = namePosBGA;
+            }
             nameFrames[i] = new HanabiNameFrame({
-                x: namePos[nump][j].x * winW,
-                y: namePos[nump][j].y * winH,
-                width: namePos[nump][j].w * winW,
-                height: namePos[nump][j].h * winH,
+                x: playerNamePos[nump][j].x * winW,
+                y: playerNamePos[nump][j].y * winH,
+                width: playerNamePos[nump][j].w * winW,
+                height: playerNamePos[nump][j].h * winH,
                 name: this.playerNames[i],
             });
 
