@@ -31,6 +31,7 @@ function HanabiLobby() {
     this.sendTimerSound = true; // We want sounds by default
     this.sendChatNotify = false;
     this.sendChatSound = false;
+    this.showBGAUI = false;
     this.showColorblindUI = false;
     this.showTimerInUntimed = false;
     this.reverseHands = false;
@@ -1837,7 +1838,7 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
             'sendTimerSound',
         ],
         [
-            // Receive notifications when your name is mentioned in chat
+            // Show desktop notifications when your name is mentioned in chat
             'send-chat-notification',
             'sendChatNotify',
         ],
@@ -1847,22 +1848,27 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
             'sendChatSound',
         ],
         [
+            // Enable Board Game Arena mode (hands grouped together)
+            'show-bga-ui',
+            'showBGAUI',
+        ],
+        [
             // Enable colorblind mode
             'show-colorblind-ui',
             'showColorblindUI',
         ],
         [
-            // Hide the turn timers that tick up in untimed games
+            // Show turn timers in untimed games
             'show-timer-in-untimed',
             'showTimerInUntimed',
         ],
         [
-            // Reverse the order of cards relative to a hand
+            // Reverse hand direction (new cards go on the right)
             'reverse-hands',
             'reverseHands',
         ],
         [
-            // Enable speedrun hotkeys
+            // Enable speedrun keyboard hotkeys
             'speedrun-hotkeys',
             'speedrunHotkeys',
         ],
