@@ -463,7 +463,6 @@ function HanabiUI(lobby, gameID) {
             Kinetic.Group.prototype.add.call(this, childText);
         }
     };
-
     Kinetic.Util.extend(MultiFitText, Kinetic.Group);
 
     MultiFitText.prototype.setMultiText = function setMultiText(text) {
@@ -2844,6 +2843,7 @@ function HanabiUI(lobby, gameID) {
     const discardStacks = new Map();
     let playArea;
     let discardArea;
+    let clueLogRect;
     let clueLog;
     let clueArea;
     let clueTargetButtonGroup;
@@ -3181,49 +3181,6 @@ function HanabiUI(lobby, gameID) {
         }
 
         /*
-            Statistics shown on the right-hand side of the screen (at the bottom of the clue log)
-        */
-
-        paceTextLabel = basicTextLabel.clone({
-            text: 'Pace',
-            x: 0.83 * winW,
-            y: 0.54 * winH,
-            fontSize: 0.020 * winH,
-        });
-        UILayer.add(paceTextLabel);
-
-        paceNumberLabel = basicNumberLabel.clone({
-            text: '-',
-            x: 0.925 * winW,
-            y: 0.54 * winH,
-            fontSize: 0.020 * winH,
-        });
-        UILayer.add(paceNumberLabel);
-
-        efficiencyTextLabel = basicTextLabel.clone({
-            text: 'Efficiency',
-            x: 0.83 * winW,
-            y: 0.56 * winH,
-            fontSize: 0.020 * winH,
-        });
-        UILayer.add(efficiencyTextLabel);
-
-        efficiencyNumberLabel = basicNumberLabel.clone({
-            text: '-',
-            x: 0.915 * winW,
-            y: 0.56 * winH,
-            width: 0.04 * winW,
-            fontSize: 0.020 * winH,
-        });
-        UILayer.add(efficiencyNumberLabel);
-
-        this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
-            this.cardsGotten += cardsGottenDelta;
-            this.efficiency = this.cardsGotten / this.cluesSpentPlusStrikes;
-            efficiencyNumberLabel.setText(`${this.efficiency.toFixed(2)}`);
-        };
-
-        /*
             The "eyes" symbol to show that one or more people are spectating the game
         */
 
@@ -3429,9 +3386,9 @@ function HanabiUI(lobby, gameID) {
             x: 0.8,
             y: 0.01,
             w: 0.19,
-            h: 0.58,
+            h: 0.51,
         };
-        rect = new Kinetic.Rect({
+        clueLogRect = new Kinetic.Rect({
             x: clueLogValues.x * winW,
             y: clueLogValues.y * winH,
             width: clueLogValues.w * winW,
@@ -3440,7 +3397,7 @@ function HanabiUI(lobby, gameID) {
             opacity: 0.2,
             cornerRadius: 0.01 * winW,
         });
-        bgLayer.add(rect);
+        bgLayer.add(clueLogRect);
 
         const spacing = 0.01;
         clueLog = new HanabiClueLog({
@@ -3452,30 +3409,58 @@ function HanabiUI(lobby, gameID) {
         UILayer.add(clueLog);
 
         /*
-            Draw the chat log
-            (this shared the faded rectangle from the clue log)
+            Statistics shown on the right-hand side of the screen (at the bottom of the clue log)
         */
 
-        chatLog = new MultiFitText({
-            align: 'left',
-            fontSize: 0.028 * winH,
-            fontFamily: 'Verdana',
-            fill: '#d8d5ef',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
-            listening: false,
+        rect = new Kinetic.Rect({
             x: clueLogValues.x * winW,
-            y: clueLogValues.y * winH,
+            y: 0.53 * winH,
             width: clueLogValues.w * winW,
-            height: clueLogValues.h * winH,
-            maxLines: 20,
+            height: 0.06 * winH,
+            fill: 'black',
+            opacity: 0.2,
+            cornerRadius: 0.01 * winW,
         });
-        UILayer.add(chatLog);
+        bgLayer.add(rect);
+
+        paceTextLabel = basicTextLabel.clone({
+            text: 'Pace',
+            x: 0.83 * winW,
+            y: 0.54 * winH,
+            fontSize: 0.02 * winH,
+        });
+        UILayer.add(paceTextLabel);
+
+        paceNumberLabel = basicNumberLabel.clone({
+            text: '-',
+            x: 0.925 * winW,
+            y: 0.54 * winH,
+            fontSize: 0.02 * winH,
+        });
+        UILayer.add(paceNumberLabel);
+
+        efficiencyTextLabel = basicTextLabel.clone({
+            text: 'Efficiency',
+            x: 0.83 * winW,
+            y: 0.56 * winH,
+            fontSize: 0.02 * winH,
+        });
+        UILayer.add(efficiencyTextLabel);
+
+        efficiencyNumberLabel = basicNumberLabel.clone({
+            text: '-',
+            x: 0.915 * winW,
+            y: 0.56 * winH,
+            width: 0.04 * winW,
+            fontSize: 0.02 * winH,
+        });
+        UILayer.add(efficiencyNumberLabel);
+
+        this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
+            this.cardsGotten += cardsGottenDelta;
+            this.efficiency = this.cardsGotten / this.cluesSpentPlusStrikes;
+            efficiencyNumberLabel.setText(`${this.efficiency.toFixed(2)}`);
+        };
 
         /*
             Draw the stacks and the discard pile
@@ -3713,48 +3698,58 @@ function HanabiUI(lobby, gameID) {
             5: [],
         };
 
-        // Set the hand positions for 2-player and 3-player
-        // (with 5 cards in the hand)
         const handPosBGAValues = {
             x: 0.44,
-            y: 0.01,
+            y: 0.04,
             w: 0.34,
             h: 0.16,
-            rot: 0,
-            spacing: 0.22,
+            spacing: 0.24,
         };
-        for (let i = 2; i <= 3; i++) {
+        for (let i = 2; i <= 5; i++) {
+            let handX = handPosBGAValues.x;
+            let handY = handPosBGAValues.y;
+            let handW = handPosBGAValues.w;
+            let handSpacing = handPosBGAValues.spacing;
+            if (i >= 4) {
+                // The hands only have 4 cards instead of 5,
+                // so we need to slightly reposition the hands horizontally
+                handX += 0.03;
+                handW -= 0.07;
+            }
+            if (i === 5) {
+                handY -= 0.03;
+                handSpacing -= 0.042;
+            }
+
             for (let j = 0; j < i; j++) {
                 handPosBGA[i].push({
-                    x: handPosBGAValues.x,
-                    y: handPosBGAValues.y + (handPosBGAValues.spacing * j),
-                    w: handPosBGAValues.w,
+                    x: handX,
+                    y: handY + (handSpacing * j),
+                    w: handW,
                     h: handPosBGAValues.h,
-                    rot: handPosBGAValues.rot,
+                    rot: 0,
                 });
             }
         }
 
         // Set the hand positions for 4-player and 5-player
         // (with 4 cards in the hand)
-        const handPosBGAValuesSmall = {
+        const handPosBGAValues4 = {
             x: 0.47,
             y: handPosBGAValues.y,
             w: 0.27,
             h: handPosBGAValues.h,
             rot: handPosBGAValues.rot,
-            spacing: 0.195,
+            spacing: handPosBGAValues.spacing,
         };
-        for (let i = 4; i <= 5; i++) {
-            for (let j = 0; j < i; j++) {
-                handPosBGA[i].push({
-                    x: handPosBGAValuesSmall.x,
-                    y: handPosBGAValuesSmall.y + (handPosBGAValuesSmall.spacing * j),
-                    w: handPosBGAValuesSmall.w,
-                    h: handPosBGAValuesSmall.h,
-                    rot: handPosBGAValuesSmall.rot,
-                });
-            }
+        for (let j = 0; j < 4; j++) {
+            handPosBGA[4].push({
+                x: handPosBGAValues4.x,
+                y: handPosBGAValues4.y + (handPosBGAValues4.spacing * j),
+                w: handPosBGAValues4.w,
+                h: handPosBGAValues4.h,
+                rot: handPosBGAValues4.rot,
+            });
         }
 
         // This is the position for the white shade that shows where the new side of the hand is
@@ -4855,11 +4850,14 @@ Keyboard hotkeys:
             chatButton.setVisible(!show);
             cluesButton.setVisible(show);
             clueLog.setVisible(!show);
-            paceTextLabel.setVisible(!show);
-            paceNumberLabel.setVisible(!show);
-            efficiencyTextLabel.setVisible(!show);
-            efficiencyNumberLabel.setVisible(!show);
-            chatLog.setVisible(show);
+            if (show) {
+                $('#tooltip-chat').css('left', clueLogRect.attrs.x);
+                $('#tooltip-chat').css('top', clueLogRect.attrs.y);
+                $('#tooltip-chat').css('width', clueLogRect.attrs.width);
+                $('#tooltip-chat').tooltipster('open');
+            } else {
+                $('#tooltip-chat').tooltipster('close');
+            }
             UILayer.draw();
         };
 

@@ -275,6 +275,7 @@ function HanabiLobby() {
         $('#game-tooltips').append(`<div id="tooltip-card-${i}"></div>`);
         $(`#tooltip-card-${i}`).tooltipster(tooltipOptions);
     }
+    $('#tooltip-chat').tooltipster(tooltipOptions);
 
     /*
         Display the login screen
