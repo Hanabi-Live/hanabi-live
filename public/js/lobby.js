@@ -252,13 +252,13 @@ function HanabiLobby() {
         'tooltipster-shadow-big',
     ];
     const tooltipOptions = {
-        theme: tooltipThemes,
-        delay: 0,
-        trigger: 'custom',
-        contentAsHTML: true,
         animation: 'grow',
-        updateAnimation: null,
+        contentAsHTML: true,
+        delay: 0,
         interactive: true, // So that users can update their notes
+        theme: tooltipThemes,
+        trigger: 'custom',
+        updateAnimation: null,
     };
     for (let i = 0; i < 5; i++) {
         $('#game-tooltips').append(`<div id="tooltip-player-${i}"></div>`);
@@ -275,7 +275,16 @@ function HanabiLobby() {
         $('#game-tooltips').append(`<div id="tooltip-card-${i}"></div>`);
         $(`#tooltip-card-${i}`).tooltipster(tooltipOptions);
     }
-    $('#tooltip-chat').tooltipster(tooltipOptions);
+    $('#tooltip-chat').tooltipster({
+        animationDuration: 0,
+        arrow: false,
+        contentAsHTML: true,
+        delay: 0,
+        distance: 0,
+        interactive: true,
+        theme: tooltipThemes,
+        trigger: 'custom',
+    });
 
     /*
         Display the login screen
@@ -325,31 +334,35 @@ function HanabiLobby() {
     });
 
     // Handle chatting in the lobby once logged in
-    const input = $('#lobby-chat-input');
-    input.on('keypress', (event) => {
-        if (event.key !== 'Enter') {
-            return;
-        }
+    const rooms = ['lobby', 'game'];
+    for (const room of rooms) {
+        const input = $(`#${room}-chat-input`);
+        input.on('keypress', (event) => {
+            if (event.key !== 'Enter') {
+                return;
+            }
 
-        if (!input.val()) {
-            return;
-        }
+            if (!input.val()) {
+                return;
+            }
 
-        // Clear the chat box
-        const msg = input.val();
-        input.val('');
+            // Clear the chat box
+            const msg = input.val();
+            input.val('');
 
-        // It is a normal chat message
-        self.connSend({
-            type: 'chat',
-            resp: {
-                msg,
-                room: 'lobby',
-            },
+            // It is a normal chat message
+            self.connSend({
+                type: 'chat',
+                resp: {
+                    msg,
+                    room,
+                },
+            });
         });
-    });
+    }
+
+    // By default, submitting a form will reload the page, so stop this from happening
     $('#lobby-chat-form').submit((event) => {
-        // By default, the form will reload the page, so stop this from happening
         event.preventDefault();
     });
 
@@ -729,11 +742,14 @@ HanabiLobby.prototype.showGame = () => {
     $('body').css('overflow', 'hidden');
 };
 
-HanabiLobby.prototype.hideGame = () => {
+HanabiLobby.prototype.hideGame = function hideGame() {
     $('#game').hide();
 
     // Change the scroll bars for the page back to the default value
     $('body').css('overflow', 'visible');
+
+    // Make sure there are not any game-related tooltips showing
+    this.closeAllTooltips();
 };
 
 HanabiLobby.prototype.addUser = function addUser(data) {
@@ -974,7 +990,12 @@ HanabiLobby.prototype.drawTables = function drawTables() {
 };
 
 HanabiLobby.prototype.addChat = function addChat(data) {
-    const chat = $('#lobby-chat-text');
+    let chat;
+    if (data.room === 'lobby') {
+        chat = $('#lobby-chat-text');
+    } else {
+        chat = $('#game-chat-text');
+    }
 
     // Convert any Discord emotes
     data.msg = this.fillEmotes(data.msg);
@@ -1555,11 +1576,7 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
     });
 
     conn.on('chat', (data) => {
-        if (data.room === 'lobby') {
-            self.addChat(data);
-        } else if (self.ui) {
-            self.ui.handleMessage('chat', data);
-        }
+        self.addChat(data);
     });
 
     conn.on('chatList', (data) => {

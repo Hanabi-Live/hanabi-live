@@ -303,6 +303,15 @@ a {
     line-height: 1em;
 }
 
+#game-chat {
+    font-size: 0.65em;
+}
+
+#game-chat-input {
+    overflow-y: auto;
+    overflow-wrap: break-word;
+}
+
 .game-tooltips-ol {
     margin-top: 0.5em;
     margin-bottom: 0;

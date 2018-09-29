@@ -4546,6 +4546,11 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
+            // Make sure we are not typing anything into the in-game chat
+            if ($('#game-chat-input').is(':focus')) {
+                return;
+            }
+
             if (event.key === 'Z') { // Shift + z
                 // This is used for fun in shared replays
                 this.sharedReplaySendSound('buzz');
@@ -4854,6 +4859,11 @@ Keyboard hotkeys:
                 $('#tooltip-chat').css('left', clueLogRect.attrs.x);
                 $('#tooltip-chat').css('top', clueLogRect.attrs.y);
                 $('#tooltip-chat').css('width', clueLogRect.attrs.width);
+                $('#tooltip-chat').tooltipster('instance').option('minWidth', clueLogRect.attrs.width);
+                $('#tooltip-chat').tooltipster('instance').option('maxWidth', clueLogRect.attrs.width);
+                const chatHeight = clueLogRect.attrs.height - 0.027 * winH;
+                $('#game-chat').css('min-height', chatHeight);
+                $('#game-chat').css('min-height', chatHeight);
                 $('#tooltip-chat').tooltipster('open');
             } else {
                 $('#tooltip-chat').tooltipster('close');
@@ -6169,10 +6179,6 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         }
 
         this.lobby.playSound(msgData.sound);
-    } else if (msgType === 'chat') {
-        // This is an in-game chat message
-        this.chatLog.setMultiText(msgData.text);
-        this.UILayer.draw();
     }
 };
 

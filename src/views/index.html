@@ -575,6 +575,11 @@
 
             <br /><br /><br />
         </div>
+
+        <div id="game-chat">
+            <div id="game-chat-text"></div>
+            <input id="game-chat-input" type="text" placeholder="Chat" />
+        </div>
     </div>
 
     <!-- Game (the UI when playing a game) -->
@@ -587,7 +592,7 @@
         <div id="tooltip-leader"></div>
         <!-- "tooltip-card-#" is added in "lobby.js" -->
         <div id="tooltip-signal"></div><!-- For the "Reorder Cards" feature -->
-        <div id="tooltip-chat"></div><!-- The in-game chat that covers the clue log -->
+        <div id="tooltip-chat" class="tooltip" data-tooltip-content="#game-chat"></div>
     </div>
 
     <!-- Password modal -->

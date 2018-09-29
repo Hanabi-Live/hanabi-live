@@ -4,6 +4,7 @@
 	{
 		msg: 'hi',
 		room: 'lobby',
+		// Room can also be 'game'
 	}
 */
 
@@ -11,7 +12,6 @@ package main
 
 import (
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -53,8 +53,40 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	// Validate the room
-	if d.Room != "lobby" && !strings.HasPrefix(d.Room, "game") {
+	if d.Room != "lobby" && d.Room != "game" {
 		s.Warning("That is not a valid room.")
+		return
+	}
+
+	var g *Game
+	if d.Room == "game" {
+		gameID := s.CurrentGame()
+
+		// Validate that they are in a game if they are trying to send to a game room
+		if gameID == -1 {
+			s.Warning("You cannot send game chat if you are not in a game.")
+			return
+		}
+
+		// Get the corresponding game
+		if v, ok := games[gameID]; !ok {
+			s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+			return
+		} else {
+			g = v
+		}
+
+		// Validate that the game is running
+		if !g.Running {
+			s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
+			return
+		}
+
+		// Validate that this player is in the game or spectating
+		if g.GetPlayerIndex(userID) == -1 && g.GetSpectatorIndex(userID) == -1 {
+			s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ".")
+			return
+		}
 	}
 
 	// Sanitize the message using the bluemonday library to stop
@@ -66,6 +98,8 @@ func commandChat(s *Session, d *CommandData) {
 	/*
 		Chat
 	*/
+
+	// Append the game ID to the room
 
 	// Add the message to the database
 	if d.Discord {
@@ -90,30 +124,12 @@ func commandChat(s *Session, d *CommandData) {
 	text += "> " + msg
 	log.Info(text)
 
-	if d.Room != "lobby" {
-		// Parse the game ID from the room name
-		gameIDstring := strings.TrimPrefix(d.Room, "game")
-		var gameID int
-		if v, err := strconv.Atoi(gameIDstring); err != nil {
-			log.Error("Failed to parse the game ID from the room name:", err)
-			s.Error("")
-			return
-		} else {
-			gameID = v
-		}
-
-		// Get the corresponding game
-		var g *Game
-		if v, ok := games[gameID]; !ok {
-			s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
-			return
-		} else {
-			g = v
-		}
-
+	if d.Room == "game" {
 		// Send it to all of the players and spectators
-		for _, p := range g.Players {
-			p.Session.NotifyChat(msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
+		if !g.SharedReplay {
+			for _, p := range g.Players {
+				p.Session.NotifyChat(msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
+			}
 		}
 		for _, s2 := range g.Spectators {
 			s2.NotifyChat(msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
