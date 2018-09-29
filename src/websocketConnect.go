@@ -114,14 +114,19 @@ func websocketConnect(ms *melody.Session) {
 	}
 	s.NotifyGameHistory(history)
 
-	// Check to see if this user was in any existing games
+	// Send a "table" message for every current table
 	for _, g := range games {
+		s.NotifyTable(g)
+	}
+
+	// First, check to see if this user was in any existing games
+	for _, g := range games {
+		if g.SharedReplay {
+			continue
+		}
+
 		for _, p := range g.Players {
 			if p.Name != s.Username() {
-				continue
-			}
-
-			if g.SharedReplay {
 				continue
 			}
 
@@ -134,14 +139,15 @@ func websocketConnect(ms *melody.Session) {
 				ID: g.ID,
 			}
 			s.Set("currentGame", g.ID)
+			s.Set("status", "Lobby")
 			commandGameReattend(s, d)
 
-			// We can break here because the player can only be in one game at a time
-			break
+			// If the user happens to be in more than one game, then we will just put them into the first one and ignore the rest
+			return
 		}
 	}
 
-	// Check to see if this user was in any existing shared replays
+	// Second, check to see if this user was in any existing shared replays
 	for _, g := range games {
 		if !g.SharedReplay {
 			continue
@@ -157,16 +163,12 @@ func websocketConnect(ms *melody.Session) {
 					ID: g.ID,
 				}
 				s.Set("currentGame", g.ID)
+				s.Set("status", "Lobby")
 				commandGameSpectate(s, d)
 
-				// We can break here because the player can only be in one game at a time
-				break
+				// We can return here because the player can only be in one shared replay at a time
+				return
 			}
 		}
-	}
-
-	// Send a "table" message for every current table
-	for _, g := range games {
-		s.NotifyTable(g)
 	}
 }

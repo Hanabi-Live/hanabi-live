@@ -46,9 +46,6 @@ func commandGameSpectate(s *Session, d *CommandData) {
 
 	log.Info(g.GetName() + "User \"" + s.Username() + "\" spectated.")
 
-	// Start the idle timeout
-	go g.CheckIdle()
-
 	// Add them to the spectators object
 	g.Spectators = append(g.Spectators, s)
 	g.NotifySpectators()
@@ -64,9 +61,6 @@ func commandGameSpectate(s *Session, d *CommandData) {
 
 func joinSharedReplay(s *Session, g *Game) {
 	log.Info(g.GetName() + "User \"" + s.Username() + "\" joined.")
-
-	// Start the idle timeout
-	go g.CheckIdle()
 
 	// Add them to the spectators object
 	g.Spectators = append(g.Spectators, s)

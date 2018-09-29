@@ -41,9 +41,6 @@ func commandGameLeave(s *Session, d *CommandData) {
 
 	log.Info(g.GetName() + "User \"" + s.Username() + "\" left. (There are now " + strconv.Itoa(len(g.Players)-1) + " players.)")
 
-	// Start the idle timeout
-	go g.CheckIdle()
-
 	// Remove the player
 	g.Players = append(g.Players[:i], g.Players[i+1:]...)
 	notifyAllTable(g)

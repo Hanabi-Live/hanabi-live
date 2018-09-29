@@ -13,16 +13,16 @@ func commandGameUnattend(s *Session, d *CommandData) {
 	// Set their status
 	oldStatus := s.Status()
 	s.Set("status", "Lobby")
+	gameID := s.CurrentGame()
+	s.Set("currentGame", -1)
 	notifyAllUser(s)
 
 	// Check to see if they are in a (solo) replay
 	if oldStatus == "Replay" {
-		s.Set("currentGame", -1)
 		return
 	}
 
 	// Validate that the game exists
-	gameID := s.CurrentGame()
 	if gameID == -1 {
 		// The user may be returning from a shared replay that was ended due to idleness,
 		// or perhaps they lagged and sent two gameUnattend messages, with this one being the second one
@@ -38,9 +38,6 @@ func commandGameUnattend(s *Session, d *CommandData) {
 		g = v
 	}
 
-	// Start the idle timeout
-	go g.CheckIdle()
-
 	// Check to see if they are a spectator
 	if oldStatus == "Spectating" || oldStatus == "Shared Replay" {
 		// Check to see if they are in the spectators list
@@ -49,9 +46,6 @@ func commandGameUnattend(s *Session, d *CommandData) {
 			log.Error("User \"" + s.Username() + "\" tried to unattend game " + strconv.Itoa(gameID) + ", but they were not in the spectators list.")
 			return
 		}
-
-		// We only want to reset this for players who are not in the actual game
-		s.Set("currentGame", -1)
 
 		// Remove them from the slice
 		g.Spectators = append(g.Spectators[:i], g.Spectators[i+1:]...)
@@ -66,8 +60,7 @@ func commandGameUnattend(s *Session, d *CommandData) {
 				// Notify everyone that the table was deleted
 				notifyAllTableGone(g)
 			} else {
-				// Since the number of spectators is the number of players for shared replays,
-				// we need to notify everyone that this player left
+				// Notify everyone that this player left
 				notifyAllTable(g)
 			}
 		}

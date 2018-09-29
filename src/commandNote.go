@@ -46,9 +46,6 @@ func commandNote(s *Session, d *CommandData) {
 		Note
 	*/
 
-	// Start the idle timeout
-	go g.CheckIdle()
-
 	// Update the array that contains all of their notes
 	p.Notes[d.Order] = d.Note
 

@@ -501,6 +501,7 @@ func (g *Game) CheckIdle() {
 	// Boot all of the spectators, if any
 	for _, s := range g.Spectators {
 		s.Set("currentGame", g.ID)
+		s.Set("status", "Spectating")
 		commandGameUnattend(s, nil)
 	}
 
@@ -526,12 +527,14 @@ func (g *Game) CheckIdle() {
 			Type: 5, // Idle timeout
 		}
 		s.Set("currentGame", g.ID)
+		s.Set("status", "Playing")
 		commandAction(s, d)
 	} else {
 		// We need to end a game that hasn't started yet
 		// Force the owner to leave, which should subsequently eject everyone else
 		// (this will send everyone back to the main lobby screen)
 		s.Set("currentGame", g.ID)
+		s.Set("status", "Pre-Game")
 		commandGameLeave(s, nil)
 	}
 }
