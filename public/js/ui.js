@@ -2921,13 +2921,11 @@ function HanabiUI(lobby, gameID) {
 
         bgLayer.add(background);
 
-        playArea = new Kinetic.Rect({
-            x: 0.183 * winW,
-            y: 0.3 * winH,
-            width: 0.435 * winW,
-            height: 0.189 * winH,
-        });
+        /*
+            Draw the discard area
+        */
 
+        // This is the invisible rectangle that players drag cards to in order to discard them
         discardArea = new Kinetic.Rect({
             x: 0.8 * winW,
             y: 0.6 * winH,
@@ -3524,7 +3522,6 @@ function HanabiUI(lobby, gameID) {
 
                     const suitLabelText = new FitText({
                         x: (playStackValues.x - 0.01 + (width + playStackValues.spacing) * i) * winW,
-                        //y: (playAreaY + 0.155 + yOffset) * winH,
                         y: (playStackValues.y + 0.155) * winH,
                         width: 0.08 * winW,
                         height: 0.051 * winH,
@@ -3541,6 +3538,32 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
+        // This is the invisible rectangle that players drag cards to in order to play them
+        // Make it a little big bigger than the stacks
+        const overlap = 0.03;
+        const playAreaValues = {
+            x: 0.183,
+            y: 0.345,
+            w: 0.435,
+            h: 0.189,
+        };
+        if (lobby.showBGAUI) {
+            playAreaValues.x = 0.01;
+            playAreaValues.y = 0.279;
+            playAreaValues.w = 0.4;
+        }
+        playArea = new Kinetic.Rect({
+            x: (playAreaValues.x - overlap) * winW,
+            y: (playAreaValues.y - overlap) * winH,
+            width: (playAreaValues.w + overlap * 2) * winW,
+            height: (playAreaValues.h + overlap * 2) * winH,
+        });
+
+        /*
+            Draw the deck
+        */
+
+        // This is the faded rectangle that is hidden until all of the deck has been depleted
         rect = new Kinetic.Rect({
             x: 0.08 * winW,
             y: 0.8 * winH,
@@ -3550,7 +3573,6 @@ function HanabiUI(lobby, gameID) {
             opacity: 0.2,
             cornerRadius: 0.006 * winW,
         });
-
         bgLayer.add(rect);
 
         drawDeck = new CardDeck({
