@@ -61,6 +61,12 @@ func commandGameCreate(s *Session, d *CommandData) {
 		return
 	}
 
+	// Blank out the time controls if this is not a timed game
+	if !d.Timed {
+		d.BaseTimeMinutes = 0
+		d.TimePerTurnSeconds = 0
+	}
+
 	/*
 		Create
 	*/

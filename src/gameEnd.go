@@ -96,6 +96,7 @@ func (g *Game) End() {
 		NumPlayers:      len(g.Players),
 		Owner:           g.Owner,
 		Variant:         g.Options.Variant,
+		Timed:           g.Options.Timed,
 		TimeBase:        int(g.Options.TimeBase),
 		TimePerTurn:     g.Options.TimePerTurn,
 		DeckPlays:       g.Options.DeckPlays,
