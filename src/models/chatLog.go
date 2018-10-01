@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"strconv"
 	"time"
 )
 
@@ -48,8 +49,7 @@ type ChatMessage struct {
 
 // Get the past messages sent in the lobby
 func (*ChatLog) Get(room string, count int) ([]ChatMessage, error) {
-	var rows *sql.Rows
-	if v, err := db.Query(`
+	SQLString := `
 		SELECT
 			IFNULL(users.username, "__server"),
 			chat_log.discord_name,
@@ -63,9 +63,13 @@ func (*ChatLog) Get(room string, count int) ([]ChatMessage, error) {
 			room = ?
 		ORDER BY
 			chat_log.datetime_sent DESC
-		LIMIT
-			?
-	`, room, count); err != nil {
+	`
+	if count > 0 {
+		SQLString += "LIMIT " + strconv.Itoa(count)
+	}
+
+	var rows *sql.Rows
+	if v, err := db.Query(SQLString, room); err != nil {
 		return nil, err
 	} else {
 		rows = v

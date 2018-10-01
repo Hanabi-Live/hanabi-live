@@ -140,6 +140,16 @@ func (g *Game) End() {
 		}
 	}
 
+	// Next, we have to insert rows for each of the chat messages
+	room := "game" + strconv.Itoa(databaseID)
+	for _, chatMsg := range g.Chat {
+		if err := db.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, room); err != nil {
+			log.Error("Failed to insert a chat message into the database:", err)
+			return
+		}
+	}
+
+	// Send a "gameHistory" message to all the players in the game
 	var numSimilar int
 	if v, err := db.Games.GetNumSimilar(g.Seed); err != nil {
 		log.Error("Failed to get the number of games on seed "+g.Seed+":", err)
@@ -147,8 +157,6 @@ func (g *Game) End() {
 	} else {
 		numSimilar = v
 	}
-
-	// Send a "gameHistory" message to all the players in the game
 	for _, p := range g.Players {
 		var otherPlayerNames string
 		for _, p2 := range g.Players {
