@@ -42,6 +42,10 @@ func graceful(s *Session, d *CommandData) {
 		return
 	}
 
+	graceful2()
+}
+
+func graceful2() {
 	numGames := countActiveGames()
 	log.Info("Initiating a graceful server restart (with " + strconv.Itoa(numGames) + " active games).")
 	if numGames == 0 {

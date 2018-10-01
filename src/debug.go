@@ -19,6 +19,10 @@ func debug(s *Session, d *CommandData) {
 		return
 	}
 
+	debug2()
+}
+
+func debug2() {
 	// Print out all of the current games
 	log.Debug("---------------------------------------------------------------")
 	log.Debug("Current games:")
