@@ -364,12 +364,14 @@ func (g *Game) NotifyBoot() {
 		Type: "boot",
 	}
 
-	for _, p := range g.Players {
-		if !p.Present {
-			continue
-		}
+	if !g.SharedReplay {
+		for _, p := range g.Players {
+			if !p.Present {
+				continue
+			}
 
-		p.Session.Emit("notify", msg)
+			p.Session.Emit("notify", msg)
+		}
 	}
 
 	for _, s := range g.Spectators {
