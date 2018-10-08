@@ -58,6 +58,13 @@ func debug(s *Session, d *CommandData) {
 		if len(g.DisconSpectators) == 0 {
 			log.Debug("    [no disconnected spectators]")
 		}
+		log.Debug("  Chat:")
+		for j, m := range g.Chat { // This is a []*GameChatMessage
+			log.Debug("    " + strconv.Itoa(j) + " - [" + strconv.Itoa(m.UserID) + "] <" + m.Username + "> " + m.Msg)
+		}
+		if len(g.Chat) == 0 {
+			log.Debug("    [no chat]")
+		}
 	}
 
 	// Print out all of the current users

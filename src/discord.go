@@ -197,6 +197,26 @@ func discordGetNickname(discordID string) string {
 	return ""
 }
 
+func discordGetChannel(discordID string) string {
+	// Get the Discord guild object
+	var guild *discordgo.Guild
+	if v, err := discord.Guild(discordListenChannels[0]); err != nil { // Assume that the first channel ID is the same as the server ID
+		log.Error("Failed to get the Discord guild:", err)
+		return ""
+	} else {
+		guild = v
+	}
+
+	// Get the name of the channel
+	for _, channel := range guild.Channels {
+		if channel.ID == discordID {
+			return channel.Name
+		}
+	}
+
+	return "Unknown Discord Channel"
+}
+
 func discordGetID(username string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild

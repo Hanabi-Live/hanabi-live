@@ -61,6 +61,12 @@ func commandGameCreate(s *Session, d *CommandData) {
 		return
 	}
 
+	// Blank out the time controls if this is not a timed game
+	if !d.Timed {
+		d.BaseTimeMinutes = 0
+		d.TimePerTurnSeconds = 0
+	}
+
 	/*
 		Create
 	*/
@@ -96,6 +102,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 		DiscardSignal: &DiscardSignal{
 			TurnExpiration: -1,
 		},
+		Chat: make([]*GameChatMessage, 0),
 	}
 	msg := g.GetName() + "User \"" + s.Username() + "\" created"
 	if g.Options.Timed && g.Options.ReorderCards {

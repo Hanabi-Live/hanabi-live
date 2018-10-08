@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 /*
@@ -150,7 +152,7 @@ func chatFillMentions(msg string) string {
 
 	for {
 		match := mentionRegExp.FindStringSubmatch(msg)
-		if match == nil || len(match) < 2 {
+		if match == nil || len(match) <= 1 {
 			break
 		}
 		discordID := match[1]
@@ -159,4 +161,60 @@ func chatFillMentions(msg string) string {
 		msg = strings.Replace(msg, "&lt;@!"+discordID+"&gt;", "@"+username, -1)
 	}
 	return msg
+}
+
+func chatFillChannels(msg string) string {
+	// Discord channels are in the form of "<#380813128176500736>"
+	// By the time the message gets here, it will be sanitized to "&lt;#380813128176500736&gt;"
+	var channelRegExp *regexp.Regexp
+	if v, err := regexp.Compile(`&lt;#(\d+?)&gt;`); err != nil {
+		log.Error("Failed to create the Discord channel regular expression:", err)
+		return msg
+	} else {
+		channelRegExp = v
+	}
+
+	for {
+		match := channelRegExp.FindStringSubmatch(msg)
+		if match == nil || len(match) <= 1 {
+			break
+		}
+		discordID := match[1]
+		channel := discordGetChannel(discordID)
+		msg = strings.Replace(msg, "&lt;#"+discordID+"&gt;", "#"+channel, -1)
+	}
+	return msg
+}
+
+func chatSendPast(s *Session, room string, count int) {
+	var rawMsgs []models.ChatMessage
+	if v, err := db.ChatLog.Get(room, count); err != nil {
+		log.Error("Failed to get the lobby chat history for user \""+s.Username()+"\":", err)
+		return
+	} else {
+		rawMsgs = v
+	}
+
+	// Right now, the room might be "room123", but the client expects the room to be either "lobby" or "game"
+	if strings.HasPrefix(room, "game") {
+		room = "game"
+	}
+
+	msgs := make([]*ChatMessage, 0)
+	for _, rawMsg := range rawMsgs {
+		discord := false
+		server := false
+		if rawMsg.Name == "__server" {
+			server = true
+		}
+		if rawMsg.DiscordName.Valid {
+			server = false
+			discord = true
+			rawMsg.Name = rawMsg.DiscordName.String
+		}
+		rawMsg.Message = chatFillMentions(rawMsg.Message)
+		msg := chatMakeMessage(rawMsg.Message, rawMsg.Name, discord, server, rawMsg.Datetime, room)
+		msgs = append(msgs, msg)
+	}
+	s.Emit("chatList", msgs)
 }

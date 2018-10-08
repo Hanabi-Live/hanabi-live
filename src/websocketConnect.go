@@ -59,31 +59,7 @@ func websocketConnect(ms *melody.Session) {
 	commandGetName(s, nil)
 
 	// Send past chat messages
-	var rawMsgs []models.ChatMessage
-	if v, err := db.ChatLog.Get("lobby", 50); err != nil {
-		log.Error("Failed to get the lobby chat history for user \""+s.Username()+"\":", err)
-		return
-	} else {
-		rawMsgs = v
-	}
-
-	msgs := make([]*ChatMessage, 0)
-	for _, rawMsg := range rawMsgs {
-		discord := false
-		server := false
-		if rawMsg.Name == "__server" {
-			server = true
-		}
-		if rawMsg.DiscordName.Valid {
-			server = false
-			discord = true
-			rawMsg.Name = rawMsg.DiscordName.String
-		}
-		rawMsg.Message = chatFillMentions(rawMsg.Message)
-		msg := chatMakeMessage(rawMsg.Message, rawMsg.Name, discord, server, rawMsg.Datetime, "lobby")
-		msgs = append(msgs, msg)
-	}
-	s.Emit("chatList", msgs)
+	chatSendPast(s, "lobby", 50)
 
 	// Send them the message(s) of the day
 	msg := "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Hanabi Discord chat</a>."
@@ -138,9 +114,7 @@ func websocketConnect(ms *melody.Session) {
 			d := &CommandData{
 				ID: g.ID,
 			}
-			s.Set("currentGame", g.ID)
-			s.Set("status", "Lobby")
-			commandGameReattend(s, d)
+			commandGameReattend(s, d) // This function doesn't care what their current game and/or status is
 
 			// If the user happens to be in more than one game, then we will just put them into the first one and ignore the rest
 			return
@@ -162,9 +136,7 @@ func websocketConnect(ms *melody.Session) {
 				d := &CommandData{
 					ID: g.ID,
 				}
-				s.Set("currentGame", g.ID)
-				s.Set("status", "Lobby")
-				commandGameSpectate(s, d)
+				commandGameSpectate(s, d) // This function doesn't care what their current game and/or status is
 
 				// We can return here because the player can only be in one shared replay at a time
 				return

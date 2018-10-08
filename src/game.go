@@ -40,7 +40,8 @@ type Game struct {
 	Sound         string
 	TurnBeginTime time.Time
 	EndTurn       int
-	BlindPlays    int // The number of consecutive blind plays
+	BlindPlays    int                // The number of consecutive blind plays
+	Chat          []*GameChatMessage // All of the in-game chat history
 }
 
 type Options struct {
@@ -56,6 +57,13 @@ type Options struct {
 type DiscardSignal struct {
 	Outstanding    bool
 	TurnExpiration int
+}
+
+type GameChatMessage struct {
+	UserID       int
+	Username     string
+	Msg          string
+	DatetimeSent time.Time
 }
 
 /*
