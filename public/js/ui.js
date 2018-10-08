@@ -2859,6 +2859,7 @@ function HanabiUI(lobby, gameID) {
     let noDiscardLabel;
     let noDoubleDiscardLabel;
     let deckPlayAvailableLabel;
+    let scoreArea;
     let replayArea;
     let replayBar;
     let replayShuttleShared;
@@ -2900,7 +2901,7 @@ function HanabiUI(lobby, gameID) {
         let y;
         let width;
         let height;
-        let offset;
+        let yOffset;
         let rect;
         let button;
 
@@ -2920,13 +2921,11 @@ function HanabiUI(lobby, gameID) {
 
         bgLayer.add(background);
 
-        playArea = new Kinetic.Rect({
-            x: 0.183 * winW,
-            y: 0.3 * winH,
-            width: 0.435 * winW,
-            height: 0.189 * winH,
-        });
+        /*
+            Draw the discard area
+        */
 
+        // This is the invisible rectangle that players drag cards to in order to discard them
         discardArea = new Kinetic.Rect({
             x: 0.8 * winW,
             y: 0.6 * winH,
@@ -2945,7 +2944,6 @@ function HanabiUI(lobby, gameID) {
             cornerRadius: 0.01 * winW,
             visible: false,
         });
-
         UILayer.add(noDiscardLabel);
 
         // The yellow border that surrounds the discard pile when it is a "Double Discard" situation
@@ -2960,9 +2958,9 @@ function HanabiUI(lobby, gameID) {
             visible: false,
             opacity: 0.75,
         });
-
         UILayer.add(noDoubleDiscardLabel);
 
+        // The faded rectange around the trash can
         rect = new Kinetic.Rect({
             x: 0.8 * winW,
             y: 0.6 * winH,
@@ -2972,9 +2970,9 @@ function HanabiUI(lobby, gameID) {
             opacity: 0.2,
             cornerRadius: 0.01 * winW,
         });
-
         bgLayer.add(rect);
 
+        // The icon over the discard pile
         const img = new Kinetic.Image({
             x: 0.82 * winW,
             y: 0.62 * winH,
@@ -2983,22 +2981,43 @@ function HanabiUI(lobby, gameID) {
             opacity: 0.2,
             image: ImageLoader.get('trashcan'),
         });
-
         bgLayer.add(img);
 
+        /*
+            The action log
+        */
+
+        const actionLogValues = {
+            x: 0.2,
+            y: 0.235,
+            w: 0.4,
+            h: 0.098,
+        };
+        if (lobby.showBGAUI) {
+            actionLogValues.x = 0.01;
+            actionLogValues.y = 0.01;
+            actionLogValues.h = 0.25;
+        }
+        const actionLog = new Kinetic.Group({
+            x: actionLogValues.x * winW,
+            y: actionLogValues.y * winH,
+        });
+        UILayer.add(actionLog);
+
+        // The faded rectange around the action log
         rect = new Kinetic.Rect({
-            x: 0.2 * winW,
-            y: 0.235 * winH,
-            width: 0.4 * winW,
-            height: 0.098 * winH,
+            x: 0,
+            y: 0,
+            width: actionLogValues.w * winW,
+            height: actionLogValues.h * winH,
             fill: 'black',
             opacity: 0.3,
             cornerRadius: 0.01 * winH,
             listening: true,
         });
+        actionLog.add(rect);
 
-        bgLayer.add(rect);
-
+        // Clicking on the action log
         rect.on('click tap', () => {
             msgLogGroup.show();
             overback.show();
@@ -3015,6 +3034,11 @@ function HanabiUI(lobby, gameID) {
             });
         });
 
+        // The action log
+        let maxLines = 3;
+        if (lobby.showBGAUI) {
+            maxLines = 8;
+        }
         messagePrompt = new MultiFitText({
             align: 'center',
             fontSize: 0.028 * winH,
@@ -3028,15 +3052,15 @@ function HanabiUI(lobby, gameID) {
             },
             shadowOpacity: 0.9,
             listening: false,
-            x: 0.21 * winW,
-            y: 0.238 * winH,
-            width: 0.38 * winW,
-            height: 0.095 * winH,
-            maxLines: 3,
+            x: 0.01 * winW,
+            y: 0.003 * winH,
+            width: (actionLogValues.w - 0.02) * winW,
+            height: (actionLogValues.h - 0.003) * winH,
+            maxLines,
         });
+        actionLog.add(messagePrompt);
 
-        UILayer.add(messagePrompt);
-
+        // The dark overlay that appears when you click on the "Help" button
         overback = new Kinetic.Rect({
             x: 0,
             y: 0,
@@ -3046,28 +3070,42 @@ function HanabiUI(lobby, gameID) {
             fill: 'black',
             visible: false,
         });
-
         overLayer.add(overback);
 
+        // The full action log (that appears when you click on the action log)
         msgLogGroup = new HanabiMsgLog();
-
         overLayer.add(msgLogGroup);
 
+        // The rectangle that holds the turn, score, and clue count
+        const scoreAreaValues = {
+            x: 0.66,
+            y: 0.81,
+        };
+        if (lobby.showBGAUI) {
+            scoreAreaValues.x = 0.168;
+            scoreAreaValues.y = 0.81;
+        }
+        scoreArea = new Kinetic.Group({
+            x: scoreAreaValues.x * winW,
+            y: scoreAreaValues.y * winH,
+        });
+        UILayer.add(scoreArea);
+
+        // The faded rectangle around the score area
         rect = new Kinetic.Rect({
-            x: 0.66 * winW,
-            y: 0.81 * winH,
+            x: 0,
+            y: 0,
             width: 0.13 * winW,
             height: 0.18 * winH,
             fill: 'black',
             opacity: 0.2,
             cornerRadius: 0.01 * winW,
         });
-
-        bgLayer.add(rect);
+        scoreArea.add(rect);
 
         const basicTextLabel = new Kinetic.Text({
-            x: 0.67 * winW,
-            y: 0.82 * winH,
+            x: 0.01 * winW,
+            y: 0.01 * winH,
             width: 0.11 * winW,
             height: 0.03 * winH,
             fontSize: 0.026 * winH,
@@ -3088,84 +3126,51 @@ function HanabiUI(lobby, gameID) {
 
         turnTextLabel = basicTextLabel.clone({
             text: 'Turn',
-            x: 0.69 * winW,
-            y: 0.82 * winH,
+            x: 0.03 * winW,
+            y: 0.01 * winH,
         });
+        scoreArea.add(turnTextLabel);
+
         turnNumberLabel = basicNumberLabel.clone({
             text: '1',
-            x: 0.73 * winW,
-            y: 0.82 * winH,
+            x: 0.07 * winW,
+            y: 0.01 * winH,
         });
+        scoreArea.add(turnNumberLabel);
+
         scoreTextLabel = basicTextLabel.clone({
             text: 'Score',
-            x: 0.69 * winW,
-            y: 0.855 * winH,
+            x: 0.03 * winW,
+            y: 0.045 * winH,
         });
+        scoreArea.add(scoreTextLabel);
+
         scoreNumberLabel = basicNumberLabel.clone({
             text: '0',
-            x: 0.73 * winW,
-            y: 0.855 * winH,
+            x: 0.07 * winW,
+            y: 0.045 * winH,
         });
+        scoreArea.add(scoreNumberLabel);
+
         cluesTextLabel = basicTextLabel.clone({
             text: 'Clues',
-            x: 0.69 * winW,
-            y: 0.89 * winH,
+            x: 0.03 * winW,
+            y: 0.08 * winH,
         });
+        scoreArea.add(cluesTextLabel);
+
         cluesNumberLabel = basicNumberLabel.clone({
             text: '8',
-            x: 0.73 * winW,
-            y: 0.89 * winH,
+            x: 0.07 * winW,
+            y: 0.08 * winH,
         });
-
-        UILayer.add(turnTextLabel);
-        UILayer.add(turnNumberLabel);
-        UILayer.add(scoreTextLabel);
-        UILayer.add(scoreNumberLabel);
-        UILayer.add(cluesTextLabel);
-        UILayer.add(cluesNumberLabel);
-
-        paceTextLabel = basicTextLabel.clone({
-            text: 'Pace',
-            x: 0.83 * winW,
-            y: 0.54 * winH,
-            fontSize: 0.020 * winH,
-        });
-        paceNumberLabel = basicNumberLabel.clone({
-            text: '-',
-            x: 0.925 * winW,
-            y: 0.54 * winH,
-            fontSize: 0.020 * winH,
-        });
-        efficiencyTextLabel = basicTextLabel.clone({
-            text: 'Efficiency',
-            x: 0.83 * winW,
-            y: 0.56 * winH,
-            fontSize: 0.020 * winH,
-        });
-        efficiencyNumberLabel = basicNumberLabel.clone({
-            text: '-',
-            x: 0.915 * winW,
-            y: 0.56 * winH,
-            width: 0.04 * winW,
-            fontSize: 0.020 * winH,
-        });
-
-        UILayer.add(efficiencyTextLabel);
-        UILayer.add(efficiencyNumberLabel);
-        UILayer.add(paceTextLabel);
-        UILayer.add(paceNumberLabel);
-
-        this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
-            this.cardsGotten += cardsGottenDelta;
-            this.efficiency = this.cardsGotten / this.cluesSpentPlusStrikes;
-            efficiencyNumberLabel.setText(`${this.efficiency.toFixed(2)}`);
-        };
+        scoreArea.add(cluesNumberLabel);
 
         // Draw the 3 strike (bomb) indicators
         for (let i = 0; i < 3; i++) {
             rect = new Kinetic.Rect({
-                x: (0.67 + 0.04 * i) * winW,
-                y: 0.925 * winH,
+                x: (0.01 + 0.04 * i) * winW,
+                y: 0.115 * winH,
                 width: 0.03 * winW,
                 height: 0.053 * winH,
                 fill: 'black',
@@ -3173,16 +3178,67 @@ function HanabiUI(lobby, gameID) {
                 cornerRadius: 0.003 * winW,
             });
 
-            bgLayer.add(rect);
+            scoreArea.add(rect);
         }
+
+        /*
+            Statistics shown on the right-hand side of the screen (at the bottom of the clue log)
+        */
+
+        paceTextLabel = basicTextLabel.clone({
+            text: 'Pace',
+            x: 0.83 * winW,
+            y: 0.54 * winH,
+            fontSize: 0.020 * winH,
+        });
+        UILayer.add(paceTextLabel);
+
+        paceNumberLabel = basicNumberLabel.clone({
+            text: '-',
+            x: 0.925 * winW,
+            y: 0.54 * winH,
+            fontSize: 0.020 * winH,
+        });
+        UILayer.add(paceNumberLabel);
+
+        efficiencyTextLabel = basicTextLabel.clone({
+            text: 'Efficiency',
+            x: 0.83 * winW,
+            y: 0.56 * winH,
+            fontSize: 0.020 * winH,
+        });
+        UILayer.add(efficiencyTextLabel);
+
+        efficiencyNumberLabel = basicNumberLabel.clone({
+            text: '-',
+            x: 0.915 * winW,
+            y: 0.56 * winH,
+            width: 0.04 * winW,
+            fontSize: 0.020 * winH,
+        });
+        UILayer.add(efficiencyNumberLabel);
+
+        this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
+            this.cardsGotten += cardsGottenDelta;
+            this.efficiency = this.cardsGotten / this.cluesSpentPlusStrikes;
+            efficiencyNumberLabel.setText(`${this.efficiency.toFixed(2)}`);
+        };
 
         /*
             The 'eyes' symbol to show that one or more people are spectating the game
         */
 
+        const spectatorsLabelValues = {
+            x: 0.623,
+            y: 0.9,
+        };
+        if (lobby.showBGAUI) {
+            spectatorsLabelValues.x = 0.01;
+            spectatorsLabelValues.y = 0.72;
+        }
         spectatorsLabel = new Kinetic.Text({
-            x: 0.623 * winW,
-            y: 0.9 * winH,
+            x: spectatorsLabelValues.x * winW,
+            y: spectatorsLabelValues.y * winH,
             width: 0.03 * winW,
             height: 0.03 * winH,
             fontSize: 0.03 * winH,
@@ -3215,8 +3271,8 @@ function HanabiUI(lobby, gameID) {
         });
 
         spectatorsNumLabel = new Kinetic.Text({
-            x: 0.583 * winW,
-            y: 0.934 * winH,
+            x: (spectatorsLabelValues.x - 0.04) * winW,
+            y: (spectatorsLabelValues.y + 0.034) * winH,
             width: 0.11 * winW,
             height: 0.03 * winH,
             fontSize: 0.03 * winH,
@@ -3236,9 +3292,17 @@ function HanabiUI(lobby, gameID) {
         UILayer.add(spectatorsNumLabel);
 
         // Shared replay leader indicator
+        const sharedReplayLeaderLabelValues = {
+            x: 0.623,
+            y: 0.85,
+        };
+        if (lobby.showBGAUI) {
+            sharedReplayLeaderLabelValues.x = spectatorsLabelValues.x + 0.03;
+            sharedReplayLeaderLabelValues.y = spectatorsLabelValues.y;
+        }
         sharedReplayLeaderLabel = new Kinetic.Text({
-            x: 0.623 * winW,
-            y: 0.85 * winH,
+            x: sharedReplayLeaderLabelValues.x * winW,
+            y: sharedReplayLeaderLabelValues.y * winH,
             width: 0.03 * winW,
             height: 0.03 * winH,
             fontSize: 0.03 * winH,
@@ -3367,7 +3431,6 @@ function HanabiUI(lobby, gameID) {
             opacity: 0.2,
             cornerRadius: 0.01 * winW,
         });
-
         bgLayer.add(rect);
 
         clueLog = new HanabiClueLog({
@@ -3376,21 +3439,23 @@ function HanabiUI(lobby, gameID) {
             width: 0.17 * winW,
             height: 0.56 * winH,
         });
-
         UILayer.add(clueLog);
 
-        let pileback;
+        /*
+            Draw the stacks and the discard pile
+        */
 
+        let pileback;
         if (this.variant.suits.length === 6) {
             y = 0.04;
             width = 0.06;
             height = 0.151;
-            offset = 0.019;
+            yOffset = 0.019;
         } else { // 5 stacks
             y = 0.05;
             width = 0.075;
             height = 0.189;
-            offset = 0;
+            yOffset = 0;
         }
 
         // TODO: move blocks like this into their own functions
@@ -3398,12 +3463,24 @@ function HanabiUI(lobby, gameID) {
         if (this.variant.showSuitNames) {
             playAreaY = 0.327;
         }
+        const playStackValues = {
+            x: 0.183,
+            y: playAreaY + yOffset,
+            spacing: 0.015,
+        };
+        if (lobby.showBGAUI) {
+            playStackValues.x = actionLogValues.x;
+            playStackValues.y = actionLogValues.y + actionLogValues.h + 0.02;
+            playStackValues.spacing = 0.006;
+        }
         {
             let i = 0;
             for (const suit of this.variant.suits) {
+                const playStackX = playStackValues.x + (width + playStackValues.spacing) * i;
+
                 pileback = new Kinetic.Image({
-                    x: (0.183 + (width + 0.015) * i) * winW,
-                    y: (playAreaY + offset) * winH,
+                    x: playStackX * winW,
+                    y: playStackValues.y * winH,
                     width: width * winW,
                     height: height * winH,
                     image: cardImages[`Card-${suit.name}-0`],
@@ -3412,8 +3489,8 @@ function HanabiUI(lobby, gameID) {
                 bgLayer.add(pileback);
 
                 const thisSuitPlayStack = new CardStack({
-                    x: (0.183 + (width + 0.015) * i) * winW,
-                    y: (playAreaY + offset) * winH,
+                    x: playStackX * winW,
+                    y: playStackValues.y * winH,
                     width: width * winW,
                     height: height * winH,
                 });
@@ -3444,8 +3521,8 @@ function HanabiUI(lobby, gameID) {
                     }
 
                     const suitLabelText = new FitText({
-                        x: (0.173 + (width + 0.015) * i) * winW,
-                        y: (playAreaY + 0.155 + offset) * winH,
+                        x: (playStackValues.x - 0.01 + (width + playStackValues.spacing) * i) * winW,
+                        y: (playStackValues.y + 0.155) * winH,
                         width: 0.08 * winW,
                         height: 0.051 * winH,
                         fontSize: 0.02 * winH,
@@ -3461,6 +3538,32 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
+        // This is the invisible rectangle that players drag cards to in order to play them
+        // Make it a little big bigger than the stacks
+        const overlap = 0.03;
+        const playAreaValues = {
+            x: 0.183,
+            y: 0.345,
+            w: 0.435,
+            h: 0.189,
+        };
+        if (lobby.showBGAUI) {
+            playAreaValues.x = 0.01;
+            playAreaValues.y = 0.279;
+            playAreaValues.w = 0.4;
+        }
+        playArea = new Kinetic.Rect({
+            x: (playAreaValues.x - overlap) * winW,
+            y: (playAreaValues.y - overlap) * winH,
+            width: (playAreaValues.w + overlap * 2) * winW,
+            height: (playAreaValues.h + overlap * 2) * winH,
+        });
+
+        /*
+            Draw the deck
+        */
+
+        // This is the faded rectangle that is hidden until all of the deck has been depleted
         rect = new Kinetic.Rect({
             x: 0.08 * winW,
             y: 0.8 * winH,
@@ -3470,7 +3573,6 @@ function HanabiUI(lobby, gameID) {
             opacity: 0.2,
             cornerRadius: 0.006 * winW,
         });
-
         bgLayer.add(rect);
 
         drawDeck = new CardDeck({
@@ -3541,321 +3643,188 @@ function HanabiUI(lobby, gameID) {
 
         cardLayer.add(drawDeck);
 
+        /* eslint-disable object-curly-newline */
+
         const handPos = {
             2: [
-                {
-                    x: 0.19,
-                    y: 0.77,
-                    w: 0.42,
-                    h: 0.189,
-                    rot: 0,
-                },
-                {
-                    x: 0.19,
-                    y: 0.01,
-                    w: 0.42,
-                    h: 0.189,
-                    rot: 0,
-                },
+                { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
+                { x: 0.19, y: 0.01, w: 0.42, h: 0.189, rot: 0 },
             ],
             3: [
-                {
-                    x: 0.19,
-                    y: 0.77,
-                    w: 0.42,
-                    h: 0.189,
-                    rot: 0,
-                },
-                {
-                    x: 0.01,
-                    y: 0.71,
-                    w: 0.41,
-                    h: 0.189,
-                    rot: -78,
-                },
-                {
-                    x: 0.705,
-                    y: 0,
-                    w: 0.41,
-                    h: 0.189,
-                    rot: 78,
-                },
+                { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
+                { x: 0.01, y: 0.71, w: 0.41, h: 0.189, rot: -78 },
+                { x: 0.705, y: 0, w: 0.41, h: 0.189, rot: 78 },
             ],
             4: [
-                {
-                    x: 0.23,
-                    y: 0.77,
-                    w: 0.34,
-                    h: 0.189,
-                    rot: 0,
-                },
-                {
-                    x: 0.015,
-                    y: 0.7,
-                    w: 0.34,
-                    h: 0.189,
-                    rot: -78,
-                },
-                {
-                    x: 0.23,
-                    y: 0.01,
-                    w: 0.34,
-                    h: 0.189,
-                    rot: 0,
-                },
-                {
-                    x: 0.715,
-                    y: 0.095,
-                    w: 0.34,
-                    h: 0.189,
-                    rot: 78,
-                },
+                { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
+                { x: 0.015, y: 0.7, w: 0.34, h: 0.189, rot: -78 },
+                { x: 0.23, y: 0.01, w: 0.34, h: 0.189, rot: 0 },
+                { x: 0.715, y: 0.095, w: 0.34, h: 0.189, rot: 78 },
             ],
             5: [
-                {
-                    x: 0.23,
-                    y: 0.77,
-                    w: 0.34,
-                    h: 0.189,
-                    rot: 0,
-                },
-                {
-                    x: 0.03,
-                    y: 0.77,
-                    w: 0.301,
-                    h: 0.18,
-                    rot: -90,
-                },
-                {
-                    x: 0.025,
-                    y: 0.009,
-                    w: 0.34,
-                    h: 0.189,
-                    rot: 0,
-                },
-                {
-                    x: 0.445,
-                    y: 0.009,
-                    w: 0.34,
-                    h: 0.189,
-                    rot: 0,
-                },
-                {
-                    x: 0.77,
-                    y: 0.22,
-                    w: 0.301,
-                    h: 0.18,
-                    rot: 90,
-                },
+                { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
+                { x: 0.03, y: 0.77, w: 0.301, h: 0.18, rot: -90 },
+                { x: 0.025, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
+                { x: 0.445, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
+                { x: 0.77, y: 0.22, w: 0.301, h: 0.18, rot: 90 },
             ],
         };
 
+        const handPosBGA = {
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+        };
+
+        // Set the hand positions for 2-player and 3-player
+        // (with 5 cards in the hand)
+        const handPosBGAValues = {
+            x: 0.44,
+            y: 0.01,
+            w: 0.34,
+            h: 0.16,
+            rot: 0,
+            spacing: 0.22,
+        };
+        for (let i = 2; i <= 3; i++) {
+            for (let j = 0; j < i; j++) {
+                handPosBGA[i].push({
+                    x: handPosBGAValues.x,
+                    y: handPosBGAValues.y + (handPosBGAValues.spacing * j),
+                    w: handPosBGAValues.w,
+                    h: handPosBGAValues.h,
+                    rot: handPosBGAValues.rot,
+                });
+            }
+        }
+
+        // Set the hand positions for 4-player and 5-player
+        // (with 4 cards in the hand)
+        const handPosBGAValuesSmall = {
+            x: 0.47,
+            y: handPosBGAValues.y,
+            w: 0.27,
+            h: handPosBGAValues.h,
+            rot: handPosBGAValues.rot,
+            spacing: 0.195,
+        };
+        for (let i = 4; i <= 5; i++) {
+            for (let j = 0; j < i; j++) {
+                handPosBGA[i].push({
+                    x: handPosBGAValuesSmall.x,
+                    y: handPosBGAValuesSmall.y + (handPosBGAValuesSmall.spacing * j),
+                    w: handPosBGAValuesSmall.w,
+                    h: handPosBGAValuesSmall.h,
+                    rot: handPosBGAValuesSmall.rot,
+                });
+            }
+        }
+
+        // This is the position for the white shade that shows where the new side of the hand is
+        // (there is no shade on the Board Game Arena mode)
         const shadePos = {
             2: [
-                {
-                    x: 0.185,
-                    y: 0.762,
-                    w: 0.43,
-                    h: 0.205,
-                    rot: 0,
-                },
-                {
-                    x: 0.185,
-                    y: 0.002,
-                    w: 0.43,
-                    h: 0.205,
-                    rot: 0,
-                },
+                { x: 0.185, y: 0.762, w: 0.43, h: 0.205, rot: 0 },
+                { x: 0.185, y: 0.002, w: 0.43, h: 0.205, rot: 0 },
             ],
             3: [
-                {
-                    x: 0.185,
-                    y: 0.762,
-                    w: 0.43,
-                    h: 0.205,
-                    rot: 0,
-                },
-                {
-                    x: 0.005,
-                    y: 0.718,
-                    w: 0.42,
-                    h: 0.205,
-                    rot: -78,
-                },
-                {
-                    x: 0.708,
-                    y: -0.008,
-                    w: 0.42,
-                    h: 0.205,
-                    rot: 78,
-                },
+                { x: 0.185, y: 0.762, w: 0.43, h: 0.205, rot: 0 },
+                { x: 0.005, y: 0.718, w: 0.42, h: 0.205, rot: -78 },
+                { x: 0.708, y: -0.008, w: 0.42, h: 0.205, rot: 78 },
             ],
             4: [
-                {
-                    x: 0.225,
-                    y: 0.762,
-                    w: 0.35,
-                    h: 0.205,
-                    rot: 0,
-                },
-                {
-                    x: 0.01,
-                    y: 0.708,
-                    w: 0.35,
-                    h: 0.205,
-                    rot: -78,
-                },
-                {
-                    x: 0.225,
-                    y: 0.002,
-                    w: 0.35,
-                    h: 0.205,
-                    rot: 0,
-                },
-                {
-                    x: 0.718,
-                    y: 0.087,
-                    w: 0.35,
-                    h: 0.205,
-                    rot: 78,
-                },
+                { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0 },
+                { x: 0.01, y: 0.708, w: 0.35, h: 0.205, rot: -78 },
+                { x: 0.225, y: 0.002, w: 0.35, h: 0.205, rot: 0 },
+                { x: 0.718, y: 0.087, w: 0.35, h: 0.205, rot: 78 },
             ],
             5: [
-                {
-                    x: 0.225,
-                    y: 0.762,
-                    w: 0.35,
-                    h: 0.205,
-                    rot: 0,
-                },
-                {
-                    x: 0.026,
-                    y: 0.775,
-                    w: 0.311,
-                    h: 0.196,
-                    rot: -90,
-                },
-                {
-                    x: 0.02,
-                    y: 0.001,
-                    w: 0.35,
-                    h: 0.205,
-                    rot: 0,
-                },
-                {
-                    x: 0.44,
-                    y: 0.001,
-                    w: 0.35,
-                    h: 0.205,
-                    rot: 0,
-                },
-                {
-                    x: 0.774,
-                    y: 0.215,
-                    w: 0.311,
-                    h: 0.196,
-                    rot: 90,
-                },
+                { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0 },
+                { x: 0.026, y: 0.775, w: 0.311, h: 0.196, rot: -90 },
+                { x: 0.02, y: 0.001, w: 0.35, h: 0.205, rot: 0 },
+                { x: 0.44, y: 0.001, w: 0.35, h: 0.205, rot: 0 },
+                { x: 0.774, y: 0.215, w: 0.311, h: 0.196, rot: 90 },
             ],
         };
 
+        const namePosValues = {
+            h: 0.02,
+        };
         const namePos = {
             2: [
-                {
-                    x: 0.18,
-                    y: 0.97,
-                    w: 0.44,
-                    h: 0.02,
-                },
-                {
-                    x: 0.18,
-                    y: 0.21,
-                    w: 0.44,
-                    h: 0.02,
-                },
+                { x: 0.18, y: 0.97, w: 0.44, h: namePosValues.h },
+                { x: 0.18, y: 0.21, w: 0.44, h: namePosValues.h },
             ],
             3: [
-                {
-                    x: 0.18,
-                    y: 0.97,
-                    w: 0.44,
-                    h: 0.02,
-                },
-                {
-                    x: 0.01,
-                    y: 0.765,
-                    w: 0.12,
-                    h: 0.02,
-                },
-                {
-                    x: 0.67,
-                    y: 0.765,
-                    w: 0.12,
-                    h: 0.02,
-                },
+                { x: 0.18, y: 0.97, w: 0.44, h: namePosValues.h },
+                { x: 0.01, y: 0.765, w: 0.12, h: namePosValues.h },
+                { x: 0.67, y: 0.765, w: 0.12, h: namePosValues.h },
             ],
             4: [
-                {
-                    x: 0.22,
-                    y: 0.97,
-                    w: 0.36,
-                    h: 0.02,
-                },
-                {
-                    x: 0.01,
-                    y: 0.74,
-                    w: 0.13,
-                    h: 0.02,
-                },
-                {
-                    x: 0.22,
-                    y: 0.21,
-                    w: 0.36,
-                    h: 0.02,
-                },
-                {
-                    x: 0.66,
-                    y: 0.74,
-                    w: 0.13,
-                    h: 0.02,
-                },
+                { x: 0.22, y: 0.97, w: 0.36, h: namePosValues.h },
+                { x: 0.01, y: 0.74, w: 0.13, h: namePosValues.h },
+                { x: 0.22, y: 0.21, w: 0.36, h: namePosValues.h },
+                { x: 0.66, y: 0.74, w: 0.13, h: namePosValues.h },
             ],
             5: [
-                {
-                    x: 0.22,
-                    y: 0.97,
-                    w: 0.36,
-                    h: 0.02,
-                },
-                {
-                    x: 0.025,
-                    y: 0.775,
-                    w: 0.116,
-                    h: 0.02,
-                },
-                {
-                    x: 0.015,
-                    y: 0.199,
-                    w: 0.36,
-                    h: 0.02,
-                },
-                {
-                    x: 0.435,
-                    y: 0.199,
-                    w: 0.36,
-                    h: 0.02,
-                },
-                {
-                    x: 0.659,
-                    y: 0.775,
-                    w: 0.116,
-                    h: 0.02,
-                },
+                { x: 0.22, y: 0.97, w: 0.36, h: namePosValues.h },
+                { x: 0.025, y: 0.775, w: 0.116, h: namePosValues.h },
+                { x: 0.015, y: 0.199, w: 0.36, h: namePosValues.h },
+                { x: 0.435, y: 0.199, w: 0.36, h: namePosValues.h },
+                { x: 0.659, y: 0.775, w: 0.116, h: namePosValues.h },
             ],
         };
+
+        const namePosBGAMod = {
+            x: -0.01,
+            y: 0.17,
+            w: 0.02,
+        };
+        const namePosBGA = {
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+        };
+        for (let i = 2; i <= 5; i++) {
+            for (let j = 0; j < i; j++) {
+                namePosBGA[i].push({
+                    x: handPosBGA[i][j].x + namePosBGAMod.x,
+                    y: handPosBGA[i][j].y + namePosBGAMod.y,
+                    w: handPosBGA[i][j].w + namePosBGAMod.w,
+                    h: namePosValues.h,
+                });
+            }
+        }
+
+
+        /* eslint-enable object-curly-newline */
 
         const nump = this.playerNames.length;
 
+        const isHandReversed = (j) => {
+            // By default, the hand is not reversed
+            let reverse = false;
+
+            if (j === 0) {
+                // Reverse the ordering of the cards for our own hand
+                // (for our hand, the oldest card is the first card, which should be on the right)
+                reverse = true;
+            }
+            if (lobby.showBGAUI) {
+                // If Board Game Arena mode is on, then we need to reverse every hand
+                reverse = true;
+            }
+            if (lobby.reverseHands) {
+                // If the "Reverse hand direction" option is turned on, then we need to flip the direction of every hand
+                reverse = !reverse;
+            }
+
+            return reverse;
+        };
+
+        // Draw the hands
         for (let i = 0; i < nump; i++) {
             let j = i - this.playerUs;
 
@@ -3863,60 +3832,82 @@ function HanabiUI(lobby, gameID) {
                 j += nump;
             }
 
+            let playerHandPos = handPos;
+            if (lobby.showBGAUI) {
+                playerHandPos = handPosBGA;
+            }
+
+            let invertCards = false;
+            if (i !== this.playerUs) {
+                // We want to flip the cards for other players
+                invertCards = true;
+            }
+            if (lobby.showBGAUI) {
+                // On the BGA layout, all the hands should not be flipped
+                invertCards = false;
+            }
+
             playerHands[i] = new CardLayout({
-                x: handPos[nump][j].x * winW,
-                y: handPos[nump][j].y * winH,
-                width: handPos[nump][j].w * winW,
-                height: handPos[nump][j].h * winH,
-                rotationDeg: handPos[nump][j].rot,
+                x: playerHandPos[nump][j].x * winW,
+                y: playerHandPos[nump][j].y * winH,
+                width: playerHandPos[nump][j].w * winW,
+                height: playerHandPos[nump][j].h * winH,
+                rotationDeg: playerHandPos[nump][j].rot,
                 align: 'center',
-                reverse: j === 0 !== lobby.reverseHands,
-                invertCards: i !== this.playerUs,
+                reverse: isHandReversed(j),
+                invertCards,
             });
 
             cardLayer.add(playerHands[i]);
 
             // Draw the faded shade that shows where the "new" side of the hand is
-            rect = new Kinetic.Rect({
-                x: shadePos[nump][j].x * winW,
-                y: shadePos[nump][j].y * winH,
-                width: shadePos[nump][j].w * winW,
-                height: shadePos[nump][j].h * winH,
-                rotationDeg: shadePos[nump][j].rot,
-                cornerRadius: 0.01 * shadePos[nump][j].w * winW,
-                opacity: 0.4,
-                fillLinearGradientStartPoint: {
-                    x: 0,
-                    y: 0,
-                },
-                fillLinearGradientEndPoint: {
-                    x: shadePos[nump][j].w * winW,
-                    y: 0,
-                },
-                fillLinearGradientColorStops: [
-                    0,
-                    'rgba(0,0,0,0)',
-                    0.9,
-                    'white',
-                ],
-            });
+            // (but don't bother drawing it in Board Game Arena mode since all the hands face the same way)
+            if (!lobby.showBGAUI) {
+                rect = new Kinetic.Rect({
+                    x: shadePos[nump][j].x * winW,
+                    y: shadePos[nump][j].y * winH,
+                    width: shadePos[nump][j].w * winW,
+                    height: shadePos[nump][j].h * winH,
+                    rotationDeg: shadePos[nump][j].rot,
+                    cornerRadius: 0.01 * shadePos[nump][j].w * winW,
+                    opacity: 0.4,
+                    fillLinearGradientStartPoint: {
+                        x: 0,
+                        y: 0,
+                    },
+                    fillLinearGradientEndPoint: {
+                        x: shadePos[nump][j].w * winW,
+                        y: 0,
+                    },
+                    fillLinearGradientColorStops: [
+                        0,
+                        'rgba(0,0,0,0)',
+                        0.9,
+                        'white',
+                    ],
+                });
 
-            if (j === 0 !== lobby.reverseHands) {
-                rect.setFillLinearGradientColorStops([
-                    1,
-                    'rgba(0,0,0,0)',
-                    0.1,
-                    'white',
-                ]);
+                if (isHandReversed(j)) {
+                    rect.setFillLinearGradientColorStops([
+                        1,
+                        'rgba(0,0,0,0)',
+                        0.1,
+                        'white',
+                    ]);
+                }
+
+                bgLayer.add(rect);
             }
 
-            bgLayer.add(rect);
-
+            let playerNamePos = namePos;
+            if (lobby.showBGAUI) {
+                playerNamePos = namePosBGA;
+            }
             nameFrames[i] = new HanabiNameFrame({
-                x: namePos[nump][j].x * winW,
-                y: namePos[nump][j].y * winH,
-                width: namePos[nump][j].w * winW,
-                height: namePos[nump][j].h * winH,
+                x: playerNamePos[nump][j].x * winW,
+                y: playerNamePos[nump][j].y * winH,
+                width: playerNamePos[nump][j].w * winW,
+                height: playerNamePos[nump][j].h * winH,
                 name: this.playerNames[i],
             });
 
@@ -3940,41 +3931,25 @@ function HanabiUI(lobby, gameID) {
             }
         }
 
-        noClueBox = new Kinetic.Rect({
-            x: 0.275 * winW,
-            y: 0.56 * winH,
-            width: 0.25 * winW,
-            height: 0.15 * winH,
-            cornerRadius: 0.01 * winW,
-            fill: 'black',
-            opacity: 0.5,
-            visible: false,
-        });
+        /*
+            Draw the clue area
+        */
 
-        UILayer.add(noClueBox);
-
-        noClueLabel = new Kinetic.Text({
-            x: 0.15 * winW,
-            y: 0.585 * winH,
-            width: 0.5 * winW,
-            height: 0.19 * winH,
-            fontFamily: 'Verdana',
-            fontSize: 0.08 * winH,
-            strokeWidth: 1,
-            text: 'No Clues',
-            align: 'center',
-            fill: '#df2c4d',
-            stroke: 'black',
-            visible: false,
-        });
-
-        UILayer.add(noClueLabel);
-
+        const clueAreaValues = {
+            x: 0.1,
+            y: 0.54,
+            w: 0.55, // The width of all of the vanilla cards is 0.435
+            h: 0.27,
+        };
+        if (lobby.showBGAUI) {
+            clueAreaValues.x = playStackValues.x - 0.102;
+            clueAreaValues.y = playStackValues.y + 0.22;
+        }
         clueArea = new Kinetic.Group({
-            x: 0.10 * winW,
-            y: 0.54 * winH,
-            width: 0.55 * winW,
-            height: 0.27 * winH,
+            x: clueAreaValues.x * winW,
+            y: clueAreaValues.y * winH,
+            width: clueAreaValues.w * winW,
+            height: clueAreaValues.h * winH,
         });
 
         clueTargetButtonGroup = new ButtonGroup();
@@ -4068,12 +4043,50 @@ function HanabiUI(lobby, gameID) {
             height: 0.051 * winH,
             text: 'Give Clue',
         });
-
         clueArea.add(submitClue);
-
         clueArea.hide();
 
         UILayer.add(clueArea);
+
+        const noClueBoxValues = {
+            x: 0.275,
+            y: 0.56,
+        };
+        if (lobby.showBGAUI) {
+            noClueBoxValues.x = clueAreaValues.x + 0.178;
+            noClueBoxValues.y = clueAreaValues.y;
+        }
+        noClueBox = new Kinetic.Rect({
+            x: noClueBoxValues.x * winW,
+            y: noClueBoxValues.y * winH,
+            width: 0.25 * winW,
+            height: 0.15 * winH,
+            cornerRadius: 0.01 * winW,
+            fill: 'black',
+            opacity: 0.5,
+            visible: false,
+        });
+        UILayer.add(noClueBox);
+
+        const noClueLabelValues = {
+            x: noClueBoxValues.x - 0.125,
+            y: noClueBoxValues.y + 0.025,
+        };
+        noClueLabel = new Kinetic.Text({
+            x: noClueLabelValues.x * winW,
+            y: noClueLabelValues.y * winH,
+            width: 0.5 * winW,
+            height: 0.19 * winH,
+            fontFamily: 'Verdana',
+            fontSize: 0.08 * winH,
+            strokeWidth: 1,
+            text: 'No Clues',
+            align: 'center',
+            fill: '#df2c4d',
+            stroke: 'black',
+            visible: false,
+        });
+        UILayer.add(noClueLabel);
 
         /*
             Draw the timer
@@ -4083,11 +4096,22 @@ function HanabiUI(lobby, gameID) {
 
         // We don't want the timer to show in replays
         if (!this.replayOnly && (ui.timedGame || lobby.showTimerInUntimed)) {
-            const timerY = 0.592;
+            const timerValues = {
+                x1: 0.155,
+                x2: 0.565,
+                y1: 0.592,
+                y2: 0.592,
+            };
+            if (lobby.showBGAUI) {
+                timerValues.x1 = 0.31;
+                timerValues.x2 = 0.31;
+                timerValues.y1 = 0.77;
+                timerValues.y2 = 0.885;
+            }
 
             timer1 = new TimerDisplay({
-                x: 0.155 * winW,
-                y: timerY * winH,
+                x: timerValues.x1 * winW,
+                y: timerValues.y1 * winH,
                 width: 0.08 * winW,
                 height: 0.051 * winH,
                 fontSize: 0.03 * winH,
@@ -4100,8 +4124,8 @@ function HanabiUI(lobby, gameID) {
             timerLayer.add(timer1);
 
             timer2 = new TimerDisplay({
-                x: 0.565 * winW,
-                y: timerY * winH,
+                x: timerValues.x2 * winW,
+                y: timerValues.y2 * winH,
                 width: 0.08 * winW,
                 height: 0.051 * winH,
                 fontSize: 0.03 * winH,
@@ -4133,17 +4157,27 @@ function HanabiUI(lobby, gameID) {
         };
         this.inferSharedReplayMode = inferSharedReplayMode; // Make it available os that we can use it elsewhere in the code
 
+        const replayAreaValues = {
+            x: 0.15,
+            y: 0.51,
+            w: 0.5,
+        };
+        if (lobby.showBGAUI) {
+            replayAreaValues.x = 0.01;
+            replayAreaValues.y = 0.49;
+            replayAreaValues.w = 0.4;
+        }
         replayArea = new Kinetic.Group({
-            x: 0.15 * winW,
-            y: 0.51 * winH,
-            width: 0.5 * winW,
+            x: replayAreaValues.x * winW,
+            y: replayAreaValues.y * winH,
+            width: replayAreaValues.w * winW,
             height: 0.27 * winH,
         });
 
         replayBar = new Kinetic.Rect({
             x: 0,
             y: 0.0425 * winH,
-            width: 0.5 * winW,
+            width: replayAreaValues.w * winW,
             height: 0.01 * winH,
             fill: 'black',
             cornerRadius: 0.005 * winH,
@@ -4155,7 +4189,7 @@ function HanabiUI(lobby, gameID) {
         rect = new Kinetic.Rect({
             x: 0,
             y: 0,
-            width: 0.5 * winW,
+            width: replayAreaValues.w * winW,
             height: 0.05 * winH,
             opacity: 0,
         });
@@ -4221,99 +4255,91 @@ function HanabiUI(lobby, gameID) {
                 };
             },
         });
-
         replayShuttle.on('dragend', () => {
             cardLayer.draw();
             UILayer.draw();
         });
-
         replayArea.add(replayShuttle);
-
         ui.adjustReplayShuttle();
+
+        const replayButtonValues = {
+            x: 0.1,
+            y: 0.07,
+            spacing: 0.08,
+        };
+        if (lobby.showBGAUI) {
+            replayButtonValues.x = 0.05;
+        }
 
         // Rewind to the beginning (the left-most button)
         button = new Button({
-            x: 0.1 * winW,
+            x: replayButtonValues.x * winW,
             y: 0.07 * winH,
             width: 0.06 * winW,
             height: 0.08 * winH,
             image: 'rewindfull',
         });
-
-
         const rewindFullFunction = () => {
             inferSharedReplayMode();
             ui.performReplay(0);
         };
-
         button.on('click tap', rewindFullFunction);
-
         replayArea.add(button);
 
         // Rewind one turn (the second left-most button)
         button = new Button({
-            x: 0.18 * winW,
+            x: (replayButtonValues.x + replayButtonValues.spacing) * winW,
             y: 0.07 * winH,
             width: 0.06 * winW,
             height: 0.08 * winH,
             image: 'rewind',
         });
-
         const backwardFunction = () => {
             inferSharedReplayMode();
             ui.performReplay(self.replayTurn - 1, true);
         };
-
         button.on('click tap', backwardFunction);
-
         replayArea.add(button);
 
         // Go forward one turn (the second right-most button)
         button = new Button({
-            x: 0.26 * winW,
+            x: (replayButtonValues.x + replayButtonValues.spacing * 2) * winW,
             y: 0.07 * winH,
             width: 0.06 * winW,
             height: 0.08 * winH,
             image: 'forward',
         });
-
         const forwardFunction = () => {
             inferSharedReplayMode();
             ui.performReplay(self.replayTurn + 1);
         };
-
         button.on('click tap', forwardFunction);
-
         replayArea.add(button);
 
         // Go forward to the end (the right-most button)
         button = new Button({
-            x: 0.34 * winW,
+            x: (replayButtonValues.x + replayButtonValues.spacing * 3) * winW,
             y: 0.07 * winH,
             width: 0.06 * winW,
             height: 0.08 * winH,
             image: 'forwardfull',
         });
-
         const forwardFullFunction = () => {
             inferSharedReplayMode();
             ui.performReplay(self.replayMax, true);
         };
-
         button.on('click tap', forwardFullFunction);
-
         replayArea.add(button);
 
         // The "Exit Replay" button
         replayExitButton = new Button({
-            x: 0.15 * winW,
+            x: (replayButtonValues.x + 0.05) * winW,
             y: 0.17 * winH,
             width: 0.2 * winW,
             height: 0.06 * winH,
             text: 'Exit Replay',
             visible: !this.replayOnly && !this.sharedReplay,
         });
-
         replayExitButton.on('click tap', () => {
             if (self.replayOnly) {
                 ui.sendMsg({
@@ -4322,21 +4348,19 @@ function HanabiUI(lobby, gameID) {
                 });
 
                 this.stopLocalTimer();
-
                 ui.lobby.gameEnded();
             } else {
                 // Mark the time that the user clicked the "Exit Replay" button
                 // (so that we can avoid an accidental "Give Clue" double-click)
                 ui.accidentalClueTimer = Date.now();
-
                 self.enterReplay(false);
             }
         });
-
         replayArea.add(replayExitButton);
 
+        // The "Pause Shared Turns"  / "Use Shared Turns" button
         toggleSharedTurnButton = new ToggleButton({
-            x: 0.15 * winW,
+            x: (replayButtonValues.x + 0.05) * winW,
             y: 0.17 * winH,
             width: 0.2 * winW,
             height: 0.06 * winH,
@@ -4345,7 +4369,6 @@ function HanabiUI(lobby, gameID) {
             initialState: !ui.useSharedTurns,
             visible: false,
         });
-
         toggleSharedTurnButton.on('click tap', () => {
             ui.useSharedTurns = !ui.useSharedTurns;
             replayShuttleShared.setVisible(!ui.useSharedTurns);
@@ -4357,7 +4380,6 @@ function HanabiUI(lobby, gameID) {
                 }
             }
         });
-
         replayArea.add(toggleSharedTurnButton);
 
         replayArea.hide();
@@ -5440,8 +5462,8 @@ function HanabiUI(lobby, gameID) {
             this.cluesSpentPlusStrikes += 1;
             this.handleEfficiency(0);
             const x = new Kinetic.Image({
-                x: (0.675 + 0.04 * (data.num - 1)) * winW,
-                y: 0.935 * winH,
+                x: (0.015 + 0.04 * (data.num - 1)) * winW,
+                y: 0.125 * winH,
                 width: 0.02 * winW,
                 height: 0.036 * winH,
                 image: ImageLoader.get('redx'),
@@ -5450,7 +5472,7 @@ function HanabiUI(lobby, gameID) {
 
             strikes[data.num - 1] = x;
 
-            UILayer.add(x);
+            scoreArea.add(x);
 
             if (ui.animateFast) {
                 x.setOpacity(1.0);
