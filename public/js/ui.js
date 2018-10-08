@@ -1981,7 +1981,6 @@ function HanabiUI(lobby, gameID) {
             opacity: 0.1,
             listening: true,
         });
-
         this.background = background;
 
         this.add(background);
@@ -1997,7 +1996,6 @@ function HanabiUI(lobby, gameID) {
             text: config.giver,
             listening: false,
         });
-
         this.add(giver);
 
         const target = new FitText({
@@ -2011,7 +2009,6 @@ function HanabiUI(lobby, gameID) {
             text: config.target,
             listening: false,
         });
-
         this.add(target);
 
         const name = new Kinetic.Text({
@@ -2026,7 +2023,6 @@ function HanabiUI(lobby, gameID) {
             text: config.clueName,
             listening: false,
         });
-
         this.add(name);
 
         const negativeMarker = new Kinetic.Text({
@@ -2824,6 +2820,7 @@ function HanabiUI(lobby, gameID) {
     const playerHands = [];
     let drawDeck;
     let messagePrompt;
+    let chatLog;
 
     let cluesTextLabel;
     let cluesNumberLabel;
@@ -2869,6 +2866,8 @@ function HanabiUI(lobby, gameID) {
     let toggleSharedTurnButton; // Used in shared replays
     let lobbyButton;
     let helpButton;
+    let chatButton;
+    let cluesButton;
     let helpGroup;
     let msgLogGroup;
     let overback;
@@ -3225,7 +3224,7 @@ function HanabiUI(lobby, gameID) {
         };
 
         /*
-            The 'eyes' symbol to show that one or more people are spectating the game
+            The "eyes" symbol to show that one or more people are spectating the game
         */
 
         const spectatorsLabelValues = {
@@ -3422,24 +3421,61 @@ function HanabiUI(lobby, gameID) {
             End of spectator / shared replay stuff
         */
 
+        /*
+            Draw the clue log
+        */
+
+        const clueLogValues = {
+            x: 0.8,
+            y: 0.01,
+            w: 0.19,
+            h: 0.58,
+        };
         rect = new Kinetic.Rect({
-            x: 0.8 * winW,
-            y: 0.01 * winH,
-            width: 0.19 * winW,
-            height: 0.58 * winH,
+            x: clueLogValues.x * winW,
+            y: clueLogValues.y * winH,
+            width: clueLogValues.w * winW,
+            height: clueLogValues.h * winH,
             fill: 'black',
             opacity: 0.2,
             cornerRadius: 0.01 * winW,
         });
         bgLayer.add(rect);
 
+        const spacing = 0.01;
         clueLog = new HanabiClueLog({
-            x: 0.81 * winW,
-            y: 0.02 * winH,
-            width: 0.17 * winW,
-            height: 0.56 * winH,
+            x: (clueLogValues.x + spacing) * winW,
+            y: (clueLogValues.y + spacing) * winH,
+            width: (clueLogValues.w - spacing * 2) * winW,
+            height: (clueLogValues.h - spacing * 2) * winH,
         });
         UILayer.add(clueLog);
+
+        /*
+            Draw the chat log
+            (this shared the faded rectangle from the clue log)
+        */
+
+        chatLog = new MultiFitText({
+            align: 'left',
+            fontSize: 0.028 * winH,
+            fontFamily: 'Verdana',
+            fill: '#d8d5ef',
+            shadowColor: 'black',
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
+            listening: false,
+            x: clueLogValues.x * winW,
+            y: clueLogValues.y * winH,
+            width: clueLogValues.w * winW,
+            height: clueLogValues.h * winH,
+            maxLines: 20,
+        });
+        UILayer.add(chatLog);
 
         /*
             Draw the stacks and the discard pile
@@ -4735,26 +4771,24 @@ function HanabiUI(lobby, gameID) {
             fill: 'black',
             cornerRadius: 0.01 * winW,
         });
-
         helpGroup.add(rect);
 
         const helpText = `Welcome to Hanabi!
 
-    When it is your turn, you may play a card by dragging it to the play stacks in the center of the screen.
+When it is your turn, you may play a card by dragging it to the play stacks in the center of the screen.
 
-    To discard, drag a card to the discard area in the lower right. However, note that you are not allowed to discard when there are 8 clues available. (A red border will appear around the discard area to signify this.)
+To discard, drag a card to the discard area in the lower right. However, note that you are not allowed to discard when there are 8 clues available. (A red border will appear around the discard area to signify this.)
 
-    To give a clue, use the boxes in the center of the screen. You may mouseover a card to see what clues have been given about it. You can also mouseover the clues in the log to see which cards it referenced.
+To give a clue, use the boxes in the center of the screen. You may mouseover a card to see what clues have been given about it. You can also mouseover the clues in the log to see which cards it referenced.
 
-    You can rewind the game state with the arrow button in the bottom-left.
+You can rewind the game state with the arrow button in the bottom-left.
 
-    Keyboard hotkeys:
-    - Play: "a" or "+"
-    - Discard: "d" or "-"
-    - Clue: "Tab", then 1/2/3/4/5 or Q/W/E/R/T, then "Enter"
-    - Rewind: "Left", or "[" for a full rotation, or "Home" for the beginning
-    - Fast-forward: "Right", or "]" for a full rotation, or "End" for the end`;
-
+Keyboard hotkeys:
+- Play: "a" or "+"
+- Discard: "d" or "-"
+- Clue: "Tab", then 1/2/3/4/5 or Q/W/E/R/T, then "Enter"
+- Rewind: "Left", or "[" for a full rotation, or "Home" for the beginning
+- Fast-forward: "Right", or "]" for a full rotation, or "End" for the end`;
         const text = new Kinetic.Text({
             x: 0.03 * winW,
             y: 0.03 * winH,
@@ -4765,7 +4799,6 @@ function HanabiUI(lobby, gameID) {
             fill: 'white',
             text: helpText,
         });
-
         helpGroup.add(text);
 
         deckPlayAvailableLabel = new Kinetic.Rect({
@@ -4778,7 +4811,6 @@ function HanabiUI(lobby, gameID) {
             strokeWidth: 10,
             visible: false,
         });
-
         UILayer.add(deckPlayAvailableLabel);
 
         replayButton = new Button({
@@ -4789,7 +4821,6 @@ function HanabiUI(lobby, gameID) {
             image: 'replay',
             visible: false,
         });
-
         replayButton.on('click tap', () => {
             self.enterReplay(!self.replay);
         });
@@ -4802,16 +4833,14 @@ function HanabiUI(lobby, gameID) {
             width: 0.06 * winW,
             height: 0.06 * winH,
             text: 'Help',
+            visible: false, // Currently disabled in favor of a chat button
         });
-
         UILayer.add(helpButton);
-
         helpButton.on('click tap', () => {
             helpGroup.show();
             overback.show();
 
             overLayer.draw();
-
             overback.on('click tap', () => {
                 overback.off('click tap');
 
@@ -4822,6 +4851,43 @@ function HanabiUI(lobby, gameID) {
             });
         });
 
+        const toggleChat = (show) => {
+            chatButton.setVisible(!show);
+            cluesButton.setVisible(show);
+            clueLog.setVisible(!show);
+            paceTextLabel.setVisible(!show);
+            paceNumberLabel.setVisible(!show);
+            efficiencyTextLabel.setVisible(!show);
+            efficiencyNumberLabel.setVisible(!show);
+            chatLog.setVisible(show);
+            UILayer.draw();
+        };
+
+        chatButton = new Button({
+            x: 0.01 * winW,
+            y: 0.87 * winH,
+            width: 0.06 * winW,
+            height: 0.06 * winH,
+            text: 'Chat',
+        });
+        UILayer.add(chatButton);
+        chatButton.on('click tap', () => {
+            toggleChat(true);
+        });
+
+        cluesButton = new Button({
+            x: 0.01 * winW,
+            y: 0.87 * winH,
+            width: 0.06 * winW,
+            height: 0.06 * winH,
+            text: 'Clues',
+            visible: false,
+        });
+        UILayer.add(cluesButton);
+        cluesButton.on('click tap', () => {
+            toggleChat(false);
+        });
+
         lobbyButton = new Button({
             x: 0.01 * winW,
             y: 0.94 * winH,
@@ -4829,7 +4895,6 @@ function HanabiUI(lobby, gameID) {
             height: 0.05 * winH,
             text: 'Lobby',
         });
-
         UILayer.add(lobbyButton);
 
         lobbyButton.on('click tap', () => {
@@ -6106,6 +6171,10 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         }
 
         this.lobby.playSound(msgData.sound);
+    } else if (msgType === 'chat') {
+        // This is an in-game chat message
+        this.chatLog.setMultiText(msgData.text);
+        this.UILayer.draw();
     }
 };
 

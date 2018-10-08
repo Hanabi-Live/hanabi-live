@@ -1554,7 +1554,11 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
     });
 
     conn.on('chat', (data) => {
-        self.addChat(data);
+        if (data.room === 'lobby') {
+            self.addChat(data);
+        } else if (self.ui) {
+            self.ui.handleMessage('chat', data);
+        }
     });
 
     conn.on('chatList', (data) => {
