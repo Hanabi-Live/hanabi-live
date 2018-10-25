@@ -44,8 +44,10 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 		}
 	}
 	if len(list) == 0 &&
-		(d.Clue.Type != 1 || g.Options.Variant != 10) && // Make an exception for color clues in the "Acid Trip" variant
-		!g.Options.EmptyClues { // Allow empty clues if the optional setting is enabled
+		// Make an exception for color clues in the "Color Blind" variant
+		(d.Clue.Type != 1 || variants[g.Options.Variant].Name != "Color Blind") &&
+		// Allow empty clues if the optional setting is enabled
+		!g.Options.EmptyClues {
 
 		return false
 	}

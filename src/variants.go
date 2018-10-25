@@ -49,7 +49,7 @@ var (
 	OrangeClue = ColorClue{Name: "Orange"}
 	BlackClue  = ColorClue{Name: "Black"}
 
-	// Helpers used for "Rainbow", "Colorless & Rainbow", and "Acid Trip"
+	// Helpers used for "Rainbow", "Colorless & Rainbow", and "Color Blind"
 	allColorClues = []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue, BlackClue}
 	noColorClues  = []ColorClue{}
 )
@@ -106,13 +106,13 @@ var (
 	BerrySuit = NewSuit("Berry", []ColorClue{BlueClue})
 	RubySuit  = NewSuit("Ruby", []ColorClue{RedClue})
 
-	// For "Acid Trip"
-	AcidBlueSuit   = NewSuit("Blue", noColorClues)
-	AcidGreenSuit  = NewSuit("Green", noColorClues)
-	AcidYellowSuit = NewSuit("Yellow", noColorClues)
-	AcidRedSuit    = NewSuit("Red", noColorClues)
-	AcidPurpleSuit = NewSuit("Purple", noColorClues)
-	AcidOrangeSuit = NewSuit("Orange", noColorClues)
+	// For "Color Blind"
+	BlindBlueSuit   = NewSuit("Blue", noColorClues)
+	BlindGreenSuit  = NewSuit("Green", noColorClues)
+	BlindYellowSuit = NewSuit("Yellow", noColorClues)
+	BlindRedSuit    = NewSuit("Red", noColorClues)
+	BlindPurpleSuit = NewSuit("Purple", noColorClues)
+	BlindOrangeSuit = NewSuit("Orange", noColorClues)
 
 	// For "Rainbow & Black Suits (1 of each)"
 	Rainbow1oESuit = NewSuit1oE("Rainbow", allColorClues)
@@ -177,8 +177,8 @@ var (
 			Clues: []ColorClue{BlueClue, RedClue},
 		},
 		Variant{
-			Name:  "Acid Trip",
-			Suits: []Suit{AcidBlueSuit, AcidGreenSuit, AcidYellowSuit, AcidRedSuit, AcidPurpleSuit, AcidOrangeSuit},
+			Name:  "Color Blind",
+			Suits: []Suit{BlindBlueSuit, BlindGreenSuit, BlindYellowSuit, BlindRedSuit, BlindPurpleSuit, BlindOrangeSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
 		},
 		Variant{

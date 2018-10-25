@@ -685,7 +685,7 @@
             [exports.COLOR.RED],
         ),
 
-        AT_BLUE: new Suit(
+        CB_BLUE: new Suit(
             'Blue',
             'B',
             exports.COLOR.BLUE,
@@ -694,7 +694,7 @@
             [],
         ),
 
-        AT_GREEN: new Suit(
+        CB_GREEN: new Suit(
             'Green',
             'G',
             exports.COLOR.GREEN,
@@ -703,7 +703,7 @@
             [],
         ),
 
-        AT_YELLOW: new Suit(
+        CB_YELLOW: new Suit(
             'Yellow',
             'Y',
             exports.COLOR.YELLOW,
@@ -712,7 +712,7 @@
             [],
         ),
 
-        AT_RED: new Suit(
+        CB_RED: new Suit(
             'Red',
             'R',
             exports.COLOR.RED,
@@ -721,7 +721,7 @@
             [],
         ),
 
-        AT_PURPLE: new Suit(
+        CB_PURPLE: new Suit(
             'Purple',
             'P',
             exports.COLOR.PURPLE,
@@ -730,7 +730,7 @@
             [],
         ),
 
-        AT_ORANGE: new Suit(
+        CB_ORANGE: new Suit(
             'Orange',
             'O',
             exports.COLOR.ORANGE,
@@ -932,19 +932,19 @@
             'Blue & Red',
         ),
 
-        ACIDTRIP: new Variant(
+        COLORBLIND: new Variant(
             [
-                exports.SUIT.AT_BLUE,
-                exports.SUIT.AT_GREEN,
-                exports.SUIT.AT_YELLOW,
-                exports.SUIT.AT_RED,
-                exports.SUIT.AT_PURPLE,
-                exports.SUIT.AT_ORANGE,
+                exports.SUIT.CB_BLUE,
+                exports.SUIT.CB_GREEN,
+                exports.SUIT.CB_YELLOW,
+                exports.SUIT.CB_RED,
+                exports.SUIT.CB_PURPLE,
+                exports.SUIT.CB_ORANGE,
             ],
             baseColorsPlusOrange,
             false,
-            'Acid Trip',
-            'Acid Trip',
+            'Color Blind',
+            'Color Blind',
         ),
 
         SINGLERAINBOW: new Variant(
@@ -990,7 +990,7 @@
         exports.VARIANT.CRAZY,
         exports.VARIANT.AMBIGUOUS,
         exports.VARIANT.BLUERED,
-        exports.VARIANT.ACIDTRIP,
+        exports.VARIANT.COLORBLIND,
         exports.VARIANT.SINGLERAINBOW,
         exports.VARIANT.SINGLERAINBOWBLACK,
     ];
