@@ -138,10 +138,17 @@ func chatServerSend(msg string) {
 }
 
 func chatFillMentions(msg string) string {
-	// Discord mentions are in the form of "<@71242588694249472>"
-	// By the time the message gets here, it will be sanitized to "&lt;@71242588694249472&gt;"
-	// They can also be in the form of "<@!71242588694249472>" (with a "!" after the "@") if a nickname is set for that person
-	// We want to convert this to the username, so that the lobby displays messages in a manner similar to the Discord client
+	/*
+		Discord mentions are in the form of "<@71242588694249472>"
+		By the time the message gets here, it will be sanitized to "&lt;@71242588694249472&gt;"
+		They can also be in the form of "<@!71242588694249472>" (with a "!" after the "@") if a nickname is set for that person
+		We want to convert this to the username, so that the lobby displays messages in a manner similar to the Discord client
+	*/
+
+	if discord == nil {
+		return msg
+	}
+
 	var mentionRegExp *regexp.Regexp
 	if v, err := regexp.Compile(`&lt;@!*(\d+?)&gt;`); err != nil {
 		log.Error("Failed to create the Discord mention regular expression:", err)
@@ -164,8 +171,15 @@ func chatFillMentions(msg string) string {
 }
 
 func chatFillChannels(msg string) string {
-	// Discord channels are in the form of "<#380813128176500736>"
-	// By the time the message gets here, it will be sanitized to "&lt;#380813128176500736&gt;"
+	/*
+		Discord channels are in the form of "<#380813128176500736>"
+		By the time the message gets here, it will be sanitized to "&lt;#380813128176500736&gt;"
+	*/
+
+	if discord == nil {
+		return msg
+	}
+
 	var channelRegExp *regexp.Regexp
 	if v, err := regexp.Compile(`&lt;#(\d+?)&gt;`); err != nil {
 		log.Error("Failed to create the Discord channel regular expression:", err)
