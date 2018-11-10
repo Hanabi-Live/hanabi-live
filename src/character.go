@@ -73,7 +73,7 @@ var (
 		},
 		CharacterAssignment{
 			Name:        "Panicky",
-			Description: "After discarding, discards again if there are 4 clues or less",
+			Description: "Has to discard twice if 4 clues or less",
 		},
 	}
 )
@@ -126,33 +126,44 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Playe
 		return false
 	}
 
-	name := characterAssignments[p.CharacterAssignment].Name
-	if name == "Genius" &&
-		p.CharacterMetadata != -1 &&
-		(d.Type != 0 || // Clue
-			d.Clue.Type != p.CharacterMetadata) {
+	if p.CharacterMetadata == -1 {
+		return false
+	}
 
-		s.Warning("You are " + name + ", so you must give both a number clue and a color clue.")
-		return true
+	name := characterAssignments[p.CharacterAssignment].Name
+	if name == "Genius" {
+		if d.Type != 0 { // Clue
+			s.Warning("You are " + name + ", so you must now give your second clue.")
+			return true
+		}
+
+		if d.Clue.Type != p.CharacterMetadata {
+			s.Warning("You are " + name + ", so you must now give the opposite clue type.")
+			return true
+		}
+
+		if d.Target != p.CharacterMetadata2 {
+			s.Warning("You are " + name + ", so you must give the second clue to the same player.")
+			return true
+		}
 
 	} else if name == "Synesthetic" {
-		if p.CharacterMetadata == -1 &&
-			d.Type == 0 && // Clue
-			d.Clue.Type != 0 { // Number clue
-
-			s.Warning("You are " + name + ", so you must give a number clue first.")
+		if d.Type != 0 { // Clue
+			s.Warning("You are " + name + ", so you must now give your second clue.")
 			return true
+		}
 
-		} else if p.CharacterMetadata != -1 &&
-			(d.Type != 0 || // Clue
-				d.Clue.Value != p.CharacterMetadata) {
+		if d.Clue.Type != p.CharacterMetadata {
+			s.Warning("You are " + name + ", so you must now give the matching color clue.")
+			return true
+		}
 
-			s.Warning("You are " + name + ", so you must give the matching color clue.")
+		if d.Target != p.CharacterMetadata2 {
+			s.Warning("You are " + name + ", so you must give the second clue to the same player.")
 			return true
 		}
 
 	} else if name == "Panicky" &&
-		p.CharacterMetadata != -1 &&
 		d.Type != 2 { // Discard
 
 		s.Warning("You are " + name + ", so you must discard again since there are 4 or less clues available.")
@@ -196,34 +207,76 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		return true
 
 	} else if name == "Picky" &&
-		d.Clue.Value%2 == 1 {
+		((d.Clue.Type == 0 && // Number clue
+			d.Clue.Value%2 == 0) ||
+			(d.Clue.Type == 1 && // Color clue
+				(d.Clue.Value+1)%2 == 0)) {
 
 		s.Warning("You are " + name + ", so you can only clue odd numbers or clues that touch odd amounts of cards.")
 		return true
 
-	} else if name == "Spiteful" &&
-		d.Target == (p.Index+1)%len(g.Players) {
+	} else if name == "Spiteful" {
+		leftIndex := p.Index + 1
+		if leftIndex == len(g.Players) {
+			leftIndex = 0
+		}
+		log.Debug("Cluer's index:", p.Index)
+		log.Debug("Clue target index:", d.Target)
+		log.Debug("Left index:", leftIndex)
+		if d.Target == leftIndex {
+			s.Warning("You are " + name + ", so you cannot clue the player to your left.")
+			return true
+		}
 
-		s.Warning("You are " + name + ", so you cannot clue the player to your left.")
-		return true
+	} else if name == "Insolent" {
+		rightIndex := p.Index - 1
+		if rightIndex == -1 {
+			rightIndex = len(g.Players) - 1
+		}
+		log.Debug("Cluer's index:", p.Index)
+		log.Debug("Clue target index:", d.Target)
+		log.Debug("Right index:", rightIndex)
+		if d.Target == rightIndex {
+			s.Warning("You are " + name + ", so you cannot clue the player to your right.")
+			return true
+		}
 
-	} else if name == "Insolent" &&
-		d.Target == (p.Index-1)%len(g.Players) {
-
-		s.Warning("You are " + name + ", so you cannot clue the player to your right.")
-		return true
-
-	} else if name == "Insolent" &&
+	} else if name == "Philospher" &&
 		len(p.FindCardsTouchedByClue(g, d)) != 0 {
 
 		s.Warning("You are " + name + ", so you can only give empty clues.")
 		return true
-	} else if name == "Genius" &&
-		p.CharacterMetadata == -1 &&
-		g.Clues < 2 {
 
-		s.Warning("You are " + name + ", so there needs to be at least two clues available for you to give a clue.")
-		return true
+	} else if name == "Genius" &&
+		p.CharacterMetadata == -1 {
+
+		if g.Clues < 2 {
+			s.Warning("You are " + name + ", so there needs to be at least two clues available for you to give a clue.")
+			return true
+		}
+		if d.Clue.Type != 0 { // Number clue
+			s.Warning("You are " + name + ", so you must give a number clue first.")
+			return true
+		}
+
+	} else if name == "Synesthetic" &&
+		p.CharacterMetadata == -1 {
+
+		if d.Clue.Type != 0 { // Number clue
+			s.Warning("You are " + name + ", so you must give a number clue first.")
+			return true
+		}
+		d2 := &CommandData{
+			Clue: Clue{
+				Type:  1, // Color clue
+				Value: d.Clue.Value - 1,
+			},
+			Target: d.Target,
+		}
+		if len(p.FindCardsTouchedByClue(g, d2)) == 0 {
+			s.Warning("You are " + name + ", so both versions of the clue must touch at least 1 card in the hand.")
+			return true
+		}
 	}
 
 	return false
@@ -284,7 +337,7 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 	if name == "Genius" &&
 		d.Type == 0 { // Clue
 
-		// Must clue both a number and a color
+		// Must clue both a number and a color (uses 2 clues)
 		// "p.CharacterMetadata" represents the state, which alternates between -1 and 0/1
 		// (depending on whether we need to give a color or number clue)
 		if p.CharacterMetadata == -1 {
@@ -293,23 +346,28 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 			} else if d.Clue.Type == 1 {
 				p.CharacterMetadata = 0
 			}
+			p.CharacterMetadata2 = d.Target
 			return true
 		} else {
 			p.CharacterMetadata = -1
+			p.CharacterMetadata2 = -1
 			return false
 		}
 
 	} else if name == "Synesthetic" &&
 		d.Type == 0 { // Clue
 
-		// Must clue both a number and a color of the same value
+		// Must clue both a number and a color of the same value (uses 1 clue)
 		// "p.CharacterMetadata" represents the state, which alternates between -1 and X
 		// (depending on the value of the clue given)
 		if p.CharacterMetadata == -1 {
 			p.CharacterMetadata = d.Clue.Value - 1
+			p.CharacterMetadata2 = d.Target
+			g.Clues++ // The second clue given should not cost a clue
 			return true
 		} else {
 			p.CharacterMetadata = -1
+			p.CharacterMetadata2 = -1
 			return false
 		}
 	} else if name == "Panicky" &&

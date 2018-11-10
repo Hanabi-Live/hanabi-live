@@ -88,13 +88,14 @@ func commandGameJoin(s *Session, d *CommandData) {
 	p := &Player{
 		ID:      s.UserID(),
 		Name:    s.Username(),
-		Index:   len(g.Players),
+		Index:   len(g.Players), // We have not added this player to the slice yet, so this should be 0 initially
 		Present: true,
 		Stats:   stats,
 		Time:    timeBase,
 		// Notes will get initialized after the deck is created in "commandGameStart.go"
 		CharacterAssignment: -1,
 		CharacterMetadata:   -1,
+		CharacterMetadata2:  -1,
 		Session:             s,
 	}
 	g.Players = append(g.Players, p)

@@ -21,6 +21,7 @@ type Player struct {
 	PerformedFinalTurn  bool
 	CharacterAssignment int
 	CharacterMetadata   int
+	CharacterMetadata2  int
 
 	Session *Session
 }

@@ -1067,10 +1067,11 @@
         ),
         new CharacterAssignment(
             'Panicky',
-            'After discarding, discards again if there are 4 clues or less',
+            'Has to discard twice if 4 clues or less',
         ),
 
         /*
+            - fix tooltips
             12) Contrarian - Play order inverts after this player takes a turn
             6) Forgetful - Hand is shuffled after discarding (but before drawing)
 
