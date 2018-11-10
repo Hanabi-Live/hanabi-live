@@ -27,6 +27,8 @@ function HanabiUI(lobby, gameID) {
     this.playerNames = [];
     this.characterAssignments = []; // This is the "Detrimental Character Assignments" for each player, if enabled
     // (it is either an empty array or an array of integers)
+    this.characterMetadata = []; // This is extra information about each player's "Detrimental Character Assignments", if enabled
+    // (it is either an empty array or an array of integers)
     this.variant = 0;
     this.cardsGotten = 0;
     this.cluesSpentPlusStrikes = 0;
@@ -3985,7 +3987,15 @@ function HanabiUI(lobby, gameID) {
                     tooltip.css('top', this.attrs.y);
 
                     const character = CHARACTER_ASSIGNMENTS[ui.characterAssignments[i]];
-                    const content = `<b>${character.name}</b>:<br />${character.description}`;
+                    const metadata = ui.characterMetadata[i]
+                    let content = `<b>${character.name}</b>:<br />${character.description}`;
+                    if (character.name === 'Fuming') {
+                        // Replace "[random color]" with the selected color
+                        content = content.replace('[random color]', ui.variant.clueColors[metadata].name.toLowerCase());
+                    } else if (character.name === 'Dumbfounded') {
+                        // Replace "[random number]" with the selected number
+                        content = content.replace('[random number]', metadata);
+                    }
                     tooltip.tooltipster('instance').content(content);
 
                     tooltip.tooltipster('open');
@@ -6118,6 +6128,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.playerUs = msgData.seat;
         this.playerNames = msgData.names;
         this.characterAssignments = msgData.characterAssignments;
+        this.characterMetadata = msgData.characterMetadata;
         this.variant = constants.VARIANT_INTEGER_MAPPING[msgData.variant];
         this.replay = msgData.replay;
         this.replayOnly = msgData.replay;

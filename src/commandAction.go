@@ -73,17 +73,12 @@ func commandAction(s *Session, d *CommandData) {
 		return
 	}
 
-	// Local variables
-	p := g.Players[i]
-
-	// Validate "Detrimental Character Assignment" restrictions
-	if characterAssignmentsValidate(s, d, g, p) {
-		return
-	}
-
 	/*
 		Action
 	*/
+
+	// Local variables
+	p := g.Players[i]
 
 	// Remove the "fail" and "blind" states
 	g.Sound = ""
@@ -173,6 +168,20 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
+		// Validate "Detrimental Character Assignment" restrictions
+		if checkEccentric(s, d, g, p) {
+			return
+		}
+		if checkGreedy(s, d, g, p) {
+			return
+		}
+		if checkFuming(s, d, g, p) {
+			return
+		}
+		if checkDumbfounded(s, d, g, p) {
+			return
+		}
+
 		// The "GiveClue()" method will return false if the clue touches 0 cards in the hand
 		if !p.GiveClue(g, d) {
 			s.Warning("You cannot give a clue that touches 0 cards in the hand.")
@@ -205,6 +214,11 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
+		// Validate "Detrimental Character Assignment" restrictions
+		if checkCompulsive(s, g, p) {
+			return
+		}
+
 		g.Clues++
 		c := p.RemoveCard(d.Target)
 		doubleDiscard = p.DiscardCard(g, c)
@@ -227,14 +241,14 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		p.PlayDeck(g)
-	} else if d.Type == 4 {
+	} else if d.Type == 4 { // Out of time
 		// This is a special action type sent by the server to itself when a player runs out of time
 		g.Strikes = 3
 		g.Actions = append(g.Actions, Action{
 			Text: p.Name + " ran out of time!",
 		})
 		g.NotifyAction()
-	} else if d.Type == 5 {
+	} else if d.Type == 5 { // Idle timeout
 		// This is a special action type sent by the server to itself when the game has been idle for too long
 		g.Strikes = 3
 		g.Actions = append(g.Actions, Action{

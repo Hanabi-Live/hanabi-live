@@ -1010,6 +1010,22 @@
             'Compulsive',
             'Cannot discard if there is an even number of clues available (including 0)',
         ),
+        new CharacterAssignment(
+            'Eccentric',
+            'Can only give clues that touch a single card',
+        ),
+        new CharacterAssignment(
+            'Greedy',
+            'Can only give clues that touch 2+ cards',
+        ),
+        new CharacterAssignment(
+            'Fuming',
+            'Cannot clue [random color]',
+        ),
+        new CharacterAssignment(
+            'Dumbfounded',
+            'Cannot clue [random number]',
+        ),
     ];
 
     // This only freezes one layer deep; to do any better, we should likely

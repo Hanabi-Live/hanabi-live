@@ -19,11 +19,71 @@ type Player struct {
 	Time                time.Duration
 	Notes               []string
 	CharacterAssignment int
+	CharacterMetadata   int
 
 	Session *Session
 }
 
 func (p *Player) GiveClue(g *Game, d *CommandData) bool {
+	cardsTouched := p.FindCardsTouchedByClue(g, d)
+	if len(cardsTouched) == 0 &&
+		// Make an exception for color clues in the "Color Blind" variant
+		(d.Clue.Type != 1 || variants[g.Options.Variant].Name != "Color Blind") &&
+		// Allow empty clues if the optional setting is enabled
+		!g.Options.EmptyClues {
+
+		return false
+	}
+
+	// Keep track that someone clued
+	g.Clues--
+	g.DiscardSignal.Outstanding = false
+
+	// Send the "notify" message about the clue
+	g.Actions = append(g.Actions, Action{
+		Clue:   d.Clue,
+		Giver:  p.Index,
+		List:   cardsTouched,
+		Target: d.Target,
+		Type:   "clue",
+		Turn:   g.Turn,
+	})
+	g.NotifyAction()
+
+	// Send the "message" message about the clue
+	text := p.Name + " tells " + g.Players[d.Target].Name + " "
+	if len(cardsTouched) != 0 {
+		text += "about "
+		words := []string{
+			"one",
+			"two",
+			"three",
+			"four",
+			"five",
+		}
+		text += words[len(cardsTouched)-1] + " "
+	}
+
+	if d.Clue.Type == 0 {
+		// Number clue
+		text += strconv.Itoa(d.Clue.Value)
+	} else if d.Clue.Type == 1 {
+		// Color clue
+		text += variants[g.Options.Variant].Clues[d.Clue.Value].Name
+	}
+	if len(cardsTouched) > 1 {
+		text += "s"
+	}
+	g.Actions = append(g.Actions, Action{
+		Text: text,
+	})
+	g.NotifyAction()
+	log.Info(g.GetName() + text)
+
+	return true
+}
+
+func (p *Player) FindCardsTouchedByClue(g *Game, d *CommandData) []int {
 	// Find out what cards this clue touches
 	list := make([]int, 0)
 	for _, c := range g.Players[d.Target].Hand {
@@ -44,61 +104,8 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 			c.Touched = true
 		}
 	}
-	if len(list) == 0 &&
-		// Make an exception for color clues in the "Color Blind" variant
-		(d.Clue.Type != 1 || variants[g.Options.Variant].Name != "Color Blind") &&
-		// Allow empty clues if the optional setting is enabled
-		!g.Options.EmptyClues {
 
-		return false
-	}
-
-	// Keep track that someone clued
-	g.Clues--
-	g.DiscardSignal.Outstanding = false
-
-	// Send the "notify" message about the clue
-	g.Actions = append(g.Actions, Action{
-		Clue:   d.Clue,
-		Giver:  p.Index,
-		List:   list,
-		Target: d.Target,
-		Type:   "clue",
-		Turn:   g.Turn,
-	})
-	g.NotifyAction()
-
-	// Send the "message" message about the clue
-	text := p.Name + " tells " + g.Players[d.Target].Name + " "
-	if len(list) != 0 {
-		text += "about "
-		words := []string{
-			"one",
-			"two",
-			"three",
-			"four",
-			"five",
-		}
-		text += words[len(list)-1] + " "
-	}
-
-	if d.Clue.Type == 0 {
-		// Number clue
-		text += strconv.Itoa(d.Clue.Value)
-	} else if d.Clue.Type == 1 {
-		// Color clue
-		text += variants[g.Options.Variant].Clues[d.Clue.Value].Name
-	}
-	if len(list) > 1 {
-		text += "s"
-	}
-	g.Actions = append(g.Actions, Action{
-		Text: text,
-	})
-	g.NotifyAction()
-	log.Info(g.GetName() + text)
-
-	return true
+	return list
 }
 
 func (p *Player) RemoveCard(target int) *Card {

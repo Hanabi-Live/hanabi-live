@@ -59,6 +59,7 @@ CREATE TABLE game_participants (
     game_id               INT              NOT NULL,
     notes                 NVARCHAR(10000)  NOT NULL,
     character_assignment  INT              NOT NULL,
+    character_metadata    INT              NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the game participant rows */

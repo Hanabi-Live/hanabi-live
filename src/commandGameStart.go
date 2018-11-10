@@ -306,16 +306,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	}
 
 	// Decide the random character assignments
-	if g.Options.CharacterAssignments {
-		// Seed the PRNG (copied from above)
-		crc64Table := crc64.MakeTable(crc64.ECMA)
-		intSeed := crc64.Checksum([]byte(g.Seed), crc64Table)
-		rand.Seed(int64(intSeed))
-
-		for _, p := range g.Players {
-			p.CharacterAssignment = rand.Intn(len(characterAssignments))
-		}
-	}
+	characterAssignmentsGenerate(g)
 
 	// Send messages about the current status
 	// (the client already knows that the game starts with 8 clues and a score of 0;

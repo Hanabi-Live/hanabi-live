@@ -73,9 +73,11 @@ func commandHello(s *Session, d *CommandData) {
 
 	// Create a list of the "Detrimental Character Assignments", if enabled
 	playerCharacterAssignments := make([]int, 0)
+	characterMetadata := make([]int, 0)
 	if g.Options.CharacterAssignments {
 		for _, p := range g.Players {
 			playerCharacterAssignments = append(playerCharacterAssignments, p.CharacterAssignment)
+			characterMetadata = append(characterMetadata, p.CharacterMetadata)
 		}
 	}
 
@@ -94,6 +96,7 @@ func commandHello(s *Session, d *CommandData) {
 	type InitMessage struct {
 		Names                []string `json:"names"`
 		CharacterAssignments []int    `json:"characterAssignments"`
+		CharacterMetadata    []int    `json:"characterMetadata"`
 		Replay               bool     `json:"replay"`
 		Seat                 int      `json:"seat"`
 		Spectating           bool     `json:"spectating"`
@@ -119,6 +122,7 @@ func commandHello(s *Session, d *CommandData) {
 	s.Emit("init", &InitMessage{
 		Names:                names,
 		CharacterAssignments: playerCharacterAssignments,
+		CharacterMetadata:    characterMetadata,
 		Replay:               replay,
 		Seat:                 seat,
 		Spectating:           spectating,

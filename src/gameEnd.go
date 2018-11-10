@@ -119,7 +119,7 @@ func (g *Game) End() {
 
 	// Next, we have to insert rows for each of the participants
 	for _, p := range g.Players {
-		if err := db.GameParticipants.Insert(p.ID, databaseID, p.Notes, p.CharacterAssignment); err != nil {
+		if err := db.GameParticipants.Insert(p.ID, databaseID, p.Notes, p.CharacterAssignment, p.CharacterMetadata); err != nil {
 			log.Error("Failed to insert the game participant row:", err)
 			return
 		}

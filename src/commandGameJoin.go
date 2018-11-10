@@ -93,7 +93,9 @@ func commandGameJoin(s *Session, d *CommandData) {
 		Stats:   stats,
 		Time:    timeBase,
 		// Notes will get initialized after the deck is created in "commandGameStart.go"
-		Session: s,
+		CharacterAssignment: -1,
+		CharacterMetadata:   -1,
+		Session:             s,
 	}
 	g.Players = append(g.Players, p)
 	notifyAllTable(g)
