@@ -15,9 +15,10 @@ type Player struct {
 	Present bool
 	Stats   models.Stats
 
-	Hand  []*Card
-	Time  time.Duration
-	Notes []string
+	Hand                []*Card
+	Time                time.Duration
+	Notes               []string
+	CharacterAssignment int
 
 	Session *Session
 }

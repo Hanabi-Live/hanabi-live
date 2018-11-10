@@ -227,6 +227,18 @@ function HanabiLobby() {
         }
         $('#create-game-empty-clues').prop('checked', emptyClues);
 
+        // Fill in the "Detrimental Character Assignments" checkbox
+        let characterAssignments;
+        try {
+            characterAssignments = JSON.parse(localStorage.getItem('createTableCharacterAssignments'));
+        } catch (err) {
+            characterAssignments = false;
+        }
+        if (typeof characterAssignments !== 'boolean') {
+            characterAssignments = false;
+        }
+        $('#create-game-character-assignments').prop('checked', characterAssignments);
+
         // Fill in the "Password" box
         const password = localStorage.getItem('createTablePassword');
         $('#create-game-password').val(password);
@@ -422,6 +434,9 @@ function HanabiLobby() {
         const emptyClues = document.getElementById('create-game-empty-clues').checked;
         localStorage.setItem('createTableEmptyClues', emptyClues);
 
+        const characterAssignments = document.getElementById('create-game-character-assignments').checked;
+        localStorage.setItem('characterAssignments', characterAssignments);
+
         let password = $('#create-game-password').val();
         localStorage.setItem('createTablePassword', password);
         if (password !== '') {
@@ -439,6 +454,7 @@ function HanabiLobby() {
                 reorderCards,
                 deckPlays,
                 emptyClues,
+                characterAssignments,
                 password,
             },
         });

@@ -28,22 +28,23 @@ DROP TABLE IF EXISTS games;
 CREATE TABLE games (
     id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    name               NVARCHAR(50)  NOT NULL,
-    num_players        TINYINT       NOT NULL,
-    owner              INT           NOT NULL,
-    variant            TINYINT       NOT NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
-    timed              BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
-    time_base          INT           NOT NULL, /* in seconds */
-    time_per_turn      INT           NOT NULL, /* in seconds */
-    deck_plays         BOOLEAN       NOT NULL,
-    empty_clues        BOOLEAN       NOT NULL,
-    seed               VARCHAR(50)   NOT NULL, /* like "p2v0s1" */
-    score              INT           NOT NULL,
-    num_turns          INT           NOT NULL,
-    end_condition      INT           NOT NULL, /* 0 - in progress, 1 - normal, 2 - strikeout, 3 - timeout, 4 - abandoned */
-    datetime_created   TIMESTAMP     NOT NULL,
-    datetime_started   TIMESTAMP     NOT NULL,
-    datetime_finished  TIMESTAMP     NOT NULL  DEFAULT NOW(),
+    name                   NVARCHAR(50)  NOT NULL,
+    num_players            TINYINT       NOT NULL,
+    owner                  INT           NOT NULL,
+    variant                TINYINT       NOT NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
+    timed                  BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
+    time_base              INT           NOT NULL, /* in seconds */
+    time_per_turn          INT           NOT NULL, /* in seconds */
+    deck_plays             BOOLEAN       NOT NULL,
+    empty_clues            BOOLEAN       NOT NULL,
+    character_assignments  BOOLEAN       NOT NULL,
+    seed                   VARCHAR(50)   NOT NULL, /* like "p2v0s1" */
+    score                  INT           NOT NULL,
+    num_turns              INT           NOT NULL,
+    end_condition          INT           NOT NULL, /* 0 - in progress, 1 - normal, 2 - strikeout, 3 - timeout, 4 - abandoned */
+    datetime_created       TIMESTAMP     NOT NULL,
+    datetime_started       TIMESTAMP     NOT NULL,
+    datetime_finished      TIMESTAMP     NOT NULL  DEFAULT NOW(),
     FOREIGN KEY (owner) REFERENCES users (id)
 );
 CREATE INDEX games_index_num_players ON games (num_players);
@@ -54,9 +55,10 @@ DROP TABLE IF EXISTS game_participants;
 CREATE TABLE game_participants (
     id       INT              NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    user_id  INT              NOT NULL,
-    game_id  INT              NOT NULL,
-    notes    NVARCHAR(10000)  NOT NULL,
+    user_id               INT              NOT NULL,
+    game_id               INT              NOT NULL,
+    notes                 NVARCHAR(10000)  NOT NULL,
+    character_assignment  INT              NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the game participant rows */

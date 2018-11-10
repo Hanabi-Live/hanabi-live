@@ -7,7 +7,7 @@ import (
 
 type GameParticipants struct{}
 
-func (*GameParticipants) Insert(userID int, gameID int, notes []string) error {
+func (*GameParticipants) Insert(userID int, gameID int, notes []string, characterAssignment int) error {
 	var notesString string
 	if v, err := json.Marshal(notes); err != nil {
 		return err
@@ -17,8 +17,8 @@ func (*GameParticipants) Insert(userID int, gameID int, notes []string) error {
 
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`
-		INSERT INTO game_participants (user_id, game_id, notes)
-		VALUES (?, ?, ?)
+		INSERT INTO game_participants (user_id, game_id, notes, character_assignment)
+		VALUES (?, ?, ?, ?)
 	`); err != nil {
 		return err
 	} else {
@@ -26,6 +26,6 @@ func (*GameParticipants) Insert(userID int, gameID int, notes []string) error {
 	}
 	defer stmt.Close() // nolint: errcheck
 
-	_, err := stmt.Exec(userID, gameID, notesString)
+	_, err := stmt.Exec(userID, gameID, notesString, characterAssignment)
 	return err
 }

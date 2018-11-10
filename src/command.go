@@ -9,15 +9,16 @@ type CommandData struct {
 	Room string `json:"room"`
 
 	// gameCreate
-	Name               string  `json:"name"`
-	Password           string  `json:"password"`
-	Variant            int     `json:"variant"`
-	Timed              bool    `json:"timed"`
-	BaseTimeMinutes    float64 `json:"baseTimeMinutes"`
-	TimePerTurnSeconds int     `json:"timePerTurnSeconds"`
-	DeckPlays          bool    `json:"deckPlays"`
-	ReorderCards       bool    `json:"reorderCards"`
-	EmptyClues         bool    `json:"emptyClues"`
+	Name                 string  `json:"name"`
+	Password             string  `json:"password"`
+	Variant              int     `json:"variant"`
+	Timed                bool    `json:"timed"`
+	BaseTimeMinutes      float64 `json:"baseTimeMinutes"`
+	TimePerTurnSeconds   int     `json:"timePerTurnSeconds"`
+	DeckPlays            bool    `json:"deckPlays"`
+	ReorderCards         bool    `json:"reorderCards"`
+	EmptyClues           bool    `json:"emptyClues"`
+	CharacterAssignments bool    `json:"characterAssignments"`
 
 	// action
 	Clue   Clue `json:"clue"`

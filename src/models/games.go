@@ -12,21 +12,22 @@ type Games struct{}
 // GameRow mirrors the "games" table row
 // (it contains a subset of the information in the Game struct)
 type GameRow struct {
-	Name            string
-	NumPlayers      int
-	Owner           int
-	Variant         int
-	Timed           bool
-	TimeBase        int
-	TimePerTurn     int
-	DeckPlays       bool
-	EmptyClues      bool
-	Seed            string
-	Score           int
-	NumTurns        int
-	EndCondition    int
-	DatetimeCreated time.Time
-	DatetimeStarted time.Time
+	Name                 string
+	NumPlayers           int
+	Owner                int
+	Variant              int
+	Timed                bool
+	TimeBase             int
+	TimePerTurn          int
+	DeckPlays            bool
+	EmptyClues           bool
+	CharacterAssignments bool
+	Seed                 string
+	Score                int
+	NumTurns             int
+	EndCondition         int
+	DatetimeCreated      time.Time
+	DatetimeStarted      time.Time
 }
 
 func (*Games) Insert(gameRow GameRow) (int, error) {

@@ -92,21 +92,22 @@ func (g *Game) End() {
 
 	// Record the game in the database
 	row := models.GameRow{
-		Name:            g.Name,
-		NumPlayers:      len(g.Players),
-		Owner:           g.Owner,
-		Variant:         g.Options.Variant,
-		Timed:           g.Options.Timed,
-		TimeBase:        int(g.Options.TimeBase),
-		TimePerTurn:     g.Options.TimePerTurn,
-		DeckPlays:       g.Options.DeckPlays,
-		EmptyClues:      g.Options.EmptyClues,
-		Seed:            g.Seed,
-		Score:           g.Score,
-		EndCondition:    g.EndCondition,
-		DatetimeCreated: g.DatetimeCreated,
-		DatetimeStarted: g.DatetimeStarted,
-		NumTurns:        g.Turn,
+		Name:                 g.Name,
+		NumPlayers:           len(g.Players),
+		Owner:                g.Owner,
+		Variant:              g.Options.Variant,
+		Timed:                g.Options.Timed,
+		TimeBase:             int(g.Options.TimeBase),
+		TimePerTurn:          g.Options.TimePerTurn,
+		DeckPlays:            g.Options.DeckPlays,
+		EmptyClues:           g.Options.EmptyClues,
+		CharacterAssignments: g.Options.CharacterAssignments,
+		Seed:                 g.Seed,
+		Score:                g.Score,
+		EndCondition:         g.EndCondition,
+		DatetimeCreated:      g.DatetimeCreated,
+		DatetimeStarted:      g.DatetimeStarted,
+		NumTurns:             g.Turn,
 	}
 	var databaseID int
 	if v, err := db.Games.Insert(row); err != nil {
@@ -118,7 +119,7 @@ func (g *Game) End() {
 
 	// Next, we have to insert rows for each of the participants
 	for _, p := range g.Players {
-		if err := db.GameParticipants.Insert(p.ID, databaseID, p.Notes); err != nil {
+		if err := db.GameParticipants.Insert(p.ID, databaseID, p.Notes, p.CharacterAssignment); err != nil {
 			log.Error("Failed to insert the game participant row:", err)
 			return
 		}
