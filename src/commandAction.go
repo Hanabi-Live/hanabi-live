@@ -169,16 +169,7 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		// Validate "Detrimental Character Assignment" restrictions
-		if checkEccentric(s, d, g, p) {
-			return
-		}
-		if checkGreedy(s, d, g, p) {
-			return
-		}
-		if checkFuming(s, d, g, p) {
-			return
-		}
-		if checkDumbfounded(s, d, g, p) {
+		if characterCheckClue(s, d, g, p) {
 			return
 		}
 
@@ -194,6 +185,11 @@ func commandAction(s *Session, d *CommandData) {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
 			s.Warning("You cannot play a card that is not in your hand.")
+			return
+		}
+
+		// Validate "Detrimental Character Assignment" restrictions
+		if characterCheckPlay(s, d, g, p) {
 			return
 		}
 
@@ -215,7 +211,7 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		// Validate "Detrimental Character Assignment" restrictions
-		if checkCompulsive(s, g, p) {
+		if characterCheckDiscard(s, g, p) {
 			return
 		}
 

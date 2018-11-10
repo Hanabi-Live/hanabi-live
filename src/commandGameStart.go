@@ -306,7 +306,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	}
 
 	// Decide the random character assignments
-	characterAssignmentsGenerate(g)
+	characterGenerate(g)
 
 	// Send messages about the current status
 	// (the client already knows that the game starts with 8 clues and a score of 0;

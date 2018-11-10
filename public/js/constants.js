@@ -1006,12 +1006,9 @@
         this.description = description;
     };
     exports.CHARACTER_ASSIGNMENTS = [
+        // Clue characters
         new CharacterAssignment(
-            'Compulsive',
-            'Cannot discard if there is an even number of clues available (including 0)',
-        ),
-        new CharacterAssignment(
-            'Eccentric',
+            'Conservative',
             'Can only give clues that touch a single card',
         ),
         new CharacterAssignment(
@@ -1020,12 +1017,79 @@
         ),
         new CharacterAssignment(
             'Fuming',
-            'Cannot clue [random color]',
+            'Can only clue [random color]',
         ),
         new CharacterAssignment(
             'Dumbfounded',
-            'Cannot clue [random number]',
+            'Can only clue [random number]',
         ),
+        new CharacterAssignment(
+            'Eccentric',
+            'Can only clue odd numbers or clues that touch odd amounts of cards',
+        ),
+        new CharacterAssignment(
+            'Spiteful',
+            'Cannot clue the player to their left',
+        ),
+        new CharacterAssignment(
+            'Insolent',
+            'Cannot clue the player to their right',
+        ),
+
+        // Play characters
+        new CharacterAssignment(
+            'Follower',
+            'Cannot be the first person to play a card of a certain rank',
+        ),
+
+        // Discard characters
+        new CharacterAssignment(
+            'Anxious',
+            'Cannot discard if there is an even number of clues available (including 0)',
+        ),
+        new CharacterAssignment(
+            'Traumatized',
+            'Cannot discard if there is an odd number of clues available',
+        ),
+
+        /*
+            1) Compulsive - ?
+            9) Panicky - After discarding, discards again if the clue token count at 4 or less
+            character which can only give empty clues
+            can't clue player to your left
+            can't clue player to your right
+
+            7) Genius - Must give both a color and number clue to a player at the same time (and uses two clue tokens)
+            10) Synesthetic - After giving a clue, also gives the matching color/number clue
+            12) Contrarian - Play order inverts after this player takes a turn
+            6) Forgetful - Hand is shuffled after discarding (but before drawing)
+
+            Vindictive - must give a clue if they received a clue since their last turn.
+            Impulsive - must play slot 1 if it has been clued
+            Short-sighted - can only clue the player to their left (maybe too restrictive?)
+
+            Wasteful - cannot discard if there is more than 1 clue available
+            Miser - cannot clue if there are 4 or fewer clues available
+            Procrastinator (timed only) - timer goes down twice as quickly
+
+            ??? - all given clues must touch either the newest or oldest card in someone's hand
+
+            change text on dumbfounded + the other one
+            fix follower to misplay
+            buff follower, 2 cards of the same rank
+            forbidden color and number
+            "cannot see the cards of the player to your right"?
+            
+            slow - cannot play if you played on your previous turn
+            hesitant - cannot play from slot 1 (or randomly choose a number between 1 and (handsize - 1), cannot play from that slot. Your rightmost card cannot be chosen that way)
+            colorblind - cannot receive color clues
+            careless - must discard if no card in their hand is clued, except at 8 clues (probably not restrictive enough, since most of the time you have clued cards in your hand.)
+            impatient - cannot clue if any card in their hand is clued (probably too harsh)
+            locked - cannot discard (strictly worse than wasteful though, probably wasteful is not detrimental enough)
+            vulnerable - cannot receive the clues 2 or 5.
+            mood swings - must alternative color clues and number clues [to be more precise: if the previous clue this player gave was a number clue, the next clue must be color and vice versa]
+            insistent - after giving a clue, must repeat this clue to the same player until one of the clued cards has been played or discarded (unless at 0 clues).
+        */
     ];
 
     // This only freezes one layer deep; to do any better, we should likely
