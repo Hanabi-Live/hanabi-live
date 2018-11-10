@@ -66,9 +66,17 @@ func commandHello(s *Session, d *CommandData) {
 	}
 
 	// Create a list of names of the users in this game
-	var names []string
+	names := make([]string, 0)
 	for _, p := range g.Players {
 		names = append(names, p.Name)
+	}
+
+	// Create a list of the "Detrimental Character Assignments", if enabled
+	playerCharacterAssignments := make([]int, 0)
+	if g.Options.CharacterAssignments {
+		for _, p := range g.Players {
+			playerCharacterAssignments = append(playerCharacterAssignments, p.CharacterAssignment)
+		}
 	}
 
 	// Find out what seat number (index) this user is sitting in
@@ -84,16 +92,17 @@ func commandHello(s *Session, d *CommandData) {
 
 	// Give them an "init" message
 	type InitMessage struct {
-		Names        []string `json:"names"`
-		Replay       bool     `json:"replay"`
-		Seat         int      `json:"seat"`
-		Spectating   bool     `json:"spectating"`
-		Timed        bool     `json:"timed"`
-		ReorderCards bool     `json:"reorderCards"`
-		DeckPlays    bool     `json:"deckPlays"`
-		EmptyClues   bool     `json:"emptyClues"`
-		Variant      int      `json:"variant"`
-		SharedReplay bool     `json:"sharedReplay"`
+		Names                []string `json:"names"`
+		CharacterAssignments []int    `json:"characterAssignments"`
+		Replay               bool     `json:"replay"`
+		Seat                 int      `json:"seat"`
+		Spectating           bool     `json:"spectating"`
+		Timed                bool     `json:"timed"`
+		ReorderCards         bool     `json:"reorderCards"`
+		DeckPlays            bool     `json:"deckPlays"`
+		EmptyClues           bool     `json:"emptyClues"`
+		Variant              int      `json:"variant"`
+		SharedReplay         bool     `json:"sharedReplay"`
 	}
 	replay := false
 	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
@@ -108,15 +117,16 @@ func commandHello(s *Session, d *CommandData) {
 		sharedReplay = true
 	}
 	s.Emit("init", &InitMessage{
-		Names:        names,
-		Replay:       replay,
-		Seat:         seat,
-		Spectating:   spectating,
-		Timed:        g.Options.Timed,
-		ReorderCards: g.Options.ReorderCards,
-		DeckPlays:    g.Options.DeckPlays,
-		EmptyClues:   g.Options.EmptyClues,
-		Variant:      g.Options.Variant,
-		SharedReplay: sharedReplay,
+		Names:                names,
+		CharacterAssignments: playerCharacterAssignments,
+		Replay:               replay,
+		Seat:                 seat,
+		Spectating:           spectating,
+		Timed:                g.Options.Timed,
+		ReorderCards:         g.Options.ReorderCards,
+		DeckPlays:            g.Options.DeckPlays,
+		EmptyClues:           g.Options.EmptyClues,
+		Variant:              g.Options.Variant,
+		SharedReplay:         sharedReplay,
 	})
 }

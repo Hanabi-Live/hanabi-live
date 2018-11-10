@@ -73,12 +73,17 @@ func commandAction(s *Session, d *CommandData) {
 		return
 	}
 
+	// Local variables
+	p := g.Players[i]
+
+	// Validate "Detrimental Character Assignment" restrictions
+	if characterAssignmentsValidate(s, d, g, p) {
+		return
+	}
+
 	/*
 		Action
 	*/
-
-	// Local variables
-	p := g.Players[i]
 
 	// Remove the "fail" and "blind" states
 	g.Sound = ""
@@ -133,7 +138,7 @@ func commandAction(s *Session, d *CommandData) {
 	doubleDiscard := false
 	if d.Type == 0 { // Clue
 		// Validate that the target of the clue is sane
-		if d.Target < 0 || d.Target > len(g.Players) - 1 {
+		if d.Target < 0 || d.Target > len(g.Players)-1 {
 			s.Warning("That is an invalid clue target.")
 			return
 		}
@@ -163,7 +168,7 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		// If it is a color clue, validate that the color clue is valid
-		if d.Clue.Type == 1 && (d.Clue.Value < 0 || d.Clue.Value > len(g.Stacks) - 1) {
+		if d.Clue.Type == 1 && (d.Clue.Value < 0 || d.Clue.Value > len(g.Stacks)-1) {
 			s.Warning("That is an invalid color clue.")
 			return
 		}

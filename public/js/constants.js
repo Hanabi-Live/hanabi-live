@@ -1001,6 +1001,17 @@
         REPLAY_LEADER: '#ffdf00',
     };
 
+    const CharacterAssignment = function CharacterAssignment(name, description) {
+        this.name = name;
+        this.description = description;
+    };
+    exports.CHARACTER_ASSIGNMENTS = [
+        new CharacterAssignment(
+            'Compulsive',
+            'Cannot discard if there is an even number of clues available (including 0)',
+        ),
+    ];
+
     // This only freezes one layer deep; to do any better, we should likely
     // involve a library like immutablejs. But probably not worth bothering with.
     for (const property of Object.keys(exports)) {

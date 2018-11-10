@@ -18,12 +18,15 @@ function HanabiUI(lobby, gameID) {
         backpath,
         drawshape,
         INDICATOR,
+        CHARACTER_ASSIGNMENTS,
     } = constants;
 
     this.deck = [];
 
     this.playerUs = -1;
     this.playerNames = [];
+    this.characterAssignments = []; // This is the "Detrimental Character Assignments" for each player, if enabled
+    // (it is either an empty array or an array of integers)
     this.variant = 0;
     this.cardsGotten = 0;
     this.cluesSpentPlusStrikes = 0;
@@ -3941,7 +3944,6 @@ function HanabiUI(lobby, gameID) {
                 height: playerNamePos[nump][j].h * winH,
                 name: this.playerNames[i],
             });
-
             UILayer.add(nameFrames[i]);
 
             // Draw the tooltips on the player names that show the time
@@ -3957,6 +3959,39 @@ function HanabiUI(lobby, gameID) {
                 });
                 nameFrames[i].on('mouseout', () => {
                     const tooltip = $(`#tooltip-player-${i}`);
+                    tooltip.tooltipster('close');
+                });
+            }
+
+            // Draw the "Detrimental Character Assignments" icon and tooltip
+            if (this.characterAssignments.length > 0) {
+                var circle = new Kinetic.Circle({
+                    // The X and Y are copied from the name frame above
+                    x: playerNamePos[nump][j].x * winW,
+                    y: playerNamePos[nump][j].y * winH,
+                    radius: 0.01 * winW,
+                    fill: 'red',
+                    stroke: 'black',
+                    strokeWidth: 4
+                });
+                UILayer.add(circle);
+
+                circle.on('mousemove', function circleMouseMove() {
+                    ui.activeHover = this;
+
+                    const tooltipX = this.getWidth() / 2 + this.attrs.x;
+                    const tooltip = $(`#tooltip-character-assignment-${i}`);
+                    tooltip.css('left', tooltipX);
+                    tooltip.css('top', this.attrs.y);
+
+                    const character = CHARACTER_ASSIGNMENTS[ui.characterAssignments[i]];
+                    const content = `<b>${character.name}</b>:<br />${character.description}`;
+                    tooltip.tooltipster('instance').content(content);
+
+                    tooltip.tooltipster('open');
+                });
+                circle.on('mouseout', () => {
+                    const tooltip = $(`#tooltip-character-assignment-${i}`);
                     tooltip.tooltipster('close');
                 });
             }
@@ -6082,6 +6117,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
     } else if (msgType === 'init') {
         this.playerUs = msgData.seat;
         this.playerNames = msgData.names;
+        this.characterAssignments = msgData.characterAssignments;
         this.variant = constants.VARIANT_INTEGER_MAPPING[msgData.variant];
         this.replay = msgData.replay;
         this.replayOnly = msgData.replay;

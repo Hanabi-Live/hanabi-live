@@ -142,32 +142,34 @@ func (g *Game) NotifyPlayerChange() {
 		}
 
 		type GameMessage struct {
-			Name         string  `json:"name"`
-			Running      bool    `json:"running"`
-			NumPlayers   int     `json:"numPlayers"`
-			Variant      int     `json:"variant"`
-			Timed        bool    `json:"timed"`
-			BaseTime     float64 `json:"baseTime"`
-			TimePerTurn  int     `json:"timePerTurn"`
-			ReorderCards bool    `json:"reorderCards"`
-			DeckPlays    bool    `json:"deckPlays"`
-			EmptyClues   bool    `json:"emptyClues"`
-			Password     bool    `json:"password"`
-			SharedReplay bool    `json:"sharedReplay"`
+			Name                 string  `json:"name"`
+			Running              bool    `json:"running"`
+			NumPlayers           int     `json:"numPlayers"`
+			Variant              int     `json:"variant"`
+			Timed                bool    `json:"timed"`
+			BaseTime             float64 `json:"baseTime"`
+			TimePerTurn          int     `json:"timePerTurn"`
+			ReorderCards         bool    `json:"reorderCards"`
+			DeckPlays            bool    `json:"deckPlays"`
+			EmptyClues           bool    `json:"emptyClues"`
+			CharacterAssignments bool    `json:"characterAssignments"`
+			Password             bool    `json:"password"`
+			SharedReplay         bool    `json:"sharedReplay"`
 		}
 		p.Session.Emit("game", GameMessage{
-			Name:         g.Name,
-			Running:      g.Running,
-			NumPlayers:   len(g.Players),
-			Variant:      g.Options.Variant,
-			Timed:        g.Options.Timed,
-			BaseTime:     g.Options.TimeBase,
-			TimePerTurn:  g.Options.TimePerTurn,
-			ReorderCards: g.Options.ReorderCards,
-			DeckPlays:    g.Options.DeckPlays,
-			EmptyClues:   g.Options.EmptyClues,
-			Password:     g.Password != "",
-			SharedReplay: g.SharedReplay,
+			Name:                 g.Name,
+			Running:              g.Running,
+			NumPlayers:           len(g.Players),
+			Variant:              g.Options.Variant,
+			Timed:                g.Options.Timed,
+			BaseTime:             g.Options.TimeBase,
+			TimePerTurn:          g.Options.TimePerTurn,
+			ReorderCards:         g.Options.ReorderCards,
+			DeckPlays:            g.Options.DeckPlays,
+			EmptyClues:           g.Options.EmptyClues,
+			CharacterAssignments: g.Options.CharacterAssignments,
+			Password:             g.Password != "",
+			SharedReplay:         g.SharedReplay,
 		})
 
 		// Tell the client to redraw all of the lobby rectanges to account for the new player

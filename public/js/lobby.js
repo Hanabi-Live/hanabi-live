@@ -278,6 +278,10 @@ function HanabiLobby() {
         const newThemes = tooltipThemes.slice();
         newThemes.push('align-center');
         $(`#tooltip-player-${i}`).tooltipster('instance').option('theme', newThemes);
+
+        $('#game-tooltips').append(`<div id="tooltip-character-assignment-${i}"></div>`);
+        $(`#tooltip-character-assignment-${i}`).tooltipster(tooltipOptions);
+        $(`#tooltip-character-assignment-${i}`).tooltipster('instance').option('theme', newThemes);
     }
     $('#tooltip-spectators').tooltipster(tooltipOptions);
     $('#tooltip-leader').tooltipster(tooltipOptions);
@@ -435,7 +439,7 @@ function HanabiLobby() {
         localStorage.setItem('createTableEmptyClues', emptyClues);
 
         const characterAssignments = document.getElementById('create-game-character-assignments').checked;
-        localStorage.setItem('characterAssignments', characterAssignments);
+        localStorage.setItem('createTableCharacterAssignments', characterAssignments);
 
         let password = $('#create-game-password').val();
         localStorage.setItem('createTablePassword', password);
@@ -1367,6 +1371,10 @@ HanabiLobby.prototype.showJoined = function showJoined() {
     }
     if (this.game.emptyClues) {
         const text = 'Empty Clues';
+        $('<li>').html(text).appendTo(options);
+    }
+    if (this.game.characterAssignments) {
+        const text = 'Character Assignments';
         $('<li>').html(text).appendTo(options);
     }
     if (this.game.password) {
