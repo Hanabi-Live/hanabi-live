@@ -73,12 +73,17 @@ func commandAction(s *Session, d *CommandData) {
 		return
 	}
 
+	// Local variables
+	p := g.Players[i]
+
+	// Validate that a player is not doing an illegal action for their character
+	if characterValidateSecondAction(s, d, g, p) {
+		return
+	}
+
 	/*
 		Action
 	*/
-
-	// Local variables
-	p := g.Players[i]
 
 	// Remove the "fail" and "blind" states
 	g.Sound = ""
@@ -87,46 +92,6 @@ func commandAction(s *Session, d *CommandData) {
 	// (but don't update the idle variable if we are ending the game due to idleness)
 	if d.Type != 5 {
 		go g.CheckIdle()
-	}
-
-	// Handle card-reordering
-	if g.Turn > g.DiscardSignal.TurnExpiration {
-		g.DiscardSignal.Outstanding = false
-	}
-	if g.Options.ReorderCards &&
-		g.DiscardSignal.Outstanding &&
-		d.Type != 1 && // It doesn't happen on a play
-		d.Type != 3 { // It doesn't happen on a deck blind-play
-
-		// Find the chop card
-		chopIndex := g.Players[i].GetChopIndex()
-
-		// We don't need to reorder anything if the chop is slot 1
-		// (the left-most card)
-		if chopIndex != len(p.Hand)-1 {
-			chopCard := p.Hand[chopIndex]
-
-			// Remove the chop card from their hand
-			p.Hand = append(p.Hand[:chopIndex], p.Hand[chopIndex+1:]...)
-
-			// Add it to the end (the left-most position)
-			p.Hand = append(p.Hand, chopCard)
-
-			// Make an array that represents the order of the player's hand
-			handOrder := make([]int, 0)
-			for _, c := range p.Hand {
-				handOrder = append(handOrder, c.Order)
-			}
-
-			// Notify everyone about the reordering
-			g.Actions = append(g.Actions, Action{
-				Type:      "reorder",
-				Target:    i,
-				HandOrder: handOrder,
-			})
-			g.NotifyAction()
-			log.Info("Reordered the cards for player:", p.Name)
-		}
 	}
 
 	// Do different tasks depending on the action
@@ -163,7 +128,7 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		// If it is a color clue, validate that the color clue is valid
-		if d.Clue.Type == 1 && (d.Clue.Value < 0 || d.Clue.Value > len(g.Stacks)-1) {
+		if d.Clue.Type == 1 && (d.Clue.Value < 0 || d.Clue.Value > len(variants[g.Options.Variant].Clues)-1) {
 			s.Warning("That is an invalid color clue.")
 			return
 		}
@@ -185,11 +150,6 @@ func commandAction(s *Session, d *CommandData) {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
 			s.Warning("You cannot play a card that is not in your hand.")
-			return
-		}
-
-		// Validate "Detrimental Character Assignment" restrictions
-		if characterCheckPlay(s, d, g, p) {
 			return
 		}
 
@@ -281,11 +241,16 @@ func commandAction(s *Session, d *CommandData) {
 		g.TurnBeginTime = time.Now()
 	}
 
+	// If this is the final go-around, mark that they have performed an action
+	if g.EndPlayer != -1 {
+		p.PerformedFinalTurn = true
+	}
+
 	// Increment the turn
-	g.Turn++
-	g.ActivePlayer++
-	if g.ActivePlayer == len(g.Players) {
-		g.ActivePlayer = 0
+	// (but don't increment it if we are on a characters that takes two turns in a row)
+	if !characterTakingSecondTurn(d, g, p) {
+		g.Turn++
+		g.ActivePlayer = (g.ActivePlayer + 1) % len(g.Players)
 	}
 	np := g.Players[g.ActivePlayer] // The next player
 

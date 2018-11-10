@@ -191,18 +191,6 @@ function HanabiLobby() {
         }
         $('#time-per-turn-seconds').val(timePerTurnSeconds);
 
-        // Fill in the "Reorder Cards" checkbox
-        let reorderCards;
-        try {
-            reorderCards = JSON.parse(localStorage.getItem('createTableReorderCards'));
-        } catch (err) {
-            reorderCards = false;
-        }
-        if (typeof reorderCards !== 'boolean') {
-            reorderCards = false;
-        }
-        $('#create-game-reorder-cards').prop('checked', reorderCards);
-
         // Fill in the "Allow Bottom-Deck Blind Plays" checkbox
         let deckPlays;
         try {
@@ -285,8 +273,6 @@ function HanabiLobby() {
     }
     $('#tooltip-spectators').tooltipster(tooltipOptions);
     $('#tooltip-leader').tooltipster(tooltipOptions);
-    $('#tooltip-signal').tooltipster(tooltipOptions);
-    $('#tooltip-signal').tooltipster('instance').content('The discard signal is outstanding.');
     for (let i = 0; i < 60; i++) { // Matches card.order
         $('#game-tooltips').append(`<div id="tooltip-card-${i}"></div>`);
         $(`#tooltip-card-${i}`).tooltipster(tooltipOptions);
@@ -429,9 +415,6 @@ function HanabiLobby() {
         const timePerTurnSeconds = $('#time-per-turn-seconds').val();
         localStorage.setItem('timePerTurnSeconds', timePerTurnSeconds);
 
-        const reorderCards = document.getElementById('create-game-reorder-cards').checked;
-        localStorage.setItem('createTableReorderCards', reorderCards);
-
         const deckPlays = document.getElementById('create-game-deck-plays').checked;
         localStorage.setItem('createTableDeckPlays', deckPlays);
 
@@ -455,7 +438,6 @@ function HanabiLobby() {
                 timed,
                 baseTimeMinutes: parseFloat(baseTimeMinutes), // The server expects this as an float64
                 timePerTurnSeconds: parseInt(timePerTurnSeconds, 10), // The server expects this as an integer
-                reorderCards,
                 deckPlays,
                 emptyClues,
                 characterAssignments,
@@ -1359,10 +1341,6 @@ HanabiLobby.prototype.showJoined = function showJoined() {
     options.text('');
     if (this.game.timed) {
         const text = `Timed (${timerFormatter(this.game.baseTime)} + ${timerFormatter(this.game.timePerTurn)})`;
-        $('<li>').html(text).appendTo(options);
-    }
-    if (this.game.reorderCards) {
-        const text = 'Forced Chop Rotation';
         $('<li>').html(text).appendTo(options);
     }
     if (this.game.deckPlays) {

@@ -23,15 +23,15 @@ var (
 		},
 		CharacterAssignment{
 			Name:        "Fuming",
-			Description: "Can only clue [random color]",
+			Description: "Can only clue numbers and [random color]",
 		},
 		CharacterAssignment{
 			Name:        "Dumbfounded",
-			Description: "Can only clue [random number]",
+			Description: "Can only clue colors and [random number]",
 		},
 		CharacterAssignment{
-			Name:        "Eccentric",
-			Description: "Can only clue odd numbers or clues that touch odd amounts of cards",
+			Name:        "Picky",
+			Description: "Can only clue odd numbers or odd colors",
 		},
 		CharacterAssignment{
 			Name:        "Spiteful",
@@ -41,11 +41,15 @@ var (
 			Name:        "Insolent",
 			Description: "Cannot clue the player to their right",
 		},
+		CharacterAssignment{
+			Name:        "Philospher",
+			Description: "Can only give empty clues",
+		},
 
 		// Play characters
 		CharacterAssignment{
 			Name:        "Follower",
-			Description: "Cannot be the first person to play a card of a certain rank",
+			Description: "Cannot play a card unless two cards of the same rank have already been played",
 		},
 
 		// Discard characters
@@ -56,6 +60,20 @@ var (
 		CharacterAssignment{
 			Name:        "Traumatized",
 			Description: "Cannot discard if there is an odd number of clues available",
+		},
+
+		// Extra turn characters
+		CharacterAssignment{
+			Name:        "Genius",
+			Description: "Must clue both a number and a color (uses 2 clues)",
+		},
+		CharacterAssignment{
+			Name:        "Synesthetic",
+			Description: "Must clue both a number and a color of the same value (uses 1 clue)",
+		},
+		CharacterAssignment{
+			Name:        "Panicky",
+			Description: "After discarding, discards again if there are 4 clues or less",
 		},
 	}
 )
@@ -103,6 +121,48 @@ func characterGenerate(g *Game) {
 	}
 }
 
+func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Player) bool {
+	if !g.Options.CharacterAssignments {
+		return false
+	}
+
+	name := characterAssignments[p.CharacterAssignment].Name
+	if name == "Genius" &&
+		p.CharacterMetadata != -1 &&
+		(d.Type != 0 || // Clue
+			d.Clue.Type != p.CharacterMetadata) {
+
+		s.Warning("You are " + name + ", so you must give both a number clue and a color clue.")
+		return true
+
+	} else if name == "Synesthetic" {
+		if p.CharacterMetadata == -1 &&
+			d.Type == 0 && // Clue
+			d.Clue.Type != 0 { // Number clue
+
+			s.Warning("You are " + name + ", so you must give a number clue first.")
+			return true
+
+		} else if p.CharacterMetadata != -1 &&
+			(d.Type != 0 || // Clue
+				d.Clue.Value != p.CharacterMetadata) {
+
+			s.Warning("You are " + name + ", so you must give the matching color clue.")
+			return true
+		}
+
+	} else if name == "Panicky" &&
+		p.CharacterMetadata != -1 &&
+		d.Type != 2 { // Discard
+
+		s.Warning("You are " + name + ", so you must discard again since there are 4 or less clues available.")
+		return true
+	}
+
+	return false
+}
+
+// characterCheckClue returns true if the clue cannot be given
 func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 	if !g.Options.CharacterAssignments {
 		return false
@@ -135,9 +195,8 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		s.Warning("You are " + name + ", so you can not give that type of clue.")
 		return true
 
-	} else if name == "Eccentric" &&
-		(d.Clue.Value%2 == 1 ||
-			len(p.FindCardsTouchedByClue(g, d))%2 == 1) {
+	} else if name == "Picky" &&
+		d.Clue.Value%2 == 1 {
 
 		s.Warning("You are " + name + ", so you can only clue odd numbers or clues that touch odd amounts of cards.")
 		return true
@@ -149,42 +208,43 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		return true
 
 	} else if name == "Insolent" &&
-		d.Target == (p.Index+1)%len(g.Players) {
+		d.Target == (p.Index-1)%len(g.Players) {
 
 		s.Warning("You are " + name + ", so you cannot clue the player to your right.")
 		return true
 
+	} else if name == "Insolent" &&
+		len(p.FindCardsTouchedByClue(g, d)) != 0 {
+
+		s.Warning("You are " + name + ", so you can only give empty clues.")
+		return true
+	} else if name == "Genius" &&
+		p.CharacterMetadata == -1 &&
+		g.Clues < 2 {
+
+		s.Warning("You are " + name + ", so there needs to be at least two clues available for you to give a clue.")
+		return true
 	}
 
 	return false
 }
 
-func characterCheckPlay(s *Session, d *CommandData, g *Game, p *Player) bool {
+// characterCheckPlay returns true if the card should misplay
+func characterCheckPlay(g *Game, p *Player, c *Card) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}
 
 	name := characterAssignments[p.CharacterAssignment].Name
 	if name == "Follower" {
-		// Look through the deck for this card
-		var card *Card
-		for _, c := range g.Deck {
-			if c.Order == d.Target {
-				card = c
-				break
-			}
-		}
-
-		// Look through the stacks to see if the rank of this card has been already played
-		found := false
+		// Look through the stacks to see if two cards of this rank have already been played
+		numPlayedOfThisRank := 0
 		for _, s := range g.Stacks {
-			if s >= card.Rank {
-				found = true
-				break
+			if s >= c.Rank {
+				numPlayedOfThisRank++
 			}
 		}
-		if !found {
-			s.Warning("You are " + name + ", so you cannot be the first person to play a card of a certain rank.")
+		if numPlayedOfThisRank < 2 {
 			return true
 		}
 	}
@@ -192,6 +252,7 @@ func characterCheckPlay(s *Session, d *CommandData, g *Game, p *Player) bool {
 	return false
 }
 
+// characterCheckDiscard returns true if the player cannot currently discard
 func characterCheckDiscard(s *Session, g *Game, p *Player) bool {
 	if !g.Options.CharacterAssignments {
 		return false
@@ -209,6 +270,63 @@ func characterCheckDiscard(s *Session, g *Game, p *Player) bool {
 
 		s.Warning("You are " + name + ", so you cannot discard when there is an odd number of clues available.")
 		return true
+	}
+
+	return false
+}
+
+func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
+	if !g.Options.CharacterAssignments {
+		return false
+	}
+
+	name := characterAssignments[p.CharacterAssignment].Name
+	if name == "Genius" &&
+		d.Type == 0 { // Clue
+
+		// Must clue both a number and a color
+		// "p.CharacterMetadata" represents the state, which alternates between -1 and 0/1
+		// (depending on whether we need to give a color or number clue)
+		if p.CharacterMetadata == -1 {
+			if d.Clue.Type == 0 {
+				p.CharacterMetadata = 1
+			} else if d.Clue.Type == 1 {
+				p.CharacterMetadata = 0
+			}
+			return true
+		} else {
+			p.CharacterMetadata = -1
+			return false
+		}
+
+	} else if name == "Synesthetic" &&
+		d.Type == 0 { // Clue
+
+		// Must clue both a number and a color of the same value
+		// "p.CharacterMetadata" represents the state, which alternates between -1 and X
+		// (depending on the value of the clue given)
+		if p.CharacterMetadata == -1 {
+			p.CharacterMetadata = d.Clue.Value - 1
+			return true
+		} else {
+			p.CharacterMetadata = -1
+			return false
+		}
+	} else if name == "Panicky" &&
+		d.Type == 2 { // Discard
+
+		// After discarding, discards again if there are 4 clues or less
+		// "p.CharacterMetadata" represents the state, which alternates between -1 and 0
+		if p.CharacterMetadata == -1 &&
+			g.Clues <= 4 {
+
+			p.CharacterMetadata = 0
+			return true
+
+		} else if p.CharacterMetadata == 0 {
+			p.CharacterMetadata = -1
+			return false
+		}
 	}
 
 	return false

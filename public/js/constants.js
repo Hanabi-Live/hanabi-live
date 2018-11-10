@@ -1006,7 +1006,7 @@
         this.description = description;
     };
     exports.CHARACTER_ASSIGNMENTS = [
-        // Clue characters
+        // Clue restriction characters
         new CharacterAssignment(
             'Conservative',
             'Can only give clues that touch a single card',
@@ -1017,15 +1017,15 @@
         ),
         new CharacterAssignment(
             'Fuming',
-            'Can only clue [random color]',
+            'Can only clue numbers and [random color]',
         ),
         new CharacterAssignment(
             'Dumbfounded',
-            'Can only clue [random number]',
+            'Can only clue colors and [random number]',
         ),
         new CharacterAssignment(
-            'Eccentric',
-            'Can only clue odd numbers or clues that touch odd amounts of cards',
+            'Picky',
+            'Can only clue odd numbers or odd colors',
         ),
         new CharacterAssignment(
             'Spiteful',
@@ -1035,14 +1035,18 @@
             'Insolent',
             'Cannot clue the player to their right',
         ),
-
-        // Play characters
         new CharacterAssignment(
-            'Follower',
-            'Cannot be the first person to play a card of a certain rank',
+            'Philospher',
+            'Can only give empty clues',
         ),
 
-        // Discard characters
+        // Play restriction characters
+        new CharacterAssignment(
+            'Follower',
+            'Cannot play a card unless two cards of the same rank have already been played',
+        ),
+
+        // Discard restriction characters
         new CharacterAssignment(
             'Anxious',
             'Cannot discard if there is an even number of clues available (including 0)',
@@ -1052,15 +1056,21 @@
             'Cannot discard if there is an odd number of clues available',
         ),
 
-        /*
-            1) Compulsive - ?
-            9) Panicky - After discarding, discards again if the clue token count at 4 or less
-            character which can only give empty clues
-            can't clue player to your left
-            can't clue player to your right
+        // Extra turn characters
+        new CharacterAssignment(
+            'Genius',
+            'Must clue both a number and a color (uses two clues)',
+        ),
+        new CharacterAssignment(
+            'Synesthetic',
+            'Gives number and color clues at the same time',
+        ),
+        new CharacterAssignment(
+            'Panicky',
+            'After discarding, discards again if there are 4 clues or less',
+        ),
 
-            7) Genius - Must give both a color and number clue to a player at the same time (and uses two clue tokens)
-            10) Synesthetic - After giving a clue, also gives the matching color/number clue
+        /*
             12) Contrarian - Play order inverts after this player takes a turn
             6) Forgetful - Hand is shuffled after discarding (but before drawing)
 
@@ -1072,14 +1082,11 @@
             Miser - cannot clue if there are 4 or fewer clues available
             Procrastinator (timed only) - timer goes down twice as quickly
 
-            ??? - all given clues must touch either the newest or oldest card in someone's hand
+            Compulsive - all given clues must touch either the newest or oldest card in someone's hand
 
-            change text on dumbfounded + the other one
-            fix follower to misplay
-            buff follower, 2 cards of the same rank
             forbidden color and number
-            "cannot see the cards of the player to your right"?
-            
+            - "cannot see the cards of the player to your right"?
+
             slow - cannot play if you played on your previous turn
             hesitant - cannot play from slot 1 (or randomly choose a number between 1 and (handsize - 1), cannot play from that slot. Your rightmost card cannot be chosen that way)
             colorblind - cannot receive color clues
@@ -1089,6 +1096,34 @@
             vulnerable - cannot receive the clues 2 or 5.
             mood swings - must alternative color clues and number clues [to be more precise: if the previous clue this player gave was a number clue, the next clue must be color and vice versa]
             insistent - after giving a clue, must repeat this clue to the same player until one of the clued cards has been played or discarded (unless at 0 clues).
+            stubborn - must do a different action than the player to their right (the actions are {clue, play, discard})
+            gambler - must play if he didn't play last turn. Misplays by gambler don't cost a strike.
+
+            Eccentric - ?
+
+
+
+
+			// Remove the chop card from their hand
+			p.Hand = append(p.Hand[:chopIndex], p.Hand[chopIndex+1:]...)
+
+			// Add it to the end (the left-most position)
+			p.Hand = append(p.Hand, chopCard)
+
+			// Make an array that represents the order of the player's hand
+			handOrder := make([]int, 0)
+			for _, c := range p.Hand {
+				handOrder = append(handOrder, c.Order)
+			}
+
+			// Notify everyone about the reordering
+			g.Actions = append(g.Actions, Action{
+				Type:      "reorder",
+				Target:    i,
+				HandOrder: handOrder,
+			})
+			g.NotifyAction()
+			log.Info("Reordered the cards for player:", p.Name)
         */
     ];
 

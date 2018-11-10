@@ -100,10 +100,9 @@ func commandGameCreate(s *Session, d *CommandData) {
 		Deck:               make([]*Card, 0),
 		Stacks:             make([]int, 0),
 		Actions:            make([]Action, 0),
-		DiscardSignal: &DiscardSignal{
-			TurnExpiration: -1,
-		},
-		Chat: make([]*GameChatMessage, 0),
+		EndPlayer:          -1,
+		EndTurn:            -1,
+		Chat:               make([]*GameChatMessage, 0),
 	}
 	msg := g.GetName() + "User \"" + s.Username() + "\" created"
 	if g.Options.Timed && g.Options.ReorderCards {

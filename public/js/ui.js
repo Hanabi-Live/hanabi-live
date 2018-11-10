@@ -66,7 +66,6 @@ function HanabiUI(lobby, gameID) {
     this.editingNote = null; // Equal to the card order number or null
     this.editingNoteActionOccured = false; // Equal to true if something happened when the note box happens to be open
 
-    this.reorderCards = false;
     this.deckPlays = false;
     this.emptyClues = false;
 
@@ -2841,7 +2840,6 @@ function HanabiUI(lobby, gameID) {
     let spectatorsNumLabel;
     let sharedReplayLeaderLabel;
     let sharedReplayLeaderLabelPulse;
-    let discardSignalLabel;
     let strikes = [];
     const nameFrames = [];
     const playStacks = new Map();
@@ -3343,40 +3341,6 @@ function HanabiUI(lobby, gameID) {
                     name: target,
                 },
             });
-        });
-
-        // Discard signal indicator
-        discardSignalLabel = new Kinetic.Text({
-            x: 0.623 * winW,
-            y: 0.85 * winH,
-            width: 0.03 * winW,
-            height: 0.03 * winH,
-            fontSize: 0.03 * winH,
-            fontFamily: 'Verdana',
-            align: 'center',
-            text: '👋',
-            fill: '#d8d5ef',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
-            visible: false,
-        });
-        UILayer.add(discardSignalLabel);
-
-        discardSignalLabel.on('mousemove', function discardSignalLabelMouseMove() {
-            ui.activeHover = this;
-
-            const tooltipX = this.attrs.x + this.getWidth() / 2;
-            $('#tooltip-signal').css('left', tooltipX);
-            $('#tooltip-signal').css('top', this.attrs.y);
-            $('#tooltip-signal').tooltipster('open');
-        });
-        discardSignalLabel.on('mouseout', () => {
-            $('#tooltip-signal').tooltipster('close');
         });
 
         /*
@@ -5934,12 +5898,6 @@ Keyboard hotkeys:
             }
         }
 
-        if (data.discardSignalOutstanding && this.reorderCards) {
-            discardSignalLabel.setVisible(true);
-        } else {
-            discardSignalLabel.setVisible(false);
-        }
-
         // We have to redraw the UI layer to avoid a bug with the clue UI
         UILayer.draw();
 
@@ -6135,7 +6093,6 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.spectating = msgData.spectating;
         this.timedGame = msgData.timed;
         this.sharedReplay = msgData.sharedReplay;
-        this.reorderCards = msgData.reorderCards;
         this.deckPlays = msgData.deckPlays;
         this.emptyClues = msgData.emptyClues;
 

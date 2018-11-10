@@ -18,6 +18,7 @@ type Player struct {
 	Hand                []*Card
 	Time                time.Duration
 	Notes               []string
+	PerformedFinalTurn  bool
 	CharacterAssignment int
 	CharacterMetadata   int
 
@@ -30,14 +31,15 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 		// Make an exception for color clues in the "Color Blind" variant
 		(d.Clue.Type != 1 || variants[g.Options.Variant].Name != "Color Blind") &&
 		// Allow empty clues if the optional setting is enabled
-		!g.Options.EmptyClues {
+		!g.Options.EmptyClues &&
+		// Philosphers can only give empty clues
+		characterAssignments[p.CharacterAssignment].Name != "Philospher" {
 
 		return false
 	}
 
 	// Keep track that someone clued
 	g.Clues--
-	g.DiscardSignal.Outstanding = false
 
 	// Send the "notify" message about the clue
 	g.Actions = append(g.Actions, Action{
@@ -135,7 +137,9 @@ func (p *Player) RemoveCard(target int) *Card {
 // (which can only occur if the card blind-plays)
 func (p *Player) PlayCard(g *Game, c *Card) bool {
 	// Find out if this successfully plays
-	if c.Rank != g.Stacks[c.Suit]+1 {
+	if c.Rank != g.Stacks[c.Suit]+1 ||
+		characterCheckPlay(g, p, c) { // Validate "Detrimental Character Assignment" restrictions
+
 		// The card does not play
 		c.Failed = true
 		g.Strikes++
@@ -214,14 +218,6 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 
 // DiscardCard returns true if it is a "double discard" situation
 func (p *Player) DiscardCard(g *Game, c *Card) bool {
-	// Keep track that someone discarded
-	// (used for the "Reorder Cards" feature)
-	if g.Options.ReorderCards {
-		g.DiscardSignal.Outstanding = true
-		g.DiscardSignal.TurnExpiration = g.Turn + len(g.Players) - 1
-		log.Info("Discard signal outstanding, expiring on turn:", g.DiscardSignal.TurnExpiration)
-	}
-
 	// Mark that the card is discarded
 	c.Discarded = true
 
@@ -311,7 +307,7 @@ func (p *Player) DrawCard(g *Game) {
 	// Check to see if that was the last card drawn
 	if g.DeckIndex >= len(g.Deck) {
 		// Mark the turn upon which the game will end
-		g.EndTurn = g.Turn + len(g.Players) + 1
+		g.EndPlayer = (g.ActivePlayer + 1) % len(g.Players)
 	}
 }
 
@@ -323,27 +319,6 @@ func (p *Player) PlayDeck(g *Game) {
 	c := p.RemoveCard(len(g.Deck) - 1) // The final card
 	c.Slot = -1
 	p.PlayCard(g, c)
-}
-
-// GetChopIndex gets the index of the oldest (right-most) unclued card
-// (used for the "Reorder Cards" feature)
-func (p *Player) GetChopIndex() int {
-	chopIndex := -1
-
-	// Go through their hand
-	for i := 0; i < len(p.Hand); i++ {
-		if !p.Hand[i].Touched {
-			chopIndex = i
-			break
-		}
-	}
-	if chopIndex == -1 {
-		// Their hand is filled with clued cards,
-		// so the chop is considered to be their newest (left-most) card
-		chopIndex = len(p.Hand) - 1
-	}
-
-	return chopIndex
 }
 
 func (p *Player) InHand(order int) bool {

@@ -36,10 +36,10 @@ type Game struct {
 	Progress      int
 	Strikes       int
 	Actions       []Action // We don't want this to be a pointer because this simplifies scrubbing
-	DiscardSignal *DiscardSignal
 	Sound         string
 	TurnBeginTime time.Time
-	EndTurn       int
+	EndPlayer     int                // Set when the final card is drawn to determine when the game should end
+	EndTurn       int                // Set when the game ends
 	BlindPlays    int                // The number of consecutive blind plays
 	Chat          []*GameChatMessage // All of the in-game chat history
 }
@@ -53,11 +53,6 @@ type Options struct {
 	DeckPlays            bool
 	EmptyClues           bool
 	CharacterAssignments bool
-}
-
-type DiscardSignal struct {
-	Outstanding    bool
-	TurnExpiration int
 }
 
 type GameChatMessage struct {
@@ -443,12 +438,22 @@ func (g *Game) CheckEnd() bool {
 		return true
 	}
 
-	// Check for the final go-around
-	// (initiated after the last card is played from the deck)
-	if g.Turn == g.EndTurn {
-		log.Info(g.GetName() + "Final turn reached; ending the game.")
-		g.EndCondition = 1
-		return true
+	// Check to see if the final go-around has completed
+	// (which is initiated after the last card is played from the deck)
+	// We can't use the amount of turns to determine this because certain characters can each player to take multiple turns
+	if g.ActivePlayer == g.EndPlayer {
+		allDoneFinalTurn := true
+		for _, p := range g.Players {
+			if !p.PerformedFinalTurn {
+				allDoneFinalTurn = false
+				break
+			}
+		}
+		if allDoneFinalTurn {
+			log.Info(g.GetName() + "Final turn reached; ending the game.")
+			g.EndCondition = 1
+			return true
+		}
 	}
 
 	// Check to see if the maximum score has been reached
