@@ -41,10 +41,6 @@ var (
 			Name:        "Insolent",
 			Description: "Cannot clue the player to their right",
 		},
-		CharacterAssignment{
-			Name:        "Philospher",
-			Description: "Can only give empty clues",
-		},
 
 		// Play characters
 		CharacterAssignment{
@@ -273,7 +269,13 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 			},
 			Target: d.Target,
 		}
-		if len(p.FindCardsTouchedByClue(g, d2)) == 0 {
+		cardsTouched := p.FindCardsTouchedByClue(g, d2)
+		log.Debug("Original clue type given:", d.Clue.Type)
+		log.Debug("Original clue value given:", d.Clue.Value)
+		log.Debug("New clue type given:", d2.Clue.Type)
+		log.Debug("New clue value given:", d2.Clue.Value)
+		log.Debug("Cards touched:", cardsTouched)
+		if len(cardsTouched) == 0 {
 			s.Warning("You are " + name + ", so both versions of the clue must touch at least 1 card in the hand.")
 			return true
 		}

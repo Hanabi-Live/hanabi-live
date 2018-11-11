@@ -1035,10 +1035,6 @@
             'Insolent',
             'Cannot clue the player to their right',
         ),
-        new CharacterAssignment(
-            'Philospher',
-            'Can only give empty clues',
-        ),
 
         // Play restriction characters
         new CharacterAssignment(
