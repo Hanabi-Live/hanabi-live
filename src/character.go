@@ -133,12 +133,12 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Playe
 			return true
 		}
 
-		if d.Clue.Type != p.CharacterMetadata {
-			s.Warning("You are " + name + ", so you must now give the opposite clue type.")
+		if d.Clue.Type != 1 { // Color clue
+			s.Warning("You are " + name + ", so you must now give a color clue.")
 			return true
 		}
 
-		if d.Target != p.CharacterMetadata2 {
+		if d.Target != p.CharacterMetadata {
 			s.Warning("You are " + name + ", so you must give the second clue to the same player.")
 			return true
 		}
@@ -149,13 +149,18 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Playe
 			return true
 		}
 
-		if d.Clue.Type != p.CharacterMetadata {
-			s.Warning("You are " + name + ", so you must now give the matching color clue.")
+		if d.Clue.Type != 1 { // Color clue
+			s.Warning("You are " + name + ", so you must now give a color clue.")
 			return true
 		}
 
-		if d.Target != p.CharacterMetadata2 {
+		if d.Target != p.CharacterMetadata {
 			s.Warning("You are " + name + ", so you must give the second clue to the same player.")
+			return true
+		}
+
+		if d.Clue.Value != p.CharacterMetadata2 {
+			s.Warning("You are " + name + ", so you must give the matching color clue.")
 			return true
 		}
 
@@ -340,19 +345,12 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 		d.Type == 0 { // Clue
 
 		// Must clue both a number and a color (uses 2 clues)
-		// "p.CharacterMetadata" represents the state, which alternates between -1 and 0/1
-		// (depending on whether we need to give a color or number clue)
+		// The clue target is stored in "p.CharacterMetadata"
 		if p.CharacterMetadata == -1 {
-			if d.Clue.Type == 0 {
-				p.CharacterMetadata = 1
-			} else if d.Clue.Type == 1 {
-				p.CharacterMetadata = 0
-			}
-			p.CharacterMetadata2 = d.Target
+			p.CharacterMetadata = d.Target
 			return true
 		} else {
 			p.CharacterMetadata = -1
-			p.CharacterMetadata2 = -1
 			return false
 		}
 
@@ -360,11 +358,11 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 		d.Type == 0 { // Clue
 
 		// Must clue both a number and a color of the same value (uses 1 clue)
-		// "p.CharacterMetadata" represents the state, which alternates between -1 and X
-		// (depending on the value of the clue given)
+		// The clue target is stored in "p.CharacterMetadata"
+		// The value of the clue is stored in "p.CharacterMetadata2"
 		if p.CharacterMetadata == -1 {
-			p.CharacterMetadata = d.Clue.Value - 1
-			p.CharacterMetadata2 = d.Target
+			p.CharacterMetadata = d.Target
+			p.CharacterMetadata2 = d.Clue.Value - 1
 			g.Clues++ // The second clue given should not cost a clue
 			return true
 		} else {
@@ -372,6 +370,7 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 			p.CharacterMetadata2 = -1
 			return false
 		}
+
 	} else if name == "Panicky" &&
 		d.Type == 2 { // Discard
 
