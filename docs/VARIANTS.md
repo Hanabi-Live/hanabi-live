@@ -1,6 +1,6 @@
 # List of Variants
 
-Hanabi Live is programmed by Hanabi enthusists who have played thousands of games. In order to keep the game fresh, the server allows you to create games using several custom variants which are listed below. Beyond this, players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#other-options).
+Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of games. In order to keep the game fresh, the server allows you to create games using several custom variants which are listed below. Beyond this, players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#other-options).
 
 <br />
 
