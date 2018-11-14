@@ -80,18 +80,17 @@ The server was originally an attempt to emulate the [Keldon Hanabi server](http:
 * A golden border will appear around the deck when there is 1 card left in order to signify that this is possible.
 * This feature can prevent losses that occur from being "bottom decked" by a 3 or a 4 that was impossible to save in the early or mid-game.
 
-#### Forced Chop Rotation
-
-* Each game has the option to be created with "Forced Chop Rotation".
-* If enabled, each player will automatically reorder their cards in the following algorithmic fashion:
-  * After you discard or clue, if all the people between you and the last person who discarded played cards, then you move your right-most unclued card to the left-most position.
-* This option is to faciliate Hanabi players who play with a specific card reordering convention framework.
-
 #### Empty Clues
 
 * By default, it is not possible to give an "empty" clue, which is a clue that touches 0 cards.
 * Each game has the option to allow empty clues.
 * This option is to faciliate Hanabi players who play with a specific "positional" convention framework.
+
+### Detrimental Character Assignments
+
+* Each game has the option to enable "Detrimental Character Assignments". When enabled, it will restrict players in additional ways beyond the normal rules.
+* The characters are loosly based on [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant) from Sean McCarthy on the Board Game Geek forums.
+* More information on the characters are listed on [a separate page](https://github.com/Zamiell/hanabi-live/tree/master/docs/CHARACTERS.md).
 
 #### Password-Protected Games
 

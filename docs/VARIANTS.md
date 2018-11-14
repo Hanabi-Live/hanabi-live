@@ -1,5 +1,8 @@
-List of Variants
-================
+# List of Variants
+
+Hanabi Live is programmed by Hanabi enthusists who have played thousands of games. In order to keep the game fresh, the server allows you to create games using several custom variants which are listed below. Beyond this, players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#other-options).
+
+<br />
 
 ### No Variant
 
@@ -106,7 +109,7 @@ List of Variants
 
 * This has the same 6 suits as the "Orange Suit" variant.
 * This has the same 6 clues available as the "Orange Suit" variant.
-* Color clues touch no suits. (Empty color clues are allowed.)
+* Color clues touch no suits. (Empty color clues are always allowed.)
 
 ### Rainbow Suit (one of each)
 

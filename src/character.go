@@ -69,7 +69,7 @@ var (
 		},
 		CharacterAssignment{
 			Name:        "Panicky",
-			Description: "Has to discard twice if 4 clues or less",
+			Description: "When discarding, discards twice if 4 clues or less",
 		},
 	}
 )

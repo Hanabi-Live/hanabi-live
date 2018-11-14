@@ -1063,7 +1063,7 @@
         ),
         new CharacterAssignment(
             'Panicky',
-            'Has to discard twice if 4 clues or less',
+            'When discarding, discards twice if 4 clues or less',
         ),
 
         /*
