@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "description": "The JavaScript client for the Hanabi Live server",
   "devDependencies": {
-    "browserify": "^15.2.0",
-    "eslint": "^4.9.0",
-    "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.7.0"
+    "browserify": "^16.2.3",
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0"
   },
   "repository": {
     "type": "git",
@@ -14,10 +14,10 @@
   },
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "jquery": "^3.2.1",
+    "jquery": "^3.3.1",
     "pixi-tween": "^0.2.0",
-    "pixi.js": "^4.7.0",
-    "sha.js": "^2.4.9"
+    "pixi.js": "^4.8.2",
+    "sha.js": "^2.4.11"
   },
   "scripts": {
     "build": "browserify dev/main.js > main.bundled.js"
