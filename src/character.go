@@ -8,6 +8,7 @@ import (
 type CharacterAssignment struct {
 	Name        string
 	Description string
+	Emoji       string
 }
 
 var (
@@ -16,60 +17,73 @@ var (
 		CharacterAssignment{
 			Name:        "Conservative",
 			Description: "Can only give clues that touch a single card",
+			Emoji:       "💼",
 		},
 		CharacterAssignment{
 			Name:        "Greedy",
 			Description: "Can only give clues that touch 2+ cards",
+			Emoji:       "🤑",
 		},
 		CharacterAssignment{
 			Name:        "Fuming",
 			Description: "Can only clue numbers and [random color]",
+			Emoji:       "🌋",
 		},
 		CharacterAssignment{
 			Name:        "Dumbfounded",
 			Description: "Can only clue colors and [random number]",
+			Emoji:       "🤯",
 		},
 		CharacterAssignment{
 			Name:        "Picky",
 			Description: "Can only clue odd numbers or odd colors",
+			Emoji:       "🤢",
 		},
 		CharacterAssignment{
 			Name:        "Spiteful",
 			Description: "Cannot clue the player to their left",
+			Emoji:       "😈",
 		},
 		CharacterAssignment{
 			Name:        "Insolent",
 			Description: "Cannot clue the player to their right",
+			Emoji:       "😏",
 		},
 
 		// Play characters
 		CharacterAssignment{
 			Name:        "Follower",
 			Description: "Cannot play a card unless two cards of the same rank have already been played",
+			Emoji:       "👁️",
 		},
 
 		// Discard characters
 		CharacterAssignment{
 			Name:        "Anxious",
 			Description: "Cannot discard if there is an even number of clues available (including 0)",
+			Emoji:       "😰",
 		},
 		CharacterAssignment{
 			Name:        "Traumatized",
 			Description: "Cannot discard if there is an odd number of clues available",
+			Emoji:       "😨",
 		},
 
 		// Extra turn characters
 		CharacterAssignment{
 			Name:        "Genius",
 			Description: "Must clue both a number and a color (uses 2 clues)",
+			Emoji:       "🧠",
 		},
 		CharacterAssignment{
 			Name:        "Synesthetic",
 			Description: "Must clue both a number and a color of the same value (uses 1 clue)",
+			Emoji:       "🎨",
 		},
 		CharacterAssignment{
 			Name:        "Panicky",
 			Description: "When discarding, discards twice if 4 clues or less",
+			Emoji:       "😳",
 		},
 	}
 )
