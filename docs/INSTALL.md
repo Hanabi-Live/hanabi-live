@@ -104,3 +104,24 @@ Later, to manage the service:
 * Restart it: `supervisorctl restart hanabi-live`
 
 <br />
+
+
+
+Install the JavaScript linter
+-----------------------------
+
+The Hanabi Live website contains a fair amount of JavaScript, so like most JavaScript projects we use a [linter](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. We use [ESLint](https://eslint.org/) as our linter and use a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
+
+The following are instructions for setting up the linter. This assumes you are on Windows and will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that, as of 2018, happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc.
+
+Assuming you have already cloned the repository:
+
+* Install [Choclately](https://chocolatey.org/):
+  * From an elevated command prompt: `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
+* Install [Node.js](https://nodejs.org/en/):
+  * `choco install nodejs`
+* Install [Yarn](https://yarnpkg.com/en/):
+  * `choco install yarn`
+* `cd public\js`
+
+<br />
