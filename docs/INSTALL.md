@@ -134,11 +134,11 @@ Note that these steps require an elevated (administrator) command-shell. You may
   * `cd .. && cd .. && cd ..`
 * Open VSCode using the cloned repository as the project folder:
   * `code hanabi-live`
-* Ctrl + Shift + X to open the "Extensions" section
-* Install the "ESLint" extension
-* Click the blue "Reload" button
-* Ctrl + Shift + E to open the "Explorer" section
+* Type "Ctrl + Shift + X" to open the "Extensions" section.
+* Install the "ESLint" extension.
+* Click on the blue "Reload" button.
+* Type "Ctrl + Shift + E" to open the "Explorer" section.
 * Navigate to and open "public\js\lobby.js"
-* TODO
+* Test to see that the linter is working properly by adding a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom tab.
 
 <br />
