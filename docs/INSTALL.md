@@ -112,16 +112,33 @@ Install the JavaScript linter
 
 The Hanabi Live website contains a fair amount of JavaScript, so like most JavaScript projects we use a [linter](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. We use [ESLint](https://eslint.org/) as our linter and use a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
 
-The following are instructions for setting up the linter. This assumes you are on Windows and will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that, as of 2018, happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc.
+The following are instructions for setting up the linter. This assumes you are on Windows and will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that, as of 2018, happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc. If you are using a different OS/editor, some adjustments will be needed.
 
-Assuming you have already cloned the repository:
+Note that these steps require an elevated (administrator) command-shell. You may have to exit and re-open the command shell in-between steps in order to repopulate the PATH environment variable.
 
-* Install [Choclately](https://chocolatey.org/):
+* Install [Chocolatey](https://chocolatey.org/):
   * From an elevated command prompt: `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
+* Install [Git](https://git-scm.com/):
+  * `choco install git -y`
 * Install [Node.js](https://nodejs.org/en/):
-  * `choco install nodejs`
-* Install [Yarn](https://yarnpkg.com/en/):
-  * `choco install yarn`
-* `cd public\js`
+  * `choco install nodejs -y`
+* Install [Visual Studio Code](https://code.visualstudio.com/):
+  * `choco install vscode -y`
+* Make it so that Git doesn't convert LF to CRLF when cloning the repository:
+  * `git config --global core.autocrlf false`
+* Clone the repository:
+  * `git clone https://github.com/Zamiell/hanabi-live.git` (or clone a fork, if you are doing development work)
+* Install the development dependencies:
+  * `cd hanabi-live\public\js`
+  * `npx install-peerdeps --dev eslint-config-airbnb-base`
+  * `cd .. && cd .. && cd ..`
+* Open VSCode using the cloned repository as the project folder:
+  * `code hanabi-live`
+* Ctrl + Shift + X to open the "Extensions" section
+* Install the "ESLint" extension
+* Click the blue "Reload" button
+* Ctrl + Shift + E to open the "Explorer" section
+* Navigate to and open "public\js\lobby.js"
+* TODO
 
 <br />
