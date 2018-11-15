@@ -3931,18 +3931,30 @@ function HanabiUI(lobby, gameID) {
 
             // Draw the "Detrimental Character Assignments" icon and tooltip
             if (this.characterAssignments.length > 0) {
-                var circle = new Kinetic.Circle({
-                    // The X and Y are copied from the name frame above
-                    x: playerNamePos[nump][j].x * winW,
-                    y: playerNamePos[nump][j].y * winH,
-                    radius: 0.01 * winW,
-                    fill: 'red',
-                    stroke: 'black',
-                    strokeWidth: 4
+                let width = 0.03 * winW;
+                let height = 0.03 * winH;
+                let charName = CHARACTER_ASSIGNMENTS[ui.characterAssignments[i]].name;
+                var charIcon = new Kinetic.Text({
+                    width: width,
+                    height: height,
+                    x: playerNamePos[nump][j].x * winW - width / 2,
+                    y: playerNamePos[nump][j].y * winH - height / 2,
+                    fontSize: 0.03 * winH,
+                    fontFamily: 'Verdana',
+                    align: 'center',
+                    text: CHARACTER_ASSIGNMENTS[ui.characterAssignments[i]].emoji,
+                    fill: 'yellow',
+                    shadowColor: 'black',
+                    shadowBlur: 10,
+                    shadowOffset: {
+                        x: 0,
+                        y: 0,
+                    },
+                    shadowOpacity: 0.9,
                 });
-                UILayer.add(circle);
+                UILayer.add(charIcon);
 
-                circle.on('mousemove', function circleMouseMove() {
+                charIcon.on('mousemove', function charIconMouseMove() {
                     ui.activeHover = this;
 
                     const tooltipX = this.getWidth() / 2 + this.attrs.x;
@@ -4597,13 +4609,7 @@ function HanabiUI(lobby, gameID) {
                         clue,
                     },
                 };
-                if (ui.ourTurn) {
-                    ui.sendMsg(action);
-                    ui.stopAction();
-                    savedAction = null;
-                } else {
-                    ui.queuedAction = action;
-                }
+                ui.endTurn(action);
             };
 
             // Check for speedrun keyboard hotkeys
@@ -5878,6 +5884,16 @@ Keyboard hotkeys:
         submitClue.off('click tap');
     };
 
+    this.endTurn = function endTurn(action) {
+        if (ui.ourTurn) {
+            ui.sendMsg(action);
+            ui.stopAction();
+            savedAction = null;
+        } else {
+            ui.queuedAction = action;
+        }
+    };
+
     let savedAction = null;
 
     this.handleAction = function handleAction(data) {
@@ -5986,13 +6002,7 @@ Keyboard hotkeys:
                     clue: clueToMsgClue(clueButton.clue, ui.variant),
                 },
             };
-            if (ui.ourTurn) {
-                ui.sendMsg(action);
-                ui.stopAction();
-                savedAction = null;
-            } else {
-                ui.queuedAction = action;
-            }
+            ui.endTurn(action);
         });
     };
 
@@ -6011,13 +6021,9 @@ Keyboard hotkeys:
                     target: this.children[0].order,
                 },
             };
+            ui.endTurn(action);
             if (ui.ourTurn) {
-                ui.sendMsg(action);
-                ui.stopAction();
                 this.setDraggable(false);
-                savedAction = null;
-            } else {
-                ui.queuedAction = action;
             }
         } else if (
             pos.x >= discardArea.getX() &&
@@ -6033,13 +6039,9 @@ Keyboard hotkeys:
                     target: this.children[0].order,
                 },
             };
+            ui.endTurn(action);
             if (ui.ourTurn) {
-                ui.sendMsg(action);
-                ui.stopAction();
                 this.setDraggable(false);
-                savedAction = null;
-            } else {
-                ui.queuedAction = action;
             }
         } else {
             playerHands[ui.playerUs].doLayout();
