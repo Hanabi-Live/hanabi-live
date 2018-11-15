@@ -21,7 +21,7 @@ Note that these steps require an elevated (administrator) command-shell. You may
   * `git config --global core.autocrlf false`
 * Clone the repository:
   * `git clone https://github.com/Zamiell/hanabi-live.git` (or clone a fork, if you are doing development work)
-* Install the development dependencies:
+* Install the linter dependencies:
   * `cd hanabi-live\public\js`
   * `npx install-peerdeps --dev eslint-config-airbnb-base`
   * `cd .. && cd .. && cd ..`
