@@ -1001,9 +1001,10 @@
         REPLAY_LEADER: '#ffdf00',
     };
 
-    const CharacterAssignment = function CharacterAssignment(name, description) {
+    const CharacterAssignment = function CharacterAssignment(name, description, emoji) {
         this.name = name;
         this.description = description;
+        this.emoji = emoji;
     };
     exports.CHARACTER_ASSIGNMENTS = [
         // Clue restriction characters
