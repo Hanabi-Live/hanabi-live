@@ -1001,69 +1001,83 @@
         REPLAY_LEADER: '#ffdf00',
     };
 
-    const CharacterAssignment = function CharacterAssignment(name, description) {
+    const CharacterAssignment = function CharacterAssignment(name, description, emoji) {
         this.name = name;
         this.description = description;
+        this.emoji = emoji;
     };
     exports.CHARACTER_ASSIGNMENTS = [
         // Clue restriction characters
         new CharacterAssignment(
             'Conservative',
             'Can only give clues that touch a single card',
+            '💼',
         ),
         new CharacterAssignment(
             'Greedy',
             'Can only give clues that touch 2+ cards',
+            '🤑',
         ),
         new CharacterAssignment(
             'Fuming',
             'Can only clue numbers and [random color]',
+            '🌋',
         ),
         new CharacterAssignment(
             'Dumbfounded',
             'Can only clue colors and [random number]',
+            '🤯',
         ),
         new CharacterAssignment(
             'Picky',
             'Can only clue odd numbers or odd colors',
+            '🤢',
         ),
         new CharacterAssignment(
             'Spiteful',
             'Cannot clue the player to their left',
+            '😈',
         ),
         new CharacterAssignment(
             'Insolent',
             'Cannot clue the player to their right',
+            '😏',
         ),
 
         // Play restriction characters
         new CharacterAssignment(
             'Follower',
             'Cannot play a card unless two cards of the same rank have already been played',
+            '👁️',
         ),
 
         // Discard restriction characters
         new CharacterAssignment(
             'Anxious',
             'Cannot discard if there is an even number of clues available (including 0)',
+            '😰',
         ),
         new CharacterAssignment(
             'Traumatized',
             'Cannot discard if there is an odd number of clues available',
+            '😨',
         ),
 
         // Extra turn characters
         new CharacterAssignment(
             'Genius',
             'Must clue both a number and a color (uses two clues)',
+            '🧠',
         ),
         new CharacterAssignment(
             'Synesthetic',
             'Gives number and color clues at the same time',
+            '🎨',
         ),
         new CharacterAssignment(
             'Panicky',
             'When discarding, discards twice if 4 clues or less',
+            '😳',
         ),
 
         /*
