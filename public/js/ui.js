@@ -3976,7 +3976,7 @@ function HanabiUI(lobby, gameID) {
 
                     tooltip.tooltipster('open');
                 });
-                circle.on('mouseout', () => {
+                charIcon.on('mouseout', () => {
                     const tooltip = $(`#tooltip-character-assignment-${i}`);
                     tooltip.tooltipster('close');
                 });
