@@ -105,7 +105,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   1. Blue
   2. Red
 
-### Acid Trip
+### Color Blind
 
 * This has the same 6 suits as the "Orange Suit" variant.
 * This has the same 6 clues available as the "Orange Suit" variant.
