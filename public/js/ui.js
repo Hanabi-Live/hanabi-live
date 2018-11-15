@@ -3931,18 +3931,32 @@ function HanabiUI(lobby, gameID) {
 
             // Draw the "Detrimental Character Assignments" icon and tooltip
             if (this.characterAssignments.length > 0) {
-                var circle = new Kinetic.Circle({
-                    // The X and Y are copied from the name frame above
-                    x: playerNamePos[nump][j].x * winW,
-                    y: playerNamePos[nump][j].y * winH,
-                    radius: 0.01 * winW,
-                    fill: 'red',
-                    stroke: 'black',
-                    strokeWidth: 4
-                });
-                UILayer.add(circle);
+                    let width = 0.03 * winW;
+                    let height = 0.03 * winH;
+                    let charName = CHARACTER_ASSIGNMENTS[ui.characterAssignments[i]].name;
 
-                circle.on('mousemove', function circleMouseMove() {
+                    var charIcon = new Kinetic.Text({
+                    // The X and Y are copied from the name frame above
+                    width: width,
+                    height: height,
+                    x: playerNamePos[nump][j].x * winW - width / 2,
+                    y: playerNamePos[nump][j].y * winH - height / 2,
+                    fontSize: 0.03 * winH,
+                    fontFamily: 'Verdana',
+                    align: 'center',
+                    text: ui.getCharacterIcon(charName),
+                    fill: 'yellow',
+                    shadowColor: 'black',
+                    shadowBlur: 10,
+                    shadowOffset: {
+                        x: 0,
+                        y: 0,
+                    },
+                    shadowOpacity: 0.9
+                });
+                UILayer.add(charIcon);
+
+                charIcon.on('mousemove', function charIconMouseMove() {
                     ui.activeHover = this;
 
                     const tooltipX = this.getWidth() / 2 + this.attrs.x;
@@ -3964,7 +3978,7 @@ function HanabiUI(lobby, gameID) {
 
                     tooltip.tooltipster('open');
                 });
-                circle.on('mouseout', () => {
+                charIcon.on('mouseout', () => {
                     const tooltip = $(`#tooltip-character-assignment-${i}`);
                     tooltip.tooltipster('close');
                 });
@@ -4597,13 +4611,7 @@ function HanabiUI(lobby, gameID) {
                         clue,
                     },
                 };
-                if (ui.ourTurn) {
-                    ui.sendMsg(action);
-                    ui.stopAction();
-                    savedAction = null;
-                } else {
-                    ui.queuedAction = action;
-                }
+                ui.endTurn(action);
             };
 
             // Check for speedrun keyboard hotkeys
@@ -5880,6 +5888,51 @@ Keyboard hotkeys:
 
     let savedAction = null;
 
+    this.endTurn = function endTurn(action) {
+        if (ui.ourTurn) {
+            if (ui.characterMetadata.length > 0) {
+                ui.checkCharacter(action);
+            }
+            ui.sendMsg(action);
+            ui.stopAction();
+            savedAction = null;
+        } else {
+            ui.queuedAction = action;
+        }
+    };
+
+    this.getCharacterIcon = function getCharacterIcon(name) {
+        if (name === 'Conservative') {
+            return '💼';
+        } else if (name === 'Greedy') {
+        	return '🤑';
+        } else if (name === 'Fuming') {
+        	return '🌋';
+        } else if (name === 'Dumbfounded') {
+        	return '🤯';
+        } else if (name === 'Picky') {
+        	return '🤢';
+        } else if (name === 'Spiteful') {
+        	return '😈';
+        } else if (name === 'Insolent') {
+        	return '😏';
+        } else if (name === 'Follower') {
+        	return '👁️';
+        } else if (name === 'Anxious') {
+        	return '😰';
+        } else if (name === 'Traumatized') {
+        	return '😨';
+        } else if (name === 'Genius') {
+        	return '🧠';
+        } else if (name === 'Synesthetic') {
+        	return '🎨';
+        } else if (name === 'Panicky') {
+        	return '😳';
+        } else {
+        	return '❌';
+        }
+    }
+
     this.handleAction = function handleAction(data) {
         savedAction = data;
 
@@ -5986,13 +6039,7 @@ Keyboard hotkeys:
                     clue: clueToMsgClue(clueButton.clue, ui.variant),
                 },
             };
-            if (ui.ourTurn) {
-                ui.sendMsg(action);
-                ui.stopAction();
-                savedAction = null;
-            } else {
-                ui.queuedAction = action;
-            }
+            ui.endTurn(action);
         });
     };
 
@@ -6011,13 +6058,9 @@ Keyboard hotkeys:
                     target: this.children[0].order,
                 },
             };
+            ui.endTurn(action);
             if (ui.ourTurn) {
-                ui.sendMsg(action);
-                ui.stopAction();
                 this.setDraggable(false);
-                savedAction = null;
-            } else {
-                ui.queuedAction = action;
             }
         } else if (
             pos.x >= discardArea.getX() &&
@@ -6033,13 +6076,9 @@ Keyboard hotkeys:
                     target: this.children[0].order,
                 },
             };
+            ui.endTurn(action);
             if (ui.ourTurn) {
-                ui.sendMsg(action);
-                ui.stopAction();
                 this.setDraggable(false);
-                savedAction = null;
-            } else {
-                ui.queuedAction = action;
             }
         } else {
             playerHands[ui.playerUs].doLayout();
