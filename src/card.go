@@ -5,14 +5,15 @@ import (
 )
 
 type Card struct {
-	Order     int // Assigned after the deck is shuffled
-	Suit      int
-	Rank      int
-	Touched   bool
-	Slot      int // Assigned after the card is removed from a player's hand
-	Failed    bool
-	Discarded bool
-	Played    bool
+	Order            int // Assigned after the deck is shuffled
+	Suit             int
+	Rank             int
+	Touched          bool
+	Slot             int // Assigned after the card is removed from a player's hand
+	Failed           bool
+	Discarded        bool
+	Played           bool
+	InsistentTouched bool // Used by the "Insistent" character
 }
 
 func (c *Card) Name(g *Game) string {

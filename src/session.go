@@ -337,20 +337,13 @@ func (s *Session) NotifyReplayLeader(g *Game) {
 	})
 }
 
-func (s *Session) NotifyGameAction(a Action, g *Game) {
+func (s *Session) NotifyGameAction(a Action, g *Game, p *Player) {
 	msgType := "notify"
 	if a.Text != "" {
 		msgType = "message"
 	}
 
-	// We need to scrub the action of information so that we don't reveal
-	// to the client anything about the cards that they are drawing
-	i := g.GetPlayerIndex(s.UserID())
-	if a.Type == "draw" && a.Who == i {
-		a.Rank = -1
-		a.Suit = -1
-	}
-
+	a.Scrub(g, p)
 	s.Emit(msgType, a)
 }
 

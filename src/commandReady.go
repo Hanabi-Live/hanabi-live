@@ -88,12 +88,10 @@ func commandReady(s *Session, d *CommandData) {
 
 	// Scrub actions
 	var scrubbedActions []Action
-	if s.Status() == "Playing" {
+	if i > -1 {
+		p := g.Players[i]
 		for _, a := range actions {
-			if a.Type == "draw" && a.Who == i {
-				a.Rank = -1
-				a.Suit = -1
-			}
+			a.Scrub(g, p)
 			scrubbedActions = append(scrubbedActions, a)
 		}
 	} else {

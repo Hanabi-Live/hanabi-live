@@ -1073,6 +1073,11 @@
             'Clues given must alternate between color and number',
             '👧',
         ),
+        new CharacterAssignment(
+            'Insistent',
+            'Must continue to clue cards until one of them is played or discarded',
+            '😣',
+        ),
 
         // Clue restriction characters (receiving)
         new CharacterAssignment(
@@ -1158,16 +1163,23 @@
             'Must perform a different action type than the player that came before them',
             '😠',
         ),
+        /*
         new CharacterAssignment(
             'Forgetful',
             'Hand is shuffled after discarding (but before drawing)',
             '🔀',
         ),
-
-        /*
-            Blind Spot - Cannot see the cards of the player to their right
-            Oblivious - Cannot see the cards of the player to their left
         */
+        new CharacterAssignment(
+            'Blind Spot',
+            'Cannot see the cards of the player to their left',
+            '🚗',
+        ),
+        new CharacterAssignment(
+            'Oblivious',
+            'Cannot see the cards of the player to their right',
+            '🚂',
+        ),
     ];
 
     // This only freezes one layer deep; to do any better, we should likely

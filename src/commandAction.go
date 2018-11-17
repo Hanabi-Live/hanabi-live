@@ -160,7 +160,7 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
-		c := p.RemoveCard(d.Target)
+		c := p.RemoveCard(d.Target, g)
 		doubleDiscard = p.PlayCard(g, c)
 		p.DrawCard(g)
 	} else if d.Type == actionTypeDiscard {
@@ -183,7 +183,7 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		g.Clues++
-		c := p.RemoveCard(d.Target)
+		c := p.RemoveCard(d.Target, g)
 		doubleDiscard = p.DiscardCard(g, c)
 		characterShuffle(g, p)
 		p.DrawCard(g)

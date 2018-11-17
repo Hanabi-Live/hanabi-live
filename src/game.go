@@ -273,12 +273,12 @@ func (g *Game) NotifyAction() {
 			continue
 		}
 
-		p.Session.NotifyGameAction(a, g)
+		p.Session.NotifyGameAction(a, g, p)
 	}
 
 	// Also send the spectators an update
 	for _, s := range g.Spectators {
-		s.NotifyGameAction(a, g)
+		s.NotifyGameAction(a, g, nil)
 	}
 }
 

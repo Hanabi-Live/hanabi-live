@@ -10,6 +10,7 @@ type CharacterAssignment struct {
 	Name        string
 	Description string
 	Emoji       string
+	Not2P       bool
 }
 
 var (
@@ -54,11 +55,13 @@ var (
 			Name:        "Spiteful",
 			Description: "Cannot clue the player to their left",
 			Emoji:       "😈",
+			Not2P:       true,
 		},
 		CharacterAssignment{
 			Name:        "Insolent",
 			Description: "Cannot clue the player to their right",
 			Emoji:       "😏",
+			Not2P:       true,
 		},
 		CharacterAssignment{
 			Name:        "Vindictive",
@@ -79,6 +82,11 @@ var (
 			Name:        "Mood Swings",
 			Description: "Clues given must alternate between color and number",
 			Emoji:       "👧",
+		},
+		CharacterAssignment{
+			Name:        "Insistent",
+			Description: "Must continue to clue cards until one of them is played or discarded",
+			Emoji:       "😣",
 		},
 
 		// Clue restriction characters (receiving)
@@ -159,16 +167,31 @@ var (
 			Name:        "Contrarian",
 			Description: "Play order inverts after taking a turn",
 			Emoji:       "🙅",
+			Not2P:       true,
 		},
 		CharacterAssignment{
 			Name:        "Stubborn",
 			Description: "Must perform a different action type than the player that came before them",
 			Emoji:       "😠",
 		},
+		/*
+			CharacterAssignment{
+				Name:        "Forgetful",
+				Description: "Hand is shuffled after discarding (but before drawing)",
+				Emoji:       "🔀",
+			},
+		*/
 		CharacterAssignment{
-			Name:        "Forgetful",
-			Description: "Hand is shuffled after discarding (but before drawing)",
-			Emoji:       "🔀",
+			Name:        "Blind Spot",
+			Description: "Cannot see the cards of the player to their left",
+			Emoji:       "🚗",
+			Not2P:       true,
+		},
+		CharacterAssignment{
+			Name:        "Oblivious",
+			Description: "Cannot see the cards of the player to their right",
+			Emoji:       "🚂",
+			Not2P:       true,
 		},
 	}
 )
@@ -190,24 +213,32 @@ func characterGenerate(g *Game) {
 
 			// Hard-code some character assignments for testing purposes
 			if p.Name == "test" {
-				p.CharacterAssignment = 28
+				manualAssignment := "Blind Spot"
+				for i, ca := range characterAssignments {
+					if ca.Name == manualAssignment {
+						p.CharacterAssignment = i
+						break
+					}
+				}
 			}
 
 			// Check to see if any other players have this assignment already
-			unique := true
 			for j, p2 := range g.Players {
 				if i == j {
 					break
 				}
 
 				if p2.CharacterAssignment == p.CharacterAssignment {
-					unique = false
-					break
+					continue
 				}
 			}
-			if unique {
-				break
+
+			// Check to see if this character is restricted from 2-player games
+			if characterAssignments[p.CharacterAssignment].Not2P && len(g.Players) == 2 {
+				continue
 			}
+
+			break
 		}
 
 		name := characterAssignments[p.CharacterAssignment].Name
@@ -238,6 +269,13 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *Player) boo
 		d.Type != actionTypeClue {
 
 		s.Warning("You are " + name + ", so you must give a clue if you have been given a clue on this go-around.")
+		return true
+
+	} else if name == "Insistent" &&
+		p.CharacterMetadata != -1 &&
+		d.Type != actionTypeClue {
+
+		s.Warning("You are " + name + ", so you must continue to clue cards until one of them is played or discarded.")
 		return true
 
 	} else if name == "Impulsive" &&
@@ -433,6 +471,28 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		s.Warning("You are " + name + ", so cannot give the same clue type twice in a row.")
 		return true
 
+	} else if name == "Insistent" &&
+		p.CharacterMetadata != -1 {
+
+		if d.Target != p.CharacterMetadata {
+			s.Warning("You are " + name + ", so you must continue to clue cards until one of them is played or discarded.")
+			return true
+		}
+
+		cardsTouched := p2.FindCardsTouchedByClue(d, g)
+		touchedInsistentCards := false
+		for _, order := range cardsTouched {
+			c := g.Deck[order]
+			if c.InsistentTouched {
+				touchedInsistentCards = true
+				break
+			}
+		}
+		if !touchedInsistentCards {
+			s.Warning("You are " + name + ", so you must continue to clue cards until one of them is played or discarded.")
+			return true
+		}
+
 	} else if name == "Genius" &&
 		p.CharacterMetadata == -1 {
 
@@ -560,6 +620,37 @@ func characterPostClue(d *CommandData, g *Game, p *Player) {
 
 	} else if name == "Mood Swings" {
 		p.CharacterMetadata = d.Clue.Type
+
+	} else if name == "Insistent" {
+		// Mark that these cards must be continue to be clued
+		cardsTouched := p2.FindCardsTouchedByClue(d, g)
+		for _, order := range cardsTouched {
+			c := g.Deck[order]
+			c.InsistentTouched = true
+		}
+	}
+}
+
+func characterPostRemove(g *Game, p *Player, c *Card) {
+	if !g.Options.CharacterAssignments {
+		return
+	}
+
+	if !c.InsistentTouched {
+		return
+	}
+
+	for _, c2 := range p.Hand {
+		c2.InsistentTouched = false
+	}
+
+	// Find the "Insistent" player and reset their state so that they are not forced to give a clue on their subsequent turn
+	for _, p2 := range g.Players {
+		if characterAssignments[p2.CharacterAssignment].Name == "Insistent" {
+			p2.CharacterMetadata = -1
+			// (only one player should be Insistent)
+			break
+		}
 	}
 }
 
@@ -689,4 +780,24 @@ func characterShuffle(g *Game, p *Player) {
 	if name == "Forgetful" {
 		p.ShuffleHand(g)
 	}
+}
+
+func characterHideCard(a *Action, g *Game, p *Player) bool {
+	if !g.Options.CharacterAssignments {
+		return false
+	}
+
+	name := characterAssignments[p.CharacterAssignment].Name
+	if name == "Blind Spot" {
+		if a.Who == (p.Index+1)%len(g.Players) {
+			return true
+		}
+
+	} else if name == "Oblivious" &&
+		a.Who == (p.Index-1)%len(g.Players) {
+
+		return true
+	}
+
+	return false
 }

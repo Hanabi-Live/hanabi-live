@@ -128,7 +128,7 @@ func (p *Player) IsLastCardTouchedByClue(d *CommandData, g *Game) bool {
 			variantIsCardTouched(g.Options.Variant, d.Clue.Value, c.Suit))
 }
 
-func (p *Player) RemoveCard(target int) *Card {
+func (p *Player) RemoveCard(target int, g *Game) *Card {
 	// Remove the card from their hand
 	var removedCard *Card
 	for i, c := range p.Hand {
@@ -147,6 +147,8 @@ func (p *Player) RemoveCard(target int) *Card {
 	if removedCard == nil {
 		log.Fatal("The target of " + strconv.Itoa(target) + " is not in the hand of " + p.Name + ".")
 	}
+
+	characterPostRemove(g, p, removedCard)
 
 	return removedCard
 }
@@ -336,7 +338,7 @@ func (p *Player) PlayDeck(g *Game) {
 	p.DrawCard(g)
 
 	// Play the card freshly drawn
-	c := p.RemoveCard(len(g.Deck) - 1) // The final card
+	c := p.RemoveCard(len(g.Deck)-1, g) // The final card
 	c.Slot = -1
 	p.PlayCard(g, c)
 }

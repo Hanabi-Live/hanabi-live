@@ -29,3 +29,19 @@ type Which struct {
 	Suit  int `json:"suit"`
 	Order int `json:"order"`
 }
+
+// Scrub removes some information from an action so that we do not reveal
+// to the client anything about the cards that they are drawing
+func (a *Action) Scrub(g *Game, p *Player) {
+	// The player will be nil if this is an action that is going to a spectator
+	if p == nil {
+		return
+	}
+
+	if a.Type == "draw" &&
+		(a.Who == p.Index || characterHideCard(a, g, p)) {
+
+		a.Rank = -1
+		a.Suit = -1
+	}
+}
