@@ -606,22 +606,24 @@ func characterPostClue(d *CommandData, g *Game, p *Player) {
 		return
 	}
 
+	name := characterAssignments[p.CharacterAssignment].Name // The person giving the clue
+	if name == "Mood Swings" {
+		p.CharacterMetadata = d.Clue.Type
+	}
+
 	p2 := g.Players[d.Target] // The target of the clue
-	name := characterAssignments[p2.CharacterAssignment].Name
-	if name == "Vindictive" {
+	name2 := characterAssignments[p2.CharacterAssignment].Name
+	if name2 == "Vindictive" {
 		// Store that they have had at least one clue given to them on this go-around of the table
 		p2.CharacterMetadata = 0
 
-	} else if name == "Impulsive" &&
+	} else if name2 == "Impulsive" &&
 		p2.IsFirstCardTouchedByClue(d, g) {
 
 		// Store that they had their slot 1 card clued
 		p2.CharacterMetadata = 0
 
-	} else if name == "Mood Swings" {
-		p.CharacterMetadata = d.Clue.Type
-
-	} else if name == "Insistent" {
+	} else if name2 == "Insistent" {
 		// Mark that these cards must be continue to be clued
 		cardsTouched := p2.FindCardsTouchedByClue(d, g)
 		for _, order := range cardsTouched {
