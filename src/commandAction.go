@@ -262,6 +262,9 @@ func commandAction(s *Session, d *CommandData) {
 	if !characterTakingSecondTurn(d, g, p) {
 		g.Turn++
 		if g.TurnsInverted {
+			// In Golang, "%" will give the remainder and not the modulus,
+			// so we need to ensure that the result is not negative or we will get a "index out of range" error below
+			g.ActivePlayer += len(g.Players)
 			g.ActivePlayer = (g.ActivePlayer - 1) % len(g.Players)
 		} else {
 			g.ActivePlayer = (g.ActivePlayer + 1) % len(g.Players)

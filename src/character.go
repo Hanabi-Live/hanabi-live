@@ -125,7 +125,7 @@ var (
 		},
 		CharacterAssignment{
 			Name:        "Gambler",
-			Description: "Must play if he didn't play last turn; forced misplays do not cost a strike",
+			Description: "Must play if they didn't play last turn; forced misplays do not cost a strike",
 			Emoji:       "️🎲",
 		},
 

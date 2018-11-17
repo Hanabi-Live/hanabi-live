@@ -319,9 +319,11 @@
         if (fillType === exports.fillType.SOLID) {
             // "colors" in this case should be a single color, not an array
             return colors.hexCode;
-        } else if (fillType === exports.fillType.LINEAR_GRADIENT) {
+        }
+        if (fillType === exports.fillType.LINEAR_GRADIENT) {
             return evenLinearGradient(ctx, colors, fillSpec.args);
-        } else if (fillType === exports.fillType.RADIAL_GRADIENT) {
+        }
+        if (fillType === exports.fillType.RADIAL_GRADIENT) {
             return evenRadialGradient(ctx, colors, fillSpec.args);
         }
 
@@ -1114,7 +1116,7 @@
         ),
         new CharacterAssignment(
             'Gambler',
-            'Must play if he didn\'t play last turn; forced misplays do not cost a strike',
+            'Must play if they didn\'t play last turn; forced misplays do not cost a strike',
             '🎲',
         ),
 
