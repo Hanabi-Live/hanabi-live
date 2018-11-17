@@ -5,6 +5,8 @@ import (
 	"strconv"
 )
 
+const debugCharacter = "Contrarian"
+
 type CharacterAssignment struct {
 	Name        string
 	Description string
@@ -208,9 +210,8 @@ func characterGenerate(g *Game) {
 
 			// Hard-code some character assignments for testing purposes
 			if p.Name == "test" {
-				manualAssignment := "Blind Spot"
 				for i, ca := range characterAssignments {
-					if ca.Name == manualAssignment {
+					if ca.Name == debugCharacter {
 						p.CharacterAssignment = i
 						break
 					}
@@ -674,6 +675,8 @@ func characterPostAction(d *CommandData, g *Game, p *Player) {
 		} else {
 			p.CharacterMetadata = 0
 		}
+	} else if name == "Contrarian" {
+		g.TurnsInverted = !g.TurnsInverted
 	}
 
 	// Store the last action that was performed
@@ -736,19 +739,6 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 			p.CharacterMetadata = -1
 			return false
 		}
-	}
-
-	return false
-}
-
-func characterInvertTurns(g *Game, p *Player) bool {
-	if !g.Options.CharacterAssignments {
-		return false
-	}
-
-	name := characterAssignments[p.CharacterAssignment].Name
-	if name == "Contrarian" {
-		return true
 	}
 
 	return false

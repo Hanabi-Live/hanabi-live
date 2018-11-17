@@ -261,9 +261,10 @@ func commandAction(s *Session, d *CommandData) {
 	// (but don't increment it if we are on a characters that takes two turns in a row)
 	if !characterTakingSecondTurn(d, g, p) {
 		g.Turn++
-		g.ActivePlayer = (g.ActivePlayer + 1) % len(g.Players)
-		if characterInvertTurns(g, p) {
+		if g.TurnsInverted {
 			g.ActivePlayer = (g.ActivePlayer - 1) % len(g.Players)
+		} else {
+			g.ActivePlayer = (g.ActivePlayer + 1) % len(g.Players)
 		}
 	}
 	np := g.Players[g.ActivePlayer] // The next player

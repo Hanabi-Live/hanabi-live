@@ -29,6 +29,7 @@ type Game struct {
 	DeckIndex     int
 	Stacks        []int
 	Turn          int
+	TurnsInverted bool
 	ActivePlayer  int
 	Clues         int
 	Score         int
