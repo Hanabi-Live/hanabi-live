@@ -2823,7 +2823,6 @@ function HanabiUI(lobby, gameID) {
     const playerHands = [];
     let drawDeck;
     let messagePrompt;
-    let chatLog;
 
     let cluesTextLabel;
     let cluesNumberLabel;
@@ -3931,14 +3930,13 @@ function HanabiUI(lobby, gameID) {
 
             // Draw the "Detrimental Character Assignments" icon and tooltip
             if (this.characterAssignments.length > 0) {
-                let width = 0.03 * winW;
-                let height = 0.03 * winH;
-                let charName = CHARACTER_ASSIGNMENTS[ui.characterAssignments[i]].name;
-                var charIcon = new Kinetic.Text({
-                    width: width,
-                    height: height,
-                    x: playerNamePos[nump][j].x * winW - width / 2,
-                    y: playerNamePos[nump][j].y * winH - height / 2,
+                const width2 = 0.03 * winW;
+                const height2 = 0.03 * winH;
+                const charIcon = new Kinetic.Text({
+                    width: width2,
+                    height: height2,
+                    x: playerNamePos[nump][j].x * winW - width2 / 2,
+                    y: playerNamePos[nump][j].y * winH - height2 / 2,
                     fontSize: 0.03 * winH,
                     fontFamily: 'Verdana',
                     align: 'center',
@@ -3963,7 +3961,7 @@ function HanabiUI(lobby, gameID) {
                     tooltip.css('top', this.attrs.y);
 
                     const character = CHARACTER_ASSIGNMENTS[ui.characterAssignments[i]];
-                    const metadata = ui.characterMetadata[i]
+                    const metadata = ui.characterMetadata[i];
                     let content = `<b>${character.name}</b>:<br />${character.description}`;
                     if (content.includes('[random color]')) {
                         // Replace "[random color]" with the selected color
@@ -4579,13 +4577,16 @@ function HanabiUI(lobby, gameID) {
                 // This is used for fun in shared replays
                 this.sharedReplaySendSound('buzz');
                 return;
-            } else if (event.key === 'X') { // Shift + x
+            }
+            if (event.key === 'X') { // Shift + x
                 // This is used as a sound test
                 lobby.playSound('turn_us');
                 return;
-            } else if (event.ctrlKey && event.key === 'Enter') { // Ctrl + Enter
+            }
+            if (event.ctrlKey && event.key === 'Enter') { // Ctrl + Enter
                 // Click on the 'Give Clue' button
                 submitClue.dispatchEvent(new MouseEvent('click'));
+                return;
             }
 
             // Don't interfere with other kinds of hotkeys
