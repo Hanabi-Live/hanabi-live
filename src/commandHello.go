@@ -127,7 +127,6 @@ func commandHello(s *Session, d *CommandData) {
 		Seat:                 seat,
 		Spectating:           spectating,
 		Timed:                g.Options.Timed,
-		ReorderCards:         g.Options.ReorderCards,
 		DeckPlays:            g.Options.DeckPlays,
 		EmptyClues:           g.Options.EmptyClues,
 		Variant:              g.Options.Variant,

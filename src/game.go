@@ -49,7 +49,6 @@ type Options struct {
 	Timed                bool
 	TimeBase             float64
 	TimePerTurn          int
-	ReorderCards         bool
 	DeckPlays            bool
 	EmptyClues           bool
 	CharacterAssignments bool
@@ -159,7 +158,6 @@ func (g *Game) NotifyPlayerChange() {
 			Timed:                g.Options.Timed,
 			BaseTime:             g.Options.TimeBase,
 			TimePerTurn:          g.Options.TimePerTurn,
-			ReorderCards:         g.Options.ReorderCards,
 			DeckPlays:            g.Options.DeckPlays,
 			EmptyClues:           g.Options.EmptyClues,
 			CharacterAssignments: g.Options.CharacterAssignments,

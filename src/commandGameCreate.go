@@ -86,7 +86,6 @@ func commandGameCreate(s *Session, d *CommandData) {
 			Timed:                d.Timed,
 			TimeBase:             d.BaseTimeMinutes,
 			TimePerTurn:          d.TimePerTurnSeconds,
-			ReorderCards:         d.ReorderCards,
 			DeckPlays:            d.DeckPlays,
 			EmptyClues:           d.EmptyClues,
 			CharacterAssignments: d.CharacterAssignments,
@@ -105,12 +104,8 @@ func commandGameCreate(s *Session, d *CommandData) {
 		Chat:               make([]*GameChatMessage, 0),
 	}
 	msg := g.GetName() + "User \"" + s.Username() + "\" created"
-	if g.Options.Timed && g.Options.ReorderCards {
-		msg += " (timed / reorder)"
-	} else if g.Options.Timed {
+	if g.Options.Timed {
 		msg += " (timed)"
-	} else if g.Options.ReorderCards {
-		msg += " (reorder)"
 	}
 	msg += "."
 	log.Info(msg)

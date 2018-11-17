@@ -1,7 +1,6 @@
 package main
 
 import (
-	"hash/crc64"
 	"math/rand"
 	"strconv"
 )
@@ -201,11 +200,7 @@ func characterGenerate(g *Game) {
 		return
 	}
 
-	// Seed the PRNG (copied from above)
-	crc64Table := crc64.MakeTable(crc64.ECMA)
-	intSeed := crc64.Checksum([]byte(g.Seed), crc64Table)
-	rand.Seed(int64(intSeed))
-
+	// We don't have to seed the PRNG, since that was done just a moment ago when the deck was shuffled
 	for i, p := range g.Players {
 		for {
 			// Get a random character assignment

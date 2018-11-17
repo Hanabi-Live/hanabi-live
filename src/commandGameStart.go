@@ -63,9 +63,6 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Start the idle timeout
 	go g.CheckIdle()
 
-	// Decide the random character assignments
-	characterGenerate(g)
-
 	// Create the deck
 	// (it will have 60 cards if playing no variant,
 	// 65 cards if playing a one of each variant,
@@ -278,9 +275,12 @@ func commandGameStart(s *Session, d *CommandData) {
 		c.Order = i
 	}
 
+	// Decide the random character assignments
+	// (this has to be after seed generation and initialization)
+	characterGenerate(g)
+
 	log.Info(g.GetName()+"Using seed:", g.Seed)
 	log.Info(g.GetName()+"Timed:", g.Options.Timed)
-	log.Info(g.GetName()+"Chop rotation:", g.Options.ReorderCards)
 
 	// Log the deal (so that it can be distributed to others if necessary)
 	log.Info("--------------------------------------------------")

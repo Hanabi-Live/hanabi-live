@@ -225,7 +225,6 @@ func (s *Session) NotifyTable(g *Game) {
 		Timed:        g.Options.Timed,
 		BaseTime:     g.Options.TimeBase,
 		TimePerTurn:  g.Options.TimePerTurn,
-		ReorderCards: g.Options.ReorderCards,
 		OurTurn:      joined && g.Running && g.ActivePlayer == i,
 		SharedReplay: g.SharedReplay,
 		Progress:     g.Progress,
