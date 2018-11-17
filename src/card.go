@@ -5,11 +5,11 @@ import (
 )
 
 type Card struct {
-	Order     int
+	Order     int // Assigned after the deck is shuffled
 	Suit      int
 	Rank      int
 	Touched   bool
-	Slot      int // Written/assigned after the deck is shuffled
+	Slot      int // Assigned after the card is removed from a player's hand
 	Failed    bool
 	Discarded bool
 	Played    bool

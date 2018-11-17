@@ -3,6 +3,7 @@ package main
 import (
 	"hash/crc64"
 	"math/rand"
+	"strconv"
 )
 
 type CharacterAssignment struct {
@@ -13,17 +14,7 @@ type CharacterAssignment struct {
 
 var (
 	characterAssignments = []CharacterAssignment{
-		// Clue characters
-		CharacterAssignment{
-			Name:        "Conservative",
-			Description: "Can only give clues that touch a single card",
-			Emoji:       "💼",
-		},
-		CharacterAssignment{
-			Name:        "Greedy",
-			Description: "Can only give clues that touch 2+ cards",
-			Emoji:       "🤑",
-		},
+		// Clue restriction characters
 		CharacterAssignment{
 			Name:        "Fuming",
 			Description: "Can only clue numbers and [random color]",
@@ -33,6 +24,26 @@ var (
 			Name:        "Dumbfounded",
 			Description: "Can only clue colors and [random number]",
 			Emoji:       "🤯",
+		},
+		CharacterAssignment{
+			Name:        "Inept",
+			Description: "Cannot give any clues that touch [random color] cards",
+			Emoji:       "️🤔",
+		},
+		CharacterAssignment{
+			Name:        "Awkward",
+			Description: "Cannot give any clues that touch [random number]s",
+			Emoji:       "️😬",
+		},
+		CharacterAssignment{
+			Name:        "Conservative",
+			Description: "Can only give clues that touch a single card",
+			Emoji:       "🕇",
+		},
+		CharacterAssignment{
+			Name:        "Greedy",
+			Description: "Can only give clues that touch 2+ cards",
+			Emoji:       "🤑",
 		},
 		CharacterAssignment{
 			Name:        "Picky",
@@ -49,15 +60,67 @@ var (
 			Description: "Cannot clue the player to their right",
 			Emoji:       "😏",
 		},
+		CharacterAssignment{
+			Name:        "Vindictive",
+			Description: "Must clue if they received a clue since their last turn",
+			Emoji:       "🗡️",
+		},
+		CharacterAssignment{
+			Name:        "Miser",
+			Description: "Can only clue if there are 4 or more clues available",
+			Emoji:       "💰",
+		},
+		CharacterAssignment{
+			Name:        "Compulsive",
+			Description: "Can only clue if it touches the newest or oldest card in someone's hand",
+			Emoji:       "📺",
+		},
+		CharacterAssignment{
+			Name:        "Mood Swings",
+			Description: "Clues given must alternate between color and number",
+			Emoji:       "👧",
+		},
 
-		// Play characters
+		// Clue restriction characters (receiving)
+		CharacterAssignment{
+			Name:        "Vulnerable",
+			Description: "Cannot receive a number 2 or number 5 clue",
+			Emoji:       "🛡️",
+		},
+		CharacterAssignment{
+			Name:        "Color-Blind",
+			Description: "Cannot receive a color clue",
+			Emoji:       "️👓",
+		},
+
+		// Play restriction characters
 		CharacterAssignment{
 			Name:        "Follower",
 			Description: "Cannot play a card unless two cards of the same rank have already been played",
 			Emoji:       "👁️",
 		},
+		CharacterAssignment{
+			Name:        "Impulsive",
+			Description: "Must play slot 1 if it has been clued",
+			Emoji:       "️💉",
+		},
+		CharacterAssignment{
+			Name:        "Indolent",
+			Description: "Cannot play a card if they played on the last round",
+			Emoji:       "️💺",
+		},
+		CharacterAssignment{
+			Name:        "Hesitant",
+			Description: "Cannot play cards from slot 1",
+			Emoji:       "️️👴🏻",
+		},
+		CharacterAssignment{
+			Name:        "Gambler",
+			Description: "Must play if he didn't play last turn; forced misplays do not cost a strike",
+			Emoji:       "️🎲",
+		},
 
-		// Discard characters
+		// Discard restriction characters
 		CharacterAssignment{
 			Name:        "Anxious",
 			Description: "Cannot discard if there is an even number of clues available (including 0)",
@@ -67,6 +130,11 @@ var (
 			Name:        "Traumatized",
 			Description: "Cannot discard if there is an odd number of clues available",
 			Emoji:       "😨",
+		},
+		CharacterAssignment{
+			Name:        "Wasteful",
+			Description: "Cannot discard if there are 2 or more clues available",
+			Emoji:       "🗑️",
 		},
 
 		// Extra turn characters
@@ -85,6 +153,23 @@ var (
 			Description: "When discarding, discards twice if 4 clues or less",
 			Emoji:       "😳",
 		},
+
+		// Other
+		CharacterAssignment{
+			Name:        "Contrarian",
+			Description: "Play order inverts after taking a turn",
+			Emoji:       "🙅",
+		},
+		CharacterAssignment{
+			Name:        "Stubborn",
+			Description: "Must perform a different action type than the player that came before them",
+			Emoji:       "😠",
+		},
+		CharacterAssignment{
+			Name:        "Forgetful",
+			Description: "Hand is shuffled after discarding (but before drawing)",
+			Emoji:       "🔀",
+		},
 	}
 )
 
@@ -102,6 +187,11 @@ func characterGenerate(g *Game) {
 		for {
 			// Get a random character assignment
 			p.CharacterAssignment = rand.Intn(len(characterAssignments))
+
+			// Hard-code some character assignments for testing purposes
+			if p.Name == "test" {
+				p.CharacterAssignment = 28
+			}
 
 			// Check to see if any other players have this assignment already
 			unique := true
@@ -127,8 +217,60 @@ func characterGenerate(g *Game) {
 		} else if name == "Dumbfounded" {
 			// A random number from 1 to 5
 			p.CharacterMetadata = rand.Intn(4) + 1
+		} else if name == "Inept" {
+			// A random number from 0 to the number of suits in this variant
+			p.CharacterMetadata = rand.Intn(len(g.Stacks))
+		} else if name == "Awkward" {
+			// A random number from 1 to 5
+			p.CharacterMetadata = rand.Intn(4) + 1
 		}
 	}
+}
+
+func characterValidateAction(s *Session, d *CommandData, g *Game, p *Player) bool {
+	if !g.Options.CharacterAssignments {
+		return false
+	}
+
+	name := characterAssignments[p.CharacterAssignment].Name
+	if name == "Vindictive" &&
+		p.CharacterMetadata == 0 &&
+		d.Type != actionTypeClue {
+
+		s.Warning("You are " + name + ", so you must give a clue if you have been given a clue on this go-around.")
+		return true
+
+	} else if name == "Impulsive" &&
+		p.CharacterMetadata == 0 &&
+		(d.Type != actionTypePlay ||
+			d.Target != p.Hand[len(p.Hand)-1].Order) {
+
+		s.Warning("You are " + name + ", so you must play your slot 1 card after it has been clued.")
+		return true
+
+	} else if name == "Stubborn" &&
+		d.Type == p.CharacterMetadata {
+
+		s.Warning("You are " + name + ", so you cannot perform the same kind of action that the previous player did.")
+		return true
+
+	} else if name == "Indolent" &&
+		d.Type == actionTypePlay &&
+		p.CharacterMetadata == 0 {
+
+		s.Warning("You are " + name + ", so you cannot play a card if you played one in the last round.")
+		return true
+
+	} else if name == "Gambler" &&
+		p.CharacterMetadata == 0 &&
+		d.Type != actionTypePlay &&
+		d.Type != actionTypeDeckPlay {
+
+		s.Warning("You are " + name + ", so you must play a card if you did not play a card on the last round.")
+		return true
+	}
+
+	return false
 }
 
 func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Player) bool {
@@ -142,12 +284,12 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Playe
 
 	name := characterAssignments[p.CharacterAssignment].Name
 	if name == "Genius" {
-		if d.Type != 0 { // Clue
+		if d.Type != actionTypeClue {
 			s.Warning("You are " + name + ", so you must now give your second clue.")
 			return true
 		}
 
-		if d.Clue.Type != 1 { // Color clue
+		if d.Clue.Type != clueTypeColor {
 			s.Warning("You are " + name + ", so you must now give a color clue.")
 			return true
 		}
@@ -158,12 +300,12 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Playe
 		}
 
 	} else if name == "Synesthetic" {
-		if d.Type != 0 { // Clue
+		if d.Type != actionTypeClue {
 			s.Warning("You are " + name + ", so you must now give your second clue.")
 			return true
 		}
 
-		if d.Clue.Type != 1 { // Color clue
+		if d.Clue.Type != clueTypeColor {
 			s.Warning("You are " + name + ", so you must now give a color clue.")
 			return true
 		}
@@ -179,7 +321,7 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Playe
 		}
 
 	} else if name == "Panicky" &&
-		d.Type != 2 { // Discard
+		d.Type != actionTypeDiscard {
 
 		s.Warning("You are " + name + ", so you must discard again since there are 4 or less clues available.")
 		return true
@@ -194,37 +336,59 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		return false
 	}
 
-	name := characterAssignments[p.CharacterAssignment].Name
-	if name == "Conservative" &&
-		len(p.FindCardsTouchedByClue(g, d)) != 1 {
-
-		s.Warning("You are " + name + ", so you can only give clues that touch a single card.")
-		return true
-
-	} else if name == "Greedy" &&
-		len(p.FindCardsTouchedByClue(g, d)) < 2 {
-
-		s.Warning("You are " + name + ", so you can only give clues that touch 2+ cards.")
-		return true
-
-	} else if name == "Fuming" &&
-		d.Clue.Type == 1 && // Color clue
+	name := characterAssignments[p.CharacterAssignment].Name   // The cluer's character
+	p2 := g.Players[d.Target]                                  // The target of the clue
+	name2 := characterAssignments[p2.CharacterAssignment].Name // The target character
+	if name == "Fuming" &&
+		d.Clue.Type == clueTypeColor &&
 		d.Clue.Value != p.CharacterMetadata {
 
 		s.Warning("You are " + name + ", so you can not give that type of clue.")
 		return true
 
 	} else if name == "Dumbfounded" &&
-		d.Clue.Type == 0 && // Number clue
+		d.Clue.Type == clueTypeNumber &&
 		d.Clue.Value != p.CharacterMetadata {
 
 		s.Warning("You are " + name + ", so you can not give that type of clue.")
 		return true
 
+	} else if name == "Inept" {
+		cardsTouched := p2.FindCardsTouchedByClue(d, g)
+		for _, order := range cardsTouched {
+			c := g.Deck[order]
+			if c.Suit == p.CharacterMetadata {
+				s.Warning("You are " + name + ", so you cannot give clues that touch a specific suit.")
+				return true
+			}
+		}
+
+	} else if name == "Awkward" {
+		cardsTouched := p2.FindCardsTouchedByClue(d, g)
+		for _, order := range cardsTouched {
+			c := g.Deck[order]
+			if c.Rank == p.CharacterMetadata {
+				s.Warning("You are " + name + ", so you cannot give clues that touch cards with a rank of " + strconv.Itoa(p.CharacterMetadata) + ".")
+				return true
+			}
+		}
+
+	} else if name == "Conservative" &&
+		len(p2.FindCardsTouchedByClue(d, g)) != 1 {
+
+		s.Warning("You are " + name + ", so you can only give clues that touch a single card.")
+		return true
+
+	} else if name == "Greedy" &&
+		len(p2.FindCardsTouchedByClue(d, g)) < 2 {
+
+		s.Warning("You are " + name + ", so you can only give clues that touch 2+ cards.")
+		return true
+
 	} else if name == "Picky" &&
-		((d.Clue.Type == 0 && // Number clue
+		((d.Clue.Type == clueTypeNumber &&
 			d.Clue.Value%2 == 0) ||
-			(d.Clue.Type == 1 && // Color clue
+			(d.Clue.Type == clueTypeColor &&
 				(d.Clue.Value+1)%2 == 0)) {
 
 		s.Warning("You are " + name + ", so you can only clue odd numbers or clues that touch odd amounts of cards.")
@@ -235,9 +399,6 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		if leftIndex == len(g.Players) {
 			leftIndex = 0
 		}
-		log.Debug("Cluer's index:", p.Index)
-		log.Debug("Clue target index:", d.Target)
-		log.Debug("Left index:", leftIndex)
 		if d.Target == leftIndex {
 			s.Warning("You are " + name + ", so you cannot clue the player to your left.")
 			return true
@@ -248,18 +409,28 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		if rightIndex == -1 {
 			rightIndex = len(g.Players) - 1
 		}
-		log.Debug("Cluer's index:", p.Index)
-		log.Debug("Clue target index:", d.Target)
-		log.Debug("Right index:", rightIndex)
 		if d.Target == rightIndex {
 			s.Warning("You are " + name + ", so you cannot clue the player to your right.")
 			return true
 		}
 
-	} else if name == "Philospher" &&
-		len(p.FindCardsTouchedByClue(g, d)) != 0 {
+	} else if name == "Miser" &&
+		g.Clues < 4 {
 
-		s.Warning("You are " + name + ", so you can only give empty clues.")
+		s.Warning("You are " + name + ", so you cannot give a clue unless there are 4 or more clues available.")
+		return true
+
+	} else if name == "Compulsive" &&
+		!p2.IsFirstCardTouchedByClue(d, g) &&
+		!p2.IsLastCardTouchedByClue(d, g) {
+
+		s.Warning("You are " + name + ", so you can only give a clue if it touches either the newest or oldest card in a hand.")
+		return true
+
+	} else if name == "Mood Swings" &&
+		p.CharacterMetadata == d.Clue.Type {
+
+		s.Warning("You are " + name + ", so cannot give the same clue type twice in a row.")
 		return true
 
 	} else if name == "Genius" &&
@@ -269,7 +440,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 			s.Warning("You are " + name + ", so there needs to be at least two clues available for you to give a clue.")
 			return true
 		}
-		if d.Clue.Type != 0 { // Number clue
+		if d.Clue.Type != clueTypeNumber {
 			s.Warning("You are " + name + ", so you must give a number clue first.")
 			return true
 		}
@@ -277,27 +448,37 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 	} else if name == "Synesthetic" &&
 		p.CharacterMetadata == -1 {
 
-		if d.Clue.Type != 0 { // Number clue
+		if d.Clue.Type != clueTypeNumber {
 			s.Warning("You are " + name + ", so you must give a number clue first.")
 			return true
 		}
+
 		d2 := &CommandData{
 			Clue: Clue{
-				Type:  1, // Color clue
+				Type:  clueTypeColor,
 				Value: d.Clue.Value - 1,
 			},
 			Target: d.Target,
 		}
-		cardsTouched := p.FindCardsTouchedByClue(g, d2)
-		log.Debug("Original clue type given:", d.Clue.Type)
-		log.Debug("Original clue value given:", d.Clue.Value)
-		log.Debug("New clue type given:", d2.Clue.Type)
-		log.Debug("New clue value given:", d2.Clue.Value)
-		log.Debug("Cards touched:", cardsTouched)
+		cardsTouched := p2.FindCardsTouchedByClue(d2, g)
 		if len(cardsTouched) == 0 {
 			s.Warning("You are " + name + ", so both versions of the clue must touch at least 1 card in the hand.")
 			return true
 		}
+
+	} else if name2 == "Vulnerable" &&
+		d.Clue.Type == clueTypeNumber &&
+		(d.Clue.Value == 2 ||
+			d.Clue.Value == 5) {
+
+		s.Warning("You cannot give a number 2 or number 5 clue to a " + name + " character.")
+		return true
+
+	} else if name2 == "Color-Blind" &&
+		d.Clue.Type == clueTypeColor {
+
+		s.Warning("You cannot give a color blue to a " + name + " character.")
+		return true
 	}
 
 	return false
@@ -321,6 +502,11 @@ func characterCheckPlay(g *Game, p *Player, c *Card) bool {
 		if numPlayedOfThisRank < 2 {
 			return true
 		}
+
+	} else if name == "Hesitant" &&
+		c.Slot == 1 {
+
+		return true
 	}
 
 	return false
@@ -344,9 +530,71 @@ func characterCheckDiscard(s *Session, g *Game, p *Player) bool {
 
 		s.Warning("You are " + name + ", so you cannot discard when there is an odd number of clues available.")
 		return true
+
+	} else if name == "Wasteful" &&
+		g.Clues >= 2 {
+
+		s.Warning("You are " + name + ", so you cannot discard if there are 2 or more clues available.")
+		return true
 	}
 
 	return false
+}
+
+func characterPostClue(d *CommandData, g *Game, p *Player) {
+	if !g.Options.CharacterAssignments {
+		return
+	}
+
+	p2 := g.Players[d.Target] // The target of the clue
+	name := characterAssignments[p2.CharacterAssignment].Name
+	if name == "Vindictive" {
+		// Store that they have had at least one clue given to them on this go-around of the table
+		p2.CharacterMetadata = 0
+
+	} else if name == "Impulsive" &&
+		p2.IsFirstCardTouchedByClue(d, g) {
+
+		// Store that they had their slot 1 card clued
+		p2.CharacterMetadata = 0
+
+	} else if name == "Mood Swings" {
+		p.CharacterMetadata = d.Clue.Type
+	}
+}
+
+func characterPostAction(d *CommandData, g *Game, p *Player) {
+	if !g.Options.CharacterAssignments {
+		return
+	}
+
+	// Clear the counter for characters that have abilities relating to a single go-around of the table
+	name := characterAssignments[p.CharacterAssignment].Name
+	if name == "Vindictive" {
+		p.CharacterMetadata = -1
+	} else if name == "Impulsive" {
+		p.CharacterMetadata = -1
+	} else if name == "Indolent" {
+		if d.Type == actionTypePlay {
+			p.CharacterMetadata = 0
+		} else {
+			p.CharacterMetadata = -1
+		}
+	} else if name == "Gambler" {
+		if d.Type == actionTypePlay || d.Type == actionTypeDeckPlay {
+			p.CharacterMetadata = -1
+		} else {
+			p.CharacterMetadata = 0
+		}
+	}
+
+	// Store the last action that was performed
+	for _, p2 := range g.Players {
+		name2 := characterAssignments[p2.CharacterAssignment].Name
+		if name2 == "Stubborn" {
+			p2.CharacterMetadata = d.Type
+		}
+	}
 }
 
 func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
@@ -356,7 +604,7 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 
 	name := characterAssignments[p.CharacterAssignment].Name
 	if name == "Genius" &&
-		d.Type == 0 { // Clue
+		d.Type == actionTypeClue {
 
 		// Must clue both a number and a color (uses 2 clues)
 		// The clue target is stored in "p.CharacterMetadata"
@@ -369,7 +617,7 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 		}
 
 	} else if name == "Synesthetic" &&
-		d.Type == 0 { // Clue
+		d.Type == actionTypeClue {
 
 		// Must clue both a number and a color of the same value (uses 1 clue)
 		// The clue target is stored in "p.CharacterMetadata"
@@ -386,7 +634,7 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 		}
 
 	} else if name == "Panicky" &&
-		d.Type == 2 { // Discard
+		d.Type == actionTypeDiscard {
 
 		// After discarding, discards again if there are 4 clues or less
 		// "p.CharacterMetadata" represents the state, which alternates between -1 and 0
@@ -403,4 +651,42 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 	}
 
 	return false
+}
+
+func characterInvertTurns(g *Game, p *Player) bool {
+	if !g.Options.CharacterAssignments {
+		return false
+	}
+
+	name := characterAssignments[p.CharacterAssignment].Name
+	if name == "Contrarian" {
+		return true
+	}
+
+	return false
+}
+
+func characterUseStrike(g *Game, p *Player) bool {
+	if !g.Options.CharacterAssignments {
+		return true
+	}
+
+	name := characterAssignments[p.CharacterAssignment].Name
+	if name == "Gambler" &&
+		p.CharacterMetadata == 0 {
+		return false
+	}
+
+	return true
+}
+
+func characterShuffle(g *Game, p *Player) {
+	if !g.Options.CharacterAssignments {
+		return
+	}
+
+	name := characterAssignments[p.CharacterAssignment].Name
+	if name == "Forgetful" {
+		p.ShuffleHand(g)
+	}
 }

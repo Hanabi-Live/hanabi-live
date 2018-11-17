@@ -1007,17 +1007,7 @@
         this.emoji = emoji;
     };
     exports.CHARACTER_ASSIGNMENTS = [
-        // Clue restriction characters
-        new CharacterAssignment(
-            'Conservative',
-            'Can only give clues that touch a single card',
-            '💼',
-        ),
-        new CharacterAssignment(
-            'Greedy',
-            'Can only give clues that touch 2+ cards',
-            '🤑',
-        ),
+        // Clue restriction characters (giving)
         new CharacterAssignment(
             'Fuming',
             'Can only clue numbers and [random color]',
@@ -1027,6 +1017,26 @@
             'Dumbfounded',
             'Can only clue colors and [random number]',
             '🤯',
+        ),
+        new CharacterAssignment(
+            'Inept',
+            'Cannot give any clues that touch [random suit] cards',
+            '🤔',
+        ),
+        new CharacterAssignment(
+            'Awkward',
+            'Cannot give any clues that touch [random number]s',
+            '😬',
+        ),
+        new CharacterAssignment(
+            'Conservative',
+            'Can only give clues that touch a single card',
+            '🕇',
+        ),
+        new CharacterAssignment(
+            'Greedy',
+            'Can only give clues that touch 2+ cards',
+            '🤑',
         ),
         new CharacterAssignment(
             'Picky',
@@ -1043,12 +1053,64 @@
             'Cannot clue the player to their right',
             '😏',
         ),
+        new CharacterAssignment(
+            'Vindictive',
+            'Must clue if they received a clue since their last turn',
+            '🗡️',
+        ),
+        new CharacterAssignment(
+            'Miser',
+            'Can only clue if there are 4 or more clues available',
+            '💰',
+        ),
+        new CharacterAssignment(
+            'Compulsive',
+            'Can only clue if it touches the newest or oldest card in someone\'s hand',
+            '📺',
+        ),
+        new CharacterAssignment(
+            'Mood Swings',
+            'Clues given must alternate between color and number',
+            '👧',
+        ),
+
+        // Clue restriction characters (receiving)
+        new CharacterAssignment(
+            'Vulnerable',
+            'Cannot receive a number 2 or number 5 clue',
+            '🛡️',
+        ),
+        new CharacterAssignment(
+            'Color-Blind',
+            'Cannot receive a color clue',
+            '👓',
+        ),
 
         // Play restriction characters
         new CharacterAssignment(
             'Follower',
             'Cannot play a card unless two cards of the same rank have already been played',
             '👁️',
+        ),
+        new CharacterAssignment(
+            'Impulsive',
+            'Must play slot 1 if it has been clued',
+            '💉',
+        ),
+        new CharacterAssignment(
+            'Indolent',
+            'Cannot play a card if they played on the last round',
+            '💺',
+        ),
+        new CharacterAssignment(
+            'Hesitant',
+            'Cannot play cards from slot 1',
+            '👴🏻',
+        ),
+        new CharacterAssignment(
+            'Gambler',
+            'Must play if he didn\'t play last turn; forced misplays do not cost a strike',
+            '🎲',
         ),
 
         // Discard restriction characters
@@ -1061,6 +1123,11 @@
             'Traumatized',
             'Cannot discard if there is an odd number of clues available',
             '😨',
+        ),
+        new CharacterAssignment(
+            'Wasteful',
+            'Cannot discard if there are 2 or more clues available',
+            '🗑️',
         ),
 
         // Extra turn characters
@@ -1080,61 +1147,26 @@
             '😳',
         ),
 
+        // Other
+        new CharacterAssignment(
+            'Contrarian',
+            'Play order inverts after taking a turn',
+            '🙅',
+        ),
+        new CharacterAssignment(
+            'Stubborn',
+            'Must perform a different action type than the player that came before them',
+            '😠',
+        ),
+        new CharacterAssignment(
+            'Forgetful',
+            'Hand is shuffled after discarding (but before drawing)',
+            '🔀',
+        ),
+
         /*
-            - fix tooltips
-            12) Contrarian - Play order inverts after this player takes a turn
-            6) Forgetful - Hand is shuffled after discarding (but before drawing)
-
-            Vindictive - must give a clue if they received a clue since their last turn.
-            Impulsive - must play slot 1 if it has been clued
-            Short-sighted - can only clue the player to their left (maybe too restrictive?)
-
-            Wasteful - cannot discard if there is more than 1 clue available
-            Miser - cannot clue if there are 4 or fewer clues available
-            Procrastinator (timed only) - timer goes down twice as quickly
-
-            Compulsive - all given clues must touch either the newest or oldest card in someone's hand
-
-            forbidden color and number
-            - "cannot see the cards of the player to your right"?
-
-            slow - cannot play if you played on your previous turn
-            hesitant - cannot play from slot 1 (or randomly choose a number between 1 and (handsize - 1), cannot play from that slot. Your rightmost card cannot be chosen that way)
-            colorblind - cannot receive color clues
-            careless - must discard if no card in their hand is clued, except at 8 clues (probably not restrictive enough, since most of the time you have clued cards in your hand.)
-            impatient - cannot clue if any card in their hand is clued (probably too harsh)
-            locked - cannot discard (strictly worse than wasteful though, probably wasteful is not detrimental enough)
-            vulnerable - cannot receive the clues 2 or 5.
-            mood swings - must alternative color clues and number clues [to be more precise: if the previous clue this player gave was a number clue, the next clue must be color and vice versa]
-            insistent - after giving a clue, must repeat this clue to the same player until one of the clued cards has been played or discarded (unless at 0 clues).
-            stubborn - must do a different action than the player to their right (the actions are {clue, play, discard})
-            gambler - must play if he didn't play last turn. Misplays by gambler don't cost a strike.
-
-            Eccentric - ?
-
-
-
-
-			// Remove the chop card from their hand
-			p.Hand = append(p.Hand[:chopIndex], p.Hand[chopIndex+1:]...)
-
-			// Add it to the end (the left-most position)
-			p.Hand = append(p.Hand, chopCard)
-
-			// Make an array that represents the order of the player's hand
-			handOrder := make([]int, 0)
-			for _, c := range p.Hand {
-				handOrder = append(handOrder, c.Order)
-			}
-
-			// Notify everyone about the reordering
-			g.Actions = append(g.Actions, Action{
-				Type:      "reorder",
-				Target:    i,
-				HandOrder: handOrder,
-			})
-			g.NotifyAction()
-			log.Info("Reordered the cards for player:", p.Name)
+            Blind Spot - Cannot see the cards of the player to their right
+            Oblivious - Cannot see the cards of the player to their left
         */
     ];
 

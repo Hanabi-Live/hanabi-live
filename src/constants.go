@@ -5,6 +5,28 @@ import (
 )
 
 const (
+	actionTypeClue = iota
+	actionTypePlay
+	actionTypeDiscard
+	actionTypeDeckPlay
+	actionTypeTimeLimitReached
+	actionTypeIdleLimitReached
+)
+
+const (
+	clueTypeNumber = iota
+	clueTypeColor
+)
+
+const (
+	replayActionTypeTurn = iota
+	replayActionTypeArrow
+	replayActionTypeLeaderTransfer
+	replayActionTypeMorph
+	replayActionTypeSound
+)
+
+const (
 	// The amount of time that a game is inactive before it is killed by the server
 	idleGameTimeout = time.Minute * 30
 

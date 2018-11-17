@@ -3965,12 +3965,15 @@ function HanabiUI(lobby, gameID) {
                     const character = CHARACTER_ASSIGNMENTS[ui.characterAssignments[i]];
                     const metadata = ui.characterMetadata[i]
                     let content = `<b>${character.name}</b>:<br />${character.description}`;
-                    if (character.name === 'Fuming') {
+                    if (content.includes('[random color]')) {
                         // Replace "[random color]" with the selected color
                         content = content.replace('[random color]', ui.variant.clueColors[metadata].name.toLowerCase());
-                    } else if (character.name === 'Dumbfounded') {
+                    } else if (content.includes('[random number]')) {
                         // Replace "[random number]" with the selected number
                         content = content.replace('[random number]', metadata);
+                    } else if (content.includes('[random suit]')) {
+                        // Replace "[random suit]" with the selected suit name
+                        content = content.replace('[random suit]', ui.variant.suits[metadata].name);
                     }
                     tooltip.tooltipster('instance').content(content);
 

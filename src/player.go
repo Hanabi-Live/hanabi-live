@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 	"strconv"
 	"time"
 
@@ -26,17 +27,24 @@ type Player struct {
 	Session *Session
 }
 
-func (p *Player) GiveClue(g *Game, d *CommandData) bool {
-	cardsTouched := p.FindCardsTouchedByClue(g, d)
+func (p *Player) GiveClue(d *CommandData, g *Game) bool {
+	p2 := g.Players[d.Target] // The target of the clue
+	cardsTouched := p2.FindCardsTouchedByClue(d, g)
 	if len(cardsTouched) == 0 &&
 		// Make an exception for color clues in the "Color Blind" variant
-		(d.Clue.Type != 1 || variants[g.Options.Variant].Name != "Color Blind") &&
+		(d.Clue.Type != clueTypeColor || variants[g.Options.Variant].Name != "Color Blind") &&
 		// Allow empty clues if the optional setting is enabled
 		!g.Options.EmptyClues &&
 		// Philosphers can only give empty clues
 		characterAssignments[p.CharacterAssignment].Name != "Philospher" {
 
 		return false
+	}
+
+	// Mark that the cards have been touched
+	for _, order := range cardsTouched {
+		c := g.Deck[order]
+		c.Touched = true
 	}
 
 	// Keep track that someone clued
@@ -54,7 +62,7 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 	g.NotifyAction()
 
 	// Send the "message" message about the clue
-	text := p.Name + " tells " + g.Players[d.Target].Name + " "
+	text := p.Name + " tells " + p2.Name + " "
 	if len(cardsTouched) != 0 {
 		text += "about "
 		words := []string{
@@ -67,11 +75,9 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 		text += words[len(cardsTouched)-1] + " "
 	}
 
-	if d.Clue.Type == 0 {
-		// Number clue
+	if d.Clue.Type == clueTypeNumber {
 		text += strconv.Itoa(d.Clue.Value)
-	} else if d.Clue.Type == 1 {
-		// Color clue
+	} else if d.Clue.Type == clueTypeColor {
 		text += variants[g.Options.Variant].Clues[d.Clue.Value].Name
 	}
 	if len(cardsTouched) > 1 {
@@ -83,32 +89,43 @@ func (p *Player) GiveClue(g *Game, d *CommandData) bool {
 	g.NotifyAction()
 	log.Info(g.GetName() + text)
 
+	// Do post-clue tasks
+	characterPostClue(d, g, p)
+
 	return true
 }
 
-func (p *Player) FindCardsTouchedByClue(g *Game, d *CommandData) []int {
-	// Find out what cards this clue touches
+// FindCardsTouchedByClue returns a slice of card orders
+// (in this context, "orders" are the card position in the deck, not in the hand)
+func (p *Player) FindCardsTouchedByClue(d *CommandData, g *Game) []int {
 	list := make([]int, 0)
-	for _, c := range g.Players[d.Target].Hand {
-		touched := false
-		if d.Clue.Type == 0 {
-			// Number clue
-			if c.Rank == d.Clue.Value {
-				touched = true
-			}
-		} else if d.Clue.Type == 1 {
-			// Color clue
-			if variantIsCardTouched(g.Options.Variant, d.Clue.Value, c.Suit) {
-				touched = true
-			}
-		}
-		if touched {
+	for _, c := range p.Hand {
+		if (d.Clue.Type == clueTypeNumber &&
+			c.Rank == d.Clue.Value) ||
+			(d.Clue.Type == clueTypeColor &&
+				variantIsCardTouched(g.Options.Variant, d.Clue.Value, c.Suit)) {
+
 			list = append(list, c.Order)
-			c.Touched = true
 		}
 	}
 
 	return list
+}
+
+func (p *Player) IsFirstCardTouchedByClue(d *CommandData, g *Game) bool {
+	c := p.Hand[len(p.Hand)-1]
+	return (d.Clue.Type == clueTypeNumber &&
+		c.Rank == d.Clue.Value) ||
+		(d.Clue.Type == clueTypeColor &&
+			variantIsCardTouched(g.Options.Variant, d.Clue.Value, c.Suit))
+}
+
+func (p *Player) IsLastCardTouchedByClue(d *CommandData, g *Game) bool {
+	c := p.Hand[0]
+	return (d.Clue.Type == clueTypeNumber &&
+		c.Rank == d.Clue.Value) ||
+		(d.Clue.Type == clueTypeColor &&
+			variantIsCardTouched(g.Options.Variant, d.Clue.Value, c.Suit))
 }
 
 func (p *Player) RemoveCard(target int) *Card {
@@ -143,7 +160,9 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 
 		// The card does not play
 		c.Failed = true
-		g.Strikes++
+		if characterUseStrike(g, p) {
+			g.Strikes++
+		}
 
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
@@ -330,4 +349,35 @@ func (p *Player) InHand(order int) bool {
 	}
 
 	return false
+}
+
+func (p *Player) ShuffleHand(g *Game) {
+	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
+	rand.Seed(time.Now().UTC().UnixNano())
+	for i := range p.Hand {
+		j := rand.Intn(i + 1)
+		p.Hand[i], p.Hand[j] = p.Hand[j], p.Hand[i]
+	}
+
+	for _, c := range p.Hand {
+		// Remove all clues from cards in the hand
+		c.Touched = false
+
+		// Remove all notes from cards in the hand
+		p.Notes[c.Order] = ""
+	}
+
+	// Make an array that represents the order of the player's hand
+	handOrder := make([]int, 0)
+	for _, c := range p.Hand {
+		handOrder = append(handOrder, c.Order)
+	}
+
+	// Notify everyone about the shuffling
+	g.Actions = append(g.Actions, Action{
+		Type:      "reorder",
+		Target:    p.Index,
+		HandOrder: handOrder,
+	})
+	g.NotifyAction()
 }

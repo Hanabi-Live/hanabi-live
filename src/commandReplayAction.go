@@ -55,7 +55,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 	go g.CheckIdle()
 
 	// Send the message to everyone else
-	if d.Type == 0 {
+	if d.Type == replayActionTypeTurn {
 		// A turn change
 		g.Turn = d.Turn
 		for _, s2 := range g.Spectators {
@@ -82,7 +82,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		// Send every user connected an update about this table
 		// (this is sort of wasteful but is necessary for users to see the progress of the replay from the lobby)
 		notifyAllTable(g)
-	} else if d.Type == 1 {
+	} else if d.Type == replayActionTypeArrow {
 		// A card arrow indication
 		for _, s2 := range g.Spectators {
 			type ReplayIndicatorMessage struct {
@@ -92,7 +92,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 				Order: d.Order,
 			})
 		}
-	} else if d.Type == 2 {
+	} else if d.Type == replayActionTypeLeaderTransfer {
 		// A leader transfer
 		// Validate that the person that they are passing off the leader to actually exists in the game
 		newLeaderID := -1
@@ -115,7 +115,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		for _, s2 := range g.Spectators {
 			s2.NotifyReplayLeader(g)
 		}
-	} else if d.Type == 3 {
+	} else if d.Type == replayActionTypeMorph {
 		// A "hypothetical" card morph
 		for _, s2 := range g.Spectators {
 			type ReplayMorphMessage struct {
@@ -129,7 +129,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 				Rank:  d.Rank,
 			})
 		}
-	} else if d.Type == 4 {
+	} else if d.Type == replayActionTypeSound {
 		// A sound effect
 		for _, s2 := range g.Spectators {
 			type ReplaySoundMessage struct {

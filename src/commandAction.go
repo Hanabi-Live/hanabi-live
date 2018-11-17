@@ -21,7 +21,7 @@
 		// 1 is a play
 		// 2 is a discard
 		// 3 is a deck blind play
-		// 4 is a timer limit reached (only used by the server)
+		// 4 is a time limit reached (only used by the server)
 		// 5 is a idle limit reached (only used by the server)
 	}
 */
@@ -62,7 +62,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Validate that it is this player's turn
-	if g.ActivePlayer != i && d.Type != 5 { // Make an exception for idle timeouts
+	if g.ActivePlayer != i && d.Type != actionTypeIdleLimitReached {
 		s.Warning("It is not your turn, so you cannot perform an action.")
 		return
 	}
@@ -77,6 +77,9 @@ func commandAction(s *Session, d *CommandData) {
 	p := g.Players[i]
 
 	// Validate that a player is not doing an illegal action for their character
+	if characterValidateAction(s, d, g, p) {
+		return
+	}
 	if characterValidateSecondAction(s, d, g, p) {
 		return
 	}
@@ -90,13 +93,13 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Start the idle timeout
 	// (but don't update the idle variable if we are ending the game due to idleness)
-	if d.Type != 5 {
+	if d.Type != actionTypeIdleLimitReached {
 		go g.CheckIdle()
 	}
 
 	// Do different tasks depending on the action
 	doubleDiscard := false
-	if d.Type == 0 { // Clue
+	if d.Type == actionTypeClue {
 		// Validate that the target of the clue is sane
 		if d.Target < 0 || d.Target > len(g.Players)-1 {
 			s.Warning("That is an invalid clue target.")
@@ -121,14 +124,18 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
-		// If it is a number clue, validate that the number clue is valid
-		if d.Clue.Type == 0 && (d.Clue.Value < 0 || d.Clue.Value > 5) {
+		// Validate that number clues are valid
+		if d.Clue.Type == clueTypeNumber &&
+			(d.Clue.Value < 0 || d.Clue.Value > 5) {
+
 			s.Warning("That is an invalid number clue.")
 			return
 		}
 
-		// If it is a color clue, validate that the color clue is valid
-		if d.Clue.Type == 1 && (d.Clue.Value < 0 || d.Clue.Value > len(variants[g.Options.Variant].Clues)-1) {
+		// Validate that the color clues are valid
+		if d.Clue.Type == clueTypeColor &&
+			(d.Clue.Value < 0 || d.Clue.Value > len(variants[g.Options.Variant].Clues)-1) {
+
 			s.Warning("That is an invalid color clue.")
 			return
 		}
@@ -139,14 +146,14 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		// The "GiveClue()" method will return false if the clue touches 0 cards in the hand
-		if !p.GiveClue(g, d) {
+		if !p.GiveClue(d, g) {
 			s.Warning("You cannot give a clue that touches 0 cards in the hand.")
 			return
 		}
 
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
-	} else if d.Type == 1 { // Play
+	} else if d.Type == actionTypePlay {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
 			s.Warning("You cannot play a card that is not in your hand.")
@@ -156,7 +163,7 @@ func commandAction(s *Session, d *CommandData) {
 		c := p.RemoveCard(d.Target)
 		doubleDiscard = p.PlayCard(g, c)
 		p.DrawCard(g)
-	} else if d.Type == 2 { // Discard
+	} else if d.Type == actionTypeDiscard {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
 			s.Warning("You cannot play a card that is not in your hand.")
@@ -178,11 +185,12 @@ func commandAction(s *Session, d *CommandData) {
 		g.Clues++
 		c := p.RemoveCard(d.Target)
 		doubleDiscard = p.DiscardCard(g, c)
+		characterShuffle(g, p)
 		p.DrawCard(g)
 
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
-	} else if d.Type == 3 { // Deck play
+	} else if d.Type == actionTypeDeckPlay {
 		// Validate that the game type allows deck plays
 		if !g.Options.DeckPlays {
 			s.Warning("Deck plays are disabled for this game.")
@@ -197,14 +205,14 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		p.PlayDeck(g)
-	} else if d.Type == 4 { // Out of time
+	} else if d.Type == actionTypeTimeLimitReached {
 		// This is a special action type sent by the server to itself when a player runs out of time
 		g.Strikes = 3
 		g.Actions = append(g.Actions, Action{
 			Text: p.Name + " ran out of time!",
 		})
 		g.NotifyAction()
-	} else if d.Type == 5 { // Idle timeout
+	} else if d.Type == actionTypeIdleLimitReached {
 		// This is a special action type sent by the server to itself when the game has been idle for too long
 		g.Strikes = 3
 		g.Actions = append(g.Actions, Action{
@@ -214,6 +222,9 @@ func commandAction(s *Session, d *CommandData) {
 	} else {
 		return
 	}
+
+	// Do post-action tasks
+	characterPostAction(d, g, p)
 
 	// Send messages about the current status
 	g.Actions = append(g.Actions, Action{
@@ -229,7 +240,7 @@ func commandAction(s *Session, d *CommandData) {
 	// (if the game is over now due to a player running out of time, we don't
 	// need to adjust the timer because we already set it to 0 in the
 	// "checkTimer" function)
-	if d.Type != 4 {
+	if d.Type != actionTypeTimeLimitReached {
 		p.Time -= time.Since(g.TurnBeginTime)
 		// (in non-timed games, "Time" will decrement into negative numbers to show how much time they are taking)
 
@@ -251,6 +262,9 @@ func commandAction(s *Session, d *CommandData) {
 	if !characterTakingSecondTurn(d, g, p) {
 		g.Turn++
 		g.ActivePlayer = (g.ActivePlayer + 1) % len(g.Players)
+		if characterInvertTurns(g, p) {
+			g.ActivePlayer = (g.ActivePlayer - 1) % len(g.Players)
+		}
 	}
 	np := g.Players[g.ActivePlayer] // The next player
 
