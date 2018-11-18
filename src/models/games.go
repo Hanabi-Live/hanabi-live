@@ -41,7 +41,9 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			timed,
 			time_base,
 			time_per_turn,
+			deck_plays,
 			empty_clues,
+			character_assignments,
 			seed,
 			score,
 			num_turns,
@@ -49,6 +51,8 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			datetime_created,
 			datetime_started
 		) VALUES (
+			?,
+			?,
 			?,
 			?,
 			?,
@@ -80,7 +84,9 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 		gameRow.Timed,
 		gameRow.TimeBase,
 		gameRow.TimePerTurn,
+		gameRow.DeckPlays,
 		gameRow.EmptyClues,
+		gameRow.CharacterAssignments,
 		gameRow.Seed,
 		gameRow.Score,
 		gameRow.NumTurns,
@@ -289,6 +295,16 @@ func (*Games) GetVariant(databaseID int) (int, error) {
 	return variant, err
 }
 
+func (*Games) GetCharacterAssignments(databaseID int) (bool, error) {
+	var characterAssignments bool
+	err := db.QueryRow(`
+		SELECT character_assignments
+		FROM games
+		WHERE games.id = ?
+	`, databaseID).Scan(&characterAssignments)
+	return characterAssignments, err
+}
+
 func (*Games) GetNumTurns(databaseID int) (int, error) {
 	var numTurns int
 	err := db.QueryRow(`
@@ -300,8 +316,10 @@ func (*Games) GetNumTurns(databaseID int) (int, error) {
 }
 
 type Player struct {
-	ID   int
-	Name string
+	ID                  int
+	Name                string
+	CharacterAssignment int
+	CharacterMetadata   int
 }
 
 // GetPlayers is used in the "hello" and the "commandSharedReplayCreate" commands
@@ -310,7 +328,9 @@ func (*Games) GetPlayers(databaseID int) ([]*Player, error) {
 	if v, err := db.Query(`
 		SELECT
 			users.id AS user_id,
-			users.username AS username
+			users.username AS username,
+			game_participants.character_assignment AS character_assignment,
+			game_participants.character_metadata AS character_metadata
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 			JOIN users ON game_participants.user_id = users.id
@@ -327,7 +347,12 @@ func (*Games) GetPlayers(databaseID int) ([]*Player, error) {
 	players := make([]*Player, 0)
 	for rows.Next() {
 		var player Player
-		if err := rows.Scan(&player.ID, &player.Name); err != nil {
+		if err := rows.Scan(
+			&player.ID,
+			&player.Name,
+			&player.CharacterAssignment,
+			&player.CharacterMetadata,
+		); err != nil {
 			return nil, err
 		}
 		players = append(players, &player)

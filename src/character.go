@@ -207,16 +207,7 @@ func characterGenerate(g *Game) {
 		for {
 			// Get a random character assignment
 			p.CharacterAssignment = rand.Intn(len(characterAssignments))
-
-			// Hard-code some character assignments for testing purposes
-			if p.Name == "test" {
-				for i, ca := range characterAssignments {
-					if ca.Name == debugCharacter {
-						p.CharacterAssignment = i
-						break
-					}
-				}
-			}
+			log.Debug("CHOSE:", p.CharacterAssignment)
 
 			// Check to see if any other players have this assignment already
 			for j, p2 := range g.Players {
@@ -232,6 +223,16 @@ func characterGenerate(g *Game) {
 			// Check to see if this character is restricted from 2-player games
 			if characterAssignments[p.CharacterAssignment].Not2P && len(g.Players) == 2 {
 				continue
+			}
+
+			// Hard-code some character assignments for testing purposes
+			if p.Name == "test" {
+				for i, ca := range characterAssignments {
+					if ca.Name == debugCharacter {
+						p.CharacterAssignment = i
+						break
+					}
+				}
 			}
 
 			break

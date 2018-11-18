@@ -38,6 +38,11 @@ func (a *Action) Scrub(g *Game, p *Player) {
 		return
 	}
 
+	// Don't scrub in shared replays
+	if g.SharedReplay {
+		return
+	}
+
 	if a.Type == "draw" &&
 		(a.Who == p.Index || characterHideCard(a, g, p)) {
 

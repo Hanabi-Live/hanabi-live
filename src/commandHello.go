@@ -32,6 +32,16 @@ func commandHello(s *Session, d *CommandData) {
 			variant = v
 		}
 
+		var characterAssignmentsEnabled bool
+		if v, err := db.Games.GetCharacterAssignments(gameID); err != nil {
+			log.Error("Failed to get the character assignments from the database for game "+strconv.Itoa(gameID)+":", err)
+			s.Error("Failed to initialize the game. Please contact an administrator.")
+			return
+		} else {
+			characterAssignmentsEnabled = v
+			log.Debug("characterAssignmentsEnabled:", characterAssignmentsEnabled)
+		}
+
 		var dbPlayers []*models.Player
 		if v, err := db.Games.GetPlayers(gameID); err != nil {
 			log.Error("Failed to get the players from the database for game "+strconv.Itoa(gameID)+":", err)
@@ -40,18 +50,23 @@ func commandHello(s *Session, d *CommandData) {
 		} else {
 			dbPlayers = v
 		}
+
+		// We need to convert the database player objects to a normal player objects
 		var players []*Player
 		for _, p := range dbPlayers {
 			player := &Player{
-				ID:   p.ID,
-				Name: p.Name,
+				ID:                  p.ID,
+				Name:                p.Name,
+				CharacterAssignment: p.CharacterAssignment,
+				CharacterMetadata:   p.CharacterMetadata,
 			}
 			players = append(players, player)
 		}
 
 		g = &Game{
 			Options: &Options{
-				Variant: variant,
+				Variant:              variant,
+				CharacterAssignments: characterAssignmentsEnabled,
 			},
 			Players: players,
 		}
