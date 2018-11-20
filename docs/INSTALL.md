@@ -1,7 +1,7 @@
 Installation + Linter Installation (for Client-Side Development Only)
 ---------------------------------------------------------------------
 
-If all you are doing is just looking to update the client JavaScript, then you still need to clone the main repository, but you do not need to install Golang or run the server code.
+If you are just looking to update the client JavaScript, then you will still need to clone the main repository, but you do not need to install Golang or run the server code. (But you probably should so that you can easily test your changes.)
 
 First, you should know that like most JavaScript projects, we use a [linter](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. We use [ESLint](https://eslint.org/) as our linter and use a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
 
