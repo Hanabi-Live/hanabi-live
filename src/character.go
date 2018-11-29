@@ -523,7 +523,8 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 			return true
 		}
 
-	} else if name2 == "Vulnerable" &&
+	} 
+	if name2 == "Vulnerable" &&
 		d.Clue.Type == clueTypeNumber &&
 		(d.Clue.Value == 2 ||
 			d.Clue.Value == 5) {
