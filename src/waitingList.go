@@ -53,7 +53,12 @@ func waitingListAdd(s *Session, d *CommandData) {
 		DiscordMention:  discordMention,
 		DatetimeExpired: time.Now().Add(idleWaitingListTimeout),
 	}
-	db.DiscordWaiters.Insert(waiter)
+	if err := db.DiscordWaiters.Insert(waiter); err != nil {
+		msg := "Failed to insert the waiter into the database: " + err.Error()
+		log.Error(msg)
+		chatServerSend(msg)
+		return
+	}
 	waitingList = append(waitingList, waiter)
 
 	// Announce it
@@ -112,7 +117,12 @@ func waitingListAlert(g *Game, creator string) {
 	mentionList = strings.TrimSuffix(mentionList, ", ")
 
 	// Empty the waiting list in the database and in memory
-	db.DiscordWaiters.DeleteAll()
+	if err := db.DiscordWaiters.DeleteAll(); err != nil {
+		msg := "Failed to delete the waiters in the database: " + err.Error()
+		log.Error(msg)
+		chatServerSend(msg)
+		return
+	}
 	waitingList = make([]*models.Waiter, 0)
 
 	// Alert all of the people on the waiting list
@@ -126,7 +136,12 @@ func waitingListAlert(g *Game, creator string) {
 
 func waitingListRemoveSub(i int) {
 	// Remove them from the the database
-	db.DiscordWaiters.Delete(waitingList[i].Username)
+	if err := db.DiscordWaiters.Delete(waitingList[i].Username); err != nil {
+		msg := "Failed to delete \"" + waitingList[i].Username + "\" from the database: " + err.Error()
+		log.Error(msg)
+		chatServerSend(msg)
+		return
+	}
 
 	// Remove it from the slice in memory
 	waitingList = append(waitingList[:i], waitingList[i+1:]...)

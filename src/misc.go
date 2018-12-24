@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"regexp"
-	"strconv"
 	"time"
 )
 
@@ -38,11 +37,6 @@ func durationToString(d time.Duration) string {
 	d -= m * time.Minute
 	s := d / time.Second
 	return fmt.Sprintf("%02d:%02d", m, s)
-}
-
-// From: https://stackoverflow.com/questions/19101419/go-golang-formatfloat-convert-float-number-to-string
-func floatToString(f float64) string {
-	return strconv.FormatFloat(f, 'f', 6, 64)
 }
 
 // From: https://stackoverflow.com/questions/38554353/how-to-check-if-a-string-only-contains-alphabetic-characters-in-go

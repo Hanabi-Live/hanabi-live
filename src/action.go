@@ -1,5 +1,6 @@
 package main
 
+// Action describes a change in the game state. It is a catch-all struct that contains all of the possible things that can happen.
 type Action struct {
 	Type          string `json:"type"`
 	Who           int    `json:"who"`
