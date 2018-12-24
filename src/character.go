@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-const debugCharacter = "Contrarian"
+const debugCharacter = "Insistent"
 
 type CharacterAssignment struct {
 	Name        string
@@ -207,17 +207,21 @@ func characterGenerate(g *Game) {
 		for {
 			// Get a random character assignment
 			p.CharacterAssignment = rand.Intn(len(characterAssignments))
-			log.Debug("CHOSE:", p.CharacterAssignment)
 
 			// Check to see if any other players have this assignment already
+			alreadyAssigned := false
 			for j, p2 := range g.Players {
 				if i == j {
 					break
 				}
 
 				if p2.CharacterAssignment == p.CharacterAssignment {
-					continue
+					alreadyAssigned = true
+					break
 				}
+			}
+			if alreadyAssigned {
+				continue
 			}
 
 			// Check to see if this character is restricted from 2-player games
@@ -478,10 +482,12 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 
 		cardsTouched := p2.FindCardsTouchedByClue(d, g)
 		touchedInsistentCards := false
-		for _, order := range cardsTouched {
+		log.Debug("INSOLENT # CARDS TOUCHED:", len(cardsTouched))
+		for i, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.InsistentTouched {
 				touchedInsistentCards = true
+				log.Debug("CLUE TOUCHED INSISTENT CARD IN I:", i)
 				break
 			}
 		}
@@ -604,12 +610,20 @@ func characterPostClue(d *CommandData, g *Game, p *Player) {
 	}
 
 	name := characterAssignments[p.CharacterAssignment].Name // The person giving the clue
+	p2 := g.Players[d.Target]                                // The target of the clue
+	name2 := characterAssignments[p2.CharacterAssignment].Name
+
 	if name == "Mood Swings" {
 		p.CharacterMetadata = d.Clue.Type
+	} else if name == "Insistent" {
+		// Mark that the cards that they clued must be continue to be clued
+		cardsTouched := p2.FindCardsTouchedByClue(d, g)
+		for _, order := range cardsTouched {
+			c := g.Deck[order]
+			c.InsistentTouched = true
+		}
 	}
 
-	p2 := g.Players[d.Target] // The target of the clue
-	name2 := characterAssignments[p2.CharacterAssignment].Name
 	if name2 == "Vindictive" {
 		// Store that they have had at least one clue given to them on this go-around of the table
 		p2.CharacterMetadata = 0
@@ -619,14 +633,6 @@ func characterPostClue(d *CommandData, g *Game, p *Player) {
 
 		// Store that they had their slot 1 card clued
 		p2.CharacterMetadata = 0
-
-	} else if name2 == "Insistent" {
-		// Mark that these cards must be continue to be clued
-		cardsTouched := p2.FindCardsTouchedByClue(d, g)
-		for _, order := range cardsTouched {
-			c := g.Deck[order]
-			c.InsistentTouched = true
-		}
 	}
 }
 
@@ -639,14 +645,18 @@ func characterPostRemove(g *Game, p *Player, c *Card) {
 		return
 	}
 
-	for _, c2 := range p.Hand {
-		c2.InsistentTouched = false
+	for i, c2 := range p.Hand {
+		if c2.InsistentTouched {
+			c2.InsistentTouched = false
+			log.Debug("UNSET INSISTENTTOUCHED ON CARD", i, "OF PLAYER:", p.Name)
+		}
 	}
 
 	// Find the "Insistent" player and reset their state so that they are not forced to give a clue on their subsequent turn
 	for _, p2 := range g.Players {
 		if characterAssignments[p2.CharacterAssignment].Name == "Insistent" {
 			p2.CharacterMetadata = -1
+			log.Debug("AN INSISTENT CARD WAS TOUCHED, RESETTING THE INSISTENT PLAYERS METADATA TO -1")
 			// (only one player should be Insistent)
 			break
 		}
@@ -777,14 +787,19 @@ func characterHideCard(a *Action, g *Game, p *Player) bool {
 
 	name := characterAssignments[p.CharacterAssignment].Name
 	if name == "Blind Spot" {
-		if a.Who == (p.Index+1)%len(g.Players) {
+		leftPlayer := (p.Index + 1) % len(g.Players)
+		if a.Who == leftPlayer {
 			return true
 		}
 
-	} else if name == "Oblivious" &&
-		a.Who == (p.Index-1)%len(g.Players) {
-
-		return true
+	} else if name == "Oblivious" {
+		// In Golang, "%" will give the remainder and not the modulus,
+		// so we need to ensure that the result is not negative or we will get a "index out of range" error below
+		playerIndex := p.Index + len(g.Players)
+		rightPlayer := (playerIndex - 1) % len(g.Players)
+		if a.Who == rightPlayer {
+			return true
+		}
 	}
 
 	return false

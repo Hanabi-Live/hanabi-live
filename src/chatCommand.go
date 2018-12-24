@@ -52,7 +52,8 @@ func chatCommandInit() {
 
 	// Admin-only commands (from the lobby only)
 	chatCommandMap["restart"] = restart
-	chatCommandMap["graceful"] = graceful // This is in the "restart.go" file
+	chatCommandMap["graceful"] = graceful     // This is in the "restart.go" file
+	chatCommandMap["ungraceful"] = ungraceful // This is in the "restart.go" file
 	chatCommandMap["debug"] = debug
 }
 

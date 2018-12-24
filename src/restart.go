@@ -8,15 +8,7 @@ import (
 )
 
 func restart(s *Session, d *CommandData) {
-	// Validate that this message was sent from the lobby
-	if d.Discord {
-		chatServerSend("You can only perform that command from the lobby.")
-		return
-	}
-
-	// Validate that they are an administrator
-	if !s.Admin() {
-		chatServerSend("You can only perform that command if you are an administrator.")
+	if !isAdmin(s, d) {
 		return
 	}
 
@@ -30,15 +22,7 @@ func restart2() {
 }
 
 func graceful(s *Session, d *CommandData) {
-	// Validate that this message was sent from the lobby
-	if d.Discord {
-		chatServerSend("You can only perform that command from the lobby.")
-		return
-	}
-
-	// Validate that they are an administrator
-	if !s.Admin() {
-		chatServerSend("You can only perform that command if you are an administrator.")
+	if !isAdmin(s, d) {
 		return
 	}
 
@@ -90,6 +74,35 @@ func countActiveGames() int {
 	}
 
 	return numGames
+}
+
+func ungraceful(s *Session, d *CommandData) {
+	if !isAdmin(s, d) {
+		return
+	}
+
+	shutdownMode = 0
+	chatServerSend("Server restart has been canceled. New game creation has been enabled.")
+}
+
+/*
+	Subroutines
+*/
+
+func isAdmin(s *Session, d *CommandData) bool {
+	// Validate that this message was sent from the lobby
+	if d.Discord {
+		chatServerSend("You can only perform that command from the lobby.")
+		return false
+	}
+
+	// Validate that they are an administrator
+	if !s.Admin() {
+		chatServerSend("You can only perform that command if you are an administrator.")
+		return false
+	}
+
+	return true
 }
 
 func execute(script string) {
