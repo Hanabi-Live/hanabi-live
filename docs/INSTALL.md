@@ -20,24 +20,41 @@ Note that these steps require an elevated (administrator) command-shell.
   * `refreshenv`
   * `code --install-extension ms-vscode.Go`
   * `code --install-extension dbaeumer.vscode-eslint`
+* Install the Golang development dependencies that VSCode uses:
+  * `go get -u github.com/nsf/gocode`
+  * `go get -u github.com/uudashr/gopkgs/cmd/gopkgs`
+  * `go get -u github.com/lukehoban/go-outline
+  * `go get -u github.com/newhook/go-symbols`
+  * `go get -u golang.org/x/tools/cmd/guru`
+  * `go get -u golang.org/x/tools/cmd/gorename`
+  * `go get -u github.com/derekparker/delve/cmd/dlv`  
+  * `go get -u -v github.com/ianthehat/godef`
+  * `go get -u github.com/sqs/goreturns`
+  * `go get -u golang.org/x/lint/golint`
+gocode-gomod
+godef-gomod
 * Install [golangci-lint](https://github.com/golangci/golangci-lint):
+  * `start "" "%PROGRAMFILES%\Git\bin\sh.exe" --login` (to start Git Bash)
   * `go get -u github.com/golangci/golangci-lint`
-  * ?
+  * `cd $(go env GOPATH)/src/github.com/golangci/golangci-lint/cmd/golangci-lint`
+  * `go install -ldflags "-X 'main.version=$(git describe --tags)' -X 'main.commit=$(git rev-parse --short HEAD)' -X 'main.date=$(date)'"`
+  * `exit`
 * Make it so that Git doesn't convert LF to CRLF when cloning the repository:
   * `git config --global core.autocrlf false`
 * Clone the repository:
-  * `cd 
+  * `mkdir %GOPATH%\src\github.com\Zamiell && cd %GOPATH%\src\github.com\Zamiell`
   * `git clone https://github.com/Zamiell/hanabi-live.git` (or clone a fork, if you are doing development work)
-* Install the linter dependencies:
-  * `cd hanabi-live\public\js`
+  * `cd hanabi-live`
+* Install the Golang dependencies:
+  * `cd src` (this is where all of the Go source code lives)
+  * `go get -v ./...` (it is normal for this to take a very long time)
+  * `cd ..`
+* Install the JavaScript linter dependencies:
+  * `cd public\js`
   * `npx install-peerdeps --dev eslint-config-airbnb-base`
-  * `cd .. && cd .. && cd ..`
+  * `cd .. && cd ..`
 * Open VSCode using the cloned repository as the project folder:
-  * `code hanabi-live`
-* Type "Ctrl + Shift + X" to open the "Extensions" section.
-* Install the "ESLint" extension.
-* Click on the blue "Reload" button.
-* Type "Ctrl + Shift + E" to open the "Explorer" section.
+  * `code .`
 * Navigate to and open "public\js\lobby.js"
 * Test to see that the linter is working properly by adding a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom tab.
 
