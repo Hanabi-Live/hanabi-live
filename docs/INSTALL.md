@@ -27,11 +27,21 @@ Note that these steps require an elevated (administrator) command-shell.
   * `go get -u github.com/newhook/go-symbols`
   * `go get -u golang.org/x/tools/cmd/guru`
   * `go get -u golang.org/x/tools/cmd/gorename`
-  * `go get -u github.com/derekparker/delve/cmd/dlv`  
-  * `go get -u github.com/ianthehat/godef`
+  * `go get -u github.com/fatih/gomodifytags`
+  * `go get -u github.com/haya14busa/goplay/cmd/goplay`
+  * `go get -u github.com/josharian/impl`
+  * `go get -u github.com/tylerb/gotype-live`
+  * `go get -u github.com/rogpeppe/godef`
+  * `go get -u golang.org/x/tools/cmd/godoc`
+  * `go get -u github.com/zmb3/gogetdoc`
+  * `go get -u golang.org/x/tools/cmd/goimports`
   * `go get -u github.com/sqs/goreturns`
   * `go get -u golang.org/x/lint/golint`
-  * ? gocode-gomod godef-gomod
+  * `go get -u github.com/cweill/gotests/...`
+  * `go get -u github.com/alecthomas/gometalinter`
+  * `go get -u honnef.co/go/tools/...`
+  * `go get -u github.com/sourcegraph/go-langserver`
+  * `go get -u github.com/derekparker/delve/cmd/dlv`
 * Install [golangci-lint](https://github.com/golangci/golangci-lint):
   * `start "" "%PROGRAMFILES%\Git\bin\sh.exe" --login` (to start Git Bash)
   * `go get -u github.com/golangci/golangci-lint`
@@ -44,7 +54,7 @@ Note that these steps require an elevated (administrator) command-shell.
   * `mkdir %GOPATH%\src\github.com\Zamiell && cd %GOPATH%\src\github.com\Zamiell`
   * `git clone https://github.com/Zamiell/hanabi-live.git` (or clone a fork, if you are doing development work)
   * `cd hanabi-live`
-* Install the Golang dependencies:
+* Install the project's Golang dependencies:
   * `cd src` (this is where all of the Go source code lives)
   * `go get -v ./...` (it is normal for this to take a very long time)
   * `cd ..`
