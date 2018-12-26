@@ -74,12 +74,11 @@ Note that these steps require an elevated (administrator) command-shell.
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * Test the Golang linter:
-  * Navigate to and open "src\action.go".
+  * On the left pane, navigate to and open "src\action.go".
   * Save the file.
-  
-* Test to see that the linter is working properly by adding a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom tab.
-
-If you need to also run the server on Windows, then follow the below instructions.
+* Test the JavaScript linter:
+  * On the left pane, navigate to and open "public\js\lobby.js".
+  * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom tab.
 
 <br />
 
