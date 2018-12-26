@@ -15,11 +15,11 @@ Note that these steps require an elevated (administrator) command-shell.
   * `choco install golang -y`
 * Install [MariaDB](https://mariadb.org/) and set up a user:
   * `choco install mariadb -y`
-  * `sudo mysql_secure_installation`
-    * Follow the prompts.
-  * `sudo mysql -u root -p`
+  * `mysql -u root`
+    * `DELETE FROM mysql.user WHERE User='';`
+    * `DROP DATABASE test;`
     * `CREATE DATABASE hanabi;`
-    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';` (change the password to something else)
+    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
     * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
     * `FLUSH PRIVILEGES;`
 * Install [Node.js](https://nodejs.org/en/):
