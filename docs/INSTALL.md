@@ -23,7 +23,7 @@ Note that these steps require an elevated (administrator) command-shell.
 * Install the Golang development dependencies that VSCode uses:
   * `go get -u github.com/nsf/gocode`
   * `go get -u github.com/uudashr/gopkgs/cmd/gopkgs`
-  * `go get -u github.com/lukehoban/go-outline
+  * `go get -u github.com/lukehoban/go-outline`
   * `go get -u github.com/newhook/go-symbols`
   * `go get -u golang.org/x/tools/cmd/guru`
   * `go get -u golang.org/x/tools/cmd/gorename`
