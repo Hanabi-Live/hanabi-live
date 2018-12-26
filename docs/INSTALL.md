@@ -1,25 +1,32 @@
-Installation + Linter Installation (for Client-Side Development Only)
----------------------------------------------------------------------
+Server Installation + Linter Installation (for Windows)
+-------------------------------------------------------
 
-If you are just looking to update the client JavaScript, then you will still need to clone the main repository, but you do not need to install Golang or run the server code. (But you probably should so that you can easily test your changes.)
+Like many code projects, we use [linters](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. For JavaScript, we use [ESLint](https://eslint.org/) and have a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). For Golang, we use [golangci-lint](https://github.com/golangci/golangci-lint). We ask that all pull requests pass our linting rules.
 
-First, you should know that like most JavaScript projects, we use a [linter](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. We use [ESLint](https://eslint.org/) as our linter and use a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
+The following instructions will set up the server development environment as well as the linters. This assumes you are on Windows and will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc. If you are using a different OS/editor, some adjustments will be needed (i.e. using `brew` on MacOS instead of `choco`).
 
-The following are instructions for setting up the linter. This assumes you are on Windows and will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that, as of 2018, happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc. If you are using a different OS/editor, some adjustments will be needed.
-
-Note that these steps require an elevated (administrator) command-shell. You may have to exit and re-open the command shell in-between steps in order to repopulate the PATH environment variable.
+Note that these steps require an elevated (administrator) command-shell.
 
 * Install [Chocolatey](https://chocolatey.org/):
   * From an elevated command prompt: `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
 * Install [Git](https://git-scm.com/):
   * `choco install git -y`
+* Install [Goalng](https://golang.org/):
+  * `choco install golang -y`
 * Install [Node.js](https://nodejs.org/en/):
   * `choco install nodejs -y`
 * Install [Visual Studio Code](https://code.visualstudio.com/):
   * `choco install vscode -y`
+  * `refreshenv`
+  * `code --install-extension ms-vscode.Go`
+  * `code --install-extension dbaeumer.vscode-eslint`
+* Install [golangci-lint](https://github.com/golangci/golangci-lint):
+  * `go get -u github.com/golangci/golangci-lint`
+  * ?
 * Make it so that Git doesn't convert LF to CRLF when cloning the repository:
   * `git config --global core.autocrlf false`
 * Clone the repository:
+  * `cd 
   * `git clone https://github.com/Zamiell/hanabi-live.git` (or clone a fork, if you are doing development work)
 * Install the linter dependencies:
   * `cd hanabi-live\public\js`
@@ -40,8 +47,8 @@ If you need to also run the server on Windows, then follow the below instruction
 
 
 
-Installation (Full)
--------------------
+Server Installation (Linux)
+---------------------------
 
 These instructions assume you are running Ubuntu 16.04 LTS. Some adjustment will be needed for macOS or Windows installations.
 
