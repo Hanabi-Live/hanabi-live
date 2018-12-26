@@ -13,6 +13,15 @@ Note that these steps require an elevated (administrator) command-shell.
   * `choco install git -y`
 * Install [Goalng](https://golang.org/):
   * `choco install golang -y`
+* Install [MariaDB](https://mariadb.org/) and set up a user:
+  * `choco install mariadb -y`
+  * `sudo mysql_secure_installation`
+    * Follow the prompts.
+  * `sudo mysql -u root -p`
+    * `CREATE DATABASE hanabi;`
+    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';` (change the password to something else)
+    * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
+    * `FLUSH PRIVILEGES;`
 * Install [Node.js](https://nodejs.org/en/):
   * `choco install nodejs -y`
 * Install [Visual Studio Code](https://code.visualstudio.com/):
@@ -64,7 +73,10 @@ Note that these steps require an elevated (administrator) command-shell.
   * `cd .. && cd ..`
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
-* Navigate to and open "public\js\lobby.js"
+* Test the Golang linter:
+  * Navigate to and open "src\action.go".
+  * Save the file.
+  
 * Test to see that the linter is working properly by adding a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom tab.
 
 If you need to also run the server on Windows, then follow the below instructions.
