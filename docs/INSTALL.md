@@ -9,23 +9,9 @@ Note that these steps require an elevated (administrator) command-shell.
 
 * Install [Chocolatey](https://chocolatey.org/):
   * From an elevated command prompt: `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
-* Install [Git](https://git-scm.com/):
-  * `choco install git -y`
-* Install [Goalng](https://golang.org/):
-  * `choco install golang -y`
-* Install [MariaDB](https://mariadb.org/) and set up a user:
-  * `choco install mariadb -y`
-  * `mysql -u root`
-    * `DELETE FROM mysql.user WHERE User='';`
-    * `DROP DATABASE test;`
-    * `CREATE DATABASE hanabi;`
-    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
-    * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
-    * `FLUSH PRIVILEGES;`
-* Install [Node.js](https://nodejs.org/en/):
-  * `choco install nodejs -y`
-* Install [Visual Studio Code](https://code.visualstudio.com/):
-  * `choco install vscode -y`
+* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
+  * `choco install git golang mariadb nodejs vscode -y`
+* Install VS Code extensions:
   * `refreshenv`
   * `code --install-extension ms-vscode.Go`
   * `code --install-extension dbaeumer.vscode-eslint`
@@ -67,6 +53,15 @@ Note that these steps require an elevated (administrator) command-shell.
   * `cd src` (this is where all of the Go source code lives)
   * `go get -v ./...` (it is normal for this to take a very long time)
   * `cd ..`
+* Install the database:
+  * `mysql -u root`
+    * `DELETE FROM mysql.user WHERE User='';`
+    * `DROP DATABASE test;`
+    * `CREATE DATABASE hanabi;`
+    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
+    * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
+    * `FLUSH PRIVILEGES;`
+  * `mysql -uhanabiuser -p1234567890 < install/database_schema.sql`
 * Install the JavaScript linter dependencies:
   * `cd public\js`
   * `npx install-peerdeps --dev eslint-config-airbnb-base`
