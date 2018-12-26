@@ -31,8 +31,7 @@ Note that these steps require an elevated (administrator) command-shell.
   * `go get -u -v github.com/ianthehat/godef`
   * `go get -u github.com/sqs/goreturns`
   * `go get -u golang.org/x/lint/golint`
-gocode-gomod
-godef-gomod
+  * ? gocode-gomod godef-gomod
 * Install [golangci-lint](https://github.com/golangci/golangci-lint):
   * `start "" "%PROGRAMFILES%\Git\bin\sh.exe" --login` (to start Git Bash)
   * `go get -u github.com/golangci/golangci-lint`
