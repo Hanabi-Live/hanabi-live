@@ -16,35 +16,16 @@ Note that these steps require an elevated (administrator) command-shell.
   * `code --install-extension ms-vscode.Go`
   * `code --install-extension dbaeumer.vscode-eslint`
 * Install the Golang development dependencies that VSCode uses:
-  * `go get -u github.com/nsf/gocode`
-  * `go get -u github.com/uudashr/gopkgs/cmd/gopkgs`
-  * `go get -u github.com/lukehoban/go-outline`
-  * `go get -u github.com/newhook/go-symbols`
-  * `go get -u golang.org/x/tools/cmd/guru`
-  * `go get -u golang.org/x/tools/cmd/gorename`
-  * `go get -u github.com/fatih/gomodifytags`
-  * `go get -u github.com/haya14busa/goplay/cmd/goplay`
-  * `go get -u github.com/josharian/impl`
-  * `go get -u github.com/tylerb/gotype-live`
-  * `go get -u github.com/rogpeppe/godef`
-  * `go get -u golang.org/x/tools/cmd/godoc`
-  * `go get -u github.com/zmb3/gogetdoc`
-  * `go get -u golang.org/x/tools/cmd/goimports`
-  * `go get -u github.com/sqs/goreturns`
-  * `go get -u golang.org/x/lint/golint`
-  * `go get -u github.com/cweill/gotests/...`
-  * `go get -u github.com/alecthomas/gometalinter`
-  * `go get -u honnef.co/go/tools/...`
-  * `go get -u github.com/sourcegraph/go-langserver`
-  * `go get -u github.com/derekparker/delve/cmd/dlv`
-* Install [golangci-lint](https://github.com/golangci/golangci-lint):
+  * `go get -v -u github.com/nsf/gocode github.com/uudashr/gopkgs/cmd/gopkgs github.com/lukehoban/go-outline github.com/newhook/go-symbols golang.org/x/tools/cmd/guru golang.org/x/tools/cmd/gorename github.com/fatih/gomodifytags github.com/haya14busa/goplay/cmd/goplay github.com/josharian/impl github.com/tylerb/gotype-live github.com/rogpeppe/godef golang.org/x/tools/cmd/godoc github.com/zmb3/gogetdoc golang.org/x/tools/cmd/goimports github.com/sqs/goreturns golang.org/x/lint/golint github.com/cweill/gotests/... github.com/alecthomas/gometalinter honnef.co/go/tools/... github.com/sourcegraph/go-langserver github.com/derekparker/delve/cmd/dlv github.com/golangci/golangci-lint 
+* Install the [golangci-lint](https://github.com/golangci/golangci-lint) dependencies:
   * `start "" "%PROGRAMFILES%\Git\bin\sh.exe" --login` (to start Git Bash)
-  * `go get -u github.com/golangci/golangci-lint`
   * `cd $(go env GOPATH)/src/github.com/golangci/golangci-lint/cmd/golangci-lint`
   * `go install -ldflags "-X 'main.version=$(git describe --tags)' -X 'main.commit=$(git rev-parse --short HEAD)' -X 'main.date=$(date)'"`
   * `exit`
-* Make it so that Git doesn't convert LF to CRLF when cloning the repository:
+* Make it so that Git does not convert LF to CRLF when cloning the repository:
   * `git config --global core.autocrlf false`
+* Make it so that Git automatically rebases when pulling:
+  * `git config --global pull.rebase true`
 * Clone the repository:
   * `mkdir %GOPATH%\src\github.com\Zamiell && cd %GOPATH%\src\github.com\Zamiell`
   * `git clone https://github.com/Zamiell/hanabi-live.git` (or clone a fork, if you are doing development work)
