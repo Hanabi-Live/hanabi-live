@@ -28,7 +28,7 @@ Note that these steps require an elevated (administrator) command-shell.
   * `go get -u golang.org/x/tools/cmd/guru`
   * `go get -u golang.org/x/tools/cmd/gorename`
   * `go get -u github.com/derekparker/delve/cmd/dlv`  
-  * `go get -u -v github.com/ianthehat/godef`
+  * `go get -u github.com/ianthehat/godef`
   * `go get -u github.com/sqs/goreturns`
   * `go get -u golang.org/x/lint/golint`
   * ? gocode-gomod godef-gomod
