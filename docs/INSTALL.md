@@ -5,7 +5,7 @@ Like many code projects, we use [linters](https://en.wikipedia.org/wiki/Lint_(so
 
 The following instructions will set up the server development environment as well as the linters. This assumes you are on Windows and will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc. If you are using a different OS/editor, some adjustments will be needed (i.e. using `brew` on MacOS instead of `choco`).
 
-Note that these steps require an elevated (administrator) command-shell.
+Note that these steps require **an elevated (administrator) command-shell**.
 
 * Install [Chocolatey](https://chocolatey.org/):
   * `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
