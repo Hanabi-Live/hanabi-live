@@ -15,8 +15,10 @@ Note that these steps require an elevated (administrator) command-shell.
   * `refreshenv`
   * `git config --global user.name "Your_Username"`
   * `git config --global user.email "your@email.com"`
-  * `git config --global core.autocrlf false` (so that Git does not convert LF to CRLF when cloning repositories)
-  * `git config --global pull.rebase true` (so that Git automatically rebases when pulling)
+  * `git config --global core.autocrlf false` <br />
+  (so that Git does not convert LF to CRLF when cloning repositories)
+  * `git config --global pull.rebase true` <br />
+  (so that Git automatically rebases when pulling)
 * Clone the repository:
   * `mkdir %GOPATH%\src\github.com\Zamiell`
   * `cd %GOPATH%\src\github.com\Zamiell`
