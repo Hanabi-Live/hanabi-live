@@ -22,18 +22,20 @@ Note that these steps require an elevated (administrator) command-shell.
 * Clone the repository:
   * `mkdir %GOPATH%\src\github.com\Zamiell`
   * `cd %GOPATH%\src\github.com\Zamiell`
-  * `git clone https://github.com/Zamiell/hanabi-live.git` (or clone a fork, if you are doing development work)
+  * `git clone https://github.com/Zamiell/hanabi-live.git` <br />
+  (or clone a fork, if you are doing development work)
   * `cd hanabi-live`
 * Install the project's development dependencies:
   * `install\install_development_dependencies.sh`
-* Install the database:
+* Delete the anonymous user, delete the test database, create the Hanabi database, and create the Hanabi user:
   * `mysql -u root`
     * `DELETE FROM mysql.user WHERE User='';`
-    * `DROP DATABASE test;`
+    * `DROP DATABASE IF EXISTS test;`
     * `CREATE DATABASE hanabi;`
     * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
     * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
     * `FLUSH PRIVILEGES;`
+* Install the database schema:
   * `mysql -uhanabiuser -p1234567890 < install/database_schema.sql`
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
