@@ -37,11 +37,29 @@ Note that these steps require an elevated (administrator) command-shell.
     * `FLUSH PRIVILEGES;`
 * Install the database schema:
   * `mysql -uhanabiuser -p1234567890 < install/database_schema.sql`
+* Set the Golang linter in the VS Code settings:
+  * `notepad "%APPDATA%\Code\User\settings.json"` <br />
+  (the file will not exist on fresh VS Code installations)
+
+```
+{
+    "editor.fontSize": 16,
+    "editor.renderWhitespace": "all",
+    "editor.wordWrap": "on",
+    "go.lintTool":"golangci-lint",
+    "go.lintFlags": [
+        "--fast"
+    ],
+    "workbench.startupEditor": "newUntitledFile"
+}
+```
+
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * Test the Golang linter:
   * On the left pane, navigate to and open "src\action.go".
-  * Save the file.
+  * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install".
+  * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom tab.
 * Test the JavaScript linter:
   * On the left pane, navigate to and open "public\js\lobby.js".
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom tab.
