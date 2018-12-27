@@ -35,6 +35,7 @@ Note that these steps require **an elevated (administrator) command-shell**.
     * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
     * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
     * `FLUSH PRIVILEGES;`
+    * `exit`
 * Install the database schema:
   * `mysql -uhanabiuser -p1234567890 < install/database_schema.sql`
 * Set the Golang linter in the VS Code settings:
