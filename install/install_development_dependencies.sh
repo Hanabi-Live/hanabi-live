@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e # Exit on any errors
+set -x # Enable debugging
+
 # This is the directory that this script lives in
 DIRNAME=$(dirname "$0")
 
@@ -9,7 +12,7 @@ code --install-extension dbaeumer.vscode-eslint # For JavaScript
 
 # Install the Golang dependencies for the project
 cd $DIRNAME/../src
-go get -v ./..
+go get -v ./...
 
 # Install the Golang development dependencies that VSCode uses
 go get -u github.com/nsf/gocode
@@ -35,10 +38,10 @@ go get -u github.com/sourcegraph/go-langserver
 go get -u github.com/derekparker/delve/cmd/dlv
 
 # Install the Golang linter
-go get -u github.com/golangci/golangci-lint
+go get -u github.com/golangci/golangci-lint || true # This is expected to give the "no Go files" error
 cd $(go env GOPATH)/src/github.com/golangci/golangci-lint/cmd/golangci-lint
 go install -ldflags "-X 'main.version=$(git describe --tags)' -X 'main.commit=$(git rev-parse --short HEAD)' -X 'main.date=$(date)'"
 
 # Install the JavaScript linter
-cd $DIRNAME/public/js
+cd $DIRNAME/../public/js
 npx install-peerdeps --dev eslint-config-airbnb-base
