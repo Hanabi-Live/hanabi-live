@@ -12,7 +12,7 @@ code --install-extension dbaeumer.vscode-eslint # For JavaScript
 
 # Install the Golang dependencies for the project
 cd $DIRNAME/../src
-go get -v ./...
+go get -u -v ./...
 
 # Install the Golang development dependencies that VSCode uses
 go get -u github.com/mdempsky/gocode
