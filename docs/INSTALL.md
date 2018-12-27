@@ -71,7 +71,7 @@ Note that these steps require an elevated (administrator) command-shell.
 Server Installation (Linux)
 ---------------------------
 
-These instructions assume you are running Ubuntu 16.04 LTS. Some adjustment will be needed for macOS or Windows installations.
+These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment will be needed for macOS installations.
 
 * Install [Golang](https://golang.org/):
   * `sudo add-apt-repository ppa:longsleep/golang-backports` (if you don't do this, it will install a version of Golang that is very old)
