@@ -15,7 +15,7 @@ cd $DIRNAME/../src
 go get -v ./...
 
 # Install the Golang development dependencies that VSCode uses
-go get -u github.com/nsf/gocode
+go get -u github.com/mdempsky/gocode
 go get -u github.com/uudashr/gopkgs/cmd/gopkgs
 go get -u github.com/lukehoban/go-outline
 go get -u github.com/newhook/go-symbols
@@ -25,7 +25,7 @@ go get -u github.com/fatih/gomodifytags
 go get -u github.com/haya14busa/goplay/cmd/goplay
 go get -u github.com/josharian/impl
 go get -u github.com/tylerb/gotype-live
-go get -u github.com/rogpeppe/godef
+go get -u github.com/ianthehat/godef
 go get -u golang.org/x/tools/cmd/godoc
 go get -u github.com/zmb3/gogetdoc
 go get -u golang.org/x/tools/cmd/goimports
