@@ -38,6 +38,9 @@ Note that these steps require **an elevated (administrator) command-shell**.
     * `exit`
 * Install the database schema:
   * `mysql -uhanabiuser -p1234567890 < install/database_schema.sql`
+* Set up environment variables:
+  * `copy .env_template .env`
+  * For local development, you don't have to change any of the default environment variables, but if you like you can open this file to review the defaults.
 * Set the Golang linter in the VS Code settings:
   * `notepad "%APPDATA%\Code\User\settings.json"` <br />
   (the file will not exist on fresh VS Code installations)
@@ -59,11 +62,16 @@ Note that these steps require **an elevated (administrator) command-shell**.
   * `code .`
 * Test the Golang linter:
   * On the left pane, navigate to and open "src\action.go".
-  * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install".
-  * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom tab.
+  * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
+  * Add a new line of "asdf" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
 * Test the JavaScript linter:
   * On the left pane, navigate to and open "public\js\lobby.js".
-  * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom tab.
+  * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
+* If needed, compile and run the server locally:
+  * `cd src`
+  * `go build && "%GOPATH%\bin\src.exe"`
+  * A Windows Firewall dialog may pop up; allow the connection.
+  * Open a browser and surf to: http://localhost
 
 <br />
 
