@@ -11,29 +11,19 @@ Note that these steps require an elevated (administrator) command-shell.
   * From an elevated command prompt: `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
 * Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
   * `choco install git golang mariadb nodejs vscode -y`
-* Install VS Code extensions:
+* Configure Git:
   * `refreshenv`
-  * `code --install-extension ms-vscode.Go`
-  * `code --install-extension dbaeumer.vscode-eslint`
-* Install the Golang development dependencies that VSCode uses:
-  * `go get -v -u github.com/nsf/gocode github.com/uudashr/gopkgs/cmd/gopkgs github.com/lukehoban/go-outline github.com/newhook/go-symbols golang.org/x/tools/cmd/guru golang.org/x/tools/cmd/gorename github.com/fatih/gomodifytags github.com/haya14busa/goplay/cmd/goplay github.com/josharian/impl github.com/tylerb/gotype-live github.com/rogpeppe/godef golang.org/x/tools/cmd/godoc github.com/zmb3/gogetdoc golang.org/x/tools/cmd/goimports github.com/sqs/goreturns golang.org/x/lint/golint github.com/cweill/gotests/... github.com/alecthomas/gometalinter honnef.co/go/tools/... github.com/sourcegraph/go-langserver github.com/derekparker/delve/cmd/dlv github.com/golangci/golangci-lint`
-* Install the [golangci-lint](https://github.com/golangci/golangci-lint) dependencies:
-  * `start "" "%PROGRAMFILES%\Git\bin\sh.exe" --login` (to start Git Bash)
-  * `cd $(go env GOPATH)/src/github.com/golangci/golangci-lint/cmd/golangci-lint`
-  * `go install -ldflags "-X 'main.version=$(git describe --tags)' -X 'main.commit=$(git rev-parse --short HEAD)' -X 'main.date=$(date)'"`
-  * `exit`
-* Make it so that Git does not convert LF to CRLF when cloning the repository:
-  * `git config --global core.autocrlf false`
-* Make it so that Git automatically rebases when pulling:
-  * `git config --global pull.rebase true`
+  * `git config --global user.name "Your_Username"`
+  * `git config --global user.email "your@email.com"`
+  * `git config --global core.autocrlf false` (so that Git does not convert LF to CRLF when cloning repositories)
+  * `git config --global pull.rebase true` (so that Git automatically rebases when pulling)
 * Clone the repository:
-  * `mkdir %GOPATH%\src\github.com\Zamiell && cd %GOPATH%\src\github.com\Zamiell`
+  * `mkdir %GOPATH%\src\github.com\Zamiell`
+  * `cd %GOPATH%\src\github.com\Zamiell`
   * `git clone https://github.com/Zamiell/hanabi-live.git` (or clone a fork, if you are doing development work)
   * `cd hanabi-live`
-* Install the project's Golang dependencies:
-  * `cd src` (this is where all of the Go source code lives)
-  * `go get -v ./...` (it is normal for this to take a very long time)
-  * `cd ..`
+* Install the project's development dependencies:
+  * `install\install_development_dependencies.sh`
 * Install the database:
   * `mysql -u root`
     * `DELETE FROM mysql.user WHERE User='';`
@@ -43,10 +33,6 @@ Note that these steps require an elevated (administrator) command-shell.
     * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
     * `FLUSH PRIVILEGES;`
   * `mysql -uhanabiuser -p1234567890 < install/database_schema.sql`
-* Install the JavaScript linter dependencies:
-  * `cd public\js`
-  * `npx install-peerdeps --dev eslint-config-airbnb-base`
-  * `cd .. && cd ..`
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * Test the Golang linter:
