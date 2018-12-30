@@ -128,5 +128,5 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 ### Colorless Suit
 
-* The purple suit is replaced with a white suit.
+* An white suit is added as a 6th suit.
 * No color clues touch the white suit.
