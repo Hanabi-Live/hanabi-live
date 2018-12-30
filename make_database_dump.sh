@@ -10,4 +10,4 @@ source $REPO_DIR/.env
 # Back up the database and gzip it
 mkdir -p $REPO_DIR/backups
 mysqldump -u$DB_USER -p$DB_PASS hanabi > $REPO_DIR/backups/$FILENAME
-gzip $BACKUPS_DIR/$FILENAME
+gzip $REPO_DIR/backups/$FILENAME
