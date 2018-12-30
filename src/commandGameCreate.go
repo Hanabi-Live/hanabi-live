@@ -27,6 +27,12 @@ func commandGameCreate(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that the player is not joined to another game
+	if s.CurrentGame() != -1 {
+		s.Warning("You cannot create a new game when you are already in one.")
+		return
+	}
+
 	// Make a default game name if they did not provide one
 	if len(d.Name) == 0 {
 		d.Name = s.Username() + "'s game"
@@ -45,9 +51,9 @@ func commandGameCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that the player is not joined to another game
-	if s.CurrentGame() != -1 {
-		s.Warning("You cannot create a new game when you are already in one.")
+	// Validate that the variant number is valid
+	if d.Variant < 0 || d.Variant >= len(variants) {
+		s.Warning("That is not a valid variant.")
 		return
 	}
 
