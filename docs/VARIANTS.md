@@ -125,3 +125,8 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * A rainbow suit is added as a 6th suit.
 * All color clues will "touch" the rainbow suit.
 * There is only one of each rainbow card in the deck, which means that every rainbow card is "critical".
+
+### Colorless Suit
+
+* The purple suit is replaced with a white suit.
+* No color clues touch the white suit.
