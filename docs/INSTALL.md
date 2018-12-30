@@ -172,3 +172,15 @@ Later, to manage the service:
 * Restart it: `supervisorctl restart hanabi-live`
 
 <br />
+
+
+
+Automate backups (optional)
+---------------------------
+
+* `crontab -e`
+
+```
+# Backup the hanabi-live database every day at midnight
+0 0 * * * /root/go/src/github.com/Zamiell/hanabi-live/make_database_dump.sh
+```
