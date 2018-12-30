@@ -105,7 +105,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment wi
   * `cd hanabi-live`
 * Download and install all of the Go dependencies:
   * `cd src` (this is where all of the Go source code lives)
-  * `go get -v ./...` (it is normal for this to take a very long time)
+  * `go get -u -v ./...` (it is normal for this to take a very long time)
   * `cd ..`
 * Set up environment variables:
   * `cp .env_template .env`
