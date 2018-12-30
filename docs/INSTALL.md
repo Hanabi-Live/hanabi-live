@@ -160,9 +160,9 @@ Install as a service (optional)
 * Install Supervisor:
   * `sudo apt install supervisor -y`
 * Copy the configuration files:
-  * `mkdir -p /etc/supervisord/conf.d`
-  * `cp "$GOPATH/src/github.com/Zamiell/hanabi-live/install/supervisord/supervisord.conf" /etc/supervisord/supervisord.conf`
-  * `cp "$GOPATH/src/github.com/Zamiell/hanabi-live/install/supervisord/hanabi-live.conf" /etc/supervisord/conf.d/hanabi-live.conf`
+  * `mkdir -p /etc/supervisor/conf.d`
+  * `cp "$GOPATH/src/github.com/Zamiell/hanabi-live/install/supervisor/supervisord.conf" /etc/supervisor/supervisord.conf`
+  * `cp "$GOPATH/src/github.com/Zamiell/hanabi-live/install/supervisor/hanabi-live.conf" /etc/supervisor/conf.d/hanabi-live.conf`
 * Load the new configuration:
   * `supervisorctl reload`
 
