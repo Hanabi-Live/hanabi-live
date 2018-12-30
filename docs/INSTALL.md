@@ -163,7 +163,8 @@ Install as a service (optional)
   * `mkdir -p /etc/supervisord/conf.d`
   * `cp "$GOPATH/src/github.com/Zamiell/hanabi-live/install/supervisord/supervisord.conf" /etc/supervisord/supervisord.conf`
   * `cp "$GOPATH/src/github.com/Zamiell/hanabi-live/install/supervisord/hanabi-live.conf" /etc/supervisord/conf.d/hanabi-live.conf`
-* Load the new configuration: `supervisorctl reload`
+* Load the new configuration:
+  * `supervisorctl reload`
 
 Later, to manage the service:
 
