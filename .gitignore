@@ -14,11 +14,6 @@ backups
 # The compiled binary
 hanabi-live
 
-# Helper scripts
-database_shell.sh
-make_database_dump.sh
-watch.sh
-
 # VS Code stuff
 .vscode
 
