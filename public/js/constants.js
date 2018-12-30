@@ -978,6 +978,21 @@
             'Rainbow & Black Suits (one of each)',
             'Rainbow & Black (1oE)',
         ),
+
+        WHITE: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+                exports.SUIT.WHITE,
+            ],
+            baseColors,
+            false,
+            'Colorless Suit',
+            'White',
+        ),
     };
 
     // This is the mapping that the server uses
@@ -995,6 +1010,7 @@
         exports.VARIANT.COLORBLIND,
         exports.VARIANT.SINGLERAINBOW,
         exports.VARIANT.SINGLERAINBOWBLACK,
+        exports.VARIANT.WHITE,
     ];
 
     exports.INDICATOR = {
