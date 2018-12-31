@@ -130,3 +130,9 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 * An white suit is added as a 6th suit.
 * No color clues touch the white suit.
+
+### Rainbow Suit & Multi-fives
+
+* The purple suit is replaced with a rainbow suit.
+* All color clues will "touch" the rainbow suit.
+* Furthermore, all rank clues will touch 5's of any suit.
