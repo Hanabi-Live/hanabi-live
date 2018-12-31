@@ -1227,22 +1227,7 @@ function HanabiUI(lobby, gameID) {
     };
 
     HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
-        if (clue.type === CLUE_TYPE.COLOR) {
-            const clueColor = clue.value;
-            const findPipElement = suit => this.suitPips.find(`.${suit.name}`);
-            const removed = filterInPlace(this.possibleSuits, suit => suit.clueColors.includes(clueColor) === positive);
-            removed.forEach(suit => findPipElement(suit).hide());
-            // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
-            // display a non-grey card face
-            if (this.possibleSuits.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
-                [this.trueSuit] = this.possibleSuits;
-                findPipElement(this.trueSuit).hide();
-                this.suitPips.hide();
-                ui.learnedCards[this.order].suit = this.trueSuit;
-            }
-            // Ensure that the learned card data is not overwritten with less recent information
-            filterInPlace(ui.learnedCards[this.order].possibleSuits, s => this.possibleSuits.includes(s));
-        } else {
+        if (clue.type === CLUE_TYPE.RANK) {
             const clueRank = clue.value;
             const findPipElement = rank => this.rankPips.find(`.${rank}`);
             let removed;
@@ -1262,6 +1247,23 @@ function HanabiUI(lobby, gameID) {
             }
             // Ensure that the learned card data is not overwritten with less recent information
             filterInPlace(ui.learnedCards[this.order].possibleRanks, s => this.possibleRanks.includes(s));
+        } else if (clue.type === CLUE_TYPE.COLOR) {
+            const clueColor = clue.value;
+            const findPipElement = suit => this.suitPips.find(`.${suit.name}`);
+            const removed = filterInPlace(this.possibleSuits, suit => suit.clueColors.includes(clueColor) === positive);
+            removed.forEach(suit => findPipElement(suit).hide());
+            // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
+            // display a non-grey card face
+            if (this.possibleSuits.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
+                [this.trueSuit] = this.possibleSuits;
+                findPipElement(this.trueSuit).hide();
+                this.suitPips.hide();
+                ui.learnedCards[this.order].suit = this.trueSuit;
+            }
+            // Ensure that the learned card data is not overwritten with less recent information
+            filterInPlace(ui.learnedCards[this.order].possibleSuits, s => this.possibleSuits.includes(s));
+        } else {
+            console.error('Clue type invalid.');
         }
     };
 
