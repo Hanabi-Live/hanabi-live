@@ -20,7 +20,7 @@
         NAVY: new Color('Navy', 'N', '#000066'),
         ORANGE: new Color('Orange', 'O', '#ff8800'), // ff8800 is orange, ff33cc is pink, ff00ff is magenta
         TAN: new Color('Tan', 'T', '#999900'),
-        BURGUNDY: new Color('Burgundy', 'B', '#660016'),
+        MAHOGANY: new Color('Mahogany', 'M', '#660016'),
         TEAL: new Color('Teal', 'T', '#00b3b3'),
         LIME: new Color('Lime', 'L', '#80c000'),
         CARDINAL: new Color('Cardinal', 'C', '#810735'),
@@ -30,7 +30,7 @@
         LGREEN: new Color('Lime', 'L', '#1aff1a'),
         DGREEN: new Color('Forest', 'F', '#008000'),
         LRED: new Color('Tomato', 'T', '#e60000'),
-        DRED: new Color('Burgundy', 'B', '#660000'),
+        DRED: new Color('Mahogany', 'M', '#660000'),
         BLUE1: new Color('Sky', 'S', '#4d88ff'),
         BLUE3: new Color('Navy', 'N', '#001a4d'),
         RED1: new Color('Tomato', 'T', '#ff1a1a'),
@@ -460,10 +460,10 @@
             ],
         ),
 
-        BURGUNDY: new Suit(
-            'Burgundy',
-            'B',
-            exports.COLOR.BURGUNDY,
+        MAHOGANY: new Suit(
+            'Mahogany',
+            'M',
+            exports.COLOR.MAHOGANY,
             basicCardFillSpec,
             exports.SHAPE.SPADE,
             [
@@ -569,6 +569,15 @@
             [exports.COLOR.WHITE],
         ),
 
+        WHITE2: new Suit(
+            'White',
+            'W',
+            exports.COLOR.WHITE,
+            basicCardFillSpec,
+            exports.SHAPE.SPADE,
+            [exports.COLOR.WHITE],
+        ),
+
         // Gray suit represents cards of unknown suit. It must not be included in variants.
         GRAY: new Suit(
             'Gray',
@@ -625,7 +634,7 @@
         ),
 
         DRED: new Suit(
-            'Burgundy',
+            'Mahogany',
             'B',
             exports.COLOR.DRED,
             basicCardFillSpec,
@@ -832,7 +841,7 @@
                 exports.SUIT.NAVY, // Blue + Black
                 exports.SUIT.MORANGE, // Yellow + Red
                 exports.SUIT.TAN, // Yellow + Black
-                exports.SUIT.BURGUNDY, // Red + Black
+                exports.SUIT.MAHOGANY, // Red + Black
             ],
             [
                 exports.COLOR.BLUE,
@@ -871,7 +880,7 @@
             ],
             baseColorsMinusPurple,
             false,
-            'Colorless & Rainbow Suits',
+            'White & Rainbow Suits',
             'White & Rainbow',
         ),
 
@@ -986,11 +995,11 @@
                 exports.SUIT.YELLOW,
                 exports.SUIT.RED,
                 exports.SUIT.PURPLE,
-                exports.SUIT.WHITE,
+                exports.SUIT.WHITE2,
             ],
             baseColors,
             false,
-            'Colorless Suit',
+            'White Suit',
             'White',
         ),
     };

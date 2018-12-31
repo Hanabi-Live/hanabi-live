@@ -49,7 +49,7 @@ var (
 	OrangeClue = ColorClue{Name: "Orange"}
 	BlackClue  = ColorClue{Name: "Black"}
 
-	// Helpers used for "Rainbow", "Colorless & Rainbow", and "Color Blind"
+	// Helpers used for "Rainbow", "White & Rainbow", and "Color Blind"
 	allColorClues = []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue, BlackClue}
 	noColorClues  = []ColorClue{}
 )
@@ -91,7 +91,7 @@ var (
 	CardinalDualSuit = NewSuit("Cardinal", []ColorClue{RedClue, PurpleClue})
 	IndigoDualSuit   = NewSuit("Indigo", []ColorClue{BlueClue, PurpleClue})
 
-	// For "Colorless & Rainbow Suits"
+	// For "White & Rainbow Suits"
 	WhiteSuit = NewSuit("White", noColorClues)
 
 	// For "Ambiguous Suits"
@@ -100,7 +100,7 @@ var (
 	LimeSuit     = NewSuit("Lime", []ColorClue{GreenClue})
 	ForestSuit   = NewSuit("Forest", []ColorClue{GreenClue})
 	TomatoSuit   = NewSuit("Tomato", []ColorClue{RedClue})
-	MohaganySuit = NewSuit("Mohagany", []ColorClue{RedClue})
+	MahoganySuit = NewSuit("Mahogany", []ColorClue{RedClue})
 
 	// For "Blue & Red Suits"
 	BerrySuit = NewSuit("Berry", []ColorClue{BlueClue})
@@ -168,12 +168,12 @@ var (
 		},
 		Variant{
 			Name:  "Ambiguous",
-			Suits: []Suit{SkySuit, NavySuit, LimeSuit, ForestSuit, TomatoSuit, MohaganySuit},
+			Suits: []Suit{SkySuit, NavySuit, LimeSuit, ForestSuit, TomatoSuit, MahoganySuit},
 			Clues: []ColorClue{BlueClue, GreenClue, RedClue},
 		},
 		Variant{
 			Name:  "Blue & Red",
-			Suits: []Suit{SkySuit, BerrySuit, NavySuit, TomatoSuit, RubySuit, MohaganySuit},
+			Suits: []Suit{SkySuit, BerrySuit, NavySuit, TomatoSuit, RubySuit, MahoganySuit},
 			Clues: []ColorClue{BlueClue, RedClue},
 		},
 		Variant{
