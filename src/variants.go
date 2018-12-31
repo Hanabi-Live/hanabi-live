@@ -196,13 +196,24 @@ var (
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, WhiteSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
+		Variant{
+			Name:  "Rainbow & Multi-fives",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, RainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
 	}
 )
 
 // variantIsCardTouched returns true if a color clue will touch a particular suit
 // For example, a yellow clue will not touch a green card in "No Variant", but it will in "Dual-color Suits"
-func variantIsCardTouched(variant int, clue int, suit int) bool {
-	return isCluedBy(variants[variant].Suits[suit].ColorsTouchedBy, variants[variant].Clues[clue])
+func variantIsCardTouched(variant int, clue Clue, card *Card) bool {
+	if clue.Type == clueTypeNumber {
+		return card.Rank == clue.Value || (variants[variant].Name == "Rainbow & Multi-fives" && card.Rank == 5)
+	} else if clue.Type == clueTypeColor {
+		return isCluedBy(variants[variant].Suits[card.Suit].ColorsTouchedBy, variants[variant].Clues[clue.Value])
+	}
+
+	return false
 }
 
 // isCluedBy returns true if the ColorClue is in the list

@@ -29,7 +29,7 @@ type Player struct {
 
 func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	p2 := g.Players[d.Target] // The target of the clue
-	cardsTouched := p2.FindCardsTouchedByClue(d, g)
+	cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
 	if len(cardsTouched) == 0 &&
 		// Make an exception for color clues in the "Color Blind" variant
 		(d.Clue.Type != clueTypeColor || variants[g.Options.Variant].Name != "Color Blind") &&
@@ -97,14 +97,10 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 
 // FindCardsTouchedByClue returns a slice of card orders
 // (in this context, "orders" are the card position in the deck, not in the hand)
-func (p *Player) FindCardsTouchedByClue(d *CommandData, g *Game) []int {
+func (p *Player) FindCardsTouchedByClue(clue Clue, g *Game) []int {
 	list := make([]int, 0)
 	for _, c := range p.Hand {
-		if (d.Clue.Type == clueTypeNumber &&
-			c.Rank == d.Clue.Value) ||
-			(d.Clue.Type == clueTypeColor &&
-				variantIsCardTouched(g.Options.Variant, d.Clue.Value, c.Suit)) {
-
+		if variantIsCardTouched(g.Options.Variant, clue, c) {
 			list = append(list, c.Order)
 		}
 	}
@@ -112,20 +108,14 @@ func (p *Player) FindCardsTouchedByClue(d *CommandData, g *Game) []int {
 	return list
 }
 
-func (p *Player) IsFirstCardTouchedByClue(d *CommandData, g *Game) bool {
-	c := p.Hand[len(p.Hand)-1]
-	return (d.Clue.Type == clueTypeNumber &&
-		c.Rank == d.Clue.Value) ||
-		(d.Clue.Type == clueTypeColor &&
-			variantIsCardTouched(g.Options.Variant, d.Clue.Value, c.Suit))
+func (p *Player) IsFirstCardTouchedByClue(clue Clue, g *Game) bool {
+	card := p.Hand[len(p.Hand)-1]
+	return variantIsCardTouched(g.Options.Variant, clue, card)
 }
 
-func (p *Player) IsLastCardTouchedByClue(d *CommandData, g *Game) bool {
-	c := p.Hand[0]
-	return (d.Clue.Type == clueTypeNumber &&
-		c.Rank == d.Clue.Value) ||
-		(d.Clue.Type == clueTypeColor &&
-			variantIsCardTouched(g.Options.Variant, d.Clue.Value, c.Suit))
+func (p *Player) IsLastCardTouchedByClue(clue Clue, g *Game) bool {
+	card := p.Hand[0]
+	return variantIsCardTouched(g.Options.Variant, clue, card)
 }
 
 func (p *Player) RemoveCard(target int, g *Game) *Card {

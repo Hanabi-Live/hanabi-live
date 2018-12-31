@@ -393,7 +393,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		return true
 
 	} else if name == "Inept" {
-		cardsTouched := p2.FindCardsTouchedByClue(d, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Suit == p.CharacterMetadata {
@@ -403,7 +403,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		}
 
 	} else if name == "Awkward" {
-		cardsTouched := p2.FindCardsTouchedByClue(d, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Rank == p.CharacterMetadata {
@@ -413,13 +413,13 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		}
 
 	} else if name == "Conservative" &&
-		len(p2.FindCardsTouchedByClue(d, g)) != 1 {
+		len(p2.FindCardsTouchedByClue(d.Clue, g)) != 1 {
 
 		s.Warning("You are " + name + ", so you can only give clues that touch a single card.")
 		return true
 
 	} else if name == "Greedy" &&
-		len(p2.FindCardsTouchedByClue(d, g)) < 2 {
+		len(p2.FindCardsTouchedByClue(d.Clue, g)) < 2 {
 
 		s.Warning("You are " + name + ", so you can only give clues that touch 2+ cards.")
 		return true
@@ -460,8 +460,8 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		return true
 
 	} else if name == "Compulsive" &&
-		!p2.IsFirstCardTouchedByClue(d, g) &&
-		!p2.IsLastCardTouchedByClue(d, g) {
+		!p2.IsFirstCardTouchedByClue(d.Clue, g) &&
+		!p2.IsLastCardTouchedByClue(d.Clue, g) {
 
 		s.Warning("You are " + name + ", so you can only give a clue if it touches either the newest or oldest card in a hand.")
 		return true
@@ -480,7 +480,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 			return true
 		}
 
-		cardsTouched := p2.FindCardsTouchedByClue(d, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
 		touchedInsistentCards := false
 		log.Debug("INSOLENT # CARDS TOUCHED:", len(cardsTouched))
 		for i, order := range cardsTouched {
@@ -516,20 +516,17 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 			return true
 		}
 
-		d2 := &CommandData{
-			Clue: Clue{
-				Type:  clueTypeColor,
-				Value: d.Clue.Value - 1,
-			},
-			Target: d.Target,
+		clue := Clue{
+			Type:  clueTypeColor,
+			Value: d.Clue.Value - 1,
 		}
-		cardsTouched := p2.FindCardsTouchedByClue(d2, g)
+		cardsTouched := p2.FindCardsTouchedByClue(clue, g)
 		if len(cardsTouched) == 0 {
 			s.Warning("You are " + name + ", so both versions of the clue must touch at least 1 card in the hand.")
 			return true
 		}
 
-	} 
+	}
 	if name2 == "Vulnerable" &&
 		d.Clue.Type == clueTypeNumber &&
 		(d.Clue.Value == 2 ||
@@ -618,7 +615,7 @@ func characterPostClue(d *CommandData, g *Game, p *Player) {
 		p.CharacterMetadata = d.Clue.Type
 	} else if name == "Insistent" {
 		// Mark that the cards that they clued must be continue to be clued
-		cardsTouched := p2.FindCardsTouchedByClue(d, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			c.InsistentTouched = true
@@ -630,7 +627,7 @@ func characterPostClue(d *CommandData, g *Game, p *Player) {
 		p2.CharacterMetadata = 0
 
 	} else if name2 == "Impulsive" &&
-		p2.IsFirstCardTouchedByClue(d, g) {
+		p2.IsFirstCardTouchedByClue(d.Clue, g) {
 
 		// Store that they had their slot 1 card clued
 		p2.CharacterMetadata = 0

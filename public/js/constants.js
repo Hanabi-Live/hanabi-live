@@ -1002,6 +1002,20 @@
             'White Suit',
             'White',
         ),
+
+        RAINBOWMULTIFIVES: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColorsMinusPurple,
+            false,
+            'Rainbow Suit & Multi-fives',
+            'Rainbow & Multi-fives',
+        ),
     };
 
     // This is the mapping that the server uses
@@ -1020,6 +1034,7 @@
         exports.VARIANT.SINGLERAINBOW,
         exports.VARIANT.SINGLERAINBOWBLACK,
         exports.VARIANT.WHITE,
+        exports.VARIANT.RAINBOWMULTIFIVES,
     ];
 
     exports.INDICATOR = {

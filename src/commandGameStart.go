@@ -68,7 +68,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	// 65 cards if playing a one of each variant,
 	// and 70 cards when playing the other variants)
 	suits := []int{0, 1, 2, 3, 4}
-	if g.Options.Variant > 0 {
+	if len(variants[g.Options.Variant].Suits) > 5 {
 		suits = append(suits, 5)
 	}
 	for _, suit := range suits {
