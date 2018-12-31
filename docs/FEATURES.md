@@ -86,7 +86,7 @@ The server was originally an attempt to emulate the [Keldon Hanabi server](http:
 * Each game has the option to allow empty clues.
 * This option is to faciliate Hanabi players who play with a specific "positional" convention framework.
 
-### Detrimental Character Assignments
+#### Detrimental Character Assignments
 
 * Each game has the option to enable "Detrimental Character Assignments". When enabled, it will restrict players in additional ways beyond the normal rules.
 * The characters are loosly based on [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant) from Sean McCarthy on the Board Game Geek forums.
