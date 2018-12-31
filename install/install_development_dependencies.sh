@@ -4,7 +4,8 @@ set -e # Exit on any errors
 set -x # Enable debugging
 
 # This is the directory that this script lives in
-DIRNAME=$(dirname "$0")
+# From: https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
+DIRNAME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Install VS Code extensions
 code --install-extension ms-vscode.Go # For Golang
