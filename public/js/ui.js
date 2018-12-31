@@ -1245,7 +1245,12 @@ function HanabiUI(lobby, gameID) {
         } else {
             const clueRank = clue.value;
             const findPipElement = rank => this.rankPips.find(`.${rank}`);
-            const removed = filterInPlace(this.possibleRanks, rank => (rank === clueRank) === positive);
+            let removed;
+            if (ui.variant.name === 'Rainbow Suit & Multi-fives') {
+                removed = filterInPlace(this.possibleRanks, rank => (rank === clueRank || rank === 5) === positive);
+            } else {
+                removed = filterInPlace(this.possibleRanks, rank => (rank === clueRank) === positive);
+            }
             removed.forEach(rank => findPipElement(rank).hide());
             // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
             // display a non-grey card face
