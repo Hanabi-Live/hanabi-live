@@ -228,3 +228,11 @@ func isCluedBy(list []ColorClue, item ColorClue) bool {
 	}
 	return false
 }
+
+func variantIsClueLegal(variant int, clue Clue) bool {
+	if variants[variant].Name == "Rainbow & Multi-fives" && clue.Type == clueTypeNumber && clue.Value == 5 {
+		return false
+	}
+
+	return true
+}

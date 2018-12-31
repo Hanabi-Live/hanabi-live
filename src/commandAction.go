@@ -140,6 +140,12 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
+		// Validate variant-specific restrictions
+		if !variantIsClueLegal(g.Options.Variant, d.Clue) {
+			s.Warning("That is an invalid clue for this variant.")
+			return
+		}
+
 		// Validate "Detrimental Character Assignment" restrictions
 		if characterCheckClue(s, d, g, p) {
 			return
