@@ -56,7 +56,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * All color clues will "touch" the rainbow suit.
 * The standard color clue types are available.
 
-### Colorless & Rainbow Suits
+### White & Rainbow Suits
 
 * The purple suit is replaced with a white suit.
 * No color clues touch the white suit.
@@ -126,7 +126,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * All color clues will "touch" the rainbow suit.
 * There is only one of each rainbow card in the deck, which means that every rainbow card is "critical".
 
-### Colorless Suit
+### White Suit
 
 * An white suit is added as a 6th suit.
 * No color clues touch the white suit.
