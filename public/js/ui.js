@@ -2398,7 +2398,10 @@ function HanabiUI(lobby, gameID) {
             let touched = false;
             let color;
             if (clue.type === CLUE_TYPE.RANK) {
-                if (clue.value === card.trueRank) {
+                if (
+                    clue.value === card.trueRank ||
+                    (ui.variant.name === 'Rainbow Suit & Multi-fives' && card.trueRank === 5)
+                ) {
                     touched = true;
                     color = INDICATOR.POSITIVE;
                 }
@@ -4033,8 +4036,8 @@ function HanabiUI(lobby, gameID) {
         const rankClueButtons = [];
         const suitClueButtons = [];
 
+        // Player buttons
         x = 0.26 * winW - (nump - 2) * 0.044 * winW;
-
         for (let i = 0; i < nump - 1; i++) {
             const j = (this.playerUs + i + 1) % nump;
 
@@ -4048,15 +4051,21 @@ function HanabiUI(lobby, gameID) {
             });
 
             clueArea.add(button);
+            clueTargetButtonGroup.add(button);
 
             x += 0.0875 * winW;
-
-            clueTargetButtonGroup.add(button);
         }
 
-        for (let i = 1; i <= 5; i++) {
+        // Rank buttons
+        let numRanks = 5;
+        if (ui.variant.name === 'Rainbow Suit & Multi-fives') {
+            numRanks = 4;
+        }
+        for (let i = 1; i <= numRanks; i++) {
+            x = 0.134 + ((5 - numRanks) * 0.025);
             button = new NumberButton({
-                x: (0.183 + (i - 1) * 0.049) * winW,
+                // x: (0.183 + (i - 1) * 0.049) * winW,
+                x: (x + i * 0.049) * winW,
                 y: 0.027 * winH,
                 width: 0.04 * winW,
                 height: 0.071 * winH,
@@ -4071,8 +4080,9 @@ function HanabiUI(lobby, gameID) {
 
             clueButtonGroup.add(button);
         }
-        x = 0.158 + ((6 - this.variant.clueColors.length) * 0.025);
 
+        // Color buttons
+        x = 0.158 + ((6 - this.variant.clueColors.length) * 0.025);
         {
             let i = 0;
             for (const color of this.variant.clueColors) {
