@@ -69,7 +69,7 @@ Note that these steps require **an elevated (administrator) command-shell**.
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 * If needed, compile and run the server locally:
   * `cd src`
-  * `go build && "%GOPATH%\bin\src.exe"`
+  * `go install && "%GOPATH%\bin\src.exe"`
   * A Windows Firewall dialog may pop up; allow the connection.
   * Open a browser and surf to: http://localhost
 
