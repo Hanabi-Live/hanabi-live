@@ -879,7 +879,7 @@ function HanabiUI(lobby, gameID) {
             tooltipInstance.option('side', 'top');
 
             // Flip the tooltip if it is too close to the top of the screen
-            if (posY < 20) { // 20 is just an arbitrary threshold that seems to be big enough for 1080p at least
+            if (posY < 200) { // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout
                 posY = pos.y + (self.getHeight() * self.parent.scale().y / 2);
                 tooltipInstance.option('side', 'bottom');
             }
@@ -3450,7 +3450,7 @@ function HanabiUI(lobby, gameID) {
             width = 0.06;
             height = 0.151;
             yOffset = 0.019;
-        } else { // 5 stacks
+        } else { // 4 or 5 stacks
             y = 0.05;
             width = 0.075;
             height = 0.189;
@@ -3467,6 +3467,9 @@ function HanabiUI(lobby, gameID) {
             y: playAreaY + yOffset,
             spacing: 0.015,
         };
+        if (this.variant.suits.length === 4) {
+            playStackValues.x += ((width + playStackValues.spacing) / 2);
+        }
         if (lobby.showBGAUI) {
             playStackValues.x = actionLogValues.x;
             playStackValues.y = actionLogValues.y + actionLogValues.h + 0.02;
