@@ -466,6 +466,7 @@ function HanabiLobby() {
         });
     });
 
+    // The "Return to Lobby" button (from the "Pre-Game" screen)
     $('#nav-buttons-game-unattend').on('click', (event) => {
         event.preventDefault();
 
@@ -479,10 +480,13 @@ function HanabiLobby() {
         });
     });
 
+    // The "Show History" button
     $('#nav-buttons-games-history').on('click', (event) => {
         event.preventDefault();
 
         $('#lobby-games').hide();
+        $('#lobby-chat').hide();
+        $('#lobby-users').hide();
         $('#lobby-history').show();
         self.showNav('history');
 
@@ -513,12 +517,15 @@ function HanabiLobby() {
         });
     });
 
+    // The "Return to Lobby" button (from the "History" and "History Details" screen)
     $('.nav-return-table').on('click', (event) => {
         event.preventDefault();
 
-        $('#lobby-history-details').hide();
         $('#lobby-history').hide();
+        $('#lobby-history-details').hide();
         $('#lobby-games').show();
+        $('#lobby-chat').show();
+        $('#lobby-users').show();
         self.showNav('games');
     });
 

@@ -178,13 +178,19 @@ table td {
 }
 
 .lobby-bottom-box {
-    margin-bottom: 1.5em; /* testing */
+    margin-bottom: 1.5em;
 }
 
 .lobby-top-box {
     margin-top: 1.5em;
     margin-bottom: 1.5em;
     height: 45vh;
+}
+
+.lobby-full-box {
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    height: auto;
 }
 
 .lobby-users-box-container {
@@ -194,6 +200,12 @@ table td {
 .lobby-table-container {
     overflow-y: auto;
     height: 40vh;
+}
+
+.lobby-table-container-full {
+    overflow-y: auto;
+    /* height: 83.4vh; */
+    height: calc(100vh - 9.6em);
 }
 
 #lobby-games-table {
