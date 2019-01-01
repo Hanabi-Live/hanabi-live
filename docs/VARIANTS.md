@@ -136,3 +136,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * The purple suit is replaced with a rainbow suit.
 * All color clues will "touch" the rainbow suit.
 * Furthermore, all rank clues will touch 5's of any suit.
+
+### Four Suits
+
+* The purple suit is removed.
