@@ -538,7 +538,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 	} else if name2 == "Color-Blind" &&
 		d.Clue.Type == clueTypeColor {
 
-		s.Warning("You cannot give a color blue to a " + name2 + " character.")
+		s.Warning("You cannot give that color clue to a " + name2 + " character.")
 		return true
 	}
 
