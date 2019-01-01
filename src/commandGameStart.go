@@ -67,13 +67,14 @@ func commandGameStart(s *Session, d *CommandData) {
 	// (it will have 60 cards if playing no variant,
 	// 65 cards if playing a one of each variant,
 	// and 70 cards when playing the other variants)
-	suits := []int{0, 1, 2, 3, 4}
-	if len(variants[g.Options.Variant].Suits) > 5 {
-		suits = append(suits, 5)
+	suits := make([]int, 0)
+	for i := 0; i < len(variants[g.Options.Variant].Suits); i++ {
+		suits = append(suits, i) // For a "No Variant" game, suits will be equal to {0, 1, 2, 3, 4}
 	}
 	for _, suit := range suits {
 		ranks := []int{1, 2, 3, 4, 5}
 		for _, rank := range ranks {
+			// In a normal suit of Hanabi, there are three 1's, two 2's, two 3's, two 4's, and one five
 			var amountToAdd int
 			if rank == 1 {
 				amountToAdd = 3

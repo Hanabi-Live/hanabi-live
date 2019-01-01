@@ -1016,6 +1016,19 @@
             'Rainbow Suit & Multi-fives',
             'Rainbow & Multi-fives',
         ),
+
+        FOURSUITS: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+            ],
+            baseColorsMinusPurple,
+            false,
+            'Four Suits',
+            'Four Suits',
+        ),
     };
 
     // This is the mapping that the server uses
@@ -1035,6 +1048,7 @@
         exports.VARIANT.SINGLERAINBOWBLACK,
         exports.VARIANT.WHITE,
         exports.VARIANT.RAINBOWMULTIFIVES,
+        exports.VARIANT.FOURSUITS,
     ];
 
     exports.INDICATOR = {
