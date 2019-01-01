@@ -47,9 +47,10 @@ function HanabiLobby() {
     this.errorOccured = false;
 
     // Initialize the modals
-    $('#password-modal-button').click(() => {
+    $('#password-modal-submit').click(() => {
         $('#password-modal').fadeOut(fadeTime);
         $('#lobby').fadeTo(fadeTime, 1);
+
         const gameID = parseInt($('#password-modal-id').val(), 10); // The server expects this as a number
         const passwordPlaintext = $('#password-modal-password').val();
         const password = hex_sha256(`Hanabi game password ${passwordPlaintext}`);
@@ -60,6 +61,10 @@ function HanabiLobby() {
                 password,
             },
         });
+    });
+    $('#password-modal-cancel').click(() => {
+        $('#password-modal').fadeOut(fadeTime);
+        $('#lobby').fadeTo(fadeTime, 1);
     });
     $('#warning-modal-button').click(() => {
         $('#warning-modal').fadeOut(fadeTime);
