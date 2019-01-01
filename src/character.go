@@ -532,13 +532,13 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		(d.Clue.Value == 2 ||
 			d.Clue.Value == 5) {
 
-		s.Warning("You cannot give a number 2 or number 5 clue to a " + name + " character.")
+		s.Warning("You cannot give a number 2 or number 5 clue to a " + name2 + " character.")
 		return true
 
 	} else if name2 == "Color-Blind" &&
 		d.Clue.Type == clueTypeColor {
 
-		s.Warning("You cannot give a color blue to a " + name + " character.")
+		s.Warning("You cannot give a color blue to a " + name2 + " character.")
 		return true
 	}
 

@@ -47,9 +47,7 @@ func commandNote(s *Session, d *CommandData) {
 	// Sanitize the message using the bluemonday library to stop
 	// various attacks against other players
 	sp := bluemonday.StrictPolicy()
-	log.Debug("BEFORE SANI:", d.Note)
 	d.Note = sp.Sanitize(d.Note)
-	log.Debug("AFTER SANI:", d.Note)
 
 	/*
 		Note
