@@ -225,6 +225,11 @@
         exports.COLOR.RED,
         exports.COLOR.BLACK,
     ];
+    const baseColorsMinusPurpleRed = [
+        exports.COLOR.BLUE,
+        exports.COLOR.GREEN,
+        exports.COLOR.YELLOW,
+    ];
 
     // Specify between solid color and gradients,
     // along with additional args in the case of gradients
@@ -1029,6 +1034,33 @@
             'Four Suits',
             'Four Suits',
         ),
+
+        RAINBOWFIVESUITS: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColorsMinusPurple,
+            false,
+            'Rainbow Suit (with 5 suits)',
+            'Rainbow (5 suits)',
+        ),
+
+        RAINBOWFOURSUITS: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColorsMinusPurpleRed,
+            false,
+            'Rainbow Suit (with 4 suits)',
+            'Rainbow (4 suits)',
+        ),
     };
 
     // This is the mapping that the server uses
@@ -1049,6 +1081,8 @@
         exports.VARIANT.WHITE,
         exports.VARIANT.RAINBOWMULTIFIVES,
         exports.VARIANT.FOURSUITS,
+        exports.VARIANT.RAINBOWFIVESUITS,
+        exports.VARIANT.RAINBOWFOURSUITS,
     ];
 
     exports.INDICATOR = {

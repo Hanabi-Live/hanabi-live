@@ -206,6 +206,16 @@ var (
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
+		Variant{
+			Name:  "Rainbow Suit (with 5 Suits)",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, RainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		Variant{
+			Name:  "Rainbow Suit (with 4 Suits)",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
+		},
 	}
 )
 
