@@ -90,6 +90,15 @@ func (g *Game) End() {
 	// (we will send a new table message later for the shared replay)
 	notifyAllTableGone(g)
 
+	// Reset the player's current game and status
+	// (this is needed in case the game ends due to idleness;
+	// they will be manually set to having a status of "Shared Replay" later once the game is converted)
+	for _, p := range g.Players {
+		p.Session.Set("currentGame", -1)
+		p.Session.Set("status", "Lobby")
+		notifyAllUser(p.Session)
+	}
+
 	// Record the game in the database
 	row := models.GameRow{
 		Name:                 g.Name,
@@ -212,10 +221,6 @@ func (g *Game) End() {
 	// Turn the players into spectators
 	ownerOffline := false
 	for _, p := range g.Players {
-		// Reset everyone's current game
-		// (this is necessary for players who happen to be offline or in the lobby)
-		p.Session.Set("currentGame", -1)
-
 		// Skip offline players and players in the lobby;
 		// if they re-login, then they will just stay in the lobby
 		if !p.Present {

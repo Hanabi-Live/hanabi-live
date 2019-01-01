@@ -40,7 +40,7 @@ type Game struct {
 	Sound         string
 	TurnBeginTime time.Time
 	EndPlayer     int                // Set when the final card is drawn to determine when the game should end
-	EndTurn       int                // Set when the game ends
+	EndTurn       int                // Set when the game ends (to be used in Shared Replays)
 	BlindPlays    int                // The number of consecutive blind plays
 	Chat          []*GameChatMessage // All of the in-game chat history
 }
@@ -542,7 +542,7 @@ func (g *Game) CheckIdle() {
 		// We need to end a game that has started
 		// (this will put everyone in a non-shared replay of the idle game)
 		d := &CommandData{
-			Type: 5, // Idle timeout
+			Type: actionTypeIdleLimitReached,
 		}
 		s.Set("currentGame", g.ID)
 		s.Set("status", "Playing")

@@ -4,6 +4,9 @@ import (
 	"time"
 )
 
+// iota starts at 0 and counts upwards
+// i.e. actionTypeClue = 0, actionTypePlay = 1, etc.
+
 const (
 	actionTypeClue = iota
 	actionTypePlay
