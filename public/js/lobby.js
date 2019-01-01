@@ -35,6 +35,7 @@ function HanabiLobby() {
     this.showColorblindUI = false;
     this.showTimerInUntimed = false;
     this.reverseHands = false;
+    this.speedrunPreplay = false;
     this.speedrunHotkeys = false;
 
     this.game = {
@@ -1909,6 +1910,11 @@ HanabiLobby.prototype.loadSettings = function loadSettings() {
             // Reverse hand direction (new cards go on the right)
             'reverse-hands',
             'reverseHands',
+        ],
+        [
+            // Enable pre-playing cards
+            'speedrun-preplay',
+            'speedrunPreplay',
         ],
         [
             // Enable speedrun keyboard hotkeys

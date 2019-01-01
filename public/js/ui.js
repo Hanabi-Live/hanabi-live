@@ -5293,6 +5293,7 @@ Keyboard hotkeys:
             // Adding speedrun code; make all cards in our hand draggable from the get-go
             // except for cards we have already played or discarded
             if (
+                lobby.speedrunPreplay &&
                 data.who === ui.playerUs &&
                 !this.replayOnly &&
                 !this.spectating &&
@@ -5899,14 +5900,14 @@ Keyboard hotkeys:
         clueButtonGroup.off('change');
 
         // Make all of the cards in our hand not draggable
-        // (commented out for speedrun purposes)
-        /*
-        for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
-            const child = playerHands[ui.playerUs].children[i];
-            child.off('dragend.play');
-            child.setDraggable(false);
+        // (but we need to keep them draggable if the pre-play setting is enabled)
+        if (!lobby.speedrunPreplay) {
+            for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
+                const child = playerHands[ui.playerUs].children[i];
+                child.off('dragend.play');
+                child.setDraggable(false);
+            }
         }
-        */
 
         drawDeck.cardback.setDraggable(false);
         deckPlayAvailableLabel.setVisible(false);
@@ -5956,14 +5957,14 @@ Keyboard hotkeys:
         playerHands[ui.playerUs].moveToTop();
 
         // Set our hand to being draggable
-        // (commented out since the hand is never not made draggable for speedrun purposes)
-        /*
-        for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
-            const child = playerHands[ui.playerUs].children[i];
-            child.setDraggable(true);
-            child.on('dragend.play', dragendPlay);
+        // (this is unnecessary if the pre-play setting is enabled, as the hand will already be draggable)
+        if (!lobby.speedrunPreplay) {
+            for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
+                const child = playerHands[ui.playerUs].children[i];
+                child.setDraggable(true);
+                child.on('dragend.play', dragendPlay);
+            }
         }
-        */
 
         if (ui.deckPlays) {
             drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
