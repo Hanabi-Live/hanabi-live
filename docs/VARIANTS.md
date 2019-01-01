@@ -140,3 +140,14 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### Four Suits
 
 * The purple suit is removed.
+
+### Rainbow Suit (with 5 Suits)
+
+* The purple suit is replaced with a rainbow suit.
+* All color clues will "touch" the rainbow suit.
+
+### Rainbow Suit (with 4 Suits)
+
+* The red suit is replaced with a rainbow suit.
+* All color clues will "touch" the rainbow suit.
+* The purple suit is removed.
