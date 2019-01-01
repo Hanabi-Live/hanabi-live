@@ -698,6 +698,7 @@ HanabiLobby.prototype.hideLogin = () => {
 HanabiLobby.prototype.showLobby = function showLobby(fast) {
     $('body').css('overflow', 'hidden');
     $('#lobby').show();
+    $('#lobby-history').hide(); // We can't hide this element by default in "index.html" or else the "No game history" text will not be centered
     this.showNav('games');
     $('#lobby-chat-input').focus();
 };
@@ -1141,9 +1142,20 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
     // Clear all of the existing rows
     tbody.html('');
 
+    // Handle if the user has no history
+    const ids = Object.keys(this.historyList);
+    if (ids.length === 0) {
+        $('#lobby-history-no').show();
+        $('#lobby-history').addClass('align-center-v');
+        $('#lobby-history-table-container').hide();
+        return;
+    }
+    $('#lobby-history-no').hide();
+    $('#lobby-history').removeClass('align-center-v');
+    $('#lobby-history-table-container').show();
+
     // Sort the game IDs in reverse order
     // (so that the most recent ones are near the top)
-    const ids = Object.keys(this.historyList);
     ids.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
     ids.reverse();
 
