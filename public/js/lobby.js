@@ -121,11 +121,16 @@ function HanabiLobby() {
         }
     };
 
-    // Map the escape key to close all tooltips
+    // Map the escape key to close all tooltips / modals
     $(document).keydown((event) => {
         if (event.key === 'Escape') {
             event.preventDefault();
+
             this.closeAllTooltips();
+
+            if ($('#password-modal').is(':visible')) {
+                $('#password-modal-cancel').click();
+            }
         }
     });
 
