@@ -1089,6 +1089,11 @@ function HanabiUI(lobby, gameID) {
                     }
                 } else if (keyEvent.key === 'Enter') {
                     note = $(`#tooltip-card-${self.order}-input`).val();
+
+                    // Strip any HTML elements
+                    // (to be thorough, the server will also perform this validation)
+                    note = stripHTMLtags(note);
+
                     ui.setNote(self.order, note);
 
                     // Also send the note to the server
@@ -3467,13 +3472,15 @@ function HanabiUI(lobby, gameID) {
             y: playAreaY + yOffset,
             spacing: 0.015,
         };
-        if (this.variant.suits.length === 4) {
-            playStackValues.x += ((width + playStackValues.spacing) / 2);
-        }
         if (lobby.showBGAUI) {
             playStackValues.x = actionLogValues.x;
             playStackValues.y = actionLogValues.y + actionLogValues.h + 0.02;
             playStackValues.spacing = 0.006;
+        }
+        if (this.variant.suits.length === 4) {
+            // If there are only 4 stacks, they will be left-aligned instead of centered
+            // So, center them by moving them to the right a little bit
+            playStackValues.x += ((width + playStackValues.spacing) / 2);
         }
         {
             let i = 0;
@@ -6234,3 +6241,8 @@ HanabiUI.prototype.sendMsg = function sendMsg(msg) {
     }
     this.backend.emit(command, data);
 };
+
+function stripHTMLtags(input) {
+    const doc = new DOMParser().parseFromString(input, 'text/html');
+    return doc.body.textContent || '';
+}

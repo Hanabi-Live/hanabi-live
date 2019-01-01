@@ -61,8 +61,8 @@ func commandChat(s *Session, d *CommandData) {
 	// Sanitize the message using the bluemonday library to stop
 	// various attacks against other players
 	rawMsg := d.Msg
-	p := bluemonday.StrictPolicy()
-	d.Msg = p.Sanitize(d.Msg)
+	sp := bluemonday.StrictPolicy()
+	d.Msg = sp.Sanitize(d.Msg)
 
 	/*
 		Chat
