@@ -212,20 +212,20 @@
         exports.COLOR.PURPLE,
         exports.COLOR.BLACK,
     ];
-    const baseColorsMinusPurple = [
+    const baseColors4 = [
         exports.COLOR.BLUE,
         exports.COLOR.GREEN,
         exports.COLOR.YELLOW,
         exports.COLOR.RED,
     ];
-    const baseColorsMinusPurplePlusBlack = [
+    const baseColors4plusBlack = [
         exports.COLOR.BLUE,
         exports.COLOR.GREEN,
         exports.COLOR.YELLOW,
         exports.COLOR.RED,
         exports.COLOR.BLACK,
     ];
-    const baseColorsMinusPurpleRed = [
+    const baseColors3 = [
         exports.COLOR.BLUE,
         exports.COLOR.GREEN,
         exports.COLOR.YELLOW,
@@ -883,7 +883,7 @@
                 exports.SUIT.WHITE,
                 exports.SUIT.RAINBOW,
             ],
-            baseColorsMinusPurple,
+            baseColors4,
             false,
             'White & Rainbow Suits',
             'White & Rainbow',
@@ -987,7 +987,7 @@
                 exports.SUIT.BLACK,
                 exports.SUIT.SINGLERAINBOW,
             ],
-            baseColorsMinusPurplePlusBlack,
+            baseColors4plusBlack,
             false,
             'Rainbow & Black Suits (one of each)',
             'Rainbow & Black (1oE)',
@@ -1016,7 +1016,7 @@
                 exports.SUIT.RED,
                 exports.SUIT.RAINBOW,
             ],
-            baseColorsMinusPurple,
+            baseColors4,
             false,
             'Rainbow Suit & Multi-fives',
             'Rainbow & Multi-fives',
@@ -1029,7 +1029,7 @@
                 exports.SUIT.YELLOW,
                 exports.SUIT.RED,
             ],
-            baseColorsMinusPurple,
+            baseColors4,
             false,
             'Four Suits',
             'Four Suits',
@@ -1043,7 +1043,7 @@
                 exports.SUIT.RED,
                 exports.SUIT.RAINBOW,
             ],
-            baseColorsMinusPurple,
+            baseColors4,
             false,
             'Rainbow Suit (with 5 suits)',
             'Rainbow (5 suits)',
@@ -1056,10 +1056,22 @@
                 exports.SUIT.YELLOW,
                 exports.SUIT.RAINBOW,
             ],
-            baseColorsMinusPurpleRed,
+            baseColors3,
             false,
             'Rainbow Suit (with 4 suits)',
             'Rainbow (4 suits)',
+        ),
+
+        THREESUITS: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+            ],
+            baseColors3,
+            false,
+            'Three Suits',
+            'Three Suits',
         ),
     };
 
