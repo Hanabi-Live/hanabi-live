@@ -1073,6 +1073,37 @@
             'Three Suits',
             'Three Suits',
         ),
+
+        RAINBOWTHREESUITS: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors3,
+            false,
+            'Rainbow Suit (with 3 suits)',
+            'Rainbow (3 suits)',
+        ),
+
+        AFRICANAMERICAN: new Variant(
+            [
+                exports.SUIT.LRED,
+                exports.SUIT.DRED,
+                exports.SUIT.WHITE,
+                exports.SUIT.LBLUE,
+                exports.SUIT.DBLUE,
+                exports.SUIT.BLACK,
+            ],
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.RED,
+                exports.COLOR.BLACK,
+            ],
+            true,
+            'African American',
+            'African American',
+        ),
     };
 
     // This is the mapping that the server uses
@@ -1095,6 +1126,9 @@
         exports.VARIANT.FOURSUITS,
         exports.VARIANT.RAINBOWFIVESUITS,
         exports.VARIANT.RAINBOWFOURSUITS,
+        exports.VARIANT.THREESUITS,
+        exports.VARIANT.RAINBOWTHREESUITS,
+        exports.VARIANT.AFRICANAMERICAN,
     ];
 
     exports.INDICATOR = {
