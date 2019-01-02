@@ -3481,6 +3481,10 @@ function HanabiUI(lobby, gameID) {
             // If there are only 4 stacks, they will be left-aligned instead of centered
             // So, center them by moving them to the right a little bit
             playStackValues.x += ((width + playStackValues.spacing) / 2);
+        } else if (this.variant.suits.length === 3) {
+            // If there are only 4 stacks, they will be left-aligned instead of centered
+            // So, center them by moving them to the right a little bit
+            playStackValues.x += ((width + playStackValues.spacing) / 2) * 2;
         }
         {
             let i = 0;
