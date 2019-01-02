@@ -151,7 +151,7 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	failed := c.Rank != g.Stacks[c.Suit]+1
 
 	// Handle custom variants where the cards to not play in order from 1 to 5
-	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up and Down") {
+	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
 		if g.StackDirections[c.Suit] == stackDirectionUndecided {
 			// If the stack direction is undecided, then there is either no cards played or a "START" card has been played
 			if g.Stacks[c.Suit] == 0 {
@@ -259,10 +259,10 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 
 	// Give the team a clue if the final card of the suit was played
 	// (this will always be a 5 unless it is a custom variant)
-	extraClue = c.Rank == 5
+	extraClue := c.Rank == 5
 
 	// Handle custom variants that do not play in order from 1 to 5
-	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up and Down") {
+	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
 		extraClue = (c.Rank == 5 && g.StackDirections[c.Suit] == stackDirectionUp) ||
 			(c.Rank == 1 && g.StackDirections[c.Suit] == stackDirectionDown)
 	}
