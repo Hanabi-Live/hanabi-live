@@ -259,20 +259,12 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 
 	// Give the team a clue if the final card of the suit was played
 	// (this will always be a 5 unless it is a custom variant)
-	extraClue := false
-	if c.Rank == 5 {
-		extraClue = true
-	}
+	extraClue = c.Rank == 5
 
 	// Handle custom variants that do not play in order from 1 to 5
 	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up and Down") {
-		if (c.Rank == 5 && g.StackDirections[c.Suit] == stackDirectionUp) ||
-			(c.Rank == 1 && g.StackDirections[c.Suit] == stackDirectionDown) {
-
-			extraClue = true
-		} else {
-			extraClue = false
-		}
+		extraClue = (c.Rank == 5 && g.StackDirections[c.Suit] == stackDirectionUp) ||
+			(c.Rank == 1 && g.StackDirections[c.Suit] == stackDirectionDown)
 	}
 
 	if extraClue {
