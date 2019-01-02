@@ -141,12 +141,12 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 * The purple suit is removed.
 
-### Rainbow Suit (with 5 Suits)
+### Rainbow Suit (with 5 suits)
 
 * The purple suit is replaced with a rainbow suit.
 * All color clues will "touch" the rainbow suit.
 
-### Rainbow Suit (with 4 Suits)
+### Rainbow Suit (with 4 suits)
 
 * The red suit is replaced with a rainbow suit.
 * All color clues will "touch" the rainbow suit.
@@ -157,7 +157,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * The red suit is removed.
 * The purple suit is removed.
 
-### Rainbow Suit (with 3 Suits)
+### Rainbow Suit (with 3 suits)
 
 * The blue suit is replaced with a rainbow suit.
 * All color clues will "touch" the rainbow suit.
@@ -172,3 +172,36 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   4. Sky (blue)
   3. Navy (blue)
   6. Black (one of each)
+
+### Black Suit (with 5 suits)
+
+* The purple suit is replaced by a black suit.
+* It works similar to the other suits in that you can clue black cards with black clues.
+* There is only one of each black card in the deck, which means that every black card is "critical".
+
+### White Suit (with 5 suits)
+
+* The purple suit is replaced by a white suit.
+* No color clues touch the white suit.
+
+### Rainbow Suit (one of each) (with 5 suits)
+
+* The purple suit is replaced by a rainbow suit.
+* All color clues will "touch" the rainbow suit.
+* There is only one of each rainbow card in the deck, which means that every rainbow card is "critical".
+
+### Up or Down
+
+* This variant was invented by [url=https://boardgamegeek.com/article/30863162]Sean McCarthy on the BoardGameGeek forums[/url].
+* Two 1's are removed from each suit.
+* One "START" card is added to each suit.
+* When a stack is empty, you can play either a 1, a 5, or a START card on it.
+* When a stack has a START card on it, you can play either a 2 or a 4 on it.
+* If a stack was started with a 1 (or a START + 2), then it works as a normal stack.
+* If a stack was started with a 5 (or a START + 4), then it must be completed in reverse.
+* A clue token is given when a stack is completed, regardless of whether it is a normal stack or a reversed stack.
+
+### Up or Down & Rainbow Suit
+
+* This is the same as the *Up or Down* variant but with a rainbow suit added as a 6th suit.
+* All color clues will "touch" the rainbow suit.
