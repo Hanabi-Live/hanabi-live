@@ -166,8 +166,8 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### African American
 
 * This variant is composed of the following suits:
-  4. Tomato (red)
-  6. Mahogany (red)
+  1. Tomato (red)
+  2. Mahogany (red)
   3. White (colorless)
   4. Sky (blue)
   3. Navy (blue)
