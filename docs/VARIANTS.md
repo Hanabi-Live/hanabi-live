@@ -53,15 +53,12 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   4. Cardinal (red / purple)
   5. Indigo (blue / purple)
 * A rainbow suit is added as a 6th suit.
-* All color clues will "touch" the rainbow suit.
 * The standard color clue types are available.
 
 ### White & Rainbow Suits
 
 * The purple suit is replaced with a white suit.
-* No color clues touch the white suit.
 * A rainbow suit is added as a 6th suit.
-* All color clues will "touch" the rainbow suit.
 
 ### Wild & Crazy
 
@@ -114,27 +111,21 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### Rainbow Suit (one of each)
 
 * A rainbow suit is added as a 6th suit.
-* All color clues will "touch" the rainbow suit.
 * There is only one of each rainbow card in the deck, which means that every rainbow card is "critical".
 
 ### Rainbow & Black Suits (one of each)
 
 * The purple suit is replaced with a black suit.
-* It works similar to the other suits in that you can clue black cards with black clues.
-* There is only one of each black card in the deck, which means that every black card is "critical".
 * A rainbow suit is added as a 6th suit.
-* All color clues will "touch" the rainbow suit.
-* There is only one of each rainbow card in the deck, which means that every rainbow card is "critical".
+* There is only one of each black and rainbow cards in the deck, which means that every black and rainbow card is "critical".
 
 ### White Suit
 
 * An white suit is added as a 6th suit.
-* No color clues touch the white suit.
 
 ### Rainbow Suit & Multi-fives
 
 * The purple suit is replaced with a rainbow suit.
-* All color clues will "touch" the rainbow suit.
 * Furthermore, all rank clues will touch 5's of any suit.
 
 ### Four Suits
@@ -144,12 +135,10 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### Rainbow Suit (with 5 suits)
 
 * The purple suit is replaced with a rainbow suit.
-* All color clues will "touch" the rainbow suit.
 
 ### Rainbow Suit (with 4 suits)
 
 * The red suit is replaced with a rainbow suit.
-* All color clues will "touch" the rainbow suit.
 * The purple suit is removed.
 
 ### Three Suits
@@ -160,12 +149,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### Rainbow Suit (with 3 suits)
 
 * The blue suit is replaced with a rainbow suit.
-* All color clues will "touch" the rainbow suit.
 * The red and purple suits are removed.
 
 ### African American
 
-* This variant is composed of the following suits:
+* This is a mix of several variants. The suits are as follows:
   1. Tomato (red)
   2. Mahogany (red)
   3. White (colorless)
@@ -176,18 +164,14 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### Black Suit (with 5 suits)
 
 * The purple suit is replaced by a black suit.
-* It works similar to the other suits in that you can clue black cards with black clues.
-* There is only one of each black card in the deck, which means that every black card is "critical".
 
 ### White Suit (with 5 suits)
 
 * The purple suit is replaced by a white suit.
-* No color clues touch the white suit.
 
 ### Rainbow Suit (one of each) (with 5 suits)
 
 * The purple suit is replaced by a rainbow suit.
-* All color clues will "touch" the rainbow suit.
 * There is only one of each rainbow card in the deck, which means that every rainbow card is "critical".
 
 ### Up or Down
@@ -204,4 +188,46 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### Up or Down & Rainbow Suit
 
 * This is the same as the *Up or Down* variant but with a rainbow suit added as a 6th suit.
+
+### Dual-color Suits (with 5 suits)
+
+* 5 suits are changed to be "touched" by two separate colors:
+  1. Teal (blue / green)
+  2. Lime (green / yellow)
+  3. Orange (yellow / red)
+  4. Cardinal (red / purple)
+  5. Indigo (blue / purple)
+* The standard color clue types are available.
+
+### Dual-color & Rainbow Suits (with 4 suits)
+
+* 3 suits are changed to be "touched" by two separate colors:
+  1. Green (blue / yellow)
+  2. Purple (blue / red)
+  3. Orange (yellow / red)
+* A rainbow suit is added as a 4th suit.
 * All color clues will "touch" the rainbow suit.
+* There are only 3 types of color clues available:
+  1. Blue
+  2. Red
+  3. Yellow
+
+### White Suit (with 4 suits)
+
+* The purple suit is replaced by a white suit.
+
+### White Suit (with 3 suits)
+
+* The blue suit is replaced with a white suit.
+* The red and purple suits are removed.
+
+### White & Rainbow Suits (with 5 suits)
+
+* The red suit is replaced by a white suit.
+* The purple suit is replaced by a rainbow suit.
+
+### White & Rainbow Suits (with 4 suits)
+
+* The yellow suit is replaced by a white suit.
+* The red suit is replaced by a rainbow suit.
+* The purple suit is removed.
