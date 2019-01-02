@@ -156,3 +156,19 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 * The red suit is removed.
 * The purple suit is removed.
+
+### Rainbow Suit (with 3 Suits)
+
+* The blue suit is replaced with a rainbow suit.
+* All color clues will "touch" the rainbow suit.
+* The red and purple suits are removed.
+
+### African American
+
+* This variant is composed of the following suits:
+  4. Tomato (red)
+  6. Mahogany (red)
+  3. White (colorless)
+  4. Sky (blue)
+  3. Navy (blue)
+  6. Black (one of each)
