@@ -32,8 +32,8 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	p2 := g.Players[d.Target] // The target of the clue
 	cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
 	if len(cardsTouched) == 0 &&
-		// Make an exception for color clues in the "Color Blind" variant
-		(d.Clue.Type != clueTypeColor || variants[g.Options.Variant].Name != "Color Blind") &&
+		// Make an exception for color clues in the "Color Blind" variants
+		(d.Clue.Type != clueTypeColor || !strings.HasPrefix(variants[g.Options.Variant].Name, "Color Blind")) &&
 		// Allow empty clues if the optional setting is enabled
 		!g.Options.EmptyClues &&
 		// Philosphers can only give empty clues

@@ -2389,9 +2389,9 @@ function HanabiUI(lobby, gameID) {
             return false;
         }
 
-        // Make an exception for the "Color Blind" variant
+        // Make an exception for the "Color Blind" variants
         // (all color clues touch all cards, so don't show the arrows for simplicity)
-        if (this.variant.name === 'Color Blind' && clue.type === CLUE_TYPE.COLOR) {
+        if (this.variant.name.startsWith('Color Blind') && clue.type === CLUE_TYPE.COLOR) {
             return true;
         }
 
