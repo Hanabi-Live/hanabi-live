@@ -192,7 +192,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 ### Up or Down
 
-* This variant was invented by [url=https://boardgamegeek.com/article/30863162]Sean McCarthy on the BoardGameGeek forums[/url].
+* This variant was invented by [Sean McCarthy on the BoardGameGeek forums](https://boardgamegeek.com/article/30863162).
 * Two 1's are removed from each suit.
 * One "START" card is added to each suit.
 * When a stack is empty, you can play either a 1, a 5, or a START card on it.
