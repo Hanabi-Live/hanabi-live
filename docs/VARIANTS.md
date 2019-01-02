@@ -231,3 +231,26 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * The yellow suit is replaced by a white suit.
 * The red suit is replaced by a rainbow suit.
 * The purple suit is removed.
+
+### Blue & Red Suits (with 4 suits)
+
+* Two suits share a color. The suits are as follows:
+  1. Sky (blue)
+  2. Navy (blue)
+  3. Tomato (red)
+  4. Burgundy (red)
+* There are 2 types of color clues available:
+  1. Blue
+  2. Red
+
+### Blue & Red & Rainbow Suits (with 5 suits)
+
+* Two suits share a color. The suits are as follows:
+  1. Sky (blue)
+  2. Navy (blue)
+  3. Tomato (red)
+  4. Burgundy (red)
+* A rainbow suit is as a 6th suit.
+* There are 2 types of color clues available:
+  1. Blue
+  2. Red
