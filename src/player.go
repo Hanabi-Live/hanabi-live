@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
@@ -144,13 +145,55 @@ func (p *Player) RemoveCard(target int, g *Game) *Card {
 }
 
 // PlayCard returns true if it is a "double discard" situation
-// (which can only occur if the card blind-plays)
+// (which can only occur if the card fails to play)
 func (p *Player) PlayCard(g *Game, c *Card) bool {
 	// Find out if this successfully plays
-	if c.Rank != g.Stacks[c.Suit]+1 ||
-		characterCheckPlay(g, p, c) { // Validate "Detrimental Character Assignment" restrictions
+	failed := c.Rank != g.Stacks[c.Suit]+1
 
-		// The card does not play
+	// Handle custom variants where the cards to not play in order from 1 to 5
+	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up and Down") {
+		if g.StackDirections[c.Suit] == stackDirectionUndecided {
+			// If the stack direction is undecided, then there is either no cards played or a "START" card has been played
+			if g.Stacks[c.Suit] == 0 {
+				// No cards have been played yet on this stack
+				failed = c.Rank != 0 && c.Rank != 1 && c.Rank != 5
+
+				// Set the stack direction
+				if c.Rank == 1 {
+					g.StackDirections[c.Suit] = stackDirectionUp
+				} else if c.Rank == 5 {
+					g.StackDirections[c.Suit] = stackDirectionDown
+				}
+			} else if g.Stacks[c.Suit] == -1 {
+				// The "START" card has been played
+				failed = c.Rank != 2 && c.Rank != 4
+
+				// Set the stack direction
+				if c.Rank == 2 {
+					g.StackDirections[c.Suit] = stackDirectionUp
+				} else if c.Rank == 4 {
+					g.StackDirections[c.Suit] = stackDirectionDown
+				}
+			}
+
+		} else if g.StackDirections[c.Suit] == stackDirectionUp {
+			// We don't have to do anything if this is a "normal" stack that is going from 1 to 5,
+			// because we just checked for that situation above
+
+		} else if g.StackDirections[c.Suit] == stackDirectionDown {
+			failed = c.Rank != g.Stacks[c.Suit]-1 && c.Rank != 0
+		} else {
+			log.Error("Unknown stack direction for suit:", g.StackDirections[c.Suit])
+		}
+	}
+
+	// Handle "Detrimental Character Assignment" restrictions
+	if characterCheckPlay(g, p, c) { // (this returns true if it should misplay)
+		failed = true
+	}
+
+	// Handle if the card does not play
+	if failed {
 		c.Failed = true
 		if characterUseStrike(g, p) {
 			g.Strikes++
@@ -169,10 +212,13 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 		return p.DiscardCard(g, c)
 	}
 
-	// Success; the card plays
+	// Handle successful card plays
 	c.Played = true
 	g.Score++
-	g.Stacks[c.Suit]++
+	g.Stacks[c.Suit] = c.Rank
+	if c.Rank == 0 {
+		g.Stacks[c.Suit] = -1 // A rank 0 card is the "START" card
+	}
 
 	// Send the "notify" message about the play
 	g.Actions = append(g.Actions, Action{
@@ -211,8 +257,25 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	g.NotifyAction()
 	log.Info(g.GetName() + text)
 
-	// Give the team a clue if a 5 was played
+	// Give the team a clue if the final card of the suit was played
+	// (this will always be a 5 unless it is a custom variant)
+	extraClue := false
 	if c.Rank == 5 {
+		extraClue = true
+	}
+
+	// Handle custom variants that do not play in order from 1 to 5
+	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up and Down") {
+		if (c.Rank == 5 && g.StackDirections[c.Suit] == stackDirectionUp) ||
+			(c.Rank == 1 && g.StackDirections[c.Suit] == stackDirectionDown) {
+
+			extraClue = true
+		} else {
+			extraClue = false
+		}
+	}
+
+	if extraClue {
 		g.Clues++
 		if g.Clues > 8 {
 			// The extra clue is wasted if they are at 8 clues already

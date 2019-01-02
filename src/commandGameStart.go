@@ -73,12 +73,20 @@ func commandGameStart(s *Session, d *CommandData) {
 	}
 	for _, suit := range suits {
 		ranks := []int{1, 2, 3, 4, 5}
+		if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
+			ranks = append(ranks, 0) // The 0th rank is the "START" card
+		}
 		for _, rank := range ranks {
 			// In a normal suit of Hanabi, there are three 1's, two 2's, two 3's, two 4's, and one five
 			var amountToAdd int
 			if rank == 1 {
 				amountToAdd = 3
+				if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
+					amountToAdd = 1
+				}
 			} else if rank == 5 {
+				amountToAdd = 1
+			} else if rank == 0 { // The "START" card
 				amountToAdd = 1
 			} else {
 				amountToAdd = 2
@@ -102,6 +110,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Create the stacks
 	for i := 0; i < len(suits); i++ {
 		g.Stacks = append(g.Stacks, 0)
+		g.StackDirections = append(g.StackDirections, 0)
 	}
 	g.MaxScore = len(g.Stacks) * 5 // Assuming that there are 5 points per stack
 

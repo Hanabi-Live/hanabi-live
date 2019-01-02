@@ -207,12 +207,12 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
 		Variant{
-			Name:  "Rainbow Suit (with 5 Suits)",
+			Name:  "Rainbow Suit (5 Suits)",
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
 		Variant{
-			Name:  "Rainbow Suit (with 4 Suits)",
+			Name:  "Rainbow Suit (4 Suits)",
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
@@ -222,7 +222,7 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
 		Variant{
-			Name:  "Rainbow Suit (with 3 Suits)",
+			Name:  "Rainbow Suit (3 Suits)",
 			Suits: []Suit{BlueSuit, GreenSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
@@ -230,6 +230,31 @@ var (
 			Name:  "African American",
 			Suits: []Suit{TomatoSuit, MahoganySuit, WhiteSuit, SkySuit, NavySuit, BlackSuit},
 			Clues: []ColorClue{BlueClue, RedClue, BlackClue},
+		},
+		Variant{
+			Name:  "Black Suit (5 suits)",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BlackSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
+		},
+		Variant{
+			Name:  "White Suit (5 suits)",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		Variant{
+			Name:  "Rainbow (1oE) (5 suits)",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, Rainbow1oESuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		Variant{
+			Name:  "Up or Down",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Up or Down & Rainbow",
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, RainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
 	}
 )

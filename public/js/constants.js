@@ -550,7 +550,7 @@
             Object.values(exports.COLOR),
         ),
 
-        SINGLERAINBOW: new Suit(
+        RAINBOW1OE: new Suit(
             'Rainbow',
             'M',
             [
@@ -583,6 +583,15 @@
             [exports.COLOR.WHITE],
         ),
 
+        WHITE3: new Suit(
+            'White',
+            'W',
+            exports.COLOR.WHITE,
+            basicCardFillSpec,
+            exports.SHAPE.STAR,
+            [exports.COLOR.WHITE],
+        ),
+
         // Gray suit represents cards of unknown suit. It must not be included in variants.
         GRAY: new Suit(
             'Gray',
@@ -602,12 +611,30 @@
             [exports.COLOR.BLUE],
         ),
 
+        LBLUE2: new Suit(
+            'Sky',
+            'S',
+            exports.COLOR.LBLUE,
+            basicCardFillSpec,
+            exports.SHAPE.HEART,
+            [exports.COLOR.BLUE],
+        ),
+
         DBLUE: new Suit(
             'Navy',
             'N',
             exports.COLOR.DBLUE,
             basicCardFillSpec,
             exports.SHAPE.CLUB,
+            [exports.COLOR.BLUE],
+        ),
+
+        DBLUE2: new Suit(
+            'Navy',
+            'N',
+            exports.COLOR.DBLUE,
+            basicCardFillSpec,
+            exports.SHAPE.CRESCENT,
             [exports.COLOR.BLUE],
         ),
 
@@ -638,12 +665,30 @@
             [exports.COLOR.RED],
         ),
 
+        LRED2: new Suit(
+            'Tomato',
+            'T',
+            exports.COLOR.LRED,
+            basicCardFillSpec,
+            exports.SHAPE.DIAMOND,
+            [exports.COLOR.RED],
+        ),
+
         DRED: new Suit(
             'Mahogany',
             'B',
             exports.COLOR.DRED,
             basicCardFillSpec,
             exports.SHAPE.SPADE,
+            [exports.COLOR.RED],
+        ),
+
+        DRED2: new Suit(
+            'Mahogany',
+            'B',
+            exports.COLOR.DRED,
+            basicCardFillSpec,
+            exports.SHAPE.CLUB,
             [exports.COLOR.RED],
         ),
 
@@ -963,14 +1008,14 @@
             'Color Blind',
         ),
 
-        SINGLERAINBOW: new Variant(
+        RAINBOW1OE: new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
                 exports.SUIT.YELLOW,
                 exports.SUIT.RED,
                 exports.SUIT.PURPLE,
-                exports.SUIT.SINGLERAINBOW,
+                exports.SUIT.RAINBOW1OE,
             ],
             baseColors,
             false,
@@ -978,14 +1023,14 @@
             'Rainbow (1oE)',
         ),
 
-        SINGLERAINBOWBLACK: new Variant(
+        RAINBOW1OEBLACK: new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
                 exports.SUIT.YELLOW,
                 exports.SUIT.RED,
                 exports.SUIT.BLACK,
-                exports.SUIT.SINGLERAINBOW,
+                exports.SUIT.RAINBOW1OE,
             ],
             baseColors4plusBlack,
             false,
@@ -1088,11 +1133,11 @@
 
         AFRICANAMERICAN: new Variant(
             [
-                exports.SUIT.LRED,
-                exports.SUIT.DRED,
-                exports.SUIT.WHITE,
-                exports.SUIT.LBLUE,
-                exports.SUIT.DBLUE,
+                exports.SUIT.LRED2,
+                exports.SUIT.DRED2,
+                exports.SUIT.WHITE3,
+                exports.SUIT.LBLUE2,
+                exports.SUIT.DBLUE2,
                 exports.SUIT.BLACK,
             ],
             [
@@ -1104,6 +1149,78 @@
             'African American',
             'African American',
         ),
+
+        BLACKFIVESUITS: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.BLACK,
+            ],
+            baseColors4plusBlack,
+            false,
+            'Black Suit (with 5 suits)',
+            'Black (5 suits)',
+        ),
+
+        WHITEFIVESUITS: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.WHITE,
+            ],
+            baseColors4,
+            false,
+            'White Suit (with 5 suits)',
+            'White (5 suits)',
+        ),
+
+        RAINBOW1OEFIVESUITS: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.RAINBOW1OE,
+            ],
+            baseColors4,
+            false,
+            'Rainbow (1oE) (with 5 suits)',
+            'Rainbow (1oE) (5 suits)',
+        ),
+
+        UPORDOWN: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+            ],
+            baseColors,
+            false,
+            'Up or Down',
+            'Up or Down',
+        ),
+
+        UPORDOWNRAINBOW: new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors,
+            false,
+            'Up or Down & Rainbow Suit',
+            'Up or Down & Rainbow',
+        ),
+
     };
 
     // This is the mapping that the server uses
@@ -1119,8 +1236,8 @@
         exports.VARIANT.AMBIGUOUS,
         exports.VARIANT.BLUERED,
         exports.VARIANT.COLORBLIND,
-        exports.VARIANT.SINGLERAINBOW,
-        exports.VARIANT.SINGLERAINBOWBLACK,
+        exports.VARIANT.RAINBOW1OE,
+        exports.VARIANT.RAINBOW1OEBLACK,
         exports.VARIANT.WHITE,
         exports.VARIANT.RAINBOWMULTIFIVES,
         exports.VARIANT.FOURSUITS,
@@ -1129,6 +1246,11 @@
         exports.VARIANT.THREESUITS,
         exports.VARIANT.RAINBOWTHREESUITS,
         exports.VARIANT.AFRICANAMERICAN,
+        exports.VARIANT.BLACKFIVESUITS,
+        exports.VARIANT.WHITEFIVESUITS,
+        exports.VARIANT.RAINBOW1OEFIVESUITS,
+        exports.VARIANT.UPORDOWN,
+        exports.VARIANT.UPORDOWNRAINBOW,
     ];
 
     exports.INDICATOR = {

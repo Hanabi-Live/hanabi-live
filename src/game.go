@@ -24,25 +24,26 @@ type Game struct {
 	DatetimeFinished   time.Time
 	EndCondition       int // See "database_schema.sql" for mappings
 
-	Seed          string
-	Deck          []*Card
-	DeckIndex     int
-	Stacks        []int
-	Turn          int
-	TurnsInverted bool
-	ActivePlayer  int
-	Clues         int
-	Score         int
-	MaxScore      int
-	Progress      int
-	Strikes       int
-	Actions       []Action // We don't want this to be a pointer because this simplifies scrubbing
-	Sound         string
-	TurnBeginTime time.Time
-	EndPlayer     int                // Set when the final card is drawn to determine when the game should end
-	EndTurn       int                // Set when the game ends (to be used in Shared Replays)
-	BlindPlays    int                // The number of consecutive blind plays
-	Chat          []*GameChatMessage // All of the in-game chat history
+	Seed            string
+	Deck            []*Card
+	DeckIndex       int
+	Stacks          []int
+	StackDirections []int // The possible values for this are listed in "constants.go"
+	Turn            int
+	TurnsInverted   bool
+	ActivePlayer    int
+	Clues           int
+	Score           int
+	MaxScore        int
+	Progress        int
+	Strikes         int
+	Actions         []Action // We don't want this to be a pointer because this simplifies scrubbing
+	Sound           string
+	TurnBeginTime   time.Time
+	EndPlayer       int                // Set when the final card is drawn to determine when the game should end
+	EndTurn         int                // Set when the game ends (to be used in Shared Replays)
+	BlindPlays      int                // The number of consecutive blind plays
+	Chat            []*GameChatMessage // All of the in-game chat history
 }
 
 type Options struct {
