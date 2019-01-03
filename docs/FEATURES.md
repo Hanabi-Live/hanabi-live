@@ -75,7 +75,7 @@ The server was originally an attempt to emulate the [Keldon Hanabi server](http:
 #### Bottom Deck Blind Plays
 
 * Each game has the option to allow a special "house" rule.
-* If enabled, if there is 1 card left in the deck, players are allowed to blind play it.
+* If enabled, when there is 1 card left in the deck, players are allowed to blind play it.
 * This is done by dragging the deck on to the play area.
 * A golden border will appear around the deck when there is 1 card left in order to signify that this is possible.
 * This feature can prevent losses that occur from being "bottom decked" by a 3 or a 4 that was impossible to save in the early or mid-game.
