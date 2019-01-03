@@ -3573,6 +3573,13 @@ function HanabiUI(lobby, gameID) {
         });
 
         /*
+            Draw the arrows for the stacks
+            (for the "Up or Down" variants)
+        */
+
+        // TODO
+
+        /*
             Draw the deck
         */
 

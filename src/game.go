@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
@@ -99,7 +100,14 @@ func (g *Game) GetSpectatorIndex(id int) int {
 	return -1
 }
 
+// UpdateMaxScore goes through the deck to see if needed cards have been discarded
 func (g *Game) UpdateMaxScore() {
+	// Don't bother adjusting the maximum score if we are playing a "Up or Down" variant,
+	// as it is more difficult to calculate which cards are still needed
+	if strings.HasPrefix(variants(g.Options.Variant).Name, "Up or Down") {
+		return
+	}
+
 	g.MaxScore = 0
 	for suit := range g.Stacks {
 		for rank := 1; rank <= 5; rank++ {
@@ -464,6 +472,11 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// Check to see if there are any cards remaining that can be played on the stacks
+	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
+		// Don't bother searching through the deck if we are playing an "Up or Down" variant,
+		// as it is more difficult to calculate which cards are still needed
+		return false
+	}
 	for i, stackLen := range g.Stacks {
 		// Search through the deck
 		neededSuit := i
