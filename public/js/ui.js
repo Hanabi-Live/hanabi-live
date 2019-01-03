@@ -3450,7 +3450,7 @@ function HanabiUI(lobby, gameID) {
         */
 
         let pileback;
-        if (this.variant.suits.length === 6) {
+        if (this.variant.suits.length === 6 || this.variant.name.startsWith('Up or Down')) {
             y = 0.04;
             width = 0.06;
             height = 0.151;
@@ -3463,21 +3463,20 @@ function HanabiUI(lobby, gameID) {
         }
 
         // TODO: move blocks like this into their own functions
-        let playAreaY = 0.345;
-        if (this.variant.showSuitNames) {
-            playAreaY = 0.327;
-        }
         const playStackValues = {
             x: 0.183,
-            y: playAreaY + yOffset,
+            y: 0.345 + yOffset,
             spacing: 0.015,
         };
+        if (this.variant.showSuitNames) {
+            playStackValues.y -= 0.018;
+        }
         if (lobby.showBGAUI) {
             playStackValues.x = actionLogValues.x;
             playStackValues.y = actionLogValues.y + actionLogValues.h + 0.02;
             playStackValues.spacing = 0.006;
         }
-        if (this.variant.suits.length === 4) {
+        if (this.variant.suits.length === 4 || this.variant.name === 'Up or Down') {
             // If there are only 4 stacks, they will be left-aligned instead of centered
             // So, center them by moving them to the right a little bit
             playStackValues.x += ((width + playStackValues.spacing) / 2);
@@ -3486,6 +3485,7 @@ function HanabiUI(lobby, gameID) {
             // So, center them by moving them to the right a little bit
             playStackValues.x += ((width + playStackValues.spacing) / 2) * 2;
         }
+        this.suitLabelTexts = [];
         {
             let i = 0;
             for (const suit of this.variant.suits) {
@@ -3532,6 +3532,9 @@ function HanabiUI(lobby, gameID) {
                         const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
                         text += ` [${colorList}]`;
                     }
+                    if (this.variant.name.startsWith('Up or Down')) {
+                        text = '';
+                    }
 
                     const suitLabelText = new FitText({
                         x: (playStackValues.x - 0.01 + (width + playStackValues.spacing) * i) * winW,
@@ -3545,6 +3548,7 @@ function HanabiUI(lobby, gameID) {
                         fill: '#d8d5ef',
                     });
                     textLayer.add(suitLabelText);
+                    this.suitLabelTexts.push(suitLabelText);
                 }
 
                 i += 1;
@@ -3571,13 +3575,6 @@ function HanabiUI(lobby, gameID) {
             width: (playAreaValues.w + overlap * 2) * winW,
             height: (playAreaValues.h + overlap * 2) * winH,
         });
-
-        /*
-            Draw the arrows for the stacks
-            (for the "Up or Down" variants)
-        */
-
-        // TODO
 
         /*
             Draw the deck
@@ -4636,7 +4633,6 @@ function HanabiUI(lobby, gameID) {
             const getOrderFromSlot = (slot) => {
                 const playerCards = playerHands[ui.playerUs].children;
                 const maxSlotIndex = playerCards.length;
-                console.log(slot);
                 return playerCards[maxSlotIndex - slot].children[0].order;
             };
             const speedrunAction = (type, target, clue = null) => {
@@ -5696,6 +5692,25 @@ Keyboard hotkeys:
         } else if (type === 'boot') {
             this.stopLocalTimer();
             ui.lobby.gameEnded();
+        } else if (type === 'suitDirections') {
+            for (let i = 0; i < data.directions.length; i++) {
+                let direction = data.directions[i];
+                let text;
+		if (direction === 0) {
+                    text = ''; // Undecided
+                } else if (direction === 1) {
+                    text = 'Up';
+                } else if (direction === 2) {
+                    text = 'Down';
+                } else if (direction === 3) {
+                    text = 'Finished';
+                } else {
+                    text = 'Unknown';
+                }
+                this.suitLabelTexts[i].setText(text);
+                textLayer.draw();
+                console.log('SET TEXT TO:', text);
+            }
         }
     };
 

@@ -104,7 +104,7 @@ func (g *Game) GetSpectatorIndex(id int) int {
 func (g *Game) UpdateMaxScore() {
 	// Don't bother adjusting the maximum score if we are playing a "Up or Down" variant,
 	// as it is more difficult to calculate which cards are still needed
-	if strings.HasPrefix(variants(g.Options.Variant).Name, "Up or Down") {
+	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
 		return
 	}
 

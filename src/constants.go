@@ -33,6 +33,7 @@ const (
 	stackDirectionUndecided = iota
 	stackDirectionUp
 	stackDirectionDown
+	stackDirectionFinished
 )
 
 const (

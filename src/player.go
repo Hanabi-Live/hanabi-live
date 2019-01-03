@@ -177,13 +177,16 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 			}
 
 		} else if g.StackDirections[c.Suit] == stackDirectionUp {
-			// We don't have to do anything if this is a "normal" stack that is going from 1 to 5,
+			// We don't have to check for failure if this is a "normal" stack that is going from 1 to 5,
 			// because we just checked for that situation above
-
+			if c.Rank == 5 {
+				g.StackDirections[c.Suit] = stackDirectionFinished
+			}
 		} else if g.StackDirections[c.Suit] == stackDirectionDown {
 			failed = c.Rank != g.Stacks[c.Suit]-1 && c.Rank != 0
-		} else {
-			log.Error("Unknown stack direction for suit:", g.StackDirections[c.Suit])
+			if c.Rank == 1 {
+				g.StackDirections[c.Suit] = stackDirectionFinished
+			}
 		}
 	}
 
@@ -256,6 +259,16 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	})
 	g.NotifyAction()
 	log.Info(g.GetName() + text)
+
+	// Send the stack directions
+	// (for "Up or Down" variants)
+	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
+		g.Actions = append(g.Actions, Action{
+			Type:       "suitDirections",
+			Directions: g.StackDirections,
+		})
+		g.NotifyAction()
+	}
 
 	// Give the team a clue if the final card of the suit was played
 	// (this will always be a 5 unless it is a custom variant)
