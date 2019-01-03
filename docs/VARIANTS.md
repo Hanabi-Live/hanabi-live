@@ -31,14 +31,14 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 ### Dual-color Suits
 
-* All suits are changed to be "touched" by two separate colors:
+* The suits are changed to be "touched" by two separate colors:
   1. Green (blue / yellow)
   2. Purple (blue / red)
   3. Navy (blue / black)
   4. Orange (yellow / red)
   5. Tan (yellow / black)
   6. Burgundy (red / black)
-* There are only 4 types of color clues available:
+* There are 4 types of color clues available:
   1. Blue
   2. Yellow
   3. Red
@@ -46,18 +46,18 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 ### Dual-color & Rainbow Suits
 
-* 5 suits are changed to be "touched" by two separate colors:
+* The suits are changed to be "touched" by two separate colors:
   1. Teal (blue / green)
   2. Lime (green / yellow)
   3. Orange (yellow / red)
   4. Cardinal (red / purple)
   5. Indigo (blue / purple)
 * A rainbow suit is added as a 6th suit.
-* The standard color clue types are available.
 
 ### White & Rainbow Suits
 
 * The purple suit is replaced with a white suit.
+* No color clues "touch" the white suit.
 * A rainbow suit is added as a 6th suit.
 
 ### Wild & Crazy
@@ -206,7 +206,17 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   2. Purple (blue / red)
   3. Orange (yellow / red)
 * A rainbow suit is added as a 4th suit.
-* All color clues will "touch" the rainbow suit.
+* There are only 3 types of color clues available:
+  1. Blue
+  2. Red
+  3. Yellow
+
+### Dual-color Suits (with 3 suits)
+
+* 3 suits are changed to be "touched" by two separate colors:
+  1. Green (blue / yellow)
+  2. Purple (blue / red)
+  3. Orange (yellow / red)
 * There are only 3 types of color clues available:
   1. Blue
   2. Red
@@ -243,7 +253,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   1. Blue
   2. Red
 
-### Blue & Red & Rainbow Suits (with 5 suits)
+### Blue & Red & Rainbow Suits
 
 * Two suits share a color. The suits are as follows:
   1. Sky (blue)
@@ -254,3 +264,17 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * There are 2 types of color clues available:
   1. Blue
   2. Red
+
+### Color Blind (5 Suits)
+
+* Color clues touch no suits. (Empty color clues are always allowed.)
+
+### Color Blind (4 Suits)
+
+* Color clues touch no suits. (Empty color clues are always allowed.)
+* The purple suit is removed.
+
+### Color Blind (3 Suits)
+
+* Color clues touch no suits. (Empty color clues are always allowed.)
+* The red and purple suit is removed.
