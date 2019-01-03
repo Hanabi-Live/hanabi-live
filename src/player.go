@@ -278,6 +278,7 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
 		extraClue = (c.Rank == 5 && g.StackDirections[c.Suit] == stackDirectionUp) ||
 			(c.Rank == 1 && g.StackDirections[c.Suit] == stackDirectionDown)
+		log.Debug("GETTING HERE:", extraClue)
 	}
 
 	if extraClue {
