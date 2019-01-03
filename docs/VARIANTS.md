@@ -277,4 +277,4 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### Color Blind (3 Suits)
 
 * Color clues touch no suits. (Empty color clues are always allowed.)
-* The red and purple suit is removed.
+* The red and purple suit are removed.
