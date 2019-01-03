@@ -84,7 +84,7 @@ The server was originally an attempt to emulate the [Keldon Hanabi server](http:
 
 * By default, it is not possible to give an "empty" clue, which is a clue that touches 0 cards.
 * Each game has the option to allow empty clues.
-* This option is to faciliate Hanabi players who play with a specific "positional" convention framework.
+* More information on the history of empty clues can be found in the [Hyphen-ated conventions repository](https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Empty_Clues.md#history).
 
 #### Detrimental Character Assignments
 
