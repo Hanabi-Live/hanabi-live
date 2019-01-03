@@ -5709,7 +5709,6 @@ Keyboard hotkeys:
                 }
                 this.suitLabelTexts[i].setText(text);
                 textLayer.draw();
-                console.log('SET TEXT TO:', text);
             }
         }
     };

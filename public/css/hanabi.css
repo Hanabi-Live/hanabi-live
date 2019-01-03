@@ -301,6 +301,11 @@ a {
     font-size: 1em;
 }
 
+.create-game-icon-up {
+    position: relative;
+    bottom: 0.75em;
+}
+
 /*
     In-game tooltips
 */
