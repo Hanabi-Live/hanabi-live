@@ -278,3 +278,8 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 * Color clues touch no suits. (Empty color clues are always allowed.)
 * The red and purple suit are removed.
+
+### Rainbow & Multi-Fives (6 Suits)
+
+* A rainbow suit is added as a 6th suit.
+* Furthermore, all rank clues will touch 5's of any suit.
