@@ -817,7 +817,21 @@
         COLOR: 1,
     };
 
-    const Variant = function Variant(suits, clueColors, showSuitNames, name, nameShort) {
+    // From: https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
+    const efficiencyArrays = {
+        sixSuits: [0.86, 0.97, 1.07],
+        sixSuits1oE: [1.00, 1.15, 1.30],
+        sixSuitsUoD: [1.03, 1.20, 1.36],
+        sixSuits1oEx2: [1.20, 1.43, 1.67],
+        fiveSuits: [0.86, 1.00, 1.14],
+        fiveSuits1oE: [1.04, 1.25, 1.47],
+        fiveSuitsUoD: [1.04, 1.25, 1.47],
+        fourSuits: [0.87, 1.05, 1.25],
+        fourSuits1oE: [1.11, 1.43, 1.82],
+        threeSuits: [0.88, 1.15, 1.50],
+    };
+
+    const Variant = function Variant(suits, clueColors, showSuitNames, name, nameShort, efficiencyArray) {
         this.suits = suits;
         this.ranks = [1, 2, 3, 4, 5];
         this.clueColors = clueColors;
@@ -826,6 +840,7 @@
         this.nameShort = nameShort;
         this.offsetCardIndicators = suits.some(s => s !== exports.SUIT.RAINBOW && s.clueColors.length > 1);
         this.maxScore = suits.length * 5;
+        this.efficiencyArray = efficiencyArray;
     };
 
     exports.VARIANT = {
@@ -841,6 +856,7 @@
             false,
             'None',
             'No Variant',
+            efficiencyArrays.fiveSuits,
         ),
 
         ORANGE: new Variant(
@@ -856,6 +872,7 @@
             false,
             'Orange Suit',
             'Orange',
+            efficiencyArrays.sixSuits,
         ),
 
         BLACK: new Variant(
@@ -871,6 +888,7 @@
             false,
             'Black Suit (one of each)',
             'Black (1oE)',
+            efficiencyArrays.sixSuits1oE,
         ),
 
         RAINBOW: new Variant(
@@ -886,6 +904,7 @@
             false,
             'Rainbow Suit (all colors)',
             'Rainbow',
+            efficiencyArrays.sixSuits,
         ),
 
         DUAL: new Variant(
@@ -906,6 +925,7 @@
             true,
             'Dual-color Suits',
             'Dual-color',
+            efficiencyArrays.sixSuits,
         ),
 
         DUALRAINBOW: new Variant(
@@ -921,6 +941,7 @@
             true,
             'Dual-color & Rainbow Suits',
             'Dual & Rainbow',
+            efficiencyArrays.sixSuits,
         ),
 
         WHITERAINBOW: new Variant(
@@ -936,6 +957,7 @@
             false,
             'White & Rainbow Suits',
             'White & Rainbow',
+            efficiencyArrays.sixSuits,
         ),
 
         CRAZY: new Variant(
@@ -956,6 +978,7 @@
             true,
             'Wild & Crazy',
             'Wild & Crazy',
+            efficiencyArrays.sixSuits1oE,
         ),
 
         AMBIGUOUS: new Variant(
@@ -977,6 +1000,7 @@
             true,
             'Ambiguous Suits',
             'Ambiguous',
+            efficiencyArrays.sixSuits,
         ),
 
         BLUERED: new Variant(
@@ -995,6 +1019,7 @@
             true,
             'Blue & Red Suits',
             'Blue & Red',
+            efficiencyArrays.sixSuits,
         ),
 
         COLORBLIND: new Variant(
@@ -1010,6 +1035,7 @@
             false,
             'Color Blind',
             'Color Blind',
+            efficiencyArrays.sixSuits,
         ),
 
         RAINBOW1OE: new Variant(
@@ -1025,6 +1051,7 @@
             false,
             'Rainbow Suit (one of each)',
             'Rainbow (1oE)',
+            efficiencyArrays.sixSuits1oE,
         ),
 
         RAINBOW1OEBLACK: new Variant(
@@ -1040,6 +1067,7 @@
             false,
             'Rainbow & Black Suits (one of each)',
             'Rainbow & Black (1oE)',
+            efficiencyArrays.sixSuits1oEx2,
         ),
 
         WHITE: new Variant(
@@ -1055,6 +1083,7 @@
             false,
             'White Suit',
             'White',
+            efficiencyArrays.sixSuits,
         ),
 
         RAINBOWMULTIFIVES: new Variant(
@@ -1069,6 +1098,7 @@
             false,
             'Rainbow Suit & Multi-fives',
             'Rainbow & Multi-fives',
+            efficiencyArrays.fiveSuits,
         ),
 
         FOURSUITS: new Variant(
@@ -1082,6 +1112,7 @@
             false,
             'Four Suits',
             'Four Suits',
+            efficiencyArrays.fourSuits,
         ),
 
         RAINBOWFIVESUITS: new Variant(
@@ -1096,6 +1127,7 @@
             false,
             'Rainbow Suit (with 5 suits)',
             'Rainbow (5 suits)',
+            efficiencyArrays.fiveSuits,
         ),
 
         RAINBOWFOURSUITS: new Variant(
@@ -1109,6 +1141,7 @@
             false,
             'Rainbow Suit (with 4 suits)',
             'Rainbow (4 suits)',
+            efficiencyArrays.fourSuits,
         ),
 
         THREESUITS: new Variant(
@@ -1121,6 +1154,7 @@
             false,
             'Three Suits',
             'Three Suits',
+            efficiencyArrays.threeSuits,
         ),
 
         RAINBOWTHREESUITS: new Variant(
@@ -1133,6 +1167,7 @@
             false,
             'Rainbow Suit (with 3 suits)',
             'Rainbow (3 suits)',
+            efficiencyArrays.threeSuits,
         ),
 
         AFRICANAMERICAN: new Variant(
@@ -1152,6 +1187,7 @@
             true,
             'African American',
             'African American',
+            efficiencyArrays.sixSuits1oE,
         ),
 
         BLACKFIVESUITS: new Variant(
@@ -1166,6 +1202,7 @@
             false,
             'Black Suit (with 5 suits)',
             'Black (5 suits)',
+            efficiencyArrays.fiveSuits1oE,
         ),
 
         WHITEFIVESUITS: new Variant(
@@ -1180,6 +1217,7 @@
             false,
             'White Suit (with 5 suits)',
             'White (5 suits)',
+            efficiencyArrays.fiveSuits,
         ),
 
         RAINBOW1OEFIVESUITS: new Variant(
@@ -1194,6 +1232,7 @@
             false,
             'Rainbow (1oE) (with 5 suits)',
             'Rainbow (1oE) (5 suits)',
+            efficiencyArrays.fiveSuits1oE,
         ),
 
         UPORDOWN: new Variant(
@@ -1208,6 +1247,7 @@
             true,
             'Up or Down',
             'Up or Down',
+            efficiencyArrays.fiveSuitsUoD,
         ),
 
         UPORDOWNRAINBOW: new Variant(
@@ -1223,6 +1263,7 @@
             true,
             'Up or Down & Rainbow Suit',
             'Up or Down & Rainbow',
+            efficiencyArrays.sixSuitsUoD,
         ),
 
     };

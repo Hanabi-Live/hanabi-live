@@ -3408,7 +3408,7 @@ function HanabiUI(lobby, gameID) {
 
         paceTextLabel = basicTextLabel.clone({
             text: 'Pace',
-            x: 0.83 * winW,
+            x: 0.825 * winW,
             y: 0.54 * winH,
             fontSize: 0.02 * winH,
         });
@@ -3416,15 +3416,16 @@ function HanabiUI(lobby, gameID) {
 
         paceNumberLabel = basicNumberLabel.clone({
             text: '-',
-            x: 0.925 * winW,
+            x: 0.9 * winW,
             y: 0.54 * winH,
             fontSize: 0.02 * winH,
+            align: 'left',
         });
         UILayer.add(paceNumberLabel);
 
         efficiencyTextLabel = basicTextLabel.clone({
             text: 'Efficiency',
-            x: 0.83 * winW,
+            x: 0.825 * winW,
             y: 0.56 * winH,
             fontSize: 0.02 * winH,
         });
@@ -3432,17 +3433,27 @@ function HanabiUI(lobby, gameID) {
 
         efficiencyNumberLabel = basicNumberLabel.clone({
             text: '-',
-            x: 0.915 * winW,
+            x: 0.9 * winW,
             y: 0.56 * winH,
-            width: 0.04 * winW,
+            width: 0.08 * winW,
             fontSize: 0.02 * winH,
+            align: 'left',
         });
         UILayer.add(efficiencyNumberLabel);
 
         this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
             this.cardsGotten += cardsGottenDelta;
-            this.efficiency = this.cardsGotten / this.cluesSpentPlusStrikes;
-            efficiencyNumberLabel.setText(`${this.efficiency.toFixed(2)}`);
+            const efficiency = (this.cardsGotten / this.cluesSpentPlusStrikes).toFixed(2); // Round it to 2 decimal places
+            let efficiencyIndex;
+            if (this.playerNames.length === 2) {
+                efficiencyIndex = 0;
+            } else if (this.playerNames.length === 5) {
+                efficiencyIndex = 2;
+            } else {
+                efficiencyIndex = 1;
+            }
+            const minEfficiency = this.variant.efficiencyArray[efficiencyIndex];
+            efficiencyNumberLabel.setText(`${efficiency} / ${minEfficiency}`);
         };
 
         /*
