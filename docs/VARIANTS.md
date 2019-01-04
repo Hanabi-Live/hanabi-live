@@ -283,3 +283,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 * A rainbow suit is added as a 6th suit.
 * Furthermore, all rank clues will touch 5's of any suit.
+
+### Up or Down (6 suits)
+
+* TBD
