@@ -5694,9 +5694,9 @@ Keyboard hotkeys:
             ui.lobby.gameEnded();
         } else if (type === 'suitDirections') {
             for (let i = 0; i < data.directions.length; i++) {
-                let direction = data.directions[i];
+                const direction = data.directions[i];
                 let text;
-		if (direction === 0) {
+                if (direction === 0) {
                     text = ''; // Undecided
                 } else if (direction === 1) {
                     text = 'Up';
