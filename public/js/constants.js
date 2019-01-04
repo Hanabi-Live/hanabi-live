@@ -230,6 +230,10 @@
         exports.COLOR.GREEN,
         exports.COLOR.YELLOW,
     ];
+    const baseColors2 = [
+        exports.COLOR.BLUE,
+        exports.COLOR.GREEN,
+    ];
 
     // Specify between solid color and gradients,
     // along with additional args in the case of gradients
@@ -382,6 +386,16 @@
             basicCardFillSpec,
             exports.SHAPE.CRESCENT,
             [exports.COLOR.PURPLE],
+        ),
+
+        // Gray suit represents cards of unknown suit. It must not be included in variants.
+        GRAY: new Suit(
+            'Gray',
+            '',
+            exports.COLOR.GRAY,
+            basicCardFillSpec,
+            null,
+            [],
         ),
 
         ORANGE: new Suit(
@@ -590,16 +604,6 @@
             basicCardFillSpec,
             exports.SHAPE.STAR,
             [exports.COLOR.WHITE],
-        ),
-
-        // Gray suit represents cards of unknown suit. It must not be included in variants.
-        GRAY: new Suit(
-            'Gray',
-            '',
-            exports.COLOR.GRAY,
-            basicCardFillSpec,
-            null,
-            [],
         ),
 
         LBLUE: new Suit(
@@ -1125,7 +1129,7 @@
                 exports.SUIT.GREEN,
                 exports.SUIT.RAINBOW,
             ],
-            baseColors3,
+            baseColors2,
             false,
             'Rainbow Suit (with 3 suits)',
             'Rainbow (3 suits)',

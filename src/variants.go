@@ -224,7 +224,7 @@ var (
 		Variant{
 			Name:  "Rainbow Suit (3 Suits)",
 			Suits: []Suit{BlueSuit, GreenSuit, RainbowSuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
+			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 		Variant{
 			Name:  "African American",

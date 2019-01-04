@@ -754,7 +754,7 @@ function HanabiUI(lobby, gameID) {
                         x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25),
                         y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3),
                     },
-                    fill: ((suit === SUIT.RAINBOW || suit === SUIT.SINGLERAINBOW) ? undefined : suit.fillColors.hexCode),
+                    fill: ((suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) ? undefined : suit.fillColors.hexCode),
                     stroke: 'black',
                     name: suit.name,
                     listening: false,
@@ -766,7 +766,7 @@ function HanabiUI(lobby, gameID) {
                 });
 
                 // Gradient numbers are magic
-                if (suit === SUIT.RAINBOW || suit === SUIT.SINGLERAINBOW) {
+                if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
                     suitPip.fillRadialGradientColorStops([
                         0.3, suit.fillColors[0].hexCode,
                         0.425, suit.fillColors[1].hexCode,
@@ -2414,7 +2414,7 @@ function HanabiUI(lobby, gameID) {
                 const clueColor = clue.value;
                 if (
                     card.trueSuit === SUIT.RAINBOW ||
-                    card.trueSuit === SUIT.SINGLERAINBOW ||
+                    card.trueSuit === SUIT.RAINBOW1OE ||
                     card.trueSuit.clueColors.includes(clueColor)
                 ) {
                     touched = true;
@@ -3527,7 +3527,7 @@ function HanabiUI(lobby, gameID) {
                         lobby.showColorblindUI &&
                         suit.clueColors.length > 1 &&
                         suit !== SUIT.RAINBOW &&
-                        suit !== SUIT.SINGLERAINBOW
+                        suit !== SUIT.RAINBOW1OE
                     ) {
                         const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
                         text += ` [${colorList}]`;
