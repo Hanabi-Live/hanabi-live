@@ -443,7 +443,7 @@ func isCluedBy(list []ColorClue, item ColorClue) bool {
 
 func variantIsClueLegal(variant string, clue Clue) bool {
 	// You are not allowed to clue number 5 in the "Multi-Fives" variants
-	if variant == "Rainbow & Multi-fives" && clue.Type == clueTypeNumber && clue.Value == 5 {
+	if strings.HasPrefix(variant, "Multi-Fives") && clue.Type == clueTypeNumber && clue.Value == 5 {
 		return false
 	}
 
