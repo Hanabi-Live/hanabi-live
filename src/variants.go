@@ -10,7 +10,8 @@ import (
 */
 
 type Variant struct {
-	ID int
+	Name string
+	ID   int
 	// Each variant must have a unique numerical ID for seed generation purposes
 	// Prior to January 2019, variants were identified as number instead of name
 	// For variants created prior to this date, the ID also doubles as the original numerical identifier
@@ -114,63 +115,74 @@ var (
 
 // Variants
 var (
-	variants   map[string]Variant
-	variantsID map[int]string
+	variantDefinitions []Variant
+	variants           map[string]Variant
+	variantsID         map[int]string
 )
 
 func variantsInit() {
-	variants = map[string]Variant{
+	variantDefinitions = []Variant{
 		// Normal
-		"No Variant": Variant{
+		Variant{
+			Name:  "No Variant",
 			ID:    0,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
-		"Six Suits": Variant{
+		Variant{
+			Name:  "Six Suits",
 			ID:    1,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
 		},
-		"Four Suits": Variant{
+		Variant{
+			Name:  "Four Suits",
 			ID:    15,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
-		"Three Suits": Variant{
+		Variant{
+			Name:  "Three Suits",
 			ID:    18,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
 
 		// White
-		"White (6 Suits)": Variant{
+		Variant{
+			Name:  "White (6 Suits)",
 			ID:    13,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, WhiteSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
-		"White (5 Suits)": Variant{
+		Variant{
+			Name:  "White (5 Suits)",
 			ID:    22,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
-		"White (4 Suits)": Variant{
+		Variant{
+			Name:  "White (4 Suits)",
 			ID:    26,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, WhiteSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
-		"White (3 Suits)": Variant{
+		Variant{
+			Name:  "White (3 Suits)",
 			ID:    27,
 			Suits: []Suit{BlueSuit, GreenSuit, WhiteSuit},
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
 		// Black
-		"Black (6 Suits)": Variant{
+		Variant{
+			Name:  "Black (6 Suits)",
 			ID:    2,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, BlackSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, BlackClue},
 		},
-		"Black (5 Suits)": Variant{
+		Variant{
+			Name:  "Black (5 Suits)",
 			ID:    21,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BlackSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
@@ -178,57 +190,67 @@ func variantsInit() {
 		// "Black (4 Suits)" would be too difficult
 
 		// Rainbow
-		"Rainbow (6 Suits)": Variant{
+		Variant{
+			Name:  "Rainbow (6 Suits)",
 			ID:    3,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
-		"Rainbow (5 Suits)": Variant{
+		Variant{
+			Name:  "Rainbow (5 Suits)",
 			ID:    16,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
-		"Rainbow (4 Suits)": Variant{
+		Variant{
+			Name:  "Rainbow (4 Suits)",
 			ID:    17,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
-		"Rainbow (3 Suits)": Variant{
+		Variant{
+			Name:  "Rainbow (3 Suits)",
 			ID:    19,
 			Suits: []Suit{BlueSuit, GreenSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
 		// White & Rainbow
-		"White & Rainbow (6 Suits)": Variant{
+		Variant{
+			Name:  "White & Rainbow (6 Suits)",
 			ID:    6,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
-		"White & Rainbow (5 Suits)": Variant{
+		Variant{
+			Name:  "White & Rainbow (5 Suits)",
 			ID:    28,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, WhiteSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
-		"White & Rainbow (4 Suits)": Variant{
+		Variant{
+			Name:  "White & Rainbow (4 Suits)",
 			ID:    29,
 			Suits: []Suit{BlueSuit, GreenSuit, WhiteSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
 		// Dark Rainbow
-		"Dark Rainbow (6 Suits)": Variant{
+		Variant{
+			Name:  "Dark Rainbow (6 Suits)",
 			ID:    11,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, Rainbow1oESuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
-		"Dark Rainbow (5 Suits)": Variant{
+		Variant{
+			Name:  "Dark Rainbow (5 Suits)",
 			ID:    23,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, Rainbow1oESuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
 		// "Dark Rainbow (4 Suits)" would be too difficult
-		"Black & Dark Rainbow (6 Suits)": Variant{
+		Variant{
+			Name:  "Black & Dark Rainbow (6 Suits)",
 			ID:    12,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BlackSuit, Rainbow1oESuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
@@ -236,168 +258,199 @@ func variantsInit() {
 		// "Black & Dark Rainbow (5 Suits)" would be too difficult
 
 		// Color Blind
-		"Color Blind (6 Suits)": Variant{
+		Variant{
+			Name:  "Color Blind (6 Suits)",
 			ID:    10,
 			Suits: []Suit{BlindBlueSuit, BlindGreenSuit, BlindYellowSuit, BlindRedSuit, BlindPurpleSuit, BlindOrangeSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
 		},
-		"Color Blind (5 Suits)": Variant{
+		Variant{
+			Name:  "Color Blind (5 Suits)",
 			ID:    33,
 			Suits: []Suit{BlindBlueSuit, BlindGreenSuit, BlindYellowSuit, BlindRedSuit, BlindPurpleSuit, BlindOrangeSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
 		},
-		"Color Blind (4 Suits)": Variant{
+		Variant{
+			Name:  "Color Blind (4 Suits)",
 			ID:    34,
 			Suits: []Suit{BlindBlueSuit, BlindGreenSuit, BlindYellowSuit, BlindRedSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
-		"Color Blind (3 Suits)": Variant{
+		Variant{
+			Name:  "Color Blind (3 Suits)",
 			ID:    35,
 			Suits: []Suit{BlindBlueSuit, BlindGreenSuit, BlindYellowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
 
 		// Ambiguous
-		"Ambiguous (6 Suits)": Variant{
+		Variant{
+			Name:  "Ambiguous (6 Suits)",
 			ID:    8,
 			Suits: []Suit{SkySuit, NavySuit, LimeSuit, ForestSuit, TomatoSuit, MahoganySuit},
 			Clues: []ColorClue{BlueClue, GreenClue, RedClue},
 		},
-		"Very Ambiguous (6 Suits)": Variant{
+		Variant{
+			Name:  "Very Ambiguous (6 Suits)",
 			ID:    9,
 			Suits: []Suit{SkySuit, BerrySuit, NavySuit, TomatoSuit, RubySuit, MahoganySuit},
 			Clues: []ColorClue{BlueClue, RedClue},
 		},
-		"Very Ambiguous (4 Suits)": Variant{
+		Variant{
+			Name:  "Very Ambiguous (4 Suits)",
 			ID:    30,
 			Suits: []Suit{SkySuit, NavySuit, TomatoSuit, MahoganySuit},
 			Clues: []ColorClue{BlueClue, RedClue},
 		},
-		"Very Ambiguous & White (5 Suits)": Variant{
+		Variant{
+			Name:  "Very Ambiguous & White (5 Suits)",
 			ID:    31,
 			Suits: []Suit{SkySuit, NavySuit, TomatoSuit, MahoganySuit, WhiteSuit},
 			Clues: []ColorClue{BlueClue, RedClue},
 		},
-		"Very Ambiguous & Rainbow (5 Suits)": Variant{
+		Variant{
+			Name:  "Very Ambiguous & Rainbow (5 Suits)",
 			ID:    32,
 			Suits: []Suit{SkySuit, NavySuit, TomatoSuit, MahoganySuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, RedClue},
 		},
 
 		// Dual-Color
-		"Dual-Color (6 Suits)": Variant{
+		Variant{
+			Name:  "Dual-Color (6 Suits)",
 			ID:    4,
 			Suits: []Suit{GreenDualSuit, PurpleDualSuit, NavyDualSuit, OrangeDualSuit, TanDualSuit, BurgundyDualSuit},
 			Clues: []ColorClue{BlueClue, YellowClue, RedClue, BlackClue},
 		},
-		"Dual-Color (5 Suits)": Variant{
+		Variant{
+			Name:  "Dual-Color (5 Suits)",
 			ID:    36,
 			Suits: []Suit{TealDualSuit, LimeDualSuit, OrangeDualSuit, CardinalDualSuit, IndigoDualSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
-		"Dual-Color (3 Suits)": Variant{
+		Variant{
+			Name:  "Dual-Color (3 Suits)",
 			ID:    37,
 			Suits: []Suit{GreenDualSuit, PurpleDualSuit, OrangeDualSuit},
 			Clues: []ColorClue{BlueClue, YellowClue, RedClue},
 		},
-		"Dual-Color & Rainbow (6 Suits)": Variant{
+		Variant{
+			Name:  "Dual-Color & Rainbow (6 Suits)",
 			ID:    5,
 			Suits: []Suit{TealDualSuit, LimeDualSuit, OrangeDualSuit, CardinalDualSuit, IndigoDualSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
-		"Dual-Color & Rainbow (4 Suits)": Variant{
+		Variant{
+			Name:  "Dual-Color & Rainbow (4 Suits)",
 			ID:    38,
 			Suits: []Suit{GreenDualSuit, PurpleDualSuit, OrangeDualSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, YellowClue, RedClue},
 		},
 
 		// Multi-Fives
-		"Multi-Fives (6 Suits)": Variant{
+		Variant{
+			Name:  "Multi-Fives (6 Suits)",
 			ID:    45,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
 		},
-		"Multi-Fives (5 Suits)": Variant{
+		Variant{
+			Name:  "Multi-Fives (5 Suits)",
 			ID:    46,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
-		"Multi-Fives (4 Suits)": Variant{
+		Variant{
+			Name:  "Multi-Fives (4 Suits)",
 			ID:    49,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
-		"Multi-Fives (3 Suits)": Variant{
+		Variant{
+			Name:  "Multi-Fives (3 Suits)",
 			ID:    50,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
-		"Multi-Fives & Rainbow (6 Suits)": Variant{
+		Variant{
+			Name:  "Multi-Fives & Rainbow (6 Suits)",
 			ID:    39,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
-		"Multi-Fives & Rainbow (5 Suits)": Variant{
+		Variant{
+			Name:  "Multi-Fives & Rainbow (5 Suits)",
 			ID:    14,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
-		"Multi-Fives & Rainbow (4 Suits)": Variant{
+		Variant{
+			Name:  "Multi-Fives & Rainbow (4 Suits)",
 			ID:    47,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
-		"Multi-Fives & Rainbow (3 Suits)": Variant{
+		Variant{
+			Name:  "Multi-Fives & Rainbow (3 Suits)",
 			ID:    48,
 			Suits: []Suit{BlueSuit, GreenSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
 		// Up or Down
-		"Up or Down (6 Suits)": Variant{
+		Variant{
+			Name:  "Up or Down (6 Suits)",
 			ID:    40,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
 		},
-		"Up or Down (5 Suits)": Variant{
+		Variant{
+			Name:  "Up or Down (5 Suits)",
 			ID:    24,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
 		// "Up or Down (4 Suits)" is too difficult
-		"Up or Down & White (6 Suits)": Variant{
+		Variant{
+			Name:  "Up or Down & White (6 Suits)",
 			ID:    41,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, WhiteSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
-		"Up or Down & White (5 Suits)": Variant{
+		Variant{
+			Name:  "Up or Down & White (5 Suits)",
 			ID:    42,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
-		"Up or Down & Rainbow (6 Suits)": Variant{
+		Variant{
+			Name:  "Up or Down & Rainbow (6 Suits)",
 			ID:    25,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
-		"Up or Down & Rainbow (5 Suits)": Variant{
+		Variant{
+			Name:  "Up or Down & Rainbow (5 Suits)",
 			ID:    43,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
-		"Up or Down & White & Rainbow (6 Suits)": Variant{
+		Variant{
+			Name:  "Up or Down & White & Rainbow (6 Suits)",
 			ID:    44,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit, RainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
 
 		// Mixed
-		"African American": Variant{
+		Variant{
+			Name:  "African American",
 			ID:    20,
 			Suits: []Suit{TomatoSuit, MahoganySuit, WhiteSuit, SkySuit, NavySuit, BlackSuit},
 			Clues: []ColorClue{BlueClue, RedClue, BlackClue},
 		},
-		"Wild & Crazy": Variant{
+		Variant{
+			Name:  "Wild & Crazy",
 			ID:    7,
 			Suits: []Suit{GreenDualSuit, PurpleDualSuit, OrangeDualSuit, WhiteSuit, RainbowSuit, BlackSuit},
 			Clues: []ColorClue{BlueClue, YellowClue, RedClue, BlackClue},
@@ -405,21 +458,27 @@ func variantsInit() {
 	}
 
 	// Validate that all of the ID's are unique
-	for variantName, variant := range variants {
-		for variantName2, variant2 := range variants {
-			if variantName == variantName2 {
+	for _, variant := range variantDefinitions {
+		for _, variant2 := range variantDefinitions {
+			if variant.Name == variant2.Name {
 				continue
 			}
 			if variant.ID == variant2.ID {
-				log.Fatal("Variant \"" + variantName + "\" and \"" + variantName2 + "\" have the same ID (" + strconv.Itoa(variant.ID) + ").")
+				log.Fatal("Variant \"" + variant.Name + "\" and \"" + variant2.Name + "\" have the same ID (" + strconv.Itoa(variant.ID) + ").")
 			}
 		}
 	}
 
-	// Populate a reverse mapping of ID to variant name
+	// Put all of the variants into a map with their name as an index
+	variants = make(map[string]Variant)
+	for _, variant := range variantDefinitions {
+		variants[variant.Name] = variant
+	}
+
+	// Also populate a reverse mapping of ID to variant name
 	variantsID = make(map[int]string)
-	for variantName, variant := range variants {
-		variantsID[variant.ID] = variantName
+	for _, variant := range variantDefinitions {
+		variantsID[variant.ID] = variant.Name
 	}
 }
 

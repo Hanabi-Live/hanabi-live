@@ -55,11 +55,10 @@ func httpProfile(c *gin.Context) {
 
 	totalMaxScoresNumerator := 0
 	totalMaxScoresDenominator := 0
-	i := 0
-	for variant := range variants {
+	for i, variant := range variantDefinitions {
 		var stats models.Stats
-		if v, err := db.Users.GetStats(user.ID, variant); err != nil {
-			log.Error("Failed to get the stats for player \""+user.Username+"\" for variant \""+variant+"\":", err)
+		if v, err := db.Users.GetStats(user.ID, variant.ID); err != nil {
+			log.Error("Failed to get the stats for player \""+user.Username+"\" for variant \""+variant.Name+"\":", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		} else {
@@ -73,9 +72,9 @@ func httpProfile(c *gin.Context) {
 		}
 
 		if i == 0 {
-			text += "No Variant\n"
+			text += variant.Name + "\n"
 		} else {
-			text += "Variant " + strconv.Itoa(i) + " - " + variant + "\n"
+			text += "Variant " + strconv.Itoa(i) + " - " + variant.Name + "\n"
 		}
 
 		text += "- Total games played: " + strconv.Itoa(stats.NumPlayedVariant) + "\n"
@@ -104,8 +103,6 @@ func httpProfile(c *gin.Context) {
 			totalMaxScoresNumerator++
 		}
 		totalMaxScoresDenominator += 4
-
-		i++
 	}
 
 	// Edit in the max scores
