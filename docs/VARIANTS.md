@@ -37,7 +37,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * It works similar to the other suits in that you can clue black cards with black clues.
 * There is only one of each black card in the deck, which means that every black card is "critical".
 
-### Rainbow Variants
+### Rainbow
 
 * A rainbow suit is added.
 * All color clues will "touch" the rainbow suit.
