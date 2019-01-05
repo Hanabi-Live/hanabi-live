@@ -119,7 +119,7 @@ var (
 
 func variantsInit() {
 	variants = map[string]Variant{
-		// "Normal" variants
+		// Normal
 		"None": Variant{
 			ID:    0,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
@@ -141,7 +141,7 @@ func variantsInit() {
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
 
-		// White variants
+		// White
 		"White (6 Suits)": Variant{
 			ID:    13,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, WhiteSuit},
@@ -163,7 +163,7 @@ func variantsInit() {
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
-		// Black variants
+		// Black
 		"Black (6 Suits)": Variant{
 			ID:    2,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, BlackSuit},
@@ -176,7 +176,7 @@ func variantsInit() {
 		},
 		// "Black (4 Suits)" would be too difficult
 
-		// Rainbow variants
+		// Rainbow
 		"Rainbow (6 Suits)": Variant{
 			ID:    3,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, RainbowSuit},
@@ -198,7 +198,7 @@ func variantsInit() {
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
-		// White & Rainbow variants
+		// White & Rainbow
 		"White & Rainbow (6 Suits)": Variant{
 			ID:    6,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit, RainbowSuit},
@@ -215,7 +215,7 @@ func variantsInit() {
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
-		// Dark Rainbow variants
+		// Dark Rainbow
 		"Dark Rainbow (6 Suits)": Variant{
 			ID:    11,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, Rainbow1oESuit},
@@ -234,7 +234,7 @@ func variantsInit() {
 		},
 		// "Black & Dark Rainbow (5 Suits)" would be too difficult
 
-		// Color Blind variants
+		// Color Blind
 		"Color Blind (6 Suits)": Variant{
 			ID:    10,
 			Suits: []Suit{BlindBlueSuit, BlindGreenSuit, BlindYellowSuit, BlindRedSuit, BlindPurpleSuit, BlindOrangeSuit},
@@ -256,7 +256,7 @@ func variantsInit() {
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
 
-		// Ambiguous variants
+		// Ambiguous
 		"Ambiguous (6 Suits)": Variant{
 			ID:    8,
 			Suits: []Suit{SkySuit, NavySuit, LimeSuit, ForestSuit, TomatoSuit, MahoganySuit},
@@ -283,7 +283,7 @@ func variantsInit() {
 			Clues: []ColorClue{BlueClue, RedClue},
 		},
 
-		// Dual-Color variants
+		// Dual-Color
 		"Dual-Color (6 Suits)": Variant{
 			ID:    4,
 			Suits: []Suit{GreenDualSuit, PurpleDualSuit, NavyDualSuit, OrangeDualSuit, TanDualSuit, BurgundyDualSuit},
@@ -310,7 +310,7 @@ func variantsInit() {
 			Clues: []ColorClue{BlueClue, YellowClue, RedClue},
 		},
 
-		// Multi-Fives variants
+		// Multi-Fives
 		"Multi-Fives (6 Suits)": Variant{
 			ID:    45,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
@@ -352,7 +352,7 @@ func variantsInit() {
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
-		// Up or Down variants
+		// Up or Down
 		"Up or Down (6 Suits)": Variant{
 			ID:    40,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
@@ -390,7 +390,7 @@ func variantsInit() {
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
 
-		// Mixed variants
+		// Mixed
 		"African American": Variant{
 			ID:    20,
 			Suits: []Suit{TomatoSuit, MahoganySuit, WhiteSuit, SkySuit, NavySuit, BlackSuit},
@@ -442,7 +442,7 @@ func isCluedBy(list []ColorClue, item ColorClue) bool {
 }
 
 func variantIsClueLegal(variant string, clue Clue) bool {
-	// You are not allowed to clue number 5 in the "Rainbow & Multi-fives" variant
+	// You are not allowed to clue number 5 in the "Multi-Fives" variants
 	if variant == "Rainbow & Multi-fives" && clue.Type == clueTypeNumber && clue.Value == 5 {
 		return false
 	}

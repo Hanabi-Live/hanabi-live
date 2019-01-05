@@ -31,7 +31,7 @@ CREATE TABLE games (
     name                   NVARCHAR(50)  NOT NULL,
     num_players            TINYINT       NOT NULL,
     owner                  INT           NOT NULL,
-    variant                VARCHAR(50)   NOT NULL, /* Equal to the name of the variant, e.g. "None", "Four Suits", etc. */
+    variant                INT           NOT NULL, /* Equal to the variant ID (found in "variants.go") */
     timed                  BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
     time_base              INT           NOT NULL, /* in seconds */
     time_per_turn          INT           NOT NULL, /* in seconds */
