@@ -105,6 +105,8 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * Normal
   * None
   * Six Suits
+  * Four Suits
+  * Three Suits
 * White
   * White (6 Suits)
   * White (5 Suits)
