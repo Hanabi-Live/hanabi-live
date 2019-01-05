@@ -37,7 +37,15 @@ func (c *Card) IsAlreadyPlayed(g *Game) bool {
 	return false
 }
 
+// IsCritical returns true if this card is the last non-discarded card left
+// This is used to indicate "Double Discard" situations and for the sad sound effect
 func (c *Card) IsCritical(g *Game) bool {
+	// For simplicity, START cards are never considered critical
+	// (used in the "Up or Down" variants)
+	if c.Rank == 0 {
+		return false
+	}
+
 	// Search through the deck for other copies of the card
 	for _, deckCard := range g.Deck {
 		if deckCard.Order == c.Order {
@@ -53,9 +61,9 @@ func (c *Card) IsCritical(g *Game) bool {
 	return true
 }
 
+// IsDead returns true if all the copies of some previous rank have been discarded,
+// so it is no longer possible to play this card
 func (c *Card) IsDead(g *Game) bool {
-	// Check to see if the card is "dead"
-	// (meaning that all the copies of some previous rank have been discarded, so it is no longer possible to play this card)
 	if !strings.HasPrefix(g.Options.Variant, "Up or Down") || g.StackDirections[c.Suit] == stackDirectionUp {
 		// This is a "normal" variant where the cards play in order
 		// (or this is a stack going upward in an "Up or Down" variant)
