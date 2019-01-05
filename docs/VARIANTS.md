@@ -83,7 +83,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   3. Lime (green)
   4. Forest (green)
   5. Tomato (red)
-  6. Burgundy (red)
+  6. Mahogany (red)
 * There are 3 types of color clues available:
   1. Blue
   2. Green
@@ -248,7 +248,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   1. Sky (blue)
   2. Navy (blue)
   3. Tomato (red)
-  4. Burgundy (red)
+  4. Mahogany (red)
 * There are 2 types of color clues available:
   1. Blue
   2. Red
@@ -259,7 +259,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   1. Sky (blue)
   2. Navy (blue)
   3. Tomato (red)
-  4. Burgundy (red)
+  4. Mahogany (red)
 * A rainbow suit is as a 6th suit.
 * There are 2 types of color clues available:
   1. Blue
