@@ -48,7 +48,7 @@ type Game struct {
 }
 
 type Options struct {
-	Variant              int
+	Variant              string
 	Timed                bool
 	TimeBase             float64
 	TimePerTurn          int
@@ -104,7 +104,7 @@ func (g *Game) GetSpectatorIndex(id int) int {
 func (g *Game) UpdateMaxScore() {
 	// Don't bother adjusting the maximum score if we are playing a "Up or Down" variant,
 	// as it is more difficult to calculate which cards are still needed
-	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
+	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
 		return
 	}
 
@@ -149,7 +149,7 @@ func (g *Game) NotifyPlayerChange() {
 			Name                 string  `json:"name"`
 			Running              bool    `json:"running"`
 			NumPlayers           int     `json:"numPlayers"`
-			Variant              int     `json:"variant"`
+			Variant              string  `json:"variant"`
 			Timed                bool    `json:"timed"`
 			BaseTime             float64 `json:"baseTime"`
 			TimePerTurn          int     `json:"timePerTurn"`
@@ -472,7 +472,7 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// Check to see if there are any cards remaining that can be played on the stacks
-	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
+	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
 		// Don't bother searching through the deck if we are playing an "Up or Down" variant,
 		// as it is more difficult to calculate which cards are still needed
 		return false

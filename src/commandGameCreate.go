@@ -51,8 +51,15 @@ func commandGameCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that the variant number is valid
-	if d.Variant < 0 || d.Variant >= len(variants) {
+	// Validate that the variant name is valid
+	valid := false
+	for variant := range variants {
+		if d.Variant == variant {
+			valid = true
+			break
+		}
+	}
+	if !valid {
 		s.Warning("That is not a valid variant.")
 		return
 	}

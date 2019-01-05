@@ -69,11 +69,11 @@ func commandGameStart(s *Session, d *CommandData) {
 	// and 70 cards when playing the other variants)
 	suits := make([]int, 0)
 	for i := 0; i < len(variants[g.Options.Variant].Suits); i++ {
-		suits = append(suits, i) // For a "No Variant" game, suits will be equal to {0, 1, 2, 3, 4}
+		suits = append(suits, i) // For a normal game, the suits will be equal to {0, 1, 2, 3, 4}
 	}
 	for _, suit := range suits {
 		ranks := []int{1, 2, 3, 4, 5}
-		if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
+		if strings.HasPrefix(g.Options.Variant, "Up or Down") {
 			ranks = append(ranks, 0) // The 0th rank is the "START" card
 		}
 		for _, rank := range ranks {
@@ -81,7 +81,7 @@ func commandGameStart(s *Session, d *CommandData) {
 			var amountToAdd int
 			if rank == 1 {
 				amountToAdd = 3
-				if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
+				if strings.HasPrefix(g.Options.Variant, "Up or Down") {
 					amountToAdd = 1
 				}
 			} else if rank == 5 {
@@ -228,7 +228,7 @@ func commandGameStart(s *Session, d *CommandData) {
 			seedRegExp = v
 		}
 
-		seedPrefix := "p" + strconv.Itoa(len(g.Players)) + "v" + strconv.Itoa(g.Options.Variant) + "s"
+		seedPrefix := "p" + strconv.Itoa(len(g.Players)) + "v" + strconv.Itoa(variants[g.Options.Variant].ID) + "s"
 		match2 := seedRegExp.FindStringSubmatch(g.Name)
 		if match2 != nil {
 			g.Seed = seedPrefix + match2[1]

@@ -11,7 +11,7 @@ type CommandData struct {
 	// gameCreate
 	Name                 string  `json:"name"`
 	Password             string  `json:"password"`
-	Variant              int     `json:"variant"`
+	Variant              string  `json:"variant"`
 	Timed                bool    `json:"timed"`
 	BaseTimeMinutes      float64 `json:"baseTimeMinutes"`
 	TimePerTurnSeconds   int     `json:"timePerTurnSeconds"`

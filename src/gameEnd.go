@@ -289,7 +289,7 @@ func announceGameResult(g *Game, databaseID int) {
 	}
 	msg := "[" + strings.Join(playerList, ", ") + "] "
 	msg += "finished a"
-	firstLetter := strings.ToLower(variants[g.Options.Variant].Name)[0]
+	firstLetter := strings.ToLower(g.Options.Variant)[0]
 	if firstLetter == 'a' ||
 		firstLetter == 'e' ||
 		firstLetter == 'i' ||
@@ -298,7 +298,7 @@ func announceGameResult(g *Game, databaseID int) {
 
 		msg += "n"
 	}
-	msg += " " + strings.ToLower(variants[g.Options.Variant].Name) + " "
+	msg += " " + strings.ToLower(g.Options.Variant) + " "
 	msg += "game with a score of " + strconv.Itoa(g.Score) + ". "
 	if g.Score == len(g.Stacks)*5 { // This is the theoretical perfect score for this variant (assuming that there are 5 points per stack)
 		msg += pogChamp + " "

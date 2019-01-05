@@ -76,7 +76,7 @@ type Stats struct {
 	StrikeoutRateVariant float64 `json:"strikeoutRateVariant"`
 }
 
-func (*Users) GetStats(userID int, variant int) (Stats, error) {
+func (*Users) GetStats(userID int, variant string) (Stats, error) {
 	var stats Stats
 	err := db.QueryRow(
 		`

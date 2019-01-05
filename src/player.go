@@ -33,7 +33,7 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
 	if len(cardsTouched) == 0 &&
 		// Make an exception for color clues in the "Color Blind" variants
-		(d.Clue.Type != clueTypeColor || !strings.HasPrefix(variants[g.Options.Variant].Name, "Color Blind")) &&
+		(d.Clue.Type != clueTypeColor || !strings.HasPrefix(g.Options.Variant, "Color Blind")) &&
 		// Allow empty clues if the optional setting is enabled
 		!g.Options.EmptyClues &&
 		// Philosphers can only give empty clues
@@ -151,7 +151,7 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	failed := c.Rank != g.Stacks[c.Suit]+1
 
 	// Handle custom variants where the cards to not play in order from 1 to 5
-	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
+	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
 		if g.StackDirections[c.Suit] == stackDirectionUndecided {
 			// If the stack direction is undecided, then there is either no cards played or a "START" card has been played
 			if g.Stacks[c.Suit] == 0 {
@@ -262,7 +262,7 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 
 	// Send the stack directions
 	// (for "Up or Down" variants)
-	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
+	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
 		g.Actions = append(g.Actions, Action{
 			Type:       "suitDirections",
 			Directions: g.StackDirections,
@@ -275,10 +275,9 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	extraClue := c.Rank == 5
 
 	// Handle custom variants that do not play in order from 1 to 5
-	if strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") {
+	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
 		extraClue = (c.Rank == 5 && g.StackDirections[c.Suit] == stackDirectionUp) ||
 			(c.Rank == 1 && g.StackDirections[c.Suit] == stackDirectionDown)
-		log.Debug("GETTING HERE:", extraClue)
 	}
 
 	if extraClue {

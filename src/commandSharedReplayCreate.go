@@ -24,7 +24,7 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	var variant int
+	var variant string
 	if v, err := db.Games.GetVariant(gameID); err != nil {
 		log.Error("Failed to get the variant from the database for game "+strconv.Itoa(gameID)+":", err)
 		s.Error("Failed to initialize the game. Please contact an administrator.")

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Import the database username and password
+source ../.env
+
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="None" WHERE variant=0'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Six Suits" WHERE variant=1'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Black (6 Suits)" WHERE variant=2'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Rainbow (6 Suits)" WHERE variant=3'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Dual-Color (6 Suits)" WHERE variant=4'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Dual-Color & Rainbow (6 Suits)" WHERE variant=5'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="White & Rainbow (6 Suits)" WHERE variant=6'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Wild & Crazy" WHERE variant=7'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Ambiguous (6 Suits)" WHERE variant=8'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Very Ambiguous (6 Suits)" WHERE variant=9'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Color Blind (6 Suits)" WHERE variant=10'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Dark Rainbow (6 Suits)" WHERE variant=11'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Black & Dark Rainbow (6 Suits)" WHERE variant=12'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="White (6 Suits)" WHERE variant=13'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Multi-Fives & Rainbow (5 Suits)" WHERE variant=14'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Four Suits" WHERE variant=15'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Rainbow (5 Suits)" WHERE variant=16'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Rainbow (4 Suits)" WHERE variant=17'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Three Suits" WHERE variant=18'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Rainbow (3 Suits)" WHERE variant=19'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="African American" WHERE variant=20'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Black (5 Suits)" WHERE variant=21'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="White (5 Suits)" WHERE variant=22'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Dark Rainbow (5 Suits)" WHERE variant=23'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Up or Down (5 Suits)" WHERE variant=24'
+mysql -u$DB_USER -p$DB_PASS hanabi -e 'UPDATE games SET variant2="Up or Down & Rainbow (6 Suits)" WHERE variant=25'

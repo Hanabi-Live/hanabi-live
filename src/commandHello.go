@@ -23,7 +23,7 @@ func commandHello(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
 	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
-		var variant int
+		var variant string
 		if v, err := db.Games.GetVariant(gameID); err != nil {
 			log.Error("Failed to get the variant from the database for game "+strconv.Itoa(gameID)+":", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")
@@ -119,7 +119,7 @@ func commandHello(s *Session, d *CommandData) {
 		ReorderCards         bool     `json:"reorderCards"`
 		DeckPlays            bool     `json:"deckPlays"`
 		EmptyClues           bool     `json:"emptyClues"`
-		Variant              int      `json:"variant"`
+		Variant              string   `json:"variant"`
 		SharedReplay         bool     `json:"sharedReplay"`
 	}
 	replay := false

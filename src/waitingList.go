@@ -126,7 +126,7 @@ func waitingListAlert(g *Game, creator string) {
 	waitingList = make([]*models.Waiter, 0)
 
 	// Alert all of the people on the waiting list
-	alert := creator + " created a table. (" + variants[g.Options.Variant].Name + ")\n" + mentionList
+	alert := creator + " created a table. (" + g.Options.Variant + ")\n" + mentionList
 	chatServerSend(alert)
 }
 

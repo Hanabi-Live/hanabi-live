@@ -15,7 +15,7 @@ type GameRow struct {
 	Name                 string
 	NumPlayers           int
 	Owner                int
-	Variant              int
+	Variant              string
 	Timed                bool
 	TimeBase             int
 	TimePerTurn          int
@@ -128,7 +128,7 @@ type GameHistory struct {
 	ID               int
 	NumPlayers       int
 	Score            int
-	Variant          int
+	Variant          string
 	DatetimeFinished time.Time
 	Seed             string
 	NumSimilar       int
@@ -285,8 +285,8 @@ func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
 	return seeds, nil
 }
 
-func (*Games) GetVariant(databaseID int) (int, error) {
-	var variant int
+func (*Games) GetVariant(databaseID int) (string, error) {
+	var variant string
 	err := db.QueryRow(`
 		SELECT variant
 		FROM games

@@ -202,7 +202,7 @@ func (s *Session) NotifyTable(g *Game) {
 		NumPlayers   int     `json:"numPlayers"`
 		Owned        bool    `json:"owned"`
 		Running      bool    `json:"running"`
-		Variant      int     `json:"variant"`
+		Variant      string  `json:"variant"`
 		Timed        bool    `json:"timed"`
 		BaseTime     float64 `json:"baseTime"`
 		TimePerTurn  int     `json:"timePerTurn"`
@@ -269,7 +269,7 @@ func (s *Session) NotifyGameHistory(h []models.GameHistory) {
 		OtherPlayerNames string    `json:"otherPlayerNames"`
 		Score            int       `json:"score"`
 		DatetimeFinished time.Time `json:"datetime"`
-		Variant          int       `json:"variant"`
+		Variant          string    `json:"variant"`
 	}
 	m := make([]*GameHistoryMessage, 0)
 	for _, g := range h {

@@ -55,10 +55,11 @@ func httpProfile(c *gin.Context) {
 
 	totalMaxScoresNumerator := 0
 	totalMaxScoresDenominator := 0
-	for i, variant := range variants {
+	i := 0
+	for variant := range variants {
 		var stats models.Stats
-		if v, err := db.Users.GetStats(user.ID, i); err != nil {
-			log.Error("Failed to get the stats for player \""+user.Username+"\":", err)
+		if v, err := db.Users.GetStats(user.ID, variant); err != nil {
+			log.Error("Failed to get the stats for player \""+user.Username+"\" for variant \""+variant+"\":", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		} else {
@@ -74,7 +75,7 @@ func httpProfile(c *gin.Context) {
 		if i == 0 {
 			text += "No Variant\n"
 		} else {
-			text += "Variant " + strconv.Itoa(i) + " - " + variant.Name + "\n"
+			text += "Variant " + strconv.Itoa(i) + " - " + variant + "\n"
 		}
 
 		text += "- Total games played: " + strconv.Itoa(stats.NumPlayedVariant) + "\n"
@@ -103,6 +104,8 @@ func httpProfile(c *gin.Context) {
 			totalMaxScoresNumerator++
 		}
 		totalMaxScoresDenominator += 4
+
+		i++
 	}
 
 	// Edit in the max scores
@@ -132,7 +135,7 @@ func httpProfile(c *gin.Context) {
 		text += "Game #" + strconv.Itoa(g.ID) + "\n"
 		text += "- " + strconv.Itoa(g.NumPlayers) + " players\n"
 		text += "- Score: " + strconv.Itoa(g.Score) + "\n"
-		text += "- Variant: " + variants[g.Variant].Name + "\n"
+		text += "- Variant: " + g.Variant + "\n"
 		text += "- Date: " + g.DatetimeFinished.Format("Mon Jan 02 15:04:05 MST 2006") + "\n" // Same as the Linux date command
 		text += "- Other players: " + g.OtherPlayerNames + "\n"
 		text += "- Other scores: " + strconv.Itoa(g.NumSimilar) + "\n"

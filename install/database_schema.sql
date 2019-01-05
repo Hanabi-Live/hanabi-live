@@ -31,7 +31,7 @@ CREATE TABLE games (
     name                   NVARCHAR(50)  NOT NULL,
     num_players            TINYINT       NOT NULL,
     owner                  INT           NOT NULL,
-    variant                TINYINT       NOT NULL, /* 0 - none, 1 - black, 2 - black one of each, 3 - rainbow */
+    variant                VARCHAR(50)   NOT NULL, /* Equal to the name of the variant, e.g. "None", "Four Suits", etc. */
     timed                  BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
     time_base              INT           NOT NULL, /* in seconds */
     time_per_turn          INT           NOT NULL, /* in seconds */

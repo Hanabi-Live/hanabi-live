@@ -56,7 +56,7 @@ func (c *Card) IsCritical(g *Game) bool {
 func (c *Card) IsDead(g *Game) bool {
 	// Check to see if the card is "dead"
 	// (meaning that all the copies of some previous rank have been discarded, so it is no longer possible to play this card)
-	if !strings.HasPrefix(variants[g.Options.Variant].Name, "Up or Down") || g.StackDirections[c.Suit] == stackDirectionUp {
+	if !strings.HasPrefix(g.Options.Variant, "Up or Down") || g.StackDirections[c.Suit] == stackDirectionUp {
 		// This is a "normal" variant where the cards play in order
 		// (or this is a stack going upward in an "Up or Down" variant)
 		for i := 1; i < c.Rank; i++ {
