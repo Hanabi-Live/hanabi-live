@@ -4,7 +4,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 <br />
 
-### None / No Variant
+### No Variant
 
 * This is the "base" game, with 5 suits. Unlike some real-life versions of the game, Hanabi Live uses the following five suit colors:
   * Blue
