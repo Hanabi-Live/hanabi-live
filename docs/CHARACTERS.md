@@ -5,4 +5,4 @@
 
 ## List of Characters
 
-As the list of characters are in flux, please look at the [constants.js file](https://github.com/Zamiell/hanabi-live/blob/master/public/js/constants.js#L1036) for the full listing.
+As the list of characters are in flux, please look at the [constants.js file](https://github.com/Zamiell/hanabi-live/blob/master/public/js/constants.js#L1535) for the full listing.
