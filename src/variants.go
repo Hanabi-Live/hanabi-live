@@ -114,13 +114,14 @@ var (
 
 // Variants
 var (
-	variants map[string]Variant
+	variants   map[string]Variant
+	variantsID map[int]string
 )
 
 func variantsInit() {
 	variants = map[string]Variant{
 		// Normal
-		"None": Variant{
+		"No Variant": Variant{
 			ID:    0,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
@@ -322,12 +323,12 @@ func variantsInit() {
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
 		"Multi-Fives (4 Suits)": Variant{
-			ID:    46,
+			ID:    49,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
 		"Multi-Fives (3 Suits)": Variant{
-			ID:    46,
+			ID:    50,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
@@ -413,6 +414,12 @@ func variantsInit() {
 				log.Fatal("Variant \"" + variantName + "\" and \"" + variantName2 + "\" have the same ID (" + strconv.Itoa(variant.ID) + ").")
 			}
 		}
+	}
+
+	// Populate a reverse mapping of ID to variant name
+	variantsID = make(map[int]string)
+	for variantName, variant := range variants {
+		variantsID[variant.ID] = variantName
 	}
 }
 

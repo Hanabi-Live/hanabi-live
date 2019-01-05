@@ -153,14 +153,9 @@ function HanabiLobby() {
         }
 
         // Fill in the "Variant" dropdown
-        let variant;
-        try {
-            variant = JSON.parse(localStorage.getItem('createTableVariant'));
-        } catch (err) {
-            variant = 0;
-        }
-        if (typeof variant !== 'number' || variant < 0 || variant >= variantNames.length) {
-            variant = 0;
+        let variant = localStorage.getItem('createTableVariant');
+        if (typeof variant !== 'string') {
+            variant = 'No Variant';
         }
         $('#create-game-variant').val(variant);
 
@@ -414,7 +409,7 @@ function HanabiLobby() {
 
         const name = $('#create-game-name').val();
 
-        const variant = parseInt($('#create-game-variant').val(), 10);
+        const variant = $('#create-game-variant').val();
         localStorage.setItem('createTableVariant', variant);
 
         const timed = document.getElementById('create-game-timed').checked;
@@ -828,18 +823,10 @@ HanabiLobby.prototype.removeTable = function removeTable(data) {
     this.drawTables();
 };
 
-// Populate all of the variant names, which are used in a few places in the code
-// (there is a full and short name for each variant)
-const variantNames = [];
-const variantNamesShort = [];
-for (const variant of Object.values(constants.VARIANT)) {
-    variantNames.push(variant.name);
-    variantNamesShort.push(variant.nameShort);
-}
-
+// Populate the variant dropdown in the "Create Game" tooltip
 $(document).ready(() => {
-    for (let i = 0; i < variantNames.length; i++) {
-        const option = new Option(variantNames[i], i);
+    for (const variant of Object.keys(constants.VARIANTS)) {
+        const option = new Option(variant, variant);
         $('#create-game-variant').append($(option));
     }
 });
@@ -884,7 +871,7 @@ HanabiLobby.prototype.drawTables = function drawTables() {
         $('<td>').html(table.numPlayers).appendTo(row);
 
         // Column 3 - Variant
-        $('<td>').html(variantNamesShort[table.variant]).appendTo(row);
+        $('<td>').html(table.variant).appendTo(row);
 
         // Column 4 - Timed
         let timed = 'No';
@@ -1180,7 +1167,7 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
     // Add all of the history
     for (let i = 0; i < ids.length; i++) {
         const gameData = this.historyList[ids[i]];
-        const { maxScore } = constants.VARIANT_INTEGER_MAPPING[gameData.variant];
+        const { maxScore } = constants.VARIANTS[gameData.variant];
 
         const row = $('<tr>');
 
@@ -1194,7 +1181,7 @@ HanabiLobby.prototype.drawHistory = function drawHistory() {
         $('<td>').html(`${gameData.score}/${maxScore}`).appendTo(row);
 
         // Column 4 - Variant
-        $('<td>').html(variantNamesShort[gameData.variant]).appendTo(row);
+        $('<td>').html(gameData.variant).appendTo(row);
 
         // Column 5 - Time Completed
         const timeCompleted = dateTimeFormatter.format(new Date(gameData.datetime));
@@ -1256,7 +1243,7 @@ HanabiLobby.prototype.drawHistoryDetails = function drawHistoryDetails() {
     const variant = this.historyDetailList
         .filter(g => g.id in this.historyList)
         .map(g => this.historyList[g.id].variant)
-        .map(v => constants.VARIANT_INTEGER_MAPPING[v])[0];
+        .map(v => constants.VARIANTS[v])[0];
 
     // The game played by the user might not have been sent by the server yet
     if (variant === undefined) {
@@ -1363,7 +1350,7 @@ HanabiLobby.prototype.showJoined = function showJoined() {
 
     // Update the information on the left-hand side of the screen
     $('#lobby-game-name').text(this.game.name);
-    $('#lobby-game-variant').text(variantNames[this.game.variant]);
+    $('#lobby-game-variant').text(this.game.variant);
 
     const optionsTitle = $('#lobby-game-options-title');
     optionsTitle.text('Options:');

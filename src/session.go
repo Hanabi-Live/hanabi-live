@@ -261,7 +261,7 @@ func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, 
 }
 
 // NotifyGameHistory will send a user all of their past games
-func (s *Session) NotifyGameHistory(h []models.GameHistory) {
+func (s *Session) NotifyGameHistory(h []*models.GameHistory) {
 	type GameHistoryMessage struct {
 		ID               int       `json:"id"`
 		NumPlayers       int       `json:"numPlayers"`

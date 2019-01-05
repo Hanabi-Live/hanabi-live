@@ -15,7 +15,7 @@ type GameRow struct {
 	Name                 string
 	NumPlayers           int
 	Owner                int
-	Variant              string
+	Variant              int // This corresponds to the numerial ID of the variant listed in the "variants.go" file
 	Timed                bool
 	TimeBase             int
 	TimePerTurn          int
@@ -128,6 +128,7 @@ type GameHistory struct {
 	ID               int
 	NumPlayers       int
 	Score            int
+	VariantNum       int
 	Variant          string
 	DatetimeFinished time.Time
 	Seed             string
@@ -136,7 +137,7 @@ type GameHistory struct {
 	You              bool
 }
 
-func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]GameHistory, error) {
+func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*GameHistory, error) {
 	SQLString := `
 		SELECT
 			games.id AS id_original,
@@ -175,14 +176,14 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]Ga
 	}
 	defer rows.Close() // nolint: errcheck
 
-	games := make([]GameHistory, 0)
+	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
 		if err := rows.Scan(
 			&game.ID,
 			&game.NumPlayers,
 			&game.Score,
-			&game.Variant,
+			&game.VariantNum,
 			&game.DatetimeFinished,
 			&game.Seed,
 			&game.NumSimilar,
@@ -190,7 +191,7 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]Ga
 		); err != nil {
 			return nil, err
 		}
-		games = append(games, game)
+		games = append(games, &game)
 	}
 
 	return games, nil
@@ -285,8 +286,8 @@ func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
 	return seeds, nil
 }
 
-func (*Games) GetVariant(databaseID int) (string, error) {
-	var variant string
+func (*Games) GetVariant(databaseID int) (int, error) {
+	var variant int
 	err := db.QueryRow(`
 		SELECT variant
 		FROM games

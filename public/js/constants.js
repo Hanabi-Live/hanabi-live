@@ -831,20 +831,19 @@
         threeSuits: [0.88, 1.15, 1.50],
     };
 
-    const Variant = function Variant(suits, clueColors, showSuitNames, name, nameShort, efficiencyArray) {
+    const Variant = function Variant(suits, clueColors, showSuitNames, efficiencyArray) {
         this.suits = suits;
         this.ranks = [1, 2, 3, 4, 5];
         this.clueColors = clueColors;
         this.showSuitNames = showSuitNames; // We draw the text below the suits for confusing variants
-        this.name = name;
-        this.nameShort = nameShort;
         this.offsetCardIndicators = suits.some(s => s !== exports.SUIT.RAINBOW && s.clueColors.length > 1);
         this.maxScore = suits.length * 5;
         this.efficiencyArray = efficiencyArray;
     };
 
-    exports.VARIANT = {
-        NONE: new Variant(
+    exports.VARIANTS = {
+        // Normal
+        'No Variant': new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
@@ -854,12 +853,9 @@
             ],
             baseColors,
             false,
-            'None',
-            'No Variant',
             efficiencyArrays.fiveSuits,
         ),
-
-        ORANGE: new Variant(
+        'Six Suits': new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
@@ -870,12 +866,80 @@
             ],
             baseColorsPlusOrange,
             false,
-            'Orange Suit',
-            'Orange',
             efficiencyArrays.sixSuits,
         ),
+        'Four Suits': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+            ],
+            baseColors4,
+            false,
+            efficiencyArrays.fourSuits,
+        ),
+        'Three Suits': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+            ],
+            baseColors3,
+            false,
+            efficiencyArrays.threeSuits,
+        ),
 
-        BLACK: new Variant(
+        // White
+        'White (6 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+                exports.SUIT.WHITE2,
+            ],
+            baseColors,
+            false,
+            efficiencyArrays.sixSuits,
+        ),
+        'White (5 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.WHITE,
+            ],
+            baseColors4,
+            false,
+            efficiencyArrays.fiveSuits,
+        ),
+        'White (4 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.WHITE,
+            ],
+            baseColors3,
+            false,
+            efficiencyArrays.fourSuits,
+        ),
+        'White (3 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.WHITE,
+            ],
+            baseColors2,
+            false,
+            efficiencyArrays.threeSuits,
+        ),
+
+        // Black
+        'Black (6 Suits)': new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
@@ -886,12 +950,23 @@
             ],
             baseColorsPlusBlack,
             false,
-            'Black Suit (one of each)',
-            'Black (1oE)',
             efficiencyArrays.sixSuits1oE,
         ),
+        'Black (5 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.BLACK,
+            ],
+            baseColors4plusBlack,
+            false,
+            efficiencyArrays.fiveSuits1oE,
+        ),
 
-        RAINBOW: new Variant(
+        // Rainbow
+        'Rainbow (6 Suits)': new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
@@ -902,49 +977,44 @@
             ],
             baseColors,
             false,
-            'Rainbow Suit (all colors)',
-            'Rainbow',
             efficiencyArrays.sixSuits,
         ),
-
-        DUAL: new Variant(
+        'Rainbow (5 Suits)': new Variant(
             [
-                exports.SUIT.MGREEN, // Blue + Yellow
-                exports.SUIT.MPURPLE, // Blue + Red
-                exports.SUIT.NAVY, // Blue + Black
-                exports.SUIT.MORANGE, // Yellow + Red
-                exports.SUIT.TAN, // Yellow + Black
-                exports.SUIT.MAHOGANY, // Red + Black
-            ],
-            [
-                exports.COLOR.BLUE,
-                exports.COLOR.YELLOW,
-                exports.COLOR.RED,
-                exports.COLOR.BLACK,
-            ],
-            true,
-            'Dual-color Suits',
-            'Dual-color',
-            efficiencyArrays.sixSuits,
-        ),
-
-        DUALRAINBOW: new Variant(
-            [
-                exports.SUIT.TEAL, // Blue + Green
-                exports.SUIT.LIME, // Green + Yellow
-                exports.SUIT.SORANGE, // Yellow + Red
-                exports.SUIT.CARDINAL, // Red + Purple
-                exports.SUIT.INDIGO, // Purple + Blue
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
                 exports.SUIT.RAINBOW,
             ],
-            baseColors,
-            true,
-            'Dual-color & Rainbow Suits',
-            'Dual & Rainbow',
-            efficiencyArrays.sixSuits,
+            baseColors4,
+            false,
+            efficiencyArrays.fiveSuits,
+        ),
+        'Rainbow (4 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors3,
+            false,
+            efficiencyArrays.fourSuits,
+        ),
+        'Rainbow (3 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors2,
+            false,
+            efficiencyArrays.threeSuits,
         ),
 
-        WHITERAINBOW: new Variant(
+        // White & Rainbow
+        'White & Rainbow (6 Suits)': new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
@@ -955,33 +1025,122 @@
             ],
             baseColors4,
             false,
-            'White & Rainbow Suits',
-            'White & Rainbow',
             efficiencyArrays.sixSuits,
         ),
-
-        CRAZY: new Variant(
+        'White & Rainbow (5 Suits)': new Variant(
             [
-                exports.SUIT.MGREEN, // Blue + Yellow
-                exports.SUIT.MPURPLE, // Blue + Red
-                exports.SUIT.MORANGE, // Yellow + Red
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
                 exports.SUIT.WHITE,
                 exports.SUIT.RAINBOW,
-                exports.SUIT.BLACK,
             ],
+            baseColors3,
+            false,
+            efficiencyArrays.fiveSuits,
+        ),
+        'White & Rainbow (4 Suits)': new Variant(
             [
-                exports.COLOR.BLUE,
-                exports.COLOR.YELLOW,
-                exports.COLOR.RED,
-                exports.COLOR.BLACK,
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.WHITE,
+                exports.SUIT.RAINBOW,
             ],
-            true,
-            'Wild & Crazy',
-            'Wild & Crazy',
-            efficiencyArrays.sixSuits1oE,
+            baseColors2,
+            false,
+            efficiencyArrays.fourSuits,
         ),
 
-        AMBIGUOUS: new Variant(
+        // Dark Rainbow
+        'Dark Rainbow (6 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+                exports.SUIT.RAINBOW1OE,
+            ],
+            baseColors,
+            false,
+            efficiencyArrays.sixSuits1oE,
+        ),
+        'Dark Rainbow (5 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.RAINBOW1OE,
+            ],
+            baseColors4,
+            false,
+            efficiencyArrays.fiveSuits1oE,
+        ),
+        'Black & Dark Rainbow (6 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.BLACK,
+                exports.SUIT.RAINBOW1OE,
+            ],
+            baseColors4plusBlack,
+            false,
+            efficiencyArrays.sixSuits1oEx2,
+        ),
+
+        // Color Blind
+        'Color Blind (6 Suits)': new Variant(
+            [
+                exports.SUIT.CB_BLUE,
+                exports.SUIT.CB_GREEN,
+                exports.SUIT.CB_YELLOW,
+                exports.SUIT.CB_RED,
+                exports.SUIT.CB_PURPLE,
+                exports.SUIT.CB_ORANGE,
+            ],
+            baseColorsPlusOrange,
+            false,
+            efficiencyArrays.sixSuits,
+        ),
+        'Color Blind (5 Suits)': new Variant(
+            [
+                exports.SUIT.CB_BLUE,
+                exports.SUIT.CB_GREEN,
+                exports.SUIT.CB_YELLOW,
+                exports.SUIT.CB_RED,
+                exports.SUIT.CB_PURPLE,
+            ],
+            baseColors,
+            false,
+            efficiencyArrays.fiveSuits,
+        ),
+        'Color Blind (4 Suits)': new Variant(
+            [
+                exports.SUIT.CB_BLUE,
+                exports.SUIT.CB_GREEN,
+                exports.SUIT.CB_YELLOW,
+                exports.SUIT.CB_RED,
+            ],
+            baseColors4,
+            false,
+            efficiencyArrays.fourSuits,
+        ),
+        'Color Blind (3 Suits)': new Variant(
+            [
+                exports.SUIT.CB_BLUE,
+                exports.SUIT.CB_GREEN,
+                exports.SUIT.CB_YELLOW,
+            ],
+            baseColors3,
+            false,
+            efficiencyArrays.threeSuits,
+        ),
+
+        // Ambiguous
+        'Ambiguous (6 Suits)': new Variant(
             [
                 // L stands for light
                 // D stands for dark
@@ -998,12 +1157,9 @@
                 exports.COLOR.RED,
             ],
             true,
-            'Ambiguous Suits',
-            'Ambiguous',
             efficiencyArrays.sixSuits,
         ),
-
-        BLUERED: new Variant(
+        'Very Ambiguous (6 Suits)': new Variant(
             [
                 exports.SUIT.BLUE1,
                 exports.SUIT.BLUE2,
@@ -1017,91 +1173,154 @@
                 exports.COLOR.RED,
             ],
             true,
-            'Blue & Red Suits',
-            'Blue & Red',
             efficiencyArrays.sixSuits,
         ),
-
-        COLORBLIND: new Variant(
+        'Very Ambiguous (4 Suits)': new Variant(
             [
-                exports.SUIT.CB_BLUE,
-                exports.SUIT.CB_GREEN,
-                exports.SUIT.CB_YELLOW,
-                exports.SUIT.CB_RED,
-                exports.SUIT.CB_PURPLE,
-                exports.SUIT.CB_ORANGE,
+                exports.SUIT.LBLUE,
+                exports.SUIT.DBLUE,
+                exports.SUIT.LRED,
+                exports.SUIT.DRED,
+            ],
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.RED,
+            ],
+            true,
+            efficiencyArrays.fourSuits,
+        ),
+        'Very Ambiguous & White (5 Suits)': new Variant(
+            [
+                exports.SUIT.LBLUE,
+                exports.SUIT.DBLUE,
+                exports.SUIT.LRED,
+                exports.SUIT.DRED,
+                exports.SUIT.WHITE,
+            ],
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.RED,
+            ],
+            true,
+            efficiencyArrays.fiveSuits,
+        ),
+        'Very Ambiguous & Rainbow (5 Suits)': new Variant(
+            [
+                exports.SUIT.LBLUE,
+                exports.SUIT.DBLUE,
+                exports.SUIT.LRED,
+                exports.SUIT.DRED,
+                exports.SUIT.RAINBOW,
+            ],
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.RED,
+            ],
+            true,
+            efficiencyArrays.fiveSuits,
+        ),
+
+        // Dual-Color
+        'Dual-Color (6 Suits)': new Variant(
+            [
+                exports.SUIT.MGREEN, // Blue + Yellow
+                exports.SUIT.MPURPLE, // Blue + Red
+                exports.SUIT.NAVY, // Blue + Black
+                exports.SUIT.MORANGE, // Yellow + Red
+                exports.SUIT.TAN, // Yellow + Black
+                exports.SUIT.MAHOGANY, // Red + Black
+            ],
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.YELLOW,
+                exports.COLOR.RED,
+                exports.COLOR.BLACK,
+            ],
+            true,
+            efficiencyArrays.sixSuits,
+        ),
+        'Dual-Color (5 Suits)': new Variant(
+            [
+                exports.SUIT.TEAL, // Blue + Green
+                exports.SUIT.LIME, // Green + Yellow
+                exports.SUIT.SORANGE, // Yellow + Red
+                exports.SUIT.CARDINAL, // Red + Purple
+                exports.SUIT.INDIGO, // Purple + Blue
+            ],
+            baseColors,
+            true,
+            efficiencyArrays.fiveSuits,
+        ),
+        'Dual-Color (3 Suits)': new Variant(
+            [
+                exports.SUIT.MGREEN, // Blue + Yellow
+                exports.SUIT.MPURPLE, // Blue + Red
+                exports.SUIT.MORANGE, // Yellow + Red
+            ],
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.YELLOW,
+                exports.COLOR.RED,
+            ],
+            true,
+            efficiencyArrays.threeSuits,
+        ),
+        'Dual-Color & Rainbow (6 Suits)': new Variant(
+            [
+                exports.SUIT.TEAL, // Blue + Green
+                exports.SUIT.LIME, // Green + Yellow
+                exports.SUIT.SORANGE, // Yellow + Red
+                exports.SUIT.CARDINAL, // Red + Purple
+                exports.SUIT.INDIGO, // Purple + Blue
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors,
+            true,
+            efficiencyArrays.sixSuits,
+        ),
+        'Dual-Color & Rainbow (4 Suits)': new Variant(
+            [
+                exports.SUIT.MGREEN, // Blue + Yellow
+                exports.SUIT.MPURPLE, // Blue + Red
+                exports.SUIT.MORANGE, // Yellow + Red
+                exports.SUIT.RAINBOW,
+            ],
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.YELLOW,
+                exports.COLOR.RED,
+            ],
+            true,
+            efficiencyArrays.fourSuits,
+        ),
+
+        // Multi-Fives
+        'Multi-Fives (6 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+                exports.SUIT.ORANGE,
             ],
             baseColorsPlusOrange,
             false,
-            'Color Blind',
-            'Color Blind',
             efficiencyArrays.sixSuits,
         ),
-
-        RAINBOW1OE: new Variant(
+        'Multi-Fives (5 Suits)': new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
                 exports.SUIT.YELLOW,
                 exports.SUIT.RED,
                 exports.SUIT.PURPLE,
-                exports.SUIT.RAINBOW1OE,
             ],
             baseColors,
             false,
-            'Rainbow Suit (one of each)',
-            'Rainbow (1oE)',
-            efficiencyArrays.sixSuits1oE,
-        ),
-
-        RAINBOW1OEBLACK: new Variant(
-            [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RED,
-                exports.SUIT.BLACK,
-                exports.SUIT.RAINBOW1OE,
-            ],
-            baseColors4plusBlack,
-            false,
-            'Rainbow & Black Suits (one of each)',
-            'Rainbow & Black (1oE)',
-            efficiencyArrays.sixSuits1oEx2,
-        ),
-
-        WHITE: new Variant(
-            [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RED,
-                exports.SUIT.PURPLE,
-                exports.SUIT.WHITE2,
-            ],
-            baseColors,
-            false,
-            'White Suit',
-            'White',
-            efficiencyArrays.sixSuits,
-        ),
-
-        RAINBOWMULTIFIVES: new Variant(
-            [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RED,
-                exports.SUIT.RAINBOW,
-            ],
-            baseColors4,
-            false,
-            'Rainbow Suit & Multi-fives',
-            'Rainbow & Multi-fives',
             efficiencyArrays.fiveSuits,
         ),
-
-        FOURSUITS: new Variant(
+        'Multi-Fives (4 Suits)': new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
@@ -1110,41 +1329,9 @@
             ],
             baseColors4,
             false,
-            'Four Suits',
-            'Four Suits',
             efficiencyArrays.fourSuits,
         ),
-
-        RAINBOWFIVESUITS: new Variant(
-            [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RED,
-                exports.SUIT.RAINBOW,
-            ],
-            baseColors4,
-            false,
-            'Rainbow Suit (with 5 suits)',
-            'Rainbow (5 suits)',
-            efficiencyArrays.fiveSuits,
-        ),
-
-        RAINBOWFOURSUITS: new Variant(
-            [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RAINBOW,
-            ],
-            baseColors3,
-            false,
-            'Rainbow Suit (with 4 suits)',
-            'Rainbow (4 suits)',
-            efficiencyArrays.fourSuits,
-        ),
-
-        THREESUITS: new Variant(
+        'Multi-Fives (3 Suits)': new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
@@ -1152,12 +1339,45 @@
             ],
             baseColors3,
             false,
-            'Three Suits',
-            'Three Suits',
             efficiencyArrays.threeSuits,
         ),
-
-        RAINBOWTHREESUITS: new Variant(
+        'Multi-Fives & Rainbow (6 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors,
+            false,
+            efficiencyArrays.fiveSuits,
+        ),
+        'Multi-Fives & Rainbow (5 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors4,
+            false,
+            efficiencyArrays.fiveSuits,
+        ),
+        'Multi-Fives & Rainbow (4 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors3,
+            false,
+            efficiencyArrays.fourSuits,
+        ),
+        'Multi-Fives & Rainbow (3 Suits)': new Variant(
             [
                 exports.SUIT.BLUE,
                 exports.SUIT.GREEN,
@@ -1165,12 +1385,101 @@
             ],
             baseColors2,
             false,
-            'Rainbow Suit (with 3 suits)',
-            'Rainbow (3 suits)',
-            efficiencyArrays.threeSuits,
+            efficiencyArrays.fourSuits,
         ),
 
-        AFRICANAMERICAN: new Variant(
+        // Up or Down
+        'Up or Down (6 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+                exports.SUIT.ORANGE,
+            ],
+            baseColorsPlusOrange,
+            true,
+            efficiencyArrays.sixSuitsUoD,
+        ),
+        'Up or Down (5 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+            ],
+            baseColors,
+            true,
+            efficiencyArrays.fiveSuitsUoD,
+        ),
+        'Up or Down & White (6 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+                exports.SUIT.WHITE,
+            ],
+            baseColors,
+            true,
+            efficiencyArrays.sixSuitsUoD,
+        ),
+        'Up or Down & White (5 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.WHITE,
+            ],
+            baseColors4,
+            true,
+            efficiencyArrays.fiveSuitsUoD,
+        ),
+        'Up or Down & Rainbow (6 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors,
+            true,
+            efficiencyArrays.sixSuitsUoD,
+        ),
+        'Up or Down & Rainbow (5 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors4,
+            true,
+            efficiencyArrays.fiveSuitsUoD,
+        ),
+        'Up or Down & White & Rainbow (6 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.WHITE,
+                exports.SUIT.RAINBOW,
+            ],
+            baseColors4,
+            true,
+            efficiencyArrays.sixSuitsUoD,
+        ),
+
+        // Mixed
+        'African American': new Variant(
             [
                 exports.SUIT.LRED2,
                 exports.SUIT.DRED2,
@@ -1185,118 +1494,32 @@
                 exports.COLOR.BLACK,
             ],
             true,
-            'African American',
-            'African American',
             efficiencyArrays.sixSuits1oE,
         ),
-
-        BLACKFIVESUITS: new Variant(
+        'Wild & Crazy': new Variant(
             [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RED,
+                exports.SUIT.MGREEN, // Blue + Yellow
+                exports.SUIT.MPURPLE, // Blue + Red
+                exports.SUIT.MORANGE, // Yellow + Red
+                exports.SUIT.WHITE,
+                exports.SUIT.RAINBOW,
                 exports.SUIT.BLACK,
             ],
-            baseColors4plusBlack,
-            false,
-            'Black Suit (with 5 suits)',
-            'Black (5 suits)',
-            efficiencyArrays.fiveSuits1oE,
-        ),
-
-        WHITEFIVESUITS: new Variant(
             [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RED,
-                exports.SUIT.WHITE,
+                exports.COLOR.BLUE,
+                exports.COLOR.YELLOW,
+                exports.COLOR.RED,
+                exports.COLOR.BLACK,
             ],
-            baseColors4,
-            false,
-            'White Suit (with 5 suits)',
-            'White (5 suits)',
-            efficiencyArrays.fiveSuits,
-        ),
-
-        RAINBOW1OEFIVESUITS: new Variant(
-            [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RED,
-                exports.SUIT.RAINBOW1OE,
-            ],
-            baseColors4,
-            false,
-            'Rainbow (1oE) (with 5 suits)',
-            'Rainbow (1oE) (5 suits)',
-            efficiencyArrays.fiveSuits1oE,
-        ),
-
-        UPORDOWN: new Variant(
-            [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RED,
-                exports.SUIT.PURPLE,
-            ],
-            baseColors,
             true,
-            'Up or Down',
-            'Up or Down',
-            efficiencyArrays.fiveSuitsUoD,
+            efficiencyArrays.sixSuits1oE,
         ),
-
-        UPORDOWNRAINBOW: new Variant(
-            [
-                exports.SUIT.BLUE,
-                exports.SUIT.GREEN,
-                exports.SUIT.YELLOW,
-                exports.SUIT.RED,
-                exports.SUIT.PURPLE,
-                exports.SUIT.RAINBOW,
-            ],
-            baseColors,
-            true,
-            'Up or Down & Rainbow Suit',
-            'Up or Down & Rainbow',
-            efficiencyArrays.sixSuitsUoD,
-        ),
-
     };
 
-    // This is the mapping that the server uses
-    exports.VARIANT_INTEGER_MAPPING = [
-        exports.VARIANT.NONE,
-        exports.VARIANT.ORANGE,
-        exports.VARIANT.BLACK,
-        exports.VARIANT.RAINBOW,
-        exports.VARIANT.DUAL,
-        exports.VARIANT.DUALRAINBOW,
-        exports.VARIANT.WHITERAINBOW,
-        exports.VARIANT.CRAZY,
-        exports.VARIANT.AMBIGUOUS,
-        exports.VARIANT.BLUERED,
-        exports.VARIANT.COLORBLIND,
-        exports.VARIANT.RAINBOW1OE,
-        exports.VARIANT.RAINBOW1OEBLACK,
-        exports.VARIANT.WHITE,
-        exports.VARIANT.RAINBOWMULTIFIVES,
-        exports.VARIANT.FOURSUITS,
-        exports.VARIANT.RAINBOWFIVESUITS,
-        exports.VARIANT.RAINBOWFOURSUITS,
-        exports.VARIANT.THREESUITS,
-        exports.VARIANT.RAINBOWTHREESUITS,
-        exports.VARIANT.AFRICANAMERICAN,
-        exports.VARIANT.BLACKFIVESUITS,
-        exports.VARIANT.WHITEFIVESUITS,
-        exports.VARIANT.RAINBOW1OEFIVESUITS,
-        exports.VARIANT.UPORDOWN,
-        exports.VARIANT.UPORDOWNRAINBOW,
-    ];
+    // Copy the name of each variant inside of the object for later use
+    for (const name of Object.keys(exports.VARIANTS)) {
+        exports.VARIANTS[name].name = name;
+    }
 
     exports.INDICATOR = {
         POSITIVE: '#ffffff',

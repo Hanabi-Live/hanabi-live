@@ -104,7 +104,7 @@ func (g *Game) End() {
 		Name:                 g.Name,
 		NumPlayers:           len(g.Players),
 		Owner:                g.Owner,
-		Variant:              g.Options.Variant,
+		Variant:              variants[g.Options.Variant].ID,
 		Timed:                g.Options.Timed,
 		TimeBase:             int(g.Options.TimeBase),
 		TimePerTurn:          g.Options.TimePerTurn,
@@ -176,8 +176,8 @@ func (g *Game) End() {
 		}
 		otherPlayerNames = strings.TrimSuffix(otherPlayerNames, ", ")
 
-		h := make([]models.GameHistory, 0)
-		h = append(h, models.GameHistory{
+		h := make([]*models.GameHistory, 0)
+		h = append(h, &models.GameHistory{
 			ID:               databaseID,
 			NumPlayers:       len(g.Players),
 			NumSimilar:       numSimilar,
@@ -298,7 +298,7 @@ func announceGameResult(g *Game, databaseID int) {
 
 		msg += "n"
 	}
-	msg += " " + strings.ToLower(g.Options.Variant) + " "
+	msg += " " + g.Options.Variant + " "
 	msg += "game with a score of " + strconv.Itoa(g.Score) + ". "
 	if g.Score == len(g.Stacks)*5 { // This is the theoretical perfect score for this variant (assuming that there are 5 points per stack)
 		msg += pogChamp + " "

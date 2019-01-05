@@ -29,7 +29,7 @@ function HanabiUI(lobby, gameID) {
     // (it is either an empty array or an array of integers)
     this.characterMetadata = []; // This is extra information about each player's "Detrimental Character Assignments", if enabled
     // (it is either an empty array or an array of integers)
-    this.variant = 0;
+    this.variant = constants.VARIANTS['No Variant'];
     this.cardsGotten = 0;
     this.cluesSpentPlusStrikes = 0;
     this.replay = false;
@@ -1236,7 +1236,7 @@ function HanabiUI(lobby, gameID) {
             const clueRank = clue.value;
             const findPipElement = rank => this.rankPips.find(`.${rank}`);
             let removed;
-            if (ui.variant.name === 'Rainbow Suit & Multi-fives') {
+            if (ui.variant.name.startsWith('Multi-Fives')) {
                 removed = filterInPlace(this.possibleRanks, rank => (rank === clueRank || rank === 5) === positive);
             } else {
                 removed = filterInPlace(this.possibleRanks, rank => (rank === clueRank) === positive);
@@ -2405,7 +2405,7 @@ function HanabiUI(lobby, gameID) {
             if (clue.type === CLUE_TYPE.RANK) {
                 if (
                     clue.value === card.trueRank ||
-                    (ui.variant.name === 'Rainbow Suit & Multi-fives' && card.trueRank === 5)
+                    (ui.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
                 ) {
                     touched = true;
                     color = INDICATOR.POSITIVE;
@@ -3461,7 +3461,7 @@ function HanabiUI(lobby, gameID) {
         */
 
         let pileback;
-        if (this.variant.suits.length === 6 || this.variant.name.startsWith('Up or Down')) {
+        if (this.variant.suits.length === 6 || this.variant.showSuitNames) {
             y = 0.04;
             width = 0.06;
             height = 0.151;
@@ -3487,12 +3487,15 @@ function HanabiUI(lobby, gameID) {
             playStackValues.y = actionLogValues.y + actionLogValues.h + 0.02;
             playStackValues.spacing = 0.006;
         }
-        if (this.variant.suits.length === 4 || this.variant.name === 'Up or Down') {
+        if (
+            this.variant.suits.length === 4 ||
+            (this.variant.suits.length === 5 && this.variant.showSuitNames)
+        ) {
             // If there are only 4 stacks, they will be left-aligned instead of centered
             // So, center them by moving them to the right a little bit
             playStackValues.x += ((width + playStackValues.spacing) / 2);
         } else if (this.variant.suits.length === 3) {
-            // If there are only 4 stacks, they will be left-aligned instead of centered
+            // If there are only 3 stacks, they will be left-aligned instead of centered
             // So, center them by moving them to the right a little bit
             playStackValues.x += ((width + playStackValues.spacing) / 2) * 2;
         }
@@ -4087,7 +4090,7 @@ function HanabiUI(lobby, gameID) {
 
         // Rank buttons
         let numRanks = 5;
-        if (ui.variant.name === 'Rainbow Suit & Multi-fives') {
+        if (ui.variant.name.startsWith('Multi-Fives')) {
             numRanks = 4;
         }
         for (let i = 1; i <= numRanks; i++) {
@@ -6157,7 +6160,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.playerNames = msgData.names;
         this.characterAssignments = msgData.characterAssignments;
         this.characterMetadata = msgData.characterMetadata;
-        this.variant = constants.VARIANT_INTEGER_MAPPING[msgData.variant];
+        this.variant = constants.VARIANTS[msgData.variant];
         this.replay = msgData.replay;
         this.replayOnly = msgData.replay;
         this.spectating = msgData.spectating;

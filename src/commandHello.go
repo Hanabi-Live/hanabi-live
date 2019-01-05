@@ -23,13 +23,13 @@ func commandHello(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
 	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
-		var variant string
+		var variantID int
 		if v, err := db.Games.GetVariant(gameID); err != nil {
 			log.Error("Failed to get the variant from the database for game "+strconv.Itoa(gameID)+":", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")
 			return
 		} else {
-			variant = v
+			variantID = v
 		}
 
 		var characterAssignmentsEnabled bool
@@ -39,7 +39,6 @@ func commandHello(s *Session, d *CommandData) {
 			return
 		} else {
 			characterAssignmentsEnabled = v
-			log.Debug("characterAssignmentsEnabled:", characterAssignmentsEnabled)
 		}
 
 		var dbPlayers []*models.Player
@@ -65,7 +64,7 @@ func commandHello(s *Session, d *CommandData) {
 
 		g = &Game{
 			Options: &Options{
-				Variant:              variant,
+				Variant:              variantsID[variantID],
 				CharacterAssignments: characterAssignmentsEnabled,
 			},
 			Players: players,

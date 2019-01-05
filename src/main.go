@@ -65,6 +65,9 @@ func main() {
 		wordList = strings.Split(wordListString, "\n")
 	}
 
+	// Initialize the variants
+	variantsInit()
+
 	// Initialize catching Unix signals
 	signalInit()
 

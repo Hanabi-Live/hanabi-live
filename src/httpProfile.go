@@ -113,13 +113,14 @@ func httpProfile(c *gin.Context) {
 	text = strings.Replace(text, "Total max scores:", "Total max scores: "+totalMaxScores, 1)
 
 	// Get the player's entire game history
-	var history []models.GameHistory
+	var history []*models.GameHistory
 	if v, err := db.Games.GetUserHistory(user.ID, 0, 0, true); err != nil {
 		log.Error("Failed to get the history for player \""+user.Username+"\":", err)
 		return
 	} else {
 		history = v
 	}
+	history = historyFillVariants(history)
 
 	text += "\n\n"
 	text += "+-------------------+\n"
