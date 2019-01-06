@@ -5,6 +5,32 @@ The server was originally an attempt to emulate the [Keldon Hanabi server](http:
 
 <br />
 
+## Basic How-To
+
+* If you don't know how to play Hanabi already, you can read [the official rules](https://pastebin.com/pR54gTq4) or [watch my video explanation](https://www.youtube.com/watch?v=jR9i1qCbHXQ).
+* Getting a game going should be self-explanatory, but just in case:
+  * Once logged in, use the "Create Game" button on the top navigation bar and then click "Create".
+  * For everyone else, the game will now appear in the list of games. To join it, they need to click on the arrow symbol (in the "Action" column).
+  * Then, the creator of the table needs to click on the "Start Game" button on the top navigation bar.
+* Once inside a game, the UI elements are as follows:
+  * The play stacks are in the center of the screen (one for each suit).
+  * Around the play stacks, the players are evenly distributed. (This is similar to players would be sitting at a table in real life.)
+  * In the top-right-hand corner is a clue log that will track every clue given over the course of the game.
+  * In the middle-right is some statistics about how well the game is going.
+  * In the bottom-left-hand corner is the deck, which shows how many cards are left in it.
+  * In the bottom-right-hand corner is the discard pile.
+  * To the left of the discard pile is the turn count, score, clue count, and strike count.
+* To perform an action:
+  * Play a card by clicking and dragging it to the center stacks.
+  * Discard a card by clicking and dragging it to the discard pile.
+  * Give a clue by:
+    * Click on the button corresponding to the clue recipient.
+    * Click on the button corresponding to the rank or the color.
+    * Click on the "Give Clue" button.
+* Once the game is over, use the "Lobby" button in the bottom-left-hand corner.
+
+<br />
+
 ## Major Features
 
 #### Clue Indication
