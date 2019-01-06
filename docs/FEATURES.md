@@ -1,6 +1,10 @@
 List of Features
 ================
 
+[Hanabi Live](https://hanabi.live/) was released on October 2017 as an attempt to improve upon Keldon's [Keldon's Hanabi server](http://keldon.net/hanabi/). Much of the client code was originally borrowed from his implementation. Nearly all of the server code was written by Zamiel. Several community members have contributed to the project.
+
+<br />
+
 ## Basic How-To
 
 * If you don't know how to play Hanabi already, you can read [the official rules](https://pastebin.com/pR54gTq4) or [watch my video explanation](https://www.youtube.com/watch?v=jR9i1qCbHXQ).
