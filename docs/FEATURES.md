@@ -44,6 +44,7 @@ List of Features
 
 * Players can right-click on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
 * This is useful for storing contextual information about a card for later.
+* Notes can also be written inside of an in-game replay as a way to track the card as it moves throughout your hand.
 * Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
 * Notes are saved in the database and will persist into the replay.
 * Everyone's notes are combined and shown to spectators, which is fun to see.
