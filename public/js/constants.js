@@ -296,12 +296,13 @@
     };
 
     // Pair each suit name with the color(s) that correspond(s) to it
-    const Suit = function Suit(name, abbreviation, fillColors, cardFillSpec, clueColors) {
+    const Suit = function Suit(name, abbreviation, fillColors, cardFillSpec, clueColors, oneOfEach = false) {
         this.name = name;
         this.abbreviation = abbreviation;
         this.fillColors = fillColors;
         this.cardFillSpec = cardFillSpec;
         this.clueColors = clueColors;
+        this.oneOfEach = oneOfEach;
     };
 
     // Returns the style (color, gradient, etc.) for a given card area
@@ -395,6 +396,7 @@
             exports.COLOR.BLACK,
             basicCardFillSpec,
             [exports.COLOR.BLACK],
+            true, // This suit has one of each card
         ),
         RAINBOW: new Suit(
             // Color ordering is not guaranteed to be the same as declaration order
@@ -418,6 +420,7 @@
             ],
             multiCardFillSpec,
             Object.values(exports.COLOR),
+            true, // This suit has one of each card
         ),
 
         // For "Color Blind"
@@ -668,20 +671,6 @@
         COLOR: 1,
     };
 
-    // From: https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
-    const efficiencyArrays = {
-        sixSuits: [0.86, 0.97, 1.07],
-        sixSuits1oE: [1.00, 1.15, 1.30],
-        sixSuitsUoD: [1.03, 1.20, 1.36],
-        sixSuits1oEx2: [1.20, 1.43, 1.67],
-        fiveSuits: [0.86, 1.00, 1.14],
-        fiveSuits1oE: [1.04, 1.25, 1.47],
-        fiveSuitsUoD: [1.04, 1.25, 1.47],
-        fourSuits: [0.87, 1.05, 1.25],
-        fourSuits1oE: [1.11, 1.43, 1.82],
-        threeSuits: [0.88, 1.15, 1.50],
-    };
-
     const Variant = function Variant(suits, clueColors, showSuitNames, efficiencyArray) {
         this.suits = suits;
         this.ranks = [1, 2, 3, 4, 5];
@@ -704,7 +693,6 @@
             ],
             baseColors,
             false,
-            efficiencyArrays.fiveSuits,
         ),
         'Six Suits': new Variant(
             [
@@ -717,7 +705,6 @@
             ],
             baseColorsPlusOrange,
             false,
-            efficiencyArrays.sixSuits,
         ),
         'Four Suits': new Variant(
             [
@@ -728,7 +715,6 @@
             ],
             baseColors4,
             false,
-            efficiencyArrays.fourSuits,
         ),
         'Three Suits': new Variant(
             [
@@ -738,7 +724,6 @@
             ],
             baseColors3,
             false,
-            efficiencyArrays.threeSuits,
         ),
 
         // White
@@ -753,7 +738,6 @@
             ],
             baseColors,
             false,
-            efficiencyArrays.sixSuits,
         ),
         'White (5 Suits)': new Variant(
             [
@@ -765,7 +749,6 @@
             ],
             baseColors4,
             false,
-            efficiencyArrays.fiveSuits,
         ),
         'White (4 Suits)': new Variant(
             [
@@ -776,7 +759,6 @@
             ],
             baseColors3,
             false,
-            efficiencyArrays.fourSuits,
         ),
         'White (3 Suits)': new Variant(
             [
@@ -786,7 +768,6 @@
             ],
             baseColors2,
             false,
-            efficiencyArrays.threeSuits,
         ),
 
         // Black
@@ -801,7 +782,6 @@
             ],
             baseColorsPlusBlack,
             false,
-            efficiencyArrays.sixSuits1oE,
         ),
         'Black (5 Suits)': new Variant(
             [
@@ -813,7 +793,6 @@
             ],
             baseColors4plusBlack,
             false,
-            efficiencyArrays.fiveSuits1oE,
         ),
 
         // Rainbow
@@ -828,7 +807,6 @@
             ],
             baseColors,
             false,
-            efficiencyArrays.sixSuits,
         ),
         'Rainbow (5 Suits)': new Variant(
             [
@@ -840,7 +818,6 @@
             ],
             baseColors4,
             false,
-            efficiencyArrays.fiveSuits,
         ),
         'Rainbow (4 Suits)': new Variant(
             [
@@ -851,7 +828,6 @@
             ],
             baseColors3,
             false,
-            efficiencyArrays.fourSuits,
         ),
         'Rainbow (3 Suits)': new Variant(
             [
@@ -861,7 +837,6 @@
             ],
             baseColors2,
             false,
-            efficiencyArrays.threeSuits,
         ),
 
         // White & Rainbow
@@ -876,7 +851,6 @@
             ],
             baseColors4,
             false,
-            efficiencyArrays.sixSuits,
         ),
         'White & Rainbow (5 Suits)': new Variant(
             [
@@ -888,7 +862,6 @@
             ],
             baseColors3,
             false,
-            efficiencyArrays.fiveSuits,
         ),
         'White & Rainbow (4 Suits)': new Variant(
             [
@@ -899,7 +872,6 @@
             ],
             baseColors2,
             false,
-            efficiencyArrays.fourSuits,
         ),
 
         // Dark Rainbow
@@ -914,7 +886,6 @@
             ],
             baseColors,
             false,
-            efficiencyArrays.sixSuits1oE,
         ),
         'Dark Rainbow (5 Suits)': new Variant(
             [
@@ -926,7 +897,6 @@
             ],
             baseColors4,
             false,
-            efficiencyArrays.fiveSuits1oE,
         ),
         'Black & Dark Rainbow (6 Suits)': new Variant(
             [
@@ -939,7 +909,6 @@
             ],
             baseColors4plusBlack,
             false,
-            efficiencyArrays.sixSuits1oEx2,
         ),
 
         // Color Blind
@@ -954,7 +923,6 @@
             ],
             baseColorsPlusOrange,
             false,
-            efficiencyArrays.sixSuits,
         ),
         'Color Blind (5 Suits)': new Variant(
             [
@@ -966,7 +934,6 @@
             ],
             baseColors,
             false,
-            efficiencyArrays.fiveSuits,
         ),
         'Color Blind (4 Suits)': new Variant(
             [
@@ -977,7 +944,6 @@
             ],
             baseColors4,
             false,
-            efficiencyArrays.fourSuits,
         ),
         'Color Blind (3 Suits)': new Variant(
             [
@@ -987,7 +953,6 @@
             ],
             baseColors3,
             false,
-            efficiencyArrays.threeSuits,
         ),
 
         // Ambiguous
@@ -1008,7 +973,6 @@
                 exports.COLOR.RED,
             ],
             true,
-            efficiencyArrays.sixSuits,
         ),
         'Very Ambiguous (6 Suits)': new Variant(
             [
@@ -1024,7 +988,6 @@
                 exports.COLOR.RED,
             ],
             true,
-            efficiencyArrays.sixSuits,
         ),
         'Very Ambiguous (4 Suits)': new Variant(
             [
@@ -1038,7 +1001,6 @@
                 exports.COLOR.RED,
             ],
             true,
-            efficiencyArrays.fourSuits,
         ),
         'Very Ambiguous & White (5 Suits)': new Variant(
             [
@@ -1053,7 +1015,6 @@
                 exports.COLOR.RED,
             ],
             true,
-            efficiencyArrays.fiveSuits,
         ),
         'Very Ambiguous & Rainbow (5 Suits)': new Variant(
             [
@@ -1068,7 +1029,6 @@
                 exports.COLOR.RED,
             ],
             true,
-            efficiencyArrays.fiveSuits,
         ),
 
         // Dual-Color
@@ -1088,7 +1048,6 @@
                 exports.COLOR.BLACK,
             ],
             true,
-            efficiencyArrays.sixSuits,
         ),
         'Dual-Color (5 Suits)': new Variant(
             [
@@ -1100,7 +1059,6 @@
             ],
             baseColors,
             true,
-            efficiencyArrays.fiveSuits,
         ),
         'Dual-Color (3 Suits)': new Variant(
             [
@@ -1114,7 +1072,6 @@
                 exports.COLOR.RED,
             ],
             true,
-            efficiencyArrays.threeSuits,
         ),
         'Dual-Color & Rainbow (6 Suits)': new Variant(
             [
@@ -1127,7 +1084,6 @@
             ],
             baseColors,
             true,
-            efficiencyArrays.sixSuits,
         ),
         'Dual-Color & Rainbow (4 Suits)': new Variant(
             [
@@ -1142,7 +1098,6 @@
                 exports.COLOR.RED,
             ],
             true,
-            efficiencyArrays.fourSuits,
         ),
 
         // Multi-Fives
@@ -1157,7 +1112,6 @@
             ],
             baseColorsPlusOrange,
             false,
-            efficiencyArrays.sixSuits,
         ),
         'Multi-Fives (5 Suits)': new Variant(
             [
@@ -1169,7 +1123,6 @@
             ],
             baseColors,
             false,
-            efficiencyArrays.fiveSuits,
         ),
         'Multi-Fives (4 Suits)': new Variant(
             [
@@ -1180,7 +1133,6 @@
             ],
             baseColors4,
             false,
-            efficiencyArrays.fourSuits,
         ),
         'Multi-Fives (3 Suits)': new Variant(
             [
@@ -1190,7 +1142,6 @@
             ],
             baseColors3,
             false,
-            efficiencyArrays.threeSuits,
         ),
         'Multi-Fives & Rainbow (6 Suits)': new Variant(
             [
@@ -1203,7 +1154,6 @@
             ],
             baseColors,
             false,
-            efficiencyArrays.fiveSuits,
         ),
         'Multi-Fives & Rainbow (5 Suits)': new Variant(
             [
@@ -1215,7 +1165,6 @@
             ],
             baseColors4,
             false,
-            efficiencyArrays.fiveSuits,
         ),
         'Multi-Fives & Rainbow (4 Suits)': new Variant(
             [
@@ -1226,7 +1175,6 @@
             ],
             baseColors3,
             false,
-            efficiencyArrays.fourSuits,
         ),
         'Multi-Fives & Rainbow (3 Suits)': new Variant(
             [
@@ -1236,7 +1184,6 @@
             ],
             baseColors2,
             false,
-            efficiencyArrays.fourSuits,
         ),
 
         // Up or Down
@@ -1251,7 +1198,6 @@
             ],
             baseColorsPlusOrange,
             true,
-            efficiencyArrays.sixSuitsUoD,
         ),
         'Up or Down (5 Suits)': new Variant(
             [
@@ -1263,7 +1209,6 @@
             ],
             baseColors,
             true,
-            efficiencyArrays.fiveSuitsUoD,
         ),
         'Up or Down & White (6 Suits)': new Variant(
             [
@@ -1276,7 +1221,6 @@
             ],
             baseColors,
             true,
-            efficiencyArrays.sixSuitsUoD,
         ),
         'Up or Down & White (5 Suits)': new Variant(
             [
@@ -1288,7 +1232,6 @@
             ],
             baseColors4,
             true,
-            efficiencyArrays.fiveSuitsUoD,
         ),
         'Up or Down & Rainbow (6 Suits)': new Variant(
             [
@@ -1301,7 +1244,6 @@
             ],
             baseColors,
             true,
-            efficiencyArrays.sixSuitsUoD,
         ),
         'Up or Down & Rainbow (5 Suits)': new Variant(
             [
@@ -1313,7 +1255,6 @@
             ],
             baseColors4,
             true,
-            efficiencyArrays.fiveSuitsUoD,
         ),
         'Up or Down & White & Rainbow (6 Suits)': new Variant(
             [
@@ -1326,7 +1267,6 @@
             ],
             baseColors4,
             true,
-            efficiencyArrays.sixSuitsUoD,
         ),
 
         // Mixed
@@ -1345,7 +1285,6 @@
                 exports.COLOR.BLACK,
             ],
             true,
-            efficiencyArrays.sixSuits1oE,
         ),
         'Wild & Crazy': new Variant(
             [
@@ -1363,7 +1302,6 @@
                 exports.COLOR.BLACK,
             ],
             true,
-            efficiencyArrays.sixSuits1oE,
         ),
     };
 

@@ -3451,15 +3451,37 @@ function HanabiUI(lobby, gameID) {
         this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
             this.cardsGotten += cardsGottenDelta;
             const efficiency = (this.cardsGotten / this.cluesSpentPlusStrikes).toFixed(2); // Round it to 2 decimal places
-            let efficiencyIndex;
-            if (this.playerNames.length === 2) {
-                efficiencyIndex = 0;
-            } else if (this.playerNames.length === 5) {
-                efficiencyIndex = 2;
-            } else {
-                efficiencyIndex = 1;
+
+            // Calculate the minimum amount of efficiency needed in order to win this variant
+            // First, calculate starting pace with the following formula:
+            // total cards in the deck - ((number of cards in a player's hand - 1) * number of players) - (5 * number of suits)
+            let totalCardsInTheDeck = 0;
+            for (const suit of this.variant.suits) {
+                totalCardsInTheDeck += 10;
+                if (suit.oneOfEach) {
+                    totalCardsInTheDeck -= 5;
+                } else if (this.variant.name.startsWith('Up or Down')) {
+                    totalCardsInTheDeck -= 1;
+                }
             }
-            const minEfficiency = this.variant.efficiencyArray[efficiencyIndex].toFixed(2); // Round it to 2 decimal places
+            const numberOfPlayers = this.playerNames.length;
+            let cardsInHand = 5;
+            if (numberOfPlayers === 4 || numberOfPlayers === 5) {
+                cardsInHand = 4;
+            } else if (numberOfPlayers === 6) {
+                cardsInHand = 3;
+            }
+            const startingPace = totalCardsInTheDeck - ((cardsInHand - 1) * numberOfPlayers) - (5 * this.variant.suits.length);
+
+            // Second, use the pace to calculate the efficiency required with the following formula:
+            // (5 * number of suits) / (pace + number of suits + 7 (- 1 if a 5/6-player game))
+            const minEfficiencyNumerator = 5 * this.variant.suits.length;
+            let minEfficiencyDenominator = startingPace + this.variant.suits.length + 7;
+            if (numberOfPlayers === 5 || numberOfPlayers === 6) {
+                minEfficiencyDenominator -= 1;
+            }
+            const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2); // Round it to 2 decimal places
+
             efficiencyNumberLabel.setText(`${efficiency} / ${minEfficiency}`);
         };
 
