@@ -159,27 +159,33 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 				failed = c.Rank != 0 && c.Rank != 1 && c.Rank != 5
 
 				// Set the stack direction
-				if c.Rank == 1 {
-					g.StackDirections[c.Suit] = stackDirectionUp
-				} else if c.Rank == 5 {
-					g.StackDirections[c.Suit] = stackDirectionDown
+				if !failed {
+					if c.Rank == 1 {
+						g.StackDirections[c.Suit] = stackDirectionUp
+					} else if c.Rank == 5 {
+						g.StackDirections[c.Suit] = stackDirectionDown
+					}
 				}
 			} else if g.Stacks[c.Suit] == -1 {
 				// The "START" card has been played
 				failed = c.Rank != 2 && c.Rank != 4
 
 				// Set the stack direction
-				if c.Rank == 2 {
-					g.StackDirections[c.Suit] = stackDirectionUp
-				} else if c.Rank == 4 {
-					g.StackDirections[c.Suit] = stackDirectionDown
+				if !failed {
+					if c.Rank == 2 {
+						g.StackDirections[c.Suit] = stackDirectionUp
+					} else if c.Rank == 4 {
+						g.StackDirections[c.Suit] = stackDirectionDown
+					}
 				}
 			}
 
 		} else if g.StackDirections[c.Suit] == stackDirectionUp {
 			// We don't have to check for failure if this is a "normal" stack that is going from 1 to 5,
 			// because we just checked for that situation above
-			if c.Rank == 5 {
+
+			// Set the stack direction
+			if !failed && c.Rank == 5 {
 				g.StackDirections[c.Suit] = stackDirectionFinished
 			}
 		} else if g.StackDirections[c.Suit] == stackDirectionDown {
@@ -188,7 +194,9 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 				// We also have to handle the case where a "START" card is played on top of a 1
 				failed = true
 			}
-			if c.Rank == 1 {
+
+			// Set the stack direction
+			if !failed && c.Rank == 1 {
 				g.StackDirections[c.Suit] = stackDirectionFinished
 			}
 		}

@@ -5582,7 +5582,12 @@ Keyboard hotkeys:
             scoreNumberLabel.setText(data.score);
 
             // Update the stack directions (only in "Up or Down" variants)
-            if (this.variant.name.startsWith('Up or Down')) {
+            if (
+                this.variant.name.startsWith('Up or Down') &&
+                // For historical purposes, we need to check to see the property exists because some old games don't have it
+                typeof data.stackDirections !== 'undefined' &&
+                data.stackDirections !== null
+            ) {
                 for (let i = 0; i < data.stackDirections.length; i++) {
                     const direction = data.stackDirections[i];
                     let text;

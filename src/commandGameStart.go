@@ -322,14 +322,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	// (the client already knows that the game starts with 8 clues and a score of 0;
 	// however, sending this message ensures that it will draw the red border
 	// around the discard pile to indicate that discarding is not possible)
-	g.Actions = append(g.Actions, Action{
-		Type:          "status",
-		Clues:         g.Clues,
-		Score:         g.Score,
-		MaxScore:      g.MaxScore,
-		DoubleDiscard: false,
-	})
-	g.NotifyAction()
+	g.NotifyStatus(false) // The argument is "doubleDiscard"
 
 	text := g.Players[g.ActivePlayer].Name + " goes first"
 	g.Actions = append(g.Actions, Action{

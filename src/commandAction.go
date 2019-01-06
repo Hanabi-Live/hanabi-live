@@ -232,16 +232,8 @@ func commandAction(s *Session, d *CommandData) {
 	// Do post-action tasks
 	characterPostAction(d, g, p)
 
-	// Send messages about the current status
-	g.Actions = append(g.Actions, Action{
-		Type:            "status",
-		Clues:           g.Clues,
-		Score:           g.Score,
-		MaxScore:        g.MaxScore,
-		DoubleDiscard:   doubleDiscard,
-		StackDirections: g.StackDirections,
-	})
-	g.NotifyAction()
+	// Send a message about the current status
+	g.NotifyStatus(doubleDiscard)
 
 	// Adjust the timer for the player that just took their turn
 	// (if the game is over now due to a player running out of time, we don't
