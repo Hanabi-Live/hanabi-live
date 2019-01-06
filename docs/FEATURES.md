@@ -127,18 +127,29 @@ List of Features
 
 ## Other Options
 
+#### Board Game Arena Mode
+
+* This makes the interface look more like the [Board Game Arena](https://en.boardgamearena.com/) implementation of Hanabi, in which all of the hands are grouped together in rows.
+
 #### Color-Blind Mode
 
 * Each player has the option to toggle a color-blind mode that will add a letter to each card that signifies which suit it is.
-
-#### Efficiency Statistics
-
-* Each player has the option to toggle efficiency statistics about the current game. They are shown at the bottom of the clue log.
 
 #### Reverse Hand Direction
 
 * Each player has the option to toggle a "reverse hand direction" option, in which the user interface will display the hand from right-to-left instead of from left-to-right.
 * This is useful for players that are used to drawing cards from the right side instead of from the left.
+
+#### Pre-Playing
+
+* Each player has the option to enable the ability to pre-play cards, which is similar to "pre-moves" in Chess.
+* Players can pre-play or pre-discard by clicking and dragging a card to the respective location and releasing the mouse button. Once done, the card will hover over the location until their turn has arrived, and then the action will be automatically performed.
+* Once a card is pre-played or pre-discarded, it cannot be undone unless they go back to the lobby (or refresh the page).
+
+#### Speedrun Keyboard Hotkeys
+
+* Each player has the option to enable speedrun keyboard hotkeys to allow for faster actions.
+* This feature is bugged and will be reimplemented in the future.
 
 <br />
 
