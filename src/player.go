@@ -183,7 +183,11 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 				g.StackDirections[c.Suit] = stackDirectionFinished
 			}
 		} else if g.StackDirections[c.Suit] == stackDirectionDown {
-			failed = c.Rank != g.Stacks[c.Suit]-1 && c.Rank != 0
+			failed = c.Rank != g.Stacks[c.Suit]-1
+			if g.Stacks[c.Suit] == 1 && c.Rank == 0 {
+				// We also have to handle the case where a "START" card is played on top of a 1
+				failed = true
+			}
 			if c.Rank == 1 {
 				g.StackDirections[c.Suit] = stackDirectionFinished
 			}
