@@ -14,7 +14,6 @@ function HanabiUI(lobby, gameID) {
         CARD_AREA,
         CARDH,
         CARDW,
-        PATHFUNC,
         backpath,
         drawshape,
         INDICATOR,
@@ -205,9 +204,9 @@ function HanabiUI(lobby, gameID) {
         overLayer.draw();
     }
 
-    // Runs each time the DOM window resize event fires.
+    // Runs each time the DOM window resize event fires
     // Resets the canvas dimensions to match window,
-    // then draws the new borders accordingly.
+    // then draws the new borders accordingly
     function resizeCanvas() {
         $('canvas').each((index, canvas) => {
             canvas.width = window.innerWidth;
@@ -217,7 +216,6 @@ function HanabiUI(lobby, gameID) {
         });
         redraw();
     }
-    // End Block
 
     function cloneCanvas(oldCanvas) {
         const newCanvas = document.createElement('canvas');
@@ -418,6 +416,16 @@ function HanabiUI(lobby, gameID) {
         }
 
         context.drawImage(src, 0, 0, width, height);
+    };
+
+    const drawSuitShape = (suit, i) => {
+        // Suit shapes go in order from left to right, with the exception of rainbow suits,
+        // which are always given a rainbow symbol
+        if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
+            // The final shape function in the array is the rainbow
+            i = constants.SHAPE_FUNCTIONS.length - 1;
+        }
+        return constants.SHAPE_FUNCTIONS[i];
     };
 
     const FitText = function FitText(config) {
@@ -735,8 +743,9 @@ function HanabiUI(lobby, gameID) {
         {
             const { suits } = config;
             const nSuits = suits.length;
-            let i = 0;
-            for (const suit of suits) {
+            for (let i = 0; i < suits.length; i++) {
+                const suit = suits[i];
+
                 const suitPip = new Kinetic.Shape({
                     x: Math.floor(CARDW * 0.5),
                     y: Math.floor(CARDH * 0.5),
@@ -749,7 +758,7 @@ function HanabiUI(lobby, gameID) {
 
                     // Transform polar to cartesian coordinates
                     // The magic number added to the offset is needed to center things properly;
-                    // I don't know why it's needed... perhaps something to do with the pathfuncs
+                    // I don't know why it's needed... perhaps something to do with the shape functions
                     offset: {
                         x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25),
                         y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3),
@@ -759,7 +768,7 @@ function HanabiUI(lobby, gameID) {
                     name: suit.name,
                     listening: false,
                     drawFunc: (ctx) => {
-                        PATHFUNC.get(suit.shape)(ctx);
+                        drawSuitShape(suit, i)(ctx);
                         ctx.closePath();
                         ctx.fillStrokeShape(suitPip);
                     },
@@ -795,7 +804,6 @@ function HanabiUI(lobby, gameID) {
                 }
 
                 this.suitPips.add(suitPip);
-                i += 1;
             }
         }
 
@@ -2548,8 +2556,8 @@ function HanabiUI(lobby, gameID) {
         ctx.restore();
     };
 
-    const drawSuitPips = function drawSuitPips(ctx, rank, shape) {
-        const pathfunc = PATHFUNC.get(shape);
+    const drawSuitPips = function drawSuitPips(ctx, rank, suit, i) {
+        const pathfunc = drawSuitShape(suit, i);
         const scale = 0.4;
 
         // The middle for cards 2 or 4
@@ -2668,8 +2676,9 @@ function HanabiUI(lobby, gameID) {
         const ctx = cvs.getContext('2d');
 
         const nSuits = ui.variant.suits.length;
-        let i = 0;
-        for (const suit of ui.variant.suits) {
+        for (let i = 0; i < ui.variant.suits.length; i++) {
+            const suit = ui.variant.suits[i];
+
             ctx.resetTransform();
             ctx.scale(0.4, 0.4);
 
@@ -2682,22 +2691,20 @@ function HanabiUI(lobby, gameID) {
             y -= 1.05 * Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3);
             ctx.translate(x, y);
 
-            PATHFUNC.get(suit.shape)(ctx);
+            drawSuitShape(suit, i)(ctx);
             drawshape(ctx);
-
-            i += 1;
         }
-
         ctx.save();
-
         return cvs;
     };
 
     this.buildCards = function buildCards() {
-        // The Gray suit represents cards of unknown suit
+        // The gray suit represents cards of unknown suit
         const suits = this.variant.suits.concat(SUIT.GRAY);
-        for (const suit of suits) {
-            // 0 is the stack base. 1-5 are the cards. 6 is a card of unknown rank.
+        for (let i = 0; i < suits.length; i++) {
+            const suit = suits[i];
+
+            // 0 is the stack base; 1-5 are the cards; 6 is a card of unknown rank
             for (let rank = 0; rank <= 6; rank++) {
                 const cvs = document.createElement('canvas');
                 cvs.width = CARDW;
@@ -2752,7 +2759,7 @@ function HanabiUI(lobby, gameID) {
                 ctx.lineWidth = 5;
 
                 // Make the special corners on cards for the mixed variant
-                if (suit.clueColors.length === 2) {
+                if (suit.clueColors !== null && suit.clueColors.length === 2) {
                     drawMixedCardHelper(ctx, suit.clueColors);
                 }
 
@@ -2765,7 +2772,7 @@ function HanabiUI(lobby, gameID) {
                 }
 
                 if (suit !== SUIT.GRAY) {
-                    drawSuitPips(ctx, rank, suit.shape);
+                    drawSuitPips(ctx, rank, suit, i);
                 }
 
                 // Gray Card images would be identical to NoPip images

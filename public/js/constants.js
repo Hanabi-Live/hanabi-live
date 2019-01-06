@@ -9,14 +9,18 @@
     };
 
     exports.COLOR = {
+        // Normal
         BLUE: new Color('Blue', 'B', '#0044cc'),
         GREEN: new Color('Green', 'G', '#00cc00'),
         YELLOW: new Color('Yellow', 'Y', '#ccaa22'),
         RED: new Color('Red', 'R', '#aa0000'),
         PURPLE: new Color('Purple', 'P', '#6600cc'),
-        BLACK: new Color('Black', 'K', '#111111'),
+        GRAY: new Color('Gray', 'G', '#cccccc'), // For unknown cards
+
+        // Basic variants
         WHITE: new Color('White', 'W', '#d9d9d9'),
-        GRAY: new Color('Gray', 'G', '#cccccc'),
+        BLACK: new Color('Black', 'K', '#111111'),
+
         NAVY: new Color('Navy', 'N', '#000066'),
         ORANGE: new Color('Orange', 'O', '#ff8800'), // ff8800 is orange, ff33cc is pink, ff00ff is magenta
         TAN: new Color('Tan', 'T', '#999900'),
@@ -37,19 +41,8 @@
         RED3: new Color('Mahogany', 'M', '#330000'),
     };
 
-    exports.SHAPE = {
-        DIAMOND: 'diamond',
-        CLUB: 'club',
-        STAR: 'star',
-        HEART: 'heart',
-        CRESCENT: 'crescent',
-        SPADE: 'spade',
-        RAINBOW: 'rainbow',
-    };
-
-    exports.PATHFUNC = new Map();
-    exports.PATHFUNC.set(
-        exports.SHAPE.DIAMOND,
+    exports.SHAPE_FUNCTIONS = [
+        // Diamond
         (ctx) => {
             const w = 70;
             const h = 80;
@@ -84,9 +77,8 @@
             ctx.quadraticCurveTo(...interps[2], ...points[3]);
             ctx.quadraticCurveTo(...interps[3], ...points[0]);
         },
-    );
-    exports.PATHFUNC.set(
-        exports.SHAPE.CLUB,
+
+        // Club
         (ctx) => {
             ctx.beginPath();
             ctx.moveTo(50, 180);
@@ -97,9 +89,8 @@
             ctx.arc(40, 110, 35, 4.712, 0.4636, true);
             ctx.quadraticCurveTo(70, 140, 50, 180);
         },
-    );
-    exports.PATHFUNC.set(
-        exports.SHAPE.STAR,
+
+        // Star
         (ctx) => {
             ctx.translate(75, 100);
             ctx.beginPath();
@@ -111,9 +102,8 @@
                 ctx.lineTo(0, -75);
             }
         },
-    );
-    exports.PATHFUNC.set(
-        exports.SHAPE.HEART,
+
+        // Heart
         (ctx) => {
             ctx.beginPath();
             ctx.moveTo(75, 65);
@@ -124,17 +114,15 @@
             ctx.bezierCurveTo(130, 82, 130, 45, 100, 45);
             ctx.bezierCurveTo(85, 45, 75, 57, 75, 65);
         },
-    );
-    exports.PATHFUNC.set(
-        exports.SHAPE.CRESCENT,
+
+        // Crescent
         (ctx) => {
             ctx.beginPath();
             ctx.arc(75, 100, 75, 3, 4.3, true);
             ctx.arc(48, 83, 52, 5, 2.5, false);
         },
-    );
-    exports.PATHFUNC.set(
-        exports.SHAPE.SPADE,
+
+        // Spade
         (ctx) => {
             ctx.beginPath();
             ctx.beginPath();
@@ -146,9 +134,8 @@
             ctx.arc(40, 110, 35, 3.712, 0.4636, true);
             ctx.quadraticCurveTo(70, 140, 50, 180);
         },
-    );
-    exports.PATHFUNC.set(
-        exports.SHAPE.RAINBOW,
+
+        // Rainbow
         (ctx) => {
             ctx.beginPath();
             ctx.moveTo(0, 140);
@@ -157,7 +144,7 @@
             ctx.arc(75, 140, 25, 0, Math.PI, true);
             ctx.lineTo(0, 140);
         },
-    );
+    ];
 
     /*
         TODO: these functions obviously belong somewhere else
@@ -309,12 +296,11 @@
     };
 
     // Pair each suit name with the color(s) that correspond(s) to it
-    const Suit = function Suit(name, abbreviation, fillColors, cardFillSpec, shape, clueColors) {
+    const Suit = function Suit(name, abbreviation, fillColors, cardFillSpec, clueColors) {
         this.name = name;
         this.abbreviation = abbreviation;
         this.fillColors = fillColors;
         this.cardFillSpec = cardFillSpec;
-        this.shape = shape;
         this.clueColors = clueColors;
     };
 
@@ -343,53 +329,43 @@
     // will only hurt if we have a lot of instances of suits that vary in
     // property between variants
     exports.SUIT = {
+        // The base game
         BLUE: new Suit(
             'Blue',
             'B',
             exports.COLOR.BLUE,
             basicCardFillSpec,
-            exports.SHAPE.DIAMOND,
             [exports.COLOR.BLUE],
         ),
-
         GREEN: new Suit(
             'Green',
             'G',
             exports.COLOR.GREEN,
             basicCardFillSpec,
-            exports.SHAPE.CLUB,
             [exports.COLOR.GREEN],
         ),
-
         YELLOW: new Suit(
             'Yellow',
             'Y',
             exports.COLOR.YELLOW,
             basicCardFillSpec,
-            exports.SHAPE.STAR,
             [exports.COLOR.YELLOW],
         ),
-
         RED: new Suit(
             'Red',
             'R',
             exports.COLOR.RED,
             basicCardFillSpec,
-            exports.SHAPE.HEART,
             [exports.COLOR.RED],
         ),
-
         PURPLE: new Suit(
             'Purple',
             'P',
             exports.COLOR.PURPLE,
             basicCardFillSpec,
-            exports.SHAPE.CRESCENT,
             [exports.COLOR.PURPLE],
         ),
-
-        // Gray suit represents cards of unknown suit. It must not be included in variants.
-        GRAY: new Suit(
+        GRAY: new Suit( // This represents cards of unknown suit; it must not be included in variants
             'Gray',
             '',
             exports.COLOR.GRAY,
@@ -398,172 +374,38 @@
             [],
         ),
 
+        // Basic variants
         ORANGE: new Suit(
             'Orange',
             'O',
             exports.COLOR.ORANGE,
             basicCardFillSpec,
-            exports.SHAPE.SPADE,
             [exports.COLOR.ORANGE],
         ),
-
+        WHITE: new Suit(
+            'White',
+            'W',
+            exports.COLOR.WHITE,
+            basicCardFillSpec,
+            [exports.COLOR.WHITE],
+        ),
         BLACK: new Suit(
             'Black',
             'K',
             exports.COLOR.BLACK,
             basicCardFillSpec,
-            exports.SHAPE.SPADE,
             [exports.COLOR.BLACK],
         ),
-
-        // Green for the dual-color variants
-        // (in no-variant, it is a single color, but in the dual-color variants,
-        // it is composed of two different colors)
-        MGREEN: new Suit(
-            'Green',
-            'G',
-            exports.COLOR.GREEN,
-            basicCardFillSpec,
-            exports.SHAPE.DIAMOND,
-            [
-                exports.COLOR.BLUE,
-                exports.COLOR.YELLOW,
-            ],
-        ),
-
-        MPURPLE: new Suit(
-            'Purple',
-            'P',
-            exports.COLOR.PURPLE,
-            basicCardFillSpec,
-            exports.SHAPE.CLUB,
-            [
-                exports.COLOR.BLUE,
-                exports.COLOR.RED,
-            ],
-        ),
-
-        NAVY: new Suit(
-            'Navy',
-            'N',
-            exports.COLOR.NAVY,
-            basicCardFillSpec,
-            exports.SHAPE.STAR,
-            [
-                exports.COLOR.BLUE,
-                exports.COLOR.BLACK,
-            ],
-        ),
-
-        MORANGE: new Suit(
-            'Orange',
-            'O',
-            exports.COLOR.ORANGE,
-            basicCardFillSpec,
-            exports.SHAPE.HEART,
-            [
-                exports.COLOR.YELLOW,
-                exports.COLOR.RED,
-            ],
-        ),
-
-        TAN: new Suit(
-            'Tan',
-            'T',
-            exports.COLOR.TAN,
-            basicCardFillSpec,
-            exports.SHAPE.CRESCENT,
-            [
-                exports.COLOR.YELLOW,
-                exports.COLOR.BLACK,
-            ],
-        ),
-
-        MAHOGANY: new Suit(
-            'Mahogany',
-            'M',
-            exports.COLOR.MAHOGANY,
-            basicCardFillSpec,
-            exports.SHAPE.SPADE,
-            [
-                exports.COLOR.RED,
-                exports.COLOR.BLACK,
-            ],
-        ),
-
-        TEAL: new Suit(
-            'Teal',
-            'T',
-            exports.COLOR.TEAL,
-            basicCardFillSpec,
-            exports.SHAPE.DIAMOND,
-            [
-                exports.COLOR.BLUE,
-                exports.COLOR.GREEN,
-            ],
-        ),
-
-        LIME: new Suit(
-            'Lime',
-            'L',
-            exports.COLOR.LIME,
-            basicCardFillSpec,
-            exports.SHAPE.CLUB,
-            [
-                exports.COLOR.GREEN,
-                exports.COLOR.YELLOW,
-            ],
-        ),
-
-        // Orange with a star pattern, for MM variant
-        SORANGE: new Suit(
-            'Orange',
-            'O',
-            exports.COLOR.ORANGE,
-            basicCardFillSpec,
-            exports.SHAPE.STAR,
-            [
-                exports.COLOR.YELLOW,
-                exports.COLOR.RED,
-            ],
-        ),
-
-        CARDINAL: new Suit(
-            'Cardinal',
-            'C',
-            exports.COLOR.CARDINAL,
-            basicCardFillSpec,
-            exports.SHAPE.HEART,
-            [
-                exports.COLOR.RED,
-                exports.COLOR.PURPLE,
-            ],
-        ),
-
-        INDIGO: new Suit(
-            'Indigo',
-            'I',
-            exports.COLOR.INDIGO,
-            basicCardFillSpec,
-            exports.SHAPE.CRESCENT,
-            [
-                exports.COLOR.BLUE,
-                exports.COLOR.PURPLE,
-            ],
-        ),
-
-        // Color ordering not guaranteed to be the same as declaration order
-        // Recommend not to access these values for the rainbow suit, but rather use
-        // special cases e.g. `if (suit === SUIT.RAINBOW, color_match = true)`
         RAINBOW: new Suit(
+            // Color ordering is not guaranteed to be the same as declaration order
+            // Do not these values for the rainbow suit; instead, use special cases
+            // e.g. if (suit === SUIT.RAINBOW, color_match = true)
             'Rainbow',
             'M',
             baseColors,
             multiCardFillSpec,
-            exports.SHAPE.RAINBOW,
             Object.values(exports.COLOR),
         ),
-
         RAINBOW1OE: new Suit(
             'Rainbow',
             'M',
@@ -575,233 +417,242 @@
                 new Color(null, null, '#550055'),
             ],
             multiCardFillSpec,
-            exports.SHAPE.RAINBOW,
             Object.values(exports.COLOR),
         ),
 
-        WHITE: new Suit(
-            'White',
-            'W',
-            exports.COLOR.WHITE,
-            basicCardFillSpec,
-            exports.SHAPE.CRESCENT,
-            [exports.COLOR.WHITE],
-        ),
-
-        WHITE2: new Suit(
-            'White',
-            'W',
-            exports.COLOR.WHITE,
-            basicCardFillSpec,
-            exports.SHAPE.SPADE,
-            [exports.COLOR.WHITE],
-        ),
-
-        WHITE3: new Suit(
-            'White',
-            'W',
-            exports.COLOR.WHITE,
-            basicCardFillSpec,
-            exports.SHAPE.STAR,
-            [exports.COLOR.WHITE],
-        ),
-
-        LBLUE: new Suit(
-            'Sky',
-            'S',
-            exports.COLOR.LBLUE,
-            basicCardFillSpec,
-            exports.SHAPE.DIAMOND,
-            [exports.COLOR.BLUE],
-        ),
-
-        LBLUE2: new Suit(
-            'Sky',
-            'S',
-            exports.COLOR.LBLUE,
-            basicCardFillSpec,
-            exports.SHAPE.HEART,
-            [exports.COLOR.BLUE],
-        ),
-
-        DBLUE: new Suit(
-            'Navy',
-            'N',
-            exports.COLOR.DBLUE,
-            basicCardFillSpec,
-            exports.SHAPE.CLUB,
-            [exports.COLOR.BLUE],
-        ),
-
-        DBLUE2: new Suit(
-            'Navy',
-            'N',
-            exports.COLOR.DBLUE,
-            basicCardFillSpec,
-            exports.SHAPE.CRESCENT,
-            [exports.COLOR.BLUE],
-        ),
-
-        LGREEN: new Suit(
-            'Lime',
-            'L',
-            exports.COLOR.LGREEN,
-            basicCardFillSpec,
-            exports.SHAPE.STAR,
-            [exports.COLOR.GREEN],
-        ),
-
-        DGREEN: new Suit(
-            'Forest',
-            'F',
-            exports.COLOR.DGREEN,
-            basicCardFillSpec,
-            exports.SHAPE.HEART,
-            [exports.COLOR.GREEN],
-        ),
-
-        LRED: new Suit(
-            'Tomato',
-            'T',
-            exports.COLOR.LRED,
-            basicCardFillSpec,
-            exports.SHAPE.CRESCENT,
-            [exports.COLOR.RED],
-        ),
-
-        LRED2: new Suit(
-            'Tomato',
-            'T',
-            exports.COLOR.LRED,
-            basicCardFillSpec,
-            exports.SHAPE.DIAMOND,
-            [exports.COLOR.RED],
-        ),
-
-        DRED: new Suit(
-            'Mahogany',
-            'B',
-            exports.COLOR.DRED,
-            basicCardFillSpec,
-            exports.SHAPE.SPADE,
-            [exports.COLOR.RED],
-        ),
-
-        DRED2: new Suit(
-            'Mahogany',
-            'B',
-            exports.COLOR.DRED,
-            basicCardFillSpec,
-            exports.SHAPE.CLUB,
-            [exports.COLOR.RED],
-        ),
-
-        BLUE1: new Suit(
-            'Sky',
-            'S',
-            exports.COLOR.BLUE1,
-            basicCardFillSpec,
-            exports.SHAPE.DIAMOND,
-            [exports.COLOR.BLUE],
-        ),
-
-        BLUE2: new Suit(
-            'Berry',
-            'B',
-            exports.COLOR.BLUE,
-            basicCardFillSpec,
-            exports.SHAPE.CLUB,
-            [exports.COLOR.BLUE],
-        ),
-
-        BLUE3: new Suit(
-            'Navy',
-            'N',
-            exports.COLOR.BLUE3,
-            basicCardFillSpec,
-            exports.SHAPE.STAR,
-            [exports.COLOR.BLUE],
-        ),
-
-        RED1: new Suit(
-            'Tomato',
-            'T',
-            exports.COLOR.RED1,
-            basicCardFillSpec,
-            exports.SHAPE.HEART,
-            [exports.COLOR.RED],
-        ),
-
-        RED2: new Suit(
-            'Ruby',
-            'R',
-            exports.COLOR.RED,
-            basicCardFillSpec,
-            exports.SHAPE.CRESCENT,
-            [exports.COLOR.RED],
-        ),
-
-        RED3: new Suit(
-            'Mahogany',
-            'M',
-            exports.COLOR.RED3,
-            basicCardFillSpec,
-            exports.SHAPE.SPADE,
-            [exports.COLOR.RED],
-        ),
-
+        // For "Color Blind"
         CB_BLUE: new Suit(
             'Blue',
             'B',
             exports.COLOR.BLUE,
             basicCardFillSpec,
-            exports.SHAPE.DIAMOND,
             [],
         ),
-
         CB_GREEN: new Suit(
             'Green',
             'G',
             exports.COLOR.GREEN,
             basicCardFillSpec,
-            exports.SHAPE.CLUB,
             [],
         ),
-
         CB_YELLOW: new Suit(
             'Yellow',
             'Y',
             exports.COLOR.YELLOW,
             basicCardFillSpec,
-            exports.SHAPE.STAR,
             [],
         ),
-
         CB_RED: new Suit(
             'Red',
             'R',
             exports.COLOR.RED,
             basicCardFillSpec,
-            exports.SHAPE.HEART,
             [],
         ),
-
         CB_PURPLE: new Suit(
             'Purple',
             'P',
             exports.COLOR.PURPLE,
             basicCardFillSpec,
-            exports.SHAPE.CRESCENT,
             [],
         ),
-
         CB_ORANGE: new Suit(
             'Orange',
             'O',
             exports.COLOR.ORANGE,
             basicCardFillSpec,
-            exports.SHAPE.SPADE,
             [],
+        ),
+
+        // For "Ambiguous"
+        LBLUE: new Suit(
+            'Sky',
+            'S',
+            exports.COLOR.LBLUE,
+            basicCardFillSpec,
+            [exports.COLOR.BLUE],
+        ),
+        DBLUE: new Suit(
+            'Navy',
+            'N',
+            exports.COLOR.DBLUE,
+            basicCardFillSpec,
+            [exports.COLOR.BLUE],
+        ),
+        LGREEN: new Suit(
+            'Lime',
+            'L',
+            exports.COLOR.LGREEN,
+            basicCardFillSpec,
+            [exports.COLOR.GREEN],
+        ),
+        DGREEN: new Suit(
+            'Forest',
+            'F',
+            exports.COLOR.DGREEN,
+            basicCardFillSpec,
+            [exports.COLOR.GREEN],
+        ),
+        LRED: new Suit(
+            'Tomato',
+            'T',
+            exports.COLOR.LRED,
+            basicCardFillSpec,
+            [exports.COLOR.RED],
+        ),
+        DRED: new Suit(
+            'Mahogany',
+            'B',
+            exports.COLOR.DRED,
+            basicCardFillSpec,
+            [exports.COLOR.RED],
+        ),
+        BLUE1: new Suit(
+            'Sky',
+            'S',
+            exports.COLOR.BLUE1,
+            basicCardFillSpec,
+            [exports.COLOR.BLUE],
+        ),
+        BLUE2: new Suit(
+            'Berry',
+            'B',
+            exports.COLOR.BLUE,
+            basicCardFillSpec,
+            [exports.COLOR.BLUE],
+        ),
+        BLUE3: new Suit(
+            'Navy',
+            'N',
+            exports.COLOR.BLUE3,
+            basicCardFillSpec,
+            [exports.COLOR.BLUE],
+        ),
+        RED1: new Suit(
+            'Tomato',
+            'T',
+            exports.COLOR.RED1,
+            basicCardFillSpec,
+            [exports.COLOR.RED],
+        ),
+        RED2: new Suit(
+            'Ruby',
+            'R',
+            exports.COLOR.RED,
+            basicCardFillSpec,
+            [exports.COLOR.RED],
+        ),
+        RED3: new Suit(
+            'Mahogany',
+            'M',
+            exports.COLOR.RED3,
+            basicCardFillSpec,
+            [exports.COLOR.RED],
+        ),
+
+        // For "Dual-Color (6 Suits)"
+        MGREEN: new Suit(
+            'Green',
+            'G',
+            exports.COLOR.GREEN,
+            basicCardFillSpec,
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.YELLOW,
+            ],
+        ),
+        MPURPLE: new Suit(
+            'Purple',
+            'P',
+            exports.COLOR.PURPLE,
+            basicCardFillSpec,
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.RED,
+            ],
+        ),
+        NAVY: new Suit(
+            'Navy',
+            'N',
+            exports.COLOR.NAVY,
+            basicCardFillSpec,
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.BLACK,
+            ],
+        ),
+        MORANGE: new Suit(
+            'Orange',
+            'O',
+            exports.COLOR.ORANGE,
+            basicCardFillSpec,
+            [
+                exports.COLOR.YELLOW,
+                exports.COLOR.RED,
+            ],
+        ),
+        TAN: new Suit(
+            'Tan',
+            'T',
+            exports.COLOR.TAN,
+            basicCardFillSpec,
+            [
+                exports.COLOR.YELLOW,
+                exports.COLOR.BLACK,
+            ],
+        ),
+        MAHOGANY: new Suit(
+            'Mahogany',
+            'M',
+            exports.COLOR.MAHOGANY,
+            basicCardFillSpec,
+            [
+                exports.COLOR.RED,
+                exports.COLOR.BLACK,
+            ],
+        ),
+
+        // For "Dual-Color (5 Suits)"
+        TEAL: new Suit(
+            'Teal',
+            'T',
+            exports.COLOR.TEAL,
+            basicCardFillSpec,
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.GREEN,
+            ],
+        ),
+        LIME: new Suit(
+            'Lime',
+            'L',
+            exports.COLOR.LIME,
+            basicCardFillSpec,
+            [
+                exports.COLOR.GREEN,
+                exports.COLOR.YELLOW,
+            ],
+        ),
+        // MORANGE is reused
+        CARDINAL: new Suit(
+            'Cardinal',
+            'C',
+            exports.COLOR.CARDINAL,
+            basicCardFillSpec,
+            [
+                exports.COLOR.RED,
+                exports.COLOR.PURPLE,
+            ],
+        ),
+        INDIGO: new Suit(
+            'Indigo',
+            'I',
+            exports.COLOR.INDIGO,
+            basicCardFillSpec,
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.PURPLE,
+            ],
         ),
     };
 
@@ -898,7 +749,7 @@
                 exports.SUIT.YELLOW,
                 exports.SUIT.RED,
                 exports.SUIT.PURPLE,
-                exports.SUIT.WHITE2,
+                exports.SUIT.WHITE,
             ],
             baseColors,
             false,
@@ -1243,7 +1094,7 @@
             [
                 exports.SUIT.TEAL, // Blue + Green
                 exports.SUIT.LIME, // Green + Yellow
-                exports.SUIT.SORANGE, // Yellow + Red
+                exports.SUIT.MORANGE, // Yellow + Red
                 exports.SUIT.CARDINAL, // Red + Purple
                 exports.SUIT.INDIGO, // Purple + Blue
             ],
@@ -1269,7 +1120,7 @@
             [
                 exports.SUIT.TEAL, // Blue + Green
                 exports.SUIT.LIME, // Green + Yellow
-                exports.SUIT.SORANGE, // Yellow + Red
+                exports.SUIT.MORANGE, // Yellow + Red
                 exports.SUIT.CARDINAL, // Red + Purple
                 exports.SUIT.INDIGO, // Purple + Blue
                 exports.SUIT.RAINBOW,
@@ -1481,11 +1332,11 @@
         // Mixed
         'African American': new Variant(
             [
-                exports.SUIT.LRED2,
-                exports.SUIT.DRED2,
-                exports.SUIT.WHITE3,
-                exports.SUIT.LBLUE2,
-                exports.SUIT.DBLUE2,
+                exports.SUIT.LRED,
+                exports.SUIT.DRED,
+                exports.SUIT.WHITE,
+                exports.SUIT.LBLUE,
+                exports.SUIT.DBLUE,
                 exports.SUIT.BLACK,
             ],
             [
