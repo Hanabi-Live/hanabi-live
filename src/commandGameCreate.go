@@ -135,8 +135,9 @@ func commandGameCreate(s *Session, d *CommandData) {
 	commandGameJoin(s, d)
 
 	// Alert the people on the waiting list, if any
-	if g.Password == "" && !strings.HasPrefix(g.Name, "test") {
-		// We don't want to alert on password-protected games or test games
+	if d.AlertWaiters && g.Password == "" && !strings.HasPrefix(g.Name, "test") {
+		// Even if they check the "Alert people" checkbox,
+		// we don't want to alert on password-protected games or test games
 		waitingListAlert(g, s.Username())
 	}
 }

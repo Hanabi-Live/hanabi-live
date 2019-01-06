@@ -237,6 +237,18 @@ function HanabiLobby() {
         const password = localStorage.getItem('createTablePassword');
         $('#create-game-password').val(password);
 
+        // Fill in the "Alert people" box
+        let alertWaiters;
+        try {
+            alertWaiters = JSON.parse(localStorage.getItem('createTableAlertWaiters'));
+        } catch (err) {
+            alertWaiters = false;
+        }
+        if (typeof alertWaiters !== 'boolean') {
+            alertWaiters = false;
+        }
+        $('#create-game-alert-waiters').prop('checked', alertWaiters);
+
         // Focus the "Name" box
         // (we have to wait 1 millisecond or it won't work due to the nature of the above code)
         setTimeout(() => {
@@ -439,6 +451,9 @@ function HanabiLobby() {
             password = hex_sha256(`Hanabi game password ${password}`);
         }
 
+        const alertWaiters = document.getElementById('create-game-alert-waiters').checked;
+        localStorage.setItem('createTableAlertWaiters', alertWaiters);
+
         self.connSend({
             type: 'gameCreate',
             resp: {
@@ -451,6 +466,7 @@ function HanabiLobby() {
                 emptyClues,
                 characterAssignments,
                 password,
+                alertWaiters,
             },
         });
 

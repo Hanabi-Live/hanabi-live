@@ -19,6 +19,7 @@ type CommandData struct {
 	ReorderCards         bool    `json:"reorderCards"`
 	EmptyClues           bool    `json:"emptyClues"`
 	CharacterAssignments bool    `json:"characterAssignments"`
+	AlertWaiters         bool    `json:"alertWaiters"`
 
 	// action
 	Clue   Clue `json:"clue"`
