@@ -10,7 +10,7 @@ List of Features
   * Then, the creator of the table needs to click on the "Start Game" button on the top navigation bar.
 * Once inside a game, the UI elements are as follows:
   * The play stacks are in the center of the screen (one for each suit).
-  * Around the play stacks, the players are evenly distributed. (This is similar to players would be sitting at a table in real life.)
+  * Around the play stacks, the players are evenly distributed. (This is similar to how players would be if they were sitting at a table in real life.)
   * You can tell which side is a player's hand corresponds to the "newest" side by looking for the white glow.
   * You can tell whose turn it is by looking to see if a player's name is bolded.
   * In the top-right-hand corner is a clue log that will track every clue given over the course of the game.
