@@ -984,7 +984,7 @@ function HanabiUI(lobby, gameID) {
                     return;
                 }
 
-                if (event.evt.which !== mouseButton || !this.isInPlayerHand()) {
+                if (event.evt.which !== mouseButton) {
                     return;
                 }
 
@@ -1025,7 +1025,7 @@ function HanabiUI(lobby, gameID) {
             // In a shared replay, the leader right-clicks a card to draw attention to it
             if (
                 ui.sharedReplay &&
-                event.evt.which === 3 &&
+                event.evt.which === 3 && // Right-click
                 ui.sharedReplayLeader === lobby.username
             ) {
                 if (ui.useSharedTurns) {
@@ -5865,7 +5865,7 @@ Keyboard hotkeys:
         }
 
         // Show or hide the white square
-        if (data.notes.length > 0 && card.isInPlayerHand()) {
+        if (data.notes.length > 0) {
             card.noteGiven.show();
             card.noteGiven.setFill('yellow');
         } else {
@@ -5907,7 +5907,7 @@ Keyboard hotkeys:
             if (note !== null && note !== '') {
                 card.note = note;
             }
-            if (note !== null && note !== '' && card.isInPlayerHand()) {
+            if (note !== null && note !== '') {
                 card.noteGiven.show();
                 if (ui.spectating) {
                     card.noteGiven.setFill('yellow');
@@ -5953,8 +5953,9 @@ Keyboard hotkeys:
     };
 
     this.handleReplayIndicator = (data) => {
+        // Ensure that the card exists as a sanity-check
         const indicated = ui.deck[data.order];
-        if (indicated && indicated.isInPlayerHand()) {
+        if (indicated) {
             // Either show or hide the arrow (if it is already visible)
             const visible = !(indicated.indicatorArrow.visible() && indicated.indicatorArrow.getFill() === INDICATOR.REPLAY_LEADER);
             // (if the arrow is showing but is a different kind of arrow, then just overwrite the existing arrow)

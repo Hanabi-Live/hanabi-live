@@ -310,7 +310,6 @@ function HanabiLobby() {
         Display the login screen
     */
 
-    this.hideLobby();
     this.closeAllTooltips();
     this.showLogin();
     this.loadSettings();
@@ -545,13 +544,7 @@ function HanabiLobby() {
     // The "Return to Lobby" button (from the "History" and "History Details" screen)
     $('.nav-return-table').on('click', (event) => {
         event.preventDefault();
-
-        $('#lobby-history').hide();
-        $('#lobby-history-details').hide();
-        $('#lobby-top-half').show();
-        $('#lobby-separator').show();
-        $('#lobby-bottom-half').show();
-        self.showNav('games');
+        self.returnToLobbyFromHistory();
     });
 
     $('#return-history').on('click', (event) => {
@@ -728,20 +721,10 @@ HanabiLobby.prototype.hideLogin = () => {
 };
 
 HanabiLobby.prototype.showLobby = function showLobby(fast) {
-    $('body').css('overflow', 'hidden');
     $('#lobby').show();
     $('#lobby-history').hide(); // We can't hide this element by default in "index.html" or else the "No game history" text will not be centered
     this.showNav('games');
     $('#lobby-chat-input').focus();
-};
-
-HanabiLobby.prototype.hideLobby = function hideLobby(fast) {
-    // This has to be in a timeout to work for some reason
-    setTimeout(() => {
-        $('body').css('overflow', 'visible');
-        $('#lobby').hide();
-        this.showNav('nothing');
-    }, 1);
 };
 
 HanabiLobby.prototype.closeAllTooltips = function closeAllTooltips() {
@@ -760,31 +743,6 @@ HanabiLobby.prototype.showHistoryDetails = function showHistoryDetails() {
 
     this.historyDetailList = [];
     this.drawHistoryDetails();
-};
-
-HanabiLobby.prototype.showPregame = () => {
-    $('#page-wrapper').fadeIn(fadeTime);
-};
-
-HanabiLobby.prototype.hidePregame = () => {
-    $('#page-wrapper').hide();
-};
-
-HanabiLobby.prototype.showGame = () => {
-    $('#game').fadeIn(fadeTime);
-
-    // The scroll bars appear for some reason when showing the game, which is annoying and wastes space
-    $('body').css('overflow', 'hidden');
-};
-
-HanabiLobby.prototype.hideGame = function hideGame() {
-    $('#game').hide();
-
-    // Change the scroll bars for the page back to the default value
-    $('body').css('overflow', 'visible');
-
-    // Make sure there are not any game-related tooltips showing
-    this.closeAllTooltips();
 };
 
 HanabiLobby.prototype.addUser = function addUser(data) {
@@ -1106,10 +1064,7 @@ HanabiLobby.prototype.makeReplayButton = function makeReplayButton(id, text, msg
         });
 
         if (returnsToLobby) {
-            $('#lobby-history-details').hide();
-            $('#lobby-history').hide();
-            $('#lobby-games').show();
-            self.showNav('games');
+            self.returnToLobbyFromHistory();
         }
     });
 
@@ -1502,8 +1457,8 @@ HanabiLobby.prototype.gameStarted = function gameStarted(data) {
         this.showNav('games');
     }
 
-    this.hidePregame();
-    this.showGame();
+    $('#page-wrapper').hide(); // We can't fade this out as it will overlap
+    $('#game').fadeIn(fadeTime);
 
     this.ui = new HanabiUI(this, this.gameID);
     this.ui.setBackend(this.conn);
@@ -1511,15 +1466,26 @@ HanabiLobby.prototype.gameStarted = function gameStarted(data) {
 
 HanabiLobby.prototype.gameEnded = function gameEnded(data) {
     this.ui.destroy();
-
-    this.hideGame();
-    this.showPregame();
-
     this.ui = null;
+
+    $('#game').hide(); // We can't fade this out as it will overlap
+    $('#page-wrapper').fadeIn(fadeTime);
+
+    // Make sure there are not any game-related tooltips showing
+    this.closeAllTooltips();
 
     // Scroll to the bottom of the lobby
     const chat = document.getElementById('lobby-chat-text');
     chat.scrollTop = chat.scrollHeight;
+};
+
+HanabiLobby.prototype.returnToLobbyFromHistory = function returnToLobbyFromHistory() {
+    $('#lobby-history').hide();
+    $('#lobby-history-details').hide();
+    $('#lobby-top-half').show();
+    $('#lobby-separator').show();
+    $('#lobby-bottom-half').show();
+    this.showNav('games');
 };
 
 HanabiLobby.prototype.connSet = function connSet(conn) {
