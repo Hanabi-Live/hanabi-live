@@ -77,20 +77,13 @@ var (
 	WhiteSuit      = NewSuit("White", noColorClues)
 	Rainbow1oESuit = NewSuit1oE("Rainbow", allColorClues)
 
-	// For "Dual-Color (6 Suits)"
-	GreenDualSuit    = NewSuit("Green", []ColorClue{BlueClue, YellowClue})
-	PurpleDualSuit   = NewSuit("Purple", []ColorClue{RedClue, BlueClue})
-	NavyDualSuit     = NewSuit("Navy", []ColorClue{BlackClue, BlueClue})
-	OrangeDualSuit   = NewSuit("Orange", []ColorClue{YellowClue, RedClue})
-	TanDualSuit      = NewSuit("Tan", []ColorClue{BlackClue, YellowClue})
-	BurgundyDualSuit = NewSuit("Burgundy", []ColorClue{BlackClue, RedClue})
-
-	// For "Dual-Color (5 Suits)"
-	TealDualSuit = NewSuit("Teal", []ColorClue{BlueClue, GreenClue})
-	LimeDualSuit = NewSuit("Lime", []ColorClue{YellowClue, GreenClue})
-	// OrangeDualSuit is reused
-	CardinalDualSuit = NewSuit("Cardinal", []ColorClue{RedClue, PurpleClue})
-	IndigoDualSuit   = NewSuit("Indigo", []ColorClue{BlueClue, PurpleClue})
+	// For "Color Blind"
+	BlindBlueSuit   = NewSuit("Blue", noColorClues)
+	BlindGreenSuit  = NewSuit("Green", noColorClues)
+	BlindYellowSuit = NewSuit("Yellow", noColorClues)
+	BlindRedSuit    = NewSuit("Red", noColorClues)
+	BlindPurpleSuit = NewSuit("Purple", noColorClues)
+	BlindOrangeSuit = NewSuit("Orange", noColorClues)
 
 	// For "Ambiguous"
 	SkySuit      = NewSuit("Sky", []ColorClue{BlueClue})
@@ -104,13 +97,20 @@ var (
 	BerrySuit = NewSuit("Berry", []ColorClue{BlueClue})
 	RubySuit  = NewSuit("Ruby", []ColorClue{RedClue})
 
-	// For "Color Blind"
-	BlindBlueSuit   = NewSuit("Blue", noColorClues)
-	BlindGreenSuit  = NewSuit("Green", noColorClues)
-	BlindYellowSuit = NewSuit("Yellow", noColorClues)
-	BlindRedSuit    = NewSuit("Red", noColorClues)
-	BlindPurpleSuit = NewSuit("Purple", noColorClues)
-	BlindOrangeSuit = NewSuit("Orange", noColorClues)
+	// For "Dual-Color (6 Suits)"
+	GreenDualSuit    = NewSuit("Green", []ColorClue{BlueClue, YellowClue})
+	PurpleDualSuit   = NewSuit("Purple", []ColorClue{RedClue, BlueClue})
+	NavyDualSuit     = NewSuit("Navy", []ColorClue{BlackClue, BlueClue})
+	OrangeDualSuit   = NewSuit("Orange", []ColorClue{YellowClue, RedClue})
+	TanDualSuit      = NewSuit("Tan", []ColorClue{BlackClue, YellowClue})
+	MahoganyDualSuit = NewSuit("Mahogany", []ColorClue{BlackClue, RedClue})
+
+	// For "Dual-Color (5 Suits)"
+	TealDualSuit = NewSuit("Teal", []ColorClue{BlueClue, GreenClue})
+	LimeDualSuit = NewSuit("Lime", []ColorClue{YellowClue, GreenClue})
+	// OrangeDualSuit is reused
+	CardinalDualSuit = NewSuit("Cardinal", []ColorClue{RedClue, PurpleClue})
+	IndigoDualSuit   = NewSuit("Indigo", []ColorClue{BlueClue, PurpleClue})
 )
 
 // Variants
@@ -319,7 +319,7 @@ func variantsInit() {
 		Variant{
 			Name:  "Dual-Color (6 Suits)",
 			ID:    4,
-			Suits: []Suit{GreenDualSuit, PurpleDualSuit, NavyDualSuit, OrangeDualSuit, TanDualSuit, BurgundyDualSuit},
+			Suits: []Suit{GreenDualSuit, PurpleDualSuit, NavyDualSuit, OrangeDualSuit, TanDualSuit, MahoganyDualSuit},
 			Clues: []ColorClue{BlueClue, YellowClue, RedClue, BlackClue},
 		},
 		Variant{
