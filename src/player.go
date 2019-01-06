@@ -264,16 +264,6 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	g.NotifyAction()
 	log.Info(g.GetName() + text)
 
-	// Send the stack directions
-	// (for "Up or Down" variants)
-	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		g.Actions = append(g.Actions, Action{
-			Type:       "suitDirections",
-			Directions: g.StackDirections,
-		})
-		g.NotifyAction()
-	}
-
 	// Give the team a clue if the final card of the suit was played
 	// (this will always be a 5 unless it is a custom variant)
 	extraClue := c.Rank == 5

@@ -3,27 +3,27 @@ package main
 // Action describes a change in the game state
 // It is a catch-all struct that contains all of the possible things that can happen.
 type Action struct {
-	Type          string `json:"type"`
-	Who           int    `json:"who"`
-	Suit          int    `json:"suit"`
-	Rank          int    `json:"rank"`
-	Text          string `json:"text"`
-	Target        int    `json:"target"`
-	HandOrder     []int  `json:"handOrder"`
-	Clue          Clue   `json:"clue"`
-	Giver         int    `json:"giver"`
-	List          []int  `json:"list"`
-	Turn          int    `json:"turn"`
-	Which         Which  `json:"which"`
-	Num           int    `json:"num"`
-	Order         int    `json:"order"`
-	Size          int    `json:"size"`
-	Clues         int    `json:"clues"`
-	Score         int    `json:"score"`
-	MaxScore      int    `json:"maxScore"`
-	Loss          bool   `json:"loss"`
-	DoubleDiscard bool   `json:"doubleDiscard"`
-	Directions    []int  `json:"directions"`
+	Type            string `json:"type"`
+	Who             int    `json:"who"`
+	Suit            int    `json:"suit"`
+	Rank            int    `json:"rank"`
+	Text            string `json:"text"`
+	Target          int    `json:"target"`
+	HandOrder       []int  `json:"handOrder"`
+	Clue            Clue   `json:"clue"`
+	Giver           int    `json:"giver"`
+	List            []int  `json:"list"`
+	Turn            int    `json:"turn"`
+	Which           Which  `json:"which"`
+	Num             int    `json:"num"`
+	Order           int    `json:"order"`
+	Size            int    `json:"size"`
+	Clues           int    `json:"clues"`
+	Score           int    `json:"score"`
+	MaxScore        int    `json:"maxScore"`
+	Loss            bool   `json:"loss"`
+	DoubleDiscard   bool   `json:"doubleDiscard"`
+	StackDirections []int  `json:"stackDirections"`
 }
 
 type Which struct {

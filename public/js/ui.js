@@ -5581,6 +5581,27 @@ Keyboard hotkeys:
             // Update the score (in the bottom-right-hand corner)
             scoreNumberLabel.setText(data.score);
 
+            // Update the stack directions (only in "Up or Down" variants)
+            if (this.variant.name.startsWith('Up or Down')) {
+                for (let i = 0; i < data.stackDirections.length; i++) {
+                    const direction = data.stackDirections[i];
+                    let text;
+                    if (direction === 0) {
+                        text = ''; // Undecided
+                    } else if (direction === 1) {
+                        text = 'Up';
+                    } else if (direction === 2) {
+                        text = 'Down';
+                    } else if (direction === 3) {
+                        text = 'Finished';
+                    } else {
+                        text = 'Unknown';
+                    }
+                    this.suitLabelTexts[i].setText(text);
+                    textLayer.draw();
+                }
+            }
+
             /*
                 Calculate some "End-Game" metrics
             */
@@ -5735,24 +5756,6 @@ Keyboard hotkeys:
         } else if (type === 'boot') {
             this.stopLocalTimer();
             ui.lobby.gameEnded();
-        } else if (type === 'suitDirections') {
-            for (let i = 0; i < data.directions.length; i++) {
-                const direction = data.directions[i];
-                let text;
-                if (direction === 0) {
-                    text = ''; // Undecided
-                } else if (direction === 1) {
-                    text = 'Up';
-                } else if (direction === 2) {
-                    text = 'Down';
-                } else if (direction === 3) {
-                    text = 'Finished';
-                } else {
-                    text = 'Unknown';
-                }
-                this.suitLabelTexts[i].setText(text);
-                textLayer.draw();
-            }
         }
     };
 
