@@ -7,9 +7,17 @@
     margin-top: 0;
 }
 
+.row {
+    border-bottom: 0;
+}
+
 /*
     Common
 */
+
+html, body, #page-wrapper {
+    height: 100%;
+}
 
 body {
     background-color: rgb(34, 79, 39);
@@ -25,8 +33,10 @@ table td {
     vertical-align: middle;
 }
 
-/* The "align-center" class will do horizontal centering (in "alpha.css").
-   The "align-center-v" class will do vertical centering. */
+/*
+    The "align-center" class will do horizontal centering (in "alpha.css")
+    The "align-center-v" class will do vertical centering
+*/
 .align-center-v {
     display: flex;
     align-items: center;
@@ -96,20 +106,6 @@ table td {
 }
 
 /*
-    Modals
-*/
-
-.modal {
-    position: absolute;
-    z-index: 1;
-    top: 5em;
-    left: 5em;
-    right: 5em;
-    bottom: 5em;
-    overflow: auto;
-}
-
-/*
     Nav
 */
 
@@ -173,24 +169,38 @@ table td {
     Lobby
 */
 
-.lobby-box {
+#lobby {
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    /* Left and right margins are handled on the rows in "alpha.css" */
+    height: calc(100% - 3em); /* The header is 3em */
+    /*
+        Even with width 100%, the scroll bar can pop up when going back from a game to the lobby
+        So we can set "overflow-y" to explicitly prevent this from occuring
+    */
+    overflow-y: hidden;
+}
+
+#lobby > div > div {
+    height: 100%;
+}
+
+#lobby > div > div > section {
     padding: 1.5em;
+    margin-bottom: 0;
+    height: 100%;
 }
 
-.lobby-bottom-box {
-    margin-bottom: 1.5em;
+.lobby-half {
+    height: calc((100% - 1.5em) / 2);
 }
 
-.lobby-top-box {
-    margin-top: 1.5em;
-    margin-bottom: 1.5em;
-    height: 45vh;
+#lobby-separator {
+    height: 1.5em;
 }
 
-.lobby-full-box {
-    margin-top: 1.5em;
-    margin-bottom: 1.5em;
-    height: auto;
+.lobby-full {
+    height: 100%;
 }
 
 .lobby-users-box-container {
@@ -199,26 +209,14 @@ table td {
 
 .lobby-table-container {
     overflow-y: auto;
-    height: 40vh;
-}
-
-.lobby-table-container-full {
-    overflow-y: auto;
-    /* height: 83.4vh; */
-    height: calc(100vh - 9.6em);
+    height: 100%;
 }
 
 #lobby-games-table {
     margin-bottom: 0;
 }
 
-#lobby-chat {
-    /* margin-bottom: 0; */
-    height: 41vh;
-}
-
 #lobby-chat-text {
-    height: calc(100% - 3.5em);
     overflow-y: auto;
     overflow-wrap: break-word;
     border-style: solid !important;
@@ -226,11 +224,7 @@ table td {
     border: 1px;
     margin-bottom: 1em;
     padding: 0 0.5em 0 0.5em;
-}
-
-#lobby-users {
-    /* margin-bottom: 0; */
-    height: 41vh;
+    height: calc(100% - 3.5em); /* The height of the input box is 3.5em */
 }
 
 #lobby-users-title {
@@ -239,7 +233,7 @@ table td {
 
 #lobby-users-container {
     overflow-y: auto;
-    height: 30vh;
+    height: calc(100% - 3em); /* The height of the "Online Users" text is 3em */
 }
 
 #lobby-game-left {
@@ -304,6 +298,20 @@ a {
 .create-game-icon-up {
     position: relative;
     bottom: 0.75em;
+}
+
+/*
+    Modals
+*/
+
+.modal {
+    position: absolute;
+    z-index: 1;
+    top: 5em;
+    left: 5em;
+    right: 5em;
+    bottom: 5em;
+    overflow: auto;
 }
 
 /*

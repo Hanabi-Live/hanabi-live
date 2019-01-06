@@ -373,6 +373,9 @@ function HanabiLobby() {
     $('#lobby-chat-form').submit((event) => {
         event.preventDefault();
     });
+    $('#lobby-chat-game-form').submit((event) => {
+        event.preventDefault();
+    });
 
     /*
         Create a new game
@@ -490,9 +493,9 @@ function HanabiLobby() {
     $('#nav-buttons-games-history').on('click', (event) => {
         event.preventDefault();
 
-        $('#lobby-games').hide();
-        $('#lobby-chat').hide();
-        $('#lobby-users').hide();
+        $('#lobby-top-half').hide();
+        $('#lobby-separator').hide();
+        $('#lobby-bottom-half').hide();
         $('#lobby-history').show();
         self.showNav('history');
 
@@ -529,9 +532,9 @@ function HanabiLobby() {
 
         $('#lobby-history').hide();
         $('#lobby-history-details').hide();
-        $('#lobby-games').show();
-        $('#lobby-chat').show();
-        $('#lobby-users').show();
+        $('#lobby-top-half').show();
+        $('#lobby-separator').show();
+        $('#lobby-bottom-half').show();
         self.showNav('games');
     });
 

@@ -20,7 +20,7 @@
 </head>
 
 <body>
-    <!-- Pregame elements (the lobby) -->
+    <!-- Header & Login & Lobby -->
     <div id="page-wrapper">
 
         <!-- Header -->
@@ -110,7 +110,7 @@
             </nav>
         </header>
 
-        <!-- Main -->
+        <!-- Login -->
         <div id="login">
             <section id="main" class="container">
                 <header>
@@ -125,9 +125,7 @@
                 <div class="row uniform 100%">
                     <div class="3u 12u">
                     </div>
-
                     <div class="6u 12u">
-
                         <section class="box align-center">
                             <h3>Sign In / Create Account</h3>
                             <p>To create a new account, simply login with a new username and select a password. Do <strong>NOT</strong> reuse any of your previous passwords!</p>
@@ -150,7 +148,6 @@
                                         <input id="login-password" type="password" placeholder="Password" />
                                     </div>
                                 </div>
-                                <center>
                                 <div class="row uniform 100%">
                                     <div class="3u 12u padding-top1p5">
                                     </div>
@@ -174,19 +171,22 @@
                         </section>
                     </div>
                 </div>
-                <div class="align-center">
-                    <a href="https://discord.gg/FADvkJp">
-                        <img id="title-discord" src="public/img/discord.png" />
-                    </a>
+                <div class="row uniform 100%">
+                    <div class="12u 12u align-center">
+                        <a href="https://discord.gg/FADvkJp">
+                            <img id="title-discord" src="public/img/discord.png" />
+                        </a>
+                    </div>
                 </div>
             </section>
         </div>
 
+        <!-- Lobby -->
         <div id="lobby" class="container hidden">
-            <!-- The "games" table (all current games) -->
-            <div class="row 100%">
+            <div id="lobby-top-half" class="row 100% lobby-half">
                 <div class="12u">
-                    <section id="lobby-games" class="box lobby-box lobby-top-box align-center-v">
+                    <!-- The "games" table (all current games) -->
+                    <section id="lobby-games" class="box align-center-v">
                         <h3 id="lobby-games-no">No current games.</h3>
                         <div id="lobby-games-table-container" class="hidden lobby-table-container">
                             <table id="lobby-games-table" class="alt">
@@ -207,13 +207,9 @@
                             </table>
                         </table>
                     </section>
-                </div>
-            </div>
 
-            <!-- The "game" table (the current unstarted game) -->
-            <div class="row 100%">
-                <div class="12u">
-                    <section id="lobby-game" class="box lobby-box lobby-top-box hidden">
+                    <!-- The "game" table (the current unstarted game) -->
+                    <section id="lobby-game" class="box hidden">
                         <div class="row 100%">
                             <div id="lobby-game-left" class="2u padding-right1">
                                 <h4 class="padding0p5">
@@ -239,12 +235,54 @@
                 </div>
             </div>
 
-            <!-- The history table (all played games) -->
-            <div class="row 100%">
+            <!-- Spacing -->
+            <div id="lobby-separator" class="row 100%"></div>
+
+            <div id="lobby-bottom-half" class="row 100% lobby-half">
+                <div class="8u">
+                    <!-- The chat for the entire lobby -->
+                    <section id="lobby-chat" class="box">
+                        <div id="lobby-chat-text"></div>
+                        <form id="lobby-chat-form">
+                            <input id="lobby-chat-input" type="text" placeholder="Chat" />
+                        </form>
+                    </section>
+
+                    <!-- The chat for the players in the currently unstarted game -->
+                    <section id="lobby-chat-game" class="box hidden">
+                        <div id="lobby-chat-game-text"></div>
+                        <form id="lobby-chat-game-form">
+                            <input id="lobby-chat-game-input" type="text" placeholder="Chat" />
+                        </form>
+                    </section>
+                </div>
+
+                <!-- The "Online Users" section -->
+                <div class="4u lobby-users-box-container">
+                    <section class="box">
+                        <h3 id="lobby-users-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
+                        <div id="lobby-users-container">
+                            <table id="lobby-users-table" class="slim-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lobby-users-table-tbody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- History -->
+            <div class="row 100% lobby-full">
                 <div class="12u">
-                    <section id="lobby-history" class="box lobby-box lobby-full-box">
+                    <!-- The history table (all played games) -->
+                    <section id="lobby-history" class="box">
                         <h3 id="lobby-history-no" class="align-center">No game history. Play some games!</h3>
-                        <div id="lobby-history-table-container" class="hidden lobby-table-container-full">
+                        <div id="lobby-history-table-container" class="hidden lobby-table-container">
                             <table class="alt">
                                 <thead>
                                     <tr>
@@ -270,14 +308,10 @@
                             </div>
                         </div>
                     </section>
-                </div>
-            </div>
 
-            <!-- The history details table (all games on a specific seed) -->
-            <div class="row 100%">
-                <div class="12u">
-                    <section id="lobby-history-details" class="box lobby-box lobby-full-box hidden">
-                        <div class="lobby-table-container-full">
+                    <!-- The history details table (all games on a specific seed) -->
+                    <section id="lobby-history-details" class="box hidden">
+                        <div class="lobby-table-container">
                             <table class="alt">
                                 <thead>
                                     <tr>
@@ -290,34 +324,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="lobby-history-details-table-tbody"></tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
-            </div>
-
-            <!-- Lobby chat -->
-            <div class="row 100%">
-                <div class="8u">
-                    <section id="lobby-chat" class="box lobby-box lobby-bottom-box">
-                        <div id="lobby-chat-text"></div>
-                        <form id="lobby-chat-form">
-                            <input id="lobby-chat-input" type="text" placeholder="Chat" />
-                        </form>
-                    </section>
-                </div>
-                <div class="4u lobby-users-box-container">
-                    <section id="lobby-users" class="box lobby-box">
-                        <h3 id="lobby-users-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
-                        <div id="lobby-users-container">
-                            <table id="lobby-users-table" class="slim-table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="lobby-users-table-tbody"></tbody>
                             </table>
                         </div>
                     </section>
@@ -346,9 +352,7 @@
                 </div>
                 <div class="8u 12u">
                     <div class="select-wrapper">
-                        <select id="create-game-variant">
-                            <!-- This is filled in with all of the variant options in the "lobby.js" file -->
-                        </select>
+                        <select id="create-game-variant"></select>
                     </div>
                 </div>
                 <div class="1u 12u input-text align-left">
@@ -616,10 +620,8 @@
 
     <!-- Game tooltips (which are initialized in "lobby.js" -->
     <div id="game-tooltips">
-        <!-- "tooltip-player-#" is added in "lobby.js" -->
         <div id="tooltip-spectators"></div>
         <div id="tooltip-leader"></div>
-        <!-- "tooltip-card-#" is added in "lobby.js" -->
         <div id="tooltip-chat" class="tooltip" data-tooltip-content="#game-chat"></div>
     </div>
 
