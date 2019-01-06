@@ -3452,7 +3452,7 @@ function HanabiUI(lobby, gameID) {
             } else {
                 efficiencyIndex = 1;
             }
-            const minEfficiency = this.variant.efficiencyArray[efficiencyIndex];
+            const minEfficiency = this.variant.efficiencyArray[efficiencyIndex].toFixed(2); // Round it to 2 decimal places
             efficiencyNumberLabel.setText(`${efficiency} / ${minEfficiency}`);
         };
 
