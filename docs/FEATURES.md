@@ -130,21 +130,21 @@ The server was originally an attempt to emulate the [Keldon Hanabi server](http:
 
 ## Keyboard Shortcuts
 
-* For the lobby:
+* In the lobby:
   * Create a table: `Alt + c`
   * Show history: `Alt + h`
   * Start a game: `Alt + s`
   * Leave a table: `Alt + l`
   * Return to tables: `Alt + r`
-* For in-game:
+* In a game:
   * Play a card: `a` or `+` (will prompt an alert for the slot number)
   * Discard a card: `d` or `-` (will prompt an alert for the slot number)
   * Clue:
     * `Tab` to select a player
     * `1`, `2`, `3`, `4`, `5` for a number clue
     * Or `q`, `w`, `e`, `r`, `t` for a color clue
-    * Then `Enter` to submit
-* For in a replay:
+    * Then `Ctrl + Enter` to submit
+* In a replay:
   * Rewind back one turn: `Left`
   * Fast-forward one turn: `Right`
   * Rewind one full rotation: `[`
