@@ -53,8 +53,7 @@ func httpProfile(c *gin.Context) {
 	text += "-+\n"
 	text += "\n"
 
-	totalMaxScoresNumerator := 0
-	totalMaxScoresDenominator := 0
+	totalMaxScores := 0
 	for i, variant := range variantDefinitions {
 		var stats models.Stats
 		if v, err := db.Users.GetStats(user.ID, variant.ID); err != nil {
@@ -86,28 +85,24 @@ func httpProfile(c *gin.Context) {
 		text += "- Strikeout rate: " + strconv.Itoa(int(math.Round(stats.StrikeoutRateVariant*100))) + "%%\n" // We must escape the percent sign here
 		text += "\n"
 
-		maxScore := 25
-		if i > 0 {
-			maxScore = 30
+		maxScoreForThisVariant := 5 * len(variant.Suits)
+		if stats.BestScoreVariant2 == maxScoreForThisVariant {
+			totalMaxScores++
 		}
-		if stats.BestScoreVariant2 == maxScore {
-			totalMaxScoresNumerator++
+		if stats.BestScoreVariant3 == maxScoreForThisVariant {
+			totalMaxScores++
 		}
-		if stats.BestScoreVariant3 == maxScore {
-			totalMaxScoresNumerator++
+		if stats.BestScoreVariant4 == maxScoreForThisVariant {
+			totalMaxScores++
 		}
-		if stats.BestScoreVariant4 == maxScore {
-			totalMaxScoresNumerator++
+		if stats.BestScoreVariant5 == maxScoreForThisVariant {
+			totalMaxScores++
 		}
-		if stats.BestScoreVariant5 == maxScore {
-			totalMaxScoresNumerator++
-		}
-		totalMaxScoresDenominator += 4
 	}
 
 	// Edit in the max scores
-	totalMaxScores := strconv.Itoa(totalMaxScoresNumerator) + " / " + strconv.Itoa(totalMaxScoresDenominator)
-	text = strings.Replace(text, "Total max scores:", "Total max scores: "+totalMaxScores, 1)
+	maxScoresText := strconv.Itoa(totalMaxScores) + " / " + strconv.Itoa(len(variantDefinitions)*4)
+	text = strings.Replace(text, "Total max scores:", "Total max scores: "+maxScoresText, 1)
 
 	// Get the player's entire game history
 	var history []*models.GameHistory
