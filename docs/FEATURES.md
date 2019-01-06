@@ -1,10 +1,6 @@
 List of Features
 ================
 
-The server was originally an attempt to emulate the [Keldon Hanabi server](http://keldon.net/hanabi/) and was written in Node.js. Since then, it has been completely rewritten in Go.
-
-<br />
-
 ## Basic How-To
 
 * If you don't know how to play Hanabi already, you can read [the official rules](https://pastebin.com/pR54gTq4) or [watch my video explanation](https://www.youtube.com/watch?v=jR9i1qCbHXQ).
@@ -15,6 +11,8 @@ The server was originally an attempt to emulate the [Keldon Hanabi server](http:
 * Once inside a game, the UI elements are as follows:
   * The play stacks are in the center of the screen (one for each suit).
   * Around the play stacks, the players are evenly distributed. (This is similar to players would be sitting at a table in real life.)
+  * You can tell which side is a player's hand corresponds to the "newest" side by looking for the white glow.
+  * You can tell whose turn it is by looking to see if a player's name is bolded.
   * In the top-right-hand corner is a clue log that will track every clue given over the course of the game.
   * In the middle-right is some statistics about how well the game is going.
   * In the bottom-left-hand corner is the deck, which shows how many cards are left in it.
