@@ -165,6 +165,15 @@ The server was originally an attempt to emulate the [Keldon Hanabi server](http:
 
 <br />
 
+## Discord Integration
+
+* All lobby chat will be replicated to (and from) the [Hanabi Discord server](https://discord.gg/FADvkJp).
+* If you want to try to get some people together for a game, you can use the `/here` command to ping everyone who has joined the Discord server.
+* If you want the Discord bot to ping you when the next game starts, use the `/next` command to be put on the waiting list.
+* The full list of commands is found in the [chatCommand.go file](https://github.com/Zamiell/hanabi-live/blob/master/src/chatCommand.go).
+
+<br />
+
 ## Other Quality of Life Improvements (over Keldon's Server)
 
 * The action log is improved:
@@ -181,7 +190,6 @@ The server was originally an attempt to emulate the [Keldon Hanabi server](http:
 * You will no longer have to refresh the page after resizing the browser window.
 * The "Clues" text on the game UI will be red while at 8 clues.
 * Each suit name is listed below the stack in the middle of the screen during games with the multi-color variants.
-* All lobby chat will be replicated to (and from) the Hanabi Discord server.
 * The lobby has been completely rehauled:
   * The nice-looking user interface is [Alpha from HTML5UP](https://html5up.net/alpha).
   * The username box on the login box will now be automatically focused and you can press enter to login.
