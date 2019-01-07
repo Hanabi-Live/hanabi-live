@@ -1,5 +1,6 @@
 const showDebugMessages = true;
 const fadeTime = 350; // Vanilla Keldon is 800
+const browserIsFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 $(document).ready(() => {
     // Initialize the lobby code
@@ -9,21 +10,29 @@ $(document).ready(() => {
 function HanabiLobby() {
     const self = this;
 
+    // Lists containing the things in the lobby tables
     this.userList = {};
     this.tableList = {};
     this.historyList = {};
     this.historyDetailList = [];
+
+    // Set in the "setGame()" function after receiving a "game" message
+    // All we need to do is initialize the players to an empty array to avoid some errors elsewhere
+    this.game = {
+        players: [],
+    };
 
     // Upon connecting, the server will only send us the last 10 games that we played
     // If the user clicks on the "Show More History" button,
     // then the server will send us more games
     this.historyClicked = false;
 
+    // Misc. other variables
     this.username = null;
     this.pass = null;
-
     this.gameID = null;
     this.randomName = '';
+    this.errorOccured = false;
 
     // The lobby settings found in the gear sub-menu
     this.sendTurnNotify = false;
@@ -37,14 +46,6 @@ function HanabiLobby() {
     this.reverseHands = false;
     this.speedrunPreplay = false;
     this.speedrunHotkeys = false;
-
-    this.game = {
-        // Set in the "setGame()" function after receiving a "game" message
-        // All we need to do is initialize the players to an empty array to avoid some errors elsewhere
-        players: [],
-    };
-
-    this.errorOccured = false;
 
     // Initialize the modals
     $('#password-modal-submit').click(() => {
@@ -313,6 +314,17 @@ function HanabiLobby() {
     this.closeAllTooltips();
     this.showLogin();
     this.loadSettings();
+
+    // Check to see if we have accepted the Firefox warning
+    if (browserIsFirefox && getCookie('acceptedFirefoxWarning') !== 'true') { // Cookies are strings
+        $('#sign-in').hide();
+        $('#firefox-warning').show();
+    }
+    $('#firefox-warning-button').click(() => {
+        setCookie('acceptedFirefoxWarning', 'true');
+        $('#firefox-warning').hide();
+        $('#sign-in').show();
+    });
 
     // Handle logging in from the home page
     $('#login-button').click(() => {
@@ -636,6 +648,11 @@ HanabiLobby.prototype.preloadSounds = function preloadSounds() {
 };
 
 HanabiLobby.prototype.automaticallyLogin = function automaticallyLogin() {
+    // Don't automatically login if they are on Firefox and have not confirmed the warning dialog
+    if (browserIsFirefox && getCookie('acceptedFirefoxWarning') !== 'true') { // Cookies are strings
+        return;
+    }
+
     // Automatically sign in to the WebSocket server if we have cached credentials
     this.username = getCookie('hanabiuser');
     this.pass = getCookie('hanabipass');
