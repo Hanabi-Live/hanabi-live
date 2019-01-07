@@ -1282,7 +1282,6 @@ function HanabiUI(lobby, gameID) {
 
     HanabiCard.prototype.hideClues = function hideClues() {
         this.cluedBorder.hide();
-        this.noteGiven.hide();
     };
 
     HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
