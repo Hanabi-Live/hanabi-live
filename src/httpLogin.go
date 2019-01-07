@@ -149,6 +149,8 @@ func httpLogin(c *gin.Context) {
 		return
 	}
 
-	// Log the login request
+	// Log the login request and give a "200 OK" HTTP code
+	// (returning a code is not actually necessary but Firefox will complain otherwise)
 	log.Info("User \""+user.Username+"\" logged in from:", ip)
+	http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
 }
