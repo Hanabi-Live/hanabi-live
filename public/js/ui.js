@@ -850,16 +850,25 @@ function HanabiUI(lobby, gameID) {
 
         this.add(this.indicatorArrow);
 
-        // Define the "note indicator" square
-        this.noteGiven = new Kinetic.Rect({
-            x: 0.854 * config.width,
-            y: (ui.variant.offsetCardIndicators ? 0.16 : 0.065) * config.height,
-            width: 0.09 * config.width,
-            height: 0.09 * config.width,
-            fill: 'white',
-            stroke: 'black',
-            strokeWidth: 4,
+        // Define the note indicator emoji (this used to be a white square)
+        this.noteGiven = new Kinetic.Text({
+            x: 0.96 * config.width,
+            y: (ui.variant.offsetCardIndicators ? 0.16 : 0.16) * config.height,
+            fontSize: 0.1 * config.height,
+            fontFamily: 'Verdana',
+            align: 'center',
+            text: '📝',
+            rotation: 180,
+            fill: '#ffffff',
+            shadowColor: 'black',
+            shadowBlur: 10,
+            shadowOffset: {
+                x: 0,
+                y: 0,
+            },
+            shadowOpacity: 0.9,
             visible: false,
+            listening: false,
         });
         this.add(this.noteGiven);
         if (ui.getNote(this.order)) {
@@ -912,7 +921,11 @@ function HanabiUI(lobby, gameID) {
             }
 
             // If we are spectating and there is an new note, mark it as seen
-            self.noteGiven.setFill('white');
+            if (self.noteGiven.rotated) {
+                self.noteGiven.rotated = false;
+                self.noteGiven.rotate(-15);
+                cardLayer.batchDraw();
+            }
 
             // Don't open any more note tooltips if the user is currently editing a note
             if (ui.editingNote !== null) {
@@ -5859,10 +5872,11 @@ Keyboard hotkeys:
             return;
         }
 
-        // Show or hide the white square
+        // Show or hide the note indicator
         if (data.notes.length > 0) {
             card.noteGiven.show();
-            card.noteGiven.setFill('yellow');
+            card.noteGiven.rotate(15);
+            card.noteGiven.rotated = true;
         } else {
             card.noteGiven.hide();
         }
@@ -5905,7 +5919,8 @@ Keyboard hotkeys:
             if (note !== null && note !== '') {
                 card.noteGiven.show();
                 if (ui.spectating) {
-                    card.noteGiven.setFill('yellow');
+                    card.noteGiven.rotate(15);
+                    card.noteGiven.rotated = true;
                 }
             }
         }
