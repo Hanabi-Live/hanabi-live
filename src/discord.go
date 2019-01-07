@@ -104,15 +104,6 @@ func discordReady(s *discordgo.Session, event *discordgo.Ready) {
 
 // Copy messages from Discord to the lobby
 func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	// Record the time of any "@here" pings that occur
-	if strings.Contains(m.Content, "@here") {
-		discordLastAtHere = time.Now()
-		if err := db.DiscordMetadata.Put("last_at_here", discordLastAtHere.Format(time.RFC3339)); err != nil {
-			log.Error("Failed to update the database for the last @here:", err)
-			return
-		}
-	}
-
 	// Ignore all messages created by the bot itself
 	if m.Author.ID == discordBotID {
 		return

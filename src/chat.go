@@ -27,13 +27,24 @@ func chatHere(s *Session, d *CommandData) {
 			d.Username = s.Username()
 		}
 		msg += d.Username + " wants to play. Anyone "
+		test := false
 		if len(d.Args) > 0 && d.Args[0] == "test" {
+			test = true
 			msg += "here? (This is just a test.)"
 		} else {
 			msg += "@here?"
 		}
 		if len(d.Args) > 0 && d.Args[0] != "" && d.Args[0] != "test" {
 			msg += " " + strings.Join(d.Args, " ")
+		}
+
+		// Record the time of the "@here" ping so that we can enforce the time limit
+		if !test {
+			discordLastAtHere = time.Now()
+			if err := db.DiscordMetadata.Put("last_at_here", discordLastAtHere.Format(time.RFC3339)); err != nil {
+				log.Error("Failed to update the database for the last @here:", err)
+				return
+			}
 		}
 	}
 	if len(waitingList) > 0 {
