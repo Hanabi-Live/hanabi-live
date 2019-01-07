@@ -1158,7 +1158,7 @@ function HanabiUI(lobby, gameID) {
             }
 
             const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "11", "65")');
-            if (card.length !== 2) {
+            if (card === null || card.length !== 2) {
                 return;
             }
             const suitLetter = card[0];
@@ -2378,16 +2378,12 @@ function HanabiUI(lobby, gameID) {
 
     const showClueMatch = (target, clue, showNeg) => {
         // Hide all of the existing arrows on the cards
-        for (let i = 0; i < ui.playerNames.length; i++) {
+        for (let i = 0; i < this.deck.length; i++) {
             if (i === target) {
                 continue;
             }
 
-            for (let j = 0; j < playerHands[i].children.length; j++) {
-                const child = playerHands[i].children[j];
-                const card = child.children[0];
-                card.setIndicator(false);
-            }
+            this.deck[i].setIndicator(false);
         }
         cardLayer.batchDraw();
 
