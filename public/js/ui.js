@@ -870,6 +870,7 @@ function HanabiUI(lobby, gameID) {
             visible: false,
             listening: false,
         });
+        this.noteGiven.rotated = false;
         this.add(this.noteGiven);
         if (ui.getNote(this.order)) {
             this.noteGiven.show();
@@ -5875,8 +5876,10 @@ Keyboard hotkeys:
         // Show or hide the note indicator
         if (data.notes.length > 0) {
             card.noteGiven.show();
-            card.noteGiven.rotate(15);
-            card.noteGiven.rotated = true;
+            if (!card.noteGiven.rotated) {
+                card.noteGiven.rotate(15);
+                card.noteGiven.rotated = true;
+            }
         } else {
             card.noteGiven.hide();
         }
@@ -5918,7 +5921,7 @@ Keyboard hotkeys:
             }
             if (note !== null && note !== '') {
                 card.noteGiven.show();
-                if (ui.spectating) {
+                if (ui.spectating && !card.noteGiven.rotated) {
                     card.noteGiven.rotate(15);
                     card.noteGiven.rotated = true;
                 }
