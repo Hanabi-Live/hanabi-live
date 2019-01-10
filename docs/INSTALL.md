@@ -113,6 +113,13 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment wi
     * Fill in the values accordingly.
 * Import the database schema:
   * `mysql -uhanabiuser -p < install/database_schema.sql`
+* Set up automated database backups:
+  * `crontab -e`
+
+```
+# Backup the "hanabi" database every day
+0 0 * * * /root/go/src/github.com/Zamiell/hanabi-live/make_database_dump.sh
+```
 
 <br />
 
@@ -149,6 +156,12 @@ Install HTTPS (optional)
 * In the `.env` file:
   * Set `TLS_CERT_FILE` to: `/etc/letsencrypt/live/hanabi.live/fullchain.pem`
   * Set `TLS_KEY_FILE` to: `/etc/letsencrypt/live/hanabi.live/privkey.pem`
+* `crontab -e`
+
+```
+# Keep the Let's Encrypt certificate up to date
+0 0 * * * /root/go/src/github.com/Zamiell/hanabi-live/renew_cert.sh
+```
 
 <br />
 
