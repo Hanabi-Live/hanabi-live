@@ -83,7 +83,8 @@ Server Installation (Linux)
 These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment will be needed for macOS installations.
 
 * Install [Golang](https://golang.org/):
-  * `sudo add-apt-repository ppa:longsleep/golang-backports` (if you don't do this, it will install a version of Golang that is very old)
+  * `sudo add-apt-repository ppa:longsleep/golang-backports` <br />
+  (if you don't do this, it will install a version of Golang that is very old)
   * `sudo apt update`
   * `sudo apt install golang-go -y`
   * `mkdir "$HOME/go"`
