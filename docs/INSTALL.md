@@ -96,17 +96,19 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment wi
     * Follow the prompts.
   * `sudo mysql -u root -p`
     * `CREATE DATABASE hanabi;`
-    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';` (change the password to something else)
+    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';` <br />
+    (change the password to something else)
     * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
     * `FLUSH PRIVILEGES;`
 * Clone the server:
   * `mkdir -p "$GOPATH/src/github.com/Zamiell"`
   * `cd "$GOPATH/src/github.com/Zamiell/"`
-  * `git clone https://github.com/Zamiell/hanabi-live.git` (or clone a fork, if you are doing development work)
+  * `git clone https://github.com/Zamiell/hanabi-live.git` <br />
+  (or clone a fork, if you are doing development work)
   * `cd hanabi-live`
 * Download and install all of the Go dependencies:
-  * `cd src` (this is where all of the Go source code lives)
-  * `go get -u -v ./...` (it is normal for this to take a very long time)
+  * `cd src`
+  * `go get -u -v ./...`
   * `cd ..`
 * Set up environment variables:
   * `cp .env_template .env`
@@ -143,7 +145,8 @@ Compile / Build
 
 * `cd "$GOPATH/src/github.com/Zamiell/hanabi-live/src"`
 * `go install`
-* `mv "$GOPATH/bin/src" "$GOPATH/bin/hanabi-live"` (the binary is called `src` by default, since the name of the directory is `src`)
+* `mv "$GOPATH/bin/src" "$GOPATH/bin/hanabi-live"` <br />
+(the binary is called `src` by default, since the name of the directory is `src`)
 
 <br />
 
@@ -153,7 +156,8 @@ Install HTTPS (optional)
 ------------------------
 
 * `sudo apt install letsencrypt -y`
-* `letsencrypt certonly --standalone -d hanabi.live -d www.hanabi.live` (this creates "/etc/letsencrypt/live/hanabi.live/")
+* `letsencrypt certonly --standalone -d hanabi.live -d www.hanabi.live` <br />
+(this creates "/etc/letsencrypt/live/hanabi.live/")
 * In the `.env` file:
   * Set `TLS_CERT_FILE` to: `/etc/letsencrypt/live/hanabi.live/fullchain.pem`
   * Set `TLS_KEY_FILE` to: `/etc/letsencrypt/live/hanabi.live/privkey.pem`
@@ -187,15 +191,3 @@ Later, to manage the service:
 * Restart it: `supervisorctl restart hanabi-live`
 
 <br />
-
-
-
-Automate backups (optional)
----------------------------
-
-* `crontab -e`
-
-```
-# Backup the hanabi-live database every day at midnight
-0 0 * * * /root/go/src/github.com/Zamiell/hanabi-live/make_database_dump.sh
-```
