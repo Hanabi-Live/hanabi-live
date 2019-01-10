@@ -18,7 +18,7 @@ func httpProfile(c *gin.Context) {
 	// Parse the player name from the URL
 	player := c.Params.ByName("player")
 	if player == "" {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
 		return
 	}
 
@@ -38,7 +38,7 @@ func httpProfile(c *gin.Context) {
 	// We will return a text document containing all of their stats
 	text := ""
 
-	// Get the stats for this player
+	// Make the title
 	title := "Hanabi.live Statistics for " + user.Username
 	text += "+-"
 	for i := 0; i < len(title); i++ {
@@ -53,6 +53,7 @@ func httpProfile(c *gin.Context) {
 	text += "-+\n"
 	text += "\n"
 
+	// Get the stats for this player
 	totalMaxScores := 0
 	for i, variant := range variantDefinitions {
 		var stats models.Stats
@@ -70,11 +71,10 @@ func httpProfile(c *gin.Context) {
 			text += "\n"
 		}
 
-		if i == 0 {
-			text += variant.Name + "\n"
-		} else {
-			text += "Variant " + strconv.Itoa(i) + " - " + variant.Name + "\n"
+		if i != 0 {
+			text += "Variant " + strconv.Itoa(i) + " - "
 		}
+		text += variant.Name + "\n"
 
 		text += "- Total games played: " + strconv.Itoa(stats.NumPlayedVariant) + "\n"
 		text += "- Best 2-player score: " + strconv.Itoa(stats.BestScoreVariant2) + "\n"
@@ -135,6 +135,7 @@ func httpProfile(c *gin.Context) {
 		text += "\n"
 	}
 
+	// Return the profile to the client
 	if _, err := fmt.Fprintf(w, text); err != nil {
 		log.Error("Failed to write out the profile text:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

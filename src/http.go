@@ -89,7 +89,10 @@ func httpInit() {
 	// Path handlers (for the website)
 	httpRouter.GET("/", httpHome)
 	httpRouter.GET("/profile", httpProfile)
-	httpRouter.GET("/profile/:player", httpProfile) // Handles profile username
+	httpRouter.GET("/profile/:player", httpProfile)
+	httpRouter.GET("/missing-scores", httpMissingScores)
+	httpRouter.GET("/missing-scores/:player", httpMissingScores)
+
 	httpRouter.GET("/videos", httpVideos)
 	httpRouter.GET("/dev", httpHomeDev)
 	httpRouter.Static("/public", path.Join(projectPath, "public"))

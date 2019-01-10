@@ -72,6 +72,7 @@ type Stats struct {
 	BestScoreVariant3    int     `json:"bestScoreVariant3"`
 	BestScoreVariant4    int     `json:"bestScoreVariant4"`
 	BestScoreVariant5    int     `json:"bestScoreVariant5"`
+	BestScoreVariant6    int     `json:"bestScoreVariant6"`
 	AverageScoreVariant  float64 `json:"averageScoreVariant"`
 	StrikeoutRateVariant float64 `json:"strikeoutRateVariant"`
 }
@@ -142,6 +143,17 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 						AND games.num_players = 5
 				) AS best_score_variant_5,
 
+				/* BestScoreVariant6 */
+				(
+					SELECT IFNULL(MAX(games.score), 0)
+					FROM games
+						JOIN game_participants
+							ON game_participants.game_id = games.id
+					WHERE game_participants.user_id = ?
+						AND games.variant = ?
+						AND games.num_players = 6
+				) AS best_score_variant_6,
+
 				/* AverageScoreVariant */
 				(
 					SELECT IFNULL(AVG(games.score), 0)
@@ -182,6 +194,8 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 		variant,
 		userID, // best_score_variant_5
 		variant,
+		userID, // best_score_variant_6
+		variant,
 		userID, // average_score_variant
 		variant,
 		userID, // strikeout_rate_variant
@@ -195,6 +209,7 @@ func (*Users) GetStats(userID int, variant int) (Stats, error) {
 		&stats.BestScoreVariant3,
 		&stats.BestScoreVariant4,
 		&stats.BestScoreVariant5,
+		&stats.BestScoreVariant6,
 		&stats.AverageScoreVariant,
 		&stats.StrikeoutRateVariant,
 	)
