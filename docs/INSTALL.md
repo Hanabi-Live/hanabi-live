@@ -47,6 +47,7 @@ Note that these steps require **an elevated (administrator) command-shell**.
 
 ```
 {
+    "files.eol": "\n",
     "editor.fontSize": 16,
     "editor.renderWhitespace": "all",
     "editor.wordWrap": "on",
