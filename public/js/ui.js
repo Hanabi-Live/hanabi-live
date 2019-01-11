@@ -111,62 +111,34 @@ function HanabiUI(lobby, gameID) {
 
         self.reset();
 
-        // This resets all the msgs so that everything shows up again,
+        // This resets all the messages so that everything shows up again,
         // since the server doesn't replay them and the client only draws streamed
-        // information and doesn't maintain a full game state.
+        // information and doesn't maintain a full game state
         if (self.replayOnly) {
-            // Rebuilds for a replay.
-            let msg;
-
-            // Iterate over the replay, stop at the current turn or at the end
-            self.replayPos = 0;
-            while (true) { // eslint-disable-line no-constant-condition
-                msg = self.replayLog[self.replayPos];
-                self.replayPos += 1;
-
-                // Stop at end of replay
-                if (!msg) {
-                    break;
-                }
-
-                // Rebuild all messages and notifies - this will correctly position cards and text
-                if (msg.type === 'message') {
-                    self.setMessage(msg.resp);
-                } else if (msg.type === 'notify') {
-                    self.handleNotify(msg.resp);
-                }
-
-                // Stop if you're at the current turn
-                if (msg.type === 'notify' && msg.resp.type === 'turn') {
-                    if (msg.resp.num === self.replayTurn) {
-                        break;
-                    }
-                }
-            }
+            rebuildReplay();
         } else {
             // Rebuilds for a game
             let msg;
             let whoseTurn = 0;
 
-            // Iterate over all moves to date.
+            // Iterate over all moves to date
             for (let i = 0; i < self.replayLog.length; i++) {
                 msg = self.replayLog[i];
 
-                // Rebuild all messages and notifies - this will correctly position cards and text
-                if (msg.type === 'message') {
-                    self.setMessage(msg.resp);
-                } else if (msg.type === 'notify') {
-                    self.handleNotify(msg.resp);
-                    // Correctly record and handle whose turn it is
-                    if (msg.resp.type === 'turn') {
-                        whoseTurn = msg.resp.who;
-                    }
+                // Rebuild all notifies; this will correctly position cards and text
+                self.handleNotify(msg.data);
+
+                // Correctly record and handle whose turn it is
+                if (msg.data.type === 'turn') {
+                    whoseTurn = msg.data.who;
                 }
             }
+
             // If it's your turn, setup the clue area
             if (whoseTurn === self.playerUs && !self.spectating) {
                 self.handleAction.call(self, self.lastAction);
             }
+
             // Setup the timers
             self.handleClock.call(self, self.activeClockIndex);
         }
@@ -202,6 +174,32 @@ function HanabiUI(lobby, gameID) {
         timerLayer.draw();
         cardLayer.draw();
         overLayer.draw();
+    }
+
+    // Iterate over the replay and stop at the current turn or at the end, whichever comes first
+    function rebuildReplay() {
+        const self = lobby.ui;
+
+        this.replayPos = 0;
+        while (true) { // eslint-disable-line no-constant-condition
+            const msg = self.replayLog[self.replayPos];
+            self.replayPos += 1;
+
+            // Stop at the end of the replay
+            if (!msg) {
+                break;
+            }
+
+            // Rebuild all notifies; this will correctly position cards and text
+            self.handleNotify(msg.data);
+
+            // Stop if you're at the current turn
+            if (msg.data.type === 'turn') {
+                if (msg.data.num === self.replayTurn) {
+                    break;
+                }
+            }
+        }
     }
 
     // Runs each time the DOM window resize event fires
@@ -1045,7 +1043,7 @@ function HanabiUI(lobby, gameID) {
                 if (ui.useSharedTurns) {
                     ui.sendMsg({
                         type: 'replayAction',
-                        resp: {
+                        data: {
                             type: 1,
                             order: self.order,
                         },
@@ -1122,7 +1120,7 @@ function HanabiUI(lobby, gameID) {
                     if (!ui.replayOnly && !ui.spectating) {
                         ui.sendMsg({
                             type: 'note',
-                            resp: {
+                            data: {
                                 order: self.order,
                                 note,
                             },
@@ -1201,7 +1199,7 @@ function HanabiUI(lobby, gameID) {
             if (ui.sharedReplayLeader === lobby.username) {
                 ui.sendMsg({
                     type: 'replayAction',
-                    resp: {
+                    data: {
                         type: 3,
                         order: self.order,
                         suit,
@@ -2280,7 +2278,7 @@ function HanabiUI(lobby, gameID) {
 
         ui.sendMsg({
             type: 'replayAction',
-            resp: {
+            data: {
                 type: 2, // Type 2 is a leader transfer
                 name: username,
             },
@@ -2380,7 +2378,7 @@ function HanabiUI(lobby, gameID) {
         ui.buildUI();
         ui.sendMsg({
             type: 'ready',
-            resp: {},
+            data: {},
         });
         ui.ready = true;
     });
@@ -2917,7 +2915,7 @@ function HanabiUI(lobby, gameID) {
         if (ui.sharedReplayTurn !== target) {
             ui.sendMsg({
                 type: 'replayAction',
-                resp: {
+                data: {
                     type: 0, // Type 0 is a new replay turn
                     turn: target,
                 },
@@ -3366,7 +3364,7 @@ function HanabiUI(lobby, gameID) {
 
             ui.sendMsg({
                 type: 'replayAction',
-                resp: {
+                data: {
                     type: 2, // Type 2 is a leader transfer
                     name: target,
                 },
@@ -3670,7 +3668,7 @@ function HanabiUI(lobby, gameID) {
 
                 ui.sendMsg({
                     type: 'action',
-                    resp: {
+                    data: {
                         type: ACT.DECKPLAY,
                     },
                 });
@@ -4484,7 +4482,7 @@ function HanabiUI(lobby, gameID) {
             if (self.replayOnly) {
                 ui.sendMsg({
                     type: 'gameUnattend',
-                    resp: {},
+                    data: {},
                 });
 
                 this.stopLocalTimer();
@@ -4614,17 +4612,17 @@ function HanabiUI(lobby, gameID) {
                 return;
             }
 
-            const resp = {};
+            const data = {};
             if (cardOrder === 'deck') {
-                resp.type = ACT.DECKPLAY;
+                data.type = ACT.DECKPLAY;
             } else {
-                resp.type = intendedPlay ? ACT.PLAY : ACT.DISCARD;
-                resp.target = cardOrder;
+                data.type = intendedPlay ? ACT.PLAY : ACT.DISCARD;
+                data.target = cardOrder;
             }
 
             ui.sendMsg({
                 type: 'action',
-                resp,
+                data,
             });
             ui.stopAction();
             savedAction = null;
@@ -4651,7 +4649,6 @@ function HanabiUI(lobby, gameID) {
         this.keyNavigation = (event) => {
             // Make sure that the editing note variable is not set
             if (ui.editingNote !== null) {
-                console.error('BUG: keyNavigation ran while a note was open. Please report this.');
                 return;
             }
 
@@ -4693,7 +4690,7 @@ function HanabiUI(lobby, gameID) {
                 }
                 const action = {
                     type: 'action',
-                    resp: {
+                    data: {
                         type,
                         target,
                         clue,
@@ -4845,7 +4842,7 @@ function HanabiUI(lobby, gameID) {
             // Send it
             ui.sendMsg({
                 type: 'replayAction',
-                resp: {
+                data: {
                     type: 4,
                     sound,
                 },
@@ -5014,7 +5011,7 @@ Keyboard hotkeys:
             lobbyButton.off('click tap');
             ui.sendMsg({
                 type: 'gameUnattend',
-                resp: {},
+                data: {},
             });
 
             this.stopLocalTimer();
@@ -5068,7 +5065,7 @@ Keyboard hotkeys:
     };
 
     this.saveReplay = function saveReplay(msg) {
-        const msgData = msg.resp;
+        const msgData = msg.data;
 
         this.replayLog.push(msg);
 
@@ -5179,27 +5176,7 @@ Keyboard hotkeys:
             this.replayPos = 0;
         }
 
-        let msg;
-        while (true) { // eslint-disable-line no-constant-condition
-            msg = this.replayLog[this.replayPos];
-            this.replayPos += 1;
-
-            if (!msg) {
-                break;
-            }
-
-            if (msg.type === 'message') {
-                this.setMessage(msg.resp);
-            } else if (msg.type === 'notify') {
-                this.handleNotify(msg.resp);
-            }
-
-            if (msg.type === 'notify' && msg.resp.type === 'turn') {
-                if (msg.resp.num === this.replayTurn) {
-                    break;
-                }
-            }
-        }
+        rebuildReplay();
 
         this.animateFast = false;
         msgLogGroup.refreshText();
@@ -5309,7 +5286,9 @@ Keyboard hotkeys:
         }
 
         const { type } = data;
-        if (type === 'draw') {
+        if (type === 'text') {
+            this.setMessage(data);
+        } else if (type === 'draw') {
             if (data.suit === -1) {
                 delete data.suit;
             }
@@ -5363,7 +5342,7 @@ Keyboard hotkeys:
             }
         } else if (type === 'drawSize') {
             drawDeck.setCount(data.size);
-        } else if (type === 'played') {
+        } else if (type === 'play') {
             const suit = msgSuitToSuit(data.which.suit, ui.variant);
             showClueMatch(-1);
 
@@ -6118,7 +6097,7 @@ Keyboard hotkeys:
 
             const action = {
                 type: 'action',
-                resp: {
+                data: {
                     type: ACT.CLUE,
                     target: target.targetIndex,
                     clue: clueToMsgClue(clueButton.clue, ui.variant),
@@ -6138,7 +6117,7 @@ Keyboard hotkeys:
         if (overPlayArea(pos)) {
             const action = {
                 type: 'action',
-                resp: {
+                data: {
                     type: ACT.PLAY,
                     target: this.children[0].order,
                 },
@@ -6156,7 +6135,7 @@ Keyboard hotkeys:
         ) {
             const action = {
                 type: 'action',
-                resp: {
+                data: {
                     type: ACT.DISCARD,
                     target: this.children[0].order,
                 },
@@ -6199,14 +6178,9 @@ Keyboard hotkeys:
 HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
     const msg = {};
     msg.type = msgType;
-    msg.resp = msgData;
+    msg.data = msgData;
 
-    if (msgType === 'message') {
-        this.replayLog.push(msg);
-        if (!this.replay) {
-            this.setMessage.call(this, msgData);
-        }
-    } else if (msgType === 'init') {
+    if (msgType === 'init') {
         this.playerUs = msgData.seat;
         this.playerNames = msgData.names;
         this.characterAssignments = msgData.characterAssignments;
@@ -6315,22 +6289,22 @@ HanabiUI.prototype.setBackend = function setBackend(backend) {
 
     this.sendMsg({
         type: 'hello',
-        resp: {},
+        data: {},
     });
 };
 
 HanabiUI.prototype.sendMsg = function sendMsg(msg) {
-    const command = msg.type;
-    let data = msg.resp;
+    const { type } = msg;
+    let { data } = msg;
     if (typeof data === 'undefined') {
         data = {};
     }
 
     if (this.showDebugMessages) {
-        console.log(`%cSent (UI) ${command}:`, 'color: green;');
+        console.log(`%cSent (UI) ${type}:`, 'color: green;');
         console.log(data);
     }
-    this.backend.emit(command, data);
+    this.backend.emit(type, data);
 };
 
 function stripHTMLtags(input) {

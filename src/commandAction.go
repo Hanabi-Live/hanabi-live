@@ -214,14 +214,16 @@ func commandAction(s *Session, d *CommandData) {
 	} else if d.Type == actionTypeTimeLimitReached {
 		// This is a special action type sent by the server to itself when a player runs out of time
 		g.Strikes = 3
-		g.Actions = append(g.Actions, Action{
+		g.Actions = append(g.Actions, ActionText{
+			Type: "text",
 			Text: p.Name + " ran out of time!",
 		})
 		g.NotifyAction()
 	} else if d.Type == actionTypeIdleLimitReached {
 		// This is a special action type sent by the server to itself when the game has been idle for too long
 		g.Strikes = 3
-		g.Actions = append(g.Actions, Action{
+		g.Actions = append(g.Actions, ActionText{
+			Type: "text",
 			Text: "Players were idle for too long.",
 		})
 		g.NotifyAction()
@@ -279,19 +281,14 @@ func commandAction(s *Session, d *CommandData) {
 		} else {
 			text = "Players score " + strconv.Itoa(g.Score) + " points"
 		}
-		g.Actions = append(g.Actions, Action{
+		g.Actions = append(g.Actions, ActionText{
+			Type: "text",
 			Text: text,
 		})
 		g.NotifyAction()
 		log.Info(g.GetName() + " " + text)
 	} else {
-		// Send messages about the current turn
-		g.Actions = append(g.Actions, Action{
-			Type: "turn",
-			Num:  g.Turn,
-			Who:  g.ActivePlayer,
-		})
-		g.NotifyAction()
+		g.NotifyTurn()
 		log.Info(g.GetName() + " It is now " + np.Name + "'s turn.")
 	}
 

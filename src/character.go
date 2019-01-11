@@ -778,7 +778,7 @@ func characterShuffle(g *Game, p *Player) {
 	}
 }
 
-func characterHideCard(a *Action, g *Game, p *Player) bool {
+func characterHideCard(a *ActionDraw, g *Game, p *Player) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}

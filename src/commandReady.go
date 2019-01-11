@@ -41,7 +41,7 @@ func commandReady(s *Session, d *CommandData) {
 
 	i := g.GetPlayerIndex(s.UserID())
 
-	var actions []Action
+	var actions []interface{}
 	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
 		var actionStrings []string
 		if v, err := db.GameActions.GetAll(gameID); err != nil {
@@ -54,7 +54,7 @@ func commandReady(s *Session, d *CommandData) {
 
 		for _, actionString := range actionStrings {
 			// Convert it from JSON
-			var action Action
+			var action interface{}
 			if err := json.Unmarshal([]byte(actionString), &action); err != nil {
 				log.Error("Failed to unmarshal an action:", err)
 				s.Error("Failed to initialize the game. Please contact an administrator.")
@@ -86,15 +86,21 @@ func commandReady(s *Session, d *CommandData) {
 		}
 	}
 
-	// Scrub actions
-	var scrubbedActions []Action
+	// Check to see if we need to remove some card information
+	var scrubbedActions []interface{}
 	if i > -1 {
+		// The person requesting the game state is one of the active players, so we need to hide some information
 		p := g.Players[i]
 		for _, a := range actions {
-			a.Scrub(g, p)
+			drawAction, ok := a.(ActionDraw)
+			if ok && drawAction.Type == "draw" {
+				drawAction.Scrub(g, p)
+				a = drawAction
+			}
 			scrubbedActions = append(scrubbedActions, a)
 		}
 	} else {
+		// The person requesting the game state is not an active player, so we don't need to hide any information
 		scrubbedActions = actions
 	}
 
@@ -129,6 +135,11 @@ func commandReady(s *Session, d *CommandData) {
 			s.Emit("notes", &NotesMessage{
 				Notes: notes[i].Notes,
 			})
+
+			// Set their "present" variable back to true, which will turn their name from red to black
+			p := g.Players[i]
+			p.Present = true
+			g.NotifyConnected()
 		}
 	}
 

@@ -30,7 +30,7 @@ type Game struct {
 	DeckIndex       int
 	Stacks          []int
 	StackDirections []int // The possible values for this are listed in "constants.go"
-	Turn            int
+	Turn            int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
 	TurnsInverted   bool
 	ActivePlayer    int
 	Clues           int
@@ -38,13 +38,16 @@ type Game struct {
 	MaxScore        int
 	Progress        int
 	Strikes         int
-	Actions         []Action // We don't want this to be a pointer because this simplifies scrubbing
-	Sound           string
-	TurnBeginTime   time.Time
-	EndPlayer       int                // Set when the final card is drawn to determine when the game should end
-	EndTurn         int                // Set when the game ends (to be used in Shared Replays)
-	BlindPlays      int                // The number of consecutive blind plays
-	Chat            []*GameChatMessage // All of the in-game chat history
+	Actions         []interface{}
+	// Different actions will have different fields
+	// Thus, Actions is a slice of different action types
+	// Furthermore, we don't want this to be a pointer of interfaces because this simplifies action scrubbing
+	Sound         string
+	TurnBeginTime time.Time
+	EndPlayer     int                // Set when the final card is drawn to determine when the game should end
+	EndTurn       int                // Set when the game ends (to be used in Shared Replays)
+	BlindPlays    int                // The number of consecutive blind plays
+	Chat          []*GameChatMessage // All of the in-game chat history
 }
 
 type Options struct {
@@ -265,20 +268,31 @@ func (g *Game) NotifyConnected() {
 	}
 }
 
-// NotifyAction appends a new "status" action and alerts everyone
+// NotifyStatus appends a new "status" action and alerts everyone
 // This is only called in situations where the game has started
 func (g *Game) NotifyStatus(doubleDiscard bool) {
 	// Since StackDirections is a slice, it will be stored as a pointer (unlike the other primitive values)
 	// So, make a copy to preserve the stack directions for this exact moment in time
 	stackDirections := make([]int, len(g.StackDirections))
 	copy(stackDirections, g.StackDirections)
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionStatus{
 		Type:            "status",
 		Clues:           g.Clues,
 		Score:           g.Score,
 		MaxScore:        g.MaxScore,
 		DoubleDiscard:   doubleDiscard,
 		StackDirections: stackDirections,
+	})
+	g.NotifyAction()
+}
+
+// NotifyTurn appends a new "turn" action and alerts everyone
+// This is only called in situations where the game has started
+func (g *Game) NotifyTurn() {
+	g.Actions = append(g.Actions, ActionTurn{
+		Type: "turn",
+		Num:  g.Turn,
+		Who:  g.ActivePlayer,
 	})
 	g.NotifyAction()
 }

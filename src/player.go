@@ -52,12 +52,12 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	g.Clues--
 
 	// Send the "notify" message about the clue
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionClue{
+		Type:   "clue",
 		Clue:   d.Clue,
 		Giver:  p.Index,
 		List:   cardsTouched,
 		Target: d.Target,
-		Type:   "clue",
 		Turn:   g.Turn,
 	})
 	g.NotifyAction()
@@ -84,7 +84,8 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	if len(cardsTouched) > 1 {
 		text += "s"
 	}
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionText{
+		Type: "text",
 		Text: text,
 	})
 	g.NotifyAction()
@@ -218,7 +219,7 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 		g.BlindPlays = 0
 
 		// Send the "notify" message about the strike
-		g.Actions = append(g.Actions, Action{
+		g.Actions = append(g.Actions, ActionStrike{
 			Type: "strike",
 			Num:  g.Strikes,
 		})
@@ -236,8 +237,8 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	}
 
 	// Send the "notify" message about the play
-	g.Actions = append(g.Actions, Action{
-		Type: "played",
+	g.Actions = append(g.Actions, ActionPlay{
+		Type: "play",
 		Which: Which{
 			Index: p.Index,
 			Rank:  c.Rank,
@@ -266,7 +267,8 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
 	}
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionText{
+		Type: "type",
 		Text: text,
 	})
 	g.NotifyAction()
@@ -302,7 +304,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 	// Mark that the card is discarded
 	c.Discarded = true
 
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionDiscard{
 		Type: "discard",
 		Which: Which{
 			Index: p.Index,
@@ -333,7 +335,8 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 		text += " (blind)"
 	}
 
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionText{
+		Type: "text",
 		Text: text,
 	})
 	g.NotifyAction()
@@ -366,7 +369,7 @@ func (p *Player) DrawCard(g *Game) {
 	g.DeckIndex++
 	p.Hand = append(p.Hand, c)
 
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionDraw{
 		Type:  "draw",
 		Who:   p.Index,
 		Rank:  c.Rank,
@@ -377,7 +380,7 @@ func (p *Player) DrawCard(g *Game) {
 		g.NotifyAction()
 	}
 
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionDrawSize{
 		Type: "drawSize",
 		Size: len(g.Deck) - g.DeckIndex,
 	})
@@ -435,7 +438,7 @@ func (p *Player) ShuffleHand(g *Game) {
 	}
 
 	// Notify everyone about the shuffling
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionReorder{
 		Type:      "reorder",
 		Target:    p.Index,
 		HandOrder: handOrder,

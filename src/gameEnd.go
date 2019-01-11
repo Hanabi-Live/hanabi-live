@@ -19,19 +19,14 @@ func (g *Game) End() {
 	log.Info(g.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
 	// Advance a turn so that we have an extra separator before the finishing times
-	g.Actions = append(g.Actions, Action{
-		Type: "turn",
-		Num:  g.Turn,
-		Who:  g.ActivePlayer,
-	})
-	g.NotifyAction()
+	g.NotifyTurn()
 
 	// Send the "gameOver" message
 	loss := false
 	if g.EndCondition > 1 {
 		loss = true
 	}
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionGameOver{
 		Type:  "gameOver",
 		Score: g.Score,
 		Loss:  loss,
@@ -70,7 +65,8 @@ func (g *Game) End() {
 			// Player times are negative in untimed games
 			text += "took " + durationToString(p.Time*-1)
 		}
-		g.Actions = append(g.Actions, Action{
+		g.Actions = append(g.Actions, ActionText{
+			Type: "text",
 			Text: text,
 		})
 		g.NotifyAction()
@@ -80,7 +76,8 @@ func (g *Game) End() {
 	// Send a text message showing how much time the game took in total
 	totalTime := g.DatetimeFinished.Sub(g.DatetimeStarted)
 	text := "The total game duration was: " + durationToString(totalTime)
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionText{
+		Type: "text",
 		Text: text,
 	})
 	g.NotifyAction()

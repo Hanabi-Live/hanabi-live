@@ -35,7 +35,7 @@ func debug2() {
 		// Manually enumerate the slices and maps
 		log.Debug("  Players:")
 		for j, p := range g.Players { // This is a []*Player
-			log.Debug("    " + strconv.Itoa(j) + " - User ID: " + strconv.Itoa(p.ID) + ", Username: " + p.Name)
+			log.Debug("    " + strconv.Itoa(j) + " - User ID: " + strconv.Itoa(p.ID) + ", Username: " + p.Name + ", Present: " + strconv.FormatBool(p.Present))
 		}
 		if len(g.Players) == 0 {
 			log.Debug("    [no players]")

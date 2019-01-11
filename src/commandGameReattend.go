@@ -40,13 +40,11 @@ func commandGameReattend(s *Session, d *CommandData) {
 
 	log.Info(g.GetName() + "User \"" + s.Username() + "\" reattended.")
 
-	// Set their "present" variable back to true, which will turn their name
-	// from red to black (or remove the "AWAY" if the game has not started yet)
-	p := g.Players[i]
-	p.Present = true
-	if g.Running {
-		g.NotifyConnected()
-	} else {
+	// Set their "present" variable back to true, which will remove the "AWAY" if the game has not started yet
+	// (if t he game is running, this is handled in the "commandReady()" function)
+	if !g.Running {
+		p := g.Players[i]
+		p.Present = true
 		g.NotifyPlayerChange()
 	}
 

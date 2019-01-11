@@ -1664,12 +1664,6 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
         self.randomName = data.name;
     });
 
-    conn.on('message', (data) => {
-        if (self.ui) {
-            self.ui.handleMessage('message', data);
-        }
-    });
-
     conn.on('init', (data) => {
         if (self.ui) {
             self.ui.handleMessage('init', data);
@@ -1692,11 +1686,7 @@ HanabiLobby.prototype.connCommands = function connCommands(conn) {
         if (self.ui) {
             // When the server has a bunch of notify actions to send, it will send them all in one array
             for (const action of data) {
-                if (action.type === '') {
-                    self.ui.handleMessage('message', action);
-                } else {
-                    self.ui.handleMessage('notify', action);
-                }
+                self.ui.handleMessage('notify', action);
             }
         }
     });

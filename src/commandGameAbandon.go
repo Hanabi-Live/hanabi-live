@@ -54,7 +54,8 @@ func commandGameAbandon(s *Session, d *CommandData) {
 
 	// End the game and write it to the database
 	text := s.Username() + " terminated the game!"
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionText{
+		Type: "text",
 		Text: text,
 	})
 	g.NotifyAction()

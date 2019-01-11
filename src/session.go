@@ -336,14 +336,15 @@ func (s *Session) NotifyReplayLeader(g *Game) {
 	})
 }
 
-func (s *Session) NotifyGameAction(a Action, g *Game, p *Player) {
-	msgType := "notify"
-	if a.Text != "" {
-		msgType = "message"
+func (s *Session) NotifyGameAction(a interface{}, g *Game, p *Player) {
+	// Check to see if we need to remove some card information
+	drawAction, ok := a.(ActionDraw)
+	if ok && drawAction.Type == "draw" {
+		drawAction.Scrub(g, p)
+		a = drawAction
 	}
 
-	a.Scrub(g, p)
-	s.Emit(msgType, a)
+	s.Emit("notify", a)
 }
 
 func (s *Session) NotifyClock(g *Game) {

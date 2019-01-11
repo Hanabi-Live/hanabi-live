@@ -302,9 +302,15 @@ func commandGameStart(s *Session, d *CommandData) {
 	log.Info("--------------------------------------------------")
 
 	// Now that we have finished building the deck,
-	// initialize all of the players notes based on the number of cards in the deck
+	// initialize all of the player's notes based on the number of cards in the deck
 	for _, p := range g.Players {
 		p.Notes = make([]string, len(g.Deck))
+	}
+
+	// Initialize all of the players to not being present
+	// (we will set them back to present once they send the "ready" message)
+	for _, p := range g.Players {
+		p.Present = false
 	}
 
 	// Deal the cards
@@ -324,14 +330,12 @@ func commandGameStart(s *Session, d *CommandData) {
 	// around the discard pile to indicate that discarding is not possible)
 	g.NotifyStatus(false) // The argument is "doubleDiscard"
 
+	// Send messages about the current turn
+	g.NotifyTurn()
 	text := g.Players[g.ActivePlayer].Name + " goes first"
-	g.Actions = append(g.Actions, Action{
+	g.Actions = append(g.Actions, ActionText{
+		Type: "text",
 		Text: text,
-	})
-	g.Actions = append(g.Actions, Action{
-		Type: "turn",
-		Num:  0,
-		Who:  g.ActivePlayer,
 	})
 	log.Info(g.GetName() + text)
 
