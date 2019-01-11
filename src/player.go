@@ -268,7 +268,7 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 		g.BlindPlays = 0
 	}
 	g.Actions = append(g.Actions, ActionText{
-		Type: "type",
+		Type: "text",
 		Text: text,
 	})
 	g.NotifyAction()
