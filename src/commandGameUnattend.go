@@ -49,7 +49,8 @@ func commandGameUnattend(s *Session, d *CommandData) {
 
 		// Remove them from the slice
 		g.Spectators = append(g.Spectators[:i], g.Spectators[i+1:]...)
-		g.NotifySpectators()
+		notifyAllTable(g)    // Update the spectator list for the row in the lobby
+		g.NotifySpectators() // Update the in-game spectator list
 
 		if g.SharedReplay {
 			if len(g.Spectators) == 0 {

@@ -274,8 +274,8 @@ func (g *Game) End() {
 		s.NotifyAllNotes(notes)
 	}
 
-	notifyAllTable(g)
-	g.NotifySpectators()
+	notifyAllTable(g)    // Update the spectator list for the row in the lobby
+	g.NotifySpectators() // Update the in-game spectator list
 }
 
 func announceGameResult(g *Game, databaseID int) {
