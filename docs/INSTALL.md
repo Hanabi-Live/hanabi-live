@@ -1,5 +1,5 @@
-Server Installation + Linter Installation (for Windows)
--------------------------------------------------------
+Server Installation + Linter Installation (for Deveopment / Windows)
+--------------------------------------------------------------------
 
 Like many code projects, we use [linters](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For JavaScript (the client-side code), we use [ESLint](https://eslint.org/) and have a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
 
@@ -78,7 +78,7 @@ Note that these steps require **an elevated (administrator) command-shell**.
 
 
 
-Server Installation (Linux)
+Server Installation (for Linux)
 ---------------------------
 
 These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment will be needed for macOS installations.
@@ -135,7 +135,7 @@ Run
 * `cd "$GOPATH/src/github.com/Zamiell/hanabi-live"`
 * `go run src/*.go`
   * `sudo` might be necessary to run this command because the server listens on port 80 and/or 443.
-  * If you are on Windows, this command must be run in PowerShell (as opposed to a "normal" command prompt); otherwise,  the `*` file substitution will not work.
+  * If you are on Windows, run this command in Git Bash, as the `*` file substitution will not work in a normal command prompt.
 
 <br />
 
