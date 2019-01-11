@@ -67,7 +67,8 @@ func httpProfile(c *gin.Context) {
 
 		if i == 0 {
 			text += "Total games played: " + strconv.Itoa(stats.NumPlayed) + "\n"
-			text += "Total <a href=\"/missing-scores/" + player + "\">max scores</a>:\n"
+			text += "Total max scores</a>:\n"
+			text += "https://hanabi.live/missing-scores/" + player + "\n"
 			text += "\n"
 		}
 
