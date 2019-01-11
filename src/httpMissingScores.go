@@ -76,26 +76,31 @@ func httpMissingScores(c *gin.Context) {
 		line += variant.Name + " - "
 
 		maxScoreForThisVariant := 5 * len(variant.Suits)
-		if stats.BestScoreVariant2 != maxScoreForThisVariant {
+		if stats.BestScoreVariant2 == maxScoreForThisVariant {
+			totalMaxScores++
+		} else {
 			text += line + "2-player\n"
-			totalMaxScores++
 		}
-		if stats.BestScoreVariant3 != maxScoreForThisVariant {
+		if stats.BestScoreVariant3 == maxScoreForThisVariant {
+			totalMaxScores++
+		} else {
 			text += line + "3-player\n"
-			totalMaxScores++
 		}
-		if stats.BestScoreVariant4 != maxScoreForThisVariant {
+		if stats.BestScoreVariant4 == maxScoreForThisVariant {
+			totalMaxScores++
+		} else {
 			text += line + "4-player\n"
-			totalMaxScores++
 		}
-		if stats.BestScoreVariant5 != maxScoreForThisVariant {
-			text += line + "5-player\n"
+		if stats.BestScoreVariant5 == maxScoreForThisVariant {
 			totalMaxScores++
+		} else {
+			text += line + "5-player\n"
 		}
 		/*
 			if stats.BestScoreVariant6 != maxScoreForThisVariant {
-				text += line + "6-player\n"
 				totalMaxScores++
+			} else {
+				text += line + "6-player\n"
 			}
 		*/
 	}
