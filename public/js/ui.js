@@ -3692,9 +3692,6 @@ function HanabiUI(lobby, gameID) {
             }
         });
 
-        drawDeck.cardback.on('click', goToTurn);
-        drawDeckRect.cardback.on('click', goToTurn); // We also want to be able to right-click if all the cards are drawn
-
         const goToTurn = (event) => {
             // Do nothing if this is not a right-click
             if (event.evt.which !== 3) {
@@ -3711,6 +3708,8 @@ function HanabiUI(lobby, gameID) {
             }
             ui.performReplay(turn, true);
         };
+        drawDeck.cardback.on('click', goToTurn);
+        drawDeckRect.on('click', goToTurn); // We also want to be able to right-click if all the cards are drawn
 
         cardLayer.add(drawDeck);
 
