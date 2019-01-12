@@ -330,14 +330,17 @@ func commandGameStart(s *Session, d *CommandData) {
 	// around the discard pile to indicate that discarding is not possible)
 	g.NotifyStatus(false) // The argument is "doubleDiscard"
 
-	// Send messages about the current turn
-	g.NotifyTurn()
+	// Show who goes first
+	// (this must be sent before the "turn" message so that the text appears on the first turn of the replay)
 	text := g.Players[g.ActivePlayer].Name + " goes first"
 	g.Actions = append(g.Actions, ActionText{
 		Type: "text",
 		Text: text,
 	})
 	log.Info(g.GetName() + text)
+
+	// Send a message about the current turn
+	g.NotifyTurn()
 
 	// Send a "gameStart" message to everyone in the game
 	for _, p := range g.Players {
