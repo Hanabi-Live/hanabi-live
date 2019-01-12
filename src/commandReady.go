@@ -124,6 +124,9 @@ func commandReady(s *Session, d *CommandData) {
 		// Send them the current time for all player's clocks
 		s.NotifyClock(g)
 
+		// Send them a sound so that they know the game started
+		s.NotifySound(g, i)
+
 		if i == -1 {
 			// They are a spectator, so send them the notes from all players
 			s.NotifyAllNotes(notes)

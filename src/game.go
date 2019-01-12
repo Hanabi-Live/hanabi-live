@@ -362,43 +362,19 @@ func (g *Game) NotifyTime() {
 	}
 }
 
+// NotifySound sends a sound notification to everyone in the game
+// (signifying that an action just occured)
 func (g *Game) NotifySound() {
-	type SoundMessage struct {
-		File string `json:"file"`
-	}
-
-	// Send a sound notification
 	for i, p := range g.Players {
 		if !p.Present {
 			continue
 		}
 
-		// Prepare the sound message
-		sound := "turn_other"
-		if g.Sound != "" {
-			sound = g.Sound
-		} else if i == g.ActivePlayer {
-			sound = "turn_us"
-		}
-		data := &SoundMessage{
-			File: sound,
-		}
-		p.Session.Emit("sound", data)
+		p.Session.NotifySound(g, i)
 	}
 
-	// Also send it to the spectators
 	for _, s := range g.Spectators {
-		// Prepare the sound message
-		// (the code is duplicated here because I don't want to mess with
-		// having to change the file name back to default)
-		sound := "turn_other"
-		if g.Sound != "" {
-			sound = g.Sound
-		}
-		data := &SoundMessage{
-			File: sound,
-		}
-		s.Emit("sound", data)
+		s.NotifySound(g, -1)
 	}
 }
 

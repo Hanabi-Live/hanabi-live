@@ -359,11 +359,4 @@ func commandGameStart(s *Session, d *CommandData) {
 	if g.Options.Timed {
 		go g.CheckTimer(0, g.Players[g.ActivePlayer])
 	}
-
-	// Send the list of people who are connected
-	// (this governs if a player's name is red or not)
-	g.NotifyConnected()
-
-	// Make a sound effect
-	g.NotifySound()
 }

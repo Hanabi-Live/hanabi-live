@@ -233,6 +233,16 @@ func (s *Session) NotifyTable(g *Game) {
 	})
 }
 
+// NotifyTableGone will notify someone about a game that ended
+func (s *Session) NotifyTableGone(g *Game) {
+	type TableGoneMessage struct {
+		ID int `json:"id"`
+	}
+	s.Emit("tableGone", &TableGoneMessage{
+		ID: g.ID,
+	})
+}
+
 func (s *Session) NotifyGameStart() {
 	type GameStartMessage struct {
 		Replay bool `json:"replay"`
@@ -243,16 +253,6 @@ func (s *Session) NotifyGameStart() {
 	}
 	s.Emit("gameStart", &GameStartMessage{
 		Replay: replay,
-	})
-}
-
-// NotifyTableGone will notify someone about a game that ended
-func (s *Session) NotifyTableGone(g *Game) {
-	type TableGoneMessage struct {
-		ID int `json:"id"`
-	}
-	s.Emit("tableGone", &TableGoneMessage{
-		ID: g.ID,
 	})
 }
 
@@ -345,6 +345,23 @@ func (s *Session) NotifyGameAction(a interface{}, g *Game, p *Player) {
 	}
 
 	s.Emit("notify", a)
+}
+
+func (s *Session) NotifySound(g *Game, i int) {
+	// Prepare the sound message
+	sound := "turn_other"
+	if g.Sound != "" {
+		sound = g.Sound
+	} else if i == g.ActivePlayer {
+		sound = "turn_us"
+	}
+	type SoundMessage struct {
+		File string `json:"file"`
+	}
+	data := &SoundMessage{
+		File: sound,
+	}
+	s.Emit("sound", data)
 }
 
 func (s *Session) NotifyClock(g *Game) {
