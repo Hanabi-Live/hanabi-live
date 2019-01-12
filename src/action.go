@@ -17,12 +17,15 @@ type ActionDrawSize struct {
 	Size int    `json:"size"`
 }
 type ActionStatus struct {
-	Type            string `json:"type"`
-	Clues           int    `json:"clues"`
-	Score           int    `json:"score"`
-	MaxScore        int    `json:"maxScore"`
-	DoubleDiscard   bool   `json:"doubleDiscard"`
-	StackDirections []int  `json:"stackDirections"`
+	Type          string `json:"type"`
+	Clues         int    `json:"clues"`
+	Score         int    `json:"score"`
+	MaxScore      int    `json:"maxScore"`
+	DoubleDiscard bool   `json:"doubleDiscard"`
+}
+type ActionStackDirections struct {
+	Type       string `json:"type"`
+	Directions []int  `json:"directions"`
 }
 type ActionText struct {
 	Type string `json:"type"`
@@ -63,7 +66,7 @@ type ActionGameOver struct {
 	Score int    `json:"score"`
 	Loss  bool   `json:"loss"`
 }
-type Which struct { // Used by "ActionPlay" and "ActionReveal"
+type Which struct { // Used by "ActionPlay" and "ActionDiscard"
 	Index int `json:"index"`
 	Rank  int `json:"rank"`
 	Suit  int `json:"suit"`

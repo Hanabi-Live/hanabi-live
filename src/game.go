@@ -271,19 +271,28 @@ func (g *Game) NotifyConnected() {
 // NotifyStatus appends a new "status" action and alerts everyone
 // This is only called in situations where the game has started
 func (g *Game) NotifyStatus(doubleDiscard bool) {
-	// Since StackDirections is a slice, it will be stored as a pointer (unlike the other primitive values)
-	// So, make a copy to preserve the stack directions for this exact moment in time
-	stackDirections := make([]int, len(g.StackDirections))
-	copy(stackDirections, g.StackDirections)
 	g.Actions = append(g.Actions, ActionStatus{
-		Type:            "status",
-		Clues:           g.Clues,
-		Score:           g.Score,
-		MaxScore:        g.MaxScore,
-		DoubleDiscard:   doubleDiscard,
-		StackDirections: stackDirections,
+		Type:          "status",
+		Clues:         g.Clues,
+		Score:         g.Score,
+		MaxScore:      g.MaxScore,
+		DoubleDiscard: doubleDiscard,
 	})
 	g.NotifyAction()
+
+	// If we are playing an "Up or Down" variant, we also need to send the stack directions
+	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+		// Since StackDirections is a slice, it will be stored as a pointer
+		// (unlike the primitive values that we used for the ActionStatus message above)
+		// So, make a copy to preserve the stack directions for this exact moment in time
+		stackDirections := make([]int, len(g.StackDirections))
+		copy(stackDirections, g.StackDirections)
+		g.Actions = append(g.Actions, ActionStackDirections{
+			Type:       "stackDirections",
+			Directions: stackDirections,
+		})
+		g.NotifyAction()
+	}
 }
 
 // NotifyTurn appends a new "turn" action and alerts everyone

@@ -5569,32 +5569,6 @@ Keyboard hotkeys:
             // Update the score (in the bottom-right-hand corner)
             scoreNumberLabel.setText(data.score);
 
-            // Update the stack directions (only in "Up or Down" variants)
-            if (
-                this.variant.name.startsWith('Up or Down') &&
-                // For historical purposes, we need to check to see the property exists because some old games don't have it
-                typeof data.stackDirections !== 'undefined' &&
-                data.stackDirections !== null
-            ) {
-                for (let i = 0; i < data.stackDirections.length; i++) {
-                    const direction = data.stackDirections[i];
-                    let text;
-                    if (direction === 0) {
-                        text = ''; // Undecided
-                    } else if (direction === 1) {
-                        text = 'Up';
-                    } else if (direction === 2) {
-                        text = 'Down';
-                    } else if (direction === 3) {
-                        text = 'Finished';
-                    } else {
-                        text = 'Unknown';
-                    }
-                    this.suitLabelTexts[i].setText(text);
-                    textLayer.draw();
-                }
-            }
-
             /*
                 Calculate some "End-Game" metrics
             */
@@ -5641,6 +5615,27 @@ Keyboard hotkeys:
 
             if (!this.animateFast) {
                 UILayer.draw();
+            }
+        } else if (type === 'stackDirections') {
+            // Update the stack directions (only in "Up or Down" variants)
+            if (this.variant.name.startsWith('Up or Down')) {
+                for (let i = 0; i < data.directions.length; i++) {
+                    const direction = data.directions[i];
+                    let text;
+                    if (direction === 0) {
+                        text = ''; // Undecided
+                    } else if (direction === 1) {
+                        text = 'Up';
+                    } else if (direction === 2) {
+                        text = 'Down';
+                    } else if (direction === 3) {
+                        text = 'Finished';
+                    } else {
+                        text = 'Unknown';
+                    }
+                    this.suitLabelTexts[i].setText(text);
+                    textLayer.draw();
+                }
             }
         } else if (type === 'strike') {
             this.cluesSpentPlusStrikes += 1;
