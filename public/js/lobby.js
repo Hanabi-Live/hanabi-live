@@ -487,6 +487,10 @@ function HanabiLobby() {
     $('#nav-buttons-game-start').on('click', (event) => {
         event.preventDefault();
 
+        if ($('#nav-buttons-game-start').hasClass('disabled')) {
+            return;
+        }
+
         self.connSend({
             type: 'gameStart',
             resp: {},
@@ -1988,8 +1992,18 @@ HanabiLobby.prototype.sendNotify = (msg, tag) => {
 };
 
 HanabiLobby.prototype.playSound = (file) => {
-    const audio = new Audio(`public/sounds/${file}.mp3`);
-    audio.play();
+    const path = `public/sounds/${file}.mp3`;
+    const audio = new Audio(path);
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+        playPromise.then((_) => {
+            // Audio playback was successful; do nothing
+        }).catch((error) => {
+            // Audio playback failed; this is most likely due to the user not having interacted with the page yet
+            // https://stackoverflow.com/questions/52807874/how-to-make-audio-play-on-body-onload
+            console.error(`Failed to play "${path}":`, error);
+        });
+    }
 };
 
 HanabiLobby.prototype.showNav = (target) => {
