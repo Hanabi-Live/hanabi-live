@@ -2850,6 +2850,7 @@ function HanabiUI(lobby, gameID) {
         listening: false,
     });
     const playerHands = [];
+    let drawDeckRect;
     let drawDeck;
     let messagePrompt;
 
@@ -3631,7 +3632,7 @@ function HanabiUI(lobby, gameID) {
         */
 
         // This is the faded rectangle that is hidden until all of the deck has been depleted
-        rect = new Kinetic.Rect({
+        drawDeckRect = new Kinetic.Rect({
             x: 0.08 * winW,
             y: 0.8 * winH,
             width: 0.075 * winW,
@@ -3640,7 +3641,7 @@ function HanabiUI(lobby, gameID) {
             opacity: 0.2,
             cornerRadius: 0.006 * winW,
         });
-        bgLayer.add(rect);
+        bgLayer.add(drawDeckRect);
 
         drawDeck = new CardDeck({
             x: 0.08 * winW,
@@ -3691,7 +3692,10 @@ function HanabiUI(lobby, gameID) {
             }
         });
 
-        drawDeck.cardback.on('click', (event) => {
+        drawDeck.cardback.on('click', goToTurn);
+        drawDeckRect.cardback.on('click', goToTurn); // We also want to be able to right-click if all the cards are drawn
+
+        const goToTurn = (event) => {
             // Do nothing if this is not a right-click
             if (event.evt.which !== 3) {
                 return;
@@ -3706,7 +3710,7 @@ function HanabiUI(lobby, gameID) {
                 ui.enterReplay(true);
             }
             ui.performReplay(turn, true);
-        });
+        };
 
         cardLayer.add(drawDeck);
 
