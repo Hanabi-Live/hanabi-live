@@ -210,9 +210,7 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	// Handle if the card does not play
 	if failed {
 		c.Failed = true
-		if characterUseStrike(g, p) {
-			g.Strikes++
-		}
+		g.Strikes++
 
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0

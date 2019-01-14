@@ -123,11 +123,6 @@ var (
 			Description: "Cannot play cards from slot 1",
 			Emoji:       "️️👴🏻",
 		},
-		CharacterAssignment{
-			Name:        "Gambler",
-			Description: "Must play if they didn't play last turn; forced misplays do not cost a strike",
-			Emoji:       "️🎲",
-		},
 
 		// Discard restriction characters
 		CharacterAssignment{
@@ -298,14 +293,6 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *Player) boo
 		p.CharacterMetadata == 0 {
 
 		s.Warning("You are " + name + ", so you cannot play a card if you played one in the last round.")
-		return true
-
-	} else if name == "Gambler" &&
-		p.CharacterMetadata == 0 &&
-		d.Type != actionTypePlay &&
-		d.Type != actionTypeDeckPlay {
-
-		s.Warning("You are " + name + ", so you must play a card if you did not play a card on the last round.")
 		return true
 	}
 
@@ -678,12 +665,6 @@ func characterPostAction(d *CommandData, g *Game, p *Player) {
 		} else {
 			p.CharacterMetadata = -1
 		}
-	} else if name == "Gambler" {
-		if d.Type == actionTypePlay || d.Type == actionTypeDeckPlay {
-			p.CharacterMetadata = -1
-		} else {
-			p.CharacterMetadata = 0
-		}
 	} else if name == "Contrarian" {
 		g.TurnsInverted = !g.TurnsInverted
 	}
@@ -751,20 +732,6 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 	}
 
 	return false
-}
-
-func characterUseStrike(g *Game, p *Player) bool {
-	if !g.Options.CharacterAssignments {
-		return true
-	}
-
-	name := characterAssignments[p.CharacterAssignment].Name
-	if name == "Gambler" &&
-		p.CharacterMetadata == 0 {
-		return false
-	}
-
-	return true
 }
 
 func characterShuffle(g *Game, p *Player) {

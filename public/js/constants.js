@@ -1438,11 +1438,6 @@
             'Cannot play cards from slot 1',
             '👴🏻',
         ),
-        new CharacterAssignment(
-            'Gambler',
-            'Must play if they didn\'t play last turn; forced misplays do not cost a strike',
-            '🎲',
-        ),
 
         // Discard restriction characters
         new CharacterAssignment(
