@@ -23,6 +23,7 @@ exports.show = () => {
     $('#lobby-separator').hide();
     $('#lobby-bottom-half').hide();
     lobby.nav.show('history');
+    lobby.history.draw();
 };
 
 exports.hide = () => {
@@ -123,11 +124,8 @@ const makeReplayButton = (id, text, msgType, returnsToLobby) => {
     button.on('click', (event) => {
         event.preventDefault();
         globals.gameID = id;
-        globals.connSend({
-            type: msgType,
-            resp: {
-                gameID: parseInt(globals.gameID, 10), // The server expects this as an integer
-            },
+        globals.conn.send(msgType, {
+            gameID: parseInt(globals.gameID, 10), // The server expects this as an integer
         });
         if (returnsToLobby) {
             lobby.history.hide();
@@ -148,13 +146,10 @@ const makeHistoryDetailsButton = (id, gameCount) => {
     button.on('click', (event) => {
         event.preventDefault();
         globals.gameID = id;
-        globals.connSend({
-            type: 'historyDetails',
-            resp: {
-                gameID: parseInt(globals.gameID, 10),
-            },
+        globals.conn.send('historyDetails', {
+            gameID: parseInt(globals.gameID, 10),
         });
-        lobby.historyDetails.show();
+        lobby.history.showDetails();
     });
 
     return button;
