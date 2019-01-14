@@ -156,6 +156,10 @@ func discordSend(to string, username string, msg string) {
 	}
 	fullMsg += msg
 
+	// Scrub "@here" and "@everyone"
+	// (the bot has permissions to perform these actions, so we need to escape them to prevent abuse from lobby users)
+	fullMsg = chatScrubDiscordPings(fullMsg)
+
 	if _, err := discord.ChannelMessageSend(to, fullMsg); err != nil {
 		log.Error("Failed to send \""+fullMsg+"\" to Discord:", err)
 		return

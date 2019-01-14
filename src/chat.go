@@ -211,6 +211,17 @@ func chatFillChannels(msg string) string {
 	return msg
 }
 
+func chatScrubDiscordPings(msg string) string {
+	if discord == nil {
+		return msg
+	}
+
+	msg = strings.Replace(msg, "@everyone", "`@everyone`", -1)
+	msg = strings.Replace(msg, "@here", "`@here`", -1)
+
+	return msg
+}
+
 func chatSendPast(s *Session, room string, count int) {
 	var rawMsgs []models.ChatMessage
 	if v, err := db.ChatLog.Get(room, count); err != nil {
