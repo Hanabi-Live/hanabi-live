@@ -42,7 +42,9 @@ exports.draw = () => {
     tbody.html('');
 
     // Handle if the user has no history
-    const ids = Object.keys(globals.historyList);
+    const ids = Object.keys(globals.historyList).map(i => parseInt(i, 10));
+    // JavaScript keys come as strings, so we need to convert them to integers
+
     if (ids.length === 0) {
         $('#lobby-history-no').show();
         $('#lobby-history').addClass('align-center-v');
@@ -53,9 +55,8 @@ exports.draw = () => {
     $('#lobby-history').removeClass('align-center-v');
     $('#lobby-history-table-container').show();
 
-    // Sort the game IDs in reverse order
-    // (so that the most recent ones are near the top)
-    ids.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+    // Sort the game IDs in reverse order (so that the most recent ones are near the top)
+    ids.sort();
     ids.reverse();
 
     // Add all of the history
@@ -125,7 +126,7 @@ const makeReplayButton = (id, text, msgType, returnsToLobby) => {
         event.preventDefault();
         globals.gameID = id;
         globals.conn.send(msgType, {
-            gameID: parseInt(globals.gameID, 10), // The server expects this as an integer
+            gameID: globals.gameID,
         });
         if (returnsToLobby) {
             lobby.history.hide();
@@ -147,7 +148,7 @@ const makeHistoryDetailsButton = (id, gameCount) => {
         event.preventDefault();
         globals.gameID = id;
         globals.conn.send('historyDetails', {
-            gameID: parseInt(globals.gameID, 10),
+            gameID: globals.gameID,
         });
         lobby.history.showDetails();
     });
