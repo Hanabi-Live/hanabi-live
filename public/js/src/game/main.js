@@ -9,6 +9,7 @@ exports.tooltips = require('./tooltips');
 // Imports
 const globals = require('../globals');
 const misc = require('../misc');
+const ui = require('./ui');
 
 $(document).ready(() => {
     // Disable the right-click context menu while in a game
@@ -25,7 +26,7 @@ exports.show = () => {
     $('#navPanel').hide();
     $('#navButton').hide();
 
-    globals.ui = new HanabiUI(globals, globals.gameID, exports);
+    globals.ui = new ui(globals, globals.gameID, exports); // eslint-disable-line
     globals.ui.setBackend(globals.conn);
 };
 
