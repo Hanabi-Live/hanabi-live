@@ -65,21 +65,21 @@
                         </a>
                     </li>
                 </ul>
-                <ul id="nav-buttons-game" class="hidden">
+                <ul id="nav-buttons-pregame" class="hidden">
                     <li>
-                        <a id="nav-buttons-game-start" class="button">
+                        <a id="nav-buttons-pregame-start" class="button">
                             <i class="fas fa-play nav-icon"></i>
                             <span class="nav-hotkey-indicator">S</span>tart Game
                         </a>
                     </li>
                     <li>
-                        <a id="nav-buttons-game-unattend" class="button">
+                        <a id="nav-buttons-pregame-unattend" class="button">
                             <i class="fas fa-pause nav-icon"></i>
                             <span class="nav-hotkey-indicator">R</span>eturn to Lobby
                         </a>
                     </li>
                     <li>
-                        <a id="nav-buttons-game-leave" class="button">
+                        <a id="nav-buttons-pregame-leave" class="button">
                             <i class="fas fa-times nav-icon"></i>
                             <span class="nav-hotkey-indicator">L</span>eave Game
                         </a>
@@ -105,9 +105,9 @@
                         </a>
                     </li>
                 </ul>
-                <ul id="nav-buttons-return" class="hidden">
+                <ul id="nav-buttons-history-details" class="hidden">
                     <li>
-                        <a id="nav-buttons-return-table" class="button nav-return-table">
+                        <a id="nav-buttons-history-details-return" class="button nav-return-table">
                             <i class="fas fa-home nav-icon"></i>
                             <span class="nav-hotkey-indicator">R</span>eturn to Lobby
                         </a>
@@ -220,28 +220,28 @@
                         </table>
                     </section>
 
-                    <!-- The "game" table (the current unstarted game) -->
-                    <section id="lobby-game" class="box hidden">
+                    <!-- The "pregame" table -->
+                    <section id="lobby-pregame" class="box hidden">
                         <div class="row 100%">
-                            <div id="lobby-game-left" class="2u padding-right1">
+                            <div id="lobby-pregame-left" class="2u padding-right1">
                                 <h4 class="padding0p5">
                                     <strong>Game name:</strong><br />
-                                    <span id="lobby-game-name"></span>
+                                    <span id="lobby-pregame-name"></span>
                                 </h4>
                                 <h4 class="padding0p5">
                                     <strong>Variant:</strong><br />
-                                    <span id="lobby-game-variant"></span>
+                                    <span id="lobby-pregame-variant"></span>
                                 </h4>
                                 <h4 class="padding0p5">
-                                    <span id="lobby-game-options-title"><strong>Options:</strong></span><br />
-                                    <ul id="lobby-game-options"></ul>
+                                    <span id="lobby-pregame-options-title"><strong>Options:</strong></span><br />
+                                    <ul id="lobby-pregame-options"></ul>
                                 </h4>
                             </div>
-                            <div id="lobby-game-player-1" class="2u lobby-game-player"></div>
-                            <div id="lobby-game-player-2" class="2u lobby-game-player"></div>
-                            <div id="lobby-game-player-3" class="2u lobby-game-player"></div>
-                            <div id="lobby-game-player-4" class="2u lobby-game-player"></div>
-                            <div id="lobby-game-player-5" class="2u lobby-game-player"></div>
+                            <div id="lobby-pregame-player-1" class="2u lobby-pregame-player"></div>
+                            <div id="lobby-pregame-player-2" class="2u lobby-pregame-player"></div>
+                            <div id="lobby-pregame-player-3" class="2u lobby-pregame-player"></div>
+                            <div id="lobby-pregame-player-4" class="2u lobby-pregame-player"></div>
+                            <div id="lobby-pregame-player-5" class="2u lobby-pregame-player"></div>
                         </div>
                     </section>
                 </div>
@@ -716,14 +716,11 @@
     <!-- SHA256 (for password hashing) -->
     <script type="text/javascript" src="public/js/lib/sha256.min.js"></script>
 
-    <!-- Golem (a WebSocket client) -->
-    <script type="text/javascript" src="public/js/lib/golem.js"></script>
-
     <!-- Hanabi Live code -->
     <script type="text/javascript" src="public/js/constants.js"></script>
     <script type="text/javascript" src="public/js/ui/timer.js"></script>
     <script type="text/javascript" src="public/js/ui.js"></script>
-    <script type="text/javascript" src="public/js/lobby.js"></script>
+    <script type="text/javascript" src="public/js/main.bundled.js"></script> <!-- Lobby code is now bundled with Browserify -->
 </body>
 
 </html>
