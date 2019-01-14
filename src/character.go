@@ -10,8 +10,6 @@ const debugCharacter = "Insistent"
 type CharacterAssignment struct {
 	Name string
 	// Similar to variants, each character must have a unique numerical ID (for the database)
-	// Prior to January 2019, variants were identified as number instead of name
-	// For variants created prior to this date, the ID also doubles as the original numerical identifier
 	ID          int
 	Description string
 	Emoji       string
