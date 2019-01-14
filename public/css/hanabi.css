@@ -331,6 +331,15 @@ table td {
 }
 
 /*
+    Game
+*/
+
+#game {
+    height: 100%;
+    overflow: hidden;
+}
+
+/*
     In-game tooltips
 */
 
