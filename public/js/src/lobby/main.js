@@ -11,3 +11,7 @@ exports.pregame = require('./pregame');
 exports.settings = require('./settings');
 exports.tables = require('./tables');
 exports.users = require('./users');
+
+// Also make it available to the window so that we can access global variables
+// from the JavaScript console (for debugging purposes)
+window.lobby = exports;

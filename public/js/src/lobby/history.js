@@ -199,7 +199,6 @@ exports.drawDetails = () => {
     // Add all of the games
     for (let i = 0; i < globals.historyDetailList.length; i++) {
         const gameData = globals.historyDetailList[i];
-        console.log(gameData);
 
         const row = $('<tr>');
 
