@@ -24,9 +24,6 @@ exports.show = () => {
     $('#game').html(''); // Ensure that no old games will show while the new canvas loads
     $('#game').show();
 
-    // The scroll bars appear for some reason when showing the game, which is annoying and wastes space
-    $('body').css('overflow', 'hidden');
-
     // Request the "init" message
     // TODO: combine the "hello" + "ready" message and the "gameStart" + "init" messages
     globals.conn.send('hello');

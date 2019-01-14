@@ -2,6 +2,7 @@
     The main entry point for the Hanabi client code
 */
 
+// Browserify is used to have Node.js-style imports and easily split up the client code into multiple files
 const globals = require('./globals');
 require('./modals');
 require('./keyboard');

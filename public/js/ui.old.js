@@ -1,9 +1,8 @@
-function HanabiUI(lobby, gameID, game) {
+function HanabiUI(lobby, gameID) {
     this.showDebugMessages = true;
 
     this.lobby = lobby;
     this.gameID = gameID;
-    this.game = game;
 
     const ui = this;
 
@@ -25,11 +24,9 @@ function HanabiUI(lobby, gameID, game) {
 
     this.playerUs = -1;
     this.playerNames = [];
-    this.characterAssignments = [];
-    // This is the "Detrimental Character Assignments" for each player, if enabled
+    this.characterAssignments = []; // This is the "Detrimental Character Assignments" for each player, if enabled
     // (it is either an empty array or an array of integers)
-    this.characterMetadata = [];
-    // This is extra information about each player's "Detrimental Character Assignments", if enabled
+    this.characterMetadata = []; // This is extra information about each player's "Detrimental Character Assignments", if enabled
     // (it is either an empty array or an array of integers)
     this.variant = constants.VARIANTS['No Variant'];
     this.cardsGotten = 0;
@@ -66,8 +63,7 @@ function HanabiUI(lobby, gameID, game) {
 
     // Users can only update one note at a time to prevent bugs
     this.editingNote = null; // Equal to the card order number or null
-    this.editingNoteActionOccured = false;
-    // Equal to true if something happened when the note box happens to be open
+    this.editingNoteActionOccured = false; // Equal to true if something happened when the note box happens to be open
 
     this.deckPlays = false;
     this.emptyClues = false;
@@ -77,8 +73,7 @@ function HanabiUI(lobby, gameID, game) {
     this.queuedAction = null;
     this.currentClues = 8;
 
-    // Used to prevent giving an accidental clue after clicking the "Exit Replay" button or
-    // pressing enter to submit a note
+    // Used to prevent giving an accidental clue after clicking the "Exit Replay" button or pressing enter to submit a note
     this.accidentalClueTimer = Date.now();
 
     // This below code block deals with automatic resizing
@@ -317,15 +312,15 @@ function HanabiUI(lobby, gameID, game) {
         // Play a sound to indicate that the current player is almost out of time
         // Do not play it more frequently than about once per second
         if (
-            ui.timedGame
-            && lobby.settings.sendTimerSound
-            && millisecondsLeft > 0
-            && millisecondsLeft <= 5000
-            && timeElapsed > 900
-            && timeElapsed < 1100
-            && !lobby.errorOccured
+            ui.timedGame &&
+            lobby.sendTimerSound &&
+            millisecondsLeft > 0 &&
+            millisecondsLeft <= 5000 &&
+            timeElapsed > 900 &&
+            timeElapsed < 1100 &&
+            !lobby.errorOccured
         ) {
-            ui.game.sounds.play('tone');
+            lobby.playSound('tone');
         }
     }
 
@@ -359,23 +354,14 @@ function HanabiUI(lobby, gameID, game) {
         const suit = (!card.showOnlyLearned && card.trueSuit);
         const empathyPastSuitUncertain = card.showOnlyLearned && card.possibleSuits.length > 1;
 
-        let suitToShow = suit || learnedCard.suit || SUIT.GRAY;
-        if (empathyPastSuitUncertain) {
-            suitToShow = SUIT.GRAY;
-        }
+        const suitToShow = (empathyPastSuitUncertain) ? SUIT.GRAY : (suit || learnedCard.suit || SUIT.GRAY);
 
         // For whatever reason, Card-Gray is never created, so use NoPip-Gray
         if (suitToShow === SUIT.GRAY) {
             prefix = 'NoPip';
         }
 
-        let name = `${prefix}-${suitToShow.name}-`;
-        if (empathyPastRankUncertain) {
-            name += '6';
-        } else {
-            name += rank || learnedCard.rank || '6';
-        }
-        return name;
+        return `${prefix}-${suitToShow.name}-${empathyPastRankUncertain ? 6 : (rank || learnedCard.rank || 6)}`;
     }
 
     const scaleCardImage = function scaleCardImage(context, name) {
@@ -459,10 +445,7 @@ function HanabiUI(lobby, gameID, game) {
     FitText.prototype.resize = function resize() {
         this.setFontSize(this.origFontSize);
 
-        while (
-            this._getTextSize(this.getText()).width > this.getWidth()
-            && this.getFontSize() > 5
-        ) {
+        while (this._getTextSize(this.getText()).width > this.getWidth() && this.getFontSize() > 5) {
             this.setFontSize(this.getFontSize() * 0.9);
         }
 
@@ -761,11 +744,6 @@ function HanabiUI(lobby, gameID, game) {
             for (let i = 0; i < suits.length; i++) {
                 const suit = suits[i];
 
-                let fill = suit.fillColors.hexCode;
-                if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
-                    fill = undefined;
-                }
-
                 const suitPip = new Kinetic.Shape({
                     x: Math.floor(CARDW * 0.5),
                     y: Math.floor(CARDH * 0.5),
@@ -778,13 +756,12 @@ function HanabiUI(lobby, gameID, game) {
 
                     // Transform polar to cartesian coordinates
                     // The magic number added to the offset is needed to center things properly;
-                    // We don't know why it's needed;
-                    // perhaps something to do with the shape functions
+                    // I don't know why it's needed... perhaps something to do with the shape functions
                     offset: {
-                        x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25), // eslint-disable-line
-                        y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3), // eslint-disable-line
+                        x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25),
+                        y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3),
                     },
-                    fill,
+                    fill: ((suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) ? undefined : suit.fillColors.hexCode),
                     stroke: 'black',
                     name: suit.name,
                     listening: false,
@@ -918,8 +895,7 @@ function HanabiUI(lobby, gameID, game) {
             tooltipInstance.option('side', 'top');
 
             // Flip the tooltip if it is too close to the top of the screen
-            if (posY < 200) {
-                // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout
+            if (posY < 200) { // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout
                 posY = pos.y + (self.getHeight() * self.parent.scale().y / 2);
                 tooltipInstance.option('side', 'bottom');
             }
@@ -998,9 +974,7 @@ function HanabiUI(lobby, gameID, game) {
         };
         const endHolderViewOnCard = function endHolderViewOnCard(toggledPips) {
             const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
-            cardsToReset.map(
-                (card, index) => toggleHolderViewOnCard(card, false, toggledPips[index]),
-            );
+            cardsToReset.map((card, index) => toggleHolderViewOnCard(card, false, toggledPips[index]));
             cardLayer.batchDraw();
         };
         const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
@@ -1042,9 +1016,9 @@ function HanabiUI(lobby, gameID, game) {
         if (config.holder === ui.playerUs && !ui.replayOnly && !ui.spectating) {
             this.on('mousedown', (event) => {
                 if (
-                    event.evt.which !== 1 // dragging uses left click
-                    || ui.replay
-                    || !this.indicatorArrow.isVisible()
+                    event.evt.which !== 1 || // dragging uses left click
+                    ui.replay ||
+                    !this.indicatorArrow.isVisible()
                 ) {
                     return;
                 }
@@ -1062,9 +1036,9 @@ function HanabiUI(lobby, gameID, game) {
 
             // In a shared replay, the leader right-clicks a card to draw attention to it
             if (
-                ui.sharedReplay
-                && event.evt.which === 3 // Right-click
-                && ui.sharedReplayLeader === lobby.username
+                ui.sharedReplay &&
+                event.evt.which === 3 && // Right-click
+                ui.sharedReplayLeader === lobby.username
             ) {
                 if (ui.useSharedTurns) {
                     ui.sendMsg({
@@ -1085,8 +1059,7 @@ function HanabiUI(lobby, gameID, game) {
                 return;
             }
 
-            // In a non-shared replay, a user might still want to draw an arrow on a card
-            // for demonstration purposes
+            // In a non-shared replay, a user might still want to draw an arrow on a card for demonstration purposes
             if (window.event.ctrlKey) {
                 ui.handleReplayIndicator({
                     order: self.order,
@@ -1185,7 +1158,7 @@ function HanabiUI(lobby, gameID, game) {
         });
 
         // Catch clicks for making arbitrary cards (for hypothetical situation creation)
-        this.on('mousedown', () => {
+        this.on('mousedown', (event) => {
             // Do nothing if shift is not being held
             if (!window.event.shiftKey) {
                 return;
@@ -1284,15 +1257,9 @@ function HanabiUI(lobby, gameID, game) {
             const findPipElement = rank => this.rankPips.find(`.${rank}`);
             let removed;
             if (ui.variant.name.startsWith('Multi-Fives')) {
-                removed = filterInPlace(
-                    this.possibleRanks,
-                    rank => (rank === clueRank || rank === 5) === positive,
-                );
+                removed = filterInPlace(this.possibleRanks, rank => (rank === clueRank || rank === 5) === positive);
             } else {
-                removed = filterInPlace(
-                    this.possibleRanks,
-                    rank => (rank === clueRank) === positive,
-                );
+                removed = filterInPlace(this.possibleRanks, rank => (rank === clueRank) === positive);
             }
             removed.forEach(rank => findPipElement(rank).hide());
             // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
@@ -1304,17 +1271,11 @@ function HanabiUI(lobby, gameID, game) {
                 ui.learnedCards[this.order].rank = this.trueRank;
             }
             // Ensure that the learned card data is not overwritten with less recent information
-            filterInPlace(
-                ui.learnedCards[this.order].possibleRanks,
-                s => this.possibleRanks.includes(s),
-            );
+            filterInPlace(ui.learnedCards[this.order].possibleRanks, s => this.possibleRanks.includes(s));
         } else if (clue.type === CLUE_TYPE.COLOR) {
             const clueColor = clue.value;
             const findPipElement = suit => this.suitPips.find(`.${suit.name}`);
-            const removed = filterInPlace(
-                this.possibleSuits,
-                suit => suit.clueColors.includes(clueColor) === positive,
-            );
+            const removed = filterInPlace(this.possibleSuits, suit => suit.clueColors.includes(clueColor) === positive);
             removed.forEach(suit => findPipElement(suit).hide());
             // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
             // display a non-grey card face
@@ -1325,10 +1286,7 @@ function HanabiUI(lobby, gameID, game) {
                 ui.learnedCards[this.order].suit = this.trueSuit;
             }
             // Ensure that the learned card data is not overwritten with less recent information
-            filterInPlace(
-                ui.learnedCards[this.order].possibleSuits,
-                s => this.possibleSuits.includes(s),
-            );
+            filterInPlace(ui.learnedCards[this.order].possibleSuits, s => this.possibleSuits.includes(s));
         } else {
             console.error('Clue type invalid.');
         }
@@ -1879,7 +1837,7 @@ function HanabiUI(lobby, gameID, game) {
             strokeWidth: 1,
             align: 'center',
             text: config.text,
-            visible: lobby.settings.showColorblindUI,
+            visible: lobby.showColorblindUI,
         });
 
         this.add(text);
@@ -2202,7 +2160,7 @@ function HanabiUI(lobby, gameID, game) {
             if (ui.deck[this.neglist[i]] === target) {
                 this.background.setOpacity(0.4);
                 this.background.setFill('#ff7777');
-                if (lobby.settings.showColorblindUI) {
+                if (lobby.showColorblindUI) {
                     this.negativeMarker.setVisible(true);
                 }
             }
@@ -2429,7 +2387,7 @@ function HanabiUI(lobby, gameID, game) {
         ImageLoader.start();
     };
 
-    const showClueMatch = (target, clue) => {
+    const showClueMatch = (target, clue, showNeg) => {
         // Hide all of the existing arrows on the cards
         for (let i = 0; i < this.deck.length; i++) {
             if (i === target) {
@@ -2461,8 +2419,8 @@ function HanabiUI(lobby, gameID, game) {
             let color;
             if (clue.type === CLUE_TYPE.RANK) {
                 if (
-                    clue.value === card.trueRank
-                    || (ui.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
+                    clue.value === card.trueRank ||
+                    (ui.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
                 ) {
                     touched = true;
                     color = INDICATOR.POSITIVE;
@@ -2470,9 +2428,9 @@ function HanabiUI(lobby, gameID, game) {
             } else if (clue.type === CLUE_TYPE.COLOR) {
                 const clueColor = clue.value;
                 if (
-                    card.trueSuit === SUIT.RAINBOW
-                    || card.trueSuit === SUIT.RAINBOW1OE
-                    || card.trueSuit.clueColors.includes(clueColor)
+                    card.trueSuit === SUIT.RAINBOW ||
+                    card.trueSuit === SUIT.RAINBOW1OE ||
+                    card.trueSuit.clueColors.includes(clueColor)
                 ) {
                     touched = true;
                     color = clueColor.hexCode;
@@ -2530,10 +2488,7 @@ function HanabiUI(lobby, gameID, game) {
     const drawCardBase = function drawCardBase(ctx, suit, rank) {
         // Draw the background
         ctx.fillStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
-        ctx.strokeStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
-        if (ctx.fillStyle === COLOR.WHITE.hexCode) {
-            ctx.strokeStyle = COLOR.BLACK.hexCode;
-        }
+        ctx.strokeStyle = (ctx.fillStyle === COLOR.WHITE.hexCode) ? COLOR.BLACK.hexCode : suit.style(ctx, CARD_AREA.BACKGROUND);
 
         backpath(ctx, 4, xrad, yrad);
 
@@ -2573,8 +2528,7 @@ function HanabiUI(lobby, gameID, game) {
         ctx.beginPath();
         ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top-right-hand corner
         ctx.lineTo(CARDW - borderSize - triangleSize, borderSize); // Move left
-        ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
-        // Move down and right diagonally
+        ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move down and right diagonally
         ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
         ctx.fillStyle = clueColor1.hexCode;
         drawshape(ctx);
@@ -2583,8 +2537,7 @@ function HanabiUI(lobby, gameID, game) {
         ctx.beginPath();
         ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top-right-hand corner
         ctx.lineTo(CARDW - borderSize, borderSize + triangleSize); // Move down
-        ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
-        // Move up and left diagonally
+        ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2)); // Move up and left diagonally
         ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
         ctx.fillStyle = clueColor2.hexCode;
         drawshape(ctx);
@@ -2593,8 +2546,7 @@ function HanabiUI(lobby, gameID, game) {
         ctx.beginPath();
         ctx.moveTo(borderSize, CARDH - borderSize); // Start at the bottom right-hand corner
         ctx.lineTo(borderSize, CARDH - borderSize - triangleSize); // Move up
-        ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2));
-        // Move right and down diagonally
+        ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2)); // Move right and down diagonally
         ctx.moveTo(borderSize, CARDH - borderSize); // Move back to the beginning
         ctx.fillStyle = clueColor1.hexCode;
         drawshape(ctx);
@@ -2603,8 +2555,7 @@ function HanabiUI(lobby, gameID, game) {
         ctx.beginPath();
         ctx.moveTo(borderSize, CARDH - borderSize); // Start at the bottom right-hand corner
         ctx.lineTo(borderSize + triangleSize, CARDH - borderSize); // Move right
-        ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2));
-        // Move left and up diagonally
+        ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2)); // Move left and up diagonally
         ctx.moveTo(borderSize, CARDH - borderSize); // Move back to the beginning
         ctx.fillStyle = clueColor2.hexCode;
         drawshape(ctx);
@@ -2629,7 +2580,7 @@ function HanabiUI(lobby, gameID, game) {
 
         // Top and bottom for cards 2, 3, 4, 5
         if (rank > 1 && rank <= 5) {
-            const symbolYPos = lobby.settings.showColorblindUI ? 85 : 120;
+            const symbolYPos = lobby.showColorblindUI ? 85 : 120;
             ctx.save();
             ctx.translate(CARDW / 2, CARDH / 2);
             ctx.translate(0, -symbolYPos);
@@ -2687,7 +2638,7 @@ function HanabiUI(lobby, gameID, game) {
         // Unknown rank, so draw large faint suit
         if (rank === 6) {
             ctx.save();
-            ctx.globalAlpha = lobby.settings.showColorblindUI ? 0.4 : 0.1;
+            ctx.globalAlpha = lobby.showColorblindUI ? 0.4 : 0.1;
             ctx.translate(CARDW / 2, CARDH / 2);
             ctx.scale(scale * 3, scale * 3);
             ctx.translate(-75, -100);
@@ -2743,8 +2694,8 @@ function HanabiUI(lobby, gameID, game) {
 
             // Transform polar to cartesian coordinates
             // The magic number added to the offset is needed to center things properly
-            x -= 1.05 * Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25); // eslint-disable-line
-            y -= 1.05 * Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3); // eslint-disable-line
+            x -= 1.05 * Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25);
+            y -= 1.05 * Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3);
             ctx.translate(x, y);
 
             drawSuitShape(suit, i)(ctx);
@@ -2784,7 +2735,7 @@ function HanabiUI(lobby, gameID, game) {
                     let textYPos;
                     let indexLabel;
                     let fontSize;
-                    if (lobby.settings.showColorblindUI) {
+                    if (lobby.showColorblindUI) {
                         fontSize = 68;
                         textYPos = 83;
                         indexLabel = suit.abbreviation + rank.toString();
@@ -2955,10 +2906,10 @@ function HanabiUI(lobby, gameID, game) {
     const notesWritten = []; // An array containing all of the player's notes, indexed by card order
 
     const overPlayArea = pos => (
-        pos.x >= playArea.getX()
-        && pos.y >= playArea.getY()
-        && pos.x <= playArea.getX() + playArea.getWidth()
-        && pos.y <= playArea.getY() + playArea.getHeight()
+        pos.x >= playArea.getX() &&
+        pos.y >= playArea.getY() &&
+        pos.x <= playArea.getX() + playArea.getWidth() &&
+        pos.y <= playArea.getY() + playArea.getHeight()
     );
 
     const shareCurrentTurn = (target) => {
@@ -3073,7 +3024,7 @@ function HanabiUI(lobby, gameID, game) {
             w: 0.4,
             h: 0.098,
         };
-        if (lobby.settings.showBGAUI) {
+        if (lobby.showBGAUI) {
             actionLogValues.x = 0.01;
             actionLogValues.y = 0.01;
             actionLogValues.h = 0.25;
@@ -3116,7 +3067,7 @@ function HanabiUI(lobby, gameID, game) {
 
         // The action log
         let maxLines = 3;
-        if (lobby.settings.showBGAUI) {
+        if (lobby.showBGAUI) {
             maxLines = 8;
         }
         messagePrompt = new MultiFitText({
@@ -3161,7 +3112,7 @@ function HanabiUI(lobby, gameID, game) {
             x: 0.66,
             y: 0.81,
         };
-        if (lobby.settings.showBGAUI) {
+        if (lobby.showBGAUI) {
             scoreAreaValues.x = 0.168;
             scoreAreaValues.y = 0.81;
         }
@@ -3269,7 +3220,7 @@ function HanabiUI(lobby, gameID, game) {
             x: 0.623,
             y: 0.9,
         };
-        if (lobby.settings.showBGAUI) {
+        if (lobby.showBGAUI) {
             spectatorsLabelValues.x = 0.01;
             spectatorsLabelValues.y = 0.72;
         }
@@ -3333,7 +3284,7 @@ function HanabiUI(lobby, gameID, game) {
             x: 0.623,
             y: 0.85,
         };
-        if (lobby.settings.showBGAUI) {
+        if (lobby.showBGAUI) {
             sharedReplayLeaderLabelValues.x = spectatorsLabelValues.x + 0.03;
             sharedReplayLeaderLabelValues.y = spectatorsLabelValues.y;
         }
@@ -3507,14 +3458,11 @@ function HanabiUI(lobby, gameID, game) {
 
         this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
             this.cardsGotten += cardsGottenDelta;
-            const efficiency = (this.cardsGotten / this.cluesSpentPlusStrikes).toFixed(2);
-            // Round it to 2 decimal places
+            const efficiency = (this.cardsGotten / this.cluesSpentPlusStrikes).toFixed(2); // Round it to 2 decimal places
 
             // Calculate the minimum amount of efficiency needed in order to win this variant
             // First, calculate starting pace with the following formula:
-            // total cards in the deck -
-            // ((number of cards in a player's hand - 1) * number of players) -
-            // (5 * number of suits)
+            // total cards in the deck - ((number of cards in a player's hand - 1) * number of players) - (5 * number of suits)
             let totalCardsInTheDeck = 0;
             for (const suit of this.variant.suits) {
                 totalCardsInTheDeck += 10;
@@ -3531,9 +3479,7 @@ function HanabiUI(lobby, gameID, game) {
             } else if (numberOfPlayers === 6) {
                 cardsInHand = 3;
             }
-            let startingPace = totalCardsInTheDeck;
-            startingPace -= (cardsInHand - 1) * numberOfPlayers;
-            startingPace -= 5 * this.variant.suits.length;
+            const startingPace = totalCardsInTheDeck - ((cardsInHand - 1) * numberOfPlayers) - (5 * this.variant.suits.length);
 
             // Second, use the pace to calculate the efficiency required with the following formula:
             // (5 * number of suits) / (pace + number of suits + 7 (- 1 if a 5/6-player game))
@@ -3542,8 +3488,7 @@ function HanabiUI(lobby, gameID, game) {
             if (numberOfPlayers === 5 || numberOfPlayers === 6) {
                 minEfficiencyDenominator -= 1;
             }
-            const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);
-            // Round it to 2 decimal places
+            const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2); // Round it to 2 decimal places
 
             efficiencyNumberLabel.setText(`${efficiency} / ${minEfficiency}`);
         };
@@ -3574,14 +3519,14 @@ function HanabiUI(lobby, gameID, game) {
         if (this.variant.showSuitNames) {
             playStackValues.y -= 0.018;
         }
-        if (lobby.settings.showBGAUI) {
+        if (lobby.showBGAUI) {
             playStackValues.x = actionLogValues.x;
             playStackValues.y = actionLogValues.y + actionLogValues.h + 0.02;
             playStackValues.spacing = 0.006;
         }
         if (
-            this.variant.suits.length === 4
-            || (this.variant.suits.length === 5 && this.variant.showSuitNames)
+            this.variant.suits.length === 4 ||
+            (this.variant.suits.length === 5 && this.variant.showSuitNames)
         ) {
             // If there are only 4 stacks, they will be left-aligned instead of centered
             // So, center them by moving them to the right a little bit
@@ -3630,10 +3575,10 @@ function HanabiUI(lobby, gameID, game) {
                 if (this.variant.showSuitNames) {
                     let text = suit.name;
                     if (
-                        lobby.settings.showColorblindUI
-                        && suit.clueColors.length > 1
-                        && suit !== SUIT.RAINBOW
-                        && suit !== SUIT.RAINBOW1OE
+                        lobby.showColorblindUI &&
+                        suit.clueColors.length > 1 &&
+                        suit !== SUIT.RAINBOW &&
+                        suit !== SUIT.RAINBOW1OE
                     ) {
                         const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
                         text += ` [${colorList}]`;
@@ -3643,7 +3588,7 @@ function HanabiUI(lobby, gameID, game) {
                     }
 
                     const suitLabelText = new FitText({
-                        x: (playStackValues.x - 0.01 + (width + playStackValues.spacing) * i) * winW, // eslint-disable-line
+                        x: (playStackValues.x - 0.01 + (width + playStackValues.spacing) * i) * winW,
                         y: (playStackValues.y + 0.155) * winH,
                         width: 0.08 * winW,
                         height: 0.051 * winH,
@@ -3670,7 +3615,7 @@ function HanabiUI(lobby, gameID, game) {
             w: 0.435,
             h: 0.189,
         };
-        if (lobby.settings.showBGAUI) {
+        if (lobby.showBGAUI) {
             playAreaValues.x = 0.01;
             playAreaValues.y = 0.279;
             playAreaValues.w = 0.4;
@@ -3733,8 +3678,7 @@ function HanabiUI(lobby, gameID, game) {
 
                 savedAction = null;
             } else {
-                // The card was dragged to an invalid location,
-                // so animate the card back to where it was
+                // The card was dragged to an invalid location, so animate the card back to where it was
                 new Kinetic.Tween({
                     node: this,
                     duration: 0.5,
@@ -3755,8 +3699,7 @@ function HanabiUI(lobby, gameID, game) {
             }
 
             const turn = parseInt(window.prompt('Which turn do you want to go to?'), 10) - 1;
-            // We need to decrement the turn because
-            // the turn shown to the user is always one greater than the real turn
+            // We need to decrement the turn because the turn show to the user is always one greater than the real turn
 
             if (ui.replayOnly) {
                 ui.inferSharedReplayMode();
@@ -3766,8 +3709,7 @@ function HanabiUI(lobby, gameID, game) {
             ui.performReplay(turn, true);
         };
         drawDeck.cardback.on('click', goToTurn);
-        drawDeckRect.on('click', goToTurn);
-        // We also want to be able to right-click if all the cards are drawn
+        drawDeckRect.on('click', goToTurn); // We also want to be able to right-click if all the cards are drawn
 
         cardLayer.add(drawDeck);
 
@@ -3936,6 +3878,7 @@ function HanabiUI(lobby, gameID, game) {
             }
         }
 
+
         /* eslint-enable object-curly-newline */
 
         const nump = this.playerNames.length;
@@ -3949,13 +3892,12 @@ function HanabiUI(lobby, gameID, game) {
                 // (for our hand, the oldest card is the first card, which should be on the right)
                 reverse = true;
             }
-            if (lobby.settings.showBGAUI) {
+            if (lobby.showBGAUI) {
                 // If Board Game Arena mode is on, then we need to reverse every hand
                 reverse = true;
             }
-            if (lobby.settings.reverseHands) {
-                // If the "Reverse hand direction" option is turned on,
-                // then we need to flip the direction of every hand
+            if (lobby.reverseHands) {
+                // If the "Reverse hand direction" option is turned on, then we need to flip the direction of every hand
                 reverse = !reverse;
             }
 
@@ -3971,7 +3913,7 @@ function HanabiUI(lobby, gameID, game) {
             }
 
             let playerHandPos = handPos;
-            if (lobby.settings.showBGAUI) {
+            if (lobby.showBGAUI) {
                 playerHandPos = handPosBGA;
             }
 
@@ -3980,7 +3922,7 @@ function HanabiUI(lobby, gameID, game) {
                 // We want to flip the cards for other players
                 invertCards = true;
             }
-            if (lobby.settings.showBGAUI) {
+            if (lobby.showBGAUI) {
                 // On the BGA layout, all the hands should not be flipped
                 invertCards = false;
             }
@@ -3999,9 +3941,8 @@ function HanabiUI(lobby, gameID, game) {
             cardLayer.add(playerHands[i]);
 
             // Draw the faded shade that shows where the "new" side of the hand is
-            // (but don't bother drawing it in Board Game Arena mode since
-            // all the hands face the same way)
-            if (!lobby.settings.showBGAUI) {
+            // (but don't bother drawing it in Board Game Arena mode since all the hands face the same way)
+            if (!lobby.showBGAUI) {
                 rect = new Kinetic.Rect({
                     x: shadePos[nump][j].x * winW,
                     y: shadePos[nump][j].y * winH,
@@ -4039,7 +3980,7 @@ function HanabiUI(lobby, gameID, game) {
             }
 
             let playerNamePos = namePos;
-            if (lobby.settings.showBGAUI) {
+            if (lobby.showBGAUI) {
                 playerNamePos = namePosBGA;
             }
             nameFrames[i] = new HanabiNameFrame({
@@ -4134,7 +4075,7 @@ function HanabiUI(lobby, gameID, game) {
             w: 0.55, // The width of all of the vanilla cards is 0.435
             h: 0.27,
         };
-        if (lobby.settings.showBGAUI) {
+        if (lobby.showBGAUI) {
             clueAreaValues.x = playStackValues.x - 0.102;
             clueAreaValues.y = playStackValues.y + 0.22;
         }
@@ -4252,7 +4193,7 @@ function HanabiUI(lobby, gameID, game) {
             x: 0.275,
             y: 0.56,
         };
-        if (lobby.settings.showBGAUI) {
+        if (lobby.showBGAUI) {
             noClueBoxValues.x = clueAreaValues.x + 0.178;
             noClueBoxValues.y = clueAreaValues.y;
         }
@@ -4295,14 +4236,14 @@ function HanabiUI(lobby, gameID, game) {
         this.stopLocalTimer();
 
         // We don't want the timer to show in replays
-        if (!this.replayOnly && (ui.timedGame || lobby.settings.showTimerInUntimed)) {
+        if (!this.replayOnly && (ui.timedGame || lobby.showTimerInUntimed)) {
             const timerValues = {
                 x1: 0.155,
                 x2: 0.565,
                 y1: 0.592,
                 y2: 0.592,
             };
-            if (lobby.settings.showBGAUI) {
+            if (lobby.showBGAUI) {
                 timerValues.x1 = 0.31;
                 timerValues.x2 = 0.31;
                 timerValues.y1 = 0.77;
@@ -4346,24 +4287,23 @@ function HanabiUI(lobby, gameID, game) {
         // Navigating as a follower in a shared replay disables replay actions
         const inferSharedReplayMode = () => {
             if (
-                ui.replayOnly
-                && ui.sharedReplay
-                && ui.sharedReplayLeader !== lobby.username
-                && ui.useSharedTurns
+                ui.replayOnly &&
+                ui.sharedReplay &&
+                ui.sharedReplayLeader !== lobby.username &&
+                ui.useSharedTurns
             ) {
                 // Replay actions currently enabled, so disable them
                 toggleSharedTurnButton.dispatchEvent(new MouseEvent('click'));
             }
         };
-        this.inferSharedReplayMode = inferSharedReplayMode;
-        // Make it available so that we can use it elsewhere in the code
+        this.inferSharedReplayMode = inferSharedReplayMode; // Make it available os that we can use it elsewhere in the code
 
         const replayAreaValues = {
             x: 0.15,
             y: 0.51,
             w: 0.5,
         };
-        if (lobby.settings.showBGAUI) {
+        if (lobby.showBGAUI) {
             replayAreaValues.x = 0.01;
             replayAreaValues.y = 0.49;
             replayAreaValues.w = 0.4;
@@ -4468,7 +4408,7 @@ function HanabiUI(lobby, gameID, game) {
             y: 0.07,
             spacing: 0.08,
         };
-        if (lobby.settings.showBGAUI) {
+        if (lobby.showBGAUI) {
             replayButtonValues.x = 0.05;
         }
 
@@ -4549,7 +4489,7 @@ function HanabiUI(lobby, gameID, game) {
                 });
 
                 this.stopLocalTimer();
-                game.hide();
+                ui.lobby.gameEnded();
             } else {
                 // Mark the time that the user clicked the "Exit Replay" button
                 // (so that we can avoid an accidental "Give Clue" double-click)
@@ -4727,7 +4667,7 @@ function HanabiUI(lobby, gameID, game) {
             }
             if (event.key === 'X') { // Shift + x
                 // This is used as a sound test
-                ui.game.sounds.play('turn_us');
+                lobby.playSound('turn_us');
                 return;
             }
             if (event.ctrlKey && event.key === 'Enter') { // Ctrl + Enter
@@ -4763,7 +4703,7 @@ function HanabiUI(lobby, gameID, game) {
             };
 
             // Check for speedrun keyboard hotkeys
-            if (lobby.settings.speedrunHotkeys) {
+            if (lobby.speedrunHotkeys) {
                 // Play cards (ACT.PLAY)
                 if (event.key === '1') {
                     speedrunAction(ACT.PLAY, getOrderFromSlot(1));
@@ -4913,7 +4853,7 @@ function HanabiUI(lobby, gameID, game) {
 
             // Play the sound effect manually so that
             // we don't have to wait for the client to server round-trip
-            ui.game.sounds.play(sound);
+            lobby.playSound(sound);
         };
 
         helpGroup = new Kinetic.Group({
@@ -5078,7 +5018,8 @@ Keyboard hotkeys:
             });
 
             this.stopLocalTimer();
-            game.hide();
+
+            ui.lobby.gameEnded();
         });
 
         if (ui.replay) {
@@ -5164,7 +5105,7 @@ Keyboard hotkeys:
             this.replayPos = this.replayLog.length;
             this.replayTurn = this.replayMax;
             this.adjustReplayShuttle();
-            this.stopAction();
+            this.stopAction(true);
             replayArea.show();
             for (let i = 0; i < this.deck.length; i++) {
                 this.deck[i].setBareImage();
@@ -5219,9 +5160,9 @@ Keyboard hotkeys:
         }
 
         if (
-            this.sharedReplay
-            && this.sharedReplayLeader === lobby.username
-            && this.useSharedTurns
+            this.sharedReplay &&
+            this.sharedReplayLeader === lobby.username &&
+            this.useSharedTurns
         ) {
             shareCurrentTurn(target);
         }
@@ -5336,8 +5277,7 @@ Keyboard hotkeys:
     };
 
     this.handleNotify = function handleNotify(data) {
-        // If an action in the game happens,
-        // mark to make the tooltip go away after the user has finished entering their note
+        // If an action in the game happens, mark to make the tooltip go away after the user has finished entering their note
         if (ui.editingNote !== null) {
             ui.editingNoteActionOccured = true;
         }
@@ -5394,11 +5334,11 @@ Keyboard hotkeys:
             // Adding speedrun code; make all cards in our hand draggable from the get-go
             // except for cards we have already played or discarded
             if (
-                lobby.settings.speedrunPreplay
-                && data.who === ui.playerUs
-                && !this.replayOnly
-                && !this.spectating
-                && !ui.learnedCards[data.order].revealed
+                lobby.speedrunPreplay &&
+                data.who === ui.playerUs &&
+                !this.replayOnly &&
+                !this.spectating &&
+                !ui.learnedCards[data.order].revealed
             ) {
                 child.setDraggable(true);
                 child.on('dragend.play', dragendPlay);
@@ -5638,22 +5578,17 @@ Keyboard hotkeys:
 
             const adjustedScorePlusDeck = data.score + drawDeck.getCountAsInt() - data.maxScore;
 
-            // Formula derived by Libster;
-            // the number of discards that can happen while still getting the maximum number of
-            // points (this is represented to the user as "Pace" on the user interface)
+            // Formula derived by Libster; the number of discards that can happen while still getting the maximum number of points
+            // (this is represented to the user as "Pace" on the user interface)
             const endGameThreshold1 = adjustedScorePlusDeck + this.playerNames.length;
 
-            // Formula derived by Florrat;
-            // a strategical estimate of "End-Game" that tries to account for the number of players
-            const endGameThreshold2 = adjustedScorePlusDeck + Math.floor(this.playerNames.length / 2); // eslint-disable-line
+            // Formula derived by Florrat; a strategical estimate of "End-Game" that tries to account for the number of players
+            const endGameThreshold2 = adjustedScorePlusDeck + Math.floor(this.playerNames.length / 2);
 
-            // Formula derived by Hyphen-ated;
-            // a more conservative estimate of "End-Game" that does not account for
-            // the number of players
+            // Formula derived by Hyphen-ated; a more conservative estimate of "End-Game" that does not account for the number of players
             const endGameThreshold3 = adjustedScorePlusDeck;
 
-            // Update the pace
-            // (part of the efficiency statistics on the right-hand side of the screen)
+            // Update the pace (part of the efficiency statistics on the right-hand side of the screen)
             // If there are no cards left in the deck, pace is meaningless
             if (drawDeck.getCountAsInt() === 0) {
                 paceNumberLabel.setText('-');
@@ -5665,8 +5600,7 @@ Keyboard hotkeys:
                 }
                 paceNumberLabel.setText(paceText);
 
-                // Color the pace label depending on how "risky" it would be to discard
-                // (approximately)
+                // Color the pace label depending on how "risky" it would be to discard (approximately)
                 if (endGameThreshold1 <= 0) {
                     // No more discards can occur in order to get a maximum score
                     paceNumberLabel.setFill('#df1c2d'); // Red
@@ -5777,8 +5711,7 @@ Keyboard hotkeys:
                 this.replayOnly = true;
                 this.replayTurn = this.replayMax;
                 this.sharedReplayTurn = this.replayTurn;
-                replayButton.hide();
-                // Hide the in-game replay button in the bottom-left-hand corner
+                replayButton.hide(); // Hide the in-game replay button in the bottom-left-hand corner
             }
 
             // We could be in the middle of an in-game replay when the game ends,
@@ -5794,8 +5727,7 @@ Keyboard hotkeys:
             const hand = playerHands[data.target];
             // TODO: Throw an error if hand and note.hand dont have the same numbers in them
 
-            // Get the LayoutChild objects in the hand and
-            // put them in the right order in a temporary array
+            // Get the LayoutChild objects in the hand and put them in the right order in a temporary array
             const newChildOrder = [];
             const handSize = hand.children.length;
             for (let i = 0; i < handSize; i++) {
@@ -5814,7 +5746,7 @@ Keyboard hotkeys:
             }
         } else if (type === 'boot') {
             this.stopLocalTimer();
-            game.hide();
+            ui.lobby.gameEnded();
         }
     };
 
@@ -5831,7 +5763,7 @@ Keyboard hotkeys:
             spectatorsNumLabel.setText(data.names.length);
 
             // Build the string that shows all the names
-            const nameEntries = data.names.map(name => `<li>${name}</li>`).join('');
+            const nameEntries = data.names.map((name, i) => `<li>${name}</li>`).join('');
             let content = '<strong>';
             if (this.replayOnly) {
                 content += 'Shared Replay Viewers';
@@ -6015,18 +5947,14 @@ Keyboard hotkeys:
         const indicated = ui.deck[data.order];
         if (indicated) {
             // Either show or hide the arrow (if it is already visible)
-            const visible = !(
-                indicated.indicatorArrow.visible()
-                && indicated.indicatorArrow.getFill() === INDICATOR.REPLAY_LEADER
-            );
-            // (if the arrow is showing but is a different kind of arrow,
-            // then just overwrite the existing arrow)
+            const visible = !(indicated.indicatorArrow.visible() && indicated.indicatorArrow.getFill() === INDICATOR.REPLAY_LEADER);
+            // (if the arrow is showing but is a different kind of arrow, then just overwrite the existing arrow)
             showClueMatch(-1);
             indicated.setIndicator(visible, INDICATOR.REPLAY_LEADER);
         }
     };
 
-    this.stopAction = () => {
+    this.stopAction = (fast) => {
         clueArea.hide();
 
         noClueLabel.hide();
@@ -6040,7 +5968,7 @@ Keyboard hotkeys:
 
         // Make all of the cards in our hand not draggable
         // (but we need to keep them draggable if the pre-play setting is enabled)
-        if (!lobby.settings.speedrunPreplay) {
+        if (!lobby.speedrunPreplay) {
             for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
                 const child = playerHands[ui.playerUs].children[i];
                 child.off('dragend.play');
@@ -6051,8 +5979,7 @@ Keyboard hotkeys:
         drawDeck.cardback.setDraggable(false);
         deckPlayAvailableLabel.setVisible(false);
 
-        // This is necessary to prevent multiple messages being sent from one click of the
-        // "Submit Clue" button
+        // This is necessary to prevent multiple messages being sent from one click of the "Submit Clue" button
         submitClue.off('click tap');
     };
 
@@ -6097,9 +6024,8 @@ Keyboard hotkeys:
         playerHands[ui.playerUs].moveToTop();
 
         // Set our hand to being draggable
-        // (this is unnecessary if the pre-play setting is enabled,
-        // as the hand will already be draggable)
-        if (!lobby.settings.speedrunPreplay) {
+        // (this is unnecessary if the pre-play setting is enabled, as the hand will already be draggable)
+        if (!lobby.speedrunPreplay) {
             for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
                 const child = playerHands[ui.playerUs].children[i];
                 child.setDraggable(true);
@@ -6131,8 +6057,7 @@ Keyboard hotkeys:
 
             if (!match && !ui.emptyClues) {
                 // Disable the "Submit Clue" button if the given clue will touch no cards
-                // (but allow all clues if they have the optional setting for "Empty Clues"
-                // turned on)
+                // (but allow all clues if they have the optional setting for "Empty Clues" turned on)
                 submitClue.setEnabled(false);
                 return;
             }
@@ -6200,11 +6125,11 @@ Keyboard hotkeys:
                 this.setDraggable(false);
             }
         } else if (
-            pos.x >= discardArea.getX()
-            && pos.y >= discardArea.getY()
-            && pos.x <= discardArea.getX() + discardArea.getWidth()
-            && pos.y <= discardArea.getY() + discardArea.getHeight()
-            && ui.currentClues !== 8
+            pos.x >= discardArea.getX() &&
+            pos.y >= discardArea.getY() &&
+            pos.x <= discardArea.getX() + discardArea.getWidth() &&
+            pos.y <= discardArea.getY() + discardArea.getHeight() &&
+            ui.currentClues !== 8
         ) {
             const action = {
                 type: 'action',
@@ -6290,7 +6215,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
             return;
         }
 
-        if (this.lobby.settings.sendTurnNotify) {
+        if (this.lobby.sendTurnNotify) {
             this.lobby.sendNotify('It\'s your turn', 'turn');
         }
     } else if (msgType === 'spectators') {
@@ -6353,7 +6278,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
             return;
         }
 
-        this.game.sounds.play(msgData.sound);
+        this.lobby.playSound(msgData.sound);
     }
 };
 

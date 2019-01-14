@@ -101,9 +101,9 @@ exports.send = send;
 const getAjaxError = (jqXHR) => {
     if (jqXHR.readyState === 0) {
         return 'A network error occured. The server might be down!';
-    } else if (jqXHR.responseText === '') {
+    }
+    if (jqXHR.responseText === '') {
         return 'An unknown error occured.';
     }
-
     return jqXHR.responseText;
 };

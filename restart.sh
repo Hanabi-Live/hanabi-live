@@ -1,10 +1,18 @@
 #!/bin/bash
 
-cd "/root/go/src/github.com/Zamiell/hanabi-live/src"
-GOPATH=/root/go /usr/bin/go install
+# Get the directory of this script
+# https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# Recompile the Go code and restart the service
+cd "$DIR/src"
+go install
 if [ $? -eq 0 ]; then
-        mv "/root/go/bin/src" "/root/go/bin/hanabi-live"
-        supervisorctl restart hanabi-live
+	mv "$GOPATH/bin/src" "$GOPATH/bin/hanabi-live"
+	supervisorctl restart hanabi-live
 else
-        echo "hanabi-live - Go compilation failed!"
+	echo "hanabi-live - Go compilation failed!"
 fi
+
+# Browserify the client code
+browserify "$DIR/public/js/dev2/main.js" --outfile "$DIR/public/js/main.bundled.js" --verbose --debug

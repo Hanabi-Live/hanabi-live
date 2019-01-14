@@ -148,25 +148,46 @@ func (g *Game) NotifyPlayerChange() {
 			continue
 		}
 
-		type GameMessage struct {
-			Name                 string  `json:"name"`
-			Running              bool    `json:"running"`
-			NumPlayers           int     `json:"numPlayers"`
-			Variant              string  `json:"variant"`
-			Timed                bool    `json:"timed"`
-			BaseTime             float64 `json:"baseTime"`
-			TimePerTurn          int     `json:"timePerTurn"`
-			ReorderCards         bool    `json:"reorderCards"`
-			DeckPlays            bool    `json:"deckPlays"`
-			EmptyClues           bool    `json:"emptyClues"`
-			CharacterAssignments bool    `json:"characterAssignments"`
-			Password             bool    `json:"password"`
-			SharedReplay         bool    `json:"sharedReplay"`
+		// First, make the array that contains information about all of the players in the game
+		type GamePlayerMessage struct {
+			Index   int          `json:"index"`
+			Name    string       `json:"name"`
+			You     bool         `json:"you"`
+			Present bool         `json:"present"`
+			Stats   models.Stats `json:"stats"`
 		}
-		p.Session.Emit("game", GameMessage{
+		gamePlayers := make([]*GamePlayerMessage, 0)
+		for j, p2 := range g.Players {
+			gamePlayer := &GamePlayerMessage{
+				Index:   j,
+				Name:    p2.Name,
+				You:     p.ID == p2.ID,
+				Present: p2.Present,
+				Stats:   p2.Stats,
+			}
+			gamePlayers = append(gamePlayers, gamePlayer)
+		}
+
+		// Second, send information about the game and the players in one big message
+		type GameMessage struct {
+			Name                 string               `json:"name"`
+			Running              bool                 `json:"running"`
+			Players              []*GamePlayerMessage `json:"players"`
+			Variant              string               `json:"variant"`
+			Timed                bool                 `json:"timed"`
+			BaseTime             float64              `json:"baseTime"`
+			TimePerTurn          int                  `json:"timePerTurn"`
+			ReorderCards         bool                 `json:"reorderCards"`
+			DeckPlays            bool                 `json:"deckPlays"`
+			EmptyClues           bool                 `json:"emptyClues"`
+			CharacterAssignments bool                 `json:"characterAssignments"`
+			Password             bool                 `json:"password"`
+			SharedReplay         bool                 `json:"sharedReplay"`
+		}
+		p.Session.Emit("game", &GameMessage{
 			Name:                 g.Name,
 			Running:              g.Running,
-			NumPlayers:           len(g.Players),
+			Players:              gamePlayers,
 			Variant:              g.Options.Variant,
 			Timed:                g.Options.Timed,
 			BaseTime:             g.Options.TimeBase,
@@ -177,28 +198,6 @@ func (g *Game) NotifyPlayerChange() {
 			Password:             g.Password != "",
 			SharedReplay:         g.SharedReplay,
 		})
-
-		// Tell the client to redraw all of the lobby rectanges to account for the new player
-		for j, p2 := range g.Players {
-			if !p.Present {
-				continue
-			}
-
-			type GamePlayerMessage struct {
-				Index   int          `json:"index"`
-				Name    string       `json:"name"`
-				You     bool         `json:"you"`
-				Present bool         `json:"present"`
-				Stats   models.Stats `json:"stats"`
-			}
-			p.Session.Emit("gamePlayer", &GamePlayerMessage{
-				Index:   j,
-				Name:    p2.Name,
-				You:     p.ID == p2.ID,
-				Present: p2.Present,
-				Stats:   p2.Stats,
-			})
-		}
 	}
 }
 

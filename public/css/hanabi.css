@@ -21,11 +21,15 @@ html, body, #page-wrapper {
 
 body {
     background-color: rgb(34, 79, 39);
-    /* The same color as the background image so that it won't show white while the image is loading */
+    /* This is the same color as the background image so that it won't show white while the image is loading */
     background-image: url(../img/background2.jpg);
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
+}
+
+a {
+    color: blue;
 }
 
 table td {
@@ -106,20 +110,6 @@ table td {
 }
 
 /*
-    Nav
-*/
-
-.nav-icon {
-    position: relative;
-    top: 0.05em;
-    right: 0.3em;
-}
-
-.nav-hotkey-indicator {
-    border-bottom: dotted 1px;
-}
-
-/*
     Title
 */
 
@@ -166,6 +156,20 @@ table td {
 }
 
 /*
+    Nav (the top bar)
+*/
+
+.nav-icon {
+    position: relative;
+    top: 0.05em;
+    right: 0.3em;
+}
+
+.nav-hotkey-indicator {
+    border-bottom: dotted 1px;
+}
+
+/*
     Lobby
 */
 
@@ -203,18 +207,28 @@ table td {
     height: 100%;
 }
 
-.lobby-users-box-container {
-    padding-left: 1.5em !important;
-}
-
 .lobby-table-container {
     overflow-y: auto;
     height: 100%;
 }
 
+.lobby-button-icon {
+    font-size: 1.5em;
+    position: relative;
+    top: 0.22em;
+}
+
+/*
+    The list of ongoing tables / games
+*/
+
 #lobby-games-table {
     margin-bottom: 0;
 }
+
+/*
+    Lobby chat
+*/
 
 #lobby-chat-text {
     overflow-y: auto;
@@ -227,6 +241,10 @@ table td {
     height: calc(100% - 3.5em); /* The height of the input box is 3.5em */
 }
 
+/*
+    User list
+*/
+
 #lobby-users-title {
     font-size: 1.3em;
 }
@@ -236,41 +254,39 @@ table td {
     height: calc(100% - 3em); /* The height of the "Online Users" text is 3em */
 }
 
-#lobby-game-left {
+.lobby-users-box-container {
+    padding-left: 1.5em !important;
+}
+
+#lobby-users-table-tbody a {
+    text-decoration-skip-ink: none;
+}
+
+/*
+    Pregame
+*/
+
+#lobby-pregame-left {
     font-size: 0.85em;
 }
 
-.lobby-game-player {
+.lobby-pregame-player {
     border: 1px solid black;
     border-radius: 5px;
     padding: 1em;
 }
 
-.lobby-game-player-away {
+.lobby-pregame-player-away {
     margin-top: 1em;
     margin-bottom: 0;
 }
 
-#lobby-game-options {
+#lobby-pregame-options {
     padding-left: 1em;
 }
 
-#lobby-game-options > li {
+#lobby-pregame-options > li {
     padding-left: 0;
-}
-
-.lobby-button-icon {
-    font-size: 1.5em;
-    position: relative;
-    top: 0.22em;
-}
-
-a {
-    color: blue;
-}
-
-#lobby-users-table-tbody a {
-    text-decoration-skip-ink: none;
 }
 
 /*

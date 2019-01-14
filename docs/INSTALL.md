@@ -47,15 +47,21 @@ Note that these steps require **an elevated (administrator) command-shell**.
 
 ```
 {
-    "files.eol": "\n",
     "editor.fontSize": 16,
     "editor.renderWhitespace": "all",
+    "editor.rulers": [100],
     "editor.wordWrap": "on",
+    "files.eol": "\n",
     "go.lintTool":"golangci-lint",
     "go.lintFlags": [
         "--fast"
     ],
-    "workbench.startupEditor": "newUntitledFile"
+    /*
+        This is needed to stop VSCode from recommending ES6 conversions
+        https://stackoverflow.com/questions/49447955/what-is-this-mark
+    */
+    "javascript.suggestionActions.enabled": false,
+    "workbench.startupEditor": "newUntitledFile" /* Don't show the VSCode welcome screen */
 }
 ```
 

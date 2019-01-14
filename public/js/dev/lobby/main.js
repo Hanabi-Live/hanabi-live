@@ -156,6 +156,7 @@ const drawTables = () => {
             button.html('<i class="fas fa-eye lobby-button-icon"></i>&nbsp; Spectate');
             button.attr('id', `spectate-${game.id}`);
             button.on('click', (event) => {
+                event.preventDefault();
                 globals.gameID = game.id;
                 globals.conn.send('gameSpectate', {
                     gameID: game.id,
@@ -171,7 +172,6 @@ const drawTables = () => {
             }
             button.on('click', (event) => {
                 event.preventDefault();
-
                 globals.gameID = game.id;
                 globals.conn.send('gameJoin', {
                     gameID: game.id,
@@ -185,7 +185,6 @@ const drawTables = () => {
 
             button.on('click', (event) => {
                 event.preventDefault();
-
                 globals.gameID = game.id;
                 globals.conn.send('gameReattend', {
                     gameID: game.id,
@@ -316,9 +315,12 @@ exports.showJoined = () => {
         div.show();
 
         // Calculate some stats
-        const averageScoreVariant = Math.round(player.stats.averageScoreVariant * 100) / 100; // Round it to 2 decimal places
-        let strikeoutRateVariant = player.stats.strikeoutRateVariant * 100; // Turn it into a percent
-        strikeoutRateVariant = Math.round(strikeoutRateVariant * 100) / 100; // Round it to 2 decimal places
+        const averageScoreVariant = Math.round(player.stats.averageScoreVariant * 100) / 100;
+        // Round it to 2 decimal places
+        let strikeoutRateVariant = player.stats.strikeoutRateVariant * 100;
+        // Turn it into a percent
+        strikeoutRateVariant = Math.round(strikeoutRateVariant * 100) / 100;
+        // Round it to 2 decimal places
 
         let html = `
             <p class="margin0 padding0p5">

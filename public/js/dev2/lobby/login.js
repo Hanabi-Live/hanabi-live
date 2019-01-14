@@ -1,0 +1,157 @@
+/*
+    The initial login page
+*/
+
+// Imports
+// const shajs = require('sha.js');
+const globals = require('../globals');
+const cookie = require('../cookie');
+const websocket = require('../websocket');
+const lobby = require('./main');
+
+$(document).ready(() => {
+    $('#login-button').click((event) => {
+        event.preventDefault();
+        $('#login-form').submit();
+    });
+    $('#login-form').on('keypress', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            $('#login-form').submit();
+        }
+    });
+    $('#login-form').submit(submit);
+
+    // Make the tooltip for the Discord icon at the bottom of the screen
+    const discordContent = 'Discord is a voice and text chat application that you can run in a browser.<br />If the server is down, you can probably find out why in the Hanabi server / chat room.';
+    $('#title-discord').tooltipster({
+        theme: 'tooltipster-shadow',
+        delay: 0,
+        content: discordContent,
+        contentAsHTML: true,
+    });
+
+    // Check to see if we have accepted the Firefox warning
+    if (globals.browserIsFirefox && cookie.get('acceptedFirefoxWarning') !== 'true') { // Cookies are strings
+        $('#sign-in').hide();
+        $('#firefox-warning').show();
+    }
+    $('#firefox-warning-button').click(() => {
+        cookie.set('acceptedFirefoxWarning', 'true');
+        $('#firefox-warning').hide();
+        $('#sign-in').show();
+    });
+
+    automaticLogin();
+});
+
+const submit = (event) => {
+    // By default, the form will reload the page, so stop this from happening
+    event.preventDefault();
+
+    const username = $('#login-username').val();
+    const passwordPlaintext = $('#login-password').val();
+
+    if (!username) {
+        formError('You must provide a username.');
+        return;
+    }
+    if (!passwordPlaintext) {
+        formError('You must provide a password.');
+        return;
+    }
+
+    // const password = shajs('sha256').update(`Hanabi password ${pass}`).digest('hex');
+    const password = hex_sha256(`Hanabi password ${passwordPlaintext}`);
+
+    cookie.set('hanabiuser', username);
+    cookie.set('hanabipass', password);
+
+    globals.username = username;
+    globals.password = password;
+
+    send();
+};
+
+const formError = (msg) => {
+    // For some reason this has to be invoked asycnronously in order to work properly
+    setTimeout(() => {
+        $('#login-ajax').hide();
+        $('#login-button').removeClass('disabled');
+        $('#login-alert').html(msg);
+        $('#login-alert').fadeIn(globals.fadeTime);
+    }, 0);
+};
+
+const send = () => {
+    $('#login-button').addClass('disabled');
+    $('#login-explanation').hide();
+    $('#login-ajax').show();
+
+    // Send a login request to the server; if successful, we will get a cookie back
+    let url = `${window.location.protocol}//${window.location.hostname}`;
+    if (window.location.port !== '') {
+        url += `:${window.location.port}`;
+    }
+    url += '/login';
+    const postData = {
+        username: globals.username,
+        password: globals.password,
+    };
+    const request = $.ajax({
+        url,
+        type: 'POST',
+        data: postData,
+    });
+    console.log(`Sent a login request to: ${url}`);
+
+    request.done(() => {
+        // We successfully got a cookie; attempt to establish a WebSocket connection
+        websocket.set();
+    });
+    request.fail((jqXHR) => {
+        formError(`Login failed: ${getAjaxError(jqXHR)}`);
+    });
+};
+
+const getAjaxError = (jqXHR) => {
+    if (jqXHR.readyState === 0) {
+        return 'A network error occured. The server might be down!';
+    }
+    if (jqXHR.responseText === '') {
+        return 'An unknown error occured.';
+    }
+    return jqXHR.responseText;
+};
+
+const automaticLogin = () => {
+    // Don't automatically login if they are on Firefox and have not confirmed the warning dialog
+    if (globals.browserIsFirefox && cookie.getCookie('acceptedFirefoxWarning') !== 'true') { // Cookies are strings
+        return;
+    }
+
+    // Automatically sign in to the WebSocket server if we have cached credentials
+    globals.username = cookie.get('hanabiuser');
+    globals.password = cookie.get('hanabipass');
+    if (globals.username) {
+        $('#login-username').val(globals.username);
+        $('#login-password').focus();
+    }
+
+    if (!globals.username || !globals.password) {
+        return;
+    }
+    console.log('Automatically logging in from cookie credentials.');
+    send();
+};
+
+// This hides the login screen and shows the lobby
+exports.hide = () => {
+    globals.currentScreen = 'lobby';
+    $('#lobby').show();
+    $('#lobby-history').hide(); // We can't hide this element by default in "index.html" or else the "No game history" text will not be centered
+    lobby.nav.show('games');
+    lobby.users.draw();
+    lobby.tables.draw();
+    $('#lobby-chat-input').focus();
+};

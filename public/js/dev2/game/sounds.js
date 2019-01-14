@@ -1,0 +1,49 @@
+/*
+    In-game sounds
+*/
+
+// Imports
+const globals = require('../globals');
+
+$(document).ready(() => {
+    preload();
+});
+
+exports.play = (file) => {
+    const path = `/public/sounds/${file}.mp3`;
+    const audio = new Audio(path);
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            // Audio playback was successful; do nothing
+        }).catch((error) => {
+            // Audio playback failed
+            // This is most likely due to the user not having interacted with the page yet
+            // https://stackoverflow.com/questions/52807874/how-to-make-audio-play-on-body-onload
+            console.error(`Failed to play "${path}":`, error);
+        });
+    }
+};
+
+const preload = () => {
+    if (!globals.settings.sendTurnSound) {
+        return;
+    }
+
+    const soundFiles = [
+        'blind1',
+        'blind2',
+        'blind3',
+        'blind4',
+        'buzz',
+        'fail',
+        'sad',
+        'tone',
+        'turn_other',
+        'turn_us',
+    ];
+    for (const file of soundFiles) {
+        const audio = new Audio(`public/sounds/${file}.mp3`);
+        audio.load();
+    }
+};
