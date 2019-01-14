@@ -159,6 +159,7 @@ const makeHistoryDetailsButton = (id, gameCount) => {
 exports.showDetails = () => {
     $('#lobby-history').hide();
     $('#lobby-history-details').show();
+    lobby.nav.show('history-details');
 
     // The server will send us messages to populate this array momentarily
     globals.historyDetailList = [];

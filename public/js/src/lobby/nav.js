@@ -76,10 +76,17 @@ $(document).ready(() => {
         });
     });
 
-    // The "Return to Lobby" button (from the "History" and "History Details" screen)
-    $('.nav-return-table').on('click', (event) => {
+    // The "Return to Lobby" button (from the "History" screen)
+    $('#nav-buttons-history-return').on('click', (event) => {
         event.preventDefault();
         lobby.history.hide();
+    });
+
+    // The "Return to History" button (from the "History Details" screen)
+    $('#nav-buttons-history-details-return').on('click', (event) => {
+        event.preventDefault();
+        lobby.history.hideDetails();
+        lobby.history.show();
     });
 });
 
