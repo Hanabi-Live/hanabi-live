@@ -166,6 +166,11 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
+		// Validate "Detrimental Character Assignment" restrictions
+		if characterCheckPlay(s, d, g, p) {
+			return
+		}
+
 		c := p.RemoveCard(d.Target, g)
 		doubleDiscard = p.PlayCard(g, c)
 		p.DrawCard(g)

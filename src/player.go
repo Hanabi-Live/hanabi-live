@@ -27,6 +27,10 @@ type Player struct {
 	Session *Session
 }
 
+/*
+	Main functions, relating to in-game actions
+*/
+
 func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	p2 := g.Players[d.Target] // The target of the clue
 	cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
@@ -96,52 +100,21 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	return true
 }
 
-// FindCardsTouchedByClue returns a slice of card orders
-// (in this context, "orders" are the card position in the deck, not in the hand)
-func (p *Player) FindCardsTouchedByClue(clue Clue, g *Game) []int {
-	list := make([]int, 0)
-	for _, c := range p.Hand {
-		if variantIsCardTouched(g.Options.Variant, clue, c) {
-			list = append(list, c.Order)
-		}
-	}
-
-	return list
-}
-
-func (p *Player) IsFirstCardTouchedByClue(clue Clue, g *Game) bool {
-	card := p.Hand[len(p.Hand)-1]
-	return variantIsCardTouched(g.Options.Variant, clue, card)
-}
-
-func (p *Player) IsLastCardTouchedByClue(clue Clue, g *Game) bool {
-	card := p.Hand[0]
-	return variantIsCardTouched(g.Options.Variant, clue, card)
-}
-
 func (p *Player) RemoveCard(target int, g *Game) *Card {
-	// Remove the card from their hand
-	var removedCard *Card
-	for i, c := range p.Hand {
-		if c.Order == target {
-			removedCard = c
+	// Get the target card
+	i := p.GetCardIndex(target)
+	c := p.Hand[i]
 
-			// Mark what the "slot" number is
-			// e.g. slot 1 is the newest (left-most) card, which is index 5 (in a 3 player game)
-			removedCard.Slot = len(p.Hand) - i
+	// Mark what the "slot" number is
+	// e.g. slot 1 is the newest (left-most) card, which is index 5 (in a 3 player game)
+	c.Slot = p.GetCardSlot(target)
 
-			p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
-			break
-		}
-	}
+	// Remove it from the hand
+	p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
 
-	if removedCard == nil {
-		log.Fatal("The target of " + strconv.Itoa(target) + " is not in the hand of " + p.Name + ".")
-	}
+	characterPostRemove(g, p, c)
 
-	characterPostRemove(g, p, removedCard)
-
-	return removedCard
+	return c
 }
 
 // PlayCard returns true if it is a "double discard" situation
@@ -203,7 +176,7 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	}
 
 	// Handle "Detrimental Character Assignment" restrictions
-	if characterCheckPlay(g, p, c) { // (this returns true if it should misplay)
+	if characterCheckMisplay(g, p, c) { // (this returns true if it should misplay)
 		failed = true
 	}
 
@@ -403,6 +376,33 @@ func (p *Player) PlayDeck(g *Game) {
 	p.PlayCard(g, c)
 }
 
+/*
+	Subroutines
+*/
+
+// FindCardsTouchedByClue returns a slice of card orders
+// (in this context, "orders" are the card position in the deck, not in the hand)
+func (p *Player) FindCardsTouchedByClue(clue Clue, g *Game) []int {
+	list := make([]int, 0)
+	for _, c := range p.Hand {
+		if variantIsCardTouched(g.Options.Variant, clue, c) {
+			list = append(list, c.Order)
+		}
+	}
+
+	return list
+}
+
+func (p *Player) IsFirstCardTouchedByClue(clue Clue, g *Game) bool {
+	card := p.Hand[len(p.Hand)-1]
+	return variantIsCardTouched(g.Options.Variant, clue, card)
+}
+
+func (p *Player) IsLastCardTouchedByClue(clue Clue, g *Game) bool {
+	card := p.Hand[0]
+	return variantIsCardTouched(g.Options.Variant, clue, card)
+}
+
 func (p *Player) InHand(order int) bool {
 	for _, c := range p.Hand {
 		if c.Order == order {
@@ -411,6 +411,27 @@ func (p *Player) InHand(order int) bool {
 	}
 
 	return false
+}
+
+func (p *Player) GetCardIndex(order int) int {
+	for i, c := range p.Hand {
+		if c.Order == order {
+			return i
+		}
+	}
+
+	return -1
+}
+
+func (p *Player) GetCardSlot(order int) int {
+	for i, c := range p.Hand {
+		if c.Order == order {
+			return len(p.Hand) - i
+			// e.g. slot 1 is the newest (left-most) card, which is index 5 (in a 3 player game)
+		}
+	}
+
+	return -1
 }
 
 func (p *Player) ShuffleHand(g *Game) {

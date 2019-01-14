@@ -591,8 +591,24 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 	return false
 }
 
-// characterCheckPlay returns true if the card should misplay
-func characterCheckPlay(g *Game, p *Player, c *Card) bool {
+// characterCheckPlay returns true if the card cannot be played
+func characterCheckPlay(s *Session, d *CommandData, g *Game, p *Player) bool {
+	if !g.Options.CharacterAssignments {
+		return false
+	}
+
+	if p.Character == "Hesitant" &&
+		p.GetCardSlot(d.Target) == 1 {
+
+		s.Warning("You cannot play that card since you are a " + p.Character + " character.")
+		return true
+	}
+
+	return false
+}
+
+// characterCheckMisplay returns true if the card should misplay
+func characterCheckMisplay(g *Game, p *Player, c *Card) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}
@@ -608,11 +624,6 @@ func characterCheckPlay(g *Game, p *Player, c *Card) bool {
 		if numPlayedOfThisRank < 2 {
 			return true
 		}
-
-	} else if p.Character == "Hesitant" &&
-		c.Slot == 1 {
-
-		return true
 	}
 
 	return false
