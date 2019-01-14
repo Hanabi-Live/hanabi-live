@@ -113,7 +113,6 @@ func commandGameCreate(s *Session, d *CommandData) {
 		Stacks:             make([]int, 0),
 		StackDirections:    make([]int, 0),
 		Actions:            make([]interface{}, 0),
-		EndPlayer:          -1,
 		EndTurn:            -1,
 		Chat:               make([]*GameChatMessage, 0),
 	}

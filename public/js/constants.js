@@ -156,7 +156,7 @@
         ctx.lineTo(p, exports.CARDH - yrad - p);
         ctx.quadraticCurveTo(0, exports.CARDH, xrad + p, exports.CARDH - p);
         ctx.lineTo(exports.CARDW - xrad - p, exports.CARDH - p);
-        ctx.quadraticCurveTo(exports.CARDW, exports.CARDH, exports.CARDW - p, exports.CARDH - yrad - p);
+        ctx.quadraticCurveTo(exports.CARDW, exports.CARDH, exports.CARDW - p, exports.CARDH - yrad - p); // eslint-disable-line
         ctx.lineTo(exports.CARDW - p, yrad + p);
         ctx.quadraticCurveTo(exports.CARDW, 0, exports.CARDW - xrad - p, p);
         ctx.lineTo(xrad + p, p);
@@ -296,7 +296,14 @@
     };
 
     // Pair each suit name with the color(s) that correspond(s) to it
-    const Suit = function Suit(name, abbreviation, fillColors, cardFillSpec, clueColors, oneOfEach = false) {
+    const Suit = function Suit(
+        name,
+        abbreviation,
+        fillColors,
+        cardFillSpec,
+        clueColors,
+        oneOfEach = false,
+    ) {
         this.name = name;
         this.abbreviation = abbreviation;
         this.fillColors = fillColors;
@@ -366,7 +373,8 @@
             basicCardFillSpec,
             [exports.COLOR.PURPLE],
         ),
-        GRAY: new Suit( // This represents cards of unknown suit; it must not be included in variants
+        GRAY: new Suit(
+            // This represents cards of unknown suit; it must not be included in variants
             'Gray',
             '',
             exports.COLOR.GRAY,
@@ -675,8 +683,11 @@
         this.suits = suits;
         this.ranks = [1, 2, 3, 4, 5];
         this.clueColors = clueColors;
-        this.showSuitNames = showSuitNames; // We draw the text below the suits for confusing variants
-        this.offsetCardIndicators = suits.some(s => s !== exports.SUIT.RAINBOW && s.clueColors.length > 1);
+        this.showSuitNames = showSuitNames;
+        // We draw the text below the suits for confusing variants
+        this.offsetCardIndicators = suits.some(
+            s => s !== exports.SUIT.RAINBOW && s.clueColors.length > 1,
+        );
         this.maxScore = suits.length * 5;
         this.efficiencyArray = efficiencyArray;
     };
@@ -1470,7 +1481,7 @@
         // Other
         new CharacterAssignment(
             'Contrarian',
-            'Play order inverts after taking a turn',
+            'Play order inverts after taking a turn + 2 turn end game',
             '🙅',
         ),
         new CharacterAssignment(

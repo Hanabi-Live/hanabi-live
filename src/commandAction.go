@@ -253,11 +253,6 @@ func commandAction(s *Session, d *CommandData) {
 		g.TurnBeginTime = time.Now()
 	}
 
-	// If this is the final go-around, mark that they have performed an action
-	if g.EndPlayer != -1 {
-		p.PerformedFinalTurn = true
-	}
-
 	// Increment the turn
 	// (but don't increment it if we are on a characters that takes two turns in a row)
 	if !characterTakingSecondTurn(d, g, p) {

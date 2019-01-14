@@ -20,7 +20,6 @@ type Player struct {
 	Hand                []*Card
 	Time                time.Duration
 	Notes               []string
-	PerformedFinalTurn  bool
 	CharacterAssignment int
 	CharacterMetadata   int
 	CharacterMetadata2  int
@@ -391,7 +390,8 @@ func (p *Player) DrawCard(g *Game) {
 	// Check to see if that was the last card drawn
 	if g.DeckIndex >= len(g.Deck) {
 		// Mark the turn upon which the game will end
-		g.EndPlayer = (g.ActivePlayer + 1) % len(g.Players)
+		g.EndTurn = g.Turn + len(g.Players)
+		characterAdjustEndTurn(g)
 	}
 }
 

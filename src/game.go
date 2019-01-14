@@ -44,8 +44,7 @@ type Game struct {
 	// Furthermore, we don't want this to be a pointer of interfaces because this simplifies action scrubbing
 	Sound         string
 	TurnBeginTime time.Time
-	EndPlayer     int                // Set when the final card is drawn to determine when the game should end
-	EndTurn       int                // Set when the game ends (to be used in Shared Replays)
+	EndTurn       int                // Set when the final card is drawn to determine when the game should end
 	BlindPlays    int                // The number of consecutive blind plays
 	Chat          []*GameChatMessage // All of the in-game chat history
 }
@@ -464,20 +463,10 @@ func (g *Game) CheckEnd() bool {
 
 	// Check to see if the final go-around has completed
 	// (which is initiated after the last card is played from the deck)
-	// We can't use the amount of turns to determine this because certain characters can each player to take multiple turns
-	if g.ActivePlayer == g.EndPlayer {
-		allDoneFinalTurn := true
-		for _, p := range g.Players {
-			if !p.PerformedFinalTurn {
-				allDoneFinalTurn = false
-				break
-			}
-		}
-		if allDoneFinalTurn {
-			log.Info(g.GetName() + "Final turn reached; ending the game.")
-			g.EndCondition = 1
-			return true
-		}
+	if g.Turn == g.EndTurn {
+		log.Info(g.GetName() + "Final turn reached; ending the game.")
+		g.EndCondition = 1
+		return true
 	}
 
 	// Check to see if the maximum score has been reached

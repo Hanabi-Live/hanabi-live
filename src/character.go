@@ -166,7 +166,7 @@ var (
 		// Other
 		CharacterAssignment{
 			Name:        "Contrarian",
-			Description: "Play order inverts after taking a turn",
+			Description: "Play order inverts after taking a turn + 2 turn end game",
 			Emoji:       "🙅",
 			Not2P:       true,
 		},
@@ -801,4 +801,18 @@ func characterHideCard(a *ActionDraw, g *Game, p *Player) bool {
 	}
 
 	return false
+}
+
+func characterAdjustEndTurn(g *Game) {
+	if !g.Options.CharacterAssignments {
+		return
+	}
+
+	// Check to see if anyone is playing as a character that will adjust the final go-around of the table
+	for _, p := range g.Players {
+		name := characterAssignments[p.CharacterAssignment].Name
+		if name == "Contrarian" {
+			g.EndTurn = g.Turn + 2
+		}
+	}
 }
