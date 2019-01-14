@@ -4100,7 +4100,7 @@ function HanabiUI(lobby, gameID, game) {
                     tooltip.css('left', tooltipX);
                     tooltip.css('top', this.attrs.y);
 
-                    const character = CHARACTER_ASSIGNMENTS[ui.characterAssignments[i]];
+                    const character = CHARACTERS[ui.characterAssignments[i]];
                     const metadata = ui.characterMetadata[i];
                     let content = `<b>${character.name}</b>:<br />${character.description}`;
                     if (content.includes('[random color]')) {
