@@ -168,6 +168,7 @@ exports.showDetails = () => {
 exports.hideDetails = () => {
     $('#lobby-history').show();
     $('#lobby-history-details').hide();
+    lobby.nav.show('history');
 };
 
 // This function is called once for each new history element received from the server

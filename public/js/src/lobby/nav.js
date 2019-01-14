@@ -86,7 +86,6 @@ $(document).ready(() => {
     $('#nav-buttons-history-details-return').on('click', (event) => {
         event.preventDefault();
         lobby.history.hideDetails();
-        lobby.history.show();
     });
 });
 
