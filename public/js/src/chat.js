@@ -3,7 +3,7 @@
 */
 
 // Imports
-const globals = require('../globals');
+const globals = require('./globals');
 
 $(document).ready(() => {
     const rooms = ['lobby', 'game'];

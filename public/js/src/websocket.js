@@ -7,6 +7,7 @@
 const golem = require('../lib/golem2');
 const globals = require('./globals');
 const modals = require('./modals');
+const chat = require('./chat');
 const lobby = require('./lobby/main');
 const game = require('./game/main');
 
@@ -115,7 +116,7 @@ const initCommands = () => {
         lobby.tables.draw();
     });
 
-    globals.conn.on('chat', lobby.chat.add);
+    globals.conn.on('chat', chat.add);
 
     globals.conn.on('chatList', (dataArray) => {
         // Reverse the order of the chat messages
@@ -124,7 +125,7 @@ const initCommands = () => {
         dataArray.reverse();
 
         for (const data of dataArray) {
-            lobby.chat.add(data);
+            chat.add(data);
         }
     });
 

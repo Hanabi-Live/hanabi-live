@@ -2,7 +2,6 @@
     The lobby is composed of all of the UI elements that don't have to do with the game itself
 */
 
-exports.chat = require('./chat');
 exports.createGame = require('./createGame');
 exports.history = require('./history');
 exports.keyboard = require('./keyboard');
