@@ -18,7 +18,7 @@ function HanabiUI(lobby, gameID, game) {
         backpath,
         drawshape,
         INDICATOR,
-        CHARACTER_ASSIGNMENTS,
+        CHARACTERS,
     } = constants;
 
     this.deck = [];
@@ -4080,7 +4080,7 @@ function HanabiUI(lobby, gameID, game) {
                     fontSize: 0.03 * winH,
                     fontFamily: 'Verdana',
                     align: 'center',
-                    text: CHARACTER_ASSIGNMENTS[ui.characterAssignments[i]].emoji,
+                    text: CHARACTERS[ui.characterAssignments[i]].emoji,
                     fill: 'yellow',
                     shadowColor: 'black',
                     shadowBlur: 10,

@@ -54,10 +54,10 @@ func commandHello(s *Session, d *CommandData) {
 		var players []*Player
 		for _, p := range dbPlayers {
 			player := &Player{
-				ID:                  p.ID,
-				Name:                p.Name,
-				CharacterAssignment: p.CharacterAssignment,
-				CharacterMetadata:   p.CharacterMetadata,
+				ID:                p.ID,
+				Name:              p.Name,
+				Character:         charactersID[p.CharacterAssignment],
+				CharacterMetadata: p.CharacterMetadata,
 			}
 			players = append(players, player)
 		}
@@ -86,11 +86,11 @@ func commandHello(s *Session, d *CommandData) {
 	}
 
 	// Create a list of the "Detrimental Character Assignments", if enabled
-	playerCharacterAssignments := make([]int, 0)
+	characterAssignments := make([]string, 0)
 	characterMetadata := make([]int, 0)
 	if g.Options.CharacterAssignments {
 		for _, p := range g.Players {
-			playerCharacterAssignments = append(playerCharacterAssignments, p.CharacterAssignment)
+			characterAssignments = append(characterAssignments, p.Character)
 			characterMetadata = append(characterMetadata, p.CharacterMetadata)
 		}
 	}
@@ -109,7 +109,7 @@ func commandHello(s *Session, d *CommandData) {
 	// Give them an "init" message
 	type InitMessage struct {
 		Names                []string `json:"names"`
-		CharacterAssignments []int    `json:"characterAssignments"`
+		CharacterAssignments []string `json:"characterAssignments"`
 		CharacterMetadata    []int    `json:"characterMetadata"`
 		Replay               bool     `json:"replay"`
 		Seat                 int      `json:"seat"`
@@ -135,7 +135,7 @@ func commandHello(s *Session, d *CommandData) {
 	}
 	s.Emit("init", &InitMessage{
 		Names:                names,
-		CharacterAssignments: playerCharacterAssignments,
+		CharacterAssignments: characterAssignments,
 		CharacterMetadata:    characterMetadata,
 		Replay:               replay,
 		Seat:                 seat,

@@ -68,6 +68,9 @@ func main() {
 	// Initialize the variants
 	variantsInit()
 
+	// Initialize "Detrimental Character Assignments"
+	characterInit()
+
 	// Initialize catching Unix signals
 	signalInit()
 

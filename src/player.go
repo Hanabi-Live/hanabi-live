@@ -17,12 +17,12 @@ type Player struct {
 	Present bool
 	Stats   models.Stats
 
-	Hand                []*Card
-	Time                time.Duration
-	Notes               []string
-	CharacterAssignment int
-	CharacterMetadata   int
-	CharacterMetadata2  int
+	Hand               []*Card
+	Time               time.Duration
+	Notes              []string
+	Character          string
+	CharacterMetadata  int
+	CharacterMetadata2 int
 
 	Session *Session
 }
@@ -36,7 +36,7 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 		// Allow empty clues if the optional setting is enabled
 		!g.Options.EmptyClues &&
 		// Philosphers can only give empty clues
-		characterAssignments[p.CharacterAssignment].Name != "Philospher" {
+		p.Character != "Philospher" {
 
 		return false
 	}

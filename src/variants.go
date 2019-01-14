@@ -473,7 +473,7 @@ func variantsInit() {
 		variants[variant.Name] = variant
 	}
 
-	// Also populate a reverse mapping of ID to variant name
+	// Also populate a reverse mapping of ID to name
 	variantsID = make(map[int]string)
 	for _, variant := range variantDefinitions {
 		variantsID[variant.ID] = variant.Name

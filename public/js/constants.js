@@ -1327,181 +1327,154 @@
         REPLAY_LEADER: '#ffdf00',
     };
 
-    const CharacterAssignment = function CharacterAssignment(name, description, emoji) {
-        this.name = name;
+    const Character = function Character(description, emoji) {
         this.description = description;
         this.emoji = emoji;
     };
-    exports.CHARACTER_ASSIGNMENTS = [
+    exports.CHARACTERS = {
         // Clue restriction characters (giving)
-        new CharacterAssignment(
-            'Fuming',
+        'Fuming': new Character(
             'Can only clue numbers and [random color]',
             '🌋',
         ),
-        new CharacterAssignment(
-            'Dumbfounded',
+        'Dumbfounded': new Character(
             'Can only clue colors and [random number]',
             '🤯',
         ),
-        new CharacterAssignment(
-            'Inept',
+        'Inept': new Character(
             'Cannot give any clues that touch [random suit] cards',
             '🤔',
         ),
-        new CharacterAssignment(
-            'Awkward',
+        'Awkward': new Character(
             'Cannot give any clues that touch [random number]s',
             '😬',
         ),
-        new CharacterAssignment(
-            'Conservative',
+        'Conservative': new Character(
             'Can only give clues that touch a single card',
             '🕇',
         ),
-        new CharacterAssignment(
-            'Greedy',
+        'Greedy': new Character(
             'Can only give clues that touch 2+ cards',
             '🤑',
         ),
-        new CharacterAssignment(
-            'Picky',
+        'Picky': new Character(
             'Can only clue odd numbers or odd colors',
             '🤢',
         ),
-        new CharacterAssignment(
-            'Spiteful',
+        'Spiteful': new Character(
             'Cannot clue the player to their left',
             '😈',
         ),
-        new CharacterAssignment(
-            'Insolent',
+        'Insolent': new Character(
             'Cannot clue the player to their right',
             '😏',
         ),
-        new CharacterAssignment(
-            'Vindictive',
+        'Vindictive': new Character(
             'Must clue if they received a clue since their last turn',
             '🗡️',
         ),
-        new CharacterAssignment(
-            'Miser',
+        'Miser': new Character(
             'Can only clue if there are 4 or more clues available',
             '💰',
         ),
-        new CharacterAssignment(
-            'Compulsive',
+        'Compulsive': new Character(
             'Can only clue if it touches the newest or oldest card in someone\'s hand',
             '📺',
         ),
-        new CharacterAssignment(
-            'Mood Swings',
+        'Mood Swings': new Character(
             'Clues given must alternate between color and number',
             '👧',
         ),
-        new CharacterAssignment(
-            'Insistent',
+        'Insistent': new Character(
             'Must continue to clue cards until one of them is played or discarded',
             '😣',
         ),
 
         // Clue restriction characters (receiving)
-        new CharacterAssignment(
-            'Vulnerable',
+        'Vulnerable': new Character(
             'Cannot receive a number 2 or number 5 clue',
             '🛡️',
         ),
-        new CharacterAssignment(
-            'Color-Blind',
+        'Color-Blind': new Character(
             'Cannot receive a color clue',
             '👓',
         ),
 
         // Play restriction characters
-        new CharacterAssignment(
-            'Follower',
+        'Follower': new Character(
             'Cannot play a card unless two cards of the same rank have already been played',
             '👁️',
         ),
-        new CharacterAssignment(
-            'Impulsive',
+        'Impulsive': new Character(
             'Must play slot 1 if it has been clued',
             '💉',
         ),
-        new CharacterAssignment(
-            'Indolent',
+        'Indolent': new Character(
             'Cannot play a card if they played on the last round',
             '💺',
         ),
-        new CharacterAssignment(
-            'Hesitant',
+        'Hesitant': new Character(
             'Cannot play cards from slot 1',
             '👴🏻',
         ),
 
         // Discard restriction characters
-        new CharacterAssignment(
-            'Anxious',
+        'Anxious': new Character(
             'Cannot discard if there is an even number of clues available (including 0)',
             '😰',
         ),
-        new CharacterAssignment(
-            'Traumatized',
+        'Traumatized': new Character(
             'Cannot discard if there is an odd number of clues available',
             '😨',
         ),
-        new CharacterAssignment(
-            'Wasteful',
+        'Wasteful': new Character(
             'Cannot discard if there are 2 or more clues available',
             '🗑️',
         ),
 
         // Extra turn characters
-        new CharacterAssignment(
-            'Genius',
+        'Genius': new Character(
             'Must clue both a number and a color (uses two clues)',
             '🧠',
         ),
-        new CharacterAssignment(
-            'Synesthetic',
+        'Synesthetic': new Character(
             'Gives number and color clues at the same time',
             '🎨',
         ),
-        new CharacterAssignment(
-            'Panicky',
+        'Panicky': new Character(
             'When discarding, discards twice if 4 clues or less',
             '😳',
         ),
 
         // Other
-        new CharacterAssignment(
-            'Contrarian',
+        'Contrarian': new Character(
             'Play order inverts after taking a turn + 2 turn end game',
             '🙅',
         ),
-        new CharacterAssignment(
-            'Stubborn',
+        'Stubborn': new Character(
             'Must perform a different action type than the player that came before them',
             '😠',
         ),
         /*
-        new CharacterAssignment(
-            'Forgetful',
+        'Forgetful': new Character(
             'Hand is shuffled after discarding (but before drawing)',
             '🔀',
         ),
         */
-        new CharacterAssignment(
-            'Blind Spot',
+        'Blind Spot': new Character(
             'Cannot see the cards of the player to their left',
             '🚗',
         ),
-        new CharacterAssignment(
-            'Oblivious',
+        'Oblivious': new Character(
             'Cannot see the cards of the player to their right',
             '🚂',
         ),
-    ];
+    };
+
+    // Copy the name of each character inside of the object for later use
+    for (const name of Object.keys(exports.CHARACTERS)) {
+        exports.CHARACTERS[name].name = name;
+    }
 
     // This only freezes one layer deep; to do any better, we should likely
     // involve a library like immutablejs. But probably not worth bothering with.

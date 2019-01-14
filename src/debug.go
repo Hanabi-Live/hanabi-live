@@ -78,12 +78,5 @@ func debug2() {
 	}
 	log.Debug("  discordLastAtHere:", discordLastAtHere)
 
-	// Print out the "Detrimental Character Assignments"
-	log.Debug("---------------------------------------------------------------")
-	log.Debug("Detrimental Character Assignments:")
-	for i, ca := range characterAssignments { // This is a []CharacterAssignment
-		log.Debug("  " + strconv.Itoa(i) + " - " + ca.Name)
-	}
-
 	log.Debug("---------------------------------------------------------------")
 }
