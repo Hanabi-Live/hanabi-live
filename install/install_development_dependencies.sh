@@ -5,14 +5,14 @@ set -x # Enable debugging
 
 # This is the directory that this script lives in
 # From: https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
-DIRNAME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Install VS Code extensions
 code --install-extension ms-vscode.Go # For Golang
 code --install-extension dbaeumer.vscode-eslint # For JavaScript
 
 # Install the Golang dependencies for the project
-cd $DIRNAME/../src
+cd "$DIR/../src"
 go get -u -v ./...
 
 # Install the Golang development dependencies that VSCode uses
@@ -39,15 +39,15 @@ go get -u github.com/sourcegraph/go-langserver
 go get -u github.com/derekparker/delve/cmd/dlv
 
 # Install the Golang linter
-go get -u github.com/golangci/golangci-lint || true # This is expected to give the "no Go files" error
-cd $(go env GOPATH)/src/github.com/golangci/golangci-lint/cmd/golangci-lint
+go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+cd "$(go env GOPATH)/src/github.com/golangci/golangci-lint/cmd/golangci-lint"
 go install -ldflags "-X 'main.version=$(git describe --tags)' -X 'main.commit=$(git rev-parse --short HEAD)' -X 'main.date=$(date)'"
 
 # Install the JavaScript dependencies
 npm install -g browserify
 npm install -g watchify
-# TODO Add initial browserify run here to create "main.bundled.js"
+"$DIR/browserify.sh"
 
 # Install the JavaScript linter
-cd $DIRNAME/../public/js
+cd "$DIR/../public/js"
 npx install-peerdeps --dev eslint-config-airbnb-base

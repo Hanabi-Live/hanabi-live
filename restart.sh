@@ -15,4 +15,4 @@ else
 fi
 
 # Browserify the client code
-browserify "$DIR/public/js/src/main.js" --outfile "$DIR/public/js/main.bundled.js" --verbose --debug
+"$DIR/browserify.sh"
