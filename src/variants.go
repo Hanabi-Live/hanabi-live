@@ -12,9 +12,7 @@ import (
 type Variant struct {
 	Name string
 	ID   int
-	// Each variant must have a unique numerical ID for seed generation purposes
-	// Prior to January 2019, variants were identified as number instead of name
-	// For variants created prior to this date, the ID also doubles as the original numerical identifier
+	// Each variant must have a unique numerical ID for seed generation purposes (and for the database)
 	Suits []Suit
 	Clues []ColorClue
 }

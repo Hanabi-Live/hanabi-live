@@ -8,7 +8,11 @@ import (
 const debugCharacter = "Insistent"
 
 type CharacterAssignment struct {
-	Name        string
+	Name string
+	// Similar to variants, each character must have a unique numerical ID (for the database)
+	// Prior to January 2019, variants were identified as number instead of name
+	// For variants created prior to this date, the ID also doubles as the original numerical identifier
+	ID          int
 	Description string
 	Emoji       string
 	Not2P       bool
@@ -19,73 +23,87 @@ var (
 		// Clue restriction characters
 		CharacterAssignment{
 			Name:        "Fuming",
+			ID:          0,
 			Description: "Can only clue numbers and [random color]",
 			Emoji:       "🌋",
 		},
 		CharacterAssignment{
 			Name:        "Dumbfounded",
+			ID:          1,
 			Description: "Can only clue colors and [random number]",
 			Emoji:       "🤯",
 		},
 		CharacterAssignment{
 			Name:        "Inept",
+			ID:          2,
 			Description: "Cannot give any clues that touch [random color] cards",
 			Emoji:       "️🤔",
 		},
 		CharacterAssignment{
 			Name:        "Awkward",
+			ID:          3,
 			Description: "Cannot give any clues that touch [random number]s",
 			Emoji:       "️😬",
 		},
 		CharacterAssignment{
 			Name:        "Conservative",
+			ID:          4,
 			Description: "Can only give clues that touch a single card",
 			Emoji:       "🕇",
 		},
 		CharacterAssignment{
 			Name:        "Greedy",
+			ID:          5,
 			Description: "Can only give clues that touch 2+ cards",
 			Emoji:       "🤑",
 		},
 		CharacterAssignment{
 			Name:        "Picky",
+			ID:          6,
 			Description: "Can only clue odd numbers or odd colors",
 			Emoji:       "🤢",
 		},
 		CharacterAssignment{
 			Name:        "Spiteful",
+			ID:          7,
 			Description: "Cannot clue the player to their left",
 			Emoji:       "😈",
 			Not2P:       true,
 		},
 		CharacterAssignment{
 			Name:        "Insolent",
+			ID:          8,
 			Description: "Cannot clue the player to their right",
 			Emoji:       "😏",
 			Not2P:       true,
 		},
 		CharacterAssignment{
 			Name:        "Vindictive",
+			ID:          9,
 			Description: "Must clue if they received a clue since their last turn",
 			Emoji:       "🗡️",
 		},
 		CharacterAssignment{
 			Name:        "Miser",
+			ID:          10,
 			Description: "Can only clue if there are 4 or more clues available",
 			Emoji:       "💰",
 		},
 		CharacterAssignment{
 			Name:        "Compulsive",
+			ID:          11,
 			Description: "Can only clue if it touches the newest or oldest card in someone's hand",
 			Emoji:       "📺",
 		},
 		CharacterAssignment{
 			Name:        "Mood Swings",
+			ID:          12,
 			Description: "Clues given must alternate between color and number",
 			Emoji:       "👧",
 		},
 		CharacterAssignment{
 			Name:        "Insistent",
+			ID:          13,
 			Description: "Must continue to clue cards until one of them is played or discarded",
 			Emoji:       "😣",
 		},
@@ -93,11 +111,13 @@ var (
 		// Clue restriction characters (receiving)
 		CharacterAssignment{
 			Name:        "Vulnerable",
+			ID:          14,
 			Description: "Cannot receive a number 2 or number 5 clue",
 			Emoji:       "🛡️",
 		},
 		CharacterAssignment{
 			Name:        "Color-Blind",
+			ID:          15,
 			Description: "Cannot receive a color clue",
 			Emoji:       "️👓",
 		},
@@ -105,21 +125,25 @@ var (
 		// Play restriction characters
 		CharacterAssignment{
 			Name:        "Follower",
+			ID:          67,
 			Description: "Cannot play a card unless two cards of the same rank have already been played",
 			Emoji:       "👁️",
 		},
 		CharacterAssignment{
 			Name:        "Impulsive",
+			ID:          17,
 			Description: "Must play slot 1 if it has been clued",
 			Emoji:       "️💉",
 		},
 		CharacterAssignment{
 			Name:        "Indolent",
+			ID:          18,
 			Description: "Cannot play a card if they played on the last round",
 			Emoji:       "️💺",
 		},
 		CharacterAssignment{
 			Name:        "Hesitant",
+			ID:          19,
 			Description: "Cannot play cards from slot 1",
 			Emoji:       "️️👴🏻",
 		},
@@ -127,16 +151,19 @@ var (
 		// Discard restriction characters
 		CharacterAssignment{
 			Name:        "Anxious",
+			ID:          21,
 			Description: "Cannot discard if there is an even number of clues available (including 0)",
 			Emoji:       "😰",
 		},
 		CharacterAssignment{
 			Name:        "Traumatized",
+			ID:          22,
 			Description: "Cannot discard if there is an odd number of clues available",
 			Emoji:       "😨",
 		},
 		CharacterAssignment{
 			Name:        "Wasteful",
+			ID:          23,
 			Description: "Cannot discard if there are 2 or more clues available",
 			Emoji:       "🗑️",
 		},
@@ -144,16 +171,19 @@ var (
 		// Extra turn characters
 		CharacterAssignment{
 			Name:        "Genius",
+			ID:          24,
 			Description: "Must clue both a number and a color (uses 2 clues)",
 			Emoji:       "🧠",
 		},
 		CharacterAssignment{
 			Name:        "Synesthetic",
+			ID:          25,
 			Description: "Must clue both a number and a color of the same value (uses 1 clue)",
 			Emoji:       "🎨",
 		},
 		CharacterAssignment{
 			Name:        "Panicky",
+			ID:          26,
 			Description: "When discarding, discards twice if 4 clues or less",
 			Emoji:       "😳",
 		},
@@ -161,30 +191,35 @@ var (
 		// Other
 		CharacterAssignment{
 			Name:        "Contrarian",
+			ID:          27,
 			Description: "Play order inverts after taking a turn + 2 turn end game",
 			Emoji:       "🙅",
 			Not2P:       true,
 		},
 		CharacterAssignment{
 			Name:        "Stubborn",
+			ID:          28,
 			Description: "Must perform a different action type than the player that came before them",
 			Emoji:       "😠",
 		},
 		/*
 			CharacterAssignment{
 				Name:        "Forgetful",
+				ID:          31,
 				Description: "Hand is shuffled after discarding (but before drawing)",
 				Emoji:       "🔀",
 			},
 		*/
 		CharacterAssignment{
 			Name:        "Blind Spot",
+			ID:          29,
 			Description: "Cannot see the cards of the player to their left",
 			Emoji:       "🚗",
 			Not2P:       true,
 		},
 		CharacterAssignment{
 			Name:        "Oblivious",
+			ID:          30,
 			Description: "Cannot see the cards of the player to their right",
 			Emoji:       "🚂",
 			Not2P:       true,
@@ -201,7 +236,7 @@ func characterGenerate(g *Game) {
 	for i, p := range g.Players {
 		for {
 			// Get a random character assignment
-			p.CharacterAssignment = rand.Intn(len(characterAssignments))
+			p.CharacterAssignment = characterAssignments[rand.Intn(len(characterAssignments))].ID
 
 			// Check to see if any other players have this assignment already
 			alreadyAssigned := false
