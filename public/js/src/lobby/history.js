@@ -197,26 +197,27 @@ exports.drawDetails = () => {
     // Add all of the games
     for (let i = 0; i < globals.historyDetailList.length; i++) {
         const gameData = globals.historyDetailList[i];
+        console.log(gameData);
 
         const row = $('<tr>');
 
         // Column 1 - Game ID
         let id = `#${gameData.id}`;
-        if (gameData.us) {
+        if (gameData.you) {
             id = `<strong>${id}</strong>`;
         }
         $('<td>').html(id).appendTo(row);
 
         // Column 2 - Score
         let score = `${gameData.score}/${variant.maxScore}`;
-        if (gameData.us) {
+        if (gameData.you) {
             score = `<strong>${score}</strong>`;
         }
         $('<td>').html(score).appendTo(row);
 
         // Column 3 - Time Completed
         let dateTime = dateTimeFormatter.format(new Date(gameData.datetime));
-        if (gameData.us) {
+        if (gameData.you) {
             dateTime = `<strong>${dateTime}</strong>`;
         }
         $('<td>').html(dateTime).appendTo(row);
@@ -231,7 +232,7 @@ exports.drawDetails = () => {
 
         // Column 6 - Other Players
         let otherPlayers = gameData.otherPlayerNames;
-        if (gameData.us) {
+        if (gameData.you) {
             otherPlayers = `<strong>${globals.username}, ${otherPlayers}</strong>`;
         }
         $('<td>').html(otherPlayers).appendTo(row);
