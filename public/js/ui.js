@@ -83,7 +83,8 @@ function HanabiUI(lobby, gameID, game) {
 
     // This below code block deals with automatic resizing
     // Start listening to resize events and draw canvas.
-    window.addEventListener('resize', resizeCanvas, false);
+    // (this commented out because it is currently broken)
+    // window.addEventListener('resize', resizeCanvas, false);
 
     this.stopLocalTimer = function stopLocalTimer() {
         if (ui.timerID !== null) {
