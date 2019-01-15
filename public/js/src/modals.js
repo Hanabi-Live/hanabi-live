@@ -14,12 +14,21 @@ const modals = [
 
 // Initialize the modals
 $(document).ready(() => {
-    $('#password-modal-submit').click(passwordSubmit);
-
+    // All modals
     for (const modal of modals) {
         $(`#${modal}-modal-cancel`).click(closeAll);
     }
 
+    // Password
+    $('#password-modal-password').on('keypress', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            $('#password-modal-submit').click();
+        }
+    });
+    $('#password-modal-submit').click(passwordSubmit);
+
+    // Warning
     $('#warning-modal-button').click(() => {
         $('#warning-modal').fadeOut(globals.fadeTime);
         if ($('#lobby').is(':visible')) {
@@ -30,6 +39,7 @@ $(document).ready(() => {
         }
     });
 
+    // Error
     $('#error-modal-button').click(() => {
         window.location.reload();
     });
