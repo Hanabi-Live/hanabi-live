@@ -64,45 +64,33 @@ func httpMissingScores(c *gin.Context) {
 			stats = v
 		}
 
+		bestScores := []int{
+			stats.BestScoreVariant2,
+			stats.BestScoreVariant3,
+			stats.BestScoreVariant4,
+			stats.BestScoreVariant5,
+			// stats.BestScoreVariant6,
+		}
+
 		if i == 0 {
 			text += "Total max scores:\n"
 			text += "\n"
 		}
 
-		line := ""
-		if i != 0 {
-			line += "Variant " + strconv.Itoa(i) + " - "
-		}
-		line += variant.Name + " - "
-
 		maxScoreForThisVariant := 5 * len(variant.Suits)
-		if stats.BestScoreVariant2 == maxScoreForThisVariant {
-			totalMaxScores++
-		} else {
-			text += line + "2-player\n"
-		}
-		if stats.BestScoreVariant3 == maxScoreForThisVariant {
-			totalMaxScores++
-		} else {
-			text += line + "3-player\n"
-		}
-		if stats.BestScoreVariant4 == maxScoreForThisVariant {
-			totalMaxScores++
-		} else {
-			text += line + "4-player\n"
-		}
-		if stats.BestScoreVariant5 == maxScoreForThisVariant {
-			totalMaxScores++
-		} else {
-			text += line + "5-player\n"
-		}
-		/*
-			if stats.BestScoreVariant6 != maxScoreForThisVariant {
+
+		for j, bestScore := range bestScores {
+			if bestScore == maxScoreForThisVariant {
 				totalMaxScores++
 			} else {
-				text += line + "6-player\n"
+				if i != 0 {
+					text += "Variant " + strconv.Itoa(i) + " - "
+				}
+				text += variant.Name + " - "
+				text += strconv.Itoa(j + 2) + "-player - "
+				text += "Current score: " + strconv.Itoa(bestScore) + " / " + strconv.Itoa(maxScoreForThisVariant) + "\n"
 			}
-		*/
+		}
 	}
 
 	// Edit in the max scores
