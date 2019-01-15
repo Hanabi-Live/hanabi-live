@@ -50,7 +50,7 @@ type CommandData struct {
 	Username             string
 	Discord              bool
 	Server               bool
-	Echo                 bool     // True if this is a server message but it should still go to the main channels
+	Spam                 bool     // True if it should go to the "bot" channel
 	DiscordID            string   // Used when echoing a message from Discord to the lobby
 	DiscordDiscriminator string   // Used when echoing a message from Discord to the lobby
 	Args                 []string // Used to pass chat command arguments to a chat command handler

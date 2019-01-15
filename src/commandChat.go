@@ -12,6 +12,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -110,13 +111,21 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Send the chat message to the Discord "#general" channel if we are replicating a message
 	to := discordLobbyChannel
-	if d.Server && !d.Echo {
-		// Send server messages to a separate channel
+	if d.Server && d.Spam {
+		// Send spammy messages to a separate channel
 		to = discordBotChannel
 	}
 
 	// Don't send Discord messages that we are already replicating
 	if !d.Discord {
+		// Scrub "@here" and "@everyone" from user messages
+		// (the bot has permissions to perform these actions in the Discord server,
+		// so we need to escape them to prevent abuse from lobby users)
+		if !d.Server {
+			rawMsg = strings.Replace(rawMsg, "@everyone", "AtEveryone", -1)
+			rawMsg = strings.Replace(rawMsg, "@here", "AtHere", -1)
+		}
+
 		// We use "rawMsg" instead of "d.Msg" because we want to send the unsanitized message
 		// The bluemonday library is intended for HTML rendering, and Discord can handle any special characters
 		discordSend(to, d.Username, rawMsg)

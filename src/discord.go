@@ -149,11 +149,6 @@ func discordSend(to string, username string, msg string) {
 		return
 	}
 
-	// Scrub "@here" and "@everyone"
-	// (the bot has permissions to perform these actions, so we need to escape them to prevent abuse from lobby users)
-	msg = strings.Replace(msg, "@everyone", "AtEveryone", -1)
-	msg = strings.Replace(msg, "@here", "AtHere", -1)
-
 	// Make a message prefix to identify the user
 	var fullMsg string
 	if username != "" {

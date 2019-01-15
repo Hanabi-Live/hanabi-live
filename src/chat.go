@@ -136,14 +136,12 @@ func chatMakeMessage(msg string, who string, discord bool, server bool, datetime
 }
 
 // chatServerSend is a helper function to give feedback to a user after they type a command
-// It will go to the #general channel instead of the #hanabi-live-bot channel
-// (since we set "Echo" equal to true)
 func chatServerSend(msg string) {
 	d := &CommandData{
 		Msg:    msg,
 		Room:   "lobby",
 		Server: true,
-		Echo:   true,
+		Spam:   false, // So that it goes to the "#general" channel
 	}
 	commandChat(nil, d)
 }
