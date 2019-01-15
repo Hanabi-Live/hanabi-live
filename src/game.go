@@ -31,7 +31,7 @@ type Game struct {
 	Turn            int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
 	TurnsInverted   bool
 	ActivePlayer    int
-	Clues           int
+	Clues           float64 // We don't want this to be an int since there is a variant that gives 0.5 clues per discard
 	Score           int
 	MaxScore        int
 	Progress        int

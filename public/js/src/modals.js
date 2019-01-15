@@ -35,11 +35,11 @@ $(document).ready(() => {
     });
 });
 
-exports.passwordShow = () => {
+exports.passwordShow = (gameID) => {
     $('#lobby').fadeTo(globals.fadeTime, 0.25);
     misc.closeAllTooltips();
 
-    $('#password-modal-id').val(globals.gameID);
+    $('#password-modal-id').val(gameID);
     $('#password-modal').fadeIn(globals.fadeTime);
     $('#password-modal-password').focus();
 };
