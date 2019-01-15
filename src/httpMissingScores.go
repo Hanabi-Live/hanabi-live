@@ -111,7 +111,8 @@ func httpMissingScores(c *gin.Context) {
 
 	// Return the missing scores to the client
 	if _, err := fmt.Fprintf(w, text); err != nil {
-		log.Error("Failed to write out the missing scores text:", err)
+		// We don't want to use "log.Error()" here because client disconnects are relatively normal
+		log.Info("Failed to write out the missing scores text:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

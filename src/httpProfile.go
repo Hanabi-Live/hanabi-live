@@ -138,7 +138,8 @@ func httpProfile(c *gin.Context) {
 
 	// Return the profile to the client
 	if _, err := fmt.Fprintf(w, text); err != nil {
-		log.Error("Failed to write out the profile text:", err)
+		// We don't want to use "log.Error()" here because client disconnects are relatively normal
+		log.Info("Failed to write out the profile text:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
