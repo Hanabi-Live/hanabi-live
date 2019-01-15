@@ -33,5 +33,5 @@ func commandHistoryGet(s *Session, d *CommandData) {
 		history = v
 	}
 	history = historyFillVariants(history)
-	s.NotifyGameHistory(history)
+	s.NotifyGameHistory(history, false)
 }

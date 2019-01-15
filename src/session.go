@@ -260,27 +260,29 @@ func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, 
 	s.Emit("chat", chatMakeMessage(msg, who, discord, server, datetime, room))
 }
 
-// NotifyGameHistory will send a user all of their past games
-func (s *Session) NotifyGameHistory(h []*models.GameHistory) {
+// NotifyGameHistory will send a user a subset of their past games
+func (s *Session) NotifyGameHistory(h []*models.GameHistory, incrementNumGames bool) {
 	type GameHistoryMessage struct {
-		ID               int       `json:"id"`
-		NumPlayers       int       `json:"numPlayers"`
-		NumSimilar       int       `json:"numSimilar"`
-		OtherPlayerNames string    `json:"otherPlayerNames"`
-		Score            int       `json:"score"`
-		DatetimeFinished time.Time `json:"datetime"`
-		Variant          string    `json:"variant"`
+		ID                int       `json:"id"`
+		NumPlayers        int       `json:"numPlayers"`
+		NumSimilar        int       `json:"numSimilar"`
+		OtherPlayerNames  string    `json:"otherPlayerNames"`
+		Score             int       `json:"score"`
+		DatetimeFinished  time.Time `json:"datetime"`
+		Variant           string    `json:"variant"`
+		IncrementNumGames bool      `json:"incrementNumGames"`
 	}
 	m := make([]*GameHistoryMessage, 0)
 	for _, g := range h {
 		m = append(m, &GameHistoryMessage{
-			ID:               g.ID,
-			NumPlayers:       g.NumPlayers,
-			NumSimilar:       g.NumSimilar,
-			OtherPlayerNames: g.OtherPlayerNames,
-			Score:            g.Score,
-			DatetimeFinished: g.DatetimeFinished,
-			Variant:          g.Variant,
+			ID:                g.ID,
+			NumPlayers:        g.NumPlayers,
+			NumSimilar:        g.NumSimilar,
+			OtherPlayerNames:  g.OtherPlayerNames,
+			Score:             g.Score,
+			DatetimeFinished:  g.DatetimeFinished,
+			Variant:           g.Variant,
+			IncrementNumGames: incrementNumGames,
 		})
 	}
 	s.Emit("gameHistory", &m)

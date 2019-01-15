@@ -183,7 +183,7 @@ func (g *Game) End() {
 			Variant:          g.Options.Variant,
 			OtherPlayerNames: otherPlayerNames,
 		})
-		p.Session.NotifyGameHistory(h)
+		p.Session.NotifyGameHistory(h, true)
 	}
 
 	// Send a chat message with the game result and players

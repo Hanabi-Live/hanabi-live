@@ -176,6 +176,11 @@ const initCommands = () => {
         // data will be an array of all of the games that we have previously played
         for (const data of dataArray) {
             globals.historyList[data.id] = data;
+
+            if (data.incrementNumGames) {
+                globals.totalGames += 1;
+                $('#nav-buttons-history-game-count').html(globals.totalGames);
+            }
         }
 
         // The server sent us more games because
