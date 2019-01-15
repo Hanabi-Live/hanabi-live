@@ -361,7 +361,7 @@ func (p *Player) DrawCard(g *Game) {
 	// Check to see if that was the last card drawn
 	if g.DeckIndex >= len(g.Deck) {
 		// Mark the turn upon which the game will end
-		g.EndTurn = g.Turn + len(g.Players)
+		g.EndTurn = g.Turn + len(g.Players) + 1
 		characterAdjustEndTurn(g)
 	}
 }
