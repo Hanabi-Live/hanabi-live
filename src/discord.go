@@ -89,6 +89,7 @@ func discordConnect() {
 		Msg:    msg,
 		Room:   "lobby",
 		Server: true,
+		Spam:   true,
 	}
 	commandChat(nil, d)
 }

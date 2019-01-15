@@ -308,6 +308,7 @@ func announceGameResult(g *Game, databaseID int) {
 		Server: true,
 		Msg:    msg,
 		Room:   "lobby",
+		Spam:   true,
 	}
 	commandChat(nil, d)
 }
