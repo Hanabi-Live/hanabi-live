@@ -33,6 +33,14 @@ func commandGameSpectate(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that they are not already in the spectators object
+	for _, s2 := range g.Spectators {
+		if s2.ID() == s.ID() {
+			s.Warning("You are already spectating game " + strconv.Itoa(gameID) + ".")
+			return
+		}
+	}
+
 	// The logic for joining a shared replay is in a separate function for organizational purposes
 	// (users should see a "Spectate" button for shared replays)
 	if g.SharedReplay {
