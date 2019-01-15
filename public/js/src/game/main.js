@@ -22,10 +22,6 @@ exports.show = () => {
     $('#page-wrapper').hide(); // We can't fade this out as it will overlap
     $('#game').fadeIn(globals.fadeTime);
 
-    // The Alpha custom nav for tiny resolutions
-    $('#navPanel').hide();
-    $('#navButton').hide();
-
     globals.ui = new ui(globals, globals.gameID, exports); // eslint-disable-line
     globals.ui.setBackend(globals.conn);
 };
@@ -38,10 +34,6 @@ exports.hide = () => {
 
     $('#game').hide(); // We can't fade this out as it will overlap
     $('#page-wrapper').fadeIn(globals.fadeTime);
-
-    // The Alpha custom nav for tiny resolutions
-    $('#navPanel').show();
-    $('#navButton').show();
 
     // Make sure there are not any game-related tooltips showing
     misc.closeAllTooltips();

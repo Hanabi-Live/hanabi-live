@@ -86,6 +86,8 @@ exports.set = () => {
 const initCommands = () => {
     globals.conn.on('hello', (data) => {
         globals.username = data.username;
+        globals.totalGames = data.totalGames;
+        $('#nav-buttons-history-game-count').html(globals.totalGames);
         $('#login').hide();
         lobby.login.hide();
     });

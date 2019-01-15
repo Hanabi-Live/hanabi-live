@@ -44,15 +44,29 @@ func websocketConnect(ms *melody.Session) {
 	sessions[s.UserID()] = s
 	log.Info("User \""+s.Username()+"\" connected;", len(sessions), "user(s) now connected.")
 
+	// Get their total number of games played
+	var totalGames int
+	if v, err := db.Games.GetUserNumGames(s.UserID()); err != nil {
+		log.Error("Failed to get the number of games played for user \""+s.Username()+"\":", err)
+		return
+	} else {
+		totalGames = v
+	}
+
 	// They have successfully logged in, so send initial messages to the client
 	type HelloMessage struct {
-		Username string `json:"username"`
+		Username   string `json:"username"`
+		TotalGames int    `json:"totalGames"`
 	}
 	s.Emit("hello", &HelloMessage{
 		// We have to send the username back to the client because they may
 		// have logged in with the wrong case, and the client needs to know
 		// their exact username or various bugs will creep up
 		Username: s.Username(),
+
+		// We also send the total amount of games that they have played
+		// (to be shown in the nav bar on the history page)
+		TotalGames: totalGames,
 	})
 
 	// Send them a random name

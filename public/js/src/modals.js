@@ -10,6 +10,7 @@ const lobby = require('./lobby/main');
 // The list of all of the modals
 const modals = [
     'password',
+    // "warning" and "error" are intentionally omitted, as they are handled separately
 ];
 
 // Initialize the modals

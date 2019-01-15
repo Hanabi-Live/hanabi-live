@@ -19,6 +19,7 @@ const globals = {
     historyDetailList: [], // Set upon clicking the "History Details" button
     historyClicked: false,
     // Used to keep track of whether the user clicked on the "Show More History" button
+    totalGames: 0, // Set upon login
     randomName: '', // Set upon login
 
     // The lobby settings found in the gear sub-menu

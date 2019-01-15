@@ -197,6 +197,19 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 	return games, nil
 }
 
+func (*Games) GetUserNumGames(userID int) (int, error) {
+	var count int
+	if err := db.QueryRow(`
+		SELECT COUNT(id)
+		FROM game_participants
+		WHERE user_id = ?
+	`, userID).Scan(&count); err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 // GetNumSimilar is used in the "endGame" function
 func (*Games) GetNumSimilar(seed string) (int, error) {
 	var count int

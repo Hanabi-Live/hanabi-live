@@ -42,7 +42,7 @@
 			*/
 
 		// Off-Canvas Navigation.
-
+			/*
 			// Navigation Button.
 				$(
 					'<div id="navButton">' +
@@ -75,7 +75,9 @@
 				if (skel.vars.os == 'wp' && skel.vars.osVersion < 10)
 					$('#navButton, #navPanel, #page-wrapper')
 						.css('transition', 'none');
+			*/
 
+		/*
 		// Header.
 		// If the header is using "alt" styling and #banner is present, use scrollwatch
 		// to revert it back to normal styling once the user scrolls past the banner.
@@ -97,6 +99,7 @@
 				});
 
 			}
+		*/
 
 	});
 
