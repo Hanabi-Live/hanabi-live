@@ -16,17 +16,19 @@ $(document).ready(() => {
     // Make the extra time fields appear and disappear depending on whether the checkbox is checked
     $('#create-game-timed').change(() => {
         if ($('#create-game-timed').prop('checked')) {
+            $('#create-game-timed-label').removeClass('col-3');
+            $('#create-game-timed-label').addClass('col-2');
             $('#create-game-timed-option-1').show();
             $('#create-game-timed-option-2').show();
             $('#create-game-timed-option-3').show();
             $('#create-game-timed-option-4').show();
-            $('#create-game-timed-option-padding').hide();
         } else {
+            $('#create-game-timed-label').addClass('col-3');
+            $('#create-game-timed-label').removeClass('col-2');
             $('#create-game-timed-option-1').hide();
             $('#create-game-timed-option-2').hide();
             $('#create-game-timed-option-3').hide();
             $('#create-game-timed-option-4').hide();
-            $('#create-game-timed-option-padding').show();
         }
 
         // Redraw the tooltip so that the new elements will fit better

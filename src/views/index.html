@@ -10,8 +10,11 @@
     <title>Hanabi Live</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- We remove "user-scalable=no" since we are removing the mobile nav and want them to be able to zoom -->
     <meta name="description" content="A place to play Hanabi online, a cooperative card game of logic and reasoning.">
     <meta name="keywords" content="hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning">
+    <link rel="stylesheet" type="text/css" href="public/css/fontawesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="public/css/solid.min.css" />
     <link rel="stylesheet" type="text/css" href="public/css/alpha.css" />
     <link rel="stylesheet" type="text/css" href="public/css/tooltipster.bundle.min.css" />
     <link rel="stylesheet" type="text/css" href="public/css/tooltipster-sideTip-shadow.min.css" />
@@ -27,6 +30,7 @@
         <header id="header">
             <h1>Hanabi Live</h1>
             <nav id="nav">
+                <!-- We use <i> instead of the icon class because it results in a more compact button -->
                 <ul id="nav-buttons-games" class="hidden">
                     <li>
                         <a id="nav-buttons-games-create-game" class="button tooltip" data-tooltip-content="#create-game-tooltip">
@@ -132,54 +136,60 @@
                         a cooperative card game of logic and reasoning
                     </p>
                 </header>
-                <div class="row uniform 100%">
-                    <div class="3u 12u">
+
+                <div class="row">
+                    <div class="col-2">
                     </div>
-                    <div class="6u 12u">
+                    <div class="col-8">
                         <section id="firefox-warning" class="box align-center hidden">
-                            <h3>Warning!</h3>
-                            <p>For some unknown reason, the JavaScript for this website performs terribly in Firefox. Please, for the love of god, use Chrome or Chromium when playing Hanabi on this page.</p>
+                            <h3><i class="fas fa-exclamation-triangle"></i> Warning!</h3>
+                            <p>For some unknown reason, the JavaScript for this website performs terribly in Firefox. Please, for your sanity, use Chrome or Chromium when using Hanabi Live.</p>
                             <button id="firefox-warning-button" class="button align-center">OK</button>
                         </section>
 
                         <section id="sign-in" class="box align-center">
                             <h3>Sign In / Create Account</h3>
-                            <p>To create a new account, simply login with a new username and select a password. Do <strong>NOT</strong> reuse any of your previous passwords!</p>
+                            <p>
+                                To create a new account, simply login with a new username and select a password. <br />
+                                Do <strong>NOT</strong> reuse any of your previous passwords!
+                            </p>
                             <form id="login-form">
-                                <div class="row uniform 100%">
-                                    <div class="2u 12u"></div>
-                                    <div class="1u 12u">
+                                <div class="row">
+                                    <div class="col-2"></div>
+                                    <div class="col-1">
                                         <i class="fas fa-user fa-2x login-icon"></i>
                                     </div>
-                                    <div class="7u 12u(mobilep)">
+                                    <div class="col-7">
                                         <input id="login-username" type="text" placeholder="Username" autofocus />
                                     </div>
                                 </div>
-                                <div class="row uniform 100%">
-                                    <div class="2u 12u"></div>
-                                    <div class="1u 12u padding-top1">
+                                <div class="padding-top1"></div>
+                                <div class="row">
+                                    <div class="col-2"></div>
+                                    <div class="col-1">
                                         <i class="fas fa-key fa-2x login-icon"></i>
                                     </div>
-                                    <div class="7u 12u(mobilep) padding-top1">
+                                    <div class="col-7">
                                         <input id="login-password" type="password" placeholder="Password" />
                                     </div>
                                 </div>
-                                <div class="row uniform 100%">
-                                    <div class="3u 12u padding-top1p5">
-                                    </div>
-                                    <div class="6u 12u padding-top1p5">
+                                <div class="padding-top1p5"></div>
+                                <div class="row">
+                                    <div class="col-3"></div>
+                                    <div class="col-3">
                                         <ul class="actions">
                                             <li>
                                                 <a id="login-button" class="button fit icon fa-sign-in">Sign In</a>
                                             </li>
-                                            <li>
-                                                <img id="login-ajax" class="hidden" src="public/img/ajax.gif">
-                                            </li>
                                         </ul>
                                     </div>
+                                    <div class="col-1">
+                                        <img id="login-ajax" class="hidden" src="public/img/ajax.gif">
+                                    </div>
                                 </div>
-                                <div class="row uniform 100%">
-                                    <div class="12u padding-top1">
+                                <div class="padding-top1"></div>
+                                <div class="row">
+                                    <div class="col-12">
                                         <p id="login-alert" class="hidden"></p>
                                     </div>
                                 </div>
@@ -187,8 +197,8 @@
                         </section>
                     </div>
                 </div>
-                <div class="row uniform 100%">
-                    <div class="12u 12u align-center">
+                <div class="row">
+                    <div class="col-12 align-center">
                         <a href="https://discord.gg/FADvkJp">
                             <img id="title-discord" src="public/img/discord.png" />
                         </a>
@@ -199,8 +209,8 @@
 
         <!-- Lobby -->
         <div id="lobby" class="container hidden">
-            <div id="lobby-top-half" class="row 100% lobby-half">
-                <div class="12u">
+            <div id="lobby-top-half" class="row lobby-half">
+                <div class="col-12">
                     <!-- The "games" table (all current games) -->
                     <section id="lobby-games" class="box align-center-v">
                         <h3 id="lobby-games-no">No current games.</h3>
@@ -226,8 +236,8 @@
 
                     <!-- The "pregame" table -->
                     <section id="lobby-pregame" class="box hidden">
-                        <div class="row 100%">
-                            <div id="lobby-pregame-left" class="2u padding-right1">
+                        <div class="row">
+                            <div id="lobby-pregame-left" class="col-2 padding-right1">
                                 <h4 class="padding0p5">
                                     <strong>Game name:</strong><br />
                                     <span id="lobby-pregame-name"></span>
@@ -241,21 +251,21 @@
                                     <ul id="lobby-pregame-options"></ul>
                                 </h4>
                             </div>
-                            <div id="lobby-pregame-player-1" class="2u lobby-pregame-player"></div>
-                            <div id="lobby-pregame-player-2" class="2u lobby-pregame-player"></div>
-                            <div id="lobby-pregame-player-3" class="2u lobby-pregame-player"></div>
-                            <div id="lobby-pregame-player-4" class="2u lobby-pregame-player"></div>
-                            <div id="lobby-pregame-player-5" class="2u lobby-pregame-player"></div>
+                            <div id="lobby-pregame-player-1" class="col-2 lobby-pregame-player"></div>
+                            <div id="lobby-pregame-player-2" class="col-2 lobby-pregame-player"></div>
+                            <div id="lobby-pregame-player-3" class="col-2 lobby-pregame-player"></div>
+                            <div id="lobby-pregame-player-4" class="col-2 lobby-pregame-player"></div>
+                            <div id="lobby-pregame-player-5" class="col-2 lobby-pregame-player"></div>
                         </div>
                     </section>
                 </div>
             </div>
 
             <!-- Spacing -->
-            <div id="lobby-separator" class="row 100%"></div>
+            <div id="lobby-separator" class="row"></div>
 
-            <div id="lobby-bottom-half" class="row 100% lobby-half">
-                <div class="8u">
+            <div id="lobby-bottom-half" class="row lobby-half">
+                <div class="col-8">
                     <!-- The chat for the entire lobby -->
                     <section id="lobby-chat" class="box">
                         <div id="lobby-chat-text"></div>
@@ -274,7 +284,7 @@
                 </div>
 
                 <!-- The "Online Users" section -->
-                <div class="4u lobby-users-box-container">
+                <div class="col-4 lobby-users-box-container">
                     <section class="box">
                         <h3 id="lobby-users-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
                         <div id="lobby-users-container">
@@ -293,8 +303,8 @@
             </div>
 
             <!-- History -->
-            <div class="row 100% lobby-full">
-                <div class="12u">
+            <div class="row lobby-full">
+                <div class="col-12">
                     <!-- The history table (all played games) -->
                     <section id="lobby-history" class="box">
                         <h3 id="lobby-history-no" class="align-center">No game history. Play some games!</h3>
@@ -353,142 +363,138 @@
         <div id="create-game-tooltip">
             <h2 id="create-game-tooltip-title">Create a New Game</h2>
 
-            <div class="row uniform 100%">
-                <div class="2u 12u input-text align-right">
+            <div class="row">
+                <div class="col-3 input-text align-right">
+                    <i class="fas fa-signature nav-icon"></i>
                     Name
                 </div>
-                <div class="9u 12u">
+                <div class="col-8">
                     <input id="create-game-name" type="text" placeholder="Name" />
                 </div>
             </div>
+            <br />
 
-            <div class="row uniform 100%">
-                <div class="2u 12u input-text align-right">
+            <div class="row">
+                <div class="col-3 input-text align-right">
+                    <i class="fas fa-rainbow nav-icon"></i>
                     Variant
                 </div>
-                <div class="8u 12u">
+                <div class="col-7">
                     <div class="select-wrapper">
                         <select id="create-game-variant"></select>
                     </div>
                 </div>
-                <div class="1u 12u input-text align-left">
-                    <span style="color: blue;">
-                        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md" target="_blank">
-                            <i class="fas fa-question-circle"></i>
-                        </a>
-                    </span>
+                <div class="col-1 input-text">
+                    <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md" target="_blank">
+                        <i class="fas fa-question-circle"></i>
+                    </a>
                 </div>
             </div>
+            <br />
 
-            <div class="row uniform 100%">
-                <div id="create-game-timed-label" class="2u 12u padding-top1 align-right">
+            <div class="row">
+                <div id="create-game-timed-label" class="col-3 align-right">
+                    <i class="fas fa-clock nav-icon"></i>
                     Timed
                 </div>
-                <div id="create-game-timed-container" class="1u 12u padding-top1">
+                <div id="create-game-timed-container" class="col-1">
                     <input id="create-game-timed" type="checkbox" />
                     <label for="create-game-timed"></label>
                 </div>
-                <div id="create-game-timed-option-1" class="2u 12u input-text2 align-right">
+                <div id="create-game-timed-option-1" class="col-2 input-text2 align-right">
                     Base Time<br />
                     (in minutes)
                 </div>
-                <div id="create-game-timed-option-2" class="2u 12u">
+                <div id="create-game-timed-option-2" class="col-2">
                     <input id="base-time-minutes" type="text" placeholder="Base Time">
                 </div>
-                <div id="create-game-timed-option-3" class="2u 12u input-text2 align-right">
+                <div id="create-game-timed-option-3" class="col-2 input-text2 align-right">
                     Time per Turn<br />
                     (in seconds)
                 </div>
-                <div id="create-game-timed-option-4" class="2u 12u">
+                <div id="create-game-timed-option-4" class="col-2">
                     <input id="time-per-turn-seconds" type="text" placeholder="Time per Turn">
                 </div>
             </div>
+            <br /><br />
 
-            <div id="create-game-timed-option-padding" class="margin4"></div>
-
-            <div class="row uniform 100%">
-                <div class="6u 12u align-right">
+            <div class="row">
+                <div class="col-6 create-game-text-label">
                     Allow Bottom-Deck Blind Plays
                 </div>
-                <div class="2u 12u padding-top1">
+                <div class="col-2">
                     <input id="create-game-deck-plays" type="checkbox" />
                     <label for="create-game-deck-plays"></label>
                 </div>
-                <div class="1u 12u input-text align-left">
-                    <span style="color: blue;">
-                        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays" target="_blank">
-                            <i class="fas fa-question-circle create-game-icon-up"></i>
-                        </a>
-                    </span>
+                <div class="col-1 input-text">
+                    <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays" target="_blank">
+                        <i class="fas fa-question-circle create-game-icon-up"></i>
+                    </a>
                 </div>
             </div>
+            <br />
 
-            <div class="row uniform 100%">
-                <div class="6u 12u align-right">
+            <div class="row">
+                <div class="col-6 create-game-text-label">
                     Allow Empty Clues
                 </div>
-                <div class="2u 12u padding-top1">
+                <div class="col-2">
                     <input id="create-game-empty-clues" type="checkbox" />
                     <label for="create-game-empty-clues"></label>
                 </div>
-                <div class="1u 12u input-text align-left">
-                    <span style="color: blue;">
-                        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#empty-clues" target="_blank">
-                            <i class="fas fa-question-circle create-game-icon-up"></i>
-                        </a>
-                    </span>
+                <div class="col-1 input-text">
+                    <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#empty-clues" target="_blank">
+                        <i class="fas fa-question-circle create-game-icon-up"></i>
+                    </a>
                 </div>
             </div>
+            <br />
 
-            <div class="row uniform 100%">
-                <div class="6u 12u align-right">
+            <div class="row">
+                <div class="col-6 align-right">
                     Detrimental Character Assignments
                 </div>
-                <div class="2u 12u padding-top1">
+                <div class="col-2">
                     <input id="create-game-character-assignments" type="checkbox" />
                     <label for="create-game-character-assignments"></label>
                 </div>
-                <div class="1u 12u input-text align-left">
-                    <span style="color: blue;">
-                        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/CHARACTERS.md" target="_blank">
-                            <i class="fas fa-question-circle create-game-icon-up"></i>
-                        </a>
-                    </span>
+                <div class="col-1 input-text">
+                    <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/CHARACTERS.md" target="_blank">
+                        <i class="fas fa-question-circle create-game-icon-up"></i>
+                    </a>
                 </div>
             </div>
+            <br />
 
-            <div class="row uniform 100%">
-                <div class="2u 12u input-text align-right">
+            <div class="row">
+                <div class="col-3 input-text align-right">
+                    <i class="fas fa-key nav-icon"></i>
                     Password
                 </div>
-                <div class="9u 12u">
+                <div class="col-8">
                     <input id="create-game-password" type="text" placeholder="Password (optional)" />
                 </div>
             </div>
+            <br />
 
-            <div class="row uniform 100%">
-                <div class="6u 12u align-right">
-                    Alert people on the waiting list, if any
+            <div class="row">
+                <div class="col-6 create-game-text-label">
+                    <i class="fas fa-bed nav-icon"></i>
+                    Alert people on the waiting list
                 </div>
-                <div class="2u 12u padding-top1">
+                <div class="col-2">
                     <input id="create-game-alert-waiters" type="checkbox" />
                     <label for="create-game-alert-waiters"></label>
                 </div>
-                <div class="1u 12u input-text align-left">
-                    <span style="color: blue;">
-                        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#discord-integration" target="_blank">
-                            <i class="fas fa-question-circle create-game-icon-up"></i>
-                        </a>
-                    </span>
+                <div class="col-1 input-text">
+                    <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#discord-integration" target="_blank">
+                        <i class="fas fa-question-circle create-game-icon-up"></i>
+                    </a>
                 </div>
             </div>
+            <br />
 
-            <div class="row uniform 100%">
-                <div class="2u 12u"></div>
-                <div class="6u 12u">
-                </div>
-            </div>
-
+            <br />
             <button id="create-game-submit" class="button fit" type="submit">
                 <i class="fas fa-check"></i>&nbsp;
                 Create
@@ -527,7 +533,6 @@
                     </form>
                     Keldon was the original creator of the well-designed JavaScript client.
                 </li>
-                <br />
             </ul>
         </div>
 
@@ -639,7 +644,7 @@
                 </span>
             </label>
 
-            <br /><br /><br />
+            <br /><br />
         </div>
 
         <div id="game-chat">
@@ -706,8 +711,6 @@
     <!-- Alpha (the HTML5 template) -->
     <script type="text/javascript" src="public/js/lib/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="public/js/lib/skel.min.js"></script>
-    <script type="text/javascript" src="public/js/lib/fa-solid.min.js"></script>
-    <script type="text/javascript" src="public/js/lib/fontawesome.min.js"></script>
     <script type="text/javascript" src="public/js/lib/alpha.js"></script>
 
     <!-- Tooltipster (a tooltip library) -->
@@ -722,7 +725,8 @@
 
     <!-- Hanabi Live code -->
     <script type="text/javascript" src="public/js/constants.js"></script>
-    <script type="text/javascript" src="public/js/main.bundled.js"></script> <!-- Lobby code is now bundled with Browserify -->
+    <script type="text/javascript" src="public/js/main.bundled.js"></script>
+    <!-- Lobby code is now bundled with Browserify -->
 </body>
 
 </html>

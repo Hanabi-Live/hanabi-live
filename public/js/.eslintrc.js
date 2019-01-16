@@ -53,12 +53,8 @@ module.exports = {
     },
 
     'globals': {
-        'HanabiUI': true,
-        'GameUI': true,
         'constants': true,
-        'golem': true,
         'Kinetic': true,
         'hex_sha256': true,
-        'TimerDisplay': true,
     },
 };
