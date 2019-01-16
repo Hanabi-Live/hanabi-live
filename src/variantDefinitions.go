@@ -277,6 +277,26 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
+		// Clue Starved
+		Variant{
+			Name:  "Clue Starved (6 Suits)",
+			ID:    51,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
+		},
+		Variant{
+			Name:  "Clue Starved (5 Suits)",
+			ID:    52,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Clue Starved (4 Suits)",
+			ID:    53,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+
 		// Up or Down
 		Variant{
 			Name:  "Up or Down (6 Suits)",
