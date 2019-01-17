@@ -1,0 +1,3 @@
+# We don't need to include combined or minified CSS
+/main.css
+/main.min.css

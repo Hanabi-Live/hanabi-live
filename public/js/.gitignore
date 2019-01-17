@@ -1,8 +1,9 @@
 # NPM modules are not typically included in a repository
 node_modules
 
-# This is the Browserified JavaScript file
+# We don't need to include the transpiled/minified JS
 /main.bundled.js
-
-# This is the temporary Watchify JavaScript file
 /main.bundled.js~
+/main.js
+/main.min.js
+/main.min.js.map

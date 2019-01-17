@@ -14,5 +14,5 @@ else
 	echo "hanabi-live - Go compilation failed!"
 fi
 
-# Browserify the client code
-"$DIR/browserify.sh"
+# Rebuild the client code
+python "$DIR/build_client.py"

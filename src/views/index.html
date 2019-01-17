@@ -13,12 +13,8 @@
     <!-- We remove "user-scalable=no" since we are removing the mobile nav and want them to be able to zoom -->
     <meta name="description" content="A place to play Hanabi online, a cooperative card game of logic and reasoning.">
     <meta name="keywords" content="hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning">
-    <link rel="stylesheet" type="text/css" href="public/css/fontawesome.min.css" />
-    <link rel="stylesheet" type="text/css" href="public/css/solid.min.css" />
-    <link rel="stylesheet" type="text/css" href="public/css/alpha.css" />
-    <link rel="stylesheet" type="text/css" href="public/css/tooltipster.bundle.min.css" />
-    <link rel="stylesheet" type="text/css" href="public/css/tooltipster-sideTip-shadow.min.css" />
-    <link rel="stylesheet" type="text/css" href="public/css/hanabi.css" />
+    <link rel="stylesheet" type="text/css" href="public/css/main.min.css" />
+    <!-- All of the CSS is bundled into one file -->
     <link rel="icon" href="public/img/favicon.png" type="image/x-icon">
 </head>
 
@@ -708,25 +704,9 @@
         </section>
     </div>
 
-    <!-- Alpha (the HTML5 template) -->
-    <script type="text/javascript" src="public/js/lib/jquery-3.2.1.min.js"></script>
-    <script type="text/javascript" src="public/js/lib/skel.min.js"></script>
-    <script type="text/javascript" src="public/js/lib/alpha.js"></script>
-
-    <!-- Tooltipster (a tooltip library) -->
-    <script type="text/javascript" src="public/js/lib/tooltipster.bundle.min.js"></script>
-    <script type="text/javascript" src="public/js/lib/tooltipster-scrollableTip.min.js"></script>
-
-    <!-- KineticJS (a graphics library) -->
-    <script type="text/javascript" src="public/js/lib/kinetic-v5.1.1.min.js"></script>
-
-    <!-- SHA256 (for password hashing) -->
-    <script type="text/javascript" src="public/js/lib/sha256.min.js"></script>
-
     <!-- Hanabi Live code -->
-    <script type="text/javascript" src="public/js/constants.js"></script>
-    <script type="text/javascript" src="public/js/main.bundled.js"></script>
-    <!-- Lobby code is now bundled with Browserify -->
+    <script type="text/javascript" src="public/js/main.min.js"></script>
+    <!-- All of the JavaScript is bundled into one file -->
 </body>
 
 </html>
