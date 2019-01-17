@@ -15,4 +15,4 @@ else
 fi
 
 # Rebuild the client code
-python "$DIR/build_client.py"
+bash "$DIR/build_client.sh"
