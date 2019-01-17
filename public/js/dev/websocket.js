@@ -3,7 +3,7 @@
     The client uses a slightly modified version of the Golem WebSocket library
 */
 
-const golem = require('../lib/golem2');
+const golem = require('../lib/golem');
 const globals = require('./globals');
 const misc = require('./misc');
 const modals = require('./modals');
@@ -36,12 +36,12 @@ exports.set = () => {
         Define event handlers
     */
 
-    globals.conn.on('open', (event) => {
+    globals.conn.on('open', () => {
         // We will show the lobby upon recieving the "hello" command from the server
         console.log('WebSocket connection established.');
     });
 
-    globals.conn.on('close', (event) => {
+    globals.conn.on('close', () => {
         console.log('WebSocket connection disconnected / closed.');
         modals.errorShow('Disconnected from the server. Either your Internet hiccuped or the server restarted.');
     });
@@ -69,7 +69,7 @@ exports.set = () => {
     };
 
     // Send any client errors to the server for tracking purposes
-    window.onerror = (message, url, lineno, colno, error) => {
+    window.onerror = (message, url, lineno, colno) => {
         // We don't want to report errors if someone is doing local development
         if (window.location.hostname === 'localhost') {
             return;
@@ -148,7 +148,7 @@ const initCommands = () => {
         globals.gameID = data.gameID;
     });
 
-    globals.conn.on('left', (data) => {
+    globals.conn.on('left', () => {
         lobby.drawTables();
 
         $('#lobby-game').hide();
