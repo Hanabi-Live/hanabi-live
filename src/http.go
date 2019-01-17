@@ -5,11 +5,17 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
+	"text/template"
 
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 )
+
+type TemplateData struct {
+	Title string
+}
 
 const (
 	sessionName = "hanabi.sid"
@@ -87,14 +93,14 @@ func httpInit() {
 	httpRouter.GET("/ws", httpWS)
 
 	// Path handlers (for the website)
-	httpRouter.GET("/", httpHome)
+	httpRouter.GET("/", httpMain)
 	httpRouter.GET("/profile", httpProfile)
 	httpRouter.GET("/profile/:player", httpProfile)
 	httpRouter.GET("/missing-scores", httpMissingScores)
 	httpRouter.GET("/missing-scores/:player", httpMissingScores)
 
 	httpRouter.GET("/videos", httpVideos)
-	httpRouter.GET("/dev", httpHomeDev)
+	httpRouter.GET("/dev", httpMainDev)
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
 
 	if useTLS {
@@ -139,5 +145,53 @@ func httpInit() {
 			log.Fatal("http.ListenAndServe failed:", err)
 		}
 		log.Fatal("http.ListenAndServe ended prematurely.")
+	}
+}
+
+// httpServeTemplate combines a standard HTML header with the body for a specific page
+// (we want the same HTML header for all pages)
+func httpServeTemplate(w http.ResponseWriter, templateName string, data interface{}) {
+	viewsPath := path.Join(projectPath, "src", "views")
+	layoutPath := path.Join(viewsPath, "layout.tmpl")
+	contentPath := path.Join(viewsPath, templateName+".tmpl")
+
+	// Ensure that the layout file exists
+	if _, err := os.Stat(layoutPath); os.IsNotExist(err) {
+		log.Error("The layout template does not exist.")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	// Return a 404 if the template doesn't exist or it is a directory
+	if info, err := os.Stat(layoutPath); os.IsNotExist(err) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	} else if info.IsDir() {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// Create the template
+	tmpl, err := template.ParseFiles(layoutPath, contentPath)
+	if err != nil {
+		log.Error("Failed to create the template:", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	// Execute the template and send it to the user
+	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {
+		if strings.HasSuffix(err.Error(), ": write: broken pipe") ||
+			strings.HasSuffix(err.Error(), ": client disconnected") ||
+			strings.HasSuffix(err.Error(), ": http2: stream closed") ||
+			strings.HasSuffix(err.Error(), ": write: connection timed out") {
+
+			// Some errors are common and expected
+			// (e.g. the user presses the "Stop" button while the template is executing)
+			log.Info("Ordinary error when executing the template: " + err.Error())
+		} else {
+			log.Error("Failed to execute the template: " + err.Error())
+		}
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 }

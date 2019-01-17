@@ -1,0 +1,27 @@
+{{define "layout"}}
+<!DOCTYPE HTML>
+<!--
+    Alpha by HTML5 UP
+    html5up.net | @ajlkn
+    Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+
+<head>
+    <title>Hanabi Live{{if ne .Title "Main"}} - {{.Title}}{{end}}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- We remove "user-scalable=no" since we are removing the mobile nav and want them to be able to zoom -->
+    <meta name="description" content="A place to play Hanabi online, a cooperative card game of logic and reasoning.">
+    <meta name="keywords" content="hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning">
+    <link rel="stylesheet" type="text/css" href="public/css/main.min.css" />
+    <!-- All of the CSS is bundled into one file -->
+    <link rel="icon" href="public/img/favicon.png" type="image/x-icon">
+</head>
+
+<body>
+    {{ template "content" .}}
+</body>
+
+</html>
+{{end}}

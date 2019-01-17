@@ -7,16 +7,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func httpHome(c *gin.Context) {
-	// Local variables
-	r := c.Request
+func httpMain(c *gin.Context) {
 	w := c.Writer
-
-	index := path.Join(projectPath, "src", "views", "index.html")
-	http.ServeFile(w, r, index)
+	data := TemplateData{
+		Title: "Main",
+	}
+	httpServeTemplate(w, "main", data)
 }
 
-func httpHomeDev(c *gin.Context) {
+func httpMainDev(c *gin.Context) {
 	// Local variables
 	r := c.Request
 	w := c.Writer
