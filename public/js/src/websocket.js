@@ -4,7 +4,7 @@
 */
 
 // Imports
-const golem = require('../lib/golem2');
+const golem = require('../lib/golem');
 const globals = require('./globals');
 const modals = require('./modals');
 const chat = require('./chat');
