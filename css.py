@@ -26,10 +26,11 @@ for file_name in CSS_FILES:
         css += f.read()
 
 # Write it out to a temporary file
-output_path = os.path.join(CSS_DIR, 'main.css')
-with open(output_path, 'w') as f:
+CSS_CONCATENATED = os.path.join(CSS_DIR, 'main.css')
+with open(CSS_CONCATENATED, 'w') as f:
     f.write(css)
 
 # Optimize and minify CSS with CSSO
-output_path2 = os.path.join(CSS_DIR, 'main.min.css')
-os.system('csso --input "' + output_path + '" --output "' + output_path2 + '"')
+os.chdir(CSS_DIR)
+CSS_MINIFIED = os.path.join(CSS_DIR, 'main.min.css')
+os.system('npx csso --input "' + CSS_CONCATENATED + '" --output "' + CSS_MINIFIED + '"')
