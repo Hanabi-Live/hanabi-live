@@ -44,7 +44,7 @@ for file_name in JS_FILES:
 
 # Write it out to a temporary file
 JS_CONCATENATED = os.path.join(JS_DIR, 'main.js')
-with open(JS_CONCATENATED, 'w') as f:
+with open(JS_CONCATENATED, 'w', encoding='utf8') as f:
     f.write(js)
 
 # Minify JS

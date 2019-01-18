@@ -27,7 +27,7 @@ for file_name in CSS_FILES:
 
 # Write it out to a temporary file
 CSS_CONCATENATED = os.path.join(CSS_DIR, 'main.css')
-with open(CSS_CONCATENATED, 'w') as f:
+with open(CSS_CONCATENATED, 'w', encoding='utf8') as f:
     f.write(css)
 
 # Optimize and minify CSS with CSSO
