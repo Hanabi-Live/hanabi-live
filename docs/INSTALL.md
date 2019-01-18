@@ -9,8 +9,8 @@ Note that these steps require **an elevated (administrator) command-shell**.
 
 * Install [Chocolatey](https://chocolatey.org/):
   * `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
-* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
-  * `choco install git golang mariadb nodejs vscode -y`
+* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), [Python 3](https://www.python.org/), and [Visual Studio Code](https://code.visualstudio.com/):
+  * `choco install git golang mariadb nodejs python vscode -y`
 * Configure Git:
   * `refreshenv`
   * `git config --global user.name "Your_Username"`
@@ -117,6 +117,10 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment wi
   * `cd src`
   * `go get -u -v ./...`
   * `cd ..`
+* Download and install all of the JavaScript dependencies:
+  * `cd public/js`
+  * `npm install`
+  * `cd ../..`
 * Set up environment variables:
   * `cp .env_template .env`
   * `nano .env`

@@ -44,10 +44,11 @@ cd "$(go env GOPATH)/src/github.com/golangci/golangci-lint/cmd/golangci-lint"
 go install -ldflags "-X 'main.version=$(git describe --tags)' -X 'main.commit=$(git rev-parse --short HEAD)' -X 'main.date=$(date)'"
 
 # Install the JavaScript dependencies
-npm install -g browserify
-npm install -g watchify
-"$DIR/browserify.sh"
+cd "$DIR/../public/js"
+npm install
 
 # Install the JavaScript linter
-cd "$DIR/../public/js"
 npx install-peerdeps --dev eslint-config-airbnb-base
+
+# Build the client code
+"$DIR/../build_client.sh"

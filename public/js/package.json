@@ -13,7 +13,10 @@
   },
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "google-closure-compiler": "^20181210.0.0"
+    "browserify": "^16.2.3",
+    "csso-cli": "^2.0.2",
+    "google-closure-compiler": "^20181210.0.0",
+    "watchify": "^3.11.0"
   },
   "scripts": {
     "build": "browserify dev/main.js > main.bundled.js"
