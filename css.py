@@ -31,6 +31,8 @@ with open(CSS_CONCATENATED, 'w', encoding='utf8') as f:
     f.write(css)
 
 # Optimize and minify CSS with CSSO
-os.chdir(CSS_DIR)
+# (which is installed in the JavaScript directory)
+JS_DIR = os.path.join(DIR, 'public', 'js')
+os.chdir(JS_DIR)
 CSS_MINIFIED = os.path.join(CSS_DIR, 'main.min.css')
 os.system('npx csso --input "' + CSS_CONCATENATED + '" --output "' + CSS_MINIFIED + '"')
