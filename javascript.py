@@ -35,11 +35,11 @@ JS_LIB_DIR = os.path.join(JS_DIR, 'lib')
 js = ''
 for file_name in JS_LIB_FILES:
     file_path = os.path.join(JS_LIB_DIR, file_name)
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf8') as f:
         js += f.read()
 for file_name in JS_FILES:
     file_path = os.path.join(JS_DIR, file_name)
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf8') as f:
         js += f.read()
 
 # Write it out to a temporary file

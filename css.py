@@ -22,7 +22,7 @@ CSS_DIR = os.path.join(DIR, 'public', 'css')
 css = ''
 for file_name in CSS_FILES:
     file_path = os.path.join(CSS_DIR, file_name)
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf8') as f:
         css += f.read()
 
 # Write it out to a temporary file
