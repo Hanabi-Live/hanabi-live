@@ -1,0 +1,10 @@
+{{define "informational"}}
+<h2 class="align-center">List of Flowcharts</h2>
+
+<h3>Early Game</h3>
+<ul>
+    {{range .Flowcharts}}
+        <li><a href="/{{.Name}}">{{.Description}}</a></li>
+    {{end}}
+</ul>
+{{end}}

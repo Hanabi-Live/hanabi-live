@@ -14,7 +14,8 @@ import (
 )
 
 type TemplateData struct {
-	Title string
+	Title  string
+	Header bool
 }
 
 const (
@@ -100,6 +101,8 @@ func httpInit() {
 	httpRouter.GET("/missing-scores/:player", httpMissingScores)
 
 	httpRouter.GET("/videos", httpVideos)
+	httpRouter.GET("/flowcharts", httpFlowcharts)
+	httpRouter.GET("/flowcharts/early5clue", httpEarly5Clue)
 	httpRouter.GET("/dev", httpMainDev)
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
 
@@ -150,10 +153,13 @@ func httpInit() {
 
 // httpServeTemplate combines a standard HTML header with the body for a specific page
 // (we want the same HTML header for all pages)
-func httpServeTemplate(w http.ResponseWriter, templateName string, data interface{}) {
+func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...string) {
 	viewsPath := path.Join(projectPath, "src", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
-	contentPath := path.Join(viewsPath, templateName+".tmpl")
+	//turns the slice of file names into a slice of full paths
+	for i := 0; i < len(templateName); i++ {
+		templateName[i] = path.Join(viewsPath, templateName[i]+".tmpl")
+	}
 
 	// Ensure that the layout file exists
 	if _, err := os.Stat(layoutPath); os.IsNotExist(err) {
@@ -171,8 +177,10 @@ func httpServeTemplate(w http.ResponseWriter, templateName string, data interfac
 		return
 	}
 
+	//append the main layout to our list of playouts
+	templateName = append(templateName, layoutPath)
 	// Create the template
-	tmpl, err := template.ParseFiles(layoutPath, contentPath)
+	tmpl, err := template.ParseFiles(templateName...)
 	if err != nil {
 		log.Error("Failed to create the template:", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

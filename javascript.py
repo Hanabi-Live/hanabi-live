@@ -27,16 +27,16 @@ JS_DIR = os.path.join(DIR, 'public', 'js')
 js = ''
 for file_name in JS_LIB_FILES:
     file_path = os.path.join(JS_LIB_DIR, file_name)
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         js += f.read()
 for file_name in JS_FILES:
     file_path = os.path.join(JS_DIR, file_name)
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         js += f.read()
 
 # Write it out to a temporary file
 output_path = os.path.join(JS_DIR, 'main.js')
-with open(output_path, 'w') as f:
+with open(output_path, 'w', encoding='utf-8') as f:
     f.write(js)
 
 # Minify JS
