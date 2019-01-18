@@ -25,7 +25,8 @@ Note that these steps require **an elevated (administrator) command-shell**.
   * `git clone https://github.com/Zamiell/hanabi-live.git` <br />
   (or clone a fork, if you are doing development work)
   * `cd hanabi-live`
-* Install the project's development dependencies:
+* Install the project's dependencies:
+  * `install\install_dependencies.sh`
   * `install\install_development_dependencies.sh`
 * Delete the anonymous user, delete the test database, create the Hanabi database, and create the Hanabi user:
   * `mysql -u root`
@@ -97,37 +98,28 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment wi
   * `mkdir "$HOME/go"`
   * `export GOPATH=$HOME/go && echo 'export GOPATH=$HOME/go' >> ~/.profile`
   * `export PATH=$PATH:$GOPATH/bin && echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.profile`
-* Install [MariaDB](https://mariadb.org/) and set up a user:
+* Install [MariaDB](https://mariadb.org/):
   * `sudo apt install mariadb-server -y`
   * `sudo mysql_secure_installation`
     * Follow the prompts.
-  * `sudo mysql -u root -p`
-    * `CREATE DATABASE hanabi;`
-    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';` <br />
-    (change the password to something else)
-    * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
-    * `FLUSH PRIVILEGES;`
 * Clone the server:
   * `mkdir -p "$GOPATH/src/github.com/Zamiell"`
   * `cd "$GOPATH/src/github.com/Zamiell/"`
   * `git clone https://github.com/Zamiell/hanabi-live.git` <br />
   (or clone a fork, if you are doing development work)
   * `cd hanabi-live`
-* Download and install all of the Go dependencies:
-  * `cd src`
-  * `go get -u -v ./...`
-  * `cd ..`
-* Download and install all of the JavaScript dependencies:
-  * `cd public/js`
-  * `npm install`
-  * `cd ../..`
-* Build the client code:
-  * `./build_client.sh`
+* Install the project dependencies and prepare for the first run:
+  * `./install/install_dependencies`
 * Set up environment variables:
-  * `cp .env_template .env`
   * `nano .env`
     * Fill in the values accordingly.
-* Import the database schema:
+* Set up a database user and import the database schema:
+  * `sudo mysql -u root -p`
+    * `CREATE DATABASE hanabi;`
+    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';` <br />
+    (change the password to something else)
+    * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
+    * `FLUSH PRIVILEGES;`
   * `mysql -uhanabiuser -p < install/database_schema.sql`
 * Set up automated database backups:
   * `crontab -e`
@@ -149,7 +141,7 @@ Run
   * `sudo` might be necessary to run this command because the server listens on port 80 and/or 443.
   * If you are on Windows, run this command in Git Bash, as the `*` file substitution will not work in a normal command prompt.
 * If you change any of the Go code, then you will restart the server for the changes to take effect.
-* If you change any of the JavaScript or CSS, then you will need to rerun `build_client.sh` in order to re-bundle it into `main.min.js` and `main.min.css`.
+* If you change any of the JavaScript or CSS, then you will need to rerun `build_client.sh` in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to do a hard cache refresh in the browser.)
 
 <br />
 
