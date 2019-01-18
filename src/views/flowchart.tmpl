@@ -1,0 +1,12 @@
+{{define "header"}}
+    <link rel="stylesheet" href="/public/css/alpha.css" />
+    <link rel="stylesheet" href="/public/css/hanabi.css" />
+    <link rel="stylesheet" href="/public/flowcharts/flowchart.css"/>
+{{end}}
+
+{{define "informational"}}
+    <div class='quiz-container'></div>
+    <script src="/public/js/lib/jquery-3.3.1.min.js"></script>
+    <script src="/public/flowcharts/quizes/{{.Flowchart}}.js"></script>
+    <script src="/public/flowcharts/flowchart.js"></script>
+{{end}}

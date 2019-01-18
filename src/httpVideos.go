@@ -9,5 +9,6 @@ func httpVideos(c *gin.Context) {
 	data := TemplateData{
 		Title: "Videos",
 	}
-	httpServeTemplate(w, "videos", data)
+
+	httpServeTemplate(w, data, "informational", "videos")
 }

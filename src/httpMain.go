@@ -12,7 +12,7 @@ func httpMain(c *gin.Context) {
 	data := TemplateData{
 		Title: "Main",
 	}
-	httpServeTemplate(w, "main", data)
+	httpServeTemplate(w, data, "main")
 }
 
 func httpMainDev(c *gin.Context) {
