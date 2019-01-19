@@ -184,6 +184,57 @@ func (g *Game) End() {
 			OtherPlayerNames: otherPlayerNames,
 		})
 		p.Session.NotifyGameHistory(h, true)
+		// The second argument tells the client to increment the total number of games played
+	}
+
+	// Update the stats for each player
+	for _, p := range g.Players {
+		// Get their current best scores
+		var stats models.Stats
+		if v, err := db.UserStats.Get(p.ID, variants[g.Options.Variant].ID); err != nil {
+			log.Error("Failed to get the stats for user "+p.Name+":", err)
+			return
+		} else {
+			stats = v
+		}
+
+		// Compute the integer modifier for this game
+		// 0 if no extra options
+		// 1 if deck play
+		// 2 if empty clues
+		// 3 if both
+		modifier := 0
+		if g.Options.DeckPlays {
+			modifier += 1
+		}
+		if g.Options.EmptyClues {
+			modifier += 2
+		}
+
+		if len(g.Players) == 2 && g.Score > stats.BestScore2 {
+			stats.BestScore2 = g.Score
+			stats.BestScore2Mod = modifier
+		} else if len(g.Players) == 3 && g.Score > stats.BestScore3 {
+			stats.BestScore3 = g.Score
+			stats.BestScore3Mod = modifier
+		} else if len(g.Players) == 4 && g.Score > stats.BestScore4 {
+			stats.BestScore4 = g.Score
+			stats.BestScore4Mod = modifier
+		} else if len(g.Players) == 5 && g.Score > stats.BestScore5 {
+			stats.BestScore5 = g.Score
+			stats.BestScore5Mod = modifier
+		} else if len(g.Players) == 6 && g.Score > stats.BestScore6 {
+			stats.BestScore6 = g.Score
+			stats.BestScore6Mod = modifier
+		}
+
+		// Update their stats
+		// (even if they did not get a new best score,
+		// we still want to update their average score and strikeout rate)
+		if err := db.UserStats.Update(p.ID, variants[g.Options.Variant].ID, stats); err != nil {
+			log.Error("Failed to update the stats for user "+p.Name+":", err)
+			return
+		}
 	}
 
 	// Send a chat message with the game result and players

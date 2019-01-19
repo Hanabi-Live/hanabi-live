@@ -69,7 +69,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 
 	// Get the stats for this player
 	var stats models.Stats
-	if v, err := db.Users.GetStats(s.UserID(), variants[g.Options.Variant].ID); err != nil {
+	if v, err := db.UserStats.Get(s.UserID(), variants[g.Options.Variant].ID); err != nil {
 		log.Error("Failed to get the stats for player \""+s.Username()+"\":", err)
 		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
 		return

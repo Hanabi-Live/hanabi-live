@@ -79,4 +79,14 @@ func debug2() {
 	log.Debug("  discordLastAtHere:", discordLastAtHere)
 
 	log.Debug("---------------------------------------------------------------")
+
+	updateBestScores()
+}
+
+func updateBestScores() {
+	if err := db.UserStats.UpdateAll(variantGetHighestID()); err != nil {
+		log.Error("Failed to update the best scores for every user:", err)
+	} else {
+		log.Info("Updated the best scores for every user.")
+	}
 }

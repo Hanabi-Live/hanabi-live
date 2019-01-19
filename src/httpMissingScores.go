@@ -56,7 +56,7 @@ func httpMissingScores(c *gin.Context) {
 	totalMaxScores := 0
 	for i, variant := range variantDefinitions {
 		var stats models.Stats
-		if v, err := db.Users.GetStats(user.ID, variant.ID); err != nil {
+		if v, err := db.UserStats.Get(user.ID, variant.ID); err != nil {
 			log.Error("Failed to get the stats for player \""+user.Username+"\" for variant \""+variant.Name+"\":", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -65,11 +65,11 @@ func httpMissingScores(c *gin.Context) {
 		}
 
 		bestScores := []int{
-			stats.BestScoreVariant2,
-			stats.BestScoreVariant3,
-			stats.BestScoreVariant4,
-			stats.BestScoreVariant5,
-			// stats.BestScoreVariant6,
+			stats.BestScore2,
+			stats.BestScore3,
+			stats.BestScore4,
+			stats.BestScore5,
+			stats.BestScore6,
 		}
 
 		if i == 0 {
@@ -87,7 +87,7 @@ func httpMissingScores(c *gin.Context) {
 					text += "Variant " + strconv.Itoa(i) + " - "
 				}
 				text += variant.Name + " - "
-				text += strconv.Itoa(j + 2) + "-player - "
+				text += strconv.Itoa(j+2) + "-player - "
 				text += "Current score: " + strconv.Itoa(bestScore) + " / " + strconv.Itoa(maxScoreForThisVariant) + "\n"
 			}
 		}

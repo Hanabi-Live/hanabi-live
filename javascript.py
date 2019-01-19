@@ -2,6 +2,7 @@
 
 # Imports
 import os
+import sys
 
 # Get the directory of the script
 # https://stackoverflow.com/questions/4934806/how-can-i-find-scripts-directory-with-python
@@ -15,6 +16,7 @@ os.chdir(JS_DIR)
 MAIN_SRC_JS = os.path.join(JS_DIR, 'src', 'main.js')
 MAIN_BUNDLED_JS = os.path.join(JS_DIR, 'main.bundled.js')
 os.system('npx browserify "' + MAIN_SRC_JS + '" --outfile "' + MAIN_BUNDLED_JS + '" --verbose --debug')
+print("Browserification complete.")
 
 # Combine all of the JavaScript into one file
 JS_LIB_FILES = [
@@ -35,18 +37,32 @@ JS_LIB_DIR = os.path.join(JS_DIR, 'lib')
 js = ''
 for file_name in JS_LIB_FILES:
     file_path = os.path.join(JS_LIB_DIR, file_name)
-    with open(file_path, 'r', encoding='utf8') as f:
-        js += f.read()
+    if sys.version_info >= (3, 0):
+        with open(file_path, 'r', encoding='utf8') as f:
+            js += f.read()
+    else:
+        with open(file_path, 'r') as f:
+            js += f.read()
+
 for file_name in JS_FILES:
     file_path = os.path.join(JS_DIR, file_name)
-    with open(file_path, 'r', encoding='utf8') as f:
-        js += f.read()
+    if sys.version_info >= (3, 0):
+        with open(file_path, 'r', encoding='utf8') as f:
+            js += f.read()
+    else:
+        with open(file_path, 'r') as f:
+            js += f.read()
 
 # Write it out to a temporary file
 JS_CONCATENATED = os.path.join(JS_DIR, 'main.js')
-with open(JS_CONCATENATED, 'w', encoding='utf8') as f:
-    f.write(js)
+if sys.version_info >= (3, 0):
+    with open(JS_CONCATENATED, 'w', encoding='utf8') as f:
+        f.write(js)
+else:
+    with open(JS_CONCATENATED, 'w') as f:
+        f.write(js)
 
-# Minify JS
-os.system('npx google-closure-compiler --js=main.js --js_output_file=main.min.js')
+# Compile and minify JS
+os.system('npx google-closure-compiler --js=main.js --js_output_file=main.min.js --warning_level QUIET')
 # (if we use the full paths here, it throws errors on Windows)
+print("Closure compilation complete.")

@@ -50,6 +50,7 @@
                                 <th>3-Player Best Score</th>
                                 <th>4-Player Best Score</th>
                                 <th>5-Player Best Score</th>
+                                <th>6-Player Best Score</th>
                                 <th>Average Score</th>
                                 <th>Strikeout Rate</th>
                             </tr>
@@ -59,16 +60,20 @@
                                 <tr>
                                     <td>{{.Name}}</td>
                                     <td>{{.NumGames}}</td>
-                                    <td>
-                                        {{if eq .BestScore2 .MaxScore}}<strong>{{end}}
-                                        {{.BestScore2}}
-                                        {{if eq .BestScore2 .MaxScore}}</strong> &nbsp;
-                                        {{if eq .BestScore2Mod }}
-                                        <i class="fas fa-check"></i>{{end}}
-                                    </td>
-                                    <td>{{.BestScore3}}</td>
-                                    <td>{{.BestScore4}}</td>
-                                    <td>{{.BestScore5}}</td>
+                                    {{range $index2, $results2 := .BestScores}}
+                                        <td>
+                                            {{if eq .Score $results.MaxScore}}<strong>{{end}}
+                                            {{.Score}} / {{$results.MaxScore}}
+                                            {{if eq .Score $results.MaxScore}}
+                                                </strong> &nbsp;
+                                                {{if eq .Modifier 0}}
+                                                    <i class="fas fa-check score-modifier green"></i>
+                                                {{else if eq .Modifier 1}}
+                                                    <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
+                                                {{end}}
+                                            {{end}}
+                                        </td>
+                                    {{end}}
                                     <td>{{.AverageScore}}</td>
                                     <td>{{.StrikeoutRate}}</td>
                                 </tr>
@@ -79,5 +84,12 @@
             </div>
         </div>
     </section>
+</div>
+
+<!-- Tooltips -->
+<div>
+    <div id="modifier-deckplays">
+        HELLO
+    </div>
 </div>
 {{end}}

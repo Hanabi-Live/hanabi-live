@@ -27,11 +27,7 @@ type VariantStats struct {
 }
 type BestScore struct {
 	Score    int
-	Modifier int
-	// 0 if no extra options
-	// 1 if deck play
-	// 2 if empty clues
-	// 3 if both
+	Modifier int // (see the stats section in "gameEnd.go")
 }
 
 func httpProfile(c *gin.Context) {
@@ -69,7 +65,7 @@ func httpProfile(c *gin.Context) {
 	totalMaxScores := 0
 	for i, variant := range variantDefinitions {
 		var stats models.Stats
-		if v, err := db.Users.GetStats(user.ID, variant.ID); err != nil {
+		if v, err := db.UserStats.Get(user.ID, variant.ID); err != nil {
 			log.Error("Failed to get the stats for player \""+user.Username+"\" for variant \""+variant.Name+"\":", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -78,59 +74,60 @@ func httpProfile(c *gin.Context) {
 		}
 
 		if i == 0 {
-			data.NumGames = stats.NumPlayed
+			data.NumGames = stats.NumPlayedAll
 		}
 
 		maxScoreForThisVariant := 5 * len(variant.Suits)
-		if stats.BestScoreVariant2 == maxScoreForThisVariant {
+		if stats.BestScore2 == maxScoreForThisVariant {
 			totalMaxScores++
 		}
-		if stats.BestScoreVariant3 == maxScoreForThisVariant {
+		if stats.BestScore3 == maxScoreForThisVariant {
 			totalMaxScores++
 		}
-		if stats.BestScoreVariant4 == maxScoreForThisVariant {
+		if stats.BestScore4 == maxScoreForThisVariant {
 			totalMaxScores++
 		}
-		if stats.BestScoreVariant5 == maxScoreForThisVariant {
+		if stats.BestScore5 == maxScoreForThisVariant {
+			totalMaxScores++
+		}
+		if stats.BestScore6 == maxScoreForThisVariant {
 			totalMaxScores++
 		}
 
-		compiledStats := VariantStats{
+		updatedStats := VariantStats{
 			Name:          variant.Name,
-			NumGames:      stats.NumPlayedVariant,
+			NumGames:      stats.NumPlayed,
 			MaxScore:      maxScoreForThisVariant,
 			BestScores:    make([]BestScore, 0),
-			AverageScore:  int((math.Round(stats.AverageScoreVariant))),
-			StrikeoutRate: int(math.Round(stats.StrikeoutRateVariant * 100)),
+			AverageScore:  int((math.Round(stats.AverageScore))),
+			StrikeoutRate: int(math.Round(stats.StrikeoutRate * 100)),
 		}
-		compiledStats.BestScores = append(compiledStats.BestScores, BestScore{
-			Score:    stats.BestScoreVariant2,
-			Modifier: stats.BestScoreVariant2,
+		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
+			Score:    stats.BestScore2,
+			Modifier: stats.BestScore2Mod,
 		})
-		compiledStats.BestScores = append(compiledStats.BestScores, BestScore{
-			Score:    stats.BestScoreVariant3,
-			Modifier: stats.BestScoreVariant3,
+		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
+			Score:    stats.BestScore3,
+			Modifier: stats.BestScore3Mod,
 		})
-		compiledStats.BestScores = append(compiledStats.BestScores, BestScore{
-			Score:    stats.BestScoreVariant4,
-			Modifier: stats.BestScoreVariant4,
+		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
+			Score:    stats.BestScore4,
+			Modifier: stats.BestScore4Mod,
 		})
-		compiledStats.BestScores = append(compiledStats.BestScores, BestScore{
-			Score:    stats.BestScoreVariant5,
-			Modifier: stats.BestScoreVariant5,
+		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
+			Score:    stats.BestScore5,
+			Modifier: stats.BestScore5Mod,
 		})
-		/*
-			compiledStats.BestScores = append(compiledStats.BestScores, BestScore{
-				Score:    stats.BestScoreVariant6,
-				Modifier: stats.BestScoreVariant6,
-			})
-		*/
-		data.VariantStats = append(data.VariantStats, compiledStats)
+		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
+			Score:    stats.BestScore6,
+			Modifier: stats.BestScore6Mod,
+		})
+		data.VariantStats = append(data.VariantStats, updatedStats)
 	}
 
 	// Add the total max scores
 	data.NumMaxScores = totalMaxScores
-	data.TotalMaxScores = len(variantDefinitions) * 4
+	data.TotalMaxScores = len(variantDefinitions) * 5 // For 2 to 6 players
 
 	httpServeTemplate(w, data, "profile")
 }

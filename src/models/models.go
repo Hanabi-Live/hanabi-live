@@ -25,6 +25,7 @@ type Models struct {
 	GameParticipants
 	Games
 	Users
+	UserStats
 }
 
 // Init opens a database connection based on the credentials in the ".env" file

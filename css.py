@@ -2,6 +2,7 @@
 
 # Imports
 import os
+import sys
 
 # Get the directory of the script
 # https://stackoverflow.com/questions/4934806/how-can-i-find-scripts-directory-with-python
@@ -22,13 +23,21 @@ CSS_DIR = os.path.join(DIR, 'public', 'css')
 css = ''
 for file_name in CSS_FILES:
     file_path = os.path.join(CSS_DIR, file_name)
-    with open(file_path, 'r', encoding='utf8') as f:
-        css += f.read()
+    if sys.version_info >= (3, 0):
+        with open(file_path, 'r', encoding='utf8') as f:
+            css += f.read()
+    else:
+        with open(file_path, 'r') as f:
+            css += f.read()
 
 # Write it out to a temporary file
 CSS_CONCATENATED = os.path.join(CSS_DIR, 'main.css')
-with open(CSS_CONCATENATED, 'w', encoding='utf8') as f:
-    f.write(css)
+if sys.version_info >= (3, 0):
+    with open(CSS_CONCATENATED, 'w', encoding='utf8') as f:
+        f.write(css)
+else:
+    with open(CSS_CONCATENATED, 'w') as f:
+        f.write(css)
 
 # Optimize and minify CSS with CSSO
 # (which is installed in the JavaScript directory)
