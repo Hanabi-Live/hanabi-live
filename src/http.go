@@ -14,8 +14,9 @@ import (
 )
 
 type TemplateData struct {
-	Title  string
-	Header bool
+	Title  string // Used to populate the <title> tag
+	Header bool   // Whether or not the template contains extra code in the <head> tag
+	Name   string // Used for the profile
 }
 
 const (
@@ -31,7 +32,7 @@ func httpInit() {
 	gin.SetMode(gin.ReleaseMode) // Comment this out to debug HTTP stuff
 	httpRouter := gin.New()
 	httpRouter.Use(gin.Recovery())
-	//httpRouter.Use(gin.Logger()) // Uncomment this out to enable HTTP request logging
+	//httpRouter.Use(gin.Logger()) // Uncomment this to enable HTTP request logging
 
 	// Read some configuration values from environment variables
 	// (they were loaded from the .env file in main.go)
@@ -97,6 +98,8 @@ func httpInit() {
 	httpRouter.GET("/", httpMain)
 	httpRouter.GET("/profile", httpProfile)
 	httpRouter.GET("/profile/:player", httpProfile)
+	httpRouter.GET("/history", httpHistory)
+	httpRouter.GET("/history/:player", httpHistory)
 	httpRouter.GET("/missing-scores", httpMissingScores)
 	httpRouter.GET("/missing-scores/:player", httpMissingScores)
 
@@ -156,7 +159,8 @@ func httpInit() {
 func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...string) {
 	viewsPath := path.Join(projectPath, "src", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
-	//turns the slice of file names into a slice of full paths
+
+	// Turn the slice of file names into a slice of full paths
 	for i := 0; i < len(templateName); i++ {
 		templateName[i] = path.Join(viewsPath, templateName[i]+".tmpl")
 	}
@@ -177,8 +181,9 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 		return
 	}
 
-	//append the main layout to our list of playouts
+	// Append the main layout to our list of layouts
 	templateName = append(templateName, layoutPath)
+
 	// Create the template
 	tmpl, err := template.ParseFiles(templateName...)
 	if err != nil {

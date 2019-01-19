@@ -24,6 +24,30 @@ CREATE TABLE users (
 );
 CREATE INDEX users_index_username ON users (username);
 
+DROP TABLE IF EXISTS user_stats;
+CREATE TABLE user_stats (
+    id               INT  NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    /* PRIMARY KEY automatically creates a UNIQUE constraint */
+    user_id          INT  NOT NULL,
+    variant          INT  NOT NULL, /* Equal to the variant ID (found in "variants.go") */
+    num_played       INT  NOT NULL,
+    best_score2      INT  NOT NULL, /* Their best score for 2-player games on this variant */
+    best_score2_mod  INT  NOT NULL, /* This stores if they used additional options to make the game easier */
+    best_score3      INT  NOT NULL,
+    best_score3_mod  INT  NOT NULL,
+    best_score4      INT  NOT NULL,
+    best_score4_mod  INT  NOT NULL,
+    best_score5      INT  NOT NULL,
+    best_score5_mod  INT  NOT NULL,
+    best_score6      INT  NOT NULL,
+    best_score6_mod  INT  NOT NULL,
+    average_score    INT  NOT NULL,
+    strikeout_rate   INT  NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    /* If the user is deleted, automatically delete all of their stats */
+);
+CREATE INDEX user_stats_index_user_id ON user_stats (user_id);
+
 DROP TABLE IF EXISTS games;
 CREATE TABLE games (
     id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,

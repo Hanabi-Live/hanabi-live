@@ -438,3 +438,19 @@ table td {
     margin-bottom: 0;
     padding-left: 0.9em;
 }
+
+/*
+    Profile
+*/
+
+.score-modifier {
+    font-size: 0.75em;
+}
+
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}

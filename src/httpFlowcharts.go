@@ -21,7 +21,7 @@ type FlowchartData struct {
 	Header    bool
 }
 
-//home page for all flowcharts, displays flowchart list
+// The home page for the flowcharts (which shows the list of all flowcharts)
 func httpFlowcharts(c *gin.Context) {
 	w := c.Writer
 	data := FlowchartsData{
@@ -33,8 +33,7 @@ func httpFlowcharts(c *gin.Context) {
 	httpServeTemplate(w, data, "informational", "flowcharts")
 }
 
-//all other flowchart quizes are/will be represented here and require no templates vvvvvvvvv
-
+// Individual flowchart pages (they use a shared template)
 func httpEarly5Clue(c *gin.Context) {
 	w := c.Writer
 	data := FlowchartData{

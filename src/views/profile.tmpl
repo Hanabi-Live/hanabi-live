@@ -1,0 +1,83 @@
+{{define "header"}}
+    <link rel="stylesheet" href="/public/flowcharts/flowchart.css"/>
+{{end}}
+
+{{define "content"}}
+<div id="page-wrapper">
+
+    <!-- Header -->
+    <header id="header">
+        <h1>Hanabi Live</h1>
+        <nav id="nav"></nav>
+    </header>
+
+    <!-- Main -->
+    <section id="main" class="container">
+        <header>
+            <h2><img src="/public/img/logos/5.png" height="200"></h2>
+        </header>
+        <div class="row uniform 100%">
+            <div class="col-12">
+                <!-- Text -->
+                <section class="box">
+                    <h2 class="align-center">{{.Name}}'s Profile</h2>
+
+                    <div>
+                        <ul class="actions fit">
+                            <li>
+                                <a class="button fit icon fa-chart-area disabled">Scores & Statistics</a>
+                            </li>
+                            <li>
+                                <a class="button fit icon fa-history">Full Game History</a>
+                            </li>
+                            <li>
+                                <a class="button fit icon fa-question">Missing Scores</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <ul>
+                        <li>Total games played: {{.NumGames}}</li>
+                        <li>Total max scores: {{.NumMaxScores}} / {{.TotalMaxScores}}</li>
+                    </ul>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Variant</th>
+                                <th>Total Games</th>
+                                <th>2-Player Best Score</th>
+                                <th>3-Player Best Score</th>
+                                <th>4-Player Best Score</th>
+                                <th>5-Player Best Score</th>
+                                <th>Average Score</th>
+                                <th>Strikeout Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range $index, $results := .VariantStats}}
+                                <tr>
+                                    <td>{{.Name}}</td>
+                                    <td>{{.NumGames}}</td>
+                                    <td>
+                                        {{if eq .BestScore2 .MaxScore}}<strong>{{end}}
+                                        {{.BestScore2}}
+                                        {{if eq .BestScore2 .MaxScore}}</strong> &nbsp;
+                                        {{if eq .BestScore2Mod }}
+                                        <i class="fas fa-check"></i>{{end}}
+                                    </td>
+                                    <td>{{.BestScore3}}</td>
+                                    <td>{{.BestScore4}}</td>
+                                    <td>{{.BestScore5}}</td>
+                                    <td>{{.AverageScore}}</td>
+                                    <td>{{.StrikeoutRate}}</td>
+                                </tr>
+                            {{- end -}}
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+        </div>
+    </section>
+</div>
+{{end}}
