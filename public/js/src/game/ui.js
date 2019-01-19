@@ -321,7 +321,7 @@ function HanabiUI(lobby, gameID, game) {
             ui.timedGame
             && lobby.settings.sendTimerSound
             && millisecondsLeft > 0
-            && millisecondsLeft <= 5000
+            && millisecondsLeft <= 10000
             && timeElapsed > 900
             && timeElapsed < 1100
             && !lobby.errorOccured
