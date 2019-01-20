@@ -159,9 +159,9 @@ const initCommands = () => {
 
     globals.conn.on('tableReady', (data) => {
         if (data.ready) {
-            $('#nav-buttons-game-start').removeClass('disabled');
+            $('#nav-buttons-pregame-start').removeClass('disabled');
         } else {
-            $('#nav-buttons-game-start').addClass('disabled');
+            $('#nav-buttons-pregame-start').addClass('disabled');
         }
     });
 
