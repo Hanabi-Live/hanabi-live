@@ -28,23 +28,25 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 ### White
 
-* A white suit is added.
+* One of the suits is replaced with a white suit.
 * No color clues "touch" the white suit. (It is a colorless suit.)
 
 ### Black
 
-* A black suit is added.
+* One of the suits is replaced with a black suit.
 * It works similar to the other suits in that you can clue black cards with black clues.
 * There is only one of each black card in the deck, which means that every black card is "critical".
 
 ### Rainbow
 
-* A rainbow suit is added.
+* One of the suits is replaced with a rainbow suit.
 * All color clues will "touch" the rainbow suit.
 
 ### Dark Rainbow
 
-* A dark rainbow suit is the same as a rainbow suit, except that there is only one of each card in the deck. This means that every dark rainbow card is "critical".
+* One of the suits is replaced with a dark rainbow suit.
+* All color clues will "touch" the dark rainbow suit.
+* There is only one of each dark rainbow card in the deck, which means that every dark rainbow card is "critical".
 
 ### Color Blind
 
