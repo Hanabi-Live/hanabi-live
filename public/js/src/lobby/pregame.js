@@ -55,8 +55,9 @@ exports.draw = () => {
         optionsTitle.text('');
     }
 
-    // Draw the 5 players
-    for (let i = 0; i < 5; i++) {
+    // Draw the player boxes
+    const numPlayers = globals.game.players.length;
+    for (let i = 0; i < 6; i++) {
         const div = $(`#lobby-pregame-player-${(i + 1)}`);
 
         const player = globals.game.players[i];
@@ -68,73 +69,109 @@ exports.draw = () => {
 
         div.show();
 
-        // Calculate some stats
-        const averageScoreVariant = Math.round(player.stats.averageScoreVariant * 100) / 100;
-        // (round it to 2 decimal places)
-        let strikeoutRateVariant = player.stats.strikeoutRateVariant * 100;
-        // (turn it into a percent)
-        strikeoutRateVariant = Math.round(strikeoutRateVariant * 100) / 100;
-        // (round it to 2 decimal places)
-
         let html = `
             <p class="margin0 padding0p5">
                 <strong>${player.name}</strong>
             </p>
-            <div class="row 100%">
-                <div class="10u">
+        `;
+
+        // There is not enough room to draw the full box for 6 players
+        if (numPlayers === 6) {
+            div.removeClass('col-2');
+            div.addClass('lobby-pregame-col');
+        } else {
+            div.addClass('col-2');
+            div.removeClass('lobby-pregame-col');
+        }
+
+        // Calculate some stats
+        const averageScore = Math.round(player.stats.averageScore * 100) / 100;
+        // (round it to 2 decimal places)
+        let strikeoutRate = player.stats.strikeoutRate * 100;
+        // (turn it into a percent)
+        strikeoutRate = Math.round(strikeoutRate * 100) / 100;
+        // (round it to 2 decimal places)
+        const maxScore = 5 * constants.VARIANTS[globals.game.variant].suits.length;
+
+        html += `
+            <div class="row">
+                <div class="col-10">
                     Total games:
                 </div>
-                <div class="2u align-right padding0">
+                <div class="col-2 align-right padding0">
+                    ${player.stats.numPlayedAll}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-10">
+                    ...of this variant:
+                </div>
+                <div class="col-2 align-right padding0">
                     ${player.stats.numPlayed}
                 </div>
             </div>
-            <div class="row 100%">
-                <div class="10u">
-                    ...of this variant:
-                </div>
-                <div class="2u align-right padding0">
-                    ${player.stats.numPlayedVariant}
-                </div>
-            </div>
-            Best scores with:
-            <div class="row 100%">
-                <div class="10u">
-                    ...3 players:
-                </div>
-                <div class="2u align-right padding0">
-                    ${player.stats.bestScoreVariant3}
-                </div>
-            </div>
-            <div class="row 100%">
-                <div class="10u">
-                    ...4 players:
-                </div>
-                <div class="2u align-right padding0">
-                    ${player.stats.bestScoreVariant4}
-                </div>
-            </div>
-            <div class="row 100%">
-                <div class="10u">
-                    ...5 players:
-                </div>
-                <div class="2u align-right padding0">
-                    ${player.stats.bestScoreVariant5}
-                </div>
-            </div>
-            <div class="row 100%">
-                <div class="10u">
+            <div class="row">
+                <div class="col-10">
                     Average score:
                 </div>
-                <div class="2u align-right padding0">
-                    ${averageScoreVariant}
+                <div class="col-2 align-right padding0">
+                    ${averageScore}
                 </div>
             </div>
-            <div class="row 100%">
-                <div class="10u">
+            <div class="row">
+                <div class="col-10">
                     Strikeout rate:
                 </div>
-                <div class="2u align-right padding0">
-                    ${strikeoutRateVariant}%
+                <div class="col-2 align-right padding0">
+                    ${strikeoutRate}%
+                </div>
+            </div>
+        `;
+        if (numPlayers > 1) {
+            html += `
+                <div class="row">
+                    <div class="col-10">
+                        ${numPlayers}-player best score:
+                    </div>
+                    <div class="col-2 align-right padding0">
+                        ${player.stats[`bestScore${numPlayers}`]}
+                    </div>
+                </div>
+            `;
+        }
+        html += `
+            <div class="row">
+                <div class="col-10">
+                    ${numPlayers === 1 ? 'B' : 'Other b'}est scores:
+                </div>
+                <div class="col-2 align-right padding0">
+                    <i id="lobby-pregame-player-${i + 1}-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${i + 1}-tooltip"></i>
+                </div>
+            </div>
+            <div class="hidden">
+                <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
+        `;
+        for (let j = 2; j <= 6; j++) {
+            html += '<div class="row">';
+            html += `<div class="col-6">${j}-player:</div>`;
+            const bestScore = player.stats[`bestScore${j}`];
+            const bestScoreMod = player.stats[`bestScore${j}Mod`];
+            html += '<div class="col-6">';
+            if (bestScore === maxScore) {
+                html += '<strong>';
+            }
+            html += ` ${bestScore} / ${maxScore}`;
+            if (bestScore === maxScore) {
+                html += '</strong> &nbsp; ';
+                if (bestScoreMod === 0) {
+                    html += '<i class="fas fa-check score-modifier green"></i>';
+                } else {
+                    html += '<i class="fas fa-times score-modifier red"></i>';
+                }
+            }
+            html += '</div></div>';
+        }
+        html += `
                 </div>
             </div>
         `;
@@ -143,5 +180,16 @@ exports.draw = () => {
         }
 
         div.html(html);
+
+        // Initialize the tooltip
+        $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster({
+            animation: 'grow',
+            contentAsHTML: true,
+            delay: 0,
+            theme: [
+                'tooltipster-shadow',
+                'tooltipster-shadow-big',
+            ],
+        });
     }
 };

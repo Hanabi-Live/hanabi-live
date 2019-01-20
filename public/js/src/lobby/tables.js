@@ -73,7 +73,7 @@ exports.draw = () => {
         } else if (!table.joined) {
             button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>');
             button.attr('id', `join-${table.id}`);
-            if (table.numPlayers >= 5) {
+            if (table.numPlayers >= 6) {
                 button.addClass('disabled');
             }
             button.on('click', tableJoinButton(table));

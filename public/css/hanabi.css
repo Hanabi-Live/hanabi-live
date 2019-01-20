@@ -350,6 +350,25 @@ table td {
     padding-left: 0;
 }
 
+.lobby-pregame-tooltip {
+    font-size: 0.75em;
+    width: 8em;
+}
+
+.lobby-pregame-tooltip > div {
+    /* Alpha sets this to -2em, so we have to reset it */
+    margin-left: 0em;
+    text-align: left;
+}
+
+.lobby-pregame-tooltip > div > div {
+    padding-left: 0;
+}
+
+.lobby-pregame-col {
+    width: 13.75%;
+}
+
 /*
     Create Game Tooltip
 */
@@ -365,7 +384,7 @@ table td {
 }
 
 #create-game-tooltip > div > div {
-    padding-left: 0em;
+    padding-left: 0;
 }
 
 .create-game-icon {
