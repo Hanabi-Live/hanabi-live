@@ -132,14 +132,9 @@ exports.ready = () => {
     $('#create-game-timed').change();
 
     // Fill in the "Base Time" box
-    let baseTimeMinutes;
-    try {
-        // We don't want to do "JSON.parse()" here because it may not be a whole number
-        baseTimeMinutes = localStorage.getItem('baseTimeMinutes');
-    } catch (err) {
-        baseTimeMinutes = 2;
-    }
-    if (baseTimeMinutes < 0) {
+    let baseTimeMinutes = localStorage.getItem('baseTimeMinutes');
+    // (we don't want to do "JSON.parse()" here because it may not be a whole number)
+    if (baseTimeMinutes === null || baseTimeMinutes < 0) {
         baseTimeMinutes = 2;
     }
     $('#base-time-minutes').val(baseTimeMinutes);
