@@ -18,7 +18,7 @@ exports.draw = () => {
         const row = $('<tr>');
 
         let { name } = user;
-        name = `<a href="/profile/${name}" target="_blank" rel="noopener noreferrer">${name}</a>`;
+        name = `<a href="/scores/${name}" target="_blank" rel="noopener noreferrer">${name}</a>`;
         if (user.name === globals.username) {
             name = `<strong>${name}</strong>`;
         }
