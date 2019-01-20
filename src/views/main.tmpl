@@ -335,7 +335,9 @@
 
         <div class="row">
             <div class="col-3 input-text">
-                <i class="fas fa-signature nav-icon"></i>
+                <div class="create-game-icon">
+                    <i class="fas fa-signature"></i>
+                </div>
                 Name
             </div>
             <div class="col-8">
@@ -346,7 +348,9 @@
 
         <div class="row">
             <div class="col-3 input-text">
-                <i class="fas fa-rainbow nav-icon"></i>
+                <div class="create-game-icon">
+                    <i class="fas fa-rainbow"></i>
+                </div>
                 Variant
             </div>
             <div class="col-7">
@@ -364,7 +368,9 @@
 
         <div class="row">
             <div id="create-game-timed-label" class="col-3">
-                <i class="fas fa-clock nav-icon"></i>
+                <div class="create-game-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
                 Timed
             </div>
             <div id="create-game-timed-container" class="col-1">
@@ -389,14 +395,17 @@
         <br /><br />
 
         <div class="row">
-            <div class="col-6 create-game-text-label">
-                Allow Bottom-Deck Blind-Plays
+            <div class="col-9 create-game-text-label">
+                <div class="create-game-icon">
+                    <i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>
+                </div>
+                Bottom-Deck Blind-Plays
             </div>
-            <div class="col-2">
+            <div class="col-1">
                 <input id="create-game-deck-plays" type="checkbox" />
                 <label for="create-game-deck-plays"></label>
             </div>
-            <div class="col-1 input-text">
+            <div class="col-1 input-text align-center">
                 <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays" target="_blank">
                     <i class="fas fa-question-circle create-game-icon-up"></i>
                 </a>
@@ -405,14 +414,17 @@
         <br />
 
         <div class="row">
-            <div class="col-6 create-game-text-label">
-                Allow Empty Clues
+            <div class="col-9 create-game-text-label">
+                <div class="create-game-icon">
+                    <i class="fas fa-expand"></i>
+                </div>
+                Empty Clues
             </div>
-            <div class="col-2">
+            <div class="col-1">
                 <input id="create-game-empty-clues" type="checkbox" />
                 <label for="create-game-empty-clues"></label>
             </div>
-            <div class="col-1 input-text">
+            <div class="col-1 input-text align-center">
                 <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#empty-clues" target="_blank">
                     <i class="fas fa-question-circle create-game-icon-up"></i>
                 </a>
@@ -421,14 +433,17 @@
         <br />
 
         <div class="row">
-            <div class="col-6 align-right">
-                Detrimental Character Assignments
+            <div class="col-9">
+                <div class="create-game-icon">
+                    🤔
+                </div>
+                Detrimental Characters
             </div>
-            <div class="col-2">
+            <div class="col-1">
                 <input id="create-game-character-assignments" type="checkbox" />
                 <label for="create-game-character-assignments"></label>
             </div>
-            <div class="col-1 input-text">
+            <div class="col-1 input-text align-center">
                 <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/CHARACTERS.md" target="_blank">
                     <i class="fas fa-question-circle create-game-icon-up"></i>
                 </a>
@@ -437,26 +452,30 @@
         <br />
 
         <div class="row">
-            <div class="col-3 input-text align-right">
-                <i class="fas fa-key nav-icon"></i>
+            <div class="col-4 input-text">
+                <div class="create-game-icon">
+                    <i class="fas fa-key nav-icon"></i>
+                </div>
                 Password
             </div>
-            <div class="col-8">
+            <div class="col-6">
                 <input id="create-game-password" type="text" placeholder="Password (optional)" />
             </div>
         </div>
         <br />
 
         <div class="row">
-            <div class="col-6 create-game-text-label">
-                <i class="fas fa-bed nav-icon"></i>
+            <div class="col-9 create-game-text-label">
+                <div class="create-game-icon">
+                    <i class="fas fa-bed nav-icon"></i>
+                </div>
                 Alert people on the waiting list
             </div>
-            <div class="col-2">
+            <div class="col-1">
                 <input id="create-game-alert-waiters" type="checkbox" />
                 <label for="create-game-alert-waiters"></label>
             </div>
-            <div class="col-1 input-text">
+            <div class="col-1 input-text align-center">
                 <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#discord-integration" target="_blank">
                     <i class="fas fa-question-circle create-game-icon-up"></i>
                 </a>
