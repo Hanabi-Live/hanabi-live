@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 )
 
 type UserStats struct{}
@@ -217,6 +218,7 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 			return err
 		}
 
+		fmt.Println("Updating user:", userID)
 		for variant := 0; variant <= highestVariantID; variant++ {
 			// Check to see if this user has played any games of this variant
 			var numRows int
