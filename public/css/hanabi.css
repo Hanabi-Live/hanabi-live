@@ -358,6 +358,15 @@ table td {
     width: 11em;
 }
 
+#create-game-tooltip > div {
+    /* Alpha sets this to -2em, so we have to reset it */
+    margin-left: 0.5em;
+}
+
+#create-game-tooltip > div > div {
+    padding-left: 0em;
+}
+
 .create-game-text-label {
     /* Annoyingly, the text does not line up with the checkbox */
     position: relative;
