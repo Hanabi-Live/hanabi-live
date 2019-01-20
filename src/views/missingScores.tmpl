@@ -1,0 +1,37 @@
+{{define "profile"}}
+<ul>
+    <li>Total max scores: {{.NumMaxScores}} / {{.TotalMaxScores}}</li>
+</ul>
+
+<table>
+    <thead>
+        <tr>
+            <th>Variant</th>
+            <th># of Players</th>
+            <th>Current Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range $index, $results := .VariantStats}}
+            {{range $index2, $results2 := .BestScores}}
+                {{if or (ne .Score $results.MaxScore) (ne .Modifier 0)}}
+                    <tr>
+                        <td>{{$results.Name}}</td>
+                        <td>{{.NumPlayers}}</td>
+                        <td>
+                            {{.Score}} / {{$results.MaxScore}} &nbsp;
+                            {{if eq .Modifier 1}}
+                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
+                            {{else if eq .Modifier 2}}
+                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-emptyclues"></i>
+                            {{else if eq .Modifier 3}}
+                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays-emptyclues"></i>
+                            {{end}}
+                        </td>
+                    </tr>
+                {{end}}
+            {{- end -}}
+        {{- end -}}
+    </tbody>
+</table>
+{{end}}

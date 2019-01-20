@@ -55,7 +55,7 @@ func commandGameUnattend(s *Session, d *CommandData) {
 		if g.SharedReplay {
 			if len(g.Spectators) == 0 {
 				// This was the last person to leave the shared replay, so delete it
-				log.Info("Ended shared replay " + strconv.Itoa(gameID) + " because everyone left.")
+				log.Info("Ended shared replay #" + strconv.Itoa(gameID) + " because everyone left.")
 				delete(games, gameID)
 
 				// Notify everyone that the table was deleted

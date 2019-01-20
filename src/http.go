@@ -96,17 +96,15 @@ func httpInit() {
 
 	// Path handlers (for the website)
 	httpRouter.GET("/", httpMain)
-	httpRouter.GET("/profile", httpProfile)
-	httpRouter.GET("/profile/:player", httpProfile)
+	httpRouter.GET("/scores", httpScores)
+	httpRouter.GET("/scores/:player", httpScores)
 	httpRouter.GET("/history", httpHistory)
 	httpRouter.GET("/history/:player", httpHistory)
-	httpRouter.GET("/missing-scores", httpMissingScores)
-	httpRouter.GET("/missing-scores/:player", httpMissingScores)
-
+	httpRouter.GET("/missing-scores", httpScores)
+	httpRouter.GET("/missing-scores/:player", httpScores)
 	httpRouter.GET("/videos", httpVideos)
 	httpRouter.GET("/flowcharts", httpFlowcharts)
 	httpRouter.GET("/flowcharts/early5clue", httpEarly5Clue)
-	httpRouter.GET("/dev", httpMainDev)
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
 
 	if useTLS {

@@ -1,7 +1,3 @@
-{{define "header"}}
-    <link rel="stylesheet" href="/public/flowcharts/flowchart.css"/>
-{{end}}
-
 {{define "content"}}
 <div id="page-wrapper">
 
@@ -18,68 +14,25 @@
         </header>
         <div class="row uniform 100%">
             <div class="col-12">
-                <!-- Text -->
                 <section class="box">
                     <h2 class="align-center">{{.Name}}'s Profile</h2>
 
                     <div>
                         <ul class="actions fit">
                             <li>
-                                <a class="button fit icon fa-chart-area disabled">Scores & Statistics</a>
+                                <a class="button fit icon fa-chart-area{{if eq .Title "Scores"}} disabled{{else}}" href="/scores/{{.Name}}{{end}}">Scores & Statistics</a>
                             </li>
                             <li>
-                                <a class="button fit icon fa-history">Full Game History</a>
+                                <a class="button fit icon fa-history{{if eq .Title "History"}} disabled{{else}}" href="/history/{{.Name}}{{end}}">Full Game History</a>
                             </li>
                             <li>
-                                <a class="button fit icon fa-question">Missing Scores</a>
+                                <a class="button fit icon fa-question{{if eq .Title "Missing Scores"}} disabled{{else}}" href="/missing-scores/{{.Name}}{{end}}">Missing Scores</a>
                             </li>
                         </ul>
                     </div>
 
-                    <ul>
-                        <li>Total games played: {{.NumGames}}</li>
-                        <li>Total max scores: {{.NumMaxScores}} / {{.TotalMaxScores}}</li>
-                    </ul>
+                    {{template "profile" .}}
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Variant</th>
-                                <th>Total Games</th>
-                                <th>2-Player Best Score</th>
-                                <th>3-Player Best Score</th>
-                                <th>4-Player Best Score</th>
-                                <th>5-Player Best Score</th>
-                                <th>6-Player Best Score</th>
-                                <th>Average Score</th>
-                                <th>Strikeout Rate</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{range $index, $results := .VariantStats}}
-                                <tr>
-                                    <td>{{.Name}}</td>
-                                    <td>{{.NumGames}}</td>
-                                    {{range $index2, $results2 := .BestScores}}
-                                        <td>
-                                            {{if eq .Score $results.MaxScore}}<strong>{{end}}
-                                            {{.Score}} / {{$results.MaxScore}}
-                                            {{if eq .Score $results.MaxScore}}
-                                                </strong> &nbsp;
-                                                {{if eq .Modifier 0}}
-                                                    <i class="fas fa-check score-modifier green"></i>
-                                                {{else if eq .Modifier 1}}
-                                                    <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
-                                                {{end}}
-                                            {{end}}
-                                        </td>
-                                    {{end}}
-                                    <td>{{.AverageScore}}</td>
-                                    <td>{{.StrikeoutRate}}</td>
-                                </tr>
-                            {{- end -}}
-                        </tbody>
-                    </table>
                 </section>
             </div>
         </div>
@@ -87,9 +40,32 @@
 </div>
 
 <!-- Tooltips -->
-<div>
-    <div id="modifier-deckplays">
-        HELLO
+<div class="hidden">
+    <div id="modifier-deckplays" class="profile-tooltip">
+        This score is not legitimate since the <strong>Bottom-Deck Blind-Play</strong> option was used as a crutch.
+    </div>
+    <div id="modifier-emptyclues" class="profile-tooltip">
+        This score is not legitimate since the <strong>Empty Clue</strong> option was used as a crutch.
+    </div>
+    <div id="modifier-deckplays-emptyclues" class="profile-tooltip">
+        This score is not legitimate since the <strong>Bottom-Deck Blind-Play</strong> and <strong>Empty Clue</strong> options were used as a crutch.
     </div>
 </div>
+
+<script type="text/javascript" src="/public/js/lib/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/tooltipster.bundle.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(() => {
+        // Initialize the tooltips
+        $('.tooltip').tooltipster({
+            animation: 'grow',
+            contentAsHTML: true,
+            delay: 0,
+            theme: [
+                'tooltipster-shadow',
+                'tooltipster-shadow-big',
+            ],
+        });
+    });
+</script>
 {{end}}

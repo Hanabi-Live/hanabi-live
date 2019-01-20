@@ -1,0 +1,28 @@
+{{define "profile"}}
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th># of Players</th>
+            <th>Score</th>
+            <th>Variant</th>
+            <th>Date</th>
+            <th>Other Players</th>
+            <th>Other Scores</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range $index, $results := .History}}
+            <tr>
+                <td>{{.ID}}</td>
+                <td>{{.NumPlayers}}</td>
+                <td>{{.Score}}</td>
+                <td>{{.Variant}}</td>
+                <td>{{.DatetimeFinished}}</td>
+                <td>{{.OtherPlayerNames}}</td>
+                <td>{{.NumSimilar}}</td>
+            </tr>
+        {{- end -}}
+    </tbody>
+</tabke>
+{{end}}

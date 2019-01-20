@@ -454,3 +454,7 @@ table td {
 .red {
     color: red;
 }
+
+.profile-tooltip {
+    font-size: 0.75em;
+}

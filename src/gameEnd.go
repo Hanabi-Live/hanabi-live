@@ -205,7 +205,7 @@ func (g *Game) End() {
 		// 3 if both
 		modifier := 0
 		if g.Options.DeckPlays {
-			modifier += 1
+			modifier++
 		}
 		if g.Options.EmptyClues {
 			modifier += 2

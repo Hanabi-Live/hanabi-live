@@ -1,9 +1,6 @@
 package main
 
 import (
-	"net/http"
-	"path"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,13 +10,4 @@ func httpMain(c *gin.Context) {
 		Title: "Main",
 	}
 	httpServeTemplate(w, data, "main")
-}
-
-func httpMainDev(c *gin.Context) {
-	// Local variables
-	r := c.Request
-	w := c.Writer
-
-	index := path.Join(projectPath, "src", "views", "index.dev.html")
-	http.ServeFile(w, r, index)
 }

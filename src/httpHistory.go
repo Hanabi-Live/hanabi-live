@@ -7,12 +7,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type HistoryData struct {
+	Title   string
+	Header  bool
+	Name    string
+	History []*models.GameHistory
+}
+
 func httpHistory(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
 	// Parse the player name from the URL
-	player := c.Params.ByName("player")
+	player := c.Param("player")
 	if player == "" {
 		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
 		return
@@ -31,23 +38,17 @@ func httpHistory(c *gin.Context) {
 		return
 	}
 
-	data := TemplateData{
-		Title:  "Profile",
-		Header: true,
-		Name:   user.Username,
+	// Get the player's entire game history
+	var history []*models.GameHistory
+	if v, err := db.Games.GetUserHistory(user.ID, 0, 0, true); err != nil {
+		log.Error("Failed to get the history for player \""+user.Username+"\":", err)
+		return
+	} else {
+		history = v
 	}
+	history = historyFillVariants(history)
 
 	/*
-		// Get the player's entire game history
-		var history []*models.GameHistory
-		if v, err := db.Games.GetUserHistory(user.ID, 0, 0, true); err != nil {
-			log.Error("Failed to get the history for player \""+user.Username+"\":", err)
-			return
-		} else {
-			history = v
-		}
-		history = historyFillVariants(history)
-
 		text := ""
 		text += "+-------------------+\n"
 		text += "| Full Game History |\n"
@@ -70,5 +71,10 @@ func httpHistory(c *gin.Context) {
 		}
 	*/
 
-	httpServeTemplate(w, data, "history")
+	data := HistoryData{
+		Title:   "History",
+		Name:    user.Username,
+		History: history,
+	}
+	httpServeTemplate(w, data, "profile", "history")
 }

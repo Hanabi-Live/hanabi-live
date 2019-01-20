@@ -3,6 +3,7 @@ package main
 import (
 	"math"
 	"net/http"
+	"strings"
 
 	"github.com/Zamiell/hanabi-live/src/models"
 	"github.com/gin-gonic/gin"
@@ -26,16 +27,17 @@ type VariantStats struct {
 	StrikeoutRate int
 }
 type BestScore struct {
-	Score    int
-	Modifier int // (see the stats section in "gameEnd.go")
+	NumPlayers int
+	Score      int
+	Modifier   int // (see the stats section in "gameEnd.go")
 }
 
-func httpProfile(c *gin.Context) {
+func httpScores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
 	// Parse the player name from the URL
-	player := c.Params.ByName("player")
+	player := c.Param("player")
 	if player == "" {
 		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
 		return
@@ -54,15 +56,10 @@ func httpProfile(c *gin.Context) {
 		return
 	}
 
-	data := ProfileData{
-		Title:        "Profile",
-		Header:       true,
-		Name:         user.Username,
-		VariantStats: make([]VariantStats, 0),
-	}
-
 	// Get the stats for this player
+	numGames := 0
 	totalMaxScores := 0
+	variantStats := make([]VariantStats, 0)
 	for i, variant := range variantDefinitions {
 		var stats models.Stats
 		if v, err := db.UserStats.Get(user.ID, variant.ID); err != nil {
@@ -74,7 +71,7 @@ func httpProfile(c *gin.Context) {
 		}
 
 		if i == 0 {
-			data.NumGames = stats.NumPlayedAll
+			numGames = stats.NumPlayedAll
 		}
 
 		maxScoreForThisVariant := 5 * len(variant.Suits)
@@ -103,31 +100,46 @@ func httpProfile(c *gin.Context) {
 			StrikeoutRate: int(math.Round(stats.StrikeoutRate * 100)),
 		}
 		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
-			Score:    stats.BestScore2,
-			Modifier: stats.BestScore2Mod,
+			NumPlayers: 2,
+			Score:      stats.BestScore2,
+			Modifier:   stats.BestScore2Mod,
 		})
 		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
-			Score:    stats.BestScore3,
-			Modifier: stats.BestScore3Mod,
+			NumPlayers: 3,
+			Score:      stats.BestScore3,
+			Modifier:   stats.BestScore3Mod,
 		})
 		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
-			Score:    stats.BestScore4,
-			Modifier: stats.BestScore4Mod,
+			NumPlayers: 4,
+			Score:      stats.BestScore4,
+			Modifier:   stats.BestScore4Mod,
 		})
 		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
-			Score:    stats.BestScore5,
-			Modifier: stats.BestScore5Mod,
+			NumPlayers: 5,
+			Score:      stats.BestScore5,
+			Modifier:   stats.BestScore5Mod,
 		})
 		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
-			Score:    stats.BestScore6,
-			Modifier: stats.BestScore6Mod,
+			NumPlayers: 6,
+			Score:      stats.BestScore6,
+			Modifier:   stats.BestScore6Mod,
 		})
-		data.VariantStats = append(data.VariantStats, updatedStats)
+		variantStats = append(variantStats, updatedStats)
 	}
 
-	// Add the total max scores
-	data.NumMaxScores = totalMaxScores
-	data.TotalMaxScores = len(variantDefinitions) * 5 // For 2 to 6 players
+	data := ProfileData{
+		Title:          "Scores",
+		Name:           user.Username,
+		NumGames:       numGames,
+		NumMaxScores:   totalMaxScores,
+		TotalMaxScores: len(variantDefinitions) * 5, // For 2 to 6 players
+		VariantStats:   variantStats,
+	}
 
-	httpServeTemplate(w, data, "profile")
+	if strings.HasPrefix(c.Request.URL.Path, "/missing-scores/") {
+		data.Title = "Missing Scores"
+		httpServeTemplate(w, data, "profile", "missingScores")
+	} else {
+		httpServeTemplate(w, data, "profile", "scores")
+	}
 }

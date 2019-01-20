@@ -1,0 +1,50 @@
+{{define "profile"}}
+<ul>
+    <li>Total games played: {{.NumGames}}</li>
+    <li>Total max scores: {{.NumMaxScores}} / {{.TotalMaxScores}}</li>
+</ul>
+
+<table>
+    <thead>
+        <tr>
+            <th>Variant</th>
+            <th>Total Games</th>
+            <th>2-Player Best Score</th>
+            <th>3-Player Best Score</th>
+            <th>4-Player Best Score</th>
+            <th>5-Player Best Score</th>
+            <th>6-Player Best Score</th>
+            <th>Average Score</th>
+            <th>Strikeout Rate</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range $index, $results := .VariantStats}}
+            <tr>
+                <td>{{.Name}}</td>
+                <td>{{.NumGames}}</td>
+                {{range $index2, $results2 := .BestScores}}
+                    <td>
+                        {{if eq .Score $results.MaxScore}}<strong>{{end}}
+                        {{.Score}} / {{$results.MaxScore}}
+                        {{if eq .Score $results.MaxScore}}
+                            </strong> &nbsp;
+                            {{if eq .Modifier 0}}
+                                <i class="fas fa-check score-modifier green"></i>
+                            {{else if eq .Modifier 1}}
+                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
+                            {{else if eq .Modifier 2}}
+                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-emptyclues"></i>
+                            {{else if eq .Modifier 3}}
+                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays-emptyclues"></i>
+                            {{end}}
+                        {{end}}
+                    </td>
+                {{end}}
+                <td>{{.AverageScore}}</td>
+                <td>{{.StrikeoutRate}}</td>
+            </tr>
+        {{- end -}}
+    </tbody>
+</table>
+{{end}}
