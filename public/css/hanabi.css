@@ -47,8 +47,6 @@
     Font Awesome 6 fixes
 */
 
-/* TODO */
-
 input[type="checkbox"] + label:before,
 input[type="radio"] + label:before,
 .icon:before,
@@ -73,6 +71,7 @@ a {
     /* The default link style is a dotted bottom border, which is quite ugly */
     border-bottom: 0;
     text-decoration: underline;
+    color: blue;
 }
 
 /*
@@ -90,10 +89,6 @@ body {
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
-}
-
-a {
-    color: blue;
 }
 
 table td {
@@ -133,6 +128,10 @@ table td {
 
 .padding0p5 {
     padding-bottom: 0.5em;
+}
+
+.padding0p75 {
+    padding-bottom: 0.75em;
 }
 
 .padding-top1 {
