@@ -19,6 +19,7 @@ type ProfileData struct {
 	VariantStats   []VariantStats
 }
 type VariantStats struct {
+	ID            int
 	Name          string
 	NumGames      int
 	MaxScore      int
@@ -77,6 +78,7 @@ func httpScores(c *gin.Context) {
 		}
 
 		updatedStats := VariantStats{
+			ID:            i,
 			Name:          variant.Name,
 			NumGames:      stats.NumPlayed,
 			MaxScore:      maxScoreForThisVariant,

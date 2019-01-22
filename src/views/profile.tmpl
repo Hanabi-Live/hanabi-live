@@ -1,4 +1,11 @@
 {{define "content"}}
+<style>
+    th:hover {
+        background-color: rgb(220, 220, 220);
+        cursor: pointer;
+    }
+</style>
+
 <div id="page-wrapper">
 
     <!-- Header -->
@@ -53,6 +60,7 @@
 </div>
 
 <script type="text/javascript" src="/public/js/lib/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/jquery.tablesorter-2.31.1.min.js"></script>
 <script type="text/javascript" src="/public/js/lib/tooltipster.bundle.min.js"></script>
 <script type="text/javascript">
     $(document).ready(() => {
@@ -66,6 +74,9 @@
                 'tooltipster-shadow-big',
             ],
         });
+
+        // Initialize the table sorting
+        $("table").tablesorter();
     });
 </script>
 {{end}}

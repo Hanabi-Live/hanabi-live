@@ -7,6 +7,7 @@
 <table>
     <thead>
         <tr>
+            <th>ID</th>
             <th>Variant</th>
             <th>Total Games</th>
             <th>2-Player Best Score</th>
@@ -21,6 +22,7 @@
     <tbody>
         {{range $index, $results := .VariantStats}}
             <tr>
+                <td>{{.ID}}</td>
                 <td>{{.Name}}</td>
                 <td>{{.NumGames}}</td>
                 {{range $index2, $results2 := .BestScores}}

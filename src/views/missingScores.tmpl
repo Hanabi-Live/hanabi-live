@@ -6,6 +6,7 @@
 <table>
     <thead>
         <tr>
+            <th>ID</th>
             <th>Variant</th>
             <th># of Players</th>
             <th>Current Score</th>
@@ -16,6 +17,7 @@
             {{range $index2, $results2 := .BestScores}}
                 {{if or (ne .Score $results.MaxScore) (ne .Modifier 0)}}
                     <tr>
+                        <td>{{$results.ID}}</td>
                         <td>{{$results.Name}}</td>
                         <td>{{.NumPlayers}}</td>
                         <td>
