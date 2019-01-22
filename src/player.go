@@ -121,58 +121,12 @@ func (p *Player) RemoveCard(target int, g *Game) *Card {
 // (which can only occur if the card fails to play)
 func (p *Player) PlayCard(g *Game, c *Card) bool {
 	// Find out if this successfully plays
-	failed := c.Rank != g.Stacks[c.Suit]+1
-
-	// Handle custom variants where the cards to not play in order from 1 to 5
+	var failed bool
 	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		if g.StackDirections[c.Suit] == stackDirectionUndecided {
-			// If the stack direction is undecided, then there is either no cards played or a "START" card has been played
-			if g.Stacks[c.Suit] == 0 {
-				// No cards have been played yet on this stack
-				failed = c.Rank != 0 && c.Rank != 1 && c.Rank != 5
-
-				// Set the stack direction
-				if !failed {
-					if c.Rank == 1 {
-						g.StackDirections[c.Suit] = stackDirectionUp
-					} else if c.Rank == 5 {
-						g.StackDirections[c.Suit] = stackDirectionDown
-					}
-				}
-			} else if g.Stacks[c.Suit] == -1 {
-				// The "START" card has been played
-				failed = c.Rank != 2 && c.Rank != 4
-
-				// Set the stack direction
-				if !failed {
-					if c.Rank == 2 {
-						g.StackDirections[c.Suit] = stackDirectionUp
-					} else if c.Rank == 4 {
-						g.StackDirections[c.Suit] = stackDirectionDown
-					}
-				}
-			}
-
-		} else if g.StackDirections[c.Suit] == stackDirectionUp {
-			// We don't have to check for failure if this is a "normal" stack that is going from 1 to 5,
-			// because we just checked for that situation above
-
-			// Set the stack direction
-			if !failed && c.Rank == 5 {
-				g.StackDirections[c.Suit] = stackDirectionFinished
-			}
-		} else if g.StackDirections[c.Suit] == stackDirectionDown {
-			failed = c.Rank != g.Stacks[c.Suit]-1
-			if g.Stacks[c.Suit] == 1 && c.Rank == 0 {
-				// We also have to handle the case where a "START" card is played on top of a 1
-				failed = true
-			}
-
-			// Set the stack direction
-			if !failed && c.Rank == 1 {
-				g.StackDirections[c.Suit] = stackDirectionFinished
-			}
-		}
+		// In the "Up or Down" variants, cards do not play in order
+		failed = variantUpOrDownPlay(g, c)
+	} else {
+		failed = c.Rank != g.Stacks[c.Suit]+1
 	}
 
 	// Handle "Detrimental Character Assignment" restrictions
@@ -312,20 +266,23 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 	g.NotifyAction()
 	log.Info(g.GetName() + text)
 
-	// Find out if this was a misplay or discard of a "critical" card
-	if c.IsCritical(g) && !c.IsDead(g) {
+	// Find out if this was a misplay/discard of a card needed to get the maximum score
+	needsToBePlayed := c.NeedsToBePlayed(g)
+	total, discarded := g.GetSpecificCardNum(c.Suit, c.Rank)
+	if needsToBePlayed && total == discarded {
 		// Decrease the maximum score possible for this game
 		g.UpdateMaxScore()
 
-		if !c.Failed { // Ignore misplays
+		if !c.Failed {
 			// Play a sad sound because this discard just reduced the maximum score, "losing" the game
-			// (don't play the custom sound on a misplay, since the misplay sound will already indicate that an error occurred)
+			// (don't play the custom sound on a misplay,
+			// since the misplay sound will already indicate that an error occurred)
 			g.Sound = "sad"
 		}
 	}
 
-	// Find out if this is a "double discard" situation
-	return c.Rank != 1 && !c.IsCritical(g) && !c.IsAlreadyPlayed(g)
+	// Return whether or not this is a "double discard" situation
+	return needsToBePlayed && total == discarded-1
 }
 
 func (p *Player) DrawCard(g *Game) {

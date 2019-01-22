@@ -186,3 +186,109 @@ func variantGetHighestID() int {
 	}
 	return highestID
 }
+
+/*
+	"Up or Down" functions
+*/
+
+func variantUpOrDownPlay(g *Game, c *Card) bool {
+	if g.StackDirections[c.Suit] == stackDirectionUndecided {
+		// If the stack direction is undecided,
+		// then there is either no cards played or a "START" card has been played
+		if g.Stacks[c.Suit] == 0 {
+			// No cards have been played yet on this stack
+			failed := c.Rank != 0 && c.Rank != 1 && c.Rank != 5
+
+			// Set the stack direction
+			if !failed {
+				if c.Rank == 1 {
+					g.StackDirections[c.Suit] = stackDirectionUp
+				} else if c.Rank == 5 {
+					g.StackDirections[c.Suit] = stackDirectionDown
+				}
+			}
+		} else if g.Stacks[c.Suit] == -1 {
+			// The "START" card has been played
+			failed := c.Rank != 2 && c.Rank != 4
+
+			// Set the stack direction
+			if !failed {
+				if c.Rank == 2 {
+					g.StackDirections[c.Suit] = stackDirectionUp
+				} else if c.Rank == 4 {
+					g.StackDirections[c.Suit] = stackDirectionDown
+				}
+			}
+		}
+
+	} else if g.StackDirections[c.Suit] == stackDirectionUp {
+		failed := c.Rank != g.Stacks[c.Suit]+1
+
+		// Set the stack direction
+		if !failed && c.Rank == 5 {
+			g.StackDirections[c.Suit] = stackDirectionFinished
+		}
+
+	} else if g.StackDirections[c.Suit] == stackDirectionDown {
+		failed := c.Rank != g.Stacks[c.Suit]-1
+
+		// Set the stack direction
+		if !failed && c.Rank == 1 {
+			g.StackDirections[c.Suit] = stackDirectionFinished
+		}
+
+	} else if g.StackDirections[c.Suit] == stackDirectionFinished {
+		// Once a stack is finished, any card that is played will fail to play
+		return true
+	}
+
+	// Default case; we should never get here
+	return true
+}
+
+// variantUpOrDownIsDead returns true if it is no longer possible to play this card
+// (taking into account the stack direction)
+func variantUpOrDownIsDead(g *Game, c *Card) bool {
+	// It is not possible for a card to be dead if the stack is already finished
+	if g.StackDirections[c.Suit] == stackDirectionFinished {
+		return false
+	}
+
+	// Compile a list of the preceding cards
+	ranksToCheck := make([]int, 0)
+	if g.StackDirections[c.Suit] == stackDirectionUndecided {
+		// Since the stack direction is undecided,
+		// this card will only be dead if all three of the starting cards are discarded
+		// (we assume that there is only one of each, e.g. one 1, one 5, and one START card)
+		ranksToCheck = []int{0, 1, 5}
+		for i := range ranksToCheck {
+			for _, deckCard := range g.Deck {
+				if deckCard.Suit == c.Suit && deckCard.Rank == i && !deckCard.Discarded {
+					return false
+				}
+			}
+		}
+		return true
+
+	} else if g.StackDirections[c.Suit] == stackDirectionUp {
+		for i := 1; i < c.Rank; i++ {
+			ranksToCheck = append(ranksToCheck, i)
+		}
+
+	} else if g.StackDirections[c.Suit] == stackDirectionDown {
+		for i := 5; i > c.Rank; i-- {
+			ranksToCheck = append(ranksToCheck, i)
+		}
+	}
+
+	// Check to see if all of the preceding cards have been discarded
+	for i := range ranksToCheck {
+		total, discarded := g.GetSpecificCardNum(c.Suit, i)
+		if total == discarded {
+			// The suit is "dead"
+			return true
+		}
+	}
+
+	return false
+}

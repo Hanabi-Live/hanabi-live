@@ -18,100 +18,44 @@ type Card struct {
 }
 
 func (c *Card) Name(g *Game) string {
-	return variants[g.Options.Variant].Suits[c.Suit].Name + " " + strconv.Itoa(c.Rank)
-}
-
-func (c *Card) IsAlreadyPlayed(g *Game) bool {
-	// Go through the deck and search to see if the other matching cards are already played
-	for _, deckCard := range g.Deck {
-		// Skip this card
-		if deckCard.Order == c.Order {
-			continue
-		}
-
-		if deckCard.Suit == c.Suit && deckCard.Rank == c.Rank && deckCard.Played {
-			return true
-		}
-	}
-
-	return false
-}
-
-// IsCritical returns true if this card is the last non-discarded card left
-// This is used to indicate "Double Discard" situations and for the sad sound effect
-func (c *Card) IsCritical(g *Game) bool {
-	// For simplicity, START cards are never considered critical
-	// (used in the "Up or Down" variants)
+	name := variants[g.Options.Variant].Suits[c.Suit].Name
+	name += " "
 	if c.Rank == 0 {
-		return false
+		name += "START"
+	} else {
+		name += strconv.Itoa(c.Rank)
 	}
+	return name
+}
 
-	// Search through the deck for other copies of the card
-	for _, deckCard := range g.Deck {
-		if deckCard.Order == c.Order {
-			// Skip over this card
-			continue
-		}
+// NeedsToBePlayed returns true if the card is not yet played
+// and is still needed to be played in order to get the maximum score
+func (c *Card) NeedsToBePlayed(g *Game) bool {
+	// First, check to see this card has already been played
+	for _, c2 := range g.Deck {
+		if c2.Suit == c.Suit &&
+			c2.Rank == c.Rank &&
+			c2.Played {
 
-		if deckCard.Suit == c.Suit && deckCard.Rank == c.Rank && !deckCard.Discarded {
 			return false
 		}
 	}
 
-	return true
-}
-
-// IsDead returns true if all the copies of some previous rank have been discarded,
-// so it is no longer possible to play this card
-func (c *Card) IsDead(g *Game) bool {
-	if !strings.HasPrefix(g.Options.Variant, "Up or Down") || g.StackDirections[c.Suit] == stackDirectionUp {
-		// This is a "normal" variant where the cards play in order
-		// (or this is a stack going upward in an "Up or Down" variant)
-		for i := 1; i < c.Rank; i++ {
-			// Start with the 1s, then the 2s, etc., checking to see if they are all discarded
-			totalCardsNotDiscarded := 3
-			if i > 1 {
-				totalCardsNotDiscarded = 2
-			}
-			if variants[g.Options.Variant].Suits[c.Suit].IsOneOfEach {
-				totalCardsNotDiscarded = 1
-			}
-			for _, deckCard := range g.Deck {
-				if deckCard.Suit == c.Suit && deckCard.Rank == i && deckCard.Discarded {
-					totalCardsNotDiscarded--
-				}
-			}
-			if totalCardsNotDiscarded == 0 {
-				// The suit is "dead"
-				return true
-			}
-		}
-	} else {
-		// This is a stack going downward in an "Up or Down" variant
-		for i := 5; i > c.Rank; i-- {
-			if i == 0 {
-				break
-			}
-
-			// Start with the 5, then the 4s, etc., checking to see if they are all discarded
-			totalCardsNotDiscarded := 2
-			if i == 1 || i == 5 {
-				totalCardsNotDiscarded = 1
-			}
-			if variants[g.Options.Variant].Suits[c.Suit].IsOneOfEach {
-				totalCardsNotDiscarded = 1
-			}
-			for _, deckCard := range g.Deck {
-				if deckCard.Suit == c.Suit && deckCard.Rank == i && deckCard.Discarded {
-					totalCardsNotDiscarded--
-				}
-			}
-			if totalCardsNotDiscarded == 0 {
-				// The suit is "dead"
-				return true
-			}
+	// Second, check to see if it is still possible to play this card
+	// (the preceding cards in the suit might have already been discarded)
+	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+		// In Up or Down, doing this is more complicated
+		return !variantUpOrDownIsDead(g, c)
+		// (if the suit is dead, then the card does not need to be played)
+	}
+	for i := 1; i < c.Rank; i++ {
+		total, discarded := g.GetSpecificCardNum(c.Suit, i)
+		if total == discarded {
+			// The suit is "dead", so this card does not need to be played anymore
+			return false
 		}
 	}
 
-	return false
+	// By default, all cards not yet played will need to be played
+	return true
 }
