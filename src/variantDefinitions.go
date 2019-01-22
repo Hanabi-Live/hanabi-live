@@ -332,8 +332,8 @@ var (
 		Variant{
 			Name:  "Up or Down & Rainbow (5 Suits)",
 			ID:    43,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, RainbowSuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, RainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
 		Variant{
 			Name:  "Up or Down & White & Rainbow (6 Suits)",
