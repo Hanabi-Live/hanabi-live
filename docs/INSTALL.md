@@ -28,6 +28,9 @@ Note that these steps require **an elevated (administrator) command-shell**.
 * Install the project's dependencies:
   * `install\install_dependencies.sh`
   * `install\install_development_dependencies.sh`
+* Set up environment variables (optional):
+  * `notepad .env`
+  * For local development, you don't have to change any of the default environment variables, but if you want you can open this file and review the defaults.
 * Delete the anonymous user, delete the test database, create the Hanabi database, and create the Hanabi user:
   * `mysql -u root`
     * `DELETE FROM mysql.user WHERE User='';`
@@ -38,10 +41,7 @@ Note that these steps require **an elevated (administrator) command-shell**.
     * `FLUSH PRIVILEGES;`
     * `exit`
 * Install the database schema:
-  * `mysql -uhanabiuser -p1234567890 < install/database_schema.sql`
-* Set up environment variables:
-  * `copy .env_template .env`
-  * For local development, you don't have to change any of the default environment variables, but if you like you can open this file to review the defaults.
+  * `install\install_database_schema.sh`
 * Set the Golang linter in the VS Code settings:
   * `notepad "%APPDATA%\Code\User\settings.json"` <br />
   (the file will not exist on fresh VS Code installations)
@@ -120,7 +120,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment wi
     (change the password to something else)
     * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
     * `FLUSH PRIVILEGES;`
-  * `mysql -uhanabiuser -p < install/database_schema.sql`
+  * `./install/install_database_schema.sh`
 * Set up automated database backups:
   * `crontab -e`
 
