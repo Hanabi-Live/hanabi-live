@@ -235,11 +235,11 @@ func (g *Game) End() {
 	log.Info("Finished database actions for the end of the game.")
 
 	// Turn the game into a shared replay
+	delete(games, g.ID)
 	if _, ok := games[databaseID]; ok {
 		log.Error("Failed to turn the game into a shared replay since there already exists a game with an ID of " + strconv.Itoa(databaseID) + ".")
 		return
 	}
-	delete(games, g.ID)
 	g.ID = databaseID
 	games[g.ID] = g
 	g.SharedReplay = true
