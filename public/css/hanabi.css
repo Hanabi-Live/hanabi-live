@@ -327,6 +327,10 @@ table td {
     Pregame
 */
 
+#lobby-pregame > div {
+    height: 100%;
+}
+
 #lobby-pregame-left {
     font-size: 0.85em;
 }
@@ -335,6 +339,7 @@ table td {
     border: 1px solid black;
     border-radius: 5px;
     padding: 1em;
+    height: 100%;
 }
 
 .lobby-pregame-player-away {
