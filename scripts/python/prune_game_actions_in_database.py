@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Imports
 import json
@@ -27,10 +27,8 @@ cnx = mysql.connector.connect(
 )
 
 # Get all database records
-cursor = cnx.cursor(buffered=True)
-query = ('''
-SELECT id, action FROM game_actions
-''')
+cursor = cnx.cursor()
+query = ('SELECT id, action FROM game_actions')
 cursor.execute(query)
 
 update_list = []
@@ -217,6 +215,7 @@ for thing in update_list:
     cursor = cnx.cursor()
     query = ('UPDATE game_actions SET action = %s WHERE id = %s')
     cursor.execute(query, (thing[1], thing[0]))
+    cursor.close()
     print('UPDATED ID:', thing[0], thing[1])
 
 cnx.commit()
