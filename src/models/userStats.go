@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -9,24 +10,27 @@ type UserStats struct{}
 
 // These are the stats for a user playing a specific variant + the total count of their games
 type Stats struct {
-	NumPlayedAll  int     `json:"numPlayedAll"`
-	NumPlayed     int     `json:"numPlayed"`
-	BestScore2    int     `json:"bestScore2"`
-	BestScore2Mod int     `json:"bestScore2Mod"`
-	BestScore3    int     `json:"bestScore3"`
-	BestScore3Mod int     `json:"bestScore3Mod"`
-	BestScore4    int     `json:"bestScore4"`
-	BestScore4Mod int     `json:"bestScore4Mod"`
-	BestScore5    int     `json:"bestScore5"`
-	BestScore5Mod int     `json:"bestScore5Mod"`
-	BestScore6    int     `json:"bestScore6"`
-	BestScore6Mod int     `json:"bestScore6Mod"`
-	AverageScore  float64 `json:"averageScore"`
-	StrikeoutRate float64 `json:"strikeoutRate"`
+	NumPlayedAll  int          `json:"numPlayedAll"`
+	NumPlayed     int          `json:"numPlayed"`
+	BestScores    []*BestScore `json:"bestScores"`
+	AverageScore  float64      `json:"averageScore"`
+	StrikeoutRate float64      `json:"strikeoutRate"`
+}
+type BestScore struct {
+	NumPlayers int `json:"numPlayers"`
+	Score      int `json:"score"`
+	Modifier   int `json:"modifier"` // (see the stats section in "gameEnd.go")
 }
 
 func (*UserStats) Get(userID int, variant int) (Stats, error) {
 	var stats Stats
+	stats.BestScores = make([]*BestScore, 5) // From 2 to 6 players
+	for i := range stats.BestScores {
+		// This will not work if written as "for i, bestScore :="
+		stats.BestScores[i] = new(BestScore)
+		stats.BestScores[i].NumPlayers = i + 2
+	}
+
 	if err := db.QueryRow(`
 		SELECT
 			(
@@ -53,16 +57,16 @@ func (*UserStats) Get(userID int, variant int) (Stats, error) {
 	`, userID, userID, variant).Scan(
 		&stats.NumPlayedAll,
 		&stats.NumPlayed,
-		&stats.BestScore2,
-		&stats.BestScore2Mod,
-		&stats.BestScore3,
-		&stats.BestScore3Mod,
-		&stats.BestScore4,
-		&stats.BestScore4Mod,
-		&stats.BestScore5,
-		&stats.BestScore5Mod,
-		&stats.BestScore6,
-		&stats.BestScore6Mod,
+		&stats.BestScores[0].Score, // 2-player
+		&stats.BestScores[0].Modifier,
+		&stats.BestScores[1].Score, // 3-player
+		&stats.BestScores[1].Modifier,
+		&stats.BestScores[2].Score, // 4-player
+		&stats.BestScores[2].Modifier,
+		&stats.BestScores[3].Score, // 5-player
+		&stats.BestScores[3].Modifier,
+		&stats.BestScores[4].Score, // 6-player
+		&stats.BestScores[4].Modifier,
 		&stats.AverageScore,
 		&stats.StrikeoutRate,
 	); err == sql.ErrNoRows {
@@ -75,6 +79,11 @@ func (*UserStats) Get(userID int, variant int) (Stats, error) {
 }
 
 func (*UserStats) Update(userID int, variant int, stats Stats) error {
+	// Validate that the BestScores slice contains 5 entries
+	if len(stats.BestScores) != 5 {
+		return errors.New("BestScores does not contain 5 entries (for 2 to 6 players).")
+	}
+
 	// First, check to see if they have a row in the stats table for this variant already
 	// If they don't, then we need to insert a new row
 	var numRows int
@@ -163,16 +172,16 @@ func (*UserStats) Update(userID int, variant int, stats Stats) error {
 	_, err := stmt.Exec(
 		userID, // num_played
 		variant,
-		stats.BestScore2,
-		stats.BestScore2Mod,
-		stats.BestScore3,
-		stats.BestScore3Mod,
-		stats.BestScore4,
-		stats.BestScore4Mod,
-		stats.BestScore5,
-		stats.BestScore5Mod,
-		stats.BestScore6,
-		stats.BestScore6Mod,
+		stats.BestScores[0].Score, // 2-player
+		stats.BestScores[0].Modifier,
+		stats.BestScores[1].Score, // 3-player
+		stats.BestScores[1].Modifier,
+		stats.BestScores[2].Score, // 4-player
+		stats.BestScores[2].Modifier,
+		stats.BestScores[3].Score, // 5-player
+		stats.BestScores[3].Modifier,
+		stats.BestScores[4].Score, // 6-player
+		stats.BestScores[4].Modifier,
 		userID, // average_score
 		variant,
 		userID, // strikeout_rate
@@ -286,22 +295,9 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 					}
 				}
 
-				if numPlayers == 2 {
-					stats.BestScore2 = overallBestScore
-					stats.BestScore2Mod = overallBestScoreMod
-				} else if numPlayers == 3 {
-					stats.BestScore3 = overallBestScore
-					stats.BestScore3Mod = overallBestScoreMod
-				} else if numPlayers == 4 {
-					stats.BestScore4 = overallBestScore
-					stats.BestScore4Mod = overallBestScoreMod
-				} else if numPlayers == 5 {
-					stats.BestScore5 = overallBestScore
-					stats.BestScore5Mod = overallBestScoreMod
-				} else if numPlayers == 6 {
-					stats.BestScore6 = overallBestScore
-					stats.BestScore6Mod = overallBestScoreMod
-				}
+				i := numPlayers - 2
+				stats.BestScores[i].Score = overallBestScore
+				stats.BestScores[i].Modifier = overallBestScoreMod
 			}
 
 			// Insert a new row for this user + variant

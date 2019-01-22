@@ -22,14 +22,9 @@ type VariantStats struct {
 	Name          string
 	NumGames      int
 	MaxScore      int
-	BestScores    []BestScore
+	BestScores    []*models.BestScore
 	AverageScore  int
 	StrikeoutRate int
-}
-type BestScore struct {
-	NumPlayers int
-	Score      int
-	Modifier   int // (see the stats section in "gameEnd.go")
 }
 
 func httpScores(c *gin.Context) {
@@ -75,55 +70,20 @@ func httpScores(c *gin.Context) {
 		}
 
 		maxScoreForThisVariant := 5 * len(variant.Suits)
-		if stats.BestScore2 == maxScoreForThisVariant {
-			totalMaxScores++
-		}
-		if stats.BestScore3 == maxScoreForThisVariant {
-			totalMaxScores++
-		}
-		if stats.BestScore4 == maxScoreForThisVariant {
-			totalMaxScores++
-		}
-		if stats.BestScore5 == maxScoreForThisVariant {
-			totalMaxScores++
-		}
-		if stats.BestScore6 == maxScoreForThisVariant {
-			totalMaxScores++
+		for _, bestScore := range stats.BestScores {
+			if bestScore.Score == maxScoreForThisVariant {
+				totalMaxScores++
+			}
 		}
 
 		updatedStats := VariantStats{
 			Name:          variant.Name,
 			NumGames:      stats.NumPlayed,
 			MaxScore:      maxScoreForThisVariant,
-			BestScores:    make([]BestScore, 0),
+			BestScores:    stats.BestScores,
 			AverageScore:  int((math.Round(stats.AverageScore))),
 			StrikeoutRate: int(math.Round(stats.StrikeoutRate * 100)),
 		}
-		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
-			NumPlayers: 2,
-			Score:      stats.BestScore2,
-			Modifier:   stats.BestScore2Mod,
-		})
-		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
-			NumPlayers: 3,
-			Score:      stats.BestScore3,
-			Modifier:   stats.BestScore3Mod,
-		})
-		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
-			NumPlayers: 4,
-			Score:      stats.BestScore4,
-			Modifier:   stats.BestScore4Mod,
-		})
-		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
-			NumPlayers: 5,
-			Score:      stats.BestScore5,
-			Modifier:   stats.BestScore5Mod,
-		})
-		updatedStats.BestScores = append(updatedStats.BestScores, BestScore{
-			NumPlayers: 6,
-			Score:      stats.BestScore6,
-			Modifier:   stats.BestScore6Mod,
-		})
 		variantStats = append(variantStats, updatedStats)
 	}
 

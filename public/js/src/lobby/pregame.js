@@ -57,7 +57,7 @@ exports.draw = () => {
 
     // Draw the player boxes
     const numPlayers = globals.game.players.length;
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i <= 5; i++) {
         const div = $(`#lobby-pregame-player-${(i + 1)}`);
 
         const player = globals.game.players[i];
@@ -134,7 +134,7 @@ exports.draw = () => {
                         ${numPlayers}-player best score:
                     </div>
                     <div class="col-2 align-right padding0">
-                        ${player.stats[`bestScore${numPlayers}`]}
+                        ${player.stats.bestScores[numPlayers - 2].score}
                     </div>
                 </div>
             `;
@@ -154,8 +154,9 @@ exports.draw = () => {
         for (let j = 2; j <= 6; j++) {
             html += '<div class="row">';
             html += `<div class="col-6">${j}-player:</div>`;
-            const bestScore = player.stats[`bestScore${j}`];
-            const bestScoreMod = player.stats[`bestScore${j}Mod`];
+            const bestScoreObject = player.stats.bestScores[j - 2];
+            const bestScore = bestScoreObject.score;
+            const bestScoreMod = bestScoreObject.modifier;
             html += '<div class="col-6">';
             if (bestScore === maxScore) {
                 html += '<strong>';

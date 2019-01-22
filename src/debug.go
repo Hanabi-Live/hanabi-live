@@ -81,6 +81,7 @@ func debug2() {
 	log.Debug("---------------------------------------------------------------")
 }
 
+/*
 func updateBestScores() {
 	if err := db.UserStats.UpdateAll(variantGetHighestID()); err != nil {
 		log.Error("Failed to update the best scores for every user:", err)
@@ -88,3 +89,4 @@ func updateBestScores() {
 		log.Info("Updated the best scores for every user.")
 	}
 }
+*/
