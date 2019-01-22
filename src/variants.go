@@ -194,12 +194,13 @@ func variantGetHighestID() int {
 */
 
 func variantUpOrDownPlay(g *Game, c *Card) bool {
+	var failed bool
 	if g.StackDirections[c.Suit] == stackDirectionUndecided {
 		// If the stack direction is undecided,
 		// then there is either no cards played or a "START" card has been played
 		if g.Stacks[c.Suit] == 0 {
 			// No cards have been played yet on this stack
-			failed := c.Rank != 0 && c.Rank != 1 && c.Rank != 5
+			failed = c.Rank != 0 && c.Rank != 1 && c.Rank != 5
 
 			// Set the stack direction
 			if !failed {
@@ -211,7 +212,7 @@ func variantUpOrDownPlay(g *Game, c *Card) bool {
 			}
 		} else if g.Stacks[c.Suit] == -1 {
 			// The "START" card has been played
-			failed := c.Rank != 2 && c.Rank != 4
+			failed = c.Rank != 2 && c.Rank != 4
 
 			// Set the stack direction
 			if !failed {
@@ -224,7 +225,7 @@ func variantUpOrDownPlay(g *Game, c *Card) bool {
 		}
 
 	} else if g.StackDirections[c.Suit] == stackDirectionUp {
-		failed := c.Rank != g.Stacks[c.Suit]+1
+		failed = c.Rank != g.Stacks[c.Suit]+1
 
 		// Set the stack direction
 		if !failed && c.Rank == 5 {
@@ -232,7 +233,7 @@ func variantUpOrDownPlay(g *Game, c *Card) bool {
 		}
 
 	} else if g.StackDirections[c.Suit] == stackDirectionDown {
-		failed := c.Rank != g.Stacks[c.Suit]-1
+		failed = c.Rank != g.Stacks[c.Suit]-1
 
 		// Set the stack direction
 		if !failed && c.Rank == 1 {
@@ -241,11 +242,10 @@ func variantUpOrDownPlay(g *Game, c *Card) bool {
 
 	} else if g.StackDirections[c.Suit] == stackDirectionFinished {
 		// Once a stack is finished, any card that is played will fail to play
-		return true
+		failed = true
 	}
 
-	// Default case; we should never get here
-	return true
+	return failed
 }
 
 // variantUpOrDownIsDead returns true if it is no longer possible to play this card
@@ -293,4 +293,10 @@ func variantUpOrDownIsDead(g *Game, c *Card) bool {
 	}
 
 	return false
+}
+
+// variantUpOrDownUpdateMaxScore goes through all the cards in the deck and calculates the maximum possible score
+// (some important cards might have been discarded already)
+func variantUpOrDownUpdateMaxScore(g *Game) {
+
 }

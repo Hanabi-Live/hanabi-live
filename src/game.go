@@ -105,6 +105,7 @@ func (g *Game) UpdateMaxScore() {
 	// Don't bother adjusting the maximum score if we are playing a "Up or Down" variant,
 	// as it is more difficult to calculate which cards are still needed
 	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+		variantUpOrDownUpdateMaxScore(g)
 		return
 	}
 
@@ -112,14 +113,8 @@ func (g *Game) UpdateMaxScore() {
 	for suit := range g.Stacks {
 		for rank := 1; rank <= 5; rank++ {
 			// Search through the deck to see if all the coipes of this card are discarded already
-			cardAlive := false
-			for _, c := range g.Deck {
-				if c.Suit == suit && c.Rank == rank && !c.Discarded {
-					cardAlive = true
-					break
-				}
-			}
-			if cardAlive {
+			total, discarded := g.GetSpecificCardNum(suit, rank)
+			if total > discarded {
 				g.MaxScore++
 			} else {
 				break
