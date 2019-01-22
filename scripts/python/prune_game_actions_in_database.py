@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# (the "dotenv" module does not work in Python 2)
 
 # Imports
 import json

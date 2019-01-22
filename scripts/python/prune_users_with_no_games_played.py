@@ -1,7 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# (the "dotenv" module does not work in Python 2)
 
 # Imports
 import os
+import sys
 import dotenv
 import mysql.connector
 
@@ -25,7 +27,7 @@ cnx = mysql.connector.connect(
 )
 
 # Get all users
-cursor = cnx.cursor(buffered=True)
+cursor = cnx.cursor()
 query = ('SELECT id, username FROM users')
 cursor.execute(query)
 
@@ -36,18 +38,16 @@ cursor.close()
 
 for user in users:
     cursor = cnx.cursor()
-    query = ('SELECT id FROM game_participants WHERE user_id = %s')
-    cursor.execute(query, (user[0]))
-
-    games = 0
-    for (game_id) in cursor:
-        games += 1
+    query = ('SELECT COUNT(id) FROM game_participants WHERE user_id = %s')
+    cursor.execute(query, (user[0],))
+    for (count) in cursor:
+        num_games = count[0]
     cursor.close()
 
-    if games == 0:
+    if num_games == 0:
         cursor = cnx.cursor()
         query = ('DELETE FROM users WHERE id = %s')
-        cursor.execute(query, (user_id))
+        cursor.execute(query, (user[0],))
         print('Deleted user:', user[0], user[1])
 
 cnx.commit()
