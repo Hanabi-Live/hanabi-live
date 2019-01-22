@@ -211,19 +211,38 @@ func (g *Game) End() {
 			modifier += 2
 		}
 
-		if len(g.Players) == 2 && g.Score > stats.BestScore2 {
+		if len(g.Players) == 2 &&
+			(g.Score > stats.BestScore2 ||
+				(g.Score == stats.BestScore2 && modifier < stats.BestScore2Mod)) {
+
 			stats.BestScore2 = g.Score
 			stats.BestScore2Mod = modifier
-		} else if len(g.Players) == 3 && g.Score > stats.BestScore3 {
+
+		} else if len(g.Players) == 3 &&
+			(g.Score > stats.BestScore3 ||
+				(g.Score == stats.BestScore3 && modifier < stats.BestScore3Mod)) {
+
 			stats.BestScore3 = g.Score
 			stats.BestScore3Mod = modifier
-		} else if len(g.Players) == 4 && g.Score > stats.BestScore4 {
+
+		} else if len(g.Players) == 4 &&
+			(g.Score > stats.BestScore4 ||
+				(g.Score == stats.BestScore4 && modifier < stats.BestScore4Mod)) {
+
 			stats.BestScore4 = g.Score
 			stats.BestScore4Mod = modifier
-		} else if len(g.Players) == 5 && g.Score > stats.BestScore5 {
+
+		} else if len(g.Players) == 5 &&
+			(g.Score > stats.BestScore5 ||
+				(g.Score == stats.BestScore5 && modifier < stats.BestScore5Mod)) {
+
 			stats.BestScore5 = g.Score
 			stats.BestScore5Mod = modifier
-		} else if len(g.Players) == 6 && g.Score > stats.BestScore6 {
+
+		} else if len(g.Players) == 6 &&
+			(g.Score > stats.BestScore6 ||
+				(g.Score == stats.BestScore6 && modifier < stats.BestScore6Mod)) {
+
 			stats.BestScore6 = g.Score
 			stats.BestScore6Mod = modifier
 		}
