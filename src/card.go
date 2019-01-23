@@ -20,7 +20,7 @@ type Card struct {
 func (c *Card) Name(g *Game) string {
 	name := variants[g.Options.Variant].Suits[c.Suit].Name
 	name += " "
-	if c.Rank == 0 {
+	if c.Rank == startCardRank {
 		name += "START"
 	} else {
 		name += strconv.Itoa(c.Rank)

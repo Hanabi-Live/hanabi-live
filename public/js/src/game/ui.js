@@ -2798,7 +2798,7 @@ function HanabiUI(lobby, gameID, game) {
                     let textYPos;
                     let indexLabel;
                     let rankString = rank.toString();
-                    if (this.variant.name.startsWith('Up or Down')) && rank === 7 {
+                    if (rank === 7) {
                         // "START" cards are represented by rank 7
                         rankString = 'S';
                     }

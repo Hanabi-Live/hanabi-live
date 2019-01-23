@@ -2,20 +2,35 @@
 
 # Imports
 import os
+import subprocess
 import sys
 
 # Get the directory of the script
 # https://stackoverflow.com/questions/4934806/how-can-i-find-scripts-directory-with-python
 DIR = os.path.dirname(os.path.realpath(__file__))
 
-# We must change the directory to where the JavaScript tools are installed
-JS_DIR = os.path.join(DIR, 'public', 'js')
-os.chdir(JS_DIR)
-
 # "Browserify" the JavaScript (to convert Node-style imports to compatible browser code)
+JS_DIR = os.path.join(DIR, 'public', 'js')
 MAIN_SRC_JS = os.path.join(JS_DIR, 'src', 'main.js')
 MAIN_BUNDLED_JS = os.path.join(JS_DIR, 'main.bundled.js')
-os.system('npx browserify "' + MAIN_SRC_JS + '" --outfile "' + MAIN_BUNDLED_JS + '" --verbose --debug')
+if not os.path.isfile(MAIN_SRC_JS):
+    print('Error: Failed to find file "' + MAIN_SRC_JS + '".')
+try:
+   output = subprocess.check_output([
+       'npx',
+       'browserify',
+       MAIN_SRC_JS,
+       '--outfile',
+       MAIN_BUNDLED_JS,
+       '--verbose',
+       '--debug',
+   ], cwd=JS_DIR)
+   output = output.strip()
+   if output != '':
+       print(output)
+except subprocess.CalledProcessError as e:
+    print('Error: Failed to browserify the JavaScript.')
+    sys.exit(1)
 print("Browserification complete.")
 
 # Combine all of the JavaScript into one file
@@ -37,6 +52,9 @@ JS_LIB_DIR = os.path.join(JS_DIR, 'lib')
 js = ''
 for file_name in JS_LIB_FILES:
     file_path = os.path.join(JS_LIB_DIR, file_name)
+    if not os.path.isfile(file_path):
+        print('Error: Failed to find file "' + file_path + '".')
+        sys.exit(1)
     if sys.version_info >= (3, 0):
         with open(file_path, 'r', encoding='utf8') as f:
             js += f.read()
@@ -46,6 +64,9 @@ for file_name in JS_LIB_FILES:
 
 for file_name in JS_FILES:
     file_path = os.path.join(JS_DIR, file_name)
+    if not os.path.isfile(file_path):
+        print('Error: Failed to find file "' + file_path + '".')
+        sys.exit(1)
     if sys.version_info >= (3, 0):
         with open(file_path, 'r', encoding='utf8') as f:
             js += f.read()
@@ -63,6 +84,21 @@ else:
         f.write(js)
 
 # Compile and minify JS
-os.system('npx google-closure-compiler --js=main.js --js_output_file=main.min.js --warning_level QUIET')
-# (if we use the full paths here, it throws errors on Windows)
+try:
+    output = subprocess.check_output([
+        'npx',
+        'google-closure-compiler',
+        '--js',
+        'main.js',
+        '--js_output_file',
+        'main.min.js',
+        '--warning_level',
+        'QUIET',
+    ], cwd=JS_DIR)
+    output = output.strip()
+    if output != '':
+        print(output)
+except subprocess.CalledProcessError as e:
+    print('Error: Failed to compile the JavaScript.')
+    sys.exit(1)
 print("Closure compilation complete.")

@@ -2,6 +2,7 @@
 
 # Imports
 import os
+import subprocess
 import sys
 
 # Get the directory of the script
@@ -23,6 +24,9 @@ CSS_DIR = os.path.join(DIR, 'public', 'css')
 css = ''
 for file_name in CSS_FILES:
     file_path = os.path.join(CSS_DIR, file_name)
+    if not os.path.isfile(file_path):
+        print('Error: Failed to find file "' + file_path + '".')
+        sys.exit(1)
     if sys.version_info >= (3, 0):
         with open(file_path, 'r', encoding='utf8') as f:
             css += f.read()
@@ -42,6 +46,19 @@ else:
 # Optimize and minify CSS with CSSO
 # (which is installed in the JavaScript directory)
 JS_DIR = os.path.join(DIR, 'public', 'js')
-os.chdir(JS_DIR)
 CSS_MINIFIED = os.path.join(CSS_DIR, 'main.min.css')
-os.system('npx csso --input "' + CSS_CONCATENATED + '" --output "' + CSS_MINIFIED + '"')
+try:
+    output = subprocess.check_output([
+        'npx',
+        'csso',
+        '--input',
+        CSS_CONCATENATED,
+        '--output',
+        CSS_MINIFIED,
+    ], cwd=JS_DIR)
+    output = output.strip()
+    if output != '':
+        print(output)
+except subprocess.CalledProcessError as e:
+    print('Error: Failed to compile the JavaScript.')
+    sys.exit(1)
