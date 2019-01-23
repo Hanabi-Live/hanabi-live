@@ -282,7 +282,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 	}
 
 	// Return whether or not this is a "double discard" situation
-	return needsToBePlayed && total == discarded-1
+	return needsToBePlayed && total == discarded+1
 }
 
 func (p *Player) DrawCard(g *Game) {
