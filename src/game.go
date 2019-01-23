@@ -102,8 +102,8 @@ func (g *Game) GetSpectatorIndex(id int) int {
 
 // UpdateMaxScore goes through the deck to see if needed cards have been discarded
 func (g *Game) UpdateMaxScore() {
-	// Don't bother adjusting the maximum score if we are playing a "Up or Down" variant,
-	// as it is more difficult to calculate which cards are still needed
+	// Adjusting the maximum score is much more complicated if we are playing a "Up or Down" variant,
+	// so the logic for this is stored in a separate file
 	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
 		variantUpOrDownUpdateMaxScore(g)
 		return
@@ -197,20 +197,23 @@ func (g *Game) CheckEnd() bool {
 
 	// Check to see if there are any cards remaining that can be played on the stacks
 	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		// Don't bother searching through the deck if we are playing an "Up or Down" variant,
-		// as it is more difficult to calculate which cards are still needed
-		return false
-	}
-	for i, stackLen := range g.Stacks {
-		// Search through the deck
-		neededSuit := i
-		neededRank := stackLen + 1
-		for _, c := range g.Deck {
-			if c.Suit == neededSuit &&
-				c.Rank == neededRank &&
-				!c.Discarded {
+		// Searching for the next card is much more complicated if we are playing a "Up or Down" variant,
+		// so the logic for this is stored in a separate file
+		if !variantUpOrDownCheckAllDead(g) {
+			return false
+		}
+	} else {
+		for i, stackLen := range g.Stacks {
+			// Search through the deck
+			neededSuit := i
+			neededRank := stackLen + 1
+			for _, c := range g.Deck {
+				if c.Suit == neededSuit &&
+					c.Rank == neededRank &&
+					!c.Discarded {
 
-				return false
+					return false
+				}
 			}
 		}
 	}

@@ -74,7 +74,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	for _, suit := range suits {
 		ranks := []int{1, 2, 3, 4, 5}
 		if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-			ranks = append(ranks, 0) // The 0th rank is the "START" card
+			ranks = append(ranks, startCardRank) // This is defined in the "variantUpOrDown.go" file
 		}
 		for _, rank := range ranks {
 			// In a normal suit of Hanabi, there are three 1's, two 2's, two 3's, two 4's, and one five
@@ -86,7 +86,7 @@ func commandGameStart(s *Session, d *CommandData) {
 				}
 			} else if rank == 5 {
 				amountToAdd = 1
-			} else if rank == 0 { // The "START" card
+			} else if rank == startCardRank { // The "START" card
 				amountToAdd = 1
 			} else {
 				amountToAdd = 2

@@ -83,7 +83,7 @@ function HanabiUI(lobby, gameID, game) {
     this.accidentalClueTimer = Date.now();
 
     // This below code block deals with automatic resizing
-    // Start listening to resize events and draw canvas.
+    // Start listening to resize events and draw canvas
     // (this is commented out because it is currently broken)
     // window.addEventListener('resize', resizeCanvas, false);
 
@@ -499,10 +499,9 @@ function HanabiUI(lobby, gameID, game) {
             this.smallHistory.shift();
         }
         this.smallHistory.push(text);
-        // Performance optimization: setText on the children is slow, so don't
-        // actually do it until its time to display things.
-        // We also have to call refreshText after any time we manipulate replay
-        // position
+        // Performance optimization: setText on the children is slow,
+        // so don't actually do it until its time to display things
+        // We also have to call refreshText after any time we manipulate replay position
         if (!ui.replay || !ui.animateFast) {
             this.refreshText();
         }
@@ -2772,8 +2771,11 @@ function HanabiUI(lobby, gameID, game) {
         for (let i = 0; i < suits.length; i++) {
             const suit = suits[i];
 
-            // 0 is the stack base; 1-5 are the cards; 6 is a card of unknown rank
-            for (let rank = 0; rank <= 6; rank++) {
+            // Rank 0 is the stack base
+            // Rank 1-5 are the normal cards
+            // Rank 6 is a card of unknown rank
+            // Rank 7 is a "START" card (in the "Up or Down" variants)
+            for (let rank = 0; rank <= 7; rank++) {
                 const cvs = document.createElement('canvas');
                 cvs.width = CARDW;
                 cvs.height = CARDH;
@@ -2792,18 +2794,23 @@ function HanabiUI(lobby, gameID, game) {
                 ctx.lineWidth = 2;
                 ctx.lineJoin = 'round';
 
-                if (rank > 0 && rank < 6) {
+                if (rank != 0 && rank != 6) {
                     let textYPos;
                     let indexLabel;
+                    let rankString = rank.toString();
+                    if (this.variant.name.startsWith('Up or Down')) && rank === 7 {
+                        // "START" cards are represented by rank 7
+                        rankString = 'S';
+                    }
                     let fontSize;
                     if (lobby.settings.showColorblindUI) {
                         fontSize = 68;
                         textYPos = 83;
-                        indexLabel = suit.abbreviation + rank.toString();
+                        indexLabel = suit.abbreviation + rankString;
                     } else {
                         fontSize = 96;
                         textYPos = 110;
-                        indexLabel = rank.toString();
+                        indexLabel = rankString;
                     }
 
                     ctx.font = `bold ${fontSize}pt Arial`;

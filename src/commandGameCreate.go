@@ -106,7 +106,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 		Players:            make([]*Player, 0),
 		Spectators:         make([]*Session, 0),
 		DisconSpectators:   make(map[int]bool),
-		Clues:              8,
+		Clues:              maxClues,
 		DatetimeCreated:    time.Now(),
 		DatetimeLastAction: time.Now(),
 		Deck:               make([]*Card, 0),
@@ -118,7 +118,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 	}
 	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
 		// In this variant, having 1 clue available is represented with a value of 2
-		// We want the players to start with 8 clues, so we have to double the starting clues
+		// We want the players to start with the normal amount of clues, so we have to double the starting amount
 		g.Clues *= 2
 	}
 	msg := g.GetName() + "User \"" + s.Username() + "\" created"

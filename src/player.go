@@ -49,7 +49,7 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 		c.Touched = true
 	}
 
-	// Keep track that someone clued
+	// Keep track that someone clued (i.e. doing 1 clue costs 1 "Clue Token")
 	g.Clues--
 	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
 		// In the "Clue Starved" variants, you only get 0.5 clues per discard
@@ -213,9 +213,14 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 
 	if extraClue {
 		g.Clues++
-		if g.Clues > 8 {
-			// The extra clue is wasted if they are at 8 clues already
-			g.Clues = 8
+
+		// The extra clue is wasted if the team is at the maximum amount of clues already
+		clueLimit := maxClues
+		if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+			clueLimit *= 2
+		}
+		if g.Clues > clueLimit {
+			g.Clues = clueLimit
 		}
 	}
 

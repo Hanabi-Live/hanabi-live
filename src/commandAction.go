@@ -30,6 +30,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -187,10 +188,14 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
-		// Validate that the team is not at 8 clues
+		// Validate that the team is not at the maximum amount of clues
 		// (the client should enforce this, but do a check just in case)
-		if g.Clues == 8 {
-			s.Warning("You cannot discard while the team has 8 clues.")
+		clueLimit := maxClues
+		if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+			clueLimit *= 2
+		}
+		if g.Clues == clueLimit {
+			s.Warning("You cannot discard while the team has " + strconv.Itoa(maxClues) + " clues.")
 			return
 		}
 
