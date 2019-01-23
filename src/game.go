@@ -140,6 +140,16 @@ func (g *Game) GetSpecificCardNum(suit int, rank int) (int, int) {
 	return total, discarded
 }
 
+func (g *Game) IsCardPlayed(suit int, rank int) bool {
+	for _, c := range g.Deck {
+		if c.Suit == suit && c.Rank == rank && c.Played {
+			return true
+		}
+	}
+
+	return false
+}
+
 /*
 	Other major functions
 */

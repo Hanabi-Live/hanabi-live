@@ -41,3 +41,11 @@ func durationToString(d time.Duration) string {
 
 // From: https://stackoverflow.com/questions/38554353/how-to-check-if-a-string-only-contains-alphabetic-characters-in-go
 var isAlphanumericSpacesAndSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !-]+$`).MatchString
+
+// From: https://mrekucci.blogspot.com/2015/07/dont-abuse-mathmax-mathmin.html
+func max(x, y int) int {
+	if x > y {
+		return x
+	}
+	return y
+}

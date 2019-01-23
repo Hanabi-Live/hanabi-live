@@ -298,5 +298,63 @@ func variantUpOrDownIsDead(g *Game, c *Card) bool {
 // variantUpOrDownUpdateMaxScore goes through all the cards in the deck and calculates the maximum possible score
 // (some important cards might have been discarded already)
 func variantUpOrDownUpdateMaxScore(g *Game) {
+	g.MaxScore = 0
+	for suit := range g.Stacks {
+		if g.StackDirections[suit] == stackDirectionUndecided {
+			upWalk := variantUpOrDownWalk(g, suit, true)
+			downWalk := variantUpOrDownWalk(g, suit, false)
+			g.MaxScore += max(upWalk, downWalk)
+		} else if g.StackDirections[suit] == stackDirectionUp {
+			g.MaxScore += variantUpOrDownWalk(g, suit, true)
+		} else if g.StackDirections[suit] == stackDirectionDown {
+			g.MaxScore += variantUpOrDownWalk(g, suit, false)
+		} else if g.StackDirections[suit] == stackDirectionFinished {
+			g.MaxScore += 5
+		}
+	}
+}
 
+func variantUpOrDownWalk(g *Game, suit int, up bool) int {
+	cardsThatCanStillBePlayed := 0
+	if up {
+		// First, check to see if the stack can still be started (going up)
+		for rank := range []int{0, 1} {
+			total, discarded := g.GetSpecificCardNum(suit, rank)
+			if total == discarded {
+				return 0
+			}
+		}
+		cardsThatCanStillBePlayed++
+
+		// Second, walk upwards
+		for rank := 2; rank <= 5; rank++ {
+			total, discarded := g.GetSpecificCardNum(suit, rank)
+			if total > discarded {
+				cardsThatCanStillBePlayed++
+			} else {
+				break
+			}
+		}
+
+	} else {
+		// First, check to see if the stack can still be started (going down)
+		for rank := range []int{0, 5} {
+			total, discarded := g.GetSpecificCardNum(suit, rank)
+			if total == discarded {
+				return 0
+			}
+		}
+
+		// Second, walk downwards
+		for rank := 4; rank >= 1; rank-- {
+			total, discarded := g.GetSpecificCardNum(suit, rank)
+			if total > discarded {
+				cardsThatCanStillBePlayed++
+			} else {
+				break
+			}
+		}
+	}
+
+	return cardsThatCanStillBePlayed
 }
