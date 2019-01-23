@@ -86,8 +86,7 @@ body {
     background-color: rgb(34, 79, 39);
     /* This is the same color as the background image so that it won't show white while the image is loading */
     background-image: url(../img/background2.jpg);
-    background-repeat: no-repeat;
-    background-position: center center;
+    background-repeat: round;
     background-attachment: fixed;
 }
 
