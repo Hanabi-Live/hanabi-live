@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 	"time"
 
@@ -321,11 +322,32 @@ func (s *Session) NotifySpectators(g *Game) {
 func (s *Session) NotifyReplayLeader(g *Game) {
 	// Get the username of the game owner
 	// (the "Owner" field is used to store the leader of the shared replay)
-	var name string
+	name := ""
 	for _, s := range g.Spectators {
 		if s.UserID() == g.Owner {
 			name = s.Username()
 			break
+		}
+	}
+
+	if name == "" {
+		// The leader is not currently present, so try getting their username from the players object
+		for _, p := range g.Players {
+			if p.ID == g.Owner {
+				name = p.Name
+				break
+			}
+		}
+	}
+
+	if name == "" {
+		// The leader is not currently present and was not a member of the original game,
+		// so we need to look up their username from the database
+		if v, err := db.Users.GetUsername(g.Owner); err != nil {
+			log.Error("Failed to get the username for user "+strconv.Itoa(g.Owner)+" who is the owner of game:", g.ID)
+			return
+		} else {
+			name = v
 		}
 	}
 

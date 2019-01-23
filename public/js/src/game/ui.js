@@ -41,6 +41,7 @@ function HanabiUI(lobby, gameID, game) {
     this.useSharedTurns = true;
     this.replayOnly = false;
     this.spectating = false;
+    this.spectators = []; // Used to keep track of the spectators of the current game
     this.replayMax = 0;
     this.animateFast = true;
     this.ready = false;
@@ -5835,6 +5836,9 @@ Keyboard hotkeys:
             return;
         }
 
+        // Remember the current list of spectators
+        this.spectators = data.names;
+
         const shouldShowLabel = data.names.length > 0;
         spectatorsLabel.setVisible(shouldShowLabel);
         spectatorsNumLabel.setVisible(shouldShowLabel);
@@ -5854,6 +5858,17 @@ Keyboard hotkeys:
         } else {
             $('#tooltip-spectators').tooltipster('close');
         }
+
+        // We might also need to update the content of replay leader icon
+        if (this.sharedReplay) {
+            let content = `<strong>Leader:</strong> ${this.sharedReplayLeader}`;
+            if (!this.spectators.includes(this.sharedReplayLeader)) {
+                // Check to see if the leader is away
+                content += ' (away)';
+            }
+            $('#tooltip-leader').tooltipster('instance').content(content);
+        }
+
         UILayer.batchDraw();
     };
 
@@ -5997,14 +6012,13 @@ Keyboard hotkeys:
 
         // Update the UI
         sharedReplayLeaderLabel.show();
-        const content = `<strong>Leader:</strong> ${this.sharedReplayLeader}`;
+        let content = `<strong>Leader:</strong> ${this.sharedReplayLeader}`;
+        if (!this.spectators.includes(this.sharedReplayLeader)) {
+            // Check to see if the leader is away
+            content += ' (away)';
+        }
         $('#tooltip-leader').tooltipster('instance').content(content);
 
-        if (this.sharedReplayLeader === lobby.username) {
-            sharedReplayLeaderLabel.fill('yellow');
-        } else {
-            sharedReplayLeaderLabel.fill('white');
-        }
         sharedReplayLeaderLabelPulse.play();
 
         toggleSharedTurnButton.show();

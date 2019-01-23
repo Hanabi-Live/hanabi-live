@@ -65,6 +65,16 @@ func (*Users) Get(username string) (bool, User, error) {
 	return true, user, nil
 }
 
+func (*Users) GetUsername(userID int) (string, error) {
+	var username string
+	err := db.QueryRow(`
+		SELECT username
+		FROM users
+		WHERE id = ?
+	`, userID).Scan(&username)
+	return username, err
+}
+
 func (*Users) Update(userID int, lastIP string) error {
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`
