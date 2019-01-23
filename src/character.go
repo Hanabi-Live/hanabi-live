@@ -1,7 +1,6 @@
 package main
 
 import (
-	"math"
 	"math/rand"
 	"strconv"
 )
@@ -429,13 +428,13 @@ func characterCheckDiscard(s *Session, g *Game, p *Player) bool {
 	}
 
 	if p.Character == "Anxious" &&
-		int(math.Floor(g.Clues))%2 == 0 { // Even amount of clues
+		g.Clues%2 == 0 { // Even amount of clues
 
 		s.Warning("You are " + p.Character + ", so you cannot discard when there is an even number of clues available.")
 		return true
 
 	} else if p.Character == "Traumatized" &&
-		int(math.Floor(g.Clues))%2 == 1 { // Odd amount of clues
+		g.Clues%2 == 1 { // Odd amount of clues
 
 		s.Warning("You are " + p.Character + ", so you cannot discard when there is an odd number of clues available.")
 		return true

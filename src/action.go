@@ -17,11 +17,11 @@ type ActionDrawSize struct {
 	Size int    `json:"size"`
 }
 type ActionStatus struct {
-	Type          string  `json:"type"`
-	Clues         float64 `json:"clues"`
-	Score         int     `json:"score"`
-	MaxScore      int     `json:"maxScore"`
-	DoubleDiscard bool    `json:"doubleDiscard"`
+	Type          string `json:"type"`
+	Clues         int    `json:"clues"`
+	Score         int    `json:"score"`
+	MaxScore      int    `json:"maxScore"`
+	DoubleDiscard bool   `json:"doubleDiscard"`
 }
 type ActionStackDirections struct {
 	Type       string `json:"type"`
