@@ -635,3 +635,15 @@ func characterAdjustEndTurn(g *Game) {
 		}
 	}
 }
+
+func characterCheckSoftlock(g *Game, p *Player) {
+	if !g.Options.CharacterAssignments {
+		return
+	}
+
+	if g.Clues == 0 &&
+		(p.Character == "Vindictive" || p.Character == "Insistent") {
+
+		g.Strikes = 3
+	}
+}

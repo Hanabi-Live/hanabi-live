@@ -273,6 +273,10 @@ func commandAction(s *Session, d *CommandData) {
 	}
 	np := g.Players[g.ActivePlayer] // The next player
 
+	// Check for character-related softlocks
+	// (we will set the strikes to 3 if there is a softlock)
+	characterCheckSoftlock(g, np)
+
 	// Check for end game states
 	if g.CheckEnd() {
 		var text string
