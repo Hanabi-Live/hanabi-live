@@ -873,9 +873,14 @@ function HanabiUI(lobby, gameID, game) {
         this.add(this.indicatorArrow);
 
         // Define the note indicator emoji (this used to be a white square)
+        const noteX = 0.78;
+        const noteY = 0.06;
         this.noteGiven = new Kinetic.Text({
-            x: 0.96 * config.width,
-            y: (ui.variant.offsetCardIndicators ? 0.16 : 0.16) * config.height,
+            x: noteX * config.width,
+            // If the cards have triangles on the corners that show the color composition,
+            // the note emoji will overlap
+            // Thus, we move it downwards if this is the case
+            y: (ui.variant.offsetCardIndicators ? noteY + 0.1 : noteY) * config.height,
             fontSize: 0.1 * config.height,
             fontFamily: 'Verdana',
             align: 'center',
@@ -892,7 +897,12 @@ function HanabiUI(lobby, gameID, game) {
             visible: false,
             listening: false,
         });
+        this.noteGiven.setScale({
+            x: -1,
+            y: -1,
+        });
         this.noteGiven.rotated = false;
+        // (we might rotate it later to indicate to spectators that the note was updated)
         this.add(this.noteGiven);
         if (ui.getNote(this.order)) {
             this.noteGiven.show();
