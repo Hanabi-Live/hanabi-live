@@ -14,8 +14,18 @@
     <!-- We remove "user-scalable=no" since we are removing the mobile nav and want them to be able to zoom -->
     <meta name="description" content="A place to play Hanabi online, a cooperative card game of logic and reasoning.">
     <meta name="keywords" content="hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning">
-    <link rel="stylesheet" type="text/css" href="/public/css/main.min.css" />
-    <!-- All of the CSS is bundled into one file -->
+    {{if eq .Title "Dev}}
+        <!-- This matches what is in "css.py" -->
+        <link rel="stylesheet" type="text/css" href="/public/css/fontawesome.min.css" />
+        <link rel="stylesheet" type="text/css" href="/public/css/solid.min.css" />
+        <link rel="stylesheet" type="text/css" href="/public/css/tooltipster.bundle.min.css" />
+        <link rel="stylesheet" type="text/css" href="/public/css/tooltipster-sideTip-shadow.min.css" />
+        <link rel="stylesheet" type="text/css" href="/public/css/alpha.css" />
+        <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
+    {{else}}
+        <!-- All of the CSS is bundled into one file -->
+        <link rel="stylesheet" type="text/css" href="/public/css/main.min.css" />
+    {{end}}
     {{if .Header}}{{template "header" .}}{{end}}
     <link rel="icon" href="/public/img/favicon.png" type="image/x-icon">
 </head>

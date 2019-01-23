@@ -703,7 +703,19 @@
     </section>
 </div>
 
-<!-- Hanabi Live code -->
-<script type="text/javascript" src="/public/js/main.min.js"></script>
-<!-- All of the JavaScript is bundled into one file -->
+{{if eq .Title "Dev}}
+    <!-- This matches what is in "javascript.py" -->
+    <script type="text/javascript" src="/public/js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="/public/js/skel.min.js"></script>
+    <script type="text/javascript" src="/public/js/alpha.js"></script>
+    <script type="text/javascript" src="/public/js/tooltipster.bundle.min.js"></script>
+    <script type="text/javascript" src="/public/js/tooltipster-scrollableTip.min.js"></script>
+    <script type="text/javascript" src="/public/js/kinetic-v5.1.1.min.js"></script>
+    <script type="text/javascript" src="/public/js/sha256.min.js"></script>
+    <script type="text/javascript" src="/public/js/constants.js"></script>
+    <script type="text/javascript" src="/public/js/main.bundled.js"></script>
+{{else}}
+    <!-- All of the JavaScript is bundled into one file -->
+    <script type="text/javascript" src="/public/js/main.min.js"></script>
+{{end}}
 {{end}}
