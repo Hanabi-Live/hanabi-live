@@ -117,6 +117,10 @@ func commandAction(s *Session, d *CommandData) {
 			s.Warning("You cannot give a clue when the team has 0 clues left.")
 			return
 		}
+		if strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.Clues == 1 {
+			s.Warning("You cannot give a clue when the team only has 0.5 clues.")
+			return
+		}
 
 		// Validate that the clue type is sane
 		if d.Clue.Type < 0 || d.Clue.Type > 1 {
@@ -140,7 +144,7 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
-		// Validate variant-specific restrictions
+		// Validate variant-specific cluing restrictions
 		if !variantIsClueLegal(g.Options.Variant, d.Clue) {
 			s.Warning("That is an invalid clue for this variant.")
 			return
@@ -159,6 +163,7 @@ func commandAction(s *Session, d *CommandData) {
 
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
+
 	} else if d.Type == actionTypePlay {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
@@ -174,6 +179,7 @@ func commandAction(s *Session, d *CommandData) {
 		c := p.RemoveCard(d.Target, g)
 		doubleDiscard = p.PlayCard(g, c)
 		p.DrawCard(g)
+
 	} else if d.Type == actionTypeDiscard {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
@@ -201,6 +207,7 @@ func commandAction(s *Session, d *CommandData) {
 
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
+
 	} else if d.Type == actionTypeDeckPlay {
 		// Validate that the game type allows deck plays
 		if !g.Options.DeckPlays {
@@ -216,6 +223,7 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		p.PlayDeck(g)
+
 	} else if d.Type == actionTypeTimeLimitReached {
 		// This is a special action type sent by the server to itself when a player runs out of time
 		g.Strikes = 3
@@ -224,6 +232,7 @@ func commandAction(s *Session, d *CommandData) {
 			Text: p.Name + " ran out of time!",
 		})
 		g.NotifyAction()
+
 	} else if d.Type == actionTypeIdleLimitReached {
 		// This is a special action type sent by the server to itself when the game has been idle for too long
 		g.Strikes = 3
@@ -232,7 +241,9 @@ func commandAction(s *Session, d *CommandData) {
 			Text: "Players were idle for too long.",
 		})
 		g.NotifyAction()
+
 	} else {
+		s.Warning("That is not a valid action type.")
 		return
 	}
 

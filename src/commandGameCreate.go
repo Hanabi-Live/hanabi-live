@@ -116,6 +116,11 @@ func commandGameCreate(s *Session, d *CommandData) {
 		EndTurn:            -1,
 		Chat:               make([]*GameChatMessage, 0),
 	}
+	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
+		// In this variant, having 1 clue available is represented with a value of 2
+		// We want the players to start with 8 clues, so we have to double the starting clues
+		g.Clues *= 2
+	}
 	msg := g.GetName() + "User \"" + s.Username() + "\" created"
 	if g.Options.Timed {
 		msg += " (timed)"

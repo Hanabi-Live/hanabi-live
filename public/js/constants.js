@@ -1197,6 +1197,41 @@
             false,
         ),
 
+        // Clue Starved
+        'Clue Starved (6 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+                exports.SUIT.ORANGE,
+            ],
+            baseColorsPlusOrange,
+            false,
+        ),
+        'Clue Starved (5 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+                exports.SUIT.PURPLE,
+            ],
+            baseColors,
+            false,
+        ),
+        'Clue Starved (4 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE,
+                exports.SUIT.GREEN,
+                exports.SUIT.YELLOW,
+                exports.SUIT.RED,
+            ],
+            baseColors4,
+            false,
+        ),
+
         // Up or Down
         'Up or Down (6 Suits)': new Variant(
             [

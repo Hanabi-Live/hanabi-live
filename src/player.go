@@ -38,9 +38,7 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 		// Make an exception for color clues in the "Color Blind" variants
 		(d.Clue.Type != clueTypeColor || !strings.HasPrefix(g.Options.Variant, "Color Blind")) &&
 		// Allow empty clues if the optional setting is enabled
-		!g.Options.EmptyClues &&
-		// Philosphers can only give empty clues
-		p.Character != "Philospher" {
+		!g.Options.EmptyClues {
 
 		return false
 	}
@@ -53,6 +51,12 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 
 	// Keep track that someone clued
 	g.Clues--
+	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
+		// In the "Clue Starved" variants, you only get 0.5 clues per discard
+		// This is represented on the server by having each clue take two clues
+		// On the client, clues are shown to the user to be divided by two
+		g.Clues--
+	}
 
 	// Send the "notify" message about the clue
 	g.Actions = append(g.Actions, ActionClue{

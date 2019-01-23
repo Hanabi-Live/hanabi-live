@@ -5613,20 +5613,25 @@ Keyboard hotkeys:
         } else if (type === 'status') {
             // Update internal state variables
             this.currentClues = data.clues; // Used for the pre-move feature
+            if (this.variant.name.startsWith('Clue Starved')) {
+                // In "Clue Starved" variants, 1 clue is represented on the server by 2
+                // Thus, in order to get the "real" clue count, we have to divide by 2
+                this.currentClues /= 2;
+            }
 
             // Update the number of clues in the bottom-right hand corner of the screen
-            cluesNumberLabel.setText(`${data.clues}`);
-            if (data.clues === 0 || data.clues === 8) {
+            cluesNumberLabel.setText(`${this.currentClues}`);
+            if (this.currentClues === 0 || this.currentClues === 8) {
                 cluesNumberLabel.setFill('#df1c2d'); // Red
-            } else if (data.clues === 1) {
+            } else if (this.currentClues === 1) {
                 cluesNumberLabel.setFill('#ef8c1d'); // Orange
-            } else if (data.clues === 2) {
+            } else if (this.currentClues === 2) {
                 cluesNumberLabel.setFill('#efef1d'); // Yellow
             } else {
                 cluesNumberLabel.setFill('#d8d5ef'); // White
             }
 
-            if (data.clues === 8) {
+            if (this.currentClues === 8) {
                 // Show the red border around the discard pile
                 // (to reinforce the fact that being at 8 clues is a special situation)
                 noDiscardLabel.show();
