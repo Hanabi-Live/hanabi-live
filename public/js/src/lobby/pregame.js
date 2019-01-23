@@ -11,6 +11,9 @@ exports.show = () => {
     $('#lobby-pregame').show();
     $('#lobby-games').hide();
     lobby.nav.show('pregame');
+    $('#nav-buttons-pregame-start').addClass('disabled');
+    // The server will send us a "tableReady" message momentarily if
+    // we need to enable the "Start Game" button
 };
 
 exports.hide = () => {
@@ -32,7 +35,11 @@ exports.draw = () => {
     const options = $('#lobby-pregame-options');
     options.text('');
     if (globals.game.timed) {
-        const text = `Timed (${misc.timerFormatter(globals.game.baseTime)} + ${misc.timerFormatter(globals.game.timePerTurn)})`;
+        let text = 'Timed (';
+        text += misc.timerFormatter(globals.game.baseTime);
+        text += ' + ';
+        text += misc.timerFormatter(globals.game.timePerTurn)
+        text += ')';
         $('<li>').html(text).appendTo(options);
     }
     if (globals.game.deckPlays) {
