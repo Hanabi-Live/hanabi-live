@@ -69,6 +69,10 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * Fives are "touched" by all rank clues.
 * Players cannot clue rank 5.
 
+### Clue Starved
+
+* Each discard only generates 0.5 clues. (The team still starts with 8 clues.)
+
 ### Up or Down
 
 * This variant was invented by [Sean McCarthy on the BoardGameGeek forums](https://boardgamegeek.com/article/30863162).
