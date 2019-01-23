@@ -318,11 +318,16 @@ func variantUpOrDownWalk(g *Game, suit int, up bool) int {
 	cardsThatCanStillBePlayed := 0
 	if up {
 		// First, check to see if the stack can still be started (going up)
+		canBeStarted := false
 		for rank := range []int{0, 1} {
 			total, discarded := g.GetSpecificCardNum(suit, rank)
-			if total == discarded {
-				return 0
+			if total > discarded {
+				canBeStarted = true
+				break
 			}
+		}
+		if !canBeStarted {
+			return cardsThatCanStillBePlayed
 		}
 		cardsThatCanStillBePlayed++
 
@@ -338,12 +343,18 @@ func variantUpOrDownWalk(g *Game, suit int, up bool) int {
 
 	} else {
 		// First, check to see if the stack can still be started (going down)
+		canBeStarted := false
 		for rank := range []int{0, 5} {
 			total, discarded := g.GetSpecificCardNum(suit, rank)
-			if total == discarded {
-				return 0
+			if total > discarded {
+				canBeStarted = true
+				break
 			}
 		}
+		if !canBeStarted {
+			return cardsThatCanStillBePlayed
+		}
+		cardsThatCanStillBePlayed++
 
 		// Second, walk downwards
 		for rank := 4; rank >= 1; rank-- {
