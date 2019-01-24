@@ -20,7 +20,9 @@ func chatHere(s *Session, d *CommandData) {
 	if time.Since(discordLastAtHere) < discordAtHereTimeout {
 		timeCanPingAgain := discordLastAtHere.Add(discordAtHereTimeout)
 		minutesLeft := int(math.Ceil(time.Until(timeCanPingAgain).Minutes()))
-		msg += "In order to prevent spam, you need to wait another " + strconv.Itoa(minutesLeft) + " minutes before you can send out another mass ping."
+		msg += "In order to prevent spam, "
+		msg += "you need to wait another " + strconv.Itoa(minutesLeft) + " minutes "
+		msg += "before you can send out another mass ping."
 	} else {
 		// If the command was sent from the lobby, "d.Username" will be blank
 		if d.Username == "" && s != nil {
@@ -150,8 +152,10 @@ func chatFillMentions(msg string) string {
 	/*
 		Discord mentions are in the form of "<@71242588694249472>"
 		By the time the message gets here, it will be sanitized to "&lt;@71242588694249472&gt;"
-		They can also be in the form of "<@!71242588694249472>" (with a "!" after the "@") if a nickname is set for that person
-		We want to convert this to the username, so that the lobby displays messages in a manner similar to the Discord client
+		They can also be in the form of "<@!71242588694249472>" (with a "!" after the "@")
+		if a nickname is set for that person
+		We want to convert this to the username,
+		so that the lobby displays messages in a manner similar to the Discord client
 	*/
 
 	if discord == nil {

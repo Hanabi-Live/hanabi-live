@@ -18,7 +18,7 @@ func (*ChatLog) Insert(userID int, message string, room string) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	_, err := stmt.Exec(userID, message, room)
 	return err

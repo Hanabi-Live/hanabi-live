@@ -410,7 +410,8 @@ func (*Games) GetNotes(databaseID int) ([]PlayerNote, error) {
 			return nil, err
 		}
 
-		// If the notes are longer than the maximum size of the column in the database, then they will be truncated, resulting in invalid JSON
+		// If the notes are longer than the maximum size of the column in the database,
+		// then they will be truncated, resulting in invalid JSON
 		// So, check to see if it is valid JSON before proceeding
 		if !isJSON(notesJSON) {
 			notesJSON = "[]"

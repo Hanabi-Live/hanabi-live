@@ -125,7 +125,10 @@ func variantsInit() {
 				continue
 			}
 			if variant.ID == variant2.ID {
-				log.Fatal("Variant \"" + variant.Name + "\" and \"" + variant2.Name + "\" have the same ID (" + strconv.Itoa(variant.ID) + ").")
+				log.Fatal(
+					"Variant \"" + variant.Name + "\" and \"" + variant2.Name + "\" " +
+						"have the same ID (" + strconv.Itoa(variant.ID) + ").",
+				)
 			}
 		}
 	}

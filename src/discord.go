@@ -167,12 +167,13 @@ func discordSend(to string, username string, msg string) {
 func discordGetNickname(discordID string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild
-	if v, err := discord.Guild(discordListenChannels[0]); err != nil { // Assume that the first channel ID is the same as the server ID
+	if v, err := discord.Guild(discordListenChannels[0]); err != nil {
 		log.Error("Failed to get the Discord guild:", err)
 		return ""
 	} else {
 		guild = v
 	}
+	// (assume that the first channel ID is the same as the server ID)
 
 	// Get their custom nickname for the Discord server, if any
 	for _, member := range guild.Members {
@@ -193,12 +194,13 @@ func discordGetNickname(discordID string) string {
 func discordGetChannel(discordID string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild
-	if v, err := discord.Guild(discordListenChannels[0]); err != nil { // Assume that the first channel ID is the same as the server ID
+	if v, err := discord.Guild(discordListenChannels[0]); err != nil {
 		log.Error("Failed to get the Discord guild:", err)
 		return ""
 	} else {
 		guild = v
 	}
+	// (assume that the first channel ID is the same as the server ID)
 
 	// Get the name of the channel
 	for _, channel := range guild.Channels {
@@ -213,12 +215,13 @@ func discordGetChannel(discordID string) string {
 func discordGetID(username string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild
-	if v, err := discord.Guild(discordListenChannels[0]); err != nil { // Assume that the first channel ID is the same as the server ID
+	if v, err := discord.Guild(discordListenChannels[0]); err != nil {
 		log.Error("Failed to get the Discord guild:", err)
 		return ""
 	} else {
 		guild = v
 	}
+	// (assume that the first channel ID is the same as the server ID)
 
 	// Find the ID that corresponds to this username
 	for _, member := range guild.Members {

@@ -7,7 +7,13 @@ import (
 
 type GameParticipants struct{}
 
-func (*GameParticipants) Insert(userID int, gameID int, notes []string, characterAssignment int, characterMetadata int) error {
+func (*GameParticipants) Insert(
+	userID int,
+	gameID int,
+	notes []string,
+	characterAssignment int,
+	characterMetadata int,
+) error {
 	var notesString string
 	if v, err := json.Marshal(notes); err != nil {
 		return err

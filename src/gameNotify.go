@@ -103,7 +103,8 @@ func (g *Game) NotifyTableReady() {
 	}
 }
 
-// NotifyConnected will change the player name-tags different colors to indicate whether or not they are currently connected
+// NotifyConnected will change the player name-tags different colors
+// to indicate whether or not they are currently connected
 // This is only called in situations where the game has started
 func (g *Game) NotifyConnected() {
 	if !g.Running {
@@ -125,7 +126,8 @@ func (g *Game) NotifyConnected() {
 		List: list,
 	}
 
-	// If this is a shared replay, then all of the players are also spectators, so we do not want to send them a duplicate message
+	// If this is a shared replay, then all of the players are also spectators,
+	// so we do not want to send them a duplicate message
 	if !g.SharedReplay {
 		for _, p := range g.Players {
 			if !p.Present {
@@ -206,7 +208,8 @@ func (g *Game) NotifyAction() {
 }
 
 func (g *Game) NotifySpectators() {
-	// If this is a shared replay, then all of the players are also spectators, so we do not want to send them a duplicate message
+	// If this is a shared replay, then all of the players are also spectators,
+	// so we do not want to send them a duplicate message
 	if !g.SharedReplay {
 		for _, p := range g.Players {
 			if !p.Present {
@@ -237,7 +240,7 @@ func (g *Game) NotifyTime() {
 }
 
 // NotifySound sends a sound notification to everyone in the game
-// (signifying that an action just occured)
+// (signifying that an action just occurred)
 func (g *Game) NotifySound() {
 	for i, p := range g.Players {
 		if !p.Present {

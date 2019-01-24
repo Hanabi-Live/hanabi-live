@@ -51,7 +51,12 @@ func httpLogin(c *gin.Context) {
 		return
 	} else if userIsBanned {
 		log.Info("IP \"" + ip + "\" tried to log in, but they are banned.")
-		http.Error(w, "Your IP address has been banned. Please contact an administrator if you think this is a mistake.", http.StatusUnauthorized)
+		http.Error(
+			w,
+			"Your IP address has been banned. "+
+				"Please contact an administrator if you think this is a mistake.",
+			http.StatusUnauthorized,
+		)
 		return
 	}
 
@@ -80,14 +85,22 @@ func httpLogin(c *gin.Context) {
 
 	// Validate that the username is not excessively short
 	if len(username) < minUsernameLength {
-		log.Info("User from IP \"" + ip + "\" tried to log in with a username of \"" + username + "\", but it is shorter than " + strconv.Itoa(minUsernameLength) + " characters.")
+		log.Info(
+			"User from IP \"" + ip + "\" " +
+				"tried to log in with a username of \"" + username + "\", " +
+				"but it is shorter than " + strconv.Itoa(minUsernameLength) + " characters.",
+		)
 		http.Error(w, "Usernames must be "+strconv.Itoa(minUsernameLength)+" characters or more.", http.StatusUnauthorized)
 		return
 	}
 
 	// Validate that the username is not excessively long
 	if len(username) > maxUsernameLength {
-		log.Info("User from IP \"" + ip + "\" tried to log in with a username of \"" + username + "\", but it is longer than " + strconv.Itoa(maxUsernameLength) + " characters.")
+		log.Info(
+			"User from IP \"" + ip + "\" " +
+				"tried to log in with a username of \"" + username + "\", " +
+				"but it is longer than " + strconv.Itoa(maxUsernameLength) + " characters.",
+		)
 		http.Error(w, "Usernames must be "+strconv.Itoa(maxUsernameLength)+" characters or less.", http.StatusUnauthorized)
 		return
 	}
@@ -95,8 +108,17 @@ func httpLogin(c *gin.Context) {
 	// Validate that the username does not have any special characters in it
 	// (other than underscores, hyphens, and periods)
 	if strings.ContainsAny(username, "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?") {
-		log.Info("User from IP \"" + ip + "\" tried to log in with a username of \"" + username + "\", but it has illegal special characters in it.")
-		http.Error(w, "Usernames must not contain any special characters other than underscores, hyphens, and periods.", http.StatusUnauthorized)
+		log.Info(
+			"User from IP \"" + ip + "\" tried to log in with " +
+				"a username of \"" + username + "\", " +
+				"but it has illegal special characters in it.",
+		)
+		http.Error(
+			w,
+			"Usernames must not contain any special characters other than "+
+				"underscores, hyphens, and periods.",
+			http.StatusUnauthorized,
+		)
 		return
 	}
 

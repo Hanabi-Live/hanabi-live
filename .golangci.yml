@@ -1,0 +1,24 @@
+linters:
+  enable-all: true
+  disable:
+    # We use many globals in the code base
+    - gochecknoglobals
+    # goconst complains about some common strings
+    - goconst
+    # gocritic complains about needing to make case statements
+    - gocritic
+    # gocyclo complains about having large functions
+    - gocyclo
+    # gofmt is not needed because we are running goimports (which is a superset of gofmt)
+    - gofmt
+    # We do not care about making structs take less memory
+    - maligned 
+    # We use some unused parameters for command function uniformity
+    - unparam
+
+issues:
+  exclude:
+    # We want to use golint but we don't care about some of the things that it complains about
+    #- "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment or be unexported"
+    #- "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment (or a comment on this block) or be unexported"
+    - "if block ends with a return statement, so drop this else and outdent its block"

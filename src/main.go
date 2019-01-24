@@ -39,7 +39,8 @@ func main() {
 
 	// Check to see if the project path exists
 	if _, err := os.Stat(projectPath); os.IsNotExist(err) {
-		log.Fatal("The project path of \"" + projectPath + "\" does not exist. Check to see if your GOPATH environment variable is set properly.")
+		log.Fatal("The project path of \"" + projectPath + "\" does not exist. " +
+			"Check to see if your GOPATH environment variable is set properly.")
 	}
 
 	// Load the ".env" file which contains environment variables with secret values

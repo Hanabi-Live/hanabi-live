@@ -125,7 +125,13 @@ func (g *Game) End() {
 
 	// Next, we have to insert rows for each of the participants
 	for _, p := range g.Players {
-		if err := db.GameParticipants.Insert(p.ID, databaseID, p.Notes, characters[p.Character].ID, p.CharacterMetadata); err != nil {
+		if err := db.GameParticipants.Insert(
+			p.ID,
+			databaseID,
+			p.Notes,
+			characters[p.Character].ID,
+			p.CharacterMetadata,
+		); err != nil {
 			log.Error("Failed to insert the game participant row:", err)
 			return
 		}
@@ -237,7 +243,10 @@ func (g *Game) End() {
 	// Turn the game into a shared replay
 	delete(games, g.ID)
 	if _, ok := games[databaseID]; ok {
-		log.Error("Failed to turn the game into a shared replay since there already exists a game with an ID of " + strconv.Itoa(databaseID) + ".")
+		log.Error(
+			"Failed to turn the game into a shared replay since there already exists a game " +
+				"with an ID of " + strconv.Itoa(databaseID) + ".",
+		)
 		return
 	}
 	g.ID = databaseID
@@ -297,7 +306,8 @@ func (g *Game) End() {
 		log.Info("Set the new leader to be:", g.Spectators[0].Username())
 	}
 
-	// In a shared replay, we don't want any of the player names to be red, because it does not matter if they are present or not
+	// In a shared replay, we don't want any of the player names to be red,
+	// because it does not matter if they are present or not
 	// So manually make everyone present and then send out an update
 	for _, p := range g.Players {
 		p.Present = true
@@ -340,7 +350,9 @@ func announceGameResult(g *Game, databaseID int) {
 	}
 	msg += " " + g.Options.Variant + " "
 	msg += "game with a score of " + strconv.Itoa(g.Score) + ". "
-	if g.Score == len(g.Stacks)*5 { // This is the theoretical perfect score for this variant (assuming that there are 5 points per stack)
+	if g.Score == len(g.Stacks)*5 {
+		// This is the theoretical perfect score for this variant
+		// (assuming that there are 5 points per stack)
 		msg += pogChamp + " "
 	} else if g.Score == 0 {
 		msg += bibleThump + " "

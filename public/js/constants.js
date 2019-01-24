@@ -686,7 +686,9 @@
         this.showSuitNames = showSuitNames;
         // We draw text of the suit names below the stacks for confusing variants
         this.offsetCardIndicators = suits.some(
-            s => s !== exports.SUIT.RAINBOW && s !== exports.SUIT.RAINBOW1OE && s.clueColors.length > 1,
+            s => s !== exports.SUIT.RAINBOW
+                && s !== exports.SUIT.RAINBOW1OE
+                && s.clueColors.length > 1,
         );
         this.maxScore = suits.length * 5;
     };

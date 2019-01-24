@@ -19,6 +19,7 @@
     "watchify": "^3.11.0"
   },
   "scripts": {
-    "build": "browserify dev/main.js > main.bundled.js"
+    "browserify": "browserify src/main.js > main.bundled.js",
+    "lint": "eslint src/*.js"
   }
 }

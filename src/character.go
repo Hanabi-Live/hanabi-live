@@ -29,7 +29,8 @@ func characterInit() {
 				continue
 			}
 			if character.ID == character2.ID {
-				log.Fatal("Character \"" + character.Name + "\" and \"" + character2.Name + "\" have the same ID (" + strconv.Itoa(character.ID) + ").")
+				log.Fatal("Character \"" + character.Name + "\" and \"" + character2.Name + "\" " +
+					"have the same ID (" + strconv.Itoa(character.ID) + ").")
 			}
 		}
 	}
@@ -247,7 +248,13 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Rank == p.CharacterMetadata {
-				s.Warning("You are " + p.Character + ", so you cannot give clues that touch cards with a rank of " + strconv.Itoa(p.CharacterMetadata) + ".")
+				s.Warning(
+					"You are " +
+						p.Character +
+						", so you cannot give clues that touch cards with a rank of " +
+						strconv.Itoa(p.CharacterMetadata) +
+						".",
+				)
 				return true
 			}
 		}
@@ -303,7 +310,10 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		!p2.IsFirstCardTouchedByClue(d.Clue, g) &&
 		!p2.IsLastCardTouchedByClue(d.Clue, g) {
 
-		s.Warning("You are " + p.Character + ", so you can only give a clue if it touches either the newest or oldest card in a hand.")
+		s.Warning(
+			"You are " + p.Character + ", so you can only give a clue if " +
+				"it touches either the newest or oldest card in a hand.",
+		)
 		return true
 
 	} else if p.Character == "Mood Swings" &&
@@ -316,7 +326,10 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		p.CharacterMetadata != -1 {
 
 		if d.Target != p.CharacterMetadata {
-			s.Warning("You are " + p.Character + ", so you must continue to clue cards until one of them is played or discarded.")
+			s.Warning(
+				"You are " + p.Character + ", so you must continue to clue cards " +
+					"until one of them is played or discarded.",
+			)
 			return true
 		}
 
@@ -330,7 +343,10 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 			}
 		}
 		if !touchedInsistentCards {
-			s.Warning("You are " + p.Character + ", so you must continue to clue cards until one of them is played or discarded.")
+			s.Warning(
+				"You are " + p.Character + ", so you must continue to clue cards" +
+					"until one of them is played or discarded.",
+			)
 			return true
 		}
 
@@ -495,7 +511,8 @@ func characterPostRemove(g *Game, p *Player, c *Card) {
 		}
 	}
 
-	// Find the "Insistent" player and reset their state so that they are not forced to give a clue on their subsequent turn
+	// Find the "Insistent" player and reset their state so that
+	// they are not forced to give a clue on their subsequent turn
 	for _, p2 := range g.Players {
 		if characters[p2.Character].Name == "Insistent" {
 			p2.CharacterMetadata = -1

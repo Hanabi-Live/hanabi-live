@@ -81,7 +81,7 @@ func (*UserStats) Get(userID int, variant int) (Stats, error) {
 func (*UserStats) Update(userID int, variant int, stats Stats) error {
 	// Validate that the BestScores slice contains 5 entries
 	if len(stats.BestScores) != 5 {
-		return errors.New("BestScores does not contain 5 entries (for 2 to 6 players).")
+		return errors.New("BestScores does not contain 5 entries (for 2 to 6 players)")
 	}
 
 	// First, check to see if they have a row in the stats table for this variant already

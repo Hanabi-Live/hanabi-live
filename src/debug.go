@@ -35,7 +35,12 @@ func debug2() {
 		// Manually enumerate the slices and maps
 		log.Debug("  Players:")
 		for j, p := range g.Players { // This is a []*Player
-			log.Debug("    " + strconv.Itoa(j) + " - User ID: " + strconv.Itoa(p.ID) + ", Username: " + p.Name + ", Present: " + strconv.FormatBool(p.Present))
+			log.Debug(
+				"    " + strconv.Itoa(j) + " - " +
+					"User ID: " + strconv.Itoa(p.ID) + ", " +
+					"Username: " + p.Name + ", " +
+					"Present: " + strconv.FormatBool(p.Present),
+			)
 		}
 		if len(g.Players) == 0 {
 			log.Debug("    [no players]")
@@ -67,7 +72,12 @@ func debug2() {
 	log.Debug("---------------------------------------------------------------")
 	log.Debug("Current users:")
 	for i, s2 := range sessions { // This is a map[int]*Session
-		log.Debug("  User ID: " + strconv.Itoa(i) + ", Username: " + s2.Username() + ", Status: " + s2.Status() + ", Current game: " + strconv.Itoa(s2.CurrentGame()))
+		log.Debug(
+			"  User ID: " + strconv.Itoa(i) + ", " +
+				"Username: " + s2.Username() + ", " +
+				"Status: " + s2.Status() + ", " +
+				"Current game: " + strconv.Itoa(s2.CurrentGame()),
+		)
 	}
 
 	// Print out the waiting list

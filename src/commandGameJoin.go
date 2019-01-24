@@ -39,7 +39,8 @@ func commandGameJoin(s *Session, d *CommandData) {
 
 	// Validate that the player is not joined to another game
 	if s.CurrentGame() != -1 {
-		s.Warning("You cannot be in more than one game at a time. (You are already in game #" + strconv.Itoa(s.CurrentGame()) + ".)")
+		s.Warning("You cannot be in more than one game at a time. " +
+			"(You are already in game #" + strconv.Itoa(s.CurrentGame()) + ".)")
 		return
 	}
 
@@ -65,7 +66,11 @@ func commandGameJoin(s *Session, d *CommandData) {
 		Join
 	*/
 
-	log.Info(g.GetName() + "User \"" + s.Username() + "\" joined. (There are now " + strconv.Itoa(len(g.Players)+1) + " players.)")
+	log.Info(
+		g.GetName() +
+			"User \"" + s.Username() + "\" joined. " +
+			"(There are now " + strconv.Itoa(len(g.Players)+1) + " players.)",
+	)
 
 	// Get the stats for this player
 	var stats models.Stats

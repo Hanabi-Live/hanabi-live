@@ -41,7 +41,7 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 	} else {
 		dbPlayers = v
 	}
-	var players []*Player
+	players := make([]*Player, 0)
 	for _, p := range dbPlayers {
 		player := &Player{
 			ID:   p.ID,

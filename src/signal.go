@@ -8,7 +8,8 @@ import (
 	"syscall"
 )
 
-// We want to be able to control the server from the command-line without actually having to send chat messages to the lobby
+// We want to be able to control the server from the command-line
+// without actually having to send chat messages to the lobby
 func signalInit() {
 	signalChannel := make(chan os.Signal, 1)
 
