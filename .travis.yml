@@ -1,13 +1,15 @@
 # Configure Travis CI
 # https://travis-ci.org/
 
-language: go
+matrix:
+  include:
+    - language: go
+      go:
+        - master
+      script:
+        - cd src && go install
 
-go:
-  - master
-
-script:
-  - cd src && go install
+#    - language: javascript
 
 notifications:
   email:
