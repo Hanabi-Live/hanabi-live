@@ -1,4 +1,4 @@
-ackage main
+package main
 
 import (
 	"strconv"
