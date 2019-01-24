@@ -6,10 +6,21 @@ matrix:
     - language: go
       go:
         - master
+      before_script:
+        - cd src
       script:
-        - cd src && go install
+        - go install # Compile the Go code
+        - golangci-lint run # Run the Golang linter
 
-#    - language: javascript
+    - language: node_js
+      node_js:
+        - node
+      before_script:
+        - cd public/js
+        - npm install
+      script:
+        - cd
+        - ./build_client.sh
 
 notifications:
   email:
