@@ -38,7 +38,7 @@ exports.draw = () => {
         let text = 'Timed (';
         text += misc.timerFormatter(globals.game.baseTime);
         text += ' + ';
-        text += misc.timerFormatter(globals.game.timePerTurn)
+        text += misc.timerFormatter(globals.game.timePerTurn);
         text += ')';
         $('<li>').html(text).appendTo(options);
     }

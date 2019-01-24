@@ -2794,7 +2794,7 @@ function HanabiUI(lobby, gameID, game) {
                 ctx.lineWidth = 2;
                 ctx.lineJoin = 'round';
 
-                if (rank != 0 && rank != 6) {
+                if (rank !== 0 && rank !== 6) {
                     let textYPos;
                     let indexLabel;
                     let rankString = rank.toString();
