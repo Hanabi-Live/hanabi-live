@@ -106,7 +106,7 @@ func isAdmin(s *Session, d *CommandData) bool {
 }
 
 func execute(script string) {
-	cmd := exec.Command(path.Join(projectPath, script)) // nolint: gas
+	cmd := exec.Command(path.Join(projectPath, script))
 	if output, err := cmd.Output(); err != nil {
 		log.Error("Failed to execute \""+script+"\":", err)
 	} else {

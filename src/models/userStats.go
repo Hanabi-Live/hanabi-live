@@ -105,7 +105,7 @@ func (*UserStats) Update(userID int, variant int, stats Stats) error {
 		} else {
 			stmt = v
 		}
-		defer stmt.Close() // nolint: errcheck
+		defer stmt.Close()
 
 		if _, err := stmt.Exec(userID, variant); err != nil {
 			return err
@@ -167,7 +167,7 @@ func (*UserStats) Update(userID int, variant int, stats Stats) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	_, err := stmt.Exec(
 		userID, // num_played
@@ -204,7 +204,7 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	if _, err := stmt.Exec(); err != nil {
 		return err

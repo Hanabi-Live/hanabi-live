@@ -73,7 +73,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	var res sql.Result
 	if v, err := stmt.Exec(
@@ -174,7 +174,7 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 	} else {
 		rows = v
 	}
-	defer rows.Close() // nolint: errcheck
+	defer rows.Close()
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
@@ -253,7 +253,7 @@ func (*Games) GetAllDeals(userID int, databaseID int) ([]GameHistory, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close() // nolint: errcheck
+	defer rows.Close()
 
 	games := make([]GameHistory, 0)
 	for rows.Next() {
@@ -285,7 +285,7 @@ func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close() // nolint: errcheck
+	defer rows.Close()
 
 	seeds := make([]string, 0)
 	for rows.Next() {
@@ -356,7 +356,7 @@ func (*Games) GetPlayers(databaseID int) ([]*Player, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close() // nolint: errcheck
+	defer rows.Close()
 
 	players := make([]*Player, 0)
 	for rows.Next() {
@@ -399,7 +399,7 @@ func (*Games) GetNotes(databaseID int) ([]PlayerNote, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close() // nolint: errcheck
+	defer rows.Close()
 
 	notes := make([]PlayerNote, 0)
 	for rows.Next() {

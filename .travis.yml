@@ -1,31 +1,37 @@
 # Configure Travis CI
 # https://travis-ci.org/
 
+# In order to test two different languages, we have to use a matrix (e.g. a parallel job)
+# https://stackoverflow.com/questions/27644586/how-to-set-up-travis-ci-with-multiple-languages
 matrix:
   include:
     - language: go
       go:
         - master
       before_script:
+        # Install the Go linter
+        # (v1.13.1 is the latest as of Jan 2019)
+        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.13.1
+        # Go to the Go source code
         - cd src
       script:
         # Compile the Go code
         - go install
-        # Install the Go linter
-        # (v1.13.1 is the latest as of Jan 2019)
-        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.13.1
         # Run the Golang linter
-        - golangci-lint run
+        - ../lint.sh
 
     - language: node_js
       node_js:
         - node
       before_script:
+        # Install the JavaScript linter
         - cd public/js
         - npm install
       script:
-        - cd ../..
-        - ./build_client.sh
+        # Run the JavaScript linter
+        - npm run-script lint
+        # Run Browerify and the Google Closure Compiler
+        - ../../build_client.sh
 
 notifications:
   email:

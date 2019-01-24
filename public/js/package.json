@@ -20,6 +20,6 @@
   },
   "scripts": {
     "browserify": "browserify src/main.js > main.bundled.js",
-    "lint": "eslint src/*.js"
+    "lint": "eslint \"src/**/*.js\""
   }
 }

@@ -1,6 +1,8 @@
 package models
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 type DiscordMetadata struct{}
 
@@ -28,7 +30,7 @@ func (*DiscordMetadata) Put(name string, value string) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	_, err := stmt.Exec(value, name)
 	return err

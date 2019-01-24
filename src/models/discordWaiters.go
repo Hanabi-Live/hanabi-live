@@ -32,7 +32,7 @@ func (*DiscordWaiters) GetAll() ([]*Waiter, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close() // nolint: errcheck
+	defer rows.Close()
 
 	for rows.Next() {
 		var waiter Waiter
@@ -59,7 +59,7 @@ func (*DiscordWaiters) Insert(waiter *Waiter) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	_, err := stmt.Exec(waiter.Username, waiter.DiscordMention, waiter.DatetimeExpired)
 	return err
@@ -75,7 +75,7 @@ func (*DiscordWaiters) Delete(username string) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	_, err := stmt.Exec(username)
 	return err
@@ -90,7 +90,7 @@ func (*DiscordWaiters) DeleteAll() error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	_, err := stmt.Exec()
 	return err

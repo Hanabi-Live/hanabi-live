@@ -34,7 +34,7 @@ func (*ChatLog) InsertDiscord(discordName string, message string, room string) e
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	_, err := stmt.Exec(discordName, message, room)
 	return err
@@ -74,7 +74,7 @@ func (*ChatLog) Get(room string, count int) ([]ChatMessage, error) {
 	} else {
 		rows = v
 	}
-	defer rows.Close() // nolint: errcheck
+	defer rows.Close()
 
 	chatMessages := make([]ChatMessage, 0)
 	for rows.Next() {

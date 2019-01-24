@@ -19,6 +19,4 @@ linters:
 issues:
   exclude:
     # We want to use golint but we don't care about some of the things that it complains about
-    #- "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment or be unexported"
-    #- "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment (or a comment on this block) or be unexported"
     - "if block ends with a return statement, so drop this else and outdent its block"

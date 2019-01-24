@@ -30,7 +30,7 @@ func (*GameParticipants) Insert(
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	_, err := stmt.Exec(userID, gameID, notesString, characterAssignment, characterMetadata)
 	return err

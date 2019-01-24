@@ -25,7 +25,7 @@ func (*Users) Insert(username string, password string) (User, error) {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	var res sql.Result
 	if v, err := stmt.Exec(username, password); err != nil {
@@ -86,7 +86,7 @@ func (*Users) Update(userID int, lastIP string) error {
 	} else {
 		stmt = v
 	}
-	defer stmt.Close() // nolint: errcheck
+	defer stmt.Close()
 
 	_, err := stmt.Exec(lastIP, userID)
 	return err
