@@ -1,0 +1,15 @@
+# Configure Travis CI
+# https://travis-ci.org/
+
+language: go
+
+go:
+  - master
+
+script:
+  - cd src && go install
+
+notifications:
+  email:
+    on_success: never
+    on_failure: never
