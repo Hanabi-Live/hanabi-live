@@ -24,11 +24,10 @@ function HanabiUI(lobby, game) {
 
     this.cardsGotten = 0;
     this.cluesSpentPlusStrikes = 0;
+
     this.useSharedTurns = true;
-    this.spectators = []; // Used to keep track of the spectators of the current game
 
     this.animateFast = true;
-    this.ready = false;
     // In replays, we can show information about a card that was not
     // known at the time, but is known now; these are cards we have "learned"
     this.learnedCards = [];
@@ -167,7 +166,6 @@ function HanabiUI(lobby, game) {
     function rebuildReplay() {
         const self = lobby.ui;
 
-        globals.replayPos = 0;
         while (true) {
             const msg = globals.replayLog[globals.replayPos];
             globals.replayPos += 1;
@@ -181,10 +179,8 @@ function HanabiUI(lobby, game) {
             self.handleNotify(msg.data);
 
             // Stop if you're at the current turn
-            if (msg.data.type === 'turn') {
-                if (msg.data.num === globals.replayTurn) {
-                    break;
-                }
+            if (msg.data.type === 'turn' && msg.data.num === globals.replayTurn) {
+                break;
             }
         }
     }
@@ -2414,7 +2410,7 @@ function HanabiUI(lobby, game) {
             type: 'ready',
             data: {},
         });
-        ui.ready = true;
+        globals.ready = true;
     });
 
     this.loadImages = () => {
@@ -5132,13 +5128,13 @@ Keyboard hotkeys:
         globals.replayLog.push(msg);
 
         if (msgData.type === 'turn') {
-            this.replayMax = msgData.num;
+            globals.replayMax = msgData.num;
         }
         if (msgData.type === 'gameOver') {
-            this.replayMax += 1;
+            globals.replayMax += 1;
         }
 
-        if (!globals.replay && this.replayMax > 0) {
+        if (!globals.replay && globals.replayMax > 0) {
             replayButton.show();
         }
 
@@ -5150,7 +5146,7 @@ Keyboard hotkeys:
 
     const positionReplayShuttle = (shuttle, turn) => {
         const w = shuttle.getParent().getWidth() - shuttle.getWidth();
-        shuttle.setX(turn * w / this.replayMax);
+        shuttle.setX(turn * w / globals.replayMax);
     };
 
     this.adjustReplayShuttle = () => {
@@ -5162,7 +5158,7 @@ Keyboard hotkeys:
         if (!globals.inReplay && enter) {
             globals.inReplay = true;
             globals.replayPos = globals.replayLog.length;
-            globals.replayTurn = this.replayMax;
+            globals.replayTurn = globals.replayMax;
             this.adjustReplayShuttle();
             this.stopAction();
             replayArea.show();
@@ -5172,7 +5168,7 @@ Keyboard hotkeys:
             UILayer.draw();
             cardLayer.draw();
         } else if (globals.inReplay && !enter) {
-            this.performReplay(this.replayMax, true);
+            this.performReplay(globals.replayMax, true);
             globals.inReplay = false;
             replayArea.hide();
 
@@ -5203,8 +5199,8 @@ Keyboard hotkeys:
         if (target < 0) {
             target = 0;
         }
-        if (target > this.replayMax) {
-            target = this.replayMax;
+        if (target > globals.replayMax) {
+            target = globals.replayMax;
         }
 
         if (target < globals.replayTurn) {
@@ -5262,7 +5258,7 @@ Keyboard hotkeys:
     };
 
     this.showConnected = function showConnected(list) {
-        if (!this.ready) {
+        if (!globals.ready) {
             return;
         }
 
@@ -5780,7 +5776,7 @@ Keyboard hotkeys:
             // start the process of transforming it into a shared replay
             if (!globals.replay) {
                 globals.replay = true;
-                globals.replayTurn = this.replayMax;
+                globals.replayTurn = globals.replayMax;
                 globals.sharedReplayTurn = globals.replayTurn;
                 replayButton.hide();
                 // Hide the in-game replay button in the bottom-left-hand corner
@@ -5830,7 +5826,7 @@ Keyboard hotkeys:
         }
 
         // Remember the current list of spectators
-        this.spectators = data.names;
+        globals.spectators = data.names;
 
         const shouldShowLabel = data.names.length > 0;
         spectatorsLabel.setVisible(shouldShowLabel);
@@ -5855,7 +5851,7 @@ Keyboard hotkeys:
         // We might also need to update the content of replay leader icon
         if (globals.sharedReplay) {
             let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
-            if (!this.spectators.includes(globals.sharedReplayLeader)) {
+            if (!globals.spectators.includes(globals.sharedReplayLeader)) {
                 // Check to see if the leader is away
                 content += ' (away)';
             }
@@ -6006,7 +6002,7 @@ Keyboard hotkeys:
         // Update the UI
         sharedReplayLeaderLabel.show();
         let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
-        if (!this.spectators.includes(globals.sharedReplayLeader)) {
+        if (!globals.spectators.includes(globals.sharedReplayLeader)) {
             // Check to see if the leader is away
             content += ' (away)';
         }
@@ -6269,11 +6265,11 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
 
     if (msgType === 'init') {
         // Game settings
+        globals.playerUs = msgData.seat;
         globals.playerNames = msgData.names;
         globals.variant = constants.VARIANTS[msgData.variant];
-        globals.playerUs = msgData.seat;
-        globals.spectating = msgData.spectating;
         globals.replay = msgData.replay;
+        globals.spectating = msgData.spectating;
         globals.sharedReplay = msgData.sharedReplay;
 
         // Optional settings
@@ -6283,9 +6279,8 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         globals.characterAssignments = msgData.characterAssignments;
         globals.characterMetadata = msgData.characterMetadata;
 
-        // Also set some extra variables
-        globals.inReplay = msgData.replay;
-        if (globals.inReplay) {
+        globals.inReplay = globals.replay;
+        if (globals.replay) {
             globals.replayTurn = -1;
         }
 

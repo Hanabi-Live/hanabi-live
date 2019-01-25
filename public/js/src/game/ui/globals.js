@@ -27,7 +27,9 @@ const globals = {
     // (it is either an empty array or an array of integers)
 
     // Game state variables
+    ready: false,
     deck: [],
+    spectators: [],
 
     // Replay variables
     inReplay: false, // Whether or not the replay controls are currently showing
@@ -41,3 +43,7 @@ const globals = {
     sharedReplayTurn: -1,
 };
 module.exports = globals;
+
+// Also make it available to the window so that we can access global variables
+// from the JavaScript console (for debugging purposes)
+window.globals2 = globals;
