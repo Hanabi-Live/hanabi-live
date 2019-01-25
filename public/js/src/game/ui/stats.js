@@ -1,5 +1,5 @@
 /*
-    Functions for the stats on the middle-left-hand side
+    Functions for the stats on the middle-right-hand side
 */
 
 // Imports

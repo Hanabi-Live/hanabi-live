@@ -31,7 +31,7 @@ exports.show = () => {
 
 exports.hide = () => {
     $('#game-chat-modal').fadeOut(globals.fadeTime);
-}
+};
 
 /*
     Make draggable div
@@ -39,23 +39,26 @@ exports.hide = () => {
 */
 
 function initDraggableDiv(elmnt) {
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    if (document.getElementById(elmnt.id + '-header')) {
-        // if present, the header is where you move the DIV from:
-        document.getElementById(elmnt.id + '-header').onmousedown = dragMouseDown;
+    let pos1 = 0;
+    let pos2 = 0;
+    let pos3 = 0;
+    let pos4 = 0;
+    if (document.getElementById(`${elmnt.id}-header`)) {
+        // If present, the header is where you move the div from
+        document.getElementById(`${elmnt.id}-header`).onmousedown = dragMouseDown;
     } else {
-        // otherwise, move the DIV from anywhere inside the DIV: 
+        // Otherwise, move the div from anywhere inside the div
         elmnt.onmousedown = dragMouseDown;
     }
 
     function dragMouseDown(e) {
         e = e || window.event;
         e.preventDefault();
-        // get the mouse cursor position at startup:
+        // Get the mouse cursor position at startup
         pos3 = e.clientX;
         pos4 = e.clientY;
         document.onmouseup = closeDragElement;
-        // call a function whenever the cursor moves:
+        // Call a function whenever the cursor moves
         document.onmousemove = elementDrag;
     }
 
@@ -67,9 +70,9 @@ function initDraggableDiv(elmnt) {
         pos2 = pos4 - e.clientY;
         pos3 = e.clientX;
         pos4 = e.clientY;
-        // set the element's new position:
-        elmnt.style.top = (elmnt.offsetTop - pos2) + 'px';
-        elmnt.style.left = (elmnt.offsetLeft - pos1) + 'px';
+        // Set the element's new position
+        elmnt.style.top = `${elmnt.offsetTop - pos2}px`;
+        elmnt.style.left = `${elmnt.offsetLeft - pos1}px`;
     }
 
     function closeDragElement() {
@@ -84,70 +87,75 @@ function initDraggableDiv(elmnt) {
     https://codepen.io/ZeroX-DG/pen/vjdoYe
 */
 
+/* eslint-disable */
 function initResizableDiv(div) {
     const element = document.querySelector(div);
-    const resizers = document.querySelectorAll(div + ' .resizer')
-    const minimum_size = 20;
-    let original_width = 0;
-    let original_height = 0;
-    let original_x = 0;
-    let original_y = 0;
-    let original_mouse_x = 0;
-    let original_mouse_y = 0;
-    for (let i = 0;i < resizers.length; i++) {
+    const resizers = document.querySelectorAll(`${div} .resizer`);
+    const minimumSize = 20;
+    let originalWidth = 0;
+    let originalHeight = 0;
+    let originalX = 0;
+    let originalY = 0;
+    let originalMouseX = 0;
+    let originalMouseY = 0;
+    for (let i = 0; i < resizers.length; i++) {
         const currentResizer = resizers[i];
-        currentResizer.addEventListener('mousedown', function(e) {
-            e.preventDefault()
-            original_width = parseFloat(getComputedStyle(element, null).getPropertyValue('width').replace('px', ''));
-            original_height = parseFloat(getComputedStyle(element, null).getPropertyValue('height').replace('px', ''));
-            original_x = element.getBoundingClientRect().left;
-            original_y = element.getBoundingClientRect().top;
-            original_mouse_x = e.pageX;
-            original_mouse_y = e.pageY;
+        currentResizer.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            originalWidth = parseFloat(getComputedStyle(element, null)
+                .getPropertyValue('width')
+                .replace('px', ''));
+            originalHeight = parseFloat(getComputedStyle(element, null)
+                .getPropertyValue('height')
+                .replace('px', ''));
+            originalX = element.getBoundingClientRect().left;
+            originalY = element.getBoundingClientRect().top;
+            originalMouseX = e.pageX;
+            originalMouseY = e.pageY;
             window.addEventListener('mousemove', resize)
             window.addEventListener('mouseup', stopResize)
         });
 
         function resize(e) {
             if (currentResizer.classList.contains('bottom-right')) {
-                const width = original_width + (e.pageX - original_mouse_x);
-                const height = original_height + (e.pageY - original_mouse_y);
-                if (width > minimum_size) {
+                const width = originalWidth + (e.pageX - originalMouseX);
+                const height = originalHeight + (e.pageY - originalMouseY);
+                if (width > minimumSize) {
                     element.style.width = width + 'px';
                 }
-                if (height > minimum_size) {
+                if (height > minimumSize) {
                     element.style.height = height + 'px';
                 }
             } else if (currentResizer.classList.contains('bottom-left')) {
-                const height = original_height + (e.pageY - original_mouse_y);
-                const width = original_width - (e.pageX - original_mouse_x);
-                if (height > minimum_size) {
+                const height = originalHeight + (e.pageY - originalMouseY);
+                const width = originalWidth - (e.pageX - originalMouseX);
+                if (height > minimumSize) {
                     element.style.height = height + 'px';
                 }
-                if (width > minimum_size) {
+                if (width > minimumSize) {
                     element.style.width = width + 'px';
-                    element.style.left = original_x + (e.pageX - original_mouse_x) + 'px';
+                    element.style.left = originalX + (e.pageX - originalMouseX) + 'px';
                 }
             } else if (currentResizer.classList.contains('top-right')) {
-                const width = original_width + (e.pageX - original_mouse_x);
-                const height = original_height - (e.pageY - original_mouse_y);
-                if (width > minimum_size) {
+                const width = originalWidth + (e.pageX - originalMouseX);
+                const height = originalHeight - (e.pageY - originalMouseY);
+                if (width > minimumSize) {
                     element.style.width = width + 'px';
                 }
-                if (height > minimum_size) {
+                if (height > minimumSize) {
                     element.style.height = height + 'px';
-                    element.style.top = original_y + (e.pageY - original_mouse_y) + 'px';
+                    element.style.top = originalY + (e.pageY - originalMouseY) + 'px';
                 }
             } else {
-                const width = original_width - (e.pageX - original_mouse_x)
-                const height = original_height - (e.pageY - original_mouse_y)
-                if (width > minimum_size) {
+                const width = originalWidth - (e.pageX - originalMouseX)
+                const height = originalHeight - (e.pageY - originalMouseY)
+                if (width > minimumSize) {
                     element.style.width = width + 'px'
-                    element.style.left = original_x + (e.pageX - original_mouse_x) + 'px';
+                    element.style.left = originalX + (e.pageX - originalMouseX) + 'px';
                 }
-                if (height > minimum_size) {
+                if (height > minimumSize) {
                     element.style.height = height + 'px';
-                    element.style.top = original_y + (e.pageY - original_mouse_y) + 'px';
+                    element.style.top = originalY + (e.pageY - originalMouseY) + 'px';
                 }
             }
         }
@@ -157,3 +165,4 @@ function initResizableDiv(div) {
         }
     }
 }
+/* eslint-enable */
