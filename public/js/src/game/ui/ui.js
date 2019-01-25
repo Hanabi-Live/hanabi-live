@@ -1,11 +1,8 @@
 // Imports
 const globals = require('./globals');
 
-function HanabiUI(lobby, gameID, game) {
-    this.showDebugMessages = true;
-
+function HanabiUI(lobby, game) {
     this.lobby = lobby;
-    this.gameID = gameID;
     this.game = game;
 
     const ui = this;
@@ -25,25 +22,11 @@ function HanabiUI(lobby, gameID, game) {
         SUIT,
     } = constants;
 
-
-    this.playerNames = [];
-    this.characterAssignments = [];
-    // This is the "Detrimental Character Assignments" for each player, if enabled
-    // (it is either an empty array or an array of integers)
-    this.characterMetadata = [];
-    // This is extra information about each player's "Detrimental Character Assignments", if enabled
-    // (it is either an empty array or an array of integers)
     this.cardsGotten = 0;
     this.cluesSpentPlusStrikes = 0;
-    this.replay = false;
-    this.sharedReplay = false;
-    this.sharedReplayLeader = ''; // Equal to the username of the shared replay leader
-    this.sharedReplayTurn = -1;
     this.useSharedTurns = true;
-    this.replayOnly = false;
-    this.spectating = false;
     this.spectators = []; // Used to keep track of the spectators of the current game
-    this.replayMax = 0;
+
     this.animateFast = true;
     this.ready = false;
     // In replays, we can show information about a card that was not
@@ -55,7 +38,6 @@ function HanabiUI(lobby, gameID, game) {
     // A function called after an action from the server moves cards
     this.postAnimationLayout = null;
 
-    this.timedGame = false;
     this.lastTimerUpdateTimeMS = new Date().getTime();
 
     this.playerTimes = [];
@@ -119,7 +101,7 @@ function HanabiUI(lobby, gameID, game) {
         // This resets all the messages so that everything shows up again,
         // since the server doesn't replay them and the client only draws streamed
         // information and doesn't maintain a full game state
-        if (self.replayOnly) {
+        if (globals.replay) {
             rebuildReplay();
         } else {
             // Rebuilds for a game
@@ -127,8 +109,8 @@ function HanabiUI(lobby, gameID, game) {
             let whoseTurn = 0;
 
             // Iterate over all moves to date
-            for (let i = 0; i < self.replayLog.length; i++) {
-                msg = self.replayLog[i];
+            for (let i = 0; i < globals.replayLog.length; i++) {
+                msg = globals.replayLog[i];
 
                 // Rebuild all notifies; this will correctly position cards and text
                 self.handleNotify(msg.data);
@@ -140,7 +122,7 @@ function HanabiUI(lobby, gameID, game) {
             }
 
             // If it's your turn, setup the clue area
-            if (whoseTurn === globals.playerUs && !self.spectating) {
+            if (whoseTurn === globals.playerUs && !globals.spectating) {
                 self.handleAction.call(self, self.lastAction);
             }
 
@@ -152,14 +134,14 @@ function HanabiUI(lobby, gameID, game) {
         self.animateFast = false;
 
         // Restore Replay Button if applicable
-        if (!self.replayOnly && self.replayMax > 0) {
+        if (!globals.replay && globals.replayMax > 0) {
             replayButton.show();
         }
 
         // Restore Shared Replay Button if applicable
-        if (self.sharedReplay) {
+        if (globals.sharedReplay) {
             self.handleReplayLeader({
-                name: self.sharedReplayLeader,
+                name: globals.sharedReplayLeader,
             });
         }
 
@@ -185,10 +167,10 @@ function HanabiUI(lobby, gameID, game) {
     function rebuildReplay() {
         const self = lobby.ui;
 
-        this.replayPos = 0;
+        globals.replayPos = 0;
         while (true) {
-            const msg = self.replayLog[self.replayPos];
-            self.replayPos += 1;
+            const msg = globals.replayLog[globals.replayPos];
+            globals.replayPos += 1;
 
             // Stop at the end of the replay
             if (!msg) {
@@ -200,7 +182,7 @@ function HanabiUI(lobby, gameID, game) {
 
             // Stop if you're at the current turn
             if (msg.data.type === 'turn') {
-                if (msg.data.num === self.replayTurn) {
+                if (msg.data.num === globals.replayTurn) {
                     break;
                 }
             }
@@ -297,14 +279,14 @@ function HanabiUI(lobby, gameID, game) {
 
         // Update the time in local array to approximate server times
         ui.playerTimes[activeIndex] -= timeElapsed;
-        if (ui.timedGame && ui.playerTimes[activeIndex] < 0) {
+        if (globals.timed && ui.playerTimes[activeIndex] < 0) {
             // Don't let the timer go into negative values, or else it will mess up the display
             // (but in non-timed games, we want this to happen)
             ui.playerTimes[activeIndex] = 0;
         }
 
         let millisecondsLeft = ui.playerTimes[activeIndex];
-        if (!ui.timedGame) {
+        if (!globals.timed) {
             // Invert it to show how much time each player is taking
             millisecondsLeft *= -1;
         }
@@ -317,7 +299,7 @@ function HanabiUI(lobby, gameID, game) {
         // Play a sound to indicate that the current player is almost out of time
         // Do not play it more frequently than about once per second
         if (
-            ui.timedGame
+            globals.timed
             && lobby.settings.sendTimerSound
             && millisecondsLeft > 0
             && millisecondsLeft <= 10000
@@ -331,13 +313,13 @@ function HanabiUI(lobby, gameID, game) {
 
     function setTickingDownTimeTooltip(i) {
         let time = ui.playerTimes[i];
-        if (!ui.timedGame) {
+        if (!globals.timed) {
             // Invert it to show how much time each player is taking
             time *= -1;
         }
 
         let content = 'Time ';
-        if (ui.timedGame) {
+        if (globals.timed) {
             content += 'remaining';
         } else {
             content += 'taken';
@@ -497,10 +479,11 @@ function HanabiUI(lobby, gameID, game) {
             this.smallHistory.shift();
         }
         this.smallHistory.push(text);
+
         // Performance optimization: setText on the children is slow,
         // so don't actually do it until its time to display things
         // We also have to call refreshText after any time we manipulate replay position
-        if (!ui.replay || !ui.animateFast) {
+        if (!globals.inReplay || !ui.animateFast) {
             this.refreshText();
         }
     };
@@ -580,7 +563,7 @@ function HanabiUI(lobby, gameID, game) {
 
         this.playerLogs = [];
         this.playerLogNumbers = [];
-        for (let i = 0; i < ui.playerNames.length; i++) {
+        for (let i = 0; i < globals.playerNames.length; i++) {
             this.playerLogs[i] = new MultiFitText(textoptions);
             this.playerLogs[i].hide();
             Kinetic.Group.prototype.add.call(this, this.playerLogs[i]);
@@ -600,8 +583,8 @@ function HanabiUI(lobby, gameID, game) {
         };
 
         appendLine(this.logtext, this.lognumbers, msg);
-        for (let i = 0; i < ui.playerNames.length; i++) {
-            if (msg.startsWith(ui.playerNames[i])) {
+        for (let i = 0; i < globals.playerNames.length; i++) {
+            if (msg.startsWith(globals.playerNames[i])) {
                 appendLine(this.playerLogs[i], this.playerLogNumbers[i], msg);
                 break;
             }
@@ -610,8 +593,8 @@ function HanabiUI(lobby, gameID, game) {
 
     HanabiMsgLog.prototype.showPlayerActions = function showPlayerActions(playerName) {
         let playerIDX;
-        for (let i = 0; i < ui.playerNames.length; i++) {
-            if (ui.playerNames[i] === playerName) {
+        for (let i = 0; i < globals.playerNames.length; i++) {
+            if (globals.playerNames[i] === playerName) {
                 playerIDX = i;
             }
         }
@@ -642,7 +625,7 @@ function HanabiUI(lobby, gameID, game) {
     HanabiMsgLog.prototype.refreshText = function refreshText() {
         this.logtext.refreshText();
         this.lognumbers.refreshText();
-        for (let i = 0; i < ui.playerNames.length; i++) {
+        for (let i = 0; i < globals.playerNames.length; i++) {
             this.playerLogs[i].refreshText();
             this.playerLogNumbers[i].refreshText();
         }
@@ -651,7 +634,7 @@ function HanabiUI(lobby, gameID, game) {
     HanabiMsgLog.prototype.reset = function reset() {
         this.logtext.reset();
         this.lognumbers.reset();
-        for (let i = 0; i < ui.playerNames.length; i++) {
+        for (let i = 0; i < globals.playerNames.length; i++) {
             this.playerLogs[i].reset();
             this.playerLogNumbers[i].reset();
         }
@@ -732,7 +715,7 @@ function HanabiUI(lobby, gameID, game) {
         if (cardPresentKnowledge.suit) {
             this.suitPips.visible(false);
         }
-        if (ui.replayOnly) {
+        if (globals.replay) {
             this.rankPips.visible(false);
             this.suitPips.visible(false);
         }
@@ -1022,7 +1005,7 @@ function HanabiUI(lobby, gameID, game) {
             cardLayer.batchDraw();
             return toggledPips;
         };
-        if (config.holder !== globals.playerUs || ui.replay || ui.spectating) {
+        if (config.holder !== globals.playerUs || globals.inReplay || globals.spectating) {
             const mouseButton = 1;
             let toggledPips = [];
             this.on('mousedown', (event) => {
@@ -1048,11 +1031,11 @@ function HanabiUI(lobby, gameID, game) {
         }
 
         // Hide clue arrows ahead of user dragging their card
-        if (config.holder === globals.playerUs && !ui.replayOnly && !ui.spectating) {
+        if (config.holder === globals.playerUs && !globals.replay && !globals.spectating) {
             this.on('mousedown', (event) => {
                 if (
                     event.evt.which !== 1 // dragging uses left click
-                    || ui.replay
+                    || globals.inReplay
                     || !this.indicatorArrow.isVisible()
                 ) {
                     return;
@@ -1071,9 +1054,9 @@ function HanabiUI(lobby, gameID, game) {
 
             // In a shared replay, the leader right-clicks a card to draw attention to it
             if (
-                ui.sharedReplay
+                globals.sharedReplay
                 && event.evt.which === 3 // Right-click
-                && ui.sharedReplayLeader === lobby.username
+                && globals.sharedReplayLeader === lobby.username
             ) {
                 if (ui.useSharedTurns) {
                     ui.sendMsg({
@@ -1109,7 +1092,7 @@ function HanabiUI(lobby, gameID, game) {
             }
 
             // Don't edit any notes in shared replays
-            if (ui.sharedReplay) {
+            if (globals.sharedReplay) {
                 return;
             }
 
@@ -1153,7 +1136,7 @@ function HanabiUI(lobby, gameID, game) {
                     ui.setNote(self.order, note);
 
                     // Also send the note to the server
-                    if (!ui.replayOnly && !ui.spectating) {
+                    if (!globals.replay && !globals.spectating) {
                         ui.sendMsg({
                             type: 'note',
                             data: {
@@ -1201,7 +1184,7 @@ function HanabiUI(lobby, gameID, game) {
             }
 
             // Only allow this feature in replays
-            if (!ui.replayOnly) {
+            if (!globals.replay) {
                 return;
             }
 
@@ -1232,7 +1215,7 @@ function HanabiUI(lobby, gameID, game) {
             }
 
             // Tell the server that we are doing a hypothetical
-            if (ui.sharedReplayLeader === lobby.username) {
+            if (globals.sharedReplayLeader === lobby.username) {
                 ui.sendMsg({
                     type: 'replayAction',
                     data: {
@@ -2152,7 +2135,7 @@ function HanabiUI(lobby, gameID, game) {
 
         // Click an entry in the clue log to go to that turn in the replay
         background.on('click', () => {
-            if (ui.replayOnly) {
+            if (globals.replay) {
                 ui.inferSharedReplayMode();
             } else {
                 ui.enterReplay(true);
@@ -2164,15 +2147,15 @@ function HanabiUI(lobby, gameID, game) {
     Kinetic.Util.extend(HanabiClueEntry, Kinetic.Group);
 
     HanabiClueEntry.prototype.checkValid = (c) => {
-        if (!ui.deck[c]) {
+        if (!globals.deck[c]) {
             return false;
         }
 
-        if (!ui.deck[c].parent) {
+        if (!globals.deck[c].parent) {
             return false;
         }
 
-        return ui.deck[c].isInPlayerHand();
+        return globals.deck[c].isInPlayerHand();
     };
 
     // Returns number of expirations, either 0 or 1 depending on whether it expired
@@ -2202,13 +2185,13 @@ function HanabiUI(lobby, gameID, game) {
         this.negativeMarker.setVisible(false);
 
         for (let i = 0; i < this.list.length; i++) {
-            if (ui.deck[this.list[i]] === target) {
+            if (globals.deck[this.list[i]] === target) {
                 this.background.setOpacity(0.4);
             }
         }
 
         for (let i = 0; i < this.neglist.length; i++) {
-            if (ui.deck[this.neglist[i]] === target) {
+            if (globals.deck[this.neglist[i]] === target) {
                 this.background.setOpacity(0.4);
                 this.background.setFill('#ff7777');
                 if (lobby.settings.showColorblindUI) {
@@ -2313,12 +2296,12 @@ function HanabiUI(lobby, gameID, game) {
     // Transfer leadership of the shared replay to another player
     HanabiNameFrame.prototype.giveLeader = function giveLeader(username) {
         // Only proceed if we are in a shared replay
-        if (!ui.sharedReplay) {
+        if (!globals.sharedReplay) {
             return;
         }
 
         // Only proceed if we are the replay leader
-        if (ui.sharedReplayLeader !== lobby.username) {
+        if (globals.sharedReplayLeader !== lobby.username) {
             return;
         }
 
@@ -2440,12 +2423,12 @@ function HanabiUI(lobby, gameID, game) {
 
     const showClueMatch = (target, clue) => {
         // Hide all of the existing arrows on the cards
-        for (let i = 0; i < this.deck.length; i++) {
+        for (let i = 0; i < globals.deck.length; i++) {
             if (i === target) {
                 continue;
             }
 
-            this.deck[i].setIndicator(false);
+            globals.deck[i].setIndicator(false);
         }
         cardLayer.batchDraw();
 
@@ -2979,7 +2962,7 @@ function HanabiUI(lobby, gameID, game) {
     );
 
     const shareCurrentTurn = (target) => {
-        if (ui.sharedReplayTurn !== target) {
+        if (globals.sharedReplayTurn !== target) {
             ui.sendMsg({
                 type: 'replayAction',
                 data: {
@@ -2987,7 +2970,7 @@ function HanabiUI(lobby, gameID, game) {
                     turn: target,
                 },
             });
-            ui.sharedReplayTurn = target;
+            globals.sharedReplayTurn = target;
             ui.adjustReplayShuttle();
         }
     };
@@ -3411,7 +3394,7 @@ function HanabiUI(lobby, gameID, game) {
             }
 
             // Do nothing if we are not the shared replay leader
-            if (ui.sharedReplayLeader !== lobby.username) {
+            if (globals.sharedReplayLeader !== lobby.username) {
                 return;
             }
 
@@ -3541,7 +3524,7 @@ function HanabiUI(lobby, gameID, game) {
                     totalCardsInTheDeck -= 1;
                 }
             }
-            const numberOfPlayers = this.playerNames.length;
+            const numberOfPlayers = globals.playerNames.length;
             let cardsInHand = 5;
             if (numberOfPlayers === 4 || numberOfPlayers === 5) {
                 cardsInHand = 4;
@@ -3775,7 +3758,7 @@ function HanabiUI(lobby, gameID, game) {
             // We need to decrement the turn because
             // the turn shown to the user is always one greater than the real turn
 
-            if (ui.replayOnly) {
+            if (globals.replay) {
                 ui.inferSharedReplayMode();
             } else {
                 ui.enterReplay(true);
@@ -3955,7 +3938,7 @@ function HanabiUI(lobby, gameID, game) {
 
         /* eslint-enable object-curly-newline */
 
-        const nump = this.playerNames.length;
+        const nump = globals.playerNames.length;
 
         const isHandReversed = (j) => {
             // By default, the hand is not reversed
@@ -4064,12 +4047,12 @@ function HanabiUI(lobby, gameID, game) {
                 y: playerNamePos[nump][j].y * winH,
                 width: playerNamePos[nump][j].w * winW,
                 height: playerNamePos[nump][j].h * winH,
-                name: this.playerNames[i],
+                name: globals.playerNames[i],
             });
             UILayer.add(nameFrames[i]);
 
             // Draw the tooltips on the player names that show the time
-            if (!this.replayOnly) {
+            if (!globals.replay) {
                 nameFrames[i].on('mousemove', function nameFramesMouseMove() {
                     ui.activeHover = this;
 
@@ -4086,7 +4069,7 @@ function HanabiUI(lobby, gameID, game) {
             }
 
             // Draw the "Detrimental Character Assignments" icon and tooltip
-            if (this.characterAssignments.length > 0) {
+            if (globals.characterAssignments.length > 0) {
                 const width2 = 0.03 * winW;
                 const height2 = 0.03 * winH;
                 const charIcon = new Kinetic.Text({
@@ -4097,7 +4080,7 @@ function HanabiUI(lobby, gameID, game) {
                     fontSize: 0.03 * winH,
                     fontFamily: 'Verdana',
                     align: 'center',
-                    text: CHARACTERS[ui.characterAssignments[i]].emoji,
+                    text: CHARACTERS[globals.characterAssignments[i]].emoji,
                     fill: 'yellow',
                     shadowColor: 'black',
                     shadowBlur: 10,
@@ -4117,8 +4100,8 @@ function HanabiUI(lobby, gameID, game) {
                     tooltip.css('left', tooltipX);
                     tooltip.css('top', this.attrs.y);
 
-                    const character = CHARACTERS[ui.characterAssignments[i]];
-                    const metadata = ui.characterMetadata[i];
+                    const character = CHARACTERS[globals.characterAssignments[i]];
+                    const metadata = globals.characterMetadata[i];
                     let content = `<b>${character.name}</b>:<br />${character.description}`;
                     if (content.includes('[random color]')) {
                         // Replace "[random color]" with the selected color
@@ -4193,7 +4176,7 @@ function HanabiUI(lobby, gameID, game) {
                 y: 0,
                 width: 0.08 * winW,
                 height: 0.025 * winH,
-                text: this.playerNames[j],
+                text: globals.playerNames[j],
                 targetIndex: j,
             });
 
@@ -4312,7 +4295,7 @@ function HanabiUI(lobby, gameID, game) {
         this.stopLocalTimer();
 
         // We don't want the timer to show in replays
-        if (!this.replayOnly && (ui.timedGame || lobby.settings.showTimerInUntimed)) {
+        if (!globals.replay && (globals.timed || lobby.settings.showTimerInUntimed)) {
             const timerValues = {
                 x1: 0.155,
                 x2: 0.565,
@@ -4335,7 +4318,7 @@ function HanabiUI(lobby, gameID, game) {
                 cornerRadius: 0.005 * winH,
                 spaceH: 0.01 * winH,
                 label: 'You',
-                visible: !this.spectating,
+                visible: !globals.spectating,
             });
 
             timerLayer.add(timer1);
@@ -4363,9 +4346,9 @@ function HanabiUI(lobby, gameID, game) {
         // Navigating as a follower in a shared replay disables replay actions
         const inferSharedReplayMode = () => {
             if (
-                ui.replayOnly
-                && ui.sharedReplay
-                && ui.sharedReplayLeader !== lobby.username
+                globals.replay
+                && globals.sharedReplay
+                && globals.sharedReplayLeader !== lobby.username
                 && ui.useSharedTurns
             ) {
                 // Replay actions currently enabled, so disable them
@@ -4415,9 +4398,9 @@ function HanabiUI(lobby, gameID, game) {
         rect.on('click', function rectClick(event) {
             const rectX = event.evt.x - this.getAbsolutePosition().x;
             const w = this.getWidth();
-            const step = w / self.replayMax;
+            const step = w / globals.replayMax;
             const newTurn = Math.floor((rectX + step / 2) / step);
-            if (newTurn !== self.replayTurn) {
+            if (newTurn !== globals.replayTurn) {
                 inferSharedReplayMode();
                 self.performReplay(newTurn, true);
             }
@@ -4436,7 +4419,7 @@ function HanabiUI(lobby, gameID, game) {
         });
 
         replayShuttleShared.on('click tap', () => {
-            ui.performReplay(ui.sharedReplayTurn, true);
+            ui.performReplay(globals.sharedReplayTurn, true);
         });
 
         replayArea.add(replayShuttleShared);
@@ -4460,9 +4443,9 @@ function HanabiUI(lobby, gameID, game) {
                 if (shuttleX > w) {
                     shuttleX = w;
                 }
-                const step = w / self.replayMax;
+                const step = w / globals.replayMax;
                 const newTurn = Math.floor((shuttleX + step / 2) / step);
-                if (newTurn !== self.replayTurn) {
+                if (newTurn !== globals.replayTurn) {
                     inferSharedReplayMode();
                     self.performReplay(newTurn, true);
                 }
@@ -4514,7 +4497,7 @@ function HanabiUI(lobby, gameID, game) {
         });
         const backwardFunction = () => {
             inferSharedReplayMode();
-            ui.performReplay(self.replayTurn - 1, true);
+            ui.performReplay(globals.replayTurn - 1, true);
         };
         button.on('click tap', backwardFunction);
         replayArea.add(button);
@@ -4529,7 +4512,7 @@ function HanabiUI(lobby, gameID, game) {
         });
         const forwardFunction = () => {
             inferSharedReplayMode();
-            ui.performReplay(self.replayTurn + 1);
+            ui.performReplay(globals.replayTurn + 1);
         };
         button.on('click tap', forwardFunction);
         replayArea.add(button);
@@ -4544,7 +4527,7 @@ function HanabiUI(lobby, gameID, game) {
         });
         const forwardFullFunction = () => {
             inferSharedReplayMode();
-            ui.performReplay(self.replayMax, true);
+            ui.performReplay(globals.replayMax, true);
         };
         button.on('click tap', forwardFullFunction);
         replayArea.add(button);
@@ -4556,10 +4539,10 @@ function HanabiUI(lobby, gameID, game) {
             width: 0.2 * winW,
             height: 0.06 * winH,
             text: 'Exit Replay',
-            visible: !this.replayOnly && !this.sharedReplay,
+            visible: !globals.replay && !globals.sharedReplay,
         });
         replayExitButton.on('click tap', () => {
-            if (self.replayOnly) {
+            if (globals.replay) {
                 ui.sendMsg({
                     type: 'gameUnattend',
                     data: {},
@@ -4591,10 +4574,10 @@ function HanabiUI(lobby, gameID, game) {
             ui.useSharedTurns = !ui.useSharedTurns;
             replayShuttleShared.setVisible(!ui.useSharedTurns);
             if (ui.useSharedTurns) {
-                if (ui.sharedReplayLeader === lobby.username) {
-                    shareCurrentTurn(ui.replayTurn);
+                if (globals.sharedReplayLeader === lobby.username) {
+                    shareCurrentTurn(globals.replayTurn);
                 } else {
-                    ui.performReplay(ui.sharedReplayTurn);
+                    ui.performReplay(globals.sharedReplayTurn);
                 }
             }
         });
@@ -4609,12 +4592,12 @@ function HanabiUI(lobby, gameID, game) {
 
         const backwardRound = () => {
             inferSharedReplayMode();
-            ui.performReplay(self.replayTurn - nump, true);
+            ui.performReplay(globals.replayTurn - nump, true);
         };
 
         const forwardRound = () => {
             inferSharedReplayMode();
-            ui.performReplay(self.replayTurn + nump);
+            ui.performReplay(globals.replayTurn + nump);
         };
 
         const mouseClickHelper = elem => () => {
@@ -4739,7 +4722,7 @@ function HanabiUI(lobby, gameID, game) {
 
             if (event.key === 'Z') { // Shift + z
                 // This is used for fun in shared replays
-                this.sharedReplaySendSound('buzz');
+                globals.sharedReplaySendSound('buzz');
                 return;
             }
             if (event.key === 'X') { // Shift + x
@@ -4908,14 +4891,14 @@ function HanabiUI(lobby, gameID, game) {
             End of keyboard shortcuts
         */
 
-        this.sharedReplaySendSound = (sound) => {
+        globals.sharedReplaySendSound = (sound) => {
             // Only enable sound effects in a shared replay
-            if (!this.replayOnly || !this.sharedReplay) {
+            if (!globals.replay || !globals.sharedReplay) {
                 return;
             }
 
             // Only enable sound effects for shared replay leaders
-            if (this.sharedReplayLeader !== lobby.username) {
+            if (globals.sharedReplayLeader !== lobby.username) {
                 return;
             }
 
@@ -5004,7 +4987,7 @@ Keyboard hotkeys:
             visible: false,
         });
         replayButton.on('click tap', () => {
-            self.enterReplay(!self.replay);
+            self.enterReplay(!globals.inReplay);
         });
 
         UILayer.add(replayButton);
@@ -5098,7 +5081,7 @@ Keyboard hotkeys:
             game.hide();
         });
 
-        if (ui.replay) {
+        if (globals.inReplay) {
             replayArea.show();
         }
 
@@ -5121,11 +5104,11 @@ Keyboard hotkeys:
             discardStacks.get(suit).removeChildren();
         }
 
-        for (let i = 0; i < this.playerNames.length; i++) {
+        for (let i = 0; i < globals.playerNames.length; i++) {
             playerHands[i].removeChildren();
         }
 
-        ui.deck = [];
+        globals.deck = [];
         ui.postAnimationLayout = null;
 
         clueLog.clear();
@@ -5146,7 +5129,7 @@ Keyboard hotkeys:
     this.saveReplay = function saveReplay(msg) {
         const msgData = msg.data;
 
-        this.replayLog.push(msg);
+        globals.replayLog.push(msg);
 
         if (msgData.type === 'turn') {
             this.replayMax = msgData.num;
@@ -5155,11 +5138,11 @@ Keyboard hotkeys:
             this.replayMax += 1;
         }
 
-        if (!this.replayOnly && this.replayMax > 0) {
+        if (!globals.replay && this.replayMax > 0) {
             replayButton.show();
         }
 
-        if (this.replay) {
+        if (globals.inReplay) {
             this.adjustReplayShuttle();
             UILayer.draw();
         }
@@ -5171,33 +5154,33 @@ Keyboard hotkeys:
     };
 
     this.adjustReplayShuttle = () => {
-        positionReplayShuttle(replayShuttle, this.replayTurn);
-        positionReplayShuttle(replayShuttleShared, this.sharedReplayTurn);
+        positionReplayShuttle(replayShuttle, globals.replayTurn);
+        positionReplayShuttle(replayShuttleShared, globals.sharedReplayTurn);
     };
 
     this.enterReplay = function enterReplay(enter) {
-        if (!this.replay && enter) {
-            this.replay = true;
-            this.replayPos = this.replayLog.length;
-            this.replayTurn = this.replayMax;
+        if (!globals.inReplay && enter) {
+            globals.inReplay = true;
+            globals.replayPos = globals.replayLog.length;
+            globals.replayTurn = this.replayMax;
             this.adjustReplayShuttle();
             this.stopAction();
             replayArea.show();
-            for (let i = 0; i < this.deck.length; i++) {
-                this.deck[i].setBareImage();
+            for (let i = 0; i < globals.deck.length; i++) {
+                globals.deck[i].setBareImage();
             }
             UILayer.draw();
             cardLayer.draw();
-        } else if (this.replay && !enter) {
+        } else if (globals.inReplay && !enter) {
             this.performReplay(this.replayMax, true);
-            this.replay = false;
+            globals.inReplay = false;
             replayArea.hide();
 
             if (savedAction) {
                 this.handleAction(savedAction);
             }
-            for (let i = 0; i < this.deck.length; i++) {
-                this.deck[i].setBareImage();
+            for (let i = 0; i < globals.deck.length; i++) {
+                globals.deck[i].setBareImage();
             }
             UILayer.draw();
             cardLayer.draw();
@@ -5224,26 +5207,26 @@ Keyboard hotkeys:
             target = this.replayMax;
         }
 
-        if (target < this.replayTurn) {
+        if (target < globals.replayTurn) {
             rewind = true;
             this.resetLabels();
             this.cardsGotten = 0;
             this.cluesSpentPlusStrikes = 0;
         }
 
-        if (this.replayTurn === target) {
+        if (globals.replayTurn === target) {
             return; // We're already there, nothing to do!
         }
 
         if (
-            this.sharedReplay
-            && this.sharedReplayLeader === lobby.username
+            globals.sharedReplay
+            && globals.sharedReplayLeader === lobby.username
             && this.useSharedTurns
         ) {
             shareCurrentTurn(target);
         }
 
-        this.replayTurn = target;
+        globals.replayTurn = target;
 
         this.adjustReplayShuttle();
         if (fast) {
@@ -5252,7 +5235,7 @@ Keyboard hotkeys:
 
         if (rewind) {
             this.reset();
-            this.replayPos = 0;
+            globals.replayPos = 0;
         }
 
         rebuildReplay();
@@ -5267,7 +5250,7 @@ Keyboard hotkeys:
     this.replayAdvanced = function replayAdvanced() {
         this.animateFast = false;
 
-        if (this.replay) {
+        if (globals.inReplay) {
             this.performReplay(0);
         }
 
@@ -5382,7 +5365,7 @@ Keyboard hotkeys:
                     possibleRanks: globals.variant.ranks.slice(),
                 };
             }
-            ui.deck[data.order] = new HanabiCard({
+            globals.deck[data.order] = new HanabiCard({
                 suit,
                 rank: data.rank,
                 order: data.order,
@@ -5392,7 +5375,7 @@ Keyboard hotkeys:
             });
 
             const child = new LayoutChild();
-            child.add(ui.deck[data.order]);
+            child.add(globals.deck[data.order]);
 
             const pos = drawDeck.cardback.getAbsolutePosition();
 
@@ -5413,8 +5396,8 @@ Keyboard hotkeys:
             if (
                 lobby.settings.speedrunPreplay
                 && data.who === globals.playerUs
-                && !this.replayOnly
-                && !this.spectating
+                && !globals.replay
+                && !globals.spectating
                 && !ui.learnedCards[data.order].revealed
             ) {
                 child.setDraggable(true);
@@ -5426,7 +5409,7 @@ Keyboard hotkeys:
             const suit = msgSuitToSuit(data.which.suit, globals.variant);
             showClueMatch(-1);
 
-            const child = ui.deck[data.which.order].parent;
+            const child = globals.deck[data.which.order].parent;
             const card = child.children[0];
             if (!card.isClued()) {
                 this.handleEfficiency(+1);
@@ -5439,12 +5422,12 @@ Keyboard hotkeys:
             learnedCard.possibleRanks = [data.which.rank];
             learnedCard.revealed = true;
 
-            ui.deck[data.which.order].showOnlyLearned = false;
-            ui.deck[data.which.order].trueSuit = suit;
-            ui.deck[data.which.order].trueRank = data.which.rank;
-            ui.deck[data.which.order].setBareImage();
+            globals.deck[data.which.order].showOnlyLearned = false;
+            globals.deck[data.which.order].trueSuit = suit;
+            globals.deck[data.which.order].trueRank = data.which.rank;
+            globals.deck[data.which.order].setBareImage();
 
-            ui.deck[data.which.order].hideClues();
+            globals.deck[data.which.order].hideClues();
 
             const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
@@ -5461,9 +5444,9 @@ Keyboard hotkeys:
             const suit = msgSuitToSuit(data.which.suit, globals.variant);
             showClueMatch(-1);
 
-            const cardObject = ui.deck[data.which.order];
+            const cardObject = globals.deck[data.which.order];
             if (typeof cardObject === 'undefined') {
-                console.error(`Failed to find card ${data.which.order} in the deck. (There are ${ui.deck.length} cards in the deck.)`);
+                console.error(`Failed to find card ${data.which.order} in the deck. (There are ${globals.deck.length} cards in the deck.)`);
                 return;
             }
             const child = cardObject.parent;
@@ -5479,12 +5462,12 @@ Keyboard hotkeys:
             learnedCard.possibleRanks = [data.which.rank];
             learnedCard.revealed = true;
 
-            ui.deck[data.which.order].showOnlyLearned = false;
-            ui.deck[data.which.order].trueSuit = suit;
-            ui.deck[data.which.order].trueRank = data.which.rank;
-            ui.deck[data.which.order].setBareImage();
+            globals.deck[data.which.order].showOnlyLearned = false;
+            globals.deck[data.which.order].trueSuit = suit;
+            globals.deck[data.which.order].trueRank = data.which.rank;
+            globals.deck[data.which.order].setBareImage();
 
-            ui.deck[data.which.order].hideClues();
+            globals.deck[data.which.order].hideClues();
 
             const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
@@ -5530,7 +5513,7 @@ Keyboard hotkeys:
                 }
             */
             const suit = msgSuitToSuit(data.which.suit, globals.variant);
-            const card = ui.deck[data.which.order];
+            const card = globals.deck[data.which.order];
 
             const learnedCard = ui.learnedCards[data.which.order];
             learnedCard.suit = suit;
@@ -5559,7 +5542,7 @@ Keyboard hotkeys:
             showClueMatch(-1);
 
             for (let i = 0; i < data.list.length; i++) {
-                const card = ui.deck[data.list[i]];
+                const card = globals.deck[data.list[i]];
                 if (!card.isClued()) {
                     this.handleEfficiency(+1);
                 } else {
@@ -5604,8 +5587,8 @@ Keyboard hotkeys:
             const entry = new HanabiClueEntry({
                 width: clueLog.getWidth(),
                 height: 0.017 * winH,
-                giver: ui.playerNames[data.giver],
-                target: ui.playerNames[data.target],
+                giver: globals.playerNames[data.giver],
+                target: globals.playerNames[data.target],
                 clueName,
                 list: data.list,
                 neglist,
@@ -5663,11 +5646,11 @@ Keyboard hotkeys:
             // Formula derived by Libster;
             // the number of discards that can happen while still getting the maximum number of
             // points (this is represented to the user as "Pace" on the user interface)
-            const endGameThreshold1 = adjustedScorePlusDeck + this.playerNames.length;
+            const endGameThreshold1 = adjustedScorePlusDeck + globals.playerNames.length;
 
             // Formula derived by Florrat;
             // a strategical estimate of "End-Game" that tries to account for the number of players
-            const endGameThreshold2 = adjustedScorePlusDeck + Math.floor(this.playerNames.length / 2); // eslint-disable-line
+            const endGameThreshold2 = adjustedScorePlusDeck + Math.floor(globals.playerNames.length / 2); // eslint-disable-line
 
             // Formula derived by Hyphen-ated;
             // a more conservative estimate of "End-Game" that does not account for
@@ -5762,7 +5745,7 @@ Keyboard hotkeys:
                 clueArea.hide();
             }
 
-            for (let i = 0; i < ui.playerNames.length; i++) {
+            for (let i = 0; i < globals.playerNames.length; i++) {
                 nameFrames[i].setActive(data.who === i);
             }
 
@@ -5781,7 +5764,7 @@ Keyboard hotkeys:
                 }, 250);
             }
         } else if (type === 'gameOver') {
-            for (let i = 0; i < this.playerNames.length; i++) {
+            for (let i = 0; i < globals.playerNames.length; i++) {
                 nameFrames[i].off('mousemove');
             }
 
@@ -5795,17 +5778,17 @@ Keyboard hotkeys:
 
             // If the game just finished for the players,
             // start the process of transforming it into a shared replay
-            if (!this.replayOnly) {
-                this.replayOnly = true;
-                this.replayTurn = this.replayMax;
-                this.sharedReplayTurn = this.replayTurn;
+            if (!globals.replay) {
+                globals.replay = true;
+                globals.replayTurn = this.replayMax;
+                globals.sharedReplayTurn = globals.replayTurn;
                 replayButton.hide();
                 // Hide the in-game replay button in the bottom-left-hand corner
             }
 
             // We could be in the middle of an in-game replay when the game ends,
             // so don't jerk them out of the in-game replay
-            if (!this.replay) {
+            if (!globals.inReplay) {
                 this.enterReplay(true);
             }
 
@@ -5822,7 +5805,7 @@ Keyboard hotkeys:
             const handSize = hand.children.length;
             for (let i = 0; i < handSize; i++) {
                 const order = data.handOrder[i];
-                const child = ui.deck[order].parent;
+                const child = globals.deck[order].parent;
                 newChildOrder.push(child);
 
                 // Take them out of the hand itself
@@ -5858,7 +5841,7 @@ Keyboard hotkeys:
             // Build the string that shows all the names
             const nameEntries = data.names.map(name => `<li>${name}</li>`).join('');
             let content = '<strong>';
-            if (this.replayOnly) {
+            if (globals.replay) {
                 content += 'Shared Replay Viewers';
             } else {
                 content += 'Spectators';
@@ -5870,9 +5853,9 @@ Keyboard hotkeys:
         }
 
         // We might also need to update the content of replay leader icon
-        if (this.sharedReplay) {
-            let content = `<strong>Leader:</strong> ${this.sharedReplayLeader}`;
-            if (!this.spectators.includes(this.sharedReplayLeader)) {
+        if (globals.sharedReplay) {
+            let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
+            if (!this.spectators.includes(globals.sharedReplayLeader)) {
                 // Check to see if the leader is away
                 content += ' (away)';
             }
@@ -5890,13 +5873,13 @@ Keyboard hotkeys:
             return;
         }
 
-        const currentUserTurn = activeIndex === globals.playerUs && !ui.spectating;
+        const currentUserTurn = activeIndex === globals.playerUs && !globals.spectating;
 
         // Update onscreen time displays
-        if (!ui.spectating) {
+        if (!globals.spectating) {
             // The visibilty of this timer does not change during a game
             let time = ui.playerTimes[globals.playerUs];
-            if (!ui.timedGame) {
+            if (!globals.timed) {
                 // Invert it to show how much time each player is taking
                 time *= -1;
             }
@@ -5906,7 +5889,7 @@ Keyboard hotkeys:
         if (!currentUserTurn) {
             // Update the ui with the value of the timer for the active player
             let time = ui.playerTimes[activeIndex];
-            if (!ui.timedGame) {
+            if (!globals.timed) {
                 // Invert it to show how much time each player is taking
                 time *= -1;
             }
@@ -5949,7 +5932,7 @@ Keyboard hotkeys:
         ui.setNote(data.order, data.notes);
 
         // Draw (or hide) the note indicator
-        const card = ui.deck[data.order];
+        const card = globals.deck[data.order];
         if (!card) {
             return;
         }
@@ -5993,7 +5976,7 @@ Keyboard hotkeys:
 
             // The following code is mosly copied from the "handleNote" function
             // Draw (or hide) the note indicator
-            const card = ui.deck[order];
+            const card = globals.deck[order];
             if (!card) {
                 continue;
             }
@@ -6002,7 +5985,7 @@ Keyboard hotkeys:
             }
             if (note !== null && note !== '') {
                 card.noteGiven.show();
-                if (ui.spectating && !card.noteGiven.rotated) {
+                if (globals.spectating && !card.noteGiven.rotated) {
                     card.noteGiven.rotate(15);
                     card.noteGiven.rotated = true;
                 }
@@ -6014,16 +5997,16 @@ Keyboard hotkeys:
 
     this.handleReplayLeader = function handleReplayLeader(data) {
         // We might be entering this function after a game just ended
-        this.sharedReplay = true;
+        globals.sharedReplay = true;
         replayExitButton.hide();
 
         // Update the stored replay leader
-        this.sharedReplayLeader = data.name;
+        globals.sharedReplayLeader = data.name;
 
         // Update the UI
         sharedReplayLeaderLabel.show();
-        let content = `<strong>Leader:</strong> ${this.sharedReplayLeader}`;
-        if (!this.spectators.includes(this.sharedReplayLeader)) {
+        let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
+        if (!this.spectators.includes(globals.sharedReplayLeader)) {
             // Check to see if the leader is away
             content += ' (away)';
         }
@@ -6036,10 +6019,10 @@ Keyboard hotkeys:
     };
 
     this.handleReplayTurn = function handleReplayTurn(data) {
-        this.sharedReplayTurn = data.turn;
+        globals.sharedReplayTurn = data.turn;
         this.adjustReplayShuttle();
         if (ui.useSharedTurns) {
-            this.performReplay(this.sharedReplayTurn);
+            this.performReplay(globals.sharedReplayTurn);
         } else {
             replayShuttleShared.getLayer().batchDraw();
         }
@@ -6047,7 +6030,7 @@ Keyboard hotkeys:
 
     this.handleReplayIndicator = (data) => {
         // Ensure that the card exists as a sanity-check
-        const indicated = ui.deck[data.order];
+        const indicated = globals.deck[data.order];
         if (indicated) {
             // Either show or hide the arrow (if it is already visible)
             const visible = !(
@@ -6106,7 +6089,7 @@ Keyboard hotkeys:
     this.handleAction = function handleAction(data) {
         savedAction = data;
 
-        if (this.replay) {
+        if (globals.inReplay) {
             return;
         }
 
@@ -6124,7 +6107,7 @@ Keyboard hotkeys:
         // We have to redraw the UI layer to avoid a bug with the clue UI
         UILayer.draw();
 
-        if (this.playerNames.length === 2) {
+        if (globals.playerNames.length === 2) {
             // Default the clue recipient button to the only other player available
             clueTargetButtonGroup.list[0].setPressed(true);
         }
@@ -6273,10 +6256,6 @@ Keyboard hotkeys:
         $(document).unbind('keydown', this.keyNavigation);
         this.stopLocalTimer();
     };
-
-    this.replayLog = [];
-    this.replayPos = 0;
-    this.replayTurn = 0;
 }
 
 /*
@@ -6289,21 +6268,25 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
     msg.data = msgData;
 
     if (msgType === 'init') {
-        globals.playerUs = msgData.seat;
-        this.playerNames = msgData.names;
-        this.characterAssignments = msgData.characterAssignments;
-        this.characterMetadata = msgData.characterMetadata;
+        // Game settings
+        globals.playerNames = msgData.names;
         globals.variant = constants.VARIANTS[msgData.variant];
-        this.replay = msgData.replay;
-        this.replayOnly = msgData.replay;
-        this.spectating = msgData.spectating;
-        this.timedGame = msgData.timed;
-        this.sharedReplay = msgData.sharedReplay;
+        globals.playerUs = msgData.seat;
+        globals.spectating = msgData.spectating;
+        globals.replay = msgData.replay;
+        globals.sharedReplay = msgData.sharedReplay;
+
+        // Optional settings
+        globals.timed = msgData.timed;
         globals.deckPlays = msgData.deckPlays;
         globals.emptyClues = msgData.emptyClues;
+        globals.characterAssignments = msgData.characterAssignments;
+        globals.characterMetadata = msgData.characterMetadata;
 
-        if (this.replayOnly) {
-            this.replayTurn = -1;
+        // Also set some extra variables
+        globals.inReplay = msgData.replay;
+        if (globals.inReplay) {
+            globals.replayTurn = -1;
         }
 
         this.loadImages();
@@ -6314,7 +6297,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
     } else if (msgType === 'notify') {
         this.saveReplay(msg);
 
-        if (!this.replay || msgData.type === 'reveal' || msgData.type === 'boot') {
+        if (!globals.inReplay || msgData.type === 'reveal' || msgData.type === 'boot') {
             this.handleNotify(msgData);
         }
     } else if (msgType === 'action') {
@@ -6356,7 +6339,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleReplayTurn.call(this, msgData);
     } else if (msgType === 'replayIndicator') {
         // This is used in shared replays
-        if (this.sharedReplayLeader === this.lobby.username) {
+        if (globals.sharedReplayLeader === this.lobby.username) {
             // We don't have to draw any arrows;
             // we already did it manually immediately after sending the "replayAction" message
             return;
@@ -6365,7 +6348,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleReplayIndicator.call(this, msgData);
     } else if (msgType === 'replayMorph') {
         // This is used in shared replays to make hypothetical game states
-        if (this.sharedReplayLeader === this.lobby.username) {
+        if (globals.sharedReplayLeader === this.lobby.username) {
             // We don't have to reveal anything;
             // we already did it manually immediately after sending the "replayAction" message
             return;
@@ -6382,7 +6365,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleNotify(revealMsg);
     } else if (msgType === 'replaySound') {
         // This is used in shared replays to make fun sounds
-        if (this.sharedReplayLeader === this.lobby.username) {
+        if (globals.sharedReplayLeader === this.lobby.username) {
             // We don't have to play anything;
             // we already did it manually immediately after sending the "replayAction" message
             return;
@@ -6408,7 +6391,7 @@ HanabiUI.prototype.sendMsg = function sendMsg(msg) {
         data = {};
     }
 
-    if (this.showDebugMessages) {
+    if (globals.debug) {
         console.log(`%cSent (UI) ${type}:`, 'color: green;');
         console.log(data);
     }

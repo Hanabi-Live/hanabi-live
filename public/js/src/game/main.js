@@ -22,7 +22,7 @@ exports.show = () => {
     $('#page-wrapper').hide(); // We can't fade this out as it will overlap
     $('#game').fadeIn(globals.fadeTime);
 
-    globals.ui = new ui(globals, globals.gameID, exports); // eslint-disable-line
+    globals.ui = new ui(globals, exports); // eslint-disable-line new-cap
     globals.ui.setBackend(globals.conn);
 };
 

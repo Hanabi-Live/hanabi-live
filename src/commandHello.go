@@ -106,8 +106,23 @@ func commandHello(s *Session, d *CommandData) {
 	// If this is a replay of a game they were not in (or if they are spectating),
 	// the above if statement will never be reached, and they will be in seat 0
 
+	// Find out their status
+	spectating := false
+	if s.Status() == "Spectating" {
+		spectating = true
+	}
+	replay := false
+	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
+		replay = true
+	}
+	sharedReplay := false
+	if s.Status() == "Shared Replay" {
+		sharedReplay = true
+	}
+
 	// Give them an "init" message
 	type InitMessage struct {
+		// Game settings
 		Names        []string `json:"names"`
 		Variant      string   `json:"variant"`
 		Seat         int      `json:"seat"`
@@ -122,29 +137,20 @@ func commandHello(s *Session, d *CommandData) {
 		CharacterAssignments []string `json:"characterAssignments"`
 		CharacterMetadata    []int    `json:"characterMetadata"`
 	}
-	replay := false
-	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
-		replay = true
-	}
-	spectating := false
-	if s.Status() == "Spectating" {
-		spectating = true
-	}
-	sharedReplay := false
-	if s.Status() == "Shared Replay" {
-		sharedReplay = true
-	}
 	s.Emit("init", &InitMessage{
-		Names:                names,
-		CharacterAssignments: characterAssignments,
-		CharacterMetadata:    characterMetadata,
-		Replay:               replay,
-		Seat:                 seat,
-		Spectating:           spectating,
+		// Game settings
+		Names:        names,
+		Variant:      g.Options.Variant,
+		Seat:         seat,
+		Spectating:   spectating,
+		Replay:       replay,
+		SharedReplay: sharedReplay,
+
+		// Optional settings
 		Timed:                g.Options.Timed,
 		DeckPlays:            g.Options.DeckPlays,
 		EmptyClues:           g.Options.EmptyClues,
-		Variant:              g.Options.Variant,
-		SharedReplay:         sharedReplay,
+		CharacterAssignments: characterAssignments,
+		CharacterMetadata:    characterMetadata,
 	})
 }
