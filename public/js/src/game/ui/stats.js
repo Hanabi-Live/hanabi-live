@@ -1,3 +1,7 @@
+/*
+    Functions for the stats on the middle-left-hand side
+*/
+
 // Imports
 const globals = require('./globals');
 

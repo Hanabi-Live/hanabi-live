@@ -5,7 +5,7 @@ const debug = true;
 const globals = {
     debug,
 
-    // ?
+    // Objects sent upon UI initialization
     lobby: null,
     game: null,
 
@@ -55,7 +55,15 @@ const globals = {
     sharedReplayTurn: -1,
 
     // UI elements
-    elements: [],
+    elements: {
+        paceNumberLabel: null,
+        efficiencyNumberLabel: null,
+        timer1: null,
+        timer2: null,
+    },
+    layers: {
+        timer: null,
+    },
 };
 module.exports = globals;
 

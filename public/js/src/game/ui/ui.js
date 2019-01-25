@@ -1,6 +1,7 @@
 // Imports
 const globals = require('./globals');
 const stats = require('./stats');
+const timer = require('./timer');
 
 function HanabiUI(lobby, game) {
     this.lobby = lobby;
@@ -37,14 +38,8 @@ function HanabiUI(lobby, game) {
     // A function called after an action from the server moves cards
     this.postAnimationLayout = null;
 
-    this.lastTimerUpdateTimeMS = new Date().getTime();
-
-    this.playerTimes = [];
-    this.timerID = null;
-
     // Stored variables for rebuilding the game state
     this.lastAction = null;
-    this.activeClockIndex = null;
     this.lastSpectators = null;
 
     // Users can only update one note at a time to prevent bugs
@@ -64,13 +59,6 @@ function HanabiUI(lobby, game) {
     // Start listening to resize events and draw canvas
     // (this is commented out because it is currently broken)
     // window.addEventListener('resize', resizeCanvas, false);
-
-    this.stopLocalTimer = function stopLocalTimer() {
-        if (ui.timerID !== null) {
-            window.clearInterval(ui.timerID);
-            ui.timerID = null;
-        }
-    };
 
     function redraw() {
         const self = lobby.ui;
@@ -125,7 +113,8 @@ function HanabiUI(lobby, game) {
             }
 
             // Setup the timers
-            self.handleClock.call(self, self.activeClockIndex);
+            // (TODO fix this to "timer.update()" and test)
+            // self.handleClock.call(self, self.activeClockIndex);
         }
 
         // Restore Drag and Drop Functionality
@@ -156,7 +145,7 @@ function HanabiUI(lobby, game) {
         bgLayer.draw();
         textLayer.draw();
         UILayer.draw();
-        timerLayer.draw();
+        globals.layers.timer.draw();
         cardLayer.draw();
         overLayer.draw();
     }
@@ -250,80 +239,6 @@ function HanabiUI(lobby, game) {
     /*
         Misc. functions
     */
-
-    function pad2(num) {
-        if (num < 10) {
-            return `0${num}`;
-        }
-        return `${num}`;
-    }
-
-    function millisecondsToTimeDisplay(milliseconds) {
-        const seconds = Math.ceil(milliseconds / 1000);
-        return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
-    }
-
-    function setTickingDownTime(text, activeIndex) {
-        // Compute elapsed time since last timer update
-        const now = new Date().getTime();
-        const timeElapsed = now - ui.lastTimerUpdateTimeMS;
-        ui.lastTimerUpdateTimeMS = now;
-        if (timeElapsed < 0) {
-            return;
-        }
-
-        // Update the time in local array to approximate server times
-        ui.playerTimes[activeIndex] -= timeElapsed;
-        if (globals.timed && ui.playerTimes[activeIndex] < 0) {
-            // Don't let the timer go into negative values, or else it will mess up the display
-            // (but in non-timed games, we want this to happen)
-            ui.playerTimes[activeIndex] = 0;
-        }
-
-        let millisecondsLeft = ui.playerTimes[activeIndex];
-        if (!globals.timed) {
-            // Invert it to show how much time each player is taking
-            millisecondsLeft *= -1;
-        }
-        const displayString = millisecondsToTimeDisplay(millisecondsLeft);
-
-        // Update display
-        text.setText(displayString);
-        text.getLayer().batchDraw();
-
-        // Play a sound to indicate that the current player is almost out of time
-        // Do not play it more frequently than about once per second
-        if (
-            globals.timed
-            && lobby.settings.sendTimerSound
-            && millisecondsLeft > 0
-            && millisecondsLeft <= 10000
-            && timeElapsed > 900
-            && timeElapsed < 1100
-            && !lobby.errorOccured
-        ) {
-            ui.game.sounds.play('tone');
-        }
-    }
-
-    function setTickingDownTimeTooltip(i) {
-        let time = ui.playerTimes[i];
-        if (!globals.timed) {
-            // Invert it to show how much time each player is taking
-            time *= -1;
-        }
-
-        let content = 'Time ';
-        if (globals.timed) {
-            content += 'remaining';
-        } else {
-            content += 'taken';
-        }
-        content += ':<br /><strong>';
-        content += millisecondsToTimeDisplay(time);
-        content += '</strong>';
-        $(`#tooltip-player-${i}`).tooltipster('instance').content(content);
-    }
 
     function imageName(card) {
         let prefix = 'Card';
@@ -2883,7 +2798,7 @@ function HanabiUI(lobby, game) {
     const textLayer = new Kinetic.Layer({
         listening: false,
     });
-    const timerLayer = new Kinetic.Layer({
+    globals.layers.timer = new Kinetic.Layer({
         listening: false,
     });
     const playerHands = [];
@@ -2914,8 +2829,6 @@ function HanabiUI(lobby, game) {
     let clueTargetButtonGroup;
     let clueButtonGroup;
     let submitClue;
-    let timer1;
-    let timer2;
     let noClueLabel;
     let noClueBox;
     let noDiscardLabel;
@@ -4232,8 +4145,6 @@ function HanabiUI(lobby, game) {
             Draw the timer
         */
 
-        this.stopLocalTimer();
-
         // We don't want the timer to show in replays
         if (!globals.replay && (globals.timed || lobby.settings.showTimerInUntimed)) {
             const timerValues = {
@@ -4249,7 +4160,7 @@ function HanabiUI(lobby, game) {
                 timerValues.y2 = 0.885;
             }
 
-            timer1 = new TimerDisplay({
+            globals.elements.timer1 = new timer.TimerDisplay({
                 x: timerValues.x1 * winW,
                 y: timerValues.y1 * winH,
                 width: 0.08 * winW,
@@ -4260,10 +4171,9 @@ function HanabiUI(lobby, game) {
                 label: 'You',
                 visible: !globals.spectating,
             });
+            globals.layers.timer.add(globals.elements.timer1);
 
-            timerLayer.add(timer1);
-
-            timer2 = new TimerDisplay({
+            globals.elements.timer2 = new timer.TimerDisplay({
                 x: timerValues.x2 * winW,
                 y: timerValues.y2 * winH,
                 width: 0.08 * winW,
@@ -4275,9 +4185,11 @@ function HanabiUI(lobby, game) {
                 label: 'Current\nPlayer',
                 visible: false,
             });
-
-            timerLayer.add(timer2);
+            globals.layers.timer.add(globals.elements.timer2);
         }
+
+        // Just in case, stop the previous timer, if any
+        timer.stop();
 
         /*
             Draw the replay area
@@ -4488,7 +4400,7 @@ function HanabiUI(lobby, game) {
                     data: {},
                 });
 
-                this.stopLocalTimer();
+                timer.stop();
                 game.hide();
             } else {
                 // Mark the time that the user clicked the "Exit Replay" button
@@ -4984,7 +4896,7 @@ Keyboard hotkeys:
                 data: {},
             });
 
-            this.stopLocalTimer();
+            timer.stop();
             game.hide();
         });
 
@@ -4995,7 +4907,7 @@ Keyboard hotkeys:
         stage.add(bgLayer);
         stage.add(textLayer);
         stage.add(UILayer);
-        stage.add(timerLayer);
+        stage.add(globals.layers.timer);
         stage.add(cardLayer);
         stage.add(overLayer);
     };
@@ -5632,13 +5544,12 @@ Keyboard hotkeys:
                 nameFrames[i].off('mousemove');
             }
 
-            if (timer1) {
-                timer1.hide();
+            if (globals.elements.timer1) {
+                globals.elements.timer1.hide();
             }
 
-            timerLayer.draw();
-
-            this.stopLocalTimer();
+            globals.layers.timer.draw();
+            timer.stop();
 
             // If the game just finished for the players,
             // start the process of transforming it into a shared replay
@@ -5682,7 +5593,7 @@ Keyboard hotkeys:
                 hand.add(child);
             }
         } else if (type === 'boot') {
-            this.stopLocalTimer();
+            timer.stop();
             game.hide();
         }
     };
@@ -5727,59 +5638,6 @@ Keyboard hotkeys:
         }
 
         UILayer.batchDraw();
-    };
-
-    this.handleClock = (activeIndex) => {
-        this.stopLocalTimer();
-
-        // Check to see if the second timer has been drawn
-        if (typeof timer2 === 'undefined') {
-            return;
-        }
-
-        const currentUserTurn = activeIndex === globals.playerUs && !globals.spectating;
-
-        // Update onscreen time displays
-        if (!globals.spectating) {
-            // The visibilty of this timer does not change during a game
-            let time = ui.playerTimes[globals.playerUs];
-            if (!globals.timed) {
-                // Invert it to show how much time each player is taking
-                time *= -1;
-            }
-            timer1.setText(millisecondsToTimeDisplay(time));
-        }
-
-        if (!currentUserTurn) {
-            // Update the ui with the value of the timer for the active player
-            let time = ui.playerTimes[activeIndex];
-            if (!globals.timed) {
-                // Invert it to show how much time each player is taking
-                time *= -1;
-            }
-            timer2.setText(millisecondsToTimeDisplay(time));
-        }
-
-        const shoudShowTimer2 = !currentUserTurn && activeIndex !== null;
-        timer2.setVisible(shoudShowTimer2);
-        timerLayer.draw();
-
-        // Update the timer tooltips for each player
-        for (let i = 0; i < ui.playerTimes.length; i++) {
-            setTickingDownTimeTooltip(i);
-        }
-
-        // If no timer is running on the server, do not configure local approximation
-        if (activeIndex === null) {
-            return;
-        }
-
-        // Start the local timer for the active player
-        const activeTimerUIText = (currentUserTurn ? timer1 : timer2);
-        ui.timerID = window.setInterval(() => {
-            setTickingDownTime(activeTimerUIText, activeIndex);
-            setTickingDownTimeTooltip(activeIndex);
-        }, 1000);
     };
 
     // Recieved by the client when spectating a game
@@ -6118,7 +5976,7 @@ Keyboard hotkeys:
         stage.destroy();
         window.removeEventListener('resize', resizeCanvas, false);
         $(document).unbind('keydown', this.keyNavigation);
-        this.stopLocalTimer();
+        timer.stop();
     };
 }
 
@@ -6179,15 +6037,9 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         // This is used to update the names of the people currently spectating the game
         this.handleSpectators.call(this, msgData);
     } else if (msgType === 'clock') {
-        if (msgData.active === -1) {
-            msgData.active = null;
-        }
-
-        // This is used for timed games
-        this.stopLocalTimer();
-        this.playerTimes = msgData.times;
-        this.activeClockIndex = msgData.active;
-        this.handleClock.call(this, msgData.active);
+        // Update the clocks to show how much time people are taking
+        // or how much time people have left
+        timer.update(msgData);
     } else if (msgType === 'note') {
         // This is used for spectators
         this.handleNote.call(this, msgData);
@@ -6265,66 +6117,5 @@ function stripHTMLtags(input) {
     const doc = new DOMParser().parseFromString(input, 'text/html');
     return doc.body.textContent || '';
 }
-
-const TimerDisplay = function TimerDisplay(config) {
-    Kinetic.Group.call(this, config);
-
-    const rectangle = new Kinetic.Rect({
-        x: 0,
-        y: 0,
-        width: config.width,
-        height: config.height,
-        fill: 'black',
-        cornerRadius: config.cornerRadius,
-        opacity: 0.2,
-        listening: false,
-    });
-    this.add(rectangle);
-
-    const label = new Kinetic.Text({
-        x: 0,
-        y: 6 * config.spaceH,
-        width: config.width,
-        height: config.height,
-        fontSize: config.labelFontSize || config.fontSize,
-        fontFamily: 'Verdana',
-        align: 'center',
-        text: config.label,
-        fill: '#d8d5ef',
-        shadowColor: 'black',
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-        listening: false,
-    });
-    this.add(label);
-
-    const text = new Kinetic.Text({
-        x: 0,
-        y: config.spaceH,
-        width: config.width,
-        height: config.height,
-        fontSize: config.fontSize,
-        fontFamily: 'Verdana',
-        align: 'center',
-        text: '??:??',
-        fill: '#d8d5ef',
-        shadowColor: 'black',
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-        listening: false,
-    });
-    this.add(text);
-
-    this.setText = s => text.setText(s);
-};
-Kinetic.Util.extend(TimerDisplay, Kinetic.Group);
 
 module.exports = HanabiUI;
