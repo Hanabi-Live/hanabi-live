@@ -146,14 +146,16 @@ func commandReady(s *Session, d *CommandData) {
 			p.Present = true
 			g.NotifyConnected()
 		}
-
-		// Send them the chat history for this game
-		chatSendPastFromGame(s, g)
 	}
 
 	// Send them the number of spectators
 	if s.Status() != "Replay" {
 		s.NotifySpectators(g)
+	}
+
+	// Send them the chat history for this game
+	if s.Status() != "Replay" {
+		chatSendPastFromGame(s, g)
 	}
 
 	if s.Status() == "Shared Replay" {

@@ -25,6 +25,14 @@ const toggle = () => {
 };
 exports.toggle = toggle;
 
+exports.show = () => {
+    $('#game-chat-modal').fadeIn(globals.fadeTime);
+};
+
+exports.hide = () => {
+    $('#game-chat-modal').fadeOut(globals.fadeTime);
+}
+
 /*
     Make draggable div
     https://www.w3schools.com/howto/howto_js_draggable.asp

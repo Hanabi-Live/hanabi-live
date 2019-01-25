@@ -6,6 +6,7 @@
 const globals = require('./globals');
 const misc = require('./misc');
 const lobby = require('./lobby/main');
+const game = require('./game/main');
 
 // The list of all of the modals
 const modals = [
@@ -76,6 +77,7 @@ exports.warningShow = (msg) => {
         $('#game').fadeTo(globals.fadeTime, 0.25);
     }
     misc.closeAllTooltips();
+    game.chat.hide();
 
     $('#warning-modal-description').html(msg);
     $('#warning-modal').fadeIn(globals.fadeTime);
@@ -95,6 +97,7 @@ exports.errorShow = (msg) => {
         $('#game').fadeTo(globals.fadeTime, 0.1);
     }
     misc.closeAllTooltips();
+    game.chat.hide();
 
     // Clear out the top navigation buttons
     lobby.nav.show('nothing');

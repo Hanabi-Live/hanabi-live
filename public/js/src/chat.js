@@ -4,6 +4,7 @@
 
 // Imports
 const globals = require('./globals');
+const game = require('./game/main');
 
 $(document).ready(() => {
     const input1 = $('#lobby-chat-input');
@@ -34,12 +35,14 @@ const send = (room, input) => (event) => {
 
 exports.add = (data) => {
     let chat;
+    let ingame = false;
     if (data.room === 'lobby') {
         chat = $('#lobby-chat-text');
     } else if ($('#lobby-chat-pregame-text').is(':visible')) {
         chat = $('#lobby-chat-pregame-text');
     } else {
         chat = $('#game-chat-text');
+        ingame = true;
     }
 
     // Convert any Discord emotes
@@ -71,6 +74,11 @@ exports.add = (data) => {
     chat.animate({
         scrollTop: chat[0].scrollHeight,
     }, globals.fadeTime);
+
+    // Show the chat window when any new messages are sent
+    if (ingame) {
+        game.chat.show();
+    }
 };
 
 const fillEmotes = (message) => {
