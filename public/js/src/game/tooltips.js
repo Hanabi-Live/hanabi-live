@@ -34,14 +34,4 @@ $(document).ready(() => {
         $('#game-tooltips').append(`<div id="tooltip-card-${i}"></div>`);
         $(`#tooltip-card-${i}`).tooltipster(tooltipOptions);
     }
-    $('#tooltip-chat').tooltipster({
-        animationDuration: 0,
-        arrow: false,
-        contentAsHTML: true,
-        delay: 0,
-        distance: 0,
-        interactive: true,
-        theme: tooltipThemes,
-        trigger: 'custom',
-    });
 });

@@ -4,7 +4,9 @@ const stats = require('./stats');
 
 function HanabiUI(lobby, game) {
     this.lobby = lobby;
+    globals.lobby = lobby;
     this.game = game;
+    globals.game = game;
 
     const ui = this;
 
@@ -4955,26 +4957,6 @@ Keyboard hotkeys:
             });
         });
 
-        const toggleChat = (show) => {
-            chatButton.setVisible(!show);
-            cluesButton.setVisible(show);
-            clueLog.setVisible(!show);
-            if (show) {
-                $('#tooltip-chat').css('left', clueLogRect.attrs.x);
-                $('#tooltip-chat').css('top', clueLogRect.attrs.y);
-                $('#tooltip-chat').css('width', clueLogRect.attrs.width);
-                $('#tooltip-chat').tooltipster('instance').option('minWidth', clueLogRect.attrs.width);
-                $('#tooltip-chat').tooltipster('instance').option('maxWidth', clueLogRect.attrs.width);
-                const chatHeight = clueLogRect.attrs.height - 0.027 * winH;
-                $('#game-chat').css('min-height', chatHeight);
-                $('#game-chat').css('min-height', chatHeight);
-                $('#tooltip-chat').tooltipster('open');
-            } else {
-                $('#tooltip-chat').tooltipster('close');
-            }
-            UILayer.draw();
-        };
-
         chatButton = new Button({
             x: 0.01 * winW,
             y: 0.87 * winH,
@@ -4984,9 +4966,10 @@ Keyboard hotkeys:
         });
         UILayer.add(chatButton);
         chatButton.on('click tap', () => {
-            toggleChat(true);
+            globals.game.chat.toggle();
         });
 
+        /*
         cluesButton = new Button({
             x: 0.01 * winW,
             y: 0.87 * winH,
@@ -4999,6 +4982,7 @@ Keyboard hotkeys:
         cluesButton.on('click tap', () => {
             toggleChat(false);
         });
+        */
 
         lobbyButton = new Button({
             x: 0.01 * winW,

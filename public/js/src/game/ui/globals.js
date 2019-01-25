@@ -5,6 +5,10 @@ const debug = true;
 const globals = {
     debug,
 
+    // ?
+    lobby: null,
+    game: null,
+
     // Game settings
     // (sent in the "init" message)
     playerNames: [],

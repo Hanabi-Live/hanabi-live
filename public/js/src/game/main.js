@@ -2,6 +2,7 @@
     The Hanabi game UI
 */
 
+exports.chat = require('./chat');
 exports.commands = require('./commands');
 exports.sounds = require('./sounds');
 exports.tooltips = require('./tooltips');
@@ -22,6 +23,9 @@ exports.show = () => {
     $('#page-wrapper').hide(); // We can't fade this out as it will overlap
     $('#game').fadeIn(globals.fadeTime);
 
+    // Clear the in-game chat box of any previous content
+    $('#game-chat-text').html('');
+
     globals.ui = new ui(globals, exports); // eslint-disable-line new-cap
     globals.ui.setBackend(globals.conn);
 };
@@ -35,7 +39,10 @@ exports.hide = () => {
     $('#game').hide(); // We can't fade this out as it will overlap
     $('#page-wrapper').fadeIn(globals.fadeTime);
 
-    // Make sure there are not any game-related tooltips showing
+    // Make sure that there are not any game-related modals showing
+    $('#game-chat-modal').hide();
+
+    // Make sure that there are not any game-related tooltips showing
     misc.closeAllTooltips();
 
     // Scroll to the bottom of the lobby

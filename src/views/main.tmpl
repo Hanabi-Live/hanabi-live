@@ -640,11 +640,6 @@
 
         <br /><br />
     </div>
-
-    <div id="game-chat">
-        <div id="game-chat-text"></div>
-        <input id="game-chat-input" type="text" placeholder="Chat" />
-    </div>
 </div>
 
 <!-- Game (the UI when playing a game) -->
@@ -674,6 +669,27 @@
             </li>
         </ul>
     </section>
+</div>
+
+<!-- Game chat modal -->
+<div id="game-chat-modal" class="hidden resizable">
+    <div class="resizers">
+        <div class="resizer top-left"></div>
+        <div class="resizer top-right"></div>
+        <div class="resizer bottom-left"></div>
+        <div class="resizer bottom-right"></div>
+
+        <!-- The content has to also be inside the "resizers" div in order to work properly -->
+        <div id="game-chat-modal-header">
+            <a id="game-chat-modal-header-close">
+                <i class="fas fa-times fa-xs"></i>
+            </a>
+        </div>
+        <section class="box">
+            <div id="game-chat-text" class="lobby-chat-text-box"></div>
+            <input id="game-chat-input" type="text" placeholder="Chat" autocomplete="off" />
+        </section>
+    </div>
 </div>
 
 <!-- Warning modal -->
