@@ -16,9 +16,6 @@ $(document).keydown((event) => {
     } else if (event.altKey && event.key === 'h') { // Alt + h
         // Click the "Show History" button
         $('#nav-buttons-games-history').click();
-    } else if (event.altKey && event.key === 't') { // Alt + t
-        // Click the "Settings" button
-        $('#nav-buttons-games-settings').click();
     } else if (event.altKey && event.key === 'o') { // Alt + o
         // Click the "Sign Out" button
         $('#nav-buttons-games-sign-out').click();
@@ -27,12 +24,12 @@ $(document).keydown((event) => {
         $('#nav-buttons-game-start').click();
     } else if (event.altKey && event.key === 'l') { // Alt + l
         // Click on the "Leave Game" button
-        $('#nav-buttons-game-leave').click();
+        $('#nav-buttons-pregame-leave').click();
     } else if (event.altKey && event.key === 'r') { // Alt + r
         // Click on the "Return to Lobby" button
         // (either at the "game" screen or the "history" screen or the "scores" screen)
-        if ($('#nav-buttons-game-unattend').is(':visible')) {
-            $('#nav-buttons-game-unattend').click();
+        if ($('#nav-buttons-pregame-unattend').is(':visible')) {
+            $('#nav-buttons-pregame-unattend').click();
         } else if ($('#nav-buttons-history-return').is(':visible')) {
             $('#nav-buttons-history-return').click();
         } else if ($('#nav-buttons-history-details-return').is(':visible')) {
