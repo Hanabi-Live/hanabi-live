@@ -683,7 +683,7 @@ function HanabiUI(lobby, game) {
             return this.suitKnown() && this.rankKnown();
         };
         this.order = config.order;
-        // possible suits and ranks (based on clues given) are tracked separately from knowledge of
+        // Possible suits and ranks (based on clues given) are tracked separately from knowledge of
         // the true suit and rank
         this.possibleSuits = config.suits;
         this.possibleRanks = config.ranks;
@@ -2932,7 +2932,6 @@ function HanabiUI(lobby, game) {
     let lobbyButton;
     let helpButton;
     let chatButton;
-    let cluesButton;
     let helpGroup;
     let msgLogGroup;
     let overback;
@@ -4968,21 +4967,6 @@ Keyboard hotkeys:
         chatButton.on('click tap', () => {
             globals.game.chat.toggle();
         });
-
-        /*
-        cluesButton = new Button({
-            x: 0.01 * winW,
-            y: 0.87 * winH,
-            width: 0.06 * winW,
-            height: 0.06 * winH,
-            text: 'Clues',
-            visible: false,
-        });
-        UILayer.add(cluesButton);
-        cluesButton.on('click tap', () => {
-            toggleChat(false);
-        });
-        */
 
         lobbyButton = new Button({
             x: 0.01 * winW,
