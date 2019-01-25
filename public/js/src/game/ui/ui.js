@@ -1,3 +1,6 @@
+// Imports
+const globals = require('./globals');
+
 function HanabiUI(lobby, gameID, game) {
     this.showDebugMessages = true;
 
@@ -9,21 +12,20 @@ function HanabiUI(lobby, gameID, game) {
 
     const {
         ACT,
-        CLUE_TYPE,
-        COLOR,
-        SUIT,
+        backpath,
         CARD_AREA,
         CARDH,
         CARDW,
-        backpath,
+        CHARACTERS,
+        CLUE_TYPE,
+        COLOR,
         drawshape,
         INDICATOR,
-        CHARACTERS,
+        SHAPE_FUNCTIONS,
+        SUIT,
     } = constants;
 
-    this.deck = [];
 
-    this.playerUs = -1;
     this.playerNames = [];
     this.characterAssignments = [];
     // This is the "Detrimental Character Assignments" for each player, if enabled
@@ -31,7 +33,6 @@ function HanabiUI(lobby, gameID, game) {
     this.characterMetadata = [];
     // This is extra information about each player's "Detrimental Character Assignments", if enabled
     // (it is either an empty array or an array of integers)
-    this.variant = constants.VARIANTS['No Variant'];
     this.cardsGotten = 0;
     this.cluesSpentPlusStrikes = 0;
     this.replay = false;
@@ -69,9 +70,6 @@ function HanabiUI(lobby, gameID, game) {
     this.editingNote = null; // Equal to the card order number or null
     this.editingNoteActionOccured = false;
     // Equal to true if something happened when the note box happens to be open
-
-    this.deckPlays = false;
-    this.emptyClues = false;
 
     // Used for the pre-move feature
     this.ourTurn = false;
@@ -142,7 +140,7 @@ function HanabiUI(lobby, gameID, game) {
             }
 
             // If it's your turn, setup the clue area
-            if (whoseTurn === self.playerUs && !self.spectating) {
+            if (whoseTurn === globals.playerUs && !self.spectating) {
                 self.handleAction.call(self, self.lastAction);
             }
 
@@ -188,7 +186,7 @@ function HanabiUI(lobby, gameID, game) {
         const self = lobby.ui;
 
         this.replayPos = 0;
-        while (true) { // eslint-disable-line no-constant-condition
+        while (true) {
             const msg = self.replayLog[self.replayPos];
             self.replayPos += 1;
 
@@ -437,9 +435,9 @@ function HanabiUI(lobby, gameID, game) {
         // which are always given a rainbow symbol
         if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
             // The final shape function in the array is the rainbow
-            i = constants.SHAPE_FUNCTIONS.length - 1;
+            i = SHAPE_FUNCTIONS.length - 1;
         }
-        return constants.SHAPE_FUNCTIONS[i];
+        return SHAPE_FUNCTIONS[i];
     };
 
     const FitText = function FitText(config) {
@@ -880,7 +878,7 @@ function HanabiUI(lobby, gameID, game) {
             // If the cards have triangles on the corners that show the color composition,
             // the note emoji will overlap
             // Thus, we move it downwards if this is the case
-            y: (ui.variant.offsetCardIndicators ? noteY + 0.1 : noteY) * config.height,
+            y: (globals.variant.offsetCardIndicators ? noteY + 0.1 : noteY) * config.height,
             fontSize: 0.1 * config.height,
             fontFamily: 'Verdana',
             align: 'center',
@@ -1024,7 +1022,7 @@ function HanabiUI(lobby, gameID, game) {
             cardLayer.batchDraw();
             return toggledPips;
         };
-        if (config.holder !== ui.playerUs || ui.replay || ui.spectating) {
+        if (config.holder !== globals.playerUs || ui.replay || ui.spectating) {
             const mouseButton = 1;
             let toggledPips = [];
             this.on('mousedown', (event) => {
@@ -1050,7 +1048,7 @@ function HanabiUI(lobby, gameID, game) {
         }
 
         // Hide clue arrows ahead of user dragging their card
-        if (config.holder === ui.playerUs && !ui.replayOnly && !ui.spectating) {
+        if (config.holder === globals.playerUs && !ui.replayOnly && !ui.spectating) {
             this.on('mousedown', (event) => {
                 if (
                     event.evt.which !== 1 // dragging uses left click
@@ -1294,7 +1292,7 @@ function HanabiUI(lobby, gameID, game) {
             const clueRank = clue.value;
             const findPipElement = rank => this.rankPips.find(`.${rank}`);
             let removed;
-            if (ui.variant.name.startsWith('Multi-Fives')) {
+            if (globals.variant.name.startsWith('Multi-Fives')) {
                 removed = filterInPlace(
                     this.possibleRanks,
                     rank => (rank === clueRank || rank === 5) === positive,
@@ -2459,7 +2457,7 @@ function HanabiUI(lobby, gameID, game) {
 
         // Make an exception for the "Color Blind" variants
         // (all color clues touch all cards, so don't show the arrows for simplicity)
-        if (this.variant.name.startsWith('Color Blind') && clue.type === CLUE_TYPE.COLOR) {
+        if (globals.variant.name.startsWith('Color Blind') && clue.type === CLUE_TYPE.COLOR) {
             return true;
         }
 
@@ -2473,7 +2471,7 @@ function HanabiUI(lobby, gameID, game) {
             if (clue.type === CLUE_TYPE.RANK) {
                 if (
                     clue.value === card.trueRank
-                    || (ui.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
+                    || (globals.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
                 ) {
                     touched = true;
                     color = INDICATOR.POSITIVE;
@@ -2742,9 +2740,9 @@ function HanabiUI(lobby, gameID, game) {
         const cvs = makeUnknownCardImage();
         const ctx = cvs.getContext('2d');
 
-        const nSuits = ui.variant.suits.length;
-        for (let i = 0; i < ui.variant.suits.length; i++) {
-            const suit = ui.variant.suits[i];
+        const nSuits = globals.variant.suits.length;
+        for (let i = 0; i < globals.variant.suits.length; i++) {
+            const suit = globals.variant.suits[i];
 
             ctx.resetTransform();
             ctx.scale(0.4, 0.4);
@@ -2767,7 +2765,7 @@ function HanabiUI(lobby, gameID, game) {
 
     this.buildCards = function buildCards() {
         // The gray suit represents cards of unknown suit
-        const suits = this.variant.suits.concat(SUIT.GRAY);
+        const suits = globals.variant.suits.concat(SUIT.GRAY);
         for (let i = 0; i < suits.length; i++) {
             const suit = suits[i];
 
@@ -3535,11 +3533,11 @@ function HanabiUI(lobby, gameID, game) {
             // ((number of cards in a player's hand - 1) * number of players) -
             // (5 * number of suits)
             let totalCardsInTheDeck = 0;
-            for (const suit of this.variant.suits) {
+            for (const suit of globals.variant.suits) {
                 totalCardsInTheDeck += 10;
                 if (suit.oneOfEach) {
                     totalCardsInTheDeck -= 5;
-                } else if (this.variant.name.startsWith('Up or Down')) {
+                } else if (globals.variant.name.startsWith('Up or Down')) {
                     totalCardsInTheDeck -= 1;
                 }
             }
@@ -3552,12 +3550,12 @@ function HanabiUI(lobby, gameID, game) {
             }
             let startingPace = totalCardsInTheDeck;
             startingPace -= (cardsInHand - 1) * numberOfPlayers;
-            startingPace -= 5 * this.variant.suits.length;
+            startingPace -= 5 * globals.variant.suits.length;
 
             // Second, use the pace to calculate the efficiency required with the following formula:
             // (5 * number of suits) / (pace + number of suits + 7 (- 1 if a 5/6-player game))
-            const minEfficiencyNumerator = 5 * this.variant.suits.length;
-            let minEfficiencyDenominator = startingPace + this.variant.suits.length + 7;
+            const minEfficiencyNumerator = 5 * globals.variant.suits.length;
+            let minEfficiencyDenominator = startingPace + globals.variant.suits.length + 7;
             if (numberOfPlayers === 5 || numberOfPlayers === 6) {
                 minEfficiencyDenominator -= 1;
             }
@@ -3572,7 +3570,7 @@ function HanabiUI(lobby, gameID, game) {
         */
 
         let pileback;
-        if (this.variant.suits.length === 6 || this.variant.showSuitNames) {
+        if (globals.variant.suits.length === 6 || globals.variant.showSuitNames) {
             y = 0.04;
             width = 0.06;
             height = 0.151;
@@ -3590,7 +3588,7 @@ function HanabiUI(lobby, gameID, game) {
             y: 0.345 + yOffset,
             spacing: 0.015,
         };
-        if (this.variant.showSuitNames) {
+        if (globals.variant.showSuitNames) {
             playStackValues.y -= 0.018;
         }
         if (lobby.settings.showBGAUI) {
@@ -3599,13 +3597,13 @@ function HanabiUI(lobby, gameID, game) {
             playStackValues.spacing = 0.006;
         }
         if (
-            this.variant.suits.length === 4
-            || (this.variant.suits.length === 5 && this.variant.showSuitNames)
+            globals.variant.suits.length === 4
+            || (globals.variant.suits.length === 5 && globals.variant.showSuitNames)
         ) {
             // If there are only 4 stacks, they will be left-aligned instead of centered
             // So, center them by moving them to the right a little bit
             playStackValues.x += ((width + playStackValues.spacing) / 2);
-        } else if (this.variant.suits.length === 3) {
+        } else if (globals.variant.suits.length === 3) {
             // If there are only 3 stacks, they will be left-aligned instead of centered
             // So, center them by moving them to the right a little bit
             playStackValues.x += ((width + playStackValues.spacing) / 2) * 2;
@@ -3613,7 +3611,7 @@ function HanabiUI(lobby, gameID, game) {
         this.suitLabelTexts = [];
         {
             let i = 0;
-            for (const suit of this.variant.suits) {
+            for (const suit of globals.variant.suits) {
                 const playStackX = playStackValues.x + (width + playStackValues.spacing) * i;
 
                 pileback = new Kinetic.Image({
@@ -3646,7 +3644,7 @@ function HanabiUI(lobby, gameID, game) {
 
                 // Draw the suit name next to each suit
                 // (a text description of the suit)
-                if (this.variant.showSuitNames) {
+                if (globals.variant.showSuitNames) {
                     let text = suit.name;
                     if (
                         lobby.settings.showColorblindUI
@@ -3657,7 +3655,7 @@ function HanabiUI(lobby, gameID, game) {
                         const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
                         text += ` [${colorList}]`;
                     }
-                    if (this.variant.name.startsWith('Up or Down')) {
+                    if (globals.variant.name.startsWith('Up or Down')) {
                         text = '';
                     }
 
@@ -3723,7 +3721,7 @@ function HanabiUI(lobby, gameID, game) {
             width: 0.075 * winW,
             height: 0.189 * winH,
             cardback: 'deck-back',
-            suits: this.variant.suits,
+            suits: globals.variant.suits,
         });
 
         drawDeck.cardback.on('dragend.play', function drawDeckDragendPlay() {
@@ -3983,7 +3981,7 @@ function HanabiUI(lobby, gameID, game) {
 
         // Draw the hands
         for (let i = 0; i < nump; i++) {
-            let j = i - this.playerUs;
+            let j = i - globals.playerUs;
 
             if (j < 0) {
                 j += nump;
@@ -3995,7 +3993,7 @@ function HanabiUI(lobby, gameID, game) {
             }
 
             let invertCards = false;
-            if (i !== this.playerUs) {
+            if (i !== globals.playerUs) {
                 // We want to flip the cards for other players
                 invertCards = true;
             }
@@ -4124,13 +4122,13 @@ function HanabiUI(lobby, gameID, game) {
                     let content = `<b>${character.name}</b>:<br />${character.description}`;
                     if (content.includes('[random color]')) {
                         // Replace "[random color]" with the selected color
-                        content = content.replace('[random color]', ui.variant.clueColors[metadata].name.toLowerCase());
+                        content = content.replace('[random color]', globals.variant.clueColors[metadata].name.toLowerCase());
                     } else if (content.includes('[random number]')) {
                         // Replace "[random number]" with the selected number
                         content = content.replace('[random number]', metadata);
                     } else if (content.includes('[random suit]')) {
                         // Replace "[random suit]" with the selected suit name
-                        content = content.replace('[random suit]', ui.variant.suits[metadata].name);
+                        content = content.replace('[random suit]', globals.variant.suits[metadata].name);
                     }
                     tooltip.tooltipster('instance').content(content);
 
@@ -4188,7 +4186,7 @@ function HanabiUI(lobby, gameID, game) {
         // Player buttons
         x = 0.26 * winW - (nump - 2) * 0.044 * winW;
         for (let i = 0; i < nump - 1; i++) {
-            const j = (this.playerUs + i + 1) % nump;
+            const j = (globals.playerUs + i + 1) % nump;
 
             button = new ClueRecipientButton({
                 x,
@@ -4207,7 +4205,7 @@ function HanabiUI(lobby, gameID, game) {
 
         // Rank buttons
         let numRanks = 5;
-        if (ui.variant.name.startsWith('Multi-Fives')) {
+        if (globals.variant.name.startsWith('Multi-Fives')) {
             numRanks = 4;
         }
         for (let i = 1; i <= numRanks; i++) {
@@ -4231,10 +4229,10 @@ function HanabiUI(lobby, gameID, game) {
         }
 
         // Color buttons
-        x = 0.158 + ((6 - this.variant.clueColors.length) * 0.025);
+        x = 0.158 + ((6 - globals.variant.clueColors.length) * 0.025);
         {
             let i = 0;
-            for (const color of this.variant.clueColors) {
+            for (const color of globals.variant.clueColors) {
                 button = new ColorButton({
                     x: (x + i * 0.049) * winW,
                     y: 0.1 * winH,
@@ -4662,7 +4660,7 @@ function HanabiUI(lobby, gameID, game) {
 
         // Keyboard actions for playing and discarding cards
         const promptOwnHandOrder = (actionString) => {
-            const playerCards = playerHands[ui.playerUs].children;
+            const playerCards = playerHands[globals.playerUs].children;
             const maxSlotIndex = playerCards.length;
             const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${actionString}.`;
             const response = window.prompt(msg);
@@ -4762,7 +4760,7 @@ function HanabiUI(lobby, gameID, game) {
 
             // Speedrun hotkey helper functions
             const getOrderFromSlot = (slot) => {
-                const playerCards = playerHands[ui.playerUs].children;
+                const playerCards = playerHands[globals.playerUs].children;
                 const maxSlotIndex = playerCards.length;
                 return playerCards[maxSlotIndex - slot].children[0].order;
             };
@@ -5116,7 +5114,7 @@ Keyboard hotkeys:
         messagePrompt.setMultiText('');
         msgLogGroup.reset();
 
-        const { suits } = this.variant;
+        const { suits } = globals.variant;
 
         for (const suit of suits) {
             playStacks.get(suit).removeChildren();
@@ -5377,19 +5375,19 @@ Keyboard hotkeys:
             if (data.rank === -1) {
                 delete data.rank;
             }
-            const suit = msgSuitToSuit(data.suit, ui.variant);
+            const suit = msgSuitToSuit(data.suit, globals.variant);
             if (!ui.learnedCards[data.order]) {
                 ui.learnedCards[data.order] = {
-                    possibleSuits: this.variant.suits.slice(),
-                    possibleRanks: this.variant.ranks.slice(),
+                    possibleSuits: globals.variant.suits.slice(),
+                    possibleRanks: globals.variant.ranks.slice(),
                 };
             }
             ui.deck[data.order] = new HanabiCard({
                 suit,
                 rank: data.rank,
                 order: data.order,
-                suits: this.variant.suits.slice(),
-                ranks: this.variant.ranks.slice(),
+                suits: globals.variant.suits.slice(),
+                ranks: globals.variant.ranks.slice(),
                 holder: data.who,
             });
 
@@ -5414,7 +5412,7 @@ Keyboard hotkeys:
             // except for cards we have already played or discarded
             if (
                 lobby.settings.speedrunPreplay
-                && data.who === ui.playerUs
+                && data.who === globals.playerUs
                 && !this.replayOnly
                 && !this.spectating
                 && !ui.learnedCards[data.order].revealed
@@ -5425,7 +5423,7 @@ Keyboard hotkeys:
         } else if (type === 'drawSize') {
             drawDeck.setCount(data.size);
         } else if (type === 'play') {
-            const suit = msgSuitToSuit(data.which.suit, ui.variant);
+            const suit = msgSuitToSuit(data.which.suit, globals.variant);
             showClueMatch(-1);
 
             const child = ui.deck[data.which.order].parent;
@@ -5460,7 +5458,7 @@ Keyboard hotkeys:
 
             clueLog.checkExpiry();
         } else if (type === 'discard') {
-            const suit = msgSuitToSuit(data.which.suit, ui.variant);
+            const suit = msgSuitToSuit(data.which.suit, globals.variant);
             showClueMatch(-1);
 
             const cardObject = ui.deck[data.which.order];
@@ -5531,7 +5529,7 @@ Keyboard hotkeys:
                     },
                 }
             */
-            const suit = msgSuitToSuit(data.which.suit, ui.variant);
+            const suit = msgSuitToSuit(data.which.suit, globals.variant);
             const card = ui.deck[data.which.order];
 
             const learnedCard = ui.learnedCards[data.which.order];
@@ -5557,7 +5555,7 @@ Keyboard hotkeys:
             this.cluesSpentPlusStrikes += 1;
             this.handleEfficiency(0);
 
-            const clue = msgClueToClue(data.clue, ui.variant);
+            const clue = msgClueToClue(data.clue, globals.variant);
             showClueMatch(-1);
 
             for (let i = 0; i < data.list.length; i++) {
@@ -5620,7 +5618,7 @@ Keyboard hotkeys:
         } else if (type === 'status') {
             // Update internal state variables
             this.currentClues = data.clues; // Used for the pre-move feature
-            if (this.variant.name.startsWith('Clue Starved')) {
+            if (globals.variant.name.startsWith('Clue Starved')) {
                 // In "Clue Starved" variants, 1 clue is represented on the server by 2
                 // Thus, in order to get the "real" clue count, we have to divide by 2
                 this.currentClues /= 2;
@@ -5711,7 +5709,7 @@ Keyboard hotkeys:
             }
         } else if (type === 'stackDirections') {
             // Update the stack directions (only in "Up or Down" variants)
-            if (this.variant.name.startsWith('Up or Down')) {
+            if (globals.variant.name.startsWith('Up or Down')) {
                 for (let i = 0; i < data.directions.length; i++) {
                     const direction = data.directions[i];
                     let text;
@@ -5758,7 +5756,7 @@ Keyboard hotkeys:
             }
         } else if (type === 'turn') {
             // Keep track of whether or not it is our turn (speedrun)
-            this.ourTurn = (data.who === this.playerUs);
+            this.ourTurn = (data.who === globals.playerUs);
             if (!this.ourTurn) {
                 // Adding this here to avoid bugs with pre-moves
                 clueArea.hide();
@@ -5892,12 +5890,12 @@ Keyboard hotkeys:
             return;
         }
 
-        const currentUserTurn = activeIndex === ui.playerUs && !ui.spectating;
+        const currentUserTurn = activeIndex === globals.playerUs && !ui.spectating;
 
         // Update onscreen time displays
         if (!ui.spectating) {
             // The visibilty of this timer does not change during a game
-            let time = ui.playerTimes[ui.playerUs];
+            let time = ui.playerTimes[globals.playerUs];
             if (!ui.timedGame) {
                 // Invert it to show how much time each player is taking
                 time *= -1;
@@ -6078,8 +6076,8 @@ Keyboard hotkeys:
         // Make all of the cards in our hand not draggable
         // (but we need to keep them draggable if the pre-play setting is enabled)
         if (!lobby.settings.speedrunPreplay) {
-            for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
-                const child = playerHands[ui.playerUs].children[i];
+            for (let i = 0; i < playerHands[globals.playerUs].children.length; i++) {
+                const child = playerHands[globals.playerUs].children[i];
                 child.off('dragend.play');
                 child.setDraggable(false);
             }
@@ -6131,20 +6129,20 @@ Keyboard hotkeys:
             clueTargetButtonGroup.list[0].setPressed(true);
         }
 
-        playerHands[ui.playerUs].moveToTop();
+        playerHands[globals.playerUs].moveToTop();
 
         // Set our hand to being draggable
         // (this is unnecessary if the pre-play setting is enabled,
         // as the hand will already be draggable)
         if (!lobby.settings.speedrunPreplay) {
-            for (let i = 0; i < playerHands[ui.playerUs].children.length; i++) {
-                const child = playerHands[ui.playerUs].children[i];
+            for (let i = 0; i < playerHands[globals.playerUs].children.length; i++) {
+                const child = playerHands[globals.playerUs].children[i];
                 child.setDraggable(true);
                 child.on('dragend.play', dragendPlay);
             }
         }
 
-        if (ui.deckPlays) {
+        if (globals.deckPlays) {
             drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
             deckPlayAvailableLabel.setVisible(data.canBlindPlayDeck);
 
@@ -6166,7 +6164,7 @@ Keyboard hotkeys:
             const who = target.targetIndex;
             const match = showClueMatch(who, clueButton.clue);
 
-            if (!match && !ui.emptyClues) {
+            if (!match && !globals.emptyClues) {
                 // Disable the "Submit Clue" button if the given clue will touch no cards
                 // (but allow all clues if they have the optional setting for "Empty Clues"
                 // turned on)
@@ -6210,7 +6208,7 @@ Keyboard hotkeys:
                 data: {
                     type: ACT.CLUE,
                     target: target.targetIndex,
-                    clue: clueToMsgClue(clueButton.clue, ui.variant),
+                    clue: clueToMsgClue(clueButton.clue, globals.variant),
                 },
             };
             ui.endTurn(action);
@@ -6255,7 +6253,7 @@ Keyboard hotkeys:
                 this.setDraggable(false);
             }
         } else {
-            playerHands[ui.playerUs].doLayout();
+            playerHands[globals.playerUs].doLayout();
         }
     };
 
@@ -6291,18 +6289,18 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
     msg.data = msgData;
 
     if (msgType === 'init') {
-        this.playerUs = msgData.seat;
+        globals.playerUs = msgData.seat;
         this.playerNames = msgData.names;
         this.characterAssignments = msgData.characterAssignments;
         this.characterMetadata = msgData.characterMetadata;
-        this.variant = constants.VARIANTS[msgData.variant];
+        globals.variant = constants.VARIANTS[msgData.variant];
         this.replay = msgData.replay;
         this.replayOnly = msgData.replay;
         this.spectating = msgData.spectating;
         this.timedGame = msgData.timed;
         this.sharedReplay = msgData.sharedReplay;
-        this.deckPlays = msgData.deckPlays;
-        this.emptyClues = msgData.emptyClues;
+        globals.deckPlays = msgData.deckPlays;
+        globals.emptyClues = msgData.emptyClues;
 
         if (this.replayOnly) {
             this.replayTurn = -1;

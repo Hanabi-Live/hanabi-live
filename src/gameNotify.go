@@ -52,12 +52,10 @@ func (g *Game) NotifyPlayerChange() {
 			Timed                bool                 `json:"timed"`
 			BaseTime             float64              `json:"baseTime"`
 			TimePerTurn          int                  `json:"timePerTurn"`
-			ReorderCards         bool                 `json:"reorderCards"`
 			DeckPlays            bool                 `json:"deckPlays"`
 			EmptyClues           bool                 `json:"emptyClues"`
 			CharacterAssignments bool                 `json:"characterAssignments"`
 			Password             bool                 `json:"password"`
-			SharedReplay         bool                 `json:"sharedReplay"`
 		}
 		p.Session.Emit("game", &GameMessage{
 			Name:                 g.Name,
@@ -71,7 +69,6 @@ func (g *Game) NotifyPlayerChange() {
 			EmptyClues:           g.Options.EmptyClues,
 			CharacterAssignments: g.Options.CharacterAssignments,
 			Password:             g.Password != "",
-			SharedReplay:         g.SharedReplay,
 		})
 	}
 }

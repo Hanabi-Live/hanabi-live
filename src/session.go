@@ -207,7 +207,6 @@ func (s *Session) NotifyTable(g *Game) {
 		Timed        bool    `json:"timed"`
 		BaseTime     float64 `json:"baseTime"`
 		TimePerTurn  int     `json:"timePerTurn"`
-		ReorderCards bool    `json:"reorderCards"`
 		OurTurn      bool    `json:"ourTurn"`
 		SharedReplay bool    `json:"sharedReplay"`
 		Progress     int     `json:"progress"`

@@ -108,18 +108,19 @@ func commandHello(s *Session, d *CommandData) {
 
 	// Give them an "init" message
 	type InitMessage struct {
-		Names                []string `json:"names"`
-		CharacterAssignments []string `json:"characterAssignments"`
-		CharacterMetadata    []int    `json:"characterMetadata"`
-		Replay               bool     `json:"replay"`
-		Seat                 int      `json:"seat"`
-		Spectating           bool     `json:"spectating"`
+		Names        []string `json:"names"`
+		Variant      string   `json:"variant"`
+		Seat         int      `json:"seat"`
+		Spectating   bool     `json:"spectating"`
+		Replay       bool     `json:"replay"`
+		SharedReplay bool     `json:"sharedReplay"`
+
+		// Optional settings
 		Timed                bool     `json:"timed"`
-		ReorderCards         bool     `json:"reorderCards"`
 		DeckPlays            bool     `json:"deckPlays"`
 		EmptyClues           bool     `json:"emptyClues"`
-		Variant              string   `json:"variant"`
-		SharedReplay         bool     `json:"sharedReplay"`
+		CharacterAssignments []string `json:"characterAssignments"`
+		CharacterMetadata    []int    `json:"characterMetadata"`
 	}
 	replay := false
 	if s.Status() == "Replay" || s.Status() == "Shared Replay" {

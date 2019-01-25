@@ -9,7 +9,7 @@ exports.tooltips = require('./tooltips');
 // Imports
 const globals = require('../globals');
 const misc = require('../misc');
-const ui = require('./ui');
+const ui = require('./ui/ui');
 
 $(document).ready(() => {
     // Disable the right-click context menu while in a game
