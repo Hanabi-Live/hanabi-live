@@ -41,7 +41,7 @@ func commandGameReattend(s *Session, d *CommandData) {
 	log.Info(g.GetName() + "User \"" + s.Username() + "\" reattended.")
 
 	// Set their "present" variable back to true, which will remove the "AWAY" if the game has not started yet
-	// (if t he game is running, this is handled in the "commandReady()" function)
+	// (if the game is running, this is handled in the "commandReady()" function)
 	if !g.Running {
 		p := g.Players[i]
 		p.Present = true
@@ -66,7 +66,10 @@ func commandGameReattend(s *Session, d *CommandData) {
 	})
 
 	// Send them the chat history for this game
-	chatSendPastFromGame(s, g)
+	// (if the game is running, this is handled in the "commandReady()" function)
+	if !g.Running {
+		chatSendPastFromGame(s, g)
+	}
 
 	if g.Running {
 		// Make the client switch screens to show the game UI

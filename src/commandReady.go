@@ -146,6 +146,9 @@ func commandReady(s *Session, d *CommandData) {
 			p.Present = true
 			g.NotifyConnected()
 		}
+
+		// Send them the chat history for this game
+		chatSendPastFromGame(s, g)
 	}
 
 	// Send them the number of spectators
