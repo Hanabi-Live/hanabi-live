@@ -29,7 +29,15 @@ const globals = {
     // Game state variables
     ready: false,
     deck: [],
+    deckSize: 0,
+    turn: 0,
+    score: 0,
+    clues: 0,
     spectators: [],
+
+    // Efficiency variables
+    cardsGotten: 0,
+    cluesSpentPlusStrikes: 0,
 
     // Replay variables
     inReplay: false, // Whether or not the replay controls are currently showing
@@ -41,6 +49,9 @@ const globals = {
     // Shared replay variables
     sharedReplayLeader: '', // Equal to the username of the leader
     sharedReplayTurn: -1,
+
+    // UI elements
+    elements: [],
 };
 module.exports = globals;
 

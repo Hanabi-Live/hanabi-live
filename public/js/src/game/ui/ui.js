@@ -1,5 +1,6 @@
 // Imports
 const globals = require('./globals');
+const stats = require('./stats');
 
 function HanabiUI(lobby, game) {
     this.lobby = lobby;
@@ -21,9 +22,6 @@ function HanabiUI(lobby, game) {
         SHAPE_FUNCTIONS,
         SUIT,
     } = constants;
-
-    this.cardsGotten = 0;
-    this.cluesSpentPlusStrikes = 0;
 
     this.useSharedTurns = true;
 
@@ -55,7 +53,6 @@ function HanabiUI(lobby, game) {
     // Used for the pre-move feature
     this.ourTurn = false;
     this.queuedAction = null;
-    this.currentClues = 8;
 
     // Used to prevent giving an accidental clue after clicking the "Exit Replay" button or
     // pressing enter to submit a note
@@ -575,7 +572,7 @@ function HanabiUI(lobby, game) {
     HanabiMsgLog.prototype.addMessage = function addMessage(msg) {
         const appendLine = (log, numbers, line) => {
             log.setMultiText(line);
-            numbers.setMultiText(drawDeck.getCountAsString());
+            numbers.setMultiText(globals.deckSize.toString());
         };
 
         appendLine(this.logtext, this.lognumbers, msg);
@@ -1546,13 +1543,6 @@ function HanabiUI(lobby, game) {
         this.count.setText(count.toString());
 
         this.cardback.setVisible(count > 0);
-    };
-
-    CardDeck.prototype.getCountAsString = function getCountAsString() {
-        return this.count.getText();
-    };
-    CardDeck.prototype.getCountAsInt = function getCountAsInt() {
-        return parseInt(this.getCountAsString(), 10);
     };
 
     CardDeck.prototype.doLayout = function doLayout() {
@@ -2905,10 +2895,6 @@ function HanabiUI(lobby, game) {
     let scoreNumberLabel;
     let turnTextLabel;
     let turnNumberLabel;
-    let efficiencyTextLabel;
-    let efficiencyNumberLabel;
-    let paceTextLabel;
-    let paceNumberLabel;
 
     let spectatorsLabel;
     let spectatorsNumLabel;
@@ -3466,7 +3452,7 @@ function HanabiUI(lobby, game) {
         });
         bgLayer.add(rect);
 
-        paceTextLabel = basicTextLabel.clone({
+        const paceTextLabel = basicTextLabel.clone({
             text: 'Pace',
             x: 0.825 * winW,
             y: 0.54 * winH,
@@ -3474,16 +3460,16 @@ function HanabiUI(lobby, game) {
         });
         UILayer.add(paceTextLabel);
 
-        paceNumberLabel = basicNumberLabel.clone({
+        globals.elements.paceNumberLabel = basicNumberLabel.clone({
             text: '-',
             x: 0.9 * winW,
             y: 0.54 * winH,
             fontSize: 0.02 * winH,
             align: 'left',
         });
-        UILayer.add(paceNumberLabel);
+        UILayer.add(globals.elements.paceNumberLabel);
 
-        efficiencyTextLabel = basicTextLabel.clone({
+        const efficiencyTextLabel = basicTextLabel.clone({
             text: 'Efficiency',
             x: 0.825 * winW,
             y: 0.56 * winH,
@@ -3491,7 +3477,7 @@ function HanabiUI(lobby, game) {
         });
         UILayer.add(efficiencyTextLabel);
 
-        efficiencyNumberLabel = basicNumberLabel.clone({
+        globals.elements.efficiencyNumberLabel = basicNumberLabel.clone({
             text: '-',
             x: 0.9 * winW,
             y: 0.56 * winH,
@@ -3499,50 +3485,7 @@ function HanabiUI(lobby, game) {
             fontSize: 0.02 * winH,
             align: 'left',
         });
-        UILayer.add(efficiencyNumberLabel);
-
-        this.handleEfficiency = function handleEfficiency(cardsGottenDelta) {
-            this.cardsGotten += cardsGottenDelta;
-            const efficiency = (this.cardsGotten / this.cluesSpentPlusStrikes).toFixed(2);
-            // Round it to 2 decimal places
-
-            // Calculate the minimum amount of efficiency needed in order to win this variant
-            // First, calculate starting pace with the following formula:
-            // total cards in the deck -
-            // ((number of cards in a player's hand - 1) * number of players) -
-            // (5 * number of suits)
-            let totalCardsInTheDeck = 0;
-            for (const suit of globals.variant.suits) {
-                totalCardsInTheDeck += 10;
-                if (suit.oneOfEach) {
-                    totalCardsInTheDeck -= 5;
-                } else if (globals.variant.name.startsWith('Up or Down')) {
-                    totalCardsInTheDeck -= 1;
-                }
-            }
-            const numberOfPlayers = globals.playerNames.length;
-            let cardsInHand = 5;
-            if (numberOfPlayers === 4 || numberOfPlayers === 5) {
-                cardsInHand = 4;
-            } else if (numberOfPlayers === 6) {
-                cardsInHand = 3;
-            }
-            let startingPace = totalCardsInTheDeck;
-            startingPace -= (cardsInHand - 1) * numberOfPlayers;
-            startingPace -= 5 * globals.variant.suits.length;
-
-            // Second, use the pace to calculate the efficiency required with the following formula:
-            // (5 * number of suits) / (pace + number of suits + 7 (- 1 if a 5/6-player game))
-            const minEfficiencyNumerator = 5 * globals.variant.suits.length;
-            let minEfficiencyDenominator = startingPace + globals.variant.suits.length + 7;
-            if (numberOfPlayers === 5 || numberOfPlayers === 6) {
-                minEfficiencyDenominator -= 1;
-            }
-            const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);
-            // Round it to 2 decimal places
-
-            efficiencyNumberLabel.setText(`${efficiency} / ${minEfficiency}`);
-        };
+        UILayer.add(globals.elements.efficiencyNumberLabel);
 
         /*
             Draw the stacks and the discard pile
@@ -5111,7 +5054,7 @@ Keyboard hotkeys:
         messagePrompt.reset();
 
         // This should always be overridden before it gets displayed
-        drawDeck.setCount(99);
+        drawDeck.setCount(0);
 
         for (let i = 0; i < strikes.length; i++) {
             strikes[i].remove();
@@ -5189,8 +5132,8 @@ Keyboard hotkeys:
         cluesNumberLabel.setText('8');
         cluesNumberLabel.setFill('#df1c2d');
         scoreNumberLabel.setText('0');
-        paceNumberLabel.setText('-'); // The deck count hasn't updated yet, so just set this to a default value
-        efficiencyNumberLabel.setText('-'); // Since no clues have been given yet, we can't divide by 0
+        globals.elements.paceNumberLabel.setText('-');
+        globals.elements.efficiencyNumberLabel.setText('-');
     };
 
     this.performReplay = function performReplay(target, fast) {
@@ -5206,8 +5149,8 @@ Keyboard hotkeys:
         if (target < globals.replayTurn) {
             rewind = true;
             this.resetLabels();
-            this.cardsGotten = 0;
-            this.cluesSpentPlusStrikes = 0;
+            globals.cardsGotten = 0;
+            globals.cluesSpentPlusStrikes = 0;
         }
 
         if (globals.replayTurn === target) {
@@ -5400,6 +5343,7 @@ Keyboard hotkeys:
                 child.on('dragend.play', dragendPlay);
             }
         } else if (type === 'drawSize') {
+            globals.deckSize = data.size;
             drawDeck.setCount(data.size);
         } else if (type === 'play') {
             const suit = msgSuitToSuit(data.which.suit, globals.variant);
@@ -5408,7 +5352,7 @@ Keyboard hotkeys:
             const child = globals.deck[data.which.order].parent;
             const card = child.children[0];
             if (!card.isClued()) {
-                this.handleEfficiency(+1);
+                stats.updateEfficiency(1);
             }
 
             const learnedCard = ui.learnedCards[data.which.order];
@@ -5448,7 +5392,7 @@ Keyboard hotkeys:
             const child = cardObject.parent;
             const card = child.children[0];
             if (card.isClued()) {
-                this.handleEfficiency(-1);
+                stats.updateEfficiency(-1);
             }
 
             const learnedCard = ui.learnedCards[data.which.order];
@@ -5531,8 +5475,8 @@ Keyboard hotkeys:
                 cardLayer.draw();
             }
         } else if (type === 'clue') {
-            this.cluesSpentPlusStrikes += 1;
-            this.handleEfficiency(0);
+            globals.cluesSpentPlusStrikes += 1;
+            stats.updateEfficiency(0);
 
             const clue = msgClueToClue(data.clue, globals.variant);
             showClueMatch(-1);
@@ -5540,9 +5484,9 @@ Keyboard hotkeys:
             for (let i = 0; i < data.list.length; i++) {
                 const card = globals.deck[data.list[i]];
                 if (!card.isClued()) {
-                    this.handleEfficiency(+1);
+                    stats.updateEfficiency(1);
                 } else {
-                    this.handleEfficiency(0);
+                    stats.updateEfficiency(0);
                 }
                 let color;
                 if (clue.type === 0) {
@@ -5596,26 +5540,28 @@ Keyboard hotkeys:
             clueLog.checkExpiry();
         } else if (type === 'status') {
             // Update internal state variables
-            this.currentClues = data.clues; // Used for the pre-move feature
+            globals.clues = data.clues;
             if (globals.variant.name.startsWith('Clue Starved')) {
                 // In "Clue Starved" variants, 1 clue is represented on the server by 2
                 // Thus, in order to get the "real" clue count, we have to divide by 2
-                this.currentClues /= 2;
+                globals.clues /= 2;
             }
+            globals.score = data.score;
+            globals.maxScore = data.maxScore;
 
             // Update the number of clues in the bottom-right hand corner of the screen
-            cluesNumberLabel.setText(`${this.currentClues}`);
-            if (this.currentClues === 0 || this.currentClues === 8) {
+            cluesNumberLabel.setText(globals.clues.toString());
+            if (globals.clues === 0 || globals.clues === 8) {
                 cluesNumberLabel.setFill('#df1c2d'); // Red
-            } else if (this.currentClues === 1) {
+            } else if (globals.clues === 1) {
                 cluesNumberLabel.setFill('#ef8c1d'); // Orange
-            } else if (this.currentClues === 2) {
+            } else if (globals.clues === 2) {
                 cluesNumberLabel.setFill('#efef1d'); // Yellow
             } else {
                 cluesNumberLabel.setFill('#d8d5ef'); // White
             }
 
-            if (this.currentClues === 8) {
+            if (globals.clues === 8) {
                 // Show the red border around the discard pile
                 // (to reinforce the fact that being at 8 clues is a special situation)
                 noDiscardLabel.show();
@@ -5631,57 +5577,11 @@ Keyboard hotkeys:
             }
 
             // Update the score (in the bottom-right-hand corner)
-            scoreNumberLabel.setText(data.score);
+            scoreNumberLabel.setText(globals.score);
 
-            /*
-                Calculate some "End-Game" metrics
-            */
-
-            const adjustedScorePlusDeck = data.score + drawDeck.getCountAsInt() - data.maxScore;
-
-            // Formula derived by Libster;
-            // the number of discards that can happen while still getting the maximum number of
-            // points (this is represented to the user as "Pace" on the user interface)
-            const endGameThreshold1 = adjustedScorePlusDeck + globals.playerNames.length;
-
-            // Formula derived by Florrat;
-            // a strategical estimate of "End-Game" that tries to account for the number of players
-            const endGameThreshold2 = adjustedScorePlusDeck + Math.floor(globals.playerNames.length / 2); // eslint-disable-line
-
-            // Formula derived by Hyphen-ated;
-            // a more conservative estimate of "End-Game" that does not account for
-            // the number of players
-            const endGameThreshold3 = adjustedScorePlusDeck;
-
-            // Update the pace
-            // (part of the efficiency statistics on the right-hand side of the screen)
-            // If there are no cards left in the deck, pace is meaningless
-            if (drawDeck.getCountAsInt() === 0) {
-                paceNumberLabel.setText('-');
-                paceNumberLabel.setFill('#d8d5ef'); // White
-            } else {
-                let paceText = endGameThreshold1.toString();
-                if (endGameThreshold1 > 0) {
-                    paceText = `+${endGameThreshold1}`;
-                }
-                paceNumberLabel.setText(paceText);
-
-                // Color the pace label depending on how "risky" it would be to discard
-                // (approximately)
-                if (endGameThreshold1 <= 0) {
-                    // No more discards can occur in order to get a maximum score
-                    paceNumberLabel.setFill('#df1c2d'); // Red
-                } else if (endGameThreshold2 < 0) {
-                    // It would probably be risky to discard
-                    paceNumberLabel.setFill('#ef8c1d'); // Orange
-                } else if (endGameThreshold3 < 0) {
-                    // It might be risky to discard
-                    paceNumberLabel.setFill('#efef1d'); // Yellow
-                } else {
-                    // We are not even close to the "End-Game", so give it the default color
-                    paceNumberLabel.setFill('#d8d5ef'); // White
-                }
-            }
+            // Update the stats on the middle-left-hand side of the screen
+            stats.updatePace();
+            stats.updateEfficiency(0);
 
             if (!this.animateFast) {
                 UILayer.draw();
@@ -5708,8 +5608,8 @@ Keyboard hotkeys:
                 }
             }
         } else if (type === 'strike') {
-            this.cluesSpentPlusStrikes += 1;
-            this.handleEfficiency(0);
+            globals.cluesSpentPlusStrikes += 1;
+            stats.updateEfficiency(0);
             const x = new Kinetic.Image({
                 x: (0.015 + 0.04 * (data.num - 1)) * winW,
                 y: 0.125 * winH,
@@ -6265,11 +6165,11 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
 
     if (msgType === 'init') {
         // Game settings
-        globals.playerUs = msgData.seat;
         globals.playerNames = msgData.names;
         globals.variant = constants.VARIANTS[msgData.variant];
-        globals.replay = msgData.replay;
+        globals.playerUs = msgData.seat;
         globals.spectating = msgData.spectating;
+        globals.replay = msgData.replay;
         globals.sharedReplay = msgData.sharedReplay;
 
         // Optional settings
