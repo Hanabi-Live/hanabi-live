@@ -236,28 +236,27 @@
         <div id="lobby-separator" class="row"></div>
 
         <div id="lobby-bottom-half" class="row lobby-half">
-            <div class="col-8">
-                <!-- The chat for the entire lobby -->
+            <!-- The chat for the entire lobby -->
+            <div id="lobby-chat-container" class="col-8">
                 <section id="lobby-chat" class="box">
-                    <div id="lobby-chat-text"></div>
-                    <form id="lobby-chat-form">
-                        <input id="lobby-chat-input" type="text" placeholder="Chat" />
-                    </form>
+                    <div id="lobby-chat-text" class="lobby-chat-text-box"></div>
+                    <input id="lobby-chat-input" type="text" placeholder="Chat" autocomplete="off" />
                 </section>
+            </div>
 
-                <!-- The chat for the players in the currently unstarted game -->
-                <section id="lobby-chat-game" class="box hidden">
-                    <div id="lobby-chat-game-text"></div>
-                    <form id="lobby-chat-game-form">
-                        <input id="lobby-chat-game-input" type="text" placeholder="Chat" />
-                    </form>
+            <!-- The chat for the players in the currently unstarted game -->
+            <div id="lobby-chat-pregame-container" class="col-4 hidden">
+                <section id="lobby-chat-pregame" class="box">
+                    <h3 class="lobby-title">Pre-Game Chat</h3>
+                    <div id="lobby-chat-pregame-text" class="lobby-chat-text-box"></div>
+                    <input id="lobby-chat-pregame-input" type="text" placeholder="Chat" autocomplete="off" />
                 </section>
             </div>
 
             <!-- The "Online Users" section -->
             <div class="col-4 lobby-users-box-container">
                 <section class="box">
-                    <h3 id="lobby-users-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
+                    <h3 class="lobby-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
                     <div id="lobby-users-container">
                         <table id="lobby-users-table" class="slim-table">
                             <thead>

@@ -66,9 +66,7 @@ func commandGameReattend(s *Session, d *CommandData) {
 	})
 
 	// Send them the chat history for this game
-	for _, chatMsg := range g.Chat {
-		s.NotifyChat(chatMsg.Msg, chatMsg.Username, false, false, chatMsg.DatetimeSent, "game")
-	}
+	chatSendPastFromGame(s, g)
 
 	if g.Running {
 		// Make the client switch screens to show the game UI

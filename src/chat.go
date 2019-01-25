@@ -213,7 +213,7 @@ func chatFillChannels(msg string) string {
 	return msg
 }
 
-func chatSendPast(s *Session, room string, count int) {
+func chatSendPastFromDatabase(s *Session, room string, count int) {
 	var rawMsgs []models.ChatMessage
 	if v, err := db.ChatLog.Get(room, count); err != nil {
 		log.Error("Failed to get the lobby chat history for user \""+s.Username()+"\":", err)
@@ -222,13 +222,12 @@ func chatSendPast(s *Session, room string, count int) {
 		rawMsgs = v
 	}
 
-	// Right now, the room might be "room123", but the client expects the room to be either "lobby" or "game"
-	if strings.HasPrefix(room, "game") {
-		room = "game"
-	}
-
 	msgs := make([]*ChatMessage, 0)
-	for _, rawMsg := range rawMsgs {
+	for i := len(rawMsgs) - 1; i >= 0; i-- {
+		// The chat messages were queried from the database in order from newest to newest
+		// We want to send them to the client in the reverse order so that
+		// the newest messages display at the bottom
+		rawMsg := rawMsgs[i]
 		discord := false
 		server := false
 		if rawMsg.Name == "__server" {
@@ -244,4 +243,20 @@ func chatSendPast(s *Session, room string, count int) {
 		msgs = append(msgs, msg)
 	}
 	s.Emit("chatList", msgs)
+}
+
+func chatSendPastFromGame(s *Session, g *Game) {
+	chatList := make([]*ChatMessage, 0)
+	for i, gcm := range g.Chat {
+		// Only send the first 200 messages to prevent clients from becoming overloaded
+		// (in case someone maliciously spams hundreds of messages)
+		if i >= 200 {
+			break
+		}
+
+		// We have to convert the *GameChatMessage to a *ChatMessage
+		cm := chatMakeMessage(gcm.Msg, gcm.Username, false, gcm.Server, gcm.Datetime, "game")
+		chatList = append(chatList, cm)
+	}
+	s.Emit("chatList", chatList)
 }

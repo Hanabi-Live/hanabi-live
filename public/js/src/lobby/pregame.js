@@ -8,17 +8,42 @@ const misc = require('../misc');
 const lobby = require('./main');
 
 exports.show = () => {
+    // Replace the list of current games with a list of the current players
     $('#lobby-pregame').show();
     $('#lobby-games').hide();
+
+    // Add an extra chat box
+    $('#lobby-chat-container').removeClass('col-8');
+    $('#lobby-chat-container').addClass('col-4');
+    $('#lobby-chat-pregame-container').show();
+
+    // Clear the pregame chat box of any previous content
+    $('#lobby-chat-pregame-text').html('');
+
+    // Scroll to the bottom of both chat boxes
+    const chat1 = document.getElementById('lobby-chat-text');
+    chat1.scrollTop = chat1.scrollHeight;
+    const chat2 = document.getElementById('lobby-chat-pregame-text');
+    chat2.scrollTop = chat2.scrollHeight;
+
+    // Adjust the top navigation bar
     lobby.nav.show('pregame');
     $('#nav-buttons-pregame-start').addClass('disabled');
-    // The server will send us a "tableReady" message momentarily if
-    // we need to enable the "Start Game" button
+    // (the server will send us a "tableReady" message momentarily if
+    // we need to enable the "Start Game" button)
 };
 
 exports.hide = () => {
+    // Replace the list of current players with a list of the current games
     $('#lobby-pregame').hide();
     $('#lobby-games').show();
+
+    // Remove the extra chat box
+    $('#lobby-chat-container').addClass('col-8');
+    $('#lobby-chat-container').removeClass('col-4');
+    $('#lobby-chat-pregame-container').hide();
+
+    // Adjust the navigation bar
     lobby.nav.show('games');
 };
 

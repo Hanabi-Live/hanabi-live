@@ -6,20 +6,12 @@
 const globals = require('./globals');
 
 $(document).ready(() => {
-    const rooms = ['lobby', 'game'];
-
-    for (const room of rooms) {
-        const input = $(`#${room}-chat-input`);
-        input.on('keypress', send(room, input));
-    }
-
-    // By default, submitting a form will reload the page, so stop this from happening
-    $('#lobby-chat-form').submit((event) => {
-        event.preventDefault();
-    });
-    $('#lobby-chat-game-form').submit((event) => {
-        event.preventDefault();
-    });
+    const input1 = $('#lobby-chat-input');
+    input1.on('keypress', send('lobby', input1));
+    const input2 = $('#lobby-chat-pregame-input');
+    input2.on('keypress', send('game', input2));
+    const input3 = $('#game-chat-input');
+    input3.on('keypress', send('game', input3));
 });
 
 const send = (room, input) => (event) => {
@@ -44,6 +36,8 @@ exports.add = (data) => {
     let chat;
     if (data.room === 'lobby') {
         chat = $('#lobby-chat-text');
+    } else if ($('#lobby-chat-pregame-text').is(':visible')) {
+        chat = $('#lobby-chat-pregame-text');
     } else {
         chat = $('#game-chat-text');
     }

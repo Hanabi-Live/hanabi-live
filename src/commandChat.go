@@ -161,20 +161,20 @@ func commandChatGame(s *Session, d *CommandData) {
 
 	// Store the chat in memory for later
 	chatMsg := &GameChatMessage{
-		UserID:       s.UserID(),
-		Username:     d.Username, // This was prepared above in the "commandChat()" function
-		Msg:          d.Msg,
-		DatetimeSent: time.Now(),
+		UserID:   s.UserID(),
+		Username: d.Username, // This was prepared above in the "commandChat()" function
+		Msg:      d.Msg,
+		Datetime: time.Now(),
 	}
 	g.Chat = append(g.Chat, chatMsg)
 
 	// Send it to all of the players and spectators
 	if !g.SharedReplay {
 		for _, p := range g.Players {
-			p.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.DatetimeSent, d.Room)
+			p.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
 		}
 	}
 	for _, s2 := range g.Spectators {
-		s2.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.DatetimeSent, d.Room)
+		s2.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
 	}
 }

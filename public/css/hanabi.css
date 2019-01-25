@@ -278,6 +278,11 @@ table td {
     top: 0.22em;
 }
 
+.lobby-title {
+    /* We want to make h3 elements a bit smaller */
+    font-size: 1.3em;
+}
+
 /*
     The list of ongoing tables / games
 */
@@ -290,7 +295,7 @@ table td {
     Lobby chat
 */
 
-#lobby-chat-text {
+.lobby-chat-text-box {
     overflow-y: auto;
     overflow-wrap: break-word;
     border-style: solid !important;
@@ -301,13 +306,17 @@ table td {
     height: calc(100% - 3.5em); /* The height of the input box is 3.5em */
 }
 
+#lobby-chat-pregame-text {
+    height: calc(100% - 6.05em);
+    /*
+        The height of the input box is 3.5em
+        and the height of the title is 1.5em
+    */
+}
+
 /*
     User list
 */
-
-#lobby-users-title {
-    font-size: 1.3em;
-}
 
 #lobby-users-container {
     overflow-y: auto;

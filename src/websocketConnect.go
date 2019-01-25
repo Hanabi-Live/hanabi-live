@@ -72,8 +72,8 @@ func websocketConnect(ms *melody.Session) {
 	// Send them a random name
 	commandGetName(s, nil)
 
-	// Send past chat messages
-	chatSendPast(s, "lobby", 50)
+	// Send the past 50 chat messages from the lobby
+	chatSendPastFromDatabase(s, "lobby", 50)
 
 	// Send them the message(s) of the day
 	msg := "Find teammates and discuss strategy in the "
@@ -82,7 +82,7 @@ func websocketConnect(ms *melody.Session) {
 	s.NotifyChat(msg, "", false, true, time.Now(), "lobby")
 
 	// Alert everyone that a new user has logged in
-	// (note that Keldon sends users a message about themselves)
+	// (note that we send users a message about themselves)
 	notifyAllUser(s)
 
 	// Send a "user" message for every currently connected user

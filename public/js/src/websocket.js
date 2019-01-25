@@ -121,11 +121,6 @@ const initCommands = () => {
     globals.conn.on('chat', chat.add);
 
     globals.conn.on('chatList', (dataArray) => {
-        // Reverse the order of the chat messages
-        // (it is queried from the database from newest to oldest,
-        // but we want the oldest message to appear first)
-        dataArray.reverse();
-
         for (const data of dataArray) {
             chat.add(data);
         }

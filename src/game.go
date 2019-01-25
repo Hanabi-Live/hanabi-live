@@ -64,10 +64,11 @@ type Options struct {
 }
 
 type GameChatMessage struct {
-	UserID       int
-	Username     string
-	Msg          string
-	DatetimeSent time.Time
+	UserID   int
+	Username string
+	Msg      string
+	Datetime time.Time
+	Server   bool
 }
 
 /*
