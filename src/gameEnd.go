@@ -33,7 +33,7 @@ func (g *Game) End() {
 	})
 	g.NotifyAction()
 
-	// Send everyone a clock message with an active value of null, which
+	// Send everyone a clock message with an active value of -1, which
 	// will get rid of the timers on the client-side
 	g.NotifyTime()
 

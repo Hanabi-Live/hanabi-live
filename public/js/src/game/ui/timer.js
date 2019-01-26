@@ -10,7 +10,7 @@ const globals = require('./globals');
 let timerID = null;
 let playerTimes = null;
 let activeIndex = null;
-let lastTimerUpdateTimeMS = new Date().getTime();
+let lastTimerUpdateTimeMS = null;
 
 // Has the following data:
 /*
@@ -27,14 +27,20 @@ let lastTimerUpdateTimeMS = new Date().getTime();
 exports.update = (data) => {
     stop();
 
-    // Check to see if the second timer has been drawn
-    if (typeof globals.elements.timer2 === 'undefined') {
+    // We don't need to update the timers if they are not showing
+    if (
+        globals.elements.timer1 === null
+        || globals.elements.timer2 === null
+    ) {
         return;
     }
 
     // Record the data
     playerTimes = data.times;
     activeIndex = data.active;
+
+    // Mark the time that we updated the local player times
+    lastTimerUpdateTimeMS = new Date().getTime();
 
     // Update onscreen time displays
     if (!globals.spectating) {
@@ -58,7 +64,7 @@ exports.update = (data) => {
         globals.elements.timer2.setText(millisecondsToTimeDisplay(time));
     }
 
-    const shoudShowTimer2 = !ourTurn && activeIndex !== null;
+    const shoudShowTimer2 = !ourTurn && activeIndex !== -1;
     globals.elements.timer2.setVisible(shoudShowTimer2);
     globals.layers.timer.draw();
 
@@ -67,8 +73,8 @@ exports.update = (data) => {
         setTickingDownTimeTooltip(i);
     }
 
-    // If no timer is running on the server, do not configure local approximation
-    if (activeIndex === null) {
+    // The server will send an active value of -1 when the game is over
+    if (activeIndex === -1) {
         return;
     }
 
@@ -82,22 +88,11 @@ exports.update = (data) => {
 
 const stop = () => {
     if (timerID !== null) {
-        timerID = null;
         window.clearInterval(timerID);
+        timerID = null;
     }
 };
 exports.stop = stop;
-
-const millisecondsToTimeDisplay = (milliseconds) => {
-    const seconds = Math.ceil(milliseconds / 1000);
-    return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
-};
-const pad2 = (num) => {
-    if (num < 10) {
-        return `0${num}`;
-    }
-    return `${num}`;
-};
 
 function setTickingDownTime(text) {
     // Compute elapsed time since last timer update
@@ -132,7 +127,7 @@ function setTickingDownTime(text) {
     if (
         globals.timed
         && globals.lobby.settings.sendTimerSound
-        && millisecondsLeft > 0
+        && millisecondsLeft > 0 // Between 0 and 10 seconds
         && millisecondsLeft <= 10000
         && timeElapsed > 900
         && timeElapsed < 1100
@@ -160,6 +155,10 @@ function setTickingDownTimeTooltip(i) {
     content += '</strong>';
     $(`#tooltip-player-${i}`).tooltipster('instance').content(content);
 }
+
+/*
+    The UI timer object
+*/
 
 const TimerDisplay = function TimerDisplay(config) {
     Kinetic.Group.call(this, config);
@@ -222,3 +221,18 @@ const TimerDisplay = function TimerDisplay(config) {
 };
 Kinetic.Util.extend(TimerDisplay, Kinetic.Group);
 exports.TimerDisplay = TimerDisplay;
+
+/*
+    Misc. functions
+*/
+
+const millisecondsToTimeDisplay = (milliseconds) => {
+    const seconds = Math.ceil(milliseconds / 1000);
+    return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
+};
+const pad2 = (num) => {
+    if (num < 10) {
+        return `0${num}`;
+    }
+    return `${num}`;
+};
