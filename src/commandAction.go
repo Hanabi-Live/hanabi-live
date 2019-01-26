@@ -191,7 +191,7 @@ func commandAction(s *Session, d *CommandData) {
 		// Validate that the team is not at the maximum amount of clues
 		// (the client should enforce this, but do a check just in case)
 		clueLimit := maxClues
-		if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+		if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
 			clueLimit *= 2
 		}
 		if g.Clues == clueLimit {
