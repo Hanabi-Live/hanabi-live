@@ -4,6 +4,8 @@ const globals = require('./globals');
 // Configuration
 const debug = true;
 
+// We modify the individual properties instead of replacing the entire globals object
+// If we did that, the references in the other files would point to the outdated version
 module.exports = () => {
     globals.debug = debug;
 

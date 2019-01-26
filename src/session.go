@@ -296,9 +296,13 @@ func (s *Session) NotifyAction(g *Game) {
 		CanDiscard       bool `json:"canDiscard"`
 		CanBlindPlayDeck bool `json:"canBlindPlayDeck"`
 	}
+	canClue := g.Clues >= 1
+	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
+		canClue = g.Clues >= 2
+	}
 	s.Emit("action", &ActionMessage{
-		CanClue:          g.Clues > 0,
-		CanDiscard:       g.Clues < 8,
+		CanClue:          canClue,
+		CanDiscard:       g.Clues != maxClues,
 		CanBlindPlayDeck: g.Options.DeckPlays && g.DeckIndex == len(g.Deck)-1,
 	})
 }

@@ -5436,11 +5436,11 @@ Keyboard hotkeys:
 
             // Update the number of clues in the bottom-right hand corner of the screen
             cluesNumberLabel.setText(globals.clues.toString());
-            if (globals.clues === 0 || globals.clues === 8) {
+            if (globals.clues < 1 || globals.clues === 8) {
                 cluesNumberLabel.setFill('#df1c2d'); // Red
-            } else if (globals.clues === 1) {
+            } else if (globals.clues >= 1 && globals.clues < 2) {
                 cluesNumberLabel.setFill('#ef8c1d'); // Orange
-            } else if (globals.clues === 2) {
+            } else if (globals.clues >= 2 && globals.clues < 3) {
                 cluesNumberLabel.setFill('#efef1d'); // Yellow
             } else {
                 cluesNumberLabel.setFill('#d8d5ef'); // White
