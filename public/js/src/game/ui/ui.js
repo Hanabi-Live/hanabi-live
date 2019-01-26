@@ -1,14 +1,11 @@
 // Imports
-let globals;
-let stats;
-let timer;
+const globals = require('./globals');
+const globalsInit = require('./globalsInit');
+const stats = require('./stats');
+const timer = require('./timer');
 
 function HanabiUI(lobby, game) {
-    /* eslint-disable global-require */
-    globals = require('./globals');
-    stats = require('./stats');
-    timer = require('./timer');
-    /* eslint-enable global-require */
+    globalsInit();
 
     this.lobby = lobby;
     globals.lobby = lobby;
