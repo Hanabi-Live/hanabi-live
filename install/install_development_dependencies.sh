@@ -11,7 +11,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 code --install-extension ms-vscode.Go # For Golang
 code --install-extension dbaeumer.vscode-eslint # For JavaScript
 
-# Install the Golang development dependencies that VSCode uses
+# Install the Golang tools that VSCode uses
 go get -u github.com/mdempsky/gocode
 go get -u github.com/uudashr/gopkgs/cmd/gopkgs
 go get -u github.com/lukehoban/go-outline
@@ -36,8 +36,6 @@ go get -u github.com/derekparker/delve/cmd/dlv
 
 # Install the Golang linter
 go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
-cd "$(go env GOPATH)/src/github.com/golangci/golangci-lint/cmd/golangci-lint"
-go install -ldflags "-X 'main.version=$(git describe --tags)' -X 'main.commit=$(git rev-parse --short HEAD)' -X 'main.date=$(date)'"
 
 # Install the JavaScript linter
 cd "$DIR/../public/js"
