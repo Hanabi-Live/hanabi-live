@@ -7,9 +7,7 @@ const timer = require('./timer');
 function HanabiUI(lobby, game) {
     globalsInit();
 
-    this.lobby = lobby;
     globals.lobby = lobby;
-    this.game = game;
     globals.game = game;
 
     const ui = this;
@@ -63,11 +61,13 @@ function HanabiUI(lobby, game) {
     // (this is commented out because it is currently broken)
     // window.addEventListener('resize', resizeCanvas, false);
 
+    /*
     function redraw() {
-        const self = lobby.ui;
+        const self = globals.lobby.ui;
 
         // Unbind duplicateable keybindings
-        $(document).off('keydown');
+        // (commented out because this would unbind the lobby hotkeys)
+        // $(document).off('keydown');
 
         // Remove drawn elements to prep for a redraw
         stage.destroy();
@@ -152,10 +152,11 @@ function HanabiUI(lobby, game) {
         cardLayer.draw();
         overLayer.draw();
     }
+    */
 
     // Iterate over the replay and stop at the current turn or at the end, whichever comes first
     function rebuildReplay() {
-        const self = lobby.ui;
+        const self = globals.lobby.ui;
 
         while (true) {
             const msg = globals.replayLog[globals.replayPos];
@@ -179,6 +180,7 @@ function HanabiUI(lobby, game) {
     // Runs each time the DOM window resize event fires
     // Resets the canvas dimensions to match window,
     // then draws the new borders accordingly
+    /*
     function resizeCanvas() {
         $('canvas').each((index, canvas) => {
             canvas.width = window.innerWidth;
@@ -188,6 +190,7 @@ function HanabiUI(lobby, game) {
         });
         redraw();
     }
+    */
 
     function cloneCanvas(oldCanvas) {
         const newCanvas = document.createElement('canvas');
@@ -969,7 +972,7 @@ function HanabiUI(lobby, game) {
             if (
                 globals.sharedReplay
                 && event.evt.which === 3 // Right-click
-                && globals.sharedReplayLeader === lobby.username
+                && globals.sharedReplayLeader === globals.lobby.username
             ) {
                 if (ui.useSharedTurns) {
                     ui.sendMsg({
@@ -1128,7 +1131,7 @@ function HanabiUI(lobby, game) {
             }
 
             // Tell the server that we are doing a hypothetical
-            if (globals.sharedReplayLeader === lobby.username) {
+            if (globals.sharedReplayLeader === globals.lobby.username) {
                 ui.sendMsg({
                     type: 'replayAction',
                     data: {
@@ -1777,7 +1780,7 @@ function HanabiUI(lobby, game) {
             strokeWidth: 1,
             align: 'center',
             text: config.text,
-            visible: lobby.settings.showColorblindUI,
+            visible: globals.lobby.settings.showColorblindUI,
         });
 
         this.add(text);
@@ -2100,7 +2103,7 @@ function HanabiUI(lobby, game) {
             if (globals.deck[this.neglist[i]] === target) {
                 this.background.setOpacity(0.4);
                 this.background.setFill('#ff7777');
-                if (lobby.settings.showColorblindUI) {
+                if (globals.lobby.settings.showColorblindUI) {
                     this.negativeMarker.setVisible(true);
                 }
             }
@@ -2207,12 +2210,12 @@ function HanabiUI(lobby, game) {
         }
 
         // Only proceed if we are the replay leader
-        if (globals.sharedReplayLeader !== lobby.username) {
+        if (globals.sharedReplayLeader !== globals.lobby.username) {
             return;
         }
 
         // Only proceed if we chose someone else
-        if (username === lobby.username) {
+        if (username === globals.lobby.username) {
             return;
         }
 
@@ -2527,7 +2530,7 @@ function HanabiUI(lobby, game) {
 
         // Top and bottom for cards 2, 3, 4, 5
         if (rank > 1 && rank <= 5) {
-            const symbolYPos = lobby.settings.showColorblindUI ? 85 : 120;
+            const symbolYPos = globals.lobby.settings.showColorblindUI ? 85 : 120;
             ctx.save();
             ctx.translate(CARDW / 2, CARDH / 2);
             ctx.translate(0, -symbolYPos);
@@ -2585,7 +2588,7 @@ function HanabiUI(lobby, game) {
         // Unknown rank, so draw large faint suit
         if (rank === 6) {
             ctx.save();
-            ctx.globalAlpha = lobby.settings.showColorblindUI ? 0.4 : 0.1;
+            ctx.globalAlpha = globals.lobby.settings.showColorblindUI ? 0.4 : 0.1;
             ctx.translate(CARDW / 2, CARDH / 2);
             ctx.scale(scale * 3, scale * 3);
             ctx.translate(-75, -100);
@@ -2690,7 +2693,7 @@ function HanabiUI(lobby, game) {
                         rankString = 'S';
                     }
                     let fontSize;
-                    if (lobby.settings.showColorblindUI) {
+                    if (globals.lobby.settings.showColorblindUI) {
                         fontSize = 68;
                         textYPos = 83;
                         indexLabel = suit.abbreviation + rankString;
@@ -2785,7 +2788,7 @@ function HanabiUI(lobby, game) {
         stage.setHeight(ch);
     };
 
-    let stage = new Kinetic.Stage({
+    const stage = new Kinetic.Stage({
         container: 'game',
     });
 
@@ -2972,7 +2975,7 @@ function HanabiUI(lobby, game) {
             w: 0.4,
             h: 0.098,
         };
-        if (lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showBGAUI) {
             actionLogValues.x = 0.01;
             actionLogValues.y = 0.01;
             actionLogValues.h = 0.25;
@@ -3015,7 +3018,7 @@ function HanabiUI(lobby, game) {
 
         // The action log
         let maxLines = 3;
-        if (lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showBGAUI) {
             maxLines = 8;
         }
         messagePrompt = new MultiFitText({
@@ -3060,7 +3063,7 @@ function HanabiUI(lobby, game) {
             x: 0.66,
             y: 0.81,
         };
-        if (lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showBGAUI) {
             scoreAreaValues.x = 0.168;
             scoreAreaValues.y = 0.81;
         }
@@ -3168,7 +3171,7 @@ function HanabiUI(lobby, game) {
             x: 0.623,
             y: 0.9,
         };
-        if (lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showBGAUI) {
             spectatorsLabelValues.x = 0.01;
             spectatorsLabelValues.y = 0.72;
         }
@@ -3232,7 +3235,7 @@ function HanabiUI(lobby, game) {
             x: 0.623,
             y: 0.85,
         };
-        if (lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showBGAUI) {
             sharedReplayLeaderLabelValues.x = spectatorsLabelValues.x + 0.03;
             sharedReplayLeaderLabelValues.y = spectatorsLabelValues.y;
         }
@@ -3293,7 +3296,7 @@ function HanabiUI(lobby, game) {
             }
 
             // Do nothing if we are not the shared replay leader
-            if (globals.sharedReplayLeader !== lobby.username) {
+            if (globals.sharedReplayLeader !== globals.lobby.username) {
                 return;
             }
 
@@ -3307,7 +3310,7 @@ function HanabiUI(lobby, game) {
             target = ui.lastSpectators.names[target];
 
             // Only proceed if we chose someone else
-            if (target === lobby.username) {
+            if (target === globals.lobby.username) {
                 return;
             }
 
@@ -3430,7 +3433,7 @@ function HanabiUI(lobby, game) {
         if (globals.variant.showSuitNames) {
             playStackValues.y -= 0.018;
         }
-        if (lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showBGAUI) {
             playStackValues.x = actionLogValues.x;
             playStackValues.y = actionLogValues.y + actionLogValues.h + 0.02;
             playStackValues.spacing = 0.006;
@@ -3486,7 +3489,7 @@ function HanabiUI(lobby, game) {
                 if (globals.variant.showSuitNames) {
                     let text = suit.name;
                     if (
-                        lobby.settings.showColorblindUI
+                        globals.lobby.settings.showColorblindUI
                         && suit.clueColors.length > 1
                         && suit !== SUIT.RAINBOW
                         && suit !== SUIT.RAINBOW1OE
@@ -3526,7 +3529,7 @@ function HanabiUI(lobby, game) {
             w: 0.435,
             h: 0.189,
         };
-        if (lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showBGAUI) {
             playAreaValues.x = 0.01;
             playAreaValues.y = 0.279;
             playAreaValues.w = 0.4;
@@ -3805,11 +3808,11 @@ function HanabiUI(lobby, game) {
                 // (for our hand, the oldest card is the first card, which should be on the right)
                 reverse = true;
             }
-            if (lobby.settings.showBGAUI) {
+            if (globals.lobby.settings.showBGAUI) {
                 // If Board Game Arena mode is on, then we need to reverse every hand
                 reverse = true;
             }
-            if (lobby.settings.reverseHands) {
+            if (globals.lobby.settings.reverseHands) {
                 // If the "Reverse hand direction" option is turned on,
                 // then we need to flip the direction of every hand
                 reverse = !reverse;
@@ -3827,7 +3830,7 @@ function HanabiUI(lobby, game) {
             }
 
             let playerHandPos = handPos;
-            if (lobby.settings.showBGAUI) {
+            if (globals.lobby.settings.showBGAUI) {
                 playerHandPos = handPosBGA;
             }
 
@@ -3836,7 +3839,7 @@ function HanabiUI(lobby, game) {
                 // We want to flip the cards for other players
                 invertCards = true;
             }
-            if (lobby.settings.showBGAUI) {
+            if (globals.lobby.settings.showBGAUI) {
                 // On the BGA layout, all the hands should not be flipped
                 invertCards = false;
             }
@@ -3857,7 +3860,7 @@ function HanabiUI(lobby, game) {
             // Draw the faded shade that shows where the "new" side of the hand is
             // (but don't bother drawing it in Board Game Arena mode since
             // all the hands face the same way)
-            if (!lobby.settings.showBGAUI) {
+            if (!globals.lobby.settings.showBGAUI) {
                 rect = new Kinetic.Rect({
                     x: shadePos[nump][j].x * winW,
                     y: shadePos[nump][j].y * winH,
@@ -3895,7 +3898,7 @@ function HanabiUI(lobby, game) {
             }
 
             let playerNamePos = namePos;
-            if (lobby.settings.showBGAUI) {
+            if (globals.lobby.settings.showBGAUI) {
                 playerNamePos = namePosBGA;
             }
             nameFrames[i] = new HanabiNameFrame({
@@ -3992,7 +3995,7 @@ function HanabiUI(lobby, game) {
             w: 0.55, // The width of all of the vanilla cards is 0.435
             h: 0.27,
         };
-        if (lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showBGAUI) {
             clueAreaValues.x = playStackValues.x - 0.102;
             clueAreaValues.y = playStackValues.y + 0.22;
         }
@@ -4110,7 +4113,7 @@ function HanabiUI(lobby, game) {
             x: 0.275,
             y: 0.56,
         };
-        if (lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showBGAUI) {
             noClueBoxValues.x = clueAreaValues.x + 0.178;
             noClueBoxValues.y = clueAreaValues.y;
         }
@@ -4151,14 +4154,14 @@ function HanabiUI(lobby, game) {
         */
 
         // We don't want the timer to show in replays
-        if (!globals.replay && (globals.timed || lobby.settings.showTimerInUntimed)) {
+        if (!globals.replay && (globals.timed || globals.lobby.settings.showTimerInUntimed)) {
             const timerValues = {
                 x1: 0.155,
                 x2: 0.565,
                 y1: 0.592,
                 y2: 0.592,
             };
-            if (lobby.settings.showBGAUI) {
+            if (globals.lobby.settings.showBGAUI) {
                 timerValues.x1 = 0.31;
                 timerValues.x2 = 0.31;
                 timerValues.y1 = 0.77;
@@ -4205,7 +4208,7 @@ function HanabiUI(lobby, game) {
             if (
                 globals.replay
                 && globals.sharedReplay
-                && globals.sharedReplayLeader !== lobby.username
+                && globals.sharedReplayLeader !== globals.lobby.username
                 && ui.useSharedTurns
             ) {
                 // Replay actions currently enabled, so disable them
@@ -4220,7 +4223,7 @@ function HanabiUI(lobby, game) {
             y: 0.51,
             w: 0.5,
         };
-        if (lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showBGAUI) {
             replayAreaValues.x = 0.01;
             replayAreaValues.y = 0.49;
             replayAreaValues.w = 0.4;
@@ -4325,7 +4328,7 @@ function HanabiUI(lobby, game) {
             y: 0.07,
             spacing: 0.08,
         };
-        if (lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showBGAUI) {
             replayButtonValues.x = 0.05;
         }
 
@@ -4406,7 +4409,7 @@ function HanabiUI(lobby, game) {
                 });
 
                 timer.stop();
-                game.hide();
+                globals.game.hide();
             } else {
                 // Mark the time that the user clicked the "Exit Replay" button
                 // (so that we can avoid an accidental "Give Clue" double-click)
@@ -4431,7 +4434,7 @@ function HanabiUI(lobby, game) {
             ui.useSharedTurns = !ui.useSharedTurns;
             replayShuttleShared.setVisible(!ui.useSharedTurns);
             if (ui.useSharedTurns) {
-                if (globals.sharedReplayLeader === lobby.username) {
+                if (globals.sharedReplayLeader === globals.lobby.username) {
                     shareCurrentTurn(globals.replayTurn);
                 } else {
                     ui.performReplay(globals.sharedReplayTurn);
@@ -4584,7 +4587,7 @@ function HanabiUI(lobby, game) {
             }
             if (event.key === 'X') { // Shift + x
                 // This is used as a sound test
-                ui.game.sounds.play('turn_us');
+                globals.game.sounds.play('turn_us');
                 return;
             }
             if (event.ctrlKey && event.key === 'Enter') { // Ctrl + Enter
@@ -4620,7 +4623,7 @@ function HanabiUI(lobby, game) {
             };
 
             // Check for speedrun keyboard hotkeys
-            if (lobby.settings.speedrunHotkeys) {
+            if (globals.lobby.settings.speedrunHotkeys) {
                 // Play cards (ACT.PLAY)
                 if (event.key === '1') {
                     speedrunAction(ACT.PLAY, getOrderFromSlot(1));
@@ -4755,7 +4758,7 @@ function HanabiUI(lobby, game) {
             }
 
             // Only enable sound effects for shared replay leaders
-            if (globals.sharedReplayLeader !== lobby.username) {
+            if (globals.sharedReplayLeader !== globals.lobby.username) {
                 return;
             }
 
@@ -4770,7 +4773,7 @@ function HanabiUI(lobby, game) {
 
             // Play the sound effect manually so that
             // we don't have to wait for the client to server round-trip
-            ui.game.sounds.play(sound);
+            globals.game.sounds.play(sound);
         };
 
         helpGroup = new Kinetic.Group({
@@ -4902,7 +4905,7 @@ Keyboard hotkeys:
             });
 
             timer.stop();
-            game.hide();
+            globals.game.hide();
         });
 
         if (globals.inReplay) {
@@ -5044,7 +5047,7 @@ Keyboard hotkeys:
 
         if (
             globals.sharedReplay
-            && globals.sharedReplayLeader === lobby.username
+            && globals.sharedReplayLeader === globals.lobby.username
             && this.useSharedTurns
         ) {
             shareCurrentTurn(target);
@@ -5218,7 +5221,7 @@ Keyboard hotkeys:
             // Adding speedrun code; make all cards in our hand draggable from the get-go
             // except for cards we have already played or discarded
             if (
-                lobby.settings.speedrunPreplay
+                globals.lobby.settings.speedrunPreplay
                 && data.who === globals.playerUs
                 && !globals.replay
                 && !globals.spectating
@@ -5599,7 +5602,7 @@ Keyboard hotkeys:
             }
         } else if (type === 'boot') {
             timer.stop();
-            game.hide();
+            globals.game.hide();
         }
     };
 
@@ -5785,7 +5788,7 @@ Keyboard hotkeys:
 
         // Make all of the cards in our hand not draggable
         // (but we need to keep them draggable if the pre-play setting is enabled)
-        if (!lobby.settings.speedrunPreplay) {
+        if (!globals.lobby.settings.speedrunPreplay) {
             for (let i = 0; i < playerHands[globals.playerUs].children.length; i++) {
                 const child = playerHands[globals.playerUs].children[i];
                 child.off('dragend.play');
@@ -5844,7 +5847,7 @@ Keyboard hotkeys:
         // Set our hand to being draggable
         // (this is unnecessary if the pre-play setting is enabled,
         // as the hand will already be draggable)
-        if (!lobby.settings.speedrunPreplay) {
+        if (!globals.lobby.settings.speedrunPreplay) {
             for (let i = 0; i < playerHands[globals.playerUs].children.length; i++) {
                 const child = playerHands[globals.playerUs].children[i];
                 child.setDraggable(true);
@@ -5978,10 +5981,10 @@ Keyboard hotkeys:
     };
 
     this.destroy = function destroy() {
-        stage.destroy();
-        window.removeEventListener('resize', resizeCanvas, false);
-        $(document).unbind('keydown', this.keyNavigation);
         timer.stop();
+        stage.destroy();
+        // window.removeEventListener('resize', resizeCanvas, false);
+        $(document).unbind('keydown', this.keyNavigation);
     };
 }
 
@@ -6034,8 +6037,8 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
             return;
         }
 
-        if (this.lobby.settings.sendTurnNotify) {
-            this.lobby.sendNotify('It\'s your turn', 'turn');
+        if (globals.lobby.settings.sendTurnNotify) {
+            globals.lobby.sendNotify('It\'s your turn', 'turn');
         }
     } else if (msgType === 'spectators') {
         this.lastSpectators = msgData;
@@ -6059,7 +6062,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleReplayTurn.call(this, msgData);
     } else if (msgType === 'replayIndicator') {
         // This is used in shared replays
-        if (globals.sharedReplayLeader === this.lobby.username) {
+        if (globals.sharedReplayLeader === globals.lobby.username) {
             // We don't have to draw any arrows;
             // we already did it manually immediately after sending the "replayAction" message
             return;
@@ -6068,7 +6071,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleReplayIndicator.call(this, msgData);
     } else if (msgType === 'replayMorph') {
         // This is used in shared replays to make hypothetical game states
-        if (globals.sharedReplayLeader === this.lobby.username) {
+        if (globals.sharedReplayLeader === globals.lobby.username) {
             // We don't have to reveal anything;
             // we already did it manually immediately after sending the "replayAction" message
             return;
@@ -6085,13 +6088,13 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         this.handleNotify(revealMsg);
     } else if (msgType === 'replaySound') {
         // This is used in shared replays to make fun sounds
-        if (globals.sharedReplayLeader === this.lobby.username) {
+        if (globals.sharedReplayLeader === globals.lobby.username) {
             // We don't have to play anything;
             // we already did it manually immediately after sending the "replayAction" message
             return;
         }
 
-        this.game.sounds.play(msgData.sound);
+        globals.game.sounds.play(msgData.sound);
     }
 };
 
