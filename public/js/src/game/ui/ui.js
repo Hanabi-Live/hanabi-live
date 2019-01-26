@@ -1,9 +1,15 @@
 // Imports
-const globals = require('./globals');
-const stats = require('./stats');
-const timer = require('./timer');
+let globals;
+let stats;
+let timer;
 
 function HanabiUI(lobby, game) {
+    /* eslint-disable global-require */
+    globals = require('./globals');
+    stats = require('./stats');
+    timer = require('./timer');
+    /* eslint-enable global-require */
+
     this.lobby = lobby;
     globals.lobby = lobby;
     this.game = game;
@@ -3945,6 +3951,7 @@ function HanabiUI(lobby, game) {
                 });
                 UILayer.add(charIcon);
 
+                /* eslint-disable no-loop-func */
                 charIcon.on('mousemove', function charIconMouseMove() {
                     ui.activeHover = this;
 
@@ -3970,6 +3977,7 @@ function HanabiUI(lobby, game) {
 
                     tooltip.tooltipster('open');
                 });
+                /* eslint-enable no-loop-func */
                 charIcon.on('mouseout', () => {
                     const tooltip = $(`#tooltip-character-assignment-${i}`);
                     tooltip.tooltipster('close');
