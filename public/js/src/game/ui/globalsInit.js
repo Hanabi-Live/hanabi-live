@@ -66,6 +66,7 @@ module.exports = () => {
         timer2: null,
     };
     globals.layers = {
+        UI: null,
         timer: null,
     };
 };

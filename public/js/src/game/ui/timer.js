@@ -7,10 +7,17 @@
 const globals = require('./globals');
 
 // Variables
-let timerID = null;
-let playerTimes = null;
-let activeIndex = null;
-let lastTimerUpdateTimeMS = null;
+let timerID;
+let playerTimes;
+let activeIndex;
+let lastTimerUpdateTimeMS;
+
+exports.init = () => {
+    timerID = null;
+    playerTimes = null;
+    activeIndex = null;
+    lastTimerUpdateTimeMS = null;
+};
 
 // Has the following data:
 /*

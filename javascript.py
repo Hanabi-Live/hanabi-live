@@ -22,8 +22,6 @@ try:
        MAIN_SRC_JS,
        '--outfile',
        MAIN_BUNDLED_JS,
-       '--verbose',
-       '--debug',
    ], cwd=JS_DIR)
    output = output.strip()
    if output != '':

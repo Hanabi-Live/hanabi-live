@@ -27,7 +27,7 @@ exports.show = () => {
     $('#game-chat-text').html('');
 
     globals.ui = new ui(globals, exports); // eslint-disable-line new-cap
-    globals.ui.setBackend(globals.conn);
+    globals.conn.send('hello');
 };
 
 exports.hide = () => {

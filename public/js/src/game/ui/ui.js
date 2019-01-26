@@ -1,11 +1,16 @@
 // Imports
 const globals = require('./globals');
 const globalsInit = require('./globalsInit');
+const notes = require('./notes');
 const stats = require('./stats');
 const timer = require('./timer');
 
 function HanabiUI(lobby, game) {
+    // Since the "HanabiUI" object is being reinstantiated,
+    // we need to explicitly reinitialize all varaibles (or else they will retain their old values)
     globalsInit();
+    timer.init();
+    notes.init();
 
     globals.lobby = lobby;
     globals.game = game;
@@ -42,11 +47,6 @@ function HanabiUI(lobby, game) {
     // Stored variables for rebuilding the game state
     this.lastAction = null;
     this.lastSpectators = null;
-
-    // Users can only update one note at a time to prevent bugs
-    this.editingNote = null; // Equal to the card order number or null
-    this.editingNoteActionOccured = false;
-    // Equal to true if something happened when the note box happens to be open
 
     // Used for the pre-move feature
     this.ourTurn = false;
@@ -147,9 +147,9 @@ function HanabiUI(lobby, game) {
         // Redraw all layers
         bgLayer.draw();
         textLayer.draw();
-        UILayer.draw();
+        globals.layers.UI.draw();
         globals.layers.timer.draw();
-        cardLayer.draw();
+        globals.layers.card.draw();
         overLayer.draw();
     }
     */
@@ -801,7 +801,7 @@ function HanabiUI(lobby, game) {
         this.noteGiven.rotated = false;
         // (we might rotate it later to indicate to spectators that the note was updated)
         this.add(this.noteGiven);
-        if (ui.getNote(this.order)) {
+        if (notes.get(this.order)) {
             this.noteGiven.show();
         }
 
@@ -809,41 +809,6 @@ function HanabiUI(lobby, game) {
             Define event handlers
             Multiple handlers may set activeHover
         */
-
-        const cardTooltipOpen = () => {
-            const tooltip = $(`#tooltip-card-${self.order}`);
-            const tooltipInstance = tooltip.tooltipster('instance');
-
-            // Do nothing if the tooltip is already open
-            if (tooltip.tooltipster('status').open) {
-                return;
-            }
-
-            // We want the tooltip to appear above the card by default
-            const pos = self.getAbsolutePosition();
-            let posX = pos.x;
-            let posY = pos.y - (self.getHeight() * self.parent.scale().y / 2);
-            tooltipInstance.option('side', 'top');
-
-            // Flip the tooltip if it is too close to the top of the screen
-            if (posY < 200) {
-                // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout
-                posY = pos.y + (self.getHeight() * self.parent.scale().y / 2);
-                tooltipInstance.option('side', 'bottom');
-            }
-
-            // If there is an clue arrow showing, it will overlap with the tooltip arrow,
-            // so move it over to the right a little bit
-            if (self.indicatorArrow.visible()) {
-                posX = pos.x + ((self.getWidth() * self.parent.scale().x / 2) / 2.5);
-            }
-
-            // Update the tooltip and open it
-            tooltip.css('left', posX);
-            tooltip.css('top', posY);
-            tooltipInstance.content(ui.getNote(self.order) || '');
-            tooltip.tooltipster('open');
-        };
 
         this.on('mousemove', function cardMouseMove() {
             // Don't do anything if there is not a note on this card
@@ -855,21 +820,21 @@ function HanabiUI(lobby, game) {
             if (self.noteGiven.rotated) {
                 self.noteGiven.rotated = false;
                 self.noteGiven.rotate(-15);
-                cardLayer.batchDraw();
+                globals.layers.card.batchDraw();
             }
 
             // Don't open any more note tooltips if the user is currently editing a note
-            if (ui.editingNote !== null) {
+            if (notes.vars.editing !== null) {
                 return;
             }
 
             ui.activeHover = this;
-            cardTooltipOpen();
+            notes.show(self); // We supply the card as the argument
         });
 
         this.on('mouseout', () => {
             // Don't close the tooltip if we are currently editing a note
-            if (ui.editingNote !== null) {
+            if (notes.vars.editing !== null) {
                 return;
             }
 
@@ -879,12 +844,12 @@ function HanabiUI(lobby, game) {
 
         this.on('mousemove tap', () => {
             clueLog.showMatches(self);
-            UILayer.draw();
+            globals.layers.UI.draw();
         });
 
         this.on('mouseout', () => {
             clueLog.showMatches(null);
-            UILayer.draw();
+            globals.layers.UI.draw();
         });
 
         // Empathy feature
@@ -909,7 +874,7 @@ function HanabiUI(lobby, game) {
             cardsToReset.map(
                 (card, index) => toggleHolderViewOnCard(card, false, toggledPips[index]),
             );
-            cardLayer.batchDraw();
+            globals.layers.card.batchDraw();
         };
         const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
             if (toggledHolderViewCards.length > 0) {
@@ -918,7 +883,7 @@ function HanabiUI(lobby, game) {
 
             toggledHolderViewCards.splice(0, 0, ...cards);
             const toggledPips = cards.map(c => toggleHolderViewOnCard(c, true, [1, 1]));
-            cardLayer.batchDraw();
+            globals.layers.card.batchDraw();
             return toggledPips;
         };
         if (config.holder !== globals.playerUs || globals.inReplay || globals.spectating) {
@@ -1002,94 +967,7 @@ function HanabiUI(lobby, game) {
                 return;
             }
 
-            if (event.evt.which !== 3) { // Right-click
-                // We only care about right clicks
-                return;
-            }
-
-            // Don't edit any notes in shared replays
-            if (globals.sharedReplay) {
-                return;
-            }
-
-            // Close any existing note tooltips
-            if (ui.editingNote !== null) {
-                const tooltip = $(`#tooltip-card-${ui.editingNote}`);
-                tooltip.tooltipster('close');
-            }
-
-            cardTooltipOpen();
-
-            ui.editingNote = self.order;
-            let note = ui.getNote(self.order);
-            if (note === null) {
-                note = '';
-            }
-            const tooltip = $(`#tooltip-card-${self.order}`);
-            const tooltipInstance = tooltip.tooltipster('instance');
-            tooltipInstance.content(`<input id="tooltip-card-${self.order}-input" type="text" value="${note}"/>`);
-
-            $(`#tooltip-card-${self.order}-input`).on('keydown', (keyEvent) => {
-                keyEvent.stopPropagation();
-                if (keyEvent.key !== 'Enter' && keyEvent.key !== 'Escape') {
-                    return;
-                }
-
-                ui.editingNote = null;
-
-                if (keyEvent.key === 'Escape') {
-                    note = ui.getNote(self.order);
-                    if (note === null) {
-                        note = '';
-                    }
-                } else if (keyEvent.key === 'Enter') {
-                    note = $(`#tooltip-card-${self.order}-input`).val();
-
-                    // Strip any HTML elements
-                    // (to be thorough, the server will also perform this validation)
-                    note = stripHTMLtags(note);
-
-                    ui.setNote(self.order, note);
-
-                    // Also send the note to the server
-                    if (!globals.replay && !globals.spectating) {
-                        ui.sendMsg({
-                            type: 'note',
-                            data: {
-                                order: self.order,
-                                note,
-                            },
-                        });
-                    }
-
-                    // Check to see if an event happened while we were editing this note
-                    if (ui.editingNoteActionOccured) {
-                        ui.editingNoteActionOccured = false;
-                        tooltip.tooltipster('close');
-                    }
-
-                    // Mark the time that we submitted the note
-                    // (so that we can avoid an accidental double enter press)
-                    ui.accidentalClueTimer = Date.now();
-                }
-
-                tooltipInstance.content(note);
-                self.noteGiven.setVisible(note.length > 0);
-                if (note.length === 0) {
-                    tooltip.tooltipster('close');
-                }
-
-                UILayer.draw();
-                cardLayer.draw();
-            });
-
-            // Automatically highlight all of the existing text when a note input box is focused
-            $(`#tooltip-card-${self.order}-input`).focus(function tooltipCardInputFocus() {
-                $(this).select();
-            });
-
-            // Automatically focus the new text input box
-            $(`#tooltip-card-${self.order}-input`).focus();
+            notes.edit(self, event);
         });
 
         // Catch clicks for making arbitrary cards (for hypothetical situation creation)
@@ -2339,7 +2217,7 @@ function HanabiUI(lobby, game) {
 
             globals.deck[i].setIndicator(false);
         }
-        cardLayer.batchDraw();
+        globals.layers.card.batchDraw();
 
         // We supply this function with an argument of "-1" if we just want to
         // clear the existing arrows and nothing else
@@ -2388,7 +2266,7 @@ function HanabiUI(lobby, game) {
             }
         }
 
-        cardLayer.batchDraw();
+        globals.layers.card.batchDraw();
 
         return match;
     };
@@ -2798,8 +2676,8 @@ function HanabiUI(lobby, game) {
     let winH = stage.getHeight();
 
     const bgLayer = new Kinetic.Layer();
-    const cardLayer = new Kinetic.Layer();
-    const UILayer = new Kinetic.Layer();
+    globals.layers.card = new Kinetic.Layer();
+    globals.layers.UI = new Kinetic.Layer();
     const overLayer = new Kinetic.Layer();
     const textLayer = new Kinetic.Layer({
         listening: false,
@@ -2854,7 +2732,6 @@ function HanabiUI(lobby, game) {
     let helpGroup;
     let msgLogGroup;
     let overback;
-    const notesWritten = []; // An array containing all of the player's notes, indexed by card order
 
     const overPlayArea = pos => (
         pos.x >= playArea.getX()
@@ -2926,7 +2803,7 @@ function HanabiUI(lobby, game) {
             cornerRadius: 0.01 * winW,
             visible: false,
         });
-        UILayer.add(noDiscardLabel);
+        globals.layers.UI.add(noDiscardLabel);
 
         // The yellow border that surrounds the discard pile when it is a "Double Discard" situation
         noDoubleDiscardLabel = new Kinetic.Rect({
@@ -2940,7 +2817,7 @@ function HanabiUI(lobby, game) {
             visible: false,
             opacity: 0.75,
         });
-        UILayer.add(noDoubleDiscardLabel);
+        globals.layers.UI.add(noDoubleDiscardLabel);
 
         // The faded rectange around the trash can
         rect = new Kinetic.Rect({
@@ -2984,7 +2861,7 @@ function HanabiUI(lobby, game) {
             x: actionLogValues.x * winW,
             y: actionLogValues.y * winH,
         });
-        UILayer.add(actionLog);
+        globals.layers.UI.add(actionLog);
 
         // The faded rectange around the action log
         rect = new Kinetic.Rect({
@@ -3071,7 +2948,7 @@ function HanabiUI(lobby, game) {
             x: scoreAreaValues.x * winW,
             y: scoreAreaValues.y * winH,
         });
-        UILayer.add(scoreArea);
+        globals.layers.UI.add(scoreArea);
 
         // The faded rectangle around the score area
         rect = new Kinetic.Rect({
@@ -3194,7 +3071,7 @@ function HanabiUI(lobby, game) {
             shadowOpacity: 0.9,
             visible: false,
         });
-        UILayer.add(spectatorsLabel);
+        globals.layers.UI.add(spectatorsLabel);
 
         // Tooltip for the eyes
         spectatorsLabel.on('mousemove', function spectatorsLabelMouseMove() {
@@ -3228,7 +3105,7 @@ function HanabiUI(lobby, game) {
             shadowOpacity: 0.9,
             visible: false,
         });
-        UILayer.add(spectatorsNumLabel);
+        globals.layers.UI.add(spectatorsNumLabel);
 
         // Shared replay leader indicator
         const sharedReplayLeaderLabelValues = {
@@ -3258,7 +3135,7 @@ function HanabiUI(lobby, game) {
             shadowOpacity: 0.9,
             visible: false,
         });
-        UILayer.add(sharedReplayLeaderLabel);
+        globals.layers.UI.add(sharedReplayLeaderLabel);
 
         // Add an animation to alert everyone when shared replay leadership has been transfered
         sharedReplayLeaderLabelPulse = new Kinetic.Tween({
@@ -3273,7 +3150,7 @@ function HanabiUI(lobby, game) {
                 sharedReplayLeaderLabelPulse.reverse();
             },
         });
-        sharedReplayLeaderLabelPulse.anim.addLayer(UILayer);
+        sharedReplayLeaderLabelPulse.anim.addLayer(globals.layers.UI);
 
         // Tooltip for the crown
         sharedReplayLeaderLabel.on('mousemove', function sharedReplayLeaderLabelMouseMove() {
@@ -3355,7 +3232,7 @@ function HanabiUI(lobby, game) {
             width: (clueLogValues.w - spacing * 2) * winW,
             height: (clueLogValues.h - spacing * 2) * winH,
         });
-        UILayer.add(clueLog);
+        globals.layers.UI.add(clueLog);
 
         /*
             Statistics shown on the right-hand side of the screen (at the bottom of the clue log)
@@ -3378,7 +3255,7 @@ function HanabiUI(lobby, game) {
             y: 0.54 * winH,
             fontSize: 0.02 * winH,
         });
-        UILayer.add(paceTextLabel);
+        globals.layers.UI.add(paceTextLabel);
 
         globals.elements.paceNumberLabel = basicNumberLabel.clone({
             text: '-',
@@ -3387,7 +3264,7 @@ function HanabiUI(lobby, game) {
             fontSize: 0.02 * winH,
             align: 'left',
         });
-        UILayer.add(globals.elements.paceNumberLabel);
+        globals.layers.UI.add(globals.elements.paceNumberLabel);
 
         const efficiencyTextLabel = basicTextLabel.clone({
             text: 'Efficiency',
@@ -3395,7 +3272,7 @@ function HanabiUI(lobby, game) {
             y: 0.56 * winH,
             fontSize: 0.02 * winH,
         });
-        UILayer.add(efficiencyTextLabel);
+        globals.layers.UI.add(efficiencyTextLabel);
 
         globals.elements.efficiencyNumberLabel = basicNumberLabel.clone({
             text: '-',
@@ -3405,7 +3282,7 @@ function HanabiUI(lobby, game) {
             fontSize: 0.02 * winH,
             align: 'left',
         });
-        UILayer.add(globals.elements.efficiencyNumberLabel);
+        globals.layers.UI.add(globals.elements.efficiencyNumberLabel);
 
         /*
             Draw the stacks and the discard pile
@@ -3473,7 +3350,7 @@ function HanabiUI(lobby, game) {
                     height: height * winH,
                 });
                 playStacks.set(suit, thisSuitPlayStack);
-                cardLayer.add(thisSuitPlayStack);
+                globals.layers.card.add(thisSuitPlayStack);
 
                 const thisSuitDiscardStack = new CardLayout({
                     x: 0.81 * winW,
@@ -3482,7 +3359,7 @@ function HanabiUI(lobby, game) {
                     height: 0.17 * winH,
                 });
                 discardStacks.set(suit, thisSuitDiscardStack);
-                cardLayer.add(thisSuitDiscardStack);
+                globals.layers.card.add(thisSuitDiscardStack);
 
                 // Draw the suit name next to each suit
                 // (a text description of the suit)
@@ -3601,7 +3478,7 @@ function HanabiUI(lobby, game) {
                     y: 0,
                     runonce: true,
                     onFinish: () => {
-                        UILayer.draw();
+                        globals.layers.UI.draw();
                     },
                 }).play();
             }
@@ -3628,7 +3505,7 @@ function HanabiUI(lobby, game) {
         drawDeckRect.on('click', goToTurn);
         // We also want to be able to right-click if all the cards are drawn
 
-        cardLayer.add(drawDeck);
+        globals.layers.card.add(drawDeck);
 
         /* eslint-disable object-curly-newline */
 
@@ -3855,7 +3732,7 @@ function HanabiUI(lobby, game) {
                 invertCards,
             });
 
-            cardLayer.add(playerHands[i]);
+            globals.layers.card.add(playerHands[i]);
 
             // Draw the faded shade that shows where the "new" side of the hand is
             // (but don't bother drawing it in Board Game Arena mode since
@@ -3908,7 +3785,7 @@ function HanabiUI(lobby, game) {
                 height: playerNamePos[nump][j].h * winH,
                 name: globals.playerNames[i],
             });
-            UILayer.add(nameFrames[i]);
+            globals.layers.UI.add(nameFrames[i]);
 
             // Draw the tooltips on the player names that show the time
             if (!globals.replay) {
@@ -3949,7 +3826,7 @@ function HanabiUI(lobby, game) {
                     },
                     shadowOpacity: 0.9,
                 });
-                UILayer.add(charIcon);
+                globals.layers.UI.add(charIcon);
 
                 /* eslint-disable no-loop-func */
                 charIcon.on('mousemove', function charIconMouseMove() {
@@ -4107,7 +3984,7 @@ function HanabiUI(lobby, game) {
         clueArea.add(submitClue);
         clueArea.hide();
 
-        UILayer.add(clueArea);
+        globals.layers.UI.add(clueArea);
 
         const noClueBoxValues = {
             x: 0.275,
@@ -4127,7 +4004,7 @@ function HanabiUI(lobby, game) {
             opacity: 0.5,
             visible: false,
         });
-        UILayer.add(noClueBox);
+        globals.layers.UI.add(noClueBox);
 
         const noClueLabelValues = {
             x: noClueBoxValues.x - 0.125,
@@ -4147,7 +4024,7 @@ function HanabiUI(lobby, game) {
             stroke: 'black',
             visible: false,
         });
-        UILayer.add(noClueLabel);
+        globals.layers.UI.add(noClueLabel);
 
         /*
             Draw the timer
@@ -4317,8 +4194,8 @@ function HanabiUI(lobby, game) {
             },
         });
         replayShuttle.on('dragend', () => {
-            cardLayer.draw();
-            UILayer.draw();
+            globals.layers.card.draw();
+            globals.layers.UI.draw();
         });
         replayArea.add(replayShuttle);
         ui.adjustReplayShuttle();
@@ -4444,7 +4321,7 @@ function HanabiUI(lobby, game) {
         replayArea.add(toggleSharedTurnButton);
 
         replayArea.hide();
-        UILayer.add(replayArea);
+        globals.layers.UI.add(replayArea);
 
         /*
             Keyboard shortcuts
@@ -4571,7 +4448,7 @@ function HanabiUI(lobby, game) {
 
         this.keyNavigation = (event) => {
             // Make sure that the editing note variable is not set
-            if (ui.editingNote !== null) {
+            if (notes.vars.editing !== null) {
                 return;
             }
 
@@ -4836,7 +4713,7 @@ Keyboard hotkeys:
             strokeWidth: 10,
             visible: false,
         });
-        UILayer.add(deckPlayAvailableLabel);
+        globals.layers.UI.add(deckPlayAvailableLabel);
 
         replayButton = new Button({
             x: 0.01 * winW,
@@ -4850,7 +4727,7 @@ Keyboard hotkeys:
             self.enterReplay(!globals.inReplay);
         });
 
-        UILayer.add(replayButton);
+        globals.layers.UI.add(replayButton);
 
         helpButton = new Button({
             x: 0.01 * winW,
@@ -4860,7 +4737,7 @@ Keyboard hotkeys:
             text: 'Help',
             visible: false, // Currently disabled in favor of a chat button
         });
-        UILayer.add(helpButton);
+        globals.layers.UI.add(helpButton);
         helpButton.on('click tap', () => {
             helpGroup.show();
             overback.show();
@@ -4883,7 +4760,7 @@ Keyboard hotkeys:
             height: 0.06 * winH,
             text: 'Chat',
         });
-        UILayer.add(chatButton);
+        globals.layers.UI.add(chatButton);
         chatButton.on('click tap', () => {
             globals.game.chat.toggle();
         });
@@ -4895,7 +4772,7 @@ Keyboard hotkeys:
             height: 0.05 * winH,
             text: 'Lobby',
         });
-        UILayer.add(lobbyButton);
+        globals.layers.UI.add(lobbyButton);
 
         lobbyButton.on('click tap', () => {
             lobbyButton.off('click tap');
@@ -4914,9 +4791,9 @@ Keyboard hotkeys:
 
         stage.add(bgLayer);
         stage.add(textLayer);
-        stage.add(UILayer);
+        stage.add(globals.layers.UI);
         stage.add(globals.layers.timer);
-        stage.add(cardLayer);
+        stage.add(globals.layers.card);
         stage.add(overLayer);
     };
 
@@ -4971,7 +4848,7 @@ Keyboard hotkeys:
 
         if (globals.inReplay) {
             this.adjustReplayShuttle();
-            UILayer.draw();
+            globals.layers.UI.draw();
         }
     };
 
@@ -4996,8 +4873,8 @@ Keyboard hotkeys:
             for (let i = 0; i < globals.deck.length; i++) {
                 globals.deck[i].setBareImage();
             }
-            UILayer.draw();
-            cardLayer.draw();
+            globals.layers.UI.draw();
+            globals.layers.card.draw();
         } else if (globals.inReplay && !enter) {
             this.performReplay(globals.replayMax, true);
             globals.inReplay = false;
@@ -5009,8 +4886,8 @@ Keyboard hotkeys:
             for (let i = 0; i < globals.deck.length; i++) {
                 globals.deck[i].setBareImage();
             }
-            UILayer.draw();
-            cardLayer.draw();
+            globals.layers.UI.draw();
+            globals.layers.card.draw();
         }
     };
 
@@ -5070,8 +4947,8 @@ Keyboard hotkeys:
         this.animateFast = false;
         msgLogGroup.refreshText();
         messagePrompt.refreshText();
-        cardLayer.draw();
-        UILayer.draw();
+        globals.layers.card.draw();
+        globals.layers.UI.draw();
     };
 
     this.replayAdvanced = function replayAdvanced() {
@@ -5081,11 +4958,11 @@ Keyboard hotkeys:
             this.performReplay(0);
         }
 
-        cardLayer.draw();
+        globals.layers.card.draw();
 
         // There's a bug on the emulator where the text doesn't show upon first
         // loading a game; doing this seems to fix it
-        UILayer.draw();
+        globals.layers.UI.draw();
     };
 
     this.showConnected = function showConnected(list) {
@@ -5097,7 +4974,7 @@ Keyboard hotkeys:
             nameFrames[i].setConnected(list[i]);
         }
 
-        UILayer.draw();
+        globals.layers.UI.draw();
     };
 
     function showLoading() {
@@ -5147,26 +5024,11 @@ Keyboard hotkeys:
 
     showLoading();
 
-    this.getNote = (cardOrder) => {
-        const note = notesWritten[cardOrder];
-        if (typeof note === 'undefined') {
-            return null;
-        }
-        return note;
-    };
-
-    this.setNote = function setNote(order, note) {
-        if (note === '') {
-            note = undefined;
-        }
-        notesWritten[order] = note;
-    };
-
     this.handleNotify = function handleNotify(data) {
         // If an action in the game happens,
         // mark to make the tooltip go away after the user has finished entering their note
-        if (ui.editingNote !== null) {
-            ui.editingNoteActionOccured = true;
+        if (notes.vars.editing !== null) {
+            notes.vars.actionOccured = true;
         }
 
         // Automatically disable any tooltips once an action in the game happens
@@ -5360,7 +5222,7 @@ Keyboard hotkeys:
             card.rankPips.hide();
 
             if (!this.animateFast) {
-                cardLayer.draw();
+                globals.layers.card.draw();
             }
         } else if (type === 'clue') {
             globals.cluesSpentPlusStrikes += 1;
@@ -5472,7 +5334,7 @@ Keyboard hotkeys:
             stats.updateEfficiency(0);
 
             if (!this.animateFast) {
-                UILayer.draw();
+                globals.layers.UI.draw();
             }
         } else if (type === 'stackDirections') {
             // Update the stack directions (only in "Up or Down" variants)
@@ -5534,7 +5396,7 @@ Keyboard hotkeys:
             }
 
             if (!this.animateFast) {
-                UILayer.draw();
+                globals.layers.UI.draw();
             }
 
             turnNumberLabel.setText(`${data.num + 1}`);
@@ -5576,7 +5438,7 @@ Keyboard hotkeys:
             }
 
             if (!this.animateFast) {
-                UILayer.draw();
+                globals.layers.UI.draw();
             }
         } else if (type === 'reorder') {
             const hand = playerHands[data.target];
@@ -5645,7 +5507,7 @@ Keyboard hotkeys:
             $('#tooltip-leader').tooltipster('instance').content(content);
         }
 
-        UILayer.batchDraw();
+        globals.layers.UI.batchDraw();
     };
 
     // Recieved by the client when spectating a game
@@ -5659,7 +5521,7 @@ Keyboard hotkeys:
     this.handleNote = (data) => {
         // Set the note
         // (which is the combined notes from all of the players, formatted by the server)
-        ui.setNote(data.order, data.notes);
+        notes.set(data.order, data.notes);
 
         // Draw (or hide) the note indicator
         const card = globals.deck[data.order];
@@ -5678,7 +5540,7 @@ Keyboard hotkeys:
             card.noteGiven.hide();
         }
 
-        cardLayer.batchDraw();
+        globals.layers.card.batchDraw();
     };
 
     // Recieved by the client when:
@@ -5702,7 +5564,7 @@ Keyboard hotkeys:
             const note = data.notes[order];
 
             // Set the note
-            ui.setNote(order, note);
+            notes.set(order, note);
 
             // The following code is mosly copied from the "handleNote" function
             // Draw (or hide) the note indicator
@@ -5722,7 +5584,7 @@ Keyboard hotkeys:
             }
         }
 
-        cardLayer.batchDraw();
+        globals.layers.card.batchDraw();
     };
 
     this.handleReplayLeader = function handleReplayLeader(data) {
@@ -5745,7 +5607,7 @@ Keyboard hotkeys:
         sharedReplayLeaderLabelPulse.play();
 
         toggleSharedTurnButton.show();
-        UILayer.draw();
+        globals.layers.UI.draw();
     };
 
     this.handleReplayTurn = function handleReplayTurn(data) {
@@ -5830,12 +5692,12 @@ Keyboard hotkeys:
             noClueLabel.show();
             noClueBox.show();
             if (!this.animateFast) {
-                UILayer.draw();
+                globals.layers.UI.draw();
             }
         }
 
         // We have to redraw the UI layer to avoid a bug with the clue UI
-        UILayer.draw();
+        globals.layers.UI.draw();
 
         if (globals.playerNames.length === 2) {
             // Default the clue recipient button to the only other player available
@@ -5975,7 +5837,7 @@ Keyboard hotkeys:
 
         messagePrompt.setMultiText(msg.text);
         if (!this.animateFast) {
-            UILayer.draw();
+            globals.layers.UI.draw();
             overLayer.draw();
         }
     };
@@ -6098,32 +5960,11 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
     }
 };
 
-HanabiUI.prototype.setBackend = function setBackend(backend) {
-    this.backend = backend;
-
-    this.sendMsg({
-        type: 'hello',
-        data: {},
-    });
-};
-
 HanabiUI.prototype.sendMsg = function sendMsg(msg) {
     const { type } = msg;
-    let { data } = msg;
-    if (typeof data === 'undefined') {
-        data = {};
-    }
-
-    if (globals.debug) {
-        console.log(`%cSent (UI) ${type}:`, 'color: green;');
-        console.log(data);
-    }
-    this.backend.emit(type, data);
+    const { data } = msg;
+    console.log(globals.lobby);
+    globals.lobby.conn.send(type, data);
 };
-
-function stripHTMLtags(input) {
-    const doc = new DOMParser().parseFromString(input, 'text/html');
-    return doc.body.textContent || '';
-}
 
 module.exports = HanabiUI;
