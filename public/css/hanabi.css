@@ -83,9 +83,8 @@ html, body, #page-wrapper {
 }
 
 body {
-    background-color: rgb(34, 79, 39);
-    /* This is the same color as the background image so that it won't show white while the image is loading */
-    background-image: url(../img/background2.jpg);
+    background-color: #00420f;
+    background-image: url(../img/dark-wood.png);
     background-repeat: repeat;
     background-attachment: fixed;
 }

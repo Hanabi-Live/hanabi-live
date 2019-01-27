@@ -118,11 +118,32 @@ const initCommands = () => {
         lobby.tables.draw();
     });
 
-    globals.conn.on('chat', chat.add);
+    globals.conn.on('chat', (data) => {
+        chat.add(data, true);
+        if (
+            data.room === 'game'
+            && globals.ui !== null
+            && !$('#game-chat-modal').is(':visible')
+        ) {
+            globals.chatUnread += 1;
+            globals.ui.updateChatLabel();
+        }
+    });
 
-    globals.conn.on('chatList', (dataArray) => {
-        for (const data of dataArray) {
-            chat.add(data);
+    // The "chatList" command is sent upon initial connection
+    // to get a list of past lobby chat messages
+    // It is also sent upon connecting to a game to get a list of past in-game chat messages
+    globals.conn.on('chatList', (data) => {
+        for (const line of data.list) {
+            chat.add(line);
+        }
+        if (
+            // If the UI is open, we assume that this is a list of in-game chat messages
+            globals.ui !== null
+            && !$('#game-chat-modal').is(':visible')
+        ) {
+            globals.chatUnread += data.unread;
+            globals.ui.updateChatLabel();
         }
     });
 

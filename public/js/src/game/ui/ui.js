@@ -234,7 +234,7 @@ function HanabiUI(lobby, game) {
         let clueValue;
         if (clueType === CLUE_TYPE.COLOR) {
             clueValue = variant.clueColors[msgClueValue];
-        } else { // Rank clue
+        } else if (clueType === CLUE_TYPE.RANK) {
             clueValue = msgClueValue;
         }
         return new Clue(clueType, clueValue);
@@ -1454,12 +1454,12 @@ function HanabiUI(lobby, game) {
         this.add(background);
 
         if (config.text) {
-            const text = new Kinetic.Text({
+            this.text = new FitText({
                 name: 'text',
                 x: 0,
-                y: 0.2 * h,
+                y: 0.25 * h,
                 width: w,
-                height: 0.6 * h,
+                height: 0.5 * h,
                 listening: false,
                 fontSize: 0.5 * h,
                 fontFamily: 'Verdana',
@@ -1468,9 +1468,10 @@ function HanabiUI(lobby, game) {
                 text: config.text,
             });
 
-            this.setText = display => text.setText(display);
+            this.setText = text => this.text.setText(text);
+            this.setFill = fill => this.text.setFill(fill);
 
-            this.add(text);
+            this.add(this.text);
         } else if (config.image) {
             const img = new Kinetic.Image({
                 name: 'image',
@@ -2728,7 +2729,6 @@ function HanabiUI(lobby, game) {
     let toggleSharedTurnButton; // Used in shared replays
     let lobbyButton;
     let helpButton;
-    let chatButton;
     let helpGroup;
     let msgLogGroup;
     let overback;
@@ -4753,15 +4753,15 @@ Keyboard hotkeys:
             });
         });
 
-        chatButton = new Button({
+        globals.elements.chatButton = new Button({
             x: 0.01 * winW,
             y: 0.87 * winH,
             width: 0.06 * winW,
             height: 0.06 * winH,
             text: 'Chat',
         });
-        globals.layers.UI.add(chatButton);
-        chatButton.on('click tap', () => {
+        globals.layers.UI.add(globals.elements.chatButton);
+        globals.elements.chatButton.on('click tap', () => {
             globals.game.chat.toggle();
         });
 
@@ -5965,6 +5965,15 @@ HanabiUI.prototype.sendMsg = function sendMsg(msg) {
     const { data } = msg;
     console.log(globals.lobby);
     globals.lobby.conn.send(type, data);
+};
+
+HanabiUI.prototype.updateChatLabel = function updateChatLabel() {
+    let text = 'Chat';
+    if (globals.lobby.chatUnread > 0) {
+        text += ` (${globals.lobby.chatUnread})`;
+    }
+    globals.elements.chatButton.setText(text);
+    globals.layers.UI.draw();
 };
 
 module.exports = HanabiUI;

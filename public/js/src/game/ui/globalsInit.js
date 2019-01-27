@@ -62,6 +62,7 @@ module.exports = () => {
     globals.elements = {
         paceNumberLabel: null,
         efficiencyNumberLabel: null,
+        chatButton: null,
         timer1: null,
         timer2: null,
     };
@@ -69,4 +70,7 @@ module.exports = () => {
         UI: null,
         timer: null,
     };
+
+    // Unread chat messages
+    globals.chatUnread = 0;
 };

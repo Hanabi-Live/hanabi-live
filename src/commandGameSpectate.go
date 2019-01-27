@@ -10,7 +10,9 @@
 
 package main
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func commandGameSpectate(s *Session, d *CommandData) {
 	/*
@@ -34,51 +36,43 @@ func commandGameSpectate(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are not already in the spectators object
-	for _, s2 := range g.Spectators {
-		if s2.UserID() == s.UserID() {
+	for _, sp := range g.Spectators {
+		if sp.ID == s.UserID() {
 			s.Warning("You are already spectating game " + strconv.Itoa(gameID) + ".")
 			return
 		}
 	}
 
-	// The logic for joining a shared replay is in a separate function for organizational purposes
-	// (users should see a "Spectate" button for shared replays)
-	if g.SharedReplay {
-		joinSharedReplay(s, g)
-		return
-	}
-
 	/*
-		Spectate
+		Spectate / Join Shared Replay
 	*/
 
-	log.Info(g.GetName() + "User \"" + s.Username() + "\" spectated.")
+	if !g.SharedReplay {
+		log.Info(g.GetName() + "User \"" + s.Username() + "\" spectated.")
+	} else {
+		log.Info(g.GetName() + "User \"" + s.Username() + "\" joined.")
+	}
 
 	// Add them to the spectators object
-	g.Spectators = append(g.Spectators, s)
-	notifyAllTable(g)    // Update the spectator list for the row in the lobby
-	g.NotifySpectators() // Update the in-game spectator list
-
-	// Set their status
-	s.Set("currentGame", gameID)
-	s.Set("status", "Spectating")
-	notifyAllUser(s)
-
-	// Send them a "gameStart" message
-	s.NotifyGameStart()
-}
-
-func joinSharedReplay(s *Session, g *Game) {
-	log.Info(g.GetName() + "User \"" + s.Username() + "\" joined.")
-
-	// Add them to the spectators object
-	g.Spectators = append(g.Spectators, s)
+	sp := &Spectator{
+		ID:    s.UserID(),
+		Name:  s.Username(),
+		Index: len(g.Spectators),
+		// We have not added this player to the slice yet, so this should be 0 initially
+		ChatReadIndex: 0,
+		Session:       s,
+	}
+	g.Spectators = append(g.Spectators, sp)
 	notifyAllTable(g)    // Update the spectator list for the row in the lobby
 	g.NotifySpectators() // Update the in-game spectator list
 
 	// Set their status
 	s.Set("currentGame", g.ID)
-	s.Set("status", "Shared Replay")
+	status := statusSpectating
+	if g.SharedReplay {
+		status = statusSharedReplay
+	}
+	s.Set("status", status)
 	notifyAllUser(s)
 
 	// Send them a "gameStart" message

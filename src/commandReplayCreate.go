@@ -27,7 +27,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 
 	// Set their status
 	s.Set("currentGame", gameID)
-	s.Set("status", "Replay")
+	s.Set("status", statusReplay)
 	notifyAllUser(s)
 
 	// Send them a "gameStart" message

@@ -38,12 +38,12 @@ func websocketDisconnect2(s *Session) {
 			if g.Running {
 				log.Info(g.GetName() + "Unattending player \"" + s.Username() + "\" since they disconnected.")
 				s.Set("currentGame", g.ID)
-				s.Set("status", "Playing")
+				s.Set("status", statusPlaying)
 				commandGameUnattend(s, nil)
 			} else {
 				log.Info(g.GetName() + "Ejecting player \"" + s.Username() + "\" from an unstarted game since they disconnected.")
 				s.Set("currentGame", g.ID)
-				s.Set("status", "Pre-Game")
+				s.Set("status", statusPregame)
 				commandGameLeave(s, nil)
 			}
 		}
@@ -53,7 +53,7 @@ func websocketDisconnect2(s *Session) {
 			log.Info(g.GetName() + "Ejecting spectator \"" + s.Username() + "\" since they disconnected.")
 			g.DisconSpectators[s.UserID()] = true
 			s.Set("currentGame", g.ID)
-			s.Set("status", "Spectating")
+			s.Set("status", statusSpectating)
 			commandGameUnattend(s, nil)
 		}
 	}

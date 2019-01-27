@@ -10,28 +10,42 @@ $(document).ready(() => {
     initResizableDiv('.resizable');
 
     $('#game-chat-modal-header-close').click(() => {
-        toggle();
+        hide();
     });
 });
 
-const toggle = () => {
+exports.toggle = () => {
     const modal = $('#game-chat-modal');
     if (modal.is(':visible')) {
-        modal.fadeOut(globals.fadeTime);
+        hide();
     } else {
-        modal.fadeIn(globals.fadeTime);
-        $('#game-chat-input').focus();
+        show();
     }
 };
-exports.toggle = toggle;
 
-exports.show = () => {
+const show = () => {
+    // Check to see if there are any uncurrently unread chat messages
+    if (globals.chatUnread !== 0) {
+        // If the user is opening the chat, then we assume that all of the chat messages are read
+        globals.chatUnread = 0;
+        globals.conn.send('chatRead'); // We need to notify the server that we have read everything
+        globals.ui.updateChatLabel(); // Reset the "Chat" UI button back to normal
+    }
+
     $('#game-chat-modal').fadeIn(globals.fadeTime);
-};
 
-exports.hide = () => {
+    // Scroll to the bottom of the chat
+    const chat = document.getElementById('game-chat-text');
+    chat.scrollTop = chat.scrollHeight;
+
+    $('#game-chat-input').focus();
+};
+exports.show = show;
+
+const hide = () => {
     $('#game-chat-modal').fadeOut(globals.fadeTime);
 };
+exports.hide = hide;
 
 /*
     Make draggable div

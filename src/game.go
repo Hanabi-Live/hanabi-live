@@ -17,7 +17,7 @@ type Game struct {
 	// but it can technically be any string at all
 	Options            *Options
 	Players            []*Player
-	Spectators         []*Session
+	Spectators         []*Spectator
 	DisconSpectators   map[int]bool
 	Running            bool
 	SharedReplay       bool
@@ -99,8 +99,8 @@ func (g *Game) GetSpectatorIndex(id int) int {
 		return -1
 	}
 
-	for i, s := range g.Spectators {
-		if s.UserID() == id {
+	for i, sp := range g.Spectators {
+		if sp.ID == id {
 			return i
 		}
 	}
@@ -262,9 +262,9 @@ func (g *Game) CheckIdle() {
 
 	// Boot all of the spectators, if any
 	for len(g.Spectators) > 0 {
-		s := g.Spectators[0]
+		s := g.Spectators[0].Session
 		s.Set("currentGame", g.ID)
-		s.Set("status", "Spectating")
+		s.Set("status", statusSpectating)
 		commandGameUnattend(s, nil)
 	}
 
@@ -290,14 +290,14 @@ func (g *Game) CheckIdle() {
 			Type: actionTypeIdleLimitReached,
 		}
 		s.Set("currentGame", g.ID)
-		s.Set("status", "Playing")
+		s.Set("status", statusPlaying)
 		commandAction(s, d)
 	} else {
 		// We need to end a game that hasn't started yet
 		// Force the owner to leave, which should subsequently eject everyone else
 		// (this will send everyone back to the main lobby screen)
 		s.Set("currentGame", g.ID)
-		s.Set("status", "Pre-Game")
+		s.Set("status", statusPregame)
 		commandGameLeave(s, nil)
 	}
 }

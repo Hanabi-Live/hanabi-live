@@ -56,6 +56,12 @@ func main() {
 	}
 	defer db.Close()
 
+	// Initialize the variants
+	variantsInit()
+
+	// Initialize "Detrimental Character Assignments"
+	characterInit()
+
 	// Initialize the word list
 	wordListPath := path.Join(projectPath, "src", "assets", "wordList.txt")
 	if v, err := ioutil.ReadFile(wordListPath); err != nil {
@@ -65,12 +71,6 @@ func main() {
 		wordListString := string(v)
 		wordList = strings.Split(wordListString, "\n")
 	}
-
-	// Initialize the variants
-	variantsInit()
-
-	// Initialize "Detrimental Character Assignments"
-	characterInit()
 
 	// Initialize catching Unix signals
 	signalInit()

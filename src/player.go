@@ -11,11 +11,12 @@ import (
 )
 
 type Player struct {
-	ID      int
-	Name    string
-	Index   int
-	Present bool
-	Stats   models.Stats
+	ID            int
+	Name          string
+	Index         int
+	ChatReadIndex int
+	Present       bool
+	Stats         models.Stats
 
 	Hand               []*Card
 	Time               time.Duration

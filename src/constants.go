@@ -5,7 +5,27 @@ import (
 )
 
 // iota starts at 0 and counts upwards
-// i.e. actionTypeClue = 0, actionTypePlay = 1, etc.
+// i.e. statusLobby = 0, statusPregame = 1, etc.
+
+const (
+	statusLobby = iota
+	statusPregame
+	statusPlaying
+	statusSpectating
+	statusReplay
+	statusSharedReplay
+)
+
+var (
+	status = []string{
+		"Lobby",
+		"Pre-Game",
+		"Playing",
+		"Spectating",
+		"Replay",
+		"Shared Replay",
+	}
+)
 
 const (
 	actionTypeClue = iota

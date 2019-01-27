@@ -70,12 +70,12 @@ func (s *Session) CurrentGame() int {
 	}
 }
 
-func (s *Session) Status() string {
+func (s *Session) Status() int {
 	if v, exists := s.Get("status"); !exists {
 		log.Error("Failed to get \"status\" from a session.")
-		return "Unknown"
+		return -1
 	} else {
-		return v.(string)
+		return v.(int)
 	}
 }
 
@@ -150,7 +150,7 @@ func (s *Session) NotifyUser(u *Session) {
 	s.Emit("user", &UserMessage{
 		ID:     u.UserID(),
 		Name:   u.Username(),
-		Status: u.Status(),
+		Status: status[u.Status()],
 	})
 }
 
@@ -187,8 +187,8 @@ func (s *Session) NotifyTable(g *Game) {
 	}
 
 	spectatorNames := make([]string, 0)
-	for _, s2 := range g.Spectators {
-		spectatorNames = append(spectatorNames, s2.Username())
+	for _, sp := range g.Spectators {
+		spectatorNames = append(spectatorNames, sp.Name)
 	}
 	spectators := strings.Join(spectatorNames, ", ")
 	if spectators == "" {
@@ -247,12 +247,8 @@ func (s *Session) NotifyGameStart() {
 	type GameStartMessage struct {
 		Replay bool `json:"replay"`
 	}
-	replay := false
-	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
-		replay = true
-	}
 	s.Emit("gameStart", &GameStartMessage{
-		Replay: replay,
+		Replay: s.Status() == statusReplay || s.Status() == statusSharedReplay,
 	})
 }
 
@@ -310,8 +306,8 @@ func (s *Session) NotifyAction(g *Game) {
 func (s *Session) NotifySpectators(g *Game) {
 	// Build an array with the names of all of the spectators
 	names := make([]string, 0)
-	for _, s := range g.Spectators {
-		names = append(names, s.Username())
+	for _, sp := range g.Spectators {
+		names = append(names, sp.Name)
 	}
 
 	type SpectatorsMessage struct {
@@ -326,9 +322,9 @@ func (s *Session) NotifyReplayLeader(g *Game) {
 	// Get the username of the game owner
 	// (the "Owner" field is used to store the leader of the shared replay)
 	name := ""
-	for _, s := range g.Spectators {
-		if s.UserID() == g.Owner {
-			name = s.Username()
+	for _, sp := range g.Spectators {
+		if sp.ID == g.Owner {
+			name = sp.Name
 			break
 		}
 	}

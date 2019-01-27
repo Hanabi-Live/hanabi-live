@@ -27,6 +27,7 @@ exports.show = () => {
     $('#game-chat-text').html('');
 
     globals.ui = new ui(globals, exports); // eslint-disable-line new-cap
+    globals.chatUnread = 0;
     globals.conn.send('hello');
 };
 
@@ -45,7 +46,7 @@ exports.hide = () => {
     // Make sure that there are not any game-related tooltips showing
     misc.closeAllTooltips();
 
-    // Scroll to the bottom of the lobby
+    // Scroll to the bottom of the chat
     const chat = document.getElementById('lobby-chat-text');
     chat.scrollTop = chat.scrollHeight;
 };

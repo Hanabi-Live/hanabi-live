@@ -57,7 +57,7 @@ func commandGameLeave(s *Session, d *CommandData) {
 
 	// Set their status
 	s.Set("currentGame", -1)
-	s.Set("status", "Lobby")
+	s.Set("status", statusLobby)
 	notifyAllUser(s)
 
 	// Make the client switch screens to show the base lobby

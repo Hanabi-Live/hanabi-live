@@ -4,7 +4,7 @@
 	{
 		msg: 'hi',
 		room: 'lobby',
-		// Room can also be 'game'
+		// Room can also be "game"
 	}
 */
 
@@ -171,10 +171,14 @@ func commandChatGame(s *Session, d *CommandData) {
 	// Send it to all of the players and spectators
 	if !g.SharedReplay {
 		for _, p := range g.Players {
-			p.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
+			if p.Present {
+				p.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
+				p.ChatReadIndex = len(g.Chat)
+			}
 		}
 	}
-	for _, s2 := range g.Spectators {
-		s2.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
+	for _, sp := range g.Spectators {
+		sp.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
+		sp.ChatReadIndex = len(g.Chat)
 	}
 }

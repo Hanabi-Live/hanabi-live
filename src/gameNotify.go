@@ -136,8 +136,8 @@ func (g *Game) NotifyConnected() {
 	}
 
 	// Also send it to the spectators
-	for _, s := range g.Spectators {
-		s.Emit("connected", data)
+	for _, sp := range g.Spectators {
+		sp.Session.Emit("connected", data)
 	}
 }
 
@@ -199,8 +199,8 @@ func (g *Game) NotifyAction() {
 	}
 
 	// Also send the spectators an update
-	for _, s := range g.Spectators {
-		s.NotifyGameAction(a, g, nil)
+	for _, sp := range g.Spectators {
+		sp.Session.NotifyGameAction(a, g, nil)
 	}
 }
 
@@ -217,8 +217,8 @@ func (g *Game) NotifySpectators() {
 		}
 	}
 
-	for _, s := range g.Spectators {
-		s.NotifySpectators(g)
+	for _, sp := range g.Spectators {
+		sp.Session.NotifySpectators(g)
 	}
 }
 
@@ -231,8 +231,8 @@ func (g *Game) NotifyTime() {
 		p.Session.NotifyClock(g)
 	}
 
-	for _, s := range g.Spectators {
-		s.NotifyClock(g)
+	for _, sp := range g.Spectators {
+		sp.Session.NotifyClock(g)
 	}
 }
 
@@ -247,8 +247,8 @@ func (g *Game) NotifySound() {
 		p.Session.NotifySound(g, i)
 	}
 
-	for _, s := range g.Spectators {
-		s.NotifySound(g, -1)
+	for _, sp := range g.Spectators {
+		sp.Session.NotifySound(g, -1)
 	}
 }
 
@@ -271,8 +271,8 @@ func (g *Game) NotifyBoot() {
 		}
 	}
 
-	for _, s := range g.Spectators {
-		s.Emit("notify", msg)
+	for _, sp := range g.Spectators {
+		sp.Session.Emit("notify", msg)
 	}
 }
 
@@ -292,7 +292,7 @@ func (g *Game) NotifySpectatorsNote(order int) {
 		Notes: notes,
 	}
 
-	for _, s := range g.Spectators {
-		s.Emit("note", data)
+	for _, sp := range g.Spectators {
+		sp.Session.Emit("note", data)
 	}
 }

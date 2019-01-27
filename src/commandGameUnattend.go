@@ -12,13 +12,13 @@ import (
 func commandGameUnattend(s *Session, d *CommandData) {
 	// Set their status
 	oldStatus := s.Status()
-	s.Set("status", "Lobby")
+	s.Set("status", statusLobby)
 	gameID := s.CurrentGame()
 	s.Set("currentGame", -1)
 	notifyAllUser(s)
 
 	// Check to see if they are in a (solo) replay
-	if oldStatus == "Replay" {
+	if oldStatus == statusReplay {
 		return
 	}
 
@@ -42,7 +42,7 @@ func commandGameUnattend(s *Session, d *CommandData) {
 	}
 
 	// Check to see if they are a spectator
-	if oldStatus == "Spectating" || oldStatus == "Shared Replay" {
+	if oldStatus == statusSpectating || oldStatus == statusSharedReplay {
 		// Check to see if they are in the spectators list
 		i := g.GetSpectatorIndex(s.UserID())
 		if i == -1 {

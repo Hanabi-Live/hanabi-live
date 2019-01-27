@@ -75,6 +75,7 @@ func commandInit() {
 	commandMap["gameAbandon"] = commandGameAbandon
 	commandMap["gameSpectate"] = commandGameSpectate
 	commandMap["chat"] = commandChat
+	commandMap["chatRead"] = commandChatRead
 	commandMap["getName"] = commandGetName
 	commandMap["historyDetails"] = commandHistoryDetails
 	commandMap["historyGetAll"] = commandHistoryGetAll

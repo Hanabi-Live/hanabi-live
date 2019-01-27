@@ -46,8 +46,8 @@ func debug2() {
 			log.Debug("    [no players]")
 		}
 		log.Debug("  Spectators:")
-		for j, s := range g.Spectators { // This is a []*Session
-			log.Debug("    " + strconv.Itoa(j) + " - User ID: " + strconv.Itoa(s.UserID()) + ", Username: " + s.Username())
+		for j, sp := range g.Spectators { // This is a []*Session
+			log.Debug("    " + strconv.Itoa(j) + " - User ID: " + strconv.Itoa(sp.ID) + ", Username: " + sp.Name)
 		}
 		if len(g.Spectators) == 0 {
 			log.Debug("    [no spectators]")
@@ -75,7 +75,7 @@ func debug2() {
 		log.Debug(
 			"  User ID: " + strconv.Itoa(i) + ", " +
 				"Username: " + s2.Username() + ", " +
-				"Status: " + s2.Status() + ", " +
+				"Status: " + strconv.Itoa(s2.Status()) + ", " +
 				"Current game: " + strconv.Itoa(s2.CurrentGame()),
 		)
 	}

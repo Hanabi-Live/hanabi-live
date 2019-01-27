@@ -213,6 +213,11 @@ func chatFillChannels(msg string) string {
 	return msg
 }
 
+type ChatListMessage struct {
+	List   []*ChatMessage `json:"list"`
+	Unread int            `json:"unread"`
+}
+
 func chatSendPastFromDatabase(s *Session, room string, count int) {
 	var rawMsgs []models.ChatMessage
 	if v, err := db.ChatLog.Get(room, count); err != nil {
@@ -242,10 +247,13 @@ func chatSendPastFromDatabase(s *Session, room string, count int) {
 		msg := chatMakeMessage(rawMsg.Message, rawMsg.Name, discord, server, rawMsg.Datetime, room)
 		msgs = append(msgs, msg)
 	}
-	s.Emit("chatList", msgs)
+	s.Emit("chatList", &ChatListMessage{
+		List:   msgs,
+		Unread: 0, // This is only used for in-game chat
+	})
 }
 
-func chatSendPastFromGame(s *Session, g *Game) {
+func chatSendPastFromGame(s *Session, g *Game, readIndex int) {
 	chatList := make([]*ChatMessage, 0)
 	for i, gcm := range g.Chat {
 		// Only send the first 200 messages to prevent clients from becoming overloaded
@@ -258,5 +266,8 @@ func chatSendPastFromGame(s *Session, g *Game) {
 		cm := chatMakeMessage(gcm.Msg, gcm.Username, false, gcm.Server, gcm.Datetime, "game")
 		chatList = append(chatList, cm)
 	}
-	s.Emit("chatList", chatList)
+	s.Emit("chatList", &ChatListMessage{
+		List:   chatList,
+		Unread: len(g.Chat) - readIndex,
+	})
 }

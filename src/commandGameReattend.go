@@ -42,8 +42,8 @@ func commandGameReattend(s *Session, d *CommandData) {
 
 	// Set their "present" variable back to true, which will remove the "AWAY" if the game has not started yet
 	// (if the game is running, this is handled in the "commandReady()" function)
+	p := g.Players[i]
 	if !g.Running {
-		p := g.Players[i]
 		p.Present = true
 		g.NotifyPlayerChange()
 	}
@@ -51,9 +51,9 @@ func commandGameReattend(s *Session, d *CommandData) {
 	// Set their status
 	s.Set("currentGame", gameID)
 	if g.Running {
-		s.Set("status", "Playing")
+		s.Set("status", statusPlaying)
 	} else {
-		s.Set("status", "Pre-Game")
+		s.Set("status", statusPregame)
 	}
 	notifyAllUser(s)
 
@@ -68,7 +68,7 @@ func commandGameReattend(s *Session, d *CommandData) {
 	// Send them the chat history for this game
 	// (if the game is running, this is handled in the "commandReady()" function)
 	if !g.Running {
-		chatSendPastFromGame(s, g)
+		chatSendPastFromGame(s, g, p.ChatReadIndex)
 	}
 
 	if g.Running {

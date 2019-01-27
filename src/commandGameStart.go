@@ -290,7 +290,6 @@ func commandGameStart(s *Session, d *CommandData) {
 	characterGenerate(g)
 
 	log.Info(g.GetName()+"Using seed:", g.Seed)
-	log.Info(g.GetName()+"Timed:", g.Options.Timed)
 
 	// Log the deal (so that it can be distributed to others if necessary)
 	log.Info("--------------------------------------------------")
@@ -308,9 +307,15 @@ func commandGameStart(s *Session, d *CommandData) {
 	}
 
 	// Initialize all of the players to not being present
+	// This is so that we don't send them unnecessary messages during the game initialization
 	// (we will set them back to present once they send the "ready" message)
+	listOfAwayPlayers := make([]int, 0)
 	for _, p := range g.Players {
-		p.Present = false
+		if p.Present {
+			p.Present = false
+		} else {
+			listOfAwayPlayers = append(listOfAwayPlayers, p.ID)
+		}
 	}
 
 	// Deal the cards
@@ -324,10 +329,7 @@ func commandGameStart(s *Session, d *CommandData) {
 		}
 	}
 
-	// Send messages about the current status
-	// (the client already knows that the game starts with 8 clues and a score of 0;
-	// however, sending this message ensures that it will draw the red border
-	// around the discard pile to indicate that discarding is not possible)
+	// Record the initial status of the game
 	g.NotifyStatus(false) // The argument is "doubleDiscard"
 
 	// Show who goes first
@@ -339,12 +341,15 @@ func commandGameStart(s *Session, d *CommandData) {
 	})
 	log.Info(g.GetName() + text)
 
-	// Send a message about the current turn
+	// Record a message about the first turn
 	g.NotifyTurn()
 
 	// Send a "gameStart" message to everyone in the game
 	for _, p := range g.Players {
-		p.Session.NotifyGameStart()
+		// If a player is back in the lobby, then don't automatically force them into the game
+		if !intInSlice(p.ID, listOfAwayPlayers) {
+			p.Session.NotifyGameStart()
+		}
 	}
 
 	// Let everyone know that the game has started, which will turn the
@@ -353,7 +358,7 @@ func commandGameStart(s *Session, d *CommandData) {
 
 	// Set the status for all of the users in the game
 	for _, p := range g.Players {
-		p.Session.Set("status", "Playing")
+		p.Session.Set("status", statusPlaying)
 		notifyAllUser(p.Session)
 	}
 

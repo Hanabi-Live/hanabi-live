@@ -89,10 +89,11 @@ func (g *Game) End() {
 
 	// Reset the player's current game and status
 	// (this is needed in case the game ends due to idleness;
-	// they will be manually set to having a status of "Shared Replay" later once the game is converted)
+	// they will be manually set to having a "Shared Replay" status later
+	// after the game is converted)
 	for _, p := range g.Players {
 		p.Session.Set("currentGame", -1)
-		p.Session.Set("status", "Lobby")
+		p.Session.Set("status", statusLobby)
 		notifyAllUser(p.Session)
 	}
 
@@ -289,7 +290,15 @@ func (g *Game) End() {
 			continue
 		}
 
-		g.Spectators = append(g.Spectators, p.Session)
+		// Add the new spectator
+		sp := &Spectator{
+			ID:            p.ID,
+			Name:          p.Name,
+			Index:         len(g.Spectators),
+			ChatReadIndex: len(g.Chat),
+			Session:       p.Session,
+		}
+		g.Spectators = append(g.Spectators, sp)
 		log.Info("Converted " + p.Name + " to a spectator.")
 	}
 
@@ -302,8 +311,8 @@ func (g *Game) End() {
 	// If the owner of the game is not present, then make someone else the shared replay leader
 	if ownerOffline {
 		// Default to making the first spectator the shared replay leader
-		g.Owner = g.Spectators[0].UserID()
-		log.Info("Set the new leader to be:", g.Spectators[0].Username())
+		g.Owner = g.Spectators[0].ID
+		log.Info("Set the new leader to be:", g.Spectators[0].Name)
 	}
 
 	// In a shared replay, we don't want any of the player names to be red,
@@ -314,17 +323,17 @@ func (g *Game) End() {
 	}
 	g.NotifyConnected()
 
-	for _, s := range g.Spectators {
+	for _, sp := range g.Spectators {
 		// Reset everyone's status (both players and spectators are now spectators)
-		s.Set("currentGame", g.ID)
-		s.Set("status", "Shared Replay")
-		notifyAllUser(s)
+		sp.Session.Set("currentGame", g.ID)
+		sp.Session.Set("status", statusSharedReplay)
+		notifyAllUser(sp.Session)
 
 		// Activate the Replay Leader label
-		s.NotifyReplayLeader(g)
+		sp.Session.NotifyReplayLeader(g)
 
 		// Send them the notes from all players
-		s.NotifyAllNotes(notes)
+		sp.Session.NotifyAllNotes(notes)
 	}
 
 	notifyAllTable(g)    // Update the spectator list for the row in the lobby

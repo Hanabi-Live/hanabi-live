@@ -20,7 +20,7 @@ func commandReady(s *Session, d *CommandData) {
 	// Validate that the game exists
 	gameID := s.CurrentGame()
 	var g *Game
-	if s.Status() != "Replay" {
+	if s.Status() != statusReplay {
 		if v, ok := games[gameID]; !ok {
 			s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
 			return
@@ -42,7 +42,7 @@ func commandReady(s *Session, d *CommandData) {
 	i := g.GetPlayerIndex(s.UserID())
 
 	var actions []interface{}
-	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
+	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
 		var actionStrings []string
 		if v, err := db.GameActions.GetAll(gameID); err != nil {
 			log.Error("Failed to get the actions from the database for game "+strconv.Itoa(gameID)+":", err)
@@ -67,7 +67,7 @@ func commandReady(s *Session, d *CommandData) {
 	}
 
 	notes := make([]models.PlayerNote, 0)
-	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
+	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
 		if v, err := db.Games.GetNotes(gameID); err != nil {
 			log.Error("Failed to get the notes from the database for game "+strconv.Itoa(gameID)+":", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")
@@ -108,7 +108,7 @@ func commandReady(s *Session, d *CommandData) {
 	s.Emit("notifyList", &scrubbedActions)
 
 	// If it is their turn, send an "action" message
-	if s.Status() != "Replay" && s.Status() != "Shared Replay" && g.ActivePlayer == i {
+	if s.Status() != statusReplay && s.Status() != statusSharedReplay && g.ActivePlayer == i {
 		s.NotifyAction(g)
 	}
 
@@ -117,7 +117,7 @@ func commandReady(s *Session, d *CommandData) {
 	s.Emit("advanced", nil)
 
 	// Check if the game is still in progress
-	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
+	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
 		// Since the game is over, send them the notes from everyone in the game
 		s.NotifyAllNotes(notes)
 	} else {
@@ -149,16 +149,22 @@ func commandReady(s *Session, d *CommandData) {
 	}
 
 	// Send them the number of spectators
-	if s.Status() != "Replay" {
+	if s.Status() != statusReplay {
 		s.NotifySpectators(g)
 	}
 
 	// Send them the chat history for this game
-	if s.Status() != "Replay" {
-		chatSendPastFromGame(s, g)
+	if s.Status() != statusReplay {
+		var readIndex int
+		if s.Status() == statusPlaying {
+			readIndex = g.Players[i].ChatReadIndex
+		} else {
+			readIndex = g.Spectators[i].ChatReadIndex
+		}
+		chatSendPastFromGame(s, g, readIndex)
 	}
 
-	if s.Status() == "Shared Replay" {
+	if s.Status() == statusSharedReplay {
 		// Enable the replay controls for the leader of the review
 		s.NotifyReplayLeader(g)
 

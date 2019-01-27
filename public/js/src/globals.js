@@ -54,6 +54,8 @@ const globals = {
     ui: null, // This contains UI variables and objects, initialized in "game/init.js"
     */
     ui: null, // This contains the HanabiUI object (legacy)
+
+    chatUnread: 0, // Used to keep track of how many in-game chat messages are currently unread
 };
 module.exports = globals;
 

@@ -22,7 +22,7 @@ import (
 func commandHello(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
-	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
+	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
 		var variantID int
 		if v, err := db.Games.GetVariant(gameID); err != nil {
 			log.Error("Failed to get the variant from the database for game "+strconv.Itoa(gameID)+":", err)
@@ -106,20 +106,6 @@ func commandHello(s *Session, d *CommandData) {
 	// If this is a replay of a game they were not in (or if they are spectating),
 	// the above if statement will never be reached, and they will be in seat 0
 
-	// Find out their status
-	spectating := false
-	if s.Status() == "Spectating" {
-		spectating = true
-	}
-	replay := false
-	if s.Status() == "Replay" || s.Status() == "Shared Replay" {
-		replay = true
-	}
-	sharedReplay := false
-	if s.Status() == "Shared Replay" {
-		sharedReplay = true
-	}
-
 	// Give them an "init" message
 	type InitMessage struct {
 		// Game settings
@@ -142,9 +128,9 @@ func commandHello(s *Session, d *CommandData) {
 		Names:        names,
 		Variant:      g.Options.Variant,
 		Seat:         seat,
-		Spectating:   spectating,
-		Replay:       replay,
-		SharedReplay: sharedReplay,
+		Spectating:   s.Status() == statusSpectating,
+		Replay:       s.Status() == statusReplay || s.Status() == statusSharedReplay,
+		SharedReplay: s.Status() == statusSharedReplay,
 
 		// Optional settings
 		Timed:                g.Options.Timed,

@@ -73,7 +73,7 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 			Variant: variantsID[variantID],
 		},
 		Players:            players,
-		Spectators:         make([]*Session, 0),
+		Spectators:         make([]*Spectator, 0),
 		DisconSpectators:   make(map[int]bool),
 		Running:            true,
 		SharedReplay:       true,
@@ -87,6 +87,6 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 	notifyAllTable(g)
 
 	// Join the user to the new table
-	// (in the "commandGameSpectate.go" file)
-	joinSharedReplay(s, g)
+	d.ID = gameID
+	commandGameSpectate(s, d)
 }

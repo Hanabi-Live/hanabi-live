@@ -22,6 +22,15 @@ func getRandom(min int, max int) int {
 	return rand.Intn(max-min) + min
 }
 
+func intInSlice(a int, slice []int) bool {
+	for _, b := range slice {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 func stringInSlice(a string, slice []string) bool {
 	for _, b := range slice {
 		if b == a {

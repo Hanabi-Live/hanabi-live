@@ -105,7 +105,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 			CharacterAssignments: d.CharacterAssignments,
 		},
 		Players:            make([]*Player, 0),
-		Spectators:         make([]*Session, 0),
+		Spectators:         make([]*Spectator, 0),
 		DisconSpectators:   make(map[int]bool),
 		Clues:              maxClues,
 		DatetimeCreated:    time.Now(),
