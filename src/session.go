@@ -150,7 +150,7 @@ func (s *Session) NotifyUser(u *Session) {
 	s.Emit("user", &UserMessage{
 		ID:     u.UserID(),
 		Name:   u.Username(),
-		Status: status[u.Status()],
+		Status: status[u.Status()], // Status declarations are in the "constants.go" file
 	})
 }
 

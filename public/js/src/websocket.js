@@ -131,8 +131,8 @@ const initCommands = () => {
     });
 
     // The "chatList" command is sent upon initial connection
-    // to get a list of past lobby chat messages
-    // It is also sent upon connecting to a game to get a list of past in-game chat messages
+    // to give the client a list of past lobby chat messages
+    // It is also sent upon connecting to a game to give a list of past in-game chat messages
     globals.conn.on('chatList', (data) => {
         for (const line of data.list) {
             chat.add(line);

@@ -1454,10 +1454,10 @@ function HanabiUI(lobby, game) {
         this.add(background);
 
         if (config.text) {
-            this.text = new FitText({
+            const text = new FitText({
                 name: 'text',
                 x: 0,
-                y: 0.25 * h,
+                y: 0.275 * h,
                 width: w,
                 height: 0.5 * h,
                 listening: false,
@@ -1468,10 +1468,10 @@ function HanabiUI(lobby, game) {
                 text: config.text,
             });
 
-            this.setText = text => this.text.setText(text);
-            this.setFill = fill => this.text.setFill(fill);
+            this.setText = newText => text.setText(newText);
+            this.setFill = newFill => text.setFill(newFill);
 
-            this.add(this.text);
+            this.add(text);
         } else if (config.image) {
             const img = new Kinetic.Image({
                 name: 'image',
@@ -1563,9 +1563,9 @@ function HanabiUI(lobby, game) {
 
         const text = new Kinetic.Text({
             x: 0,
-            y: 0.2 * h,
+            y: 0.275 * h, // 0.25 is too high for some reason
             width: w,
-            height: 0.6 * h,
+            height: 0.5 * h,
             listening: false,
             fontSize: 0.5 * h,
             fontFamily: 'Verdana',
@@ -2799,7 +2799,7 @@ function HanabiUI(lobby, game) {
             width: 0.19 * winW,
             height: 0.39 * winH,
             stroke: '#df1c2d',
-            strokeWidth: 0.007 * winW,
+            strokeWidth: 0.005 * winW,
             cornerRadius: 0.01 * winW,
             visible: false,
         });
@@ -3924,7 +3924,7 @@ function HanabiUI(lobby, game) {
             x += 0.0875 * winW;
         }
 
-        // Rank buttons
+        // Rank buttons / number buttons
         let numRanks = 5;
         if (globals.variant.name.startsWith('Multi-Fives')) {
             numRanks = 4;
@@ -3974,6 +3974,7 @@ function HanabiUI(lobby, game) {
             }
         }
 
+        // The "Give Clue" button
         submitClue = new Button({
             x: 0.183 * winW,
             y: 0.172 * winH,
@@ -4468,7 +4469,7 @@ function HanabiUI(lobby, game) {
                 return;
             }
             if (event.ctrlKey && event.key === 'Enter') { // Ctrl + Enter
-                // Click on the 'Give Clue' button
+                // Click on the "Give Clue" button
                 submitClue.dispatchEvent(new MouseEvent('click'));
                 return;
             }
