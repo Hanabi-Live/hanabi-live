@@ -15,7 +15,7 @@ exports.updatePace = () => {
 
     // Formula derived by Florrat;
     // a strategical estimate of "End-Game" that tries to account for the number of players
-    const endGameThreshold2 = adjustedScorePlusDeck + Math.floor(globals.playerNames.length / 2); // eslint-disable-line
+    const endGameThreshold2 = adjustedScorePlusDeck + Math.floor(globals.playerNames.length / 2);
 
     // Formula derived by Hyphen-ated;
     // a more conservative estimate of "End-Game" that does not account for
@@ -59,11 +59,14 @@ exports.updateEfficiency = (cardsGottenDelta) => {
     const efficiency = (globals.cardsGotten / globals.cluesSpentPlusStrikes).toFixed(2);
     // Round it to 2 decimal places
 
-    // Calculate the minimum amount of efficiency needed in order to win this variant
-    // First, calculate starting pace with the following formula:
-    // total cards in the deck -
-    // ((number of cards in a player's hand - 1) * number of players) -
-    // (5 * number of suits)
+    /*
+        Calculate the minimum amount of efficiency needed in order to win this variant
+        First, calculate the starting pace with the following formula:
+            total cards in the deck -
+            ((number of cards in a player's hand - 1) * number of players) -
+            (5 * number of suits)
+        https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
+    */
     let totalCardsInTheDeck = 0;
     for (const suit of globals.variant.suits) {
         totalCardsInTheDeck += 10;
@@ -83,17 +86,26 @@ exports.updateEfficiency = (cardsGottenDelta) => {
     let startingPace = totalCardsInTheDeck;
     startingPace -= (cardsInHand - 1) * numberOfPlayers;
     startingPace -= 5 * globals.variant.suits.length;
-    if (globals.variant.name.startsWith('Clue Starved')) {
-        startingPace = Math.floor(startingPace / 2);
-    }
 
-    // Second, use the pace to calculate the efficiency required with the following formula:
-    // (5 * number of suits) / (pace + number of suits + 7 (- 1 if a 5/6-player game))
+    /*
+        Second, use the pace to calculate the minimum efficiency required to win the game
+        with the following formula:
+            (5 * number of suits) /
+            (8 + floor((starting pace + number of suits - unusable clues) / discards per clue))
+        https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
+    */
     const minEfficiencyNumerator = 5 * globals.variant.suits.length;
-    let minEfficiencyDenominator = startingPace + globals.variant.suits.length + 7;
-    if (numberOfPlayers === 5 || numberOfPlayers === 6) {
-        minEfficiencyDenominator -= 1;
+    let unusableClues = 1;
+    if (numberOfPlayers >= 5) {
+        unusableClues = 2;
     }
+    let discardsPerClue = 1;
+    if (globals.variant.name.startsWith('Clue Starved')) {
+        discardsPerClue = 2;
+    }
+    const minEfficiencyDenominator = 8 + Math.floor(
+        (startingPace + globals.variant.suits.length - unusableClues) / discardsPerClue,
+    );
     const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);
     // Round it to 2 decimal places
 
