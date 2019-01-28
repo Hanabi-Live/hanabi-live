@@ -83,6 +83,9 @@ exports.updateEfficiency = (cardsGottenDelta) => {
     let startingPace = totalCardsInTheDeck;
     startingPace -= (cardsInHand - 1) * numberOfPlayers;
     startingPace -= 5 * globals.variant.suits.length;
+    if (globals.variant.name.startsWith('Clue Starved')) {
+        startingPace = Math.floor(startingPace / 2);
+    }
 
     // Second, use the pace to calculate the efficiency required with the following formula:
     // (5 * number of suits) / (pace + number of suits + 7 (- 1 if a 5/6-player game))
