@@ -404,5 +404,8 @@ func (g *Game) CopyActionsFromDatabase(s *Session) bool {
 		}
 	}
 
-	return true
+	log.Error("Failed to find the intended turn before reaching the end of game " +
+		strconv.Itoa(g.Options.SetReplay) + ".")
+	s.Error("Failed to initialize the game. Please contact an administrator.")
+	return false
 }
