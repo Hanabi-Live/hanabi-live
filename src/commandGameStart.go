@@ -373,8 +373,6 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 }
 
 func (g *Game) CopyActionsFromDatabase(s *Session) bool {
-	actions := make([]interface{}, 0)
-
 	var actionStrings []string
 	if v, err := db.GameActions.GetAll(g.Options.SetReplay); err != nil {
 		log.Error("Failed to get the actions from the database for game "+
@@ -394,10 +392,12 @@ func (g *Game) CopyActionsFromDatabase(s *Session) bool {
 			return false
 		}
 
-		actions = append(actions, action)
+		g.Actions = append(g.Actions, action)
 
 		// Stop if we have reached the intended turn
-		if actionTurn, ok := action.(ActionTurn); ok {
+		log.Debug("APPENDED:", len(g.Actions), action)
+		if actionTurn, ok := action.(*ActionTurn); ok {
+			log.Debug("GETTING HERE:", actionTurn)
 			if actionTurn.Num == g.Options.SetReplayTurn {
 				return true
 			}

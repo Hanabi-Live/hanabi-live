@@ -138,6 +138,15 @@ func commandGameCreate(s *Session, d *CommandData) {
 				return
 			}
 
+			// Set the variant of the game to be the same as the one in the database
+			if v, err := db.Games.GetVariant(setReplay); err != nil {
+				log.Error("Failed to get the variant from the database for game "+strconv.Itoa(setReplay)+":", err)
+				s.Error("Failed to initialize the game. Please contact an administrator.")
+				return
+			} else {
+				d.Variant = variantsID[v]
+			}
+
 		} else if strings.HasPrefix(d.Name, "!deal") {
 			// !deal - Play a specific deal read from a text file
 			var dealRegExp *regexp.Regexp
