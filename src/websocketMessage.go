@@ -8,10 +8,9 @@ import (
 )
 
 /*
-	On top of the WebSocket protocol, the client and the server communicate
-	using a specific format based on the Golem WebSocket framework protocol.
-	First, the name of the command is sent, then a space, then the JSON of the
-	data.
+	On top of the WebSocket protocol, the client and the server communicate using a specific format
+	based on the Golem WebSocket framework protocol. First, the name of the command is sent, then a
+	space, then the JSON of the data.
 
 	Example:
 		gameJoin {"gameID":1}
@@ -47,12 +46,8 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	// Unmarshal the JSON (this code is taken from Golem)
 	var d *CommandData
 	if err := json.Unmarshal(jsonData, &d); err != nil {
-		log.Error(
-			"User \"" + s.Username() +
-				"\" sent an command of \"" +
-				command + "\" with invalid data: " +
-				string(jsonData),
-		)
+		log.Error("User \"" + s.Username() + "\" sent an command of " +
+			"\"" + command + "\" with invalid data: " + string(jsonData))
 		return
 	}
 

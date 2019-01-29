@@ -85,18 +85,14 @@ func httpWS(c *gin.Context) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else if !exists {
-		log.Error(
-			"User \"" + username + "\" does not exist in the database; " +
-				"they are trying to establish a WebSocket connection with an orphaned account.",
-		)
+		log.Error("User \"" + username + "\" does not exist in the database; " +
+			"they are trying to establish a WebSocket connection with an orphaned account.")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	} else if userID != user.ID {
-		log.Error(
-			"User \"" + username + "\" exists in the database, " +
-				"but they are trying to establish a WebSocket connection with an account ID that" +
-				"does not match the ID in the database.",
-		)
+		log.Error("User \"" + username + "\" exists in the database, " +
+			"but they are trying to establish a WebSocket connection with an account ID that" +
+			"does not match the ID in the database.")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}

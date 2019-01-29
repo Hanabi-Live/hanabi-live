@@ -395,9 +395,8 @@ func (g *Game) CopyActionsFromDatabase(s *Session) bool {
 		g.Actions = append(g.Actions, action)
 
 		// Stop if we have reached the intended turn
-		log.Debug("APPENDED:", len(g.Actions), action)
-		if actionTurn, ok := action.(*ActionTurn); ok {
-			log.Debug("GETTING HERE:", actionTurn)
+		var actionTurn *ActionTurn
+		if err := json.Unmarshal([]byte(actionString), &actionTurn); err == nil {
 			if actionTurn.Num == g.Options.SetReplayTurn {
 				return true
 			}
