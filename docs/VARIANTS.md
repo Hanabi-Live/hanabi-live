@@ -160,6 +160,10 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Multi-Fives & Rainbow (5 Suits)
   * Multi-Fives & Rainbow (4 Suits)
   * Multi-Fives & Rainbow (3 Suits)
+* Clue Starved
+  * Clue Starved (6 Suits)
+  * Clue Starved (5 Suits)
+  * Clue Starved (4 Suits)
 * Up or Down
   * Up or Down (6 Suits)
   * Up or Down (5 Suits)
