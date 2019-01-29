@@ -43,7 +43,7 @@ func (c *Card) NeedsToBePlayed(g *Game) bool {
 
 	// Determining if the card needs to be played in the "Up or Down" variants is more complicated
 	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		return variantUpOrNeedsToBePlayed(g, c)
+		return variantUpOrDownNeedsToBePlayed(g, c)
 	}
 
 	// Second, check to see if it is still possible to play this card
