@@ -106,16 +106,14 @@ func variantUpOrDownNeedsToBePlayed(g *Game, c *Card) bool {
 	// two of them have to be played
 	if g.StackDirections[c.Suit] == stackDirectionUndecided {
 		ranksToCheck := []int{1, 5, startCardRank}
-		atLeastOneStartingCardsDiscarded := false
+		startingCardsDiscarded := 0
 		for i := range ranksToCheck {
 			total, discarded := g.GetSpecificCardNum(c.Suit, i)
-			if total != discarded {
-				atLeastOneStartingCardsDiscarded = true
-				break
+			if total == discarded {
+				startingCardsDiscarded++
 			}
 		}
-
-		if atLeastOneStartingCardsDiscarded {
+		if startingCardsDiscarded > 1 {
 			return true
 		}
 	}
