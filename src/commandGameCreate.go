@@ -1,6 +1,9 @@
 package main
 
 import (
+	"os"
+	"path"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -41,15 +44,130 @@ func commandGameCreate(s *Session, d *CommandData) {
 
 	// Validate that the game name is not excessively long
 	if len(d.Name) > maxGameNameLength {
-		s.Warning("You cannot have a game name be longer than " + strconv.Itoa(maxGameNameLength) + " characters.")
+		s.Warning("You cannot have a game name be longer than " +
+			strconv.Itoa(maxGameNameLength) + " characters.")
 		return
 	}
 
 	// Validate that the game name does not contain any special characters
 	// (this mitigates XSS-style attacks)
 	if !isAlphanumericSpacesAndSafeSpecialCharacters(d.Name) {
-		s.Warning("Game names can only contain English letters, numbers, and spaces.")
+		s.Warning("Game names can only contain English letters, numbers, spaces, hyphens, " +
+			"and exclamation marks.")
 		return
+	}
+
+	// If they are trying to create a game with a special option, validate the options
+	setSeed := ""
+	setReplay := 0
+	setReplayTurn := 0
+	setDeal := ""
+	if strings.HasPrefix(d.Name, "!") {
+		if strings.HasPrefix(d.Name, "!seed") {
+			// !seed - Play a specific seed
+			var seedRegExp *regexp.Regexp
+			if v, err := regexp.Compile(`^!seed (.+)$`); err != nil {
+				log.Error("Failed to create the seed regular expression:", err)
+				s.Error("Failed to create the game. Please contact an administrator.")
+				return
+			} else {
+				seedRegExp = v
+			}
+			match := seedRegExp.FindStringSubmatch(d.Name)
+			if match == nil {
+				s.Warning("Games on specific seeds must be created in the form: " +
+					"!seed [seed number]")
+				return
+			}
+			setSeed = match[1]
+
+		} else if strings.HasPrefix(d.Name, "!replay") {
+			// !replay - Replay a specific game up to a specific turn
+			var replayRegExp *regexp.Regexp
+			if v, err := regexp.Compile(`^!replay (\d+) (\d+)$`); err != nil {
+				log.Error("Failed to create the replay regular expression:", err)
+				s.Error("Failed to create the game. Please contact an administrator.")
+				return
+			} else {
+				replayRegExp = v
+			}
+			match := replayRegExp.FindStringSubmatch(d.Name)
+			if match == nil {
+				s.Warning("Replays of specific games must be created in the form: " +
+					"!seed [game ID] [turn number]")
+				return
+			}
+			if v, err := strconv.Atoi(match[1]); err != nil {
+				log.Error("Failed to convert the first argument to a number:", err)
+				s.Error("Failed to create the game. Please contact an administrator.")
+				return
+			} else {
+				setReplay = v
+			}
+			if v, err := strconv.Atoi(match[2]); err != nil {
+				log.Error("Failed to convert the second argument to a number:", err)
+				s.Error("Failed to create the game. Please contact an administrator.")
+				return
+			} else {
+				setReplayTurn = v
+			}
+
+			// Check to see if the game ID exists on the server
+			if exists, err := db.Games.Exists(setReplay); err != nil {
+				log.Error("Failed to check to see if game "+
+					"\""+strconv.Itoa(setReplay)+"\" exists:", err)
+				s.Error("Failed to create the game. Please contact an administrator.")
+				return
+			} else if !exists {
+				s.Warning("That game ID does not exist in the database.")
+				return
+			}
+
+			// Check to see if this turn is valid
+			// (it has to be a turn before the game ends)
+			var numTurns int
+			if v, err := db.Games.GetNumTurns(setReplay); err != nil {
+				log.Error("Failed to get the number of turns from the database for game "+strconv.Itoa(setReplay)+":", err)
+				s.Error("Failed to initialize the game. Please contact an administrator.")
+				return
+			} else {
+				numTurns = v
+			}
+			if setReplayTurn >= numTurns {
+				s.Warning("That turn is not valid for the specified game ID.")
+				return
+			}
+
+		} else if strings.HasPrefix(d.Name, "!deal") {
+			// !deal - Play a specific deal read from a text file
+			var dealRegExp *regexp.Regexp
+			if v, err := regexp.Compile(`^!deal (.+)$`); err != nil {
+				log.Error("Failed to create the deal regular expression:", err)
+				s.Error("Failed to create the game. Please contact an administrator.")
+				return
+			} else {
+				dealRegExp = v
+			}
+			match := dealRegExp.FindStringSubmatch(d.Name)
+			if match == nil {
+				s.Warning("Games on specific deals must be created in the form: !deal [filename]")
+				return
+			}
+			setDeal = match[1]
+
+			// Check to see if the file exists on the server
+			filePath := path.Join(projectPath, "specific-deals", setDeal+".txt")
+			if _, err := os.Stat(filePath); err != nil {
+				s.Error("That preset deal does not exist on the server.")
+				return
+			}
+			// (we won't bother parsing the file until the game is actually started)
+
+		} else {
+			s.Warning("You cannot start a game with an exclamation mark unless " +
+				"you are trying to use a specific game creation command.")
+			return
+		}
 	}
 
 	// Validate that the variant name is valid
@@ -103,6 +221,10 @@ func commandGameCreate(s *Session, d *CommandData) {
 			DeckPlays:            d.DeckPlays,
 			EmptyClues:           d.EmptyClues,
 			CharacterAssignments: d.CharacterAssignments,
+			SetSeed:              setSeed,
+			SetReplay:            setReplay,
+			SetReplayTurn:        setReplayTurn,
+			SetDeal:              setDeal,
 		},
 		Players:            make([]*Player, 0),
 		Spectators:         make([]*Spectator, 0),
@@ -119,7 +241,8 @@ func commandGameCreate(s *Session, d *CommandData) {
 	}
 	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
 		// In this variant, having 1 clue available is represented with a value of 2
-		// We want the players to start with the normal amount of clues, so we have to double the starting amount
+		// We want the players to start with the normal amount of clues,
+		// so we have to double the starting amount
 		g.Clues *= 2
 	}
 	msg := g.GetName() + "User \"" + s.Username() + "\" created"

@@ -61,6 +61,12 @@ type Options struct {
 	DeckPlays            bool
 	EmptyClues           bool
 	CharacterAssignments bool
+
+	// The rest of the options are parsed from the game name
+	SetSeed       string
+	SetReplay     int
+	SetReplayTurn int
+	SetDeal       string
 }
 
 type GameChatMessage struct {

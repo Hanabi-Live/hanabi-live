@@ -329,6 +329,16 @@ func (*Games) GetNumTurns(databaseID int) (int, error) {
 	return numTurns, err
 }
 
+func (*Games) GetSeed(databaseID int) (string, error) {
+	var seed string
+	err := db.QueryRow(`
+		SELECT seed
+		FROM games
+		WHERE games.id = ?
+	`, databaseID).Scan(&seed)
+	return seed, err
+}
+
 type Player struct {
 	ID                  int
 	Name                string

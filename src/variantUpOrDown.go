@@ -220,11 +220,10 @@ func variantUpOrDownWalk(g *Game, suit int, up bool) int {
 
 // variantUpOrDownCheckAllDead returns true if no more cards can be played on the stacks
 func variantUpOrDownCheckAllDead(g *Game) bool {
-	for i, stackRank := range g.Stacks {
+	for suit, stackRank := range g.Stacks {
 		// Search through the deck
-		neededSuit := i
 		neededRanks := make([]int, 0)
-		if g.StackDirections[i] == stackDirectionUndecided {
+		if g.StackDirections[suit] == stackDirectionUndecided {
 			if stackRank == 0 {
 				// Nothing is played on the stack
 				neededRanks = []int{1, 5, startCardRank}
@@ -232,17 +231,17 @@ func variantUpOrDownCheckAllDead(g *Game) bool {
 				// The "START" card is played on the stack
 				neededRanks = []int{2, 4}
 			}
-		} else if g.StackDirections[i] == stackDirectionUp {
+		} else if g.StackDirections[suit] == stackDirectionUp {
 			neededRanks = append(neededRanks, stackRank+1)
-		} else if g.StackDirections[i] == stackDirectionDown {
+		} else if g.StackDirections[suit] == stackDirectionDown {
 			neededRanks = append(neededRanks, stackRank-1)
-		} else if g.StackDirections[i] == stackDirectionFinished {
+		} else if g.StackDirections[suit] == stackDirectionFinished {
 			continue
 		}
 
 		for _, c := range g.Deck {
 			for neededRank := range neededRanks {
-				if c.Suit == neededSuit &&
+				if c.Suit == suit &&
 					c.Rank == neededRank &&
 					!c.Discarded {
 

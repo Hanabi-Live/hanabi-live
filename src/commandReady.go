@@ -41,7 +41,7 @@ func commandReady(s *Session, d *CommandData) {
 
 	i := g.GetPlayerIndex(s.UserID())
 
-	var actions []interface{}
+	actions := make([]interface{}, 0)
 	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
 		var actionStrings []string
 		if v, err := db.GameActions.GetAll(gameID); err != nil {
