@@ -112,6 +112,10 @@ func commandGameCreate(s *Session, d *CommandData) {
 				setReplayTurn = v
 			}
 
+			// We have to minus the turn by one since turns are stored on the server starting at 0
+			// and turns are shown to the user starting at 1
+			setReplayTurn--
+
 			// Check to see if the game ID exists on the server
 			if exists, err := db.Games.Exists(setReplay); err != nil {
 				log.Error("Failed to check to see if game "+
