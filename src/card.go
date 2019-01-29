@@ -41,13 +41,13 @@ func (c *Card) NeedsToBePlayed(g *Game) bool {
 		}
 	}
 
+	// Determining if the card needs to be played in the "Up or Down" variants is more complicated
+	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+		return variantUpOrNeedsToBePlayed(g, c)
+	}
+
 	// Second, check to see if it is still possible to play this card
 	// (the preceding cards in the suit might have already been discarded)
-	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		// In Up or Down, doing this is more complicated
-		return !variantUpOrDownIsDead(g, c)
-		// (if the suit is dead, then the card does not need to be played)
-	}
 	for i := 1; i < c.Rank; i++ {
 		total, discarded := g.GetSpecificCardNum(c.Suit, i)
 		if total == discarded {

@@ -75,6 +75,106 @@ func variantUpOrDownPlay(g *Game, c *Card) bool {
 	return failed
 }
 
+// variantUpOrDownNeedsToBePlayed returns true if this card still needs to be played
+// in order to get the maximum score (taking into account the stack direction)
+// (before getting here, we already checked to see if the card has already been played)
+func variantUpOrDownNeedsToBePlayed(g *Game, c *Card) bool {
+	// First, check to see if the suit is already finished
+	if g.StackDirections[c.Suit] == stackDirectionFinished {
+		return false
+	}
+
+	// Second, check to see if this card is dead
+	// (meaning that all of a previous card in the suit have been discarded already)
+	if variantUpOrDownIsDead(g, c) {
+		return false
+	}
+
+	// To start with, all 2's, 3's, and 4's must be played
+	if c.Rank == 2 || c.Rank == 3 || c.Rank == 4 {
+		return true
+	}
+
+	// 1's, 5's, and "START" cards do not necessarily need to be played
+	if c.Rank == 1 {
+		if g.StackDirections[c.Suit] == stackDirectionUndecided {
+			if g.Stacks[c.Suit] == 0 {
+				// We only need to play a 1 if
+				// the 5 and the "START" card of this suit are already discarded
+				ranksToCheck := []int{1, startCardRank}
+				for i := range ranksToCheck {
+					total, discarded := g.GetSpecificCardNum(c.Suit, i)
+					if total != discarded {
+						return false
+					}
+				}
+				return true
+			} else if g.Stacks[c.Suit] == startCardRank {
+				// We need to play a 1 if the 5 has already been discarded
+				total, discarded := g.GetSpecificCardNum(c.Suit, 5)
+				return total == discarded
+			}
+		} else if g.StackDirections[c.Suit] == stackDirectionUp {
+			// We never need to play a 1 if the stack is going up
+			return false
+		} else if g.StackDirections[c.Suit] == stackDirectionDown {
+			// We always need to play a 1 if the stack is going down
+			return true
+		}
+
+	} else if c.Rank == 5 {
+		if g.StackDirections[c.Suit] == stackDirectionUndecided {
+			if g.Stacks[c.Suit] == 0 {
+				// We only need to play a 5 if
+				// the 1 and the "START" card of this suit are already discarded
+				ranksToCheck := []int{1, startCardRank}
+				for i := range ranksToCheck {
+					total, discarded := g.GetSpecificCardNum(c.Suit, i)
+					if total != discarded {
+						return false
+					}
+				}
+				return true
+			} else if g.Stacks[c.Suit] == startCardRank {
+				// We need to play a 5 if the 1 has already been discarded
+				total, discarded := g.GetSpecificCardNum(c.Suit, 1)
+				return total == discarded
+			}
+		} else if g.StackDirections[c.Suit] == stackDirectionUp {
+			// We always need to play a 5 if the stack is going up
+			return true
+		} else if g.StackDirections[c.Suit] == stackDirectionDown {
+			// We never need to play a 5 if the stack is going down
+			return false
+		}
+
+	} else if c.Rank == startCardRank {
+		if g.StackDirections[c.Suit] == stackDirectionUndecided {
+			// If the stack direction is undecided, "g.Stacks[c.Suit]" must equal 0 at this point
+			// because otherwise the "START" card would have already been played
+			// We only need to play a "START" card if
+			// the 1 and the 5 of this suit are already discarded
+			ranksToCheck := []int{1, 5}
+			for i := range ranksToCheck {
+				total, discarded := g.GetSpecificCardNum(c.Suit, i)
+				if total != discarded {
+					return false
+				}
+			}
+			return true
+		} else if g.StackDirections[c.Suit] == stackDirectionUp {
+			// We never need to play a "START" card if the stack is going up
+			return false
+		} else if g.StackDirections[c.Suit] == stackDirectionDown {
+			// We never need to play a "START" card if the stack is going down
+			return false
+		}
+	}
+
+	// Default case (we should never get here)
+	return false
+}
+
 // variantUpOrDownIsDead returns true if it is no longer possible to play this card
 // (taking into account the stack direction)
 func variantUpOrDownIsDead(g *Game, c *Card) bool {
