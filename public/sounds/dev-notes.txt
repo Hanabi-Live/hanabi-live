@@ -48,4 +48,9 @@ finished_failure:
 - Notes: a, "/", ".", ",", m
 - (set tuning --> key --> none)
 
+sad:
+- Keys: G, C, B, A#
+- Notes: a, v, c, x
+- (set tuning --> key --> none)
+
 The sounds are reduced in Audacity by -3.0 db before exporting to MP3.
