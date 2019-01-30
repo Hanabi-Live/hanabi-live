@@ -38,7 +38,7 @@ type ActionTurn struct {
 }
 type ActionClue struct {
 	Type   string `json:"type"`
-	Clue   Clue   `json:"clue"`
+	Clue   Clue   `json:"clue"` // Defined in "command.go"
 	Giver  int    `json:"giver"`
 	List   []int  `json:"list"` // The list of cards that the clue "touches"
 	Target int    `json:"target"`

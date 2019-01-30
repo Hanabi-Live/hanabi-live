@@ -159,7 +159,7 @@ func commandReady(s *Session, d *CommandData) {
 		if s.Status() == statusPlaying {
 			readIndex = g.Players[i].ChatReadIndex
 		} else {
-			readIndex = g.Spectators[g.GetSpectatorIndex(s.ID())].ChatReadIndex
+			readIndex = g.Spectators[g.GetSpectatorIndex(s.UserID())].ChatReadIndex
 		}
 		chatSendPastFromGame(s, g, readIndex)
 	}

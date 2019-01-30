@@ -182,6 +182,7 @@ func (g *Game) CheckTimer(turn int, p *Player) {
 		Type: 4,
 	}
 	p.Session.Set("currentGame", g.ID)
+	p.Session.Set("status", statusPlaying)
 	commandAction(p.Session, d)
 }
 

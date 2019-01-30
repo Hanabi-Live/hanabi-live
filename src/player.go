@@ -32,6 +32,7 @@ type Player struct {
 	Main functions, relating to in-game actions
 */
 
+// GiveClue returns false if the clue is illegal
 func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	p2 := g.Players[d.Target] // The target of the clue
 	cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
@@ -348,7 +349,7 @@ func (p *Player) PlayDeck(g *Game) {
 */
 
 // FindCardsTouchedByClue returns a slice of card orders
-// (in this context, "orders" are the card position in the deck, not in the hand)
+// (in this context, "orders" are the card positions in the deck, not in the hand)
 func (p *Player) FindCardsTouchedByClue(clue Clue, g *Game) []int {
 	list := make([]int, 0)
 	for _, c := range p.Hand {

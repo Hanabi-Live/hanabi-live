@@ -52,6 +52,16 @@ func commandGameStart(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that everyone is present
+	// (this only applies to "!replay" because
+	// we need to emulate player actions using their session)
+	for _, p := range g.Players {
+		if !p.Present {
+			s.Warning("Everyone must be present before you can start this game.")
+			return
+		}
+	}
+
 	/*
 		Start
 	*/
@@ -227,37 +237,37 @@ func commandGameStart(s *Session, d *CommandData) {
 		}
 	}
 
+	// Deal the cards
+	handSize := 5
+	if len(g.Players) > 3 {
+		handSize = 4
+	}
+	for _, p := range g.Players {
+		for i := 0; i < handSize; i++ {
+			p.DrawCard(g)
+		}
+	}
+
+	// Record the initial status of the game
+	g.NotifyStatus(false) // The argument is "doubleDiscard"
+
+	// Show who goes first
+	// (this must be sent before the "turn" message
+	// so that the text appears on the first turn of the replay)
+	text := g.Players[g.ActivePlayer].Name + " goes first"
+	g.Actions = append(g.Actions, ActionText{
+		Type: "text",
+		Text: text,
+	})
+	log.Info(g.GetName() + text)
+
+	// Record a message about the first turn
+	g.NotifyTurn()
+
+	// If we are replaying an existing game up to a certain point,
+	// start emulating all of the actions
 	if g.Options.SetReplay != 0 {
-		// We are replaying an existing game up to a certain point,
-		// so we don't need to deal cards or add the initial actions
-		g.CopyActionsFromDatabase(s)
-	} else {
-		// This is a normal game
-		// Deal the cards
-		handSize := 5
-		if len(g.Players) > 3 {
-			handSize = 4
-		}
-		for _, p := range g.Players {
-			for i := 0; i < handSize; i++ {
-				p.DrawCard(g)
-			}
-		}
-
-		// Record the initial status of the game
-		g.NotifyStatus(false) // The argument is "doubleDiscard"
-
-		// Show who goes first
-		// (this must be sent before the "turn" message so that the text appears on the first turn of the replay)
-		text := g.Players[g.ActivePlayer].Name + " goes first"
-		g.Actions = append(g.Actions, ActionText{
-			Type: "text",
-			Text: text,
-		})
-		log.Info(g.GetName() + text)
-
-		// Record a message about the first turn
-		g.NotifyTurn()
+		g.EmulateGameplayFromDatabaseActions(s)
 	}
 
 	// Send a "gameStart" message to everyone in the game
@@ -372,7 +382,14 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 	return true
 }
 
-func (g *Game) CopyActionsFromDatabase(s *Session) bool {
+func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
+	// Ensure that the correct session values are set for all of the players
+	// (before we start sending messages on their behalf)
+	for _, p := range g.Players {
+		p.Session.Set("currentGame", g.ID)
+		p.Session.Set("status", statusPlaying)
+	}
+
 	var actionStrings []string
 	if v, err := db.GameActions.GetAll(g.Options.SetReplay); err != nil {
 		log.Error("Failed to get the actions from the database for game "+
@@ -385,18 +402,61 @@ func (g *Game) CopyActionsFromDatabase(s *Session) bool {
 
 	for _, actionString := range actionStrings {
 		// Convert it from JSON
-		var action interface{}
+		var action map[string]interface{}
 		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
 			log.Error("Failed to unmarshal an action:", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")
 			return false
 		}
 
-		g.Actions = append(g.Actions, action)
+		// Emulate the various actions
+		if action["type"] == "clue" {
+			// Unmarshal the specific action type
+			var actionClue ActionClue
+			if err := json.Unmarshal([]byte(actionString), &actionClue); err != nil {
+				log.Error("Failed to unmarshal a play action:", err)
+				s.Error("Failed to initialize the game. Please contact an administrator.")
+				return false
+			}
 
-		// Stop if we have reached the intended turn
-		var actionTurn *ActionTurn
-		if err := json.Unmarshal([]byte(actionString), &actionTurn); err == nil {
+			d := &CommandData{
+				Type:   actionTypeClue,
+				Target: actionClue.Target,
+				Clue:   actionClue.Clue,
+			}
+			commandAction(g.Players[actionClue.Giver].Session, d)
+		} else if action["type"] == "play" {
+			// Unmarshal the specific action type
+			var actionPlay ActionPlay
+			if err := json.Unmarshal([]byte(actionString), &actionPlay); err != nil {
+				log.Error("Failed to unmarshal a play action:", err)
+				s.Error("Failed to initialize the game. Please contact an administrator.")
+				return false
+			}
+
+			// TODO
+
+		} else if action["type"] == "discard" {
+			// Unmarshal the specific action type
+			var actionDiscard ActionTurn
+			if err := json.Unmarshal([]byte(actionString), &actionDiscard); err != nil {
+				log.Error("Failed to unmarshal a discard action:", err)
+				s.Error("Failed to initialize the game. Please contact an administrator.")
+				return false
+			}
+
+			// TODO
+
+		} else if action["type"] == "turn" {
+			// Unmarshal the specific action type
+			var actionTurn ActionTurn
+			if err := json.Unmarshal([]byte(actionString), &actionTurn); err != nil {
+				log.Error("Failed to unmarshal a turn action:", err)
+				s.Error("Failed to initialize the game. Please contact an administrator.")
+				return false
+			}
+
+			// Stop if we have reached the intended turn
 			if actionTurn.Num == g.Options.SetReplayTurn {
 				return true
 			}
