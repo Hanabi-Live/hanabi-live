@@ -291,7 +291,8 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 	// This could be a double discard situation if there is only one other copy of this card
 	// and it needs to be played
 	total, discarded := g.GetSpecificCardNum(c.Suit, c.Rank)
-	doubleDiscard := total == discarded+1 && c.NeedsToBePlayed(g)
+	doubleDiscard := total == discarded+2 && c.NeedsToBePlayed(g)
+	// (we add two because this card has not been marked as discarded yet)
 
 	// Mark that the card is discarded
 	c.Discarded = true
