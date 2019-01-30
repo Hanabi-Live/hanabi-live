@@ -74,6 +74,20 @@ a {
     color: blue;
 }
 
+/* Make the lobby width be 80% on big resolutions and 100% on smaller resolutions */
+@media screen and (min-width: 1280px) {
+    .container.max {
+        width: 80%;
+    }
+}
+
+/* Make the nav bar always show, even on the tiniest resolutions */
+@media screen and (max-width: 840px) {
+    #header {
+        display: block;
+    }
+}
+
 /*
     Common
 */
