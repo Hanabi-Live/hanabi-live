@@ -52,6 +52,13 @@ List of Features
 * Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
 * Notes are saved in the database and will persist into the replay.
 * Everyone's notes are combined and shown to spectators, which is fun to see.
+* There are also some keyboard shortcuts for making notes:
+  * Shift + Right-click --> f
+    * "f" is a common abbreviation for "this card is Finessed".
+  * Alt + Right-click --> cm
+    * "cm" is a common abbreviation for "this card is Chop Moved".
+  * Ctrl + Shift + Right-click --> [previously entered note]
+    * If you need to put the same note on multiple cards, enter the note once on the first card, and then use this hotkey on the rest of the cards.
 
 #### Spectators
 
