@@ -419,12 +419,14 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 				return false
 			}
 
+			// Emulate the clue action
 			d := &CommandData{
 				Type:   actionTypeClue,
 				Target: actionClue.Target,
 				Clue:   actionClue.Clue,
 			}
 			commandAction(g.Players[actionClue.Giver].Session, d)
+
 		} else if action["type"] == "play" {
 			// Unmarshal the specific action type
 			var actionPlay ActionPlay
@@ -434,18 +436,28 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 				return false
 			}
 
-			// TODO
+			// Emulate the play action
+			d := &CommandData{
+				Type:   actionTypePlay,
+				Target: actionPlay.Which.Order,
+			}
+			commandAction(g.Players[actionPlay.Which.Index].Session, d)
 
 		} else if action["type"] == "discard" {
 			// Unmarshal the specific action type
-			var actionDiscard ActionTurn
+			var actionDiscard ActionDiscard
 			if err := json.Unmarshal([]byte(actionString), &actionDiscard); err != nil {
 				log.Error("Failed to unmarshal a discard action:", err)
 				s.Error("Failed to initialize the game. Please contact an administrator.")
 				return false
 			}
 
-			// TODO
+			// Emulate the discard action
+			d := &CommandData{
+				Type:   actionTypeDiscard,
+				Target: actionDiscard.Which.Order,
+			}
+			commandAction(g.Players[actionDiscard.Which.Index].Session, d)
 
 		} else if action["type"] == "turn" {
 			// Unmarshal the specific action type

@@ -67,10 +67,10 @@ type ActionGameOver struct {
 	Loss  bool   `json:"loss"`
 }
 type Which struct { // Used by "ActionPlay" and "ActionDiscard"
-	Index int `json:"index"`
+	Index int `json:"index"` // The index of the player
 	Rank  int `json:"rank"`
 	Suit  int `json:"suit"`
-	Order int `json:"order"`
+	Order int `json:"order"` // The ID of the card (based on its order in the deck)
 }
 
 // Scrub removes some information from an action so that we do not reveal
