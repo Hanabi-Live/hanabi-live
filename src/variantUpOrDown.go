@@ -79,7 +79,7 @@ func variantUpOrDownPlay(g *Game, c *Card) bool {
 // in order to get the maximum score (taking into account the stack direction)
 // (before getting here, we already checked to see if the card has already been played)
 func variantUpOrDownNeedsToBePlayed(g *Game, c *Card) bool {
-	// First, check to see if the suit is already finished
+	// First, check to see if the stack is already finished
 	if g.StackDirections[c.Suit] == stackDirectionFinished {
 		return false
 	}
@@ -95,6 +95,7 @@ func variantUpOrDownNeedsToBePlayed(g *Game, c *Card) bool {
 		return true
 	}
 
+	// This card is either a 1, a 5, or a "START" card
 	// The final card in an already-decided stack must be played
 	if (g.StackDirections[c.Suit] == stackDirectionUp && c.Rank == 5) ||
 		(g.StackDirections[c.Suit] == stackDirectionDown && c.Rank == 1) {
@@ -102,19 +103,16 @@ func variantUpOrDownNeedsToBePlayed(g *Game, c *Card) bool {
 		return true
 	}
 
-	// For undecided piles, between the 1, the 5, and the "START" card,
+	// For undecided stacks, between the 1, the 5, and the "START" card,
 	// two of them have to be played
 	if g.StackDirections[c.Suit] == stackDirectionUndecided {
 		ranksToCheck := []int{1, 5, startCardRank}
-		startingCardsDiscarded := 0
 		for i := range ranksToCheck {
 			total, discarded := g.GetSpecificCardNum(c.Suit, i)
 			if total == discarded {
-				startingCardsDiscarded++
+				// At least one starting card is discarded, so we need the other two
+				return true
 			}
-		}
-		if startingCardsDiscarded > 1 {
-			return true
 		}
 	}
 
@@ -122,78 +120,53 @@ func variantUpOrDownNeedsToBePlayed(g *Game, c *Card) bool {
 	return false
 }
 
-// variantUpOrDownIsDead returns true if it is no longer possible to play this card
+// variantUpOrDownIsDead returns true if it is no longer possible to play this card by
+// looking to see if all of the previous cards in the stack have been discarded
 // (taking into account the stack direction)
 func variantUpOrDownIsDead(g *Game, c *Card) bool {
-	// It is not possible for a card to be dead if the stack is already finished
-	if g.StackDirections[c.Suit] == stackDirectionFinished {
+	// Make a map that shows if all of some particular rank in this suit has been discarded
+	ranks := []int{1, 2, 3, 4, 5, startCardRank}
+	allDiscarded := make(map[int]bool)
+	for _, rank := range ranks {
+		total, discarded := g.GetSpecificCardNum(c.Suit, rank)
+		allDiscarded[rank] = total == discarded
+	}
+
+	// Start by handling the easy cases of up and down
+	if g.StackDirections[c.Suit] == stackDirectionUp {
+		for i := 2; i < c.Rank; i++ {
+			if allDiscarded[i] {
+				return true
+			}
+		}
+		return false
+	} else if g.StackDirections[c.Suit] == stackDirectionDown {
+		for i := 4; i > c.Rank; i-- {
+			if allDiscarded[i] {
+				return true
+			}
+		}
 		return false
 	}
 
-	// Compile a list of the preceding cards
-	if g.StackDirections[c.Suit] == stackDirectionUndecided {
-		if g.Stacks[c.Suit] == startCardRank || c.Rank == 3 {
-			// If the "START" card is played on the stack,
-			// then this card will be dead if all of the 2's and all of the 4's have been discarded
-			// (this situation also applies to 3's when no cards have been played on the stack)
-			dead := true
-			ranksToCheck := []int{2, 4}
-			for i := range ranksToCheck {
-				for _, deckCard := range g.Deck {
-					if deckCard.Suit == c.Suit && deckCard.Rank == i && !deckCard.Discarded {
-						dead = false
-						break
-					}
-				}
-				if !dead {
-					break
-				}
-			}
-			if dead {
-				return true
-			}
-		}
+	// If we got this far, the stack direction is undecided
+	// (the previous function handles the case where the stack is finished)
+	// Check to see if the entire suit is dead in the case where
+	// all 3 of the start cards are discarded
+	if allDiscarded[1] && allDiscarded[5] && allDiscarded[startCardRank] {
+		return true
+	}
 
-		if g.Stacks[c.Suit] == 0 {
-			// No cards are played yet on this stack
-			// (or this is a 3 and a "START" card has been played on the stack)
-			// No matter what the rank of this card is, it will be dead if all three of
-			// the starting cards of the suit are discarded
-			// (we assume that there is only one of each, e.g. one 1, one 5, and one "START" card)
-			dead := false
-			ranksToCheck := []int{1, 5, startCardRank}
-			for i := range ranksToCheck {
-				for _, deckCard := range g.Deck {
-					if deckCard.Suit == c.Suit && deckCard.Rank == i && !deckCard.Discarded {
-						dead = false
-						break
-					}
-				}
-				if !dead {
-					break
-				}
-			}
-			if dead {
-				return true
-			}
-		}
-
-	} else if g.StackDirections[c.Suit] == stackDirectionUp {
-		for i := 2; i < c.Rank; i++ {
-			total, discarded := g.GetSpecificCardNum(c.Suit, i)
-			if total == discarded {
-				return true
-			}
-		}
-
-	} else if g.StackDirections[c.Suit] == stackDirectionDown {
-		for i := 4; i > c.Rank; i-- {
-			total, discarded := g.GetSpecificCardNum(c.Suit, i)
-			if total == discarded {
-				return true
-			}
+	// If the "START" card is played on the stack,
+	// then this card will be dead if all of the 2's and all of the 4's have been discarded
+	// (this situation also applies to 3's when no cards have been played on the stack)
+	if g.Stacks[c.Suit] == startCardRank || c.Rank == 3 {
+		if allDiscarded[2] && allDiscarded[4] {
+			return true
 		}
 	}
+
+	// ??? WHAT ELSE
 
 	return false
 }

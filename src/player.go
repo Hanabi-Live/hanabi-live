@@ -236,9 +236,6 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 
 // DiscardCard returns true if it is a "double discard" situation
 func (p *Player) DiscardCard(g *Game, c *Card) bool {
-	// Mark that the card is discarded
-	c.Discarded = true
-
 	g.Actions = append(g.Actions, ActionDiscard{
 		Type: "discard",
 		Which: Which{
@@ -291,6 +288,9 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 			g.Sound = "sad"
 		}
 	}
+
+	// Mark that the card is discarded
+	c.Discarded = true
 
 	// Return whether or not this is a "double discard" situation
 	return needsToBePlayed && total == discarded+1
