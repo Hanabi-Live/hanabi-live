@@ -135,7 +135,14 @@ exports.openEditTooltip = (card) => {
             }
         }
 
-        update(card);
+        // Update the tooltip and the card
+        tooltipInstance.content(note);
+        card.noteGiven.setVisible(note.length > 0);
+        if (note.length === 0) {
+            tooltip.tooltipster('close');
+        }
+        globals.layers.UI.draw();
+        globals.layers.card.draw();
     });
 
     // Automatically highlight all of the existing text when a note input box is focused
@@ -146,20 +153,6 @@ exports.openEditTooltip = (card) => {
     // Automatically focus the new text input box
     $(`#tooltip-card-${card.order}-input`).focus();
 };
-
-const update = (card) => {
-    const note = get(card.order) || '';
-    const tooltip = $(`#tooltip-card-${card.order}`);
-    const tooltipInstance = tooltip.tooltipster('instance');
-    tooltipInstance.content(note);
-    card.noteGiven.setVisible(note.length > 0);
-    if (note.length === 0) {
-        tooltip.tooltipster('close');
-    }
-    globals.layers.UI.draw();
-    globals.layers.card.draw();
-};
-exports.update = update;
 
 /*
     Misc. functions

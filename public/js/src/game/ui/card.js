@@ -514,7 +514,7 @@ HanabiCard.prototype.click = function click(event) {
     ) {
         const note = 'f';
         notes.set(this.order, note);
-        notes.update(this);
+        notes.show(this);
         return;
     }
 
@@ -526,7 +526,7 @@ HanabiCard.prototype.click = function click(event) {
     ) {
         const note = 'cm';
         notes.set(this.order, note);
-        notes.update(this);
+        notes.show(this);
         return;
     }
 
