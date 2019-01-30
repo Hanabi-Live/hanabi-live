@@ -90,34 +90,9 @@ func variantUpOrDownNeedsToBePlayed(g *Game, c *Card) bool {
 		return false
 	}
 
+	// This function is only entered for cards that have another copy (e.g. 2's, 3's, and 4's)
 	// All 2's, 3's, and 4's must be played
-	if c.Rank == 2 || c.Rank == 3 || c.Rank == 4 {
-		return true
-	}
-
-	// This card is either a 1, a 5, or a "START" card
-	// The final card in an already-decided stack must be played
-	if (g.StackDirections[c.Suit] == stackDirectionUp && c.Rank == 5) ||
-		(g.StackDirections[c.Suit] == stackDirectionDown && c.Rank == 1) {
-
-		return true
-	}
-
-	// For undecided stacks, between the 1, the 5, and the "START" card,
-	// two of them have to be played
-	if g.StackDirections[c.Suit] == stackDirectionUndecided {
-		ranksToCheck := []int{1, 5, startCardRank}
-		for i := range ranksToCheck {
-			total, discarded := g.GetSpecificCardNum(c.Suit, i)
-			if total == discarded {
-				// At least one starting card has already been discarded, so we need the other two
-				return true
-			}
-		}
-	}
-
-	// Default case; if the card does not meet the above conditions, it does not need to be played
-	return false
+	return true
 }
 
 // variantUpOrDownIsDead returns true if it is no longer possible to play this card by
