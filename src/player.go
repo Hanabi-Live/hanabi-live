@@ -274,26 +274,30 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 	g.NotifyAction()
 	log.Info(g.GetName() + text)
 
-	// Find out if this was a misplay/discard of a card needed to get the maximum score
-	needsToBePlayed := c.NeedsToBePlayed(g)
-	total, discarded := g.GetSpecificCardNum(c.Suit, c.Rank)
-	if needsToBePlayed && total == discarded {
+	// This could have been a discard (or misplay) or a card needed to get the maximum score
+	newMaxScore := g.GetMaxScore()
+	if newMaxScore != g.MaxScore {
 		// Decrease the maximum score possible for this game
-		g.UpdateMaxScore()
+		g.MaxScore = newMaxScore
 
+		// Play a sad sound
+		// (don't play the custom sound on a misplay,
+		// since the misplay sound will already indicate that an error has occurred)
 		if !c.Failed {
-			// Play a sad sound because this discard just reduced the maximum score, "losing" the game
-			// (don't play the custom sound on a misplay,
-			// since the misplay sound will already indicate that an error occurred)
 			g.Sound = "sad"
 		}
 	}
+
+	// This could be a double discard situation if there is only one other copy of this card
+	// and it needs to be played
+	total, discarded := g.GetSpecificCardNum(c.Suit, c.Rank)
+	doubleDiscard := total == discarded+1 && c.NeedsToBePlayed(g)
 
 	// Mark that the card is discarded
 	c.Discarded = true
 
 	// Return whether or not this is a "double discard" situation
-	return needsToBePlayed && total == discarded+1
+	return doubleDiscard
 }
 
 func (p *Player) DrawCard(g *Game) {

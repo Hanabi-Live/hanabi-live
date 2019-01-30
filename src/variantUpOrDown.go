@@ -90,7 +90,7 @@ func variantUpOrDownNeedsToBePlayed(g *Game, c *Card) bool {
 		return false
 	}
 
-	// To start with, all 2's, 3's, and 4's must be played
+	// All 2's, 3's, and 4's must be played
 	if c.Rank == 2 || c.Rank == 3 || c.Rank == 4 {
 		return true
 	}
@@ -110,7 +110,7 @@ func variantUpOrDownNeedsToBePlayed(g *Game, c *Card) bool {
 		for i := range ranksToCheck {
 			total, discarded := g.GetSpecificCardNum(c.Suit, i)
 			if total == discarded {
-				// At least one starting card is discarded, so we need the other two
+				// At least one starting card has already been discarded, so we need the other two
 				return true
 			}
 		}
@@ -171,76 +171,70 @@ func variantUpOrDownIsDead(g *Game, c *Card) bool {
 	return false
 }
 
-// variantUpOrDownUpdateMaxScore goes through all the cards in the deck and calculates the maximum possible score
-// (some important cards might have been discarded already)
-func variantUpOrDownUpdateMaxScore(g *Game) {
-	g.MaxScore = 0
+// variantUpOrDownGetMaxScore calculates what the maximum score is,
+// accounting for stacks that cannot be completed due to discarded cards
+func variantUpOrDownGetMaxScore(g *Game) int {
+	maxScore := 0
 	for suit := range g.Stacks {
+		// Make a map that shows if all of some particular rank in this suit has been discarded
+		ranks := []int{1, 2, 3, 4, 5, startCardRank}
+		allDiscarded := make(map[int]bool)
+		for _, rank := range ranks {
+			total, discarded := g.GetSpecificCardNum(suit, rank)
+			allDiscarded[rank] = total == discarded
+		}
+
 		if g.StackDirections[suit] == stackDirectionUndecided {
-			upWalk := variantUpOrDownWalk(g, suit, true)
-			downWalk := variantUpOrDownWalk(g, suit, false)
-			g.MaxScore += max(upWalk, downWalk)
+			upWalk := variantUpOrDownWalkUp(g, suit, allDiscarded)
+			downWalk := variantUpOrDownWalkDown(g, suit, allDiscarded)
+			maxScore += max(upWalk, downWalk)
 		} else if g.StackDirections[suit] == stackDirectionUp {
-			g.MaxScore += variantUpOrDownWalk(g, suit, true)
+			maxScore += variantUpOrDownWalkUp(g, suit, allDiscarded)
 		} else if g.StackDirections[suit] == stackDirectionDown {
-			g.MaxScore += variantUpOrDownWalk(g, suit, false)
+			maxScore += variantUpOrDownWalkDown(g, suit, allDiscarded)
 		} else if g.StackDirections[suit] == stackDirectionFinished {
-			g.MaxScore += 5
+			maxScore += 5
 		}
 	}
+
+	return maxScore
 }
 
-func variantUpOrDownWalk(g *Game, suit int, up bool) int {
+func variantUpOrDownWalkUp(g *Game, suit int, allDiscarded map[int]bool) int {
 	cardsThatCanStillBePlayed := 0
-	if up {
-		// First, check to see if the stack can still be started (going up)
-		canBeStarted := false
-		for rank := range []int{1, startCardRank} {
-			total, discarded := g.GetSpecificCardNum(suit, rank)
-			if total > discarded {
-				canBeStarted = true
-				break
-			}
-		}
-		if !canBeStarted {
-			return cardsThatCanStillBePlayed
+
+	// First, check to see if the stack can still be started
+	if allDiscarded[1] && allDiscarded[startCardRank] {
+		return 0
+	}
+	cardsThatCanStillBePlayed++
+
+	// Second, walk upwards
+	for rank := 2; rank <= 5; rank++ {
+		if allDiscarded[rank] {
+			break
 		}
 		cardsThatCanStillBePlayed++
+	}
 
-		// Second, walk upwards
-		for rank := 2; rank <= 5; rank++ {
-			total, discarded := g.GetSpecificCardNum(suit, rank)
-			if total > discarded {
-				cardsThatCanStillBePlayed++
-			} else {
-				break
-			}
-		}
+	return cardsThatCanStillBePlayed
+}
 
-	} else {
-		// First, check to see if the stack can still be started (going down)
-		canBeStarted := false
-		for rank := range []int{5, startCardRank} {
-			total, discarded := g.GetSpecificCardNum(suit, rank)
-			if total > discarded {
-				canBeStarted = true
-				break
-			}
-		}
-		if !canBeStarted {
-			return cardsThatCanStillBePlayed
+func variantUpOrDownWalkDown(g *Game, suit int, allDiscarded map[int]bool) int {
+	cardsThatCanStillBePlayed := 0
+
+	// First, check to see if the stack can still be started (going down)
+	if allDiscarded[5] && allDiscarded[startCardRank] {
+		return 0
+	}
+	cardsThatCanStillBePlayed++
+
+	// Second, walk downwards
+	for rank := 4; rank >= 1; rank-- {
+		if allDiscarded[rank] {
+			break
 		}
 		cardsThatCanStillBePlayed++
-
-		// Second, walk downwards
-		for rank := 4; rank >= 1; rank-- {
-			total, discarded := g.GetSpecificCardNum(suit, rank)
-			if total > discarded {
-				cardsThatCanStillBePlayed++
-			} else {
-				break
-			}
-		}
 	}
 
 	return cardsThatCanStillBePlayed

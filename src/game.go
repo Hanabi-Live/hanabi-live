@@ -113,27 +113,28 @@ func (g *Game) GetSpectatorIndex(id int) int {
 	return -1
 }
 
-// UpdateMaxScore goes through the deck to see if needed cards have been discarded
-func (g *Game) UpdateMaxScore() {
-	// Adjusting the maximum score is much more complicated if we are playing a "Up or Down" variant,
-	// so the logic for this is stored in a separate file
+// GetMaxScore calculates what the maximum score is,
+// accounting for stacks that cannot be completed due to discarded cards
+func (g *Game) GetMaxScore() int {
+	// Getting the maximum score is much more complicated if we are playing a "Up or Down" variant
 	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		variantUpOrDownUpdateMaxScore(g)
-		return
+		return variantUpOrDownGetMaxScore(g)
 	}
 
-	g.MaxScore = 0
+	maxScore := 0
 	for suit := range g.Stacks {
 		for rank := 1; rank <= 5; rank++ {
 			// Search through the deck to see if all the coipes of this card are discarded already
 			total, discarded := g.GetSpecificCardNum(suit, rank)
 			if total > discarded {
-				g.MaxScore++
+				maxScore++
 			} else {
 				break
 			}
 		}
 	}
+
+	return maxScore
 }
 
 // GetSpecificCardNum returns the total cards in the deck of the specified suit and rank
