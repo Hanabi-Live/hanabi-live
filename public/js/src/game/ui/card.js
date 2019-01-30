@@ -477,19 +477,24 @@ HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
 };
 
 HanabiCard.prototype.click = function click(event) {
-    // Shift + left-click is a card morph
-    if (
-        window.event.shiftKey
-        && event.evt.which === 1
-    ) {
-        this.clickMorph();
-        return;
+    if (event.evt.which === 1) { // Left-click
+        this.clickLeft();
+    } else if (event.evt.which === 3) { // Right-click
+        this.clickRight();
     }
+};
 
+HanabiCard.prototype.click = function clickLeft() {
+    // Shift + left-click is a card morph
+    if (window.event.shiftKey) {
+        this.clickMorph();
+    }
+};
+
+HanabiCard.prototype.click = function clickRight() {
     // Right-click for a leader in a shared replay is an arrow
     if (
-        event.evt.which === 3
-        && globals.sharedReplay
+        globals.sharedReplay
         && globals.sharedReplayLeader === globals.lobby.username
         && globals.useSharedTurns
     ) {
@@ -497,43 +502,45 @@ HanabiCard.prototype.click = function click(event) {
         return;
     }
 
-    // Ctrl + right-click is a local arrow
-    if (
-        window.event.ctrlKey
-        && event.evt.which === 3
-    ) {
-        this.clickArrowLocal();
+    // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
+    // (this must be above the other note code because of the modifiers)
+    if (window.event.ctrlKey && window.event.shiftKey) {
+        const note = notes.vars.lastNote;
+        notes.set(this.order, note);
+        notes.update(this);
+        notes.show(this);
         return;
     }
 
     // Shfit + right-click is a "f" note
     // (this is a common abbreviation for "this card is Finessed")
-    if (
-        window.event.shiftKey
-        && event.evt.which === 3
-    ) {
+    if (window.event.shiftKey) {
         const note = 'f';
         notes.set(this.order, note);
+        notes.update(this);
         notes.show(this);
         return;
     }
 
     // Alt + right-click is a "cm" note
     // (this is a common abbreviation for "this card is chop moved")
-    if (
-        window.event.altKey
-        && event.evt.which === 3
-    ) {
+    if (window.event.altKey) {
         const note = 'cm';
         notes.set(this.order, note);
+        notes.update(this);
         notes.show(this);
         return;
     }
 
-    // Right-click is edit a note
-    if (event.evt.which === 3) {
-        notes.openEditTooltip(this);
+    // Ctrl + right-click is a local arrow
+    // (this must be below the "ctrl + shift + right-click" code)
+    if (window.event.ctrlKey) {
+        this.clickArrowLocal();
+        return;
     }
+
+    // A normal right-click is edit a note
+    notes.openEditTooltip(this);
 };
 
 HanabiCard.prototype.clickArrow = function clickArrow() {

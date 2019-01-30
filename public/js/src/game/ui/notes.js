@@ -20,6 +20,7 @@ exports.init = () => {
     vars.editing = null;
     // Equal to true if something happened when the note box happens to be open
     vars.actionOccured = false;
+    vars.lastNote = ''; // Equal to the last note entered
 };
 
 const get = (order) => {
@@ -36,6 +37,7 @@ const set = (order, note) => {
         note = undefined;
     }
     notes[order] = note;
+    vars.lastNote = note;
 
     // Also send the note to the server
     if (!globals.replay && !globals.spectating) {
@@ -78,7 +80,8 @@ const show = (card) => {
     // Update the tooltip and open it
     tooltip.css('left', posX);
     tooltip.css('top', posY);
-    tooltipInstance.content(get(card.order) || '');
+    const note = get(card.order) || '';
+    tooltipInstance.content(note);
     tooltip.tooltipster('open');
 };
 exports.show = show;
@@ -135,14 +138,7 @@ exports.openEditTooltip = (card) => {
             }
         }
 
-        // Update the tooltip and the card
-        tooltipInstance.content(note);
-        card.noteGiven.setVisible(note.length > 0);
-        if (note.length === 0) {
-            tooltip.tooltipster('close');
-        }
-        globals.layers.UI.draw();
-        globals.layers.card.draw();
+        update(card);
     });
 
     // Automatically highlight all of the existing text when a note input box is focused
@@ -153,6 +149,21 @@ exports.openEditTooltip = (card) => {
     // Automatically focus the new text input box
     $(`#tooltip-card-${card.order}-input`).focus();
 };
+
+const update = (card) => {
+    // Update the tooltip and the card
+    const tooltip = $(`#tooltip-card-${card.order}`);
+    const tooltipInstance = tooltip.tooltipster('instance');
+    const note = get(card.order) || '';
+    tooltipInstance.content(note);
+    card.noteGiven.setVisible(note.length > 0);
+    if (note.length === 0) {
+        tooltip.tooltipster('close');
+    }
+    globals.layers.UI.draw();
+    globals.layers.card.draw();
+};
+exports.update = update;
 
 /*
     Misc. functions
