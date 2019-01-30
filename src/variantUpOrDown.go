@@ -166,8 +166,6 @@ func variantUpOrDownIsDead(g *Game, c *Card) bool {
 		}
 	}
 
-	// ??? WHAT ELSE
-
 	return false
 }
 
