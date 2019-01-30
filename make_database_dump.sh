@@ -15,3 +15,10 @@ source "$DIR/.env"
 mkdir -p "$BACKUPS_DIR"
 mysqldump -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" > "$BACKUPS_DIR/$FILENAME"
 gzip "$BACKUPS_DIR/$FILENAME"
+
+# Delete old backups if the hard drive is getting full
+AMOUNT_FULL=$(df "$DIR" | tail -1 | awk '{print $5}' | rev | cut -c 2- | rev)
+if [ $AMOUNT_FULL -gt 80 ]; then
+    # Delete the oldest file in the backups directory
+    rm "$(ls -t "$BACKUPS_DIR" | tail -1)"
+fi
