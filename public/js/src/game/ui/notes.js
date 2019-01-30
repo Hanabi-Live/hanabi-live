@@ -36,6 +36,14 @@ const set = (order, note) => {
         note = undefined;
     }
     notes[order] = note;
+
+    // Also send the note to the server
+    if (!globals.replay && !globals.spectating) {
+        globals.lobby.conn.send('note', {
+            order,
+            note,
+        });
+    }
 };
 exports.set = set;
 
@@ -75,12 +83,7 @@ const show = (card) => {
 };
 exports.show = show;
 
-exports.edit = (card, event) => {
-    if (event.evt.which !== 3) { // Right-click
-        // We only care about right clicks
-        return;
-    }
-
+exports.openEditTooltip = (card) => {
     // Don't edit any notes in shared replays
     if (globals.sharedReplay) {
         return;
@@ -125,14 +128,6 @@ exports.edit = (card, event) => {
 
             set(card.order, note);
 
-            // Also send the note to the server
-            if (!globals.replay && !globals.spectating) {
-                globals.lobby.conn.send('note', {
-                    order: card.order,
-                    note,
-                });
-            }
-
             // Check to see if an event happened while we were editing this note
             if (vars.actionOccured) {
                 vars.actionOccured = false;
@@ -140,14 +135,7 @@ exports.edit = (card, event) => {
             }
         }
 
-        tooltipInstance.content(note);
-        card.noteGiven.setVisible(note.length > 0);
-        if (note.length === 0) {
-            tooltip.tooltipster('close');
-        }
-
-        globals.layers.UI.draw();
-        globals.layers.card.draw();
+        update(card);
     });
 
     // Automatically highlight all of the existing text when a note input box is focused
@@ -158,6 +146,20 @@ exports.edit = (card, event) => {
     // Automatically focus the new text input box
     $(`#tooltip-card-${card.order}-input`).focus();
 };
+
+const update = (card) => {
+    const note = get(card.order) || '';
+    const tooltip = $(`#tooltip-card-${card.order}`);
+    const tooltipInstance = tooltip.tooltipster('instance');
+    tooltipInstance.content(note);
+    card.noteGiven.setVisible(note.length > 0);
+    if (note.length === 0) {
+        tooltip.tooltipster('close');
+    }
+    globals.layers.UI.draw();
+    globals.layers.card.draw();
+};
+exports.update = update;
 
 /*
     Misc. functions

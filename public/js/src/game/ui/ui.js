@@ -4779,7 +4779,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         // This is used in shared replays to make fun sounds
         if (globals.sharedReplayLeader === globals.lobby.username) {
             // We don't have to play anything;
-            // we already did it manually immediately after sending the "replayAction" message
+            // we already did it manually after sending the "replayAction" message
             return;
         }
 

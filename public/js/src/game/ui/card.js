@@ -360,11 +360,6 @@ const HanabiCard = function HanabiCard(config) {
         const mouseButton = 1;
         let toggledPips = [];
         this.on('mousedown', (event) => {
-            // Do nothing if shift is being held
-            if (window.event.shiftKey) {
-                return;
-            }
-
             if (event.evt.which !== mouseButton) {
                 return;
             }
@@ -385,7 +380,7 @@ const HanabiCard = function HanabiCard(config) {
     if (config.holder === globals.playerUs && !globals.replay && !globals.spectating) {
         this.on('mousedown', (event) => {
             if (
-                event.evt.which !== 1 // dragging uses left click
+                event.evt.which !== 1 // Dragging uses left click
                 || globals.inReplay
                 || !this.indicatorArrow.isVisible()
             ) {
@@ -397,106 +392,7 @@ const HanabiCard = function HanabiCard(config) {
         });
     }
 
-    this.on('click', (event) => {
-        // Do nothing if shift is being held
-        if (window.event.shiftKey) {
-            return;
-        }
-
-        // In a shared replay, the leader right-clicks a card to draw attention to it
-        if (
-            globals.sharedReplay
-            && event.evt.which === 3 // Right-click
-            && globals.sharedReplayLeader === globals.lobby.username
-        ) {
-            if (globals.useSharedTurns) {
-                globals.lobby.conn.send('replayAction', {
-                    type: 1,
-                    order: self.order,
-                });
-
-                // Draw the indicator for the user manually so that
-                // we don't have to wait for the client to server round-trip
-                globals.lobby.ui.handleReplayIndicator({
-                    order: self.order,
-                });
-            }
-
-            return;
-        }
-
-        // In a non-shared replay, a user might still want to draw an arrow on a card
-        // for demonstration purposes
-        if (window.event.ctrlKey) {
-            globals.lobby.ui.handleReplayIndicator({
-                order: self.order,
-            });
-            return;
-        }
-
-        notes.edit(self, event);
-    });
-
-    // Catch clicks for making arbitrary cards (for hypothetical situation creation)
-    this.on('mousedown', () => {
-        // Do nothing if shift is not being held
-        if (!window.event.shiftKey) {
-            return;
-        }
-
-        // Only allow this feature in replays
-        if (!globals.replay) {
-            return;
-        }
-
-        const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "11", "65")');
-        if (card === null || card.length !== 2) {
-            return;
-        }
-        const suitLetter = card[0];
-        let suit;
-        if (suitLetter === 'b' || suitLetter === '1') {
-            suit = 0;
-        } else if (suitLetter === 'g' || suitLetter === '2') {
-            suit = 1;
-        } else if (suitLetter === 'y' || suitLetter === '3') {
-            suit = 2;
-        } else if (suitLetter === 'r' || suitLetter === '4') {
-            suit = 3;
-        } else if (suitLetter === 'p' || suitLetter === '5') {
-            suit = 4;
-        } else if (suitLetter === 'k' || suitLetter === 'm' || suitLetter === '6') {
-            suit = 5;
-        } else {
-            return;
-        }
-        const rank = parseInt(card[1], 10);
-        if (Number.isNaN(rank)) {
-            return;
-        }
-
-        // Tell the server that we are doing a hypothetical
-        if (globals.sharedReplayLeader === globals.lobby.username) {
-            globals.lobby.conn.send('replayAction', {
-                type: 3,
-                order: self.order,
-                suit,
-                rank,
-            });
-        }
-
-        // Send the reveal message manually so that
-        // we don't have to wait for the client to server round-trip
-        const revealMsg = {
-            type: 'reveal',
-            which: {
-                order: self.order,
-                rank,
-                suit,
-            },
-        };
-        globals.lobby.ui.handleNotify(revealMsg);
-    });
+    this.on('click', this.click);
 
     this.isClued = function isClued() {
         return this.cluedBorder.visible();
@@ -579,6 +475,146 @@ HanabiCard.prototype.hideClues = function hideClues() {
 HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
     return globals.elements.playerHands.indexOf(this.parent.parent) !== -1;
 };
+
+HanabiCard.prototype.click = function click(event) {
+    // Shift + left-click is a card morph
+    if (
+        window.event.shiftKey
+        && event.evt.which === 1
+    ) {
+        this.clickMorph();
+        return;
+    }
+
+    // Right-click for a leader in a shared replay is an arrow
+    if (
+        event.evt.which === 3
+        && globals.sharedReplay
+        && globals.sharedReplayLeader === globals.lobby.username
+        && globals.useSharedTurns
+    ) {
+        this.clickArrow();
+        return;
+    }
+
+    // Ctrl + right-click is a local arrow
+    if (
+        window.event.ctrlKey
+        && event.evt.which === 3
+    ) {
+        this.clickArrowLocal();
+        return;
+    }
+
+    // Shfit + right-click is a "f" note
+    // (this is a common abbreviation for "this card is Finessed")
+    if (
+        window.event.shiftKey
+        && event.evt.which === 3
+    ) {
+        const note = 'f';
+        notes.set(this.order, note);
+        notes.update(this);
+        return;
+    }
+
+    // Alt + right-click is a "cm" note
+    // (this is a common abbreviation for "this card is chop moved")
+    if (
+        window.event.altKey
+        && event.evt.which === 3
+    ) {
+        const note = 'cm';
+        notes.set(this.order, note);
+        notes.update(this);
+        return;
+    }
+
+    // Right-click is edit a note
+    if (event.evt.which === 3) {
+        notes.openEditTooltip(this);
+    }
+};
+
+HanabiCard.prototype.clickArrow = function clickArrow() {
+    // In a shared replay, the leader right-clicks a card to draw on arrow on it to attention to it
+    // (and it is shown to all of the players in the review)
+    globals.lobby.conn.send('replayAction', {
+        type: 1,
+        order: this.order,
+    });
+
+    // Draw the indicator for the user manually so that
+    // we don't have to wait for the client to server round-trip
+    globals.lobby.ui.handleReplayIndicator({
+        order: this.order,
+    });
+};
+
+HanabiCard.prototype.clickArrowLocal = function clickArrowLocal() {
+    // Even if they are not a leader in a shared replay,
+    // a user might still want to draw an arrow on a card for demonstration purposes
+    globals.lobby.ui.handleReplayIndicator({
+        order: this.order,
+    });
+};
+
+// Morphing cards allows for creation of hypothetical situations
+HanabiCard.prototype.clickMorph = function clickMorph() {
+    // Only allow this feature in replays
+    if (!globals.replay) {
+        return;
+    }
+
+    const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "11", "65")');
+    if (card === null || card.length !== 2) {
+        return;
+    }
+    const suitLetter = card[0];
+    let suit;
+    if (suitLetter === 'b' || suitLetter === '1') {
+        suit = 0;
+    } else if (suitLetter === 'g' || suitLetter === '2') {
+        suit = 1;
+    } else if (suitLetter === 'y' || suitLetter === '3') {
+        suit = 2;
+    } else if (suitLetter === 'r' || suitLetter === '4') {
+        suit = 3;
+    } else if (suitLetter === 'p' || suitLetter === '5') {
+        suit = 4;
+    } else if (suitLetter === 'k' || suitLetter === 'm' || suitLetter === '6') {
+        suit = 5;
+    } else {
+        return;
+    }
+    const rank = parseInt(card[1], 10);
+    if (Number.isNaN(rank)) {
+        return;
+    }
+
+    // Tell the server that we are doing a hypothetical
+    if (globals.sharedReplayLeader === globals.lobby.username) {
+        globals.lobby.conn.send('replayAction', {
+            type: 3,
+            order: this.order,
+            suit,
+            rank,
+        });
+    }
+
+    // Send the reveal message manually so that
+    // we don't have to wait for the client to server round-trip
+    const revealMsg = {
+        type: 'reveal',
+        which: {
+            order: this.order,
+            rank,
+            suit,
+        },
+    };
+    globals.lobby.ui.handleNotify(revealMsg);
+};
+
 
 module.exports = HanabiCard;
 
