@@ -1,6 +1,8 @@
 // Imports
 const globals = require('./globals');
 const globalsInit = require('./globalsInit');
+const HanabiCard = require('./card');
+const cardDraw = require('./cardDraw');
 const notes = require('./notes');
 const stats = require('./stats');
 const timer = require('./timer');
@@ -9,37 +11,30 @@ function HanabiUI(lobby, game) {
     // Since the "HanabiUI" object is being reinstantiated,
     // we need to explicitly reinitialize all varaibles (or else they will retain their old values)
     globalsInit();
+    cardDraw.init();
     timer.init();
     notes.init();
 
     globals.lobby = lobby;
     globals.game = game;
 
+    // Eventually we will remove all "ui" references
     const ui = this;
 
     const {
         ACT,
-        backpath,
-        CARD_AREA,
-        CARDH,
         CARDW,
         CHARACTERS,
         CLUE_TYPE,
-        COLOR,
-        drawshape,
         INDICATOR,
-        SHAPE_FUNCTIONS,
         SUIT,
     } = constants;
 
-    this.useSharedTurns = true;
+    /*
+        UI variables not converted to globals yet
+    */
 
     this.animateFast = true;
-    // In replays, we can show information about a card that was not
-    // known at the time, but is known now; these are cards we have "learned"
-    this.learnedCards = [];
-
-    this.activeHover = null;
 
     // A function called after an action from the server moves cards
     this.postAnimationLayout = null;
@@ -56,158 +51,17 @@ function HanabiUI(lobby, game) {
     // pressing enter to submit a note
     this.accidentalClueTimer = Date.now();
 
-    // This below code block deals with automatic resizing
-    // Start listening to resize events and draw canvas
-    // (this is commented out because it is currently broken)
-    // window.addEventListener('resize', resizeCanvas, false);
-
     /*
-    function redraw() {
-        const self = globals.lobby.ui;
-
-        // Unbind duplicateable keybindings
-        // (commented out because this would unbind the lobby hotkeys)
-        // $(document).off('keydown');
-
-        // Remove drawn elements to prep for a redraw
-        stage.destroy();
-        stage = new Kinetic.Stage({
-            container: 'game',
-        });
-
-        // Reset stage to new window size
-        sizeStage(stage);
-
-        winW = stage.getWidth();
-        winH = stage.getHeight();
-
-        // Rebuild UI elements and cards to new scaling
-        self.buildCards();
-        self.buildUI();
-
-        self.reset();
-
-        // This resets all the messages so that everything shows up again,
-        // since the server doesn't replay them and the client only draws streamed
-        // information and doesn't maintain a full game state
-        if (globals.replay) {
-            rebuildReplay();
-        } else {
-            // Rebuilds for a game
-            let msg;
-            let whoseTurn = 0;
-
-            // Iterate over all moves to date
-            for (let i = 0; i < globals.replayLog.length; i++) {
-                msg = globals.replayLog[i];
-
-                // Rebuild all notifies; this will correctly position cards and text
-                self.handleNotify(msg.data);
-
-                // Correctly record and handle whose turn it is
-                if (msg.data.type === 'turn') {
-                    whoseTurn = msg.data.who;
-                }
-            }
-
-            // If it's your turn, setup the clue area
-            if (whoseTurn === globals.playerUs && !globals.spectating) {
-                self.handleAction.call(self, self.lastAction);
-            }
-
-            // Setup the timers
-            // (TODO fix this to "timer.update()" and test)
-            // self.handleClock.call(self, self.activeClockIndex);
-        }
-
-        // Restore Drag and Drop Functionality
-        self.animateFast = false;
-
-        // Restore Replay Button if applicable
-        if (!globals.replay && globals.replayMax > 0) {
-            replayButton.show();
-        }
-
-        // Restore Shared Replay Button if applicable
-        if (globals.sharedReplay) {
-            self.handleReplayLeader({
-                name: globals.sharedReplayLeader,
-            });
-        }
-
-        // Restore the spectator icon
-        if (self.lastSpectators) {
-            self.handleSpectators(self.lastSpectators);
-        }
-
-        // Restore message text and prompts
-        msgLogGroup.refreshText();
-        messagePrompt.refreshText();
-
-        // Redraw all layers
-        bgLayer.draw();
-        textLayer.draw();
-        globals.layers.UI.draw();
-        globals.layers.timer.draw();
-        globals.layers.card.draw();
-        overLayer.draw();
-    }
+        Misc. UI objects
     */
-
-    // Iterate over the replay and stop at the current turn or at the end, whichever comes first
-    function rebuildReplay() {
-        const self = globals.lobby.ui;
-
-        while (true) {
-            const msg = globals.replayLog[globals.replayPos];
-            globals.replayPos += 1;
-
-            // Stop at the end of the replay
-            if (!msg) {
-                break;
-            }
-
-            // Rebuild all notifies; this will correctly position cards and text
-            self.handleNotify(msg.data);
-
-            // Stop if you're at the current turn
-            if (msg.data.type === 'turn' && msg.data.num === globals.replayTurn) {
-                break;
-            }
-        }
-    }
-
-    // Runs each time the DOM window resize event fires
-    // Resets the canvas dimensions to match window,
-    // then draws the new borders accordingly
-    /*
-    function resizeCanvas() {
-        $('canvas').each((index, canvas) => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            $(canvas).css('width', window.innerWidth);
-            $(canvas).css('height', window.innerHeight);
-        });
-        redraw();
-    }
-    */
-
-    function cloneCanvas(oldCanvas) {
-        const newCanvas = document.createElement('canvas');
-        newCanvas.width = oldCanvas.width;
-        newCanvas.height = oldCanvas.height;
-        const context = newCanvas.getContext('2d');
-        context.drawImage(oldCanvas, 0, 0);
-        return newCanvas;
-    }
 
     const Clue = function Clue(type, value) {
         this.type = type;
         this.value = value;
     };
-    // Convert a clue to the format used by the server, which is identical but
-    // for the color value; for the client it is a rich object and for the
-    // server a simple integer mapping
+
+    // Convert a clue to the format used by the server, which is identical but for the color value;
+    // on the client it is a rich object and on the server it is a simple integer mapping
     const clueToMsgClue = (clue, variant) => {
         const {
             type: clueType,
@@ -225,7 +79,6 @@ function HanabiUI(lobby, game) {
             value: msgClueValue,
         };
     };
-
     const msgClueToClue = (msgClue, variant) => {
         const {
             type: clueType,
@@ -241,102 +94,6 @@ function HanabiUI(lobby, game) {
     };
 
     const msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit];
-
-    /*
-        Misc. functions
-    */
-
-    function imageName(card) {
-        let prefix = 'Card';
-
-        const learnedCard = ui.learnedCards[card.order];
-
-        const rank = (!card.showOnlyLearned && card.trueRank);
-        const empathyPastRankUncertain = card.showOnlyLearned && card.possibleRanks.length > 1;
-
-        const suit = (!card.showOnlyLearned && card.trueSuit);
-        const empathyPastSuitUncertain = card.showOnlyLearned && card.possibleSuits.length > 1;
-
-        let suitToShow = suit || learnedCard.suit || SUIT.GRAY;
-        if (empathyPastSuitUncertain) {
-            suitToShow = SUIT.GRAY;
-        }
-
-        // For whatever reason, Card-Gray is never created, so use NoPip-Gray
-        if (suitToShow === SUIT.GRAY) {
-            prefix = 'NoPip';
-        }
-
-        let name = `${prefix}-${suitToShow.name}-`;
-        if (empathyPastRankUncertain) {
-            name += '6';
-        } else {
-            name += rank || learnedCard.rank || '6';
-        }
-        return name;
-    }
-
-    const scaleCardImage = function scaleCardImage(context, name) {
-        const width = this.getWidth();
-        const height = this.getHeight();
-        const am = this.getAbsoluteTransform();
-        let src = cardImages[name];
-
-        if (!src) {
-            console.error(`The image "${name}" was not generated.`);
-            return;
-        }
-
-        const dw = Math.sqrt(am.m[0] * am.m[0] + am.m[1] * am.m[1]) * width;
-        const dh = Math.sqrt(am.m[2] * am.m[2] + am.m[3] * am.m[3]) * height;
-
-        if (dw < 1 || dh < 1) {
-            return;
-        }
-
-        let sw = width;
-        let sh = height;
-        let steps = 0;
-
-        if (!scaleCardImages[name]) {
-            scaleCardImages[name] = [];
-        }
-
-        // Scaling the card down in steps of half in each dimension presumably improves the scaling?
-        while (dw < sw / 2) {
-            let scaleCanvas = scaleCardImages[name][steps];
-            sw = Math.floor(sw / 2);
-            sh = Math.floor(sh / 2);
-
-            if (!scaleCanvas) {
-                scaleCanvas = document.createElement('canvas');
-                scaleCanvas.width = sw;
-                scaleCanvas.height = sh;
-
-                const scaleContext = scaleCanvas.getContext('2d');
-
-                scaleContext.drawImage(src, 0, 0, sw, sh);
-
-                scaleCardImages[name][steps] = scaleCanvas;
-            }
-
-            src = scaleCanvas;
-
-            steps += 1;
-        }
-
-        context.drawImage(src, 0, 0, width, height);
-    };
-
-    const drawSuitShape = (suit, i) => {
-        // Suit shapes go in order from left to right, with the exception of rainbow suits,
-        // which are always given a rainbow symbol
-        if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
-            // The final shape function in the array is the rainbow
-            i = SHAPE_FUNCTIONS.length - 1;
-        }
-        return SHAPE_FUNCTIONS[i];
-    };
 
     const FitText = function FitText(config) {
         Kinetic.Text.call(this, config);
@@ -556,577 +313,9 @@ function HanabiUI(lobby, game) {
         }
     };
 
-    // dynamically adjusted known cards, to be restored by event
-    const toggledHolderViewCards = [];
-
-    const HanabiCard = function HanabiCard(config) {
-        const self = this;
-
-        config.width = CARDW;
-        config.height = CARDH;
-        config.x = CARDW / 2;
-        config.y = CARDH / 2;
-        config.offset = {
-            x: CARDW / 2,
-            y: CARDH / 2,
-        };
-
-        Kinetic.Group.call(this, config);
-
-        this.bare = new Kinetic.Image({
-            width: config.width,
-            height: config.height,
-        });
-
-        this.doRotations = function doRotations(inverted = false) {
-            this.setRotation(inverted ? 180 : 0);
-
-            this.bare.setRotation(inverted ? 180 : 0);
-            this.bare.setX(inverted ? config.width : 0);
-            this.bare.setY(inverted ? config.height : 0);
-        };
-
-        this.bare.setDrawFunc(function setDrawFunc(context) {
-            scaleCardImage.call(this, context, self.barename);
-        });
-
-        this.add(this.bare);
-
-        this.trueSuit = config.suit || undefined;
-        this.trueRank = config.rank || undefined;
-        this.suitKnown = function suitKnown() {
-            return this.trueSuit !== undefined;
-        };
-        this.rankKnown = function rankKnown() {
-            return this.trueRank !== undefined;
-        };
-        this.identityKnown = function identityKnown() {
-            return this.suitKnown() && this.rankKnown();
-        };
-        this.order = config.order;
-        // Possible suits and ranks (based on clues given) are tracked separately from knowledge of
-        // the true suit and rank
-        this.possibleSuits = config.suits;
-        this.possibleRanks = config.ranks;
-        this.rankPips = new Kinetic.Group({
-            x: 0,
-            y: Math.floor(CARDH * 0.85),
-            width: CARDW,
-            height: Math.floor(CARDH * 0.15),
-            visible: !this.rankKnown(),
-        });
-        this.suitPips = new Kinetic.Group({
-            x: 0,
-            y: 0,
-            width: Math.floor(CARDW),
-            height: Math.floor(CARDH),
-            visible: !this.suitKnown(),
-        });
-        this.add(this.rankPips);
-        this.add(this.suitPips);
-        const cardPresentKnowledge = ui.learnedCards[this.order];
-        if (cardPresentKnowledge.rank) {
-            this.rankPips.visible(false);
-        }
-        if (cardPresentKnowledge.suit) {
-            this.suitPips.visible(false);
-        }
-        if (globals.replay) {
-            this.rankPips.visible(false);
-            this.suitPips.visible(false);
-        }
-
-        for (const i of config.ranks) {
-            const rankPip = new Kinetic.Rect({
-                x: Math.floor(CARDW * (i * 0.19 - 0.14)),
-                y: 0,
-                width: Math.floor(CARDW * 0.15),
-                height: Math.floor(CARDH * 0.10),
-                fill: 'black',
-                stroke: 'black',
-                name: i.toString(),
-                listening: false,
-            });
-            if (!ui.learnedCards[this.order].possibleRanks.includes(i)) {
-                rankPip.setOpacity(0.3);
-            }
-            this.rankPips.add(rankPip);
-        }
-
-        {
-            const { suits } = config;
-            const nSuits = suits.length;
-            for (let i = 0; i < suits.length; i++) {
-                const suit = suits[i];
-
-                let fill = suit.fillColors.hexCode;
-                if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
-                    fill = undefined;
-                }
-
-                const suitPip = new Kinetic.Shape({
-                    x: Math.floor(CARDW * 0.5),
-                    y: Math.floor(CARDH * 0.5),
-
-                    // Scale numbers are magic
-                    scale: {
-                        x: 0.4,
-                        y: 0.4,
-                    },
-
-                    // Transform polar to cartesian coordinates
-                    // The magic number added to the offset is needed to center things properly;
-                    // We don't know why it's needed;
-                    // perhaps something to do with the shape functions
-                    offset: {
-                        x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25), // eslint-disable-line
-                        y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3), // eslint-disable-line
-                    },
-                    fill,
-                    stroke: 'black',
-                    name: suit.name,
-                    listening: false,
-                    drawFunc: (ctx) => {
-                        drawSuitShape(suit, i)(ctx);
-                        ctx.closePath();
-                        ctx.fillStrokeShape(suitPip);
-                    },
-                });
-
-                // Gradient numbers are magic
-                if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
-                    suitPip.fillRadialGradientColorStops([
-                        0.3, suit.fillColors[0].hexCode,
-                        0.425, suit.fillColors[1].hexCode,
-                        0.65, suit.fillColors[2].hexCode,
-                        0.875, suit.fillColors[3].hexCode,
-                        1, suit.fillColors[4].hexCode,
-                    ]);
-                    suitPip.fillRadialGradientStartPoint({
-                        x: 75,
-                        y: 140,
-                    });
-                    suitPip.fillRadialGradientEndPoint({
-                        x: 75,
-                        y: 140,
-                    });
-                    suitPip.fillRadialGradientStartRadius(0);
-                    suitPip.fillRadialGradientEndRadius(Math.floor(CARDW * 0.25));
-                }
-                suitPip.rotation(0);
-
-                // Reduce opactity of eliminated suits and outline remaining suits
-                if (!ui.learnedCards[this.order].possibleSuits.includes(suit)) {
-                    suitPip.setOpacity(0.4);
-                } else {
-                    suitPip.setStrokeWidth(5);
-                }
-
-                this.suitPips.add(suitPip);
-            }
-        }
-
-        this.barename = undefined;
-        this.showOnlyLearned = false;
-
-        this.setBareImage();
-
-        this.cluedBorder = new Kinetic.Rect({
-            x: 3,
-            y: 3,
-            width: config.width - 6,
-            height: config.height - 6,
-            cornerRadius: 6,
-            strokeWidth: 16,
-            stroke: '#ffdf00',
-            visible: false,
-            listening: false,
-        });
-
-        this.add(this.cluedBorder);
-
-        this.indicatorArrow = new Kinetic.Text({
-            x: config.width * 1.01,
-            y: config.height * 0.18,
-            width: config.width,
-            height: 0.5 * config.height,
-            fontSize: 0.2 * winH,
-            fontFamily: 'Verdana',
-            align: 'center',
-            text: '⬆',
-            rotation: 180,
-            fill: '#ffffff',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
-            visible: false,
-            listening: false,
-        });
-
-        this.add(this.indicatorArrow);
-
-        // Define the note indicator emoji (this used to be a white square)
-        const noteX = 0.78;
-        const noteY = 0.06;
-        this.noteGiven = new Kinetic.Text({
-            x: noteX * config.width,
-            // If the cards have triangles on the corners that show the color composition,
-            // the note emoji will overlap
-            // Thus, we move it downwards if this is the case
-            y: (globals.variant.offsetCardIndicators ? noteY + 0.1 : noteY) * config.height,
-            fontSize: 0.1 * config.height,
-            fontFamily: 'Verdana',
-            align: 'center',
-            text: '📝',
-            rotation: 180,
-            fill: '#ffffff',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: {
-                x: 0,
-                y: 0,
-            },
-            shadowOpacity: 0.9,
-            visible: false,
-            listening: false,
-        });
-        this.noteGiven.setScale({
-            x: -1,
-            y: -1,
-        });
-        this.noteGiven.rotated = false;
-        // (we might rotate it later to indicate to spectators that the note was updated)
-        this.add(this.noteGiven);
-        if (notes.get(this.order)) {
-            this.noteGiven.show();
-        }
-
-        /*
-            Define event handlers
-            Multiple handlers may set activeHover
-        */
-
-        this.on('mousemove', function cardMouseMove() {
-            // Don't do anything if there is not a note on this card
-            if (!self.noteGiven.visible()) {
-                return;
-            }
-
-            // If we are spectating and there is an new note, mark it as seen
-            if (self.noteGiven.rotated) {
-                self.noteGiven.rotated = false;
-                self.noteGiven.rotate(-15);
-                globals.layers.card.batchDraw();
-            }
-
-            // Don't open any more note tooltips if the user is currently editing a note
-            if (notes.vars.editing !== null) {
-                return;
-            }
-
-            ui.activeHover = this;
-            notes.show(self); // We supply the card as the argument
-        });
-
-        this.on('mouseout', () => {
-            // Don't close the tooltip if we are currently editing a note
-            if (notes.vars.editing !== null) {
-                return;
-            }
-
-            const tooltip = $(`#tooltip-card-${self.order}`);
-            tooltip.tooltipster('close');
-        });
-
-        this.on('mousemove tap', () => {
-            clueLog.showMatches(self);
-            globals.layers.UI.draw();
-        });
-
-        this.on('mouseout', () => {
-            clueLog.showMatches(null);
-            globals.layers.UI.draw();
-        });
-
-        // Empathy feature
-        // Show teammate view of their hand, or past view of your own hand
-        // Pips visibility state is tracked so it can be restored for your own hand during a game
-        const toggleHolderViewOnCard = (c, enabled, togglePips) => {
-            const toggledPips = [0, 0];
-            if (c.rankPips.visible() !== enabled && togglePips[0] === 1) {
-                c.rankPips.setVisible(enabled);
-                toggledPips[0] = 1;
-            }
-            if (c.suitPips.visible() !== enabled && togglePips[1] === 1) {
-                c.suitPips.setVisible(enabled);
-                toggledPips[1] = 1;
-            }
-            c.showOnlyLearned = enabled;
-            c.setBareImage();
-            return toggledPips;
-        };
-        const endHolderViewOnCard = function endHolderViewOnCard(toggledPips) {
-            const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
-            cardsToReset.map(
-                (card, index) => toggleHolderViewOnCard(card, false, toggledPips[index]),
-            );
-            globals.layers.card.batchDraw();
-        };
-        const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
-            if (toggledHolderViewCards.length > 0) {
-                return undefined; // data race with stop
-            }
-
-            toggledHolderViewCards.splice(0, 0, ...cards);
-            const toggledPips = cards.map(c => toggleHolderViewOnCard(c, true, [1, 1]));
-            globals.layers.card.batchDraw();
-            return toggledPips;
-        };
-        if (config.holder !== globals.playerUs || globals.inReplay || globals.spectating) {
-            const mouseButton = 1;
-            let toggledPips = [];
-            this.on('mousedown', (event) => {
-                // Do nothing if shift is being held
-                if (window.event.shiftKey) {
-                    return;
-                }
-
-                if (event.evt.which !== mouseButton) {
-                    return;
-                }
-
-                ui.activeHover = this;
-                const cards = this.parent.parent.children.map(c => c.children[0]);
-                toggledPips = beginHolderViewOnCard(cards);
-            });
-            this.on('mouseup mouseout', (event) => {
-                if (event.type === 'mouseup' && event.evt.which !== mouseButton) {
-                    return;
-                }
-                endHolderViewOnCard(toggledPips);
-            });
-        }
-
-        // Hide clue arrows ahead of user dragging their card
-        if (config.holder === globals.playerUs && !globals.replay && !globals.spectating) {
-            this.on('mousedown', (event) => {
-                if (
-                    event.evt.which !== 1 // dragging uses left click
-                    || globals.inReplay
-                    || !this.indicatorArrow.isVisible()
-                ) {
-                    return;
-                }
-
-                showClueMatch(-1);
-                // Do not prevent default since the other event is starting
-            });
-        }
-
-        this.on('click', (event) => {
-            // Do nothing if shift is being held
-            if (window.event.shiftKey) {
-                return;
-            }
-
-            // In a shared replay, the leader right-clicks a card to draw attention to it
-            if (
-                globals.sharedReplay
-                && event.evt.which === 3 // Right-click
-                && globals.sharedReplayLeader === globals.lobby.username
-            ) {
-                if (ui.useSharedTurns) {
-                    ui.sendMsg({
-                        type: 'replayAction',
-                        data: {
-                            type: 1,
-                            order: self.order,
-                        },
-                    });
-
-                    // Draw the indicator for the user manually so that
-                    // we don't have to wait for the client to server round-trip
-                    ui.handleReplayIndicator({
-                        order: self.order,
-                    });
-                }
-
-                return;
-            }
-
-            // In a non-shared replay, a user might still want to draw an arrow on a card
-            // for demonstration purposes
-            if (window.event.ctrlKey) {
-                ui.handleReplayIndicator({
-                    order: self.order,
-                });
-                return;
-            }
-
-            notes.edit(self, event);
-        });
-
-        // Catch clicks for making arbitrary cards (for hypothetical situation creation)
-        this.on('mousedown', () => {
-            // Do nothing if shift is not being held
-            if (!window.event.shiftKey) {
-                return;
-            }
-
-            // Only allow this feature in replays
-            if (!globals.replay) {
-                return;
-            }
-
-            const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "11", "65")');
-            if (card === null || card.length !== 2) {
-                return;
-            }
-            const suitLetter = card[0];
-            let suit;
-            if (suitLetter === 'b' || suitLetter === '1') {
-                suit = 0;
-            } else if (suitLetter === 'g' || suitLetter === '2') {
-                suit = 1;
-            } else if (suitLetter === 'y' || suitLetter === '3') {
-                suit = 2;
-            } else if (suitLetter === 'r' || suitLetter === '4') {
-                suit = 3;
-            } else if (suitLetter === 'p' || suitLetter === '5') {
-                suit = 4;
-            } else if (suitLetter === 'k' || suitLetter === 'm' || suitLetter === '6') {
-                suit = 5;
-            } else {
-                return;
-            }
-            const rank = parseInt(card[1], 10);
-            if (Number.isNaN(rank)) {
-                return;
-            }
-
-            // Tell the server that we are doing a hypothetical
-            if (globals.sharedReplayLeader === globals.lobby.username) {
-                ui.sendMsg({
-                    type: 'replayAction',
-                    data: {
-                        type: 3,
-                        order: self.order,
-                        suit,
-                        rank,
-                    },
-                });
-            }
-
-            // Send the reveal message manually so that
-            // we don't have to wait for the client to server round-trip
-            const revealMsg = {
-                type: 'reveal',
-                which: {
-                    order: self.order,
-                    rank,
-                    suit,
-                },
-            };
-            ui.handleNotify(revealMsg);
-        });
-
-        this.isClued = function isClued() {
-            return this.cluedBorder.visible();
-        };
-    };
-
-    Kinetic.Util.extend(HanabiCard, Kinetic.Group);
-
-    HanabiCard.prototype.setBareImage = function setBareImage() {
-        this.barename = imageName(this);
-    };
-
-    HanabiCard.prototype.setIndicator = function setIndicator(visible, type = INDICATOR.POSITIVE) {
-        this.indicatorArrow.setStroke('#000000');
-        this.indicatorArrow.setFill(type);
-        this.indicatorArrow.setVisible(visible);
-        this.getLayer().batchDraw();
-    };
-
-    const filterInPlace = function filterInPlace(values, predicate) {
-        const removed = [];
-        let i = values.length - 1;
-        while (i >= 0) {
-            if (!predicate(values[i], i)) {
-                removed.unshift(values.splice(i, 1)[0]);
-            }
-            i -= 1;
-        }
-        return removed;
-    };
-
-    HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
-        if (clue.type === CLUE_TYPE.RANK) {
-            const clueRank = clue.value;
-            const findPipElement = rank => this.rankPips.find(`.${rank}`);
-            let removed;
-            if (globals.variant.name.startsWith('Multi-Fives')) {
-                removed = filterInPlace(
-                    this.possibleRanks,
-                    rank => (rank === clueRank || rank === 5) === positive,
-                );
-            } else {
-                removed = filterInPlace(
-                    this.possibleRanks,
-                    rank => (rank === clueRank) === positive,
-                );
-            }
-            removed.forEach(rank => findPipElement(rank).hide());
-            // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
-            // display a non-grey card face
-            if (this.possibleRanks.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
-                [this.trueRank] = this.possibleRanks;
-                findPipElement(this.trueRank).hide();
-                this.rankPips.hide();
-                ui.learnedCards[this.order].rank = this.trueRank;
-            }
-            // Ensure that the learned card data is not overwritten with less recent information
-            filterInPlace(
-                ui.learnedCards[this.order].possibleRanks,
-                s => this.possibleRanks.includes(s),
-            );
-        } else if (clue.type === CLUE_TYPE.COLOR) {
-            const clueColor = clue.value;
-            const findPipElement = suit => this.suitPips.find(`.${suit.name}`);
-            const removed = filterInPlace(
-                this.possibleSuits,
-                suit => suit.clueColors.includes(clueColor) === positive,
-            );
-            removed.forEach(suit => findPipElement(suit).hide());
-            // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
-            // display a non-grey card face
-            if (this.possibleSuits.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
-                [this.trueSuit] = this.possibleSuits;
-                findPipElement(this.trueSuit).hide();
-                this.suitPips.hide();
-                ui.learnedCards[this.order].suit = this.trueSuit;
-            }
-            // Ensure that the learned card data is not overwritten with less recent information
-            filterInPlace(
-                ui.learnedCards[this.order].possibleSuits,
-                s => this.possibleSuits.includes(s),
-            );
-        } else {
-            console.error('Clue type invalid.');
-        }
-    };
-
-    HanabiCard.prototype.hideClues = function hideClues() {
-        this.cluedBorder.hide();
-    };
-
-    HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
-        return playerHands.indexOf(this.parent.parent) !== -1;
-    };
+    /*
+        Card layouts
+    */
 
     const LayoutChild = function LayoutChild(config) {
         Kinetic.Group.call(this, config);
@@ -1280,7 +469,7 @@ function HanabiUI(lobby, game) {
             y: 0,
             width: this.getWidth(),
             height: this.getHeight(),
-            image: cardImages[config.cardback],
+            image: globals.cardImages[config.cardback],
         });
 
         this.add(this.cardback);
@@ -1903,7 +1092,7 @@ function HanabiUI(lobby, game) {
 
         // Add a mouseover highlighting effect
         background.on('mouseover tap', () => {
-            clueLog.showMatches(null);
+            globals.elements.clueLog.showMatches(null);
 
             background.setOpacity(0.4);
             background.getLayer().batchDraw();
@@ -2098,12 +1287,9 @@ function HanabiUI(lobby, game) {
             return;
         }
 
-        ui.sendMsg({
-            type: 'replayAction',
-            data: {
-                type: 2, // Type 2 is a leader transfer
-                name: username,
-            },
+        globals.lobby.conn.send('replayAction', {
+            type: 2, // Type 2 is a leader transfer
+            name: username,
         });
     };
 
@@ -2196,12 +1382,9 @@ function HanabiUI(lobby, game) {
     };
 
     const ImageLoader = new Loader(() => {
-        ui.buildCards();
+        cardDraw.buildCards();
         ui.buildUI();
-        ui.sendMsg({
-            type: 'ready',
-            data: {},
-        });
+        globals.lobby.conn.send('ready');
         globals.ready = true;
     });
 
@@ -2209,7 +1392,7 @@ function HanabiUI(lobby, game) {
         ImageLoader.start();
     };
 
-    const showClueMatch = (target, clue) => {
+    this.showClueMatch = (target, clue) => {
         // Hide all of the existing arrows on the cards
         for (let i = 0; i < globals.deck.length; i++) {
             if (i === target) {
@@ -2233,8 +1416,8 @@ function HanabiUI(lobby, game) {
         }
 
         let match = false;
-        for (let i = 0; i < playerHands[target].children.length; i++) {
-            const child = playerHands[target].children[i];
+        for (let i = 0; i < globals.elements.playerHands[target].children.length; i++) {
+            const child = globals.elements.playerHands[target].children[i];
             const card = child.children[0];
 
             let touched = false;
@@ -2270,364 +1453,6 @@ function HanabiUI(lobby, game) {
         globals.layers.card.batchDraw();
 
         return match;
-    };
-
-    const cardImages = {};
-    const scaleCardImages = {};
-
-    const xrad = CARDW * 0.08;
-    const yrad = CARDH * 0.08;
-
-    // Draw texture lines on card
-    const drawCardTexture = function drawCardTexture(ctx) {
-        backpath(ctx, 4, xrad, yrad);
-
-        ctx.fillStyle = 'white';
-        ctx.fill();
-
-        ctx.save();
-        ctx.clip();
-        ctx.globalAlpha = 0.2;
-        ctx.strokeStyle = 'black';
-
-        for (let x = 0; x < CARDW; x += 4 + Math.random() * 4) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, CARDH);
-            ctx.stroke();
-        }
-
-        for (let y = 0; y < CARDH; y += 4 + Math.random() * 4) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(CARDW, y);
-            ctx.stroke();
-        }
-
-        ctx.restore();
-    };
-
-    const drawCardBase = function drawCardBase(ctx, suit, rank) {
-        // Draw the background
-        ctx.fillStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
-        ctx.strokeStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
-        if (ctx.fillStyle === COLOR.WHITE.hexCode) {
-            ctx.strokeStyle = COLOR.BLACK.hexCode;
-        }
-
-        backpath(ctx, 4, xrad, yrad);
-
-        ctx.save();
-        // Draw the borders (on visible cards) and the color fill
-        ctx.globalAlpha = 0.3;
-        ctx.fill();
-        ctx.globalAlpha = 0.7;
-        ctx.lineWidth = 8;
-        // The borders should be more opaque for the stack base
-        if (rank === 0) {
-            ctx.globalAlpha = 1.0;
-        }
-        ctx.stroke();
-
-        ctx.restore();
-    };
-
-    const drawCardIndex = function drawCardIndex(ctx, textYPos, indexLabel) {
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-        ctx.fillText(indexLabel, 19, textYPos);
-        ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-        ctx.strokeText(indexLabel, 19, textYPos);
-    };
-
-    const drawMixedCardHelper = function drawMixedCardHelper(ctx, clueColors) {
-        const [clueColor1, clueColor2] = clueColors;
-
-        ctx.save();
-
-        ctx.lineWidth = 1;
-
-        const triangleSize = 50;
-        const borderSize = 8;
-
-        // Draw the first half of the top-right triangle
-        ctx.beginPath();
-        ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top-right-hand corner
-        ctx.lineTo(CARDW - borderSize - triangleSize, borderSize); // Move left
-        ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
-        // Move down and right diagonally
-        ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
-        ctx.fillStyle = clueColor1.hexCode;
-        drawshape(ctx);
-
-        // Draw the second half of the top-right triangle
-        ctx.beginPath();
-        ctx.moveTo(CARDW - borderSize, borderSize); // Start at the top-right-hand corner
-        ctx.lineTo(CARDW - borderSize, borderSize + triangleSize); // Move down
-        ctx.lineTo(CARDW - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
-        // Move up and left diagonally
-        ctx.moveTo(CARDW - borderSize, borderSize); // Move back to the beginning
-        ctx.fillStyle = clueColor2.hexCode;
-        drawshape(ctx);
-
-        // Draw the first half of the bottom-left triangle
-        ctx.beginPath();
-        ctx.moveTo(borderSize, CARDH - borderSize); // Start at the bottom right-hand corner
-        ctx.lineTo(borderSize, CARDH - borderSize - triangleSize); // Move up
-        ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2));
-        // Move right and down diagonally
-        ctx.moveTo(borderSize, CARDH - borderSize); // Move back to the beginning
-        ctx.fillStyle = clueColor1.hexCode;
-        drawshape(ctx);
-
-        // Draw the second half of the bottom-left triangle
-        ctx.beginPath();
-        ctx.moveTo(borderSize, CARDH - borderSize); // Start at the bottom right-hand corner
-        ctx.lineTo(borderSize + triangleSize, CARDH - borderSize); // Move right
-        ctx.lineTo(borderSize + (triangleSize / 2), CARDH - borderSize - (triangleSize / 2));
-        // Move left and up diagonally
-        ctx.moveTo(borderSize, CARDH - borderSize); // Move back to the beginning
-        ctx.fillStyle = clueColor2.hexCode;
-        drawshape(ctx);
-
-        ctx.restore();
-    };
-
-    const drawSuitPips = function drawSuitPips(ctx, rank, suit, i) {
-        const pathfunc = drawSuitShape(suit, i);
-        const scale = 0.4;
-
-        // The middle for cards 2 or 4
-        if (rank === 1 || rank === 3) {
-            ctx.save();
-            ctx.translate(CARDW / 2, CARDH / 2);
-            ctx.scale(scale, scale);
-            ctx.translate(-75, -100);
-            pathfunc(ctx);
-            drawshape(ctx);
-            ctx.restore();
-        }
-
-        // Top and bottom for cards 2, 3, 4, 5
-        if (rank > 1 && rank <= 5) {
-            const symbolYPos = globals.lobby.settings.showColorblindUI ? 85 : 120;
-            ctx.save();
-            ctx.translate(CARDW / 2, CARDH / 2);
-            ctx.translate(0, -symbolYPos);
-            ctx.scale(scale, scale);
-            ctx.translate(-75, -100);
-            pathfunc(ctx);
-            drawshape(ctx);
-            ctx.restore();
-
-            ctx.save();
-            ctx.translate(CARDW / 2, CARDH / 2);
-            ctx.translate(0, symbolYPos);
-            ctx.scale(scale, scale);
-            ctx.rotate(Math.PI);
-            ctx.translate(-75, -100);
-            pathfunc(ctx);
-            drawshape(ctx);
-            ctx.restore();
-        }
-
-        // Left and right for cards 4 and 5
-        if (rank === 4 || rank === 5) {
-            ctx.save();
-            ctx.translate(CARDW / 2, CARDH / 2);
-            ctx.translate(-90, 0);
-            ctx.scale(scale, scale);
-            ctx.translate(-75, -100);
-            pathfunc(ctx);
-            drawshape(ctx);
-            ctx.restore();
-
-            ctx.save();
-            ctx.translate(CARDW / 2, CARDH / 2);
-            ctx.translate(90, 0);
-            ctx.scale(scale, scale);
-            ctx.rotate(Math.PI);
-            ctx.translate(-75, -100);
-            pathfunc(ctx);
-            drawshape(ctx);
-            ctx.restore();
-        }
-
-        // Size, position, and alpha adjustment for the central icon on stack base and 5
-        if (rank === 0 || rank === 5) {
-            ctx.globalAlpha = 1.0;
-            ctx.save();
-            ctx.translate(CARDW / 2, CARDH / 2);
-            ctx.scale(scale * 3 / 2, scale * 3 / 2);
-            ctx.translate(-75, -100);
-            pathfunc(ctx);
-            drawshape(ctx);
-            ctx.restore();
-        }
-
-        // Unknown rank, so draw large faint suit
-        if (rank === 6) {
-            ctx.save();
-            ctx.globalAlpha = globals.lobby.settings.showColorblindUI ? 0.4 : 0.1;
-            ctx.translate(CARDW / 2, CARDH / 2);
-            ctx.scale(scale * 3, scale * 3);
-            ctx.translate(-75, -100);
-            pathfunc(ctx);
-            drawshape(ctx);
-            ctx.restore();
-        }
-    };
-
-    const makeUnknownCardImage = function makeUnknownCardImage() {
-        const cvs = document.createElement('canvas');
-        cvs.width = CARDW;
-        cvs.height = CARDH;
-
-        const ctx = cvs.getContext('2d');
-
-        drawCardTexture(ctx);
-
-        ctx.fillStyle = 'black';
-
-        backpath(ctx, 4, xrad, yrad);
-
-        ctx.save();
-        ctx.globalAlpha = 0.5;
-        ctx.fill();
-        ctx.globalAlpha = 0.7;
-        ctx.lineWidth = 8;
-        ctx.stroke();
-        ctx.restore();
-
-        ctx.fillStyle = '#444444';
-        ctx.lineWidth = 8;
-        ctx.lineJoin = 'round';
-
-        ctx.translate(CARDW / 2, CARDH / 2);
-
-        return cvs;
-    };
-
-    const makeDeckBack = function makeDeckBack() {
-        const cvs = makeUnknownCardImage();
-        const ctx = cvs.getContext('2d');
-
-        const nSuits = globals.variant.suits.length;
-        for (let i = 0; i < globals.variant.suits.length; i++) {
-            const suit = globals.variant.suits[i];
-
-            ctx.resetTransform();
-            ctx.scale(0.4, 0.4);
-
-            let x = Math.floor(CARDW * 1.25);
-            let y = Math.floor(CARDH * 1.25);
-
-            // Transform polar to cartesian coordinates
-            // The magic number added to the offset is needed to center things properly
-            x -= 1.05 * Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25); // eslint-disable-line
-            y -= 1.05 * Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3); // eslint-disable-line
-            ctx.translate(x, y);
-
-            drawSuitShape(suit, i)(ctx);
-            drawshape(ctx);
-        }
-        ctx.save();
-        return cvs;
-    };
-
-    this.buildCards = function buildCards() {
-        // The gray suit represents cards of unknown suit
-        const suits = globals.variant.suits.concat(SUIT.GRAY);
-        for (let i = 0; i < suits.length; i++) {
-            const suit = suits[i];
-
-            // Rank 0 is the stack base
-            // Rank 1-5 are the normal cards
-            // Rank 6 is a card of unknown rank
-            // Rank 7 is a "START" card (in the "Up or Down" variants)
-            for (let rank = 0; rank <= 7; rank++) {
-                const cvs = document.createElement('canvas');
-                cvs.width = CARDW;
-                cvs.height = CARDH;
-
-                const ctx = cvs.getContext('2d');
-
-                if (rank > 0) {
-                    drawCardTexture(ctx);
-                }
-
-                drawCardBase(ctx, suit, rank);
-
-                ctx.shadowBlur = 10;
-                ctx.fillStyle = suit.style(ctx, CARD_AREA.NUMBER);
-                ctx.strokeStyle = 'black';
-                ctx.lineWidth = 2;
-                ctx.lineJoin = 'round';
-
-                if (rank !== 0 && rank !== 6) {
-                    let textYPos;
-                    let indexLabel;
-                    let rankString = rank.toString();
-                    if (rank === 7) {
-                        // "START" cards are represented by rank 7
-                        rankString = 'S';
-                    }
-                    let fontSize;
-                    if (globals.lobby.settings.showColorblindUI) {
-                        fontSize = 68;
-                        textYPos = 83;
-                        indexLabel = suit.abbreviation + rankString;
-                    } else {
-                        fontSize = 96;
-                        textYPos = 110;
-                        indexLabel = rankString;
-                    }
-
-                    ctx.font = `bold ${fontSize}pt Arial`;
-
-                    // Draw index on top left
-                    drawCardIndex(ctx, textYPos, indexLabel);
-
-                    // 'Index' cards are used to draw cards of learned but not yet known rank
-                    cardImages[`Index-${suit.name}-${rank}`] = cloneCanvas(cvs);
-
-                    // Draw index on bottom right
-                    ctx.save();
-                    ctx.translate(CARDW, CARDH);
-                    ctx.rotate(Math.PI);
-                    drawCardIndex(ctx, textYPos, indexLabel);
-                    ctx.restore();
-                }
-
-                ctx.fillStyle = suit.style(ctx, CARD_AREA.SYMBOL);
-
-                ctx.lineWidth = 5;
-
-                // Make the special corners on cards for the mixed variant
-                if (suit.clueColors !== null && suit.clueColors.length === 2) {
-                    drawMixedCardHelper(ctx, suit.clueColors);
-                }
-
-                // 'NoPip' cards are used for
-                //   cards of known rank before suit learned
-                //   cards of unknown rank
-                // Entirely unknown cards (Gray 6) have a custom image defined separately
-                if (rank > 0 && (rank < 6 || suit !== SUIT.GRAY)) {
-                    cardImages[`NoPip-${suit.name}-${rank}`] = cloneCanvas(cvs);
-                }
-
-                if (suit !== SUIT.GRAY) {
-                    drawSuitPips(ctx, rank, suit, i);
-                }
-
-                // Gray Card images would be identical to NoPip images
-                if (suit !== SUIT.GRAY) {
-                    cardImages[`Card-${suit.name}-${rank}`] = cvs;
-                }
-            }
-        }
-
-        cardImages['NoPip-Gray-6'] = makeUnknownCardImage();
-        cardImages['deck-back'] = makeDeckBack();
     };
 
     const sizeStage = (stage) => {
@@ -2667,14 +1492,14 @@ function HanabiUI(lobby, game) {
         stage.setHeight(ch);
     };
 
-    const stage = new Kinetic.Stage({
+    globals.stage = new Kinetic.Stage({
         container: 'game',
     });
 
-    sizeStage(stage);
+    sizeStage(globals.stage);
 
-    let winW = stage.getWidth();
-    let winH = stage.getHeight();
+    let winW = globals.stage.getWidth();
+    let winH = globals.stage.getHeight();
 
     const bgLayer = new Kinetic.Layer();
     globals.layers.card = new Kinetic.Layer();
@@ -2686,7 +1511,6 @@ function HanabiUI(lobby, game) {
     globals.layers.timer = new Kinetic.Layer({
         listening: false,
     });
-    const playerHands = [];
     let drawDeckRect;
     let drawDeck;
     let messagePrompt;
@@ -2709,7 +1533,6 @@ function HanabiUI(lobby, game) {
     let playArea;
     let discardArea;
     let clueLogRect;
-    let clueLog;
     let clueArea;
     let clueTargetButtonGroup;
     let clueButtonGroup;
@@ -2742,12 +1565,9 @@ function HanabiUI(lobby, game) {
 
     const shareCurrentTurn = (target) => {
         if (globals.sharedReplayTurn !== target) {
-            ui.sendMsg({
-                type: 'replayAction',
-                data: {
-                    type: 0, // Type 0 is a new replay turn
-                    turn: target,
-                },
+            globals.lobby.conn.send('replayAction', {
+                type: 0, // Type 0 is a new replay turn
+                turn: target,
             });
             globals.sharedReplayTurn = target;
             ui.adjustReplayShuttle();
@@ -2764,7 +1584,7 @@ function HanabiUI(lobby, game) {
         let rect;
         let button;
 
-        const layers = stage.getLayers();
+        const layers = globals.stage.getLayers();
 
         for (let i = 0; i < layers.length; i++) {
             layers[i].remove();
@@ -3075,7 +1895,7 @@ function HanabiUI(lobby, game) {
 
         // Tooltip for the eyes
         spectatorsLabel.on('mousemove', function spectatorsLabelMouseMove() {
-            ui.activeHover = this;
+            globals.activeHover = this;
 
             const tooltipX = this.attrs.x + this.getWidth() / 2;
             $('#tooltip-spectators').css('left', tooltipX);
@@ -3154,7 +1974,7 @@ function HanabiUI(lobby, game) {
 
         // Tooltip for the crown
         sharedReplayLeaderLabel.on('mousemove', function sharedReplayLeaderLabelMouseMove() {
-            ui.activeHover = this;
+            globals.activeHover = this;
 
             const tooltipX = this.attrs.x + this.getWidth() / 2;
             $('#tooltip-leader').css('left', tooltipX);
@@ -3191,12 +2011,9 @@ function HanabiUI(lobby, game) {
                 return;
             }
 
-            ui.sendMsg({
-                type: 'replayAction',
-                data: {
-                    type: 2, // Type 2 is a leader transfer
-                    name: target,
-                },
+            globals.lobby.replay.send('replayAction', {
+                type: 2, // Type 2 is a leader transfer
+                name: target,
             });
         });
 
@@ -3226,13 +2043,13 @@ function HanabiUI(lobby, game) {
         bgLayer.add(clueLogRect);
 
         const spacing = 0.01;
-        clueLog = new HanabiClueLog({
+        globals.elements.clueLog = new HanabiClueLog({
             x: (clueLogValues.x + spacing) * winW,
             y: (clueLogValues.y + spacing) * winH,
             width: (clueLogValues.w - spacing * 2) * winW,
             height: (clueLogValues.h - spacing * 2) * winH,
         });
-        globals.layers.UI.add(clueLog);
+        globals.layers.UI.add(globals.elements.clueLog);
 
         /*
             Statistics shown on the right-hand side of the screen (at the bottom of the clue log)
@@ -3338,7 +2155,7 @@ function HanabiUI(lobby, game) {
                     y: playStackValues.y * winH,
                     width: width * winW,
                     height: height * winH,
-                    image: cardImages[`Card-${suit.name}-0`],
+                    image: globals.cardImages[`Card-${suit.name}-0`],
                 });
 
                 bgLayer.add(pileback);
@@ -3458,11 +2275,8 @@ function HanabiUI(lobby, game) {
                 this.setDraggable(false);
                 deckPlayAvailableLabel.setVisible(false);
 
-                ui.sendMsg({
-                    type: 'action',
-                    data: {
-                        type: ACT.DECKPLAY,
-                    },
+                globals.lobby.conn.send('action', {
+                    type: ACT.DECKPLAY,
                 });
 
                 self.stopAction();
@@ -3721,7 +2535,7 @@ function HanabiUI(lobby, game) {
                 invertCards = false;
             }
 
-            playerHands[i] = new CardLayout({
+            globals.elements.playerHands[i] = new CardLayout({
                 x: playerHandPos[nump][j].x * winW,
                 y: playerHandPos[nump][j].y * winH,
                 width: playerHandPos[nump][j].w * winW,
@@ -3731,8 +2545,7 @@ function HanabiUI(lobby, game) {
                 reverse: isHandReversed(j),
                 invertCards,
             });
-
-            globals.layers.card.add(playerHands[i]);
+            globals.layers.card.add(globals.elements.playerHands[i]);
 
             // Draw the faded shade that shows where the "new" side of the hand is
             // (but don't bother drawing it in Board Game Arena mode since
@@ -3790,7 +2603,7 @@ function HanabiUI(lobby, game) {
             // Draw the tooltips on the player names that show the time
             if (!globals.replay) {
                 nameFrames[i].on('mousemove', function nameFramesMouseMove() {
-                    ui.activeHover = this;
+                    globals.activeHover = this;
 
                     const tooltipX = this.getWidth() / 2 + this.attrs.x;
                     const tooltip = $(`#tooltip-player-${i}`);
@@ -3830,7 +2643,7 @@ function HanabiUI(lobby, game) {
 
                 /* eslint-disable no-loop-func */
                 charIcon.on('mousemove', function charIconMouseMove() {
-                    ui.activeHover = this;
+                    globals.activeHover = this;
 
                     const tooltipX = this.getWidth() / 2 + this.attrs.x;
                     const tooltip = $(`#tooltip-character-assignment-${i}`);
@@ -4087,7 +2900,7 @@ function HanabiUI(lobby, game) {
                 globals.replay
                 && globals.sharedReplay
                 && globals.sharedReplayLeader !== globals.lobby.username
-                && ui.useSharedTurns
+                && globals.useSharedTurns
             ) {
                 // Replay actions currently enabled, so disable them
                 toggleSharedTurnButton.dispatchEvent(new MouseEvent('click'));
@@ -4153,7 +2966,7 @@ function HanabiUI(lobby, game) {
             height: 0.03 * winH,
             cornerRadius: 0.01 * winW,
             fill: '#d1d1d1',
-            visible: !ui.useSharedTurns,
+            visible: !globals.useSharedTurns,
         });
 
         replayShuttleShared.on('click tap', () => {
@@ -4281,10 +3094,7 @@ function HanabiUI(lobby, game) {
         });
         replayExitButton.on('click tap', () => {
             if (globals.replay) {
-                ui.sendMsg({
-                    type: 'gameUnattend',
-                    data: {},
-                });
+                globals.lobby.conn.send('gameUnattend');
 
                 timer.stop();
                 globals.game.hide();
@@ -4305,13 +3115,13 @@ function HanabiUI(lobby, game) {
             height: 0.06 * winH,
             text: 'Pause Shared Turns',
             alternateText: 'Use Shared Turns',
-            initialState: !ui.useSharedTurns,
+            initialState: !globals.useSharedTurns,
             visible: false,
         });
         toggleSharedTurnButton.on('click tap', () => {
-            ui.useSharedTurns = !ui.useSharedTurns;
-            replayShuttleShared.setVisible(!ui.useSharedTurns);
-            if (ui.useSharedTurns) {
+            globals.useSharedTurns = !globals.useSharedTurns;
+            replayShuttleShared.setVisible(!globals.useSharedTurns);
+            if (globals.useSharedTurns) {
                 if (globals.sharedReplayLeader === globals.lobby.username) {
                     shareCurrentTurn(globals.replayTurn);
                 } else {
@@ -4381,7 +3191,7 @@ function HanabiUI(lobby, game) {
 
         // Keyboard actions for playing and discarding cards
         const promptOwnHandOrder = (actionString) => {
-            const playerCards = playerHands[globals.playerUs].children;
+            const playerCards = globals.elements.playerHands[globals.playerUs].children;
             const maxSlotIndex = playerCards.length;
             const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${actionString}.`;
             const response = window.prompt(msg);
@@ -4421,10 +3231,7 @@ function HanabiUI(lobby, game) {
                 data.target = cardOrder;
             }
 
-            ui.sendMsg({
-                type: 'action',
-                data,
-            });
+            globals.lobby.conn.send('action', data);
             ui.stopAction();
             savedAction = null;
         };
@@ -4481,12 +3288,12 @@ function HanabiUI(lobby, game) {
 
             // Speedrun hotkey helper functions
             const getOrderFromSlot = (slot) => {
-                const playerCards = playerHands[globals.playerUs].children;
+                const playerCards = globals.elements.playerHands[globals.playerUs].children;
                 const maxSlotIndex = playerCards.length;
                 return playerCards[maxSlotIndex - slot].children[0].order;
             };
             const speedrunAction = (type, target, clue = null) => {
-                if (clue !== null && !showClueMatch(target, clue)) {
+                if (clue !== null && !globals.lobby.ui.showClueMatch(target, clue)) {
                     return;
                 }
                 const action = {
@@ -4641,12 +3448,9 @@ function HanabiUI(lobby, game) {
             }
 
             // Send it
-            ui.sendMsg({
-                type: 'replayAction',
-                data: {
-                    type: 4,
-                    sound,
-                },
+            globals.lobby.conn.send('replayAction', {
+                type: 4,
+                sound,
             });
 
             // Play the sound effect manually so that
@@ -4777,10 +3581,7 @@ Keyboard hotkeys:
 
         lobbyButton.on('click tap', () => {
             lobbyButton.off('click tap');
-            ui.sendMsg({
-                type: 'gameUnattend',
-                data: {},
-            });
+            globals.lobby.conn.send('gameUnattend');
 
             timer.stop();
             globals.game.hide();
@@ -4790,12 +3591,12 @@ Keyboard hotkeys:
             replayArea.show();
         }
 
-        stage.add(bgLayer);
-        stage.add(textLayer);
-        stage.add(globals.layers.UI);
-        stage.add(globals.layers.timer);
-        stage.add(globals.layers.card);
-        stage.add(overLayer);
+        globals.stage.add(bgLayer);
+        globals.stage.add(textLayer);
+        globals.stage.add(globals.layers.UI);
+        globals.stage.add(globals.layers.timer);
+        globals.stage.add(globals.layers.card);
+        globals.stage.add(overLayer);
     };
 
     this.reset = function reset() {
@@ -4810,13 +3611,13 @@ Keyboard hotkeys:
         }
 
         for (let i = 0; i < globals.playerNames.length; i++) {
-            playerHands[i].removeChildren();
+            globals.elements.playerHands[i].removeChildren();
         }
 
         globals.deck = [];
         ui.postAnimationLayout = null;
 
-        clueLog.clear();
+        globals.elements.clueLog.clear();
         messagePrompt.reset();
 
         // This should always be overridden before it gets displayed
@@ -4926,7 +3727,7 @@ Keyboard hotkeys:
         if (
             globals.sharedReplay
             && globals.sharedReplayLeader === globals.lobby.username
-            && this.useSharedTurns
+            && globals.useSharedTurns
         ) {
             shareCurrentTurn(target);
         }
@@ -4950,6 +3751,29 @@ Keyboard hotkeys:
         messagePrompt.refreshText();
         globals.layers.card.draw();
         globals.layers.UI.draw();
+    };
+
+    // Iterate over the replay and stop at the current turn or at the end, whichever comes first
+    const rebuildReplay = () => {
+        const self = globals.lobby.ui;
+
+        while (true) {
+            const msg = globals.replayLog[globals.replayPos];
+            globals.replayPos += 1;
+
+            // Stop at the end of the replay
+            if (!msg) {
+                break;
+            }
+
+            // Rebuild all notifies; this will correctly position cards and text
+            self.handleNotify(msg.data);
+
+            // Stop if you're at the current turn
+            if (msg.data.type === 'turn' && msg.data.num === globals.replayTurn) {
+                break;
+            }
+        }
     };
 
     this.replayAdvanced = function replayAdvanced() {
@@ -5020,7 +3844,7 @@ Keyboard hotkeys:
             loadinglayer.draw();
         };
 
-        stage.add(loadinglayer);
+        globals.stage.add(loadinglayer);
     }
 
     showLoading();
@@ -5033,9 +3857,9 @@ Keyboard hotkeys:
         }
 
         // Automatically disable any tooltips once an action in the game happens
-        if (ui.activeHover) {
-            ui.activeHover.dispatchEvent(new MouseEvent('mouseout'));
-            ui.activeHover = null;
+        if (globals.activeHover) {
+            globals.activeHover.dispatchEvent(new MouseEvent('mouseout'));
+            globals.activeHover = null;
         }
 
         const { type } = data;
@@ -5049,8 +3873,8 @@ Keyboard hotkeys:
                 delete data.rank;
             }
             const suit = msgSuitToSuit(data.suit, globals.variant);
-            if (!ui.learnedCards[data.order]) {
-                ui.learnedCards[data.order] = {
+            if (!globals.learnedCards[data.order]) {
+                globals.learnedCards[data.order] = {
                     possibleSuits: globals.variant.suits.slice(),
                     possibleRanks: globals.variant.ranks.slice(),
                 };
@@ -5070,7 +3894,7 @@ Keyboard hotkeys:
             const pos = drawDeck.cardback.getAbsolutePosition();
 
             child.setAbsolutePosition(pos);
-            child.setRotation(-playerHands[data.who].getRotation());
+            child.setRotation(-globals.elements.playerHands[data.who].getRotation());
 
             const scale = drawDeck.cardback.getWidth() / CARDW;
             child.setScale({
@@ -5078,8 +3902,8 @@ Keyboard hotkeys:
                 y: scale,
             });
 
-            playerHands[data.who].add(child);
-            playerHands[data.who].moveToTop();
+            globals.elements.playerHands[data.who].add(child);
+            globals.elements.playerHands[data.who].moveToTop();
 
             // Adding speedrun code; make all cards in our hand draggable from the get-go
             // except for cards we have already played or discarded
@@ -5088,7 +3912,7 @@ Keyboard hotkeys:
                 && data.who === globals.playerUs
                 && !globals.replay
                 && !globals.spectating
-                && !ui.learnedCards[data.order].revealed
+                && !globals.learnedCards[data.order].revealed
             ) {
                 child.setDraggable(true);
                 child.on('dragend.play', dragendPlay);
@@ -5098,7 +3922,7 @@ Keyboard hotkeys:
             drawDeck.setCount(data.size);
         } else if (type === 'play') {
             const suit = msgSuitToSuit(data.which.suit, globals.variant);
-            showClueMatch(-1);
+            globals.lobby.ui.showClueMatch(-1);
 
             const child = globals.deck[data.which.order].parent;
             const card = child.children[0];
@@ -5106,7 +3930,7 @@ Keyboard hotkeys:
                 stats.updateEfficiency(1);
             }
 
-            const learnedCard = ui.learnedCards[data.which.order];
+            const learnedCard = globals.learnedCards[data.which.order];
             learnedCard.suit = suit;
             learnedCard.rank = data.which.rank;
             learnedCard.possibleSuits = [suit];
@@ -5130,10 +3954,10 @@ Keyboard hotkeys:
             playStacks.get(suit).add(child);
             playStacks.get(suit).moveToTop();
 
-            clueLog.checkExpiry();
+            globals.elements.clueLog.checkExpiry();
         } else if (type === 'discard') {
             const suit = msgSuitToSuit(data.which.suit, globals.variant);
-            showClueMatch(-1);
+            globals.lobby.ui.showClueMatch(-1);
 
             const cardObject = globals.deck[data.which.order];
             if (typeof cardObject === 'undefined') {
@@ -5146,7 +3970,7 @@ Keyboard hotkeys:
                 stats.updateEfficiency(-1);
             }
 
-            const learnedCard = ui.learnedCards[data.which.order];
+            const learnedCard = globals.learnedCards[data.which.order];
             learnedCard.suit = suit;
             learnedCard.rank = data.which.rank;
             learnedCard.possibleSuits = [suit];
@@ -5190,7 +4014,7 @@ Keyboard hotkeys:
                 }
             } while (!finished);
 
-            clueLog.checkExpiry();
+            globals.elements.clueLog.checkExpiry();
         } else if (type === 'reveal') {
             // Has the following data:
             /*
@@ -5206,7 +4030,7 @@ Keyboard hotkeys:
             const suit = msgSuitToSuit(data.which.suit, globals.variant);
             const card = globals.deck[data.which.order];
 
-            const learnedCard = ui.learnedCards[data.which.order];
+            const learnedCard = globals.learnedCards[data.which.order];
             learnedCard.suit = suit;
             learnedCard.rank = data.which.rank;
             learnedCard.possibleSuits = [suit];
@@ -5230,7 +4054,7 @@ Keyboard hotkeys:
             stats.updateEfficiency(0);
 
             const clue = msgClueToClue(data.clue, globals.variant);
-            showClueMatch(-1);
+            globals.lobby.ui.showClueMatch(-1);
 
             for (let i = 0; i < data.list.length; i++) {
                 const card = globals.deck[data.list[i]];
@@ -5255,8 +4079,8 @@ Keyboard hotkeys:
 
             const neglist = [];
 
-            for (let i = 0; i < playerHands[data.target].children.length; i++) {
-                const child = playerHands[data.target].children[i];
+            for (let i = 0; i < globals.elements.playerHands[data.target].children.length; i++) {
+                const child = globals.elements.playerHands[data.target].children[i];
 
                 const card = child.children[0];
                 const { order } = card;
@@ -5276,7 +4100,7 @@ Keyboard hotkeys:
             }
 
             const entry = new HanabiClueEntry({
-                width: clueLog.getWidth(),
+                width: globals.elements.clueLog.getWidth(),
                 height: 0.017 * winH,
                 giver: globals.playerNames[data.giver],
                 target: globals.playerNames[data.target],
@@ -5286,9 +4110,9 @@ Keyboard hotkeys:
                 turn: data.turn,
             });
 
-            clueLog.add(entry);
+            globals.elements.clueLog.add(entry);
 
-            clueLog.checkExpiry();
+            globals.elements.clueLog.checkExpiry();
         } else if (type === 'status') {
             // Update internal state variables
             globals.clues = data.clues;
@@ -5442,7 +4266,7 @@ Keyboard hotkeys:
                 globals.layers.UI.draw();
             }
         } else if (type === 'reorder') {
-            const hand = playerHands[data.target];
+            const hand = globals.elements.playerHands[data.target];
             // TODO: Throw an error if hand and note.hand dont have the same numbers in them
 
             // Get the LayoutChild objects in the hand and
@@ -5614,7 +4438,7 @@ Keyboard hotkeys:
     this.handleReplayTurn = function handleReplayTurn(data) {
         globals.sharedReplayTurn = data.turn;
         this.adjustReplayShuttle();
-        if (ui.useSharedTurns) {
+        if (globals.useSharedTurns) {
             this.performReplay(globals.sharedReplayTurn);
         } else {
             replayShuttleShared.getLayer().batchDraw();
@@ -5632,7 +4456,7 @@ Keyboard hotkeys:
             );
             // (if the arrow is showing but is a different kind of arrow,
             // then just overwrite the existing arrow)
-            showClueMatch(-1);
+            globals.lobby.ui.showClueMatch(-1);
             indicated.setIndicator(visible, INDICATOR.REPLAY_LEADER);
         }
     };
@@ -5645,15 +4469,16 @@ Keyboard hotkeys:
         noDiscardLabel.hide();
         noDoubleDiscardLabel.hide();
 
-        showClueMatch(-1);
+        globals.lobby.ui.showClueMatch(-1);
         clueTargetButtonGroup.off('change');
         clueButtonGroup.off('change');
 
         // Make all of the cards in our hand not draggable
         // (but we need to keep them draggable if the pre-play setting is enabled)
         if (!globals.lobby.settings.speedrunPreplay) {
-            for (let i = 0; i < playerHands[globals.playerUs].children.length; i++) {
-                const child = playerHands[globals.playerUs].children[i];
+            const ourHand = globals.elements.playerHands[globals.playerUs];
+            for (let i = 0; i < ourHand.children.length; i++) {
+                const child = ourHand.children[i];
                 child.off('dragend.play');
                 child.setDraggable(false);
             }
@@ -5705,14 +4530,15 @@ Keyboard hotkeys:
             clueTargetButtonGroup.list[0].setPressed(true);
         }
 
-        playerHands[globals.playerUs].moveToTop();
+        globals.elements.playerHands[globals.playerUs].moveToTop();
 
         // Set our hand to being draggable
         // (this is unnecessary if the pre-play setting is enabled,
         // as the hand will already be draggable)
         if (!globals.lobby.settings.speedrunPreplay) {
-            for (let i = 0; i < playerHands[globals.playerUs].children.length; i++) {
-                const child = playerHands[globals.playerUs].children[i];
+            const ourHand = globals.elements.playerHands[globals.playerUs];
+            for (let i = 0; i < ourHand.children.length; i++) {
+                const child = ourHand.children[i];
                 child.setDraggable(true);
                 child.on('dragend.play', dragendPlay);
             }
@@ -5738,7 +4564,7 @@ Keyboard hotkeys:
             }
 
             const who = target.targetIndex;
-            const match = showClueMatch(who, clueButton.clue);
+            const match = globals.lobby.ui.showClueMatch(who, clueButton.clue);
 
             if (!match && !globals.emptyClues) {
                 // Disable the "Submit Clue" button if the given clue will touch no cards
@@ -5777,7 +4603,7 @@ Keyboard hotkeys:
                 return;
             }
 
-            showClueMatch(target.targetIndex, {});
+            globals.lobby.ui.showClueMatch(target.targetIndex, {});
 
             const action = {
                 type: 'action',
@@ -5829,7 +4655,7 @@ Keyboard hotkeys:
                 this.setDraggable(false);
             }
         } else {
-            playerHands[globals.playerUs].doLayout();
+            globals.elements.playerHands[globals.playerUs].doLayout();
         }
     };
 
@@ -5845,7 +4671,7 @@ Keyboard hotkeys:
 
     this.destroy = function destroy() {
         timer.stop();
-        stage.destroy();
+        globals.stage.destroy();
         // window.removeEventListener('resize', resizeCanvas, false);
         $(document).unbind('keydown', this.keyNavigation);
     };

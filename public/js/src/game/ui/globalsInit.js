@@ -53,23 +53,32 @@ module.exports = () => {
     globals.replayPos = 0;
     globals.replayTurn = 0;
     globals.replayMax = 0;
+    // In replays, we can show information about a card that was not known at the time,
+    // but is known now; these are cards we have "learned"
+    globals.learnedCards = [];
 
     // Shared replay variables
     globals.sharedReplayLeader = ''; // Equal to the username of the leader
     globals.sharedReplayTurn = -1;
+    globals.useSharedTurns = true;
 
     // UI elements
+    globals.stage = null;
+    globals.layers = {
+        UI: null,
+        timer: null,
+    };
     globals.elements = {
+        playerHands: [],
+        clueLog: null,
         paceNumberLabel: null,
         efficiencyNumberLabel: null,
         chatButton: null,
         timer1: null,
         timer2: null,
     };
-    globals.layers = {
-        UI: null,
-        timer: null,
-    };
+    globals.activeHover = null; // The elemnt that the mouse cursor is currently over
+    globals.cardImages = {};
 
     // Unread chat messages
     globals.chatUnread = 0;
