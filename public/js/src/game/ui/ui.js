@@ -3558,17 +3558,20 @@ Keyboard hotkeys:
             });
         });
 
-        globals.elements.chatButton = new Button({
-            x: 0.01 * winW,
-            y: 0.87 * winH,
-            width: 0.06 * winW,
-            height: 0.06 * winH,
-            text: 'Chat',
-        });
-        globals.layers.UI.add(globals.elements.chatButton);
-        globals.elements.chatButton.on('click tap', () => {
-            globals.game.chat.toggle();
-        });
+        // The chat button is not necessary in non-shared replays
+        if (!globals.replay || globals.sharedReplay) {
+            globals.elements.chatButton = new Button({
+                x: 0.01 * winW,
+                y: 0.87 * winH,
+                width: 0.06 * winW,
+                height: 0.06 * winH,
+                text: 'Chat',
+            });
+            globals.layers.UI.add(globals.elements.chatButton);
+            globals.elements.chatButton.on('click tap', () => {
+                globals.game.chat.toggle();
+            });
+        }
 
         lobbyButton = new Button({
             x: 0.01 * winW,
