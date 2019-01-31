@@ -3,9 +3,7 @@
 */
 
 // Imports
-// const shajs = require('sha.js');
 const globals = require('../globals');
-const cookie = require('../cookie');
 const websocket = require('../websocket');
 const lobby = require('./main');
 
@@ -23,7 +21,9 @@ $(document).ready(() => {
     $('#login-form').submit(submit);
 
     // Make the tooltip for the Discord icon at the bottom of the screen
-    const discordContent = 'Discord is a voice and text chat application that you can run in a browser.<br />If the server is down, you can probably find out why in the Hanabi server / chat room.';
+    let discordContent = 'Discord is a voice and text chat application that you can run in a';
+    discordContent += 'browser.<br />If the server is down, you can probably find out why in the';
+    discordContent += 'Hanabi server / chat room.';
     $('#title-discord').tooltipster({
         theme: 'tooltipster-shadow',
         delay: 0,
@@ -32,12 +32,13 @@ $(document).ready(() => {
     });
 
     // Check to see if we have accepted the Firefox warning
-    if (globals.browserIsFirefox && cookie.get('acceptedFirefoxWarning') !== 'true') { // Cookies are strings
+    // (cookies are strings, so we cannot check for equality)
+    if (globals.browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
         $('#sign-in').hide();
         $('#firefox-warning').show();
     }
     $('#firefox-warning-button').click(() => {
-        cookie.set('acceptedFirefoxWarning', 'true');
+        localStorage.setItem('acceptedFirefoxWarning', 'true');
         $('#firefox-warning').hide();
         $('#sign-in').show();
     });
@@ -61,11 +62,12 @@ const submit = (event) => {
         return;
     }
 
-    // const password = shajs('sha256').update(`Hanabi password ${pass}`).digest('hex');
+    // We salt the password with a prefix of "Hanabi password "
+    // and then hash it with SHA256 before sending it to the server
     const password = hex_sha256(`Hanabi password ${passwordPlaintext}`);
 
-    cookie.set('hanabiuser', username);
-    cookie.set('hanabipass', password);
+    localStorage.setItem('hanabiuser', username);
+    localStorage.setItem('hanabipass', password);
 
     globals.username = username;
     globals.password = password;
@@ -126,13 +128,14 @@ const getAjaxError = (jqXHR) => {
 
 const automaticLogin = () => {
     // Don't automatically login if they are on Firefox and have not confirmed the warning dialog
-    if (globals.browserIsFirefox && cookie.get('acceptedFirefoxWarning') !== 'true') { // Cookies are strings
+    // (cookies are strings, so we cannot check for equality)
+    if (globals.browserIsFirefox && cookie.get('acceptedFirefoxWarning') !== 'true') {
         return;
     }
 
     // Automatically sign in to the WebSocket server if we have cached credentials
-    globals.username = cookie.get('hanabiuser');
-    globals.password = cookie.get('hanabipass');
+    globals.username = localStorage.getItem('hanabiuser');
+    globals.password = localStorage.getItem('hanabipass');
     if (globals.username) {
         $('#login-username').val(globals.username);
         $('#login-password').focus();
@@ -149,7 +152,9 @@ const automaticLogin = () => {
 exports.hide = () => {
     globals.currentScreen = 'lobby';
     $('#lobby').show();
-    $('#lobby-history').hide(); // We can't hide this element by default in "index.html" or else the "No game history" text will not be centered
+    $('#lobby-history').hide();
+    // We can't hide this element by default in "index.html" or else the "No game history" text
+    // will not be centered
     lobby.nav.show('games');
     lobby.users.draw();
     lobby.tables.draw();

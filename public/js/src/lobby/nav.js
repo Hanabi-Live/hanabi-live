@@ -5,7 +5,6 @@
 // Imports
 const globals = require('../globals');
 const misc = require('../misc');
-const cookie = require('../cookie');
 const modals = require('../modals');
 const lobby = require('./main');
 
@@ -34,8 +33,8 @@ $(document).ready(() => {
     // The "Sign Out" button
     $('#nav-buttons-games-sign-out').on('click', (event) => {
         event.preventDefault();
-        cookie.delete('hanabiuser');
-        cookie.delete('hanabipass');
+        localStorage.removeItem('hanabiuser');
+        localStorage.removeItem('hanabipass');
         window.location.reload();
     });
 
