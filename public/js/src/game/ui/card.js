@@ -533,8 +533,9 @@ HanabiCard.prototype.clickRight = function clickRight() {
     }
 
     // Ctrl + right-click is a local arrow
-    // (this must be below the "ctrl + shift + right-click" code)
-    if (window.event.ctrlKey) {
+    // (we don't want this functionality in shared replays because
+    // it could be misleading as to who the real replay leader is)
+    if (window.event.ctrlKey && globals.sharedReplay === false) {
         this.clickArrowLocal();
         return;
     }
