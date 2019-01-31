@@ -119,7 +119,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 			// Check to see if the game ID exists on the server
 			if exists, err := db.Games.Exists(setReplay); err != nil {
 				log.Error("Failed to check to see if game "+
-					"\""+strconv.Itoa(setReplay)+"\" exists:", err)
+					strconv.Itoa(setReplay)+" exists:", err)
 				s.Error("Failed to create the game. Please contact an administrator.")
 				return
 			} else if !exists {

@@ -52,13 +52,28 @@ func commandGameStart(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that everyone is present
-	// (this only applies to "!replay" because
-	// we need to emulate player actions using their session)
-	for _, p := range g.Players {
-		if !p.Present {
-			s.Warning("Everyone must be present before you can start this game.")
+	// Validate extra things for "!replay" games
+	if g.Options.SetReplay != 0 {
+		// Validate that the right amount of players is in the game
+		if numPlayers, err := db.Games.GetNumPlayers(g.Options.SetReplay); err != nil {
+			log.Error("Failed to get the number of players in game "+
+				strconv.Itoa(g.Options.SetReplay)+":", err)
+			s.Error("Failed to create the game. Please contact an administrator.")
 			return
+		} else if len(g.Players) != numPlayers {
+			s.Warning("You currently have " + strconv.Itoa(len(g.Players)) + " in the game but game " +
+				strconv.Itoa(g.Options.SetReplay) + " had " + strconv.Itoa(numPlayers) + " in it.")
+			return
+		}
+
+		// Validate that everyone is present
+		// (this only applies to "!replay" because
+		// we need to emulate player actions using their session)
+		for _, p := range g.Players {
+			if !p.Present {
+				s.Warning("Everyone must be present before you can start this game.")
+				return
+			}
 		}
 	}
 

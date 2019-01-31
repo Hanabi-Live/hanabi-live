@@ -309,6 +309,17 @@ func (*Games) GetVariant(databaseID int) (int, error) {
 	return variant, err
 }
 
+func (*Games) GetNumPlayers(databaseID int) (int, error) {
+	var numPlayers int
+	err := db.QueryRow(`
+		SELECT COUNT(game_participants.id)
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE games.id = ?
+	`, databaseID).Scan(&numPlayers)
+	return numPlayers, err
+}
+
 func (*Games) GetCharacterAssignments(databaseID int) (bool, error) {
 	var characterAssignments bool
 	err := db.QueryRow(`
