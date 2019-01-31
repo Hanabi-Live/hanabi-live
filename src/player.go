@@ -148,11 +148,11 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 
 		// Increase the misplay streak
 		g.Misplays++
-		if g.BlindPlays > 2 {
-			// There is no sound effect for more than 2 blind plays in a row
-			g.BlindPlays = 2
+		if g.Misplays > 2 {
+			// There is no sound effect for more than 2 misplays in a row
+			g.Misplays = 2
 		}
-		g.Sound = "fail" + strconv.Itoa(g.BlindPlays)
+		g.Sound = "fail" + strconv.Itoa(g.Misplays)
 
 		// Send the "notify" message about the strike
 		g.Actions = append(g.Actions, ActionStrike{
