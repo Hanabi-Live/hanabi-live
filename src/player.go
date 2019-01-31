@@ -72,25 +72,23 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	g.NotifyAction()
 
 	// Send the "message" message about the clue
-	text := p.Name + " tells " + p2.Name + " "
-	if len(cardsTouched) != 0 {
-		text += "about "
-		words := []string{
-			"one",
-			"two",
-			"three",
-			"four",
-			"five",
-		}
-		text += words[len(cardsTouched)-1] + " "
+	text := p.Name + " tells " + p2.Name + " about "
+	words := []string{
+		"zero",
+		"one",
+		"two",
+		"three",
+		"four",
+		"five",
 	}
+	text += words[len(cardsTouched)] + " "
 
 	if d.Clue.Type == clueTypeNumber {
 		text += strconv.Itoa(d.Clue.Value)
 	} else if d.Clue.Type == clueTypeColor {
 		text += variants[g.Options.Variant].Clues[d.Clue.Value].Name
 	}
-	if len(cardsTouched) > 1 {
+	if len(cardsTouched) != 1 {
 		text += "s"
 	}
 	g.Actions = append(g.Actions, ActionText{
