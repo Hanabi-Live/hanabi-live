@@ -7,10 +7,12 @@ $(document).ready(() => {
     // e.g. if ($('#asdf').is(':offscreen'))
     jQuery.expr.filters.offscreen = (el) => {
         const rect = el.getBoundingClientRect();
-        return rect.top < 0
-            || rect.bottom > window.innerHeight
-            || rect.left < 0
-            || rect.right > window.innerWidth;
+        return rect.top < 1 // Above the top
+            || rect.bottom > window.innerHeight - 5 // Below the bottom
+            || rect.left < 1 // Left of the left edge
+            || rect.right > window.innerWidth - 5; // Right of the right edge
+        // We modify the top/left by 1 and the bottom/right by 5
+        // to prevent scroll bars from appearing
     };
 });
 
