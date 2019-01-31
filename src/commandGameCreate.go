@@ -94,7 +94,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 			match := replayRegExp.FindStringSubmatch(d.Name)
 			if match == nil {
 				s.Warning("Replays of specific games must be created in the form: " +
-					"!seed [game ID] [turn number]")
+					"!replay [game ID] [turn number]")
 				return
 			}
 			if v, err := strconv.Atoi(match[1]); err != nil {
