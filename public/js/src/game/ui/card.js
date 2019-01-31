@@ -484,14 +484,14 @@ HanabiCard.prototype.click = function click(event) {
     }
 };
 
-HanabiCard.prototype.click = function clickLeft() {
+HanabiCard.prototype.clickLeft = function clickLeft() {
     // Shift + left-click is a card morph
     if (window.event.shiftKey) {
         this.clickMorph();
     }
 };
 
-HanabiCard.prototype.click = function clickRight() {
+HanabiCard.prototype.clickRight = function clickRight() {
     // Right-click for a leader in a shared replay is an arrow
     if (
         globals.sharedReplay
