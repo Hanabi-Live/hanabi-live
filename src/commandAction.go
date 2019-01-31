@@ -89,7 +89,7 @@ func commandAction(s *Session, d *CommandData) {
 		Action
 	*/
 
-	// Remove the "fail" and "blind" states
+	// Remove the "fail#" and "blind#" states
 	g.Sound = ""
 
 	// Start the idle timeout
@@ -165,6 +165,9 @@ func commandAction(s *Session, d *CommandData) {
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
 
+		// Mark that the misplay streak has ended
+		g.Misplays = 0
+
 	} else if d.Type == actionTypePlay {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
@@ -213,6 +216,9 @@ func commandAction(s *Session, d *CommandData) {
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
 
+		// Mark that the misplay streak has ended
+		g.Misplays = 0
+
 	} else if d.Type == actionTypeDeckPlay {
 		// Validate that the game type allows deck plays
 		if !g.Options.DeckPlays {
@@ -232,6 +238,7 @@ func commandAction(s *Session, d *CommandData) {
 	} else if d.Type == actionTypeTimeLimitReached {
 		// This is a special action type sent by the server to itself when a player runs out of time
 		g.Strikes = 3
+		g.EndCondition = actionTypeTimeLimitReached
 		g.Actions = append(g.Actions, ActionText{
 			Type: "text",
 			Text: p.Name + " ran out of time!",
@@ -241,6 +248,7 @@ func commandAction(s *Session, d *CommandData) {
 	} else if d.Type == actionTypeIdleLimitReached {
 		// This is a special action type sent by the server to itself when the game has been idle for too long
 		g.Strikes = 3
+		g.EndCondition = actionTypeIdleLimitReached
 		g.Actions = append(g.Actions, ActionText{
 			Type: "text",
 			Text: "Players were idle for too long.",
@@ -296,7 +304,7 @@ func commandAction(s *Session, d *CommandData) {
 	// Check for end game states
 	if g.CheckEnd() {
 		var text string
-		if g.EndCondition > 1 {
+		if g.EndCondition > endConditionNormal {
 			text = "Players lose!"
 		} else {
 			text = "Players score " + strconv.Itoa(g.Score) + " points"
@@ -311,11 +319,16 @@ func commandAction(s *Session, d *CommandData) {
 		g.NotifyTurn()
 		log.Info(g.GetName() + " It is now " + np.Name + "'s turn.")
 	}
+	if g.EndCondition == endConditionNormal {
+		g.Sound = "finished_success"
+	} else if g.EndCondition > endConditionNormal {
+		g.Sound = "finished_fail"
+	}
 
 	// Tell every client to play a sound as a notification for the action taken
 	g.NotifySound()
 
-	if g.EndCondition > 0 {
+	if g.EndCondition > endConditionInProgress {
 		g.End()
 		return
 	}

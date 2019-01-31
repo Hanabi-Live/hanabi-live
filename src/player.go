@@ -148,6 +148,14 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
 
+		// Increase the misplay streak
+		g.Misplays++
+		if g.BlindPlays > 2 {
+			// There is no sound effect for more than 2 blind plays in a row
+			g.BlindPlays = 2
+		}
+		g.Sound = "fail" + strconv.Itoa(g.BlindPlays)
+
 		// Send the "notify" message about the strike
 		g.Actions = append(g.Actions, ActionStrike{
 			Type: "strike",
@@ -165,6 +173,9 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	if c.Rank == 0 {
 		g.Stacks[c.Suit] = -1 // A rank 0 card is the "START" card
 	}
+
+	// Mark that the misplay streak has ended
+	g.Misplays = 0
 
 	// Send the "notify" message about the play
 	g.Actions = append(g.Actions, ActionPlay{
@@ -185,7 +196,10 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	} else {
 		text += "slot #" + strconv.Itoa(c.Slot)
 	}
-	if !c.Touched {
+	if c.Touched {
+		// Mark that the blind-play streak has ended
+		g.BlindPlays = 0
+	} else {
 		text += " (blind)"
 		g.BlindPlays++
 		if g.BlindPlays > 4 {
@@ -193,9 +207,6 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 			g.BlindPlays = 4
 		}
 		g.Sound = "blind" + strconv.Itoa(g.BlindPlays)
-	} else {
-		// Mark that the blind-play streak has ended
-		g.BlindPlays = 0
 	}
 	g.Actions = append(g.Actions, ActionText{
 		Type: "text",
@@ -250,7 +261,6 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 	text := p.Name + " "
 	if c.Failed {
 		text += "fails to play"
-		g.Sound = "fail"
 	} else {
 		text += "discards"
 	}

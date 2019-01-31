@@ -42,6 +42,14 @@ const (
 )
 
 const (
+	endConditionInProgress = iota
+	endConditionNormal
+	endConditionStrikeout
+	endConditionTimeout
+	endConditionAbandoned
+)
+
+const (
 	replayActionTypeTurn = iota
 	replayActionTypeArrow
 	replayActionTypeLeaderTransfer

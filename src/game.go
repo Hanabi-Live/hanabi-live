@@ -50,6 +50,7 @@ type Game struct {
 	EndTurn       int
 	// Set when the final card is drawn to determine when the game should end
 	BlindPlays int                // The number of consecutive blind plays
+	Misplays   int                // The number of consecutive misplays
 	Chat       []*GameChatMessage // All of the in-game chat history
 }
 
@@ -166,7 +167,7 @@ func (g *Game) CheckTimer(turn int, p *Player) {
 	defer commandMutex.Unlock()
 
 	// Check to see if the game ended already
-	if g.EndCondition > 0 {
+	if g.EndCondition > endConditionInProgress {
 		return
 	}
 
@@ -180,7 +181,7 @@ func (g *Game) CheckTimer(turn int, p *Player) {
 
 	// End the game
 	d := &CommandData{
-		Type: 4,
+		Type: actionTypeTimeLimitReached,
 	}
 	p.Session.Set("currentGame", g.ID)
 	p.Session.Set("status", statusPlaying)
@@ -188,10 +189,20 @@ func (g *Game) CheckTimer(turn int, p *Player) {
 }
 
 func (g *Game) CheckEnd() bool {
+	// Check to see if one of the players ran out of time
+	if g.EndCondition == endConditionTimeout {
+		return true
+	}
+
+	// Check to see if the game ended to idleness
+	if g.EndCondition == actionTypeIdleLimitReached {
+		return true
+	}
+
 	// Check for 3 strikes
 	if g.Strikes == 3 {
 		log.Info(g.GetName() + "3 strike maximum reached; ending the game.")
-		g.EndCondition = 2
+		g.EndCondition = endConditionStrikeout
 		return true
 	}
 
@@ -199,14 +210,14 @@ func (g *Game) CheckEnd() bool {
 	// (which is initiated after the last card is played from the deck)
 	if g.Turn == g.EndTurn {
 		log.Info(g.GetName() + "Final turn reached; ending the game.")
-		g.EndCondition = 1
+		g.EndCondition = endConditionNormal
 		return true
 	}
 
 	// Check to see if the maximum score has been reached
 	if g.Score == g.MaxScore {
 		log.Info(g.GetName() + "Maximum score reached; ending the game.")
-		g.EndCondition = 1
+		g.EndCondition = endConditionNormal
 		return true
 	}
 
@@ -235,7 +246,7 @@ func (g *Game) CheckEnd() bool {
 
 	// If we got this far, nothing can be played
 	log.Info(g.GetName() + "No remaining cards can be played; ending the game.")
-	g.EndCondition = 1
+	g.EndCondition = endConditionNormal
 	return true
 }
 
@@ -264,7 +275,8 @@ func (g *Game) CheckIdle() {
 	log.Info(g.GetName() + " Idle timeout has elapsed; ending the game.")
 
 	if g.SharedReplay {
-		// If this is a shared replay, we want to send a message to the client that will take them back to the lobby
+		// If this is a shared replay,
+		// we want to send a message to the client that will take them back to the lobby
 		g.NotifyBoot()
 	}
 

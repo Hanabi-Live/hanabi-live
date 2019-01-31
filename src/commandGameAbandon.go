@@ -59,7 +59,7 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		Text: text,
 	})
 	g.NotifyAction()
-	g.EndCondition = 4
+	g.EndCondition = endConditionAbandoned
 	g.Score = 0
 	g.End()
 }

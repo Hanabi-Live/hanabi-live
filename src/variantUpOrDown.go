@@ -4,6 +4,9 @@
 
 package main
 
+// iota starts at 0 and counts upwards
+// i.e. stackDirectionUndecided = 0, stackDirectionUp = 1, etc.
+
 const (
 	stackDirectionUndecided = iota
 	stackDirectionUp

@@ -404,7 +404,7 @@ func (s *Session) NotifyClock(g *Game) {
 	}
 
 	active := g.ActivePlayer
-	if g.EndCondition > 0 {
+	if g.EndCondition > endConditionInProgress {
 		active = -1
 	}
 

@@ -30,22 +30,23 @@ turn_blind4:
 - Keys: m, >, a, f, q
 - Notes: G, B, D, G, G
 
-turn_fail:
-- Keys: m, n
-- Notes: G, F
-
-turn_fail2:
-- Keys: a, "/", "."
-- Notes: G, F#, F
-- (set tuning --> key --> none)
-
 finished_success:
 - Keys: m, n, b, v, c
 - Notes: G, F, E, D, C
 
+turn_fail:
+- Keys: a, /
+- Notes: G, F#
+- (set tuning --> key --> none)
+
+turn_fail2:
+- Keys: a, /, "."
+- Notes: G, F#, F
+- (set tuning --> key --> none)
+
 finished_failure:
 - Keys: G, F#, F, E, D#
-- Notes: a, "/", ".", ",", m
+- Notes: a, /, ".", ",", m
 - (set tuning --> key --> none)
 
 sad:
@@ -53,4 +54,4 @@ sad:
 - Notes: a, v, c, x
 - (set tuning --> key --> none)
 
-The sounds are reduced in Audacity by -3.0 db before exporting to MP3.
+The sounds are reduced in Audacity by -12.0 db before exporting to MP3.

@@ -13,7 +13,9 @@ func (g *Game) End() {
 	g.DatetimeFinished = time.Now()
 
 	// Log the game ending
-	if g.EndCondition > 1 {
+	loss := false
+	if g.EndCondition > endConditionNormal {
+		loss = true
 		g.Score = 0
 	}
 	log.Info(g.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
@@ -22,10 +24,6 @@ func (g *Game) End() {
 	g.NotifyTurn()
 
 	// Send the "gameOver" message
-	loss := false
-	if g.EndCondition > 1 {
-		loss = true
-	}
 	g.Actions = append(g.Actions, ActionGameOver{
 		Type:  "gameOver",
 		Score: g.Score,
