@@ -125,7 +125,7 @@ func (g *Game) GetMaxScore() int {
 	maxScore := 0
 	for suit := range g.Stacks {
 		for rank := 1; rank <= 5; rank++ {
-			// Search through the deck to see if all the coipes of this card are discarded already
+			// Search through the deck to see if all the copies of this card are discarded already
 			total, discarded := g.GetSpecificCardNum(suit, rank)
 			if total > discarded {
 				maxScore++

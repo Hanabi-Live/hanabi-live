@@ -41,7 +41,7 @@ func variantUpOrDownPlay(g *Game, c *Card) bool {
 			}
 
 		} else if g.Stacks[c.Suit] == startCardRank {
-			// The "START" card has been played
+			// The "START" card has been played on the stack
 			failed = c.Rank != 2 && c.Rank != 4
 
 			// Set the stack direction
@@ -219,7 +219,6 @@ func variantUpOrDownWalkDown(g *Game, suit int, allDiscarded map[int]bool) int {
 // variantUpOrDownCheckAllDead returns true if no more cards can be played on the stacks
 func variantUpOrDownCheckAllDead(g *Game) bool {
 	for suit, stackRank := range g.Stacks {
-		// Search through the deck
 		neededRanks := make([]int, 0)
 		if g.StackDirections[suit] == stackDirectionUndecided {
 			if stackRank == 0 {

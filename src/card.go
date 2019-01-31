@@ -31,7 +31,7 @@ func (c *Card) Name(g *Game) string {
 // NeedsToBePlayed returns true if the card is not yet played
 // and is still needed to be played in order to get the maximum score
 func (c *Card) NeedsToBePlayed(g *Game) bool {
-	// First, check to see this card has already been played
+	// First, check to see if a copy of this card has already been played
 	for _, c2 := range g.Deck {
 		if c2.Suit == c.Suit &&
 			c2.Rank == c.Rank &&
