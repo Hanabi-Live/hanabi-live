@@ -31,8 +31,8 @@ turn_blind4:
 - Notes: G, B, D, G, G
 
 finished_success:
-- Keys: m, n, b, v, c
-- Notes: G, F, E, D, C
+- Keys: m, >, a, f, a, >, m
+- Notes: G, B, D, G, D, B, G
 
 turn_fail:
 - Keys: a, /
