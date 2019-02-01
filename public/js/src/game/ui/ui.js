@@ -3267,10 +3267,15 @@ function HanabiUI(lobby, game) {
 
             if (event.key === 'Z') { // Shift + z
                 // This is used for fun in shared replays
-                globals.sharedReplaySendSound('buzz');
+                this.sharedReplaySendSound('buzz');
                 return;
             }
             if (event.key === 'X') { // Shift + x
+                // This is used for fun in shared replays
+                this.sharedReplaySendSound('god');
+                return;
+            }
+            if (event.key === 'C') { // Shift + c
                 // This is used as a sound test
                 globals.game.sounds.play('turn_us');
                 return;
@@ -3436,7 +3441,7 @@ function HanabiUI(lobby, game) {
             End of keyboard shortcuts
         */
 
-        globals.sharedReplaySendSound = (sound) => {
+        this.sharedReplaySendSound = (sound) => {
             // Only enable sound effects in a shared replay
             if (!globals.replay || !globals.sharedReplay) {
                 return;
