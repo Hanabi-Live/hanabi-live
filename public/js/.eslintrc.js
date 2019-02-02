@@ -53,7 +53,6 @@ module.exports = {
     },
 
     'globals': {
-        'constants': true,
         'Kinetic': true,
         'hex_sha256': true,
     },

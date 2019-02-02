@@ -4,6 +4,7 @@
 
 // Imports
 const globals = require('../globals');
+const constants = require('../constants');
 const lobby = require('./main');
 
 $(document).ready(() => {

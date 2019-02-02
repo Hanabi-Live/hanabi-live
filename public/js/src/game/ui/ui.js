@@ -1,4 +1,5 @@
 // Imports
+const constants = require('../../constants');
 const globals = require('./globals');
 const globalsInit = require('./globalsInit');
 const HanabiCard = require('./card');

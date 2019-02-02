@@ -42,7 +42,6 @@ JS_LIB_FILES = [
     'sha256.min.js', # SHA256 (for password hashing)
 ]
 JS_FILES = [
-    'constants.js', # Hanabi Live code
     'main.bundled.js', # Hanabi Live code
 ]
 JS_LIB_DIR = os.path.join(JS_DIR, 'lib')

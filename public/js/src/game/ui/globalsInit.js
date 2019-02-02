@@ -16,7 +16,7 @@ module.exports = () => {
     // Game settings
     // (sent in the "init" message)
     globals.playerNames = [];
-    globals.variant = constants.VARIANTS['No Variant'];
+    globals.variant = null;
     globals.playerUs = -1;
     globals.spectating = false;
     globals.replay = false;
