@@ -1811,8 +1811,13 @@ function HanabiUI(lobby, game) {
             return;
         }
 
+        // Erase the arrows
         globals.lobby.ui.showClueMatch(target.targetIndex, {});
 
+        // Set the clue timer to prevent multiple clicks
+        globals.accidentalClueTimer = Date.now();
+
+        // Send the message to the server
         const action = {
             type: 'action',
             data: {
@@ -2447,7 +2452,7 @@ function HanabiUI(lobby, game) {
     this.handleNote = (data) => {
         // Set the note
         // (which is the combined notes from all of the players, formatted by the server)
-        notes.set(data.order, data.notes);
+        notes.set(data.order, data.notes, false);
 
         // Draw (or hide) the note indicator
         const card = globals.deck[data.order];
@@ -2490,7 +2495,7 @@ function HanabiUI(lobby, game) {
             const note = data.notes[order];
 
             // Set the note
-            notes.set(order, note);
+            notes.set(order, note, false);
 
             // The following code is mosly copied from the "handleNote" function
             // Draw (or hide) the note indicator
@@ -2589,10 +2594,6 @@ function HanabiUI(lobby, game) {
 
         drawDeck.cardback.setDraggable(false);
         deckPlayAvailableLabel.setVisible(false);
-
-        // This is necessary to prevent multiple messages being sent from one click of the
-        // "Give Clue" button
-        globals.elements.giveClueButton.off('click tap');
     };
 
     this.endTurn = function endTurn(action) {

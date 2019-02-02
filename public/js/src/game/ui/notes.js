@@ -32,15 +32,15 @@ const get = (order) => {
 };
 exports.get = get;
 
-const set = (order, note) => {
+const set = (order, note, send = true) => {
     if (note === '') {
         note = undefined;
     }
     notes[order] = note;
     vars.lastNote = note;
 
-    // Also send the note to the server
-    if (!globals.replay && !globals.spectating) {
+    // Send the note to the server
+    if (send && !globals.replay && !globals.spectating) {
         globals.lobby.conn.send('note', {
             order,
             note,
