@@ -129,7 +129,7 @@ const getAjaxError = (jqXHR) => {
 const automaticLogin = () => {
     // Don't automatically login if they are on Firefox and have not confirmed the warning dialog
     // (cookies are strings, so we cannot check for equality)
-    if (globals.browserIsFirefox && cookie.get('acceptedFirefoxWarning') !== 'true') {
+    if (globals.browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
         return;
     }
 
