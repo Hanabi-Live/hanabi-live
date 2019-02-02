@@ -2853,7 +2853,6 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
 HanabiUI.prototype.sendMsg = function sendMsg(msg) {
     const { type } = msg;
     const { data } = msg;
-    console.log(globals.lobby);
     globals.lobby.conn.send(type, data);
 };
 
