@@ -45,7 +45,6 @@ function HanabiUI(lobby, game) {
 
     // Stored variables for rebuilding the game state
     this.lastAction = null;
-    this.lastSpectators = null;
 
     // Used for the pre-move feature
     this.ourTurn = false;
@@ -1894,20 +1893,20 @@ function HanabiUI(lobby, game) {
             }
 
             let msg = 'What is the number of the person that you want to pass the replay leader to?\n\n';
-            msg += ui.lastSpectators.names.map((name, i) => `${i + 1} - ${name}\n`).join('');
+            msg += globals.spectators.map((name, i) => `${i + 1} - ${name}\n`).join('');
             let target = window.prompt(msg);
             if (Number.isNaN(target)) {
                 return;
             }
             target -= 1;
-            target = ui.lastSpectators.names[target];
+            target = globals.spectators[target];
 
             // Only proceed if we chose someone else
             if (target === globals.lobby.username) {
                 return;
             }
 
-            globals.lobby.replay.send('replayAction', {
+            globals.lobby.conn.send('replayAction', {
                 type: constants.REPLAY_ACTION_TYPE.LEADER_TRANSFER,
                 name: target,
             });
@@ -4003,7 +4002,6 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
             globals.lobby.sendNotify('It\'s your turn', 'turn');
         }
     } else if (msgType === 'spectators') {
-        this.lastSpectators = msgData;
         // This is used to update the names of the people currently spectating the game
         this.handleSpectators.call(this, msgData);
     } else if (msgType === 'clock') {
