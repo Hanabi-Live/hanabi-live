@@ -171,27 +171,27 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue, RedClue},
 		},
 		Variant{
-			Name:  "Very Ambiguous (6 Suits)",
-			ID:    9,
-			Suits: []Suit{SkySuit, BerrySuit, NavySuit, TomatoSuit, RubySuit, MahoganySuit},
-			Clues: []ColorClue{BlueClue, RedClue},
-		},
-		Variant{
-			Name:  "Very Ambiguous (4 Suits)",
+			Name:  "Ambiguous (4 Suits)",
 			ID:    30,
 			Suits: []Suit{SkySuit, NavySuit, TomatoSuit, MahoganySuit},
 			Clues: []ColorClue{BlueClue, RedClue},
 		},
 		Variant{
-			Name:  "Very Ambiguous & White (5 Suits)",
+			Name:  "Ambiguous & White (5 Suits)",
 			ID:    31,
 			Suits: []Suit{SkySuit, NavySuit, TomatoSuit, MahoganySuit, WhiteSuit},
 			Clues: []ColorClue{BlueClue, RedClue},
 		},
 		Variant{
-			Name:  "Very Ambiguous & Rainbow (5 Suits)",
+			Name:  "Ambiguous & Rainbow (5 Suits)",
 			ID:    32,
 			Suits: []Suit{SkySuit, NavySuit, TomatoSuit, MahoganySuit, RainbowSuit},
+			Clues: []ColorClue{BlueClue, RedClue},
+		},
+		Variant{
+			Name:  "Very Ambiguous (6 Suits)",
+			ID:    9,
+			Suits: []Suit{SkySuit, BerrySuit, NavySuit, TomatoSuit, RubySuit, MahoganySuit},
 			Clues: []ColorClue{BlueClue, RedClue},
 		},
 

@@ -962,22 +962,7 @@
             ],
             true,
         ),
-        'Very Ambiguous (6 Suits)': new Variant(
-            [
-                exports.SUIT.BLUE1,
-                exports.SUIT.BLUE2,
-                exports.SUIT.BLUE3,
-                exports.SUIT.RED1,
-                exports.SUIT.RED2,
-                exports.SUIT.RED3,
-            ],
-            [
-                exports.COLOR.BLUE,
-                exports.COLOR.RED,
-            ],
-            true,
-        ),
-        'Very Ambiguous (4 Suits)': new Variant(
+        'Ambiguous (4 Suits)': new Variant(
             [
                 exports.SUIT.LBLUE,
                 exports.SUIT.DBLUE,
@@ -990,7 +975,7 @@
             ],
             true,
         ),
-        'Very Ambiguous & White (5 Suits)': new Variant(
+        'Ambiguous & White (5 Suits)': new Variant(
             [
                 exports.SUIT.LBLUE,
                 exports.SUIT.DBLUE,
@@ -1004,13 +989,28 @@
             ],
             true,
         ),
-        'Very Ambiguous & Rainbow (5 Suits)': new Variant(
+        'Ambiguous & Rainbow (5 Suits)': new Variant(
             [
                 exports.SUIT.LBLUE,
                 exports.SUIT.DBLUE,
                 exports.SUIT.LRED,
                 exports.SUIT.DRED,
                 exports.SUIT.RAINBOW,
+            ],
+            [
+                exports.COLOR.BLUE,
+                exports.COLOR.RED,
+            ],
+            true,
+        ),
+        'Very Ambiguous (6 Suits)': new Variant(
+            [
+                exports.SUIT.BLUE1,
+                exports.SUIT.BLUE2,
+                exports.SUIT.BLUE3,
+                exports.SUIT.RED1,
+                exports.SUIT.RED2,
+                exports.SUIT.RED3,
             ],
             [
                 exports.COLOR.BLUE,
