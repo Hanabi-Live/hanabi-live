@@ -5,6 +5,7 @@ const globals = require('./globals');
 const globalsInit = require('./globalsInit');
 const HanabiCard = require('./card');
 const HanabiMsgLog = require('./msgLog');
+const LayoutChild = require('./layoutChild');
 const cardDraw = require('./cardDraw');
 const keyboard = require('./keyboard');
 const MultiFitText = require('./multiFitText');
@@ -36,20 +37,6 @@ function HanabiUI(lobby, game) {
         INDICATOR,
         SUIT,
     } = constants;
-
-    /*
-        UI variables not converted to globals yet
-    */
-
-    // A function called after an action from the server moves cards
-    this.postAnimationLayout = null;
-
-    // Stored variables for rebuilding the game state
-    this.lastAction = null;
-
-    // Used for the pre-move feature
-    this.ourTurn = false;
-    this.queuedAction = null;
 
     /*
         Misc. UI objects
@@ -98,42 +85,6 @@ function HanabiUI(lobby, game) {
     /*
         Card layouts
     */
-
-    const LayoutChild = function LayoutChild(config) {
-        Kinetic.Group.call(this, config);
-
-        this.tween = null;
-    };
-
-    Kinetic.Util.extend(LayoutChild, Kinetic.Group);
-
-    LayoutChild.prototype.add = function add(child) {
-        const self = this;
-
-        Kinetic.Group.prototype.add.call(this, child);
-        this.setWidth(child.getWidth());
-        this.setHeight(child.getHeight());
-
-        child.on('widthChange', (event) => {
-            if (event.oldVal === event.newVal) {
-                return;
-            }
-            self.setWidth(event.newVal);
-            if (self.parent) {
-                self.parent.doLayout();
-            }
-        });
-
-        child.on('heightChange', (event) => {
-            if (event.oldVal === event.newVal) {
-                return;
-            }
-            self.setHeight(event.newVal);
-            if (self.parent) {
-                self.parent.doLayout();
-            }
-        });
-    };
 
     const CardLayout = function CardLayout(config) {
         Kinetic.Group.call(this, config);
@@ -202,7 +153,7 @@ function HanabiUI(lobby, game) {
             x = lw - x;
         }
 
-        const storedPostAnimationLayout = ui.postAnimationLayout;
+        const storedPostAnimationLayout = globals.postAnimationLayout;
 
         for (let i = 0; i < n; i++) {
             const node = this.children[i];
@@ -2027,9 +1978,9 @@ function HanabiUI(lobby, game) {
             pos.y += this.getHeight() * this.getScaleY() / 2;
 
             if (overPlayArea(pos)) {
-                ui.postAnimationLayout = () => {
+                globals.postAnimationLayout = () => {
                     drawDeck.doLayout();
-                    ui.postAnimationLayout = null;
+                    globals.postAnimationLayout = null;
                 };
 
                 this.setDraggable(false);
@@ -2913,7 +2864,7 @@ function HanabiUI(lobby, game) {
         }
 
         globals.deck = [];
-        ui.postAnimationLayout = null;
+        globals.postAnimationLayout = null;
 
         globals.elements.clueLog.clear();
         globals.elements.messagePrompt.reset();
@@ -3384,8 +3335,8 @@ function HanabiUI(lobby, game) {
             }
         } else if (type === 'turn') {
             // Keep track of whether or not it is our turn (speedrun)
-            this.ourTurn = (data.who === globals.playerUs);
-            if (!this.ourTurn) {
+            globals.ourTurn = (data.who === globals.playerUs);
+            if (!globals.ourTurn) {
                 // Adding this here to avoid bugs with pre-moves
                 clueArea.hide();
             }
@@ -3400,12 +3351,12 @@ function HanabiUI(lobby, game) {
 
             turnNumberLabel.setText(`${data.num + 1}`);
 
-            if (this.queuedAction !== null && this.ourTurn) {
+            if (globals.queuedAction !== null && globals.ourTurn) {
                 setTimeout(() => {
-                    ui.sendMsg(this.queuedAction);
+                    ui.sendMsg(globals.queuedAction);
                     ui.stopAction();
 
-                    this.queuedAction = null;
+                    globals.queuedAction = null;
                 }, 250);
             }
         } else if (type === 'gameOver') {
@@ -3669,12 +3620,12 @@ function HanabiUI(lobby, game) {
     };
 
     this.endTurn = function endTurn(action) {
-        if (ui.ourTurn) {
+        if (globals.ourTurn) {
             ui.sendMsg(action);
             ui.stopAction();
             globals.savedAction = null;
         } else {
-            ui.queuedAction = action;
+            globals.queuedAction = action;
         }
     };
 
@@ -3770,7 +3721,7 @@ function HanabiUI(lobby, game) {
                 },
             };
             ui.endTurn(action);
-            if (ui.ourTurn) {
+            if (globals.ourTurn) {
                 this.setDraggable(false);
             }
         } else if (
@@ -3788,7 +3739,7 @@ function HanabiUI(lobby, game) {
                 },
             };
             ui.endTurn(action);
-            if (ui.ourTurn) {
+            if (globals.ourTurn) {
                 this.setDraggable(false);
             }
         } else {
@@ -3856,7 +3807,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
             this.handleNotify(msgData);
         }
     } else if (msgType === 'action') {
-        this.lastAction = msgData;
+        globals.lastAction = msgData;
         this.handleAction.call(this, msgData);
 
         if (globals.animateFast) {

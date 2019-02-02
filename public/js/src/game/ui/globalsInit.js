@@ -91,9 +91,16 @@ module.exports = () => {
     globals.activeHover = null; // The elemnt that the mouse cursor is currently over
     globals.cardImages = {};
 
+    // Pre-play feature
+    globals.ourTurn = false;
+    globals.queuedAction = null;
+
     // Miscellaneous
     globals.animateFast = true;
     globals.savedAction = null; // Used to save new actions when in an in-game replay
+    globals.postAnimationLayout = null;
+    // A function called after an action from the server moves cards
+    globals.lastAction = null; // Used when rebuilding the game state
     globals.accidentalClueTimer = Date.now();
     // Used to prevent giving an accidental clue after clicking the "Exit Replay" button
     globals.chatUnread = 0;
