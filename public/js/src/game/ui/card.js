@@ -549,7 +549,7 @@ HanabiCard.prototype.clickArrow = function clickArrow() {
     // In a shared replay, the leader right-clicks a card to draw on arrow on it to attention to it
     // (and it is shown to all of the players in the review)
     globals.lobby.conn.send('replayAction', {
-        type: 1,
+        type: constants.REPLAY_ACTION_TYPE.ARROW,
         order: this.order,
     });
 
@@ -604,7 +604,7 @@ HanabiCard.prototype.clickMorph = function clickMorph() {
     // Tell the server that we are doing a hypothetical
     if (globals.sharedReplayLeader === globals.lobby.username) {
         globals.lobby.conn.send('replayAction', {
-            type: 3,
+            type: constants.REPLAY_ACTION_TYPE.MORPH,
             order: this.order,
             suit,
             rank,

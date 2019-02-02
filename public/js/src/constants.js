@@ -44,7 +44,7 @@ exports.COLOR = {
     RED3: new Color('Mahogany', 'M', '#330000'),
 };
 
-exports.fillType = {
+const FILL_TYPE = {
     SOLID: 'solid',
     LINEAR_GRADIENT: 'linear_gradient',
     RADIAL_GRADIENT: 'radial_gradient',
@@ -103,17 +103,17 @@ const FillSpec = function FillSpec(fillType, args = null) {
     this.args = args;
 };
 
-const solidFillSpec = new FillSpec(exports.fillType.SOLID);
+const solidFillSpec = new FillSpec(FILL_TYPE.SOLID);
 const multiBkgFillSpec = new FillSpec(
-    exports.fillType.LINEAR_GRADIENT,
+    FILL_TYPE.LINEAR_GRADIENT,
     [0, 0, 0, exports.CARDH],
 );
 const multiNumberFillSpec = new FillSpec(
-    exports.fillType.LINEAR_GRADIENT,
+    FILL_TYPE.LINEAR_GRADIENT,
     [0, 14, 0, 110],
 );
 const multiSymbolFillSpec = new FillSpec(
-    exports.fillType.RADIAL_GRADIENT,
+    FILL_TYPE.RADIAL_GRADIENT,
     [75, 150, 25, 75, 150, 75],
 );
 
@@ -191,14 +191,14 @@ Suit.prototype.style = function style(ctx, cardArea) {
     const { fillType } = fillSpec;
     const colors = this.fillColors;
 
-    if (fillType === exports.fillType.SOLID) {
+    if (fillType === FILL_TYPE.SOLID) {
         // "colors" in this case should be a single color, not an array
         return colors.hexCode;
     }
-    if (fillType === exports.fillType.LINEAR_GRADIENT) {
+    if (fillType === FILL_TYPE.LINEAR_GRADIENT) {
         return evenLinearGradient(ctx, colors, fillSpec.args);
     }
-    if (fillType === exports.fillType.RADIAL_GRADIENT) {
+    if (fillType === FILL_TYPE.RADIAL_GRADIENT) {
         return evenRadialGradient(ctx, colors, fillSpec.args);
     }
 
@@ -1383,6 +1383,15 @@ exports.CHARACTERS = {
 for (const name of Object.keys(exports.CHARACTERS)) {
     exports.CHARACTERS[name].name = name;
 }
+
+// This must match the "replayActionType" constants in the "constants.go" file
+exports.REPLAY_ACTION_TYPE = {
+    TURN: 0,
+    ARROW: 1,
+    LEADER_TRANSFER: 2,
+    MORPH: 3,
+    SOUND: 4,
+};
 
 // This only freezes one layer deep; to do any better, we should likely
 // involve a library like immutablejs. But probably not worth bothering with.

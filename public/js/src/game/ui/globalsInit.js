@@ -70,16 +70,29 @@ module.exports = () => {
     };
     globals.elements = {
         playerHands: [],
+        messagePrompt: null, // The truncated action log
+        msgLogGroup: null, // The full action log
+        clueTargetButtonGroup: null,
+        clueButtonGroup: null,
+        rankClueButtons: null,
+        suitClueButtons: null,
+        giveClueButton: null,
         clueLog: null,
         paceNumberLabel: null,
         efficiencyNumberLabel: null,
         chatButton: null,
         timer1: null,
         timer2: null,
+        replayArea: null,
+        replayShuttleShared: null,
     };
     globals.activeHover = null; // The elemnt that the mouse cursor is currently over
     globals.cardImages = {};
 
-    // Unread chat messages
+    // Miscellaneous
+    globals.animateFast = true;
+    globals.savedAction = null; // Used to save new actions when in an in-game replay
+    globals.accidentalClueTimer = Date.now();
+    // Used to prevent giving an accidental clue after clicking the "Exit Replay" button
     globals.chatUnread = 0;
 };
