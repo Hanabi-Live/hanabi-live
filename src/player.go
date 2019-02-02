@@ -227,7 +227,7 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 
 		// The extra clue is wasted if the team is at the maximum amount of clues already
 		clueLimit := maxClues
-		if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+		if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
 			clueLimit *= 2
 		}
 		if g.Clues > clueLimit {
