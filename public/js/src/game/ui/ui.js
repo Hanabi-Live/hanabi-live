@@ -1,5 +1,6 @@
 // Imports
 const Button = require('./button');
+const ButtonGroup = require('./buttonGroup');
 const CardDeck = require('./cardDeck');
 const cardDraw = require('./cardDraw');
 const CardStack = require('./cardStack');
@@ -11,6 +12,8 @@ const FitText = require('./fitText');
 const globals = require('./globals');
 const globalsInit = require('./globalsInit');
 const HanabiCard = require('./card');
+const HanabiClueEntry = require('./clueEntry');
+const HanabiClueLog = require('./clueLog');
 const HanabiMsgLog = require('./msgLog');
 const LayoutChild = require('./layoutChild');
 const keyboard = require('./keyboard');
@@ -19,6 +22,7 @@ const NumberButton = require('./numberButton');
 const notes = require('./notes');
 const replay = require('./replay');
 const stats = require('./stats');
+const ToggleButton = require('./toggleButton');
 const timer = require('./timer');
 
 function HanabiUI(lobby, game) {
@@ -87,300 +91,6 @@ function HanabiUI(lobby, game) {
         return new Clue(clueType, clueValue);
     };
     const msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit];
-
-    /*
-        Card layouts
-    */
-
-    // A simple two-state button with text for each state
-    const ToggleButton = function ToggleButton(config) {
-        Button.call(this, config);
-        let toggleState = false;
-
-        const toggle = () => {
-            toggleState = !toggleState;
-            this.setText(toggleState ? config.alternateText : config.text);
-            if (this.getLayer()) {
-                this.getLayer().batchDraw();
-            }
-        };
-
-        this.on('click tap', toggle);
-
-        if (config.initialState) {
-            toggle();
-        }
-    };
-
-    Kinetic.Util.extend(ToggleButton, Button);
-
-    const ButtonGroup = function ButtonGroup(config) {
-        Kinetic.Node.call(this, config);
-
-        this.list = [];
-    };
-
-    Kinetic.Util.extend(ButtonGroup, Kinetic.Node);
-
-    ButtonGroup.prototype.add = function add(button) {
-        const self = this;
-
-        this.list.push(button);
-
-        button.on('click tap', function buttonClick() {
-            this.setPressed(true);
-
-            for (let i = 0; i < self.list.length; i++) {
-                if (self.list[i] !== this && self.list[i].pressed) {
-                    self.list[i].setPressed(false);
-                }
-            }
-
-            self.fire('change');
-        });
-    };
-
-    ButtonGroup.prototype.getPressed = function getPressed() {
-        for (let i = 0; i < this.list.length; i++) {
-            if (this.list[i].pressed) {
-                return this.list[i];
-            }
-        }
-
-        return null;
-    };
-
-    ButtonGroup.prototype.clearPressed = function clearPressed() {
-        for (let i = 0; i < this.list.length; i++) {
-            if (this.list[i].pressed) {
-                this.list[i].setPressed(false);
-            }
-        }
-    };
-
-    const HanabiClueLog = function HanabiClueLog(config) {
-        Kinetic.Group.call(this, config);
-    };
-
-    Kinetic.Util.extend(HanabiClueLog, Kinetic.Group);
-
-    HanabiClueLog.prototype.add = function add(child) {
-        Kinetic.Group.prototype.add.call(this, child);
-        this.doLayout();
-    };
-
-    HanabiClueLog.prototype._setChildrenIndices = function _setChildrenIndices() {
-        Kinetic.Group.prototype._setChildrenIndices.call(this);
-        this.doLayout();
-    };
-
-    HanabiClueLog.prototype.doLayout = function doLayout() {
-        let y = 0;
-
-        for (let i = 0; i < this.children.length; i++) {
-            const node = this.children[i];
-
-            node.setY(y);
-
-            y += node.getHeight() + 0.001 * winH;
-        }
-    };
-
-    HanabiClueLog.prototype.checkExpiry = function checkExpiry() {
-        const maxLength = 31;
-        const childrenToRemove = this.children.length - maxLength;
-        if (childrenToRemove < 1) {
-            return;
-        }
-        let childrenRemoved = 0;
-        for (let i = 0; i < this.children.length; i++) {
-            childrenRemoved += this.children[i].checkExpiry();
-            if (childrenRemoved >= childrenToRemove) {
-                break;
-            }
-        }
-
-        this.doLayout();
-    };
-
-    HanabiClueLog.prototype.showMatches = function showMatches(target) {
-        for (let i = 0; i < this.children.length; i++) {
-            this.children[i].showMatch(target);
-        }
-    };
-
-    HanabiClueLog.prototype.clear = function clear() {
-        for (let i = this.children.length - 1; i >= 0; i--) {
-            this.children[i].remove();
-        }
-    };
-
-    const HanabiClueEntry = function HanabiClueEntry(config) {
-        Kinetic.Group.call(this, config);
-
-        const w = config.width;
-        const h = config.height;
-
-        const background = new Kinetic.Rect({
-            x: 0,
-            y: 0,
-            width: w,
-            height: h,
-            fill: 'white',
-            opacity: 0.1,
-            listening: true,
-        });
-        this.background = background;
-
-        this.add(background);
-
-        const giver = new FitText({
-            x: 0.05 * w,
-            y: 0,
-            width: 0.3 * w,
-            height: h,
-            fontSize: 0.9 * h,
-            fontFamily: 'Verdana',
-            fill: 'white',
-            text: config.giver,
-            listening: false,
-        });
-        this.add(giver);
-
-        const target = new FitText({
-            x: 0.4 * w,
-            y: 0,
-            width: 0.3 * w,
-            height: h,
-            fontSize: 0.9 * h,
-            fontFamily: 'Verdana',
-            fill: 'white',
-            text: config.target,
-            listening: false,
-        });
-        this.add(target);
-
-        const name = new Kinetic.Text({
-            x: 0.75 * w,
-            y: 0,
-            width: 0.2 * w,
-            height: h,
-            align: 'center',
-            fontSize: 0.9 * h,
-            fontFamily: 'Verdana',
-            fill: 'white',
-            text: config.clueName,
-            listening: false,
-        });
-        this.add(name);
-
-        const negativeMarker = new Kinetic.Text({
-            x: 0.88 * w,
-            y: 0,
-            width: 0.2 * w,
-            height: h,
-            align: 'center',
-            fontSize: 0.9 * h,
-            fontFamily: 'Verdana',
-            fill: 'white',
-            text: '✘',
-            listening: false,
-            visible: false,
-        });
-
-        this.negativeMarker = negativeMarker;
-        this.add(negativeMarker);
-
-        this.list = config.list;
-        this.neglist = config.neglist;
-
-        // Add a mouseover highlighting effect
-        background.on('mouseover tap', () => {
-            globals.elements.clueLog.showMatches(null);
-
-            background.setOpacity(0.4);
-            background.getLayer().batchDraw();
-        });
-        background.on('mouseout', () => {
-            // Fix the bug where the mouseout can happen after the clue has been destroyed
-            if (background.getLayer() === null) {
-                return;
-            }
-
-            background.setOpacity(0.1);
-            background.getLayer().batchDraw();
-        });
-
-        // Store the turn that the clue occured inside this object for later
-        this.turn = config.turn;
-
-        // Click an entry in the clue log to go to that turn in the replay
-        background.on('click', () => {
-            if (globals.replay) {
-                replay.checkDisableSharedTurns();
-            } else {
-                replay.enter();
-            }
-            replay.goto(this.turn + 1, true);
-        });
-    };
-
-    Kinetic.Util.extend(HanabiClueEntry, Kinetic.Group);
-
-    HanabiClueEntry.prototype.checkValid = (c) => {
-        if (!globals.deck[c]) {
-            return false;
-        }
-
-        if (!globals.deck[c].parent) {
-            return false;
-        }
-
-        return globals.deck[c].isInPlayerHand();
-    };
-
-    // Returns number of expirations, either 0 or 1 depending on whether it expired
-    HanabiClueEntry.prototype.checkExpiry = function checkExpiry() {
-        for (let i = 0; i < this.list.length; i++) {
-            if (this.checkValid(this.list[i])) {
-                return 0;
-            }
-        }
-
-        for (let i = 0; i < this.neglist.length; i++) {
-            if (this.checkValid(this.neglist[i])) {
-                return 0;
-            }
-        }
-
-        this.off('mouseover tap');
-        this.off('mouseout');
-
-        this.remove();
-        return 1;
-    };
-
-    HanabiClueEntry.prototype.showMatch = function showMatch(target) {
-        this.background.setOpacity(0.1);
-        this.background.setFill('white');
-        this.negativeMarker.setVisible(false);
-
-        for (let i = 0; i < this.list.length; i++) {
-            if (globals.deck[this.list[i]] === target) {
-                this.background.setOpacity(0.4);
-            }
-        }
-
-        for (let i = 0; i < this.neglist.length; i++) {
-            if (globals.deck[this.neglist[i]] === target) {
-                this.background.setOpacity(0.4);
-                this.background.setFill('#ff7777');
-                if (globals.lobby.settings.showColorblindUI) {
-                    this.negativeMarker.setVisible(true);
-                }
-            }
-        }
-    };
 
     const HanabiNameFrame = function HanabiNameFrame(config) {
         Kinetic.Group.call(this, config);
@@ -700,7 +410,7 @@ function HanabiUI(lobby, game) {
     sizeStage(globals.stage);
 
     const winW = globals.stage.getWidth();
-    let winH = globals.stage.getHeight();
+    const winH = globals.stage.getHeight();
 
     const bgLayer = new Kinetic.Layer();
     globals.layers.card = new Kinetic.Layer();
