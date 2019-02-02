@@ -20,7 +20,7 @@ const enter = () => {
     globals.replayTurn = globals.replayMax;
     adjustShuttles();
     globals.lobby.ui.stopAction();
-    globals.replayArea.show();
+    globals.elements.replayArea.show();
     for (let i = 0; i < globals.deck.length; i++) {
         globals.deck[i].setBareImage();
     }

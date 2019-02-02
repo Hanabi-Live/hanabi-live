@@ -114,7 +114,7 @@ const keydown = (event) => {
         return;
     }
 
-    // Check for non-speedrun keyboard hotkeys
+    // Check for keyboard hotkeys
     let hotkeyFunction;
     if (globals.elements.replayArea.visible()) {
         hotkeyFunction = hotkeyMap.replay[event.key];
