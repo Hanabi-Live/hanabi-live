@@ -237,7 +237,7 @@ func variantUpOrDownCheckAllDead(g *Game) bool {
 		}
 
 		for _, c := range g.Deck {
-			for neededRank := range neededRanks {
+			for _, neededRank := range neededRanks {
 				if c.Suit == suit &&
 					c.Rank == neededRank &&
 					!c.Discarded {
