@@ -63,6 +63,7 @@ module.exports = () => {
     globals.useSharedTurns = true;
 
     // UI elements
+    globals.ImageLoader = null;
     globals.stage = null;
     globals.layers = {
         UI: null,

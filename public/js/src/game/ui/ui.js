@@ -1,4 +1,6 @@
 // Imports
+const CardDeck = require('./cardDeck');
+const CardLayout = require('./cardLayout');
 const constants = require('../../constants');
 const FitText = require('./fitText');
 const globals = require('./globals');
@@ -79,201 +81,11 @@ function HanabiUI(lobby, game) {
         }
         return new Clue(clueType, clueValue);
     };
-
     const msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit];
 
     /*
         Card layouts
     */
-
-    const CardLayout = function CardLayout(config) {
-        Kinetic.Group.call(this, config);
-
-        this.align = (config.align || 'left');
-        this.reverse = (config.reverse || false);
-        this.invertCards = (config.invertCards || false);
-    };
-
-    Kinetic.Util.extend(CardLayout, Kinetic.Group);
-
-    CardLayout.prototype.add = function add(child) {
-        child.children.forEach((c) => {
-            if (c.doRotations) {
-                c.doRotations(this.invertCards);
-            }
-        });
-        const pos = child.getAbsolutePosition();
-        Kinetic.Group.prototype.add.call(this, child);
-        child.setAbsolutePosition(pos);
-        this.doLayout();
-    };
-
-    CardLayout.prototype._setChildrenIndices = function _setChildrenIndices() {
-        Kinetic.Group.prototype._setChildrenIndices.call(this);
-        this.doLayout();
-    };
-
-    CardLayout.prototype.doLayout = function doLayout() {
-        let uw = 0;
-        let dist = 0;
-        let x = 0;
-
-        const lw = this.getWidth();
-        const lh = this.getHeight();
-
-        const n = this.children.length;
-
-        for (let i = 0; i < n; i++) {
-            const node = this.children[i];
-
-            if (!node.getHeight()) {
-                continue;
-            }
-
-            const scale = lh / node.getHeight();
-
-            uw += scale * node.getWidth();
-        }
-
-        if (n > 1) {
-            dist = (lw - uw) / (n - 1);
-        }
-
-        if (dist > 10) {
-            dist = 10;
-        }
-
-        uw += dist * (n - 1);
-
-        if (this.align === 'center' && uw < lw) {
-            x = (lw - uw) / 2;
-        }
-
-        if (this.reverse) {
-            x = lw - x;
-        }
-
-        const storedPostAnimationLayout = globals.postAnimationLayout;
-
-        for (let i = 0; i < n; i++) {
-            const node = this.children[i];
-
-            if (!node.getHeight()) {
-                continue;
-            }
-
-            const scale = lh / node.getHeight();
-
-            if (node.tween) {
-                node.tween.destroy();
-            }
-
-            if (!node.isDragging()) {
-                if (globals.animateFast) {
-                    node.setX(x - (this.reverse ? scale * node.getWidth() : 0));
-                    node.setY(0);
-                    node.setScaleX(scale);
-                    node.setScaleY(scale);
-                    node.setRotation(0);
-                } else {
-                    node.tween = new Kinetic.Tween({
-                        node,
-                        duration: 0.5,
-                        x: x - (this.reverse ? scale * node.getWidth() : 0),
-                        y: 0,
-                        scaleX: scale,
-                        scaleY: scale,
-                        rotation: 0,
-                        runonce: true,
-                        onFinish: storedPostAnimationLayout,
-                    }).play();
-                }
-            }
-
-            x += (scale * node.getWidth() + dist) * (this.reverse ? -1 : 1);
-        }
-    };
-
-    const CardDeck = function CardDeck(config) {
-        Kinetic.Group.call(this, config);
-
-        this.cardback = new Kinetic.Image({
-            x: 0,
-            y: 0,
-            width: this.getWidth(),
-            height: this.getHeight(),
-            image: globals.cardImages[config.cardback],
-        });
-
-        this.add(this.cardback);
-
-        this.count = new Kinetic.Text({
-            fill: 'white',
-            stroke: 'black',
-            strokeWidth: 1,
-            align: 'center',
-            x: 0,
-            y: 0.3 * this.getHeight(),
-            width: this.getWidth(),
-            height: 0.4 * this.getHeight(),
-            fontSize: 0.4 * this.getHeight(),
-            fontFamily: 'Verdana',
-            fontStyle: 'bold',
-            text: '0',
-            listening: false,
-        });
-
-        this.add(this.count);
-    };
-
-    Kinetic.Util.extend(CardDeck, Kinetic.Group);
-
-    CardDeck.prototype.add = function add(child) {
-        const self = this;
-
-        Kinetic.Group.prototype.add.call(this, child);
-
-        if (child instanceof LayoutChild) {
-            if (globals.animateFast) {
-                child.remove();
-                return;
-            }
-
-            child.tween = new Kinetic.Tween({
-                node: child,
-                x: 0,
-                y: 0,
-                scaleX: 0.01,
-                scaleY: 0.01,
-                rotation: 0,
-                duration: 0.5,
-                runonce: true,
-            }).play();
-
-            child.tween.onFinish = () => {
-                if (child.parent === self) {
-                    child.remove();
-                }
-            };
-        }
-    };
-
-    CardDeck.prototype.setCardBack = function setCardBack(cardback) {
-        this.cardback.setImage(ImageLoader.get(cardback));
-    };
-
-    CardDeck.prototype.setCount = function setCount(count) {
-        this.count.setText(count.toString());
-
-        this.cardback.setVisible(count > 0);
-    };
-
-    CardDeck.prototype.doLayout = function doLayout() {
-        this.cardback.setPosition({
-            x: 0,
-            y: 0,
-        });
-    };
 
     const CardStack = function CardStack(config) {
         Kinetic.Group.call(this, config);
@@ -402,7 +214,7 @@ function HanabiUI(lobby, game) {
                 width: 0.6 * w,
                 height: 0.6 * h,
                 listening: false,
-                image: ImageLoader.get(config.image),
+                image: globals.ImageLoader.get(config.image),
             });
 
             this.add(img);
@@ -1114,17 +926,13 @@ function HanabiUI(lobby, game) {
         return this.map[name];
     };
 
-    const ImageLoader = new Loader(() => {
+    globals.ImageLoader = new Loader(() => {
         cardDraw.buildCards();
         ui.buildUI();
         keyboard.init(); // Keyboard hotkeys can only be initialized once the clue buttons are drawn
         globals.lobby.conn.send('ready');
         globals.ready = true;
     });
-
-    this.loadImages = () => {
-        ImageLoader.start();
-    };
 
     this.showClueMatch = (target, clue) => {
         // Hide all of the existing arrows on the cards
@@ -1306,7 +1114,7 @@ function HanabiUI(lobby, game) {
             y: 0,
             width: winW,
             height: winH,
-            image: ImageLoader.get('background'),
+            image: globals.ImageLoader.get('background'),
         });
 
         bgLayer.add(background);
@@ -1369,7 +1177,7 @@ function HanabiUI(lobby, game) {
             width: 0.15 * winW,
             height: 0.35 * winH,
             opacity: 0.2,
-            image: ImageLoader.get('trashcan'),
+            image: globals.ImageLoader.get('trashcan'),
         });
         bgLayer.add(img);
 
@@ -2964,7 +2772,7 @@ function HanabiUI(lobby, game) {
 
         loadinglayer.add(progresslabel);
 
-        ImageLoader.progressCallback = (done, total) => {
+        globals.ImageLoader.progressCallback = (done, total) => {
             progresslabel.setText(`${done}/${total}`);
             loadinglayer.draw();
         };
@@ -3315,7 +3123,7 @@ function HanabiUI(lobby, game) {
                 y: 0.125 * winH,
                 width: 0.02 * winW,
                 height: 0.036 * winH,
-                image: ImageLoader.get('x'),
+                image: globals.ImageLoader.get('x'),
                 opacity: 0,
             });
 
@@ -3795,7 +3603,7 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
             globals.replayTurn = -1;
         }
 
-        this.loadImages();
+        globals.ImageLoader.start();
     } else if (msgType === 'advanced') {
         this.replayAdvanced();
     } else if (msgType === 'connected') {
