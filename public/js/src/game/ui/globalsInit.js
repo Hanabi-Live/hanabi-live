@@ -67,8 +67,10 @@ module.exports = () => {
     globals.layers = {
         UI: null,
         timer: null,
+        overtop: null, // A layer drawn overtop everything else
     };
     globals.elements = {
+        stageFade: null,
         playerHands: [],
         messagePrompt: null, // The truncated action log
         msgLogGroup: null, // The full action log

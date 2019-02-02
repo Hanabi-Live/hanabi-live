@@ -2,6 +2,7 @@
     Functions for progressing forward and backward through time
 */
 
+// Imports
 const globals = require('./globals');
 const constants = require('../../constants');
 const timer = require('./timer');

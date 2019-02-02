@@ -4,6 +4,7 @@ const FitText = require('./fitText');
 const globals = require('./globals');
 const globalsInit = require('./globalsInit');
 const HanabiCard = require('./card');
+const HanabiMsgLog = require('./msgLog');
 const cardDraw = require('./cardDraw');
 const keyboard = require('./keyboard');
 const MultiFitText = require('./multiFitText');
@@ -93,141 +94,6 @@ function HanabiUI(lobby, game) {
     };
 
     const msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit];
-
-    const HanabiMsgLog = function HanabiMsgLog(config) {
-        const baseConfig = {
-            x: 0.2 * winW,
-            y: 0.02 * winH,
-            width: 0.4 * winW,
-            height: 0.96 * winH,
-            clipX: 0,
-            clipY: 0,
-            clipWidth: 0.4 * winW,
-            clipHeight: 0.96 * winH,
-            visible: false,
-            listening: false,
-        };
-
-        $.extend(baseConfig, config);
-        Kinetic.Group.call(this, baseConfig);
-
-        const rect = new Kinetic.Rect({
-            x: 0,
-            y: 0,
-            width: 0.4 * winW,
-            height: 0.96 * winH,
-            fill: 'black',
-            opacity: 0.9,
-            cornerRadius: 0.01 * winW,
-        });
-
-        Kinetic.Group.prototype.add.call(this, rect);
-
-        const textoptions = {
-            fontSize: 0.025 * winH,
-            fontFamily: 'Verdana',
-            fill: 'white',
-            x: 0.04 * winW,
-            y: 0.01 * winH,
-            width: 0.35 * winW,
-            height: 0.94 * winH,
-            maxLines: 38,
-        };
-
-        this.logtext = new MultiFitText(textoptions);
-        Kinetic.Group.prototype.add.call(this, this.logtext);
-
-        const numbersoptions = {
-            fontSize: 0.025 * winH,
-            fontFamily: 'Verdana',
-            fill: 'lightgrey',
-            x: 0.01 * winW,
-            y: 0.01 * winH,
-            width: 0.03 * winW,
-            height: 0.94 * winH,
-            maxLines: 38,
-        };
-        this.lognumbers = new MultiFitText(numbersoptions);
-        Kinetic.Group.prototype.add.call(this, this.lognumbers);
-
-        this.playerLogs = [];
-        this.playerLogNumbers = [];
-        for (let i = 0; i < globals.playerNames.length; i++) {
-            this.playerLogs[i] = new MultiFitText(textoptions);
-            this.playerLogs[i].hide();
-            Kinetic.Group.prototype.add.call(this, this.playerLogs[i]);
-
-            this.playerLogNumbers[i] = new MultiFitText(numbersoptions);
-            this.playerLogNumbers[i].hide();
-            Kinetic.Group.prototype.add.call(this, this.playerLogNumbers[i]);
-        }
-    };
-
-    Kinetic.Util.extend(HanabiMsgLog, Kinetic.Group);
-
-    HanabiMsgLog.prototype.addMessage = function addMessage(msg) {
-        const appendLine = (log, numbers, line) => {
-            log.setMultiText(line);
-            numbers.setMultiText(globals.deckSize.toString());
-        };
-
-        appendLine(this.logtext, this.lognumbers, msg);
-        for (let i = 0; i < globals.playerNames.length; i++) {
-            if (msg.startsWith(globals.playerNames[i])) {
-                appendLine(this.playerLogs[i], this.playerLogNumbers[i], msg);
-                break;
-            }
-        }
-    };
-
-    HanabiMsgLog.prototype.showPlayerActions = function showPlayerActions(playerName) {
-        let playerIDX;
-        for (let i = 0; i < globals.playerNames.length; i++) {
-            if (globals.playerNames[i] === playerName) {
-                playerIDX = i;
-            }
-        }
-        this.logtext.hide();
-        this.lognumbers.hide();
-        this.playerLogs[playerIDX].show();
-        this.playerLogNumbers[playerIDX].show();
-
-        this.show();
-
-        overback.show();
-        overLayer.draw();
-
-        const thislog = this;
-        overback.on('click tap', () => {
-            overback.off('click tap');
-            thislog.playerLogs[playerIDX].hide();
-            thislog.playerLogNumbers[playerIDX].hide();
-
-            thislog.logtext.show();
-            thislog.lognumbers.show();
-            thislog.hide();
-            overback.hide();
-            overLayer.draw();
-        });
-    };
-
-    HanabiMsgLog.prototype.refreshText = function refreshText() {
-        this.logtext.refreshText();
-        this.lognumbers.refreshText();
-        for (let i = 0; i < globals.playerNames.length; i++) {
-            this.playerLogs[i].refreshText();
-            this.playerLogNumbers[i].refreshText();
-        }
-    };
-
-    HanabiMsgLog.prototype.reset = function reset() {
-        this.logtext.reset();
-        this.lognumbers.reset();
-        for (let i = 0; i < globals.playerNames.length; i++) {
-            this.playerLogs[i].reset();
-            this.playerLogNumbers[i].reset();
-        }
-    };
 
     /*
         Card layouts
@@ -1415,13 +1281,13 @@ function HanabiUI(lobby, game) {
 
     sizeStage(globals.stage);
 
-    let winW = globals.stage.getWidth();
+    const winW = globals.stage.getWidth();
     let winH = globals.stage.getHeight();
 
     const bgLayer = new Kinetic.Layer();
     globals.layers.card = new Kinetic.Layer();
     globals.layers.UI = new Kinetic.Layer();
-    const overLayer = new Kinetic.Layer();
+    globals.layers.overtop = new Kinetic.Layer();
     const textLayer = new Kinetic.Layer({
         listening: false,
     });
@@ -1460,7 +1326,6 @@ function HanabiUI(lobby, game) {
     let replayButton;
     let replayExitButton;
     let lobbyButton;
-    let overback;
 
     const overPlayArea = pos => (
         pos.x >= playArea.getX()
@@ -1594,17 +1459,17 @@ function HanabiUI(lobby, game) {
         // Clicking on the action log
         rect.on('click tap', () => {
             globals.elements.msgLogGroup.show();
-            overback.show();
+            globals.elements.stageFade.show();
 
-            overLayer.draw();
+            globals.layers.overtop.draw();
 
-            overback.on('click tap', () => {
-                overback.off('click tap');
+            globals.elements.stageFade.on('click tap', () => {
+                globals.elements.stageFade.off('click tap');
 
                 globals.elements.msgLogGroup.hide();
-                overback.hide();
+                globals.elements.stageFade.hide();
 
-                overLayer.draw();
+                globals.layers.overtop.draw();
             });
         });
 
@@ -1635,7 +1500,7 @@ function HanabiUI(lobby, game) {
         actionLog.add(globals.elements.messagePrompt);
 
         // The dark overlay that appears when you click on the action log (or a player's name)
-        overback = new Kinetic.Rect({
+        globals.elements.stageFade = new Kinetic.Rect({
             x: 0,
             y: 0,
             width: winW,
@@ -1644,11 +1509,11 @@ function HanabiUI(lobby, game) {
             fill: 'black',
             visible: false,
         });
-        overLayer.add(overback);
+        globals.layers.overtop.add(globals.elements.stageFade);
 
         // The full action log (that appears when you click on the action log)
         globals.elements.msgLogGroup = new HanabiMsgLog();
-        overLayer.add(globals.elements.msgLogGroup);
+        globals.layers.overtop.add(globals.elements.msgLogGroup);
 
         // The rectangle that holds the turn, score, and clue count
         const scoreAreaValues = {
@@ -2997,7 +2862,7 @@ function HanabiUI(lobby, game) {
         globals.stage.add(globals.layers.UI);
         globals.stage.add(globals.layers.timer);
         globals.stage.add(globals.layers.card);
-        globals.stage.add(overLayer);
+        globals.stage.add(globals.layers.overtop);
     };
 
     this.giveClue = () => {
@@ -3937,7 +3802,7 @@ function HanabiUI(lobby, game) {
         globals.elements.messagePrompt.setMultiText(msg.text);
         if (!globals.animateFast) {
             globals.layers.UI.draw();
-            overLayer.draw();
+            globals.layers.overtop.draw();
         }
     };
 
