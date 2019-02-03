@@ -211,6 +211,10 @@ const HanabiCard = function HanabiCard(config) {
     });
     this.add(this.cluedBorder);
 
+    this.isClued = function isClued() {
+        return this.cluedBorder.visible();
+    };
+
     this.indicatorArrow = new Kinetic.Text({
         x: config.width * 1.01,
         y: config.height * 0.18,
@@ -317,8 +321,30 @@ const HanabiCard = function HanabiCard(config) {
         globals.layers.UI.draw();
     });
 
-    // Empathy feature
-    // Show teammate view of their hand, or past view of your own hand
+    this.on('click', this.click);
+
+    // Hide clue arrows ahead of user dragging their card
+    if (config.holder === globals.playerUs && !globals.replay && !globals.spectating) {
+        this.on('mousedown', (event) => {
+            if (
+                event.evt.which !== 1 // Dragging uses left click
+                || globals.inReplay
+                || !this.indicatorArrow.isVisible()
+            ) {
+                return;
+            }
+
+            globals.lobby.ui.showClueMatch(-1);
+            // Do not prevent default since there can be more than one mousedown event
+        });
+    }
+
+    /*
+        Empathy feature
+    */
+
+    // Click on a teammate's card to have the card show as it would to that teammate
+    // (or, in a replay, show your own card as it appeared at that moment in time)
     // Pips visibility state is tracked so it can be restored for your own hand during a game
     const toggleHolderViewOnCard = (c, enabled, togglePips) => {
         const toggledPips = [0, 0];
@@ -379,28 +405,6 @@ const HanabiCard = function HanabiCard(config) {
             endHolderViewOnCard(toggledPips);
         });
     }
-
-    // Hide clue arrows ahead of user dragging their card
-    if (config.holder === globals.playerUs && !globals.replay && !globals.spectating) {
-        this.on('mousedown', (event) => {
-            if (
-                event.evt.which !== 1 // Dragging uses left click
-                || globals.inReplay
-                || !this.indicatorArrow.isVisible()
-            ) {
-                return;
-            }
-
-            globals.lobby.ui.showClueMatch(-1);
-            // Do not prevent default since the other event is starting
-        });
-    }
-
-    this.on('click', this.click);
-
-    this.isClued = function isClued() {
-        return this.cluedBorder.visible();
-    };
 };
 
 Kinetic.Util.extend(HanabiCard, Kinetic.Group);
