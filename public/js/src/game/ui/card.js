@@ -55,7 +55,6 @@ const HanabiCard = function HanabiCard(config) {
             this.getAbsoluteTransform(),
         );
     });
-
     this.add(this.bare);
 
     this.trueSuit = config.suit || undefined;
@@ -74,6 +73,7 @@ const HanabiCard = function HanabiCard(config) {
     // the true suit and rank
     this.possibleSuits = config.suits;
     this.possibleRanks = config.ranks;
+
     this.rankPips = new Kinetic.Group({
         x: 0,
         y: Math.floor(CARDH * 0.85),
@@ -90,6 +90,7 @@ const HanabiCard = function HanabiCard(config) {
     });
     this.add(this.rankPips);
     this.add(this.suitPips);
+
     const cardPresentKnowledge = globals.learnedCards[this.order];
     if (cardPresentKnowledge.rank) {
         this.rankPips.visible(false);
@@ -119,79 +120,77 @@ const HanabiCard = function HanabiCard(config) {
         this.rankPips.add(rankPip);
     }
 
-    {
-        const { suits } = config;
-        const nSuits = suits.length;
-        for (let i = 0; i < suits.length; i++) {
-            const suit = suits[i];
+    const { suits } = config;
+    const nSuits = suits.length;
+    for (let i = 0; i < suits.length; i++) {
+        const suit = suits[i];
 
-            let fill = suit.fillColors.hexCode;
-            if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
-                fill = undefined;
-            }
-
-            const suitPip = new Kinetic.Shape({
-                x: Math.floor(CARDW * 0.5),
-                y: Math.floor(CARDH * 0.5),
-
-                // Scale numbers are magic
-                scale: {
-                    x: 0.4,
-                    y: 0.4,
-                },
-
-                // Transform polar to cartesian coordinates
-                // The magic number added to the offset is needed to center things properly;
-                // We don't know why it's needed;
-                // perhaps something to do with the shape functions
-                offset: {
-                    x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25), // eslint-disable-line
-                    y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3), // eslint-disable-line
-                },
-                fill,
-                stroke: 'black',
-                name: suit.name,
-                listening: false,
-                /* eslint-disable no-loop-func */
-                drawFunc: (ctx) => {
-                    cardDraw.drawSuitShape(suit, i)(ctx);
-                    ctx.closePath();
-                    ctx.fillStrokeShape(suitPip);
-                },
-                /* eslint-enable no-loop-func */
-            });
-
-            // Gradient numbers are magic
-            if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
-                suitPip.fillRadialGradientColorStops([
-                    0.3, suit.fillColors[0].hexCode,
-                    0.425, suit.fillColors[1].hexCode,
-                    0.65, suit.fillColors[2].hexCode,
-                    0.875, suit.fillColors[3].hexCode,
-                    1, suit.fillColors[4].hexCode,
-                ]);
-                suitPip.fillRadialGradientStartPoint({
-                    x: 75,
-                    y: 140,
-                });
-                suitPip.fillRadialGradientEndPoint({
-                    x: 75,
-                    y: 140,
-                });
-                suitPip.fillRadialGradientStartRadius(0);
-                suitPip.fillRadialGradientEndRadius(Math.floor(CARDW * 0.25));
-            }
-            suitPip.rotation(0);
-
-            // Reduce opactity of eliminated suits and outline remaining suits
-            if (!globals.learnedCards[this.order].possibleSuits.includes(suit)) {
-                suitPip.setOpacity(0.4);
-            } else {
-                suitPip.setStrokeWidth(5);
-            }
-
-            this.suitPips.add(suitPip);
+        let fill = suit.fillColors.hexCode;
+        if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
+            fill = undefined;
         }
+
+        const suitPip = new Kinetic.Shape({
+            x: Math.floor(CARDW * 0.5),
+            y: Math.floor(CARDH * 0.5),
+
+            // Scale numbers are magic
+            scale: {
+                x: 0.4,
+                y: 0.4,
+            },
+
+            // Transform polar to cartesian coordinates
+            // The magic number added to the offset is needed to center things properly;
+            // We don't know why it's needed;
+            // perhaps something to do with the shape functions
+            offset: {
+                x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25), // eslint-disable-line
+                y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3), // eslint-disable-line
+            },
+            fill,
+            stroke: 'black',
+            name: suit.name,
+            listening: false,
+            /* eslint-disable no-loop-func */
+            drawFunc: (ctx) => {
+                cardDraw.drawSuitShape(suit, i)(ctx);
+                ctx.closePath();
+                ctx.fillStrokeShape(suitPip);
+            },
+            /* eslint-enable no-loop-func */
+        });
+
+        // Gradient numbers are magic
+        if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
+            suitPip.fillRadialGradientColorStops([
+                0.3, suit.fillColors[0].hexCode,
+                0.425, suit.fillColors[1].hexCode,
+                0.65, suit.fillColors[2].hexCode,
+                0.875, suit.fillColors[3].hexCode,
+                1, suit.fillColors[4].hexCode,
+            ]);
+            suitPip.fillRadialGradientStartPoint({
+                x: 75,
+                y: 140,
+            });
+            suitPip.fillRadialGradientEndPoint({
+                x: 75,
+                y: 140,
+            });
+            suitPip.fillRadialGradientStartRadius(0);
+            suitPip.fillRadialGradientEndRadius(Math.floor(CARDW * 0.25));
+        }
+        suitPip.rotation(0);
+
+        // Reduce opactity of eliminated suits and outline remaining suits
+        if (!globals.learnedCards[this.order].possibleSuits.includes(suit)) {
+            suitPip.setOpacity(0.4);
+        } else {
+            suitPip.setStrokeWidth(5);
+        }
+
+        this.suitPips.add(suitPip);
     }
 
     this.barename = undefined;
@@ -210,7 +209,6 @@ const HanabiCard = function HanabiCard(config) {
         visible: false,
         listening: false,
     });
-
     this.add(this.cluedBorder);
 
     this.indicatorArrow = new Kinetic.Text({
@@ -234,7 +232,6 @@ const HanabiCard = function HanabiCard(config) {
         visible: false,
         listening: false,
     });
-
     this.add(this.indicatorArrow);
 
     // Define the note indicator emoji (this used to be a white square)
@@ -349,7 +346,7 @@ const HanabiCard = function HanabiCard(config) {
     };
     const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
         if (toggledHolderViewCards.length > 0) {
-            return undefined; // data race with stop
+            return undefined; // Handle race conditions with stop
         }
 
         toggledHolderViewCards.splice(0, 0, ...cards);

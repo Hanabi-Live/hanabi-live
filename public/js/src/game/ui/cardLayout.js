@@ -1,3 +1,7 @@
+/*
+    CardLayout is composed of LayoutChild objects
+*/
+
 // Imports
 const globals = require('./globals');
 
