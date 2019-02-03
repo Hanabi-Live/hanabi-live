@@ -362,6 +362,12 @@ const HanabiCard = function HanabiCard(config) {
                 return;
             }
 
+            // Disable Empathy if the card is tweening
+            const child = this.parent; // This is the LayoutChild
+            if (child.tween && child.tween.isPlaying()) {
+                return;
+            }
+
             globals.activeHover = this;
             const cards = this.parent.parent.children.map(c => c.children[0]);
             toggledPips = beginHolderViewOnCard(cards);

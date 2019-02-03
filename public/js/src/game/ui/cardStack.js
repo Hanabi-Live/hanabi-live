@@ -1,3 +1,7 @@
+/*
+    CardStack is composed of LayoutChild objects
+*/
+
 // Imports
 const globals = require('./globals');
 
@@ -50,7 +54,7 @@ CardStack.prototype.doLayout = function doLayout() {
     };
 
     for (let i = 0; i < this.children.length; i++) {
-        const node = this.children[i];
+        const node = this.children[i]; // This is a LayoutChild
 
         const scale = lh / node.getHeight();
 

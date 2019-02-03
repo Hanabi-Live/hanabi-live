@@ -2096,8 +2096,8 @@ function HanabiUI(lobby, game) {
             card.setBareImage();
             card.hideClues();
         } else if (type === 'reveal') {
-            // Has the following data:
             /*
+                Has the following data:
                 {
                     type: 'reveal',
                     which: {
@@ -2415,9 +2415,9 @@ function HanabiUI(lobby, game) {
         globals.layers.UI.batchDraw();
     };
 
-    // Recieved by the client when spectating a game
-    // Has the following data:
     /*
+        Recieved by the client when spectating a game
+        Has the following data:
         {
             order: 16,
             note: '<strong>Zamiel:</strong> note1<br /><strong>Duneaught:</strong> note2<br />',
@@ -2448,13 +2448,14 @@ function HanabiUI(lobby, game) {
         globals.layers.card.batchDraw();
     };
 
-    // Recieved by the client when:
-    // - joining a replay (will get all notes)
-    // - joining a shared replay (will get all notes)
-    // - joining an existing game as a spectator (will get all notes)
-    // - reconnecting an existing game as a player (will only get your own notes)
-    // Has the following data:
     /*
+        Recieved by the client when:
+        - joining a replay (will get all notes)
+        - joining a shared replay (will get all notes)
+        - joining an existing game as a spectator (will get all notes)
+        - reconnecting an existing game as a player (will only get your own notes)
+
+        Has the following data:
         {
             notes: [
                 null,
