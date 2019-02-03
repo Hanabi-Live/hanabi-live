@@ -96,69 +96,11 @@ func (g *Game) End() {
 	}
 
 	// Record the game in the database
-	row := models.GameRow{
-		Name:                 g.Name,
-		NumPlayers:           len(g.Players),
-		Owner:                g.Owner,
-		Variant:              variants[g.Options.Variant].ID,
-		Timed:                g.Options.Timed,
-		TimeBase:             int(g.Options.TimeBase),
-		TimePerTurn:          g.Options.TimePerTurn,
-		DeckPlays:            g.Options.DeckPlays,
-		EmptyClues:           g.Options.EmptyClues,
-		CharacterAssignments: g.Options.CharacterAssignments,
-		Seed:                 g.Seed,
-		Score:                g.Score,
-		EndCondition:         g.EndCondition,
-		DatetimeCreated:      g.DatetimeCreated,
-		DatetimeStarted:      g.DatetimeStarted,
-		NumTurns:             g.Turn,
-	}
 	var databaseID int
-	if v, err := db.Games.Insert(row); err != nil {
-		log.Error("Failed to insert the game row:", err)
+	if v, err := g.WriteDatabase(); err != nil {
 		return
 	} else {
 		databaseID = v
-	}
-
-	// Next, we have to insert rows for each of the participants
-	for _, p := range g.Players {
-		if err := db.GameParticipants.Insert(
-			p.ID,
-			databaseID,
-			p.Notes,
-			characters[p.Character].ID,
-			p.CharacterMetadata,
-		); err != nil {
-			log.Error("Failed to insert the game participant row:", err)
-			return
-		}
-	}
-
-	// Next, we have to insert rows for each of the actions
-	for _, a := range g.Actions {
-		var aString string
-		if v, err := json.Marshal(a); err != nil {
-			log.Error("Failed to convert the action to JSON:", err)
-			return
-		} else {
-			aString = string(v)
-		}
-
-		if err := db.GameActions.Insert(databaseID, aString); err != nil {
-			log.Error("Failed to insert the action row:", err)
-			return
-		}
-	}
-
-	// Next, we have to insert rows for each of the chat messages
-	room := "game" + strconv.Itoa(databaseID)
-	for _, chatMsg := range g.Chat {
-		if err := db.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, room); err != nil {
-			log.Error("Failed to insert a chat message into the database:", err)
-			return
-		}
 	}
 
 	// Send a "gameHistory" message to all the players in the game
@@ -192,13 +134,86 @@ func (g *Game) End() {
 		// The second argument tells the client to increment the total number of games played
 	}
 
+	// Send a chat message with the game result and players
+	g.AnnounceGameResult(databaseID)
+
+	// Turn the game into a shared replay
+	g.ConvertToSharedReplay(databaseID)
+}
+
+func (g *Game) WriteDatabase() (int, error) {
+	row := models.GameRow{
+		Name:                 g.Name,
+		NumPlayers:           len(g.Players),
+		Owner:                g.Owner,
+		Variant:              variants[g.Options.Variant].ID,
+		Timed:                g.Options.Timed,
+		TimeBase:             int(g.Options.TimeBase),
+		TimePerTurn:          g.Options.TimePerTurn,
+		DeckPlays:            g.Options.DeckPlays,
+		EmptyClues:           g.Options.EmptyClues,
+		CharacterAssignments: g.Options.CharacterAssignments,
+		Seed:                 g.Seed,
+		Score:                g.Score,
+		EndCondition:         g.EndCondition,
+		DatetimeCreated:      g.DatetimeCreated,
+		DatetimeStarted:      g.DatetimeStarted,
+		NumTurns:             g.Turn,
+	}
+	var databaseID int
+	if v, err := db.Games.Insert(row); err != nil {
+		log.Error("Failed to insert the game row:", err)
+		return 0, err
+	} else {
+		databaseID = v
+	}
+
+	// Next, we have to insert rows for each of the participants
+	for _, p := range g.Players {
+		if err := db.GameParticipants.Insert(
+			p.ID,
+			databaseID,
+			p.Notes,
+			characters[p.Character].ID,
+			p.CharacterMetadata,
+		); err != nil {
+			log.Error("Failed to insert the game participant row:", err)
+			return 0, err
+		}
+	}
+
+	// Next, we have to insert rows for each of the actions
+	for _, a := range g.Actions {
+		var aString string
+		if v, err := json.Marshal(a); err != nil {
+			log.Error("Failed to convert the action to JSON:", err)
+			return 0, err
+		} else {
+			aString = string(v)
+		}
+
+		if err := db.GameActions.Insert(databaseID, aString); err != nil {
+			log.Error("Failed to insert the action row:", err)
+			return 0, err
+		}
+	}
+
+	// Next, we have to insert rows for each of the chat messages
+	room := "game" + strconv.Itoa(databaseID)
+	for _, chatMsg := range g.Chat {
+		if err := db.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, room); err != nil {
+			log.Error("Failed to insert a chat message into the database:", err)
+			return 0, err
+		}
+	}
+
 	// Update the stats for each player
 	for _, p := range g.Players {
 		// Get their current best scores
 		var stats models.Stats
 		if v, err := db.UserStats.Get(p.ID, variants[g.Options.Variant].ID); err != nil {
 			log.Error("Failed to get the stats for user "+p.Name+":", err)
-			return
+			return 0, err
 		} else {
 			stats = v
 		}
@@ -230,16 +245,52 @@ func (g *Game) End() {
 		// we still want to update their average score and strikeout rate)
 		if err := db.UserStats.Update(p.ID, variants[g.Options.Variant].ID, stats); err != nil {
 			log.Error("Failed to update the stats for user "+p.Name+":", err)
-			return
+			return 0, err
 		}
 	}
 
-	// Send a chat message with the game result and players
-	announceGameResult(g, databaseID)
-
 	log.Info("Finished database actions for the end of the game.")
+	return databaseID, nil
+}
 
-	// Turn the game into a shared replay
+func (g *Game) AnnounceGameResult(databaseID int) {
+	// Make the list of names
+	playerList := make([]string, 0)
+	for _, p := range g.Players {
+		playerList = append(playerList, p.Name)
+	}
+	msg := "[" + strings.Join(playerList, ", ") + "] "
+	msg += "finished a"
+	firstLetter := strings.ToLower(g.Options.Variant)[0]
+	if firstLetter == 'a' ||
+		firstLetter == 'e' ||
+		firstLetter == 'i' ||
+		firstLetter == 'o' ||
+		firstLetter == 'u' {
+
+		msg += "n"
+	}
+	msg += " " + g.Options.Variant + " "
+	msg += "game with a score of " + strconv.Itoa(g.Score) + ". "
+	if g.Score == len(g.Stacks)*5 {
+		// This is the theoretical perfect score for this variant
+		// (assuming that there are 5 points per stack)
+		msg += pogChamp + " "
+	} else if g.Score == 0 {
+		msg += bibleThump + " "
+	}
+	msg += "(id: " + strconv.Itoa(databaseID) + ", seed: " + g.Seed + ")"
+
+	d := &CommandData{
+		Server: true,
+		Msg:    msg,
+		Room:   "lobby",
+		Spam:   true,
+	}
+	commandChat(nil, d)
+}
+
+func (g *Game) ConvertToSharedReplay(databaseID int) {
 	delete(games, g.ID)
 	if _, ok := games[databaseID]; ok {
 		log.Error("Failed to turn the game into a shared replay since " +
@@ -334,41 +385,4 @@ func (g *Game) End() {
 
 	notifyAllTable(g)    // Update the spectator list for the row in the lobby
 	g.NotifySpectators() // Update the in-game spectator list
-}
-
-func announceGameResult(g *Game, databaseID int) {
-	// Make the list of names
-	playerList := make([]string, 0)
-	for _, p := range g.Players {
-		playerList = append(playerList, p.Name)
-	}
-	msg := "[" + strings.Join(playerList, ", ") + "] "
-	msg += "finished a"
-	firstLetter := strings.ToLower(g.Options.Variant)[0]
-	if firstLetter == 'a' ||
-		firstLetter == 'e' ||
-		firstLetter == 'i' ||
-		firstLetter == 'o' ||
-		firstLetter == 'u' {
-
-		msg += "n"
-	}
-	msg += " " + g.Options.Variant + " "
-	msg += "game with a score of " + strconv.Itoa(g.Score) + ". "
-	if g.Score == len(g.Stacks)*5 {
-		// This is the theoretical perfect score for this variant
-		// (assuming that there are 5 points per stack)
-		msg += pogChamp + " "
-	} else if g.Score == 0 {
-		msg += bibleThump + " "
-	}
-	msg += "(id: " + strconv.Itoa(databaseID) + ", seed: " + g.Seed + ")"
-
-	d := &CommandData{
-		Server: true,
-		Msg:    msg,
-		Room:   "lobby",
-		Spam:   true,
-	}
-	commandChat(nil, d)
 }

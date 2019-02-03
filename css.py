@@ -20,6 +20,9 @@ CSS_FILES = [
     'hanabi.css', # Site-specific CSS
 ]
 CSS_DIR = os.path.join(DIR, 'public', 'css')
+if not os.path.isdir(CSS_DIR):
+    print('Error: Failed to find the CSS directory at "' + CSS_DIR + '".')
+    sys.exit(1)
 
 css = ''
 for file_name in CSS_FILES:
@@ -46,6 +49,9 @@ else:
 # Optimize and minify CSS with CSSO
 # (which is installed in the JavaScript directory)
 JS_DIR = os.path.join(DIR, 'public', 'js')
+if not os.path.isdir(JS_DIR):
+    print('Error: Failed to find the JavaScript directory at "' + JS_DIR + '".')
+    sys.exit(1)
 CSS_MINIFIED = os.path.join(CSS_DIR, 'main.min.css')
 try:
     output = subprocess.check_output([
@@ -55,10 +61,13 @@ try:
         CSS_CONCATENATED,
         '--output',
         CSS_MINIFIED,
-    ], cwd=JS_DIR)
+    ], cwd=JS_DIR, shell=True)
+    # (we have to specify "shell=True" for compatability with Git Bash on Windows)
+    if sys.version_info >= (3, 0):
+        output = output.decode('utf-8') 
     output = output.strip()
     if output != '':
         print(output)
 except subprocess.CalledProcessError as e:
-    print('Error: Failed to compile the JavaScript.')
+    print('Error: Failed to minify the CSS.')
     sys.exit(1)

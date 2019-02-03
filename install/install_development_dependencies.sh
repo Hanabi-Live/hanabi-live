@@ -30,7 +30,6 @@ go get -u github.com/sqs/goreturns
 go get -u golang.org/x/lint/golint
 go get -u github.com/cweill/gotests/...
 go get -u github.com/alecthomas/gometalinter
-#go get -u honnef.co/go/tools/...
 go get -u github.com/sourcegraph/go-langserver
 go get -u github.com/derekparker/delve/cmd/dlv
 

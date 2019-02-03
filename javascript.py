@@ -16,16 +16,19 @@ MAIN_BUNDLED_JS = os.path.join(JS_DIR, 'main.bundled.js')
 if not os.path.isfile(MAIN_SRC_JS):
     print('Error: Failed to find file "' + MAIN_SRC_JS + '".')
 try:
-   output = subprocess.check_output([
-       'npx',
-       'browserify',
-       MAIN_SRC_JS,
-       '--outfile',
-       MAIN_BUNDLED_JS,
-   ], cwd=JS_DIR)
-   output = output.strip()
-   if output != '':
-       print(output)
+    output = subprocess.check_output([
+        'npx',
+        'browserify',
+        MAIN_SRC_JS,
+        '--outfile',
+        MAIN_BUNDLED_JS,
+    ], cwd=JS_DIR, shell=True)
+    # (we have to specify "shell=True" for compatability with Git Bash on Windows)
+    if sys.version_info >= (3, 0):
+        output = output.decode('utf-8') 
+    output = output.strip()
+    if output != '':
+        print(output)
 except subprocess.CalledProcessError as e:
     print('Error: Failed to browserify the JavaScript.')
     sys.exit(1)
@@ -91,7 +94,10 @@ try:
         'main.min.js',
         '--warning_level',
         'QUIET',
-    ], cwd=JS_DIR)
+    ], cwd=JS_DIR, shell=True)
+    # (we have to specify "shell=True" for compatability with Git Bash on Windows)
+    if sys.version_info >= (3, 0):
+        output = output.decode('utf-8') 
     output = output.strip()
     if output != '':
         print(output)

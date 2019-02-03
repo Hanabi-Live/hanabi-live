@@ -287,7 +287,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 
 	// This could have been a discard (or misplay) or a card needed to get the maximum score
 	newMaxScore := g.GetMaxScore()
-	if newMaxScore != g.MaxScore {
+	if newMaxScore < g.MaxScore {
 		// Decrease the maximum score possible for this game
 		g.MaxScore = newMaxScore
 
