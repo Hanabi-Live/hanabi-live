@@ -2046,9 +2046,6 @@ function HanabiUI(lobby, game) {
             card.trueSuit = suit;
             card.trueRank = data.which.rank;
 
-            card.setBareImage();
-            card.hideClues();
-
             const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
             card.suitPips.hide();
@@ -2093,6 +2090,11 @@ function HanabiUI(lobby, game) {
                     stats.updateEfficiency(-1);
                 }
             }
+
+            // Reveal the card and get rid of the yellow border, if present
+            // (this code must be after the efficiency code above)
+            card.setBareImage();
+            card.hideClues();
         } else if (type === 'reveal') {
             // Has the following data:
             /*
