@@ -13,8 +13,12 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 JS_DIR = os.path.join(DIR, 'public', 'js')
 MAIN_SRC_JS = os.path.join(JS_DIR, 'src', 'main.js')
 MAIN_BUNDLED_JS = os.path.join(JS_DIR, 'main.bundled.js')
+if not os.path.isdir(JS_DIR):
+    print('Error: Failed to find the JavaScript directory at "' + JS_DIR + '".')
+    sys.exit(1)
 if not os.path.isfile(MAIN_SRC_JS):
-    print('Error: Failed to find file "' + MAIN_SRC_JS + '".')
+    print('Error: Failed to find the main JavaScript file at "' + MAIN_SRC_JS + '".')
+    sys.exit(1)
 try:
     output = subprocess.check_output([
         'npx',
@@ -48,6 +52,9 @@ JS_FILES = [
     'main.bundled.js', # Hanabi Live code
 ]
 JS_LIB_DIR = os.path.join(JS_DIR, 'lib')
+if not os.path.isdir(JS_LIB_DIR):
+    print('Error: Failed to find the JavaScript library directory at "' + JS_LIB_DIR + '".')
+    sys.exit(1)
 
 js = ''
 for file_name in JS_LIB_FILES:
@@ -104,4 +111,4 @@ try:
 except subprocess.CalledProcessError as e:
     print('Error: Failed to compile the JavaScript.')
     sys.exit(1)
-print("Closure compilation complete.")
+print('Closure compilation complete.')
