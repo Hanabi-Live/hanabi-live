@@ -66,6 +66,7 @@ CardStack.prototype.doLayout = function doLayout() {
             node.setRotation(0);
             hideUnder();
         } else {
+            // Animate the card leaving the hand to the play stacks / discard pile
             node.tween = new Kinetic.Tween({
                 node,
                 duration: 0.8,

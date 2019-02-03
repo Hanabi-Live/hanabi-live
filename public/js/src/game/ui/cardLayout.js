@@ -95,6 +95,7 @@ CardLayout.prototype.doLayout = function doLayout() {
                 node.setScaleY(scale);
                 node.setRotation(0);
             } else {
+                // Animate the card leaving the deck
                 node.tween = new Kinetic.Tween({
                     node,
                     duration: 0.5,

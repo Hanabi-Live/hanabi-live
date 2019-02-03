@@ -2026,15 +2026,14 @@ function HanabiUI(lobby, game) {
         } else if (type === 'drawSize') {
             globals.deckSize = data.size;
             drawDeck.setCount(data.size);
-        } else if (type === 'play') {
+        } else if (type === 'play' || type === 'discard') {
+            // Local variables
             const suit = msgSuitToSuit(data.which.suit, globals.variant);
-            globals.lobby.ui.showClueMatch(-1);
+            const card = globals.deck[data.which.order];
+            const child = card.parent; // This is the LayoutChild
 
-            const child = globals.deck[data.which.order].parent;
-            const card = child.children[0];
-            if (!card.isClued()) {
-                stats.updateEfficiency(1);
-            }
+            // Hide all of the existing arrows on the cards
+            globals.lobby.ui.showClueMatch(-1);
 
             const learnedCard = globals.learnedCards[data.which.order];
             learnedCard.suit = suit;
@@ -2043,52 +2042,12 @@ function HanabiUI(lobby, game) {
             learnedCard.possibleRanks = [data.which.rank];
             learnedCard.revealed = true;
 
-            globals.deck[data.which.order].showOnlyLearned = false;
-            globals.deck[data.which.order].trueSuit = suit;
-            globals.deck[data.which.order].trueRank = data.which.rank;
-            globals.deck[data.which.order].setBareImage();
+            card.showOnlyLearned = false;
+            card.trueSuit = suit;
+            card.trueRank = data.which.rank;
 
-            globals.deck[data.which.order].hideClues();
-
-            const pos = child.getAbsolutePosition();
-            child.setRotation(child.parent.getRotation());
-            card.suitPips.hide();
-            card.rankPips.hide();
-            child.remove();
-            child.setAbsolutePosition(pos);
-
-            playStacks.get(suit).add(child);
-            playStacks.get(suit).moveToTop();
-
-            globals.elements.clueLog.checkExpiry();
-        } else if (type === 'discard') {
-            const suit = msgSuitToSuit(data.which.suit, globals.variant);
-            globals.lobby.ui.showClueMatch(-1);
-
-            const cardObject = globals.deck[data.which.order];
-            if (typeof cardObject === 'undefined') {
-                console.error(`Failed to find card ${data.which.order} in the deck. (There are ${globals.deck.length} cards in the deck.)`);
-                return;
-            }
-            const child = cardObject.parent;
-            const card = child.children[0];
-            if (card.isClued()) {
-                stats.updateEfficiency(-1);
-            }
-
-            const learnedCard = globals.learnedCards[data.which.order];
-            learnedCard.suit = suit;
-            learnedCard.rank = data.which.rank;
-            learnedCard.possibleSuits = [suit];
-            learnedCard.possibleRanks = [data.which.rank];
-            learnedCard.revealed = true;
-
-            globals.deck[data.which.order].showOnlyLearned = false;
-            globals.deck[data.which.order].trueSuit = suit;
-            globals.deck[data.which.order].trueRank = data.which.rank;
-            globals.deck[data.which.order].setBareImage();
-
-            globals.deck[data.which.order].hideClues();
+            card.setBareImage();
+            card.hideClues();
 
             const pos = child.getAbsolutePosition();
             child.setRotation(child.parent.getRotation());
@@ -2097,30 +2056,43 @@ function HanabiUI(lobby, game) {
             child.remove();
             child.setAbsolutePosition(pos);
 
-            discardStacks.get(suit).add(child);
+            globals.elements.clueLog.checkExpiry();
 
-            for (const discardStack of discardStacks) {
-                if (discardStack[1]) {
-                    discardStack[1].moveToTop();
+            if (type === 'play') {
+                playStacks.get(suit).add(child);
+                playStacks.get(suit).moveToTop();
+
+                if (!card.isClued()) {
+                    stats.updateEfficiency(1);
+                }
+            } else if (type === 'discard') {
+                discardStacks.get(suit).add(child);
+
+                for (const discardStack of discardStacks) {
+                    if (discardStack[1]) {
+                        discardStack[1].moveToTop();
+                    }
+                }
+
+                let finished = false;
+                do {
+                    const n = child.getZIndex();
+
+                    if (!n) {
+                        break;
+                    }
+
+                    if (data.which.rank < child.parent.children[n - 1].children[0].trueRank) {
+                        child.moveDown();
+                    } else {
+                        finished = true;
+                    }
+                } while (!finished);
+
+                if (!card.isClued()) {
+                    stats.updateEfficiency(-1);
                 }
             }
-
-            let finished = false;
-            do {
-                const n = child.getZIndex();
-
-                if (!n) {
-                    break;
-                }
-
-                if (data.which.rank < child.parent.children[n - 1].children[0].trueRank) {
-                    child.moveDown();
-                } else {
-                    finished = true;
-                }
-            } while (!finished);
-
-            globals.elements.clueLog.checkExpiry();
         } else if (type === 'reveal') {
             // Has the following data:
             /*
