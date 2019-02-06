@@ -1,0 +1,18 @@
+{
+    "editor.fontSize": 16,
+    "editor.renderWhitespace": "all",
+    "editor.rulers": [100],
+    "editor.wordWrap": "on",
+    "files.eol": "\n",
+    "go.lintTool":"golangci-lint",
+    "go.lintFlags": [
+        "--fast"
+    ],
+
+    // This is needed to stop VSCode from recommending ES6 conversions
+    // https://stackoverflow.com/questions/49447955/what-is-this-mark
+    "javascript.suggestionActions.enabled": false,
+
+    // Don't show the VSCode welcome screen
+    "workbench.startupEditor": "newUntitledFile"
+}
