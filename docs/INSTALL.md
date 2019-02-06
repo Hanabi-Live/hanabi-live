@@ -119,7 +119,7 @@ Run
 * `go run src/*.go`
   * `sudo` might be necessary to run this command because the server listens on port 80 and/or 443.
   * If you are on Windows, run this command in Git Bash, as the `*` file substitution will not work in a normal command prompt.
-* If you change any of the Go code, then you will restart the server for the changes to take effect.
+* If you change any of the Go code, then you must restart the server for the changes to take effect.
 * If you change any of the JavaScript or CSS, then you will need to rerun `build_client.sh` in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to do a hard cache refresh in the browser.)
 
 <br />
