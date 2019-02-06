@@ -9,8 +9,8 @@ Note that these steps require **an elevated (administrator) command-shell**.
 
 * Install [Chocolatey](https://chocolatey.org/):
   * `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
-* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), [Python 3](https://www.python.org/), and [Visual Studio Code](https://code.visualstudio.com/):
-  * `choco install git golang mariadb nodejs python vscode -y`
+* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), [Python 3](https://www.python.org/), [Visual Studio Code](https://code.visualstudio.com/), and [Wget](https://eternallybored.org/misc/wget/):
+  * `choco install git golang mariadb nodejs python vscode wget -y`
 * Configure Git:
   * `refreshenv`
   * `git config --global user.name "Your_Username"`
@@ -42,30 +42,9 @@ Note that these steps require **an elevated (administrator) command-shell**.
     * `exit`
 * Install the database schema:
   * `install\install_database_schema.sh`
-* Set the Golang linter in the VS Code settings:
-  * `notepad "%APPDATA%\Code\User\settings.json"` <br />
-  (the file will not exist on fresh VS Code installations)
-
-```
-{
-    "editor.fontSize": 16,
-    "editor.renderWhitespace": "all",
-    "editor.rulers": [100],
-    "editor.wordWrap": "on",
-    "files.eol": "\n",
-    "go.lintTool":"golangci-lint",
-    "go.lintFlags": [
-        "--fast"
-    ],
-    /*
-        This is needed to stop VSCode from recommending ES6 conversions
-        https://stackoverflow.com/questions/49447955/what-is-this-mark
-    */
-    "javascript.suggestionActions.enabled": false,
-    "workbench.startupEditor": "newUntitledFile" /* Don't show the VSCode welcome screen */
-}
-```
-
+* Import a solid set of starting VSCode user settings:
+  * `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"`
+  (feel free to tweak this to your liking)
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * Test the Golang linter:
