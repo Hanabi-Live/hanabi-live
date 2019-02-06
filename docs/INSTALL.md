@@ -43,7 +43,7 @@ Note that these steps require **an elevated (administrator) command-shell**.
 * Install the database schema:
   * `install\install_database_schema.sh`
 * Import a solid set of starting VSCode user settings:
-  * `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"`
+  * `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"` <br />
   (feel free to tweak this to your liking)
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
