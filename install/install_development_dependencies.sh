@@ -12,7 +12,7 @@ code --install-extension ms-vscode.Go # For Golang
 code --install-extension dbaeumer.vscode-eslint # For JavaScript
 
 # Install the Golang tools that VSCode uses
-go get -u github.com/mdempsky/gocode
+go get -u github.com/stamblerre/gocode
 go get -u github.com/uudashr/gopkgs/cmd/gopkgs
 go get -u github.com/lukehoban/go-outline
 go get -u github.com/newhook/go-symbols

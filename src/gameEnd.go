@@ -137,7 +137,8 @@ func (g *Game) End() {
 	// Send a chat message with the game result and players
 	g.AnnounceGameResult(databaseID)
 
-	// Turn the game into a shared replay
+	// All games are automatically converted to shared replays after they finish
+	// (unless all the players are in the lobby / disconnected, or if the game ended to idleness)
 	g.ConvertToSharedReplay(databaseID)
 }
 
