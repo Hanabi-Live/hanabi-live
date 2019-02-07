@@ -61,6 +61,15 @@ func (s *Session) Admin() bool {
 	}
 }
 
+func (s *Session) FirstTimeUser() bool {
+	if v, exists := s.Get("firstTimeUser"); !exists {
+		log.Error("Failed to get \"firstTimeUser\" from a session.")
+		return false
+	} else {
+		return v.(bool)
+	}
+}
+
 func (s *Session) CurrentGame() int {
 	if v, exists := s.Get("currentGame"); !exists {
 		log.Error("Failed to get \"currentGame\" from a session.")

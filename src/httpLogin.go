@@ -165,6 +165,7 @@ func httpLogin(c *gin.Context) {
 	session.Set("userID", user.ID)
 	session.Set("username", user.Username)
 	session.Set("admin", user.Admin)
+	session.Set("firstTimeUser", !exists)
 	if err := session.Save(); err != nil {
 		log.Error("Failed to write to the login cookie for user \""+user.Username+"\":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

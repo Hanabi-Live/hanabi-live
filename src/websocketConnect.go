@@ -55,8 +55,9 @@ func websocketConnect(ms *melody.Session) {
 
 	// They have successfully logged in, so send initial messages to the client
 	type HelloMessage struct {
-		Username   string `json:"username"`
-		TotalGames int    `json:"totalGames"`
+		Username      string `json:"username"`
+		TotalGames    int    `json:"totalGames"`
+		FirstTimeUser bool   `json:"firstTimeUser"`
 	}
 	s.Emit("hello", &HelloMessage{
 		// We have to send the username back to the client because they may
@@ -67,6 +68,9 @@ func websocketConnect(ms *melody.Session) {
 		// We also send the total amount of games that they have played
 		// (to be shown in the nav bar on the history page)
 		TotalGames: totalGames,
+
+		// First time users get a quick tutorial
+		FirstTimeUser: s.FirstTimeUser(),
 	})
 
 	// Send them a random name

@@ -88,8 +88,7 @@ const initCommands = () => {
         globals.username = data.username;
         globals.totalGames = data.totalGames;
         $('#nav-buttons-history-game-count').html(globals.totalGames);
-        $('#login').hide();
-        lobby.login.hide();
+        lobby.login.hide(data.firstTimeUser);
     });
 
     globals.conn.on('user', (data) => {

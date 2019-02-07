@@ -78,6 +78,14 @@ func httpWS(c *gin.Context) {
 	} else {
 		admin = v.(int)
 	}
+	var firstTimeUser bool
+	if v := session.Get("firstTimeUser"); v == nil {
+		log.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed firstTimeUser check).")
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	} else {
+		firstTimeUser = v.(bool)
+	}
 
 	// Check for sessions that belong to orphaned accounts
 	if exists, user, err := db.Users.Get(username); err != nil {
@@ -105,6 +113,7 @@ func httpWS(c *gin.Context) {
 	keys["userID"] = userID
 	keys["username"] = username
 	keys["admin"] = admin
+	keys["firstTimeUser"] = firstTimeUser
 	keys["currentGame"] = -1     // By default, the user is not in any games
 	keys["status"] = statusLobby // By default, the user is in the lobby
 

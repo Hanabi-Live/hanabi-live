@@ -10,6 +10,7 @@ exports.nav = require('./nav');
 exports.pregame = require('./pregame');
 exports.settings = require('./settings');
 exports.tables = require('./tables');
+require('./tutorial');
 exports.users = require('./users');
 
 // Also make it available to the window so that we can access global variables

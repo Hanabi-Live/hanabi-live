@@ -148,8 +148,16 @@ const automaticLogin = () => {
     send();
 };
 
-// This hides the login screen and shows the lobby
-exports.hide = () => {
+exports.hide = (firstTimeUser) => {
+    // Hide the login screen
+    $('#login').hide();
+
+    if (firstTimeUser) {
+        $('#tutorial').fadeIn(globals.fadeTime);
+        return;
+    }
+
+    // Show the lobby
     globals.currentScreen = 'lobby';
     $('#lobby').show();
     $('#lobby-history').hide();
