@@ -2,12 +2,16 @@
 
 # Imports
 import os
+import platform
 import subprocess
 import sys
 
 # Get the directory of the script
 # https://stackoverflow.com/questions/4934806/how-can-i-find-scripts-directory-with-python
 DIR = os.path.dirname(os.path.realpath(__file__))
+
+# We have to specify "shell=True" for compatability with Git Bash on Windows
+shell = platform.system() == 'Windows'
 
 # Combine all of the CSS into one file
 # (these must be in a specific order)
@@ -53,6 +57,7 @@ if not os.path.isdir(JS_DIR):
     print('Error: Failed to find the JavaScript directory at "' + JS_DIR + '".')
     sys.exit(1)
 CSS_MINIFIED = os.path.join(CSS_DIR, 'main.min.css')
+
 try:
     output = subprocess.check_output([
         'npx',
@@ -61,8 +66,7 @@ try:
         CSS_CONCATENATED,
         '--output',
         CSS_MINIFIED,
-    ], cwd=JS_DIR, shell=True)
-    # (we have to specify "shell=True" for compatability with Git Bash on Windows)
+    ], cwd=JS_DIR, shell=shell)
     if sys.version_info >= (3, 0):
         output = output.decode('utf-8') 
     output = output.strip()

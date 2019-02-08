@@ -2,12 +2,16 @@
 
 # Imports
 import os
+import platform
 import subprocess
 import sys
 
 # Get the directory of the script
 # https://stackoverflow.com/questions/4934806/how-can-i-find-scripts-directory-with-python
 DIR = os.path.dirname(os.path.realpath(__file__))
+
+# We have to specify "shell=True" for compatability with Git Bash on Windows
+shell = platform.system() == 'Windows'
 
 # "Browserify" the JavaScript (to convert Node-style imports to compatible browser code)
 JS_DIR = os.path.join(DIR, 'public', 'js')
@@ -26,8 +30,7 @@ try:
         MAIN_SRC_JS,
         '--outfile',
         MAIN_BUNDLED_JS,
-    ], cwd=JS_DIR, shell=True)
-    # (we have to specify "shell=True" for compatability with Git Bash on Windows)
+    ], cwd=JS_DIR, shell=shell)
     if sys.version_info >= (3, 0):
         output = output.decode('utf-8') 
     output = output.strip()
@@ -101,8 +104,7 @@ try:
         'main.min.js',
         '--warning_level',
         'QUIET',
-    ], cwd=JS_DIR, shell=True)
-    # (we have to specify "shell=True" for compatability with Git Bash on Windows)
+    ], cwd=JS_DIR, shell=shell)
     if sys.version_info >= (3, 0):
         output = output.decode('utf-8') 
     output = output.strip()
