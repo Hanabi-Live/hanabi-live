@@ -12,6 +12,8 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 
 # We have to specify "shell=True" for compatability with Git Bash on Windows
 shell = platform.system() == 'Windows'
+print(shell)
+sys.exit(1)
 
 # "Browserify" the JavaScript (to convert Node-style imports to compatible browser code)
 JS_DIR = os.path.join(DIR, 'public', 'js')
