@@ -18,6 +18,8 @@ func restart(s *Session, d *CommandData) {
 
 func restart2() {
 	execute("pull.sh")
+	execute("build_client.sh")
+	// Even though "build_client.sh" is part of restart.sh, it does not execute for some reason
 	execute("restart.sh")
 }
 
@@ -31,13 +33,15 @@ func graceful(s *Session, d *CommandData) {
 
 func graceful2() {
 	numGames := countActiveGames()
-	log.Info("Initiating a graceful server restart (with " + strconv.Itoa(numGames) + " active games).")
+	log.Info("Initiating a graceful server restart " +
+		"(with " + strconv.Itoa(numGames) + " active games).")
 	if numGames == 0 {
 		restart2()
 	} else {
 		shutdownMode = 1
 		go gracefulWait()
-		chatServerSend("The server will restart when all ongoing games have finished. New game creation has been disabled.")
+		chatServerSend("The server will restart when all ongoing games have finished. " +
+			"New game creation has been disabled.")
 	}
 }
 
