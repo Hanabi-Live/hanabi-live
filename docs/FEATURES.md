@@ -88,7 +88,7 @@ List of Features
 * At the end of each game, you will automatically be put into a shared replay with everyone who played the game.
 * The leader controls what turn is being shown. By default, the leader will be the person who created the game or created the shared replay.
 * The leader can right-click on a card to highlight it with a red arrow (to point out things to the other players).
-* The leader can shift + left-click on a card to morph it into an arbitrary card.
+* The leader can Ctrl + Shift + Alt + right-click on a card to morph it into an arbitrary card.
 * The current leader can be seen by hovering over the "👑" icon in the bottom right-hand corner.
 * The leader role can be transfered by right-clicking on the crown.
 

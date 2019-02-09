@@ -321,7 +321,7 @@ const HanabiCard = function HanabiCard(config) {
         globals.layers.UI.draw();
     });
 
-    this.on('click', this.click);
+    this.on('click', this.clickRight);
 
     // Hide clue arrows ahead of user dragging their card
     if (config.holder === globals.playerUs && !globals.replay && !globals.spectating) {
@@ -484,22 +484,19 @@ HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
     return globals.elements.playerHands.indexOf(this.parent.parent) !== -1;
 };
 
-HanabiCard.prototype.click = function click(event) {
-    if (event.evt.which === 1) { // Left-click
-        this.clickLeft();
-    } else if (event.evt.which === 3) { // Right-click
-        this.clickRight();
+HanabiCard.prototype.clickRight = function clickRight(event) {
+    // We only-care about right-clicks
+    // The "Empathy" feature is handled elsewhere in this file
+    if (event.evt.which !== 3) { // Right-click
+        return;
     }
-};
 
-HanabiCard.prototype.clickLeft = function clickLeft() {
-    // Shift + left-click is a card morph
-    if (window.event.shiftKey) {
+    // Ctrl + shift + alt + right-click is a card morph
+    if (window.event.ctrlKey && window.event.shiftKey && window.event.altKey) {
         this.clickMorph();
+        return;
     }
-};
 
-HanabiCard.prototype.clickRight = function clickRight() {
     // Right-click for a leader in a shared replay is an arrow
     if (
         globals.sharedReplay
