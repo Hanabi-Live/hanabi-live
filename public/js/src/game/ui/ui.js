@@ -2841,6 +2841,10 @@ HanabiUI.prototype.updateChatLabel = function updateChatLabel() {
     globals.layers.UI.draw();
 };
 
+HanabiUI.prototype.toggleChat = function toggleChat() {
+    globals.game.chat.toggle();
+};
+
 // Expose the globals to functions in the "game" directory
 HanabiUI.prototype.globals = globals;
 
