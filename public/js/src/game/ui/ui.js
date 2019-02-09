@@ -2086,7 +2086,7 @@ function HanabiUI(lobby, game) {
                     }
                 } while (!finished);
 
-                if (!card.isClued()) {
+                if (card.isClued()) {
                     stats.updateEfficiency(-1);
                 }
             }
