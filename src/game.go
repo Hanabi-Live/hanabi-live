@@ -52,6 +52,7 @@ type Game struct {
 	BlindPlays int                // The number of consecutive blind plays
 	Misplays   int                // The number of consecutive misplays
 	Chat       []*GameChatMessage // All of the in-game chat history
+	ChatRead   map[int]int        // A map of which users have read which messages
 }
 
 type Options struct {

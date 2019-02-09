@@ -340,11 +340,10 @@ func (g *Game) ConvertToSharedReplay(databaseID int) {
 
 		// Add the new spectator
 		sp := &Spectator{
-			ID:            p.ID,
-			Name:          p.Name,
-			Index:         len(g.Spectators),
-			ChatReadIndex: len(g.Chat),
-			Session:       p.Session,
+			ID:      p.ID,
+			Name:    p.Name,
+			Index:   len(g.Spectators),
+			Session: p.Session,
 		}
 		g.Spectators = append(g.Spectators, sp)
 		log.Info("Converted " + p.Name + " to a spectator.")

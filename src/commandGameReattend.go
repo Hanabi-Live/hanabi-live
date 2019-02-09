@@ -68,7 +68,7 @@ func commandGameReattend(s *Session, d *CommandData) {
 	// Send them the chat history for this game
 	// (if the game is running, this is handled in the "commandReady()" function)
 	if !g.Running {
-		chatSendPastFromGame(s, g, p.ChatReadIndex)
+		chatSendPastFromGame(s, g)
 	}
 
 	if g.Running {

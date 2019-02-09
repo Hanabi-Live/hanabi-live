@@ -2841,4 +2841,7 @@ HanabiUI.prototype.updateChatLabel = function updateChatLabel() {
     globals.layers.UI.draw();
 };
 
+// Expose the globals to functions in the "game" directory
+HanabiUI.prototype.globals = globals;
+
 module.exports = HanabiUI;

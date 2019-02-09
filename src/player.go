@@ -11,12 +11,11 @@ import (
 )
 
 type Player struct {
-	ID            int
-	Name          string
-	Index         int
-	ChatReadIndex int
-	Present       bool
-	Stats         models.Stats
+	ID      int // This is equal to the database ID for the user
+	Name    string
+	Index   int
+	Present bool
+	Stats   models.Stats
 
 	Hand               []*Card
 	Time               time.Duration

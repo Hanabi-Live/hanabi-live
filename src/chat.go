@@ -253,7 +253,7 @@ func chatSendPastFromDatabase(s *Session, room string, count int) {
 	})
 }
 
-func chatSendPastFromGame(s *Session, g *Game, readIndex int) {
+func chatSendPastFromGame(s *Session, g *Game) {
 	chatList := make([]*ChatMessage, 0)
 	for i, gcm := range g.Chat {
 		// Only send the first 200 messages to prevent clients from becoming overloaded
@@ -268,6 +268,6 @@ func chatSendPastFromGame(s *Session, g *Game, readIndex int) {
 	}
 	s.Emit("chatList", &ChatListMessage{
 		List:   chatList,
-		Unread: len(g.Chat) - readIndex,
+		Unread: len(g.Chat) - g.ChatRead[s.UserID()],
 	})
 }

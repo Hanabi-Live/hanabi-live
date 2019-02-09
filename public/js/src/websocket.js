@@ -124,8 +124,15 @@ const initCommands = () => {
             && globals.ui !== null
             && !$('#game-chat-modal').is(':visible')
         ) {
-            globals.chatUnread += 1;
-            globals.ui.updateChatLabel();
+            if (globals.ui.globals.spectating && !globals.ui.globals.sharedReplay) {
+                // Pop up the chat window every time for spectators
+                chat.toggle();
+            } else {
+                // Do not pop up the chat window by default;
+                // instead, change the "Chat" button to say "Chat (1)"
+                globals.chatUnread += 1;
+                globals.ui.updateChatLabel();
+            }
         }
     });
 

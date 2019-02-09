@@ -30,10 +30,9 @@ func commandChatRead(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that they are in the game
-	i := g.GetPlayerIndex(s.UserID())
-	if i == -1 {
-		s.Warning("You are in not game " + strconv.Itoa(gameID) + ", so you cannot send an action.")
+	// Validate that they are in the game or are a spectator
+	if g.GetPlayerIndex(s.UserID()) == -1 && g.GetSpectatorIndex(s.UserID()) == -1 {
+		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ", so you cannot acknowledge its chat.")
 		return
 	}
 
@@ -41,6 +40,5 @@ func commandChatRead(s *Session, d *CommandData) {
 		Mark that they have read all of the in-game chat
 	*/
 
-	p := g.Players[i]
-	p.ChatReadIndex = len(g.Chat)
+	g.ChatRead[s.UserID()] = len(g.Chat)
 }

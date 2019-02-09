@@ -59,8 +59,7 @@ func commandGameSpectate(s *Session, d *CommandData) {
 		Name:  s.Username(),
 		Index: len(g.Spectators),
 		// We have not added this player to the slice yet, so this should be 0 initially
-		ChatReadIndex: 0,
-		Session:       s,
+		Session: s,
 	}
 	g.Spectators = append(g.Spectators, sp)
 	notifyAllTable(g)    // Update the spectator list for the row in the lobby

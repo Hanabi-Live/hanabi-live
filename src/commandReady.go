@@ -155,13 +155,7 @@ func commandReady(s *Session, d *CommandData) {
 
 	// Send them the chat history for this game
 	if s.Status() != statusReplay {
-		var readIndex int
-		if s.Status() == statusPlaying {
-			readIndex = g.Players[i].ChatReadIndex
-		} else {
-			readIndex = g.Spectators[g.GetSpectatorIndex(s.UserID())].ChatReadIndex
-		}
-		chatSendPastFromGame(s, g, readIndex)
+		chatSendPastFromGame(s, g)
 	}
 
 	if s.Status() == statusSharedReplay {

@@ -95,10 +95,9 @@ func commandGameJoin(s *Session, d *CommandData) {
 		Name:  s.Username(),
 		Index: len(g.Players),
 		// We have not added this player to the slice yet, so this should be 0 initially
-		ChatReadIndex: 0,
-		Present:       true,
-		Stats:         stats,
-		Time:          timeBase,
+		Present: true,
+		Stats:   stats,
+		Time:    timeBase,
 		// Notes will get initialized after the deck is created in "commandGameStart.go"
 		CharacterMetadata:  -1,
 		CharacterMetadata2: -1,
@@ -123,7 +122,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 	})
 
 	// Send them the chat history for this game
-	chatSendPastFromGame(s, g, 0)
+	chatSendPastFromGame(s, g)
 
 	// Send the table owner whether or not the "Start Game" button should be greyed out
 	g.NotifyTableReady()
