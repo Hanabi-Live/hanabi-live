@@ -33,6 +33,9 @@ const HanabiNameFrame = function HanabiNameFrame(config) {
 
     this.name.setOffsetX(w / 2);
     const nameTextObject = this.name;
+
+    // Left-click on the name frame to see a log of only their actions
+    // Right-click on the name frame to pass the replay leader to them
     this.name.on('click tap', (event) => {
         const username = nameTextObject.getText();
         if (event.evt.which === 1) { // Left-click
@@ -90,6 +93,30 @@ const HanabiNameFrame = function HanabiNameFrame(config) {
     });
 
     this.add(this.rightline);
+
+    // Draw the tooltips on the player names that show the time
+    this.playerNum = config.playerNum;
+    this.on('mousemove', function nameFramesMouseMove() {
+        if (globals.replay) {
+            return;
+        }
+
+        globals.activeHover = this;
+
+        const tooltipX = this.getWidth() / 2 + this.attrs.x;
+        const tooltip = $(`#tooltip-player-${this.playerNum}`);
+        tooltip.css('left', tooltipX);
+        tooltip.css('top', this.attrs.y);
+        tooltip.tooltipster('open');
+    });
+    this.on('mouseout', () => {
+        if (globals.replay) {
+            return;
+        }
+
+        const tooltip = $(`#tooltip-player-${this.playerNum}`);
+        tooltip.tooltipster('close');
+    });
 };
 
 Kinetic.Util.extend(HanabiNameFrame, Kinetic.Group);

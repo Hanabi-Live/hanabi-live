@@ -810,12 +810,12 @@
 <!-- Game (the UI when playing a game) -->
 <div id="game" class="hidden"></div>
 
-<!-- Game tooltips (which are initialized in "lobby.js" -->
-<div id="game-tooltips">
+<!-- Game tooltips (which are initialized in "tooltips.js") -->
+<span id="game-tooltips"><!-- This span cannot be hidden -->
+    <div id="tooltip-deck"></div>
     <div id="tooltip-spectators"></div>
     <div id="tooltip-leader"></div>
-    <div id="tooltip-chat" class="tooltip" data-tooltip-content="#game-chat"></div>
-</div>
+</span>
 
 <!-- Password modal -->
 <div id="password-modal" class="modal hidden">

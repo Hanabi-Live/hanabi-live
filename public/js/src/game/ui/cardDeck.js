@@ -1,6 +1,8 @@
 // Imports
 const globals = require('./globals');
+const constants = require('../../constants');
 const LayoutChild = require('./layoutChild');
+const replay = require('./replay');
 
 const CardDeck = function CardDeck(config) {
     Kinetic.Group.call(this, config);
@@ -12,8 +14,47 @@ const CardDeck = function CardDeck(config) {
         height: this.getHeight(),
         image: globals.cardImages[config.cardback],
     });
-
     this.add(this.cardback);
+
+    this.cardback.on('dragend.play', function dragendPlay() {
+        const pos = this.getAbsolutePosition();
+
+        pos.x += this.getWidth() * this.getScaleX() / 2;
+        pos.y += this.getHeight() * this.getScaleY() / 2;
+
+        if (globals.lobby.ui.overPlayArea(pos)) {
+            globals.postAnimationLayout = () => {
+                this.doLayout();
+                globals.postAnimationLayout = null;
+            };
+
+            this.setDraggable(false);
+            globals.elements.deckPlayAvailableLabel.setVisible(false);
+
+            globals.lobby.conn.send('action', {
+                type: constants.ACT.DECKPLAY,
+            });
+
+            globals.lobby.ui.stopAction();
+
+            globals.savedAction = null;
+        } else {
+            // The card was dragged to an invalid location,
+            // so animate the card back to where it was
+            new Kinetic.Tween({
+                node: this,
+                duration: 0.5,
+                x: 0,
+                y: 0,
+                runonce: true,
+                onFinish: () => {
+                    globals.layers.UI.draw();
+                },
+            }).play();
+        }
+    });
+
+    this.cardback.on('click', replay.promptTurn);
 
     this.count = new Kinetic.Text({
         fill: 'white',
@@ -30,7 +71,6 @@ const CardDeck = function CardDeck(config) {
         text: '0',
         listening: false,
     });
-
     this.add(this.count);
 };
 

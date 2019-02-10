@@ -71,24 +71,36 @@ module.exports = () => {
         overtop: null, // A layer drawn overtop everything else
     };
     globals.elements = {
+        // The main screen
         stageFade: null,
         playerHands: [],
         messagePrompt: null, // The truncated action log
-        msgLogGroup: null, // The full action log
+        chatButton: null,
+        deckPlayAvailableLabel: null,
+
+        // The right-most column of the main screen
+        clueLog: null,
+        paceNumberLabel: null,
+        efficiencyNumberLabel: null,
+        strikes: [],
+
+        // The clue UI
         clueTargetButtonGroup: null,
         clueButtonGroup: null,
         rankClueButtons: null,
         suitClueButtons: null,
         giveClueButton: null,
-        clueLog: null,
-        paceNumberLabel: null,
-        efficiencyNumberLabel: null,
-        strikes: [],
-        chatButton: null,
-        timer1: null,
-        timer2: null,
+
+        // The replay screen
         replayArea: null,
         replayShuttleShared: null,
+
+        // Other screens
+        msgLogGroup: null, // The full action log
+
+        // Other optional elements
+        timer1: null,
+        timer2: null,
     };
     globals.activeHover = null; // The element that the mouse cursor is currently over
     globals.cardImages = {};

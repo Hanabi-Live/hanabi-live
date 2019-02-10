@@ -240,14 +240,13 @@ function HanabiUI(lobby, game) {
     let noClueBox;
     let noDiscardLabel;
     let noDoubleDiscardLabel;
-    let deckPlayAvailableLabel;
     let scoreArea;
     let replayBar;
     let replayButton;
     let replayExitButton;
     let lobbyButton;
 
-    const overPlayArea = pos => (
+    this.overPlayArea = pos => (
         pos.x >= playArea.getX()
         && pos.y >= playArea.getY()
         && pos.x <= playArea.getX() + playArea.getWidth()
@@ -255,7 +254,6 @@ function HanabiUI(lobby, game) {
     );
 
     this.buildUI = function buildUI() {
-        const self = this;
         let x;
         let y;
         let width;
@@ -930,6 +928,9 @@ function HanabiUI(lobby, game) {
         });
         bgLayer.add(drawDeckRect);
 
+        // We also want to be able to right-click the deck if all the cards are drawn
+        drawDeckRect.on('click', replay.promptTurn);
+
         drawDeck = new CardDeck({
             x: 0.08 * winW,
             y: 0.8 * winH,
@@ -938,52 +939,9 @@ function HanabiUI(lobby, game) {
             cardback: 'deck-back',
             suits: globals.variant.suits,
         });
-
-        drawDeck.cardback.on('dragend.play', function drawDeckDragendPlay() {
-            const pos = this.getAbsolutePosition();
-
-            pos.x += this.getWidth() * this.getScaleX() / 2;
-            pos.y += this.getHeight() * this.getScaleY() / 2;
-
-            if (overPlayArea(pos)) {
-                globals.postAnimationLayout = () => {
-                    drawDeck.doLayout();
-                    globals.postAnimationLayout = null;
-                };
-
-                this.setDraggable(false);
-                deckPlayAvailableLabel.setVisible(false);
-
-                globals.lobby.conn.send('action', {
-                    type: ACT.DECKPLAY,
-                });
-
-                self.stopAction();
-
-                globals.savedAction = null;
-            } else {
-                // The card was dragged to an invalid location,
-                // so animate the card back to where it was
-                new Kinetic.Tween({
-                    node: this,
-                    duration: 0.5,
-                    x: 0,
-                    y: 0,
-                    runonce: true,
-                    onFinish: () => {
-                        globals.layers.UI.draw();
-                    },
-                }).play();
-            }
-        });
-
-        drawDeck.cardback.on('click', replay.promptTurn);
-        drawDeckRect.on('click', replay.promptTurn);
-        // We also want to be able to right-click if all the cards are drawn
-
         globals.layers.card.add(drawDeck);
 
-        deckPlayAvailableLabel = new Kinetic.Rect({
+        globals.elements.deckPlayAvailableLabel = new Kinetic.Rect({
             x: 0.08 * winW,
             y: 0.8 * winH,
             width: 0.075 * winW,
@@ -993,7 +951,7 @@ function HanabiUI(lobby, game) {
             strokeWidth: 10,
             visible: false,
         });
-        globals.layers.UI.add(deckPlayAvailableLabel);
+        globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
 
         /* eslint-disable object-curly-newline */
 
@@ -1271,25 +1229,9 @@ function HanabiUI(lobby, game) {
                 width: playerNamePos[nump][j].w * winW,
                 height: playerNamePos[nump][j].h * winH,
                 name: globals.playerNames[i],
+                playerNum: i,
             });
             globals.layers.UI.add(nameFrames[i]);
-
-            // Draw the tooltips on the player names that show the time
-            if (!globals.replay) {
-                nameFrames[i].on('mousemove', function nameFramesMouseMove() {
-                    globals.activeHover = this;
-
-                    const tooltipX = this.getWidth() / 2 + this.attrs.x;
-                    const tooltip = $(`#tooltip-player-${i}`);
-                    tooltip.css('left', tooltipX);
-                    tooltip.css('top', this.attrs.y);
-                    tooltip.tooltipster('open');
-                });
-                nameFrames[i].on('mouseout', () => {
-                    const tooltip = $(`#tooltip-player-${i}`);
-                    tooltip.tooltipster('close');
-                });
-            }
 
             // Draw the "Detrimental Character Assignments" icon and tooltip
             if (globals.characterAssignments.length > 0) {
@@ -2577,7 +2519,7 @@ function HanabiUI(lobby, game) {
         }
 
         drawDeck.cardback.setDraggable(false);
-        deckPlayAvailableLabel.setVisible(false);
+        globals.elements.deckPlayAvailableLabel.setVisible(false);
     };
 
     this.endTurn = function endTurn(action) {
@@ -2632,7 +2574,7 @@ function HanabiUI(lobby, game) {
 
         if (globals.deckPlays) {
             drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
-            deckPlayAvailableLabel.setVisible(data.canBlindPlayDeck);
+            globals.elements.deckPlayAvailableLabel.setVisible(data.canBlindPlayDeck);
 
             // Ensure the deck is above other cards and UI elements
             if (data.canBlindPlayDeck) {
@@ -2681,7 +2623,7 @@ function HanabiUI(lobby, game) {
         pos.y += this.getHeight() * this.getScaleY() / 2;
 
         // Figure out if it currently our turn
-        if (overPlayArea(pos)) {
+        if (ui.overPlayArea(pos)) {
             const action = {
                 type: 'action',
                 data: {
