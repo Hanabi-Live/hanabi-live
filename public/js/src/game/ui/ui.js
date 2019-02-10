@@ -2054,8 +2054,10 @@ function HanabiUI(lobby, game) {
                     stats.updateEfficiency(1);
                 }
             } else if (type === 'discard') {
-                discardStacks.get(suit).add(child);
+                card.isDiscarded = true;
+                card.turnDiscarded = globals.turn;
 
+                discardStacks.get(suit).add(child);
                 for (const discardStack of discardStacks) {
                     if (discardStack[1]) {
                         discardStack[1].moveToTop();

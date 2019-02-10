@@ -7,6 +7,7 @@ const globals = require('./globals');
 const constants = require('../../constants');
 const cardDraw = require('./cardDraw');
 const notes = require('./notes');
+const replay = require('./replay');
 
 // Constants
 const {
@@ -214,6 +215,8 @@ const HanabiCard = function HanabiCard(config) {
     this.isClued = function isClued() {
         return this.cluedBorder.visible();
     };
+    this.isDiscarded = false;
+    this.turnDiscarded = null;
 
     this.indicatorArrow = new Kinetic.Text({
         x: config.width * 1.01,
@@ -321,7 +324,7 @@ const HanabiCard = function HanabiCard(config) {
         globals.layers.UI.draw();
     });
 
-    this.on('click', this.clickRight);
+    this.on('click tap', this.click);
 
     // Hide clue arrows ahead of user dragging their card
     if (config.holder === globals.playerUs && !globals.replay && !globals.spectating) {
@@ -381,7 +384,7 @@ const HanabiCard = function HanabiCard(config) {
         return toggledPips;
     };
     if (config.holder !== globals.playerUs || globals.inReplay || globals.spectating) {
-        const mouseButton = 1;
+        const mouseButton = 1; // Left-click
         let toggledPips = [];
         this.on('mousedown', (event) => {
             if (event.evt.which !== mouseButton) {
@@ -391,6 +394,12 @@ const HanabiCard = function HanabiCard(config) {
             // Disable Empathy if the card is tweening
             const child = this.parent; // This is the LayoutChild
             if (child.tween && child.tween.isPlaying()) {
+                return;
+            }
+
+            // Disable Empathy if the card is discarded
+            // (clicking on a discarded card goes to the turn that it was discarded)
+            if (this.isDiscarded) {
                 return;
             }
 
@@ -484,13 +493,28 @@ HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
     return globals.elements.playerHands.indexOf(this.parent.parent) !== -1;
 };
 
-HanabiCard.prototype.clickRight = function clickRight(event) {
-    // We only-care about right-clicks
-    // The "Empathy" feature is handled elsewhere in this file
-    if (event.evt.which !== 3) { // Right-click
-        return;
+HanabiCard.prototype.click = function click(event) {
+    if (event.evt.which === 1) { // Left-click
+        this.clickLeft();
+    } else if (event.evt.which === 3) { // Right-click
+        this.clickRight();
     }
+};
 
+HanabiCard.prototype.clickLeft = function clickLeft() {
+    // The "Empathy" feature is handled elsewhere in this file
+    if (this.isDiscarded) {
+        // Click on the x to go to the turn that the strike happened
+        if (globals.replay) {
+            replay.checkDisableSharedTurns();
+        } else {
+            replay.enter();
+        }
+        replay.goto(this.turnDiscarded + 1, true);
+    }
+};
+
+HanabiCard.prototype.clickRight = function clickRight() {
     // Ctrl + shift + alt + right-click is a card morph
     if (window.event.ctrlKey && window.event.shiftKey && window.event.altKey) {
         this.clickMorph();
