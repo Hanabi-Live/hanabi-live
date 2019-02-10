@@ -78,6 +78,7 @@ module.exports = () => {
         playerHands: [],
         messagePrompt: null, // The truncated action log
         chatButton: null,
+        drawDeck: null,
         deckPlayAvailableLabel: null,
 
         // The right-most column of the main screen

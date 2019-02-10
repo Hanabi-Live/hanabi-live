@@ -2,6 +2,7 @@
 const globals = require('./globals');
 const constants = require('../../constants');
 const LayoutChild = require('./layoutChild');
+const misc = require('../../misc');
 const replay = require('./replay');
 
 const CardDeck = function CardDeck(config) {
@@ -74,22 +75,22 @@ const CardDeck = function CardDeck(config) {
     this.add(this.count);
 
     // If the user hovers over the deck, show a tooltip that shows extra game options, if any
+    this.initTooltip();
     this.on('mousemove', function mouseMove() {
-        const tooltip = $('#tooltip-deck');
-        if (tooltip.html() === '') {
+        if (globals.elements.deckPlayAvailableLabel.isVisible()) {
+            // Disable the tooltip if the user might be dragging the deck
             return;
         }
+
+        const tooltip = $('#tooltip-deck');
         globals.activeHover = this;
-        tooltip.css('left', this.attrs.x);
+        const tooltipX = this.getWidth() / 2 + this.attrs.x;
+        tooltip.css('left', tooltipX);
         tooltip.css('top', this.attrs.y);
         tooltip.tooltipster('open');
     });
     this.on('mouseout', () => {
-        const tooltip = $('#tooltip-deck');
-        if (tooltip.html() === '') {
-            return;
-        }
-        tooltip.tooltipster('close');
+        $('#tooltip-deck').tooltipster('close');
     });
 };
 
@@ -140,6 +141,43 @@ CardDeck.prototype.doLayout = function doLayout() {
         x: 0,
         y: 0,
     });
+};
+
+// The deck tooltip shows the custom options for this game, if any
+CardDeck.prototype.initTooltip = function initTooltip() {
+    if (
+        globals.variant.name === 'No Variant'
+        && !globals.timed
+        && !globals.deckPlays
+        && !globals.emptyClues
+        && globals.characterAssignments.length === 0
+    ) {
+        return;
+    }
+
+    let content = '<strong>Game Options:</strong>';
+    content += '<ul class="game-tooltips-ul">';
+    if (globals.variant.name !== 'No Variant') {
+        content += `<li>Variant: ${globals.variant.name}</li>`;
+    }
+    if (globals.timed) {
+        content += '<li>Timed: ';
+        content += misc.timerFormatter(globals.baseTime * 1000);
+        content += ' + ';
+        content += misc.timerFormatter(globals.timePerTurn * 1000);
+        content += '</li>';
+    }
+    if (globals.deckPlays) {
+        content += '<li>Bottom-Deck Blind Plays</li>';
+    }
+    if (globals.emptyClues) {
+        content += '<li>Empty Clues</li>';
+    }
+    if (globals.characterAssignments.length > 0) {
+        content += '<li>Detrimental Characters</li>';
+    }
+    content += '</ul>';
+    $('#tooltip-deck').tooltipster('instance').content(content);
 };
 
 module.exports = CardDeck;

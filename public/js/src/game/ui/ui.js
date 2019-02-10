@@ -19,7 +19,6 @@ const HanabiMsgLog = require('./msgLog');
 const LayoutChild = require('./layoutChild');
 const Loader = require('./loader');
 const keyboard = require('./keyboard');
-const misc = require('../../misc');
 const MultiFitText = require('./multiFitText');
 const NumberButton = require('./numberButton');
 const notes = require('./notes');
@@ -218,7 +217,6 @@ function HanabiUI(lobby, game) {
         listening: false,
     });
     let drawDeckRect;
-    let drawDeck;
 
     let cluesTextLabel;
     let cluesNumberLabel;
@@ -933,7 +931,7 @@ function HanabiUI(lobby, game) {
         // We also want to be able to right-click the deck if all the cards are drawn
         drawDeckRect.on('click', replay.promptTurn);
 
-        drawDeck = new CardDeck({
+        globals.elements.drawDeck = new CardDeck({
             x: 0.08 * winW,
             y: 0.8 * winH,
             width: 0.075 * winW,
@@ -941,7 +939,7 @@ function HanabiUI(lobby, game) {
             cardback: 'deck-back',
             suits: globals.variant.suits,
         });
-        globals.layers.card.add(drawDeck);
+        globals.layers.card.add(globals.elements.drawDeck);
 
         globals.elements.deckPlayAvailableLabel = new Kinetic.Rect({
             x: 0.08 * winW,
@@ -1787,7 +1785,7 @@ function HanabiUI(lobby, game) {
         globals.elements.messagePrompt.reset();
 
         // This should always be overridden before it gets displayed
-        drawDeck.setCount(0);
+        globals.elements.drawDeck.setCount(0);
 
         for (let i = 0; i < globals.elements.strikes.length; i++) {
             globals.elements.strikes[i].remove();
@@ -1932,12 +1930,12 @@ function HanabiUI(lobby, game) {
             const child = new LayoutChild();
             child.add(globals.deck[data.order]);
 
-            const pos = drawDeck.cardback.getAbsolutePosition();
+            const pos = globals.elements.drawDeck.cardback.getAbsolutePosition();
 
             child.setAbsolutePosition(pos);
             child.setRotation(-globals.elements.playerHands[data.who].getRotation());
 
-            const scale = drawDeck.cardback.getWidth() / CARDW;
+            const scale = globals.elements.drawDeck.cardback.getWidth() / CARDW;
             child.setScale({
                 x: scale,
                 y: scale,
@@ -1960,7 +1958,7 @@ function HanabiUI(lobby, game) {
             }
         } else if (type === 'drawSize') {
             globals.deckSize = data.size;
-            drawDeck.setCount(data.size);
+            globals.elements.drawDeck.setCount(data.size);
         } else if (type === 'play' || type === 'discard') {
             // Local variables
             const suit = msgSuitToSuit(data.which.suit, globals.variant);
@@ -2520,7 +2518,7 @@ function HanabiUI(lobby, game) {
             }
         }
 
-        drawDeck.cardback.setDraggable(false);
+        globals.elements.drawDeck.cardback.setDraggable(false);
         globals.elements.deckPlayAvailableLabel.setVisible(false);
     };
 
@@ -2575,12 +2573,12 @@ function HanabiUI(lobby, game) {
         }
 
         if (globals.deckPlays) {
-            drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
+            globals.elements.drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
             globals.elements.deckPlayAvailableLabel.setVisible(data.canBlindPlayDeck);
 
             // Ensure the deck is above other cards and UI elements
             if (data.canBlindPlayDeck) {
-                drawDeck.moveToTop();
+                globals.elements.drawDeck.moveToTop();
             }
         }
 
@@ -2708,40 +2706,6 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         globals.inReplay = globals.replay;
         if (globals.replay) {
             globals.replayTurn = -1;
-        }
-
-        // Set the deck tooltip that shows all of the custom options for this game, if any
-        if (
-            globals.variant !== 'No Variant'
-            || globals.timed
-            || globals.deckPlays
-            || globals.emptyClues
-            || globals.characterAssignments.length > 0
-        ) {
-            let html = '<h1>Game Options</h1><ul>';
-            if (globals.variant !== 'No Variant') {
-                html += `<li>Variant: ${globals.variant}</li>`;
-            }
-            if (globals.timed) {
-                const baseTimeMinutes = (globals.baseTime / 60).toFixed(2);
-                // Round it to 2 decimal places
-                html += '<li>Timed: ';
-                html += misc.timerFormatter(baseTimeMinutes);
-                html += ' + ';
-                html += misc.timerFormatter(globals.timePerTurn);
-                html += '</li>';
-            }
-            if (globals.deckPlays) {
-                html += '<li>Bottom-Deck Blind Plays: Enabled</li>';
-            }
-            if (globals.emptyClues) {
-                html += '<li>Empty Clues: Enabled</li>';
-            }
-            if (globals.characterAssignments.length > 0) {
-                html += '<li>Detrimental Characters: Enabled</li>';
-            }
-            html += '</ul>';
-            $('#tooltip-deck').html(html);
         }
 
         // Begin to load all of the card images

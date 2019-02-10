@@ -480,6 +480,16 @@ table td {
     line-height: 1em;
 }
 
+.game-tooltips-ul {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+    text-indent: -0.5em;
+}
+
+.game-tooltips-ul > li {
+    margin-bottom: 0.1em;
+}
+
 .game-tooltips-ol {
     margin-top: 0.5em;
     margin-bottom: 0;
