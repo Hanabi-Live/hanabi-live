@@ -172,8 +172,12 @@ func commandChatGame(s *Session, d *CommandData) {
 	}
 
 	// Store the chat in memory for later
+	userID := 0
+	if !d.Server && s != nil {
+		userID = s.UserID()
+	}
 	chatMsg := &GameChatMessage{
-		UserID:   s.UserID(),
+		UserID:   userID,
 		Username: d.Username, // This was prepared above in the "commandChat()" function
 		Msg:      d.Msg,
 		Datetime: time.Now(),
