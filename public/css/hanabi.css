@@ -493,10 +493,7 @@ table td {
 #game-chat-modal {
     position: absolute;
     z-index: 1;
-    top: 1%;
-    right: 1%;
-    width: 20%;
-    height: 50%;
+    /* The modal is automatically positioned in the "chat.js" file */
     background-color: black;
     border-radius: 10px; /* This has to match the border-radius below */
 }
