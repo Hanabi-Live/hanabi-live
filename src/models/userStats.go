@@ -31,13 +31,19 @@ func (*UserStats) Get(userID int, variant int) (Stats, error) {
 		stats.BestScores[i].NumPlayers = i + 2
 	}
 
+	// First, get the total amount of games
+	if err := db.QueryRow(`
+		SELECT COUNT(id)
+		FROM game_participants
+		WHERE user_id = ?
+	`, userID).Scan(&stats.NumPlayedAll); err != nil {
+		return stats, err
+	}
+
+	// Second, get the stats for this variant
+	// If this variant has never been played, all the values will default to 0
 	if err := db.QueryRow(`
 		SELECT
-			(
-				SELECT COUNT(id)
-				FROM game_participants
-				WHERE user_id = ?
-			) AS num_played_all,
 			num_played,
 			best_score2,
 			best_score2_mod,
@@ -54,8 +60,7 @@ func (*UserStats) Get(userID int, variant int) (Stats, error) {
 		FROM user_stats
 		WHERE user_id = ?
 			AND variant = ?
-	`, userID, userID, variant).Scan(
-		&stats.NumPlayedAll,
+	`, userID, variant).Scan(
 		&stats.NumPlayed,
 		&stats.BestScores[0].Score, // 2-player
 		&stats.BestScores[0].Modifier,
