@@ -93,10 +93,10 @@ CREATE INDEX game_participants_index_game_id ON game_participants (game_id);
 
 DROP TABLE IF EXISTS game_actions;
 CREATE TABLE game_actions (
-    id       INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    id       INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    game_id  INT           NOT NULL,
-    action   VARCHAR(500)  NOT NULL, /* JSON */
+    game_id  INT            NOT NULL,
+    action   VARCHAR(1500)  NOT NULL, /* JSON */
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the game action rows */
 );
