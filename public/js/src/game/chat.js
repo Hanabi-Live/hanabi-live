@@ -24,7 +24,8 @@ exports.toggle = () => {
 };
 
 const show = () => {
-    $('#game-chat-modal').fadeIn(globals.fadeTime);
+    const modal = $('#game-chat-modal');
+    modal.fadeIn(globals.fadeTime);
 
     // Check to see if there are any uncurrently unread chat messages
     if (globals.chatUnread !== 0) {
@@ -35,7 +36,6 @@ const show = () => {
     }
 
     // If there is a stored size / position for the chat box, set that
-    const modal = $('#game-chat-modal');
     let putChatInDefaultPosition = true;
     const width = localStorage.getItem('chatWindowWidth');
     const height = localStorage.getItem('chatWindowHeight');
