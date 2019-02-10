@@ -58,7 +58,7 @@ type Game struct {
 type Options struct {
 	Variant              string
 	Timed                bool
-	TimeBase             float64
+	BaseTime             int
 	TimePerTurn          int
 	DeckPlays            bool
 	EmptyClues           bool

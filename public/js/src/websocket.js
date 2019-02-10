@@ -102,10 +102,8 @@ const initCommands = () => {
     });
 
     globals.conn.on('table', (data) => {
-        // The baseTime comes in minutes, so convert it to milliseconds
-        data.baseTime *= 1000 * 60;
-
-        // The timePerTurn comes in seconds, so convert it to milliseconds
+        // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
+        data.baseTime *= 1000;
         data.timePerTurn *= 1000;
 
         globals.tableList[data.id] = data;
@@ -170,11 +168,9 @@ const initCommands = () => {
     globals.conn.on('game', (data) => {
         globals.game = data;
 
-        // This comes from the server in minutes, so convert it to milliseconds
-        globals.game.baseTime = data.baseTime * 1000 * 60;
-
-        // This comes from the server in seconds, so convert it to milliseconds
-        globals.game.timePerTurn = data.timePerTurn * 1000;
+        // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
+        globals.game.baseTime *= 1000;
+        globals.game.timePerTurn *= 1000;
 
         lobby.pregame.draw();
     });

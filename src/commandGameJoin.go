@@ -86,8 +86,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 	// It will decrement into negative numbers to show how much time they are taking
 	timeBase := time.Duration(0)
 	if g.Options.Timed {
-		numSeconds := g.Options.TimeBase * 60
-		timeBase = time.Duration(numSeconds) * time.Second
+		timeBase = time.Duration(g.Options.BaseTime) * time.Second
 	}
 
 	p := &Player{

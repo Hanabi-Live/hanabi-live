@@ -72,6 +72,25 @@ const CardDeck = function CardDeck(config) {
         listening: false,
     });
     this.add(this.count);
+
+    // If the user hovers over the deck, show a tooltip that shows extra game options, if any
+    this.on('mousemove', function mouseMove() {
+        const tooltip = $('#tooltip-deck');
+        if (tooltip.html() === '') {
+            return;
+        }
+        globals.activeHover = this;
+        tooltip.css('left', this.attrs.x);
+        tooltip.css('top', this.attrs.y);
+        tooltip.tooltipster('open');
+    });
+    this.on('mouseout', () => {
+        const tooltip = $('#tooltip-deck');
+        if (tooltip.html() === '') {
+            return;
+        }
+        tooltip.tooltipster('close');
+    });
 };
 
 Kinetic.Util.extend(CardDeck, Kinetic.Group);

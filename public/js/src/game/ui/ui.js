@@ -19,6 +19,7 @@ const HanabiMsgLog = require('./msgLog');
 const LayoutChild = require('./layoutChild');
 const Loader = require('./loader');
 const keyboard = require('./keyboard');
+const misc = require('../../misc');
 const MultiFitText = require('./multiFitText');
 const NumberButton = require('./numberButton');
 const notes = require('./notes');
@@ -39,7 +40,8 @@ function HanabiUI(lobby, game) {
     globals.lobby = lobby;
     globals.game = game;
 
-    // Eventually we will remove all "ui" references
+    // Eventually, we should refactor everything out of "ui.js" and remove all "ui" references
+    // (this is how the code worked pre-Browserify)
     const ui = this;
 
     const {
@@ -1945,7 +1947,7 @@ function HanabiUI(lobby, game) {
             globals.elements.playerHands[data.who].moveToTop();
 
             // Adding speedrun code; make all cards in our hand draggable from the get-go
-            // except for cards we have already played or discarded
+            // (except for cards we have already played or discarded)
             if (
                 globals.lobby.settings.speedrunPreplay
                 && data.who === globals.playerUs
@@ -2696,6 +2698,8 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
 
         // Optional settings
         globals.timed = msgData.timed;
+        globals.baseTime = msgData.baseTime;
+        globals.timePerTurn = msgData.timePerTurn;
         globals.deckPlays = msgData.deckPlays;
         globals.emptyClues = msgData.emptyClues;
         globals.characterAssignments = msgData.characterAssignments;
@@ -2706,6 +2710,41 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
             globals.replayTurn = -1;
         }
 
+        // Set the deck tooltip that shows all of the custom options for this game, if any
+        if (
+            globals.variant !== 'No Variant'
+            || globals.timed
+            || globals.deckPlays
+            || globals.emptyClues
+            || globals.characterAssignments.length > 0
+        ) {
+            let html = '<h1>Game Options</h1><ul>';
+            if (globals.variant !== 'No Variant') {
+                html += `<li>Variant: ${globals.variant}</li>`;
+            }
+            if (globals.timed) {
+                const baseTimeMinutes = (globals.baseTime / 60).toFixed(2);
+                // Round it to 2 decimal places
+                html += '<li>Timed: ';
+                html += misc.timerFormatter(baseTimeMinutes);
+                html += ' + ';
+                html += misc.timerFormatter(globals.timePerTurn);
+                html += '</li>';
+            }
+            if (globals.deckPlays) {
+                html += '<li>Bottom-Deck Blind Plays: Enabled</li>';
+            }
+            if (globals.emptyClues) {
+                html += '<li>Empty Clues: Enabled</li>';
+            }
+            if (globals.characterAssignments.length > 0) {
+                html += '<li>Detrimental Characters: Enabled</li>';
+            }
+            html += '</ul>';
+            $('#tooltip-deck').html(html);
+        }
+
+        // Begin to load all of the card images
         globals.ImageLoader.start();
     } else if (msgType === 'advanced') {
         this.replayAdvanced();

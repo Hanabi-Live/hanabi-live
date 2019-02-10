@@ -50,7 +50,7 @@ func (g *Game) NotifyPlayerChange() {
 			Players              []*GamePlayerMessage `json:"players"`
 			Variant              string               `json:"variant"`
 			Timed                bool                 `json:"timed"`
-			BaseTime             float64              `json:"baseTime"`
+			BaseTime             int                  `json:"baseTime"`
 			TimePerTurn          int                  `json:"timePerTurn"`
 			DeckPlays            bool                 `json:"deckPlays"`
 			EmptyClues           bool                 `json:"emptyClues"`
@@ -63,7 +63,7 @@ func (g *Game) NotifyPlayerChange() {
 			Players:              gamePlayers,
 			Variant:              g.Options.Variant,
 			Timed:                g.Options.Timed,
-			BaseTime:             g.Options.TimeBase,
+			BaseTime:             g.Options.BaseTime,
 			TimePerTurn:          g.Options.TimePerTurn,
 			DeckPlays:            g.Options.DeckPlays,
 			EmptyClues:           g.Options.EmptyClues,

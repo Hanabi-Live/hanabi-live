@@ -118,6 +118,8 @@ func commandHello(s *Session, d *CommandData) {
 
 		// Optional settings
 		Timed                bool     `json:"timed"`
+		BaseTime             int      `json:"baseTime"`
+		TimePerTurn          int      `json:"timePerTurn"`
 		DeckPlays            bool     `json:"deckPlays"`
 		EmptyClues           bool     `json:"emptyClues"`
 		CharacterAssignments []string `json:"characterAssignments"`
@@ -134,6 +136,8 @@ func commandHello(s *Session, d *CommandData) {
 
 		// Optional settings
 		Timed:                g.Options.Timed,
+		BaseTime:             g.Options.BaseTime,
+		TimePerTurn:          g.Options.TimePerTurn,
 		DeckPlays:            g.Options.DeckPlays,
 		EmptyClues:           g.Options.EmptyClues,
 		CharacterAssignments: characterAssignments,

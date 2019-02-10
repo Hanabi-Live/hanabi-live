@@ -205,22 +205,22 @@ func (s *Session) NotifyTable(g *Game) {
 	}
 
 	type TableMessage struct {
-		ID           int     `json:"id"`
-		Name         string  `json:"name"`
-		Password     bool    `json:"password"`
-		Joined       bool    `json:"joined"`
-		NumPlayers   int     `json:"numPlayers"`
-		Owned        bool    `json:"owned"`
-		Running      bool    `json:"running"`
-		Variant      string  `json:"variant"`
-		Timed        bool    `json:"timed"`
-		BaseTime     float64 `json:"baseTime"`
-		TimePerTurn  int     `json:"timePerTurn"`
-		OurTurn      bool    `json:"ourTurn"`
-		SharedReplay bool    `json:"sharedReplay"`
-		Progress     int     `json:"progress"`
-		Players      string  `json:"players"`
-		Spectators   string  `json:"spectators"`
+		ID           int    `json:"id"`
+		Name         string `json:"name"`
+		Password     bool   `json:"password"`
+		Joined       bool   `json:"joined"`
+		NumPlayers   int    `json:"numPlayers"`
+		Owned        bool   `json:"owned"`
+		Running      bool   `json:"running"`
+		Variant      string `json:"variant"`
+		Timed        bool   `json:"timed"`
+		BaseTime     int    `json:"baseTime"`
+		TimePerTurn  int    `json:"timePerTurn"`
+		OurTurn      bool   `json:"ourTurn"`
+		SharedReplay bool   `json:"sharedReplay"`
+		Progress     int    `json:"progress"`
+		Players      string `json:"players"`
+		Spectators   string `json:"spectators"`
 	}
 	s.Emit("table", &TableMessage{
 		ID:           g.ID,
@@ -232,7 +232,7 @@ func (s *Session) NotifyTable(g *Game) {
 		Running:      g.Running,
 		Variant:      g.Options.Variant,
 		Timed:        g.Options.Timed,
-		BaseTime:     g.Options.TimeBase,
+		BaseTime:     g.Options.BaseTime,
 		TimePerTurn:  g.Options.TimePerTurn,
 		OurTurn:      joined && g.Running && g.ActivePlayer == i,
 		SharedReplay: g.SharedReplay,

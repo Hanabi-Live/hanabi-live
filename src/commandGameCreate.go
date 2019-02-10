@@ -197,19 +197,19 @@ func commandGameCreate(s *Session, d *CommandData) {
 	}
 
 	// Validate that the time controls are sane
-	if d.Timed && d.BaseTimeMinutes <= 0 {
+	if d.Timed && d.BaseTime <= 0 {
 		s.Warning("That is not a valid value for \"Base Time\".")
 		return
 	}
-	if d.Timed && d.TimePerTurnSeconds <= 0 {
+	if d.Timed && d.TimePerTurn <= 0 {
 		s.Warning("That is not a valid value for \"Time per Turn\".")
 		return
 	}
 
 	// Blank out the time controls if this is not a timed game
 	if !d.Timed {
-		d.BaseTimeMinutes = 0
-		d.TimePerTurnSeconds = 0
+		d.BaseTime = 0
+		d.TimePerTurn = 0
 	}
 
 	/*
@@ -229,8 +229,8 @@ func commandGameCreate(s *Session, d *CommandData) {
 		Options: &Options{
 			Variant:              d.Variant,
 			Timed:                d.Timed,
-			TimeBase:             d.BaseTimeMinutes,
-			TimePerTurn:          d.TimePerTurnSeconds,
+			BaseTime:             d.BaseTime,
+			TimePerTurn:          d.TimePerTurn,
 			DeckPlays:            d.DeckPlays,
 			EmptyClues:           d.EmptyClues,
 			CharacterAssignments: d.CharacterAssignments,

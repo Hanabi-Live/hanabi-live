@@ -96,7 +96,7 @@ const HanabiNameFrame = function HanabiNameFrame(config) {
 
     // Draw the tooltips on the player names that show the time
     this.playerNum = config.playerNum;
-    this.on('mousemove', function nameFramesMouseMove() {
+    this.on('mousemove', function mouseMove() {
         if (globals.replay) {
             return;
         }

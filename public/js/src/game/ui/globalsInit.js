@@ -25,6 +25,8 @@ module.exports = () => {
     // Optional game settings
     // (sent in the "init" message)
     globals.timed = false;
+    globals.baseTime = null;
+    globals.timePerTurn = null;
     globals.deckPlays = false;
     globals.emptyClues = false;
     globals.characterAssignments = [];

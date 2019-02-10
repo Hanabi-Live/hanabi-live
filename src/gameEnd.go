@@ -164,7 +164,7 @@ func (g *Game) WriteDatabase() (int, error) {
 		Owner:                g.Owner,
 		Variant:              variants[g.Options.Variant].ID,
 		Timed:                g.Options.Timed,
-		TimeBase:             int(g.Options.TimeBase),
+		TimeBase:             g.Options.BaseTime,
 		TimePerTurn:          g.Options.TimePerTurn,
 		DeckPlays:            g.Options.DeckPlays,
 		EmptyClues:           g.Options.EmptyClues,

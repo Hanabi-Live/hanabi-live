@@ -85,10 +85,8 @@ const submit = (event) => {
         name,
         variant,
         timed,
-        baseTimeMinutes: parseFloat(baseTimeMinutes),
-        // The server expects this as an float64
-        timePerTurnSeconds: parseInt(timePerTurnSeconds, 10),
-        // The server expects this as an integer
+        baseTime: Math.round(baseTimeMinutes * 60), // The server expects this in seconds
+        timePerTurn: parseInt(timePerTurnSeconds, 10), // The server expects this in seconds
         deckPlays,
         emptyClues,
         characterAssignments,
