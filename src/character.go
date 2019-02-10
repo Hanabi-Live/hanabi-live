@@ -620,20 +620,10 @@ func characterHideCard(a *ActionDraw, g *Game, p *Player) bool {
 		return false
 	}
 
-	if p.Character == "Blind Spot" {
-		leftPlayer := (p.Index + 1) % len(g.Players)
-		if a.Who == leftPlayer {
-			return true
-		}
-
-	} else if p.Character == "Oblivious" {
-		// In Golang, "%" will give the remainder and not the modulus,
-		// so we need to ensure that the result is not negative or we will get a "index out of range" error below
-		playerIndex := p.Index + len(g.Players)
-		rightPlayer := (playerIndex - 1) % len(g.Players)
-		if a.Who == rightPlayer {
-			return true
-		}
+	if p.Character == "Blind Spot" && a.Who == p.GetLeftPlayer(g) {
+		return true
+	} else if p.Character == "Oblivious" && a.Who == p.GetRightPlayer(g) {
+		return true
 	}
 
 	return false
@@ -662,4 +652,18 @@ func characterCheckSoftlock(g *Game, p *Player) {
 
 		g.Strikes = 3
 	}
+}
+
+func characterEmptyClueAllowed(d *CommandData, g *Game, p *Player) bool {
+	if !g.Options.CharacterAssignments {
+		return false
+	}
+
+	if p.Character == "Blind Spot" && d.Target == p.GetLeftPlayer(g) {
+		return true
+	} else if p.Character == "Oblivious" && d.Target == p.GetRightPlayer(g) {
+		return true
+	}
+
+	return false
 }

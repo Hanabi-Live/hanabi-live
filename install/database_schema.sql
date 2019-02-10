@@ -1,5 +1,5 @@
 /*
-    Setting up the database is covered in the README.md file
+    Setting up the database is done in the "install_database_schema.sh" script
 */
 
 USE hanabi;

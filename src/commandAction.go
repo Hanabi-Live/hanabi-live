@@ -124,7 +124,7 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		// Validate that the clue type is sane
-		if d.Clue.Type < 0 || d.Clue.Type > 1 {
+		if d.Clue.Type < clueTypeNumber || d.Clue.Type > clueTypeColor {
 			s.Warning("That is an invalid clue type.")
 			return
 		}

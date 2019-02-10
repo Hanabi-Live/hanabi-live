@@ -119,12 +119,6 @@ function HanabiUI(lobby, game) {
             return false;
         }
 
-        // Make an exception for the "Color Blind" variants
-        // (all color clues touch all cards, so don't show the arrows for simplicity)
-        if (globals.variant.name.startsWith('Color Blind') && clue.type === CLUE_TYPE.COLOR) {
-            return true;
-        }
-
         let match = false;
         for (let i = 0; i < globals.elements.playerHands[target].children.length; i++) {
             const child = globals.elements.playerHands[target].children[i];
@@ -2643,14 +2637,22 @@ function HanabiUI(lobby, game) {
             const who = target.targetIndex;
             const match = globals.lobby.ui.showClueMatch(who, clueButton.clue);
 
-            // Disable the "Give Clue" button if the given clue will touch no cards
-            // (but allow all clues if they have the optional setting for "Empty Clues" turned on)
-            if (!match && !globals.emptyClues) {
-                globals.elements.giveClueButton.setEnabled(false);
-                return;
-            }
+            // By default, only enable the "Give Clue" button if the clue "touched"
+            // one or more cards in the hand
+            const enabled = match
+                // Make an exception if they have the optional setting for "Empty Clues" turned on
+                || globals.emptyClues
+                // Make an exception for the "Color Blind" variants (color clues touch no cards)
+                || (globals.variant.name.startsWith('Color Blind')
+                    && clueButton.clue.type === CLUE_TYPE.COLOR)
+                // Make an exception for certain characters
+                || (globals.characterAssignments[globals.playerUs] === 'Blind Spot'
+                    && who === (globals.playerUs + 1) % globals.playerNames.length)
+                || (globals.characterAssignments[globals.playerUs] === 'Oblivious'
+                    && who === (globals.playerUs - 1 + globals.playerNames.length)
+                    % globals.playerNames.length);
 
-            globals.elements.giveClueButton.setEnabled(true);
+            globals.elements.giveClueButton.setEnabled(enabled);
         };
 
         globals.elements.clueTargetButtonGroup.on('change', checkClueLegal);

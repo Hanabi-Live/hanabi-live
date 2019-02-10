@@ -35,11 +35,15 @@ type Player struct {
 func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	p2 := g.Players[d.Target] // The target of the clue
 	cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
+
+	// By default, do not allow clues that "touch" no cards in the hand
 	if len(cardsTouched) == 0 &&
-		// Make an exception for color clues in the "Color Blind" variants
+		// Make an exception if they have the optional setting for "Empty Clues" turned on
+		!g.Options.EmptyClues &&
+		// Make an exception for the "Color Blind" variants (color clues touch no cards)
 		(d.Clue.Type != clueTypeColor || !strings.HasPrefix(g.Options.Variant, "Color Blind")) &&
-		// Allow empty clues if the optional setting is enabled
-		!g.Options.EmptyClues {
+		// Make an exception for certain characters
+		!characterEmptyClueAllowed(d, g, p) {
 
 		return false
 	}
@@ -411,6 +415,18 @@ func (p *Player) GetCardSlot(order int) int {
 	}
 
 	return -1
+}
+
+// GetLeftPlayer returns the index of the player that is sitting to this player's left
+func (p *Player) GetLeftPlayer(g *Game) int {
+	return (p.Index + 1) % len(g.Players)
+}
+
+// GetRightPlayer returns the index of the player that is sitting to this player's right
+func (p *Player) GetRightPlayer(g *Game) int {
+	// In Golang, "%" will give the remainder and not the modulus,
+	// so we need to ensure that the result is not negative or we will get a "index out of range" error below
+	return (p.Index - 1 + len(g.Players)) % len(g.Players)
 }
 
 func (p *Player) ShuffleHand(g *Game) {
