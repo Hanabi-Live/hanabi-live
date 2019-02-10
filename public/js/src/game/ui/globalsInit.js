@@ -89,7 +89,7 @@ module.exports = () => {
         replayArea: null,
         replayShuttleShared: null,
     };
-    globals.activeHover = null; // The elemnt that the mouse cursor is currently over
+    globals.activeHover = null; // The element that the mouse cursor is currently over
     globals.cardImages = {};
 
     // Pre-play feature

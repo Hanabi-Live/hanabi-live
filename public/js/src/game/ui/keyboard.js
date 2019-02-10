@@ -71,6 +71,13 @@ exports.destroy = () => {
 };
 
 const keydown = (event) => {
+    // Disable hotkeys if we not currently in a game
+    // (this should not be possible, as the handler gets unregistered upon going back to the lobby,
+    // but double check just in case)
+    if (globals.lobby.currentScreen !== 'game') {
+        return;
+    }
+
     // Disable keyboard hotkeys if we are editing a note
     if (notes.vars.editing !== null) {
         return;
@@ -89,6 +96,20 @@ const keydown = (event) => {
 
     // Don't interfere with other kinds of hotkeys
     if (event.ctrlKey || event.altKey) {
+        return;
+    }
+
+    // Delete the note from the card that we are currently hovering-over, if any
+    if (
+        event.key === 'Delete'
+        && globals.activeHover !== null
+        && typeof globals.activeHover.order !== 'undefined'
+    ) {
+        // Note that "activeHover" will remain set even if we move the mouse away from the card,
+        // so this means that if the mouse is not hovering over ANY card, then the note that will be
+        // deleted will be from the last tooltip shown
+        notes.set(globals.activeHover.order, '');
+        notes.update(globals.activeHover);
         return;
     }
 
