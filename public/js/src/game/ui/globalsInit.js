@@ -83,6 +83,7 @@ module.exports = () => {
         clueLog: null,
         paceNumberLabel: null,
         efficiencyNumberLabel: null,
+        strikes: [],
         chatButton: null,
         timer1: null,
         timer2: null,

@@ -229,7 +229,6 @@ function HanabiUI(lobby, game) {
     let spectatorsNumLabel;
     let sharedReplayLeaderLabel;
     let sharedReplayLeaderLabelPulse;
-    let strikes = [];
     const nameFrames = [];
     const playStacks = new Map();
     const discardStacks = new Map();
@@ -526,9 +525,9 @@ function HanabiUI(lobby, game) {
         });
         scoreArea.add(cluesNumberLabel);
 
-        // Draw the 3 strike (bomb) indicators
+        // Draw the 3 strike (bomb) black squares
         for (let i = 0; i < 3; i++) {
-            rect = new Kinetic.Rect({
+            const square = new Kinetic.Rect({
                 x: (0.01 + 0.04 * i) * winW,
                 y: 0.115 * winH,
                 width: 0.03 * winW,
@@ -537,8 +536,7 @@ function HanabiUI(lobby, game) {
                 opacity: 0.6,
                 cornerRadius: 0.003 * winW,
             });
-
-            scoreArea.add(rect);
+            scoreArea.add(square);
         }
 
         /*
@@ -1847,11 +1845,10 @@ function HanabiUI(lobby, game) {
         // This should always be overridden before it gets displayed
         drawDeck.setCount(0);
 
-        for (let i = 0; i < strikes.length; i++) {
-            strikes[i].remove();
+        for (let i = 0; i < globals.elements.strikes.length; i++) {
+            globals.elements.strikes[i].remove();
         }
-
-        strikes = [];
+        globals.elements.strikes = [];
 
         globals.animateFast = true;
     };
@@ -2259,6 +2256,7 @@ function HanabiUI(lobby, game) {
         } else if (type === 'strike') {
             globals.cluesSpentPlusStrikes += 1;
             stats.updateEfficiency(0);
+
             const x = new Kinetic.Image({
                 x: (0.015 + 0.04 * (data.num - 1)) * winW,
                 y: 0.125 * winH,
@@ -2268,9 +2266,21 @@ function HanabiUI(lobby, game) {
                 opacity: 0,
             });
 
-            strikes[data.num - 1] = x;
+            // We also record the turn that the strike happened
+            x.turn = globals.turn;
+
+            // Click on the x to go to the turn that the strike happened
+            x.on('click', function squareClick() {
+                if (globals.replay) {
+                    replay.checkDisableSharedTurns();
+                } else {
+                    replay.enter();
+                }
+                replay.goto(this.turn + 1, true);
+            });
 
             scoreArea.add(x);
+            globals.elements.strikes[data.num - 1] = x;
 
             if (globals.animateFast) {
                 x.setOpacity(1.0);
@@ -2283,6 +2293,9 @@ function HanabiUI(lobby, game) {
                 }).play();
             }
         } else if (type === 'turn') {
+            // Store the current turn in memory
+            globals.turn = data.num;
+
             // Keep track of whether or not it is our turn (speedrun)
             globals.ourTurn = (data.who === globals.playerUs);
             if (!globals.ourTurn) {
@@ -2298,7 +2311,7 @@ function HanabiUI(lobby, game) {
                 globals.layers.UI.draw();
             }
 
-            turnNumberLabel.setText(`${data.num + 1}`);
+            turnNumberLabel.setText(`${globals.turn + 1}`);
 
             if (globals.queuedAction !== null && globals.ourTurn) {
                 setTimeout(() => {
