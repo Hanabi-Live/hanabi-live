@@ -128,6 +128,15 @@ func waitingListAlert(g *Game, creator string) {
 	// Alert all of the people on the waiting list
 	alert := creator + " created a table. (" + g.Options.Variant + ")\n" + mentionList
 	chatServerSend(alert)
+
+	// Also, copy the people who were pinged to the pre-game chat for reference
+	d := &CommandData{
+		Msg:    "Alerted players: " + mentionList,
+		Room:   "game",
+		GameID: g.ID,
+		Server: true,
+	}
+	commandChat(nil, d)
 }
 
 /*

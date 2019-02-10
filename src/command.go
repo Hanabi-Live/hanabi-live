@@ -53,6 +53,7 @@ type CommandData struct {
 	DiscordID            string   // Used when echoing a message from Discord to the lobby
 	DiscordDiscriminator string   // Used when echoing a message from Discord to the lobby
 	Args                 []string // Used to pass chat command arguments to a chat command handler
+	GameID               int      // Used to pass the game ID to a chat command handler
 }
 type Clue struct {
 	Type  int `json:"type"`

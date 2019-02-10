@@ -70,11 +70,15 @@ func commandChat(s *Session, d *CommandData) {
 	*/
 
 	// Log the message
-	text := "<" + d.Username
-	if d.DiscordDiscriminator != "" {
-		text += "#" + d.DiscordDiscriminator
+	text := ""
+	if d.Username != "" {
+		text += "<" + d.Username
+		if d.DiscordDiscriminator != "" {
+			text += "#" + d.DiscordDiscriminator
+		}
+		text += "> "
 	}
-	text += "> " + d.Msg
+	text += d.Msg
 	log.Info(text)
 
 	// Handle in-game chat in a different function; the rest of this function will be for lobby chat
@@ -136,9 +140,17 @@ func commandChat(s *Session, d *CommandData) {
 }
 
 func commandChatGame(s *Session, d *CommandData) {
-	gameID := s.CurrentGame()
+	// If this is a server-generated message, it will have an explicit game ID set
+	gameID := d.GameID
+	if gameID == 0 && s != nil {
+		// Otherwise, retrieve the ID of the game that the user is currently playing
+		gameID = s.CurrentGame()
+	} else if gameID == 0 {
+		log.Error("The \"commandChatGame\" function was called with a game ID of 0.")
+		return
+	}
 
-	// Validate that they are in a game if they are trying to send to a game room
+	// Validate that the user is in a game
 	if gameID == -1 {
 		s.Warning("You cannot send game chat if you are not in a game.")
 		return
@@ -154,7 +166,7 @@ func commandChatGame(s *Session, d *CommandData) {
 	}
 
 	// Validate that this player is in the game or spectating
-	if g.GetPlayerIndex(s.UserID()) == -1 && g.GetSpectatorIndex(s.UserID()) == -1 {
+	if !d.Server && g.GetPlayerIndex(s.UserID()) == -1 && g.GetSpectatorIndex(s.UserID()) == -1 {
 		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ".")
 		return
 	}
