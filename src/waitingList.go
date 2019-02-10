@@ -110,6 +110,11 @@ func waitingListAlert(g *Game, creator string) {
 	}
 
 	// Build a list of everyone on the waiting list
+	usernameList := ""
+	for _, waiter := range waitingList {
+		usernameList += waiter.Username + ", "
+	}
+	usernameList = strings.TrimSuffix(usernameList, ", ")
 	mentionList := ""
 	for _, waiter := range waitingList {
 		mentionList += waiter.DiscordMention + ", "
@@ -131,7 +136,7 @@ func waitingListAlert(g *Game, creator string) {
 
 	// Also, copy the people who were pinged to the pre-game chat for reference
 	d := &CommandData{
-		Msg:    "Alerted players: " + mentionList,
+		Msg:    "Alerted players: " + usernameList,
 		Room:   "game",
 		GameID: g.ID,
 		Server: true,
