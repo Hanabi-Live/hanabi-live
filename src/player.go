@@ -179,8 +179,8 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 		Type: "play",
 		Which: Which{
 			Index: p.Index,
-			Rank:  c.Rank,
 			Suit:  c.Suit,
+			Rank:  c.Rank,
 			Order: c.Order,
 		},
 	})

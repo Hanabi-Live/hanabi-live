@@ -19,7 +19,7 @@ func restart(s *Session, d *CommandData) {
 func restart2() {
 	execute("pull.sh")
 	execute("build_client.sh")
-	// Even though "build_client.sh" is part of restart.sh, it does not execute for some reason
+	// Even though "build_client.sh" is part of "restart.sh", it does not execute for some reason
 	execute("restart.sh")
 }
 

@@ -66,11 +66,19 @@ type ActionGameOver struct {
 	Score int    `json:"score"`
 	Loss  bool   `json:"loss"`
 }
-type Which struct { // Used by "ActionPlay" and "ActionDiscard"
+type ActionDeckOrder struct {
+	Type string       `json:"type"`
+	Deck []CardSimple `json:"card"`
+}
+type Which struct { // Used by "ActionPlay", "ActionDiscard", and "RevealMessage"
 	Index int `json:"index"` // The index of the player
-	Rank  int `json:"rank"`
 	Suit  int `json:"suit"`
+	Rank  int `json:"rank"`
 	Order int `json:"order"` // The ID of the card (based on its order in the deck)
+}
+type CardSimple struct { // Used by "ActionDeckOrder"
+	Suit int `json:"suit"`
+	Rank int `json:"rank"`
 }
 
 // Scrub removes some information from an action so that we do not reveal

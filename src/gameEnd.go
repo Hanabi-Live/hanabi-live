@@ -45,8 +45,8 @@ func (g *Game) End() {
 			p.Session.Emit("notify", &RevealMessage{
 				Type: "reveal",
 				Which: &Which{
-					Rank:  c.Rank,
 					Suit:  c.Suit,
+					Rank:  c.Rank,
 					Order: c.Order,
 				},
 			})
@@ -80,6 +80,21 @@ func (g *Game) End() {
 	})
 	g.NotifyAction()
 	log.Info(g.GetName() + text)
+
+	// Append a final action with a listing of every card in the deck
+	// (so that the client will have it for hypotheticals)
+	deck := make([]CardSimple, 0)
+	for _, c := range g.Deck {
+		deck = append(deck, CardSimple{
+			Suit: c.Suit,
+			Rank: c.Rank,
+		})
+	}
+	g.Actions = append(g.Actions, ActionDeckOrder{
+		Type: "deckOrder",
+		Deck: deck,
+	})
+	g.NotifyAction()
 
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)
