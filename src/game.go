@@ -26,6 +26,7 @@ type Game struct {
 	DatetimeStarted    time.Time
 	DatetimeFinished   time.Time
 	EndCondition       int // See "database_schema.sql" for mappings
+	AutomaticStart     int // See "chatPregame.go"
 
 	Seed            string
 	Deck            []*Card
