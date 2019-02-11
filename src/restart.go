@@ -34,13 +34,15 @@ func graceful(s *Session, d *CommandData) {
 
 func graceful2() {
 	numGames := countActiveGames()
-	log.Info("Initiating a graceful server restart (with " + strconv.Itoa(numGames) + " active games).")
+	log.Info("Initiating a graceful server restart " +
+		"(with " + strconv.Itoa(numGames) + " active games).")
 	if numGames == 0 {
 		restart2()
 	} else {
 		shutdownMode = 1
 		go gracefulWait()
-		chatServerSend("The server will restart when all ongoing games have finished. New game creation has been disabled.")
+		chatServerSend("The server will restart when all ongoing games have finished. " +
+			"New game creation has been disabled.")
 	}
 }
 

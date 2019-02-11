@@ -4,7 +4,6 @@
 
 // Browserify is used to have Node.js-style imports
 // (allowing the client code to be split up into multiple files)
-console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
 require('./game/main');
 require('./lobby/main');
 require('./modals');
