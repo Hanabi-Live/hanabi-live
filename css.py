@@ -15,11 +15,14 @@ shell = platform.system() == 'Windows'
 
 # Combine all of the CSS into one file
 # (these must be in a specific order)
-CSS_FILES = [
+
+CSS_LIB_FILES = [
     'fontawesome.min.css', # Font Awesome
     'solid.min.css', # Font Awesome
     'tooltipster.bundle.min.css', # Tooltipster
     'tooltipster-sideTip-shadow.min.css', # Tooltipster
+]
+CSS_FILES = [
     'alpha.css', # HTML5 Up Alpha Template
     'hanabi.css', # Site-specific CSS
 ]
@@ -27,8 +30,23 @@ CSS_DIR = os.path.join(DIR, 'public', 'css')
 if not os.path.isdir(CSS_DIR):
     print('Error: Failed to find the CSS directory at "' + CSS_DIR + '".')
     sys.exit(1)
+CSS_LIB_DIR = os.path.join(CSS_DIR, 'lib')
+if not os.path.isdir(CSS_LIB_DIR):
+    print('Error: Failed to find the CSS library directory at "' + CSS_LIB_DIR + '".')
+    sys.exit(1)
 
 css = ''
+for file_name in CSS_LIB_FILES:
+    file_path = os.path.join(CSS_LIB_DIR, file_name)
+    if not os.path.isfile(file_path):
+        print('Error: Failed to find file "' + file_path + '".')
+        sys.exit(1)
+    if sys.version_info >= (3, 0):
+        with open(file_path, 'r', encoding='utf8') as f:
+            css += f.read()
+    else:
+        with open(file_path, 'r') as f:
+            css += f.read()
 for file_name in CSS_FILES:
     file_path = os.path.join(CSS_DIR, file_name)
     if not os.path.isfile(file_path):

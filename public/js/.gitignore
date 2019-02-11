@@ -5,6 +5,7 @@ node_modules
 # We don't need to include the transpiled/minified JS
 /main.bundled.js
 /main.bundled.js~
+/main.transpiled.js
 /main.js
 /main.min.js
 /main.min.js.map
