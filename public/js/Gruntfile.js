@@ -3,6 +3,7 @@ module.exports = (grunt) => {
         pkg: grunt.file.readJSON('package.json'),
 
         // "Browserify" the Hanabi JavaScript (to convert Node-style imports to compatible browser code)
+        // https://github.com/browserify/browserify
         browserify: {
             dist: {
                 src: 'src/main.js',
@@ -43,8 +44,8 @@ module.exports = (grunt) => {
         // (Babel options are configured in the ".babelrc" file)
         babel: {
             options: {
-                // This is needed to tell Babel that we want it to do maximum transpilation
-                // (so that it will work on every single browser)
+                // This is needed to tell Babel that we want maximum transpilation
+                // (so that the resulting JavaScript will work on every single browser)
                 // https://babeljs.io/docs/en/babel-preset-env
                 presets: ['@babel/preset-env'],
 
