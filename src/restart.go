@@ -19,7 +19,8 @@ func restart(s *Session, d *CommandData) {
 func restart2() {
 	execute("pull.sh")
 	execute("build_client.sh")
-	// Even though "build_client.sh" is part of "restart.sh", it does not execute for some reason
+	// Even though this is included in the "restart.sh" script, it won't execute for some reason,
+	// so call it here manually
 	execute("restart.sh")
 }
 
@@ -33,15 +34,13 @@ func graceful(s *Session, d *CommandData) {
 
 func graceful2() {
 	numGames := countActiveGames()
-	log.Info("Initiating a graceful server restart " +
-		"(with " + strconv.Itoa(numGames) + " active games).")
+	log.Info("Initiating a graceful server restart (with " + strconv.Itoa(numGames) + " active games).")
 	if numGames == 0 {
 		restart2()
 	} else {
 		shutdownMode = 1
 		go gracefulWait()
-		chatServerSend("The server will restart when all ongoing games have finished. " +
-			"New game creation has been disabled.")
+		chatServerSend("The server will restart when all ongoing games have finished. New game creation has been disabled.")
 	}
 }
 
@@ -113,6 +112,8 @@ func execute(script string) {
 	cmd := exec.Command(path.Join(projectPath, script))
 	if output, err := cmd.Output(); err != nil {
 		log.Error("Failed to execute \""+script+"\":", err)
+		log.Error("Output is as follows:")
+		log.Error(string(output))
 	} else {
 		log.Info("\""+script+"\" completed:", string(output))
 	}
