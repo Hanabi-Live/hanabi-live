@@ -7,10 +7,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Rebuild the client code
 bash "$DIR/build_client.sh"
 
-# Recompile the Go code and restart the service
+# Recompile the Golang code and restart the service
 cd "$DIR/src"
 go install
 if [ $? -eq 0 ]; then
+	# The binary is called "src" by default, since the directory name is "src"
 	mv "$GOPATH/bin/src" "$GOPATH/bin/hanabi-live"
 	supervisorctl restart hanabi-live
 else

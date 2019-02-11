@@ -1,5 +1,5 @@
-Server Installation + Linter Installation (for Deveopment / Windows)
---------------------------------------------------------------------
+Server Installation + Linter Installation (for Development / Windows)
+---------------------------------------------------------------------
 
 Like many code projects, we use [linters](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For JavaScript (the client-side code), we use [ESLint](https://eslint.org/) and have a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
 
@@ -9,8 +9,8 @@ Note that these steps require **an elevated (administrator) command-shell**.
 
 * Install [Chocolatey](https://chocolatey.org/):
   * `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
-* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), [Python 3](https://www.python.org/), [Visual Studio Code](https://code.visualstudio.com/), and [Wget](https://eternallybored.org/misc/wget/):
-  * `choco install git golang mariadb nodejs python vscode wget -y`
+* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), [Visual Studio Code](https://code.visualstudio.com/), and [Wget](https://eternallybored.org/misc/wget/):
+  * `choco install git golang mariadb nodejs vscode wget -y`
 * Configure Git:
   * `refreshenv`
   * `git config --global user.name "Your_Username"`
@@ -28,9 +28,6 @@ Note that these steps require **an elevated (administrator) command-shell**.
 * Install the project's dependencies:
   * `install\install_dependencies.sh`
   * `install\install_development_dependencies.sh`
-* Set up environment variables (optional):
-  * `notepad .env`
-  * For local development, you don't have to change any of the default environment variables, but if you want you can open this file and review the defaults.
 * Delete the anonymous user, delete the test database, create the Hanabi database, and create the Hanabi user:
   * `mysql -u root`
     * `DELETE FROM mysql.user WHERE User='';`
@@ -44,7 +41,7 @@ Note that these steps require **an elevated (administrator) command-shell**.
   * `install\install_database_schema.sh`
 * Import a solid set of starting VSCode user settings:
   * `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"` <br />
-  (feel free to tweak this to your liking)
+  (feel free to tweak this file to your liking)
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * Test the Golang linter:
@@ -65,9 +62,9 @@ Note that these steps require **an elevated (administrator) command-shell**.
 
 
 Server Installation (for Linux)
----------------------------
+-------------------------------
 
-These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment will be needed for macOS installations.
+These instructions assume you are running Ubuntu 18.04.1 LTS.
 
 * Install [Golang](https://golang.org/):
   * `sudo add-apt-repository ppa:longsleep/golang-backports` <br />
@@ -87,11 +84,11 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment wi
   * `git clone https://github.com/Zamiell/hanabi-live.git` <br />
   (or clone a fork, if you are doing development work)
   * `cd hanabi-live`
-* Install the project dependencies and prepare for the first run:
+* Install the project dependencies:
   * `./install/install_dependencies`
 * Set up environment variables:
   * `nano .env`
-    * Fill in the values accordingly.
+    * Fill in the values accordingly. The most important one is DOMAIN - **this must match the URL that the user types in!**
 * Set up a database user and import the database schema:
   * `sudo mysql -u root -p`
     * `CREATE DATABASE hanabi;`
@@ -115,26 +112,15 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustment wi
 Run
 ---
 
-* `cd "$GOPATH/src/github.com/Zamiell/hanabi-live"`
-* `go run src/*.go`
+* The following script will compile and run the server:
+  * `"$GOPATH/src/github.com/Zamiell/hanabi-live/run.sh"`
   * `sudo` might be necessary to run this command because the server listens on port 80 and/or 443.
-  * If you are on Windows, run this command in Git Bash, as the `*` file substitution will not work in a normal command prompt.
 * If you change any of the Go code, then you must restart the server for the changes to take effect.
-* If you change any of the JavaScript or CSS, then you will need to rerun `build_client.sh` in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to do a hard cache refresh in the browser.)
+* If you change any of the JavaScript or CSS, then you will need to re-run the `build_client.sh` script in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to do a hard cache refresh in the browser.)
+  * Alternatively, if you are actively changing/developing the JavaScript, leave the `watchify.sh` script running and surf to "https://localhost/dev". This way, the code will get automatically Browserified whenever you change a file.
 
 <br />
 
-
-
-Compile / Build
----------------
-
-* `cd "$GOPATH/src/github.com/Zamiell/hanabi-live/src"`
-* `go install`
-* `mv "$GOPATH/bin/src" "$GOPATH/bin/hanabi-live"` <br />
-(the binary is called `src` by default, since the name of the directory is `src`)
-
-<br />
 
 
 
@@ -175,5 +161,3 @@ Later, to manage the service:
 * Start it: `supervisorctl start hanabi-live`
 * Stop it: `supervisorctl stop hanabi-live`
 * Restart it: `supervisorctl restart hanabi-live`
-
-<br />

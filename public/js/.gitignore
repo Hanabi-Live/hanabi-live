@@ -2,10 +2,9 @@
 node_modules
 /package-lock.json
 
-# We don't need to include the transpiled/minified JS
+# We don't need to include the browserified/transpiled/minified JS
+/main.browserified.js
+/main.browserified.js~
 /main.bundled.js
-/main.bundled.js~
 /main.transpiled.js
-/main.js
 /main.min.js
-/main.min.js.map
