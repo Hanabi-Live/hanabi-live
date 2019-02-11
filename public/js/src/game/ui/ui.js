@@ -1990,7 +1990,7 @@ function HanabiUI(lobby, game) {
 
             if (type === 'play') {
                 card.isPlayed = true;
-                card.turnPlayed = globals.turn;
+                card.turnPlayed = globals.turn - 1;
 
                 playStacks.get(suit).add(child);
                 playStacks.get(suit).moveToTop();
@@ -2000,7 +2000,7 @@ function HanabiUI(lobby, game) {
                 }
             } else if (type === 'discard') {
                 card.isDiscarded = true;
-                card.turnDiscarded = globals.turn;
+                card.turnDiscarded = globals.turn - 1;
 
                 discardStacks.get(suit).add(child);
                 for (const discardStack of discardStacks) {
