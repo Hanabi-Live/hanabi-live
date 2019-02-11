@@ -1989,6 +1989,9 @@ function HanabiUI(lobby, game) {
             globals.elements.clueLog.checkExpiry();
 
             if (type === 'play') {
+                card.isPlayed = true;
+                card.turnPlayed = globals.turn;
+
                 playStacks.get(suit).add(child);
                 playStacks.get(suit).moveToTop();
 

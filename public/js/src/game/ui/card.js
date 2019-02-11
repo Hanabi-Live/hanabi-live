@@ -217,6 +217,8 @@ const HanabiCard = function HanabiCard(config) {
     };
     this.isDiscarded = false;
     this.turnDiscarded = null;
+    this.isPlayed = false;
+    this.turnPlayed = null;
 
     this.indicatorArrow = new Kinetic.Text({
         x: config.width * 1.01,
@@ -397,9 +399,9 @@ const HanabiCard = function HanabiCard(config) {
                 return;
             }
 
-            // Disable Empathy if the card is discarded
-            // (clicking on a discarded card goes to the turn that it was discarded)
-            if (this.isDiscarded) {
+            // Disable Empathy if the card is played or discarded
+            // (clicking on a played/discarded card goes to the turn that it was played/discarded)
+            if (this.isPlayed || this.isDiscarded) {
                 return;
             }
 
@@ -503,8 +505,16 @@ HanabiCard.prototype.click = function click(event) {
 
 HanabiCard.prototype.clickLeft = function clickLeft() {
     // The "Empathy" feature is handled elsewhere in this file
-    if (this.isDiscarded) {
-        // Click on the x to go to the turn that the strike happened
+    if (this.isPlayed) {
+        // Clicking on played cards goes to the turn that they were played
+        if (globals.replay) {
+            replay.checkDisableSharedTurns();
+        } else {
+            replay.enter();
+        }
+        replay.goto(this.turnPlayed + 1, true);
+    } else if (this.isDiscarded) {
+        // Clicking on discarded cards goes to the turn that they were discarded
         if (globals.replay) {
             replay.checkDisableSharedTurns();
         } else {
