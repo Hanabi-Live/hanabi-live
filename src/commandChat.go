@@ -136,7 +136,7 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	// Check for commands
-	chatCommand(s, d)
+	chatCommand(s, d, false)
 }
 
 func commandChatGame(s *Session, d *CommandData) {
@@ -197,4 +197,7 @@ func commandChatGame(s *Session, d *CommandData) {
 		sp.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
 		g.ChatRead[sp.ID] = len(g.Chat)
 	}
+
+	// Check for commands
+	chatCommand(s, d, true)
 }

@@ -1,5 +1,6 @@
 /*
-    CardStack is composed of LayoutChild objects
+    CardStack is an object that represents a play stack
+    It is composed of LayoutChild objects
 */
 
 // Imports

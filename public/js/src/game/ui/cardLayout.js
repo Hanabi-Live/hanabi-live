@@ -1,5 +1,6 @@
 /*
-    CardLayout is composed of LayoutChild objects
+    CardLayout is an object that represents a player's hand (or a discard pile)
+    It is composed of LayoutChild objects
 */
 
 // Imports
