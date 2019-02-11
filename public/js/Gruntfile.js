@@ -6,7 +6,7 @@ module.exports = (grunt) => {
         browserify: {
             dist: {
                 src: 'src/main.js',
-                dest: 'main.browserifed.js',
+                dest: 'main.browserified.js',
             },
         },
 
@@ -22,7 +22,7 @@ module.exports = (grunt) => {
                     'lib/sha256.min.js',
                     'lib/skel.min.js',
                     'lib/alpha.js',
-                    'main.browserifed.js',
+                    'main.browserified.js',
                 ],
                 dest: 'main.bundled.js',
             },
@@ -42,6 +42,16 @@ module.exports = (grunt) => {
         // Transpile the JavaScript using Babel so that it will work in older browsers
         // (Babel options are configured in the ".babelrc" file)
         babel: {
+            options: {
+                // This is needed to tell Babel that we want it to do maximum transpilation
+                // (so that it will work on every single browser)
+                // https://babeljs.io/docs/en/babel-preset-env
+                presets: ['@babel/preset-env'],
+
+                // Babel assumes that JavaScript is ES6 modules by default, which is not the case here
+                // https://stackoverflow.com/questions/34973442/how-to-stop-babel-from-transpiling-this-to-undefined-and-inserting-use-str
+                sourceType: 'unambiguous',
+            },
             dist: {
                 src: 'main.bundled.js',
                 dest: 'main.transpiled.js',
@@ -52,7 +62,7 @@ module.exports = (grunt) => {
         'closure-compiler': {
             dist: {
                 src: 'main.transpiled.js',
-                dest: 'main.compiled.js',
+                dest: 'main.min.js',
             },
         },
 

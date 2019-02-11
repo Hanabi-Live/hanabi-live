@@ -28,6 +28,9 @@ Note that these steps require **an elevated (administrator) command-shell**.
 * Install the project's dependencies:
   * `install\install_dependencies.sh`
   * `install\install_development_dependencies.sh`
+* Set the domain URL (optional):
+  * `notepad .env` <br />
+  (if you plan to surf to "http://localhost", then don't change anything)
 * Delete the anonymous user, delete the test database, create the Hanabi database, and create the Hanabi user:
   * `mysql -u root`
     * `DELETE FROM mysql.user WHERE User='';`
