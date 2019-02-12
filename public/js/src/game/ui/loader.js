@@ -1,5 +1,5 @@
-const Loader = function Loader(cb) {
-    this.cb = cb;
+const Loader = function Loader(finishedCallback) {
+    this.finishedCallback = finishedCallback;
 
     this.filemap = {};
 
@@ -29,9 +29,7 @@ Loader.prototype.addAlias = function addAlias(name, alias, ext) {
 };
 
 Loader.prototype.start = function start() {
-    const self = this;
-
-    const total = Object.keys(self.filemap).length;
+    const total = Object.keys(this.filemap).length;
 
     this.map = {};
     this.numLoaded = 0;
@@ -42,19 +40,19 @@ Loader.prototype.start = function start() {
         this.map[name] = img;
 
         img.onload = () => {
-            self.numLoaded += 1;
+            this.numLoaded += 1;
 
-            self.progress(self.numLoaded, total);
+            this.progress(this.numLoaded, total);
 
-            if (self.numLoaded === total) {
-                self.cb();
+            if (this.numLoaded === total) {
+                this.finishedCallback();
             }
         };
 
-        img.src = self.filemap[name];
+        img.src = this.filemap[name];
     }
 
-    self.progress(0, total);
+    this.progress(0, total);
 };
 
 Loader.prototype.progress = function progress(done, total) {

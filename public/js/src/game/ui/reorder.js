@@ -12,7 +12,7 @@ if (note.who == ui.player_us) {
 
         var area = player_hands[ui.player_us];
 
-        if (this.overPlayArea()) {
+        if (globals.elements.playArea.isOver()) {
             var i, x;
 
             while (1) {

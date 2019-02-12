@@ -4,6 +4,7 @@
 
 // Imports
 const constants = require('../../constants');
+const convert = require('./convert');
 const globals = require('./globals');
 const HanabiCard = require('./card');
 const HanabiClueEntry = require('./clueEntry');
@@ -19,7 +20,7 @@ commands.clue = (data) => {
     globals.cluesSpentPlusStrikes += 1;
     stats.updateEfficiency(0);
 
-    const clue = globals.lobby.ui.msgClueToClue(data.clue, globals.variant);
+    const clue = convert.msgClueToClue(data.clue, globals.variant);
     globals.lobby.ui.showClueMatch(-1);
 
     for (let i = 0; i < data.list.length; i++) {
@@ -90,7 +91,7 @@ commands.discard = (data) => {
     revealCard(data);
 
     // Local variables
-    const suit = globals.lobby.ui.msgSuitToSuit(data.which.suit, globals.variant);
+    const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
     const card = globals.deck[data.which.order];
     const child = card.parent; // This is the LayoutChild
 
@@ -133,7 +134,7 @@ commands.draw = (data) => {
     if (data.rank === -1) {
         delete data.rank;
     }
-    const suit = globals.lobby.ui.msgSuitToSuit(data.suit, globals.variant);
+    const suit = convert.msgSuitToSuit(data.suit, globals.variant);
     if (!globals.learnedCards[data.order]) {
         globals.learnedCards[data.order] = {
             possibleSuits: globals.variant.suits.slice(),
@@ -221,7 +222,7 @@ commands.play = (data) => {
     revealCard(data);
 
     // Local variables
-    const suit = globals.lobby.ui.msgSuitToSuit(data.which.suit, globals.variant);
+    const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
     const card = globals.deck[data.which.order];
     const child = card.parent; // This is the LayoutChild
 
@@ -273,7 +274,7 @@ commands.reorder = (data) => {
 */
 commands.reveal = (data) => {
     // Local variables
-    const suit = globals.lobby.ui.msgSuitToSuit(data.which.suit, globals.variant);
+    const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
     const card = globals.deck[data.which.order];
 
     const learnedCard = globals.learnedCards[data.which.order];
@@ -433,8 +434,9 @@ commands.turn = (data) => {
     globals.elements.turnNumberLabel.setText(`${globals.turn + 1}`);
 
     if (globals.queuedAction !== null && globals.ourTurn) {
+        // We don't want to send the queued action right away, or else it introduces bugs
         setTimeout(() => {
-            globals.lobby.ui.sendMsg(globals.queuedAction);
+            globals.lobby.conn.send(globals.queuedAction.type, globals.queuedAction.data);
             globals.lobby.ui.stopAction();
 
             globals.queuedAction = null;
@@ -444,7 +446,7 @@ commands.turn = (data) => {
 
 const revealCard = (data) => {
     // Local variables
-    const suit = globals.lobby.ui.msgSuitToSuit(data.which.suit, globals.variant);
+    const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
     const card = globals.deck[data.which.order];
     const child = card.parent; // This is the LayoutChild
 

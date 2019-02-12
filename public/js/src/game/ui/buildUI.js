@@ -76,6 +76,12 @@ module.exports = () => {
         width: 0.2 * winW,
         height: 0.4 * winH,
     });
+    globals.elements.discardArea.isOver = pos => (
+        pos.x >= globals.elements.discardArea.getX()
+        && pos.y >= globals.elements.discardArea.getY()
+        && pos.x <= globals.elements.discardArea.getX() + globals.elements.discardArea.getWidth()
+        && pos.y <= globals.elements.discardArea.getY() + globals.elements.discardArea.getHeight()
+    );
 
     // The red border that surrounds the discard pile when the team is at 8 clues
     globals.elements.noDiscardLabel = new Kinetic.Rect({
@@ -697,6 +703,12 @@ module.exports = () => {
         width: (playAreaValues.w + overlap * 2) * winW,
         height: (playAreaValues.h + overlap * 2) * winH,
     });
+    globals.elements.playArea.isOver = pos => (
+        pos.x >= globals.elements.playArea.getX()
+        && pos.y >= globals.elements.playArea.getY()
+        && pos.x <= globals.elements.playArea.getX() + globals.elements.playArea.getWidth()
+        && pos.y <= globals.elements.playArea.getY() + globals.elements.playArea.getHeight()
+    );
 
     /*
         Draw the deck

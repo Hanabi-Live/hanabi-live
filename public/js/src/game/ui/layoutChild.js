@@ -69,9 +69,9 @@ LayoutChild.prototype.dragendPlay = function dragendPlay() {
     pos.y += this.getHeight() * this.getScaleY() / 2;
 
     let draggedTo = null;
-    if (globals.lobby.ui.overPlayArea(pos)) {
+    if (globals.elements.playArea.isOver(pos)) {
         draggedTo = 'playArea';
-    } else if (globals.lobby.ui.overDiscardArea(pos) && globals.clues !== 8) {
+    } else if (globals.elements.discardArea.isOver(pos) && globals.clues !== 8) {
         draggedTo = 'discardArea';
     }
     if (draggedTo === null) {

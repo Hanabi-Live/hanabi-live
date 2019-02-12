@@ -1,8 +1,8 @@
 // Imports
 const buildUI = require('./buildUI');
 const cardDraw = require('./cardDraw');
-const Clue = require('./clue');
 const constants = require('../../constants');
+const convert = require('./convert');
 const globals = require('./globals');
 const globalsInit = require('./globalsInit');
 const Loader = require('./loader');
@@ -28,377 +28,321 @@ function HanabiUI(lobby, game) {
     globals.game = game; // This is the "game.js" in the root of the "game" directory
     // We should also combine this with the UI object in the future
 
-    /*
-        Misc. functions
-    */
+    // Initialize the stage and show the loading screen
+    this.initStage();
+    globals.ImageLoader = new Loader(this.finishedLoadingImages);
+    this.showLoadingScreen();
+}
 
-    // Convert a clue to the format used by the server, which is identical but for the color value;
-    // on the client it is a rich object and on the server it is a simple integer mapping
-    this.clueToMsgClue = (clue, variant) => {
-        const {
-            type: clueType,
-            value: clueValue,
-        } = clue;
-        let msgClueValue;
-        if (clueType === constants.CLUE_TYPE.COLOR) {
-            const clueColor = clueValue;
-            msgClueValue = variant.clueColors.findIndex(color => color === clueColor);
-        } else if (clueType === constants.CLUE_TYPE.RANK) {
-            msgClueValue = clueValue;
-        }
-        return {
-            type: clueType,
-            value: msgClueValue,
-        };
-    };
-    this.msgClueToClue = (msgClue, variant) => {
-        const {
-            type: clueType,
-            value: msgClueValue,
-        } = msgClue;
-        let clueValue;
-        if (clueType === constants.CLUE_TYPE.COLOR) {
-            clueValue = variant.clueColors[msgClueValue];
-        } else if (clueType === constants.CLUE_TYPE.RANK) {
-            clueValue = msgClueValue;
-        }
-        return new Clue(clueType, clueValue);
-    };
-    this.msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit];
-
-    globals.ImageLoader = new Loader(() => {
-        cardDraw.buildCards();
-        buildUI();
-        keyboard.init(); // Keyboard hotkeys can only be initialized once the clue buttons are drawn
-        globals.lobby.conn.send('ready');
-        globals.ready = true;
-    });
-
-    this.showClueMatch = (target, clue) => {
-        // Hide all of the existing arrows on the cards
-        for (let i = 0; i < globals.deck.length; i++) {
-            if (i === target) {
-                continue;
-            }
-
-            globals.deck[i].setIndicator(false);
-        }
-        globals.layers.card.batchDraw();
-
-        // We supply this function with an argument of "-1" if we just want to
-        // clear the existing arrows and nothing else
-        if (target < 0) {
-            return false;
-        }
-
-        let match = false;
-        for (let i = 0; i < globals.elements.playerHands[target].children.length; i++) {
-            const child = globals.elements.playerHands[target].children[i];
-            const card = child.children[0];
-
-            let touched = false;
-            let color;
-            if (clue.type === constants.CLUE_TYPE.RANK) {
-                if (
-                    clue.value === card.trueRank
-                    || (globals.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
-                ) {
-                    touched = true;
-                    color = constants.INDICATOR.POSITIVE;
-                }
-            } else if (clue.type === constants.CLUE_TYPE.COLOR) {
-                const clueColor = clue.value;
-                if (
-                    card.trueSuit === constants.SUIT.RAINBOW
-                    || card.trueSuit === constants.SUIT.RAINBOW1OE
-                    || card.trueSuit.clueColors.includes(clueColor)
-                ) {
-                    touched = true;
-                    color = clueColor.hexCode;
-                }
-            }
-
-            if (touched) {
-                match = true;
-                card.setIndicator(true, color);
-            } else {
-                card.setIndicator(false);
-            }
-        }
-
-        globals.layers.card.batchDraw();
-
-        return match;
-    };
-
-    const sizeStage = (stage) => {
-        let ww = window.innerWidth;
-        let wh = window.innerHeight;
-
-        if (ww < 640) {
-            ww = 640;
-        }
-        if (wh < 360) {
-            wh = 360;
-        }
-
-        const ratio = 1.777;
-
-        let cw;
-        let ch;
-        if (ww < wh * ratio) {
-            cw = ww;
-            ch = ww / ratio;
-        } else {
-            ch = wh;
-            cw = wh * ratio;
-        }
-
-        cw = Math.floor(cw);
-        ch = Math.floor(ch);
-
-        if (cw > 0.98 * ww) {
-            cw = ww;
-        }
-        if (ch > 0.98 * wh) {
-            ch = wh;
-        }
-
-        stage.setWidth(cw);
-        stage.setHeight(ch);
-    };
-
+HanabiUI.prototype.initStage = function initStage() {
+    // Initialize and size the stage depending on the window size
     globals.stage = new Kinetic.Stage({
         container: 'game',
     });
-    sizeStage(globals.stage);
+    let ww = window.innerWidth;
+    let wh = window.innerHeight;
 
+    if (ww < 640) {
+        ww = 640;
+    }
+    if (wh < 360) {
+        wh = 360;
+    }
+
+    const ratio = 1.777;
+
+    let cw;
+    let ch;
+    if (ww < wh * ratio) {
+        cw = ww;
+        ch = ww / ratio;
+    } else {
+        ch = wh;
+        cw = wh * ratio;
+    }
+
+    cw = Math.floor(cw);
+    ch = Math.floor(ch);
+
+    if (cw > 0.98 * ww) {
+        cw = ww;
+    }
+    if (ch > 0.98 * wh) {
+        ch = wh;
+    }
+    globals.stage.setWidth(cw);
+    globals.stage.setHeight(ch);
+};
+
+HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
     const winW = globals.stage.getWidth();
     const winH = globals.stage.getHeight();
 
-    this.overPlayArea = pos => (
-        pos.x >= globals.elements.playArea.getX()
-        && pos.y >= globals.elements.playArea.getY()
-        && pos.x <= globals.elements.playArea.getX() + globals.elements.playArea.getWidth()
-        && pos.y <= globals.elements.playArea.getY() + globals.elements.playArea.getHeight()
-    );
+    const loadinglayer = new Kinetic.Layer();
 
-    this.overDiscardArea = pos => (
-        pos.x >= globals.elements.discardArea.getX()
-        && pos.y >= globals.elements.discardArea.getY()
-        && pos.x <= globals.elements.discardArea.getX() + globals.elements.discardArea.getWidth()
-        && pos.y <= globals.elements.discardArea.getY() + globals.elements.discardArea.getHeight()
-    );
+    const loadinglabel = new Kinetic.Text({
+        fill: '#d8d5ef',
+        stroke: '#747278',
+        strokeWidth: 1,
+        text: 'Loading...',
+        align: 'center',
+        x: 0,
+        y: 0.7 * winH,
+        width: winW,
+        height: 0.05 * winH,
+        fontFamily: 'Arial',
+        fontStyle: 'bold',
+        fontSize: 0.05 * winH,
+    });
+    loadinglayer.add(loadinglabel);
 
-    this.giveClue = () => {
-        if (!globals.elements.giveClueButton.getEnabled()) {
-            return;
-        }
+    const progresslabel = new Kinetic.Text({
+        fill: '#d8d5ef',
+        stroke: '#747278',
+        strokeWidth: 1,
+        text: '0 / 0',
+        align: 'center',
+        x: 0,
+        y: 0.8 * winH,
+        width: winW,
+        height: 0.05 * winH,
+        fontFamily: 'Arial',
+        fontStyle: 'bold',
+        fontSize: 0.05 * winH,
+    });
+    loadinglayer.add(progresslabel);
 
-        // Prevent the user from accidentally giving a clue in certain situations
-        if (Date.now() - globals.accidentalClueTimer < 1000) {
-            return;
-        }
-
-        const target = globals.elements.clueTargetButtonGroup.getPressed();
-        if (!target) {
-            return;
-        }
-        const clueButton = globals.elements.clueButtonGroup.getPressed();
-        if (!clueButton) {
-            return;
-        }
-
-        // Erase the arrows
-        globals.lobby.ui.showClueMatch(target.targetIndex, {});
-
-        // Set the clue timer to prevent multiple clicks
-        globals.accidentalClueTimer = Date.now();
-
-        // Send the message to the server
-        const action = {
-            type: 'action',
-            data: {
-                type: constants.ACT.CLUE,
-                target: target.targetIndex,
-                clue: this.clueToMsgClue(clueButton.clue, globals.variant),
-            },
-        };
-        globals.lobby.ui.endTurn(action);
+    globals.ImageLoader.progressCallback = (done, total) => {
+        progresslabel.setText(`${done}/${total}`);
+        loadinglayer.draw();
     };
+    globals.stage.add(loadinglayer);
+};
 
-    function showLoading() {
-        const loadinglayer = new Kinetic.Layer();
+HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
+    // Build images for every card (with respect to the variant that we are playing)
+    cardDraw.buildCards();
 
-        const loadinglabel = new Kinetic.Text({
-            fill: '#d8d5ef',
-            stroke: '#747278',
-            strokeWidth: 1,
-            text: 'Loading...',
-            align: 'center',
-            x: 0,
-            y: 0.7 * winH,
-            width: winW,
-            height: 0.05 * winH,
-            fontFamily: 'Arial',
-            fontStyle: 'bold',
-            fontSize: 0.05 * winH,
-        });
+    // Draw the user interface
+    buildUI();
 
-        loadinglayer.add(loadinglabel);
+    keyboard.init(); // Keyboard hotkeys can only be initialized once the clue buttons are drawn
 
-        const progresslabel = new Kinetic.Text({
-            fill: '#d8d5ef',
-            stroke: '#747278',
-            strokeWidth: 1,
-            text: '0 / 0',
-            align: 'center',
-            x: 0,
-            y: 0.8 * winH,
-            width: winW,
-            height: 0.05 * winH,
-            fontFamily: 'Arial',
-            fontStyle: 'bold',
-            fontSize: 0.05 * winH,
-        });
+    // Tell the server that we are finished loading
+    globals.ready = true;
+    globals.lobby.conn.send('ready');
+};
 
-        loadinglayer.add(progresslabel);
+HanabiUI.prototype.endTurn = function endTurn(action) {
+    if (globals.ourTurn) {
+        globals.lobby.conn.send(action.type, action.data);
+        globals.lobby.ui.stopAction();
+        globals.savedAction = null;
+    } else {
+        globals.queuedAction = action;
+    }
+};
 
-        globals.ImageLoader.progressCallback = (done, total) => {
-            progresslabel.setText(`${done}/${total}`);
-            loadinglayer.draw();
-        };
+HanabiUI.prototype.handleAction = function handleAction(data) {
+    globals.savedAction = data;
 
-        globals.stage.add(loadinglayer);
+    if (globals.inReplay) {
+        return;
     }
 
-    showLoading();
-
-    this.stopAction = () => {
-        globals.elements.clueArea.hide();
-        globals.elements.noClueBox.hide();
-        globals.elements.noClueLabel.hide();
-        globals.elements.noDiscardLabel.hide();
-        globals.elements.noDoubleDiscardLabel.hide();
-
-        globals.lobby.ui.showClueMatch(-1);
-        globals.elements.clueTargetButtonGroup.off('change');
-        globals.elements.clueButtonGroup.off('change');
-
-        // Make all of the cards in our hand not draggable
-        // (but we need to keep them draggable if the pre-play setting is enabled)
-        if (!globals.lobby.settings.speedrunPreplay) {
-            const ourHand = globals.elements.playerHands[globals.playerUs];
-            for (const child of ourHand.children) {
-                // This is a LayoutChild
-                child.off('dragend.play');
-                child.setDraggable(false);
-            }
+    if (data.canClue) {
+        // Show the clue UI
+        globals.elements.clueArea.show();
+    } else {
+        globals.elements.noClueBox.show();
+        globals.elements.noClueLabel.show();
+        if (!globals.animateFast) {
+            globals.layers.UI.draw();
         }
+    }
 
-        globals.elements.drawDeck.cardback.setDraggable(false);
-        globals.elements.deckPlayAvailableLabel.setVisible(false);
-    };
+    // We have to redraw the UI layer to avoid a bug with the clue UI
+    globals.layers.UI.draw();
 
-    this.endTurn = function endTurn(action) {
-        if (globals.ourTurn) {
-            globals.lobby.ui.sendMsg(action);
-            globals.lobby.ui.stopAction();
-            globals.savedAction = null;
-        } else {
-            globals.queuedAction = action;
+    if (globals.playerNames.length === 2) {
+        // Default the clue recipient button to the only other player available
+        globals.elements.clueTargetButtonGroup.list[0].setPressed(true);
+    }
+
+    globals.elements.playerHands[globals.playerUs].moveToTop();
+
+    // Set our hand to being draggable
+    // (this is unnecessary if the pre-play setting is enabled,
+    // as the hand will already be draggable)
+    if (!globals.lobby.settings.speedrunPreplay) {
+        const ourHand = globals.elements.playerHands[globals.playerUs];
+        for (const child of ourHand.children) {
+            child.checkSetDraggable();
         }
-    };
+    }
 
-    this.handleAction = function handleAction(data) {
-        globals.savedAction = data;
+    if (globals.deckPlays) {
+        globals.elements.drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
+        globals.elements.deckPlayAvailableLabel.setVisible(data.canBlindPlayDeck);
 
-        if (globals.inReplay) {
+        // Ensure the deck is above other cards and UI elements
+        if (data.canBlindPlayDeck) {
+            globals.elements.drawDeck.moveToTop();
+        }
+    }
+
+    const checkClueLegal = () => {
+        const target = globals.elements.clueTargetButtonGroup.getPressed();
+        const clueButton = globals.elements.clueButtonGroup.getPressed();
+
+        if (!target || !clueButton) {
+            globals.elements.giveClueButton.setEnabled(false);
             return;
         }
 
-        if (data.canClue) {
-            // Show the clue UI
-            globals.elements.clueArea.show();
+        const who = target.targetIndex;
+        const match = globals.lobby.ui.showClueMatch(who, clueButton.clue);
+
+        // By default, only enable the "Give Clue" button if the clue "touched"
+        // one or more cards in the hand
+        const enabled = match
+            // Make an exception if they have the optional setting for "Empty Clues" turned on
+            || globals.emptyClues
+            // Make an exception for the "Color Blind" variants (color clues touch no cards)
+            || (globals.variant.name.startsWith('Color Blind')
+                && clueButton.clue.type === constants.CLUE_TYPE.COLOR)
+            // Make an exception for certain characters
+            || (globals.characterAssignments[globals.playerUs] === 'Blind Spot'
+                && who === (globals.playerUs + 1) % globals.playerNames.length)
+            || (globals.characterAssignments[globals.playerUs] === 'Oblivious'
+                && who === (globals.playerUs - 1 + globals.playerNames.length)
+                % globals.playerNames.length);
+
+        globals.elements.giveClueButton.setEnabled(enabled);
+    };
+
+    globals.elements.clueTargetButtonGroup.on('change', checkClueLegal);
+    globals.elements.clueButtonGroup.on('change', checkClueLegal);
+};
+
+HanabiUI.prototype.stopAction = function stopAction() {
+    globals.elements.clueArea.hide();
+    globals.elements.noClueBox.hide();
+    globals.elements.noClueLabel.hide();
+    globals.elements.noDiscardLabel.hide();
+    globals.elements.noDoubleDiscardLabel.hide();
+
+    globals.lobby.ui.showClueMatch(-1);
+    globals.elements.clueTargetButtonGroup.off('change');
+    globals.elements.clueButtonGroup.off('change');
+
+    // Make all of the cards in our hand not draggable
+    // (but we need to keep them draggable if the pre-play setting is enabled)
+    if (!globals.lobby.settings.speedrunPreplay) {
+        const ourHand = globals.elements.playerHands[globals.playerUs];
+        for (const child of ourHand.children) {
+            // This is a LayoutChild
+            child.off('dragend.play');
+            child.setDraggable(false);
+        }
+    }
+
+    globals.elements.drawDeck.cardback.setDraggable(false);
+    globals.elements.deckPlayAvailableLabel.setVisible(false);
+};
+
+HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
+    // Hide all of the existing arrows on the cards
+    for (let i = 0; i < globals.deck.length; i++) {
+        if (i === target) {
+            continue;
+        }
+
+        globals.deck[i].setIndicator(false);
+    }
+    globals.layers.card.batchDraw();
+
+    // We supply this function with an argument of "-1" if we just want to
+    // clear the existing arrows and nothing else
+    if (target < 0) {
+        return false;
+    }
+
+    let match = false;
+    for (let i = 0; i < globals.elements.playerHands[target].children.length; i++) {
+        const child = globals.elements.playerHands[target].children[i];
+        const card = child.children[0];
+
+        let touched = false;
+        let color;
+        if (clue.type === constants.CLUE_TYPE.RANK) {
+            if (
+                clue.value === card.trueRank
+                || (globals.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
+            ) {
+                touched = true;
+                color = constants.INDICATOR.POSITIVE;
+            }
+        } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+            const clueColor = clue.value;
+            if (
+                card.trueSuit === constants.SUIT.RAINBOW
+                || card.trueSuit === constants.SUIT.RAINBOW1OE
+                || card.trueSuit.clueColors.includes(clueColor)
+            ) {
+                touched = true;
+                color = clueColor.hexCode;
+            }
+        }
+
+        if (touched) {
+            match = true;
+            card.setIndicator(true, color);
         } else {
-            globals.elements.noClueBox.show();
-            globals.elements.noClueLabel.show();
-            if (!globals.animateFast) {
-                globals.layers.UI.draw();
-            }
+            card.setIndicator(false);
         }
+    }
 
-        // We have to redraw the UI layer to avoid a bug with the clue UI
-        globals.layers.UI.draw();
+    globals.layers.card.batchDraw();
 
-        if (globals.playerNames.length === 2) {
-            // Default the clue recipient button to the only other player available
-            globals.elements.clueTargetButtonGroup.list[0].setPressed(true);
-        }
+    return match;
+};
 
-        globals.elements.playerHands[globals.playerUs].moveToTop();
+HanabiUI.prototype.giveClue = function giveClue() {
+    if (!globals.elements.giveClueButton.getEnabled()) {
+        return;
+    }
 
-        // Set our hand to being draggable
-        // (this is unnecessary if the pre-play setting is enabled,
-        // as the hand will already be draggable)
-        if (!globals.lobby.settings.speedrunPreplay) {
-            const ourHand = globals.elements.playerHands[globals.playerUs];
-            for (const child of ourHand.children) {
-                child.checkSetDraggable();
-            }
-        }
+    // Prevent the user from accidentally giving a clue in certain situations
+    if (Date.now() - globals.accidentalClueTimer < 1000) {
+        return;
+    }
 
-        if (globals.deckPlays) {
-            globals.elements.drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
-            globals.elements.deckPlayAvailableLabel.setVisible(data.canBlindPlayDeck);
+    const target = globals.elements.clueTargetButtonGroup.getPressed();
+    if (!target) {
+        return;
+    }
+    const clueButton = globals.elements.clueButtonGroup.getPressed();
+    if (!clueButton) {
+        return;
+    }
 
-            // Ensure the deck is above other cards and UI elements
-            if (data.canBlindPlayDeck) {
-                globals.elements.drawDeck.moveToTop();
-            }
-        }
+    // Erase the arrows
+    globals.lobby.ui.showClueMatch(target.targetIndex, {});
 
-        const checkClueLegal = () => {
-            const target = globals.elements.clueTargetButtonGroup.getPressed();
-            const clueButton = globals.elements.clueButtonGroup.getPressed();
+    // Set the clue timer to prevent multiple clicks
+    globals.accidentalClueTimer = Date.now();
 
-            if (!target || !clueButton) {
-                globals.elements.giveClueButton.setEnabled(false);
-                return;
-            }
-
-            const who = target.targetIndex;
-            const match = globals.lobby.ui.showClueMatch(who, clueButton.clue);
-
-            // By default, only enable the "Give Clue" button if the clue "touched"
-            // one or more cards in the hand
-            const enabled = match
-                // Make an exception if they have the optional setting for "Empty Clues" turned on
-                || globals.emptyClues
-                // Make an exception for the "Color Blind" variants (color clues touch no cards)
-                || (globals.variant.name.startsWith('Color Blind')
-                    && clueButton.clue.type === constants.CLUE_TYPE.COLOR)
-                // Make an exception for certain characters
-                || (globals.characterAssignments[globals.playerUs] === 'Blind Spot'
-                    && who === (globals.playerUs + 1) % globals.playerNames.length)
-                || (globals.characterAssignments[globals.playerUs] === 'Oblivious'
-                    && who === (globals.playerUs - 1 + globals.playerNames.length)
-                    % globals.playerNames.length);
-
-            globals.elements.giveClueButton.setEnabled(enabled);
-        };
-
-        globals.elements.clueTargetButtonGroup.on('change', checkClueLegal);
-        globals.elements.clueButtonGroup.on('change', checkClueLegal);
-    };
-
-    this.destroy = function destroy() {
-        keyboard.destroy();
-        timer.stop();
-        globals.stage.destroy();
-        // window.removeEventListener('resize', resizeCanvas, false);
-    };
-}
+    // Send the message to the server
+    globals.lobby.ui.endTurn({
+        type: 'action',
+        data: {
+            type: constants.ACT.CLUE,
+            target: target.targetIndex,
+            clue: convert.clueToMsgClue(clueButton.clue, globals.variant),
+        },
+    });
+};
 
 HanabiUI.prototype.handleWebsocket = function handleWebsocket(command, data) {
     if (Object.prototype.hasOwnProperty.call(websocket, command)) {
@@ -429,12 +373,6 @@ HanabiUI.prototype.handleNotify = function handleNotify(data) {
     }
 };
 
-HanabiUI.prototype.sendMsg = function sendMsg(msg) {
-    const { type } = msg;
-    const { data } = msg;
-    globals.lobby.conn.send(type, data);
-};
-
 HanabiUI.prototype.updateChatLabel = function updateChatLabel() {
     let text = 'Chat';
     if (globals.lobby.chatUnread > 0) {
@@ -446,6 +384,13 @@ HanabiUI.prototype.updateChatLabel = function updateChatLabel() {
 
 HanabiUI.prototype.toggleChat = function toggleChat() {
     globals.game.chat.toggle();
+};
+
+HanabiUI.prototype.destroy = function destroy() {
+    keyboard.destroy();
+    timer.stop();
+    globals.stage.destroy();
+    // window.removeEventListener('resize', resizeCanvas, false);
 };
 
 // Expose the globals to functions in the "game" directory
