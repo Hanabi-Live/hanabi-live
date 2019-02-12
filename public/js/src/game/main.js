@@ -3,7 +3,7 @@
 */
 
 exports.chat = require('./chat');
-exports.commands = require('./commands');
+exports.websocket = require('./websocket');
 exports.sounds = require('./sounds');
 exports.tooltips = require('./tooltips');
 

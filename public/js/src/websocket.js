@@ -215,7 +215,7 @@ const initCommands = () => {
     });
 
     globals.conn.on('sound', (data) => {
-        if (globals.settings.sendTurnSound) {
+        if (globals.settings.sendTurnSound && globals.currentScreen === 'game') {
             game.sounds.play(data.file);
         }
     });
@@ -246,5 +246,5 @@ const initCommands = () => {
 
     // There are yet more command handlers for events that happen in-game
     // These will only have an effect if the current screen is equal to "game"
-    game.commands.init();
+    game.websocket.init();
 };

@@ -608,7 +608,6 @@ module.exports = () => {
         // So, center them by moving them to the right a little bit
         playStackValues.x += ((width + playStackValues.spacing) / 2) * 2;
     }
-    this.suitLabelTexts = [];
     {
         let i = 0;
         for (const suit of globals.variant.suits) {
@@ -671,7 +670,7 @@ module.exports = () => {
                     fill: '#d8d5ef',
                 });
                 text.add(suitLabelText);
-                this.suitLabelTexts.push(suitLabelText);
+                globals.elements.suitLabelTexts.push(suitLabelText);
             }
 
             i += 1;
@@ -1199,7 +1198,7 @@ module.exports = () => {
         text: 'Give Clue',
     });
     globals.elements.clueArea.add(globals.elements.giveClueButton);
-    globals.elements.giveClueButton.on('click tap', this.giveClue);
+    globals.elements.giveClueButton.on('click tap', globals.lobby.ui.giveClue);
 
     globals.elements.clueArea.hide();
     globals.layers.UI.add(globals.elements.clueArea);

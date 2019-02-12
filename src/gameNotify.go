@@ -252,27 +252,20 @@ func (g *Game) NotifySound() {
 	}
 }
 
+// Boot the people in the game and/or shared replay back to the lobby screen
 func (g *Game) NotifyBoot() {
-	// Boot the people in the game and/or shared replay back to the lobby screen
-	type BootMessage struct {
-		Type string `json:"type"`
-	}
-	msg := &BootMessage{
-		Type: "boot",
-	}
-
 	if !g.SharedReplay {
 		for _, p := range g.Players {
 			if !p.Present {
 				continue
 			}
 
-			p.Session.Emit("notify", msg)
+			p.Session.Emit("boot", nil)
 		}
 	}
 
 	for _, sp := range g.Spectators {
-		sp.Session.Emit("notify", msg)
+		sp.Session.Emit("boot", nil)
 	}
 }
 

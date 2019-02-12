@@ -80,6 +80,7 @@ module.exports = () => {
         stageFade: null,
         playArea: null,
         playStacks: new Map(),
+        suitLabelTexts: [],
         discardArea: null,
         discardStacks: new Map(),
         playerHands: [],

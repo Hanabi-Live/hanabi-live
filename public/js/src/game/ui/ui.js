@@ -14,6 +14,7 @@ const notes = require('./notes');
 const replay = require('./replay');
 const stats = require('./stats');
 const timer = require('./timer');
+const websocket = require('./websocket');
 
 function HanabiUI(lobby, game) {
     // Since the "HanabiUI" object is being reinstantiated,
@@ -34,6 +35,9 @@ function HanabiUI(lobby, game) {
     // Eventually, we should refactor everything out of "ui.js" and remove all "ui" references
     // (pre-Browserify, everything was in the HanabiUI class)
     const ui = this;
+
+    // Initialize all of the message commands and notify commands
+    // TODO
 
     /*
         Misc. UI objects
@@ -233,52 +237,6 @@ function HanabiUI(lobby, game) {
             },
         };
         ui.endTurn(action);
-    };
-
-    this.saveReplay = function saveReplay(msg) {
-        const msgData = msg.data;
-
-        globals.replayLog.push(msg);
-
-        if (msgData.type === 'turn') {
-            globals.replayMax = msgData.num;
-        }
-        if (msgData.type === 'gameOver') {
-            globals.replayMax += 1;
-        }
-
-        if (!globals.replay && globals.replayMax > 0) {
-            globals.elements.replayButton.show();
-        }
-
-        if (globals.inReplay) {
-            replay.adjustShuttles();
-            globals.layers.UI.draw();
-        }
-    };
-
-    this.replayAdvanced = function replayAdvanced() {
-        globals.animateFast = false;
-
-        if (globals.inReplay) {
-            replay.goto(0);
-        }
-
-        globals.layers.card.draw();
-        globals.layers.UI.draw();
-        // We need to re-draw the UI or else the action text will not appear
-    };
-
-    this.showConnected = function showConnected(list) {
-        if (!globals.ready) {
-            return;
-        }
-
-        for (let i = 0; i < list.length; i++) {
-            globals.elements.nameFrames[i].setConnected(list[i]);
-        }
-
-        globals.layers.UI.draw();
     };
 
     function showLoading() {
@@ -623,7 +581,7 @@ function HanabiUI(lobby, game) {
                     } else {
                         text = 'Unknown';
                     }
-                    this.suitLabelTexts[i].setText(text);
+                    globals.elements.suitLabelTexts[i].setText(text);
                     globals.layers.text.draw();
                 }
             }
@@ -748,185 +706,11 @@ function HanabiUI(lobby, game) {
                 const child = newChildOrder[i];
                 hand.add(child);
             }
-        } else if (type === 'boot') {
-            timer.stop();
-            globals.game.hide();
         } else if (type === 'deckOrder') {
             // TODO
         } else {
             console.log('Received an invalid notify message:', type);
         }
-    };
-
-    this.handleSpectators = (data) => {
-        if (!globals.elements.spectatorsLabel) {
-            // Sometimes we can get here without the spectators label being initiated yet
-            return;
-        }
-
-        // Remember the current list of spectators
-        globals.spectators = data.names;
-
-        const shouldShowLabel = data.names.length > 0;
-        globals.elements.spectatorsLabel.setVisible(shouldShowLabel);
-        globals.elements.spectatorsNumLabel.setVisible(shouldShowLabel);
-        if (shouldShowLabel) {
-            globals.elements.spectatorsNumLabel.setText(data.names.length);
-
-            // Build the string that shows all the names
-            const nameEntries = data.names.map(name => `<li>${name}</li>`).join('');
-            let content = '<strong>';
-            if (globals.replay) {
-                content += 'Shared Replay Viewers';
-            } else {
-                content += 'Spectators';
-            }
-            content += `:</strong><ol class="game-tooltips-ol">${nameEntries}</ol>`;
-            $('#tooltip-spectators').tooltipster('instance').content(content);
-        } else {
-            $('#tooltip-spectators').tooltipster('close');
-        }
-
-        // We might also need to update the content of replay leader icon
-        if (globals.sharedReplay) {
-            let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
-            if (!globals.spectators.includes(globals.sharedReplayLeader)) {
-                // Check to see if the leader is away
-                content += ' (away)';
-            }
-            $('#tooltip-leader').tooltipster('instance').content(content);
-        }
-
-        globals.layers.UI.batchDraw();
-    };
-
-    /*
-        Recieved by the client when spectating a game
-        Has the following data:
-        {
-            order: 16,
-            note: '<strong>Zamiel:</strong> note1<br /><strong>Duneaught:</strong> note2<br />',
-        }
-    */
-    this.handleNote = (data) => {
-        // Set the note
-        // (which is the combined notes from all of the players, formatted by the server)
-        notes.set(data.order, data.notes, false);
-
-        // Draw (or hide) the note indicator
-        const card = globals.deck[data.order];
-        if (!card) {
-            return;
-        }
-
-        // Show or hide the note indicator
-        if (data.notes.length > 0) {
-            card.noteGiven.show();
-            if (!card.noteGiven.rotated) {
-                card.noteGiven.rotate(15);
-                card.noteGiven.rotated = true;
-            }
-        } else {
-            card.noteGiven.hide();
-        }
-
-        globals.layers.card.batchDraw();
-    };
-
-    /*
-        Recieved by the client when:
-        - joining a replay (will get all notes)
-        - joining a shared replay (will get all notes)
-        - joining an existing game as a spectator (will get all notes)
-        - reconnecting an existing game as a player (will only get your own notes)
-
-        Has the following data:
-        {
-            notes: [
-                null,
-                null,
-                null,
-                zamiel: 'g1\nsankala: g1/g2',
-            ],
-        }
-    */
-    this.handleNotes = (data) => {
-        for (let order = 0; order < data.notes.length; order++) {
-            const note = data.notes[order];
-
-            // Set the note
-            notes.set(order, note, false);
-
-            // The following code is mosly copied from the "handleNote" function
-            // Draw (or hide) the note indicator
-            const card = globals.deck[order];
-            if (!card) {
-                continue;
-            }
-            if (note !== null && note !== '') {
-                card.note = note;
-            }
-            if (note !== null && note !== '') {
-                card.noteGiven.show();
-                if (globals.spectating && !card.noteGiven.rotated) {
-                    card.noteGiven.rotate(15);
-                    card.noteGiven.rotated = true;
-                }
-            }
-        }
-
-        globals.layers.card.batchDraw();
-    };
-
-    this.handleReplayLeader = function handleReplayLeader(data) {
-        // We might be entering this function after a game just ended
-        globals.sharedReplay = true;
-        globals.elements.replayExitButton.hide();
-
-        // Update the stored replay leader
-        globals.sharedReplayLeader = data.name;
-
-        // Update the UI
-        globals.elements.sharedReplayLeaderLabel.show();
-        let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
-        if (!globals.spectators.includes(globals.sharedReplayLeader)) {
-            // Check to see if the leader is away
-            content += ' (away)';
-        }
-        $('#tooltip-leader').tooltipster('instance').content(content);
-
-        globals.elements.sharedReplayLeaderLabelPulse.play();
-
-        globals.elements.toggleSharedTurnButton.show();
-        globals.layers.UI.draw();
-    };
-
-    this.handleReplayTurn = function handleReplayTurn(data) {
-        globals.sharedReplayTurn = data.turn;
-        replay.adjustShuttles();
-        if (globals.useSharedTurns) {
-            replay.goto(globals.sharedReplayTurn);
-        } else {
-            globals.elements.replayShuttleShared.getLayer().batchDraw();
-        }
-    };
-
-    this.handleReplayIndicator = (data) => {
-        // Ensure that the card exists as a sanity-check
-        const indicated = globals.deck[data.order];
-        if (!indicated) {
-            return;
-        }
-
-        // Either show or hide the arrow (if it is already visible)
-        const visible = !(
-            indicated.indicatorArrow.visible()
-            && indicated.indicatorArrow.getFill() === constants.INDICATOR.REPLAY_LEADER
-        );
-        // (if the arrow is showing but is a different kind of arrow,
-        // then just overwrite the existing arrow)
-        globals.lobby.ui.showClueMatch(-1);
-        indicated.setIndicator(visible, constants.INDICATOR.REPLAY_LEADER);
     };
 
     this.stopAction = () => {
@@ -1069,113 +853,11 @@ function HanabiUI(lobby, game) {
     End of Hanabi UI
 */
 
-HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
-    const msg = {};
-    msg.type = msgType;
-    msg.data = msgData;
-
-    if (msgType === 'init') {
-        // Game settings
-        globals.playerNames = msgData.names;
-        globals.variant = constants.VARIANTS[msgData.variant];
-        globals.playerUs = msgData.seat;
-        globals.spectating = msgData.spectating;
-        globals.replay = msgData.replay;
-        globals.sharedReplay = msgData.sharedReplay;
-
-        // Optional settings
-        globals.timed = msgData.timed;
-        globals.baseTime = msgData.baseTime;
-        globals.timePerTurn = msgData.timePerTurn;
-        globals.deckPlays = msgData.deckPlays;
-        globals.emptyClues = msgData.emptyClues;
-        globals.characterAssignments = msgData.characterAssignments;
-        globals.characterMetadata = msgData.characterMetadata;
-
-        globals.inReplay = globals.replay;
-        if (globals.replay) {
-            globals.replayTurn = -1;
-        }
-
-        // Begin to load all of the card images
-        globals.ImageLoader.start();
-    } else if (msgType === 'advanced') {
-        this.replayAdvanced();
-    } else if (msgType === 'connected') {
-        this.showConnected(msgData.list);
-    } else if (msgType === 'notify') {
-        this.saveReplay(msg);
-
-        if (!globals.inReplay || msgData.type === 'reveal' || msgData.type === 'boot') {
-            this.handleNotify(msgData);
-        }
-    } else if (msgType === 'action') {
-        globals.lastAction = msgData;
-        this.handleAction.call(this, msgData);
-
-        if (globals.animateFast) {
-            return;
-        }
-
-        if (globals.lobby.settings.sendTurnNotify) {
-            globals.lobby.sendNotify('It\'s your turn', 'turn');
-        }
-    } else if (msgType === 'spectators') {
-        // This is used to update the names of the people currently spectating the game
-        this.handleSpectators.call(this, msgData);
-    } else if (msgType === 'clock') {
-        // Update the clocks to show how much time people are taking
-        // or how much time people have left
-        timer.update(msgData);
-    } else if (msgType === 'note') {
-        // This is used for spectators
-        this.handleNote.call(this, msgData);
-    } else if (msgType === 'notes') {
-        // This is a list of all of your notes, sent upon reconnecting to a game
-        this.handleNotes.call(this, msgData);
-    } else if (msgType === 'replayLeader') {
-        // This is used in shared replays
-        this.handleReplayLeader.call(this, msgData);
-    } else if (msgType === 'replayTurn') {
-        // This is used in shared replays
-        this.handleReplayTurn.call(this, msgData);
-    } else if (msgType === 'replayIndicator') {
-        // This is used in shared replays
-        if (globals.sharedReplayLeader === globals.lobby.username) {
-            // We don't have to draw any arrows;
-            // we already did it manually immediately after sending the "replayAction" message
-            return;
-        }
-
-        this.handleReplayIndicator.call(this, msgData);
-    } else if (msgType === 'replayMorph') {
-        // This is used in shared replays to make hypothetical game states
-        if (globals.sharedReplayLeader === globals.lobby.username) {
-            // We don't have to reveal anything;
-            // we already did it manually immediately after sending the "replayAction" message
-            return;
-        }
-
-        const revealMsg = {
-            type: 'reveal',
-            which: {
-                order: msgData.order,
-                rank: msgData.rank,
-                suit: msgData.suit,
-            },
-        };
-        this.handleNotify(revealMsg);
-    } else if (msgType === 'replaySound') {
-        // This is used in shared replays to make fun sounds
-        if (globals.sharedReplayLeader === globals.lobby.username) {
-            // We don't have to play anything;
-            // we already did it manually after sending the "replayAction" message
-            return;
-        }
-
-        globals.game.sounds.play(msgData.sound);
+HanabiUI.prototype.handleWebsocket = function handleWebsocket(command, data) {
+    if (Object.prototype.hasOwnProperty.call(websocket, command)) {
+        websocket[command](data);
     } else {
-        console.error('Received an invalid message:', msgType);
+        console.error(`A WebSocket function for the "${command}" is not defined.`);
     }
 };
 
