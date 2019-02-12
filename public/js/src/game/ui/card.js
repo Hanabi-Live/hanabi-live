@@ -496,6 +496,12 @@ HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
 };
 
 HanabiCard.prototype.click = function click(event) {
+    // Disable all click events if the card is tweening
+    const child = this.parent; // This is the LayoutChild
+    if (child.tween && child.tween.isPlaying()) {
+        return;
+    }
+
     if (event.evt.which === 1) { // Left-click
         this.clickLeft();
     } else if (event.evt.which === 3) { // Right-click
