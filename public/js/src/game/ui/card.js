@@ -663,20 +663,7 @@ HanabiCard.prototype.clickMorph = function clickMorph() {
             rank,
         });
     }
-
-    // Send the reveal message manually so that
-    // we don't have to wait for the client to server round-trip
-    const revealMsg = {
-        type: 'reveal',
-        which: {
-            order: this.order,
-            rank,
-            suit,
-        },
-    };
-    globals.lobby.ui.handleNotify(revealMsg);
 };
-
 
 module.exports = HanabiCard;
 

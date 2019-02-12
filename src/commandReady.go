@@ -45,7 +45,8 @@ func commandReady(s *Session, d *CommandData) {
 	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
 		var actionStrings []string
 		if v, err := db.GameActions.GetAll(gameID); err != nil {
-			log.Error("Failed to get the actions from the database for game "+strconv.Itoa(gameID)+":", err)
+			log.Error("Failed to get the actions from the database "+
+				"for game "+strconv.Itoa(gameID)+":", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")
 			return
 		} else {
@@ -69,7 +70,8 @@ func commandReady(s *Session, d *CommandData) {
 	notes := make([]models.PlayerNote, 0)
 	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
 		if v, err := db.Games.GetNotes(gameID); err != nil {
-			log.Error("Failed to get the notes from the database for game "+strconv.Itoa(gameID)+":", err)
+			log.Error("Failed to get the notes from the database "+
+				"for game "+strconv.Itoa(gameID)+":", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")
 			return
 		} else {
@@ -89,7 +91,8 @@ func commandReady(s *Session, d *CommandData) {
 	// Check to see if we need to remove some card information
 	var scrubbedActions []interface{}
 	if i > -1 {
-		// The person requesting the game state is one of the active players, so we need to hide some information
+		// The person requesting the game state is one of the active players,
+		// so we need to hide some information
 		p := g.Players[i]
 		for _, a := range actions {
 			drawAction, ok := a.(ActionDraw)
@@ -100,7 +103,8 @@ func commandReady(s *Session, d *CommandData) {
 			scrubbedActions = append(scrubbedActions, a)
 		}
 	} else {
-		// The person requesting the game state is not an active player, so we don't need to hide any information
+		// The person requesting the game state is not an active player,
+		// so we don't need to hide any information
 		scrubbedActions = actions
 	}
 
@@ -141,7 +145,8 @@ func commandReady(s *Session, d *CommandData) {
 				Notes: notes[i].Notes,
 			})
 
-			// Set their "present" variable back to true, which will turn their name from red to black
+			// Set their "present" variable back to true,
+			// which will turn their name from red to black
 			p := g.Players[i]
 			p.Present = true
 			g.NotifyConnected()

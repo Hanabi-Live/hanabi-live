@@ -101,10 +101,10 @@ const goto = (target, fast) => {
         }
 
         // Rebuild all notifies; this will correctly position cards and text
-        globals.lobby.ui.handleNotify(msg.data);
+        globals.lobby.ui.handleNotify(msg);
 
         // Stop if you're at the current turn
-        if (msg.data.type === 'turn' && msg.data.num === globals.replayTurn) {
+        if (msg.type === 'turn' && msg.num === globals.replayTurn) {
             break;
         }
     }

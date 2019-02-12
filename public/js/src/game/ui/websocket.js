@@ -6,6 +6,7 @@
 const globals = require('./globals');
 const constants = require('../../constants');
 const notes = require('./notes');
+const notify = require('./notify');
 const replay = require('./replay');
 const timer = require('./timer');
 
@@ -91,10 +92,7 @@ commands.init = (data) => {
 // Used when the game state changes
 commands.notify = (data) => {
     // We need to save this game state change for the purposes of the in-game replay
-    globals.replayLog.push({
-        type: 'notify',
-        data,
-    });
+    globals.replayLog.push(data);
     if (data.type === 'turn') {
         globals.replayMax = data.num;
     }
@@ -243,14 +241,7 @@ commands.replayLeader = (data) => {
 
 // This is used in shared replays to make hypothetical game states
 commands.replayMorph = (data) => {
-    if (globals.sharedReplayLeader === globals.lobby.username) {
-        // We don't have to reveal anything;
-        // we already did it manually immediately after sending the "replayAction" message
-        return;
-    }
-
-    globals.lobby.ui.handleNotify({
-        type: 'reveal',
+    notify.reveal({
         which: {
             order: data.order,
             rank: data.rank,
