@@ -253,6 +253,13 @@ function HanabiUI(lobby, game) {
         && pos.y <= playArea.getY() + playArea.getHeight()
     );
 
+    this.overDiscardArea = pos => (
+        pos.x >= discardArea.getX()
+        && pos.y >= discardArea.getY()
+        && pos.x <= discardArea.getX() + discardArea.getWidth()
+        && pos.y <= discardArea.getY() + discardArea.getHeight()
+    );
+
     this.buildUI = function buildUI() {
         let x;
         let y;
@@ -2625,7 +2632,6 @@ function HanabiUI(lobby, game) {
         pos.x += this.getWidth() * this.getScaleX() / 2;
         pos.y += this.getHeight() * this.getScaleY() / 2;
 
-        // Figure out if it currently our turn
         if (ui.overPlayArea(pos)) {
             const action = {
                 type: 'action',
@@ -2635,16 +2641,8 @@ function HanabiUI(lobby, game) {
                 },
             };
             ui.endTurn(action);
-            if (globals.ourTurn) {
-                this.setDraggable(false);
-            }
-        } else if (
-            pos.x >= discardArea.getX()
-            && pos.y >= discardArea.getY()
-            && pos.x <= discardArea.getX() + discardArea.getWidth()
-            && pos.y <= discardArea.getY() + discardArea.getHeight()
-            && ui.currentClues !== 8
-        ) {
+            this.setDraggable(false);
+        } else if (ui.overDiscardArea(pos) && ui.currentClues !== 8) {
             const action = {
                 type: 'action',
                 data: {
@@ -2653,10 +2651,9 @@ function HanabiUI(lobby, game) {
                 },
             };
             ui.endTurn(action);
-            if (globals.ourTurn) {
-                this.setDraggable(false);
-            }
+            this.setDraggable(false);
         } else {
+            // The card was dragged to an invalid location; tween it back to the hand
             globals.elements.playerHands[globals.playerUs].doLayout();
         }
     };
