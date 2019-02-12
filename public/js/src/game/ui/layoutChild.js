@@ -11,8 +11,6 @@ const LayoutChild = function LayoutChild(config) {
 Kinetic.Util.extend(LayoutChild, Kinetic.Group);
 
 LayoutChild.prototype.add = function add(child) {
-    const self = this;
-
     Kinetic.Group.prototype.add.call(this, child);
     this.setWidth(child.getWidth());
     this.setHeight(child.getHeight());
@@ -21,9 +19,9 @@ LayoutChild.prototype.add = function add(child) {
         if (event.oldVal === event.newVal) {
             return;
         }
-        self.setWidth(event.newVal);
-        if (self.parent) {
-            self.parent.doLayout();
+        this.setWidth(event.newVal);
+        if (this.parent) {
+            this.parent.doLayout();
         }
     });
 
@@ -31,9 +29,9 @@ LayoutChild.prototype.add = function add(child) {
         if (event.oldVal === event.newVal) {
             return;
         }
-        self.setHeight(event.newVal);
-        if (self.parent) {
-            self.parent.doLayout();
+        this.setHeight(event.newVal);
+        if (this.parent) {
+            this.parent.doLayout();
         }
     });
 };

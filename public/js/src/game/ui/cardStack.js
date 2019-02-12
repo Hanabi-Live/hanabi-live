@@ -29,14 +29,12 @@ CardStack.prototype._setChildrenIndices = function _setChildrenIndices() {
 };
 
 CardStack.prototype.doLayout = function doLayout() {
-    const self = this;
-
     const lh = this.getHeight();
 
     const hideUnder = () => {
-        const n = self.children.length;
+        const n = this.children.length;
         for (let i = 0; i < n; i++) {
-            const node = self.children[i];
+            const node = this.children[i];
 
             if (!node.tween) {
                 continue;
@@ -47,10 +45,10 @@ CardStack.prototype.doLayout = function doLayout() {
             }
         }
         for (let i = 0; i < n - 1; i++) {
-            self.children[i].setVisible(false);
+            this.children[i].setVisible(false);
         }
         if (n > 0) {
-            self.children[n - 1].setVisible(true);
+            this.children[n - 1].setVisible(true);
         }
     };
 

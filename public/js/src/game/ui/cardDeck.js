@@ -99,8 +99,6 @@ const CardDeck = function CardDeck(config) {
 Kinetic.Util.extend(CardDeck, Kinetic.Group);
 
 CardDeck.prototype.add = function add(child) {
-    const self = this;
-
     Kinetic.Group.prototype.add.call(this, child);
 
     if (child instanceof LayoutChild) {
@@ -121,7 +119,7 @@ CardDeck.prototype.add = function add(child) {
         }).play();
 
         child.tween.onFinish = () => {
-            if (child.parent === self) {
+            if (child.parent === this) {
                 child.remove();
             }
         };

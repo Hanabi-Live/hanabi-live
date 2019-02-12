@@ -126,7 +126,8 @@ HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
     // Draw the user interface
     buildUI();
 
-    keyboard.init(); // Keyboard hotkeys can only be initialized once the clue buttons are drawn
+    // Keyboard hotkeys can only be initialized once the clue buttons are drawn
+    keyboard.init();
 
     // Tell the server that we are finished loading
     globals.ready = true;
