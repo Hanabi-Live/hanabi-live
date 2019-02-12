@@ -33,7 +33,7 @@ module.exports = (grunt) => {
                     '../css/lib/solid.min.css',
                     '../css/lib/tooltipster.bundle.min.css',
                     '../css/lib/tooltipster-sideTip-shadow.min.css',
-                    '../css/alpha.css',
+                    '../css/lib/alpha.css',
                     '../css/hanabi.css',
                 ],
                 dest: '../css/main.css',
