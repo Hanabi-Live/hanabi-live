@@ -109,10 +109,12 @@ CardLayout.prototype.doLayout = function doLayout() {
                     runonce: true,
                     /* eslint-disable no-loop-func */
                     onFinish: () => {
+                        node.tween.destroy();
+                        node.tween = null;
+                        node.checkSetDraggable();
                         if (storedPostAnimationLayout !== null) {
                             storedPostAnimationLayout();
                         }
-                        node.checkSetDraggable();
                     },
                     /* eslint-enable */
                 }).play();
