@@ -24,20 +24,16 @@ function HanabiUI(lobby, game) {
     notes.init();
     timer.init();
 
-    globals.lobby = lobby;
-    globals.game = game;
+    // Store references to the parent objects for later use
+    globals.lobby = lobby; // This is the "globals.js" in the root of the "src" directory
+    // It we name it "lobby" here to distinguish it from the UI globals;
+    // after more refactoring, we will eventually merge these objects to make it less confusing
+    globals.game = game; // This is the "game.js" in the root of the "game" directory
+    // We should also combine this with the UI object in the future
 
     // Eventually, we should refactor everything out of "ui.js" and remove all "ui" references
-    // (this is how the code worked pre-Browserify)
+    // (pre-Browserify, everything was in the HanabiUI class)
     const ui = this;
-
-    const {
-        ACT,
-        CARDW,
-        CLUE_TYPE,
-        INDICATOR,
-        SUIT,
-    } = constants;
 
     /*
         Misc. UI objects
@@ -51,10 +47,10 @@ function HanabiUI(lobby, game) {
             value: clueValue,
         } = clue;
         let msgClueValue;
-        if (clueType === CLUE_TYPE.COLOR) {
+        if (clueType === constants.CLUE_TYPE.COLOR) {
             const clueColor = clueValue;
             msgClueValue = variant.clueColors.findIndex(color => color === clueColor);
-        } else if (clueType === CLUE_TYPE.RANK) {
+        } else if (clueType === constants.CLUE_TYPE.RANK) {
             msgClueValue = clueValue;
         }
         return {
@@ -68,9 +64,9 @@ function HanabiUI(lobby, game) {
             value: msgClueValue,
         } = msgClue;
         let clueValue;
-        if (clueType === CLUE_TYPE.COLOR) {
+        if (clueType === constants.CLUE_TYPE.COLOR) {
             clueValue = variant.clueColors[msgClueValue];
-        } else if (clueType === CLUE_TYPE.RANK) {
+        } else if (clueType === constants.CLUE_TYPE.RANK) {
             clueValue = msgClueValue;
         }
         return new Clue(clueType, clueValue);
@@ -109,19 +105,19 @@ function HanabiUI(lobby, game) {
 
             let touched = false;
             let color;
-            if (clue.type === CLUE_TYPE.RANK) {
+            if (clue.type === constants.CLUE_TYPE.RANK) {
                 if (
                     clue.value === card.trueRank
                     || (globals.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
                 ) {
                     touched = true;
-                    color = INDICATOR.POSITIVE;
+                    color = constants.INDICATOR.POSITIVE;
                 }
-            } else if (clue.type === CLUE_TYPE.COLOR) {
+            } else if (clue.type === constants.CLUE_TYPE.COLOR) {
                 const clueColor = clue.value;
                 if (
-                    card.trueSuit === SUIT.RAINBOW
-                    || card.trueSuit === SUIT.RAINBOW1OE
+                    card.trueSuit === constants.SUIT.RAINBOW
+                    || card.trueSuit === constants.SUIT.RAINBOW1OE
                     || card.trueSuit.clueColors.includes(clueColor)
                 ) {
                     touched = true;
@@ -231,7 +227,7 @@ function HanabiUI(lobby, game) {
         const action = {
             type: 'action',
             data: {
-                type: ACT.CLUE,
+                type: constants.ACT.CLUE,
                 target: target.targetIndex,
                 clue: clueToMsgClue(clueButton.clue, globals.variant),
             },
@@ -379,7 +375,7 @@ function HanabiUI(lobby, game) {
             child.setAbsolutePosition(pos);
             child.setRotation(-globals.elements.playerHands[data.who].getRotation());
 
-            const scale = globals.elements.drawDeck.cardback.getWidth() / CARDW;
+            const scale = globals.elements.drawDeck.cardback.getWidth() / constants.CARDW;
             child.setScale({
                 x: scale,
                 y: scale,
@@ -515,7 +511,7 @@ function HanabiUI(lobby, game) {
                 let color;
                 if (clue.type === 0) {
                     // Number (rank) clues
-                    color = INDICATOR.POSITIVE;
+                    color = constants.INDICATOR.POSITIVE;
                 } else {
                     // Color clues
                     color = clue.value.hexCode;
@@ -542,7 +538,7 @@ function HanabiUI(lobby, game) {
             }
 
             let clueName;
-            if (data.clue.type === CLUE_TYPE.RANK) {
+            if (data.clue.type === constants.CLUE_TYPE.RANK) {
                 clueName = clue.value.toString();
             } else {
                 clueName = clue.value.name;
@@ -925,12 +921,12 @@ function HanabiUI(lobby, game) {
         // Either show or hide the arrow (if it is already visible)
         const visible = !(
             indicated.indicatorArrow.visible()
-            && indicated.indicatorArrow.getFill() === INDICATOR.REPLAY_LEADER
+            && indicated.indicatorArrow.getFill() === constants.INDICATOR.REPLAY_LEADER
         );
         // (if the arrow is showing but is a different kind of arrow,
         // then just overwrite the existing arrow)
         globals.lobby.ui.showClueMatch(-1);
-        indicated.setIndicator(visible, INDICATOR.REPLAY_LEADER);
+        indicated.setIndicator(visible, constants.INDICATOR.REPLAY_LEADER);
     };
 
     this.stopAction = () => {
@@ -1036,7 +1032,7 @@ function HanabiUI(lobby, game) {
                 || globals.emptyClues
                 // Make an exception for the "Color Blind" variants (color clues touch no cards)
                 || (globals.variant.name.startsWith('Color Blind')
-                    && clueButton.clue.type === CLUE_TYPE.COLOR)
+                    && clueButton.clue.type === constants.CLUE_TYPE.COLOR)
                 // Make an exception for certain characters
                 || (globals.characterAssignments[globals.playerUs] === 'Blind Spot'
                     && who === (globals.playerUs + 1) % globals.playerNames.length)
