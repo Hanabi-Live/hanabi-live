@@ -92,23 +92,19 @@ List of Features
 * The current leader can be seen by hovering over the "👑" icon in the bottom right-hand corner.
 * The leader role can be transfered by right-clicking on the crown.
 
-### Game Statistics
+#### Game Statistics
 
 * Some statistics are shown on the right hand side of the screen to show how well the game is going.
-
-#### Pace
-
-* You can think of Hanabi as a race to play all of the cards before the deck runs out. It is useful to track how close to the end of the race you are.
-* Pace is a measure of the amount of discards that can happen while still having a chance to get the maximum score.
-* Pace is calculated with the following formula: `current score + cards in deck + number of players - maximum score`
-
-#### Efficiency
-
-* In Hanabi, you want to be as efficient as possible with the limited number of clues that you have. It is useful to track how well the team is doing with regards to this.
-* Efficiency is calculated with the following formula: `number of clues given / (number of cards played + number of unplayed cards with one or more clues "on" them)`
-* This measure of efficiency assumes *Good Touch Principle* - that all clued cards will eventually be played. If your team does not play with *Good Touch Principle*, then these numbers won't really be useful.
-* The numerator (first number) shows the efficiency of the current game.
-* The denominator (second number) shows the minimum possible efficiency needed to win with the current number of players and the current variant.
+* Pace:
+  * You can think of Hanabi as a race to play all of the cards before the deck runs out. It is useful to track how close to the end of the race you are.
+  * Pace is a measure of the amount of discards that can happen while still having a chance to get the maximum score.
+  * Pace is calculated with the following formula: `current score + cards in deck + number of players - maximum score`
+* Efficiency:
+  * In Hanabi, you want to be as efficient as possible with the limited number of clues that you have. It is useful to track how well the team is doing with regards to this.
+  * Efficiency is calculated with the following formula: `number of clues given / (number of cards played + number of unplayed cards with one or more clues "on" them)`
+  * This measure of efficiency assumes *Good Touch Principle* - that all clued cards will eventually be played. If your team does not play with *Good Touch Principle*, then these numbers won't really be useful.
+  * The numerator (first number) shows the efficiency of the current game.
+  * The denominator (second number) shows the minimum possible efficiency needed to win with the current number of players and the current variant.
 
 <br />
 
