@@ -58,7 +58,7 @@ List of Features
   * Alt + Right-click --> cm
     * "cm" is a common abbreviation for "this card is *Chop Moved*".
   * Ctrl + Shift + Right-click --> [previously entered note]
-    * If you need to put the same note on multiple cards, enter the note once on the first card, and then use this hotkey on the rest of the cards.
+    * If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
 
 #### Spectators
 
