@@ -28,10 +28,6 @@ function HanabiUI(lobby, game) {
     globals.game = game; // This is the "game.js" in the root of the "game" directory
     // We should also combine this with the UI object in the future
 
-    // Eventually, we should refactor everything out of "ui.js" and remove all "ui" references
-    // (pre-Browserify, everything was in the HanabiUI class)
-    const ui = this;
-
     /*
         Misc. functions
     */
@@ -228,7 +224,7 @@ function HanabiUI(lobby, game) {
                 clue: this.clueToMsgClue(clueButton.clue, globals.variant),
             },
         };
-        ui.endTurn(action);
+        globals.lobby.ui.endTurn(action);
     };
 
     function showLoading() {
@@ -306,8 +302,8 @@ function HanabiUI(lobby, game) {
 
     this.endTurn = function endTurn(action) {
         if (globals.ourTurn) {
-            ui.sendMsg(action);
-            ui.stopAction();
+            globals.lobby.ui.sendMsg(action);
+            globals.lobby.ui.stopAction();
             globals.savedAction = null;
         } else {
             globals.queuedAction = action;
