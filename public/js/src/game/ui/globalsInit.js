@@ -68,37 +68,58 @@ module.exports = () => {
     globals.ImageLoader = null;
     globals.stage = null;
     globals.layers = {
+        background: null,
+        card: null,
         UI: null,
-        timer: null,
         overtop: null, // A layer drawn overtop everything else
+        text: null,
+        timer: null,
     };
     globals.elements = {
         // The main screen
         stageFade: null,
+        playArea: null,
         playStacks: new Map(),
+        discardArea: null,
         discardStacks: new Map(),
         playerHands: [],
+        nameFrames: [],
         messagePrompt: null, // The truncated action log
+        replayButton: null,
         chatButton: null,
         drawDeck: null,
         deckPlayAvailableLabel: null,
 
-        // The right-most column of the main screen
+        // Extra elements on the right-hand side + the bottom
         clueLog: null,
         paceNumberLabel: null,
         efficiencyNumberLabel: null,
+        noDiscardLabel: null,
+        noDoubleDiscardLabel: null,
+        scoreArea: null,
+        turnNumberLabel: null,
+        scoreNumberLabel: null,
+        cluesNumberLabel: null,
         strikes: [],
+        spectatorsLabel: null,
+        spectatorsNumLabel: null,
+        sharedReplayLeaderLabel: null,
+        sharedReplayLeaderLabelPulse: null,
 
         // The clue UI
+        clueArea: null,
         clueTargetButtonGroup: null,
         clueButtonGroup: null,
         rankClueButtons: null,
         suitClueButtons: null,
         giveClueButton: null,
+        noClueBox: null,
+        noClueLabel: null,
 
         // The replay screen
         replayArea: null,
         replayShuttleShared: null,
+        replayExitButton: null,
 
         // Other screens
         msgLogGroup: null, // The full action log

@@ -7,8 +7,10 @@
 // Runs each time the DOM window resize event fires
 // Resets the canvas dimensions to match window,
 // then draws the new borders accordingly
+
 /*
 // window.addEventListener('resize', resizeCanvas, false);
+
 const resizeCanvas = () => {
     $('canvas').each((index, canvas) => {
         canvas.width = window.innerWidth;
@@ -18,6 +20,7 @@ const resizeCanvas = () => {
     });
     redraw();
 }
+
 const redraw = () => {
     const self = globals.lobby.ui;
 
@@ -101,11 +104,8 @@ const redraw = () => {
     messagePrompt.refreshText();
 
     // Redraw all layers
-    bgLayer.draw();
-    textLayer.draw();
-    globals.layers.UI.draw();
-    globals.layers.timer.draw();
-    globals.layers.card.draw();
-    overLayer.draw();
+    for (const layer of globals.layers) {
+        layer.draw();
+    }
 }
 */
