@@ -2478,8 +2478,8 @@ function HanabiUI(lobby, game) {
         // (but we need to keep them draggable if the pre-play setting is enabled)
         if (!globals.lobby.settings.speedrunPreplay) {
             const ourHand = globals.elements.playerHands[globals.playerUs];
-            for (let i = 0; i < ourHand.children.length; i++) {
-                const child = ourHand.children[i]; // This is a LayoutChild
+            for (const child of ourHand.children) {
+                // This is a LayoutChild
                 child.off('dragend.play');
                 child.setDraggable(false);
             }
@@ -2533,9 +2533,7 @@ function HanabiUI(lobby, game) {
         if (!globals.lobby.settings.speedrunPreplay) {
             const ourHand = globals.elements.playerHands[globals.playerUs];
             for (const child of ourHand.children) {
-                // TODO check for tweening
-                child.setDraggable(true);
-                child.on('dragend.play', this.dragendPlay);
+                child.checkSetDraggable();
             }
         }
 
@@ -2581,38 +2579,6 @@ function HanabiUI(lobby, game) {
 
         globals.elements.clueTargetButtonGroup.on('change', checkClueLegal);
         globals.elements.clueButtonGroup.on('change', checkClueLegal);
-    };
-
-    this.dragendPlay = function dragendPlay() {
-        // "this" is a LayoutChild
-        const pos = this.getAbsolutePosition();
-
-        pos.x += this.getWidth() * this.getScaleX() / 2;
-        pos.y += this.getHeight() * this.getScaleY() / 2;
-
-        let draggedTo = null;
-        if (ui.overPlayArea(pos)) {
-            draggedTo = 'playArea';
-        } else if (ui.overDiscardArea(pos) && ui.currentClues !== 8) {
-            draggedTo = 'discardArea';
-        }
-        if (draggedTo === null) {
-            // The card was dragged to an invalid location; tween it back to the hand
-            globals.elements.playerHands[globals.playerUs].doLayout();
-            return;
-        }
-
-        ui.endTurn({
-            type: 'action',
-            data: {
-                type: (draggedTo === 'playArea' ? ACT.PLAY : ACT.DISCARD),
-                target: this.children[0].order,
-            },
-        });
-        this.setDraggable(false);
-
-        // We have to unregister the handler or else it will send multiple actions for one drag
-        this.off('dragend.play', this.dragendPlay);
     };
 
     this.setMessage = (msg) => {

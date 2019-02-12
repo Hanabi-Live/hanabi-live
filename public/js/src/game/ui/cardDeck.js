@@ -24,6 +24,8 @@ const CardDeck = function CardDeck(config) {
         pos.y += this.getHeight() * this.getScaleY() / 2;
 
         if (globals.lobby.ui.overPlayArea(pos)) {
+            // We need to remove the card from the screen once the animtion is finished
+            // (otherwise, the card will be stuck in the in-game replay)
             globals.postAnimationLayout = () => {
                 this.parent.doLayout();
                 globals.postAnimationLayout = null;

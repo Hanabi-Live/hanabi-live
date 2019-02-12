@@ -95,7 +95,7 @@ CardLayout.prototype.doLayout = function doLayout() {
                 node.setScaleX(scale);
                 node.setScaleY(scale);
                 node.setRotation(0);
-                node.setSpeedrunDraggable();
+                node.checkSetDraggable();
             } else {
                 // Animate the card leaving the deck
                 node.tween = new Kinetic.Tween({
@@ -112,7 +112,7 @@ CardLayout.prototype.doLayout = function doLayout() {
                         if (storedPostAnimationLayout !== null) {
                             storedPostAnimationLayout();
                         }
-                        node.setSpeedrunDraggable();
+                        node.checkSetDraggable();
                     },
                     /* eslint-enable */
                 }).play();

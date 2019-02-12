@@ -19,7 +19,7 @@ module.exports = () => {
     globals.variant = null;
     globals.playerUs = -1;
     globals.spectating = false;
-    globals.replay = false;
+    globals.replay = false; // True if a solo or shared replay
     globals.sharedReplay = false;
 
     // Optional game settings
