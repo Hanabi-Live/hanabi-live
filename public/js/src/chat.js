@@ -5,6 +5,9 @@
 // Imports
 const globals = require('./globals');
 
+// Variables
+let chatLineNum = 1;
+
 $(document).ready(() => {
     const input1 = $('#lobby-chat-input');
     input1.on('keypress', send('lobby', input1));
@@ -32,7 +35,7 @@ const send = (room, input) => (event) => {
     });
 };
 
-exports.add = (data) => {
+exports.add = (data, fast = false) => {
     let chat;
     if (data.room === 'lobby') {
         chat = $('#lobby-chat-text');
@@ -55,7 +58,7 @@ exports.add = (data) => {
         },
     ).format(new Date(data.datetime));
 
-    let line = `<span>[${datetime}]&nbsp; `;
+    let line = `<span id="chat-line-${chatLineNum}" class="${fast ? '' : 'hidden'}">[${datetime}]&nbsp; `;
     if (data.server) {
         line += data.msg;
     } else if (data.who) {
@@ -66,11 +69,26 @@ exports.add = (data) => {
     }
     line += '</span><br />';
 
-    chat.finish();
+    // Find out if we should automatically scroll down after adding the new line of chat
+    // https://stackoverflow.com/questions/6271237/detecting-when-user-scrolls-to-bottom-of-div-with-jquery
+    // If we are already scrolled to the bottom, then it is ok to automatically scroll
+    let autoScroll = false;
+    if (chat.scrollTop() + Math.ceil(chat.innerHeight()) >= chat[0].scrollHeight) {
+        autoScroll = true;
+    }
+
+    // Add the new line and fade it in
     chat.append(line);
-    chat.animate({
-        scrollTop: chat[0].scrollHeight,
-    }, globals.fadeTime);
+    $(`#chat-line-${chatLineNum}`).fadeIn(globals.fadeTime);
+    chatLineNum += 1;
+
+    // Automatically scroll down
+    if (autoScroll) {
+        chat.animate({
+            scrollTop: chat[0].scrollHeight,
+        }, (fast ? 0 : 500));
+    }
+    console.log(fast);
 };
 
 const fillEmotes = (message) => {
