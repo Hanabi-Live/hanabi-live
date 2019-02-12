@@ -10,7 +10,6 @@ package main
 
 import (
 	"strconv"
-	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
 )
@@ -82,13 +81,6 @@ func commandGameJoin(s *Session, d *CommandData) {
 		stats = v
 	}
 
-	// In non-timed games, start each player with 0 "time left"
-	// It will decrement into negative numbers to show how much time they are taking
-	timeBase := time.Duration(0)
-	if g.Options.Timed {
-		timeBase = time.Duration(g.Options.BaseTime) * time.Second
-	}
-
 	p := &Player{
 		ID:    s.UserID(),
 		Name:  s.Username(),
@@ -96,12 +88,13 @@ func commandGameJoin(s *Session, d *CommandData) {
 		// We have not added this player to the slice yet, so this should be 0 initially
 		Present: true,
 		Stats:   stats,
-		Time:    timeBase,
+		// Time will get initialized below
 		// Notes will get initialized after the deck is created in "commandGameStart.go"
 		CharacterMetadata:  -1,
 		CharacterMetadata2: -1,
 		Session:            s,
 	}
+	p.InitTime(g)
 	g.Players = append(g.Players, p)
 	notifyAllTable(g)
 	g.NotifyPlayerChange()

@@ -27,6 +27,15 @@ type Player struct {
 	Session *Session
 }
 
+func (p *Player) InitTime(g *Game) {
+	// In non-timed games, start each player with 0 "time left"
+	// It will decrement into negative numbers to show how much time they are taking
+	p.Time = time.Duration(0)
+	if g.Options.Timed {
+		p.Time = time.Duration(g.Options.BaseTime) * time.Second
+	}
+}
+
 /*
 	Main functions, relating to in-game actions
 */

@@ -485,6 +485,12 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 
 			// Stop if we have reached the intended turn
 			if actionTurn.Num == g.Options.SetReplayTurn {
+				// We have to reset all of the player's clocks before we proceed
+				// to avoid some bugs relating to taking super-fast turns
+				for _, p := range g.Players {
+					p.InitTime(g)
+				}
+
 				return true
 			}
 		}

@@ -58,6 +58,8 @@ const HanabiCard = function HanabiCard(config) {
     });
     this.add(this.bare);
 
+    this.holder = config.holder;
+
     this.trueSuit = config.suit || undefined;
     this.trueRank = config.rank || undefined;
     this.suitKnown = function suitKnown() {
@@ -329,7 +331,7 @@ const HanabiCard = function HanabiCard(config) {
     this.on('click tap', this.click);
 
     // Hide clue arrows ahead of user dragging their card
-    if (config.holder === globals.playerUs && !globals.replay && !globals.spectating) {
+    if (this.holder === globals.playerUs && !globals.replay && !globals.spectating) {
         this.on('mousedown', (event) => {
             if (
                 event.evt.which !== 1 // Dragging uses left click
@@ -385,7 +387,7 @@ const HanabiCard = function HanabiCard(config) {
         globals.layers.card.batchDraw();
         return toggledPips;
     };
-    if (config.holder !== globals.playerUs || globals.inReplay || globals.spectating) {
+    if (this.holder !== globals.playerUs || globals.inReplay || globals.spectating) {
         const mouseButton = 1; // Left-click
         let toggledPips = [];
         this.on('mousedown', (event) => {

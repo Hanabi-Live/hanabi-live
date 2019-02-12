@@ -230,8 +230,6 @@ function HanabiUI(lobby, game) {
     let sharedReplayLeaderLabel;
     let sharedReplayLeaderLabelPulse;
     const nameFrames = [];
-    const playStacks = new Map();
-    const discardStacks = new Map();
     let playArea;
     let discardArea;
     let clueLogRect;
@@ -850,7 +848,7 @@ function HanabiUI(lobby, game) {
                     width: width * winW,
                     height: height * winH,
                 });
-                playStacks.set(suit, thisSuitPlayStack);
+                globals.elements.playStacks.set(suit, thisSuitPlayStack);
                 globals.layers.card.add(thisSuitPlayStack);
 
                 const thisSuitDiscardStack = new CardLayout({
@@ -859,7 +857,7 @@ function HanabiUI(lobby, game) {
                     width: 0.17 * winW,
                     height: 0.17 * winH,
                 });
-                discardStacks.set(suit, thisSuitDiscardStack);
+                globals.elements.discardStacks.set(suit, thisSuitDiscardStack);
                 globals.layers.card.add(thisSuitDiscardStack);
 
                 // Draw the suit name next to each suit
@@ -1770,38 +1768,6 @@ function HanabiUI(lobby, game) {
         ui.endTurn(action);
     };
 
-    this.reset = function reset() {
-        globals.elements.messagePrompt.setMultiText('');
-        globals.elements.msgLogGroup.reset();
-
-        const { suits } = globals.variant;
-
-        for (const suit of suits) {
-            playStacks.get(suit).removeChildren();
-            discardStacks.get(suit).removeChildren();
-        }
-
-        for (let i = 0; i < globals.playerNames.length; i++) {
-            globals.elements.playerHands[i].removeChildren();
-        }
-
-        globals.deck = [];
-        globals.postAnimationLayout = null;
-
-        globals.elements.clueLog.clear();
-        globals.elements.messagePrompt.reset();
-
-        // This should always be overridden before it gets displayed
-        globals.elements.drawDeck.setCount(0);
-
-        for (let i = 0; i < globals.elements.strikes.length; i++) {
-            globals.elements.strikes[i].remove();
-        }
-        globals.elements.strikes = [];
-
-        globals.animateFast = true;
-    };
-
     this.saveReplay = function saveReplay(msg) {
         const msgData = msg.data;
 
@@ -1950,19 +1916,6 @@ function HanabiUI(lobby, game) {
 
             globals.elements.playerHands[data.who].add(child);
             globals.elements.playerHands[data.who].moveToTop();
-
-            // Adding speedrun code; make all cards in our hand draggable from the get-go
-            // (except for cards we have already played or discarded)
-            if (
-                globals.lobby.settings.speedrunPreplay
-                && data.who === globals.playerUs
-                && !globals.replay
-                && !globals.spectating
-                && !globals.learnedCards[data.order].revealed
-            ) {
-                child.setDraggable(true);
-                child.on('dragend.play', dragendPlay);
-            }
         } else if (type === 'drawSize') {
             globals.deckSize = data.size;
             globals.elements.drawDeck.setCount(data.size);
@@ -1999,8 +1952,8 @@ function HanabiUI(lobby, game) {
                 card.isPlayed = true;
                 card.turnPlayed = globals.turn - 1;
 
-                playStacks.get(suit).add(child);
-                playStacks.get(suit).moveToTop();
+                globals.elements.playStacks.get(suit).add(child);
+                globals.elements.playStacks.get(suit).moveToTop();
 
                 if (!card.isClued()) {
                     stats.updateEfficiency(1);
@@ -2009,8 +1962,8 @@ function HanabiUI(lobby, game) {
                 card.isDiscarded = true;
                 card.turnDiscarded = globals.turn - 1;
 
-                discardStacks.get(suit).add(child);
-                for (const discardStack of discardStacks) {
+                globals.elements.discardStacks.get(suit).add(child);
+                for (const discardStack of globals.elements.discardStacks) {
                     if (discardStack[1]) {
                         discardStack[1].moveToTop();
                     }
@@ -2331,6 +2284,10 @@ function HanabiUI(lobby, game) {
         } else if (type === 'boot') {
             timer.stop();
             globals.game.hide();
+        } else if (type === 'deckOrder') {
+            // TODO
+        } else {
+            console.log('Received an invalid notify message:', type);
         }
     };
 
@@ -2522,7 +2479,7 @@ function HanabiUI(lobby, game) {
         if (!globals.lobby.settings.speedrunPreplay) {
             const ourHand = globals.elements.playerHands[globals.playerUs];
             for (let i = 0; i < ourHand.children.length; i++) {
-                const child = ourHand.children[i];
+                const child = ourHand.children[i]; // This is a LayoutChild
                 child.off('dragend.play');
                 child.setDraggable(false);
             }
@@ -2575,10 +2532,10 @@ function HanabiUI(lobby, game) {
         // as the hand will already be draggable)
         if (!globals.lobby.settings.speedrunPreplay) {
             const ourHand = globals.elements.playerHands[globals.playerUs];
-            for (let i = 0; i < ourHand.children.length; i++) {
-                const child = ourHand.children[i];
+            for (const child of ourHand.children) {
+                // TODO check for tweening
                 child.setDraggable(true);
-                child.on('dragend.play', dragendPlay);
+                child.on('dragend.play', this.dragendPlay);
             }
         }
 
@@ -2626,36 +2583,36 @@ function HanabiUI(lobby, game) {
         globals.elements.clueButtonGroup.on('change', checkClueLegal);
     };
 
-    const dragendPlay = function dragendPlay() {
+    this.dragendPlay = function dragendPlay() {
+        // "this" is a LayoutChild
         const pos = this.getAbsolutePosition();
 
         pos.x += this.getWidth() * this.getScaleX() / 2;
         pos.y += this.getHeight() * this.getScaleY() / 2;
 
+        let draggedTo = null;
         if (ui.overPlayArea(pos)) {
-            const action = {
-                type: 'action',
-                data: {
-                    type: ACT.PLAY,
-                    target: this.children[0].order,
-                },
-            };
-            ui.endTurn(action);
-            this.setDraggable(false);
+            draggedTo = 'playArea';
         } else if (ui.overDiscardArea(pos) && ui.currentClues !== 8) {
-            const action = {
-                type: 'action',
-                data: {
-                    type: ACT.DISCARD,
-                    target: this.children[0].order,
-                },
-            };
-            ui.endTurn(action);
-            this.setDraggable(false);
-        } else {
+            draggedTo = 'discardArea';
+        }
+        if (draggedTo === null) {
             // The card was dragged to an invalid location; tween it back to the hand
             globals.elements.playerHands[globals.playerUs].doLayout();
+            return;
         }
+
+        ui.endTurn({
+            type: 'action',
+            data: {
+                type: (draggedTo === 'playArea' ? ACT.PLAY : ACT.DISCARD),
+                target: this.children[0].order,
+            },
+        });
+        this.setDraggable(false);
+
+        // We have to unregister the handler or else it will send multiple actions for one drag
+        this.off('dragend.play', this.dragendPlay);
     };
 
     this.setMessage = (msg) => {
@@ -2785,6 +2742,8 @@ HanabiUI.prototype.handleMessage = function handleMessage(msgType, msgData) {
         }
 
         globals.game.sounds.play(msgData.sound);
+    } else {
+        console.error('Received an invalid message:', msgType);
     }
 };
 

@@ -1,3 +1,6 @@
+// Imports
+const globals = require('./globals');
+
 const LayoutChild = function LayoutChild(config) {
     Kinetic.Group.call(this, config);
 
@@ -32,6 +35,23 @@ LayoutChild.prototype.add = function add(child) {
             self.parent.doLayout();
         }
     });
+};
+
+LayoutChild.prototype.setSpeedrunDraggable = function setSpeedrunDraggable() {
+    // If we have the "Enable pre-playing cards" feature enabled,
+    // make all cards in our hand draggable from the get-go
+    // (except for cards we have already played or discarded)
+    const card = this.children[0];
+    if (
+        globals.lobby.settings.speedrunPreplay
+        && card.holder === globals.playerUs
+        && !globals.replay
+        && !globals.spectating
+        && !globals.learnedCards[card.order].revealed
+    ) {
+        this.setDraggable(true);
+        this.on('dragend.play', globals.lobby.ui.dragendPlay);
+    }
 };
 
 module.exports = LayoutChild;

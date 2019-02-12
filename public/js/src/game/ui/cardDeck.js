@@ -25,7 +25,7 @@ const CardDeck = function CardDeck(config) {
 
         if (globals.lobby.ui.overPlayArea(pos)) {
             globals.postAnimationLayout = () => {
-                this.doLayout();
+                this.parent.doLayout();
                 globals.postAnimationLayout = null;
             };
 

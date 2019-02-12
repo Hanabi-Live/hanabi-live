@@ -86,7 +86,7 @@ const goto = (target, fast) => {
     }
 
     if (rewind) {
-        globals.lobby.ui.reset();
+        reset();
         globals.replayPos = 0;
     }
 
@@ -116,6 +116,38 @@ const goto = (target, fast) => {
     globals.layers.UI.draw();
 };
 exports.goto = goto;
+
+const reset = function reset() {
+    globals.elements.messagePrompt.setMultiText('');
+    globals.elements.msgLogGroup.reset();
+
+    const { suits } = globals.variant;
+
+    for (const suit of suits) {
+        globals.elements.playStacks.get(suit).removeChildren();
+        globals.elements.discardStacks.get(suit).removeChildren();
+    }
+
+    for (let i = 0; i < globals.playerNames.length; i++) {
+        globals.elements.playerHands[i].removeChildren();
+    }
+
+    globals.deck = [];
+    globals.postAnimationLayout = null;
+
+    globals.elements.clueLog.clear();
+    globals.elements.messagePrompt.reset();
+
+    // This should always be overridden before it gets displayed
+    globals.elements.drawDeck.setCount(0);
+
+    for (let i = 0; i < globals.elements.strikes.length; i++) {
+        globals.elements.strikes[i].remove();
+    }
+    globals.elements.strikes = [];
+
+    globals.animateFast = true;
+};
 
 /*
     The 4 replay button functions

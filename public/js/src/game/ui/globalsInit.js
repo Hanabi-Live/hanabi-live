@@ -75,6 +75,8 @@ module.exports = () => {
     globals.elements = {
         // The main screen
         stageFade: null,
+        playStacks: new Map(),
+        discardStacks: new Map(),
         playerHands: [],
         messagePrompt: null, // The truncated action log
         chatButton: null,
