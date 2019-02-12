@@ -36,9 +36,6 @@ function HanabiUI(lobby, game) {
     // (pre-Browserify, everything was in the HanabiUI class)
     const ui = this;
 
-    // Initialize all of the message commands and notify commands
-    // TODO
-
     /*
         Misc. UI objects
     */

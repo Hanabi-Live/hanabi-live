@@ -203,26 +203,18 @@ commands.notifyList = (dataList) => {
 // This is used in shared replays to highlight a specific card
 commands.replayIndicator = (data) => {
     if (globals.sharedReplayLeader === globals.lobby.username) {
-        // We don't have to draw any arrows;
+        // We don't have to draw any indicator arrows;
         // we already did it manually immediately after sending the "replayAction" message
         return;
     }
 
     // Ensure that the card exists as a sanity-check
-    const indicated = globals.deck[data.order];
-    if (!indicated) {
+    const card = globals.deck[data.order];
+    if (!card) {
         return;
     }
 
-    // Either show or hide the arrow (if it is already visible)
-    const visible = !(
-        indicated.indicatorArrow.visible()
-        && indicated.indicatorArrow.getFill() === constants.INDICATOR.REPLAY_LEADER
-    );
-    // (if the arrow is showing but is a different kind of arrow,
-    // then just overwrite the existing arrow)
-    globals.lobby.ui.showClueMatch(-1);
-    indicated.setIndicator(visible, constants.INDICATOR.REPLAY_LEADER);
+    card.toggleSharedReplayIndicator();
 };
 
 // This is used in shared replays to specify who the leader is

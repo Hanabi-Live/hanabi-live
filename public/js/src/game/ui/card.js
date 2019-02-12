@@ -497,6 +497,18 @@ HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
     return globals.elements.playerHands.indexOf(this.parent.parent) !== -1;
 };
 
+HanabiCard.prototype.toggleSharedReplayIndicator = function setSharedReplayIndicator() {
+    // Either show or hide the arrow (if it is already visible)
+    const visible = !(
+        this.indicatorArrow.visible()
+        && this.indicatorArrow.getFill() === constants.INDICATOR.REPLAY_LEADER
+    );
+    // (if the arrow is showing but is a different kind of arrow,
+    // then just overwrite the existing arrow)
+    globals.lobby.ui.showClueMatch(-1);
+    this.setIndicator(visible, constants.INDICATOR.REPLAY_LEADER);
+};
+
 HanabiCard.prototype.click = function click(event) {
     // Disable all click events if the card is tweening
     const child = this.parent; // This is the LayoutChild
@@ -599,19 +611,14 @@ HanabiCard.prototype.clickArrow = function clickArrow() {
         order: this.order,
     });
 
-    // Draw the indicator for the user manually so that
-    // we don't have to wait for the client to server round-trip
-    globals.lobby.ui.handleReplayIndicator({
-        order: this.order,
-    });
+    // Draw the indicator manually so that we don't have to wait for the client to server round-trip
+    this.toggleSharedReplayIndicator();
 };
 
 HanabiCard.prototype.clickArrowLocal = function clickArrowLocal() {
     // Even if they are not a leader in a shared replay,
     // a user might still want to draw an arrow on a card for demonstration purposes
-    globals.lobby.ui.handleReplayIndicator({
-        order: this.order,
-    });
+    this.toggleSharedReplayIndicator();
 };
 
 // Morphing cards allows for creation of hypothetical situations

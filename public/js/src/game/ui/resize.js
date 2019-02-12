@@ -89,14 +89,14 @@ const redraw = () => {
 
     // Restore Shared Replay Button if applicable
     if (globals.sharedReplay) {
-        self.handleReplayLeader({
+        commands.replayLeader({
             name: globals.sharedReplayLeader,
         });
     }
 
     // Restore the spectator icon
     if (self.lastSpectators) {
-        self.handleSpectators(self.lastSpectators);
+        commands.spectators(self.lastSpectators);
     }
 
     // Restore message text and prompts
