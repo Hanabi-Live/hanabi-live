@@ -713,20 +713,22 @@ HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft() {
     if (window.event.ctrlKey) {
         return;
     }
-    const color = this.trueSuit.clueColors[0];
-    const colors = globals.variant.clueColors;
-    const value = colors.findIndex(variantClueColor => variantClueColor === color);
-    globals.lobby.ui.endTurn({
-        type: 'action',
-        data: {
-            type: constants.ACT.CLUE,
-            target: this.holder,
-            clue: {
-                type: constants.CLUE_TYPE.COLOR,
-                value,
+    if (globals.clues !== 0) {
+        const color = this.trueSuit.clueColors[0];
+        const colors = globals.variant.clueColors;
+        const value = colors.findIndex(variantClueColor => variantClueColor === color);
+        globals.lobby.ui.endTurn({
+            type: 'action',
+            data: {
+                type: constants.ACT.CLUE,
+                target: this.holder,
+                clue: {
+                    type: constants.CLUE_TYPE.COLOR,
+                    value,
+                },
             },
-        },
-    });
+        });
+    }
 };
 
 HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight() {
@@ -757,17 +759,19 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight() {
     }
 
     // Right-clicking on cards in other people's hands is a number clue action
-    globals.lobby.ui.endTurn({
-        type: 'action',
-        data: {
-            type: constants.ACT.CLUE,
-            target: this.holder,
-            clue: {
-                type: constants.CLUE_TYPE.RANK,
-                value: this.trueRank,
+    if (globals.clues !== 0) {
+        globals.lobby.ui.endTurn({
+            type: 'action',
+            data: {
+                type: constants.ACT.CLUE,
+                target: this.holder,
+                clue: {
+                    type: constants.CLUE_TYPE.RANK,
+                    value: this.trueRank,
+                },
             },
-        },
-    });
+        });
+    }
 };
 
 HanabiCard.prototype.setNote = function setNote(note) {
