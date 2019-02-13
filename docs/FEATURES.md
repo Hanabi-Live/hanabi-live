@@ -74,7 +74,7 @@ List of Features
 #### Game History and Profiles
 
 * After a game is completed, it will be recorded in the database.
-* Players will be able to see all of their past games in the "Show History" screen.
+* Players will be able to see their past games in the "Show History" screen.
 * You can click on a player's name in the lobby to view their profile, which will show all of their past games and some extra statistics.
 
 #### Replays
@@ -123,7 +123,6 @@ List of Features
 * Similar to chess, each player has a bank of time that decreases only during their turn.
 * By default, each player starts with 2 minutes and adds 20 seconds to their clock after performing each move.
 * If time runs out for any player, the game immediately ends and a score of 0 will be given.
-* In non-timed games, there is an option to show the timers anyway. They will count up instead of down to show how long each player is taking.
 
 #### Speedruns
 
@@ -190,12 +189,17 @@ List of Features
 
 ## Sounds
 
-* A sound is played each time a player takes an action.
-* A different sound is played when it reaches your turn.
-* There is a custom sound for a failed play.
-* There is a custom sound for a blind play.
-* There is a custom sound for multiple blind plays in a row (up to 4).
-* There is a custom sound for discarding a critical card.
+* There are different sounds for:
+  * when a player takes an action
+  * when it reaches your turn
+  * when a card fails to play
+  * when two cards fail to play in a row
+  * when a card blind-plays
+  * when multiple cards blind-play in a row (up to 4)
+  * discarding a "critical" card
+  * finishing the game with a score of 0
+  * finishing the game with a non-perfect score
+  * finishing the game with a perfect score
 
 <br />
 
@@ -256,6 +260,7 @@ List of Features
   * At the end of the game, in timed games, it will show how much time each player had left. In non-timed games, it will show how much time that the game took in total.
 * The clue log will still continue to function if you mouse over played and discarded cards.
 * The "No Clues" indicator is much easier to see.
+* You can click on the clue log, played cards, discarded cards, and strikes to go directly to the turn that the thing happened.
 * Replays of other games will no longer show "Alice", "Bob", etc., and will instead show the real player names. This way, if you have a question about what they did, you can message them and ask.
 * Upon refreshing the page, if you are in the middle of the game, you will be automatically taken into that game from the lobby.
 * You will no longer have to refresh the page after resizing the browser window.
