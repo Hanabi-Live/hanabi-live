@@ -43,6 +43,9 @@ $(document).ready(() => {
             $('#create-game-timed-row').show();
             $('#create-game-timed-row-spacing').show();
         }
+
+        // Redraw the tooltip so that the new elements will fit better
+        $('#nav-buttons-games-create-game').tooltipster('reposition');
     });
 
     $('#create-game-tooltip').on('keypress', (event) => {
