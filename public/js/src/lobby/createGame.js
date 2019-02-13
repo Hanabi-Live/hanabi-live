@@ -67,13 +67,13 @@ const submit = (event) => {
     localStorage.setItem('createTableTimed', timed);
 
     const baseTimeMinutes = $('#base-time-minutes').val();
-    localStorage.setItem('baseTimeMinutes', baseTimeMinutes);
+    localStorage.setItem('createTableBaseTimeMinutes', baseTimeMinutes);
 
     const timePerTurnSeconds = $('#time-per-turn-seconds').val();
-    localStorage.setItem('timePerTurnSeconds', timePerTurnSeconds);
+    localStorage.setItem('createTableTimePerTurnSeconds', timePerTurnSeconds);
 
     const speedrun = document.getElementById('create-game-speedrun').checked;
-    localStorage.setItem('speedrun', speedrun);
+    localStorage.setItem('createTableSpeedrun', speedrun);
 
     const deckPlays = document.getElementById('create-game-deck-plays').checked;
     localStorage.setItem('createTableDeckPlays', deckPlays);
@@ -170,7 +170,7 @@ exports.ready = () => {
     } catch (err) {
         speedrun = false;
     }
-    if (typeof deckPlays !== 'boolean') {
+    if (typeof speedrun !== 'boolean') {
         speedrun = false;
     }
     $('#create-game-speedrun').prop('checked', speedrun);

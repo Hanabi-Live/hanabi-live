@@ -10,6 +10,16 @@ module.exports = (grunt) => {
                 src: 'src/main.js',
                 dest: 'main.browserified.js',
             },
+
+            dev: {
+                src: 'src/main.js',
+                dest: 'main.browserified.dev.js',
+                options: {
+                    browserifyOptions: {
+                        debug: true,
+                    },
+                },
+            },
         },
 
         // Concatenate all of the JavaScript files together into the "main.js" file
