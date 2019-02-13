@@ -125,6 +125,18 @@ List of Features
 * If time runs out for any player, the game immediately ends and a score of 0 will be given.
 * In non-timed games, there is an option to show the timers anyway. They will count up instead of down to show how long each player is taking.
 
+#### Speedruns
+
+* Each game has the option to be created as a speedrun. Speedruns are where players attempt to beat the game as fast as possible (as a special challenge). The best speedrun times are tracked on the [Speedrun.com leaderboards](https://www.speedrun.com/hanabi).
+* In a speedrun, the controls work differently and are optimized for faster play:
+  * Left-clicking on a card in your hand will play it.
+  * Right-clicking on a card in your hand hand will discard it.
+  * Left-clicking on a card in your teammate's hand will give it a color clue.
+  * Right-clicking on a card in your teammate's hand will give it a number clue.
+  * Empathy can still be used by Ctrl + Left-clicking.
+* Speedrunning games will not count towards your statistics.
+* If this mode is enabled, then the "Timed" option will be disabled.
+
 #### Bottom Deck Blind Plays
 
 * Each game has the option to allow a special "house" rule.
@@ -173,11 +185,6 @@ List of Features
 * Each player has the option to enable the ability to pre-play cards, which is similar to "pre-moves" in Chess.
 * Players can pre-play or pre-discard by clicking and dragging a card to the respective location and releasing the mouse button. Once done, the card will hover over the location until their turn has arrived, and then the action will be automatically performed.
 * Once a card is pre-played or pre-discarded, it cannot be undone unless they go back to the lobby (or refresh the page).
-
-#### Speedrun Keyboard Hotkeys
-
-* Each player has the option to enable speedrun keyboard hotkeys to allow for faster actions.
-* This feature is bugged and will be reimplemented in the future.
 
 <br />
 
