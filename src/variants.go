@@ -179,15 +179,3 @@ func variantIsClueLegal(variant string, clue Clue) bool {
 
 	return true
 }
-
-/*
-func variantGetHighestID() int {
-	highestID := 0
-	for _, v := range variantDefinitions {
-		if v.ID > highestID {
-			highestID = v.ID
-		}
-	}
-	return highestID
-}
-*/

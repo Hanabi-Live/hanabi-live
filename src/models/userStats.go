@@ -258,6 +258,13 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 
 			// Update scores for players 2 through 6
 			var stats Stats
+			stats.BestScores = make([]*BestScore, 5) // From 2 to 6 players
+			for i := range stats.BestScores {
+				// This will not work if written as "for i, bestScore :="
+				stats.BestScores[i] = new(BestScore)
+				stats.BestScores[i].NumPlayers = i + 2
+			}
+
 			for numPlayers := 2; numPlayers <= 6; numPlayers++ {
 				overallBestScore := 0
 				overallBestScoreMod := 0

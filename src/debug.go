@@ -90,7 +90,7 @@ func debug2() {
 
 	log.Debug("---------------------------------------------------------------")
 
-	//updateBestScores() {
+	//updateBestScores()
 }
 
 /*
@@ -100,5 +100,15 @@ func updateBestScores() {
 	} else {
 		log.Info("Updated the best scores for every user.")
 	}
+}
+
+func variantGetHighestID() int {
+	highestID := 0
+	for _, v := range variantDefinitions {
+		if v.ID > highestID {
+			highestID = v.ID
+		}
+	}
+	return highestID
 }
 */
