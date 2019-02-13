@@ -138,12 +138,25 @@ func chatMakeMessage(msg string, who string, discord bool, server bool, datetime
 }
 
 // chatServerSend is a helper function to give feedback to a user after they type a command
+// (for the lobby / Discord)
 func chatServerSend(msg string) {
 	d := &CommandData{
 		Msg:    msg,
 		Room:   "lobby",
 		Server: true,
 		Spam:   false, // So that it goes to the "#general" channel
+	}
+	commandChat(nil, d)
+}
+
+// chatServerPregameSend is a helper function to give feedback to a user after they type a command
+// (for the pre-game chat)
+func chatServerPregameSend(msg string, gameID int) {
+	d := &CommandData{
+		Msg:    msg,
+		Room:   "game",
+		GameID: gameID,
+		Server: true,
 	}
 	commandChat(nil, d)
 }

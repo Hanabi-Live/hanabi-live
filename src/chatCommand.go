@@ -36,7 +36,7 @@ func chatHelp(s *Session, d *CommandData) {
 var (
 	// Used to store all of the functions that handle each command
 	chatCommandMap        = make(map[string]func(*Session, *CommandData))
-	chatPregameCommandMap = make(map[string]func(*Session, *CommandData))
+	chatPregameCommandMap = make(map[string]func(*Session, *CommandData, *Game))
 )
 
 func chatCommandInit() {
@@ -66,7 +66,7 @@ func chatCommandInit() {
 	chatPregameCommandMap["s6"] = chatPregameS6
 }
 
-func chatCommand(s *Session, d *CommandData, pregame bool) {
+func chatCommand(s *Session, d *CommandData, g *Game) {
 	// Parse the command
 	args := strings.Split(d.Msg, " ")
 	command := args[0]
@@ -81,17 +81,19 @@ func chatCommand(s *Session, d *CommandData, pregame bool) {
 	command = strings.ToLower(command) // Commands are case-insensitive
 
 	// Check to see if there is a command handler for this command
-	if !pregame {
+	if g == nil {
+		// This is a lobby / Discord chat message
 		if _, ok := chatCommandMap[command]; !ok {
 			chatServerSend("That is not a valid command.")
 			return
 		}
 		chatCommandMap[command](s, d)
 	} else {
+		// This is a pre-game chat message
 		if _, ok := chatPregameCommandMap[command]; !ok {
-			chatServerSend("That is not a valid command.")
+			chatServerPregameSend("That is not a valid pre-game command.", g.ID)
 			return
 		}
-		chatPregameCommandMap[command](s, d)
+		chatPregameCommandMap[command](s, d, g)
 	}
 }

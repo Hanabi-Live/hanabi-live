@@ -63,9 +63,9 @@ exports.add = (data, fast) => {
         line += data.msg;
     } else if (data.who) {
         line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
-        line += `${$('<a>').html(data.msg).html()}`;
+        line += data.msg;
     } else {
-        line += `<strong>${$('<a>').html(data.msg).html()}</strong>`;
+        line += data.msg;
     }
     line += '</span><br />';
 

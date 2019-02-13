@@ -21,11 +21,12 @@ exports.show = () => {
     // Clear the pregame chat box of any previous content
     $('#lobby-chat-pregame-text').html('');
 
-    // Scroll to the bottom of both chat boxes
-    const chat1 = document.getElementById('lobby-chat-text');
-    chat1.scrollTop = chat1.scrollHeight;
-    const chat2 = document.getElementById('lobby-chat-pregame-text');
-    chat2.scrollTop = chat2.scrollHeight;
+    // Scroll to the bottom of the pregame chat
+    const chat = document.getElementById('lobby-chat-pregame-text');
+    chat.scrollTop = chat.scrollHeight;
+
+    // Focus the pregame chat
+    $('#lobby-chat-pregame-input').focus();
 
     // Adjust the top navigation bar
     lobby.nav.show('pregame');

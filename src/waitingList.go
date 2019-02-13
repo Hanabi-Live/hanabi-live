@@ -135,13 +135,7 @@ func waitingListAlert(g *Game, creator string) {
 	chatServerSend(alert)
 
 	// Also, copy the people who were pinged to the pre-game chat for reference
-	d := &CommandData{
-		Msg:    "Alerted players: " + usernameList,
-		Room:   "game",
-		GameID: g.ID,
-		Server: true,
-	}
-	commandChat(nil, d)
+	chatServerPregameSend("Alerted players: "+usernameList, g.ID)
 }
 
 /*

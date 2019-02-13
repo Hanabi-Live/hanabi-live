@@ -136,7 +136,7 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	// Check for commands
-	chatCommand(s, d, false)
+	chatCommand(s, d, nil) // We pass nil as the third argument because there is no associated game
 }
 
 func commandChatGame(s *Session, d *CommandData) {
@@ -199,5 +199,5 @@ func commandChatGame(s *Session, d *CommandData) {
 	}
 
 	// Check for commands
-	chatCommand(s, d, true)
+	chatCommand(s, d, g)
 }

@@ -231,23 +231,18 @@ const initCommands = () => {
     });
 
     globals.conn.on('warning', (data) => {
-        // Log the warning message
         console.warn(data.warning);
-
-        // Show the warning modal
         modals.warningShow(data.warning);
     });
 
     globals.conn.on('error', (data) => {
-        // Log the error message
         console.error(data.error);
+        modals.errorShow(data.error);
 
         // Disconnect from the server, if connected
         if (!globals.conn) {
             globals.conn.close();
         }
-
-        modals.errorShow(data.error);
     });
 
     // There are yet more command handlers for events that happen in-game

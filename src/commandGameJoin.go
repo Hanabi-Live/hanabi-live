@@ -118,4 +118,23 @@ func commandGameJoin(s *Session, d *CommandData) {
 
 	// Send the table owner whether or not the "Start Game" button should be greyed out
 	g.NotifyTableReady()
+
+	// If the user previously requested it, automatically start the game
+	if g.AutomaticStart == len(g.Players) {
+		// Check to see if the owner is present
+		for _, p := range g.Players {
+			if p.ID == g.Owner {
+				if !p.Present {
+					chatServerPregameSend("Aborting automatic game start since "+
+						"the table creator is away.", g.ID)
+					return
+				}
+
+				commandGameStart(p.Session, nil)
+				return
+			}
+		}
+
+		log.Error("Failed to find the owner of the game when attempting to automatically start it.")
+	}
 }
