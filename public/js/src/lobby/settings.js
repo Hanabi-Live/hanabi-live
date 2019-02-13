@@ -50,9 +50,9 @@ const settingsList = [
         'speedrunPreplay',
     ],
     [
-        // Enable speedrun keyboard hotkeys
-        'speedrun-hotkeys',
-        'speedrunHotkeys',
+        // Enable speedrun mode
+        'speedrun-mode',
+        'speedrunMode',
     ],
 ];
 

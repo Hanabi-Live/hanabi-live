@@ -395,9 +395,14 @@ const HanabiCard = function HanabiCard(config) {
                 return;
             }
 
+            // Disable Empathy if the speedrun mode are enabled
+            if (globals.lobby.settings.speedrunMode) {
+                return;
+            }
+
             // Disable Empathy if the card is tweening
             const child = this.parent; // This is the LayoutChild
-            if (child.tween && child.tween.isPlaying()) {
+            if (child.tween !== null) {
                 return;
             }
 
@@ -512,7 +517,14 @@ HanabiCard.prototype.toggleSharedReplayIndicator = function setSharedReplayIndic
 HanabiCard.prototype.click = function click(event) {
     // Disable all click events if the card is tweening
     const child = this.parent; // This is the LayoutChild
-    if (child.tween && child.tween.isPlaying()) {
+    if (child.tween !== null) {
+        return;
+    }
+
+    // Speedrunning mode overrides the normal card clicking behavior
+    // (but don't use the speedrunning behavior if we are in a solo or shared replay)
+    if (globals.lobby.settings.speedrunMode && !globals.replay) {
+        this.clickSpeedrun(event.evt.which);
         return;
     }
 
@@ -524,7 +536,7 @@ HanabiCard.prototype.click = function click(event) {
 };
 
 HanabiCard.prototype.clickLeft = function clickLeft() {
-    // The "Empathy" feature is handled elsewhere in this file
+    // The "Empathy" feature is handled above, so we don't have to worry about it here
     if (this.isPlayed) {
         // Clicking on played cards goes to the turn that they were played
         if (globals.replay) {
@@ -564,30 +576,21 @@ HanabiCard.prototype.clickRight = function clickRight() {
     // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
     // (this must be above the other note code because of the modifiers)
     if (window.event.ctrlKey && window.event.shiftKey) {
-        const note = notes.vars.lastNote;
-        notes.set(this.order, note);
-        notes.update(this);
-        notes.show(this);
+        this.setNote(notes.vars.lastNote);
         return;
     }
 
     // Shfit + right-click is a "f" note
     // (this is a common abbreviation for "this card is Finessed")
     if (window.event.shiftKey) {
-        const note = 'f';
-        notes.set(this.order, note);
-        notes.update(this);
-        notes.show(this);
+        this.setNote('f');
         return;
     }
 
     // Alt + right-click is a "cm" note
     // (this is a common abbreviation for "this card is chop moved")
     if (window.event.altKey) {
-        const note = 'cm';
-        notes.set(this.order, note);
-        notes.update(this);
-        notes.show(this);
+        this.setNote('cm');
         return;
     }
 
@@ -665,6 +668,97 @@ HanabiCard.prototype.clickMorph = function clickMorph() {
     }
 };
 
+HanabiCard.prototype.clickSpeedrun = function clickMorph(clickType) {
+    // Do nothing if we accidentally click on a played/discarded card
+    if (this.isPlayed || this.isDiscarded) {
+        return;
+    }
+
+    // First, check for "assign note" clicks
+    // (code is copied from the "clickRight()" function above)
+
+    // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
+    // (this must be above the other note code because of the modifiers)
+    if (window.event.ctrlKey && window.event.shiftKey) {
+        this.setNote(notes.vars.lastNote);
+        return;
+    }
+
+    // Shfit + right-click is a "f" note
+    // (this is a common abbreviation for "this card is Finessed")
+    if (window.event.shiftKey) {
+        this.setNote('f');
+        return;
+    }
+
+    // Alt + right-click is a "cm" note
+    // (this is a common abbreviation for "this card is chop moved")
+    if (window.event.altKey) {
+        this.setNote('cm');
+        return;
+    }
+
+    if (this.holder === globals.playerUs) {
+        if (clickType === 1) { // Left-click
+            // Left-clicking on cards in our own hand is a play action
+            globals.lobby.ui.endTurn({
+                type: 'action',
+                data: {
+                    type: constants.ACT.PLAY,
+                    target: this.order,
+                },
+            });
+        } else if (clickType === 3) { // Right-click
+            // Right-clicking on cards in our own hand is a discard action
+            globals.lobby.ui.endTurn({
+                type: 'action',
+                data: {
+                    type: constants.ACT.DISCARD,
+                    target: this.order,
+                },
+            });
+        }
+        return;
+    }
+
+    if (clickType === 1) { // Left-click
+        // Left-clicking on cards in other people's hands is a color clue action
+        const color = this.trueSuit.clueColors[0];
+        const colors = globals.variant.clueColors;
+        const value = colors.findIndex(variantClueColor => variantClueColor === color);
+        globals.lobby.ui.endTurn({
+            type: 'action',
+            data: {
+                type: constants.ACT.CLUE,
+                target: this.holder,
+                clue: {
+                    type: constants.CLUE_TYPE.COLOR,
+                    value,
+                },
+            },
+        });
+    } else if (clickType === 3) { // Right-click
+        // Right-clicking on cards in other people's hands is a number clue action
+        globals.lobby.ui.endTurn({
+            type: 'action',
+            data: {
+                type: constants.ACT.CLUE,
+                target: this.holder,
+                clue: {
+                    type: constants.CLUE_TYPE.RANK,
+                    value: this.trueRank,
+                },
+            },
+        });
+    }
+};
+
+HanabiCard.prototype.setNote = function setNote(note) {
+    notes.set(this.order, note);
+    notes.update(this);
+    notes.show(this);
+};
+
 module.exports = HanabiCard;
 
 /*
@@ -701,7 +795,7 @@ const imageName = (card) => {
     return name;
 };
 
-const filterInPlace = function filterInPlace(values, predicate) {
+const filterInPlace = (values, predicate) => {
     const removed = [];
     let i = values.length - 1;
     while (i >= 0) {

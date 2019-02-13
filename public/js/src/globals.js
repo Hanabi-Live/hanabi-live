@@ -34,7 +34,7 @@ const globals = {
         showTimerInUntimed: false,
         reverseHands: false,
         speedrunPreplay: false,
-        speedrunHotkeys: false,
+        speedrunMode: false,
     },
 
     gameID: null,

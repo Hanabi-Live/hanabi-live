@@ -1,6 +1,8 @@
 package main
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func chatPregameS(s *Session, d *CommandData, g *Game) {
 	g.AutomaticStart = len(g.Players) + 1

@@ -53,6 +53,8 @@ LayoutChild.prototype.checkSetDraggable = function checkSetDraggable() {
         // (this function will be called again upon the completion of the animation)
         || this.tween !== null
     ) {
+        this.setDraggable(false);
+        this.off('dragend.play');
         return;
     }
 

@@ -107,7 +107,6 @@ CardLayout.prototype.doLayout = function doLayout() {
                     scaleY: scale,
                     rotation: 0,
                     runonce: true,
-                    /* eslint-disable no-loop-func */
                     onFinish: () => {
                         node.tween.destroy();
                         node.tween = null;
@@ -116,7 +115,6 @@ CardLayout.prototype.doLayout = function doLayout() {
                             storedPostAnimationLayout();
                         }
                     },
-                    /* eslint-enable */
                 }).play();
             }
         }

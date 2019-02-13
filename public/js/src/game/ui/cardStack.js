@@ -40,7 +40,7 @@ CardStack.prototype.doLayout = function doLayout() {
                 continue;
             }
 
-            if (node.tween.isPlaying()) {
+            if (node.tween !== null) {
                 return;
             }
         }
@@ -57,10 +57,6 @@ CardStack.prototype.doLayout = function doLayout() {
 
         const scale = lh / node.getHeight();
 
-        if (node.tween) {
-            node.tween.destroy();
-        }
-
         if (globals.animateFast) {
             node.setX(0);
             node.setY(0);
@@ -69,7 +65,7 @@ CardStack.prototype.doLayout = function doLayout() {
             node.setRotation(0);
             hideUnder();
         } else {
-            // Animate the card leaving the hand to the play stacks / discard pile
+            // Animate the card leaving the hand to the play stacks
             node.tween = new Kinetic.Tween({
                 node,
                 duration: 0.8,
@@ -79,7 +75,12 @@ CardStack.prototype.doLayout = function doLayout() {
                 scaleY: scale,
                 rotation: 0,
                 runonce: true,
-                onFinish: hideUnder,
+                onFinish: () => {
+                    node.tween.destroy();
+                    node.tween = null;
+                    node.checkSetDraggable();
+                    hideUnder();
+                },
             }).play();
         }
     }
