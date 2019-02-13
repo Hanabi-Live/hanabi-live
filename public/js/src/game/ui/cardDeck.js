@@ -24,7 +24,7 @@ const CardDeck = function CardDeck(config) {
         pos.y += this.getHeight() * this.getScaleY() / 2;
 
         if (globals.elements.playArea.isOver(pos)) {
-            // We need to remove the card from the screen once the animtion is finished
+            // We need to remove the card from the screen once the animation is finished
             // (otherwise, the card will be stuck in the in-game replay)
             globals.postAnimationLayout = () => {
                 this.parent.doLayout();
@@ -42,7 +42,7 @@ const CardDeck = function CardDeck(config) {
 
             globals.savedAction = null;
         } else {
-            // The card was dragged to an invalid location,
+            // The deck was dragged to an invalid location,
             // so animate the card back to where it was
             new Kinetic.Tween({
                 node: this,
@@ -101,29 +101,31 @@ Kinetic.Util.extend(CardDeck, Kinetic.Group);
 CardDeck.prototype.add = function add(child) {
     Kinetic.Group.prototype.add.call(this, child);
 
-    if (child instanceof LayoutChild) {
-        if (globals.animateFast) {
-            child.remove();
-            return;
-        }
-
-        child.tween = new Kinetic.Tween({
-            node: child,
-            x: 0,
-            y: 0,
-            scaleX: 0.01,
-            scaleY: 0.01,
-            rotation: 0,
-            duration: 0.5,
-            runonce: true,
-        }).play();
-
-        child.tween.onFinish = () => {
-            if (child.parent === this) {
-                child.remove();
-            }
-        };
+    if (!(child instanceof LayoutChild)) {
+        return;
     }
+
+    if (globals.animateFast) {
+        child.remove();
+        return;
+    }
+
+    child.tween = new Kinetic.Tween({
+        node: child,
+        x: 0,
+        y: 0,
+        scaleX: 0.01,
+        scaleY: 0.01,
+        rotation: 0,
+        duration: 0.5,
+        runonce: true,
+    }).play();
+
+    child.tween.onFinish = () => {
+        if (child.parent === this) {
+            child.remove();
+        }
+    };
 };
 
 CardDeck.prototype.setCardBack = function setCardBack(cardback) {

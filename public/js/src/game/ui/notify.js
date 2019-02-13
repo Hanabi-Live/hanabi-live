@@ -100,6 +100,13 @@ commands.discard = (data) => {
 
     globals.elements.discardStacks.get(suit).add(child);
 
+    // Make sure that the card is on top of the play stacks ??? TODO CHECK TO SEE IF THIS IS TRUE
+    for (const discardStack of globals.elements.discardStacks) {
+        if (discardStack[1]) {
+            discardStack[1].moveToTop();
+        }
+    }
+
     // Put the discard pile in order from 1 to 5
     // (this is commented out so that we can instead see the order in which things are discarded)
     /*
@@ -431,16 +438,6 @@ commands.turn = (data) => {
     }
 
     globals.elements.turnNumberLabel.setText(`${globals.turn + 1}`);
-
-    if (globals.queuedAction !== null && globals.ourTurn) {
-        // We don't want to send the queued action right away, or else it introduces bugs
-        setTimeout(() => {
-            globals.lobby.conn.send(globals.queuedAction.type, globals.queuedAction.data);
-            globals.lobby.ui.stopAction();
-
-            globals.queuedAction = null;
-        }, 250);
-    }
 };
 
 const revealCard = (data) => {

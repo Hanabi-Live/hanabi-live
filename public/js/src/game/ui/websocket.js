@@ -24,6 +24,21 @@ commands.action = (data) => {
     if (globals.lobby.settings.sendTurnNotify) {
         globals.lobby.sendNotify('It\'s your turn', 'turn');
     }
+
+    // Handle pre-playing / pre-discarding / pre-cluing
+    if (globals.queuedAction === null) {
+        // Prevent pre-cluing if the team is now at 0 clues
+        if (globals.queuedAction.type === constants.ACT.CLUE && globals.clues === 0) {
+            return;
+        }
+
+        // We don't want to send the queued action right away, or else it introduces bugs
+        setTimeout(() => {
+            globals.lobby.conn.send(globals.queuedAction.type, globals.queuedAction.data);
+            globals.lobby.ui.stopAction();
+            globals.queuedAction = null;
+        }, 250);
+    }
 };
 
 // This is sent to the client upon game initialization (in the "commandReady.go" file)

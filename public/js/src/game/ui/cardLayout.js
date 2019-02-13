@@ -88,35 +88,34 @@ CardLayout.prototype.doLayout = function doLayout() {
             node.tween.destroy();
         }
 
-        if (!node.isDragging()) {
-            if (globals.animateFast) {
-                node.setX(x - (this.reverse ? scale * node.getWidth() : 0));
-                node.setY(0);
-                node.setScaleX(scale);
-                node.setScaleY(scale);
-                node.setRotation(0);
-                node.checkSetDraggable();
-            } else {
-                // Animate the card leaving the deck
-                node.tween = new Kinetic.Tween({
-                    node,
-                    duration: 0.5,
-                    x: x - (this.reverse ? scale * node.getWidth() : 0),
-                    y: 0,
-                    scaleX: scale,
-                    scaleY: scale,
-                    rotation: 0,
-                    runonce: true,
-                    onFinish: () => {
-                        node.tween.destroy();
-                        node.tween = null;
-                        node.checkSetDraggable();
-                        if (storedPostAnimationLayout !== null) {
-                            storedPostAnimationLayout();
-                        }
-                    },
-                }).play();
-            }
+        if (globals.animateFast) {
+            node.setX(x - (this.reverse ? scale * node.getWidth() : 0));
+            node.setY(0);
+            node.setScaleX(scale);
+            node.setScaleY(scale);
+            node.setRotation(0);
+            node.checkSetDraggable();
+        } else {
+            // Animate the card leaving the deck
+            const card = node.children[0];
+            card.tweening = true;
+            node.tween = new Kinetic.Tween({
+                node,
+                duration: 0.5,
+                x: x - (this.reverse ? scale * node.getWidth() : 0),
+                y: 0,
+                scaleX: scale,
+                scaleY: scale,
+                rotation: 0,
+                runonce: true,
+                onFinish: () => {
+                    card.tweening = false;
+                    node.checkSetDraggable();
+                    if (storedPostAnimationLayout !== null) {
+                        storedPostAnimationLayout();
+                    }
+                },
+            }).play();
         }
 
         x += (scale * node.getWidth() + dist) * (this.reverse ? -1 : 1);

@@ -66,6 +66,8 @@ CardStack.prototype.doLayout = function doLayout() {
             hideUnder();
         } else {
             // Animate the card leaving the hand to the play stacks
+            const card = node.children[0];
+            card.tweening = true;
             node.tween = new Kinetic.Tween({
                 node,
                 duration: 0.8,
@@ -76,8 +78,7 @@ CardStack.prototype.doLayout = function doLayout() {
                 rotation: 0,
                 runonce: true,
                 onFinish: () => {
-                    node.tween.destroy();
-                    node.tween = null;
+                    card.tweening = false;
                     node.checkSetDraggable();
                     hideUnder();
                 },

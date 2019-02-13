@@ -52,7 +52,7 @@ LayoutChild.prototype.checkSetDraggable = function checkSetDraggable() {
         || globals.spectating // Cards should not be draggable if we are spectating an ongoing game
         // Cards should not be draggable if they are currently playing an animation
         // (this function will be called again upon the completion of the animation)
-        || this.tween !== null
+        || card.tweening
     ) {
         this.setDraggable(false);
         this.off('dragend.play');

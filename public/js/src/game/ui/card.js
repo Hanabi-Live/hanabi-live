@@ -34,6 +34,8 @@ const HanabiCard = function HanabiCard(config) {
 
     Kinetic.Group.call(this, config);
 
+    this.tweening = false;
+
     this.bare = new Kinetic.Image({
         width: config.width,
         height: config.height,
@@ -397,8 +399,7 @@ const HanabiCard = function HanabiCard(config) {
             }
 
             // Disable Empathy if the card is tweening
-            const child = this.parent; // This is the LayoutChild
-            if (child.tween !== null) {
+            if (this.tweening) {
                 return;
             }
 
@@ -408,8 +409,16 @@ const HanabiCard = function HanabiCard(config) {
                 return;
             }
 
+            // Empathy in speedrun-mode uses Ctrl
+            if (globals.lobby.settings.speedrunMode && !window.event.ctrlKey) {
+                return;
+            }
+
             // Disable Empathy if any modifiers are being held down
-            if (window.event.ctrlKey || window.event.shiftKey || window.event.altKey) {
+            if (!globals.lobby.settings.speedrunMode && window.event.ctrlKey) {
+                return;
+            }
+            if (window.event.shiftKey || window.event.altKey) {
                 return;
             }
 
@@ -517,8 +526,7 @@ HanabiCard.prototype.toggleSharedReplayIndicator = function setSharedReplayIndic
 
 HanabiCard.prototype.click = function click(event) {
     // Disable all click events if the card is tweening
-    const child = this.parent; // This is the LayoutChild
-    if (child.tween !== null) {
+    if (this.tweening) {
         return;
     }
 
@@ -688,8 +696,8 @@ HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(event) {
 };
 
 HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft() {
+    // Left-clicking on cards in our own hand is a play action
     if (this.holder === globals.playerUs) {
-        // Left-clicking on cards in our own hand is a play action
         globals.lobby.ui.endTurn({
             type: 'action',
             data: {
@@ -700,58 +708,28 @@ HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft() {
         return;
     }
 
+    // Left-clicking on cards in other people's hands is a color clue action
+    // (but if we are holding Ctrl, then we are using Empathy)
     if (window.event.ctrlKey) {
-        // Ctrl + left-clicking on cards in other people's hands is a color clue action
-        const color = this.trueSuit.clueColors[0];
-        const colors = globals.variant.clueColors;
-        const value = colors.findIndex(variantClueColor => variantClueColor === color);
-        globals.lobby.ui.endTurn({
-            type: 'action',
-            data: {
-                type: constants.ACT.CLUE,
-                target: this.holder,
-                clue: {
-                    type: constants.CLUE_TYPE.COLOR,
-                    value,
-                },
-            },
-        });
-    } else if (window.event.shiftKey) {
-        // Shift + left-clicking on cards in other people's hands is a number clue action
-        globals.lobby.ui.endTurn({
-            type: 'action',
-            data: {
-                type: constants.ACT.CLUE,
-                target: this.holder,
-                clue: {
-                    type: constants.CLUE_TYPE.RANK,
-                    value: this.trueRank,
-                },
-            },
-        });
+        return;
     }
+    const color = this.trueSuit.clueColors[0];
+    const colors = globals.variant.clueColors;
+    const value = colors.findIndex(variantClueColor => variantClueColor === color);
+    globals.lobby.ui.endTurn({
+        type: 'action',
+        data: {
+            type: constants.ACT.CLUE,
+            target: this.holder,
+            clue: {
+                type: constants.CLUE_TYPE.COLOR,
+                value,
+            },
+        },
+    });
 };
 
 HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight() {
-    if (this.holder === globals.playerUs) {
-        // Right-clicking on cards in our own hand is a discard action
-        globals.lobby.ui.endTurn({
-            type: 'action',
-            data: {
-                type: constants.ACT.DISCARD,
-                target: this.order,
-            },
-        });
-        return;
-    }
-
-    // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
-    // (this must be above the other note code because of the modifiers)
-    if (window.event.ctrlKey && window.event.shiftKey) {
-        this.setNote(notes.vars.lastNote);
-        return;
-    }
-
     // Shfit + right-click is a "f" note
     // (this is a common abbreviation for "this card is Finessed")
     if (window.event.shiftKey) {
@@ -766,8 +744,30 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight() {
         return;
     }
 
-    // A normal right-click is edit a note
-    notes.openEditTooltip(this);
+    // Right-clicking on cards in our own hand is a discard action
+    if (this.holder === globals.playerUs) {
+        globals.lobby.ui.endTurn({
+            type: 'action',
+            data: {
+                type: constants.ACT.DISCARD,
+                target: this.order,
+            },
+        });
+        return;
+    }
+
+    // Right-clicking on cards in other people's hands is a number clue action
+    globals.lobby.ui.endTurn({
+        type: 'action',
+        data: {
+            type: constants.ACT.CLUE,
+            target: this.holder,
+            clue: {
+                type: constants.CLUE_TYPE.RANK,
+                value: this.trueRank,
+            },
+        },
+    });
 };
 
 HanabiCard.prototype.setNote = function setNote(note) {
