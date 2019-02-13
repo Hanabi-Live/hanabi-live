@@ -99,12 +99,10 @@ commands.discard = (data) => {
     card.turnDiscarded = globals.turn - 1;
 
     globals.elements.discardStacks.get(suit).add(child);
-    for (const discardStack of globals.elements.discardStacks) {
-        if (discardStack[1]) {
-            discardStack[1].moveToTop();
-        }
-    }
 
+    // Put the discard pile in order from 1 to 5
+    // (this is commented out so that we can instead see the order in which things are discarded)
+    /*
     let finished = false;
     do {
         const n = child.getZIndex();
@@ -119,6 +117,7 @@ commands.discard = (data) => {
             finished = true;
         }
     } while (!finished);
+    */
 
     if (card.isClued()) {
         stats.updateEfficiency(-1);

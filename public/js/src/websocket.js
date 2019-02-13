@@ -116,7 +116,7 @@ const initCommands = () => {
     });
 
     globals.conn.on('chat', (data) => {
-        chat.add(data);
+        chat.add(data, false); // The second argument is "fast"
         if (
             data.room === 'game'
             && globals.ui !== null
@@ -139,7 +139,7 @@ const initCommands = () => {
     // It is also sent upon connecting to a game to give a list of past in-game chat messages
     globals.conn.on('chatList', (data) => {
         for (const line of data.list) {
-            chat.add(line, true);
+            chat.add(line, true); // The second argument is "true"
         }
         if (
             // If the UI is open, we assume that this is a list of in-game chat messages

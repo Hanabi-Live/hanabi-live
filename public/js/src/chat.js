@@ -35,7 +35,7 @@ const send = (room, input) => (event) => {
     });
 };
 
-exports.add = (data, fast = false) => {
+exports.add = (data, fast) => {
     let chat;
     if (data.room === 'lobby') {
         chat = $('#lobby-chat-text');
@@ -88,7 +88,6 @@ exports.add = (data, fast = false) => {
             scrollTop: chat[0].scrollHeight,
         }, (fast ? 0 : 500));
     }
-    console.log(fast);
 };
 
 const fillEmotes = (message) => {
