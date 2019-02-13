@@ -147,7 +147,7 @@ exports.ready = () => {
     $('#create-game-timed').change();
 
     // Fill in the "Base Time" box
-    let baseTimeMinutes = localStorage.getItem('baseTimeMinutes');
+    let baseTimeMinutes = localStorage.getItem('createTableBaseTimeMinutes');
     // (we don't want to do "JSON.parse()" here because it may not be a whole number)
     if (baseTimeMinutes === null || baseTimeMinutes < 0) {
         baseTimeMinutes = 2;
@@ -157,7 +157,7 @@ exports.ready = () => {
     // Fill in the "Time Per Turn" box
     let timePerTurnSeconds;
     try {
-        timePerTurnSeconds = JSON.parse(localStorage.getItem('timePerTurnSeconds'));
+        timePerTurnSeconds = JSON.parse(localStorage.getItem('createTableTimePerTurnSeconds'));
     } catch (err) {
         timePerTurnSeconds = 20;
     }
@@ -169,7 +169,7 @@ exports.ready = () => {
     // Fill in the "Speedrun" checkbox
     let speedrun;
     try {
-        speedrun = JSON.parse(localStorage.getItem('speedrun'));
+        speedrun = JSON.parse(localStorage.getItem('createTableSpeedrun'));
     } catch (err) {
         speedrun = false;
     }
