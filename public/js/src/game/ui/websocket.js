@@ -32,6 +32,11 @@ commands.action = (data) => {
             return;
         }
 
+        // Prevent discarding if the team is now at 8 clues
+        if (globals.queuedAction.data.type === constants.ACT.DISCARD && globals.clues === 8) {
+            return;
+        }
+
         // We don't want to send the queued action right away, or else it introduces bugs
         setTimeout(() => {
             globals.lobby.conn.send(globals.queuedAction.type, globals.queuedAction.data);

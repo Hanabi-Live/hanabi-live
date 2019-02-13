@@ -748,6 +748,10 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight() {
 
     // Right-clicking on cards in our own hand is a discard action
     if (this.holder === globals.playerUs) {
+        // Prevent discarding while at 8 clues
+        if (globals.clues === 8) {
+            return;
+        }
         globals.lobby.ui.endTurn({
             type: 'action',
             data: {
