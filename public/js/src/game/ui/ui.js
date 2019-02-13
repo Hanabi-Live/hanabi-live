@@ -261,10 +261,6 @@ HanabiUI.prototype.stopAction = function stopAction() {
 HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
     // Hide all of the existing arrows on the cards
     for (let i = 0; i < globals.deck.length; i++) {
-        if (i === target) {
-            continue;
-        }
-
         globals.deck[i].setIndicator(false);
     }
     globals.layers.card.batchDraw();
