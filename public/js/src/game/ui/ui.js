@@ -312,21 +312,18 @@ HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
 };
 
 HanabiUI.prototype.giveClue = function giveClue() {
-    if (!globals.elements.giveClueButton.getEnabled()) {
-        return;
-    }
-
-    // Prevent the user from accidentally giving a clue in certain situations
-    if (Date.now() - globals.accidentalClueTimer < 1000) {
-        return;
-    }
-
     const target = globals.elements.clueTargetButtonGroup.getPressed();
-    if (!target) {
-        return;
-    }
     const clueButton = globals.elements.clueButtonGroup.getPressed();
-    if (!clueButton) {
+    if (
+        !globals.ourTurn // We can only give clues on our turn
+        || globals.clues === 0 // We can only give a clue if there is one available
+        || !target // We might have not selected a clue recipient
+        || !clueButton // We might have not selected a type of clue
+        // We might be trying to give an invalid clue (e.g. an Empty Clue)
+        || !globals.elements.giveClueButton.getEnabled()
+        // Prevent the user from accidentally giving a clue in certain situations
+        || (Date.now() - globals.accidentalClueTimer < 1000)
+    ) {
         return;
     }
 

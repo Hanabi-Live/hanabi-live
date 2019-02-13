@@ -90,6 +90,7 @@ const keydown = (event) => {
 
     // Give a clue
     if (event.ctrlKey && event.key === 'Enter') { // Ctrl + Enter
+        // The "giveClue()" function has validation inside of it
         globals.lobby.ui.giveClue();
         return;
     }
