@@ -89,6 +89,8 @@ func debug2() {
 	log.Debug("  discordLastAtHere:", discordLastAtHere)
 
 	log.Debug("---------------------------------------------------------------")
+
+	//updateBestScores() {
 }
 
 /*

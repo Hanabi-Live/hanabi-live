@@ -178,7 +178,7 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
         // This is unnecessary if the pre-play setting is enabled,
         // as the hand will already be draggable
         !globals.lobby.settings.speedrunPreplay
-        // This is unnecessary if this a speedrun mode,
+        // This is unnecessary if this a speedrun,
         // as clicking on cards takes priority over dragging cards
         && !globals.speedrun
     ) {

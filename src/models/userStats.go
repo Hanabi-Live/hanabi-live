@@ -31,11 +31,13 @@ func (*UserStats) Get(userID int, variant int) (Stats, error) {
 		stats.BestScores[i].NumPlayers = i + 2
 	}
 
-	// First, get the total amount of games
+	// First, get the total amount of games (not including speedrun games)
 	if err := db.QueryRow(`
-		SELECT COUNT(id)
-		FROM game_participants
-		WHERE user_id = ?
+		SELECT COUNT(games.id)
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE game_participants.user_id = ?
+			AND games.speedrun = 0
 	`, userID).Scan(&stats.NumPlayedAll); err != nil {
 		return stats, err
 	}
@@ -128,6 +130,7 @@ func (*UserStats) Update(userID int, variant int, stats Stats) error {
 						ON game_participants.game_id = games.id
 				WHERE game_participants.user_id = ?
 					AND games.variant = ?
+					AND games.speedrun = 0
 			),
 			best_score2 = ?,
 			best_score2_mod = ?,
@@ -147,6 +150,7 @@ func (*UserStats) Update(userID int, variant int, stats Stats) error {
 				WHERE game_participants.user_id = ?
 					AND games.score != 0
 					AND games.variant = ?
+					AND games.speedrun = 0
 			),
 			strikeout_rate = IFNULL((
 				SELECT COUNT(games.id)
@@ -156,6 +160,7 @@ func (*UserStats) Update(userID int, variant int, stats Stats) error {
 				WHERE game_participants.user_id = ?
 					AND games.score = 0
 					AND games.variant = ?
+					AND games.speedrun = 0
 			) / (
 				SELECT COUNT(games.id)
 				FROM games
@@ -163,6 +168,7 @@ func (*UserStats) Update(userID int, variant int, stats Stats) error {
 						ON game_participants.game_id = games.id
 				WHERE game_participants.user_id = ?
 					AND games.variant = ?
+					AND games.speedrun = 0
 			), 0)
 
 		WHERE user_id = ?
