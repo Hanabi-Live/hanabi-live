@@ -4,7 +4,8 @@ node_modules
 
 # We don't need to include the browserified/transpiled/minified JS
 /main.browserified.js
-/main.browserified.js~
+/main.browserified.dev.js
+/main.browserified.dev.js~
 /main.bundled.js
 /main.transpiled.js
 /main.min.js
