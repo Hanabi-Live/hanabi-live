@@ -26,9 +26,9 @@ commands.action = (data) => {
     }
 
     // Handle pre-playing / pre-discarding / pre-cluing
-    if (globals.queuedAction === null) {
+    if (globals.queuedAction !== null) {
         // Prevent pre-cluing if the team is now at 0 clues
-        if (globals.queuedAction.type === constants.ACT.CLUE && globals.clues === 0) {
+        if (globals.queuedAction.data.type === constants.ACT.CLUE && globals.clues === 0) {
             return;
         }
 
