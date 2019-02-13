@@ -46,18 +46,11 @@ func (s *Session) Username() string {
 }
 
 func (s *Session) Admin() bool {
-	var admin int
 	if v, exists := s.Get("admin"); !exists {
 		log.Error("Failed to get \"admin\" from a session.")
 		return false
 	} else {
-		admin = v.(int)
-	}
-
-	if admin == 1 {
-		return true
-	} else {
-		return false
+		return v.(bool)
 	}
 }
 

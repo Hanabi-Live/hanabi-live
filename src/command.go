@@ -15,6 +15,7 @@ type CommandData struct {
 	Timed                bool   `json:"timed"`
 	BaseTime             int    `json:"baseTime"`    // In seconds
 	TimePerTurn          int    `json:"timePerTurn"` // In seconds
+	Speedrun             bool   `json:"speedrun"`
 	DeckPlays            bool   `json:"deckPlays"`
 	EmptyClues           bool   `json:"emptyClues"`
 	CharacterAssignments bool   `json:"characterAssignments"`

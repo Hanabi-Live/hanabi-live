@@ -61,6 +61,7 @@ type Options struct {
 	Timed                bool
 	BaseTime             int
 	TimePerTurn          int
+	Speedrun             bool
 	DeckPlays            bool
 	EmptyClues           bool
 	CharacterAssignments bool

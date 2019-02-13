@@ -70,13 +70,13 @@ func httpWS(c *gin.Context) {
 	} else {
 		username = v.(string)
 	}
-	var admin int
+	var admin bool
 	if v := session.Get("admin"); v == nil {
 		log.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed admin check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	} else {
-		admin = v.(int)
+		admin = v.(bool)
 	}
 	var firstTimeUser bool
 	if v := session.Get("firstTimeUser"); v == nil {

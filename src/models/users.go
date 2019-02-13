@@ -10,7 +10,7 @@ type User struct {
 	ID       int
 	Username string
 	Password string
-	Admin    int
+	Admin    bool
 }
 
 func (*Users) Insert(username string, password string) (User, error) {

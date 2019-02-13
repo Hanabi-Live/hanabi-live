@@ -59,6 +59,7 @@ CREATE TABLE games (
     timed                  BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
     time_base              INT           NOT NULL, /* in seconds */
     time_per_turn          INT           NOT NULL, /* in seconds */
+    speedrun               BOOLEAN       NOT NULL,
     deck_plays             BOOLEAN       NOT NULL,
     empty_clues            BOOLEAN       NOT NULL,
     character_assignments  BOOLEAN       NOT NULL,

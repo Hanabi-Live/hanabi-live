@@ -49,11 +49,6 @@ const settingsList = [
         'speedrun-preplay',
         'speedrunPreplay',
     ],
-    [
-        // Enable speedrun mode
-        'speedrun-mode',
-        'speedrunMode',
-    ],
 ];
 
 $(document).ready(() => {

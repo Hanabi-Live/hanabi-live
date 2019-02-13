@@ -166,6 +166,7 @@ func (g *Game) WriteDatabase() (int, error) {
 		Timed:                g.Options.Timed,
 		TimeBase:             g.Options.BaseTime,
 		TimePerTurn:          g.Options.TimePerTurn,
+		Speedrun:             g.Options.Speedrun,
 		DeckPlays:            g.Options.DeckPlays,
 		EmptyClues:           g.Options.EmptyClues,
 		CharacterAssignments: g.Options.CharacterAssignments,
@@ -270,6 +271,11 @@ func (g *Game) WriteDatabase() (int, error) {
 }
 
 func (g *Game) AnnounceGameResult(databaseID int) {
+	// Don't announce speedruns
+	if g.Options.Speedrun {
+		return
+	}
+
 	// Make the list of names
 	playerList := make([]string, 0)
 	for _, p := range g.Players {

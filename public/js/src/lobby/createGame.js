@@ -35,6 +35,15 @@ $(document).ready(() => {
         // Redraw the tooltip so that the new elements will fit better
         $('#nav-buttons-games-create-game').tooltipster('reposition');
     });
+    $('#create-game-speedrun').change(() => {
+        if ($('#create-game-speedrun').prop('checked')) {
+            $('#create-game-timed-row').hide();
+            $('#create-game-timed-row-spacing').hide();
+        } else {
+            $('#create-game-timed-row').show();
+            $('#create-game-timed-row-spacing').show();
+        }
+    });
 
     $('#create-game-tooltip').on('keypress', (event) => {
         if (event.key === 'Enter') {
@@ -149,6 +158,19 @@ exports.ready = () => {
         timePerTurnSeconds = 20;
     }
     $('#time-per-turn-seconds').val(timePerTurnSeconds);
+
+    // Fill in the "Speedrun" checkbox
+    let speedrun;
+    try {
+        speedrun = JSON.parse(localStorage.getItem('speedrun'));
+    } catch (err) {
+        speedrun = false;
+    }
+    if (typeof deckPlays !== 'boolean') {
+        speedrun = false;
+    }
+    $('#create-game-speedrun').prop('checked', speedrun);
+    $('#create-game-speedrun').change();
 
     // Fill in the "Allow Bottom-Deck Blind Plays" checkbox
     let deckPlays;

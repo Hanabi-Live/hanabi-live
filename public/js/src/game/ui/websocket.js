@@ -95,6 +95,7 @@ commands.init = (data) => {
     globals.timed = data.timed;
     globals.baseTime = data.baseTime;
     globals.timePerTurn = data.timePerTurn;
+    globals.speedrun = data.speedrun;
     globals.deckPlays = data.deckPlays;
     globals.emptyClues = data.emptyClues;
     globals.characterAssignments = data.characterAssignments;

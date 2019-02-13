@@ -212,6 +212,13 @@ func commandGameCreate(s *Session, d *CommandData) {
 		d.TimePerTurn = 0
 	}
 
+	// A speedrun cannot be timed
+	if d.Speedrun {
+		d.Timed = false
+		d.BaseTime = 0
+		d.TimePerTurn = 0
+	}
+
 	/*
 		Create
 	*/
@@ -231,6 +238,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 			Timed:                d.Timed,
 			BaseTime:             d.BaseTime,
 			TimePerTurn:          d.TimePerTurn,
+			Speedrun:             d.Speedrun,
 			DeckPlays:            d.DeckPlays,
 			EmptyClues:           d.EmptyClues,
 			CharacterAssignments: d.CharacterAssignments,

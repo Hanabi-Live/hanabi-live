@@ -23,10 +23,11 @@ module.exports = () => {
     globals.sharedReplay = false;
 
     // Optional game settings
-    // (sent in the "init" message)
+    // (sent in the "init" message in "websocket.js")
     globals.timed = false;
     globals.baseTime = null;
     globals.timePerTurn = null;
+    globals.speedrun = false;
     globals.deckPlays = false;
     globals.emptyClues = false;
     globals.characterAssignments = [];

@@ -409,13 +409,13 @@ const HanabiCard = function HanabiCard(config) {
                 return;
             }
 
-            // Empathy in speedrun-mode uses Ctrl
-            if (globals.lobby.settings.speedrunMode && !window.event.ctrlKey) {
+            // Empathy in speedruns uses Ctrl
+            if (globals.speedrun && !window.event.ctrlKey) {
                 return;
             }
 
             // Disable Empathy if any modifiers are being held down
-            if (!globals.lobby.settings.speedrunMode && window.event.ctrlKey) {
+            if (!globals.speedrun && window.event.ctrlKey) {
                 return;
             }
             if (window.event.shiftKey || window.event.altKey) {
@@ -530,9 +530,9 @@ HanabiCard.prototype.click = function click(event) {
         return;
     }
 
-    // Speedrunning mode overrides the normal card clicking behavior
+    // Speedrunning overrides the normal card clicking behavior
     // (but don't use the speedrunning behavior if we are in a solo or shared replay)
-    if (globals.lobby.settings.speedrunMode && !globals.replay) {
+    if (globals.speedrun && !globals.replay) {
         return;
     }
 
@@ -677,9 +677,9 @@ HanabiCard.prototype.clickMorph = function clickMorph() {
 };
 
 HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(event) {
-    // Speedrunning mode overrides the normal card clicking behavior
+    // Speedrunning overrides the normal card clicking behavior
     // (but don't use the speedrunning behavior if we are in a solo or shared replay)
-    if (!globals.lobby.settings.speedrunMode || globals.replay) {
+    if (!globals.speedrun || globals.replay) {
         return;
     }
 
