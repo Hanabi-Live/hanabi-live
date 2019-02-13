@@ -151,6 +151,7 @@ CardDeck.prototype.initTooltip = function initTooltip() {
     if (
         globals.variant.name === 'No Variant'
         && !globals.timed
+        && !globals.speedrun
         && !globals.deckPlays
         && !globals.emptyClues
         && globals.characterAssignments.length === 0
@@ -161,23 +162,28 @@ CardDeck.prototype.initTooltip = function initTooltip() {
     let content = '<strong>Game Options:</strong>';
     content += '<ul class="game-tooltips-ul">';
     if (globals.variant.name !== 'No Variant') {
-        content += `<li>Variant: ${globals.variant.name}</li>`;
+        content += '<div class="create-game-icon"><i class="fas fa-rainbow"></i></div>';
+        content += `&nbsp; Variant: ${globals.variant.name}</li>`;
     }
     if (globals.timed) {
-        content += '<li>Timed: ';
+        content += '<li><i class="fas fa-clock"></i>&nbsp; Timed: ';
         content += misc.timerFormatter(globals.baseTime * 1000);
         content += ' + ';
         content += misc.timerFormatter(globals.timePerTurn * 1000);
         content += '</li>';
     }
+    if (globals.speedrun) {
+        content += '<li><i class="fas fa-running"></i>&nbsp; Speedrun</li>';
+    }
     if (globals.deckPlays) {
-        content += '<li>Bottom-Deck Blind Plays</li>';
+        content += '<li><i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>';
+        content += '&nbsp; Bottom-Deck Blind Plays</li>';
     }
     if (globals.emptyClues) {
-        content += '<li>Empty Clues</li>';
+        content += '<li><i class="fas fa-expand"></i>&nbsp; Empty Clues</li>';
     }
     if (globals.characterAssignments.length > 0) {
-        content += '<li>Detrimental Characters</li>';
+        content += '<li>🤔&nbsp; Detrimental Characters</li>';
     }
     content += '</ul>';
     $('#tooltip-deck').tooltipster('instance').content(content);

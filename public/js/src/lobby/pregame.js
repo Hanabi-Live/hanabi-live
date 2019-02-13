@@ -8,7 +8,20 @@ const constants = require('../constants');
 const misc = require('../misc');
 const lobby = require('./main');
 
+// Constants
+const tooltipsterOptions = {
+    animation: 'grow',
+    contentAsHTML: true,
+    delay: 0,
+    theme: [
+        'tooltipster-shadow',
+        'tooltipster-shadow-big',
+    ],
+};
+
 exports.show = () => {
+    globals.currentScreen = 'pregame';
+
     // Replace the list of current games with a list of the current players
     $('#lobby-pregame').show();
     $('#lobby-games').hide();
@@ -40,6 +53,8 @@ exports.show = () => {
 };
 
 exports.hide = () => {
+    globals.currentScreen = 'lobby';
+
     // Replace the list of current players with a list of the current games
     $('#lobby-pregame').hide();
     $('#lobby-games').show();
@@ -64,34 +79,95 @@ exports.draw = () => {
     const optionsTitle = $('#lobby-pregame-options-title');
     optionsTitle.text('Options:');
     const options = $('#lobby-pregame-options');
-    options.text('');
+
+    // Note that the tooltips must be created inline; if they are created staticly in "main.tmpl",
+    // then they will fail to initialize properly on the second viewing
+    let html = '';
     if (globals.game.timed) {
-        let text = 'Timed (';
-        text += misc.timerFormatter(globals.game.baseTime);
-        text += ' + ';
-        text += misc.timerFormatter(globals.game.timePerTurn);
-        text += ')';
-        $('<li>').html(text).appendTo(options);
+        html += '<li><i id="lobby-pregame-options-timer" class="fas fa-clock" ';
+        html += 'data-tooltip-content="#pregame-tooltip-timer"></i>&nbsp; (';
+        html += misc.timerFormatter(globals.game.baseTime);
+        html += ' + ';
+        html += misc.timerFormatter(globals.game.timePerTurn);
+        html += ')</li>';
+        html += `
+            <div class="hidden">
+                <div id="pregame-tooltip-timer" class="lobby-pregame-tooltip-icon">
+                    This is an timed game.
+                </div>
+            </div>
+        `;
+    }
+    if (globals.game.speedrun) {
+        html += '<li><i id="lobby-pregame-options-speedrun" class="fas fa-running" ';
+        html += 'data-tooltip-content="#pregame-tooltip-speedrun"></i></li>';
+        html += `
+            <div class="hidden">
+                <div id="pregame-tooltip-speedrun" class="lobby-pregame-tooltip-icon">
+                    This is a speedrun.
+                </div>
+            </div>
+        `;
     }
     if (globals.game.deckPlays) {
-        const text = 'Bottom-deck Blind Plays';
-        $('<li>').html(text).appendTo(options);
+        html += '<li><i id="lobby-pregame-options-deck-plays" class="fas fa-blind" ';
+        html += 'style="position: relative; left: 0.2em;" ';
+        html += 'data-tooltip-content="#pregame-tooltip-deck-plays"></i></li>';
+        html += `
+            <div class="hidden">
+                <div id="pregame-tooltip-deck-plays" class="lobby-pregame-tooltip-icon">
+                    The <b>Bottom-Deck Blind-Plays</b> option is enabled.
+                </div>
+            </div>
+        `;
     }
     if (globals.game.emptyClues) {
-        const text = 'Empty Clues';
-        $('<li>').html(text).appendTo(options);
+        html += '<li><i id="lobby-pregame-options-empty-clues" class="fas fa-expand" ';
+        html += 'data-tooltip-content="#pregame-tooltip-empty-clues"></i></li>';
+        html += `
+            <div class="hidden">
+                <div id="pregame-tooltip-empty-clues" class="lobby-pregame-tooltip-icon">
+                    The <b>Empty Clues</b> option is enabled.
+                </div>
+            </div>
+        `;
     }
     if (globals.game.characterAssignments) {
-        const text = 'Character Assignments';
-        $('<li>').html(text).appendTo(options);
+        html += '<li><span id="lobby-pregame-options-characters" ';
+        html += 'style="position: relative; right: 0.2em;" ';
+        html += 'data-tooltip-content="#pregame-tooltip-characters">🤔</span></li>';
+        html += `
+            <div class="hidden">
+                <div id="pregame-tooltip-characters" class="lobby-pregame-tooltip-icon">
+                    The <b>Detrimental Characters</b> option is enabled.
+                </div>
+            </div>
+        `;
     }
     if (globals.game.password) {
-        const text = 'Password-protected';
-        $('<li>').html(text).appendTo(options);
+        html += '<li><i id="lobby-pregame-options-password" class="fas fa-lock" ';
+        html += 'data-tooltip-content="#pregame-tooltip-password"></i></li>';
+        html += `
+            <div class="hidden">
+                <div id="pregame-tooltip-password" class="lobby-pregame-tooltip-icon">
+                    This game is password protected.
+                </div>
+            </div>
+        `;
     }
-    if (options.text() === '') {
+
+    options.html(html);
+    if (html === '') {
         optionsTitle.text('');
     }
+
+    // Initialize the tooltips, if any
+    $('#lobby-pregame-options-timer').tooltipster(tooltipsterOptions);
+    $('#lobby-pregame-options-speedrun').tooltipster(tooltipsterOptions);
+    $('#lobby-pregame-options-deck-plays').tooltipster(tooltipsterOptions);
+    $('#lobby-pregame-options-empty-clues').tooltipster(tooltipsterOptions);
+    $('#lobby-pregame-options-characters').tooltipster(tooltipsterOptions);
+    $('#lobby-pregame-options-password').tooltipster(tooltipsterOptions);
 
     // Draw the player boxes
     const numPlayers = globals.game.players.length;
@@ -107,7 +183,7 @@ exports.draw = () => {
 
         div.show();
 
-        let html = `
+        html = `
             <p class="margin0 padding0p5">
                 <strong>${player.name}</strong>
             </p>
@@ -221,14 +297,6 @@ exports.draw = () => {
         div.html(html);
 
         // Initialize the tooltip
-        $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster({
-            animation: 'grow',
-            contentAsHTML: true,
-            delay: 0,
-            theme: [
-                'tooltipster-shadow',
-                'tooltipster-shadow-big',
-            ],
-        });
+        $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster(tooltipsterOptions);
     }
 };

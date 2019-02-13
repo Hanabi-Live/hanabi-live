@@ -303,6 +303,44 @@ func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
 	return seeds, nil
 }
 
+type Options struct {
+	Variant              int
+	Timed                bool
+	BaseTime             int
+	TimePerTurn          int
+	Speedrun             bool
+	DeckPlays            bool
+	EmptyClues           bool
+	CharacterAssignments bool
+}
+
+func (*Games) GetOptions(databaseID int) (Options, error) {
+	var options Options
+	err := db.QueryRow(`
+		SELECT
+			variant,
+			timed,
+			time_base,
+			time_per_turn,
+			speedrun,
+			deck_plays,
+			empty_clues,
+			character_assignments
+		FROM games
+		WHERE games.id = ?
+	`, databaseID).Scan(
+		&options.Variant,
+		&options.Timed,
+		&options.BaseTime,
+		&options.TimePerTurn,
+		&options.Speedrun,
+		&options.DeckPlays,
+		&options.EmptyClues,
+		&options.CharacterAssignments,
+	)
+	return options, err
+}
+
 func (*Games) GetVariant(databaseID int) (int, error) {
 	var variant int
 	err := db.QueryRow(`
@@ -322,16 +360,6 @@ func (*Games) GetNumPlayers(databaseID int) (int, error) {
 		WHERE games.id = ?
 	`, databaseID).Scan(&numPlayers)
 	return numPlayers, err
-}
-
-func (*Games) GetCharacterAssignments(databaseID int) (bool, error) {
-	var characterAssignments bool
-	err := db.QueryRow(`
-		SELECT character_assignments
-		FROM games
-		WHERE games.id = ?
-	`, databaseID).Scan(&characterAssignments)
-	return characterAssignments, err
 }
 
 func (*Games) GetNumTurns(databaseID int) (int, error) {

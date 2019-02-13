@@ -152,6 +152,10 @@ func (*UserStats) Update(userID int, variant int, stats Stats) error {
 					AND games.variant = ?
 					AND games.speedrun = 0
 			),
+			/*
+				We enclose this query in an "IFNULL" so that it defaults to 0 (instead of NULL)
+				if a user has not played any games
+			*/
 			strikeout_rate = IFNULL((
 				SELECT COUNT(games.id)
 				FROM games
@@ -161,7 +165,13 @@ func (*UserStats) Update(userID int, variant int, stats Stats) error {
 					AND games.score = 0
 					AND games.variant = ?
 					AND games.speedrun = 0
-			) / (
+			) / COALESCE(NULLIF((
+				/*
+					The above code means "default to 1 if the query returns 0"
+					https://stackoverflow.com/questions/10246993/mysql-function-like-isnull-to-check-for-zero-value
+					We want to avoid a division by 0 if a user is playing a game for the first time
+					and it is a speedrun
+				*/
 				SELECT COUNT(games.id)
 				FROM games
 					JOIN game_participants
@@ -169,7 +179,7 @@ func (*UserStats) Update(userID int, variant int, stats Stats) error {
 				WHERE game_participants.user_id = ?
 					AND games.variant = ?
 					AND games.speedrun = 0
-			), 0)
+			), 0), 1), 0)
 
 		WHERE user_id = ?
 			AND variant = ?

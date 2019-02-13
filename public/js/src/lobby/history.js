@@ -19,6 +19,7 @@ $(document).ready(() => {
 });
 
 exports.show = () => {
+    globals.currentScreen = 'history';
     $('#lobby-history').show();
     $('#lobby-top-half').hide();
     $('#lobby-separator').hide();
@@ -28,6 +29,7 @@ exports.show = () => {
 };
 
 exports.hide = () => {
+    globals.currentScreen = 'lobby';
     $('#lobby-history').hide();
     $('#lobby-history-details').hide();
     $('#lobby-top-half').show();
@@ -158,6 +160,7 @@ const makeHistoryDetailsButton = (id, gameCount) => {
 };
 
 exports.showDetails = () => {
+    globals.currentScreen = 'historyDetails';
     $('#lobby-history').hide();
     $('#lobby-history-details').show();
     lobby.nav.show('history-details');
@@ -167,6 +170,7 @@ exports.showDetails = () => {
 };
 
 exports.hideDetails = () => {
+    globals.currentScreen = 'history';
     $('#lobby-history').show();
     $('#lobby-history-details').hide();
     lobby.nav.show('history');

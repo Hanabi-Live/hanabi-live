@@ -23,22 +23,13 @@ func commandHello(s *Session, d *CommandData) {
 	gameID := s.CurrentGame()
 	var g *Game
 	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
-		var variantID int
-		if v, err := db.Games.GetVariant(gameID); err != nil {
-			log.Error("Failed to get the variant from the database for game "+strconv.Itoa(gameID)+":", err)
+		var options models.Options
+		if v, err := db.Games.GetOptions(gameID); err != nil {
+			log.Error("Failed to get the options from the database for game "+strconv.Itoa(gameID)+":", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")
 			return
 		} else {
-			variantID = v
-		}
-
-		var characterAssignmentsEnabled bool
-		if v, err := db.Games.GetCharacterAssignments(gameID); err != nil {
-			log.Error("Failed to get the character assignments from the database for game "+strconv.Itoa(gameID)+":", err)
-			s.Error("Failed to initialize the game. Please contact an administrator.")
-			return
-		} else {
-			characterAssignmentsEnabled = v
+			options = v
 		}
 
 		var dbPlayers []*models.Player
@@ -64,8 +55,14 @@ func commandHello(s *Session, d *CommandData) {
 
 		g = &Game{
 			Options: &Options{
-				Variant:              variantsID[variantID],
-				CharacterAssignments: characterAssignmentsEnabled,
+				Variant:              variantsID[options.Variant],
+				Timed:                options.Timed,
+				BaseTime:             options.BaseTime,
+				TimePerTurn:          options.TimePerTurn,
+				Speedrun:             options.Speedrun,
+				DeckPlays:            options.DeckPlays,
+				EmptyClues:           options.EmptyClues,
+				CharacterAssignments: options.CharacterAssignments,
 			},
 			Players: players,
 		}

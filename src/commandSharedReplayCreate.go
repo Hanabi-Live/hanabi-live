@@ -24,13 +24,13 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	var variantID int
-	if v, err := db.Games.GetVariant(gameID); err != nil {
-		log.Error("Failed to get the variant from the database for game "+strconv.Itoa(gameID)+":", err)
+	var options models.Options
+	if v, err := db.Games.GetOptions(gameID); err != nil {
+		log.Error("Failed to get the options from the database for game "+strconv.Itoa(gameID)+":", err)
 		s.Error("Failed to initialize the game. Please contact an administrator.")
 		return
 	} else {
-		variantID = v
+		options = v
 	}
 
 	var dbPlayers []*models.Player
@@ -70,7 +70,14 @@ func commandSharedReplayCreate(s *Session, d *CommandData) {
 		Name:  name,
 		Owner: s.UserID(),
 		Options: &Options{
-			Variant: variantsID[variantID],
+			Variant:              variantsID[options.Variant],
+			Timed:                options.Timed,
+			BaseTime:             options.BaseTime,
+			TimePerTurn:          options.TimePerTurn,
+			Speedrun:             options.Speedrun,
+			DeckPlays:            options.DeckPlays,
+			EmptyClues:           options.EmptyClues,
+			CharacterAssignments: options.CharacterAssignments,
 		},
 		Players:            players,
 		Spectators:         make([]*Spectator, 0),

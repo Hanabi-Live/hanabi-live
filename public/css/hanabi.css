@@ -378,6 +378,10 @@ table td {
     width: 8em;
 }
 
+.lobby-pregame-tooltip-icon {
+    font-size: 0.75em;
+}
+
 .lobby-pregame-tooltip > div {
     /* Alpha sets this to -2em, so we have to reset it */
     margin-left: 0em;
@@ -481,13 +485,20 @@ table td {
 }
 
 .game-tooltips-ul {
+    list-style-type: none;
     margin-top: 0.5em;
     margin-bottom: 0;
-    text-indent: -0.5em;
+    text-indent: -0.75em;
 }
 
 .game-tooltips-ul > li {
     margin-bottom: 0.1em;
+}
+
+.game-tooltips-icon {
+    display: inline-block;
+    width: 1em;
+    text-align: center;
 }
 
 .game-tooltips-ol {

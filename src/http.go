@@ -193,10 +193,10 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {
-		if strings.HasSuffix(err.Error(), ": write: broken pipe") ||
-			strings.HasSuffix(err.Error(), ": client disconnected") ||
-			strings.HasSuffix(err.Error(), ": http2: stream closed") ||
-			strings.HasSuffix(err.Error(), ": write: connection timed out") {
+		if strings.HasSuffix(err.Error(), "write: broken pipe") ||
+			strings.HasSuffix(err.Error(), "client disconnected") ||
+			strings.HasSuffix(err.Error(), "http2: stream closed") ||
+			strings.HasSuffix(err.Error(), "write: connection timed out") {
 
 			// Some errors are common and expected
 			// (e.g. the user presses the "Stop" button while the template is executing)
