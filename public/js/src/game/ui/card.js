@@ -672,7 +672,7 @@ HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(clickType) {
     if (clickType === 1) { // Left-click
         this.clickSpeedrunLeft();
     } else if (clickType === 3) { // Right-click
-        this.clickSpeedrunLeft();
+        this.clickSpeedrunRight();
     }
 };
 
