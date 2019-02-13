@@ -395,11 +395,6 @@ const HanabiCard = function HanabiCard(config) {
                 return;
             }
 
-            // Disable Empathy if the speedrun mode are enabled
-            if (globals.lobby.settings.speedrunMode) {
-                return;
-            }
-
             // Disable Empathy if the card is tweening
             const child = this.parent; // This is the LayoutChild
             if (child.tween !== null) {
@@ -668,15 +663,78 @@ HanabiCard.prototype.clickMorph = function clickMorph() {
     }
 };
 
-HanabiCard.prototype.clickSpeedrun = function clickMorph(clickType) {
+HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(clickType) {
     // Do nothing if we accidentally click on a played/discarded card
     if (this.isPlayed || this.isDiscarded) {
         return;
     }
 
+    if (clickType === 1) { // Left-click
+        this.clickSpeedrunLeft();
+    } else if (clickType === 3) { // Right-click
+        this.clickSpeedrunLeft();
+    }
+};
+
+HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft() {
     // First, check for "assign note" clicks
     // (code is copied from the "clickRight()" function above)
+    if (this.holder === globals.playerUs) {
+        if (!window.event.ctrlKey) {
+            // Left-clicking on cards in our own hand is a play action
+            globals.lobby.ui.endTurn({
+                type: 'action',
+                data: {
+                    type: constants.ACT.PLAY,
+                    target: this.order,
+                },
+            });
+        } else {
+            // Ctrl + left-clicking on cards in our own hand is a discard action
+            globals.lobby.ui.endTurn({
+                type: 'action',
+                data: {
+                    type: constants.ACT.DISCARD,
+                    target: this.order,
+                },
+            });
+        }
+        return;
+    }
 
+    if (window.event.ctrlKey) {
+        // Ctrl + left-clicking on cards in other people's hands is a color clue action
+        const color = this.trueSuit.clueColors[0];
+        const colors = globals.variant.clueColors;
+        const value = colors.findIndex(variantClueColor => variantClueColor === color);
+        globals.lobby.ui.endTurn({
+            type: 'action',
+            data: {
+                type: constants.ACT.CLUE,
+                target: this.holder,
+                clue: {
+                    type: constants.CLUE_TYPE.COLOR,
+                    value,
+                },
+            },
+        });
+    } else if (window.event.shiftKey) {
+        // Shift + left-clicking on cards in other people's hands is a number clue action
+        globals.lobby.ui.endTurn({
+            type: 'action',
+            data: {
+                type: constants.ACT.CLUE,
+                target: this.holder,
+                clue: {
+                    type: constants.CLUE_TYPE.RANK,
+                    value: this.trueRank,
+                },
+            },
+        });
+    }
+};
+
+HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight() {
     // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
     // (this must be above the other note code because of the modifiers)
     if (window.event.ctrlKey && window.event.shiftKey) {
@@ -698,59 +756,8 @@ HanabiCard.prototype.clickSpeedrun = function clickMorph(clickType) {
         return;
     }
 
-    if (this.holder === globals.playerUs) {
-        if (clickType === 1) { // Left-click
-            // Left-clicking on cards in our own hand is a play action
-            globals.lobby.ui.endTurn({
-                type: 'action',
-                data: {
-                    type: constants.ACT.PLAY,
-                    target: this.order,
-                },
-            });
-        } else if (clickType === 3) { // Right-click
-            // Right-clicking on cards in our own hand is a discard action
-            globals.lobby.ui.endTurn({
-                type: 'action',
-                data: {
-                    type: constants.ACT.DISCARD,
-                    target: this.order,
-                },
-            });
-        }
-        return;
-    }
-
-    if (clickType === 1) { // Left-click
-        // Left-clicking on cards in other people's hands is a color clue action
-        const color = this.trueSuit.clueColors[0];
-        const colors = globals.variant.clueColors;
-        const value = colors.findIndex(variantClueColor => variantClueColor === color);
-        globals.lobby.ui.endTurn({
-            type: 'action',
-            data: {
-                type: constants.ACT.CLUE,
-                target: this.holder,
-                clue: {
-                    type: constants.CLUE_TYPE.COLOR,
-                    value,
-                },
-            },
-        });
-    } else if (clickType === 3) { // Right-click
-        // Right-clicking on cards in other people's hands is a number clue action
-        globals.lobby.ui.endTurn({
-            type: 'action',
-            data: {
-                type: constants.ACT.CLUE,
-                target: this.holder,
-                clue: {
-                    type: constants.CLUE_TYPE.RANK,
-                    value: this.trueRank,
-                },
-            },
-        });
-    }
+    // A normal right-click is edit a note
+    notes.openEditTooltip(this);
 };
 
 HanabiCard.prototype.setNote = function setNote(note) {
