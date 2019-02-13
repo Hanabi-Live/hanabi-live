@@ -677,7 +677,7 @@ HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(clickType) {
 };
 
 HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft() {
-    if (this.holder === globals.playerUs && globals.ourTurn) {
+    if (this.holder === globals.playerUs) {
         // Left-clicking on cards in our own hand is a play action
         globals.lobby.ui.endTurn({
             type: 'action',
@@ -722,7 +722,7 @@ HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft() {
 };
 
 HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight() {
-    if (this.holder === globals.playerUs && globals.ourTurn) {
+    if (this.holder === globals.playerUs) {
         // Right-clicking on cards in our own hand is a discard action
         globals.lobby.ui.endTurn({
             type: 'action',
