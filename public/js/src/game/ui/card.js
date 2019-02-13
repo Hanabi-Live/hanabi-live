@@ -677,28 +677,15 @@ HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(clickType) {
 };
 
 HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft() {
-    // First, check for "assign note" clicks
-    // (code is copied from the "clickRight()" function above)
     if (this.holder === globals.playerUs) {
-        if (!window.event.ctrlKey) {
-            // Left-clicking on cards in our own hand is a play action
-            globals.lobby.ui.endTurn({
-                type: 'action',
-                data: {
-                    type: constants.ACT.PLAY,
-                    target: this.order,
-                },
-            });
-        } else {
-            // Ctrl + left-clicking on cards in our own hand is a discard action
-            globals.lobby.ui.endTurn({
-                type: 'action',
-                data: {
-                    type: constants.ACT.DISCARD,
-                    target: this.order,
-                },
-            });
-        }
+        // Left-clicking on cards in our own hand is a play action
+        globals.lobby.ui.endTurn({
+            type: 'action',
+            data: {
+                type: constants.ACT.PLAY,
+                target: this.order,
+            },
+        });
         return;
     }
 
@@ -735,6 +722,17 @@ HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft() {
 };
 
 HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight() {
+    if (this.holder === globals.playerUs) {
+        // Right-clicking on cards in our own hand is a discard action
+        globals.lobby.ui.endTurn({
+            type: 'action',
+            data: {
+                type: constants.ACT.DISCARD,
+                target: this.order,
+            },
+        });
+    }
+
     // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
     // (this must be above the other note code because of the modifiers)
     if (window.event.ctrlKey && window.event.shiftKey) {

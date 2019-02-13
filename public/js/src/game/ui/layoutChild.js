@@ -44,6 +44,7 @@ LayoutChild.prototype.checkSetDraggable = function checkSetDraggable() {
         // If it is not our turn, then the card does not need to be draggable yet
         // (unless we have the "Enable pre-playing cards" feature enabled)
         (!globals.ourTurn && !globals.lobby.settings.speedrunPreplay)
+        || globals.lobby.settings.speedrunMode // Speedrun mode takes priority over preplay
         || card.holder !== globals.playerUs // Only our cards should be draggable
         || card.isPlayed // Cards on the stacks should not be draggable
         || card.isDiscarded // Cards in the discard pile should not be draggable

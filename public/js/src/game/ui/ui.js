@@ -173,9 +173,14 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
     globals.elements.playerHands[globals.playerUs].moveToTop();
 
     // Set our hand to being draggable
-    // (this is unnecessary if the pre-play setting is enabled,
-    // as the hand will already be draggable)
-    if (!globals.lobby.settings.speedrunPreplay) {
+    if (
+        // This is unnecessary if the pre-play setting is enabled,
+        // as the hand will already be draggable
+        !globals.lobby.settings.speedrunPreplay
+        // This is unnecessary if the speedrun mode is enabled,
+        // as clicking on cards takes priority over dragging cards
+        && !globals.lobby.settings.speedrunMode
+    ) {
         const ourHand = globals.elements.playerHands[globals.playerUs];
         for (const child of ourHand.children) {
             child.checkSetDraggable();
