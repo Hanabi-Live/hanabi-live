@@ -952,31 +952,6 @@ const drawClueArea = () => {
         }
     }
 
-    // Rank buttons / number buttons
-    let numRanks = 5;
-    if (globals.variant.name.startsWith('Multi-Fives')) {
-        numRanks = 4;
-    }
-    for (let i = 1; i <= numRanks; i++) {
-        const x = 0.134 + ((5 - numRanks) * 0.025);
-        button = new NumberButton({
-            // x: (0.183 + (i - 1) * 0.049) * winW,
-            x: (x + i * 0.049) * winW,
-            y: 0.027 * winH,
-            width: 0.04 * winW,
-            height: 0.071 * winH,
-            number: i,
-            clue: new Clue(constants.CLUE_TYPE.RANK, i),
-        });
-
-        // Add it to the button array (for keyboard hotkeys)
-        globals.elements.rankClueButtons.push(button);
-
-        globals.elements.clueArea.add(button);
-
-        globals.elements.clueButtonGroup.add(button);
-    }
-
     // Color buttons
     {
         const x = 0.158 + ((6 - globals.variant.clueColors.length) * 0.025);
@@ -984,7 +959,7 @@ const drawClueArea = () => {
         for (const color of globals.variant.clueColors) {
             button = new ColorButton({
                 x: (x + i * 0.049) * winW,
-                y: 0.1 * winH,
+                y: 0.027 * winH,
                 width: 0.04 * winW,
                 height: 0.071 * winH,
                 color: color.hexCode,
@@ -1000,6 +975,31 @@ const drawClueArea = () => {
             globals.elements.clueButtonGroup.add(button);
             i += 1;
         }
+    }
+
+    // Rank buttons / number buttons
+    let numRanks = 5;
+    if (globals.variant.name.startsWith('Multi-Fives')) {
+        numRanks = 4;
+    }
+    for (let i = 1; i <= numRanks; i++) {
+        const x = 0.134 + ((5 - numRanks) * 0.025);
+        button = new NumberButton({
+            // x: (0.183 + (i - 1) * 0.049) * winW,
+            x: (x + i * 0.049) * winW,
+            y: 0.1 * winH,
+            width: 0.04 * winW,
+            height: 0.071 * winH,
+            number: i,
+            clue: new Clue(constants.CLUE_TYPE.RANK, i),
+        });
+
+        // Add it to the button array (for keyboard hotkeys)
+        globals.elements.rankClueButtons.push(button);
+
+        globals.elements.clueArea.add(button);
+
+        globals.elements.clueButtonGroup.add(button);
     }
 
     // The "Give Clue" button
