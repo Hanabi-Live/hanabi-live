@@ -329,6 +329,7 @@ const HanabiCard = function HanabiCard(config) {
     });
 
     this.on('click tap', this.click);
+    this.on('mousedown', this.clickSpeedrun);
 
     // Hide clue arrows ahead of user dragging their card
     if (this.holder === globals.playerUs && !globals.replay && !globals.spectating) {
@@ -404,6 +405,11 @@ const HanabiCard = function HanabiCard(config) {
             // Disable Empathy if the card is played or discarded
             // (clicking on a played/discarded card goes to the turn that it was played/discarded)
             if (this.isPlayed || this.isDiscarded) {
+                return;
+            }
+
+            // Disable Empathy if any modifiers are being held down
+            if (window.event.ctrlKey || window.event.shiftKey || window.event.altKey) {
                 return;
             }
 
@@ -519,7 +525,6 @@ HanabiCard.prototype.click = function click(event) {
     // Speedrunning mode overrides the normal card clicking behavior
     // (but don't use the speedrunning behavior if we are in a solo or shared replay)
     if (globals.lobby.settings.speedrunMode && !globals.replay) {
-        this.clickSpeedrun(event.evt.which);
         return;
     }
 
@@ -663,15 +668,21 @@ HanabiCard.prototype.clickMorph = function clickMorph() {
     }
 };
 
-HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(clickType) {
+HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(event) {
+    // Speedrunning mode overrides the normal card clicking behavior
+    // (but don't use the speedrunning behavior if we are in a solo or shared replay)
+    if (!globals.lobby.settings.speedrunMode || globals.replay) {
+        return;
+    }
+
     // Do nothing if we accidentally click on a played/discarded card
     if (this.isPlayed || this.isDiscarded) {
         return;
     }
 
-    if (clickType === 1) { // Left-click
+    if (event.evt.which === 1) { // Left-click
         this.clickSpeedrunLeft();
-    } else if (clickType === 3) { // Right-click
+    } else if (event.evt.which === 3) { // Right-click
         this.clickSpeedrunRight();
     }
 };
