@@ -1,19 +1,20 @@
 // Imports
 const globals = require('./globals');
+const graphics = require('./graphics');
 
 const HanabiClueLog = function HanabiClueLog(config) {
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
 };
 
-Kinetic.Util.extend(HanabiClueLog, Kinetic.Group);
+graphics.Util.extend(HanabiClueLog, graphics.Group);
 
 HanabiClueLog.prototype.add = function add(child) {
-    Kinetic.Group.prototype.add.call(this, child);
+    graphics.Group.prototype.add.call(this, child);
     this.doLayout();
 };
 
 HanabiClueLog.prototype._setChildrenIndices = function _setChildrenIndices() {
-    Kinetic.Group.prototype._setChildrenIndices.call(this);
+    graphics.Group.prototype._setChildrenIndices.call(this);
     this.doLayout();
 };
 

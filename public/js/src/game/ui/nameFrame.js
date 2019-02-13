@@ -1,11 +1,12 @@
 // Imports
 const globals = require('./globals');
 const constants = require('../../constants');
+const graphics = require('./graphics');
 
 const HanabiNameFrame = function HanabiNameFrame(config) {
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
 
-    this.name = new Kinetic.Text({
+    this.name = new graphics.Text({
         x: config.width / 2,
         y: 0,
         height: config.height,
@@ -48,7 +49,7 @@ const HanabiNameFrame = function HanabiNameFrame(config) {
 
     w *= 1.4;
 
-    this.leftline = new Kinetic.Line({
+    this.leftline = new graphics.Line({
         points: [
             0,
             0,
@@ -71,7 +72,7 @@ const HanabiNameFrame = function HanabiNameFrame(config) {
 
     this.add(this.leftline);
 
-    this.rightline = new Kinetic.Line({
+    this.rightline = new graphics.Line({
         points: [
             config.width / 2 + w / 2,
             config.height / 2,
@@ -119,7 +120,7 @@ const HanabiNameFrame = function HanabiNameFrame(config) {
     });
 };
 
-Kinetic.Util.extend(HanabiNameFrame, Kinetic.Group);
+graphics.Util.extend(HanabiNameFrame, graphics.Group);
 
 // Transfer leadership of the shared replay to another player
 HanabiNameFrame.prototype.giveLeader = function giveLeader(username) {

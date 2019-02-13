@@ -1,14 +1,15 @@
 // Imports
 const globals = require('./globals');
 const constants = require('../../constants');
+const graphics = require('./graphics');
 const LayoutChild = require('./layoutChild');
 const misc = require('../../misc');
 const replay = require('./replay');
 
 const CardDeck = function CardDeck(config) {
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
 
-    this.cardback = new Kinetic.Image({
+    this.cardback = new graphics.Image({
         x: 0,
         y: 0,
         width: this.getWidth(),
@@ -44,7 +45,7 @@ const CardDeck = function CardDeck(config) {
         } else {
             // The deck was dragged to an invalid location,
             // so animate the card back to where it was
-            new Kinetic.Tween({
+            new graphics.Tween({
                 node: this,
                 duration: 0.5,
                 x: 0,
@@ -59,7 +60,7 @@ const CardDeck = function CardDeck(config) {
 
     this.cardback.on('click', replay.promptTurn);
 
-    this.count = new Kinetic.Text({
+    this.count = new graphics.Text({
         fill: 'white',
         stroke: 'black',
         strokeWidth: 1,
@@ -96,10 +97,10 @@ const CardDeck = function CardDeck(config) {
     });
 };
 
-Kinetic.Util.extend(CardDeck, Kinetic.Group);
+graphics.Util.extend(CardDeck, graphics.Group);
 
 CardDeck.prototype.add = function add(child) {
-    Kinetic.Group.prototype.add.call(this, child);
+    graphics.Group.prototype.add.call(this, child);
 
     if (!(child instanceof LayoutChild)) {
         return;
@@ -110,7 +111,7 @@ CardDeck.prototype.add = function add(child) {
         return;
     }
 
-    child.tween = new Kinetic.Tween({
+    child.tween = new graphics.Tween({
         node: child,
         x: 0,
         y: 0,

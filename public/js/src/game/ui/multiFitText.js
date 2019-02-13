@@ -1,9 +1,10 @@
 // Imports
 const globals = require('./globals');
+const graphics = require('./graphics');
 const FitText = require('./fitText');
 
 const MultiFitText = function MultiFitText(config) {
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
     this.maxLines = config.maxLines;
     this.smallHistory = [];
     for (let i = 0; i < this.maxLines; i++) {
@@ -14,10 +15,10 @@ const MultiFitText = function MultiFitText(config) {
         newConfig.y = i * newConfig.height;
 
         const childText = new FitText(newConfig);
-        Kinetic.Group.prototype.add.call(this, childText);
+        graphics.Group.prototype.add.call(this, childText);
     }
 };
-Kinetic.Util.extend(MultiFitText, Kinetic.Group);
+graphics.Util.extend(MultiFitText, graphics.Group);
 
 MultiFitText.prototype.setMultiText = function setMultiText(text) {
     if (this.smallHistory.length >= this.maxLines) {

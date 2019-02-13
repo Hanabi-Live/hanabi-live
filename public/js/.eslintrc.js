@@ -1,17 +1,17 @@
 module.exports = {
     // The linter base is the airbnb style guide, located here:
     // https://github.com/airbnb/javascript
-    'extends': 'airbnb-base',
+    extends: 'airbnb-base',
 
-    'env': {
-        'es6': true,
-        'browser': true,
-        'jquery': true,
+    env: {
+        es6: true,
+        browser: true,
+        jquery: true,
     },
 
     // We modify the base for some specific things
     // (listed in alphabetical order)
-    'rules': {
+    rules: {
         // airbnb uses 2 spaces, but it is harder to read block intendation at a glance
         'indent': ['warn', 4],
 
@@ -52,8 +52,9 @@ module.exports = {
         'quote-props': ['warn', 'consistent-as-needed'],
     },
 
-    'globals': {
-        'Kinetic': true,
-        'hex_sha256': true,
+    globals: {
+        Kinetic: true,
+        Konva: true,
+        hex_sha256: true,
     },
 };

@@ -1,14 +1,15 @@
 // Imports
 const globals = require('./globals');
 const FitText = require('./fitText');
+const graphics = require('./graphics');
 
 const Button = function Button(config) {
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
 
     const w = this.getWidth();
     const h = this.getHeight();
 
-    const background = new Kinetic.Rect({
+    const background = new graphics.Rect({
         name: 'background',
         x: 0,
         y: 0,
@@ -42,7 +43,7 @@ const Button = function Button(config) {
 
         this.add(text);
     } else if (config.image) {
-        const img = new Kinetic.Image({
+        const img = new graphics.Image({
             name: 'image',
             x: 0.2 * w,
             y: 0.2 * h,
@@ -79,7 +80,7 @@ const Button = function Button(config) {
     });
 };
 
-Kinetic.Util.extend(Button, Kinetic.Group);
+graphics.Util.extend(Button, graphics.Group);
 
 Button.prototype.setEnabled = function setEnabled(enabled) {
     this.enabled = enabled;

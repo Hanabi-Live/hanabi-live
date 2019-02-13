@@ -5,12 +5,13 @@
 
 // Imports
 const globals = require('./globals');
+const graphics = require('./graphics');
 
 const CardStack = function CardStack(config) {
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
 };
 
-Kinetic.Util.extend(CardStack, Kinetic.Group);
+graphics.Util.extend(CardStack, graphics.Group);
 
 CardStack.prototype.add = function add(child) {
     child.children.forEach((c) => {
@@ -19,13 +20,13 @@ CardStack.prototype.add = function add(child) {
         }
     });
     const pos = child.getAbsolutePosition();
-    Kinetic.Group.prototype.add.call(this, child);
+    graphics.Group.prototype.add.call(this, child);
     child.setAbsolutePosition(pos);
     this.doLayout();
 };
 
 CardStack.prototype._setChildrenIndices = function _setChildrenIndices() {
-    Kinetic.Group.prototype._setChildrenIndices.call(this);
+    graphics.Group.prototype._setChildrenIndices.call(this);
 };
 
 CardStack.prototype.doLayout = function doLayout() {
@@ -68,7 +69,7 @@ CardStack.prototype.doLayout = function doLayout() {
             // Animate the card leaving the hand to the play stacks
             const card = node.children[0];
             card.tweening = true;
-            node.tween = new Kinetic.Tween({
+            node.tween = new graphics.Tween({
                 node,
                 duration: 0.8,
                 x: 0,

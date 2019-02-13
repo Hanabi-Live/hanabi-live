@@ -6,6 +6,7 @@
 const constants = require('../../constants');
 const convert = require('./convert');
 const globals = require('./globals');
+const graphics = require('./graphics');
 const HanabiCard = require('./card');
 const HanabiClueEntry = require('./clueEntry');
 const LayoutChild = require('./layoutChild');
@@ -366,7 +367,7 @@ commands.status = (data) => {
     }
 
     // Update the score (in the bottom-right-hand corner)
-    globals.elements.scoreNumberLabel.setText(globals.score);
+    globals.elements.scoreNumberLabel.setText(globals.score.toString());
 
     // Update the stats on the middle-left-hand side of the screen
     stats.updatePace();
@@ -381,7 +382,7 @@ commands.strike = (data) => {
     globals.cluesSpentPlusStrikes += 1;
     stats.updateEfficiency(0);
 
-    const x = new Kinetic.Image({
+    const x = new graphics.Image({
         x: (0.015 + 0.04 * (data.num - 1)) * globals.stage.getWidth(),
         y: 0.125 * globals.stage.getHeight(),
         width: 0.02 * globals.stage.getWidth(),
@@ -409,7 +410,7 @@ commands.strike = (data) => {
     if (globals.animateFast) {
         x.setOpacity(1.0);
     } else {
-        new Kinetic.Tween({
+        new graphics.Tween({
             node: x,
             opacity: 1.0,
             duration: globals.animateFast ? 0.001 : 1.0,

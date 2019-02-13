@@ -6,6 +6,7 @@
 const globals = require('./globals');
 const constants = require('../../constants');
 const cardDraw = require('./cardDraw');
+const graphics = require('./graphics');
 const notes = require('./notes');
 const replay = require('./replay');
 
@@ -32,11 +33,11 @@ const HanabiCard = function HanabiCard(config) {
         y: CARDH / 2,
     };
 
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
 
     this.tweening = false;
 
-    this.bare = new Kinetic.Image({
+    this.bare = new graphics.Image({
         width: config.width,
         height: config.height,
     });
@@ -49,7 +50,7 @@ const HanabiCard = function HanabiCard(config) {
         this.bare.setY(inverted ? config.height : 0);
     };
 
-    this.bare.setDrawFunc(function setDrawFunc(context) {
+    this.bare.setSceneFunc(function setSceneFunc(context) {
         cardDraw.scaleCardImage(
             context,
             self.barename,
@@ -79,14 +80,14 @@ const HanabiCard = function HanabiCard(config) {
     this.possibleSuits = config.suits;
     this.possibleRanks = config.ranks;
 
-    this.rankPips = new Kinetic.Group({
+    this.rankPips = new graphics.Group({
         x: 0,
         y: Math.floor(CARDH * 0.85),
         width: CARDW,
         height: Math.floor(CARDH * 0.15),
         visible: !this.rankKnown(),
     });
-    this.suitPips = new Kinetic.Group({
+    this.suitPips = new graphics.Group({
         x: 0,
         y: 0,
         width: Math.floor(CARDW),
@@ -109,7 +110,7 @@ const HanabiCard = function HanabiCard(config) {
     }
 
     for (const i of config.ranks) {
-        const rankPip = new Kinetic.Rect({
+        const rankPip = new graphics.Rect({
             x: Math.floor(CARDW * (i * 0.19 - 0.14)),
             y: 0,
             width: Math.floor(CARDW * 0.15),
@@ -135,7 +136,7 @@ const HanabiCard = function HanabiCard(config) {
             fill = undefined;
         }
 
-        const suitPip = new Kinetic.Shape({
+        const suitPip = new graphics.Shape({
             x: Math.floor(CARDW * 0.5),
             y: Math.floor(CARDH * 0.5),
 
@@ -158,7 +159,7 @@ const HanabiCard = function HanabiCard(config) {
             name: suit.name,
             listening: false,
             /* eslint-disable no-loop-func */
-            drawFunc: (ctx) => {
+            sceneFunc: (ctx) => {
                 cardDraw.drawSuitShape(suit, i)(ctx);
                 ctx.closePath();
                 ctx.fillStrokeShape(suitPip);
@@ -203,7 +204,7 @@ const HanabiCard = function HanabiCard(config) {
 
     this.setBareImage();
 
-    this.cluedBorder = new Kinetic.Rect({
+    this.cluedBorder = new graphics.Rect({
         x: 3,
         y: 3,
         width: config.width - 6,
@@ -224,7 +225,7 @@ const HanabiCard = function HanabiCard(config) {
     this.isPlayed = false;
     this.turnPlayed = null;
 
-    this.indicatorArrow = new Kinetic.Text({
+    this.indicatorArrow = new graphics.Text({
         x: config.width * 1.01,
         y: config.height * 0.18,
         width: config.width,
@@ -247,10 +248,61 @@ const HanabiCard = function HanabiCard(config) {
     });
     this.add(this.indicatorArrow);
 
+    /*
+    // From: https://stackoverflow.com/questions/808826/draw-arrow-on-canvas-tag
+    function canvas_arrow(fromx, fromy, tox, toy, r){
+        const cvs = document.createElement('canvas');
+        const context = cvs.getContext('2d');
+
+        var x_center = tox;
+        var y_center = toy;
+
+        var angle;
+        var x;
+        var y;
+
+        context.beginPath();
+
+        angle = Math.atan2(toy-fromy,tox-fromx)
+        x = r*Math.cos(angle) + x_center;
+        y = r*Math.sin(angle) + y_center;
+
+        context.moveTo(x, y);
+
+        angle += (1/3)*(2*Math.PI)
+        x = r*Math.cos(angle) + x_center;
+        y = r*Math.sin(angle) + y_center;
+
+        context.lineTo(x, y);
+
+        angle += (1/3)*(2*Math.PI)
+        x = r*Math.cos(angle) + x_center;
+        y = r*Math.sin(angle) + y_center;
+
+        context.lineTo(x, y);
+
+        context.closePath();
+
+        context.fill();
+
+        return cvs;
+    }
+    const width = this.getWidth();
+    const height = this.getHeight();
+    this.indicatorArrow = new graphics.Image({
+        x: 0,
+        y: 0,
+        width,
+        height,
+        image: canvas_arrow(width / 2, 0, width / 2, height / 5, 50),
+    });
+    this.add(this.indicatorArrow);
+    */
+
     // Define the note indicator emoji (this used to be a white square)
     const noteX = 0.78;
     const noteY = 0.06;
-    this.noteGiven = new Kinetic.Text({
+    this.noteGiven = new graphics.Text({
         x: noteX * config.width,
         // If the cards have triangles on the corners that show the color composition,
         // the note emoji will overlap
@@ -435,7 +487,7 @@ const HanabiCard = function HanabiCard(config) {
     }
 };
 
-Kinetic.Util.extend(HanabiCard, Kinetic.Group);
+graphics.Util.extend(HanabiCard, graphics.Group);
 
 HanabiCard.prototype.setBareImage = function setBareImage() {
     this.barename = imageName(this);

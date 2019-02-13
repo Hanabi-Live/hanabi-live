@@ -1,5 +1,6 @@
 // Imports
 const Button = require('./button');
+const graphics = require('./graphics');
 
 // A simple two-state button with text for each state
 const ToggleButton = function ToggleButton(config) {
@@ -21,6 +22,6 @@ const ToggleButton = function ToggleButton(config) {
     }
 };
 
-Kinetic.Util.extend(ToggleButton, Button);
+graphics.Util.extend(ToggleButton, Button);
 
 module.exports = ToggleButton;

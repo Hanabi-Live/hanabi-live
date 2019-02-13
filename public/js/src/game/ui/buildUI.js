@@ -14,6 +14,7 @@ const ClueRecipientButton = require('./clueRecipientButton');
 const ColorButton = require('./colorButton');
 const constants = require('../../constants');
 const FitText = require('./fitText');
+const graphics = require('./graphics');
 const HanabiClueLog = require('./clueLog');
 const HanabiNameFrame = require('./nameFrame');
 const HanabiMsgLog = require('./msgLog');
@@ -44,18 +45,18 @@ module.exports = () => {
 
     // Define the layers
     // (they are added to the stage later on at the end of the buildUI function)
-    globals.layers.background = new Kinetic.Layer();
-    globals.layers.card = new Kinetic.Layer();
-    globals.layers.UI = new Kinetic.Layer();
-    globals.layers.overtop = new Kinetic.Layer();
-    globals.layers.text = new Kinetic.Layer({
+    globals.layers.background = new graphics.Layer();
+    globals.layers.card = new graphics.Layer();
+    globals.layers.UI = new graphics.Layer();
+    globals.layers.overtop = new graphics.Layer();
+    globals.layers.text = new graphics.Layer({
         listening: false,
     });
-    globals.layers.timer = new Kinetic.Layer({
+    globals.layers.timer = new graphics.Layer({
         listening: false,
     });
 
-    const background = new Kinetic.Image({
+    const background = new graphics.Image({
         x: 0,
         y: 0,
         width: winW,
@@ -70,7 +71,7 @@ module.exports = () => {
     */
 
     // This is the invisible rectangle that players drag cards to in order to discard them
-    globals.elements.discardArea = new Kinetic.Rect({
+    globals.elements.discardArea = new graphics.Rect({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.2 * winW,
@@ -84,7 +85,7 @@ module.exports = () => {
     );
 
     // The red border that surrounds the discard pile when the team is at 8 clues
-    globals.elements.noDiscardLabel = new Kinetic.Rect({
+    globals.elements.noDiscardLabel = new graphics.Rect({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.19 * winW,
@@ -97,7 +98,7 @@ module.exports = () => {
     globals.layers.UI.add(globals.elements.noDiscardLabel);
 
     // The yellow border that surrounds the discard pile when it is a "Double Discard" situation
-    globals.elements.noDoubleDiscardLabel = new Kinetic.Rect({
+    globals.elements.noDoubleDiscardLabel = new graphics.Rect({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.19 * winW,
@@ -111,7 +112,7 @@ module.exports = () => {
     globals.layers.UI.add(globals.elements.noDoubleDiscardLabel);
 
     // The faded rectange around the trash can
-    rect = new Kinetic.Rect({
+    rect = new graphics.Rect({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.19 * winW,
@@ -123,7 +124,7 @@ module.exports = () => {
     globals.layers.background.add(rect);
 
     // The icon over the discard pile
-    const img = new Kinetic.Image({
+    const img = new graphics.Image({
         x: 0.82 * winW,
         y: 0.62 * winH,
         width: 0.15 * winW,
@@ -148,14 +149,14 @@ module.exports = () => {
         actionLogValues.y = 0.01;
         actionLogValues.h = 0.25;
     }
-    const actionLog = new Kinetic.Group({
+    const actionLog = new graphics.Group({
         x: actionLogValues.x * winW,
         y: actionLogValues.y * winH,
     });
     globals.layers.UI.add(actionLog);
 
     // The faded rectange around the action log
-    rect = new Kinetic.Rect({
+    rect = new graphics.Rect({
         x: 0,
         y: 0,
         width: actionLogValues.w * winW,
@@ -211,7 +212,7 @@ module.exports = () => {
     actionLog.add(globals.elements.messagePrompt);
 
     // The dark overlay that appears when you click on the action log (or a player's name)
-    globals.elements.stageFade = new Kinetic.Rect({
+    globals.elements.stageFade = new graphics.Rect({
         x: 0,
         y: 0,
         width: winW,
@@ -235,14 +236,14 @@ module.exports = () => {
         scoreAreaValues.x = 0.168;
         scoreAreaValues.y = 0.81;
     }
-    globals.elements.scoreArea = new Kinetic.Group({
+    globals.elements.scoreArea = new graphics.Group({
         x: scoreAreaValues.x * winW,
         y: scoreAreaValues.y * winH,
     });
     globals.layers.UI.add(globals.elements.scoreArea);
 
     // The faded rectangle around the score area
-    rect = new Kinetic.Rect({
+    rect = new graphics.Rect({
         x: 0,
         y: 0,
         width: 0.13 * winW,
@@ -253,7 +254,7 @@ module.exports = () => {
     });
     globals.elements.scoreArea.add(rect);
 
-    const basicTextLabel = new Kinetic.Text({
+    const basicTextLabel = new graphics.Text({
         x: 0.01 * winW,
         y: 0.01 * winH,
         width: 0.11 * winW,
@@ -318,7 +319,7 @@ module.exports = () => {
 
     // Draw the 3 strike (bomb) black squares
     for (let i = 0; i < 3; i++) {
-        const square = new Kinetic.Rect({
+        const square = new graphics.Rect({
             x: (0.01 + 0.04 * i) * winW,
             y: 0.115 * winH,
             width: 0.03 * winW,
@@ -342,7 +343,7 @@ module.exports = () => {
         spectatorsLabelValues.x = 0.01;
         spectatorsLabelValues.y = 0.72;
     }
-    globals.elements.spectatorsLabel = new Kinetic.Text({
+    globals.elements.spectatorsLabel = new graphics.Text({
         x: spectatorsLabelValues.x * winW,
         y: spectatorsLabelValues.y * winH,
         width: 0.03 * winW,
@@ -376,7 +377,7 @@ module.exports = () => {
         $('#tooltip-spectators').tooltipster('close');
     });
 
-    globals.elements.spectatorsNumLabel = new Kinetic.Text({
+    globals.elements.spectatorsNumLabel = new graphics.Text({
         x: (spectatorsLabelValues.x - 0.04) * winW,
         y: (spectatorsLabelValues.y + 0.034) * winH,
         width: 0.11 * winW,
@@ -406,7 +407,7 @@ module.exports = () => {
         sharedReplayLeaderLabelValues.x = spectatorsLabelValues.x + 0.03;
         sharedReplayLeaderLabelValues.y = spectatorsLabelValues.y;
     }
-    globals.elements.sharedReplayLeaderLabel = new Kinetic.Text({
+    globals.elements.sharedReplayLeaderLabel = new graphics.Text({
         x: sharedReplayLeaderLabelValues.x * winW,
         y: sharedReplayLeaderLabelValues.y * winH,
         width: 0.03 * winW,
@@ -428,14 +429,14 @@ module.exports = () => {
     globals.layers.UI.add(globals.elements.sharedReplayLeaderLabel);
 
     // Add an animation to alert everyone when shared replay leadership has been transfered
-    globals.elements.sharedReplayLeaderLabelPulse = new Kinetic.Tween({
+    globals.elements.sharedReplayLeaderLabelPulse = new graphics.Tween({
         node: globals.elements.sharedReplayLeaderLabel,
         scaleX: 2,
         scaleY: 2,
         offsetX: 12,
         offsetY: 10,
         duration: 0.5,
-        easing: Kinetic.Easings.EaseInOut,
+        easing: graphics.Easings.EaseInOut,
         onFinish: () => {
             globals.elements.sharedReplayLeaderLabelPulse.reverse();
         },
@@ -501,7 +502,7 @@ module.exports = () => {
         w: 0.19,
         h: 0.51,
     };
-    const clueLogRect = new Kinetic.Rect({
+    const clueLogRect = new graphics.Rect({
         x: clueLogValues.x * winW,
         y: clueLogValues.y * winH,
         width: clueLogValues.w * winW,
@@ -525,7 +526,7 @@ module.exports = () => {
         Statistics shown on the right-hand side of the screen (at the bottom of the clue log)
     */
 
-    rect = new Kinetic.Rect({
+    rect = new graphics.Rect({
         x: clueLogValues.x * winW,
         y: 0.53 * winH,
         width: clueLogValues.w * winW,
@@ -619,7 +620,7 @@ module.exports = () => {
         for (const suit of globals.variant.suits) {
             const playStackX = playStackValues.x + (width + playStackValues.spacing) * i;
 
-            pileback = new Kinetic.Image({
+            pileback = new graphics.Image({
                 x: playStackX * winW,
                 y: playStackValues.y * winH,
                 width: width * winW,
@@ -697,7 +698,7 @@ module.exports = () => {
         playAreaValues.y = 0.279;
         playAreaValues.w = 0.4;
     }
-    globals.elements.playArea = new Kinetic.Rect({
+    globals.elements.playArea = new graphics.Rect({
         x: (playAreaValues.x - overlap) * winW,
         y: (playAreaValues.y - overlap) * winH,
         width: (playAreaValues.w + overlap * 2) * winW,
@@ -715,7 +716,7 @@ module.exports = () => {
     */
 
     // This is the faded rectangle that is hidden until all of the deck has been depleted
-    const drawDeckRect = new Kinetic.Rect({
+    const drawDeckRect = new graphics.Rect({
         x: 0.08 * winW,
         y: 0.8 * winH,
         width: 0.075 * winW,
@@ -739,7 +740,7 @@ module.exports = () => {
     });
     globals.layers.card.add(globals.elements.drawDeck);
 
-    globals.elements.deckPlayAvailableLabel = new Kinetic.Rect({
+    globals.elements.deckPlayAvailableLabel = new graphics.Rect({
         x: 0.08 * winW,
         y: 0.8 * winH,
         width: 0.075 * winW,
@@ -970,7 +971,7 @@ module.exports = () => {
             y: playerHandPos[nump][j].y * winH,
             width: playerHandPos[nump][j].w * winW,
             height: playerHandPos[nump][j].h * winH,
-            rotationDeg: playerHandPos[nump][j].rot,
+            rotation: playerHandPos[nump][j].rot,
             align: 'center',
             reverse: isHandReversed(j),
             invertCards,
@@ -981,12 +982,12 @@ module.exports = () => {
         // (but don't bother drawing it in Board Game Arena mode since
         // all the hands face the same way)
         if (!globals.lobby.settings.showBGAUI) {
-            rect = new Kinetic.Rect({
+            rect = new graphics.Rect({
                 x: shadePos[nump][j].x * winW,
                 y: shadePos[nump][j].y * winH,
                 width: shadePos[nump][j].w * winW,
                 height: shadePos[nump][j].h * winH,
-                rotationDeg: shadePos[nump][j].rot,
+                rotation: shadePos[nump][j].rot,
                 cornerRadius: 0.01 * shadePos[nump][j].w * winW,
                 opacity: 0.4,
                 fillLinearGradientStartPoint: {
@@ -1035,7 +1036,7 @@ module.exports = () => {
         if (globals.characterAssignments.length > 0) {
             const width2 = 0.03 * winW;
             const height2 = 0.03 * winH;
-            const charIcon = new Kinetic.Text({
+            const charIcon = new graphics.Text({
                 width: width2,
                 height: height2,
                 x: playerNamePos[nump][j].x * winW - width2 / 2,
@@ -1103,7 +1104,7 @@ module.exports = () => {
         clueAreaValues.x = playStackValues.x - 0.102;
         clueAreaValues.y = playStackValues.y + 0.22;
     }
-    globals.elements.clueArea = new Kinetic.Group({
+    globals.elements.clueArea = new graphics.Group({
         x: clueAreaValues.x * winW,
         y: clueAreaValues.y * winH,
         width: clueAreaValues.w * winW,
@@ -1224,7 +1225,7 @@ module.exports = () => {
         noClueBoxValues.x = clueAreaValues.x + 0.178;
         noClueBoxValues.y = clueAreaValues.y;
     }
-    globals.elements.noClueBox = new Kinetic.Rect({
+    globals.elements.noClueBox = new graphics.Rect({
         x: noClueBoxValues.x * winW,
         y: noClueBoxValues.y * winH,
         width: 0.25 * winW,
@@ -1240,7 +1241,7 @@ module.exports = () => {
         x: noClueBoxValues.x - 0.125,
         y: noClueBoxValues.y + 0.025,
     };
-    globals.elements.noClueLabel = new Kinetic.Text({
+    globals.elements.noClueLabel = new graphics.Text({
         x: noClueLabelValues.x * winW,
         y: noClueLabelValues.y * winH,
         width: 0.5 * winW,
@@ -1320,14 +1321,14 @@ module.exports = () => {
         replayAreaValues.y = 0.49;
         replayAreaValues.w = 0.4;
     }
-    globals.elements.replayArea = new Kinetic.Group({
+    globals.elements.replayArea = new graphics.Group({
         x: replayAreaValues.x * winW,
         y: replayAreaValues.y * winH,
         width: replayAreaValues.w * winW,
         height: 0.27 * winH,
     });
 
-    const replayBar = new Kinetic.Rect({
+    const replayBar = new graphics.Rect({
         x: 0,
         y: 0.0425 * winH,
         width: replayAreaValues.w * winW,
@@ -1338,7 +1339,7 @@ module.exports = () => {
     });
     globals.elements.replayArea.add(replayBar);
 
-    rect = new Kinetic.Rect({
+    rect = new graphics.Rect({
         x: 0,
         y: 0,
         width: replayAreaValues.w * winW,
@@ -1348,7 +1349,7 @@ module.exports = () => {
     rect.on('click', replay.barClick);
     globals.elements.replayArea.add(rect);
 
-    globals.elements.replayShuttle = new Kinetic.Rect({
+    globals.elements.replayShuttle = new graphics.Rect({
         x: 0,
         y: 0.0325 * winH,
         width: 0.03 * winW,
@@ -1364,7 +1365,7 @@ module.exports = () => {
     });
     globals.elements.replayArea.add(globals.elements.replayShuttle);
 
-    globals.elements.replayShuttleShared = new Kinetic.Rect({
+    globals.elements.replayShuttleShared = new graphics.Rect({
         x: 0,
         y: 0.0325 * winH,
         width: 0.03 * winW,

@@ -1,5 +1,6 @@
 // Imports
 const globals = require('./globals');
+const graphics = require('./graphics');
 const MultiFitText = require('./multiFitText');
 
 const HanabiMsgLog = function HanabiMsgLog(config) {
@@ -17,9 +18,9 @@ const HanabiMsgLog = function HanabiMsgLog(config) {
     };
 
     $.extend(baseConfig, config);
-    Kinetic.Group.call(this, baseConfig);
+    graphics.Group.call(this, baseConfig);
 
-    const rect = new Kinetic.Rect({
+    const rect = new graphics.Rect({
         x: 0,
         y: 0,
         width: 0.4 * globals.stage.getWidth(),
@@ -29,7 +30,7 @@ const HanabiMsgLog = function HanabiMsgLog(config) {
         cornerRadius: 0.01 * globals.stage.getWidth(),
     });
 
-    Kinetic.Group.prototype.add.call(this, rect);
+    graphics.Group.prototype.add.call(this, rect);
 
     const textoptions = {
         fontSize: 0.025 * globals.stage.getHeight(),
@@ -43,7 +44,7 @@ const HanabiMsgLog = function HanabiMsgLog(config) {
     };
 
     this.logtext = new MultiFitText(textoptions);
-    Kinetic.Group.prototype.add.call(this, this.logtext);
+    graphics.Group.prototype.add.call(this, this.logtext);
 
     const numbersoptions = {
         fontSize: 0.025 * globals.stage.getHeight(),
@@ -56,22 +57,22 @@ const HanabiMsgLog = function HanabiMsgLog(config) {
         maxLines: 38,
     };
     this.lognumbers = new MultiFitText(numbersoptions);
-    Kinetic.Group.prototype.add.call(this, this.lognumbers);
+    graphics.Group.prototype.add.call(this, this.lognumbers);
 
     this.playerLogs = [];
     this.playerLogNumbers = [];
     for (let i = 0; i < globals.playerNames.length; i++) {
         this.playerLogs[i] = new MultiFitText(textoptions);
         this.playerLogs[i].hide();
-        Kinetic.Group.prototype.add.call(this, this.playerLogs[i]);
+        graphics.Group.prototype.add.call(this, this.playerLogs[i]);
 
         this.playerLogNumbers[i] = new MultiFitText(numbersoptions);
         this.playerLogNumbers[i].hide();
-        Kinetic.Group.prototype.add.call(this, this.playerLogNumbers[i]);
+        graphics.Group.prototype.add.call(this, this.playerLogNumbers[i]);
     }
 };
 
-Kinetic.Util.extend(HanabiMsgLog, Kinetic.Group);
+graphics.Util.extend(HanabiMsgLog, graphics.Group);
 
 HanabiMsgLog.prototype.addMessage = function addMessage(msg) {
     const appendLine = (log, numbers, line) => {

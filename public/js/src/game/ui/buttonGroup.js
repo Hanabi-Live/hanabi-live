@@ -1,10 +1,13 @@
+// Imports
+const graphics = require('./graphics');
+
 const ButtonGroup = function ButtonGroup(config) {
-    Kinetic.Node.call(this, config);
+    graphics.Node.call(this, config);
 
     this.list = [];
 };
 
-Kinetic.Util.extend(ButtonGroup, Kinetic.Node);
+graphics.Util.extend(ButtonGroup, graphics.Node);
 
 ButtonGroup.prototype.add = function add(button) {
     const self = this;

@@ -1,13 +1,14 @@
 // Imports
 const globals = require('./globals');
+const graphics = require('./graphics');
 
 const ColorButton = function ColorButton(config) {
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
 
     const w = this.getWidth();
     const h = this.getHeight();
 
-    const background = new Kinetic.Rect({
+    const background = new graphics.Rect({
         name: 'background',
         x: 0,
         y: 0,
@@ -21,7 +22,7 @@ const ColorButton = function ColorButton(config) {
 
     this.add(background);
 
-    const color = new Kinetic.Rect({
+    const color = new graphics.Rect({
         x: 0.1 * w,
         y: 0.1 * h,
         width: 0.8 * w,
@@ -34,7 +35,7 @@ const ColorButton = function ColorButton(config) {
 
     this.add(color);
 
-    const text = new Kinetic.Text({
+    const text = new graphics.Text({
         x: 0,
         y: 0.2 * h,
         width: w,
@@ -77,7 +78,7 @@ const ColorButton = function ColorButton(config) {
     });
 };
 
-Kinetic.Util.extend(ColorButton, Kinetic.Group);
+graphics.Util.extend(ColorButton, graphics.Group);
 
 ColorButton.prototype.setPressed = function setPressed(pressed) {
     this.pressed = pressed;

@@ -5,6 +5,7 @@
 
 // Imports
 const globals = require('./globals');
+const graphics = require('./graphics');
 
 // Variables
 let timerID;
@@ -168,9 +169,9 @@ function setTickingDownTimeTooltip(i) {
 */
 
 const TimerDisplay = function TimerDisplay(config) {
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
 
-    const rectangle = new Kinetic.Rect({
+    const rectangle = new graphics.Rect({
         x: 0,
         y: 0,
         width: config.width,
@@ -182,7 +183,7 @@ const TimerDisplay = function TimerDisplay(config) {
     });
     this.add(rectangle);
 
-    const label = new Kinetic.Text({
+    const label = new graphics.Text({
         x: 0,
         y: 6 * config.spaceH,
         width: config.width,
@@ -203,7 +204,7 @@ const TimerDisplay = function TimerDisplay(config) {
     });
     this.add(label);
 
-    const text = new Kinetic.Text({
+    const text = new graphics.Text({
         x: 0,
         y: config.spaceH,
         width: config.width,
@@ -226,7 +227,7 @@ const TimerDisplay = function TimerDisplay(config) {
 
     this.setText = s => text.setText(s);
 };
-Kinetic.Util.extend(TimerDisplay, Kinetic.Group);
+graphics.Util.extend(TimerDisplay, graphics.Group);
 exports.TimerDisplay = TimerDisplay;
 
 /*

@@ -1,18 +1,21 @@
+// Imports
+const graphics = require('./graphics');
+
 const FitText = function FitText(config) {
-    Kinetic.Text.call(this, config);
+    graphics.Text.call(this, config);
 
     this.origFontSize = this.getFontSize();
     this.needsResize = true;
 
-    this.setDrawFunc(function setDrawFunc(context) {
+    this.setSceneFunc(function setSceneFunc(context) {
         if (this.needsResize) {
             this.resize();
         }
-        Kinetic.Text.prototype._sceneFunc.call(this, context);
+        graphics.Text.prototype._sceneFunc.call(this, context);
     });
 };
 
-Kinetic.Util.extend(FitText, Kinetic.Text);
+graphics.Util.extend(FitText, graphics.Text);
 
 FitText.prototype.resize = function resize() {
     this.setFontSize(this.origFontSize);
@@ -28,7 +31,7 @@ FitText.prototype.resize = function resize() {
 };
 
 FitText.prototype.setText = function setText(text) {
-    Kinetic.Text.prototype.setText.call(this, text);
+    graphics.Text.prototype.setText.call(this, text);
 
     this.needsResize = true;
 };

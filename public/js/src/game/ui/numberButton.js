@@ -1,10 +1,13 @@
+// Imports
+const graphics = require('./graphics');
+
 const NumberButton = function NumberButton(config) {
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
 
     const w = this.getWidth();
     const h = this.getHeight();
 
-    const background = new Kinetic.Rect({
+    const background = new graphics.Rect({
         name: 'background',
         x: 0,
         y: 0,
@@ -18,7 +21,7 @@ const NumberButton = function NumberButton(config) {
 
     this.add(background);
 
-    const text = new Kinetic.Text({
+    const text = new graphics.Text({
         x: 0,
         y: 0.275 * h, // 0.25 is too high for some reason
         width: w,
@@ -60,7 +63,7 @@ const NumberButton = function NumberButton(config) {
     });
 };
 
-Kinetic.Util.extend(NumberButton, Kinetic.Group);
+graphics.Util.extend(NumberButton, graphics.Group);
 
 NumberButton.prototype.setPressed = function setPressed(pressed) {
     this.pressed = pressed;

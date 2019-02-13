@@ -5,6 +5,7 @@ const constants = require('../../constants');
 const convert = require('./convert');
 const globals = require('./globals');
 const globalsInit = require('./globalsInit');
+const graphics = require('./graphics');
 const Loader = require('./loader');
 const keyboard = require('./keyboard');
 const notes = require('./notes');
@@ -36,7 +37,7 @@ function HanabiUI(lobby, game) {
 
 HanabiUI.prototype.initStage = function initStage() {
     // Initialize and size the stage depending on the window size
-    globals.stage = new Kinetic.Stage({
+    globals.stage = new graphics.Stage({
         container: 'game',
     });
     let ww = window.innerWidth;
@@ -78,9 +79,9 @@ HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
     const winW = globals.stage.getWidth();
     const winH = globals.stage.getHeight();
 
-    const loadinglayer = new Kinetic.Layer();
+    const loadinglayer = new graphics.Layer();
 
-    const loadinglabel = new Kinetic.Text({
+    const loadinglabel = new graphics.Text({
         fill: '#d8d5ef',
         stroke: '#747278',
         strokeWidth: 1,
@@ -96,7 +97,7 @@ HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
     });
     loadinglayer.add(loadinglabel);
 
-    const progresslabel = new Kinetic.Text({
+    const progresslabel = new graphics.Text({
         fill: '#d8d5ef',
         stroke: '#747278',
         strokeWidth: 1,

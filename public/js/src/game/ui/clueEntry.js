@@ -1,15 +1,16 @@
 // Imports
 const globals = require('./globals');
 const FitText = require('./fitText');
+const graphics = require('./graphics');
 const replay = require('./replay');
 
 const HanabiClueEntry = function HanabiClueEntry(config) {
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
 
     const w = config.width;
     const h = config.height;
 
-    const background = new Kinetic.Rect({
+    const background = new graphics.Rect({
         x: 0,
         y: 0,
         width: w,
@@ -48,7 +49,7 @@ const HanabiClueEntry = function HanabiClueEntry(config) {
     });
     this.add(target);
 
-    const name = new Kinetic.Text({
+    const name = new graphics.Text({
         x: 0.75 * w,
         y: 0,
         width: 0.2 * w,
@@ -62,7 +63,7 @@ const HanabiClueEntry = function HanabiClueEntry(config) {
     });
     this.add(name);
 
-    const negativeMarker = new Kinetic.Text({
+    const negativeMarker = new graphics.Text({
         x: 0.88 * w,
         y: 0,
         width: 0.2 * w,
@@ -113,7 +114,7 @@ const HanabiClueEntry = function HanabiClueEntry(config) {
     });
 };
 
-Kinetic.Util.extend(HanabiClueEntry, Kinetic.Group);
+graphics.Util.extend(HanabiClueEntry, graphics.Group);
 
 HanabiClueEntry.prototype.checkValid = (c) => {
     if (!globals.deck[c]) {

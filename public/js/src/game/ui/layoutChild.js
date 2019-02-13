@@ -1,17 +1,18 @@
 // Imports
 const globals = require('./globals');
 const constants = require('../../constants');
+const graphics = require('./graphics');
 
 const LayoutChild = function LayoutChild(config) {
-    Kinetic.Group.call(this, config);
+    graphics.Group.call(this, config);
 
     this.tween = null;
 };
 
-Kinetic.Util.extend(LayoutChild, Kinetic.Group);
+graphics.Util.extend(LayoutChild, graphics.Group);
 
 LayoutChild.prototype.add = function add(child) {
-    Kinetic.Group.prototype.add.call(this, child);
+    graphics.Group.prototype.add.call(this, child);
     this.setWidth(child.getWidth());
     this.setHeight(child.getHeight());
 
