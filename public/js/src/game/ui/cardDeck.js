@@ -162,28 +162,34 @@ CardDeck.prototype.initTooltip = function initTooltip() {
     let content = '<strong>Game Options:</strong>';
     content += '<ul class="game-tooltips-ul">';
     if (globals.variant.name !== 'No Variant') {
-        content += '<div class="create-game-icon"><i class="fas fa-rainbow"></i></div>';
-        content += `&nbsp; Variant: ${globals.variant.name}</li>`;
+        content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
+        content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
     }
     if (globals.timed) {
-        content += '<li><i class="fas fa-clock"></i>&nbsp; Timed: ';
+        content += '<li><span class="game-tooltips-icon"><i class="fas fa-clock"></i></span>';
+        content += '&nbsp; Timed: ';
         content += misc.timerFormatter(globals.baseTime * 1000);
         content += ' + ';
         content += misc.timerFormatter(globals.timePerTurn * 1000);
         content += '</li>';
     }
     if (globals.speedrun) {
-        content += '<li><i class="fas fa-running"></i>&nbsp; Speedrun</li>';
+        content += '<li><span class="game-tooltips-icon"><i class="fas fa-running"></i></span>';
+        content += '&nbsp; Speedrun</li>';
     }
     if (globals.deckPlays) {
-        content += '<li><i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>';
+        content += '<li><span class="game-tooltips-icon">';
+        content += '<i class="fas fa-blind" style="position: relative; left: 0.2em;"></i></span>';
         content += '&nbsp; Bottom-Deck Blind Plays</li>';
     }
     if (globals.emptyClues) {
-        content += '<li><i class="fas fa-expand"></i>&nbsp; Empty Clues</li>';
+        content += '<li><span class="game-tooltips-icon"><i class="fas fa-expand"></i></span>';
+        content += '&nbsp; Empty Clues</li>';
     }
     if (globals.characterAssignments.length > 0) {
-        content += '<li>🤔&nbsp; Detrimental Characters</li>';
+        content += '<li><span class="game-tooltips-icon">';
+        content += '<span style="position: relative; right: 0.4em;">🤔</span></span>';
+        content += '&nbsp; Detrimental Characters</li>';
     }
     content += '</ul>';
     $('#tooltip-deck').tooltipster('instance').content(content);

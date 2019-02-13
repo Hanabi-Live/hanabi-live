@@ -488,7 +488,7 @@ table td {
     list-style-type: none;
     margin-top: 0.5em;
     margin-bottom: 0;
-    text-indent: -0.75em;
+    text-indent: -0.5em;
 }
 
 .game-tooltips-ul > li {
@@ -497,7 +497,7 @@ table td {
 
 .game-tooltips-icon {
     display: inline-block;
-    width: 1em;
+    width: 0.5em;
     text-align: center;
 }
 
