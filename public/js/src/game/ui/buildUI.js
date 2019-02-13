@@ -684,7 +684,7 @@ const drawScoreArea = () => {
 
     // Draw the 3 strike (bomb) black squares
     for (let i = 0; i < 3; i++) {
-        const square = new graphics.Rect({
+        globals.elements.strikeSquares[i] = new graphics.Rect({
             x: (0.01 + 0.04 * i) * winW,
             y: 0.115 * winH,
             width: 0.03 * winW,
@@ -693,7 +693,23 @@ const drawScoreArea = () => {
             opacity: 0.6,
             cornerRadius: 0.003 * winW,
         });
-        globals.elements.scoreArea.add(square);
+        globals.elements.scoreArea.add(globals.elements.strikeSquares[i]);
+
+        // We also keep track of the turn that the strike happened
+        globals.elements.strikeSquares[i].turn = null;
+
+        // Click on an empty square to go to the turn that the strike happened, if any
+        globals.elements.strikeSquares[i].on('click', function squareClick() {
+            if (this.turn === null) {
+                return;
+            }
+            if (globals.replay) {
+                replay.checkDisableSharedTurns();
+            } else {
+                replay.enter();
+            }
+            replay.goto(this.turn + 1, true);
+        });
     }
 };
 

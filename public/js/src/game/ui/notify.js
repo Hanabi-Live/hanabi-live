@@ -393,9 +393,10 @@ commands.strike = (data) => {
 
     // We also record the turn that the strike happened
     x.turn = globals.turn - 1;
+    globals.elements.strikeSquares[data.num - 1].turn = globals.turn - 1;
 
     // Click on the x to go to the turn that the strike happened
-    x.on('click', function squareClick() {
+    x.on('click', function xClick() {
         if (globals.replay) {
             replay.checkDisableSharedTurns();
         } else {

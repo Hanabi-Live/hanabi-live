@@ -103,6 +103,7 @@ module.exports = () => {
         scoreNumberLabel: null,
         cluesNumberLabel: null,
         strikes: [],
+        strikeSquares: [],
         spectatorsLabel: null,
         spectatorsNumLabel: null,
         sharedReplayLeaderLabel: null,
