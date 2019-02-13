@@ -118,6 +118,16 @@ const HanabiNameFrame = function HanabiNameFrame(config) {
         const tooltip = $(`#tooltip-player-${this.playerNum}`);
         tooltip.tooltipster('close');
     });
+
+    /*
+    // Define a pulsating animation that represents that it is this player's turn
+    this.tween = new Konva.Tween({
+        node: this.name,
+        x: 280,
+        easing: Konva.Easings.Linear,
+        duration: 2,
+    });
+    */
 };
 
 graphics.Util.extend(HanabiNameFrame, graphics.Group);
@@ -154,6 +164,8 @@ HanabiNameFrame.prototype.setActive = function setActive(active) {
     this.rightline.setShadowOpacity(active ? 0.6 : 0);
 
     this.name.setFontStyle(active ? 'bold' : 'normal');
+
+    // this.tween.play();
 };
 
 HanabiNameFrame.prototype.setConnected = function setConnected(connected) {

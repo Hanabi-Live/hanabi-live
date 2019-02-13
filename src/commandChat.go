@@ -109,8 +109,10 @@ func commandChat(s *Session, d *CommandData) {
 	d.Msg = chatFillChannels(d.Msg)
 
 	// Lobby messages go to everyone
-	for _, s2 := range sessions {
-		s2.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
+	if !d.OnlyDiscord {
+		for _, s2 := range sessions {
+			s2.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, time.Now(), d.Room)
+		}
 	}
 
 	// Send the chat message to the Discord "#general" channel if we are replicating a message

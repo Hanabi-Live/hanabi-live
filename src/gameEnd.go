@@ -271,11 +271,6 @@ func (g *Game) WriteDatabase() (int, error) {
 }
 
 func (g *Game) AnnounceGameResult(databaseID int) {
-	// Don't announce speedruns
-	if g.Options.Speedrun {
-		return
-	}
-
 	// Make the list of names
 	playerList := make([]string, 0)
 	for _, p := range g.Players {
@@ -308,6 +303,10 @@ func (g *Game) AnnounceGameResult(databaseID int) {
 		Msg:    msg,
 		Room:   "lobby",
 		Spam:   true,
+		// Speedrun announcements do not get sent to the lobby to avoid spam
+		// (they will still go to the #hanabi-live-bot channel though so that it is easy to find the
+		// game ID of a perfect game afterward)
+		OnlyDiscord: g.Options.Speedrun,
 	}
 	commandChat(nil, d)
 }
