@@ -3,6 +3,7 @@
     in case we want to change the graphics library that we use
 */
 
+exports.Arrow = Konva.Arrow;
 exports.Easings = Konva.Easings;
 exports.Group = Konva.Group;
 exports.Image = Konva.Image;

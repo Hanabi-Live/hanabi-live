@@ -392,7 +392,7 @@ commands.strike = (data) => {
     });
 
     // We also record the turn that the strike happened
-    x.turn = globals.turn;
+    x.turn = globals.turn - 1;
 
     // Click on the x to go to the turn that the strike happened
     x.on('click', function squareClick() {
