@@ -17,11 +17,14 @@ func restart(s *Session, d *CommandData) {
 }
 
 func restart2() {
-	execute("pull.sh")
-	execute("build_client.sh")
-	// Even though this is included in the "restart.sh" script, it won't execute for some reason,
-	// so call it here manually
-	execute("restart.sh")
+	// Even though the "build_client.sh" script is included in the "restart.sh" script,
+	// it will skip over it when called from Golang for some reason
+	// So, build the client manually first before restarting
+	cwd := path.Join(projectPath, "public", "js")
+	grunt := path.Join(cwd, "node_modules", ".bin", "grunt")
+	execute(grunt, cwd)
+
+	execute("restart.sh", projectPath)
 }
 
 func graceful(s *Session, d *CommandData) {
@@ -110,8 +113,9 @@ func isAdmin(s *Session, d *CommandData) bool {
 	return true
 }
 
-func execute(script string) {
+func execute(script string, cwd string) {
 	cmd := exec.Command(path.Join(projectPath, script))
+	cmd.Dir = cwd
 	if output, err := cmd.Output(); err != nil {
 		log.Error("Failed to execute \""+script+"\":", err)
 		log.Error("Output is as follows:")

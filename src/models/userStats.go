@@ -180,7 +180,6 @@ func (*UserStats) Update(userID int, variant int, stats Stats) error {
 					AND games.variant = ?
 					AND games.speedrun = 0
 			), 0), 1), 0)
-
 		WHERE user_id = ?
 			AND variant = ?
 	`); err != nil {
