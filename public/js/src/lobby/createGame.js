@@ -72,6 +72,9 @@ const submit = (event) => {
     const timePerTurnSeconds = $('#time-per-turn-seconds').val();
     localStorage.setItem('timePerTurnSeconds', timePerTurnSeconds);
 
+    const speedrun = document.getElementById('create-game-speedrun').checked;
+    localStorage.setItem('speedrun', speedrun);
+
     const deckPlays = document.getElementById('create-game-deck-plays').checked;
     localStorage.setItem('createTableDeckPlays', deckPlays);
 
@@ -96,6 +99,7 @@ const submit = (event) => {
         timed,
         baseTime: Math.round(baseTimeMinutes * 60), // The server expects this in seconds
         timePerTurn: parseInt(timePerTurnSeconds, 10), // The server expects this in seconds
+        speedrun,
         deckPlays,
         emptyClues,
         characterAssignments,
