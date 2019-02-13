@@ -136,6 +136,7 @@ HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
 
 HanabiUI.prototype.endTurn = function endTurn(action) {
     if (globals.ourTurn) {
+        globals.ourTurn = false;
         globals.lobby.conn.send(action.type, action.data);
         globals.lobby.ui.stopAction();
         globals.savedAction = null;
