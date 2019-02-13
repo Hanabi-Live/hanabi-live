@@ -87,7 +87,7 @@ const initCommands = () => {
     globals.conn.on('hello', (data) => {
         globals.username = data.username;
         globals.totalGames = data.totalGames;
-        $('#nav-buttons-history-game-count').html(globals.totalGames);
+        $('#nav-buttons-history-total-games').html(globals.totalGames);
         lobby.login.hide(data.firstTimeUser);
     });
 
@@ -139,7 +139,7 @@ const initCommands = () => {
     // It is also sent upon connecting to a game to give a list of past in-game chat messages
     globals.conn.on('chatList', (data) => {
         for (const line of data.list) {
-            chat.add(line, true); // The second argument is "true"
+            chat.add(line, true); // The second argument is "fast"
         }
         if (
             // If the UI is open, we assume that this is a list of in-game chat messages
@@ -197,7 +197,6 @@ const initCommands = () => {
 
             if (data.incrementNumGames) {
                 globals.totalGames += 1;
-                $('#nav-buttons-history-game-count').html(globals.totalGames);
             }
         }
 
@@ -206,6 +205,13 @@ const initCommands = () => {
         if (globals.historyClicked) {
             globals.historyClicked = false;
             lobby.history.draw();
+        }
+
+        const shownGames = Object.keys(globals.historyList).length;
+        $('#nav-buttons-history-shown-games').html(shownGames);
+        $('#nav-buttons-history-total-games').html(globals.totalGames);
+        if (shownGames === globals.totalGames) {
+            $('#lobby-history-show-more').hide();
         }
     });
 
