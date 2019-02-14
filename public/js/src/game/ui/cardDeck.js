@@ -58,8 +58,6 @@ const CardDeck = function CardDeck(config) {
         }
     });
 
-    this.cardback.on('click', replay.promptTurn);
-
     this.count = new graphics.Text({
         fill: 'white',
         stroke: 'black',

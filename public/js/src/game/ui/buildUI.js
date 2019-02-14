@@ -427,9 +427,6 @@ const drawDeck = () => {
     });
     globals.layers.background.add(drawDeckRect);
 
-    // We also want to be able to right-click the deck if all the cards are drawn
-    drawDeckRect.on('click', replay.promptTurn);
-
     globals.elements.drawDeck = new CardDeck({
         x: 0.08 * winW,
         y: 0.8 * winH,
@@ -646,6 +643,9 @@ const drawScoreArea = () => {
         y: 0.01 * winH,
     });
     globals.elements.scoreArea.add(turnTextLabel);
+
+    // We also want to be able to right-click the turn to go to a specific turn in the replay
+    turnTextLabel.on('click', replay.promptTurn);
 
     globals.elements.turnNumberLabel = basicNumberLabel.clone({
         text: '1',
