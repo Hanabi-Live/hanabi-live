@@ -21,8 +21,8 @@ $(document).ready(() => {
     $('#login-form').submit(submit);
 
     // Make the tooltip for the Discord icon at the bottom of the screen
-    let discordContent = 'Discord is a voice and text chat application that you can run in a';
-    discordContent += 'browser.<br />If the server is down, you can probably find out why in the';
+    let discordContent = 'Discord is a voice and text chat application that you can run in a ';
+    discordContent += 'browser.<br />If the server is down, you can probably find out why in the ';
     discordContent += 'Hanabi server / chat room.';
     $('#title-discord').tooltipster({
         theme: 'tooltipster-shadow',
