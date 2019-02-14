@@ -7,14 +7,14 @@ import (
 )
 
 type Game struct {
-	ID    int
-	Name  string
+	ID   int
+	Name string
 	// The user ID of the person who started the game
 	// or the current leader of the shared replay
 	Owner int
 	// This is a salted SHA512 hash sent by the client,
 	// but it can technically be any string at all
-	Password string
+	Password           string
 	Options            *Options
 	Players            []*Player
 	Spectators         []*Spectator
@@ -45,11 +45,11 @@ type Game struct {
 	// Thus, Actions is a slice of different action types
 	// Furthermore, we don't want this to be a pointer of interfaces because
 	// this simplifies action scrubbing
-	Actions         []interface{}
+	Actions       []interface{}
 	Sound         string
 	TurnBeginTime time.Time
 	// Set when the final card is drawn to determine when the game should end
-	EndTurn       int
+	EndTurn    int
 	BlindPlays int                // The number of consecutive blind plays
 	Misplays   int                // The number of consecutive misplays
 	Chat       []*GameChatMessage // All of the in-game chat history
