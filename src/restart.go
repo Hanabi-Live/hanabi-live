@@ -17,13 +17,6 @@ func restart(s *Session, d *CommandData) {
 }
 
 func restart2() {
-	// Even though the "build_client.sh" script is included in the "restart.sh" script,
-	// it will skip over it when called from Golang for some reason
-	// So, build the client manually first before restarting
-	cwd := path.Join(projectPath, "public", "js")
-	grunt := path.Join(cwd, "node_modules", ".bin", "grunt")
-	execute(grunt, cwd)
-
 	execute("restart.sh", projectPath)
 }
 
@@ -114,12 +107,14 @@ func isAdmin(s *Session, d *CommandData) bool {
 }
 
 func execute(script string, cwd string) {
-	cmd := exec.Command(path.Join(projectPath, script))
+	cmd := exec.Command(path.Join(cwd, script))
 	cmd.Dir = cwd
 	if output, err := cmd.Output(); err != nil {
 		log.Error("Failed to execute \""+script+"\":", err)
-		log.Error("Output is as follows:")
-		log.Error(string(output))
+		if string(output) != "" {
+			log.Error("Output is as follows:")
+			log.Error(string(output))
+		}
 	} else {
 		log.Info("\""+script+"\" completed:", string(output))
 	}
