@@ -109,10 +109,23 @@ exports.updateEfficiency = (cardsGottenDelta) => {
     const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);
     // Round it to 2 decimal places
 
+    // Finally, update the labels on the right-hand side of the screen
+    const effNumLabel = globals.elements.efficiencyNumberLabel;
     if (globals.cluesSpentPlusStrikes === 0) {
         // First, handle the case in which 0 clues have been given
-        globals.elements.efficiencyNumberLabel.setText(`- / ${minEfficiency}`);
+        effNumLabel.setText('- / ');
     } else {
-        globals.elements.efficiencyNumberLabel.setText(`${efficiency} / ${minEfficiency}`);
+        effNumLabel.setText(`${efficiency} / `);
+        effNumLabel.setWidth(effNumLabel._getTextSize(effNumLabel.getText()).width);
+    }
+    globals.elements.efficiencyNumberLabelMinNeeded.setText(minEfficiency.toString());
+    const x = effNumLabel.getX() + effNumLabel._getTextSize(effNumLabel.getText()).width;
+    globals.elements.efficiencyNumberLabelMinNeeded.setX(x);
+    if (minEfficiency < 1.25) {
+        globals.elements.efficiencyNumberLabelMinNeeded.setFill('white');
+    } else {
+        // "Hard" variants are denoted by a red efficiency
+        globals.elements.efficiencyNumberLabelMinNeeded.setFill('#ffb2b2'); // Reddish-white
+        // globals.elements.efficiencyNumberLabelMinNeeded.setShadowEnabled(false);
     }
 };

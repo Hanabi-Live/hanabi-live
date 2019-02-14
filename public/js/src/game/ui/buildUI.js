@@ -741,8 +741,8 @@ const drawClueLog = () => {
     globals.layers.UI.add(globals.elements.clueLog);
 };
 
+// Statistics are shown on the right-hand side of the screen (at the bottom of the clue log)
 const drawStatistics = () => {
-    // Statistics are shown on the right-hand side of the screen (at the bottom of the clue log)
     rect = new graphics.Rect({
         x: clueLogValues.x * winW,
         y: 0.53 * winH,
@@ -779,15 +779,24 @@ const drawStatistics = () => {
     });
     globals.layers.UI.add(efficiencyTextLabel);
 
-    globals.elements.efficiencyNumberLabel = basicNumberLabel.clone({
-        text: '-',
+    const effNumLabel = basicNumberLabel.clone({
+        text: '- / ',
         x: 0.9 * winW,
         y: 0.56 * winH,
-        width: 0.08 * winW,
         fontSize: 0.02 * winH,
         align: 'left',
     });
-    globals.layers.UI.add(globals.elements.efficiencyNumberLabel);
+    globals.layers.UI.add(effNumLabel);
+    globals.elements.efficiencyNumberLabel = effNumLabel;
+
+    globals.elements.efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
+        text: '-',
+        x: effNumLabel.getX() +  effNumLabel._getTextSize(effNumLabel.getText()).width,
+        y: 0.56 * winH,
+        fontSize: 0.02 * winH,
+        align: 'left',
+    });
+    globals.layers.UI.add(globals.elements.efficiencyNumberLabelMinNeeded);
 };
 
 const drawDiscardArea = () => {

@@ -17,6 +17,7 @@ const {
     CLUE_TYPE,
     SUIT,
 } = constants;
+const sharedReplayIndicatorArrowColor = '#ffdf00'; // Yellow
 
 const HanabiCard = function HanabiCard(config) {
     const self = this;
@@ -484,7 +485,7 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, clue) {
         if (clue === null) {
             // This is a shared replay arrow, so don't draw the circle
             this.indicatorCircle.setVisible(false);
-            const color = '#ffdf00'; // Yellow
+            const color = sharedReplayIndicatorArrowColor;
             this.indicatorArrow.setStroke(color);
             this.indicatorArrow.setFill(color);
         } else {
@@ -574,8 +575,8 @@ HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
 HanabiCard.prototype.toggleSharedReplayIndicator = function setSharedReplayIndicator() {
     // Either show or hide the arrow (if it is already visible)
     const visible = !(
-        this.indicatorArrow.visible()
-        && this.indicatorArrow.getFill() === constants.INDICATOR.REPLAY_LEADER
+        this.indicatorGroup.visible()
+        && this.indicatorArrow.getFill() === sharedReplayIndicatorArrowColor
     );
     // (if the arrow is showing but is a different kind of arrow,
     // then just overwrite the existing arrow)

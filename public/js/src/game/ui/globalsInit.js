@@ -96,6 +96,7 @@ module.exports = () => {
         clueLog: null,
         paceNumberLabel: null,
         efficiencyNumberLabel: null,
+        efficiencyNumberLabelMinNeeded: null,
         noDiscardLabel: null,
         noDoubleDiscardLabel: null,
         scoreArea: null,
