@@ -126,6 +126,5 @@ exports.updateEfficiency = (cardsGottenDelta) => {
     } else {
         // "Hard" variants are denoted by a red efficiency
         globals.elements.efficiencyNumberLabelMinNeeded.setFill('#ffb2b2'); // Reddish-white
-        // globals.elements.efficiencyNumberLabelMinNeeded.setShadowEnabled(false);
     }
 };
