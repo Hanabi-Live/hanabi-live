@@ -16,6 +16,11 @@ module.exports = () => {
 
     /* eslint-disable object-curly-newline */
 
+    // The hand positions are different depending on the amount of players,
+    // so they have to be hard coded
+    const handPos6H = 0.125;
+    const handPos6Ratio = 0.34 / 0.189;
+    const handPos6W = handPos6H * handPos6Ratio;
     const handPos = {
         2: [
             { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
@@ -39,15 +44,19 @@ module.exports = () => {
             { x: 0.445, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
             { x: 0.77, y: 0.22, w: 0.301, h: 0.18, rot: 90 },
         ],
+        6: [
+            { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
+            { x: 0.1, y: 0.76, w: handPos6W, h: handPos6H, rot: -115 },
+            { x: 0.025, y: 0.15, w: handPos6W, h: handPos6H, rot: -15 },
+            { x: 0.3, y: 0.04, w: handPos6W, h: handPos6H, rot: 0 },
+            { x: 0.57, y: 0.05, w: handPos6W, h: handPos6H, rot: 15 },
+            { x: 0.79, y: 0.402, w: handPos6W, h: handPos6H, rot: 115 },
+        ],
     };
 
-    const handPosBGA = {
-        2: [],
-        3: [],
-        4: [],
-        5: [],
-    };
-
+    // In "Board Game Arena" mode, the hands are all in a line,
+    // so they do not have to be hard coded
+    const handPosBGA = {};
     const handPosBGAValues = {
         x: 0.44,
         y: 0.04,
@@ -55,13 +64,14 @@ module.exports = () => {
         h: 0.16,
         spacing: 0.24,
     };
-    for (let i = 2; i <= 5; i++) {
+    for (let i = 2; i <= 6; i++) {
         let handX = handPosBGAValues.x;
         let handY = handPosBGAValues.y;
         let handW = handPosBGAValues.w;
+        let handH = handPosBGAValues.h;
         let handSpacing = handPosBGAValues.spacing;
         if (i >= 4) {
-            // The hands only have 4 cards instead of 5,
+            // The hands have 4 cards instead of 5,
             // so we need to slightly reposition the hands horizontally
             handX += 0.03;
             handW -= 0.07;
@@ -69,14 +79,19 @@ module.exports = () => {
         if (i === 5) {
             handY -= 0.03;
             handSpacing -= 0.042;
+        } else if (i === 6) {
+            handY -= 0.03;
+            handH -= 0.034;
+            handSpacing -= 0.075;
         }
 
+        handPosBGA[i] = [];
         for (let j = 0; j < i; j++) {
             handPosBGA[i].push({
                 x: handX,
                 y: handY + (handSpacing * j),
                 w: handW,
-                h: handPosBGAValues.h,
+                h: handH,
                 rot: 0,
             });
         }
@@ -103,32 +118,50 @@ module.exports = () => {
     }
 
     // This is the position for the white shade that shows where the new side of the hand is
-    // (there is no shade on the Board Game Arena mode)
+    // The x and y coordinates cannot be algorithmically derived from the hand positions
+    // Note that there is no shade in BGA mode
     const shadePos = {
         2: [
-            { x: 0.185, y: 0.762, w: 0.43, h: 0.205, rot: 0 },
-            { x: 0.185, y: 0.002, w: 0.43, h: 0.205, rot: 0 },
+            { x: handPos[2][0].x - 0.005, y: handPos[2][0].y - 0.008 },
+            { x: handPos[2][1].x - 0.005, y: handPos[2][1].y - 0.008 },
         ],
         3: [
-            { x: 0.185, y: 0.762, w: 0.43, h: 0.205, rot: 0 },
-            { x: 0.005, y: 0.718, w: 0.42, h: 0.205, rot: -78 },
-            { x: 0.708, y: -0.008, w: 0.42, h: 0.205, rot: 78 },
+            { x: handPos[3][0].x - 0.005, y: handPos[3][0].y - 0.008 },
+            { x: handPos[3][1].x - 0.005, y: handPos[3][1].y + 0.008 },
+            { x: handPos[3][2].x + 0.003, y: handPos[3][2].y - 0.008 },
         ],
         4: [
-            { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0 },
-            { x: 0.01, y: 0.708, w: 0.35, h: 0.205, rot: -78 },
-            { x: 0.225, y: 0.002, w: 0.35, h: 0.205, rot: 0 },
-            { x: 0.718, y: 0.087, w: 0.35, h: 0.205, rot: 78 },
+            { x: handPos[4][0].x - 0.005, y: handPos[4][0].y - 0.008 },
+            { x: handPos[4][1].x - 0.005, y: handPos[4][1].y + 0.008 },
+            { x: handPos[4][2].x - 0.005, y: handPos[4][2].y - 0.008 },
+            { x: handPos[4][3].x + 0.003, y: handPos[4][3].y - 0.008 },
         ],
         5: [
-            { x: 0.225, y: 0.762, w: 0.35, h: 0.205, rot: 0 },
-            { x: 0.026, y: 0.775, w: 0.311, h: 0.196, rot: -90 },
-            { x: 0.02, y: 0.001, w: 0.35, h: 0.205, rot: 0 },
-            { x: 0.44, y: 0.001, w: 0.35, h: 0.205, rot: 0 },
-            { x: 0.774, y: 0.215, w: 0.311, h: 0.196, rot: 90 },
+            { x: handPos[5][0].x - 0.005, y: handPos[5][0].y - 0.008 },
+            { x: handPos[5][1].x - 0.004, y: handPos[5][1].y + 0.005 },
+            { x: handPos[5][2].x - 0.001, y: handPos[5][2].y - 0.008 },
+            { x: handPos[5][3].x + 0.005, y: handPos[5][3].y - 0.008 },
+            { x: handPos[5][4].x + 0.004, y: handPos[5][4].y - 0.005 },
+        ],
+        6: [
+            { x: handPos[6][0].x - 0.005, y: handPos[6][0].y - 0.008 },
+            { x: handPos[6][1].x - 0.002, y: handPos[6][1].y + 0.008 },
+            { x: handPos[6][2].x - 0.005, y: handPos[6][2].y - 0.008 },
+            { x: handPos[6][3].x - 0.005, y: handPos[6][3].y - 0.008 },
+            { x: handPos[6][4].x - 0.005, y: handPos[6][4].y - 0.008 },
+            { x: handPos[6][5].x + 0.005, y: handPos[6][5].y - 0.000 },
         ],
     };
+    for (let i = 2; i <= 6; i++) {
+        for (let j = 0; j < i; j++) {
+            shadePos[i][j].w = handPos[i][j].w + 0.01;
+            shadePos[i][j].h = handPos[i][j].h + 0.016;
+            shadePos[i][j].rot = handPos[i][j].rot;
+        }
+    }
 
+    // This is the position for the player name frames
+    // This cannot be algorithmically derived from the hand positions
     const namePosValues = {
         h: 0.02,
     };
@@ -155,6 +188,14 @@ module.exports = () => {
             { x: 0.435, y: 0.199, w: 0.36, h: namePosValues.h },
             { x: 0.659, y: 0.775, w: 0.116, h: namePosValues.h },
         ],
+        6: [
+            { x: 0.22, y: 0.97, w: 0.36, h: namePosValues.h },
+            { x: 0.01, y: 0.775, w: 0.155, h: namePosValues.h },
+            { x: 0.03, y: 0.275, w: 0.15, h: namePosValues.h },
+            { x: 0.295, y: 0.175, w: 0.233, h: namePosValues.h },
+            { x: 0.635, y: 0.275, w: 0.15, h: namePosValues.h },
+            { x: 0.635, y: 0.775, w: 0.155, h: namePosValues.h },
+        ],
     };
 
     const namePosBGAMod = {
@@ -162,17 +203,17 @@ module.exports = () => {
         y: 0.17,
         w: 0.02,
     };
-    const namePosBGA = {
-        2: [],
-        3: [],
-        4: [],
-        5: [],
-    };
-    for (let i = 2; i <= 5; i++) {
+    const namePosBGA = {};
+    for (let i = 2; i <= 6; i++) {
+        let y = namePosBGAMod.y;
+        if (i === 6) {
+            y -= 0.035;
+        }
+        namePosBGA[i] = [];
         for (let j = 0; j < i; j++) {
             namePosBGA[i].push({
                 x: handPosBGA[i][j].x + namePosBGAMod.x,
-                y: handPosBGA[i][j].y + namePosBGAMod.y,
+                y: handPosBGA[i][j].y + y,
                 w: handPosBGA[i][j].w + namePosBGAMod.w,
                 h: namePosValues.h,
             });
@@ -191,7 +232,7 @@ module.exports = () => {
             reverse = true;
         }
         if (globals.lobby.settings.showBGAUI) {
-            // If Board Game Arena mode is on, then we need to reverse every hand
+            // In BGA mode, we need to reverse every hand
             reverse = true;
         }
         if (globals.lobby.settings.reverseHands) {
@@ -239,8 +280,7 @@ module.exports = () => {
         globals.layers.card.add(globals.elements.playerHands[i]);
 
         // Draw the faded shade that shows where the "new" side of the hand is
-        // (but don't bother drawing it in Board Game Arena mode since
-        // all the hands face the same way)
+        // (but don't bother drawing it in BGA mode since all the hands face the same way)
         if (!globals.lobby.settings.showBGAUI) {
             rect = new graphics.Rect({
                 x: shadePos[numPlayers][j].x * winW,

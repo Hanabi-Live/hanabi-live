@@ -30,8 +30,6 @@ const NumberButton = function NumberButton(config) {
         fontSize: 0.5 * h,
         fontFamily: 'Verdana',
         fill: 'white',
-        stroke: 'black',
-        strokeWidth: 1,
         align: 'center',
         text: config.number.toString(),
     });
