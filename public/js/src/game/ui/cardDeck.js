@@ -145,23 +145,11 @@ CardDeck.prototype.doLayout = function doLayout() {
 
 // The deck tooltip shows the custom options for this game, if any
 CardDeck.prototype.initTooltip = function initTooltip() {
-    if (
-        globals.variant.name === 'No Variant'
-        && !globals.timed
-        && !globals.speedrun
-        && !globals.deckPlays
-        && !globals.emptyClues
-        && globals.characterAssignments.length === 0
-    ) {
-        return;
-    }
-
     let content = '<strong>Game Options:</strong>';
     content += '<ul class="game-tooltips-ul">';
-    if (globals.variant.name !== 'No Variant') {
-        content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
-        content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
-    }
+    content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
+    content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
+
     if (globals.timed) {
         content += '<li><span class="game-tooltips-icon"><i class="fas fa-clock"></i></span>';
         content += '&nbsp; Timed: ';
@@ -170,24 +158,29 @@ CardDeck.prototype.initTooltip = function initTooltip() {
         content += misc.timerFormatter(globals.timePerTurn * 1000);
         content += '</li>';
     }
+
     if (globals.speedrun) {
         content += '<li><span class="game-tooltips-icon"><i class="fas fa-running"></i></span>';
         content += '&nbsp; Speedrun</li>';
     }
+
     if (globals.deckPlays) {
         content += '<li><span class="game-tooltips-icon">';
         content += '<i class="fas fa-blind" style="position: relative; left: 0.2em;"></i></span>';
         content += '&nbsp; Bottom-Deck Blind Plays</li>';
     }
+
     if (globals.emptyClues) {
         content += '<li><span class="game-tooltips-icon"><i class="fas fa-expand"></i></span>';
         content += '&nbsp; Empty Clues</li>';
     }
+
     if (globals.characterAssignments.length > 0) {
         content += '<li><span class="game-tooltips-icon">';
         content += '<span style="position: relative; right: 0.4em;">🤔</span></span>';
         content += '&nbsp; Detrimental Characters</li>';
     }
+
     content += '</ul>';
     $('#tooltip-deck').tooltipster('instance').content(content);
 };
