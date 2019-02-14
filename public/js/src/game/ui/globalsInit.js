@@ -108,6 +108,7 @@ module.exports = () => {
         spectatorsLabel: null,
         spectatorsNumLabel: null,
         sharedReplayLeaderLabel: null,
+        sharedReplayLeaderCircle: null,
         sharedReplayLeaderLabelPulse: null,
 
         // The clue UI

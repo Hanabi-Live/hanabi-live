@@ -238,26 +238,28 @@ commands.replayIndicator = (data) => {
 
 // This is used in shared replays to specify who the leader is
 commands.replayLeader = (data) => {
+    // Store who the shared replay leader is
+    globals.sharedReplayLeader = data.name;
+
     // We might be entering this function after a game just ended
     globals.sharedReplay = true;
     globals.elements.replayExitButton.hide();
 
-    // Update the stored replay leader
-    globals.sharedReplayLeader = data.name;
-
-    // Update the UI
+    // Update the UI and play an animation to indicate there is a new replay leader
     globals.elements.sharedReplayLeaderLabel.show();
+    const weAreLeader = globals.sharedReplayLeader === globals.lobby.username;
+    globals.elements.sharedReplayLeaderCircle.setVisible(weAreLeader);
+    globals.elements.sharedReplayLeaderLabelPulse.play();
+    globals.elements.toggleSharedTurnButton.show();
+    globals.layers.UI.draw();
+
+    // Update the tooltip
     let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
     if (!globals.spectators.includes(globals.sharedReplayLeader)) {
         // Check to see if the leader is away
         content += ' (away)';
     }
     $('#tooltip-leader').tooltipster('instance').content(content);
-
-    globals.elements.sharedReplayLeaderLabelPulse.play();
-
-    globals.elements.toggleSharedTurnButton.show();
-    globals.layers.UI.draw();
 };
 
 // This is used in shared replays to make hypothetical game states

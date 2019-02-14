@@ -521,7 +521,8 @@ const drawSharedReplay = () => {
     // Shared replay leader indicator
     const sharedReplayLeaderLabelValues = {
         x: 0.623,
-        y: 0.85,
+        y: 0.84,
+        size: 0.03,
     };
     if (globals.lobby.settings.showBGAUI) {
         sharedReplayLeaderLabelValues.x = spectatorsLabelValues.x + 0.03;
@@ -530,9 +531,9 @@ const drawSharedReplay = () => {
     globals.elements.sharedReplayLeaderLabel = new graphics.Text({
         x: sharedReplayLeaderLabelValues.x * winW,
         y: sharedReplayLeaderLabelValues.y * winH,
-        width: 0.03 * winW,
-        height: 0.03 * winH,
-        fontSize: 0.03 * winH,
+        width: sharedReplayLeaderLabelValues.size * winW,
+        height: sharedReplayLeaderLabelValues.size * winH,
+        fontSize: sharedReplayLeaderLabelValues.size * winH,
         fontFamily: 'Verdana',
         align: 'center',
         text: '👑',
@@ -548,13 +549,25 @@ const drawSharedReplay = () => {
     });
     globals.layers.UI.add(globals.elements.sharedReplayLeaderLabel);
 
+    // A red circle around the crown indicates that we are the current replay leader
+    globals.elements.sharedReplayLeaderCircle = new graphics.Circle({
+        x: (sharedReplayLeaderLabelValues.x + 0.015) * winW,
+        y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
+        radius: 0.025 * winH,
+        stroke: '#ffe03b', // Yellow
+        strokeWidth: 2,
+        visible: false,
+    });
+    globals.layers.UI.add(globals.elements.sharedReplayLeaderCircle);
+
     // Add an animation to alert everyone when shared replay leadership has been transfered
     globals.elements.sharedReplayLeaderLabelPulse = new graphics.Tween({
         node: globals.elements.sharedReplayLeaderLabel,
-        scaleX: 2,
-        scaleY: 2,
-        offsetX: 12,
-        offsetY: 10,
+        width: (sharedReplayLeaderLabelValues.size * winW) * 2,
+        height: (sharedReplayLeaderLabelValues.size * winH) * 2,
+        fontSize: (sharedReplayLeaderLabelValues.size * winH) * 2,
+        offsetX: 0.025 * winH,
+        offsetY: 0.025 * winH,
         duration: 0.5,
         easing: graphics.Easings.EaseInOut,
         onFinish: () => {

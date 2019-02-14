@@ -121,10 +121,10 @@ const HanabiNameFrame = function HanabiNameFrame(config) {
 
     /*
     // Define a pulsating animation that represents that it is this player's turn
-    this.tween = new Konva.Tween({
+    this.tween = new graphics.Tween({
         node: this.name,
         x: 280,
-        easing: Konva.Easings.Linear,
+        easing: graphics.Easings.Linear,
         duration: 2,
     });
     */
