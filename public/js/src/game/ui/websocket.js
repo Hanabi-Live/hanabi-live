@@ -27,6 +27,10 @@ commands.action = (data) => {
 
     // Handle pre-playing / pre-discarding / pre-cluing
     if (globals.queuedAction !== null) {
+        // Get rid of the pre-move button, since it is now our turn
+        globals.elements.premoveCancelButton.setVisible(false);
+        globals.layers.UI.draw();
+
         // Prevent pre-cluing if the team is now at 0 clues
         if (globals.queuedAction.data.type === constants.ACT.CLUE && globals.clues === 0) {
             return;

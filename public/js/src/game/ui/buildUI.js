@@ -116,6 +116,7 @@ module.exports = () => {
     // Conditional elements
     drawTimers();
     drawClueArea();
+    drawPreplayArea();
     drawReplayArea();
 
     if (globals.inReplay) {
@@ -1101,6 +1102,38 @@ const drawClueArea = () => {
         visible: false,
     });
     globals.layers.UI.add(globals.elements.noClueLabel);
+};
+
+const drawPreplayArea = () => {
+    const clueAreaValues = {
+        x: 0.1,
+        y: 0.54,
+        w: 0.55, // The width of all of the vanilla cards is 0.435
+        h: 0.27,
+    };
+    globals.elements.premoveCancelButton = new Button({
+        x: 0.255 * winW,
+        y: 0.6 * winH,
+        width: 0.29 * winW,
+        height: 0.1 * winH,
+        text: 'Cancel Pre-Move',
+        visible: false,
+    });
+    globals.layers.UI.add(globals.elements.premoveCancelButton);
+    globals.elements.premoveCancelButton.on('click tap', () => {
+        globals.elements.premoveCancelButton.setVisible(false);
+        globals.layers.UI.draw();
+
+        // If we dragged a card, we have to put the card back in the hand
+        if (
+            globals.queuedAction.data.type === constants.ACT.PLAY
+            || globals.queuedAction.data.type === constants.ACT.DISCARD
+        ) {
+            globals.elements.playerHands[globals.playerUs].doLayout();
+        }
+
+        globals.queuedAction = null;
+    });
 };
 
 const drawReplayArea = () => {

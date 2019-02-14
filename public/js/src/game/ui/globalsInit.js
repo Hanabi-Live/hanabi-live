@@ -136,7 +136,7 @@ module.exports = () => {
     globals.activeHover = null; // The element that the mouse cursor is currently over
     globals.cardImages = {};
 
-    // Pre-play feature
+    // Pre-move feature
     globals.ourTurn = false;
     globals.queuedAction = null;
 

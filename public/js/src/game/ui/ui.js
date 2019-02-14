@@ -143,6 +143,18 @@ HanabiUI.prototype.endTurn = function endTurn(action) {
         globals.savedAction = null;
     } else {
         globals.queuedAction = action;
+        globals.elements.premoveCancelButton.setVisible(true);
+        console.log(globals.queuedAction);
+        let text = 'Cancel Pre-';
+        if (globals.queuedAction.data.type === constants.ACT.CLUE) {
+            text += 'Clue'
+        } else if (globals.queuedAction.data.type === constants.ACT.PLAY) {
+            text += 'Play'
+        } else if (globals.queuedAction.data.type === constants.ACT.DISCARD) {
+            text += 'Discard'
+        }
+        globals.elements.premoveCancelButton.setText(text);
+        globals.layers.UI.draw();
     }
 };
 
