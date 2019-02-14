@@ -262,7 +262,7 @@ HanabiUI.prototype.stopAction = function stopAction() {
 HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
     // Hide all of the existing arrows on the cards
     for (let i = 0; i < globals.deck.length; i++) {
-        globals.deck[i].setIndicator(false);
+        globals.deck[i].setIndicator(false, null);
     }
     globals.layers.card.batchDraw();
 
@@ -278,14 +278,12 @@ HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
         const card = child.children[0];
 
         let touched = false;
-        let color;
         if (clue.type === constants.CLUE_TYPE.RANK) {
             if (
                 clue.value === card.trueRank
                 || (globals.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
             ) {
                 touched = true;
-                color = constants.INDICATOR.POSITIVE;
             }
         } else if (clue.type === constants.CLUE_TYPE.COLOR) {
             const clueColor = clue.value;
@@ -295,15 +293,14 @@ HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
                 || card.trueSuit.clueColors.includes(clueColor)
             ) {
                 touched = true;
-                color = clueColor.hexCode;
             }
         }
 
         if (touched) {
             match = true;
-            card.setIndicator(true, color);
+            card.setIndicator(true, clue);
         } else {
-            card.setIndicator(false);
+            card.setIndicator(false, null);
         }
     }
 

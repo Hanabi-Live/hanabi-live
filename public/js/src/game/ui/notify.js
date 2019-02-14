@@ -31,15 +31,8 @@ commands.clue = (data) => {
         } else {
             stats.updateEfficiency(0);
         }
-        let color;
-        if (clue.type === 0) {
-            // Number (rank) clues
-            color = constants.INDICATOR.POSITIVE;
-        } else {
-            // Color clues
-            color = clue.value.hexCode;
-        }
-        card.setIndicator(true, color);
+        card.turnClued = globals.turn;
+        card.setIndicator(true, clue);
         card.cluedBorder.show();
         card.applyClue(clue, true);
         card.setBareImage();
@@ -440,6 +433,14 @@ commands.turn = (data) => {
     }
 
     globals.elements.turnNumberLabel.setText(`${globals.turn + 1}`);
+
+    // Change the border of cards that were clued 2 turns ago
+    // to indicate that they are no longer freshly clued
+    for (const card of globals.deck) {
+        if (card.turnClued !== null && card.turnClued === globals.turn - 2) {
+            card.cluedBorder.setStroke('#ffdf00'); // Yellow
+        }
+    }
 };
 
 const revealCard = (data) => {

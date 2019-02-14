@@ -1229,12 +1229,6 @@ for (const name of Object.keys(exports.VARIANTS)) {
     exports.VARIANTS[name].name = name;
 }
 
-exports.INDICATOR = {
-    POSITIVE: '#ffffff',
-    NEGATIVE: '#ff7777',
-    REPLAY_LEADER: '#ffdf00',
-};
-
 const Character = function Character(description, emoji) {
     this.description = description;
     this.emoji = emoji;

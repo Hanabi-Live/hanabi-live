@@ -16,7 +16,7 @@ const hotkeyMap = {};
 
 exports.init = () => {
     /*
-        Build a mappings of hotkeys to functions
+        Build a mapping of hotkeys to functions
     */
 
     hotkeyMap.replay = {

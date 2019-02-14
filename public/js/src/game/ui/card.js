@@ -15,14 +15,11 @@ const {
     CARDH,
     CARDW,
     CLUE_TYPE,
-    INDICATOR,
     SUIT,
 } = constants;
 
 const HanabiCard = function HanabiCard(config) {
     const self = this;
-
-    const winH = globals.stage.getHeight();
 
     config.width = CARDW;
     config.height = CARDH;
@@ -211,42 +208,93 @@ const HanabiCard = function HanabiCard(config) {
         height: config.height - 6,
         cornerRadius: 6,
         strokeWidth: 16,
-        stroke: '#ffdf00',
+        stroke: '#ffbb00', // Orange
+        // (it will turn to a different color after it is no longer freshly clued)
         visible: false,
         listening: false,
     });
     this.add(this.cluedBorder);
 
+    this.turnClued = null;
     this.isClued = function isClued() {
-        return this.cluedBorder.visible();
+        return this.turnClued !== null;
     };
     this.isDiscarded = false;
     this.turnDiscarded = null;
     this.isPlayed = false;
     this.turnPlayed = null;
 
-    this.indicatorArrow = new graphics.Text({
-        x: config.width * 1.01,
-        y: config.height * 0.18,
+    this.indicatorGroup = new graphics.Group({
+        y: -config.height / 4,
         width: config.width,
         height: 0.5 * config.height,
-        fontSize: 0.2 * winH,
-        fontFamily: 'Verdana',
-        align: 'center',
-        text: '⬆',
-        rotation: 180,
-        fill: '#ffffff',
+        visible: false,
+        listening: false,
+    });
+    this.add(this.indicatorGroup);
+
+    this.indicatorArrow = new graphics.Arrow({
+        points: [
+            config.width / 2,
+            0,
+            config.width / 2,
+            config.height / 2.5,
+        ],
+        pointerLength: 20,
+        pointerWidth: 20,
+        fill: 'white',
+        stroke: 'white',
+        strokeWidth: 25,
         shadowColor: 'black',
-        shadowBlur: 10,
+        shadowBlur: 75,
         shadowOffset: {
             x: 0,
             y: 0,
         },
-        shadowOpacity: 0.9,
-        visible: false,
+        shadowOpacity: 1,
+        visible: true,
         listening: false,
     });
-    this.add(this.indicatorArrow);
+    this.indicatorGroup.add(this.indicatorArrow);
+
+    this.indicatorCircle = new graphics.Circle({
+        x: 0.5 * config.width,
+        y: 0.15 * config.height,
+        radius: 45,
+        fill: 'black',
+        stroke: 'white',
+        strokeWidth: 5,
+        listening: false,
+    });
+    this.indicatorGroup.add(this.indicatorCircle);
+
+    let x;
+    let y;
+    let rotation;
+    if (this.holder === globals.playerUs) {
+        rotation = 0;
+        x = (0.5 * config.width) - (this.indicatorCircle.getAttr('width') / 2);
+        y = (0.15 * config.height) - (this.indicatorCircle.getAttr('height') / 2.75);
+    } else {
+        rotation = 180;
+        x = (0.82 * config.width) - (this.indicatorCircle.getAttr('width') / 2);
+        y = (0.31 * config.height) - (this.indicatorCircle.getAttr('height') / 2.75);
+    }
+    this.indicatorText = new graphics.Text({
+        x,
+        y,
+        width: this.indicatorCircle.getAttr('width'),
+        height: this.indicatorCircle.getAttr('height'),
+        fontSize: 0.175 * config.height,
+        fontFamily: 'Verdana',
+        fill: 'white',
+        stroke: 'white',
+        strokeWidth: 1,
+        align: 'center',
+        rotation,
+        listening: false,
+    });
+    this.indicatorGroup.add(this.indicatorText);
 
     // Define the note indicator emoji (this used to be a white square)
     const noteX = 0.78;
@@ -431,10 +479,31 @@ HanabiCard.prototype.setBareImage = function setBareImage() {
     this.barename = imageName(this);
 };
 
-HanabiCard.prototype.setIndicator = function setIndicator(visible, type = INDICATOR.POSITIVE) {
-    this.indicatorArrow.setStroke('#000000');
-    this.indicatorArrow.setFill(type);
-    this.indicatorArrow.setVisible(visible);
+HanabiCard.prototype.setIndicator = function setIndicator(visible, clue) {
+    if (visible) {
+        if (clue === null) {
+            // This is a shared replay arrow, so don't draw the circle
+            this.indicatorCircle.setVisible(false);
+            const color = '#ffdf00'; // Yellow
+            this.indicatorArrow.setStroke(color);
+            this.indicatorArrow.setFill(color);
+        } else {
+            // Clue arrows are white with a circle that shows the type of clue given
+            this.indicatorCircle.setVisible(true);
+            const color = 'white';
+            this.indicatorArrow.setStroke(color);
+            this.indicatorArrow.setFill(color);
+            if (clue.type === constants.CLUE_TYPE.RANK) {
+                this.indicatorCircle.setFill('black');
+                this.indicatorText.setText(clue.value.toString());
+                this.indicatorText.setVisible(true);
+            } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+                this.indicatorCircle.setFill(clue.value.hexCode);
+                this.indicatorText.setVisible(false);
+            }
+        }
+    }
+    this.indicatorGroup.setVisible(visible);
     this.getLayer().batchDraw();
 };
 
@@ -511,7 +580,7 @@ HanabiCard.prototype.toggleSharedReplayIndicator = function setSharedReplayIndic
     // (if the arrow is showing but is a different kind of arrow,
     // then just overwrite the existing arrow)
     globals.lobby.ui.showClueMatch(-1);
-    this.setIndicator(visible, constants.INDICATOR.REPLAY_LEADER);
+    this.setIndicator(visible, null);
 };
 
 HanabiCard.prototype.click = function click(event) {

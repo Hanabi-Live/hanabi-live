@@ -4,6 +4,7 @@
 */
 
 exports.Arrow = Konva.Arrow;
+exports.Circle = Konva.Circle;
 exports.Easings = Konva.Easings;
 exports.Group = Konva.Group;
 exports.Image = Konva.Image;
