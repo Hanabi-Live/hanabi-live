@@ -637,9 +637,16 @@ const drawScoreArea = () => {
     });
     globals.elements.scoreArea.add(rect);
 
+    let labelX = 0.03;
+    let labelSpacing = 0.04;
+    if (globals.variant.name.startsWith('Clue Starved')) {
+        labelX -= 0.005;
+        labelSpacing += 0.01;
+    }
+
     const turnTextLabel = basicTextLabel.clone({
         text: 'Turn',
-        x: 0.03 * winW,
+        x: labelX * winW,
         y: 0.01 * winH,
     });
     globals.elements.scoreArea.add(turnTextLabel);
@@ -649,35 +656,35 @@ const drawScoreArea = () => {
 
     globals.elements.turnNumberLabel = basicNumberLabel.clone({
         text: '1',
-        x: 0.07 * winW,
+        x: (labelX + labelSpacing) * winW,
         y: 0.01 * winH,
     });
     globals.elements.scoreArea.add(globals.elements.turnNumberLabel);
 
     const scoreTextLabel = basicTextLabel.clone({
         text: 'Score',
-        x: 0.03 * winW,
+        x: labelX * winW,
         y: 0.045 * winH,
     });
     globals.elements.scoreArea.add(scoreTextLabel);
 
     globals.elements.scoreNumberLabel = basicNumberLabel.clone({
         text: '0',
-        x: 0.07 * winW,
+        x: (labelX + labelSpacing) * winW,
         y: 0.045 * winH,
     });
     globals.elements.scoreArea.add(globals.elements.scoreNumberLabel);
 
     const cluesTextLabel = basicTextLabel.clone({
         text: 'Clues',
-        x: 0.03 * winW,
+        x: labelX * winW,
         y: 0.08 * winH,
     });
     globals.elements.scoreArea.add(cluesTextLabel);
 
     globals.elements.cluesNumberLabel = basicNumberLabel.clone({
         text: '8',
-        x: 0.07 * winW,
+        x: (labelX + labelSpacing) * winW,
         y: 0.08 * winH,
     });
     globals.elements.scoreArea.add(globals.elements.cluesNumberLabel);
