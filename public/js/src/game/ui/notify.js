@@ -31,7 +31,9 @@ commands.clue = (data) => {
         } else {
             stats.updateEfficiency(0);
         }
-        card.turnClued = globals.turn;
+        if (card.turnFirstClued === null) {
+            card.turnFirstClued = globals.turn;
+        }
         card.setIndicator(true, clue);
         card.cluedBorder.show();
         card.applyClue(clue, true);
@@ -437,7 +439,7 @@ commands.turn = (data) => {
     // Change the border of cards that were clued 2 turns ago
     // to indicate that they are no longer freshly clued
     for (const card of globals.deck) {
-        if (card.turnClued !== null && card.turnClued === globals.turn - 2) {
+        if (card.turnFirstClued !== null && card.turnFirstClued === globals.turn - 2) {
             card.cluedBorder.setStroke('#ffdf00'); // Yellow
         }
     }

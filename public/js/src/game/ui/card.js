@@ -215,9 +215,9 @@ const HanabiCard = function HanabiCard(config) {
     });
     this.add(this.cluedBorder);
 
-    this.turnClued = null;
+    this.turnFirstClued = null;
     this.isClued = function isClued() {
-        return this.turnClued !== null;
+        return this.turnFirstClued !== null;
     };
     this.isDiscarded = false;
     this.turnDiscarded = null;
