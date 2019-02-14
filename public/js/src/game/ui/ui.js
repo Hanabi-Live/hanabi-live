@@ -147,11 +147,11 @@ HanabiUI.prototype.endTurn = function endTurn(action) {
         console.log(globals.queuedAction);
         let text = 'Cancel Pre-';
         if (globals.queuedAction.data.type === constants.ACT.CLUE) {
-            text += 'Clue'
+            text += 'Clue';
         } else if (globals.queuedAction.data.type === constants.ACT.PLAY) {
-            text += 'Play'
+            text += 'Play';
         } else if (globals.queuedAction.data.type === constants.ACT.DISCARD) {
-            text += 'Discard'
+            text += 'Discard';
         }
         globals.elements.premoveCancelButton.setText(text);
         globals.layers.UI.draw();

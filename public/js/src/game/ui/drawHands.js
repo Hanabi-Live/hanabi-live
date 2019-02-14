@@ -205,7 +205,7 @@ module.exports = () => {
     };
     const namePosBGA = {};
     for (let i = 2; i <= 6; i++) {
-        let y = namePosBGAMod.y;
+        let { y } = namePosBGAMod;
         if (i === 6) {
             y -= 0.035;
         }

@@ -254,17 +254,20 @@ const drawPlayStacksAndDiscardStacks = () => {
         playStackValues.y = actionLogValues.y + actionLogValues.h + 0.02;
         playStackValues.spacing = 0.006;
     }
+
+    // Variants with less than 5 stacks will be left-aligned instead of centered
+    // unless we manually adjust them
     if (
-        globals.variant.suits.length === 4
+        (globals.variant.suits.length === 4 && !globals.variant.showSuitNames)
         || (globals.variant.suits.length === 5 && globals.variant.showSuitNames)
     ) {
-        // If there are only 4 stacks, they will be left-aligned instead of centered
-        // So, center them by moving them to the right a little bit
-        playStackValues.x += ((width + playStackValues.spacing) / 2);
-    } else if (globals.variant.suits.length === 3) {
-        // If there are only 3 stacks, they will be left-aligned instead of centered
-        // So, center them by moving them to the right a little bit
+        playStackValues.x += (width + playStackValues.spacing) / 2;
+    } else if (globals.variant.suits.length === 4 && globals.variant.showSuitNames) {
+        playStackValues.x += width + playStackValues.spacing;
+    } else if (globals.variant.suits.length === 3 && !globals.variant.showSuitNames) {
         playStackValues.x += ((width + playStackValues.spacing) / 2) * 2;
+    } else if (globals.variant.suits.length === 3 && globals.variant.showSuitNames) {
+        playStackValues.x += (width + playStackValues.spacing) * 1.5;
     }
 
     let i = 0;
@@ -327,7 +330,7 @@ const drawPlayStacksAndDiscardStacks = () => {
                 text,
                 fill: '#d8d5ef',
             });
-            text.add(suitLabelText);
+            globals.layers.text.add(suitLabelText);
             globals.elements.suitLabelTexts.push(suitLabelText);
         }
 
@@ -1105,12 +1108,6 @@ const drawClueArea = () => {
 };
 
 const drawPreplayArea = () => {
-    const clueAreaValues = {
-        x: 0.1,
-        y: 0.54,
-        w: 0.55, // The width of all of the vanilla cards is 0.435
-        h: 0.27,
-    };
     globals.elements.premoveCancelButton = new Button({
         x: 0.255 * winW,
         y: 0.6 * winH,
