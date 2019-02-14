@@ -791,7 +791,7 @@ const drawStatistics = () => {
 
     globals.elements.efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
         text: '-',
-        x: effNumLabel.getX() +  effNumLabel._getTextSize(effNumLabel.getText()).width,
+        x: effNumLabel.getX() + effNumLabel._getTextSize(effNumLabel.getText()).width,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
         align: 'left',

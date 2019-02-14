@@ -4,7 +4,6 @@ const constants = require('../../constants');
 const graphics = require('./graphics');
 const LayoutChild = require('./layoutChild');
 const misc = require('../../misc');
-const replay = require('./replay');
 
 const CardDeck = function CardDeck(config) {
     graphics.Group.call(this, config);

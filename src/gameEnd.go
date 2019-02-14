@@ -322,7 +322,8 @@ func (g *Game) ConvertToSharedReplay(databaseID int) {
 	games[g.ID] = g
 	g.SharedReplay = true
 	g.Name = "Shared replay for game #" + strconv.Itoa(g.ID)
-	g.EndTurn = g.Turn // In shared replays, the final turn of the game is stored in the "EndTurn" variable
+	// Update the "EndTurn" variable (since we incremented the final turn above in an artificial way)
+	g.EndTurn = g.Turn
 	g.Progress = 100
 
 	// Get the notes from all of the players

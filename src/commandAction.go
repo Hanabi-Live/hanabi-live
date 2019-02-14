@@ -282,6 +282,14 @@ func commandAction(s *Session, d *CommandData) {
 		g.TurnBeginTime = time.Now()
 	}
 
+	// If a player has just taken their final turn,
+	// mark all of the cards in their hand as not able to be played
+	if g.EndTurn != 0 && g.EndTurn != g.Turn + len(g.Players) + 1 {
+		for _, c := range p.Hand {
+			c.CannotBePlayed = true
+		}
+	}
+
 	// Increment the turn
 	// (but don't increment it if we are on a characters that takes two turns in a row)
 	if !characterTakingSecondTurn(d, g, p) {

@@ -14,6 +14,9 @@ type Card struct {
 	Failed           bool
 	Discarded        bool
 	Played           bool
+	// After a player takes their final turn,
+	// all of the remaining cards in their hand are marked with the following bool
+	CannotBePlayed   bool
 	InsistentTouched bool // Used by the "Insistent" character
 }
 
