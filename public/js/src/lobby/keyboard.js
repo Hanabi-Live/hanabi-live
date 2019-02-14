@@ -6,6 +6,11 @@
 const globals = require('../globals');
 
 $(document).keydown((event) => {
+    // Lobby hotkeys only use alt, do don't do anything if other modifiers are pressed
+    if (event.ctrlKey || event.shiftKey || event.metaKey) {
+        return;
+    }
+
     if (event.altKey && event.key === 'c') { // Alt + c
         // Click the "Create Game" button
         if (globals.currentScreen === 'lobby') {

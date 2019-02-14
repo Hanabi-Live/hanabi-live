@@ -16,7 +16,7 @@ const hotkeyMap = {};
 
 exports.init = () => {
     /*
-        Build mappings of hotkeys to functions
+        Build a mappings of hotkeys to functions
     */
 
     hotkeyMap.replay = {
@@ -88,21 +88,28 @@ const keydown = (event) => {
         return;
     }
 
-    // Give a clue
-    if (event.ctrlKey && event.key === 'Enter') { // Ctrl + Enter
+    // Ctrl + Enter = Give a clue
+    if (
+        event.ctrlKey
+        && !event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+        && event.key === 'Enter'
+    ) {
         // The "giveClue()" function has validation inside of it
         globals.lobby.ui.giveClue();
         return;
     }
 
     // Don't interfere with other kinds of hotkeys
-    if (event.ctrlKey || event.altKey) {
+    if (event.ctrlKey || event.shiftKey || event.metaKey) {
         return;
     }
 
-    // Delete the note from the card that we are currently hovering-over, if any
+    // Delete = Delete the note from the card that we are currently hovering-over, if any
     if (
         event.key === 'Delete'
+        && !event.shiftKey
         && globals.activeHover !== null
         && typeof globals.activeHover.order !== 'undefined'
     ) {
@@ -115,24 +122,24 @@ const keydown = (event) => {
     }
 
     // Send a sound
-    if (event.key === 'Z') { // Shift + z
+    if (event.altKey && event.key === 'z') { // Alt + z
         // This is used for fun in shared replays
         sharedReplaySendSound('buzz');
         return;
     }
-    if (event.key === 'X') { // Shift + x
+    if (event.altKey && event.key === 'x') { // Alt + x
         // This is used for fun in shared replays
         sharedReplaySendSound('god');
         return;
     }
-    if (event.key === 'C') { // Shift + c
+    if (event.altKey && event.key === 'c') { // Alt + c
         // This is used as a sound test
         globals.game.sounds.play('turn_us');
         return;
     }
 
     // Don't interfere with other kinds of hotkeys
-    if (event.shiftKey) {
+    if (event.altKey) {
         return;
     }
 
@@ -172,10 +179,6 @@ const sharedReplaySendSound = (sound) => {
         type: constants.REPLAY_ACTION_TYPE.SOUND,
         sound,
     });
-
-    // Play the sound effect manually so that
-    // we don't have to wait for the client to server round-trip
-    globals.game.sounds.play(sound);
 };
 
 /*

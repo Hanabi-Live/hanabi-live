@@ -273,12 +273,6 @@ commands.replayMorph = (data) => {
 
 // This is used in shared replays to make fun sounds
 commands.replaySound = (data) => {
-    if (globals.sharedReplayLeader === globals.lobby.username) {
-        // We don't have to play anything;
-        // we already did it manually after sending the "replayAction" message
-        return;
-    }
-
     globals.game.sounds.play(data.sound);
 };
 

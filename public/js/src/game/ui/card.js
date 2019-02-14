@@ -248,57 +248,6 @@ const HanabiCard = function HanabiCard(config) {
     });
     this.add(this.indicatorArrow);
 
-    /*
-    // From: https://stackoverflow.com/questions/808826/draw-arrow-on-canvas-tag
-    function canvas_arrow(fromx, fromy, tox, toy, r){
-        const cvs = document.createElement('canvas');
-        const context = cvs.getContext('2d');
-
-        var x_center = tox;
-        var y_center = toy;
-
-        var angle;
-        var x;
-        var y;
-
-        context.beginPath();
-
-        angle = Math.atan2(toy-fromy,tox-fromx)
-        x = r*Math.cos(angle) + x_center;
-        y = r*Math.sin(angle) + y_center;
-
-        context.moveTo(x, y);
-
-        angle += (1/3)*(2*Math.PI)
-        x = r*Math.cos(angle) + x_center;
-        y = r*Math.sin(angle) + y_center;
-
-        context.lineTo(x, y);
-
-        angle += (1/3)*(2*Math.PI)
-        x = r*Math.cos(angle) + x_center;
-        y = r*Math.sin(angle) + y_center;
-
-        context.lineTo(x, y);
-
-        context.closePath();
-
-        context.fill();
-
-        return cvs;
-    }
-    const width = this.getWidth();
-    const height = this.getHeight();
-    this.indicatorArrow = new graphics.Image({
-        x: 0,
-        y: 0,
-        width,
-        height,
-        image: canvas_arrow(width / 2, 0, width / 2, height / 5, 50),
-    });
-    this.add(this.indicatorArrow);
-    */
-
     // Define the note indicator emoji (this used to be a white square)
     const noteX = 0.78;
     const noteY = 0.06;
@@ -392,6 +341,9 @@ const HanabiCard = function HanabiCard(config) {
                 event.evt.which !== 1 // Dragging uses left click
                 || globals.inReplay
                 || !this.indicatorArrow.isVisible()
+                || !this.parent.getDraggable()
+                || this.isPlayed
+                || this.isDiscarded
             ) {
                 return;
             }
@@ -446,31 +398,17 @@ const HanabiCard = function HanabiCard(config) {
         const mouseButton = 1; // Left-click
         let toggledPips = [];
         this.on('mousedown', (event) => {
-            if (event.evt.which !== mouseButton) {
-                return;
-            }
-
-            // Disable Empathy if the card is tweening
-            if (this.tweening) {
-                return;
-            }
-
-            // Disable Empathy if the card is played or discarded
-            // (clicking on a played/discarded card goes to the turn that it was played/discarded)
-            if (this.isPlayed || this.isDiscarded) {
-                return;
-            }
-
-            // Empathy in speedruns uses Ctrl
-            if (globals.speedrun && !window.event.ctrlKey) {
-                return;
-            }
-
-            // Disable Empathy if any modifiers are being held down
-            if (!globals.speedrun && window.event.ctrlKey) {
-                return;
-            }
-            if (window.event.shiftKey || window.event.altKey) {
+            if (
+                event.evt.which !== mouseButton // Only do Empathy for left-clicks
+                || this.tweening // Disable Empathy if the card is tweening
+                || this.isPlayed // Clicking on a played card goes to the turn that it was played
+                // Clicking on a discarded card goes to the turn that it was discarded
+                || this.isDiscarded
+                // Disable Empathy if a modifier key is pressed
+                || event.shiftKey || event.altKey || event.metaKey
+                || (globals.speedrun && !event.ctrlKey) // Empathy in speedruns uses Ctrl
+                || (!globals.speedrun && event.ctrlKey)
+            ) {
                 return;
             }
 
@@ -589,14 +527,20 @@ HanabiCard.prototype.click = function click(event) {
     }
 
     if (event.evt.which === 1) { // Left-click
-        this.clickLeft();
+        this.clickLeft(event.evt);
     } else if (event.evt.which === 3) { // Right-click
-        this.clickRight();
+        this.clickRight(event.evt);
     }
 };
 
-HanabiCard.prototype.clickLeft = function clickLeft() {
+HanabiCard.prototype.clickLeft = function clickLeft(event) {
     // The "Empathy" feature is handled above, so we don't have to worry about it here
+
+    // No actions in this function should use any modifiers
+    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
+        return;
+    }
+
     if (this.isPlayed) {
         // Clicking on played cards goes to the turn that they were played
         if (globals.replay) {
@@ -616,14 +560,21 @@ HanabiCard.prototype.clickLeft = function clickLeft() {
     }
 };
 
-HanabiCard.prototype.clickRight = function clickRight() {
+HanabiCard.prototype.clickRight = function clickRight(event) {
     // Ctrl + shift + alt + right-click is a card morph
-    if (window.event.ctrlKey && window.event.shiftKey && window.event.altKey) {
+    if (
+        event.ctrlKey
+        && event.shiftKey
+        && event.altKey
+        && !event.metaKey
+    ) {
         this.clickMorph();
         return;
     }
 
     // Right-click for a leader in a shared replay is an arrow
+    // (we want it to work no matter what modifiers are being pressed,
+    // in case someone is pushing their push to talk hotkey while highlighting cards)
     if (
         globals.sharedReplay
         && globals.sharedReplayLeader === globals.lobby.username
@@ -635,21 +586,36 @@ HanabiCard.prototype.clickRight = function clickRight() {
 
     // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
     // (this must be above the other note code because of the modifiers)
-    if (window.event.ctrlKey && window.event.shiftKey) {
+    if (
+        event.ctrlKey
+        && event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+    ) {
         this.setNote(notes.vars.lastNote);
         return;
     }
 
     // Shfit + right-click is a "f" note
     // (this is a common abbreviation for "this card is Finessed")
-    if (window.event.shiftKey) {
+    if (
+        !event.ctrlKey
+        && event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+    ) {
         this.setNote('f');
         return;
     }
 
     // Alt + right-click is a "cm" note
     // (this is a common abbreviation for "this card is chop moved")
-    if (window.event.altKey) {
+    if (
+        !event.ctrlKey
+        && !event.shiftKey
+        && event.altKey
+        && !event.metaKey
+    ) {
         this.setNote('cm');
         return;
     }
@@ -657,13 +623,26 @@ HanabiCard.prototype.clickRight = function clickRight() {
     // Ctrl + right-click is a local arrow
     // (we don't want this functionality in shared replays because
     // it could be misleading as to who the real replay leader is)
-    if (window.event.ctrlKey && globals.sharedReplay === false) {
+    if (
+        event.ctrlKey
+        && !event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+        && globals.sharedReplay === false
+    ) {
         this.clickArrowLocal();
         return;
     }
 
     // A normal right-click is edit a note
-    notes.openEditTooltip(this);
+    if (
+        !event.ctrlKey
+        && !event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+    ) {
+        notes.openEditTooltip(this);
+    }
 };
 
 HanabiCard.prototype.clickArrow = function clickArrow() {
@@ -735,21 +714,32 @@ HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(event) {
         return;
     }
 
+    // Disable all click events if the card is tweening
+    if (this.tweening) {
+        return;
+    }
+
     // Do nothing if we accidentally click on a played/discarded card
     if (this.isPlayed || this.isDiscarded) {
         return;
     }
 
     if (event.evt.which === 1) { // Left-click
-        this.clickSpeedrunLeft();
+        this.clickSpeedrunLeft(event.evt);
     } else if (event.evt.which === 3) { // Right-click
-        this.clickSpeedrunRight();
+        this.clickSpeedrunRight(event.evt);
     }
 };
 
-HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft() {
+HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft(event) {
     // Left-clicking on cards in our own hand is a play action
-    if (this.holder === globals.playerUs) {
+    if (
+        this.holder === globals.playerUs
+        && !event.ctrlKey
+        && !event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+    ) {
         globals.lobby.ui.endTurn({
             type: 'action',
             data: {
@@ -762,10 +752,14 @@ HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft() {
 
     // Left-clicking on cards in other people's hands is a color clue action
     // (but if we are holding Ctrl, then we are using Empathy)
-    if (window.event.ctrlKey) {
-        return;
-    }
-    if (globals.clues !== 0) {
+    if (
+        this.holder !== globals.playerUs
+        && globals.clues !== 0
+        && !event.ctrlKey
+        && !event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+    ) {
         const color = this.trueSuit.clueColors[0];
         const colors = globals.variant.clueColors;
         const value = colors.findIndex(variantClueColor => variantClueColor === color);
@@ -783,23 +777,15 @@ HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft() {
     }
 };
 
-HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight() {
-    // Shfit + right-click is a "f" note
-    // (this is a common abbreviation for "this card is Finessed")
-    if (window.event.shiftKey) {
-        this.setNote('f');
-        return;
-    }
-
-    // Alt + right-click is a "cm" note
-    // (this is a common abbreviation for "this card is chop moved")
-    if (window.event.altKey) {
-        this.setNote('cm');
-        return;
-    }
-
+HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight(event) {
     // Right-clicking on cards in our own hand is a discard action
-    if (this.holder === globals.playerUs) {
+    if (
+        this.holder === globals.playerUs
+        && !event.ctrlKey
+        && !event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+    ) {
         // Prevent discarding while at 8 clues
         if (globals.clues === 8) {
             return;
@@ -815,7 +801,14 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight() {
     }
 
     // Right-clicking on cards in other people's hands is a number clue action
-    if (globals.clues !== 0) {
+    if (
+        this.holder !== globals.playerUs
+        && globals.clues !== 0
+        && !event.ctrlKey
+        && !event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+    ) {
         globals.lobby.ui.endTurn({
             type: 'action',
             data: {
@@ -827,6 +820,30 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight() {
                 },
             },
         });
+        return;
+    }
+
+    // Shfit + right-click is a "f" note
+    // (this is a common abbreviation for "this card is Finessed")
+    if (
+        !event.ctrlKey
+        && event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+    ) {
+        this.setNote('f');
+        return;
+    }
+
+    // Alt + right-click is a "cm" note
+    // (this is a common abbreviation for "this card is chop moved")
+    if (
+        !event.ctrlKey
+        && !event.shiftKey
+        && event.altKey
+        && !event.metaKey
+    ) {
+        this.setNote('cm');
     }
 };
 
