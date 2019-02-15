@@ -1113,5 +1113,6 @@ const getSpecificCardNum = (suit, rank) => {
             discarded += 1;
         }
     }
+
     return { total, discarded };
 };

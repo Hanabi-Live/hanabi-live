@@ -46,7 +46,7 @@ $(document).keydown((event) => {
         } else if (globals.currentScreen === 'historyDetails') {
             $('#nav-buttons-history-details-return').click();
         }
-    } else if (event.altKey && event.key === 'w') { // Alt + w
+    } else if (event.altKey && event.key === 'a') { // Alt + a
         // Click on the "Watch Replay by ID" button
         if (globals.currentScreen === 'lobby' || globals.currentScreen === 'history') {
             $('a.nav-buttons-history-by-id[data-replayType="replayCreate"]').click();

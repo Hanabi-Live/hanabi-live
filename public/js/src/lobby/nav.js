@@ -64,7 +64,11 @@ $(document).ready(() => {
     $('.nav-buttons-history-by-id').on('click', (event) => {
         event.preventDefault();
         const subtype = event.currentTarget.getAttribute('data-display');
-        const replayID = window.prompt(`What is the ID of the game you want to ${subtype}?`);
+        let lastID = localStorage.getItem('lastID');
+        if (typeof lastID !== 'string') {
+            lastID = '';
+        }
+        const replayID = window.prompt(`What is the ID of the game you want to ${subtype}?`, lastID);
         if (replayID === null) {
             // The user clicked the "cancel" button, so do nothing else
             return;
@@ -73,6 +77,9 @@ $(document).ready(() => {
         globals.conn.send(event.currentTarget.getAttribute('data-replayType'), {
             gameID: parseInt(replayID, 10),
         });
+
+        // Save the ID locally in case they want to view the same replay again later on
+        localStorage.setItem('lastID', replayID);
     });
 
     // The "Return to Lobby" button (from the "History" screen)
