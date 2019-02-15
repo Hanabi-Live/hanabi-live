@@ -275,7 +275,7 @@ const HanabiCard = function HanabiCard(config) {
     let x;
     let y;
     let rotation;
-    if (this.holder === globals.playerUs) {
+    if (this.holder === globals.playerUs || globals.lobby.settings.showBGAUI) {
         rotation = 0;
         x = (0.5 * config.width) - (this.indicatorCircle.getAttr('width') / 2);
         y = (0.15 * config.height) - (this.indicatorCircle.getAttr('height') / 2.75);
