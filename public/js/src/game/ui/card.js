@@ -22,6 +22,7 @@ const sharedReplayIndicatorArrowColor = '#ffdf00'; // Yellow
 const HanabiCard = function HanabiCard(config) {
     const self = this;
 
+    // Cards should start off with a constant width and height
     config.width = CARDW;
     config.height = CARDH;
     config.x = CARDW / 2;
@@ -33,21 +34,49 @@ const HanabiCard = function HanabiCard(config) {
 
     graphics.Group.call(this, config);
 
+    // Card variables
+    this.order = config.order;
+    this.holder = config.holder;
+    this.trueSuit = config.suit || undefined;
+    this.trueRank = config.rank || undefined;
+    // Possible suits and ranks (based on clues given) are tracked separately from
+    // knowledge of the true suit and rank
+    this.possibleSuits = config.suits;
+    this.possibleRanks = config.ranks;
     this.tweening = false;
+    this.barename = undefined;
+    this.showOnlyLearned = false;
+    this.turnFirstClued = null;
+    this.isDiscarded = false;
+    this.turnDiscarded = null;
+    this.isPlayed = false;
+    this.turnPlayed = null;
 
+    // Some short helper functions
+    this.suitKnown = function suitKnown() {
+        return this.trueSuit !== undefined;
+    };
+    this.rankKnown = function rankKnown() {
+        return this.trueRank !== undefined;
+    };
+    this.identityKnown = function identityKnown() {
+        return this.suitKnown() && this.rankKnown();
+    };
+    this.isClued = function isClued() {
+        return this.turnFirstClued !== null;
+    };
+    this.isInPlayerHand = function isInPlayerHand() {
+        return globals.elements.playerHands.indexOf(this.parent.parent) !== -1;
+    };
+    this.hideClues = function hideClues() {
+        this.cluedBorder.hide();
+    };
+
+    // Create the "bare" card image, which is a gray card with all the pips
     this.bare = new graphics.Image({
         width: config.width,
         height: config.height,
     });
-
-    this.doRotations = function doRotations(inverted = false) {
-        this.setRotation(inverted ? 180 : 0);
-
-        this.bare.setRotation(inverted ? 180 : 0);
-        this.bare.setX(inverted ? config.width : 0);
-        this.bare.setY(inverted ? config.height : 0);
-    };
-
     this.bare.setSceneFunc(function setSceneFunc(context) {
         cardDraw.scaleCardImage(
             context,
@@ -59,32 +88,7 @@ const HanabiCard = function HanabiCard(config) {
     });
     this.add(this.bare);
 
-    this.holder = config.holder;
-
-    this.trueSuit = config.suit || undefined;
-    this.trueRank = config.rank || undefined;
-    this.suitKnown = function suitKnown() {
-        return this.trueSuit !== undefined;
-    };
-    this.rankKnown = function rankKnown() {
-        return this.trueRank !== undefined;
-    };
-    this.identityKnown = function identityKnown() {
-        return this.suitKnown() && this.rankKnown();
-    };
-    this.order = config.order;
-    // Possible suits and ranks (based on clues given) are tracked separately from knowledge of
-    // the true suit and rank
-    this.possibleSuits = config.suits;
-    this.possibleRanks = config.ranks;
-
-    this.rankPips = new graphics.Group({
-        x: 0,
-        y: Math.floor(CARDH * 0.85),
-        width: CARDW,
-        height: Math.floor(CARDH * 0.15),
-        visible: !this.rankKnown(),
-    });
+    // The suit pips and the black squares
     this.suitPips = new graphics.Group({
         x: 0,
         y: 0,
@@ -92,8 +96,15 @@ const HanabiCard = function HanabiCard(config) {
         height: Math.floor(CARDH),
         visible: !this.suitKnown(),
     });
-    this.add(this.rankPips);
     this.add(this.suitPips);
+    this.rankPips = new graphics.Group({
+        x: 0,
+        y: Math.floor(CARDH * 0.85),
+        width: CARDW,
+        height: Math.floor(CARDH * 0.15),
+        visible: !this.rankKnown(),
+    });
+    this.add(this.rankPips);
 
     const cardPresentKnowledge = globals.learnedCards[this.order];
     if (cardPresentKnowledge.rank) {
@@ -195,9 +206,6 @@ const HanabiCard = function HanabiCard(config) {
         this.suitPips.add(suitPip);
     }
 
-    this.barename = undefined;
-    this.showOnlyLearned = false;
-
     this.setBareImage();
 
     this.cluedBorder = new graphics.Rect({
@@ -214,34 +222,21 @@ const HanabiCard = function HanabiCard(config) {
     });
     this.add(this.cluedBorder);
 
-    this.turnFirstClued = null;
-    this.isClued = function isClued() {
-        return this.turnFirstClued !== null;
-    };
-    this.isDiscarded = false;
-    this.turnDiscarded = null;
-    this.isPlayed = false;
-    this.turnPlayed = null;
-
     this.initIndicatorArrow(config);
     this.initNote(config);
     this.initEmpathy();
 
-    /*
-        Define other general event handlers
-        Multiple handlers may set activeHover
-    */
-
-    this.on('mousemove tap', () => {
-        globals.elements.clueLog.showMatches(self);
+    // Define the clue log mouse handlers
+    this.on('mousemove tap', function cardClueLogMousemoveTap() {
+        globals.elements.clueLog.showMatches(this);
         globals.layers.UI.draw();
     });
-
     this.on('mouseout', () => {
         globals.elements.clueLog.showMatches(null);
         globals.layers.UI.draw();
     });
 
+    // Define the other mouse handlers
     this.on('click tap', this.click);
     this.on('mousedown', this.clickSpeedrun);
 };
@@ -249,8 +244,43 @@ const HanabiCard = function HanabiCard(config) {
 graphics.Util.extend(HanabiCard, graphics.Group);
 
 HanabiCard.prototype.setBareImage = function setBareImage() {
-    this.barename = imageName(this);
+    let prefix = 'Card';
+
+    const learnedCard = globals.learnedCards[card.order];
+
+    const rank = (!card.showOnlyLearned && card.trueRank);
+    const empathyPastRankUncertain = card.showOnlyLearned && card.possibleRanks.length > 1;
+
+    const suit = (!card.showOnlyLearned && card.trueSuit);
+    const empathyPastSuitUncertain = card.showOnlyLearned && card.possibleSuits.length > 1;
+
+    let suitToShow = suit || learnedCard.suit || SUIT.GRAY;
+    if (empathyPastSuitUncertain) {
+        suitToShow = SUIT.GRAY;
+    }
+
+    // For whatever reason, "Card-Gray" is never created, so use "NoPip-Gray"
+    if (suitToShow === SUIT.GRAY) {
+        prefix = 'NoPip';
+    }
+
+    let name = `${prefix}-${suitToShow.name}-`;
+    if (empathyPastRankUncertain) {
+        name += '6';
+    } else {
+        name += rank || learnedCard.rank || '6';
+    }
+
+    this.barename = name;
 };
+
+HanabiCard.prototype.doRotations = function doRotations(inverted = false) {
+    this.setRotation(inverted ? 180 : 0);
+
+    this.bare.setRotation(inverted ? 180 : 0);
+    this.bare.setX(inverted ? config.width : 0);
+    this.bare.setY(inverted ? config.height : 0);
+}
 
 HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
     this.indicatorGroup = new graphics.Group({
@@ -583,8 +613,8 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
             );
         }
         removed.forEach(rank => findPipElement(rank).hide());
-        // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
-        // display a non-grey card face
+        // Don't mark unclued cards in your own hand with true suit or rank,
+        // so that they don't display a non-gray card face
         if (this.possibleRanks.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
             [this.trueRank] = this.possibleRanks;
             findPipElement(this.trueRank).hide();
@@ -604,8 +634,8 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
             suit => suit.clueColors.includes(clueColor) === positive,
         );
         removed.forEach(suit => findPipElement(suit).hide());
-        // Don't mark unclued cards in your own hand with true suit or rank, so that they don't
-        // display a non-grey card face
+        // Don't mark unclued cards in your own hand with true suit or rank,
+        // so that they don't display a non-gray card face
         if (this.possibleSuits.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
             [this.trueSuit] = this.possibleSuits;
             findPipElement(this.trueSuit).hide();
@@ -620,14 +650,6 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
     } else {
         console.error('Clue type invalid.');
     }
-};
-
-HanabiCard.prototype.hideClues = function hideClues() {
-    this.cluedBorder.hide();
-};
-
-HanabiCard.prototype.isInPlayerHand = function isInPlayerHand() {
-    return globals.elements.playerHands.indexOf(this.parent.parent) !== -1;
 };
 
 HanabiCard.prototype.toggleSharedReplayIndicator = function setSharedReplayIndicator() {
@@ -981,41 +1003,30 @@ HanabiCard.prototype.setNote = function setNote(note) {
     notes.show(this);
 };
 
+HanabiCard.prototype.isCritical = function isCritical() {
+    if (
+        !this.identityKnown
+        || this.isPlayed
+        || this.isDiscarded
+    ) {
+        return false;
+    }
+
+    let cardsLeft = 0;
+    for (const card of globals.deck) {
+        if (
+            card.trueSuit === this.trueSuit
+            && card.trueRank === this.trueRank
+        )
+    }
+    return false
+}
+
 module.exports = HanabiCard;
 
 /*
     Misc. functions
 */
-
-const imageName = (card) => {
-    let prefix = 'Card';
-
-    const learnedCard = globals.learnedCards[card.order];
-
-    const rank = (!card.showOnlyLearned && card.trueRank);
-    const empathyPastRankUncertain = card.showOnlyLearned && card.possibleRanks.length > 1;
-
-    const suit = (!card.showOnlyLearned && card.trueSuit);
-    const empathyPastSuitUncertain = card.showOnlyLearned && card.possibleSuits.length > 1;
-
-    let suitToShow = suit || learnedCard.suit || SUIT.GRAY;
-    if (empathyPastSuitUncertain) {
-        suitToShow = SUIT.GRAY;
-    }
-
-    // For whatever reason, Card-Gray is never created, so use NoPip-Gray
-    if (suitToShow === SUIT.GRAY) {
-        prefix = 'NoPip';
-    }
-
-    let name = `${prefix}-${suitToShow.name}-`;
-    if (empathyPastRankUncertain) {
-        name += '6';
-    } else {
-        name += rank || learnedCard.rank || '6';
-    }
-    return name;
-};
 
 const filterInPlace = (values, predicate) => {
     const removed = [];
