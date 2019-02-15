@@ -85,13 +85,12 @@ func discordConnect() {
 
 	// Announce that the server has started
 	msg := "The server has successfully started at: " + time.Now().Format("Mon Jan 02 15:04:05 MST 2006")
-	d := &CommandData{
+	commandChat(nil, &CommandData{
 		Msg:    msg,
 		Room:   "lobby",
 		Server: true,
 		Spam:   true,
-	}
-	commandChat(nil, d)
+	})
 }
 
 /*
@@ -130,15 +129,14 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Send everyone the notification
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
-	d := &CommandData{
+	commandChat(nil, &CommandData{
 		Username:             discordGetNickname(m.Author.ID),
 		Msg:                  m.Content,
 		Discord:              true,
 		Room:                 "lobby",
 		DiscordID:            m.Author.ID,            // Pass through the ID in case we need it for a custom command
 		DiscordDiscriminator: m.Author.Discriminator, // Pass through the discriminator so we can append it to the username
-	}
-	commandChat(nil, d)
+	})
 }
 
 /*

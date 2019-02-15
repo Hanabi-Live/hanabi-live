@@ -435,12 +435,11 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			}
 
 			// Emulate the clue action
-			d := &CommandData{
+			commandAction(g.Players[actionClue.Giver].Session, &CommandData{
 				Type:   actionTypeClue,
 				Target: actionClue.Target,
 				Clue:   actionClue.Clue,
-			}
-			commandAction(g.Players[actionClue.Giver].Session, d)
+			})
 
 		} else if action["type"] == "play" {
 			// Unmarshal the specific action type
@@ -452,11 +451,10 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			}
 
 			// Emulate the play action
-			d := &CommandData{
+			commandAction(g.Players[actionPlay.Which.Index].Session, &CommandData{
 				Type:   actionTypePlay,
 				Target: actionPlay.Which.Order,
-			}
-			commandAction(g.Players[actionPlay.Which.Index].Session, d)
+			})
 
 		} else if action["type"] == "discard" {
 			// Unmarshal the specific action type
@@ -468,11 +466,10 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			}
 
 			// Emulate the discard action
-			d := &CommandData{
+			commandAction(g.Players[actionDiscard.Which.Index].Session, &CommandData{
 				Type:   actionTypeDiscard,
 				Target: actionDiscard.Which.Order,
-			}
-			commandAction(g.Players[actionDiscard.Which.Index].Session, d)
+			})
 
 		} else if action["type"] == "turn" {
 			// Unmarshal the specific action type

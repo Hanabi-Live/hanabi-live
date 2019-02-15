@@ -15,6 +15,15 @@ const (
 
 // Generate a random table name
 func commandGetName(s *Session, d *CommandData) {
+	type NameMessage struct {
+		Name string `json:"name"`
+	}
+	s.Emit("name", &NameMessage{
+		Name: getName(),
+	})
+}
+
+func getName() string {
 	words := make([]string, 0)
 	for len(words) < numRandomWords {
 		i := getRandom(0, len(wordList)-1)
@@ -26,12 +35,5 @@ func commandGetName(s *Session, d *CommandData) {
 		}
 	}
 
-	name := strings.Join(words, " ")
-
-	type NameMessage struct {
-		Name string `json:"name"`
-	}
-	s.Emit("name", &NameMessage{
-		Name: name,
-	})
+	return strings.Join(words, " ")
 }

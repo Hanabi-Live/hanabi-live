@@ -64,10 +64,16 @@ exports.init = () => {
 
     // Enable all of the keyboard hotkeys
     $(document).keydown(keydown);
+
+    // Handle the swapping of the "Chat" button
+    $(document).keydown(buttonToggleKeyDown);
+    $(document).keyup(buttonToggleKeyUp);
 };
 
 exports.destroy = () => {
     $(document).unbind('keydown', keydown);
+    $(document).unbind('keydown', buttonToggleKeyDown);
+    $(document).unbind('keyup', buttonToggleKeyUp);
 };
 
 const keydown = (event) => {
@@ -179,6 +185,77 @@ const sharedReplaySendSound = (sound) => {
         type: constants.REPLAY_ACTION_TYPE.SOUND,
         sound,
     });
+};
+
+// The "Ctrl" key toggles the middle button in the bottom-left-hand corner
+const buttonToggleKeyDown = (event) => {
+    if (!event.ctrlKey) {
+        return;
+    }
+
+    // The middle button won't be present in solo replays
+    if (globals.replay && !globals.sharedReplay) {
+        return;
+    }
+
+    if (!globals.sharedReplay) {
+        if (!globals.speedrun && globals.elements.chatButton.getVisible()) {
+            // We are in a normal game, so toggle "Chat" --> "Kill"
+            globals.elements.chatButton.hide();
+            globals.elements.killButton.show();
+            globals.layers.UI.draw();
+        } else if (globals.speedrun && globals.elements.killButton.getVisible()) {
+            // We are in a speedrun, so toggle "Kill" --> "Chat"
+            globals.elements.chatButton.show();
+            globals.elements.killButton.hide();
+            globals.layers.UI.draw();
+        }
+    } else {
+        if (!globals.speedrun && globals.elements.chatButton.getVisible()) {
+            // We are in a normal shared replay, so toggle "Chat" --> "Restart"
+            globals.elements.chatButton.hide();
+            globals.elements.restartButton.show();
+            globals.layers.UI.draw();
+        } else if (globals.speedrun && globals.elements.restartButton.getVisible()) {
+            // We are in a speedrun shared replay, so toggle "Restart" --> "Chat"
+            globals.elements.chatButton.show();
+            globals.elements.restartButton.hide();
+            globals.layers.UI.draw();
+        }
+    }
+};
+const buttonToggleKeyUp = (event) => {
+    if (event.ctrlKey) {
+        return;
+    }
+
+    // The middle button won't be present in solo replays
+    if (globals.replay && !globals.sharedReplay) {
+        return;
+    }
+
+    // Revert the toggles defined in the "buttonToggleKeyDown()" function
+    if (!globals.sharedReplay) {
+        if (!globals.speedrun && globals.elements.killButton.getVisible()) {
+            globals.elements.chatButton.show();
+            globals.elements.killButton.hide();
+            globals.layers.UI.draw();
+        } else if (globals.speedrun && globals.elements.chatButton.getVisible()) {
+            globals.elements.chatButton.hide();
+            globals.elements.killButton.show();
+            globals.layers.UI.draw();
+        }
+    } else {
+        if (!globals.speedrun && globals.elements.restartButton.getVisible()) {
+            globals.elements.chatButton.show();
+            globals.elements.restartButton.hide();
+            globals.layers.UI.draw();
+        } else if (globals.speedrun && globals.elements.chatButton.getVisible()) {
+            globals.elements.chatButton.hide();
+            globals.elements.restartButton.show();
+            globals.layers.UI.draw();
+        }
+    }
 };
 
 /*

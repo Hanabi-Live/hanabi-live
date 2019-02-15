@@ -132,10 +132,9 @@ func websocketConnect(ms *melody.Session) {
 
 			// Add the player back to the game
 			log.Info(g.GetName() + "Automatically reattending player \"" + s.Username() + "\".")
-			d := &CommandData{
+			commandGameReattend(s, &CommandData{ // This function does not care what their current game and/or status is
 				ID: g.ID,
-			}
-			commandGameReattend(s, d) // This function doesn't care what their current game and/or status is
+			})
 
 			// If the user happens to be in more than one game, then we will just put them into the first one and ignore the rest
 			return
@@ -154,10 +153,9 @@ func websocketConnect(ms *melody.Session) {
 
 				// Add the player back to the shared replay
 				log.Info(g.GetName() + "Automatically respectating player \"" + s.Username() + "\".")
-				d := &CommandData{
+				commandGameSpectate(s, &CommandData{ // This function does not care what their current game and/or status is
 					ID: g.ID,
-				}
-				commandGameSpectate(s, d) // This function doesn't care what their current game and/or status is
+				})
 
 				// We can return here because the player can only be in one shared replay at a time
 				return

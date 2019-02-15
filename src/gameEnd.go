@@ -271,6 +271,11 @@ func (g *Game) WriteDatabase() (int, error) {
 }
 
 func (g *Game) AnnounceGameResult(databaseID int) {
+	// Don't announce the results of test games
+	if g.Name == "test game" {
+		return
+	}
+
 	// Make the list of names
 	playerList := make([]string, 0)
 	for _, p := range g.Players {
@@ -298,7 +303,7 @@ func (g *Game) AnnounceGameResult(databaseID int) {
 	}
 	msg += "(id: " + strconv.Itoa(databaseID) + ", seed: " + g.Seed + ")"
 
-	d := &CommandData{
+	commandChat(nil, &CommandData{
 		Server: true,
 		Msg:    msg,
 		Room:   "lobby",
@@ -307,8 +312,7 @@ func (g *Game) AnnounceGameResult(databaseID int) {
 		// (they will still go to the #hanabi-live-bot channel though so that it is easy to find the
 		// game ID of a perfect game afterward)
 		OnlyDiscord: g.Options.Speedrun,
-	}
-	commandChat(nil, d)
+	})
 }
 
 func (g *Game) ConvertToSharedReplay(databaseID int) {

@@ -388,19 +388,57 @@ const drawBottomLeftButtons = () => {
     globals.layers.UI.add(globals.elements.replayButton);
 
     // The chat button is not necessary in non-shared replays
+    const middleButtonPos = {
+        x: 0.01,
+        y: 0.87,
+        size: 0.06,
+    };
     if (!globals.replay || globals.sharedReplay) {
         globals.elements.chatButton = new Button({
-            x: 0.01 * winW,
-            y: 0.87 * winH,
-            width: 0.06 * winW,
-            height: 0.06 * winH,
+            x: middleButtonPos.x * winW,
+            y: middleButtonPos.y * winH,
+            width: middleButtonPos.size * winW,
+            height: middleButtonPos.size * winH,
             text: 'Chat',
+            // In speedruns, show the abandon game button by default instead of the chat button
+            visible: !globals.speedrun,
         });
         globals.layers.UI.add(globals.elements.chatButton);
         globals.elements.chatButton.on('click tap', () => {
             globals.game.chat.toggle();
         });
     }
+
+    // The kill button is only necessary in non-replays
+    if (!globals.replay) {
+        globals.elements.killButton = new Button({
+            x: middleButtonPos.x * winW,
+            y: middleButtonPos.y * winH,
+            width: middleButtonPos.size * winW,
+            height: middleButtonPos.size * winH,
+            image: 'x',
+            // In speedruns, show the abandon game button by default instead of the chat button
+            visible: globals.speedrun,
+        });
+        globals.layers.UI.add(globals.elements.killButton);
+        globals.elements.killButton.on('click tap', () => {
+            globals.lobby.conn.send('gameAbandon');
+        });
+    }
+
+    // The restart button is shown in shared replays of speedruns that just ended
+    globals.elements.restartButton = new Button({
+        x: middleButtonPos.x * winW,
+        y: middleButtonPos.y * winH,
+        width: middleButtonPos.size * winW,
+        height: middleButtonPos.size * winH,
+        text: 'Restart',
+        visible: false,
+    });
+    globals.layers.UI.add(globals.elements.restartButton);
+    globals.elements.restartButton.on('click tap', () => {
+        globals.lobby.conn.send('gameRestart');
+    });
 
     const lobbyButton = new Button({
         x: 0.01 * winW,

@@ -77,6 +77,7 @@ func commandInit() {
 	commandMap["gameReattend"] = commandGameReattend
 	commandMap["gameAbandon"] = commandGameAbandon
 	commandMap["gameSpectate"] = commandGameSpectate
+	commandMap["gameRestart"] = commandGameRestart
 	commandMap["chat"] = commandChat
 	commandMap["chatRead"] = commandChatRead
 	commandMap["getName"] = commandGetName

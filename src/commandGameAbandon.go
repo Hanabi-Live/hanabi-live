@@ -1,9 +1,6 @@
 /*
-	Sent when the user clicks the "X" button next to the table in the lobby
-	"data" example:
-	{
-		gameID: 594,
-	}
+	Sent when the user clicks the "X" button in the bottom-left-hand corner
+	"data" is empty
 */
 
 package main
@@ -18,7 +15,7 @@ func commandGameAbandon(s *Session, d *CommandData) {
 	*/
 
 	// Validate that the game exists
-	gameID := d.ID
+	gameID := s.CurrentGame()
 	var g *Game
 	if v, ok := games[gameID]; !ok {
 		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")

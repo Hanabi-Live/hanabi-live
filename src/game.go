@@ -183,12 +183,11 @@ func (g *Game) CheckTimer(turn int, p *Player) {
 	log.Info(g.GetName() + "Time ran out for \"" + p.Name + "\".")
 
 	// End the game
-	d := &CommandData{
-		Type: actionTypeTimeLimitReached,
-	}
 	p.Session.Set("currentGame", g.ID)
 	p.Session.Set("status", statusPlaying)
-	commandAction(p.Session, d)
+	commandAction(p.Session, &CommandData{
+		Type: actionTypeTimeLimitReached,
+	})
 }
 
 func (g *Game) CheckEnd() bool {
@@ -310,12 +309,11 @@ func (g *Game) CheckIdle() {
 	if g.Running {
 		// We need to end a game that has started
 		// (this will put everyone in a non-shared replay of the idle game)
-		d := &CommandData{
-			Type: actionTypeIdleLimitReached,
-		}
 		s.Set("currentGame", g.ID)
 		s.Set("status", statusPlaying)
-		commandAction(s, d)
+		commandAction(s, &CommandData{
+			Type: actionTypeIdleLimitReached,
+		})
 	} else {
 		// We need to end a game that hasn't started yet
 		// Force the owner to leave, which should subsequently eject everyone else

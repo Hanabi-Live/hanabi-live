@@ -84,20 +84,10 @@ exports.draw = () => {
         }
         $('<td>').html(button).appendTo(row);
 
-        // Column 7 - Abandon
-        let button2 = 'n/a';
-        if (table.joined && (table.owned || table.running) && !table.sharedReplay) {
-            button2 = $('<button>').attr('type', 'button').addClass('button small margin0');
-            button2.html('<i class="fas fa-times lobby-button-icon"></i>');
-            button2.attr('id', `abandon-${table.id}`);
-            button2.on('click', tableAbandonButton(table));
-        }
-        $('<td>').html(button2).appendTo(row);
-
-        // Column 8 - Players
+        // Column 7 - Players
         $('<td>').html(table.players).appendTo(row);
 
-        // Column 9 - Spectators
+        // Column 8 - Spectators
         $('<td>').html(table.spectators).appendTo(row);
 
         row.appendTo(tbody);
@@ -135,19 +125,4 @@ const tableReattendButton = table => (event) => {
         gameID: table.id,
     });
     lobby.tables.draw();
-};
-
-const tableAbandonButton = table => (event) => {
-    event.preventDefault();
-
-    if (table.running) {
-        if (!window.confirm('Are you sure? This will cancel the game for all players.')) {
-            return;
-        }
-    }
-
-    globals.gameID = null;
-    globals.conn.send('gameAbandon', {
-        gameID: table.id,
-    });
 };

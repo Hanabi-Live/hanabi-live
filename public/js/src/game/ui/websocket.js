@@ -248,6 +248,14 @@ commands.replayLeader = (data) => {
     // We might be entering this function after a game just ended
     globals.sharedReplay = true;
     globals.elements.replayExitButton.hide();
+    if (!globals.speedrun) {
+        globals.elements.chatButton.show();
+    } else {
+        globals.elements.restartButton.show();
+    }
+    if (globals.elements.killButton !== null) {
+        globals.elements.killButton.hide();
+    }
 
     // Update the UI and play an animation to indicate there is a new replay leader
     globals.elements.sharedReplayLeaderLabel.show();

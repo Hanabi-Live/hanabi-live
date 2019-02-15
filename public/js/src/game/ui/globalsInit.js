@@ -89,6 +89,8 @@ module.exports = () => {
         messagePrompt: null, // The truncated action log
         replayButton: null,
         chatButton: null,
+        killButton: null,
+        restartButton: null,
         drawDeck: null,
         deckPlayAvailableLabel: null,
 
