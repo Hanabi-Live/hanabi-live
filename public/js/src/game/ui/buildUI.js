@@ -522,7 +522,6 @@ const drawSpectators = () => {
 
 // The "crown" symbol to show that we are in a shared replay
 const drawSharedReplay = () => {
-    // Shared replay leader indicator
     const sharedReplayLeaderLabelValues = {
         x: 0.623,
         y: 0.84,
@@ -532,6 +531,20 @@ const drawSharedReplay = () => {
         sharedReplayLeaderLabelValues.x = spectatorsLabelValues.x + 0.03;
         sharedReplayLeaderLabelValues.y = spectatorsLabelValues.y;
     }
+
+    // A red circle around the crown indicates that we are the current replay leader
+    // (we want the icon to be on top of this so that it does not interfere with mouse events)
+    globals.elements.sharedReplayLeaderCircle = new graphics.Circle({
+        x: (sharedReplayLeaderLabelValues.x + 0.015) * winW,
+        y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
+        radius: 0.025 * winH,
+        stroke: '#ffe03b', // Yellow
+        strokeWidth: 2,
+        visible: false,
+    });
+    globals.layers.UI.add(globals.elements.sharedReplayLeaderCircle);
+
+    // The crown emoji
     globals.elements.sharedReplayLeaderLabel = new graphics.Text({
         x: sharedReplayLeaderLabelValues.x * winW,
         y: sharedReplayLeaderLabelValues.y * winH,
@@ -552,17 +565,6 @@ const drawSharedReplay = () => {
         visible: false,
     });
     globals.layers.UI.add(globals.elements.sharedReplayLeaderLabel);
-
-    // A red circle around the crown indicates that we are the current replay leader
-    globals.elements.sharedReplayLeaderCircle = new graphics.Circle({
-        x: (sharedReplayLeaderLabelValues.x + 0.015) * winW,
-        y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
-        radius: 0.025 * winH,
-        stroke: '#ffe03b', // Yellow
-        strokeWidth: 2,
-        visible: false,
-    });
-    globals.layers.UI.add(globals.elements.sharedReplayLeaderCircle);
 
     // Add an animation to alert everyone when shared replay leadership has been transfered
     globals.elements.sharedReplayLeaderLabelPulse = new graphics.Tween({

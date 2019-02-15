@@ -174,7 +174,7 @@ var (
 		Character{
 			Name:        "Contrarian",
 			ID:          27,
-			Description: "Play order inverts after taking a turn + 2 turn end game",
+			Description: "Play order inverts after taking a turn, 2-turn end game",
 			Emoji:       "🙅",
 			Not2P:       true,
 		},
@@ -184,14 +184,6 @@ var (
 			Description: "Must perform a different action type than the player that came before them",
 			Emoji:       "😠",
 		},
-		/*
-			Character{
-				Name:        "Forgetful",
-				ID:          31,
-				Description: "Hand is shuffled after discarding (but before drawing)",
-				Emoji:       "🔀",
-			},
-		*/
 		Character{
 			Name:        "Blind Spot",
 			ID:          29,
@@ -206,5 +198,13 @@ var (
 			Emoji:       "🚂",
 			Not2P:       true,
 		},
+		/*
+			Character{
+				Name:        "Forgetful",
+				ID:          31,
+				Description: "Hand is shuffled after discarding (but before drawing)",
+				Emoji:       "🔀",
+			},
+		*/
 	}
 )

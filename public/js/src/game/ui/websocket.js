@@ -253,8 +253,8 @@ commands.replayLeader = (data) => {
     globals.elements.sharedReplayLeaderLabel.show();
     const weAreLeader = globals.sharedReplayLeader === globals.lobby.username;
     globals.elements.sharedReplayLeaderCircle.setVisible(weAreLeader);
-    globals.elements.sharedReplayLeaderLabelPulse.play();
     globals.elements.toggleSharedTurnButton.show();
+    globals.elements.sharedReplayLeaderLabelPulse.play();
     globals.layers.UI.draw();
 
     // Update the tooltip
@@ -284,10 +284,18 @@ commands.replaySound = (data) => {
 
 // This is used in shared replays to change the turn
 commands.replayTurn = (data) => {
+    let oldTurn = globals.sharedReplayTurn;
     globals.sharedReplayTurn = data.turn;
     replay.adjustShuttles();
     if (globals.useSharedTurns) {
         replay.goto(globals.sharedReplayTurn);
+
+        // Play an animation to indicate the direction that the leader has taken us in
+        if (oldTurn > globals.sharedReplayTurn) {
+            
+        } else if (oldTurn < globals.sharedReplayTurn) {
+            
+        }
     } else {
         globals.elements.replayShuttleShared.getLayer().batchDraw();
     }

@@ -1350,19 +1350,13 @@ exports.CHARACTERS = {
 
     // Other
     'Contrarian': new Character(
-        'Play order inverts after taking a turn + 2 turn end game',
+        'Play order inverts after taking a turn, 2-turn end game',
         '🙅',
     ),
     'Stubborn': new Character(
         'Must perform a different action type than the player that came before them',
         '😠',
     ),
-    /*
-    'Forgetful': new Character(
-        'Hand is shuffled after discarding (but before drawing)',
-        '🔀',
-    ),
-    */
     'Blind Spot': new Character(
         'Cannot see the cards of the player to their left',
         '🚗',
@@ -1371,6 +1365,12 @@ exports.CHARACTERS = {
         'Cannot see the cards of the player to their right',
         '🚂',
     ),
+    /*
+    'Forgetful': new Character(
+        'Hand is shuffled after discarding (but before drawing)',
+        '🔀',
+    ),
+    */
 };
 
 // Copy the name of each character inside of the object for later use

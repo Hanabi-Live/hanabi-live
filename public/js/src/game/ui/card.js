@@ -1,5 +1,5 @@
 /*
-    The HanabiCard object, which represts a single card
+    The HanabiCard object, which represents a single card
 */
 
 // Imports
@@ -144,7 +144,7 @@ const HanabiCard = function HanabiCard(config) {
                 y: 0.4,
             },
 
-            // Transform polar to cartesian coordinates
+            // Transform polar to Cartesian coordinates
             // The magic number added to the offset is needed to center things properly;
             // We don't know why it's needed;
             // perhaps something to do with the shape functions
@@ -187,7 +187,7 @@ const HanabiCard = function HanabiCard(config) {
         }
         suitPip.rotation(0);
 
-        // Reduce opactity of eliminated suits and outline remaining suits
+        // Reduce opacity of eliminated suits and outline remaining suits
         if (!globals.learnedCards[this.order].possibleSuits.includes(suit)) {
             suitPip.setOpacity(0.4);
         } else {
@@ -226,6 +226,7 @@ const HanabiCard = function HanabiCard(config) {
     this.turnPlayed = null;
 
     this.indicatorGroup = new graphics.Group({
+        x: 0,
         y: -config.height / 4,
         width: config.width,
         height: 0.5 * config.height,
@@ -233,6 +234,8 @@ const HanabiCard = function HanabiCard(config) {
         listening: false,
     });
     this.add(this.indicatorGroup);
+    this.indicatorGroup.originalX = this.indicatorGroup.getX()
+    this.indicatorGroup.originalY = this.indicatorGroup.getY()
 
     this.indicatorArrow = new graphics.Arrow({
         points: [
@@ -480,7 +483,7 @@ HanabiCard.prototype.setBareImage = function setBareImage() {
     this.barename = imageName(this);
 };
 
-HanabiCard.prototype.setIndicator = function setIndicator(visible, clue) {
+HanabiCard.prototype.setIndicator = function setIndicator(visible, playerNum, clue) {
     if (visible) {
         if (clue === null) {
             // This is a shared replay arrow, so don't draw the circle
@@ -502,8 +505,41 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, clue) {
                 this.indicatorCircle.setFill(clue.value.hexCode);
                 this.indicatorText.setVisible(false);
             }
+
+            if (this.indicatorTween) {
+                this.indicatorTween.destroy();
+            }
+
+            if (globals.animateFast) {
+                // Just set the arrow in position
+                this.indicatorGroup.setX(this.indicatorGroup.originalX);
+                this.indicatorGroup.setY(this.indicatorGroup.originalY);
+            } else if (playerNum !== null) {
+                // Animate the arrow flying from the player who gave the clue to the cards
+                /*
+                const nameFrame = globals.elements.nameFrames[playerNum];
+                console.log('THIS CARD ORDER:', this.order);
+                const cardPos = this.getAbsolutePosition();
+                const namePos = nameFrame.getAbsolutePosition();
+                console.log('CARD ABSOLUTE:', cardPos)
+                console.log('NAME ABSOLUTE:', namePos)
+                console.log(namePos.x - cardPos.x, namePos.y - cardPos.y);
+                this.indicatorGroup.setX();
+                this.indicatorGroup.setY(-150);
+                console.log('IND-GROUP X:', this.indicatorGroup.getX());
+                console.log('IND-GROUP Y:', this.indicatorGroup.getY());
+                this.indicatorTween = new graphics.Tween({
+                    node: this.indicatorGroup,
+                    duration: 0.5,
+                    x: this.indicatorGroup.originalX,
+                    y: this.indicatorGroup.originalY,
+                    runonce: true,
+                }).play();
+                */
+            }
         }
     }
+
     this.indicatorGroup.setVisible(visible);
     this.getLayer().batchDraw();
 };
@@ -581,7 +617,7 @@ HanabiCard.prototype.toggleSharedReplayIndicator = function setSharedReplayIndic
     // (if the arrow is showing but is a different kind of arrow,
     // then just overwrite the existing arrow)
     globals.lobby.ui.showClueMatch(-1);
-    this.setIndicator(visible, null);
+    this.setIndicator(visible, null, null);
 };
 
 HanabiCard.prototype.click = function click(event) {
