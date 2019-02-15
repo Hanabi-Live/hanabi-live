@@ -37,12 +37,11 @@ List of Features
 
 #### Clue Indication
 
-* The cards last touched by a clue are indicated by arrows.
+* The cards last touched by a clue are indicated by arrows. A circle on the arrow shows the type of clue that was given.
 * Yellow borders around a card signify that it has been "touched" by one or more clues.
 * Color pips (that match the suits of the stack) and black boxes (that match the number possibilities) will appear on cards in a player's hand. The pips and boxes will automatically disappear as more information is learned about the card.
 * You can left-click on someone else's card to see how it appears to them. (This is referred to as "empathy".)
 * A clue log is also shown in the top-right-hand corner. When mousing over a card, the positive clues that have touched the card will turn white and the negative clues that have touched the card will turn red.
-* As a helpful shortcut, you can click on a specific clue in the clue log to go to the exact turn when the clue was given.
 
 #### Notes
 
@@ -70,6 +69,12 @@ List of Features
 
 * In the middle of a game, players can click on the arrow button in the bottom-left-hand corner to open the in-game replay feature.
 * Using this feature, players can go back in time to see the exact game state at a specific turn.
+* There are some helpful shortcuts for going to a specific turn:
+  * You can click on a card in the play stacks to go to the turn before the card was played.
+  * You can click on a card in the discard pile to go to the turn before the card was discarded.
+  * You can click on an entry in the clue log to go to the turn when the clue was given.
+  * You can click on the three strike squares to go to the turn before the strike happened, if any.
+  * You can right-click on the "Turn" label to go to an arbitrary turn.
 
 #### Game History and Profiles
 
@@ -260,7 +265,6 @@ List of Features
   * At the end of the game, in timed games, it will show how much time each player had left. In non-timed games, it will show how much time that the game took in total.
 * The clue log will still continue to function if you mouse over played and discarded cards.
 * The "No Clues" indicator is much easier to see.
-* You can click on the clue log, played cards, discarded cards, and strikes to go directly to the turn that the thing happened.
 * Replays of other games will no longer show "Alice", "Bob", etc., and will instead show the real player names. This way, if you have a question about what they did, you can message them and ask.
 * Upon refreshing the page, if you are in the middle of the game, you will be automatically taken into that game from the lobby.
 * You will no longer have to refresh the page after resizing the browser window.
