@@ -223,10 +223,36 @@ const HanabiCard = function HanabiCard(config) {
     this.isPlayed = false;
     this.turnPlayed = null;
 
+    this.initIndicatorArrow(config);
+    this.initNote(config);
+    this.initEmpathy();
+
     /*
-        Indicator arrow
+        Define other general event handlers
+        Multiple handlers may set activeHover
     */
 
+    this.on('mousemove tap', () => {
+        globals.elements.clueLog.showMatches(self);
+        globals.layers.UI.draw();
+    });
+
+    this.on('mouseout', () => {
+        globals.elements.clueLog.showMatches(null);
+        globals.layers.UI.draw();
+    });
+
+    this.on('click tap', this.click);
+    this.on('mousedown', this.clickSpeedrun);
+};
+
+graphics.Util.extend(HanabiCard, graphics.Group);
+
+HanabiCard.prototype.setBareImage = function setBareImage() {
+    this.barename = imageName(this);
+};
+
+HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
     this.indicatorGroup = new graphics.Group({
         x: 0,
         y: -config.height / 4,
@@ -302,10 +328,27 @@ const HanabiCard = function HanabiCard(config) {
     });
     this.indicatorGroup.add(this.indicatorText);
 
-    /*
-        Note
-    */
+    // Hide the indicator arrows when a user begins to drag a card in their hand
+    if (this.holder === globals.playerUs && !globals.replay && !globals.spectating) {
+        this.on('mousedown', (event) => {
+            if (
+                event.evt.which !== 1 // Dragging uses left click
+                || globals.inReplay
+                || !this.indicatorArrow.isVisible()
+                || !this.parent.getDraggable()
+                || this.isPlayed
+                || this.isDiscarded
+            ) {
+                return;
+            }
 
+            globals.lobby.ui.showClueMatch(-1);
+            // Do not prevent default since there can be more than one mousedown event
+        });
+    }
+};
+
+HanabiCard.prototype.initNote = function initNote(config) {
     // Define the note indicator emoji (this used to be a white square)
     const noteX = 0.78;
     const noteY = 0.06;
@@ -342,21 +385,16 @@ const HanabiCard = function HanabiCard(config) {
         this.noteGiven.show();
     }
 
-    /*
-        Define event handlers
-        Multiple handlers may set activeHover
-    */
-
     this.on('mousemove', function cardMouseMove() {
         // Don't do anything if there is not a note on this card
-        if (!self.noteGiven.visible()) {
+        if (!this.noteGiven.visible()) {
             return;
         }
 
         // If we are spectating and there is an new note, mark it as seen
-        if (self.noteGiven.rotated) {
-            self.noteGiven.rotated = false;
-            self.noteGiven.rotate(-15);
+        if (this.noteGiven.rotated) {
+            this.noteGiven.rotated = false;
+            this.noteGiven.rotate(-15);
             globals.layers.card.batchDraw();
         }
 
@@ -366,55 +404,21 @@ const HanabiCard = function HanabiCard(config) {
         }
 
         globals.activeHover = this;
-        notes.show(self); // We supply the card as the argument
+        notes.show(this); // We supply the card as the argument
     });
 
-    this.on('mouseout', () => {
+    this.on('mouseout', function cardMouseOut() {
         // Don't close the tooltip if we are currently editing a note
         if (notes.vars.editing !== null) {
             return;
         }
 
-        const tooltip = $(`#tooltip-card-${self.order}`);
+        const tooltip = $(`#tooltip-card-${this.order}`);
         tooltip.tooltipster('close');
     });
+};
 
-    this.on('mousemove tap', () => {
-        globals.elements.clueLog.showMatches(self);
-        globals.layers.UI.draw();
-    });
-
-    this.on('mouseout', () => {
-        globals.elements.clueLog.showMatches(null);
-        globals.layers.UI.draw();
-    });
-
-    this.on('click tap', this.click);
-    this.on('mousedown', this.clickSpeedrun);
-
-    // Hide clue arrows ahead of user dragging their card
-    if (this.holder === globals.playerUs && !globals.replay && !globals.spectating) {
-        this.on('mousedown', (event) => {
-            if (
-                event.evt.which !== 1 // Dragging uses left click
-                || globals.inReplay
-                || !this.indicatorArrow.isVisible()
-                || !this.parent.getDraggable()
-                || this.isPlayed
-                || this.isDiscarded
-            ) {
-                return;
-            }
-
-            globals.lobby.ui.showClueMatch(-1);
-            // Do not prevent default since there can be more than one mousedown event
-        });
-    }
-
-    /*
-        Empathy feature
-    */
-
+HanabiCard.prototype.initEmpathy = function initEmpathy() {
     // Click on a teammate's card to have the card show as it would to that teammate
     // (or, in a replay, show your own card as it appeared at that moment in time)
     // Pips visibility state is tracked so it can be restored for your own hand during a game
@@ -483,12 +487,6 @@ const HanabiCard = function HanabiCard(config) {
     }
 };
 
-graphics.Util.extend(HanabiCard, graphics.Group);
-
-HanabiCard.prototype.setBareImage = function setBareImage() {
-    this.barename = imageName(this);
-};
-
 HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target, clue) {
     if (visible) {
         if (clue === null) {
@@ -533,10 +531,11 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
                 const indW = this.indicatorGroup.getWidth() / Math.PI;
                 // The angle has to account for the whole card reflection business
                 // in other players' hands
-                const indTheta = (
-                    this.parent.parent.rotation
-                    + 180 * (target !== globals.playerUs)
-                ) / 180 * Math.PI;
+                let indRadians = this.parent.parent.rotation;
+                if (target !== globals.playerUs) {
+                    indRadians += 180;
+                }
+                const indTheta = indRadians / 180 * Math.PI;
                 pos.x += handW / 2 * Math.cos(rot) - handH / 2 * Math.sin(rot);
                 pos.y += handW / 2 * Math.sin(rot) + handH / 2 * Math.cos(rot);
 
