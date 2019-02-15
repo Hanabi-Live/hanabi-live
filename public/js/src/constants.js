@@ -1392,3 +1392,6 @@ exports.REPLAY_ACTION_TYPE = {
 for (const property of Object.keys(exports)) {
     Object.freeze(property);
 }
+
+// Also make the constants available from the JavaScript console (for debugging purposes)
+window.constants = exports;

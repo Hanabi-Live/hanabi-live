@@ -1026,25 +1026,13 @@ HanabiCard.prototype.isCritical = function isCritical() {
         !this.identityKnown
         || this.isPlayed
         || this.isDiscarded
+        || !needsToBePlayed(this.trueSuit, this.trueRank)
     ) {
         return false;
     }
 
-    let cardsLeft = 0;
-    for (const card of globals.deck) {
-        if (card.trueSuit === this.trueSuit && card.trueRank === this.trueRank) {
-            // Another card of this identity is already played, so this card is not critical
-            if (card.isPlayed) {
-                return false;
-            }
-
-            if (!card.isDiscarded) {
-                cardsLeft += 1;
-            }
-        }
-    }
-
-    return cardsLeft === 1;
+    const num = getSpecificCardNum(this.trueSuit, this.trueRank);
+    return num.total === num.discarded + 1;
 };
 
 module.exports = HanabiCard;
@@ -1063,4 +1051,67 @@ const filterInPlace = (values, predicate) => {
         i -= 1;
     }
     return removed;
+};
+
+// needsToBePlayed returns true if the card is not yet played
+// and is still needed to be played in order to get the maximum score
+// (this mirrors the server function in "card.go")
+const needsToBePlayed = (suit, rank) => {
+    // First, check to see if a copy of this card has already been played
+    for (const card of globals.deck) {
+        if (card.trueSuit === suit && card.trueRank === rank && card.isPlayed) {
+            return false;
+        }
+    }
+
+    // Determining if the card needs to be played in the "Up or Down" variants is more complicated
+    if (globals.variant.name.startsWith('Up or Down')) {
+        return false;
+    }
+
+    // Second, check to see if it is still possible to play this card
+    // (the preceding cards in the suit might have already been discarded)
+    for (let i = 1; i < rank; i++) {
+        const num = getSpecificCardNum(suit, i);
+        if (num.total === num.discarded) {
+            // The suit is "dead", so this card does not need to be played anymore
+            return false;
+        }
+    }
+
+    // By default, all cards not yet played will need to be played
+    return true;
+};
+
+// getSpecificCardNum returns the total cards in the deck of the specified suit and rank
+// as well as how many of those that have been already discarded
+// (this DOES NOT mirror the server function in "game.go",
+// because the client does not have the full deck)
+const getSpecificCardNum = (suit, rank) => {
+    // First, find out how many of this card should be in the deck, based on the rules of the game
+    let total = 0;
+    if (rank === 1) {
+        total = 3;
+        if (globals.variant.name.startsWith('Up or Down')) {
+            total = 1;
+        }
+    } else if (rank === 5) {
+        total = 1;
+    } else if (rank === 7) { // The "START" card
+        total = 1;
+    } else {
+        total = 2;
+    }
+    if (suit.oneOfEach) {
+        total = 1;
+    }
+
+    // Second, search through the deck to find the total amount of discarded cards that match
+    let discarded = 0;
+    for (const card of globals.deck) {
+        if (card.trueSuit === suit && card.trueRank === rank && card.isDiscarded) {
+            discarded += 1;
+        }
+    }
+    return { total, discarded };
 };
