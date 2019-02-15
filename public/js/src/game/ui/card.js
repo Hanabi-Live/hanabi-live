@@ -46,7 +46,7 @@ const HanabiCard = function HanabiCard(config) {
     this.tweening = false;
     this.barename = undefined;
     this.showOnlyLearned = false;
-    this.turnFirstClued = null;
+    this.numPositiveClues = 0;
     this.isDiscarded = false;
     this.turnDiscarded = null;
     this.isPlayed = false;
@@ -69,7 +69,7 @@ const HanabiCard = function HanabiCard(config) {
         return this.suitKnown() && this.rankKnown();
     };
     this.isClued = function isClued() {
-        return this.turnFirstClued !== null;
+        return this.numPositiveClues > 0;
     };
     this.isInPlayerHand = function isInPlayerHand() {
         return globals.elements.playerHands.indexOf(this.parent.parent) !== -1;
@@ -102,8 +102,7 @@ const HanabiCard = function HanabiCard(config) {
         height: config.height - 6,
         cornerRadius: 6,
         strokeWidth: 16,
-        stroke: '#ffbb00', // Orange
-        // (it will turn to a different color after it is no longer freshly clued)
+        stroke: '#ffdf00', // Yellow
         visible: false,
         listening: false,
     });
@@ -297,6 +296,38 @@ HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
     this.indicatorGroup.originalX = this.indicatorGroup.getX();
     this.indicatorGroup.originalY = this.indicatorGroup.getY();
 
+    this.indicatorArrowBorder = new graphics.Arrow({
+        points: [
+            config.width / 2,
+            0,
+            config.width / 2,
+            config.height / 2.5,
+        ],
+        pointerLength: 20,
+        pointerWidth: 20,
+        fill: 'black',
+        stroke: 'black',
+        strokeWidth: 40,
+        shadowBlur: 75,
+        shadowOpacity: 1,
+        visible: true,
+        listening: false,
+    });
+    this.indicatorGroup.add(this.indicatorArrowBorder);
+
+    this.indicatorArrowBorderEdge = new graphics.Line({
+        points: [
+            (config.width / 2) - 20,
+            0,
+            (config.width / 2) + 20,
+            0,
+        ],
+        fill: 'black',
+        stroke: 'black',
+        strokeWidth: 15,
+    });
+    this.indicatorGroup.add(this.indicatorArrowBorderEdge);
+
     this.indicatorArrow = new graphics.Arrow({
         points: [
             config.width / 2,
@@ -309,13 +340,6 @@ HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
         fill: 'white',
         stroke: 'white',
         strokeWidth: 25,
-        shadowColor: 'black',
-        shadowBlur: 75,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 1,
         visible: true,
         listening: false,
     });
@@ -537,6 +561,17 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
             // Clue arrows are white with a circle that shows the type of clue given
             this.indicatorCircle.setVisible(true);
             const color = 'white';
+            if (this.numPositiveClues >= 2) {
+                // We remove the border of the arrow to signify that
+                // this is not a "freshly touched" card
+                this.indicatorArrowBorder.setVisible(false);
+                this.indicatorArrowBorderEdge.setVisible(false);
+
+                // Originally, we drew the shadow on the outside (border) arrow,
+                // but not the inside one; draw it now so that the arrows look consistent
+                this.indicatorArrow.setShadowBlur(75);
+                this.indicatorArrow.setShadowOpacity(1);
+            }
             this.indicatorArrow.setStroke(color);
             this.indicatorArrow.setFill(color);
             if (clue.type === constants.CLUE_TYPE.RANK) {
