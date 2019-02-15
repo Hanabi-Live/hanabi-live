@@ -439,13 +439,7 @@ HanabiCard.prototype.initEmpathy = function initEmpathy() {
 
     // Dynamically adjusted known cards, to be restored by event
     const toggledHolderViewCards = [];
-    const endHolderViewOnCard = function endHolderViewOnCard(toggledPips) {
-        const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
-        cardsToReset.map(
-            (card, index) => toggleHolderViewOnCard(card, false, toggledPips[index]),
-        );
-        globals.layers.card.batchDraw();
-    };
+
     const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
         if (toggledHolderViewCards.length > 0) {
             return undefined; // Handle race conditions with stop
@@ -456,35 +450,47 @@ HanabiCard.prototype.initEmpathy = function initEmpathy() {
         globals.layers.card.batchDraw();
         return toggledPips;
     };
-    if (this.holder !== globals.playerUs || globals.inReplay || globals.spectating) {
-        const mouseButton = 1; // Left-click
-        let toggledPips = [];
-        this.on('mousedown', (event) => {
-            if (
-                event.evt.which !== mouseButton // Only do Empathy for left-clicks
-                || this.tweening // Disable Empathy if the card is tweening
-                || this.isPlayed // Clicking on a played card goes to the turn that it was played
-                // Clicking on a discarded card goes to the turn that it was discarded
-                || this.isDiscarded
-                // Disable Empathy if a modifier key is pressed
-                || event.shiftKey || event.altKey || event.metaKey
-                || (globals.speedrun && !event.ctrlKey) // Empathy in speedruns uses Ctrl
-                || (!globals.speedrun && event.ctrlKey)
-            ) {
-                return;
-            }
+    const endHolderViewOnCard = function endHolderViewOnCard(toggledPips) {
+        const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
+        cardsToReset.map(
+            (card, index) => toggleHolderViewOnCard(card, false, toggledPips[index]),
+        );
+        globals.layers.card.batchDraw();
+    };
 
-            globals.activeHover = this;
-            const cards = this.parent.parent.children.map(c => c.children[0]);
-            toggledPips = beginHolderViewOnCard(cards);
-        });
-        this.on('mouseup mouseout', (event) => {
-            if (event.type === 'mouseup' && event.evt.which !== mouseButton) {
-                return;
-            }
-            endHolderViewOnCard(toggledPips);
-        });
-    }
+    const empathyMouseButton = 1; // Left-click
+    let toggledPips = [];
+    this.on('mousedown', (event) => {
+        if (
+            event.evt.which !== empathyMouseButton // Only do Empathy for left-clicks
+            // Disable Empathy if a modifier key is pressed
+            // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
+            || (event.evt.ctrlKey && !globals.speedrun)
+            || (!event.evt.ctrlKey && globals.speedrun && !globals.replay)
+            || event.evt.shiftKey
+            || event.evt.altKey
+            || event.evt.metaKey
+            || this.tweening // Disable Empathy if the card is tweening
+            || this.isPlayed // Clicking on a played card goes to the turn that it was played
+            // Clicking on a discarded card goes to the turn that it was discarded
+            || this.isDiscarded
+            // Disable Empathy on our own hand
+            // (unless we are in an in-game replay or we are a spectator)
+            || (this.holder === globals.playerUs && !globals.inReplay && !globals.spectating)
+        ) {
+            return;
+        }
+
+        globals.activeHover = this;
+        const cards = this.parent.parent.children.map(c => c.children[0]);
+        toggledPips = beginHolderViewOnCard(cards);
+    });
+    this.on('mouseup mouseout', (event) => {
+        if (event.type === 'mouseup' && event.evt.which !== empathyMouseButton) {
+            return;
+        }
+        endHolderViewOnCard(toggledPips);
+    });
 };
 
 HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target, clue) {

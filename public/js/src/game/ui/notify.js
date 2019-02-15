@@ -193,9 +193,23 @@ commands.gameOver = () => {
     if (!globals.replay) {
         globals.replay = true;
         globals.replayTurn = globals.replayMax;
+        globals.sharedReplay = true;
         globals.sharedReplayTurn = globals.replayTurn;
+
+        // Hide the "Exit Replay" button in the center of the screen,
+        // since it is no longer necessary
+        globals.elements.replayExitButton.hide();
+
+        // Hide some buttons in the bottom-left-hand corner
         globals.elements.replayButton.hide();
-        // Hide the in-game replay button in the bottom-left-hand corner
+        if (!globals.speedrun) {
+            globals.elements.chatButton.show();
+        } else {
+            globals.elements.restartButton.show();
+        }
+        if (globals.elements.killButton !== null) {
+            globals.elements.killButton.hide();
+        }
     }
 
     // We could be in the middle of an in-game replay when the game ends,
