@@ -198,30 +198,42 @@ const buttonToggleKeyDown = (event) => {
         return;
     }
 
-    if (!globals.sharedReplay) {
-        if (!globals.speedrun && globals.elements.chatButton.getVisible()) {
-            // We are in a normal game, so toggle "Chat" --> "Kill"
-            globals.elements.chatButton.hide();
-            globals.elements.killButton.show();
-            globals.layers.UI.draw();
-        } else if (globals.speedrun && globals.elements.killButton.getVisible()) {
-            // We are in a speedrun, so toggle "Kill" --> "Chat"
-            globals.elements.chatButton.show();
-            globals.elements.killButton.hide();
-            globals.layers.UI.draw();
-        }
-    } else {
-        if (!globals.speedrun && globals.elements.chatButton.getVisible()) {
-            // We are in a normal shared replay, so toggle "Chat" --> "Restart"
-            globals.elements.chatButton.hide();
-            globals.elements.restartButton.show();
-            globals.layers.UI.draw();
-        } else if (globals.speedrun && globals.elements.restartButton.getVisible()) {
-            // We are in a speedrun shared replay, so toggle "Restart" --> "Chat"
-            globals.elements.chatButton.show();
-            globals.elements.restartButton.hide();
-            globals.layers.UI.draw();
-        }
+    if (
+        !globals.sharedReplay
+        && !globals.speedrun
+        && globals.elements.chatButton.getVisible()
+    ) {
+        // We are in a normal game, so toggle "Chat" --> "Kill"
+        globals.elements.chatButton.hide();
+        globals.elements.killButton.show();
+        globals.layers.UI.draw();
+    } else if (
+        !globals.sharedReplay
+        && globals.speedrun
+        && globals.elements.killButton.getVisible()
+    ) {
+        // We are in a speedrun, so toggle "Kill" --> "Chat"
+        globals.elements.chatButton.show();
+        globals.elements.killButton.hide();
+        globals.layers.UI.draw();
+    } else if (
+        globals.sharedReplay
+        && !globals.speedrun
+        && globals.elements.chatButton.getVisible()
+    ) {
+        // We are in a normal shared replay, so toggle "Chat" --> "Restart"
+        globals.elements.chatButton.hide();
+        globals.elements.restartButton.show();
+        globals.layers.UI.draw();
+    } else if (
+        globals.sharedReplay
+        && globals.speedrun
+        && globals.elements.restartButton.getVisible()
+    ) {
+        // We are in a speedrun shared replay, so toggle "Restart" --> "Chat"
+        globals.elements.chatButton.show();
+        globals.elements.restartButton.hide();
+        globals.layers.UI.draw();
     }
 };
 const buttonToggleKeyUp = (event) => {
@@ -235,26 +247,38 @@ const buttonToggleKeyUp = (event) => {
     }
 
     // Revert the toggles defined in the "buttonToggleKeyDown()" function
-    if (!globals.sharedReplay) {
-        if (!globals.speedrun && globals.elements.killButton.getVisible()) {
-            globals.elements.chatButton.show();
-            globals.elements.killButton.hide();
-            globals.layers.UI.draw();
-        } else if (globals.speedrun && globals.elements.chatButton.getVisible()) {
-            globals.elements.chatButton.hide();
-            globals.elements.killButton.show();
-            globals.layers.UI.draw();
-        }
-    } else {
-        if (!globals.speedrun && globals.elements.restartButton.getVisible()) {
-            globals.elements.chatButton.show();
-            globals.elements.restartButton.hide();
-            globals.layers.UI.draw();
-        } else if (globals.speedrun && globals.elements.chatButton.getVisible()) {
-            globals.elements.chatButton.hide();
-            globals.elements.restartButton.show();
-            globals.layers.UI.draw();
-        }
+    if (
+        !globals.sharedReplay
+        && !globals.speedrun
+        && globals.elements.killButton.getVisible()
+    ) {
+        globals.elements.chatButton.show();
+        globals.elements.killButton.hide();
+        globals.layers.UI.draw();
+    } else if (
+        !globals.sharedReplay
+        && globals.speedrun
+        && globals.elements.chatButton.getVisible()
+    ) {
+        globals.elements.chatButton.hide();
+        globals.elements.killButton.show();
+        globals.layers.UI.draw();
+    } else if (
+        globals.sharedReplay
+        && !globals.speedrun
+        && globals.elements.restartButton.getVisible()
+    ) {
+        globals.elements.chatButton.show();
+        globals.elements.restartButton.hide();
+        globals.layers.UI.draw();
+    } else if (
+        globals.sharedReplay
+        && globals.speedrun
+        && globals.elements.chatButton.getVisible()
+    ) {
+        globals.elements.chatButton.hide();
+        globals.elements.restartButton.show();
+        globals.layers.UI.draw();
     }
 };
 

@@ -6,5 +6,5 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 cd "$DIR"
 
-# This only lints the Golang code
-golangci-lint run
+# This only lints the JavaScript code
+npm run-script lint

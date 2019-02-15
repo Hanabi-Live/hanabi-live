@@ -53,6 +53,12 @@ const HanabiCard = function HanabiCard(config) {
     this.turnPlayed = null;
 
     // Some short helper functions
+    this.doRotations = function doRotations(inverted) {
+        this.setRotation(inverted ? 180 : 0);
+        this.bare.setRotation(inverted ? 180 : 0);
+        this.bare.setX(inverted ? config.width : 0);
+        this.bare.setY(inverted ? config.height : 0);
+    };
     this.suitKnown = function suitKnown() {
         return this.trueSuit !== undefined;
     };
@@ -88,7 +94,78 @@ const HanabiCard = function HanabiCard(config) {
     });
     this.add(this.bare);
 
-    // The suit pips and the black squares
+    // The card will get a border when it becomes clued
+    this.cluedBorder = new graphics.Rect({
+        x: 3,
+        y: 3,
+        width: config.width - 6,
+        height: config.height - 6,
+        cornerRadius: 6,
+        strokeWidth: 16,
+        stroke: '#ffbb00', // Orange
+        // (it will turn to a different color after it is no longer freshly clued)
+        visible: false,
+        listening: false,
+    });
+    this.add(this.cluedBorder);
+
+    // Initialize various elements/features of the card
+    this.initPips(config);
+    this.setBareImage();
+    this.initIndicatorArrow(config);
+    this.initNote(config);
+    this.initEmpathy();
+
+    // Define the clue log mouse handlers
+    this.on('mousemove tap', function cardClueLogMousemoveTap() {
+        globals.elements.clueLog.showMatches(this);
+        globals.layers.UI.draw();
+    });
+    this.on('mouseout', () => {
+        globals.elements.clueLog.showMatches(null);
+        globals.layers.UI.draw();
+    });
+
+    // Define the other mouse handlers
+    this.on('click tap', this.click);
+    this.on('mousedown', this.clickSpeedrun);
+};
+
+graphics.Util.extend(HanabiCard, graphics.Group);
+
+HanabiCard.prototype.setBareImage = function setBareImage() {
+    let prefix = 'Card';
+
+    const learnedCard = globals.learnedCards[this.order];
+
+    const rank = (!this.showOnlyLearned && this.trueRank);
+    const empathyPastRankUncertain = this.showOnlyLearned && this.possibleRanks.length > 1;
+
+    const suit = (!this.showOnlyLearned && this.trueSuit);
+    const empathyPastSuitUncertain = this.showOnlyLearned && this.possibleSuits.length > 1;
+
+    let suitToShow = suit || learnedCard.suit || SUIT.GRAY;
+    if (empathyPastSuitUncertain) {
+        suitToShow = SUIT.GRAY;
+    }
+
+    // For whatever reason, "Card-Gray" is never created, so use "NoPip-Gray"
+    if (suitToShow === SUIT.GRAY) {
+        prefix = 'NoPip';
+    }
+
+    let name = `${prefix}-${suitToShow.name}-`;
+    if (empathyPastRankUncertain) {
+        name += '6';
+    } else {
+        name += rank || learnedCard.rank || '6';
+    }
+
+    this.barename = name;
+};
+
+// This initializes both the suit pips and the black squares
+HanabiCard.prototype.initPips = function initPips(config) {
     this.suitPips = new graphics.Group({
         x: 0,
         y: 0,
@@ -205,82 +282,7 @@ const HanabiCard = function HanabiCard(config) {
 
         this.suitPips.add(suitPip);
     }
-
-    this.setBareImage();
-
-    this.cluedBorder = new graphics.Rect({
-        x: 3,
-        y: 3,
-        width: config.width - 6,
-        height: config.height - 6,
-        cornerRadius: 6,
-        strokeWidth: 16,
-        stroke: '#ffbb00', // Orange
-        // (it will turn to a different color after it is no longer freshly clued)
-        visible: false,
-        listening: false,
-    });
-    this.add(this.cluedBorder);
-
-    this.initIndicatorArrow(config);
-    this.initNote(config);
-    this.initEmpathy();
-
-    // Define the clue log mouse handlers
-    this.on('mousemove tap', function cardClueLogMousemoveTap() {
-        globals.elements.clueLog.showMatches(this);
-        globals.layers.UI.draw();
-    });
-    this.on('mouseout', () => {
-        globals.elements.clueLog.showMatches(null);
-        globals.layers.UI.draw();
-    });
-
-    // Define the other mouse handlers
-    this.on('click tap', this.click);
-    this.on('mousedown', this.clickSpeedrun);
 };
-
-graphics.Util.extend(HanabiCard, graphics.Group);
-
-HanabiCard.prototype.setBareImage = function setBareImage() {
-    let prefix = 'Card';
-
-    const learnedCard = globals.learnedCards[card.order];
-
-    const rank = (!card.showOnlyLearned && card.trueRank);
-    const empathyPastRankUncertain = card.showOnlyLearned && card.possibleRanks.length > 1;
-
-    const suit = (!card.showOnlyLearned && card.trueSuit);
-    const empathyPastSuitUncertain = card.showOnlyLearned && card.possibleSuits.length > 1;
-
-    let suitToShow = suit || learnedCard.suit || SUIT.GRAY;
-    if (empathyPastSuitUncertain) {
-        suitToShow = SUIT.GRAY;
-    }
-
-    // For whatever reason, "Card-Gray" is never created, so use "NoPip-Gray"
-    if (suitToShow === SUIT.GRAY) {
-        prefix = 'NoPip';
-    }
-
-    let name = `${prefix}-${suitToShow.name}-`;
-    if (empathyPastRankUncertain) {
-        name += '6';
-    } else {
-        name += rank || learnedCard.rank || '6';
-    }
-
-    this.barename = name;
-};
-
-HanabiCard.prototype.doRotations = function doRotations(inverted = false) {
-    this.setRotation(inverted ? 180 : 0);
-
-    this.bare.setRotation(inverted ? 180 : 0);
-    this.bare.setX(inverted ? config.width : 0);
-    this.bare.setY(inverted ? config.height : 0);
-}
 
 HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
     this.indicatorGroup = new graphics.Group({
@@ -741,18 +743,20 @@ HanabiCard.prototype.clickRight = function clickRight(event) {
         && event.shiftKey
         && !event.altKey
         && !event.metaKey
+        && !globals.replay
     ) {
         this.setNote(notes.vars.lastNote);
         return;
     }
 
-    // Shfit + right-click is a "f" note
+    // Shift + right-click is a "f" note
     // (this is a common abbreviation for "this card is Finessed")
     if (
         !event.ctrlKey
         && event.shiftKey
         && !event.altKey
         && !event.metaKey
+        && !globals.replay
     ) {
         this.setNote('f');
         return;
@@ -765,6 +769,7 @@ HanabiCard.prototype.clickRight = function clickRight(event) {
         && !event.shiftKey
         && event.altKey
         && !event.metaKey
+        && !globals.replay
     ) {
         this.setNote('cm');
         return;
@@ -790,6 +795,7 @@ HanabiCard.prototype.clickRight = function clickRight(event) {
         && !event.shiftKey
         && !event.altKey
         && !event.metaKey
+        && !globals.replay
     ) {
         notes.openEditTooltip(this);
     }
@@ -858,19 +864,14 @@ HanabiCard.prototype.clickMorph = function clickMorph() {
 };
 
 HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(event) {
-    // Speedrunning overrides the normal card clicking behavior
-    // (but don't use the speedrunning behavior if we are in a solo or shared replay)
-    if (!globals.speedrun || globals.replay) {
-        return;
-    }
-
-    // Disable all click events if the card is tweening
-    if (this.tweening) {
-        return;
-    }
-
-    // Do nothing if we accidentally click on a played/discarded card
-    if (this.isPlayed || this.isDiscarded) {
+    if (
+        // Speedrunning overrides the normal card clicking behavior
+        // (but don't use the speedrunning behavior if we are in a solo or shared replay)
+        (!globals.speedrun || globals.replay)
+        || this.tweening // Disable all click events if the card is tweening
+        || this.isPlayed // Do nothing if we accidentally clicked on a played card
+        || this.isDiscarded // Do nothing if we accidentally clicked on a discarded card
+    ) {
         return;
     }
 
@@ -973,7 +974,18 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight(event) {
         return;
     }
 
-    // Shfit + right-click is a "f" note
+    // Ctrl + right-click is the normal note popup
+    if (
+        event.ctrlKey
+        && !event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+    ) {
+        notes.openEditTooltip(this);
+        return;
+    }
+
+    // Shift + right-click is a "f" note
     // (this is a common abbreviation for "this card is Finessed")
     if (
         !event.ctrlKey
@@ -1014,13 +1026,20 @@ HanabiCard.prototype.isCritical = function isCritical() {
 
     let cardsLeft = 0;
     for (const card of globals.deck) {
-        if (
-            card.trueSuit === this.trueSuit
-            && card.trueRank === this.trueRank
-        )
+        if (card.trueSuit === this.trueSuit && card.trueRank === this.trueRank) {
+            // Another card of this identity is already played, so this card is not critical
+            if (card.isPlayed) {
+                return false;
+            }
+
+            if (!card.isDiscarded) {
+                cardsLeft += 1;
+            }
+        }
     }
-    return false
-}
+
+    return cardsLeft === 1;
+};
 
 module.exports = HanabiCard;
 
