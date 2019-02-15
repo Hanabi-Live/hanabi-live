@@ -34,6 +34,7 @@ let rect; // We reuse this to draw many squares / rectangles
 let button; // We reuse this to draw many buttons
 let actionLogValues;
 let playStackValues;
+let playAreaValues;
 let clueLogValues;
 let spectatorsLabelValues;
 
@@ -118,6 +119,7 @@ module.exports = () => {
     drawClueArea();
     drawPreplayArea();
     drawReplayArea();
+    drawExtraAnimations();
 
     if (globals.inReplay) {
         globals.elements.replayArea.show();
@@ -340,7 +342,7 @@ const drawPlayStacksAndDiscardStacks = () => {
     // This is the invisible rectangle that players drag cards to in order to play them
     // Make it a little big bigger than the stacks
     const overlap = 0.03;
-    const playAreaValues = {
+    playAreaValues = {
         x: 0.183,
         y: 0.345,
         w: 0.435,
@@ -1287,4 +1289,48 @@ const drawReplayArea = () => {
 
     globals.elements.replayArea.hide();
     globals.layers.UI.add(globals.elements.replayArea);
+};
+
+const drawExtraAnimations = () => {
+    // These images are shown to the player to
+    // indicate which direction we are moving in a shared replay
+    const x = (playAreaValues.x + (playAreaValues.w / 2) - 0.05);
+    const y = (playAreaValues.y + (playAreaValues.h / 2) - 0.05);
+    const size = 0.1;
+
+    globals.elements.sharedReplayForward = new graphics.Image({
+        x: x * winW,
+        y: y * winH,
+        width: size * winW,
+        height: size * winH,
+        image: globals.ImageLoader.get('replay-forward'),
+        opacity: 0,
+    });
+    globals.layers.UI.add(globals.elements.sharedReplayForward);
+    globals.elements.sharedReplayForwardTween = new graphics.Tween({
+        node: globals.elements.sharedReplayForward,
+        duration: 0.5,
+        opacity: 1,
+        onFinish: () => {
+            globals.elements.sharedReplayForwardTween.reverse();
+        },
+    });
+
+    globals.elements.sharedReplayBackward = new graphics.Image({
+        x: x * winW,
+        y: y * winH,
+        width: size * winW,
+        height: size * winH,
+        image: globals.ImageLoader.get('replay-back'),
+        opacity: 0,
+    });
+    globals.layers.UI.add(globals.elements.sharedReplayBackward);
+    globals.elements.sharedReplayBackwardTween = new graphics.Tween({
+        node: globals.elements.sharedReplayBackward,
+        duration: 0.5,
+        opacity: 1,
+        onFinish: () => {
+            globals.elements.sharedReplayBackwardTween.reverse();
+        },
+    });
 };

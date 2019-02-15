@@ -234,8 +234,8 @@ const HanabiCard = function HanabiCard(config) {
         listening: false,
     });
     this.add(this.indicatorGroup);
-    this.indicatorGroup.originalX = this.indicatorGroup.getX()
-    this.indicatorGroup.originalY = this.indicatorGroup.getY()
+    this.indicatorGroup.originalX = this.indicatorGroup.getX();
+    this.indicatorGroup.originalY = this.indicatorGroup.getY();
 
     this.indicatorArrow = new graphics.Arrow({
         points: [

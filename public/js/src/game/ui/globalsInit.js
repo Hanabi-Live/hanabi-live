@@ -132,6 +132,10 @@ module.exports = () => {
         // Other optional elements
         timer1: null,
         timer2: null,
+        sharedReplayForward: null,
+        sharedReplayForwardTween: null,
+        sharedReplayBackward: null,
+        sharedReplayBackwardTween: null,
     };
     globals.activeHover = null; // The element that the mouse cursor is currently over
     globals.cardImages = {};

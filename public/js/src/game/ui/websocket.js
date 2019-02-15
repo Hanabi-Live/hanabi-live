@@ -284,17 +284,19 @@ commands.replaySound = (data) => {
 
 // This is used in shared replays to change the turn
 commands.replayTurn = (data) => {
-    let oldTurn = globals.sharedReplayTurn;
+    const oldTurn = globals.sharedReplayTurn;
     globals.sharedReplayTurn = data.turn;
     replay.adjustShuttles();
     if (globals.useSharedTurns) {
         replay.goto(globals.sharedReplayTurn);
 
         // Play an animation to indicate the direction that the leader has taken us in
-        if (oldTurn > globals.sharedReplayTurn) {
-            
-        } else if (oldTurn < globals.sharedReplayTurn) {
-            
+        if (oldTurn > globals.sharedReplayTurn && oldTurn !== -1) {
+            globals.elements.sharedReplayBackwardTween.play();
+            globals.layers.UI.draw();
+        } else if (oldTurn < globals.sharedReplayTurn && oldTurn !== -1) {
+            globals.elements.sharedReplayForwardTween.play();
+            globals.layers.UI.draw();
         }
     } else {
         globals.elements.replayShuttleShared.getLayer().batchDraw();

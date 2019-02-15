@@ -108,7 +108,7 @@ CardDeck.prototype.add = function add(child) {
         return;
     }
 
-    console.log('PLAYING UNKNOWN TWEEN')
+    console.log('PLAYING UNKNOWN TWEEN');
     child.tween = new graphics.Tween({
         node: child,
         x: 0,
@@ -121,7 +121,7 @@ CardDeck.prototype.add = function add(child) {
     }).play();
 
     child.tween.onFinish = () => {
-        console.log('FINISHED UNKNOWN TWEEN')
+        console.log('FINISHED UNKNOWN TWEEN');
         if (child.parent === this) {
             child.remove();
         }
