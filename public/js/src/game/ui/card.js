@@ -673,7 +673,8 @@ HanabiCard.prototype.click = function click(event) {
     }
 
     // Speedrunning overrides the normal card clicking behavior
-    // (but don't use the speedrunning behavior if we are in a solo or shared replay)
+    // (but don't use the speedrunning behavior if
+    // we are in a solo replay / shared replay / spectating)
     if (globals.speedrun && !globals.replay && !globals.spectating) {
         return;
     }

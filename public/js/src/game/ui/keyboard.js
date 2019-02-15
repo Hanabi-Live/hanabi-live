@@ -199,7 +199,8 @@ const buttonToggleKeyDown = (event) => {
     }
 
     if (
-        !globals.sharedReplay
+        !globals.replay
+        && !globals.spectating
         && !globals.speedrun
         && globals.elements.chatButton.getVisible()
     ) {
@@ -208,7 +209,8 @@ const buttonToggleKeyDown = (event) => {
         globals.elements.killButton.show();
         globals.layers.UI.draw();
     } else if (
-        !globals.sharedReplay
+        !globals.replay
+        && !globals.spectating
         && globals.speedrun
         && globals.elements.killButton.getVisible()
     ) {
@@ -248,7 +250,8 @@ const buttonToggleKeyUp = (event) => {
 
     // Revert the toggles defined in the "buttonToggleKeyDown()" function
     if (
-        !globals.sharedReplay
+        !globals.replay
+        && !globals.spectating
         && !globals.speedrun
         && globals.elements.killButton.getVisible()
     ) {
@@ -256,7 +259,8 @@ const buttonToggleKeyUp = (event) => {
         globals.elements.killButton.hide();
         globals.layers.UI.draw();
     } else if (
-        !globals.sharedReplay
+        !globals.replay
+        && !globals.spectating
         && globals.speedrun
         && globals.elements.chatButton.getVisible()
     ) {
