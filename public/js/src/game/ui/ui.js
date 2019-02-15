@@ -274,7 +274,7 @@ HanabiUI.prototype.stopAction = function stopAction() {
 HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
     // Hide all of the existing arrows on the cards
     for (let i = 0; i < globals.deck.length; i++) {
-        globals.deck[i].setIndicator(false, null, null);
+        globals.deck[i].setIndicator(false, null, null, null);
     }
     globals.layers.card.batchDraw();
 
@@ -310,9 +310,9 @@ HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
 
         if (touched) {
             match = true;
-            card.setIndicator(true, null, clue);
+            card.setIndicator(true, null, null, clue);
         } else {
-            card.setIndicator(false, null, null);
+            card.setIndicator(false, null, null, null);
         }
     }
 

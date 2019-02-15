@@ -13,6 +13,7 @@ const CardLayout = function CardLayout(config) {
     this.align = (config.align || 'left');
     this.reverse = (config.reverse || false);
     this.invertCards = (config.invertCards || false);
+    this.rotation = config.rotation;
 };
 
 graphics.Util.extend(CardLayout, graphics.Group);

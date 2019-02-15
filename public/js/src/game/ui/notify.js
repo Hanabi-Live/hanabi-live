@@ -34,7 +34,7 @@ commands.clue = (data) => {
         if (card.turnFirstClued === null) {
             card.turnFirstClued = globals.turn;
         }
-        card.setIndicator(true, data.giver, clue);
+        card.setIndicator(true, data.giver, data.target, clue);
         card.cluedBorder.show();
         card.applyClue(clue, true);
         card.setBareImage();

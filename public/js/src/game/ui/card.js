@@ -156,13 +156,11 @@ const HanabiCard = function HanabiCard(config) {
             stroke: 'black',
             name: suit.name,
             listening: false,
-            /* eslint-disable no-loop-func */
             sceneFunc: (ctx) => {
                 cardDraw.drawSuitShape(suit, i)(ctx);
                 ctx.closePath();
                 ctx.fillStrokeShape(suitPip);
             },
-            /* eslint-enable no-loop-func */
         });
 
         // Gradient numbers are magic
@@ -225,11 +223,15 @@ const HanabiCard = function HanabiCard(config) {
     this.isPlayed = false;
     this.turnPlayed = null;
 
+    /*
+        Indicator arrow
+    */
+
     this.indicatorGroup = new graphics.Group({
         x: 0,
         y: -config.height / 4,
         width: config.width,
-        height: 0.5 * config.height,
+        height: config.height,
         visible: false,
         listening: false,
     });
@@ -299,6 +301,10 @@ const HanabiCard = function HanabiCard(config) {
         listening: false,
     });
     this.indicatorGroup.add(this.indicatorText);
+
+    /*
+        Note
+    */
 
     // Define the note indicator emoji (this used to be a white square)
     const noteX = 0.78;
@@ -483,7 +489,7 @@ HanabiCard.prototype.setBareImage = function setBareImage() {
     this.barename = imageName(this);
 };
 
-HanabiCard.prototype.setIndicator = function setIndicator(visible, playerNum, clue) {
+HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target, clue) {
     if (visible) {
         if (clue === null) {
             // This is a shared replay arrow, so don't draw the circle
@@ -514,20 +520,32 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, playerNum, cl
                 // Just set the arrow in position
                 this.indicatorGroup.setX(this.indicatorGroup.originalX);
                 this.indicatorGroup.setY(this.indicatorGroup.originalY);
-            } else if (playerNum !== null) {
+            } else if (giver !== null) {
                 // Animate the arrow flying from the player who gave the clue to the cards
-                /*
-                const nameFrame = globals.elements.nameFrames[playerNum];
-                console.log('THIS CARD ORDER:', this.order);
-                const cardPos = this.getAbsolutePosition();
-                const namePos = nameFrame.getAbsolutePosition();
-                console.log('CARD ABSOLUTE:', cardPos)
-                console.log('NAME ABSOLUTE:', namePos)
-                console.log(namePos.x - cardPos.x, namePos.y - cardPos.y);
-                this.indicatorGroup.setX();
-                this.indicatorGroup.setY(-150);
-                console.log('IND-GROUP X:', this.indicatorGroup.getX());
-                console.log('IND-GROUP Y:', this.indicatorGroup.getY());
+                const playerHand = globals.elements.playerHands[giver];
+                const pos = playerHand.getAbsolutePosition();
+                const handW = playerHand.getWidth();
+                const handH = playerHand.getHeight();
+                // This comes in radians from Konva but we need to convert it to degrees
+                const rot = playerHand.rotation / 180 * Math.PI;
+                // Dividing by pi here is a complete hack; I don't know why the hand dimensions
+                // and indicator group dimensions are scaled differently by a factor of pi
+                const indW = this.indicatorGroup.getWidth() / Math.PI;
+                // The angle has to account for the whole card reflection business
+                // in other players' hands
+                const indTheta = (
+                    this.parent.parent.rotation
+                    + 180 * (target !== globals.playerUs)
+                ) / 180 * Math.PI;
+                pos.x += handW / 2 * Math.cos(rot) - handH / 2 * Math.sin(rot);
+                pos.y += handW / 2 * Math.sin(rot) + handH / 2 * Math.cos(rot);
+
+                // Now, "pos" is equal to the exact center of the hand
+                // We need to now adjust it to account for the size of the indicator arrow group
+                pos.x -= indW / 2 * Math.cos(indTheta);
+                pos.y -= indW / 2 * Math.sin(indTheta);
+
+                this.indicatorGroup.setAbsolutePosition(pos);
                 this.indicatorTween = new graphics.Tween({
                     node: this.indicatorGroup,
                     duration: 0.5,
@@ -535,7 +553,6 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, playerNum, cl
                     y: this.indicatorGroup.originalY,
                     runonce: true,
                 }).play();
-                */
             }
         }
     }
@@ -617,7 +634,7 @@ HanabiCard.prototype.toggleSharedReplayIndicator = function setSharedReplayIndic
     // (if the arrow is showing but is a different kind of arrow,
     // then just overwrite the existing arrow)
     globals.lobby.ui.showClueMatch(-1);
-    this.setIndicator(visible, null, null);
+    this.setIndicator(visible, null, null, null);
 };
 
 HanabiCard.prototype.click = function click(event) {
