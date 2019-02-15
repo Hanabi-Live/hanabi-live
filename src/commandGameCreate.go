@@ -142,13 +142,21 @@ func commandGameCreate(s *Session, d *CommandData) {
 				return
 			}
 
-			// Set the variant of the game to be the same as the one in the database
-			if v, err := db.Games.GetVariant(setReplay); err != nil {
+			// Set the options of the game to be the same as the one in the database
+			if v, err := db.Games.GetOptions(setReplay); err != nil {
 				log.Error("Failed to get the variant from the database for game "+strconv.Itoa(setReplay)+":", err)
 				s.Error("Failed to initialize the game. Please contact an administrator.")
 				return
 			} else {
-				d.Variant = variantsID[v]
+				// The variant is submitted to the server as a name but stored in the database as an integer
+				d.Variant = variantsID[v.Variant]
+				d.Timed = v.Timed
+				d.BaseTime = v.BaseTime
+				d.TimePerTurn = v.TimePerTurn
+				d.Speedrun = v.Speedrun
+				d.DeckPlays = v.DeckPlays
+				d.EmptyClues = v.EmptyClues
+				d.CharacterAssignments = v.CharacterAssignments
 			}
 
 		} else if strings.HasPrefix(d.Name, "!deal") {

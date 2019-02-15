@@ -341,16 +341,6 @@ func (*Games) GetOptions(databaseID int) (Options, error) {
 	return options, err
 }
 
-func (*Games) GetVariant(databaseID int) (int, error) {
-	var variant int
-	err := db.QueryRow(`
-		SELECT variant
-		FROM games
-		WHERE games.id = ?
-	`, databaseID).Scan(&variant)
-	return variant, err
-}
-
 func (*Games) GetNumPlayers(databaseID int) (int, error) {
 	var numPlayers int
 	err := db.QueryRow(`
