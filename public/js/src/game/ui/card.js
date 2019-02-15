@@ -361,23 +361,23 @@ HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
     this.indicatorGroup.add(this.indicatorText);
 
     // Hide the indicator arrows when a user begins to drag a card in their hand
-    if (this.holder === globals.playerUs && !globals.replay && !globals.spectating) {
-        this.on('mousedown', (event) => {
-            if (
-                event.evt.which !== 1 // Dragging uses left click
-                || globals.inReplay
-                || !this.indicatorArrow.isVisible()
-                || !this.parent.getDraggable()
-                || this.isPlayed
-                || this.isDiscarded
-            ) {
-                return;
-            }
+    this.on('mousedown', (event) => {
+        if (
+            event.evt.which !== 1 // Dragging uses left click
+            || this.holder !== globals.playerUs
+            || globals.inReplay
+            || globals.replay
+            || globals.spectating
+            || !this.indicatorArrow.isVisible()
+            || !this.parent.getDraggable()
+            || this.isPlayed
+            || this.isDiscarded
+        ) {
+            return;
+        }
 
-            globals.lobby.ui.showClueMatch(-1);
-            // Do not prevent default since there can be more than one mousedown event
-        });
-    }
+        globals.lobby.ui.showClueMatch(-1);
+    });
 };
 
 HanabiCard.prototype.initNote = function initNote(config) {
@@ -674,7 +674,7 @@ HanabiCard.prototype.click = function click(event) {
 
     // Speedrunning overrides the normal card clicking behavior
     // (but don't use the speedrunning behavior if we are in a solo or shared replay)
-    if (globals.speedrun && !globals.replay) {
+    if (globals.speedrun && !globals.replay && !globals.spectating) {
         return;
     }
 
@@ -744,6 +744,7 @@ HanabiCard.prototype.clickRight = function clickRight(event) {
         && !event.altKey
         && !event.metaKey
         && !globals.replay
+        && !globals.spectating
     ) {
         this.setNote(notes.vars.lastNote);
         return;
@@ -757,6 +758,7 @@ HanabiCard.prototype.clickRight = function clickRight(event) {
         && !event.altKey
         && !event.metaKey
         && !globals.replay
+        && !globals.spectating
     ) {
         this.setNote('f');
         return;
@@ -770,6 +772,7 @@ HanabiCard.prototype.clickRight = function clickRight(event) {
         && event.altKey
         && !event.metaKey
         && !globals.replay
+        && !globals.spectating
     ) {
         this.setNote('cm');
         return;
@@ -796,6 +799,7 @@ HanabiCard.prototype.clickRight = function clickRight(event) {
         && !event.altKey
         && !event.metaKey
         && !globals.replay
+        && !globals.spectating
     ) {
         notes.openEditTooltip(this);
     }
@@ -866,8 +870,9 @@ HanabiCard.prototype.clickMorph = function clickMorph() {
 HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(event) {
     if (
         // Speedrunning overrides the normal card clicking behavior
-        // (but don't use the speedrunning behavior if we are in a solo or shared replay)
-        (!globals.speedrun || globals.replay)
+        // (but don't use the speedrunning behavior if
+        // we are in a solo replay / shared replay / spectating)
+        (!globals.speedrun || globals.replay || globals.spectating)
         || this.tweening // Disable all click events if the card is tweening
         || this.isPlayed // Do nothing if we accidentally clicked on a played card
         || this.isDiscarded // Do nothing if we accidentally clicked on a discarded card
