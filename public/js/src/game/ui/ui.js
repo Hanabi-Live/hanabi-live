@@ -166,23 +166,20 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
     }
 
     if (data.canClue) {
-        // Show the clue UI
+        // Reset and show the clue UI
+        if (globals.playerNames.length === 2) {
+            // In 2-player games,
+            // default the clue recipient button to the only other player available
+            // Otherwise, leave the last player selected
+            globals.elements.clueTargetButtonGroup.list[0].setPressed(true);
+        }
+        globals.elements.clueTypeButtonGroup.clearPressed();
         globals.elements.clueArea.show();
     } else {
         globals.elements.noClueBox.show();
         globals.elements.noClueLabel.show();
-        if (!globals.animateFast) {
-            globals.layers.UI.draw();
-        }
     }
-
-    // We have to redraw the UI layer to avoid a bug with the clue UI
     globals.layers.UI.draw();
-
-    if (globals.playerNames.length === 2) {
-        // Default the clue recipient button to the only other player available
-        globals.elements.clueTargetButtonGroup.list[0].setPressed(true);
-    }
 
     globals.elements.playerHands[globals.playerUs].moveToTop();
 

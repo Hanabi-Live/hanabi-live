@@ -116,7 +116,7 @@ module.exports = () => {
         // The clue UI
         clueArea: null,
         clueTargetButtonGroup: null,
-        clueButtonGroup: null,
+        clueTypeButtonGroup: null,
         rankClueButtons: null,
         suitClueButtons: null,
         giveClueButton: null,

@@ -1000,8 +1000,8 @@ const drawClueArea = () => {
         height: clueAreaValues.h * winH,
     });
 
+    // Player buttons
     globals.elements.clueTargetButtonGroup = new ButtonGroup();
-
     globals.elements.clueTargetButtonGroup.selectNextTarget = function selectNextTarget() {
         let newSelectionIndex = 0;
         for (let i = 0; i < this.list.length; i++) {
@@ -1014,14 +1014,6 @@ const drawClueArea = () => {
         this.list[newSelectionIndex].dispatchEvent(new MouseEvent('click'));
     };
 
-    globals.elements.clueButtonGroup = new ButtonGroup();
-
-    // Store each button inside an array for later
-    // (so that we can press them with keyboard hotkeys)
-    globals.elements.rankClueButtons = [];
-    globals.elements.suitClueButtons = [];
-
-    // Player buttons
     {
         let x = 0.26 * winW - (numPlayers - 2) * 0.044 * winW;
         for (let i = 0; i < numPlayers - 1; i++) {
@@ -1043,32 +1035,31 @@ const drawClueArea = () => {
         }
     }
 
+    // Clue type buttons
+    globals.elements.clueTypeButtonGroup = new ButtonGroup();
+
     // Color buttons
-    {
+    globals.elements.suitClueButtons = [];
+    for (let i = 0; i < globals.variant.clueColors.length; i++) {
+        const color = globals.variant.clueColors[i];
         const x = 0.158 + ((6 - globals.variant.clueColors.length) * 0.025);
-        let i = 0;
-        for (const color of globals.variant.clueColors) {
-            button = new ColorButton({
-                x: (x + i * 0.049) * winW,
-                y: 0.027 * winH,
-                width: 0.04 * winW,
-                height: 0.071 * winH,
-                color: color.hexCode,
-                text: color.abbreviation,
-                clue: new Clue(constants.CLUE_TYPE.COLOR, color),
-            });
+        button = new ColorButton({
+            x: (x + i * 0.049) * winW,
+            y: 0.027 * winH,
+            width: 0.04 * winW,
+            height: 0.071 * winH,
+            color: color.hexCode,
+            text: color.abbreviation,
+            clue: new Clue(constants.CLUE_TYPE.COLOR, color),
+        });
 
-            globals.elements.clueArea.add(button);
-
-            // Add it to the button array (for keyboard hotkeys)
-            globals.elements.suitClueButtons.push(button);
-
-            globals.elements.clueButtonGroup.add(button);
-            i += 1;
-        }
+        globals.elements.clueArea.add(button);
+        globals.elements.suitClueButtons.push(button);
+        globals.elements.clueTypeButtonGroup.add(button);
     }
 
     // Rank buttons / number buttons
+    globals.elements.rankClueButtons = [];
     let numRanks = 5;
     if (globals.variant.name.startsWith('Multi-Fives')) {
         numRanks = 4;
@@ -1076,7 +1067,6 @@ const drawClueArea = () => {
     for (let i = 1; i <= numRanks; i++) {
         const x = 0.134 + ((5 - numRanks) * 0.025);
         button = new NumberButton({
-            // x: (0.183 + (i - 1) * 0.049) * winW,
             x: (x + i * 0.049) * winW,
             y: 0.1 * winH,
             width: 0.04 * winW,
@@ -1085,12 +1075,9 @@ const drawClueArea = () => {
             clue: new Clue(constants.CLUE_TYPE.RANK, i),
         });
 
-        // Add it to the button array (for keyboard hotkeys)
         globals.elements.rankClueButtons.push(button);
-
         globals.elements.clueArea.add(button);
-
-        globals.elements.clueButtonGroup.add(button);
+        globals.elements.clueTypeButtonGroup.add(button);
     }
 
     // The "Give Clue" button
