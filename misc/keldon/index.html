@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name=viewport content="width=1010, initial-scale=1">
+<title>Hanabi</title>
+<script type="text/javascript" async src="lib/kinetic-v5.1.1.min.js"></script>
+<script type="text/javascript" async src="lib/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" async src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script type="text/javascript" async src="sha256.js"></script>
+<script type="text/javascript" async src="constants.js"></script>
+<script type="text/javascript" async src="ui.js"></script>
+<script type="text/javascript" async src="lobby.js"></script>
+<link rel="stylesheet" type="text/css" href="hanabi.css">
+</head>
+<body>
+<div id="pregame">
+	<div id="login">
+		<h1>Login</h1>
+		<div>Username: <input type="text" id="user"></div>
+		<div>Password: <input type="password" id="pass"></div>
+		<div id="connecting"><img src="img/logging.gif"></div>
+		<div id="login-container"><button type="button" id="login-button">Login</button></div>
+		<div id="login-result"></div>
+		<p>Registration is not required.  To create a new account,
+		simply login with a new username and select a password.</p>
+	</div>
+	<div id="lobby">
+		<div id="table-area">
+			<div id="table-list-div">
+				Open Tables
+				<ul id="table-list" class="lobby-element">
+				</ul>
+			</div>
+			<div class="control-buttons">
+				<button type="button" id="create-table">Create Table</button>
+				<button type="button" id="show-history">Show History</button>
+				<button type="button" id="show-resources">Resources</button>
+				<button type="button" id="show-settings"></button>
+			</div>
+		</div>
+		<div id="joined-table" class="lobby-element">
+			<div id="joined-desc"></div>
+			<div id="show-player-1" class="show-player"></div>
+			<div id="show-player-2" class="show-player"></div>
+			<div id="show-player-3" class="show-player"></div>
+			<div id="show-player-4" class="show-player"></div>
+			<div id="show-player-5" class="show-player"></div>
+			<button type="button" id="start-game" disabled>Start Game</button>
+			<button type="button" id="leave-game">Leave Game</button>
+			<button type="button" id="unattend-table">Return to Tables</button>
+		</div>
+		<div id="game-history">
+			<div id="history-list-div">
+				Your Game History
+				<ul id="history-list" class="lobby-element">
+				</ul>
+			</div>
+			<div class="control-buttons">
+				<button type="button" class="return-table">Return to Tables</button>
+			</div>
+		</div>
+		<div id="game-history-details">
+			<div id="history-details-list-div">
+				All games played with same deal
+				<ul id="history-details-list" class="lobby-element">
+				</ul>
+			</div>
+			<div class="control-buttons">
+				<button type="button" class="return-table">Return to Tables</button>
+				<button type="button" id="return-history">Return to History</button>
+			</div>
+		</div>
+		<div id="chat" class="lobby-element"></div>
+		<div id="user-list-div" class="lobby-element">
+			<ul id="user-list">
+			</ul>
+		</div>
+		<div id="chat-entry">
+			<input type="text" id="chat-input">
+		</div>
+	</div>
+	<div id="create-table-dialog" title="Create Table">
+		<div>
+			Game Name:
+			<input type="text" id="create-game-name">
+		</div>
+		<div>
+			Max Players:
+			<select id="create-game-players">
+				<option value="2">2</option>
+				<option value="3">3</option>
+				<option value="4">4</option>
+				<option value="5" selected>5</option>
+			</select>
+		</div>
+		<div>
+			Variant:
+			<select id="create-game-variant">
+				<option value="0">None</option>
+				<option value="1">Black Suit</option>
+				<option value="2">Black Suit (one of each rank)</option>
+				<option value="3">Multi-color Suit</option>
+			</select>
+		</div>
+		<div>
+			Allow Spectators:
+			<input type="checkbox" id="create-game-allow-spec">
+		</div>
+		<div>
+			<button type="button" id="create-game-submit">Create Game</button>
+			<button type="button" id="create-game-cancel">Cancel</button>
+		</div>
+	</div>
+	<div id="resources-dialog" title="Other Resources">
+		<h1>Other Resources</h1>
+		<ul>
+			<li><a href="https://discord.gg/FADvkJp" target="_blank">Hanabi Discord server</a></li>
+			<li>
+				<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" id="donateform">
+				<input type="hidden" name="cmd" value="_s-xclick">
+				<input type="hidden" name="hosted_button_id" value="GFKEQ9MTFJRUL">
+				<a href="#" onclick="document.getElementById('donateform').submit()">Donate (via PayPal) to help offset server costs</a>
+				</form>
+			</li>
+		</ul>
+		<button type="button" id="close-resources">Close</button>
+	</div>
+	<div id="settings-dialog" title="Settings">
+		<h1>Settings</h1>
+		<h2>Turn Notifications</h2>
+		<ul>
+			<li>
+				<label>
+				<input type="checkbox" id="send-turn-notification">
+				Receive notification when it's your turn
+				</label>
+			</li>
+			<li>
+				<label>
+				<input type="checkbox" id="send-turn-sound">
+				Play sound when it's your turn
+				</label>
+			</li>
+		</ul>
+		<h2>Chat Notifications</h2>
+		<ul>
+			<li>
+				<label>
+				<input type="checkbox" id="send-chat-notification">
+				Receive notification when your name is mentioned in chat
+				</label>
+			</li>
+			<li>
+				<label>
+				<input type="checkbox" id="send-chat-sound">
+				Play sound when your name is mentioned in chat
+				</label>
+			</li>
+		</ul>
+		<button type="button" id="close-settings">Close</button>
+	</div>
+</div>
+<div id="game"></div>
+<script type="text/javascript">
+window.onload = function() {
+	window.lobby = new HanabiLobby();
+	var conn = io.connect("http://keldon.net:32221/");
+	window.lobby.set_conn(conn);
+};
+</script>
+</body>
+</html>

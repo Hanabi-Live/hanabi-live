@@ -1,0 +1,375 @@
+body {
+	width: 100%;
+	height: 100%;
+	margin: 0px;
+	background-color: black;
+}
+
+button {
+	background-color: rgba(0, 0, 0, 0.6);
+	width: 280px;
+	height: 38px;
+	margin: 5px;
+
+	border: none;
+	border-radius: 6px;
+	font-size: 27px;
+	color: white;
+}
+
+button:active {
+	background-color: rgba(136, 136, 136, 0.6);
+}
+
+button:disabled {
+	color: rgb(108, 108, 108);
+}
+
+button.abandon {
+	background: url(img/redx.png) no-repeat;
+	background-size: contain;
+	width: 46px;
+	height: 46px;
+	margin: 2px;
+
+	border: none;
+}
+
+#show-resources {
+	position: absolute;
+	right: 60px;
+}
+
+#show-settings {
+	background-image: url(img/gear.png);
+	background-repeat: no-repeat;
+	background-size: contain;
+	width: 50px;
+
+	position: absolute;
+	right: 0px;
+}
+
+ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+#lobby {
+	display: none;
+	height: 100%;
+}
+
+#pregame {
+	background: url(img/background.jpg) no-repeat center center fixed;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+
+	position: absolute;
+	clear: both;
+	width: 1000px;
+	height: 600px;
+	top: 50%;
+	left: 50%;
+	margin-top: -300px;
+	margin-left: -500px;
+	padding: 5px;
+
+	color: black;
+}
+
+#login {
+	font-size: large;
+}
+
+#connecting {
+	display: none;
+}
+
+#table-area {
+	height: 50%;
+	width: 100%;
+}
+
+#table-list-div {
+	height: 80%;
+	margin: 5px 0px 0px 0px;
+}
+
+#table-list {
+	height: 85%;
+	overflow-y: auto;
+
+	border: 1px solid #444;
+	border-radius: 5px;
+}
+
+#joined-table {
+	display: none;
+
+	height: 50%;
+	width: 100%;
+
+	border: 1px solid #444;
+	border-radius: 5px;
+}
+
+#joined-desc {
+	float: left;
+	width: 20%;
+	height: 80%;
+}
+
+.show-player {
+	float: left;
+	width: 16%;
+	height: 80%;
+}
+
+.deck-select {
+	height: 25px;
+	overflow-y: hidden;
+	font-size: 80%;
+}
+
+#choose-deck {
+	max-width: 95%;
+}
+
+.player-name {
+	font-weight: bold;
+}
+
+.player-details {
+	overflow-y: auto;
+	height: 80%;
+	margin: 2px;
+	padding: 2px;
+
+	border: 1px solid #444;
+	border-radius: 5px;
+}
+
+#game-history {
+	display: none;
+
+	height: 50%;
+	width: 100%;
+}
+
+#history-list-div {
+	height: 80%;
+	margin: 5px 0px 0px 0px;
+}
+
+#history-list {
+	height: 85%;
+	overflow-y: auto;
+
+	border: 1px solid #444;
+	border-radius: 5px;
+}
+
+#game-history-details {
+	display: none;
+
+	height: 50%;
+	width: 100%;
+}
+
+#history-details-list-div {
+	height: 80%;
+	margin: 5px 0px 0px 0px;
+}
+
+#history-details-list {
+	height: 85%;
+	overflow-y: auto;
+
+	border: 1px solid #444;
+	border-radius: 5px;
+}
+
+.detail-us {
+	font-weight: bold;
+}
+
+.control-buttons {
+	margin: 0px auto;
+}
+
+#chat {
+	float: left;
+	overflow-y: scroll;
+	height: 42%;
+	width: 72%;
+	padding: 5px;
+	margin-top: 5px;
+	margin-right: 10px;
+
+	border: 1px solid #444;
+	border-radius: 5px;
+}
+
+#user-list-div {
+	overflow-y: scroll;
+	height: 42%;
+	padding: 5px;
+	margin-top: 5px;
+
+	border: 1px solid #444;
+	border-radius: 5px;
+}
+
+.user-name {
+	width: 100px;
+}
+
+.user-seated {
+	width: 60px;
+	text-align: center;
+}
+
+.user-playing {
+	width: 50px;
+	text-align: center;
+}
+
+#chat-entry {
+	margin-top: 1px;
+	padding-right: 5px;
+}
+
+#chat-input {
+	width: 100%;
+}
+
+#create-table-dialog {
+	display: none;
+
+	position: absolute;
+	width: 300px;
+	height: 190px;
+	top: 45px;
+	left: 300px;
+	z-index: 100;
+	padding: 5px;
+
+	background-color: rgba(255, 255, 255, 0.9);
+	border: 3px solid #444;
+	border-radius: 5px;
+}
+
+#resources-dialog {
+	display: none;
+
+	position: absolute;
+	width: 500px;
+	height: 400px;
+	top: 45px;
+	left: 200px;
+	z-index: 100;
+	padding: 5px;
+
+	background-color: rgba(255, 255, 255, 0.9);
+	border: 3px solid #444;
+	border-radius: 5px;
+}
+
+#close-resources {
+	position: absolute;
+	bottom: 15px;
+}
+
+#settings-dialog {
+	display: none;
+
+	position: absolute;
+	width: 500px;
+	height: 400px;
+	top: 45px;
+	left: 200px;
+	z-index: 100;
+	padding: 5px;
+
+	background-color: rgba(255, 255, 255, 0.9);
+	border: 3px solid #444;
+	border-radius: 5px;
+}
+
+#close-settings {
+	position: absolute;
+	bottom: 15px;
+}
+
+.lobby-element {
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+.table-header {
+	font-weight: bold;
+	border-bottom: 1px solid #444;
+}
+
+.table-item {
+	border-bottom: 1px solid #444;
+}
+
+.table-item:last-child {
+	border-bottom: none;
+}
+
+.table-attr {
+	display: inline-block;
+}
+
+.table-name {
+	width: 240px;
+}
+
+.table-players {
+	width: 50px;
+}
+
+.table-variant {
+	width: 250px;
+}
+
+.table-turn {
+	width: 90px;
+}
+
+.table-player {
+	width: 305px;
+}
+
+.table-abandon {
+	width: 55px;
+}
+
+.history-id {
+	width: 75px;
+}
+
+.history-players {
+	width: 75px;
+}
+
+.history-score {
+	width: 120px;
+}
+
+.history-ts {
+	width: 150px;
+}
+
+.history-variant {
+	width: 250px;
+}
+
+.history-others {
+	width: 150px
+}
