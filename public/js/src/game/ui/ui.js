@@ -210,7 +210,7 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
 
     const checkClueLegal = () => {
         const target = globals.elements.clueTargetButtonGroup.getPressed();
-        const clueButton = globals.elements.clueButtonGroup.getPressed();
+        const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
 
         if (!target || !clueButton) {
             globals.elements.giveClueButton.setEnabled(false);
@@ -239,7 +239,7 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
     };
 
     globals.elements.clueTargetButtonGroup.on('change', checkClueLegal);
-    globals.elements.clueButtonGroup.on('change', checkClueLegal);
+    globals.elements.clueTypeButtonGroup.on('change', checkClueLegal);
 };
 
 HanabiUI.prototype.stopAction = function stopAction() {
@@ -251,7 +251,7 @@ HanabiUI.prototype.stopAction = function stopAction() {
 
     globals.lobby.ui.showClueMatch(-1);
     globals.elements.clueTargetButtonGroup.off('change');
-    globals.elements.clueButtonGroup.off('change');
+    globals.elements.clueTypeButtonGroup.off('change');
 
     // Make all of the cards in our hand not draggable
     // (but we need to keep them draggable if the pre-play setting is enabled)
@@ -320,7 +320,7 @@ HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
 
 HanabiUI.prototype.giveClue = function giveClue() {
     const target = globals.elements.clueTargetButtonGroup.getPressed();
-    const clueButton = globals.elements.clueButtonGroup.getPressed();
+    const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
     if (
         !globals.ourTurn // We can only give clues on our turn
         || globals.clues === 0 // We can only give a clue if there is one available

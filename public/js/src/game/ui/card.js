@@ -554,6 +554,7 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
         if (clue === null) {
             // This is a shared replay arrow, so don't draw the circle
             this.indicatorCircle.setVisible(false);
+            this.indicatorText.setVisible(false);
             const color = sharedReplayIndicatorArrowColor;
             this.indicatorArrow.setStroke(color);
             this.indicatorArrow.setFill(color);
