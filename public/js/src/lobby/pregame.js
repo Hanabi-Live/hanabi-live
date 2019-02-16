@@ -93,7 +93,7 @@ exports.draw = () => {
         html += `
             <div class="hidden">
                 <div id="pregame-tooltip-timer" class="lobby-pregame-tooltip-icon">
-                    This is an timed game.
+                    This is a timed game.
                 </div>
             </div>
         `;
