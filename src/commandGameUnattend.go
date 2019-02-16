@@ -44,7 +44,7 @@ func commandGameUnattend(s *Session, d *CommandData) {
 		// Check to see if they are in the spectators list
 		i := g.GetSpectatorIndex(s.UserID())
 		if i == -1 {
-			log.Error("User \"" + s.Username() + "\" tried to unattend " +
+			log.Warning("User \"" + s.Username() + "\" tried to unattend " +
 				"game " + strconv.Itoa(gameID) + ", but they were not in the spectators list.")
 			return
 		}

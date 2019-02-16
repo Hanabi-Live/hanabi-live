@@ -617,13 +617,19 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
                 // We need to now adjust it to account for the size of the indicator arrow group
                 pos.x -= indW / 2 * Math.cos(indTheta);
                 pos.y -= indW / 2 * Math.sin(indTheta);
-
                 this.indicatorGroup.setAbsolutePosition(pos);
+
+                // Set the rotation so that the arrow will start off by pointing towards the card
+                // that it is travelling to
+                // this.indicatorGroup.setRotation(90);
+                // TODO NEED LIBSTERS HELP
+
                 this.indicatorTween = new graphics.Tween({
                     node: this.indicatorGroup,
                     duration: 0.5,
                     x: this.indicatorGroup.originalX,
                     y: this.indicatorGroup.originalY,
+                    rotation: 0,
                     runonce: true,
                 }).play();
             }
