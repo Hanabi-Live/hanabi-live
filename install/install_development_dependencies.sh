@@ -12,26 +12,25 @@ code --install-extension "ms-vscode.Go" # For Golang
 code --install-extension "dbaeumer.vscode-eslint" # For JavaScript
 
 # Install the Golang tools that VSCode uses
-go get -u "github.com/stamblerre/gocode"
-go get -u "github.com/uudashr/gopkgs/cmd/gopkgs"
-go get -u "github.com/lukehoban/go-outline"
-go get -u "github.com/newhook/go-symbols"
-go get -u "golang.org/x/tools/cmd/guru"
-go get -u "golang.org/x/tools/cmd/gorename"
-go get -u "github.com/fatih/gomodifytags"
-go get -u "github.com/haya14busa/goplay/cmd/goplay"
-go get -u "github.com/josharian/impl"
-go get -u "github.com/tylerb/gotype-live"
-go get -u "github.com/ianthehat/godef"
-go get -u "golang.org/x/tools/cmd/godoc"
-go get -u "github.com/zmb3/gogetdoc"
-go get -u "golang.org/x/tools/cmd/goimports"
-go get -u "github.com/sqs/goreturns"
-go get -u "golang.org/x/lint/golint"
-go get -u "github.com/cweill/gotests/..."
-go get -u "github.com/alecthomas/gometalinter"
-go get -u "github.com/sourcegraph/go-langserver"
-go get -u "github.com/derekparker/delve/cmd/dlv"
+# From: https://github.com/Microsoft/vscode-go/wiki/Go-tools-that-the-Go-extension-depends-on
+go get -u -v github.com/ramya-rao-a/go-outline
+go get -u -v github.com/acroca/go-symbols
+go get -u -v github.com/mdempsky/gocode
+go get -u -v github.com/rogpeppe/godef
+go get -u -v golang.org/x/tools/cmd/godoc
+go get -u -v github.com/zmb3/gogetdoc
+go get -u -v golang.org/x/lint/golint
+go get -u -v github.com/fatih/gomodifytags
+go get -u -v golang.org/x/tools/cmd/gorename
+go get -u -v sourcegraph.com/sqs/goreturns
+go get -u -v golang.org/x/tools/cmd/goimports
+go get -u -v github.com/cweill/gotests/...
+go get -u -v golang.org/x/tools/cmd/guru
+go get -u -v github.com/josharian/impl
+go get -u -v github.com/haya14busa/goplay/cmd/goplay
+go get -u -v github.com/uudashr/gopkgs/cmd/gopkgs
+go get -u -v github.com/davidrjenni/reftools/cmd/fillstruct
+go get -u -v github.com/alecthomas/gometalinter
 
 # Install the Golang linter
 go get -u "github.com/golangci/golangci-lint/cmd/golangci-lint"
