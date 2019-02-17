@@ -9,8 +9,8 @@ Note that these steps require **an elevated (administrator) command-shell**.
 
 * Install [Chocolatey](https://chocolatey.org/):
   * `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
-* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), [Visual Studio Code](https://code.visualstudio.com/), and [Wget](https://eternallybored.org/misc/wget/):
-  * `choco install git golang mariadb nodejs vscode wget -y`
+* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), [Java](https://www.java.com/en/), [Visual Studio Code](https://code.visualstudio.com/), and [Wget](https://eternallybored.org/misc/wget/):
+  * `choco install git golang mariadb nodejs jre8 vscode wget -y`
 * Configure Git:
   * `refreshenv`
   * `git config --global user.name "Your_Username"`

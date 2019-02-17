@@ -33,7 +33,7 @@ go get -u -v github.com/davidrjenni/reftools/cmd/fillstruct
 go get -u -v github.com/alecthomas/gometalinter
 
 # Install the Golang linter
-go get -u "github.com/golangci/golangci-lint/cmd/golangci-lint"
+go get -u -v "github.com/golangci/golangci-lint/cmd/golangci-lint"
 
 # Install the JavaScript linter
 cd "$DIR/../public/js"
