@@ -114,7 +114,7 @@ List of Features
   * Note that this measure of efficiency assumes *Good Touch Principle* - that all clued cards will eventually be played. If your team does not play with *Good Touch Principle*, then these numbers won't be useful.
   * Even known useless cards with a clue on them will be counted.
 
-### 6-Player Games
+#### 6-Player Games
 
 Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to do.
 
