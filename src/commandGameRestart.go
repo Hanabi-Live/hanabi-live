@@ -31,9 +31,15 @@ func commandGameRestart(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that this person is leading the review
+	// Validate that this person is leading the shared replay
 	if s.UserID() != g.Owner {
 		s.Warning("You cannot restart a game unless you are the leader.")
+		return
+	}
+
+	// Validate that there are at least two people in the shared replay
+	if len(g.Spectators) < 2 {
+		s.Warning("You cannot restart a game unless there are at least two people in it.")
 		return
 	}
 
@@ -73,7 +79,7 @@ func commandGameRestart(s *Session, d *CommandData) {
 		commandGameJoin(s2, &CommandData{
 			// We increment the newGameID after creating a game,
 			// so assume that the ID of the last game created is equal to the "newGameID" minus 1
-			GameID: newGameID - 1,
+			ID: newGameID - 1,
 		})
 	}
 	commandGameStart(s, nil)

@@ -275,12 +275,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 		// so we have to double the starting amount
 		g.Clues *= 2
 	}
-	msg := g.GetName() + "User \"" + s.Username() + "\" created"
-	if g.Options.Timed {
-		msg += " (timed)"
-	}
-	msg += "."
-	log.Info(msg)
+	log.Info(g.GetName() + "User \"" + s.Username() + "\" created a game.")
 
 	// Add it to the map
 	games[gameID] = g
