@@ -305,6 +305,24 @@ func (s *Session) NotifyAction(g *Game) {
 	})
 }
 
+// NotifyConnected will send someone a list corresponding to which players are connected
+// On the client, this changes the player name-tags different colors
+func (s *Session) NotifyConnected(g *Game) {
+	// Make the list
+	list := make([]bool, 0)
+	for _, p := range g.Players {
+		list = append(list, p.Present)
+	}
+
+	// Send the "connected" message
+	type ConnectedMessage struct {
+		List []bool `json:"list"`
+	}
+	s.Emit("connected", &ConnectedMessage{
+		List: list,
+	})
+}
+
 func (s *Session) NotifySpectators(g *Game) {
 	// Build an array with the names of all of the spectators
 	names := make([]string, 0)

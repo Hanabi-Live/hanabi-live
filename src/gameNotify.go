@@ -102,8 +102,8 @@ func (g *Game) NotifyTableReady() {
 	}
 }
 
-// NotifyConnected will change the player name-tags different colors
-// to indicate whether or not they are currently connected
+// NotifyConnected will send "connected" messages to everyone in a game
+// (because someone just connected or disconnected)
 // This is only called in situations where the game has started
 func (g *Game) NotifyConnected() {
 	if !g.Running {
@@ -111,35 +111,17 @@ func (g *Game) NotifyConnected() {
 		return
 	}
 
-	// Make a list of who is currently connected of the players in the current game
-	list := make([]bool, 0)
-	for _, p := range g.Players {
-		list = append(list, p.Present)
-	}
-
-	// Send a "connected" message to all of the users in the game
-	type ConnectedMessage struct {
-		List []bool `json:"list"`
-	}
-	data := &ConnectedMessage{
-		List: list,
-	}
-
 	// If this is a shared replay, then all of the players are also spectators,
 	// so we do not want to send them a duplicate message
 	if !g.SharedReplay {
 		for _, p := range g.Players {
-			if !p.Present {
-				continue
-			}
-
-			p.Session.Emit("connected", data)
+			p.Session.NotifyConnected(g)
 		}
 	}
 
-	// Also send it to the spectators
+	// Also send the spectators an update
 	for _, sp := range g.Spectators {
-		sp.Session.Emit("connected", data)
+		sp.Session.NotifyConnected(g)
 	}
 }
 

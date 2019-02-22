@@ -10,6 +10,13 @@ import (
 	"github.com/Zamiell/hanabi-live/src/models"
 )
 
+const (
+	// When sending the in-game chat history,
+	// only send the last X messages to prevent clients from becoming overloaded
+	// (in case someone maliciously spams a lot of messages)
+	chatLimit = 1000
+)
+
 /*
 	Chat command functions
 */
@@ -266,14 +273,13 @@ func chatSendPastFromDatabase(s *Session, room string, count int) {
 
 func chatSendPastFromGame(s *Session, g *Game) {
 	chatList := make([]*ChatMessage, 0)
-	for i, gcm := range g.Chat {
-		// Only send the first 200 messages to prevent clients from becoming overloaded
-		// (in case someone maliciously spams hundreds of messages)
-		if i >= 200 {
-			break
-		}
-
+	i := 0
+	if len(g.Chat) > chatLimit {
+		i = len(g.Chat) - chatLimit
+	}
+	for ; i < len(g.Chat); i++ {
 		// We have to convert the *GameChatMessage to a *ChatMessage
+		gcm := g.Chat[i]
 		cm := chatMakeMessage(gcm.Msg, gcm.Username, false, gcm.Server, gcm.Datetime, "game")
 		chatList = append(chatList, cm)
 	}

@@ -563,10 +563,9 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 		if p.CharacterMetadata == -1 {
 			p.CharacterMetadata = d.Target
 			return true
-		} else {
-			p.CharacterMetadata = -1
-			return false
 		}
+		p.CharacterMetadata = -1
+		return false
 
 	} else if p.Character == "Synesthetic" &&
 		d.Type == actionTypeClue {
@@ -579,11 +578,10 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 			p.CharacterMetadata2 = d.Clue.Value - 1
 			g.Clues++ // The second clue given should not cost a clue
 			return true
-		} else {
-			p.CharacterMetadata = -1
-			p.CharacterMetadata2 = -1
-			return false
 		}
+		p.CharacterMetadata = -1
+		p.CharacterMetadata2 = -1
+		return false
 
 	} else if p.Character == "Panicky" &&
 		d.Type == actionTypeDiscard {
