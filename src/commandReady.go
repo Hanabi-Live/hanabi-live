@@ -125,6 +125,9 @@ func commandReady(s *Session, d *CommandData) {
 		// Since the game is over, send them the notes from everyone in the game
 		s.NotifyAllNotes(notes)
 	} else {
+		// Send them the current connection status of the players
+		s.NotifyConnected(g)
+
 		// Send them the current time for all player's clocks
 		s.NotifyClock(g)
 
