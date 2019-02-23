@@ -252,8 +252,34 @@ const positionReplayShuttle = (shuttle, turn) => {
 };
 
 const adjustShuttles = () => {
-    positionReplayShuttle(globals.elements.replayShuttle, globals.replayTurn);
-    positionReplayShuttle(globals.elements.replayShuttleShared, globals.sharedReplayTurn);
+    const shuttle = globals.elements.replayShuttle;
+    const shuttleShared = globals.elements.replayShuttleShared;
+    positionReplayShuttle(shuttle, globals.replayTurn);
+    positionReplayShuttle(shuttleShared, globals.sharedReplayTurn);
+
+    // If the shuttles are overlapping, then make the normal shuttle a little bit smaller
+    let smaller = false;
+    if (!globals.useSharedTurns && globals.replayTurn === globals.sharedReplayTurn) {
+        smaller = true;
+    }
+    let size = 0.03;
+    if (smaller) {
+        size = 0.023;
+    }
+    const winW = globals.stage.getWidth();
+    const winH = globals.stage.getHeight();
+    shuttle.setWidth(size * winW);
+    shuttle.setHeight(size * winH);
+    let y = 0.0325 * winH;
+    if (smaller) {
+        const x = shuttle.getX();
+        const diffX = shuttleShared.getWidth() - shuttle.getWidth();
+        shuttle.setX(x + diffX / 2);
+
+        const diffY = shuttleShared.getHeight() - shuttle.getHeight();
+        y += diffY / 2;
+    }
+    shuttle.setY(y);
 };
 exports.adjustShuttles = adjustShuttles;
 
@@ -297,6 +323,11 @@ exports.toggleSharedTurns = () => {
             goto(globals.sharedReplayTurn);
         }
     }
+
+    // We need to adjust the shuttles in the case where
+    // the normal shuttle is underneath the shared replay shuttle
+    // and we need to make it bigger/smaller
+    adjustShuttles();
 };
 
 // Navigating as a follower in a shared replay disables replay actions

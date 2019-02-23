@@ -1206,12 +1206,29 @@ const drawReplayArea = () => {
     rect.on('click', replay.barClick);
     globals.elements.replayArea.add(rect);
 
+    // We want the shared (white) replay shuttle to be below the normal replay shuttle,
+    // so we define it first
+    globals.elements.replayShuttleShared = new graphics.Rect({
+        x: 0,
+        y: 0.0325 * winH,
+        width: 0.03 * winW,
+        height: 0.03 * winH,
+        cornerRadius: 0.01 * winW,
+        fill: '#d1d1d1', // Gray
+        visible: !globals.useSharedTurns,
+    });
+    globals.elements.replayShuttleShared.on('click tap', () => {
+        replay.goto(globals.sharedReplayTurn, true);
+    });
+    globals.elements.replayArea.add(globals.elements.replayShuttleShared);
+
+    // This is the normal (blue) replay shuttle
     globals.elements.replayShuttle = new graphics.Rect({
         x: 0,
         y: 0.0325 * winH,
         width: 0.03 * winW,
         height: 0.03 * winH,
-        fill: '#0000cc',
+        fill: '#0000cc', // Blue
         cornerRadius: 0.01 * winW,
         draggable: true,
         dragBoundFunc: replay.barDrag,
@@ -1221,20 +1238,6 @@ const drawReplayArea = () => {
         globals.layers.UI.batchDraw();
     });
     globals.elements.replayArea.add(globals.elements.replayShuttle);
-
-    globals.elements.replayShuttleShared = new graphics.Rect({
-        x: 0,
-        y: 0.0325 * winH,
-        width: 0.03 * winW,
-        height: 0.03 * winH,
-        cornerRadius: 0.01 * winW,
-        fill: '#d1d1d1',
-        visible: !globals.useSharedTurns,
-    });
-    globals.elements.replayShuttleShared.on('click tap', () => {
-        replay.goto(globals.sharedReplayTurn, true);
-    });
-    globals.elements.replayArea.add(globals.elements.replayShuttleShared);
 
     replay.adjustShuttles();
 
