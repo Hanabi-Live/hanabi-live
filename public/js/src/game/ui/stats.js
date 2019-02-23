@@ -122,7 +122,7 @@ exports.updateEfficiency = (cardsGottenDelta) => {
     const x = effNumLabel.getX() + effNumLabel._getTextSize(effNumLabel.getText()).width;
     globals.elements.efficiencyNumberLabelMinNeeded.setX(x);
     if (minEfficiency < 1.25) {
-        globals.elements.efficiencyNumberLabelMinNeeded.setFill('white');
+        globals.elements.efficiencyNumberLabelMinNeeded.setFill('#d8d5ef'); // Default (white)
     } else {
         // "Hard" variants are denoted by a red efficiency
         globals.elements.efficiencyNumberLabelMinNeeded.setFill('#ffb2b2'); // Reddish-white
