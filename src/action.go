@@ -61,16 +61,11 @@ type ActionStrike struct {
 	Type string `json:"type"`
 	Num  int    `json:"num"`
 }
-type ActionGameOver struct {
-	Type  string `json:"type"`
-	Score int    `json:"score"`
-	Loss  bool   `json:"loss"`
-}
 type ActionDeckOrder struct {
 	Type string       `json:"type"`
 	Deck []CardSimple `json:"card"`
 }
-type Which struct { // Used by "ActionPlay", "ActionDiscard", and "RevealMessage"
+type Which struct { // Used by "ActionPlay" and "ActionDiscard"
 	Index int `json:"index"` // The index of the player
 	Suit  int `json:"suit"`
 	Rank  int `json:"rank"`

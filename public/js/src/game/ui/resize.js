@@ -105,7 +105,7 @@ const redraw = () => {
 
     // Redraw all layers
     for (const layer of globals.layers) {
-        layer.draw();
+        layer.batchDraw();
     }
 }
 */

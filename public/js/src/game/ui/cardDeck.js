@@ -51,7 +51,7 @@ const CardDeck = function CardDeck(config) {
                 y: 0,
                 runonce: true,
                 onFinish: () => {
-                    globals.layers.UI.draw();
+                    globals.layers.UI.batchDraw();
                 },
             }).play();
         }

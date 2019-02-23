@@ -11,47 +11,10 @@ import (
 
 func (g *Game) End() {
 	g.DatetimeFinished = time.Now()
-
-	// Log the game ending
-	loss := false
 	if g.EndCondition > endConditionNormal {
-		loss = true
 		g.Score = 0
 	}
 	log.Info(g.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
-
-	// Advance a turn so that we have an extra separator before the finishing times
-	g.NotifyTurn()
-
-	// Send the "gameOver" message
-	g.Actions = append(g.Actions, ActionGameOver{
-		Type:  "gameOver",
-		Score: g.Score,
-		Loss:  loss,
-	})
-	g.NotifyAction()
-
-	// Send everyone a clock message with an active value of -1, which
-	// will get rid of the timers on the client-side
-	g.NotifyTime()
-
-	// Send "reveal" messages to each player about the missing cards in their hand
-	for _, p := range g.Players {
-		for _, c := range p.Hand {
-			type RevealMessage struct {
-				Type  string `json:"type"`
-				Which *Which `json:"which"`
-			}
-			p.Session.Emit("notify", &RevealMessage{
-				Type: "reveal",
-				Which: &Which{
-					Suit:  c.Suit,
-					Rank:  c.Rank,
-					Order: c.Order,
-				},
-			})
-		}
-	}
 
 	// Send text messages showing how much time each player finished with
 	// (this won't appear initially unless the user clicks back and then forward again)
@@ -61,7 +24,7 @@ func (g *Game) End() {
 			text += "had " + durationToString(p.Time) + " left"
 		} else {
 			// Player times are negative in untimed games
-			text += "took " + durationToString(p.Time*-1)
+			text += "took: " + durationToString(p.Time*-1)
 		}
 		g.Actions = append(g.Actions, ActionText{
 			Type: "text",
@@ -81,6 +44,10 @@ func (g *Game) End() {
 	g.NotifyAction()
 	log.Info(g.GetName() + text)
 
+	// Advance a turn so that the finishing times are separated from the final action of the game
+	g.Turn++
+	g.NotifyTurn()
+
 	// Append a final action with a listing of every card in the deck
 	// (so that the client will have it for hypotheticals)
 	deck := make([]CardSimple, 0)
@@ -95,6 +62,25 @@ func (g *Game) End() {
 		Deck: deck,
 	})
 	g.NotifyAction()
+
+	// Notify everyone that the game is over
+	g.NotifyGameOver()
+
+	// Send "reveal" messages to each player about the missing cards in their hand
+	for _, p := range g.Players {
+		for _, c := range p.Hand {
+			type RevealMessage struct {
+				Suit  int `json:"suit"`
+				Rank  int `json:"rank"`
+				Order int `json:"order"` // The ID of the card (based on its order in the deck)
+			}
+			p.Session.Emit("reveal", &RevealMessage{
+				Suit:  c.Suit,
+				Rank:  c.Rank,
+				Order: c.Order,
+			})
+		}
+	}
 
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)

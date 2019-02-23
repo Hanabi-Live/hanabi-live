@@ -139,7 +139,7 @@ func (s *Session) Error(message string) {
 }
 
 /*
-	Notify functions
+	Out-of-game notify functions
 */
 
 // NotifyUser will notify someone about a new user that connected or a change in an existing user
@@ -245,15 +245,6 @@ func (s *Session) NotifyTableGone(g *Game) {
 	})
 }
 
-func (s *Session) NotifyGameStart() {
-	type GameStartMessage struct {
-		Replay bool `json:"replay"`
-	}
-	s.Emit("gameStart", &GameStartMessage{
-		Replay: s.Status() == statusReplay || s.Status() == statusSharedReplay,
-	})
-}
-
 func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, datetime time.Time, room string) {
 	s.Emit("chat", chatMakeMessage(msg, who, discord, server, datetime, room))
 }
@@ -286,6 +277,37 @@ func (s *Session) NotifyGameHistory(h []*models.GameHistory, incrementNumGames b
 	s.Emit("gameHistory", &m)
 }
 
+func (s *Session) NotifyGameStart() {
+	type GameStartMessage struct {
+		Replay bool `json:"replay"`
+	}
+	s.Emit("gameStart", &GameStartMessage{
+		Replay: s.Status() == statusReplay || s.Status() == statusSharedReplay,
+	})
+}
+
+/*
+	In-game notify functions
+*/
+
+// NotifyConnected will send someone a list corresponding to which players are connected
+// On the client, this changes the player name-tags different colors
+func (s *Session) NotifyConnected(g *Game) {
+	// Make the list
+	list := make([]bool, 0)
+	for _, p := range g.Players {
+		list = append(list, p.Present)
+	}
+
+	// Send the "connected" message
+	type ConnectedMessage struct {
+		List []bool `json:"list"`
+	}
+	s.Emit("connected", &ConnectedMessage{
+		List: list,
+	})
+}
+
 // NotifyAction will send someone an "action" message
 // This is sent at the beginning of their turn and lists the allowed actions on this turn
 func (s *Session) NotifyAction(g *Game) {
@@ -305,21 +327,57 @@ func (s *Session) NotifyAction(g *Game) {
 	})
 }
 
-// NotifyConnected will send someone a list corresponding to which players are connected
-// On the client, this changes the player name-tags different colors
-func (s *Session) NotifyConnected(g *Game) {
-	// Make the list
-	list := make([]bool, 0)
-	for _, p := range g.Players {
-		list = append(list, p.Present)
+func (s *Session) NotifyGameAction(a interface{}, g *Game, p *Player) {
+	// Check to see if we need to remove some card information
+	drawAction, ok := a.(ActionDraw)
+	if ok && drawAction.Type == "draw" {
+		drawAction.Scrub(g, p)
+		a = drawAction
 	}
 
-	// Send the "connected" message
-	type ConnectedMessage struct {
-		List []bool `json:"list"`
+	s.Emit("notify", a)
+}
+
+func (s *Session) NotifySound(g *Game, i int) {
+	// Prepare the sound message
+	sound := "turn_other"
+	if g.Sound != "" {
+		sound = g.Sound
+	} else if i == g.ActivePlayer {
+		sound = "turn_us"
 	}
-	s.Emit("connected", &ConnectedMessage{
-		List: list,
+	type SoundMessage struct {
+		File string `json:"file"`
+	}
+	data := &SoundMessage{
+		File: sound,
+	}
+	s.Emit("sound", data)
+}
+
+func (s *Session) NotifyClock(g *Game) {
+	// Create the clock message
+	times := make([]int64, 0)
+	for i, p := range g.Players {
+		// We could be sending the message in the middle of someone's turn, so account for this
+		timeLeft := p.Time
+		if g.ActivePlayer == i {
+			elapsedTime := time.Since(g.TurnBeginTime)
+			timeLeft -= elapsedTime
+		}
+
+		// JavaScript expects time in milliseconds
+		milliseconds := int64(timeLeft / time.Millisecond)
+		times = append(times, milliseconds)
+	}
+
+	type ClockMessage struct {
+		Times  []int64 `json:"times"`
+		Active int     `json:"active"`
+	}
+	s.Emit("clock", &ClockMessage{
+		Times:  times,
+		Active: g.ActivePlayer,
 	})
 }
 
@@ -376,65 +434,6 @@ func (s *Session) NotifyReplayLeader(g *Game) {
 	}
 	s.Emit("replayLeader", &ReplayLeaderMessage{
 		Name: name,
-	})
-}
-
-func (s *Session) NotifyGameAction(a interface{}, g *Game, p *Player) {
-	// Check to see if we need to remove some card information
-	drawAction, ok := a.(ActionDraw)
-	if ok && drawAction.Type == "draw" {
-		drawAction.Scrub(g, p)
-		a = drawAction
-	}
-
-	s.Emit("notify", a)
-}
-
-func (s *Session) NotifySound(g *Game, i int) {
-	// Prepare the sound message
-	sound := "turn_other"
-	if g.Sound != "" {
-		sound = g.Sound
-	} else if i == g.ActivePlayer {
-		sound = "turn_us"
-	}
-	type SoundMessage struct {
-		File string `json:"file"`
-	}
-	data := &SoundMessage{
-		File: sound,
-	}
-	s.Emit("sound", data)
-}
-
-func (s *Session) NotifyClock(g *Game) {
-	// Create the clock message
-	times := make([]int64, 0)
-	for i, p := range g.Players {
-		// We could be sending the message in the middle of someone's turn, so account for this
-		timeLeft := p.Time
-		if g.ActivePlayer == i {
-			elapsedTime := time.Since(g.TurnBeginTime)
-			timeLeft -= elapsedTime
-		}
-
-		// JavaScript expects time in milliseconds
-		milliseconds := int64(timeLeft / time.Millisecond)
-		times = append(times, milliseconds)
-	}
-
-	active := g.ActivePlayer
-	if g.EndCondition > endConditionInProgress {
-		active = -1
-	}
-
-	type ClockMessage struct {
-		Times  []int64 `json:"times"`
-		Active int     `json:"active"`
-	}
-	s.Emit("clock", &ClockMessage{
-		Times:  times,
-		Active: active,
 	})
 }
 

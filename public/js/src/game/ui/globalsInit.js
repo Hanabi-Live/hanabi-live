@@ -64,6 +64,7 @@ module.exports = () => {
     globals.sharedReplayLeader = ''; // Equal to the username of the leader
     globals.sharedReplayTurn = -1;
     globals.useSharedTurns = true;
+    globals.sharedReplayLoading = true; // This is used to not animate cards when loading in
 
     // UI elements
     globals.ImageLoader = null;

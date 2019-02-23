@@ -61,11 +61,11 @@ const Button = function Button(config) {
 
     background.on('mousedown', () => {
         background.setFill('#888888');
-        background.getLayer().draw();
+        background.getLayer().batchDraw();
 
         const resetButton = () => {
             background.setFill('black');
-            background.getLayer().draw();
+            background.getLayer().batchDraw();
 
             background.off('mouseup');
             background.off('mouseout');
@@ -89,7 +89,7 @@ Button.prototype.setEnabled = function setEnabled(enabled) {
 
     this.get('.background')[0].setListening(enabled);
 
-    this.getLayer().draw();
+    this.getLayer().batchDraw();
 };
 
 Button.prototype.getEnabled = function getEnabled() {

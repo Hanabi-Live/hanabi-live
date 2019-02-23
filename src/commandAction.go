@@ -315,7 +315,7 @@ func commandAction(s *Session, d *CommandData) {
 		if g.EndCondition > endConditionNormal {
 			text = "Players lose!"
 		} else {
-			text = "Players score " + strconv.Itoa(g.Score) + " points"
+			text = "Players score " + strconv.Itoa(g.Score) + " points."
 		}
 		g.Actions = append(g.Actions, ActionText{
 			Type: "text",
@@ -323,11 +323,16 @@ func commandAction(s *Session, d *CommandData) {
 		})
 		g.NotifyAction()
 		log.Info(g.GetName() + " " + text)
-	} else {
-		g.NotifyTurn()
-		log.Info(g.GetName() + " It is now " + np.Name + "'s turn.")
 	}
-	if g.EndCondition == endConditionNormal {
+
+	// Send the new turn
+	// This must be below the end-game text (e.g. "Players lose!"),
+	// so that it is combined with the final action
+	g.NotifyTurn()
+
+	if g.EndCondition == endConditionInProgress {
+		log.Info(g.GetName() + " It is now " + np.Name + "'s turn.")
+	} else if g.EndCondition == endConditionNormal {
 		if g.Score == len(g.Stacks)*5 {
 			// The players got the theoretical perfect score for this variant
 			// (assuming that there are 5 points per stack)

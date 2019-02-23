@@ -160,8 +160,8 @@ const update = (card) => {
     if (note.length === 0) {
         tooltip.tooltipster('close');
     }
-    globals.layers.UI.draw();
-    globals.layers.card.draw();
+    globals.layers.UI.batchDraw();
+    globals.layers.card.batchDraw();
 };
 exports.update = update;
 

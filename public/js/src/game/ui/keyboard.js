@@ -209,7 +209,7 @@ const buttonToggleKeyDown = (event) => {
         // We are in a normal game, so toggle "Chat" --> "Kill"
         globals.elements.chatButton.hide();
         globals.elements.killButton.show();
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     } else if (
         !globals.replay
         && !globals.spectating
@@ -219,7 +219,7 @@ const buttonToggleKeyDown = (event) => {
         // We are in a speedrun, so toggle "Kill" --> "Chat"
         globals.elements.chatButton.show();
         globals.elements.killButton.hide();
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     } else if (
         globals.sharedReplay
         && !globals.speedrun
@@ -228,7 +228,7 @@ const buttonToggleKeyDown = (event) => {
         // We are in a normal shared replay, so toggle "Chat" --> "Restart"
         globals.elements.chatButton.hide();
         globals.elements.restartButton.show();
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     } else if (
         globals.sharedReplay
         && globals.speedrun
@@ -237,7 +237,7 @@ const buttonToggleKeyDown = (event) => {
         // We are in a speedrun shared replay, so toggle "Restart" --> "Chat"
         globals.elements.chatButton.show();
         globals.elements.restartButton.hide();
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     }
 };
 const buttonToggleKeyUp = (event) => {
@@ -259,7 +259,7 @@ const buttonToggleKeyUp = (event) => {
     ) {
         globals.elements.chatButton.show();
         globals.elements.killButton.hide();
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     } else if (
         !globals.replay
         && !globals.spectating
@@ -268,7 +268,7 @@ const buttonToggleKeyUp = (event) => {
     ) {
         globals.elements.chatButton.hide();
         globals.elements.killButton.show();
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     } else if (
         globals.sharedReplay
         && !globals.speedrun
@@ -276,7 +276,7 @@ const buttonToggleKeyUp = (event) => {
     ) {
         globals.elements.chatButton.show();
         globals.elements.restartButton.hide();
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     } else if (
         globals.sharedReplay
         && globals.speedrun
@@ -284,7 +284,7 @@ const buttonToggleKeyUp = (event) => {
     ) {
         globals.elements.chatButton.hide();
         globals.elements.restartButton.show();
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     }
 };
 const windowFocus = (event) => {

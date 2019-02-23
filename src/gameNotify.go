@@ -155,10 +155,14 @@ func (g *Game) NotifyStatus(doubleDiscard bool) {
 // NotifyTurn appends a new "turn" action and alerts everyone
 // This is only called in situations where the game has started
 func (g *Game) NotifyTurn() {
+	who := g.ActivePlayer
+	if g.EndCondition > endConditionInProgress {
+		who = -1
+	}
 	g.Actions = append(g.Actions, ActionTurn{
 		Type: "turn",
 		Num:  g.Turn,
-		Who:  g.ActivePlayer,
+		Who:  who,
 	})
 	g.NotifyAction()
 }
@@ -188,21 +192,33 @@ func (g *Game) NotifyAction() {
 	}
 }
 
-func (g *Game) NotifySpectators() {
-	// If this is a shared replay, then all of the players are also spectators,
-	// so we do not want to send them a duplicate message
-	if !g.SharedReplay {
-		for _, p := range g.Players {
-			if !p.Present {
-				continue
-			}
-
-			p.Session.NotifySpectators(g)
+// NotifySound sends a sound notification to everyone in the game
+// (signifying that an action just occurred)
+func (g *Game) NotifySound() {
+	for i, p := range g.Players {
+		if !p.Present {
+			continue
 		}
+
+		p.Session.NotifySound(g, i)
 	}
 
 	for _, sp := range g.Spectators {
-		sp.Session.NotifySpectators(g)
+		sp.Session.NotifySound(g, -1)
+	}
+}
+
+func (g *Game) NotifyGameOver() {
+	for _, p := range g.Players {
+		if !p.Present {
+			continue
+		}
+
+		p.Session.Emit("gameOver", nil)
+	}
+
+	for _, sp := range g.Spectators {
+		sp.Session.Emit("gameOver", nil)
 	}
 }
 
@@ -220,36 +236,21 @@ func (g *Game) NotifyTime() {
 	}
 }
 
-// NotifySound sends a sound notification to everyone in the game
-// (signifying that an action just occurred)
-func (g *Game) NotifySound() {
-	for i, p := range g.Players {
-		if !p.Present {
-			continue
-		}
-
-		p.Session.NotifySound(g, i)
-	}
-
-	for _, sp := range g.Spectators {
-		sp.Session.NotifySound(g, -1)
-	}
-}
-
-// Boot the people in the game and/or shared replay back to the lobby screen
-func (g *Game) NotifyBoot() {
+func (g *Game) NotifySpectators() {
+	// If this is a shared replay, then all of the players are also spectators,
+	// so we do not want to send them a duplicate message
 	if !g.SharedReplay {
 		for _, p := range g.Players {
 			if !p.Present {
 				continue
 			}
 
-			p.Session.Emit("boot", nil)
+			p.Session.NotifySpectators(g)
 		}
 	}
 
 	for _, sp := range g.Spectators {
-		sp.Session.Emit("boot", nil)
+		sp.Session.NotifySpectators(g)
 	}
 }
 
@@ -271,5 +272,22 @@ func (g *Game) NotifySpectatorsNote(order int) {
 
 	for _, sp := range g.Spectators {
 		sp.Session.Emit("note", data)
+	}
+}
+
+// Boot the people in the game and/or shared replay back to the lobby screen
+func (g *Game) NotifyBoot() {
+	if !g.SharedReplay {
+		for _, p := range g.Players {
+			if !p.Present {
+				continue
+			}
+
+			p.Session.Emit("boot", nil)
+		}
+	}
+
+	for _, sp := range g.Spectators {
+		sp.Session.Emit("boot", nil)
 	}
 }

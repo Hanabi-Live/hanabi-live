@@ -11,6 +11,7 @@ const gameCommands = [
     'boot',
     'clock',
     'connected',
+    'gameOver',
     'init',
     'note',
     'notes',
@@ -21,6 +22,7 @@ const gameCommands = [
     'replayMorph',
     'replaySound',
     'replayTurn',
+    'reveal',
     'spectators',
 ];
 

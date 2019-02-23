@@ -25,8 +25,8 @@ const enter = () => {
     for (let i = 0; i < globals.deck.length; i++) {
         globals.deck[i].setBareImage();
     }
-    globals.layers.UI.draw();
-    globals.layers.card.draw();
+    globals.layers.UI.batchDraw();
+    globals.layers.card.batchDraw();
 };
 exports.enter = enter;
 
@@ -45,8 +45,8 @@ const exit = () => {
     for (let i = 0; i < globals.deck.length; i++) {
         globals.deck[i].setBareImage();
     }
-    globals.layers.UI.draw();
-    globals.layers.card.draw();
+    globals.layers.UI.batchDraw();
+    globals.layers.card.batchDraw();
 };
 exports.exit = exit;
 
@@ -112,8 +112,8 @@ const goto = (target, fast) => {
     globals.animateFast = false;
     globals.elements.msgLogGroup.refreshText();
     globals.elements.messagePrompt.refreshText();
-    globals.layers.card.draw();
-    globals.layers.UI.draw();
+    globals.layers.card.batchDraw();
+    globals.layers.UI.batchDraw();
 };
 exports.goto = goto;
 

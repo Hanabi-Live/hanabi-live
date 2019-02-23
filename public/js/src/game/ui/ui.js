@@ -115,7 +115,7 @@ HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
 
     globals.ImageLoader.progressCallback = (done, total) => {
         progresslabel.setText(`${done}/${total}`);
-        loadinglayer.draw();
+        loadinglayer.batchDraw();
     };
     globals.stage.add(loadinglayer);
 };
@@ -154,7 +154,7 @@ HanabiUI.prototype.endTurn = function endTurn(action) {
             text += 'Discard';
         }
         globals.elements.premoveCancelButton.setText(text);
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     }
 };
 
@@ -179,7 +179,7 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
         globals.elements.noClueBox.show();
         globals.elements.noClueLabel.show();
     }
-    globals.layers.UI.draw();
+    globals.layers.UI.batchDraw();
 
     globals.elements.playerHands[globals.playerUs].moveToTop();
 
@@ -386,7 +386,7 @@ HanabiUI.prototype.updateChatLabel = function updateChatLabel() {
         text += ` (${globals.lobby.chatUnread})`;
     }
     globals.elements.chatButton.setText(text);
-    globals.layers.UI.draw();
+    globals.layers.UI.batchDraw();
 };
 
 HanabiUI.prototype.toggleChat = function toggleChat() {

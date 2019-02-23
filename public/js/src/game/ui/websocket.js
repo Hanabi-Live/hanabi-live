@@ -5,8 +5,8 @@
 // Imports
 const globals = require('./globals');
 const constants = require('../../constants');
+const convert = require('./convert');
 const notes = require('./notes');
-const notify = require('./notify');
 const replay = require('./replay');
 const timer = require('./timer');
 
@@ -29,7 +29,7 @@ commands.action = (data) => {
     if (globals.queuedAction !== null) {
         // Get rid of the pre-move button, since it is now our turn
         globals.elements.premoveCancelButton.setVisible(false);
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
 
         // Prevent pre-cluing if the team is now at 0 clues
         if (globals.queuedAction.data.type === constants.ACT.CLUE && globals.clues === 0) {
@@ -54,12 +54,13 @@ commands.action = (data) => {
 commands.advanced = () => {
     globals.animateFast = false;
 
-    if (globals.inReplay) {
-        replay.goto(0);
+    // Initialize solo replays to the first turn (otherwise, nothing will be drawn)
+    if (globals.replay && !globals.sharedReplay) {
+        replay.goto(0, true);
     }
 
-    globals.layers.card.draw();
-    globals.layers.UI.draw(); // We need to re-draw the UI or else the action text will not appear
+    globals.layers.card.batchDraw();
+    globals.layers.UI.batchDraw();
 };
 
 // This is sent by the server to force the client to go back to the lobby
@@ -83,7 +84,58 @@ commands.connected = (data) => {
         globals.elements.nameFrames[i].setConnected(data.list[i]);
     }
 
-    globals.layers.UI.draw();
+    globals.layers.UI.batchDraw();
+};
+
+// The game just finished
+commands.gameOver = () => {
+    // If any player time tooltips are open, close them
+    for (let i = 0; i < globals.playerNames.length; i++) {
+        globals.elements.nameFrames[i].off('mousemove');
+    }
+
+    // If the timers are showing, hide them
+    if (globals.elements.timer1) {
+        globals.elements.timer1.hide();
+    }
+    timer.stop();
+    globals.layers.timer.batchDraw();
+
+    // Transform this game into a shared replay
+    globals.replay = true;
+    globals.sharedReplay = true;
+    globals.sharedReplayTurn = globals.replayTurn;
+
+    // Open the replay UI if we were not in an in-game replay when the game ended
+    if (!globals.inReplay) {
+        replay.enter();
+    }
+
+    /*
+        If we are in an in-game replay when the game ends, we need to jerk them away from what they
+        are doing and go to the end of the game. This is because we need to process all of the
+        queued "notify" messages. (Otherwise, the code will try to "reveal" cards that are
+        undefined.)
+    */
+
+    // The final turn displays how long everyone took, so we want to go to the turn before that
+    replay.goto(globals.replayMax - 1);
+
+    // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
+    globals.elements.replayExitButton.hide();
+
+    // Hide some buttons in the bottom-left-hand corner
+    globals.elements.replayButton.hide();
+    if (!globals.speedrun) {
+        globals.elements.chatButton.show();
+    } else {
+        globals.elements.restartButton.show();
+    }
+    if (globals.elements.killButton !== null) {
+        globals.elements.killButton.hide();
+    }
+
+    globals.layers.UI.batchDraw();
 };
 
 commands.init = (data) => {
@@ -118,23 +170,25 @@ commands.init = (data) => {
 commands.notify = (data) => {
     // We need to save this game state change for the purposes of the in-game replay
     globals.replayLog.push(data);
-    if (data.type === 'turn') {
-        globals.replayMax = data.num;
-    }
-    if (data.type === 'gameOver') {
-        globals.replayMax += 1;
-    }
+
+    // Once a turn has been taken, we active the "In-Game Replay" button
     if (!globals.replay && globals.replayMax > 0) {
         globals.elements.replayButton.show();
     }
-    if (globals.inReplay) {
-        replay.adjustShuttles();
-        globals.layers.UI.draw();
+
+    // We need to update the replay slider, based on the new amount of turns
+    if (data.type === 'turn') {
+        globals.replayMax = data.num;
+
+        if (globals.inReplay) {
+            replay.adjustShuttles();
+            globals.layers.UI.batchDraw();
+        }
     }
 
     // Now that it is recorded, change the actual active game state
     // (unless we are in an in-game replay)
-    if (!globals.inReplay || data.type === 'reveal') {
+    if (!globals.inReplay) {
         globals.lobby.ui.handleNotify(data);
     }
 };
@@ -251,7 +305,7 @@ commands.replayLeader = (data) => {
     globals.elements.sharedReplayLeaderCircle.setVisible(weAreLeader);
     globals.elements.toggleSharedTurnButton.show();
     globals.elements.sharedReplayLeaderLabelPulse.play();
-    globals.layers.UI.draw();
+    globals.layers.UI.batchDraw();
 
     // Update the tooltip
     let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
@@ -264,7 +318,7 @@ commands.replayLeader = (data) => {
 
 // This is used in shared replays to make hypothetical game states
 commands.replayMorph = (data) => {
-    notify.reveal({
+    commands.reveal({
         which: {
             order: data.order,
             rank: data.rank,
@@ -284,18 +338,57 @@ commands.replayTurn = (data) => {
     globals.sharedReplayTurn = data.turn;
     replay.adjustShuttles();
     if (globals.useSharedTurns) {
-        replay.goto(globals.sharedReplayTurn);
+        replay.goto(globals.sharedReplayTurn, globals.sharedReplayLoading);
 
-        // Play an animation to indicate the direction that the leader has taken us in
-        if (oldTurn > globals.sharedReplayTurn && oldTurn !== -1) {
-            globals.elements.sharedReplayBackwardTween.play();
-            globals.layers.UI.draw();
-        } else if (oldTurn < globals.sharedReplayTurn && oldTurn !== -1) {
-            globals.elements.sharedReplayForwardTween.play();
-            globals.layers.UI.draw();
+        if (!globals.sharedReplayLoading) {
+            // Play an animation to indicate the direction that the leader has taken us in
+            if (oldTurn > globals.sharedReplayTurn && oldTurn !== -1) {
+                globals.elements.sharedReplayBackwardTween.play();
+            } else if (oldTurn < globals.sharedReplayTurn && oldTurn !== -1) {
+                globals.elements.sharedReplayForwardTween.play();
+            }
+            globals.layers.UI.batchDraw();
         }
     } else {
-        globals.elements.replayShuttleShared.getLayer().batchDraw();
+        // Even though we are not using the shared turns,
+        // we need to update the slider to show where the replay leader changed the turn to
+        globals.layers.UI.batchDraw();
+    }
+};
+
+/*
+    Has the following data:
+    {
+        type: 'reveal',
+        which: {
+            order: 5,
+            rank: 2,
+            suit: 1,
+        },
+    }
+*/
+commands.reveal = (data) => {
+    // Local variables
+    const suit = convert.msgSuitToSuit(data.suit, globals.variant);
+    const card = globals.deck[data.order];
+
+    const learnedCard = globals.learnedCards[data.order];
+    learnedCard.suit = suit;
+    learnedCard.rank = data.rank;
+    learnedCard.possibleSuits = [suit];
+    learnedCard.possibleRanks = [data.rank];
+    learnedCard.revealed = true;
+
+    card.showOnlyLearned = false;
+    card.trueSuit = suit;
+    card.trueRank = data.rank;
+    card.setBareImage();
+
+    card.suitPips.hide();
+    card.rankPips.hide();
+
+    if (!globals.animateFast) {
+        globals.layers.card.batchDraw();
     }
 };
 

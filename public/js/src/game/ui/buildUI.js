@@ -171,7 +171,7 @@ const drawActionLog = () => {
         globals.elements.msgLogGroup.show();
         globals.elements.stageFade.show();
 
-        globals.layers.overtop.draw();
+        globals.layers.overtop.batchDraw();
 
         globals.elements.stageFade.on('click tap', () => {
             globals.elements.stageFade.off('click tap');
@@ -179,7 +179,7 @@ const drawActionLog = () => {
             globals.elements.msgLogGroup.hide();
             globals.elements.stageFade.hide();
 
-            globals.layers.overtop.draw();
+            globals.layers.overtop.batchDraw();
         });
     });
 
@@ -1150,7 +1150,7 @@ const drawPreplayArea = () => {
     globals.layers.UI.add(globals.elements.premoveCancelButton);
     globals.elements.premoveCancelButton.on('click tap', () => {
         globals.elements.premoveCancelButton.setVisible(false);
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
 
         // If we dragged a card, we have to put the card back in the hand
         if (
@@ -1217,8 +1217,8 @@ const drawReplayArea = () => {
         dragBoundFunc: replay.barDrag,
     });
     globals.elements.replayShuttle.on('dragend', () => {
-        globals.layers.card.draw();
-        globals.layers.UI.draw();
+        globals.layers.card.batchDraw();
+        globals.layers.UI.batchDraw();
     });
     globals.elements.replayArea.add(globals.elements.replayShuttle);
 

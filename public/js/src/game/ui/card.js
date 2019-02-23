@@ -118,11 +118,11 @@ const HanabiCard = function HanabiCard(config) {
     // Define the clue log mouse handlers
     this.on('mousemove tap', function cardClueLogMousemoveTap() {
         globals.elements.clueLog.showMatches(this);
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     });
     this.on('mouseout', () => {
         globals.elements.clueLog.showMatches(null);
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     });
 
     // Define the other mouse handlers

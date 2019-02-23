@@ -12,7 +12,6 @@ const HanabiClueEntry = require('./clueEntry');
 const LayoutChild = require('./layoutChild');
 const replay = require('./replay');
 const stats = require('./stats');
-const timer = require('./timer');
 
 // Define a command handler map
 const commands = {};
@@ -174,61 +173,14 @@ commands.drawSize = (data) => {
     globals.elements.drawDeck.setCount(data.size);
 };
 
-commands.gameOver = () => {
-    for (let i = 0; i < globals.playerNames.length; i++) {
-        globals.elements.nameFrames[i].off('mousemove');
-    }
-
-    if (globals.elements.timer1) {
-        globals.elements.timer1.hide();
-    }
-
-    globals.layers.timer.draw();
-    timer.stop();
-
-    // If the game just finished for the players,
-    // start the process of transforming it into a shared replay
-    if (!globals.replay) {
-        globals.replay = true;
-        globals.replayTurn = globals.replayMax;
-        globals.sharedReplay = true;
-        globals.sharedReplayTurn = globals.replayTurn;
-
-        // Hide the "Exit Replay" button in the center of the screen,
-        // since it is no longer necessary
-        globals.elements.replayExitButton.hide();
-
-        // Hide some buttons in the bottom-left-hand corner
-        globals.elements.replayButton.hide();
-        if (!globals.speedrun) {
-            globals.elements.chatButton.show();
-        } else {
-            globals.elements.restartButton.show();
-        }
-        if (globals.elements.killButton !== null) {
-            globals.elements.killButton.hide();
-        }
-    }
-
-    // We could be in the middle of an in-game replay when the game ends,
-    // so don't jerk them out of the in-game replay
-    if (!globals.inReplay) {
-        replay.enter();
-    }
-
-    if (!globals.animateFast) {
-        globals.layers.UI.draw();
-    }
-};
-
 // A new line of text has appeared in the action log
 commands.text = (data) => {
     globals.elements.msgLogGroup.addMessage(data.text);
 
     globals.elements.messagePrompt.setMultiText(data.text);
     if (!globals.animateFast) {
-        globals.layers.UI.draw();
-        globals.layers.overtop.draw();
+        globals.layers.UI.batchDraw();
+        globals.layers.overtop.batchDraw();
     }
 };
 
@@ -275,43 +227,6 @@ commands.reorder = (data) => {
     }
 };
 
-/*
-    Has the following data:
-    {
-        type: 'reveal',
-        which: {
-            order: 5,
-            rank: 2,
-            suit: 1,
-        },
-    }
-*/
-commands.reveal = (data) => {
-    // Local variables
-    const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
-    const card = globals.deck[data.which.order];
-
-    const learnedCard = globals.learnedCards[data.which.order];
-    learnedCard.suit = suit;
-    learnedCard.rank = data.which.rank;
-    learnedCard.possibleSuits = [suit];
-    learnedCard.possibleRanks = [data.which.rank];
-    learnedCard.revealed = true;
-
-    card.showOnlyLearned = false;
-    card.trueSuit = suit;
-    card.trueRank = data.which.rank;
-    card.setBareImage();
-
-    card.hideClues();
-    card.suitPips.hide();
-    card.rankPips.hide();
-
-    if (!globals.animateFast) {
-        globals.layers.card.draw();
-    }
-};
-
 commands.stackDirections = (data) => {
     // Update the stack directions (only in "Up or Down" variants)
     if (globals.variant.name.startsWith('Up or Down')) {
@@ -330,7 +245,7 @@ commands.stackDirections = (data) => {
                 text = 'Unknown';
             }
             globals.elements.suitLabelTexts[i].setText(text);
-            globals.layers.text.draw();
+            globals.layers.text.batchDraw();
         }
     }
 };
@@ -389,7 +304,7 @@ commands.status = (data) => {
     stats.updateEfficiency(0);
 
     if (!globals.animateFast) {
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     }
 };
 
@@ -451,7 +366,7 @@ commands.turn = (data) => {
     }
 
     if (!globals.animateFast) {
-        globals.layers.UI.draw();
+        globals.layers.UI.batchDraw();
     }
 
     globals.elements.turnNumberLabel.setText(`${globals.turn + 1}`);

@@ -104,7 +104,7 @@ HanabiMsgLog.prototype.showPlayerActions = function showPlayerActions(playerName
     this.show();
 
     globals.elements.stageFade.show();
-    globals.layers.overtop.draw();
+    globals.layers.overtop.batchDraw();
 
     const thislog = this;
     globals.elements.stageFade.on('click tap', () => {
@@ -116,7 +116,7 @@ HanabiMsgLog.prototype.showPlayerActions = function showPlayerActions(playerName
         thislog.lognumbers.show();
         thislog.hide();
         globals.elements.stageFade.hide();
-        globals.layers.overtop.draw();
+        globals.layers.overtop.batchDraw();
     });
 };
 

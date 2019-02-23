@@ -49,14 +49,25 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		return
 	}
 
-	// End the game and write it to the database
+	// We want to set the end condition before advancing the turn to ensure that
+	// no active player will show
+	g.EndCondition = endConditionAbandoned
+
+	// Add a text message for the termination
+	// and put it on its own turn so that it is separate from the final times
 	text := s.Username() + " terminated the game!"
 	g.Actions = append(g.Actions, ActionText{
 		Type: "text",
 		Text: text,
 	})
 	g.NotifyAction()
-	g.EndCondition = endConditionAbandoned
-	g.Score = 0
+	g.Turn++
+	g.NotifyTurn()
+
+	// Play a sound to indicate that the game was terminated
+	g.Sound = "finished_fail"
+	g.NotifySound()
+
+	// End the game and write it to the database
 	g.End()
 }

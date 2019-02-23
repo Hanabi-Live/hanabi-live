@@ -59,11 +59,11 @@ const ColorButton = function ColorButton(config) {
 
     background.on('mousedown', () => {
         background.setFill('#888888');
-        background.getLayer().draw();
+        background.getLayer().batchDraw();
 
         const resetButton = () => {
             background.setFill('black');
-            background.getLayer().draw();
+            background.getLayer().batchDraw();
 
             background.off('mouseup');
             background.off('mouseout');
