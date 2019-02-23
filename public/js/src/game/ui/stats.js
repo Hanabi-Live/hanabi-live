@@ -113,14 +113,15 @@ exports.updateEfficiency = (cardsGottenDelta) => {
     const effNumLabel = globals.elements.efficiencyNumberLabel;
     if (globals.cluesSpentPlusStrikes === 0) {
         // First, handle the case in which 0 clues have been given
-        effNumLabel.setText('- / ');
+        effNumLabel.setText('-');
     } else {
-        effNumLabel.setText(`${efficiency} / `);
-        effNumLabel.setWidth(effNumLabel._getTextSize(effNumLabel.getText()).width);
+        effNumLabel.setText(efficiency.toString());
     }
-    globals.elements.efficiencyNumberLabelMinNeeded.setText(minEfficiency.toString());
+    const effNumMinLabel = globals.elements.efficiencyNumberLabelMinNeeded;
+    effNumMinLabel.setText(` / ${minEfficiency}`);
+    effNumMinLabel.setWidth(effNumMinLabel._getTextSize(effNumMinLabel.getText()).width);
     const x = effNumLabel.getX() + effNumLabel._getTextSize(effNumLabel.getText()).width;
-    globals.elements.efficiencyNumberLabelMinNeeded.setX(x);
+    effNumMinLabel.setX(x);
     if (minEfficiency < 1.25) {
         globals.elements.efficiencyNumberLabelMinNeeded.setFill('#d8d5ef'); // Default (white)
     } else {

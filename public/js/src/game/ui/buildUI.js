@@ -93,7 +93,7 @@ module.exports = () => {
         },
         shadowOpacity: 0.9,
     });
-    basicNumberLabel = basicTextLabel.clone().setText('0').setWidth(0.03 * winW).align('right');
+    basicNumberLabel = basicTextLabel.clone().setText('0').setWidth(0.03 * winW);
 
     // The middle of the screen
     drawActionLog();
@@ -689,12 +689,8 @@ const drawScoreArea = () => {
     });
     globals.elements.scoreArea.add(rect);
 
-    let labelX = 0.03;
-    let labelSpacing = 0.04;
-    if (globals.variant.name.startsWith('Clue Starved')) {
-        labelX -= 0.005;
-        labelSpacing += 0.01;
-    }
+    const labelX = 0.02;
+    const labelSpacing = 0.06;
 
     const turnTextLabel = basicTextLabel.clone({
         text: 'Turn',
@@ -713,6 +709,9 @@ const drawScoreArea = () => {
     });
     globals.elements.scoreArea.add(globals.elements.turnNumberLabel);
 
+    // We also want to be able to right-click the turn to go to a specific turn in the replay
+    globals.elements.turnNumberLabel.on('click', replay.promptTurn);
+
     const scoreTextLabel = basicTextLabel.clone({
         text: 'Score',
         x: labelX * winW,
@@ -726,6 +725,14 @@ const drawScoreArea = () => {
         y: 0.045 * winH,
     });
     globals.elements.scoreArea.add(globals.elements.scoreNumberLabel);
+
+    globals.elements.maxScoreNumberLabel = basicNumberLabel.clone({
+        text: '',
+        x: (labelX + labelSpacing) * winW,
+        y: 0.049 * winH,
+        fontSize: 0.017 * winH,
+    });
+    globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel);
 
     const cluesTextLabel = basicTextLabel.clone({
         text: 'Clues',
@@ -826,7 +833,6 @@ const drawStatistics = () => {
         x: 0.9 * winW,
         y: 0.54 * winH,
         fontSize: 0.02 * winH,
-        align: 'left',
     });
     globals.layers.UI.add(globals.elements.paceNumberLabel);
 
@@ -838,22 +844,19 @@ const drawStatistics = () => {
     });
     globals.layers.UI.add(efficiencyTextLabel);
 
-    const effNumLabel = basicNumberLabel.clone({
-        text: '- / ',
+    globals.elements.efficiencyNumberLabel = basicNumberLabel.clone({
+        text: '-',
         x: 0.9 * winW,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
-        align: 'left',
     });
-    globals.layers.UI.add(effNumLabel);
-    globals.elements.efficiencyNumberLabel = effNumLabel;
+    globals.layers.UI.add(globals.elements.efficiencyNumberLabel);
 
     globals.elements.efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
-        text: '-',
-        x: effNumLabel.getX() + effNumLabel._getTextSize(effNumLabel.getText()).width,
+        text: '',
+        x: 0.9,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
-        align: 'left',
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabelMinNeeded);
 };

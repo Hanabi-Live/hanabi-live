@@ -374,7 +374,15 @@ commands.status = (data) => {
     }
 
     // Update the score (in the bottom-right-hand corner)
-    globals.elements.scoreNumberLabel.setText(globals.score.toString());
+    const scoreLabel = globals.elements.scoreNumberLabel;
+    scoreLabel.setText(globals.score.toString());
+
+    // Reposition the maximum score
+    const maxScoreLabel = globals.elements.maxScoreNumberLabel;
+    maxScoreLabel.setText(` / ${globals.maxScore}`);
+    maxScoreLabel.setWidth(maxScoreLabel._getTextSize(maxScoreLabel.getText()).width);
+    const x = scoreLabel.getX() + scoreLabel._getTextSize(scoreLabel.getText()).width;
+    maxScoreLabel.setX(x);
 
     // Update the stats on the middle-left-hand side of the screen
     stats.updatePace();
