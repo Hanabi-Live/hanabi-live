@@ -319,11 +319,9 @@ commands.replayLeader = (data) => {
 // This is used in shared replays to make hypothetical game states
 commands.replayMorph = (data) => {
     commands.reveal({
-        which: {
-            order: data.order,
-            rank: data.rank,
-            suit: data.suit,
-        },
+        order: data.order,
+        rank: data.rank,
+        suit: data.suit,
     });
 };
 
