@@ -289,8 +289,8 @@ const buttonToggleKeyUp = (event) => {
 };
 const windowFocus = (event) => {
     /*
-        If the user is holding down control and moves to a different tab or a different application,
-        the page will get stuck in a "Ctrl is held down" state, because the "Ctrl-up" event will
+        If the user is holding down Ctrl and moves to a different tab or a different application,
+        the page will get stuck in a "Ctrl is held down" state, because the "Ctrl up" event will
         never be captured by the Hanabi code. Thus, when the user re-focuses the Hanabi page, we
         want to reset Ctrl to not being held.
 

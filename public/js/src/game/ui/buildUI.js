@@ -31,10 +31,12 @@ let numPlayers;
 let basicTextLabel;
 let basicNumberLabel;
 let rect; // We reuse this to draw many squares / rectangles
-let button; // We reuse this to draw many buttons
 let actionLogValues;
 let playStackValues;
 let playAreaValues;
+let cardWidth;
+let cardHeight;
+let clueAreaValues;
 let clueLogValues;
 let spectatorsLabelValues;
 
@@ -226,22 +228,19 @@ const drawActionLog = () => {
 
 const drawPlayStacksAndDiscardStacks = () => {
     // Local variables
-    let pileback;
-    let y;
-    let width;
-    let height;
+    let discardStackSpacing;
     let yOffset;
 
     if (globals.variant.suits.length === 6 || globals.variant.showSuitNames) {
-        y = 0.04;
-        width = 0.06;
-        height = 0.151;
+        cardWidth = 0.06;
+        cardHeight = 0.151;
         yOffset = 0.019;
+        discardStackSpacing = 0.04;
     } else { // 4 or 5 stacks
-        y = 0.05;
-        width = 0.075;
-        height = 0.189;
+        cardWidth = 0.075;
+        cardHeight = 0.189;
         yOffset = 0;
+        discardStackSpacing = 0.05;
     }
     playStackValues = {
         x: 0.183,
@@ -263,41 +262,40 @@ const drawPlayStacksAndDiscardStacks = () => {
         (globals.variant.suits.length === 4 && !globals.variant.showSuitNames)
         || (globals.variant.suits.length === 5 && globals.variant.showSuitNames)
     ) {
-        playStackValues.x += (width + playStackValues.spacing) / 2;
+        playStackValues.x += (cardWidth + playStackValues.spacing) / 2;
     } else if (globals.variant.suits.length === 4 && globals.variant.showSuitNames) {
-        playStackValues.x += width + playStackValues.spacing;
+        playStackValues.x += cardWidth + playStackValues.spacing;
     } else if (globals.variant.suits.length === 3 && !globals.variant.showSuitNames) {
-        playStackValues.x += ((width + playStackValues.spacing) / 2) * 2;
+        playStackValues.x += ((cardWidth + playStackValues.spacing) / 2) * 2;
     } else if (globals.variant.suits.length === 3 && globals.variant.showSuitNames) {
-        playStackValues.x += (width + playStackValues.spacing) * 1.5;
+        playStackValues.x += (cardWidth + playStackValues.spacing) * 1.5;
     }
 
-    let i = 0;
-    for (const suit of globals.variant.suits) {
-        const playStackX = playStackValues.x + (width + playStackValues.spacing) * i;
+    for (let i = 0; i < globals.variant.suits.length; i++) {
+        const suit = globals.variant.suits[i];
+        const playStackX = playStackValues.x + (cardWidth + playStackValues.spacing) * i;
 
-        pileback = new graphics.Image({
+        const pileback = new graphics.Image({
             x: playStackX * winW,
             y: playStackValues.y * winH,
-            width: width * winW,
-            height: height * winH,
+            width: cardWidth * winW,
+            height: cardHeight * winH,
             image: globals.cardImages[`Card-${suit.name}-0`],
         });
-
         globals.layers.background.add(pileback);
 
         const thisSuitPlayStack = new CardStack({
             x: playStackX * winW,
             y: playStackValues.y * winH,
-            width: width * winW,
-            height: height * winH,
+            width: cardWidth * winW,
+            height: cardHeight * winH,
         });
         globals.elements.playStacks.set(suit, thisSuitPlayStack);
         globals.layers.card.add(thisSuitPlayStack);
 
         const thisSuitDiscardStack = new CardLayout({
             x: 0.81 * winW,
-            y: (0.61 + y * i) * winH,
+            y: (0.61 + discardStackSpacing * i) * winH,
             width: 0.17 * winW,
             height: 0.17 * winH,
         });
@@ -322,7 +320,7 @@ const drawPlayStacksAndDiscardStacks = () => {
             }
 
             const suitLabelText = new FitText({
-                x: (playStackValues.x - 0.01 + (width + playStackValues.spacing) * i) * winW, // eslint-disable-line
+                x: (playStackValues.x - 0.01 + (cardWidth + playStackValues.spacing) * i) * winW,
                 y: (playStackValues.y + 0.155) * winH,
                 width: 0.08 * winW,
                 height: 0.051 * winH,
@@ -335,24 +333,19 @@ const drawPlayStacksAndDiscardStacks = () => {
             globals.layers.text.add(suitLabelText);
             globals.elements.suitLabelTexts.push(suitLabelText);
         }
-
-        i += 1;
     }
 
     // This is the invisible rectangle that players drag cards to in order to play them
     // Make it a little big bigger than the stacks
     const overlap = 0.03;
+    let w = cardWidth * globals.variant.suits.length;
+    w += playStackValues.spacing * (globals.variant.suits.length - 1);
     playAreaValues = {
-        x: 0.183,
-        y: 0.345,
-        w: 0.435,
-        h: 0.189,
+        x: playStackValues.x,
+        y: playStackValues.y,
+        w,
+        h: cardHeight,
     };
-    if (globals.lobby.settings.showBGAUI) {
-        playAreaValues.x = 0.01;
-        playAreaValues.y = 0.279;
-        playAreaValues.w = 0.4;
-    }
     globals.elements.playArea = new graphics.Rect({
         x: (playAreaValues.x - overlap) * winW,
         y: (playAreaValues.y - overlap) * winH,
@@ -983,25 +976,40 @@ const drawTimers = () => {
 };
 
 const drawClueArea = () => {
-    const clueAreaValues = {
-        x: 0.1,
-        y: 0.54,
-        w: 0.55, // The width of all of the vanilla cards is 0.435
-        h: 0.27,
+    // Put the clue area directly below the play stacks, with a little bit of spacing
+    clueAreaValues = {
+        x: playAreaValues.x,
+        y: playAreaValues.y + playAreaValues.h + 0.005,
+        w: playAreaValues.w,
     };
-    if (globals.lobby.settings.showBGAUI) {
-        clueAreaValues.x = playStackValues.x - 0.102;
-        clueAreaValues.y = playStackValues.y + 0.22;
-    }
     globals.elements.clueArea = new graphics.Group({
         x: clueAreaValues.x * winW,
         y: clueAreaValues.y * winH,
         width: clueAreaValues.w * winW,
-        height: clueAreaValues.h * winH,
     });
 
     // Player buttons
     globals.elements.clueTargetButtonGroup = new ButtonGroup();
+    const playerButtonW = 0.08;
+    const playerButtonSpacing = 0.0075;
+    const totalPlayerButtons = numPlayers - 1;
+    let totalPlayerWidth = playerButtonW * totalPlayerButtons;
+    totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
+    let playerX = (clueAreaValues.w * 0.5) - (totalPlayerWidth * 0.5);
+    for (let i = 0; i < numPlayers - 1; i++) {
+        const j = (globals.playerUs + i + 1) % numPlayers;
+        const button = new ClueRecipientButton({
+            x: playerX * winW,
+            y: 0,
+            width: playerButtonW * winW,
+            height: 0.025 * winH,
+            text: globals.playerNames[j],
+            targetIndex: j,
+        });
+        globals.elements.clueArea.add(button);
+        globals.elements.clueTargetButtonGroup.add(button);
+        playerX += playerButtonW + playerButtonSpacing;
+    }
     globals.elements.clueTargetButtonGroup.selectNextTarget = function selectNextTarget() {
         let newSelectionIndex = 0;
         for (let i = 0; i < this.list.length; i++) {
@@ -1010,44 +1018,27 @@ const drawClueArea = () => {
                 break;
             }
         }
-
         this.list[newSelectionIndex].dispatchEvent(new MouseEvent('click'));
     };
 
-    {
-        let x = 0.26 * winW - (numPlayers - 2) * 0.044 * winW;
-        for (let i = 0; i < numPlayers - 1; i++) {
-            const j = (globals.playerUs + i + 1) % numPlayers;
-
-            button = new ClueRecipientButton({
-                x,
-                y: 0,
-                width: 0.08 * winW,
-                height: 0.025 * winH,
-                text: globals.playerNames[j],
-                targetIndex: j,
-            });
-
-            globals.elements.clueArea.add(button);
-            globals.elements.clueTargetButtonGroup.add(button);
-
-            x += 0.0875 * winW;
-        }
-    }
-
     // Clue type buttons
     globals.elements.clueTypeButtonGroup = new ButtonGroup();
+    const buttonW = 0.04;
+    const buttonH = 0.071;
+    const buttonSpacing = 0.009;
 
     // Color buttons
     globals.elements.suitClueButtons = [];
+    let totalColorWidth = buttonW * globals.variant.clueColors.length;
+    totalColorWidth += buttonSpacing * (globals.variant.clueColors.length - 1);
+    const colorX = (clueAreaValues.w * 0.5) - (totalColorWidth * 0.5);
     for (let i = 0; i < globals.variant.clueColors.length; i++) {
         const color = globals.variant.clueColors[i];
-        const x = 0.158 + ((6 - globals.variant.clueColors.length) * 0.025);
-        button = new ColorButton({
-            x: (x + i * 0.049) * winW,
+        const button = new ColorButton({
+            x: (colorX + i * (buttonW + buttonSpacing)) * winW,
             y: 0.027 * winH,
-            width: 0.04 * winW,
-            height: 0.071 * winH,
+            width: buttonW * winW,
+            height: buttonH * winH,
             color: color.hexCode,
             text: color.abbreviation,
             clue: new Clue(constants.CLUE_TYPE.COLOR, color),
@@ -1064,15 +1055,17 @@ const drawClueArea = () => {
     if (globals.variant.name.startsWith('Multi-Fives')) {
         numRanks = 4;
     }
-    for (let i = 1; i <= numRanks; i++) {
-        const x = 0.134 + ((5 - numRanks) * 0.025);
-        button = new NumberButton({
-            x: (x + i * 0.049) * winW,
+    let totalRankWidth = buttonW * numRanks;
+    totalRankWidth += buttonSpacing * (numRanks - 1);
+    const rankX = (clueAreaValues.w * 0.5) - (totalRankWidth * 0.5);
+    for (let i = 0; i < numRanks; i++) {
+        const button = new NumberButton({
+            x: (rankX + i * (buttonW + buttonSpacing)) * winW,
             y: 0.1 * winH,
-            width: 0.04 * winW,
-            height: 0.071 * winH,
-            number: i,
-            clue: new Clue(constants.CLUE_TYPE.RANK, i),
+            width: buttonW * winW,
+            height: buttonH * winH,
+            number: i + 1,
+            clue: new Clue(constants.CLUE_TYPE.RANK, i + 1),
         });
 
         globals.elements.rankClueButtons.push(button);
@@ -1081,10 +1074,12 @@ const drawClueArea = () => {
     }
 
     // The "Give Clue" button
+    const giveClueW = 0.236;
+    const giveClueX = (clueAreaValues.w * 0.5) - (giveClueW * 0.5);
     globals.elements.giveClueButton = new Button({
-        x: 0.183 * winW,
-        y: 0.172 * winH,
-        width: 0.236 * winW,
+        x: giveClueX * winW,
+        y: 0.173 * winH,
+        width: giveClueW * winW,
         height: 0.051 * winH,
         text: 'Give Clue',
     });
@@ -1137,11 +1132,15 @@ const drawClueArea = () => {
 };
 
 const drawPreplayArea = () => {
+    const w = 0.29;
+    const h = 0.1;
+    const x = clueAreaValues.x + (clueAreaValues.w / 2) - (w / 2);
+    const y = clueAreaValues.y + 0.05; // "clueAreaValues.h" does not exist
     globals.elements.premoveCancelButton = new Button({
-        x: 0.255 * winW,
-        y: 0.6 * winH,
-        width: 0.29 * winW,
-        height: 0.1 * winH,
+        x: x * winW,
+        y: y * winH,
+        width: w * winW,
+        height: h * winH,
         text: 'Cancel Pre-Move',
         visible: false,
     });
@@ -1163,6 +1162,9 @@ const drawPreplayArea = () => {
 };
 
 const drawReplayArea = () => {
+    // Local variables
+    let button;
+
     const replayAreaValues = {
         x: 0.15,
         y: 0.51,
