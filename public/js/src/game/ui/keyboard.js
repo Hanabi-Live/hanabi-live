@@ -68,12 +68,14 @@ exports.init = () => {
     // Handle the swapping of the "Chat" button
     $(document).keydown(buttonToggleKeyDown);
     $(document).keyup(buttonToggleKeyUp);
+    $(window).focus(windowFocus);
 };
 
 exports.destroy = () => {
     $(document).unbind('keydown', keydown);
     $(document).unbind('keydown', buttonToggleKeyDown);
     $(document).unbind('keyup', buttonToggleKeyUp);
+    $(window).unbind('focus', windowFocus);
 };
 
 const keydown = (event) => {
@@ -284,6 +286,21 @@ const buttonToggleKeyUp = (event) => {
         globals.elements.restartButton.show();
         globals.layers.UI.draw();
     }
+};
+const windowFocus = (event) => {
+    /*
+        If the user is holding down control and moves to a different tab or a different application,
+        the page will get stuck in a "Ctrl is held down" state, because the "Ctrl-up" event will
+        never be captured by the Hanabi code. Thus, when the user re-focuses the Hanabi page, we
+        want to reset Ctrl to not being held.
+
+        We actually can't do better and check to see if Ctrl is held upon focus, because when we
+        enter this function, "event.ctrlKey" will always be undefined, regardless of whether the
+        user is holding down Ctrl or not.
+
+        This code will not work if we bind to the "document" object instead of the "window" object.
+    */
+    buttonToggleKeyUp(event);
 };
 
 /*
