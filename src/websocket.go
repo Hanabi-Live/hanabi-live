@@ -29,7 +29,7 @@ func websocketInit() {
 	// The default maximum message size is 512 bytes,
 	// but this is not long enough to send Hanabi game objects
 	// Thus, we have to manually increase it
-	m.Config.MaxMessageSize *= 4
+	m.Config.MaxMessageSize = 8192
 
 	// Attach some handlers
 	m.HandleConnect(websocketConnect)
