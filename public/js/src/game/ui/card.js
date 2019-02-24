@@ -592,10 +592,6 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
             }
 
             // Fix the bug where the arrows can be hidden by other cards
-            // in certain specific circumstances
-            // TODO: this doesn't work??
-            // game 20595 turn 8 from Cory's perspective
-            this.moveToTop();
             this.getParent().getParent().moveToTop();
 
             if (globals.animateFast) {
