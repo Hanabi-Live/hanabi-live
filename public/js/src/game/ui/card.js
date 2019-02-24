@@ -596,7 +596,7 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
             // TODO: this doesn't work??
             // game 20595 turn 8 from Cory's perspective
             this.moveToTop();
-            this.getParent().moveToTop();
+            this.getParent().getParent().moveToTop();
 
             if (globals.animateFast) {
                 // Just set the arrow in position

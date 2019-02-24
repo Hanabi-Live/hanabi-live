@@ -729,7 +729,7 @@ const drawScoreArea = () => {
     globals.elements.maxScoreNumberLabel = basicNumberLabel.clone({
         text: '',
         x: (labelX + labelSpacing) * winW,
-        y: 0.049 * winH,
+        y: 0.05 * winH,
         fontSize: 0.017 * winH,
     });
     globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel);
