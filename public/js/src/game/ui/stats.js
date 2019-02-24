@@ -59,73 +59,15 @@ exports.updateEfficiency = (cardsGottenDelta) => {
     const efficiency = (globals.cardsGotten / globals.cluesSpentPlusStrikes).toFixed(2);
     // Round it to 2 decimal places
 
-    /*
-        Calculate the minimum amount of efficiency needed in order to win this variant
-        First, calculate the starting pace with the following formula:
-            total cards in the deck -
-            ((number of cards in a player's hand - 1) * number of players) -
-            (5 * number of suits)
-        https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
-    */
-    let totalCardsInTheDeck = 0;
-    for (const suit of globals.variant.suits) {
-        totalCardsInTheDeck += 10;
-        if (suit.oneOfEach) {
-            totalCardsInTheDeck -= 5;
-        } else if (globals.variant.name.startsWith('Up or Down')) {
-            totalCardsInTheDeck -= 1;
-        }
-    }
-    const numberOfPlayers = globals.playerNames.length;
-    let cardsInHand = 5;
-    if (numberOfPlayers === 4 || numberOfPlayers === 5) {
-        cardsInHand = 4;
-    } else if (numberOfPlayers === 6) {
-        cardsInHand = 3;
-    }
-    let startingPace = totalCardsInTheDeck;
-    startingPace -= (cardsInHand - 1) * numberOfPlayers;
-    startingPace -= 5 * globals.variant.suits.length;
-
-    /*
-        Second, use the pace to calculate the minimum efficiency required to win the game
-        with the following formula:
-            (5 * number of suits) /
-            (8 + floor((starting pace + number of suits - unusable clues) / discards per clue))
-        https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
-    */
-    const minEfficiencyNumerator = 5 * globals.variant.suits.length;
-    let unusableClues = 1;
-    if (numberOfPlayers >= 5) {
-        unusableClues = 2;
-    }
-    let discardsPerClue = 1;
-    if (globals.variant.name.startsWith('Clue Starved')) {
-        discardsPerClue = 2;
-    }
-    const minEfficiencyDenominator = 8 + Math.floor(
-        (startingPace + globals.variant.suits.length - unusableClues) / discardsPerClue,
-    );
-    const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);
-    // Round it to 2 decimal places
-
-    // Finally, update the labels on the right-hand side of the screen
+    // Update the labels on the right-hand side of the screen
     const effNumLabel = globals.elements.efficiencyNumberLabel;
     if (globals.cluesSpentPlusStrikes === 0) {
         // First, handle the case in which 0 clues have been given
-        effNumLabel.setText('-');
+        effNumLabel.setText('- / ');
     } else {
-        effNumLabel.setText(efficiency.toString());
+        effNumLabel.setText(`${efficiency} / `);
+        effNumLabel.setWidth(effNumLabel._getTextSize(effNumLabel.getText()).width);
     }
-    const effNumMinLabel = globals.elements.efficiencyNumberLabelMinNeeded;
-    effNumMinLabel.setText(` / ${minEfficiency}`);
-    effNumMinLabel.setWidth(effNumMinLabel._getTextSize(effNumMinLabel.getText()).width);
     const x = effNumLabel.getX() + effNumLabel._getTextSize(effNumLabel.getText()).width;
-    effNumMinLabel.setX(x);
-    if (minEfficiency < 1.25) {
-        globals.elements.efficiencyNumberLabelMinNeeded.setFill('#d8d5ef'); // Default (white)
-    } else {
-        // "Hard" variants are denoted by a red efficiency
-        globals.elements.efficiencyNumberLabelMinNeeded.setFill('#ffb2b2'); // Reddish-white
-    }
+    globals.elements.efficiencyNumberLabelMinNeeded.setX(x);
 };

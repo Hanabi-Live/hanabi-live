@@ -286,12 +286,19 @@ HanabiCard.prototype.initPips = function initPips(config) {
 HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
     this.indicatorGroup = new graphics.Group({
         x: 0,
-        y: -config.height / 4,
+        y: -config.height * 0.25,
         width: config.width,
         height: config.height,
         visible: false,
         listening: false,
     });
+    if (this.holder === globals.playerUs && globals.lobby.settings.showBGAUI) {
+        // In BGA mode, our hand is the one closest to the top
+        // So, invert the arrows so that it is easier to see them
+        this.indicatorGroup.setRotation(180);
+        this.indicatorGroup.setX(config.width);
+        this.indicatorGroup.setY(config.height * 1.18);
+    }
     this.add(this.indicatorGroup);
     this.indicatorGroup.originalX = this.indicatorGroup.getX();
     this.indicatorGroup.originalY = this.indicatorGroup.getY();
@@ -359,7 +366,7 @@ HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
     let x;
     let y;
     let rotation;
-    if (this.holder === globals.playerUs || globals.lobby.settings.showBGAUI) {
+    if (this.holder === globals.playerUs && !globals.lobby.settings.showBGAUI) {
         rotation = 0;
         x = (0.5 * config.width) - (this.indicatorCircle.getAttr('width') / 2);
         y = (0.15 * config.height) - (this.indicatorCircle.getAttr('height') / 2.75);
@@ -614,6 +621,7 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
 
                 // Set the rotation so that the arrow will start off by pointing towards the card
                 // that it is travelling to
+                const originalRotation = this.indicatorGroup.getRotation();
                 // this.indicatorGroup.setRotation(90);
                 // TODO NEED LIBSTERS HELP
 
@@ -622,7 +630,7 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
                     duration: 0.5,
                     x: this.indicatorGroup.originalX,
                     y: this.indicatorGroup.originalY,
-                    rotation: 0,
+                    rotation: originalRotation,
                     runonce: true,
                 }).play();
             }

@@ -845,20 +845,79 @@ const drawStatistics = () => {
     globals.layers.UI.add(efficiencyTextLabel);
 
     globals.elements.efficiencyNumberLabel = basicNumberLabel.clone({
-        text: '-',
+        text: '- / ',
         x: 0.9 * winW,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabel);
 
+    const minEfficiency = getMinEfficiency();
     globals.elements.efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
-        text: '',
+        text: minEfficiency.toString(),
         x: 0.9,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
+        // "Easy" variants use the default color (off-white)
+        // "Hard" variants use pink
+        fill: (minEfficiency < 1.25 ? '#d8d5ef' : '#ffb2b2'),
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabelMinNeeded);
+};
+
+const getMinEfficiency = () => {
+    /*
+        Calculate the minimum amount of efficiency needed in order to win this variant
+        First, calculate the starting pace with the following formula:
+            total cards in the deck -
+            ((number of cards in a player's hand - 1) * number of players) -
+            (5 * number of suits)
+        https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
+    */
+
+    let totalCardsInTheDeck = 0;
+    for (const suit of globals.variant.suits) {
+        totalCardsInTheDeck += 10;
+        if (suit.oneOfEach) {
+            totalCardsInTheDeck -= 5;
+        } else if (globals.variant.name.startsWith('Up or Down')) {
+            totalCardsInTheDeck -= 1;
+        }
+    }
+    const numberOfPlayers = globals.playerNames.length;
+    let cardsInHand = 5;
+    if (numberOfPlayers === 4 || numberOfPlayers === 5) {
+        cardsInHand = 4;
+    } else if (numberOfPlayers === 6) {
+        cardsInHand = 3;
+    }
+    let startingPace = totalCardsInTheDeck;
+    startingPace -= (cardsInHand - 1) * numberOfPlayers;
+    startingPace -= 5 * globals.variant.suits.length;
+
+    /*
+        Second, use the pace to calculate the minimum efficiency required to win the game
+        with the following formula:
+            (5 * number of suits) /
+            (8 + floor((starting pace + number of suits - unusable clues) / discards per clue))
+        https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
+    */
+    const minEfficiencyNumerator = 5 * globals.variant.suits.length;
+    let unusableClues = 1;
+    if (numberOfPlayers >= 5) {
+        unusableClues = 2;
+    }
+    let discardsPerClue = 1;
+    if (globals.variant.name.startsWith('Clue Starved')) {
+        discardsPerClue = 2;
+    }
+    const minEfficiencyDenominator = 8 + Math.floor(
+        (startingPace + globals.variant.suits.length - unusableClues) / discardsPerClue,
+    );
+    const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);
+    // Round it to 2 decimal places
+
+    return minEfficiency;
 };
 
 const drawDiscardArea = () => {
