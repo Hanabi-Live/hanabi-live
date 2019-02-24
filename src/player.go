@@ -355,6 +355,7 @@ func (p *Player) DrawCard(g *Game) {
 		// Mark the turn upon which the game will end
 		g.EndTurn = g.Turn + len(g.Players) + 1
 		characterAdjustEndTurn(g)
+		log.Info(g.GetName() + "Marking to end the game on turn: " + strconv.Itoa(g.EndTurn))
 	}
 }
 

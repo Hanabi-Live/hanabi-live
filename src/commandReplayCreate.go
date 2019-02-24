@@ -370,7 +370,7 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		Clues:              maxClues,
 		MaxScore:           len(variants[d.GameJSON.Variant].Suits) * 5,
 		Actions:            make([]interface{}, 0),
-		EndTurn:            len(d.GameJSON.Actions),
+		EndTurn:            -1,
 		Chat:               make([]*GameChatMessage, 0),
 		ChatRead:           make(map[int]int),
 	}

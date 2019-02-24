@@ -230,6 +230,9 @@ func (g *Game) CheckEnd() bool {
 	} else {
 		for i, stackLen := range g.Stacks {
 			// Search through the deck
+			if stackLen == 5 {
+				continue
+			}
 			neededSuit := i
 			neededRank := stackLen + 1
 			for _, c := range g.Deck {
