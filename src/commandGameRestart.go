@@ -26,8 +26,8 @@ func commandGameRestart(s *Session, d *CommandData) {
 	}
 
 	// Validate that this is a shared replay
-	if !g.SharedReplay {
-		s.Warning("Game " + strconv.Itoa(gameID) + " is not a shared replay, so you cannot send a shared replay action.")
+	if !g.Replay || !g.Visible {
+		s.Warning("Game " + strconv.Itoa(gameID) + " is not a shared replay, so you cannot send a restart action.")
 		return
 	}
 

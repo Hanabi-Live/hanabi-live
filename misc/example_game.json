@@ -1,0 +1,210 @@
+{
+    "actions": [
+        {
+            "clue": {
+                "type": 1,
+                "value": 3
+            },
+            "target": 1,
+            "type": "clue"
+        },
+        {
+            "target": 4,
+            "type": "play"
+        },
+        {
+            "target": 4,
+            "type": "discard"
+        }
+    ],
+    "deck": [
+        {
+            "rank": 1,
+            "suit": 3
+        },
+        {
+            "rank": 4,
+            "suit": 2
+        },
+        {
+            "rank": 2,
+            "suit": 1
+        },
+        {
+            "rank": 3,
+            "suit": 0
+        },
+        {
+            "rank": 1,
+            "suit": 3
+        },
+        {
+            "rank": 3,
+            "suit": 3
+        },
+        {
+            "rank": 2,
+            "suit": 1
+        },
+        {
+            "rank": 4,
+            "suit": 2
+        },
+        {
+            "rank": 4,
+            "suit": 0
+        },
+        {
+            "rank": 4,
+            "suit": 1
+        },
+        {
+            "rank": 3,
+            "suit": 2
+        },
+        {
+            "rank": 1,
+            "suit": 3
+        },
+        {
+            "rank": 3,
+            "suit": 4
+        },
+        {
+            "rank": 5,
+            "suit": 2
+        },
+        {
+            "rank": 1,
+            "suit": 1
+        },
+        {
+            "rank": 4,
+            "suit": 4
+        },
+        {
+            "rank": 1,
+            "suit": 0
+        },
+        {
+            "rank": 4,
+            "suit": 3
+        },
+        {
+            "rank": 3,
+            "suit": 0
+        },
+        {
+            "rank": 1,
+            "suit": 1
+        },
+        {
+            "rank": 3,
+            "suit": 1
+        },
+        {
+            "rank": 3,
+            "suit": 3
+        },
+        {
+            "rank": 2,
+            "suit": 0
+        },
+        {
+            "rank": 1,
+            "suit": 0
+        },
+        {
+            "rank": 1,
+            "suit": 2
+        },
+        {
+            "rank": 3,
+            "suit": 2
+        },
+        {
+            "rank": 5,
+            "suit": 1
+        },
+        {
+            "rank": 1,
+            "suit": 2
+        },
+        {
+            "rank": 5,
+            "suit": 4
+        },
+        {
+            "rank": 1,
+            "suit": 4
+        },
+        {
+            "rank": 1,
+            "suit": 2
+        },
+        {
+            "rank": 2,
+            "suit": 0
+        },
+        {
+            "rank": 2,
+            "suit": 4
+        },
+        {
+            "rank": 4,
+            "suit": 3
+        },
+        {
+            "rank": 2,
+            "suit": 2
+        },
+        {
+            "rank": 5,
+            "suit": 0
+        },
+        {
+            "rank": 4,
+            "suit": 0
+        },
+        {
+            "rank": 1,
+            "suit": 1
+        },
+        {
+            "rank": 5,
+            "suit": 3
+        },
+        {
+            "rank": 2,
+            "suit": 3
+        },
+        {
+            "rank": 4,
+            "suit": 1
+        },
+        {
+            "rank": 2,
+            "suit": 3
+        },
+        {
+            "rank": 1,
+            "suit": 0
+        },
+        {
+            "rank": 2,
+            "suit": 2
+        },
+        {
+            "rank": 3,
+            "suit": 1
+        }
+    ],
+    "players": [
+        "Zamiel",
+        "Libster",
+        "florrat2",
+        "Sankala",
+        "910dan"
+    ],
+    "variant": "Black (5 Suits)"
+}

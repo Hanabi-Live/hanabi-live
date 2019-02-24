@@ -80,15 +80,16 @@ const submit = () => {
     }
 
     // JSON
-    let json = $('#replay-json').val();
+    const gameJSONString = $('#replay-json').val();
+    let gameJSON;
     if (source === 'json') {
         try {
-            json = JSON.parse(json);
+            gameJSON = JSON.parse(gameJSONString);
         } catch (err) {
-            error('Error: That is not a valid JSON array.');
+            error('Error: That is not a valid JSON object.');
             return;
         }
-        localStorage.setItem('watchReplayJSON', json);
+        localStorage.setItem('watchReplayJSON', gameJSONString);
     }
 
     // Visibility
@@ -113,7 +114,7 @@ const submit = () => {
     } else if (source === 'json') {
         globals.conn.send('replayCreate', {
             source,
-            json,
+            gameJSON,
             visibility,
         });
     }

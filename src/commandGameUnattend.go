@@ -17,11 +17,6 @@ func commandGameUnattend(s *Session, d *CommandData) {
 	s.Set("currentGame", -1)
 	notifyAllUser(s)
 
-	// Check to see if they are in a (solo) replay
-	if oldStatus == statusReplay {
-		return
-	}
-
 	// Validate that the game exists
 	if gameID == -1 {
 		// The user may be returning from a shared replay that was ended due to idleness,
@@ -31,8 +26,7 @@ func commandGameUnattend(s *Session, d *CommandData) {
 	}
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		log.Error("User \"" + s.Username() + "\" tried to unattend, " +
-			"but the game does not exist and they were not in the a solo replay.")
+		log.Error("User \"" + s.Username() + "\" tried to unattend, but the game does not exist.")
 		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist, so you cannot unattend it.")
 		return
 	} else {
@@ -40,7 +34,10 @@ func commandGameUnattend(s *Session, d *CommandData) {
 	}
 
 	// Check to see if they are a spectator
-	if oldStatus == statusSpectating || oldStatus == statusSharedReplay {
+	if oldStatus == statusSpectating ||
+		oldStatus == statusReplay ||
+		oldStatus == statusSharedReplay {
+
 		// Check to see if they are in the spectators list
 		i := g.GetSpectatorIndex(s.UserID())
 		if i == -1 {
@@ -51,17 +48,21 @@ func commandGameUnattend(s *Session, d *CommandData) {
 
 		// Remove them from the slice
 		g.Spectators = append(g.Spectators[:i], g.Spectators[i+1:]...)
-		notifyAllTable(g)    // Update the spectator list for the row in the lobby
-		g.NotifySpectators() // Update the in-game spectator list
+		if g.Visible {
+			notifyAllTable(g)    // Update the spectator list for the row in the lobby
+			g.NotifySpectators() // Update the in-game spectator list
+		}
 
-		if g.SharedReplay {
+		if g.Replay {
 			if len(g.Spectators) == 0 {
-				// This was the last person to leave the shared replay, so delete it
-				log.Info("Ended shared replay #" + strconv.Itoa(gameID) + " because everyone left.")
+				// This was the last person to leave the replay, so delete it
+				log.Info("Ended replay #" + strconv.Itoa(gameID) + " because everyone left.")
 				delete(games, gameID)
 
 				// Notify everyone that the table was deleted
-				notifyAllTableGone(g)
+				if g.Visible {
+					notifyAllTableGone(g)
+				}
 			} else {
 				// Notify everyone that this player left
 				notifyAllTable(g)

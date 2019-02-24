@@ -1,6 +1,8 @@
 /*
 	Sent when the user clicks on the "Spectate" button in the lobby
 	(the client will send a "hello" message after getting "gameStart")
+	Sent on behalf of a user when they create a solo replay
+	Sent on behalf of a user when they create a shared replay
 
 	"data" example:
 	{
@@ -44,32 +46,36 @@ func commandGameSpectate(s *Session, d *CommandData) {
 	}
 
 	/*
-		Spectate / Join Shared Replay
+		Spectate / Join Solo Replay / Join Shared Replay
 	*/
 
-	if !g.SharedReplay {
-		log.Info(g.GetName() + "User \"" + s.Username() + "\" spectated.")
-	} else {
+	if g.Replay {
 		log.Info(g.GetName() + "User \"" + s.Username() + "\" joined.")
+	} else {
+		log.Info(g.GetName() + "User \"" + s.Username() + "\" spectated.")
 	}
 
 	// Add them to the spectators object
 	sp := &Spectator{
-		ID:    s.UserID(),
-		Name:  s.Username(),
-		Index: len(g.Spectators),
-		// We have not added this player to the slice yet, so this should be 0 initially
+		ID:      s.UserID(),
+		Name:    s.Username(),
 		Session: s,
 	}
 	g.Spectators = append(g.Spectators, sp)
-	notifyAllTable(g)    // Update the spectator list for the row in the lobby
-	g.NotifySpectators() // Update the in-game spectator list
+	if g.Visible {
+		notifyAllTable(g)    // Update the spectator list for the row in the lobby
+		g.NotifySpectators() // Update the in-game spectator list
+	}
 
 	// Set their status
 	s.Set("currentGame", g.ID)
 	status := statusSpectating
-	if g.SharedReplay {
-		status = statusSharedReplay
+	if g.Replay {
+		if g.Visible {
+			status = statusSharedReplay
+		} else {
+			status = statusReplay
+		}
 	}
 	s.Set("status", status)
 	notifyAllUser(s)

@@ -23,8 +23,15 @@ func websocketInit() {
 	// (which is used in the "websocketHandleMessage" function)
 	commandInit()
 
-	// Define a new Melody router and attach a message handler
+	// Define a new Melody router
 	m = melody.New()
+
+	// The default maximum message size is 512 bytes,
+	// but this is not long enough to send Hanabi game objects
+	// Thus, we have to manually increase it
+	m.Config.MaxMessageSize *= 4
+
+	// Attach some handlers
 	m.HandleConnect(websocketConnect)
 	m.HandleDisconnect(websocketDisconnect)
 	m.HandleMessage(websocketMessage)

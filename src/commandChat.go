@@ -187,7 +187,7 @@ func commandChatGame(s *Session, d *CommandData) {
 	g.Chat = append(g.Chat, chatMsg)
 
 	// Send it to all of the players and spectators
-	if !g.SharedReplay {
+	if !g.Replay {
 		for _, p := range g.Players {
 			if p.Present {
 				p.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)

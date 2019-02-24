@@ -68,7 +68,7 @@ func countActiveGames() int {
 		if !g.Running {
 			continue
 		}
-		if g.SharedReplay {
+		if g.Replay {
 			continue
 		}
 		numGames++

@@ -43,10 +43,10 @@ exports.draw = () => {
     // Clear all of the existing rows
     tbody.html('');
 
-    // Handle if the user has no history
-    const ids = Object.keys(globals.historyList).map(i => parseInt(i, 10));
     // JavaScript keys come as strings, so we need to convert them to integers
+    const ids = Object.keys(globals.historyList).map(i => parseInt(i, 10));
 
+    // Handle if the user has no history
     if (ids.length === 0) {
         $('#lobby-history-no').show();
         $('#lobby-history').addClass('align-center-v');
@@ -58,7 +58,9 @@ exports.draw = () => {
     $('#lobby-history-table-container').show();
 
     // Sort the game IDs in reverse order (so that the most recent ones are near the top)
-    ids.sort();
+    // By default, JavaScript will sort them in alphabetical order,
+    // so we must specify an ascending sort
+    ids.sort((a, b) => a - b);
     ids.reverse();
 
     // Add all of the history

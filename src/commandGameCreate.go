@@ -192,14 +192,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 	}
 
 	// Validate that the variant name is valid
-	valid := false
-	for variant := range variants {
-		if d.Variant == variant {
-			valid = true
-			break
-		}
-	}
-	if !valid {
+	if _, ok := variants[d.Variant]; !ok {
 		s.Warning("That is not a valid variant.")
 		return
 	}
@@ -240,6 +233,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 		ID:       gameID,
 		Name:     d.Name,
 		Owner:    s.UserID(),
+		Visible:  true,
 		Password: d.Password,
 		Options: &Options{
 			Variant:              d.Variant,

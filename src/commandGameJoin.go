@@ -82,10 +82,10 @@ func commandGameJoin(s *Session, d *CommandData) {
 	}
 
 	p := &Player{
-		ID:    s.UserID(),
-		Name:  s.Username(),
-		Index: len(g.Players),
+		ID:   s.UserID(),
+		Name: s.Username(),
 		// We have not added this player to the slice yet, so this should be 0 initially
+		Index:   len(g.Players),
 		Present: true,
 		Stats:   stats,
 		// Time will get initialized below

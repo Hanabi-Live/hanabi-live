@@ -11,7 +11,8 @@ type Game struct {
 	Name string
 	// The user ID of the person who started the game
 	// or the current leader of the shared replay
-	Owner int
+	Owner   int
+	Visible bool // Whether or not this game is shown to other users
 	// This is a salted SHA512 hash sent by the client,
 	// but it can technically be any string at all
 	Password           string
@@ -20,7 +21,7 @@ type Game struct {
 	Spectators         []*Spectator
 	DisconSpectators   map[int]bool
 	Running            bool
-	SharedReplay       bool
+	Replay             bool
 	DatetimeCreated    time.Time
 	DatetimeLastAction time.Time
 	DatetimeStarted    time.Time
@@ -277,8 +278,8 @@ func (g *Game) CheckIdle() {
 
 	log.Info(g.GetName() + " Idle timeout has elapsed; ending the game.")
 
-	if g.SharedReplay {
-		// If this is a shared replay,
+	if g.Replay {
+		// If this is a replay,
 		// we want to send a message to the client that will take them back to the lobby
 		g.NotifyBoot()
 	}
@@ -291,9 +292,9 @@ func (g *Game) CheckIdle() {
 		commandGameUnattend(s, nil)
 	}
 
-	if g.SharedReplay {
-		// If this is a shared replay, then we are done;
-		// the shared should automatically end now that all of the spectators have left
+	if g.Replay {
+		// If this is a replay, then we are done;
+		// it should automatically end now that all of the spectators have left
 		return
 	}
 

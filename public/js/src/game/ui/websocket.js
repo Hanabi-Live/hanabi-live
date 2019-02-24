@@ -76,10 +76,6 @@ commands.clock = (data) => {
 };
 
 commands.connected = (data) => {
-    if (!globals.ready) {
-        return;
-    }
-
     for (let i = 0; i < data.list.length; i++) {
         globals.elements.nameFrames[i].setConnected(data.list[i]);
     }
@@ -236,10 +232,9 @@ commands.note = (data) => {
     Has the following data:
     {
         notes: [
-            null,
-            null,
-            null,
-            zamiel: 'g1\nsankala: g1/g2',
+            "",
+            "",
+            "<strong>Zamiel:</strong> b3<br /><strong>Sankala:</strong> f<br />",
         ],
     }
 */

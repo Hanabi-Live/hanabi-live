@@ -38,7 +38,6 @@ module.exports = () => {
     // if enabled (it is either an empty array or an array of integers)
 
     // Game state variables
-    globals.ready = false;
     globals.deck = [];
     globals.deckSize = 0;
     globals.turn = 0;

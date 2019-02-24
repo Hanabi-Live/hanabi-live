@@ -113,12 +113,14 @@ func websocketConnect(ms *melody.Session) {
 
 	// Send a "table" message for every current table
 	for _, g := range games {
-		s.NotifyTable(g)
+		if g.Visible {
+			s.NotifyTable(g)
+		}
 	}
 
 	// First, check to see if this user was in any existing games
 	for _, g := range games {
-		if g.SharedReplay {
+		if g.Replay {
 			continue
 		}
 
@@ -143,7 +145,7 @@ func websocketConnect(ms *melody.Session) {
 
 	// Second, check to see if this user was in any existing shared replays
 	for _, g := range games {
-		if !g.SharedReplay {
+		if !g.Replay {
 			continue
 		}
 

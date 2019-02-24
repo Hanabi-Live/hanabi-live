@@ -34,7 +34,7 @@ func websocketDisconnect2(s *Session) {
 	// Look for the disconnecting player in all the games
 	for _, g := range games {
 		// They could be one of the players (1/2)
-		if !g.SharedReplay && g.GetPlayerIndex(s.UserID()) != -1 {
+		if !g.Replay && g.GetPlayerIndex(s.UserID()) != -1 {
 			if g.Running {
 				log.Info(g.GetName() + "Unattending player \"" + s.Username() + "\" since they disconnected.")
 				s.Set("currentGame", g.ID)

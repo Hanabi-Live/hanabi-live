@@ -310,7 +310,7 @@ func (g *Game) ConvertToSharedReplay(databaseID int) {
 	}
 	g.ID = databaseID
 	games[g.ID] = g
-	g.SharedReplay = true
+	g.Replay = true
 	g.Name = "Shared replay for game #" + strconv.Itoa(g.ID)
 	// Update the "EndTurn" variable (since we incremented the final turn above in an artificial way)
 	g.EndTurn = g.Turn
@@ -353,7 +353,6 @@ func (g *Game) ConvertToSharedReplay(databaseID int) {
 		sp := &Spectator{
 			ID:      p.ID,
 			Name:    p.Name,
-			Index:   len(g.Spectators),
 			Session: p.Session,
 		}
 		g.Spectators = append(g.Spectators, sp)

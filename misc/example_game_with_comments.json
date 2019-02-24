@@ -1,0 +1,260 @@
+/*
+    This is a JSON object that represents a game of Hanabi
+*/
+{
+    /*
+        An array that contains all of the actions that the players performed in the game
+        Valid actions are "clue", "play", and "discard"
+        An example of each action is listed below
+    */
+    "actions": [
+        // A "clue" action
+        {
+            "clue": {
+                /*
+                    0 is a number clue
+                    1 is a color clue
+                */
+                "type": 1,
+                /*
+                    If a number clue, value is equal to the rank
+                    If a color clue, value is equal to:
+                    - 0 if blue
+                    - 1 if green
+                    - 2 if yellow
+                    - 3 if red
+                    - 4 if purple
+                    - 5 if black
+                */
+                "value": 3
+            },
+            // The ID of the player receiving the clue
+            "target": 1,
+            "type": "clue"
+        },
+        // A "play" action
+        {
+            // The index of the card that is being played
+            // (e.g. index 0 corresponds to the 1st card dealt, etc.)
+            "target": 4,
+            "type": "play"
+        },
+        // A "discard" action
+        {
+            // The index of the card that is being discarded
+            // (e.g. index 0 corresponds to the 1st card dealt, etc.)
+            "target": 4,
+            "type": "discard"
+        }
+    ],
+    /*
+        An array that contains all of the cards in the deck
+        The array lists the cards from top to bottom
+        Cards are NOT dealt to the players like they would be in real life
+        Cards are dealt to the first player until they reach the maximum number of cards,
+        then cards are dealt to the second player until they reach the maximum number of cards,
+        and so forth
+
+        The suit number corresponds to the color clue type above
+    */
+    "deck": [
+        {
+            "rank": 1,
+            "suit": 3
+        },
+        {
+            "rank": 4,
+            "suit": 2
+        },
+        {
+            "rank": 2,
+            "suit": 1
+        },
+        {
+            "rank": 3,
+            "suit": 0
+        },
+        {
+            "rank": 1,
+            "suit": 3
+        },
+        {
+            "rank": 3,
+            "suit": 3
+        },
+        {
+            "rank": 2,
+            "suit": 1
+        },
+        {
+            "rank": 4,
+            "suit": 2
+        },
+        {
+            "rank": 4,
+            "suit": 0
+        },
+        {
+            "rank": 4,
+            "suit": 1
+        },
+        {
+            "rank": 3,
+            "suit": 2
+        },
+        {
+            "rank": 1,
+            "suit": 3
+        },
+        {
+            "rank": 3,
+            "suit": 4
+        },
+        {
+            "rank": 5,
+            "suit": 2
+        },
+        {
+            "rank": 1,
+            "suit": 1
+        },
+        {
+            "rank": 4,
+            "suit": 4
+        },
+        {
+            "rank": 1,
+            "suit": 0
+        },
+        {
+            "rank": 4,
+            "suit": 3
+        },
+        {
+            "rank": 3,
+            "suit": 0
+        },
+        {
+            "rank": 1,
+            "suit": 1
+        },
+        {
+            "rank": 3,
+            "suit": 1
+        },
+        {
+            "rank": 3,
+            "suit": 3
+        },
+        {
+            "rank": 2,
+            "suit": 0
+        },
+        {
+            "rank": 1,
+            "suit": 0
+        },
+        {
+            "rank": 1,
+            "suit": 2
+        },
+        {
+            "rank": 3,
+            "suit": 2
+        },
+        {
+            "rank": 5,
+            "suit": 1
+        },
+        {
+            "rank": 1,
+            "suit": 2
+        },
+        {
+            "rank": 5,
+            "suit": 4
+        },
+        {
+            "rank": 1,
+            "suit": 4
+        },
+        {
+            "rank": 1,
+            "suit": 2
+        },
+        {
+            "rank": 2,
+            "suit": 0
+        },
+        {
+            "rank": 2,
+            "suit": 4
+        },
+        {
+            "rank": 4,
+            "suit": 3
+        },
+        {
+            "rank": 2,
+            "suit": 2
+        },
+        {
+            "rank": 5,
+            "suit": 0
+        },
+        {
+            "rank": 4,
+            "suit": 0
+        },
+        {
+            "rank": 1,
+            "suit": 1
+        },
+        {
+            "rank": 5,
+            "suit": 3
+        },
+        {
+            "rank": 2,
+            "suit": 3
+        },
+        {
+            "rank": 4,
+            "suit": 1
+        },
+        {
+            "rank": 2,
+            "suit": 3
+        },
+        {
+            "rank": 1,
+            "suit": 0
+        },
+        {
+            "rank": 2,
+            "suit": 2
+        },
+        {
+            "rank": 3,
+            "suit": 1
+        }
+    ],
+    /*
+        An array that contains the names of the players
+        The 0th player will always go first
+    */
+    "players": [
+        "Zamiel",
+        "Libster",
+        "florrat2",
+        "Sankala",
+        "910dan"
+    ],
+    /*
+        Equal to the type of variant
+        Use "No Variant" for the base game
+        A full list of variants can be found here:
+        https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md#full-variant-listing
+    */
+    "variant": "Black (5 Suits)"
+}

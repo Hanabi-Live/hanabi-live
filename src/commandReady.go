@@ -6,7 +6,6 @@
 package main
 
 import (
-	"encoding/json"
 	"strconv"
 
 	"github.com/Zamiell/hanabi-live/src/models"
@@ -20,19 +19,17 @@ func commandReady(s *Session, d *CommandData) {
 	// Validate that the game exists
 	gameID := s.CurrentGame()
 	var g *Game
-	if s.Status() != statusReplay {
-		if v, ok := games[gameID]; !ok {
-			s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
-			return
-		} else {
-			g = v
-		}
+	if v, ok := games[gameID]; !ok {
+		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+		return
+	} else {
+		g = v
+	}
 
-		// Validate that the game has started
-		if !g.Running {
-			s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
-			return
-		}
+	// Validate that the game has started
+	if !g.Running {
+		s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
+		return
 	}
 
 	/*
@@ -41,51 +38,14 @@ func commandReady(s *Session, d *CommandData) {
 
 	i := g.GetPlayerIndex(s.UserID())
 
-	actions := make([]interface{}, 0)
-	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
-		var actionStrings []string
-		if v, err := db.GameActions.GetAll(gameID); err != nil {
-			log.Error("Failed to get the actions from the database "+
-				"for game "+strconv.Itoa(gameID)+":", err)
-			s.Error("Failed to initialize the game. Please contact an administrator.")
-			return
-		} else {
-			actionStrings = v
-		}
-
-		for _, actionString := range actionStrings {
-			// Convert it from JSON
-			var action interface{}
-			if err := json.Unmarshal([]byte(actionString), &action); err != nil {
-				log.Error("Failed to unmarshal an action:", err)
-				s.Error("Failed to initialize the game. Please contact an administrator.")
-				return
-			}
-			actions = append(actions, action)
-		}
-	} else {
-		actions = g.Actions
-	}
-
 	notes := make([]models.PlayerNote, 0)
-	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
-		if v, err := db.Games.GetNotes(gameID); err != nil {
-			log.Error("Failed to get the notes from the database "+
-				"for game "+strconv.Itoa(gameID)+":", err)
-			s.Error("Failed to initialize the game. Please contact an administrator.")
-			return
-		} else {
-			notes = v
+	for _, p := range g.Players {
+		note := models.PlayerNote{
+			ID:    p.ID,
+			Name:  p.Name,
+			Notes: p.Notes,
 		}
-	} else {
-		for _, p := range g.Players {
-			note := models.PlayerNote{
-				ID:    p.ID,
-				Name:  p.Name,
-				Notes: p.Notes,
-			}
-			notes = append(notes, note)
-		}
+		notes = append(notes, note)
 	}
 
 	// Check to see if we need to remove some card information
@@ -94,7 +54,7 @@ func commandReady(s *Session, d *CommandData) {
 		// The person requesting the game state is one of the active players,
 		// so we need to hide some information
 		p := g.Players[i]
-		for _, a := range actions {
+		for _, a := range g.Actions {
 			drawAction, ok := a.(ActionDraw)
 			if ok && drawAction.Type == "draw" {
 				drawAction.Scrub(g, p)
@@ -105,14 +65,14 @@ func commandReady(s *Session, d *CommandData) {
 	} else {
 		// The person requesting the game state is not an active player,
 		// so we don't need to hide any information
-		scrubbedActions = actions
+		scrubbedActions = g.Actions
 	}
 
 	// Send a "notify" or "message" message for every game action of the deal
 	s.Emit("notifyList", &scrubbedActions)
 
 	// If it is their turn, send an "action" message
-	if s.Status() != statusReplay && s.Status() != statusSharedReplay && g.ActivePlayer == i {
+	if !g.Replay && g.ActivePlayer == i {
 		s.NotifyAction(g)
 	}
 
@@ -121,7 +81,7 @@ func commandReady(s *Session, d *CommandData) {
 	s.Emit("advanced", nil)
 
 	// Check if the game is still in progress
-	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
+	if g.Replay {
 		// Since the game is over, send them the notes from everyone in the game
 		s.NotifyAllNotes(notes)
 	} else {
@@ -156,17 +116,15 @@ func commandReady(s *Session, d *CommandData) {
 		}
 	}
 
-	// Send them the number of spectators
-	if s.Status() != statusReplay {
+	if g.Visible {
+		// Send them the number of spectators
 		s.NotifySpectators(g)
-	}
 
-	// Send them the chat history for this game
-	if s.Status() != statusReplay {
+		// Send them the chat history for this game
 		chatSendPastFromGame(s, g)
 	}
 
-	if s.Status() == statusSharedReplay {
+	if g.Replay && g.Visible {
 		// Enable the replay controls for the leader of the review
 		s.NotifyReplayLeader(g)
 

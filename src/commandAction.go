@@ -68,8 +68,8 @@ func commandAction(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that it is not a shared replay
-	if g.SharedReplay {
+	// Validate that it is not a replay
+	if g.Replay {
 		s.Warning("You cannot perform a game action in a shared replay.")
 		return
 	}

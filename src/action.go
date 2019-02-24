@@ -84,8 +84,8 @@ func (a *ActionDraw) Scrub(g *Game, p *Player) {
 		return
 	}
 
-	// Don't scrub in shared replays
-	if g.SharedReplay {
+	// Don't scrub in replays
+	if g.Replay {
 		return
 	}
 

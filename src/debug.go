@@ -18,6 +18,9 @@ func debug2() {
 	// Print out all of the current games
 	log.Debug("---------------------------------------------------------------")
 	log.Debug("Current games:")
+	if len(games) == 0 {
+		log.Debug("  [no games]")
+	}
 	for i, g := range games { // This is a map[int]*Game
 		log.Debug(strconv.Itoa(i) + " - " + g.Name)
 
@@ -71,6 +74,9 @@ func debug2() {
 	// Print out all of the current users
 	log.Debug("---------------------------------------------------------------")
 	log.Debug("Current users:")
+	if len(sessions) == 0 {
+		log.Debug("  [no users]")
+	}
 	for i, s2 := range sessions { // This is a map[int]*Session
 		log.Debug(
 			"  User ID: " + strconv.Itoa(i) + ", " +
@@ -83,6 +89,9 @@ func debug2() {
 	// Print out the waiting list
 	log.Debug("---------------------------------------------------------------")
 	log.Debug("Waiting list:")
+	if len(waitingList) == 0 {
+		log.Debug("  [no people on the waiting list]")
+	}
 	for i, p := range waitingList { // This is a []*models.Waiter
 		log.Debug("  " + strconv.Itoa(i) + " - " + p.Username + " - " + p.DiscordMention + " - " + p.DatetimeExpired.String())
 	}

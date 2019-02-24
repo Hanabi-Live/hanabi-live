@@ -131,7 +131,6 @@ HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
     keyboard.init();
 
     // Tell the server that we are finished loading
-    globals.ready = true;
     globals.lobby.conn.send('ready');
 };
 

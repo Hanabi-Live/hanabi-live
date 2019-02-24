@@ -175,7 +175,7 @@ func (s *Session) NotifyTable(g *Game) {
 	}
 
 	numPlayers := len(g.Players)
-	if g.SharedReplay {
+	if g.Replay {
 		numPlayers = len(g.Spectators)
 	}
 
@@ -228,7 +228,7 @@ func (s *Session) NotifyTable(g *Game) {
 		BaseTime:     g.Options.BaseTime,
 		TimePerTurn:  g.Options.TimePerTurn,
 		OurTurn:      joined && g.Running && g.ActivePlayer == i,
-		SharedReplay: g.SharedReplay,
+		SharedReplay: g.Replay,
 		Progress:     g.Progress,
 		Players:      players,
 		Spectators:   spectators,

@@ -18,23 +18,29 @@ import (
 )
 
 func commandHello(s *Session, d *CommandData) {
-	d.ID = s.CurrentGame()
+	/*
+		Validate
+	*/
+
+	// Validate that the game exists
+	gameID := s.CurrentGame()
 	var g *Game
-	if s.Status() == statusReplay {
-		if v, success := convertDatabaseGametoGame(s, d); !success {
-			return
-		} else {
-			g = v
-		}
+	if v, ok := games[gameID]; !ok {
+		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
+		return
 	} else {
-		// Validate that the game exists
-		if v, ok := games[d.ID]; !ok {
-			s.Error("Game " + strconv.Itoa(d.ID) + " does not exist.")
-			return
-		} else {
-			g = v
-		}
+		g = v
 	}
+
+	// Validate that the game has started
+	if !g.Running {
+		s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
+		return
+	}
+
+	/*
+		Hello
+	*/
 
 	// Create a list of names of the users in this game
 	names := make([]string, 0)

@@ -31,9 +31,9 @@ type CommandData struct {
 	Order int    `json:"order"`
 
 	// replayCreate
-	Source     string `json:"source"`
-	JSON       string `json:"json"`
-	Visibility string `json:"visibility"`
+	Source     string   `json:"source"`
+	GameJSON   gameJSON `json:"gameJSON"`
+	Visibility string   `json:"visibility"`
 
 	// sharedReplay
 	Turn  int    `json:"turn"`

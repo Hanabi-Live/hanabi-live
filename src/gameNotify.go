@@ -105,16 +105,15 @@ func (g *Game) NotifyTableReady() {
 // NotifyConnected will send "connected" messages to everyone in a game
 // (because someone just connected or disconnected)
 // This is only called in situations where the game has started
+// This is never called in replays
 func (g *Game) NotifyConnected() {
 	if !g.Running {
 		log.Error("The \"NotifyConnected()\" function was called on a game that has not started yet.")
 		return
 	}
 
-	// If this is a shared replay, then all of the players are also spectators,
-	// so we do not want to send them a duplicate message
-	if !g.SharedReplay {
-		for _, p := range g.Players {
+	for _, p := range g.Players {
+		if p.Present {
 			p.Session.NotifyConnected(g)
 		}
 	}
@@ -179,11 +178,9 @@ func (g *Game) NotifyAction() {
 	a := g.Actions[len(g.Actions)-1]
 
 	for _, p := range g.Players {
-		if !p.Present {
-			continue
+		if p.Present {
+			p.Session.NotifyGameAction(a, g, p)
 		}
-
-		p.Session.NotifyGameAction(a, g, p)
 	}
 
 	// Also send the spectators an update
@@ -196,11 +193,9 @@ func (g *Game) NotifyAction() {
 // (signifying that an action just occurred)
 func (g *Game) NotifySound() {
 	for i, p := range g.Players {
-		if !p.Present {
-			continue
+		if p.Present {
+			p.Session.NotifySound(g, i)
 		}
-
-		p.Session.NotifySound(g, i)
 	}
 
 	for _, sp := range g.Spectators {
@@ -210,11 +205,9 @@ func (g *Game) NotifySound() {
 
 func (g *Game) NotifyGameOver() {
 	for _, p := range g.Players {
-		if !p.Present {
-			continue
+		if p.Present {
+			p.Session.Emit("gameOver", nil)
 		}
-
-		p.Session.Emit("gameOver", nil)
 	}
 
 	for _, sp := range g.Spectators {
@@ -224,11 +217,9 @@ func (g *Game) NotifyGameOver() {
 
 func (g *Game) NotifyTime() {
 	for _, p := range g.Players {
-		if !p.Present {
-			continue
+		if p.Present {
+			p.Session.NotifyClock(g)
 		}
-
-		p.Session.NotifyClock(g)
 	}
 
 	for _, sp := range g.Spectators {
@@ -237,15 +228,13 @@ func (g *Game) NotifyTime() {
 }
 
 func (g *Game) NotifySpectators() {
-	// If this is a shared replay, then all of the players are also spectators,
+	// If this is a replay, then all of the players are also spectators,
 	// so we do not want to send them a duplicate message
-	if !g.SharedReplay {
+	if !g.Replay {
 		for _, p := range g.Players {
-			if !p.Present {
-				continue
+			if p.Present {
+				p.Session.NotifySpectators(g)
 			}
-
-			p.Session.NotifySpectators(g)
 		}
 	}
 
@@ -277,13 +266,11 @@ func (g *Game) NotifySpectatorsNote(order int) {
 
 // Boot the people in the game and/or shared replay back to the lobby screen
 func (g *Game) NotifyBoot() {
-	if !g.SharedReplay {
+	if !g.Replay {
 		for _, p := range g.Players {
-			if !p.Present {
-				continue
+			if p.Present {
+				p.Session.Emit("boot", nil)
 			}
-
-			p.Session.Emit("boot", nil)
 		}
 	}
 

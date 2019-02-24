@@ -844,6 +844,8 @@ const drawStatistics = () => {
     });
     globals.layers.UI.add(efficiencyTextLabel);
 
+    // We want the "/" to be part of the first label since we don't want
+    // to change the color of it later on
     globals.elements.efficiencyNumberLabel = basicNumberLabel.clone({
         text: '- / ',
         x: 0.9 * winW,
