@@ -448,6 +448,35 @@ table td {
 }
 
 /*
+    Watch Specific Replay Tooltip
+*/
+
+#replay-tooltip-title {
+    width: 13em;
+}
+
+#replay-json {
+    resize: none;
+}
+
+#replay-error-row-text {
+    color: red;
+}
+
+.replay-radio-container {
+    position: absolute;
+}
+
+.replay-radio {
+    top: 0.6em;
+}
+
+.replay-radio-label {
+    position: relative;
+    top: 0.4em;
+}
+
+/*
     Modals
 */
 

@@ -8,8 +8,7 @@ const websocket = require('../websocket');
 const lobby = require('./main');
 
 $(document).ready(() => {
-    $('#login-button').click((event) => {
-        event.preventDefault();
+    $('#login-button').click(() => {
         $('#login-form').submit();
     });
     $('#login-form').on('keypress', (event) => {
@@ -156,6 +155,7 @@ exports.hide = (firstTimeUser) => {
         $('#tutorial').fadeIn(globals.fadeTime);
         return;
     }
+    $('#tutorial').hide();
 
     // Show the lobby
     globals.currentScreen = 'lobby';

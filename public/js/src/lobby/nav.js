@@ -7,6 +7,7 @@ const globals = require('../globals');
 const misc = require('../misc');
 const modals = require('../modals');
 const lobby = require('./main');
+const watchReplay = require('./watchReplay');
 
 $(document).ready(() => {
     // Initialize all of the navigation tooltips using Tooltipster
@@ -14,12 +15,16 @@ $(document).ready(() => {
 
     // The "Create Game" button
     $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', lobby.createGame.ready);
+    // (the logic for this tooltip is handled in the "createGame.js" file)
 
     // The "Show History" button
-    $('#nav-buttons-games-history').on('click', (event) => {
-        event.preventDefault();
+    $('#nav-buttons-games-history').on('click', () => {
         lobby.history.show();
     });
+
+    // The "Watch Specific Replay" button
+    $('#nav-buttons-games-replay').tooltipster('option', 'functionReady', watchReplay.ready);
+    // (the logic for this tooltip is handled in the "watchReplay.js" file)
 
     // The "Help" button
     // (this is just a simple link)
@@ -31,16 +36,14 @@ $(document).ready(() => {
     // (initialized in the "initTooltips()" function)
 
     // The "Sign Out" button
-    $('#nav-buttons-games-sign-out').on('click', (event) => {
-        event.preventDefault();
+    $('#nav-buttons-games-sign-out').on('click', () => {
         localStorage.removeItem('hanabiuser');
         localStorage.removeItem('hanabipass');
         window.location.reload();
     });
 
     // The "Start Game" button
-    $('#nav-buttons-pregame-start').on('click', (event) => {
-        event.preventDefault();
+    $('#nav-buttons-pregame-start').on('click', () => {
         if ($('#nav-buttons-pregame-start').hasClass('disabled')) {
             return;
         }
@@ -48,49 +51,23 @@ $(document).ready(() => {
     });
 
     // The "Return to Lobby" button (from the "Pregame" screen)
-    $('#nav-buttons-pregame-unattend').on('click', (event) => {
-        event.preventDefault();
+    $('#nav-buttons-pregame-unattend').on('click', () => {
         lobby.pregame.hide();
         globals.conn.send('gameUnattend');
     });
 
     // The "Leave Game" button
-    $('#nav-buttons-pregame-leave').on('click', (event) => {
-        event.preventDefault();
+    $('#nav-buttons-pregame-leave').on('click', () => {
         globals.conn.send('gameLeave');
     });
 
-    // "Watch Replay by ID" and "Share Replay by ID" buttons
-    $('.nav-buttons-history-by-id').on('click', (event) => {
-        event.preventDefault();
-        const subtype = event.currentTarget.getAttribute('data-display');
-        let lastID = localStorage.getItem('lastID');
-        if (typeof lastID !== 'string') {
-            lastID = '';
-        }
-        const replayID = window.prompt(`What is the ID of the game you want to ${subtype}?`, lastID);
-        if (replayID === null) {
-            // The user clicked the "cancel" button, so do nothing else
-            return;
-        }
-
-        globals.conn.send(event.currentTarget.getAttribute('data-replayType'), {
-            gameID: parseInt(replayID, 10),
-        });
-
-        // Save the ID locally in case they want to view the same replay again later on
-        localStorage.setItem('lastID', replayID);
-    });
-
     // The "Return to Lobby" button (from the "History" screen)
-    $('#nav-buttons-history-return').on('click', (event) => {
-        event.preventDefault();
+    $('#nav-buttons-history-return').on('click', () => {
         lobby.history.hide();
     });
 
     // The "Return to History" button (from the "History Details" screen)
-    $('#nav-buttons-history-details-return').on('click', (event) => {
-        event.preventDefault();
+    $('#nav-buttons-history-details-return').on('click', () => {
         lobby.history.hideDetails();
     });
 });
@@ -98,6 +75,7 @@ $(document).ready(() => {
 const initTooltips = () => {
     const tooltips = [
         'create-game',
+        'replay',
         'resources',
         'settings',
     ];
@@ -112,7 +90,10 @@ const initTooltips = () => {
             screen. We can use a Tooltipster plugin to automatically create a scroll bar for it.
             https://github.com/louisameline/tooltipster-scrollableTip
         */
-        plugins: ['sideTip', 'scrollableTip'],
+        plugins: [
+            'sideTip', // Make it have the ability to be positioned on a specific side
+            'scrollableTip', // Make it scrollable
+        ],
         functionBefore: () => {
             $('#lobby').fadeTo(globals.fadeTime, 0.4);
         },

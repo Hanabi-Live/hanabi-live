@@ -21,6 +21,12 @@
                     </a>
                 </li>
                 <li>
+                    <a id="nav-buttons-games-replay" class="button tooltip" data-tooltip-content="#replay-tooltip">
+                        <i class="fas fa-eye nav-icon"></i>
+                        W<span class="nav-hotkey-indicator">a</span>tch Specific Replay
+                    </a>
+                </li>
+                <li>
                     <a id="nav-buttons-games-help" class="button" href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md" target="_blank">
                         <i class="fas fa-question-circle nav-icon"></i>
                         Help
@@ -70,18 +76,6 @@
                     Shown games: <span id="nav-buttons-history-shown-games">0</span> / <span id="nav-buttons-history-total-games">0</span>
                 </li>
                 <li>&nbsp;</li>
-                <li>
-                    <a class="button nav-buttons-history-by-id" data-replayType="replayCreate" data-display="watch">
-                        <i class="fas fa-eye nav-icon"></i>
-                        W<span class="nav-hotkey-indicator">a</span>tch Replay by ID
-                    </a>
-                </li>
-                <li>
-                    <a class="button nav-buttons-history-by-id" data-replayType="sharedReplayCreate" data-display="share">
-                        <i class="fas fa-users nav-icon"></i>
-                        Shar<span class="nav-hotkey-indicator">e</span> Replay by ID
-                    </a>
-                </li>
                 <li>
                     <a id="nav-buttons-history-return" class="button">
                         <i class="fas fa-home nav-icon"></i>
@@ -815,6 +809,95 @@
         </label>
 
         <br /><br />
+    </div>
+
+    <div id="replay-tooltip">
+        <h2 id="replay-tooltip-title">Watch a Specific Replay</h2>
+
+        <div class="row">
+            <div class="col-3 input-text">
+                <div class="create-game-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                Source
+            </div>
+            <div class="col-4">
+                <input id="replay-source-id" type="radio" name="replay-source" value="id" checked />
+                <label class="replay-radio" for="replay-source-id">
+                    <span class="replay-radio-label">Database ID</span>
+                </label>
+            </div>
+            <div class="col-4">
+                <input id="replay-source-json" type="radio" name="replay-source" value="json" />
+                <label class="replay-radio" for="replay-source-json">
+                    <span class="replay-radio-label">JSON Data</span>
+                </label>
+            </div>
+        </div>
+        <br /><br />
+
+        <div id="replay-id-row" class="row">
+            <div class="col-3 input-text">
+                <div class="create-game-icon">
+                    <i class="fas fa-fingerprint"></i>
+                </div>
+                ID
+            </div>
+            <div class="col-8">
+                <input id="replay-id" type="text" />
+            </div>
+        </div>
+
+        <div id="replay-json-row" class="row">
+            <div class="col-3 input-text">
+                <div class="create-game-icon">
+                    <i class="fas fa-table"></i>
+                </div>
+                JSON
+            </div>
+            <div class="col-8">
+                <textarea id="replay-json" rows="3"></textarea>
+            </div>
+        </div>
+
+        <!-- Spacing for the ID row or the JSON row -->
+        <br />
+
+        <div id="replay-error-row" class="row">
+            <div class="col-3 input-text"></div>
+            <div id="replay-error-row-text" class="col-8"></div>
+        </div>
+        <div id="replay-error-row-spacing">
+            <br /><br />
+        </div>
+
+        <div class="row">
+            <div class="col-3 input-text">
+                <div class="create-game-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                Visibility
+            </div>
+            <div class="col-4">
+                <input id="replay-visibility-solo" type="radio" name="replay-visibility" checked />
+                <label class="replay-radio" for="replay-visibility-solo">
+                    <span class="replay-radio-label">Solo</span>
+                </label>
+            </div>
+            <div class="col-4">
+                <input id="replay-visibility-shared" type="radio" name="replay-visibility" />
+                <label class="replay-radio" for="replay-visibility-shared">
+                    <span class="replay-radio-label">Shared</span>
+                </label>
+            </div>
+        </div>
+        <br />
+
+        <br />
+        <button id="replay-submit" class="button fit" type="submit">
+            <i class="fas fa-eye"></i>&nbsp;
+            Watch
+        </button>
     </div>
 </div>
 

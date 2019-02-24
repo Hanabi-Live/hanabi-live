@@ -8,8 +8,7 @@ const constants = require('../constants');
 const lobby = require('./main');
 
 $(document).ready(() => {
-    $('#lobby-history-show-more').on('click', (event) => {
-        event.preventDefault();
+    $('#lobby-history-show-more').on('click', () => {
         globals.historyClicked = true;
         globals.conn.send('historyGet', {
             offset: Object.keys(globals.historyList).length,
@@ -86,11 +85,11 @@ exports.draw = () => {
         $('<td>').html(timeCompleted).appendTo(row);
 
         // Column 6 - Watch Replay
-        const watchReplayButton = makeReplayButton(ids[i], 'Watch Replay', 'replayCreate', false);
+        const watchReplayButton = makeReplayButton(ids[i], 'solo');
         $('<td>').html(watchReplayButton).appendTo(row);
 
         // Column 7 - Share Replay
-        const shareReplayButton = makeReplayButton(ids[i], 'Share Replay', 'sharedReplayCreate', true);
+        const shareReplayButton = makeReplayButton(ids[i], 'shared');
         $('<td>').html(shareReplayButton).appendTo(row);
 
         // Column 8 - Other Scores
@@ -113,25 +112,30 @@ exports.draw = () => {
     }
 };
 
-const makeReplayButton = (id, text, msgType, returnsToLobby) => {
+const makeReplayButton = (id, visibility) => {
     const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
-    if (text === 'Watch Replay') {
+    let text;
+    if (visibility === 'solo') {
         text = '<i class="fas fa-eye lobby-button-icon"></i>';
-    } else if (text === 'Share Replay') {
+    } else if (visibility === 'shared') {
         text = '<i class="fas fa-users lobby-button-icon"></i>';
+    } else {
+        console.error('The "makeReplayButton()" function was provided an invalid visibility argument.');
+        return '';
     }
     button.html(text);
     button.addClass('history-table');
     button.addClass('enter-history-game');
     button.attr('id', `replay-${id}`);
 
-    button.on('click', (event) => {
-        event.preventDefault();
+    button.on('click', () => {
         globals.gameID = id;
-        globals.conn.send(msgType, {
+        globals.conn.send('replayCreate', {
+            source: 'id',
             gameID: globals.gameID,
+            visibility,
         });
-        if (returnsToLobby) {
+        if (visibility === 'shared') {
             lobby.history.hide();
         }
     });
@@ -147,8 +151,7 @@ const makeHistoryDetailsButton = (id, gameCount) => {
     }
     button.attr('id', `history-details-${id}`);
 
-    button.on('click', (event) => {
-        event.preventDefault();
+    button.on('click', () => {
         globals.gameID = id;
         globals.conn.send('historyDetails', {
             gameID: globals.gameID,
@@ -229,11 +232,11 @@ exports.drawDetails = () => {
         $('<td>').html(dateTime).appendTo(row);
 
         // Column 4 - Watch Replay
-        const watchReplayButton = makeReplayButton(gameData.id, 'Watch Replay', 'replayCreate', false);
+        const watchReplayButton = makeReplayButton(gameData.id, 'solo');
         $('<td>').html(watchReplayButton).appendTo(row);
 
         // Column 5 - Share Replay
-        const shareReplayButton = makeReplayButton(gameData.id, 'Share Replay', 'sharedReplayCreate', false);
+        const shareReplayButton = makeReplayButton(gameData.id, 'shared');
         $('<td>').html(shareReplayButton).appendTo(row);
 
         // Column 6 - Other Players

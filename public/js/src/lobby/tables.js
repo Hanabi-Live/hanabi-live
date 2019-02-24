@@ -94,8 +94,7 @@ exports.draw = () => {
     }
 };
 
-const tableSpectateButton = table => (event) => {
-    event.preventDefault();
+const tableSpectateButton = table => () => {
     globals.gameID = table.id;
     globals.conn.send('gameSpectate', {
         gameID: table.id,
@@ -103,9 +102,7 @@ const tableSpectateButton = table => (event) => {
     lobby.tables.draw();
 };
 
-const tableJoinButton = table => (event) => {
-    event.preventDefault();
-
+const tableJoinButton = table => () => {
     if (table.password) {
         modals.passwordShow(table.id);
         return;
@@ -118,8 +115,7 @@ const tableJoinButton = table => (event) => {
     lobby.tables.draw();
 };
 
-const tableReattendButton = table => (event) => {
-    event.preventDefault();
+const tableReattendButton = table => () => {
     globals.gameID = table.id;
     globals.conn.send('gameReattend', {
         gameID: table.id,

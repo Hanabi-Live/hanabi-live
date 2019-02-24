@@ -280,6 +280,7 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
   * Your name will be bolded in the user list.
   * The ambiguous checkboxes in the lobby have been converted to a "Status" indicator, showing exactly what the person is doing.
 * You can now view a replay (or share a replay) by ID number.
+* You can now view a replay (or share a replay) from arbitrary JSON game data.
 * When you create a game, the server will suggest a randomly generated table name for you.
 * Idle games and idle shared replays will automatically be ended by the server after 30 minutes.
 

@@ -58,9 +58,7 @@ $(document).ready(() => {
     $('#create-game-submit').on('click', submit);
 });
 
-const submit = (event) => {
-    event.preventDefault();
-
+const submit = () => {
     const name = $('#create-game-name').val();
 
     const variant = $('#create-game-variant').val();
@@ -232,7 +230,7 @@ exports.ready = () => {
     $('#create-game-alert-waiters').prop('checked', alertWaiters);
 
     // Focus the "Name" box
-    // (we have to wait 1 millisecond or it won't work due to the nature of the above code)
+    // (we have to wait 1 millisecond or it won't work due to the nature of the tooltip)
     setTimeout(() => {
         $('#create-game-name').focus();
     }, 1);

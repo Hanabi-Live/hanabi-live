@@ -2,7 +2,7 @@
 	Sent when the user:
 	- is in a game that is starting
 	- joins a game that has already started
-	- starts a replay
+	- starts a solo replay
 	- starts spectating a game
 
 	This is sent before the UI is initialized; the client will send a "ready"
@@ -15,61 +15,21 @@ package main
 
 import (
 	"strconv"
-
-	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 func commandHello(s *Session, d *CommandData) {
-	gameID := s.CurrentGame()
+	d.ID = s.CurrentGame()
 	var g *Game
-	if s.Status() == statusReplay || s.Status() == statusSharedReplay {
-		var options models.Options
-		if v, err := db.Games.GetOptions(gameID); err != nil {
-			log.Error("Failed to get the options from the database for game "+strconv.Itoa(gameID)+":", err)
-			s.Error("Failed to initialize the game. Please contact an administrator.")
+	if s.Status() == statusReplay {
+		if v, success := convertDatabaseGametoGame(s, d); !success {
 			return
 		} else {
-			options = v
-		}
-
-		var dbPlayers []*models.Player
-		if v, err := db.Games.GetPlayers(gameID); err != nil {
-			log.Error("Failed to get the players from the database for game "+strconv.Itoa(gameID)+":", err)
-			s.Error("Failed to initialize the game. Please contact an administrator.")
-			return
-		} else {
-			dbPlayers = v
-		}
-
-		// We need to convert the database player objects to a normal player objects
-		var players []*Player
-		for _, p := range dbPlayers {
-			player := &Player{
-				ID:                p.ID,
-				Name:              p.Name,
-				Character:         charactersID[p.CharacterAssignment],
-				CharacterMetadata: p.CharacterMetadata,
-			}
-			players = append(players, player)
-		}
-
-		g = &Game{
-			Options: &Options{
-				Variant:              variantsID[options.Variant],
-				Timed:                options.Timed,
-				BaseTime:             options.BaseTime,
-				TimePerTurn:          options.TimePerTurn,
-				Speedrun:             options.Speedrun,
-				DeckPlays:            options.DeckPlays,
-				EmptyClues:           options.EmptyClues,
-				CharacterAssignments: options.CharacterAssignments,
-			},
-			Players: players,
+			g = v
 		}
 	} else {
 		// Validate that the game exists
-		if v, ok := games[gameID]; !ok {
-			s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
+		if v, ok := games[d.ID]; !ok {
+			s.Error("Game " + strconv.Itoa(d.ID) + " does not exist.")
 			return
 		} else {
 			g = v

@@ -47,14 +47,9 @@ $(document).keydown((event) => {
             $('#nav-buttons-history-details-return').click();
         }
     } else if (event.altKey && event.key === 'a') { // Alt + a
-        // Click on the "Watch Replay by ID" button
-        if (globals.currentScreen === 'lobby' || globals.currentScreen === 'history') {
-            $('a.nav-buttons-history-by-id[data-replayType="replayCreate"]').click();
-        }
-    } else if (event.altKey && event.key === 'e') { // Alt + e
-        // Click on the "Share Replay by ID" button
-        if (globals.currentScreen === 'lobby' || globals.currentScreen === 'history') {
-            $('a.nav-buttons-history-by-id[data-replayType="sharedReplayCreate"]').click();
+        // Click on the "Watch Specific Replay" button
+        if (globals.currentScreen === 'history') {
+            $('#nav-buttons-history-replay').click();
         }
     }
 });

@@ -1,7 +1,7 @@
 package main
 
 type CommandData struct {
-	// misc.
+	// various
 	ID int `json:"gameID"`
 
 	// chat
@@ -29,6 +29,11 @@ type CommandData struct {
 	// note
 	Note  string `json:"note"`
 	Order int    `json:"order"`
+
+	// replayCreate
+	Source     string `json:"source"`
+	JSON       string `json:"json"`
+	Visibility string `json:"visibility"`
 
 	// sharedReplay
 	Turn  int    `json:"turn"`
@@ -86,7 +91,6 @@ func commandInit() {
 	commandMap["historyGet"] = commandHistoryGet
 	commandMap["gameStart"] = commandGameStart
 	commandMap["replayCreate"] = commandReplayCreate
-	commandMap["sharedReplayCreate"] = commandSharedReplayCreate
 
 	// Game commands
 	commandMap["hello"] = commandHello

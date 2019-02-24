@@ -56,8 +56,7 @@ exports.passwordShow = (gameID) => {
     $('#password-modal-password').focus();
 };
 
-const passwordSubmit = (event) => {
-    event.preventDefault();
+const passwordSubmit = () => {
     $('#password-modal').fadeOut(globals.fadeTime);
     $('#lobby').fadeTo(globals.fadeTime, 1);
     const gameID = parseInt($('#password-modal-id').val(), 10); // The server expects this as a number
