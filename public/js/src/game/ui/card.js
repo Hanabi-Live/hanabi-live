@@ -47,6 +47,7 @@ const HanabiCard = function HanabiCard(config) {
     this.barename = undefined;
     this.showOnlyLearned = false;
     this.numPositiveClues = 0;
+    this.turnDrawn = globals.turn;
     this.isDiscarded = false;
     this.turnDiscarded = null;
     this.isPlayed = false;
@@ -753,7 +754,8 @@ HanabiCard.prototype.clickLeft = function clickLeft(event) {
         } else {
             replay.enter();
         }
-        replay.goto(this.turnDrawn + 1, true);
+        replay.goto(this.turnDrawn, true);
+        replay.goto(this.turnDrawn + 1, false);
     } else if (this.isPlayed) {
         // Clicking on played cards goes to the turn that they were played
         if (globals.replay) {
