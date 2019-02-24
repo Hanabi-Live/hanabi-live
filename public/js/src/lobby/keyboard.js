@@ -21,6 +21,11 @@ $(document).keydown((event) => {
         if (globals.currentScreen === 'lobby') {
             $('#nav-buttons-games-history').click();
         }
+    } else if (event.altKey && event.key === 'w') { // Alt + w
+        // Click on the "Watch Specific Replay" button
+        if (globals.currentScreen === 'lobby') {
+            $('#nav-buttons-history-replay').click();
+        }
     } else if (event.altKey && event.key === 'o') { // Alt + o
         // Click the "Sign Out" button
         if (globals.currentScreen === 'lobby') {
@@ -45,11 +50,6 @@ $(document).keydown((event) => {
             $('#nav-buttons-history-return').click();
         } else if (globals.currentScreen === 'historyDetails') {
             $('#nav-buttons-history-details-return').click();
-        }
-    } else if (event.altKey && event.key === 'a') { // Alt + a
-        // Click on the "Watch Specific Replay" button
-        if (globals.currentScreen === 'history') {
-            $('#nav-buttons-history-replay').click();
         }
     }
 });
