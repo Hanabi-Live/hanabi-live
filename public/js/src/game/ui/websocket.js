@@ -347,6 +347,10 @@ commands.replayTurn = (data) => {
             }
             globals.layers.UI.batchDraw();
         }
+
+        if (globals.sharedReplayLoading) {
+            globals.sharedReplayLoading = false;
+        }
     } else {
         // Even though we are not using the shared turns,
         // we need to update the slider to show where the replay leader changed the turn to

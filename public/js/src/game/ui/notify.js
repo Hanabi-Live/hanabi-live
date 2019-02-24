@@ -372,6 +372,12 @@ commands.turn = (data) => {
     globals.elements.turnNumberLabel.setText(`${globals.turn + 1}`);
 };
 
+module.exports = commands;
+
+/*
+    Misc. subroutines
+*/
+
 const revealCard = (data) => {
     // Local variables
     const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
@@ -402,5 +408,3 @@ const revealCard = (data) => {
 
     globals.elements.clueLog.checkExpiry();
 };
-
-module.exports = commands;
