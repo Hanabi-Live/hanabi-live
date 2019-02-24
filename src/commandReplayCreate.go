@@ -219,7 +219,6 @@ type ActionJSON struct {
 
 func replayJSON(s *Session, d *CommandData) {
 	// Validate that there is at least one action
-	log.Debug(d.GameJSON)
 	if len(d.GameJSON.Actions) < 1 {
 		s.Warning("There must be at least one game action in the JSON array.")
 		return

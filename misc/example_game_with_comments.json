@@ -239,8 +239,10 @@
             "suit": 1
         }
     ],
-    // The index of the player that will go first
-    // This will default to 0, which corresponds to the 0th player listed below
+    /*
+        The index of the player that will go first
+        This will default to 0, which corresponds to the 0th player listed below
+    */
     "firstPlayer": 0,
     /*
         An array that contains the notes of the players
