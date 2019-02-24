@@ -591,9 +591,6 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
                 this.indicatorTween.destroy();
             }
 
-            // Fix the bug where the arrows can be hidden by other cards
-            this.getParent().getParent().moveToTop();
-
             if (globals.animateFast) {
                 // Just set the arrow in position
                 this.indicatorGroup.setX(this.indicatorGroup.originalX);
@@ -644,6 +641,12 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
     }
 
     this.indicatorGroup.setVisible(visible);
+
+    // Fix the bug where the arrows can be hidden by other cards
+    if (visible) {
+        this.getParent().getParent().moveToTop();
+    }
+
     this.getLayer().batchDraw();
 };
 
