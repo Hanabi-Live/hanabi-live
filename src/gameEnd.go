@@ -16,6 +16,10 @@ func (g *Game) End() {
 	}
 	log.Info(g.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
+	if g.NoDatabase {
+		return
+	}
+
 	// Send text messages showing how much time each player finished with
 	// (this won't appear initially unless the user clicks back and then forward again)
 	for _, p := range g.Players {

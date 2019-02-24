@@ -87,7 +87,7 @@ func (s *Session) Status() int {
 
 // Emit sends a message to a client using the Golem-style protocol described above
 func (s *Session) Emit(command string, d interface{}) {
-	if s == nil {
+	if s == nil || s.Session == nil || s.Session.Request == nil {
 		return
 	}
 
@@ -115,6 +115,8 @@ func (s *Session) Warning(message string) {
 		message = "Something went wrong. Please contact an administrator."
 	}
 
+	log.Info("Warning - " + message + " - " + s.Username())
+
 	type WarningMessage struct {
 		Warning string `json:"warning"`
 	}
@@ -129,6 +131,8 @@ func (s *Session) Error(message string) {
 	if message == "" {
 		message = "Something went wrong. Please contact an administrator."
 	}
+
+	log.Info("Error - " + message + " - " + s.Username())
 
 	type ErrorMessage struct {
 		Error string `json:"error"`

@@ -257,11 +257,11 @@
         The 0th player will always go first
     */
     "players": [
-        "Zamiel",
-        "Libster",
-        "florrat2",
-        "Sankala",
-        "910dan"
+        "Robot1",
+        "Robot2",
+        "Robot3",
+        "Robot4",
+        "Robot5"
     ],
     /*
         Equal to the type of variant

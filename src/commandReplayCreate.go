@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
+	melody "gopkg.in/olahol/melody.v1"
 )
 
 func commandReplayCreate(s *Session, d *CommandData) {
@@ -66,12 +67,13 @@ func replayID(s *Session, d *CommandData) {
 	}
 	games[d.ID] = g
 	log.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " replay: #" + strconv.Itoa(d.ID))
-	if g.Visible {
-		notifyAllTable(g)
-	}
+	// (a "table" message will be sent when the user joins)
 
 	// Join the user to the new replay
 	commandGameSpectate(s, d)
+
+	// Start the idle timeout
+	go g.CheckIdle()
 }
 
 func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
@@ -191,8 +193,11 @@ func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
 		Replay:             true,
 		DatetimeCreated:    time.Now(),
 		DatetimeLastAction: time.Now(),
+		DatetimeStarted:    time.Now(),
 		Actions:            actions,
 		EndTurn:            numTurns,
+		Chat:               make([]*GameChatMessage, 0),
+		ChatRead:           make(map[int]int),
 	}
 
 	return g, true
@@ -283,18 +288,26 @@ func replayJSON(s *Session, d *CommandData) {
 	g := convertJSONGametoGame(s, d)
 	games[g.ID] = g
 	log.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " JSON replay: #" + strconv.Itoa(g.ID))
-	notifyAllTable(g)
+	// (a "table" message will be sent when the user joins)
+
+	// Send messages from fake players to emulate the gameplay that occurred in the JSON actions
+	emulateJSONActions(g, d)
+
+	// Do a mini-version of the steps in the "g.End()" function
+	g.Replay = true
+	g.EndTurn = g.Turn
+	g.Progress = 100
 
 	// Join the user to the new shared replay
 	commandGameSpectate(s, d)
+
+	// Start the idle timeout
+	go g.CheckIdle()
 }
 
 func convertJSONGametoGame(s *Session, d *CommandData) *Game {
-	// Local variables
-	gameID := d.ID
-
 	// Define a standard naming scheme for shared replays
-	name := strings.Title(d.Visibility) + " replay for JSON game #" + strconv.Itoa(gameID)
+	name := strings.Title(d.Visibility) + " replay for JSON game #" + strconv.Itoa(d.ID)
 
 	// Figure out whether this game should be invisible
 	visible := false
@@ -305,29 +318,36 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 	// Convert the JSON player objects to a normal player objects
 	players := make([]*Player, 0)
 	for i, name := range d.GameJSON.Players {
+		// Prepare the player session that will be used for emulation
+		keys := make(map[string]interface{})
+		keys["ID"] = -1 // We set it to -1 since it does not matter
+		// This can be any arbitrary unique number,
+		// but we will set it to the same value as the player index for simplicity
+		keys["userID"] = i
+		keys["username"] = name
+		keys["admin"] = false
+		keys["firstTimeUser"] = false
+		keys["currentGame"] = d.ID
+		keys["status"] = statusPlaying
+
 		player := &Player{
-			ID:    i,
-			Name:  name,
-			Notes: d.GameJSON.Notes[i],
+			ID:      i,
+			Name:    name,
+			Index:   i,
+			Present: true,
+			Notes:   d.GameJSON.Notes[i],
+			Session: &Session{
+				&melody.Session{
+					Keys: keys,
+				},
+			},
 		}
 		players = append(players, player)
 	}
 
-	// Convert the JSON actions to normal action objects
-	actions := make([]interface{}, 0)
-	for _, action := range d.GameJSON.Actions {
-		if action.Type == "clue" {
-
-		} else if action.Type == "play" {
-
-		} else if action.Type == "discard" {
-
-		}
-	}
-
 	// Create the game object
 	g := &Game{
-		ID:      gameID,
+		ID:      d.ID,
 		Name:    name,
 		Owner:   s.UserID(),
 		Visible: visible,
@@ -340,9 +360,83 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		Running:            true,
 		DatetimeCreated:    time.Now(),
 		DatetimeLastAction: time.Now(),
-		Actions:            actions,
+		DatetimeStarted:    time.Now(),
+		NoDatabase:         true,
+		Deck:               make([]*Card, 0),
+		Stacks:             make([]int, len(variants[d.GameJSON.Variant].Suits)),
+		StackDirections:    make([]int, len(variants[d.GameJSON.Variant].Suits)),
+		Clues:              maxClues,
+		MaxScore:           len(variants[d.GameJSON.Variant].Suits) * 5,
+		Actions:            make([]interface{}, 0),
 		EndTurn:            len(d.GameJSON.Actions),
+		Chat:               make([]*GameChatMessage, 0),
+		ChatRead:           make(map[int]int),
 	}
 
+	// Convert the JSON deck to a normal deck
+	for i, c := range d.GameJSON.Deck {
+		g.Deck = append(g.Deck, &Card{
+			Suit:  c.Suit,
+			Rank:  c.Rank,
+			Order: i,
+		})
+
+	}
+
+	/*
+		The following code is mostly copied from the "commandGameStart()" function
+	*/
+
+	// Deal the cards
+	handSize := 5
+	if len(g.Players) > 3 {
+		handSize = 4
+	}
+	for _, p := range g.Players {
+		for i := 0; i < handSize; i++ {
+			p.DrawCard(g)
+		}
+	}
+
+	// Record the initial status of the game
+	g.NotifyStatus(false) // The argument is "doubleDiscard"
+
+	// Show who goes first
+	// (this must be sent before the "turn" message
+	// so that the text appears on the first turn of the replay)
+	text := g.Players[g.ActivePlayer].Name + " goes first"
+	g.Actions = append(g.Actions, ActionText{
+		Type: "text",
+		Text: text,
+	})
+	log.Info(g.GetName() + text)
+
+	// Record a message about the first turn
+	g.NotifyTurn()
+
 	return g
+}
+
+func emulateJSONActions(g *Game, d *CommandData) {
+	// Emulate the JSON actions to normal action objects
+	for _, action := range d.GameJSON.Actions {
+		p := g.Players[g.ActivePlayer]
+		if action.Type == "clue" {
+			commandAction(p.Session, &CommandData{
+				Type:   actionTypeClue,
+				Target: action.Target,
+				Clue:   action.Clue,
+			})
+		} else if action.Type == "play" {
+			commandAction(p.Session, &CommandData{
+				Type:   actionTypePlay,
+				Target: action.Target,
+			})
+		} else if action.Type == "discard" {
+			commandAction(p.Session, &CommandData{
+				Type:   actionTypeDiscard,
+				Target: action.Target,
+			})
+		}
+	}
 }

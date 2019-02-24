@@ -26,8 +26,9 @@ type Game struct {
 	DatetimeLastAction time.Time
 	DatetimeStarted    time.Time
 	DatetimeFinished   time.Time
-	EndCondition       int // See "database_schema.sql" for mappings
-	AutomaticStart     int // See "chatPregame.go"
+	EndCondition       int  // See "database_schema.sql" for mappings
+	AutomaticStart     int  // See "chatPregame.go"
+	NoDatabase         bool // Set to true for games created from arbitrary JSON
 
 	Seed            string
 	Deck            []*Card
@@ -91,11 +92,6 @@ func (g *Game) GetName() string {
 }
 
 func (g *Game) GetPlayerIndex(id int) int {
-	// If this function is called for a replay, the game will be nil, so account for this
-	if g == nil {
-		return -1
-	}
-
 	for i, p := range g.Players {
 		if p.ID == id {
 			return i

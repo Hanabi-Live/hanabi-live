@@ -61,8 +61,8 @@ func commandGameStart(s *Session, d *CommandData) {
 			s.Error("Failed to create the game. Please contact an administrator.")
 			return
 		} else if len(g.Players) != numPlayers {
-			s.Warning("You currently have " + strconv.Itoa(len(g.Players)) + " in the game but game " +
-				strconv.Itoa(g.Options.SetReplay) + " had " + strconv.Itoa(numPlayers) + " in it.")
+			s.Warning("You currently have " + strconv.Itoa(len(g.Players)) + " players but game " +
+				strconv.Itoa(g.Options.SetReplay) + " needs " + strconv.Itoa(numPlayers) + " players.")
 			return
 		}
 
@@ -122,22 +122,14 @@ func commandGameStart(s *Session, d *CommandData) {
 
 			for i := 0; i < amountToAdd; i++ {
 				// Add the card to the deck
-				card := &Card{
+				g.Deck = append(g.Deck, &Card{
 					Suit: suit,
 					Rank: rank,
 					// We can't set the order here because the deck will be shuffled later
-				}
-				g.Deck = append(g.Deck, card)
+				})
 			}
 		}
 	}
-
-	// Create the stacks
-	for i := 0; i < len(suits); i++ {
-		g.Stacks = append(g.Stacks, 0)
-		g.StackDirections = append(g.StackDirections, 0)
-	}
-	g.MaxScore = len(g.Stacks) * 5 // Assuming that there are 5 points per stack
 
 	// Handle setting the seed
 	preset := false

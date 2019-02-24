@@ -248,13 +248,9 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Rank == p.CharacterMetadata {
-				s.Warning(
-					"You are " +
-						p.Character +
-						", so you cannot give clues that touch cards with a rank of " +
-						strconv.Itoa(p.CharacterMetadata) +
-						".",
-				)
+				text := "You are " + p.Character + ", so you cannot give clues that touch cards "
+				text += "with a rank of " + strconv.Itoa(p.CharacterMetadata) + "."
+				s.Warning(text)
 				return true
 			}
 		}
@@ -310,10 +306,9 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		!p2.IsFirstCardTouchedByClue(d.Clue, g) &&
 		!p2.IsLastCardTouchedByClue(d.Clue, g) {
 
-		s.Warning(
-			"You are " + p.Character + ", so you can only give a clue if " +
-				"it touches either the newest or oldest card in a hand.",
-		)
+		text := "You are " + p.Character + ", so you can only give a clue if it touches either the "
+		text += "newest or oldest card in a hand."
+		s.Warning(text)
 		return true
 
 	} else if p.Character == "Mood Swings" &&
@@ -326,10 +321,9 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		p.CharacterMetadata != -1 {
 
 		if d.Target != p.CharacterMetadata {
-			s.Warning(
-				"You are " + p.Character + ", so you must continue to clue cards " +
-					"until one of them is played or discarded.",
-			)
+			text := "You are " + p.Character + ", so you must continue to clue cards until one of "
+			text += "them is played or discarded."
+			s.Warning(text)
 			return true
 		}
 
@@ -343,10 +337,9 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 			}
 		}
 		if !touchedInsistentCards {
-			s.Warning(
-				"You are " + p.Character + ", so you must continue to clue cards" +
-					"until one of them is played or discarded.",
-			)
+			text := "You are " + p.Character + ", so you must continue to clue cards until one of "
+			text += "them is played or discarded."
+			s.Warning(text)
 			return true
 		}
 

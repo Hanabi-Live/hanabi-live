@@ -169,7 +169,7 @@ func commandChatGame(s *Session, d *CommandData) {
 
 	// Validate that this player is in the game or spectating
 	if !d.Server && g.GetPlayerIndex(s.UserID()) == -1 && g.GetSpectatorIndex(s.UserID()) == -1 {
-		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ".")
+		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ", so you cannot send chat to it.")
 		return
 	}
 

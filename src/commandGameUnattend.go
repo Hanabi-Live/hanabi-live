@@ -19,15 +19,16 @@ func commandGameUnattend(s *Session, d *CommandData) {
 
 	// Validate that the game exists
 	if gameID == -1 {
-		// The user may be returning from a shared replay that was ended due to idleness,
-		// or perhaps they lagged and sent two gameUnattend messages, with this one being the second one
-		log.Info("User \"" + s.Username() + "\" tried to unattend, but their game ID was set to -1.")
+		// The user may be returning from a replay that was ended due to idleness,
+		// or perhaps they lagged and sent two gameUnattend messages,
+		// with this one being the second one
+		log.Info("User \"" + s.Username() + "\" tried to unattend, " +
+			"but their game ID was set to -1.")
 		return
 	}
 	var g *Game
 	if v, ok := games[gameID]; !ok {
-		log.Error("User \"" + s.Username() + "\" tried to unattend, but the game does not exist.")
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist, so you cannot unattend it.")
+		s.Error("Game " + strconv.Itoa(gameID) + " does not exist, so you cannot unattend it.")
 		return
 	} else {
 		g = v
@@ -41,8 +42,8 @@ func commandGameUnattend(s *Session, d *CommandData) {
 		// Check to see if they are in the spectators list
 		i := g.GetSpectatorIndex(s.UserID())
 		if i == -1 {
-			log.Warning("User \"" + s.Username() + "\" tried to unattend " +
-				"game " + strconv.Itoa(gameID) + ", but they were not in the spectators list.")
+			s.Error("You are not in the spectators list, " +
+				"even though you were marked as being in replay " + strconv.Itoa(gameID) + ".")
 			return
 		}
 
