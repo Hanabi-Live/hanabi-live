@@ -32,7 +32,7 @@ type CommandData struct {
 
 	// replayCreate
 	Source     string   `json:"source"`
-	GameJSON   gameJSON `json:"gameJSON"`
+	GameJSON   GameJSON `json:"gameJSON"`
 	Visibility string   `json:"visibility"`
 
 	// sharedReplay

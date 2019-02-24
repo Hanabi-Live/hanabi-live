@@ -17,13 +17,17 @@ func notifyAllUserLeft(s *Session) {
 }
 
 func notifyAllTable(g *Game) {
-	for _, s := range sessions {
-		s.NotifyTable(g)
+	if g.Visible {
+		for _, s := range sessions {
+			s.NotifyTable(g)
+		}
 	}
 }
 
 func notifyAllTableGone(g *Game) {
-	for _, s := range sessions {
-		s.NotifyTableGone(g)
+	if g.Visible {
+		for _, s := range sessions {
+			s.NotifyTableGone(g)
+		}
 	}
 }

@@ -411,7 +411,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 		// Convert it from JSON
 		var action map[string]interface{}
 		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
-			log.Error("Failed to unmarshal an action:", err)
+			log.Error("Failed to unmarshal an action while emulating gameplay from the database:", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")
 			return false
 		}
@@ -421,7 +421,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			// Unmarshal the specific action type
 			var actionClue ActionClue
 			if err := json.Unmarshal([]byte(actionString), &actionClue); err != nil {
-				log.Error("Failed to unmarshal a play action:", err)
+				log.Error("Failed to unmarshal a clue action:", err)
 				s.Error("Failed to initialize the game. Please contact an administrator.")
 				return false
 			}

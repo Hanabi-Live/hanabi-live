@@ -203,14 +203,15 @@ func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
 	return g, true
 }
 
-type gameJSON struct {
-	Actions []actionJSON `json:"actions"`
-	Deck    []CardSimple `json:"deck"`
-	Notes   [][]string   `json:"notes"`
-	Players []string     `json:"players"`
-	Variant string       `json:"variant"`
+type GameJSON struct {
+	Actions     []ActionJSON `json:"actions"`
+	Deck        []CardSimple `json:"deck"`
+	FirstPlayer int          `json:"firstPlayer"`
+	Notes       [][]string   `json:"notes"`
+	Players     []string     `json:"players"`
+	Variant     string       `json:"variant"`
 }
-type actionJSON struct {
+type ActionJSON struct {
 	Clue   Clue   `json:"clue"`
 	Target int    `json:"target"`
 	Type   string `json:"type"`
@@ -218,6 +219,7 @@ type actionJSON struct {
 
 func replayJSON(s *Session, d *CommandData) {
 	// Validate that there is at least one action
+	log.Debug(d.GameJSON)
 	if len(d.GameJSON.Actions) < 1 {
 		s.Warning("There must be at least one game action in the JSON array.")
 		return
@@ -269,14 +271,14 @@ func replayJSON(s *Session, d *CommandData) {
 	}
 
 	// Validate the notes
-	if len(d.GameJSON.Notes) < 1 || len(d.GameJSON.Notes) > 6 {
-		s.Warning("The number of note arrays must be between 1 and 6.")
+	if len(d.GameJSON.Notes) < 2 || len(d.GameJSON.Notes) > 6 {
+		s.Warning("The number of note arrays must be between 2 and 6.")
 		return
 	}
 
 	// Validate the amount of players
-	if len(d.GameJSON.Players) < 1 || len(d.GameJSON.Players) > 6 {
-		s.Warning("The number of players must be between 1 and 6.")
+	if len(d.GameJSON.Players) < 2 || len(d.GameJSON.Players) > 6 {
+		s.Warning("The number of players must be between 2 and 6.")
 		return
 	}
 
@@ -365,6 +367,7 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		Deck:               make([]*Card, 0),
 		Stacks:             make([]int, len(variants[d.GameJSON.Variant].Suits)),
 		StackDirections:    make([]int, len(variants[d.GameJSON.Variant].Suits)),
+		ActivePlayer:       d.GameJSON.FirstPlayer,
 		Clues:              maxClues,
 		MaxScore:           len(variants[d.GameJSON.Variant].Suits) * 5,
 		Actions:            make([]interface{}, 0),

@@ -228,6 +228,10 @@ func (g *Game) NotifyTime() {
 }
 
 func (g *Game) NotifySpectators() {
+	if !g.Visible {
+		return
+	}
+
 	// If this is a replay, then all of the players are also spectators,
 	// so we do not want to send them a duplicate message
 	if !g.Replay {

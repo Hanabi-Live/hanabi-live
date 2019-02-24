@@ -43,7 +43,7 @@
         {
             // The index of the card that is being discarded
             // (e.g. index 0 corresponds to the 1st card dealt, etc.)
-            "target": 4,
+            "target": 11,
             "type": "discard"
         }
     ],
@@ -239,10 +239,13 @@
             "suit": 1
         }
     ],
+    // The index of the player that will go first
+    // This will default to 0, which corresponds to the 0th player listed below
+    "firstPlayer": 0,
     /*
         An array that contains the notes of the players
         Players can write arbitrary notes on individual cards
-        The 0th array corresponds to the 0th player
+        The 0th array corresponds to the 0th player listed below
         The 0th note corresponds to the card at index 0 in the deck
     */
     "notes": [
@@ -254,7 +257,7 @@
     ],
     /*
         An array that contains the names of the players
-        The 0th player will always go first
+        The 0th player will go first unless a non-zero value is specified for "firstPlayer" above
     */
     "players": [
         "Robot1",

@@ -62,10 +62,8 @@ func commandGameSpectate(s *Session, d *CommandData) {
 		Session: s,
 	}
 	g.Spectators = append(g.Spectators, sp)
-	if g.Visible {
-		notifyAllTable(g)    // Update the spectator list for the row in the lobby
-		g.NotifySpectators() // Update the in-game spectator list
-	}
+	notifyAllTable(g)    // Update the spectator list for the row in the lobby
+	g.NotifySpectators() // Update the in-game spectator list
 
 	// Set their status
 	s.Set("currentGame", g.ID)

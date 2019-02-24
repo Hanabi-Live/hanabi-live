@@ -13,7 +13,7 @@
             "type": "play"
         },
         {
-            "target": 4,
+            "target": 11,
             "type": "discard"
         }
     ],
@@ -199,6 +199,7 @@
             "suit": 1
         }
     ],
+    "firstPlayer": 0,
     "notes": [
         ["f", "cm"],
         ["f2", "cm2"],

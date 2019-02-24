@@ -106,6 +106,8 @@ func httpInit() {
 	httpRouter.GET("/videos", httpVideos)
 	httpRouter.GET("/flowcharts", httpFlowcharts)
 	httpRouter.GET("/flowcharts/early5clue", httpEarly5Clue)
+	httpRouter.GET("/export", httpExport)
+	httpRouter.GET("/export/:game", httpExport)
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
 
 	if useTLS {
