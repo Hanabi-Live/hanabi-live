@@ -11,7 +11,7 @@
         An example of each action is listed below
     */
     "actions": [
-        // A "clue" action
+        // A "clue" action (type 0)
         {
             "clue": {
                 /*
@@ -35,19 +35,19 @@
             "target": 1,
             "type": 0,
         },
-        // A "play" action
+        // A "play" action (type 1)
         {
             // The index of the card that is being played
             // (e.g. index 0 corresponds to the 1st card dealt, etc.)
             "target": 4,
-            "type": "play"
+            "type": 1
         },
-        // A "discard" action
+        // A "discard" action (type 2)
         {
             // The index of the card that is being discarded
             // (e.g. index 0 corresponds to the 1st card dealt, etc.)
             "target": 11,
-            "type": "discard"
+            "type": 2
         }
     ],
     /*
