@@ -87,7 +87,7 @@ func httpExport(c *gin.Context) {
 			actions = append(actions, ActionJSON{
 				Clue:   actionClue.Clue,
 				Target: actionClue.Target,
-				Type:   "clue",
+				Type:   actionTypeClue,
 			})
 
 		} else if action["type"] == "play" {
@@ -101,7 +101,7 @@ func httpExport(c *gin.Context) {
 
 			actions = append(actions, ActionJSON{
 				Target: actionPlay.Which.Order,
-				Type:   "play",
+				Type:   actionTypePlay,
 			})
 
 		} else if action["type"] == "discard" {
@@ -115,7 +115,7 @@ func httpExport(c *gin.Context) {
 
 			actions = append(actions, ActionJSON{
 				Target: actionDiscard.Which.Order,
-				Type:   "discard",
+				Type:   actionTypeDiscard,
 			})
 		} else if action["type"] == "deckOrder" {
 			// Unmarshal the specific action type

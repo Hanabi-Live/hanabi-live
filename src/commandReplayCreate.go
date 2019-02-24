@@ -212,9 +212,9 @@ type GameJSON struct {
 	Variant     string       `json:"variant"`
 }
 type ActionJSON struct {
-	Clue   Clue   `json:"clue"`
-	Target int    `json:"target"`
-	Type   string `json:"type"`
+	Clue   Clue `json:"clue"`
+	Target int  `json:"target"`
+	Type   int  `json:"type"`
 }
 
 func replayJSON(s *Session, d *CommandData) {
@@ -226,7 +226,7 @@ func replayJSON(s *Session, d *CommandData) {
 
 	// Validate actions
 	for i, action := range d.GameJSON.Actions {
-		if action.Type == "clue" {
+		if action.Type == actionTypeClue {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
 				s.Warning("Action " + strconv.Itoa(i) + " is a clue with an invalid target: " + strconv.Itoa(action.Target))
 				return
@@ -235,13 +235,13 @@ func replayJSON(s *Session, d *CommandData) {
 				s.Warning("Action " + strconv.Itoa(i) + " is a clue with an clue type: " + strconv.Itoa(action.Clue.Type))
 				return
 			}
-		} else if action.Type == "play" || action.Type == "discard" {
+		} else if action.Type == actionTypePlay || action.Type == actionTypeDiscard {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Deck)-1 {
-				s.Warning("Action " + strconv.Itoa(i) + " is a " + action.Type + " with an invalid target.")
+				s.Warning("Action " + strconv.Itoa(i) + " is a play or discard with an invalid target.")
 				return
 			}
 		} else {
-			s.Warning("Action " + strconv.Itoa(i) + " has an invalid type: " + action.Type)
+			s.Warning("Action " + strconv.Itoa(i) + " has an invalid type: " + strconv.Itoa(action.Type))
 			return
 		}
 	}
@@ -423,18 +423,18 @@ func emulateJSONActions(g *Game, d *CommandData) {
 	// Emulate the JSON actions to normal action objects
 	for _, action := range d.GameJSON.Actions {
 		p := g.Players[g.ActivePlayer]
-		if action.Type == "clue" {
+		if action.Type == actionTypeClue {
 			commandAction(p.Session, &CommandData{
 				Type:   actionTypeClue,
 				Target: action.Target,
 				Clue:   action.Clue,
 			})
-		} else if action.Type == "play" {
+		} else if action.Type == actionTypePlay {
 			commandAction(p.Session, &CommandData{
 				Type:   actionTypePlay,
 				Target: action.Target,
 			})
-		} else if action.Type == "discard" {
+		} else if action.Type == actionTypeDiscard {
 			commandAction(p.Session, &CommandData{
 				Type:   actionTypeDiscard,
 				Target: action.Target,

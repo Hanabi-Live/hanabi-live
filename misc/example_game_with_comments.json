@@ -4,7 +4,10 @@
 {
     /*
         An array that contains all of the actions that the players performed in the game
-        Valid actions are "clue", "play", and "discard"
+        Valid actions types are:
+        - 0 if a clue
+        - 1 if a play
+        - 2 if a discard
         An example of each action is listed below
     */
     "actions": [
@@ -30,7 +33,7 @@
             },
             // The ID of the player receiving the clue
             "target": 1,
-            "type": "clue"
+            "type": 0,
         },
         // A "play" action
         {
