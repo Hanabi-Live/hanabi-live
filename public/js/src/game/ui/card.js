@@ -561,20 +561,13 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
         } else {
             // Clue arrows are white with a circle that shows the type of clue given
             this.indicatorCircle.setVisible(true);
-            const color = 'white';
             if (this.numPositiveClues >= 2) {
-                // We remove the border of the arrow to signify that
+                // We change the color of the arrow to signify that
                 // this is not a "freshly touched" card
-                this.indicatorArrowBorder.setVisible(false);
-                this.indicatorArrowBorderEdge.setVisible(false);
-
-                // Originally, we drew the shadow on the outside (border) arrow,
-                // but not the inside one; draw it now so that the arrows look consistent
-                this.indicatorArrow.setShadowBlur(75);
-                this.indicatorArrow.setShadowOpacity(1);
+                const color = '#a6a6a6'; // Gray
+                this.indicatorArrow.setStroke(color);
+                this.indicatorArrow.setFill(color);
             }
-            this.indicatorArrow.setStroke(color);
-            this.indicatorArrow.setFill(color);
             if (clue.type === constants.CLUE_TYPE.RANK) {
                 this.indicatorCircle.setFill('black');
                 this.indicatorText.setText(clue.value.toString());
