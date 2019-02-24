@@ -199,6 +199,13 @@
             "suit": 1
         }
     ],
+    "notes": [
+        ["f", "cm"],
+        ["f2", "cm2"],
+        [],
+        [],
+        []
+    ],
     "players": [
         "Zamiel",
         "Libster",

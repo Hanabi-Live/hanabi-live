@@ -240,6 +240,19 @@
         }
     ],
     /*
+        An array that contains the notes of the players
+        Players can write arbitrary notes on individual cards
+        The 0th array corresponds to the 0th player
+        The 0th note corresponds to the card at index 0 in the deck
+    */
+    "notes": [
+        ["f", "cm"],
+        ["f2", "cm2"],
+        [],
+        [],
+        []
+    ],
+    /*
         An array that contains the names of the players
         The 0th player will always go first
     */

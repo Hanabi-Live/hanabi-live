@@ -50,7 +50,7 @@ func commandReady(s *Session, d *CommandData) {
 
 	// Check to see if we need to remove some card information
 	var scrubbedActions []interface{}
-	if i > -1 {
+	if !g.Replay && i > -1 {
 		// The person requesting the game state is one of the active players,
 		// so we need to hide some information
 		p := g.Players[i]
@@ -68,7 +68,7 @@ func commandReady(s *Session, d *CommandData) {
 		scrubbedActions = g.Actions
 	}
 
-	// Send a "notify" or "message" message for every game action of the deal
+	// Send a "notify" message for every action of the game
 	s.Emit("notifyList", &scrubbedActions)
 
 	// If it is their turn, send an "action" message

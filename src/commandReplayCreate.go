@@ -115,7 +115,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
 		notes = v
 	}
 
-	// We need to convert the database player objects to normal player objects
+	// Convert the database player objects to normal player objects
 	players := make([]*Player, 0)
 	for i, p := range dbPlayers {
 		player := &Player{
@@ -139,7 +139,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
 		actionStrings = v
 	}
 
-	// We need to convert the database action objects to normal action objects
+	// Convert the database action objects to normal action objects
 	actions := make([]interface{}, 0)
 	for _, actionString := range actionStrings {
 		// Convert it from JSON
@@ -191,7 +191,6 @@ func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
 		Replay:             true,
 		DatetimeCreated:    time.Now(),
 		DatetimeLastAction: time.Now(),
-		Turn:               0,
 		Actions:            actions,
 		EndTurn:            numTurns,
 	}
@@ -202,6 +201,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
 type gameJSON struct {
 	Actions []actionJSON `json:"actions"`
 	Deck    []CardSimple `json:"deck"`
+	Notes   [][]string   `json:"notes"`
 	Players []string     `json:"players"`
 	Variant string       `json:"variant"`
 }
@@ -263,6 +263,12 @@ func replayJSON(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate the notes
+	if len(d.GameJSON.Notes) < 1 || len(d.GameJSON.Notes) > 6 {
+		s.Warning("The number of note arrays must be between 1 and 6.")
+		return
+	}
+
 	// Validate the amount of players
 	if len(d.GameJSON.Players) < 1 || len(d.GameJSON.Players) > 6 {
 		s.Warning("The number of players must be between 1 and 6.")
@@ -276,11 +282,10 @@ func replayJSON(s *Session, d *CommandData) {
 	// Convert the JSON game to a normal game object
 	g := convertJSONGametoGame(s, d)
 	games[g.ID] = g
-	log.Info("User \"" + s.Username() + "\" created a new shared JSON replay: #" + strconv.Itoa(g.ID))
+	log.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " JSON replay: #" + strconv.Itoa(g.ID))
 	notifyAllTable(g)
 
 	// Join the user to the new shared replay
-	d.ID = g.ID
 	commandGameSpectate(s, d)
 }
 
@@ -297,14 +302,27 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		visible = true
 	}
 
-	// We need to convert the JSON player objects to a normal player objects
+	// Convert the JSON player objects to a normal player objects
 	players := make([]*Player, 0)
 	for i, name := range d.GameJSON.Players {
 		player := &Player{
-			ID:   i,
-			Name: name,
+			ID:    i,
+			Name:  name,
+			Notes: d.GameJSON.Notes[i],
 		}
 		players = append(players, player)
+	}
+
+	// Convert the JSON actions to normal action objects
+	actions := make([]interface{}, 0)
+	for _, action := range d.GameJSON.Actions {
+		if action.Type == "clue" {
+
+		} else if action.Type == "play" {
+
+		} else if action.Type == "discard" {
+
+		}
 	}
 
 	// Create the game object
@@ -320,10 +338,9 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		Spectators:         make([]*Spectator, 0),
 		DisconSpectators:   make(map[int]bool),
 		Running:            true,
-		Replay:             true,
 		DatetimeCreated:    time.Now(),
 		DatetimeLastAction: time.Now(),
-		Turn:               0,
+		Actions:            actions,
 		EndTurn:            len(d.GameJSON.Actions),
 	}
 

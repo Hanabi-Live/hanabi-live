@@ -251,11 +251,6 @@ table td {
     margin-bottom: 1.5em;
     /* Left and right margins are handled on the rows in "alpha.css" */
     height: calc(100% - 3em); /* The header is 3em */
-    /*
-        Even with width 100%, the scroll bar can pop up when going back from a game to the lobby
-        So we can set "overflow-y" to explicitly prevent this from occuring
-    */
-    overflow-y: hidden;
 }
 
 #lobby > div > div {
@@ -496,7 +491,6 @@ table td {
 
 #game {
     height: 100%;
-    overflow: hidden;
 }
 
 /*
