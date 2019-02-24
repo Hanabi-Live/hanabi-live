@@ -588,6 +588,10 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
                 this.indicatorTween.destroy();
             }
 
+            // Fix the bug where the arrows can be hidden by other cards
+            // in certain specific circumstances
+            this.moveToTop();
+
             if (globals.animateFast) {
                 // Just set the arrow in position
                 this.indicatorGroup.setX(this.indicatorGroup.originalX);
