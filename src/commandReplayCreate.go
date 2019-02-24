@@ -353,7 +353,8 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		Owner:   s.UserID(),
 		Visible: visible,
 		Options: &Options{
-			Variant: d.GameJSON.Variant,
+			Variant:    d.GameJSON.Variant,
+			EmptyClues: true, // Always enable empty clues in case it is used in the JSON
 		},
 		Players:            players,
 		Spectators:         make([]*Spectator, 0),
