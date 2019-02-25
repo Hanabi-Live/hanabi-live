@@ -19,6 +19,11 @@ type Session struct {
 */
 
 func (s *Session) ID() int {
+	if s == nil {
+		log.Error("The \"ID\" method was called for a nil session.")
+		return -1
+	}
+
 	if v, exists := s.Get("ID"); !exists {
 		log.Error("Failed to get \"ID\" from a session.")
 		return -1
@@ -28,6 +33,11 @@ func (s *Session) ID() int {
 }
 
 func (s *Session) UserID() int {
+	if s == nil {
+		log.Error("The \"UserID\" method was called for a nil session.")
+		return -1
+	}
+
 	if v, exists := s.Get("userID"); !exists {
 		log.Error("Failed to get \"userID\" from a session.")
 		return -1
@@ -37,6 +47,11 @@ func (s *Session) UserID() int {
 }
 
 func (s *Session) Username() string {
+	if s == nil {
+		log.Error("The \"Username\" method was called for a nil session.")
+		return "Unknown"
+	}
+
 	if v, exists := s.Get("username"); !exists {
 		log.Error("Failed to get \"username\" from a session.")
 		return "Unknown"
@@ -46,6 +61,11 @@ func (s *Session) Username() string {
 }
 
 func (s *Session) Admin() bool {
+	if s == nil {
+		log.Error("The \"Admin\" method was called for a nil session.")
+		return false
+	}
+
 	if v, exists := s.Get("admin"); !exists {
 		log.Error("Failed to get \"admin\" from a session.")
 		return false
@@ -55,6 +75,11 @@ func (s *Session) Admin() bool {
 }
 
 func (s *Session) FirstTimeUser() bool {
+	if s == nil {
+		log.Error("The \"FirstTimeUser\" method was called for a nil session.")
+		return false
+	}
+
 	if v, exists := s.Get("firstTimeUser"); !exists {
 		log.Error("Failed to get \"firstTimeUser\" from a session.")
 		return false
@@ -64,6 +89,11 @@ func (s *Session) FirstTimeUser() bool {
 }
 
 func (s *Session) CurrentGame() int {
+	if s == nil {
+		log.Error("The \"CurrentGame\" method was called for a nil session.")
+		return -1
+	}
+
 	if v, exists := s.Get("currentGame"); !exists {
 		log.Error("Failed to get \"currentGame\" from a session.")
 		return -1
@@ -73,6 +103,11 @@ func (s *Session) CurrentGame() int {
 }
 
 func (s *Session) Status() int {
+	if s == nil {
+		log.Error("The \"Status\" method was called for a nil session.")
+		return -1
+	}
+
 	if v, exists := s.Get("status"); !exists {
 		log.Error("Failed to get \"status\" from a session.")
 		return -1

@@ -44,7 +44,9 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Validate the message
 	if d.Msg == "" {
-		s.Warning("You cannot send a blank message.")
+		if s != nil {
+			s.Warning("You cannot send a blank message.")
+		}
 		return
 	}
 
