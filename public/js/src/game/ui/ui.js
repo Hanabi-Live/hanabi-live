@@ -326,7 +326,7 @@ HanabiUI.prototype.giveClue = function giveClue() {
         || !target // We might have not selected a clue recipient
         || !clueButton // We might have not selected a type of clue
         // We might be trying to give an invalid clue (e.g. an Empty Clue)
-        || !globals.elements.giveClueButton.getEnabled()
+        || !globals.elements.giveClueButton.enabled
         // Prevent the user from accidentally giving a clue in certain situations
         || (Date.now() - globals.accidentalClueTimer < 1000)
     ) {

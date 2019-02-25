@@ -361,17 +361,19 @@ const drawPlayStacksAndDiscardStacks = () => {
 };
 
 const drawBottomLeftButtons = () => {
-    // The replay button is invisible by default,
-    // since there is no history to replay on the first turn of the game
+    // A button to toggle the in-game replay
     globals.elements.replayButton = new Button({
         x: 0.01 * winW,
         y: 0.8 * winH,
         width: 0.06 * winW,
         height: 0.06 * winH,
         image: 'replay',
-        visible: false,
+        visible: !this.replay,
     });
     globals.elements.replayButton.on('click tap', () => {
+        if (!globals.elements.replayButton.enabled) {
+            return;
+        }
         if (globals.inReplay) {
             replay.exit();
         } else {
@@ -379,6 +381,7 @@ const drawBottomLeftButtons = () => {
         }
     });
     globals.layers.UI.add(globals.elements.replayButton);
+    globals.elements.replayButton.setEnabled(false);
 
     // The chat button is not necessary in non-shared replays
     const middleButtonPos = {
@@ -1092,6 +1095,7 @@ const drawClueArea = () => {
         height: 0.051 * winH,
         text: 'Give Clue',
     });
+    globals.elements.giveClueButton.setEnabled(false);
     globals.elements.clueArea.add(globals.elements.giveClueButton);
     globals.elements.giveClueButton.on('click tap', globals.lobby.ui.giveClue);
 

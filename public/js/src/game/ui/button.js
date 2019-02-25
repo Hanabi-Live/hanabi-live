@@ -9,6 +9,10 @@ const Button = function Button(config) {
     const w = this.getWidth();
     const h = this.getHeight();
 
+    // Button variables
+    this.enabled = true;
+    this.pressed = false;
+
     const background = new graphics.Rect({
         name: 'background',
         x: 0,
@@ -20,7 +24,6 @@ const Button = function Button(config) {
         fill: 'black',
         opacity: 0.6,
     });
-
     this.add(background);
 
     if (config.text) {
@@ -37,10 +40,8 @@ const Button = function Button(config) {
             align: 'center',
             text: config.text,
         });
-
         this.setText = newText => text.setText(newText);
         this.setFill = newFill => text.setFill(newFill);
-
         this.add(text);
     } else if (config.image) {
         const img = new graphics.Image({
@@ -52,12 +53,9 @@ const Button = function Button(config) {
             listening: false,
             image: globals.ImageLoader.get(config.image),
         });
-
         this.add(img);
+        this.imageName = config.image; // Store this for later in case we disable the button
     }
-
-    this.enabled = true;
-    this.pressed = false;
 
     background.on('mousedown', () => {
         background.setFill('#888888');
@@ -83,24 +81,36 @@ const Button = function Button(config) {
 graphics.Util.extend(Button, graphics.Group);
 
 Button.prototype.setEnabled = function setEnabled(enabled) {
+    if (enabled === this.enabled) {
+        return;
+    }
     this.enabled = enabled;
 
-    this.get('.text')[0].setFill(enabled ? 'white' : '#444444');
+    const text = this.get('.text');
+    if (text.length > 0) {
+        text[0].setFill(enabled ? 'white' : '#444444');
+    }
 
-    this.get('.background')[0].setListening(enabled);
+    const image = this.get('.image');
+    if (image.length > 0) {
+        const imageName = (enabled ? this.imageName : `${this.imageName}-disabled`);
+        image[0].setImage(globals.ImageLoader.get(imageName));
+    }
 
-    this.getLayer().batchDraw();
-};
+    const background = this.get('.background');
+    if (background.length > 0) {
+        background[0].setListening(enabled);
+    }
 
-Button.prototype.getEnabled = function getEnabled() {
-    return this.enabled;
+    const layer = this.getLayer();
+    if (layer !== null) {
+        layer.batchDraw();
+    }
 };
 
 Button.prototype.setPressed = function setPressed(pressed) {
     this.pressed = pressed;
-
     this.get('.background')[0].setFill(pressed ? '#cccccc' : 'black');
-
     this.getLayer().batchDraw();
 };
 

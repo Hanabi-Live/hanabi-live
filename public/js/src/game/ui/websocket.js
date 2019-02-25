@@ -167,18 +167,17 @@ commands.notify = (data) => {
     // We need to save this game state change for the purposes of the in-game replay
     globals.replayLog.push(data);
 
-    // Once a turn has been taken, we active the "In-Game Replay" button
-    if (!globals.replay && globals.replayMax > 0) {
-        globals.elements.replayButton.show();
-    }
-
-    // We need to update the replay slider, based on the new amount of turns
     if (data.type === 'turn') {
+        // We need to update the replay slider, based on the new amount of turns
         globals.replayMax = data.num;
-
         if (globals.inReplay) {
             replay.adjustShuttles();
             globals.layers.UI.batchDraw();
+        }
+
+        // On the second turn and beyond, ensure that the "In-Game Replay" button is enabled
+        if (!globals.replay && globals.replayMax > 0) {
+            globals.elements.replayButton.setEnabled(true);
         }
     }
 

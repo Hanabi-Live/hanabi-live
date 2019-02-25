@@ -6,6 +6,7 @@ const Loader = function Loader(finishedCallback) {
     const basic = [
         'x',
         'replay',
+        'replay-disabled',
         'replay-back',
         'replay-back-full',
         'replay-forward',
