@@ -747,7 +747,7 @@ HanabiCard.prototype.clickLeft = function clickLeft(event) {
         return;
     }
 
-    if (event.ctrlKey) {
+    if (event.altKey) {
         // Ctrl + clicking a card goes to the turn it was drawn
         if (globals.replay) {
             replay.checkDisableSharedTurns();

@@ -70,7 +70,7 @@ List of Features
 * In the middle of a game, players can click on the arrow button in the bottom-left-hand corner to open the in-game replay feature.
 * Using this feature, players can go back in time to see the exact game state at a specific turn.
 * There are some helpful shortcuts for going to a specific turn:
-  * You can Ctrl + click on a card to go to the turn it was drawn.
+  * You can Alt + click on a card to go to the turn it was drawn.
   * You can click on a card in the play stacks to go to the turn before the card was played.
   * You can click on a card in the discard pile to go to the turn before the card was discarded.
   * You can click on an entry in the clue log to go to the turn when the clue was given.
