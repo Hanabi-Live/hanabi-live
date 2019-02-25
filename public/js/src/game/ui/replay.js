@@ -25,6 +25,8 @@ const enter = () => {
     for (let i = 0; i < globals.deck.length; i++) {
         globals.deck[i].setBareImage();
     }
+    globals.elements.replayButton.setEnabled(false);
+
     globals.layers.UI.batchDraw();
     globals.layers.card.batchDraw();
 };
@@ -45,6 +47,8 @@ const exit = () => {
     for (let i = 0; i < globals.deck.length; i++) {
         globals.deck[i].setBareImage();
     }
+    globals.elements.replayButton.setEnabled(true);
+
     globals.layers.UI.batchDraw();
     globals.layers.card.batchDraw();
 };
@@ -255,8 +259,6 @@ const positionReplayShuttle = (shuttle, turn) => {
 const adjustShuttles = () => {
     const shuttle = globals.elements.replayShuttle;
     const shuttleShared = globals.elements.replayShuttleShared;
-    positionReplayShuttle(shuttle, globals.replayTurn);
-    positionReplayShuttle(shuttleShared, globals.sharedReplayTurn);
 
     // If the shuttles are overlapping, then make the normal shuttle a little bit smaller
     let smaller = false;
@@ -271,16 +273,25 @@ const adjustShuttles = () => {
     const winH = globals.stage.getHeight();
     shuttle.setWidth(size * winW);
     shuttle.setHeight(size * winH);
+
+    // If it is smaller, we need to nudge it down a bit in order to center it
     let y = 0.0325 * winH;
     if (smaller) {
-        const x = shuttle.getX();
-        const diffX = shuttleShared.getWidth() - shuttle.getWidth();
-        shuttle.setX(x + diffX / 2);
-
         const diffY = shuttleShared.getHeight() - shuttle.getHeight();
         y += diffY / 2;
     }
     shuttle.setY(y);
+
+    // Adjust the shuttles along the X axis based on the current turn
+    // If it is smaller, we need to nudge it to the right a bit in order to center it
+    positionReplayShuttle(shuttleShared, globals.sharedReplayTurn);
+    if (smaller) {
+        const diffX = shuttleShared.getWidth() - shuttle.getWidth();
+        const adjustment = diffX / 2;
+        shuttle.setX(shuttleShared.getX() + adjustment);
+    } else {
+        positionReplayShuttle(shuttle, globals.replayTurn);
+    }
 };
 exports.adjustShuttles = adjustShuttles;
 

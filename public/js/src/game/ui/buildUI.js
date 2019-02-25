@@ -368,7 +368,7 @@ const drawBottomLeftButtons = () => {
         width: 0.06 * winW,
         height: 0.06 * winH,
         image: 'replay',
-        visible: !this.replay,
+        visible: !globals.replay,
     });
     globals.elements.replayButton.on('click tap', () => {
         if (!globals.elements.replayButton.enabled) {
@@ -1311,7 +1311,7 @@ const drawReplayArea = () => {
         width: 0.2 * winW,
         height: 0.06 * winH,
         text: 'Exit Replay',
-        visible: !globals.replay && !globals.sharedReplay,
+        visible: !globals.replay,
     });
     globals.elements.replayExitButton.on('click tap', replay.exitButton);
     globals.elements.replayArea.add(globals.elements.replayExitButton);
