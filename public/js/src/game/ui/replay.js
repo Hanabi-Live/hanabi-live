@@ -5,7 +5,6 @@
 // Imports
 const globals = require('./globals');
 const constants = require('../../constants');
-const timer = require('./timer');
 
 /*
     Main replay functions
@@ -55,24 +54,33 @@ const exit = () => {
 exports.exit = exit;
 
 const goto = (target, fast) => {
-    let rewind = false;
-
+    // Validate function arguments
     if (target < 0) {
         target = 0;
     }
     if (target > globals.replayMax) {
         target = globals.replayMax;
     }
+    if (target === globals.replayTurn) {
+        return;
+    }
 
+    // If this is a big jump, we need to update the "Back to Turn #" button
+    if (
+        (target > globals.replayTurn && target - globals.replayTurn > 1)
+        || (globals.replayTurn > target && globals.replayTurn - target > 1)
+    ) {
+        globals.replayTurnMemory = globals.replayTurn;
+        globals.elements.backToTurnButton.update();
+        globals.elements.backToTurnButton.setEnabled(true);
+    }
+
+    let rewind = false;
     if (target < globals.replayTurn) {
         rewind = true;
         globals.turn = 0;
         globals.cardsGotten = 0;
         globals.cluesSpentPlusStrikes = 0;
-    }
-
-    if (globals.replayTurn === target) {
-        return; // We are already there, nothing to do
     }
 
     if (
@@ -198,18 +206,27 @@ exports.forwardRound = () => {
 */
 
 exports.exitButton = () => {
-    if (globals.replay) {
-        globals.lobby.conn.send('gameUnattend');
+    // Mark the time that the user clicked the "Exit Replay" button
+    // (so that we can avoid an accidental "Give Clue" double-click)
+    globals.accidentalClueTimer = Date.now();
 
-        timer.stop();
-        globals.game.hide();
-    } else {
-        // Mark the time that the user clicked the "Exit Replay" button
-        // (so that we can avoid an accidental "Give Clue" double-click)
-        globals.accidentalClueTimer = Date.now();
+    exit();
+};
 
-        exit();
+/*
+    The "Back to Turn #" button
+*/
+
+exports.backToTurnButton = () => {
+    if (globals.replayTurnMemory === -1) {
+        return;
     }
+    const oldTurn = globals.replayTurn;
+    goto(globals.replayTurnMemory, true);
+    globals.replayTurnMemory = oldTurn;
+
+    // Update the button
+    globals.elements.backToTurnButton.update();
 };
 
 /*

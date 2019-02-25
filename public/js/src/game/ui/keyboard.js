@@ -114,7 +114,18 @@ const keydown = (event) => {
         return;
     }
 
-    // Delete = Delete the note from the card that we are currently hovering-over, if any
+    // Escape: If in an in-game replay, exit back to the game
+    if (
+        !event.ctrlKey
+        && !event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+        && event.key === 'Escape'
+    ) {
+        replay.exit();
+    }
+
+    // Delete: Delete the note from the card that we are currently hovering-over, if any
     if (
         event.key === 'Delete'
         && !event.shiftKey
@@ -129,7 +140,7 @@ const keydown = (event) => {
         return;
     }
 
-    // Send a sound
+    // Hotkeys for sending sounds
     if (event.altKey && event.key === 'z') { // Alt + z
         // This is used for fun in shared replays
         sharedReplaySendSound('buzz');
@@ -151,7 +162,7 @@ const keydown = (event) => {
         return;
     }
 
-    // Check for keyboard hotkeys
+    // Check for other keyboard hotkeys
     let hotkeyFunction;
     if (globals.elements.replayArea.visible()) {
         hotkeyFunction = hotkeyMap.replay[event.key];
@@ -164,7 +175,6 @@ const keydown = (event) => {
         }
         hotkeyFunction = hotkeyFunction || hotkeyMap.play[event.key];
     }
-
     if (hotkeyFunction !== undefined) {
         event.preventDefault();
         hotkeyFunction();

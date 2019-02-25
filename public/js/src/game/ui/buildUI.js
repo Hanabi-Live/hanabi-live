@@ -1254,62 +1254,78 @@ const drawReplayArea = () => {
     const replayButtonValues = {
         x: 0.1,
         y: 0.07,
-        spacing: 0.08,
+        w: 0.06,
+        h: 0.08,
+        spacing: 0.02,
     };
     if (globals.lobby.settings.showBGAUI) {
         replayButtonValues.x = 0.05;
     }
 
-    // Go back to the beginning (the left-most button)
-    button = new Button({
-        x: replayButtonValues.x * winW,
-        y: 0.07 * winH,
-        width: 0.06 * winW,
-        height: 0.08 * winH,
-        image: 'replay-back-full',
-    });
-    button.on('click tap', replay.backFull);
-    globals.elements.replayArea.add(button);
+    {
+        let { x } = replayButtonValues;
 
-    // Go back one turn (the second left-most button)
-    button = new Button({
-        x: (replayButtonValues.x + replayButtonValues.spacing) * winW,
-        y: 0.07 * winH,
-        width: 0.06 * winW,
-        height: 0.08 * winH,
-        image: 'replay-back',
-    });
-    button.on('click tap', replay.back);
-    globals.elements.replayArea.add(button);
+        // Go back to the beginning (the left-most button)
+        button = new Button({
+            x: x * winW,
+            y: 0.07 * winH,
+            width: replayButtonValues.w * winW,
+            height: replayButtonValues.h * winH,
+            image: 'replay-back-full',
+        });
+        button.on('click tap', replay.backFull);
+        globals.elements.replayArea.add(button);
 
-    // Go forward one turn (the second right-most button)
-    button = new Button({
-        x: (replayButtonValues.x + replayButtonValues.spacing * 2) * winW,
-        y: 0.07 * winH,
-        width: 0.06 * winW,
-        height: 0.08 * winH,
-        image: 'replay-forward',
-    });
-    button.on('click tap', replay.forward);
-    globals.elements.replayArea.add(button);
+        // Go back one turn (the second left-most button)
+        x += replayButtonValues.w + replayButtonValues.spacing;
+        button = new Button({
+            x: x * winW,
+            y: 0.07 * winH,
+            width: replayButtonValues.w * winW,
+            height: replayButtonValues.h * winH,
+            image: 'replay-back',
+        });
+        button.on('click tap', replay.back);
+        globals.elements.replayArea.add(button);
 
-    // Go forward to the end (the right-most button)
-    button = new Button({
-        x: (replayButtonValues.x + replayButtonValues.spacing * 3) * winW,
-        y: 0.07 * winH,
-        width: 0.06 * winW,
-        height: 0.08 * winH,
-        image: 'replay-forward-full',
-    });
-    button.on('click tap', replay.forwardFull);
-    globals.elements.replayArea.add(button);
+        // Go forward one turn (the second right-most button)
+        x += replayButtonValues.w + replayButtonValues.spacing;
+        button = new Button({
+            x: x * winW,
+            y: 0.07 * winH,
+            width: replayButtonValues.w * winW,
+            height: replayButtonValues.h * winH,
+            image: 'replay-forward',
+        });
+        button.on('click tap', replay.forward);
+        globals.elements.replayArea.add(button);
+
+        // Go forward to the end (the right-most button)
+        x += replayButtonValues.w + replayButtonValues.spacing;
+        button = new Button({
+            x: x * winW,
+            y: 0.07 * winH,
+            width: replayButtonValues.w * winW,
+            height: replayButtonValues.h * winH,
+            image: 'replay-forward-full',
+        });
+        button.on('click tap', replay.forwardFull);
+        globals.elements.replayArea.add(button);
+    }
+
+    const bottomLeftReplayButtonValues = {
+        x: replayButtonValues.x,
+        y: 0.17,
+        w: replayButtonValues.w * 2 + replayButtonValues.spacing,
+        h: 0.06,
+    };
 
     // The "Exit Replay" button
     globals.elements.replayExitButton = new Button({
-        x: (replayButtonValues.x + 0.05) * winW,
-        y: 0.17 * winH,
-        width: 0.2 * winW,
-        height: 0.06 * winH,
+        x: bottomLeftReplayButtonValues.x * winW,
+        y: bottomLeftReplayButtonValues.y * winH,
+        width: bottomLeftReplayButtonValues.w * winW,
+        height: bottomLeftReplayButtonValues.h * winH,
         text: 'Exit Replay',
         visible: !globals.replay,
     });
@@ -1317,11 +1333,12 @@ const drawReplayArea = () => {
     globals.elements.replayArea.add(globals.elements.replayExitButton);
 
     // The "Pause Shared Turns"  / "Use Shared Turns" button
+    // (this will be shown when the client receives the "replayLeader" command)
     globals.elements.toggleSharedTurnButton = new ToggleButton({
-        x: (replayButtonValues.x + 0.05) * winW,
-        y: 0.17 * winH,
-        width: 0.2 * winW,
-        height: 0.06 * winH,
+        x: bottomLeftReplayButtonValues.x * winW,
+        y: bottomLeftReplayButtonValues.y * winH,
+        width: bottomLeftReplayButtonValues.w * winW,
+        height: bottomLeftReplayButtonValues.h * winH,
         text: 'Pause Shared Turns',
         alternateText: 'Use Shared Turns',
         initialState: !globals.useSharedTurns,
@@ -1332,6 +1349,22 @@ const drawReplayArea = () => {
 
     globals.elements.replayArea.hide();
     globals.layers.UI.add(globals.elements.replayArea);
+
+    // The "Go Back to Turn #" button
+    const x = replayButtonValues.x + (replayButtonValues.w * 2) + (replayButtonValues.spacing * 2);
+    globals.elements.backToTurnButton = new Button({
+        x: x * winW,
+        y: bottomLeftReplayButtonValues.y * winH,
+        width: bottomLeftReplayButtonValues.w * winW,
+        height: bottomLeftReplayButtonValues.h * winH,
+        text: 'Back to Turn 0',
+    });
+    globals.elements.backToTurnButton.on('click tap', replay.backToTurnButton);
+    globals.elements.replayArea.add(globals.elements.backToTurnButton);
+    globals.elements.backToTurnButton.setEnabled(false);
+    globals.elements.backToTurnButton.update = () => {
+        globals.elements.backToTurnButton.setText(`Back to Turn ${globals.replayTurnMemory}`);
+    };
 };
 
 const drawExtraAnimations = () => {

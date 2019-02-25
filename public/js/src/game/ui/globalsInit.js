@@ -54,6 +54,7 @@ module.exports = () => {
     globals.replayLog = [];
     globals.replayPos = 0;
     globals.replayTurn = 0;
+    globals.replayTurnMemory = -1; // Used for the "Back to Turn #" button
     globals.replayMax = 0;
     // In replays, we can show information about a card that was not known at the time,
     // but is known now; these are cards we have "learned"
