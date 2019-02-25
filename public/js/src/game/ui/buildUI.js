@@ -1313,7 +1313,7 @@ const drawReplayArea = () => {
         globals.elements.replayArea.add(button);
     }
 
-    const extra = 0.05;
+    const extra = 0.03;
     const bottomLeftReplayButtonValues = {
         x: replayButtonValues.x - extra,
         y: 0.17,
