@@ -93,6 +93,7 @@ commands.gameOver = () => {
     // If the timers are showing, hide them
     if (globals.elements.timer1) {
         globals.elements.timer1.hide();
+        globals.elements.timer2.hide();
     }
     timer.stop();
     globals.layers.timer.batchDraw();

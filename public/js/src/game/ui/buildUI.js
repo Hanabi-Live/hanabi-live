@@ -1313,7 +1313,7 @@ const drawReplayArea = () => {
         globals.elements.replayArea.add(button);
     }
 
-    const extra = 0.03;
+    const extra = 0.03; // Any bigger and they start to overlap with the timers
     const bottomLeftReplayButtonValues = {
         x: replayButtonValues.x - extra,
         y: 0.17,
