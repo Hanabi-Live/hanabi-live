@@ -3,6 +3,8 @@ package main
 import (
 	"math/rand"
 	"strconv"
+
+	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 const debugCharacter = "Insistent"
@@ -50,6 +52,25 @@ func characterInit() {
 
 func characterGenerate(g *Game) {
 	if !g.Options.CharacterAssignments {
+		return
+	}
+
+	// If this is a "!replay" game, use the character selections from the database instead of
+	// generating new random ones
+	if g.Options.SetReplay != 0 {
+		// Get the players from the database
+		var dbPlayers []*models.Player
+		if v, err := db.Games.GetPlayers(g.Options.SetReplay); err != nil {
+			log.Error("Failed to get the players from the database for game "+strconv.Itoa(g.Options.SetReplay)+":", err)
+			return
+		} else {
+			dbPlayers = v
+		}
+
+		for i, p := range dbPlayers {
+			g.Players[i].Character = charactersID[p.CharacterAssignment]
+			g.Players[i].CharacterMetadata = p.CharacterMetadata
+		}
 		return
 	}
 
