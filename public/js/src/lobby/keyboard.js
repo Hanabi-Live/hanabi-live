@@ -25,7 +25,7 @@ $(document).keydown((event) => {
         // Click on the "Watch Specific Replay" button
         // (we can't use "Alt + w" because that conflicts with LastPass)
         if (globals.currentScreen === 'lobby') {
-            $('#nav-buttons-history-replay').click();
+            $('#nav-buttons-games-replay').click();
         }
     } else if (event.altKey && event.key === 'o') { // Alt + o
         // Click the "Sign Out" button

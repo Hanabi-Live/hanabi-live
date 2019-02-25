@@ -62,6 +62,7 @@ const goto = (target, fast) => {
 
     if (target < globals.replayTurn) {
         rewind = true;
+        globals.turn = 0;
         globals.cardsGotten = 0;
         globals.cluesSpentPlusStrikes = 0;
     }

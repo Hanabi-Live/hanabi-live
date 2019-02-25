@@ -755,7 +755,9 @@ HanabiCard.prototype.clickLeft = function clickLeft(event) {
             replay.enter();
         }
         replay.goto(this.turnDrawn, true);
-        replay.goto(this.turnDrawn + 1, false);
+        if (this.turnDrawn !== 0) {
+            replay.goto(this.turnDrawn + 1, false);
+        }
     } else if (this.isPlayed) {
         // Clicking on played cards goes to the turn that they were played
         if (globals.replay) {

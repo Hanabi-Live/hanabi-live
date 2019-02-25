@@ -296,6 +296,7 @@ func replayJSON(s *Session, d *CommandData) {
 
 	// Do a mini-version of the steps in the "g.End()" function
 	g.Replay = true
+	g.Turn = 0 // We want to start viewing the replay at the beginning, not the end
 	g.EndTurn = g.Turn
 	g.Progress = 100
 
