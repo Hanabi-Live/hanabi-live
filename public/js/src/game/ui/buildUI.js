@@ -1175,9 +1175,6 @@ const drawPreplayArea = () => {
 };
 
 const drawReplayArea = () => {
-    // Local variables
-    let button;
-
     const replayAreaValues = {
         x: 0.15,
         y: 0.51,
@@ -1266,54 +1263,54 @@ const drawReplayArea = () => {
         let { x } = replayButtonValues;
 
         // Go back to the beginning (the left-most button)
-        button = new Button({
+        globals.elements.replayBackFullButton = new Button({
             x: x * winW,
             y: 0.07 * winH,
             width: replayButtonValues.w * winW,
             height: replayButtonValues.h * winH,
             image: 'replay-back-full',
         });
-        button.on('click tap', replay.backFull);
-        globals.elements.replayArea.add(button);
+        globals.elements.replayBackFullButton.on('click tap', replay.backFull);
+        globals.elements.replayArea.add(globals.elements.replayBackFullButton);
 
         // Go back one turn (the second left-most button)
         x += replayButtonValues.w + replayButtonValues.spacing;
-        button = new Button({
+        globals.elements.replayBackButton = new Button({
             x: x * winW,
             y: 0.07 * winH,
             width: replayButtonValues.w * winW,
             height: replayButtonValues.h * winH,
             image: 'replay-back',
         });
-        button.on('click tap', replay.back);
-        globals.elements.replayArea.add(button);
+        globals.elements.replayBackButton.on('click tap', replay.back);
+        globals.elements.replayArea.add(globals.elements.replayBackButton);
 
         // Go forward one turn (the second right-most button)
         x += replayButtonValues.w + replayButtonValues.spacing;
-        button = new Button({
+        globals.elements.replayForwardButton = new Button({
             x: x * winW,
             y: 0.07 * winH,
             width: replayButtonValues.w * winW,
             height: replayButtonValues.h * winH,
             image: 'replay-forward',
         });
-        button.on('click tap', replay.forward);
-        globals.elements.replayArea.add(button);
+        globals.elements.replayForwardButton.on('click tap', replay.forward);
+        globals.elements.replayArea.add(globals.elements.replayForwardButton);
 
         // Go forward to the end (the right-most button)
         x += replayButtonValues.w + replayButtonValues.spacing;
-        button = new Button({
+        globals.elements.replayForwardFullButton = new Button({
             x: x * winW,
             y: 0.07 * winH,
             width: replayButtonValues.w * winW,
             height: replayButtonValues.h * winH,
             image: 'replay-forward-full',
         });
-        button.on('click tap', replay.forwardFull);
-        globals.elements.replayArea.add(button);
+        globals.elements.replayForwardFullButton.on('click tap', replay.forwardFull);
+        globals.elements.replayArea.add(globals.elements.replayForwardFullButton);
     }
 
-    const extra = 0.03; // Any bigger and they start to overlap with the timers
+    const extra = 0.035; // Any bigger and they start to overlap with the timers
     const bottomLeftReplayButtonValues = {
         x: replayButtonValues.x - extra,
         y: 0.17,

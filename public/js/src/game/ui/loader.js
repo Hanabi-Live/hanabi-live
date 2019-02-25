@@ -8,9 +8,13 @@ const Loader = function Loader(finishedCallback) {
         'replay',
         'replay-disabled',
         'replay-back',
+        'replay-back-disabled',
         'replay-back-full',
+        'replay-back-full-disabled',
         'replay-forward',
+        'replay-forward-disabled',
         'replay-forward-full',
+        'replay-forward-full-disabled',
         'trashcan',
     ];
 

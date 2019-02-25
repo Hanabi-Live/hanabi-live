@@ -127,6 +127,10 @@ module.exports = () => {
         // The replay screen
         replayArea: null,
         replayShuttleShared: null,
+        replayBackFullButton: null,
+        replayBackButton: null,
+        replayForwardButton: null,
+        replayForwardFullButton: null,
         replayExitButton: null,
 
         // Other screens

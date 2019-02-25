@@ -65,6 +65,12 @@ const goto = (target, fast) => {
         return;
     }
 
+    // If we are going to the first turn, disable the rewind replay buttons
+    globals.elements.replayBackFullButton.setEnabled(target !== 0);
+    globals.elements.replayBackButton.setEnabled(target !== 0);
+    globals.elements.replayForwardButton.setEnabled(target !== globals.replayMax);
+    globals.elements.replayForwardFullButton.setEnabled(target !== globals.replayMax);
+
     // If this is a big jump, we need to update the "Back to Turn #" button
     if (
         (target > globals.replayTurn && target - globals.replayTurn > 1)
