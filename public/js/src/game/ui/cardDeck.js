@@ -39,8 +39,6 @@ const CardDeck = function CardDeck(config) {
             });
 
             globals.lobby.ui.stopAction();
-
-            globals.savedAction = null;
         } else {
             // The deck was dragged to an invalid location,
             // so animate the card back to where it was

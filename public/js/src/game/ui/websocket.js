@@ -44,8 +44,9 @@ commands.action = (data) => {
         // We don't want to send the queued action right away, or else it introduces bugs
         setTimeout(() => {
             globals.lobby.conn.send(globals.queuedAction.type, globals.queuedAction.data);
-            globals.lobby.ui.stopAction();
             globals.queuedAction = null;
+            globals.lobby.ui.stopAction();
+            globals.savedAction = null;
         }, 250);
     }
 };
