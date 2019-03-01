@@ -639,15 +639,21 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
                 }).play();
             }
         }
+
+        if (this.isDiscarded) {
+            // The cards in the discard pile are packed together tightly
+            // So, if the arrows are hovering over a card, it will not be clear which card the arrow
+            // is pointing to
+            // Thus, move the arrow to be flush with the card
+            this.indicatorGroup.setY(-this.getHeight() / 2 + 0.02 * globals.stage.getHeight());
+        } else {
+            // Fix the bug where the arrows can be hidden by other cards
+            // (but ignore the discard pile because it has to be in a certain order)
+            this.getParent().getParent().moveToTop();
+        }
     }
 
     this.indicatorGroup.setVisible(visible);
-
-    // Fix the bug where the arrows can be hidden by other cards
-    if (visible) {
-        this.getParent().getParent().moveToTop();
-    }
-
     this.getLayer().batchDraw();
 };
 

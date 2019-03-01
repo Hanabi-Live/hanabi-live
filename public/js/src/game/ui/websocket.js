@@ -336,8 +336,10 @@ commands.replayTurn = (data) => {
         if (!globals.sharedReplayLoading) {
             // Play an animation to indicate the direction that the leader has taken us in
             if (oldTurn > globals.sharedReplayTurn && oldTurn !== -1) {
+                console.log('Playing backward tween (debug).');
                 globals.elements.sharedReplayBackwardTween.play();
             } else if (oldTurn < globals.sharedReplayTurn && oldTurn !== -1) {
+                console.log('Playing forward tween (debug).');
                 globals.elements.sharedReplayForwardTween.play();
             }
             globals.layers.UI.batchDraw();
