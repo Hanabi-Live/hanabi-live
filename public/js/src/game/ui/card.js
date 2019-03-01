@@ -570,15 +570,20 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
             this.indicatorArrow.setStroke(color);
             this.indicatorArrow.setFill(color);
         } else {
+            // Change the color of the arrow
+            let color;
+            if (this.numPositiveClues >= 2) {
+                // "Non-freshly touched" cards use a different color
+                color = '#a6a6a6'; // Dark gray
+            } else {
+                // "Freshly touched" cards use the default arrow color
+                color = 'white'; // The default color
+            }
+            this.indicatorArrow.setStroke(color);
+            this.indicatorArrow.setFill(color);
+
             // Clue arrows are white with a circle that shows the type of clue given
             this.indicatorCircle.setVisible(true);
-            if (this.numPositiveClues >= 2) {
-                // We change the color of the arrow to signify that
-                // this is not a "freshly touched" card
-                const color = '#a6a6a6'; // Gray
-                this.indicatorArrow.setStroke(color);
-                this.indicatorArrow.setFill(color);
-            }
             if (clue.type === constants.CLUE_TYPE.RANK) {
                 this.indicatorCircle.setFill('black');
                 this.indicatorText.setText(clue.value.toString());
@@ -591,7 +596,6 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
             if (this.indicatorTween) {
                 this.indicatorTween.destroy();
             }
-
             if (globals.animateFast) {
                 // Just set the arrow in position
                 this.indicatorGroup.setX(this.indicatorGroup.originalX);
