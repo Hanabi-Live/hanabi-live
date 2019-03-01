@@ -994,6 +994,9 @@ const drawClueArea = () => {
         y: playAreaValues.y + playAreaValues.h + 0.005,
         w: playAreaValues.w,
     };
+    if (globals.variant.showSuitNames) {
+        clueAreaValues.y += 0.03;
+    }
     globals.elements.clueArea = new graphics.Group({
         x: clueAreaValues.x * winW,
         y: clueAreaValues.y * winH,
