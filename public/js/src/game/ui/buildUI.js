@@ -1351,7 +1351,7 @@ const drawReplayArea = () => {
     globals.elements.replayArea.hide();
     globals.layers.UI.add(globals.elements.replayArea);
 
-    // The "Go Back to Turn #" button
+    // The "Back to Turn #" button
     const x = replayButtonValues.x + (replayButtonValues.w * 2) + (replayButtonValues.spacing * 2);
     globals.elements.backToTurnButton = new Button({
         x: x * winW,
