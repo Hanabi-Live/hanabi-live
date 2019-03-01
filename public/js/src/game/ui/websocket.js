@@ -327,8 +327,12 @@ commands.replaySound = (data) => {
 
 // This is used in shared replays to change the turn
 commands.replayTurn = (data) => {
-    // If we are the replay leader, then we don't have to do anything
-    if (globals.sharedReplayLeader === globals.lobby.username) {
+    if (
+        // If we are the replay leader, then we don't have to do anything
+        globals.sharedReplayLeader === globals.lobby.username
+        // Make an exception for when we are first loading the game
+        && globals.sharedReplayTurn !== -1
+    ) {
         return;
     }
 
