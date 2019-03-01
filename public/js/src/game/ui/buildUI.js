@@ -1364,7 +1364,8 @@ const drawReplayArea = () => {
     globals.elements.replayArea.add(globals.elements.backToTurnButton);
     globals.elements.backToTurnButton.setEnabled(false);
     globals.elements.backToTurnButton.update = () => {
-        globals.elements.backToTurnButton.setText(`Back to Turn ${globals.replayTurnMemory + 1}`);
+        const turn = (globals.replayTurnMemory < 0 ? 0 : globals.replayTurnMemory);
+        globals.elements.backToTurnButton.setText(`Back to Turn ${turn}`);
     };
 };
 
