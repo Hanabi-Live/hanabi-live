@@ -177,6 +177,8 @@ commands.notify = (data) => {
         globals.replayMax = data.num;
         if (globals.inReplay) {
             replay.adjustShuttles();
+            globals.elements.replayForwardButton.setEnabled(true);
+            globals.elements.replayForwardFullButton.setEnabled(true);
             globals.layers.UI.batchDraw();
         }
 
