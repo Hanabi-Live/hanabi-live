@@ -752,13 +752,13 @@ HanabiCard.prototype.click = function click(event) {
 HanabiCard.prototype.clickLeft = function clickLeft(event) {
     // The "Empathy" feature is handled above, so we don't have to worry about it here
 
-    // No actions in this function use modifiers other than Ctrl
-    if (event.shiftKey || event.altKey || event.metaKey) {
+    // No actions in this function use modifiers other than Alt
+    if (event.ctrlKey || event.shiftKey || event.metaKey) {
         return;
     }
 
     if (event.altKey) {
-        // Ctrl + clicking a card goes to the turn it was drawn
+        // Alt + clicking a card goes to the turn it was drawn
         if (globals.replay) {
             replay.checkDisableSharedTurns();
         } else {
