@@ -99,6 +99,9 @@ commands.gameOver = () => {
     timer.stop();
     globals.layers.timer.batchDraw();
 
+    // If the preplay button is showing, hide it
+    globals.elements.premoveCancelButton.hide();
+
     // Transform this game into a shared replay
     globals.replay = true;
     globals.sharedReplay = true;
