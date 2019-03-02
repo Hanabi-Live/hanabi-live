@@ -53,8 +53,8 @@ module.exports = {
     },
 
     globals: {
-        Kinetic: true,
         Konva: true,
+        Phaser: true,
         hex_sha256: true,
     },
 };

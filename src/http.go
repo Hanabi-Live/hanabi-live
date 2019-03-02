@@ -96,7 +96,9 @@ func httpInit() {
 
 	// Path handlers (for the website)
 	httpRouter.GET("/", httpMain)
-	httpRouter.GET("/dev", httpDev) // The same as "/" but uses unbundled JavaScript/CSS
+	httpRouter.GET("/dev", httpDev)  // The same as "/" but uses unbundled JavaScript/CSS
+	httpRouter.GET("/dev2", httpDev) // Used for testing Phaser
+	// (JavaScript will detect the difference by using "window.location.path")
 	httpRouter.GET("/scores", httpScores)
 	httpRouter.GET("/scores/:player", httpScores)
 	httpRouter.GET("/history", httpHistory)

@@ -158,6 +158,7 @@ commands.init = (data) => {
     globals.characterAssignments = data.characterAssignments;
     globals.characterMetadata = data.characterMetadata;
 
+    // Open the replay UI if we are in a replay
     globals.inReplay = globals.replay;
     if (globals.replay) {
         globals.replayTurn = -1;

@@ -36,25 +36,18 @@ const globals = {
         speedrunPreplay: false,
     },
 
-    gameID: null,
-    game: {}, // Equal to the data for the "game" command
-    init: {}, // Equal to the data for the "init" command
-    state: { // Variables that represent the current game state
-        activeIndex: 0,
-        deck: [],
-    },
+    game: {}, // Equal to the data from the "game" command
 
     currentScreen: 'login',
     errorOccured: false,
 
-    /*
-    app: null, // This is the canvas container initialized in "game/init.js"
-    resources: null, // This contains the loaded graphics, initialized in "game/init.js"
-    ui: null, // This contains UI variables and objects, initialized in "game/init.js"
-    */
+    // Legacy UI variables
     ui: null, // This contains the HanabiUI object (legacy)
-
     chatUnread: 0, // Used to keep track of how many in-game chat messages are currently unread
+
+    // Phaser UI variables
+    init: null, // Equal to the data from the "init" command
+    // ui: null, // The various graphics objects used, initialized in the "commands.init()" function
 };
 module.exports = globals;
 

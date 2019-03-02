@@ -131,10 +131,9 @@ const makeReplayButton = (id, visibility) => {
     button.attr('id', `replay-${id}`);
 
     button.on('click', () => {
-        globals.gameID = id;
         globals.conn.send('replayCreate', {
             source: 'id',
-            gameID: globals.gameID,
+            gameID: id,
             visibility,
         });
         if (visibility === 'shared') {
@@ -154,9 +153,8 @@ const makeHistoryDetailsButton = (id, gameCount) => {
     button.attr('id', `history-details-${id}`);
 
     button.on('click', () => {
-        globals.gameID = id;
         globals.conn.send('historyDetails', {
-            gameID: globals.gameID,
+            gameID: id,
         });
         lobby.history.showDetails();
     });

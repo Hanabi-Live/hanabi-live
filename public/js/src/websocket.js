@@ -89,6 +89,17 @@ const initCommands = () => {
         globals.totalGames = data.totalGames;
         $('#nav-buttons-history-total-games').html(globals.totalGames);
         lobby.login.hide(data.firstTimeUser);
+
+        // Automatically go into a replay if doing development work
+        if (window.location.pathname === '/dev2') {
+            setTimeout(() => {
+                globals.conn.send('replayCreate', {
+                    gameID: 14,
+                    source: 'id',
+                    visibility: 'solo',
+                });
+            }, 10);
+        }
     });
 
     globals.conn.on('user', (data) => {
@@ -151,16 +162,14 @@ const initCommands = () => {
         }
     });
 
-    globals.conn.on('joined', (data) => {
+    globals.conn.on('joined', () => {
         // We joined a new game, so transition between screens
-        globals.gameID = data.gameID;
         lobby.tables.draw();
         lobby.pregame.show();
     });
 
     globals.conn.on('left', () => {
         // We left a table, so transition between screens
-        globals.gameID = null;
         lobby.tables.draw();
         lobby.pregame.hide();
     });

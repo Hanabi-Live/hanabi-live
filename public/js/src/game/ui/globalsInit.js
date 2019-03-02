@@ -146,6 +146,7 @@ module.exports = () => {
     };
     globals.activeHover = null; // The element that the mouse cursor is currently over
     globals.cardImages = {};
+    globals.scaleCardImages = {};
 
     // Pre-move feature
     globals.ourTurn = false;

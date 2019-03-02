@@ -1,12 +1,12 @@
 /*
     The Hanabi card grahpics are various HTML5 canvas drawings
     The "buildCards()" function draws all of them and then stores them in the
-    "globals.cardImages" object to be used later
+    "globals.ui.cardImages" object to be used later
 */
 
 // Imports
-const globals = require('./globals');
-const constants = require('../../constants');
+const globals = require('../globals');
+const constants = require('../constants');
 
 // Constants
 const {
@@ -21,7 +21,7 @@ const yrad = CARDH * 0.08;
 
 exports.buildCards = () => {
     // The gray suit represents cards of unknown suit
-    const suits = globals.variant.suits.concat(SUIT.GRAY);
+    const suits = globals.init.variant.suits.concat(SUIT.GRAY);
     for (let i = 0; i < suits.length; i++) {
         const suit = suits[i];
 
@@ -57,7 +57,7 @@ exports.buildCards = () => {
                     rankString = 'S';
                 }
                 let fontSize;
-                if (globals.lobby.settings.showColorblindUI) {
+                if (globals.settings.showColorblindUI) {
                     fontSize = 68;
                     textYPos = 83;
                     indexLabel = suit.abbreviation + rankString;
@@ -73,7 +73,7 @@ exports.buildCards = () => {
                 drawCardIndex(ctx, textYPos, indexLabel);
 
                 // 'Index' cards are used to draw cards of learned but not yet known rank
-                globals.cardImages[`Index-${suit.name}-${rank}`] = cloneCanvas(cvs);
+                globals.ui.cardImages[`Index-${suit.name}-${rank}`] = cloneCanvas(cvs);
 
                 // Draw index on bottom right
                 ctx.save();
@@ -97,7 +97,7 @@ exports.buildCards = () => {
             //   cards of unknown rank
             // Entirely unknown cards (Gray 6) have a custom image defined separately
             if (rank > 0 && (rank < 6 || suit !== SUIT.GRAY)) {
-                globals.cardImages[`NoPip-${suit.name}-${rank}`] = cloneCanvas(cvs);
+                globals.ui.cardImages[`NoPip-${suit.name}-${rank}`] = cloneCanvas(cvs);
             }
 
             if (suit !== SUIT.GRAY) {
@@ -106,13 +106,13 @@ exports.buildCards = () => {
 
             // Gray Card images would be identical to NoPip images
             if (suit !== SUIT.GRAY) {
-                globals.cardImages[`Card-${suit.name}-${rank}`] = cvs;
+                globals.ui.cardImages[`Card-${suit.name}-${rank}`] = cvs;
             }
         }
     }
 
-    globals.cardImages['NoPip-Gray-6'] = makeUnknownCardImage();
-    globals.cardImages['deck-back'] = makeDeckBack();
+    globals.ui.cardImages['NoPip-Gray-6'] = makeUnknownCardImage();
+    globals.ui.cardImages['deck-back'] = makeDeckBack();
 };
 
 const cloneCanvas = (oldCanvas) => {
@@ -141,7 +141,7 @@ const drawSuitPips = (ctx, rank, suit, i) => {
 
     // Top and bottom for cards 2, 3, 4, 5
     if (rank > 1 && rank <= 5) {
-        const symbolYPos = globals.lobby.settings.showColorblindUI ? 85 : 120;
+        const symbolYPos = globals.settings.showColorblindUI ? 85 : 120;
         ctx.save();
         ctx.translate(CARDW / 2, CARDH / 2);
         ctx.translate(0, -symbolYPos);
@@ -199,7 +199,7 @@ const drawSuitPips = (ctx, rank, suit, i) => {
     // Unknown rank, so draw large faint suit
     if (rank === 6) {
         ctx.save();
-        ctx.globalAlpha = globals.lobby.settings.showColorblindUI ? 0.4 : 0.1;
+        ctx.globalAlpha = globals.settings.showColorblindUI ? 0.4 : 0.1;
         ctx.translate(CARDW / 2, CARDH / 2);
         ctx.scale(scale * 3, scale * 3);
         ctx.translate(-75, -100);
@@ -213,9 +213,9 @@ const makeDeckBack = () => {
     const cvs = makeUnknownCardImage();
     const ctx = cvs.getContext('2d');
 
-    const nSuits = globals.variant.suits.length;
-    for (let i = 0; i < globals.variant.suits.length; i++) {
-        const suit = globals.variant.suits[i];
+    const nSuits = globals.init.variant.suits.length;
+    for (let i = 0; i < globals.init.variant.suits.length; i++) {
+        const suit = globals.init.variant.suits[i];
 
         ctx.resetTransform();
         ctx.scale(0.4, 0.4);
@@ -517,7 +517,7 @@ const drawSuitShape = (suit, i) => {
 exports.drawSuitShape = drawSuitShape;
 
 exports.scaleCardImage = (context, name, width, height, am) => {
-    let src = globals.cardImages[name];
+    let src = globals.ui.cardImages[name];
 
     if (!src) {
         console.error(`The image "${name}" was not generated.`);
@@ -535,14 +535,14 @@ exports.scaleCardImage = (context, name, width, height, am) => {
     let sh = height;
     let steps = 0;
 
-    if (!globals.scaleCardImages[name]) {
-        globals.scaleCardImages[name] = [];
+    if (!globals.ui.scaleCardImages[name]) {
+        globals.ui.scaleCardImages[name] = [];
     }
 
     // This code was written by Keldon;
     // scaling the card down in steps of half in each dimension presumably improves the scaling
     while (dw < sw / 2) {
-        let scaleCanvas = globals.scaleCardImages[name][steps];
+        let scaleCanvas = globals.ui.scaleCardImages[name][steps];
         sw = Math.floor(sw / 2);
         sh = Math.floor(sh / 2);
 
@@ -555,7 +555,7 @@ exports.scaleCardImage = (context, name, width, height, am) => {
 
             scaleContext.drawImage(src, 0, 0, sw, sh);
 
-            globals.scaleCardImages[name][steps] = scaleCanvas;
+            globals.ui.scaleCardImages[name][steps] = scaleCanvas;
         }
 
         src = scaleCanvas;

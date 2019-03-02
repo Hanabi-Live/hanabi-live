@@ -7,3 +7,12 @@
 require('./game/main');
 require('./lobby/main');
 require('./modals');
+
+// For debugging graphics
+/*
+$(document).ready(() => {
+    $('body').click((event) => {
+        console.log(`Cursor position: ${event.clientX}, ${event.clientY}`);
+    });
+});
+*/

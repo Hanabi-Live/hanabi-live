@@ -17,7 +17,6 @@ function HanabiUI(lobby, game) {
     // Since the "HanabiUI" object is being reinstantiated,
     // we need to explicitly reinitialize all varaibles (or else they will retain their old values)
     globalsInit();
-    cardDraw.init();
     // (the keyboard functions can only be initialized once the clue buttons are drawn)
     notes.init();
     timer.init();
@@ -35,11 +34,14 @@ function HanabiUI(lobby, game) {
     this.showLoadingScreen();
 }
 
+// Initialize and size the stage depending on the window size
 HanabiUI.prototype.initStage = function initStage() {
-    // Initialize and size the stage depending on the window size
     globals.stage = new graphics.Stage({
         container: 'game',
     });
+
+    const ratio = 16 / 9;
+
     let ww = window.innerWidth;
     let wh = window.innerHeight;
 
@@ -49,8 +51,6 @@ HanabiUI.prototype.initStage = function initStage() {
     if (wh < 360) {
         wh = 360;
     }
-
-    const ratio = 1.777;
 
     let cw;
     let ch;

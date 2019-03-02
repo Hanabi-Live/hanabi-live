@@ -19,15 +19,17 @@ $(document).ready(() => {
 
 exports.show = () => {
     globals.currentScreen = 'game';
-
     $('#page-wrapper').hide(); // We can't fade this out as it will overlap
-    $('#game').fadeIn(globals.fadeTime);
+    $('#game-chat-text').html(''); // Clear the in-game chat box of any previous content
 
-    // Clear the in-game chat box of any previous content
-    $('#game-chat-text').html('');
-
-    globals.ui = new ui(globals, exports); // eslint-disable-line new-cap
-    globals.chatUnread = 0;
+    if (window.location.pathname === '/dev2') {
+        // Do nothing and initialize later when we get the "init" message
+        // TODO we can initialize the stage and some graphics here
+    } else {
+        $('#game').fadeIn(globals.fadeTime);
+        globals.ui = new ui(globals, exports); // eslint-disable-line new-cap
+        globals.chatUnread = 0;
+    }
     globals.conn.send('hello');
 };
 
@@ -50,7 +52,3 @@ exports.hide = () => {
     const chat = document.getElementById('lobby-chat-text');
     chat.scrollTop = chat.scrollHeight;
 };
-
-// Also make it available to the window so that we can access global variables
-// from the JavaScript console (for debugging purposes)
-window.game = exports;
