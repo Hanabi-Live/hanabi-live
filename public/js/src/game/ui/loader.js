@@ -1,9 +1,7 @@
 const Loader = function Loader(finishedCallback) {
     this.finishedCallback = finishedCallback;
 
-    this.filemap = {};
-
-    const basic = [
+    const files = [
         'x',
         'replay',
         'replay-disabled',
@@ -17,9 +15,9 @@ const Loader = function Loader(finishedCallback) {
         'replay-forward-full-disabled',
         'trashcan',
     ];
-
-    for (let i = 0; i < basic.length; i++) {
-        this.filemap[basic[i]] = `public/img/${basic[i]}.png`;
+    this.filemap = {};
+    for (const file of files) {
+        this.filemap[file] = `public/img/${file}.png`;
     }
 
     this.filemap.background = 'public/img/background.jpg';

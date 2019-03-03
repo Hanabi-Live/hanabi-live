@@ -2,10 +2,13 @@
     A Phaser demo
 */
 
+// Imports
+const globals = require('../globals');
+
 exports.init = () => {
     const { width, height } = getGameSize();
-    const game = new Phaser.Game({ // eslint-disable-line
-        type: Phaser.AUTO, // AUTO picks WEBGL if available, otherwise CANVAS
+    globals.phaser = new Phaser.Game({
+        type: Phaser.AUTO, // "AUTO" picks "WEBGL" if available, otherwise "CANVAS"
         width,
         height,
         scene: {
@@ -15,13 +18,33 @@ exports.init = () => {
     });
 
     function preload() {
-        this.load.image('logo', '/public/img/unused/5.png');
+        const files = [
+            'x',
+            'replay',
+            'replay-disabled',
+            'replay-back',
+            'replay-back-disabled',
+            'replay-back-full',
+            'replay-back-full-disabled',
+            'replay-forward',
+            'replay-forward-disabled',
+            'replay-forward-full',
+            'replay-forward-full-disabled',
+            'trashcan',
+        ];
+        for (const file of files) {
+            this.load.image(file, `/public/img/${file}.png`);
+        }
     }
 
     function create() {
-        const logo = this.add.image(100, 100, 'logo');
-        logo.setInteractive();
-        this.input.setDraggable(logo);
+        const cardTexture = this.textures.createCanvas('card');
+        cardTexture.setDataSource(globals.ui.cardImages['Card-Forest-1']);
+        cardTexture.refresh();
+        const card = this.add.image(150, 200, 'card');
+        // const logo = this.add.image(100, 100, 'logo');
+        card.setInteractive();
+        this.input.setDraggable(card);
         this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
             gameObject.x = dragX;
             gameObject.y = dragY;

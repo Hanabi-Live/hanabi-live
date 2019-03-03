@@ -46,6 +46,7 @@ const globals = {
     chatUnread: 0, // Used to keep track of how many in-game chat messages are currently unread
 
     // Phaser UI variables
+    phaser: null,
     init: null, // Equal to the data from the "init" command
     // ui: null, // The various graphics objects used, initialized in the "commands.init()" function
 };
