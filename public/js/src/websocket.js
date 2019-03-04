@@ -94,7 +94,7 @@ const initCommands = () => {
         if (window.location.pathname === '/dev2') {
             setTimeout(() => {
                 globals.conn.send('replayCreate', {
-                    gameID: 14,
+                    gameID: 51, // The first game in the Hanabi Live database
                     source: 'id',
                     visibility: 'solo',
                 });
