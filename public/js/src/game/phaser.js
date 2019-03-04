@@ -19,65 +19,75 @@ exports.init = () => {
             create,
         },
     });
-
-    function preload() {
-        const files = [
-            'x',
-            'replay',
-            'replay-disabled',
-            'replay-back',
-            'replay-back-disabled',
-            'replay-back-full',
-            'replay-back-full-disabled',
-            'replay-forward',
-            'replay-forward-disabled',
-            'replay-forward-full',
-            'replay-forward-full-disabled',
-            'trashcan',
-        ];
-        for (const file of files) {
-            this.load.image(file, `/public/img/${file}.png`);
-        }
-    }
-
-    function create() {
-        // Convert all of the card canvases to textures
-        for (const key in globals.ui.cardImages) {
-            if (Object.prototype.hasOwnProperty.call(globals.ui.cardImages, key)) {
-                const canvas = globals.ui.cardImages[key];
-                this.textures.addCanvas(key, canvas);
-            }
-        }
-
-        for (let i = 0; i <= 5; i++) {
-            const order = i;
-            const suitNum = i;
-            const rank = i;
-
-            const suit = convert.msgSuitToSuit(suitNum, globals.init.variant);
-            if (!globals.state.learnedCards[order]) {
-                globals.state.learnedCards[order] = {
-                    possibleSuits: globals.init.variant.suits.slice(),
-                    possibleRanks: globals.init.variant.ranks.slice(),
-                };
-            }
-            globals.ui.cards[order] = new HanabiCard(this, {
-                suit,
-                rank,
-                order,
-                suits: globals.init.variant.suits.slice(),
-                ranks: globals.init.variant.ranks.slice(),
-                holder: 0,
-            });
-            this.add.existing(globals.ui.cards[order]);
-
-            this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-                gameObject.x = dragX;
-                gameObject.y = dragY;
-            });
-        }
-    }
 };
+
+function preload() {
+    const files = [
+        'replay',
+        'replay-disabled',
+        'replay-back',
+        'replay-back-disabled',
+        'replay-back-full',
+        'replay-back-full-disabled',
+        'replay-forward',
+        'replay-forward-disabled',
+        'replay-forward-full',
+        'replay-forward-full-disabled',
+        'trashcan',
+        'x',
+    ];
+    for (const file of files) {
+        this.load.image(file, `/public/img/${file}.png`);
+    }
+    this.load.image('background', '/public/img/background.jpg');
+}
+
+function create() {
+    // Set the background
+    console.log(this.cameras);
+    const background = this.add.sprite(
+        this.sys.canvas.width / 2,
+        this.sys.canvas.height / 2,
+        'background',
+    );
+    background.setDisplaySize(this.sys.canvas.width, this.sys.canvas.height);
+
+    // Convert all of the card canvases to textures
+    for (const key in globals.ui.cardImages) {
+        if (Object.prototype.hasOwnProperty.call(globals.ui.cardImages, key)) {
+            const canvas = globals.ui.cardImages[key];
+            this.textures.addCanvas(key, canvas);
+        }
+    }
+
+    for (let i = 0; i <= 5; i++) {
+        const order = i;
+        const suitNum = i;
+        const rank = i;
+
+        const suit = convert.msgSuitToSuit(suitNum, globals.init.variant);
+        if (!globals.state.learnedCards[order]) {
+            globals.state.learnedCards[order] = {
+                possibleSuits: globals.init.variant.suits.slice(),
+                possibleRanks: globals.init.variant.ranks.slice(),
+            };
+        }
+        globals.ui.cards[order] = new HanabiCard(this, {
+            suit,
+            rank,
+            order,
+            suits: globals.init.variant.suits.slice(),
+            ranks: globals.init.variant.ranks.slice(),
+            holder: 0,
+        });
+        this.add.existing(globals.ui.cards[order]);
+
+        this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+            gameObject.x = dragX;
+            gameObject.y = dragY;
+        });
+    }
+}
 
 // We want the game stage to always be 16:9
 const getGameSize = () => {

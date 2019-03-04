@@ -31,7 +31,7 @@ module.exports = (grunt) => {
                     'lib/tooltipster.bundle.min.js',
                     'lib/tooltipster-scrollableTip.min.js',
                     'lib/konva-2.4.2.min.js',
-                    // 'lib/phaser.min.js',
+                    'lib/phaser.min.js',
                     'lib/sha256.min.js',
                     'lib/skel.min.js',
                     'lib/alpha.js',
