@@ -3,7 +3,7 @@
 */
 
 // Imports
-const buildCards = require('./buildCards');
+const cardDraw = require('./cardDraw');
 const constants = require('../constants');
 const globals = require('../globals');
 const phaser = require('./phaser');
@@ -58,12 +58,13 @@ commands.init = (data) => {
 
     // Also initalize the "ui" object, which contains various graphical objects
     globals.ui = {
+        cards: [],
         cardImages: {},
         scaleCardImages: {},
     };
 
     // Build images for every card (with respect to the variant that we are playing)
-    buildCards.buildCards();
+    cardDraw.buildCards();
 
     // Draw the user interface
     phaser.init();

@@ -3,7 +3,10 @@
 */
 
 // Imports
+const convert = require('./convert');
+// const constants = require('../constants');
 const globals = require('../globals');
+const HanabiCard = require('./card');
 
 exports.init = () => {
     const { width, height } = getGameSize();
@@ -38,17 +41,41 @@ exports.init = () => {
     }
 
     function create() {
-        const cardTexture = this.textures.createCanvas('card');
-        cardTexture.setDataSource(globals.ui.cardImages['Card-Forest-1']);
-        cardTexture.refresh();
-        const card = this.add.image(150, 200, 'card');
-        // const logo = this.add.image(100, 100, 'logo');
-        card.setInteractive();
-        this.input.setDraggable(card);
-        this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-            gameObject.x = dragX;
-            gameObject.y = dragY;
-        });
+        // Convert all of the card canvases to textures
+        for (const key in globals.ui.cardImages) {
+            if (Object.prototype.hasOwnProperty.call(globals.ui.cardImages, key)) {
+                const canvas = globals.ui.cardImages[key];
+                this.textures.addCanvas(key, canvas);
+            }
+        }
+
+        for (let i = 0; i <= 5; i++) {
+            const order = i;
+            const suitNum = i;
+            const rank = i;
+
+            const suit = convert.msgSuitToSuit(suitNum, globals.init.variant);
+            if (!globals.state.learnedCards[order]) {
+                globals.state.learnedCards[order] = {
+                    possibleSuits: globals.init.variant.suits.slice(),
+                    possibleRanks: globals.init.variant.ranks.slice(),
+                };
+            }
+            globals.ui.cards[order] = new HanabiCard(this, {
+                suit,
+                rank,
+                order,
+                suits: globals.init.variant.suits.slice(),
+                ranks: globals.init.variant.ranks.slice(),
+                holder: 0,
+            });
+            this.add.existing(globals.ui.cards[order]);
+
+            this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+                gameObject.x = dragX;
+                gameObject.y = dragY;
+            });
+        }
     }
 };
 

@@ -49,6 +49,10 @@ const globals = {
     phaser: null,
     init: null, // Equal to the data from the "init" command
     // ui: null, // The various graphics objects used, initialized in the "commands.init()" function
+    state: { // Variables relating to the current game state
+        turn: 0,
+        learnedCards: [],
+    },
 };
 module.exports = globals;
 

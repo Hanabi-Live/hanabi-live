@@ -1,7 +1,5 @@
 /*
     The Hanabi card grahpics are various HTML5 canvas drawings
-    The "buildCards()" function draws all of them and then stores them in the
-    "globals.cardImages" object to be used later
 */
 
 // Imports
@@ -19,6 +17,8 @@ const {
 const xrad = CARDW * 0.08;
 const yrad = CARDH * 0.08;
 
+// The "buildCards()" function draws all of the cards and then stores them in the
+// "globals.cardImages" object to be used later
 exports.buildCards = () => {
     // The gray suit represents cards of unknown suit
     const suits = globals.variant.suits.concat(SUIT.GRAY);
