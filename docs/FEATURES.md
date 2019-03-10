@@ -96,7 +96,7 @@ List of Features
 * The leader can right-click on a card to highlight it with a red arrow (to point out things to the other players).
 * The leader can Ctrl + Shift + Alt + right-click on a card to morph it into an arbitrary card.
 * The current leader can be seen by hovering over the "👑" icon in the bottom right-hand corner.
-* The leader role can be transfered by right-clicking on the crown.
+* The leader role can be transfered by right-clicking on a player's name or by right-clicking the crown.
 
 #### Game Statistics
 
