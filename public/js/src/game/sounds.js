@@ -43,7 +43,7 @@ const preload = () => {
         'tone',
         'turn_other',
         'turn_us',
-        // Don't preload shared replay sound effects, as they are used more rarely
+        // Do not preload shared replay sound effects, as they are used more rarely
     ];
     for (const file of soundFiles) {
         const audio = new Audio(`public/sounds/${file}.mp3`);

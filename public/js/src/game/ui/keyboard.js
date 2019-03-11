@@ -99,28 +99,23 @@ const keydown = (event) => {
     // Ctrl + Enter = Give a clue
     if (
         event.ctrlKey
+        && event.key === 'Enter'
         && !event.shiftKey
         && !event.altKey
         && !event.metaKey
-        && event.key === 'Enter'
     ) {
         // The "giveClue()" function has validation inside of it
         globals.lobby.ui.giveClue();
         return;
     }
 
-    // Don't interfere with other kinds of hotkeys
-    if (event.ctrlKey || event.shiftKey || event.metaKey) {
-        return;
-    }
-
     // Escape: If in an in-game replay, exit back to the game
     if (
-        !event.ctrlKey
+        event.key === 'Escape'
+        && !event.ctrlKey
         && !event.shiftKey
         && !event.altKey
         && !event.metaKey
-        && event.key === 'Escape'
     ) {
         replay.exit();
     }
@@ -128,7 +123,10 @@ const keydown = (event) => {
     // Delete: Delete the note from the card that we are currently hovering-over, if any
     if (
         event.key === 'Delete'
+        && !event.ctrlKey
         && !event.shiftKey
+        && !event.altKey
+        && !event.metaKey
         && globals.activeHover !== null
         && typeof globals.activeHover.order !== 'undefined'
     ) {
@@ -141,24 +139,42 @@ const keydown = (event) => {
     }
 
     // Hotkeys for sending sounds
-    if (event.altKey && event.key === 'z') { // Alt + z
-        // This is used for fun in shared replays
-        sharedReplaySendSound('buzz');
-        return;
-    }
-    if (event.altKey && event.key === 'x') { // Alt + x
-        // This is used for fun in shared replays
-        sharedReplaySendSound('god');
-        return;
-    }
-    if (event.altKey && event.key === 'c') { // Alt + c
-        // This is used as a sound test
-        globals.game.sounds.play('turn_us');
-        return;
+    if (
+        event.altKey
+        && !event.ctrlKey
+        && !event.shiftKey
+        && !event.metaKey
+    ) {
+        if (event.key === 'b') { // Alt + b
+            // This is used for fun in shared replays
+            sharedReplaySendSound('buzz');
+            return;
+        }
+        if (event.key === 'g') { // Alt + g
+            // This is used for fun in shared replays
+            sharedReplaySendSound('god');
+            return;
+        }
+        if (event.key === 'n') { // Alt + n
+            // This is used for fun in shared replays
+            sharedReplaySendSound('nooo');
+            return;
+        }
+        if (event.key === 'z') { // Alt + z
+            // This is used as a sound test
+            globals.game.sounds.play('turn_us');
+            return;
+        }
     }
 
     // Don't interfere with other kinds of hotkeys
-    if (event.altKey) {
+    if (
+        event.altKey
+        || event.ctrlKey
+        || event.shiftKey
+        || event.altKey
+        || event.metaKey
+    ) {
         return;
     }
 
