@@ -30,7 +30,6 @@ let winH;
 let numPlayers;
 let basicTextLabel;
 let basicNumberLabel;
-let rect; // We reuse this to draw many squares / rectangles
 let actionLogValues;
 let playAreaValues;
 let cardWidth;
@@ -153,8 +152,8 @@ const drawActionLog = () => {
     });
     globals.layers.UI.add(actionLog);
 
-    // The faded rectange around the action log
-    rect = new graphics.Rect({
+    // The faded rectangle around the action log
+    const actionLogRect = new graphics.Rect({
         x: 0,
         y: 0,
         width: actionLogValues.w * winW,
@@ -164,10 +163,10 @@ const drawActionLog = () => {
         cornerRadius: 0.01 * winH,
         listening: true,
     });
-    actionLog.add(rect);
+    actionLog.add(actionLogRect);
 
     // Clicking on the action log
-    rect.on('click tap', () => {
+    actionLogRect.on('click tap', () => {
         globals.elements.msgLogGroup.show();
         globals.elements.stageFade.show();
 
@@ -509,7 +508,7 @@ const drawScoreArea = () => {
     globals.layers.UI.add(globals.elements.scoreArea);
 
     // The faded rectangle around the score area
-    rect = new graphics.Rect({
+    const scoreAreaRect = new graphics.Rect({
         x: 0,
         y: 0,
         width: scoreAreaValues.w * winW,
@@ -518,7 +517,7 @@ const drawScoreArea = () => {
         opacity: 0.2,
         cornerRadius: 0.01 * winW,
     });
-    globals.elements.scoreArea.add(rect);
+    globals.elements.scoreArea.add(scoreAreaRect);
 
     const labelX = 0.02;
     const labelSpacing = 0.06;
@@ -811,7 +810,7 @@ const drawClueLog = () => {
 
 // Statistics are shown on the right-hand side of the screen (at the bottom of the clue log)
 const drawStatistics = () => {
-    rect = new graphics.Rect({
+    const statsRect = new graphics.Rect({
         x: clueLogValues.x * winW,
         y: 0.53 * winH,
         width: clueLogValues.w * winW,
@@ -820,7 +819,7 @@ const drawStatistics = () => {
         opacity: 0.2,
         cornerRadius: 0.01 * winW,
     });
-    globals.layers.background.add(rect);
+    globals.layers.background.add(statsRect);
 
     const paceTextLabel = basicTextLabel.clone({
         text: 'Pace',
@@ -911,8 +910,8 @@ const drawDiscardArea = () => {
     });
     globals.layers.UI.add(globals.elements.noDoubleDiscardLabel);
 
-    // The faded rectange around the trash can
-    rect = new graphics.Rect({
+    // The faded rectangle around the trash can
+    const discardAreaRect = new graphics.Rect({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.19 * winW,
@@ -921,7 +920,7 @@ const drawDiscardArea = () => {
         opacity: 0.2,
         cornerRadius: 0.01 * winW,
     });
-    globals.layers.background.add(rect);
+    globals.layers.background.add(discardAreaRect);
 
     // The icon over the discard pile
     const img = new graphics.Image({
@@ -1189,6 +1188,7 @@ const drawReplayArea = () => {
         height: 0.27 * winH,
     });
 
+    // The thin black rectangle that the replay slider slides on
     const replayBar = new graphics.Rect({
         x: 0,
         y: 0.0425 * winH,
@@ -1200,15 +1200,17 @@ const drawReplayArea = () => {
     });
     globals.elements.replayArea.add(replayBar);
 
-    rect = new graphics.Rect({
+    // An invisible rectangle over the visible black rectangle above
+    // (which is slightly bigger so that it is easier to click on)
+    const replayBarClickRect = new graphics.Rect({
         x: 0,
         y: 0,
         width: replayAreaValues.w * winW,
         height: 0.05 * winH,
         opacity: 0,
     });
-    rect.on('click', replay.barClick);
-    globals.elements.replayArea.add(rect);
+    replayBarClickRect.on('click', replay.barClick);
+    globals.elements.replayArea.add(replayBarClickRect);
 
     // We want the shared (white) replay shuttle to be below the normal replay shuttle,
     // so we define it first

@@ -25,6 +25,7 @@ const enter = () => {
         globals.deck[i].setBareImage();
     }
     globals.elements.replayButton.setEnabled(false);
+    setVisibleButtons();
 
     globals.layers.UI.batchDraw();
     globals.layers.card.batchDraw();
@@ -65,12 +66,6 @@ const goto = (target, fast) => {
         return;
     }
 
-    // If we are going to the first turn, disable the rewind replay buttons
-    globals.elements.replayBackFullButton.setEnabled(target !== 0);
-    globals.elements.replayBackButton.setEnabled(target !== 0);
-    globals.elements.replayForwardButton.setEnabled(target !== globals.replayMax);
-    globals.elements.replayForwardFullButton.setEnabled(target !== globals.replayMax);
-
     // If this is a big jump, we need to update the "Back to Turn #" button
     if (
         (target > globals.replayTurn && target - globals.replayTurn > 1)
@@ -99,6 +94,7 @@ const goto = (target, fast) => {
 
     globals.replayTurn = target;
 
+    setVisibleButtons();
     adjustShuttles();
     if (fast) {
         globals.animateFast = true;
@@ -136,7 +132,17 @@ const goto = (target, fast) => {
 };
 exports.goto = goto;
 
-const reset = function reset() {
+const setVisibleButtons = () => {
+    // If we are on the first turn, disable the rewind replay buttons
+    globals.elements.replayBackFullButton.setEnabled(globals.replayTurn !== 0);
+    globals.elements.replayBackButton.setEnabled(globals.replayTurn !== 0);
+
+    // If we are on the last turn, disable the forward replay buttons
+    globals.elements.replayForwardButton.setEnabled(globals.replayTurn !== globals.replayMax);
+    globals.elements.replayForwardFullButton.setEnabled(globals.replayTurn !== globals.replayMax);
+}
+
+const reset = () => {
     globals.elements.messagePrompt.setMultiText('');
     globals.elements.msgLogGroup.reset();
 
