@@ -36,6 +36,7 @@ let playStackValues;
 let playAreaValues;
 let cardWidth;
 let cardHeight;
+let scoreAreaValues;
 let clueAreaValues;
 let clueLogValues;
 let spectatorsLabelValues;
@@ -107,9 +108,9 @@ module.exports = () => {
     drawDeck();
 
     // The bottom-right
+    drawScoreArea();
     drawSpectators();
     drawSharedReplay();
-    drawScoreArea();
 
     // The right-hand column
     drawClueLog();
@@ -397,7 +398,7 @@ const drawBottomLeftButtons = () => {
             height: middleButtonPos.size * winH,
             text: 'Chat',
             // In speedruns, show the abandon game button by default instead of the chat button
-            visible: !globals.speedrun,
+            visible: !globals.speedrun || globals.spectating,
         });
         globals.layers.UI.add(globals.elements.chatButton);
         globals.elements.chatButton.on('click tap', () => {
@@ -414,7 +415,7 @@ const drawBottomLeftButtons = () => {
             height: middleButtonPos.size * winH,
             image: 'x',
             // In speedruns, show the abandon game button by default instead of the chat button
-            visible: globals.speedrun,
+            visible: globals.speedrun && !globals.spectating,
         });
         globals.layers.UI.add(globals.elements.killButton);
         globals.elements.killButton.on('click tap', () => {
@@ -490,15 +491,136 @@ const drawDeck = () => {
     globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
 };
 
-// The "eyes" symbol to show that one or more people are spectating the game
-const drawSpectators = () => {
-    spectatorsLabelValues = {
-        x: 0.623,
-        y: 0.9,
+const drawScoreArea = () => {
+    // The rectangle that holds the turn, score, and clue count
+    scoreAreaValues = {
+        x: 0.66,
+        y: 0.81,
+        w: 0.13,
+        h: 0.18,
     };
     if (globals.lobby.settings.showBGAUI) {
-        spectatorsLabelValues.x = 0.01;
-        spectatorsLabelValues.y = 0.72;
+        scoreAreaValues.x = 0.168;
+        scoreAreaValues.y = 0.81;
+    }
+    globals.elements.scoreArea = new graphics.Group({
+        x: scoreAreaValues.x * winW,
+        y: scoreAreaValues.y * winH,
+    });
+    globals.layers.UI.add(globals.elements.scoreArea);
+
+    // The faded rectangle around the score area
+    rect = new graphics.Rect({
+        x: 0,
+        y: 0,
+        width: scoreAreaValues.w * winW,
+        height: scoreAreaValues.h * winH,
+        fill: 'black',
+        opacity: 0.2,
+        cornerRadius: 0.01 * winW,
+    });
+    globals.elements.scoreArea.add(rect);
+
+    const labelX = 0.02;
+    const labelSpacing = 0.06;
+
+    const turnTextLabel = basicTextLabel.clone({
+        text: 'Turn',
+        x: labelX * winW,
+        y: 0.01 * winH,
+    });
+    globals.elements.scoreArea.add(turnTextLabel);
+
+    // We also want to be able to right-click the turn to go to a specific turn in the replay
+    turnTextLabel.on('click', replay.promptTurn);
+
+    globals.elements.turnNumberLabel = basicNumberLabel.clone({
+        text: '1',
+        x: (labelX + labelSpacing) * winW,
+        y: 0.01 * winH,
+    });
+    globals.elements.scoreArea.add(globals.elements.turnNumberLabel);
+
+    // We also want to be able to right-click the turn to go to a specific turn in the replay
+    globals.elements.turnNumberLabel.on('click', replay.promptTurn);
+
+    const scoreTextLabel = basicTextLabel.clone({
+        text: 'Score',
+        x: labelX * winW,
+        y: 0.045 * winH,
+    });
+    globals.elements.scoreArea.add(scoreTextLabel);
+
+    globals.elements.scoreNumberLabel = basicNumberLabel.clone({
+        text: '0',
+        x: (labelX + labelSpacing) * winW,
+        y: 0.045 * winH,
+    });
+    globals.elements.scoreArea.add(globals.elements.scoreNumberLabel);
+
+    globals.elements.maxScoreNumberLabel = basicNumberLabel.clone({
+        text: '',
+        x: (labelX + labelSpacing) * winW,
+        y: 0.05 * winH,
+        fontSize: 0.017 * winH,
+    });
+    globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel);
+
+    const cluesTextLabel = basicTextLabel.clone({
+        text: 'Clues',
+        x: labelX * winW,
+        y: 0.08 * winH,
+    });
+    globals.elements.scoreArea.add(cluesTextLabel);
+
+    globals.elements.cluesNumberLabel = basicNumberLabel.clone({
+        text: '8',
+        x: (labelX + labelSpacing) * winW,
+        y: 0.08 * winH,
+    });
+    globals.elements.scoreArea.add(globals.elements.cluesNumberLabel);
+
+    // Draw the 3 strike (bomb) black squares
+    for (let i = 0; i < 3; i++) {
+        globals.elements.strikeSquares[i] = new graphics.Rect({
+            x: (0.01 + 0.04 * i) * winW,
+            y: 0.115 * winH,
+            width: 0.03 * winW,
+            height: 0.053 * winH,
+            fill: 'black',
+            opacity: 0.6,
+            cornerRadius: 0.003 * winW,
+        });
+        globals.elements.scoreArea.add(globals.elements.strikeSquares[i]);
+
+        // We also keep track of the turn that the strike happened
+        globals.elements.strikeSquares[i].turn = null;
+
+        // Click on an empty square to go to the turn that the strike happened, if any
+        globals.elements.strikeSquares[i].on('click', function squareClick() {
+            if (this.turn === null) {
+                return;
+            }
+            if (globals.replay) {
+                replay.checkDisableSharedTurns();
+            } else {
+                replay.enter();
+            }
+            replay.goto(this.turn + 1, true);
+        });
+    }
+};
+
+// The "eyes" symbol to show that one or more people are spectating the game
+const drawSpectators = () => {
+    // Position it to the bottom-left of the score area
+    spectatorsLabelValues = {
+        x: scoreAreaValues.x - 0.037,
+        y: scoreAreaValues.y + 0.09,
+    };
+    if (globals.lobby.settings.showBGAUI) {
+        // Position it to the bottom-right of the score area
+        spectatorsLabelValues.x = scoreAreaValues.x + scoreAreaValues.w + 0.01;
     }
     globals.elements.spectatorsLabel = new graphics.Text({
         x: spectatorsLabelValues.x * winW,
@@ -559,14 +681,10 @@ const drawSpectators = () => {
 // The "crown" symbol to show that we are in a shared replay
 const drawSharedReplay = () => {
     const sharedReplayLeaderLabelValues = {
-        x: 0.623,
-        y: 0.84,
+        x: spectatorsLabelValues.x,
+        y: spectatorsLabelValues.y - 0.06,
         size: 0.03,
     };
-    if (globals.lobby.settings.showBGAUI) {
-        sharedReplayLeaderLabelValues.x = spectatorsLabelValues.x + 0.03;
-        sharedReplayLeaderLabelValues.y = spectatorsLabelValues.y;
-    }
 
     // A red circle around the crown indicates that we are the current replay leader
     // (we want the icon to be on top of this so that it does not interfere with mouse events)
@@ -662,124 +780,6 @@ const drawSharedReplay = () => {
             name: target,
         });
     });
-};
-
-const drawScoreArea = () => {
-    // The rectangle that holds the turn, score, and clue count
-    const scoreAreaValues = {
-        x: 0.66,
-        y: 0.81,
-    };
-    if (globals.lobby.settings.showBGAUI) {
-        scoreAreaValues.x = 0.168;
-        scoreAreaValues.y = 0.81;
-    }
-    globals.elements.scoreArea = new graphics.Group({
-        x: scoreAreaValues.x * winW,
-        y: scoreAreaValues.y * winH,
-    });
-    globals.layers.UI.add(globals.elements.scoreArea);
-
-    // The faded rectangle around the score area
-    rect = new graphics.Rect({
-        x: 0,
-        y: 0,
-        width: 0.13 * winW,
-        height: 0.18 * winH,
-        fill: 'black',
-        opacity: 0.2,
-        cornerRadius: 0.01 * winW,
-    });
-    globals.elements.scoreArea.add(rect);
-
-    const labelX = 0.02;
-    const labelSpacing = 0.06;
-
-    const turnTextLabel = basicTextLabel.clone({
-        text: 'Turn',
-        x: labelX * winW,
-        y: 0.01 * winH,
-    });
-    globals.elements.scoreArea.add(turnTextLabel);
-
-    // We also want to be able to right-click the turn to go to a specific turn in the replay
-    turnTextLabel.on('click', replay.promptTurn);
-
-    globals.elements.turnNumberLabel = basicNumberLabel.clone({
-        text: '1',
-        x: (labelX + labelSpacing) * winW,
-        y: 0.01 * winH,
-    });
-    globals.elements.scoreArea.add(globals.elements.turnNumberLabel);
-
-    // We also want to be able to right-click the turn to go to a specific turn in the replay
-    globals.elements.turnNumberLabel.on('click', replay.promptTurn);
-
-    const scoreTextLabel = basicTextLabel.clone({
-        text: 'Score',
-        x: labelX * winW,
-        y: 0.045 * winH,
-    });
-    globals.elements.scoreArea.add(scoreTextLabel);
-
-    globals.elements.scoreNumberLabel = basicNumberLabel.clone({
-        text: '0',
-        x: (labelX + labelSpacing) * winW,
-        y: 0.045 * winH,
-    });
-    globals.elements.scoreArea.add(globals.elements.scoreNumberLabel);
-
-    globals.elements.maxScoreNumberLabel = basicNumberLabel.clone({
-        text: '',
-        x: (labelX + labelSpacing) * winW,
-        y: 0.05 * winH,
-        fontSize: 0.017 * winH,
-    });
-    globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel);
-
-    const cluesTextLabel = basicTextLabel.clone({
-        text: 'Clues',
-        x: labelX * winW,
-        y: 0.08 * winH,
-    });
-    globals.elements.scoreArea.add(cluesTextLabel);
-
-    globals.elements.cluesNumberLabel = basicNumberLabel.clone({
-        text: '8',
-        x: (labelX + labelSpacing) * winW,
-        y: 0.08 * winH,
-    });
-    globals.elements.scoreArea.add(globals.elements.cluesNumberLabel);
-
-    // Draw the 3 strike (bomb) black squares
-    for (let i = 0; i < 3; i++) {
-        globals.elements.strikeSquares[i] = new graphics.Rect({
-            x: (0.01 + 0.04 * i) * winW,
-            y: 0.115 * winH,
-            width: 0.03 * winW,
-            height: 0.053 * winH,
-            fill: 'black',
-            opacity: 0.6,
-            cornerRadius: 0.003 * winW,
-        });
-        globals.elements.scoreArea.add(globals.elements.strikeSquares[i]);
-
-        // We also keep track of the turn that the strike happened
-        globals.elements.strikeSquares[i].turn = null;
-
-        // Click on an empty square to go to the turn that the strike happened, if any
-        globals.elements.strikeSquares[i].on('click', function squareClick() {
-            if (this.turn === null) {
-                return;
-            }
-            if (globals.replay) {
-                replay.checkDisableSharedTurns();
-            } else {
-                replay.enter();
-            }
-            replay.goto(this.turn + 1, true);
-        });
-    }
 };
 
 const drawClueLog = () => {
