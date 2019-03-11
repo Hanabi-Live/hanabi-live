@@ -19,7 +19,7 @@ module.exports = () => {
     globals.variant = null;
     globals.playerUs = -1;
     globals.spectating = false;
-    globals.replay = false; // True if a solo or shared replay
+    globals.replay = false; // True if we are in a solo or shared replay
     globals.sharedReplay = false;
 
     // Optional game settings
@@ -41,9 +41,11 @@ module.exports = () => {
     globals.deck = [];
     globals.deckSize = 0;
     globals.turn = 0;
+    globals.endTurn = null; // Set when the final card is drawn
     globals.score = 0;
     globals.clues = 0;
     globals.spectators = [];
+    globals.deckOrder = null; // Sent when the game ends
 
     // Efficiency variables
     globals.cardsGotten = 0;
@@ -93,6 +95,8 @@ module.exports = () => {
         killButton: null,
         restartButton: null,
         drawDeck: null,
+        deckTurnsRemainingLabel1: null,
+        deckTurnsRemainingLabel2: null,
         deckPlayAvailableLabel: null,
 
         // Extra elements on the right-hand side + the bottom

@@ -63,7 +63,7 @@ type ActionStrike struct {
 }
 type ActionDeckOrder struct {
 	Type string       `json:"type"`
-	Deck []CardSimple `json:"card"`
+	Deck []CardSimple `json:"deck"`
 }
 type Which struct { // Used by "ActionPlay" and "ActionDiscard"
 	Index int `json:"index"` // The index of the player

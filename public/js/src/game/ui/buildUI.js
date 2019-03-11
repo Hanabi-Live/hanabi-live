@@ -21,8 +21,12 @@ const HanabiMsgLog = require('./msgLog');
 const MultiFitText = require('./multiFitText');
 const NumberButton = require('./numberButton');
 const replay = require('./replay');
+const stats = require('./stats');
 const timer = require('./timer');
 const ToggleButton = require('./toggleButton');
+
+// Constants
+const labelColor = '#d8d5ef'; // Off-white
 
 // Variables
 let winW;
@@ -83,7 +87,7 @@ module.exports = () => {
         fontFamily: 'Verdana',
         align: 'left',
         text: 'Placeholder text',
-        fill: '#d8d5ef',
+        fill: labelColor,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -191,7 +195,7 @@ const drawActionLog = () => {
         align: 'center',
         fontSize: 0.028 * winH,
         fontFamily: 'Verdana',
-        fill: '#d8d5ef',
+        fill: labelColor,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -327,7 +331,7 @@ const drawPlayStacksAndDiscardStacks = () => {
                 fontFamily: 'Verdana',
                 align: 'center',
                 text,
-                fill: '#d8d5ef',
+                fill: labelColor,
             });
             globals.layers.text.add(suitLabelText);
             globals.elements.suitLabelTexts.push(suitLabelText);
@@ -454,12 +458,19 @@ const drawBottomLeftButtons = () => {
 };
 
 const drawDeck = () => {
+    const deckValues = {
+        x: 0.08,
+        y: 0.8,
+        w: 0.075,
+        h: 0.189,
+    };
+
     // This is the faded rectangle that is hidden until all of the deck has been depleted
     const drawDeckRect = new graphics.Rect({
-        x: 0.08 * winW,
-        y: 0.8 * winH,
-        width: 0.075 * winW,
-        height: 0.189 * winH,
+        x: deckValues.x * winW,
+        y: deckValues.y * winH,
+        width: deckValues.w * winW,
+        height: deckValues.h * winH,
         fill: 'black',
         opacity: 0.2,
         cornerRadius: 0.006 * winW,
@@ -467,20 +478,43 @@ const drawDeck = () => {
     globals.layers.background.add(drawDeckRect);
 
     globals.elements.drawDeck = new CardDeck({
-        x: 0.08 * winW,
-        y: 0.8 * winH,
-        width: 0.075 * winW,
-        height: 0.189 * winH,
+        x: deckValues.x * winW,
+        y: deckValues.y * winH,
+        width: deckValues.w * winW,
+        height: deckValues.h * winH,
         cardback: 'deck-back',
         suits: globals.variant.suits,
     });
     globals.layers.card.add(globals.elements.drawDeck);
 
+    // When there are no cards left in the deck,
+    // show a label that indicates how many turns are left before the game ends
+    const xOffset = 0.017;
+    const fontSize = 0.025;
+    globals.elements.deckTurnsRemainingLabel1 = basicTextLabel.clone({
+        text: 'Turns',
+        x: (deckValues.x + xOffset) * winW,
+        y: (deckValues.y + deckValues.h - 0.07) * winH,
+        fontSize: fontSize * winH,
+        visible: false,
+    });
+    globals.layers.UI.add(globals.elements.deckTurnsRemainingLabel1);
+    globals.elements.deckTurnsRemainingLabel2 = basicTextLabel.clone({
+        text: 'left: #',
+        x: (deckValues.x + xOffset) * winW,
+        y: (deckValues.y + deckValues.h - 0.04) * winH,
+        fontSize: fontSize * winH,
+        visible: false,
+    });
+    globals.layers.UI.add(globals.elements.deckTurnsRemainingLabel2);
+
+    // This is a yellow border around the deck that will appear when only one card is left
+    // (if the game option was enabled)
     globals.elements.deckPlayAvailableLabel = new graphics.Rect({
-        x: 0.08 * winW,
-        y: 0.8 * winH,
-        width: 0.075 * winW,
-        height: 0.189 * winH,
+        x: deckValues.x * winW,
+        y: deckValues.y * winH,
+        width: deckValues.w * winW,
+        height: deckValues.h * winH,
         stroke: 'yellow',
         cornerRadius: 6,
         strokeWidth: 10,
@@ -663,7 +697,7 @@ const drawSpectators = () => {
         fontFamily: 'Verdana',
         align: 'center',
         text: '0',
-        fill: '#d8d5ef',
+        fill: labelColor,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -706,7 +740,7 @@ const drawSharedReplay = () => {
         fontFamily: 'Verdana',
         align: 'center',
         text: '👑',
-        fill: '#d8d5ef',
+        fill: labelColor,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -855,7 +889,7 @@ const drawStatistics = () => {
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabel);
 
-    const minEfficiency = getMinEfficiency();
+    const minEfficiency = stats.getMinEfficiency();
     globals.elements.efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
         text: minEfficiency.toString(),
         x: 0.9,
@@ -863,7 +897,7 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
         // "Easy" variants use the default color (off-white)
         // "Hard" variants use pink
-        fill: (minEfficiency < 1.25 ? '#d8d5ef' : '#ffb2b2'),
+        fill: (minEfficiency < 1.25 ? labelColor : '#ffb2b2'),
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabelMinNeeded);
 };
@@ -1407,63 +1441,4 @@ const drawExtraAnimations = () => {
             globals.elements.sharedReplayBackwardTween.reverse();
         },
     });
-};
-
-/*
-    Misc. subroutines
-*/
-
-const getMinEfficiency = () => {
-    /*
-        Calculate the minimum amount of efficiency needed in order to win this variant
-        First, calculate the starting pace with the following formula:
-            total cards in the deck -
-            ((number of cards in a player's hand - 1) * number of players) -
-            (5 * number of suits)
-        https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
-    */
-
-    let totalCardsInTheDeck = 0;
-    for (const suit of globals.variant.suits) {
-        totalCardsInTheDeck += 10;
-        if (suit.oneOfEach) {
-            totalCardsInTheDeck -= 5;
-        } else if (globals.variant.name.startsWith('Up or Down')) {
-            totalCardsInTheDeck -= 1;
-        }
-    }
-    const numberOfPlayers = globals.playerNames.length;
-    let cardsInHand = 5;
-    if (numberOfPlayers === 4 || numberOfPlayers === 5) {
-        cardsInHand = 4;
-    } else if (numberOfPlayers === 6) {
-        cardsInHand = 4; // TODO change this to 3
-    }
-    let startingPace = totalCardsInTheDeck;
-    startingPace -= (cardsInHand - 1) * numberOfPlayers;
-    startingPace -= 5 * globals.variant.suits.length;
-
-    /*
-        Second, use the pace to calculate the minimum efficiency required to win the game
-        with the following formula:
-            (5 * number of suits) /
-            (8 + floor((starting pace + number of suits - unusable clues) / discards per clue))
-        https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
-    */
-    const minEfficiencyNumerator = 5 * globals.variant.suits.length;
-    let unusableClues = 1;
-    if (numberOfPlayers >= 5) {
-        unusableClues = 2;
-    }
-    let discardsPerClue = 1;
-    if (globals.variant.name.startsWith('Clue Starved')) {
-        discardsPerClue = 2;
-    }
-    const minEfficiencyDenominator = 8 + Math.floor(
-        (startingPace + globals.variant.suits.length - unusableClues) / discardsPerClue,
-    );
-    const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);
-    // Round it to 2 decimal places
-
-    return minEfficiency;
 };

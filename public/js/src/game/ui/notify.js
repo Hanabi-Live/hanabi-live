@@ -76,8 +76,8 @@ commands.clue = (data) => {
 };
 
 // At the end of a game, the server sends a list that reveals what the entire deck is
-commands.deckOrder = () => {
-    // TODO
+commands.deckOrder = (data) => {
+    globals.deckOrder = data.deck;
 };
 
 commands.discard = (data) => {
@@ -93,31 +93,16 @@ commands.discard = (data) => {
 
     globals.elements.discardStacks.get(suit).add(child);
 
-    // Make sure that the card is on top of the play stacks ??? TODO CHECK TO SEE IF THIS IS TRUE
+    // Bring the discarded card to the top
+    // (otherwise, while it is tweening to the discard pile,
+    // it will fly underneath the play stacks and other player's hands)
+    // Furthermore, go through the discard piles and make sure that they are properly overlapping
+    // (the bottom-most stack should have priority over the top)
     for (const discardStack of globals.elements.discardStacks) {
         if (discardStack[1]) {
             discardStack[1].moveToTop();
         }
     }
-
-    // Put the discard pile in order from 1 to 5
-    // (this is commented out so that we can instead see the order in which things are discarded)
-    /*
-    let finished = false;
-    do {
-        const n = child.getZIndex();
-
-        if (!n) {
-            break;
-        }
-
-        if (data.which.rank < child.parent.children[n - 1].children[0].trueRank) {
-            child.moveDown();
-        } else {
-            finished = true;
-        }
-    } while (!finished);
-    */
 
     if (card.isClued()) {
         stats.updateEfficiency(-1);
@@ -370,6 +355,22 @@ commands.turn = (data) => {
     }
 
     globals.elements.turnNumberLabel.setText(`${globals.turn + 1}`);
+
+    // If there are no cards left in the deck, update the "Turns left: #" label
+    if (globals.elements.drawDeck.count === 0) {
+        if (globals.endTurn === null) {
+            globals.endTurn = globals.turn + globals.playerNames.length;
+        }
+        let numTurnsLeft = globals.endTurn - globals.turn;
+
+        // The game is artificially extended by a turn in order to
+        // show the times separately from the final action, so account for this
+        if (globals.turn === globals.replayMax && globals.replay) {
+            numTurnsLeft += 1;
+        }
+
+        globals.elements.deckTurnsRemainingLabel2.setText(`left: ${numTurnsLeft}`);
+    }
 };
 
 module.exports = commands;

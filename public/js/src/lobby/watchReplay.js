@@ -141,11 +141,11 @@ exports.ready = () => {
 
     // Set the "ID" field
     const gameID = localStorage.getItem('watchReplayID');
-    $('#replay-id').text(gameID);
+    $('#replay-id').val(gameID);
 
     // Set the "JSON" field
     const json = localStorage.getItem('watchReplayJSON');
-    $('#replay-json').text(json);
+    $('#replay-json').val(json);
 
     // Hide the error row
     $('#replay-error-row').hide();

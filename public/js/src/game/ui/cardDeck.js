@@ -17,45 +17,10 @@ const CardDeck = function CardDeck(config) {
     });
     this.add(this.cardback);
 
-    this.cardback.on('dragend.play', function dragendPlay() {
-        const pos = this.getAbsolutePosition();
+    this.cardback.on('dragend.play', dragendPlay);
 
-        pos.x += this.getWidth() * this.getScaleX() / 2;
-        pos.y += this.getHeight() * this.getScaleY() / 2;
-
-        if (globals.elements.playArea.isOver(pos)) {
-            // We need to remove the card from the screen once the animation is finished
-            // (otherwise, the card will be stuck in the in-game replay)
-            globals.postAnimationLayout = () => {
-                this.parent.doLayout();
-                globals.postAnimationLayout = null;
-            };
-
-            this.setDraggable(false);
-            globals.elements.deckPlayAvailableLabel.setVisible(false);
-
-            globals.lobby.conn.send('action', {
-                type: constants.ACT.DECKPLAY,
-            });
-
-            globals.lobby.ui.stopAction();
-        } else {
-            // The deck was dragged to an invalid location,
-            // so animate the card back to where it was
-            new graphics.Tween({
-                node: this,
-                duration: 0.5,
-                x: 0,
-                y: 0,
-                runonce: true,
-                onFinish: () => {
-                    globals.layers.UI.batchDraw();
-                },
-            }).play();
-        }
-    });
-
-    this.count = new graphics.Text({
+    this.count = 0;
+    this.numLeftText = new graphics.Text({
         fill: 'white',
         stroke: 'black',
         strokeWidth: 1,
@@ -70,7 +35,7 @@ const CardDeck = function CardDeck(config) {
         text: '0',
         listening: false,
     });
-    this.add(this.count);
+    this.add(this.numLeftText);
 
     // If the user hovers over the deck, show a tooltip that shows extra game options, if any
     this.initTooltip();
@@ -94,6 +59,44 @@ const CardDeck = function CardDeck(config) {
 
 graphics.Util.extend(CardDeck, graphics.Group);
 
+function dragendPlay() {
+    const pos = this.getAbsolutePosition();
+
+    pos.x += this.getWidth() * this.getScaleX() / 2;
+    pos.y += this.getHeight() * this.getScaleY() / 2;
+
+    if (globals.elements.playArea.isOver(pos)) {
+        // We need to remove the card from the screen once the animation is finished
+        // (otherwise, the card will be stuck in the in-game replay)
+        globals.postAnimationLayout = () => {
+            this.parent.doLayout();
+            globals.postAnimationLayout = null;
+        };
+
+        this.setDraggable(false);
+        globals.elements.deckPlayAvailableLabel.setVisible(false);
+
+        globals.lobby.conn.send('action', {
+            type: constants.ACT.DECKPLAY,
+        });
+
+        globals.lobby.ui.stopAction();
+    } else {
+        // The deck was dragged to an invalid location,
+        // so animate the card back to where it was
+        new graphics.Tween({
+            node: this,
+            duration: 0.5,
+            x: 0,
+            y: 0,
+            runonce: true,
+            onFinish: () => {
+                globals.layers.UI.batchDraw();
+            },
+        }).play();
+    }
+}
+
 CardDeck.prototype.add = function add(child) {
     graphics.Group.prototype.add.call(this, child);
 
@@ -101,29 +104,7 @@ CardDeck.prototype.add = function add(child) {
         return;
     }
 
-    if (globals.animateFast) {
-        child.remove();
-        return;
-    }
-
-    console.log('PLAYING UNKNOWN TWEEN');
-    child.tween = new graphics.Tween({
-        node: child,
-        x: 0,
-        y: 0,
-        scaleX: 0.01,
-        scaleY: 0.01,
-        rotation: 0,
-        duration: 0.5,
-        runonce: true,
-    }).play();
-
-    child.tween.onFinish = () => {
-        console.log('FINISHED UNKNOWN TWEEN');
-        if (child.parent === this) {
-            child.remove();
-        }
-    };
+    child.remove();
 };
 
 CardDeck.prototype.setCardBack = function setCardBack(cardback) {
@@ -131,9 +112,20 @@ CardDeck.prototype.setCardBack = function setCardBack(cardback) {
 };
 
 CardDeck.prototype.setCount = function setCount(count) {
-    this.count.setText(count.toString());
+    this.count = count;
+    this.numLeftText.setText(count.toString());
 
+    // When there are no cards left in the deck,
+    // remove the card-back
+    // and show a label that indicates how many turns are left before the game ends
     this.cardback.setVisible(count > 0);
+    let h = 0.3;
+    if (count === 0) {
+        h = 0.15;
+    }
+    this.numLeftText.setY(h * this.getHeight());
+    globals.elements.deckTurnsRemainingLabel1.setVisible(count === 0);
+    globals.elements.deckTurnsRemainingLabel2.setVisible(count === 0);
 };
 
 CardDeck.prototype.doLayout = function doLayout() {

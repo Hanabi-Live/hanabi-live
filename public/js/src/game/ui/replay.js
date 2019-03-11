@@ -140,7 +140,7 @@ const setVisibleButtons = () => {
     // If we are on the last turn, disable the forward replay buttons
     globals.elements.replayForwardButton.setEnabled(globals.replayTurn !== globals.replayMax);
     globals.elements.replayForwardFullButton.setEnabled(globals.replayTurn !== globals.replayMax);
-}
+};
 
 const reset = () => {
     globals.elements.messagePrompt.setMultiText('');
