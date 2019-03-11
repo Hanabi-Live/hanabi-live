@@ -7,6 +7,7 @@ const convert = require('./convert');
 // const constants = require('../constants');
 const globals = require('../globals');
 const HanabiCard = require('./card');
+const Hand = require('./hand');
 
 exports.init = () => {
     const { width, height } = getGameSize();
@@ -60,32 +61,51 @@ function create() {
         }
     }
 
-    for (let i = 0; i <= 5; i++) {
-        const order = i;
-        const suitNum = i;
-        const rank = i;
+    // Had to modify these since Phaser objects have default origin at their centres
+    const handLayoutsRelative = [
+        { x: 0.5, y: 0.9, rot: 0 },
+        { x: 0.1, y: 0.5, rot: -78 * (Math.PI / 180) },
+        { x: 0.5, y: 0.1, rot: 0 },
+        { x: 0.9, y: 0.5, rot: 78 * (Math.PI / 180) },
+    ];
+    const handLayoutsAbsolute = handLayoutsRelative.map(handLayout => ({
+        x: handLayout.x * this.sys.canvas.width,
+        y: handLayout.y * this.sys.canvas.height,
+        rot: handLayout.rot,
+    }));
+    const hands = handLayoutsAbsolute.map(handLayout => new Hand(this, handLayout));
+    hands.map(hand => this.add.existing(hand));
 
-        const suit = convert.msgSuitToSuit(suitNum, globals.init.variant);
-        if (!globals.state.learnedCards[order]) {
-            globals.state.learnedCards[order] = {
-                possibleSuits: globals.init.variant.suits.slice(),
-                possibleRanks: globals.init.variant.ranks.slice(),
-            };
+    let order = 0;
+    for (const hand of hands) {
+        for (let i = 0; i <= 5; i++) {
+            const suitNum = i;
+            const rank = i;
+
+            const suit = convert.msgSuitToSuit(suitNum, globals.init.variant);
+            if (!globals.state.learnedCards[order]) {
+                globals.state.learnedCards[order] = {
+                    possibleSuits: globals.init.variant.suits.slice(),
+                    possibleRanks: globals.init.variant.ranks.slice(),
+                };
+            }
+            globals.ui.cards[order] = new HanabiCard(this, {
+                suit,
+                rank,
+                order,
+                suits: globals.init.variant.suits.slice(),
+                ranks: globals.init.variant.ranks.slice(),
+                holder: 0,
+            });
+            this.add.existing(globals.ui.cards[order]);
+
+            this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+                gameObject.x = dragX;
+                gameObject.y = dragY;
+            });
+            hand.draw(globals.ui.cards[order]);
+            order += 1;
         }
-        globals.ui.cards[order] = new HanabiCard(this, {
-            suit,
-            rank,
-            order,
-            suits: globals.init.variant.suits.slice(),
-            ranks: globals.init.variant.ranks.slice(),
-            holder: 0,
-        });
-        this.add.existing(globals.ui.cards[order]);
-
-        this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-            gameObject.x = dragX;
-            gameObject.y = dragY;
-        });
     }
 }
 

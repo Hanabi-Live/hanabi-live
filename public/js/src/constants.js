@@ -4,6 +4,8 @@
 
 exports.CARDW = 286;
 exports.CARDH = 406;
+// This is a temporary scale only to be used with phaser until dynamic scaling is implemented
+exports.PHASER_DEMO_SCALE = 0.35;
 
 const Color = function Color(name, abbreviation, hexCode) {
     this.name = name;

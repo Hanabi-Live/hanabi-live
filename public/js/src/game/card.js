@@ -10,6 +10,7 @@ const constants = require('../constants');
 const {
     CARDH,
     CARDW,
+    PHASER_DEMO_SCALE,
     SUIT,
 } = constants;
 
@@ -18,13 +19,8 @@ class HanabiCard extends Phaser.GameObjects.Container {
         // Initialize the Phaser container
         super(scene);
 
-        // Cards should start off with a constant width and height
-        config.x = CARDW / 2;
-        config.y = CARDH / 2;
-        config.offset = {
-            x: CARDW / 2,
-            y: CARDH / 2,
-        };
+        this.x = config.x || 0;
+        this.y = config.y || 0;
 
         // Card variables
         this.order = config.order;
@@ -45,18 +41,7 @@ class HanabiCard extends Phaser.GameObjects.Container {
         this.isPlayed = false;
         this.turnPlayed = null;
 
-        this.setCardImageName();
-
-        // const image = this.scene.add.image(CARDW / 2, CARDH / 2, this.imageName);
-        const image = new Phaser.GameObjects.Image(
-            this.scene,
-            CARDW / 2,
-            CARDH / 2,
-            this.imageName,
-        );
-        image.setScale(0.35);
-        image.setInteractive();
-        this.scene.input.setDraggable(image);
+        const image = this.getImage();
         this.add(image);
 
         /*
@@ -77,6 +62,21 @@ class HanabiCard extends Phaser.GameObjects.Container {
     /*
         Some short helper methods
     */
+    getImage() {
+        this.setCardImageName();
+
+        // const image = this.scene.add.image(CARDW / 2, CARDH / 2, this.imageName);
+        const image = new Phaser.GameObjects.Image(
+            this.scene,
+            0,
+            0,
+            this.imageName,
+        );
+        image.setScale(PHASER_DEMO_SCALE);
+        image.setInteractive();
+        this.scene.input.setDraggable(image);
+        return image;
+    }
 
     doRotations(inverted) {
         this.setRotation(inverted ? 180 : 0);
