@@ -96,7 +96,7 @@ const keydown = (event) => {
         return;
     }
 
-    // Ctrl + Enter = Give a clue
+    // Ctrl + Enter = Give a clue / click on the "Give Clue" button
     if (
         event.ctrlKey
         && event.key === 'Enter'

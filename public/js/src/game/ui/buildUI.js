@@ -32,7 +32,6 @@ let basicTextLabel;
 let basicNumberLabel;
 let rect; // We reuse this to draw many squares / rectangles
 let actionLogValues;
-let playStackValues;
 let playAreaValues;
 let cardWidth;
 let cardHeight;
@@ -243,7 +242,7 @@ const drawPlayStacksAndDiscardStacks = () => {
         yOffset = 0;
         discardStackSpacing = 0.05;
     }
-    playStackValues = {
+    const playStackValues = {
         x: 0.183,
         y: 0.345 + yOffset,
         spacing: 0.015,
@@ -1106,19 +1105,18 @@ const drawClueArea = () => {
     globals.layers.UI.add(globals.elements.clueArea);
 
     // The "No Clues" box
+    const noClueBoxWidth = 0.25;
     const noClueBoxValues = {
-        x: 0.275,
-        y: 0.56,
+        x: clueAreaValues.x + (clueAreaValues.w / 2) - (noClueBoxWidth / 2),
+        y: clueAreaValues.y + 0.015,
+        w: noClueBoxWidth,
+        h: 0.15,
     };
-    if (globals.lobby.settings.showBGAUI) {
-        noClueBoxValues.x = clueAreaValues.x + 0.178;
-        noClueBoxValues.y = clueAreaValues.y;
-    }
     globals.elements.noClueBox = new graphics.Rect({
         x: noClueBoxValues.x * winW,
         y: noClueBoxValues.y * winH,
-        width: 0.25 * winW,
-        height: 0.15 * winH,
+        width: noClueBoxValues.w * winW,
+        height: noClueBoxValues.h * winH,
         cornerRadius: 0.01 * winW,
         fill: 'black',
         opacity: 0.5,
@@ -1126,15 +1124,11 @@ const drawClueArea = () => {
     });
     globals.layers.UI.add(globals.elements.noClueBox);
 
-    const noClueLabelValues = {
-        x: noClueBoxValues.x - 0.125,
-        y: noClueBoxValues.y + 0.025,
-    };
     globals.elements.noClueLabel = new graphics.Text({
-        x: noClueLabelValues.x * winW,
-        y: noClueLabelValues.y * winH,
-        width: 0.5 * winW,
-        height: 0.19 * winH,
+        x: noClueBoxValues.x * winW,
+        y: (noClueBoxValues.y + 0.035) * winH,
+        width: noClueBoxValues.w * winW,
+        height: noClueBoxValues.h * winH,
         fontFamily: 'Verdana',
         fontSize: 0.08 * winH,
         strokeWidth: 1,
