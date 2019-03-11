@@ -11,6 +11,7 @@
 package main
 
 import (
+	"encoding/json"
 	"math"
 	"strconv"
 )
@@ -153,14 +154,14 @@ func commandReplayAction(s *Session, d *CommandData) {
 
 		// Test to see if it is valid JSON
 		var js json.RawMessage
-		if json.Unmarshal([]byte(g.ActionJSON), &js) == nil {
+		if json.Unmarshal([]byte(d.ActionJSON), &js) == nil {
 			s.Warning("That is not a valid JSON object.")
 			return
 		}
 
 		// Perform a move in the hypothetical
 		for _, sp := range g.Spectators {
-			sp.Session.Emit("hypoAction", g.ActionJSON)
+			sp.Session.Emit("hypoAction", d.ActionJSON)
 		}
 	} else {
 		s.Error("That is an invalid type of shared replay action.")
