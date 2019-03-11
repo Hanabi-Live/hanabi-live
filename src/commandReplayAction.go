@@ -2,12 +2,7 @@
 	Sent when the user performs an action in a shared replay
 	"data" example:
 	{
-		type: 0,
-		// 0 is a turn change
-		// 1 is a card arrow indication
-		// 2 is a leader transfer
-		// 3 is a "hypothetical" card morph
-		// 4 is a sound effect
+		type: 0, // Types are listed in the "constants.go" file
 		value: 10,
 		name: 'Zamiel',
 	}
@@ -138,6 +133,34 @@ func commandReplayAction(s *Session, d *CommandData) {
 			sp.Session.Emit("replaySound", &ReplaySoundMessage{
 				Sound: d.Sound,
 			})
+		}
+	} else if d.Type == replayActionTypeHypoStart {
+		// Start a hypothetical line
+		for _, sp := range g.Spectators {
+			sp.Session.Emit("hypoStart", nil)
+		}
+	} else if d.Type == replayActionTypeHypoEnd {
+		// End a hypothetical line
+		for _, sp := range g.Spectators {
+			sp.Session.Emit("hypoEnd", nil)
+		}
+	} else if d.Type == replayActionTypeHypoAction {
+		// Validate that the submitted action is not empty
+		if d.ActionJSON == "" {
+			s.Warning("The action JSON cannot be blank.")
+			return
+		}
+
+		// Test to see if it is valid JSON
+		var js json.RawMessage
+		if json.Unmarshal([]byte(g.ActionJSON), &js) == nil {
+			s.Warning("That is not a valid JSON object.")
+			return
+		}
+
+		// Perform a move in the hypothetical
+		for _, sp := range g.Spectators {
+			sp.Session.Emit("hypoAction", g.ActionJSON)
 		}
 	} else {
 		s.Error("That is an invalid type of shared replay action.")

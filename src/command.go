@@ -45,6 +45,9 @@ type CommandData struct {
 	Offset int `json:"offset"`
 	Amount int `json:"amount"`
 
+	// hypoAction
+	ActionJSON string `json:"actionJSON"`
+
 	// clientError
 	Message string `json:"message"`
 	URL     string `json:"url"`

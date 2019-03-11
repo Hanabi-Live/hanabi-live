@@ -50,11 +50,14 @@ const (
 )
 
 const (
-	replayActionTypeTurn = iota
-	replayActionTypeArrow
+	replayActionTypeTurn  = iota // Changing the shared turn
+	replayActionTypeArrow        // Highlighting a card with an indicator arrow
 	replayActionTypeLeaderTransfer
-	replayActionTypeMorph
-	replayActionTypeSound
+	replayActionTypeMorph      // Morphing a card to be something else for the purpose of a hypothetical
+	replayActionTypeSound      // Play one of the arbitrary sound effects included on the server
+	replayActionTypeHypoStart  // Start a hypothetical line
+	replayActionTypeHypoEnd    // End a hypothetical line
+	replayActionTypeHypoAction // Perform a move in the hypothetical
 )
 
 const (
