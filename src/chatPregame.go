@@ -5,27 +5,30 @@ import (
 )
 
 func chatPregameS(s *Session, d *CommandData, g *Game) {
-	g.AutomaticStart = len(g.Players) + 1
-	chatServerPregameSend("The game will start as soon as "+strconv.Itoa(g.AutomaticStart)+
-		" players have joined.", g.ID)
+	automaticStart(s, g, len(g.Players)+1)
 }
 
 func chatPregameS3(s *Session, d *CommandData, g *Game) {
-	g.AutomaticStart = 3
-	chatServerPregameSend("The game will start as soon as 3 players have joined.", g.ID)
+	automaticStart(s, g, 3)
 }
 
 func chatPregameS4(s *Session, d *CommandData, g *Game) {
-	g.AutomaticStart = 4
-	chatServerPregameSend("The game will start as soon as 4 players have joined.", g.ID)
+	automaticStart(s, g, 4)
 }
 
 func chatPregameS5(s *Session, d *CommandData, g *Game) {
-	g.AutomaticStart = 5
-	chatServerPregameSend("The game will start as soon as 5 players have joined.", g.ID)
+	automaticStart(s, g, 5)
 }
 
 func chatPregameS6(s *Session, d *CommandData, g *Game) {
-	g.AutomaticStart = 6
-	chatServerPregameSend("The game will start as soon as 6 players have joined.", g.ID)
+	automaticStart(s, g, 6)
+}
+
+func automaticStart(s *Session, g *Game, numPlayers int) {
+	if len(g.Players) == numPlayers {
+		commandGameStart(s, nil)
+	} else {
+		g.AutomaticStart = numPlayers
+		chatServerPregameSend("The game will start as soon as "+strconv.Itoa(numPlayers)+" players have joined.", g.ID)
+	}
 }
