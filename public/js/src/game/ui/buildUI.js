@@ -1441,7 +1441,7 @@ const getMinEfficiency = () => {
     if (numberOfPlayers === 4 || numberOfPlayers === 5) {
         cardsInHand = 4;
     } else if (numberOfPlayers === 6) {
-        cardsInHand = 3;
+        cardsInHand = 4; // TODO change this to 3
     }
     let startingPace = totalCardsInTheDeck;
     startingPace -= (cardsInHand - 1) * numberOfPlayers;
