@@ -150,7 +150,7 @@ const keydown = (event) => {
             sharedReplaySendSound('buzz');
             return;
         }
-        if (event.key === 'g') { // Alt + g
+        if (event.key === 'h') { // Alt + h ("Alt + g" is taken by LastPass)
             // This is used for fun in shared replays
             sharedReplaySendSound('god');
             return;
