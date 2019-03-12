@@ -58,15 +58,15 @@ module.exports = () => {
     // Define the layers
     // (they are added to the stage later on at the end of the buildUI function)
     globals.layers.background = new graphics.Layer();
-    globals.layers.card = new graphics.Layer();
     globals.layers.UI = new graphics.Layer();
-    globals.layers.overtop = new graphics.Layer();
-    globals.layers.text = new graphics.Layer({
-        listening: false,
-    });
     globals.layers.timer = new graphics.Layer({
         listening: false,
     });
+    globals.layers.card = new graphics.Layer();
+    globals.layers.UI2 = new graphics.Layer({ // We need some UI elements to be on top of cards
+        listening: false,
+    });
+    globals.layers.overtop = new graphics.Layer(); // A layer drawn overtop everything else
 
     const background = new graphics.Image({
         x: 0,
@@ -131,10 +131,10 @@ module.exports = () => {
     }
 
     globals.stage.add(globals.layers.background);
-    globals.stage.add(globals.layers.text);
     globals.stage.add(globals.layers.UI);
     globals.stage.add(globals.layers.timer);
     globals.stage.add(globals.layers.card);
+    globals.stage.add(globals.layers.UI2);
     globals.stage.add(globals.layers.overtop);
 };
 
@@ -333,7 +333,7 @@ const drawPlayStacksAndDiscardStacks = () => {
                 text,
                 fill: labelColor,
             });
-            globals.layers.text.add(suitLabelText);
+            globals.layers.UI2.add(suitLabelText);
             globals.elements.suitLabelTexts.push(suitLabelText);
         }
     }
@@ -1419,7 +1419,7 @@ const drawExtraAnimations = () => {
         image: globals.ImageLoader.get('replay-forward'),
         opacity: 0,
     });
-    globals.layers.UI.add(globals.elements.sharedReplayForward);
+    globals.layers.UI2.add(globals.elements.sharedReplayForward);
     globals.elements.sharedReplayForwardTween = new graphics.Tween({
         node: globals.elements.sharedReplayForward,
         duration: 0.5,
@@ -1437,7 +1437,7 @@ const drawExtraAnimations = () => {
         image: globals.ImageLoader.get('replay-back'),
         opacity: 0,
     });
-    globals.layers.UI.add(globals.elements.sharedReplayBackward);
+    globals.layers.UI2.add(globals.elements.sharedReplayBackward);
     globals.elements.sharedReplayBackwardTween = new graphics.Tween({
         node: globals.elements.sharedReplayBackward,
         duration: 0.5,
