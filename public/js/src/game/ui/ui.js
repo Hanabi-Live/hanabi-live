@@ -380,7 +380,7 @@ HanabiUI.prototype.handleNotify = function handleNotify(data) {
 };
 
 HanabiUI.prototype.updateChatLabel = function updateChatLabel() {
-    let text = 'Chat';
+    let text = '💬';
     if (globals.lobby.chatUnread > 0) {
         text += ` (${globals.lobby.chatUnread})`;
     }

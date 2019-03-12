@@ -2,7 +2,7 @@ const Loader = function Loader(finishedCallback) {
     this.finishedCallback = finishedCallback;
 
     const files = [
-        'x',
+        'home',
         'replay',
         'replay-disabled',
         'replay-back',
@@ -14,6 +14,7 @@ const Loader = function Loader(finishedCallback) {
         'replay-forward-full',
         'replay-forward-full-disabled',
         'trashcan',
+        'x',
     ];
     this.filemap = {};
     for (const file of files) {

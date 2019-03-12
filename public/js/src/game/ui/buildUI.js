@@ -38,6 +38,7 @@ let actionLogValues;
 let playAreaValues;
 let cardWidth;
 let cardHeight;
+let bottomLeftButtonValues;
 let scoreAreaValues;
 let clueAreaValues;
 let clueLogValues;
@@ -364,12 +365,19 @@ const drawPlayStacksAndDiscardStacks = () => {
 };
 
 const drawBottomLeftButtons = () => {
-    // A button to toggle the in-game replay
+    bottomLeftButtonValues = {
+        x: 0.01,
+        y: 0.8,
+        w: 0.07,
+        h: 0.0563, // 0.06
+    };
+
+    // The toggle in-game replay button
     globals.elements.replayButton = new Button({
-        x: 0.01 * winW,
-        y: 0.8 * winH,
-        width: 0.06 * winW,
-        height: 0.06 * winH,
+        x: bottomLeftButtonValues.x * winW,
+        y: bottomLeftButtonValues.y * winH,
+        width: bottomLeftButtonValues.w * winW,
+        height: bottomLeftButtonValues.h * winH,
         image: 'replay',
         visible: !globals.replay,
     });
@@ -386,68 +394,46 @@ const drawBottomLeftButtons = () => {
     globals.layers.UI.add(globals.elements.replayButton);
     globals.elements.replayButton.setEnabled(false);
 
-    // The chat button is not necessary in non-shared replays
-    const middleButtonPos = {
-        x: 0.01,
-        y: 0.87,
-        size: 0.06,
-    };
-    if (!globals.replay || globals.sharedReplay) {
-        globals.elements.chatButton = new Button({
-            x: middleButtonPos.x * winW,
-            y: middleButtonPos.y * winH,
-            width: middleButtonPos.size * winW,
-            height: middleButtonPos.size * winH,
-            text: 'Chat',
-            // In speedruns, show the abandon game button by default instead of the chat button
-            visible: !globals.speedrun || globals.spectating,
-        });
-        globals.layers.UI.add(globals.elements.chatButton);
-        globals.elements.chatButton.on('click tap', () => {
-            globals.game.chat.toggle();
-        });
-    }
-
-    // The kill button is only necessary in non-replays
-    if (!globals.replay) {
-        globals.elements.killButton = new Button({
-            x: middleButtonPos.x * winW,
-            y: middleButtonPos.y * winH,
-            width: middleButtonPos.size * winW,
-            height: middleButtonPos.size * winH,
-            image: 'x',
-            // In speedruns, show the abandon game button by default instead of the chat button
-            visible: globals.speedrun && !globals.spectating,
-        });
-        globals.layers.UI.add(globals.elements.killButton);
-        globals.elements.killButton.on('click tap', () => {
-            globals.lobby.conn.send('gameAbandon');
-        });
-    }
-
-    // The restart button is shown in shared replays of speedruns that just ended
+    // The restart button
+    // (to go into a new game with the same settings as the current shared replay)
     globals.elements.restartButton = new Button({
-        x: middleButtonPos.x * winW,
-        y: middleButtonPos.y * winH,
-        width: middleButtonPos.size * winW,
-        height: middleButtonPos.size * winH,
+        x: bottomLeftButtonValues.x * winW,
+        y: bottomLeftButtonValues.y * winH,
+        width: bottomLeftButtonValues.w * winW,
+        height: bottomLeftButtonValues.h * winH,
         text: 'Restart',
-        visible: false,
+        visible: globals.replay && globals.sharedReplay,
     });
     globals.layers.UI.add(globals.elements.restartButton);
     globals.elements.restartButton.on('click tap', () => {
         globals.lobby.conn.send('gameRestart');
     });
 
+    // The chat button
+    globals.elements.chatButton = new Button({
+        x: bottomLeftButtonValues.x * winW,
+        y: (bottomLeftButtonValues.y + bottomLeftButtonValues.h + 0.01) * winH,
+        width: bottomLeftButtonValues.w * winW,
+        height: bottomLeftButtonValues.h * winH,
+        text: '💬',
+        visible: !globals.replay || globals.sharedReplay,
+    });
+    globals.layers.UI.add(globals.elements.chatButton);
+    globals.elements.chatButton.on('click tap', () => {
+        globals.game.chat.toggle();
+    });
+
+    const shortButtonSpacing = 0.003;
+
+    // The lobby button (which takes the user back to the lobby)
     const lobbyButton = new Button({
-        x: 0.01 * winW,
-        y: 0.94 * winH,
-        width: 0.06 * winW,
-        height: 0.05 * winH,
-        text: 'Lobby',
+        x: bottomLeftButtonValues.x * winW,
+        y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h) + 0.02) * winH,
+        width: ((bottomLeftButtonValues.w / 2) - shortButtonSpacing) * winW,
+        height: bottomLeftButtonValues.h * winH,
+        image: 'home',
     });
     globals.layers.UI.add(lobbyButton);
-
     lobbyButton.on('click tap', () => {
         lobbyButton.off('click tap');
         globals.lobby.conn.send('gameUnattend');
@@ -455,12 +441,26 @@ const drawBottomLeftButtons = () => {
         timer.stop();
         globals.game.hide();
     });
+
+    // The kill button (which terminates the current game)
+    globals.elements.killButton = new Button({
+        x: (bottomLeftButtonValues.x + (bottomLeftButtonValues.w / 2) + shortButtonSpacing) * winW,
+        y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h) + 0.02) * winH,
+        width: ((bottomLeftButtonValues.w / 2) - shortButtonSpacing) * winW,
+        height: bottomLeftButtonValues.h * winH,
+        image: 'x',
+        visible: !globals.replay && !globals.spectating,
+    });
+    globals.layers.UI.add(globals.elements.killButton);
+    globals.elements.killButton.on('click tap', () => {
+        globals.lobby.conn.send('gameAbandon');
+    });
 };
 
 const drawDeck = () => {
     const deckValues = {
-        x: 0.08,
-        y: 0.8,
+        x: bottomLeftButtonValues.x + bottomLeftButtonValues.w + 0.01,
+        y: bottomLeftButtonValues.y,
         w: 0.075,
         h: 0.189,
     };
