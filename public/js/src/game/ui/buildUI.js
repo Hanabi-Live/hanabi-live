@@ -985,8 +985,8 @@ const drawTimers = () => {
         y2: 0.592,
     };
     if (globals.lobby.settings.showBGAUI) {
-        timerValues.x1 = 0.31;
-        timerValues.x2 = 0.31;
+        timerValues.x1 = 0.345;
+        timerValues.x2 = 0.345;
         timerValues.y1 = 0.77;
         timerValues.y2 = 0.885;
     }
@@ -1004,6 +1004,7 @@ const drawTimers = () => {
     });
     globals.layers.timer.add(globals.elements.timer1);
 
+    // Current Player
     globals.elements.timer2 = new timer.TimerDisplay({
         x: timerValues.x2 * winW,
         y: timerValues.y2 * winH,
