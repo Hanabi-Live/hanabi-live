@@ -1030,6 +1030,10 @@ const drawClueArea = () => {
     if (globals.variant.showSuitNames) {
         clueAreaValues.y += 0.03;
     }
+    // In BGA mode, we can afford to put a bit more spacing to make it look less packed together
+    if (globals.lobby.settings.showBGAUI) {
+        clueAreaValues.y += 0.02;
+    }
     globals.elements.clueArea = new graphics.Group({
         x: clueAreaValues.x * winW,
         y: clueAreaValues.y * winH,
