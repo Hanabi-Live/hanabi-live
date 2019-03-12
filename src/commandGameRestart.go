@@ -47,19 +47,17 @@ func commandGameRestart(s *Session, d *CommandData) {
 		Restart
 	*/
 
-	// Force the client of all of the spectators to go back to the lobbby
+	// Force the client of all of the spectators to go back to the lobby
 	g.NotifyBoot()
 
 	// On the server side, all of the spectators will still be in the game
 	// Make a list of the sessions and then manually disconnect them
-	otherPlayerSessions := make([]*Session, 0)
+	gameSessions := make([]*Session, 0)
 	for _, sp := range g.Spectators {
-		if sp.ID != s.UserID() {
-			otherPlayerSessions = append(otherPlayerSessions, sp.Session)
-		}
-		sp.Session.Set("currentGame", g.ID)
-		sp.Session.Set("status", statusSpectating)
-		commandGameUnattend(sp.Session, nil)
+		gameSessions = append(gameSessions, sp.Session)
+	}
+	for _, s2 := range gameSessions {
+		commandGameUnattend(s2, nil)
 	}
 
 	// The shared replay should now be deleted, since all of the players have left
@@ -75,7 +73,11 @@ func commandGameRestart(s *Session, d *CommandData) {
 		EmptyClues:           g.Options.EmptyClues,
 		CharacterAssignments: g.Options.CharacterAssignments,
 	})
-	for _, s2 := range otherPlayerSessions {
+	for _, s2 := range gameSessions {
+		if s2.UserID() == s.UserID() {
+			// The creator of the game does not need to join
+			continue
+		}
 		commandGameJoin(s2, &CommandData{
 			// We increment the newGameID after creating a game,
 			// so assume that the ID of the last game created is equal to the "newGameID" minus 1

@@ -43,7 +43,8 @@ func commandGameUnattend(s *Session, d *CommandData) {
 		i := g.GetSpectatorIndex(s.UserID())
 		if i == -1 {
 			s.Error("You are not in the spectators list, " +
-				"even though you were marked as being in replay " + strconv.Itoa(gameID) + ".")
+				"even though you were marked as having status \"" + status[oldStatus] + "\" " +
+				"in replay " + strconv.Itoa(gameID) + ".")
 			return
 		}
 
