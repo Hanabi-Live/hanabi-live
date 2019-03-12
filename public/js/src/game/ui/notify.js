@@ -230,7 +230,7 @@ commands.stackDirections = (data) => {
                 text = 'Unknown';
             }
             globals.elements.suitLabelTexts[i].setText(text);
-            globals.layers.UI2.batchDraw();
+            globals.layers.UI.batchDraw();
         }
     }
 };

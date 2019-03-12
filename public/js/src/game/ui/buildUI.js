@@ -333,7 +333,7 @@ const drawPlayStacksAndDiscardStacks = () => {
                 text,
                 fill: labelColor,
             });
-            globals.layers.UI2.add(suitLabelText);
+            globals.layers.UI.add(suitLabelText);
             globals.elements.suitLabelTexts.push(suitLabelText);
         }
     }
