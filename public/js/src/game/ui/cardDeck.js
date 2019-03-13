@@ -2,7 +2,7 @@
 const globals = require('./globals');
 const constants = require('../../constants');
 const graphics = require('./graphics');
-const LayoutChild = require('./layoutChild');
+const LayoutChild = require('./LayoutChild');
 const misc = require('../../misc');
 const tooltips = require('./tooltips');
 

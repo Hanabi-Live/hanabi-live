@@ -1,7 +1,7 @@
 // Imports
 const globals = require('./globals');
 const graphics = require('./graphics');
-const FitText = require('./fitText');
+const FitText = require('./FitText');
 
 const MultiFitText = function MultiFitText(config) {
     graphics.Group.call(this, config);

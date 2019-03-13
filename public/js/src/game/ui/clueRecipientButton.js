@@ -1,5 +1,5 @@
 // Imports
-const Button = require('./button');
+const Button = require('./Button');
 const graphics = require('./graphics');
 
 const ClueRecipientButton = function ClueRecipientButton(config) {

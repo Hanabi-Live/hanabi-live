@@ -4,7 +4,7 @@
 
 // Imports
 const constants = require('../../constants');
-const Clue = require('./clue');
+const Clue = require('./Clue');
 
 // Convert a clue to the format used by the server
 // On the client, the color is a rich object

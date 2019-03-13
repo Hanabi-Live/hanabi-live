@@ -3,13 +3,13 @@
 */
 
 // Imports
+const ClueEntry = require('./ClueEntry');
 const constants = require('../../constants');
 const convert = require('./convert');
 const globals = require('./globals');
 const graphics = require('./graphics');
-const HanabiCard = require('./card');
-const HanabiClueEntry = require('./clueEntry');
-const LayoutChild = require('./layoutChild');
+const HanabiCard = require('./HanabiCard');
+const LayoutChild = require('./LayoutChild');
 const replay = require('./replay');
 const stats = require('./stats');
 
@@ -59,7 +59,7 @@ commands.clue = (data) => {
         clueName = clue.value.name;
     }
 
-    const entry = new HanabiClueEntry({
+    const entry = new ClueEntry({
         width: globals.elements.clueLog.getWidth(),
         height: 0.017 * globals.stage.getHeight(),
         giver: globals.playerNames[data.giver],

@@ -1,5 +1,5 @@
 // Imports
-const Button = require('./button');
+const Button = require('./Button');
 const graphics = require('./graphics');
 
 // A simple two-state button with text for each state

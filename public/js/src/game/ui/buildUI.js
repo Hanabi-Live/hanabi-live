@@ -4,27 +4,27 @@
 
 // Imports
 const globals = require('./globals');
-const Button = require('./button');
-const ButtonGroup = require('./buttonGroup');
-const CardDeck = require('./cardDeck');
-const CardStack = require('./cardStack');
-const CardLayout = require('./cardLayout');
-const Clue = require('./clue');
-const ClueRecipientButton = require('./clueRecipientButton');
-const ColorButton = require('./colorButton');
+const Button = require('./Button');
+const ButtonGroup = require('./ButtonGroup');
+const CardDeck = require('./CardDeck');
+const CardStack = require('./CardStack');
+const CardLayout = require('./CardLayout');
+const Clue = require('./Clue');
+const ClueLog = require('./ClueLog');
+const ClueRecipientButton = require('./ClueRecipientButton');
+const ColorButton = require('./ColorButton');
 const constants = require('../../constants');
 const drawHands = require('./drawHands');
-const FitText = require('./fitText');
+const FitText = require('./FitText');
 const graphics = require('./graphics');
-const HanabiClueLog = require('./clueLog');
-const HanabiMsgLog = require('./msgLog');
+const MsgLog = require('./MsgLog');
 const hypothetical = require('./hypothetical');
-const MultiFitText = require('./multiFitText');
-const NumberButton = require('./numberButton');
+const MultiFitText = require('./MultiFitText');
+const NumberButton = require('./NumberButton');
 const replay = require('./replay');
 const stats = require('./stats');
 const timer = require('./timer');
-const ToggleButton = require('./toggleButton');
+const ToggleButton = require('./ToggleButton');
 const tooltips = require('./tooltips');
 
 // Constants
@@ -229,7 +229,7 @@ const drawActionLog = () => {
     globals.layers.overtop.add(globals.elements.stageFade);
 
     // The full action log (that appears when you click on the action log)
-    globals.elements.msgLogGroup = new HanabiMsgLog();
+    globals.elements.msgLogGroup = new MsgLog();
     globals.layers.overtop.add(globals.elements.msgLogGroup);
 };
 
@@ -971,7 +971,7 @@ const drawClueLog = () => {
     globals.layers.background.add(clueLogRect);
 
     const spacing = 0.01;
-    globals.elements.clueLog = new HanabiClueLog({
+    globals.elements.clueLog = new ClueLog({
         x: (clueLogValues.x + spacing) * winW,
         y: (clueLogValues.y + spacing) * winH,
         width: (clueLogValues.w - spacing * 2) * winW,
@@ -1582,7 +1582,7 @@ const drawReplayArea = () => {
     const text = new FitText({
         name: 'text',
         x: 0.027 * winW,
-        y: 0.017 * winH,
+        y: 0.016 * winH,
         width: bottomRightReplayButtonValues.w * 0.65 * winW,
         listening: false,
         fontSize: 0.5 * winH,

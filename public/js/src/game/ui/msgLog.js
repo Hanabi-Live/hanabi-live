@@ -1,9 +1,9 @@
 // Imports
 const globals = require('./globals');
 const graphics = require('./graphics');
-const MultiFitText = require('./multiFitText');
+const MultiFitText = require('./MultiFitText');
 
-const HanabiMsgLog = function HanabiMsgLog(config) {
+const MsgLog = function MsgLog(config) {
     const baseConfig = {
         x: 0.2 * globals.stage.getWidth(),
         y: 0.02 * globals.stage.getHeight(),
@@ -72,9 +72,9 @@ const HanabiMsgLog = function HanabiMsgLog(config) {
     }
 };
 
-graphics.Util.extend(HanabiMsgLog, graphics.Group);
+graphics.Util.extend(MsgLog, graphics.Group);
 
-HanabiMsgLog.prototype.addMessage = function addMessage(msg) {
+MsgLog.prototype.addMessage = function addMessage(msg) {
     const appendLine = (log, numbers, line) => {
         log.setMultiText(line);
         numbers.setMultiText(globals.deckSize.toString());
@@ -89,7 +89,7 @@ HanabiMsgLog.prototype.addMessage = function addMessage(msg) {
     }
 };
 
-HanabiMsgLog.prototype.showPlayerActions = function showPlayerActions(playerName) {
+MsgLog.prototype.showPlayerActions = function showPlayerActions(playerName) {
     let playerIDX;
     for (let i = 0; i < globals.playerNames.length; i++) {
         if (globals.playerNames[i] === playerName) {
@@ -120,7 +120,7 @@ HanabiMsgLog.prototype.showPlayerActions = function showPlayerActions(playerName
     });
 };
 
-HanabiMsgLog.prototype.refreshText = function refreshText() {
+MsgLog.prototype.refreshText = function refreshText() {
     this.logtext.refreshText();
     this.lognumbers.refreshText();
     for (let i = 0; i < globals.playerNames.length; i++) {
@@ -129,7 +129,7 @@ HanabiMsgLog.prototype.refreshText = function refreshText() {
     }
 };
 
-HanabiMsgLog.prototype.reset = function reset() {
+MsgLog.prototype.reset = function reset() {
     this.logtext.reset();
     this.lognumbers.reset();
     for (let i = 0; i < globals.playerNames.length; i++) {
@@ -138,4 +138,4 @@ HanabiMsgLog.prototype.reset = function reset() {
     }
 };
 
-module.exports = HanabiMsgLog;
+module.exports = MsgLog;

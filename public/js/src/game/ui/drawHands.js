@@ -1,9 +1,10 @@
+
 // Imports
 const globals = require('./globals');
-const CardLayout = require('./cardLayout');
+const CardLayout = require('./CardLayout');
 const constants = require('../../constants');
 const graphics = require('./graphics');
-const HanabiNameFrame = require('./nameFrame');
+const NameFrame = require('./NameFrame');
 
 module.exports = () => {
     // Constants
@@ -322,7 +323,7 @@ module.exports = () => {
         if (globals.lobby.settings.showBGAUI) {
             playerNamePos = namePosBGA;
         }
-        globals.elements.nameFrames[i] = new HanabiNameFrame({
+        globals.elements.nameFrames[i] = new NameFrame({
             x: playerNamePos[numPlayers][j].x * winW,
             y: playerNamePos[numPlayers][j].y * winH,
             width: playerNamePos[numPlayers][j].w * winW,

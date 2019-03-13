@@ -1,10 +1,10 @@
 // Imports
 const globals = require('./globals');
-const FitText = require('./fitText');
+const FitText = require('./FitText');
 const graphics = require('./graphics');
 const replay = require('./replay');
 
-const HanabiClueEntry = function HanabiClueEntry(config) {
+const ClueEntry = function ClueEntry(config) {
     graphics.Group.call(this, config);
 
     const w = config.width;
@@ -114,9 +114,9 @@ const HanabiClueEntry = function HanabiClueEntry(config) {
     });
 };
 
-graphics.Util.extend(HanabiClueEntry, graphics.Group);
+graphics.Util.extend(ClueEntry, graphics.Group);
 
-HanabiClueEntry.prototype.checkValid = (c) => {
+ClueEntry.prototype.checkValid = (c) => {
     if (!globals.deck[c]) {
         return false;
     }
@@ -129,7 +129,7 @@ HanabiClueEntry.prototype.checkValid = (c) => {
 };
 
 // Returns number of expirations, either 0 or 1 depending on whether it expired
-HanabiClueEntry.prototype.checkExpiry = function checkExpiry() {
+ClueEntry.prototype.checkExpiry = function checkExpiry() {
     for (let i = 0; i < this.list.length; i++) {
         if (this.checkValid(this.list[i])) {
             return 0;
@@ -149,7 +149,7 @@ HanabiClueEntry.prototype.checkExpiry = function checkExpiry() {
     return 1;
 };
 
-HanabiClueEntry.prototype.showMatch = function showMatch(target) {
+ClueEntry.prototype.showMatch = function showMatch(target) {
     this.background.setOpacity(0.1);
     this.background.setFill('white');
     this.negativeMarker.setVisible(false);
@@ -171,4 +171,4 @@ HanabiClueEntry.prototype.showMatch = function showMatch(target) {
     }
 };
 
-module.exports = HanabiClueEntry;
+module.exports = ClueEntry;

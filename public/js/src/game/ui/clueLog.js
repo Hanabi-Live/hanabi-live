@@ -2,23 +2,23 @@
 const globals = require('./globals');
 const graphics = require('./graphics');
 
-const HanabiClueLog = function HanabiClueLog(config) {
+const ClueLog = function ClueLog(config) {
     graphics.Group.call(this, config);
 };
 
-graphics.Util.extend(HanabiClueLog, graphics.Group);
+graphics.Util.extend(ClueLog, graphics.Group);
 
-HanabiClueLog.prototype.add = function add(child) {
+ClueLog.prototype.add = function add(child) {
     graphics.Group.prototype.add.call(this, child);
     this.doLayout();
 };
 
-HanabiClueLog.prototype._setChildrenIndices = function _setChildrenIndices() {
+ClueLog.prototype._setChildrenIndices = function _setChildrenIndices() {
     graphics.Group.prototype._setChildrenIndices.call(this);
     this.doLayout();
 };
 
-HanabiClueLog.prototype.doLayout = function doLayout() {
+ClueLog.prototype.doLayout = function doLayout() {
     let y = 0;
 
     for (let i = 0; i < this.children.length; i++) {
@@ -30,7 +30,7 @@ HanabiClueLog.prototype.doLayout = function doLayout() {
     }
 };
 
-HanabiClueLog.prototype.checkExpiry = function checkExpiry() {
+ClueLog.prototype.checkExpiry = function checkExpiry() {
     const maxLength = 31;
     const childrenToRemove = this.children.length - maxLength;
     if (childrenToRemove < 1) {
@@ -47,16 +47,16 @@ HanabiClueLog.prototype.checkExpiry = function checkExpiry() {
     this.doLayout();
 };
 
-HanabiClueLog.prototype.showMatches = function showMatches(target) {
+ClueLog.prototype.showMatches = function showMatches(target) {
     for (let i = 0; i < this.children.length; i++) {
         this.children[i].showMatch(target);
     }
 };
 
-HanabiClueLog.prototype.clear = function clear() {
+ClueLog.prototype.clear = function clear() {
     for (let i = this.children.length - 1; i >= 0; i--) {
         this.children[i].remove();
     }
 };
 
-module.exports = HanabiClueLog;
+module.exports = ClueLog;

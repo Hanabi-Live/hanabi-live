@@ -6,8 +6,8 @@
 const convert = require('./convert');
 // const constants = require('../constants');
 const globals = require('../globals');
-const HanabiCard = require('./card');
-const Hand = require('./hand');
+const HanabiCard = require('./HanabiCard');
+const Hand = require('./Hand');
 
 exports.init = () => {
     const { width, height } = getGameSize();

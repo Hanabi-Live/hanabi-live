@@ -3,7 +3,7 @@ const globals = require('./globals');
 const constants = require('../../constants');
 const graphics = require('./graphics');
 
-const HanabiNameFrame = function HanabiNameFrame(config) {
+const NameFrame = function NameFrame(config) {
     graphics.Group.call(this, config);
 
     this.name = new graphics.Text({
@@ -139,10 +139,10 @@ const HanabiNameFrame = function HanabiNameFrame(config) {
     */
 };
 
-graphics.Util.extend(HanabiNameFrame, graphics.Group);
+graphics.Util.extend(NameFrame, graphics.Group);
 
 // Transfer leadership of the shared replay to another player
-HanabiNameFrame.prototype.giveLeader = function giveLeader(username) {
+NameFrame.prototype.giveLeader = function giveLeader(username) {
     // Only proceed if we are in a shared replay
     if (!globals.sharedReplay) {
         return;
@@ -164,7 +164,7 @@ HanabiNameFrame.prototype.giveLeader = function giveLeader(username) {
     });
 };
 
-HanabiNameFrame.prototype.setActive = function setActive(active) {
+NameFrame.prototype.setActive = function setActive(active) {
     this.leftline.setStrokeWidth(active ? 3 : 1);
     this.rightline.setStrokeWidth(active ? 3 : 1);
 
@@ -177,7 +177,7 @@ HanabiNameFrame.prototype.setActive = function setActive(active) {
     // this.tween.play();
 };
 
-HanabiNameFrame.prototype.setConnected = function setConnected(connected) {
+NameFrame.prototype.setConnected = function setConnected(connected) {
     const color = connected ? '#d8d5ef' : '#e8233d';
 
     this.leftline.setStroke(color);
@@ -185,4 +185,4 @@ HanabiNameFrame.prototype.setConnected = function setConnected(connected) {
     this.name.setFill(color);
 };
 
-module.exports = HanabiNameFrame;
+module.exports = NameFrame;
