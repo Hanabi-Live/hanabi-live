@@ -40,6 +40,7 @@ let playAreaValues;
 let cardWidth;
 let cardHeight;
 let bottomLeftButtonValues;
+let deckValues;
 let scoreAreaValues;
 let clueAreaValues;
 let clueLogValues;
@@ -583,7 +584,7 @@ const drawBottomLeftButtons = () => {
 };
 
 const drawDeck = () => {
-    const deckValues = {
+    deckValues = {
         x: bottomLeftButtonValues.x + bottomLeftButtonValues.w + 0.01,
         y: bottomLeftButtonValues.y,
         w: 0.075,
@@ -657,7 +658,7 @@ const drawScoreArea = () => {
         h: 0.18,
     };
     if (globals.lobby.settings.showBGAUI) {
-        scoreAreaValues.x = 0.168;
+        scoreAreaValues.x = deckValues.x + deckValues.w + 0.01;
         scoreAreaValues.y = 0.81;
     }
     globals.elements.scoreArea = new graphics.Group({
