@@ -64,18 +64,10 @@ exports.init = () => {
 
     // Enable all of the keyboard hotkeys
     $(document).keydown(keydown);
-
-    // Handle the swapping of the "Chat" button
-    $(document).keydown(buttonToggleKeyDown);
-    $(document).keyup(buttonToggleKeyUp);
-    $(window).focus(windowFocus);
 };
 
 exports.destroy = () => {
     $(document).unbind('keydown', keydown);
-    $(document).unbind('keydown', buttonToggleKeyDown);
-    $(document).unbind('keyup', buttonToggleKeyUp);
-    $(window).unbind('focus', windowFocus);
 };
 
 const keydown = (event) => {
@@ -130,9 +122,6 @@ const keydown = (event) => {
         && globals.activeHover !== null
         && typeof globals.activeHover.order !== 'undefined'
     ) {
-        // Note that "activeHover" will remain set even if we move the mouse away from the card,
-        // so this means that if the mouse is not hovering over ANY card, then the note that will be
-        // deleted will be from the last tooltip shown
         notes.set(globals.activeHover.order, '');
         notes.update(globals.activeHover);
         return;
@@ -213,120 +202,6 @@ const sharedReplaySendSound = (sound) => {
         type: constants.REPLAY_ACTION_TYPE.SOUND,
         sound,
     });
-};
-
-// The "Ctrl" key toggles the middle button in the bottom-left-hand corner
-const buttonToggleKeyDown = (event) => {
-    if (!event.ctrlKey) {
-        return;
-    }
-
-    // The middle button won't be present in solo replays
-    if (globals.replay && !globals.sharedReplay) {
-        return;
-    }
-
-    if (
-        !globals.replay
-        && !globals.spectating
-        && !globals.speedrun
-        && globals.elements.chatButton.getVisible()
-    ) {
-        // We are in a normal game, so toggle "Chat" --> "Kill"
-        globals.elements.chatButton.hide();
-        globals.elements.killButton.show();
-        globals.layers.UI.batchDraw();
-    } else if (
-        !globals.replay
-        && !globals.spectating
-        && globals.speedrun
-        && globals.elements.killButton.getVisible()
-    ) {
-        // We are in a speedrun, so toggle "Kill" --> "Chat"
-        globals.elements.chatButton.show();
-        globals.elements.killButton.hide();
-        globals.layers.UI.batchDraw();
-    } else if (
-        globals.sharedReplay
-        && !globals.speedrun
-        && globals.elements.chatButton.getVisible()
-    ) {
-        // We are in a normal shared replay, so toggle "Chat" --> "Restart"
-        globals.elements.chatButton.hide();
-        globals.elements.restartButton.show();
-        globals.layers.UI.batchDraw();
-    } else if (
-        globals.sharedReplay
-        && globals.speedrun
-        && globals.elements.restartButton.getVisible()
-    ) {
-        // We are in a speedrun shared replay, so toggle "Restart" --> "Chat"
-        globals.elements.chatButton.show();
-        globals.elements.restartButton.hide();
-        globals.layers.UI.batchDraw();
-    }
-};
-const buttonToggleKeyUp = (event) => {
-    if (event.ctrlKey) {
-        return;
-    }
-
-    // The middle button won't be present in solo replays
-    if (globals.replay && !globals.sharedReplay) {
-        return;
-    }
-
-    // Revert the toggles defined in the "buttonToggleKeyDown()" function
-    if (
-        !globals.replay
-        && !globals.spectating
-        && !globals.speedrun
-        && globals.elements.killButton.getVisible()
-    ) {
-        globals.elements.chatButton.show();
-        globals.elements.killButton.hide();
-        globals.layers.UI.batchDraw();
-    } else if (
-        !globals.replay
-        && !globals.spectating
-        && globals.speedrun
-        && globals.elements.chatButton.getVisible()
-    ) {
-        globals.elements.chatButton.hide();
-        globals.elements.killButton.show();
-        globals.layers.UI.batchDraw();
-    } else if (
-        globals.sharedReplay
-        && !globals.speedrun
-        && globals.elements.restartButton.getVisible()
-    ) {
-        globals.elements.chatButton.show();
-        globals.elements.restartButton.hide();
-        globals.layers.UI.batchDraw();
-    } else if (
-        globals.sharedReplay
-        && globals.speedrun
-        && globals.elements.chatButton.getVisible()
-    ) {
-        globals.elements.chatButton.hide();
-        globals.elements.restartButton.show();
-        globals.layers.UI.batchDraw();
-    }
-};
-const windowFocus = (event) => {
-    /*
-        If the user is holding down Ctrl and moves to a different tab or a different application,
-        the page will get stuck in a "Ctrl is held down" state, because the "Ctrl up" event will
-        never be captured by the Hanabi code. Thus, when the user re-focuses the Hanabi page, we
-        want to reset Ctrl to not being held.
-
-        We actually can't do better and check to see if Ctrl is held upon focus, because when we
-        enter this function, "event.ctrlKey" will always be undefined, regardless of whether the
-        user is holding down Ctrl or not.
-
-        This code will not work if we bind to the "document" object instead of the "window" object.
-    */
-    buttonToggleKeyUp(event);
 };
 
 /*

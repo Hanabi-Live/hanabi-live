@@ -24,6 +24,7 @@ const replay = require('./replay');
 const stats = require('./stats');
 const timer = require('./timer');
 const ToggleButton = require('./toggleButton');
+const tooltips = require('./tooltips');
 
 // Constants
 const labelColor = '#d8d5ef'; // Off-white
@@ -393,6 +394,23 @@ const drawBottomLeftButtons = () => {
     });
     globals.layers.UI.add(globals.elements.replayButton);
     globals.elements.replayButton.setEnabled(false);
+    globals.elements.replayButton.on('mousemove', function mouseMove() {
+        // Don't do anything if we are already hovering on something
+        if (globals.activeHover !== null) {
+            return;
+        }
+
+        globals.activeHover = this;
+        setTimeout(() => {
+            tooltips.show(this, 'replay');
+        }, globals.tooltipDelay);
+    });
+    globals.elements.replayButton.on('mouseout', () => {
+        globals.activeHover = null;
+        $('#tooltip-replay').tooltipster('close');
+    });
+    const replayContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Enter the in-game replay, where you can rewind the game state to see what happened on a specific turn.</span>';
+    $('#tooltip-replay').tooltipster('instance').content(replayContent);
 
     // The restart button
     // (to go into a new game with the same settings as the current shared replay)
@@ -408,6 +426,23 @@ const drawBottomLeftButtons = () => {
     globals.elements.restartButton.on('click tap', () => {
         globals.lobby.conn.send('gameRestart');
     });
+    globals.elements.restartButton.on('mousemove', function mouseMove() {
+        // Don't do anything if we are already hovering on something
+        if (globals.activeHover !== null) {
+            return;
+        }
+
+        globals.activeHover = this;
+        setTimeout(() => {
+            tooltips.show(this, 'restart');
+        }, globals.tooltipDelay);
+    });
+    globals.elements.restartButton.on('mouseout', () => {
+        globals.activeHover = null;
+        $('#tooltip-restart').tooltipster('close');
+    });
+    const restartContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Automatically go into a new game with the current members of the shared replay (using the same game settings as this one).</span>';
+    $('#tooltip-restart').tooltipster('instance').content(restartContent);
 
     // The chat button
     globals.elements.chatButton = new Button({
@@ -422,25 +457,97 @@ const drawBottomLeftButtons = () => {
     globals.elements.chatButton.on('click tap', () => {
         globals.game.chat.toggle();
     });
+    globals.elements.chatButton.on('mousemove', function mouseMove() {
+        // Don't do anything if we are already hovering on something
+        if (globals.activeHover !== null) {
+            return;
+        }
+
+        globals.activeHover = this;
+        setTimeout(() => {
+            tooltips.show(this, 'chat');
+        }, globals.tooltipDelay);
+    });
+    globals.elements.chatButton.on('mouseout', () => {
+        globals.activeHover = null;
+        $('#tooltip-chat').tooltipster('close');
+    });
+    const chatContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Open/close the in-game chat.</span>';
+    $('#tooltip-chat').tooltipster('instance').content(chatContent);
 
     const shortButtonSpacing = 0.003;
 
     // The lobby button (which takes the user back to the lobby)
-    const lobbyButton = new Button({
-        x: bottomLeftButtonValues.x * winW,
-        y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h) + 0.02) * winH,
+    // There are two different versions, depending on whether the kill button is showing or not
+    const lobbyButtonValues = {
+        x: bottomLeftButtonValues.x,
+        y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h) + 0.02),
+        h: bottomLeftButtonValues.h,
+    };
+
+    globals.elements.lobbyButtonSmall = new Button({
+        x: lobbyButtonValues.x * winW,
+        y: lobbyButtonValues.y * winH,
         width: ((bottomLeftButtonValues.w / 2) - shortButtonSpacing) * winW,
-        height: bottomLeftButtonValues.h * winH,
+        height: lobbyButtonValues.h * winH,
         image: 'home',
+        visible: !globals.replay && !globals.spectating,
     });
-    globals.layers.UI.add(lobbyButton);
-    lobbyButton.on('click tap', () => {
-        lobbyButton.off('click tap');
+    globals.layers.UI.add(globals.elements.lobbyButtonSmall);
+    globals.elements.lobbyButtonSmall.on('click tap', lobbyButtonClick);
+    globals.elements.lobbyButtonSmall.on('mousemove', function mouseMove() {
+        // Don't do anything if we are already hovering on something
+        if (globals.activeHover !== null) {
+            return;
+        }
+
+        globals.activeHover = this;
+        setTimeout(() => {
+            tooltips.show(this, 'lobby-small');
+        }, globals.tooltipDelay);
+    });
+    globals.elements.lobbyButtonSmall.on('mouseout', () => {
+        globals.activeHover = null;
+        $('#tooltip-lobby-small').tooltipster('close');
+    });
+    const lobbySmallContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Return to the lobby. (The game will not end and your teammates will have to wait for you to come back.)</span>';
+    $('#tooltip-lobby-small').tooltipster('instance').content(lobbySmallContent);
+
+    globals.elements.lobbyButtonBig = new Button({
+        x: lobbyButtonValues.x * winW,
+        y: lobbyButtonValues.y * winH,
+        width: bottomLeftButtonValues.w * winW,
+        height: lobbyButtonValues.h * winH,
+        text: 'Lobby',
+        visible: globals.replay || globals.spectating,
+    });
+    globals.layers.UI.add(globals.elements.lobbyButtonBig);
+    globals.elements.lobbyButtonBig.on('click tap', lobbyButtonClick);
+    globals.elements.lobbyButtonBig.on('mousemove', function mouseMove() {
+        // Don't do anything if we are already hovering on something
+        if (globals.activeHover !== null) {
+            return;
+        }
+
+        globals.activeHover = this;
+        setTimeout(() => {
+            tooltips.show(this, 'lobby-big');
+        }, globals.tooltipDelay);
+    });
+    globals.elements.lobbyButtonBig.on('mouseout', () => {
+        globals.activeHover = null;
+        $('#tooltip-lobby-big').tooltipster('close');
+    });
+    const lobbyBigContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Return to the lobby.</span>';
+    $('#tooltip-lobby-big').tooltipster('instance').content(lobbyBigContent);
+
+    function lobbyButtonClick() {
+        this.off('click tap');
         globals.lobby.conn.send('gameUnattend');
 
         timer.stop();
         globals.game.hide();
-    });
+    }
 
     // The kill button (which terminates the current game)
     globals.elements.killButton = new Button({
@@ -448,13 +555,31 @@ const drawBottomLeftButtons = () => {
         y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h) + 0.02) * winH,
         width: ((bottomLeftButtonValues.w / 2) - shortButtonSpacing) * winW,
         height: bottomLeftButtonValues.h * winH,
-        image: 'x',
+        image: 'skull',
         visible: !globals.replay && !globals.spectating,
     });
     globals.layers.UI.add(globals.elements.killButton);
     globals.elements.killButton.on('click tap', () => {
         globals.lobby.conn.send('gameAbandon');
     });
+    globals.elements.killButton.on('mousemove', function mouseMove() {
+        // Don't do anything if we are already hovering on something
+        if (globals.activeHover !== null) {
+            return;
+        }
+
+        globals.activeHover = this;
+        setTimeout(() => {
+            tooltips.show(this, 'kill');
+        }, globals.tooltipDelay);
+    });
+    globals.elements.killButton.on('mouseout', () => {
+        globals.activeHover = null;
+        $('#tooltip-kill').tooltipster('close');
+    });
+    const killContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Terminate the game, ending it immediately.</span>';
+    $('#tooltip-kill').tooltipster('instance').content(killContent);
+
 };
 
 const drawDeck = () => {
@@ -677,6 +802,11 @@ const drawSpectators = () => {
 
     // Tooltip for the eyes
     globals.elements.spectatorsLabel.on('mousemove', function spectatorsLabelMouseMove() {
+        // Don't do anything if we are already hovering on something
+        if (globals.activeHover !== null) {
+            return;
+        }
+
         globals.activeHover = this;
 
         const tooltipX = this.attrs.x + this.getWidth() / 2;
@@ -685,6 +815,7 @@ const drawSpectators = () => {
         $('#tooltip-spectators').tooltipster('open');
     });
     globals.elements.spectatorsLabel.on('mouseout', () => {
+        globals.activeHover = null;
         $('#tooltip-spectators').tooltipster('close');
     });
 
@@ -770,6 +901,11 @@ const drawSharedReplay = () => {
 
     // Tooltip for the crown
     globals.elements.sharedReplayLeaderLabel.on('mousemove', function sharedReplayLeaderLabelMouseMove() {
+        // Don't do anything if we are already hovering on something
+        if (globals.activeHover !== null) {
+            return;
+        }
+
         globals.activeHover = this;
 
         const tooltipX = this.attrs.x + this.getWidth() / 2;
@@ -778,6 +914,7 @@ const drawSharedReplay = () => {
         $('#tooltip-leader').tooltipster('open');
     });
     globals.elements.sharedReplayLeaderLabel.on('mouseout', () => {
+        globals.activeHover = null;
         $('#tooltip-leader').tooltipster('close');
     });
 

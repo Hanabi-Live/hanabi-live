@@ -4,6 +4,7 @@ const constants = require('../../constants');
 const graphics = require('./graphics');
 const LayoutChild = require('./layoutChild');
 const misc = require('../../misc');
+const tooltips = require('./tooltips');
 
 const CardDeck = function CardDeck(config) {
     graphics.Group.call(this, config);
@@ -40,19 +41,23 @@ const CardDeck = function CardDeck(config) {
     // If the user hovers over the deck, show a tooltip that shows extra game options, if any
     this.initTooltip();
     this.on('mousemove', function mouseMove() {
-        if (globals.elements.deckPlayAvailableLabel.isVisible()) {
-            // Disable the tooltip if the user might be dragging the deck
+        // Don't do anything if we are already hovering on something
+        if (globals.activeHover !== null) {
             return;
         }
 
-        const tooltip = $('#tooltip-deck');
+        // Don't do anything if we might be dragging the deck
+        if (globals.elements.deckPlayAvailableLabel.isVisible()) {
+            return;
+        }
+
         globals.activeHover = this;
-        const tooltipX = this.getWidth() / 2 + this.attrs.x;
-        tooltip.css('left', tooltipX);
-        tooltip.css('top', this.attrs.y);
-        tooltip.tooltipster('open');
+        setTimeout(() => {
+            tooltips.show(this, 'deck');
+        }, globals.tooltipDelay);
     });
     this.on('mouseout', () => {
+        globals.activeHover = null;
         $('#tooltip-deck').tooltipster('close');
     });
 };
@@ -137,7 +142,8 @@ CardDeck.prototype.doLayout = function doLayout() {
 
 // The deck tooltip shows the custom options for this game, if any
 CardDeck.prototype.initTooltip = function initTooltip() {
-    let content = '<strong>Game Options:</strong>';
+    let content = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;This is the deck, which shows the number of cards remaining.</span><br /><br />';
+    content += '<strong>Game Options:</strong>';
     content += '<ul class="game-tooltips-ul">';
     content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
     content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;

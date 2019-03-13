@@ -13,6 +13,7 @@ const Loader = function Loader(finishedCallback) {
         'replay-forward-disabled',
         'replay-forward-full',
         'replay-forward-full-disabled',
+        'skull',
         'trashcan',
         'x',
     ];

@@ -98,6 +98,12 @@ const HanabiNameFrame = function HanabiNameFrame(config) {
     // Draw the tooltips on the player names that show the time
     this.playerNum = config.playerNum;
     this.on('mousemove', function mouseMove() {
+        // Don't do anything if we are already hovering on something
+        if (globals.activeHover !== null) {
+            return;
+        }
+
+        // Don't do anything if we are in a solo/shared replay
         if (globals.replay) {
             return;
         }
@@ -111,6 +117,9 @@ const HanabiNameFrame = function HanabiNameFrame(config) {
         tooltip.tooltipster('open');
     });
     this.on('mouseout', () => {
+        globals.activeHover = null;
+
+        // Don't do anything if we are in a solo/shared replay
         if (globals.replay) {
             return;
         }

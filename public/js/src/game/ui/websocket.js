@@ -125,16 +125,11 @@ commands.gameOver = () => {
     // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
     globals.elements.replayExitButton.hide();
 
-    // Hide some buttons in the bottom-left-hand corner
+    // Hide/show some buttons in the bottom-left-hand corner
     globals.elements.replayButton.hide();
-    if (!globals.speedrun) {
-        globals.elements.chatButton.show();
-    } else {
-        globals.elements.restartButton.show();
-    }
-    if (globals.elements.killButton !== null) {
-        globals.elements.killButton.hide();
-    }
+    globals.elements.killButton.hide();
+    globals.elements.lobbyButtonSmall.hide();
+    globals.elements.lobbyButtonBig.show();
 
     globals.layers.UI.batchDraw();
 };
@@ -307,6 +302,7 @@ commands.replayLeader = (data) => {
     globals.elements.sharedReplayLeaderCircle.setVisible(weAreLeader);
     globals.elements.toggleSharedTurnButton.show();
     globals.elements.sharedReplayLeaderLabelPulse.play();
+    globals.elements.restartButton.setVisible(weAreLeader);
     globals.layers.UI.batchDraw();
 
     // Update the tooltip

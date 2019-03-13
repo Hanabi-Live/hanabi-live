@@ -3,11 +3,14 @@ const globals = require('./globals');
 
 // Configuration
 const debug = true;
+const tooltipDelay = 400;
 
 // We modify the individual properties instead of replacing the entire globals object
 // If we did that, the references in the other files would point to the outdated version
 module.exports = () => {
+    // Constants
     globals.debug = debug;
+    globals.tooltipDelay = tooltipDelay;
 
     // Objects sent upon UI initialization
     globals.lobby = null;
@@ -92,6 +95,8 @@ module.exports = () => {
         messagePrompt: null, // The truncated action log
         replayButton: null,
         chatButton: null,
+        lobbyButtonSmall: null,
+        lobbyButtonBig: null,
         killButton: null,
         restartButton: null,
         drawDeck: null,

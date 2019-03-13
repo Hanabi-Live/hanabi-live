@@ -21,10 +21,22 @@ $(document).ready(() => {
         updateAnimation: null,
     };
 
-    // Some tooltips are defined in "main.tmpl"
-    $('#tooltip-deck').tooltipster(tooltipOptions);
-    $('#tooltip-spectators').tooltipster(tooltipOptions);
-    $('#tooltip-leader').tooltipster(tooltipOptions);
+    // Initialize some basic tooltips
+    const tooltips = [
+        'replay',
+        'restart',
+        'chat',
+        'lobby-small',
+        'lobby-big',
+        'kill',
+        'deck',
+        'spectators',
+        'leader',
+    ];
+    for (const tooltip of tooltips) {
+        $('#game-tooltips').append(`<div id="tooltip-${tooltip}"></div>`);
+        $(`#tooltip-${tooltip}`).tooltipster(tooltipOptions);
+    }
 
     // Dynamically create the player tooltips
     for (let i = 0; i < maxPlayers; i++) {

@@ -453,8 +453,18 @@ HanabiCard.prototype.initNote = function initNote(config) {
     }
 
     this.on('mousemove', function cardMouseMove() {
+        // Don't do anything if we are already hovering on something
+        if (globals.activeHover !== null) {
+            return;
+        }
+
         // Don't do anything if there is not a note on this card
         if (!this.noteGiven.visible()) {
+            return;
+        }
+
+        // Don't open any more note tooltips if the user is currently editing a note
+        if (notes.vars.editing !== null) {
             return;
         }
 
@@ -465,16 +475,13 @@ HanabiCard.prototype.initNote = function initNote(config) {
             globals.layers.card.batchDraw();
         }
 
-        // Don't open any more note tooltips if the user is currently editing a note
-        if (notes.vars.editing !== null) {
-            return;
-        }
-
         globals.activeHover = this;
         notes.show(this); // We supply the card as the argument
     });
 
     this.on('mouseout', function cardMouseOut() {
+        globals.activeHover = null;
+
         // Don't close the tooltip if we are currently editing a note
         if (notes.vars.editing !== null) {
             return;
@@ -556,6 +563,7 @@ HanabiCard.prototype.initEmpathy = function initEmpathy() {
         if (event.type === 'mouseup' && event.evt.which !== empathyMouseButton) {
             return;
         }
+        globals.activeHover = null;
         endHolderViewOnCard(toggledPips);
     });
 };
