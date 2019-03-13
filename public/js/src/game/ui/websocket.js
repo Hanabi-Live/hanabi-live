@@ -3,9 +3,10 @@
 */
 
 // Imports
-const globals = require('./globals');
 const constants = require('../../constants');
 const convert = require('./convert');
+const globals = require('./globals');
+const hypothetical = require('./hypothetical');
 const notes = require('./notes');
 const replay = require('./replay');
 const timer = require('./timer');
@@ -134,6 +135,26 @@ commands.gameOver = () => {
     globals.layers.UI.batchDraw();
 };
 
+commands.hypoAction = () => {
+
+};
+
+commands.hypoEnd = () => {
+    if (globals.amSharedReplayLeader) {
+        return;
+    }
+
+    hypothetical.toggle();
+};
+
+commands.hypoStart = () => {
+    if (globals.amSharedReplayLeader) {
+        return;
+    }
+
+    hypothetical.toggle();
+};
+
 commands.init = (data) => {
     // Game settings
     globals.playerNames = data.names;
@@ -152,6 +173,10 @@ commands.init = (data) => {
     globals.emptyClues = data.emptyClues;
     globals.characterAssignments = data.characterAssignments;
     globals.characterMetadata = data.characterMetadata;
+
+    // Hypothetical settings
+    globals.hypothetical = data.hypothetical;
+    globals.hypoActions = data.hypoActions;
 
     // Open the replay UI if we are in a replay
     globals.inReplay = globals.replay;

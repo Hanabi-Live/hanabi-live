@@ -263,6 +263,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 		EndTurn:            -1,
 		Chat:               make([]*GameChatMessage, 0),
 		ChatRead:           make(map[int]int),
+		HypoActions:        make([]string, 0),
 	}
 	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
 		// In this variant, having 1 clue available is represented with a value of 2

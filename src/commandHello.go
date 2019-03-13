@@ -88,6 +88,10 @@ func commandHello(s *Session, d *CommandData) {
 		EmptyClues           bool     `json:"emptyClues"`
 		CharacterAssignments []string `json:"characterAssignments"`
 		CharacterMetadata    []int    `json:"characterMetadata"`
+
+		// Hypothetical settings
+		Hypothetical bool     `json:"hypothetical"`
+		HypoActions  []string `json:"hypoActions"`
 	}
 	s.Emit("init", &InitMessage{
 		// Game settings
@@ -107,5 +111,9 @@ func commandHello(s *Session, d *CommandData) {
 		EmptyClues:           g.Options.EmptyClues,
 		CharacterAssignments: characterAssignments,
 		CharacterMetadata:    characterMetadata,
+
+		// Hypothetical settings
+		Hypothetical: g.Hypothetical,
+		HypoActions:  g.HypoActions,
 	})
 }

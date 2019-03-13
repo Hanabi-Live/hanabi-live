@@ -136,12 +136,25 @@ func commandReplayAction(s *Session, d *CommandData) {
 			})
 		}
 	} else if d.Type == replayActionTypeHypoStart {
+		if g.Hypothetical {
+			s.Warning("You are already in a hypothetical, so you cannot start a new one.")
+			return
+		}
+
 		// Start a hypothetical line
+		g.Hypothetical = true
 		for _, sp := range g.Spectators {
 			sp.Session.Emit("hypoStart", nil)
 		}
 	} else if d.Type == replayActionTypeHypoEnd {
+		if !g.Hypothetical {
+			s.Warning("You are not in a hypothetical, so you cannot end one.")
+			return
+		}
+
 		// End a hypothetical line
+		g.Hypothetical = false
+		g.HypoActions = make([]string, 0)
 		for _, sp := range g.Spectators {
 			sp.Session.Emit("hypoEnd", nil)
 		}
@@ -160,6 +173,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		}
 
 		// Perform a move in the hypothetical
+		g.HypoActions = append(g.HypoActions, d.ActionJSON)
 		for _, sp := range g.Spectators {
 			sp.Session.Emit("hypoAction", d.ActionJSON)
 		}

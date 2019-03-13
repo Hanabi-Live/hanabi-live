@@ -56,6 +56,9 @@ type Game struct {
 	Misplays   int                // The number of consecutive misplays
 	Chat       []*GameChatMessage // All of the in-game chat history
 	ChatRead   map[int]int        // A map of which users have read which messages
+
+	Hypothetical bool // Whether or not we are in a post-game hypothetical
+	HypoActions  []string
 }
 
 type Options struct {

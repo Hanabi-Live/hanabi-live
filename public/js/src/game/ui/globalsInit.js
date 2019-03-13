@@ -72,7 +72,7 @@ module.exports = () => {
     globals.useSharedTurns = true;
     globals.sharedReplayLoading = true; // This is used to not animate cards when loading in
     globals.hypothetical = false; // Whether or not we are in a hypothetical
-    globals.hypoLog = []; // An array of the actions in the current hypothetical
+    globals.hypoActions = []; // An array of the actions in the current hypothetical
 
     // UI elements
     globals.ImageLoader = null;
@@ -139,11 +139,16 @@ module.exports = () => {
         // The replay screen
         replayArea: null,
         replayShuttleShared: null,
+        replayShuttle: null,
         replayBackFullButton: null,
         replayBackButton: null,
         replayForwardButton: null,
         replayForwardFullButton: null,
         replayExitButton: null,
+        toggleSharedTurnButton: null,
+        backToTurnButton: null,
+        toggleHypoButton: null,
+        hypoCircle: null,
 
         // Other screens
         msgLogGroup: null, // The full action log

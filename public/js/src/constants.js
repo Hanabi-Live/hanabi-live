@@ -1388,8 +1388,8 @@ exports.REPLAY_ACTION_TYPE = {
     MORPH: 3,
     SOUND: 4,
     HYPO_START: 5,
-    HYPO_END: 5,
-    HYPO_ACTION: 6,
+    HYPO_END: 6,
+    HYPO_ACTION: 7,
 };
 
 // This only freezes one layer deep; to do any better, we should likely

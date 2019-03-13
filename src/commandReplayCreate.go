@@ -198,6 +198,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
 		EndTurn:            numTurns,
 		Chat:               make([]*GameChatMessage, 0),
 		ChatRead:           make(map[int]int),
+		HypoActions:        make([]string, 0),
 	}
 
 	return g, true
@@ -375,6 +376,7 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		EndTurn:            -1,
 		Chat:               make([]*GameChatMessage, 0),
 		ChatRead:           make(map[int]int),
+		HypoActions:        make([]string, 0),
 	}
 
 	// Convert the JSON deck to a normal deck
