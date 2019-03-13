@@ -135,9 +135,21 @@ HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
 };
 
 HanabiUI.prototype.endTurn = function endTurn(action) {
+    if (globals.hypothetical) {
+        globals.lobby.conn.send('replayAction', {
+            type: constants.REPLAY_ACTION_TYPE.HYPO_ACTION,
+            actionJSON: {
+                type: action.type,
+                data: action.data,
+            },
+        });
+        globals.lobby.ui.stopAction();
+        return;
+    }
+
     if (globals.ourTurn) {
         globals.ourTurn = false;
-        globals.lobby.conn.send(action.type, action.data);
+        globals.lobby.conn.send('action', action.data);
         globals.lobby.ui.stopAction();
     } else {
         globals.queuedAction = action;
@@ -192,8 +204,8 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
         && !globals.speedrun
     ) {
         const ourHand = globals.elements.playerHands[globals.playerUs];
-        for (const child of ourHand.children) {
-            child.checkSetDraggable();
+        for (const layoutChild of ourHand.children) {
+            layoutChild.checkSetDraggable();
         }
     }
 

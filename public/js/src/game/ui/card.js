@@ -551,6 +551,8 @@ HanabiCard.prototype.initEmpathy = function initEmpathy() {
             // Disable Empathy on our own hand
             // (unless we are in an in-game replay or we are a spectator)
             || (this.holder === globals.playerUs && !globals.inReplay && !globals.spectating)
+            // Disable Empathy if we in a hypothetical and are the shared replay leader
+            || (globals.hypothetical && globals.amSharedReplayLeader)
         ) {
             return;
         }
@@ -809,10 +811,10 @@ HanabiCard.prototype.clickRight = function clickRight(event) {
 
     // Right-click for a leader in a shared replay is an arrow
     // (we want it to work no matter what modifiers are being pressed,
-    // in case someone is pushing their push to talk hotkey while highlighting cards)
+    // in case someone is pushing their push-to-talk hotkey while highlighting cards)
     if (
         globals.sharedReplay
-        && globals.sharedReplayLeader === globals.lobby.username
+        && globals.amSharedReplayLeader
         && globals.useSharedTurns
     ) {
         this.clickArrow();
@@ -940,7 +942,7 @@ HanabiCard.prototype.clickMorph = function clickMorph() {
     }
 
     // Tell the server that we are doing a hypothetical
-    if (globals.sharedReplayLeader === globals.lobby.username) {
+    if (globals.amSharedReplayLeader) {
         globals.lobby.conn.send('replayAction', {
             type: constants.REPLAY_ACTION_TYPE.MORPH,
             order: this.order,

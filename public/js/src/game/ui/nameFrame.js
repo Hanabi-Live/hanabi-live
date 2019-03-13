@@ -149,7 +149,7 @@ HanabiNameFrame.prototype.giveLeader = function giveLeader(username) {
     }
 
     // Only proceed if we are the replay leader
-    if (globals.sharedReplayLeader !== globals.lobby.username) {
+    if (!globals.amSharedReplayLeader) {
         return;
     }
 

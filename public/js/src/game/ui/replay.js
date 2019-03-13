@@ -86,7 +86,7 @@ const goto = (target, fast) => {
 
     if (
         globals.sharedReplay
-        && globals.sharedReplayLeader === globals.lobby.username
+        && globals.amSharedReplayLeader
         && globals.useSharedTurns
     ) {
         shareCurrentTurn(target);
@@ -358,7 +358,7 @@ exports.toggleSharedTurns = () => {
     globals.useSharedTurns = !globals.useSharedTurns;
     globals.elements.replayShuttleShared.setVisible(!globals.useSharedTurns);
     if (globals.useSharedTurns) {
-        if (globals.sharedReplayLeader === globals.lobby.username) {
+        if (globals.amSharedReplayLeader) {
             shareCurrentTurn(globals.replayTurn);
         } else {
             goto(globals.sharedReplayTurn);
@@ -376,7 +376,7 @@ const checkDisableSharedTurns = () => {
     if (
         globals.replay
         && globals.sharedReplay
-        && globals.sharedReplayLeader !== globals.lobby.username
+        && !globals.amSharedReplayLeader
         && globals.useSharedTurns
     ) {
         // Replay actions currently enabled, so disable them

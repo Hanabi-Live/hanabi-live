@@ -55,9 +55,12 @@ LayoutChild.prototype.checkSetDraggable = function checkSetDraggable() {
         // (this function will be called again upon the completion of the animation)
         || card.tweening
     ) {
-        this.setDraggable(false);
-        this.off('dragend.play');
-        return;
+        // Make an exception for cards in a hypothetical that are being dragged by the replay leader
+        if (!globals.hypothetical || !globals.amSharedReplayLeader) {
+            this.setDraggable(false);
+            this.off('dragend.play');
+            return;
+        }
     }
 
     this.setDraggable(true);
@@ -78,7 +81,7 @@ LayoutChild.prototype.dragendPlay = function dragendPlay() {
     }
     if (draggedTo === null) {
         // The card was dragged to an invalid location; tween it back to the hand
-        globals.elements.playerHands[globals.playerUs].doLayout();
+        this.parent.doLayout(); // The parent is a CardLayout
         return;
     }
 

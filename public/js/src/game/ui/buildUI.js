@@ -18,6 +18,7 @@ const FitText = require('./fitText');
 const graphics = require('./graphics');
 const HanabiClueLog = require('./clueLog');
 const HanabiMsgLog = require('./msgLog');
+const hypothetical = require('./hypothetical');
 const MultiFitText = require('./multiFitText');
 const NumberButton = require('./numberButton');
 const replay = require('./replay');
@@ -580,7 +581,6 @@ const drawBottomLeftButtons = () => {
     });
     const killContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Terminate the game, ending it immediately.</span>';
     $('#tooltip-kill').tooltipster('instance').content(killContent);
-
 };
 
 const drawDeck = () => {
@@ -927,7 +927,7 @@ const drawSharedReplay = () => {
         }
 
         // Do nothing if we are not the shared replay leader
-        if (globals.sharedReplayLeader !== globals.lobby.username) {
+        if (!globals.amSharedReplayLeader) {
             return;
         }
 
@@ -1521,17 +1521,21 @@ const drawReplayArea = () => {
     globals.elements.toggleSharedTurnButton.on('click tap', replay.toggleSharedTurns);
     globals.elements.replayArea.add(globals.elements.toggleSharedTurnButton);
 
-    globals.elements.replayArea.hide();
-    globals.layers.UI.add(globals.elements.replayArea);
+    const bottomRightReplayButtonValues = {
+        x: replayButtonValues.x + (replayButtonValues.w * 2) + (replayButtonValues.spacing * 2),
+        y: bottomLeftReplayButtonValues.y,
+        w: bottomLeftReplayButtonValues.w,
+        h: bottomLeftReplayButtonValues.h,
+    };
 
     // The "Back to Turn #" button
-    const x = replayButtonValues.x + (replayButtonValues.w * 2) + (replayButtonValues.spacing * 2);
     globals.elements.backToTurnButton = new Button({
-        x: x * winW,
-        y: bottomLeftReplayButtonValues.y * winH,
-        width: bottomLeftReplayButtonValues.w * winW,
-        height: bottomLeftReplayButtonValues.h * winH,
+        x: bottomRightReplayButtonValues.x * winW,
+        y: bottomRightReplayButtonValues.y * winH,
+        width: bottomRightReplayButtonValues.w * winW,
+        height: bottomRightReplayButtonValues.h * winH,
         text: 'Back to Turn 0',
+        visible: !globals.replay,
     });
     globals.elements.backToTurnButton.on('click tap', replay.backToTurnButton);
     globals.elements.replayArea.add(globals.elements.backToTurnButton);
@@ -1540,6 +1544,24 @@ const drawReplayArea = () => {
         const turn = (globals.replayTurnMemory < 0 ? 0 : globals.replayTurnMemory);
         globals.elements.backToTurnButton.setText(`Back to Turn ${turn}`);
     };
+
+    // The "Enter Hypothetical" / "Exit Hypothetical" button
+    globals.elements.toggleHypoButton = new ToggleButton({
+        x: bottomRightReplayButtonValues.x * winW,
+        y: bottomRightReplayButtonValues.y * winH,
+        width: bottomRightReplayButtonValues.w * winW,
+        height: bottomRightReplayButtonValues.h * winH,
+        text: 'Enter Hypothetical',
+        alternateText: 'Exit Hypothetical',
+        initialState: !globals.useSharedTurns,
+        visible: globals.replay && globals.amSharedReplayLeader,
+    });
+    globals.elements.toggleHypoButton.on('click tap', hypothetical.toggle);
+    globals.elements.replayArea.add(globals.elements.toggleHypoButton);
+
+    // Add the replay area to the UI
+    globals.elements.replayArea.hide();
+    globals.layers.UI.add(globals.elements.replayArea);
 };
 
 const drawExtraAnimations = () => {

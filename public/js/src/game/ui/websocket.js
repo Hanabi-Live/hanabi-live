@@ -163,34 +163,6 @@ commands.init = (data) => {
     globals.ImageLoader.start();
 };
 
-// Used when the game state changes
-commands.notify = (data) => {
-    // We need to save this game state change for the purposes of the in-game replay
-    globals.replayLog.push(data);
-
-    if (data.type === 'turn') {
-        // We need to update the replay slider, based on the new amount of turns
-        globals.replayMax = data.num;
-        if (globals.inReplay) {
-            replay.adjustShuttles();
-            globals.elements.replayForwardButton.setEnabled(true);
-            globals.elements.replayForwardFullButton.setEnabled(true);
-            globals.layers.UI.batchDraw();
-        }
-
-        // On the second turn and beyond, ensure that the "In-Game Replay" button is enabled
-        if (!globals.replay && globals.replayMax > 0) {
-            globals.elements.replayButton.setEnabled(true);
-        }
-    }
-
-    // Now that it is recorded, change the actual active game state
-    // (unless we are in an in-game replay)
-    if (!globals.inReplay) {
-        globals.lobby.ui.handleNotify(data);
-    }
-};
-
 /*
     Recieved by the client when spectating a game
     Has the following data:
@@ -268,6 +240,39 @@ commands.notes = (data) => {
     globals.layers.card.batchDraw();
 };
 
+// Used when the game state changes
+commands.notify = (data) => {
+    // We need to save this game state change for the purposes of the in-game replay
+    globals.replayLog.push(data);
+
+    if (data.type === 'turn') {
+        // We need to update the replay slider, based on the new amount of turns
+        globals.replayMax = data.num;
+        if (globals.inReplay) {
+            replay.adjustShuttles();
+            globals.elements.replayForwardButton.setEnabled(true);
+            globals.elements.replayForwardFullButton.setEnabled(true);
+            globals.layers.UI.batchDraw();
+        }
+
+        // On the second turn and beyond, ensure that the "In-Game Replay" button is enabled
+        if (!globals.replay && globals.replayMax > 0) {
+            globals.elements.replayButton.setEnabled(true);
+        }
+    }
+
+    // At the end of a game, the server sends a list that reveals what the entire deck is
+    if (data.type === 'deckOrder') {
+        globals.deckOrder = data.deck;
+    }
+
+    // Now that it is recorded, change the actual active game state
+    // (unless we are in an in-game replay)
+    if (!globals.inReplay) {
+        globals.lobby.ui.handleNotify(data);
+    }
+};
+
 commands.notifyList = (dataList) => {
     for (const data of dataList) {
         commands.notify(data);
@@ -276,7 +281,7 @@ commands.notifyList = (dataList) => {
 
 // This is used in shared replays to highlight a specific card
 commands.replayIndicator = (data) => {
-    if (globals.sharedReplayLeader === globals.lobby.username) {
+    if (globals.amSharedReplayLeader) {
         // We don't have to draw any indicator arrows;
         // we already did it manually immediately after sending the "replayAction" message
         return;
@@ -295,14 +300,16 @@ commands.replayIndicator = (data) => {
 commands.replayLeader = (data) => {
     // Store who the shared replay leader is
     globals.sharedReplayLeader = data.name;
+    globals.amSharedReplayLeader = globals.sharedReplayLeader === globals.lobby.username;
 
     // Update the UI and play an animation to indicate there is a new replay leader
     globals.elements.sharedReplayLeaderLabel.show();
-    const weAreLeader = globals.sharedReplayLeader === globals.lobby.username;
-    globals.elements.sharedReplayLeaderCircle.setVisible(weAreLeader);
+    globals.elements.sharedReplayLeaderCircle.setVisible(globals.amSharedReplayLeader);
     globals.elements.toggleSharedTurnButton.show();
     globals.elements.sharedReplayLeaderLabelPulse.play();
-    globals.elements.restartButton.setVisible(weAreLeader);
+    globals.elements.restartButton.setVisible(globals.amSharedReplayLeader);
+    globals.elements.backToTurnButton.setVisible(false);
+    globals.elements.toggleHypoButton.setVisible(globals.amSharedReplayLeader);
     globals.layers.UI.batchDraw();
 
     // Update the tooltip
@@ -332,7 +339,7 @@ commands.replaySound = (data) => {
 commands.replayTurn = (data) => {
     if (
         // If we are the replay leader, then we don't have to do anything
-        globals.sharedReplayLeader === globals.lobby.username
+        globals.amSharedReplayLeader
         // Make an exception for when we are first loading the game
         && globals.sharedReplayTurn !== -1
     ) {

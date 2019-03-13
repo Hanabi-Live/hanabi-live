@@ -67,9 +67,12 @@ module.exports = () => {
 
     // Shared replay variables
     globals.sharedReplayLeader = ''; // Equal to the username of the leader
+    globals.amSharedReplayLeader = false;
     globals.sharedReplayTurn = -1;
     globals.useSharedTurns = true;
     globals.sharedReplayLoading = true; // This is used to not animate cards when loading in
+    globals.hypothetical = false; // Whether or not we are in a hypothetical
+    globals.hypoLog = []; // An array of the actions in the current hypothetical
 
     // UI elements
     globals.ImageLoader = null;

@@ -193,7 +193,7 @@ const sharedReplaySendSound = (sound) => {
     }
 
     // Only enable sound effects for shared replay leaders
-    if (globals.sharedReplayLeader !== globals.lobby.username) {
+    if (!globals.amSharedReplayLeader) {
         return;
     }
 
