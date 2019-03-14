@@ -75,6 +75,11 @@ commands.clue = (data) => {
     globals.elements.clueLog.checkExpiry();
 };
 
+commands.deckOrder = (data) => {
+    // At the end of a game, the server sends a list that reveals what the entire deck is
+    globals.deckOrder = data.deck;
+};
+
 commands.discard = (data) => {
     revealCard(data);
 

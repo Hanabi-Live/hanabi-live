@@ -286,14 +286,11 @@ commands.notify = (data) => {
         }
     }
 
-    // At the end of a game, the server sends a list that reveals what the entire deck is
-    if (data.type === 'deckOrder') {
-        globals.deckOrder = data.deck;
-    }
-
     // Now that it is recorded, change the actual active game state
     // (unless we are in an in-game replay)
-    if (!globals.inReplay) {
+    // Make an exception for the "deckOrder" message,
+    // which contains data that we need to store globally
+    if (!globals.inReplay || data.type === 'deckOrder') {
         globals.lobby.ui.handleNotify(data);
     }
 };
