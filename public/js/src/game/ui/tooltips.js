@@ -2,6 +2,11 @@
 const globals = require('./globals');
 
 exports.show = (element, name) => {
+    // Don't do anything if we are no longer in the game
+    if (globals.lobby.currentScreen !== 'game') {
+        return;
+    }
+
     // Don't do anything if the user has moved the mouse away in the meantime
     if (globals.activeHover !== element) {
         return;

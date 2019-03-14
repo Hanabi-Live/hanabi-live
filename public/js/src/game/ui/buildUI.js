@@ -544,10 +544,20 @@ const drawBottomLeftButtons = () => {
     $('#tooltip-lobby-big').tooltipster('instance').content(lobbyBigContent);
 
     function lobbyButtonClick() {
+        // Unregister the click handler to ensure that the user does not double-click
+        // and go to the lobby twice
         this.off('click tap');
-        globals.lobby.conn.send('gameUnattend');
 
+        // Hide the tooltip, if showing
+        if (globals.activeHover) {
+            globals.activeHover.dispatchEvent(new MouseEvent('mouseout'));
+            globals.activeHover = null;
+        }
+
+        // Stop any timer-related callbacks
         timer.stop();
+
+        globals.lobby.conn.send('gameUnattend');
         globals.game.hide();
     }
 
