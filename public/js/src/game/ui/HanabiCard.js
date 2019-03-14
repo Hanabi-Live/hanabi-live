@@ -960,7 +960,9 @@ HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(event) {
         // (but don't use the speedrunning behavior if
         // we are in a solo replay / shared replay / spectating)
         (!globals.speedrun || globals.replay || globals.spectating)
-        || this.tweening // Disable all click events if the card is tweening
+        // Disable all click events if the card is tweening from the deck to the hand
+        // (the second condition looks to see if it is the first card in the hand)
+        || (this.tweening && this.parent.index === this.parent.parent.children.length - 1)
         || this.isPlayed // Do nothing if we accidentally clicked on a played card
         || this.isDiscarded // Do nothing if we accidentally clicked on a discarded card
     ) {
