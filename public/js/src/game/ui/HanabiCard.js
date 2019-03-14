@@ -296,9 +296,11 @@ HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
     if (this.holder === globals.playerUs && globals.lobby.settings.showBGAUI) {
         // In BGA mode, our hand is the one closest to the top
         // So, invert the arrows so that it is easier to see them
+        // We also need to move the arrow slightly so that
+        // it does not cover the third box on the bottom of the card
         this.indicatorGroup.setRotation(180);
         this.indicatorGroup.setX(config.width);
-        this.indicatorGroup.setY(config.height * 1.18);
+        this.indicatorGroup.setY(config.height * 1.4); // 1.18 is the "normal" height
     }
     this.add(this.indicatorGroup);
     this.indicatorGroup.originalX = this.indicatorGroup.getX();
