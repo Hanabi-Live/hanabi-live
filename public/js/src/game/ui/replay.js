@@ -45,6 +45,9 @@ const exit = () => {
     if (globals.savedAction) {
         globals.lobby.ui.handleAction(globals.savedAction);
     }
+    if (!globals.elements.clueArea.getVisible()) {
+        globals.elements.currentPlayerArea.show();
+    }
     for (let i = 0; i < globals.deck.length; i++) {
         globals.deck[i].setBareImage();
     }

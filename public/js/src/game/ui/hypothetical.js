@@ -30,47 +30,52 @@ exports.toggle = () => {
     }
 };
 
+const setAllCardsDraggable = () => {
+    for (const hand of globals.elements.playerHands) {
+        for (const layoutChild of hand.children) {
+            layoutChild.checkSetDraggable();
+        }
+    }
+};
+
 exports.send = (action) => {
+    let type = '';
     if (action.data.type === constants.ACT.CLUE) {
-        // TODO
+        type = 'clue';
     } else if (action.data.type === constants.ACT.PLAY) {
-        const card = globals.deck[action.data.target];
-
-        // Play
-        hypoAction({
-            type: 'play',
-            which: {
-                index: globals.currentPlayerIndex,
-                order: action.data.target,
-                rank: card.trueRank,
-                suit: convert.suitToMsgSuit(card.trueSuit, globals.variant),
-            },
-        });
-        globals.score += 1;
-
-        // Text
-        let text = `${globals.playerNames[globals.currentPlayerIndex]} plays `;
-        text += `${card.trueSuit.name} ${card.trueRank} from slot #${card.getSlotNum()}`;
-        hypoAction({
-            type: 'text',
-            text,
-        });
-
-        // Draw
-        const nextCard = globals.deckOrder[globals.deck.length];
-        hypoAction({
-            type: 'draw',
-            order: globals.deck.length,
-            rank: nextCard.rank,
-            suit: nextCard.suit,
-            who: globals.currentPlayerIndex,
-        });
+        type = 'play';
     } else if (action.data.type === constants.ACT.DISCARD) {
+        type = 'discard';
+    } else if (action.data.type === constants.ACT.DECKPLAY) {
+        type = 'play';
+    }
+
+    if (type === 'clue') {
+        // Clue
+        console.log(action, 'XXXXXXXXXX');
+        hypoAction({
+            type,
+            clue: null,
+            giver: globals.currentPlayerIndex,
+            // list: ?,
+            // target: ?,
+            turn: globals.turn,
+        });
+        globals.clues -= 1;
+
+        // Text
+        let text = `${globals.playerNames[globals.currentPlayerIndex]} tells `;
+        text += `${globals.playerNames[action.target]} about ?`;
+        hypoAction({
+            type: 'text',
+            text,
+        });
+    } else if (type === 'play' || type === 'discard') {
         const card = globals.deck[action.data.target];
 
-        // Play
+        // Play / Discard
         hypoAction({
-            type: 'play',
+            type,
             which: {
                 index: globals.currentPlayerIndex,
                 order: action.data.target,
@@ -81,7 +86,7 @@ exports.send = (action) => {
         globals.score += 1;
 
         // Text
-        let text = `${globals.playerNames[globals.currentPlayerIndex]} plays `;
+        let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
         text += `${card.trueSuit.name} ${card.trueRank} from slot #${card.getSlotNum()}`;
         hypoAction({
             type: 'text',
@@ -97,8 +102,6 @@ exports.send = (action) => {
             suit: nextCard.suit,
             who: globals.currentPlayerIndex,
         });
-    } else if (action.data.type === constants.ACT.DECKPLAY) {
-        // TODO
     }
 
     // Status
@@ -128,12 +131,4 @@ const hypoAction = (action) => {
         type: constants.REPLAY_ACTION_TYPE.HYPO_ACTION,
         actionJSON: JSON.stringify(action),
     });
-};
-
-const setAllCardsDraggable = () => {
-    for (const hand of globals.elements.playerHands) {
-        for (const layoutChild of hand.children) {
-            layoutChild.checkSetDraggable();
-        }
-    }
 };

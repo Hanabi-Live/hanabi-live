@@ -183,8 +183,6 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
         globals.elements.clueTypeButtonGroup.clearPressed();
         globals.elements.clueArea.show();
         globals.elements.currentPlayerArea.hide();
-    } else {
-        globals.elements.currentPlayerArea.show();
     }
     globals.layers.UI.batchDraw();
 
