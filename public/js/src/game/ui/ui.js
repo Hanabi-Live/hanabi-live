@@ -79,9 +79,9 @@ HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
     const winW = globals.stage.getWidth();
     const winH = globals.stage.getHeight();
 
-    const loadinglayer = new graphics.Layer();
+    const loadingLayer = new graphics.Layer();
 
-    const loadinglabel = new graphics.Text({
+    const loadingLabel = new graphics.Text({
         fill: '#d8d5ef',
         stroke: '#747278',
         strokeWidth: 1,
@@ -95,7 +95,7 @@ HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
         fontStyle: 'bold',
         fontSize: 0.05 * winH,
     });
-    loadinglayer.add(loadinglabel);
+    loadingLayer.add(loadingLabel);
 
     const progresslabel = new graphics.Text({
         fill: '#d8d5ef',
@@ -111,13 +111,13 @@ HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
         fontStyle: 'bold',
         fontSize: 0.05 * winH,
     });
-    loadinglayer.add(progresslabel);
+    loadingLayer.add(progresslabel);
 
     globals.ImageLoader.progressCallback = (done, total) => {
         progresslabel.setText(`${done}/${total}`);
-        loadinglayer.batchDraw();
+        loadingLayer.batchDraw();
     };
-    globals.stage.add(loadinglayer);
+    globals.stage.add(loadingLayer);
 };
 
 HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
@@ -153,7 +153,7 @@ HanabiUI.prototype.endTurn = function endTurn(action) {
         globals.lobby.ui.stopAction();
     } else {
         globals.queuedAction = action;
-        globals.elements.premoveCancelButton.setVisible(true);
+        globals.elements.premoveCancelButton.show();
         let text = 'Cancel Pre-';
         if (globals.queuedAction.data.type === constants.ACT.CLUE) {
             text += 'Clue';
@@ -186,9 +186,13 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
         }
         globals.elements.clueTypeButtonGroup.clearPressed();
         globals.elements.clueArea.show();
+        globals.elements.currentPlayerArea.hide();
     } else {
+        /*
+        TODO
         globals.elements.noClueBox.show();
         globals.elements.noClueLabel.show();
+        */
     }
     globals.layers.UI.batchDraw();
 
@@ -255,8 +259,7 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
 
 HanabiUI.prototype.stopAction = function stopAction() {
     globals.elements.clueArea.hide();
-    globals.elements.noClueBox.hide();
-    globals.elements.noClueLabel.hide();
+    globals.elements.currentPlayerArea.hide();
     globals.elements.noDiscardLabel.hide();
     globals.elements.noDoubleDiscardLabel.hide();
 
@@ -276,7 +279,7 @@ HanabiUI.prototype.stopAction = function stopAction() {
     }
 
     globals.elements.drawDeck.cardback.setDraggable(false);
-    globals.elements.deckPlayAvailableLabel.setVisible(false);
+    globals.elements.deckPlayAvailableLabel.hide();
 };
 
 HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {

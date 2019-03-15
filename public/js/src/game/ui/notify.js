@@ -230,7 +230,9 @@ commands.stackDirections = (data) => {
                 text = 'Unknown';
             }
             globals.elements.suitLabelTexts[i].setText(text);
-            globals.layers.UI.batchDraw();
+            if (!globals.animateFast) {
+                globals.layers.UI.batchDraw();
+            }
         }
     }
 };
@@ -346,15 +348,20 @@ commands.turn = (data) => {
         globals.elements.clueArea.hide();
     }
 
+    // Bold the name frame of the current player to indicate that it is their turn
     for (let i = 0; i < globals.playerNames.length; i++) {
         globals.elements.nameFrames[i].setActive(data.who === i);
     }
 
-    if (!globals.animateFast) {
-        globals.layers.UI.batchDraw();
-    }
-
+    // Update the turn count in the score area
     globals.elements.turnNumberLabel.setText(`${globals.turn + 1}`);
+
+    // Update the current player in the middle of the screen
+    // (but don't bother in a solo / shared replay,
+    // since the replay controls will always cover the current player UI)
+    if (!globals.replay) {
+        globals.elements.currentPlayerArea.update(data.who);
+    }
 
     // If there are no cards left in the deck, update the "Turns left: #" label
     if (globals.elements.drawDeck.count === 0) {
@@ -370,6 +377,10 @@ commands.turn = (data) => {
         }
 
         globals.elements.deckTurnsRemainingLabel2.setText(`left: ${numTurnsLeft}`);
+    }
+
+    if (!globals.animateFast) {
+        globals.layers.UI.batchDraw();
     }
 };
 

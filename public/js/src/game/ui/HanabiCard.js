@@ -320,7 +320,6 @@ HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
         strokeWidth: 40,
         shadowBlur: 75,
         shadowOpacity: 1,
-        visible: true,
         listening: false,
     });
     this.indicatorGroup.add(this.indicatorArrowBorder);
@@ -350,7 +349,6 @@ HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
         fill: 'white',
         stroke: 'white',
         strokeWidth: 25,
-        visible: true,
         listening: false,
     });
     this.indicatorGroup.add(this.indicatorArrow);
@@ -576,8 +574,8 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
     if (visible) {
         if (clue === null) {
             // This is a shared replay arrow, so don't draw the circle
-            this.indicatorCircle.setVisible(false);
-            this.indicatorText.setVisible(false);
+            this.indicatorCircle.hide();
+            this.indicatorText.hide();
             const color = sharedReplayIndicatorArrowColor;
             this.indicatorArrow.setStroke(color);
             this.indicatorArrow.setFill(color);
@@ -595,14 +593,14 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
             this.indicatorArrow.setFill(color);
 
             // Clue arrows are white with a circle that shows the type of clue given
-            this.indicatorCircle.setVisible(true);
+            this.indicatorCircle.show();
             if (clue.type === constants.CLUE_TYPE.RANK) {
                 this.indicatorCircle.setFill('black');
                 this.indicatorText.setText(clue.value.toString());
-                this.indicatorText.setVisible(true);
+                this.indicatorText.show();
             } else if (clue.type === constants.CLUE_TYPE.COLOR) {
                 this.indicatorCircle.setFill(clue.value.hexCode);
-                this.indicatorText.setVisible(false);
+                this.indicatorText.hide();
             }
 
             if (this.indicatorTween) {
@@ -613,13 +611,14 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
                 this.indicatorGroup.setX(this.indicatorGroup.originalX);
                 this.indicatorGroup.setY(this.indicatorGroup.originalY);
             } else if (giver !== null) {
-                // Animate the arrow flying from the player who gave the clue to the cards
-                const playerHand = globals.elements.playerHands[giver];
-                const pos = playerHand.getAbsolutePosition();
-                const handW = playerHand.getWidth();
-                const handH = playerHand.getHeight();
-                // This comes in radians from Konva but we need to convert it to degrees
-                const rot = playerHand.rotation / 180 * Math.PI;
+                /*
+                    Animate the arrow flying from the player who gave the clue to the cards
+                */
+
+                // Get the center position of the clue giver's hand
+                const centerPos = globals.elements.playerHands[giver].getAbsoluteCenterPos();
+
+                // We need to adjust it to account for the size of the indicator arrow group
                 // Dividing by pi here is a complete hack; I don't know why the hand dimensions
                 // and indicator group dimensions are scaled differently by a factor of pi
                 const indW = this.indicatorGroup.getWidth() / Math.PI;
@@ -630,14 +629,10 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
                     indRadians += 180;
                 }
                 const indTheta = indRadians / 180 * Math.PI;
-                pos.x += handW / 2 * Math.cos(rot) - handH / 2 * Math.sin(rot);
-                pos.y += handW / 2 * Math.sin(rot) + handH / 2 * Math.cos(rot);
+                centerPos.x -= indW / 2 * Math.cos(indTheta);
+                centerPos.y -= indW / 2 * Math.sin(indTheta);
 
-                // Now, "pos" is equal to the exact center of the hand
-                // We need to now adjust it to account for the size of the indicator arrow group
-                pos.x -= indW / 2 * Math.cos(indTheta);
-                pos.y -= indW / 2 * Math.sin(indTheta);
-                this.indicatorGroup.setAbsolutePosition(pos);
+                this.indicatorGroup.setAbsolutePosition(centerPos);
 
                 // Set the rotation so that the arrow will start off by pointing towards the card
                 // that it is travelling to
@@ -670,7 +665,9 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
     }
 
     this.indicatorGroup.setVisible(visible);
-    this.getLayer().batchDraw();
+    if (!globals.animateFast) {
+        this.getLayer().batchDraw();
+    }
 };
 
 HanabiCard.prototype.applyClue = function applyClue(clue, positive) {

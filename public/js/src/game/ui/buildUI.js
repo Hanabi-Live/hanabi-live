@@ -24,6 +24,7 @@ const NumberButton = require('./NumberButton');
 const replay = require('./replay');
 const stats = require('./stats');
 const timer = require('./timer');
+const TimerDisplay = require('./TimerDisplay');
 const ToggleButton = require('./ToggleButton');
 const tooltips = require('./tooltips');
 
@@ -126,6 +127,7 @@ module.exports = () => {
     // Conditional elements
     drawTimers();
     drawClueArea();
+    drawCurrentPlayerArea();
     drawPreplayArea();
     drawReplayArea();
     drawExtraAnimations();
@@ -1040,7 +1042,7 @@ const drawStatistics = () => {
     const minEfficiency = stats.getMinEfficiency();
     globals.elements.efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
         text: minEfficiency.toString(),
-        x: 0.9,
+        x: 0.918 * winW,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
         // "Easy" variants use the default color (off-white)
@@ -1131,6 +1133,11 @@ const drawTimers = () => {
         x2: 0.565,
         y1: 0.592,
         y2: 0.592,
+        w: 0.08,
+        h: 0.051,
+        fontSize: 0.03,
+        cornerRadius: 0.05,
+        spaceH: 0.01,
     };
     if (globals.lobby.settings.showBGAUI) {
         timerValues.x1 = 0.345;
@@ -1139,29 +1146,30 @@ const drawTimers = () => {
         timerValues.y2 = 0.885;
     }
 
-    globals.elements.timer1 = new timer.TimerDisplay({
+    // You
+    globals.elements.timer1 = new TimerDisplay({
         x: timerValues.x1 * winW,
         y: timerValues.y1 * winH,
-        width: 0.08 * winW,
-        height: 0.051 * winH,
-        fontSize: 0.03 * winH,
-        cornerRadius: 0.005 * winH,
-        spaceH: 0.01 * winH,
+        width: timerValues.w * winW,
+        height: timerValues.h * winH,
+        fontSize: timerValues.fontSize * winH,
+        cornerRadius: timerValues.cornerRadius * winH,
+        spaceH: timerValues.spaceH * winH,
         label: 'You',
         visible: !globals.spectating,
     });
     globals.layers.timer.add(globals.elements.timer1);
 
     // Current Player
-    globals.elements.timer2 = new timer.TimerDisplay({
+    globals.elements.timer2 = new TimerDisplay({
         x: timerValues.x2 * winW,
         y: timerValues.y2 * winH,
-        width: 0.08 * winW,
-        height: 0.051 * winH,
-        fontSize: 0.03 * winH,
+        width: timerValues.w * winW,
+        height: timerValues.h * winH,
+        fontSize: timerValues.fontSize * winH,
         labelFontSize: 0.02 * winH,
-        cornerRadius: 0.005 * winH,
-        spaceH: 0.01 * winH,
+        cornerRadius: timerValues.cornerRadius * winH,
+        spaceH: timerValues.spaceH * winH,
         label: 'Current\nPlayer',
         visible: false,
     });
@@ -1289,42 +1297,258 @@ const drawClueArea = () => {
 
     globals.elements.clueArea.hide();
     globals.layers.UI.add(globals.elements.clueArea);
+};
 
-    // The "No Clues" box
-    const noClueBoxWidth = 0.25;
-    const noClueBoxValues = {
-        x: clueAreaValues.x + (clueAreaValues.w / 2) - (noClueBoxWidth / 2),
+const drawCurrentPlayerArea = () => {
+    // The "Current player: [player name]" box
+    const currentPlayerAreaWidth = 0.3; // This is big enough to fit in between the two timers
+    const currentPlayerAreaValues = {
+        x: clueAreaValues.x + (clueAreaValues.w / 2) - (currentPlayerAreaWidth / 2),
         y: clueAreaValues.y + 0.015,
-        w: noClueBoxWidth,
+        w: currentPlayerAreaWidth,
         h: 0.15,
+        spacing: 0.01,
     };
-    globals.elements.noClueBox = new graphics.Rect({
-        x: noClueBoxValues.x * winW,
-        y: noClueBoxValues.y * winH,
-        width: noClueBoxValues.w * winW,
-        height: noClueBoxValues.h * winH,
+    globals.elements.currentPlayerArea = new graphics.Group({
+        x: currentPlayerAreaValues.x * winW,
+        y: currentPlayerAreaValues.y * winH,
+        height: currentPlayerAreaValues.h * winH,
+        visible: !globals.replay,
+    });
+    globals.layers.UI.add(globals.elements.currentPlayerArea);
+
+    let currentPlayerBox1Width = (currentPlayerAreaValues.w * 0.75);
+    currentPlayerBox1Width -= currentPlayerAreaValues.spacing;
+    globals.elements.currentPlayerRect1 = new graphics.Rect({
+        width: currentPlayerBox1Width * winW,
+        height: currentPlayerAreaValues.h * winH,
         cornerRadius: 0.01 * winW,
         fill: 'black',
-        opacity: 0.5,
-        visible: false,
+        opacity: 0.2,
     });
-    globals.layers.UI.add(globals.elements.noClueBox);
+    globals.elements.currentPlayerArea.add(globals.elements.currentPlayerRect1);
 
-    globals.elements.noClueLabel = new graphics.Text({
-        x: noClueBoxValues.x * winW,
-        y: (noClueBoxValues.y + 0.035) * winH,
-        width: noClueBoxValues.w * winW,
-        height: noClueBoxValues.h * winH,
+    const textValues = {
+        w: currentPlayerBox1Width - (currentPlayerAreaValues.spacing * 4),
+        w2: currentPlayerBox1Width - (currentPlayerAreaValues.spacing * 2),
+    };
+    textValues.x = (currentPlayerBox1Width / 2) - (textValues.w / 2);
+    textValues.x2 = (currentPlayerBox1Width / 2) - (textValues.w2 / 2);
+
+    globals.elements.currentPlayerText1 = new FitText({
+        x: textValues.x * winW,
+        width: textValues.w * winW,
         fontFamily: 'Verdana',
         fontSize: 0.08 * winH,
-        strokeWidth: 1,
-        text: 'No Clues',
+        text: 'Current player:',
         align: 'center',
-        fill: '#df2c4d',
-        stroke: 'black',
+        fill: labelColor,
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+        listening: false,
+    });
+    globals.elements.currentPlayerArea.add(globals.elements.currentPlayerText1);
+
+    globals.elements.currentPlayerText2 = new FitText({
+        x: textValues.x * winW,
+        width: textValues.w * winW,
+        fontFamily: 'Verdana',
+        fontSize: 0.08 * winH,
+        text: '',
+        align: 'center',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+        listening: false,
+    });
+    globals.elements.currentPlayerArea.add(globals.elements.currentPlayerText2);
+    globals.elements.currentPlayerText2.setPlayer = function set(currentPlayerIndex, threeLines) {
+        if (globals.ourTurn) {
+            this.setText('You');
+            this.setFill('yellow');
+        } else {
+            const text = globals.playerNames[currentPlayerIndex] || 'Undefined';
+            this.setText(text);
+            this.setFill('#ffffcc');
+        }
+        this.resize();
+        let maxSize = (currentPlayerAreaValues.h / 3) * winH;
+        if (threeLines) {
+            maxSize = (currentPlayerAreaValues.h / 4) * winH;
+        }
+        while (this._getTextSize(this.getText()).height > maxSize) {
+            this.setWidth(this.getWidth() * 0.9);
+            this.resize();
+        }
+        this.setX((globals.elements.currentPlayerRect1.getWidth() / 2) - (this.getWidth() / 2));
+    };
+
+    globals.elements.currentPlayerText3 = new FitText({
+        x: textValues.x2 * winW,
+        width: textValues.w2 * winW,
+        fontFamily: 'Verdana',
+        fontSize: 0.08 * winH,
+        text: '',
+        align: 'center',
+        fill: 'red',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+        listening: false,
         visible: false,
     });
-    globals.layers.UI.add(globals.elements.noClueLabel);
+    globals.elements.currentPlayerArea.add(globals.elements.currentPlayerText3);
+
+    const arrowValues = {
+        x: (currentPlayerAreaValues.w * 0.75) + currentPlayerAreaValues.spacing,
+        w: (currentPlayerAreaValues.w * 0.25) - currentPlayerAreaValues.spacing,
+        h: currentPlayerAreaValues.h,
+        spacing: 0.01,
+    };
+    const rect2 = new graphics.Rect({
+        x: arrowValues.x * winW,
+        width: arrowValues.w * winW,
+        height: currentPlayerAreaValues.h * winH,
+        cornerRadius: 0.005 * winW,
+        fill: 'black',
+        opacity: 0.2,
+    });
+    globals.elements.currentPlayerArea.add(rect2);
+
+    globals.elements.currentPlayerArrow = new graphics.Group({
+        x: (arrowValues.x + (arrowValues.w / 2)) * winW,
+        y: (currentPlayerAreaValues.h / 2) * winH,
+        offset: {
+            x: (arrowValues.x + (arrowValues.w / 2) * winW),
+            y: (currentPlayerAreaValues.h / 2) * winH,
+        },
+        listening: false,
+    });
+    globals.elements.currentPlayerArea.add(globals.elements.currentPlayerArrow);
+
+    const arrowBorder = new graphics.Arrow({
+        points: [
+            arrowValues.spacing * winW,
+            (arrowValues.h / 2) * winH,
+            (arrowValues.w - arrowValues.spacing) * winW,
+            (arrowValues.h / 2) * winH,
+        ],
+        pointerLength: 10,
+        pointerWidth: 10,
+        fill: 'black',
+        stroke: 'black',
+        strokeWidth: 10,
+        shadowBlur: 75,
+        shadowOpacity: 1,
+        listening: false,
+    });
+    globals.elements.currentPlayerArrow.add(arrowBorder);
+
+    const arrowBorderEdge = new graphics.Line({
+        points: [
+            (arrowValues.spacing - 0.001) * winW,
+            ((arrowValues.h / 2) - 0.007) * winH,
+            (arrowValues.spacing - 0.001) * winW,
+            ((arrowValues.h / 2) + 0.007) * winH,
+        ],
+        fill: 'black',
+        stroke: 'black',
+        strokeWidth: 2,
+    });
+    globals.elements.currentPlayerArrow.add(arrowBorderEdge);
+
+    const arrowMain = new graphics.Arrow({
+        points: [
+            arrowValues.spacing * winW,
+            (arrowValues.h / 2) * winH,
+            (arrowValues.w - arrowValues.spacing) * winW,
+            (arrowValues.h / 2) * winH,
+        ],
+        pointerLength: 10,
+        pointerWidth: 10,
+        fill: labelColor,
+        stroke: labelColor,
+        strokeWidth: 5,
+        listening: false,
+    });
+    globals.elements.currentPlayerArrow.add(arrowMain);
+
+    // Set the "Current Player" area up for this specific turn,
+    // which will always be either 2 or 3 lines long
+    globals.elements.currentPlayerArea.update = function update(currentPlayerIndex) {
+        if (globals.ourTurn && globals.clues !== 0) {
+            this.hide();
+            return;
+        }
+        this.show();
+
+        // Update the text
+        const text1 = globals.elements.currentPlayerText1;
+        const text2 = globals.elements.currentPlayerText2;
+        const text3 = globals.elements.currentPlayerText3;
+        let specialText = '';
+        if (globals.clues === 0) {
+            specialText = '(cannot clue; 0 clues left)';
+        } else if (globals.clues === 8) {
+            specialText = '(cannot discard; at 8 clues)';
+        }
+        const totalH = this.getHeight();
+        const text1H = text1._getTextSize(text1.getText()).height;
+        if (specialText === '') {
+            // 2 lines
+            text2.setPlayer(currentPlayerIndex, false);
+            const text2H = text2._getTextSize(text2.getText()).height;
+            const spacing = 0.03 * globals.stage.getHeight();
+            text1.setY((totalH / 2) - (text1H / 2) - spacing);
+            text2.setY((totalH / 2) - (text2H / 2) + spacing);
+            text3.hide();
+        } else {
+            // 3 lines
+            text2.setPlayer(currentPlayerIndex, true);
+            const text2H = text2._getTextSize(text2.getText()).height;
+            const spacing = 0.04 * globals.stage.getHeight();
+            text1.setY((totalH / 2) - (text1H / 2) - spacing);
+            text2.setY((totalH / 2) - (text2H / 2) + (spacing * 0.25));
+            text3.setY((totalH / 2) - (text1H / 2) + (spacing * 1.5));
+            text3.setText(specialText);
+            text3.show();
+        }
+
+        // Make the arrow point to the current player
+        const centerPos = globals.elements.playerHands[currentPlayerIndex].getAbsoluteCenterPos();
+        const thisPos = globals.elements.currentPlayerArrow.getAbsolutePosition();
+        const x = centerPos.x - thisPos.x;
+        const y = centerPos.y - thisPos.y;
+        const radians = Math.atan(y / x);
+        const rotation = radians * (180 / Math.PI) + 180;
+
+        if (globals.animateFast) {
+            globals.elements.currentPlayerArrow.setRotation(rotation);
+        } else {
+            if (globals.elements.currentPlayerArrowTween) {
+                globals.elements.currentPlayerArrowTween.destroy();
+            }
+            globals.elements.currentPlayerArrowTween = new graphics.Tween({
+                node: globals.elements.currentPlayerArrow,
+                duration: 0.5,
+                rotation,
+                runonce: true,
+            }).play();
+        }
+    };
 };
 
 const drawPreplayArea = () => {
@@ -1342,7 +1566,7 @@ const drawPreplayArea = () => {
     });
     globals.layers.UI.add(globals.elements.premoveCancelButton);
     globals.elements.premoveCancelButton.on('click tap', () => {
-        globals.elements.premoveCancelButton.setVisible(false);
+        globals.elements.premoveCancelButton.hide();
         globals.layers.UI.batchDraw();
 
         // If we dragged a card, we have to put the card back in the hand

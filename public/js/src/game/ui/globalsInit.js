@@ -136,6 +136,15 @@ module.exports = () => {
         noClueBox: null,
         noClueLabel: null,
 
+        // The current turn UI
+        currentPlayerArea: null,
+        currentPlayerRect1: null,
+        currentPlayerText1: null,
+        currentPlayerText2: null,
+        currentPlayerText3: null,
+        currentPlayerArrow: null,
+        currentPlayerArrowTween: null,
+
         // The replay screen
         replayArea: null,
         replayShuttleShared: null,

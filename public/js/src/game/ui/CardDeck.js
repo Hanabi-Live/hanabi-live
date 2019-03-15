@@ -79,7 +79,7 @@ function dragendPlay() {
         };
 
         this.setDraggable(false);
-        globals.elements.deckPlayAvailableLabel.setVisible(false);
+        globals.elements.deckPlayAvailableLabel.hide();
 
         globals.lobby.conn.send('action', {
             type: constants.ACT.DECKPLAY,

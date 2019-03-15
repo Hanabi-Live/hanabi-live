@@ -46,10 +46,10 @@ CardStack.prototype.doLayout = function doLayout() {
             }
         }
         for (let i = 0; i < n - 1; i++) {
-            this.children[i].setVisible(false);
+            this.children[i].hide();
         }
         if (n > 0) {
-            this.children[n - 1].setVisible(true);
+            this.children[n - 1].show();
         }
     };
 

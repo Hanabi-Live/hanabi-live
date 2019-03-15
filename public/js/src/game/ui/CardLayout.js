@@ -124,4 +124,19 @@ CardLayout.prototype.doLayout = function doLayout() {
     }
 };
 
+CardLayout.prototype.getAbsoluteCenterPos = function getAbsoluteCenterPos() {
+    const pos = this.getAbsolutePosition();
+
+    const w = this.getWidth();
+    const h = this.getHeight();
+
+    // The rotation comes from Konva in radians but we need to convert it to degrees
+    const rot = this.rotation / 180 * Math.PI;
+
+    pos.x += w / 2 * Math.cos(rot) - h / 2 * Math.sin(rot);
+    pos.y += w / 2 * Math.sin(rot) + h / 2 * Math.cos(rot);
+
+    return pos;
+};
+
 module.exports = CardLayout;

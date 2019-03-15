@@ -29,7 +29,7 @@ commands.action = (data) => {
     // Handle pre-playing / pre-discarding / pre-cluing
     if (globals.queuedAction !== null) {
         // Get rid of the pre-move button, since it is now our turn
-        globals.elements.premoveCancelButton.setVisible(false);
+        globals.elements.premoveCancelButton.hide();
         globals.layers.UI.batchDraw();
 
         // Prevent pre-cluing if the team is now at 0 clues
@@ -330,7 +330,7 @@ commands.replayLeader = (data) => {
     globals.elements.toggleSharedTurnButton.show();
     globals.elements.sharedReplayLeaderLabelPulse.play();
     globals.elements.restartButton.setVisible(globals.amSharedReplayLeader);
-    globals.elements.backToTurnButton.setVisible(false);
+    globals.elements.backToTurnButton.hide();
     globals.elements.toggleHypoButton.setVisible(globals.amSharedReplayLeader);
     globals.layers.UI.batchDraw();
 

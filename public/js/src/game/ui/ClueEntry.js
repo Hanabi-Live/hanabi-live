@@ -152,7 +152,7 @@ ClueEntry.prototype.checkExpiry = function checkExpiry() {
 ClueEntry.prototype.showMatch = function showMatch(target) {
     this.background.setOpacity(0.1);
     this.background.setFill('white');
-    this.negativeMarker.setVisible(false);
+    this.negativeMarker.hide();
 
     for (let i = 0; i < this.list.length; i++) {
         if (globals.deck[this.list[i]] === target) {
@@ -165,7 +165,7 @@ ClueEntry.prototype.showMatch = function showMatch(target) {
             this.background.setOpacity(0.4);
             this.background.setFill('#ff7777');
             if (globals.lobby.settings.showColorblindUI) {
-                this.negativeMarker.setVisible(true);
+                this.negativeMarker.show();
             }
         }
     }

@@ -65,9 +65,7 @@ graphics.Util.extend(NumberButton, graphics.Group);
 
 NumberButton.prototype.setPressed = function setPressed(pressed) {
     this.pressed = pressed;
-
     this.get('.background')[0].setFill(pressed ? '#cccccc' : 'black');
-
     this.getLayer().batchDraw();
 };
 
