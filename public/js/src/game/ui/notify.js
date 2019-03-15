@@ -250,15 +250,6 @@ commands.status = (data) => {
 
     // Update the number of clues in the bottom-right hand corner of the screen
     globals.elements.cluesNumberLabel.setText(globals.clues.toString());
-    if (globals.clues < 1 || globals.clues === 8) {
-        globals.elements.cluesNumberLabel.setFill('#df1c2d'); // Red
-    } else if (globals.clues >= 1 && globals.clues < 2) {
-        globals.elements.cluesNumberLabel.setFill('#ef8c1d'); // Orange
-    } else if (globals.clues >= 2 && globals.clues < 3) {
-        globals.elements.cluesNumberLabel.setFill('#efef1d'); // Yellow
-    } else {
-        globals.elements.cluesNumberLabel.setFill('#d8d5ef'); // White
-    }
 
     if (globals.clues === 8) {
         // Show the red border around the discard pile
