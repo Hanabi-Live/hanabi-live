@@ -1373,7 +1373,7 @@ const drawCurrentPlayerArea = () => {
     });
     globals.elements.currentPlayerArea.add(globals.elements.currentPlayerText2);
     globals.elements.currentPlayerText2.setPlayer = function set(currentPlayerIndex, threeLines) {
-        if (globals.ourTurn) {
+        if (globals.ourTurn && !globals.spectating) {
             this.setText('You');
             this.setFill('yellow');
         } else {
