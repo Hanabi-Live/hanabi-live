@@ -1381,11 +1381,12 @@ const drawCurrentPlayerArea = () => {
             this.setText(text);
             this.setFill('#ffffcc');
         }
-        this.resize();
         let maxSize = (currentPlayerAreaValues.h / 3) * winH;
         if (threeLines) {
             maxSize = (currentPlayerAreaValues.h / 4) * winH;
         }
+        this.setWidth(textValues.w * winW);
+        this.resize();
         while (this._getTextSize(this.getText()).height > maxSize) {
             this.setWidth(this.getWidth() * 0.9);
             this.resize();
