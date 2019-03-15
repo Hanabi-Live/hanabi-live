@@ -188,11 +188,7 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
         globals.elements.clueArea.show();
         globals.elements.currentPlayerArea.hide();
     } else {
-        /*
-        TODO
-        globals.elements.noClueBox.show();
-        globals.elements.noClueLabel.show();
-        */
+        globals.elements.currentPlayerArea.show();
     }
     globals.layers.UI.batchDraw();
 

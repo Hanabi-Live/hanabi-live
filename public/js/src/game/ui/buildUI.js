@@ -1491,7 +1491,6 @@ const drawCurrentPlayerArea = () => {
     globals.elements.currentPlayerArea.update = function update(currentPlayerIndex) {
         if (globals.ourTurn && globals.clues !== 0) {
             this.hide();
-            return;
         }
         this.show();
 
@@ -1533,7 +1532,10 @@ const drawCurrentPlayerArea = () => {
         const x = centerPos.x - thisPos.x;
         const y = centerPos.y - thisPos.y;
         const radians = Math.atan(y / x);
-        const rotation = radians * (180 / Math.PI) + 180;
+        let rotation = radians * (180 / Math.PI);
+        if (x < 0) {
+            rotation += 180;
+        }
 
         if (globals.animateFast) {
             globals.elements.currentPlayerArrow.setRotation(rotation);
