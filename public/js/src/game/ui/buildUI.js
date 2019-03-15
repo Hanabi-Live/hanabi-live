@@ -1489,10 +1489,17 @@ const drawCurrentPlayerArea = () => {
     // Set the "Current Player" area up for this specific turn,
     // which will always be either 2 or 3 lines long
     globals.elements.currentPlayerArea.update = function update(currentPlayerIndex) {
-        if (globals.ourTurn && globals.clues !== 0) {
+        if (
+            (globals.ourTurn && globals.clues !== 0)
+            || currentPlayerIndex === -1
+        ) {
             this.hide();
         }
         this.show();
+
+        if (currentPlayerIndex === -1) {
+            return;
+        }
 
         // Update the text
         const text1 = globals.elements.currentPlayerText1;
