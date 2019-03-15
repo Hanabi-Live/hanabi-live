@@ -139,4 +139,14 @@ CardLayout.prototype.getAbsoluteCenterPos = function getAbsoluteCenterPos() {
     return pos;
 };
 
+CardLayout.prototype.isLocked = function isLocked() {
+    for (const layoutChild of this.children) {
+        const card = layoutChild.children[0];
+        if (!card.isClued()) {
+            return false;
+        }
+    }
+    return true;
+};
+
 module.exports = CardLayout;

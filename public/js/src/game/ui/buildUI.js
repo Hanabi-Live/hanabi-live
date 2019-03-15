@@ -1510,8 +1510,13 @@ const drawCurrentPlayerArea = () => {
         let specialText = '';
         if (globals.clues === 0) {
             specialText = '(cannot clue; 0 clues left)';
+            text3.setFill('red');
         } else if (globals.clues === 8) {
             specialText = '(cannot discard; at 8 clues)';
+            text3.setFill('red');
+        } else if (globals.elements.playerHands[currentPlayerIndex].isLocked()) {
+            specialText = '(locked; may not be able to discard)';
+            text3.setFill('yellow');
         }
         const totalH = this.getHeight();
         const text1H = text1._getTextSize(text1.getText()).height;

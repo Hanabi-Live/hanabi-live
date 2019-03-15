@@ -95,7 +95,7 @@ module.exports = () => {
         suitLabelTexts: [],
         discardArea: null,
         discardStacks: new Map(),
-        playerHands: [],
+        playerHands: [], // Contains CardLayouts
         nameFrames: [],
         messagePrompt: null, // The truncated action log
         replayButton: null,
