@@ -1108,6 +1108,18 @@ HanabiCard.prototype.setNote = function setNote(note) {
     notes.show(this);
 };
 
+HanabiCard.prototype.getSlotNum = function getSlotNum() {
+    const numCardsInHand = this.parent.parent.children.length;
+    for (let i = 0; i < numCardsInHand; i++) {
+        const layoutChild = this.parent.parent.children[i];
+        if (layoutChild.children[0].order === this.order) {
+            return numCardsInHand - i;
+        }
+    }
+
+    return -1;
+};
+
 HanabiCard.prototype.isCritical = function isCritical() {
     if (
         !this.identityKnown

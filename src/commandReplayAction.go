@@ -167,7 +167,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 
 		// Test to see if it is valid JSON
 		var js json.RawMessage
-		if json.Unmarshal([]byte(d.ActionJSON), &js) == nil {
+		if json.Unmarshal([]byte(d.ActionJSON), &js) != nil {
 			s.Warning("That is not a valid JSON object.")
 			return
 		}

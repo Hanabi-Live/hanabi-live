@@ -3,8 +3,9 @@
 */
 
 // Imports
-const globals = require('./globals');
 const constants = require('../../constants');
+const globals = require('./globals');
+const stats = require('./stats');
 
 /*
     Main replay functions
@@ -158,13 +159,13 @@ const reset = () => {
     }
 
     globals.deck = [];
+    globals.deckSize = stats.getTotalCardsInTheDeck();
+    globals.elements.drawDeck.setCount(globals.deckSize);
+
     globals.postAnimationLayout = null;
 
     globals.elements.clueLog.clear();
     globals.elements.messagePrompt.reset();
-
-    // This should always be overridden before it gets displayed
-    globals.elements.drawDeck.setCount(0);
 
     for (let i = 0; i < globals.elements.strikes.length; i++) {
         globals.elements.strikes[i].remove();

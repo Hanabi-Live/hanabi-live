@@ -20,7 +20,6 @@ const CardDeck = function CardDeck(config) {
 
     this.cardback.on('dragend.play', dragendPlay);
 
-    this.count = 0;
     this.numLeftText = new graphics.Text({
         fill: 'white',
         stroke: 'black',
@@ -33,7 +32,7 @@ const CardDeck = function CardDeck(config) {
         fontSize: 0.4 * this.getHeight(),
         fontFamily: 'Verdana',
         fontStyle: 'bold',
-        text: '0',
+        text: globals.deckSize.toString(),
         listening: false,
     });
     this.add(this.numLeftText);
@@ -117,7 +116,6 @@ CardDeck.prototype.setCardBack = function setCardBack(cardback) {
 };
 
 CardDeck.prototype.setCount = function setCount(count) {
-    this.count = count;
     this.numLeftText.setText(count.toString());
 
     // When there are no cards left in the deck,

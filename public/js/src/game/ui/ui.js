@@ -6,6 +6,7 @@ const convert = require('./convert');
 const globals = require('./globals');
 const globalsInit = require('./globalsInit');
 const graphics = require('./graphics');
+const hypothetical = require('./hypothetical');
 const Loader = require('./Loader');
 const keyboard = require('./keyboard');
 const notes = require('./notes');
@@ -136,13 +137,7 @@ HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
 
 HanabiUI.prototype.endTurn = function endTurn(action) {
     if (globals.hypothetical) {
-        globals.lobby.conn.send('replayAction', {
-            type: constants.REPLAY_ACTION_TYPE.HYPO_ACTION,
-            actionJSON: {
-                type: action.type,
-                data: action.data,
-            },
-        });
+        hypothetical.send(action);
         globals.lobby.ui.stopAction();
         return;
     }
@@ -366,7 +361,7 @@ HanabiUI.prototype.handleWebsocket = function handleWebsocket(command, data) {
     if (Object.prototype.hasOwnProperty.call(websocket, command)) {
         websocket[command](data);
     } else {
-        console.error(`A WebSocket function for the "${command}" is not defined.`);
+        console.error(`A WebSocket function for the "${command}" command is not defined.`);
     }
 };
 
@@ -387,7 +382,7 @@ HanabiUI.prototype.handleNotify = function handleNotify(data) {
     if (Object.prototype.hasOwnProperty.call(notify, type)) {
         notify[type](data);
     } else {
-        console.error(`A WebSocket notify function for the "${type}" is not defined.`);
+        console.error(`A WebSocket notify function for the "${type}" command is not defined.`);
     }
 };
 

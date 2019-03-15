@@ -44,8 +44,10 @@ module.exports = () => {
     globals.deck = [];
     globals.deckSize = 0;
     globals.turn = 0;
+    globals.currentPlayerIndex = 0;
     globals.endTurn = null; // Set when the final card is drawn
     globals.score = 0;
+    globals.maxScore = 0;
     globals.clues = 0;
     globals.spectators = [];
     globals.deckOrder = null; // Sent when the game ends

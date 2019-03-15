@@ -147,8 +147,13 @@ commands.gameOver = () => {
     globals.layers.UI.batchDraw();
 };
 
-commands.hypoAction = () => {
+commands.hypoAction = (data) => {
+    const notify = JSON.parse(data);
 
+    // We need to save this game state change for the purposes of the in-game hypothetical
+    globals.hypoActions.push(notify);
+
+    globals.lobby.ui.handleNotify(notify);
 };
 
 commands.hypoEnd = () => {
@@ -339,11 +344,12 @@ commands.replayLeader = (data) => {
     // Update the UI and play an animation to indicate there is a new replay leader
     globals.elements.sharedReplayLeaderLabel.show();
     globals.elements.sharedReplayLeaderCircle.setVisible(globals.amSharedReplayLeader);
-    globals.elements.toggleSharedTurnButton.show();
     globals.elements.sharedReplayLeaderLabelPulse.play();
-    globals.elements.restartButton.setVisible(globals.amSharedReplayLeader);
+    globals.elements.toggleSharedTurnButton.show();
     globals.elements.backToTurnButton.hide();
     globals.elements.toggleHypoButton.setVisible(globals.amSharedReplayLeader);
+    globals.elements.hypoCircle.setVisible(globals.hypothetical && !globals.amSharedReplayLeader);
+    globals.elements.restartButton.setVisible(globals.amSharedReplayLeader);
     globals.layers.UI.batchDraw();
 
     // Update the tooltip

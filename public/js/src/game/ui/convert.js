@@ -42,3 +42,14 @@ exports.msgClueToClue = (msgClue, variant) => {
 };
 
 exports.msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit];
+
+exports.suitToMsgSuit = (suit, variant) => {
+    for (let i = 0; i < variant.suits.length; i++) {
+        const suit2 = variant.suits[i];
+        if (suit2.name === suit.name) {
+            return i;
+        }
+    }
+
+    return -1;
+};

@@ -342,14 +342,6 @@ func (p *Player) DrawCard(g *Game) {
 		g.NotifyAction()
 	}
 
-	g.Actions = append(g.Actions, ActionDrawSize{
-		Type: "drawSize",
-		Size: len(g.Deck) - g.DeckIndex,
-	})
-	if g.Running {
-		g.NotifyAction()
-	}
-
 	// Check to see if that was the last card drawn
 	if g.DeckIndex >= len(g.Deck) {
 		// Mark the turn upon which the game will end

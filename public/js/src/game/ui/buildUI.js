@@ -615,6 +615,7 @@ const drawDeck = () => {
     });
     globals.layers.background.add(drawDeckRect);
 
+    globals.deckSize = stats.getTotalCardsInTheDeck();
     globals.elements.drawDeck = new CardDeck({
         x: deckValues.x * winW,
         y: deckValues.y * winH,
@@ -1797,7 +1798,7 @@ const drawReplayArea = () => {
         height: bottomRightReplayButtonValues.h * winH,
         text: 'Enter Hypothetical',
         alternateText: 'Exit Hypothetical',
-        initialState: !globals.useSharedTurns,
+        initialState: globals.hypothetical,
         visible: globals.replay && globals.amSharedReplayLeader,
     });
     globals.elements.toggleHypoButton.on('click tap', hypothetical.toggle);
@@ -1807,7 +1808,7 @@ const drawReplayArea = () => {
     globals.elements.hypoCircle = new graphics.Group({
         x: bottomRightReplayButtonValues.x * winW,
         y: bottomRightReplayButtonValues.y * winH,
-        visible: globals.hypothetical,
+        visible: globals.hypothetical && !globals.amSharedReplayLeader,
     });
     globals.elements.replayArea.add(globals.elements.hypoCircle);
 

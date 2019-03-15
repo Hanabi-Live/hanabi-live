@@ -112,6 +112,9 @@ commands.discard = (data) => {
 
 // A player just drew a card from the deck
 commands.draw = (data) => {
+    globals.deckSize -= 1;
+    globals.elements.drawDeck.setCount(globals.deckSize);
+
     if (data.suit === -1) {
         delete data.suit;
     }
@@ -153,9 +156,8 @@ commands.draw = (data) => {
 };
 
 // After a card is drawn, the server tells us how many cards are left in the deck
-commands.drawSize = (data) => {
-    globals.deckSize = data.size;
-    globals.elements.drawDeck.setCount(data.size);
+commands.drawSize = () => {
+    // Legacy command; TODO delete
 };
 
 // A new line of text has appeared in the action log
@@ -331,9 +333,10 @@ commands.strike = (data) => {
 commands.turn = (data) => {
     // Store the current turn in memory
     globals.turn = data.num;
+    globals.currentPlayerIndex = data.who;
 
     // Keep track of whether or not it is our turn (speedrun)
-    globals.ourTurn = (data.who === globals.playerUs);
+    globals.ourTurn = (globals.currentPlayerIndex === globals.playerUs);
     if (!globals.ourTurn) {
         // Adding this here to avoid bugs with pre-moves
         globals.elements.clueArea.hide();
@@ -341,7 +344,7 @@ commands.turn = (data) => {
 
     // Bold the name frame of the current player to indicate that it is their turn
     for (let i = 0; i < globals.playerNames.length; i++) {
-        globals.elements.nameFrames[i].setActive(data.who === i);
+        globals.elements.nameFrames[i].setActive(globals.currentPlayerIndex === i);
     }
 
     // Update the turn count in the score area
@@ -351,11 +354,11 @@ commands.turn = (data) => {
     // (but don't bother in a solo / shared replay,
     // since the replay controls will always cover the current player UI)
     if (!globals.inReplay) {
-        globals.elements.currentPlayerArea.update(data.who);
+        globals.elements.currentPlayerArea.update(globals.currentPlayerIndex);
     }
 
     // If there are no cards left in the deck, update the "Turns left: #" label
-    if (globals.elements.drawDeck.count === 0) {
+    if (globals.deckSize === 0) {
         if (globals.endTurn === null) {
             globals.endTurn = globals.turn + globals.playerNames.length;
         }

@@ -12,10 +12,6 @@ type ActionDraw struct {
 	Suit  int    `json:"suit"`
 	Order int    `json:"order"` // The ID of the card, based on its ordering in the deck
 }
-type ActionDrawSize struct {
-	Type string `json:"type"`
-	Size int    `json:"size"`
-}
 type ActionStatus struct {
 	Type          string `json:"type"`
 	Clues         int    `json:"clues"`
