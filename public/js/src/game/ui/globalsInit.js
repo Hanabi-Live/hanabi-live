@@ -177,6 +177,7 @@ module.exports = () => {
     // Pre-move feature
     globals.ourTurn = false;
     globals.queuedAction = null;
+    globals.preCluedCard = null;
 
     // Miscellaneous
     globals.animateFast = true;

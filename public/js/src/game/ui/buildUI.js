@@ -1576,6 +1576,7 @@ const drawPreplayArea = () => {
     globals.layers.UI.add(globals.elements.premoveCancelButton);
     globals.elements.premoveCancelButton.on('click tap', () => {
         globals.elements.premoveCancelButton.hide();
+        globals.elements.currentPlayerArea.show();
         globals.layers.UI.batchDraw();
 
         // If we dragged a card, we have to put the card back in the hand

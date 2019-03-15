@@ -32,9 +32,20 @@ commands.action = (data) => {
         globals.elements.premoveCancelButton.hide();
         globals.layers.UI.batchDraw();
 
-        // Prevent pre-cluing if the team is now at 0 clues
-        if (globals.queuedAction.data.type === constants.ACT.CLUE && globals.clues === 0) {
-            return;
+        if (globals.queuedAction.data.type === constants.ACT.CLUE) {
+            // Prevent pre-cluing if the team is now at 0 clues
+            if (globals.clues === 0) {
+                return;
+            }
+
+            // Prevent pre-cluing if the card is no longer in the hand
+            const card = globals.deck[globals.preCluedCard];
+            if (
+                globals.queuedAction.data.type === constants.ACT.CLUE
+                && (card.isPlayed || card.isDiscarded)
+            ) {
+                return;
+            }
         }
 
         // Prevent discarding if the team is now at 8 clues
@@ -46,6 +57,7 @@ commands.action = (data) => {
         setTimeout(() => {
             globals.lobby.conn.send(globals.queuedAction.type, globals.queuedAction.data);
             globals.queuedAction = null;
+            globals.preCluedCard = null;
             globals.lobby.ui.stopAction();
             globals.savedAction = null;
         }, 250);

@@ -1002,6 +1002,7 @@ HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft(event) {
         && !event.altKey
         && !event.metaKey
     ) {
+        globals.preCluedCard = this.order;
         const color = this.trueSuit.clueColors[0];
         const colors = globals.variant.clueColors;
         const value = colors.findIndex(variantClueColor => variantClueColor === color);
@@ -1051,6 +1052,7 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight(event) {
         && !event.altKey
         && !event.metaKey
     ) {
+        globals.preCluedCard = this.order;
         globals.lobby.ui.endTurn({
             type: 'action',
             data: {

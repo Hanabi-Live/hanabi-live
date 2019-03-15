@@ -153,7 +153,6 @@ HanabiUI.prototype.endTurn = function endTurn(action) {
         globals.lobby.ui.stopAction();
     } else {
         globals.queuedAction = action;
-        globals.elements.premoveCancelButton.show();
         let text = 'Cancel Pre-';
         if (globals.queuedAction.data.type === constants.ACT.CLUE) {
             text += 'Clue';
@@ -163,6 +162,8 @@ HanabiUI.prototype.endTurn = function endTurn(action) {
             text += 'Discard';
         }
         globals.elements.premoveCancelButton.setText(text);
+        globals.elements.premoveCancelButton.show();
+        globals.elements.currentPlayerArea.hide();
         globals.layers.UI.batchDraw();
     }
 
