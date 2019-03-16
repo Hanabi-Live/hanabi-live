@@ -21,6 +21,8 @@ const globals = {
     // Used to keep track of whether the user clicked on the "Show More History" button
     totalGames: 0, // Set upon login
     randomName: '', // Set upon login
+    lastRecvdTableGameId: null, // Used to propagate game ID to the UI
+    lastRequestedReplayId: null, // Used to propagate game ID to the UI
 
     // The lobby settings found in the gear sub-menu
     settings: {

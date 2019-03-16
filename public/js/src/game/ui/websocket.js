@@ -490,6 +490,14 @@ commands.spectators = (data) => {
     }
 
     globals.layers.UI.batchDraw();
+
+    // Hack to ensure the db game ID is updated after the value is received.
+    // Works because spectators message is recv'd after the table msg, which
+    // contains the db game ID.
+    // In parallel, there's a *different* gameID which is essentially an ID for
+    // each game in the client session.
+    globals.elements.gameIdNumberLabel.setText(`${globals.lobby.lastRecvdTableGameId}`);
+    globals.layers.UI2.batchDraw();
 };
 
 module.exports = commands;

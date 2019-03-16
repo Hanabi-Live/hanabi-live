@@ -106,6 +106,7 @@ const submit = () => {
     localStorage.setItem('watchReplayVisibility', visibility);
 
     if (source === 'id') {
+        globals.lastRequestedReplayId = gameID;
         globals.conn.send('replayCreate', {
             source,
             gameID,

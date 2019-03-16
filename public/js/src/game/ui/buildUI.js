@@ -131,6 +131,7 @@ module.exports = () => {
     drawPreplayArea();
     drawReplayArea();
     drawExtraAnimations();
+    drawGameId();
 
     if (globals.inReplay) {
         globals.elements.replayArea.show();
@@ -964,6 +965,29 @@ const drawSharedReplay = () => {
         });
     });
 };
+
+const drawGameId = () => {
+    globals.elements.gameIdTextLabel = basicTextLabel.clone({
+        text: 'ID:',
+        x: 0.097 * winW,
+        y: 0.805 * winH,
+        fontSize: 0.02 * winH,
+    });
+    globals.layers.UI2.add(globals.elements.gameIdTextLabel);
+    globals.elements.gameIdNumberLabel = basicNumberLabel.clone({
+        text: `${globals.lobby.lastRequestedReplayId}`,
+        x: 0.122 * winW,
+        y: 0.805 * winH,
+        width: 0.05 * winW,
+        fontSize: 0.02 * winH,
+    });
+    globals.layers.UI2.add(globals.elements.gameIdNumberLabel);
+    if (!globals.replay) {
+        globals.elements.gameIdTextLabel.hide();
+        globals.elements.gameIdNumberLabel.hide();
+    }
+};
+
 
 const drawClueLog = () => {
     clueLogValues = {

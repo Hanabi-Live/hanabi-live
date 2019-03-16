@@ -111,6 +111,8 @@ module.exports = () => {
 
         // Extra elements on the right-hand side + the bottom
         clueLog: null,
+        gameIdTextLabel: null,
+        gameIdNumberLabel: null,
         paceNumberLabel: null,
         efficiencyNumberLabel: null,
         efficiencyNumberLabelMinNeeded: null,
