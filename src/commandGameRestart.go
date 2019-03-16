@@ -43,6 +43,27 @@ func commandGameRestart(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that all of the players who played the game are currently spectating
+	// the shared replay
+	gameSessions := make([]*Session, 0)
+	for _, sp := range g.Spectators {
+		playedInOriginalGame := false
+		for _, p := range g.Players {
+			if p.Name == sp.Name {
+				playedInOriginalGame = true
+				break
+			}
+		}
+		if playedInOriginalGame {
+			gameSessions = append(gameSessions, sp.Session)
+		}
+	}
+	if len(gameSessions) != len(g.Players) {
+		s.Warning("Not all of the players from the original game are in the shared replay, " +
+			"so you cannot restart the game.")
+		return
+	}
+
 	/*
 		Restart
 	*/
@@ -50,12 +71,8 @@ func commandGameRestart(s *Session, d *CommandData) {
 	// Force the client of all of the spectators to go back to the lobby
 	g.NotifyBoot()
 
-	// On the server side, all of the spectators will still be in the game
-	// Make a list of the sessions and then manually disconnect them
-	gameSessions := make([]*Session, 0)
-	for _, sp := range g.Spectators {
-		gameSessions = append(gameSessions, sp.Session)
-	}
+	// On the server side, all of the spectators will still be in the game,
+	// so manually disconnect them
 	for _, s2 := range gameSessions {
 		commandGameUnattend(s2, nil)
 	}
