@@ -1491,14 +1491,14 @@ const drawCurrentPlayerArea = () => {
     // Set the "Current Player" area up for this specific turn,
     // which will always be either 2 or 3 lines long
     globals.elements.currentPlayerArea.update = function update(currentPlayerIndex) {
-        if (
-            (globals.ourTurn && globals.clues !== 0)
-            || globals.inReplay
-            || currentPlayerIndex === -1
-        ) {
-            this.hide();
-        }
-        this.show();
+        this.setVisible(
+            // Don't show it if we are in a solo/shared replay
+            // or if we happen to have the in-game replay open
+            !globals.inReplay
+            // Don't show it if the clue UI is supposed to be there
+            && (!globals.ourTurn || globals.clues === 0)
+            && currentPlayerIndex !== -1, // Don't show it if this is the end of the game
+        );
 
         if (currentPlayerIndex === -1) {
             // The game has ended

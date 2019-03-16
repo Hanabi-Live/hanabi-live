@@ -99,9 +99,10 @@ commands.connected = (data) => {
 
 // The game just finished
 commands.gameOver = () => {
-    // If any player time tooltips are open, close them
-    for (let i = 0; i < globals.playerNames.length; i++) {
-        globals.elements.nameFrames[i].off('mousemove');
+    // If any tooltips are open, close them
+    if (globals.activeHover !== null) {
+        globals.activeHover.off('mousemove');
+        globals.activeHover = null;
     }
 
     // If the timers are showing, hide them
