@@ -2,12 +2,16 @@
     A Phaser demo
 */
 
+let cursors;
+
 // Imports
 const convert = require('./convert');
 // const constants = require('../constants');
 const globals = require('../globals');
 const HanabiCard = require('./HanabiCard');
 const Hand = require('./Hand');
+const PlayArea = require('./PlayArea');
+const phaserGlobals = require('./phaserGlobals');
 
 exports.init = () => {
     const { width, height } = getGameSize();
@@ -18,6 +22,7 @@ exports.init = () => {
         scene: {
             preload,
             create,
+            update,
         },
     });
 };
@@ -41,14 +46,15 @@ function preload() {
         this.load.image(file, `/public/img/${file}.png`);
     }
     this.load.image('background', '/public/img/background.jpg');
+    this.canvas = this.sys.game.canvas;
 }
 
 function create() {
     // Set the background
     console.log(this.cameras);
     const background = this.add.sprite(
-        this.sys.canvas.width / 2,
-        this.sys.canvas.height / 2,
+        this.canvas.width / 2,
+        this.canvas.height / 2,
         'background',
     );
     background.setDisplaySize(this.sys.canvas.width, this.sys.canvas.height);
@@ -73,14 +79,20 @@ function create() {
         y: handLayout.y * this.sys.canvas.height,
         rot: handLayout.rot,
     }));
-    const hands = handLayoutsAbsolute.map(handLayout => new Hand(this, handLayout));
+    phaserGlobals.hands = handLayoutsAbsolute.map(handLayout => new Hand(this, handLayout));
+    const hands = phaserGlobals.hands;
     hands.map(hand => this.add.existing(hand));
 
     let order = 0;
     for (const hand of hands) {
-        for (let i = 0; i <= 5; i++) {
-            const suitNum = i;
+        for (let i = 0; i <= 7; i++) {
+            let suitNum = i;
             const rank = i;
+            if (suitNum === 6) {
+                suitNum = 4;
+            } else if (suitNum === 7) {
+                suitNum = 3;
+            }
 
             const suit = convert.msgSuitToSuit(suitNum, globals.init.variant);
             if (!globals.state.learnedCards[order]) {
@@ -89,7 +101,7 @@ function create() {
                     possibleRanks: globals.init.variant.ranks.slice(),
                 };
             }
-            globals.ui.cards[order] = new HanabiCard(this, {
+            const card = new HanabiCard(this, {
                 suit,
                 rank,
                 order,
@@ -97,16 +109,43 @@ function create() {
                 ranks: globals.init.variant.ranks.slice(),
                 holder: 0,
             });
-            this.add.existing(globals.ui.cards[order]);
-
+            globals.ui.cards[order] = card;
+            this.add.existing(card);
+            card.setInteractive();
+            this.input.setDraggable(card);
             this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-                gameObject.x = dragX;
-                gameObject.y = dragY;
+                const rot = gameObject.parentContainer.rotation;
+                gameObject.x = dragX * Math.cos(rot) + dragY * Math.sin(rot);
+                gameObject.y = dragY * Math.cos(rot) - dragX * Math.sin(rot);
             });
-            hand.draw(globals.ui.cards[order]);
+            // ghetto drag and drop
+            this.input.on('dragend', (pointer, gameObject) => {
+                console.log(gameObject.x);
+                console.log(gameObject.y);
+                if (
+                    //dragX > this.sys.canvas.width / 3 &&
+                    //dragX < 2 * this.sys.canvas.width / 3 &&
+                    //dragY > this.sys.canvas.height / 3 &&
+                    //dragY < 2 * this.sys.canvas.height / 3
+                    gameObject.y < -1 * this.sys.canvas.height / 3 &&
+                    gameObject.y > -2 * this.sys.canvas.height / 3
+                ) {
+                    gameObject.parentContainer.mutate(null, gameObject);
+                    phaserGlobals.playArea.addToPlayStacks(gameObject);
+                }
+            });
+            hand.mutate(card, null);
             order += 1;
         }
     }
+    phaserGlobals.playArea = new PlayArea(this, {
+        x: this.sys.canvas.width / 2,
+        y: this.sys.canvas.height / 2,
+        suits: globals.init.variant.suits.slice(),
+    });
+    this.add.existing(phaserGlobals.playArea);
+    cursors = this.input.keyboard.createCursorKeys();
+    // Ultimately, this will be called at a higher level
 }
 
 // We want the game stage to always be 16:9
@@ -148,3 +187,9 @@ const getGameSize = () => {
         height: ch,
     };
 };
+
+function update() {
+    //const hands = phaserGlobals.hands;
+    //if (cursors.right.isDown) {
+    //}
+}

@@ -21,12 +21,14 @@ class HanabiCard extends Phaser.GameObjects.Container {
 
         this.x = config.x || 0;
         this.y = config.y || 0;
+        this.setSize(CARDW * PHASER_DEMO_SCALE, CARDH * PHASER_DEMO_SCALE);
 
         // Card variables
         this.order = config.order;
         this.holder = config.holder;
         this.trueSuit = config.suit || undefined;
-        this.trueRank = config.rank || undefined;
+        // Rank 0 is the stack base, and it's false-y, so the undefined check has to be more nuanced
+        this.trueRank = typeof config.rank !== 'undefined' ? config.rank : undefined;
         // Possible suits and ranks (based on clues given) are tracked separately from
         // knowledge of the true suit and rank
         this.possibleSuits = config.suits;
@@ -73,8 +75,6 @@ class HanabiCard extends Phaser.GameObjects.Container {
             this.imageName,
         );
         image.setScale(PHASER_DEMO_SCALE);
-        image.setInteractive();
-        this.scene.input.setDraggable(image);
         return image;
     }
 
@@ -136,7 +136,9 @@ class HanabiCard extends Phaser.GameObjects.Container {
         }
 
         let name = `${prefix}-${suitToShow.name}-`;
-        if (empathyPastRankUncertain) {
+        if (rank === 0) {
+            name += '0';
+        } else if (empathyPastRankUncertain) {
             name += '6';
         } else {
             name += rank || learnedCard.rank || '6';
