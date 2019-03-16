@@ -1493,6 +1493,7 @@ const drawCurrentPlayerArea = () => {
     globals.elements.currentPlayerArea.update = function update(currentPlayerIndex) {
         if (
             (globals.ourTurn && globals.clues !== 0)
+            || globals.inReplay
             || currentPlayerIndex === -1
         ) {
             this.hide();
@@ -1500,6 +1501,7 @@ const drawCurrentPlayerArea = () => {
         this.show();
 
         if (currentPlayerIndex === -1) {
+            // The game has ended
             return;
         }
 
@@ -1559,7 +1561,7 @@ const drawCurrentPlayerArea = () => {
             }
             globals.elements.currentPlayerArrowTween = new graphics.Tween({
                 node: globals.elements.currentPlayerArrow,
-                duration: 0.5,
+                duration: 0.75,
                 rotation,
                 runonce: true,
             }).play();

@@ -351,11 +351,7 @@ commands.turn = (data) => {
     globals.elements.turnNumberLabel.setText(`${globals.turn + 1}`);
 
     // Update the current player in the middle of the screen
-    // (but don't bother in a solo / shared replay,
-    // since the replay controls will always cover the current player UI)
-    if (!globals.inReplay) {
-        globals.elements.currentPlayerArea.update(globals.currentPlayerIndex);
-    }
+    globals.elements.currentPlayerArea.update(globals.currentPlayerIndex);
 
     // If there are no cards left in the deck, update the "Turns left: #" label
     if (globals.deckSize === 0) {
