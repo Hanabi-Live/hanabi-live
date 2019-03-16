@@ -91,6 +91,12 @@ commands.discard = (data) => {
     card.isDiscarded = true;
     card.turnDiscarded = globals.turn - 1;
 
+    // If this card was misplayed, play a special animation
+    if (globals.nextDiscardWillMisplay) {
+        card.isMisplayed = true;
+        globals.nextDiscardWillMisplay = false;
+    }
+
     globals.elements.discardStacks.get(suit).add(child);
 
     // Bring the discarded card to the top
@@ -328,6 +334,10 @@ commands.strike = (data) => {
             runonce: true,
         }).play();
     }
+
+    // Mark that the next discard should play a special animation,
+    // since it won't be a normal discard
+    globals.nextDiscardWillMisplay = true;
 };
 
 commands.turn = (data) => {

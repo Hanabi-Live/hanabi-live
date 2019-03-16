@@ -52,6 +52,7 @@ const HanabiCard = function HanabiCard(config) {
     this.turnDiscarded = null;
     this.isPlayed = false;
     this.turnPlayed = null;
+    this.isMisplayed = false;
 
     // Some short helper functions
     this.doRotations = function doRotations(inverted) {

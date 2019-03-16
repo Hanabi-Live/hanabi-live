@@ -51,6 +51,7 @@ module.exports = () => {
     globals.clues = 0;
     globals.spectators = [];
     globals.deckOrder = null; // Sent when the game ends
+    globals.nextDiscardWillMisplay = false; // Set to true after the "strike" command
 
     // Efficiency variables
     globals.cardsGotten = 0;
