@@ -173,6 +173,10 @@ commands.hypoStart = () => {
     hypothetical.toggle();
 };
 
+commands.id = (data) => {
+    globals.id = data.id;
+};
+
 commands.init = (data) => {
     // Game settings
     globals.playerNames = data.names;
@@ -181,6 +185,7 @@ commands.init = (data) => {
     globals.spectating = data.spectating;
     globals.replay = data.replay;
     globals.sharedReplay = data.sharedReplay;
+    globals.id = data.id;
 
     // Optional settings
     globals.timed = data.timed;

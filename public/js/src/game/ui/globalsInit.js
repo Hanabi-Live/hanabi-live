@@ -24,6 +24,7 @@ module.exports = () => {
     globals.spectating = false;
     globals.replay = false; // True if we are in a solo or shared replay
     globals.sharedReplay = false;
+    globals.id = 0;
 
     // Optional game settings
     // (sent in the "init" message in "websocket.js")

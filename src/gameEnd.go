@@ -395,6 +395,14 @@ func (g *Game) ConvertToSharedReplay(databaseID int) {
 
 		// Send them the notes from all players
 		sp.Session.NotifyAllNotes(notes)
+
+		// Send them the database ID
+		type IDMessage struct {
+			ID int `json:"int"`
+		}
+		sp.Session.Emit("id", &IDMessage{
+			ID: databaseID,
+		})
 	}
 
 	notifyAllTable(g)    // Update the spectator list for the row in the lobby
