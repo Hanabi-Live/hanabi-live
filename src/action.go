@@ -62,10 +62,11 @@ type ActionDeckOrder struct {
 	Deck []CardSimple `json:"deck"`
 }
 type Which struct { // Used by "ActionPlay" and "ActionDiscard"
-	Index int `json:"index"` // The index of the player
-	Suit  int `json:"suit"`
-	Rank  int `json:"rank"`
-	Order int `json:"order"` // The ID of the card (based on its order in the deck)
+	Index  int  `json:"index"` // The index of the player
+	Suit   int  `json:"suit"`
+	Rank   int  `json:"rank"`
+	Order  int  `json:"order"` // The ID of the card (based on its order in the deck)
+	Failed bool `json:"action"`
 }
 type CardSimple struct { // Used by "ActionDeckOrder"
 	Suit int `json:"suit"`

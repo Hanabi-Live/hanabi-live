@@ -92,9 +92,9 @@ commands.discard = (data) => {
     card.turnDiscarded = globals.turn - 1;
 
     // If this card was misplayed, play a special animation
-    if (globals.nextDiscardWillMisplay) {
+    if (data.failed) {
         card.isMisplayed = true;
-        globals.nextDiscardWillMisplay = false;
+        // TODO
     }
 
     globals.elements.discardStacks.get(suit).add(child);
@@ -334,10 +334,6 @@ commands.strike = (data) => {
             runonce: true,
         }).play();
     }
-
-    // Mark that the next discard should play a special animation,
-    // since it won't be a normal discard
-    globals.nextDiscardWillMisplay = true;
 };
 
 commands.turn = (data) => {
