@@ -224,7 +224,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 		Create
 	*/
 
-	// Get the new game ID
+	// Get a new game ID
 	gameID := newGameID
 	newGameID++
 
@@ -274,7 +274,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 	log.Info(g.GetName() + "User \"" + s.Username() + "\" created a game.")
 
 	// Add it to the map
-	games[gameID] = g
+	games[g.ID] = g
 
 	// Let everyone know about the new table
 	notifyAllTable(g)

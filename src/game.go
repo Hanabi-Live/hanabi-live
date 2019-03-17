@@ -7,8 +7,9 @@ import (
 )
 
 type Game struct {
-	ID   int
-	Name string
+	ID         int
+	DatabaseID int
+	Name       string
 	// The user ID of the person who started the game
 	// or the current leader of the shared replay
 	Owner   int

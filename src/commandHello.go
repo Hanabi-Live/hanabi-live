@@ -102,7 +102,7 @@ func commandHello(s *Session, d *CommandData) {
 		Spectating:   s.Status() == statusSpectating,
 		Replay:       s.Status() == statusReplay || s.Status() == statusSharedReplay,
 		SharedReplay: s.Status() == statusSharedReplay,
-		ID:           g.ID,
+		ID:           g.DatabaseID,
 
 		// Optional settings
 		Timed:                g.Options.Timed,

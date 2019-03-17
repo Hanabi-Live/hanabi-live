@@ -52,24 +52,17 @@ func replayID(s *Session, d *CommandData) {
 		return
 	}
 
-	if d.Visibility == "shared" {
-		// Validate that there is not a shared replay for this game ID already
-		if _, ok := games[d.ID]; ok {
-			s.Warning("There is already a shared replay for game #" + strconv.Itoa(d.ID) + ".")
-			return
-		}
-	}
-
 	// Convert the game data from the database into a normal game object
 	g, success := convertDatabaseGametoGame(s, d)
 	if !success {
 		return
 	}
-	games[d.ID] = g
+	games[g.ID] = g
 	log.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " replay: #" + strconv.Itoa(d.ID))
 	// (a "table" message will be sent when the user joins)
 
 	// Join the user to the new replay
+	d.ID = g.ID
 	commandGameSpectate(s, d)
 
 	// Start the idle timeout
@@ -77,6 +70,10 @@ func replayID(s *Session, d *CommandData) {
 }
 
 func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
+	// Get a new game ID
+	gameID := newGameID
+	newGameID++
+
 	// Define a standard naming scheme for shared replays
 	name := strings.Title(d.Visibility) + " replay for game #" + strconv.Itoa(d.ID)
 
@@ -164,18 +161,13 @@ func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
 		numTurns = v
 	}
 
-	// If this is a solo replay, we need a brand new game ID
-	if d.Visibility == "solo" {
-		d.ID = newGameID
-		newGameID++
-	}
-
 	// Create the game object
 	g := &Game{
-		ID:      d.ID,
-		Name:    name,
-		Owner:   s.UserID(),
-		Visible: visible,
+		ID:         gameID,
+		DatabaseID: d.ID,
+		Name:       name,
+		Owner:      s.UserID(),
+		Visible:    visible,
 		Options: &Options{
 			Variant:              variantsID[options.Variant],
 			Timed:                options.Timed,
@@ -282,10 +274,6 @@ func replayJSON(s *Session, d *CommandData) {
 		return
 	}
 
-	// Get a new game ID
-	d.ID = newGameID
-	newGameID++
-
 	// Convert the JSON game to a normal game object
 	g := convertJSONGametoGame(s, d)
 	games[g.ID] = g
@@ -302,6 +290,7 @@ func replayJSON(s *Session, d *CommandData) {
 	g.Progress = 100
 
 	// Join the user to the new shared replay
+	d.ID = g.ID
 	commandGameSpectate(s, d)
 
 	// Start the idle timeout
@@ -309,8 +298,12 @@ func replayJSON(s *Session, d *CommandData) {
 }
 
 func convertJSONGametoGame(s *Session, d *CommandData) *Game {
+	// Get a new game ID
+	gameID := newGameID
+	newGameID++
+
 	// Define a standard naming scheme for shared replays
-	name := strings.Title(d.Visibility) + " replay for JSON game #" + strconv.Itoa(d.ID)
+	name := strings.Title(d.Visibility) + " replay for JSON game #" + strconv.Itoa(gameID)
 
 	// Figure out whether this game should be invisible
 	visible := false
@@ -330,7 +323,7 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		keys["username"] = name
 		keys["admin"] = false
 		keys["firstTimeUser"] = false
-		keys["currentGame"] = d.ID
+		keys["currentGame"] = gameID
 		keys["status"] = statusPlaying
 
 		player := &Player{
@@ -350,7 +343,7 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 
 	// Create the game object
 	g := &Game{
-		ID:      d.ID,
+		ID:      gameID,
 		Name:    name,
 		Owner:   s.UserID(),
 		Visible: visible,
