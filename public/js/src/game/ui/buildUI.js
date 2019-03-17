@@ -413,7 +413,7 @@ const drawBottomLeftButtons = () => {
         globals.activeHover = null;
         $('#tooltip-replay').tooltipster('close');
     });
-    const replayContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Enter the in-game replay, where you can rewind the game state to see what happened on a specific turn.</span>';
+    const replayContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Enter the in-game replay, where you can rewind the game to see what happened on a specific turn.</span>';
     $('#tooltip-replay').tooltipster('instance').content(replayContent);
 
     // The restart button

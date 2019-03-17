@@ -4,35 +4,56 @@
 
 // Imports
 const globals = require('./globals');
+const emojis = require('../lib/emojis');
 
 // Variables
 let chatLineNum = 1;
 
 $(document).ready(() => {
-    const input1 = $('#lobby-chat-input');
-    input1.on('keypress', send('lobby', input1));
-    const input2 = $('#lobby-chat-pregame-input');
-    input2.on('keypress', send('game', input2));
-    const input3 = $('#game-chat-input');
-    input3.on('keypress', send('game', input3));
+    const inputs = [
+        'lobby-chat-input',
+        'lobby-chat-pregame-input',
+        'game-chat-input',
+    ];
+    for (const input of inputs) {
+        const room = input === 'lobby-chat-input' ? 'lobby' : 'game';
+        $(`#${input}`).on('keypress', keypress(room));
+    }
 });
 
-const send = (room, input) => (event) => {
-    if (event.key !== 'Enter') {
-        return;
-    }
-    if (!input.val()) {
-        return;
+const keypress = room => function keypressFunction(event) {
+    // Check for emoji substitution
+    // e.g. :100: --> 💯
+    const input = $(this);
+    const text = input.val() + event.key;
+    const matches = text.match(/:[^\s]+:/g); // "[^\s]" is a non-whitespace character
+    if (matches) {
+        for (let match of matches) {
+            match = match.slice(1, -1); // Strip off the colons
+            const emoji = emojis[match];
+            if (emoji) {
+                input.val(text.replace(`:${match}:`, emoji));
+                event.preventDefault();
+                return;
+            }
+        }
     }
 
-    // Clear the chat box
-    const msg = input.val();
-    input.val('');
+    // Check for submission
+    if (event.key === 'Enter') {
+        if (!input.val()) {
+            return;
+        }
 
-    globals.conn.send('chat', {
-        msg,
-        room,
-    });
+        // Clear the chat box
+        const msg = input.val();
+        input.val('');
+
+        globals.conn.send('chat', {
+            msg,
+            room,
+        });
+    }
 };
 
 exports.add = (data, fast) => {
