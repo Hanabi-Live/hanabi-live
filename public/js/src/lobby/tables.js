@@ -26,7 +26,16 @@ exports.draw = () => {
 
     // Add all of the games
     for (const table of Object.values(globals.tableList)) {
-        const row = $('<tr>');
+        // Set the background color of the row, depending on what kind of game it is
+        let htmlClass;
+        if (table.sharedReplay) {
+            htmlClass = 'replay';
+        } else if (table.running) {
+            htmlClass = 'started';
+        } else {
+            htmlClass = 'unstarted';
+        }
+        const row = $(`<tr class="lobby-games-table-${htmlClass}">`);
 
         // Column 1 - Name
         $('<td>').html(table.name).appendTo(row);
@@ -47,7 +56,7 @@ exports.draw = () => {
         // Column 5 - Status
         let status;
         if (table.sharedReplay) {
-            status = 'Shared Replay';
+            status = 'Reviewing';
         } else if (table.running && table.joined) {
             if (table.ourTurn) {
                 status = '<strong>Your Turn</strong>';

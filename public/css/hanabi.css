@@ -299,6 +299,16 @@ table td {
     margin-bottom: 0;
 }
 
+.lobby-games-table-unstarted {
+    background-color: transparent !important;
+}
+.lobby-games-table-started {
+    background-color: #e6ffee !important;
+}
+.lobby-games-table-replay {
+    background-color: #fff0ff !important;
+}
+
 /*
     Lobby chat
 */
