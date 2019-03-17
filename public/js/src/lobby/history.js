@@ -131,7 +131,6 @@ const makeReplayButton = (id, visibility) => {
     button.attr('id', `replay-${id}`);
 
     button.on('click', () => {
-        globals.lastRequestedReplayId = id;
         globals.conn.send('replayCreate', {
             source: 'id',
             gameID: id,

@@ -125,6 +125,9 @@ CardDeck.prototype.setCount = function setCount(count) {
     let h = 0.3;
     if (count === 0) {
         h = 0.15;
+        if (globals.elements.gameIDLabel.getVisible()) {
+            h += 0.07;
+        }
     }
     this.numLeftText.setY(h * this.getHeight());
     globals.elements.deckTurnsRemainingLabel1.setVisible(count === 0);

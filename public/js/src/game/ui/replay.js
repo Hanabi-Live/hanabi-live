@@ -17,8 +17,6 @@ const enter = () => {
     }
 
     globals.inReplay = true;
-    globals.elements.gameIdTextLabel.show();
-    globals.elements.gameIdNumberLabel.show();
     globals.replayPos = globals.replayLog.length;
     globals.replayTurn = globals.replayMax;
     adjustShuttles();

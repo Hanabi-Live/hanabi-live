@@ -106,14 +106,13 @@ module.exports = () => {
         killButton: null,
         restartButton: null,
         drawDeck: null,
+        gameIDLabel: null,
         deckTurnsRemainingLabel1: null,
         deckTurnsRemainingLabel2: null,
         deckPlayAvailableLabel: null,
 
         // Extra elements on the right-hand side + the bottom
         clueLog: null,
-        gameIdTextLabel: null,
-        gameIdNumberLabel: null,
         paceNumberLabel: null,
         efficiencyNumberLabel: null,
         efficiencyNumberLabelMinNeeded: null,

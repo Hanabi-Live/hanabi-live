@@ -131,7 +131,6 @@ module.exports = () => {
     drawPreplayArea();
     drawReplayArea();
     drawExtraAnimations();
-    drawGameId();
 
     if (globals.inReplay) {
         globals.elements.replayArea.show();
@@ -616,6 +615,28 @@ const drawDeck = () => {
     });
     globals.layers.background.add(drawDeckRect);
 
+    // Near the top of the deck, draw the database ID for the respective game
+    // (in an ongoing game, this will not show)
+    globals.elements.gameIDLabel = new FitText({
+        text: `ID: ${globals.id}`,
+        x: deckValues.x * winW,
+        y: (deckValues.y + 0.01) * winH,
+        width: deckValues.w * winW,
+        fontFamily: 'Verdana',
+        fill: 'white',
+        align: 'center',
+        fontSize: 0.02 * winH,
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+        visible: globals.replay && globals.id !== 0,
+    });
+    globals.layers.UI2.add(globals.elements.gameIDLabel);
+
     globals.deckSize = stats.getTotalCardsInTheDeck();
     globals.elements.drawDeck = new CardDeck({
         x: deckValues.x * winW,
@@ -965,29 +986,6 @@ const drawSharedReplay = () => {
         });
     });
 };
-
-const drawGameId = () => {
-    globals.elements.gameIdTextLabel = basicTextLabel.clone({
-        text: 'ID:',
-        x: 0.097 * winW,
-        y: 0.805 * winH,
-        fontSize: 0.02 * winH,
-    });
-    globals.layers.UI2.add(globals.elements.gameIdTextLabel);
-    globals.elements.gameIdNumberLabel = basicNumberLabel.clone({
-        text: `${globals.lobby.lastRequestedReplayId}`,
-        x: 0.122 * winW,
-        y: 0.805 * winH,
-        width: 0.05 * winW,
-        fontSize: 0.02 * winH,
-    });
-    globals.layers.UI2.add(globals.elements.gameIdNumberLabel);
-    if (!globals.replay) {
-        globals.elements.gameIdTextLabel.hide();
-        globals.elements.gameIdNumberLabel.hide();
-    }
-};
-
 
 const drawClueLog = () => {
     clueLogValues = {

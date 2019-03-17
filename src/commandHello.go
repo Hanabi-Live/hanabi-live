@@ -78,7 +78,7 @@ func commandHello(s *Session, d *CommandData) {
 		Spectating   bool     `json:"spectating"`
 		Replay       bool     `json:"replay"`
 		SharedReplay bool     `json:"sharedReplay"`
-		ID           int      `json:"ID"`
+		ID           int      `json:"id"`
 
 		// Optional settings
 		Timed                bool     `json:"timed"`
