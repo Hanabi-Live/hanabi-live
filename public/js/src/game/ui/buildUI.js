@@ -1330,7 +1330,7 @@ const drawCurrentPlayerArea = () => {
         y: clueAreaValues.y + 0.015,
         w: currentPlayerAreaWidth,
         h: 0.15,
-        spacing: 0.01,
+        spacing: 0.006,
     };
     globals.elements.currentPlayerArea = new graphics.Group({
         x: currentPlayerAreaValues.x * winW,
