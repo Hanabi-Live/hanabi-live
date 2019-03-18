@@ -357,7 +357,7 @@ const checkDisableSharedTurns = () => {
         && !globals.amSharedReplayLeader
         && globals.useSharedTurns
     ) {
-        // Replay actions currently enabled, so disable them
+        // Replay actions are currently enabled, so disable them
         globals.elements.toggleSharedTurnButton.dispatchEvent(new MouseEvent('click'));
     }
 };

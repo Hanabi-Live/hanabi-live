@@ -352,6 +352,11 @@ commands.replayLeader = (data) => {
     globals.elements.sharedReplayLeaderCircle.setVisible(globals.amSharedReplayLeader);
     globals.elements.sharedReplayLeaderLabelPulse.play();
     globals.elements.toggleSharedTurnButton.show();
+    if (globals.amSharedReplayLeader) {
+        globals.elements.toggleSharedTurnButton.setLeft();
+    } else {
+        globals.elements.toggleSharedTurnButton.setCenter();
+    }
     globals.elements.toggleHypoButton.setVisible(globals.amSharedReplayLeader);
     globals.elements.hypoCircle.setVisible(globals.hypothetical && !globals.amSharedReplayLeader);
     globals.elements.restartButton.setVisible(globals.amSharedReplayLeader);
