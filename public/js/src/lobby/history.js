@@ -104,10 +104,8 @@ exports.draw = () => {
         row.appendTo(tbody);
     }
 
-    // Don't show the "Show More History" if we don't have 10 games played
-    // (there is a small bug here where if a user has exactly 10 games played
-    // then the button will erroneously show and not do anything when clicked)
-    if (ids.length < 10) {
+    // Don't show the "Show More History" if we have 10 or less games played
+    if (ids.length <= 10) {
         $('#lobby-history-show-more').hide();
     } else {
         $('#lobby-history-show-more').show();

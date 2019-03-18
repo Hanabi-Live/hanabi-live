@@ -1667,36 +1667,44 @@ const drawReplayArea = () => {
     replayBarClickRect.on('click', replay.barClick);
     globals.elements.replayArea.add(replayBarClickRect);
 
-    // We want the shared (white) replay shuttle to be below the normal replay shuttle,
-    // so we define it first
-    globals.elements.replayShuttleShared = new graphics.Rect({
+    const shuttleValues = {
         x: 0,
-        y: 0.0325 * winH,
-        width: 0.03 * winW,
-        height: 0.03 * winH,
-        cornerRadius: 0.01 * winW,
+        y: 0.0325,
+        w: 0.03,
+        h: 0.03,
+        cornerRadius: 0.01,
+        stroke: 3,
+    };
+
+    // The shared (white) replay shuttle
+    // (we want it to be below the normal replay shuttle, so we define it first)
+    globals.elements.replayShuttleShared = new graphics.Rect({
+        x: shuttleValues.x,
+        y: shuttleValues.y * winH,
+        width: shuttleValues.w * winW,
+        height: shuttleValues.h * winH,
+        cornerRadius: shuttleValues.cornerRadius * winW,
         fill: '#d1d1d1', // Gray
+        stroke: shuttleValues.stroke,
         visible: !globals.useSharedTurns,
     });
     globals.elements.replayShuttleShared.on('click tap', () => {
+        // This is needed because the shared replay shuttle will block the replay bar
         replay.goto(globals.sharedReplayTurn, true);
     });
     globals.elements.replayArea.add(globals.elements.replayShuttleShared);
 
     // This is the normal (blue) replay shuttle
     globals.elements.replayShuttle = new graphics.Rect({
-        x: 0,
-        y: 0.0325 * winH,
-        width: 0.03 * winW,
-        height: 0.03 * winH,
+        x: shuttleValues.x,
+        y: shuttleValues.y * winH,
+        width: shuttleValues.w * winW,
+        height: shuttleValues.h * winH,
         fill: '#0000cc', // Blue
-        cornerRadius: 0.01 * winW,
+        cornerRadius: shuttleValues.cornerRadius * winW,
         draggable: true,
         dragBoundFunc: replay.barDrag,
-    });
-    globals.elements.replayShuttle.on('dragend', () => {
-        globals.layers.card.batchDraw();
-        globals.layers.UI.batchDraw();
+        stroke: shuttleValues.stroke,
     });
     globals.elements.replayArea.add(globals.elements.replayShuttle);
 

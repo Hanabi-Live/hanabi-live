@@ -274,7 +274,7 @@ const adjustShuttles = () => {
     }
     let size = 0.03;
     if (smaller) {
-        size = 0.023;
+        size = 0.022;
     }
     const winW = globals.stage.getWidth();
     const winH = globals.stage.getHeight();
