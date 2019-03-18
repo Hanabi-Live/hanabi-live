@@ -5,6 +5,7 @@
 // Imports
 const globals = require('./globals');
 const emojis = require('../lib/emojis');
+const emoteCategories = require('../lib/emotes');
 
 // Variables
 let chatLineNum = 1;
@@ -66,8 +67,9 @@ exports.add = (data, fast) => {
         chat = $('#game-chat-text');
     }
 
-    // Convert any Discord emotes
-    data.msg = fillEmotes(data.msg);
+    // Convert emotes to images
+    data.msg = fillDiscordEmotes(data.msg);
+    data.msg = fillLocalEmotes(data.msg);
 
     // Get the hours and minutes from the time
     const datetime = new Intl.DateTimeFormat(
@@ -111,7 +113,8 @@ exports.add = (data, fast) => {
     }
 };
 
-const fillEmotes = (message) => {
+// Discord emotes are in the form of <>
+const fillDiscordEmotes = (message) => {
     let filledMessed = message;
     while (true) {
         const match = filledMessed.match(/&lt;:(.+?):(\d+?)&gt;/);
@@ -121,5 +124,29 @@ const fillEmotes = (message) => {
         const emoteTag = `<img src="https://cdn.discordapp.com/emojis/${match[2]}.png" title="${match[1]}" height=28 />`;
         filledMessed = filledMessed.replace(match[0], emoteTag);
     }
+    return filledMessed;
+};
+
+const fillLocalEmotes = (message) => {
+    let filledMessed = message;
+
+    // Search through the text for each emote
+    for (const category of Object.keys(emoteCategories)) {
+        for (const emote of emoteCategories[category]) {
+            if (message.indexOf(emote) !== -1) {
+                const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${category}/${emote}.png" title="${emote}" />`;
+                const re = new RegExp(`\\b${emote}\\b`, 'g'); // "\b" is a word boundary in regex
+                filledMessed = filledMessed.replace(re, emoteTag);
+            }
+        }
+    }
+
+    // Also handle special emotes that do not match the filenames
+    if (message.indexOf('&lt;3') !== -1) {
+        const emoteTag = '<img class="chat-emote" src="/public/img/emotes/3.png" title="&lt;3" />';
+        const re = new RegExp('&lt;3', 'g');
+        message = message.replace(re, emoteTag);
+    }
+
     return filledMessed;
 };

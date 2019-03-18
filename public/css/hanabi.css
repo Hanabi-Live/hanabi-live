@@ -329,6 +329,10 @@ table td {
     /* We have to move it further down because of the input box and the title */
 }
 
+.chat-emote {
+    height: 1.6em; /* This is derived from how Twitch does it */
+}
+
 /*
     User list
 */
