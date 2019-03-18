@@ -287,22 +287,12 @@ HanabiCard.prototype.initPips = function initPips(config) {
 
 HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
     this.indicatorGroup = new graphics.Group({
-        x: 0,
-        y: -config.height * 0.25,
         width: config.width,
         height: config.height,
         visible: false,
         listening: false,
     });
-    if (this.holder === globals.playerUs && globals.lobby.settings.showBGAUI) {
-        // In BGA mode, our hand is the one closest to the top
-        // So, invert the arrows so that it is easier to see them
-        // We also need to move the arrow slightly so that
-        // it does not cover the third box on the bottom of the card
-        this.indicatorGroup.setRotation(180);
-        this.indicatorGroup.setX(config.width);
-        this.indicatorGroup.setY(config.height * 1.4); // 1.18 is the "normal" height
-    }
+    this.initArrowLocation();
     this.add(this.indicatorGroup);
     this.indicatorGroup.originalX = this.indicatorGroup.getX();
     this.indicatorGroup.originalY = this.indicatorGroup.getY();
@@ -400,7 +390,7 @@ HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
     this.on('mousedown', (event) => {
         if (
             event.evt.which !== 1 // Dragging uses left click
-            || this.holder !== globals.playerUs
+            || (this.holder !== globals.playerUs && !globals.hypothetical)
             || globals.inReplay
             || globals.replay
             || globals.spectating
@@ -414,6 +404,26 @@ HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
 
         globals.lobby.ui.showClueMatch(-1);
     });
+};
+
+HanabiCard.prototype.initArrowLocation = function initArrowLocation() {
+    this.indicatorGroup.setX(0);
+    this.indicatorGroup.setY(-this.getHeight() * 0.25);
+    this.indicatorGroup.setRotation(0);
+    if (
+        this.holder === globals.playerUs
+        && globals.lobby.settings.showBGAUI
+        && !this.isPlayed
+        && !this.isDiscarded
+    ) {
+        // In BGA mode, our hand is the one closest to the top
+        // So, invert the arrows so that it is easier to see them
+        // We also need to move the arrow slightly so that
+        // it does not cover the third box on the bottom of the card
+        this.indicatorGroup.setX(this.getWidth());
+        this.indicatorGroup.setY(this.getHeight() * 1.4); // 1.18 is the "normal" height
+        this.indicatorGroup.setRotation(180);
+    }
 };
 
 HanabiCard.prototype.initNote = function initNote(config) {

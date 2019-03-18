@@ -81,8 +81,6 @@ commands.deckOrder = (data) => {
 };
 
 commands.discard = (data) => {
-    revealCard(data);
-
     // Local variables
     const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
     const card = globals.deck[data.which.order];
@@ -90,6 +88,8 @@ commands.discard = (data) => {
 
     card.isDiscarded = true;
     card.turnDiscarded = globals.turn - 1;
+
+    revealCard(data);
 
     // If this card was misplayed, play a special animation
     if (data.failed) {
@@ -178,8 +178,6 @@ commands.text = (data) => {
 };
 
 commands.play = (data) => {
-    revealCard(data);
-
     // Local variables
     const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
     const card = globals.deck[data.which.order];
@@ -187,6 +185,8 @@ commands.play = (data) => {
 
     card.isPlayed = true;
     card.turnPlayed = globals.turn - 1;
+
+    revealCard(data);
 
     globals.elements.playStacks.get(suit).add(child);
     globals.elements.playStacks.get(suit).moveToTop();
@@ -395,6 +395,9 @@ const revealCard = (data) => {
 
     // Hide all of the existing arrows on the cards
     globals.lobby.ui.showClueMatch(-1);
+
+    // Unflip the arrow, if it is flipped
+    card.initArrowLocation();
 
     const learnedCard = globals.learnedCards[data.which.order];
     learnedCard.suit = suit;
