@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 # (the "dotenv" module does not work in Python 2)
 
+import sys
+if sys.version_info < (3, 0):
+    print("This script requires Python 3.x.")
+    sys.exit(1)
+
 # Imports
 import os
-import sys
 import dotenv
 import mysql.connector
 

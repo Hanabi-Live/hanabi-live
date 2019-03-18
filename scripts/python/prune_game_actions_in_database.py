@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # (the "dotenv" module does not work in Python 2)
 
+import sys
+if sys.version_info < (3, 0):
+    print("This script requires Python 3.x.")
+    sys.exit(1)
+
 # Imports
 import json
 import os
-import sys
 import dotenv
 import mysql.connector
 
@@ -33,6 +37,7 @@ query = ('SELECT id, action FROM game_actions')
 cursor.execute(query)
 
 update_list = []
+delete_list = []
 num_records = 0
 for (id, action) in cursor:
     num_records += 1
@@ -56,7 +61,10 @@ for (id, action) in cursor:
           continue
 
     # Remove fields that are extraneous
+    delete_entire_entry = False
     keys_to_delete = []
+
+    # These actions map to what is in the "action.go" file
     if action_dict['type'] == 'draw':
         for key in action_dict:
             if (key != "type" and
@@ -64,24 +72,6 @@ for (id, action) in cursor:
                 key != "rank" and
                 key != "suit" and
                 key != "order"):
-
-                keys_to_delete.append(key)
-
-    elif action_dict['type'] == 'drawSize':
-        for key in action_dict:
-            if (key != "type" and
-                key != "size"):
-
-                keys_to_delete.append(key)
-
-    elif action_dict['type'] == 'draw_size':
-        # The "draw_size" action type was renamed to "drawSize"
-        modified = True
-        action_dict['type'] = 'drawSize'
-
-        for key in action_dict:
-            if (key != "type" and
-                key != "size"):
 
                 keys_to_delete.append(key)
 
@@ -96,17 +86,6 @@ for (id, action) in cursor:
                 keys_to_delete.append(key)
 
     elif action_dict['type'] == 'stackDirections':
-        for key in action_dict:
-            if (key != "type" and
-                key != "directions"):
-
-                keys_to_delete.append(key)
-
-    elif action_dict['type'] == 'suitDirections':
-        # The "suitDirections" action type was renamed to "stackDirections"
-        modified = True
-        action_dict['type'] = 'stackDirections'
-
         for key in action_dict:
             if (key != "type" and
                 key != "directions"):
@@ -146,17 +125,6 @@ for (id, action) in cursor:
 
                 keys_to_delete.append(key)
 
-    elif action_dict['type'] == 'played':
-        # The "played" action type was renamed to "play"
-        modified = True
-        action_dict['type'] = 'play'
-
-        for key in action_dict:
-            if (key != "type" and
-                key != "which"):
-
-                keys_to_delete.append(key)
-
     elif action_dict['type'] == 'discard':
         for key in action_dict:
             if (key != "type" and
@@ -179,32 +147,28 @@ for (id, action) in cursor:
 
                 keys_to_delete.append(key)
 
+    elif action_dict['type'] == 'deckOrder':
+        for key in action_dict:
+            if (key != "type" and
+                key != "deck"):
+
+                keys_to_delete.append(key)
+
+    elif action_dict['type'] == 'drawSize':
+        delete_entire_entry = True
+
     elif action_dict['type'] == 'gameOver':
-        for key in action_dict:
-            if (key != "type" and
-                key != "score" and
-                key != "loss"):
-
-                keys_to_delete.append(key)
-
-    elif action_dict['type'] == 'game_over':
-        # The "game_over" action type was renamed to "gameOver"
-        modified = True
-        action_dict['type'] = 'gameOver'
-
-        for key in action_dict:
-            if (key != "type" and
-                key != "score" and
-                key != "loss"):
-
-                keys_to_delete.append(key)
+        delete_entire_entry = True
 
     else:
         print("ERROR, UNKNOWN ACTION TYPE:", action_dict)
 
     # Push the update query to the list of things to update
-    if modified or len(keys_to_delete) > 0:
+    if delete_entire_entry:
+        delete_list.append((id))
+    elif modified or len(keys_to_delete) > 0:
         for key in keys_to_delete:
+            print("DELETING KEY:", key)
             action_dict.pop(key, None)
         new_action = json.dumps(action_dict, separators=(',',':')) # We provide the separators to minify the output
         update_list.append((id, new_action))
@@ -218,6 +182,13 @@ for thing in update_list:
     cursor.execute(query, (thing[1], thing[0]))
     cursor.close()
     print('UPDATED ID:', thing[0], thing[1])
+
+for thing in delete_list:
+    cursor = cnx.cursor()
+    query = ('DELETE FROM game_actions WHERE id = %s')
+    cursor.execute(query, (thing[0]))
+    cursor.close()
+    print('DELETED ID:', thing[0])
 
 cnx.commit()
 cnx.close()
