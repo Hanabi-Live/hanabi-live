@@ -1,10 +1,26 @@
 {
     "editor.fontSize": 16,
+
+    // We want to see spaces and tabs
     "editor.renderWhitespace": "all",
+
+    // This matches the Airbnb JavaScript style guide
     "editor.rulers": [100],
+
+    // IntelliSense tab completion is off by default
+    "editor.tabCompletion": "on",
+
     "editor.wordWrap": "on",
+    "explorer.confirmDelete": false,
+    
+    // Linux line endings are commonly used as a programming standard
     "files.eol": "\n",
+
+    // The default Golang linter is golint, which is only concerned with coding style
+    // GolangCI-Lint does a suite of different checks
     "go.lintTool":"golangci-lint",
+
+    // This is recommended as per the GolangCI-Lint README file
     "go.lintFlags": [
         "--fast"
     ],
@@ -12,6 +28,16 @@
     // This is needed to stop VSCode from recommending ES6 conversions
     // https://stackoverflow.com/questions/49447955/what-is-this-mark
     "javascript.suggestionActions.enabled": false,
+
+    // Disable the "Gutter" decorations along the left side next to the line numbers
+    // that show the Git history of the curernt code block
+    "scm.diffDecorations": "none",
+
+    // Disable the annoying release notes popup everytime that VSCode updates itself
+    "update.showReleaseNotes": false,
+
+    // Show the full path of the file in the window title
+    "window.title": "${activeEditorLong}${separator}${rootName}",
 
     // Don't show the VSCode welcome screen
     "workbench.startupEditor": "newUntitledFile"
