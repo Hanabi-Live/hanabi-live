@@ -22,6 +22,7 @@ class PlayArea extends Phaser.GameObjects.Container {
         }));
         this.addToPlayStacks(cardsToAdd);
     }
+
     addToPlayStacks(cards) {
         // Cards are rendered in the order of the container, so cards at the end of the container
         // will be the front of the scene
@@ -29,6 +30,7 @@ class PlayArea extends Phaser.GameObjects.Container {
         this.add(cards);
         this.addCardTweensToScene(cards);
     }
+
     addCardTweensToScene(cards) {
         if (!Array.isArray(cards)) { cards = [cards]; }
         const padding = 1.15;

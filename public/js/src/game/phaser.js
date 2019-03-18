@@ -2,8 +2,6 @@
     A Phaser demo
 */
 
-let cursors;
-
 // Imports
 const convert = require('./convert');
 // const constants = require('../constants');
@@ -12,6 +10,9 @@ const HanabiCard = require('./HanabiCard');
 const Hand = require('./Hand');
 const PlayArea = require('./PlayArea');
 const phaserGlobals = require('./phaserGlobals');
+
+// Variables
+// let cursor;
 
 exports.init = () => {
     const { width, height } = getGameSize();
@@ -80,7 +81,7 @@ function create() {
         rot: handLayout.rot,
     }));
     phaserGlobals.hands = handLayoutsAbsolute.map(handLayout => new Hand(this, handLayout));
-    const hands = phaserGlobals.hands;
+    const { hands } = phaserGlobals;
     hands.map(hand => this.add.existing(hand));
 
     let order = 0;
@@ -123,12 +124,12 @@ function create() {
                 console.log(gameObject.x);
                 console.log(gameObject.y);
                 if (
-                    //dragX > this.sys.canvas.width / 3 &&
-                    //dragX < 2 * this.sys.canvas.width / 3 &&
-                    //dragY > this.sys.canvas.height / 3 &&
-                    //dragY < 2 * this.sys.canvas.height / 3
-                    gameObject.y < -1 * this.sys.canvas.height / 3 &&
-                    gameObject.y > -2 * this.sys.canvas.height / 3
+                    // dragX > this.sys.canvas.width / 3
+                    // && dragX < 2 * this.sys.canvas.width / 3
+                    // && dragY > this.sys.canvas.height / 3
+                    // && dragY < 2 * this.sys.canvas.height / 3
+                    gameObject.y < -1 * this.sys.canvas.height / 3
+                    && gameObject.y > -2 * this.sys.canvas.height / 3
                 ) {
                     gameObject.parentContainer.mutate(null, gameObject);
                     phaserGlobals.playArea.addToPlayStacks(gameObject);
@@ -144,7 +145,7 @@ function create() {
         suits: globals.init.variant.suits.slice(),
     });
     this.add.existing(phaserGlobals.playArea);
-    cursors = this.input.keyboard.createCursorKeys();
+    // cursors = this.input.keyboard.createCursorKeys();
     // Ultimately, this will be called at a higher level
 }
 
@@ -189,7 +190,7 @@ const getGameSize = () => {
 };
 
 function update() {
-    //const hands = phaserGlobals.hands;
-    //if (cursors.right.isDown) {
-    //}
+    // const hands = phaserGlobals.hands;
+    // if (cursors.right.isDown) {
+    // }
 }
