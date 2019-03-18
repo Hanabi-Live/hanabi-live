@@ -413,7 +413,7 @@ const drawBottomLeftButtons = () => {
         globals.activeHover = null;
         $('#tooltip-replay').tooltipster('close');
     });
-    const replayContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Enter the in-game replay, where you can rewind the game to see what happened on a specific turn.</span>';
+    const replayContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Toggle the in-game replay, where you can rewind the game to see what happened on a specific turn.</span>';
     $('#tooltip-replay').tooltipster('instance').content(replayContent);
 
     // The restart button
@@ -1764,25 +1764,28 @@ const drawReplayArea = () => {
         globals.elements.replayArea.add(globals.elements.replayForwardFullButton);
     }
 
-    const extra = 0.035; // Any bigger and they start to overlap with the timers
-    const bottomLeftReplayButtonValues = {
-        x: replayButtonValues.x - extra,
-        y: 0.17,
-        w: replayButtonValues.w * 2 + replayButtonValues.spacing + extra,
-        h: 0.06,
-    };
-
     // The "Exit Replay" button
+    const bottomButtonValues = {
+        y: 0.17,
+    };
     globals.elements.replayExitButton = new Button({
-        x: bottomLeftReplayButtonValues.x * winW,
-        y: bottomLeftReplayButtonValues.y * winH,
-        width: bottomLeftReplayButtonValues.w * winW,
-        height: bottomLeftReplayButtonValues.h * winH,
+        x: (replayButtonValues.x + replayButtonValues.w + (replayButtonValues.spacing / 2)) * winW,
+        y: bottomButtonValues.y * winH,
+        width: ((replayButtonValues.w * 2) + (replayButtonValues.spacing * 2)) * winW,
+        height: replayButtonValues.w * winH,
         text: 'Exit Replay',
         visible: !globals.replay,
     });
     globals.elements.replayExitButton.on('click tap', replay.exitButton);
     globals.elements.replayArea.add(globals.elements.replayExitButton);
+
+    const extra = 0.035; // Any bigger and they start to overlap with the timers
+    const bottomLeftReplayButtonValues = {
+        x: replayButtonValues.x - extra,
+        y: bottomButtonValues.y,
+        w: replayButtonValues.w * 2 + replayButtonValues.spacing + extra,
+        h: 0.06,
+    };
 
     // The "Pause Shared Turns"  / "Use Shared Turns" button
     // (this will be shown when the client receives the "replayLeader" command)
@@ -1804,23 +1807,6 @@ const drawReplayArea = () => {
         y: bottomLeftReplayButtonValues.y,
         w: bottomLeftReplayButtonValues.w,
         h: bottomLeftReplayButtonValues.h,
-    };
-
-    // The "Back to Turn #" button
-    globals.elements.backToTurnButton = new Button({
-        x: bottomRightReplayButtonValues.x * winW,
-        y: bottomRightReplayButtonValues.y * winH,
-        width: bottomRightReplayButtonValues.w * winW,
-        height: bottomRightReplayButtonValues.h * winH,
-        text: 'Back to Turn 0',
-        visible: !globals.replay,
-    });
-    globals.elements.backToTurnButton.on('click tap', replay.backToTurnButton);
-    globals.elements.replayArea.add(globals.elements.backToTurnButton);
-    globals.elements.backToTurnButton.setEnabled(false);
-    globals.elements.backToTurnButton.update = () => {
-        const turn = (globals.replayTurnMemory < 0 ? 0 : globals.replayTurnMemory);
-        globals.elements.backToTurnButton.setText(`Back to Turn ${turn}`);
     };
 
     // The "Enter Hypothetical" / "Exit Hypothetical" button

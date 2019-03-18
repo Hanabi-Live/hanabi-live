@@ -27,7 +27,6 @@ const enter = () => {
     globals.elements.replayArea.show();
     adjustShuttles();
     setVisibleButtons();
-    globals.elements.replayButton.setEnabled(false);
     globals.layers.UI.batchDraw();
 };
 exports.enter = enter;
@@ -53,7 +52,6 @@ const exit = () => {
     for (let i = 0; i < globals.deck.length; i++) {
         globals.deck[i].setBareImage();
     }
-    globals.elements.replayButton.setEnabled(true);
 
     globals.layers.UI.batchDraw();
     globals.layers.card.batchDraw();
@@ -70,16 +68,6 @@ const goto = (target, fast) => {
     }
     if (target === globals.replayTurn) {
         return;
-    }
-
-    // If this is a big jump, we need to update the "Back to Turn #" button
-    if (
-        (target > globals.replayTurn && target - globals.replayTurn > 1)
-        || (globals.replayTurn > target && globals.replayTurn - target > 1)
-    ) {
-        globals.replayTurnMemory = globals.replayTurn;
-        globals.elements.backToTurnButton.update();
-        globals.elements.backToTurnButton.setEnabled(true);
     }
 
     let rewind = false;
@@ -229,22 +217,6 @@ exports.exitButton = () => {
     globals.accidentalClueTimer = Date.now();
 
     exit();
-};
-
-/*
-    The "Back to Turn #" button
-*/
-
-exports.backToTurnButton = () => {
-    if (globals.replayTurnMemory === -1) {
-        return;
-    }
-    const oldTurn = globals.replayTurn;
-    goto(globals.replayTurnMemory, true);
-    globals.replayTurnMemory = oldTurn;
-
-    // Update the button
-    globals.elements.backToTurnButton.update();
 };
 
 /*

@@ -3,7 +3,7 @@ const globals = require('./globals');
 
 // Configuration
 const debug = true;
-const tooltipDelay = 400; // In milliseconds
+const tooltipDelay = 500; // In milliseconds
 
 // We modify the individual properties instead of replacing the entire globals object
 // If we did that, the references in the other files would point to the outdated version
@@ -62,7 +62,6 @@ module.exports = () => {
     globals.replayLog = [];
     globals.replayPos = 0;
     globals.replayTurn = 0;
-    globals.replayTurnMemory = -1; // Used for the "Back to Turn #" button
     globals.replayMax = 0;
     // In replays, we can show information about a card that was not known at the time,
     // but is known now; these are cards we have "learned"
@@ -159,7 +158,6 @@ module.exports = () => {
         replayForwardFullButton: null,
         replayExitButton: null,
         toggleSharedTurnButton: null,
-        backToTurnButton: null,
         toggleHypoButton: null,
         hypoCircle: null,
 
