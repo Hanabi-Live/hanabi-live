@@ -595,7 +595,7 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
             let color;
             if (this.numPositiveClues >= 2) {
                 // "Non-freshly touched" cards use a different color
-                color = '#a6a6a6'; // Dark gray
+                color = '#737373'; // Dark gray
             } else {
                 // "Freshly touched" cards use the default arrow color
                 color = 'white'; // The default color
