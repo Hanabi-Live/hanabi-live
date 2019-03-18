@@ -19,17 +19,16 @@ const enter = () => {
     globals.inReplay = true;
     globals.replayPos = globals.replayLog.length;
     globals.replayTurn = globals.replayMax;
-    adjustShuttles();
-    globals.lobby.ui.stopAction();
-    globals.elements.replayArea.show();
-    for (let i = 0; i < globals.deck.length; i++) {
-        globals.deck[i].setBareImage();
-    }
-    globals.elements.replayButton.setEnabled(false);
-    setVisibleButtons();
 
+    // Hide the UI elements that overlap with the replay area
+    globals.lobby.ui.stopAction();
+
+    // Next, show the replay area and initialize some UI elements
+    globals.elements.replayArea.show();
+    adjustShuttles();
+    setVisibleButtons();
+    globals.elements.replayButton.setEnabled(false);
     globals.layers.UI.batchDraw();
-    globals.layers.card.batchDraw();
 };
 exports.enter = enter;
 
@@ -46,6 +45,10 @@ const exit = () => {
         globals.lobby.ui.handleAction(globals.savedAction);
     }
     globals.elements.currentPlayerArea.setVisible(!globals.elements.clueArea.getVisible());
+    if (globals.queuedAction !== null) {
+        globals.elements.currentPlayerArea.hide();
+        globals.elements.premoveCancelButton.show();
+    }
 
     for (let i = 0; i < globals.deck.length; i++) {
         globals.deck[i].setBareImage();

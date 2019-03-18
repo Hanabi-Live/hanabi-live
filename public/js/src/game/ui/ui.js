@@ -250,6 +250,7 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
 HanabiUI.prototype.stopAction = function stopAction() {
     globals.elements.clueArea.hide();
     globals.elements.currentPlayerArea.hide();
+    globals.elements.premoveCancelButton.hide();
     globals.elements.noDiscardLabel.hide();
     globals.elements.noDoubleDiscardLabel.hide();
 
