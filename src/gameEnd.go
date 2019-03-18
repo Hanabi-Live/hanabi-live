@@ -386,7 +386,7 @@ func (g *Game) ConvertToSharedReplay() {
 
 		// Send them the database ID
 		type IDMessage struct {
-			ID int `json:"int"`
+			ID int `json:"id"`
 		}
 		sp.Session.Emit("id", &IDMessage{
 			ID: g.DatabaseID,

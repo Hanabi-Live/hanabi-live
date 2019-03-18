@@ -18,6 +18,7 @@ const gameCommands = [
     'hypoAction',
     'hypoEnd',
     'hypoStart',
+    'id',
     'init',
     'note',
     'notes',
