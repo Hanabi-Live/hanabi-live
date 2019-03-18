@@ -1163,8 +1163,8 @@ const drawTimers = () => {
         spaceH: 0.01,
     };
     if (globals.lobby.settings.showBGAUI) {
-        timerValues.x1 = 0.345;
-        timerValues.x2 = 0.345;
+        timerValues.x1 = 0.352;
+        timerValues.x2 = timerValues.x1;
         timerValues.y1 = 0.77;
         timerValues.y2 = 0.885;
     }

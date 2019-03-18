@@ -300,7 +300,7 @@ table td {
 }
 
 .lobby-games-table-unstarted {
-    background-color: transparent !important;
+    background-color: #fffff0 !important;
 }
 .lobby-games-table-started {
     background-color: #e6ffee !important;
