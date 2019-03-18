@@ -1483,14 +1483,14 @@ const drawCurrentPlayerArea = () => {
 
     const arrowBorderEdge = new graphics.Line({
         points: [
-            (arrowValues.spacing - 0.001) * winW,
-            ((arrowValues.h / 2) - 0.007) * winH,
-            (arrowValues.spacing - 0.001) * winW,
-            ((arrowValues.h / 2) + 0.007) * winH,
+            (arrowValues.spacing) * winW,
+            ((arrowValues.h / 2) - 0.005) * winH,
+            (arrowValues.spacing) * winW,
+            ((arrowValues.h / 2) + 0.005) * winH,
         ],
         fill: 'black',
         stroke: 'black',
-        strokeWidth: 2,
+        strokeWidth: 5,
     });
     globals.elements.currentPlayerArrow.add(arrowBorderEdge);
 
