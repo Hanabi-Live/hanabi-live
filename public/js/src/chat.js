@@ -113,7 +113,8 @@ exports.add = (data, fast) => {
     }
 };
 
-// Discord emotes are in the form of <>
+// Discord emotes are in the form of:
+// <:PogChamp:254683883033853954>
 const fillDiscordEmotes = (message) => {
     let filledMessed = message;
     while (true) {
