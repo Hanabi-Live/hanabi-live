@@ -51,13 +51,13 @@ exports.update = (data) => {
 
     // Update onscreen time displays
     if (!globals.spectating) {
-        // The visibilty of this timer does not change during a game
+        // The visibilty of the first timer does not change during a game
         let time = playerTimes[globals.playerUs];
         if (!globals.timed) {
             // Invert it to show how much time each player is taking
             time *= -1;
         }
-        globals.elements.timer1.setText(millisecondsToTimeDisplay(time));
+        globals.elements.timer1.setTimerText(millisecondsToTimeDisplay(time));
     }
 
     const ourTurn = activeIndex === globals.playerUs && !globals.spectating;
@@ -68,11 +68,11 @@ exports.update = (data) => {
             // Invert it to show how much time each player is taking
             time *= -1;
         }
-        globals.elements.timer2.setText(millisecondsToTimeDisplay(time));
+        globals.elements.timer2.setTimerText(millisecondsToTimeDisplay(time));
+        globals.elements.timer2.setLabelText(globals.playerNames[activeIndex]);
     }
 
-    const shoudShowTimer2 = !ourTurn && activeIndex !== -1;
-    globals.elements.timer2.setVisible(shoudShowTimer2);
+    globals.elements.timer2.setVisible(!ourTurn && activeIndex !== -1);
     globals.layers.timer.batchDraw();
 
     // Update the timer tooltips for each player
@@ -86,9 +86,9 @@ exports.update = (data) => {
     }
 
     // Start the local timer for the active player
-    const activeTimerUIText = (ourTurn ? globals.elements.timer1 : globals.elements.timer2);
+    const activeTimer = (ourTurn ? globals.elements.timer1 : globals.elements.timer2);
     timerID = window.setInterval(() => {
-        setTickingDownTime(activeTimerUIText);
+        setTickingDownTime(activeTimer);
         setTickingDownTimeTooltip(activeIndex);
     }, 1000);
 };
@@ -101,7 +101,7 @@ const stop = () => {
 };
 exports.stop = stop;
 
-function setTickingDownTime(text) {
+function setTickingDownTime(timer) {
     // Compute elapsed time since last timer update
     const now = new Date().getTime();
     const timeElapsed = now - lastTimerUpdateTimeMS;
@@ -126,8 +126,8 @@ function setTickingDownTime(text) {
     const displayString = millisecondsToTimeDisplay(millisecondsLeft);
 
     // Update display
-    text.setText(displayString);
-    text.getLayer().batchDraw();
+    timer.setTimerText(displayString);
+    timer.getLayer().batchDraw();
 
     // Play a sound to indicate that the current player is almost out of time
     // Do not play it more frequently than about once per second

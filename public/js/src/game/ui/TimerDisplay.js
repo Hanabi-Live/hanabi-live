@@ -1,4 +1,5 @@
 // Imports
+const FitText = require('./FitText');
 const graphics = require('./graphics');
 
 const TimerDisplay = function TimerDisplay(config) {
@@ -16,28 +17,7 @@ const TimerDisplay = function TimerDisplay(config) {
     });
     this.add(rectangle);
 
-    const label = new graphics.Text({
-        x: 0,
-        y: 6 * config.spaceH,
-        width: config.width,
-        height: config.height,
-        fontSize: config.labelFontSize || config.fontSize,
-        fontFamily: 'Verdana',
-        align: 'center',
-        text: config.label,
-        fill: '#d8d5ef',
-        shadowColor: 'black',
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-        listening: false,
-    });
-    this.add(label);
-
-    const text = new graphics.Text({
+    this.timerText = new FitText({
         x: 0,
         y: config.spaceH,
         width: config.width,
@@ -56,10 +36,37 @@ const TimerDisplay = function TimerDisplay(config) {
         shadowOpacity: 0.9,
         listening: false,
     });
-    this.add(text);
+    this.add(this.timerText);
 
-    this.setText = s => text.setText(s);
+    this.labelText = new FitText({
+        x: 0,
+        y: 6 * config.spaceH,
+        width: config.width,
+        height: config.height,
+        fontSize: config.labelFontSize || config.fontSize,
+        fontFamily: 'Verdana',
+        align: 'center',
+        text: config.label,
+        fill: '#d8d5ef',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+        listening: false,
+    });
+    this.add(this.labelText);
 };
 graphics.Util.extend(TimerDisplay, graphics.Group);
+
+TimerDisplay.prototype.setTimerText = function setTimerText(s) {
+    this.timerText.setText(s);
+};
+
+TimerDisplay.prototype.setLabelText = function setLabelText(s) {
+    this.labelText.setText(s);
+};
 
 module.exports = TimerDisplay;

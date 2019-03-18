@@ -1169,7 +1169,7 @@ const drawTimers = () => {
         timerValues.y2 = 0.885;
     }
 
-    // You
+    // The timer for "You"
     globals.elements.timer1 = new TimerDisplay({
         x: timerValues.x1 * winW,
         y: timerValues.y1 * winH,
@@ -1183,7 +1183,7 @@ const drawTimers = () => {
     });
     globals.layers.timer.add(globals.elements.timer1);
 
-    // Current Player
+    // The timer for the current player
     globals.elements.timer2 = new TimerDisplay({
         x: timerValues.x2 * winW,
         y: timerValues.y2 * winH,
@@ -1193,7 +1193,7 @@ const drawTimers = () => {
         labelFontSize: 0.02 * winH,
         cornerRadius: timerValues.cornerRadius * winH,
         spaceH: timerValues.spaceH * winH,
-        label: 'Current\nPlayer',
+        label: 'Current Player',
         visible: false,
     });
     globals.layers.timer.add(globals.elements.timer2);
