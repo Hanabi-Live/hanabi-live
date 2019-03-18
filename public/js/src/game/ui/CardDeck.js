@@ -40,11 +40,6 @@ const CardDeck = function CardDeck(config) {
     // If the user hovers over the deck, show a tooltip that shows extra game options, if any
     this.initTooltip();
     this.on('mousemove', function mouseMove() {
-        // Don't do anything if we are already hovering on something
-        if (globals.activeHover !== null) {
-            return;
-        }
-
         // Don't do anything if we might be dragging the deck
         if (globals.elements.deckPlayAvailableLabel.isVisible()) {
             return;

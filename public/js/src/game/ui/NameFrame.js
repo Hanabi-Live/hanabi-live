@@ -98,11 +98,6 @@ const NameFrame = function NameFrame(config) {
     // Draw the tooltips on the player names that show the time
     this.playerNum = config.playerNum;
     this.on('mousemove', function mouseMove() {
-        // Don't do anything if we are already hovering on something
-        if (globals.activeHover !== null) {
-            return;
-        }
-
         // Don't do anything if we are in a solo/shared replay
         if (globals.replay) {
             return;
@@ -110,8 +105,8 @@ const NameFrame = function NameFrame(config) {
 
         globals.activeHover = this;
 
-        const tooltipX = this.getWidth() / 2 + this.attrs.x;
         const tooltip = $(`#tooltip-player-${this.playerNum}`);
+        const tooltipX = this.getWidth() / 2 + this.attrs.x;
         tooltip.css('left', tooltipX);
         tooltip.css('top', this.attrs.y);
         tooltip.tooltipster('open');

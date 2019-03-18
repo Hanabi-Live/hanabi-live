@@ -464,11 +464,6 @@ HanabiCard.prototype.initNote = function initNote(config) {
     }
 
     this.on('mousemove', function cardMouseMove() {
-        // Don't do anything if we are already hovering on something
-        if (globals.activeHover !== null) {
-            return;
-        }
-
         // Don't do anything if there is not a note on this card
         if (!this.noteGiven.visible()) {
             return;

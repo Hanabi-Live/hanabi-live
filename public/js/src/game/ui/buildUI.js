@@ -399,11 +399,6 @@ const drawBottomLeftButtons = () => {
     globals.layers.UI.add(globals.elements.replayButton);
     globals.elements.replayButton.setEnabled(false);
     globals.elements.replayButton.on('mousemove', function mouseMove() {
-        // Don't do anything if we are already hovering on something
-        if (globals.activeHover !== null) {
-            return;
-        }
-
         globals.activeHover = this;
         setTimeout(() => {
             tooltips.show(this, 'replay');
@@ -431,11 +426,6 @@ const drawBottomLeftButtons = () => {
         globals.lobby.conn.send('gameRestart');
     });
     globals.elements.restartButton.on('mousemove', function mouseMove() {
-        // Don't do anything if we are already hovering on something
-        if (globals.activeHover !== null) {
-            return;
-        }
-
         globals.activeHover = this;
         setTimeout(() => {
             tooltips.show(this, 'restart');
@@ -462,11 +452,6 @@ const drawBottomLeftButtons = () => {
         globals.game.chat.toggle();
     });
     globals.elements.chatButton.on('mousemove', function mouseMove() {
-        // Don't do anything if we are already hovering on something
-        if (globals.activeHover !== null) {
-            return;
-        }
-
         globals.activeHover = this;
         setTimeout(() => {
             tooltips.show(this, 'chat');
@@ -500,11 +485,6 @@ const drawBottomLeftButtons = () => {
     globals.layers.UI.add(globals.elements.lobbyButtonSmall);
     globals.elements.lobbyButtonSmall.on('click tap', lobbyButtonClick);
     globals.elements.lobbyButtonSmall.on('mousemove', function mouseMove() {
-        // Don't do anything if we are already hovering on something
-        if (globals.activeHover !== null) {
-            return;
-        }
-
         globals.activeHover = this;
         setTimeout(() => {
             tooltips.show(this, 'lobby-small');
@@ -528,11 +508,6 @@ const drawBottomLeftButtons = () => {
     globals.layers.UI.add(globals.elements.lobbyButtonBig);
     globals.elements.lobbyButtonBig.on('click tap', lobbyButtonClick);
     globals.elements.lobbyButtonBig.on('mousemove', function mouseMove() {
-        // Don't do anything if we are already hovering on something
-        if (globals.activeHover !== null) {
-            return;
-        }
-
         globals.activeHover = this;
         setTimeout(() => {
             tooltips.show(this, 'lobby-big');
@@ -577,11 +552,6 @@ const drawBottomLeftButtons = () => {
         globals.lobby.conn.send('gameAbandon');
     });
     globals.elements.killButton.on('mousemove', function mouseMove() {
-        // Don't do anything if we are already hovering on something
-        if (globals.activeHover !== null) {
-            return;
-        }
-
         globals.activeHover = this;
         setTimeout(() => {
             tooltips.show(this, 'kill');
@@ -836,11 +806,6 @@ const drawSpectators = () => {
 
     // Tooltip for the eyes
     globals.elements.spectatorsLabel.on('mousemove', function spectatorsLabelMouseMove() {
-        // Don't do anything if we are already hovering on something
-        if (globals.activeHover !== null) {
-            return;
-        }
-
         globals.activeHover = this;
 
         const tooltipX = this.attrs.x + this.getWidth() / 2;
@@ -930,11 +895,6 @@ const drawSharedReplay = () => {
 
     // Tooltip for the crown
     globals.elements.sharedReplayLeaderLabel.on('mousemove', function sharedReplayLeaderLabelMouseMove() {
-        // Don't do anything if we are already hovering on something
-        if (globals.activeHover !== null) {
-            return;
-        }
-
         globals.activeHover = this;
 
         const tooltipX = this.attrs.x + this.getWidth() / 2;

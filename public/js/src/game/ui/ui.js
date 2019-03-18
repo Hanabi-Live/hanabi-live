@@ -371,8 +371,8 @@ HanabiUI.prototype.handleNotify = function handleNotify(data) {
         notes.vars.actionOccured = true;
     }
 
-    // Automatically disable any tooltips once an action in the game happens
-    if (globals.activeHover) {
+    // Automatically close any tooltips once an action in the game happens
+    if (globals.activeHover !== null) {
         globals.activeHover.dispatchEvent(new MouseEvent('mouseout'));
         globals.activeHover = null;
     }

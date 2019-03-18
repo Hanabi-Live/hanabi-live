@@ -358,11 +358,6 @@ module.exports = () => {
             globals.layers.UI.add(charIcon);
 
             charIcon.on('mousemove', function charIconMouseMove() {
-                // Don't do anything if we are already hovering on something
-                if (globals.activeHover !== null) {
-                    return;
-                }
-
                 globals.activeHover = this;
 
                 const tooltipX = this.getWidth() / 2 + this.attrs.x;

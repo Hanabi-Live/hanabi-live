@@ -7,7 +7,7 @@
     "@babel/preset-env": "^7.3.1",
     "eslint": "^5.3.0",
     "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-import": "^2.16.0",
     "google-closure-compiler": "^20190121.0.0",
     "grunt": "^1.0.3",
     "grunt-babel": "^8.0.0",
