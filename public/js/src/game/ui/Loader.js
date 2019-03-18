@@ -2,6 +2,8 @@ const Loader = function Loader(finishedCallback) {
     this.finishedCallback = finishedCallback;
 
     const files = [
+        'crown',
+        'eyes',
         'home',
         'replay',
         'replay-disabled',

@@ -815,16 +815,14 @@ const drawSpectators = () => {
         // Position it to the bottom-right of the score area
         spectatorsLabelValues.x = scoreAreaValues.x + scoreAreaValues.w + 0.01;
     }
-    globals.elements.spectatorsLabel = new graphics.Text({
-        x: spectatorsLabelValues.x * winW,
+    const size = 0.02 * winW;
+    globals.elements.spectatorsLabel = new graphics.Image({
+        x: (spectatorsLabelValues.x + 0.005) * winW,
         y: spectatorsLabelValues.y * winH,
-        width: 0.03 * winW,
-        height: 0.03 * winH,
-        fontSize: 0.03 * winH,
-        fontFamily: 'Verdana',
+        width: size,
+        height: size,
         align: 'center',
-        text: '👀',
-        fill: 'yellow',
+        image: globals.ImageLoader.get('eyes'),
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -857,7 +855,7 @@ const drawSpectators = () => {
 
     globals.elements.spectatorsNumLabel = new graphics.Text({
         x: (spectatorsLabelValues.x - 0.04) * winW,
-        y: (spectatorsLabelValues.y + 0.034) * winH,
+        y: (spectatorsLabelValues.y + 0.04) * winH,
         width: 0.11 * winW,
         height: 0.03 * winH,
         fontSize: 0.03 * winH,
@@ -882,7 +880,6 @@ const drawSharedReplay = () => {
     const sharedReplayLeaderLabelValues = {
         x: spectatorsLabelValues.x,
         y: spectatorsLabelValues.y - 0.06,
-        size: 0.03,
     };
 
     // A red circle around the crown indicates that we are the current replay leader
@@ -890,24 +887,21 @@ const drawSharedReplay = () => {
     globals.elements.sharedReplayLeaderCircle = new graphics.Circle({
         x: (sharedReplayLeaderLabelValues.x + 0.015) * winW,
         y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
-        radius: 0.025 * winH,
+        radius: 0.028 * winH,
         stroke: '#ffe03b', // Yellow
         strokeWidth: 2,
         visible: false,
     });
     globals.layers.UI.add(globals.elements.sharedReplayLeaderCircle);
 
-    // The crown emoji
-    globals.elements.sharedReplayLeaderLabel = new graphics.Text({
-        x: sharedReplayLeaderLabelValues.x * winW,
-        y: sharedReplayLeaderLabelValues.y * winH,
-        width: sharedReplayLeaderLabelValues.size * winW,
-        height: sharedReplayLeaderLabelValues.size * winH,
-        fontSize: sharedReplayLeaderLabelValues.size * winH,
-        fontFamily: 'Verdana',
-        align: 'center',
-        text: '👑',
-        fill: labelColor,
+    // The crown
+    const size = 0.025 * winW;
+    globals.elements.sharedReplayLeaderLabel = new graphics.Image({
+        x: (sharedReplayLeaderLabelValues.x + 0.0025) * winW,
+        y: (sharedReplayLeaderLabelValues.y - 0.007) * winH,
+        width: size,
+        height: size,
+        image: globals.ImageLoader.get('crown'),
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -922,9 +916,8 @@ const drawSharedReplay = () => {
     // Add an animation to alert everyone when shared replay leadership has been transfered
     globals.elements.sharedReplayLeaderLabelPulse = new graphics.Tween({
         node: globals.elements.sharedReplayLeaderLabel,
-        width: (sharedReplayLeaderLabelValues.size * winW) * 2,
-        height: (sharedReplayLeaderLabelValues.size * winH) * 2,
-        fontSize: (sharedReplayLeaderLabelValues.size * winH) * 2,
+        width: size * 2,
+        height: size * 2,
         offsetX: 0.025 * winH,
         offsetY: 0.025 * winH,
         duration: 0.5,
