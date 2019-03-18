@@ -1541,6 +1541,9 @@ const drawCurrentPlayerArea = () => {
         } else if (globals.elements.playerHands[currentPlayerIndex].isLocked()) {
             specialText = '(locked; may not be able to discard)';
             text3.setFill('yellow');
+        } else if (globals.elements.noDoubleDiscardLabel.getVisible()) {
+            specialText = '(potentially in a "Double Discard" situation)';
+            text3.setFill('yellow');
         }
         const totalH = this.getHeight();
         const text1H = text1._getTextSize(text1.getText()).height;
