@@ -269,11 +269,22 @@ module.exports = (clueAreaValues) => {
             if (globals.elements.currentPlayerArrowTween) {
                 globals.elements.currentPlayerArrowTween.destroy();
             }
+
+            // We want the arrow to always be moving clockwise
+            const oldRotation = globals.elements.currentPlayerArrow.getRotation();
+            const unmodifiedRotation = rotation;
+            if (oldRotation > rotation) {
+                rotation += 360;
+            }
+
             globals.elements.currentPlayerArrowTween = new graphics.Tween({
                 node: globals.elements.currentPlayerArrow,
                 duration: 0.75,
                 rotation,
                 runonce: true,
+                onFinish: () => {
+                    globals.elements.currentPlayerArrow.setRotation(unmodifiedRotation);
+                },
             }).play();
         }
     };
