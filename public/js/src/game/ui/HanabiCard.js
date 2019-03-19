@@ -434,7 +434,7 @@ HanabiCard.prototype.initNote = function initNote(config) {
     this.noteGiven = new graphics.Image({
         x: noteX * config.width,
         // If the cards have triangles on the corners that show the color composition,
-        // the imageswill overlap
+        // the images will overlap
         // Thus, we move it downwards if this is the case
         y: (globals.variant.offsetCardIndicators ? noteY + 0.1 : noteY) * config.height,
         align: 'center',
