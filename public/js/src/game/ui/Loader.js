@@ -5,6 +5,7 @@ const Loader = function Loader(finishedCallback) {
         'crown',
         'eyes',
         'home',
+        'note',
         'replay',
         'replay-disabled',
         'replay-back',

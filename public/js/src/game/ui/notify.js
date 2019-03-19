@@ -161,11 +161,6 @@ commands.draw = (data) => {
     globals.elements.playerHands[data.who].moveToTop();
 };
 
-// After a card is drawn, the server tells us how many cards are left in the deck
-commands.drawSize = () => {
-    // Legacy command; TODO delete
-};
-
 // A new line of text has appeared in the action log
 commands.text = (data) => {
     globals.elements.msgLogGroup.addMessage(data.text);

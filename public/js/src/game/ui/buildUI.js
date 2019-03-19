@@ -461,7 +461,7 @@ const drawBottomLeftButtons = () => {
         globals.activeHover = null;
         $('#tooltip-chat').tooltipster('close');
     });
-    const chatContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Open/close the in-game chat.</span>';
+    const chatContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Toggle the in-game chat.</span>';
     $('#tooltip-chat').tooltipster('instance').content(chatContent);
 
     const shortButtonSpacing = 0.003;
