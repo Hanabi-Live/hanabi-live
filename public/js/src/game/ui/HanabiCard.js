@@ -427,21 +427,21 @@ HanabiCard.prototype.initArrowLocation = function initArrowLocation() {
 };
 
 HanabiCard.prototype.initNote = function initNote(config) {
-    // Define the note indicator emoji (this used to be a white square)
+    // Define the note indicator image
     const noteX = 0.78;
-    const noteY = 0.06;
-    this.noteGiven = new graphics.Text({
+    const noteY = 0.03;
+    const size = 0.2 * config.width;
+    this.noteGiven = new graphics.Image({
         x: noteX * config.width,
         // If the cards have triangles on the corners that show the color composition,
-        // the note emoji will overlap
+        // the imageswill overlap
         // Thus, we move it downwards if this is the case
         y: (globals.variant.offsetCardIndicators ? noteY + 0.1 : noteY) * config.height,
-        fontSize: 0.1 * config.height,
-        fontFamily: 'Verdana',
         align: 'center',
-        text: '📝',
+        image: globals.ImageLoader.get('note'),
+        width: size,
+        height: size,
         rotation: 180,
-        fill: '#ffffff',
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
