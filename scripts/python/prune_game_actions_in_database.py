@@ -154,21 +154,15 @@ for (id, action) in cursor:
 
                 keys_to_delete.append(key)
 
-    elif action_dict['type'] == 'drawSize':
-        delete_entire_entry = True
-
-    elif action_dict['type'] == 'gameOver':
-        delete_entire_entry = True
-
     else:
         print("ERROR, UNKNOWN ACTION TYPE:", action_dict)
 
     # Push the update query to the list of things to update
     if delete_entire_entry:
-        delete_list.append((id))
+        delete_list.append(id)
     elif modified or len(keys_to_delete) > 0:
         for key in keys_to_delete:
-            print("DELETING KEY:", key)
+            print("DELETING KEY \"" + key + "\" FROM ID:", id)
             action_dict.pop(key, None)
         new_action = json.dumps(action_dict, separators=(',',':')) # We provide the separators to minify the output
         update_list.append((id, new_action))
@@ -186,9 +180,9 @@ for thing in update_list:
 for thing in delete_list:
     cursor = cnx.cursor()
     query = ('DELETE FROM game_actions WHERE id = %s')
-    cursor.execute(query, (thing[0]))
+    cursor.execute(query, (thing,))
     cursor.close()
-    print('DELETED ID:', thing[0])
+    print('DELETED ID:', thing)
 
 cnx.commit()
 cnx.close()
