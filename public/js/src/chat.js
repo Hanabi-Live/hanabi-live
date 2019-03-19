@@ -134,10 +134,10 @@ const fillLocalEmotes = (message) => {
     // Search through the text for each emote
     for (const category of Object.keys(emoteCategories)) {
         for (const emote of emoteCategories[category]) {
-            // We don't want to replace the emote if it is followed by a colon,
+            // We don't want to replace the emote if it is followed by a quote,
             // because we don't want to replace Discord emoptes
             const index = message.indexOf(emote);
-            if (index !== -1 && message[index + emote.length + 1] !== ':') {
+            if (index !== -1 && message[index + emote.length] !== '"') {
                 const re = new RegExp(`\\b${emote}\\b`, 'g'); // "\b" is a word boundary in regex
                 const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${category}/${emote}.png" title="${emote}" />`;
                 filledMessed = filledMessed.replace(re, emoteTag);
