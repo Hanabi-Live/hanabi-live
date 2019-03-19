@@ -253,7 +253,7 @@ commands.status = (data) => {
 
     // Update the number of clues in the bottom-right hand corner of the screen
     globals.elements.cluesNumberLabel.setText(globals.clues.toString());
-    globals.elements.cluesNumberLabel.setFill(globals.clues === 0 ? 'red' : '#d8d5ef'); // Off-white
+    globals.elements.cluesNumberLabel.setFill(globals.clues === 0 ? 'red' : globals.labelColor);
 
     if (globals.clues === 8) {
         // Show the red border around the discard pile

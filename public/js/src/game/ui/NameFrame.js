@@ -14,7 +14,7 @@ const NameFrame = function NameFrame(config) {
         fontFamily: 'Verdana',
         fontSize: config.height,
         text: config.name,
-        fill: '#d8d5ef',
+        fill: globals.labelColor,
         shadowColor: 'black',
         shadowBlur: 5,
         shadowOffset: {
@@ -58,7 +58,7 @@ const NameFrame = function NameFrame(config) {
             config.width / 2 - w / 2,
             config.height / 2,
         ],
-        stroke: '#d8d5ef',
+        stroke: globals.labelColor,
         strokeWidth: 1,
         lineJoin: 'round',
         shadowColor: 'black',
@@ -81,7 +81,7 @@ const NameFrame = function NameFrame(config) {
             config.width,
             0,
         ],
-        stroke: '#d8d5ef',
+        stroke: globals.labelColor,
         strokeWidth: 1,
         lineJoin: 'round',
         shadowColor: 'black',
@@ -173,7 +173,7 @@ NameFrame.prototype.setActive = function setActive(active) {
 };
 
 NameFrame.prototype.setConnected = function setConnected(connected) {
-    const color = connected ? '#d8d5ef' : '#e8233d';
+    const color = connected ? globals.labelColor : '#e8233d'; // Red for disconnected players
 
     this.leftline.setStroke(color);
     this.rightline.setStroke(color);

@@ -83,7 +83,7 @@ HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
     const loadingLayer = new graphics.Layer();
 
     const loadingLabel = new graphics.Text({
-        fill: '#d8d5ef',
+        fill: globals.labelColor,
         stroke: '#747278',
         strokeWidth: 1,
         text: 'Loading...',
@@ -99,7 +99,7 @@ HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
     loadingLayer.add(loadingLabel);
 
     const progresslabel = new graphics.Text({
-        fill: '#d8d5ef',
+        fill: globals.labelColor,
         stroke: '#747278',
         strokeWidth: 1,
         text: '0 / 0',

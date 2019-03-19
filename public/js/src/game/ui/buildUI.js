@@ -89,7 +89,7 @@ module.exports = () => {
         fontFamily: 'Verdana',
         align: 'left',
         text: 'Placeholder text',
-        fill: labelColor,
+        fill: globals.labelColor,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -198,7 +198,7 @@ const drawActionLog = () => {
         align: 'center',
         fontSize: 0.028 * winH,
         fontFamily: 'Verdana',
-        fill: labelColor,
+        fill: globals.labelColor,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -334,7 +334,7 @@ const drawPlayStacksAndDiscardStacks = () => {
                 fontFamily: 'Verdana',
                 align: 'center',
                 text,
-                fill: labelColor,
+                fill: globals.labelColor,
             });
             globals.layers.UI.add(suitLabelText);
             globals.elements.suitLabelTexts.push(suitLabelText);
@@ -824,7 +824,7 @@ const drawSpectators = () => {
         fontFamily: 'Verdana',
         align: 'center',
         text: '0',
-        fill: labelColor,
+        fill: globals.labelColor,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -1020,7 +1020,7 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
         // "Easy" variants use the default color (off-white)
         // "Hard" variants use pink
-        fill: (minEfficiency < 1.25 ? labelColor : '#ffb2b2'),
+        fill: (minEfficiency < 1.25 ? globals.labelColor : '#ffb2b2'),
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabelMinNeeded);
 };
@@ -1315,7 +1315,7 @@ const drawCurrentPlayerArea = () => {
         fontSize: 0.08 * winH,
         text: 'Current player:',
         align: 'center',
-        fill: labelColor,
+        fill: globals.labelColor,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -1453,8 +1453,8 @@ const drawCurrentPlayerArea = () => {
         ],
         pointerLength: 10,
         pointerWidth: 10,
-        fill: labelColor,
-        stroke: labelColor,
+        fill: globals.labelColor,
+        stroke: globals.labelColor,
         strokeWidth: 5,
         listening: false,
     });

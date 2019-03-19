@@ -1,5 +1,6 @@
 // Imports
 const FitText = require('./FitText');
+const globals = require('./globals');
 const graphics = require('./graphics');
 
 const TimerDisplay = function TimerDisplay(config) {
@@ -26,7 +27,7 @@ const TimerDisplay = function TimerDisplay(config) {
         fontFamily: 'Verdana',
         align: 'center',
         text: '??:??',
-        fill: '#d8d5ef',
+        fill: globals.labelColor,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -47,7 +48,7 @@ const TimerDisplay = function TimerDisplay(config) {
         fontFamily: 'Verdana',
         align: 'center',
         text: config.label,
-        fill: '#d8d5ef',
+        fill: globals.labelColor,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {

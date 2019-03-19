@@ -28,7 +28,7 @@ exports.updatePace = () => {
     const label = globals.elements.paceNumberLabel;
     if (globals.deckSize === 0) {
         label.setText('-');
-        label.setFill('#d8d5ef'); // Off-white
+        label.setFill(globals.labelColor);
     } else {
         let paceText = endGameThreshold1.toString();
         if (endGameThreshold1 > 0) {
@@ -49,7 +49,7 @@ exports.updatePace = () => {
             label.setFill('#efef1d'); // Yellow
         } else {
             // We are not even close to the "End-Game", so give it the default color
-            label.setFill('#d8d5ef'); // Off-white
+            label.setFill(globals.labelColor);
         }
     }
 };
