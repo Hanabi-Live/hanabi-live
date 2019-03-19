@@ -1,6 +1,6 @@
 // Imports
-const constants = require('../../constants');
 const globals = require('./globals');
+const constants = require('../../constants');
 const graphics = require('./graphics');
 const LayoutChild = require('./LayoutChild');
 const misc = require('../../misc');
