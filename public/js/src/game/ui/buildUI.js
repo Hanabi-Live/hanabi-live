@@ -3,7 +3,6 @@
 */
 
 // Imports
-const globals = require('./globals');
 const Button = require('./Button');
 const ButtonGroup = require('./ButtonGroup');
 const CardDeck = require('./CardDeck');
@@ -16,6 +15,7 @@ const ColorButton = require('./ColorButton');
 const constants = require('../../constants');
 const drawHands = require('./drawHands');
 const FitText = require('./FitText');
+const globals = require('./globals');
 const graphics = require('./graphics');
 const MsgLog = require('./MsgLog');
 const hypothetical = require('./hypothetical');
@@ -27,9 +27,6 @@ const timer = require('./timer');
 const TimerDisplay = require('./TimerDisplay');
 const ToggleButton = require('./ToggleButton');
 const tooltips = require('./tooltips');
-
-// Constants
-const labelColor = '#d8d5ef'; // Off-white
 
 // Variables
 let winW;

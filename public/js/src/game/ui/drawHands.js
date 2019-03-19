@@ -1,8 +1,8 @@
 
 // Imports
-const globals = require('./globals');
 const CardLayout = require('./CardLayout');
 const constants = require('../../constants');
+const globals = require('./globals');
 const graphics = require('./graphics');
 const NameFrame = require('./NameFrame');
 

@@ -1,6 +1,6 @@
 // Imports
-const globals = require('./globals');
 const FitText = require('./FitText');
+const globals = require('./globals');
 const graphics = require('./graphics');
 
 const Button = function Button(config) {

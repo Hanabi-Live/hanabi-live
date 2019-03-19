@@ -3,8 +3,8 @@
 */
 
 // Imports
-const globals = require('./globals');
 const constants = require('../../constants');
+const globals = require('./globals');
 
 // Constants
 const {

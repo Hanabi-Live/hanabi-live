@@ -3,9 +3,9 @@
 */
 
 // Imports
-const globals = require('./globals');
 const constants = require('../../constants');
 const cardDraw = require('./cardDraw');
+const globals = require('./globals');
 const graphics = require('./graphics');
 const notes = require('./notes');
 const replay = require('./replay');

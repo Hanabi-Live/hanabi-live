@@ -1,6 +1,6 @@
 // Imports
-const globals = require('./globals');
 const constants = require('../../constants');
+const globals = require('./globals');
 const graphics = require('./graphics');
 
 const NameFrame = function NameFrame(config) {
