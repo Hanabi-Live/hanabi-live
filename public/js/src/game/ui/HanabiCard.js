@@ -4,7 +4,7 @@
 
 // Imports
 const constants = require('../../constants');
-const cardDraw = require('./cardDraw');
+const drawCards = require('./drawCards');
 const globals = require('./globals');
 const graphics = require('./graphics');
 const notes = require('./notes');
@@ -86,7 +86,7 @@ const HanabiCard = function HanabiCard(config) {
         height: config.height,
     });
     this.bare.setSceneFunc(function setSceneFunc(context) {
-        cardDraw.scaleCardImage(
+        drawCards.scaleCardImage(
             context,
             self.barename,
             this.getWidth(),
@@ -246,7 +246,7 @@ HanabiCard.prototype.initPips = function initPips(config) {
             name: suit.name,
             listening: false,
             sceneFunc: (ctx) => {
-                cardDraw.drawSuitShape(suit, i)(ctx);
+                drawCards.drawSuitShape(suit, i)(ctx);
                 ctx.closePath();
                 ctx.fillStrokeShape(suitPip);
             },

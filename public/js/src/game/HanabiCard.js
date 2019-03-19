@@ -49,7 +49,7 @@ class HanabiCard extends Phaser.GameObjects.Container {
         /*
         // Create the "bare" card image, which is a gray card with all the pips
         this.bare.setSceneFunc(function setSceneFunc(context) {
-            cardDraw.scaleCardImage(
+            drawCards.scaleCardImage(
                 context,
                 self.barename,
                 this.getWidth(),

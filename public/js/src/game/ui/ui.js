@@ -1,7 +1,7 @@
 // Imports
-const cardDraw = require('./cardDraw');
 const constants = require('../../constants');
 const convert = require('./convert');
+const drawCards = require('./drawCards');
 const drawUI = require('./drawUI');
 const globals = require('./globals');
 const globalsInit = require('./globalsInit');
@@ -123,7 +123,7 @@ HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
 
 HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
     // Build images for every card (with respect to the variant that we are playing)
-    cardDraw.buildCards();
+    drawCards.buildCards();
 
     // Draw the user interface
     drawUI();
