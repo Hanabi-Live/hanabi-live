@@ -1,8 +1,8 @@
 // Imports
-const buildUI = require('./buildUI');
 const cardDraw = require('./cardDraw');
 const constants = require('../../constants');
 const convert = require('./convert');
+const drawUI = require('./drawUI');
 const globals = require('./globals');
 const globalsInit = require('./globalsInit');
 const graphics = require('./graphics');
@@ -126,7 +126,7 @@ HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
     cardDraw.buildCards();
 
     // Draw the user interface
-    buildUI();
+    drawUI();
 
     // Keyboard hotkeys can only be initialized once the clue buttons are drawn
     keyboard.init();

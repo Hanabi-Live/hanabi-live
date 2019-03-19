@@ -58,7 +58,7 @@ module.exports = () => {
     }
 
     // Define the layers
-    // (they are added to the stage later on at the end of the buildUI function)
+    // (they are added to the stage later on at the end of this function)
     globals.layers.background = new graphics.Layer();
     globals.layers.UI = new graphics.Layer();
     globals.layers.timer = new graphics.Layer({
