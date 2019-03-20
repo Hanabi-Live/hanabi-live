@@ -47,7 +47,10 @@ const HanabiCard = function HanabiCard(config) {
     this.barename = undefined;
     this.showOnlyLearned = false;
     this.numPositiveClues = 0;
-    this.turnDrawn = globals.turn;
+    // We have to add one to the turn drawn because
+    // the "draw" command comes before the "turn" command
+    // However, if it was part of the initial deal, then it will correctly be set as turn 0
+    this.turnDrawn = globals.turn === 0 ? 0 : globals.turn + 1;
     this.isDiscarded = false;
     this.turnDiscarded = null;
     this.isPlayed = false;
@@ -774,40 +777,13 @@ HanabiCard.prototype.clickLeft = function clickLeft(event) {
 
     if (event.altKey) {
         // Alt + clicking a card goes to the turn it was drawn
-        if (globals.replay) {
-            replay.checkDisableSharedTurns();
-        } else {
-            replay.enter();
-        }
-        replay.goto(this.turnDrawn, true);
-        if (this.turnDrawn !== 0) {
-            replay.goto(this.turnDrawn + 1, false);
-        }
-
-        // Also indicate the card to make it easier to find
-        this.toggleSharedReplayIndicator();
+        gotoTurn(this.turnDrawn, this.order);
     } else if (this.isPlayed) {
-        // Clicking on played cards goes to the turn that they were played
-        if (globals.replay) {
-            replay.checkDisableSharedTurns();
-        } else {
-            replay.enter();
-        }
-        replay.goto(this.turnPlayed + 1, true);
-
-        // Also indicate the card to make it easier to find
-        this.toggleSharedReplayIndicator();
+        // Clicking on played cards goes to the turn immediately before they were played
+        gotoTurn(this.turnPlayed, this.order);
     } else if (this.isDiscarded) {
-        // Clicking on discarded cards goes to the turn that they were discarded
-        if (globals.replay) {
-            replay.checkDisableSharedTurns();
-        } else {
-            replay.enter();
-        }
-        replay.goto(this.turnDiscarded + 1, true);
-
-        // Also indicate the card to make it easier to find
-        this.toggleSharedReplayIndicator();
+        // Clicking on discarded cards goes to the turn immediately before they were discarded
+        gotoTurn(this.turnDiscarded, this.order);
     }
 };
 
@@ -1229,4 +1205,17 @@ const getSpecificCardNum = (suit, rank) => {
     }
 
     return { total, discarded };
+};
+
+const gotoTurn = (turn, order) => {
+    if (globals.replay) {
+        replay.checkDisableSharedTurns();
+    } else {
+        replay.enter();
+    }
+    replay.goto(turn, true);
+
+    // Also indicate the card to make it easier to find
+    // (we have to use "globals.deck" instead of "this" because the card will get overwritten)
+    globals.deck[order].toggleSharedReplayIndicator();
 };

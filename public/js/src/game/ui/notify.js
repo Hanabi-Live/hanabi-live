@@ -86,7 +86,7 @@ commands.discard = (data) => {
     const child = card.parent; // This is the LayoutChild
 
     card.isDiscarded = true;
-    card.turnDiscarded = globals.turn - 1;
+    card.turnDiscarded = globals.turn;
 
     revealCard(data);
 
@@ -178,7 +178,7 @@ commands.play = (data) => {
     const child = card.parent; // This is the LayoutChild
 
     card.isPlayed = true;
-    card.turnPlayed = globals.turn - 1;
+    card.turnPlayed = globals.turn;
 
     revealCard(data);
 
