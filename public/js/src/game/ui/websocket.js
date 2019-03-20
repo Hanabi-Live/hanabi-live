@@ -330,9 +330,9 @@ commands.notifyList = (dataList) => {
             const strikeSquare = globals.elements.strikeSquares[i];
             const turn = data.turn - 1 || null;
             strike.turn = turn;
-            strike.order = order;
-            const order = data.order || null;
             strikeSquare.turn = turn;
+            const order = data.order || null;
+            strike.order = order;
             strikeSquare.order = order;
         }
     }

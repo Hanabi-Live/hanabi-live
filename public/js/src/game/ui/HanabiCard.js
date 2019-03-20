@@ -672,7 +672,7 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
 
     this.indicatorGroup.setVisible(visible);
     if (!globals.animateFast) {
-        this.getLayer().batchDraw();
+        globals.layers.card.batchDraw();
     }
 };
 
@@ -783,6 +783,9 @@ HanabiCard.prototype.clickLeft = function clickLeft(event) {
         if (this.turnDrawn !== 0) {
             replay.goto(this.turnDrawn + 1, false);
         }
+
+        // Also indicate the card to make it easier to find
+        this.toggleSharedReplayIndicator();
     } else if (this.isPlayed) {
         // Clicking on played cards goes to the turn that they were played
         if (globals.replay) {
@@ -791,6 +794,9 @@ HanabiCard.prototype.clickLeft = function clickLeft(event) {
             replay.enter();
         }
         replay.goto(this.turnPlayed + 1, true);
+
+        // Also indicate the card to make it easier to find
+        this.toggleSharedReplayIndicator();
     } else if (this.isDiscarded) {
         // Clicking on discarded cards goes to the turn that they were discarded
         if (globals.replay) {
@@ -799,6 +805,9 @@ HanabiCard.prototype.clickLeft = function clickLeft(event) {
             replay.enter();
         }
         replay.goto(this.turnDiscarded + 1, true);
+
+        // Also indicate the card to make it easier to find
+        this.toggleSharedReplayIndicator();
     }
 };
 
