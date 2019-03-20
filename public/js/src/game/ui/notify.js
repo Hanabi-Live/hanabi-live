@@ -300,10 +300,14 @@ commands.strike = (data) => {
     stats.updateEfficiency(0);
 
     // Record the turn that the strike happened and the card that was misplayed
-    strike.turn = data.turn - 1;
-    strike.order = data.order;
-    strikeSquare.turn = data.turn - 1;
-    strikeSquare.order = data.order;
+    const turn = data.turn - 1 || globals.turn - 1;
+    // (old games will not have the turn integrated into the strike)
+    strike.turn = turn;
+    strikeSquare.turn = turn;
+    const order = data.order || null;
+    // (old games will not have the card number integrated into the strike)
+    strike.order = order;
+    strikeSquare.order = order;
 
     // Animate the strike square fading in
     if (globals.animateFast) {

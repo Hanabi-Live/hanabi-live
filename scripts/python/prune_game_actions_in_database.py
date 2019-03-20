@@ -33,7 +33,7 @@ cnx = mysql.connector.connect(
 
 # Get all database records
 cursor = cnx.cursor()
-query = ('SELECT id, action FROM game_actions')
+query = ('SELECT id, action FROM game_actions ORDER BY id ASC')
 cursor.execute(query)
 
 update_list = []
@@ -47,18 +47,13 @@ for (id, action) in cursor:
 
     # Ensure that each action has a type
     if 'type' not in action_dict:
-        # By default, assume any action that is missing a type is a text action
-        modified = True
-        action_dict['type'] = 'text'
+        print('ERROR: ACTION ' + str(id) + ' DOES NOT HAVE A TYPE')
+        continue
 
     # Ensure that blank action types are converted to text
     if action_dict['type'] == '':
-      if 'text' in action_dict and action_dict['text'] != '':
-          modified = True
-          action_dict['type'] = 'text'
-      else:
-          print('ERROR: TYPE WAS EMPTY AND TEXT WAS ALSO EMPTY, WEIRD')
-          continue
+        print('ERROR: ACTION ' + str(id) + ' HAS A BLANK TYPE')
+        continue
 
     # Remove fields that are extraneous
     delete_entire_entry = False
@@ -157,20 +152,20 @@ for (id, action) in cursor:
                 keys_to_delete.append(key)
 
     else:
-        print("ERROR, UNKNOWN ACTION TYPE:", action_dict)
+        print('ERROR: ACTION ' + str(id) + ' HAS AN UNKNOWN TYPE: ' + action_dict)
 
     # Push the update query to the list of things to update
     if delete_entire_entry:
         delete_list.append(id)
     elif modified or len(keys_to_delete) > 0:
         for key in keys_to_delete:
-            print("DELETING KEY \"" + key + "\" FROM ID:", id)
+            print('DELETING KEY "' + key + '" FROM ID: ' + str(id))
             action_dict.pop(key, None)
         new_action = json.dumps(action_dict, separators=(',',':')) # We provide the separators to minify the output
         update_list.append((id, new_action))
 
 cursor.close()
-print("LOADED", num_records, "RECORDS!!")
+print('LOADED ' + str(num_records) + ' RECORDS!')
 
 for thing in update_list:
     cursor = cnx.cursor()

@@ -328,10 +328,12 @@ commands.notifyList = (dataList) => {
             const i = data.num - 1;
             const strike = globals.elements.strikes[i];
             const strikeSquare = globals.elements.strikeSquares[i];
-            strike.turn = data.turn - 1;
-            strike.order = data.order;
-            strikeSquare.turn = data.turn - 1;
-            strikeSquare.order = data.order;
+            const turn = data.turn - 1 || null;
+            strike.turn = turn;
+            strike.order = order;
+            const order = data.order || null;
+            strikeSquare.turn = turn;
+            strikeSquare.order = order;
         }
     }
 };

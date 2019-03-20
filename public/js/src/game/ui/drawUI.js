@@ -761,10 +761,21 @@ const drawScoreArea = () => {
             replay.enter();
         }
         replay.goto(this.turn + 1, true);
+
+        // Also highlight the card
+        if (this.order !== null) {
+            // Ensure that the card exists as a sanity-check
+            const card = globals.deck[this.order];
+            if (!card) {
+                return;
+            }
+
+            card.toggleSharedReplayIndicator();
+        }
     }
     for (let i = 0; i < 3; i++) {
         // Draw the background square
-        globals.elements.strikeSquares[i] = new graphics.Rect({
+        const strikeSquare = new graphics.Rect({
             x: (0.01 + 0.04 * i) * winW,
             y: 0.115 * winH,
             width: 0.03 * winW,
@@ -773,10 +784,10 @@ const drawScoreArea = () => {
             opacity: 0.6,
             cornerRadius: 0.005 * winW,
         });
-        globals.elements.scoreArea.add(globals.elements.strikeSquares[i]);
+        globals.elements.scoreArea.add(strikeSquare);
 
         // Draw the red X that indicates the strike
-        globals.elements.strikes[i] = new graphics.Image({
+        const strike = new graphics.Image({
             x: (0.015 + 0.04 * i) * winW,
             y: 0.125 * winH,
             width: 0.02 * winW,
@@ -784,24 +795,30 @@ const drawScoreArea = () => {
             image: globals.ImageLoader.get('x'),
             opacity: 0,
         });
-        globals.elements.scoreArea.add(globals.elements.strikes[i]);
-        globals.elements.strikes[i].tween = null;
+        globals.elements.scoreArea.add(strike);
+        strike.tween = null;
 
         // Handle the tooltips
-        globals.elements.strikeSquares[i].on('mousemove', strikeMouseMove);
-        globals.elements.strikes[i].on('mousemove', strikeMouseMove);
-        globals.elements.strikeSquares[i].on('mouseout', strikeMouseOut);
-        globals.elements.strikes[i].on('mouseout', strikeMouseOut);
+        strikeSquare.on('mousemove', strikeMouseMove);
+        strike.on('mousemove', strikeMouseMove);
+        strikeSquare.on('mouseout', strikeMouseOut);
+        strike.on('mouseout', strikeMouseOut);
         let strikesContent = '<span style="font-size: 0.75em;">';
         strikesContent += '<i class="fas fa-info-circle fa-sm"></i> &nbsp;';
         strikesContent += 'This shows how many strikes (bombs) the team currently has.';
         $('#tooltip-strikes').tooltipster('instance').content(strikesContent);
 
         // Click on the strike to go to the turn that the strike happened, if any
-        globals.elements.strikeSquares[i].turn = null;
-        globals.elements.strikes[i].turn = null;
-        globals.elements.strikeSquares[i].on('click', strikeClick);
-        globals.elements.strikes[i].on('click', strikeClick);
+        // (and highlight the card that misplayed)
+        strikeSquare.turn = null;
+        strike.turn = null;
+        strikeSquare.order = null;
+        strike.order = null;
+        strikeSquare.on('click', strikeClick);
+        strike.on('click', strikeClick);
+
+        globals.elements.strikeSquares[i] = strikeSquare;
+        globals.elements.strikes[i] = strike;
     }
 };
 
