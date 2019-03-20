@@ -104,7 +104,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS.
   * `crontab -e`
 
 ```
-# Backup the "hanabi" database every day
+# Every day, backup the "hanabi" database
 0 0 * * * /root/go/src/github.com/Zamiell/hanabi-live/make_database_dump.sh
 ```
 
@@ -139,7 +139,7 @@ Install HTTPS (optional)
 * `crontab -e`
 
 ```
-# Keep the Let's Encrypt certificate up to date
+# Every day, keep the Let's Encrypt certificate up to date
 0 0 * * * /root/go/src/github.com/Zamiell/hanabi-live/renew_cert.sh
 ```
 
