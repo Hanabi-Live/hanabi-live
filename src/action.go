@@ -54,8 +54,10 @@ type ActionReorder struct {
 	HandOrder []int  `json:"handOrder"`
 }
 type ActionStrike struct {
-	Type string `json:"type"`
-	Num  int    `json:"num"`
+	Type  string `json:"type"`
+	Num   int    `json:"num"`   // Whether it was the first strike, the second strike, etc.
+	Turn  int    `json:"turn"`  // The turn that the strike happened
+	Order int    `json:"order"` // The order of the card that was played
 }
 type ActionDeckOrder struct {
 	Type string       `json:"type"`

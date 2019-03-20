@@ -160,10 +160,12 @@ const reset = () => {
     globals.elements.clueLog.clear();
     globals.elements.messagePrompt.reset();
 
-    for (let i = 0; i < globals.elements.strikes.length; i++) {
-        globals.elements.strikes[i].remove();
+    for (const strike of globals.elements.strikes) {
+        if (strike.tween) {
+            strike.tween.destroy();
+        }
+        strike.setOpacity(0);
     }
-    globals.elements.strikes = [];
 
     globals.animateFast = true;
 };

@@ -740,8 +740,30 @@ const drawScoreArea = () => {
     });
     globals.elements.scoreArea.add(globals.elements.cluesNumberLabel);
 
-    // Draw the 3 strike (bomb) black squares
+    // Draw the 3 strike (bomb) black squares / X's
+    function strikeMouseMove() {
+        globals.activeHover = this;
+        setTimeout(() => {
+            tooltips.show(this, 'strikes');
+        }, globals.tooltipDelay);
+    }
+    function strikeMouseOut() {
+        globals.activeHover = null;
+        $('#tooltip-strikes').tooltipster('close');
+    }
+    function strikeClick() {
+        if (this.turn === null) {
+            return;
+        }
+        if (globals.replay) {
+            replay.checkDisableSharedTurns();
+        } else {
+            replay.enter();
+        }
+        replay.goto(this.turn + 1, true);
+    }
     for (let i = 0; i < 3; i++) {
+        // Draw the background square
         globals.elements.strikeSquares[i] = new graphics.Rect({
             x: (0.01 + 0.04 * i) * winW,
             y: 0.115 * winH,
@@ -749,25 +771,37 @@ const drawScoreArea = () => {
             height: 0.053 * winH,
             fill: 'black',
             opacity: 0.6,
-            cornerRadius: 0.003 * winW,
+            cornerRadius: 0.005 * winW,
         });
         globals.elements.scoreArea.add(globals.elements.strikeSquares[i]);
 
-        // We also keep track of the turn that the strike happened
-        globals.elements.strikeSquares[i].turn = null;
-
-        // Click on an empty square to go to the turn that the strike happened, if any
-        globals.elements.strikeSquares[i].on('click', function squareClick() {
-            if (this.turn === null) {
-                return;
-            }
-            if (globals.replay) {
-                replay.checkDisableSharedTurns();
-            } else {
-                replay.enter();
-            }
-            replay.goto(this.turn + 1, true);
+        // Draw the red X that indicates the strike
+        globals.elements.strikes[i] = new graphics.Image({
+            x: (0.015 + 0.04 * i) * winW,
+            y: 0.125 * winH,
+            width: 0.02 * winW,
+            height: 0.036 * winH,
+            image: globals.ImageLoader.get('x'),
+            opacity: 0,
         });
+        globals.elements.scoreArea.add(globals.elements.strikes[i]);
+        globals.elements.strikes[i].tween = null;
+
+        // Handle the tooltips
+        globals.elements.strikeSquares[i].on('mousemove', strikeMouseMove);
+        globals.elements.strikes[i].on('mousemove', strikeMouseMove);
+        globals.elements.strikeSquares[i].on('mouseout', strikeMouseOut);
+        globals.elements.strikes[i].on('mouseout', strikeMouseOut);
+        let strikesContent = '<span style="font-size: 0.75em;">';
+        strikesContent += '<i class="fas fa-info-circle fa-sm"></i> &nbsp;';
+        strikesContent += 'This shows how many strikes (bombs) the team currently has.';
+        $('#tooltip-strikes').tooltipster('instance').content(strikesContent);
+
+        // Click on the strike to go to the turn that the strike happened, if any
+        globals.elements.strikeSquares[i].turn = null;
+        globals.elements.strikes[i].turn = null;
+        globals.elements.strikeSquares[i].on('click', strikeClick);
+        globals.elements.strikes[i].on('click', strikeClick);
     }
 };
 
@@ -782,12 +816,13 @@ const drawSpectators = () => {
         // Position it to the bottom-right of the score area
         spectatorsLabelValues.x = scoreAreaValues.x + scoreAreaValues.w + 0.01;
     }
-    const size = 0.02 * winW;
+    const imageSize = 0.02;
     globals.elements.spectatorsLabel = new graphics.Image({
         x: (spectatorsLabelValues.x + 0.005) * winW,
         y: spectatorsLabelValues.y * winH,
-        width: size,
-        height: size,
+        width: imageSize * winW,
+        height: imageSize * winW,
+        // (this is not a typo; we want it to have the same width and height)
         align: 'center',
         image: globals.ImageLoader.get('eyes'),
         shadowColor: 'black',
@@ -816,9 +851,9 @@ const drawSpectators = () => {
     });
 
     globals.elements.spectatorsNumLabel = new graphics.Text({
-        x: (spectatorsLabelValues.x - 0.04) * winW,
+        x: spectatorsLabelValues.x * winW,
         y: (spectatorsLabelValues.y + 0.04) * winH,
-        width: 0.11 * winW,
+        width: 0.03 * winW,
         height: 0.03 * winH,
         fontSize: 0.03 * winH,
         fontFamily: 'Verdana',

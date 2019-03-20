@@ -168,8 +168,10 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 
 		// Send the "notify" message about the strike
 		g.Actions = append(g.Actions, ActionStrike{
-			Type: "strike",
-			Num:  g.Strikes,
+			Type:  "strike",
+			Num:   g.Strikes,
+			Turn:  g.Turn,
+			Order: c.Order,
 		})
 		g.NotifyAction()
 

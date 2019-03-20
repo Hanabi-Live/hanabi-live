@@ -321,6 +321,18 @@ commands.notify = (data) => {
 commands.notifyList = (dataList) => {
     for (const data of dataList) {
         commands.notify(data);
+
+        // Also, record the turns that the strikes happen
+        // (or else clicking on the strike squares won't work on a freshly initialized replay)
+        if (data.type === 'strike') {
+            const i = data.num - 1;
+            const strike = globals.elements.strikes[i];
+            const strikeSquare = globals.elements.strikeSquares[i];
+            strike.turn = data.turn - 1;
+            strike.order = data.order;
+            strikeSquare.turn = data.turn - 1;
+            strikeSquare.order = data.order;
+        }
     }
 };
 

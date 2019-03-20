@@ -10,7 +10,6 @@ const globals = require('./globals');
 const graphics = require('./graphics');
 const HanabiCard = require('./HanabiCard');
 const LayoutChild = require('./LayoutChild');
-const replay = require('./replay');
 const stats = require('./stats');
 
 // Define a command handler map
@@ -291,42 +290,29 @@ commands.status = (data) => {
 };
 
 commands.strike = (data) => {
+    // Local variables
+    const i = data.num - 1;
+    const strike = globals.elements.strikes[i];
+    const strikeSquare = globals.elements.strikeSquares[i];
+
+    // Update the stats
     globals.cluesSpentPlusStrikes += 1;
     stats.updateEfficiency(0);
 
-    const x = new graphics.Image({
-        x: (0.015 + 0.04 * (data.num - 1)) * globals.stage.getWidth(),
-        y: 0.125 * globals.stage.getHeight(),
-        width: 0.02 * globals.stage.getWidth(),
-        height: 0.036 * globals.stage.getHeight(),
-        image: globals.ImageLoader.get('x'),
-        opacity: 0,
-    });
+    // Record the turn that the strike happened and the card that was misplayed
+    strike.turn = data.turn - 1;
+    strike.order = data.order;
+    strikeSquare.turn = data.turn - 1;
+    strikeSquare.order = data.order;
 
-    // We also record the turn that the strike happened
-    x.turn = globals.turn - 1;
-    globals.elements.strikeSquares[data.num - 1].turn = globals.turn - 1;
-
-    // Click on the x to go to the turn that the strike happened
-    x.on('click', function xClick() {
-        if (globals.replay) {
-            replay.checkDisableSharedTurns();
-        } else {
-            replay.enter();
-        }
-        replay.goto(this.turn + 1, true);
-    });
-
-    globals.elements.scoreArea.add(x);
-    globals.elements.strikes[data.num - 1] = x;
-
+    // Animate the strike square fading in
     if (globals.animateFast) {
-        x.setOpacity(1.0);
+        strike.setOpacity(1.0);
     } else {
-        new graphics.Tween({
-            node: x,
+        strike.tween = new graphics.Tween({
+            node: strike,
             opacity: 1.0,
-            duration: globals.animateFast ? 0.001 : 1.0,
+            duration: 1.0,
             runonce: true,
         }).play();
     }

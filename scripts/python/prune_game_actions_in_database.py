@@ -143,7 +143,9 @@ for (id, action) in cursor:
     elif action_dict['type'] == 'strike':
         for key in action_dict:
             if (key != "type" and
-                key != "num"):
+                key != "num" and
+                key != "turn" and
+                key != "order"):
 
                 keys_to_delete.append(key)
 

@@ -23,15 +23,16 @@ $(document).ready(() => {
 
     // Initialize some basic tooltips
     const tooltips = [
+        'chat',
+        'deck',
+        'kill',
+        'leader',
+        'lobby-big',
+        'lobby-small',
         'replay',
         'restart',
-        'chat',
-        'lobby-small',
-        'lobby-big',
-        'kill',
-        'deck',
         'spectators',
-        'leader',
+        'strikes',
     ];
     for (const tooltip of tooltips) {
         $('#game-tooltips').append(`<div id="tooltip-${tooltip}"></div>`);

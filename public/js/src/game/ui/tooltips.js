@@ -13,8 +13,9 @@ exports.show = (element, name) => {
     }
 
     const tooltip = $(`#tooltip-${name}`);
-    const tooltipX = element.getWidth() / 2 + element.attrs.x;
+    const pos = element.getAbsolutePosition();
+    const tooltipX = element.getWidth() / 2 + pos.x;
     tooltip.css('left', tooltipX);
-    tooltip.css('top', element.attrs.y);
+    tooltip.css('top', pos.y);
     tooltip.tooltipster('open');
 };
