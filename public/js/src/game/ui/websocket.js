@@ -174,6 +174,12 @@ commands.id = (data) => {
     globals.id = data.id;
     globals.elements.gameIDLabel.setText(`ID: ${globals.id}`);
     globals.elements.gameIDLabel.show();
+
+    // Also move the card count label on the deck downwards
+    if (globals.deckSize === 0) {
+        globals.elements.drawDeck.nudgeCountDownwards();
+    }
+
     globals.layers.UI2.batchDraw();
 };
 
@@ -311,8 +317,6 @@ commands.notify = (data) => {
 
     // Now that it is recorded, change the actual active game state
     // (unless we are in an in-game replay)
-    // Make an exception for the "deckOrder" message,
-    // which contains data that we need to store globally
     if (!globals.inReplay || data.type === 'deckOrder') {
         globals.lobby.ui.handleNotify(data);
     }
@@ -322,18 +326,27 @@ commands.notifyList = (dataList) => {
     for (const data of dataList) {
         commands.notify(data);
 
-        // Also, record the turns that the strikes happen
-        // (or else clicking on the strike squares won't work on a freshly initialized replay)
+        // Some specific messages contain global state information that we need to record
+        // (since we might be in a replay that is starting on the first turn,
+        // the respective notify functions will not be reached until
+        // we actually progress to that turn of the replay)
         if (data.type === 'strike') {
+            // Record the turns that the strikes happen
+            // (or else clicking on the strike squares won't work on a freshly initialized replay)
             const i = data.num - 1;
             const strike = globals.elements.strikes[i];
             const strikeSquare = globals.elements.strikeSquares[i];
             const turn = data.turn - 1 || null;
+            // (old games will not have the turn integrated into the strike)
             strike.turn = turn;
             strikeSquare.turn = turn;
             const order = data.order || null;
+            // (old games will not have the card number integrated into the strike)
             strike.order = order;
             strikeSquare.order = order;
+        } else if (data.type === 'deckOrder') {
+            // Record the deck order so that hypotheticals will work properly
+            globals.deckOrder = data.deck;
         }
     }
 };

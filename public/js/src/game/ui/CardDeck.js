@@ -113,20 +113,26 @@ CardDeck.prototype.setCardBack = function setCardBack(cardback) {
 CardDeck.prototype.setCount = function setCount(count) {
     this.numLeftText.setText(count.toString());
 
-    // When there are no cards left in the deck,
-    // remove the card-back
+    // When there are no cards left in the deck, remove the card-back
     // and show a label that indicates how many turns are left before the game ends
     this.cardback.setVisible(count > 0);
     let h = 0.3;
     if (count === 0) {
         h = 0.15;
-        if (globals.elements.gameIDLabel.getVisible()) {
-            h += 0.07;
-        }
     }
     this.numLeftText.setY(h * this.getHeight());
     globals.elements.deckTurnsRemainingLabel1.setVisible(count === 0);
     globals.elements.deckTurnsRemainingLabel2.setVisible(count === 0);
+
+    // If the game ID is showing, we want to center the deck count between it and the other labels
+    if (count === 0 && globals.elements.gameIDLabel.getVisible()) {
+        this.nudgeCountDownwards();
+    }
+};
+
+CardDeck.prototype.nudgeCountDownwards = function nudgeCountDownwards() {
+    const nudgeAmount = 0.07 * this.getHeight();
+    this.numLeftText.setY(this.numLeftText.getY() + nudgeAmount);
 };
 
 CardDeck.prototype.doLayout = function doLayout() {
