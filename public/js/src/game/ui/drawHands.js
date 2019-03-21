@@ -140,8 +140,8 @@ module.exports = () => {
         5: [
             { x: handPos[5][0].x - 0.005, y: handPos[5][0].y - 0.008 },
             { x: handPos[5][1].x - 0.004, y: handPos[5][1].y + 0.005 },
-            { x: handPos[5][2].x - 0.001, y: handPos[5][2].y - 0.008 },
-            { x: handPos[5][3].x + 0.005, y: handPos[5][3].y - 0.008 },
+            { x: handPos[5][2].x - 0.005, y: handPos[5][2].y - 0.008 },
+            { x: handPos[5][3].x - 0.005, y: handPos[5][3].y - 0.008 },
             { x: handPos[5][4].x + 0.004, y: handPos[5][4].y - 0.005 },
         ],
         6: [
