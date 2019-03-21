@@ -25,6 +25,7 @@ $(document).ready(() => {
     const tooltips = [
         'chat',
         'deck',
+        'discard',
         'efficiency',
         'kill',
         'leader',

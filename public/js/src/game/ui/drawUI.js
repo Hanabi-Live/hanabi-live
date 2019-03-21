@@ -429,7 +429,7 @@ const drawBottomLeftButtons = () => {
         globals.game.chat.toggle();
     });
     const chatContent = 'Toggle the in-game chat.';
-    tooltips.initDelayed(globals.elements.restartButton, 'chat', chatContent);
+    tooltips.initDelayed(globals.elements.chatButton, 'chat', chatContent);
 
     const shortButtonSpacing = 0.003;
 
@@ -1018,20 +1018,6 @@ const drawStatistics = () => {
 };
 
 const drawDiscardArea = () => {
-    // This is the invisible rectangle that players drag cards to in order to discard them
-    globals.elements.discardArea = new graphics.Rect({
-        x: 0.8 * winW,
-        y: 0.6 * winH,
-        width: 0.2 * winW,
-        height: 0.4 * winH,
-    });
-    globals.elements.discardArea.isOver = pos => (
-        pos.x >= globals.elements.discardArea.getX()
-        && pos.y >= globals.elements.discardArea.getY()
-        && pos.x <= globals.elements.discardArea.getX() + globals.elements.discardArea.getWidth()
-        && pos.y <= globals.elements.discardArea.getY() + globals.elements.discardArea.getHeight()
-    );
-
     // The red border that surrounds the discard pile when the team is at 8 clues
     globals.elements.noDiscardLabel = new graphics.Rect({
         x: 0.8 * winW,
@@ -1054,8 +1040,8 @@ const drawDiscardArea = () => {
         stroke: 'yellow',
         strokeWidth: 0.004 * winW,
         cornerRadius: 0.01 * winW,
-        visible: false,
         opacity: 0.75,
+        visible: false,
     });
     globals.layers.UI.add(globals.elements.noDoubleDiscardLabel);
 
@@ -1071,8 +1057,8 @@ const drawDiscardArea = () => {
     });
     globals.layers.background.add(discardAreaRect);
 
-    // The icon over the discard pile
-    const img = new graphics.Image({
+    // The trash can icon over the discard pile
+    const trashcan = new graphics.Image({
         x: 0.82 * winW,
         y: 0.62 * winH,
         width: 0.15 * winW,
@@ -1080,7 +1066,29 @@ const drawDiscardArea = () => {
         opacity: 0.2,
         image: globals.ImageLoader.get('trashcan'),
     });
-    globals.layers.background.add(img);
+    globals.layers.background.add(trashcan);
+
+    // This is the invisible rectangle that players drag cards to in order to discard them
+    globals.elements.discardArea = new graphics.Rect({
+        x: 0.8 * winW,
+        y: 0.6 * winH,
+        width: 0.2 * winW,
+        height: 0.4 * winH,
+    });
+    globals.elements.discardArea.isOver = pos => (
+        pos.x >= globals.elements.discardArea.getX()
+        && pos.y >= globals.elements.discardArea.getY()
+        && pos.x <= globals.elements.discardArea.getX() + globals.elements.discardArea.getWidth()
+        && pos.y <= globals.elements.discardArea.getY() + globals.elements.discardArea.getHeight()
+    );
+
+    // Initialize the tooltip
+    // (certain elements cover certain other elements,
+    // so just initialize it on multiple elements to ensure that the tooltip will always appear)
+    const discardContent = 'This is the discard pile. Both discarded and misplayed cards will be shown here.';
+    tooltips.initDelayed(globals.elements.noDiscardLabel, 'discard', discardContent);
+    tooltips.initDelayed(globals.elements.noDoubleDiscardLabel, 'discard', discardContent);
+    tooltips.initDelayed(trashcan, 'discard', discardContent);
 };
 
 const drawTimers = () => {
