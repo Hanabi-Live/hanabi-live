@@ -994,9 +994,28 @@ HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft(event) {
         && !event.metaKey
     ) {
         globals.preCluedCard = this.order;
-        const color = this.trueSuit.clueColors[0];
-        const colors = globals.variant.clueColors;
-        const value = colors.findIndex(variantClueColor => variantClueColor === color);
+
+        // A card may be cluable by more than one color, so we need to figure out which color to use
+        const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
+        const cardColors = this.trueSuit.clueColors;
+        let color;
+        if (
+            // If a clue type button is selected
+            clueButton
+            // If a color clue type button is selected
+            && clueButton.clue.type === constants.CLUE_TYPE.COLOR
+            // If the selected color clue is actually one of the possibilies for the card
+            && cardColors.findIndex(cardColor => cardColor === clueButton.clue.value) !== -1
+        ) {
+            // Use the color of the currently selected button
+            color = clueButton.clue.value;
+        } else {
+            // Otherwise, just use the first possible color
+            // e.g. for rainbow cards, use blue
+            [color] = cardColors;
+        }
+
+        const value = globals.variant.clueColors.findIndex(variantColor => variantColor === color);
         globals.lobby.ui.endTurn({
             type: 'action',
             data: {
