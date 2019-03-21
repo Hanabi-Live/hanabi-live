@@ -395,18 +395,8 @@ const drawBottomLeftButtons = () => {
     });
     globals.layers.UI.add(globals.elements.replayButton);
     globals.elements.replayButton.setEnabled(false);
-    globals.elements.replayButton.on('mousemove', function mouseMove() {
-        globals.activeHover = this;
-        setTimeout(() => {
-            tooltips.show(this, 'replay');
-        }, globals.tooltipDelay);
-    });
-    globals.elements.replayButton.on('mouseout', () => {
-        globals.activeHover = null;
-        $('#tooltip-replay').tooltipster('close');
-    });
-    const replayContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Toggle the in-game replay, where you can rewind the game to see what happened on a specific turn.</span>';
-    $('#tooltip-replay').tooltipster('instance').content(replayContent);
+    const replayContent = 'Toggle the in-game replay, where you can rewind the game to see what happened on a specific turn.';
+    tooltips.initDelayed(globals.elements.replayButton, 'replay', replayContent);
 
     // The restart button
     // (to go into a new game with the same settings as the current shared replay)
@@ -422,18 +412,8 @@ const drawBottomLeftButtons = () => {
     globals.elements.restartButton.on('click tap', () => {
         globals.lobby.conn.send('gameRestart');
     });
-    globals.elements.restartButton.on('mousemove', function mouseMove() {
-        globals.activeHover = this;
-        setTimeout(() => {
-            tooltips.show(this, 'restart');
-        }, globals.tooltipDelay);
-    });
-    globals.elements.restartButton.on('mouseout', () => {
-        globals.activeHover = null;
-        $('#tooltip-restart').tooltipster('close');
-    });
-    const restartContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Automatically go into a new game with the current members of the shared replay (using the same game settings as this one).</span>';
-    $('#tooltip-restart').tooltipster('instance').content(restartContent);
+    const restartContent = 'Automatically go into a new game with the current members of the shared replay (using the same game settings as this one).';
+    tooltips.initDelayed(globals.elements.restartButton, 'restart', restartContent);
 
     // The chat button
     globals.elements.chatButton = new Button({
@@ -448,18 +428,8 @@ const drawBottomLeftButtons = () => {
     globals.elements.chatButton.on('click tap', () => {
         globals.game.chat.toggle();
     });
-    globals.elements.chatButton.on('mousemove', function mouseMove() {
-        globals.activeHover = this;
-        setTimeout(() => {
-            tooltips.show(this, 'chat');
-        }, globals.tooltipDelay);
-    });
-    globals.elements.chatButton.on('mouseout', () => {
-        globals.activeHover = null;
-        $('#tooltip-chat').tooltipster('close');
-    });
-    const chatContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Toggle the in-game chat.</span>';
-    $('#tooltip-chat').tooltipster('instance').content(chatContent);
+    const chatContent = 'Toggle the in-game chat.';
+    tooltips.initDelayed(globals.elements.restartButton, 'chat', chatContent);
 
     const shortButtonSpacing = 0.003;
 
@@ -481,18 +451,8 @@ const drawBottomLeftButtons = () => {
     });
     globals.layers.UI.add(globals.elements.lobbyButtonSmall);
     globals.elements.lobbyButtonSmall.on('click tap', lobbyButtonClick);
-    globals.elements.lobbyButtonSmall.on('mousemove', function mouseMove() {
-        globals.activeHover = this;
-        setTimeout(() => {
-            tooltips.show(this, 'lobby-small');
-        }, globals.tooltipDelay);
-    });
-    globals.elements.lobbyButtonSmall.on('mouseout', () => {
-        globals.activeHover = null;
-        $('#tooltip-lobby-small').tooltipster('close');
-    });
-    const lobbySmallContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Return to the lobby. (The game will not end and your teammates will have to wait for you to come back.)</span>';
-    $('#tooltip-lobby-small').tooltipster('instance').content(lobbySmallContent);
+    const lobbySmallContent = 'Return to the lobby. (The game will not end and your teammates will have to wait for you to come back.)';
+    tooltips.initDelayed(globals.elements.lobbyButtonSmall, 'lobby-small', lobbySmallContent);
 
     globals.elements.lobbyButtonBig = new Button({
         x: lobbyButtonValues.x * winW,
@@ -504,18 +464,8 @@ const drawBottomLeftButtons = () => {
     });
     globals.layers.UI.add(globals.elements.lobbyButtonBig);
     globals.elements.lobbyButtonBig.on('click tap', lobbyButtonClick);
-    globals.elements.lobbyButtonBig.on('mousemove', function mouseMove() {
-        globals.activeHover = this;
-        setTimeout(() => {
-            tooltips.show(this, 'lobby-big');
-        }, globals.tooltipDelay);
-    });
-    globals.elements.lobbyButtonBig.on('mouseout', () => {
-        globals.activeHover = null;
-        $('#tooltip-lobby-big').tooltipster('close');
-    });
-    const lobbyBigContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Return to the lobby.</span>';
-    $('#tooltip-lobby-big').tooltipster('instance').content(lobbyBigContent);
+    const lobbyBigContent = 'Return to the lobby.';
+    tooltips.initDelayed(globals.elements.lobbyButtonBig, 'lobby-big', lobbyBigContent);
 
     function lobbyButtonClick() {
         // Unregister the click handler to ensure that the user does not double-click
@@ -548,18 +498,8 @@ const drawBottomLeftButtons = () => {
     globals.elements.killButton.on('click tap', () => {
         globals.lobby.conn.send('gameAbandon');
     });
-    globals.elements.killButton.on('mousemove', function mouseMove() {
-        globals.activeHover = this;
-        setTimeout(() => {
-            tooltips.show(this, 'kill');
-        }, globals.tooltipDelay);
-    });
-    globals.elements.killButton.on('mouseout', () => {
-        globals.activeHover = null;
-        $('#tooltip-kill').tooltipster('close');
-    });
-    const killContent = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;Terminate the game, ending it immediately.</span>';
-    $('#tooltip-kill').tooltipster('instance').content(killContent);
+    const killContent = 'Terminate the game, ending it immediately.';
+    tooltips.initDelayed(globals.elements.killButton, 'kill', killContent);
 };
 
 const drawDeck = () => {
@@ -741,16 +681,6 @@ const drawScoreArea = () => {
     globals.elements.scoreArea.add(globals.elements.cluesNumberLabel);
 
     // Draw the 3 strike (bomb) black squares / X's
-    function strikeMouseMove() {
-        globals.activeHover = this;
-        setTimeout(() => {
-            tooltips.show(this, 'strikes');
-        }, globals.tooltipDelay);
-    }
-    function strikeMouseOut() {
-        globals.activeHover = null;
-        $('#tooltip-strikes').tooltipster('close');
-    }
     function strikeClick() {
         if (this.turn === null) {
             return;
@@ -799,14 +729,9 @@ const drawScoreArea = () => {
         strike.tween = null;
 
         // Handle the tooltips
-        strikeSquare.on('mousemove', strikeMouseMove);
-        strike.on('mousemove', strikeMouseMove);
-        strikeSquare.on('mouseout', strikeMouseOut);
-        strike.on('mouseout', strikeMouseOut);
-        let strikesContent = '<span style="font-size: 0.75em;">';
-        strikesContent += '<i class="fas fa-info-circle fa-sm"></i> &nbsp;';
-        strikesContent += 'This shows how many strikes (bombs) the team currently has.';
-        $('#tooltip-strikes').tooltipster('instance').content(strikesContent);
+        const strikesContent = 'This shows how many strikes (bombs) the team currently has.';
+        tooltips.initDelayed(strikeSquare, 'strikes', strikesContent);
+        tooltips.initDelayed(strike, 'strikes', strikesContent);
 
         // Click on the strike to go to the turn that the strike happened, if any
         // (and highlight the card that misplayed)
@@ -1037,6 +962,10 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
     });
     globals.layers.UI.add(paceTextLabel);
+    let paceContent = 'Pace is a measure of how many discards can happen while still having a chance to get the maximum score.<br />';
+    paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    paceContent += '(For more information, click on the "Help" button in the lobby.)';
+    tooltips.initDelayed(paceTextLabel, 'pace', paceContent);
 
     globals.elements.paceNumberLabel = basicNumberLabel.clone({
         text: '-',
@@ -1045,6 +974,7 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
     });
     globals.layers.UI.add(globals.elements.paceNumberLabel);
+    tooltips.initDelayed(globals.elements.paceNumberLabel, 'pace', paceContent);
 
     const efficiencyTextLabel = basicTextLabel.clone({
         text: 'Efficiency',
@@ -1053,6 +983,14 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
     });
     globals.layers.UI.add(efficiencyTextLabel);
+    let efficiencyContent = 'Efficiency is calculated by: <i>number of clues given / (number of cards played + number of unplayed cards with one or more clues "on" them)</i><br />';
+    efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    efficiencyContent += 'The first number is the efficiency of the current game.<br />';
+    efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    efficiencyContent += 'The second number shows the minimum possible efficiency needed to win with the current number of players and the current variant.<br />';
+    efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    efficiencyContent += '(For more information, click on the "Help" button in the lobby.)';
+    tooltips.initDelayed(efficiencyTextLabel, 'efficiency', efficiencyContent);
 
     // We want the "/" to be part of the first label since we don't want
     // to change the color of it later on
@@ -1063,6 +1001,7 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabel);
+    tooltips.initDelayed(globals.elements.efficiencyNumberLabel, 'efficiency', efficiencyContent);
 
     const minEfficiency = stats.getMinEfficiency();
     globals.elements.efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
@@ -1075,6 +1014,7 @@ const drawStatistics = () => {
         fill: (minEfficiency < 1.25 ? globals.labelColor : '#ffb2b2'),
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabelMinNeeded);
+    tooltips.initDelayed(globals.elements.efficiencyNumberLabelMinNeeded, 'efficiency', efficiencyContent);
 };
 
 const drawDiscardArea = () => {

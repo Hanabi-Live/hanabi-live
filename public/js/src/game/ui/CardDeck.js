@@ -37,23 +37,7 @@ const CardDeck = function CardDeck(config) {
     });
     this.add(this.numLeftText);
 
-    // If the user hovers over the deck, show a tooltip that shows extra game options, if any
     this.initTooltip();
-    this.on('mousemove', function mouseMove() {
-        // Don't do anything if we might be dragging the deck
-        if (globals.elements.deckPlayAvailableLabel.isVisible()) {
-            return;
-        }
-
-        globals.activeHover = this;
-        setTimeout(() => {
-            tooltips.show(this, 'deck');
-        }, globals.tooltipDelay);
-    });
-    this.on('mouseout', () => {
-        globals.activeHover = null;
-        $('#tooltip-deck').tooltipster('close');
-    });
 };
 
 graphics.Util.extend(CardDeck, graphics.Group);
@@ -144,6 +128,26 @@ CardDeck.prototype.doLayout = function doLayout() {
 
 // The deck tooltip shows the custom options for this game, if any
 CardDeck.prototype.initTooltip = function initTooltip() {
+    // If the user hovers over the deck, show a tooltip that shows extra game options, if any
+    // (we don't use the "tooltip.initDelayed()" function because we need the extra condition in
+    // the "mousemove" event)
+    this.on('mousemove', function mouseMove() {
+        // Don't do anything if we might be dragging the deck
+        if (globals.elements.deckPlayAvailableLabel.isVisible()) {
+            return;
+        }
+
+        globals.activeHover = this;
+        setTimeout(() => {
+            tooltips.show(this, 'deck');
+        }, globals.tooltipDelay);
+    });
+    this.on('mouseout', () => {
+        globals.activeHover = null;
+        $('#tooltip-deck').tooltipster('close');
+    });
+
+    // The tooltip will show what the deck is, followed by the current game options
     let content = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;This is the deck, which shows the number of cards remaining.</span><br /><br />';
     content += '<strong>Game Options:</strong>';
     content += '<ul class="game-tooltips-ul">';

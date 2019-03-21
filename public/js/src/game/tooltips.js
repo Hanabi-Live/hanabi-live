@@ -25,10 +25,12 @@ $(document).ready(() => {
     const tooltips = [
         'chat',
         'deck',
+        'efficiency',
         'kill',
         'leader',
         'lobby-big',
         'lobby-small',
+        'pace',
         'replay',
         'restart',
         'spectators',
