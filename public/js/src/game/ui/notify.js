@@ -87,13 +87,15 @@ commands.discard = (data) => {
 
     card.isDiscarded = true;
     card.turnDiscarded = globals.turn;
+    card.isMisplayed = data.failed;
 
     revealCard(data);
 
     // If this card was misplayed, play a special animation
-    if (data.failed) {
-        card.isMisplayed = true;
+    if (!globals.animateFast && data.failed) {
         // TODO
+        // globals.elements.playStacks.get(suit).add(child);
+        // globals.elements.playStacks.get(suit).moveToTop();
     }
 
     globals.elements.discardStacks.get(suit).add(child);

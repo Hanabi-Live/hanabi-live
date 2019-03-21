@@ -5,6 +5,7 @@
 // Imports
 const constants = require('../../constants');
 const globals = require('./globals');
+const misc = require('../../misc');
 const notes = require('./notes');
 const replay = require('./replay');
 
@@ -99,6 +100,18 @@ const keydown = (event) => {
         // The "giveClue()" function has validation inside of it
         globals.lobby.ui.giveClue();
         return;
+    }
+
+    // Ctrl + c = Copy the current game ID
+    if (
+        event.key === 'c'
+        && event.ctrlKey
+        && !event.shiftKey
+        && !event.altKey
+        && !event.metaKey
+        && globals.id !== 0
+    ) {
+        misc.copyStringToClipboard(globals.id);
     }
 
     // Escape: If in an in-game replay, exit back to the game
