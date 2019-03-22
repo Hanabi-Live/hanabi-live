@@ -854,8 +854,10 @@ HanabiCard.prototype.clickRight = function clickRight(event) {
     }
 
     // Ctrl + right-click is a local arrow
-    // (we don't want this functionality in shared replays because
-    // it could be misleading as to who the real replay leader is)
+    // Even if they are not a leader in a shared replay,
+    // a user might still want to draw an arrow on a card for demonstration purposes
+    // However, we don't want this functionality in shared replays because
+    // it could be misleading as to who the real replay leader is
     if (
         event.ctrlKey
         && !event.shiftKey
@@ -863,7 +865,7 @@ HanabiCard.prototype.clickRight = function clickRight(event) {
         && !event.metaKey
         && globals.sharedReplay === false
     ) {
-        this.clickArrowLocal();
+        this.toggleSharedReplayIndicator();
         return;
     }
 
@@ -889,12 +891,6 @@ HanabiCard.prototype.clickArrow = function clickArrow() {
     });
 
     // Draw the indicator manually so that we don't have to wait for the client to server round-trip
-    this.toggleSharedReplayIndicator();
-};
-
-HanabiCard.prototype.clickArrowLocal = function clickArrowLocal() {
-    // Even if they are not a leader in a shared replay,
-    // a user might still want to draw an arrow on a card for demonstration purposes
     this.toggleSharedReplayIndicator();
 };
 
@@ -1110,6 +1106,10 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight(event) {
     ) {
         this.setNote('cm');
     }
+};
+
+HanabiCard.prototype.animateToPlayStacks = function animateToPlayStacks() {
+    // TODO
 };
 
 HanabiCard.prototype.setNote = function setNote(note) {
