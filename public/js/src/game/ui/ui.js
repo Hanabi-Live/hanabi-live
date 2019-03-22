@@ -356,6 +356,27 @@ HanabiUI.prototype.giveClue = function giveClue() {
     });
 };
 
+HanabiUI.prototype.recordStrike = function recordStrike(data) {
+    const i = data.num - 1;
+    const strike = globals.elements.strikes[i];
+    const strikeSquare = globals.elements.strikeSquares[i];
+
+    // We want to go to the turn before the strike actually happened
+    const turn = data.turn - 1 || globals.turn - 1;
+    // (old games will not have the turn integrated into the strike)
+    strike.turn = turn;
+    strikeSquare.turn = turn;
+
+    // We also want to record the card that misplayed so that we can highlight it with an arrow
+    const order = data.order || null;
+    // (old games will not have the card number integrated into the strike)
+    strike.order = order;
+    strikeSquare.order = order;
+
+    // Show an indication that the strike is clickable
+    strike.setFaded();
+};
+
 HanabiUI.prototype.handleWebsocket = function handleWebsocket(command, data) {
     if (Object.prototype.hasOwnProperty.call(websocket, command)) {
         websocket[command](data);

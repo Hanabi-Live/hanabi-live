@@ -164,7 +164,7 @@ const reset = () => {
         if (strike.tween) {
             strike.tween.destroy();
         }
-        strike.setOpacity(0);
+        strike.setFaded();
     }
 
     globals.animateFast = true;

@@ -727,6 +727,9 @@ const drawScoreArea = () => {
         });
         globals.elements.scoreArea.add(strike);
         strike.tween = null;
+        strike.setFaded = function setFaded() {
+            this.setOpacity(this.turn === null ? 0 : 0.1);
+        };
 
         // Handle the tooltips
         const strikesContent = 'This shows how many strikes (bombs) the team currently has.';

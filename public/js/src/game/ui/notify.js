@@ -281,21 +281,13 @@ commands.strike = (data) => {
     // Local variables
     const i = data.num - 1;
     const strike = globals.elements.strikes[i];
-    const strikeSquare = globals.elements.strikeSquares[i];
 
     // Update the stats
     globals.cluesSpentPlusStrikes += 1;
     stats.updateEfficiency(0);
 
     // Record the turn that the strike happened and the card that was misplayed
-    const turn = data.turn - 1 || globals.turn - 1;
-    // (old games will not have the turn integrated into the strike)
-    strike.turn = turn;
-    strikeSquare.turn = turn;
-    const order = data.order || null;
-    // (old games will not have the card number integrated into the strike)
-    strike.order = order;
-    strikeSquare.order = order;
+    globals.lobby.ui.recordStrike(data);
 
     // Animate the strike square fading in
     if (globals.animateFast) {

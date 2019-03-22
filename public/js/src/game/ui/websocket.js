@@ -333,17 +333,7 @@ commands.notifyList = (dataList) => {
         if (data.type === 'strike') {
             // Record the turns that the strikes happen
             // (or else clicking on the strike squares won't work on a freshly initialized replay)
-            const i = data.num - 1;
-            const strike = globals.elements.strikes[i];
-            const strikeSquare = globals.elements.strikeSquares[i];
-            const turn = data.turn - 1 || null;
-            // (old games will not have the turn integrated into the strike)
-            strike.turn = turn;
-            strikeSquare.turn = turn;
-            const order = data.order || null;
-            // (old games will not have the card number integrated into the strike)
-            strike.order = order;
-            strikeSquare.order = order;
+            globals.lobby.ui.recordStrike(data);
         } else if (data.type === 'deckOrder') {
             // Record the deck order so that hypotheticals will work properly
             globals.deckOrder = data.deck;
