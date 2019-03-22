@@ -37,11 +37,17 @@ func commandGameSpectate(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that they are not already in the spectators object
-	for _, sp := range g.Spectators {
-		if sp.ID == s.UserID() {
-			s.Warning("You are already spectating game " + strconv.Itoa(gameID) + ".")
-			return
+	// Validate that they are not already spectating a game
+	for _, g2 := range games {
+		for _, sp := range g2.Spectators {
+			if sp.ID == s.UserID() {
+				if g2.ID == g.ID {
+					s.Warning("You are already spectating this game.")
+				} else {
+					s.Warning("You are already spectating another game.")
+				}
+				return
+			}
 		}
 	}
 
