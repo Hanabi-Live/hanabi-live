@@ -3,7 +3,7 @@
 
 import sys
 if sys.version_info < (3, 0):
-    print("This script requires Python 3.x.")
+    print('This script requires Python 3.x.')
     sys.exit(1)
 
 # Imports
@@ -11,6 +11,9 @@ import json
 import os
 import dotenv
 import mysql.connector
+
+# Configuration
+debug = False
 
 # Import environment variables
 dotenv.load_dotenv(dotenv.find_dotenv())
@@ -33,7 +36,10 @@ cnx = mysql.connector.connect(
 
 # Get all database records
 cursor = cnx.cursor()
-query = ('SELECT id, action FROM game_actions ORDER BY id ASC')
+query_string = 'SELECT id, action FROM game_actions ORDER BY id ASC'
+if debug:
+    query_string += ' LIMIT 1000'
+query = (query_string)
 cursor.execute(query)
 
 update_list = []
@@ -62,92 +68,92 @@ for (id, action) in cursor:
     # These actions map to what is in the "action.go" file
     if action_dict['type'] == 'draw':
         for key in action_dict:
-            if (key != "type" and
-                key != "who" and
-                key != "rank" and
-                key != "suit" and
-                key != "order"):
+            if (key != 'type' and
+                key != 'who' and
+                key != 'rank' and
+                key != 'suit' and
+                key != 'order'):
 
                 keys_to_delete.append(key)
 
     elif action_dict['type'] == 'status':
         for key in action_dict:
-            if (key != "type" and
-                key != "clues" and
-                key != "score" and
-                key != "maxScore" and
-                key != "doubleDiscard"):
+            if (key != 'type' and
+                key != 'clues' and
+                key != 'score' and
+                key != 'maxScore' and
+                key != 'doubleDiscard'):
 
                 keys_to_delete.append(key)
 
     elif action_dict['type'] == 'stackDirections':
         for key in action_dict:
-            if (key != "type" and
-                key != "directions"):
+            if (key != 'type' and
+                key != 'directions'):
 
                 keys_to_delete.append(key)
 
     elif action_dict['type'] == 'text':
         for key in action_dict:
-            if (key != "type" and
-                key != "text"):
+            if (key != 'type' and
+                key != 'text'):
 
                 keys_to_delete.append(key)
 
     elif action_dict['type'] == 'turn':
         for key in action_dict:
-            if (key != "type" and
-                key != "num" and
-                key != "who"):
+            if (key != 'type' and
+                key != 'num' and
+                key != 'who'):
 
                 keys_to_delete.append(key)
 
     elif action_dict['type'] == 'clue':
         for key in action_dict:
-            if (key != "type" and
-                key != "clue" and
-                key != "giver" and
-                key != "list" and
-                key != "target" and
-                key != "turn"):
+            if (key != 'type' and
+                key != 'clue' and
+                key != 'giver' and
+                key != 'list' and
+                key != 'target' and
+                key != 'turn'):
 
                 keys_to_delete.append(key)
 
     elif action_dict['type'] == 'play':
         for key in action_dict:
-            if (key != "type" and
-                key != "which"):
+            if (key != 'type' and
+                key != 'which'):
 
                 keys_to_delete.append(key)
 
     elif action_dict['type'] == 'discard':
         for key in action_dict:
-            if (key != "type" and
-                key != "which"):
+            if (key != 'type' and
+                key != 'which'):
 
                 keys_to_delete.append(key)
 
     elif action_dict['type'] == 'reorder':
         for key in action_dict:
-            if (key != "type" and
-                key != "target" and
-                key != "handOrder"):
+            if (key != 'type' and
+                key != 'target' and
+                key != 'handOrder'):
 
                 keys_to_delete.append(key)
 
     elif action_dict['type'] == 'strike':
         for key in action_dict:
-            if (key != "type" and
-                key != "num" and
-                key != "turn" and
-                key != "order"):
+            if (key != 'type' and
+                key != 'num' and
+                key != 'turn' and
+                key != 'order'):
 
                 keys_to_delete.append(key)
 
     elif action_dict['type'] == 'deckOrder':
         for key in action_dict:
-            if (key != "type" and
-                key != "deck"):
+            if (key != 'type' and
+                key != 'deck'):
 
                 keys_to_delete.append(key)
 
