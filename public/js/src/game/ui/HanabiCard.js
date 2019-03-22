@@ -1109,7 +1109,28 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight(event) {
 };
 
 HanabiCard.prototype.animateToPlayStacks = function animateToPlayStacks() {
-    // TODO
+    const playStack = globals.elements.playStacks.get(this.trueSuit);
+    playStack.add(this.parent); // This is the LayoutChild
+    playStack.moveToTop();
+};
+
+HanabiCard.prototype.animateToDiscardPile = function animateToDiscardPile() {
+    globals.elements.discardStacks.get(this.trueSuit).add(this.parent); // This is the LayoutChild
+
+    // We need to bring the discarded card to the top so that when it tweens to the discard pile,
+    // it will fly on top of the play stacks and other player's hands
+    // However, if we use "globals.elements.discardStacks.get(suit).moveToTop()" like we do in the
+    // "animateToPlayStacks()" function,
+    // then the discard stacks will not be arranged in the correct order
+    // Thus, move all of the discord piles to the top in order so that they will be properly
+    // overlapping (the bottom-most stack should have priority over the top)
+    for (const discardStack of globals.elements.discardStacks) {
+        // Since "discardStacks" is a Map(),
+        // "discardStack" is an array containing a Suit and CardLayout
+        if (discardStack[1]) {
+            discardStack[1].moveToTop();
+        }
+    }
 };
 
 HanabiCard.prototype.setNote = function setNote(note) {

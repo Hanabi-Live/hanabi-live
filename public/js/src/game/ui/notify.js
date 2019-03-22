@@ -81,9 +81,7 @@ commands.deckOrder = (data) => {
 
 commands.discard = (data) => {
     // Local variables
-    const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
     const card = globals.deck[data.which.order];
-    const child = card.parent; // This is the LayoutChild
 
     card.isDiscarded = true;
     card.turnDiscarded = globals.turn;
@@ -91,28 +89,16 @@ commands.discard = (data) => {
 
     revealCard(data);
 
-    // If this card was misplayed, play a special animation
+    /*
     if (!globals.animateFast && data.failed) {
-        // TODO
-        // globals.elements.playStacks.get(suit).add(child);
-        // globals.elements.playStacks.get(suit).moveToTop();
+        // If this card was misplayed,
+        // it will automatically tween to the discard pile after reaching the play stacks
+        card.animateToPlayStacks();
+    } else {
+        card.animateToDiscardPile();
     }
-
-    globals.elements.discardStacks.get(suit).add(child);
-
-    // We need to bring the discarded card to the top so that when it tweens to the discard pile,
-    // it will fly on top of the play stacks and other player's hands
-    // However, if we use "globals.elements.discardStacks.get(suit).moveToTop()" like we do in the
-    // "commands.play()" function, then the discard stacks will not be arranged in the correct order
-    // Thus, move all of the discord piles to the top in order so that they will be properly
-    // overlapping (the bottom-most stack should have priority over the top)
-    for (const discardStack of globals.elements.discardStacks) {
-        // Since "discardStacks" is a Map(),
-        // "discardStack" is an array containing a Suit and CardLayout
-        if (discardStack[1]) {
-            discardStack[1].moveToTop();
-        }
-    }
+    */
+    card.animateToDiscardPile();
 
     if (card.isClued()) {
         stats.updateEfficiency(-1);
@@ -178,18 +164,14 @@ commands.text = (data) => {
 
 commands.play = (data) => {
     // Local variables
-    const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
     const card = globals.deck[data.which.order];
-    const child = card.parent; // This is the LayoutChild
 
     card.isPlayed = true;
     card.turnPlayed = globals.turn;
 
     revealCard(data);
 
-    const playStack = globals.elements.playStacks.get(suit);
-    playStack.add(child);
-    playStack.moveToTop();
+    card.animateToPlayStacks();
 
     if (card.isClued()) {
         card.hideClues();
