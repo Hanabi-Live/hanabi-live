@@ -68,7 +68,7 @@ type Which struct { // Used by "ActionPlay" and "ActionDiscard"
 	Suit   int  `json:"suit"`
 	Rank   int  `json:"rank"`
 	Order  int  `json:"order"` // The ID of the card (based on its order in the deck)
-	Failed bool `json:"action"`
+	Failed bool `json:"failed"`
 }
 type CardSimple struct { // Used by "ActionDeckOrder"
 	Suit int `json:"suit"`
