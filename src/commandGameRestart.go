@@ -45,7 +45,8 @@ func commandGameRestart(s *Session, d *CommandData) {
 
 	// Validate that all of the players who played the game are currently spectating
 	// the shared replay
-	gameSessions := make([]*Session, 0)
+	playerSessions := make([]*Session, 0)
+	otherSessions := make([]*Session, 0)
 	for _, sp := range g.Spectators {
 		playedInOriginalGame := false
 		for _, p := range g.Players {
@@ -55,10 +56,12 @@ func commandGameRestart(s *Session, d *CommandData) {
 			}
 		}
 		if playedInOriginalGame {
-			gameSessions = append(gameSessions, sp.Session)
+			playerSessions = append(playerSessions, sp.Session)
+		} else {
+			otherSessions = append(otherSessions, sp.Session)
 		}
 	}
-	if len(gameSessions) != len(g.Players) {
+	if len(playerSessions) != len(g.Players) {
 		s.Warning("Not all of the players from the original game are in the shared replay, " +
 			"so you cannot restart the game.")
 		return
@@ -72,8 +75,11 @@ func commandGameRestart(s *Session, d *CommandData) {
 	g.NotifyBoot()
 
 	// On the server side, all of the spectators will still be in the game,
-	// so manually disconnect them
-	for _, s2 := range gameSessions {
+	// so manually disconnect everybody
+	for _, s2 := range playerSessions {
+		commandGameUnattend(s2, nil)
+	}
+	for _, s2 := range otherSessions {
 		commandGameUnattend(s2, nil)
 	}
 
@@ -90,16 +96,26 @@ func commandGameRestart(s *Session, d *CommandData) {
 		EmptyClues:           g.Options.EmptyClues,
 		CharacterAssignments: g.Options.CharacterAssignments,
 	})
-	for _, s2 := range gameSessions {
+
+	// We increment the newGameID after creating a game,
+	// so assume that the ID of the last game created is equal to the "newGameID" minus 1
+	ID := newGameID - 1
+
+	for _, s2 := range playerSessions {
 		if s2.UserID() == s.UserID() {
 			// The creator of the game does not need to join
 			continue
 		}
 		commandGameJoin(s2, &CommandData{
-			// We increment the newGameID after creating a game,
-			// so assume that the ID of the last game created is equal to the "newGameID" minus 1
-			ID: newGameID - 1,
+			ID: ID,
 		})
 	}
 	commandGameStart(s, nil)
+
+	// Automatically join any other spectators that were watching
+	for _, s2 := range otherSessions {
+		commandGameSpectate(s2, &CommandData{
+			ID: ID,
+		})
+	}
 }
