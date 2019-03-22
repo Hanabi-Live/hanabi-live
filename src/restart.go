@@ -109,7 +109,7 @@ func isAdmin(s *Session, d *CommandData) bool {
 func execute(script string, cwd string) {
 	cmd := exec.Command(path.Join(cwd, script))
 	cmd.Dir = cwd
-	if output, err := cmd.Output(); err != nil {
+	if output, err := cmd.CombinedOutput(); err != nil {
 		log.Error("Failed to execute \""+script+"\":", err)
 		if string(output) != "" {
 			log.Error("Output is as follows:")
