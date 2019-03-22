@@ -362,14 +362,27 @@ HanabiUI.prototype.recordStrike = function recordStrike(data) {
     const strikeSquare = globals.elements.strikeSquares[i];
 
     // We want to go to the turn before the strike actually happened
-    const turn = data.turn - 1 || globals.turn - 1;
-    // (old games will not have the turn integrated into the strike)
+    let turn;
+    if (Object.prototype.hasOwnProperty.call(data, 'turn')) {
+        turn = data.turn - 1;
+    } else {
+        // Old games will not have the turn integrated into the strike
+        turn = globals.turn - 1;
+        if (turn <= 0) {
+            turn = null;
+        }
+    }
     strike.turn = turn;
     strikeSquare.turn = turn;
 
     // We also want to record the card that misplayed so that we can highlight it with an arrow
-    const order = data.order || null;
-    // (old games will not have the card number integrated into the strike)
+    let order;
+    if (Object.prototype.hasOwnProperty.call(data, 'order')) {
+        ({ order } = data);
+    } else {
+        // Old games will not have the card number integrated into the strike
+        order = null;
+    }
     strike.order = order;
     strikeSquare.order = order;
 
