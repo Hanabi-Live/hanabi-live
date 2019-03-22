@@ -263,13 +263,13 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 	c.Discarded = true
 
 	g.Actions = append(g.Actions, ActionDiscard{
-		Type: "discard",
+		Type:   "discard",
+		Failed: c.Failed,
 		Which: Which{
-			Index:  p.Index,
-			Rank:   c.Rank,
-			Suit:   c.Suit,
-			Order:  c.Order,
-			Failed: c.Failed,
+			Index: p.Index,
+			Rank:  c.Rank,
+			Suit:  c.Suit,
+			Order: c.Order,
 		},
 	})
 	g.NotifyAction()

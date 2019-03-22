@@ -728,7 +728,7 @@ const drawScoreArea = () => {
         globals.elements.scoreArea.add(strike);
         strike.tween = null;
         strike.setFaded = function setFaded() {
-            this.setOpacity(this.turn === null ? 0 : 0.1);
+            this.setOpacity(this.turn === null ? 0 : 0.15);
         };
 
         // Handle the tooltips

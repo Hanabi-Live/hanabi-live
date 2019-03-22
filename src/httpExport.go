@@ -116,7 +116,7 @@ func httpExport(c *gin.Context) {
 			// Account for failed plays, which show up in the database as discards,
 			// but handily have the "Failed" property set to true
 			actionType := actionTypeDiscard
-			if actionDiscard.Which.Failed {
+			if actionDiscard.Failed {
 				actionType = actionTypePlay
 			}
 

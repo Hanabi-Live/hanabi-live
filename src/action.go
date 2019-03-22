@@ -45,8 +45,9 @@ type ActionPlay struct {
 	Which Which  `json:"which"`
 }
 type ActionDiscard struct {
-	Type  string `json:"type"`
-	Which Which  `json:"which"`
+	Type   string `json:"type"`
+	Failed bool   `json:"failed"`
+	Which  Which  `json:"which"`
 }
 type ActionReorder struct {
 	Type      string `json:"type"`
@@ -64,11 +65,10 @@ type ActionDeckOrder struct {
 	Deck []CardSimple `json:"deck"`
 }
 type Which struct { // Used by "ActionPlay" and "ActionDiscard"
-	Index  int  `json:"index"` // The index of the player
-	Suit   int  `json:"suit"`
-	Rank   int  `json:"rank"`
-	Order  int  `json:"order"` // The ID of the card (based on its order in the deck)
-	Failed bool `json:"failed"`
+	Index int `json:"index"` // The index of the player
+	Suit  int `json:"suit"`
+	Rank  int `json:"rank"`
+	Order int `json:"order"` // The ID of the card (based on its order in the deck)
 }
 type CardSimple struct { // Used by "ActionDeckOrder"
 	Suit int `json:"suit"`
