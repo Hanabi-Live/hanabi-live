@@ -865,7 +865,11 @@ const drawSharedReplay = () => {
         duration: 0.5,
         easing: graphics.Easings.EaseInOut,
         onFinish: () => {
-            globals.elements.sharedReplayLeaderLabelPulse.reverse();
+            // Check to see if it still exists
+            // (in case the UI was rebuilt while the tween was playing)
+            if (globals.elements.sharedReplayLeaderLabelPulse) {
+                globals.elements.sharedReplayLeaderLabelPulse.reverse();
+            }
         },
     });
     globals.elements.sharedReplayLeaderLabelPulse.anim.addLayer(globals.layers.UI);

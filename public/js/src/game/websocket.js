@@ -49,6 +49,10 @@ exports.init = () => {
     }
 };
 
+/*
+    Code for the new development client
+*/
+
 // Define a command handler map
 const commands = {};
 
