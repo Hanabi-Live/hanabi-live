@@ -202,8 +202,10 @@ module.exports = (clueAreaValues) => {
             // Don't show it if we are in a solo/shared replay
             // or if we happen to have the in-game replay open
             !globals.inReplay
-            // Don't show it if the clue UI is supposed to be there
+            // Don't show it if the clue UI is there
             && (!globals.ourTurn || globals.clues === 0)
+            // Don't show it if the premove button is there
+            && !globals.elements.premoveCancelButton.getVisible()
             && currentPlayerIndex !== -1, // Don't show it if this is the end of the game
         );
 
