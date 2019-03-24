@@ -123,6 +123,11 @@ commands.gameOver = () => {
         replay.enter();
     }
 
+    // Turn off the flag that tracks when the game is over
+    // (before the "gameOver" command is receieved)
+    // (this must be after the "replay.enter()" function)
+    globals.gameOver = false;
+
     /*
         If we are in an in-game replay when the game ends, we need to jerk them away from what they
         are doing and go to the end of the game. This is because we need to process all of the
@@ -130,8 +135,9 @@ commands.gameOver = () => {
         undefined.)
     */
 
-    // The final turn displays how long everyone took, so we want to go to the turn before that
-    replay.goto(globals.replayMax - 1);
+    // The final turn displays how long everyone took,
+    // so we want to go to the turn before that, which we recorded earlier
+    replay.goto(globals.finalReplayTurn, true);
 
     // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
     globals.elements.replayExitButton.hide();
@@ -313,12 +319,25 @@ commands.notify = (data) => {
         if (!globals.replay && globals.replayMax > 0) {
             globals.elements.replayButton.setEnabled(true);
         }
+    } else if (data.type === 'deckOrder') {
+        // At the end of a game, the server sends a list that reveals what the entire deck is
+        globals.deckOrder = data.deck;
     }
 
-    // Now that it is recorded, change the actual active game state
-    // (unless we are in an in-game replay)
-    if (!globals.inReplay || data.type === 'deckOrder') {
+    // Now that it is recorded, change the actual drawn game state
+    if (
+        !globals.inReplay // Unless we are in an in-game replay
+        && !globals.gameOver // Unless it is the miscellaneous data sent at the end of a game
+    ) {
         globals.lobby.ui.handleNotify(data);
+    }
+
+    // If the game is over,
+    // don't immediately draw the subsequent turns that contain the game times
+    if (!globals.gameOver && data.type === 'turn' && data.who === -1) {
+        globals.gameOver = true;
+        globals.finalReplayPos = globals.replayLog.length;
+        globals.finalReplayTurn = data.num;
     }
 };
 

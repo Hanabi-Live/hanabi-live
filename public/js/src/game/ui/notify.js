@@ -72,11 +72,6 @@ commands.clue = (data) => {
     globals.elements.clueLog.add(entry);
 };
 
-commands.deckOrder = (data) => {
-    // At the end of a game, the server sends a list that reveals what the entire deck is
-    globals.deckOrder = data.deck;
-};
-
 commands.discard = (data) => {
     // Local variables
     const card = globals.deck[data.which.order];

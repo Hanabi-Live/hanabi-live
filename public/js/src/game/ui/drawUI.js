@@ -965,7 +965,9 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
     });
     globals.layers.UI.add(paceTextLabel);
-    let paceContent = 'Pace is a measure of how many discards can happen while still having a chance to get the maximum score.<br />';
+    let paceContent = 'Pace is a measure of how many discards can happen while<br />';
+    paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    paceContent += 'still having a chance to get the maximum score.<br />';
     paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     paceContent += '(For more information, click on the "Help" button in the lobby.)';
     tooltips.initDelayed(paceTextLabel, 'pace', paceContent);
@@ -986,11 +988,15 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
     });
     globals.layers.UI.add(efficiencyTextLabel);
-    let efficiencyContent = 'Efficiency is calculated by: <i>number of clues given / (number of cards played + number of unplayed cards with one or more clues "on" them)</i><br />';
+    let efficiencyContent = 'Efficiency is calculated by: <i>number of clues given /<br />';
+    efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    efficiencyContent += '(number of cards played + number of unplayed cards with one or more clues "on" them)</i><br />';
     efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     efficiencyContent += 'The first number is the efficiency of the current game.<br />';
     efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-    efficiencyContent += 'The second number shows the minimum possible efficiency needed to win with the current number of players and the current variant.<br />';
+    efficiencyContent += 'The second number shows the minimum possible efficiency needed to win with<br />';
+    efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    efficiencyContent += 'the current number of players and the current variant.<br />';
     efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     efficiencyContent += '(For more information, click on the "Help" button in the lobby.)';
     tooltips.initDelayed(efficiencyTextLabel, 'efficiency', efficiencyContent);

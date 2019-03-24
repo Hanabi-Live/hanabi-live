@@ -16,7 +16,6 @@ const MsgLog = function MsgLog(config) {
         visible: false,
         listening: false,
     };
-
     $.extend(baseConfig, config);
     graphics.Group.call(this, baseConfig);
 
@@ -29,10 +28,9 @@ const MsgLog = function MsgLog(config) {
         opacity: 0.9,
         cornerRadius: 0.01 * globals.stage.getWidth(),
     });
-
     graphics.Group.prototype.add.call(this, rect);
 
-    const textoptions = {
+    const textOptions = {
         fontSize: 0.025 * globals.stage.getHeight(),
         fontFamily: 'Verdana',
         fill: 'white',
@@ -42,11 +40,10 @@ const MsgLog = function MsgLog(config) {
         height: 0.94 * globals.stage.getHeight(),
         maxLines: 38,
     };
+    this.logText = new MultiFitText(textOptions);
+    graphics.Group.prototype.add.call(this, this.logText);
 
-    this.logtext = new MultiFitText(textoptions);
-    graphics.Group.prototype.add.call(this, this.logtext);
-
-    const numbersoptions = {
+    const numbersOptions = {
         fontSize: 0.025 * globals.stage.getHeight(),
         fontFamily: 'Verdana',
         fill: 'lightgrey',
@@ -56,17 +53,17 @@ const MsgLog = function MsgLog(config) {
         height: 0.94 * globals.stage.getHeight(),
         maxLines: 38,
     };
-    this.lognumbers = new MultiFitText(numbersoptions);
-    graphics.Group.prototype.add.call(this, this.lognumbers);
+    this.logNumbers = new MultiFitText(numbersOptions);
+    graphics.Group.prototype.add.call(this, this.logNumbers);
 
     this.playerLogs = [];
     this.playerLogNumbers = [];
     for (let i = 0; i < globals.playerNames.length; i++) {
-        this.playerLogs[i] = new MultiFitText(textoptions);
+        this.playerLogs[i] = new MultiFitText(textOptions);
         this.playerLogs[i].hide();
         graphics.Group.prototype.add.call(this, this.playerLogs[i]);
 
-        this.playerLogNumbers[i] = new MultiFitText(numbersoptions);
+        this.playerLogNumbers[i] = new MultiFitText(numbersOptions);
         this.playerLogNumbers[i].hide();
         graphics.Group.prototype.add.call(this, this.playerLogNumbers[i]);
     }
@@ -80,7 +77,7 @@ MsgLog.prototype.addMessage = function addMessage(msg) {
         numbers.setMultiText(globals.deckSize.toString());
     };
 
-    appendLine(this.logtext, this.lognumbers, msg);
+    appendLine(this.logText, this.logNumbers, msg);
     for (let i = 0; i < globals.playerNames.length; i++) {
         if (msg.startsWith(globals.playerNames[i])) {
             appendLine(this.playerLogs[i], this.playerLogNumbers[i], msg);
@@ -90,39 +87,38 @@ MsgLog.prototype.addMessage = function addMessage(msg) {
 };
 
 MsgLog.prototype.showPlayerActions = function showPlayerActions(playerName) {
-    let playerIDX;
+    let playerIndex;
     for (let i = 0; i < globals.playerNames.length; i++) {
         if (globals.playerNames[i] === playerName) {
-            playerIDX = i;
+            playerIndex = i;
         }
     }
-    this.logtext.hide();
-    this.lognumbers.hide();
-    this.playerLogs[playerIDX].show();
-    this.playerLogNumbers[playerIDX].show();
+    this.logText.hide();
+    this.logNumbers.hide();
+    this.playerLogs[playerIndex].show();
+    this.playerLogNumbers[playerIndex].show();
 
     this.show();
 
     globals.elements.stageFade.show();
     globals.layers.overtop.batchDraw();
 
-    const thislog = this;
     globals.elements.stageFade.on('click tap', () => {
         globals.elements.stageFade.off('click tap');
-        thislog.playerLogs[playerIDX].hide();
-        thislog.playerLogNumbers[playerIDX].hide();
+        this.playerLogs[playerIndex].hide();
+        this.playerLogNumbers[playerIndex].hide();
 
-        thislog.logtext.show();
-        thislog.lognumbers.show();
-        thislog.hide();
+        this.logText.show();
+        this.logNumbers.show();
+        this.hide();
         globals.elements.stageFade.hide();
         globals.layers.overtop.batchDraw();
     });
 };
 
 MsgLog.prototype.refreshText = function refreshText() {
-    this.logtext.refreshText();
-    this.lognumbers.refreshText();
+    this.logText.refreshText();
+    this.logNumbers.refreshText();
     for (let i = 0; i < globals.playerNames.length; i++) {
         this.playerLogs[i].refreshText();
         this.playerLogNumbers[i].refreshText();
@@ -130,8 +126,8 @@ MsgLog.prototype.refreshText = function refreshText() {
 };
 
 MsgLog.prototype.reset = function reset() {
-    this.logtext.reset();
-    this.lognumbers.reset();
+    this.logText.reset();
+    this.logNumbers.reset();
     for (let i = 0; i < globals.playerNames.length; i++) {
         this.playerLogs[i].reset();
         this.playerLogNumbers[i].reset();

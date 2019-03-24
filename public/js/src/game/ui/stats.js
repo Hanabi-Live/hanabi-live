@@ -9,8 +9,8 @@ exports.updatePace = () => {
     const adjustedScorePlusDeck = globals.score + globals.deckSize - globals.maxScore;
 
     // Formula derived by Libster;
-    // the number of discards that can happen while still getting the maximum number of
-    // points (this is represented to the user as "Pace" on the user interface)
+    // the number of discards that can happen while still getting the maximum score
+    // (this is represented to the user as "Pace" on the user interface)
     const endGameThreshold1 = adjustedScorePlusDeck + globals.playerNames.length;
 
     // Formula derived by Florrat;

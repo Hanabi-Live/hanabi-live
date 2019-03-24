@@ -61,10 +61,14 @@ module.exports = () => {
 
     // Replay variables
     globals.inReplay = false; // Whether or not the replay controls are currently showing
-    globals.replayLog = [];
-    globals.replayPos = 0;
-    globals.replayTurn = 0;
-    globals.replayMax = 0;
+    globals.replayLog = []; // Contains all of the "notify" messages for the game
+    globals.replayPos = 0; // The current index of the "globals.replayLog" array
+    globals.replayTurn = 0; // The current game turn
+    globals.replayMax = 0; // The maximum turn recorded so fast
+    // Used to keep track of when the game ends (before the "gameOver" command has arrived)
+    globals.gameOver = false;
+    globals.finalReplayPos = 0;
+    globals.finalReplayTurn = 0;
     // In replays, we can show information about a card that was not known at the time,
     // but is known now; these are cards we have "learned"
     globals.learnedCards = [];

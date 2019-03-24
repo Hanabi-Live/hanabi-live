@@ -15,10 +15,18 @@ const enter = () => {
     if (globals.inReplay) {
         return;
     }
-
     globals.inReplay = true;
+
+    // Start by putting us at the end of the replay (the current game state)
     globals.replayPos = globals.replayLog.length;
     globals.replayTurn = globals.replayMax;
+
+    // However, if the game just ended,
+    // we want to go to the turn before the miscellaneous data sent at the end of the game
+    if (globals.gameOver) {
+        globals.replayPos = globals.finalReplayPos;
+        globals.replayTurn = globals.finalReplayTurn;
+    }
 
     // Hide the UI elements that overlap with the replay area
     globals.lobby.ui.stopAction();
