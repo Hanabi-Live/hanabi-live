@@ -10,6 +10,7 @@ graphics.Util.extend(ClueLog, graphics.Group);
 
 ClueLog.prototype.add = function add(child) {
     graphics.Group.prototype.add.call(this, child);
+    this.truncateExcessClueEntries();
     this.doLayout();
 };
 
@@ -30,21 +31,14 @@ ClueLog.prototype.doLayout = function doLayout() {
     }
 };
 
-ClueLog.prototype.checkExpiry = function checkExpiry() {
-    const maxLength = 31;
-    const childrenToRemove = this.children.length - maxLength;
-    if (childrenToRemove < 1) {
-        return;
+// In a 2-player game,
+// it is possible for there to be so many clues in the game such that it overflows the clue log
+// So, if it is overflowing, then remove the earliest clues to make room for the latest clues
+ClueLog.prototype.truncateExcessClueEntries = function truncateExcessClueEntries() {
+    const maxLength = 27; // Just enough to fill the parent rectangle
+    while (this.children.length - maxLength >= 1) {
+        this.children[0].remove();
     }
-    let childrenRemoved = 0;
-    for (let i = 0; i < this.children.length; i++) {
-        childrenRemoved += this.children[i].checkExpiry();
-        if (childrenRemoved >= childrenToRemove) {
-            break;
-        }
-    }
-
-    this.doLayout();
 };
 
 ClueLog.prototype.showMatches = function showMatches(target) {

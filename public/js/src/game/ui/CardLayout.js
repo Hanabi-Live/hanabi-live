@@ -98,7 +98,8 @@ CardLayout.prototype.doLayout = function doLayout() {
             node.setRotation(0);
             node.checkSetDraggable();
         } else {
-            // Animate the card leaving the deck
+            // Animate the card going from the deck to the hand
+            // (or from the hand to the discard pile)
             const card = node.children[0];
             card.tweening = true;
             node.tween = new graphics.Tween({
@@ -116,6 +117,12 @@ CardLayout.prototype.doLayout = function doLayout() {
                     if (storedPostAnimationLayout !== null) {
                         storedPostAnimationLayout();
                     }
+
+                    /*
+                    if (card.isMisplayed) {
+                        card.
+                    }
+                    */
                 },
             }).play();
         }

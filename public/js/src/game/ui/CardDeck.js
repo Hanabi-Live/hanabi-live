@@ -65,8 +65,7 @@ function dragendPlay() {
 
         globals.lobby.ui.stopAction();
     } else {
-        // The deck was dragged to an invalid location,
-        // so animate the card back to where it was
+        // The deck was dragged to an invalid location, so animate the card back to where it was
         new graphics.Tween({
             node: this,
             duration: 0.5,

@@ -70,8 +70,6 @@ commands.clue = (data) => {
     });
 
     globals.elements.clueLog.add(entry);
-
-    globals.elements.clueLog.checkExpiry();
 };
 
 commands.deckOrder = (data) => {
@@ -87,7 +85,8 @@ commands.discard = (data) => {
     card.turnDiscarded = globals.turn;
     card.isMisplayed = data.failed;
 
-    revealCard(data);
+    card.reveal(data);
+    card.removeFromParent();
 
     /*
     if (!globals.animateFast && data.failed) {
@@ -169,7 +168,8 @@ commands.play = (data) => {
     card.isPlayed = true;
     card.turnPlayed = globals.turn;
 
-    revealCard(data);
+    card.reveal(data);
+    card.removeFromParent();
 
     card.animateToPlayStacks();
 
@@ -347,41 +347,3 @@ commands.turn = (data) => {
 };
 
 module.exports = commands;
-
-/*
-    Misc. subroutines
-*/
-
-const revealCard = (data) => {
-    // Local variables
-    const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
-    const card = globals.deck[data.which.order];
-    const child = card.parent; // This is the LayoutChild
-
-    // Hide all of the existing arrows on the cards
-    globals.lobby.ui.showClueMatch(-1);
-
-    // Unflip the arrow, if it is flipped
-    card.initArrowLocation();
-
-    const learnedCard = globals.learnedCards[data.which.order];
-    learnedCard.suit = suit;
-    learnedCard.rank = data.which.rank;
-    learnedCard.possibleSuits = [suit];
-    learnedCard.possibleRanks = [data.which.rank];
-    learnedCard.revealed = true;
-
-    card.showOnlyLearned = false;
-    card.trueSuit = suit;
-    card.trueRank = data.which.rank;
-
-    const pos = child.getAbsolutePosition();
-    child.setRotation(child.parent.getRotation());
-    card.suitPips.hide();
-    card.rankPips.hide();
-    child.remove();
-    child.setAbsolutePosition(pos);
-    card.setBareImage();
-
-    globals.elements.clueLog.checkExpiry();
-};

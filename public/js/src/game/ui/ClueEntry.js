@@ -84,7 +84,7 @@ const ClueEntry = function ClueEntry(config) {
     this.neglist = config.neglist;
 
     // Add a mouseover highlighting effect
-    background.on('mouseover tap', () => {
+    background.on('mouseover', () => {
         globals.elements.clueLog.showMatches(null);
 
         background.setOpacity(0.4);
@@ -115,39 +115,6 @@ const ClueEntry = function ClueEntry(config) {
 };
 
 graphics.Util.extend(ClueEntry, graphics.Group);
-
-ClueEntry.prototype.checkValid = (c) => {
-    if (!globals.deck[c]) {
-        return false;
-    }
-
-    if (!globals.deck[c].parent) {
-        return false;
-    }
-
-    return globals.deck[c].isInPlayerHand();
-};
-
-// Returns number of expirations, either 0 or 1 depending on whether it expired
-ClueEntry.prototype.checkExpiry = function checkExpiry() {
-    for (let i = 0; i < this.list.length; i++) {
-        if (this.checkValid(this.list[i])) {
-            return 0;
-        }
-    }
-
-    for (let i = 0; i < this.neglist.length; i++) {
-        if (this.checkValid(this.neglist[i])) {
-            return 0;
-        }
-    }
-
-    this.off('mouseover tap');
-    this.off('mouseout');
-
-    this.remove();
-    return 1;
-};
 
 ClueEntry.prototype.showMatch = function showMatch(target) {
     this.background.setOpacity(0.1);

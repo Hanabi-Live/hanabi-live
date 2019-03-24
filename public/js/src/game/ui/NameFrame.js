@@ -122,16 +122,6 @@ const NameFrame = function NameFrame(config) {
         const tooltip = $(`#tooltip-player-${this.playerNum}`);
         tooltip.tooltipster('close');
     });
-
-    /*
-    // Define a pulsating animation that represents that it is this player's turn
-    this.tween = new graphics.Tween({
-        node: this.name,
-        x: 280,
-        easing: graphics.Easings.Linear,
-        duration: 2,
-    });
-    */
 };
 
 graphics.Util.extend(NameFrame, graphics.Group);

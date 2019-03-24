@@ -44,7 +44,7 @@ CREATE TABLE user_stats (
     average_score    FLOAT  NOT NULL  DEFAULT 0,
     strikeout_rate   FLOAT  NOT NULL  DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-    /* If the user is deleted, automatically delete all of their stats */
+    /* If the user is deleted, automatically delete all of the rows */
 );
 CREATE INDEX user_stats_index_user_id ON user_stats (user_id);
 
@@ -87,7 +87,7 @@ CREATE TABLE game_participants (
     character_metadata    INT              NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
-    /* If the game is deleted, automatically delete all of the game participant rows */
+    /* If the game is deleted, automatically delete all of the rows */
 );
 CREATE INDEX game_participants_index_user_id ON game_participants (user_id);
 CREATE INDEX game_participants_index_game_id ON game_participants (game_id);
@@ -99,9 +99,38 @@ CREATE TABLE game_actions (
     game_id  INT            NOT NULL,
     action   VARCHAR(1500)  NOT NULL, /* JSON */
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
-    /* If the game is deleted, automatically delete all of the game action rows */
+    /* If the game is deleted, automatically delete all of the rows */
 );
 CREATE INDEX game_actions_index_game_id ON game_actions (game_id);
+
+/* Eventually this table will replace the "game_actions" table */
+DROP TABLE IF EXISTS game_clues;
+CREATE TABLE game_clues (
+    id       INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    /* PRIMARY KEY automatically creates a UNIQUE constraint */
+    game_id  INT      NOT NULL,
+    giver    TINYINT  NOT NULL, /* The index of the player that performed the clue */
+    target   TINYINT  NOT NULL, /* The index of the player that received the clue */
+    type     TINYINT  NOT NULL, /* 0 - number, 1 - color */
+    value    TINYINT  NOT NULL, /* 1 if 1, 2 if 2, etc., or 1 if blue, 2 if etc. */
+    FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
+    /* If the game is deleted, automatically delete all of the rows */
+);
+CREATE INDEX game_clues_index_game_id ON game_clues (game_id);
+
+/* Eventually this table will replace the "game_actions" table */
+DROP TABLE IF EXISTS game_plays;
+CREATE TABLE game_plays ( /* This include both playing a card and discarding a card */
+    id         INT      NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    /* PRIMARY KEY automatically creates a UNIQUE constraint */
+    game_id    INT      NOT NULL,
+    play_type  TINYINT  NOT NULL, /* 0 - play, 2 - discard, 3 - misplay */
+    index      TINYINT  NOT NULL, /* The index of the player that did the action */
+    order      TINYINT  NOT NULL, /* The order of the card that was played/discarded or -1 if a deck-play*/
+    FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
+    /* If the game is deleted, automatically delete all of the rows */
+);
+CREATE INDEX game_plays_index_game_id ON game_plays (game_id);
 
 DROP TABLE IF EXISTS chat_log;
 CREATE TABLE chat_log (
@@ -128,7 +157,7 @@ CREATE TABLE banned_ips (
     datetime_banned    TIMESTAMP      NOT NULL  DEFAULT NOW(),
 
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
-    /* If the user is deleted, automatically delete the banned_ips entry */
+    /* If the user is deleted, automatically delete all of the rows */
     FOREIGN KEY(admin_responsible) REFERENCES users(id)
 );
 

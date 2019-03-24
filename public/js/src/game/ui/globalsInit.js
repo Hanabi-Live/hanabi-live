@@ -93,10 +93,10 @@ module.exports = () => {
         // The main screen
         stageFade: null,
         playArea: null,
-        playStacks: new Map(),
+        playStacks: new Map(), // Keys are Suits, values are CardStacks
         suitLabelTexts: [],
         discardArea: null,
-        discardStacks: new Map(),
+        discardStacks: new Map(), // Keys are Suits, values are CardStacks
         playerHands: [], // Contains CardLayouts
         nameFrames: [],
         messagePrompt: null, // The truncated action log
@@ -186,8 +186,8 @@ module.exports = () => {
     // Miscellaneous
     globals.animateFast = true;
     globals.savedAction = null; // Used to save new actions when in an in-game replay
-    globals.postAnimationLayout = null;
     // A function called after an action from the server moves cards
+    globals.postAnimationLayout = null;
     globals.lastAction = null; // Used when rebuilding the game state
     globals.accidentalClueTimer = Date.now();
     // Used to prevent giving an accidental clue after clicking the "Exit Replay" button

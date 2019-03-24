@@ -67,6 +67,7 @@ CardStack.prototype.doLayout = function doLayout() {
             hideUnder();
         } else {
             // Animate the card leaving the hand to the play stacks
+            // (tweening from the hand to the discard pile is handled in "CardLayout.js")
             const card = node.children[0];
             card.tweening = true;
             node.tween = new graphics.Tween({

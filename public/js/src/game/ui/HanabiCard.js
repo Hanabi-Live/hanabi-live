@@ -4,6 +4,7 @@
 
 // Imports
 const constants = require('../../constants');
+const convert = require('./convert');
 const drawCards = require('./drawCards');
 const globals = require('./globals');
 const graphics = require('./graphics');
@@ -1106,6 +1107,43 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight(event) {
     ) {
         this.setNote('cm');
     }
+};
+
+HanabiCard.prototype.reveal = function reveal(data) {
+    // Local variables
+    const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
+
+    // Hide any existing arrows on all cards
+    globals.lobby.ui.showClueMatch(-1);
+
+    // Unflip the arrow, if it is flipped
+    this.initArrowLocation();
+
+    // Keep track of what this card is for the purposes of Empathy in ongoing-games
+    const learnedCard = globals.learnedCards[data.which.order];
+    learnedCard.suit = suit;
+    learnedCard.rank = data.which.rank;
+    learnedCard.possibleSuits = [suit];
+    learnedCard.possibleRanks = [data.which.rank];
+    learnedCard.revealed = true;
+
+    // Set the true suit/rank on the card and redraw it
+    this.showOnlyLearned = false;
+    this.trueSuit = suit;
+    this.trueRank = data.which.rank;
+    this.suitPips.hide();
+    this.rankPips.hide();
+    this.setBareImage();
+};
+
+HanabiCard.prototype.removeFromParent = function removeFromParent() {
+    // Remove the card from the player's hand in preparation of adding it to either
+    // the play stacks or the discard pile
+    const layoutChild = this.parent;
+    const pos = layoutChild.getAbsolutePosition();
+    layoutChild.setRotation(layoutChild.parent.getRotation());
+    layoutChild.remove();
+    layoutChild.setAbsolutePosition(pos);
 };
 
 HanabiCard.prototype.animateToPlayStacks = function animateToPlayStacks() {
