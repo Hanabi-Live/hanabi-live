@@ -20,6 +20,18 @@ $(document).ready(() => {
         const room = input === 'lobby-chat-input' ? 'lobby' : 'game';
         $(`#${input}`).on('keypress', keypress(room));
     }
+
+    // Ensure that there are no overlapping emotes
+    const emoteMap = {};
+    for (const category of Object.keys(emoteCategories)) {
+        for (const emote of emoteCategories[category]) {
+            if (emoteMap[emote]) {
+                console.error('Duplicate emote found:', emote);
+            } else {
+                emoteMap[emote] = true;
+            }
+        }
+    }
 });
 
 const keypress = room => function keypressFunction(event) {
