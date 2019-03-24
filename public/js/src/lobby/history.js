@@ -105,7 +105,7 @@ exports.draw = () => {
     }
 
     // Don't show the "Show More History" if we have 10 or less games played
-    if (ids.length <= 10) {
+    if (globals.totalGames <= 10) {
         $('#lobby-history-show-more').hide();
     } else {
         $('#lobby-history-show-more').show();
