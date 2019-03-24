@@ -46,6 +46,7 @@ module.exports = () => {
     // Game state variables
     globals.deck = [];
     globals.deckSize = 0;
+    globals.cardList = [];
     globals.turn = 0;
     globals.currentPlayerIndex = 0;
     globals.endTurn = null; // Set when the final card is drawn

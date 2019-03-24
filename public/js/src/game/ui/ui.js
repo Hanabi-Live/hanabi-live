@@ -135,6 +135,41 @@ HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
     globals.lobby.conn.send('ready');
 };
 
+HanabiUI.prototype.initCardList = function initCardList() {
+    for (const suit of globals.variant.suits) {
+        if (globals.variant.name.startsWith('Up or Down')) {
+            globals.cardList.push({
+                suit,
+                rank: 0,
+            });
+        }
+        for (let rank = 1; rank <= 5; rank++) {
+            // In a normal suit of Hanabi,
+            // there are three 1's, two 2's, two 3's, two 4's, and one five
+            let amountToAdd = 2;
+            if (rank === 1) {
+                amountToAdd = 3;
+                if (globals.variant.name.startsWith('Up or Down')) {
+                    amountToAdd = 1;
+                }
+            } else if (rank === 5) {
+                amountToAdd = 1;
+            }
+            if (suit.oneOfEach) {
+                amountToAdd = 1;
+            }
+
+            for (let i = 0; i < amountToAdd; i++) {
+                // Add the card to the deck
+                globals.cardList.push({
+                    suit,
+                    rank,
+                });
+            }
+        }
+    }
+};
+
 HanabiUI.prototype.endTurn = function endTurn(action) {
     if (globals.hypothetical) {
         hypothetical.send(action);

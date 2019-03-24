@@ -37,7 +37,6 @@ commands.clue = (data) => {
     }
 
     const neglist = [];
-
     for (let i = 0; i < globals.elements.playerHands[data.target].children.length; i++) {
         const child = globals.elements.playerHands[data.target].children[i];
 

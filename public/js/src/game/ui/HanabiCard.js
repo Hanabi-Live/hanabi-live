@@ -44,6 +44,8 @@ const HanabiCard = function HanabiCard(config) {
     // knowledge of the true suit and rank
     this.possibleSuits = config.suits;
     this.possibleRanks = config.ranks;
+    // We also keep track of every possible card that this could be
+    this.possibleCards = globals.cardList.slice();
     this.tweening = false;
     this.barename = undefined;
     this.showOnlyLearned = false;
@@ -697,6 +699,7 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
             );
         }
         removed.forEach(rank => findPipElement(rank).hide());
+
         // Don't mark unclued cards in your own hand with true suit or rank,
         // so that they don't display a non-gray card face
         if (this.possibleRanks.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
@@ -705,6 +708,7 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
             this.rankPips.hide();
             globals.learnedCards[this.order].rank = this.trueRank;
         }
+
         // Ensure that the learned card data is not overwritten with less recent information
         filterInPlace(
             globals.learnedCards[this.order].possibleRanks,
@@ -718,6 +722,7 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
             suit => suit.clueColors.includes(clueColor) === positive,
         );
         removed.forEach(suit => findPipElement(suit).hide());
+
         // Don't mark unclued cards in your own hand with true suit or rank,
         // so that they don't display a non-gray card face
         if (this.possibleSuits.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
@@ -726,6 +731,7 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
             this.suitPips.hide();
             globals.learnedCards[this.order].suit = this.trueSuit;
         }
+
         // Ensure that the learned card data is not overwritten with less recent information
         filterInPlace(
             globals.learnedCards[this.order].possibleSuits,
@@ -733,6 +739,18 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
         );
     } else {
         console.error('Clue type invalid.');
+    }
+
+    // Update the list of possible cards that this card could be
+    for (let i = this.possibleCards.length - 1; i >= 0; i--) {
+        const card = this.possibleCards[i];
+        if (
+            !this.possibleRanks.includes(card.rank)
+            || !this.possibleSuits.includes(card.suit)
+        ) {
+            this.possibleCards.splice(i, 1);
+            continue;
+        }
     }
 };
 
@@ -1201,6 +1219,23 @@ HanabiCard.prototype.isCritical = function isCritical() {
 
     const num = getSpecificCardNum(this.trueSuit, this.trueRank);
     return num.total === num.discarded + 1;
+};
+
+HanabiCard.prototype.isPotentiallyPlayable = function isPotentiallyPlayable() {
+    // Don't bother calculating this for Up or Down variants
+    if (globals.variant.name.startsWith('Up or Down')) {
+        return true;
+    }
+
+    let potentiallyPlayable = false;
+    for (const card of this.possibleCards) {
+        const nextRankNeeded = globals.elements.playStacks.get(card.suit).children.length + 1;
+        if (card.rank === nextRankNeeded) {
+            potentiallyPlayable = true;
+            break;
+        }
+    }
+    return potentiallyPlayable;
 };
 
 module.exports = HanabiCard;

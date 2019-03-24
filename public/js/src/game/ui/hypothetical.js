@@ -52,7 +52,6 @@ exports.send = (action) => {
 
     if (type === 'clue') {
         // Clue
-        console.log(action, 'XXXXXXXXXX');
         hypoAction({
             type,
             clue: null,

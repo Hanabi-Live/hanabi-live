@@ -69,7 +69,6 @@ LayoutChild.prototype.checkSetDraggable = function checkSetDraggable() {
 
 LayoutChild.prototype.dragendPlay = function dragendPlay() {
     const pos = this.getAbsolutePosition();
-
     pos.x += this.getWidth() * this.getScaleX() / 2;
     pos.y += this.getHeight() * this.getScaleY() / 2;
 
@@ -79,6 +78,26 @@ LayoutChild.prototype.dragendPlay = function dragendPlay() {
     } else if (globals.elements.discardArea.isOver(pos) && globals.clues !== 8) {
         draggedTo = 'discardArea';
     }
+
+    // Before we play a card,
+    // do a check to ensure that it is actually playable to prevent silly mistakes from players
+    // (but disable this in speedruns)
+    const card = this.children[0];
+    if (
+        draggedTo === 'playArea'
+        && !globals.speedrun
+        && !card.isPotentiallyPlayable()
+    ) {
+        const text = 'Are you sure you want to play this card?\n(It is known to be unplayable based on the positive and negative clues on the card.)';
+        if (!window.confirm(text)) {
+            draggedTo = null;
+        }
+    }
+
+    // We have to unregister the handler or else it will send multiple actions for one drag
+    this.setDraggable(false);
+    this.off('dragend.play');
+
     if (draggedTo === null) {
         // The card was dragged to an invalid location; tween it back to the hand
         this.parent.doLayout(); // The parent is a CardLayout
@@ -92,10 +111,6 @@ LayoutChild.prototype.dragendPlay = function dragendPlay() {
             target: this.children[0].order,
         },
     });
-    this.setDraggable(false);
-
-    // We have to unregister the handler or else it will send multiple actions for one drag
-    this.off('dragend.play');
 };
 
 module.exports = LayoutChild;

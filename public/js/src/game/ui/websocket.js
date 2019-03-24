@@ -221,6 +221,9 @@ commands.init = (data) => {
 
     // Begin to load all of the card images
     globals.ImageLoader.start();
+
+    // Construct a list of all of the cards in the deck
+    globals.lobby.ui.initCardList();
 };
 
 /*
