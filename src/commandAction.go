@@ -335,9 +335,7 @@ func commandAction(s *Session, d *CommandData) {
 	if g.EndCondition == endConditionInProgress {
 		log.Info(g.GetName() + " It is now " + np.Name + "'s turn.")
 	} else if g.EndCondition == endConditionNormal {
-		if g.Score == len(g.Stacks)*5 {
-			// The players got the theoretical perfect score for this variant
-			// (assuming that there are 5 points per stack)
+		if g.Score == g.GetPerfectScore() {
 			g.Sound = "finished_perfect"
 		} else {
 			// The players did got get a perfect score, but they did not strike out either

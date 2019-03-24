@@ -280,9 +280,7 @@ func (g *Game) AnnounceGameResult() {
 	}
 	msg += " " + g.Options.Variant + " "
 	msg += "game with a score of " + strconv.Itoa(g.Score) + ". "
-	if g.Score == len(g.Stacks)*5 {
-		// This is the theoretical perfect score for this variant
-		// (assuming that there are 5 points per stack)
+	if g.Score == g.GetPerfectScore() {
 		msg += pogChamp + " "
 	} else if g.Score == 0 {
 		msg += bibleThump + " "

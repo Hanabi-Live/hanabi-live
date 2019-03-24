@@ -142,6 +142,12 @@ func (g *Game) GetMaxScore() int {
 	return maxScore
 }
 
+// GetPerfectScore returns the theoretical perfect score for this variant
+// (which assumes that there are 5 points per stack)
+func (g *Game) GetPerfectScore() int {
+	return len(g.Stacks) * 5
+}
+
 // GetSpecificCardNum returns the total cards in the deck of the specified suit and rank
 // as well as how many of those that have been already discarded
 func (g *Game) GetSpecificCardNum(suit int, rank int) (int, int) {
@@ -221,6 +227,12 @@ func (g *Game) CheckEnd() bool {
 	if g.Score == g.MaxScore {
 		log.Info(g.GetName() + "Maximum score reached; ending the game.")
 		g.EndCondition = endConditionNormal
+		return true
+	}
+
+	// In a speedrun, check to see if a perfect score can still be achieved
+	if g.Options.Speedrun && g.GetMaxScore() < g.GetPerfectScore() {
+		g.EndCondition = endConditionSpeedrunFail
 		return true
 	}
 

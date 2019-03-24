@@ -47,6 +47,7 @@ const (
 	endConditionStrikeout
 	endConditionTimeout
 	endConditionAbandoned
+	endConditionSpeedrunFail
 )
 
 const (
