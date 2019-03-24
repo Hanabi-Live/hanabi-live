@@ -88,7 +88,6 @@ commands.discard = (data) => {
     card.reveal(data);
     card.removeFromParent();
 
-    /*
     if (!globals.animateFast && data.failed) {
         // If this card was misplayed,
         // it will automatically tween to the discard pile after reaching the play stacks
@@ -96,8 +95,6 @@ commands.discard = (data) => {
     } else {
         card.animateToDiscardPile();
     }
-    */
-    card.animateToDiscardPile();
 
     if (card.isClued()) {
         stats.updateEfficiency(-1);

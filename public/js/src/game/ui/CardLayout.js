@@ -109,7 +109,7 @@ CardLayout.prototype.doLayout = function doLayout() {
                 y: 0,
                 scaleX: scale,
                 scaleY: scale,
-                rotation: 0,
+                rotation: card.isMisplayed ? 360 : 0,
                 runonce: true,
                 onFinish: () => {
                     card.tweening = false;
@@ -117,12 +117,6 @@ CardLayout.prototype.doLayout = function doLayout() {
                     if (storedPostAnimationLayout !== null) {
                         storedPostAnimationLayout();
                     }
-
-                    /*
-                    if (card.isMisplayed) {
-                        card.
-                    }
-                    */
                 },
             }).play();
         }

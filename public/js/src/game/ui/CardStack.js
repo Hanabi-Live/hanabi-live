@@ -83,6 +83,11 @@ CardStack.prototype.doLayout = function doLayout() {
                     card.tweening = false;
                     node.checkSetDraggable();
                     hideUnder();
+
+                    if (card.isMisplayed) {
+                        card.removeFromParent();
+                        card.animateToDiscardPile();
+                    }
                 },
             }).play();
         }
