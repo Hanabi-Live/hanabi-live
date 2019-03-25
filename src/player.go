@@ -3,6 +3,7 @@ package main
 import (
 	"math"
 	"math/rand"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -103,6 +104,22 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	if len(cardsTouched) != 1 {
 		text += "s"
 	}
+
+	if strings.HasPrefix(g.Options.Variant, "Duck") {
+		// Create a list of slot numbers that correspond to the cards touched
+		slots := make([]string, 0)
+		for _, order := range cardsTouched {
+			slots = append(slots, strconv.Itoa(p2.GetCardSlot(order)))
+		}
+		sort.Strings(slots)
+
+		text = p.Name + " quacks at " + p2.Name + "'"
+		if !strings.HasSuffix(p2.Name, "s") {
+			text += "s"
+		}
+		text += " slot " + strings.Join(slots, "/")
+	}
+
 	g.Actions = append(g.Actions, ActionText{
 		Type: "text",
 		Text: text,

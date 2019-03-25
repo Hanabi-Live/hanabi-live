@@ -84,6 +84,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * If a stack was started with a 5 (or a START + 4), then it must be completed in reverse.
 * A clue token is given when a stack is completed, regardless of whether it is a normal stack or a reversed stack.
 
+### Duck
+
+* This variant was invented by Jack Gurev's group.
+* When players give a clue, they point at the cards clued, but say "quack" instead of a color or number.
+
 ### African American
 
 * This is a mix of several variants. The suits are as follows:

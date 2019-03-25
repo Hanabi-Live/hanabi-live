@@ -605,14 +605,20 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
             this.indicatorArrow.setFill(color);
 
             // Clue arrows are white with a circle that shows the type of clue given
-            this.indicatorCircle.show();
-            if (clue.type === constants.CLUE_TYPE.RANK) {
-                this.indicatorCircle.setFill('black');
-                this.indicatorText.setText(clue.value.toString());
-                this.indicatorText.show();
-            } else if (clue.type === constants.CLUE_TYPE.COLOR) {
-                this.indicatorCircle.setFill(clue.value.hexCode);
-                this.indicatorText.hide();
+            if (globals.variant.name.startsWith('Duck')) {
+                // Don't show the circle in Duck variants,
+                // since the clue types are supposed to be hidden
+                this.indicatorCircle.hide();
+            } else {
+                this.indicatorCircle.show();
+                if (clue.type === constants.CLUE_TYPE.RANK) {
+                    this.indicatorCircle.setFill('black');
+                    this.indicatorText.setText(clue.value.toString());
+                    this.indicatorText.show();
+                } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+                    this.indicatorCircle.setFill(clue.value.hexCode);
+                    this.indicatorText.hide();
+                }
             }
 
             if (this.indicatorTween) {
@@ -683,6 +689,10 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
 };
 
 HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
+    if (globals.variant.name.startsWith('Duck')) {
+        return;
+    }
+
     if (clue.type === CLUE_TYPE.RANK) {
         const clueRank = clue.value;
         const findPipElement = rank => this.rankPips.find(`.${rank}`);

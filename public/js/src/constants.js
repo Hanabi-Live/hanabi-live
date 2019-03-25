@@ -1190,6 +1190,50 @@ exports.VARIANTS = {
         true,
     ),
 
+    // Duck
+    'Duck (6 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.PURPLE,
+            exports.SUIT.ORANGE,
+        ],
+        baseColorsPlusOrange,
+        false,
+    ),
+    'Duck (5 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.PURPLE,
+        ],
+        baseColors,
+        false,
+    ),
+    'Duck (4 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+        ],
+        baseColors4,
+        false,
+    ),
+    'Duck (3 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+        ],
+        baseColors3,
+        false,
+    ),
+
     // Mixed
     'African American': new Variant(
         [

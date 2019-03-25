@@ -342,6 +342,32 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
 
+		// Duck
+		Variant{
+			Name:  "Duck (6 Suits)",
+			ID:    54,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
+		},
+		Variant{
+			Name:  "Duck (5 Suits)",
+			ID:    55,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Duck (4 Suits)",
+			ID:    56,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		Variant{
+			Name:  "Duck (3 Suits)",
+			ID:    57,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
+		},
+
 		// Mixed
 		Variant{
 			Name:  "African American",
