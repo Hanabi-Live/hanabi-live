@@ -10,9 +10,9 @@ const graphics = require('./graphics');
 const CardLayout = function CardLayout(config) {
     graphics.Group.call(this, config);
 
-    this.align = (config.align || 'left');
-    this.reverse = (config.reverse || false);
-    this.invertCards = (config.invertCards || false);
+    this.align = config.align || 'left';
+    this.reverse = config.reverse || false;
+    this.invertCards = config.invertCards || false;
     this.rotation = config.rotation;
 };
 
