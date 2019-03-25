@@ -35,7 +35,7 @@ CardStack.prototype.doLayout = function doLayout() {
     const hideUnder = () => {
         const n = this.children.length;
         for (let i = 0; i < n; i++) {
-            const node = this.children[i];
+            const node = this.children[i]; // This is a LayoutChild
 
             if (!node.tween) {
                 continue;
@@ -85,7 +85,9 @@ CardStack.prototype.doLayout = function doLayout() {
                     hideUnder();
 
                     if (card.isMisplayed) {
-                        card.removeFromParent();
+                        if (card.parent.parent) {
+                            card.removeFromParent();
+                        }
                         card.animateToDiscardPile();
                     }
                 },

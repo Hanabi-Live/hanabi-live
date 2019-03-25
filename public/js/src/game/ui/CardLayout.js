@@ -46,7 +46,7 @@ CardLayout.prototype.doLayout = function doLayout() {
     const n = this.children.length;
 
     for (let i = 0; i < n; i++) {
-        const node = this.children[i];
+        const node = this.children[i]; // This is a LayoutChild
 
         if (!node.getHeight()) {
             continue;
@@ -78,7 +78,7 @@ CardLayout.prototype.doLayout = function doLayout() {
     const storedPostAnimationLayout = globals.postAnimationLayout;
 
     for (let i = 0; i < n; i++) {
-        const node = this.children[i];
+        const node = this.children[i]; // This is a LayoutChild
 
         if (!node.getHeight()) {
             continue;
@@ -102,6 +102,10 @@ CardLayout.prototype.doLayout = function doLayout() {
             // (or from the hand to the discard pile)
             const card = node.children[0];
             card.tweening = true;
+            if (card.isMisplayed && card.turnDiscarded === globals.turn - 1) {
+                // If this card just misplayed, do a special animation
+                node.setRotation(360);
+            }
             node.tween = new graphics.Tween({
                 node,
                 duration: 0.5,
@@ -109,7 +113,7 @@ CardLayout.prototype.doLayout = function doLayout() {
                 y: 0,
                 scaleX: scale,
                 scaleY: scale,
-                rotation: card.isMisplayed ? 360 : 0,
+                rotation: 0,
                 runonce: true,
                 onFinish: () => {
                     card.setRotation(0);
