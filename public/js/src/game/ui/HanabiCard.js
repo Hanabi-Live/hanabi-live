@@ -1168,6 +1168,10 @@ HanabiCard.prototype.removeFromParent = function removeFromParent() {
     // Remove the card from the player's hand in preparation of adding it to either
     // the play stacks or the discard pile
     const layoutChild = this.parent;
+    if (!layoutChild.parent) {
+        // If a tween is destroyed in the middle of animation, it can cause a card to be orphaned
+        return;
+    }
     const pos = layoutChild.getAbsolutePosition();
     layoutChild.setRotation(layoutChild.parent.getRotation());
     layoutChild.remove();

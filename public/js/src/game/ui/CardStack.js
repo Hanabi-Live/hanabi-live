@@ -85,9 +85,7 @@ CardStack.prototype.doLayout = function doLayout() {
                     hideUnder();
 
                     if (card.isMisplayed) {
-                        if (card.parent.parent) {
-                            card.removeFromParent();
-                        }
+                        card.removeFromParent();
                         card.animateToDiscardPile();
                     }
                 },
