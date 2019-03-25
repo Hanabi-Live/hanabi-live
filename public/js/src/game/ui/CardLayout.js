@@ -112,6 +112,7 @@ CardLayout.prototype.doLayout = function doLayout() {
                 rotation: card.isMisplayed ? 360 : 0,
                 runonce: true,
                 onFinish: () => {
+                    card.setRotation(0);
                     card.tweening = false;
                     node.checkSetDraggable();
                     if (storedPostAnimationLayout !== null) {
