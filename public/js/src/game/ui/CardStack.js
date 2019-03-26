@@ -81,6 +81,9 @@ CardStack.prototype.doLayout = function doLayout() {
                 runonce: true,
                 onFinish: () => {
                     if (card.isMisplayed && card.parent.parent) {
+                        // If the card is misplayed, then tween it to the discard pile
+                        // We check for "card.parent.parent" to fix the bug where
+                        // the tween will still finish if the user goes backward in a replay
                         card.removeFromParent();
                         card.animateToDiscardPile();
                     } else {

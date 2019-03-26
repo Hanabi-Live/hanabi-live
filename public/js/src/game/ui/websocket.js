@@ -473,7 +473,7 @@ commands.replayTurn = (data) => {
 */
 commands.reveal = (data) => {
     const card = globals.deck[data.order];
-    card.reveal(data);
+    card.reveal(data.suit, data.rank);
 
     if (!globals.animateFast) {
         globals.layers.card.batchDraw();

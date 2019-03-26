@@ -102,7 +102,13 @@ CardLayout.prototype.doLayout = function doLayout() {
             // (or from the hand to the discard pile)
             const card = node.children[0];
             card.tweening = true;
-            if (card.isMisplayed && card.turnDiscarded === globals.turn - 1) {
+            let justDiscarded = card.turnDiscarded === globals.turn - 1;
+            if (globals.speedrun) {
+                // For speedruns, we get here a turn earlier,
+                // since it doesn't tween to the play stacks
+                justDiscarded = card.turnDiscarded === globals.turn;
+            }
+            if (card.isMisplayed && justDiscarded) {
                 // If this card just misplayed, do a special animation
                 node.setRotation(360);
             }

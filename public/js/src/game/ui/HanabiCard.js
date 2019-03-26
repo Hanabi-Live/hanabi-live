@@ -1141,10 +1141,9 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight(event) {
     }
 };
 
-HanabiCard.prototype.reveal = function reveal(data) {
+HanabiCard.prototype.reveal = function reveal(suit, rank) {
     // Local variables
-    const { order, rank } = data.which;
-    const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
+    suit = convert.msgSuitToSuit(suit, globals.variant);
 
     // Set the true suit/rank on the card
     this.showOnlyLearned = false;
@@ -1152,14 +1151,14 @@ HanabiCard.prototype.reveal = function reveal(data) {
     this.trueRank = rank;
 
     // Keep track of what this card is for the purposes of Empathy in ongoing-games
-    globals.learnedCards[order] = {
+    globals.learnedCards[this.order] = {
         suit,
         rank,
         possibleSuits: [suit],
         possibleRanks: [rank],
     };
 
-    globals.lobby.ui.removePossibilitiesFromCards(order, suit, rank);
+    globals.lobby.ui.removePossibilitiesFromCards(this.order, suit, rank);
 
     // Redraw the card
     this.suitPips.hide();

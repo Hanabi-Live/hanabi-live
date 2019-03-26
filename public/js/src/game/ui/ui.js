@@ -405,7 +405,7 @@ HanabiUI.prototype.removePossibilitiesFromCards = function removePossibilitiesFr
             for (let i = 0; i < card.possibleCards.length; i++) {
                 const possibleCard = card.possibleCards[i];
                 if (possibleCard.suit === suit && possibleCard.rank === rank) {
-                    this.possibleCards.splice(i, 1);
+                    card.possibleCards.splice(i, 1);
                     break;
                 }
             }

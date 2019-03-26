@@ -79,10 +79,10 @@ commands.discard = (data) => {
     card.turnDiscarded = globals.turn;
     card.isMisplayed = data.failed;
 
-    card.reveal(data);
+    card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();
 
-    if (!globals.animateFast && data.failed) {
+    if (data.failed && !globals.animateFast && !globals.speedrun) {
         // If this card was misplayed,
         // it will automatically tween to the discard pile after reaching the play stacks
         card.animateToPlayStacks();
@@ -171,7 +171,7 @@ commands.play = (data) => {
     card.isPlayed = true;
     card.turnPlayed = globals.turn;
 
-    card.reveal(data);
+    card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();
 
     card.animateToPlayStacks();
