@@ -29,6 +29,7 @@ type GameRow struct {
 	EndCondition         int
 	DatetimeCreated      time.Time
 	DatetimeStarted      time.Time
+	DatetimeFinished     time.Time
 }
 
 func (*Games) Insert(gameRow GameRow) (int, error) {
@@ -51,8 +52,10 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			num_turns,
 			end_condition,
 			datetime_created,
-			datetime_started
+			datetime_started,
+			datetime_finished
 		) VALUES (
+			?,
 			?,
 			?,
 			?,
@@ -97,6 +100,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 		gameRow.EndCondition,
 		gameRow.DatetimeCreated,
 		gameRow.DatetimeStarted,
+		gameRow.DatetimeFinished,
 	); err != nil {
 		return -1, err
 	} else {
@@ -469,4 +473,22 @@ func (*Games) GetNotes(databaseID int) ([]PlayerNote, error) {
 	}
 
 	return notes, nil
+}
+
+func (*Games) GetFastestTime(variant int, numPlayers int) (int, error) {
+	score := 30
+	if variant == 0 {
+		score = 25
+	}
+
+	var seconds int
+	err := db.QueryRow(`
+		SELECT TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished) AS datetime_elapsed
+		FROM games
+		WHERE variant = ?
+			AND num_players = ?
+			AND score = ?
+		ORDER BY datetime_elapsed
+	`, variant, numPlayers, score).Scan(&seconds)
+	return seconds, err
 }

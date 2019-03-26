@@ -69,7 +69,7 @@ CREATE TABLE games (
     end_condition          INT           NOT NULL, /* 0 - in progress, 1 - normal, 2 - strikeout, 3 - timeout, 4 - abandoned */
     datetime_created       TIMESTAMP     NOT NULL,
     datetime_started       TIMESTAMP     NOT NULL,
-    datetime_finished      TIMESTAMP     NOT NULL  DEFAULT NOW(),
+    datetime_finished      TIMESTAMP     NOT NULL,
     FOREIGN KEY (owner) REFERENCES users (id)
 );
 CREATE INDEX games_index_num_players ON games (num_players);

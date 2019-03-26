@@ -88,6 +88,9 @@ func main() {
 	// Initialize chat commands
 	chatCommandInit()
 
+	// Load the current speedrun records
+	speedrunInit()
+
 	// Initialize an HTTP router using the Gin framework (in "http.go")
 	// (the "ListenAndServe" functions located inside here are blocking)
 	httpInit()

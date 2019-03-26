@@ -16,6 +16,7 @@ func (g *Game) End() {
 	}
 	log.Info(g.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
+	// There will be no times associated with a JSON game, so don't bother with the rest of the code
 	if g.NoDatabase {
 		return
 	}
@@ -47,6 +48,47 @@ func (g *Game) End() {
 	})
 	g.NotifyAction()
 	log.Info(g.GetName() + text)
+
+	// In speedruns, send a text message to show how close to the record they got
+	if g.Options.Speedrun &&
+		len(g.Players) != 6 && // 6-player games are not official
+		stringInSlice(g.Options.Variant, officialSpeedrunVariants) &&
+		g.Score == g.GetPerfectScore() {
+
+		seconds := int(totalTime.Seconds())
+		fastestTime := fastestTimes[g.Options.Variant][len(g.Players)]
+		var text string
+		if seconds < fastestTime {
+			// Update the new fastest time
+			fastestTimes[g.Options.Variant][len(g.Players)] = seconds
+
+			g.Sound = "new_record"
+			g.NotifySound()
+
+			diff := fastestTime - seconds
+			text = "You beat the best time by " + strconv.Itoa(diff) + " seconds!"
+			g.Actions = append(g.Actions, ActionText{
+				Type: "text",
+				Text: text,
+			})
+			g.NotifyAction()
+			log.Info(g.GetName() + text)
+
+			text = "Congradulations on a new world record!"
+
+		} else if seconds == fastestTime {
+			text = "You tied the world record!"
+		} else {
+			diff := seconds - fastestTime
+			text = "You were slower than the world record by " + strconv.Itoa(diff) + " seconds."
+		}
+		g.Actions = append(g.Actions, ActionText{
+			Type: "text",
+			Text: text,
+		})
+		g.NotifyAction()
+		log.Info(g.GetName() + text)
+	}
 
 	// Advance a turn so that the finishing times are separated from the final action of the game
 	g.Turn++
@@ -159,10 +201,11 @@ func (g *Game) WriteDatabase() error {
 		CharacterAssignments: g.Options.CharacterAssignments,
 		Seed:                 g.Seed,
 		Score:                g.Score,
+		NumTurns:             g.Turn,
 		EndCondition:         g.EndCondition,
 		DatetimeCreated:      g.DatetimeCreated,
 		DatetimeStarted:      g.DatetimeStarted,
-		NumTurns:             g.Turn,
+		DatetimeFinished:     g.DatetimeFinished,
 	}
 	if v, err := db.Games.Insert(row); err != nil {
 		log.Error("Failed to insert the game row:", err)
