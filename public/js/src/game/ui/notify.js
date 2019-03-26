@@ -56,6 +56,9 @@ commands.clue = (data) => {
     } else {
         clueName = clue.value.name;
     }
+    if (globals.variant.name.startsWith('Duck')) {
+        clueName = 'Quack';
+    }
 
     const entry = new ClueEntry({
         width: globals.elements.clueLog.getWidth(),
