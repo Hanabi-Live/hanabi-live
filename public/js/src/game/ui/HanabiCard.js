@@ -508,18 +508,18 @@ HanabiCard.prototype.initEmpathy = function initEmpathy() {
     // Click on a teammate's card to have the card show as it would to that teammate
     // (or, in a replay, show your own card as it appeared at that moment in time)
     // Pips visibility state is tracked so it can be restored for your own hand during a game
-    const toggleHolderViewOnCard = (c, enabled, togglePips) => {
+    const toggleHolderViewOnCard = (card, enabled, togglePips) => {
         const toggledPips = [0, 0];
-        if (c.rankPips.visible() !== enabled && togglePips[0] === 1) {
-            c.rankPips.setVisible(enabled);
+        if (card.rankPips.visible() !== enabled && togglePips[0] === 1) {
+            card.rankPips.setVisible(enabled);
             toggledPips[0] = 1;
         }
-        if (c.suitPips.visible() !== enabled && togglePips[1] === 1) {
-            c.suitPips.setVisible(enabled);
+        if (card.suitPips.visible() !== enabled && togglePips[1] === 1) {
+            card.suitPips.setVisible(enabled);
             toggledPips[1] = 1;
         }
-        c.showOnlyLearned = enabled;
-        c.setBareImage();
+        card.showOnlyLearned = enabled;
+        card.setBareImage();
         return toggledPips;
     };
 
@@ -1141,27 +1141,29 @@ HanabiCard.prototype.reveal = function reveal(data) {
     // Local variables
     const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
 
+    // Set the true suit/rank on the card
+    this.showOnlyLearned = false;
+    this.trueSuit = suit;
+    this.trueRank = data.which.rank;
+
+    // Keep track of what this card is for the purposes of Empathy in ongoing-games
+    globals.learnedCards[data.which.order] = {
+        suit,
+        rank: data.which.rank,
+        possibleSuits: [suit],
+        possibleRanks: [data.which.rank],
+    };
+
+    // Redraw the card
+    this.suitPips.hide();
+    this.rankPips.hide();
+    this.setBareImage();
+
     // Hide any existing arrows on all cards
     globals.lobby.ui.showClueMatch(-1);
 
     // Unflip the arrow, if it is flipped
     this.initArrowLocation();
-
-    // Keep track of what this card is for the purposes of Empathy in ongoing-games
-    const learnedCard = globals.learnedCards[data.which.order];
-    learnedCard.suit = suit;
-    learnedCard.rank = data.which.rank;
-    learnedCard.possibleSuits = [suit];
-    learnedCard.possibleRanks = [data.which.rank];
-    learnedCard.revealed = true;
-
-    // Set the true suit/rank on the card and redraw it
-    this.showOnlyLearned = false;
-    this.trueSuit = suit;
-    this.trueRank = data.which.rank;
-    this.suitPips.hide();
-    this.rankPips.hide();
-    this.setBareImage();
 };
 
 HanabiCard.prototype.removeFromParent = function removeFromParent() {

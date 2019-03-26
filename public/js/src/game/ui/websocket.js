@@ -4,7 +4,6 @@
 
 // Imports
 const constants = require('../../constants');
-const convert = require('./convert');
 const globals = require('./globals');
 const hypothetical = require('./hypothetical');
 const notes = require('./notes');
@@ -473,24 +472,8 @@ commands.replayTurn = (data) => {
     }
 */
 commands.reveal = (data) => {
-    // Local variables
-    const suit = convert.msgSuitToSuit(data.suit, globals.variant);
     const card = globals.deck[data.order];
-
-    const learnedCard = globals.learnedCards[data.order];
-    learnedCard.suit = suit;
-    learnedCard.rank = data.rank;
-    learnedCard.possibleSuits = [suit];
-    learnedCard.possibleRanks = [data.rank];
-    learnedCard.revealed = true;
-
-    card.showOnlyLearned = false;
-    card.trueSuit = suit;
-    card.trueRank = data.rank;
-    card.setBareImage();
-
-    card.suitPips.hide();
-    card.rankPips.hide();
+    card.reveal(data);
 
     if (!globals.animateFast) {
         globals.layers.card.batchDraw();
