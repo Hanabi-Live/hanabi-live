@@ -17,6 +17,10 @@ func restart(s *Session, d *CommandData) {
 }
 
 func restart2() {
+	execute("build_client.sh", projectPath)
+	for _, s := range sessions {
+		s.Error("The server is going down for a scheduled restart. Please wait a few seconds and then refresh the page.")
+	}
 	execute("restart.sh", projectPath)
 }
 
