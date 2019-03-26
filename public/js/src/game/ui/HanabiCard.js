@@ -44,8 +44,8 @@ const HanabiCard = function HanabiCard(config) {
     // knowledge of the true suit and rank
     this.possibleSuits = config.suits;
     this.possibleRanks = config.ranks;
-    // We also keep track of every possible card that this could be
-    this.possibleCards = globals.cardList.slice();
+    // For cards in our hand, we also keep track of every possible card that it could be
+    this.possibleCards = this.holder === globals.playerUs ? globals.cardList.slice() : [];
     this.tweening = false;
     this.barename = undefined;
     this.showOnlyLearned = false;
@@ -752,14 +752,18 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
     }
 
     // Update the list of possible cards that this card could be
-    for (let i = this.possibleCards.length - 1; i >= 0; i--) {
-        const card = this.possibleCards[i];
-        if (
-            !this.possibleRanks.includes(card.rank)
-            || !this.possibleSuits.includes(card.suit)
-        ) {
-            this.possibleCards.splice(i, 1);
-            continue;
+    if (this.holder === globals.playerUs) {
+        // We go in reverse to avoid splicing bugs:
+        // https://stackoverflow.com/questions/16217333/remove-items-from-array-with-splice-in-for-loop
+        for (let i = this.possibleCards.length - 1; i >= 0; i--) {
+            const card = this.possibleCards[i];
+            if (
+                !this.possibleRanks.includes(card.rank)
+                || !this.possibleSuits.includes(card.suit)
+            ) {
+                this.possibleCards.splice(i, 1);
+                continue;
+            }
         }
     }
 };
@@ -1139,20 +1143,23 @@ HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight(event) {
 
 HanabiCard.prototype.reveal = function reveal(data) {
     // Local variables
+    const { order, rank } = data.which;
     const suit = convert.msgSuitToSuit(data.which.suit, globals.variant);
 
     // Set the true suit/rank on the card
     this.showOnlyLearned = false;
     this.trueSuit = suit;
-    this.trueRank = data.which.rank;
+    this.trueRank = rank;
 
     // Keep track of what this card is for the purposes of Empathy in ongoing-games
-    globals.learnedCards[data.which.order] = {
+    globals.learnedCards[order] = {
         suit,
-        rank: data.which.rank,
+        rank,
         possibleSuits: [suit],
-        possibleRanks: [data.which.rank],
+        possibleRanks: [rank],
     };
+
+    globals.lobby.ui.removePossibilitiesFromCards(order, suit, rank);
 
     // Redraw the card
     this.suitPips.hide();

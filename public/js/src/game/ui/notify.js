@@ -98,47 +98,59 @@ commands.discard = (data) => {
 
 // A player just drew a card from the deck
 commands.draw = (data) => {
+    // Local variables
+    const { order } = data;
+    // Suit and rank come from the server as -1 if the card is unknown
+    // (e.g. being drawn to the current player's hand)
+    // We want to convert this to just being undefined
+    let suit = data.suit === -1 ? undefined : data.suit;
+    const rank = data.rank === -1 ? undefined : data.rank;
+    // Suit comes from the server as an integer, so we also need to convert it to a Suit object
+    suit = convert.msgSuitToSuit(data.suit, globals.variant);
+
+    // Remove one card from the deck
     globals.deckSize -= 1;
     globals.elements.drawDeck.setCount(globals.deckSize);
 
-    if (data.suit === -1) {
-        delete data.suit;
-    }
-    if (data.rank === -1) {
-        delete data.rank;
-    }
-    const suit = convert.msgSuitToSuit(data.suit, globals.variant);
-    if (!globals.learnedCards[data.order]) {
-        globals.learnedCards[data.order] = {
+    // Keep track of which cards we have learned for the purposes of Empathy
+    // (this has to be done before the card is initialized)
+    if (!globals.learnedCards[order]) {
+        globals.learnedCards[order] = {
             possibleSuits: globals.variant.suits.slice(),
             possibleRanks: globals.variant.ranks.slice(),
         };
     }
-    globals.deck[data.order] = new HanabiCard({
+
+    // Create a new card
+    globals.deck[order] = new HanabiCard({
         suit,
-        rank: data.rank,
-        order: data.order,
+        rank,
+        order,
         suits: globals.variant.suits.slice(),
         ranks: globals.variant.ranks.slice(),
         holder: data.who,
     });
 
+    // Each card is contained within a LayoutChild
+    // Create a new LayoutChild, add the card, and position it over the deck
     const child = new LayoutChild();
-    child.add(globals.deck[data.order]);
-
+    child.add(globals.deck[order]);
     const pos = globals.elements.drawDeck.cardback.getAbsolutePosition();
-
     child.setAbsolutePosition(pos);
     child.setRotation(-globals.elements.playerHands[data.who].getRotation());
-
     const scale = globals.elements.drawDeck.cardback.getWidth() / constants.CARDW;
     child.setScale({
         x: scale,
         y: scale,
     });
 
+    // Add it to the player's hand (which will automatically tween the image)
     globals.elements.playerHands[data.who].add(child);
     globals.elements.playerHands[data.who].moveToTop();
+
+    if (suit && rank) {
+        globals.lobby.ui.removePossibilitiesFromCards(order, suit, rank);
+    }
 };
 
 // A new line of text has appeared in the action log

@@ -80,13 +80,13 @@ CardStack.prototype.doLayout = function doLayout() {
                 rotation: 0,
                 runonce: true,
                 onFinish: () => {
-                    card.tweening = false;
-                    node.checkSetDraggable();
-                    hideUnder();
-
-                    if (card.isMisplayed) {
+                    if (card.isMisplayed && card.parent.parent) {
                         card.removeFromParent();
                         card.animateToDiscardPile();
+                    } else {
+                        card.tweening = false;
+                        node.checkSetDraggable();
+                        hideUnder();
                     }
                 },
             }).play();
