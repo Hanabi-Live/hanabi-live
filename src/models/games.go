@@ -475,12 +475,7 @@ func (*Games) GetNotes(databaseID int) ([]PlayerNote, error) {
 	return notes, nil
 }
 
-func (*Games) GetFastestTime(variant int, numPlayers int) (int, error) {
-	score := 30
-	if variant == 0 {
-		score = 25
-	}
-
+func (*Games) GetFastestTime(variant int, numPlayers int, perfectScore int) (int, error) {
 	var seconds int
 	err := db.QueryRow(`
 		SELECT TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished) AS datetime_elapsed
@@ -489,6 +484,7 @@ func (*Games) GetFastestTime(variant int, numPlayers int) (int, error) {
 			AND num_players = ?
 			AND score = ?
 		ORDER BY datetime_elapsed
-	`, variant, numPlayers, score).Scan(&seconds)
+		LIMIT 1
+	`, variant, numPlayers, perfectScore).Scan(&seconds)
 	return seconds, err
 }
