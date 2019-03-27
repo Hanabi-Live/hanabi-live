@@ -191,6 +191,8 @@ HanabiCard.prototype.initPips = function initPips(config) {
 
     const { suits } = config;
     const nSuits = suits.length;
+    this.suitPipsMap = new Map();
+    this.suitPipsXMap = new Map();
     for (let i = 0; i < suits.length; i++) {
         const suit = suits[i];
 
@@ -221,7 +223,6 @@ HanabiCard.prototype.initPips = function initPips(config) {
             fill,
             stroke: 'black',
             strokeWidth: 5,
-            name: suit.name, // We set a name so that we can use "suitPips.find()" later on
             listening: false,
             sceneFunc: (ctx) => {
                 drawCards.drawSuitShape(suit, i)(ctx);
@@ -252,6 +253,7 @@ HanabiCard.prototype.initPips = function initPips(config) {
         }
         suitPip.rotation(0);
         this.suitPips.add(suitPip);
+        this.suitPipsMap.set(suit, suitPip);
 
         // Also create the X that will show when a certain suit can be ruled out
         const suitPipX = new graphics.Shape({
@@ -261,7 +263,6 @@ HanabiCard.prototype.initPips = function initPips(config) {
             offset,
             fill: 'black',
             stroke: 'black',
-            name: `${suit.name}-x`, // We set a name so that we can use "suitPips.find()" later on
             listening: false,
             opacity: 0.8,
             visible: false,
@@ -273,6 +274,7 @@ HanabiCard.prototype.initPips = function initPips(config) {
             },
         });
         this.suitPips.add(suitPipX);
+        this.suitPipsXMap.set(suit, suitPipX);
 
         // Reduce opacity of eliminated suits and outline remaining suits
         if (!globals.learnedCards[this.order].possibleSuits.includes(suit)) {
@@ -292,6 +294,8 @@ HanabiCard.prototype.initPips = function initPips(config) {
     });
     this.add(this.rankPips);
 
+    this.rankPipsMap = new Map();
+    this.rankPipsXMap = new Map();
     for (const rank of config.ranks) {
         const x = Math.floor(CARDW * (rank * 0.19 - 0.14));
         const y = 0;
@@ -302,11 +306,11 @@ HanabiCard.prototype.initPips = function initPips(config) {
             height: Math.floor(CARDH * 0.10),
             fill: 'black',
             stroke: 'black',
-            name: rank.toString(), // We set a name so that we can use "rankPips.find()" later on
             listening: false,
             cornerRadius: 0.02 * CARDH,
         });
         this.rankPips.add(rankPip);
+        this.rankPipsMap.set(rank, rankPip);
 
         // Also create the X that will show when a certain rank can be ruled out
         const rankPipX = new graphics.Shape({
@@ -315,7 +319,6 @@ HanabiCard.prototype.initPips = function initPips(config) {
             fill: '#e6e6e6',
             stroke: 'black',
             strokeWidth: 2,
-            name: `${rank}-x`, // We set a name so that we can use "rankPips.find()" later on
             listening: false,
             opacity: 0.8,
             visible: false,
@@ -327,6 +330,7 @@ HanabiCard.prototype.initPips = function initPips(config) {
             },
         });
         this.rankPips.add(rankPipX);
+        this.rankPipsXMap.set(rank, rankPipX);
 
         // Reduce opacity of eliminated ranks
         if (!globals.learnedCards[this.order].possibleRanks.includes(rank)) {
@@ -696,11 +700,11 @@ HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target
                 this.indicatorCircle.hide();
             } else {
                 this.indicatorCircle.show();
-                if (clue.type === constants.CLUE_TYPE.RANK) {
+                if (clue.type === CLUE_TYPE.RANK) {
                     this.indicatorCircle.setFill('black');
                     this.indicatorText.setText(clue.value.toString());
                     this.indicatorText.show();
-                } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+                } else if (clue.type === CLUE_TYPE.COLOR) {
                     this.indicatorCircle.setFill(clue.value.hexCode);
                     this.indicatorText.hide();
                 }
@@ -780,8 +784,6 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
 
     if (clue.type === CLUE_TYPE.RANK) {
         const clueRank = clue.value;
-        const findPipElement = rank => this.rankPips.find(`.${rank}`);
-        const findPipElementX = rank => this.rankPips.find(`.${rank}-x`);
         let removed;
         if (globals.variant.name.startsWith('Multi-Fives')) {
             removed = filterInPlace(
@@ -795,8 +797,8 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
             );
         }
         removed.forEach((rank) => {
-            findPipElement(rank).hide();
-            findPipElementX(rank).hide();
+            this.rankPipsMap.get(rank).hide();
+            this.rankPipsXMap.get(rank).hide();
         });
 
         if (this.possibleRanks.length === 1) {
@@ -805,7 +807,7 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
 
             // Don't hide the pips if the card is unclued
             if (!this.isInPlayerHand() || this.isClued()) {
-                findPipElement(this.trueRank).hide();
+                this.rankPipsMap.get(this.trueRank).hide();
                 this.rankPips.hide();
             }
         }
@@ -817,15 +819,13 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
         );
     } else if (clue.type === CLUE_TYPE.COLOR) {
         const clueColor = clue.value;
-        const findPipElement = suit => this.suitPips.find(`.${suit.name}`);
-        const findPipElementX = suit => this.suitPips.find(`.${suit.name}-x`);
         const removed = filterInPlace(
             this.possibleSuits,
             suit => suit.clueColors.includes(clueColor) === positive,
         );
         removed.forEach((suit) => {
-            findPipElement(suit).hide();
-            findPipElementX(suit).hide();
+            this.suitPipsMap.get(suit).hide();
+            this.suitPipsXMap.get(suit).hide();
         });
 
         if (this.possibleSuits.length === 1) {
@@ -834,7 +834,7 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
 
             // Don't hide the pips if the card is unclued
             if (!this.isInPlayerHand() || this.isClued()) {
-                findPipElement(this.trueSuit).hide();
+                this.suitPipsMap.get(this.trueSuit).hide();
                 this.suitPips.hide();
             }
         }
@@ -872,7 +872,7 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
 HanabiCard.prototype.checkPipPossibilities = function checkPipPossibilities() {
     for (const suit of globals.variant.suits) {
         // Get the corresponding pip
-        const suitPip = this.suitPips.find(`.${suit.name}`)[0];
+        const suitPip = this.suitPipsMap.get(suit);
         if (!suitPip.getVisible()) {
             continue;
         }
@@ -886,14 +886,14 @@ HanabiCard.prototype.checkPipPossibilities = function checkPipPossibilities() {
         }
         if (!stillPossible) {
             // All the cards of this suit are seen, so put an X over the suit pip
-            const x = this.suitPips.find(`.${suit.name}-x`)[0];
+            const x = this.suitPipsXMap.get(suit);
             x.setVisible(true);
         }
     }
 
     for (let rank = 1; rank <= 5; rank++) {
         // Get the corresponding pip
-        const rankPip = this.rankPips.find(`.${rank}`)[0];
+        const rankPip = this.rankPipsMap.get(rank);
         if (!rankPip.getVisible()) {
             continue;
         }
@@ -907,7 +907,7 @@ HanabiCard.prototype.checkPipPossibilities = function checkPipPossibilities() {
         }
         if (!stillPossible) {
             // All the cards of this rank are seen, so put an X over the rank pip
-            const x = this.rankPips.find(`.${rank}-x`)[0];
+            const x = this.rankPipsXMap.get(rank);
             x.setVisible(true);
         }
     }
