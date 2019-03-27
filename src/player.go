@@ -118,6 +118,9 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 			text += "s"
 		}
 		text += " slot " + strings.Join(slots, "/")
+
+		// Also play a custom sound effect
+		g.Sound = "quack"
 	}
 
 	g.Actions = append(g.Actions, ActionText{
