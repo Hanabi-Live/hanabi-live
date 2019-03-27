@@ -141,10 +141,34 @@ HanabiCard.prototype.refresh = function refresh() {
 
     this.initPossibilities();
     this.hideClues();
+    this.setBareImage();
+
+    // Reset all of the pips to their default state
+    if (this.suitPipsMap) {
+        for (const [, suitPip] of this.suitPipsMap) {
+            suitPip.show();
+        }
+    }
+    if (this.suitPipsXMap) {
+        for (const [, suitPipX] of this.suitPipsXMap) {
+            suitPipX.hide();
+        }
+    }
+    if (this.rankPipsMap) {
+        for (const [, rankPip] of this.rankPipsMap) {
+            rankPip.show();
+        }
+    }
+    if (this.rankPipsXMap) {
+        for (const [, rankPipX] of this.rankPipsXMap) {
+            rankPipX.hide();
+        }
+    }
+
+    // Hide the clue arrow
     if (this.indicatorGroup) {
         this.indicatorGroup.hide();
     }
-    this.setBareImage();
 };
 
 HanabiCard.prototype.setBareImage = function setBareImage() {
