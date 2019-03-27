@@ -88,7 +88,9 @@ LayoutChild.prototype.dragendPlay = function dragendPlay() {
         && !globals.speedrun
         && !card.isPotentiallyPlayable()
     ) {
-        const text = 'Are you sure you want to play this card?\n(It is known to be unplayable based on the positive and negative clues on the card.)';
+        let text = 'Are you sure you want to play this card?\n';
+        text += 'It is known to be unplayable based on the current information\n';
+        text += 'available to you. (e.g. positive clues, negative clues, card seen, etc.)';
         if (!window.confirm(text)) {
             draggedTo = null;
         }

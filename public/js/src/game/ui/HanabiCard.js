@@ -1408,14 +1408,9 @@ HanabiCard.prototype.isPotentiallyPlayable = function isPotentiallyPlayable() {
     for (const suit of globals.variant.suits) {
         const cardsPlayed = globals.elements.playStacks.get(suit).children.length;
         const nextRankNeeded = cardsPlayed + 1;
-        for (let rank = nextRankNeeded; rank <= 5; rank++) {
-            const count = this.possibleCards.get(`${suit.name}${rank}`);
-            if (count > 0) {
-                potentiallyPlayable = true;
-                break;
-            }
-        }
-        if (potentiallyPlayable) {
+        const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
+        if (count > 0) {
+            potentiallyPlayable = true;
             break;
         }
     }
