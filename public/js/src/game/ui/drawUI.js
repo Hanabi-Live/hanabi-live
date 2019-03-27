@@ -544,7 +544,6 @@ const drawDeck = () => {
     });
     globals.layers.UI2.add(globals.elements.gameIDLabel);
 
-    globals.deckSize = stats.getTotalCardsInTheDeck();
     globals.elements.drawDeck = new CardDeck({
         x: deckValues.x * winW,
         y: deckValues.y * winH,

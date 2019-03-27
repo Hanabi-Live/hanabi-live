@@ -93,7 +93,6 @@ const HanabiCard = function HanabiCard(config) {
     this.add(this.cluedBorder);
 
     // Initialize various elements/features of the card
-    this.refresh();
     this.initPips();
     this.initIndicatorArrow(config);
     this.initNote(config);
@@ -123,7 +122,7 @@ HanabiCard.prototype.refresh = function refresh() {
     this.possibleSuits = globals.variant.suits.slice();
     this.possibleRanks = globals.variant.ranks.slice();
     // Possible cards (based on both clues given and cards seen) are also tracked separately
-    this.possibleCards = globals.cardList.slice();
+    this.possibleCards = new Map(globals.cardMap); // Start by cloning the "globals.cardMap"
     this.tweening = false;
     this.showOnlyLearned = false;
     this.numPositiveClues = 0;
@@ -223,7 +222,7 @@ HanabiCard.prototype.initPips = function initPips() {
     });
     this.add(this.suitPips);
 
-    const suits = this.possibleSuits;
+    const { suits } = globals.variant;
     this.suitPipsMap = new Map();
     this.suitPipsXMap = new Map();
     for (let i = 0; i < suits.length; i++) {
@@ -322,7 +321,7 @@ HanabiCard.prototype.initPips = function initPips() {
 
     this.rankPipsMap = new Map();
     this.rankPipsXMap = new Map();
-    for (const rank of this.possibleRanks) {
+    for (const rank of globals.variant.ranks) {
         const x = Math.floor(CARDW * (rank * 0.19 - 0.14));
         const y = 0;
         const rankPip = new graphics.Rect({
@@ -361,9 +360,16 @@ HanabiCard.prototype.initPips = function initPips() {
 };
 
 HanabiCard.prototype.initPossibilities = function initPossibilities() {
+    // If this is the first time this function is called, there will be no cards in the deck
+    if (globals.deck.length === 0) {
+        return;
+    }
+
     // We want to remove all of the currently seen cards from the list of possibilities
-    for (const card of globals.deck) {
-        // We don't know what this card is yet
+    for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
+        const card = globals.deck[i];
+
+        // Don't do anything if we don't know what this card is yet
         if (!card.isRevealed()) {
             continue;
         }
@@ -381,7 +387,7 @@ HanabiCard.prototype.initPossibilities = function initPossibilities() {
             continue;
         }
 
-        this.removePossibility(card.trueSuit, card.trueRank);
+        this.removePossibility(card.trueSuit, card.trueRank, false);
     }
 };
 
@@ -802,8 +808,14 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
             );
         }
         removed.forEach((rank) => {
+            // Hide the rank pips
             this.rankPipsMap.get(rank).hide();
             this.rankPipsXMap.get(rank).hide();
+
+            // Remove any card possibilities for this rank
+            for (const suit of globals.variant.suits) {
+                this.removePossibility(suit, rank, true);
+            }
         });
 
         if (this.possibleRanks.length === 1) {
@@ -816,12 +828,6 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
                 this.rankPips.hide();
             }
         }
-
-        // Ensure that the learned card data is not overwritten with less recent information
-        filterInPlace(
-            globals.learnedCards[this.order].possibleRanks,
-            s => this.possibleRanks.includes(s),
-        );
     } else if (clue.type === CLUE_TYPE.COLOR) {
         const clueColor = clue.value;
         const removed = filterInPlace(
@@ -829,8 +835,14 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
             suit => suit.clueColors.includes(clueColor) === positive,
         );
         removed.forEach((suit) => {
+            // Hide the suit pips
             this.suitPipsMap.get(suit).hide();
             this.suitPipsXMap.get(suit).hide();
+
+            // Remove any card possibilities for this suit
+            for (const rank of globals.variant.ranks) {
+                this.removePossibility(suit, rank, true);
+            }
         });
 
         if (this.possibleSuits.length === 1) {
@@ -843,77 +855,54 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
                 this.suitPips.hide();
             }
         }
-
-        // Ensure that the learned card data is not overwritten with less recent information
-        filterInPlace(
-            globals.learnedCards[this.order].possibleSuits,
-            s => this.possibleSuits.includes(s),
-        );
     } else {
         console.error('Clue type invalid.');
     }
-
-    // Update the list of possible cards that this card could be
-    // We go in reverse to avoid splicing bugs:
-    // https://stackoverflow.com/questions/16217333/remove-items-from-array-with-splice-in-for-loop
-    for (let i = this.possibleCards.length - 1; i >= 0; i--) {
-        const card = this.possibleCards[i];
-
-        // This logic will work for both positive and negative clues
-        if (!this.possibleRanks.includes(card.rank) || !this.possibleSuits.includes(card.suit)) {
-            this.possibleCards.splice(i, 1);
-            continue;
-        }
-    }
-
-    // Since information was added to this card,
-    // we might have enough information to cross out some pips
-    if (!this.isRevealed()) {
-        this.checkPipPossibilities();
-    }
 };
 
-// Check to see if we can put an X over any of the shown pips
-HanabiCard.prototype.checkPipPossibilities = function checkPipPossibilities() {
-    for (const suit of globals.variant.suits) {
-        // Get the corresponding pip
-        const suitPip = this.suitPipsMap.get(suit);
-        if (!suitPip.getVisible()) {
-            continue;
-        }
-
-        let stillPossible = false;
-        for (const card of this.possibleCards) {
-            if (card.suit === suit) {
-                stillPossible = true;
-                break;
-            }
-        }
-        if (!stillPossible) {
-            // All the cards of this suit are seen, so put an X over the suit pip
-            const x = this.suitPipsXMap.get(suit);
-            x.setVisible(true);
+// Check to see if we can put an X over either this suit pip or this rank pip
+HanabiCard.prototype.checkPipPossibilities = function checkPipPossibilities(suit, rank) {
+    // First, check to see if there are any possibilities remaining for this suit
+    let suitPossible = false;
+    for (const rank2 of globals.variant.ranks) {
+        const count = this.possibleCards.get(`${suit.name}${rank2}`);
+        if (count > 0) {
+            suitPossible = true;
+            break;
         }
     }
-
-    for (let rank = 1; rank <= 5; rank++) {
-        // Get the corresponding pip
-        const rankPip = this.rankPipsMap.get(rank);
-        if (!rankPip.getVisible()) {
-            continue;
+    if (!suitPossible) {
+        // Do nothing if the normal pip is already hidden
+        const pip = this.suitPipsMap.get(suit);
+        if (!pip.getVisible()) {
+            return;
         }
 
-        let stillPossible = false;
-        for (const card of this.possibleCards) {
-            if (card.rank === rank) {
-                stillPossible = true;
-                break;
-            }
+        // All the cards of this suit are seen, so put an X over the suit pip
+        const x = this.suitPipsXMap.get(suit);
+        x.setVisible(true);
+    }
+
+    let rankPossible = false;
+    for (const suit2 of globals.variant.suits) {
+        const count = this.possibleCards.get(`${suit2.name}${rank}`);
+        if (count > 0) {
+            rankPossible = true;
+            break;
         }
-        if (!stillPossible) {
-            // All the cards of this rank are seen, so put an X over the rank pip
-            const x = this.rankPipsXMap.get(rank);
-            x.setVisible(true);
+    }
+    if (!rankPossible) {
+        // Do nothing if the normal pip is already hidden
+        const pip = this.rankPipsMap.get(rank);
+        if (!pip.getVisible()) {
+            return;
+        }
+
+        // All the cards of this rank are seen, so put an X over the rank pip
+        const x = this.rankPipsXMap.get(rank);
+        x.setVisible(true);
+        if (this.order === 21) {
+            console.log('SET VISIBLE', rank, 'ON TURN', globals.turn);
         }
     }
 };
@@ -1305,7 +1294,7 @@ HanabiCard.prototype.reveal = function reveal(suit, rank) {
                 // There is no need to update the card that is being revealed
                 continue;
             }
-            card.removePossibility(suit, rank);
+            card.removePossibility(suit, rank, false);
         }
     }
 
@@ -1315,13 +1304,10 @@ HanabiCard.prototype.reveal = function reveal(suit, rank) {
     this.trueRank = rank;
 
     // Keep track of what this card is
-    globals.learnedCards[this.order] = {
-        suit,
-        rank,
-        possibleSuits: [suit],
-        possibleRanks: [rank],
-        revealed: true,
-    };
+    const learnedCard = globals.learnedCards[this.order];
+    learnedCard.suit = suit;
+    learnedCard.rank = rank;
+    learnedCard.revealed = true;
 
     // Redraw the card
     this.suitPips.hide();
@@ -1419,32 +1405,35 @@ HanabiCard.prototype.isPotentiallyPlayable = function isPotentiallyPlayable() {
     }
 
     let potentiallyPlayable = false;
-    for (const card of this.possibleCards) {
-        const nextRankNeeded = globals.elements.playStacks.get(card.suit).children.length + 1;
-        if (card.rank === nextRankNeeded) {
-            potentiallyPlayable = true;
+    for (const suit of globals.variant.suits) {
+        const cardsPlayed = globals.elements.playStacks.get(suit).children.length;
+        const nextRankNeeded = cardsPlayed + 1;
+        for (let rank = nextRankNeeded; rank <= 5; rank++) {
+            const count = this.possibleCards.get(`${suit.name}${rank}`);
+            if (count > 0) {
+                potentiallyPlayable = true;
+                break;
+            }
+        }
+        if (potentiallyPlayable) {
             break;
         }
     }
+
     return potentiallyPlayable;
 };
 
-HanabiCard.prototype.removePossibility = function removePossibility(suit, rank) {
-    // Every card has a possibility list that contains each card in the game that it could be
+HanabiCard.prototype.removePossibility = function removePossibility(suit, rank, all) {
+    // Every card has a possibility map that maps card identities to count
     // Remove one possibility for this card
-    let removedSomething = false;
-    for (let i = 0; i < this.possibleCards.length; i++) {
-        const possibleCard = this.possibleCards[i];
-        if (possibleCard.suit === suit && possibleCard.rank === rank) {
-            removedSomething = true;
-            this.possibleCards.splice(i, 1);
-            break;
-        }
+    const mapIndex = `${suit.name}${rank}`;
+    const cardsLeft = this.possibleCards.get(mapIndex);
+    if (cardsLeft === 0) {
+        return;
     }
-
-    if (removedSomething) {
-        this.checkPipPossibilities();
-    }
+    const newValue = all ? 0 : cardsLeft - 1;
+    this.possibleCards.set(mapIndex, newValue);
+    this.checkPipPossibilities(suit, rank);
 };
 
 module.exports = HanabiCard;

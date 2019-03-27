@@ -149,6 +149,7 @@ const reset = () => {
         card.trueRank = null;
     }
     globals.deckSize = stats.getTotalCardsInTheDeck();
+    // "globals.indexOfLastDrawnCard" is set in every "draw" command
     // "globals.score", "globals.maxScore", and "globals.clues"
     // are set in every "status" command
     globals.cardsGotten = 0;

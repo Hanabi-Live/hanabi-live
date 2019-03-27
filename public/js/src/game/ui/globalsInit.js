@@ -45,14 +45,15 @@ module.exports = () => {
 
     // Game constants (set upon first initialization)
     globals.deck = []; // Contains HanabiCard objects in the order that they are dealt
-    globals.cardList = []; // Contains "simple" cards, e.g. "{ suit: 0, rank: 1 }"
+    globals.cardMap = new Map(); // Keys are e.g. "Blue1", values are the count of how many are left
     globals.deckOrder = null; // Sent when the game ends
 
     // Game state variables (reset when rewinding in a replay)
     globals.turn = 0;
     globals.currentPlayerIndex = 0;
     globals.endTurn = null; // Set when the final card is drawn
-    globals.deckSize = 0; // Set in the "drawUI.drawDeck()" function
+    globals.deckSize = 0; // Set in the "HanabiUI.initCards()" function
+    globals.indexOfLastDrawnCard = 0;
     globals.score = 0;
     globals.maxScore = 0;
     globals.clues = 0;

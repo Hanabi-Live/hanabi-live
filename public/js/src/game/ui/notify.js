@@ -117,6 +117,7 @@ commands.draw = (data) => {
 
     // Remove one card from the deck
     globals.deckSize -= 1;
+    globals.indexOfLastDrawnCard = order;
     globals.elements.drawDeck.setCount(globals.deckSize);
 
     // Keep track of which cards we have learned for the purposes of
@@ -174,7 +175,7 @@ commands.draw = (data) => {
             const hand = globals.elements.playerHands[i];
             for (const layoutChild of hand.children) {
                 const handCard = layoutChild.children[0];
-                handCard.removePossibility(suit, rank);
+                handCard.removePossibility(suit, rank, false);
             }
         }
     }

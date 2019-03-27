@@ -13,6 +13,7 @@ const Loader = require('./Loader');
 const keyboard = require('./keyboard');
 const notes = require('./notes');
 const notify = require('./notify');
+const stats = require('./stats');
 const timer = require('./timer');
 const websocket = require('./websocket');
 
@@ -128,7 +129,7 @@ HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
     drawCards.drawAll();
 
     // Construct a list of all of the cards in the deck
-    globals.lobby.ui.initCardList();
+    globals.lobby.ui.initCardMap();
 
     // Build all of the reusuable card objects
     globals.lobby.ui.initCards();
@@ -143,13 +144,11 @@ HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
     globals.lobby.conn.send('ready');
 };
 
-HanabiUI.prototype.initCardList = function initCardList() {
+HanabiUI.prototype.initCardMap = function initCardMap() {
     for (const suit of globals.variant.suits) {
         if (globals.variant.name.startsWith('Up or Down')) {
-            globals.cardList.push({
-                suit,
-                rank: 0,
-            });
+            // 6 is an unknown rank, so we use 7 to represent a "START" card
+            globals.cardMap.set(`${suit.name}7`, 1);
         }
         for (let rank = 1; rank <= 5; rank++) {
             // In a normal suit of Hanabi,
@@ -167,23 +166,16 @@ HanabiUI.prototype.initCardList = function initCardList() {
                 amountToAdd = 1;
             }
 
-            for (let i = 0; i < amountToAdd; i++) {
-                // Add the card to the deck
-                globals.cardList.push({
-                    suit,
-                    rank,
-                });
-            }
+            globals.cardMap.set(`${suit.name}${rank}`, amountToAdd);
         }
     }
 };
 
 HanabiUI.prototype.initCards = function initCards() {
-    for (let order = 0; order < globals.cardList.length; order++) {
+    globals.deckSize = stats.getTotalCardsInTheDeck();
+    for (let order = 0; order < globals.deckSize; order++) {
         // First, created the "learned" card
         globals.learnedCards.push({
-            possibleSuits: globals.variant.suits.slice(),
-            possibleRanks: globals.variant.ranks.slice(),
             revealed: false,
         });
 
