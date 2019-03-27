@@ -328,7 +328,7 @@ HanabiCard.prototype.initPips = function initPips(config) {
         });
         this.rankPips.add(rankPipX);
 
-        // Reduce opacity of eliminated suits and outline remaining suits
+        // Reduce opacity of eliminated ranks
         if (!globals.learnedCards[this.order].possibleRanks.includes(rank)) {
             rankPip.setOpacity(0.3);
             rankPipX.setOpacity(0.1);
