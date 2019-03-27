@@ -30,6 +30,11 @@ commands.clue = (data) => {
             stats.updateEfficiency(0);
         }
         card.numPositiveClues += 1;
+        if (clue.type === constants.CLUE_TYPE.RANK) {
+            card.hasPositiveRankClue = true;
+        } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+            card.hasPositiveColorClue = true;
+        }
         card.setIndicator(true, data.giver, data.target, clue);
         card.cluedBorder.show();
         card.applyClue(clue, true);
@@ -110,6 +115,7 @@ commands.draw = (data) => {
     const rank = data.rank === -1 ? undefined : data.rank;
     // Suit comes from the server as an integer, so we also need to convert it to a Suit object
     suit = convert.msgSuitToSuit(data.suit, globals.variant);
+    const holder = data.who;
 
     // Remove one card from the deck
     globals.deckSize -= 1;
@@ -121,6 +127,7 @@ commands.draw = (data) => {
         globals.learnedCards[order] = {
             possibleSuits: globals.variant.suits.slice(),
             possibleRanks: globals.variant.ranks.slice(),
+            revealed: suit && rank,
         };
     }
 
@@ -131,7 +138,7 @@ commands.draw = (data) => {
         order,
         suits: globals.variant.suits.slice(),
         ranks: globals.variant.ranks.slice(),
-        holder: data.who,
+        holder,
     });
 
     // Each card is contained within a LayoutChild
@@ -140,19 +147,32 @@ commands.draw = (data) => {
     child.add(globals.deck[order]);
     const pos = globals.elements.drawDeck.cardback.getAbsolutePosition();
     child.setAbsolutePosition(pos);
-    child.setRotation(-globals.elements.playerHands[data.who].getRotation());
+    child.setRotation(-globals.elements.playerHands[holder].getRotation());
     const scale = globals.elements.drawDeck.cardback.getWidth() / constants.CARDW;
     child.setScale({
         x: scale,
         y: scale,
     });
 
-    // Add it to the player's hand (which will automatically tween the image)
-    globals.elements.playerHands[data.who].add(child);
-    globals.elements.playerHands[data.who].moveToTop();
+    // Add it to the player's hand (which will automatically tween the card)
+    globals.elements.playerHands[holder].add(child);
+    globals.elements.playerHands[holder].moveToTop();
 
+    // If this card is known,
+    // then remove it from the card possibilities for the players who see this card
     if (suit && rank) {
-        globals.lobby.ui.removePossibilitiesFromCards(order, suit, rank);
+        for (let i = 0; i < globals.elements.playerHands.length; i++) {
+            if (i === holder) {
+                // We can't update the player who drew this card,
+                // because they do not know what it is yet
+                continue;
+            }
+            const hand = globals.elements.playerHands[i];
+            for (const layoutChild of hand.children) {
+                const card = layoutChild.children[0];
+                card.removePossibility(suit, rank);
+            }
+        }
     }
 };
 

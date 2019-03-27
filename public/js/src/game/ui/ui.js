@@ -391,28 +391,6 @@ HanabiUI.prototype.giveClue = function giveClue() {
     });
 };
 
-HanabiUI.prototype.removePossibilitiesFromCards = function removePossibilitiesFromCards(
-    order,
-    suit,
-    rank,
-) {
-    for (const card of globals.deck) {
-        if (card.order === order) {
-            // Since the card is revealed, the possibilities for this card are no longer needed
-            card.possibleCards = [];
-        } else {
-            // Remove this card from the possibility list for all other cards
-            for (let i = 0; i < card.possibleCards.length; i++) {
-                const possibleCard = card.possibleCards[i];
-                if (possibleCard.suit === suit && possibleCard.rank === rank) {
-                    card.possibleCards.splice(i, 1);
-                    break;
-                }
-            }
-        }
-    }
-};
-
 HanabiUI.prototype.recordStrike = function recordStrike(data) {
     const i = data.num - 1;
     const strike = globals.elements.strikes[i];

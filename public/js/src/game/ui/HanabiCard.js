@@ -1,5 +1,5 @@
 /*
-    The HanabiCard object, which represents a single card
+    The HanabiCard object represents a single card
 */
 
 // Imports
@@ -44,12 +44,14 @@ const HanabiCard = function HanabiCard(config) {
     // knowledge of the true suit and rank
     this.possibleSuits = config.suits;
     this.possibleRanks = config.ranks;
-    // For cards in our hand, we also keep track of every possible card that it could be
-    this.possibleCards = this.holder === globals.playerUs ? globals.cardList.slice() : [];
+    // We also keep track of every possible card that it could be
+    this.possibleCards = globals.cardList.slice();
     this.tweening = false;
-    this.barename = undefined;
+    this.bareName = undefined;
     this.showOnlyLearned = false;
     this.numPositiveClues = 0;
+    this.hasPositiveColorClue = false;
+    this.hasPositiveRankClue = false;
     // We have to add one to the turn drawn because
     // the "draw" command comes before the "turn" command
     // However, if it was part of the initial deal, then it will correctly be set as turn 0
@@ -61,20 +63,14 @@ const HanabiCard = function HanabiCard(config) {
     this.isMisplayed = false;
 
     // Some short helper functions
+    this.isRevealed = function isRevealed() {
+        return this.trueSuit && this.trueRank;
+    };
     this.doRotations = function doRotations(inverted) {
         this.setRotation(inverted ? 180 : 0);
         this.bare.setRotation(inverted ? 180 : 0);
         this.bare.setX(inverted ? config.width : 0);
         this.bare.setY(inverted ? config.height : 0);
-    };
-    this.suitKnown = function suitKnown() {
-        return this.trueSuit !== undefined;
-    };
-    this.rankKnown = function rankKnown() {
-        return this.trueRank !== undefined;
-    };
-    this.identityKnown = function identityKnown() {
-        return this.suitKnown() && this.rankKnown();
     };
     this.isClued = function isClued() {
         return this.numPositiveClues > 0;
@@ -94,7 +90,7 @@ const HanabiCard = function HanabiCard(config) {
     this.bare.setSceneFunc(function setSceneFunc(context) {
         drawCards.scaleCardImage(
             context,
-            self.barename,
+            self.bareName,
             this.getWidth(),
             this.getHeight(),
             this.getAbsoluteTransform(),
@@ -118,6 +114,7 @@ const HanabiCard = function HanabiCard(config) {
 
     // Initialize various elements/features of the card
     this.initPips(config);
+    this.initPossibilities();
     this.setBareImage();
     this.initIndicatorArrow(config);
     this.initNote(config);
@@ -141,115 +138,90 @@ const HanabiCard = function HanabiCard(config) {
 graphics.Util.extend(HanabiCard, graphics.Group);
 
 HanabiCard.prototype.setBareImage = function setBareImage() {
-    let prefix = 'Card';
-
     const learnedCard = globals.learnedCards[this.order];
 
-    const rank = (!this.showOnlyLearned && this.trueRank);
-    const empathyPastRankUncertain = this.showOnlyLearned && this.possibleRanks.length > 1;
-
-    const suit = (!this.showOnlyLearned && this.trueSuit);
+    // Find out the suit to display
+    // ("Gray" is a colorless suit used for unclued cards)
+    const suit = !this.showOnlyLearned && this.trueSuit;
     const empathyPastSuitUncertain = this.showOnlyLearned && this.possibleSuits.length > 1;
 
     let suitToShow = suit || learnedCard.suit || SUIT.GRAY;
     if (empathyPastSuitUncertain) {
         suitToShow = SUIT.GRAY;
     }
+    if (!learnedCard.revealed && !this.hasPositiveColorClue) {
+        suitToShow = SUIT.GRAY;
+    }
 
     // For whatever reason, "Card-Gray" is never created, so use "NoPip-Gray"
+    let prefix = 'Card';
     if (suitToShow === SUIT.GRAY) {
         prefix = 'NoPip';
     }
 
-    let name = `${prefix}-${suitToShow.name}-`;
+    // Find out the rank to display
+    // (6 is a used for unclued cards)
+    const rank = !this.showOnlyLearned && this.trueRank;
+    const empathyPastRankUncertain = this.showOnlyLearned && this.possibleRanks.length > 1;
+
+    let rankToShow;
     if (empathyPastRankUncertain) {
-        name += '6';
+        rankToShow = 6;
     } else {
-        name += rank || learnedCard.rank || '6';
+        rankToShow = rank || learnedCard.rank || 6;
+    }
+    if (!learnedCard.revealed && !this.hasPositiveRankClue) {
+        rankToShow = '6';
     }
 
-    this.barename = name;
+    // Set the name
+    this.bareName = `${prefix}-${suitToShow.name}-${rankToShow}`;
 };
 
-// This initializes both the suit pips and the black squares
 HanabiCard.prototype.initPips = function initPips(config) {
+    // Initialize the suit pips, which are colored shapes
     this.suitPips = new graphics.Group({
         x: 0,
         y: 0,
         width: Math.floor(CARDW),
         height: Math.floor(CARDH),
-        visible: !this.suitKnown(),
+        visible: !this.trueSuit,
     });
     this.add(this.suitPips);
-    this.rankPips = new graphics.Group({
-        x: 0,
-        y: Math.floor(CARDH * 0.85),
-        width: CARDW,
-        height: Math.floor(CARDH * 0.15),
-        visible: !this.rankKnown(),
-    });
-    this.add(this.rankPips);
-
-    const cardPresentKnowledge = globals.learnedCards[this.order];
-    if (cardPresentKnowledge.rank) {
-        this.rankPips.visible(false);
-    }
-    if (cardPresentKnowledge.suit) {
-        this.suitPips.visible(false);
-    }
-    if (globals.replay) {
-        this.rankPips.visible(false);
-        this.suitPips.visible(false);
-    }
-
-    for (const i of config.ranks) {
-        const rankPip = new graphics.Rect({
-            x: Math.floor(CARDW * (i * 0.19 - 0.14)),
-            y: 0,
-            width: Math.floor(CARDW * 0.15),
-            height: Math.floor(CARDH * 0.10),
-            fill: 'black',
-            stroke: 'black',
-            name: i.toString(),
-            listening: false,
-        });
-        if (!globals.learnedCards[this.order].possibleRanks.includes(i)) {
-            rankPip.setOpacity(0.3);
-        }
-        this.rankPips.add(rankPip);
-    }
 
     const { suits } = config;
     const nSuits = suits.length;
     for (let i = 0; i < suits.length; i++) {
         const suit = suits[i];
 
+        // Set the pip at the middle of the card
+        const x = Math.floor(CARDW * 0.5);
+        const y = Math.floor(CARDH * 0.5);
+        const scale = { // Scale numbers are magic
+            x: 0.4,
+            y: 0.4,
+        };
+        // Transform polar to Cartesian coordinates
+        // The magic number added to the offset is needed to center things properly
+        // We don't know why it's needed; perhaps something to do with the shape functions
+        const offset = {
+            x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25), // eslint-disable-line
+            y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3), // eslint-disable-line
+        };
         let fill = suit.fillColors.hexCode;
         if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
             fill = undefined;
         }
 
         const suitPip = new graphics.Shape({
-            x: Math.floor(CARDW * 0.5),
-            y: Math.floor(CARDH * 0.5),
-
-            // Scale numbers are magic
-            scale: {
-                x: 0.4,
-                y: 0.4,
-            },
-
-            // Transform polar to Cartesian coordinates
-            // The magic number added to the offset is needed to center things properly;
-            // We don't know why it's needed;
-            // perhaps something to do with the shape functions
-            offset: {
-                x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25), // eslint-disable-line
-                y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3), // eslint-disable-line
-            },
+            x,
+            y,
+            scale,
+            offset,
             fill,
             stroke: 'black',
-            name: suit.name,
+            strokeWidth: 5,
+            name: suit.name, // We set a name so that we can use "suitPips.find()" later on
             listening: false,
             sceneFunc: (ctx) => {
                 drawCards.drawSuitShape(suit, i)(ctx);
@@ -279,15 +251,125 @@ HanabiCard.prototype.initPips = function initPips(config) {
             suitPip.fillRadialGradientEndRadius(Math.floor(CARDW * 0.25));
         }
         suitPip.rotation(0);
+        this.suitPips.add(suitPip);
+
+        // Also create the X that will show when a certain suit can be ruled out
+        const suitPipX = new graphics.Shape({
+            x,
+            y,
+            scale,
+            offset,
+            fill: 'black',
+            stroke: 'black',
+            name: `${suit.name}-x`, // We set a name so that we can use "suitPips.find()" later on
+            listening: false,
+            opacity: 0.8,
+            visible: false,
+            sceneFunc: (ctx, shape) => {
+                const width = 50;
+                const xx = Math.floor((CARDW * 0.25) - (width * 0.45));
+                const xy = Math.floor((CARDH * 0.25) - (width * 0.05));
+                drawX(ctx, shape, xx, xy, 50, width);
+            },
+        });
+        this.suitPips.add(suitPipX);
 
         // Reduce opacity of eliminated suits and outline remaining suits
         if (!globals.learnedCards[this.order].possibleSuits.includes(suit)) {
             suitPip.setOpacity(0.4);
-        } else {
-            suitPip.setStrokeWidth(5);
+            suitPip.setStrokeWidth(1);
+            suitPipX.setOpacity(0.1);
+        }
+    }
+
+    // Initialize the rank pips, which are black squares along the bottom of the card
+    this.rankPips = new graphics.Group({
+        x: 0,
+        y: Math.floor(CARDH * 0.85),
+        width: CARDW,
+        height: Math.floor(CARDH * 0.15),
+        visible: !this.trueRank,
+    });
+    this.add(this.rankPips);
+
+    for (const rank of config.ranks) {
+        const x = Math.floor(CARDW * (rank * 0.19 - 0.14));
+        const y = 0;
+        const rankPip = new graphics.Rect({
+            x,
+            y,
+            width: Math.floor(CARDW * 0.15),
+            height: Math.floor(CARDH * 0.10),
+            fill: 'black',
+            stroke: 'black',
+            name: rank.toString(), // We set a name so that we can use "rankPips.find()" later on
+            listening: false,
+            cornerRadius: 0.02 * CARDH,
+        });
+        if (!globals.learnedCards[this.order].possibleRanks.includes(rank)) {
+            rankPip.setOpacity(0.3);
+        }
+        this.rankPips.add(rankPip);
+
+        // Also create the X that will show when a certain rank can be ruled out
+        const rankPipX = new graphics.Shape({
+            x,
+            y,
+            fill: '#e6e6e6',
+            stroke: 'black',
+            strokeWidth: 2,
+            name: `${rank}-x`, // We set a name so that we can use "rankPips.find()" later on
+            listening: false,
+            opacity: 0.8,
+            visible: false,
+            sceneFunc: (ctx, shape) => {
+                const width = 20;
+                const xx = Math.floor(CARDW * 0.04);
+                const xy = Math.floor(CARDH * 0.05);
+                drawX(ctx, shape, xx, xy, 12, width);
+            },
+        });
+        this.rankPips.add(rankPipX);
+    }
+
+    // Hide the pips if we have full knowledge of the suit / rank
+    const cardPresentKnowledge = globals.learnedCards[this.order];
+    if (cardPresentKnowledge.revealed) {
+        if (cardPresentKnowledge.rank) {
+            this.rankPips.visible(false);
+        }
+        if (cardPresentKnowledge.suit) {
+            this.suitPips.visible(false);
+        }
+        if (globals.replay) {
+            this.rankPips.visible(false);
+            this.suitPips.visible(false);
+        }
+    }
+};
+
+HanabiCard.prototype.initPossibilities = function initPossibilities() {
+    // We want to remove all of the currently seen cards from the list of possibilities
+    for (const card of globals.deck) {
+        // We don't know what this card is yet
+        if (!card.isRevealed()) {
+            continue;
         }
 
-        this.suitPips.add(suitPip);
+        // If the card is still in the player's hand,
+        // then we can't remove it from the list of possibilities,
+        // because they don't know what it is yet
+        if (
+            card.holder === this.holder
+            && !card.isPlayed
+            && !card.isDiscarded
+            && card.possibleSuits.length !== 1
+            && card.possibleRanks.length !== 1
+        ) {
+            continue;
+        }
+
+        this.removePossibility(card.trueSuit, card.trueRank);
     }
 };
 
@@ -693,9 +775,12 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
         return;
     }
 
+    // const wasRevealed = this.isRevealed();
+
     if (clue.type === CLUE_TYPE.RANK) {
         const clueRank = clue.value;
         const findPipElement = rank => this.rankPips.find(`.${rank}`);
+        const findPipElementX = rank => this.rankPips.find(`.${rank}-x`);
         let removed;
         if (globals.variant.name.startsWith('Multi-Fives')) {
             removed = filterInPlace(
@@ -708,15 +793,20 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
                 rank => (rank === clueRank) === positive,
             );
         }
-        removed.forEach(rank => findPipElement(rank).hide());
+        removed.forEach((rank) => {
+            findPipElement(rank).hide();
+            findPipElementX(rank).hide();
+        });
 
-        // Don't mark unclued cards in your own hand with true suit or rank,
-        // so that they don't display a non-gray card face
-        if (this.possibleRanks.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
+        if (this.possibleRanks.length === 1) {
             [this.trueRank] = this.possibleRanks;
-            findPipElement(this.trueRank).hide();
-            this.rankPips.hide();
             globals.learnedCards[this.order].rank = this.trueRank;
+
+            // Don't hide the pips if the card is unclued
+            if (!this.isInPlayerHand() || this.isClued()) {
+                findPipElement(this.trueRank).hide();
+                this.rankPips.hide();
+            }
         }
 
         // Ensure that the learned card data is not overwritten with less recent information
@@ -727,19 +817,25 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
     } else if (clue.type === CLUE_TYPE.COLOR) {
         const clueColor = clue.value;
         const findPipElement = suit => this.suitPips.find(`.${suit.name}`);
+        const findPipElementX = suit => this.suitPips.find(`.${suit.name}-x`);
         const removed = filterInPlace(
             this.possibleSuits,
             suit => suit.clueColors.includes(clueColor) === positive,
         );
-        removed.forEach(suit => findPipElement(suit).hide());
+        removed.forEach((suit) => {
+            findPipElement(suit).hide();
+            findPipElementX(suit).hide();
+        });
 
-        // Don't mark unclued cards in your own hand with true suit or rank,
-        // so that they don't display a non-gray card face
-        if (this.possibleSuits.length === 1 && (!this.isInPlayerHand() || this.isClued())) {
+        if (this.possibleSuits.length === 1) {
             [this.trueSuit] = this.possibleSuits;
-            findPipElement(this.trueSuit).hide();
-            this.suitPips.hide();
             globals.learnedCards[this.order].suit = this.trueSuit;
+
+            // Don't hide the pips if the card is unclued
+            if (!this.isInPlayerHand() || this.isClued()) {
+                findPipElement(this.trueSuit).hide();
+                this.suitPips.hide();
+            }
         }
 
         // Ensure that the learned card data is not overwritten with less recent information
@@ -752,18 +848,84 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
     }
 
     // Update the list of possible cards that this card could be
-    if (this.holder === globals.playerUs) {
-        // We go in reverse to avoid splicing bugs:
-        // https://stackoverflow.com/questions/16217333/remove-items-from-array-with-splice-in-for-loop
-        for (let i = this.possibleCards.length - 1; i >= 0; i--) {
-            const card = this.possibleCards[i];
-            if (
-                !this.possibleRanks.includes(card.rank)
-                || !this.possibleSuits.includes(card.suit)
-            ) {
-                this.possibleCards.splice(i, 1);
+    // We go in reverse to avoid splicing bugs:
+    // https://stackoverflow.com/questions/16217333/remove-items-from-array-with-splice-in-for-loop
+    for (let i = this.possibleCards.length - 1; i >= 0; i--) {
+        const card = this.possibleCards[i];
+
+        // This logic will work for both positive and negative clues
+        if (!this.possibleRanks.includes(card.rank) || !this.possibleSuits.includes(card.suit)) {
+            this.possibleCards.splice(i, 1);
+            continue;
+        }
+    }
+
+    // Also, if this card is now fully revealed,
+    // update the possibilities for the rest of the cards in this hand
+    /*
+    if (this.isRevealed() && !wasRevealed) {
+        globals.lobby.ui.removeCard(this.trueSuit, this.trueRank);
+
+        const hand = globals.elements.playerHands[this.holder];
+        for (const layoutChild of hand.children) {
+            const card = layoutChild.children[0];
+            if (card.order === this.order) {
+                // There is no need to update the card that is being revealed
                 continue;
             }
+            card.removePossibility(this.trueSuit, this.trueRank);
+        }
+    }
+    */
+
+    // Since information was added to this card,
+    // we might have enough information to cross out some pips
+    if (!this.isRevealed()) {
+        this.checkPipPossibilities();
+    }
+};
+
+// Check to see if we can put an X over any of the shown pips
+HanabiCard.prototype.checkPipPossibilities = function checkPipPossibilities() {
+    for (const suit of globals.variant.suits) {
+        // Get the corresponding pip
+        const suitPip = this.suitPips.find(`.${suit.name}`)[0];
+        if (!suitPip.getVisible()) {
+            continue;
+        }
+
+        let stillPossible = false;
+        for (const card of this.possibleCards) {
+            if (card.suit === suit) {
+                stillPossible = true;
+                break;
+            }
+        }
+        if (!stillPossible) {
+            // All the cards of this suit are seen, so put an X over the suit pip
+            const x = this.suitPips.find(`.${suit.name}-x`)[0];
+            x.setVisible(true);
+        }
+    }
+
+    for (let rank = 1; rank <= 5; rank++) {
+        // Get the corresponding pip
+        const rankPip = this.rankPips.find(`.${rank}`)[0];
+        if (!rankPip.getVisible()) {
+            continue;
+        }
+
+        let stillPossible = false;
+        for (const card of this.possibleCards) {
+            if (card.rank === rank) {
+                stillPossible = true;
+                break;
+            }
+        }
+        if (!stillPossible) {
+            // All the cards of this rank are seen, so put an X over the rank pip
+            const x = this.rankPips.find(`.${rank}-x`)[0];
+            x.setVisible(true);
         }
     }
 };
@@ -1145,20 +1307,33 @@ HanabiCard.prototype.reveal = function reveal(suit, rank) {
     // Local variables
     suit = convert.msgSuitToSuit(suit, globals.variant);
 
+    // Update the possibilities for the player who played/discarded this card
+    // (but we don't need to do anything if the card was already fully-clued)
+    if (!this.trueSuit || !this.trueRank) {
+        const hand = globals.elements.playerHands[this.holder];
+        for (const layoutChild of hand.children) {
+            const card = layoutChild.children[0];
+            if (card.order === this.order) {
+                // There is no need to update the card that is being revealed
+                continue;
+            }
+            card.removePossibility(suit, rank);
+        }
+    }
+
     // Set the true suit/rank on the card
     this.showOnlyLearned = false;
     this.trueSuit = suit;
     this.trueRank = rank;
 
-    // Keep track of what this card is for the purposes of Empathy in ongoing-games
+    // Keep track of what this card is (so that we can show faded pips, etc.)
     globals.learnedCards[this.order] = {
         suit,
         rank,
         possibleSuits: [suit],
         possibleRanks: [rank],
+        revealed: true,
     };
-
-    globals.lobby.ui.removePossibilitiesFromCards(this.order, suit, rank);
 
     // Redraw the card
     this.suitPips.hide();
@@ -1231,7 +1406,7 @@ HanabiCard.prototype.getSlotNum = function getSlotNum() {
 
 HanabiCard.prototype.isCritical = function isCritical() {
     if (
-        !this.identityKnown
+        !this.isRevealed()
         || this.isPlayed
         || this.isDiscarded
         || !needsToBePlayed(this.trueSuit, this.trueRank)
@@ -1258,6 +1433,24 @@ HanabiCard.prototype.isPotentiallyPlayable = function isPotentiallyPlayable() {
         }
     }
     return potentiallyPlayable;
+};
+
+HanabiCard.prototype.removePossibility = function removePossibility(suit, rank) {
+    // Every card has a possibility list that contains each card in the game that it could be
+    // Remove one possibility for this card
+    let removedSomething = false;
+    for (let i = 0; i < this.possibleCards.length; i++) {
+        const possibleCard = this.possibleCards[i];
+        if (possibleCard.suit === suit && possibleCard.rank === rank) {
+            removedSomething = true;
+            this.possibleCards.splice(i, 1);
+            break;
+        }
+    }
+
+    if (removedSomething) {
+        this.checkPipPossibilities();
+    }
 };
 
 module.exports = HanabiCard;
@@ -1353,4 +1546,51 @@ const gotoTurn = (turn, order) => {
     // Also indicate the card to make it easier to find
     // (we have to use "globals.deck" instead of "this" because the card will get overwritten)
     globals.deck[order].toggleSharedReplayIndicator();
+};
+
+const drawX = (ctx, shape, x, y, size, width) => {
+    // Start at the top left corner and draw an X
+    ctx.beginPath();
+    x -= size;
+    y -= size;
+    ctx.moveTo(x, y);
+    x += width / 2;
+    y -= width / 2;
+    ctx.lineTo(x, y);
+    x += size;
+    y += size;
+    ctx.lineTo(x, y);
+    x += size;
+    y -= size;
+    ctx.lineTo(x, y);
+    x += width / 2;
+    y += width / 2;
+    ctx.lineTo(x, y);
+    x -= size;
+    y += size;
+    ctx.lineTo(x, y);
+    x += size;
+    y += size;
+    ctx.lineTo(x, y);
+    x -= width / 2;
+    y += width / 2;
+    ctx.lineTo(x, y);
+    x -= size;
+    y -= size;
+    ctx.lineTo(x, y);
+    x -= size;
+    y += size;
+    ctx.lineTo(x, y);
+    x -= width / 2;
+    y -= width / 2;
+    ctx.lineTo(x, y);
+    x += size;
+    y -= size;
+    ctx.lineTo(x, y);
+    x -= size;
+    y -= size;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.closePath();
+    ctx.fillStrokeShape(shape);
 };
