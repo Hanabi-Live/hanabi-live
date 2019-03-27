@@ -306,9 +306,6 @@ HanabiCard.prototype.initPips = function initPips(config) {
             listening: false,
             cornerRadius: 0.02 * CARDH,
         });
-        if (!globals.learnedCards[this.order].possibleRanks.includes(rank)) {
-            rankPip.setOpacity(0.3);
-        }
         this.rankPips.add(rankPip);
 
         // Also create the X that will show when a certain rank can be ruled out
@@ -330,6 +327,12 @@ HanabiCard.prototype.initPips = function initPips(config) {
             },
         });
         this.rankPips.add(rankPipX);
+
+        // Reduce opacity of eliminated suits and outline remaining suits
+        if (!globals.learnedCards[this.order].possibleRanks.includes(rank)) {
+            rankPip.setOpacity(0.3);
+            rankPipX.setOpacity(0.1);
+        }
     }
 
     // Hide the pips if we have full knowledge of the suit / rank
@@ -775,8 +778,6 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
         return;
     }
 
-    // const wasRevealed = this.isRevealed();
-
     if (clue.type === CLUE_TYPE.RANK) {
         const clueRank = clue.value;
         const findPipElement = rank => this.rankPips.find(`.${rank}`);
@@ -859,24 +860,6 @@ HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
             continue;
         }
     }
-
-    // Also, if this card is now fully revealed,
-    // update the possibilities for the rest of the cards in this hand
-    /*
-    if (this.isRevealed() && !wasRevealed) {
-        globals.lobby.ui.removeCard(this.trueSuit, this.trueRank);
-
-        const hand = globals.elements.playerHands[this.holder];
-        for (const layoutChild of hand.children) {
-            const card = layoutChild.children[0];
-            if (card.order === this.order) {
-                // There is no need to update the card that is being revealed
-                continue;
-            }
-            card.removePossibility(this.trueSuit, this.trueRank);
-        }
-    }
-    */
 
     // Since information was added to this card,
     // we might have enough information to cross out some pips
