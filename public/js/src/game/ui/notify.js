@@ -121,7 +121,8 @@ commands.draw = (data) => {
     globals.deckSize -= 1;
     globals.elements.drawDeck.setCount(globals.deckSize);
 
-    // Keep track of which cards we have learned for the purposes of Empathy
+    // Keep track of which cards we have learned for the purposes of
+    // showing the true card face in the in-game replay
     // (this has to be done before the card is initialized)
     if (!globals.learnedCards[order]) {
         globals.learnedCards[order] = {

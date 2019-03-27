@@ -140,7 +140,7 @@ const keydown = (event) => {
         return;
     }
 
-    // Alt hotkeys 
+    // Alt hotkeys
     if (
         event.altKey
         && !event.ctrlKey

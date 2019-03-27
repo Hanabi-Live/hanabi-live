@@ -1292,7 +1292,7 @@ HanabiCard.prototype.reveal = function reveal(suit, rank) {
 
     // Update the possibilities for the player who played/discarded this card
     // (but we don't need to do anything if the card was already fully-clued)
-    if (!this.trueSuit || !this.trueRank) {
+    if (this.possibleSuits.length > 1 || this.possibleRanks.length > 1) {
         const hand = globals.elements.playerHands[this.holder];
         for (const layoutChild of hand.children) {
             const card = layoutChild.children[0];
@@ -1309,7 +1309,7 @@ HanabiCard.prototype.reveal = function reveal(suit, rank) {
     this.trueSuit = suit;
     this.trueRank = rank;
 
-    // Keep track of what this card is (so that we can show faded pips, etc.)
+    // Keep track of what this card is
     globals.learnedCards[this.order] = {
         suit,
         rank,
