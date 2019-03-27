@@ -275,13 +275,6 @@ HanabiCard.prototype.initPips = function initPips(config) {
         });
         this.suitPips.add(suitPipX);
         this.suitPipsXMap.set(suit, suitPipX);
-
-        // Reduce opacity of eliminated suits and outline remaining suits
-        if (!globals.learnedCards[this.order].possibleSuits.includes(suit)) {
-            suitPip.setOpacity(0.4);
-            suitPip.setStrokeWidth(1);
-            suitPipX.setOpacity(0.1);
-        }
     }
 
     // Initialize the rank pips, which are black squares along the bottom of the card
@@ -331,12 +324,6 @@ HanabiCard.prototype.initPips = function initPips(config) {
         });
         this.rankPips.add(rankPipX);
         this.rankPipsXMap.set(rank, rankPipX);
-
-        // Reduce opacity of eliminated ranks
-        if (!globals.learnedCards[this.order].possibleRanks.includes(rank)) {
-            rankPip.setOpacity(0.3);
-            rankPipX.setOpacity(0.1);
-        }
     }
 
     // Hide the pips if we have full knowledge of the suit / rank
