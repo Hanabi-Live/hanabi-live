@@ -359,7 +359,10 @@ func commandAction(s *Session, d *CommandData) {
 	// Send every user connected an update about this table
 	// (this is sort of wasteful but is necessary for users to see if it is
 	// their turn from the lobby and also to see the progress of other games)
-	notifyAllTable(g)
+	if !g.NoDatabase {
+		// Don't send table updates if we are in the process of emulating JSON actions
+		notifyAllTable(g)
+	}
 
 	// Send everyone new clock values
 	g.NotifyTime()
