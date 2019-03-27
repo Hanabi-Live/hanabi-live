@@ -14,7 +14,7 @@
     <tbody>
         {{range $index, $results := .History}}
             <tr>
-                <td>{{.ID}}</td>
+                <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
                 <td>{{.NumPlayers}}</td>
                 <td>{{.Score}}</td>
                 <td>{{.Variant}}</td>
