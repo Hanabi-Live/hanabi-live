@@ -43,20 +43,19 @@ module.exports = () => {
     // This is extra information about each player's "Detrimental Character Assignments",
     // if enabled (it is either an empty array or an array of integers)
 
-    // Game state variables
-    globals.deck = [];
-    globals.deckSize = 0;
-    globals.cardList = [];
+    // Game constants (set upon first initialization)
+    globals.deck = []; // Contains HanabiCard objects in the order that they are dealt
+    globals.cardList = []; // Contains "simple" cards, e.g. "{ suit: 0, rank: 1 }"
+    globals.deckOrder = null; // Sent when the game ends
+
+    // Game state variables (reset when rewinding in a replay)
     globals.turn = 0;
     globals.currentPlayerIndex = 0;
     globals.endTurn = null; // Set when the final card is drawn
+    globals.deckSize = 0; // Set in the "drawUI.drawDeck()" function
     globals.score = 0;
     globals.maxScore = 0;
     globals.clues = 0;
-    globals.spectators = [];
-    globals.deckOrder = null; // Sent when the game ends
-
-    // Efficiency variables
     globals.cardsGotten = 0;
     globals.cluesSpentPlusStrikes = 0;
 
@@ -195,6 +194,7 @@ module.exports = () => {
     globals.postAnimationLayout = null;
     globals.lastAction = null; // Used when rebuilding the game state
     globals.accidentalClueTimer = Date.now();
+    globals.spectators = [];
     // Used to prevent giving an accidental clue after clicking the "Exit Replay" button
     globals.chatUnread = 0;
 };

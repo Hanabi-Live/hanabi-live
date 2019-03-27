@@ -17,9 +17,9 @@ const {
 const xrad = CARDW * 0.08;
 const yrad = CARDH * 0.08;
 
-// The "buildCards()" function draws all of the cards and then stores them in the
+// The "drawAll()" function draws all of the cards and then stores them in the
 // "globals.cardImages" object to be used later
-exports.buildCards = () => {
+exports.drawAll = () => {
     // The gray suit represents cards of unknown suit
     const suits = globals.variant.suits.concat(SUIT.GRAY);
     for (let i = 0; i < suits.length; i++) {
@@ -515,53 +515,3 @@ const drawSuitShape = (suit, i) => {
     return shapeFunctions[i];
 };
 exports.drawSuitShape = drawSuitShape;
-
-exports.scaleCardImage = (context, name, width, height, am) => {
-    let src = globals.cardImages[name];
-
-    if (!src) {
-        console.error(`The image "${name}" was not generated.`);
-        return;
-    }
-
-    const dw = Math.sqrt(am.m[0] * am.m[0] + am.m[1] * am.m[1]) * width;
-    const dh = Math.sqrt(am.m[2] * am.m[2] + am.m[3] * am.m[3]) * height;
-
-    if (dw < 1 || dh < 1) {
-        return;
-    }
-
-    let sw = width;
-    let sh = height;
-    let steps = 0;
-
-    if (!globals.scaleCardImages[name]) {
-        globals.scaleCardImages[name] = [];
-    }
-
-    // This code was written by Keldon;
-    // scaling the card down in steps of half in each dimension presumably improves the scaling
-    while (dw < sw / 2) {
-        let scaleCanvas = globals.scaleCardImages[name][steps];
-        sw = Math.floor(sw / 2);
-        sh = Math.floor(sh / 2);
-
-        if (!scaleCanvas) {
-            scaleCanvas = document.createElement('canvas');
-            scaleCanvas.width = sw;
-            scaleCanvas.height = sh;
-
-            const scaleContext = scaleCanvas.getContext('2d');
-
-            scaleContext.drawImage(src, 0, 0, sw, sh);
-
-            globals.scaleCardImages[name][steps] = scaleCanvas;
-        }
-
-        src = scaleCanvas;
-
-        steps += 1;
-    }
-
-    context.drawImage(src, 0, 0, width, height);
-};

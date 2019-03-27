@@ -6,7 +6,9 @@ const drawUI = require('./drawUI');
 const globals = require('./globals');
 const globalsInit = require('./globalsInit');
 const graphics = require('./graphics');
+const HanabiCard = require('./HanabiCard');
 const hypothetical = require('./hypothetical');
+const LayoutChild = require('./LayoutChild');
 const Loader = require('./Loader');
 const keyboard = require('./keyboard');
 const notes = require('./notes');
@@ -123,7 +125,13 @@ HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
 
 HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
     // Build images for every card (with respect to the variant that we are playing)
-    drawCards.buildCards();
+    drawCards.drawAll();
+
+    // Construct a list of all of the cards in the deck
+    globals.lobby.ui.initCardList();
+
+    // Build all of the reusuable card objects
+    globals.lobby.ui.initCards();
 
     // Draw the user interface
     drawUI();
@@ -167,6 +175,27 @@ HanabiUI.prototype.initCardList = function initCardList() {
                 });
             }
         }
+    }
+};
+
+HanabiUI.prototype.initCards = function initCards() {
+    for (let order = 0; order < globals.cardList.length; order++) {
+        // First, created the "learned" card
+        globals.learnedCards.push({
+            possibleSuits: globals.variant.suits.slice(),
+            possibleRanks: globals.variant.ranks.slice(),
+            revealed: false,
+        });
+
+        // Second, create the HanabiCard object
+        const card = new HanabiCard({
+            order,
+        });
+        globals.deck.push(card);
+
+        // Third, create the LayoutChild that will be the parent of the card
+        const child = new LayoutChild();
+        child.add(card);
     }
 };
 

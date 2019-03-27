@@ -81,9 +81,6 @@ const goto = (target, fast) => {
     let rewind = false;
     if (target < globals.replayTurn) {
         rewind = true;
-        globals.turn = 0;
-        globals.cardsGotten = 0;
-        globals.cluesSpentPlusStrikes = 0;
     }
 
     if (
@@ -145,29 +142,30 @@ const setVisibleButtons = () => {
 };
 
 const reset = () => {
+    // Reset some game state variables
+    // "globals.turn" and "globals.currentPlayerIndex" is set in every "turn" command
+    globals.deckSize = stats.getTotalCardsInTheDeck();
+    // "globals.score", "globals.maxScore", and "globals.clues"
+    // are set in every "status" command
+    globals.cardsGotten = 0;
+    globals.cluesSpentPlusStrikes = 0;
+
+    // Reset various UI elements
+    globals.postAnimationLayout = null;
     globals.elements.messagePrompt.setMultiText('');
     globals.elements.msgLogGroup.reset();
+    globals.elements.drawDeck.setCount(globals.deckSize);
+    globals.elements.clueLog.clear();
+    globals.elements.messagePrompt.reset();
 
     const { suits } = globals.variant;
-
+    for (let i = 0; i < globals.elements.playerHands.length; i++) {
+        globals.elements.playerHands[i].removeChildren();
+    }
     for (const suit of suits) {
         globals.elements.playStacks.get(suit).removeChildren();
         globals.elements.discardStacks.get(suit).removeChildren();
     }
-
-    for (let i = 0; i < globals.playerNames.length; i++) {
-        globals.elements.playerHands[i].removeChildren();
-    }
-
-    globals.deck = [];
-    globals.deckSize = stats.getTotalCardsInTheDeck();
-    globals.elements.drawDeck.setCount(globals.deckSize);
-
-    globals.postAnimationLayout = null;
-
-    globals.elements.clueLog.clear();
-    globals.elements.messagePrompt.reset();
-
     for (const strike of globals.elements.strikes) {
         if (strike.tween) {
             strike.tween.destroy();

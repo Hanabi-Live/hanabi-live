@@ -35,32 +35,12 @@ const HanabiCard = function HanabiCard(config) {
 
     graphics.Group.call(this, config);
 
-    // Card variables
+    // Order is defined upon first initialization;
+    // other variables are defined below in the "refresh()" function
     this.order = config.order;
-    this.holder = config.holder;
-    this.trueSuit = config.suit || undefined;
-    this.trueRank = config.rank || undefined;
-    // Possible suits and ranks (based on clues given) are tracked separately from
-    // knowledge of the true suit and rank
-    this.possibleSuits = config.suits;
-    this.possibleRanks = config.ranks;
-    // We also keep track of every possible card that it could be
-    this.possibleCards = globals.cardList.slice();
-    this.tweening = false;
-    this.bareName = undefined;
-    this.showOnlyLearned = false;
-    this.numPositiveClues = 0;
-    this.hasPositiveColorClue = false;
-    this.hasPositiveRankClue = false;
-    // We have to add one to the turn drawn because
-    // the "draw" command comes before the "turn" command
-    // However, if it was part of the initial deal, then it will correctly be set as turn 0
-    this.turnDrawn = globals.turn === 0 ? 0 : globals.turn + 1;
-    this.isDiscarded = false;
-    this.turnDiscarded = null;
-    this.isPlayed = false;
-    this.turnPlayed = null;
-    this.isMisplayed = false;
+    this.trueSuit = null;
+    this.trueRank = null;
+    this.holder = null;
 
     // Some short helper functions
     this.isRevealed = function isRevealed() {
@@ -88,7 +68,7 @@ const HanabiCard = function HanabiCard(config) {
         height: config.height,
     });
     this.bare.setSceneFunc(function setSceneFunc(context) {
-        drawCards.scaleCardImage(
+        scaleCardImage(
             context,
             self.bareName,
             this.getWidth(),
@@ -113,9 +93,8 @@ const HanabiCard = function HanabiCard(config) {
     this.add(this.cluedBorder);
 
     // Initialize various elements/features of the card
-    this.initPips(config);
-    this.initPossibilities();
-    this.setBareImage();
+    this.refresh();
+    this.initPips();
     this.initIndicatorArrow(config);
     this.initNote(config);
     this.initEmpathy();
@@ -136,6 +115,37 @@ const HanabiCard = function HanabiCard(config) {
 };
 
 graphics.Util.extend(HanabiCard, graphics.Group);
+
+// Erase all of the data on the card to make it like it was freshly drawn
+HanabiCard.prototype.refresh = function refresh() {
+    // Possible suits and ranks (based on clues given) are tracked separately
+    // from knowledge of the true suit and rank
+    this.possibleSuits = globals.variant.suits.slice();
+    this.possibleRanks = globals.variant.ranks.slice();
+    // Possible cards (based on both clues given and cards seen) are also tracked separately
+    this.possibleCards = globals.cardList.slice();
+    this.tweening = false;
+    this.showOnlyLearned = false;
+    this.numPositiveClues = 0;
+    this.hasPositiveColorClue = false;
+    this.hasPositiveRankClue = false;
+    // We have to add one to the turn drawn because
+    // the "draw" command comes before the "turn" command
+    // However, if it was part of the initial deal, then it will correctly be set as turn 0
+    this.turnDrawn = globals.turn === 0 ? 0 : globals.turn + 1;
+    this.isDiscarded = false;
+    this.turnDiscarded = null;
+    this.isPlayed = false;
+    this.turnPlayed = null;
+    this.isMisplayed = false;
+
+    this.initPossibilities();
+    this.hideClues();
+    if (this.indicatorGroup) {
+        this.indicatorGroup.hide();
+    }
+    this.setBareImage();
+};
 
 HanabiCard.prototype.setBareImage = function setBareImage() {
     const learnedCard = globals.learnedCards[this.order];
@@ -178,7 +188,7 @@ HanabiCard.prototype.setBareImage = function setBareImage() {
     this.bareName = `${prefix}-${suitToShow.name}-${rankToShow}`;
 };
 
-HanabiCard.prototype.initPips = function initPips(config) {
+HanabiCard.prototype.initPips = function initPips() {
     // Initialize the suit pips, which are colored shapes
     this.suitPips = new graphics.Group({
         x: 0,
@@ -189,8 +199,7 @@ HanabiCard.prototype.initPips = function initPips(config) {
     });
     this.add(this.suitPips);
 
-    const { suits } = config;
-    const nSuits = suits.length;
+    const suits = this.possibleSuits;
     this.suitPipsMap = new Map();
     this.suitPipsXMap = new Map();
     for (let i = 0; i < suits.length; i++) {
@@ -207,8 +216,8 @@ HanabiCard.prototype.initPips = function initPips(config) {
         // The magic number added to the offset is needed to center things properly
         // We don't know why it's needed; perhaps something to do with the shape functions
         const offset = {
-            x: Math.floor(CARDW * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.25), // eslint-disable-line
-            y: Math.floor(CARDW * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARDW * 0.3), // eslint-disable-line
+            x: Math.floor(CARDW * 0.7 * Math.cos((-i / suits.length + 0.25) * Math.PI * 2) + CARDW * 0.25), // eslint-disable-line
+            y: Math.floor(CARDW * 0.7 * Math.sin((-i / suits.length + 0.25) * Math.PI * 2) + CARDW * 0.3), // eslint-disable-line
         };
         let fill = suit.fillColors.hexCode;
         if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
@@ -289,7 +298,7 @@ HanabiCard.prototype.initPips = function initPips(config) {
 
     this.rankPipsMap = new Map();
     this.rankPipsXMap = new Map();
-    for (const rank of config.ranks) {
+    for (const rank of this.possibleRanks) {
         const x = Math.floor(CARDW * (rank * 0.19 - 0.14));
         const y = 0;
         const rankPip = new graphics.Rect({
@@ -324,21 +333,6 @@ HanabiCard.prototype.initPips = function initPips(config) {
         });
         this.rankPips.add(rankPipX);
         this.rankPipsXMap.set(rank, rankPipX);
-    }
-
-    // Hide the pips if we have full knowledge of the suit / rank
-    const cardPresentKnowledge = globals.learnedCards[this.order];
-    if (cardPresentKnowledge.revealed) {
-        if (cardPresentKnowledge.rank) {
-            this.rankPips.visible(false);
-        }
-        if (cardPresentKnowledge.suit) {
-            this.suitPips.visible(false);
-        }
-        if (globals.replay) {
-            this.rankPips.visible(false);
-            this.suitPips.visible(false);
-        }
     }
 };
 
@@ -1332,13 +1326,19 @@ HanabiCard.prototype.removeFromParent = function removeFromParent() {
 };
 
 HanabiCard.prototype.animateToPlayStacks = function animateToPlayStacks() {
+    // We add a LayoutChild to a CardStack
     const playStack = globals.elements.playStacks.get(this.trueSuit);
-    playStack.add(this.parent); // This is the LayoutChild
+    playStack.add(this.parent);
+
+    // We also want to move this stack to the top so that
+    // cards do not tween behind the other play stacks when travelling to this stack
     playStack.moveToTop();
 };
 
 HanabiCard.prototype.animateToDiscardPile = function animateToDiscardPile() {
-    globals.elements.discardStacks.get(this.trueSuit).add(this.parent); // This is the LayoutChild
+    // We add a LayoutChild to a CardLayout
+    const discardStack = globals.elements.discardStacks.get(this.trueSuit);
+    discardStack.add(this.parent);
 
     // We need to bring the discarded card to the top so that when it tweens to the discard pile,
     // it will fly on top of the play stacks and other player's hands
@@ -1347,11 +1347,11 @@ HanabiCard.prototype.animateToDiscardPile = function animateToDiscardPile() {
     // then the discard stacks will not be arranged in the correct order
     // Thus, move all of the discord piles to the top in order so that they will be properly
     // overlapping (the bottom-most stack should have priority over the top)
-    for (const discardStack of globals.elements.discardStacks) {
+    for (const stack of globals.elements.discardStacks) {
         // Since "discardStacks" is a Map(),
-        // "discardStack" is an array containing a Suit and CardLayout
-        if (discardStack[1]) {
-            discardStack[1].moveToTop();
+        // "stack" is an array containing a Suit and CardLayout
+        if (stack[1]) {
+            stack[1].moveToTop();
         }
     }
 };
@@ -1428,6 +1428,56 @@ module.exports = HanabiCard;
 /*
     Misc. functions
 */
+
+const scaleCardImage = (context, name, width, height, am) => {
+    let src = globals.cardImages[name];
+
+    if (!src) {
+        console.error(`The image "${name}" was not generated.`);
+        return;
+    }
+
+    const dw = Math.sqrt(am.m[0] * am.m[0] + am.m[1] * am.m[1]) * width;
+    const dh = Math.sqrt(am.m[2] * am.m[2] + am.m[3] * am.m[3]) * height;
+
+    if (dw < 1 || dh < 1) {
+        return;
+    }
+
+    let sw = width;
+    let sh = height;
+    let steps = 0;
+
+    if (!globals.scaleCardImages[name]) {
+        globals.scaleCardImages[name] = [];
+    }
+
+    // This code was written by Keldon;
+    // scaling the card down in steps of half in each dimension presumably improves the scaling
+    while (dw < sw / 2) {
+        let scaleCanvas = globals.scaleCardImages[name][steps];
+        sw = Math.floor(sw / 2);
+        sh = Math.floor(sh / 2);
+
+        if (!scaleCanvas) {
+            scaleCanvas = document.createElement('canvas');
+            scaleCanvas.width = sw;
+            scaleCanvas.height = sh;
+
+            const scaleContext = scaleCanvas.getContext('2d');
+
+            scaleContext.drawImage(src, 0, 0, sw, sh);
+
+            globals.scaleCardImages[name][steps] = scaleCanvas;
+        }
+
+        src = scaleCanvas;
+
+        steps += 1;
+    }
+
+    context.drawImage(src, 0, 0, width, height);
+};
 
 const filterInPlace = (values, predicate) => {
     const removed = [];

@@ -1,5 +1,6 @@
 /*
     The HanabiCard object, which represents a single card
+    TODO this object has to be re-copied over due to lots of changes in the old UI
 */
 
 // Imports

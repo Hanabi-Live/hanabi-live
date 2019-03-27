@@ -8,8 +8,6 @@ const constants = require('../../constants');
 const convert = require('./convert');
 const globals = require('./globals');
 const graphics = require('./graphics');
-const HanabiCard = require('./HanabiCard');
-const LayoutChild = require('./LayoutChild');
 const stats = require('./stats');
 
 // Define a command handler map
@@ -111,8 +109,8 @@ commands.draw = (data) => {
     // Suit and rank come from the server as -1 if the card is unknown
     // (e.g. being drawn to the current player's hand)
     // We want to convert this to just being undefined
-    let suit = data.suit === -1 ? undefined : data.suit;
-    const rank = data.rank === -1 ? undefined : data.rank;
+    let suit = data.suit === -1 ? null : data.suit;
+    const rank = data.rank === -1 ? null : data.rank;
     // Suit comes from the server as an integer, so we also need to convert it to a Suit object
     suit = convert.msgSuitToSuit(data.suit, globals.variant);
     const holder = data.who;
@@ -124,28 +122,33 @@ commands.draw = (data) => {
     // Keep track of which cards we have learned for the purposes of
     // showing the true card face in the in-game replay
     // (this has to be done before the card is initialized)
-    if (!globals.learnedCards[order]) {
-        globals.learnedCards[order] = {
-            possibleSuits: globals.variant.suits.slice(),
-            possibleRanks: globals.variant.ranks.slice(),
-            revealed: suit && rank,
-        };
+    if (suit && rank) {
+        const learnedCard = globals.learnedCards[order];
+        learnedCard.suit = suit;
+        learnedCard.rank = rank;
+        learnedCard.revealed = true;
     }
 
-    // Create a new card
-    globals.deck[order] = new HanabiCard({
-        suit,
-        rank,
-        order,
-        suits: globals.variant.suits.slice(),
-        ranks: globals.variant.ranks.slice(),
-        holder,
-    });
+    // Refresh all the variables on the card (in case we are rewinding in a replay)
+    // (cards are created on first initialization for performance reasons)
+    const card = globals.deck[order];
+    card.trueSuit = suit; // This will be null if we don't know the suit
+    card.trueRank = rank; // This will be null if we don't know the rank
+    card.holder = holder;
+    card.refresh();
+
+    // Hide the pips if we have full knowledge of the suit / rank
+    if (suit && rank) {
+        card.suitPips.setVisible(false);
+        card.rankPips.setVisible(false);
+    }
 
     // Each card is contained within a LayoutChild
-    // Create a new LayoutChild, add the card, and position it over the deck
-    const child = new LayoutChild();
-    child.add(globals.deck[order]);
+    // Position the LayoutChild over the deck
+    const child = card.parent;
+    // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
+    // and the user rewinds to the beginning of the replay
+    card.parent.setVisible(true);
     const pos = globals.elements.drawDeck.cardback.getAbsolutePosition();
     child.setAbsolutePosition(pos);
     child.setRotation(-globals.elements.playerHands[holder].getRotation());
@@ -170,8 +173,8 @@ commands.draw = (data) => {
             }
             const hand = globals.elements.playerHands[i];
             for (const layoutChild of hand.children) {
-                const card = layoutChild.children[0];
-                card.removePossibility(suit, rank);
+                const handCard = layoutChild.children[0];
+                handCard.removePossibility(suit, rank);
             }
         }
     }
@@ -197,7 +200,6 @@ commands.play = (data) => {
 
     card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();
-
     card.animateToPlayStacks();
 
     if (card.isClued()) {
