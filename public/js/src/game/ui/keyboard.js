@@ -140,13 +140,14 @@ const keydown = (event) => {
         return;
     }
 
-    // Hotkeys for sending sounds
+    // Alt hotkeys 
     if (
         event.altKey
         && !event.ctrlKey
         && !event.shiftKey
         && !event.metaKey
     ) {
+        // Sound hotkeys
         if (event.key === 'b') { // Alt + b
             // This is used for fun in shared replays
             sharedReplaySendSound('buzz');
@@ -166,6 +167,16 @@ const keydown = (event) => {
             // This is used as a sound test
             globals.game.sounds.play('turn_us');
             return;
+        }
+
+        // Other
+        if (event.key === 't') { // Alt + t
+            const fakeMouseEvent = {
+                evt: {
+                    which: 3,
+                },
+            };
+            replay.promptTurn(fakeMouseEvent);
         }
     }
 
