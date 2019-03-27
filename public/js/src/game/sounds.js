@@ -46,7 +46,7 @@ const preload = () => {
         // Do not preload shared replay sound effects, as they are used more rarely
     ];
     for (const file of soundFiles) {
-        const audio = new Audio(`public/sounds/${file}.mp3`);
+        const audio = new Audio(`/public/sounds/${file}.mp3`);
         audio.load();
     }
 };

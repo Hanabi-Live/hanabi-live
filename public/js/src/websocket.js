@@ -90,11 +90,19 @@ const initCommands = () => {
         $('#nav-buttons-history-total-games').html(globals.totalGames);
         lobby.login.hide(data.firstTimeUser);
 
-        // Automatically go into a replay if doing development work
-        if (window.location.pathname === '/dev2') {
+        // Automatically go into a replay if surfing to "/replay/123"
+        let gameID = null;
+        const match = window.location.pathname.match(/\/replay\/(\d+)$/);
+        if (match) {
+            [, gameID] = match;
+        } else if (window.location.pathname === '/dev2') {
+            gameID = '51'; // The first game in the Hanabi Live database
+        }
+        if (gameID !== null) {
             setTimeout(() => {
+                gameID = parseInt(gameID, 10); // The server expects this as an integer
                 globals.conn.send('replayCreate', {
-                    gameID: 51, // The first game in the Hanabi Live database
+                    gameID,
                     source: 'id',
                     visibility: 'solo',
                 });

@@ -22,18 +22,18 @@ const Loader = function Loader(finishedCallback) {
     ];
     this.filemap = {};
     for (const file of files) {
-        this.filemap[file] = `public/img/${file}.png`;
+        this.filemap[file] = `/public/img/${file}.png`;
     }
 
-    this.filemap.background = 'public/img/background.jpg';
+    this.filemap.background = '/public/img/background.jpg';
 };
 
 Loader.prototype.addImage = function addImage(name, ext) {
-    this.filemap[name] = `public/img/${name}.${ext}`;
+    this.filemap[name] = `/public/img/${name}.${ext}`;
 };
 
 Loader.prototype.addAlias = function addAlias(name, alias, ext) {
-    this.filemap[name] = `public/img/${alias}.${ext}`;
+    this.filemap[name] = `/public/img/${alias}.${ext}`;
 };
 
 Loader.prototype.start = function start() {
