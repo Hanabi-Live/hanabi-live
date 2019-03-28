@@ -177,6 +177,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Up or Down & Rainbow (6 Suits)
   * Up or Down & Rainbow (5 Suits)
   * Up or Down & White & Rainbow (6 Suits)
+* Duck
+  * Duck (6 Suits)
+  * Duck (5 Suits)
+  * Duck (4 Suits)
+  * Duck (3 Suits)
 * Mixed
   * African American
   * Wild & Crazy
