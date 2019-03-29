@@ -29,8 +29,12 @@ func debug2() {
 		s := reflect.ValueOf(g).Elem()
 		typeOfT := s.Type()
 		for i := 0; i < s.NumField(); i++ {
+			fieldName := typeOfT.Field(i).Name
+			if fieldName == "Actions" {
+				continue
+			}
 			f := s.Field(i)
-			line := fmt.Sprintf("  %s\t= %v\n", typeOfT.Field(i).Name, f.Interface())
+			line := fmt.Sprintf("  %s\t= %v\n", fieldName, f.Interface())
 			log.Debug(line)
 		}
 		log.Debug("\n")
