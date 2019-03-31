@@ -74,7 +74,7 @@ func (g *Game) End() {
 			g.NotifyAction()
 			log.Info(g.GetName() + text)
 
-			text = "Congradulations on a new world record!"
+			text = "Congratulations on a new world record!"
 
 		} else if seconds == fastestTime {
 			text = "You tied the world record!"
