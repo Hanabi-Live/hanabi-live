@@ -874,6 +874,9 @@ HanabiCard.prototype.checkPipPossibilities = function checkPipPossibilities(suit
     if (!suitPossible) {
         // Do nothing if the normal pip is already hidden
         const pip = this.suitPipsMap.get(suit);
+        if (!pip) {
+            return;
+        }
         if (!pip.getVisible()) {
             return;
         }
@@ -894,6 +897,9 @@ HanabiCard.prototype.checkPipPossibilities = function checkPipPossibilities(suit
     if (!rankPossible) {
         // Do nothing if the normal pip is already hidden
         const pip = this.rankPipsMap.get(rank);
+        if (!pip) {
+            return;
+        }
         if (!pip.getVisible()) {
             return;
         }
