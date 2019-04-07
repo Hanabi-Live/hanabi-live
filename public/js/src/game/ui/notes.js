@@ -36,6 +36,7 @@ const set = (order, note, send = true) => {
     if (note === '') {
         note = undefined;
     }
+    const oldNote = notes[order];
     notes[order] = note;
     vars.lastNote = note;
 
@@ -45,6 +46,42 @@ const set = (order, note, send = true) => {
             order,
             note,
         });
+    }
+
+    // Validate that the note does not contain an impossibility
+    if (!note) {
+        return;
+    }
+    // Only examine the new text that they added
+    const getDiff = (string, diffBy) => string.split(diffBy).join('');
+    const diff = getDiff(note, oldNote);
+    let shownWarning = false;
+    for (const suit of globals.variant.suits) {
+        for (const rank of globals.variant.ranks) {
+            if (
+                diff.includes(`${suit.abbreviation.toLowerCase()}${rank}`) // e.g. b1
+                || diff.includes(`${suit.abbreviation.toUpperCase()}${rank}`) // e.g. B1
+                || diff.includes(`${suit.name}${rank}`) // e.g. Blue1
+                || diff.includes(`${suit.name.toLowerCase()}${rank}`) // e.g. blue1
+                || diff.includes(`${suit.name.toUpperCase()}${rank}`) // e.g. BLUE1
+                || diff.includes(`${rank}${suit.abbreviation.toLowerCase()}`) // e.g. 1b
+                || diff.includes(`${rank}${suit.abbreviation.toUpperCase()}`) // e.g. 1B
+                || diff.includes(`${rank}${suit.name}`) // e.g. 1Blue
+                || diff.includes(`${rank}${suit.name.toLowerCase()}`) // e.g. 1blue
+                || diff.includes(`${rank}${suit.name.toUpperCase()}`) // e.g. 1BLUE
+            ) {
+                const mapIndex = `${suit.name}${rank}`;
+                if (globals.deck[order].possibleCards.get(mapIndex) === 0) {
+                    shownWarning = true;
+                    window.alert(`That card cannot possibly be a ${suit.name} ${rank}.`);
+                    break;
+                }
+            }
+        }
+
+        if (shownWarning) {
+            break;
+        }
     }
 };
 exports.set = set;
