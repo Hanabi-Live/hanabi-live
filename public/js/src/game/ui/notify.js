@@ -130,13 +130,19 @@ commands.draw = (data) => {
         learnedCard.revealed = true;
     }
 
-    // Refresh all the variables on the card (in case we are rewinding in a replay)
-    // (cards are created on first initialization for performance reasons)
+    // Cards are created on first initialization for performance reasons
+    // So, since this card was just drawn, refresh all the variables on the card
+    // (this is necessary because we might be rewinding in a replay)
     const card = globals.deck[order];
-    card.trueSuit = suit; // This will be null if we don't know the suit
-    card.trueRank = rank; // This will be null if we don't know the rank
+    // This has to be set before the refresh so that the arrows are flipped properly
     card.holder = holder;
     card.refresh();
+
+    // Set variables specific to this card
+    card.trueSuit = suit; // This will be null if we don't know the suit
+    card.trueRank = rank; // This will be null if we don't know the rank
+    card.initPossibilities();
+    card.setBareImage();
 
     // Hide the pips if we have full knowledge of the suit / rank
     if (suit && rank) {

@@ -53,7 +53,7 @@ exports.pips = function pips() {
         y: 0,
         width: Math.floor(constants.CARDW),
         height: Math.floor(constants.CARDH),
-        visible: !this.trueSuit,
+        visible: false,
         listening: false,
     });
     this.add(this.suitPips);
@@ -153,7 +153,7 @@ exports.pips = function pips() {
         y: Math.floor(constants.CARDH * 0.85),
         width: constants.CARDW,
         height: Math.floor(constants.CARDH * 0.15),
-        visible: !this.trueRank,
+        visible: false,
         listening: false,
     });
     this.add(this.rankPips);
@@ -418,15 +418,15 @@ exports.empathy = function empathy() {
     // Pips visibility state is tracked so it can be restored for your own hand during a game
     const toggleHolderViewOnCard = (card, enabled, togglePips) => {
         const toggledPips = [0, 0];
-        if (card.rankPips.visible() !== enabled && togglePips[0] === 1) {
+        if (card.rankPips.getVisible() !== enabled && togglePips[0] === 1) {
             card.rankPips.setVisible(enabled);
             toggledPips[0] = 1;
         }
-        if (card.suitPips.visible() !== enabled && togglePips[1] === 1) {
+        if (card.suitPips.getVisible() !== enabled && togglePips[1] === 1) {
             card.suitPips.setVisible(enabled);
             toggledPips[1] = 1;
         }
-        card.showOnlyLearned = enabled;
+        card.empathy = enabled;
         card.setBareImage();
         return toggledPips;
     };
@@ -456,7 +456,7 @@ exports.empathy = function empathy() {
     let toggledPips = [];
     this.on('mousedown', (event) => {
         if (
-            event.evt.which !== empathyMouseButton // Only do Empathy for left-clicks
+            event.evt.which !== empathyMouseButton // Only enable Empathy for left-clicks
             // Disable Empathy if a modifier key is pressed
             // (unless we are in a speedrun,
             // because then Empathy is mapped to Ctrl + left click)
@@ -508,17 +508,12 @@ exports.click = function click() {
 };
 
 exports.possibilities = function possibilities() {
-    // If this is the first time this function is called, there will be no cards in the deck
-    if (globals.deck.length === 0) {
-        return;
-    }
-
     // We want to remove all of the currently seen cards from the list of possibilities
     for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
         const card = globals.deck[i];
 
         // Don't do anything if we don't know what this card is yet
-        if (!card.isRevealed()) {
+        if (!card.revealed) {
             continue;
         }
 

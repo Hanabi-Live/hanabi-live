@@ -10,7 +10,6 @@ const globals = require('./globals');
 
 exports.toggle = () => {
     globals.hypothetical = !globals.hypothetical;
-    console.log('Toggling hypothetical:', globals.hypothetical);
 
     if (globals.amSharedReplayLeader) {
         setAllCardsDraggable();

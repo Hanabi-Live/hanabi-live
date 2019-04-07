@@ -26,11 +26,10 @@ class HanabiCard extends graphics.Group {
         };
         super(config);
 
-        // Order is defined upon first initialization;
-        // other variables are defined below in the "refresh()" function
+        // Most class variables are defined below in the "refresh()" function
+        // Order is defined upon first initialization
         this.order = config.order;
-        this.trueSuit = null;
-        this.trueRank = null;
+        // The index of the player that holds this card (or null if played/discarded)
         this.holder = null;
 
         // Initialize various elements/features of the card
@@ -41,10 +40,6 @@ class HanabiCard extends graphics.Group {
         this.initNote();
         this.initEmpathy();
         this.initClick();
-    }
-
-    isRevealed() {
-        return this.trueSuit && this.trueRank;
     }
 
     doRotations(inverted) {
@@ -58,16 +53,15 @@ class HanabiCard extends graphics.Group {
         return this.numPositiveClues > 0;
     }
 
-    isInPlayerHand() {
-        return globals.elements.playerHands.indexOf(this.parent.parent) !== -1;
-    }
-
     hideClues() {
         this.cluedBorder.hide();
     }
 
     // Erase all of the data on the card to make it like it was freshly drawn
     refresh() {
+        this.revealed = false; // True when trueSuit and trueRank are set
+        this.trueSuit = null;
+        this.trueRank = null;
         // Possible suits and ranks (based on clues given) are tracked separately
         // from knowledge of the true suit and rank
         this.possibleSuits = globals.variant.suits.slice();
@@ -75,7 +69,7 @@ class HanabiCard extends graphics.Group {
         // Possible cards (based on both clues given and cards seen) are also tracked separately
         this.possibleCards = new Map(globals.cardMap); // Start by cloning the "globals.cardMap"
         this.tweening = false;
-        this.showOnlyLearned = false;
+        this.empathy = false;
         this.numPositiveClues = 0;
         this.hasPositiveColorClue = false;
         this.hasPositiveRankClue = false;
@@ -90,9 +84,7 @@ class HanabiCard extends graphics.Group {
         this.isMisplayed = false;
 
         this.setListening(true);
-        this.initPossibilities();
         this.hideClues();
-        this.setBareImage();
 
         // Reset all of the pips to their default state
         if (this.suitPipsMap) {
@@ -126,15 +118,28 @@ class HanabiCard extends graphics.Group {
         const learnedCard = globals.learnedCards[this.order];
 
         // Find out the suit to display
-        // ("Gray" is a colorless suit used for unclued cards)
-        const suit = !this.showOnlyLearned && this.trueSuit;
-        const empathyPastSuitUncertain = this.showOnlyLearned && this.possibleSuits.length > 1;
-
-        let suitToShow = suit || learnedCard.suit || constants.SUIT.GRAY;
-        if (empathyPastSuitUncertain) {
-            suitToShow = constants.SUIT.GRAY;
+        // (Gray is a colorless suit used for unclued cards)
+        let suitToShow;
+        if (this.empathy) {
+            // If we are in Empathy mode, only show the suit if there is only one possibility left
+            // and the card has one or more clues on it
+            if (this.possibleSuits.length === 1 && this.isClued()) {
+                [suitToShow] = this.possibleSuits;
+            } else {
+                suitToShow = constants.SUIT.GRAY;
+            }
+        } else {
+            // If we are not in Empathy mode, then show the suit if it is known
+            suitToShow = learnedCard.suit || constants.SUIT.GRAY;
         }
-        if (!learnedCard.revealed && !this.hasPositiveColorClue) {
+
+        // But don't show the full suit if the card is not yet revealed and it has no clues on it
+        if (
+            suitToShow !== constants.SUIT.GRAY
+            && !learnedCard.revealed
+            && !this.isClued()
+            && (this.holder === globals.playerUs || this.empathy)
+        ) {
             suitToShow = constants.SUIT.GRAY;
         }
 
@@ -146,21 +151,36 @@ class HanabiCard extends graphics.Group {
 
         // Find out the rank to display
         // (6 is a used for unclued cards)
-        const rank = !this.showOnlyLearned && this.trueRank;
-        const empathyPastRankUncertain = this.showOnlyLearned && this.possibleRanks.length > 1;
-
         let rankToShow;
-        if (empathyPastRankUncertain) {
-            rankToShow = 6;
+        if (this.empathy) {
+            // If we are in Empathy mode, only show the rank if there is only one possibility left
+            // and the card has one or more clues on it
+            if (this.possibleRanks.length === 1 && this.isClued()) {
+                [rankToShow] = this.possibleRanks;
+            } else {
+                rankToShow = 6;
+            }
         } else {
-            rankToShow = rank || learnedCard.rank || 6;
+            // If we are not in Empathy mode, then show the rank if it is known
+            rankToShow = learnedCard.rank || 6;
         }
-        if (!learnedCard.revealed && !this.hasPositiveRankClue) {
-            rankToShow = '6';
+
+        // But don't show the full rank if the card is not yet revealed and it has no clues on it
+        if (
+            rankToShow !== 6
+            && !learnedCard.revealed
+            && !this.isClued()
+            && (this.holder === globals.playerUs || this.empathy)
+        ) {
+            rankToShow = 6;
         }
 
         // Set the name
         this.bareName = `${prefix}-${suitToShow.name}-${rankToShow}`;
+
+        // Show or hide the pips
+        this.suitPips.setVisible(suitToShow === constants.SUIT.GRAY);
+        this.rankPips.setVisible(rankToShow === 6);
     }
 
     initImage() {
@@ -340,7 +360,7 @@ class HanabiCard extends graphics.Group {
                 globals.learnedCards[this.order].rank = this.trueRank;
 
                 // Don't hide the pips if the card is unclued
-                if (!this.isInPlayerHand() || this.isClued()) {
+                if (this.holder === null || this.isClued()) {
                     this.rankPipsMap.get(this.trueRank).hide();
                     this.rankPips.hide();
                 }
@@ -367,7 +387,7 @@ class HanabiCard extends graphics.Group {
                 globals.learnedCards[this.order].suit = this.trueSuit;
 
                 // Don't hide the pips if the card is unclued
-                if (!this.isInPlayerHand() || this.isClued()) {
+                if (this.holder === null || this.isClued()) {
                     this.suitPipsMap.get(this.trueSuit).hide();
                     this.suitPips.hide();
                 }
@@ -424,9 +444,6 @@ class HanabiCard extends graphics.Group {
             // All the cards of this rank are seen, so put an X over the rank pip
             const x = this.rankPipsXMap.get(rank);
             x.setVisible(true);
-            if (this.order === 21) {
-                console.log('SET VISIBLE', rank, 'ON TURN', globals.turn);
-            }
         }
     }
 
@@ -461,19 +478,17 @@ class HanabiCard extends graphics.Group {
         }
 
         // Set the true suit/rank on the card
-        this.showOnlyLearned = false;
+        this.revealed = true;
         this.trueSuit = suit;
         this.trueRank = rank;
 
         // Keep track of what this card is
         const learnedCard = globals.learnedCards[this.order];
+        learnedCard.revealed = true;
         learnedCard.suit = suit;
         learnedCard.rank = rank;
-        learnedCard.revealed = true;
 
         // Redraw the card
-        this.suitPips.hide();
-        this.rankPips.hide();
         this.setBareImage();
 
         // Hide any existing arrows on all cards
@@ -496,6 +511,9 @@ class HanabiCard extends graphics.Group {
         layoutChild.setRotation(layoutChild.parent.getRotation());
         layoutChild.remove();
         layoutChild.setAbsolutePosition(pos);
+
+        // Mark that no player is now holding this card
+        this.holder = null;
     }
 
     animateToPlayStacks() {
@@ -549,7 +567,7 @@ class HanabiCard extends graphics.Group {
 
     isCritical() {
         if (
-            !this.isRevealed()
+            !this.revealed
             || this.isPlayed
             || this.isDiscarded
             || !needsToBePlayed(this.trueSuit, this.trueRank)
