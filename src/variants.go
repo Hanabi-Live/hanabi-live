@@ -69,11 +69,11 @@ var (
 	PurpleSuit = NewSuit("Purple", []ColorClue{PurpleClue})
 
 	// Basic variants
-	OrangeSuit     = NewSuit("Orange", []ColorClue{OrangeClue})
-	BlackSuit      = NewSuit1oE("Black", []ColorClue{BlackClue})
-	RainbowSuit    = NewSuit("Rainbow", allColorClues)
-	WhiteSuit      = NewSuit("White", noColorClues)
-	Rainbow1oESuit = NewSuit1oE("Rainbow", allColorClues)
+	OrangeSuit      = NewSuit("Orange", []ColorClue{OrangeClue})
+	BlackSuit       = NewSuit1oE("Black", []ColorClue{BlackClue})
+	RainbowSuit     = NewSuit("Rainbow", allColorClues)
+	WhiteSuit       = NewSuit("White", noColorClues)
+	DarkRainbowSuit = NewSuit1oE("Rainbow", allColorClues)
 
 	// For "Color Blind"
 	BlindBlueSuit   = NewSuit("Blue", noColorClues)

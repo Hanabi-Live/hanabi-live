@@ -359,7 +359,7 @@ HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
             const clueColor = clue.value;
             if (
                 card.trueSuit === constants.SUIT.RAINBOW
-                || card.trueSuit === constants.SUIT.RAINBOW1OE
+                || card.trueSuit === constants.SUIT.DARKRAINBOW
                 || card.trueSuit.clueColors.includes(clueColor)
             ) {
                 touched = true;

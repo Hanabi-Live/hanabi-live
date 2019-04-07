@@ -2,24 +2,23 @@
 const graphics = require('./graphics');
 
 const NumberButton = function NumberButton(config) {
+    config.listening = true;
     graphics.Group.call(this, config);
 
     const w = this.getWidth();
     const h = this.getHeight();
 
-    const background = new graphics.Rect({
+    this.background = new graphics.Rect({
         name: 'background',
         x: 0,
         y: 0,
         width: w,
         height: h,
-        listening: true,
         cornerRadius: 0.12 * h,
         fill: 'black',
         opacity: 0.6,
     });
-
-    this.add(background);
+    this.add(this.background);
 
     const text = new graphics.Text({
         x: 0,
@@ -33,29 +32,27 @@ const NumberButton = function NumberButton(config) {
         align: 'center',
         text: config.number.toString(),
     });
-
     this.add(text);
 
     this.pressed = false;
 
     this.clue = config.clue;
 
-    background.on('mousedown', () => {
-        background.setFill('#888888');
-        background.getLayer().batchDraw();
+    const resetButton = () => {
+        this.background.setFill('black');
+        this.background.getLayer().batchDraw();
 
-        const resetButton = () => {
-            background.setFill('black');
-            background.getLayer().batchDraw();
+        this.background.off('mouseup');
+        this.background.off('mouseout');
+    };
+    this.background.on('mousedown', () => {
+        this.background.setFill('#888888');
+        this.background.getLayer().batchDraw();
 
-            background.off('mouseup');
-            background.off('mouseout');
-        };
-
-        background.on('mouseout', () => {
+        this.background.on('mouseout', () => {
             resetButton();
         });
-        background.on('mouseup', () => {
+        this.background.on('mouseup', () => {
             resetButton();
         });
     });
@@ -65,7 +62,7 @@ graphics.Util.extend(NumberButton, graphics.Group);
 
 NumberButton.prototype.setPressed = function setPressed(pressed) {
     this.pressed = pressed;
-    this.get('.background')[0].setFill(pressed ? '#cccccc' : 'black');
+    this.background.setFill(pressed ? '#cccccc' : 'black');
     this.getLayer().batchDraw();
 };
 

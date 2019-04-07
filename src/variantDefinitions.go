@@ -119,20 +119,20 @@ var (
 		Variant{
 			Name:  "Dark Rainbow (6 Suits)",
 			ID:    11,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, Rainbow1oESuit},
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, DarkRainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
 		},
 		Variant{
 			Name:  "Dark Rainbow (5 Suits)",
 			ID:    23,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, Rainbow1oESuit},
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, DarkRainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
 		// "Dark Rainbow (4 Suits)" would be too difficult
 		Variant{
 			Name:  "Black & Dark Rainbow (6 Suits)",
 			ID:    12,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BlackSuit, Rainbow1oESuit},
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BlackSuit, DarkRainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
 		},
 		// "Black & Dark Rainbow (5 Suits)" would be too difficult

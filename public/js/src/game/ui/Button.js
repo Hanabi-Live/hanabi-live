@@ -4,6 +4,7 @@ const globals = require('./globals');
 const graphics = require('./graphics');
 
 const Button = function Button(config) {
+    config.listening = true;
     graphics.Group.call(this, config);
 
     const w = this.getWidth();
@@ -13,21 +14,22 @@ const Button = function Button(config) {
     this.enabled = true;
     this.pressed = false;
 
-    const background = new graphics.Rect({
+    this.background = new graphics.Rect({
         name: 'background',
         x: 0,
         y: 0,
         width: w,
         height: h,
-        listening: true,
         cornerRadius: 0.12 * h,
         fill: 'black',
         opacity: 0.6,
     });
-    this.add(background);
+    this.add(this.background);
 
+    this.text = null;
+    this.img = null;
     if (config.text) {
-        const text = new FitText({
+        this.text = new FitText({
             name: 'text',
             x: 0,
             y: 0.275 * h,
@@ -40,11 +42,11 @@ const Button = function Button(config) {
             align: 'center',
             text: config.text,
         });
-        this.setText = newText => text.setText(newText);
-        this.setFill = newFill => text.setFill(newFill);
-        this.add(text);
+        this.setText = newText => this.text.setText(newText);
+        this.setFill = newFill => this.text.setFill(newFill);
+        this.add(this.text);
     } else if (config.image) {
-        const img = new graphics.Image({
+        this.img = new graphics.Image({
             name: 'image',
             x: 0.2 * w,
             y: 0.2 * h,
@@ -53,26 +55,25 @@ const Button = function Button(config) {
             listening: false,
             image: globals.ImageLoader.get(config.image),
         });
-        this.add(img);
+        this.add(this.img);
         this.imageName = config.image; // Store this for later in case we disable the button
     }
 
-    background.on('mousedown', () => {
-        background.setFill('#888888');
-        background.getLayer().batchDraw();
+    const resetButton = () => {
+        this.background.setFill('black');
+        this.background.getLayer().batchDraw();
 
-        const resetButton = () => {
-            background.setFill('black');
-            background.getLayer().batchDraw();
+        this.background.off('mouseup');
+        this.background.off('mouseout');
+    };
+    this.background.on('mousedown', () => {
+        this.background.setFill('#888888');
+        this.background.getLayer().batchDraw();
 
-            background.off('mouseup');
-            background.off('mouseout');
-        };
-
-        background.on('mouseout', () => {
+        this.background.on('mouseout', () => {
             resetButton();
         });
-        background.on('mouseup', () => {
+        this.background.on('mouseup', () => {
             resetButton();
         });
     });
@@ -86,21 +87,16 @@ Button.prototype.setEnabled = function setEnabled(enabled) {
     }
     this.enabled = enabled;
 
-    const text = this.get('.text');
-    if (text.length > 0) {
-        text[0].setFill(enabled ? 'white' : '#444444');
+    if (this.text !== null) {
+        this.text.setFill(enabled ? 'white' : '#444444');
     }
 
-    const image = this.get('.image');
-    if (image.length > 0) {
+    if (this.img !== null) {
         const imageName = (enabled ? this.imageName : `${this.imageName}-disabled`);
-        image[0].setImage(globals.ImageLoader.get(imageName));
+        this.img.setImage(globals.ImageLoader.get(imageName));
     }
 
-    const background = this.get('.background');
-    if (background.length > 0) {
-        background[0].setListening(enabled);
-    }
+    this.background.setListening(enabled);
 
     const layer = this.getLayer();
     if (layer !== null) {
@@ -110,8 +106,11 @@ Button.prototype.setEnabled = function setEnabled(enabled) {
 
 Button.prototype.setPressed = function setPressed(pressed) {
     this.pressed = pressed;
-    this.get('.background')[0].setFill(pressed ? '#cccccc' : 'black');
-    this.getLayer().batchDraw();
+    this.background.setFill(pressed ? '#cccccc' : 'black');
+    const layer = this.getLayer();
+    if (layer !== null) {
+        layer.batchDraw();
+    }
 };
 
 module.exports = Button;

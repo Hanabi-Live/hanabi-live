@@ -3,7 +3,6 @@ const graphics = require('./graphics');
 
 const ButtonGroup = function ButtonGroup(config) {
     graphics.Node.call(this, config);
-
     this.list = [];
 };
 

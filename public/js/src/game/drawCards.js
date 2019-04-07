@@ -508,7 +508,7 @@ const shapeFunctions = [
 const drawSuitShape = (suit, i) => {
     // Suit shapes go in order from left to right, with the exception of rainbow suits,
     // which are always given a rainbow symbol
-    if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
+    if (suit === SUIT.RAINBOW || suit === SUIT.DARKRAINBOW) {
         // The final shape function in the array is the rainbow
         i = shapeFunctions.length - 1;
     }

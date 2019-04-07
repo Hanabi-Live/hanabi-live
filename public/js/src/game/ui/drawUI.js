@@ -52,23 +52,25 @@ module.exports = () => {
     numPlayers = globals.playerNames.length;
 
     // Just in case, delete all existing layers
-    const layers = globals.stage.getLayers();
-    for (let i = 0; i < layers.length; i++) {
-        layers[i].remove();
+    for (const layer of globals.stage.getLayers()) {
+        layer.remove();
     }
 
     // Define the layers
     // (they are added to the stage later on at the end of this function)
-    globals.layers.background = new graphics.Layer();
-    globals.layers.UI = new graphics.Layer();
-    globals.layers.timer = new graphics.Layer({
-        listening: false,
-    });
-    globals.layers.card = new graphics.Layer();
-    globals.layers.UI2 = new graphics.Layer({ // We need some UI elements to be on top of cards
-        listening: false,
-    });
-    globals.layers.overtop = new graphics.Layer(); // A layer drawn overtop everything else
+    const layers = [
+        'background',
+        'UI',
+        'timer',
+        'card',
+        'UI2', // We need some UI elements to be on top of cards
+        'overtop', // A layer drawn overtop everything else
+    ];
+    for (const layer of layers) {
+        globals.layers[layer] = new graphics.Layer({
+            listening: false,
+        });
+    }
 
     const background = new graphics.Image({
         x: 0,
@@ -304,6 +306,7 @@ const drawPlayStacksAndDiscardStacks = () => {
             y: (0.61 + discardStackSpacing * i) * winH,
             width: 0.17 * winW,
             height: 0.17 * winH,
+            player: -1,
         });
         globals.elements.discardStacks.set(suit, thisSuitDiscardStack);
         globals.layers.card.add(thisSuitDiscardStack);
@@ -316,7 +319,7 @@ const drawPlayStacksAndDiscardStacks = () => {
                 globals.lobby.settings.showColorblindUI
                 && suit.clueColors.length > 1
                 && suit !== constants.SUIT.RAINBOW
-                && suit !== constants.SUIT.RAINBOW1OE
+                && suit !== constants.SUIT.DARKRAINBOW
             ) {
                 const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
                 text += ` [${colorList}]`;

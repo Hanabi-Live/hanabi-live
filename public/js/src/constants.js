@@ -2,16 +2,41 @@
     Suit definitions, variant definitions, character definitions, and so forth
 */
 
+// Define the defeault size of a card
 exports.CARDW = 286;
 exports.CARDH = 406;
 // This is a temporary scale only to be used with phaser until dynamic scaling is implemented
 exports.PHASER_DEMO_SCALE = 0.35;
 
-const Color = function Color(name, abbreviation, hexCode) {
-    this.name = name;
-    this.abbreviation = abbreviation;
-    this.hexCode = hexCode;
+// These constants much match their server-side counterparts
+exports.ACT = {
+    CLUE: 0,
+    PLAY: 1,
+    DISCARD: 2,
+    DECKPLAY: 3,
 };
+exports.CLUE_TYPE = {
+    RANK: 0,
+    COLOR: 1,
+};
+exports.REPLAY_ACTION_TYPE = {
+    TURN: 0,
+    ARROW: 1,
+    LEADER_TRANSFER: 2,
+    MORPH: 3,
+    SOUND: 4,
+    HYPO_START: 5,
+    HYPO_END: 6,
+    HYPO_ACTION: 7,
+};
+
+class Color {
+    constructor(name, abbreviation, hexCode) {
+        this.name = name;
+        this.abbreviation = abbreviation;
+        this.hexCode = hexCode;
+    }
+}
 
 exports.COLOR = {
     // Normal
@@ -26,8 +51,9 @@ exports.COLOR = {
     WHITE: new Color('White', 'W', '#d9d9d9'),
     BLACK: new Color('Black', 'K', '#111111'),
 
+    // Complex variants
     NAVY: new Color('Navy', 'N', '#000066'),
-    ORANGE: new Color('Orange', 'O', '#ff8800'), // ff8800 is orange, ff33cc is pink, ff00ff is magenta
+    ORANGE: new Color('Orange', 'O', '#ff8800'),
     TAN: new Color('Tan', 'T', '#999900'),
     MAHOGANY: new Color('Mahogany', 'M', '#660016'),
     TEAL: new Color('Teal', 'T', '#00b3b3'),
@@ -100,10 +126,12 @@ const baseColors2 = [
 
 // Specify between solid color and gradients,
 // along with additional args in the case of gradients
-const FillSpec = function FillSpec(fillType, args = null) {
-    this.fillType = fillType;
-    this.args = args;
-};
+class FillSpec {
+    constructor(fillType, args = null) {
+        this.fillType = fillType;
+        this.args = args;
+    }
+}
 
 const solidFillSpec = new FillSpec(FILL_TYPE.SOLID);
 const multiBkgFillSpec = new FillSpec(
@@ -125,25 +153,22 @@ exports.CARD_AREA = {
     SYMBOL: 'symbol',
 };
 
-// Bundles fill specs together for all the card attributes
-// (background, number, symbol)
-const BuildCardFillSpec = function BuildCardFillSpec(
+// Bundles fill specs together for all the card attributes (background, number, symbol)
+const buildCardFillSpec = (
     backgroundFillSpec,
     numberFillSpec,
     symbolFillSpec,
-) {
-    return new Map([
-        [exports.CARD_AREA.BACKGROUND, backgroundFillSpec],
-        [exports.CARD_AREA.NUMBER, numberFillSpec],
-        [exports.CARD_AREA.SYMBOL, symbolFillSpec],
-    ]);
-};
-const basicCardFillSpec = BuildCardFillSpec(
+) => new Map([
+    [exports.CARD_AREA.BACKGROUND, backgroundFillSpec],
+    [exports.CARD_AREA.NUMBER, numberFillSpec],
+    [exports.CARD_AREA.SYMBOL, symbolFillSpec],
+]);
+const basicCardFillSpec = buildCardFillSpec(
     solidFillSpec,
     solidFillSpec,
     solidFillSpec,
 );
-const multiCardFillSpec = BuildCardFillSpec(
+const multiCardFillSpec = buildCardFillSpec(
     multiBkgFillSpec,
     multiNumberFillSpec,
     multiSymbolFillSpec,
@@ -169,47 +194,46 @@ const evenRadialGradient = (ctx, colors, args) => {
     return grad;
 };
 
-// Pair each suit name with the color(s) that correspond(s) to it
-const Suit = function Suit(
-    name,
-    abbreviation,
-    fillColors,
-    cardFillSpec,
-    clueColors,
-    oneOfEach = false,
-) {
-    this.name = name;
-    this.abbreviation = abbreviation;
-    this.fillColors = fillColors;
-    this.cardFillSpec = cardFillSpec;
-    this.clueColors = clueColors;
-    this.oneOfEach = oneOfEach;
-};
-
-// Returns the style (color, gradient, etc.) for a given card area
-// (bkg, number, symbol)
-Suit.prototype.style = function style(ctx, cardArea) {
-    const fillSpec = this.cardFillSpec.get(cardArea);
-    const { fillType } = fillSpec;
-    const colors = this.fillColors;
-
-    if (fillType === FILL_TYPE.SOLID) {
-        // "colors" in this case should be a single color, not an array
-        return colors.hexCode;
-    }
-    if (fillType === FILL_TYPE.LINEAR_GRADIENT) {
-        return evenLinearGradient(ctx, colors, fillSpec.args);
-    }
-    if (fillType === FILL_TYPE.RADIAL_GRADIENT) {
-        return evenRadialGradient(ctx, colors, fillSpec.args);
+class Suit {
+    constructor(
+        name,
+        abbreviation,
+        fillColors,
+        cardFillSpec,
+        clueColors,
+        oneOfEach = false,
+    ) {
+        this.name = name;
+        this.abbreviation = abbreviation;
+        this.fillColors = fillColors;
+        this.cardFillSpec = cardFillSpec;
+        this.clueColors = clueColors;
+        this.oneOfEach = oneOfEach;
     }
 
-    return null;
-};
+    // Returns the style (color, gradient, etc.) for a given card area (bkg, number, symbol)
+    style(ctx, cardArea) {
+        const fillSpec = this.cardFillSpec.get(cardArea); // "this.cardFillSpec" is a Map()
+        const { fillType } = fillSpec;
+        const colors = this.fillColors;
 
-// It probably isn't design-necessary to define this list of suits, but it
-// will only hurt if we have a lot of instances of suits that vary in
-// property between variants
+        if (fillType === FILL_TYPE.SOLID) {
+            // "colors" in this case should be a single color, not an array
+            return colors.hexCode;
+        }
+        if (fillType === FILL_TYPE.LINEAR_GRADIENT) {
+            return evenLinearGradient(ctx, colors, fillSpec.args);
+        }
+        if (fillType === FILL_TYPE.RADIAL_GRADIENT) {
+            return evenRadialGradient(ctx, colors, fillSpec.args);
+        }
+
+        return null;
+    }
+}
+
+// It probably isn't design-necessary to define this list of suits, but it will only hurt if we have
+// a lot of instances of suits that vary in property between variants
 exports.SUIT = {
     // The base game
     BLUE: new Suit(
@@ -247,8 +271,9 @@ exports.SUIT = {
         basicCardFillSpec,
         [exports.COLOR.PURPLE],
     ),
+
+    // This represents cards of unknown suit; it must not be included in variants
     GRAY: new Suit(
-        // This represents cards of unknown suit; it must not be included in variants
         'Gray',
         '',
         exports.COLOR.GRAY,
@@ -281,16 +306,13 @@ exports.SUIT = {
         true, // This suit has one of each card
     ),
     RAINBOW: new Suit(
-        // Color ordering is not guaranteed to be the same as declaration order
-        // Do not these values for the rainbow suit; instead, use special cases
-        // e.g. if (suit === SUIT.RAINBOW, color_match = true)
         'Rainbow',
         'M',
         baseColors,
         multiCardFillSpec,
         Object.values(exports.COLOR),
     ),
-    RAINBOW1OE: new Suit(
+    DARKRAINBOW: new Suit(
         'Rainbow',
         'M',
         [
@@ -541,31 +563,23 @@ exports.SUIT = {
     ),
 };
 
-exports.ACT = {
-    CLUE: 0,
-    PLAY: 1,
-    DISCARD: 2,
-    DECKPLAY: 3,
-};
-
-exports.CLUE_TYPE = {
-    RANK: 0,
-    COLOR: 1,
-};
-
-const Variant = function Variant(suits, clueColors, showSuitNames) {
-    this.suits = suits;
-    this.ranks = [1, 2, 3, 4, 5];
-    this.clueColors = clueColors;
-    this.showSuitNames = showSuitNames;
-    // We draw text of the suit names below the stacks for confusing variants
-    this.offsetCardIndicators = suits.some(
-        s => s !== exports.SUIT.RAINBOW
-            && s !== exports.SUIT.RAINBOW1OE
-            && s.clueColors.length > 1,
-    );
-    this.maxScore = suits.length * 5;
-};
+class Variant {
+    constructor(suits, clueColors, showSuitNames) {
+        this.suits = suits;
+        this.ranks = [1, 2, 3, 4, 5];
+        this.clueColors = clueColors;
+        // We draw text of the suit names below the stacks for confusing variants
+        this.showSuitNames = showSuitNames;
+        // Dual-color variants will have triangles in the corner of the card to indicate what colors
+        // the suit is composed of; if so, we will need to move the note indicator downwards
+        this.offsetCardIndicators = suits.some(
+            s => s !== exports.SUIT.RAINBOW
+                && s !== exports.SUIT.DARKRAINBOW
+                && s.clueColors.length > 1,
+        );
+        this.maxScore = suits.length * 5;
+    }
+}
 
 exports.VARIANTS = {
     // Normal
@@ -768,7 +782,7 @@ exports.VARIANTS = {
             exports.SUIT.YELLOW,
             exports.SUIT.RED,
             exports.SUIT.PURPLE,
-            exports.SUIT.RAINBOW1OE,
+            exports.SUIT.DARKRAINBOW,
         ],
         baseColors,
         false,
@@ -779,7 +793,7 @@ exports.VARIANTS = {
             exports.SUIT.GREEN,
             exports.SUIT.YELLOW,
             exports.SUIT.RED,
-            exports.SUIT.RAINBOW1OE,
+            exports.SUIT.DARKRAINBOW,
         ],
         baseColors4,
         false,
@@ -791,7 +805,7 @@ exports.VARIANTS = {
             exports.SUIT.YELLOW,
             exports.SUIT.RED,
             exports.SUIT.BLACK,
-            exports.SUIT.RAINBOW1OE,
+            exports.SUIT.DARKRAINBOW,
         ],
         baseColors4plusBlack,
         false,
@@ -1275,10 +1289,13 @@ for (const name of Object.keys(exports.VARIANTS)) {
     exports.VARIANTS[name].name = name;
 }
 
-const Character = function Character(description, emoji) {
-    this.description = description;
-    this.emoji = emoji;
-};
+class Character {
+    constructor(description, emoji) {
+        this.description = description;
+        this.emoji = emoji;
+    }
+}
+
 exports.CHARACTERS = {
     // Clue restriction characters (giving)
     'Fuming': new Character(
@@ -1424,20 +1441,7 @@ for (const name of Object.keys(exports.CHARACTERS)) {
     exports.CHARACTERS[name].name = name;
 }
 
-// This must match the "replayActionType" constants in the "constants.go" file
-exports.REPLAY_ACTION_TYPE = {
-    TURN: 0,
-    ARROW: 1,
-    LEADER_TRANSFER: 2,
-    MORPH: 3,
-    SOUND: 4,
-    HYPO_START: 5,
-    HYPO_END: 6,
-    HYPO_ACTION: 7,
-};
-
-// This only freezes one layer deep; to do any better, we should likely
-// involve a library like immutablejs. But probably not worth bothering with.
+// Ensure that the constants cannot be modified (but this only freezes one layer deep)
 for (const property of Object.keys(exports)) {
     Object.freeze(property);
 }

@@ -277,6 +277,7 @@ module.exports = () => {
             align: 'center',
             reverse: isHandReversed(j),
             invertCards,
+            player: i,
         });
         globals.layers.card.add(globals.elements.playerHands[i]);
 

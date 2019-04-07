@@ -61,12 +61,14 @@ const (
 	replayActionTypeHypoAction // Perform a move in the hypothetical
 )
 
+var (
+	// The amount of time that a game is inactive before it is killed by the server
+	idleGameTimeout = time.Minute * 30
+)
+
 const (
 	// The maximum amount of clues (and the amount of clues that players start a game with)
 	maxClues = 8
-
-	// The amount of time that a game is inactive before it is killed by the server
-	idleGameTimeout = time.Minute * 30
 
 	// The amount of time that someone can be on the waiting list
 	idleWaitingListTimeout = time.Hour * 8

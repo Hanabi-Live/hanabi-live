@@ -14,9 +14,9 @@ const CardStack = function CardStack(config) {
 graphics.Util.extend(CardStack, graphics.Group);
 
 CardStack.prototype.add = function add(child) {
-    child.children.forEach((c) => {
-        if (c.doRotations) {
-            c.doRotations(false);
+    child.children.forEach((card) => {
+        if (card.doRotations) {
+            card.doRotations(false);
         }
     });
     const pos = child.getAbsolutePosition();

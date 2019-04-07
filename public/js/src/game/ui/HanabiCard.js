@@ -5,1493 +5,601 @@
 // Imports
 const constants = require('../../constants');
 const convert = require('./convert');
-const drawCards = require('./drawCards');
 const globals = require('./globals');
 const graphics = require('./graphics');
+const HanabiCardInit = require('./HanabiCardInit');
 const notes = require('./notes');
-const replay = require('./replay');
 
 // Constants
-const {
-    CARDH,
-    CARDW,
-    CLUE_TYPE,
-    SUIT,
-} = constants;
 const sharedReplayIndicatorArrowColor = '#ffdf00'; // Yellow
 
-const HanabiCard = function HanabiCard(config) {
-    const self = this;
+class HanabiCard extends graphics.Group {
+    constructor(config) {
+        // Cards should start off with a constant width and height
+        config.width = constants.CARDW;
+        config.height = constants.CARDH;
+        config.x = constants.CARDW / 2;
+        config.y = constants.CARDH / 2;
+        config.offset = {
+            x: constants.CARDW / 2,
+            y: constants.CARDH / 2,
+        };
+        config.listening = true;
+        super(config);
 
-    // Cards should start off with a constant width and height
-    config.width = CARDW;
-    config.height = CARDH;
-    config.x = CARDW / 2;
-    config.y = CARDH / 2;
-    config.offset = {
-        x: CARDW / 2,
-        y: CARDH / 2,
-    };
+        // Order is defined upon first initialization;
+        // other variables are defined below in the "refresh()" function
+        this.order = config.order;
+        this.trueSuit = null;
+        this.trueRank = null;
+        this.holder = null;
 
-    graphics.Group.call(this, config);
+        // Initialize various elements/features of the card
+        this.initImage();
+        this.initBorder();
+        this.initPips();
+        this.initIndicatorArrow();
+        this.initNote();
+        this.initEmpathy();
+        this.initClick();
+    }
 
-    // Order is defined upon first initialization;
-    // other variables are defined below in the "refresh()" function
-    this.order = config.order;
-    this.trueSuit = null;
-    this.trueRank = null;
-    this.holder = null;
-
-    // Some short helper functions
-    this.isRevealed = function isRevealed() {
+    isRevealed() {
         return this.trueSuit && this.trueRank;
-    };
-    this.doRotations = function doRotations(inverted) {
+    }
+
+    doRotations(inverted) {
         this.setRotation(inverted ? 180 : 0);
         this.bare.setRotation(inverted ? 180 : 0);
-        this.bare.setX(inverted ? config.width : 0);
-        this.bare.setY(inverted ? config.height : 0);
-    };
-    this.isClued = function isClued() {
+        this.bare.setX(inverted ? constants.CARDW : 0);
+        this.bare.setY(inverted ? constants.CARDH : 0);
+    }
+
+    isClued() {
         return this.numPositiveClues > 0;
-    };
-    this.isInPlayerHand = function isInPlayerHand() {
+    }
+
+    isInPlayerHand() {
         return globals.elements.playerHands.indexOf(this.parent.parent) !== -1;
-    };
-    this.hideClues = function hideClues() {
+    }
+
+    hideClues() {
         this.cluedBorder.hide();
-    };
-
-    // Create the "bare" card image, which is a gray card with all the pips
-    this.bare = new graphics.Image({
-        width: config.width,
-        height: config.height,
-    });
-    this.bare.setSceneFunc(function setSceneFunc(context) {
-        scaleCardImage(
-            context,
-            self.bareName,
-            this.getWidth(),
-            this.getHeight(),
-            this.getAbsoluteTransform(),
-        );
-    });
-    this.add(this.bare);
-
-    // The card will get a border when it becomes clued
-    this.cluedBorder = new graphics.Rect({
-        x: 3,
-        y: 3,
-        width: config.width - 6,
-        height: config.height - 6,
-        cornerRadius: 6,
-        strokeWidth: 16,
-        stroke: '#ffdf00', // Yellow
-        visible: false,
-        listening: false,
-    });
-    this.add(this.cluedBorder);
-
-    // Initialize various elements/features of the card
-    this.initPips();
-    this.initIndicatorArrow(config);
-    this.initNote(config);
-    this.initEmpathy();
-
-    // Define the clue log mouse handlers
-    this.on('mousemove tap', function cardClueLogMousemoveTap() {
-        globals.elements.clueLog.showMatches(this);
-        globals.layers.UI.batchDraw();
-    });
-    this.on('mouseout', () => {
-        globals.elements.clueLog.showMatches(null);
-        globals.layers.UI.batchDraw();
-    });
-
-    // Define the other mouse handlers
-    this.on('click tap', this.click);
-    this.on('mousedown', this.clickSpeedrun);
-};
-
-graphics.Util.extend(HanabiCard, graphics.Group);
-
-// Erase all of the data on the card to make it like it was freshly drawn
-HanabiCard.prototype.refresh = function refresh() {
-    // Possible suits and ranks (based on clues given) are tracked separately
-    // from knowledge of the true suit and rank
-    this.possibleSuits = globals.variant.suits.slice();
-    this.possibleRanks = globals.variant.ranks.slice();
-    // Possible cards (based on both clues given and cards seen) are also tracked separately
-    this.possibleCards = new Map(globals.cardMap); // Start by cloning the "globals.cardMap"
-    this.tweening = false;
-    this.showOnlyLearned = false;
-    this.numPositiveClues = 0;
-    this.hasPositiveColorClue = false;
-    this.hasPositiveRankClue = false;
-    // We have to add one to the turn drawn because
-    // the "draw" command comes before the "turn" command
-    // However, if it was part of the initial deal, then it will correctly be set as turn 0
-    this.turnDrawn = globals.turn === 0 ? 0 : globals.turn + 1;
-    this.isDiscarded = false;
-    this.turnDiscarded = null;
-    this.isPlayed = false;
-    this.turnPlayed = null;
-    this.isMisplayed = false;
-
-    this.initPossibilities();
-    this.hideClues();
-    this.setBareImage();
-
-    // Reset all of the pips to their default state
-    if (this.suitPipsMap) {
-        for (const [, suitPip] of this.suitPipsMap) {
-            suitPip.show();
-        }
     }
-    if (this.suitPipsXMap) {
-        for (const [, suitPipX] of this.suitPipsXMap) {
-            suitPipX.hide();
+
+    // Erase all of the data on the card to make it like it was freshly drawn
+    refresh() {
+        // Possible suits and ranks (based on clues given) are tracked separately
+        // from knowledge of the true suit and rank
+        this.possibleSuits = globals.variant.suits.slice();
+        this.possibleRanks = globals.variant.ranks.slice();
+        // Possible cards (based on both clues given and cards seen) are also tracked separately
+        this.possibleCards = new Map(globals.cardMap); // Start by cloning the "globals.cardMap"
+        this.tweening = false;
+        this.showOnlyLearned = false;
+        this.numPositiveClues = 0;
+        this.hasPositiveColorClue = false;
+        this.hasPositiveRankClue = false;
+        // We have to add one to the turn drawn because
+        // the "draw" command comes before the "turn" command
+        // However, if it was part of the initial deal, then it will correctly be set as turn 0
+        this.turnDrawn = globals.turn === 0 ? 0 : globals.turn + 1;
+        this.isDiscarded = false;
+        this.turnDiscarded = null;
+        this.isPlayed = false;
+        this.turnPlayed = null;
+        this.isMisplayed = false;
+
+        this.initPossibilities();
+        this.hideClues();
+        this.setBareImage();
+
+        // Reset all of the pips to their default state
+        if (this.suitPipsMap) {
+            for (const [, suitPip] of this.suitPipsMap) {
+                suitPip.show();
+            }
         }
-    }
-    if (this.rankPipsMap) {
-        for (const [, rankPip] of this.rankPipsMap) {
-            rankPip.show();
+        if (this.suitPipsXMap) {
+            for (const [, suitPipX] of this.suitPipsXMap) {
+                suitPipX.hide();
+            }
         }
-    }
-    if (this.rankPipsXMap) {
-        for (const [, rankPipX] of this.rankPipsXMap) {
-            rankPipX.hide();
+        if (this.rankPipsMap) {
+            for (const [, rankPip] of this.rankPipsMap) {
+                rankPip.show();
+            }
+        }
+        if (this.rankPipsXMap) {
+            for (const [, rankPipX] of this.rankPipsXMap) {
+                rankPipX.hide();
+            }
+        }
+
+        // Hide the clue arrow
+        if (this.indicatorGroup) {
+            this.indicatorGroup.hide();
         }
     }
 
-    // Hide the clue arrow
-    if (this.indicatorGroup) {
-        this.indicatorGroup.hide();
-    }
-};
+    setBareImage() {
+        const learnedCard = globals.learnedCards[this.order];
 
-HanabiCard.prototype.setBareImage = function setBareImage() {
-    const learnedCard = globals.learnedCards[this.order];
+        // Find out the suit to display
+        // ("Gray" is a colorless suit used for unclued cards)
+        const suit = !this.showOnlyLearned && this.trueSuit;
+        const empathyPastSuitUncertain = this.showOnlyLearned && this.possibleSuits.length > 1;
 
-    // Find out the suit to display
-    // ("Gray" is a colorless suit used for unclued cards)
-    const suit = !this.showOnlyLearned && this.trueSuit;
-    const empathyPastSuitUncertain = this.showOnlyLearned && this.possibleSuits.length > 1;
-
-    let suitToShow = suit || learnedCard.suit || SUIT.GRAY;
-    if (empathyPastSuitUncertain) {
-        suitToShow = SUIT.GRAY;
-    }
-    if (!learnedCard.revealed && !this.hasPositiveColorClue) {
-        suitToShow = SUIT.GRAY;
-    }
-
-    // For whatever reason, "Card-Gray" is never created, so use "NoPip-Gray"
-    let prefix = 'Card';
-    if (suitToShow === SUIT.GRAY) {
-        prefix = 'NoPip';
-    }
-
-    // Find out the rank to display
-    // (6 is a used for unclued cards)
-    const rank = !this.showOnlyLearned && this.trueRank;
-    const empathyPastRankUncertain = this.showOnlyLearned && this.possibleRanks.length > 1;
-
-    let rankToShow;
-    if (empathyPastRankUncertain) {
-        rankToShow = 6;
-    } else {
-        rankToShow = rank || learnedCard.rank || 6;
-    }
-    if (!learnedCard.revealed && !this.hasPositiveRankClue) {
-        rankToShow = '6';
-    }
-
-    // Set the name
-    this.bareName = `${prefix}-${suitToShow.name}-${rankToShow}`;
-};
-
-HanabiCard.prototype.initPips = function initPips() {
-    // Initialize the suit pips, which are colored shapes
-    this.suitPips = new graphics.Group({
-        x: 0,
-        y: 0,
-        width: Math.floor(CARDW),
-        height: Math.floor(CARDH),
-        visible: !this.trueSuit,
-    });
-    this.add(this.suitPips);
-
-    const { suits } = globals.variant;
-    this.suitPipsMap = new Map();
-    this.suitPipsXMap = new Map();
-    for (let i = 0; i < suits.length; i++) {
-        const suit = suits[i];
-
-        // Set the pip at the middle of the card
-        const x = Math.floor(CARDW * 0.5);
-        const y = Math.floor(CARDH * 0.5);
-        const scale = { // Scale numbers are magic
-            x: 0.4,
-            y: 0.4,
-        };
-        // Transform polar to Cartesian coordinates
-        // The magic number added to the offset is needed to center things properly
-        // We don't know why it's needed; perhaps something to do with the shape functions
-        const offset = {
-            x: Math.floor(CARDW * 0.7 * Math.cos((-i / suits.length + 0.25) * Math.PI * 2) + CARDW * 0.25), // eslint-disable-line
-            y: Math.floor(CARDW * 0.7 * Math.sin((-i / suits.length + 0.25) * Math.PI * 2) + CARDW * 0.3), // eslint-disable-line
-        };
-        let fill = suit.fillColors.hexCode;
-        if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
-            fill = undefined;
+        let suitToShow = suit || learnedCard.suit || constants.SUIT.GRAY;
+        if (empathyPastSuitUncertain) {
+            suitToShow = constants.SUIT.GRAY;
+        }
+        if (!learnedCard.revealed && !this.hasPositiveColorClue) {
+            suitToShow = constants.SUIT.GRAY;
         }
 
-        const suitPip = new graphics.Shape({
-            x,
-            y,
-            scale,
-            offset,
-            fill,
-            stroke: 'black',
-            strokeWidth: 5,
-            listening: false,
-            sceneFunc: (ctx) => {
-                drawCards.drawSuitShape(suit, i)(ctx);
-                ctx.closePath();
-                ctx.fillStrokeShape(suitPip);
-            },
-        });
-
-        // Gradient numbers are magic
-        if (suit === SUIT.RAINBOW || suit === SUIT.RAINBOW1OE) {
-            suitPip.fillRadialGradientColorStops([
-                0.3, suit.fillColors[0].hexCode,
-                0.425, suit.fillColors[1].hexCode,
-                0.65, suit.fillColors[2].hexCode,
-                0.875, suit.fillColors[3].hexCode,
-                1, suit.fillColors[4].hexCode,
-            ]);
-            suitPip.fillRadialGradientStartPoint({
-                x: 75,
-                y: 140,
-            });
-            suitPip.fillRadialGradientEndPoint({
-                x: 75,
-                y: 140,
-            });
-            suitPip.fillRadialGradientStartRadius(0);
-            suitPip.fillRadialGradientEndRadius(Math.floor(CARDW * 0.25));
-        }
-        suitPip.rotation(0);
-        this.suitPips.add(suitPip);
-        this.suitPipsMap.set(suit, suitPip);
-
-        // Also create the X that will show when a certain suit can be ruled out
-        const suitPipX = new graphics.Shape({
-            x,
-            y,
-            scale,
-            offset,
-            fill: 'black',
-            stroke: 'black',
-            listening: false,
-            opacity: 0.8,
-            visible: false,
-            sceneFunc: (ctx, shape) => {
-                const width = 50;
-                const xx = Math.floor((CARDW * 0.25) - (width * 0.45));
-                const xy = Math.floor((CARDH * 0.25) - (width * 0.05));
-                drawX(ctx, shape, xx, xy, 50, width);
-            },
-        });
-        this.suitPips.add(suitPipX);
-        this.suitPipsXMap.set(suit, suitPipX);
-    }
-
-    // Initialize the rank pips, which are black squares along the bottom of the card
-    this.rankPips = new graphics.Group({
-        x: 0,
-        y: Math.floor(CARDH * 0.85),
-        width: CARDW,
-        height: Math.floor(CARDH * 0.15),
-        visible: !this.trueRank,
-    });
-    this.add(this.rankPips);
-
-    this.rankPipsMap = new Map();
-    this.rankPipsXMap = new Map();
-    for (const rank of globals.variant.ranks) {
-        const x = Math.floor(CARDW * (rank * 0.19 - 0.14));
-        const y = 0;
-        const rankPip = new graphics.Rect({
-            x,
-            y,
-            width: Math.floor(CARDW * 0.15),
-            height: Math.floor(CARDH * 0.10),
-            fill: 'black',
-            stroke: 'black',
-            listening: false,
-            cornerRadius: 0.02 * CARDH,
-        });
-        this.rankPips.add(rankPip);
-        this.rankPipsMap.set(rank, rankPip);
-
-        // Also create the X that will show when a certain rank can be ruled out
-        const rankPipX = new graphics.Shape({
-            x,
-            y,
-            fill: '#e6e6e6',
-            stroke: 'black',
-            strokeWidth: 2,
-            listening: false,
-            opacity: 0.8,
-            visible: false,
-            sceneFunc: (ctx, shape) => {
-                const width = 20;
-                const xx = Math.floor(CARDW * 0.04);
-                const xy = Math.floor(CARDH * 0.05);
-                drawX(ctx, shape, xx, xy, 12, width);
-            },
-        });
-        this.rankPips.add(rankPipX);
-        this.rankPipsXMap.set(rank, rankPipX);
-    }
-};
-
-HanabiCard.prototype.initPossibilities = function initPossibilities() {
-    // If this is the first time this function is called, there will be no cards in the deck
-    if (globals.deck.length === 0) {
-        return;
-    }
-
-    // We want to remove all of the currently seen cards from the list of possibilities
-    for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
-        const card = globals.deck[i];
-
-        // Don't do anything if we don't know what this card is yet
-        if (!card.isRevealed()) {
-            continue;
+        // For whatever reason, "Card-Gray" is never created, so use "NoPip-Gray"
+        let prefix = 'Card';
+        if (suitToShow === constants.SUIT.GRAY) {
+            prefix = 'NoPip';
         }
 
-        // If the card is still in the player's hand,
-        // then we can't remove it from the list of possibilities,
-        // because they don't know what it is yet
-        if (
-            card.holder === this.holder
-            && !card.isPlayed
-            && !card.isDiscarded
-            && card.possibleSuits.length !== 1
-            && card.possibleRanks.length !== 1
-        ) {
-            continue;
+        // Find out the rank to display
+        // (6 is a used for unclued cards)
+        const rank = !this.showOnlyLearned && this.trueRank;
+        const empathyPastRankUncertain = this.showOnlyLearned && this.possibleRanks.length > 1;
+
+        let rankToShow;
+        if (empathyPastRankUncertain) {
+            rankToShow = 6;
+        } else {
+            rankToShow = rank || learnedCard.rank || 6;
+        }
+        if (!learnedCard.revealed && !this.hasPositiveRankClue) {
+            rankToShow = '6';
         }
 
-        this.removePossibility(card.trueSuit, card.trueRank, false);
+        // Set the name
+        this.bareName = `${prefix}-${suitToShow.name}-${rankToShow}`;
     }
-};
 
-HanabiCard.prototype.initIndicatorArrow = function initIndicatorArrow(config) {
-    this.indicatorGroup = new graphics.Group({
-        width: config.width,
-        height: config.height,
-        visible: false,
-        listening: false,
-    });
-    this.initArrowLocation();
-    this.add(this.indicatorGroup);
-    this.indicatorGroup.originalX = this.indicatorGroup.getX();
-    this.indicatorGroup.originalY = this.indicatorGroup.getY();
-
-    this.indicatorArrowBorder = new graphics.Arrow({
-        points: [
-            config.width / 2,
-            0,
-            config.width / 2,
-            config.height / 2.5,
-        ],
-        pointerLength: 20,
-        pointerWidth: 20,
-        fill: 'black',
-        stroke: 'black',
-        strokeWidth: 40,
-        shadowBlur: 75,
-        shadowOpacity: 1,
-        listening: false,
-    });
-    this.indicatorGroup.add(this.indicatorArrowBorder);
-
-    this.indicatorArrowBorderEdge = new graphics.Line({
-        points: [
-            (config.width / 2) - 20,
-            0,
-            (config.width / 2) + 20,
-            0,
-        ],
-        fill: 'black',
-        stroke: 'black',
-        strokeWidth: 15,
-    });
-    this.indicatorGroup.add(this.indicatorArrowBorderEdge);
-
-    this.indicatorArrow = new graphics.Arrow({
-        points: [
-            config.width / 2,
-            0,
-            config.width / 2,
-            config.height / 2.5,
-        ],
-        pointerLength: 20,
-        pointerWidth: 20,
-        fill: 'white',
-        stroke: 'white',
-        strokeWidth: 25,
-        listening: false,
-    });
-    this.indicatorGroup.add(this.indicatorArrow);
-
-    this.indicatorCircle = new graphics.Circle({
-        x: 0.5 * config.width,
-        y: 0.15 * config.height,
-        radius: 45,
-        fill: 'black',
-        stroke: 'white',
-        strokeWidth: 5,
-        listening: false,
-    });
-    this.indicatorGroup.add(this.indicatorCircle);
-
-    let x;
-    let y;
-    let rotation;
-    if (
-        (this.holder === globals.playerUs && !globals.lobby.settings.showBGAUI)
-        || (this.holder !== globals.playerUs && globals.lobby.settings.showBGAUI)
-    ) {
-        rotation = 0;
-        x = (0.5 * config.width) - (this.indicatorCircle.getAttr('width') / 2);
-        y = (0.15 * config.height) - (this.indicatorCircle.getAttr('height') / 2.75);
-    } else {
-        rotation = 180;
-        x = (0.82 * config.width) - (this.indicatorCircle.getAttr('width') / 2);
-        y = (0.31 * config.height) - (this.indicatorCircle.getAttr('height') / 2.75);
+    initImage() {
+        return HanabiCardInit.image.call(this);
     }
-    this.indicatorText = new graphics.Text({
-        x,
-        y,
-        width: this.indicatorCircle.getAttr('width'),
-        height: this.indicatorCircle.getAttr('height'),
-        fontSize: 0.175 * config.height,
-        fontFamily: 'Verdana',
-        fill: 'white',
-        stroke: 'white',
-        strokeWidth: 1,
-        align: 'center',
-        rotation,
-        listening: false,
-    });
-    this.indicatorGroup.add(this.indicatorText);
 
-    // Hide the indicator arrows when a user begins to drag a card in their hand
-    this.on('mousedown', (event) => {
-        if (
-            event.evt.which !== 1 // Dragging uses left click
-            || (this.holder !== globals.playerUs && !globals.hypothetical)
-            || globals.inReplay
-            || globals.replay
-            || globals.spectating
-            || !this.indicatorArrow.isVisible()
-            || !this.parent.getDraggable()
-            || this.isPlayed
-            || this.isDiscarded
-        ) {
-            return;
+    initBorder() {
+        return HanabiCardInit.border.call(this);
+    }
+
+    initPips() {
+        return HanabiCardInit.pips.call(this);
+    }
+
+    initIndicatorArrow() {
+        return HanabiCardInit.indicatorArrow.call(this);
+    }
+
+    initArrowLocation() {
+        return HanabiCardInit.arrowLocation.call(this);
+    }
+
+    initNote() {
+        return HanabiCardInit.note.call(this);
+    }
+
+    initEmpathy() {
+        return HanabiCardInit.empathy.call(this);
+    }
+
+    initClick() {
+        return HanabiCardInit.click.call(this);
+    }
+
+    initPossibilities() {
+        return HanabiCardInit.possibilities.call(this);
+    }
+
+    setIndicator(visible, giver, target, clue) {
+        if (visible) {
+            if (clue === null) {
+                // This is a shared replay arrow, so don't draw the circle
+                this.indicatorCircle.hide();
+                this.indicatorText.hide();
+                const color = sharedReplayIndicatorArrowColor;
+                this.indicatorArrow.setStroke(color);
+                this.indicatorArrow.setFill(color);
+            } else {
+                // Change the color of the arrow
+                let color;
+                if (this.numPositiveClues >= 2) {
+                    // "Non-freshly touched" cards use a different color
+                    color = '#737373'; // Dark gray
+                } else {
+                    // "Freshly touched" cards use the default arrow color
+                    color = 'white'; // The default color
+                }
+                this.indicatorArrow.setStroke(color);
+                this.indicatorArrow.setFill(color);
+
+                // Clue arrows are white with a circle that shows the type of clue given
+                if (globals.variant.name.startsWith('Duck')) {
+                    // Don't show the circle in Duck variants,
+                    // since the clue types are supposed to be hidden
+                    this.indicatorCircle.hide();
+                } else {
+                    this.indicatorCircle.show();
+                    if (clue.type === constants.CLUE_TYPE.RANK) {
+                        this.indicatorCircle.setFill('black');
+                        this.indicatorText.setText(clue.value.toString());
+                        this.indicatorText.show();
+                    } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+                        this.indicatorCircle.setFill(clue.value.hexCode);
+                        this.indicatorText.hide();
+                    }
+                }
+
+                if (this.indicatorTween) {
+                    this.indicatorTween.destroy();
+                }
+                if (globals.animateFast) {
+                    // Just set the arrow in position
+                    this.indicatorGroup.setX(this.indicatorGroup.originalX);
+                    this.indicatorGroup.setY(this.indicatorGroup.originalY);
+                } else if (giver !== null) {
+                    /*
+                        Animate the arrow flying from the player who gave the clue to the cards
+                    */
+
+                    // Get the center position of the clue giver's hand
+                    const centerPos = globals.elements.playerHands[giver].getAbsoluteCenterPos();
+
+                    // We need to adjust it to account for the size of the indicator arrow group
+                    // Dividing by pi here is a complete hack; I don't know why the hand dimensions
+                    // and indicator group dimensions are scaled differently by a factor of pi
+                    const indW = this.indicatorGroup.getWidth() / Math.PI;
+                    // The angle has to account for the whole card reflection business
+                    // in other players' hands
+                    let indRadians = this.parent.parent.rotation;
+                    if (target !== globals.playerUs) {
+                        indRadians += 180;
+                    }
+                    const indTheta = indRadians / 180 * Math.PI;
+                    centerPos.x -= indW / 2 * Math.cos(indTheta);
+                    centerPos.y -= indW / 2 * Math.sin(indTheta);
+
+                    this.indicatorGroup.setAbsolutePosition(centerPos);
+
+                    // Set the rotation so that the arrow will start off by pointing towards the
+                    // card that it is travelling to
+                    const originalRotation = this.indicatorGroup.getRotation();
+                    // this.indicatorGroup.setRotation(90);
+                    // TODO NEED LIBSTERS HELP
+
+                    this.indicatorTween = new graphics.Tween({
+                        node: this.indicatorGroup,
+                        duration: 0.5,
+                        x: this.indicatorGroup.originalX,
+                        y: this.indicatorGroup.originalY,
+                        rotation: originalRotation,
+                        runonce: true,
+                    }).play();
+                }
+            }
+
+            if (this.isDiscarded) {
+                // The cards in the discard pile are packed together tightly
+                // So, if the arrows are hovering over a card,
+                // it will not be clear which card the arrow is pointing to
+                // Thus, move the arrow to be flush with the card
+                this.indicatorGroup.setY(-this.getHeight() / 2 + 0.02 * globals.stage.getHeight());
+            } else {
+                // Fix the bug where the arrows can be hidden by other cards
+                // (but ignore the discard pile because it has to be in a certain order)
+                this.getParent().getParent().moveToTop();
+            }
         }
 
-        globals.lobby.ui.showClueMatch(-1);
-    });
-};
-
-HanabiCard.prototype.initArrowLocation = function initArrowLocation() {
-    this.indicatorGroup.setX(0);
-    this.indicatorGroup.setY(-this.getHeight() * 0.25);
-    this.indicatorGroup.setRotation(0);
-    if (
-        this.holder === globals.playerUs
-        && globals.lobby.settings.showBGAUI
-        && !this.isPlayed
-        && !this.isDiscarded
-    ) {
-        // In BGA mode, our hand is the one closest to the top
-        // So, invert the arrows so that it is easier to see them
-        // We also need to move the arrow slightly so that
-        // it does not cover the third box on the bottom of the card
-        this.indicatorGroup.setX(this.getWidth());
-        this.indicatorGroup.setY(this.getHeight() * 1.4); // 1.18 is the "normal" height
-        this.indicatorGroup.setRotation(180);
-    }
-};
-
-HanabiCard.prototype.initNote = function initNote(config) {
-    // Define the note indicator image
-    const noteX = 0.78;
-    const noteY = 0.03;
-    const size = 0.2 * config.width;
-    this.noteGiven = new graphics.Image({
-        x: noteX * config.width,
-        // If the cards have triangles on the corners that show the color composition,
-        // the images will overlap
-        // Thus, we move it downwards if this is the case
-        y: (globals.variant.offsetCardIndicators ? noteY + 0.1 : noteY) * config.height,
-        align: 'center',
-        image: globals.ImageLoader.get('note'),
-        width: size,
-        height: size,
-        rotation: 180,
-        shadowColor: 'black',
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 0,
-            y: 0,
-        },
-        shadowOpacity: 0.9,
-        visible: false,
-        listening: false,
-    });
-    this.noteGiven.setScale({
-        x: -1,
-        y: -1,
-    });
-    this.noteGiven.rotated = false;
-    // (we might rotate it later to indicate to spectators that the note was updated)
-    this.add(this.noteGiven);
-    if (notes.get(this.order)) {
-        this.noteGiven.show();
-    }
-
-    this.on('mousemove', function cardMouseMove() {
-        // Don't do anything if there is not a note on this card
-        if (!this.noteGiven.visible()) {
-            return;
-        }
-
-        // Don't open any more note tooltips if the user is currently editing a note
-        if (notes.vars.editing !== null) {
-            return;
-        }
-
-        // If we are spectating and there is an new note, mark it as seen
-        if (this.noteGiven.rotated) {
-            this.noteGiven.rotated = false;
-            this.noteGiven.rotate(-15);
+        this.indicatorGroup.setVisible(visible);
+        if (!globals.animateFast) {
             globals.layers.card.batchDraw();
         }
+    }
 
-        globals.activeHover = this;
-        notes.show(this); // We supply the card as the argument
-    });
-
-    this.on('mouseout', function cardMouseOut() {
-        globals.activeHover = null;
-
-        // Don't close the tooltip if we are currently editing a note
-        if (notes.vars.editing !== null) {
+    applyClue(clue, positive) {
+        if (globals.variant.name.startsWith('Duck')) {
             return;
         }
 
-        const tooltip = $(`#tooltip-card-${this.order}`);
-        tooltip.tooltipster('close');
-    });
-};
+        if (clue.type === constants.CLUE_TYPE.RANK) {
+            const clueRank = clue.value;
+            let removed;
+            if (globals.variant.name.startsWith('Multi-Fives')) {
+                removed = filterInPlace(
+                    this.possibleRanks,
+                    rank => (rank === clueRank || rank === 5) === positive,
+                );
+            } else {
+                removed = filterInPlace(
+                    this.possibleRanks,
+                    rank => (rank === clueRank) === positive,
+                );
+            }
+            removed.forEach((rank) => {
+                // Hide the rank pips
+                this.rankPipsMap.get(rank).hide();
+                this.rankPipsXMap.get(rank).hide();
 
-HanabiCard.prototype.initEmpathy = function initEmpathy() {
-    // Click on a teammate's card to have the card show as it would to that teammate
-    // (or, in a replay, show your own card as it appeared at that moment in time)
-    // Pips visibility state is tracked so it can be restored for your own hand during a game
-    const toggleHolderViewOnCard = (card, enabled, togglePips) => {
-        const toggledPips = [0, 0];
-        if (card.rankPips.visible() !== enabled && togglePips[0] === 1) {
-            card.rankPips.setVisible(enabled);
-            toggledPips[0] = 1;
+                // Remove any card possibilities for this rank
+                for (const suit of globals.variant.suits) {
+                    this.removePossibility(suit, rank, true);
+                }
+            });
+
+            if (this.possibleRanks.length === 1) {
+                [this.trueRank] = this.possibleRanks;
+                globals.learnedCards[this.order].rank = this.trueRank;
+
+                // Don't hide the pips if the card is unclued
+                if (!this.isInPlayerHand() || this.isClued()) {
+                    this.rankPipsMap.get(this.trueRank).hide();
+                    this.rankPips.hide();
+                }
+            }
+        } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+            const clueColor = clue.value;
+            const removed = filterInPlace(
+                this.possibleSuits,
+                suit => suit.clueColors.includes(clueColor) === positive,
+            );
+            removed.forEach((suit) => {
+                // Hide the suit pips
+                this.suitPipsMap.get(suit).hide();
+                this.suitPipsXMap.get(suit).hide();
+
+                // Remove any card possibilities for this suit
+                for (const rank of globals.variant.ranks) {
+                    this.removePossibility(suit, rank, true);
+                }
+            });
+
+            if (this.possibleSuits.length === 1) {
+                [this.trueSuit] = this.possibleSuits;
+                globals.learnedCards[this.order].suit = this.trueSuit;
+
+                // Don't hide the pips if the card is unclued
+                if (!this.isInPlayerHand() || this.isClued()) {
+                    this.suitPipsMap.get(this.trueSuit).hide();
+                    this.suitPips.hide();
+                }
+            }
+        } else {
+            console.error('Clue type invalid.');
         }
-        if (card.suitPips.visible() !== enabled && togglePips[1] === 1) {
-            card.suitPips.setVisible(enabled);
-            toggledPips[1] = 1;
+    }
+
+    // Check to see if we can put an X over this suit pip or this rank pip
+    checkPipPossibilities(suit, rank) {
+        // First, check to see if there are any possibilities remaining for this suit
+        let suitPossible = false;
+        for (const rank2 of globals.variant.ranks) {
+            const count = this.possibleCards.get(`${suit.name}${rank2}`);
+            if (count > 0) {
+                suitPossible = true;
+                break;
+            }
         }
-        card.showOnlyLearned = enabled;
-        card.setBareImage();
-        return toggledPips;
-    };
+        if (!suitPossible) {
+            // Do nothing if the normal pip is already hidden
+            const pip = this.suitPipsMap.get(suit);
+            if (!pip) {
+                return;
+            }
+            if (!pip.getVisible()) {
+                return;
+            }
 
-    // Dynamically adjusted known cards, to be restored by event
-    const toggledHolderViewCards = [];
-
-    const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
-        if (toggledHolderViewCards.length > 0) {
-            return undefined; // Handle race conditions with stop
+            // All the cards of this suit are seen, so put an X over the suit pip
+            const x = this.suitPipsXMap.get(suit);
+            x.setVisible(true);
         }
 
-        toggledHolderViewCards.splice(0, 0, ...cards);
-        const toggledPips = cards.map(c => toggleHolderViewOnCard(c, true, [1, 1]));
-        globals.layers.card.batchDraw();
-        return toggledPips;
-    };
-    const endHolderViewOnCard = function endHolderViewOnCard(toggledPips) {
-        const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
-        cardsToReset.map(
-            (card, index) => toggleHolderViewOnCard(card, false, toggledPips[index]),
+        let rankPossible = false;
+        for (const suit2 of globals.variant.suits) {
+            const count = this.possibleCards.get(`${suit2.name}${rank}`);
+            if (count > 0) {
+                rankPossible = true;
+                break;
+            }
+        }
+        if (!rankPossible) {
+            // Do nothing if the normal pip is already hidden
+            const pip = this.rankPipsMap.get(rank);
+            if (!pip) {
+                return;
+            }
+            if (!pip.getVisible()) {
+                return;
+            }
+
+            // All the cards of this rank are seen, so put an X over the rank pip
+            const x = this.rankPipsXMap.get(rank);
+            x.setVisible(true);
+            if (this.order === 21) {
+                console.log('SET VISIBLE', rank, 'ON TURN', globals.turn);
+            }
+        }
+    }
+
+    // Toggle the yellow arrow that the leader uses in shared replays
+    toggleSharedReplayIndicator() {
+        const visible = !(
+            this.indicatorGroup.visible()
+            && this.indicatorArrow.getFill() === sharedReplayIndicatorArrowColor
         );
-        globals.layers.card.batchDraw();
-    };
+        // (if the arrow is showing but is a different kind of arrow,
+        // then just overwrite the existing arrow)
+        globals.lobby.ui.showClueMatch(-1);
+        this.setIndicator(visible, null, null, null);
+    }
 
-    const empathyMouseButton = 1; // Left-click
-    let toggledPips = [];
-    this.on('mousedown', (event) => {
+    reveal(suit, rank) {
+        // Local variables
+        suit = convert.msgSuitToSuit(suit, globals.variant);
+
+        // Update the possibilities for the player who played/discarded this card
+        // (but we don't need to do anything if the card was already fully-clued)
+        if (this.possibleSuits.length > 1 || this.possibleRanks.length > 1) {
+            const hand = globals.elements.playerHands[this.holder];
+            for (const layoutChild of hand.children) {
+                const card = layoutChild.children[0];
+                if (card.order === this.order) {
+                    // There is no need to update the card that is being revealed
+                    continue;
+                }
+                card.removePossibility(suit, rank, false);
+            }
+        }
+
+        // Set the true suit/rank on the card
+        this.showOnlyLearned = false;
+        this.trueSuit = suit;
+        this.trueRank = rank;
+
+        // Keep track of what this card is
+        const learnedCard = globals.learnedCards[this.order];
+        learnedCard.suit = suit;
+        learnedCard.rank = rank;
+        learnedCard.revealed = true;
+
+        // Redraw the card
+        this.suitPips.hide();
+        this.rankPips.hide();
+        this.setBareImage();
+
+        // Hide any existing arrows on all cards
+        globals.lobby.ui.showClueMatch(-1);
+
+        // Unflip the arrow, if it is flipped
+        this.initArrowLocation();
+    }
+
+    removeFromParent() {
+        // Remove the card from the player's hand in preparation of adding it to either
+        // the play stacks or the discard pile
+        const layoutChild = this.parent;
+        if (!layoutChild.parent) {
+            // If a tween is destroyed in the middle of animation,
+            // it can cause a card to be orphaned
+            return;
+        }
+        const pos = layoutChild.getAbsolutePosition();
+        layoutChild.setRotation(layoutChild.parent.getRotation());
+        layoutChild.remove();
+        layoutChild.setAbsolutePosition(pos);
+    }
+
+    animateToPlayStacks() {
+        // We add a LayoutChild to a CardStack
+        const playStack = globals.elements.playStacks.get(this.trueSuit);
+        playStack.add(this.parent);
+
+        // We also want to move this stack to the top so that
+        // cards do not tween behind the other play stacks when travelling to this stack
+        playStack.moveToTop();
+    }
+
+    animateToDiscardPile() {
+        // We add a LayoutChild to a CardLayout
+        const discardStack = globals.elements.discardStacks.get(this.trueSuit);
+        discardStack.add(this.parent);
+
+        // We need to bring the discarded card to the top so that when it tweens to the discard
+        // pile, it will fly on top of the play stacks and other player's hands
+        // However, if we use "globals.elements.discardStacks.get(suit).moveToTop()" like we do in
+        // the "animateToPlayStacks()" function,
+        // then the discard stacks will not be arranged in the correct order
+        // Thus, move all of the discord piles to the top in order so that they will be properly
+        // overlapping (the bottom-most stack should have priority over the top)
+        for (const stack of globals.elements.discardStacks) {
+            // Since "discardStacks" is a Map(),
+            // "stack" is an array containing a Suit and CardLayout
+            if (stack[1]) {
+                stack[1].moveToTop();
+            }
+        }
+    }
+
+    setNote(note) {
+        notes.set(this.order, note);
+        notes.update(this);
+        notes.show(this);
+    }
+
+    getSlotNum() {
+        const numCardsInHand = this.parent.parent.children.length;
+        for (let i = 0; i < numCardsInHand; i++) {
+            const layoutChild = this.parent.parent.children[i];
+            if (layoutChild.children[0].order === this.order) {
+                return numCardsInHand - i;
+            }
+        }
+
+        return -1;
+    }
+
+    isCritical() {
         if (
-            event.evt.which !== empathyMouseButton // Only do Empathy for left-clicks
-            // Disable Empathy if a modifier key is pressed
-            // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
-            || (event.evt.ctrlKey && !globals.speedrun)
-            || (!event.evt.ctrlKey && globals.speedrun && !globals.replay)
-            || event.evt.shiftKey
-            || event.evt.altKey
-            || event.evt.metaKey
-            || this.tweening // Disable Empathy if the card is tweening
-            || this.isPlayed // Clicking on a played card goes to the turn that it was played
-            // Clicking on a discarded card goes to the turn that it was discarded
+            !this.isRevealed()
+            || this.isPlayed
             || this.isDiscarded
-            // Disable Empathy on our own hand
-            // (unless we are in an in-game replay or we are a spectator)
-            || (this.holder === globals.playerUs && !globals.inReplay && !globals.spectating)
-            // Disable Empathy if we in a hypothetical and are the shared replay leader
-            || (globals.hypothetical && globals.amSharedReplayLeader)
+            || !needsToBePlayed(this.trueSuit, this.trueRank)
         ) {
+            return false;
+        }
+
+        const num = getSpecificCardNum(this.trueSuit, this.trueRank);
+        return num.total === num.discarded + 1;
+    }
+
+    isPotentiallyPlayable() {
+        // Don't bother calculating this for Up or Down variants
+        if (globals.variant.name.startsWith('Up or Down')) {
+            return true;
+        }
+
+        let potentiallyPlayable = false;
+        for (const suit of globals.variant.suits) {
+            const cardsPlayed = globals.elements.playStacks.get(suit).children.length;
+            const nextRankNeeded = cardsPlayed + 1;
+            const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
+            if (count > 0) {
+                potentiallyPlayable = true;
+                break;
+            }
+        }
+
+        return potentiallyPlayable;
+    }
+
+    removePossibility(suit, rank, all) {
+        // Every card has a possibility map that maps card identities to count
+        // Remove one possibility for this card
+        const mapIndex = `${suit.name}${rank}`;
+        const cardsLeft = this.possibleCards.get(mapIndex);
+        if (cardsLeft === 0) {
             return;
         }
-
-        globals.activeHover = this;
-        const cards = this.parent.parent.children.map(c => c.children[0]);
-        toggledPips = beginHolderViewOnCard(cards);
-    });
-    this.on('mouseup mouseout', (event) => {
-        if (event.type === 'mouseup' && event.evt.which !== empathyMouseButton) {
-            return;
-        }
-        globals.activeHover = null;
-        endHolderViewOnCard(toggledPips);
-    });
-};
-
-HanabiCard.prototype.setIndicator = function setIndicator(visible, giver, target, clue) {
-    if (visible) {
-        if (clue === null) {
-            // This is a shared replay arrow, so don't draw the circle
-            this.indicatorCircle.hide();
-            this.indicatorText.hide();
-            const color = sharedReplayIndicatorArrowColor;
-            this.indicatorArrow.setStroke(color);
-            this.indicatorArrow.setFill(color);
-        } else {
-            // Change the color of the arrow
-            let color;
-            if (this.numPositiveClues >= 2) {
-                // "Non-freshly touched" cards use a different color
-                color = '#737373'; // Dark gray
-            } else {
-                // "Freshly touched" cards use the default arrow color
-                color = 'white'; // The default color
-            }
-            this.indicatorArrow.setStroke(color);
-            this.indicatorArrow.setFill(color);
-
-            // Clue arrows are white with a circle that shows the type of clue given
-            if (globals.variant.name.startsWith('Duck')) {
-                // Don't show the circle in Duck variants,
-                // since the clue types are supposed to be hidden
-                this.indicatorCircle.hide();
-            } else {
-                this.indicatorCircle.show();
-                if (clue.type === CLUE_TYPE.RANK) {
-                    this.indicatorCircle.setFill('black');
-                    this.indicatorText.setText(clue.value.toString());
-                    this.indicatorText.show();
-                } else if (clue.type === CLUE_TYPE.COLOR) {
-                    this.indicatorCircle.setFill(clue.value.hexCode);
-                    this.indicatorText.hide();
-                }
-            }
-
-            if (this.indicatorTween) {
-                this.indicatorTween.destroy();
-            }
-            if (globals.animateFast) {
-                // Just set the arrow in position
-                this.indicatorGroup.setX(this.indicatorGroup.originalX);
-                this.indicatorGroup.setY(this.indicatorGroup.originalY);
-            } else if (giver !== null) {
-                /*
-                    Animate the arrow flying from the player who gave the clue to the cards
-                */
-
-                // Get the center position of the clue giver's hand
-                const centerPos = globals.elements.playerHands[giver].getAbsoluteCenterPos();
-
-                // We need to adjust it to account for the size of the indicator arrow group
-                // Dividing by pi here is a complete hack; I don't know why the hand dimensions
-                // and indicator group dimensions are scaled differently by a factor of pi
-                const indW = this.indicatorGroup.getWidth() / Math.PI;
-                // The angle has to account for the whole card reflection business
-                // in other players' hands
-                let indRadians = this.parent.parent.rotation;
-                if (target !== globals.playerUs) {
-                    indRadians += 180;
-                }
-                const indTheta = indRadians / 180 * Math.PI;
-                centerPos.x -= indW / 2 * Math.cos(indTheta);
-                centerPos.y -= indW / 2 * Math.sin(indTheta);
-
-                this.indicatorGroup.setAbsolutePosition(centerPos);
-
-                // Set the rotation so that the arrow will start off by pointing towards the card
-                // that it is travelling to
-                const originalRotation = this.indicatorGroup.getRotation();
-                // this.indicatorGroup.setRotation(90);
-                // TODO NEED LIBSTERS HELP
-
-                this.indicatorTween = new graphics.Tween({
-                    node: this.indicatorGroup,
-                    duration: 0.5,
-                    x: this.indicatorGroup.originalX,
-                    y: this.indicatorGroup.originalY,
-                    rotation: originalRotation,
-                    runonce: true,
-                }).play();
-            }
-        }
-
-        if (this.isDiscarded) {
-            // The cards in the discard pile are packed together tightly
-            // So, if the arrows are hovering over a card, it will not be clear which card the arrow
-            // is pointing to
-            // Thus, move the arrow to be flush with the card
-            this.indicatorGroup.setY(-this.getHeight() / 2 + 0.02 * globals.stage.getHeight());
-        } else {
-            // Fix the bug where the arrows can be hidden by other cards
-            // (but ignore the discard pile because it has to be in a certain order)
-            this.getParent().getParent().moveToTop();
-        }
+        const newValue = all ? 0 : cardsLeft - 1;
+        this.possibleCards.set(mapIndex, newValue);
+        this.checkPipPossibilities(suit, rank);
     }
-
-    this.indicatorGroup.setVisible(visible);
-    if (!globals.animateFast) {
-        globals.layers.card.batchDraw();
-    }
-};
-
-HanabiCard.prototype.applyClue = function applyClue(clue, positive) {
-    if (globals.variant.name.startsWith('Duck')) {
-        return;
-    }
-
-    if (clue.type === CLUE_TYPE.RANK) {
-        const clueRank = clue.value;
-        let removed;
-        if (globals.variant.name.startsWith('Multi-Fives')) {
-            removed = filterInPlace(
-                this.possibleRanks,
-                rank => (rank === clueRank || rank === 5) === positive,
-            );
-        } else {
-            removed = filterInPlace(
-                this.possibleRanks,
-                rank => (rank === clueRank) === positive,
-            );
-        }
-        removed.forEach((rank) => {
-            // Hide the rank pips
-            this.rankPipsMap.get(rank).hide();
-            this.rankPipsXMap.get(rank).hide();
-
-            // Remove any card possibilities for this rank
-            for (const suit of globals.variant.suits) {
-                this.removePossibility(suit, rank, true);
-            }
-        });
-
-        if (this.possibleRanks.length === 1) {
-            [this.trueRank] = this.possibleRanks;
-            globals.learnedCards[this.order].rank = this.trueRank;
-
-            // Don't hide the pips if the card is unclued
-            if (!this.isInPlayerHand() || this.isClued()) {
-                this.rankPipsMap.get(this.trueRank).hide();
-                this.rankPips.hide();
-            }
-        }
-    } else if (clue.type === CLUE_TYPE.COLOR) {
-        const clueColor = clue.value;
-        const removed = filterInPlace(
-            this.possibleSuits,
-            suit => suit.clueColors.includes(clueColor) === positive,
-        );
-        removed.forEach((suit) => {
-            // Hide the suit pips
-            this.suitPipsMap.get(suit).hide();
-            this.suitPipsXMap.get(suit).hide();
-
-            // Remove any card possibilities for this suit
-            for (const rank of globals.variant.ranks) {
-                this.removePossibility(suit, rank, true);
-            }
-        });
-
-        if (this.possibleSuits.length === 1) {
-            [this.trueSuit] = this.possibleSuits;
-            globals.learnedCards[this.order].suit = this.trueSuit;
-
-            // Don't hide the pips if the card is unclued
-            if (!this.isInPlayerHand() || this.isClued()) {
-                this.suitPipsMap.get(this.trueSuit).hide();
-                this.suitPips.hide();
-            }
-        }
-    } else {
-        console.error('Clue type invalid.');
-    }
-};
-
-// Check to see if we can put an X over either this suit pip or this rank pip
-HanabiCard.prototype.checkPipPossibilities = function checkPipPossibilities(suit, rank) {
-    // First, check to see if there are any possibilities remaining for this suit
-    let suitPossible = false;
-    for (const rank2 of globals.variant.ranks) {
-        const count = this.possibleCards.get(`${suit.name}${rank2}`);
-        if (count > 0) {
-            suitPossible = true;
-            break;
-        }
-    }
-    if (!suitPossible) {
-        // Do nothing if the normal pip is already hidden
-        const pip = this.suitPipsMap.get(suit);
-        if (!pip) {
-            return;
-        }
-        if (!pip.getVisible()) {
-            return;
-        }
-
-        // All the cards of this suit are seen, so put an X over the suit pip
-        const x = this.suitPipsXMap.get(suit);
-        x.setVisible(true);
-    }
-
-    let rankPossible = false;
-    for (const suit2 of globals.variant.suits) {
-        const count = this.possibleCards.get(`${suit2.name}${rank}`);
-        if (count > 0) {
-            rankPossible = true;
-            break;
-        }
-    }
-    if (!rankPossible) {
-        // Do nothing if the normal pip is already hidden
-        const pip = this.rankPipsMap.get(rank);
-        if (!pip) {
-            return;
-        }
-        if (!pip.getVisible()) {
-            return;
-        }
-
-        // All the cards of this rank are seen, so put an X over the rank pip
-        const x = this.rankPipsXMap.get(rank);
-        x.setVisible(true);
-        if (this.order === 21) {
-            console.log('SET VISIBLE', rank, 'ON TURN', globals.turn);
-        }
-    }
-};
-
-HanabiCard.prototype.toggleSharedReplayIndicator = function setSharedReplayIndicator() {
-    // Either show or hide the arrow (if it is already visible)
-    const visible = !(
-        this.indicatorGroup.visible()
-        && this.indicatorArrow.getFill() === sharedReplayIndicatorArrowColor
-    );
-    // (if the arrow is showing but is a different kind of arrow,
-    // then just overwrite the existing arrow)
-    globals.lobby.ui.showClueMatch(-1);
-    this.setIndicator(visible, null, null, null);
-};
-
-HanabiCard.prototype.click = function click(event) {
-    // Disable all click events if the card is tweening
-    if (this.tweening) {
-        return;
-    }
-
-    // Speedrunning overrides the normal card clicking behavior
-    // (but don't use the speedrunning behavior if
-    // we are in a solo replay / shared replay / spectating)
-    if (globals.speedrun && !globals.replay && !globals.spectating) {
-        return;
-    }
-
-    if (event.evt.which === 1) { // Left-click
-        this.clickLeft(event.evt);
-    } else if (event.evt.which === 3) { // Right-click
-        this.clickRight(event.evt);
-    }
-};
-
-HanabiCard.prototype.clickLeft = function clickLeft(event) {
-    // The "Empathy" feature is handled above, so we don't have to worry about it here
-
-    // No actions in this function use modifiers other than Alt
-    if (event.ctrlKey || event.shiftKey || event.metaKey) {
-        return;
-    }
-
-    if (event.altKey) {
-        // Alt + clicking a card goes to the turn it was drawn
-        gotoTurn(this.turnDrawn, this.order);
-    } else if (this.isPlayed) {
-        // Clicking on played cards goes to the turn immediately before they were played
-        gotoTurn(this.turnPlayed, this.order);
-    } else if (this.isDiscarded) {
-        // Clicking on discarded cards goes to the turn immediately before they were discarded
-        gotoTurn(this.turnDiscarded, this.order);
-    }
-};
-
-HanabiCard.prototype.clickRight = function clickRight(event) {
-    // Ctrl + shift + alt + right-click is a card morph
-    if (
-        event.ctrlKey
-        && event.shiftKey
-        && event.altKey
-        && !event.metaKey
-    ) {
-        this.clickMorph();
-        return;
-    }
-
-    // Right-click for a leader in a shared replay is an arrow
-    // (we want it to work no matter what modifiers are being pressed,
-    // in case someone is pushing their push-to-talk hotkey while highlighting cards)
-    if (
-        globals.sharedReplay
-        && globals.amSharedReplayLeader
-        && globals.useSharedTurns
-    ) {
-        this.clickArrow();
-        return;
-    }
-
-    // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
-    // (this must be above the other note code because of the modifiers)
-    if (
-        event.ctrlKey
-        && event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-        && !globals.replay
-        && !globals.spectating
-    ) {
-        this.setNote(notes.vars.lastNote);
-        return;
-    }
-
-    // Shift + right-click is a "f" note
-    // (this is a common abbreviation for "this card is Finessed")
-    if (
-        !event.ctrlKey
-        && event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-        && !globals.replay
-        && !globals.spectating
-    ) {
-        this.setNote('f');
-        return;
-    }
-
-    // Alt + right-click is a "cm" note
-    // (this is a common abbreviation for "this card is chop moved")
-    if (
-        !event.ctrlKey
-        && !event.shiftKey
-        && event.altKey
-        && !event.metaKey
-        && !globals.replay
-        && !globals.spectating
-    ) {
-        this.setNote('cm');
-        return;
-    }
-
-    // Ctrl + right-click is a local arrow
-    // Even if they are not a leader in a shared replay,
-    // a user might still want to draw an arrow on a card for demonstration purposes
-    // However, we don't want this functionality in shared replays because
-    // it could be misleading as to who the real replay leader is
-    if (
-        event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-        && globals.sharedReplay === false
-    ) {
-        this.toggleSharedReplayIndicator();
-        return;
-    }
-
-    // A normal right-click is edit a note
-    if (
-        !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-        && !globals.replay
-        && !globals.spectating
-    ) {
-        notes.openEditTooltip(this);
-    }
-};
-
-HanabiCard.prototype.clickArrow = function clickArrow() {
-    // In a shared replay, the leader right-clicks a card to draw on arrow on it to attention to it
-    // (and it is shown to all of the players in the review)
-    globals.lobby.conn.send('replayAction', {
-        type: constants.REPLAY_ACTION_TYPE.ARROW,
-        order: this.order,
-    });
-
-    // Draw the indicator manually so that we don't have to wait for the client to server round-trip
-    this.toggleSharedReplayIndicator();
-};
-
-// Morphing cards allows for creation of hypothetical situations
-HanabiCard.prototype.clickMorph = function clickMorph() {
-    // Only allow this feature in replays
-    if (!globals.replay) {
-        return;
-    }
-
-    const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "11", "65")');
-    if (card === null || card.length !== 2) {
-        return;
-    }
-    const suitLetter = card[0];
-    let suit;
-    if (suitLetter === 'b' || suitLetter === '1') {
-        suit = 0;
-    } else if (suitLetter === 'g' || suitLetter === '2') {
-        suit = 1;
-    } else if (suitLetter === 'y' || suitLetter === '3') {
-        suit = 2;
-    } else if (suitLetter === 'r' || suitLetter === '4') {
-        suit = 3;
-    } else if (suitLetter === 'p' || suitLetter === '5') {
-        suit = 4;
-    } else if (suitLetter === 'k' || suitLetter === 'm' || suitLetter === '6') {
-        suit = 5;
-    } else {
-        return;
-    }
-    const rank = parseInt(card[1], 10);
-    if (Number.isNaN(rank)) {
-        return;
-    }
-
-    // Tell the server that we are doing a hypothetical
-    if (globals.amSharedReplayLeader) {
-        globals.lobby.conn.send('replayAction', {
-            type: constants.REPLAY_ACTION_TYPE.MORPH,
-            order: this.order,
-            suit,
-            rank,
-        });
-    }
-};
-
-HanabiCard.prototype.clickSpeedrun = function clickSpeedrun(event) {
-    if (
-        // Speedrunning overrides the normal card clicking behavior
-        // (but don't use the speedrunning behavior if
-        // we are in a solo replay / shared replay / spectating)
-        (!globals.speedrun || globals.replay || globals.spectating)
-        // Disable all click events if the card is tweening from the deck to the hand
-        // (the second condition looks to see if it is the first card in the hand)
-        || (this.tweening && this.parent.index === this.parent.parent.children.length - 1)
-        || this.isPlayed // Do nothing if we accidentally clicked on a played card
-        || this.isDiscarded // Do nothing if we accidentally clicked on a discarded card
-    ) {
-        return;
-    }
-
-    if (event.evt.which === 1) { // Left-click
-        this.clickSpeedrunLeft(event.evt);
-    } else if (event.evt.which === 3) { // Right-click
-        this.clickSpeedrunRight(event.evt);
-    }
-};
-
-HanabiCard.prototype.clickSpeedrunLeft = function clickSpeedrunLeft(event) {
-    // Left-clicking on cards in our own hand is a play action
-    if (
-        this.holder === globals.playerUs
-        && !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-    ) {
-        globals.lobby.ui.endTurn({
-            type: 'action',
-            data: {
-                type: constants.ACT.PLAY,
-                target: this.order,
-            },
-        });
-        return;
-    }
-
-    // Left-clicking on cards in other people's hands is a color clue action
-    // (but if we are holding Ctrl, then we are using Empathy)
-    if (
-        this.holder !== globals.playerUs
-        && globals.clues !== 0
-        && !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-    ) {
-        globals.preCluedCard = this.order;
-
-        // A card may be cluable by more than one color, so we need to figure out which color to use
-        const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
-        const cardColors = this.trueSuit.clueColors;
-        let color;
-        if (
-            // If a clue type button is selected
-            clueButton
-            // If a color clue type button is selected
-            && clueButton.clue.type === constants.CLUE_TYPE.COLOR
-            // If the selected color clue is actually one of the possibilies for the card
-            && cardColors.findIndex(cardColor => cardColor === clueButton.clue.value) !== -1
-        ) {
-            // Use the color of the currently selected button
-            color = clueButton.clue.value;
-        } else {
-            // Otherwise, just use the first possible color
-            // e.g. for rainbow cards, use blue
-            [color] = cardColors;
-        }
-
-        const value = globals.variant.clueColors.findIndex(variantColor => variantColor === color);
-        globals.lobby.ui.endTurn({
-            type: 'action',
-            data: {
-                type: constants.ACT.CLUE,
-                target: this.holder,
-                clue: {
-                    type: constants.CLUE_TYPE.COLOR,
-                    value,
-                },
-            },
-        });
-    }
-};
-
-HanabiCard.prototype.clickSpeedrunRight = function clickSpeedrunRight(event) {
-    // Right-clicking on cards in our own hand is a discard action
-    if (
-        this.holder === globals.playerUs
-        && !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-    ) {
-        // Prevent discarding while at 8 clues
-        if (globals.clues === 8) {
-            return;
-        }
-        globals.lobby.ui.endTurn({
-            type: 'action',
-            data: {
-                type: constants.ACT.DISCARD,
-                target: this.order,
-            },
-        });
-        return;
-    }
-
-    // Right-clicking on cards in other people's hands is a number clue action
-    if (
-        this.holder !== globals.playerUs
-        && globals.clues !== 0
-        && !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-    ) {
-        globals.preCluedCard = this.order;
-        globals.lobby.ui.endTurn({
-            type: 'action',
-            data: {
-                type: constants.ACT.CLUE,
-                target: this.holder,
-                clue: {
-                    type: constants.CLUE_TYPE.RANK,
-                    value: this.trueRank,
-                },
-            },
-        });
-        return;
-    }
-
-    // Ctrl + right-click is the normal note popup
-    if (
-        event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-    ) {
-        notes.openEditTooltip(this);
-        return;
-    }
-
-    // Shift + right-click is a "f" note
-    // (this is a common abbreviation for "this card is Finessed")
-    if (
-        !event.ctrlKey
-        && event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-    ) {
-        this.setNote('f');
-        return;
-    }
-
-    // Alt + right-click is a "cm" note
-    // (this is a common abbreviation for "this card is chop moved")
-    if (
-        !event.ctrlKey
-        && !event.shiftKey
-        && event.altKey
-        && !event.metaKey
-    ) {
-        this.setNote('cm');
-    }
-};
-
-HanabiCard.prototype.reveal = function reveal(suit, rank) {
-    // Local variables
-    suit = convert.msgSuitToSuit(suit, globals.variant);
-
-    // Update the possibilities for the player who played/discarded this card
-    // (but we don't need to do anything if the card was already fully-clued)
-    if (this.possibleSuits.length > 1 || this.possibleRanks.length > 1) {
-        const hand = globals.elements.playerHands[this.holder];
-        for (const layoutChild of hand.children) {
-            const card = layoutChild.children[0];
-            if (card.order === this.order) {
-                // There is no need to update the card that is being revealed
-                continue;
-            }
-            card.removePossibility(suit, rank, false);
-        }
-    }
-
-    // Set the true suit/rank on the card
-    this.showOnlyLearned = false;
-    this.trueSuit = suit;
-    this.trueRank = rank;
-
-    // Keep track of what this card is
-    const learnedCard = globals.learnedCards[this.order];
-    learnedCard.suit = suit;
-    learnedCard.rank = rank;
-    learnedCard.revealed = true;
-
-    // Redraw the card
-    this.suitPips.hide();
-    this.rankPips.hide();
-    this.setBareImage();
-
-    // Hide any existing arrows on all cards
-    globals.lobby.ui.showClueMatch(-1);
-
-    // Unflip the arrow, if it is flipped
-    this.initArrowLocation();
-};
-
-HanabiCard.prototype.removeFromParent = function removeFromParent() {
-    // Remove the card from the player's hand in preparation of adding it to either
-    // the play stacks or the discard pile
-    const layoutChild = this.parent;
-    if (!layoutChild.parent) {
-        // If a tween is destroyed in the middle of animation, it can cause a card to be orphaned
-        return;
-    }
-    const pos = layoutChild.getAbsolutePosition();
-    layoutChild.setRotation(layoutChild.parent.getRotation());
-    layoutChild.remove();
-    layoutChild.setAbsolutePosition(pos);
-};
-
-HanabiCard.prototype.animateToPlayStacks = function animateToPlayStacks() {
-    // We add a LayoutChild to a CardStack
-    const playStack = globals.elements.playStacks.get(this.trueSuit);
-    playStack.add(this.parent);
-
-    // We also want to move this stack to the top so that
-    // cards do not tween behind the other play stacks when travelling to this stack
-    playStack.moveToTop();
-};
-
-HanabiCard.prototype.animateToDiscardPile = function animateToDiscardPile() {
-    // We add a LayoutChild to a CardLayout
-    const discardStack = globals.elements.discardStacks.get(this.trueSuit);
-    discardStack.add(this.parent);
-
-    // We need to bring the discarded card to the top so that when it tweens to the discard pile,
-    // it will fly on top of the play stacks and other player's hands
-    // However, if we use "globals.elements.discardStacks.get(suit).moveToTop()" like we do in the
-    // "animateToPlayStacks()" function,
-    // then the discard stacks will not be arranged in the correct order
-    // Thus, move all of the discord piles to the top in order so that they will be properly
-    // overlapping (the bottom-most stack should have priority over the top)
-    for (const stack of globals.elements.discardStacks) {
-        // Since "discardStacks" is a Map(),
-        // "stack" is an array containing a Suit and CardLayout
-        if (stack[1]) {
-            stack[1].moveToTop();
-        }
-    }
-};
-
-HanabiCard.prototype.setNote = function setNote(note) {
-    notes.set(this.order, note);
-    notes.update(this);
-    notes.show(this);
-};
-
-HanabiCard.prototype.getSlotNum = function getSlotNum() {
-    const numCardsInHand = this.parent.parent.children.length;
-    for (let i = 0; i < numCardsInHand; i++) {
-        const layoutChild = this.parent.parent.children[i];
-        if (layoutChild.children[0].order === this.order) {
-            return numCardsInHand - i;
-        }
-    }
-
-    return -1;
-};
-
-HanabiCard.prototype.isCritical = function isCritical() {
-    if (
-        !this.isRevealed()
-        || this.isPlayed
-        || this.isDiscarded
-        || !needsToBePlayed(this.trueSuit, this.trueRank)
-    ) {
-        return false;
-    }
-
-    const num = getSpecificCardNum(this.trueSuit, this.trueRank);
-    return num.total === num.discarded + 1;
-};
-
-HanabiCard.prototype.isPotentiallyPlayable = function isPotentiallyPlayable() {
-    // Don't bother calculating this for Up or Down variants
-    if (globals.variant.name.startsWith('Up or Down')) {
-        return true;
-    }
-
-    let potentiallyPlayable = false;
-    for (const suit of globals.variant.suits) {
-        const cardsPlayed = globals.elements.playStacks.get(suit).children.length;
-        const nextRankNeeded = cardsPlayed + 1;
-        const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
-        if (count > 0) {
-            potentiallyPlayable = true;
-            break;
-        }
-    }
-
-    return potentiallyPlayable;
-};
-
-HanabiCard.prototype.removePossibility = function removePossibility(suit, rank, all) {
-    // Every card has a possibility map that maps card identities to count
-    // Remove one possibility for this card
-    const mapIndex = `${suit.name}${rank}`;
-    const cardsLeft = this.possibleCards.get(mapIndex);
-    if (cardsLeft === 0) {
-        return;
-    }
-    const newValue = all ? 0 : cardsLeft - 1;
-    this.possibleCards.set(mapIndex, newValue);
-    this.checkPipPossibilities(suit, rank);
-};
+}
 
 module.exports = HanabiCard;
 
 /*
     Misc. functions
 */
-
-const scaleCardImage = (context, name, width, height, am) => {
-    let src = globals.cardImages[name];
-
-    if (!src) {
-        console.error(`The image "${name}" was not generated.`);
-        return;
-    }
-
-    const dw = Math.sqrt(am.m[0] * am.m[0] + am.m[1] * am.m[1]) * width;
-    const dh = Math.sqrt(am.m[2] * am.m[2] + am.m[3] * am.m[3]) * height;
-
-    if (dw < 1 || dh < 1) {
-        return;
-    }
-
-    let sw = width;
-    let sh = height;
-    let steps = 0;
-
-    if (!globals.scaleCardImages[name]) {
-        globals.scaleCardImages[name] = [];
-    }
-
-    // This code was written by Keldon;
-    // scaling the card down in steps of half in each dimension presumably improves the scaling
-    while (dw < sw / 2) {
-        let scaleCanvas = globals.scaleCardImages[name][steps];
-        sw = Math.floor(sw / 2);
-        sh = Math.floor(sh / 2);
-
-        if (!scaleCanvas) {
-            scaleCanvas = document.createElement('canvas');
-            scaleCanvas.width = sw;
-            scaleCanvas.height = sh;
-
-            const scaleContext = scaleCanvas.getContext('2d');
-
-            scaleContext.drawImage(src, 0, 0, sw, sh);
-
-            globals.scaleCardImages[name][steps] = scaleCanvas;
-        }
-
-        src = scaleCanvas;
-
-        steps += 1;
-    }
-
-    context.drawImage(src, 0, 0, width, height);
-};
 
 const filterInPlace = (values, predicate) => {
     const removed = [];
@@ -1567,64 +675,4 @@ const getSpecificCardNum = (suit, rank) => {
     }
 
     return { total, discarded };
-};
-
-const gotoTurn = (turn, order) => {
-    if (globals.replay) {
-        replay.checkDisableSharedTurns();
-    } else {
-        replay.enter();
-    }
-    replay.goto(turn, true);
-
-    // Also indicate the card to make it easier to find
-    // (we have to use "globals.deck" instead of "this" because the card will get overwritten)
-    globals.deck[order].toggleSharedReplayIndicator();
-};
-
-const drawX = (ctx, shape, x, y, size, width) => {
-    // Start at the top left corner and draw an X
-    ctx.beginPath();
-    x -= size;
-    y -= size;
-    ctx.moveTo(x, y);
-    x += width / 2;
-    y -= width / 2;
-    ctx.lineTo(x, y);
-    x += size;
-    y += size;
-    ctx.lineTo(x, y);
-    x += size;
-    y -= size;
-    ctx.lineTo(x, y);
-    x += width / 2;
-    y += width / 2;
-    ctx.lineTo(x, y);
-    x -= size;
-    y += size;
-    ctx.lineTo(x, y);
-    x += size;
-    y += size;
-    ctx.lineTo(x, y);
-    x -= width / 2;
-    y += width / 2;
-    ctx.lineTo(x, y);
-    x -= size;
-    y -= size;
-    ctx.lineTo(x, y);
-    x -= size;
-    y += size;
-    ctx.lineTo(x, y);
-    x -= width / 2;
-    y -= width / 2;
-    ctx.lineTo(x, y);
-    x += size;
-    y -= size;
-    ctx.lineTo(x, y);
-    x -= size;
-    y -= size;
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    ctx.closePath();
-    ctx.fillStrokeShape(shape);
 };

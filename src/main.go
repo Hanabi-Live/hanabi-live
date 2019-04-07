@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
 	"github.com/joho/godotenv"
@@ -46,6 +47,11 @@ func main() {
 	// Load the ".env" file which contains environment variables with secret values
 	if err := godotenv.Load(path.Join(projectPath, ".env")); err != nil {
 		log.Fatal("Failed to load .env file:", err)
+	}
+
+	// If we are running in a development environment, change some constants
+	if os.Getenv("DOMAIN") == "localhost" {
+		idleGameTimeout = time.Hour * 24 * 7 // 7 days
 	}
 
 	// Initialize the database model

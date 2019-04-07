@@ -8,6 +8,7 @@ const globals = require('./globals');
 const graphics = require('./graphics');
 
 const CardLayout = function CardLayout(config) {
+    config.listening = config.player !== -1; // Discard piles do not need to be listening
     graphics.Group.call(this, config);
 
     this.align = config.align || 'left';
@@ -19,9 +20,9 @@ const CardLayout = function CardLayout(config) {
 graphics.Util.extend(CardLayout, graphics.Group);
 
 CardLayout.prototype.add = function add(child) {
-    child.children.forEach((c) => {
-        if (c.doRotations) {
-            c.doRotations(this.invertCards);
+    child.children.forEach((card) => {
+        if (card.doRotations) {
+            card.doRotations(this.invertCards);
         }
     });
     const pos = child.getAbsolutePosition();
