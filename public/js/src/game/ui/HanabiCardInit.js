@@ -16,6 +16,7 @@ exports.image = function image() {
     this.bare = new graphics.Image({
         width: constants.CARDW,
         height: constants.CARDH,
+        listening: false,
     });
     const self = this;
     this.bare.setSceneFunc(function setSceneFunc(context) {
@@ -54,6 +55,7 @@ exports.pips = function pips() {
         width: Math.floor(constants.CARDW),
         height: Math.floor(constants.CARDH),
         visible: !this.trueSuit,
+        listening: false,
     });
     this.add(this.suitPips);
 
@@ -92,12 +94,12 @@ exports.pips = function pips() {
             fill,
             stroke: 'black',
             strokeWidth: 5,
-            listening: false,
             sceneFunc: (ctx) => {
                 drawCards.drawSuitShape(suit, i)(ctx);
                 ctx.closePath();
                 ctx.fillStrokeShape(suitPip);
             },
+            listening: false,
         });
 
         // Gradient numbers are magic
@@ -132,7 +134,6 @@ exports.pips = function pips() {
             offset,
             fill: 'black',
             stroke: 'black',
-            listening: false,
             opacity: 0.8,
             visible: false,
             sceneFunc: (ctx, shape) => {
@@ -141,6 +142,7 @@ exports.pips = function pips() {
                 const xy = Math.floor((constants.CARDH * 0.25) - (width * 0.05));
                 drawX(ctx, shape, xx, xy, 50, width);
             },
+            listening: false,
         });
         this.suitPips.add(suitPipX);
         this.suitPipsXMap.set(suit, suitPipX);
@@ -153,6 +155,7 @@ exports.pips = function pips() {
         width: constants.CARDW,
         height: Math.floor(constants.CARDH * 0.15),
         visible: !this.trueRank,
+        listening: false,
     });
     this.add(this.rankPips);
 
@@ -168,8 +171,8 @@ exports.pips = function pips() {
             height: Math.floor(constants.CARDH * 0.10),
             fill: 'black',
             stroke: 'black',
-            listening: false,
             cornerRadius: 0.02 * constants.CARDH,
+            listening: false,
         });
         this.rankPips.add(rankPip);
         this.rankPipsMap.set(rank, rankPip);
@@ -181,7 +184,6 @@ exports.pips = function pips() {
             fill: '#e6e6e6',
             stroke: 'black',
             strokeWidth: 2,
-            listening: false,
             opacity: 0.8,
             visible: false,
             sceneFunc: (ctx, shape) => {
@@ -190,6 +192,7 @@ exports.pips = function pips() {
                 const xy = Math.floor(constants.CARDH * 0.05);
                 drawX(ctx, shape, xx, xy, 12, width);
             },
+            listening: false,
         });
         this.rankPips.add(rankPipX);
         this.rankPipsXMap.set(rank, rankPipX);
@@ -236,6 +239,7 @@ exports.indicatorArrow = function indicatorArrow() {
         fill: 'black',
         stroke: 'black',
         strokeWidth: 15,
+        listening: false,
     });
     this.indicatorGroup.add(this.indicatorArrowBorderEdge);
 

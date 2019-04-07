@@ -1,27 +1,31 @@
 // Imports
 const Button = require('./Button');
-const graphics = require('./graphics');
 
 // A simple two-state button with text for each state
-const ToggleButton = function ToggleButton(config) {
-    Button.call(this, config);
-    let toggleState = false;
+class ToggleButton extends Button {
+    constructor(config) {
+        super(config);
 
-    const toggle = () => {
-        toggleState = !toggleState;
-        this.setText(toggleState ? config.alternateText : config.text);
-        if (this.getLayer()) {
-            this.getLayer().batchDraw();
+        // Class variables
+        this.text = config.text;
+        this.alternateText = config.alternateText;
+        this.toggleState = false;
+
+        this.on('click tap', this.toggle);
+
+        if (config.initialState) {
+            this.toggle();
         }
-    };
-
-    this.on('click tap', toggle);
-
-    if (config.initialState) {
-        toggle();
     }
-};
 
-graphics.Util.extend(ToggleButton, Button);
+    toggle() {
+        this.toggleState = !this.toggleState;
+        this.setText(this.toggleState ? this.alternateText : this.text);
+        const layer = this.getLayer();
+        if (layer) {
+            layer.batchDraw();
+        }
+    }
+}
 
 module.exports = ToggleButton;

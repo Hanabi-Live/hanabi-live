@@ -10,7 +10,6 @@ const CardStack = require('./CardStack');
 const CardLayout = require('./CardLayout');
 const Clue = require('./Clue');
 const ClueLog = require('./ClueLog');
-const ClueRecipientButton = require('./ClueRecipientButton');
 const ColorButton = require('./ColorButton');
 const constants = require('../../constants');
 const drawHands = require('./drawHands');
@@ -68,6 +67,10 @@ module.exports = () => {
     ];
     for (const layer of layers) {
         globals.layers[layer] = new graphics.Layer({
+            // Disable "listening" for every layer/element by default to increase performance
+            // https://konvajs.org/docs/performance/Listening_False.html
+            // This means that we have to explicitly set "listening: true" for every element that
+            // we want to bind events to (for clicking, dragging, hovering, etc.)
             listening: false,
         });
     }
@@ -173,8 +176,6 @@ const drawActionLog = () => {
         listening: true,
     });
     actionLog.add(actionLogRect);
-
-    // Clicking on the action log
     actionLogRect.on('click tap', () => {
         globals.elements.msgLogGroup.show();
         globals.elements.stageFade.show();
@@ -208,7 +209,6 @@ const drawActionLog = () => {
             y: 0,
         },
         shadowOpacity: 0.9,
-        listening: false,
         x: 0.01 * winW,
         y: 0.003 * winH,
         width: (actionLogValues.w - 0.02) * winW,
@@ -1194,14 +1194,14 @@ const drawClueArea = () => {
     let playerX = (clueAreaValues.w * 0.5) - (totalPlayerWidth * 0.5);
     for (let i = 0; i < numPlayers - 1; i++) {
         const j = (globals.playerUs + i + 1) % numPlayers;
-        const button = new ClueRecipientButton({
+        const button = new Button({
             x: playerX * winW,
             y: 0,
             width: playerButtonW * winW,
             height: 0.025 * winH,
             text: globals.playerNames[j],
-            targetIndex: j,
         });
+        button.targetIndex = j;
         globals.elements.clueArea.add(button);
         globals.elements.clueTargetButtonGroup.add(button);
         playerX += playerButtonW + playerButtonSpacing;

@@ -1,47 +1,49 @@
 // Imports
 const graphics = require('./graphics');
 
-const ButtonGroup = function ButtonGroup(config) {
-    graphics.Node.call(this, config);
-    this.list = [];
-};
+class ButtonGroup extends graphics.Node {
+    constructor(config) {
+        super(config);
 
-graphics.Util.extend(ButtonGroup, graphics.Node);
+        // Class variables
+        this.list = [];
+    }
 
-ButtonGroup.prototype.add = function add(button) {
-    const self = this;
+    add(button) {
+        const self = this;
 
-    this.list.push(button);
+        this.list.push(button);
 
-    button.on('click tap', function buttonClick() {
-        this.setPressed(true);
+        button.on('click tap', function buttonClick() {
+            this.setPressed(true);
 
-        for (let i = 0; i < self.list.length; i++) {
-            if (self.list[i] !== this && self.list[i].pressed) {
-                self.list[i].setPressed(false);
+            for (let i = 0; i < self.list.length; i++) {
+                if (self.list[i] !== this && self.list[i].pressed) {
+                    self.list[i].setPressed(false);
+                }
+            }
+
+            self.fire('change');
+        });
+    }
+
+    getPressed() {
+        for (let i = 0; i < this.list.length; i++) {
+            if (this.list[i].pressed) {
+                return this.list[i];
             }
         }
 
-        self.fire('change');
-    });
-};
-
-ButtonGroup.prototype.getPressed = function getPressed() {
-    for (let i = 0; i < this.list.length; i++) {
-        if (this.list[i].pressed) {
-            return this.list[i];
-        }
+        return null;
     }
 
-    return null;
-};
-
-ButtonGroup.prototype.clearPressed = function clearPressed() {
-    for (let i = 0; i < this.list.length; i++) {
-        if (this.list[i].pressed) {
-            this.list[i].setPressed(false);
+    clearPressed() {
+        for (let i = 0; i < this.list.length; i++) {
+            if (this.list[i].pressed) {
+                this.list[i].setPressed(false);
+            }
         }
     }
-};
+}
 
 module.exports = ButtonGroup;

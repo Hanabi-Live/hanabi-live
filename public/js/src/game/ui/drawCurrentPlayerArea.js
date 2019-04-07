@@ -58,7 +58,6 @@ module.exports = (clueAreaValues) => {
             y: 0,
         },
         shadowOpacity: 0.9,
-        listening: false,
     });
     globals.elements.currentPlayerArea.add(globals.elements.currentPlayerText1);
 
@@ -76,7 +75,6 @@ module.exports = (clueAreaValues) => {
             y: 0,
         },
         shadowOpacity: 0.9,
-        listening: false,
     });
     globals.elements.currentPlayerArea.add(globals.elements.currentPlayerText2);
     globals.elements.currentPlayerText2.setPlayer = function set(currentPlayerIndex, threeLines) {
@@ -116,7 +114,6 @@ module.exports = (clueAreaValues) => {
             y: 0,
         },
         shadowOpacity: 0.9,
-        listening: false,
         visible: false,
     });
     globals.elements.currentPlayerArea.add(globals.elements.currentPlayerText3);
@@ -144,7 +141,6 @@ module.exports = (clueAreaValues) => {
             x: (arrowValues.x + (arrowValues.w / 2) * winW),
             y: (currentPlayerAreaValues.h / 2) * winH,
         },
-        listening: false,
     });
     globals.elements.currentPlayerArea.add(globals.elements.currentPlayerArrow);
 
@@ -162,7 +158,6 @@ module.exports = (clueAreaValues) => {
         strokeWidth: 10,
         shadowBlur: 75,
         shadowOpacity: 1,
-        listening: false,
     });
     globals.elements.currentPlayerArrow.add(arrowBorder);
 
@@ -191,7 +186,6 @@ module.exports = (clueAreaValues) => {
         fill: globals.labelColor,
         stroke: globals.labelColor,
         strokeWidth: 5,
-        listening: false,
     });
     globals.elements.currentPlayerArrow.add(arrowMain);
 

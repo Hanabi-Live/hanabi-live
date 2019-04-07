@@ -1,4 +1,9 @@
-module.exports = function Clue(type, value) {
-    this.type = type;
-    this.value = value;
-};
+class Clue {
+    constructor(type, value) {
+        // Class variables
+        this.type = type;
+        this.value = value;
+    }
+}
+
+module.exports = Clue;

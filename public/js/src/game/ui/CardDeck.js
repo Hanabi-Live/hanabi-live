@@ -6,186 +6,187 @@ const LayoutChild = require('./LayoutChild');
 const misc = require('../../misc');
 const tooltips = require('./tooltips');
 
-const CardDeck = function CardDeck(config) {
-    graphics.Group.call(this, config);
+class CardDeck extends graphics.Group {
+    constructor(config) {
+        config.listening = true;
+        super(config);
 
-    this.cardback = new graphics.Image({
-        x: 0,
-        y: 0,
-        width: this.getWidth(),
-        height: this.getHeight(),
-        image: globals.cardImages[config.cardback],
-    });
-    this.add(this.cardback);
-
-    this.cardback.on('dragend.play', dragendPlay);
-
-    this.numLeftText = new graphics.Text({
-        fill: 'white',
-        stroke: 'black',
-        strokeWidth: 1,
-        align: 'center',
-        x: 0,
-        y: 0.3 * this.getHeight(),
-        width: this.getWidth(),
-        height: 0.4 * this.getHeight(),
-        fontSize: 0.4 * this.getHeight(),
-        fontFamily: 'Verdana',
-        fontStyle: 'bold',
-        text: globals.deckSize.toString(),
-        listening: false,
-    });
-    this.add(this.numLeftText);
-
-    this.initTooltip();
-};
-
-graphics.Util.extend(CardDeck, graphics.Group);
-
-function dragendPlay() {
-    const pos = this.getAbsolutePosition();
-
-    pos.x += this.getWidth() * this.getScaleX() / 2;
-    pos.y += this.getHeight() * this.getScaleY() / 2;
-
-    if (globals.elements.playArea.isOver(pos)) {
-        // We need to remove the card from the screen once the animation is finished
-        // (otherwise, the card will be stuck in the in-game replay)
-        globals.postAnimationLayout = () => {
-            this.parent.doLayout();
-            globals.postAnimationLayout = null;
-        };
-
-        this.setDraggable(false);
-        globals.elements.deckPlayAvailableLabel.hide();
-
-        globals.lobby.conn.send('action', {
-            type: constants.ACT.DECKPLAY,
-        });
-
-        globals.lobby.ui.stopAction();
-    } else {
-        // The deck was dragged to an invalid location, so animate the card back to where it was
-        new graphics.Tween({
-            node: this,
-            duration: 0.5,
+        this.cardback = new graphics.Image({
             x: 0,
             y: 0,
-            runonce: true,
-            onFinish: () => {
-                globals.layers.UI.batchDraw();
-            },
-        }).play();
+            width: this.getWidth(),
+            height: this.getHeight(),
+            image: globals.cardImages[config.cardback],
+        });
+        this.add(this.cardback);
+        this.cardback.on('dragend.play', this.dragendPlay);
+
+        this.numLeftText = new graphics.Text({
+            fill: 'white',
+            stroke: 'black',
+            strokeWidth: 1,
+            align: 'center',
+            x: 0,
+            y: 0.3 * this.getHeight(),
+            width: this.getWidth(),
+            height: 0.4 * this.getHeight(),
+            fontSize: 0.4 * this.getHeight(),
+            fontFamily: 'Verdana',
+            fontStyle: 'bold',
+            text: globals.deckSize.toString(),
+            listening: false,
+        });
+        this.add(this.numLeftText);
+
+        this.initTooltip();
     }
-}
 
-CardDeck.prototype.add = function add(child) {
-    graphics.Group.prototype.add.call(this, child);
+    dragendPlay() {
+        const pos = this.getAbsolutePosition();
 
-    if (!(child instanceof LayoutChild)) {
-        return;
+        pos.x += this.getWidth() * this.getScaleX() / 2;
+        pos.y += this.getHeight() * this.getScaleY() / 2;
+
+        if (globals.elements.playArea.isOver(pos)) {
+            // We need to remove the card from the screen once the animation is finished
+            // (otherwise, the card will be stuck in the in-game replay)
+            globals.postAnimationLayout = () => {
+                this.parent.doLayout();
+                globals.postAnimationLayout = null;
+            };
+
+            this.setDraggable(false);
+            globals.elements.deckPlayAvailableLabel.hide();
+
+            globals.lobby.conn.send('action', {
+                type: constants.ACT.DECKPLAY,
+            });
+
+            globals.lobby.ui.stopAction();
+        } else {
+            // The deck was dragged to an invalid location, so animate the card back to where it was
+            new graphics.Tween({
+                node: this,
+                duration: 0.5,
+                x: 0,
+                y: 0,
+                runonce: true,
+                onFinish: () => {
+                    globals.layers.UI.batchDraw();
+                },
+            }).play();
+        }
     }
 
-    child.remove();
-};
+    add(child) {
+        graphics.Group.prototype.add.call(this, child);
 
-CardDeck.prototype.setCardBack = function setCardBack(cardback) {
-    this.cardback.setImage(globals.ImageLoader.get(cardback));
-};
-
-CardDeck.prototype.setCount = function setCount(count) {
-    this.numLeftText.setText(count.toString());
-
-    // When there are no cards left in the deck, remove the card-back
-    // and show a label that indicates how many turns are left before the game ends
-    this.cardback.setVisible(count > 0);
-    let h = 0.3;
-    if (count === 0) {
-        h = 0.15;
-    }
-    this.numLeftText.setY(h * this.getHeight());
-    globals.elements.deckTurnsRemainingLabel1.setVisible(count === 0);
-    globals.elements.deckTurnsRemainingLabel2.setVisible(count === 0);
-
-    // If the game ID is showing, we want to center the deck count between it and the other labels
-    if (count === 0 && globals.elements.gameIDLabel.getVisible()) {
-        this.nudgeCountDownwards();
-    }
-};
-
-CardDeck.prototype.nudgeCountDownwards = function nudgeCountDownwards() {
-    const nudgeAmount = 0.07 * this.getHeight();
-    this.numLeftText.setY(this.numLeftText.getY() + nudgeAmount);
-};
-
-CardDeck.prototype.doLayout = function doLayout() {
-    this.cardback.setPosition({
-        x: 0,
-        y: 0,
-    });
-};
-
-// The deck tooltip shows the custom options for this game, if any
-CardDeck.prototype.initTooltip = function initTooltip() {
-    // If the user hovers over the deck, show a tooltip that shows extra game options, if any
-    // (we don't use the "tooltip.initDelayed()" function because we need the extra condition in
-    // the "mousemove" event)
-    this.on('mousemove', function mouseMove() {
-        // Don't do anything if we might be dragging the deck
-        if (globals.elements.deckPlayAvailableLabel.isVisible()) {
+        if (!(child instanceof LayoutChild)) {
             return;
         }
 
-        globals.activeHover = this;
-        setTimeout(() => {
-            tooltips.show(this, 'deck');
-        }, globals.tooltipDelay);
-    });
-    this.on('mouseout', () => {
-        globals.activeHover = null;
-        $('#tooltip-deck').tooltipster('close');
-    });
-
-    // The tooltip will show what the deck is, followed by the current game options
-    let content = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;This is the deck, which shows the number of cards remaining.</span><br /><br />';
-    content += '<strong>Game Options:</strong>';
-    content += '<ul class="game-tooltips-ul">';
-    content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
-    content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
-
-    if (globals.timed) {
-        content += '<li><span class="game-tooltips-icon"><i class="fas fa-clock"></i></span>';
-        content += '&nbsp; Timed: ';
-        content += misc.timerFormatter(globals.baseTime * 1000);
-        content += ' + ';
-        content += misc.timerFormatter(globals.timePerTurn * 1000);
-        content += '</li>';
+        child.remove();
     }
 
-    if (globals.speedrun) {
-        content += '<li><span class="game-tooltips-icon"><i class="fas fa-running"></i></span>';
-        content += '&nbsp; Speedrun</li>';
+    setCardBack(cardback) {
+        this.cardback.setImage(globals.ImageLoader.get(cardback));
     }
 
-    if (globals.deckPlays) {
-        content += '<li><span class="game-tooltips-icon">';
-        content += '<i class="fas fa-blind" style="position: relative; left: 0.2em;"></i></span>';
-        content += '&nbsp; Bottom-Deck Blind Plays</li>';
+    setCount(count) {
+        this.numLeftText.setText(count.toString());
+
+        // When there are no cards left in the deck, remove the card-back
+        // and show a label that indicates how many turns are left before the game ends
+        this.cardback.setVisible(count > 0);
+        let h = 0.3;
+        if (count === 0) {
+            h = 0.15;
+        }
+        this.numLeftText.setY(h * this.getHeight());
+        globals.elements.deckTurnsRemainingLabel1.setVisible(count === 0);
+        globals.elements.deckTurnsRemainingLabel2.setVisible(count === 0);
+
+        // If the game ID is showing,
+        // we want to center the deck count between it and the other labels
+        if (count === 0 && globals.elements.gameIDLabel.getVisible()) {
+            this.nudgeCountDownwards();
+        }
     }
 
-    if (globals.emptyClues) {
-        content += '<li><span class="game-tooltips-icon"><i class="fas fa-expand"></i></span>';
-        content += '&nbsp; Empty Clues</li>';
+    nudgeCountDownwards() {
+        const nudgeAmount = 0.07 * this.getHeight();
+        this.numLeftText.setY(this.numLeftText.getY() + nudgeAmount);
     }
 
-    if (globals.characterAssignments.length > 0) {
-        content += '<li><span class="game-tooltips-icon">';
-        content += '<span style="position: relative; right: 0.4em;">🤔</span></span>';
-        content += '&nbsp; Detrimental Characters</li>';
+    doLayout() {
+        this.cardback.setPosition({
+            x: 0,
+            y: 0,
+        });
     }
 
-    content += '</ul>';
-    $('#tooltip-deck').tooltipster('instance').content(content);
-};
+    // The deck tooltip shows the custom options for this game, if any
+    initTooltip() {
+        // If the user hovers over the deck, show a tooltip that shows extra game options, if any
+        // (we don't use the "tooltip.initDelayed()" function because we need the extra condition in
+        // the "mousemove" event)
+        this.on('mousemove', function mouseMove() {
+            // Don't do anything if we might be dragging the deck
+            if (globals.elements.deckPlayAvailableLabel.isVisible()) {
+                return;
+            }
+
+            globals.activeHover = this;
+            setTimeout(() => {
+                tooltips.show(this, 'deck');
+            }, globals.tooltipDelay);
+        });
+        this.on('mouseout', () => {
+            globals.activeHover = null;
+            $('#tooltip-deck').tooltipster('close');
+        });
+
+        // The tooltip will show what the deck is, followed by the current game options
+        let content = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;This is the deck, which shows the number of cards remaining.</span><br /><br />';
+        content += '<strong>Game Options:</strong>';
+        content += '<ul class="game-tooltips-ul">';
+        content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
+        content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
+
+        if (globals.timed) {
+            content += '<li><span class="game-tooltips-icon"><i class="fas fa-clock"></i></span>';
+            content += '&nbsp; Timed: ';
+            content += misc.timerFormatter(globals.baseTime * 1000);
+            content += ' + ';
+            content += misc.timerFormatter(globals.timePerTurn * 1000);
+            content += '</li>';
+        }
+
+        if (globals.speedrun) {
+            content += '<li><span class="game-tooltips-icon"><i class="fas fa-running"></i></span>';
+            content += '&nbsp; Speedrun</li>';
+        }
+
+        if (globals.deckPlays) {
+            content += '<li><span class="game-tooltips-icon">';
+            content += '<i class="fas fa-blind" style="position: relative; left: 0.2em;"></i></span>';
+            content += '&nbsp; Bottom-Deck Blind Plays</li>';
+        }
+
+        if (globals.emptyClues) {
+            content += '<li><span class="game-tooltips-icon"><i class="fas fa-expand"></i></span>';
+            content += '&nbsp; Empty Clues</li>';
+        }
+
+        if (globals.characterAssignments.length > 0) {
+            content += '<li><span class="game-tooltips-icon">';
+            content += '<span style="position: relative; right: 0.4em;">🤔</span></span>';
+            content += '&nbsp; Detrimental Characters</li>';
+        }
+
+        content += '</ul>';
+        $('#tooltip-deck').tooltipster('instance').content(content);
+    }
+}
 
 module.exports = CardDeck;

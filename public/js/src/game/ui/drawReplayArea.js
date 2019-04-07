@@ -37,7 +37,6 @@ module.exports = () => {
         height: 0.01 * winH,
         fill: 'black',
         cornerRadius: 0.005 * winH,
-        listening: false,
     });
     globals.elements.replayArea.add(replayBar);
 
@@ -49,6 +48,7 @@ module.exports = () => {
         width: replayAreaValues.w * winW,
         height: 0.05 * winH,
         opacity: 0,
+        listening: true,
     });
     replayBarClickRect.on('click', replay.barClick);
     globals.elements.replayArea.add(replayBarClickRect);
@@ -73,6 +73,7 @@ module.exports = () => {
         fill: '#d1d1d1', // Gray
         stroke: shuttleValues.stroke,
         visible: !globals.useSharedTurns,
+        listening: true,
     });
     globals.elements.replayShuttleShared.on('click tap', () => {
         // This is needed because the shared replay shuttle will block the replay bar
@@ -91,6 +92,7 @@ module.exports = () => {
         draggable: true,
         dragBoundFunc: replay.barDrag,
         stroke: shuttleValues.stroke,
+        listening: true,
     });
     globals.elements.replayArea.add(globals.elements.replayShuttle);
 
@@ -251,7 +253,6 @@ module.exports = () => {
         x: 0.027 * winW,
         y: 0.016 * winH,
         width: bottomRightReplayButtonValues.w * 0.65 * winW,
-        listening: false,
         fontSize: 0.5 * winH,
         fontFamily: 'Verdana',
         fill: 'yellow',

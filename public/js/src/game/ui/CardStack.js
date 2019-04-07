@@ -7,94 +7,86 @@
 const globals = require('./globals');
 const graphics = require('./graphics');
 
-const CardStack = function CardStack(config) {
-    graphics.Group.call(this, config);
-};
+class CardStack extends graphics.Group {
+    add(child) {
+        child.children.forEach((card) => {
+            if (card.doRotations) {
+                card.doRotations(false);
+            }
+        });
+        const pos = child.getAbsolutePosition();
+        graphics.Group.prototype.add.call(this, child);
+        child.setAbsolutePosition(pos);
+        this.doLayout();
+    }
 
-graphics.Util.extend(CardStack, graphics.Group);
+    doLayout() {
+        const lh = this.getHeight();
 
-CardStack.prototype.add = function add(child) {
-    child.children.forEach((card) => {
-        if (card.doRotations) {
-            card.doRotations(false);
-        }
-    });
-    const pos = child.getAbsolutePosition();
-    graphics.Group.prototype.add.call(this, child);
-    child.setAbsolutePosition(pos);
-    this.doLayout();
-};
+        const hideUnder = () => {
+            const n = this.children.length;
+            for (let i = 0; i < n; i++) {
+                const node = this.children[i]; // This is a LayoutChild
 
-CardStack.prototype._setChildrenIndices = function _setChildrenIndices() {
-    graphics.Group.prototype._setChildrenIndices.call(this);
-};
+                if (!node.tween) {
+                    continue;
+                }
 
-CardStack.prototype.doLayout = function doLayout() {
-    const lh = this.getHeight();
+                if (node.tween !== null) {
+                    return;
+                }
+            }
+            for (let i = 0; i < n - 1; i++) {
+                this.children[i].hide();
+            }
+            if (n > 0) {
+                this.children[n - 1].show();
+            }
+        };
 
-    const hideUnder = () => {
-        const n = this.children.length;
-        for (let i = 0; i < n; i++) {
+        for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i]; // This is a LayoutChild
 
-            if (!node.tween) {
-                continue;
+            const scale = lh / node.getHeight();
+
+            if (globals.animateFast) {
+                node.setX(0);
+                node.setY(0);
+                node.setScaleX(scale);
+                node.setScaleY(scale);
+                node.setRotation(0);
+                hideUnder();
+            } else {
+                // Animate the card leaving the hand to the play stacks
+                // (tweening from the hand to the discard pile is handled in "CardLayout.js")
+                const card = node.children[0];
+                card.tweening = true;
+                node.tween = new graphics.Tween({
+                    node,
+                    duration: 0.8,
+                    x: 0,
+                    y: 0,
+                    scaleX: scale,
+                    scaleY: scale,
+                    rotation: 0,
+                    runonce: true,
+                    onFinish: () => {
+                        if (card.isMisplayed && card.parent.parent) {
+                            // If the card is misplayed, then tween it to the discard pile
+                            // We check for "card.parent.parent" to fix the bug where
+                            // the tween will still finish if the user goes backward in a replay
+                            card.removeFromParent();
+                            card.animateToDiscardPile();
+                        } else {
+                            card.tweening = false;
+                            node.checkSetDraggable();
+                            hideUnder();
+                        }
+                    },
+                }).play();
             }
-
-            if (node.tween !== null) {
-                return;
-            }
-        }
-        for (let i = 0; i < n - 1; i++) {
-            this.children[i].hide();
-        }
-        if (n > 0) {
-            this.children[n - 1].show();
-        }
-    };
-
-    for (let i = 0; i < this.children.length; i++) {
-        const node = this.children[i]; // This is a LayoutChild
-
-        const scale = lh / node.getHeight();
-
-        if (globals.animateFast) {
-            node.setX(0);
-            node.setY(0);
-            node.setScaleX(scale);
-            node.setScaleY(scale);
-            node.setRotation(0);
-            hideUnder();
-        } else {
-            // Animate the card leaving the hand to the play stacks
-            // (tweening from the hand to the discard pile is handled in "CardLayout.js")
-            const card = node.children[0];
-            card.tweening = true;
-            node.tween = new graphics.Tween({
-                node,
-                duration: 0.8,
-                x: 0,
-                y: 0,
-                scaleX: scale,
-                scaleY: scale,
-                rotation: 0,
-                runonce: true,
-                onFinish: () => {
-                    if (card.isMisplayed && card.parent.parent) {
-                        // If the card is misplayed, then tween it to the discard pile
-                        // We check for "card.parent.parent" to fix the bug where
-                        // the tween will still finish if the user goes backward in a replay
-                        card.removeFromParent();
-                        card.animateToDiscardPile();
-                    } else {
-                        card.tweening = false;
-                        node.checkSetDraggable();
-                        hideUnder();
-                    }
-                },
-            }).play();
         }
     }
-};
+}
 
 module.exports = CardStack;
