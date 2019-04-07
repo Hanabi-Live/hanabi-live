@@ -15,8 +15,10 @@ const (
 )
 
 var (
-	// Start at 1 and increment for every game created
-	newGameID = 1
+	newGameID    = 1 // Start at 1 and increment for every game created
+	seedRegExp   = regexp.MustCompile(`^!seed (.+)$`)
+	replayRegExp = regexp.MustCompile(`^!replay (\d+) (\d+)$`)
+	dealRegExp   = regexp.MustCompile(`^!deal (.+)$`)
 )
 
 func commandGameCreate(s *Session, d *CommandData) {
@@ -65,14 +67,6 @@ func commandGameCreate(s *Session, d *CommandData) {
 	if strings.HasPrefix(d.Name, "!") {
 		if strings.HasPrefix(d.Name, "!seed") {
 			// !seed - Play a specific seed
-			var seedRegExp *regexp.Regexp
-			if v, err := regexp.Compile(`^!seed (.+)$`); err != nil {
-				log.Error("Failed to create the seed regular expression:", err)
-				s.Error("Failed to create the game. Please contact an administrator.")
-				return
-			} else {
-				seedRegExp = v
-			}
 			match := seedRegExp.FindStringSubmatch(d.Name)
 			if match == nil {
 				s.Warning("Games on specific seeds must be created in the form: " +
@@ -83,14 +77,6 @@ func commandGameCreate(s *Session, d *CommandData) {
 
 		} else if strings.HasPrefix(d.Name, "!replay") {
 			// !replay - Replay a specific game up to a specific turn
-			var replayRegExp *regexp.Regexp
-			if v, err := regexp.Compile(`^!replay (\d+) (\d+)$`); err != nil {
-				log.Error("Failed to create the replay regular expression:", err)
-				s.Error("Failed to create the game. Please contact an administrator.")
-				return
-			} else {
-				replayRegExp = v
-			}
 			match := replayRegExp.FindStringSubmatch(d.Name)
 			if match == nil {
 				s.Warning("Replays of specific games must be created in the form: " +
@@ -161,14 +147,6 @@ func commandGameCreate(s *Session, d *CommandData) {
 
 		} else if strings.HasPrefix(d.Name, "!deal") {
 			// !deal - Play a specific deal read from a text file
-			var dealRegExp *regexp.Regexp
-			if v, err := regexp.Compile(`^!deal (.+)$`); err != nil {
-				log.Error("Failed to create the deal regular expression:", err)
-				s.Error("Failed to create the game. Please contact an administrator.")
-				return
-			} else {
-				dealRegExp = v
-			}
 			match := dealRegExp.FindStringSubmatch(d.Name)
 			if match == nil {
 				s.Warning("Games on specific deals must be created in the form: !deal [filename]")

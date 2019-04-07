@@ -17,6 +17,11 @@ const (
 	chatLimit = 1000
 )
 
+var (
+	mentionRegExp = regexp.MustCompile(`&lt;@!*(\d+?)&gt;`)
+	channelRegExp = regexp.MustCompile(`&lt;#(\d+?)&gt;`)
+)
+
 /*
 	Chat command functions
 */
@@ -180,14 +185,6 @@ func chatFillMentions(msg string) string {
 		return msg
 	}
 
-	var mentionRegExp *regexp.Regexp
-	if v, err := regexp.Compile(`&lt;@!*(\d+?)&gt;`); err != nil {
-		log.Error("Failed to create the Discord mention regular expression:", err)
-		return msg
-	} else {
-		mentionRegExp = v
-	}
-
 	for {
 		match := mentionRegExp.FindStringSubmatch(msg)
 		if match == nil || len(match) <= 1 {
@@ -209,14 +206,6 @@ func chatFillChannels(msg string) string {
 
 	if discord == nil {
 		return msg
-	}
-
-	var channelRegExp *regexp.Regexp
-	if v, err := regexp.Compile(`&lt;#(\d+?)&gt;`); err != nil {
-		log.Error("Failed to create the Discord channel regular expression:", err)
-		return msg
-	} else {
-		channelRegExp = v
 	}
 
 	for {

@@ -4,6 +4,9 @@ type CommandData struct {
 	// various
 	ID int `json:"gameID"`
 
+	// setting
+	Value string `json:"value"`
+
 	// chat
 	Msg  string `json:"msg"`
 	Room string `json:"room"`
@@ -86,6 +89,7 @@ func commandInit() {
 	commandMap["gameAbandon"] = commandGameAbandon
 	commandMap["gameSpectate"] = commandGameSpectate
 	commandMap["gameRestart"] = commandGameRestart
+	commandMap["setting"] = commandSetting
 	commandMap["chat"] = commandChat
 	commandMap["chatRead"] = commandChatRead
 	commandMap["getName"] = commandGetName

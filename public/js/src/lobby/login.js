@@ -4,8 +4,8 @@
 
 // Imports
 const globals = require('../globals');
-const websocket = require('../websocket');
 const lobby = require('./main');
+const websocket = require('../websocket');
 
 $(document).ready(() => {
     $('#login-button').click(() => {

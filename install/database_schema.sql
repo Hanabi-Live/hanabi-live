@@ -24,6 +24,35 @@ CREATE TABLE users (
 );
 CREATE INDEX users_index_username ON users (username);
 
+/* Any default settings must also be applied to the "userSettings.go" file */
+DROP TABLE IF EXISTS user_settings;
+CREATE TABLE user_settings (
+    id                                  INT          NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    /* PRIMARY KEY automatically creates a UNIQUE constraint */
+    user_id                             INT          NOT NULL,
+    send_turn_notify                    BOOLEAN      NOT NULL  DEFAULT 0,
+    send_turn_sound                     BOOLEAN      NOT NULL  DEFAULT 1,
+    send_timer_sound                    BOOLEAN      NOT NULL  DEFAULT 1,
+    show_keldon_UI                      BOOLEAN      NOT NULL  DEFAULT 0,
+    show_colorblind_UI                  BOOLEAN      NOT NULL  DEFAULT 0,
+    show_timer_in_untimed               BOOLEAN      NOT NULL  DEFAULT 0,
+    reverse_hands                       BOOLEAN      NOT NULL  DEFAULT 0,
+    real_life_mode                      BOOLEAN      NOT NULL  DEFAULT 0,
+    speedrun_preplay                    BOOLEAN      NOT NULL  DEFAULT 0,
+    create_table_variant                VARCHAR(50)  NOT NULL  DEFAULT "No Variant",
+    create_table_timed                  BOOLEAN      NOT NULL  DEFAULT 0,
+    create_table_base_time_minutes      FLOAT        NOT NULL  DEFAULT 2,
+    create_table_time_per_turn_seconds  INT          NOT NULL  DEFAULT 20,
+    create_table_speedrun               BOOLEAN      NOT NULL  DEFAULT 0,
+    create_table_deck_plays             BOOLEAN      NOT NULL  DEFAULT 0,
+    create_table_empty_clues            BOOLEAN      NOT NULL  DEFAULT 0,
+    create_table_character_assignments  BOOLEAN      NOT NULL  DEFAULT 0,
+    create_table_alert_waiters          BOOLEAN      NOT NULL  DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    /* If the user is deleted, automatically delete all of the rows */
+);
+CREATE INDEX user_settings_index_user_id ON user_settings (user_id);
+
 DROP TABLE IF EXISTS user_stats;
 CREATE TABLE user_stats (
     id               INT  NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
@@ -125,8 +154,8 @@ CREATE TABLE game_plays ( /* This include both playing a card and discarding a c
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
     game_id    INT      NOT NULL,
     play_type  TINYINT  NOT NULL, /* 0 - play, 2 - discard, 3 - misplay */
-    index      TINYINT  NOT NULL, /* The index of the player that did the action */
-    order      TINYINT  NOT NULL, /* The order of the card that was played/discarded or -1 if a deck-play*/
+    player     TINYINT  NOT NULL, /* The index of the player that did the action */
+    card       TINYINT  NOT NULL, /* The order of the card that was played/discarded or -1 if a deck-play*/
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the rows */
 );

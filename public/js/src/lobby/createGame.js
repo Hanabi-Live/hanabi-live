@@ -3,20 +3,20 @@
 */
 
 // Imports
-const globals = require('../globals');
 const constants = require('../constants');
+const globals = require('../globals');
 const misc = require('../misc');
 
 $(document).ready(() => {
     // Populate the variant dropdown in the "Create Game" tooltip
     for (const variant of Object.keys(constants.VARIANTS)) {
         const option = new Option(variant, variant);
-        $('#create-game-variant').append($(option));
+        $('#createTableVariant').append($(option));
     }
 
     // Make the extra time fields appear and disappear depending on whether the checkbox is checked
-    $('#create-game-timed').change(() => {
-        if ($('#create-game-timed').prop('checked')) {
+    $('#createTableTimed').change(() => {
+        if ($('#createTableTimed').prop('checked')) {
             $('#create-game-timed-label').removeClass('col-3');
             $('#create-game-timed-label').addClass('col-2');
             $('#create-game-timed-option-1').show();
@@ -35,8 +35,8 @@ $(document).ready(() => {
         // Redraw the tooltip so that the new elements will fit better
         $('#nav-buttons-games-create-game').tooltipster('reposition');
     });
-    $('#create-game-speedrun').change(() => {
-        if ($('#create-game-speedrun').prop('checked')) {
+    $('#createTableSpeedrun').change(() => {
+        if ($('#createTableSpeedrun').prop('checked')) {
             $('#create-game-timed-row').hide();
             $('#create-game-timed-row-spacing').hide();
         } else {
@@ -59,179 +59,108 @@ $(document).ready(() => {
 });
 
 const submit = () => {
-    const name = $('#create-game-name').val();
+    // We need to mutate some values before sending them to the server
+    const baseTimeMinutes = getTextbox('createTableBaseTimeMinutes');
+    const baseTime = Math.round(baseTimeMinutes * 60); // The server expects this in seconds
+    const timePerTurnSeconds = getTextbox('createTableTimePerTurnSeconds');
+    const timePerTurn = parseInt(timePerTurnSeconds, 10); // The server expects this in seconds
 
-    const variant = $('#create-game-variant').val();
-    localStorage.setItem('createTableVariant', variant);
-
-    const timed = document.getElementById('create-game-timed').checked;
-    localStorage.setItem('createTableTimed', timed);
-
-    const baseTimeMinutes = $('#base-time-minutes').val();
-    localStorage.setItem('createTableBaseTimeMinutes', baseTimeMinutes);
-
-    const timePerTurnSeconds = $('#time-per-turn-seconds').val();
-    localStorage.setItem('createTableTimePerTurnSeconds', timePerTurnSeconds);
-
-    const speedrun = document.getElementById('create-game-speedrun').checked;
-    localStorage.setItem('createTableSpeedrun', speedrun);
-
-    const deckPlays = document.getElementById('create-game-deck-plays').checked;
-    localStorage.setItem('createTableDeckPlays', deckPlays);
-
-    const emptyClues = document.getElementById('create-game-empty-clues').checked;
-    localStorage.setItem('createTableEmptyClues', emptyClues);
-
-    const characterAssignments = document.getElementById('create-game-character-assignments').checked;
-    localStorage.setItem('createTableCharacterAssignments', characterAssignments);
-
-    let password = $('#create-game-password').val();
+    // All "Create Game" settings are stored on the server with the exception of passwords;
+    // passwords are stored locally as cookies
+    let password = $('#createTablePassword').val();
     localStorage.setItem('createTablePassword', password);
     if (password !== '') {
         password = hex_sha256(`Hanabi game password ${password}`);
     }
 
-    const alertWaiters = document.getElementById('create-game-alert-waiters').checked;
-    localStorage.setItem('createTableAlertWaiters', alertWaiters);
-
     globals.conn.send('gameCreate', {
-        name,
-        variant,
-        timed,
-        baseTime: Math.round(baseTimeMinutes * 60), // The server expects this in seconds
-        timePerTurn: parseInt(timePerTurnSeconds, 10), // The server expects this in seconds
-        speedrun,
-        deckPlays,
-        emptyClues,
-        characterAssignments,
+        name: $('#createTableName').val(), // We don't bother to store the table name
+        variant: getTextbox('createTableVariant'),
+        timed: getCheckbox('createTableTimed'),
+        baseTime,
+        timePerTurn,
+        speedrun: getCheckbox('createTableSpeedrun'),
+        deckPlays: getCheckbox('createTableDeckPlays'),
+        emptyClues: getCheckbox('createTableEmptyClues'),
+        characterAssignments: getCheckbox('createTableCharacterAssignments'),
         password,
-        alertWaiters,
+        alertWaiters: getCheckbox('createTableAlertWaiters'),
     });
 
     misc.closeAllTooltips();
+};
+
+const getCheckbox = (setting) => {
+    const value = document.getElementById(setting).checked;
+    checkChanged(setting, value);
+    return value;
+};
+
+const getTextbox = (setting) => {
+    const value = $(`#${setting}`).val();
+    checkChanged(setting, value);
+    return value;
+};
+
+const checkChanged = (setting, value) => {
+    // If we are creating a new kind of table, store the setting on the server
+    if (value !== globals.settings[setting]) {
+        globals.conn.send('setting', {
+            name: setting,
+            value: value.toString(), // The server expects all settings as strings
+        });
+    }
 };
 
 // This function is executed every time the "Create Game" button is clicked
 // (after the tooltip is added to the DOM)
 exports.ready = () => {
     // Fill in the "Name" box
-    $('#create-game-name').val(globals.randomName);
-
-    // Get a new random name from the server for the next time we click the button
-    globals.conn.send('getName');
-
     if (globals.username.startsWith('test')) {
-        $('#create-game-name').val('test game');
+        $('#createTableName').val('test game');
+    } else {
+        $('#createTableName').val(globals.randomName);
+
+        // Get a new random name from the server for the next time we click the button
+        globals.conn.send('getName');
     }
 
     // Fill in the "Variant" dropdown
-    let variant = localStorage.getItem('createTableVariant');
-    if (typeof variant !== 'string') {
-        variant = 'No Variant';
-    }
-    $('#create-game-variant').val(variant);
+    $('#createTableVariant').val(globals.settings.createTableVariant);
 
     // Fill in the "Timed" checkbox
-    let timed;
-    try {
-        timed = JSON.parse(localStorage.getItem('createTableTimed'));
-    } catch (err) {
-        timed = false;
-    }
-    if (typeof timed !== 'boolean') {
-        timed = false;
-    }
-    $('#create-game-timed').prop('checked', timed);
-    $('#create-game-timed').change();
+    $('#createTableTimed').prop('checked', globals.settings.createTableTimed);
+    $('#createTableTimed').change();
 
     // Fill in the "Base Time" box
-    let baseTimeMinutes = localStorage.getItem('createTableBaseTimeMinutes');
-    // (we don't want to do "JSON.parse()" here because it may not be a whole number)
-    if (baseTimeMinutes === null || baseTimeMinutes < 0) {
-        baseTimeMinutes = 2;
-    }
-    $('#base-time-minutes').val(baseTimeMinutes);
+    $('#createTableBaseTimeMinutes').val(globals.settings.createTableBaseTimeMinutes);
 
     // Fill in the "Time Per Turn" box
-    let timePerTurnSeconds;
-    try {
-        timePerTurnSeconds = JSON.parse(localStorage.getItem('createTableTimePerTurnSeconds'));
-    } catch (err) {
-        timePerTurnSeconds = 20;
-    }
-    if (typeof timePerTurnSeconds !== 'number' || timePerTurnSeconds < 0) {
-        timePerTurnSeconds = 20;
-    }
-    $('#time-per-turn-seconds').val(timePerTurnSeconds);
+    $('#createTableTimePerTurnSeconds').val(globals.settings.createTableTimePerTurnSeconds);
 
     // Fill in the "Speedrun" checkbox
-    let speedrun;
-    try {
-        speedrun = JSON.parse(localStorage.getItem('createTableSpeedrun'));
-    } catch (err) {
-        speedrun = false;
-    }
-    if (typeof speedrun !== 'boolean') {
-        speedrun = false;
-    }
-    $('#create-game-speedrun').prop('checked', speedrun);
-    $('#create-game-speedrun').change();
+    $('#createTableSpeedrun').prop('checked', globals.settings.createTableSpeedrun);
+    $('#createTableSpeedrun').change();
 
     // Fill in the "Allow Bottom-Deck Blind Plays" checkbox
-    let deckPlays;
-    try {
-        deckPlays = JSON.parse(localStorage.getItem('createTableDeckPlays'));
-    } catch (err) {
-        deckPlays = false;
-    }
-    if (typeof deckPlays !== 'boolean') {
-        deckPlays = false;
-    }
-    $('#create-game-deck-plays').prop('checked', deckPlays);
+    $('#createTableDeckPlays').prop('checked', globals.settings.createTableDeckPlays);
 
     // Fill in the "Allow Empty Clues" checkbox
-    let emptyClues;
-    try {
-        emptyClues = JSON.parse(localStorage.getItem('createTableEmptyClues'));
-    } catch (err) {
-        emptyClues = false;
-    }
-    if (typeof emptyClues !== 'boolean') {
-        emptyClues = false;
-    }
-    $('#create-game-empty-clues').prop('checked', emptyClues);
+    $('#createTableEmptyClues').prop('checked', globals.settings.createTableEmptyClues);
 
     // Fill in the "Detrimental Character Assignments" checkbox
-    let characterAssignments;
-    try {
-        characterAssignments = JSON.parse(localStorage.getItem('createTableCharacterAssignments'));
-    } catch (err) {
-        characterAssignments = false;
-    }
-    if (typeof characterAssignments !== 'boolean') {
-        characterAssignments = false;
-    }
-    $('#create-game-character-assignments').prop('checked', characterAssignments);
+    $('#createTableCharacterAssignments').prop('checked', globals.settings.createTableCharacterAssignments);
 
     // Fill in the "Password" box
     const password = localStorage.getItem('createTablePassword');
-    $('#create-game-password').val(password);
+    $('#createTablePassword').val(password);
 
-    // Fill in the "Alert people" box
-    let alertWaiters;
-    try {
-        alertWaiters = JSON.parse(localStorage.getItem('createTableAlertWaiters'));
-    } catch (err) {
-        alertWaiters = false;
-    }
-    if (typeof alertWaiters !== 'boolean') {
-        alertWaiters = false;
-    }
-    $('#create-game-alert-waiters').prop('checked', alertWaiters);
+    // Fill in the "Alert people on the waiting list" box
+    $('#createTableAlertWaiters').prop('checked', globals.settings.createTableAlertWaiters);
 
     // Focus the "Name" box
     // (we have to wait 1 millisecond or it won't work due to the nature of the tooltip)
     setTimeout(() => {
-        $('#create-game-name').focus();
+        $('#createTableName').focus();
     }, 1);
 };

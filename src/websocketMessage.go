@@ -52,6 +52,6 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	}
 
 	// Call the command handler for this command
-	log.Info("Command - " + command + " - " + s.Username()) // Uncomment this while debugging
+	log.Info("Command - " + command + " - " + s.Username())
 	commandMap[command](s, d)
 }

@@ -499,7 +499,7 @@
                 Name
             </div>
             <div class="col-8">
-                <input id="create-game-name" type="text" placeholder="Name" />
+                <input id="createTableName" type="text" placeholder="Name" />
             </div>
         </div>
         <br />
@@ -513,7 +513,7 @@
             </div>
             <div class="col-7">
                 <div class="select-wrapper">
-                    <select id="create-game-variant"></select>
+                    <select id="createTableVariant"></select>
                 </div>
             </div>
             <div class="col-1 input-text align-center">
@@ -532,22 +532,22 @@
                 Timed
             </div>
             <div id="create-game-timed-container" class="col-1">
-                <input id="create-game-timed" type="checkbox" />
-                <label for="create-game-timed"></label>
+                <input id="createTableTimed" type="checkbox" />
+                <label for="createTableTimed"></label>
             </div>
             <div id="create-game-timed-option-1" class="col-2 input-text2 align-center">
                 Base Time<br />
                 (in minutes)
             </div>
             <div id="create-game-timed-option-2" class="col-2">
-                <input id="base-time-minutes" type="text" placeholder="Base Time">
+                <input id="createTableBaseTimeMinutes" type="text" placeholder="Base Time">
             </div>
             <div id="create-game-timed-option-3" class="col-2 input-text2 align-center">
                 Time per Turn<br />
                 (in seconds)
             </div>
             <div id="create-game-timed-option-4" class="col-2">
-                <input id="time-per-turn-seconds" type="text" placeholder="Time per Turn">
+                <input id="createTableTimePerTurnSeconds" type="text" placeholder="Time per Turn">
             </div>
         </div>
         <span id="create-game-timed-row-spacing">
@@ -562,8 +562,8 @@
                 Speedrun
             </div>
             <div class="col-1">
-                <input id="create-game-speedrun" type="checkbox" />
-                <label for="create-game-speedrun"></label>
+                <input id="createTableSpeedrun" type="checkbox" />
+                <label for="createTableSpeedrun"></label>
             </div>
             <div class="col-1 input-text align-center">
                 <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#speedruns" target="_blank">
@@ -581,8 +581,8 @@
                 Bottom-Deck Blind-Plays
             </div>
             <div class="col-1">
-                <input id="create-game-deck-plays" type="checkbox" />
-                <label for="create-game-deck-plays"></label>
+                <input id="createTableDeckPlays" type="checkbox" />
+                <label for="createTableDeckPlays"></label>
             </div>
             <div class="col-1 input-text align-center">
                 <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays" target="_blank">
@@ -600,8 +600,8 @@
                 Empty Clues
             </div>
             <div class="col-1">
-                <input id="create-game-empty-clues" type="checkbox" />
-                <label for="create-game-empty-clues"></label>
+                <input id="createTableEmptyClues" type="checkbox" />
+                <label for="createTableEmptyClues"></label>
             </div>
             <div class="col-1 input-text align-center">
                 <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#empty-clues" target="_blank">
@@ -619,8 +619,8 @@
                 Detrimental Characters
             </div>
             <div class="col-1">
-                <input id="create-game-character-assignments" type="checkbox" />
-                <label for="create-game-character-assignments"></label>
+                <input id="createTableCharacterAssignments" type="checkbox" />
+                <label for="createTableCharacterAssignments"></label>
             </div>
             <div class="col-1 input-text align-center">
                 <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/CHARACTERS.md" target="_blank">
@@ -638,7 +638,7 @@
                 Password
             </div>
             <div class="col-6">
-                <input id="create-game-password" type="text" placeholder="Password (optional)" />
+                <input id="createTablePassword" type="text" placeholder="Password (optional)" />
             </div>
         </div>
         <br />
@@ -651,8 +651,8 @@
                 Alert people on the waiting list
             </div>
             <div class="col-1">
-                <input id="create-game-alert-waiters" type="checkbox" />
-                <label for="create-game-alert-waiters"></label>
+                <input id="createTableAlertWaiters" type="checkbox" />
+                <label for="createTableAlertWaiters"></label>
             </div>
             <div class="col-1 input-text align-center">
                 <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#discord-integration" target="_blank">
@@ -714,8 +714,8 @@
 
         <p class="margin1"><strong>Game Notifications</strong></p>
 
-        <input id="send-turn-notification" type="checkbox" />
-        <label for="send-turn-notification">
+        <input id="sendTurnNotify" type="checkbox" />
+        <label for="sendTurnNotify">
             <span class="label-text">
                 Show desktop notifications when it reaches your turn
             </span>
@@ -723,39 +723,19 @@
 
         <br />
 
-        <input id="send-turn-sound" type="checkbox">
-        <label for="send-turn-sound">
+        <input id="sendTurnSound" type="checkbox">
+        <label for="sendTurnSound">
             <span class="label-text">
-                Play sounds when a move is made
+                Play a sound when a move is made
             </span>
         </label>
 
         <br />
 
-        <input id="send-timer-sound" type="checkbox">
-        <label for="send-timer-sound">
+        <input id="sendTimerSound" type="checkbox">
+        <label for="sendTimerSound">
             <span class="label-text">
-                Play ticking sounds when timers are below 5 seconds
-            </span>
-        </label>
-
-        <br /><br /><br />
-
-        <p class="margin1"><strong>Lobby Notifications</strong></p>
-
-        <input id="send-chat-notification" type="checkbox">
-        <label for="send-chat-notification">
-            <span class="label-text">
-                Show desktop notifications when your name is mentioned in chat
-            </span>
-        </label>
-
-        <br />
-
-        <input id="send-chat-sound" type="checkbox">
-        <label for="send-chat-sound">
-            <span class="label-text">
-                Play a sound when your name is mentioned in chat
+                Play ticking sounds when timers are below 10 seconds
             </span>
         </label>
 
@@ -763,17 +743,17 @@
 
         <p class="margin1"><strong>Appearance</strong></p>
 
-        <input id="show-bga-ui" type="checkbox">
-        <label for="show-bga-ui">
+        <input id="showKeldonUI" type="checkbox">
+        <label for="showKeldonUI">
             <span class="label-text">
-                Enable Board Game Arena mode (hands grouped together)
+                Enable Keldon mode (hands spread around the table)
             </span>
         </label>
 
         <br />
 
-        <input id="show-colorblind-ui" type="checkbox">
-        <label for="show-colorblind-ui">
+        <input id="showColorblindUI" type="checkbox">
+        <label for="showColorblindUI">
             <span class="label-text">
                 Enable colorblind mode
             </span>
@@ -781,8 +761,8 @@
 
         <br />
 
-        <input id="show-timer-in-untimed" type="checkbox">
-        <label for="show-timer-in-untimed">
+        <input id="showTimerInUntimed" type="checkbox">
+        <label for="showTimerInUntimed">
             <span class="label-text">
                 Show turn timers in untimed games
             </span>
@@ -790,10 +770,19 @@
 
         <br />
 
-        <input id="reverse-hands" type="checkbox">
-        <label for="reverse-hands">
+        <input id="reverseHands" type="checkbox">
+        <label for="reverseHands">
             <span class="label-text">
                 Reverse hand direction (new cards go on the right)
+            </span>
+        </label>
+
+        <br />
+
+        <input id="realLifeMode" type="checkbox">
+        <label for="realLifeMode">
+            <span class="label-text">
+                Real-life mode (no helping UI elements)
             </span>
         </label>
 
@@ -801,8 +790,8 @@
 
         <p class="margin1"><strong>Speedrunning</strong></p>
 
-        <input id="speedrun-preplay" type="checkbox">
-        <label for="speedrun-preplay">
+        <input id="speedrunPreplay" type="checkbox">
+        <label for="speedrunPreplay">
             <span class="label-text">
                 Enable pre-playing cards
             </span>

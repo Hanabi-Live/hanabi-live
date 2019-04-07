@@ -4,12 +4,13 @@
 */
 
 // Imports
+const chat = require('./chat');
+const game = require('./game/main');
 const golem = require('../lib/golem');
 const globals = require('./globals');
-const modals = require('./modals');
-const chat = require('./chat');
 const lobby = require('./lobby/main');
-const game = require('./game/main');
+const modals = require('./modals');
+const settings = require('./lobby/settings');
 
 exports.set = () => {
     // Connect to the WebSocket server
@@ -85,28 +86,33 @@ exports.set = () => {
 // This is all of the normal commands/messages that we expect to receive from the server
 const initCommands = () => {
     globals.conn.on('hello', (data) => {
-        globals.username = data.username;
+        // Store variables relating to our user account on the server
+        globals.username = data.username; // We might have logged-in with a different stylization
         globals.totalGames = data.totalGames;
+        globals.settings = data.settings;
+        settings.init();
         $('#nav-buttons-history-total-games').html(globals.totalGames);
         lobby.login.hide(data.firstTimeUser);
 
         // Automatically go into a replay if surfing to "/replay/123"
-        let gameID = null;
-        const match = window.location.pathname.match(/\/replay\/(\d+)$/);
-        if (match) {
-            [, gameID] = match;
-        } else if (window.location.pathname === '/dev2') {
-            gameID = '51'; // The first game in the Hanabi Live database
-        }
-        if (gameID !== null) {
-            setTimeout(() => {
-                gameID = parseInt(gameID, 10); // The server expects this as an integer
-                globals.conn.send('replayCreate', {
-                    gameID,
-                    source: 'id',
-                    visibility: 'solo',
-                });
-            }, 10);
+        if (!data.firstTimeUser) {
+            let gameID = null;
+            const match = window.location.pathname.match(/\/replay\/(\d+)$/);
+            if (match) {
+                [, gameID] = match;
+            } else if (window.location.pathname === '/dev2') {
+                gameID = '51'; // The first game in the Hanabi Live database
+            }
+            if (gameID !== null) {
+                setTimeout(() => {
+                    gameID = parseInt(gameID, 10); // The server expects this as an integer
+                    globals.conn.send('replayCreate', {
+                        gameID,
+                        source: 'id',
+                        visibility: 'solo',
+                    });
+                }, 10);
+            }
         }
     });
 

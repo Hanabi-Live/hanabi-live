@@ -5,4 +5,4 @@ module.exports = globals;
 
 // Also make it available to the window so that we can access global variables
 // from the JavaScript console (for debugging purposes)
-window.globals2 = globals;
+window.globals = globals;

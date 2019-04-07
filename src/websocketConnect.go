@@ -53,11 +53,21 @@ func websocketConnect(ms *melody.Session) {
 		totalGames = v
 	}
 
-	// They have successfully logged in, so send initial messages to the client
+	// Get their settings from the database
+	var settings models.Settings
+	if v, err := db.UserSettings.Get(s.UserID()); err != nil {
+		log.Error("Failed to get the settings for user \""+s.Username()+"\":", err)
+		return
+	} else {
+		settings = v
+	}
+
+	// They have successfully logged in, so send the initial message to the client
 	type HelloMessage struct {
-		Username      string `json:"username"`
-		TotalGames    int    `json:"totalGames"`
-		FirstTimeUser bool   `json:"firstTimeUser"`
+		Username      string          `json:"username"`
+		TotalGames    int             `json:"totalGames"`
+		FirstTimeUser bool            `json:"firstTimeUser"`
+		Settings      models.Settings `json:"settings"`
 	}
 	s.Emit("hello", &HelloMessage{
 		// We have to send the username back to the client because they may
@@ -71,6 +81,10 @@ func websocketConnect(ms *melody.Session) {
 
 		// First time users get a quick tutorial
 		FirstTimeUser: s.FirstTimeUser(),
+
+		// The various client settings are stored server-side so that users can seamlessly
+		// transition between computers
+		Settings: settings,
 	})
 
 	// Send them a random name

@@ -4,9 +4,9 @@
 
 // Imports
 const globals = require('../globals');
+const lobby = require('./main');
 const misc = require('../misc');
 const modals = require('../modals');
-const lobby = require('./main');
 
 exports.draw = () => {
     const tbody = $('#lobby-games-table-tbody');

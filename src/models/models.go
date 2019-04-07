@@ -25,6 +25,7 @@ type Models struct {
 	GameParticipants
 	Games
 	Users
+	UserSettings
 	UserStats
 }
 

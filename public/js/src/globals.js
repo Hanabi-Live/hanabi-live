@@ -13,6 +13,9 @@ const globals = {
 
     conn: null, // The websocket connection (set in "websocket.js")
 
+    // Contains the settings for the "Settings" tooltip and the "Create Game" tooltip
+    settings: {}, // Set upon login
+
     userList: {}, // Set upon login
     tableList: {}, // Set upon login
     historyList: {}, // Set upon login
@@ -21,20 +24,6 @@ const globals = {
     // Used to keep track of whether the user clicked on the "Show More History" button
     totalGames: 0, // Set upon login
     randomName: '', // Set upon login
-
-    // The lobby settings found in the gear sub-menu
-    settings: {
-        sendTurnNotify: false,
-        sendTurnSound: true, // We want sounds by default
-        sendTimerSound: true, // We want sounds by default
-        sendChatNotify: false,
-        sendChatSound: false,
-        showBGAUI: false,
-        showColorblindUI: false,
-        showTimerInUntimed: false,
-        reverseHands: false,
-        speedrunPreplay: false,
-    },
 
     game: {}, // Equal to the data from the "game" command
 
@@ -58,4 +47,4 @@ module.exports = globals;
 
 // Also make it available to the window so that we can access global variables
 // from the JavaScript console (for debugging purposes)
-window.globals = globals;
+window.globals2 = globals;

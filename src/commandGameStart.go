@@ -19,6 +19,10 @@ import (
 	"time"
 )
 
+var (
+	cardRegExp = regexp.MustCompile(`^(\w)(\d)$`)
+)
+
 func commandGameStart(s *Session, d *CommandData) {
 	/*
 		Validation
@@ -313,15 +317,6 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 		return false
 	} else {
 		lines = strings.Split(string(v), "\n")
-	}
-
-	var cardRegExp *regexp.Regexp
-	if v, err := regexp.Compile(`^(\w)(\d)$`); err != nil {
-		log.Error("Failed to create the card regular expression:", err)
-		s.Error("Failed to create the game. Please contact an administrator.")
-		return false
-	} else {
-		cardRegExp = v
 	}
 
 	for i, line := range lines {

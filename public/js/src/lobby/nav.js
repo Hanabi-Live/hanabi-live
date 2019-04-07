@@ -4,9 +4,9 @@
 
 // Imports
 const globals = require('../globals');
+const lobby = require('./main');
 const misc = require('../misc');
 const modals = require('../modals');
-const lobby = require('./main');
 const watchReplay = require('./watchReplay');
 
 $(document).ready(() => {

@@ -3,10 +3,10 @@
 */
 
 // Imports
-const globals = require('../globals');
 const constants = require('../constants');
-const misc = require('../misc');
+const globals = require('../globals');
 const lobby = require('./main');
+const misc = require('../misc');
 
 // Constants
 const tooltipsterOptions = {
