@@ -16,7 +16,6 @@ exports.image = function image() {
     this.bare = new graphics.Image({
         width: constants.CARDW,
         height: constants.CARDH,
-        listening: false,
     });
     const self = this;
     this.bare.setSceneFunc(function setSceneFunc(context) {

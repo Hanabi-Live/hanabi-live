@@ -1,11 +1,15 @@
+/*
+    This is the parent of a HanabiCard
+*/
+
 // Imports
 const constants = require('../../constants');
 const globals = require('./globals');
 const graphics = require('./graphics');
 
 class LayoutChild extends graphics.Group {
-    constructor(config) {
-        super(config);
+    constructor() {
+        super();
 
         // Class variables
         this.tween = null;

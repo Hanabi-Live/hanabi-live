@@ -24,7 +24,6 @@ class HanabiCard extends graphics.Group {
             x: constants.CARDW / 2,
             y: constants.CARDH / 2,
         };
-        config.listening = true;
         super(config);
 
         // Order is defined upon first initialization;
@@ -90,6 +89,7 @@ class HanabiCard extends graphics.Group {
         this.turnPlayed = null;
         this.isMisplayed = false;
 
+        this.setListening(true);
         this.initPossibilities();
         this.hideClues();
         this.setBareImage();
