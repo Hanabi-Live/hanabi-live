@@ -17,7 +17,7 @@ module.exports = () => {
 
     /* eslint-disable object-curly-newline */
 
-    // The hand positions are different depending on the amount of players,
+    // In Keldon mode, the hand positions are different depending on the amount of players,
     // so they have to be hard coded
     const handPos6H = 0.125;
     const handPos6Ratio = 0.34 / 0.189;
@@ -232,7 +232,7 @@ module.exports = () => {
             // (for our hand, the oldest card is the first card, which should be on the right)
             reverse = true;
         }
-        if (globals.lobby.settings.showBGAUI) {
+        if (!globals.lobby.settings.showKeldonUI) {
             // In BGA mode, we need to reverse every hand
             reverse = true;
         }
@@ -254,7 +254,7 @@ module.exports = () => {
         }
 
         let playerHandPos = handPos;
-        if (globals.lobby.settings.showBGAUI) {
+        if (!globals.lobby.settings.showKeldonUI) {
             playerHandPos = handPosBGA;
         }
 
@@ -263,7 +263,7 @@ module.exports = () => {
             // We want to flip the cards for other players
             invertCards = true;
         }
-        if (globals.lobby.settings.showBGAUI) {
+        if (!globals.lobby.settings.showKeldonUI) {
             // On the BGA layout, all the hands should not be flipped
             invertCards = false;
         }
@@ -283,7 +283,7 @@ module.exports = () => {
 
         // Draw the faded shade that shows where the "new" side of the hand is
         // (but don't bother drawing it in BGA mode since all the hands face the same way)
-        if (!globals.lobby.settings.showBGAUI) {
+        if (globals.lobby.settings.showKeldonUI) {
             rect = new graphics.Rect({
                 x: shadePos[numPlayers][j].x * winW,
                 y: shadePos[numPlayers][j].y * winH,
@@ -321,7 +321,7 @@ module.exports = () => {
         }
 
         let playerNamePos = namePos;
-        if (globals.lobby.settings.showBGAUI) {
+        if (!globals.lobby.settings.showKeldonUI) {
             playerNamePos = namePosBGA;
         }
         globals.elements.nameFrames[i] = new NameFrame({

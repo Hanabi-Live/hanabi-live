@@ -6,6 +6,10 @@
 const globals = require('./globals');
 
 exports.updatePace = () => {
+    if (globals.lobby.settings.realLifeMode) {
+        return;
+    }
+
     const adjustedScorePlusDeck = globals.score + globals.deckSize - globals.maxScore;
 
     // Formula derived by Libster;
@@ -55,6 +59,10 @@ exports.updatePace = () => {
 };
 
 exports.updateEfficiency = (cardsGottenDelta) => {
+    if (globals.lobby.settings.realLifeMode) {
+        return;
+    }
+
     globals.cardsGotten += cardsGottenDelta;
     const efficiency = (globals.cardsGotten / globals.cluesSpentPlusStrikes).toFixed(2);
     // Round it to 2 decimal places

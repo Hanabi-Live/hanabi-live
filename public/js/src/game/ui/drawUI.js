@@ -147,17 +147,21 @@ module.exports = () => {
 };
 
 const drawActionLog = () => {
-    actionLogValues = {
-        x: 0.2,
-        y: 0.235,
-        w: 0.4,
-        h: 0.098,
-    };
-    if (globals.lobby.settings.showBGAUI) {
-        actionLogValues.x = 0.01;
-        actionLogValues.y = 0.01;
-        actionLogValues.h = 0.25;
+    if (!globals.lobby.settings.showKeldonUI) {
+        actionLogValues = {
+            x: 0.01,
+            y: 0.01,
+            h: 0.25,
+        };
+    } else {
+        actionLogValues = {
+            x: 0.2,
+            y: 0.235,
+            h: 0.098,
+        };
     }
+    actionLogValues.w = 0.4;
+
     const actionLog = new graphics.Group({
         x: actionLogValues.x * winW,
         y: actionLogValues.y * winH,
@@ -193,9 +197,9 @@ const drawActionLog = () => {
     });
 
     // The action log
-    let maxLines = 3;
-    if (globals.lobby.settings.showBGAUI) {
-        maxLines = 8;
+    let maxLines = 8;
+    if (globals.lobby.settings.showKeldonUI) {
+        maxLines = 3;
     }
     globals.elements.messagePrompt = new MultiFitText({
         align: 'center',
@@ -259,7 +263,7 @@ const drawPlayStacksAndDiscardStacks = () => {
     if (globals.variant.showSuitNames) {
         playStackValues.y -= 0.018;
     }
-    if (globals.lobby.settings.showBGAUI) {
+    if (!globals.lobby.settings.showKeldonUI) {
         playStackValues.x = actionLogValues.x;
         playStackValues.y = actionLogValues.y + actionLogValues.h + 0.02;
         playStackValues.spacing = 0.006;
@@ -385,7 +389,7 @@ const drawBottomLeftButtons = () => {
         width: bottomLeftButtonValues.w * winW,
         height: bottomLeftButtonValues.h * winH,
         image: 'replay',
-        visible: !globals.replay,
+        visible: !globals.replay && !globals.lobby.settings.realLifeMode,
     });
     globals.elements.replayButton.on('click tap', () => {
         if (!globals.elements.replayButton.enabled) {
@@ -602,7 +606,7 @@ const drawScoreArea = () => {
         w: 0.13,
         h: 0.18,
     };
-    if (globals.lobby.settings.showBGAUI) {
+    if (!globals.lobby.settings.showKeldonUI) {
         scoreAreaValues.x = deckValues.x + deckValues.w + 0.01;
         scoreAreaValues.y = 0.81;
     }
@@ -762,7 +766,7 @@ const drawSpectators = () => {
         x: scoreAreaValues.x - 0.037,
         y: scoreAreaValues.y + 0.09,
     };
-    if (globals.lobby.settings.showBGAUI) {
+    if (!globals.lobby.settings.showKeldonUI) {
         // Position it to the bottom-right of the score area
         spectatorsLabelValues.x = scoreAreaValues.x + scoreAreaValues.w + 0.01;
     }
@@ -937,6 +941,10 @@ const drawSharedReplay = () => {
 };
 
 const drawClueLog = () => {
+    if (globals.lobby.settings.realLifeMode) {
+        return;
+    }
+
     clueLogValues = {
         x: 0.8,
         y: 0.01,
@@ -966,6 +974,10 @@ const drawClueLog = () => {
 
 // Statistics are shown on the right-hand side of the screen (at the bottom of the clue log)
 const drawStatistics = () => {
+    if (globals.lobby.settings.realLifeMode) {
+        return;
+    }
+
     const statsRect = new graphics.Rect({
         x: clueLogValues.x * winW,
         y: 0.53 * winH,
@@ -1148,7 +1160,7 @@ const drawTimers = () => {
         cornerRadius: 0.05,
         spaceH: 0.01,
     };
-    if (globals.lobby.settings.showBGAUI) {
+    if (!globals.lobby.settings.showKeldonUI) {
         timerValues.x1 = 0.352;
         timerValues.x2 = timerValues.x1;
         timerValues.y1 = 0.77;
@@ -1196,7 +1208,7 @@ const drawClueArea = () => {
         clueAreaValues.y += 0.03;
     }
     // In BGA mode, we can afford to put a bit more spacing to make it look less packed together
-    if (globals.lobby.settings.showBGAUI) {
+    if (!globals.lobby.settings.showKeldonUI) {
         clueAreaValues.y += 0.02;
     }
     globals.elements.clueArea = new graphics.Group({

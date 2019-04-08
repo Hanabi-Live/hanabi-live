@@ -34,7 +34,9 @@ commands.clue = (data) => {
             card.hasPositiveColorClue = true;
         }
         card.setIndicator(true, data.giver, data.target, clue);
-        card.cluedBorder.show();
+        if (!globals.lobby.settings.realLifeMode) {
+            card.cluedBorder.show();
+        }
         card.applyClue(clue, true);
         card.setBareImage();
     }
@@ -53,6 +55,12 @@ commands.clue = (data) => {
         }
     }
 
+    // Don't bother adding anything to the clue log if we are in real-life mode
+    if (globals.lobby.settings.realLifeMode) {
+        return;
+    }
+
+    // Add an entry to the clue log
     let clueName;
     if (data.clue.type === constants.CLUE_TYPE.RANK) {
         clueName = clue.value.toString();
@@ -73,7 +81,6 @@ commands.clue = (data) => {
         neglist,
         turn: data.turn,
     });
-
     globals.elements.clueLog.add(entry);
 };
 
@@ -278,19 +285,21 @@ commands.status = (data) => {
     globals.elements.cluesNumberLabel.setText(globals.clues.toString());
     globals.elements.cluesNumberLabel.setFill(globals.clues === 0 ? 'red' : globals.labelColor);
 
-    if (globals.clues === 8) {
-        // Show the red border around the discard pile
-        // (to reinforce the fact that being at 8 clues is a special situation)
-        globals.elements.noDiscardLabel.show();
-        globals.elements.noDoubleDiscardLabel.hide();
-    } else if (data.doubleDiscard) {
-        // Show a yellow border around the discard pile
-        // (to reinforce that this is a "Double Discard" situation)
-        globals.elements.noDiscardLabel.hide();
-        globals.elements.noDoubleDiscardLabel.show();
-    } else {
-        globals.elements.noDiscardLabel.hide();
-        globals.elements.noDoubleDiscardLabel.hide();
+    if (!globals.lobby.settings.realLifeMode) {
+        if (globals.clues === 8) {
+            // Show the red border around the discard pile
+            // (to reinforce the fact that being at 8 clues is a special situation)
+            globals.elements.noDiscardLabel.show();
+            globals.elements.noDoubleDiscardLabel.hide();
+        } else if (data.doubleDiscard) {
+            // Show a yellow border around the discard pile
+            // (to reinforce that this is a "Double Discard" situation)
+            globals.elements.noDiscardLabel.hide();
+            globals.elements.noDoubleDiscardLabel.show();
+        } else {
+            globals.elements.noDiscardLabel.hide();
+            globals.elements.noDoubleDiscardLabel.hide();
+        }
     }
 
     // Update the score (in the bottom-right-hand corner)

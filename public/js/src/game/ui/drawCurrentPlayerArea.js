@@ -213,18 +213,20 @@ module.exports = (clueAreaValues) => {
         const text2 = globals.elements.currentPlayerText2;
         const text3 = globals.elements.currentPlayerText3;
         let specialText = '';
-        if (globals.clues === 0) {
-            specialText = '(cannot clue; 0 clues left)';
-            text3.setFill('red');
-        } else if (globals.clues === 8) {
-            specialText = '(cannot discard; at 8 clues)';
-            text3.setFill('red');
-        } else if (globals.elements.playerHands[currentPlayerIndex].isLocked()) {
-            specialText = '(locked; may not be able to discard)';
-            text3.setFill('yellow');
-        } else if (globals.elements.noDoubleDiscardLabel.getVisible()) {
-            specialText = '(potentially in a "Double Discard" situation)';
-            text3.setFill('yellow');
+        if (!globals.lobby.settings.realLifeMode) {
+            if (globals.clues === 0) {
+                specialText = '(cannot clue; 0 clues left)';
+                text3.setFill('red');
+            } else if (globals.clues === 8) {
+                specialText = '(cannot discard; at 8 clues)';
+                text3.setFill('red');
+            } else if (globals.elements.playerHands[currentPlayerIndex].isLocked()) {
+                specialText = '(locked; may not be able to discard)';
+                text3.setFill('yellow');
+            } else if (globals.elements.noDoubleDiscardLabel.getVisible()) {
+                specialText = '(potentially in a "Double Discard" situation)';
+                text3.setFill('yellow');
+            }
         }
         const totalH = this.getHeight();
         const text1H = text1._getTextSize(text1.getText()).height;

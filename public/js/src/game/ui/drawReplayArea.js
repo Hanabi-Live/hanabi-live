@@ -17,11 +17,12 @@ module.exports = () => {
         y: 0.51,
         w: 0.5,
     };
-    if (globals.lobby.settings.showBGAUI) {
+    if (!globals.lobby.settings.showKeldonUI) {
         replayAreaValues.x = 0.01;
         replayAreaValues.y = 0.49;
         replayAreaValues.w = 0.4;
     }
+
     globals.elements.replayArea = new graphics.Group({
         x: replayAreaValues.x * winW,
         y: replayAreaValues.y * winH,
@@ -99,14 +100,14 @@ module.exports = () => {
     replay.adjustShuttles();
 
     const replayButtonValues = {
-        x: 0.1,
+        x: 0.05,
         y: 0.07,
         w: 0.06,
         h: 0.08,
         spacing: 0.02,
     };
-    if (globals.lobby.settings.showBGAUI) {
-        replayButtonValues.x = 0.05;
+    if (globals.lobby.settings.showKeldonUI) {
+        replayButtonValues.x = 0.1;
     }
 
     {

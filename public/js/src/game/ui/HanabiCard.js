@@ -326,7 +326,10 @@ class HanabiCard extends graphics.Group {
     }
 
     applyClue(clue, positive) {
-        if (globals.variant.name.startsWith('Duck')) {
+        if (
+            globals.lobby.settings.realLifeMode
+            || globals.variant.name.startsWith('Duck')
+        ) {
             return;
         }
 
@@ -600,6 +603,10 @@ class HanabiCard extends graphics.Group {
     }
 
     removePossibility(suit, rank, all) {
+        if (globals.lobby.settings.realLifeMode) {
+            return;
+        }
+
         // Every card has a possibility map that maps card identities to count
         // Remove one possibility for this card
         const mapIndex = `${suit.name}${rank}`;

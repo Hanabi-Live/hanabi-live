@@ -273,8 +273,8 @@ exports.indicatorArrow = function indicatorArrow() {
     let y;
     let rotation;
     if (
-        (this.holder === globals.playerUs && !globals.lobby.settings.showBGAUI)
-        || (this.holder !== globals.playerUs && globals.lobby.settings.showBGAUI)
+        (this.holder !== globals.playerUs && !globals.lobby.settings.showKeldonUI)
+        || (this.holder === globals.playerUs && globals.lobby.settings.showKeldonUI)
     ) {
         rotation = 0;
         x = (0.5 * constants.CARDW) - (this.indicatorCircle.getAttr('width') / 2);
@@ -326,7 +326,7 @@ exports.arrowLocation = function arrowLocation() {
     this.indicatorGroup.setRotation(0);
     if (
         this.holder === globals.playerUs
-        && globals.lobby.settings.showBGAUI
+        && !globals.lobby.settings.showKeldonUI
         && !this.isPlayed
         && !this.isDiscarded
     ) {
@@ -493,14 +493,16 @@ exports.empathy = function empathy() {
 
 exports.click = function click() {
     // Define the clue log mouse handlers
-    this.on('mousemove tap', () => {
-        globals.elements.clueLog.showMatches(this);
-        globals.layers.UI.batchDraw();
-    });
-    this.on('mouseout', () => {
-        globals.elements.clueLog.showMatches(null);
-        globals.layers.UI.batchDraw();
-    });
+    if (!globals.lobby.settings.realLifeMode) {
+        this.on('mousemove tap', () => {
+            globals.elements.clueLog.showMatches(this);
+            globals.layers.UI.batchDraw();
+        });
+        this.on('mouseout', () => {
+            globals.elements.clueLog.showMatches(null);
+            globals.layers.UI.batchDraw();
+        });
+    }
 
     // Define the other mouse handlers
     this.on('click tap', HanabiCardClick);
@@ -508,6 +510,10 @@ exports.click = function click() {
 };
 
 exports.possibilities = function possibilities() {
+    if (globals.lobby.settings.realLifeMode) {
+        return;
+    }
+
     // We want to remove all of the currently seen cards from the list of possibilities
     for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
         const card = globals.deck[i];
