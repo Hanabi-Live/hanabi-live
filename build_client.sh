@@ -9,7 +9,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Set the version number in the "globals.js" file
 # (which is equal to the number of commits in the git repository)
 VERSION=$(git rev-list --count HEAD)
-sed --in-place "s/ = [[:digit:]]\+;/ = $VERSION;/g" "$DIR/public/js/src/version.js"
+printf "module.exports = $VERSION;\n" > "$DIR/public/js/src/version.js"
 
 # Add the NPM directory to the path
 NODE_VERSION_DIRS=(/root/.nvm/versions/node/*)
