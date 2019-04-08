@@ -7,6 +7,9 @@
 package main
 
 import (
+	"os/exec"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
@@ -62,12 +65,35 @@ func websocketConnect(ms *melody.Session) {
 		settings = v
 	}
 
+	// Get the number of commits in the repository, which doubles as a version number
+	var versionString string
+	cmd := exec.Command("git", "rev-list", "--count", "HEAD")
+	cmd.Dir = projectPath
+	if output, err := cmd.CombinedOutput(); err != nil {
+		log.Error("Failed to find the number of commits in the repository:", err)
+		if string(output) != "" {
+			log.Error("Output is as follows:")
+			log.Error(string(output))
+		}
+		return
+	} else {
+		versionString = strings.TrimSpace(string(output))
+	}
+	var version int
+	if v, err := strconv.Atoi(versionString); err != nil {
+		log.Error("Failed to convert \""+versionString+"\" "+
+			"(the output of the \"get_build_number.sh\" script) to a number:", err)
+	} else {
+		version = v
+	}
+
 	// They have successfully logged in, so send the initial message to the client
 	type HelloMessage struct {
 		Username      string          `json:"username"`
 		TotalGames    int             `json:"totalGames"`
 		FirstTimeUser bool            `json:"firstTimeUser"`
 		Settings      models.Settings `json:"settings"`
+		Version       int             `json:"version"`
 	}
 	s.Emit("hello", &HelloMessage{
 		// We have to send the username back to the client because they may
@@ -85,6 +111,10 @@ func websocketConnect(ms *melody.Session) {
 		// The various client settings are stored server-side so that users can seamlessly
 		// transition between computers
 		Settings: settings,
+
+		// We send the latest client version number to throw a warning
+		// if a user is running old JavaScript old
+		Version: version,
 	})
 
 	// Send them a random name

@@ -1,11 +1,13 @@
 // Configuration
 const debug = true;
 const fadeTime = 350;
+const version = 1869;
 
 // Exported global variables
 const globals = {
     debug,
     fadeTime,
+    version,
     browserIsFirefox: navigator.userAgent.toLowerCase().indexOf('firefox') > -1,
 
     username: null,

@@ -90,12 +90,23 @@ const initCommands = () => {
         globals.username = data.username; // We might have logged-in with a different stylization
         globals.totalGames = data.totalGames;
         globals.settings = data.settings;
-        settings.init();
+
         $('#nav-buttons-history-total-games').html(globals.totalGames);
+        settings.init();
         lobby.login.hide(data.firstTimeUser);
 
-        // Automatically go into a replay if surfing to "/replay/123"
         if (!data.firstTimeUser) {
+            // Validate that we are on the latest JavaScript code
+            if (data.version !== globals.version && !window.location.pathname.includes('/dev')) {
+                let msg = 'You are running an outdated version of the Hanabi client code. ';
+                msg += 'Please perform a hard-refresh to get the latest version.<br />';
+                msg += '(On Windows, the hotkey for this is "Ctrl + F5". ';
+                msg += 'On MacOS, the hotkey for this is "Command + Shift + R".)';
+                modals.warningShow(msg);
+                return;
+            }
+
+            // Automatically go into a replay if surfing to "/replay/123"
             let gameID = null;
             const match = window.location.pathname.match(/\/replay\/(\d+)$/);
             if (match) {
