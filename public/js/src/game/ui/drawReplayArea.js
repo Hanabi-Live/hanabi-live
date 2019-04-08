@@ -189,7 +189,7 @@ module.exports = () => {
         width: bottomLeftReplayButtonValues.w * winW,
         height: bottomLeftReplayButtonValues.h * winH,
         text: 'Pause Shared Turns',
-        alternateText: 'Use Shared Turns',
+        text2: 'Use Shared Turns',
         initialState: !globals.useSharedTurns,
         visible: false,
     });
@@ -221,7 +221,7 @@ module.exports = () => {
         width: bottomRightReplayButtonValues.w * winW,
         height: bottomRightReplayButtonValues.h * winH,
         text: 'Enter Hypothetical',
-        alternateText: 'Exit Hypothetical',
+        text2: 'Exit Hypothetical',
         initialState: globals.hypothetical,
         visible: globals.replay && globals.amSharedReplayLeader,
     });

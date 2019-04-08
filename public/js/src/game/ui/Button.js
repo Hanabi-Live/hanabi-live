@@ -28,10 +28,10 @@ class Button extends graphics.Group {
         });
         this.add(this.background);
 
-        this.text = null;
-        this.img = null;
+        this.textElement = null;
+        this.imageElement = null;
         if (config.text) {
-            this.text = new FitText({
+            this.textElement = new FitText({
                 name: 'text',
                 x: 0,
                 y: 0.275 * h,
@@ -44,11 +44,11 @@ class Button extends graphics.Group {
                 text: config.text,
                 listening: false,
             });
-            this.setText = newText => this.text.setText(newText);
-            this.setFill = newFill => this.text.setFill(newFill);
-            this.add(this.text);
+            this.setText = newText => this.textElement.setText(newText);
+            this.setFill = newFill => this.textElement.setFill(newFill);
+            this.add(this.textElement);
         } else if (config.image) {
-            this.img = new graphics.Image({
+            this.imageElement = new graphics.Image({
                 name: 'image',
                 x: 0.2 * w,
                 y: 0.2 * h,
@@ -57,7 +57,7 @@ class Button extends graphics.Group {
                 image: globals.ImageLoader.get(config.image),
                 listening: false,
             });
-            this.add(this.img);
+            this.add(this.imageElement);
             this.imageName = config.image; // Store this for later in case we disable the button
         }
 
@@ -87,13 +87,13 @@ class Button extends graphics.Group {
         }
         this.enabled = enabled;
 
-        if (this.text !== null) {
-            this.text.setFill(enabled ? 'white' : '#444444');
+        if (this.textElement !== null) {
+            this.textElement.setFill(enabled ? 'white' : '#444444');
         }
 
-        if (this.img !== null) {
+        if (this.imageElement !== null) {
             const imageName = (enabled ? this.imageName : `${this.imageName}-disabled`);
-            this.img.setImage(globals.ImageLoader.get(imageName));
+            this.imageElement.setImage(globals.ImageLoader.get(imageName));
         }
 
         this.background.setListening(enabled);

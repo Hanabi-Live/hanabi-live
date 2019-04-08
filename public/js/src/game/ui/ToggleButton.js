@@ -7,8 +7,8 @@ class ToggleButton extends Button {
         super(config);
 
         // Class variables
-        this.text = config.text;
-        this.alternateText = config.alternateText;
+        this.text1 = config.text;
+        this.text2 = config.text2;
         this.toggleState = false;
 
         this.on('click tap', this.toggle);
@@ -20,7 +20,7 @@ class ToggleButton extends Button {
 
     toggle() {
         this.toggleState = !this.toggleState;
-        this.setText(this.toggleState ? this.alternateText : this.text);
+        this.setText(this.toggleState ? this.text2 : this.text1);
         const layer = this.getLayer();
         if (layer) {
             layer.batchDraw();

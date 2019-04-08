@@ -5,6 +5,7 @@ const graphics = require('./graphics');
 
 class NameFrame extends graphics.Group {
     constructor(config) {
+        config.listening = true;
         super(config);
 
         this.name = new graphics.Text({
@@ -26,20 +27,16 @@ class NameFrame extends graphics.Group {
         });
 
         let w = this.name.getWidth();
-
         while (w > 0.65 * config.width && this.name.getFontSize() > 5) {
             this.name.setFontSize(this.name.getFontSize() * 0.9);
-
             w = this.name.getWidth();
         }
-
         this.name.setOffsetX(w / 2);
-        const nameTextObject = this.name;
 
         // Left-click on the name frame to see a log of only their actions
         // Right-click on the name frame to pass the replay leader to them
-        this.name.on('click tap', (event) => {
-            const username = nameTextObject.getText();
+        this.name.on('click tap', function click(event) {
+            const username = this.getText();
             if (event.evt.which === 1) { // Left-click
                 globals.elements.msgLogGroup.showPlayerActions(username);
             } else if (event.evt.which === 3) { // Right-click
@@ -69,8 +66,8 @@ class NameFrame extends graphics.Group {
                 y: 3,
             },
             shadowOpacity: 0,
+            listening: false,
         });
-
         this.add(this.leftline);
 
         this.rightline = new graphics.Line({
@@ -92,8 +89,8 @@ class NameFrame extends graphics.Group {
                 y: 3,
             },
             shadowOpacity: 0,
+            listening: false,
         });
-
         this.add(this.rightline);
 
         // Draw the tooltips on the player names that show the time

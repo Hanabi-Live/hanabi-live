@@ -22,7 +22,6 @@ exports.init = () => {
 };
 
 function changeSetting() {
-    // Convert the ID back to camcel-case
     const setting = $(this).attr('id');
     const checked = $(this).is(':checked');
 

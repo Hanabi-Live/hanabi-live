@@ -226,6 +226,7 @@ const drawActionLog = () => {
         opacity: 0.3,
         fill: 'black',
         visible: false,
+        listening: true,
     });
     globals.layers.overtop.add(globals.elements.stageFade);
 
@@ -715,6 +716,7 @@ const drawScoreArea = () => {
             fill: 'black',
             opacity: 0.6,
             cornerRadius: 0.005 * winW,
+            listening: true,
         });
         globals.elements.scoreArea.add(strikeSquare);
 
@@ -726,6 +728,7 @@ const drawScoreArea = () => {
             height: 0.036 * winH,
             image: globals.ImageLoader.get('x'),
             opacity: 0,
+            listening: true,
         });
         globals.elements.scoreArea.add(strike);
         strike.tween = null;
@@ -780,6 +783,7 @@ const drawSpectators = () => {
         },
         shadowOpacity: 0.9,
         visible: false,
+        listening: true,
     });
     globals.layers.UI.add(globals.elements.spectatorsLabel);
 
@@ -854,6 +858,7 @@ const drawSharedReplay = () => {
         },
         shadowOpacity: 0.9,
         visible: false,
+        listening: true,
     });
     globals.layers.UI.add(globals.elements.sharedReplayLeaderLabel);
 
@@ -903,9 +908,17 @@ const drawSharedReplay = () => {
         }
 
         let msg = 'What is the number of the person that you want to pass the replay leader to?\n\n';
-        msg += globals.spectators.map((name, i) => `${i + 1} - ${name}\n`).join('');
+        let i = 1;
+        for (const spectator of globals.spectators) {
+            if (spectator !== globals.lobby.username) {
+                msg += `${i} - ${spectator}\n`;
+                i += 1;
+            }
+        }
         let target = window.prompt(msg);
-        if (Number.isNaN(target)) {
+        if (target === null || Number.isNaN(parseInt(target, 10))) {
+            // Don't do anything if they pressed the cancel button or
+            // if they entered something that is not a number
             return;
         }
         target -= 1;
@@ -969,6 +982,7 @@ const drawStatistics = () => {
         x: 0.825 * winW,
         y: 0.54 * winH,
         fontSize: 0.02 * winH,
+        listening: true,
     });
     globals.layers.UI.add(paceTextLabel);
     let paceContent = 'Pace is a measure of how many discards can happen while<br />';
@@ -983,6 +997,7 @@ const drawStatistics = () => {
         x: 0.9 * winW,
         y: 0.54 * winH,
         fontSize: 0.02 * winH,
+        listening: true,
     });
     globals.layers.UI.add(globals.elements.paceNumberLabel);
     tooltips.initDelayed(globals.elements.paceNumberLabel, 'pace', paceContent);
@@ -992,6 +1007,7 @@ const drawStatistics = () => {
         x: 0.825 * winW,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
+        listening: true,
     });
     globals.layers.UI.add(efficiencyTextLabel);
     let efficiencyContent = 'Efficiency is calculated by: <i>number of clues given /<br />';
@@ -1014,6 +1030,7 @@ const drawStatistics = () => {
         x: 0.9 * winW,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
+        listening: true,
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabel);
     tooltips.initDelayed(globals.elements.efficiencyNumberLabel, 'efficiency', efficiencyContent);
@@ -1027,6 +1044,7 @@ const drawStatistics = () => {
         // "Easy" variants use the default color (off-white)
         // "Hard" variants use pink
         fill: (minEfficiency < 1.25 ? globals.labelColor : '#ffb2b2'),
+        listening: true,
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabelMinNeeded);
     tooltips.initDelayed(globals.elements.efficiencyNumberLabelMinNeeded, 'efficiency', efficiencyContent);
@@ -1043,6 +1061,7 @@ const drawDiscardArea = () => {
         strokeWidth: 0.005 * winW,
         cornerRadius: 0.01 * winW,
         visible: false,
+        listening: true,
     });
     globals.layers.UI.add(globals.elements.noDiscardLabel);
 
@@ -1057,6 +1076,7 @@ const drawDiscardArea = () => {
         cornerRadius: 0.01 * winW,
         opacity: 0.75,
         visible: false,
+        listening: true,
     });
     globals.layers.UI.add(globals.elements.noDoubleDiscardLabel);
 
@@ -1080,6 +1100,7 @@ const drawDiscardArea = () => {
         height: 0.35 * winH,
         opacity: 0.2,
         image: globals.ImageLoader.get('trashcan'),
+        listening: true,
     });
     globals.layers.background.add(trashcan);
 

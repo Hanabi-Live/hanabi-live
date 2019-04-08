@@ -49,7 +49,7 @@ const set = (order, note, send = true) => {
     }
 
     // Validate that the note does not contain an impossibility
-    if (!note) {
+    if (!note || globals.replay) {
         return;
     }
     // Only examine the new text that they added
