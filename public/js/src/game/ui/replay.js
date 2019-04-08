@@ -352,7 +352,7 @@ exports.toggleSharedTurns = () => {
         if (globals.amSharedReplayLeader) {
             shareCurrentTurn(globals.replayTurn);
         } else {
-            goto(globals.sharedReplayTurn);
+            goto(globals.sharedReplayTurn, true);
         }
     }
 
