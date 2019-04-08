@@ -96,7 +96,7 @@ func commandChat(s *Session, d *CommandData) {
 			s.Error("")
 			return
 		}
-	} else {
+	} else if !d.Spam {
 		if err := db.ChatLog.Insert(userID, d.Msg, d.Room); err != nil {
 			log.Error("Failed to insert a chat message into the database:", err)
 			s.Error("")

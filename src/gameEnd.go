@@ -334,10 +334,10 @@ func (g *Game) AnnounceGameResult() {
 		Server: true,
 		Msg:    msg,
 		Room:   "lobby",
-		Spam:   true,
 		// Speedrun announcements do not get sent to the lobby to avoid spam
 		// (they will still go to the #hanabi-live-bot channel though so that it is easy to find the
 		// game ID of a perfect game afterward)
+		Spam:        true,
 		OnlyDiscord: g.Options.Speedrun,
 	})
 }
