@@ -160,7 +160,9 @@ const reset = () => {
     globals.elements.messagePrompt.setMultiText('');
     globals.elements.msgLogGroup.reset();
     globals.elements.drawDeck.setCount(globals.deckSize);
-    globals.elements.clueLog.clear();
+    if (!globals.lobby.settings.realLifeMode) {
+        globals.elements.clueLog.clear();
+    }
     globals.elements.messagePrompt.reset();
 
     const { suits } = globals.variant;
