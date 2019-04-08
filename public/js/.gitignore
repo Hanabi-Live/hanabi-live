@@ -1,3 +1,6 @@
+# Ignore the version number, which will change automatically with every commit
+version.js
+
 # NPM modules are not typically included in a repository
 node_modules
 /package-lock.json

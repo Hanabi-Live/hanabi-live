@@ -1,7 +1,7 @@
 // Configuration
 const debug = true;
 const fadeTime = 350;
-const version = 1869;
+const version = require('./version');
 
 // Exported global variables
 const globals = {
