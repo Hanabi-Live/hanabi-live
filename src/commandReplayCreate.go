@@ -257,6 +257,9 @@ func replayJSON(s *Session, d *CommandData) {
 			totalCards += 10
 		}
 	}
+	if strings.HasPrefix(variant.Name, "Up or Down") {
+		totalCards -= len(variant.Suits)
+	}
 	if len(d.GameJSON.Deck) != totalCards {
 		s.Warning("The deck must have " + strconv.Itoa(totalCards) + " cards in it.")
 		return
