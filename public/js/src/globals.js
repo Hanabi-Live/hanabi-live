@@ -1,7 +1,8 @@
 // Configuration
 const debug = true;
 const fadeTime = 350;
-const version = require('./version');
+// The "version.js" file is filled in dynamically by the "build_client.sh" script
+const version = require('./version'); // eslint-disable-line import/no-unresolved
 
 // Exported global variables
 const globals = {
