@@ -635,6 +635,7 @@ const drawScoreArea = () => {
         text: 'Turn',
         x: labelX * winW,
         y: 0.01 * winH,
+        listening: true,
     });
     globals.elements.scoreArea.add(turnTextLabel);
 
@@ -645,6 +646,7 @@ const drawScoreArea = () => {
         text: '1',
         x: (labelX + labelSpacing) * winW,
         y: 0.01 * winH,
+        listening: true,
     });
     globals.elements.scoreArea.add(globals.elements.turnNumberLabel);
 
