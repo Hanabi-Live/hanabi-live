@@ -214,6 +214,7 @@ class HanabiCard extends graphics.Group {
     }
 
     setIndicator(visible, giver, clue) {
+        this.indicatorGroup.setVisible(visible);
         if (visible) {
             if (clue === null) {
                 // This is a shared replay arrow, so don't draw the circle
@@ -260,42 +261,7 @@ class HanabiCard extends graphics.Group {
                     this.indicatorGroup.setX(this.indicatorGroup.originalX);
                     this.indicatorGroup.setY(this.indicatorGroup.originalY);
                 } else if (giver !== null) {
-                    /*
-                        Animate the arrow flying from the player who gave the clue to the cards
-                    */
-
-                    // Get the center position of the clue giver's hand
-                    const centerPos = globals.elements.playerHands[giver].getAbsoluteCenterPos();
-
-                    // We need to adjust it to account for the size of the indicator arrow group
-                    // Dividing by pi here is a complete hack; I don't know why the hand dimensions
-                    // and indicator group dimensions are scaled differently by a factor of pi
-                    const indW = this.indicatorGroup.getWidth() / Math.PI;
-                    // The angle has to account for the whole card reflection business
-                    // in other players' hands
-                    let indRadians = this.parent.parent.rotation;
-                    if (this.holder !== globals.playerUs) {
-                        indRadians += 180;
-                    }
-                    const indTheta = indRadians / 180 * Math.PI;
-                    centerPos.x -= indW / 2 * Math.cos(indTheta);
-                    centerPos.y -= indW / 2 * Math.sin(indTheta);
-
-                    this.indicatorGroup.setAbsolutePosition(centerPos);
-
-                    // Set the rotation so that the arrow will start off by pointing towards the
-                    // card that it is travelling to
-                    const originalRotation = this.indicatorGroup.getRotation();
-                    // this.indicatorGroup.setRotation(90);
-                    // TODO NEED LIBSTERS HELP
-
-                    this.indicatorTween = new graphics.Tween({
-                        node: this.indicatorGroup,
-                        duration: 0.5,
-                        x: this.indicatorGroup.originalX,
-                        y: this.indicatorGroup.originalY,
-                        rotation: originalRotation,
-                    }).play();
+                    this.animateIndicator(giver, globals.turn);
                 }
             }
 
@@ -312,10 +278,48 @@ class HanabiCard extends graphics.Group {
             }
         }
 
-        this.indicatorGroup.setVisible(visible);
         if (!globals.animateFast) {
             globals.layers.card.batchDraw();
         }
+    }
+
+    // Animate the arrow to fly from the player who gave the clue to the card
+    animateIndicator(giver, turn) {
+        // Don't bother doing the animation if it is delayed by more than one turn
+        if (globals.turn > turn + 1) {
+            return;
+        }
+
+        // Delay the animation if the card is currently tweening to avoid buggy behavior
+        if (this.tweening) {
+            this.indicatorGroup.setVisible(false);
+            setTimeout(() => {
+                this.animateIndicator(giver, turn);
+            }, 10);
+            return;
+        }
+        this.indicatorGroup.setVisible(true);
+
+        // Get the center position of the clue giver's hand
+        const centerPos = globals.elements.playerHands[giver].getAbsoluteCenterPos();
+
+        // We need to adjust it to account for the size of the indicator arrow group
+        // Dividing by pi here is a complete hack; I don't know why the hand dimensions
+        // and indicator group dimensions are scaled differently by a factor of pi
+        const indW = this.indicatorGroup.getWidth() / Math.PI;
+        const indTheta = this.parent.parent.rotation / 180 * Math.PI;
+        centerPos.x -= indW / 2 * Math.cos(indTheta);
+        centerPos.y -= indW / 2 * Math.sin(indTheta);
+
+        this.indicatorGroup.setAbsolutePosition(centerPos);
+
+        this.indicatorTween = new graphics.Tween({
+            node: this.indicatorGroup,
+            duration: 0.5,
+            x: this.indicatorGroup.originalX,
+            y: this.indicatorGroup.originalY,
+            easing: graphics.Easings.EaseOut,
+        }).play();
     }
 
     applyClue(clue, positive) {

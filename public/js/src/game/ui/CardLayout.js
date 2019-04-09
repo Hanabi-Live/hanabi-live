@@ -139,7 +139,7 @@ class CardLayout extends graphics.Group {
     }
 
     getAbsoluteCenterPos() {
-        const pos = this.getAbsolutePosition();
+        const pos = this.getAbsolutePosition(); // The top-left-hand corner
 
         const w = this.getWidth();
         const h = this.getHeight();

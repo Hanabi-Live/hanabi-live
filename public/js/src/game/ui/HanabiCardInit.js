@@ -200,8 +200,12 @@ exports.pips = function pips() {
 
 exports.indicatorArrow = function indicatorArrow() {
     this.indicatorGroup = new graphics.Group({
-        width: constants.CARDW,
-        height: constants.CARDH,
+        x: constants.CARDW / 2,
+        y: constants.CARDH / 2,
+        offset: {
+            x: constants.CARDW / 2,
+            y: constants.CARDH / 2,
+        },
         visible: false,
         listening: false,
     });
@@ -298,27 +302,34 @@ exports.indicatorArrow = function indicatorArrow() {
 };
 
 exports.arrowLocation = function arrowLocation() {
-    this.indicatorGroup.setX(0);
-    this.indicatorGroup.setY(-this.getHeight() * 0.25);
-    this.indicatorGroup.setRotation(0);
-    this.indicatorText.setX(0.418 * constants.CARDW);
-    this.indicatorText.setY(0.07 * constants.CARDH);
-    this.indicatorText.setRotation(0);
-    if (this.parent.parent && this.parent.parent.getAbsoluteCenterPos().y < 100) {
-        // Invert the arrows on the hands that are close to the top of the screen
-        // so that it is easier to see them
-        // We also need to move the arrow slightly so that
-        // it does not cover the third box on the bottom of the card
-        this.indicatorGroup.setX(this.getWidth());
-        this.indicatorGroup.setY(this.getHeight() * 1.4);
-        this.indicatorGroup.setRotation(180);
-        this.indicatorText.setX(0.58 * constants.CARDW);
-        this.indicatorText.setY(0.225 * constants.CARDH);
-        this.indicatorText.setRotation(180);
+    let y = 0.25 * constants.CARDH;
+    let rot = 0;
+    let textX = 0.418 * constants.CARDW;
+    let textY = 0.07 * constants.CARDH;
+    let textRot = 0;
+
+    if (
+        (!globals.lobby.settings.showKeldonUI && this.holder === globals.playerUs)
+        || (globals.lobby.settings.showKeldonUI && this.holder !== globals.playerUs)
+    ) {
+        // In BGA mode, invert the arrows on our hand
+        // (so that it doesn't get cut off by the top of the screen)
+        // In Keldon mode, invert the arrows for all other players
+        y = 0.9 * constants.CARDH;
+        rot = 180;
+        textX = 0.58 * constants.CARDW;
+        textY = 0.225 * constants.CARDH;
+        textRot = 180;
     }
 
+    this.indicatorGroup.setY(y);
+    this.indicatorGroup.setRotation(rot);
+    this.indicatorText.setX(textX);
+    this.indicatorText.setY(textY);
+    this.indicatorText.setRotation(textRot);
+
     this.indicatorGroup.originalX = this.indicatorGroup.getX();
-    this.indicatorGroup.originalY = this.indicatorGroup.getY();
+    this.indicatorGroup.originalY = y;
 };
 
 exports.note = function note() {
