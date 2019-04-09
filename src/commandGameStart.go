@@ -250,8 +250,10 @@ func commandGameStart(s *Session, d *CommandData) {
 
 	// Deal the cards
 	handSize := 5
-	if len(g.Players) > 3 {
+	if len(g.Players) == 4 || len(g.Players) == 5 {
 		handSize = 4
+	} else if len(g.Players) == 6 {
+		handSize = 3
 	}
 	for _, p := range g.Players {
 		for i := 0; i < handSize; i++ {

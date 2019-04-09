@@ -17,6 +17,19 @@ class CardLayout extends graphics.Group {
         this.reverse = config.reverse || false;
         this.invertCards = config.invertCards || false;
         this.rotation = config.rotation;
+
+        // Debug rectangle (uncomment to show the size of the hand)
+        /*
+        const debugRect = new graphics.Rect({
+            x: config.x,
+            y: config.y,
+            width: config.width,
+            height: config.height,
+            fill: 'black',
+            rotation: config.rotation,
+        });
+        globals.layers.UI.add(debugRect);
+        */
     }
 
     add(child) {
@@ -54,7 +67,6 @@ class CardLayout extends graphics.Group {
             }
 
             const scale = lh / node.getHeight();
-
             uw += scale * node.getWidth();
         }
 

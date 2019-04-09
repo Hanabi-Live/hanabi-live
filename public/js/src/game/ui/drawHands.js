@@ -5,6 +5,7 @@ const constants = require('../../constants');
 const globals = require('./globals');
 const graphics = require('./graphics');
 const NameFrame = require('./NameFrame');
+const stats = require('./stats');
 
 module.exports = () => {
     // Constants
@@ -19,9 +20,9 @@ module.exports = () => {
 
     // In Keldon mode, the hand positions are different depending on the amount of players,
     // so they have to be hard coded
-    const handPos6H = 0.125;
+    const handPos6H = 0.165; // 5-player is 0.189
     const handPos6Ratio = 0.34 / 0.189;
-    const handPos6W = handPos6H * handPos6Ratio;
+    const handPos6W = handPos6H * handPos6Ratio * 0.75;
     const handPos = {
         2: [
             { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
@@ -41,21 +42,21 @@ module.exports = () => {
         5: [
             { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
             { x: 0.03, y: 0.77, w: 0.301, h: 0.18, rot: -90 },
-            { x: 0.025, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
-            { x: 0.445, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
-            { x: 0.77, y: 0.22, w: 0.301, h: 0.18, rot: 90 },
+            { x: 0.0205, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
+            { x: 0.44, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
+            { x: 0.77, y: 0.225, w: 0.301, h: 0.18, rot: 90 },
         ],
         6: [
-            { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
-            { x: 0.1, y: 0.76, w: handPos6W, h: handPos6H, rot: -115 },
-            { x: 0.025, y: 0.15, w: handPos6W, h: handPos6H, rot: -15 },
-            { x: 0.3, y: 0.04, w: handPos6W, h: handPos6H, rot: 0 },
-            { x: 0.57, y: 0.05, w: handPos6W, h: handPos6H, rot: 15 },
-            { x: 0.79, y: 0.402, w: handPos6W, h: handPos6H, rot: 115 },
+            { x: 0.273, y: 0.77, w: 0.34 * 0.75, h: 0.189, rot: 0 },
+            { x: 0.03, y: 0.72, w: 0.301 * 0.8, h: 0.18, rot: -90 },
+            { x: 0.0235, y: 0.009, w: handPos6W, h: handPos6H, rot: 0 },
+            { x: 0.289, y: 0.009, w: handPos6W, h: handPos6H, rot: 0 },
+            { x: 0.5535, y: 0.009, w: handPos6W, h: handPos6H, rot: 0 },
+            { x: 0.77, y: 0.292, w: 0.301 * 0.8, h: 0.18, rot: 90 },
         ],
     };
 
-    // In "Board Game Arena" mode, the hands are all in a line,
+    // In Board Game Arena mode, the hands are all in a line,
     // so they do not have to be hard coded
     const handPosBGA = {};
     const handPosBGAValues = {
@@ -123,34 +124,34 @@ module.exports = () => {
     // Note that there is no shade in BGA mode
     const shadePos = {
         2: [
-            { x: handPos[2][0].x - 0.005, y: handPos[2][0].y - 0.008 },
-            { x: handPos[2][1].x - 0.005, y: handPos[2][1].y - 0.008 },
+            { x: handPos[2][0].x + 0.001, y: handPos[2][0].y - 0.008 },
+            { x: handPos[2][1].x - 0.011, y: handPos[2][1].y - 0.008 },
         ],
         3: [
-            { x: handPos[3][0].x - 0.005, y: handPos[3][0].y - 0.008 },
-            { x: handPos[3][1].x - 0.005, y: handPos[3][1].y + 0.008 },
-            { x: handPos[3][2].x + 0.003, y: handPos[3][2].y - 0.008 },
+            { x: handPos[3][0].x + 0.001, y: handPos[3][0].y - 0.008 },
+            { x: handPos[3][1].x - 0.006, y: handPos[3][1].y + 0.012 },
+            { x: handPos[3][2].x + 0.003, y: handPos[3][2].y - 0.015 },
         ],
         4: [
-            { x: handPos[4][0].x - 0.005, y: handPos[4][0].y - 0.008 },
-            { x: handPos[4][1].x - 0.005, y: handPos[4][1].y + 0.008 },
-            { x: handPos[4][2].x - 0.005, y: handPos[4][2].y - 0.008 },
-            { x: handPos[4][3].x + 0.003, y: handPos[4][3].y - 0.008 },
+            { x: handPos[4][0].x + 0.001, y: handPos[4][0].y - 0.008 },
+            { x: handPos[4][1].x - 0.007, y: handPos[4][1].y + 0.023 },
+            { x: handPos[4][2].x - 0.011, y: handPos[4][2].y - 0.008 },
+            { x: handPos[4][3].x + 0.001, y: handPos[4][3].y - 0.026 },
         ],
         5: [
-            { x: handPos[5][0].x - 0.005, y: handPos[5][0].y - 0.008 },
-            { x: handPos[5][1].x - 0.004, y: handPos[5][1].y + 0.005 },
-            { x: handPos[5][2].x - 0.005, y: handPos[5][2].y - 0.008 },
-            { x: handPos[5][3].x - 0.005, y: handPos[5][3].y - 0.008 },
-            { x: handPos[5][4].x + 0.004, y: handPos[5][4].y - 0.005 },
+            { x: handPos[5][0].x, y: handPos[5][0].y - 0.008 },
+            { x: handPos[5][1].x - 0.004, y: handPos[5][1].y + 0.009 },
+            { x: handPos[5][2].x - 0.01, y: handPos[5][2].y - 0.008 },
+            { x: handPos[5][3].x - 0.01, y: handPos[5][3].y - 0.008 },
+            { x: handPos[5][4].x + 0.004, y: handPos[5][4].y - 0.009 },
         ],
         6: [
-            { x: handPos[6][0].x - 0.005, y: handPos[6][0].y - 0.008 },
-            { x: handPos[6][1].x - 0.002, y: handPos[6][1].y + 0.008 },
-            { x: handPos[6][2].x - 0.005, y: handPos[6][2].y - 0.008 },
-            { x: handPos[6][3].x - 0.005, y: handPos[6][3].y - 0.008 },
-            { x: handPos[6][4].x - 0.005, y: handPos[6][4].y - 0.008 },
-            { x: handPos[6][5].x + 0.005, y: handPos[6][5].y - 0.000 },
+            { x: handPos[6][0].x + 0.001, y: handPos[6][0].y - 0.008 },
+            { x: handPos[6][1].x - 0.0045, y: handPos[6][1].y + 0.02 },
+            { x: handPos[6][2].x - 0.011, y: handPos[6][2].y - 0.008 },
+            { x: handPos[6][3].x - 0.011, y: handPos[6][3].y - 0.008 },
+            { x: handPos[6][4].x - 0.011, y: handPos[6][4].y - 0.008 },
+            { x: handPos[6][5].x + 0.0045, y: handPos[6][5].y - 0.02 },
         ],
     };
     for (let i = 2; i <= 6; i++) {
@@ -183,27 +184,82 @@ module.exports = () => {
             { x: 0.66, y: 0.74, w: 0.13, h: namePosValues.h },
         ],
         5: [
-            { x: 0.22, y: 0.97, w: 0.36, h: namePosValues.h },
-            { x: 0.025, y: 0.775, w: 0.116, h: namePosValues.h },
-            { x: 0.015, y: 0.199, w: 0.36, h: namePosValues.h },
-            { x: 0.435, y: 0.199, w: 0.36, h: namePosValues.h },
-            { x: 0.659, y: 0.775, w: 0.116, h: namePosValues.h },
+            {
+                x: handPos[5][0].x - 0.005,
+                y: handPos[5][0].y + handPos[5][1].h + 0.02,
+                w: handPos[5][0].w + 0.01,
+                h: namePosValues.h,
+            },
+            {
+                x: handPos[5][1].x - 0.0095,
+                y: handPos[5][1].y + 0.005,
+                w: 0.12,
+                h: namePosValues.h,
+            },
+            {
+                x: handPos[5][2].x - 0.005,
+                y: handPos[5][2].y + handPos[5][2].h + 0.005,
+                w: handPos[5][2].w + 0.01,
+                h: namePosValues.h,
+            },
+            {
+                x: handPos[5][3].x - 0.005,
+                y: handPos[5][3].y + handPos[5][3].h + 0.005,
+                w: handPos[5][3].w + 0.01,
+                h: namePosValues.h,
+            },
+            {
+                x: handPos[5][4].x - 0.006 - 0.105,
+                y: handPos[5][1].y + 0.005,
+                w: 0.12,
+                h: namePosValues.h,
+            },
         ],
         6: [
-            { x: 0.22, y: 0.97, w: 0.36, h: namePosValues.h },
-            { x: 0.01, y: 0.775, w: 0.155, h: namePosValues.h },
-            { x: 0.03, y: 0.275, w: 0.15, h: namePosValues.h },
-            { x: 0.295, y: 0.175, w: 0.233, h: namePosValues.h },
-            { x: 0.635, y: 0.275, w: 0.15, h: namePosValues.h },
-            { x: 0.635, y: 0.775, w: 0.155, h: namePosValues.h },
+            {
+                x: handPos[6][0].x - 0.005,
+                y: handPos[6][0].y + handPos[6][1].h + 0.02,
+                w: handPos[6][0].w + 0.01,
+                h: namePosValues.h,
+            },
+            {
+                x: handPos[6][1].x - 0.009,
+                y: handPos[6][1].y + 0.01,
+                w: 0.12,
+                h: namePosValues.h,
+            },
+            {
+                x: handPos[6][2].x - 0.005,
+                y: handPos[6][2].y + handPos[6][2].h + 0.02,
+                w: handPos[6][2].w + 0.01,
+                h: namePosValues.h,
+            },
+            {
+                x: handPos[6][3].x - 0.005,
+                y: handPos[6][3].y + handPos[6][3].h + 0.02,
+                w: handPos[6][3].w + 0.01,
+                h: namePosValues.h,
+            },
+            {
+                x: handPos[6][4].x - 0.005,
+                y: handPos[6][4].y + handPos[6][4].h + 0.02,
+                w: handPos[6][4].w + 0.01,
+                h: namePosValues.h,
+            },
+            {
+                x: handPos[6][5].x - 0.006 - 0.105,
+                y: handPos[6][1].y + 0.01,
+                w: 0.12,
+                h: namePosValues.h,
+            },
         ],
     };
 
     const namePosBGAMod = {
         x: -0.01,
         y: 0.17,
-        w: 0.02,
     };
+    const numCardsPerHand = stats.getNumCardsPerHand();
     const namePosBGA = {};
     for (let i = 2; i <= 6; i++) {
         let { y } = namePosBGAMod;
@@ -215,9 +271,17 @@ module.exports = () => {
             namePosBGA[i].push({
                 x: handPosBGA[i][j].x + namePosBGAMod.x,
                 y: handPosBGA[i][j].y + y,
-                w: handPosBGA[i][j].w + namePosBGAMod.w,
                 h: namePosValues.h,
             });
+            if (numCardsPerHand === 5) {
+                namePosBGA[i][j].x += 0.005;
+                namePosBGA[i][j].w = handPosBGA[i][j].w + 0.01;
+            } else if (numCardsPerHand === 4) {
+                namePosBGA[i][j].w = 0.29;
+            } else if (numCardsPerHand === 3) {
+                namePosBGA[i][j].x += 0.054;
+                namePosBGA[i][j].w = 0.182;
+            }
         }
     }
 
@@ -290,7 +354,7 @@ module.exports = () => {
                 width: shadePos[numPlayers][j].w * winW,
                 height: shadePos[numPlayers][j].h * winH,
                 rotation: shadePos[numPlayers][j].rot,
-                cornerRadius: 0.01 * shadePos[numPlayers][j].w * winW,
+                cornerRadius: 0.03 * shadePos[numPlayers][j].w * winW,
                 opacity: 0.4,
                 fillLinearGradientStartPoint: {
                     x: 0,
