@@ -129,17 +129,17 @@ module.exports = () => {
         ],
         3: [
             { x: handPos[3][0].x + 0.001, y: handPos[3][0].y - 0.008 },
-            { x: handPos[3][1].x - 0.006, y: handPos[3][1].y + 0.012 },
-            { x: handPos[3][2].x + 0.003, y: handPos[3][2].y - 0.015 },
+            { x: handPos[3][1].x - 0.006, y: handPos[3][1].y + 0.01 },
+            { x: handPos[3][2].x + 0.003, y: handPos[3][2].y - 0.013 },
         ],
         4: [
             { x: handPos[4][0].x + 0.001, y: handPos[4][0].y - 0.008 },
-            { x: handPos[4][1].x - 0.007, y: handPos[4][1].y + 0.023 },
+            { x: handPos[4][1].x - 0.007, y: handPos[4][1].y + 0.021 },
             { x: handPos[4][2].x - 0.011, y: handPos[4][2].y - 0.008 },
-            { x: handPos[4][3].x + 0.001, y: handPos[4][3].y - 0.026 },
+            { x: handPos[4][3].x + 0.002, y: handPos[4][3].y - 0.023 },
         ],
         5: [
-            { x: handPos[5][0].x, y: handPos[5][0].y - 0.008 },
+            { x: handPos[5][0].x + 0.001, y: handPos[5][0].y - 0.008 },
             { x: handPos[5][1].x - 0.004, y: handPos[5][1].y + 0.009 },
             { x: handPos[5][2].x - 0.01, y: handPos[5][2].y - 0.008 },
             { x: handPos[5][3].x - 0.01, y: handPos[5][3].y - 0.008 },
