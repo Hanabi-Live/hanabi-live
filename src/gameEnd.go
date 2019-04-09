@@ -311,7 +311,12 @@ func (g *Game) AnnounceGameResult() {
 		playerList = append(playerList, p.Name)
 	}
 	msg := "[" + strings.Join(playerList, ", ") + "] "
-	msg += "finished a"
+	if g.EndCondition == endConditionAbandoned {
+		msg += "abandonded"
+	} else {
+		msg += "finished"
+	}
+	msg += " a "
 	firstLetter := strings.ToLower(g.Options.Variant)[0]
 	if firstLetter == 'a' ||
 		firstLetter == 'e' ||
@@ -321,14 +326,18 @@ func (g *Game) AnnounceGameResult() {
 
 		msg += "n"
 	}
-	msg += " " + g.Options.Variant + " "
-	msg += "game with a score of " + strconv.Itoa(g.Score) + ". "
-	if g.Score == g.GetPerfectScore() {
-		msg += pogChamp + " "
-	} else if g.Score == 0 {
-		msg += bibleThump + " "
+	msg += g.Options.Variant + " game"
+	if g.EndCondition == endConditionAbandoned {
+		msg += "."
+	} else {
+		msg += " with a score of " + strconv.Itoa(g.Score) + ". "
+		if g.Score == g.GetPerfectScore() {
+			msg += pogChamp + " "
+		} else if g.Score == 0 {
+			msg += bibleThump + " "
+		}
+		msg += "(id: " + strconv.Itoa(g.DatabaseID) + ", seed: " + g.Seed + ")"
 	}
-	msg += "(id: " + strconv.Itoa(g.DatabaseID) + ", seed: " + g.Seed + ")"
 
 	commandChat(nil, &CommandData{
 		Server: true,
