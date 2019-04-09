@@ -510,6 +510,11 @@ exports.possibilities = function possibilities() {
     for (let i = 0; i < globals.indexOfLastDrawnCard; i++) {
         const card = globals.deck[i];
 
+        // Don't do anything if this is one of our cards
+        if (!card.trueSuit || !card.trueRank) {
+            continue;
+        }
+
         // Don't do anything if this player does not know what this card is yet
         if (card.holder === this.holder) {
             continue;
