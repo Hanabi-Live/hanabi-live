@@ -411,18 +411,14 @@ class HanabiCard extends graphics.Group {
         if (!suitPossible) {
             // Do nothing if the normal pip is already hidden
             const pip = this.suitPipsMap.get(suit);
-            if (!pip) {
-                return;
+            if (pip.getVisible()) {
+                // All the cards of this suit are seen, so put an X over the suit pip
+                const x = this.suitPipsXMap.get(suit);
+                x.setVisible(true);
             }
-            if (!pip.getVisible()) {
-                return;
-            }
-
-            // All the cards of this suit are seen, so put an X over the suit pip
-            const x = this.suitPipsXMap.get(suit);
-            x.setVisible(true);
         }
 
+        // Second, check to see if there are any possibilities remaining for this rank
         let rankPossible = false;
         for (const suit2 of globals.variant.suits) {
             const count = this.possibleCards.get(`${suit2.name}${rank}`);
@@ -432,18 +428,16 @@ class HanabiCard extends graphics.Group {
             }
         }
         if (!rankPossible) {
-            // Do nothing if the normal pip is already hidden
-            const pip = this.rankPipsMap.get(rank);
-            if (!pip) {
-                return;
+            // There is no rank pip for "START" cards
+            if (rank >= 1 && rank <= 5) {
+                // Do nothing if the normal pip is already hidden
+                const pip = this.rankPipsMap.get(rank);
+                if (pip.getVisible()) {
+                    // All the cards of this rank are seen, so put an X over the rank pip
+                    const x = this.rankPipsXMap.get(rank);
+                    x.setVisible(true);
+                }
             }
-            if (!pip.getVisible()) {
-                return;
-            }
-
-            // All the cards of this rank are seen, so put an X over the rank pip
-            const x = this.rankPipsXMap.get(rank);
-            x.setVisible(true);
         }
     }
 
