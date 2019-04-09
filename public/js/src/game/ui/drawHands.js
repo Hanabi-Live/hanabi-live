@@ -322,16 +322,6 @@ module.exports = () => {
             playerHandPos = handPosBGA;
         }
 
-        let invertCards = false;
-        if (i !== globals.playerUs) {
-            // We want to flip the cards for other players
-            invertCards = true;
-        }
-        if (!globals.lobby.settings.showKeldonUI) {
-            // On the BGA layout, all the hands should not be flipped
-            invertCards = false;
-        }
-
         globals.elements.playerHands[i] = new CardLayout({
             x: playerHandPos[numPlayers][j].x * winW,
             y: playerHandPos[numPlayers][j].y * winH,
@@ -340,7 +330,6 @@ module.exports = () => {
             rotation: playerHandPos[numPlayers][j].rot,
             align: 'center',
             reverse: isHandReversed(j),
-            invertCards,
             player: i,
         });
         globals.layers.card.add(globals.elements.playerHands[i]);

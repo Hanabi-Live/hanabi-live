@@ -279,7 +279,6 @@ module.exports = (clueAreaValues) => {
                 node: globals.elements.currentPlayerArrow,
                 duration: 0.75,
                 rotation,
-                runonce: true,
                 onFinish: () => {
                     globals.elements.currentPlayerArrow.setRotation(unmodifiedRotation);
                 },

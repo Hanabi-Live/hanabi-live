@@ -92,10 +92,10 @@ exports.getMinEfficiency = () => {
     */
 
     const totalCardsInTheDeck = getTotalCardsInTheDeck();
-    const numberOfPlayers = globals.playerNames.length;
+    const numPlayers = globals.playerNames.length;
     const cardsInHand = getNumCardsPerHand();
     let startingPace = totalCardsInTheDeck;
-    startingPace -= (cardsInHand - 1) * numberOfPlayers;
+    startingPace -= (cardsInHand - 1) * numPlayers;
     startingPace -= 5 * globals.variant.suits.length;
 
     /*
@@ -107,7 +107,7 @@ exports.getMinEfficiency = () => {
     */
     const minEfficiencyNumerator = 5 * globals.variant.suits.length;
     let unusableClues = 1;
-    if (numberOfPlayers >= 5) {
+    if (numPlayers >= 5) {
         unusableClues = 2;
     }
     let discardsPerClue = 1;
@@ -124,14 +124,14 @@ exports.getMinEfficiency = () => {
 };
 
 const getNumCardsPerHand = () => {
-    const numberOfPlayers = globals.playerNames.length;
-    if (numberOfPlayers === 2 || numberOfPlayers === 3) {
+    const numPlayers = globals.playerNames.length;
+    if (numPlayers === 2 || numPlayers === 3) {
         return 5;
     }
-    if (numberOfPlayers === 4 || numberOfPlayers === 5) {
+    if (numPlayers === 4 || numPlayers === 5) {
         return 4;
     }
-    if (numberOfPlayers === 6) {
+    if (numPlayers === 6) {
         return 3;
     }
 

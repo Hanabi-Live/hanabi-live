@@ -15,7 +15,6 @@ class CardLayout extends graphics.Group {
         // Class variables
         this.align = config.align || 'left';
         this.reverse = config.reverse || false;
-        this.invertCards = config.invertCards || false;
         this.rotation = config.rotation;
 
         // Debug rectangle (uncomment to show the size of the hand)
@@ -33,11 +32,6 @@ class CardLayout extends graphics.Group {
     }
 
     add(child) {
-        child.children.forEach((card) => {
-            if (card.doRotations) {
-                card.doRotations(this.invertCards);
-            }
-        });
         const pos = child.getAbsolutePosition();
         graphics.Group.prototype.add.call(this, child);
         child.setAbsolutePosition(pos);
@@ -58,7 +52,6 @@ class CardLayout extends graphics.Group {
         const lh = this.getHeight();
 
         const n = this.children.length;
-
         for (let i = 0; i < n; i++) {
             const node = this.children[i]; // This is a LayoutChild
 
@@ -73,23 +66,19 @@ class CardLayout extends graphics.Group {
         if (n > 1) {
             dist = (lw - uw) / (n - 1);
         }
-
         if (dist > 10) {
             dist = 10;
         }
-
         uw += dist * (n - 1);
 
         if (this.align === 'center' && uw < lw) {
             x = (lw - uw) / 2;
         }
-
         if (this.reverse) {
             x = lw - x;
         }
 
         const storedPostAnimationLayout = globals.postAnimationLayout;
-
         for (let i = 0; i < n; i++) {
             const node = this.children[i]; // This is a LayoutChild
 
@@ -103,8 +92,9 @@ class CardLayout extends graphics.Group {
                 node.tween.destroy();
             }
 
+            const newX = x - (this.reverse ? scale * node.getWidth() : 0);
             if (globals.animateFast) {
-                node.setX(x - (this.reverse ? scale * node.getWidth() : 0));
+                node.setX(newX);
                 node.setY(0);
                 node.setScaleX(scale);
                 node.setScaleY(scale);
@@ -113,6 +103,7 @@ class CardLayout extends graphics.Group {
             } else {
                 // Animate the card going from the deck to the hand
                 // (or from the hand to the discard pile)
+                // and animate the rest of the cards sliding over
                 const card = node.children[0];
                 card.tweening = true;
                 let justDiscarded = card.turnDiscarded === globals.turn - 1;
@@ -128,12 +119,11 @@ class CardLayout extends graphics.Group {
                 node.tween = new graphics.Tween({
                     node,
                     duration: 0.5,
-                    x: x - (this.reverse ? scale * node.getWidth() : 0),
+                    x: newX,
                     y: 0,
                     scaleX: scale,
                     scaleY: scale,
                     rotation: 0,
-                    runonce: true,
                     onFinish: () => {
                         card.tweening = false;
                         node.checkSetDraggable();

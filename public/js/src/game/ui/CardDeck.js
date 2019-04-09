@@ -70,7 +70,6 @@ class CardDeck extends graphics.Group {
                 duration: 0.5,
                 x: 0,
                 y: 0,
-                runonce: true,
                 onFinish: () => {
                     globals.layers.UI.batchDraw();
                 },

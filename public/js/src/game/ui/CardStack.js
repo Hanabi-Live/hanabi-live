@@ -9,11 +9,6 @@ const graphics = require('./graphics');
 
 class CardStack extends graphics.Group {
     add(child) {
-        child.children.forEach((card) => {
-            if (card.doRotations) {
-                card.doRotations(false);
-            }
-        });
         const pos = child.getAbsolutePosition();
         graphics.Group.prototype.add.call(this, child);
         child.setAbsolutePosition(pos);
@@ -27,11 +22,9 @@ class CardStack extends graphics.Group {
             const n = this.children.length;
             for (let i = 0; i < n; i++) {
                 const node = this.children[i]; // This is a LayoutChild
-
                 if (!node.tween) {
                     continue;
                 }
-
                 if (node.tween !== null) {
                     return;
                 }
@@ -46,7 +39,6 @@ class CardStack extends graphics.Group {
 
         for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i]; // This is a LayoutChild
-
             const scale = lh / node.getHeight();
 
             if (globals.animateFast) {
@@ -69,7 +61,6 @@ class CardStack extends graphics.Group {
                     scaleX: scale,
                     scaleY: scale,
                     rotation: 0,
-                    runonce: true,
                     onFinish: () => {
                         if (card.isMisplayed && card.parent.parent) {
                             // If the card is misplayed, then tween it to the discard pile

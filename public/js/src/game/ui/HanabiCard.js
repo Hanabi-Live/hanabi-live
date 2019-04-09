@@ -1,5 +1,6 @@
 /*
     The HanabiCard object represents a single card
+    It has a LayoutChild parent
 */
 
 // Imports
@@ -40,13 +41,6 @@ class HanabiCard extends graphics.Group {
         this.initNote();
         this.initEmpathy();
         this.initClick();
-    }
-
-    doRotations(inverted) {
-        this.setRotation(inverted ? 180 : 0);
-        this.bare.setRotation(inverted ? 180 : 0);
-        this.bare.setX(inverted ? constants.CARDW : 0);
-        this.bare.setY(inverted ? constants.CARDH : 0);
     }
 
     isClued() {
@@ -219,7 +213,7 @@ class HanabiCard extends graphics.Group {
         return HanabiCardInit.possibilities.call(this);
     }
 
-    setIndicator(visible, giver, target, clue) {
+    setIndicator(visible, giver, clue) {
         if (visible) {
             if (clue === null) {
                 // This is a shared replay arrow, so don't draw the circle
@@ -280,7 +274,7 @@ class HanabiCard extends graphics.Group {
                     // The angle has to account for the whole card reflection business
                     // in other players' hands
                     let indRadians = this.parent.parent.rotation;
-                    if (target !== globals.playerUs) {
+                    if (this.holder !== globals.playerUs) {
                         indRadians += 180;
                     }
                     const indTheta = indRadians / 180 * Math.PI;
@@ -301,7 +295,6 @@ class HanabiCard extends graphics.Group {
                         x: this.indicatorGroup.originalX,
                         y: this.indicatorGroup.originalY,
                         rotation: originalRotation,
-                        runonce: true,
                     }).play();
                 }
             }
@@ -459,7 +452,7 @@ class HanabiCard extends graphics.Group {
         // (if the arrow is showing but is a different kind of arrow,
         // then just overwrite the existing arrow)
         globals.lobby.ui.showClueMatch(-1);
-        this.setIndicator(visible, null, null, null);
+        this.setIndicator(visible, null, null);
     }
 
     reveal(suit, rank) {

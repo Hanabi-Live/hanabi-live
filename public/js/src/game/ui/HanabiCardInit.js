@@ -205,10 +205,7 @@ exports.indicatorArrow = function indicatorArrow() {
         visible: false,
         listening: false,
     });
-    this.initArrowLocation();
     this.add(this.indicatorGroup);
-    this.indicatorGroup.originalX = this.indicatorGroup.getX();
-    this.indicatorGroup.originalY = this.indicatorGroup.getY();
 
     this.indicatorArrowBorder = new graphics.Arrow({
         points: [
@@ -269,33 +266,13 @@ exports.indicatorArrow = function indicatorArrow() {
     });
     this.indicatorGroup.add(this.indicatorCircle);
 
-    let x;
-    let y;
-    let rotation;
-    if (
-        (this.holder !== globals.playerUs && !globals.lobby.settings.showKeldonUI)
-        || (this.holder === globals.playerUs && globals.lobby.settings.showKeldonUI)
-    ) {
-        rotation = 0;
-        x = (0.5 * constants.CARDW) - (this.indicatorCircle.getAttr('width') / 2);
-        y = (0.15 * constants.CARDH) - (this.indicatorCircle.getAttr('height') / 2.75);
-    } else {
-        rotation = 180;
-        x = (0.82 * constants.CARDW) - (this.indicatorCircle.getAttr('width') / 2);
-        y = (0.31 * constants.CARDH) - (this.indicatorCircle.getAttr('height') / 2.75);
-    }
     this.indicatorText = new graphics.Text({
-        x,
-        y,
-        width: this.indicatorCircle.getAttr('width'),
-        height: this.indicatorCircle.getAttr('height'),
         fontSize: 0.175 * constants.CARDH,
         fontFamily: 'Verdana',
         fill: 'white',
         stroke: 'white',
         strokeWidth: 1,
         align: 'center',
-        rotation,
         listening: false,
     });
     this.indicatorGroup.add(this.indicatorText);
@@ -324,20 +301,24 @@ exports.arrowLocation = function arrowLocation() {
     this.indicatorGroup.setX(0);
     this.indicatorGroup.setY(-this.getHeight() * 0.25);
     this.indicatorGroup.setRotation(0);
-    if (
-        this.holder === globals.playerUs
-        && !globals.lobby.settings.showKeldonUI
-        && !this.isPlayed
-        && !this.isDiscarded
-    ) {
-        // In BGA mode, our hand is the one closest to the top
-        // So, invert the arrows so that it is easier to see them
+    this.indicatorText.setX(0.418 * constants.CARDW);
+    this.indicatorText.setY(0.07 * constants.CARDH);
+    this.indicatorText.setRotation(0);
+    if (this.parent.parent && this.parent.parent.getAbsoluteCenterPos().y < 100) {
+        // Invert the arrows on the hands that are close to the top of the screen
+        // so that it is easier to see them
         // We also need to move the arrow slightly so that
         // it does not cover the third box on the bottom of the card
         this.indicatorGroup.setX(this.getWidth());
-        this.indicatorGroup.setY(this.getHeight() * 1.4); // 1.18 is the "normal" height
+        this.indicatorGroup.setY(this.getHeight() * 1.4);
         this.indicatorGroup.setRotation(180);
+        this.indicatorText.setX(0.58 * constants.CARDW);
+        this.indicatorText.setY(0.225 * constants.CARDH);
+        this.indicatorText.setRotation(180);
     }
+
+    this.indicatorGroup.originalX = this.indicatorGroup.getX();
+    this.indicatorGroup.originalY = this.indicatorGroup.getY();
 };
 
 exports.note = function note() {
