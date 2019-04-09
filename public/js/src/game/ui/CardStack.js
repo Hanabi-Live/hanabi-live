@@ -61,6 +61,7 @@ class CardStack extends graphics.Group {
                     scaleX: scale,
                     scaleY: scale,
                     rotation: 0,
+                    easing: graphics.Easings.EaseOut,
                     onFinish: () => {
                         if (card.isMisplayed && card.parent.parent) {
                             // If the card is misplayed, then tween it to the discard pile

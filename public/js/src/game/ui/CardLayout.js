@@ -124,6 +124,7 @@ class CardLayout extends graphics.Group {
                     scaleX: scale,
                     scaleY: scale,
                     rotation: 0,
+                    easing: graphics.Easings.EaseOut,
                     onFinish: () => {
                         card.tweening = false;
                         node.checkSetDraggable();
