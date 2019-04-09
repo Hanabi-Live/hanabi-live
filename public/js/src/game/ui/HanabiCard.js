@@ -53,7 +53,6 @@ class HanabiCard extends graphics.Group {
 
     // Erase all of the data on the card to make it like it was freshly drawn
     refresh() {
-        this.revealed = false; // True when trueSuit and trueRank are set
         this.trueSuit = null;
         this.trueRank = null;
         // Possible suits and ranks (based on clues given) are tracked separately
@@ -472,7 +471,6 @@ class HanabiCard extends graphics.Group {
         }
 
         // Set the true suit/rank on the card
-        this.revealed = true;
         this.trueSuit = suit;
         this.trueRank = rank;
 
@@ -561,7 +559,7 @@ class HanabiCard extends graphics.Group {
 
     isCritical() {
         if (
-            !this.revealed
+            !this.trueSuit || !this.trueSuit
             || this.isPlayed
             || this.isDiscarded
             || !needsToBePlayed(this.trueSuit, this.trueRank)

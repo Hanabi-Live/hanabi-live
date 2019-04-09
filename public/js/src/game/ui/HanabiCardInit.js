@@ -507,17 +507,19 @@ exports.possibilities = function possibilities() {
     }
 
     // We want to remove all of the currently seen cards from the list of possibilities
-    for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
+    for (let i = 0; i < globals.indexOfLastDrawnCard; i++) {
         const card = globals.deck[i];
 
-        // Don't do anything if we don't know what this card is yet
-        if (!card.revealed) {
+        // Don't do anything if this player does not know what this card is yet
+        if (card.holder === this.holder) {
             continue;
         }
 
         // If the card is still in the player's hand,
         // then we can't remove it from the list of possibilities,
         // because they don't know what it is yet
+        // TODO
+        /*
         if (
             card.holder === this.holder
             && !card.isPlayed
@@ -527,6 +529,7 @@ exports.possibilities = function possibilities() {
         ) {
             continue;
         }
+        */
 
         this.removePossibility(card.trueSuit, card.trueRank, false);
     }
