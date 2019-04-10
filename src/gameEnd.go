@@ -317,11 +317,11 @@ func (g *Game) AnnounceGameResult() {
 	}
 	msg := "[" + strings.Join(playerList, ", ") + "] "
 	if g.EndCondition == endConditionAbandoned {
-		msg += "abandonded"
+		msg += "abandoned"
 	} else {
 		msg += "finished"
 	}
-	msg += " a "
+	msg += " a"
 	firstLetter := strings.ToLower(g.Options.Variant)[0]
 	if firstLetter == 'a' ||
 		firstLetter == 'e' ||
@@ -331,7 +331,7 @@ func (g *Game) AnnounceGameResult() {
 
 		msg += "n"
 	}
-	msg += g.Options.Variant + " game"
+	msg += " " + g.Options.Variant + " game"
 	if g.EndCondition == endConditionAbandoned {
 		msg += "."
 	} else {
