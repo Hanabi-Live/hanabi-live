@@ -98,8 +98,8 @@ const initCommands = () => {
         if (!data.firstTimeUser) {
             // Validate that we are on the latest JavaScript code
             if (data.version !== globals.version && !window.location.pathname.includes('/dev')) {
-                let msg = 'You are running an outdated version of the Hanabi client code.<br />';
-                msg += `(You are on v${globals.version} and the latest is v${data.version}.)<br />`;
+                let msg = 'You are running an outdated version of the Hanabi client code. ';
+                msg += `(You are on <i>v${globals.version}</i> and the latest is <i>v${data.version}</i>.)<br />`;
                 msg += 'Please perform a hard-refresh to get the latest version.<br />';
                 msg += '(On Windows, the hotkey for this is "Ctrl + F5". ';
                 msg += 'On MacOS, the hotkey for this is "Command + Shift + R".)';

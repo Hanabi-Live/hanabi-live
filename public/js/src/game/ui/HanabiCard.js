@@ -289,6 +289,12 @@ class HanabiCard extends graphics.Group {
             return;
         }
 
+        // Don't bother doing the animation if we are no longer part of a hand
+        // (which can happen rarely when jumping quickly through a replay)
+        if (!this.parent.parent) {
+            return;
+        }
+
         // Delay the animation if the card is currently tweening to avoid buggy behavior
         if (this.tweening) {
             this.indicatorGroup.setVisible(false);

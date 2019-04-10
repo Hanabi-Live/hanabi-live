@@ -5,6 +5,7 @@
 // Imports
 const constants = require('../../constants');
 const globals = require('./globals');
+const graphics = require('./graphics');
 const stats = require('./stats');
 
 /*
@@ -273,14 +274,29 @@ exports.barDrag = function barDrag(pos) {
     };
 };
 
-const positionReplayShuttle = (shuttle, turn) => {
+const positionReplayShuttle = (shuttle, tween, turn) => {
     const w = shuttle.getParent().getWidth() - shuttle.getWidth();
-    shuttle.setX(turn * w / globals.replayMax);
+    const x = turn * w / globals.replayMax;
+    if (globals.animateFast) {
+        shuttle.setX(x);
+    } else {
+        if (tween) {
+            tween.destroy();
+        }
+        tween = new graphics.Tween({
+            x,
+            node: shuttle,
+            duration: 0.25,
+            easing: graphics.Easings.EaseOut,
+        }).play();
+    }
 };
 
 const adjustShuttles = () => {
     const shuttle = globals.elements.replayShuttle;
+    const shuttleTween = globals.elements.replayShuttleTween;
     const shuttleShared = globals.elements.replayShuttleShared;
+    const shuttleSharedTween = globals.elements.replayShuttleSharedTween;
 
     // If the shuttles are overlapping, then make the normal shuttle a little bit smaller
     let smaller = false;
@@ -306,13 +322,13 @@ const adjustShuttles = () => {
 
     // Adjust the shuttles along the X axis based on the current turn
     // If it is smaller, we need to nudge it to the right a bit in order to center it
-    positionReplayShuttle(shuttleShared, globals.sharedReplayTurn);
+    positionReplayShuttle(shuttleShared, shuttleSharedTween, globals.sharedReplayTurn);
     if (smaller) {
         const diffX = shuttleShared.getWidth() - shuttle.getWidth();
         const adjustment = diffX / 2;
         shuttle.setX(shuttleShared.getX() + adjustment);
     } else {
-        positionReplayShuttle(shuttle, globals.replayTurn);
+        positionReplayShuttle(shuttle, shuttleTween, globals.replayTurn);
     }
 };
 exports.adjustShuttles = adjustShuttles;

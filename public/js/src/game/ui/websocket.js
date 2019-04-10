@@ -436,7 +436,9 @@ commands.replayTurn = (data) => {
     globals.sharedReplayTurn = data.turn;
     replay.adjustShuttles();
     if (globals.useSharedTurns) {
-        replay.goto(globals.sharedReplayTurn, globals.sharedReplayLoading);
+        const animateFast = globals.sharedReplayLoading
+            || Math.abs(globals.sharedReplayTurn - oldTurn) > 2;
+        replay.goto(globals.sharedReplayTurn, animateFast);
 
         if (!globals.sharedReplayLoading) {
             // Play an animation to indicate the direction that the leader has taken us in

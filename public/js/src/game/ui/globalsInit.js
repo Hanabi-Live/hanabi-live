@@ -158,7 +158,9 @@ module.exports = () => {
         // The replay screen
         replayArea: null,
         replayShuttleShared: null,
+        replayShuttleSharedTween: null,
         replayShuttle: null,
+        replayShuttleTween: null,
         replayBackFullButton: null,
         replayBackButton: null,
         replayForwardButton: null,
