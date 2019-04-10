@@ -557,8 +557,8 @@ exports.SUIT = {
         exports.COLOR.INDIGO,
         basicCardFillSpec,
         [
-            exports.COLOR.BLUE,
             exports.COLOR.PURPLE,
+            exports.COLOR.BLUE,
         ],
     ),
 };

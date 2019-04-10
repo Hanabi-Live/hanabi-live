@@ -108,7 +108,7 @@ var (
 	LimeDualSuit = NewSuit("Lime", []ColorClue{YellowClue, GreenClue})
 	// OrangeDualSuit is reused
 	CardinalDualSuit = NewSuit("Cardinal", []ColorClue{RedClue, PurpleClue})
-	IndigoDualSuit   = NewSuit("Indigo", []ColorClue{BlueClue, PurpleClue})
+	IndigoDualSuit   = NewSuit("Indigo", []ColorClue{PurpleClue, BlueClue})
 )
 
 // Variants
