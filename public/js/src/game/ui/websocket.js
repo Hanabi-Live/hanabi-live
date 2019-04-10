@@ -379,15 +379,15 @@ commands.replayIndicator = (data) => {
         card.toggleSharedReplayArrow();
     } else { // Some other UI element
         let element;
-        if (data.order === -1) { // The deck
+        if (data.order === constants.REPLAY_ARROW_ORDER.DECK) {
             element = globals.elements.drawDeck;
-        } else if (data.order === -2) { // The clue count
+        } else if (data.order === constants.REPLAY_ARROW_ORDER.CLUES) {
             element = globals.elements.cluesNumberLabel;
-        } else if (data.order === -3) { // The pace
+        } else if (data.order === constants.REPLAY_ARROW_ORDER.PACE) {
             element = globals.elements.paceNumberLabel;
-        } else if (data.order === -4) { // The current efficiency
+        } else if (data.order === constants.REPLAY_ARROW_ORDER.EFFICIENCY) {
             element = globals.elements.efficiencyNumberLabel;
-        } else if (data.order === -5) { // The minimum efficiency needed
+        } else if (data.order === constants.REPLAY_ARROW_ORDER.MIN_EFFICIENCY) {
             element = globals.elements.efficiencyNumberLabelMinNeeded;
         } else {
             return;
@@ -396,6 +396,7 @@ commands.replayIndicator = (data) => {
         const visible = !element.arrow.getVisible();
         ui.hideAllArrows();
         element.arrow.setVisible(visible);
+        globals.layers.card.batchDraw();
     }
 };
 

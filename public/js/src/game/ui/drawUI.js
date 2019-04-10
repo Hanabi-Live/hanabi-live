@@ -684,12 +684,27 @@ const drawScoreArea = () => {
     });
     globals.elements.scoreArea.add(cluesTextLabel);
 
-    globals.elements.cluesNumberLabel = basicNumberLabel.clone({
+    const cluesNumberLabel = basicNumberLabel.clone({
         text: '8',
         x: (labelX + labelSpacing) * winW,
         y: 0.08 * winH,
+        listening: true,
     });
-    globals.elements.scoreArea.add(globals.elements.cluesNumberLabel);
+    globals.elements.scoreArea.add(cluesNumberLabel);
+    const cluesAbsPos = cluesNumberLabel.getAbsolutePosition();
+    cluesNumberLabel.arrow = new Arrow({
+        x: cluesAbsPos.x + (0.005 * winW),
+        y: cluesAbsPos.y + (0.005 * winH),
+        scale: {
+            x: 0.3,
+            y: 0.1,
+        },
+    });
+    globals.layers.card.add(cluesNumberLabel.arrow);
+    cluesNumberLabel.on('click', (event) => {
+        arrowClick(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
+    });
+    globals.elements.cluesNumberLabel = cluesNumberLabel;
 
     // Draw the 3 strike (bomb) black squares / X's
     function strikeClick() {
@@ -1029,11 +1044,7 @@ const drawStatistics = () => {
     });
     globals.layers.card.add(paceNumberLabel.arrow);
     paceNumberLabel.on('click', (event) => {
-        if (event.evt.which !== 3) { // Right-click
-            return;
-        }
-        paceNumberLabel.arrow.setVisible(!paceNumberLabel.arrow.getVisible());
-        globals.layers.card.batchDraw();
+        arrowClick(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
     });
     globals.elements.paceNumberLabel = paceNumberLabel;
 
@@ -1060,17 +1071,30 @@ const drawStatistics = () => {
 
     // We want the "/" to be part of the first label since we don't want
     // to change the color of it later on
-    globals.elements.efficiencyNumberLabel = basicNumberLabel.clone({
+    const efficiencyNumberLabel = basicNumberLabel.clone({
         text: '- / ',
         x: 0.9 * winW,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
         listening: true,
     });
-    globals.layers.UI.add(globals.elements.efficiencyNumberLabel);
+    globals.layers.UI.add(efficiencyNumberLabel);
+    efficiencyNumberLabel.arrow = new Arrow({
+        x: efficiencyNumberLabel.getX() + (0.015 * winW),
+        y: efficiencyNumberLabel.getY() + (0.005 * winH),
+        scale: {
+            x: 0.35,
+            y: 0.15,
+        },
+    });
+    globals.layers.card.add(efficiencyNumberLabel.arrow);
+    efficiencyNumberLabel.on('click', (event) => {
+        arrowClick(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
+    });
+    globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
 
     const minEfficiency = stats.getMinEfficiency();
-    globals.elements.efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
+    const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
         text: minEfficiency.toString(),
         x: 0.918 * winW,
         y: 0.56 * winH,
@@ -1080,7 +1104,24 @@ const drawStatistics = () => {
         fill: (minEfficiency < 1.25 ? globals.labelColor : '#ffb2b2'),
         listening: true,
     });
-    globals.layers.UI.add(globals.elements.efficiencyNumberLabelMinNeeded);
+    globals.layers.UI.add(efficiencyNumberLabelMinNeeded);
+    efficiencyNumberLabelMinNeeded.arrow = new Arrow({
+        x: efficiencyNumberLabelMinNeeded.getX() + (0.034 * winW),
+        y: efficiencyNumberLabelMinNeeded.getY() + (0.005 * winH),
+        scale: {
+            x: 0.35,
+            y: 0.15,
+        },
+    });
+    globals.layers.card.add(efficiencyNumberLabelMinNeeded.arrow);
+    efficiencyNumberLabelMinNeeded.on('click', (event) => {
+        arrowClick(
+            event,
+            constants.REPLAY_ARROW_ORDER.MIN_EFFICIENCY,
+            efficiencyNumberLabelMinNeeded,
+        );
+    });
+    globals.elements.efficiencyNumberLabelMinNeeded = efficiencyNumberLabelMinNeeded;
 };
 
 const drawDiscardArea = () => {
@@ -1403,4 +1444,28 @@ const drawExtraAnimations = () => {
             globals.elements.sharedReplayBackwardTween.reverse();
         },
     });
+};
+
+/*
+    Helper functions
+*/
+
+const arrowClick = (event, order, element) => {
+    if (
+        event.evt.which === 3 // Right-click
+        && globals.sharedReplay
+        && globals.amSharedReplayLeader
+        && globals.useSharedTurns
+    ) {
+        globals.lobby.conn.send('replayAction', {
+            type: constants.REPLAY_ACTION_TYPE.ARROW,
+            order,
+        });
+
+        // Draw the arrow manually so that we don't have to wait for the client to server round-trip
+        const visible = !element.arrow.getVisible();
+        ui.hideAllArrows();
+        element.arrow.setVisible(visible);
+        globals.layers.card.batchDraw();
+    }
 };

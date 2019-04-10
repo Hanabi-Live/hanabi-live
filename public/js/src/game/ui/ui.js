@@ -193,7 +193,16 @@ const hideAllArrows = () => {
     }
 
     // Also hide the arrows on the other various UI elements
-    // TODO
+    const elements = [
+        // globals.elements.drawDeck,
+        globals.elements.cluesNumberLabel,
+        globals.elements.paceNumberLabel,
+        globals.elements.efficiencyNumberLabel,
+        globals.elements.efficiencyNumberLabelMinNeeded,
+    ];
+    for (const element of elements) {
+        element.arrow.hide();
+    }
 
     globals.layers.card.batchDraw();
 };

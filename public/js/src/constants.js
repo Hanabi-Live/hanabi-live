@@ -29,6 +29,13 @@ exports.REPLAY_ACTION_TYPE = {
     HYPO_END: 6,
     HYPO_ACTION: 7,
 };
+exports.REPLAY_ARROW_ORDER = {
+    DECK: -1,
+    CLUES: -2,
+    PACE: -3,
+    EFFICIENCY: -4,
+    MIN_EFFICIENCY: -5,
+};
 
 class Color {
     constructor(name, abbreviation, hexCode) {
