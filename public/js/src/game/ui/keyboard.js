@@ -122,6 +122,7 @@ const keydown = (event) => {
         && !event.shiftKey
         && !event.altKey
         && !event.metaKey
+        && !globals.replay
     ) {
         replay.exit();
     }
@@ -154,9 +155,9 @@ const keydown = (event) => {
             sharedReplaySendSound('buzz');
             return;
         }
-        if (event.key === 'h') { // Alt + h ("Alt + g" is taken by LastPass)
+        if (event.key === 'h') { // Alt + h
             // This is used for fun in shared replays
-            sharedReplaySendSound('god');
+            sharedReplaySendSound('holy');
             return;
         }
         if (event.key === 'n') { // Alt + n
