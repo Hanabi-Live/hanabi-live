@@ -46,6 +46,10 @@ class LayoutChild extends graphics.Group {
     checkSetDraggable() {
         // Cards should only be draggable in specific circumstances
         const card = this.children[0];
+        if (!card) {
+            // Rarely, due to a race condition we can get here without the card being defined
+            return;
+        }
         if (
             // If it is not our turn, then the card does not need to be draggable yet
             // (unless we have the "Enable pre-playing cards" feature enabled)
