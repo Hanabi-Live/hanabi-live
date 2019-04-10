@@ -186,6 +186,32 @@ exports.giveClue = () => {
     });
 };
 
+exports.arrowClick = (event, order, element) => {
+    if (
+        event.evt.which === 3 // Right-click
+        && globals.sharedReplay
+        && globals.amSharedReplayLeader
+        && globals.useSharedTurns
+    ) {
+        globals.lobby.conn.send('replayAction', {
+            type: constants.REPLAY_ACTION_TYPE.ARROW,
+            order,
+        });
+
+        // Draw the arrow manually so that we don't have to wait for the client to server round-trip
+        const visible = !element.arrow.getVisible();
+        hideAllArrows();
+        element.arrow.setVisible(visible);
+        globals.layers.card.batchDraw();
+
+        // If this element has a tooltip and it is open, close it
+        if (element.tooltipName) {
+            const tooltip = $(`#tooltip-${element.tooltipName}`);
+            tooltip.tooltipster('close');
+        }
+    }
+};
+
 const hideAllArrows = () => {
     // Hide arrows on all of the cards
     for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
@@ -194,7 +220,7 @@ const hideAllArrows = () => {
 
     // Also hide the arrows on the other various UI elements
     const elements = [
-        // globals.elements.drawDeck,
+        globals.elements.drawDeck,
         globals.elements.cluesNumberLabel,
         globals.elements.paceNumberLabel,
         globals.elements.efficiencyNumberLabel,

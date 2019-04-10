@@ -345,7 +345,7 @@ exports.promptTurn = (event) => {
     }
 
     let turn = window.prompt('Which turn do you want to go to?');
-    if (Number.isNaN(turn)) {
+    if (turn === null || Number.isNaN(parseInt(turn, 10))) {
         return;
     }
     turn -= 1;

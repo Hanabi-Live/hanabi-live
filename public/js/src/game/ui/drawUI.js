@@ -385,7 +385,7 @@ const drawBottomLeftButtons = () => {
     };
 
     // The toggle in-game replay button
-    globals.elements.replayButton = new Button({
+    const replayButton = new Button({
         x: bottomLeftButtonValues.x * winW,
         y: bottomLeftButtonValues.y * winH,
         width: bottomLeftButtonValues.w * winW,
@@ -393,8 +393,8 @@ const drawBottomLeftButtons = () => {
         image: 'replay',
         visible: !globals.replay && !globals.lobby.settings.realLifeMode,
     });
-    globals.elements.replayButton.on('click tap', () => {
-        if (!globals.elements.replayButton.enabled) {
+    replayButton.on('click tap', () => {
+        if (!replayButton.enabled) {
             return;
         }
         if (globals.inReplay) {
@@ -403,14 +403,16 @@ const drawBottomLeftButtons = () => {
             replay.enter();
         }
     });
-    globals.layers.UI.add(globals.elements.replayButton);
-    globals.elements.replayButton.setEnabled(false);
+    globals.layers.UI.add(replayButton);
+    replayButton.setEnabled(false);
+    replayButton.tooltipName = 'replay';
     const replayContent = 'Toggle the in-game replay, where you can rewind the game to see what happened on a specific turn.';
-    tooltips.initDelayed(globals.elements.replayButton, 'replay', replayContent);
+    tooltips.init(replayButton, replayContent, true);
+    globals.elements.replayButton = replayButton;
 
     // The restart button
     // (to go into a new game with the same settings as the current shared replay)
-    globals.elements.restartButton = new Button({
+    const restartButton = new Button({
         x: bottomLeftButtonValues.x * winW,
         y: bottomLeftButtonValues.y * winH,
         width: bottomLeftButtonValues.w * winW,
@@ -418,15 +420,17 @@ const drawBottomLeftButtons = () => {
         text: 'Restart',
         visible: globals.replay && globals.sharedReplay,
     });
-    globals.layers.UI.add(globals.elements.restartButton);
-    globals.elements.restartButton.on('click tap', () => {
+    globals.layers.UI.add(restartButton);
+    restartButton.on('click tap', () => {
         globals.lobby.conn.send('gameRestart');
     });
+    restartButton.tooltipName = 'restart';
     const restartContent = 'Automatically go into a new game with the current members of the shared replay (using the same game settings as this one).';
-    tooltips.initDelayed(globals.elements.restartButton, 'restart', restartContent);
+    tooltips.init(restartButton, restartContent, true);
+    globals.elements.restartButton = restartButton;
 
     // The chat button
-    globals.elements.chatButton = new Button({
+    const chatButton = new Button({
         x: bottomLeftButtonValues.x * winW,
         y: (bottomLeftButtonValues.y + bottomLeftButtonValues.h + 0.01) * winH,
         width: bottomLeftButtonValues.w * winW,
@@ -434,12 +438,14 @@ const drawBottomLeftButtons = () => {
         text: '💬',
         visible: !globals.replay || globals.sharedReplay,
     });
-    globals.layers.UI.add(globals.elements.chatButton);
-    globals.elements.chatButton.on('click tap', () => {
+    globals.layers.UI.add(chatButton);
+    chatButton.on('click tap', () => {
         globals.game.chat.toggle();
     });
+    chatButton.tooltipName = 'chat';
     const chatContent = 'Toggle the in-game chat.';
-    tooltips.initDelayed(globals.elements.chatButton, 'chat', chatContent);
+    tooltips.init(chatButton, chatContent, true);
+    globals.elements.chatButton = chatButton;
 
     const shortButtonSpacing = 0.003;
 
@@ -451,7 +457,7 @@ const drawBottomLeftButtons = () => {
         h: bottomLeftButtonValues.h,
     };
 
-    globals.elements.lobbyButtonSmall = new Button({
+    const lobbyButtonSmall = new Button({
         x: lobbyButtonValues.x * winW,
         y: lobbyButtonValues.y * winH,
         width: ((bottomLeftButtonValues.w / 2) - shortButtonSpacing) * winW,
@@ -459,12 +465,14 @@ const drawBottomLeftButtons = () => {
         image: 'home',
         visible: !globals.replay && !globals.spectating,
     });
-    globals.layers.UI.add(globals.elements.lobbyButtonSmall);
-    globals.elements.lobbyButtonSmall.on('click tap', lobbyButtonClick);
+    globals.layers.UI.add(lobbyButtonSmall);
+    lobbyButtonSmall.on('click tap', lobbyButtonClick);
+    lobbyButtonSmall.tooltipName = 'lobby-small';
     const lobbySmallContent = 'Return to the lobby. (The game will not end and your teammates will have to wait for you to come back.)';
-    tooltips.initDelayed(globals.elements.lobbyButtonSmall, 'lobby-small', lobbySmallContent);
+    tooltips.init(lobbyButtonSmall, lobbySmallContent, true);
+    globals.elements.lobbyButtonSmall = lobbyButtonSmall;
 
-    globals.elements.lobbyButtonBig = new Button({
+    const lobbyButtonBig = new Button({
         x: lobbyButtonValues.x * winW,
         y: lobbyButtonValues.y * winH,
         width: bottomLeftButtonValues.w * winW,
@@ -472,10 +480,12 @@ const drawBottomLeftButtons = () => {
         text: 'Lobby',
         visible: globals.replay || globals.spectating,
     });
-    globals.layers.UI.add(globals.elements.lobbyButtonBig);
-    globals.elements.lobbyButtonBig.on('click tap', lobbyButtonClick);
+    globals.layers.UI.add(lobbyButtonBig);
+    lobbyButtonBig.on('click tap', lobbyButtonClick);
+    lobbyButtonBig.tooltipName = 'lobby-big';
     const lobbyBigContent = 'Return to the lobby.';
-    tooltips.initDelayed(globals.elements.lobbyButtonBig, 'lobby-big', lobbyBigContent);
+    tooltips.init(lobbyButtonBig, lobbyBigContent, true);
+    globals.elements.lobbyButtonBig = lobbyButtonBig;
 
     function lobbyButtonClick() {
         // Unregister the click handler to ensure that the user does not double-click
@@ -496,7 +506,7 @@ const drawBottomLeftButtons = () => {
     }
 
     // The kill button (which terminates the current game)
-    globals.elements.killButton = new Button({
+    const killButton = new Button({
         x: (bottomLeftButtonValues.x + (bottomLeftButtonValues.w / 2) + shortButtonSpacing) * winW,
         y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h) + 0.02) * winH,
         width: ((bottomLeftButtonValues.w / 2) - shortButtonSpacing) * winW,
@@ -504,12 +514,14 @@ const drawBottomLeftButtons = () => {
         image: 'skull',
         visible: !globals.replay && !globals.spectating,
     });
-    globals.layers.UI.add(globals.elements.killButton);
-    globals.elements.killButton.on('click tap', () => {
+    globals.layers.UI.add(killButton);
+    killButton.on('click tap', () => {
         globals.lobby.conn.send('gameAbandon');
     });
+    killButton.tooltipName = 'kill';
     const killContent = 'Terminate the game, ending it immediately.';
-    tooltips.initDelayed(globals.elements.killButton, 'kill', killContent);
+    tooltips.init(killButton, killContent, true);
+    globals.elements.killButton = killButton;
 };
 
 const drawDeck = () => {
@@ -702,7 +714,7 @@ const drawScoreArea = () => {
     });
     globals.layers.card.add(cluesNumberLabel.arrow);
     cluesNumberLabel.on('click', (event) => {
-        arrowClick(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
+        ui.arrowClick(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
     });
     globals.elements.cluesNumberLabel = cluesNumberLabel;
 
@@ -760,9 +772,11 @@ const drawScoreArea = () => {
         };
 
         // Handle the tooltips
+        strikeSquare.tooltipName = 'strikes';
+        strike.tooltipName = 'strikes';
         const strikesContent = 'This shows how many strikes (bombs) the team currently has.';
-        tooltips.initDelayed(strikeSquare, 'strikes', strikesContent);
-        tooltips.initDelayed(strike, 'strikes', strikesContent);
+        tooltips.init(strikeSquare, strikesContent, true);
+        tooltips.init(strike, strikesContent, true);
 
         // Click on the strike to go to the turn that the strike happened, if any
         // (and highlight the card that misplayed)
@@ -790,7 +804,7 @@ const drawSpectators = () => {
         spectatorsLabelValues.x = scoreAreaValues.x + scoreAreaValues.w + 0.01;
     }
     const imageSize = 0.02;
-    globals.elements.spectatorsLabel = new graphics.Image({
+    const spectatorsLabel = new graphics.Image({
         x: (spectatorsLabelValues.x + 0.005) * winW,
         y: spectatorsLabelValues.y * winH,
         width: imageSize * winW,
@@ -808,21 +822,10 @@ const drawSpectators = () => {
         visible: false,
         listening: true,
     });
-    globals.layers.UI.add(globals.elements.spectatorsLabel);
-
-    // Tooltip for the eyes
-    globals.elements.spectatorsLabel.on('mousemove', function spectatorsLabelMouseMove() {
-        globals.activeHover = this;
-
-        const tooltipX = this.attrs.x + this.getWidth() / 2;
-        $('#tooltip-spectators').css('left', tooltipX);
-        $('#tooltip-spectators').css('top', this.attrs.y);
-        $('#tooltip-spectators').tooltipster('open');
-    });
-    globals.elements.spectatorsLabel.on('mouseout', () => {
-        globals.activeHover = null;
-        $('#tooltip-spectators').tooltipster('close');
-    });
+    globals.layers.UI.add(spectatorsLabel);
+    spectatorsLabel.tooltipName = 'spectators';
+    tooltips.init(spectatorsLabel, '', false);
+    globals.elements.spectatorsLabel = spectatorsLabel;
 
     globals.elements.spectatorsNumLabel = new graphics.Text({
         x: spectatorsLabelValues.x * winW,
@@ -867,7 +870,7 @@ const drawSharedReplay = () => {
 
     // The crown
     const size = 0.025 * winW;
-    globals.elements.sharedReplayLeaderLabel = new graphics.Image({
+    const sharedReplayLeaderLabel = new graphics.Image({
         x: (sharedReplayLeaderLabelValues.x + 0.0025) * winW,
         y: (sharedReplayLeaderLabelValues.y - 0.007) * winH,
         width: size,
@@ -883,11 +886,12 @@ const drawSharedReplay = () => {
         visible: false,
         listening: true,
     });
-    globals.layers.UI.add(globals.elements.sharedReplayLeaderLabel);
+    globals.layers.UI.add(sharedReplayLeaderLabel);
+    globals.elements.sharedReplayLeaderLabel = sharedReplayLeaderLabel;
 
     // Add an animation to alert everyone when shared replay leadership has been transfered
     globals.elements.sharedReplayLeaderLabelPulse = new graphics.Tween({
-        node: globals.elements.sharedReplayLeaderLabel,
+        node: sharedReplayLeaderLabel,
         width: size * 2,
         height: size * 2,
         offsetX: 0.025 * winH,
@@ -905,21 +909,11 @@ const drawSharedReplay = () => {
     globals.elements.sharedReplayLeaderLabelPulse.anim.addLayer(globals.layers.UI);
 
     // Tooltip for the crown
-    globals.elements.sharedReplayLeaderLabel.on('mousemove', function sharedReplayLeaderLabelMouseMove() {
-        globals.activeHover = this;
-
-        const tooltipX = this.attrs.x + this.getWidth() / 2;
-        $('#tooltip-leader').css('left', tooltipX);
-        $('#tooltip-leader').css('top', this.attrs.y);
-        $('#tooltip-leader').tooltipster('open');
-    });
-    globals.elements.sharedReplayLeaderLabel.on('mouseout', () => {
-        globals.activeHover = null;
-        $('#tooltip-leader').tooltipster('close');
-    });
+    sharedReplayLeaderLabel.tooltipName = 'leader';
+    tooltips.init(sharedReplayLeaderLabel, '', false);
 
     // The user can right-click on the crown to pass the replay leader to an arbitrary person
-    globals.elements.sharedReplayLeaderLabel.on('click', (event) => {
+    sharedReplayLeaderLabel.on('click', (event) => {
         // Do nothing if this is not a right-click
         if (event.evt.which !== 3) {
             return;
@@ -1016,15 +1010,13 @@ const drawStatistics = () => {
         listening: true,
     });
     globals.layers.UI.add(paceTextLabel);
+    paceTextLabel.tooltipName = 'pace';
     let paceContent = 'Pace is a measure of how many discards can happen while<br />';
     paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     paceContent += 'still having a chance to get the maximum score.<br />';
     paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     paceContent += '(For more information, click on the "Help" button in the lobby.)';
-    tooltips.initDelayed(paceTextLabel, 'pace', paceContent);
-    paceTextLabel.on('click', () => {
-
-    });
+    tooltips.init(paceTextLabel, paceContent, true);
 
     const paceNumberLabel = basicNumberLabel.clone({
         text: '-',
@@ -1044,7 +1036,7 @@ const drawStatistics = () => {
     });
     globals.layers.card.add(paceNumberLabel.arrow);
     paceNumberLabel.on('click', (event) => {
-        arrowClick(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
+        ui.arrowClick(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
     });
     globals.elements.paceNumberLabel = paceNumberLabel;
 
@@ -1056,6 +1048,7 @@ const drawStatistics = () => {
         listening: true,
     });
     globals.layers.UI.add(efficiencyTextLabel);
+    efficiencyTextLabel.tooltipName = 'efficiency';
     let efficiencyContent = 'Efficiency is calculated by: <i>number of clues given /<br />';
     efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     efficiencyContent += '(number of cards played + number of unplayed cards with one or more clues "on" them)</i><br />';
@@ -1067,7 +1060,7 @@ const drawStatistics = () => {
     efficiencyContent += 'the current number of players and the current variant.<br />';
     efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     efficiencyContent += '(For more information, click on the "Help" button in the lobby.)';
-    tooltips.initDelayed(efficiencyTextLabel, 'efficiency', efficiencyContent);
+    tooltips.init(efficiencyTextLabel, efficiencyContent, true);
 
     // We want the "/" to be part of the first label since we don't want
     // to change the color of it later on
@@ -1089,7 +1082,7 @@ const drawStatistics = () => {
     });
     globals.layers.card.add(efficiencyNumberLabel.arrow);
     efficiencyNumberLabel.on('click', (event) => {
-        arrowClick(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
+        ui.arrowClick(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
     });
     globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
 
@@ -1115,7 +1108,7 @@ const drawStatistics = () => {
     });
     globals.layers.card.add(efficiencyNumberLabelMinNeeded.arrow);
     efficiencyNumberLabelMinNeeded.on('click', (event) => {
-        arrowClick(
+        ui.arrowClick(
             event,
             constants.REPLAY_ARROW_ORDER.MIN_EFFICIENCY,
             efficiencyNumberLabelMinNeeded,
@@ -1444,28 +1437,4 @@ const drawExtraAnimations = () => {
             globals.elements.sharedReplayBackwardTween.reverse();
         },
     });
-};
-
-/*
-    Helper functions
-*/
-
-const arrowClick = (event, order, element) => {
-    if (
-        event.evt.which === 3 // Right-click
-        && globals.sharedReplay
-        && globals.amSharedReplayLeader
-        && globals.useSharedTurns
-    ) {
-        globals.lobby.conn.send('replayAction', {
-            type: constants.REPLAY_ACTION_TYPE.ARROW,
-            order,
-        });
-
-        // Draw the arrow manually so that we don't have to wait for the client to server round-trip
-        const visible = !element.arrow.getVisible();
-        ui.hideAllArrows();
-        element.arrow.setVisible(visible);
-        globals.layers.card.batchDraw();
-    }
 };

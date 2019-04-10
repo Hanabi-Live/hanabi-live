@@ -1,4 +1,5 @@
 // Imports
+const Arrow = require('./Arrow');
 const constants = require('../../constants');
 const globals = require('./globals');
 const graphics = require('./graphics');
@@ -38,6 +39,20 @@ class CardDeck extends graphics.Group {
             listening: false,
         });
         this.add(this.numLeftText);
+
+        const thisPos = this.getAbsolutePosition();
+        this.arrow = new Arrow({
+            x: thisPos.x + (this.getWidth() / 2),
+            y: thisPos.y + (this.getHeight() * 0.05),
+            scale: {
+                x: 0.4,
+                y: 0.12,
+            },
+        });
+        globals.layers.card.add(this.arrow);
+        this.on('click', (event) => {
+            ui.arrowClick(event, constants.REPLAY_ARROW_ORDER.DECK, this);
+        });
 
         this.initTooltip();
     }
@@ -129,8 +144,9 @@ class CardDeck extends graphics.Group {
     // The deck tooltip shows the custom options for this game, if any
     initTooltip() {
         // If the user hovers over the deck, show a tooltip that shows extra game options, if any
-        // (we don't use the "tooltip.initDelayed()" function because we need the extra condition in
-        // the "mousemove" event)
+        // (we don't use the "tooltip.init()" function because we need the extra condition in the
+        // "mousemove" event)
+        this.tooltipName = 'deck';
         this.on('mousemove', function mouseMove() {
             // Don't do anything if we might be dragging the deck
             if (globals.elements.deckPlayAvailableLabel.isVisible()) {
@@ -139,7 +155,7 @@ class CardDeck extends graphics.Group {
 
             globals.activeHover = this;
             setTimeout(() => {
-                tooltips.show(this, 'deck');
+                tooltips.show(this);
             }, globals.tooltipDelay);
         });
         this.on('mouseout', () => {

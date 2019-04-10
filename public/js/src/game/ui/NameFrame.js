@@ -2,6 +2,7 @@
 const constants = require('../../constants');
 const globals = require('./globals');
 const graphics = require('./graphics');
+const tooltips = require('./tooltips');
 
 class NameFrame extends graphics.Group {
     constructor(config) {
@@ -94,20 +95,18 @@ class NameFrame extends graphics.Group {
         this.add(this.rightline);
 
         // Draw the tooltips on the player names that show the time
-        this.playerNum = config.playerNum;
+        // (we don't use the "tooltip.init()" function because we need the extra condition in the
+        // "mousemove" and "mouseout" event)
+        this.tooltipName = `player-${config.playerNum}`;
         this.on('mousemove', function mouseMove() {
+            globals.activeHover = this;
+
             // Don't do anything if we are in a solo/shared replay
             if (globals.replay) {
                 return;
             }
 
-            globals.activeHover = this;
-
-            const tooltip = $(`#tooltip-player-${this.playerNum}`);
-            const tooltipX = this.getWidth() / 2 + this.attrs.x;
-            tooltip.css('left', tooltipX);
-            tooltip.css('top', this.attrs.y);
-            tooltip.tooltipster('open');
+            tooltips.show(this);
         });
         this.on('mouseout', () => {
             globals.activeHover = null;
@@ -117,7 +116,7 @@ class NameFrame extends graphics.Group {
                 return;
             }
 
-            const tooltip = $(`#tooltip-player-${this.playerNum}`);
+            const tooltip = $(`#tooltip-${this.tooltipName}`);
             tooltip.tooltipster('close');
         });
     }

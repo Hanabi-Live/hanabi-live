@@ -1,22 +1,28 @@
 // Imports
 const globals = require('./globals');
 
-exports.initDelayed = (element, name, content) => {
+exports.init = (element, content, delayed) => {
     element.on('mousemove', function mouseMove() {
         globals.activeHover = this;
-        setTimeout(() => {
-            show(this, name);
-        }, globals.tooltipDelay);
+        if (!delayed) {
+            show(this);
+        } else {
+            setTimeout(() => {
+                show(this);
+            }, globals.tooltipDelay);
+        }
     });
     element.on('mouseout', () => {
         globals.activeHover = null;
-        $(`#tooltip-${name}`).tooltipster('close');
+        $(`#tooltip-${element.tooltipName}`).tooltipster('close');
     });
-    const fullContent = `<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;${content}</span>`;
-    $(`#tooltip-${name}`).tooltipster('instance').content(fullContent);
+    if (delayed) {
+        content = `<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;${content}</span>`;
+    }
+    $(`#tooltip-${element.tooltipName}`).tooltipster('instance').content(content);
 };
 
-const show = (element, name) => {
+const show = (element) => {
     // Don't do anything if we are no longer in the game
     if (globals.lobby.currentScreen !== 'game') {
         return;
@@ -32,7 +38,7 @@ const show = (element, name) => {
         return;
     }
 
-    const tooltip = $(`#tooltip-${name}`);
+    const tooltip = $(`#tooltip-${element.tooltipName}`);
     const pos = element.getAbsolutePosition();
     const tooltipX = element.getWidth() / 2 + pos.x;
     tooltip.css('left', tooltipX);
