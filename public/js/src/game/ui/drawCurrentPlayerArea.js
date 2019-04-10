@@ -128,7 +128,7 @@ module.exports = (clueAreaValues) => {
         x: arrowValues.x * winW,
         width: arrowValues.w * winW,
         height: currentPlayerAreaValues.h * winH,
-        cornerRadius: 0.005 * winW,
+        cornerRadius: 0.01 * winW,
         fill: 'black',
         opacity: 0.2,
     });
