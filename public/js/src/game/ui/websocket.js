@@ -361,21 +361,42 @@ commands.notifyList = (dataList) => {
     }
 };
 
-// This is used in shared replays to highlight a specific card
+// This is used in shared replays to highlight a specific card (or UI element)
 commands.replayIndicator = (data) => {
     if (globals.amSharedReplayLeader) {
         // We don't have to draw any indicator arrows;
-        // we already did it manually immediately after sending the "replayAction" message
+        // we already drew it after sending the "replayAction" message
         return;
     }
 
-    // Ensure that the card exists as a sanity-check
-    const card = globals.deck[data.order];
-    if (!card) {
-        return;
-    }
+    if (data.order >= 0) { // A card
+        // Ensure that the card exists as a sanity-check
+        // (the server does not validate the order that the leader sends)
+        const card = globals.deck[data.order];
+        if (!card) {
+            return;
+        }
+        card.toggleSharedReplayArrow();
+    } else { // Some other UI element
+        let element;
+        if (data.order === -1) { // The deck
+            element = globals.elements.drawDeck;
+        } else if (data.order === -2) { // The clue count
+            element = globals.elements.cluesNumberLabel;
+        } else if (data.order === -3) { // The pace
+            element = globals.elements.paceNumberLabel;
+        } else if (data.order === -4) { // The current efficiency
+            element = globals.elements.efficiencyNumberLabel;
+        } else if (data.order === -5) { // The minimum efficiency needed
+            element = globals.elements.efficiencyNumberLabelMinNeeded;
+        } else {
+            return;
+        }
 
-    card.toggleSharedReplayArrow();
+        const visible = !element.arrow.getVisible();
+        ui.hideAllArrows();
+        element.arrow.setVisible(visible);
+    }
 };
 
 // This is used in shared replays to specify who the leader is
