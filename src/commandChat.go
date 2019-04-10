@@ -96,7 +96,7 @@ func commandChat(s *Session, d *CommandData) {
 			s.Error("")
 			return
 		}
-	} else if !d.Spam {
+	} else if !d.OnlyDiscord {
 		if err := db.ChatLog.Insert(userID, d.Msg, d.Room); err != nil {
 			log.Error("Failed to insert a chat message into the database:", err)
 			s.Error("")
@@ -119,7 +119,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Send the chat message to the Discord "#general" channel if we are replicating a message
 	to := discordLobbyChannel
-	if d.Server && d.Spam {
+	if d.Spam {
 		// Send spammy messages to a separate channel
 		to = discordBotChannel
 	}

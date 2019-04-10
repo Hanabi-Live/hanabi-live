@@ -156,7 +156,6 @@ func chatServerSend(msg string) {
 		Msg:    msg,
 		Room:   "lobby",
 		Server: true,
-		Spam:   false, // So that it goes to the "#general" channel
 	})
 }
 
