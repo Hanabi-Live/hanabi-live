@@ -12,9 +12,9 @@ const websocket = require('./ui/websocket');
 exports.init = () => {
     let commandsToUse;
     if (window.location.pathname === '/dev2') {
-        commandsToUse = commands; // The new client
+        commandsToUse = commands; // The new client, defined below
     } else {
-        commandsToUse = websocket; // The old client
+        commandsToUse = websocket; // The old client, defined in the "ui/websocket.js" file
     }
 
     for (const command of Object.keys(commandsToUse)) {

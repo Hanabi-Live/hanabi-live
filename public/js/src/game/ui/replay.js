@@ -35,7 +35,7 @@ const enter = () => {
 
     // Next, show the replay area and initialize some UI elements
     globals.elements.replayArea.show();
-    adjustShuttles();
+    adjustShuttles(true); // We want it to immediately snap to the end
     setVisibleButtons();
     globals.layers.UI.batchDraw();
 };
@@ -275,10 +275,10 @@ exports.barDrag = function barDrag(pos) {
     };
 };
 
-const positionReplayShuttle = (shuttle, tween, turn) => {
+const positionReplayShuttle = (shuttle, tween, turn, fast) => {
     const w = shuttle.getParent().getWidth() - shuttle.getWidth();
     const x = turn * w / globals.replayMax;
-    if (globals.animateFast) {
+    if (globals.animateFast || fast) {
         shuttle.setX(x);
     } else {
         if (tween) {
@@ -293,7 +293,7 @@ const positionReplayShuttle = (shuttle, tween, turn) => {
     }
 };
 
-const adjustShuttles = () => {
+const adjustShuttles = (fast) => {
     const shuttle = globals.elements.replayShuttle;
     const shuttleTween = globals.elements.replayShuttleTween;
     const shuttleShared = globals.elements.replayShuttleShared;
@@ -323,13 +323,13 @@ const adjustShuttles = () => {
 
     // Adjust the shuttles along the X axis based on the current turn
     // If it is smaller, we need to nudge it to the right a bit in order to center it
-    positionReplayShuttle(shuttleShared, shuttleSharedTween, globals.sharedReplayTurn);
+    positionReplayShuttle(shuttleShared, shuttleSharedTween, globals.sharedReplayTurn, fast);
     if (smaller) {
         const diffX = shuttleShared.getWidth() - shuttle.getWidth();
         const adjustment = diffX / 2;
         shuttle.setX(shuttleShared.getX() + adjustment);
     } else {
-        positionReplayShuttle(shuttle, shuttleTween, globals.replayTurn);
+        positionReplayShuttle(shuttle, shuttleTween, globals.replayTurn, fast);
     }
 };
 exports.adjustShuttles = adjustShuttles;
