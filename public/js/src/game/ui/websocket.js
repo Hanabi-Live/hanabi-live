@@ -9,13 +9,14 @@ const hypothetical = require('./hypothetical');
 const notes = require('./notes');
 const replay = require('./replay');
 const timer = require('./timer');
+const ui = require('./ui');
 
 // Define a command handler map
 const commands = {};
 
 commands.action = (data) => {
     globals.lastAction = data;
-    globals.lobby.ui.handleAction.call(this, data);
+    ui.handleAction(data);
 
     if (globals.animateFast) {
         return;
@@ -57,7 +58,7 @@ commands.action = (data) => {
             globals.lobby.conn.send(globals.queuedAction.type, globals.queuedAction.data);
             globals.queuedAction = null;
             globals.preCluedCard = null;
-            globals.lobby.ui.stopAction();
+            ui.stopAction();
             globals.savedAction = null;
         }, 250);
     }
@@ -156,7 +157,7 @@ commands.hypoAction = (data) => {
     // We need to save this game state change for the purposes of the in-game hypothetical
     globals.hypoActions.push(notify);
 
-    globals.lobby.ui.handleNotify(notify);
+    ui.handleNotify(notify);
 };
 
 commands.hypoEnd = () => {
@@ -220,7 +221,7 @@ commands.init = (data) => {
 
     // Begin to load all of the card images
     globals.ImageLoader.start();
-    // (more initialization logic is found in the "HanabiUI.finishedLoadingImages()" function)
+    // (more initialization logic is found in the "finishedLoadingImages()" function)
 };
 
 /*
@@ -329,7 +330,7 @@ commands.notify = (data) => {
         !globals.inReplay // Unless we are in an in-game replay
         && !globals.gameOver // Unless it is the miscellaneous data sent at the end of a game
     ) {
-        globals.lobby.ui.handleNotify(data);
+        ui.handleNotify(data);
     }
 
     // If the game is over,
@@ -352,7 +353,7 @@ commands.notifyList = (dataList) => {
         if (data.type === 'strike') {
             // Record the turns that the strikes happen
             // (or else clicking on the strike squares won't work on a freshly initialized replay)
-            globals.lobby.ui.recordStrike(data);
+            ui.recordStrike(data);
         } else if (data.type === 'deckOrder') {
             // Record the deck order so that hypotheticals will work properly
             globals.deckOrder = data.deck;

@@ -10,7 +10,7 @@ exports.tooltips = require('./tooltips');
 // Imports
 const globals = require('../globals');
 const misc = require('../misc');
-const ui = require('./ui/ui');
+const HanabiUI = require('./ui/HanabiUI');
 
 $(document).ready(() => {
     // Disable the right-click context menu while in a game
@@ -27,7 +27,7 @@ exports.show = () => {
         // TODO we can initialize the stage and some graphics here
     } else {
         $('#game').fadeIn(globals.fadeTime);
-        globals.ui = new ui(globals, exports); // eslint-disable-line new-cap
+        globals.ui = new HanabiUI(globals, exports); // eslint-disable-line new-cap
         globals.chatUnread = 0;
     }
     globals.conn.send('hello');

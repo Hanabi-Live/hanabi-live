@@ -10,6 +10,7 @@ const globals = require('./globals');
 const graphics = require('./graphics');
 const HanabiCardInit = require('./HanabiCardInit');
 const notes = require('./notes');
+const ui = require('./ui');
 
 // Constants
 const sharedReplayArrowColor = '#ffdf00'; // Yellow
@@ -445,7 +446,7 @@ class HanabiCard extends graphics.Group {
         );
         // (if the arrow is showing but is a different kind of arrow,
         // then just overwrite the existing arrow)
-        globals.lobby.ui.showClueMatch(-1);
+        ui.hideAllArrows();
         this.setArrow(visible, null, null);
     }
 
@@ -480,8 +481,7 @@ class HanabiCard extends graphics.Group {
         // Redraw the card
         this.setBareImage();
 
-        // Hide any existing arrows on all cards
-        globals.lobby.ui.showClueMatch(-1);
+        ui.hideAllArrows();
 
         // Unflip the arrow, if it is flipped
         this.initArrowLocation();

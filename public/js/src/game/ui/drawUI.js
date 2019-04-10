@@ -3,6 +3,7 @@
 */
 
 // Imports
+const Arrow = require('./Arrow');
 const Button = require('./Button');
 const ButtonGroup = require('./ButtonGroup');
 const CardDeck = require('./CardDeck');
@@ -26,6 +27,7 @@ const stats = require('./stats');
 const timer = require('./timer');
 const TimerDisplay = require('./TimerDisplay');
 const tooltips = require('./tooltips');
+const ui = require('./ui');
 
 // Variables
 let winW;
@@ -1005,16 +1007,35 @@ const drawStatistics = () => {
     paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     paceContent += '(For more information, click on the "Help" button in the lobby.)';
     tooltips.initDelayed(paceTextLabel, 'pace', paceContent);
+    paceTextLabel.on('click', () => {
 
-    globals.elements.paceNumberLabel = basicNumberLabel.clone({
+    });
+
+    const paceNumberLabel = basicNumberLabel.clone({
         text: '-',
         x: 0.9 * winW,
         y: 0.54 * winH,
         fontSize: 0.02 * winH,
         listening: true,
     });
-    globals.layers.UI.add(globals.elements.paceNumberLabel);
-    tooltips.initDelayed(globals.elements.paceNumberLabel, 'pace', paceContent);
+    globals.layers.UI.add(paceNumberLabel);
+    paceNumberLabel.arrow = new Arrow({
+        x: paceNumberLabel.getX() + (0.01 * winW),
+        y: paceNumberLabel.getY() + (0.005 * winH),
+        scale: {
+            x: 0.35,
+            y: 0.15,
+        },
+    });
+    globals.layers.card.add(paceNumberLabel.arrow);
+    paceNumberLabel.on('click', (event) => {
+        if (event.evt.which !== 3) { // Right-click
+            return;
+        }
+        paceNumberLabel.arrow.setVisible(!paceNumberLabel.arrow.getVisible());
+        globals.layers.card.batchDraw();
+    });
+    globals.elements.paceNumberLabel = paceNumberLabel;
 
     const efficiencyTextLabel = basicTextLabel.clone({
         text: 'Efficiency',
@@ -1047,7 +1068,6 @@ const drawStatistics = () => {
         listening: true,
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabel);
-    tooltips.initDelayed(globals.elements.efficiencyNumberLabel, 'efficiency', efficiencyContent);
 
     const minEfficiency = stats.getMinEfficiency();
     globals.elements.efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
@@ -1061,7 +1081,6 @@ const drawStatistics = () => {
         listening: true,
     });
     globals.layers.UI.add(globals.elements.efficiencyNumberLabelMinNeeded);
-    tooltips.initDelayed(globals.elements.efficiencyNumberLabelMinNeeded, 'efficiency', efficiencyContent);
 };
 
 const drawDiscardArea = () => {
@@ -1305,7 +1324,7 @@ const drawClueArea = () => {
     });
     globals.elements.giveClueButton.setEnabled(false);
     globals.elements.clueArea.add(globals.elements.giveClueButton);
-    globals.elements.giveClueButton.on('click tap', globals.lobby.ui.giveClue);
+    globals.elements.giveClueButton.on('click tap', ui.giveClue);
 
     globals.elements.clueArea.hide();
     globals.layers.UI.add(globals.elements.clueArea);

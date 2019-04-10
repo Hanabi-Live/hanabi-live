@@ -7,6 +7,7 @@
 const constants = require('../../constants');
 const globals = require('./globals');
 const graphics = require('./graphics');
+const ui = require('./ui');
 
 class LayoutChild extends graphics.Group {
     constructor() {
@@ -118,7 +119,7 @@ class LayoutChild extends graphics.Group {
             return;
         }
 
-        globals.lobby.ui.endTurn({
+        ui.endTurn({
             type: 'action',
             data: {
                 type: (draggedTo === 'playArea' ? constants.ACT.PLAY : constants.ACT.DISCARD),

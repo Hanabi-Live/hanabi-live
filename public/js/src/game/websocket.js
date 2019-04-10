@@ -7,44 +7,23 @@ const constants = require('../constants');
 const drawCards = require('./drawCards');
 const globals = require('../globals');
 const phaser = require('./phaser');
-
-const gameCommands = [
-    'action',
-    'advanced',
-    'boot',
-    'clock',
-    'connected',
-    'gameOver',
-    'hypoAction',
-    'hypoEnd',
-    'hypoStart',
-    'id',
-    'init',
-    'note',
-    'notes',
-    'notifyList',
-    'notify',
-    'replayIndicator',
-    'replayLeader',
-    'replayMorph',
-    'replaySound',
-    'replayTurn',
-    'reveal',
-    'spectators',
-];
+const websocket = require('./ui/websocket');
 
 exports.init = () => {
-    for (const command of gameCommands) {
+    let commandsToUse;
+    if (window.location.pathname === '/dev2') {
+        commandsToUse = commands; // The new client
+    } else {
+        commandsToUse = websocket; // The old client
+    }
+
+    for (const command of Object.keys(commandsToUse)) {
         globals.conn.on(command, (data) => {
             if (globals.currentScreen !== 'game') {
                 return;
             }
 
-            if (window.location.pathname === '/dev2') {
-                commands[command](data);
-            } else if (globals.ui !== null) {
-                globals.ui.handleWebsocket(command, data);
-            }
+            commandsToUse[command](data);
         });
     }
 };

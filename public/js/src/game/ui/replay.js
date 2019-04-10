@@ -7,6 +7,7 @@ const constants = require('../../constants');
 const globals = require('./globals');
 const graphics = require('./graphics');
 const stats = require('./stats');
+const ui = require('./ui');
 
 /*
     Main replay functions
@@ -30,7 +31,7 @@ const enter = () => {
     }
 
     // Hide the UI elements that overlap with the replay area
-    globals.lobby.ui.stopAction();
+    ui.stopAction();
 
     // Next, show the replay area and initialize some UI elements
     globals.elements.replayArea.show();
@@ -50,7 +51,7 @@ const exit = () => {
     globals.elements.replayArea.hide();
 
     if (globals.savedAction) {
-        globals.lobby.ui.handleAction(globals.savedAction);
+        ui.handleAction(globals.savedAction);
     }
     globals.elements.currentPlayerArea.setVisible(!globals.elements.clueArea.getVisible());
     if (globals.queuedAction !== null) {
@@ -116,7 +117,7 @@ const goto = (target, fast) => {
         }
 
         // Rebuild all notifies; this will correctly position cards and text
-        globals.lobby.ui.handleNotify(msg);
+        ui.handleNotify(msg);
 
         // Stop if you're at the current turn
         if (msg.type === 'turn' && msg.num === globals.replayTurn) {

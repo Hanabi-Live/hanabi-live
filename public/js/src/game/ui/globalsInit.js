@@ -52,7 +52,7 @@ module.exports = () => {
     globals.turn = 0;
     globals.currentPlayerIndex = 0;
     globals.endTurn = null; // Set when the final card is drawn
-    globals.deckSize = 0; // Set in the "HanabiUI.initCards()" function
+    globals.deckSize = 0; // Set in the "initCards()" function
     globals.indexOfLastDrawnCard = 0;
     globals.score = 0;
     globals.maxScore = 0;

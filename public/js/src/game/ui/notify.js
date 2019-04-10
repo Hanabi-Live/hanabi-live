@@ -9,16 +9,19 @@ const convert = require('./convert');
 const globals = require('./globals');
 const graphics = require('./graphics');
 const stats = require('./stats');
+const ui = require('./ui');
 
 // Define a command handler map
 const commands = {};
 
 commands.clue = (data) => {
+    // The clue comes from the server as an integer, so convert it to an object
+    const clue = convert.msgClueToClue(data.clue, globals.variant);
+
+    ui.hideAllArrows();
+
     globals.cluesSpentPlusStrikes += 1;
     stats.updateEfficiency(0);
-
-    const clue = convert.msgClueToClue(data.clue, globals.variant);
-    globals.lobby.ui.showClueMatch(-1);
 
     for (let i = 0; i < data.list.length; i++) {
         const card = globals.deck[data.list[i]];
@@ -337,7 +340,7 @@ commands.strike = (data) => {
     stats.updateEfficiency(0);
 
     // Record the turn that the strike happened and the card that was misplayed
-    globals.lobby.ui.recordStrike(data);
+    ui.recordStrike(data);
 
     // Animate the strike square fading in
     if (globals.animateFast) {

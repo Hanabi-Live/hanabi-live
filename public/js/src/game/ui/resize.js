@@ -61,7 +61,7 @@ const redraw = () => {
             msg = globals.replayLog[i];
 
             // Rebuild all notifies; this will correctly position cards and text
-            globals.lobby.ui.handleNotify(msg);
+            ui.handleNotify(msg);
 
             // Correctly record and handle whose turn it is
             if (msg.type === 'turn') {
@@ -71,7 +71,7 @@ const redraw = () => {
 
         // If it's your turn, setup the clue area
         if (whoseTurn === globals.playerUs && !globals.spectating) {
-            self.handleAction.call(self, globals.lastAction);
+            ui.handleAction(globals.lastAction);
         }
 
         // Setup the timers

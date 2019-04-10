@@ -11,6 +11,7 @@ const graphics = require('./graphics');
 const HanabiCardClick = require('./HanabiCardClick');
 const HanabiCardClickSpeedrun = require('./HanabiCardClickSpeedrun');
 const notes = require('./notes');
+const ui = require('./ui');
 
 exports.image = function image() {
     // Create the "bare" card image, which is a gray card with all the pips
@@ -244,7 +245,7 @@ exports.arrow = function arrow() {
             return;
         }
 
-        globals.lobby.ui.showClueMatch(-1);
+        ui.hideAllArrows();
     });
 };
 

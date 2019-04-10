@@ -8,6 +8,7 @@ const globals = require('./globals');
 const misc = require('../../misc');
 const notes = require('./notes');
 const replay = require('./replay');
+const ui = require('./ui');
 
 // Constants
 const { ACT } = constants;
@@ -98,7 +99,7 @@ const keydown = (event) => {
         && !event.metaKey
     ) {
         // The "giveClue()" function has validation inside of it
-        globals.lobby.ui.giveClue();
+        ui.giveClue();
         return;
     }
 
@@ -260,7 +261,7 @@ const action = (intendedPlay = true) => {
     }
 
     globals.lobby.conn.send('action', data);
-    globals.lobby.ui.stopAction();
+    ui.stopAction();
     globals.savedAction = null;
 };
 

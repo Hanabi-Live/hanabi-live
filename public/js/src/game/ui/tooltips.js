@@ -27,6 +27,11 @@ const show = (element, name) => {
         return;
     }
 
+    // Don't do anything if this element has an arrow that is showing
+    if (element.arrow && element.arrow.getVisible()) {
+        return;
+    }
+
     const tooltip = $(`#tooltip-${name}`);
     const pos = element.getAbsolutePosition();
     const tooltipX = element.getWidth() / 2 + pos.x;

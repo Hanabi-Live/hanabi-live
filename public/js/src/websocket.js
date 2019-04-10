@@ -161,7 +161,7 @@ const initCommands = () => {
         ) {
             if (globals.ui.globals.spectating && !globals.ui.globals.sharedReplay) {
                 // Pop up the chat window every time for spectators
-                globals.ui.toggleChat();
+                game.chat.toggle();
             } else {
                 // Do not pop up the chat window by default;
                 // instead, change the "Chat" button to say "Chat (1)"

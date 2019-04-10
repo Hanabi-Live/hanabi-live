@@ -6,6 +6,7 @@
 const constants = require('../../constants');
 const globals = require('./globals');
 const notes = require('./notes');
+const ui = require('./ui');
 
 module.exports = function clickSpeedrun(event) {
     if (
@@ -38,7 +39,7 @@ const clickSpeedrunLeft = (card, event) => {
         && !event.altKey
         && !event.metaKey
     ) {
-        globals.lobby.ui.endTurn({
+        ui.endTurn({
             type: 'action',
             data: {
                 type: constants.ACT.PLAY,
@@ -84,7 +85,7 @@ const clickSpeedrunLeft = (card, event) => {
         const value = globals.variant.clueColors.findIndex(
             variantColor => variantColor === color,
         );
-        globals.lobby.ui.endTurn({
+        ui.endTurn({
             type: 'action',
             data: {
                 type: constants.ACT.CLUE,
@@ -111,7 +112,7 @@ const clickSpeedrunRight = (card, event) => {
         if (globals.clues === 8) {
             return;
         }
-        globals.lobby.ui.endTurn({
+        ui.endTurn({
             type: 'action',
             data: {
                 type: constants.ACT.DISCARD,
@@ -131,7 +132,7 @@ const clickSpeedrunRight = (card, event) => {
         && !event.metaKey
     ) {
         globals.preCluedCard = card.order;
-        globals.lobby.ui.endTurn({
+        ui.endTurn({
             type: 'action',
             data: {
                 type: constants.ACT.CLUE,

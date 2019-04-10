@@ -1,227 +1,16 @@
+/*
+    Miscellaneous helper functions that apply to the entire UI generally
+*/
+
 // Imports
 const constants = require('../../constants');
 const convert = require('./convert');
-const drawCards = require('./drawCards');
-const drawUI = require('./drawUI');
 const globals = require('./globals');
-const globalsInit = require('./globalsInit');
-const graphics = require('./graphics');
-const HanabiCard = require('./HanabiCard');
 const hypothetical = require('./hypothetical');
-const LayoutChild = require('./LayoutChild');
-const Loader = require('./Loader');
-const keyboard = require('./keyboard');
 const notes = require('./notes');
 const notify = require('./notify');
-const stats = require('./stats');
-const timer = require('./timer');
-const websocket = require('./websocket');
 
-function HanabiUI(lobby, game) {
-    // Since the "HanabiUI" object is being reinstantiated,
-    // we need to explicitly reinitialize all varaibles (or else they will retain their old values)
-    globalsInit();
-    // (the keyboard functions can only be initialized once the clue buttons are drawn)
-    notes.init();
-    timer.init();
-
-    // Store references to the parent objects for later use
-    globals.lobby = lobby; // This is the "globals.js" in the root of the "src" directory
-    // It we name it "lobby" here to distinguish it from the UI globals;
-    // after more refactoring, we will eventually merge these objects to make it less confusing
-    globals.game = game; // This is the "game.js" in the root of the "game" directory
-    // We should also combine this with the UI object in the future
-
-    // Initialize the stage and show the loading screen
-    this.initStage();
-    globals.ImageLoader = new Loader(this.finishedLoadingImages);
-    this.showLoadingScreen();
-}
-
-// Initialize and size the stage depending on the window size
-HanabiUI.prototype.initStage = function initStage() {
-    globals.stage = new graphics.Stage({
-        container: 'game',
-    });
-
-    const ratio = 16 / 9;
-
-    let ww = window.innerWidth;
-    let wh = window.innerHeight;
-
-    if (ww < 640) {
-        ww = 640;
-    }
-    if (wh < 360) {
-        wh = 360;
-    }
-
-    let cw;
-    let ch;
-    if (ww < wh * ratio) {
-        cw = ww;
-        ch = ww / ratio;
-    } else {
-        ch = wh;
-        cw = wh * ratio;
-    }
-
-    cw = Math.floor(cw);
-    ch = Math.floor(ch);
-
-    if (cw > 0.98 * ww) {
-        cw = ww;
-    }
-    if (ch > 0.98 * wh) {
-        ch = wh;
-    }
-    globals.stage.setWidth(cw);
-    globals.stage.setHeight(ch);
-};
-
-HanabiUI.prototype.showLoadingScreen = function showLoadingScreen() {
-    const winW = globals.stage.getWidth();
-    const winH = globals.stage.getHeight();
-
-    const loadingLayer = new graphics.Layer();
-
-    const loadingLabel = new graphics.Text({
-        fill: globals.labelColor,
-        stroke: '#747278',
-        strokeWidth: 1,
-        text: 'Loading...',
-        align: 'center',
-        x: 0,
-        y: 0.7 * winH,
-        width: winW,
-        height: 0.05 * winH,
-        fontFamily: 'Arial',
-        fontStyle: 'bold',
-        fontSize: 0.05 * winH,
-    });
-    loadingLayer.add(loadingLabel);
-
-    const progresslabel = new graphics.Text({
-        fill: globals.labelColor,
-        stroke: '#747278',
-        strokeWidth: 1,
-        text: '0 / 0',
-        align: 'center',
-        x: 0,
-        y: 0.8 * winH,
-        width: winW,
-        height: 0.05 * winH,
-        fontFamily: 'Arial',
-        fontStyle: 'bold',
-        fontSize: 0.05 * winH,
-    });
-    loadingLayer.add(progresslabel);
-
-    globals.ImageLoader.progressCallback = (done, total) => {
-        progresslabel.setText(`${done}/${total}`);
-        loadingLayer.batchDraw();
-    };
-    globals.stage.add(loadingLayer);
-};
-
-HanabiUI.prototype.finishedLoadingImages = function finishedLoadingImages() {
-    // Build images for every card (with respect to the variant that we are playing)
-    drawCards.drawAll();
-
-    // Construct a list of all of the cards in the deck
-    globals.lobby.ui.initCardMap();
-
-    // Build all of the reusuable card objects
-    globals.lobby.ui.initCards();
-
-    // Draw the user interface
-    drawUI();
-
-    // Keyboard hotkeys can only be initialized once the clue buttons are drawn
-    keyboard.init();
-
-    // Tell the server that we are finished loading
-    globals.lobby.conn.send('ready');
-};
-
-HanabiUI.prototype.initCardMap = function initCardMap() {
-    for (const suit of globals.variant.suits) {
-        if (globals.variant.name.startsWith('Up or Down')) {
-            // 6 is an unknown rank, so we use 7 to represent a "START" card
-            globals.cardMap.set(`${suit.name}7`, 1);
-        }
-        for (let rank = 1; rank <= 5; rank++) {
-            // In a normal suit of Hanabi,
-            // there are three 1's, two 2's, two 3's, two 4's, and one five
-            let amountToAdd = 2;
-            if (rank === 1) {
-                amountToAdd = 3;
-                if (globals.variant.name.startsWith('Up or Down')) {
-                    amountToAdd = 1;
-                }
-            } else if (rank === 5) {
-                amountToAdd = 1;
-            }
-            if (suit.oneOfEach) {
-                amountToAdd = 1;
-            }
-
-            globals.cardMap.set(`${suit.name}${rank}`, amountToAdd);
-        }
-    }
-};
-
-HanabiUI.prototype.initCards = function initCards() {
-    globals.deckSize = stats.getTotalCardsInTheDeck();
-    for (let order = 0; order < globals.deckSize; order++) {
-        // First, created the "learned" card
-        globals.learnedCards.push({
-            revealed: false,
-        });
-
-        // Second, create the HanabiCard object
-        const card = new HanabiCard({
-            order,
-        });
-        globals.deck.push(card);
-
-        // Third, create the LayoutChild that will be the parent of the card
-        const child = new LayoutChild();
-        child.add(card);
-    }
-};
-
-HanabiUI.prototype.endTurn = function endTurn(action) {
-    if (globals.hypothetical) {
-        hypothetical.send(action);
-        globals.lobby.ui.stopAction();
-        return;
-    }
-
-    if (globals.ourTurn) {
-        globals.ourTurn = false;
-        globals.lobby.conn.send('action', action.data);
-        globals.lobby.ui.stopAction();
-    } else {
-        globals.queuedAction = action;
-        let text = 'Cancel Pre-';
-        if (globals.queuedAction.data.type === constants.ACT.CLUE) {
-            text += 'Clue';
-        } else if (globals.queuedAction.data.type === constants.ACT.PLAY) {
-            text += 'Play';
-        } else if (globals.queuedAction.data.type === constants.ACT.DISCARD) {
-            text += 'Discard';
-        }
-        globals.elements.premoveCancelButton.setText(text);
-        globals.elements.premoveCancelButton.show();
-        globals.elements.currentPlayerArea.hide();
-        globals.layers.UI.batchDraw();
-    }
-
-    globals.savedAction = null;
-};
-
-HanabiUI.prototype.handleAction = function handleAction(data) {
+exports.handleAction = (data) => {
     globals.savedAction = data;
 
     if (globals.inReplay) {
@@ -269,6 +58,44 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
         }
     }
 
+    const showClueMatch = (target, clue) => {
+        hideAllArrows();
+
+        let match = false;
+        for (let i = 0; i < globals.elements.playerHands[target].children.length; i++) {
+            const child = globals.elements.playerHands[target].children[i];
+            const card = child.children[0];
+
+            let touched = false;
+            if (clue.type === constants.CLUE_TYPE.RANK) {
+                if (
+                    clue.value === card.trueRank
+                    || (globals.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
+                ) {
+                    touched = true;
+                }
+            } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+                const clueColor = clue.value;
+                if (
+                    card.trueSuit === constants.SUIT.RAINBOW
+                    || card.trueSuit === constants.SUIT.DARKRAINBOW
+                    || card.trueSuit.clueColors.includes(clueColor)
+                ) {
+                    touched = true;
+                }
+            }
+
+            if (touched) {
+                match = true;
+                card.setArrow(true, null, clue);
+            } else {
+                card.setArrow(false, null, null);
+            }
+        }
+
+        return match;
+    };
+
     const checkClueLegal = () => {
         const target = globals.elements.clueTargetButtonGroup.getPressed();
         const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
@@ -279,7 +106,7 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
         }
 
         const who = target.targetIndex;
-        const match = globals.lobby.ui.showClueMatch(who, clueButton.clue);
+        const match = showClueMatch(who, clueButton.clue);
 
         // By default, only enable the "Give Clue" button if the clue "touched"
         // one or more cards in the hand
@@ -303,14 +130,14 @@ HanabiUI.prototype.handleAction = function handleAction(data) {
     globals.elements.clueTypeButtonGroup.on('change', checkClueLegal);
 };
 
-HanabiUI.prototype.stopAction = function stopAction() {
+const stopAction = () => {
     globals.elements.clueArea.hide();
     globals.elements.currentPlayerArea.hide();
     globals.elements.premoveCancelButton.hide();
     globals.elements.noDiscardLabel.hide();
     globals.elements.noDoubleDiscardLabel.hide();
 
-    globals.lobby.ui.showClueMatch(-1);
+    hideAllArrows();
     globals.elements.clueTargetButtonGroup.off('change');
     globals.elements.clueTypeButtonGroup.off('change');
 
@@ -328,61 +155,9 @@ HanabiUI.prototype.stopAction = function stopAction() {
     globals.elements.drawDeck.cardback.setDraggable(false);
     globals.elements.deckPlayAvailableLabel.hide();
 };
+exports.stopAction = stopAction;
 
-HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
-    // Hide all of the existing arrows on the cards
-    for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
-        globals.deck[i].setArrow(false, null, null);
-    }
-    globals.layers.card.batchDraw();
-
-    // Also hide the arrows on the other various UI elements
-    // TODO
-
-    // We supply this function with an argument of "-1" if we just want to
-    // clear the existing arrows and nothing else
-    if (target < 0) {
-        return false;
-    }
-
-    let match = false;
-    for (let i = 0; i < globals.elements.playerHands[target].children.length; i++) {
-        const child = globals.elements.playerHands[target].children[i];
-        const card = child.children[0];
-
-        let touched = false;
-        if (clue.type === constants.CLUE_TYPE.RANK) {
-            if (
-                clue.value === card.trueRank
-                || (globals.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
-            ) {
-                touched = true;
-            }
-        } else if (clue.type === constants.CLUE_TYPE.COLOR) {
-            const clueColor = clue.value;
-            if (
-                card.trueSuit === constants.SUIT.RAINBOW
-                || card.trueSuit === constants.SUIT.DARKRAINBOW
-                || card.trueSuit.clueColors.includes(clueColor)
-            ) {
-                touched = true;
-            }
-        }
-
-        if (touched) {
-            match = true;
-            card.setArrow(true, null, clue);
-        } else {
-            card.setArrow(false, null, null);
-        }
-    }
-
-    globals.layers.card.batchDraw();
-
-    return match;
-};
-
-HanabiUI.prototype.giveClue = function giveClue() {
+exports.giveClue = () => {
     const target = globals.elements.clueTargetButtonGroup.getPressed();
     const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
     if (
@@ -398,14 +173,10 @@ HanabiUI.prototype.giveClue = function giveClue() {
         return;
     }
 
-    // Erase the arrows
-    globals.lobby.ui.showClueMatch(target.targetIndex, {});
-
-    // Set the clue timer to prevent multiple clicks
-    globals.accidentalClueTimer = Date.now();
+    hideAllArrows();
 
     // Send the message to the server
-    globals.lobby.ui.endTurn({
+    this.endTurn({
         type: 'action',
         data: {
             type: constants.ACT.CLUE,
@@ -415,7 +186,50 @@ HanabiUI.prototype.giveClue = function giveClue() {
     });
 };
 
-HanabiUI.prototype.recordStrike = function recordStrike(data) {
+const hideAllArrows = () => {
+    // Hide arrows on all of the cards
+    for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
+        globals.deck[i].setArrow(false, null, null);
+    }
+
+    // Also hide the arrows on the other various UI elements
+    // TODO
+
+    globals.layers.card.batchDraw();
+};
+exports.hideAllArrows = hideAllArrows;
+
+exports.endTurn = (action) => {
+    if (globals.hypothetical) {
+        hypothetical.send(action);
+        stopAction();
+        return;
+    }
+
+    if (globals.ourTurn) {
+        globals.ourTurn = false;
+        globals.lobby.conn.send('action', action.data);
+        stopAction();
+    } else {
+        globals.queuedAction = action;
+        let text = 'Cancel Pre-';
+        if (globals.queuedAction.data.type === constants.ACT.CLUE) {
+            text += 'Clue';
+        } else if (globals.queuedAction.data.type === constants.ACT.PLAY) {
+            text += 'Play';
+        } else if (globals.queuedAction.data.type === constants.ACT.DISCARD) {
+            text += 'Discard';
+        }
+        globals.elements.premoveCancelButton.setText(text);
+        globals.elements.premoveCancelButton.show();
+        globals.elements.currentPlayerArea.hide();
+        globals.layers.UI.batchDraw();
+    }
+
+    globals.savedAction = null;
+};
+
+exports.recordStrike = (data) => {
     const i = data.num - 1;
     const strike = globals.elements.strikes[i];
     const strikeSquare = globals.elements.strikeSquares[i];
@@ -449,15 +263,7 @@ HanabiUI.prototype.recordStrike = function recordStrike(data) {
     strike.setFaded();
 };
 
-HanabiUI.prototype.handleWebsocket = function handleWebsocket(command, data) {
-    if (Object.prototype.hasOwnProperty.call(websocket, command)) {
-        websocket[command](data);
-    } else {
-        console.error(`A WebSocket function for the "${command}" command is not defined.`);
-    }
-};
-
-HanabiUI.prototype.handleNotify = function handleNotify(data) {
+exports.handleNotify = (data) => {
     // If a user is editing a note and an action in the game happens,
     // mark to make the tooltip go away as soon as they are finished editing the note
     if (notes.vars.editing !== null) {
@@ -477,28 +283,3 @@ HanabiUI.prototype.handleNotify = function handleNotify(data) {
         console.error(`A WebSocket notify function for the "${type}" command is not defined.`);
     }
 };
-
-HanabiUI.prototype.updateChatLabel = function updateChatLabel() {
-    let text = '💬';
-    if (globals.lobby.chatUnread > 0) {
-        text += ` (${globals.lobby.chatUnread})`;
-    }
-    globals.elements.chatButton.setText(text);
-    globals.layers.UI.batchDraw();
-};
-
-HanabiUI.prototype.toggleChat = function toggleChat() {
-    globals.game.chat.toggle();
-};
-
-HanabiUI.prototype.destroy = function destroy() {
-    keyboard.destroy();
-    timer.stop();
-    globals.stage.destroy();
-    // window.removeEventListener('resize', resizeCanvas, false);
-};
-
-// Expose the globals to functions in the "game" directory
-HanabiUI.prototype.globals = globals;
-
-module.exports = HanabiUI;
