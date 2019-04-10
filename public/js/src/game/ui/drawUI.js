@@ -1075,7 +1075,6 @@ const drawDiscardArea = () => {
         strokeWidth: 0.005 * winW,
         cornerRadius: 0.01 * winW,
         visible: false,
-        listening: true,
     });
     globals.layers.UI.add(globals.elements.noDiscardLabel);
 
@@ -1090,7 +1089,6 @@ const drawDiscardArea = () => {
         cornerRadius: 0.01 * winW,
         opacity: 0.75,
         visible: false,
-        listening: true,
     });
     globals.layers.UI.add(globals.elements.noDoubleDiscardLabel);
 
@@ -1114,7 +1112,6 @@ const drawDiscardArea = () => {
         height: 0.35 * winH,
         opacity: 0.2,
         image: globals.ImageLoader.get('trashcan'),
-        listening: true,
     });
     globals.layers.background.add(trashcan);
 
@@ -1131,14 +1128,6 @@ const drawDiscardArea = () => {
         && pos.x <= globals.elements.discardArea.getX() + globals.elements.discardArea.getWidth()
         && pos.y <= globals.elements.discardArea.getY() + globals.elements.discardArea.getHeight()
     );
-
-    // Initialize the tooltip
-    // (certain elements cover certain other elements,
-    // so just initialize it on multiple elements to ensure that the tooltip will always appear)
-    const discardContent = 'This is the discard pile. Both discarded and misplayed cards will be shown here.';
-    tooltips.initDelayed(globals.elements.noDiscardLabel, 'discard', discardContent);
-    tooltips.initDelayed(globals.elements.noDoubleDiscardLabel, 'discard', discardContent);
-    tooltips.initDelayed(trashcan, 'discard', discardContent);
 };
 
 const drawTimers = () => {
