@@ -11,10 +11,28 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 VERSION=$(git rev-list --count HEAD)
 printf "module.exports = $VERSION;\n" > "$DIR/public/js/src/version.js"
 
-# Add the NPM directory to the path
-NODE_VERSION_DIRS=(/root/.nvm/versions/node/*)
-NPM_BIN_DIR=${NODE_VERSION_DIRS[-1]}/bin
-export PATH=$NPM_BIN_DIR:$PATH
+# If we need to, add the NPM directory to the path
+# (the Golang process will probably not have it in the path by default)
+if [ ! hash npx 2>/dev/null ]; then
+    # MacOS only has Bash version 3, which does not have assosiative arrays,
+    # so the below check will not work
+    BASH_VERSION_FIRST_DIGIT=$(bash --version | sed -n 's/.*version \([0-9]\).*/\1/p')
+    if [ "$BASH_VERSION_FIRST_DIGIT" -lt "4" ]; then
+        echo "Failed to find the \"npx\" binary (on bash version $BASH_VERSION_FIRST_DIGIT)."
+        exit 1
+    fi
+
+    # Assume that Node Version Manager is being used on this system
+    # https://github.com/creationix/nvm
+    NODE_VERSION_DIRS=(/root/.nvm/versions/node/*)
+    NODE_VERSION_DIR="${NODE_VERSION_DIRS[-1]}"
+    if [ ! -d "$NODE_VERSION_DIR" ]; then
+        echo "Failed to find the \"npx\" binary (in the \"/root/.nvm/versions/node\" directory)."
+        exit 1
+    fi
+    NPM_BIN_DIR="$NODE_VERSION_DIR/bin"
+    export PATH=$NPM_BIN_DIR:$PATH
+fi
 
 # Run the Grunt runner to prepare the JavaScript and the CSS
 cd "$DIR/public/js"

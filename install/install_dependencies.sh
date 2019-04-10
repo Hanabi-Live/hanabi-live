@@ -7,6 +7,11 @@ set -x # Enable debugging
 # From: https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+# Ensure that the ".env" file exists
+if [ ! -f "$DIR/../.env" ]; then
+    cp "$DIR/../.env_template" "$DIR/../.env"
+fi
+
 # Install the Golang dependencies for the project
 cd "$DIR/../src"
 go get -u -v ./...
@@ -17,8 +22,3 @@ npm install
 
 # Build the client code
 "$DIR/../build_client.sh"
-
-# Ensure that the .env file exists
-if [ ! -f "$DIR/../.env" ]; then
-    cp "$DIR/../.env_template" "$DIR/../.env"
-fi

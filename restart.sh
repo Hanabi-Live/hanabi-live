@@ -11,9 +11,9 @@ export HOME=/root
 cd "$DIR/src"
 go install
 if [ $? -eq 0 ]; then
-	# The binary is called "src" by default, since the directory name is "src"
-	mv "$GOPATH/bin/src" "$GOPATH/bin/hanabi-live"
-	supervisorctl restart hanabi-live
+    # The binary is called "src" by default, since the directory name is "src"
+    mv "$GOPATH/bin/src" "$GOPATH/bin/hanabi-live"
+    supervisorctl restart hanabi-live
 else
-	echo "hanabi-live - Go compilation failed!"
+    echo "hanabi-live - Go compilation failed!"
 fi

@@ -150,22 +150,22 @@ const keydown = (event) => {
         && !event.metaKey
     ) {
         // Sound hotkeys
-        if (event.key === 'b') { // Alt + b
+        if (event.key === 'b' || event.key === '∫') { // Alt + b
             // This is used for fun in shared replays
             sharedReplaySendSound('buzz');
             return;
         }
-        if (event.key === 'h') { // Alt + h
+        if (event.key === 'h' || event.key === '˙') { // Alt + h
             // This is used for fun in shared replays
             sharedReplaySendSound('holy');
             return;
         }
-        if (event.key === 'n') { // Alt + n
+        if (event.key === 'n' || event.key === '˜') { // Alt + n
             // This is used for fun in shared replays
             sharedReplaySendSound('nooo');
             return;
         }
-        if (event.key === 'z') { // Alt + z
+        if (event.key === 'z' || event.key === 'Ω') { // Alt + z
             // This is used as a sound test
             globals.game.sounds.play('turn_us');
             return;
