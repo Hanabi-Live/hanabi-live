@@ -33,7 +33,7 @@ commands.clue = (data) => {
         } else if (clue.type === constants.CLUE_TYPE.COLOR) {
             card.hasPositiveColorClue = true;
         }
-        card.setIndicator(true, data.giver, clue);
+        card.setArrow(true, data.giver, clue);
         if (!globals.lobby.settings.realLifeMode) {
             card.cluedBorder.show();
         }
@@ -176,7 +176,7 @@ commands.draw = (data) => {
     globals.elements.playerHands[holder].add(child);
     globals.elements.playerHands[holder].moveToTop();
 
-    // Initialize the indicator arrow location
+    // Initialize the arrow location
     // (which has to be done after it is added to the hand,
     // since it depends on the location on the screen)
     card.initArrowLocation();

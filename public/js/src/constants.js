@@ -572,7 +572,7 @@ class Variant {
         this.showSuitNames = showSuitNames;
         // Dual-color variants will have triangles in the corner of the card to indicate what colors
         // the suit is composed of; if so, we will need to move the note indicator downwards
-        this.offsetCardIndicators = suits.some(
+        this.offsetCornerElements = suits.some(
             s => s !== exports.SUIT.RAINBOW
                 && s !== exports.SUIT.DARKRAINBOW
                 && s.clueColors.length > 1,

@@ -374,7 +374,7 @@ commands.replayIndicator = (data) => {
         return;
     }
 
-    card.toggleSharedReplayIndicator();
+    card.toggleSharedReplayArrow();
 };
 
 // This is used in shared replays to specify who the leader is

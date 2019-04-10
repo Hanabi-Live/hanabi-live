@@ -331,10 +331,13 @@ HanabiUI.prototype.stopAction = function stopAction() {
 
 HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
     // Hide all of the existing arrows on the cards
-    for (let i = 0; i < globals.deck.length; i++) {
-        globals.deck[i].setIndicator(false, null, null);
+    for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
+        globals.deck[i].setArrow(false, null, null);
     }
     globals.layers.card.batchDraw();
+
+    // Also hide the arrows on the other various UI elements
+    // TODO
 
     // We supply this function with an argument of "-1" if we just want to
     // clear the existing arrows and nothing else
@@ -368,9 +371,9 @@ HanabiUI.prototype.showClueMatch = function showClueMatch(target, clue) {
 
         if (touched) {
             match = true;
-            card.setIndicator(true, null, clue);
+            card.setArrow(true, null, clue);
         } else {
-            card.setIndicator(false, null, null);
+            card.setArrow(false, null, null);
         }
     }
 

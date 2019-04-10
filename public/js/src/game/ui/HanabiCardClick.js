@@ -74,9 +74,8 @@ const clickRight = (card, event) => {
             order: card.order,
         });
 
-        // Draw the indicator manually so that we don't have to wait for the
-        // client to server round-trip
-        card.toggleSharedReplayIndicator();
+        // Draw the arrow manually so that we don't have to wait for the client to server round-trip
+        card.toggleSharedReplayArrow();
 
         return;
     }
@@ -135,7 +134,7 @@ const clickRight = (card, event) => {
         && !event.metaKey
         && globals.sharedReplay === false
     ) {
-        card.toggleSharedReplayIndicator();
+        card.toggleSharedReplayArrow();
         return;
     }
 
@@ -161,7 +160,7 @@ const gotoTurn = (turn, order) => {
     replay.goto(turn, true);
 
     // Also indicate the card to make it easier to find
-    globals.deck[order].toggleSharedReplayIndicator();
+    globals.deck[order].toggleSharedReplayArrow();
 };
 
 

@@ -112,7 +112,7 @@ const show = (card) => {
 
     // If there is an clue arrow showing, it will overlap with the tooltip arrow,
     // so move it over to the right a little bit
-    if (card.indicatorGroup.visible()) {
+    if (card.arrow.visible()) {
         posX = pos.x + ((card.getWidth() * card.parent.scale().x / 2) / 2.5);
     }
 

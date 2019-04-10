@@ -12,7 +12,7 @@ const HanabiCardInit = require('./HanabiCardInit');
 const notes = require('./notes');
 
 // Constants
-const sharedReplayIndicatorArrowColor = '#ffdf00'; // Yellow
+const sharedReplayArrowColor = '#ffdf00'; // Yellow
 
 class HanabiCard extends graphics.Group {
     constructor(config) {
@@ -37,7 +37,7 @@ class HanabiCard extends graphics.Group {
         this.initImage();
         this.initBorder();
         this.initPips();
-        this.initIndicatorArrow();
+        this.initArrow();
         this.initNote();
         this.initEmpathy();
         this.initClick();
@@ -102,8 +102,8 @@ class HanabiCard extends graphics.Group {
         }
 
         // Hide the clue arrow
-        if (this.indicatorGroup) {
-            this.indicatorGroup.hide();
+        if (this.arrow) {
+            this.arrow.hide();
         }
     }
 
@@ -188,8 +188,8 @@ class HanabiCard extends graphics.Group {
         return HanabiCardInit.pips.call(this);
     }
 
-    initIndicatorArrow() {
-        return HanabiCardInit.indicatorArrow.call(this);
+    initArrow() {
+        return HanabiCardInit.arrow.call(this);
     }
 
     initArrowLocation() {
@@ -212,16 +212,16 @@ class HanabiCard extends graphics.Group {
         return HanabiCardInit.possibilities.call(this);
     }
 
-    setIndicator(visible, giver, clue) {
-        this.indicatorGroup.setVisible(visible);
+    setArrow(visible, giver, clue) {
+        this.arrow.setVisible(visible);
         if (visible) {
             if (clue === null) {
                 // This is a shared replay arrow, so don't draw the circle
-                this.indicatorCircle.hide();
-                this.indicatorText.hide();
-                const color = sharedReplayIndicatorArrowColor;
-                this.indicatorArrow.setStroke(color);
-                this.indicatorArrow.setFill(color);
+                this.arrow.circle.hide();
+                this.arrow.text.hide();
+                const color = sharedReplayArrowColor;
+                this.arrow.base.setStroke(color);
+                this.arrow.base.setFill(color);
             } else {
                 // Change the color of the arrow
                 let color;
@@ -232,35 +232,35 @@ class HanabiCard extends graphics.Group {
                     // "Freshly touched" cards use the default arrow color
                     color = 'white'; // The default color
                 }
-                this.indicatorArrow.setStroke(color);
-                this.indicatorArrow.setFill(color);
+                this.arrow.base.setStroke(color);
+                this.arrow.base.setFill(color);
 
                 // Clue arrows are white with a circle that shows the type of clue given
                 if (globals.variant.name.startsWith('Duck')) {
                     // Don't show the circle in Duck variants,
                     // since the clue types are supposed to be hidden
-                    this.indicatorCircle.hide();
+                    this.arrow.circle.hide();
                 } else {
-                    this.indicatorCircle.show();
+                    this.arrow.circle.show();
                     if (clue.type === constants.CLUE_TYPE.RANK) {
-                        this.indicatorCircle.setFill('black');
-                        this.indicatorText.setText(clue.value.toString());
-                        this.indicatorText.show();
+                        this.arrow.circle.setFill('black');
+                        this.arrow.text.setText(clue.value.toString());
+                        this.arrow.text.show();
                     } else if (clue.type === constants.CLUE_TYPE.COLOR) {
-                        this.indicatorCircle.setFill(clue.value.hexCode);
-                        this.indicatorText.hide();
+                        this.arrow.circle.setFill(clue.value.hexCode);
+                        this.arrow.text.hide();
                     }
                 }
 
-                if (this.indicatorTween) {
-                    this.indicatorTween.destroy();
+                if (this.arrowTween) {
+                    this.arrowTween.destroy();
                 }
                 if (globals.animateFast) {
                     // Just set the arrow in position
-                    this.indicatorGroup.setX(this.indicatorGroup.originalX);
-                    this.indicatorGroup.setY(this.indicatorGroup.originalY);
+                    this.arrow.setX(this.arrow.originalX);
+                    this.arrow.setY(this.arrow.originalY);
                 } else if (giver !== null) {
-                    this.animateIndicator(giver, globals.turn);
+                    this.animateArrow(giver, globals.turn);
                 }
             }
 
@@ -269,7 +269,7 @@ class HanabiCard extends graphics.Group {
                 // So, if the arrows are hovering over a card,
                 // it will not be clear which card the arrow is pointing to
                 // Thus, move the arrow to be flush with the card
-                this.indicatorGroup.setY(-this.getHeight() / 2 + 0.02 * globals.stage.getHeight());
+                this.arrow.setY(-this.getHeight() / 2 + 0.02 * globals.stage.getHeight());
             } else {
                 // Fix the bug where the arrows can be hidden by other cards
                 // (but ignore the discard pile because it has to be in a certain order)
@@ -283,7 +283,7 @@ class HanabiCard extends graphics.Group {
     }
 
     // Animate the arrow to fly from the player who gave the clue to the card
-    animateIndicator(giver, turn) {
+    animateArrow(giver, turn) {
         // Don't bother doing the animation if it is delayed by more than one turn
         if (globals.turn > turn + 1) {
             return;
@@ -297,32 +297,23 @@ class HanabiCard extends graphics.Group {
 
         // Delay the animation if the card is currently tweening to avoid buggy behavior
         if (this.tweening) {
-            this.indicatorGroup.setVisible(false);
+            this.arrow.setVisible(false);
             setTimeout(() => {
-                this.animateIndicator(giver, turn);
+                this.animateArrow(giver, turn);
             }, 10);
             return;
         }
-        this.indicatorGroup.setVisible(true);
+        this.arrow.setVisible(true);
 
-        // Get the center position of the clue giver's hand
+        // Start the arrow at the center position of the clue giver's hand
         const centerPos = globals.elements.playerHands[giver].getAbsoluteCenterPos();
+        this.arrow.setAbsolutePosition(centerPos);
 
-        // We need to adjust it to account for the size of the indicator arrow group
-        // Dividing by pi here is a complete hack; I don't know why the hand dimensions
-        // and indicator group dimensions are scaled differently by a factor of pi
-        const indW = this.indicatorGroup.getWidth() / Math.PI;
-        const indTheta = this.parent.parent.rotation / 180 * Math.PI;
-        centerPos.x -= indW / 2 * Math.cos(indTheta);
-        centerPos.y -= indW / 2 * Math.sin(indTheta);
-
-        this.indicatorGroup.setAbsolutePosition(centerPos);
-
-        this.indicatorTween = new graphics.Tween({
-            node: this.indicatorGroup,
+        this.arrowTween = new graphics.Tween({
+            node: this.arrow,
             duration: 0.5,
-            x: this.indicatorGroup.originalX,
-            y: this.indicatorGroup.originalY,
+            x: this.arrow.originalX,
+            y: this.arrow.originalY,
             easing: graphics.Easings.EaseOut,
         }).play();
     }
@@ -447,15 +438,15 @@ class HanabiCard extends graphics.Group {
     }
 
     // Toggle the yellow arrow that the leader uses in shared replays
-    toggleSharedReplayIndicator() {
+    toggleSharedReplayArrow() {
         const visible = !(
-            this.indicatorGroup.visible()
-            && this.indicatorArrow.getFill() === sharedReplayIndicatorArrowColor
+            this.arrow.visible()
+            && this.arrow.base.getFill() === sharedReplayArrowColor
         );
         // (if the arrow is showing but is a different kind of arrow,
         // then just overwrite the existing arrow)
         globals.lobby.ui.showClueMatch(-1);
-        this.setIndicator(visible, null, null);
+        this.setArrow(visible, null, null);
     }
 
     reveal(suit, rank) {

@@ -3,6 +3,7 @@
 */
 
 // Imports
+const Arrow = require('./Arrow');
 const constants = require('../../constants');
 const drawCards = require('./drawCards');
 const globals = require('./globals');
@@ -198,68 +199,14 @@ exports.pips = function pips() {
     }
 };
 
-exports.indicatorArrow = function indicatorArrow() {
-    this.indicatorGroup = new graphics.Group({
+exports.arrow = function arrow() {
+    this.arrow = new Arrow({
         x: constants.CARDW / 2,
         y: constants.CARDH / 2,
-        offset: {
-            x: constants.CARDW / 2,
-            y: constants.CARDH / 2,
-        },
-        visible: false,
-        listening: false,
     });
-    this.add(this.indicatorGroup);
+    this.add(this.arrow);
 
-    this.indicatorArrowBorder = new graphics.Arrow({
-        points: [
-            constants.CARDW / 2,
-            0,
-            constants.CARDW / 2,
-            constants.CARDH / 2.5,
-        ],
-        pointerLength: 20,
-        pointerWidth: 20,
-        fill: 'black',
-        stroke: 'black',
-        strokeWidth: 40,
-        shadowBlur: 75,
-        shadowOpacity: 1,
-        listening: false,
-    });
-    this.indicatorGroup.add(this.indicatorArrowBorder);
-
-    this.indicatorArrowBorderEdge = new graphics.Line({
-        points: [
-            (constants.CARDW / 2) - 20,
-            0,
-            (constants.CARDW / 2) + 20,
-            0,
-        ],
-        fill: 'black',
-        stroke: 'black',
-        strokeWidth: 15,
-        listening: false,
-    });
-    this.indicatorGroup.add(this.indicatorArrowBorderEdge);
-
-    this.indicatorArrow = new graphics.Arrow({
-        points: [
-            constants.CARDW / 2,
-            0,
-            constants.CARDW / 2,
-            constants.CARDH / 2.5,
-        ],
-        pointerLength: 20,
-        pointerWidth: 20,
-        fill: 'white',
-        stroke: 'white',
-        strokeWidth: 25,
-        listening: false,
-    });
-    this.indicatorGroup.add(this.indicatorArrow);
-
-    this.indicatorCircle = new graphics.Circle({
+    this.arrow.circle = new graphics.Circle({
         x: 0.5 * constants.CARDW,
         y: 0.15 * constants.CARDH,
         radius: 45,
@@ -268,9 +215,9 @@ exports.indicatorArrow = function indicatorArrow() {
         strokeWidth: 5,
         listening: false,
     });
-    this.indicatorGroup.add(this.indicatorCircle);
+    this.arrow.add(this.arrow.circle);
 
-    this.indicatorText = new graphics.Text({
+    this.arrow.text = new graphics.Text({
         fontSize: 0.175 * constants.CARDH,
         fontFamily: 'Verdana',
         fill: 'white',
@@ -279,9 +226,9 @@ exports.indicatorArrow = function indicatorArrow() {
         align: 'center',
         listening: false,
     });
-    this.indicatorGroup.add(this.indicatorText);
+    this.arrow.add(this.arrow.text);
 
-    // Hide the indicator arrows when a user begins to drag a card in their hand
+    // Hide the arrows when a user begins to drag a card in their hand
     this.on('mousedown', (event) => {
         if (
             event.evt.which !== 1 // Dragging uses left click
@@ -289,7 +236,7 @@ exports.indicatorArrow = function indicatorArrow() {
             || globals.inReplay
             || globals.replay
             || globals.spectating
-            || !this.indicatorArrow.isVisible()
+            || !this.arrow.isVisible()
             || !this.parent.getDraggable()
             || this.isPlayed
             || this.isDiscarded
@@ -322,14 +269,15 @@ exports.arrowLocation = function arrowLocation() {
         textRot = 180;
     }
 
-    this.indicatorGroup.setY(y);
-    this.indicatorGroup.setRotation(rot);
-    this.indicatorText.setX(textX);
-    this.indicatorText.setY(textY);
-    this.indicatorText.setRotation(textRot);
 
-    this.indicatorGroup.originalX = this.indicatorGroup.getX();
-    this.indicatorGroup.originalY = y;
+    this.arrow.setY(y);
+    this.arrow.setRotation(rot);
+    this.arrow.text.setX(textX);
+    this.arrow.text.setY(textY);
+    this.arrow.text.setRotation(textRot);
+
+    this.arrow.originalX = this.arrow.getX();
+    this.arrow.originalY = y;
 };
 
 exports.note = function note() {
@@ -342,7 +290,7 @@ exports.note = function note() {
         // If the cards have triangles on the corners that show the color composition,
         // the images will overlap
         // Thus, we move it downwards if this is the case
-        y: (globals.variant.offsetCardIndicators ? noteY + 0.1 : noteY) * constants.CARDH,
+        y: (globals.variant.offsetCornerElements ? noteY + 0.1 : noteY) * constants.CARDH,
         align: 'center',
         image: globals.ImageLoader.get('note'),
         width: size,

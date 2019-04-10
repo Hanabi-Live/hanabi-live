@@ -709,7 +709,7 @@ const drawScoreArea = () => {
                 return;
             }
 
-            card.toggleSharedReplayIndicator();
+            card.toggleSharedReplayArrow();
         }
     }
     for (let i = 0; i < 3; i++) {
