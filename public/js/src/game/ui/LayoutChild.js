@@ -47,7 +47,8 @@ class LayoutChild extends graphics.Group {
         // Cards should only be draggable in specific circumstances
         const card = this.children[0];
         if (!card) {
-            // Rarely, due to a race condition we can get here without the card being defined
+            // Rarely, if the game is restarted when a tween is happening,
+            // we can get here without the card being defined
             return;
         }
         if (

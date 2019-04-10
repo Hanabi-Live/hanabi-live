@@ -54,21 +54,23 @@ const set = (order, note, send = true) => {
     }
     // Only examine the new text that they added
     const getDiff = (string, diffBy) => string.split(diffBy).join('');
-    const diff = getDiff(note, oldNote);
+    let diff = getDiff(note, oldNote);
+    diff = diff.replace(/\|+/g, ''); // Remove all pipes
+    diff = diff.trim(); // Remove all leading and trailing whitespace
     let shownWarning = false;
     for (const suit of globals.variant.suits) {
         for (const rank of globals.variant.ranks) {
             if (
-                diff.includes(`${suit.abbreviation.toLowerCase()}${rank}`) // e.g. b1
-                || diff.includes(`${suit.abbreviation.toUpperCase()}${rank}`) // e.g. B1
-                || diff.includes(`${suit.name}${rank}`) // e.g. Blue1
-                || diff.includes(`${suit.name.toLowerCase()}${rank}`) // e.g. blue1
-                || diff.includes(`${suit.name.toUpperCase()}${rank}`) // e.g. BLUE1
-                || diff.includes(`${rank}${suit.abbreviation.toLowerCase()}`) // e.g. 1b
-                || diff.includes(`${rank}${suit.abbreviation.toUpperCase()}`) // e.g. 1B
-                || diff.includes(`${rank}${suit.name}`) // e.g. 1Blue
-                || diff.includes(`${rank}${suit.name.toLowerCase()}`) // e.g. 1blue
-                || diff.includes(`${rank}${suit.name.toUpperCase()}`) // e.g. 1BLUE
+                diff === `${suit.abbreviation.toLowerCase()}${rank}` // e.g. b1
+                || diff === `${suit.abbreviation.toUpperCase()}${rank}` // e.g. B1
+                || diff === `${suit.name}${rank}` // e.g. Blue1
+                || diff === `${suit.name.toLowerCase()}${rank}` // e.g. blue1
+                || diff === `${suit.name.toUpperCase()}${rank}` // e.g. BLUE1
+                || diff === `${rank}${suit.abbreviation.toLowerCase()}` // e.g. 1b
+                || diff === `${rank}${suit.abbreviation.toUpperCase()}` // e.g. 1B
+                || diff === `${rank}${suit.name}` // e.g. 1Blue
+                || diff === `${rank}${suit.name.toLowerCase()}` // e.g. 1blue
+                || diff === `${rank}${suit.name.toUpperCase()}` // e.g. 1BLUE
             ) {
                 const mapIndex = `${suit.name}${rank}`;
                 if (globals.deck[order].possibleCards.get(mapIndex) === 0) {
