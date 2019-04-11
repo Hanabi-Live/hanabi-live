@@ -103,8 +103,10 @@ const getTextbox = (setting) => {
 };
 
 const checkChanged = (setting, value) => {
-    // If we are creating a new kind of table, store the setting on the server
+    // If we are creating a new kind of table than the last one one,
+    // update our local variables and then send the new setting to the server
     if (value !== globals.settings[setting]) {
+        globals.settings[setting] = value;
         globals.conn.send('setting', {
             name: setting,
             value: value.toString(), // The server expects all settings as strings
