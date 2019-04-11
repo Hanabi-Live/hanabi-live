@@ -78,6 +78,7 @@ class HanabiCard extends graphics.Group {
         this.turnPlayed = null;
         this.isMisplayed = false;
 
+        this.setOpacity(1);
         this.setListening(true);
         this.hideClues();
 
@@ -486,6 +487,7 @@ class HanabiCard extends graphics.Group {
         learnedCard.rank = rank;
 
         // Redraw the card
+        this.setOpacity(1);
         this.setBareImage();
 
         ui.hideAllArrows();
@@ -575,6 +577,16 @@ class HanabiCard extends graphics.Group {
         return num.total === num.discarded + 1;
     }
 
+    isAlreadyPlayed() {
+        // Don't bother calculating this for Up or Down variants
+        if (globals.variant.name.startsWith('Up or Down')) {
+            return false;
+        }
+
+        const numCardsPlayed = globals.elements.playStacks.get(this.trueSuit).children.length;
+        return this.trueRank <= numCardsPlayed;
+    }
+
     isPotentiallyPlayable() {
         // Don't bother calculating this for Up or Down variants
         if (globals.variant.name.startsWith('Up or Down')) {
@@ -583,8 +595,8 @@ class HanabiCard extends graphics.Group {
 
         let potentiallyPlayable = false;
         for (const suit of globals.variant.suits) {
-            const cardsPlayed = globals.elements.playStacks.get(suit).children.length;
-            const nextRankNeeded = cardsPlayed + 1;
+            const numCardsPlayed = globals.elements.playStacks.get(suit).children.length;
+            const nextRankNeeded = numCardsPlayed + 1;
             const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
             if (count > 0) {
                 potentiallyPlayable = true;

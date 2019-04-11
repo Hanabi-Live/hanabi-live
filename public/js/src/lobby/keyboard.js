@@ -45,9 +45,9 @@ $(document).keydown((event) => {
             $('#nav-buttons-pregame-leave').click();
         }
     } else if (
-        (event.altKey && (event.key === 'r' || event.key === '®'))
+        (event.altKey && (event.key === 'r' || event.key === '®')) // Alt + r
         || event.key === 'Escape'
-    ) { // Alt + r
+    ) {
         // Click on the "Return to Lobby" button
         // (either at the "game" screen or the "history" screen or the "scores" screen)
         if (globals.currentScreen === 'pregame') {

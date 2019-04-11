@@ -38,6 +38,7 @@ commands.clue = (data) => {
         }
         card.setArrow(true, data.giver, clue);
         if (!globals.lobby.settings.realLifeMode) {
+            card.setOpacity(1);
             card.cluedBorder.show();
         }
         card.applyClue(clue, true);
@@ -149,11 +150,15 @@ commands.draw = (data) => {
     card.trueSuit = suit; // This will be null if we don't know the suit
     card.trueRank = rank; // This will be null if we don't know the rank
     card.refresh();
-
-    // Hide the pips if we have full knowledge of the suit / rank
     if (suit && rank) {
+        // Hide the pips if we have full knowledge of the suit / rank
         card.suitPips.setVisible(false);
         card.rankPips.setVisible(false);
+
+        // Fade the card if it is already played
+        if (!globals.lobby.settings.realLifeMode && card.isAlreadyPlayed()) {
+            card.setOpacity(0.5);
+        }
     }
 
     // Each card is contained within a LayoutChild
@@ -219,6 +224,32 @@ commands.play = (data) => {
     card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();
     card.animateToPlayStacks();
+
+    for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
+        const card2 = globals.deck[i];
+        if (
+            card2.trueSuit === card.trueSuit
+            && card2.trueRank === card.trueRank
+            && !card2.isPlayed
+            && !card2.isDiscarded
+            && card2.numPositiveClues === 0
+            && card2.getOpacity() !== 0.5
+        ) {
+            if (card2.opacityTween) {
+                card2.opacityTween.destroy();
+            }
+            if (globals.animateFast) {
+                card2.setOpacity(0.5);
+                globals.layers.card.batchDraw();
+            } else {
+                card2.opacityTween = new graphics.Tween({
+                    node: card2,
+                    opacity: 0.5,
+                    duration: 0.5,
+                }).play();
+            }
+        }
+    }
 
     if (card.isClued()) {
         card.hideClues();
