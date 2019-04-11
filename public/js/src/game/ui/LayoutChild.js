@@ -99,6 +99,7 @@ class LayoutChild extends graphics.Group {
         if (
             draggedTo === 'playArea'
             && !globals.speedrun
+            && globals.ourTurn // Don't use warnings for preplays
             && !card.isPotentiallyPlayable()
         ) {
             let text = 'Are you sure you want to play this card?\n';

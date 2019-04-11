@@ -274,7 +274,10 @@ class HanabiCard extends graphics.Group {
             } else {
                 // Fix the bug where the arrows can be hidden by other cards
                 // (but ignore the discard pile because it has to be in a certain order)
-                this.getParent().getParent().moveToTop();
+                const hand = this.getParent().getParent();
+                if (hand) {
+                    hand.moveToTop();
+                }
             }
         }
 
