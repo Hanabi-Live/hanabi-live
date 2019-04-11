@@ -101,6 +101,7 @@ commands.discard = (data) => {
     if (data.failed && !globals.animateFast && !globals.speedrun) {
         // If this card was misplayed,
         // it will automatically tween to the discard pile after reaching the play stacks
+        card.doMisplayAnimation = true;
         card.animateToPlayStacks();
     } else {
         card.animateToDiscardPile();
@@ -144,15 +145,10 @@ commands.draw = (data) => {
     // So, since this card was just drawn, refresh all the variables on the card
     // (this is necessary because we might be rewinding in a replay)
     const card = globals.deck[order];
-    // This has to be set before the refresh so that the arrows are flipped properly
     card.holder = holder;
-    card.refresh();
-
-    // Set variables specific to this card
     card.trueSuit = suit; // This will be null if we don't know the suit
     card.trueRank = rank; // This will be null if we don't know the rank
-    card.initPossibilities();
-    card.setBareImage();
+    card.refresh();
 
     // Hide the pips if we have full knowledge of the suit / rank
     if (suit && rank) {

@@ -33,6 +33,8 @@ class HanabiCard extends graphics.Group {
         this.order = config.order;
         // The index of the player that holds this card (or null if played/discarded)
         this.holder = null;
+        this.trueSuit = null;
+        this.trueRank = null;
 
         // Initialize various elements/features of the card
         this.initImage();
@@ -54,8 +56,6 @@ class HanabiCard extends graphics.Group {
 
     // Erase all of the data on the card to make it like it was freshly drawn
     refresh() {
-        this.trueSuit = null;
-        this.trueRank = null;
         // Possible suits and ranks (based on clues given) are tracked separately
         // from knowledge of the true suit and rank
         this.possibleSuits = globals.variant.suits.slice();
@@ -64,6 +64,7 @@ class HanabiCard extends graphics.Group {
         this.possibleCards = new Map(globals.cardMap); // Start by cloning the "globals.cardMap"
         this.tweening = false;
         this.empathy = false;
+        this.doMisplayAnimation = false;
         this.numPositiveClues = 0;
         this.hasPositiveColorClue = false;
         this.hasPositiveRankClue = false;
@@ -106,6 +107,9 @@ class HanabiCard extends graphics.Group {
         if (this.arrow) {
             this.arrow.hide();
         }
+
+        this.initPossibilities();
+        this.setBareImage();
     }
 
     setBareImage() {

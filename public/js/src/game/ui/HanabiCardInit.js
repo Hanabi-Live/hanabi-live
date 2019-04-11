@@ -257,8 +257,15 @@ exports.arrowLocation = function arrowLocation() {
     let textRot = 0;
 
     if (
-        (!globals.lobby.settings.showKeldonUI && this.holder === globals.playerUs)
-        || (globals.lobby.settings.showKeldonUI && this.holder !== globals.playerUs)
+        (
+            !globals.lobby.settings.showKeldonUI
+            && this.holder === globals.playerUs
+        )
+        || (
+            globals.lobby.settings.showKeldonUI
+            && this.holder !== globals.playerUs
+            && this.holder !== null
+        )
     ) {
         // In BGA mode, invert the arrows on our hand
         // (so that it doesn't get cut off by the top of the screen)
@@ -269,7 +276,6 @@ exports.arrowLocation = function arrowLocation() {
         textY = 0.225 * constants.CARDH;
         textRot = 180;
     }
-
 
     this.arrow.setY(y);
     this.arrow.setRotation(rot);

@@ -106,14 +106,9 @@ class CardLayout extends graphics.Group {
                 // and animate the rest of the cards sliding over
                 const card = node.children[0];
                 card.tweening = true;
-                let justDiscarded = card.turnDiscarded === globals.turn - 1;
-                if (globals.speedrun) {
-                    // For speedruns, we get here a turn earlier,
-                    // since it doesn't tween to the play stacks
-                    justDiscarded = card.turnDiscarded === globals.turn;
-                }
-                if (card.isMisplayed && justDiscarded) {
+                if (card.doMisplayAnimation) {
                     // If this card just misplayed, do a special animation
+                    card.doMisplayAnimation = false;
                     node.setRotation(360);
                 }
                 node.tween = new graphics.Tween({
