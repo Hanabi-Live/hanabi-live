@@ -262,7 +262,7 @@ class HanabiCard extends graphics.Group {
                 }
                 if (globals.animateFast) {
                     // Just set the arrow in position
-                    this.arrow.setX(this.arrow.originalX);
+                    this.arrow.setX(constants.CARDW / 2);
                     this.arrow.setY(this.arrow.originalY);
                 } else if (giver !== null) {
                     this.animateArrow(giver, globals.turn);
@@ -274,7 +274,7 @@ class HanabiCard extends graphics.Group {
                 // So, if the arrows are hovering over a card,
                 // it will not be clear which card the arrow is pointing to
                 // Thus, move the arrow to be flush with the card
-                this.arrow.setY(-this.getHeight() / 2 + 0.02 * globals.stage.getHeight());
+                this.arrow.setY(0.02 * globals.stage.getHeight());
             } else {
                 // Fix the bug where the arrows can be hidden by other cards
                 // (but ignore the discard pile because it has to be in a certain order)
@@ -320,7 +320,7 @@ class HanabiCard extends graphics.Group {
         this.arrowTween = new graphics.Tween({
             node: this.arrow,
             duration: 0.5,
-            x: this.arrow.originalX,
+            x: constants.CARDW / 2,
             y: this.arrow.originalY,
             easing: graphics.Easings.EaseOut,
         }).play();
