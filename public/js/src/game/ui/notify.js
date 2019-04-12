@@ -38,7 +38,6 @@ commands.clue = (data) => {
         }
         card.setArrow(true, data.giver, clue);
         if (!globals.lobby.settings.realLifeMode) {
-            card.setOpacity(1);
             card.cluedBorder.show();
         }
         card.applyClue(clue, true);
