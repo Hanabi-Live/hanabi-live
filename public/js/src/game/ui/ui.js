@@ -49,12 +49,12 @@ exports.handleAction = (data) => {
     }
 
     if (globals.deckPlays) {
-        globals.elements.drawDeck.cardback.setDraggable(data.canBlindPlayDeck);
+        globals.elements.deck.cardBack.setDraggable(data.canBlindPlayDeck);
         globals.elements.deckPlayAvailableLabel.setVisible(data.canBlindPlayDeck);
 
         // Ensure the deck is above other cards and UI elements
         if (data.canBlindPlayDeck) {
-            globals.elements.drawDeck.moveToTop();
+            globals.elements.deck.moveToTop();
         }
     }
 
@@ -152,7 +152,7 @@ const stopAction = () => {
         }
     }
 
-    globals.elements.drawDeck.cardback.setDraggable(false);
+    globals.elements.deck.cardBack.setDraggable(false);
     globals.elements.deckPlayAvailableLabel.hide();
 };
 exports.stopAction = stopAction;
@@ -220,7 +220,7 @@ const hideAllArrows = () => {
 
     // Also hide the arrows on the other various UI elements
     const elements = [
-        globals.elements.drawDeck,
+        globals.elements.deck,
         globals.elements.cluesNumberLabel,
         globals.elements.paceNumberLabel,
         globals.elements.efficiencyNumberLabel,

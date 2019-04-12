@@ -161,7 +161,7 @@ const reset = () => {
     globals.postAnimationLayout = null;
     globals.elements.messagePrompt.setMultiText('');
     globals.elements.msgLogGroup.reset();
-    globals.elements.drawDeck.setCount(globals.deckSize);
+    globals.elements.deck.setCount(globals.deckSize);
     if (!globals.lobby.settings.realLifeMode) {
         globals.elements.clueLog.clear();
     }

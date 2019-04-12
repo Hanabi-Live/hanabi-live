@@ -237,7 +237,7 @@ exports.arrow = function arrow() {
             || globals.inReplay
             || globals.replay
             || globals.spectating
-            || !this.arrow.isVisible()
+            || !this.arrow.getVisible()
             || !this.parent.getDraggable()
             || this.isPlayed
             || this.isDiscarded
@@ -519,14 +519,14 @@ const scaleCardImage = (context, name, width, height, am) => {
     let sh = height;
     let steps = 0;
 
-    if (!globals.scaleCardImages[name]) {
-        globals.scaleCardImages[name] = [];
+    if (!globals.scaledCardImages[name]) {
+        globals.scaledCardImages[name] = [];
     }
 
     // This code was written by Keldon;
     // scaling the card down in steps of half in each dimension presumably improves the scaling
     while (dw < sw / 2) {
-        let scaleCanvas = globals.scaleCardImages[name][steps];
+        let scaleCanvas = globals.scaledCardImages[name][steps];
         sw = Math.floor(sw / 2);
         sh = Math.floor(sh / 2);
 
@@ -537,7 +537,7 @@ const scaleCardImage = (context, name, width, height, am) => {
 
             const scaleContext = scaleCanvas.getContext('2d');
             scaleContext.drawImage(src, 0, 0, sw, sh);
-            globals.scaleCardImages[name][steps] = scaleCanvas;
+            globals.scaledCardImages[name][steps] = scaleCanvas;
         }
 
         src = scaleCanvas;

@@ -1,7 +1,5 @@
 /*
     The Hanabi card grahpics are various HTML5 canvas drawings
-    The "buildCards()" function draws all of them and then stores them in the
-    "globals.ui.cardImages" object to be used later
 */
 
 // Imports
@@ -19,7 +17,9 @@ const {
 const xrad = CARDW * 0.08;
 const yrad = CARDH * 0.08;
 
-exports.buildCards = () => {
+// The "drawAll()" function draws all of the cards and then stores them in the
+// "globals.cardImages" object to be used later
+exports.drawAll = () => {
     // The gray suit represents cards of unknown suit
     const suits = globals.init.variant.suits.concat(SUIT.GRAY);
     for (let i = 0; i < suits.length; i++) {
@@ -535,14 +535,14 @@ exports.scaleCardImage = (context, name, width, height, am) => {
     let sh = height;
     let steps = 0;
 
-    if (!globals.ui.scaleCardImages[name]) {
-        globals.ui.scaleCardImages[name] = [];
+    if (!globals.ui.scaledCardImages[name]) {
+        globals.ui.scaledCardImages[name] = [];
     }
 
     // This code was written by Keldon;
     // scaling the card down in steps of half in each dimension presumably improves the scaling
     while (dw < sw / 2) {
-        let scaleCanvas = globals.ui.scaleCardImages[name][steps];
+        let scaleCanvas = globals.ui.scaledCardImages[name][steps];
         sw = Math.floor(sw / 2);
         sh = Math.floor(sh / 2);
 
@@ -552,14 +552,11 @@ exports.scaleCardImage = (context, name, width, height, am) => {
             scaleCanvas.height = sh;
 
             const scaleContext = scaleCanvas.getContext('2d');
-
             scaleContext.drawImage(src, 0, 0, sw, sh);
-
-            globals.ui.scaleCardImages[name][steps] = scaleCanvas;
+            globals.ui.scaledCardImages[name][steps] = scaleCanvas;
         }
 
         src = scaleCanvas;
-
         steps += 1;
     }
 

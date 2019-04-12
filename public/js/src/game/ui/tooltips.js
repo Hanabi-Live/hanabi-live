@@ -1,7 +1,7 @@
 // Imports
 const globals = require('./globals');
 
-exports.init = (element, content, delayed) => {
+exports.init = (element, content, delayed, customContent) => {
     element.on('mousemove', function mouseMove() {
         globals.activeHover = this;
         if (!delayed) {
@@ -16,7 +16,7 @@ exports.init = (element, content, delayed) => {
         globals.activeHover = null;
         $(`#tooltip-${element.tooltipName}`).tooltipster('close');
     });
-    if (delayed) {
+    if (!customContent) {
         content = `<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;${content}</span>`;
     }
     $(`#tooltip-${element.tooltipName}`).tooltipster('instance').content(content);

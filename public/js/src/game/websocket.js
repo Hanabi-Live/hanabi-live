@@ -47,11 +47,11 @@ commands.init = (data) => {
     globals.ui = {
         cards: [],
         cardImages: {},
-        scaleCardImages: {},
+        scaledCardImages: {},
     };
 
     // Build images for every card (with respect to the variant that we are playing)
-    drawCards.buildCards();
+    drawCards.drawAll();
 
     // Draw the user interface
     phaser.init();

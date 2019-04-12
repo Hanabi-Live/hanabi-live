@@ -8,20 +8,20 @@ const misc = require('../../misc');
 const tooltips = require('./tooltips');
 const ui = require('./ui');
 
-class CardDeck extends graphics.Group {
+class Deck extends graphics.Group {
     constructor(config) {
         config.listening = true;
         super(config);
 
-        this.cardback = new graphics.Image({
+        this.cardBack = new graphics.Image({
             x: 0,
             y: 0,
             width: this.getWidth(),
             height: this.getHeight(),
-            image: globals.cardImages[config.cardback],
+            image: globals.cardImages['deck-back'],
         });
-        this.add(this.cardback);
-        this.cardback.on('dragend.play', this.dragendPlay);
+        this.add(this.cardBack);
+        this.cardBack.on('dragend.play', this.dragendPlay);
 
         this.numLeftText = new graphics.Text({
             fill: 'white',
@@ -55,6 +55,49 @@ class CardDeck extends graphics.Group {
         });
 
         this.initTooltip();
+    }
+
+    add(child) {
+        graphics.Group.prototype.add.call(this, child);
+
+        if (!(child instanceof LayoutChild)) {
+            return;
+        }
+
+        child.remove();
+    }
+
+    doLayout() {
+        this.cardBack.setPosition({
+            x: 0,
+            y: 0,
+        });
+    }
+
+    setCount(count) {
+        this.numLeftText.setText(count.toString());
+
+        // When there are no cards left in the deck, remove the card-back
+        // and show a label that indicates how many turns are left before the game ends
+        this.cardBack.setVisible(count > 0);
+        let h = 0.3;
+        if (count === 0) {
+            h = 0.15;
+        }
+        this.numLeftText.setY(h * this.getHeight());
+        globals.elements.deckTurnsRemainingLabel1.setVisible(count === 0);
+        globals.elements.deckTurnsRemainingLabel2.setVisible(count === 0);
+
+        // If the game ID is showing,
+        // we want to center the deck count between it and the other labels
+        if (count === 0 && globals.elements.gameIDLabel.getVisible()) {
+            this.nudgeCountDownwards();
+        }
+    }
+
+    nudgeCountDownwards() {
+        const nudgeAmount = 0.07 * this.getHeight();
+        this.numLeftText.setY(this.numLeftText.getY() + nudgeAmount);
     }
 
     dragendPlay() {
@@ -94,53 +137,6 @@ class CardDeck extends graphics.Group {
         }
     }
 
-    add(child) {
-        graphics.Group.prototype.add.call(this, child);
-
-        if (!(child instanceof LayoutChild)) {
-            return;
-        }
-
-        child.remove();
-    }
-
-    setCardBack(cardback) {
-        this.cardback.setImage(globals.ImageLoader.get(cardback));
-    }
-
-    setCount(count) {
-        this.numLeftText.setText(count.toString());
-
-        // When there are no cards left in the deck, remove the card-back
-        // and show a label that indicates how many turns are left before the game ends
-        this.cardback.setVisible(count > 0);
-        let h = 0.3;
-        if (count === 0) {
-            h = 0.15;
-        }
-        this.numLeftText.setY(h * this.getHeight());
-        globals.elements.deckTurnsRemainingLabel1.setVisible(count === 0);
-        globals.elements.deckTurnsRemainingLabel2.setVisible(count === 0);
-
-        // If the game ID is showing,
-        // we want to center the deck count between it and the other labels
-        if (count === 0 && globals.elements.gameIDLabel.getVisible()) {
-            this.nudgeCountDownwards();
-        }
-    }
-
-    nudgeCountDownwards() {
-        const nudgeAmount = 0.07 * this.getHeight();
-        this.numLeftText.setY(this.numLeftText.getY() + nudgeAmount);
-    }
-
-    doLayout() {
-        this.cardback.setPosition({
-            x: 0,
-            y: 0,
-        });
-    }
-
     // The deck tooltip shows the custom options for this game, if any
     initTooltip() {
         // If the user hovers over the deck, show a tooltip that shows extra game options, if any
@@ -149,7 +145,7 @@ class CardDeck extends graphics.Group {
         this.tooltipName = 'deck';
         this.on('mousemove', function mouseMove() {
             // Don't do anything if we might be dragging the deck
-            if (globals.elements.deckPlayAvailableLabel.isVisible()) {
+            if (globals.elements.deckPlayAvailableLabel.getVisible()) {
                 return;
             }
 
@@ -203,7 +199,10 @@ class CardDeck extends graphics.Group {
 
         content += '</ul>';
         $('#tooltip-deck').tooltipster('instance').content(content);
+
+        // Store the content so it can be accessed by the faded rectangle tooltip
+        this.tooltipContent = content;
     }
 }
 
-module.exports = CardDeck;
+module.exports = Deck;

@@ -130,7 +130,7 @@ commands.draw = (data) => {
     // Remove one card from the deck
     globals.deckSize -= 1;
     globals.indexOfLastDrawnCard = order;
-    globals.elements.drawDeck.setCount(globals.deckSize);
+    globals.elements.deck.setCount(globals.deckSize);
 
     // Keep track of which cards we have learned for the purposes of
     // showing the true card face in the in-game replay
@@ -167,10 +167,10 @@ commands.draw = (data) => {
     // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
     // and the user rewinds to the beginning of the replay
     card.parent.setVisible(true);
-    const pos = globals.elements.drawDeck.cardback.getAbsolutePosition();
+    const pos = globals.elements.deck.cardBack.getAbsolutePosition();
     child.setAbsolutePosition(pos);
     child.setRotation(-globals.elements.playerHands[holder].getRotation());
-    const scale = globals.elements.drawDeck.cardback.getWidth() / constants.CARDW;
+    const scale = globals.elements.deck.cardBack.getWidth() / constants.CARDW;
     child.setScale({
         x: scale,
         y: scale,

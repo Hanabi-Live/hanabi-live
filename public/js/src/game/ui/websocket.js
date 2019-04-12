@@ -183,7 +183,7 @@ commands.id = (data) => {
 
     // Also move the card count label on the deck downwards
     if (globals.deckSize === 0) {
-        globals.elements.drawDeck.nudgeCountDownwards();
+        globals.elements.deck.nudgeCountDownwards();
     }
 
     globals.layers.UI2.batchDraw();
@@ -380,7 +380,7 @@ commands.replayIndicator = (data) => {
     } else { // Some other UI element
         let element;
         if (data.order === constants.REPLAY_ARROW_ORDER.DECK) {
-            element = globals.elements.drawDeck;
+            element = globals.elements.deck;
         } else if (data.order === constants.REPLAY_ARROW_ORDER.CLUES) {
             element = globals.elements.cluesNumberLabel;
         } else if (data.order === constants.REPLAY_ARROW_ORDER.PACE) {

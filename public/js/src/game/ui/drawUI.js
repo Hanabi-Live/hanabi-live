@@ -6,7 +6,7 @@
 const Arrow = require('./Arrow');
 const Button = require('./Button');
 const ButtonGroup = require('./ButtonGroup');
-const CardDeck = require('./CardDeck');
+const Deck = require('./Deck');
 const CardStack = require('./CardStack');
 const CardLayout = require('./CardLayout');
 const Clue = require('./Clue');
@@ -407,7 +407,7 @@ const drawBottomLeftButtons = () => {
     replayButton.setEnabled(false);
     replayButton.tooltipName = 'replay';
     const replayContent = 'Toggle the in-game replay, where you can rewind the game to see what happened on a specific turn.';
-    tooltips.init(replayButton, replayContent, true);
+    tooltips.init(replayButton, replayContent, true, false);
     globals.elements.replayButton = replayButton;
 
     // The restart button
@@ -426,7 +426,7 @@ const drawBottomLeftButtons = () => {
     });
     restartButton.tooltipName = 'restart';
     const restartContent = 'Automatically go into a new game with the current members of the shared replay (using the same game settings as this one).';
-    tooltips.init(restartButton, restartContent, true);
+    tooltips.init(restartButton, restartContent, true, false);
     globals.elements.restartButton = restartButton;
 
     // The chat button
@@ -444,7 +444,7 @@ const drawBottomLeftButtons = () => {
     });
     chatButton.tooltipName = 'chat';
     const chatContent = 'Toggle the in-game chat.';
-    tooltips.init(chatButton, chatContent, true);
+    tooltips.init(chatButton, chatContent, true, false);
     globals.elements.chatButton = chatButton;
 
     const shortButtonSpacing = 0.003;
@@ -469,7 +469,7 @@ const drawBottomLeftButtons = () => {
     lobbyButtonSmall.on('click tap', lobbyButtonClick);
     lobbyButtonSmall.tooltipName = 'lobby-small';
     const lobbySmallContent = 'Return to the lobby. (The game will not end and your teammates will have to wait for you to come back.)';
-    tooltips.init(lobbyButtonSmall, lobbySmallContent, true);
+    tooltips.init(lobbyButtonSmall, lobbySmallContent, true, false);
     globals.elements.lobbyButtonSmall = lobbyButtonSmall;
 
     const lobbyButtonBig = new Button({
@@ -484,7 +484,7 @@ const drawBottomLeftButtons = () => {
     lobbyButtonBig.on('click tap', lobbyButtonClick);
     lobbyButtonBig.tooltipName = 'lobby-big';
     const lobbyBigContent = 'Return to the lobby.';
-    tooltips.init(lobbyButtonBig, lobbyBigContent, true);
+    tooltips.init(lobbyButtonBig, lobbyBigContent, true, false);
     globals.elements.lobbyButtonBig = lobbyButtonBig;
 
     function lobbyButtonClick() {
@@ -520,7 +520,7 @@ const drawBottomLeftButtons = () => {
     });
     killButton.tooltipName = 'kill';
     const killContent = 'Terminate the game, ending it immediately.';
-    tooltips.init(killButton, killContent, true);
+    tooltips.init(killButton, killContent, true, false);
     globals.elements.killButton = killButton;
 };
 
@@ -533,7 +533,8 @@ const drawDeck = () => {
     };
 
     // This is the faded rectangle that is hidden until all of the deck has been depleted
-    const drawDeckRect = new graphics.Rect({
+    // (this has to be separate from the Deck object since it exists on a separate layer)
+    const deckRect = new graphics.Rect({
         x: deckValues.x * winW,
         y: deckValues.y * winH,
         width: deckValues.w * winW,
@@ -541,8 +542,9 @@ const drawDeck = () => {
         fill: 'black',
         opacity: 0.2,
         cornerRadius: 0.006 * winW,
+        listening: true,
     });
-    globals.layers.background.add(drawDeckRect);
+    globals.layers.background.add(deckRect);
 
     // Near the top of the deck, draw the database ID for the respective game
     // (in an ongoing game, this will not show)
@@ -566,15 +568,19 @@ const drawDeck = () => {
     });
     globals.layers.UI2.add(globals.elements.gameIDLabel);
 
-    globals.elements.drawDeck = new CardDeck({
+    globals.elements.deck = new Deck({
         x: deckValues.x * winW,
         y: deckValues.y * winH,
         width: deckValues.w * winW,
         height: deckValues.h * winH,
-        cardback: 'deck-back',
+        cardBack: 'deck-back',
         suits: globals.variant.suits,
     });
-    globals.layers.card.add(globals.elements.drawDeck);
+    globals.layers.card.add(globals.elements.deck);
+
+    // Also apply the card deck tooltip to the faded background rectangle
+    deckRect.tooltipName = 'deck';
+    tooltips.init(deckRect, globals.elements.deck.tooltipContent, true, true);
 
     // When there are no cards left in the deck,
     // show a label that indicates how many turns are left before the game ends
@@ -775,8 +781,8 @@ const drawScoreArea = () => {
         strikeSquare.tooltipName = 'strikes';
         strike.tooltipName = 'strikes';
         const strikesContent = 'This shows how many strikes (bombs) the team currently has.';
-        tooltips.init(strikeSquare, strikesContent, true);
-        tooltips.init(strike, strikesContent, true);
+        tooltips.init(strikeSquare, strikesContent, true, false);
+        tooltips.init(strike, strikesContent, true, false);
 
         // Click on the strike to go to the turn that the strike happened, if any
         // (and highlight the card that misplayed)
@@ -824,7 +830,7 @@ const drawSpectators = () => {
     });
     globals.layers.UI.add(spectatorsLabel);
     spectatorsLabel.tooltipName = 'spectators';
-    tooltips.init(spectatorsLabel, '', false);
+    tooltips.init(spectatorsLabel, '', false, true);
     globals.elements.spectatorsLabel = spectatorsLabel;
 
     globals.elements.spectatorsNumLabel = new graphics.Text({
@@ -910,7 +916,7 @@ const drawSharedReplay = () => {
 
     // Tooltip for the crown
     sharedReplayLeaderLabel.tooltipName = 'leader';
-    tooltips.init(sharedReplayLeaderLabel, '', false);
+    tooltips.init(sharedReplayLeaderLabel, '', false, true);
 
     // The user can right-click on the crown to pass the replay leader to an arbitrary person
     sharedReplayLeaderLabel.on('click', (event) => {
@@ -1016,7 +1022,7 @@ const drawStatistics = () => {
     paceContent += 'still having a chance to get the maximum score.<br />';
     paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     paceContent += '(For more information, click on the "Help" button in the lobby.)';
-    tooltips.init(paceTextLabel, paceContent, true);
+    tooltips.init(paceTextLabel, paceContent, true, false);
 
     const paceNumberLabel = basicNumberLabel.clone({
         text: '-',
@@ -1060,7 +1066,7 @@ const drawStatistics = () => {
     efficiencyContent += 'the current number of players and the current variant.<br />';
     efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     efficiencyContent += '(For more information, click on the "Help" button in the lobby.)';
-    tooltips.init(efficiencyTextLabel, efficiencyContent, true);
+    tooltips.init(efficiencyTextLabel, efficiencyContent, true, false);
 
     // We want the "/" to be part of the first label since we don't want
     // to change the color of it later on

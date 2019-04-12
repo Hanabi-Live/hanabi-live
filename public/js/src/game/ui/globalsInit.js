@@ -111,7 +111,7 @@ module.exports = () => {
         lobbyButtonBig: null,
         killButton: null,
         restartButton: null,
-        drawDeck: null,
+        deck: null,
         gameIDLabel: null,
         deckTurnsRemainingLabel1: null,
         deckTurnsRemainingLabel2: null,
@@ -183,7 +183,7 @@ module.exports = () => {
     };
     globals.activeHover = null; // The element that the mouse cursor is currently over
     globals.cardImages = {};
-    globals.scaleCardImages = {};
+    globals.scaledCardImages = {};
 
     // Pre-move feature
     globals.ourTurn = false;
