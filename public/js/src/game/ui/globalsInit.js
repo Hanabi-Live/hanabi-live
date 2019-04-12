@@ -45,7 +45,8 @@ module.exports = () => {
 
     // Game constants (set upon first initialization)
     globals.deck = []; // Contains HanabiCard objects in the order that they are dealt
-    globals.cardMap = new Map(); // Keys are e.g. "Blue1", values are the count of how many are left
+    // Keys are e.g. "Blue1", values are the count of how many are left
+    globals.cardsMap = new Map();
     globals.deckOrder = null; // Sent when the game ends
 
     // Game state variables (reset when rewinding in a replay)
@@ -59,6 +60,7 @@ module.exports = () => {
     globals.clues = 0;
     globals.cardsGotten = 0;
     globals.cluesSpentPlusStrikes = 0;
+    globals.playedCardsMap = new Map();
 
     // Replay variables
     globals.inReplay = false; // Whether or not the replay controls are currently showing

@@ -220,6 +220,9 @@ commands.play = (data) => {
     card.removeFromParent();
     card.animateToPlayStacks();
 
+    const key = `${card.trueSuit.name}${card.trueRank}`;
+    globals.playedCardsMap[key] = true;
+
     for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
         const card2 = globals.deck[i];
         if (

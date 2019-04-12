@@ -150,7 +150,7 @@ const finishedLoadingImages = () => {
     drawCards.drawAll();
 
     // Construct a list of all of the cards in the deck
-    initCardMap();
+    initCardsMap();
 
     // Build all of the reusuable card objects
     initCards();
@@ -165,11 +165,13 @@ const finishedLoadingImages = () => {
     globals.lobby.conn.send('ready');
 };
 
-const initCardMap = () => {
+const initCardsMap = () => {
     for (const suit of globals.variant.suits) {
         if (globals.variant.name.startsWith('Up or Down')) {
             // 6 is an unknown rank, so we use 7 to represent a "START" card
-            globals.cardMap.set(`${suit.name}7`, 1);
+            const key = `${suit.name}7`;
+            globals.cardsMap.set(key, 1);
+            globals.playedCardsMap.set(key, false);
         }
         for (let rank = 1; rank <= 5; rank++) {
             // In a normal suit of Hanabi,
@@ -187,7 +189,9 @@ const initCardMap = () => {
                 amountToAdd = 1;
             }
 
-            globals.cardMap.set(`${suit.name}${rank}`, amountToAdd);
+            const key = `${suit.name}${rank}`;
+            globals.cardsMap.set(key, amountToAdd);
+            globals.playedCardsMap.set(key, false);
         }
     }
 };

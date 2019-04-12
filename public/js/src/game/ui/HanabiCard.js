@@ -61,7 +61,7 @@ class HanabiCard extends graphics.Group {
         this.possibleSuits = globals.variant.suits.slice();
         this.possibleRanks = globals.variant.ranks.slice();
         // Possible cards (based on both clues given and cards seen) are also tracked separately
-        this.possibleCards = new Map(globals.cardMap); // Start by cloning the "globals.cardMap"
+        this.possibleCards = new Map(globals.cardsMap); // Start by cloning the "globals.cardsMap"
         this.tweening = false;
         this.empathy = false;
         this.doMisplayAnimation = false;
@@ -590,13 +590,14 @@ class HanabiCard extends graphics.Group {
     }
 
     isAlreadyPlayed() {
-        // Don't bother calculating this for Up or Down variants
+        // Don't bother calculating this for Up or Down variants,
+        // since all cards do not need to be played
         if (globals.variant.name.startsWith('Up or Down')) {
             return false;
         }
 
-        const numCardsPlayed = globals.elements.playStacks.get(this.trueSuit).children.length;
-        return this.trueRank <= numCardsPlayed;
+        const key = `${this.trueSuit.name}${this.trueRank}`;
+        return globals.playedCardsMap[key];
     }
 
     isPotentiallyPlayable() {
