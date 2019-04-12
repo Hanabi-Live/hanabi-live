@@ -88,7 +88,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 				} else {
 					setReplay = v
 				}
-				setReplayTurn = 0
+				setReplayTurn = 1
 			} else if match2 != nil {
 				if v, err := strconv.Atoi(match2[1]); err != nil {
 					log.Error("Failed to convert the first !replay argument to a number:", err)
@@ -103,6 +103,10 @@ func commandGameCreate(s *Session, d *CommandData) {
 					return
 				} else {
 					setReplayTurn = v
+				}
+				if setReplayTurn < 1 {
+					s.Warning("The replay turn must be greater than 0.")
+					return
 				}
 			} else {
 				s.Warning("Replays of specific games must be created in the form: " +
