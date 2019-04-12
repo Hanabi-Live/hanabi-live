@@ -333,7 +333,7 @@ func (g *Game) AnnounceGameResult() {
 	}
 	msg += " " + g.Options.Variant + " game"
 	if g.EndCondition == endConditionAbandoned {
-		msg += "."
+		msg += ". "
 	} else {
 		msg += " with a score of " + strconv.Itoa(g.Score) + ". "
 		if g.Score == g.GetPerfectScore() {
@@ -341,8 +341,8 @@ func (g *Game) AnnounceGameResult() {
 		} else if g.Score == 0 {
 			msg += bibleThump + " "
 		}
-		msg += "(id: " + strconv.Itoa(g.DatabaseID) + ", seed: " + g.Seed + ")"
 	}
+	msg += "(id: " + strconv.Itoa(g.DatabaseID) + ", seed: " + g.Seed + ")"
 
 	commandChat(nil, &CommandData{
 		Server: true,

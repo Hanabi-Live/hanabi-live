@@ -227,6 +227,18 @@ func (g *Game) NotifyTime() {
 	}
 }
 
+func (g *Game) NotifyPause() {
+	for _, p := range g.Players {
+		if p.Present {
+			p.Session.NotifyPause(g)
+		}
+	}
+
+	for _, sp := range g.Spectators {
+		sp.Session.NotifyPause(g)
+	}
+}
+
 func (g *Game) NotifySpectators() {
 	if !g.Visible {
 		return

@@ -21,6 +21,7 @@ type Player struct {
 	Hand               []*Card
 	Time               time.Duration
 	Notes              []string
+	RequestedPause     bool
 	Character          string
 	CharacterMetadata  int
 	CharacterMetadata2 int

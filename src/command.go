@@ -104,6 +104,7 @@ func commandInit() {
 	commandMap["ready"] = commandReady
 	commandMap["action"] = commandAction
 	commandMap["note"] = commandNote
+	commandMap["pause"] = commandPause
 	commandMap["replayAction"] = commandReplayAction
 
 	// Misc commands
