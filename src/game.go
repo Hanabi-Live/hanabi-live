@@ -58,6 +58,7 @@ type Game struct {
 	Chat       []*GameChatMessage // All of the in-game chat history
 	ChatRead   map[int]int        // A map of which users have read which messages
 	Paused     bool               // Only applicable to timed games
+	PauseTime  time.Time          // Only applicable to timed games
 
 	Hypothetical bool // Whether or not we are in a post-game hypothetical
 	HypoActions  []string
@@ -184,6 +185,11 @@ func (g *Game) CheckTimer(turn int, p *Player) {
 
 	// Check to see if we have made a move in the meanwhile
 	if turn != g.Turn {
+		return
+	}
+
+	// Check to see if the game is paused
+	if g.Paused {
 		return
 	}
 

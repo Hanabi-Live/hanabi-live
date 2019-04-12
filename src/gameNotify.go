@@ -218,12 +218,12 @@ func (g *Game) NotifyGameOver() {
 func (g *Game) NotifyTime() {
 	for _, p := range g.Players {
 		if p.Present {
-			p.Session.NotifyClock(g)
+			p.Session.NotifyTime(g)
 		}
 	}
 
 	for _, sp := range g.Spectators {
-		sp.Session.NotifyClock(g)
+		sp.Session.NotifyTime(g)
 	}
 }
 

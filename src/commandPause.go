@@ -2,9 +2,8 @@
 	Sent when the user pauses or unpauses the game
 	"data" example:
 	{
-		value: 'pause', // Can also be 'unpause' or 'pause-queue'
-		// ('pause-queue' will automatically pause the game when it gets to their turn,
-		// after a short delay)
+		value: 'pause', // Can also be 'unpause', 'pause-queue', 'pause-unqueue'
+		// ('pause-queue' will automatically pause the game when it gets to their turn)
 	}
 */
 
@@ -12,6 +11,7 @@ package main
 
 import (
 	"strconv"
+	"time"
 )
 
 func commandPause(s *Session, d *CommandData) {
@@ -49,29 +49,32 @@ func commandPause(s *Session, d *CommandData) {
 		return
 	}
 
+	// Queued pauses on their turn should be turned into normal pauses
+	if d.Value == "pause-queue" && g.ActivePlayer == i {
+		d.Value = "pause"
+	}
+
 	// Validate the value
-	if d.Value == "pause" || d.Value == "pause-queue" {
+	if d.Value == "pause" {
 		if g.Paused {
 			s.Warning("The game is already paused.")
 			return
 		}
-
-		if d.Value == "pause-queue" {
-			if g.ActivePlayer == i {
-				// A queued pause when
-				d.Value = "pause"
-			} else if p.RequestedPause {
-				s.Warning("You have already requested a pause when it gets to your turn.")
-				return
-			}
-		}
-
 	} else if d.Value == "unpause" {
 		if !g.Paused {
 			s.Warning("The game is not paused, so you cannot unpause.")
 			return
 		}
-
+	} else if d.Value == "pause-queue" {
+		if p.RequestedPause {
+			s.Warning("You have already requested a pause when it gets to your turn.")
+			return
+		}
+	} else if d.Value == "pause-unqueue" {
+		if !p.RequestedPause {
+			s.Warning("You have not requested a pause, so you cannot unqueue one.")
+			return
+		}
 	} else {
 		s.Warning("That is not a valid value.")
 		return
@@ -85,11 +88,25 @@ func commandPause(s *Session, d *CommandData) {
 		p.RequestedPause = true
 		return
 	}
+	if d.Value == "pause-unqueue" {
+		p.RequestedPause = false
+		return
+	}
 
 	if d.Value == "pause" {
 		g.Paused = true
+		g.PauseTime = time.Now()
 	} else if d.Value == "unpause" {
 		g.Paused = false
+
+		// Add the time elapsed during the pause to the time recorded when the turn began
+		// (because we use this as a differential to calculate how much time the player took when
+		// they end their turn)
+		g.TurnBeginTime = g.TurnBeginTime.Add(time.Since(g.PauseTime))
+
+		// Restart the function that will check to see if the current player has run out of time
+		// (since the existing function will return and do nothing if the game is paused)
+		go g.CheckTimer(g.Turn, g.Players[g.ActivePlayer])
 	}
 
 	g.NotifyPause()

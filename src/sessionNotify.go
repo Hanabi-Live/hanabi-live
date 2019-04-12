@@ -225,7 +225,7 @@ func (s *Session) NotifySound(g *Game, i int) {
 	s.Emit("sound", data)
 }
 
-func (s *Session) NotifyClock(g *Game) {
+func (s *Session) NotifyTime(g *Game) {
 	// Create the clock message
 	times := make([]int64, 0)
 	for i, p := range g.Players {
@@ -252,7 +252,12 @@ func (s *Session) NotifyClock(g *Game) {
 }
 
 func (s *Session) NotifyPause(g *Game) {
-
+	type PauseMessage struct {
+		Pause bool `json:"pause"`
+	}
+	s.Emit("pause", &PauseMessage{
+		Pause: g.Paused,
+	})
 }
 
 func (s *Session) NotifySpectators(g *Game) {

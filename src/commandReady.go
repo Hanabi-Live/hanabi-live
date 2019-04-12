@@ -89,7 +89,7 @@ func commandReady(s *Session, d *CommandData) {
 		s.NotifyConnected(g)
 
 		// Send them the current time for all player's clocks
-		s.NotifyClock(g)
+		s.NotifyTime(g)
 
 		// If this is the first turn, send them a sound so that they know the game started
 		if g.Turn == 0 {
