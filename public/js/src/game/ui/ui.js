@@ -9,6 +9,7 @@ const globals = require('./globals');
 const hypothetical = require('./hypothetical');
 const notes = require('./notes');
 const notify = require('./notify');
+const timer = require('./timer');
 
 exports.handleAction = (data) => {
     globals.savedAction = data;
@@ -317,4 +318,18 @@ exports.handleNotify = (data) => {
     } else {
         console.error(`A WebSocket notify function for the "${type}" command is not defined.`);
     }
+};
+
+exports.backToLobby = () => {
+    // Hide the tooltip, if showing
+    if (globals.activeHover) {
+        globals.activeHover.dispatchEvent(new MouseEvent('mouseout'));
+        globals.activeHover = null;
+    }
+
+    // Stop any timer-related callbacks
+    timer.stop();
+
+    globals.lobby.conn.send('gameUnattend');
+    globals.game.hide();
 };

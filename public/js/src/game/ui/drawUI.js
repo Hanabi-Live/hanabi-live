@@ -492,17 +492,7 @@ const drawBottomLeftButtons = () => {
         // and go to the lobby twice
         this.off('click tap');
 
-        // Hide the tooltip, if showing
-        if (globals.activeHover) {
-            globals.activeHover.dispatchEvent(new MouseEvent('mouseout'));
-            globals.activeHover = null;
-        }
-
-        // Stop any timer-related callbacks
-        timer.stop();
-
-        globals.lobby.conn.send('gameUnattend');
-        globals.game.hide();
+        ui.backToLobby();
     }
 
     // The kill button (which terminates the current game)
