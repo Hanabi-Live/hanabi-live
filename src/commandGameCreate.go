@@ -15,10 +15,11 @@ const (
 )
 
 var (
-	newGameID    = 1 // Start at 1 and increment for every game created
-	seedRegExp   = regexp.MustCompile(`^!seed (.+)$`)
-	replayRegExp = regexp.MustCompile(`^!replay (\d+) (\d+)$`)
-	dealRegExp   = regexp.MustCompile(`^!deal (.+)$`)
+	newGameID     = 1 // Start at 1 and increment for every game created
+	seedRegExp    = regexp.MustCompile(`^!seed (.+)$`)
+	replayRegExp1 = regexp.MustCompile(`^!replay (\d+)$`)
+	replayRegExp2 = regexp.MustCompile(`^!replay (\d+) (\d+)$`)
+	dealRegExp    = regexp.MustCompile(`^!deal (.+)$`)
 )
 
 func commandGameCreate(s *Session, d *CommandData) {
@@ -77,25 +78,36 @@ func commandGameCreate(s *Session, d *CommandData) {
 
 		} else if strings.HasPrefix(d.Name, "!replay") {
 			// !replay - Replay a specific game up to a specific turn
-			match := replayRegExp.FindStringSubmatch(d.Name)
-			if match == nil {
+			match1 := replayRegExp1.FindStringSubmatch(d.Name)
+			match2 := replayRegExp2.FindStringSubmatch(d.Name)
+			if match1 != nil {
+				if v, err := strconv.Atoi(match1[1]); err != nil {
+					log.Error("Failed to convert the !replay argument to a number:", err)
+					s.Error("Failed to create the game. Please contact an administrator.")
+					return
+				} else {
+					setReplay = v
+				}
+				setReplayTurn = 0
+			} else if match2 != nil {
+				if v, err := strconv.Atoi(match2[1]); err != nil {
+					log.Error("Failed to convert the first !replay argument to a number:", err)
+					s.Error("Failed to create the game. Please contact an administrator.")
+					return
+				} else {
+					setReplay = v
+				}
+				if v, err := strconv.Atoi(match2[2]); err != nil {
+					log.Error("Failed to convert the second !replay argument to a number:", err)
+					s.Error("Failed to create the game. Please contact an administrator.")
+					return
+				} else {
+					setReplayTurn = v
+				}
+			} else {
 				s.Warning("Replays of specific games must be created in the form: " +
 					"!replay [game ID] [turn number]")
 				return
-			}
-			if v, err := strconv.Atoi(match[1]); err != nil {
-				log.Error("Failed to convert the first argument to a number:", err)
-				s.Error("Failed to create the game. Please contact an administrator.")
-				return
-			} else {
-				setReplay = v
-			}
-			if v, err := strconv.Atoi(match[2]); err != nil {
-				log.Error("Failed to convert the second argument to a number:", err)
-				s.Error("Failed to create the game. Please contact an administrator.")
-				return
-			} else {
-				setReplayTurn = v
 			}
 
 			// We have to minus the turn by one since turns are stored on the server starting at 0
