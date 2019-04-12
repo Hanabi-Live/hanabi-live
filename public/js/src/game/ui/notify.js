@@ -154,11 +154,6 @@ commands.draw = (data) => {
         // Hide the pips if we have full knowledge of the suit / rank
         card.suitPips.setVisible(false);
         card.rankPips.setVisible(false);
-
-        // Fade the card if it is already played
-        if (!globals.lobby.settings.realLifeMode && card.isAlreadyPlayed()) {
-            card.setOpacity(0.5);
-        }
     }
 
     // Each card is contained within a LayoutChild
@@ -228,7 +223,8 @@ commands.play = (data) => {
     for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
         const card2 = globals.deck[i];
         if (
-            card2.trueSuit === card.trueSuit
+            !globals.lobby.settings.realLifeMode
+            && card2.trueSuit === card.trueSuit
             && card2.trueRank === card.trueRank
             && !card2.isPlayed
             && !card2.isDiscarded

@@ -78,7 +78,6 @@ class HanabiCard extends graphics.Group {
         this.turnPlayed = null;
         this.isMisplayed = false;
 
-        this.setOpacity(1);
         this.setListening(true);
         this.hideClues();
 
@@ -180,6 +179,20 @@ class HanabiCard extends graphics.Group {
         // Show or hide the pips
         this.suitPips.setVisible(suitToShow === constants.SUIT.GRAY);
         this.rankPips.setVisible(rankToShow === 6);
+
+        // Fade the card if it fully revealed and already played
+        let opacity = 1;
+        if (
+            !globals.lobby.settings.realLifeMode
+            && suitToShow !== constants.SUIT.GRAY
+            && rankToShow !== 6
+            // (we can't use trueSuit/trueRank because
+            // we don't want to fade the cards in Empathy-mode)
+            && this.isAlreadyPlayed()
+        ) {
+            opacity = 0.5;
+        }
+        this.setOpacity(opacity);
     }
 
     initImage() {
@@ -487,7 +500,6 @@ class HanabiCard extends graphics.Group {
         learnedCard.rank = rank;
 
         // Redraw the card
-        this.setOpacity(1);
         this.setBareImage();
 
         ui.hideAllArrows();
