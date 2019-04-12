@@ -127,7 +127,10 @@ function setTickingDownTime(timer) {
 
     // Update display
     timer.setTimerText(displayString);
-    timer.getLayer().batchDraw();
+    const layer = timer.getLayer();
+    if (layer) {
+        layer.batchDraw();
+    }
 
     // Play a sound to indicate that the current player is almost out of time
     // Do not play it more frequently than about once per second

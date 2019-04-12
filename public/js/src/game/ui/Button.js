@@ -63,14 +63,20 @@ class Button extends graphics.Group {
 
         const resetButton = () => {
             this.background.setFill('black');
-            this.background.getLayer().batchDraw();
+            const layer = this.getLayer();
+            if (layer) {
+                layer.batchDraw();
+            }
 
             this.background.off('mouseup');
             this.background.off('mouseout');
         };
         this.background.on('mousedown', () => {
             this.background.setFill('#888888');
-            this.background.getLayer().batchDraw();
+            const layer = this.getLayer();
+            if (layer) {
+                layer.batchDraw();
+            }
 
             this.background.on('mouseout', () => {
                 resetButton();
@@ -99,7 +105,7 @@ class Button extends graphics.Group {
         this.background.setListening(enabled);
 
         const layer = this.getLayer();
-        if (layer !== null) {
+        if (layer) {
             layer.batchDraw();
         }
     }
@@ -108,7 +114,7 @@ class Button extends graphics.Group {
         this.pressed = pressed;
         this.background.setFill(pressed ? '#cccccc' : 'black');
         const layer = this.getLayer();
-        if (layer !== null) {
+        if (layer) {
             layer.batchDraw();
         }
     }

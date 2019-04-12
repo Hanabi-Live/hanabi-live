@@ -87,16 +87,17 @@ class ClueEntry extends graphics.Group {
             globals.elements.clueLog.showMatches(null);
 
             this.background.setOpacity(0.4);
-            this.background.getLayer().batchDraw();
+            const layer = this.getLayer();
+            if (layer) {
+                layer.batchDraw();
+            }
         });
         this.background.on('mouseout', () => {
-            // Fix the bug where the mouseout can happen after the clue has been destroyed
-            if (this.background.getLayer() === null) {
-                return;
-            }
-
             this.background.setOpacity(0.1);
-            this.background.getLayer().batchDraw();
+            const layer = this.getLayer();
+            if (layer) {
+                layer.batchDraw();
+            }
         });
 
         // Click an entry in the clue log to go to that turn in the replay
