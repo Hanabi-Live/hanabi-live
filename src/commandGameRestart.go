@@ -46,7 +46,7 @@ func commandGameRestart(s *Session, d *CommandData) {
 	// Validate that all of the players who played the game are currently spectating
 	// the shared replay
 	playerSessions := make([]*Session, 0)
-	otherSessions := make([]*Session, 0)
+	spectatorSessions := make([]*Session, 0)
 	for _, sp := range g.Spectators {
 		playedInOriginalGame := false
 		for _, p := range g.Players {
@@ -58,7 +58,7 @@ func commandGameRestart(s *Session, d *CommandData) {
 		if playedInOriginalGame {
 			playerSessions = append(playerSessions, sp.Session)
 		} else {
-			otherSessions = append(otherSessions, sp.Session)
+			spectatorSessions = append(spectatorSessions, sp.Session)
 		}
 	}
 	if len(playerSessions) != len(g.Players) {
@@ -79,7 +79,7 @@ func commandGameRestart(s *Session, d *CommandData) {
 	for _, s2 := range playerSessions {
 		commandGameUnattend(s2, nil)
 	}
-	for _, s2 := range otherSessions {
+	for _, s2 := range spectatorSessions {
 		commandGameUnattend(s2, nil)
 	}
 
@@ -113,7 +113,7 @@ func commandGameRestart(s *Session, d *CommandData) {
 	commandGameStart(s, nil)
 
 	// Automatically join any other spectators that were watching
-	for _, s2 := range otherSessions {
+	for _, s2 := range spectatorSessions {
 		commandGameSpectate(s2, &CommandData{
 			ID: ID,
 		})

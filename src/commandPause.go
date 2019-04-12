@@ -49,7 +49,7 @@ func commandPause(s *Session, d *CommandData) {
 		return
 	}
 
-	// Queued pauses on their turn should be turned into normal pauses
+	// If a player requests a queued pause on their turn, turn it into a normal pause
 	if d.Value == "pause-queue" && g.ActivePlayer == i {
 		d.Value = "pause"
 	}

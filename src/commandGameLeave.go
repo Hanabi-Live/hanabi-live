@@ -50,11 +50,6 @@ func commandGameLeave(s *Session, d *CommandData) {
 	notifyAllTable(g)
 	g.NotifyPlayerChange()
 
-	// Fix the indexes for the remaining players
-	for j, p := range g.Players {
-		p.Index = j
-	}
-
 	// Set their status
 	s.Set("currentGame", -1)
 	s.Set("status", statusLobby)
