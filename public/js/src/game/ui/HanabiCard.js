@@ -383,10 +383,10 @@ class HanabiCard extends graphics.Group {
 
             if (this.possibleRanks.length === 1) {
                 [this.trueRank] = this.possibleRanks;
-                globals.learnedCards[this.order].rank = this.trueRank;
 
-                // Don't hide the pips if the card is unclued
+                // Don't record the rank or hide the pips if the card is unclued
                 if (this.holder === null || this.isClued()) {
+                    globals.learnedCards[this.order].rank = this.trueRank;
                     this.rankPipsMap.get(this.trueRank).hide();
                     this.rankPips.hide();
                 }
@@ -410,10 +410,10 @@ class HanabiCard extends graphics.Group {
 
             if (this.possibleSuits.length === 1) {
                 [this.trueSuit] = this.possibleSuits;
-                globals.learnedCards[this.order].suit = this.trueSuit;
 
-                // Don't hide the pips if the card is unclued
+                // Don't record the suitt or hide the pips if the card is unclued
                 if (this.holder === null || this.isClued()) {
+                    globals.learnedCards[this.order].suit = this.trueSuit;
                     this.suitPipsMap.get(this.trueSuit).hide();
                     this.suitPips.hide();
                 }
@@ -503,9 +503,9 @@ class HanabiCard extends graphics.Group {
 
         // Keep track of what this card is
         const learnedCard = globals.learnedCards[this.order];
-        learnedCard.revealed = true;
         learnedCard.suit = suit;
         learnedCard.rank = rank;
+        learnedCard.revealed = true;
 
         // Redraw the card
         this.setBareImage();

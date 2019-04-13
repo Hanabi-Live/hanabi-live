@@ -201,6 +201,8 @@ const initCards = () => {
     for (let order = 0; order < globals.deckSize; order++) {
         // First, created the "learned" card
         globals.learnedCards.push({
+            suit: null,
+            rank: null,
             revealed: false,
         });
 
