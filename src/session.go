@@ -172,3 +172,19 @@ func (s *Session) Error(message string) {
 		message,
 	})
 }
+
+func (s *Session) GetJoinedGame() *Game {
+	for _, g := range games {
+		if g.Replay {
+			continue
+		}
+
+		for _, p := range g.Players {
+			if p.Name == s.Username() {
+				return g
+			}
+		}
+	}
+
+	return nil
+}

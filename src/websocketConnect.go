@@ -182,11 +182,13 @@ func websocketConnect(ms *melody.Session) {
 
 			// Add the player back to the game
 			log.Info(g.GetName() + "Automatically reattending player \"" + s.Username() + "\".")
-			commandGameReattend(s, &CommandData{ // This function does not care what their current game and/or status is
+			commandGameReattend(s, &CommandData{
 				ID: g.ID,
 			})
+			// (this function does not care what their current game and/or status is)
 
-			// If the user happens to be in more than one game, then we will just put them into the first one and ignore the rest
+			// If the user happens to be in both a game and a replay,
+			// then ignore the replay
 			return
 		}
 	}
