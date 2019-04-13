@@ -94,6 +94,7 @@ func websocketConnect(ms *melody.Session) {
 		FirstTimeUser bool            `json:"firstTimeUser"`
 		Settings      models.Settings `json:"settings"`
 		Version       int             `json:"version"`
+		ShuttingDown  bool            `json:"shuttingDown"`
 	}
 	s.Emit("hello", &HelloMessage{
 		// We have to send the username back to the client because they may
@@ -115,6 +116,9 @@ func websocketConnect(ms *melody.Session) {
 		// We send the latest client version number to throw a warning
 		// if a user is running old JavaScript old
 		Version: version,
+
+		// Also let the user know if the server is currently performing a graceful shutdown
+		ShuttingDown: shuttingDown,
 	})
 
 	// Send them a random name

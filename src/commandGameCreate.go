@@ -28,7 +28,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 	*/
 
 	// Validate that the server is not in shutdown mode
-	if shutdownMode > 0 {
+	if shuttingDown {
 		s.Warning("The server is restarting soon (when all ongoing games have finished). " +
 			"You cannot start any new games for the time being.")
 		return

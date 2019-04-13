@@ -39,7 +39,7 @@ func graceful2() {
 	if numGames == 0 {
 		restart2()
 	} else {
-		shutdownMode = 1
+		shuttingDown = true
 		go gracefulWait()
 		chatServerSend("The server will restart when all ongoing games have finished. " +
 			"New game creation has been disabled.")
@@ -48,7 +48,7 @@ func graceful2() {
 
 func gracefulWait() {
 	for {
-		if shutdownMode == 0 {
+		if !shuttingDown {
 			log.Info("The shutdown was aborted.")
 			break
 		}
@@ -86,7 +86,7 @@ func ungraceful(s *Session, d *CommandData) {
 		return
 	}
 
-	shutdownMode = 0
+	shuttingDown = false
 	chatServerSend("Server restart has been canceled. New game creation has been enabled.")
 }
 

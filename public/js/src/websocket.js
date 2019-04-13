@@ -97,7 +97,13 @@ const initCommands = () => {
 
         if (!data.firstTimeUser) {
             // Validate that we are on the latest JavaScript code
-            if (data.version !== globals.version && !window.location.pathname.includes('/dev')) {
+            if (
+                data.version !== globals.version
+                // If the server is gracefully shutting down, then ignore the version check because
+                // the new client code is probably not compiled yet
+                && !data.shuttingDown
+                && !window.location.pathname.includes('/dev')
+            ) {
                 let msg = 'You are running an outdated version of the Hanabi client code. ';
                 msg += `(You are on <i>v${globals.version}</i> and the latest is <i>v${data.version}</i>.)<br />`;
                 msg += 'Please perform a hard-refresh to get the latest version.<br />';
