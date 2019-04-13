@@ -171,7 +171,6 @@ const initCardsMap = () => {
             // 6 is an unknown rank, so we use 7 to represent a "START" card
             const key = `${suit.name}7`;
             globals.cardsMap.set(key, 1);
-            globals.playedCardsMap.set(key, false);
         }
         for (let rank = 1; rank <= 5; rank++) {
             // In a normal suit of Hanabi,
@@ -191,7 +190,6 @@ const initCardsMap = () => {
 
             const key = `${suit.name}${rank}`;
             globals.cardsMap.set(key, amountToAdd);
-            globals.playedCardsMap.set(key, false);
         }
     }
 };

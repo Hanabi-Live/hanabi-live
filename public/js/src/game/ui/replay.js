@@ -59,7 +59,7 @@ const exit = () => {
         globals.elements.premoveCancelButton.show();
     }
 
-    for (let i = 0; i < globals.deck.length; i++) {
+    for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
         globals.deck[i].setBareImage();
     }
 
@@ -159,9 +159,6 @@ const reset = () => {
     // are set in every "status" command
     globals.cardsGotten = 0;
     globals.cluesSpentPlusStrikes = 0;
-    for (const key of globals.playedCardsMap.keys()) {
-        globals.playedCardsMap[key] = false;
-    }
 
     // Reset various UI elements
     globals.postAnimationLayout = null;

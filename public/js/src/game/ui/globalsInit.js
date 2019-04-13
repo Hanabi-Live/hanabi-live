@@ -60,7 +60,6 @@ module.exports = () => {
     globals.clues = 0;
     globals.cardsGotten = 0;
     globals.cluesSpentPlusStrikes = 0;
-    globals.playedCardsMap = new Map();
 
     // Replay variables
     globals.inReplay = false; // Whether or not the replay controls are currently showing

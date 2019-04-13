@@ -106,6 +106,9 @@ commands.discard = (data) => {
         card.animateToDiscardPile();
     }
 
+    // The fact that this card was discarded could make some other cards useless
+    ui.checkFadeInAllHands();
+
     if (card.isClued()) {
         stats.updateEfficiency(-1);
         card.hideClues(); // This must be after the efficiency update
@@ -217,35 +220,8 @@ commands.play = (data) => {
     card.removeFromParent();
     card.animateToPlayStacks();
 
-    const key = `${card.trueSuit.name}${card.trueRank}`;
-    globals.playedCardsMap[key] = true;
-
-    for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
-        const card2 = globals.deck[i];
-        if (
-            !globals.lobby.settings.realLifeMode
-            && card2.trueSuit === card.trueSuit
-            && card2.trueRank === card.trueRank
-            && !card2.isPlayed
-            && !card2.isDiscarded
-            && card2.numPositiveClues === 0
-            && card2.getOpacity() !== 0.5
-        ) {
-            if (card2.opacityTween) {
-                card2.opacityTween.destroy();
-            }
-            if (globals.animateFast) {
-                card2.setOpacity(constants.CARD_FADE);
-                globals.layers.card.batchDraw();
-            } else {
-                card2.opacityTween = new graphics.Tween({
-                    node: card2,
-                    opacity: 0.5,
-                    duration: 0.5,
-                }).play();
-            }
-        }
-    }
+    // The fact that this card was played could make some other cards useless
+    ui.checkFadeInAllHands();
 
     if (card.isClued()) {
         card.hideClues();

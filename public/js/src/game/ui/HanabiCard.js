@@ -85,7 +85,7 @@ class HanabiCard extends graphics.Group {
         // (but don't show any pips in Real-Life mode)
         if (this.suitPipsMap) {
             for (const [, suitPip] of this.suitPipsMap) {
-                suitPip.setVisible(!globals.lobby.settings.realLifeMode);
+                suitPip.show();
             }
         }
         if (this.suitPipsXMap) {
@@ -95,7 +95,7 @@ class HanabiCard extends graphics.Group {
         }
         if (this.rankPipsMap) {
             for (const [, rankPip] of this.rankPipsMap) {
-                rankPip.setVisible(!globals.lobby.settings.realLifeMode);
+                rankPip.show();
             }
         }
         if (this.rankPipsXMap) {
@@ -187,25 +187,48 @@ class HanabiCard extends graphics.Group {
         }
 
         // Show or hide the pips
-        this.suitPips.setVisible(suitToShow === constants.SUIT.GRAY);
-        this.rankPips.setVisible(rankToShow === 6);
+        if (globals.lobby.settings.realLifeMode) {
+            this.suitPips.hide();
+            this.rankPips.hide();
+        } else {
+            this.suitPips.setVisible(suitToShow === constants.SUIT.GRAY);
+            this.rankPips.setVisible(rankToShow === 6);
+        }
 
-        // Fade the card if it fully revealed and already played
-        let opacity = 1;
+        this.setFade();
+    }
+
+    // Fade all useless cards that are fully revealed and still in a player's hand
+    setFade() {
+        const oldOpacity = this.getOpacity();
+
+        let newOpacity = 1;
         if (
             !globals.lobby.settings.realLifeMode
-            && suitToShow !== constants.SUIT.GRAY
-            && rankToShow !== 6
-            // (we can't use trueSuit/trueRank because
-            // we don't want to fade the cards in Empathy-mode)
+            && !this.suitPips.getVisible()
+            && !this.rankPips.getVisible()
             && this.numPositiveClues === 0
             && !this.isPlayed
             && !this.isDiscarded
-            && this.isAlreadyPlayed()
+            && !this.needsToBePlayed()
         ) {
-            opacity = constants.CARD_FADE;
+            newOpacity = constants.CARD_FADE;
         }
-        this.setOpacity(opacity);
+
+        if (oldOpacity !== newOpacity) {
+            if (this.opacityTween) {
+                this.opacityTween.destroy();
+            }
+            if (globals.animateFast || !this.getLayer()) {
+                this.setOpacity(newOpacity);
+            } else {
+                this.opacityTween = new graphics.Tween({
+                    node: this,
+                    opacity: newOpacity,
+                    duration: 0.5,
+                }).play();
+            }
+        }
     }
 
     initImage() {
@@ -589,10 +612,11 @@ class HanabiCard extends graphics.Group {
 
     isCritical() {
         if (
-            !this.trueSuit || !this.trueSuit
+            !this.trueSuit
+            || !this.trueSuit
             || this.isPlayed
             || this.isDiscarded
-            || !needsToBePlayed(this.trueSuit, this.trueRank)
+            || this.needsToBePlayed()
         ) {
             return false;
         }
@@ -601,18 +625,47 @@ class HanabiCard extends graphics.Group {
         return num.total === num.discarded + 1;
     }
 
-    isAlreadyPlayed() {
-        // Don't bother calculating this for Up or Down variants,
-        // since all cards do not need to be played
-        if (globals.variant.name.startsWith('Up or Down')) {
-            return false;
+    // needsToBePlayed returns true if the card is not yet played
+    // and is still needed to be played in order to get the maximum score
+    // (this mirrors the server function in "card.go")
+    needsToBePlayed() {
+        // First, check to see if a copy of this card has already been played
+        for (const card of globals.deck) {
+            if (card.order === this.order) {
+                continue;
+            }
+            if (
+                card.trueSuit === this.trueSuit
+                && card.trueRank === this.trueRank
+                && card.isPlayed
+            ) {
+                return false;
+            }
         }
 
-        if (!this.trueSuit || !this.trueRank) {
-            return false;
+        // Determining if the card needs to be played in the "Up or Down" variants
+        // is more complicated
+        if (globals.variant.name.startsWith('Up or Down')) {
+            return this.needsToBePlayedUpOrDown();
         }
-        const key = `${this.trueSuit.name}${this.trueRank}`;
-        return globals.playedCardsMap[key];
+
+        // Second, check to see if it is still possible to play this card
+        // (the preceding cards in the suit might have already been discarded)
+        for (let i = 1; i < this.trueRank; i++) {
+            const num = getSpecificCardNum(this.trueSuit, i);
+            if (num.total === num.discarded) {
+                // The suit is "dead", so this card does not need to be played anymore
+                return false;
+            }
+        }
+
+        // By default, all cards not yet played will need to be played
+        return true;
+    }
+
+    needsToBePlayedUpOrDown() { // eslint-disable-line
+        // TODO
+        return true;
     }
 
     isPotentiallyPlayable() {
@@ -670,39 +723,6 @@ const filterInPlace = (values, predicate) => {
     }
     return removed;
 };
-
-// needsToBePlayed returns true if the card is not yet played
-// and is still needed to be played in order to get the maximum score
-// (this mirrors the server function in "card.go")
-const needsToBePlayed = (suit, rank) => {
-    // First, check to see if a copy of this card has already been played
-    for (const card of globals.deck) {
-        if (card.trueSuit === suit && card.trueRank === rank && card.isPlayed) {
-            return false;
-        }
-    }
-
-    // Determining if the card needs to be played in the "Up or Down" variants is more complicated
-    if (globals.variant.name.startsWith('Up or Down')) {
-        return needsToBePlayedUpOrDown(suit, rank);
-    }
-
-    // Second, check to see if it is still possible to play this card
-    // (the preceding cards in the suit might have already been discarded)
-    for (let i = 1; i < rank; i++) {
-        const num = getSpecificCardNum(suit, i);
-        if (num.total === num.discarded) {
-            // The suit is "dead", so this card does not need to be played anymore
-            return false;
-        }
-    }
-
-    // By default, all cards not yet played will need to be played
-    return true;
-};
-
-// TODO
-const needsToBePlayedUpOrDown = () => true;
 
 // getSpecificCardNum returns the total cards in the deck of the specified suit and rank
 // as well as how many of those that have been already discarded

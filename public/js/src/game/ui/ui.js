@@ -323,6 +323,15 @@ exports.handleNotify = (data) => {
     }
 };
 
+exports.checkFadeInAllHands = () => {
+    for (const cardLayout of globals.elements.playerHands) {
+        for (const layoutChild of cardLayout.children) {
+            const card = layoutChild.children[0];
+            card.setFade();
+        }
+    }
+};
+
 exports.backToLobby = () => {
     // Hide the tooltip, if showing
     if (globals.activeHover) {
