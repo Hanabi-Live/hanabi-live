@@ -136,7 +136,22 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
 		},
 		// "Black & Dark Rainbow (5 Suits)" would be too difficult
-
+		
+		// Gray
+		Variant{
+			Name:  "Gray (6 Suits)",
+			ID:    58,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, GraySuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Triple Black (6 Suits)",
+			ID:    59,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, GraySuit, BlackSuit, DarkRainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, BlackClue},
+		}
+		// "Triple black (5 suits)" would be too difficult
+		
 		// Color Blind
 		Variant{
 			Name:  "Color Blind (6 Suits)",
