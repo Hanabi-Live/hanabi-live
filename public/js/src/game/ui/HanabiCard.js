@@ -201,7 +201,7 @@ class HanabiCard extends graphics.Group {
             && this.numPositiveClues === 0
             && this.isAlreadyPlayed()
         ) {
-            opacity = 0.5;
+            opacity = constants.CARD_FADE;
         }
         this.setOpacity(opacity);
     }
