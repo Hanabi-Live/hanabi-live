@@ -2,7 +2,7 @@ const constants = require('../constants');
 
 // Constants
 const {
-    CARDW,
+    CARD_W,
     PHASER_DEMO_SCALE,
 } = constants;
 
@@ -30,7 +30,7 @@ class Hand extends Phaser.GameObjects.Container {
         const cards = this.list;
         const handSize = cards.length;
         const padding = 1.05;
-        const horizSpacing = CARDW * PHASER_DEMO_SCALE * padding;
+        const horizSpacing = CARD_W * PHASER_DEMO_SCALE * padding;
 
         for (let i = 0; i < handSize; i++) {
             // eslint pls, this is way more readable than if I threw in a bunch of parens

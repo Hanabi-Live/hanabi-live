@@ -18,13 +18,13 @@ const sharedReplayArrowColor = '#ffdf00'; // Yellow
 class HanabiCard extends graphics.Group {
     constructor(config) {
         // Cards should start off with a constant width and height
-        config.width = constants.CARDW;
-        config.height = constants.CARDH;
-        config.x = constants.CARDW / 2;
-        config.y = constants.CARDH / 2;
+        config.width = constants.CARD_W;
+        config.height = constants.CARD_H;
+        config.x = constants.CARD_W / 2;
+        config.y = constants.CARD_H / 2;
         config.offset = {
-            x: constants.CARDW / 2,
-            y: constants.CARDH / 2,
+            x: constants.CARD_W / 2,
+            y: constants.CARD_H / 2,
         };
         super(config);
 
@@ -287,7 +287,7 @@ class HanabiCard extends graphics.Group {
                 }
                 if (globals.animateFast) {
                     // Just set the arrow in position
-                    this.arrow.setX(constants.CARDW / 2);
+                    this.arrow.setX(constants.CARD_W / 2);
                     this.arrow.setY(this.arrow.originalY);
                 } else if (giver !== null) {
                     this.animateArrow(giver, globals.turn);
@@ -345,7 +345,7 @@ class HanabiCard extends graphics.Group {
         this.arrowTween = new graphics.Tween({
             node: this.arrow,
             duration: 0.5,
-            x: constants.CARDW / 2,
+            x: constants.CARD_W / 2,
             y: this.arrow.originalY,
             easing: graphics.Easings.EaseOut,
         }).play();

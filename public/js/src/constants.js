@@ -2,11 +2,12 @@
     Suit definitions, variant definitions, character definitions, and so forth
 */
 
-// Define the defeault size of a card
-exports.CARDW = 286;
-exports.CARDH = 406;
+// Define the defeault qualities of a card
+exports.CARD_W = 286;
+exports.CARD_H = 406;
 // This is a temporary scale only to be used with phaser until dynamic scaling is implemented
 exports.PHASER_DEMO_SCALE = 0.35;
+exports.CARD_FADE = 0.6;
 
 // These constants much match their server-side counterparts
 exports.ACT = {
@@ -143,7 +144,7 @@ class FillSpec {
 const solidFillSpec = new FillSpec(FILL_TYPE.SOLID);
 const multiBkgFillSpec = new FillSpec(
     FILL_TYPE.LINEAR_GRADIENT,
-    [0, 0, 0, exports.CARDH],
+    [0, 0, 0, exports.CARD_H],
 );
 const multiNumberFillSpec = new FillSpec(
     FILL_TYPE.LINEAR_GRADIENT,

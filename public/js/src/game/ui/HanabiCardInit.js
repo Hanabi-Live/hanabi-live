@@ -18,8 +18,8 @@ exports.image = function image() {
     // If the card is not revealed, it will just be a gray rectangle
     // The pips and other elements of a card are drawn on top of the bare image
     this.bare = new graphics.Image({
-        width: constants.CARDW,
-        height: constants.CARDH,
+        width: constants.CARD_W,
+        height: constants.CARD_H,
     });
     const self = this;
     this.bare.setSceneFunc(function setSceneFunc(context) {
@@ -39,8 +39,8 @@ exports.border = function border() {
     this.cluedBorder = new graphics.Rect({
         x: 3,
         y: 3,
-        width: constants.CARDW - 6,
-        height: constants.CARDH - 6,
+        width: constants.CARD_W - 6,
+        height: constants.CARD_H - 6,
         cornerRadius: 6,
         strokeWidth: 16,
         stroke: '#ffdf00', // Yellow
@@ -55,8 +55,8 @@ exports.pips = function pips() {
     this.suitPips = new graphics.Group({
         x: 0,
         y: 0,
-        width: Math.floor(constants.CARDW),
-        height: Math.floor(constants.CARDH),
+        width: Math.floor(constants.CARD_W),
+        height: Math.floor(constants.CARD_H),
         visible: false,
         listening: false,
     });
@@ -69,8 +69,8 @@ exports.pips = function pips() {
         const suit = suits[i];
 
         // Set the pip at the middle of the card
-        const x = Math.floor(constants.CARDW * 0.5);
-        const y = Math.floor(constants.CARDH * 0.5);
+        const x = Math.floor(constants.CARD_W * 0.5);
+        const y = Math.floor(constants.CARD_H * 0.5);
         const scale = { // Scale numbers are magic
             x: 0.4,
             y: 0.4,
@@ -78,11 +78,11 @@ exports.pips = function pips() {
         // Transform polar to Cartesian coordinates
         // The magic number added to the offset is needed to center things properly
         // We don't know why it's needed; perhaps something to do with the shape functions
-        const offsetBase = constants.CARDW * 0.7;
+        const offsetBase = constants.CARD_W * 0.7;
         const offsetTrig = ((-i / suits.length) + 0.25) * Math.PI * 2;
         const offset = {
-            x: Math.floor(offsetBase * Math.cos(offsetTrig) + constants.CARDW * 0.25),
-            y: Math.floor(offsetBase * Math.sin(offsetTrig) + constants.CARDW * 0.3),
+            x: Math.floor(offsetBase * Math.cos(offsetTrig) + constants.CARD_W * 0.25),
+            y: Math.floor(offsetBase * Math.sin(offsetTrig) + constants.CARD_W * 0.3),
         };
         let fill = suit.fillColors.hexCode;
         if (suit === constants.SUIT.RAINBOW || suit === constants.SUIT.DARKRAINBOW) {
@@ -123,7 +123,7 @@ exports.pips = function pips() {
                 y: 140,
             });
             suitPip.fillRadialGradientStartRadius(0);
-            suitPip.fillRadialGradientEndRadius(Math.floor(constants.CARDW * 0.25));
+            suitPip.fillRadialGradientEndRadius(Math.floor(constants.CARD_W * 0.25));
         }
         suitPip.rotation(0);
         this.suitPips.add(suitPip);
@@ -141,8 +141,8 @@ exports.pips = function pips() {
             visible: false,
             sceneFunc: (ctx, shape) => {
                 const width = 50;
-                const xx = Math.floor((constants.CARDW * 0.25) - (width * 0.45));
-                const xy = Math.floor((constants.CARDH * 0.25) - (width * 0.05));
+                const xx = Math.floor((constants.CARD_W * 0.25) - (width * 0.45));
+                const xy = Math.floor((constants.CARD_H * 0.25) - (width * 0.05));
                 drawX(ctx, shape, xx, xy, 50, width);
             },
             listening: false,
@@ -154,9 +154,9 @@ exports.pips = function pips() {
     // Initialize the rank pips, which are black squares along the bottom of the card
     this.rankPips = new graphics.Group({
         x: 0,
-        y: Math.floor(constants.CARDH * 0.85),
-        width: constants.CARDW,
-        height: Math.floor(constants.CARDH * 0.15),
+        y: Math.floor(constants.CARD_H * 0.85),
+        width: constants.CARD_W,
+        height: Math.floor(constants.CARD_H * 0.15),
         visible: false,
         listening: false,
     });
@@ -165,16 +165,16 @@ exports.pips = function pips() {
     this.rankPipsMap = new Map();
     this.rankPipsXMap = new Map();
     for (const rank of globals.variant.ranks) {
-        const x = Math.floor(constants.CARDW * (rank * 0.19 - 0.14));
+        const x = Math.floor(constants.CARD_W * (rank * 0.19 - 0.14));
         const y = 0;
         const rankPip = new graphics.Rect({
             x,
             y,
-            width: Math.floor(constants.CARDW * 0.15),
-            height: Math.floor(constants.CARDH * 0.10),
+            width: Math.floor(constants.CARD_W * 0.15),
+            height: Math.floor(constants.CARD_H * 0.10),
             fill: 'black',
             stroke: 'black',
-            cornerRadius: 0.02 * constants.CARDH,
+            cornerRadius: 0.02 * constants.CARD_H,
             listening: false,
         });
         this.rankPips.add(rankPip);
@@ -191,8 +191,8 @@ exports.pips = function pips() {
             visible: false,
             sceneFunc: (ctx, shape) => {
                 const width = 20;
-                const xx = Math.floor(constants.CARDW * 0.04);
-                const xy = Math.floor(constants.CARDH * 0.05);
+                const xx = Math.floor(constants.CARD_W * 0.04);
+                const xy = Math.floor(constants.CARD_H * 0.05);
                 drawX(ctx, shape, xx, xy, 12, width);
             },
             listening: false,
@@ -204,14 +204,14 @@ exports.pips = function pips() {
 
 exports.arrow = function arrow() {
     this.arrow = new Arrow({
-        x: constants.CARDW / 2,
-        y: constants.CARDH / 2,
+        x: constants.CARD_W / 2,
+        y: constants.CARD_H / 2,
     });
     this.add(this.arrow);
 
     this.arrow.circle = new graphics.Circle({
-        x: 0.5 * constants.CARDW,
-        y: 0.15 * constants.CARDH,
+        x: 0.5 * constants.CARD_W,
+        y: 0.15 * constants.CARD_H,
         radius: 45,
         fill: 'black',
         stroke: 'white',
@@ -221,7 +221,7 @@ exports.arrow = function arrow() {
     this.arrow.add(this.arrow.circle);
 
     this.arrow.text = new graphics.Text({
-        fontSize: 0.175 * constants.CARDH,
+        fontSize: 0.175 * constants.CARD_H,
         fontFamily: 'Verdana',
         fill: 'white',
         stroke: 'white',
@@ -252,10 +252,10 @@ exports.arrow = function arrow() {
 };
 
 exports.arrowLocation = function arrowLocation() {
-    let y = 0.25 * constants.CARDH;
+    let y = 0.25 * constants.CARD_H;
     let rot = 0;
-    let textX = 0.418 * constants.CARDW;
-    let textY = 0.07 * constants.CARDH;
+    let textX = 0.418 * constants.CARD_W;
+    let textY = 0.07 * constants.CARD_H;
     let textRot = 0;
 
     if (
@@ -274,10 +274,10 @@ exports.arrowLocation = function arrowLocation() {
         // In BGA mode, invert the arrows on our hand
         // (so that it doesn't get cut off by the top of the screen)
         // In Keldon mode, invert the arrows for all other players
-        y = 0.9 * constants.CARDH;
+        y = 0.9 * constants.CARD_H;
         rot = 180;
-        textX = 0.58 * constants.CARDW;
-        textY = 0.225 * constants.CARDH;
+        textX = 0.58 * constants.CARD_W;
+        textY = 0.225 * constants.CARD_H;
         textRot = 180;
     }
 
@@ -294,13 +294,13 @@ exports.note = function note() {
     // Define the note indicator image
     const noteX = 0.78;
     const noteY = 0.03;
-    const size = 0.2 * constants.CARDW;
+    const size = 0.2 * constants.CARD_W;
     this.noteGiven = new graphics.Image({
-        x: noteX * constants.CARDW,
+        x: noteX * constants.CARD_W,
         // If the cards have triangles on the corners that show the color composition,
         // the images will overlap
         // Thus, we move it downwards if this is the case
-        y: (globals.variant.offsetCornerElements ? noteY + 0.1 : noteY) * constants.CARDH,
+        y: (globals.variant.offsetCornerElements ? noteY + 0.1 : noteY) * constants.CARD_H,
         align: 'center',
         image: globals.ImageLoader.get('note'),
         width: size,

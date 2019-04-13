@@ -163,7 +163,7 @@ commands.draw = (data) => {
     const pos = globals.elements.deck.cardBack.getAbsolutePosition();
     child.setAbsolutePosition(pos);
     child.setRotation(-globals.elements.playerHands[holder].getRotation());
-    const scale = globals.elements.deck.cardBack.getWidth() / constants.CARDW;
+    const scale = globals.elements.deck.cardBack.getWidth() / constants.CARD_W;
     child.setScale({
         x: scale,
         y: scale,
@@ -236,7 +236,7 @@ commands.play = (data) => {
                 card2.opacityTween.destroy();
             }
             if (globals.animateFast) {
-                card2.setOpacity(0.5);
+                card2.setOpacity(constants.CARD_FADE);
                 globals.layers.card.batchDraw();
             } else {
                 card2.opacityTween = new graphics.Tween({

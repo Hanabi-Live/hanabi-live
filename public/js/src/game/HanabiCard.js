@@ -9,8 +9,8 @@ const constants = require('../constants');
 
 // Constants
 const {
-    CARDH,
-    CARDW,
+    CARD_H,
+    CARD_W,
     PHASER_DEMO_SCALE,
     SUIT,
 } = constants;
@@ -22,7 +22,7 @@ class HanabiCard extends Phaser.GameObjects.Container {
 
         this.x = config.x || 0;
         this.y = config.y || 0;
-        this.setSize(CARDW * PHASER_DEMO_SCALE, CARDH * PHASER_DEMO_SCALE);
+        this.setSize(CARD_W * PHASER_DEMO_SCALE, CARD_H * PHASER_DEMO_SCALE);
 
         // Card variables
         this.order = config.order;
@@ -68,7 +68,7 @@ class HanabiCard extends Phaser.GameObjects.Container {
     getImage() {
         this.setCardImageName();
 
-        // const image = this.scene.add.image(CARDW / 2, CARDH / 2, this.imageName);
+        // const image = this.scene.add.image(CARD_W / 2, CARD_H / 2, this.imageName);
         const image = new Phaser.GameObjects.Image(
             this.scene,
             0,
@@ -82,8 +82,8 @@ class HanabiCard extends Phaser.GameObjects.Container {
     doRotations(inverted) {
         this.setRotation(inverted ? 180 : 0);
         this.bare.setRotation(inverted ? 180 : 0);
-        this.bare.setX(inverted ? CARDW : 0);
-        this.bare.setY(inverted ? CARDH : 0);
+        this.bare.setX(inverted ? CARD_W : 0);
+        this.bare.setY(inverted ? CARD_H : 0);
     }
 
     suitKnown() {

@@ -3,7 +3,7 @@ const HanabiCard = require('./HanabiCard');
 
 // Constants
 const {
-    CARDW,
+    CARD_W,
     PHASER_DEMO_SCALE,
 } = constants;
 
@@ -34,7 +34,7 @@ class PlayArea extends Phaser.GameObjects.Container {
     addCardTweensToScene(cards) {
         if (!Array.isArray(cards)) { cards = [cards]; }
         const padding = 1.15;
-        const horizSpacing = CARDW * PHASER_DEMO_SCALE * padding;
+        const horizSpacing = CARD_W * PHASER_DEMO_SCALE * padding;
         const nSuits = this.suits.length;
 
         for (const card of cards) {
