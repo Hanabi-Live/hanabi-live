@@ -172,9 +172,9 @@ func chatServerPregameSend(msg string, gameID int) {
 
 func chatFillMentions(msg string) string {
 	/*
-		Discord mentions are in the form of "<@71242588694249472>"
-		By the time the message gets here, it will be sanitized to "&lt;@71242588694249472&gt;"
-		They can also be in the form of "<@!71242588694249472>" (with a "!" after the "@")
+		Discord mentions are in the form of "<@12345678901234567>"
+		By the time the message gets here, it will be sanitized to "&lt;@12345678901234567&gt;"
+		They can also be in the form of "<@!12345678901234567>" (with a "!" after the "@")
 		if a nickname is set for that person
 		We want to convert this to the username,
 		so that the lobby displays messages in a manner similar to the Discord client
@@ -184,15 +184,18 @@ func chatFillMentions(msg string) string {
 		return msg
 	}
 
+	log.Debug("STARTING WITH:", msg)
 	for {
 		match := mentionRegExp.FindStringSubmatch(msg)
 		if match == nil || len(match) <= 1 {
+			log.Debug("NO MATCH, EXITING")
 			break
 		}
 		discordID := match[1]
 		username := discordGetNickname(discordID)
 		msg = strings.Replace(msg, "&lt;@"+discordID+"&gt;", "@"+username, -1)
 		msg = strings.Replace(msg, "&lt;@!"+discordID+"&gt;", "@"+username, -1)
+		log.Debug("REPLACED, MSG IS NOW:", msg)
 	}
 	return msg
 }
