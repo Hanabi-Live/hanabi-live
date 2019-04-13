@@ -56,7 +56,7 @@ commands.clue = (data) => {
         if (data.list.indexOf(order) < 0) {
             negativeList.push(order);
             if (!globals.lobby.settings.realLifeMode && !globals.variant.name.startsWith('Duck')) {
-                card.applyClue(clue, true);
+                card.applyClue(clue, false);
                 card.setBareImage();
             }
         }

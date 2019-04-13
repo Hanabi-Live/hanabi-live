@@ -159,7 +159,7 @@ Install as a service (optional)
 * Load the new configuration:
   * `supervisorctl reload`
 
-Later, to manage the service:
+To manage the service:
 
 * Start it: `supervisorctl start hanabi-live`
 * Stop it: `supervisorctl stop hanabi-live`

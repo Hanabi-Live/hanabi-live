@@ -17,7 +17,7 @@ class ClueEntry extends graphics.Group {
         const w = config.width;
         const h = config.height;
         this.list = config.list;
-        this.neglist = config.neglist;
+        this.negativeList = config.negativeList;
         this.turn = config.turn;
 
         this.background = new graphics.Rect({
@@ -122,8 +122,8 @@ class ClueEntry extends graphics.Group {
             }
         }
 
-        for (let i = 0; i < this.neglist.length; i++) {
-            if (globals.deck[this.neglist[i]] === target) {
+        for (let i = 0; i < this.negativeList.length; i++) {
+            if (globals.deck[this.negativeList[i]] === target) {
                 this.background.setOpacity(0.4);
                 this.background.setFill('#ff7777');
                 if (globals.lobby.settings.showColorblindUI) {
