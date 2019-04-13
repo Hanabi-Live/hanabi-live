@@ -684,7 +684,7 @@ const needsToBePlayed = (suit, rank) => {
 
     // Determining if the card needs to be played in the "Up or Down" variants is more complicated
     if (globals.variant.name.startsWith('Up or Down')) {
-        return false;
+        return needsToBePlayedUpOrDown(suit, rank);
     }
 
     // Second, check to see if it is still possible to play this card
@@ -700,6 +700,9 @@ const needsToBePlayed = (suit, rank) => {
     // By default, all cards not yet played will need to be played
     return true;
 };
+
+// TODO
+const needsToBePlayedUpOrDown = () => true;
 
 // getSpecificCardNum returns the total cards in the deck of the specified suit and rank
 // as well as how many of those that have been already discarded

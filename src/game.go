@@ -121,6 +121,20 @@ func (g *Game) GetSpectatorIndex(id int) int {
 	return -1
 }
 
+func (g *Game) GetHandSize() int {
+	numPlayers := len(g.Players)
+	if numPlayers == 2 || numPlayers == 3 {
+		return 5
+	} else if numPlayers == 4 || numPlayers == 5 {
+		return 4
+	} else if numPlayers == 6 {
+		return 3
+	}
+
+	log.Fatal("Failed to get the hand size for " + strconv.Itoa(numPlayers) + " players for game: " + g.Name)
+	return -1
+}
+
 // GetMaxScore calculates what the maximum score is,
 // accounting for stacks that cannot be completed due to discarded cards
 func (g *Game) GetMaxScore() int {

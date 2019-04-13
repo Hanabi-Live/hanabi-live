@@ -184,6 +184,11 @@ const reset = () => {
         }
         strike.setFaded();
     }
+    for (const card of globals.deck) {
+        card.holder = null;
+        card.trueSuit = null;
+        card.trueRank = null;
+    }
 
     globals.animateFast = true;
 };

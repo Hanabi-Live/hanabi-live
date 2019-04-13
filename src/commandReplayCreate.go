@@ -390,10 +390,7 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 	*/
 
 	// Deal the cards
-	handSize := 5
-	if len(g.Players) > 3 {
-		handSize = 4
-	}
+	handSize := g.GetHandSize()
 	for _, p := range g.Players {
 		for i := 0; i < handSize; i++ {
 			p.DrawCard(g)
