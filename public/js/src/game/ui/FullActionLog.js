@@ -3,7 +3,7 @@ const globals = require('./globals');
 const graphics = require('./graphics');
 const MultiFitText = require('./MultiFitText');
 
-class MsgLog extends graphics.Group {
+class FullActionLog extends graphics.Group {
     constructor(config) {
         const baseConfig = {
             x: 0.2 * globals.stage.getWidth(),
@@ -134,4 +134,4 @@ class MsgLog extends graphics.Group {
     }
 }
 
-module.exports = MsgLog;
+module.exports = FullActionLog;

@@ -17,9 +17,9 @@ const drawHands = require('./drawHands');
 const drawReplayArea = require('./drawReplayArea');
 const drawCurrentPlayerArea = require('./drawCurrentPlayerArea');
 const FitText = require('./FitText');
+const FullActionLog = require('./FullActionLog');
 const globals = require('./globals');
 const graphics = require('./graphics');
-const MsgLog = require('./MsgLog');
 const MultiFitText = require('./MultiFitText');
 const NumberButton = require('./NumberButton');
 const replay = require('./replay');
@@ -236,7 +236,7 @@ const drawActionLog = () => {
     globals.layers.overtop.add(globals.elements.stageFade);
 
     // The full action log (that appears when you click on the action log)
-    globals.elements.fullActionLog = new MsgLog();
+    globals.elements.fullActionLog = new FullActionLog();
     globals.layers.overtop.add(globals.elements.fullActionLog);
 };
 
