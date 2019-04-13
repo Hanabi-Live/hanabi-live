@@ -199,6 +199,8 @@ class HanabiCard extends graphics.Group {
             // (we can't use trueSuit/trueRank because
             // we don't want to fade the cards in Empathy-mode)
             && this.numPositiveClues === 0
+            && !this.isPlayed
+            && !this.isDiscarded
             && this.isAlreadyPlayed()
         ) {
             opacity = constants.CARD_FADE;
