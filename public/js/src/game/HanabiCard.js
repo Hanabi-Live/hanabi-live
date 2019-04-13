@@ -48,7 +48,7 @@ class HanabiCard extends Phaser.GameObjects.Container {
         this.add(image);
 
         /*
-        // Create the "bare" card image, which is a gray card with all the pips
+        // Create the "bare" card image, which is a Unknown card with all the pips
         this.bare.setSceneFunc(function setSceneFunc(context) {
             drawCards.scaleCardImage(
                 context,
@@ -126,13 +126,13 @@ class HanabiCard extends Phaser.GameObjects.Container {
         const suit = (!this.showOnlyLearned && this.trueSuit);
         const empathyPastSuitUncertain = this.showOnlyLearned && this.possibleSuits.length > 1;
 
-        let suitToShow = suit || learnedCard.suit || SUIT.GRAY;
+        let suitToShow = suit || learnedCard.suit || SUIT.UNKNOWN;
         if (empathyPastSuitUncertain) {
-            suitToShow = SUIT.GRAY;
+            suitToShow = SUIT.UNKNOWN;
         }
 
         // "Card-Gray" is not created, so use "NoPip-Gray"
-        if (suitToShow === SUIT.GRAY) {
+        if (suitToShow === SUIT.UNKNOWN) {
             prefix = 'NoPip';
         }
 

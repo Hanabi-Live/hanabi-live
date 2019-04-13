@@ -112,7 +112,7 @@ class HanabiCard extends graphics.Group {
         const learnedCard = globals.learnedCards[this.order];
 
         // Find out the suit to display
-        // (Gray is a colorless suit used for unclued cards)
+        // (Unknown is a colorless suit used for unclued cards)
         let suitToShow;
         if (this.empathy) {
             // If we are in Empathy mode, only show the suit if there is only one possibility left
@@ -120,16 +120,16 @@ class HanabiCard extends graphics.Group {
             if (this.possibleSuits.length === 1 && this.isClued()) {
                 [suitToShow] = this.possibleSuits;
             } else {
-                suitToShow = constants.SUIT.GRAY;
+                suitToShow = constants.SUIT.UNKNOWN;
             }
         } else {
             // If we are not in Empathy mode, then show the suit if it is known
-            suitToShow = learnedCard.suit || this.noteSuit || constants.SUIT.GRAY;
+            suitToShow = learnedCard.suit || this.noteSuit || constants.SUIT.UNKNOWN;
         }
 
-        // For whatever reason, "Card-Gray" is never created, so use "NoPip-Gray"
+        // For whatever reason, "Card-Unknown" is never created, so use "NoPip-Gray"
         let prefix = 'Card';
-        if (suitToShow === constants.SUIT.GRAY) {
+        if (suitToShow === constants.SUIT.UNKNOWN) {
             prefix = 'NoPip';
         }
 
@@ -154,7 +154,7 @@ class HanabiCard extends graphics.Group {
         // always show the vanilla card back if the card is not fully revealed)
         if (
             (globals.lobby.settings.realLifeMode || globals.variant.name.startsWith('Duck'))
-            && (suitToShow === constants.SUIT.GRAY || rankToShow === 6)
+            && (suitToShow === constants.SUIT.UNKNOWN || rankToShow === 6)
         ) {
             this.bareName = 'deck-back';
         } else {
@@ -166,7 +166,7 @@ class HanabiCard extends graphics.Group {
             this.suitPips.hide();
             this.rankPips.hide();
         } else {
-            this.suitPips.setVisible(suitToShow === constants.SUIT.GRAY);
+            this.suitPips.setVisible(suitToShow === constants.SUIT.UNKNOWN);
             this.rankPips.setVisible(rankToShow === 6);
         }
 
