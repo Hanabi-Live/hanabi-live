@@ -137,6 +137,39 @@ var (
 		},
 		// "Black & Dark Rainbow (5 Suits)" would be too difficult
 
+		// Gray
+		Variant{
+			Name:  "Gray (5 Suits)",
+			ID:    58,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, GraySuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		Variant{
+			Name:  "Gray (6 Suits)",
+			ID:    59,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, GraySuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Black and Gray (6 Suits)",
+			ID:    60,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, GraySuit, BlackSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
+		},
+		Variant{
+			Name:  "Gray and Rainbow (6 Suits)",
+			ID:    61,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, GraySuit, RainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		Variant{
+			Name:  "Gray and Dark Rainbow (6 Suits)",
+			ID:    62,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, GraySuit, DarkRainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		// "Triple black (6 suits)" would be too difficult
+
 		// Color Blind
 		Variant{
 			Name:  "Color Blind (6 Suits)",

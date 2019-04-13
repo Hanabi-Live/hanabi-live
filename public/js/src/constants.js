@@ -69,12 +69,13 @@ exports.COLOR = {
     YELLOW: new Color('Yellow', 'Y', '#ccaa22'),
     RED: new Color('Red', 'R', '#aa0000'),
     PURPLE: new Color('Purple', 'P', '#6600cc'),
-    GRAY: new Color('Gray', 'G', '#cccccc'), // For unknown cards
+    UNKNOWN: new Color('Unknown', 'U', '#cccccc'),
 
     // Basic variants
     TEAL: new Color('Teal', 'C', '#00cccc'),
     WHITE: new Color('White', 'W', '#d9d9d9'),
     BLACK: new Color('Black', 'K', '#111111'),
+    GRAY: new Color('Gray', 'G', '#555555'),
 
     // "Ambiguous" variants
     L_BLUE: new Color('Sky', 'S', '#1a66ff'),
@@ -301,10 +302,10 @@ exports.SUIT = {
     ),
 
     // This represents cards of unknown suit; it must not be included in variants
-    GRAY: new Suit(
-        'Gray',
+    UNKNOWN: new Suit(
+        'Unknown',
         '',
-        exports.COLOR.GRAY,
+        exports.COLOR.UNKNOWN,
         basicCardFillSpec,
         null,
         [],
@@ -339,6 +340,14 @@ exports.SUIT = {
         baseColors,
         multiCardFillSpec,
         Object.values(exports.COLOR),
+    ),
+    GRAY: new Suit(
+        'Gray',
+        'G',
+        exports.COLOR.GRAY,
+        basicCardFillSpec,
+        [exports.COLOR.GRAY],
+        true, // This suit has one of each card
     ),
     DARK_RAINBOW: new Suit(
         'Rainbow',
@@ -838,6 +847,67 @@ exports.VARIANTS = {
             exports.SUIT.DARK_RAINBOW,
         ],
         baseColors4plusBlack,
+        false,
+    ),
+
+    // Gray
+    'Gray (5 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.GRAY,
+        ],
+        baseColors4,
+        false,
+    ),
+    'Gray (6 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.PURPLE,
+            exports.SUIT.GRAY,
+        ],
+        baseColors,
+        false,
+    ),
+    'Black and Gray (6 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.GRAY,
+            exports.SUIT.BLACK,
+        ],
+        baseColors4plusBlack,
+        false,
+    ),
+    'Gray and Rainbow (6 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.GRAY,
+            exports.SUIT.RAINBOW,
+        ],
+        baseColors4,
+        false,
+    ),
+    'Gray and Dark Rainbow (6 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.GRAY,
+            exports.SUIT.DARK_RAINBOW,
+        ],
+        baseColors4,
         false,
     ),
 

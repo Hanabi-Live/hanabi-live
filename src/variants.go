@@ -74,6 +74,7 @@ var (
 	RainbowSuit     = NewSuit("Rainbow", allColorClues)
 	WhiteSuit       = NewSuit("White", noColorClues)
 	DarkRainbowSuit = NewSuit1oE("Rainbow", allColorClues)
+	GraySuit        = NewSuit1oE("Gray", noColorClues)
 
 	// For "Color Blind"
 	BlindBlueSuit   = NewSuit("Blue", noColorClues)
