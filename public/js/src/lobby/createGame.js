@@ -83,6 +83,7 @@ const submit = () => {
         deckPlays: getCheckbox('createTableDeckPlays'),
         emptyClues: getCheckbox('createTableEmptyClues'),
         characterAssignments: getCheckbox('createTableCharacterAssignments'),
+        correspondence: getCheckbox('createTableCorrespondence'),
         password,
         alertWaiters: getCheckbox('createTableAlertWaiters'),
     });
@@ -127,42 +128,29 @@ exports.ready = () => {
         globals.conn.send('getName');
     }
 
-    // Fill in the "Variant" dropdown
-    $('#createTableVariant').val(globals.settings.createTableVariant);
-
-    // Fill in the "Timed" checkbox
-    $('#createTableTimed').prop('checked', globals.settings.createTableTimed);
-    $('#createTableTimed').change();
-
-    // Fill in the "Base Time" box
-    $('#createTableBaseTimeMinutes').val(globals.settings.createTableBaseTimeMinutes);
-
-    // Fill in the "Time Per Turn" box
-    $('#createTableTimePerTurnSeconds').val(globals.settings.createTableTimePerTurnSeconds);
-
-    // Fill in the "Speedrun" checkbox
-    $('#createTableSpeedrun').prop('checked', globals.settings.createTableSpeedrun);
-    $('#createTableSpeedrun').change();
-
-    // Fill in the "Allow Bottom-Deck Blind Plays" checkbox
-    $('#createTableDeckPlays').prop('checked', globals.settings.createTableDeckPlays);
-
-    // Fill in the "Allow Empty Clues" checkbox
-    $('#createTableEmptyClues').prop('checked', globals.settings.createTableEmptyClues);
-
-    // Fill in the "Detrimental Character Assignments" checkbox
-    $('#createTableCharacterAssignments').prop('checked', globals.settings.createTableCharacterAssignments);
-
-    // Fill in the "Password" box
-    const password = localStorage.getItem('createTablePassword');
-    $('#createTablePassword').val(password);
-
-    // Fill in the "Alert people on the waiting list" box
-    $('#createTableAlertWaiters').prop('checked', globals.settings.createTableAlertWaiters);
-
     // Focus the "Name" box
     // (we have to wait 1 millisecond or it won't work due to the nature of the tooltip)
     setTimeout(() => {
         $('#createTableName').focus();
     }, 1);
+
+    // Fill in the rest of form with the settings that we used last time
+    // (which is stored on the server)
+    for (const key of Object.keys(globals.settings)) {
+        const value = globals.settings[key];
+        const element = $(`#${key}`);
+        if (typeof value === 'boolean') {
+            // Checkboxes
+            element.prop('checked', value);
+            element.change();
+        } else {
+            // Input fields and select dropdowns
+            element.val(value);
+        }
+    }
+
+    // Fill in the "Password" box
+    // (this is not stored on the server so we have to retrieve the last password from a cookie)
+    const password = localStorage.getItem('createTablePassword');
+    $('#createTablePassword').val(password);
 };

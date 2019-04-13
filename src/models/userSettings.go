@@ -24,6 +24,7 @@ type Settings struct {
 	CreateTableDeckPlays            bool    `json:"createTableDeckPlays"`
 	CreateTableEmptyClues           bool    `json:"createTableEmptyClues"`
 	CreateTableCharacterAssignments bool    `json:"createTableCharacterAssignments"`
+	CreateTableCorrespondence       bool    `json:"createTableCorrespondence"`
 	CreateTableAlertWaiters         bool    `json:"createTableAlertWaiters"`
 }
 
@@ -60,6 +61,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 			create_table_deck_plays,
 			create_table_empty_clues,
 			create_table_character_assignments,
+			create_table_correspondence,
 			create_table_alert_waiters
 		FROM user_settings
 		WHERE user_id = ?
@@ -81,6 +83,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.CreateTableDeckPlays,
 		&settings.CreateTableEmptyClues,
 		&settings.CreateTableCharacterAssignments,
+		&settings.CreateTableCorrespondence,
 		&settings.CreateTableAlertWaiters,
 	); err == sql.ErrNoRows {
 		return defaultSettings, nil

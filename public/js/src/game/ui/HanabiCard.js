@@ -576,6 +576,10 @@ class HanabiCard extends graphics.Group {
         return -1;
     }
 
+    isRevealedToHolder() {
+        return this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
+    }
+
     isCritical() {
         if (
             !this.trueSuit || !this.trueSuit
@@ -597,6 +601,9 @@ class HanabiCard extends graphics.Group {
             return false;
         }
 
+        if (!this.trueSuit || !this.trueRank) {
+            return false;
+        }
         const key = `${this.trueSuit.name}${this.trueRank}`;
         return globals.playedCardsMap[key];
     }

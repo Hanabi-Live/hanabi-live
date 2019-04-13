@@ -208,6 +208,7 @@ commands.init = (data) => {
     globals.emptyClues = data.emptyClues;
     globals.characterAssignments = data.characterAssignments;
     globals.characterMetadata = data.characterMetadata;
+    globals.correspondence = data.correspondence;
 
     // Hypothetical settings
     globals.hypothetical = data.hypothetical;

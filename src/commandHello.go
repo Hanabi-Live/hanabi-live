@@ -89,6 +89,7 @@ func commandHello(s *Session, d *CommandData) {
 		EmptyClues           bool     `json:"emptyClues"`
 		CharacterAssignments []string `json:"characterAssignments"`
 		CharacterMetadata    []int    `json:"characterMetadata"`
+		Correspondence       bool     `json:"correspondence"`
 
 		// Hypothetical settings
 		Hypothetical bool     `json:"hypothetical"`
@@ -113,6 +114,7 @@ func commandHello(s *Session, d *CommandData) {
 		EmptyClues:           g.Options.EmptyClues,
 		CharacterAssignments: characterAssignments,
 		CharacterMetadata:    characterMetadata,
+		Correspondence:       g.Options.Correspondence,
 
 		// Hypothetical settings
 		Hypothetical: g.Hypothetical,

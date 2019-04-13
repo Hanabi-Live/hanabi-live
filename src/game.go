@@ -73,6 +73,7 @@ type Options struct {
 	DeckPlays            bool
 	EmptyClues           bool
 	CharacterAssignments bool
+	Correspondence       bool // A table option to control the idle-timeout
 
 	// The rest of the options are parsed from the game name
 	SetSeed       string
@@ -284,7 +285,11 @@ func (g *Game) CheckIdle() {
 	commandMutex.Unlock()
 
 	// We want to clean up idle games, so sleep for a reasonable amount of time
-	time.Sleep(idleGameTimeout + time.Second)
+	if g.Options.Correspondence {
+		time.Sleep(idleGameTimeoutCorrespondence)
+	} else {
+		time.Sleep(idleGameTimeout)
+	}
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
 

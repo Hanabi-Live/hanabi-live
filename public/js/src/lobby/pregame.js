@@ -83,6 +83,7 @@ exports.draw = () => {
     // Note that the tooltips must be created inline; if they are created staticly in "main.tmpl",
     // then they will fail to initialize properly on the second viewing
     let html = '';
+
     if (globals.game.timed) {
         html += '<li><i id="lobby-pregame-options-timer" class="fas fa-clock" ';
         html += 'data-tooltip-content="#pregame-tooltip-timer"></i>&nbsp; (';
@@ -98,6 +99,7 @@ exports.draw = () => {
             </div>
         `;
     }
+
     if (globals.game.speedrun) {
         html += '<li><i id="lobby-pregame-options-speedrun" class="fas fa-running" ';
         html += 'data-tooltip-content="#pregame-tooltip-speedrun"></i></li>';
@@ -109,6 +111,7 @@ exports.draw = () => {
             </div>
         `;
     }
+
     if (globals.game.deckPlays) {
         html += '<li><i id="lobby-pregame-options-deck-plays" class="fas fa-blind" ';
         html += 'style="position: relative; left: 0.2em;" ';
@@ -121,6 +124,7 @@ exports.draw = () => {
             </div>
         `;
     }
+
     if (globals.game.emptyClues) {
         html += '<li><i id="lobby-pregame-options-empty-clues" class="fas fa-expand" ';
         html += 'data-tooltip-content="#pregame-tooltip-empty-clues"></i></li>';
@@ -132,6 +136,7 @@ exports.draw = () => {
             </div>
         `;
     }
+
     if (globals.game.characterAssignments) {
         html += '<li><span id="lobby-pregame-options-characters" ';
         html += 'style="position: relative; right: 0.2em;" ';
@@ -144,6 +149,19 @@ exports.draw = () => {
             </div>
         `;
     }
+
+    if (globals.game.correspondence) {
+        html += '<li><i id="lobby-pregame-options-correspondence" class="fas fa-envelope" ';
+        html += 'data-tooltip-content="#pregame-tooltip-correspondence"></i></li>';
+        html += `
+            <div class="hidden">
+                <div id="pregame-tooltip-correspondence" class="lobby-pregame-tooltip-icon">
+                    The <b>Correspondence</b> option is enabled.
+                </div>
+            </div>
+        `;
+    }
+
     if (globals.game.password) {
         html += '<li><i id="lobby-pregame-options-password" class="fas fa-lock" ';
         html += 'data-tooltip-content="#pregame-tooltip-password"></i></li>';
@@ -162,11 +180,13 @@ exports.draw = () => {
     }
 
     // Initialize the tooltips, if any
+    // (this has to be done after adding the HTML to the page)
     $('#lobby-pregame-options-timer').tooltipster(tooltipsterOptions);
     $('#lobby-pregame-options-speedrun').tooltipster(tooltipsterOptions);
     $('#lobby-pregame-options-deck-plays').tooltipster(tooltipsterOptions);
     $('#lobby-pregame-options-empty-clues').tooltipster(tooltipsterOptions);
     $('#lobby-pregame-options-characters').tooltipster(tooltipsterOptions);
+    $('#lobby-pregame-options-correspondence').tooltipster(tooltipsterOptions);
     $('#lobby-pregame-options-password').tooltipster(tooltipsterOptions);
 
     // Draw the player boxes

@@ -305,6 +305,13 @@ func commandGameStart(s *Session, d *CommandData) {
 		}
 	}
 
+	// Now that the game has started, make sure that correspondence games are hidden in the lobby
+	if g.Options.Correspondence {
+		notifyAllTableGone(g)
+		g.Visible = false
+		// (this has to be set after the "notifyAllTableGone()" function is finished)
+	}
+
 	// Let everyone know that the game has started, which will turn the
 	// "Join Game" button into "Spectate"
 	notifyAllTable(g)

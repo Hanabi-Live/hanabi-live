@@ -24,13 +24,13 @@ module.exports = function clickSpeedrun(event) {
     }
 
     if (event.evt.which === 1) { // Left-click
-        clickSpeedrunLeft(this, event.evt);
+        clickLeft(this, event.evt);
     } else if (event.evt.which === 3) { // Right-click
-        clickSpeedrunRight(this, event.evt);
+        clickRight(this, event.evt);
     }
 };
 
-const clickSpeedrunLeft = (card, event) => {
+const clickLeft = (card, event) => {
     // Left-clicking on cards in our own hand is a play action
     if (
         card.holder === globals.playerUs
@@ -99,7 +99,7 @@ const clickSpeedrunLeft = (card, event) => {
     }
 };
 
-const clickSpeedrunRight = (card, event) => {
+const clickRight = (card, event) => {
     // Right-clicking on cards in our own hand is a discard action
     if (
         card.holder === globals.playerUs
@@ -178,5 +178,16 @@ const clickSpeedrunRight = (card, event) => {
         && !event.metaKey
     ) {
         card.setNote('cm');
+    }
+
+    // Alt + shift + right-click is a "p" note
+    // (this is a common abbreviation for "this card was told to play")
+    if (
+        !event.ctrlKey
+        && event.shiftKey
+        && event.altKey
+        && !event.metaKey
+    ) {
+        card.setNote('p');
     }
 };

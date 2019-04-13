@@ -63,7 +63,9 @@ const (
 
 var (
 	// The amount of time that a game is inactive before it is killed by the server
-	idleGameTimeout = time.Minute * 30
+	idleGameTimeout               = time.Minute * 30
+	idleGameTimeoutCorrespondence = time.Hour * 24
+	idleGameTimeoutDev            = time.Hour * 24 * 7 // 7 days
 )
 
 const (

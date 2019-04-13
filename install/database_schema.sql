@@ -47,6 +47,7 @@ CREATE TABLE user_settings (
     create_table_deck_plays             BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_empty_clues            BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_character_assignments  BOOLEAN      NOT NULL  DEFAULT 0,
+    create_table_correspondence         BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_alert_waiters          BOOLEAN      NOT NULL  DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     /* If the user is deleted, automatically delete all of the rows */

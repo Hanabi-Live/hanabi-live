@@ -64,7 +64,8 @@ func (g *Game) End() {
 			// if they were within 60 seconds of the world record
 			diff := seconds - fastestTime
 			if diff <= 60 {
-				text = "You were slower than the world record by " + strconv.Itoa(diff) + " seconds."
+				text = "You were slower than the world record by " +
+					strconv.Itoa(diff) + " seconds."
 			}
 		} else if seconds < fastestTime && g.Score == g.GetPerfectScore() {
 			// Update the new fastest time
@@ -357,9 +358,13 @@ func (g *Game) AnnounceGameResult() {
 }
 
 func (g *Game) ConvertToSharedReplay() {
+	if g.Options.Correspondence {
+		g.Visible = true
+	}
 	g.Replay = true
 	g.Name = "Shared replay for game #" + strconv.Itoa(g.DatabaseID)
-	// Update the "EndTurn" variable (since we incremented the final turn above in an artificial way)
+	// Update the "EndTurn" variable
+	// (since we incremented the final turn above in an artificial way)
 	g.EndTurn = g.Turn
 	g.Progress = 100
 
@@ -382,17 +387,20 @@ func (g *Game) ConvertToSharedReplay() {
 		if !p.Present {
 			log.Info("Skipped converting " + p.Name + " to a spectator since they are not present.")
 			if p.ID == g.Owner && p.Session.IsClosed() {
-				// We don't want to pass the replay leader away if they are still in the lobby (as opposed to being offline)
+				// We don't want to pass the replay leader away if they are still in the lobby
+				// (as opposed to being offline)
 				ownerOffline = true
-				log.Info(p.Name + " was the owner of the game and they are offline; passing the leader to someone else.")
+				log.Info(p.Name + " was the owner of the game and they are offline; " +
+					"passing the leader to someone else.")
 			}
 			continue
 		}
 
 		// If this game was ended due to idleness,
 		// skip conversion so that the shared replay gets deleted below
-		if time.Since(g.DatetimeLastAction) > idleGameTimeout {
-			log.Info("Skipped converting " + p.Name + " to a spectator since the game ended due to idleness.")
+		if g.EndCondition == endConditionTimeout {
+			log.Info("Skipped converting " + p.Name + " to a spectator " +
+				"since the game ended due to idleness.")
 			continue
 		}
 

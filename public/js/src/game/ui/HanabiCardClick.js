@@ -122,6 +122,17 @@ const clickRight = (card, event) => {
         return;
     }
 
+    // Alt + shift + right-click is a "p" note
+    // (this is a common abbreviation for "this card was told to play")
+    if (
+        !event.ctrlKey
+        && event.shiftKey
+        && event.altKey
+        && !event.metaKey
+    ) {
+        card.setNote('p');
+    }
+
     // Ctrl + right-click is a local arrow
     // Even if they are not a leader in a shared replay,
     // a user might still want to draw an arrow on a card for demonstration purposes

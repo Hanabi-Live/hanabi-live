@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
 	"github.com/joho/godotenv"
@@ -51,7 +50,7 @@ func main() {
 
 	// If we are running in a development environment, change some constants
 	if os.Getenv("DOMAIN") == "localhost" {
-		idleGameTimeout = time.Hour * 24 * 7 // 7 days
+		idleGameTimeout = idleGameTimeoutDev
 	}
 
 	// Initialize the database model

@@ -238,6 +238,7 @@ func commandGameCreate(s *Session, d *CommandData) {
 			DeckPlays:            d.DeckPlays,
 			EmptyClues:           d.EmptyClues,
 			CharacterAssignments: d.CharacterAssignments,
+			Correspondence:       d.Correspondence,
 			SetSeed:              setSeed,
 			SetReplay:            setReplay,
 			SetReplayTurn:        setReplayTurn,

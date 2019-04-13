@@ -56,6 +56,7 @@ func (g *Game) NotifyPlayerChange() {
 			DeckPlays            bool                 `json:"deckPlays"`
 			EmptyClues           bool                 `json:"emptyClues"`
 			CharacterAssignments bool                 `json:"characterAssignments"`
+			Correspondence       bool                 `json:"correspondence"`
 			Password             bool                 `json:"password"`
 		}
 		p.Session.Emit("game", &GameMessage{
@@ -70,6 +71,7 @@ func (g *Game) NotifyPlayerChange() {
 			DeckPlays:            g.Options.DeckPlays,
 			EmptyClues:           g.Options.EmptyClues,
 			CharacterAssignments: g.Options.CharacterAssignments,
+			Correspondence:       g.Options.Correspondence,
 			Password:             g.Password != "",
 		})
 	}

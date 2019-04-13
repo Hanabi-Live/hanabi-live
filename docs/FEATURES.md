@@ -166,6 +166,12 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 * The characters are loosly based on [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant) from Sean McCarthy on the Board Game Geek forums.
 * More information on the characters are listed on [a separate page](https://github.com/Zamiell/hanabi-live/tree/master/docs/CHARACTERS.md).
 
+#### Correspondence Games
+
+* Normally, games will be automatically terminated after 30 minutes of inactivity in order to prevent the lobby from getting cluttered.
+* If players are intending to play a [correspondence game](https://en.wikipedia.org/wiki/Correspondence_chess) over a span of multiple days, then they can increase the 30 minute idle-timeout to 24 hours by enabling this option.
+* Correspondence games will not be visible from the lobby and can not be spectated by other players.
+
 #### Password-Protected Games
 
 * Each game has the option to be created with a password.
