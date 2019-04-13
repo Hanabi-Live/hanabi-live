@@ -126,8 +126,8 @@ const goto = (target, fast) => {
     }
 
     globals.animateFast = false;
-    globals.elements.msgLogGroup.refreshText();
-    globals.elements.messagePrompt.refreshText();
+    globals.elements.actionLog.refreshText();
+    globals.elements.fullActionLog.refreshText();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
 };
@@ -145,7 +145,10 @@ const setVisibleButtons = () => {
 
 const reset = () => {
     // Reset some game state variables
-    // "globals.turn" and "globals.currentPlayerIndex" is set in every "turn" command
+    // "globals.turn" is set in every "turn" command,
+    // but there are "notify" messages that occur before the first "turn" command
+    globals.turn = 0;
+    // "globals.currentPlayerIndex" is set in every "turn" command
     for (const card of globals.deck) {
         card.trueSuit = null;
         card.trueRank = null;
@@ -162,11 +165,10 @@ const reset = () => {
 
     // Reset various UI elements
     globals.postAnimationLayout = null;
-    globals.elements.messagePrompt.setMultiText('');
-    globals.elements.msgLogGroup.reset();
+    globals.elements.actionLog.reset();
+    globals.elements.fullActionLog.reset();
     globals.elements.deck.setCount(globals.deckSize);
     globals.elements.clueLog.clear();
-    globals.elements.messagePrompt.reset();
 
     const { suits } = globals.variant;
     for (let i = 0; i < globals.elements.playerHands.length; i++) {

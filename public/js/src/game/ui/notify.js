@@ -198,9 +198,8 @@ commands.draw = (data) => {
 
 // A new line of text has appeared in the action log
 commands.text = (data) => {
-    globals.elements.msgLogGroup.addMessage(data.text);
-
-    globals.elements.messagePrompt.setMultiText(data.text);
+    globals.elements.actionLog.setMultiText(data.text);
+    globals.elements.fullActionLog.addMessage(data.text);
     if (!globals.animateFast) {
         globals.layers.UI.batchDraw();
         globals.layers.overtop.batchDraw();

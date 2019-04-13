@@ -106,7 +106,7 @@ module.exports = () => {
         discardStacks: new Map(), // Keys are Suits, values are CardStacks
         playerHands: [], // Contains CardLayouts
         nameFrames: [],
-        messagePrompt: null, // The truncated action log
+        actionLog: null,
         replayButton: null,
         chatButton: null,
         lobbyButtonSmall: null,
@@ -173,7 +173,7 @@ module.exports = () => {
         hypoCircle: null,
 
         // Other screens
-        msgLogGroup: null, // The full action log
+        fullActionLog: null,
 
         // Other optional elements
         timer1: null,

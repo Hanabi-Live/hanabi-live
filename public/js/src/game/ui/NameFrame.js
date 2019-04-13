@@ -39,7 +39,7 @@ class NameFrame extends graphics.Group {
         this.name.on('click tap', function click(event) {
             const username = this.getText();
             if (event.evt.which === 1) { // Left-click
-                globals.elements.msgLogGroup.showPlayerActions(username);
+                globals.elements.fullActionLog.showPlayerActions(username);
             } else if (event.evt.which === 3) { // Right-click
                 giveLeader(username);
             }

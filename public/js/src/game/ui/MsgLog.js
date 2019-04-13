@@ -73,7 +73,7 @@ class MsgLog extends graphics.Group {
     addMessage(msg) {
         const appendLine = (log, numbers, line) => {
             log.setMultiText(line);
-            numbers.setMultiText(globals.deckSize.toString());
+            numbers.setMultiText((globals.turn + 1).toString());
         };
 
         appendLine(this.logText, this.logNumbers, msg);

@@ -105,7 +105,9 @@ module.exports = () => {
         },
         shadowOpacity: 0.9,
     });
-    basicNumberLabel = basicTextLabel.clone().setText('0').setWidth(0.03 * winW);
+    basicNumberLabel = basicTextLabel.clone();
+    basicNumberLabel.setText('0');
+    basicNumberLabel.setWidth(0.03 * winW);
 
     // The middle of the screen
     drawActionLog();
@@ -164,11 +166,11 @@ const drawActionLog = () => {
     }
     actionLogValues.w = 0.4;
 
-    const actionLog = new graphics.Group({
+    const actionLogGroup = new graphics.Group({
         x: actionLogValues.x * winW,
         y: actionLogValues.y * winH,
     });
-    globals.layers.UI.add(actionLog);
+    globals.layers.UI.add(actionLogGroup);
 
     // The faded rectangle around the action log
     const actionLogRect = new graphics.Rect({
@@ -181,19 +183,16 @@ const drawActionLog = () => {
         cornerRadius: 0.01 * winH,
         listening: true,
     });
-    actionLog.add(actionLogRect);
+    actionLogGroup.add(actionLogRect);
     actionLogRect.on('click tap', () => {
-        globals.elements.msgLogGroup.show();
+        globals.elements.fullActionLog.show();
         globals.elements.stageFade.show();
-
         globals.layers.overtop.batchDraw();
 
         globals.elements.stageFade.on('click tap', () => {
             globals.elements.stageFade.off('click tap');
-
-            globals.elements.msgLogGroup.hide();
+            globals.elements.fullActionLog.hide();
             globals.elements.stageFade.hide();
-
             globals.layers.overtop.batchDraw();
         });
     });
@@ -203,7 +202,7 @@ const drawActionLog = () => {
     if (globals.lobby.settings.showKeldonUI) {
         maxLines = 3;
     }
-    globals.elements.messagePrompt = new MultiFitText({
+    globals.elements.actionLog = new MultiFitText({
         align: 'center',
         fontSize: 0.028 * winH,
         fontFamily: 'Verdana',
@@ -221,7 +220,7 @@ const drawActionLog = () => {
         height: (actionLogValues.h - 0.003) * winH,
         maxLines,
     });
-    actionLog.add(globals.elements.messagePrompt);
+    actionLogGroup.add(globals.elements.actionLog);
 
     // The dark overlay that appears when you click on the action log (or a player's name)
     globals.elements.stageFade = new graphics.Rect({
@@ -237,8 +236,8 @@ const drawActionLog = () => {
     globals.layers.overtop.add(globals.elements.stageFade);
 
     // The full action log (that appears when you click on the action log)
-    globals.elements.msgLogGroup = new MsgLog();
-    globals.layers.overtop.add(globals.elements.msgLogGroup);
+    globals.elements.fullActionLog = new MsgLog();
+    globals.layers.overtop.add(globals.elements.fullActionLog);
 };
 
 const drawPlayStacksAndDiscardStacks = () => {

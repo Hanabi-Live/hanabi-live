@@ -100,8 +100,8 @@ const redraw = () => {
     }
 
     // Restore message text and prompts
-    msgLogGroup.refreshText();
-    messagePrompt.refreshText();
+    actionLog.refreshText();
+    fullActionLog.refreshText();
 
     // Redraw all layers
     for (const layer of globals.layers) {
