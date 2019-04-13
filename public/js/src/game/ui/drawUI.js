@@ -391,7 +391,7 @@ const drawBottomLeftButtons = () => {
         width: bottomLeftButtonValues.w * winW,
         height: bottomLeftButtonValues.h * winH,
         image: 'replay',
-        visible: !globals.replay && !globals.lobby.settings.realLifeMode,
+        visible: !globals.replay,
     });
     replayButton.on('click tap', () => {
         if (!replayButton.enabled) {
@@ -955,10 +955,6 @@ const drawSharedReplay = () => {
 };
 
 const drawClueLog = () => {
-    if (globals.lobby.settings.realLifeMode) {
-        return;
-    }
-
     clueLogValues = {
         x: 0.8,
         y: 0.01,
@@ -988,10 +984,6 @@ const drawClueLog = () => {
 
 // Statistics are shown on the right-hand side of the screen (at the bottom of the clue log)
 const drawStatistics = () => {
-    if (globals.lobby.settings.realLifeMode) {
-        return;
-    }
-
     const statsRect = new graphics.Rect({
         x: clueLogValues.x * winW,
         y: 0.53 * winH,

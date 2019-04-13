@@ -228,7 +228,10 @@ const hideAllArrows = () => {
         globals.elements.efficiencyNumberLabelMinNeeded,
     ];
     for (const element of elements) {
-        element.arrow.hide();
+        // Some elements may not exist if we are in Real-Life mode
+        if (element && element.arrow) {
+            element.arrow.hide();
+        }
     }
 
     globals.layers.card.batchDraw();

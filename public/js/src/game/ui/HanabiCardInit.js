@@ -14,7 +14,9 @@ const notes = require('./notes');
 const ui = require('./ui');
 
 exports.image = function image() {
-    // Create the "bare" card image, which is a gray card with all the pips
+    // Create the "bare" card image, which is the main card grahpic
+    // If the card is not revealed, it will just be a gray rectangle
+    // The pips and other elements of a card are drawn on top of the bare image
     this.bare = new graphics.Image({
         width: constants.CARDW,
         height: constants.CARDH,
@@ -441,16 +443,14 @@ exports.empathy = function empathy() {
 
 exports.click = function click() {
     // Define the clue log mouse handlers
-    if (!globals.lobby.settings.realLifeMode) {
-        this.on('mousemove tap', () => {
-            globals.elements.clueLog.showMatches(this);
-            globals.layers.UI.batchDraw();
-        });
-        this.on('mouseout', () => {
-            globals.elements.clueLog.showMatches(null);
-            globals.layers.UI.batchDraw();
-        });
-    }
+    this.on('mousemove tap', () => {
+        globals.elements.clueLog.showMatches(this);
+        globals.layers.UI.batchDraw();
+    });
+    this.on('mouseout', () => {
+        globals.elements.clueLog.showMatches(null);
+        globals.layers.UI.batchDraw();
+    });
 
     // Define the other mouse handlers
     this.on('click tap', HanabiCardClick);

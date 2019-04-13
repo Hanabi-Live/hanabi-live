@@ -165,9 +165,7 @@ const reset = () => {
     globals.elements.messagePrompt.setMultiText('');
     globals.elements.msgLogGroup.reset();
     globals.elements.deck.setCount(globals.deckSize);
-    if (!globals.lobby.settings.realLifeMode) {
-        globals.elements.clueLog.clear();
-    }
+    globals.elements.clueLog.clear();
     globals.elements.messagePrompt.reset();
 
     const { suits } = globals.variant;

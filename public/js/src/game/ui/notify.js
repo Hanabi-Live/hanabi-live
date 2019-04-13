@@ -40,11 +40,13 @@ commands.clue = (data) => {
         if (!globals.lobby.settings.realLifeMode) {
             card.cluedBorder.show();
         }
-        card.applyClue(clue, true);
-        card.setBareImage();
+        if (!globals.lobby.settings.realLifeMode && !globals.variant.name.startsWith('Duck')) {
+            card.applyClue(clue, true);
+            card.setBareImage();
+        }
     }
 
-    const neglist = [];
+    const negativeList = [];
     for (let i = 0; i < globals.elements.playerHands[data.target].children.length; i++) {
         const child = globals.elements.playerHands[data.target].children[i];
 
@@ -52,15 +54,12 @@ commands.clue = (data) => {
         const { order } = card;
 
         if (data.list.indexOf(order) < 0) {
-            neglist.push(order);
-            card.applyClue(clue, false);
-            card.setBareImage();
+            negativeList.push(order);
+            if (!globals.lobby.settings.realLifeMode && !globals.variant.name.startsWith('Duck')) {
+                card.applyClue(clue, true);
+                card.setBareImage();
+            }
         }
-    }
-
-    // Don't bother adding anything to the clue log if we are in real-life mode
-    if (globals.lobby.settings.realLifeMode) {
-        return;
     }
 
     // Add an entry to the clue log
@@ -81,7 +80,7 @@ commands.clue = (data) => {
         target: globals.playerNames[data.target],
         clueName,
         list: data.list,
-        neglist,
+        negativeList,
         turn: data.turn,
     });
     globals.elements.clueLog.add(entry);

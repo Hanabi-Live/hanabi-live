@@ -82,9 +82,10 @@ class HanabiCard extends graphics.Group {
         this.hideClues();
 
         // Reset all of the pips to their default state
+        // (but don't show any pips in Real-Life mode)
         if (this.suitPipsMap) {
             for (const [, suitPip] of this.suitPipsMap) {
-                suitPip.show();
+                suitPip.setVisible(!globals.lobby.settings.realLifeMode);
             }
         }
         if (this.suitPipsXMap) {
@@ -94,7 +95,7 @@ class HanabiCard extends graphics.Group {
         }
         if (this.rankPipsMap) {
             for (const [, rankPip] of this.rankPipsMap) {
-                rankPip.show();
+                rankPip.setVisible(!globals.lobby.settings.realLifeMode);
             }
         }
         if (this.rankPipsXMap) {
@@ -174,7 +175,16 @@ class HanabiCard extends graphics.Group {
         }
 
         // Set the name
-        this.bareName = `${prefix}-${suitToShow.name}-${rankToShow}`;
+        // (but in Real-Life mode,
+        // always show the vanilla card back if the card is not fully revealed)
+        if (
+            globals.lobby.settings.realLifeMode
+            && (suitToShow === constants.SUIT.GRAY || rankToShow === 6)
+        ) {
+            this.bareName = 'deck-back';
+        } else {
+            this.bareName = `${prefix}-${suitToShow.name}-${rankToShow}`;
+        }
 
         // Show or hide the pips
         this.suitPips.setVisible(suitToShow === constants.SUIT.GRAY);
@@ -341,14 +351,9 @@ class HanabiCard extends graphics.Group {
         }).play();
     }
 
+    // This card was touched by a positive or negative clue,
+    // so remove pips and possibilities from the card
     applyClue(clue, positive) {
-        if (
-            globals.lobby.settings.realLifeMode
-            || globals.variant.name.startsWith('Duck')
-        ) {
-            return;
-        }
-
         if (clue.type === constants.CLUE_TYPE.RANK) {
             const clueRank = clue.value;
             let removed;
