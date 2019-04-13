@@ -48,6 +48,12 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * All color clues will "touch" the dark rainbow suit.
 * There is only one of each dark rainbow card in the deck, which means that every dark rainbow card is "critical".
 
+### Gray
+
+* One of the suits is replaced with a gray suit.
+* No color clues "touch" the gray suit. (It is a colorless suit.)
+* There is only one of each gray card in the deck, which means that every gray card is "critical".
+
 ### Color Blind
 
 * Color clues touch no suits. (Empty color clues are always allowed.)
