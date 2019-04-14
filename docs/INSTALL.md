@@ -19,29 +19,32 @@ Note that these steps require **an elevated (administrator) command-shell**.
   (so that Git does not convert LF to CRLF when cloning repositories)
   * `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
+* Configure MariaDB:
+  * `mysql -u root`
+    * `DELETE FROM mysql.user WHERE User='';` <br />
+    (this delete the anonymous user that is installed by default)
+    * `DROP DATABASE IF EXISTS test;` <br />
+    (this deletes the test database that is installed by default)
+    * `CREATE DATABASE hanabi;`
+    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
+    * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
+    * `FLUSH PRIVILEGES;`
+    * `exit`
 * Clone the repository:
   * `mkdir %GOPATH%\src\github.com\Zamiell`
   * `cd %GOPATH%\src\github.com\Zamiell`
   * `git clone https://github.com/Zamiell/hanabi-live.git` <br />
   (or clone a fork, if you are doing development work)
   * `cd hanabi-live`
-* Install the project's dependencies:
-  * `install\install_dependencies.sh`
-  * `install\install_development_dependencies.sh`
+* Change from the Windows Command Prompt to Git Bash and install some dependencies:
+  * `"%PROGRAMFILES%\Git\bin\sh.exe"`
+  * `./install/install_dependencies.sh`
+  * `./install/install_development_dependencies.sh`
+  * `./install/install_database_schema.sh`
+  * `exit`
 * Set the domain URL (optional):
   * `notepad .env` <br />
   (if you plan to surf to "http://localhost", then don't change anything)
-* Delete the anonymous user, delete the test database, create the Hanabi database, and create the Hanabi user:
-  * `mysql -u root`
-    * `DELETE FROM mysql.user WHERE User='';`
-    * `DROP DATABASE IF EXISTS test;`
-    * `CREATE DATABASE hanabi;`
-    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
-    * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
-    * `FLUSH PRIVILEGES;`
-    * `exit`
-* Install the database schema:
-  * `install\install_database_schema.sh`
 * Import a solid set of starting VSCode user settings:
   * `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"` <br />
   (feel free to tweak this file to your liking)

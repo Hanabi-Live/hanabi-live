@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -174,7 +175,9 @@ func discordGetNickname(discordID string) string {
 	// (assume that the first channel ID is the same as the server ID)
 
 	// Get their custom nickname for the Discord server, if any
-	for _, member := range guild.Members {
+	log.Debug("Searching for Discord ID: " + discordID)
+	for i, member := range guild.Members {
+		log.Debug("Member " + strconv.Itoa(i) + ": " + member.User.ID + " - " + member.Nick + " - " + member.User.Username)
 		if member.User.ID != discordID {
 			continue
 		}
@@ -186,6 +189,7 @@ func discordGetNickname(discordID string) string {
 		return member.Nick
 	}
 
+	log.Warning("Failed to find the username/nickname for Discord ID: " + discordID)
 	return ""
 }
 

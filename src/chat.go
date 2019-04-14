@@ -184,18 +184,15 @@ func chatFillMentions(msg string) string {
 		return msg
 	}
 
-	log.Debug("STARTING WITH:", msg)
 	for {
 		match := mentionRegExp.FindStringSubmatch(msg)
 		if match == nil || len(match) <= 1 {
-			log.Debug("NO MATCH, EXITING")
 			break
 		}
 		discordID := match[1]
 		username := discordGetNickname(discordID)
 		msg = strings.Replace(msg, "&lt;@"+discordID+"&gt;", "@"+username, -1)
 		msg = strings.Replace(msg, "&lt;@!"+discordID+"&gt;", "@"+username, -1)
-		log.Debug("REPLACED, MSG IS NOW:", msg)
 	}
 	return msg
 }
