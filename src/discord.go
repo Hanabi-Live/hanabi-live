@@ -15,8 +15,9 @@ var (
 	discordListenChannels []string
 	discordLobbyChannel   string
 	discordBotChannel     string
-	discordBotID          string
 	discordLastAtHere     time.Time
+	discordBotID          string
+	discordGuildID        string
 )
 
 /*
@@ -84,6 +85,9 @@ func discordConnect() {
 		return
 	}
 
+	// We want to periodically update the members of the guild, so we do this in a new goroutine
+	go discordRefreshMembers()
+
 	// Announce that the server has started
 	msg := "The server has successfully started at: " + time.Now().Format("Mon Jan 02 15:04:05 MST 2006")
 	commandChat(nil, &CommandData{
@@ -94,6 +98,20 @@ func discordConnect() {
 	})
 }
 
+func discordRefreshMembers() {
+	// An infinite loop
+	for {
+		// Request all of the guild members,
+		// as large servers will only have the first 100 or so cached in "guild.Members" by default
+		// This updates the state in the background
+		if err := discord.RequestGuildMembers(discordGuildID, "", 0); err != nil {
+			log.Error("Failed to request the Discord guild members:", err)
+		}
+
+		time.Sleep(5 * time.Minute)
+	}
+}
+
 /*
 	Event handlers
 */
@@ -101,6 +119,9 @@ func discordConnect() {
 func discordReady(s *discordgo.Session, event *discordgo.Ready) {
 	log.Info("Discord bot connected with username: " + event.User.Username)
 	discordBotID = event.User.ID
+
+	// Assume that the first channel ID is the same as the guild/server ID
+	discordGuildID = discordListenChannels[0]
 }
 
 // Copy messages from Discord to the lobby
@@ -176,12 +197,6 @@ func discordGetNickname(discordID string) string {
 		guild = v
 	}
 
-	// Request all of the guild members,
-	// as large servers will only have the first 100 or so cached in "guild.Members" by default
-	if err := discord.RequestGuildMembers(guildID, "", 0); err != nil {
-		return "[error]"
-	}
-
 	// Get their custom nickname for the Discord server, if any
 	log.Debug("Searching for Discord ID: " + discordID + ", " +
 		"len(guild.Members) = " + strconv.Itoa(len(guild.Members)) + ", " +
@@ -198,10 +213,9 @@ func discordGetNickname(discordID string) string {
 		return member.Nick
 	}
 
-	// There is a bug in the Discord API where "guild.MemberCount"
-	// will not contain all of the members of the server
-	// https://github.com/bwmarrin/discordgo/issues/639
-	// As a last resort, get the Discord user object directly
+	// If the "RequestGuildMembers()" function has not finished populating the "guild.Members",
+	// then the above code block may not find the user
+	// Default to getting the user's username directly from the API
 	if user, err := discord.User(discordID); err != nil {
 		log.Error("Failed to get the Discord user of \""+discordID+"\":", err)
 		return "[error]"
