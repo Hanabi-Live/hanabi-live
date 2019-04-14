@@ -35,8 +35,9 @@ func commandGameCreate(s *Session, d *CommandData) {
 	}
 
 	// Validate that the player is not joined to another game
-	if s.CurrentGame() != -1 {
-		s.Warning("You cannot create a new game when you are already in one.")
+	if g2 := s.GetJoinedGame(); g2 != nil {
+		s.Warning("You cannot join more than one game at a time. " +
+			"Terminate your old game before joining a new one.")
 		return
 	}
 
