@@ -281,7 +281,9 @@ module.exports = (clueAreaValues) => {
                 rotation,
                 easing: graphics.Easings.EaseInOut,
                 onFinish: () => {
-                    globals.elements.currentPlayerArrow.setRotation(unmodifiedRotation);
+                    if (globals.elements.currentPlayerArrow) {
+                        globals.elements.currentPlayerArrow.setRotation(unmodifiedRotation);
+                    }
                 },
             }).play();
         }
