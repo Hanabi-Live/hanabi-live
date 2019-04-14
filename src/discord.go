@@ -168,14 +168,16 @@ func discordGetNickname(discordID string) string {
 	var guild *discordgo.Guild
 	if v, err := discord.Guild(discordListenChannels[0]); err != nil {
 		log.Error("Failed to get the Discord guild:", err)
-		return ""
+		return "[error]"
 	} else {
 		guild = v
 	}
 	// (assume that the first channel ID is the same as the server ID)
 
 	// Get their custom nickname for the Discord server, if any
-	log.Debug("Searching for Discord ID: " + discordID)
+	log.Debug("Searching for Discord ID: " + discordID + ", " +
+		"len(guild.Members) = " + strconv.Itoa(len(guild.Members)) + ", " +
+		"guild.MemberCount = " + strconv.Itoa(guild.MemberCount))
 	for i, member := range guild.Members {
 		log.Debug("Member " + strconv.Itoa(i) + ": " + member.User.ID + " - " + member.Nick + " - " + member.User.Username)
 		if member.User.ID != discordID {
@@ -189,8 +191,14 @@ func discordGetNickname(discordID string) string {
 		return member.Nick
 	}
 
-	log.Warning("Failed to find the username/nickname for Discord ID: " + discordID)
-	return ""
+	// There is a bug in the Discord API where "guild.MemberCount" will not contain all of the members of the server
+	// As a last resort, get the Discord user object directly
+	if user, err := discord.User(discordID); err != nil {
+		log.Error("Failed to get the Discord user of \""+discordID+"\":", err)
+		return "[error]"
+	} else {
+		return user.Username
+	}
 }
 
 func discordGetChannel(discordID string) string {
