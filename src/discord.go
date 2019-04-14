@@ -164,22 +164,29 @@ func discordSend(to string, username string, msg string) {
 }
 
 func discordGetNickname(discordID string) string {
+	// Assume that the first channel ID is the same as the guild/server ID
+	guildID := discordListenChannels[0]
+
 	// Get the Discord guild object
 	var guild *discordgo.Guild
-	if v, err := discord.Guild(discordListenChannels[0]); err != nil {
+	if v, err := discord.Guild(guildID); err != nil {
 		log.Error("Failed to get the Discord guild:", err)
 		return "[error]"
 	} else {
 		guild = v
 	}
-	// (assume that the first channel ID is the same as the server ID)
+
+	// Request all of the guild members,
+	// as large servers will only have the first 100 or so cached in "guild.Members" by default
+	if err := discord.RequestGuildMembers(guildID, "", 0); err != nil {
+		return "[error]"
+	}
 
 	// Get their custom nickname for the Discord server, if any
 	log.Debug("Searching for Discord ID: " + discordID + ", " +
 		"len(guild.Members) = " + strconv.Itoa(len(guild.Members)) + ", " +
 		"guild.MemberCount = " + strconv.Itoa(guild.MemberCount))
-	for i, member := range guild.Members {
-		log.Debug("Member " + strconv.Itoa(i) + ": " + member.User.ID + " - " + member.Nick + " - " + member.User.Username)
+	for _, member := range guild.Members {
 		if member.User.ID != discordID {
 			continue
 		}
@@ -191,7 +198,9 @@ func discordGetNickname(discordID string) string {
 		return member.Nick
 	}
 
-	// There is a bug in the Discord API where "guild.MemberCount" will not contain all of the members of the server
+	// There is a bug in the Discord API where "guild.MemberCount"
+	// will not contain all of the members of the server
+	// https://github.com/bwmarrin/discordgo/issues/639
 	// As a last resort, get the Discord user object directly
 	if user, err := discord.User(discordID); err != nil {
 		log.Error("Failed to get the Discord user of \""+discordID+"\":", err)
@@ -219,7 +228,7 @@ func discordGetChannel(discordID string) string {
 		}
 	}
 
-	return "Unknown Discord Channel"
+	return "[unknown]"
 }
 
 func discordGetID(username string) string {
@@ -240,5 +249,5 @@ func discordGetID(username string) string {
 		}
 	}
 
-	return ""
+	return "[not found]"
 }
