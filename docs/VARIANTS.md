@@ -1,6 +1,6 @@
 # Variants
 
-Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of games. In order to keep the game fresh, the server allows you to create games using several custom variants. Beyond this, players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options).
+Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of games. In order to keep the game fresh, the server allows you to create games using the variants mentioned in the [rules that come with the game](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md) as well as many other non-official custom variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options).
 
 <br />
 
@@ -17,6 +17,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 * An teal suit is added.
 * It works identical to the other suits in that you can clue teal cards with teal clues.
+* (This is the first [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md).)
 
 ### Four Suits
 
@@ -26,33 +27,46 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 * The red and purple suits are removed.
 
-### White
-
-* One of the suits is replaced with a white suit.
-* No color clues "touch" the white suit. (It is a colorless suit.)
-
 ### Black
 
 * One of the suits is replaced with a black suit.
 * It works similar to the other suits in that you can clue black cards with black clues.
 * There is only one of each black card in the deck, which means that every black card is "critical".
+* (This is the second [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md).)
 
 ### Rainbow
 
 * One of the suits is replaced with a rainbow suit.
 * All color clues will "touch" the rainbow suit.
+* (This is the third [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md).)
 
-### Gray (White + Black)
+### White
+
+* One of the suits is replaced with a white suit.
+* No color clues "touch" the white suit. (It is a colorless suit.)
+
+### Brown
+
+* One of the suits is replaced with a brown suit.
+* No rank clues "touch" the brown suit.
+
+### Dark Rainbow (Rainbow + Black)
+
+* One of the suits is replaced with a dark rainbow suit.
+* All color clues will "touch" the dark rainbow suit.
+* There is only one of each dark rainbow card in the deck, which means that every dark rainbow card is "critical".
+
+### Gray (Black + White)
 
 * One of the suits is replaced with a gray suit.
 * No color clues "touch" the gray suit. (It is a colorless suit.)
 * There is only one of each gray card in the deck, which means that every gray card is "critical".
 
-### Dark Rainbow (Black + Rainbow)
+### Chocolate (Black + Brown)
 
-* One of the suits is replaced with a dark rainbow suit.
-* All color clues will "touch" the dark rainbow suit.
-* There is only one of each dark rainbow card in the deck, which means that every dark rainbow card is "critical".
+* One of the suits is replaced with a chocolate suit.
+* No rank clues "touch" the brown suit.
+* There is only one of each chocolate card in the deck, which means that every chocolate card is "critical".
 
 ### Color Blind
 
@@ -124,11 +138,6 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Six Suits
   * Four Suits
   * Three Suits
-* White
-  * White (6 Suits)
-  * White (5 Suits)
-  * White (4 Suits)
-  * White (3 Suits)
 * Black
   * Black (6 Suits)
   * Black (5 Suits)
@@ -137,31 +146,67 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Rainbow (5 Suits)
   * Rainbow (4 Suits)
   * Rainbow (3 Suits)
-* White & Black
-  * White & Black (6 Suits)
-  * White & Black (5 Suits)
-* White & Rainbow
-  * White & Rainbow (6 Suits)
-  * White & Rainbow (5 Suits)
-  * White & Rainbow (4 Suits)
+* White
+  * White (6 Suits)
+  * White (5 Suits)
+  * White (4 Suits)
+  * White (3 Suits)
+* Brown
+  * Brown (6 Suits)
+  * Brown (5 Suits)
+  * Brown (4 Suits)
+  * Brown (3 Suits)
 * Black & Rainbow
   * Black & Rainbow (6 Suits)
   * Black & Rainbow (5 Suits)
-* Gray
-  * Gray (6 Suits)
-  * Gray (5 Suits)
-* Black & Gray
-  * Black & Gray (6 Suits)
-* Rainbow & Gray
-  * Rainbow & Gray (6 Suits)
-  * Rainbow & Gray (5 Suits)
+* Black & White
+  * Black & White (6 Suits)
+  * Black & White (5 Suits)
+* Black & Brown
+  * Black & Brown (6 Suits)
+  * Black & Brown (5 Suits)
+* Rainbow & White
+  * Rainbow & White (6 Suits)
+  * Rainbow & White (5 Suits)
+  * Rainbow & White (4 Suits)
+* Rainbow & Brown
+  * Rainbow & Brown (6 Suits)
+  * Rainbow & Brown (5 Suits)
+  * Rainbow & Brown (4 Suits)
+  * Rainbow & Brown (3 Suits)
+* White & Brown
+  * White & Brown (6 Suits)
+  * White & Brown (5 Suits)
+  * White & Brown (4 Suits)
+  * White & Brown (3 Suits)
 * Dark Rainbow
   * Dark Rainbow (6 Suits)
   * Dark Rainbow (5 Suits)
-* Black & Dark Rainbow
   * Black & Dark Rainbow (6 Suits)
-* Gray & Dark Rainbow
-  * Gray & Dark Rainbow (6 Suits)
+  * White & Dark Rainbow (6 Suits)
+  * White & Dark Rainbow (5 Suits)
+  * Brown & Dark Rainbow (6 Suits)
+  * Brown & Dark Rainbow (5 Suits)
+* Gray
+  * Gray (6 Suits)
+  * Gray (5 Suits)
+  * Black & Gray (6 Suits)
+  * Rainbow & Gray (6 Suits)
+  * Rainbow & Gray (5 Suits)
+  * Brown & Gray (6 Suits)
+  * Brown & Gray (5 Suits)
+* Chocolate
+  * Chocolate (6 Suits)
+  * Chocolate (5 Suits)
+  * Black & Chocolate (6 Suits)
+  * Rainbow & Chocolate (6 Suits)
+  * Rainbow & Chocolate (5 Suits)
+  * White & Chocolate (6 Suits)
+  * White & Chocolate (5 Suits)
+* Dark Mixes
+  * Dark Rainbow & Gray (6 Suits)
+  * Dark Rainbow & Chocolate (6 Suits)
+  * Gray & Chocolate (6 Suits)
 * Color Blind
   * Color Blind (6 Suits)
   * Color Blind (5 Suits)

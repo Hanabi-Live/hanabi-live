@@ -24,6 +24,16 @@ var (
 )
 
 func characterInit() {
+	// Validate that all of the names are unique
+	uniqueNameMap := make(map[string]bool)
+	for _, character := range characterDefinitions {
+		if _, ok := uniqueNameMap[character.Name]; ok {
+			log.Fatal("There are two character with the name of \"" + character.Name + "\".")
+			return
+		}
+		uniqueNameMap[character.Name] = true
+	}
+
 	// Validate that all of the ID's are unique
 	for _, character := range characterDefinitions {
 		for _, character2 := range characterDefinitions {
@@ -33,6 +43,7 @@ func characterInit() {
 			if character.ID == character2.ID {
 				log.Fatal("Character \"" + character.Name + "\" and \"" + character2.Name + "\" " +
 					"have the same ID (" + strconv.Itoa(character.ID) + ").")
+				return
 			}
 		}
 	}

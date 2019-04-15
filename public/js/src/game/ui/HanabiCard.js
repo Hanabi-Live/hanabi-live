@@ -180,8 +180,8 @@ class HanabiCard extends graphics.Group {
         let newOpacity = 1;
         if (
             !globals.lobby.settings.realLifeMode
-            && !this.suitPips.getVisible()
-            && !this.rankPips.getVisible()
+            && this.trueSuit !== null
+            && this.trueRank !== null
             && this.numPositiveClues === 0
             && !this.isPlayed
             && !this.isDiscarded

@@ -293,7 +293,7 @@ exports.backToLobby = () => {
 };
 
 exports.setPause = () => {
-    if (!globals.timed) {
+    if (!globals.timed || globals.replay) {
         return;
     }
 

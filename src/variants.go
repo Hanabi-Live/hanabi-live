@@ -51,6 +51,7 @@ var (
 	RedClue    = ColorClue{Name: "Red"}
 	PurpleClue = ColorClue{Name: "Purple"}
 	TealClue   = ColorClue{Name: "Teal"}
+	BrownClue  = ColorClue{Name: "Brown"}
 	BlackClue  = ColorClue{Name: "Black"}
 
 	// Helpers used for some variants
@@ -73,8 +74,10 @@ var (
 	BlackSuit       = NewSuit1oE("Black", []ColorClue{BlackClue})
 	RainbowSuit     = NewSuit("Rainbow", allColorClues)
 	WhiteSuit       = NewSuit("White", noColorClues)
-	GraySuit        = NewSuit1oE("Gray", noColorClues)
+	BrownSuit       = NewSuit("Brown", []ColorClue{BrownClue})
 	DarkRainbowSuit = NewSuit1oE("Rainbow", allColorClues)
+	GraySuit        = NewSuit1oE("Gray", noColorClues)
+	ChocolateSuit   = NewSuit1oE("Chocolate", []ColorClue{BrownClue})
 
 	// For "Color Blind"
 	BlindBlueSuit   = NewSuit("Blue", noColorClues)
@@ -119,6 +122,16 @@ var (
 )
 
 func variantsInit() {
+	// Validate that all of the names are unique
+	uniqueNameMap := make(map[string]bool)
+	for _, variant := range variantDefinitions {
+		if _, ok := uniqueNameMap[variant.Name]; ok {
+			log.Fatal("There are two variants with the name of \"" + variant.Name + "\".")
+			return
+		}
+		uniqueNameMap[variant.Name] = true
+	}
+
 	// Validate that all of the ID's are unique
 	for _, variant := range variantDefinitions {
 		for _, variant2 := range variantDefinitions {
@@ -126,10 +139,9 @@ func variantsInit() {
 				continue
 			}
 			if variant.ID == variant2.ID {
-				log.Fatal(
-					"Variant \"" + variant.Name + "\" and \"" + variant2.Name + "\" " +
-						"have the same ID (" + strconv.Itoa(variant.ID) + ").",
-				)
+				log.Fatal("Variant \"" + variant.Name + "\" and \"" + variant2.Name + "\" " +
+					"have the same ID (" + strconv.Itoa(variant.ID) + ").")
+				return
 			}
 		}
 	}
