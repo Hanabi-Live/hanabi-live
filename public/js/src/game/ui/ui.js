@@ -78,7 +78,7 @@ exports.handleAction = (data) => {
                 const clueColor = clue.value;
                 if (
                     card.trueSuit === constants.SUIT.RAINBOW
-                    || card.trueSuit === constants.SUIT.DARKRAINBOW
+                    || card.trueSuit === constants.SUIT.DARK_RAINBOW
                     || card.trueSuit.clueColors.includes(clueColor)
                 ) {
                     touched = true;
@@ -294,13 +294,29 @@ exports.backToLobby = () => {
 
 exports.setPause = () => {
     if (globals.paused) {
+        // If we queued a pause, unqueue it
+        globals.pauseQueued = false;
+        const wasVisible = globals.elements.timer1Circle.getVisible();
+        if (wasVisible !== globals.pauseQueued) {
+            globals.elements.timer1Circle.setVisible(globals.pauseQueued);
+            globals.layers.UI.batchDraw();
+        }
+
         globals.elements.stageFade.setOpacity(0.7);
         globals.elements.stageFade.show();
-        globals.layers.overtop.batchDraw();
+        globals.elements.stageFade.getLayer().batchDraw();
+
+        globals.elements.timer1.hide();
+        globals.elements.timer2.hide();
+        globals.elements.timer1.getLayer().batchDraw();
     } else {
         globals.elements.stageFade.setOpacity(0.3);
         globals.elements.stageFade.hide();
-        globals.layers.overtop.batchDraw();
+        globals.elements.stageFade.getLayer().batchDraw();
+
+        globals.elements.timer1.show();
+        globals.elements.timer2.show();
+        globals.elements.timer1.getLayer().batchDraw();
     }
 };
 

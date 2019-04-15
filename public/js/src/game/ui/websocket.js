@@ -369,6 +369,8 @@ commands.notifyList = (dataList) => {
 commands.pause = (data) => {
     globals.paused = data.paused;
     globals.pausePlayer = data.pausePlayer;
+
+    // Pause or unpause the UI accordingly
     ui.setPause();
 };
 

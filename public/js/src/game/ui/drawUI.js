@@ -338,7 +338,7 @@ const drawPlayStacksAndDiscardStacks = () => {
                 globals.lobby.settings.showColorblindUI
                 && suit.clueColors.length > 1
                 && suit !== constants.SUIT.RAINBOW
-                && suit !== constants.SUIT.DARKRAINBOW
+                && suit !== constants.SUIT.DARK_RAINBOW
             ) {
                 const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
                 text += ` [${colorList}]`;

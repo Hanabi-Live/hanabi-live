@@ -84,7 +84,7 @@ exports.pips = function pips() {
             y: Math.floor(offsetBase * Math.sin(offsetTrig) + constants.CARD_W * 0.3),
         };
         let fill = suit.fillColors.hexCode;
-        if (suit === constants.SUIT.RAINBOW || suit === constants.SUIT.DARKRAINBOW) {
+        if (suit === constants.SUIT.RAINBOW || suit === constants.SUIT.DARK_RAINBOW) {
             fill = undefined;
         }
 
@@ -105,7 +105,7 @@ exports.pips = function pips() {
         });
 
         // Gradient numbers are magic
-        if (suit === constants.SUIT.RAINBOW || suit === constants.SUIT.DARKRAINBOW) {
+        if (suit === constants.SUIT.RAINBOW || suit === constants.SUIT.DARK_RAINBOW) {
             suitPip.fillRadialGradientColorStops([
                 0.3, suit.fillColors[0].hexCode,
                 0.425, suit.fillColors[1].hexCode,

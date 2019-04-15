@@ -602,7 +602,7 @@ class Variant {
         // the suit is composed of; if so, we will need to move the note indicator downwards
         this.offsetCornerElements = suits.some(
             s => s !== exports.SUIT.RAINBOW
-                && s !== exports.SUIT.DARKRAINBOW
+                && s !== exports.SUIT.DARK_RAINBOW
                 && s.clueColors.length > 1,
         );
         this.maxScore = suits.length * 5;
