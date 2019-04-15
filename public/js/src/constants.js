@@ -44,6 +44,13 @@ exports.REPLAY_ARROW_ORDER = {
     EFFICIENCY: -4,
     MIN_EFFICIENCY: -5,
 };
+exports.STACK_DIRECTION = { // Used in the "Up or Down" variants
+    UNDECIDED: 0,
+    UP: 1,
+    DOWN: 2,
+    FINISHED: 3,
+};
+exports.START_CARD_RANK = 7;
 
 class Color {
     constructor(name, abbreviation, hexCode) {

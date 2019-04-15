@@ -60,6 +60,7 @@ module.exports = () => {
     globals.clues = 0;
     globals.cardsGotten = 0;
     globals.cluesSpentPlusStrikes = 0;
+    globals.stackDirections = [0, 0, 0, 0, 0];
 
     // Replay variables
     globals.inReplay = false; // Whether or not the replay controls are currently showing

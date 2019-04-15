@@ -256,17 +256,18 @@ commands.reorder = (data) => {
 
 commands.stackDirections = (data) => {
     // Update the stack directions (only in "Up or Down" variants)
+    globals.stackDirections = data.directions;
     if (globals.variant.name.startsWith('Up or Down')) {
-        for (let i = 0; i < data.directions.length; i++) {
-            const direction = data.directions[i];
+        for (let i = 0; i < globals.stackDirections.length; i++) {
+            const direction = globals.stackDirections[i];
             let text;
-            if (direction === 0) {
-                text = ''; // Undecided
-            } else if (direction === 1) {
+            if (direction === constants.STACK_DIRECTION.UNDECIDED) {
+                text = '';
+            } else if (direction === constants.STACK_DIRECTION.UP) {
                 text = 'Up';
-            } else if (direction === 2) {
+            } else if (direction === constants.STACK_DIRECTION.DOWN) {
                 text = 'Down';
-            } else if (direction === 3) {
+            } else if (direction === constants.STACK_DIRECTION.FINISHED) {
                 text = 'Finished';
             } else {
                 text = 'Unknown';

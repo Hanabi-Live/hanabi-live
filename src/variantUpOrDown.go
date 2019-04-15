@@ -112,15 +112,16 @@ func variantUpOrDownIsDead(g *Game, c *Card) bool {
 
 	// Start by handling the easy cases of up and down
 	if g.StackDirections[c.Suit] == stackDirectionUp {
-		for i := 2; i < c.Rank; i++ {
-			if allDiscarded[i] {
+		for rank := 2; rank < c.Rank; rank++ {
+			if allDiscarded[rank] {
 				return true
 			}
 		}
 		return false
-	} else if g.StackDirections[c.Suit] == stackDirectionDown {
-		for i := 4; i > c.Rank; i-- {
-			if allDiscarded[i] {
+	}
+	if g.StackDirections[c.Suit] == stackDirectionDown {
+		for rank := 4; rank > c.Rank; rank-- {
+			if allDiscarded[rank] {
 				return true
 			}
 		}

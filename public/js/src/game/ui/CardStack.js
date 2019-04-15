@@ -82,6 +82,15 @@ class CardStack extends graphics.Group {
             }
         }
     }
+
+    getLastPlayedCard() {
+        if (this.children.length === 0) {
+            return -1;
+        }
+        const topLayoutChild = this.children[this.children.length - 1];
+        const topCard = topLayoutChild.children[0];
+        return topCard.trueRank;
+    }
 }
 
 module.exports = CardStack;

@@ -455,8 +455,8 @@ class HanabiCard extends graphics.Group {
 
     isCritical() {
         if (
-            !this.trueSuit
-            || !this.trueSuit
+            this.trueSuit === null
+            || this.trueRank === null
             || this.isPlayed
             || this.isDiscarded
             || this.needsToBePlayed()
@@ -489,7 +489,7 @@ class HanabiCard extends graphics.Group {
         // Determining if the card needs to be played in the "Up or Down" variants
         // is more complicated
         if (globals.variant.name.startsWith('Up or Down')) {
-            return this.needsToBePlayedUpOrDown();
+            return this.upOrDownNeedsToBePlayed();
         }
 
         // Second, check to see if it is still possible to play this card
@@ -506,9 +506,103 @@ class HanabiCard extends graphics.Group {
         return true;
     }
 
-    needsToBePlayedUpOrDown() { // eslint-disable-line
-        // TODO
+    // upOrDownNeedsToBePlayed returns true if this card still needs to be played
+    // in order to get the maximum score (taking into account the stack direction)
+    // (before getting here, we already checked to see if the card has already been played)
+    upOrDownNeedsToBePlayed() {
+        // First, check to see if the stack is already finished
+        const suit = convert.suitToMsgSuit(this.trueSuit, globals.variant);
+        if (globals.stackDirections[suit] === constants.STACK_DIRECTION.FINISHED) {
+            return false;
+        }
+
+        // Second, check to see if this card is dead
+        // (meaning that all of a previous card in the suit have been discarded already)
+        if (this.upOrDownIsDead()) {
+            return false;
+        }
+
+        // All 2's, 3's, and 4's must be played
+        if (this.trueRank === 2 || this.trueRank === 3 || this.trueRank === 4) {
+            return true;
+        }
+
+        if (this.trueRank === 1) {
+            // 1's do not need to be played if the stack is going up
+            if (globals.stackDirections[suit] === constants.STACK_DIRECTION.UP) {
+                return false;
+            }
+        } else if (this.trueRank === 5) {
+            // 5's do not need to be played if the stack is going down
+            if (globals.stackDirections[suit] === constants.STACK_DIRECTION.DOWN) {
+                return false;
+            }
+        } else if (this.trueRank === constants.START_CARD_RANK) {
+            // START cards do not need to be played if there are any cards played on the stack
+            const playStack = globals.elements.playStacks.get(this.trueSuit);
+            const lastPlayedCard = playStack.getLastPlayedCard();
+            if (lastPlayedCard !== -1) {
+                return false;
+            }
+        }
+
         return true;
+    }
+
+    // upOrDownIsDead returns true if it is no longer possible to play this card by
+    // looking to see if all of the previous cards in the stack have been discarded
+    // (taking into account the stack direction)
+    upOrDownIsDead() {
+        // Make a map that shows if all of some particular rank in this suit has been discarded
+        const ranks = [1, 2, 3, 4, 5, constants.START_CARD_RANK];
+        const allDiscarded = new Map();
+        for (const rank of ranks) {
+            const num = getSpecificCardNum(this.trueSuit, rank);
+            allDiscarded.set(rank, num.total === num.discarded);
+        }
+
+        // Start by handling the easy cases of up and down
+        const suit = convert.suitToMsgSuit(this.trueSuit, globals.variant);
+        if (globals.stackDirections[suit] === constants.STACK_DIRECTION.UP) {
+            for (let rank = 2; rank < this.trueRank; rank++) {
+                if (allDiscarded.get(rank)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (globals.stackDirections[suit] === constants.STACK_DIRECTION.DOWN) {
+            for (let rank = 4; rank > this.trueRank; rank--) {
+                if (allDiscarded.get(rank)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // If we got this far, the stack direction is undecided
+        // (the previous function handles the case where the stack is finished)
+        // Check to see if the entire suit is dead in the case where
+        // all 3 of the start cards are discarded
+        if (
+            allDiscarded.get(1)
+            && allDiscarded.get(5)
+            && allDiscarded.get(constants.START_CARD_RANK)
+        ) {
+            return true;
+        }
+
+        // If the "START" card is played on the stack,
+        // then this card will be dead if all of the 2's and all of the 4's have been discarded
+        // (this situation also applies to 3's when no cards have been played on the stack)
+        const lastPlayedCard = globals.elements.playStacks.get(this.trueSuit).getLastPlayedCard();
+        if (lastPlayedCard === constants.START_CARD_RANK || this.trueRank === 3) {
+            if (allDiscarded.get(2) && allDiscarded.get(4)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     isPotentiallyPlayable() {
@@ -589,7 +683,7 @@ const getSpecificCardNum = (suit, rank) => {
         }
     } else if (rank === 5) {
         total = 1;
-    } else if (rank === 7) { // The "START" card
+    } else if (rank === constants.START_CARD_RANK) {
         total = 1;
     } else {
         total = 2;

@@ -52,8 +52,7 @@ exports.drawAll = () => {
                 let textYPos;
                 let indexLabel;
                 let rankString = rank.toString();
-                if (rank === 7) {
-                    // "START" cards are represented by rank 7
+                if (rank === constants.START_CARD_RANK) {
                     rankString = 'S';
                 }
                 let fontSize;
@@ -414,8 +413,7 @@ const shapeFunctions = [
             [2, 1],
             [1, 2],
             [0, 1],
-        ]
-            .map(point => [point[0] * w + offsetX, point[1] * h + offsetY]);
+        ].map(point => [point[0] * w + offsetX, point[1] * h + offsetY]);
         const curveX = 1.46;
         const curveY = 0.6;
         const interps = [
@@ -423,11 +421,10 @@ const shapeFunctions = [
             [0, 1],
             [1, 1],
             [1, 0],
-        ]
-            .map(v => [
-                [curveX, 2 - curveX][v[0]] * w + offsetX,
-                [curveY, 2 - curveY][v[1]] * h + offsetY,
-            ]);
+        ].map(v => [
+            [curveX, 2 - curveX][v[0]] * w + offsetX,
+            [curveY, 2 - curveY][v[1]] * h + offsetY,
+        ]);
 
         ctx.beginPath();
         ctx.moveTo(...points[0]);

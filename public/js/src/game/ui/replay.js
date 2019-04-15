@@ -159,6 +159,7 @@ const reset = () => {
     // are set in every "status" command
     globals.cardsGotten = 0;
     globals.cluesSpentPlusStrikes = 0;
+    globals.stackDirections = [0, 0, 0, 0, 0];
 
     // Reset various UI elements
     globals.postAnimationLayout = null;

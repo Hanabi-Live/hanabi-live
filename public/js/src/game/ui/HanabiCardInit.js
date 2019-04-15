@@ -399,7 +399,7 @@ exports.possibilities = function possibilities() {
         const card = globals.deck[i];
 
         // Don't do anything if this is one of our cards
-        if (!card.trueSuit || !card.trueRank) {
+        if (card.trueSuit === null || card.trueRank === null) {
             continue;
         }
 
