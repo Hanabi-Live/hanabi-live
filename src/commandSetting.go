@@ -57,13 +57,19 @@ func commandSetting(s *Session, d *CommandData) {
 			return
 		}
 	} else if fieldType == "int" {
-		if _, err := strconv.Atoi(d.Value); err != nil {
+		if v, err := strconv.Atoi(d.Value); err != nil {
 			s.Warning("The setting of \"" + d.Name + "\" must be an integer.")
+			return
+		} else if v <= 0 || v > 604800 { // 1 week in seconds
+			s.Warning("The setting of \"" + d.Name + "\" is too large.")
 			return
 		}
 	} else if fieldType == "float64" {
-		if _, err := strconv.ParseFloat(d.Value, 64); err != nil {
+		if v, err := strconv.ParseFloat(d.Value, 64); err != nil {
 			s.Warning("The setting of \"" + d.Name + "\" must be an float64.")
+			return
+		} else if v <= 0 || v > 86400 { // 1 day in seconds
+			s.Warning("The setting of \"" + d.Name + "\" is too large.")
 			return
 		}
 	}

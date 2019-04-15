@@ -194,6 +194,9 @@ module.exports = () => {
     globals.preCluedCard = null;
 
     // Pause feature
+    globals.paused = false; // Whether or not the game is currently paused
+    globals.pausePlayer = ''; // The name of the player who paused the game
+    globals.pauseQueued = false; // Whether or not we have requested a queued pause
 
     // Miscellaneous
     globals.animateFast = true;

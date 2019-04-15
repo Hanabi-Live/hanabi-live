@@ -41,7 +41,7 @@ exports.msgClueToClue = (msgClue, variant) => {
     return new Clue(clueType, clueValue);
 };
 
-exports.msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit];
+exports.msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit] || null;
 
 exports.suitToMsgSuit = (suit, variant) => {
     for (let i = 0; i < variant.suits.length; i++) {

@@ -17,6 +17,7 @@ const keyboard = require('./keyboard');
 const notes = require('./notes');
 const stats = require('./stats');
 const timer = require('./timer');
+const ui = require('./ui');
 
 class HanabiUI {
     constructor(lobby, game) {
@@ -160,6 +161,9 @@ const finishedLoadingImages = () => {
 
     // Keyboard hotkeys can only be initialized once the clue buttons are drawn
     keyboard.init();
+
+    // If the game is paused, darken the background
+    ui.setPause();
 
     // Tell the server that we are finished loading
     globals.lobby.conn.send('ready');

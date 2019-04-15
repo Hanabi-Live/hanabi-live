@@ -213,6 +213,11 @@ commands.init = (data) => {
     globals.hypothetical = data.hypothetical;
     globals.hypoActions = data.hypoActions;
 
+    // Other features
+    globals.paused = data.paused;
+    globals.pausePlayer = data.pausePlayer;
+    globals.pauseQueued = data.pauseQueued;
+
     // Open the replay UI if we are in a replay
     globals.inReplay = globals.replay;
     if (globals.replay) {
@@ -362,13 +367,9 @@ commands.notifyList = (dataList) => {
 };
 
 commands.pause = (data) => {
-    if (data.paused) {
-        globals.elements.stageFade = 0.6;
-        globals.elements.stageFade.show();
-    } else {
-        globals.elements.stageFade = 0.3;
-        globals.elements.stageFade.hide();
-    }
+    globals.paused = data.paused;
+    globals.pausePlayer = data.pausePlayer;
+    ui.setPause();
 };
 
 // This is used in shared replays to highlight a specific card (or UI element)

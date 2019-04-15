@@ -140,7 +140,7 @@ commands.draw = (data) => {
     // Keep track of which cards we have learned for the purposes of
     // showing the true card face in the in-game replay
     // (this has to be done before the card is initialized)
-    if (suit && rank) {
+    if (suit !== null && rank !== null) {
         const learnedCard = globals.learnedCards[order];
         learnedCard.suit = suit;
         learnedCard.rank = rank;

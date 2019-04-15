@@ -292,6 +292,17 @@ exports.backToLobby = () => {
     globals.game.hide();
 };
 
+exports.setPause = () => {
+    if (globals.paused) {
+        globals.elements.stageFade.setOpacity(0.7);
+        globals.elements.stageFade.show();
+        globals.layers.overtop.batchDraw();
+    } else {
+        globals.elements.stageFade.setOpacity(0.3);
+        globals.elements.stageFade.hide();
+        globals.layers.overtop.batchDraw();
+    }
+};
 
 /*
     Arrow functions

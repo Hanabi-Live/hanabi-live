@@ -54,19 +54,10 @@ module.exports = () => {
 
     // Create the various Konva layers upon which all graphic elements reside
     initLayers();
+    drawBackground();
 
     // We can reuse some UI elements
     initReusableObjects();
-
-    // Draw a green background behind everything
-    const background = new graphics.Image({
-        x: 0,
-        y: 0,
-        width: winW,
-        height: winH,
-        image: globals.ImageLoader.get('background'),
-    });
-    globals.layers.background.add(background);
 
     // The middle of the screen
     drawActionLog();
@@ -132,6 +123,32 @@ const initLayers = () => {
             listening: false,
         });
     }
+};
+
+const drawBackground = () => {
+    // Draw a green background behind everything
+    const background = new graphics.Image({
+        x: 0,
+        y: 0,
+        width: winW,
+        height: winH,
+        image: globals.ImageLoader.get('background'),
+    });
+    globals.layers.background.add(background);
+
+    // The dark overlay that appears when you click the action log is clicked,
+    // when a player's name is clicked, when the game is paused, etc.
+    globals.elements.stageFade = new graphics.Rect({
+        x: 0,
+        y: 0,
+        width: winW,
+        height: winH,
+        opacity: 0.3,
+        fill: 'black',
+        visible: false,
+        listening: true,
+    });
+    globals.layers.overtop.add(globals.elements.stageFade);
 };
 
 const initReusableObjects = () => {
@@ -230,19 +247,6 @@ const drawActionLog = () => {
         maxLines,
     });
     actionLogGroup.add(globals.elements.actionLog);
-
-    // The dark overlay that appears when you click on the action log (or a player's name)
-    globals.elements.stageFade = new graphics.Rect({
-        x: 0,
-        y: 0,
-        width: winW,
-        height: winH,
-        opacity: 0.3,
-        fill: 'black',
-        visible: false,
-        listening: true,
-    });
-    globals.layers.overtop.add(globals.elements.stageFade);
 
     // The full action log (that appears when you click on the action log)
     globals.elements.fullActionLog = new FullActionLog();
@@ -866,7 +870,7 @@ const drawSharedReplay = () => {
         y: spectatorsLabelValues.y - 0.06,
     };
 
-    // A red circle around the crown indicates that we are the current replay leader
+    // A circle around the crown indicates that we are the current replay leader
     // (we want the icon to be on top of this so that it does not interfere with mouse events)
     globals.elements.sharedReplayLeaderCircle = new graphics.Circle({
         x: (sharedReplayLeaderLabelValues.x + 0.015) * winW,
@@ -1206,6 +1210,19 @@ const drawTimers = () => {
         timerValues.y2 = 0.885;
     }
 
+    // A circle around the timer indicates that we have queued a pause
+    // (we want the timer to be on top of this so that it does not interfere with mouse events)
+    globals.elements.timer1Circle = new graphics.Ellipse({
+        x: (timerValues.x1 + 0.04) * winW,
+        y: (timerValues.y1 + 0.035) * winH,
+        radiusX: 0.05 * winW,
+        radiusY: 0.07 * winH,
+        stroke: '#ffe03b', // Yellow
+        strokeWidth: 2,
+        visible: globals.pauseQueued,
+    });
+    globals.layers.UI.add(globals.elements.timer1Circle);
+
     // The timer for "You"
     globals.elements.timer1 = new TimerDisplay({
         x: timerValues.x1 * winW,
@@ -1217,8 +1234,38 @@ const drawTimers = () => {
         spaceH: timerValues.spaceH * winH,
         label: 'You',
         visible: !globals.spectating,
+        listening: true,
     });
     globals.layers.timer.add(globals.elements.timer1);
+    globals.elements.timer1.on('click', (event) => {
+        if (
+            event.evt.which !== 3 // Right-click
+            || !globals.timed // We don't need to pause if this is not a timed game
+            || globals.paused // We don't need to pause if the game is already paused
+        ) {
+            return;
+        }
+
+        let value;
+        if (globals.ourTurn) {
+            value = 'pause';
+        } else if (globals.pauseQueued) {
+            value = 'pause-unqueue';
+            globals.pauseQueued = false;
+        } else {
+            value = 'pause-queue';
+            globals.pauseQueued = true;
+        }
+        globals.lobby.conn.send('pause', {
+            value,
+        });
+
+        const wasVisible = globals.elements.timer1Circle.getVisible();
+        if (wasVisible !== globals.pauseQueued) {
+            globals.elements.timer1Circle.setVisible(globals.pauseQueued);
+            globals.layers.UI.batchDraw();
+        }
+    });
 
     // The timer for the current player
     globals.elements.timer2 = new TimerDisplay({

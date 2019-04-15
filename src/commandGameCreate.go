@@ -193,13 +193,23 @@ func commandGameCreate(s *Session, d *CommandData) {
 	}
 
 	// Validate that the time controls are sane
-	if d.Timed && d.BaseTime <= 0 {
-		s.Warning("That is not a valid value for \"Base Time\".")
-		return
-	}
-	if d.Timed && d.TimePerTurn <= 0 {
-		s.Warning("That is not a valid value for \"Time per Turn\".")
-		return
+	if d.Timed {
+		if d.BaseTime <= 0 {
+			s.Warning("That is not a valid value for \"Base Time\".")
+			return
+		}
+		if d.BaseTime > 604800 { // 1 week in seconds
+			s.Warning("The value for \"Base Time\" is too large.")
+			return
+		}
+		if d.TimePerTurn <= 0 {
+			s.Warning("That is not a valid value for \"Time per Turn\".")
+			return
+		}
+		if d.TimePerTurn > 86400 { // 1 day in seconds
+			s.Warning("The value for \"Time per Turn\" is too large.")
+			return
+		}
 	}
 
 	// Blank out the time controls if this is not a timed game

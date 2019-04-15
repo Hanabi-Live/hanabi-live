@@ -94,6 +94,11 @@ func commandHello(s *Session, d *CommandData) {
 		// Hypothetical settings
 		Hypothetical bool     `json:"hypothetical"`
 		HypoActions  []string `json:"hypoActions"`
+
+		// Other features
+		Paused      bool   `json:"paused"`
+		PausePlayer string `json:"pausePlayer"`
+		PauseQueued bool   `json:"pauseQueued"`
 	}
 	s.Emit("init", &InitMessage{
 		// Game settings
@@ -119,5 +124,10 @@ func commandHello(s *Session, d *CommandData) {
 		// Hypothetical settings
 		Hypothetical: g.Hypothetical,
 		HypoActions:  g.HypoActions,
+
+		// Other features
+		Paused:      g.Paused,
+		PausePlayer: g.Players[g.PausePlayer].Name,
+		PauseQueued: g.Players[seat].RequestedPause,
 	})
 }
