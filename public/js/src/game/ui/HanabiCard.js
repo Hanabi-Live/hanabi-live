@@ -122,16 +122,6 @@ class HanabiCard extends graphics.Group {
             suitToShow = learnedCard.suit || constants.SUIT.GRAY;
         }
 
-        // But don't show the full suit if the card is not yet revealed and it has no clues on it
-        if (
-            suitToShow !== constants.SUIT.GRAY
-            && !learnedCard.revealed
-            && !this.isClued()
-            && (this.holder === globals.playerUs || this.empathy)
-        ) {
-            suitToShow = constants.SUIT.GRAY;
-        }
-
         // For whatever reason, "Card-Gray" is never created, so use "NoPip-Gray"
         let prefix = 'Card';
         if (suitToShow === constants.SUIT.GRAY) {
@@ -154,21 +144,11 @@ class HanabiCard extends graphics.Group {
             rankToShow = learnedCard.rank || 6;
         }
 
-        // But don't show the full rank if the card is not yet revealed and it has no clues on it
-        if (
-            rankToShow !== 6
-            && !learnedCard.revealed
-            && !this.isClued()
-            && (this.holder === globals.playerUs || this.empathy)
-        ) {
-            rankToShow = 6;
-        }
-
         // Set the name
-        // (but in Real-Life mode,
+        // (but in Real-Life mode or Duck variants,
         // always show the vanilla card back if the card is not fully revealed)
         if (
-            globals.lobby.settings.realLifeMode
+            (globals.lobby.settings.realLifeMode || globals.variant.name.startsWith('Duck'))
             && (suitToShow === constants.SUIT.GRAY || rankToShow === 6)
         ) {
             this.bareName = 'deck-back';
