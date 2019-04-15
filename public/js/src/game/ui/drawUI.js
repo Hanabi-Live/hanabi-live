@@ -87,6 +87,7 @@ module.exports = () => {
     drawCurrentPlayerArea(clueAreaValues);
     drawPreplayArea();
     drawReplayArea();
+    drawPauseArea();
     drawExtraAnimations();
 
     if (globals.inReplay) {
@@ -1435,6 +1436,10 @@ const drawPreplayArea = () => {
 
         globals.queuedAction = null;
     });
+};
+
+const drawPauseArea = () => {
+    // TODO
 };
 
 const drawExtraAnimations = () => {

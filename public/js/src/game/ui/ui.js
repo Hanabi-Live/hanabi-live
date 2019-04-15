@@ -293,6 +293,10 @@ exports.backToLobby = () => {
 };
 
 exports.setPause = () => {
+    if (!globals.timed) {
+        return;
+    }
+
     if (globals.paused) {
         // If we queued a pause, unqueue it
         globals.pauseQueued = false;
