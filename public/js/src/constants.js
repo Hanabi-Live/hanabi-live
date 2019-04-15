@@ -117,21 +117,36 @@ const baseColors = [
     COLOR.RED,
     COLOR.PURPLE,
 ];
-const baseColorsPlusTeal = $.extend([], baseColors).append(COLOR.TEAL);
-const baseColorsPlusBlack = $.extend([], baseColors).append(COLOR.BLACK);
-const baseColorsPlusBrown = $.extend([], baseColors).append(COLOR.BROWN);
-const baseColors4 = $.extend([], baseColors).pop();
-const baseColors4plusBlack = $.extend([], baseColors4).append(COLOR.BLACK);
-const baseColors4plusBrown = $.extend([], baseColors4).append(COLOR.BROWN);
-const baseColors4plusBlackBrown = $.extend([], baseColors4plusBlack).append(COLOR.BROWN);
-const baseColors3 = $.extend([], baseColors4).pop();
-const baseColors3plusBlack = $.extend([], baseColors3).append(COLOR.BLACK);
-const baseColors3plusBrown = $.extend([], baseColors3).append(COLOR.BROWN);
-const baseColors3plusBlackBrown = $.extend([], baseColors3plusBlack).append(COLOR.BROWN);
-const baseColors2 = $.extend([], baseColors3).pop();
-const baseColors2plusBrown = $.extend([], baseColors2).append(COLOR.BROWN);
-const baseColors1 = $.extend([], baseColors2).pop();
-const baseColors1plusBrown = $.extend([], baseColors1).append(COLOR.BROWN);
+const baseColorsPlusTeal = $.extend([], baseColors);
+baseColorsPlusTeal.push(COLOR.TEAL);
+const baseColorsPlusBlack = $.extend([], baseColors);
+baseColorsPlusBlack.push(COLOR.BLACK);
+const baseColorsPlusBrown = $.extend([], baseColors);
+baseColorsPlusBrown.push(COLOR.BROWN);
+const baseColors4 = $.extend([], baseColors);
+baseColors4.pop();
+const baseColors4plusBlack = $.extend([], baseColors4);
+baseColors4plusBlack.push(COLOR.BLACK);
+const baseColors4plusBrown = $.extend([], baseColors4);
+baseColors4plusBrown.push(COLOR.BROWN);
+const baseColors4plusBlackBrown = $.extend([], baseColors4plusBlack);
+baseColors4plusBlackBrown.push(COLOR.BROWN);
+const baseColors3 = $.extend([], baseColors4);
+baseColors3.pop();
+const baseColors3plusBlack = $.extend([], baseColors3);
+baseColors3plusBlack.push(COLOR.BLACK);
+const baseColors3plusBrown = $.extend([], baseColors3);
+baseColors3plusBrown.push(COLOR.BROWN);
+const baseColors3plusBlackBrown = $.extend([], baseColors3plusBlack);
+baseColors3plusBlackBrown.push(COLOR.BROWN);
+const baseColors2 = $.extend([], baseColors3);
+baseColors2.pop();
+const baseColors2plusBrown = $.extend([], baseColors2);
+baseColors2plusBrown.push(COLOR.BROWN);
+const baseColors1 = $.extend([], baseColors2);
+baseColors1.pop();
+const baseColors1plusBrown = $.extend([], baseColors1);
+baseColors1plusBrown.push(COLOR.BROWN);
 
 // Specify between solid color and gradients,
 // along with additional args in the case of gradients
@@ -348,6 +363,14 @@ const SUIT = {
         ],
         multiCardFillSpec,
         Object.values(COLOR),
+        true, // This suit has one of each card
+    ),
+    CHOCOLATE: new Suit(
+        'Chocolate',
+        'C',
+        COLOR.CHOCOLATE,
+        basicCardFillSpec,
+        [COLOR.BROWN],
         true, // This suit has one of each card
     ),
 
@@ -600,9 +623,9 @@ class Variant {
         // Dual-color variants will have triangles in the corner of the card to indicate what colors
         // the suit is composed of; if so, we will need to move the note indicator downwards
         this.offsetCornerElements = suits.some(
-            s => s !== SUIT.RAINBOW
-                && s !== SUIT.DARK_RAINBOW
-                && s.clueColors.length > 1,
+            suit => suit !== SUIT.RAINBOW
+                && suit !== SUIT.DARK_RAINBOW
+                && suit.clueColors.length > 1,
         );
         this.maxScore = suits.length * 5;
     }
