@@ -25,6 +25,10 @@ function changeSetting() {
     const setting = $(this).attr('id');
     const checked = $(this).is(':checked');
 
+    if (globals.settings[setting] === checked) {
+        return;
+    }
+
     // Write the new value to our local variable
     globals.settings[setting] = checked;
 

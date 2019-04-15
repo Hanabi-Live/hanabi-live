@@ -429,9 +429,9 @@ table td {
     text-align: center;
 }
 
-.create-game-icon-up {
+.create-game-info-icon {
     position: relative;
-    bottom: 0.75em;
+    top: 0.35em;
 }
 
 .create-game-text-label {

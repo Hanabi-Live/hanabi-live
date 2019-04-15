@@ -92,6 +92,16 @@ const initCommands = () => {
         globals.totalGames = data.totalGames;
         globals.settings = data.settings;
 
+        // Some settings are stored on the server as numbers,
+        // but we need them as strings because they will exist in an input field
+        const valuesToConvertToStrings = [
+            'createTableBaseTimeMinutes',
+            'createTableTimePerTurnSeconds',
+        ];
+        for (const value of valuesToConvertToStrings) {
+            globals.settings[value] = globals.settings[value].toString();
+        }
+
         $('#nav-buttons-history-total-games').html(globals.totalGames);
         settings.init();
         lobby.login.hide(data.firstTimeUser);

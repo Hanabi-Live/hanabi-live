@@ -614,12 +614,14 @@ const SUIT = {
 exports.SUIT = SUIT;
 
 class Variant {
-    constructor(suits, clueColors, showSuitNames) {
+    constructor(suits, clueColors, showSuitNames, spacing = false) {
         this.suits = suits;
         this.ranks = [1, 2, 3, 4, 5];
         this.clueColors = clueColors;
         // We draw text of the suit names below the stacks for confusing variants
         this.showSuitNames = showSuitNames;
+        this.spacing = spacing;
+
         // Dual-color variants will have triangles in the corner of the card to indicate what colors
         // the suit is composed of; if so, we will need to move the note indicator downwards
         this.offsetCornerElements = suits.some(
@@ -674,6 +676,7 @@ exports.VARIANTS = {
         ],
         baseColors3,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Black
@@ -699,6 +702,7 @@ exports.VARIANTS = {
         ],
         baseColors4plusBlack,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Rainbow
@@ -743,6 +747,7 @@ exports.VARIANTS = {
         ],
         baseColors2,
         false,
+        true, // This is the final variant in this section
     ),
 
     // White
@@ -787,6 +792,7 @@ exports.VARIANTS = {
         ],
         baseColors2,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Brown
@@ -831,6 +837,7 @@ exports.VARIANTS = {
         ],
         baseColors2plusBrown,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Black & Rainbow
@@ -856,6 +863,7 @@ exports.VARIANTS = {
         ],
         baseColors3plusBlack,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Black & White
@@ -881,6 +889,7 @@ exports.VARIANTS = {
         ],
         baseColors3plusBlack,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Black & Brown
@@ -906,6 +915,7 @@ exports.VARIANTS = {
         ],
         baseColors3plusBlackBrown,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Rainbow & White
@@ -941,6 +951,7 @@ exports.VARIANTS = {
         ],
         baseColors2,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Rainbow & Brown
@@ -985,6 +996,7 @@ exports.VARIANTS = {
         ],
         baseColors1plusBrown,
         false,
+        true, // This is the final variant in this section
     ),
 
     // White & Brown
@@ -1029,6 +1041,7 @@ exports.VARIANTS = {
         ],
         baseColors1plusBrown,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Dark Rainbow
@@ -1112,6 +1125,7 @@ exports.VARIANTS = {
         ],
         baseColors3plusBrown,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Gray
@@ -1195,6 +1209,7 @@ exports.VARIANTS = {
         ],
         baseColors3plusBrown,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Chocolate
@@ -1278,6 +1293,7 @@ exports.VARIANTS = {
         ],
         baseColors3plusBrown,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Dark Mixes
@@ -1316,6 +1332,7 @@ exports.VARIANTS = {
         ],
         baseColors4plusBrown,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Color Blind
@@ -1360,6 +1377,7 @@ exports.VARIANTS = {
         ],
         baseColors3,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Ambiguous
@@ -1436,6 +1454,7 @@ exports.VARIANTS = {
             COLOR.RED,
         ],
         true,
+        true, // This is the final variant in this section
     ),
 
     // Dual-Color
@@ -1505,6 +1524,7 @@ exports.VARIANTS = {
             COLOR.RED,
         ],
         true,
+        true, // This is the final variant in this section
     ),
 
     // Multi-Fives
@@ -1591,6 +1611,7 @@ exports.VARIANTS = {
         ],
         baseColors2,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Clue Starved
@@ -1626,6 +1647,7 @@ exports.VARIANTS = {
         ],
         baseColors4,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Up or Down
@@ -1709,6 +1731,7 @@ exports.VARIANTS = {
         ],
         baseColors4,
         true,
+        true, // This is the final variant in this section
     ),
 
     // Duck
@@ -1753,6 +1776,7 @@ exports.VARIANTS = {
         ],
         baseColors3,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Mixed
