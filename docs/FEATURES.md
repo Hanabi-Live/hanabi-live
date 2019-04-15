@@ -39,15 +39,27 @@ List of Features
 
 * The cards last touched by a clue are indicated by arrows. A circle on the arrow shows the type of clue that was given.
 * Yellow borders around a card signify that it has been "touched" by one or more clues.
-* Color pips (that match the suits of the stack) and black boxes (that match the number possibilities) will appear on cards in a player's hand. The pips and boxes will automatically disappear as more information is learned about the card.
-* You can left-click on someone else's card to see how it appears to them. (This is referred to as "empathy".)
-* A clue log is also shown in the top-right-hand corner. When mousing over a card, the positive clues that have touched the card will turn white and the negative clues that have touched the card will turn red.
+* The game will keep track of the clues that accumulate on your cards, "filling them in" for you.
+* You can left-click on someone else's card to see how it appears to them. (This is referred to as "Empathy".)
+
+#### Pips
+
+* Color pips (that match the suits of the stack) and black boxes (that match the number possibilities) will appear on cards in a player's hand.
+* The pips and boxes will automatically disappear as positive clues and negative clues "touch" the card.
+* The pips and boxes will automatically be crossed out if all the particular cards for that suit/rank are visible.
+
+#### Clue Log
+
+* A clue log is also shown in the top-right-hand corner.
+* When mousing over a card, the positive clues that have touched the card will turn white and the negative clues that have touched the card will turn red.
+* You can click on an entry in the clue log to go to the turn when the clue was given.
 
 #### Notes
 
 * Players can right-click on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
 * This is useful for storing contextual information about a card for later.
 * Notes can also be written inside of an in-game replay as a way to track the card as it moves throughout your hand.
+* If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match. (The card face will automatically be deactivated if a clue is recieved that falsifies the note.)
 * Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
 * Notes are saved in the database and will persist into the replay.
 * Everyone's notes are combined and shown to spectators, which is fun to see.
@@ -182,9 +194,10 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 
 ## Other Options
 
-#### Board Game Arena Mode
+#### Keldon Mode
 
-* This makes the interface look more like the [Board Game Arena](https://en.boardgamearena.com/) implementation of Hanabi, in which all of the hands are grouped together in rows.
+* By default, the interface will look similar to the  [Board Game Arena](https://en.boardgamearena.com/) implementation of Hanabi, in which all of the hands are grouped together in rows.
+* In Keldon mode, the hands are distributed around the table, similar to how it would look if you were playing Hanabi in real-life.
 
 #### Color-Blind Mode
 
@@ -194,6 +207,11 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 
 * Each player has the option to toggle a "reverse hand direction" option, in which the user interface will display the hand from right-to-left instead of from left-to-right.
 * This is useful for players that are used to drawing cards from the right side instead of from the left.
+
+#### Real-Life Mode
+
+* In real-life mode, cards will no longer be filled in with positive and negative clues.
+* Furthermore, extra UI elements are turned off (8 clue warning, double discard warning, etc.).
 
 #### Pre-Playing
 
