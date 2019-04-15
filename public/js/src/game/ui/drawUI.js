@@ -746,7 +746,7 @@ const drawScoreArea = () => {
                 return;
             }
 
-            card.toggleSharedReplayArrow();
+            ui.toggleArrow(card);
         }
     }
     for (let i = 0; i < 3; i++) {
