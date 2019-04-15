@@ -63,28 +63,32 @@ exports.COLOR = {
     GRAY: new Color('Gray', 'G', '#cccccc'), // For unknown cards
 
     // Basic variants
+    TEAL: new Color('Teal', 'C', '#00cccc'),
     WHITE: new Color('White', 'W', '#d9d9d9'),
     BLACK: new Color('Black', 'K', '#111111'),
 
-    // Complex variants
-    NAVY: new Color('Navy', 'N', '#000066'),
-    ORANGE: new Color('Orange', 'O', '#ff8800'),
-    TAN: new Color('Tan', 'T', '#999900'),
-    MAHOGANY: new Color('Mahogany', 'M', '#660016'),
-    TEAL: new Color('Teal', 'T', '#00b3b3'),
-    LIME: new Color('Lime', 'L', '#80c000'),
-    CARDINAL: new Color('Cardinal', 'C', '#810735'),
-    INDIGO: new Color('Indigo', 'I', '#1a0082'),
-    LBLUE: new Color('Sky', 'S', '#1a66ff'),
-    DBLUE: new Color('Navy', 'N', '#002b80'),
-    LGREEN: new Color('Lime', 'L', '#1aff1a'),
-    DGREEN: new Color('Forest', 'F', '#008000'),
-    LRED: new Color('Tomato', 'T', '#e60000'),
-    DRED: new Color('Mahogany', 'M', '#660000'),
+    // "Ambiguous" variants
+    L_BLUE: new Color('Sky', 'S', '#1a66ff'),
+    D_BLUE: new Color('Navy', 'N', '#002b80'),
+    L_GREEN: new Color('Lime', 'L', '#1aff1a'),
+    D_GREEN: new Color('Forest', 'F', '#008000'),
+    L_RED: new Color('Tomato', 'T', '#e60000'),
+    D_RED: new Color('Mahogany', 'M', '#660000'),
+
+    // "Very Ambiguous" various
     BLUE1: new Color('Sky', 'S', '#4d88ff'),
     BLUE3: new Color('Navy', 'N', '#001a4d'),
     RED1: new Color('Tomato', 'T', '#ff1a1a'),
     RED3: new Color('Mahogany', 'M', '#330000'),
+
+    // Dual-color variants
+    NAVY: new Color('Navy', 'N', '#000066'),
+    ORANGE: new Color('Orange', 'O', '#ff8800'),
+    TAN: new Color('Tan', 'T', '#999900'),
+    MAHOGANY: new Color('Mahogany', 'M', '#660016'),
+    LIME: new Color('Lime', 'L', '#80c000'),
+    CARDINAL: new Color('Cardinal', 'C', '#810735'),
+    INDIGO: new Color('Indigo', 'I', '#1a0082'),
 };
 
 const FILL_TYPE = {
@@ -100,13 +104,13 @@ const baseColors = [
     exports.COLOR.RED,
     exports.COLOR.PURPLE,
 ];
-const baseColorsPlusOrange = [
+const baseColorsPlusTeal = [
     exports.COLOR.BLUE,
     exports.COLOR.GREEN,
     exports.COLOR.YELLOW,
     exports.COLOR.RED,
     exports.COLOR.PURPLE,
-    exports.COLOR.ORANGE,
+    exports.COLOR.TEAL,
 ];
 const baseColorsPlusBlack = [
     exports.COLOR.BLUE,
@@ -298,12 +302,12 @@ exports.SUIT = {
     ),
 
     // Basic variants
-    ORANGE: new Suit(
-        'Orange',
-        'O',
-        exports.COLOR.ORANGE,
+    TEAL: new Suit(
+        'Teal',
+        'T',
+        exports.COLOR.TEAL,
         basicCardFillSpec,
-        [exports.COLOR.ORANGE],
+        [exports.COLOR.TEAL],
     ),
     WHITE: new Suit(
         'White',
@@ -327,7 +331,7 @@ exports.SUIT = {
         multiCardFillSpec,
         Object.values(exports.COLOR),
     ),
-    DARKRAINBOW: new Suit(
+    DARK_RAINBOW: new Suit(
         'Rainbow',
         'M',
         [
@@ -378,57 +382,59 @@ exports.SUIT = {
         basicCardFillSpec,
         [],
     ),
-    CB_ORANGE: new Suit(
-        'Orange',
-        'O',
-        exports.COLOR.ORANGE,
+    CB_TEAL: new Suit(
+        'Teal',
+        'T',
+        exports.COLOR.TEAL,
         basicCardFillSpec,
         [],
     ),
 
     // For "Ambiguous"
-    LBLUE: new Suit(
+    L_BLUE: new Suit(
         'Sky',
         'S',
-        exports.COLOR.LBLUE,
+        exports.COLOR.L_BLUE,
         basicCardFillSpec,
         [exports.COLOR.BLUE],
     ),
-    DBLUE: new Suit(
+    D_BLUE: new Suit(
         'Navy',
         'N',
-        exports.COLOR.DBLUE,
+        exports.COLOR.D_BLUE,
         basicCardFillSpec,
         [exports.COLOR.BLUE],
     ),
-    LGREEN: new Suit(
+    L_GREEN: new Suit(
         'Lime',
         'L',
-        exports.COLOR.LGREEN,
+        exports.COLOR.L_GREEN,
         basicCardFillSpec,
         [exports.COLOR.GREEN],
     ),
-    DGREEN: new Suit(
+    D_GREEN: new Suit(
         'Forest',
         'F',
-        exports.COLOR.DGREEN,
+        exports.COLOR.D_GREEN,
         basicCardFillSpec,
         [exports.COLOR.GREEN],
     ),
-    LRED: new Suit(
+    L_RED: new Suit(
         'Tomato',
         'T',
-        exports.COLOR.LRED,
+        exports.COLOR.L_RED,
         basicCardFillSpec,
         [exports.COLOR.RED],
     ),
-    DRED: new Suit(
+    D_RED: new Suit(
         'Mahogany',
         'B',
-        exports.COLOR.DRED,
+        exports.COLOR.D_RED,
         basicCardFillSpec,
         [exports.COLOR.RED],
     ),
+
+    // For "Very Ambiguous"
     BLUE1: new Suit(
         'Sky',
         'S',
@@ -473,7 +479,7 @@ exports.SUIT = {
     ),
 
     // For "Dual-Color (6 Suits)"
-    MGREEN: new Suit(
+    M_GREEN: new Suit(
         'Green',
         'G',
         exports.COLOR.GREEN,
@@ -483,7 +489,7 @@ exports.SUIT = {
             exports.COLOR.YELLOW,
         ],
     ),
-    MPURPLE: new Suit(
+    M_PURPLE: new Suit(
         'Purple',
         'P',
         exports.COLOR.PURPLE,
@@ -503,7 +509,7 @@ exports.SUIT = {
             exports.COLOR.BLACK,
         ],
     ),
-    MORANGE: new Suit(
+    ORANGE: new Suit(
         'Orange',
         'O',
         exports.COLOR.ORANGE,
@@ -535,7 +541,7 @@ exports.SUIT = {
     ),
 
     // For "Dual-Color (5 Suits)"
-    TEAL: new Suit(
+    M_TEAL: new Suit(
         'Teal',
         'T',
         exports.COLOR.TEAL,
@@ -555,7 +561,7 @@ exports.SUIT = {
             exports.COLOR.YELLOW,
         ],
     ),
-    // MORANGE is reused
+    // Orange is reused
     CARDINAL: new Suit(
         'Cardinal',
         'C',
@@ -616,9 +622,9 @@ exports.VARIANTS = {
             exports.SUIT.YELLOW,
             exports.SUIT.RED,
             exports.SUIT.PURPLE,
-            exports.SUIT.ORANGE,
+            exports.SUIT.TEAL,
         ],
-        baseColorsPlusOrange,
+        baseColorsPlusTeal,
         false,
     ),
     'Four Suits': new Variant(
@@ -797,7 +803,7 @@ exports.VARIANTS = {
             exports.SUIT.YELLOW,
             exports.SUIT.RED,
             exports.SUIT.PURPLE,
-            exports.SUIT.DARKRAINBOW,
+            exports.SUIT.DARK_RAINBOW,
         ],
         baseColors,
         false,
@@ -808,7 +814,7 @@ exports.VARIANTS = {
             exports.SUIT.GREEN,
             exports.SUIT.YELLOW,
             exports.SUIT.RED,
-            exports.SUIT.DARKRAINBOW,
+            exports.SUIT.DARK_RAINBOW,
         ],
         baseColors4,
         false,
@@ -820,7 +826,7 @@ exports.VARIANTS = {
             exports.SUIT.YELLOW,
             exports.SUIT.RED,
             exports.SUIT.BLACK,
-            exports.SUIT.DARKRAINBOW,
+            exports.SUIT.DARK_RAINBOW,
         ],
         baseColors4plusBlack,
         false,
@@ -834,9 +840,9 @@ exports.VARIANTS = {
             exports.SUIT.CB_YELLOW,
             exports.SUIT.CB_RED,
             exports.SUIT.CB_PURPLE,
-            exports.SUIT.CB_ORANGE,
+            exports.SUIT.CB_TEAL,
         ],
-        baseColorsPlusOrange,
+        baseColorsPlusTeal,
         false,
     ),
     'Color Blind (5 Suits)': new Variant(
@@ -875,12 +881,12 @@ exports.VARIANTS = {
         [
             // L stands for light
             // D stands for dark
-            exports.SUIT.LBLUE,
-            exports.SUIT.DBLUE,
-            exports.SUIT.LGREEN,
-            exports.SUIT.DGREEN,
-            exports.SUIT.LRED,
-            exports.SUIT.DRED,
+            exports.SUIT.L_BLUE,
+            exports.SUIT.D_BLUE,
+            exports.SUIT.L_GREEN,
+            exports.SUIT.D_GREEN,
+            exports.SUIT.L_RED,
+            exports.SUIT.D_RED,
         ],
         [
             exports.COLOR.BLUE,
@@ -891,10 +897,10 @@ exports.VARIANTS = {
     ),
     'Ambiguous (4 Suits)': new Variant(
         [
-            exports.SUIT.LBLUE,
-            exports.SUIT.DBLUE,
-            exports.SUIT.LRED,
-            exports.SUIT.DRED,
+            exports.SUIT.L_BLUE,
+            exports.SUIT.D_BLUE,
+            exports.SUIT.L_RED,
+            exports.SUIT.D_RED,
         ],
         [
             exports.COLOR.BLUE,
@@ -904,10 +910,10 @@ exports.VARIANTS = {
     ),
     'Ambiguous & White (5 Suits)': new Variant(
         [
-            exports.SUIT.LBLUE,
-            exports.SUIT.DBLUE,
-            exports.SUIT.LRED,
-            exports.SUIT.DRED,
+            exports.SUIT.L_BLUE,
+            exports.SUIT.D_BLUE,
+            exports.SUIT.L_RED,
+            exports.SUIT.D_RED,
             exports.SUIT.WHITE,
         ],
         [
@@ -918,10 +924,10 @@ exports.VARIANTS = {
     ),
     'Ambiguous & Rainbow (5 Suits)': new Variant(
         [
-            exports.SUIT.LBLUE,
-            exports.SUIT.DBLUE,
-            exports.SUIT.LRED,
-            exports.SUIT.DRED,
+            exports.SUIT.L_BLUE,
+            exports.SUIT.D_BLUE,
+            exports.SUIT.L_RED,
+            exports.SUIT.D_RED,
             exports.SUIT.RAINBOW,
         ],
         [
@@ -949,10 +955,10 @@ exports.VARIANTS = {
     // Dual-Color
     'Dual-Color (6 Suits)': new Variant(
         [
-            exports.SUIT.MGREEN, // Blue + Yellow
-            exports.SUIT.MPURPLE, // Blue + Red
+            exports.SUIT.M_GREEN, // Blue + Yellow
+            exports.SUIT.M_PURPLE, // Blue + Red
             exports.SUIT.NAVY, // Blue + Black
-            exports.SUIT.MORANGE, // Yellow + Red
+            exports.SUIT.ORANGE, // Yellow + Red
             exports.SUIT.TAN, // Yellow + Black
             exports.SUIT.MAHOGANY, // Red + Black
         ],
@@ -966,9 +972,9 @@ exports.VARIANTS = {
     ),
     'Dual-Color (5 Suits)': new Variant(
         [
-            exports.SUIT.TEAL, // Blue + Green
+            exports.SUIT.M_TEAL, // Blue + Green
             exports.SUIT.LIME, // Green + Yellow
-            exports.SUIT.MORANGE, // Yellow + Red
+            exports.SUIT.ORANGE, // Yellow + Red
             exports.SUIT.CARDINAL, // Red + Purple
             exports.SUIT.INDIGO, // Purple + Blue
         ],
@@ -977,9 +983,9 @@ exports.VARIANTS = {
     ),
     'Dual-Color (3 Suits)': new Variant(
         [
-            exports.SUIT.MGREEN, // Blue + Yellow
-            exports.SUIT.MPURPLE, // Blue + Red
-            exports.SUIT.MORANGE, // Yellow + Red
+            exports.SUIT.M_GREEN, // Blue + Yellow
+            exports.SUIT.M_PURPLE, // Blue + Red
+            exports.SUIT.ORANGE, // Yellow + Red
         ],
         [
             exports.COLOR.BLUE,
@@ -990,9 +996,9 @@ exports.VARIANTS = {
     ),
     'Dual-Color & Rainbow (6 Suits)': new Variant(
         [
-            exports.SUIT.TEAL, // Blue + Green
+            exports.SUIT.M_TEAL, // Blue + Green
             exports.SUIT.LIME, // Green + Yellow
-            exports.SUIT.MORANGE, // Yellow + Red
+            exports.SUIT.ORANGE, // Yellow + Red
             exports.SUIT.CARDINAL, // Red + Purple
             exports.SUIT.INDIGO, // Purple + Blue
             exports.SUIT.RAINBOW,
@@ -1002,9 +1008,9 @@ exports.VARIANTS = {
     ),
     'Dual-Color & Rainbow (4 Suits)': new Variant(
         [
-            exports.SUIT.MGREEN, // Blue + Yellow
-            exports.SUIT.MPURPLE, // Blue + Red
-            exports.SUIT.MORANGE, // Yellow + Red
+            exports.SUIT.M_GREEN, // Blue + Yellow
+            exports.SUIT.M_PURPLE, // Blue + Red
+            exports.SUIT.ORANGE, // Yellow + Red
             exports.SUIT.RAINBOW,
         ],
         [
@@ -1023,9 +1029,9 @@ exports.VARIANTS = {
             exports.SUIT.YELLOW,
             exports.SUIT.RED,
             exports.SUIT.PURPLE,
-            exports.SUIT.ORANGE,
+            exports.SUIT.TEAL,
         ],
-        baseColorsPlusOrange,
+        baseColorsPlusTeal,
         false,
     ),
     'Multi-Fives (5 Suits)': new Variant(
@@ -1109,9 +1115,9 @@ exports.VARIANTS = {
             exports.SUIT.YELLOW,
             exports.SUIT.RED,
             exports.SUIT.PURPLE,
-            exports.SUIT.ORANGE,
+            exports.SUIT.TEAL,
         ],
-        baseColorsPlusOrange,
+        baseColorsPlusTeal,
         false,
     ),
     'Clue Starved (5 Suits)': new Variant(
@@ -1144,9 +1150,9 @@ exports.VARIANTS = {
             exports.SUIT.YELLOW,
             exports.SUIT.RED,
             exports.SUIT.PURPLE,
-            exports.SUIT.ORANGE,
+            exports.SUIT.TEAL,
         ],
-        baseColorsPlusOrange,
+        baseColorsPlusTeal,
         true,
     ),
     'Up or Down (5 Suits)': new Variant(
@@ -1227,9 +1233,9 @@ exports.VARIANTS = {
             exports.SUIT.YELLOW,
             exports.SUIT.RED,
             exports.SUIT.PURPLE,
-            exports.SUIT.ORANGE,
+            exports.SUIT.TEAL,
         ],
-        baseColorsPlusOrange,
+        baseColorsPlusTeal,
         false,
     ),
     'Duck (5 Suits)': new Variant(
@@ -1266,11 +1272,11 @@ exports.VARIANTS = {
     // Mixed
     'African American': new Variant(
         [
-            exports.SUIT.LRED,
-            exports.SUIT.DRED,
+            exports.SUIT.L_RED,
+            exports.SUIT.D_RED,
             exports.SUIT.WHITE,
-            exports.SUIT.LBLUE,
-            exports.SUIT.DBLUE,
+            exports.SUIT.L_BLUE,
+            exports.SUIT.D_BLUE,
             exports.SUIT.BLACK,
         ],
         [
@@ -1282,9 +1288,9 @@ exports.VARIANTS = {
     ),
     'Wild & Crazy': new Variant(
         [
-            exports.SUIT.MGREEN, // Blue + Yellow
-            exports.SUIT.MPURPLE, // Blue + Red
-            exports.SUIT.MORANGE, // Yellow + Red
+            exports.SUIT.M_GREEN, // Blue + Yellow
+            exports.SUIT.M_PURPLE, // Blue + Red
+            exports.SUIT.ORANGE, // Yellow + Red
             exports.SUIT.WHITE,
             exports.SUIT.RAINBOW,
             exports.SUIT.BLACK,

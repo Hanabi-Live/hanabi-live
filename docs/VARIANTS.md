@@ -15,8 +15,8 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 ### Six Suits
 
-* An orange suit is added.
-* It works identical to the other suits in that you can clue orange cards with orange clues.
+* An cyan suit is added.
+* It works identical to the other suits in that you can clue cyan cards with cyan clues.
 
 ### Four Suits
 

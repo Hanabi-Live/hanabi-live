@@ -50,11 +50,11 @@ var (
 	YellowClue = ColorClue{Name: "Yellow"}
 	RedClue    = ColorClue{Name: "Red"}
 	PurpleClue = ColorClue{Name: "Purple"}
-	OrangeClue = ColorClue{Name: "Orange"}
+	TealClue   = ColorClue{Name: "Teal"}
 	BlackClue  = ColorClue{Name: "Black"}
 
 	// Helpers used for some variants
-	allColorClues = []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue, BlackClue}
+	allColorClues = []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue, BlackClue}
 	noColorClues  = []ColorClue{}
 )
 
@@ -69,7 +69,7 @@ var (
 	PurpleSuit = NewSuit("Purple", []ColorClue{PurpleClue})
 
 	// Basic variants
-	OrangeSuit      = NewSuit("Orange", []ColorClue{OrangeClue})
+	TealSuit        = NewSuit("Teal", []ColorClue{TealClue})
 	BlackSuit       = NewSuit1oE("Black", []ColorClue{BlackClue})
 	RainbowSuit     = NewSuit("Rainbow", allColorClues)
 	WhiteSuit       = NewSuit("White", noColorClues)
@@ -81,7 +81,7 @@ var (
 	BlindYellowSuit = NewSuit("Yellow", noColorClues)
 	BlindRedSuit    = NewSuit("Red", noColorClues)
 	BlindPurpleSuit = NewSuit("Purple", noColorClues)
-	BlindOrangeSuit = NewSuit("Orange", noColorClues)
+	BlindTealSuit   = NewSuit("Teal", noColorClues)
 
 	// For "Ambiguous"
 	SkySuit      = NewSuit("Sky", []ColorClue{BlueClue})

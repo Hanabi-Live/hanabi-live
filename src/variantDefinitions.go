@@ -12,8 +12,8 @@ var (
 		Variant{
 			Name:  "Six Suits",
 			ID:    1,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, TealSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue},
 		},
 		Variant{
 			Name:  "Four Suits",
@@ -141,8 +141,8 @@ var (
 		Variant{
 			Name:  "Color Blind (6 Suits)",
 			ID:    10,
-			Suits: []Suit{BlindBlueSuit, BlindGreenSuit, BlindYellowSuit, BlindRedSuit, BlindPurpleSuit, BlindOrangeSuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
+			Suits: []Suit{BlindBlueSuit, BlindGreenSuit, BlindYellowSuit, BlindRedSuit, BlindPurpleSuit, BlindTealSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue},
 		},
 		Variant{
 			Name:  "Color Blind (5 Suits)",
@@ -231,8 +231,8 @@ var (
 		Variant{
 			Name:  "Multi-Fives (6 Suits)",
 			ID:    45,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, TealSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue},
 		},
 		Variant{
 			Name:  "Multi-Fives (5 Suits)",
@@ -281,8 +281,8 @@ var (
 		Variant{
 			Name:  "Clue Starved (6 Suits)",
 			ID:    51,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, TealSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue},
 		},
 		Variant{
 			Name:  "Clue Starved (5 Suits)",
@@ -301,8 +301,8 @@ var (
 		Variant{
 			Name:  "Up or Down (6 Suits)",
 			ID:    40,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, TealSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue},
 		},
 		Variant{
 			Name:  "Up or Down (5 Suits)",
@@ -346,8 +346,8 @@ var (
 		Variant{
 			Name:  "Duck (6 Suits)",
 			ID:    54,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, OrangeSuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, OrangeClue},
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, TealSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue},
 		},
 		Variant{
 			Name:  "Duck (5 Suits)",
