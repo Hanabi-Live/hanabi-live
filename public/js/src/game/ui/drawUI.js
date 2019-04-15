@@ -163,7 +163,7 @@ const initReusableObjects = () => {
         fontFamily: 'Verdana',
         align: 'left',
         text: 'Placeholder text',
-        fill: globals.labelColor,
+        fill: constants.LABEL_COLOR,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -233,7 +233,7 @@ const drawActionLog = () => {
         align: 'center',
         fontSize: 0.028 * winH,
         fontFamily: 'Verdana',
-        fill: globals.labelColor,
+        fill: constants.LABEL_COLOR,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -357,7 +357,7 @@ const drawPlayStacksAndDiscardStacks = () => {
                 fontFamily: 'Verdana',
                 align: 'center',
                 text,
-                fill: globals.labelColor,
+                fill: constants.LABEL_COLOR,
             });
             globals.layers.UI.add(suitLabelText);
             globals.elements.suitLabelTexts.push(suitLabelText);
@@ -851,7 +851,7 @@ const drawSpectators = () => {
         fontFamily: 'Verdana',
         align: 'center',
         text: '0',
-        fill: globals.labelColor,
+        fill: constants.LABEL_COLOR,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -1093,7 +1093,7 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
         // "Easy" variants use the default color (off-white)
         // "Hard" variants use pink
-        fill: (minEfficiency < 1.25 ? globals.labelColor : '#ffb2b2'),
+        fill: (minEfficiency < 1.25 ? constants.LABEL_COLOR : '#ffb2b2'),
         listening: true,
     });
     globals.layers.UI.add(efficiencyNumberLabelMinNeeded);
@@ -1439,6 +1439,13 @@ const drawPreplayArea = () => {
 };
 
 const drawPauseArea = () => {
+    globals.elements.replayArea = new graphics.Group({
+        x: 0.25 * winW,
+        y: 0.25 * winH,
+        width: 0.5 * winW,
+        height: 0.5 * winH,
+    });
+
     // TODO
 };
 

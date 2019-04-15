@@ -10,6 +10,8 @@ exports.PHASER_DEMO_SCALE = 0.35;
 exports.CARD_FADE = 0.6;
 
 // Other misc. constants
+exports.LABEL_COLOR = '#d8d5ef'; // Off-white
+exports.TOOLTIP_DELAY = 500; // In milliseconds
 exports.ARROW_COLOR = {
     DEFAULT: '#ffffff', // White
     RETOUCHED: '#737373', // Dark gray

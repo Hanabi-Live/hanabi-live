@@ -154,7 +154,7 @@ class Deck extends graphics.Group {
             globals.activeHover = this;
             setTimeout(() => {
                 tooltips.show(this);
-            }, globals.tooltipDelay);
+            }, constants.TOOLTIP_DELAY);
         });
         this.on('mouseout', () => {
             globals.activeHover = null;

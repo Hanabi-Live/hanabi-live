@@ -1,4 +1,5 @@
 // Imports
+const constants = require('../../constants');
 const FitText = require('./FitText');
 const globals = require('./globals');
 const graphics = require('./graphics');
@@ -50,7 +51,7 @@ module.exports = (clueAreaValues) => {
         fontSize: 0.08 * winH,
         text: 'Current player:',
         align: 'center',
-        fill: globals.labelColor,
+        fill: constants.LABEL_COLOR,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -183,8 +184,8 @@ module.exports = (clueAreaValues) => {
         ],
         pointerLength: 10,
         pointerWidth: 10,
-        fill: globals.labelColor,
-        stroke: globals.labelColor,
+        fill: constants.LABEL_COLOR,
+        stroke: constants.LABEL_COLOR,
         strokeWidth: 5,
     });
     globals.elements.currentPlayerArrow.add(arrowMain);

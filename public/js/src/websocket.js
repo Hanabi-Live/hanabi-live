@@ -26,7 +26,8 @@ exports.set = () => {
     }
     websocketURL += '/ws';
     console.log('Connecting to websocket URL:', websocketURL);
-    globals.conn = new golem.Connection(websocketURL, true);
+    const debug = window.location.pathname.includes('/dev');
+    globals.conn = new golem.Connection(websocketURL, debug);
     // This will automatically use the cookie that we recieved earlier from the POST
     // If the second argument is true, debugging is turned on
 
@@ -56,7 +57,7 @@ exports.set = () => {
         if (typeof data === 'undefined') {
             data = {};
         }
-        if (globals.debug) {
+        if (window.location.pathname.includes('/dev')) {
             console.log(`%cSent ${command}:`, 'color: green;');
             console.log(data);
         }

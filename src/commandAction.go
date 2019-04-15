@@ -74,6 +74,12 @@ func commandAction(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that the game is not paused
+	if g.Paused {
+		s.Warning("You cannot perform a game action when the game is paused.")
+		return
+	}
+
 	// Local variables
 	p := g.Players[i]
 

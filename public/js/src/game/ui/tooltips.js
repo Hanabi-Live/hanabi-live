@@ -1,4 +1,5 @@
 // Imports
+const constants = require('../../constants');
 const globals = require('./globals');
 
 exports.init = (element, delayed, customContent) => {
@@ -9,7 +10,7 @@ exports.init = (element, delayed, customContent) => {
         } else {
             setTimeout(() => {
                 show(this);
-            }, globals.tooltipDelay);
+            }, constants.TOOLTIP_DELAY);
         }
     });
     element.on('mouseout', () => {

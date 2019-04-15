@@ -17,7 +17,7 @@ class NameFrame extends graphics.Group {
             fontFamily: 'Verdana',
             fontSize: config.height,
             text: config.name,
-            fill: globals.labelColor,
+            fill: constants.LABEL_COLOR,
             shadowColor: 'black',
             shadowBlur: 5,
             shadowOffset: {
@@ -57,7 +57,7 @@ class NameFrame extends graphics.Group {
                 config.width / 2 - w / 2,
                 config.height / 2,
             ],
-            stroke: globals.labelColor,
+            stroke: constants.LABEL_COLOR,
             strokeWidth: 1,
             lineJoin: 'round',
             shadowColor: 'black',
@@ -80,7 +80,7 @@ class NameFrame extends graphics.Group {
                 config.width,
                 0,
             ],
-            stroke: globals.labelColor,
+            stroke: constants.LABEL_COLOR,
             strokeWidth: 1,
             lineJoin: 'round',
             shadowColor: 'black',
@@ -133,7 +133,7 @@ class NameFrame extends graphics.Group {
     }
 
     setConnected(connected) {
-        const color = connected ? globals.labelColor : '#e8233d'; // Red for disconnected players
+        const color = connected ? constants.LABEL_COLOR : '#e8233d'; // Red for disconnected players
 
         this.leftline.setStroke(color);
         this.rightline.setStroke(color);

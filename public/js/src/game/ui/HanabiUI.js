@@ -5,6 +5,7 @@
 */
 
 // Imports
+const constants = require('../../constants');
 const drawCards = require('./drawCards');
 const drawUI = require('./drawUI');
 const globals = require('./globals');
@@ -108,7 +109,7 @@ const showLoadingScreen = () => {
     const loadingLayer = new graphics.Layer();
 
     const loadingLabel = new graphics.Text({
-        fill: globals.labelColor,
+        fill: constants.LABEL_COLOR,
         stroke: '#747278',
         strokeWidth: 1,
         text: 'Loading...',
@@ -124,7 +125,7 @@ const showLoadingScreen = () => {
     loadingLayer.add(loadingLabel);
 
     const progresslabel = new graphics.Text({
-        fill: globals.labelColor,
+        fill: constants.LABEL_COLOR,
         stroke: '#747278',
         strokeWidth: 1,
         text: '0 / 0',

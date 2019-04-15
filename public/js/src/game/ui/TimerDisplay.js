@@ -1,6 +1,6 @@
 // Imports
+const constants = require('../../constants');
 const FitText = require('./FitText');
-const globals = require('./globals');
 const graphics = require('./graphics');
 
 class TimerDisplay extends graphics.Group {
@@ -27,7 +27,7 @@ class TimerDisplay extends graphics.Group {
             fontFamily: 'Verdana',
             align: 'center',
             text: '??:??',
-            fill: globals.labelColor,
+            fill: constants.LABEL_COLOR,
             shadowColor: 'black',
             shadowBlur: 10,
             shadowOffset: {
@@ -47,7 +47,7 @@ class TimerDisplay extends graphics.Group {
             fontFamily: 'Verdana',
             align: 'center',
             text: config.label,
-            fill: globals.labelColor,
+            fill: constants.LABEL_COLOR,
             shadowColor: 'black',
             shadowBlur: 10,
             shadowOffset: {

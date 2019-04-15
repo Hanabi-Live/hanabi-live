@@ -1,19 +1,9 @@
 // Imports
 const globals = require('./globals');
 
-// Configuration
-const debug = true;
-const labelColor = '#d8d5ef'; // Off-white
-const tooltipDelay = 500; // In milliseconds
-
 // We modify the individual properties instead of replacing the entire globals object
 // If we did that, the references in the other files would point to the outdated version
 module.exports = () => {
-    // Constants
-    globals.debug = debug;
-    globals.labelColor = labelColor;
-    globals.tooltipDelay = tooltipDelay;
-
     // Objects sent upon UI initialization
     globals.lobby = null;
     globals.game = null;
