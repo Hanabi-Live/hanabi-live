@@ -31,6 +31,9 @@ class HanabiCard extends graphics.Group {
         this.holder = null;
         this.trueSuit = null;
         this.trueRank = null;
+        // The name of the card image corresponding to the player-wrriten note on the card
+        this.noteSuit = null;
+        this.noteRank = null;
 
         // Initialize various elements/features of the card
         this.initImage();
@@ -119,7 +122,7 @@ class HanabiCard extends graphics.Group {
             }
         } else {
             // If we are not in Empathy mode, then show the suit if it is known
-            suitToShow = learnedCard.suit || constants.SUIT.GRAY;
+            suitToShow = learnedCard.suit || this.noteSuit || constants.SUIT.GRAY;
         }
 
         // For whatever reason, "Card-Gray" is never created, so use "NoPip-Gray"
@@ -141,7 +144,7 @@ class HanabiCard extends graphics.Group {
             }
         } else {
             // If we are not in Empathy mode, then show the rank if it is known
-            rankToShow = learnedCard.rank || 6;
+            rankToShow = learnedCard.rank || this.noteRank || 6;
         }
 
         // Set the name
@@ -372,6 +375,10 @@ class HanabiCard extends graphics.Group {
         learnedCard.revealed = true;
 
         // Redraw the card
+        if (this.noteSuit) {
+            this.noteSuit = null;
+            this.noteRank = null;
+        }
         this.setBareImage();
     }
 
@@ -539,6 +546,14 @@ class HanabiCard extends graphics.Group {
         const newValue = all ? 0 : cardsLeft - 1;
         this.possibleCards.set(mapIndex, newValue);
         this.checkPipPossibilities(suit, rank);
+
+        // If there is a specific identity note on the card, check to see if it is now invalid
+        if (this.noteSuit === suit && this.noteRank === rank) {
+            this.noteSuit = null;
+            this.noteRank = null;
+            this.setBareImage();
+            globals.layers.card.batchDraw();
+        }
     }
 }
 

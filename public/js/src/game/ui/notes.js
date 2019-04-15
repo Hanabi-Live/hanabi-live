@@ -33,6 +33,8 @@ const get = (order) => {
 exports.get = get;
 
 const set = (order, note, send = true) => {
+    const card = globals.deck[order];
+
     if (note === '') {
         note = undefined;
     }
@@ -48,43 +50,75 @@ const set = (order, note, send = true) => {
         });
     }
 
-    // Validate that the note does not contain an impossibility
+    // Check to see if they wrote a note that implies that they know the exact identity of this card
     if (!note || globals.replay || globals.spectating) {
+        if (card.noteSuit) {
+            card.noteSuit = null;
+            card.noteRank = null;
+            card.setBareImage();
+            globals.layers.card.batchDraw();
+        }
         return;
     }
     // Only examine the new text that they added
     const getDiff = (string, diffBy) => string.split(diffBy).join('');
     let diff = getDiff(note, oldNote);
-    diff = diff.replace(/\|+/g, ''); // Remove all pipes
+    // Remove all pipes (which are a conventional way to append new information to a note)
+    diff = diff.replace(/\|+/g, '');
     diff = diff.trim(); // Remove all leading and trailing whitespace
-    let shownWarning = false;
+    let noteSuit = null;
+    let noteRank = null;
     for (const suit of globals.variant.suits) {
         for (const rank of globals.variant.ranks) {
             if (
                 diff === `${suit.abbreviation.toLowerCase()}${rank}` // e.g. b1
                 || diff === `${suit.abbreviation.toUpperCase()}${rank}` // e.g. B1
                 || diff === `${suit.name}${rank}` // e.g. Blue1
+                || diff === `${suit.name} ${rank}` // e.g. Blue 1
                 || diff === `${suit.name.toLowerCase()}${rank}` // e.g. blue1
+                || diff === `${suit.name.toLowerCase()} ${rank}` // e.g. blue 1
                 || diff === `${suit.name.toUpperCase()}${rank}` // e.g. BLUE1
+                || diff === `${suit.name.toUpperCase()} ${rank}` // e.g. BLUE 1
                 || diff === `${rank}${suit.abbreviation.toLowerCase()}` // e.g. 1b
                 || diff === `${rank}${suit.abbreviation.toUpperCase()}` // e.g. 1B
                 || diff === `${rank}${suit.name}` // e.g. 1Blue
+                || diff === `${rank} ${suit.name}` // e.g. 1 Blue
                 || diff === `${rank}${suit.name.toLowerCase()}` // e.g. 1blue
+                || diff === `${rank} ${suit.name.toLowerCase()}` // e.g. 1 blue
                 || diff === `${rank}${suit.name.toUpperCase()}` // e.g. 1BLUE
+                || diff === `${rank} ${suit.name.toUpperCase()}` // e.g. 1 BLUE
             ) {
-                const mapIndex = `${suit.name}${rank}`;
-                if (globals.deck[order].possibleCards.get(mapIndex) === 0) {
-                    shownWarning = true;
-                    window.alert(`That card cannot possibly be a ${suit.name} ${rank}.`);
-                    break;
-                }
+                noteSuit = suit;
+                noteRank = rank;
+                break;
             }
         }
-
-        if (shownWarning) {
+        if (noteSuit) {
             break;
         }
     }
+    if (!noteSuit) {
+        if (card.noteSuit) {
+            card.noteSuit = null;
+            card.noteRank = null;
+            card.setBareImage();
+            globals.layers.card.batchDraw();
+        }
+        return;
+    }
+
+    // Validate that the note does not contain an impossibility
+    const mapIndex = `${noteSuit.name}${noteRank}`;
+    if (card.possibleCards.get(mapIndex) === 0) {
+        window.alert(`That card cannot possibly be a ${noteSuit.name.toLowerCase()} ${noteRank}.`);
+        return;
+    }
+
+    // Set the bare image of the card to match the note
+    card.noteSuit = noteSuit;
+    card.noteRank = noteRank;
+    card.setBareImage();
+    globals.layers.card.batchDraw();
 };
 exports.set = set;
 
