@@ -312,7 +312,7 @@ class HanabiCard extends graphics.Group {
             // remove the possibilities from the rest of the cards in their hand
             const playerHand = globals.elements.playerHands[this.holder].children;
             for (const layoutChild of playerHand) {
-                const card = layoutChild[0];
+                const card = layoutChild.children[0];
                 if (card.order === this.order) {
                     // There is no need to update the card that was just revealed
                     continue;
