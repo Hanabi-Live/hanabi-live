@@ -24,6 +24,8 @@ class HanabiCard extends graphics.Group {
         };
         super(config);
 
+        this.type = 'HanabiCard';
+
         // Most class variables are defined below in the "refresh()" function
         // Order is defined upon first initialization
         this.order = config.order;

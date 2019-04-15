@@ -322,7 +322,7 @@ const setArrow = (i, element, giver, clue) => {
     // Figure out whether the arrrow should be inverted or not
     let rot = 0;
     if (
-        element.constructor.name === 'HanabiCard'
+        element.type === 'HanabiCard'
         && !element.isPlayed
         && !element.isDiscarded
     ) {
@@ -411,12 +411,12 @@ const getArrowPos = (element, rot) => {
     pos.y += Math.cos(rotRadians) * distance;
 
     // If this is an arrow for a UI element, we need to adjust the positions a little bit
-    if (element.constructor.name === 'Deck') {
+    if (element === globals.elements.deck) {
         pos.x += element.getWidth() / 2;
         pos.y += element.getHeight() / 2.5;
     } else if (element === globals.elements.cluesNumberLabel) {
         pos.x += element.getWidth() * 0.15;
-    } else if (element.constructor.name !== 'HanabiCard') {
+    } else if (element.type !== 'HanabiCard') {
         pos.x += element.getWidth() / 3;
     }
 
