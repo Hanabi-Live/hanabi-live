@@ -20,7 +20,7 @@ const yrad = CARD_H * 0.08;
 // The "drawAll()" function draws all of the cards and then stores them in the
 // "globals.cardImages" object to be used later
 exports.drawAll = () => {
-    // The Unknown suit represents cards of unknown suit
+    // The "unknown" suit has semi-blank gray cards, representing unknown cards
     const suits = globals.variant.suits.concat(SUIT.UNKNOWN);
     for (let i = 0; i < suits.length; i++) {
         const suit = suits[i];
@@ -92,9 +92,10 @@ exports.drawAll = () => {
             }
 
             // 'NoPip' cards are used for
-            //   cards of known rank before suit learned
-            //   cards of unknown rank
-            // Entirely unknown cards (Unknown 6) have a custom image defined separately
+            // - cards of known rank before suit learned
+            // - cards of unknown rank
+            // Entirely unknown cards (e.g. "NoPip-Unknown-6")
+            // have a custom image defined separately
             if (rank > 0 && (rank < 6 || suit !== SUIT.UNKNOWN)) {
                 globals.cardImages[`NoPip-${suit.name}-${rank}`] = cloneCanvas(cvs);
             }
@@ -103,7 +104,7 @@ exports.drawAll = () => {
                 drawSuitPips(ctx, rank, suit, i);
             }
 
-            // Unknown Card images would be identical to NoPip images
+            // "Card-Unknown" images would be identical to "NoPip-Unknown" images
             if (suit !== SUIT.UNKNOWN) {
                 globals.cardImages[`Card-${suit.name}-${rank}`] = cvs;
             }

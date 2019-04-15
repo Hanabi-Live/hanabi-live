@@ -105,6 +105,9 @@ func commandPause(s *Session, d *CommandData) {
 		// they end their turn)
 		g.TurnBeginTime = g.TurnBeginTime.Add(time.Since(g.PauseTime))
 
+		// Send everyone new clock values
+		g.NotifyTime()
+
 		// Restart the function that will check to see if the current player has run out of time
 		// (since the existing function will return and do nothing if the game is paused)
 		go g.CheckTimer(g.Turn, g.Players[g.ActivePlayer])

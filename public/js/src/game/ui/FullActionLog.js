@@ -47,7 +47,7 @@ class FullActionLog extends graphics.Group {
         const numbersOptions = {
             fontSize: 0.025 * globals.stage.getHeight(),
             fontFamily: 'Verdana',
-            fill: 'lightgrey',
+            fill: '#d3d3d3', // Light gray
             x: 0.01 * globals.stage.getWidth(),
             y: 0.01 * globals.stage.getHeight(),
             width: 0.03 * globals.stage.getWidth(),

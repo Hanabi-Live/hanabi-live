@@ -127,7 +127,7 @@ class HanabiCard extends graphics.Group {
             suitToShow = learnedCard.suit || this.noteSuit || constants.SUIT.UNKNOWN;
         }
 
-        // For whatever reason, "Card-Unknown" is never created, so use "NoPip-Gray"
+        // "Card-Unknown" is not created, so use "NoPip-Unknown"
         let prefix = 'Card';
         if (suitToShow === constants.SUIT.UNKNOWN) {
             prefix = 'NoPip';

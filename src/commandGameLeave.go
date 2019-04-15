@@ -75,6 +75,6 @@ func commandGameLeave(s *Session, d *CommandData) {
 		return
 	}
 
-	// Send the table owner whether or not the "Start Game" button should be greyed out
+	// Send the table owner whether or not the "Start Game" button should be grayed out
 	g.NotifyTableReady()
 }

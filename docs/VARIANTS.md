@@ -15,8 +15,8 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 ### Six Suits
 
-* An cyan suit is added.
-* It works identical to the other suits in that you can clue cyan cards with cyan clues.
+* An teal suit is added.
+* It works identical to the other suits in that you can clue teal cards with teal clues.
 
 ### Four Suits
 
@@ -42,17 +42,17 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * One of the suits is replaced with a rainbow suit.
 * All color clues will "touch" the rainbow suit.
 
-### Dark Rainbow
-
-* One of the suits is replaced with a dark rainbow suit.
-* All color clues will "touch" the dark rainbow suit.
-* There is only one of each dark rainbow card in the deck, which means that every dark rainbow card is "critical".
-
-### Gray
+### Gray (White + Black)
 
 * One of the suits is replaced with a gray suit.
 * No color clues "touch" the gray suit. (It is a colorless suit.)
 * There is only one of each gray card in the deck, which means that every gray card is "critical".
+
+### Dark Rainbow (Black + Rainbow)
+
+* One of the suits is replaced with a dark rainbow suit.
+* All color clues will "touch" the dark rainbow suit.
+* There is only one of each dark rainbow card in the deck, which means that every dark rainbow card is "critical".
 
 ### Color Blind
 
@@ -137,20 +137,31 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Rainbow (5 Suits)
   * Rainbow (4 Suits)
   * Rainbow (3 Suits)
+* White & Black
+  * White & Black (6 Suits)
+  * White & Black (5 Suits)
 * White & Rainbow
   * White & Rainbow (6 Suits)
   * White & Rainbow (5 Suits)
   * White & Rainbow (4 Suits)
+* Black & Rainbow
+  * Black & Rainbow (6 Suits)
+  * Black & Rainbow (5 Suits)
+* Gray
+  * Gray (6 Suits)
+  * Gray (5 Suits)
+* Black & Gray
+  * Black & Gray (6 Suits)
+* Rainbow & Gray
+  * Rainbow & Gray (6 Suits)
+  * Rainbow & Gray (5 Suits)
 * Dark Rainbow
   * Dark Rainbow (6 Suits)
   * Dark Rainbow (5 Suits)
+* Black & Dark Rainbow
   * Black & Dark Rainbow (6 Suits)
-* Gray
-  * Gray (5 Suits)
-  * Gray (6 Suits)
-  * Black and Gray (6 Suits)
-  * Gray and Rainbow (6 Suits)
-  * Gray and Dark Rainbow (6 Suits)
+* Gray & Dark Rainbow
+  * Gray & Dark Rainbow (6 Suits)
 * Color Blind
   * Color Blind (6 Suits)
   * Color Blind (5 Suits)

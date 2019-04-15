@@ -148,6 +148,12 @@ const baseColors3 = [
     exports.COLOR.GREEN,
     exports.COLOR.YELLOW,
 ];
+const baseColors3plusBlack = [
+    exports.COLOR.BLUE,
+    exports.COLOR.GREEN,
+    exports.COLOR.YELLOW,
+    exports.COLOR.BLACK,
+];
 const baseColors2 = [
     exports.COLOR.BLUE,
     exports.COLOR.GREEN,
@@ -778,6 +784,31 @@ exports.VARIANTS = {
         false,
     ),
 
+    // White & Black
+    'White & Black (6 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.WHITE,
+            exports.SUIT.BLACK,
+        ],
+        baseColors4plusBlack,
+        false,
+    ),
+    'White & Black (5 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.WHITE,
+            exports.SUIT.BLACK,
+        ],
+        baseColors3plusBlack,
+        false,
+    ),
+
     // White & Rainbow
     'White & Rainbow (6 Suits)': new Variant(
         [
@@ -813,6 +844,95 @@ exports.VARIANTS = {
         false,
     ),
 
+    // Black & Rainbow
+    'Black & Rainbow (6 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.BLACK,
+            exports.SUIT.RAINBOW,
+        ],
+        baseColors4plusBlack,
+        false,
+    ),
+    'Black & Rainbow (5 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.BLACK,
+            exports.SUIT.RAINBOW,
+        ],
+        baseColors3plusBlack,
+        false,
+    ),
+
+    // Gray
+    'Gray (6 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.PURPLE,
+            exports.SUIT.GRAY,
+        ],
+        baseColors,
+        false,
+    ),
+    'Gray (5 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.GRAY,
+        ],
+        baseColors4,
+        false,
+    ),
+
+    // Black & Gray
+    'Black & Gray (6 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.GRAY,
+            exports.SUIT.BLACK,
+        ],
+        baseColors4plusBlack,
+        false,
+    ),
+
+    // Rainbow & Gray
+    'Rainbow & Gray (6 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RED,
+            exports.SUIT.RAINBOW,
+            exports.SUIT.GRAY,
+        ],
+        baseColors4,
+        false,
+    ),
+    'Rainbow & Gray (5 Suits)': new Variant(
+        [
+            exports.SUIT.BLUE,
+            exports.SUIT.GREEN,
+            exports.SUIT.YELLOW,
+            exports.SUIT.RAINBOW,
+            exports.SUIT.GRAY,
+        ],
+        baseColors3,
+        false,
+    ),
+
     // Dark Rainbow
     'Dark Rainbow (6 Suits)': new Variant(
         [
@@ -837,6 +957,8 @@ exports.VARIANTS = {
         baseColors4,
         false,
     ),
+
+    // Black & Dark Rainbow
     'Black & Dark Rainbow (6 Suits)': new Variant(
         [
             exports.SUIT.BLUE,
@@ -850,55 +972,8 @@ exports.VARIANTS = {
         false,
     ),
 
-    // Gray
-    'Gray (5 Suits)': new Variant(
-        [
-            exports.SUIT.BLUE,
-            exports.SUIT.GREEN,
-            exports.SUIT.YELLOW,
-            exports.SUIT.RED,
-            exports.SUIT.GRAY,
-        ],
-        baseColors4,
-        false,
-    ),
-    'Gray (6 Suits)': new Variant(
-        [
-            exports.SUIT.BLUE,
-            exports.SUIT.GREEN,
-            exports.SUIT.YELLOW,
-            exports.SUIT.RED,
-            exports.SUIT.PURPLE,
-            exports.SUIT.GRAY,
-        ],
-        baseColors,
-        false,
-    ),
-    'Black and Gray (6 Suits)': new Variant(
-        [
-            exports.SUIT.BLUE,
-            exports.SUIT.GREEN,
-            exports.SUIT.YELLOW,
-            exports.SUIT.RED,
-            exports.SUIT.GRAY,
-            exports.SUIT.BLACK,
-        ],
-        baseColors4plusBlack,
-        false,
-    ),
-    'Gray and Rainbow (6 Suits)': new Variant(
-        [
-            exports.SUIT.BLUE,
-            exports.SUIT.GREEN,
-            exports.SUIT.YELLOW,
-            exports.SUIT.RED,
-            exports.SUIT.GRAY,
-            exports.SUIT.RAINBOW,
-        ],
-        baseColors4,
-        false,
-    ),
-    'Gray and Dark Rainbow (6 Suits)': new Variant(
+    // Gray & Dark Rainbow
+    'Gray & Dark Rainbow (6 Suits)': new Variant(
         [
             exports.SUIT.BLUE,
             exports.SUIT.GREEN,

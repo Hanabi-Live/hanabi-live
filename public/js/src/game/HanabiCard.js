@@ -1,6 +1,6 @@
 /*
     The HanabiCard object, which represents a single card
-    TODO this object has to be re-copied over due to lots of changes in the old UI
+    TODO this object has to be re-copied over due to lots of new changes in the Konva UI
 */
 
 // Imports
@@ -46,20 +46,6 @@ class HanabiCard extends Phaser.GameObjects.Container {
 
         const image = this.getImage();
         this.add(image);
-
-        /*
-        // Create the "bare" card image, which is a Unknown card with all the pips
-        this.bare.setSceneFunc(function setSceneFunc(context) {
-            drawCards.scaleCardImage(
-                context,
-                self.barename,
-                this.getWidth(),
-                this.getHeight(),
-                this.getAbsoluteTransform(),
-            );
-        });
-        this.add(this.bare);
-        */
     }
 
     /*
@@ -116,8 +102,6 @@ class HanabiCard extends Phaser.GameObjects.Container {
     */
 
     setCardImageName() {
-        let prefix = 'Card';
-
         const learnedCard = globals.state.learnedCards[this.order];
 
         const rank = (!this.showOnlyLearned && this.trueRank);
@@ -131,7 +115,8 @@ class HanabiCard extends Phaser.GameObjects.Container {
             suitToShow = SUIT.UNKNOWN;
         }
 
-        // "Card-Gray" is not created, so use "NoPip-Gray"
+        // "Card-Unknown" is not created, so use "NoPip-Unknown"
+        let prefix = 'Card';
         if (suitToShow === SUIT.UNKNOWN) {
             prefix = 'NoPip';
         }

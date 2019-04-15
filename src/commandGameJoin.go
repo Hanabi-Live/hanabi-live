@@ -115,7 +115,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 	// Send them the chat history for this game
 	chatSendPastFromGame(s, g)
 
-	// Send the table owner whether or not the "Start Game" button should be greyed out
+	// Send the table owner whether or not the "Start Game" button should be grayed out
 	g.NotifyTableReady()
 
 	// If the user previously requested it, automatically start the game

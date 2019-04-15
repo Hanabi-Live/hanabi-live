@@ -95,6 +95,20 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
+		// White & Black
+		Variant{
+			Name:  "White & Black (6 Suits)",
+			ID:    63,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit, BlackSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
+		},
+		Variant{
+			Name:  "White & Black (5 Suits)",
+			ID:    64,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, WhiteSuit, BlackSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, BlackClue},
+		},
+
 		// White & Rainbow
 		Variant{
 			Name:  "White & Rainbow (6 Suits)",
@@ -115,6 +129,57 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
+		// Black & Rainbow
+		Variant{
+			Name:  "Black & Rainbow (6 Suits)",
+			ID:    65,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BlackSuit, RainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
+		},
+		Variant{
+			Name:  "Black & Rainbow (5 Suits)",
+			ID:    66,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, BlackSuit, RainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
+		},
+
+		// Gray
+		Variant{
+			Name:  "Gray (6 Suits)",
+			ID:    59,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, GraySuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Gray (5 Suits)",
+			ID:    58,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, GraySuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		// "Gray (4 Suits)" would be too difficult
+
+		// Black & Gray
+		Variant{
+			Name:  "Black and Gray (6 Suits)",
+			ID:    60,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, GraySuit, BlackSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
+		},
+
+		// Rainbow & Gray
+		Variant{
+			Name:  "Rainbow & Gray (6 Suits)",
+			ID:    67,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, RainbowSuit, GraySuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		Variant{
+			Name:  "Rainbow & Gray (5 Suits)",
+			ID:    68,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RainbowSuit, GraySuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
+		},
+
 		// Dark Rainbow
 		Variant{
 			Name:  "Dark Rainbow (6 Suits)",
@@ -129,46 +194,22 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
 		// "Dark Rainbow (4 Suits)" would be too difficult
+
+		// Black & Dark Rainbow
 		Variant{
 			Name:  "Black & Dark Rainbow (6 Suits)",
 			ID:    12,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BlackSuit, DarkRainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
 		},
-		// "Black & Dark Rainbow (5 Suits)" would be too difficult
 
-		// Gray
-		Variant{
-			Name:  "Gray (5 Suits)",
-			ID:    58,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, GraySuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
-		},
-		Variant{
-			Name:  "Gray (6 Suits)",
-			ID:    59,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, GraySuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
-		},
-		Variant{
-			Name:  "Black and Gray (6 Suits)",
-			ID:    60,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, GraySuit, BlackSuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
-		},
-		Variant{
-			Name:  "Gray and Rainbow (6 Suits)",
-			ID:    61,
-			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, GraySuit, RainbowSuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
-		},
+		// Gray & Dark Rainbow
 		Variant{
 			Name:  "Gray and Dark Rainbow (6 Suits)",
 			ID:    62,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, GraySuit, DarkRainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
 		},
-		// "Triple black (6 suits)" would be too difficult
 
 		// Color Blind
 		Variant{
