@@ -52,6 +52,62 @@ module.exports = () => {
     winH = globals.stage.getHeight();
     numPlayers = globals.playerNames.length;
 
+    // Create the various Konva layers upon which all graphic elements reside
+    initLayers();
+
+    // We can reuse some UI elements
+    initReusableObjects();
+
+    // Draw a green background behind everything
+    const background = new graphics.Image({
+        x: 0,
+        y: 0,
+        width: winW,
+        height: winH,
+        image: globals.ImageLoader.get('background'),
+    });
+    globals.layers.background.add(background);
+
+    // The middle of the screen
+    drawActionLog();
+    drawPlayStacksAndDiscardStacks();
+
+    // Hands are distributed throughout the screen
+    drawHands();
+
+    // The bottom-left
+    drawBottomLeftButtons();
+    drawDeck();
+
+    // The bottom-right
+    drawScoreArea();
+    drawSpectators();
+    drawSharedReplay();
+
+    // The right-hand column
+    drawClueLog();
+    drawStatistics();
+    drawDiscardArea();
+
+    // Conditional elements
+    drawArrows();
+    drawTimers();
+    drawClueArea();
+    drawCurrentPlayerArea(clueAreaValues);
+    drawPreplayArea();
+    drawReplayArea();
+    drawExtraAnimations();
+
+    if (globals.inReplay) {
+        globals.elements.replayArea.show();
+    }
+
+    for (const layer of Object.values(globals.layers)) {
+        globals.stage.add(layer);
+    }
+};
+
+const initLayers = () => {
     // Just in case, delete all existing layers
     for (const layer of globals.stage.getLayers()) {
         layer.remove();
@@ -76,16 +132,9 @@ module.exports = () => {
             listening: false,
         });
     }
+};
 
-    const background = new graphics.Image({
-        x: 0,
-        y: 0,
-        width: winW,
-        height: winH,
-        image: globals.ImageLoader.get('background'),
-    });
-    globals.layers.background.add(background);
-
+const initReusableObjects = () => {
     // Create some default objects
     basicTextLabel = new graphics.Text({
         x: 0.01 * winW,
@@ -108,46 +157,6 @@ module.exports = () => {
     basicNumberLabel = basicTextLabel.clone();
     basicNumberLabel.setText('0');
     basicNumberLabel.setWidth(0.03 * winW);
-
-    // The middle of the screen
-    drawActionLog();
-    drawPlayStacksAndDiscardStacks();
-
-    // Hands are distributed throughout the screen
-    drawHands();
-
-    // The bottom-left
-    drawBottomLeftButtons();
-    drawDeck();
-
-    // The bottom-right
-    drawScoreArea();
-    drawSpectators();
-    drawSharedReplay();
-
-    // The right-hand column
-    drawClueLog();
-    drawStatistics();
-    drawDiscardArea();
-
-    // Conditional elements
-    drawTimers();
-    drawClueArea();
-    drawCurrentPlayerArea(clueAreaValues);
-    drawPreplayArea();
-    drawReplayArea();
-    drawExtraAnimations();
-
-    if (globals.inReplay) {
-        globals.elements.replayArea.show();
-    }
-
-    globals.stage.add(globals.layers.background);
-    globals.stage.add(globals.layers.UI);
-    globals.stage.add(globals.layers.timer);
-    globals.stage.add(globals.layers.card);
-    globals.stage.add(globals.layers.UI2);
-    globals.stage.add(globals.layers.overtop);
 };
 
 const drawActionLog = () => {
@@ -689,6 +698,7 @@ const drawScoreArea = () => {
         text: 'Clues',
         x: labelX * winW,
         y: 0.08 * winH,
+        listening: true,
     });
     globals.elements.scoreArea.add(cluesTextLabel);
 
@@ -699,20 +709,14 @@ const drawScoreArea = () => {
         listening: true,
     });
     globals.elements.scoreArea.add(cluesNumberLabel);
-    const cluesAbsPos = cluesNumberLabel.getAbsolutePosition();
-    cluesNumberLabel.arrow = new Arrow({
-        x: cluesAbsPos.x + (0.005 * winW),
-        y: cluesAbsPos.y + (0.005 * winH),
-        scale: {
-            x: 0.3,
-            y: 0.1,
-        },
-    });
-    globals.layers.card.add(cluesNumberLabel.arrow);
-    cluesNumberLabel.on('click', (event) => {
-        ui.arrowClick(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
-    });
     globals.elements.cluesNumberLabel = cluesNumberLabel;
+
+    cluesTextLabel.on('click', (event) => {
+        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
+    });
+    cluesNumberLabel.on('click', (event) => {
+        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
+    });
 
     // Draw the 3 strike (bomb) black squares / X's
     function strikeClick() {
@@ -897,8 +901,6 @@ const drawSharedReplay = () => {
         duration: 0.5,
         easing: graphics.Easings.EaseInOut,
         onFinish: () => {
-            // Check to see if it still exists
-            // (in case the UI was rebuilt while the tween was playing)
             if (globals.elements.sharedReplayLeaderLabelPulse) {
                 globals.elements.sharedReplayLeaderLabelPulse.reverse();
             }
@@ -1009,7 +1011,7 @@ const drawStatistics = () => {
     paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     paceContent += '(For more information, click on the "Help" button in the lobby.)';
     paceTextLabel.tooltipContent = paceContent;
-    tooltips.init(paceTextLabel, paceContent, true, false);
+    tooltips.init(paceTextLabel, true, false);
 
     const paceNumberLabel = basicNumberLabel.clone({
         text: '-',
@@ -1019,19 +1021,14 @@ const drawStatistics = () => {
         listening: true,
     });
     globals.layers.UI.add(paceNumberLabel);
-    paceNumberLabel.arrow = new Arrow({
-        x: paceNumberLabel.getX() + (0.01 * winW),
-        y: paceNumberLabel.getY() + (0.005 * winH),
-        scale: {
-            x: 0.35,
-            y: 0.15,
-        },
-    });
-    globals.layers.card.add(paceNumberLabel.arrow);
-    paceNumberLabel.on('click', (event) => {
-        ui.arrowClick(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
-    });
     globals.elements.paceNumberLabel = paceNumberLabel;
+
+    paceTextLabel.on('click', (event) => {
+        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
+    });
+    paceNumberLabel.on('click', (event) => {
+        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
+    });
 
     const efficiencyTextLabel = basicTextLabel.clone({
         text: 'Efficiency',
@@ -1066,19 +1063,14 @@ const drawStatistics = () => {
         listening: true,
     });
     globals.layers.UI.add(efficiencyNumberLabel);
-    efficiencyNumberLabel.arrow = new Arrow({
-        x: efficiencyNumberLabel.getX() + (0.015 * winW),
-        y: efficiencyNumberLabel.getY() + (0.005 * winH),
-        scale: {
-            x: 0.35,
-            y: 0.15,
-        },
-    });
-    globals.layers.card.add(efficiencyNumberLabel.arrow);
-    efficiencyNumberLabel.on('click', (event) => {
-        ui.arrowClick(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
-    });
     globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
+
+    efficiencyTextLabel.on('click', (event) => {
+        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
+    });
+    efficiencyNumberLabel.on('click', (event) => {
+        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
+    });
 
     const minEfficiency = stats.getMinEfficiency();
     const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
@@ -1092,17 +1084,8 @@ const drawStatistics = () => {
         listening: true,
     });
     globals.layers.UI.add(efficiencyNumberLabelMinNeeded);
-    efficiencyNumberLabelMinNeeded.arrow = new Arrow({
-        x: efficiencyNumberLabelMinNeeded.getX() + (0.034 * winW),
-        y: efficiencyNumberLabelMinNeeded.getY() + (0.005 * winH),
-        scale: {
-            x: 0.35,
-            y: 0.15,
-        },
-    });
-    globals.layers.card.add(efficiencyNumberLabelMinNeeded.arrow);
     efficiencyNumberLabelMinNeeded.on('click', (event) => {
-        ui.arrowClick(
+        ui.clickArrow(
             event,
             constants.REPLAY_ARROW_ORDER.MIN_EFFICIENCY,
             efficiencyNumberLabelMinNeeded,
@@ -1175,6 +1158,16 @@ const drawDiscardArea = () => {
         && pos.x <= globals.elements.discardArea.getX() + globals.elements.discardArea.getWidth()
         && pos.y <= globals.elements.discardArea.getY() + globals.elements.discardArea.getHeight()
     );
+};
+
+const drawArrows = () => {
+    // These are arrows used to show which cards that are touched by a clue
+    // (and for pointing to various things in a shared replay)
+    for (let i = 0; i < 5; i++) {
+        const arrow = new Arrow();
+        globals.layers.card.add(arrow);
+        globals.elements.arrows.push(arrow);
+    }
 };
 
 const drawTimers = () => {
@@ -1410,7 +1403,9 @@ const drawExtraAnimations = () => {
         duration: 0.5,
         opacity: 1,
         onFinish: () => {
-            globals.elements.sharedReplayForwardTween.reverse();
+            if (globals.elements.sharedReplayForwardTween) {
+                globals.elements.sharedReplayForwardTween.reverse();
+            }
         },
     });
 
@@ -1428,7 +1423,9 @@ const drawExtraAnimations = () => {
         duration: 0.5,
         opacity: 1,
         onFinish: () => {
-            globals.elements.sharedReplayBackwardTween.reverse();
+            if (globals.elements.sharedReplayBackwardTween) {
+                globals.elements.sharedReplayBackwardTween.reverse();
+            }
         },
     });
 };

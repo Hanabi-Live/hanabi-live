@@ -3,7 +3,6 @@
 */
 
 // Imports
-const Arrow = require('./Arrow');
 const constants = require('../../constants');
 const drawCards = require('./drawCards');
 const globals = require('./globals');
@@ -202,94 +201,6 @@ exports.pips = function pips() {
     }
 };
 
-exports.arrow = function arrow() {
-    this.arrow = new Arrow({
-        x: constants.CARD_W / 2,
-        y: constants.CARD_H / 2,
-    });
-    this.add(this.arrow);
-
-    this.arrow.circle = new graphics.Circle({
-        x: 0.5 * constants.CARD_W,
-        y: 0.15 * constants.CARD_H,
-        radius: 45,
-        fill: 'black',
-        stroke: 'white',
-        strokeWidth: 5,
-        listening: false,
-    });
-    this.arrow.add(this.arrow.circle);
-
-    this.arrow.text = new graphics.Text({
-        fontSize: 0.175 * constants.CARD_H,
-        fontFamily: 'Verdana',
-        fill: 'white',
-        stroke: 'white',
-        strokeWidth: 1,
-        align: 'center',
-        listening: false,
-    });
-    this.arrow.add(this.arrow.text);
-
-    // Hide the arrows when a user begins to drag a card in their hand
-    this.on('mousedown', (event) => {
-        if (
-            event.evt.which !== 1 // Dragging uses left click
-            || (this.holder !== globals.playerUs && !globals.hypothetical)
-            || globals.inReplay
-            || globals.replay
-            || globals.spectating
-            || !this.arrow.getVisible()
-            || !this.parent.getDraggable()
-            || this.isPlayed
-            || this.isDiscarded
-        ) {
-            return;
-        }
-
-        ui.hideAllArrows();
-    });
-};
-
-exports.arrowLocation = function arrowLocation() {
-    let y = 0.25 * constants.CARD_H;
-    let rot = 0;
-    let textX = 0.418 * constants.CARD_W;
-    let textY = 0.07 * constants.CARD_H;
-    let textRot = 0;
-
-    if (
-        !this.isPlayed
-        && !this.isDiscarded
-        && (
-            (
-                !globals.lobby.settings.showKeldonUI
-                && this.holder === globals.playerUs
-            ) || (
-                globals.lobby.settings.showKeldonUI
-                && this.holder !== globals.playerUs
-            )
-        )
-    ) {
-        // In BGA mode, invert the arrows on our hand
-        // (so that it doesn't get cut off by the top of the screen)
-        // In Keldon mode, invert the arrows for all other players
-        y = 0.9 * constants.CARD_H;
-        rot = 180;
-        textX = 0.58 * constants.CARD_W;
-        textY = 0.225 * constants.CARD_H;
-        textRot = 180;
-    }
-
-    this.arrow.setY(y);
-    this.arrow.setRotation(rot);
-    this.arrow.text.setX(textX);
-    this.arrow.text.setY(textY);
-    this.arrow.text.setRotation(textRot);
-
-    this.arrow.originalY = y;
-};
-
 exports.note = function note() {
     // Define the note indicator image
     const noteX = 0.78;
@@ -327,6 +238,10 @@ exports.note = function note() {
         this.noteGiven.show();
     }
 
+    // If the user mouses over the card, show a tooltip that contains the note
+    // (we don't use the "tooltip.init()" function because we need the extra conditions in the
+    // "mousemove" event)
+    this.tooltipName = `card-${this.order}`;
     this.on('mousemove', function cardMouseMove() {
         // Don't do anything if there is not a note on this card
         if (!this.noteGiven.visible()) {
@@ -357,7 +272,7 @@ exports.note = function note() {
             return;
         }
 
-        const tooltip = $(`#tooltip-card-${this.order}`);
+        const tooltip = $(`#tooltip-${this.tooltipName}`);
         tooltip.tooltipster('close');
     });
 };
@@ -455,6 +370,23 @@ exports.click = function click() {
     // Define the other mouse handlers
     this.on('click tap', HanabiCardClick);
     this.on('mousedown', HanabiCardClickSpeedrun);
+    this.on('mousedown', (event) => {
+        // Hide any visible arrows when a user begins to drag a card in their hand
+        if (
+            event.evt.which !== 1 // Dragging uses left click
+            || (this.holder !== globals.playerUs && !globals.hypothetical)
+            || globals.inReplay
+            || globals.replay
+            || globals.spectating
+            || !this.parent.getDraggable()
+            || this.isPlayed
+            || this.isDiscarded
+        ) {
+            return;
+        }
+
+        ui.hideAllArrows();
+    });
 };
 
 exports.possibilities = function possibilities() {

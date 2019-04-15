@@ -9,6 +9,13 @@ exports.CARD_H = 406;
 exports.PHASER_DEMO_SCALE = 0.35;
 exports.CARD_FADE = 0.6;
 
+// Other misc. constants
+exports.ARROW_COLOR = {
+    DEFAULT: '#ffffff', // White
+    RETOUCHED: '#737373', // Dark gray
+    HIGHLIGHT: '#ffdf00', // Yellow
+};
+
 // These constants much match their server-side counterparts
 exports.ACT = {
     CLUE: 0,

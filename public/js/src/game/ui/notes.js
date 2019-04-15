@@ -89,7 +89,7 @@ const set = (order, note, send = true) => {
 exports.set = set;
 
 const show = (card) => {
-    const tooltip = $(`#tooltip-card-${card.order}`);
+    const tooltip = $(`#tooltip-${card.tooltipName}`);
     const tooltipInstance = tooltip.tooltipster('instance');
 
     // Do nothing if the tooltip is already open
@@ -112,8 +112,11 @@ const show = (card) => {
 
     // If there is an clue arrow showing, it will overlap with the tooltip arrow,
     // so move it over to the right a little bit
-    if (card.arrow.visible()) {
-        posX = pos.x + ((card.getWidth() * card.parent.scale().x / 2) / 2.5);
+    for (const arrow of globals.elements.arrows) {
+        if (arrow.pointingTo === card.order) {
+            posX = pos.x + ((card.getWidth() * card.parent.scale().x / 2) / 2.5);
+            break;
+        }
     }
 
     // Update the tooltip and open it
@@ -144,11 +147,11 @@ exports.openEditTooltip = (card) => {
     if (note === null) {
         note = '';
     }
-    const tooltip = $(`#tooltip-card-${card.order}`);
+    const tooltip = $(`#tooltip-${card.tooltipName}`);
     const tooltipInstance = tooltip.tooltipster('instance');
-    tooltipInstance.content(`<input id="tooltip-card-${card.order}-input" type="text" value="${note}"/>`);
+    tooltipInstance.content(`<input id="tooltip-${card.tooltipName}-input" type="text" value="${note}"/>`);
 
-    $(`#tooltip-card-${card.order}-input`).on('keydown', (keyEvent) => {
+    $(`#tooltip-${card.tooltipName}-input`).on('keydown', (keyEvent) => {
         keyEvent.stopPropagation();
         if (keyEvent.key !== 'Enter' && keyEvent.key !== 'Escape') {
             return;
@@ -162,7 +165,7 @@ exports.openEditTooltip = (card) => {
                 note = '';
             }
         } else if (keyEvent.key === 'Enter') {
-            note = $(`#tooltip-card-${card.order}-input`).val();
+            note = $(`#tooltip-${card.tooltipName}-input`).val();
 
             // Strip any HTML elements
             // (to be thorough, the server will also perform this validation)
@@ -181,26 +184,31 @@ exports.openEditTooltip = (card) => {
     });
 
     // Automatically highlight all of the existing text when a note input box is focused
-    $(`#tooltip-card-${card.order}-input`).focus(function tooltipCardInputFocus() {
+    $(`#tooltip-${card.tooltipName}-input`).focus(function tooltipCardInputFocus() {
         $(this).select();
     });
 
     // Automatically focus the new text input box
-    $(`#tooltip-card-${card.order}-input`).focus();
+    $(`#tooltip-${card.tooltipName}-input`).focus();
 };
 
 const update = (card) => {
-    // Update the tooltip and the card
-    const tooltip = $(`#tooltip-card-${card.order}`);
+    // Update the tooltip
+    const tooltip = $(`#tooltip-${card.tooltipName}`);
     const tooltipInstance = tooltip.tooltipster('instance');
     const note = get(card.order) || '';
     tooltipInstance.content(note);
-    card.noteGiven.setVisible(note.length > 0);
     if (note.length === 0) {
         tooltip.tooltipster('close');
     }
-    globals.layers.UI.batchDraw();
-    globals.layers.card.batchDraw();
+
+    // Update the card indicator
+    const visibleOld = card.noteGiven.getVisible();
+    const visibleNew = note.length > 0;
+    card.noteGiven.setVisible(visibleNew);
+    if (visibleOld !== visibleNew) {
+        globals.layers.card.batchDraw();
+    }
 };
 exports.update = update;
 

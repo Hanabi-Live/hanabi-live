@@ -18,6 +18,7 @@ commands.clue = (data) => {
     // The clue comes from the server as an integer, so convert it to an object
     const clue = convert.msgClueToClue(data.clue, globals.variant);
 
+    // Clear all visible arrows when a new move occurs
     ui.hideAllArrows();
 
     globals.cluesSpentPlusStrikes += 1;
@@ -36,7 +37,7 @@ commands.clue = (data) => {
         } else if (clue.type === constants.CLUE_TYPE.COLOR) {
             card.hasPositiveColorClue = true;
         }
-        card.setArrow(true, data.giver, clue);
+        ui.setArrow(i, card, data.giver, clue);
         if (!globals.lobby.settings.realLifeMode) {
             card.cluedBorder.show();
         }
@@ -93,6 +94,9 @@ commands.discard = (data) => {
     card.isDiscarded = true;
     card.turnDiscarded = globals.turn;
     card.isMisplayed = data.failed;
+
+    // Clear all visible arrows when a new move occurs
+    ui.hideAllArrows();
 
     card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();
@@ -176,11 +180,6 @@ commands.draw = (data) => {
     globals.elements.playerHands[holder].add(child);
     globals.elements.playerHands[holder].moveToTop();
 
-    // Initialize the arrow location
-    // (which has to be done after it is added to the hand,
-    // since it depends on the location on the screen)
-    card.initArrowLocation();
-
     // If this card is known,
     // then remove it from the card possibilities for the players who see this card
     if (suit && rank) {
@@ -215,6 +214,9 @@ commands.play = (data) => {
 
     card.isPlayed = true;
     card.turnPlayed = globals.turn;
+
+    // Clear all visible arrows when a new move occurs
+    ui.hideAllArrows();
 
     card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();

@@ -51,7 +51,7 @@ class Deck extends graphics.Group {
         });
         globals.layers.card.add(this.arrow);
         this.on('click', (event) => {
-            ui.arrowClick(event, constants.REPLAY_ARROW_ORDER.DECK, this);
+            ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.DECK, this);
         });
 
         this.initTooltip();
@@ -131,7 +131,9 @@ class Deck extends graphics.Group {
                 y: 0,
                 easing: graphics.Easings.EaseOut,
                 onFinish: () => {
-                    globals.layers.UI.batchDraw();
+                    if (globals.layers.UI) {
+                        globals.layers.UI.batchDraw();
+                    }
                 },
             }).play();
         }

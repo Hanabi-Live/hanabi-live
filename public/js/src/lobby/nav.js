@@ -37,9 +37,7 @@ $(document).ready(() => {
 
     // The "Sign Out" button
     $('#nav-buttons-games-sign-out').on('click', () => {
-        localStorage.removeItem('hanabiuser');
-        localStorage.removeItem('hanabipass');
-        window.location.reload();
+        signOut();
     });
 
     // The "Start Game" button
@@ -151,3 +149,10 @@ exports.show = (target) => {
         $(`#nav-buttons-${target}`).show();
     }
 };
+
+const signOut = () => {
+    localStorage.removeItem('hanabiuser');
+    localStorage.removeItem('hanabipass');
+    window.location.reload();
+};
+exports.signOut = signOut;

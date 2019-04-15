@@ -186,6 +186,9 @@ const reset = () => {
         card.trueSuit = null;
         card.trueRank = null;
     }
+    for (const arrow of globals.elements.arrows) {
+        arrow.hide();
+    }
 
     globals.animateFast = true;
 };

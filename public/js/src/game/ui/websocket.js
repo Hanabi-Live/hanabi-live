@@ -93,7 +93,6 @@ commands.connected = (data) => {
     for (let i = 0; i < data.list.length; i++) {
         globals.elements.nameFrames[i].setConnected(data.list[i]);
     }
-
     globals.layers.UI.batchDraw();
 };
 
@@ -377,7 +376,8 @@ commands.replayIndicator = (data) => {
         if (!card) {
             return;
         }
-        card.toggleSharedReplayArrow();
+
+        ui.toggleArrow(card);
     } else { // Some other UI element
         let element;
         if (data.order === constants.REPLAY_ARROW_ORDER.DECK) {
@@ -394,10 +394,7 @@ commands.replayIndicator = (data) => {
             return;
         }
 
-        const visible = !element.arrow.getVisible();
-        ui.hideAllArrows();
-        element.arrow.setVisible(visible);
-        globals.layers.card.batchDraw();
+        ui.toggleArrow(element);
     }
 };
 
@@ -498,10 +495,7 @@ commands.replayTurn = (data) => {
 commands.reveal = (data) => {
     const card = globals.deck[data.order];
     card.reveal(data.suit, data.rank);
-
-    if (!globals.animateFast) {
-        globals.layers.card.batchDraw();
-    }
+    globals.layers.card.batchDraw();
 };
 
 // This is used to update the names of the people currently spectating the game

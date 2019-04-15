@@ -121,11 +121,15 @@ class CardLayout extends graphics.Group {
                     rotation: 0,
                     easing: graphics.Easings.EaseOut,
                     onFinish: () => {
+                        if (!card || !node) {
+                            return;
+                        }
                         card.tweening = false;
                         node.checkSetDraggable();
-                        if (storedPostAnimationLayout !== null) {
-                            storedPostAnimationLayout();
+                        if (!storedPostAnimationLayout) {
+                            return;
                         }
+                        storedPostAnimationLayout();
                     },
                 }).play();
             }

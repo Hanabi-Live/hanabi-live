@@ -3,10 +3,11 @@
 */
 
 // Imports
-const globals = require('./globals');
-const misc = require('./misc');
-const lobby = require('./lobby/main');
 const game = require('./game/main');
+const globals = require('./globals');
+const lobby = require('./lobby/main');
+const misc = require('./misc');
+const nav = require('./lobby/nav');
 
 // The list of all of the modals
 const modals = [
@@ -44,6 +45,9 @@ $(document).ready(() => {
     // Error
     $('#error-modal-button').click(() => {
         window.location.reload();
+    });
+    $('#error-modal-signout').click(() => {
+        nav.signOut();
     });
 });
 
@@ -103,6 +107,13 @@ exports.errorShow = (msg) => {
 
     $('#error-modal-description').html(msg);
     $('#error-modal').fadeIn(globals.fadeTime);
+
+    // Show the "Sign Out" button if this is a specific type of error message
+    if (msg.startsWith('You have logged on from somewhere else')) {
+        $('#error-modal-signout').show();
+    } else {
+        $('#error-modal-signout').hide();
+    }
 };
 
 const closeAll = () => {

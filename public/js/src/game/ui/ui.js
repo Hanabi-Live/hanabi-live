@@ -6,6 +6,7 @@
 const constants = require('../../constants');
 const convert = require('./convert');
 const globals = require('./globals');
+const graphics = require('./graphics');
 const hypothetical = require('./hypothetical');
 const notes = require('./notes');
 const notify = require('./notify');
@@ -31,8 +32,6 @@ exports.handleAction = (data) => {
         globals.elements.currentPlayerArea.hide();
     }
     globals.layers.UI.batchDraw();
-
-    globals.elements.playerHands[globals.playerUs].moveToTop();
 
     // Set our hand to being draggable
     if (
@@ -88,9 +87,7 @@ exports.handleAction = (data) => {
 
             if (touched) {
                 match = true;
-                card.setArrow(true, null, clue);
-            } else {
-                card.setArrow(false, null, null);
+                setArrow(i, card, null, clue);
             }
         }
 
@@ -186,57 +183,6 @@ exports.giveClue = () => {
         },
     });
 };
-
-exports.arrowClick = (event, order, element) => {
-    if (
-        event.evt.which === 3 // Right-click
-        && globals.sharedReplay
-        && globals.amSharedReplayLeader
-        && globals.useSharedTurns
-    ) {
-        globals.lobby.conn.send('replayAction', {
-            type: constants.REPLAY_ACTION_TYPE.ARROW,
-            order,
-        });
-
-        // Draw the arrow manually so that we don't have to wait for the client to server round-trip
-        const visible = !element.arrow.getVisible();
-        hideAllArrows();
-        element.arrow.setVisible(visible);
-        globals.layers.card.batchDraw();
-
-        // If this element has a tooltip and it is open, close it
-        if (element.tooltipName) {
-            const tooltip = $(`#tooltip-${element.tooltipName}`);
-            tooltip.tooltipster('close');
-        }
-    }
-};
-
-const hideAllArrows = () => {
-    // Hide arrows on all of the cards
-    for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
-        globals.deck[i].setArrow(false, null, null);
-    }
-
-    // Also hide the arrows on the other various UI elements
-    const elements = [
-        globals.elements.deck,
-        globals.elements.cluesNumberLabel,
-        globals.elements.paceNumberLabel,
-        globals.elements.efficiencyNumberLabel,
-        globals.elements.efficiencyNumberLabelMinNeeded,
-    ];
-    for (const element of elements) {
-        // Some elements may not exist if we are in Real-Life mode
-        if (element && element.arrow) {
-            element.arrow.hide();
-        }
-    }
-
-    globals.layers.card.batchDraw();
-};
-exports.hideAllArrows = hideAllArrows;
 
 exports.endTurn = (action) => {
     if (globals.hypothetical) {
@@ -345,3 +291,216 @@ exports.backToLobby = () => {
     globals.lobby.conn.send('gameUnattend');
     globals.game.hide();
 };
+
+
+/*
+    Arrow functions
+*/
+
+const hideAllArrows = () => {
+    let changed = false;
+    for (const arrow of globals.elements.arrows) {
+        if (arrow.pointingTo !== null) {
+            changed = true;
+            arrow.pointingTo = null;
+            arrow.setVisible(false);
+        }
+    }
+    if (!globals.animateFast && changed) {
+        globals.layers.card.batchDraw();
+    }
+};
+exports.hideAllArrows = hideAllArrows;
+
+const setArrow = (i, element, giver, clue) => {
+    // Show the arrow
+    const arrow = globals.elements.arrows[i];
+    arrow.pointingTo = element;
+    arrow.show();
+    arrow.moveToTop();
+
+    // Figure out whether the arrrow should be inverted or not
+    let rot = 0;
+    if (
+        element.constructor.name === 'HanabiCard'
+        && !element.isPlayed
+        && !element.isDiscarded
+    ) {
+        if (element.parent && element.parent.parent) {
+            rot = element.parent.parent.rotation;
+        }
+        if (
+            (!globals.lobby.settings.showKeldonUI && element.holder === globals.playerUs)
+            || (globals.lobby.settings.showKeldonUI && element.holder !== globals.playerUs)
+        ) {
+            // In BGA mode, invert the arrows on our hand
+            // (so that it doesn't get cut off by the top of the screen)
+            // In Keldon mode, invert the arrows for all other players
+            rot += 180;
+        }
+    }
+    arrow.setRotation(rot);
+
+    // We want the text to always be right-side up (e.g. have a rotaiton of 0)
+    arrow.text.setRotation(360 - rot);
+
+    // Set the arrow features
+    if (clue === null) {
+        // This is a highlight arrow
+        const color = constants.ARROW_COLOR.HIGHLIGHT;
+        arrow.base.setStroke(color);
+        arrow.base.setFill(color);
+
+        // Don't draw the circle
+        arrow.circle.hide();
+        arrow.text.hide();
+    } else {
+        // This is a clue arrow
+        let color;
+        if (this.numPositiveClues >= 2) {
+            // Cards that are re-clued use a different color
+            color = constants.ARROW_COLOR.RETOUCHED;
+        } else {
+            // Freshly touched cards use the default color
+            color = constants.ARROW_COLOR.DEFAULT;
+        }
+        arrow.base.setStroke(color);
+        arrow.base.setFill(color);
+
+        // Clue arrows have a circle that shows the type of clue given
+        if (globals.variant.name.startsWith('Duck')) {
+            // Don't show the circle in Duck variants,
+            // since the clue types are supposed to be hidden
+            arrow.circle.hide();
+        } else {
+            arrow.circle.show();
+            if (clue.type === constants.CLUE_TYPE.RANK) {
+                arrow.circle.setFill('black');
+                arrow.text.setText(clue.value.toString());
+                arrow.text.show();
+            } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+                arrow.circle.setFill(clue.value.hexCode);
+                arrow.text.hide();
+            }
+        }
+    }
+
+    if (arrow.tween) {
+        arrow.tween.destroy();
+    }
+    if (globals.animateFast || giver === null) {
+        const pos = getArrowPos(element, rot);
+        arrow.setAbsolutePosition(pos);
+    } else {
+        animateArrow(arrow, element, rot, giver, globals.turn);
+    }
+    if (!globals.animateFast) {
+        globals.layers.card.batchDraw();
+    }
+};
+exports.setArrow = setArrow;
+
+const getArrowPos = (element, rot) => {
+    // Calculate the position of the arrow
+    // If we set the arrow at the absolute position of a card, it will point to the exact center
+    // Instead, back them off a little bit (accounting for the rotation of the hand)
+    const pos = element.getAbsolutePosition();
+    const distance = element.getHeight() * -0.11;
+    const rotRadians = (rot / 180) * Math.PI;
+    pos.x -= Math.sin(rotRadians) * distance;
+    pos.y += Math.cos(rotRadians) * distance;
+
+    // If this is an arrow for a UI element, we need to adjust the positions a little bit
+    if (element.constructor.name === 'Deck') {
+        pos.x += element.getWidth() / 2;
+        pos.y += element.getHeight() / 2.5;
+    } else if (element === globals.elements.cluesNumberLabel) {
+        pos.x += element.getWidth() * 0.15;
+    } else if (element.constructor.name !== 'HanabiCard') {
+        pos.x += element.getWidth() / 3;
+    }
+
+    return pos;
+};
+
+// Animate the arrow to fly from the player who gave the clue to the card
+const animateArrow = (arrow, card, rot, giver, turn) => {
+    // Don't bother doing the animation if it is delayed by more than one turn
+    if (globals.turn > turn + 1) {
+        return;
+    }
+
+    // Don't bother doing the animation if the card is no longer part of a hand
+    // (which can happen rarely when jumping quickly through a replay)
+    if (!card.parent.parent) {
+        return;
+    }
+
+    // Delay the animation if the card is currently tweening to avoid buggy behavior
+    if (card.tweening) {
+        arrow.hide();
+        setTimeout(() => {
+            animateArrow(arrow, card, rot, giver, turn);
+        }, 20);
+        return;
+    }
+    arrow.show();
+
+    // Start the arrow at the center position of the clue giver's hand
+    const centerPos = globals.elements.playerHands[giver].getAbsoluteCenterPos();
+    arrow.setAbsolutePosition(centerPos);
+
+    // Calculate the position of the final arrow destination
+    // (this must be done after the card is finished tweening)
+    const pos = getArrowPos(card, rot);
+
+    new graphics.Tween({
+        node: arrow,
+        duration: 0.5,
+        x: pos.x,
+        y: pos.y,
+        easing: graphics.Easings.EaseOut,
+    }).play();
+};
+
+exports.clickArrow = (event, order, element) => {
+    if (
+        event.evt.which === 3 // Right-click
+        && globals.sharedReplay
+        && globals.amSharedReplayLeader
+        && globals.useSharedTurns
+    ) {
+        sendArrow(order, element);
+    }
+};
+
+const sendArrow = (order, element) => {
+    globals.lobby.conn.send('replayAction', {
+        type: constants.REPLAY_ACTION_TYPE.ARROW,
+        order,
+    });
+
+    // Draw the arrow manually so that we don't have to wait for the client to server round-trip
+    toggleArrow(element);
+};
+exports.sendArrow = sendArrow;
+
+// This toggles the "highlight" arrow on a particular element
+const toggleArrow = (element) => {
+    const arrow = globals.elements.arrows[0];
+    const show = (
+        arrow.pointingTo !== element
+        || arrow.base.getFill() !== constants.ARROW_COLOR.HIGHLIGHT
+    );
+    hideAllArrows();
+    if (show) {
+        setArrow(0, element, null, null);
+
+        // If this element has a tooltip and it is open, close it
+        if (element.tooltipName) {
+            const tooltip = $(`#tooltip-${element.tooltipName}`);
+            tooltip.tooltipster('close');
+        }
+    }
+};
+exports.toggleArrow = toggleArrow;

@@ -175,6 +175,7 @@ module.exports = () => {
         fullActionLog: null,
 
         // Other optional elements
+        arrows: [],
         timer1: null,
         timer2: null,
         sharedReplayForward: null,

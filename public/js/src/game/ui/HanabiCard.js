@@ -10,10 +10,6 @@ const globals = require('./globals');
 const graphics = require('./graphics');
 const HanabiCardInit = require('./HanabiCardInit');
 const notes = require('./notes');
-const ui = require('./ui');
-
-// Constants
-const sharedReplayArrowColor = '#ffdf00'; // Yellow
 
 class HanabiCard extends graphics.Group {
     constructor(config) {
@@ -40,7 +36,6 @@ class HanabiCard extends graphics.Group {
         this.initImage();
         this.initBorder();
         this.initPips();
-        this.initArrow();
         this.initNote();
         this.initEmpathy();
         this.initClick();
@@ -102,11 +97,6 @@ class HanabiCard extends graphics.Group {
             for (const [, rankPipX] of this.rankPipsXMap) {
                 rankPipX.hide();
             }
-        }
-
-        // Hide the clue arrow
-        if (this.arrow) {
-            this.arrow.hide();
         }
 
         this.initPossibilities();
@@ -198,7 +188,7 @@ class HanabiCard extends graphics.Group {
         this.setFade();
     }
 
-    // Fade all useless cards that are fully revealed and still in a player's hand
+    // Fade this card if it is useless, fully revealed, and still in a player's hand
     setFade() {
         const oldOpacity = this.getOpacity();
 
@@ -243,14 +233,6 @@ class HanabiCard extends graphics.Group {
         return HanabiCardInit.pips.call(this);
     }
 
-    initArrow() {
-        return HanabiCardInit.arrow.call(this);
-    }
-
-    initArrowLocation() {
-        return HanabiCardInit.arrowLocation.call(this);
-    }
-
     initNote() {
         return HanabiCardInit.note.call(this);
     }
@@ -265,115 +247,6 @@ class HanabiCard extends graphics.Group {
 
     initPossibilities() {
         return HanabiCardInit.possibilities.call(this);
-    }
-
-    setArrow(visible, giver, clue) {
-        this.arrow.setVisible(visible);
-        if (visible) {
-            if (clue === null) {
-                // This is a shared replay arrow, so don't draw the circle
-                this.arrow.circle.hide();
-                this.arrow.text.hide();
-                const color = sharedReplayArrowColor;
-                this.arrow.base.setStroke(color);
-                this.arrow.base.setFill(color);
-            } else {
-                // Change the color of the arrow
-                let color;
-                if (this.numPositiveClues >= 2) {
-                    // "Non-freshly touched" cards use a different color
-                    color = '#737373'; // Dark gray
-                } else {
-                    // "Freshly touched" cards use the default arrow color
-                    color = 'white'; // The default color
-                }
-                this.arrow.base.setStroke(color);
-                this.arrow.base.setFill(color);
-
-                // Clue arrows are white with a circle that shows the type of clue given
-                if (globals.variant.name.startsWith('Duck')) {
-                    // Don't show the circle in Duck variants,
-                    // since the clue types are supposed to be hidden
-                    this.arrow.circle.hide();
-                } else {
-                    this.arrow.circle.show();
-                    if (clue.type === constants.CLUE_TYPE.RANK) {
-                        this.arrow.circle.setFill('black');
-                        this.arrow.text.setText(clue.value.toString());
-                        this.arrow.text.show();
-                    } else if (clue.type === constants.CLUE_TYPE.COLOR) {
-                        this.arrow.circle.setFill(clue.value.hexCode);
-                        this.arrow.text.hide();
-                    }
-                }
-
-                if (this.arrowTween) {
-                    this.arrowTween.destroy();
-                }
-                if (globals.animateFast) {
-                    // Just set the arrow in position
-                    this.arrow.setX(constants.CARD_W / 2);
-                    this.arrow.setY(this.arrow.originalY);
-                } else if (giver !== null) {
-                    this.animateArrow(giver, globals.turn);
-                }
-            }
-
-            if (this.isDiscarded) {
-                // The cards in the discard pile are packed together tightly
-                // So, if the arrows are hovering over a card,
-                // it will not be clear which card the arrow is pointing to
-                // Thus, move the arrow to be flush with the card
-                this.arrow.setY(0.02 * globals.stage.getHeight());
-            } else {
-                // Fix the bug where the arrows can be hidden by other cards
-                // (but ignore the discard pile because it has to be in a certain order)
-                const hand = this.getParent().getParent();
-                if (hand) {
-                    hand.moveToTop();
-                }
-            }
-        }
-
-        if (!globals.animateFast) {
-            globals.layers.card.batchDraw();
-        }
-    }
-
-    // Animate the arrow to fly from the player who gave the clue to the card
-    animateArrow(giver, turn) {
-        // Don't bother doing the animation if it is delayed by more than one turn
-        if (globals.turn > turn + 1) {
-            return;
-        }
-
-        // Don't bother doing the animation if we are no longer part of a hand
-        // (which can happen rarely when jumping quickly through a replay)
-        if (!this.parent.parent) {
-            return;
-        }
-
-        // Delay the animation if the card is currently tweening to avoid buggy behavior
-        if (this.tweening) {
-            this.arrow.setVisible(false);
-            setTimeout(() => {
-                this.animateArrow(giver, turn);
-            }, 10);
-            return;
-        }
-        this.arrow.setVisible(true);
-
-        // Start the arrow at the center position of the clue giver's hand
-        const centerPos = globals.elements.playerHands[giver].getAbsoluteCenterPos();
-        this.arrow.setAbsolutePosition(centerPos);
-
-        this.arrowTween = new graphics.Tween({
-            node: this.arrow,
-            duration: 0.5,
-            x: constants.CARD_W / 2,
-            y: this.arrow.originalY,
-            easing: graphics.Easings.EaseOut,
-        }).play();
     }
 
     // This card was touched by a positive or negative clue,
@@ -490,18 +363,6 @@ class HanabiCard extends graphics.Group {
         }
     }
 
-    // Toggle the yellow arrow that the leader uses in shared replays
-    toggleSharedReplayArrow() {
-        const visible = !(
-            this.arrow.visible()
-            && this.arrow.base.getFill() === sharedReplayArrowColor
-        );
-        // (if the arrow is showing but is a different kind of arrow,
-        // then just overwrite the existing arrow)
-        ui.hideAllArrows();
-        this.setArrow(visible, null, null);
-    }
-
     reveal(suit, rank) {
         // Local variables
         suit = convert.msgSuitToSuit(suit, globals.variant);
@@ -532,11 +393,6 @@ class HanabiCard extends graphics.Group {
 
         // Redraw the card
         this.setBareImage();
-
-        ui.hideAllArrows();
-
-        // Unflip the arrow, if it is flipped
-        this.initArrowLocation();
     }
 
     removeFromParent() {

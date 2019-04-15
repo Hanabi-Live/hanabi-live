@@ -7,6 +7,7 @@ const constants = require('../../constants');
 const globals = require('./globals');
 const notes = require('./notes');
 const replay = require('./replay');
+const ui = require('./ui');
 
 module.exports = function click(event) {
     // Disable all click events if the card is tweening
@@ -38,13 +39,13 @@ const clickLeft = (card, event) => {
 
     if (event.altKey) {
         // Alt + clicking a card goes to the turn it was drawn
-        gotoTurn(card.turnDrawn, card.order);
+        goToTurnAndIndicateCard(card.turnDrawn, card.order);
     } else if (card.isPlayed) {
         // Clicking on played cards goes to the turn immediately before they were played
-        gotoTurn(card.turnPlayed, card.order);
+        goToTurnAndIndicateCard(card.turnPlayed, card.order);
     } else if (card.isDiscarded) {
         // Clicking on discarded cards goes to the turn immediately before they were discarded
-        gotoTurn(card.turnDiscarded, card.order);
+        goToTurnAndIndicateCard(card.turnDiscarded, card.order);
     }
 };
 
@@ -69,14 +70,7 @@ const clickRight = (card, event) => {
         && globals.amSharedReplayLeader
         && globals.useSharedTurns
     ) {
-        globals.lobby.conn.send('replayAction', {
-            type: constants.REPLAY_ACTION_TYPE.ARROW,
-            order: card.order,
-        });
-
-        // Draw the arrow manually so that we don't have to wait for the client to server round-trip
-        card.toggleSharedReplayArrow();
-
+        ui.sendArrow(card.order, card);
         return;
     }
 
@@ -145,7 +139,7 @@ const clickRight = (card, event) => {
         && !event.metaKey
         && globals.sharedReplay === false
     ) {
-        card.toggleSharedReplayArrow();
+        ui.toggleArrow(card);
         return;
     }
 
@@ -162,7 +156,7 @@ const clickRight = (card, event) => {
     }
 };
 
-const gotoTurn = (turn, order) => {
+const goToTurnAndIndicateCard = (turn, order) => {
     if (globals.replay) {
         replay.checkDisableSharedTurns();
     } else {
@@ -170,8 +164,9 @@ const gotoTurn = (turn, order) => {
     }
     replay.goto(turn, true);
 
-    // Also indicate the card to make it easier to find
-    globals.deck[order].toggleSharedReplayArrow();
+    // We indicate the card to make it easier to find
+    ui.hideAllArrows(); // We hide all the arrows first to ensure that the arrow is always shown
+    ui.toggleArrow(globals.deck[order]);
 };
 
 
