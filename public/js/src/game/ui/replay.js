@@ -347,12 +347,7 @@ exports.adjustShuttles = adjustShuttles;
     Right-clicking the deck
 */
 
-exports.promptTurn = (event) => {
-    // Do nothing if this is not a right-click
-    if (event.evt.which !== 3) {
-        return;
-    }
-
+exports.promptTurn = () => {
     let turn = window.prompt('Which turn do you want to go to?');
     if (turn === null || Number.isNaN(parseInt(turn, 10))) {
         return;

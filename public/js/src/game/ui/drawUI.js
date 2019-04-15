@@ -659,7 +659,11 @@ const drawScoreArea = () => {
     globals.elements.scoreArea.add(turnTextLabel);
 
     // We also want to be able to right-click the turn to go to a specific turn in the replay
-    turnTextLabel.on('click', replay.promptTurn);
+    turnTextLabel.on('click', (event) => {
+        if (event.evt.which === 3) { // Right-click
+            replay.promptTurn();
+        }
+    });
 
     globals.elements.turnNumberLabel = basicNumberLabel.clone({
         text: '1',
@@ -670,7 +674,11 @@ const drawScoreArea = () => {
     globals.elements.scoreArea.add(globals.elements.turnNumberLabel);
 
     // We also want to be able to right-click the turn to go to a specific turn in the replay
-    globals.elements.turnNumberLabel.on('click', replay.promptTurn);
+    globals.elements.turnNumberLabel.on('click', (event) => {
+        if (event.evt.which === 3) { // Right-click
+            replay.promptTurn();
+        }
+    });
 
     const scoreTextLabel = basicTextLabel.clone({
         text: 'Score',

@@ -52,6 +52,7 @@ module.exports = () => {
     // Game state variables (reset when rewinding in a replay)
     globals.turn = 0;
     globals.currentPlayerIndex = 0;
+    globals.ourTurn = false;
     globals.endTurn = null; // Set when the final card is drawn
     globals.deckSize = 0; // Set in the "initCards()" function
     globals.indexOfLastDrawnCard = 0;
@@ -189,9 +190,10 @@ module.exports = () => {
     globals.scaledCardImages = {};
 
     // Pre-move feature
-    globals.ourTurn = false;
     globals.queuedAction = null;
     globals.preCluedCard = null;
+
+    // Pause feature
 
     // Miscellaneous
     globals.animateFast = true;

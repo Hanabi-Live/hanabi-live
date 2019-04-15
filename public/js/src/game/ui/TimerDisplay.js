@@ -5,6 +5,7 @@ const graphics = require('./graphics');
 
 class TimerDisplay extends graphics.Group {
     constructor(config) {
+        config.listening = true;
         super(config);
 
         const rectangle = new graphics.Rect({
@@ -57,6 +58,22 @@ class TimerDisplay extends graphics.Group {
             shadowOpacity: 0.9,
         });
         this.add(this.labelText);
+
+        this.on('click', (event) => {
+            if (event.evt.which !== 3) { // Right-click
+                // return;
+            }
+
+            /*
+            let value = 'pause';
+            if (!globals.ourTurn) {
+                value = 'pause-queue'
+            }
+            globals.lobby.conn.send('pause', {
+                value,
+            });
+            */
+        });
     }
 
     setTimerText(text) {

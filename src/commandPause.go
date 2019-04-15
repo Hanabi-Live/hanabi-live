@@ -96,6 +96,7 @@ func commandPause(s *Session, d *CommandData) {
 	if d.Value == "pause" {
 		g.Paused = true
 		g.PauseTime = time.Now()
+		g.PausePlayer = i
 	} else if d.Value == "unpause" {
 		g.Paused = false
 

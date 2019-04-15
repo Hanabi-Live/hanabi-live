@@ -52,13 +52,14 @@ type Game struct {
 	Sound         string
 	TurnBeginTime time.Time
 	// Set when the final card is drawn to determine when the game should end
-	EndTurn    int
-	BlindPlays int                // The number of consecutive blind plays
-	Misplays   int                // The number of consecutive misplays
-	Chat       []*GameChatMessage // All of the in-game chat history
-	ChatRead   map[int]int        // A map of which users have read which messages
-	Paused     bool               // Only applicable to timed games
-	PauseTime  time.Time          // Only applicable to timed games
+	EndTurn     int
+	BlindPlays  int                // The number of consecutive blind plays
+	Misplays    int                // The number of consecutive misplays
+	Chat        []*GameChatMessage // All of the in-game chat history
+	ChatRead    map[int]int        // A map of which users have read which messages
+	Paused      bool               // Only applicable to timed games
+	PauseTime   time.Time          // Only applicable to timed games
+	PausePlayer int                // The index of the player who paused
 
 	Hypothetical bool // Whether or not we are in a post-game hypothetical
 	HypoActions  []string

@@ -361,6 +361,16 @@ commands.notifyList = (dataList) => {
     }
 };
 
+commands.pause = (data) => {
+    if (data.paused) {
+        globals.elements.stageFade = 0.6;
+        globals.elements.stageFade.show();
+    } else {
+        globals.elements.stageFade = 0.3;
+        globals.elements.stageFade.hide();
+    }
+};
+
 // This is used in shared replays to highlight a specific card (or UI element)
 commands.replayIndicator = (data) => {
     if (globals.amSharedReplayLeader) {

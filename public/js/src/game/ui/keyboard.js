@@ -175,12 +175,7 @@ const keydown = (event) => {
         if (event.key === 'l') { // Alt + l
             ui.backToLobby();
         } else if (event.key === 't') { // Alt + t
-            const fakeMouseEvent = {
-                evt: {
-                    which: 3,
-                },
-            };
-            replay.promptTurn(fakeMouseEvent);
+            replay.promptTurn();
         }
     }
 

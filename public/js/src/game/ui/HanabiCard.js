@@ -310,7 +310,8 @@ class HanabiCard extends graphics.Group {
         if (isFullyKnown && !wasFullyKnown) {
             // Now that this card is fully revealed to the holder,
             // remove the possibilities from the rest of the cards in their hand
-            for (const layoutChild of globals.elements.playerHands[this.holder]) {
+            const playerHand = globals.elements.playerHands[this.holder].children;
+            for (const layoutChild of playerHand) {
                 const card = layoutChild[0];
                 if (card.order === this.order) {
                     // There is no need to update the card that was just revealed
@@ -372,8 +373,8 @@ class HanabiCard extends graphics.Group {
         // Update the possibilities for the player who played/discarded this card
         // (but we don't need to do anything if the card was already fully-clued)
         if (this.possibleSuits.length > 1 || this.possibleRanks.length > 1) {
-            const hand = globals.elements.playerHands[this.holder];
-            for (const layoutChild of hand.children) {
+            const playerHand = globals.elements.playerHands[this.holder].children;
+            for (const layoutChild of playerHand) {
                 const card = layoutChild.children[0];
                 if (card.order === this.order) {
                     // There is no need to update the card that is being revealed
