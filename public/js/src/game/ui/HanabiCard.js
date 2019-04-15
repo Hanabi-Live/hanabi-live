@@ -235,6 +235,11 @@ class HanabiCard extends graphics.Group {
     // This card was touched by a positive or negative clue,
     // so remove pips and possibilities from the card
     applyClue(clue, positive) {
+        const wasFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
+        if (wasFullyKnown) {
+            return;
+        }
+
         if (clue.type === constants.CLUE_TYPE.RANK) {
             const clueRank = clue.value;
             let removed;
@@ -299,6 +304,20 @@ class HanabiCard extends graphics.Group {
             }
         } else {
             console.error('Clue type invalid.');
+        }
+
+        const isFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
+        if (isFullyKnown && !wasFullyKnown) {
+            // Now that this card is fully revealed to the holder,
+            // remove the possibilities from the rest of the cards in their hand
+            for (const layoutChild of globals.elements.playerHands[this.holder]) {
+                const card = layoutChild[0];
+                if (card.order === this.order) {
+                    // There is no need to update the card that was just revealed
+                    continue;
+                }
+                card.removePossibility(this.trueSuit, this.trueRank, false);
+            }
         }
     }
 

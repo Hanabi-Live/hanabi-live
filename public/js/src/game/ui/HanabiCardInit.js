@@ -403,26 +403,16 @@ exports.possibilities = function possibilities() {
             continue;
         }
 
-        // Don't do anything if this player does not know what this card is yet
-        if (card.holder === this.holder) {
-            continue;
-        }
-
         // If the card is still in the player's hand,
         // then we can't remove it from the list of possibilities,
         // because they don't know what it is yet
-        // TODO
-        /*
         if (
             card.holder === this.holder
-            && !card.isPlayed
-            && !card.isDiscarded
             && card.possibleSuits.length !== 1
             && card.possibleRanks.length !== 1
         ) {
             continue;
         }
-        */
 
         this.removePossibility(card.trueSuit, card.trueRank, false);
     }
