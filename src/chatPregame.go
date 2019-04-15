@@ -32,3 +32,8 @@ func automaticStart(s *Session, g *Game, numPlayers int) {
 		chatServerPregameSend("The game will start as soon as "+strconv.Itoa(numPlayers)+" players have joined.", g.ID)
 	}
 }
+
+func chatPregameDiscord(s *Session, d *CommandData, g *Game) {
+	msg := "Join the Hanabi Discord server: https://discord.gg/FADvkJp"
+	chatServerPregameSend(msg, g.ID)
+}

@@ -78,6 +78,11 @@ func chatLast(s *Session, d *CommandData) {
 	chatServerSend(msg)
 }
 
+func chatDiscord(s *Session, d *CommandData) {
+	msg := "Join the Hanabi Discord server: https://discord.gg/FADvkJp"
+	chatServerSend(msg)
+}
+
 func chatRandom(s *Session, d *CommandData) {
 	errorMsg := "That is not a correct usage of the /random command."
 

@@ -15,6 +15,7 @@ func chatHelp(s *Session, d *CommandData) {
 		msg += "/next                 Put yourself on the waiting list\n"
 		msg += "/unnext               Take yourself off the waiting list\n"
 		msg += "/list                 Show the people on the waiting list\n"
+		msg += "/discord              Get the link for the Discord server\n"
 		msg += "/random [min] [max]   Get a random number\n"
 		msg += "```\n"
 		msg += "Admin-only commands (from the lobby only):\n"
@@ -50,6 +51,7 @@ func chatCommandInit() {
 	chatCommandMap["unnext"] = waitingListRemove
 	chatCommandMap["removenext"] = waitingListRemove
 	chatCommandMap["list"] = waitingListList
+	chatCommandMap["discord"] = chatDiscord
 	chatCommandMap["random"] = chatRandom
 
 	// Admin-only commands (from the lobby only)
@@ -64,6 +66,7 @@ func chatCommandInit() {
 	chatPregameCommandMap["s4"] = chatPregameS4
 	chatPregameCommandMap["s5"] = chatPregameS5
 	chatPregameCommandMap["s6"] = chatPregameS6
+	chatPregameCommandMap["discord"] = chatPregameDiscord
 }
 
 func chatCommand(s *Session, d *CommandData, g *Game) {
