@@ -12,11 +12,13 @@ VERSION=$(git rev-list --count HEAD)
 printf "module.exports = $VERSION;\n" > "$DIR/public/js/src/version.js"
 
 # If we need to, add the NPM directory to the path
-# (the Golang process will probably not have it in the path by default)
-if [ ! hash npx 2>/dev/null ]; then
+# (the Golang process will execute this script on a graceful shutdown
+# and it will not have it in the path by default)
+if ! command -v npx > /dev/null; then
     # MacOS only has Bash version 3, which does not have assosiative arrays,
     # so the below check will not work
-    BASH_VERSION_FIRST_DIGIT=$(bash --version | sed -n 's/.*version \([0-9]\).*/\1/p')
+    # https://unix.stackexchange.com/questions/92208/bash-how-to-get-the-first-number-that-occurs-in-a-variables-content
+    BASH_VERSION_FIRST_DIGIT=$(bash --version | grep -o -E '[0-9]+' | head -1 | sed -e 's/^0\+//')
     if [ "$BASH_VERSION_FIRST_DIGIT" -lt "4" ]; then
         echo "Failed to find the \"npx\" binary (on bash version $BASH_VERSION_FIRST_DIGIT)."
         exit 1
