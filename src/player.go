@@ -52,7 +52,10 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 		// Make an exception if they have the optional setting for "Empty Clues" turned on
 		!g.Options.EmptyClues &&
 		// Make an exception for the "Color Blind" variants (color clues touch no cards)
-		(d.Clue.Type != clueTypeColor || !strings.HasPrefix(g.Options.Variant, "Color Blind")) &&
+		// and "Number Blind" variants (rank clues touch no cards)
+		(d.Clue.Type != clueTypeColor ||
+			!strings.HasPrefix(g.Options.Variant, "Color Blind") ||
+			!strings.HasPrefix(g.Options.Variant, "Number Blind")) &&
 		// Make an exception for certain characters
 		!characterEmptyClueAllowed(d, g, p) {
 

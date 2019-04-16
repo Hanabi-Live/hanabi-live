@@ -165,7 +165,8 @@ func variantsInit() {
 // but it will the "Dual-Color" variant
 func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 	if clue.Type == clueTypeRank {
-		if variants[variant].Suits[card.Suit].Name == "Brown" ||
+		if strings.HasPrefix(variant, "Number Blind") ||
+			variants[variant].Suits[card.Suit].Name == "Brown" ||
 			variants[variant].Suits[card.Suit].Name == "Chocolate" {
 
 			return false

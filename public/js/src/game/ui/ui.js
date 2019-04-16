@@ -118,8 +118,11 @@ exports.handleAction = (data) => {
             // Make an exception if they have the optional setting for "Empty Clues" turned on
             || globals.emptyClues
             // Make an exception for the "Color Blind" variants (color clues touch no cards)
+            // and "Number Blind" variants (number clues touch no cards)
             || (globals.variant.name.startsWith('Color Blind')
                 && clueButton.clue.type === constants.CLUE_TYPE.COLOR)
+            || (globals.variant.name.startsWith('Number Blind')
+                && clueButton.clue.type === constants.CLUE_TYPE.RANK)
             // Make an exception for certain characters
             || (globals.characterAssignments[globals.playerUs] === 'Blind Spot'
                 && who === (globals.playerUs + 1) % globals.playerNames.length)

@@ -413,6 +413,32 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
 
+		// Number Blind
+		Variant{
+			Name:  "Number Blind (6 Suits)",
+			ID:    102,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, TealSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue},
+		},
+		Variant{
+			Name:  "Number Blind (5 Suits)",
+			ID:    103,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Number Blind (4 Suits)",
+			ID:    104,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		Variant{
+			Name:  "Number Blind (3 Suits)",
+			ID:    105,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
+		},
+
 		// Ambiguous
 		Variant{
 			Name:  "Ambiguous (6 Suits)",

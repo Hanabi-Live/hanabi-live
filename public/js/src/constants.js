@@ -1386,6 +1386,51 @@ exports.VARIANTS = {
         true, // This is the final variant in this section
     ),
 
+    // Number Blind
+    'Number Blind (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PURPLE,
+            SUIT.TEAL,
+        ],
+        baseColorsPlusTeal,
+        false,
+    ),
+    'Number Blind (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PURPLE,
+        ],
+        baseColors,
+        false,
+    ),
+    'Number Blind (4 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+        ],
+        baseColors4,
+        false,
+    ),
+    'Number Blind (3 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+        ],
+        baseColors3,
+        false,
+        true, // This is the final variant in this section
+    ),
+
     // Ambiguous
     'Ambiguous (6 Suits)': new Variant(
         [
