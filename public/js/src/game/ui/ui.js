@@ -324,7 +324,7 @@ exports.setPause = () => {
         globals.elements.stageFade.hide();
         globals.elements.stageFade.getLayer().batchDraw();
 
-        globals.elements.timer1.show();
+        globals.elements.timer1.setVisible(!globals.spectating);
         globals.elements.timer2.show();
         globals.elements.timer1.getLayer().batchDraw();
     }
