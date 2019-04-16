@@ -68,7 +68,7 @@ const set = (i, element, giver, clue) => {
     } else {
         // This is a clue arrow
         let color;
-        if (this.numPositiveClues >= 2) {
+        if (element.numPositiveClues >= 2) {
             // Cards that are re-clued use a different color
             color = constants.ARROW_COLOR.RETOUCHED;
         } else {
