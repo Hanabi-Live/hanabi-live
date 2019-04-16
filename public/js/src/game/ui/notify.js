@@ -35,11 +35,6 @@ commands.clue = (data) => {
         }
 
         card.numPositiveClues += 1;
-        if (clue.type === constants.CLUE_TYPE.RANK) {
-            card.hasPositiveRankClue = true;
-        } else if (clue.type === constants.CLUE_TYPE.COLOR) {
-            card.hasPositiveColorClue = true;
-        }
 
         arrows.set(i, card, data.giver, clue);
 
@@ -48,6 +43,7 @@ commands.clue = (data) => {
         }
         if (!globals.lobby.settings.realLifeMode && !globals.variant.name.startsWith('Duck')) {
             card.applyClue(clue, true);
+            card.checkBrownSuitRemoved();
             card.setBareImage();
         }
     }
@@ -63,6 +59,7 @@ commands.clue = (data) => {
             negativeList.push(order);
             if (!globals.lobby.settings.realLifeMode && !globals.variant.name.startsWith('Duck')) {
                 card.applyClue(clue, false);
+                card.checkBrownSuitRemoved();
                 card.setBareImage();
             }
         }

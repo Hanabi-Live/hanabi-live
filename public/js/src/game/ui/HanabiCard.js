@@ -66,8 +66,8 @@ class HanabiCard extends graphics.Group {
         this.empathy = false;
         this.doMisplayAnimation = false;
         this.numPositiveClues = 0;
-        this.hasPositiveColorClue = false;
-        this.hasPositiveRankClue = false;
+        this.brownSuitRemoved = false;
+        this.negativeRankClues = [];
         // We have to add one to the turn drawn because
         // the "draw" command comes before the "turn" command
         // However, if it was part of the initial deal, then it will correctly be set as turn 0
@@ -242,16 +242,33 @@ class HanabiCard extends graphics.Group {
             return;
         }
 
+        // If this is a negative rank clue, record it on the card for later
+        if (
+            clue.type === constants.CLUE_TYPE.RANK
+            && !positive
+        ) {
+            this.negativeRankClues.push(clue);
+        }
+
         // Find out if we can remove some rank pips or suit pips from this clue
         let ranksRemoved = [];
         let suitsRemoved = [];
         if (clue.type === constants.CLUE_TYPE.RANK) {
             const clueRank = clue.value;
             if (globals.variant.name.startsWith('Multi-Fives')) {
+                // In "Multi-Fives" variants, the 5 of every suit is touched by all rank clues
                 ranksRemoved = filterInPlace(
                     this.possibleRanks,
                     rank => (rank === clueRank || rank === 5) === positive,
                 );
+            } else if (
+                (
+                    this.possibleSuits.includes(constants.SUIT.BROWN)
+                    || this.possibleSuits.includes(constants.SUIT.CHOCOLATE)
+                ) && !positive
+            ) {
+                // Brown & chocolate suits are not touched by any rank clues,
+                // so if this is a negative rank clue, we cannot remove any rank pips from the card
             } else {
                 ranksRemoved = filterInPlace(
                     this.possibleRanks,
@@ -259,8 +276,8 @@ class HanabiCard extends graphics.Group {
                 );
             }
 
-            // Brown & chocolate suits are not touched by any rank,
-            // so if we get a positive rank clue, then we can remove the pip
+            // Brown & chocolate suits are not touched by any rank clues,
+            // so if we get a positive rank clue, then we can remove the suit pip
             if (positive) {
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
@@ -309,6 +326,11 @@ class HanabiCard extends graphics.Group {
             for (const rank of globals.variant.ranks) {
                 this.removePossibility(suit, rank, true);
             }
+
+            if (suit === constants.SUIT.BROWN || suit === constants.SUIT.CHOCOLATE) {
+                // Mark to retroactively remove rank pips when we return from this function
+                this.brownSuitRemoved = true;
+            }
         }
         if (this.possibleSuits.length === 1) {
             [this.trueSuit] = this.possibleSuits;
@@ -335,6 +357,21 @@ class HanabiCard extends graphics.Group {
                 }
                 card.removePossibility(this.trueSuit, this.trueRank, false);
             }
+        }
+    }
+
+    checkBrownSuitRemoved() {
+        if (!this.brownSuitRemoved) {
+            return;
+        }
+
+        // If a clue just eliminated the possibility of a brown suit,
+        // we can retroactively remove rank pips from previous negative rank clues
+        this.brownSuitRemoved = false;
+        const { negativeRankClues } = this;
+        this.negativeRankClues = [];
+        for (const clue of negativeRankClues) {
+            this.applyClue(clue, false);
         }
     }
 
