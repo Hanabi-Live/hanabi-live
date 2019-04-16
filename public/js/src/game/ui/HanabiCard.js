@@ -340,7 +340,7 @@ class HanabiCard extends graphics.Group {
         if (this.possibleSuits.length === 1) {
             [this.suit] = this.possibleSuits;
 
-            // Don't record the suitt or hide the pips if the card is unclued
+            // Don't record the suit or hide the pips if the card is unclued
             if (this.holder === null || this.isClued()) {
                 globals.learnedCards[this.order].suit = this.suit;
                 this.suitPipsMap.get(this.suit).hide();
@@ -351,17 +351,7 @@ class HanabiCard extends graphics.Group {
         // Handle if this is the first time that the card is fully revealed to the holder
         const isFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
         if (isFullyKnown && !wasFullyKnown) {
-            // Now that this card is fully revealed to the holder,
-            // remove the possibilities from the rest of the cards in their hand
-            const playerHand = globals.elements.playerHands[this.holder].children;
-            for (const layoutChild of playerHand) {
-                const card = layoutChild.children[0];
-                if (card.order === this.order) {
-                    // There is no need to update the card that was just revealed
-                    continue;
-                }
-                card.removePossibility(this.suit, this.rank, false);
-            }
+            this.updatePossibilitiesOnOtherCards(this.suit, this.rank);
         }
     }
 
@@ -428,18 +418,10 @@ class HanabiCard extends graphics.Group {
         // Local variables
         suit = convert.msgSuitToSuit(suit, globals.variant);
 
-        // Update the possibilities for the player who played/discarded this card
-        // (but we don't need to do anything if the card was already fully-clued)
+        // If the card was already fully-clued,
+        // we already updated the possibilities for it on other cards
         if (this.possibleSuits.length > 1 || this.possibleRanks.length > 1) {
-            const playerHand = globals.elements.playerHands[this.holder].children;
-            for (const layoutChild of playerHand) {
-                const card = layoutChild.children[0];
-                if (card.order === this.order) {
-                    // There is no need to update the card that is being revealed
-                    continue;
-                }
-                card.removePossibility(suit, rank, false);
-            }
+            this.updatePossibilitiesOnOtherCards(suit, rank);
         }
 
         // Set the true suit/rank on the card
@@ -458,6 +440,38 @@ class HanabiCard extends graphics.Group {
             this.noteRank = null;
         }
         this.setBareImage();
+    }
+
+    updatePossibilitiesOnOtherCards(suit, rank) {
+        // Update the possibilities for the player
+        // who just discovered the true identity of this card
+        // (either through playing it, discarding it, or getting a clue that fully revealed it)
+        const playerHand = globals.elements.playerHands[this.holder];
+        for (const layoutChild of playerHand.children) {
+            const card = layoutChild.children[0];
+            if (card.order === this.order) {
+                // There is no need to update the card that was just revealed
+                continue;
+            }
+            card.removePossibility(suit, rank, false);
+        }
+
+        // If this is an unknown card that we played,
+        // we also need to update the possibilities for the other hands
+        if (this.suit === null || this.rank === null) {
+            for (let i = 0; i < globals.elements.playerHands.length; i++) {
+                if (i === this.holder) {
+                    // We already updated our own hand above
+                    continue;
+                }
+
+                const playerHand2 = globals.elements.playerHands[i];
+                for (const layoutChild of playerHand2.children) {
+                    const card = layoutChild.children[0];
+                    card.removePossibility(suit, rank, false);
+                }
+            }
+        }
     }
 
     removeFromParent() {
@@ -525,10 +539,6 @@ class HanabiCard extends graphics.Group {
         }
 
         return -1;
-    }
-
-    isRevealedToHolder() {
-        return this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
     }
 
     isCritical() {
