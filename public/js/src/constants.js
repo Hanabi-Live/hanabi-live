@@ -82,7 +82,7 @@ const COLOR = {
     BLACK: new Color('Black', 'K', '#111111'),
     WHITE: new Color('White', 'W', '#d9d9d9'),
     BROWN: new Color('Brown', 'N', '#654321'),
-    GRAY: new Color('Gray', 'G', '#555555'),
+    GRAY: new Color('Gray', 'A', '#555555'),
     CHOCOLATE: new Color('Chocolate', 'C', '#4d2800'),
 
     // "Ambiguous" variants
@@ -351,7 +351,7 @@ const SUIT = {
     ),
     GRAY: new Suit(
         'Gray',
-        'G',
+        'A',
         COLOR.GRAY,
         basicCardFillSpec,
         [COLOR.GRAY],

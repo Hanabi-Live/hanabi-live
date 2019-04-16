@@ -69,7 +69,10 @@ exports.handleAction = (data) => {
 
             let touched = false;
             if (clue.type === constants.CLUE_TYPE.RANK) {
-                if (card.trueSuit === constants.SUIT.BROWN || card.trueSuit === constants.SUIT.CHOCOLATE) {
+                if (
+                    card.trueSuit === constants.SUIT.BROWN
+                    || card.trueSuit === constants.SUIT.CHOCOLATE
+                ) {
                     touched = false;
                 } else if (
                     clue.value === card.trueRank

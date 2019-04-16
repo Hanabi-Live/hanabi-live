@@ -242,72 +242,86 @@ class HanabiCard extends graphics.Group {
             return;
         }
 
+        // Find out if we can remove some rank pips or suit pips from this clue
+        let ranksRemoved = [];
+        let suitsRemoved = [];
         if (clue.type === constants.CLUE_TYPE.RANK) {
             const clueRank = clue.value;
-            let removed;
             if (globals.variant.name.startsWith('Multi-Fives')) {
-                removed = filterInPlace(
+                ranksRemoved = filterInPlace(
                     this.possibleRanks,
                     rank => (rank === clueRank || rank === 5) === positive,
                 );
             } else {
-                removed = filterInPlace(
+                ranksRemoved = filterInPlace(
                     this.possibleRanks,
                     rank => (rank === clueRank) === positive,
                 );
             }
-            removed.forEach((rank) => {
-                // Hide the rank pips
-                this.rankPipsMap.get(rank).hide();
-                this.rankPipsXMap.get(rank).hide();
 
-                // Remove any card possibilities for this rank
-                for (const suit of globals.variant.suits) {
-                    this.removePossibility(suit, rank, true);
-                }
-            });
-
-            if (this.possibleRanks.length === 1) {
-                [this.trueRank] = this.possibleRanks;
-
-                // Don't record the rank or hide the pips if the card is unclued
-                if (this.holder === null || this.isClued()) {
-                    globals.learnedCards[this.order].rank = this.trueRank;
-                    this.rankPipsMap.get(this.trueRank).hide();
-                    this.rankPips.hide();
-                }
+            // Brown & chocolate suits are not touched by any rank,
+            // so if we get a positive rank clue, then we can remove the pip
+            if (positive) {
+                suitsRemoved = filterInPlace(
+                    this.possibleSuits,
+                    suit => suit !== constants.SUIT.BROWN && suit !== constants.SUIT.CHOCOLATE,
+                );
             }
         } else if (clue.type === constants.CLUE_TYPE.COLOR) {
             const clueColor = clue.value;
-            const removed = filterInPlace(
+            suitsRemoved = filterInPlace(
                 this.possibleSuits,
                 suit => suit.clueColors.includes(clueColor) === positive,
             );
-            removed.forEach((suit) => {
-                // Hide the suit pips
-                this.suitPipsMap.get(suit).hide();
-                this.suitPipsXMap.get(suit).hide();
-
-                // Remove any card possibilities for this suit
-                for (const rank of globals.variant.ranks) {
-                    this.removePossibility(suit, rank, true);
-                }
-            });
-
-            if (this.possibleSuits.length === 1) {
-                [this.trueSuit] = this.possibleSuits;
-
-                // Don't record the suitt or hide the pips if the card is unclued
-                if (this.holder === null || this.isClued()) {
-                    globals.learnedCards[this.order].suit = this.trueSuit;
-                    this.suitPipsMap.get(this.trueSuit).hide();
-                    this.suitPips.hide();
-                }
-            }
         } else {
             console.error('Clue type invalid.');
         }
 
+        // Remove rank pips, if any
+        for (const rank of ranksRemoved) {
+            // Hide the rank pips
+            this.rankPipsMap.get(rank).hide();
+            this.rankPipsXMap.get(rank).hide();
+
+            // Remove any card possibilities for this rank
+            for (const suit of globals.variant.suits) {
+                this.removePossibility(suit, rank, true);
+            }
+        }
+        if (this.possibleRanks.length === 1) {
+            [this.trueRank] = this.possibleRanks;
+
+            // Don't record the rank or hide the pips if the card is unclued
+            if (this.holder === null || this.isClued()) {
+                globals.learnedCards[this.order].rank = this.trueRank;
+                this.rankPipsMap.get(this.trueRank).hide();
+                this.rankPips.hide();
+            }
+        }
+
+        // Remove suit pips, if any
+        for (const suit of suitsRemoved) {
+            // Hide the suit pips
+            this.suitPipsMap.get(suit).hide();
+            this.suitPipsXMap.get(suit).hide();
+
+            // Remove any card possibilities for this suit
+            for (const rank of globals.variant.ranks) {
+                this.removePossibility(suit, rank, true);
+            }
+        }
+        if (this.possibleSuits.length === 1) {
+            [this.trueSuit] = this.possibleSuits;
+
+            // Don't record the suitt or hide the pips if the card is unclued
+            if (this.holder === null || this.isClued()) {
+                globals.learnedCards[this.order].suit = this.trueSuit;
+                this.suitPipsMap.get(this.trueSuit).hide();
+                this.suitPips.hide();
+            }
+        }
+
+        // Handle if this is the first time that the card is fully revealed to the holder
         const isFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
         if (isFullyKnown && !wasFullyKnown) {
             // Now that this card is fully revealed to the holder,
