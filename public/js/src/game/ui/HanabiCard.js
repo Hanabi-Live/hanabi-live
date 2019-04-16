@@ -709,18 +709,24 @@ class HanabiCard extends graphics.Group {
         }
 
         // Every card has a possibility map that maps card identities to count
-        // Remove one possibility for this card
         const mapIndex = `${suit.name}${rank}`;
-        const cardsLeft = this.possibleCards.get(mapIndex);
-        if (cardsLeft === 0) {
-            return;
+        let cardsLeft = this.possibleCards.get(mapIndex);
+        if (cardsLeft > 0) {
+            // Remove one or all possibilities for this card,
+            // (depending on whether the card was clued
+            // or if we saw someone draw aw copy of this card)
+            cardsLeft = all ? 0 : cardsLeft - 1;
+            this.possibleCards.set(mapIndex, cardsLeft);
+            this.checkPipPossibilities(suit, rank);
         }
-        const newValue = all ? 0 : cardsLeft - 1;
-        this.possibleCards.set(mapIndex, newValue);
-        this.checkPipPossibilities(suit, rank);
 
-        // If there is a specific identity note on the card, check to see if it is now invalid
-        if (this.noteSuit === suit && this.noteRank === rank) {
+        // If we wrote a card identity note and all the possibilities for that note have been
+        // eliminated, unmorph the card
+        if (
+            suit === this.noteSuit
+            && rank === this.noteRank
+            && cardsLeft === 0
+        ) {
             this.noteSuit = null;
             this.noteRank = null;
             this.setBareImage();

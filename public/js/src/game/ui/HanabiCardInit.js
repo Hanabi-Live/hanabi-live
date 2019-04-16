@@ -379,9 +379,9 @@ exports.click = function click() {
         }
 
         // Hide any visible arrows on the rest of a hand when the card beings to be dragged
-        const hand = this.parent.parent.children;
+        const hand = this.parent.parent;
         let hidden = false;
-        for (const layoutChild of hand) {
+        for (const layoutChild of hand.children) {
             const card = layoutChild.children[0];
             for (const arrow of globals.elements.arrows) {
                 if (arrow.pointingTo === card) {
@@ -397,7 +397,7 @@ exports.click = function click() {
 
         // Move this hand to the top
         // (otherwise, the card can appear under the play stacks / discard stacks)
-        globals.elements.playerHands[this.holder].moveToTop();
+        hand.moveToTop();
     });
 };
 
