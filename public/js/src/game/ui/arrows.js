@@ -112,22 +112,22 @@ const set = (i, element, giver, clue) => {
 exports.set = set;
 
 const getPos = (element, rot) => {
-    // Calculate the position of the arrow
-    // If we set the arrow at the absolute position of a card, it will point to the exact center
-    // Instead, back it off a little bit (accounting for the rotation of the hand)
+    // Start by using the absolute position of the element
     const pos = element.getAbsolutePosition();
-    const distance = element.getHeight() * -0.15;
-    const rotRadians = (rot / 180) * Math.PI;
-    pos.x -= Math.sin(rotRadians) * distance;
-    pos.y += Math.cos(rotRadians) * distance;
 
-    // If this is an arrow for a UI element, we need to adjust the positions a little bit
-    if (element === globals.elements.deck) {
+    if (element.type === 'HanabiCard') {
+        // If we set the arrow at the absolute position of a card, it will point to the exact center
+        // Instead, back it off a little bit (accounting for the rotation of the hand)
+        const distance = element.getHeight() * -0.15;
+        const rotRadians = (rot / 180) * Math.PI;
+        pos.x -= Math.sin(rotRadians) * distance;
+        pos.y += Math.cos(rotRadians) * distance;
+    } else if (element.type === 'PlayStackBack' || element === globals.elements.deck) {
         pos.x += element.getWidth() / 2;
-        pos.y += element.getHeight() / 2.5;
+        pos.y += element.getHeight() / 3.5;
     } else if (element === globals.elements.cluesNumberLabel) {
         pos.x += element.getWidth() * 0.15;
-    } else if (element.type !== 'HanabiCard') {
+    } else {
         pos.x += element.getWidth() / 3;
     }
 
@@ -181,23 +181,23 @@ exports.click = (event, order, element) => {
         && globals.amSharedReplayLeader
         && globals.useSharedTurns
     ) {
-        sendArrow(order, element);
+        send(order, element);
     }
 };
 
-const sendArrow = (order, element) => {
+const send = (order, element) => {
     globals.lobby.conn.send('replayAction', {
         type: constants.REPLAY_ACTION_TYPE.ARROW,
         order,
     });
 
     // Draw the arrow manually so that we don't have to wait for the client to server round-trip
-    toggleArrow(element);
+    toggle(element);
 };
-exports.sendArrow = sendArrow;
+exports.send = send;
 
 // This toggles the "highlight" arrow on a particular element
-const toggleArrow = (element) => {
+const toggle = (element) => {
     const arrow = globals.elements.arrows[0];
     const show = (
         arrow.pointingTo !== element
@@ -214,4 +214,4 @@ const toggleArrow = (element) => {
         }
     }
 };
-exports.toggleArrow = toggleArrow;
+exports.toggle = toggle;

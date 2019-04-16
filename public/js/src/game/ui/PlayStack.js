@@ -7,7 +7,7 @@
 const globals = require('./globals');
 const graphics = require('./graphics');
 
-class CardStack extends graphics.Group {
+class PlayStack extends graphics.Group {
     add(child) {
         const pos = child.getAbsolutePosition();
         graphics.Group.prototype.add.call(this, child);
@@ -93,4 +93,4 @@ class CardStack extends graphics.Group {
     }
 }
 
-module.exports = CardStack;
+module.exports = PlayStack;

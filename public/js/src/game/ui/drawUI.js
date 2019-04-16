@@ -7,7 +7,6 @@ const arrows = require('./arrows');
 const Button = require('./Button');
 const ButtonGroup = require('./ButtonGroup');
 const Deck = require('./Deck');
-const CardStack = require('./CardStack');
 const CardLayout = require('./CardLayout');
 const Clue = require('./Clue');
 const ClueLog = require('./ClueLog');
@@ -22,6 +21,7 @@ const globals = require('./globals');
 const graphics = require('./graphics');
 const MultiFitText = require('./MultiFitText');
 const NumberButton = require('./NumberButton');
+const PlayStack = require('./PlayStack');
 const replay = require('./replay');
 const stats = require('./stats');
 const timer = require('./timer');
@@ -303,23 +303,30 @@ const drawPlayStacksAndDiscardStacks = () => {
         const suit = globals.variant.suits[i];
         const playStackX = playStackValues.x + (cardWidth + playStackValues.spacing) * i;
 
-        const pileback = new graphics.Image({
+        const playStackBack = new graphics.Image({
             x: playStackX * winW,
             y: playStackValues.y * winH,
             width: cardWidth * winW,
             height: cardHeight * winH,
             image: globals.cardImages[`Card-${suit.name}-0`],
+            listening: true,
         });
-        globals.layers.background.add(pileback);
+        globals.layers.background.add(playStackBack);
 
-        const thisSuitPlayStack = new CardStack({
+        playStackBack.type = 'PlayStackBack';
+        playStackBack.on('click', (event) => {
+            // The first stack is -1, the second stack is -2, and so forth
+            arrows.click(event, -i, playStackBack);
+        });
+
+        const playStack = new PlayStack({
             x: playStackX * winW,
             y: playStackValues.y * winH,
             width: cardWidth * winW,
             height: cardHeight * winH,
         });
-        globals.elements.playStacks.set(suit, thisSuitPlayStack);
-        globals.layers.card.add(thisSuitPlayStack);
+        globals.elements.playStacks.set(suit, playStack);
+        globals.layers.card.add(playStack);
 
         const thisSuitDiscardStack = new CardLayout({
             x: 0.81 * winW,
@@ -751,7 +758,7 @@ const drawScoreArea = () => {
                 return;
             }
 
-            ui.toggleArrow(card);
+            arrows.toggle(card);
         }
     }
     for (let i = 0; i < 3; i++) {

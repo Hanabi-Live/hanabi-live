@@ -3,6 +3,7 @@
 */
 
 // Imports
+const arrows = require('./arrows');
 const constants = require('../../constants');
 const globals = require('./globals');
 const hypothetical = require('./hypothetical');
@@ -390,7 +391,7 @@ commands.replayIndicator = (data) => {
             return;
         }
 
-        ui.toggleArrow(card);
+        arrows.toggle(card);
     } else { // Some other UI element
         let element;
         if (data.order === constants.REPLAY_ARROW_ORDER.DECK) {
@@ -407,7 +408,7 @@ commands.replayIndicator = (data) => {
             return;
         }
 
-        ui.toggleArrow(element);
+        arrows.toggle(element);
     }
 };
 

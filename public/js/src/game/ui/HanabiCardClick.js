@@ -8,7 +8,6 @@ const constants = require('../../constants');
 const globals = require('./globals');
 const notes = require('./notes');
 const replay = require('./replay');
-const ui = require('./ui');
 
 module.exports = function click(event) {
     // Disable all click events if the card is tweening
@@ -71,7 +70,7 @@ const clickRight = (card, event) => {
         && globals.amSharedReplayLeader
         && globals.useSharedTurns
     ) {
-        ui.sendArrow(card.order, card);
+        arrows.send(card.order, card);
         return;
     }
 
@@ -140,7 +139,7 @@ const clickRight = (card, event) => {
         && !event.metaKey
         && globals.sharedReplay === false
     ) {
-        ui.toggleArrow(card);
+        arrows.toggle(card);
         return;
     }
 
@@ -167,7 +166,7 @@ const goToTurnAndIndicateCard = (turn, order) => {
 
     // We indicate the card to make it easier to find
     arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown
-    ui.toggleArrow(globals.deck[order]);
+    arrows.toggle(globals.deck[order]);
 };
 
 
