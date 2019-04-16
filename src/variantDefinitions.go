@@ -593,32 +593,30 @@ var (
 		},
 
 		// Cow & Pig
-		/*
-			Variant{
-				Name:  "Cow & Pig (6 Suits)",
-				ID:    98,
-				Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, TealSuit},
-				Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue},
-			},
-			Variant{
-				Name:  "Cow & Pig (5 Suits)",
-				ID:    99,
-				Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
-				Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
-			},
-			Variant{
-				Name:  "Cow & Pig (4 Suits)",
-				ID:    100,
-				Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit},
-				Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
-			},
-			Variant{
-				Name:  "Cow & Pig (3 Suits)",
-				ID:    101,
-				Suits: []Suit{BlueSuit, GreenSuit, YellowSuit},
-				Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
-			},
-		*/
+		Variant{
+			Name:  "Cow & Pig (6 Suits)",
+			ID:    98,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, TealSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue},
+		},
+		Variant{
+			Name:  "Cow & Pig (5 Suits)",
+			ID:    99,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Cow & Pig (4 Suits)",
+			ID:    100,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		Variant{
+			Name:  "Cow & Pig (3 Suits)",
+			ID:    101,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
+		},
 
 		// Duck
 		Variant{

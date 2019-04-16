@@ -150,11 +150,14 @@ class HanabiCard extends graphics.Group {
         }
 
         // Set the name
-        // (but in Real-Life mode or Duck variants,
+        // (but in Real-Life mode or Cow & Pig / Duck variants,
         // always show the vanilla card back if the card is not fully revealed)
         if (
-            (globals.lobby.settings.realLifeMode || globals.variant.name.startsWith('Duck'))
-            && (suitToShow === constants.SUIT.UNKNOWN || rankToShow === 6)
+            (
+                globals.lobby.settings.realLifeMode
+                || globals.variant.name.startsWith('Cow & Pig')
+                || globals.variant.name.startsWith('Duck')
+            ) && (suitToShow === constants.SUIT.UNKNOWN || rankToShow === 6)
         ) {
             this.bareName = 'deck-back';
         } else {

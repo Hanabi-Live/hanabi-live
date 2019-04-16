@@ -116,14 +116,26 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 		}
 		sort.Strings(slots)
 
-		text = p.Name + " quacks at " + p2.Name + "'"
+		text = p.Name + " "
+		if strings.HasPrefix(g.Options.Variant, "Cow & Pig") {
+			if d.Clue.Type == clueTypeRank {
+				text += "moos"
+			} else if d.Clue.Type == clueTypeColor {
+				text += "oinks"
+			}
+		} else if strings.HasPrefix(g.Options.Variant, "Duck") {
+			text += "quacks"
+		}
+		text += " at " + p2.Name + "'"
 		if !strings.HasSuffix(p2.Name, "s") {
 			text += "s"
 		}
 		text += " slot " + strings.Join(slots, "/")
 
 		// Also play a custom sound effect
-		g.Sound = "quack"
+		if strings.HasPrefix(g.Options.Variant, "Duck") {
+			g.Sound = "quack"
+		}
 	}
 
 	g.Actions = append(g.Actions, ActionText{

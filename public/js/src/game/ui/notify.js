@@ -41,7 +41,11 @@ commands.clue = (data) => {
         if (!globals.lobby.settings.realLifeMode) {
             card.cluedBorder.show();
         }
-        if (!globals.lobby.settings.realLifeMode && !globals.variant.name.startsWith('Duck')) {
+        if (
+            !globals.lobby.settings.realLifeMode
+            && !globals.variant.name.startsWith('Cow & Pig')
+            && !globals.variant.name.startsWith('Duck')
+        ) {
             card.applyClue(clue, true);
             card.checkBrownSuitRemoved();
             card.setBareImage();
@@ -57,7 +61,11 @@ commands.clue = (data) => {
 
         if (data.list.indexOf(order) < 0) {
             negativeList.push(order);
-            if (!globals.lobby.settings.realLifeMode && !globals.variant.name.startsWith('Duck')) {
+            if (
+                !globals.lobby.settings.realLifeMode
+                && !globals.variant.name.startsWith('Cow & Pig')
+                && !globals.variant.name.startsWith('Duck')
+            ) {
                 card.applyClue(clue, false);
                 card.checkBrownSuitRemoved();
                 card.setBareImage();
@@ -69,10 +77,16 @@ commands.clue = (data) => {
     let clueName;
     if (data.clue.type === constants.CLUE_TYPE.RANK) {
         clueName = clue.value.toString();
-    } else {
+    } else if (data.clue.type === constants.CLUE_TYPE.COLOR) {
         clueName = clue.value.name;
     }
-    if (globals.variant.name.startsWith('Duck')) {
+    if (globals.variant.name.startsWith('Cow & Pig')) {
+        if (data.clue.type === constants.CLUE_TYPE.RANK) {
+            clueName = 'Moo';
+        } else if (data.clue.type === constants.CLUE_TYPE.COLOR) {
+            clueName = 'Oink';
+        }
+    } else if (globals.variant.name.startsWith('Duck')) {
         clueName = 'Quack';
     }
 
