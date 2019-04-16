@@ -62,13 +62,14 @@ exports.handleAction = (data) => {
         arrows.hideAll();
 
         let match = false;
-        for (let i = 0; i < globals.elements.playerHands[target].children.length; i++) {
+        const hand = globals.elements.playerHands[target].children;
+        for (let i = 0; i < hand.length; i++) {
             const child = globals.elements.playerHands[target].children[i];
             const card = child.children[0];
 
             let touched = false;
             if (clue.type === constants.CLUE_TYPE.RANK) {
-                if (card.suit === constants.SUIT.BROWN || card.suit === constants.SUIT.CHOCOLATE) {
+                if (card.trueSuit === constants.SUIT.BROWN || card.trueSuit === constants.SUIT.CHOCOLATE) {
                     touched = false;
                 } else if (
                     clue.value === card.trueRank
