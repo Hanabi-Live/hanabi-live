@@ -97,7 +97,7 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	}
 	text += words[len(cardsTouched)] + " "
 
-	if d.Clue.Type == clueTypeNumber {
+	if d.Clue.Type == clueTypeRank {
 		text += strconv.Itoa(d.Clue.Value)
 	} else if d.Clue.Type == clueTypeColor {
 		text += variants[g.Options.Variant].Clues[d.Clue.Value].Name

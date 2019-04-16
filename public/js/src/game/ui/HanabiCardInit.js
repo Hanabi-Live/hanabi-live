@@ -394,6 +394,10 @@ exports.click = function click() {
                 break;
             }
         }
+
+        // Move this hand to the top
+        // (otherwise, the card can appear under the play stacks / discard stacks)
+        globals.elements.playerHands[this.holder].moveToTop();
     });
 };
 

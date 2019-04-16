@@ -37,7 +37,7 @@ const (
 )
 
 const (
-	clueTypeNumber = iota
+	clueTypeRank = iota
 	clueTypeColor
 )
 

@@ -130,14 +130,14 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		// Validate that the clue type is sane
-		if d.Clue.Type < clueTypeNumber || d.Clue.Type > clueTypeColor {
+		if d.Clue.Type < clueTypeRank || d.Clue.Type > clueTypeColor {
 			s.Warning("That is an invalid clue type.")
 			return
 		}
 
 		// Validate that number clues are valid
-		if d.Clue.Type == clueTypeNumber &&
-			(d.Clue.Value < 0 || d.Clue.Value > 5) {
+		if d.Clue.Type == clueTypeRank &&
+			(d.Clue.Value < 1 || d.Clue.Value > 5) {
 
 			s.Warning("That is an invalid number clue.")
 			return

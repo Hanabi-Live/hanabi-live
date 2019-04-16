@@ -259,7 +259,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		return true
 
 	} else if p.Character == "Dumbfounded" &&
-		d.Clue.Type == clueTypeNumber &&
+		d.Clue.Type == clueTypeRank &&
 		d.Clue.Value != p.CharacterMetadata {
 
 		s.Warning("You are " + p.Character + ", so you can not give that type of clue.")
@@ -300,7 +300,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		return true
 
 	} else if p.Character == "Picky" &&
-		((d.Clue.Type == clueTypeNumber &&
+		((d.Clue.Type == clueTypeRank &&
 			d.Clue.Value%2 == 0) ||
 			(d.Clue.Type == clueTypeColor &&
 				(d.Clue.Value+1)%2 == 0)) {
@@ -382,7 +382,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 			s.Warning("You are " + p.Character + ", so there needs to be at least two clues available for you to give a clue.")
 			return true
 		}
-		if d.Clue.Type != clueTypeNumber {
+		if d.Clue.Type != clueTypeRank {
 			s.Warning("You are " + p.Character + ", so you must give a number clue first.")
 			return true
 		}
@@ -390,7 +390,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 	} else if p.Character == "Synesthetic" &&
 		p.CharacterMetadata == -1 {
 
-		if d.Clue.Type != clueTypeNumber {
+		if d.Clue.Type != clueTypeRank {
 			s.Warning("You are " + p.Character + ", so you must give a number clue first.")
 			return true
 		}
@@ -407,7 +407,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 
 	}
 	if p2.Character == "Vulnerable" &&
-		d.Clue.Type == clueTypeNumber &&
+		d.Clue.Type == clueTypeRank &&
 		(d.Clue.Value == 2 ||
 			d.Clue.Value == 5) {
 

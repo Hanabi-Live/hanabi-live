@@ -160,9 +160,15 @@ func variantsInit() {
 }
 
 // variantIsCardTouched returns true if a color clue will touch a particular suit
-// For example, a yellow clue will not touch a green card in a normal game, but it will in "Dual-color Suits"
+// For example, a yellow clue will not touch a green card in a normal game,
+// but it will the "Dual-Color" variant
 func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
-	if clue.Type == clueTypeNumber {
+	if clue.Type == clueTypeRank {
+		if variants[variant].Suits[card.Suit].Name == "Brown" ||
+			variants[variant].Suits[card.Suit].Name == "Chocolate" {
+
+			return false
+		}
 		return card.Rank == clue.Value || (strings.HasPrefix(variant, "Multi-Fives") && card.Rank == 5)
 	} else if clue.Type == clueTypeColor {
 		return isCluedBy(variants[variant].Suits[card.Suit].ColorsTouchedBy, variants[variant].Clues[clue.Value])
@@ -186,7 +192,7 @@ func isCluedBy(list []ColorClue, item ColorClue) bool {
 
 func variantIsClueLegal(variant string, clue Clue) bool {
 	// You are not allowed to clue number 5 in the "Multi-Fives" variants
-	if strings.HasPrefix(variant, "Multi-Fives") && clue.Type == clueTypeNumber && clue.Value == 5 {
+	if strings.HasPrefix(variant, "Multi-Fives") && clue.Type == clueTypeRank && clue.Value == 5 {
 		return false
 	}
 

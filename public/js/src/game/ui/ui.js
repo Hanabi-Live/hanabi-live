@@ -68,7 +68,9 @@ exports.handleAction = (data) => {
 
             let touched = false;
             if (clue.type === constants.CLUE_TYPE.RANK) {
-                if (
+                if (card.suit === constants.SUIT.BROWN || card.suit === constants.SUIT.CHOCOLATE) {
+                    touched = false;
+                } else if (
                     clue.value === card.trueRank
                     || (globals.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
                 ) {
