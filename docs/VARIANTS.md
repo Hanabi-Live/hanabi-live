@@ -1,6 +1,6 @@
 # Variants
 
-Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of games. In order to keep the game fresh, the server allows you to create games using the variants mentioned in the [rules that come with the game](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md) as well as many other non-official custom variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options).
+Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of games. In order to keep the game fresh, the server allows you to create games using the variants mentioned in the [rules that come with the game](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants) as well as many other non-official custom variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options).
 
 <br />
 
@@ -17,7 +17,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 * An teal suit is added.
 * It works identical to the other suits in that you can clue teal cards with teal clues.
-* (This is the first [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md).)
+* (This is the first [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants).)
 
 ### Four Suits
 
@@ -32,13 +32,13 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * One of the suits is replaced with a black suit.
 * It works similar to the other suits in that you can clue black cards with black clues.
 * There is only one of each black card in the deck, which means that every black card is "critical".
-* (This is the second [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md).)
+* (This is the second [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants).)
 
 ### Rainbow
 
 * One of the suits is replaced with a rainbow suit.
 * All color clues will "touch" the rainbow suit.
-* (This is the third [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md).)
+* (This is the third [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants).)
 
 ### White
 
