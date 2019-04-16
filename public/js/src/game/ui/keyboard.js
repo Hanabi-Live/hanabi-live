@@ -184,9 +184,7 @@ const keydown = (event) => {
 
     // Check for other keyboard hotkeys
     let hotkeyFunction;
-    if (globals.elements.replayArea.visible()) {
-        hotkeyFunction = hotkeyMap.replay[event.key];
-    } else if (globals.savedAction !== null) { // We can take an action
+    if (globals.savedAction !== null) { // We can take an action
         if (globals.savedAction.canClue) {
             hotkeyFunction = hotkeyMap.clue[event.key];
         }
