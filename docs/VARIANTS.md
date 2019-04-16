@@ -104,6 +104,10 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * If a stack was started with a 5 (or a START + 4), then it must be completed in reverse.
 * A clue token is given when a stack is completed, regardless of whether it is a normal stack or a reversed stack.
 
+### Cow & Pig
+
+* When players give a clue, they point at the cards clued, but say "moo" if it a color clue and "oink" if it is a number clue.
+
 ### Duck
 
 * This variant was invented by Jack Gurev's group.
@@ -245,6 +249,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Up or Down & Rainbow (6 Suits)
   * Up or Down & Rainbow (5 Suits)
   * Up or Down & White & Rainbow (6 Suits)
+* Cow & Pig
+  * Cow & Pig (6 Suits)
+  * Cow & Pig (5 Suits)
+  * Cow & Pig (4 Suits)
+  * Cow & Pig (3 Suits)
 * Duck
   * Duck (6 Suits)
   * Duck (5 Suits)

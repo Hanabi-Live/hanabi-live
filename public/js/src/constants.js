@@ -1740,6 +1740,51 @@ exports.VARIANTS = {
         true, // This is the final variant in this section
     ),
 
+    // Cow & Pig
+    'Cow & Pig (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PURPLE,
+            SUIT.TEAL,
+        ],
+        baseColorsPlusTeal,
+        false,
+    ),
+    'Cow & Pig (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PURPLE,
+        ],
+        baseColors,
+        false,
+    ),
+    'Cow & Pig (4 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+        ],
+        baseColors4,
+        false,
+    ),
+    'Cow & Pig (3 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+        ],
+        baseColors3,
+        false,
+        true, // This is the final variant in this section
+    ),
+
     // Duck
     'Duck (6 Suits)': new Variant(
         [

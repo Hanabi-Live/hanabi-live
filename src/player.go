@@ -106,7 +106,9 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 		text += "s"
 	}
 
-	if strings.HasPrefix(g.Options.Variant, "Duck") {
+	if strings.HasPrefix(g.Options.Variant, "Cow & Pig") ||
+		strings.HasPrefix(g.Options.Variant, "Duck") {
+
 		// Create a list of slot numbers that correspond to the cards touched
 		slots := make([]string, 0)
 		for _, order := range cardsTouched {

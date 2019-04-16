@@ -12,7 +12,8 @@ import (
 type Variant struct {
 	Name string
 	ID   int
-	// Each variant must have a unique numerical ID for seed generation purposes (and for the database)
+	// Each variant must have a unique numerical ID for seed generation purposes
+	// (and for the database)
 	Suits []Suit
 	Clues []ColorClue
 }
@@ -55,7 +56,7 @@ var (
 	BlackClue  = ColorClue{Name: "Black"}
 
 	// Helpers used for some variants
-	allColorClues = []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue, BlackClue}
+	allColorClues = []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue, BlackClue, BrownClue}
 	noColorClues  = []ColorClue{}
 )
 
