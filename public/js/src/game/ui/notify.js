@@ -3,6 +3,7 @@
 */
 
 // Imports
+const arrows = require('./arrows');
 const ClueEntry = require('./ClueEntry');
 const constants = require('../../constants');
 const convert = require('./convert');
@@ -19,25 +20,29 @@ commands.clue = (data) => {
     const clue = convert.msgClueToClue(data.clue, globals.variant);
 
     // Clear all visible arrows when a new move occurs
-    ui.hideAllArrows();
+    arrows.hideAll();
 
     globals.cluesSpentPlusStrikes += 1;
     stats.updateEfficiency(0);
 
     for (let i = 0; i < data.list.length; i++) {
         const card = globals.deck[data.list[i]];
+
         if (!card.isClued()) {
             stats.updateEfficiency(1);
         } else {
             stats.updateEfficiency(0);
         }
+
         card.numPositiveClues += 1;
         if (clue.type === constants.CLUE_TYPE.RANK) {
             card.hasPositiveRankClue = true;
         } else if (clue.type === constants.CLUE_TYPE.COLOR) {
             card.hasPositiveColorClue = true;
         }
-        ui.setArrow(i, card, data.giver, clue);
+
+        arrows.set(i, card, data.giver, clue);
+
         if (!globals.lobby.settings.realLifeMode) {
             card.cluedBorder.show();
         }
@@ -96,7 +101,7 @@ commands.discard = (data) => {
     card.isMisplayed = data.failed;
 
     // Clear all visible arrows when a new move occurs
-    ui.hideAllArrows();
+    arrows.hideAll();
 
     card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();
@@ -216,7 +221,7 @@ commands.play = (data) => {
     card.turnPlayed = globals.turn;
 
     // Clear all visible arrows when a new move occurs
-    ui.hideAllArrows();
+    arrows.hideAll();
 
     card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();

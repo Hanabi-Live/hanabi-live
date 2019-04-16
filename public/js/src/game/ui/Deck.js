@@ -1,5 +1,5 @@
 // Imports
-const Arrow = require('./Arrow');
+const arrows = require('./arrows');
 const constants = require('../../constants');
 const globals = require('./globals');
 const graphics = require('./graphics');
@@ -40,18 +40,8 @@ class Deck extends graphics.Group {
         });
         this.add(this.numLeftText);
 
-        const thisPos = this.getAbsolutePosition();
-        this.arrow = new Arrow({
-            x: thisPos.x + (this.getWidth() / 2),
-            y: thisPos.y + (this.getHeight() * 0.05),
-            scale: {
-                x: 0.4,
-                y: 0.12,
-            },
-        });
-        globals.layers.card.add(this.arrow);
         this.on('click', (event) => {
-            ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.DECK, this);
+            arrows.click(event, constants.REPLAY_ARROW_ORDER.DECK, this);
         });
 
         this.initTooltip();

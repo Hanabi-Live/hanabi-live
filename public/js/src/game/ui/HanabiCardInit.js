@@ -3,6 +3,7 @@
 */
 
 // Imports
+const arrows = require('./arrows');
 const constants = require('../../constants');
 const drawCards = require('./drawCards');
 const globals = require('./globals');
@@ -10,7 +11,6 @@ const graphics = require('./graphics');
 const HanabiCardClick = require('./HanabiCardClick');
 const HanabiCardClickSpeedrun = require('./HanabiCardClickSpeedrun');
 const notes = require('./notes');
-const ui = require('./ui');
 
 exports.image = function image() {
     // Create the "bare" card image, which is the main card grahpic
@@ -371,21 +371,29 @@ exports.click = function click() {
     this.on('click tap', HanabiCardClick);
     this.on('mousedown', HanabiCardClickSpeedrun);
     this.on('mousedown', (event) => {
-        // Hide any visible arrows when a user begins to drag a card in their hand
         if (
             event.evt.which !== 1 // Dragging uses left click
-            || (this.holder !== globals.playerUs && !globals.hypothetical)
-            || globals.inReplay
-            || globals.replay
-            || globals.spectating
             || !this.parent.getDraggable()
-            || this.isPlayed
-            || this.isDiscarded
         ) {
             return;
         }
 
-        ui.hideAllArrows();
+        // Hide any visible arrows on the rest of a hand when the card beings to be dragged
+        const hand = this.parent.parent.children;
+        let hidden = false;
+        for (const layoutChild of hand) {
+            const card = layoutChild.children[0];
+            for (const arrow of globals.elements.arrows) {
+                if (arrow.pointingTo === card) {
+                    hidden = true;
+                    arrows.hideAll();
+                    break;
+                }
+            }
+            if (hidden) {
+                break;
+            }
+        }
     });
 };
 

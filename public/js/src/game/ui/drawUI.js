@@ -3,7 +3,7 @@
 */
 
 // Imports
-const Arrow = require('./Arrow');
+const arrows = require('./arrows');
 const Button = require('./Button');
 const ButtonGroup = require('./ButtonGroup');
 const Deck = require('./Deck');
@@ -725,10 +725,10 @@ const drawScoreArea = () => {
     globals.elements.cluesNumberLabel = cluesNumberLabel;
 
     cluesTextLabel.on('click', (event) => {
-        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
+        arrows.click(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
     });
     cluesNumberLabel.on('click', (event) => {
-        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
+        arrows.click(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
     });
 
     // Draw the 3 strike (bomb) black squares / X's
@@ -1037,10 +1037,10 @@ const drawStatistics = () => {
     globals.elements.paceNumberLabel = paceNumberLabel;
 
     paceTextLabel.on('click', (event) => {
-        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
+        arrows.click(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
     });
     paceNumberLabel.on('click', (event) => {
-        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
+        arrows.click(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
     });
 
     const efficiencyTextLabel = basicTextLabel.clone({
@@ -1079,10 +1079,10 @@ const drawStatistics = () => {
     globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
 
     efficiencyTextLabel.on('click', (event) => {
-        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
+        arrows.click(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
     });
     efficiencyNumberLabel.on('click', (event) => {
-        ui.clickArrow(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
+        arrows.click(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
     });
 
     const minEfficiency = stats.getMinEfficiency();
@@ -1098,7 +1098,7 @@ const drawStatistics = () => {
     });
     globals.layers.UI.add(efficiencyNumberLabelMinNeeded);
     efficiencyNumberLabelMinNeeded.on('click', (event) => {
-        ui.clickArrow(
+        arrows.click(
             event,
             constants.REPLAY_ARROW_ORDER.MIN_EFFICIENCY,
             efficiencyNumberLabelMinNeeded,
@@ -1176,6 +1176,113 @@ const drawDiscardArea = () => {
 const drawArrows = () => {
     // These are arrows used to show which cards that are touched by a clue
     // (and for pointing to various things in a shared replay)
+    class Arrow extends graphics.Group {
+        constructor() {
+            const x = 0.1 * winW;
+            const y = 0.1 * winH;
+            super({
+                x,
+                y,
+                offset: {
+                    x,
+                    y,
+                },
+                visible: false,
+            });
+
+            // Class variables
+            this.pointingTo = null;
+            this.tween = null;
+
+            const pointerLength = 0.006 * winW;
+
+            // We want there to be a black outline around the arrow,
+            // so we draw a second arrow that is slightly bigger than the first
+            const border = new graphics.Arrow({
+                points: [
+                    x,
+                    0,
+                    x,
+                    y * 0.8,
+                ],
+                pointerLength,
+                pointerWidth: pointerLength,
+                fill: 'black',
+                stroke: 'black',
+                strokeWidth: pointerLength * 2,
+                shadowBlur: pointerLength * 4,
+                shadowOpacity: 1,
+            });
+            this.add(border);
+
+            // The border arrow will be missing a bottom edge,
+            // so draw that manually at the bottom of the arrow
+            const edge = new graphics.Line({
+                points: [
+                    x - pointerLength,
+                    0,
+                    x + pointerLength,
+                    0,
+                ],
+                fill: 'black',
+                stroke: 'black',
+                strokeWidth: pointerLength * 0.75,
+            });
+            this.add(edge);
+
+            // The main (inside) arrow is exported so that we can change the color later
+            this.base = new graphics.Arrow({
+                points: [
+                    x,
+                    0,
+                    x,
+                    y * 0.8,
+                ],
+                pointerLength,
+                pointerWidth: pointerLength,
+                fill: 'white',
+                stroke: 'white',
+                strokeWidth: pointerLength * 1.25,
+            });
+            this.add(this.base);
+
+            // A circle will appear on the body of the arrow to indicate the type of clue given
+            this.circle = new graphics.Circle({
+                x,
+                y: y * 0.3,
+                radius: pointerLength * 2.25,
+                fill: 'black',
+                stroke: 'white',
+                strokeWidth: pointerLength * 0.25,
+                visible: false,
+                listening: false,
+            });
+            this.add(this.circle);
+
+            // The circle will have text inside of it to indicate the number of the clue given
+            this.text = new graphics.Text({
+                x,
+                y: y * 0.3,
+                offset: {
+                    x: this.circle.getWidth() / 2,
+                    y: this.circle.getHeight() / 2,
+                },
+                width: this.circle.getWidth(),
+                // For some reason the text is offset if we place it exactly in the middle of the
+                // circle, so nudge it downwards
+                height: this.circle.getHeight() * 1.09,
+                fontSize: y * 0.38,
+                fontFamily: 'Verdana',
+                fill: 'white',
+                align: 'center',
+                verticalAlign: 'middle',
+                visible: false,
+                listening: false,
+            });
+            this.add(this.text);
+        }
+    }
+
     for (let i = 0; i < 5; i++) {
         const arrow = new Arrow();
         globals.layers.card.add(arrow);

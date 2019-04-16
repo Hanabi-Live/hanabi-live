@@ -3,6 +3,7 @@
 */
 
 // Imports
+const arrows = require('./arrows');
 const constants = require('../../constants');
 const globals = require('./globals');
 const notes = require('./notes');
@@ -165,7 +166,7 @@ const goToTurnAndIndicateCard = (turn, order) => {
     replay.goto(turn, true);
 
     // We indicate the card to make it easier to find
-    ui.hideAllArrows(); // We hide all the arrows first to ensure that the arrow is always shown
+    arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown
     ui.toggleArrow(globals.deck[order]);
 };
 
