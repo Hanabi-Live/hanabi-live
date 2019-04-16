@@ -149,10 +149,6 @@ const reset = () => {
     // but there are "notify" messages that occur before the first "turn" command
     globals.turn = 0;
     // "globals.currentPlayerIndex" is set in every "turn" command
-    for (const card of globals.deck) {
-        card.trueSuit = null;
-        card.trueRank = null;
-    }
     globals.deckSize = stats.getTotalCardsInTheDeck();
     // "globals.indexOfLastDrawnCard" is set in every "draw" command
     // "globals.score", "globals.maxScore", and "globals.clues"
@@ -184,8 +180,8 @@ const reset = () => {
     }
     for (const card of globals.deck) {
         card.holder = null;
-        card.trueSuit = null;
-        card.trueRank = null;
+        card.suit = null;
+        card.rank = null;
     }
     for (const arrow of globals.elements.arrows) {
         arrow.hide();

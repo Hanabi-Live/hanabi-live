@@ -411,7 +411,7 @@ exports.possibilities = function possibilities() {
         const card = globals.deck[i];
 
         // Don't do anything if this is one of our cards
-        if (card.trueSuit === null || card.trueRank === null) {
+        if (card.suit === null || card.rank === null) {
             continue;
         }
 
@@ -426,7 +426,7 @@ exports.possibilities = function possibilities() {
             continue;
         }
 
-        this.removePossibility(card.trueSuit, card.trueRank, false);
+        this.removePossibility(card.suit, card.rank, false);
     }
 };
 

@@ -154,8 +154,8 @@ commands.draw = (data) => {
     // (this is necessary because we might be rewinding in a replay)
     const card = globals.deck[order];
     card.holder = holder;
-    card.trueSuit = suit; // This will be null if we don't know the suit
-    card.trueRank = rank; // This will be null if we don't know the rank
+    card.suit = suit; // This will be null if we don't know the suit
+    card.rank = rank; // This will be null if we don't know the rank
     card.refresh();
     if (suit && rank) {
         // Hide the pips if we have full knowledge of the suit / rank

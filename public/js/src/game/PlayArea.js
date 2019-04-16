@@ -38,8 +38,7 @@ class PlayArea extends Phaser.GameObjects.Container {
         const nSuits = this.suits.length;
 
         for (const card of cards) {
-            const cardSuit = card.trueSuit;
-            const suitIdx = this.suits.findIndex(suit => suit === cardSuit);
+            const suitIdx = this.suits.findIndex(suit => suit === card.suit);
             // eslint pls, this is way more readable than if I threw in a bunch of parens
             /* eslint-disable no-mixed-operators, space-infix-ops */
             const x = (suitIdx + 1/2 - nSuits/2) * horizSpacing;

@@ -70,22 +70,22 @@ exports.handleAction = (data) => {
             let touched = false;
             if (clue.type === constants.CLUE_TYPE.RANK) {
                 if (
-                    card.trueSuit === constants.SUIT.BROWN
-                    || card.trueSuit === constants.SUIT.CHOCOLATE
+                    card.suit === constants.SUIT.BROWN
+                    || card.suit === constants.SUIT.CHOCOLATE
                 ) {
                     touched = false;
                 } else if (
-                    clue.value === card.trueRank
-                    || (globals.variant.name.startsWith('Multi-Fives') && card.trueRank === 5)
+                    clue.value === card.rank
+                    || (globals.variant.name.startsWith('Multi-Fives') && card.rank === 5)
                 ) {
                     touched = true;
                 }
             } else if (clue.type === constants.CLUE_TYPE.COLOR) {
                 const clueColor = clue.value;
                 if (
-                    card.trueSuit === constants.SUIT.RAINBOW
-                    || card.trueSuit === constants.SUIT.DARK_RAINBOW
-                    || card.trueSuit.clueColors.includes(clueColor)
+                    card.suit === constants.SUIT.RAINBOW
+                    || card.suit === constants.SUIT.DARK_RAINBOW
+                    || card.suit.clueColors.includes(clueColor)
                 ) {
                     touched = true;
                 }

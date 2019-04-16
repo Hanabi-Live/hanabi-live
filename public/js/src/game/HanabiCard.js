@@ -27,9 +27,9 @@ class HanabiCard extends Phaser.GameObjects.Container {
         // Card variables
         this.order = config.order;
         this.holder = config.holder;
-        this.trueSuit = config.suit || undefined;
+        this.suit = config.suit || undefined;
         // Rank 0 is the stack base, and it's false-y, so the undefined check has to be more nuanced
-        this.trueRank = typeof config.rank !== 'undefined' ? config.rank : undefined;
+        this.rank = typeof config.rank !== 'undefined' ? config.rank : undefined;
         // Possible suits and ranks (based on clues given) are tracked separately from
         // knowledge of the true suit and rank
         this.possibleSuits = config.suits;
@@ -73,11 +73,11 @@ class HanabiCard extends Phaser.GameObjects.Container {
     }
 
     suitKnown() {
-        return this.trueSuit !== undefined;
+        return this.suit !== undefined;
     }
 
     rankKnown() {
-        return this.trueRank !== undefined;
+        return this.rank !== undefined;
     }
 
     identityKnown() {
@@ -104,10 +104,10 @@ class HanabiCard extends Phaser.GameObjects.Container {
     setCardImageName() {
         const learnedCard = globals.state.learnedCards[this.order];
 
-        const rank = (!this.showOnlyLearned && this.trueRank);
+        const rank = (!this.showOnlyLearned && this.rank);
         const empathyPastRankUncertain = this.showOnlyLearned && this.possibleRanks.length > 1;
 
-        const suit = (!this.showOnlyLearned && this.trueSuit);
+        const suit = (!this.showOnlyLearned && this.suit);
         const empathyPastSuitUncertain = this.showOnlyLearned && this.possibleSuits.length > 1;
 
         let suitToShow = suit || learnedCard.suit || SUIT.UNKNOWN;

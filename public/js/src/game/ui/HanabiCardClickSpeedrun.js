@@ -64,7 +64,7 @@ const clickLeft = (card, event) => {
         // A card may be cluable by more than one color,
         // so we need to figure out which color to use
         const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
-        const cardColors = card.trueSuit.clueColors;
+        const cardColors = card.suit.clueColors;
         let color;
         if (
             // If a clue type button is selected
@@ -139,7 +139,7 @@ const clickRight = (card, event) => {
                 target: card.holder,
                 clue: {
                     type: constants.CLUE_TYPE.RANK,
-                    value: card.trueRank,
+                    value: card.rank,
                 },
             },
         });

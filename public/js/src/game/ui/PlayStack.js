@@ -89,7 +89,7 @@ class PlayStack extends graphics.Group {
         }
         const topLayoutChild = this.children[this.children.length - 1];
         const topCard = topLayoutChild.children[0];
-        return topCard.trueRank;
+        return topCard.rank;
     }
 }
 

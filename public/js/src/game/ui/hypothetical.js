@@ -77,15 +77,15 @@ exports.send = (action) => {
             which: {
                 index: globals.currentPlayerIndex,
                 order: action.data.target,
-                rank: card.trueRank,
-                suit: convert.suitToMsgSuit(card.trueSuit, globals.variant),
+                rank: card.rank,
+                suit: convert.suitToMsgSuit(card.suit, globals.variant),
             },
         });
         globals.score += 1;
 
         // Text
         let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
-        text += `${card.trueSuit.name} ${card.trueRank} from slot #${card.getSlotNum()}`;
+        text += `${card.suit.name} ${card.rank} from slot #${card.getSlotNum()}`;
         hypoAction({
             type: 'text',
             text,
