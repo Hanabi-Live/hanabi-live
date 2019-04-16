@@ -114,9 +114,9 @@ exports.set = set;
 const getPos = (element, rot) => {
     // Calculate the position of the arrow
     // If we set the arrow at the absolute position of a card, it will point to the exact center
-    // Instead, back them off a little bit (accounting for the rotation of the hand)
+    // Instead, back it off a little bit (accounting for the rotation of the hand)
     const pos = element.getAbsolutePosition();
-    const distance = element.getHeight() * -0.11;
+    const distance = element.getHeight() * -0.15;
     const rotRadians = (rot / 180) * Math.PI;
     pos.x -= Math.sin(rotRadians) * distance;
     pos.y += Math.cos(rotRadians) * distance;
