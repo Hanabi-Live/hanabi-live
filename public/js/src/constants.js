@@ -81,9 +81,9 @@ const COLOR = {
     TEAL: new Color('Teal', 'T', '#00cccc'),
     BLACK: new Color('Black', 'K', '#111111'),
     WHITE: new Color('White', 'W', '#d9d9d9'),
-    BROWN: new Color('Brown', 'N', '#a52a2a'),
+    BROWN: new Color('Brown', 'N', '#654321'),
     GRAY: new Color('Gray', 'G', '#555555'),
-    CHOCOLATE: new Color('Chocolate', 'C', '#7b3f00'),
+    CHOCOLATE: new Color('Chocolate', 'C', '#4d2800'),
 
     // "Ambiguous" variants
     L_BLUE: new Color('Sky', 'S', '#1a66ff'),
