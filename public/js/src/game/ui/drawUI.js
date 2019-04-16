@@ -1439,7 +1439,7 @@ const drawPreplayArea = () => {
 };
 
 const drawPauseArea = () => {
-    globals.elements.replayArea = new graphics.Group({
+    globals.elements.pauseArea = new graphics.Group({
         x: 0.25 * winW,
         y: 0.25 * winH,
         width: 0.5 * winW,
