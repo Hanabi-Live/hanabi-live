@@ -225,12 +225,12 @@ exports.recordStrike = (data) => {
     const strike = globals.elements.strikes[i];
     const strikeSquare = globals.elements.strikeSquares[i];
 
-    // We want to go to the turn before the strike actually happened
+    // We want to record the turn before the strike actually happened
     let turn;
     if (Object.prototype.hasOwnProperty.call(data, 'turn')) {
         turn = data.turn - 1;
     } else {
-        // Old games will not have the turn integrated into the strike
+        // Games prior to 2019 will not have the turn integrated into the strike
         turn = globals.turn - 1;
         if (turn <= 0) {
             turn = null;
@@ -244,7 +244,7 @@ exports.recordStrike = (data) => {
     if (Object.prototype.hasOwnProperty.call(data, 'order')) {
         ({ order } = data);
     } else {
-        // Old games will not have the card number integrated into the strike
+        // Games prior to 2019 will not have the card number integrated into the strike
         order = null;
     }
     strike.order = order;

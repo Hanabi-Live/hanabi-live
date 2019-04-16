@@ -176,6 +176,7 @@ const reset = () => {
         if (strike.tween) {
             strike.tween.destroy();
         }
+        strike.setOpacity(0);
         strike.setFaded();
     }
     for (const card of globals.deck) {

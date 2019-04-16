@@ -186,7 +186,7 @@ const drawSuitPips = (ctx, rank, suit, i) => {
 
     // Size, position, and alpha adjustment for the central icon on stack base and 5
     if (rank === 0 || rank === 5) {
-        ctx.globalAlpha = 1.0;
+        ctx.globalAlpha = 1;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 3 / 2, scale * 3 / 2);
@@ -254,7 +254,7 @@ const drawCardBase = (ctx, suit, rank) => {
     ctx.lineWidth = 8;
     // The borders should be more opaque for the stack base
     if (rank === 0) {
-        ctx.globalAlpha = 1.0;
+        ctx.globalAlpha = 1;
     }
     ctx.stroke();
 

@@ -343,19 +343,19 @@ commands.strike = (data) => {
     globals.cluesSpentPlusStrikes += 1;
     stats.updateEfficiency(0);
 
-    // Record the turn that the strike happened and the card that was misplayed
-    ui.recordStrike(data);
-
     // Animate the strike square fading in
     if (globals.animateFast) {
-        strike.setOpacity(1.0);
+        strike.setOpacity(1);
     } else {
         strike.tween = new graphics.Tween({
             node: strike,
-            opacity: 1.0,
-            duration: 1.0,
+            opacity: 1,
+            duration: 1,
         }).play();
     }
+
+    // Record the turn that the strike happened and the card that was misplayed
+    ui.recordStrike(data);
 };
 
 commands.turn = (data) => {
