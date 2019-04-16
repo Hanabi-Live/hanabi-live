@@ -21,17 +21,6 @@ exports.init = () => {
         Build a mapping of hotkeys to functions
     */
 
-    hotkeyMap.replay = {
-        'ArrowLeft': replay.back,
-        'ArrowRight': replay.forward,
-
-        '[': replay.backRound,
-        ']': replay.forwardRound,
-
-        'Home': replay.backFull,
-        'End': replay.forwardFull,
-    };
-
     hotkeyMap.clue = {};
 
     // Add "Tab" for player selection
@@ -52,8 +41,6 @@ exports.init = () => {
     for (let i = 0; i < globals.elements.suitClueButtons.length && i < clueKeyRow.length; i++) {
         hotkeyMap.clue[clueKeyRow[i]] = click(globals.elements.suitClueButtons[i]);
     }
-
-    // (the hotkey for giving a clue is enabled separately in the "keydown()" function)
 
     hotkeyMap.play = {
         'a': play, // The main play hotkey
@@ -90,65 +77,24 @@ const keydown = (event) => {
         return;
     }
 
-    // Ctrl + Enter = Give a clue / click on the "Give Clue" button
-    if (
-        event.ctrlKey
-        && event.key === 'Enter'
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-    ) {
-        // The "giveClue()" function has validation inside of it
-        ui.giveClue();
-        return;
-    }
+    // Ctrl hotkeys
+    if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
+        // Ctrl + Enter = Give a clue / click on the "Give Clue" button
+        if (event.key === 'Enter') {
+            // The "giveClue()" function has validation inside of it
+            ui.giveClue();
+            return;
+        }
 
-    // Ctrl + c = Copy the current game ID
-    if (
-        event.key === 'c'
-        && event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-        && globals.id !== 0
-    ) {
-        misc.copyStringToClipboard(globals.id);
-    }
-
-    // Escape: If in an in-game replay, exit back to the game
-    if (
-        event.key === 'Escape'
-        && !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-        && !globals.replay
-    ) {
-        replay.exit();
-    }
-
-    // Delete: Delete the note from the card that we are currently hovering-over, if any
-    if (
-        event.key === 'Delete'
-        && !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-        && globals.activeHover !== null
-        && typeof globals.activeHover.order !== 'undefined'
-    ) {
-        notes.set(globals.activeHover.order, '');
-        notes.update(globals.activeHover);
-        return;
+        // Ctrl + c = Copy the current game ID
+        if (event.key === 'c' && globals.id !== 0) {
+            misc.copyStringToClipboard(globals.id);
+            return;
+        }
     }
 
     // Alt hotkeys
-    if (
-        event.altKey
-        && !event.ctrlKey
-        && !event.shiftKey
-        && !event.metaKey
-    ) {
+    if (event.altKey && !event.ctrlKey && !event.shiftKey && !event.metaKey) {
         // Sound hotkeys
         if (event.key === 'b' || event.key === '∫') { // Alt + b
             // This is used for fun in shared replays
@@ -172,21 +118,67 @@ const keydown = (event) => {
         }
 
         // Other
-        if (event.key === 'l') { // Alt + l
+        if (event.key === 'l' || event.key === '¬') { // Alt + l
             ui.backToLobby();
-        } else if (event.key === 't') { // Alt + t
+            return;
+        }
+        if (event.key === 't' || event.key === '†') { // Alt + t
             replay.promptTurn();
+            return;
         }
     }
 
-    // Don't interfere with other kinds of hotkeys
+    // The rest of the hotkeys should not occur if a modifier key is pressed
+    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
+        return;
+    }
+
+    // Escape = If in an in-game replay, exit back to the game
+    if (event.key === 'Escape' && !globals.replay) {
+        replay.exit();
+        return;
+    }
+
+    // Delete = Delete the note from the card that we are currently hovering-over, if any
     if (
-        event.altKey
-        || event.ctrlKey
-        || event.shiftKey
-        || event.altKey
-        || event.metaKey
+        event.key === 'Delete'
+        && globals.activeHover !== null
+        && typeof globals.activeHover.order === 'number'
     ) {
+        notes.set(globals.activeHover.order, '');
+        notes.update(globals.activeHover);
+        return;
+    }
+
+    // Replay hotkeys
+    if (event.key === 'ArrowLeft') {
+        replay.enter();
+        replay.back();
+        return;
+    }
+    if (event.key === 'ArrowRight') {
+        replay.enter();
+        replay.forward();
+        return;
+    }
+    if (event.key === '[') {
+        replay.enter();
+        replay.backRound();
+        return;
+    }
+    if (event.key === ']') {
+        replay.enter();
+        replay.forwardRound();
+        return;
+    }
+    if (event.key === 'Home') {
+        replay.enter();
+        replay.backFull();
+        return;
+    }
+    if (event.key === 'End') {
+        replay.enter();
+        replay.forwardFull();
         return;
     }
 
