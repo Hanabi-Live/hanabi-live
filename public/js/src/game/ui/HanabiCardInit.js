@@ -278,50 +278,24 @@ exports.note = function note() {
 };
 
 exports.empathy = function empathy() {
-    // Click on a teammate's card to have the card show as it would to that teammate
-    // (or, in a replay, show your own card as it appeared at that moment in time)
+    // In a game, click on a teammate's hand to it show as it would to that teammate
+    // (or show your own hand as it should appear without any notes on it)
+    // (or, in a replay, show the hand as it appeared at that moment in time)
     // Pips visibility state is tracked so it can be restored for your own hand during a game
-    const toggleHolderViewOnCard = (card, enabled, togglePips) => {
-        const toggledPips = [0, 0];
-        if (card.rankPips.getVisible() !== enabled && togglePips[0] === 1) {
-            card.rankPips.setVisible(enabled);
-            toggledPips[0] = 1;
+    const setEmpathyOnHand = (enabled) => {
+        globals.activeHover = enabled ? this : null;
+        const hand = this.parent.parent;
+        for (const layoutChild of hand.children) {
+            const card = layoutChild.children[0];
+            card.empathy = enabled;
+            card.setBareImage();
         }
-        if (card.suitPips.getVisible() !== enabled && togglePips[1] === 1) {
-            card.suitPips.setVisible(enabled);
-            toggledPips[1] = 1;
-        }
-        card.empathy = enabled;
-        card.setBareImage();
-        return toggledPips;
-    };
-
-    // Dynamically adjusted known cards, to be restored by event
-    const toggledHolderViewCards = [];
-
-    const beginHolderViewOnCard = function beginHolderViewOnCard(cards) {
-        if (toggledHolderViewCards.length > 0) {
-            return undefined; // Handle race conditions with stop
-        }
-
-        toggledHolderViewCards.splice(0, 0, ...cards);
-        const toggledPips = cards.map(c => toggleHolderViewOnCard(c, true, [1, 1]));
-        globals.layers.card.batchDraw();
-        return toggledPips;
-    };
-    const endHolderViewOnCard = function endHolderViewOnCard(toggledPips) {
-        const cardsToReset = toggledHolderViewCards.splice(0, toggledHolderViewCards.length);
-        cardsToReset.map(
-            (card, index) => toggleHolderViewOnCard(card, false, toggledPips[index]),
-        );
         globals.layers.card.batchDraw();
     };
 
-    const empathyMouseButton = 1; // Left-click
-    let toggledPips = [];
     this.on('mousedown', (event) => {
         if (
-            event.evt.which !== empathyMouseButton // Only enable Empathy for left-clicks
+            event.evt.which !== 1 // Only enable Empathy for left-clicks
             // Disable Empathy if a modifier key is pressed
             // (unless we are in a speedrun,
             // because then Empathy is mapped to Ctrl + left click)
@@ -334,25 +308,19 @@ exports.empathy = function empathy() {
             || this.isPlayed // Clicking on a played card goes to the turn that it was played
             // Clicking on a discarded card goes to the turn that it was discarded
             || this.isDiscarded
-            // Disable Empathy on our own hand
-            // (unless we are in an in-game replay or we are a spectator)
-            || (this.holder === globals.playerUs && !globals.inReplay && !globals.spectating)
-            // Disable Empathy if we in a hypothetical and are the shared replay leader
-            || (globals.hypothetical && globals.amSharedReplayLeader)
         ) {
             return;
         }
 
-        globals.activeHover = this;
-        const cards = this.parent.parent.children.map(c => c.children[0]);
-        toggledPips = beginHolderViewOnCard(cards);
+        setEmpathyOnHand(true);
     });
+
     this.on('mouseup mouseout', (event) => {
-        if (event.type === 'mouseup' && event.evt.which !== empathyMouseButton) {
+        if (event.type === 'mouseup' && event.evt.which !== 1) { // Left-click
             return;
         }
-        globals.activeHover = null;
-        endHolderViewOnCard(toggledPips);
+
+        setEmpathyOnHand(false);
     });
 };
 

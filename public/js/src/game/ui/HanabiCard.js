@@ -64,7 +64,6 @@ class HanabiCard extends graphics.Group {
         // Possible cards (based on both clues given and cards seen) are also tracked separately
         this.possibleCards = new Map(globals.cardsMap); // Start by cloning the "globals.cardsMap"
         this.tweening = false;
-        this.dragging = false;
         this.empathy = false;
         this.doMisplayAnimation = false;
         this.numPositiveClues = 0;

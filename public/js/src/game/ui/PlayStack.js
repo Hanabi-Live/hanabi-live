@@ -63,7 +63,7 @@ class PlayStack extends graphics.Group {
                     rotation: 0,
                     easing: graphics.Easings.EaseOut,
                     onFinish: () => {
-                        if (!card || !node) {
+                        if (!node || !card || !card.parent) {
                             return;
                         }
                         if (card.isMisplayed && card.parent.parent) {

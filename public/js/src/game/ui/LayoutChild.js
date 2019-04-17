@@ -78,14 +78,10 @@ class LayoutChild extends graphics.Group {
 
         this.setDraggable(true);
         this.on('dragend', this.dragEnd);
-        this.on('dragstart', () => {
-            card.dragging = true;
-        });
     }
 
     dragEnd() {
         const card = this.children[0];
-        card.dragging = false;
 
         const pos = this.getAbsolutePosition();
         pos.x += this.getWidth() * this.getScaleX() / 2;
