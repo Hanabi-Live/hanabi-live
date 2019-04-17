@@ -1557,14 +1557,93 @@ const drawPreplayArea = () => {
 };
 
 const drawPauseArea = () => {
+    const pauseAreaValues = {
+        w: 0.5,
+        h: 0.5,
+    };
+
     globals.elements.pauseArea = new graphics.Group({
         x: 0.25 * winW,
         y: 0.25 * winH,
-        width: 0.5 * winW,
-        height: 0.5 * winH,
+        visible: false,
     });
+    globals.layers.overtop.add(globals.elements.pauseArea);
 
-    // TODO
+    const pauseRect = new graphics.Rect({
+        width: pauseAreaValues.w * winW,
+        height: pauseAreaValues.h * winH,
+        fill: '#b3b3b3',
+        cornerRadius: 0.01 * winH,
+        listening: true,
+    });
+    globals.elements.pauseArea.add(pauseRect);
+
+    const pauseTitle = new graphics.Text({
+        y: 0.1 * winH,
+        width: pauseAreaValues.w * winW,
+        fontFamily: 'Verdana',
+        fontSize: 0.08 * winH,
+        text: 'Game Paused',
+        align: 'center',
+        fill: 'white',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+    });
+    globals.elements.pauseArea.add(pauseTitle);
+
+    globals.elements.pauseText = new graphics.Text({
+        y: 0.21 * winH,
+        width: pauseAreaValues.w * winW,
+        fontFamily: 'Verdana',
+        fontSize: 0.05 * winH,
+        text: 'by: [username]',
+        align: 'center',
+        fill: 'white',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: {
+            x: 0,
+            y: 0,
+        },
+        shadowOpacity: 0.9,
+    });
+    globals.elements.pauseArea.add(globals.elements.pauseText);
+
+    const button1W = pauseAreaValues.w * 0.55;
+    const button2W = pauseAreaValues.w * 0.15;
+    const buttonH = 0.33;
+    const spacing = pauseAreaValues.w * 0.1;
+
+    const pauseButton = new Button({
+        x: spacing * winW,
+        y: buttonH * winH,
+        width: button1W * winW,
+        height: 0.1 * winH,
+        text: 'Unpause',
+    });
+    pauseButton.on('click tap', () => {
+        globals.lobby.conn.send('pause', {
+            value: 'unpause',
+        });
+    });
+    globals.elements.pauseArea.add(pauseButton);
+
+    const chatButton = new Button({
+        x: (pauseAreaValues.w - button2W - spacing) * winW,
+        y: buttonH * winH,
+        width: button2W * winW,
+        height: 0.1 * winH,
+        text: '💬',
+    });
+    globals.elements.pauseArea.add(chatButton);
+    chatButton.on('click tap', () => {
+        globals.game.chat.toggle();
+    });
 };
 
 const drawExtraAnimations = () => {

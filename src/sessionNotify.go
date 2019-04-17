@@ -253,12 +253,12 @@ func (s *Session) NotifyTime(g *Game) {
 
 func (s *Session) NotifyPause(g *Game) {
 	type PauseMessage struct {
-		Pause  bool `json:"paused"`
-		Player int  `json:"pausePlayer"`
+		Paused      bool   `json:"paused"`
+		PausePlayer string `json:"pausePlayer"`
 	}
 	s.Emit("pause", &PauseMessage{
-		Pause:  g.Paused,
-		Player: g.PausePlayer,
+		Paused:      g.Paused,
+		PausePlayer: g.Players[g.PausePlayer].Name,
 	})
 }
 

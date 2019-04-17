@@ -317,13 +317,17 @@ exports.setPause = () => {
             globals.layers.UI.batchDraw();
         }
 
-        globals.elements.stageFade.setOpacity(0.7);
+        globals.elements.stageFade.setOpacity(0.8);
         globals.elements.stageFade.show();
         globals.elements.stageFade.getLayer().batchDraw();
 
         globals.elements.timer1.hide();
         globals.elements.timer2.hide();
         globals.elements.timer1.getLayer().batchDraw();
+
+        globals.elements.pauseArea.show();
+        globals.elements.pauseText.setText(`by: ${globals.pausePlayer}`);
+        globals.elements.pauseArea.getLayer().batchDraw();
     } else {
         globals.elements.stageFade.setOpacity(0.3);
         globals.elements.stageFade.hide();
@@ -332,5 +336,8 @@ exports.setPause = () => {
         globals.elements.timer1.setVisible(!globals.spectating);
         globals.elements.timer2.show();
         globals.elements.timer1.getLayer().batchDraw();
+
+        globals.elements.pauseArea.hide();
+        globals.elements.pauseArea.getLayer().batchDraw();
     }
 };
