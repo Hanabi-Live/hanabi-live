@@ -85,7 +85,7 @@ const COLOR = {
     PINK: new Color('Pink', 'I', '#ff69b4'),
 
     // Black combination variants
-    DARK_PINK: new Color('Dark Pink', 'I', '#b30059'),
+    DARK_PINK: new Color('Dark Pink', 'I', '#660033'),
     GRAY: new Color('Gray', 'A', '#555555'),
     CHOCOLATE: new Color('Chocolate', 'C', '#4d2800'),
 

@@ -293,8 +293,10 @@ class HanabiCard extends graphics.Group {
                 // Brown & chocolate suits are not touched by any rank clues,
                 // so if this is a negative rank clue, we cannot remove any rank pips from the card
             } else if (
-                this.possibleSuits.includes(constants.SUIT.PINK)
-                && positive
+                (
+                    this.possibleSuits.includes(constants.SUIT.PINK)
+                    || this.possibleSuits.includes(constants.SUIT.DARK_PINK)
+                ) && positive
             ) {
                 // Pink cards are touched by all ranks,
                 // so if this is a positive rank clue, we cannot remove any rank pips from the card
@@ -305,14 +307,14 @@ class HanabiCard extends graphics.Group {
                 );
             }
 
+            // Pink & dark pink are touched by all rank clues
             // Brown & chocolate suits are not touched by any rank clues
-            // Pink is touched by all rank clues
             // So we may be able to remove a suit pip
             if (positive) {
                 if (this.positiveRankClues.length >= 2) {
                     suitsRemoved = filterInPlace(
                         this.possibleSuits,
-                        suit => suit === constants.SUIT.PINK,
+                        suit => suit === constants.SUIT.PINK || constants.SUIT.DARK_PINK,
                     );
                 } else {
                     suitsRemoved = filterInPlace(
@@ -323,7 +325,7 @@ class HanabiCard extends graphics.Group {
             } else {
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
-                    suit => suit !== constants.SUIT.PINK,
+                    suit => suit !== constants.SUIT.PINK && suit !== constants.SUIT.DARK_PINK,
                 );
             }
         } else if (clue.type === constants.CLUE_TYPE.COLOR) {
@@ -370,9 +372,10 @@ class HanabiCard extends graphics.Group {
             }
 
             if (
-                suit === constants.SUIT.BROWN
+                suit === constants.SUIT.PINK
+                || suit === constants.SUIT.DARK_PINK
+                || suit === constants.SUIT.BROWN
                 || suit === constants.SUIT.CHOCOLATE
-                || suit === constants.SUIT.PINK
             ) {
                 // Mark to retroactively remove rank pips when we return from this function
                 this.specialRankSuitRemoved = true;
