@@ -77,6 +77,18 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 * Color clues touch no suits. (Empty color clues are always allowed.)
 
+### Number Blind
+
+* Rank clues touch no suits. (Empty rank clues are always allowed.)
+
+### Color Mute
+
+* Color clues cannot be given.
+
+### Number Mute
+
+* Rank clues cannot be given.
+
 ### Ambiguous
 
 * Two suits share a color. There is no way to disambiguate between them with color clues.
@@ -155,6 +167,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Rainbow (5 Suits)
   * Rainbow (4 Suits)
   * Rainbow (3 Suits)
+* Pink
+  * Pink (6 Suits)
+  * Pink (5 Suits)
+  * Pink (4 Suits)
+  * Pink (3 Suits)
 * White
   * White (6 Suits)
   * White (5 Suits)
@@ -221,6 +238,21 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Color Blind (5 Suits)
   * Color Blind (4 Suits)
   * Color Blind (3 Suits)
+* Number Blind
+  * Number Blind (6 Suits)
+  * Number Blind (5 Suits)
+  * Number Blind (4 Suits)
+  * Number Blind (3 Suits)
+* Color Mute
+  * Color Mute (6 Suits)
+  * Color Mute (5 Suits)
+  * Color Mute (4 Suits)
+  * Color Mute (3 Suits)
+* Number Mute
+  * Number Mute (6 Suits)
+  * Number Mute (5 Suits)
+  * Number Mute (4 Suits)
+  * Number Mute (3 Suits)
 * Ambiguous
   * Ambiguous (6 Suits)
   * Ambiguous (4 Suits)

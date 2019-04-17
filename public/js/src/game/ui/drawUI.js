@@ -1484,7 +1484,9 @@ const drawClueArea = () => {
     // Rank buttons / number buttons
     globals.elements.rankClueButtons = [];
     let numRanks = 5;
-    if (globals.variant.name.startsWith('Multi-Fives')) {
+    if (globals.variant.name.startsWith('Number Mute')) {
+        numRanks = 0;
+    } else if (globals.variant.name.startsWith('Multi-Fives')) {
         numRanks = 4;
     }
     let totalRankWidth = buttonW * numRanks;

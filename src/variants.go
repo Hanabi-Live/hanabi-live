@@ -180,6 +180,7 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		if variants[variant].Suits[card.Suit].Name == "Pink" {
 			return true
 		} else if strings.HasPrefix(variant, "Number Blind") ||
+			strings.HasPrefix(variant, "Number Mute") ||
 			variants[variant].Suits[card.Suit].Name == "Brown" ||
 			variants[variant].Suits[card.Suit].Name == "Chocolate" {
 
@@ -187,6 +188,9 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		}
 		return card.Rank == clue.Value || (strings.HasPrefix(variant, "Multi-Fives") && card.Rank == 5)
 	} else if clue.Type == clueTypeColor {
+		if strings.HasPrefix(variant, "Color Mute") {
+			return false
+		}
 		return isCluedBy(variants[variant].Suits[card.Suit].ColorsTouchedBy, variants[variant].Clues[clue.Value])
 	}
 

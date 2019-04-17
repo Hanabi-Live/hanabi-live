@@ -1503,6 +1503,96 @@ exports.VARIANTS = {
         true, // This is the final variant in this section
     ),
 
+    // Color Mute
+    'Color Mute (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PURPLE,
+            SUIT.TEAL,
+        ],
+        [],
+        false,
+    ),
+    'Color Mute (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PURPLE,
+        ],
+        [],
+        false,
+    ),
+    'Color Mute (4 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+        ],
+        [],
+        false,
+    ),
+    'Color Mute (3 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+        ],
+        [],
+        false,
+        true, // This is the final variant in this section
+    ),
+
+    // Number Mute
+    'Number Mute (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PURPLE,
+            SUIT.TEAL,
+        ],
+        baseColorsPlusTeal,
+        false,
+    ),
+    'Number Mute (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PURPLE,
+        ],
+        baseColors,
+        false,
+    ),
+    'Number Mute (4 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+        ],
+        baseColors4,
+        false,
+    ),
+    'Number Mute (3 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+        ],
+        baseColors3,
+        false,
+        true, // This is the final variant in this section
+    ),
+
     // Ambiguous
     'Ambiguous (6 Suits)': new Variant(
         [

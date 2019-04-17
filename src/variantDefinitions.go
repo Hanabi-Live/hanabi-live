@@ -465,6 +465,58 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
 		},
 
+		// Color Mute
+		Variant{
+			Name:  "Color Mute (6 Suits)",
+			ID:    110,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, TealSuit},
+			Clues: noColorClues,
+		},
+		Variant{
+			Name:  "Color Mute (5 Suits)",
+			ID:    111,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
+			Clues: noColorClues,
+		},
+		Variant{
+			Name:  "Color Mute (4 Suits)",
+			ID:    112,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit},
+			Clues: noColorClues,
+		},
+		Variant{
+			Name:  "Color Mute (3 Suits)",
+			ID:    113,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit},
+			Clues: noColorClues,
+		},
+
+		// Number Mute
+		Variant{
+			Name:  "Number Mute (6 Suits)",
+			ID:    114,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, TealSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue},
+		},
+		Variant{
+			Name:  "Number Mute (5 Suits)",
+			ID:    115,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue},
+		},
+		Variant{
+			Name:  "Number Mute (4 Suits)",
+			ID:    116,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue},
+		},
+		Variant{
+			Name:  "Number Mute (3 Suits)",
+			ID:    117,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
+		},
+
 		// Ambiguous
 		Variant{
 			Name:  "Ambiguous (6 Suits)",
