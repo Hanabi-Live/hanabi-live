@@ -291,6 +291,16 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	progress := float64(g.Score) / float64(g.MaxScore) * 100 // In percent
 	g.Progress = int(math.Round(progress))                   // Round it to the nearest integer
 
+	// In variants, playing a card has the potential to reduce the maximum score
+	newMaxScore := g.GetMaxScore()
+	if newMaxScore < g.MaxScore {
+		// Decrease the maximum score possible for this game
+		g.MaxScore = newMaxScore
+
+		// Play a sad sound
+		g.Sound = "sad"
+	}
+
 	// This is not a "double discard" situation, since the card successfully played
 	return false
 }
