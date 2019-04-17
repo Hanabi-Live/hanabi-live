@@ -52,12 +52,23 @@ var (
 	RedClue    = ColorClue{Name: "Red"}
 	PurpleClue = ColorClue{Name: "Purple"}
 	TealClue   = ColorClue{Name: "Teal"}
-	BrownClue  = ColorClue{Name: "Brown"}
 	BlackClue  = ColorClue{Name: "Black"}
+	BrownClue  = ColorClue{Name: "Brown"}
+	PinkClue   = ColorClue{Name: "Pink"}
 
 	// Helpers used for some variants
-	allColorClues = []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, TealClue, BlackClue, BrownClue}
-	noColorClues  = []ColorClue{}
+	allColorClues = []ColorClue{
+		BlueClue,
+		GreenClue,
+		YellowClue,
+		RedClue,
+		PurpleClue,
+		TealClue,
+		BlackClue,
+		BrownClue,
+		PinkClue,
+	}
+	noColorClues = []ColorClue{}
 )
 
 // Suits
@@ -74,6 +85,7 @@ var (
 	TealSuit        = NewSuit("Teal", []ColorClue{TealClue})
 	BlackSuit       = NewSuit1oE("Black", []ColorClue{BlackClue})
 	RainbowSuit     = NewSuit("Rainbow", allColorClues)
+	PinkSuit        = NewSuit("Pink", []ColorClue{PinkClue})
 	WhiteSuit       = NewSuit("White", noColorClues)
 	BrownSuit       = NewSuit("Brown", []ColorClue{BrownClue})
 	DarkRainbowSuit = NewSuit1oE("Rainbow", allColorClues)
@@ -165,7 +177,9 @@ func variantsInit() {
 // but it will the "Dual-Color" variant
 func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 	if clue.Type == clueTypeRank {
-		if strings.HasPrefix(variant, "Number Blind") ||
+		if variants[variant].Suits[card.Suit].Name == "Pink" {
+			return true
+		} else if strings.HasPrefix(variant, "Number Blind") ||
 			variants[variant].Suits[card.Suit].Name == "Brown" ||
 			variants[variant].Suits[card.Suit].Name == "Chocolate" {
 

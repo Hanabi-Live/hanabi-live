@@ -69,6 +69,32 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue},
 		},
 
+		// Pink
+		Variant{
+			Name:  "Pink (6 Suits)",
+			ID:    106,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, PinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, PinkClue},
+		},
+		Variant{
+			Name:  "Pink (5 Suits)",
+			ID:    107,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue},
+		},
+		Variant{
+			Name:  "Pink (4 Suits)",
+			ID:    108,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, PinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, PinkClue},
+		},
+		Variant{
+			Name:  "Pink (3 Suits)",
+			ID:    109,
+			Suits: []Suit{BlueSuit, GreenSuit, PinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, PinkClue},
+		},
+
 		// White
 		Variant{
 			Name:  "White (6 Suits)",

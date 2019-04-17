@@ -47,7 +47,7 @@ commands.clue = (data) => {
             && !globals.variant.name.startsWith('Duck')
         ) {
             card.applyClue(clue, true);
-            card.checkBrownSuitRemoved();
+            card.checkSpecialRankSuitRemoved();
             card.setBareImage();
         }
     }
@@ -67,7 +67,7 @@ commands.clue = (data) => {
                 && !globals.variant.name.startsWith('Duck')
             ) {
                 card.applyClue(clue, false);
-                card.checkBrownSuitRemoved();
+                card.checkSpecialRankSuitRemoved();
                 card.setBareImage();
             }
         }

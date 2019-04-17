@@ -40,6 +40,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * All color clues will "touch" the rainbow suit.
 * (This is the third [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants).)
 
+### Pink
+
+* One of the suits is replaced with a pink suit.
+* All rank clues "touch" the pink suit.
+
 ### White
 
 * One of the suits is replaced with a white suit.

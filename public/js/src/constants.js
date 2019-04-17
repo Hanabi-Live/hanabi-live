@@ -82,6 +82,7 @@ const COLOR = {
     BLACK: new Color('Black', 'K', '#111111'),
     WHITE: new Color('White', 'W', '#d9d9d9'),
     BROWN: new Color('Brown', 'N', '#654321'),
+    PINK: new Color('Pink', 'P', '#ff69b4'),
     GRAY: new Color('Gray', 'A', '#555555'),
     CHOCOLATE: new Color('Chocolate', 'C', '#4d2800'),
 
@@ -116,6 +117,7 @@ const FILL_TYPE = {
     RADIAL_GRADIENT: 'radial_gradient',
 };
 
+// Base colors
 const baseColors = [
     COLOR.BLUE,
     COLOR.GREEN,
@@ -123,36 +125,54 @@ const baseColors = [
     COLOR.RED,
     COLOR.PURPLE,
 ];
-const baseColorsPlusTeal = $.extend([], baseColors);
-baseColorsPlusTeal.push(COLOR.TEAL);
-const baseColorsPlusBlack = $.extend([], baseColors);
-baseColorsPlusBlack.push(COLOR.BLACK);
-const baseColorsPlusBrown = $.extend([], baseColors);
-baseColorsPlusBrown.push(COLOR.BROWN);
 const baseColors4 = $.extend([], baseColors);
 baseColors4.pop();
-const baseColors4plusBlack = $.extend([], baseColors4);
-baseColors4plusBlack.push(COLOR.BLACK);
-const baseColors4plusBrown = $.extend([], baseColors4);
-baseColors4plusBrown.push(COLOR.BROWN);
-const baseColors4plusBlackBrown = $.extend([], baseColors4plusBlack);
-baseColors4plusBlackBrown.push(COLOR.BROWN);
 const baseColors3 = $.extend([], baseColors4);
 baseColors3.pop();
-const baseColors3plusBlack = $.extend([], baseColors3);
-baseColors3plusBlack.push(COLOR.BLACK);
-const baseColors3plusBrown = $.extend([], baseColors3);
-baseColors3plusBrown.push(COLOR.BROWN);
-const baseColors3plusBlackBrown = $.extend([], baseColors3plusBlack);
-baseColors3plusBlackBrown.push(COLOR.BROWN);
 const baseColors2 = $.extend([], baseColors3);
 baseColors2.pop();
-const baseColors2plusBrown = $.extend([], baseColors2);
-baseColors2plusBrown.push(COLOR.BROWN);
 const baseColors1 = $.extend([], baseColors2);
 baseColors1.pop();
+
+// Teal
+const baseColorsPlusTeal = $.extend([], baseColors);
+baseColorsPlusTeal.push(COLOR.TEAL);
+
+// Black
+const baseColorsPlusBlack = $.extend([], baseColors);
+baseColorsPlusBlack.push(COLOR.BLACK);
+const baseColors4plusBlack = $.extend([], baseColors4);
+baseColors4plusBlack.push(COLOR.BLACK);
+const baseColors3plusBlack = $.extend([], baseColors3);
+baseColors3plusBlack.push(COLOR.BLACK);
+
+// Brown
+const baseColorsPlusBrown = $.extend([], baseColors);
+baseColorsPlusBrown.push(COLOR.BROWN);
+const baseColors4plusBrown = $.extend([], baseColors4);
+baseColors4plusBrown.push(COLOR.BROWN);
+const baseColors3plusBrown = $.extend([], baseColors3);
+baseColors3plusBrown.push(COLOR.BROWN);
+const baseColors2plusBrown = $.extend([], baseColors2);
+baseColors2plusBrown.push(COLOR.BROWN);
 const baseColors1plusBrown = $.extend([], baseColors1);
 baseColors1plusBrown.push(COLOR.BROWN);
+
+// Black & Brown
+const baseColors4plusBlackBrown = $.extend([], baseColors4plusBlack);
+baseColors4plusBlackBrown.push(COLOR.BROWN);
+const baseColors3plusBlackBrown = $.extend([], baseColors3plusBlack);
+baseColors3plusBlackBrown.push(COLOR.BROWN);
+
+// Pink
+const baseColorsPlusPink = $.extend([], baseColors);
+baseColorsPlusPink.push(COLOR.PINK);
+const baseColors4plusPink = $.extend([], baseColors4);
+baseColors4plusPink.push(COLOR.PINK);
+const baseColors3plusPink = $.extend([], baseColors3);
+baseColors3plusPink.push(COLOR.PINK);
+const baseColors2plusPink = $.extend([], baseColors2);
+baseColors2plusPink.push(COLOR.PINK);
 
 // Specify between solid color and gradients,
 // along with additional args in the case of gradients
@@ -348,6 +368,13 @@ const SUIT = {
         baseColors,
         multiCardFillSpec,
         Object.values(COLOR),
+    ),
+    PINK: new Suit(
+        'Pink',
+        'P',
+        COLOR.PINK,
+        basicCardFillSpec,
+        [COLOR.PINK],
     ),
     GRAY: new Suit(
         'Gray',
@@ -752,6 +779,51 @@ exports.VARIANTS = {
             SUIT.RAINBOW,
         ],
         baseColors2,
+        false,
+        true, // This is the final variant in this section
+    ),
+
+    // Pink
+    'Pink (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PURPLE,
+            SUIT.PINK,
+        ],
+        baseColorsPlusPink,
+        false,
+    ),
+    'Pink (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PINK,
+        ],
+        baseColors4plusPink,
+        false,
+    ),
+    'Pink (4 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.PINK,
+        ],
+        baseColors3plusPink,
+        false,
+    ),
+    'Pink (3 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.PINK,
+        ],
+        baseColors2plusPink,
         false,
         true, // This is the final variant in this section
     ),
