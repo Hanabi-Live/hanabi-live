@@ -1516,6 +1516,7 @@ exports.VARIANTS = {
         ],
         baseColors3plusPinkBrown,
         false,
+        true, // This is the final variant in this section
     ),
 
     // Gray
