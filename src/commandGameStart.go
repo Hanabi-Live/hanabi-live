@@ -225,6 +225,13 @@ func commandGameStart(s *Session, d *CommandData) {
 		p.Notes = make([]string, len(g.Deck))
 	}
 
+	// Get a random player to start first (based on the game seed)
+	// (but skip doing this if we are playing a preset deal from a file,
+	// since the player that goes first is specified on the file line of the file)
+	if !preset {
+		g.ActivePlayer = rand.Intn(len(g.Players))
+	}
+
 	// Shuffle the order of the players
 	// (otherwise, the seat order would always correspond to the order that
 	// the players joined the game in)
@@ -237,13 +244,6 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Set the player indexes
 	for i, p := range g.Players {
 		p.Index = i
-	}
-
-	// Get a random player to start first (based on the game seed)
-	// (but skip doing this if we are playing a preset deal from a file,
-	// since the player that goes first is specified on the file line of the file)
-	if !preset {
-		g.ActivePlayer = rand.Intn(len(g.Players))
 	}
 
 	// Decide the random character assignments
