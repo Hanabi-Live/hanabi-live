@@ -69,7 +69,7 @@ class Color {
 }
 
 const COLOR = {
-    // Normal
+    // No variant
     BLUE: new Color('Blue', 'B', '#0044cc'),
     GREEN: new Color('Green', 'G', '#00cc00'),
     YELLOW: new Color('Yellow', 'Y', '#ccaa22'),
@@ -83,6 +83,9 @@ const COLOR = {
     WHITE: new Color('White', 'W', '#d9d9d9'),
     BROWN: new Color('Brown', 'N', '#654321'),
     PINK: new Color('Pink', 'I', '#ff69b4'),
+
+    // Black combination variants
+    DARK_PINK: new Color('Dark Pink', 'I', '#b30059'),
     GRAY: new Color('Gray', 'A', '#555555'),
     CHOCOLATE: new Color('Chocolate', 'C', '#4d2800'),
 
@@ -146,6 +149,24 @@ baseColors4plusBlack.push(COLOR.BLACK);
 const baseColors3plusBlack = $.extend([], baseColors3);
 baseColors3plusBlack.push(COLOR.BLACK);
 
+// Pink
+const baseColorsPlusPink = $.extend([], baseColors);
+baseColorsPlusPink.push(COLOR.PINK);
+const baseColors4plusPink = $.extend([], baseColors4);
+baseColors4plusPink.push(COLOR.PINK);
+const baseColors3plusPink = $.extend([], baseColors3);
+baseColors3plusPink.push(COLOR.PINK);
+const baseColors2plusPink = $.extend([], baseColors2);
+baseColors2plusPink.push(COLOR.PINK);
+const baseColors1plusPink = $.extend([], baseColors1);
+baseColors1plusPink.push(COLOR.PINK);
+
+// Black & Pink
+const baseColors4plusBlackPink = $.extend([], baseColors4plusBlack);
+baseColors4plusBlackPink.push(COLOR.PINK);
+const baseColors3plusBlackPink = $.extend([], baseColors3plusBlack);
+baseColors3plusBlackPink.push(COLOR.PINK);
+
 // Brown
 const baseColorsPlusBrown = $.extend([], baseColors);
 baseColorsPlusBrown.push(COLOR.BROWN);
@@ -164,15 +185,15 @@ baseColors4plusBlackBrown.push(COLOR.BROWN);
 const baseColors3plusBlackBrown = $.extend([], baseColors3plusBlack);
 baseColors3plusBlackBrown.push(COLOR.BROWN);
 
-// Pink
-const baseColorsPlusPink = $.extend([], baseColors);
-baseColorsPlusPink.push(COLOR.PINK);
-const baseColors4plusPink = $.extend([], baseColors4);
-baseColors4plusPink.push(COLOR.PINK);
-const baseColors3plusPink = $.extend([], baseColors3);
-baseColors3plusPink.push(COLOR.PINK);
-const baseColors2plusPink = $.extend([], baseColors2);
-baseColors2plusPink.push(COLOR.PINK);
+// Pink & Brown
+const baseColors4plusPinkBrown = $.extend([], baseColors4plusPink);
+baseColors4plusPinkBrown.push(COLOR.BROWN);
+const baseColors3plusPinkBrown = $.extend([], baseColors3plusPink);
+baseColors3plusPinkBrown.push(COLOR.BROWN);
+const baseColors2plusPinkBrown = $.extend([], baseColors2plusPink);
+baseColors2plusPinkBrown.push(COLOR.BROWN);
+const baseColors1plusPinkBrown = $.extend([], baseColors1plusPink);
+baseColors1plusPinkBrown.push(COLOR.BROWN);
 
 // Specify between solid color and gradients,
 // along with additional args in the case of gradients
@@ -376,14 +397,8 @@ const SUIT = {
         basicCardFillSpec,
         [COLOR.PINK],
     ),
-    GRAY: new Suit(
-        'Gray',
-        'A',
-        COLOR.GRAY,
-        basicCardFillSpec,
-        [COLOR.GRAY],
-        true, // This suit has one of each card
-    ),
+
+    // Black combination suits
     DARK_RAINBOW: new Suit(
         'Rainbow',
         'M',
@@ -396,6 +411,22 @@ const SUIT = {
         ],
         multiCardFillSpec,
         Object.values(COLOR),
+        true, // This suit has one of each card
+    ),
+    DARK_PINK: new Suit(
+        'Dark Pink',
+        'I',
+        COLOR.DARK_PINK,
+        basicCardFillSpec,
+        [COLOR.PINK],
+        true, // This suit has one of each card
+    ),
+    GRAY: new Suit(
+        'Gray',
+        'A',
+        COLOR.GRAY,
+        basicCardFillSpec,
+        [COLOR.GRAY],
         true, // This suit has one of each card
     ),
     CHOCOLATE: new Suit(
@@ -944,6 +975,32 @@ exports.VARIANTS = {
         true, // This is the final variant in this section
     ),
 
+    // Black & Pink
+    'Black & Pink (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.BLACK,
+            SUIT.PINK,
+        ],
+        baseColors4plusBlackPink,
+        false,
+    ),
+    'Black & Pink (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.BLACK,
+            SUIT.PINK,
+        ],
+        baseColors3plusBlackPink,
+        false,
+        true, // This is the final variant in this section
+    ),
+
     // Black & White
     'Black & White (6 Suits)': new Variant(
         [
@@ -992,6 +1049,42 @@ exports.VARIANTS = {
             SUIT.BROWN,
         ],
         baseColors3plusBlackBrown,
+        false,
+        true, // This is the final variant in this section
+    ),
+
+    // Rainbow & Pink
+    'Rainbow & Pink (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.RAINBOW,
+            SUIT.PINK,
+        ],
+        baseColors4plusPink,
+        false,
+    ),
+    'Rainbow & Pink (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RAINBOW,
+            SUIT.PINK,
+        ],
+        baseColors3plusPink,
+        false,
+    ),
+    'Rainbow & Pink (4 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.RAINBOW,
+            SUIT.PINK,
+        ],
+        baseColors2plusPink,
         false,
         true, // This is the final variant in this section
     ),
@@ -1077,6 +1170,96 @@ exports.VARIANTS = {
         true, // This is the final variant in this section
     ),
 
+    // Pink & White
+    'Pink & White (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PINK,
+            SUIT.WHITE,
+        ],
+        baseColors4plusPink,
+        false,
+    ),
+    'Pink & White (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.PINK,
+            SUIT.WHITE,
+        ],
+        baseColors3plusPink,
+        false,
+    ),
+    'Pink & White (4 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.PINK,
+            SUIT.WHITE,
+        ],
+        baseColors2plusPink,
+        false,
+    ),
+    'Pink & White (3 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.PINK,
+            SUIT.WHITE,
+        ],
+        baseColors1plusPink,
+        false,
+        true, // This is the final variant in this section
+    ),
+
+    // Pink & Brown
+    'Pink & Brown (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PINK,
+            SUIT.BROWN,
+        ],
+        baseColors4plusPinkBrown,
+        false,
+    ),
+    'Pink & Brown (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.PINK,
+            SUIT.BROWN,
+        ],
+        baseColors3plusPinkBrown,
+        false,
+    ),
+    'Pink & Brown (4 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.PINK,
+            SUIT.BROWN,
+        ],
+        baseColors2plusPinkBrown,
+        false,
+    ),
+    'Pink & Brown (3 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.PINK,
+            SUIT.BROWN,
+        ],
+        baseColors1plusPinkBrown,
+        false,
+        true, // This is the final variant in this section
+    ),
+
     // White & Brown
     'White & Brown (6 Suits)': new Variant(
         [
@@ -1158,6 +1341,29 @@ exports.VARIANTS = {
         baseColors4plusBlack,
         false,
     ),
+    'Pink & Dark Rainbow (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PINK,
+            SUIT.DARK_RAINBOW,
+        ],
+        baseColors4plusPink,
+        false,
+    ),
+    'Pink & Dark Rainbow (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.PINK,
+            SUIT.DARK_RAINBOW,
+        ],
+        baseColors3plusPink,
+        false,
+    ),
     'White & Dark Rainbow (6 Suits)': new Variant(
         [
             SUIT.BLUE,
@@ -1204,6 +1410,112 @@ exports.VARIANTS = {
         baseColors3plusBrown,
         false,
         true, // This is the final variant in this section
+    ),
+
+    // Dark Pink
+    'Dark Pink (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PURPLE,
+            SUIT.DARK_PINK,
+        ],
+        baseColorsPlusPink,
+        false,
+    ),
+    'Dark Pink (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.DARK_PINK,
+        ],
+        baseColors4plusPink,
+        false,
+    ),
+    'Black & Dark Pink (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.BLACK,
+            SUIT.DARK_PINK,
+        ],
+        baseColors4plusBlackPink,
+        false,
+    ),
+    'Rainbow & Dark Pink (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.RAINBOW,
+            SUIT.DARK_PINK,
+        ],
+        baseColors4plusPink,
+        false,
+    ),
+    'Rainbow & Dark Pink (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RAINBOW,
+            SUIT.DARK_PINK,
+        ],
+        baseColors3plusPink,
+        false,
+    ),
+    'White & Dark Pink (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.WHITE,
+            SUIT.DARK_PINK,
+        ],
+        baseColors4plusPink,
+        false,
+    ),
+    'White & Dark Pink (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.WHITE,
+            SUIT.DARK_PINK,
+        ],
+        baseColors3plusPink,
+        false,
+    ),
+    'Brown & Dark Pink (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.BROWN,
+            SUIT.DARK_PINK,
+        ],
+        baseColors4plusPinkBrown,
+        false,
+    ),
+    'Brown & Dark Pink (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.BROWN,
+            SUIT.DARK_PINK,
+        ],
+        baseColors3plusPinkBrown,
+        false,
     ),
 
     // Gray
@@ -1263,6 +1575,29 @@ exports.VARIANTS = {
             SUIT.GRAY,
         ],
         baseColors3,
+        false,
+    ),
+    'Pink & Gray (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PINK,
+            SUIT.GRAY,
+        ],
+        baseColors4plusPink,
+        false,
+    ),
+    'Pink & Gray (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.PINK,
+            SUIT.GRAY,
+        ],
+        baseColors3plusPink,
         false,
     ),
     'Brown & Gray (6 Suits)': new Variant(
@@ -1349,6 +1684,29 @@ exports.VARIANTS = {
         baseColors3plusBrown,
         false,
     ),
+    'Pink & Chocolate (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.PINK,
+            SUIT.CHOCOLATE,
+        ],
+        baseColors4plusPinkBrown,
+        false,
+    ),
+    'Pink & Chocolate (5 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.PINK,
+            SUIT.CHOCOLATE,
+        ],
+        baseColors3plusPinkBrown,
+        false,
+    ),
     'White & Chocolate (6 Suits)': new Variant(
         [
             SUIT.BLUE,
@@ -1375,6 +1733,18 @@ exports.VARIANTS = {
     ),
 
     // Dark Mixes
+    'Dark Rainbow & Dark Pink (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.DARK_RAINBOW,
+            SUIT.DARK_PINK,
+        ],
+        baseColors4plusPink,
+        false,
+    ),
     'Dark Rainbow & Gray (6 Suits)': new Variant(
         [
             SUIT.BLUE,
@@ -1397,6 +1767,30 @@ exports.VARIANTS = {
             SUIT.CHOCOLATE,
         ],
         baseColors4plusBrown,
+        false,
+    ),
+    'Dark Pink & Gray (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.DARK_PINK,
+            SUIT.GRAY,
+        ],
+        baseColors4plusPink,
+        false,
+    ),
+    'Dark Pink & Chocolate (6 Suits)': new Variant(
+        [
+            SUIT.BLUE,
+            SUIT.GREEN,
+            SUIT.YELLOW,
+            SUIT.RED,
+            SUIT.DARK_PINK,
+            SUIT.CHOCOLATE,
+        ],
+        baseColors4plusPinkBrown,
         false,
     ),
     'Gray & Chocolate (6 Suits)': new Variant(

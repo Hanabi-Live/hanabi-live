@@ -55,11 +55,17 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * One of the suits is replaced with a brown suit.
 * No rank clues "touch" the brown suit.
 
-### Dark Rainbow (Rainbow + Black)
+### Dark Rainbow (Black + Rainbow)
 
 * One of the suits is replaced with a dark rainbow suit.
 * All color clues will "touch" the dark rainbow suit.
 * There is only one of each dark rainbow card in the deck, which means that every dark rainbow card is "critical".
+
+### Dark Pink (Black + Pink)
+
+* One of the suits is replaced with a dark pink suit.
+* All rank clues will "touch" the dark pink suit.
+* There is only one of each dark pink card in the deck, which means that every dark pink card is "critical".
 
 ### Gray (Black + White)
 
@@ -185,12 +191,19 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * Black & Rainbow
   * Black & Rainbow (6 Suits)
   * Black & Rainbow (5 Suits)
+* Black & Pink
+  * Black & Pink (6 Suits)
+  * Black & Pink (5 Suits)
 * Black & White
   * Black & White (6 Suits)
   * Black & White (5 Suits)
 * Black & Brown
   * Black & Brown (6 Suits)
   * Black & Brown (5 Suits)
+* Rainbow & Pink
+  * Rainbow & Pink (6 Suits)
+  * Rainbow & Pink (5 Suits)
+  * Rainbow & Pink (4 Suits)
 * Rainbow & White
   * Rainbow & White (6 Suits)
   * Rainbow & White (5 Suits)

@@ -74,7 +74,7 @@ var (
 // Suits
 // (can use "allColorClues" or "noColorClues" as the second argument for brevity)
 var (
-	// The base game
+	// No variant
 	BlueSuit   = NewSuit("Blue", []ColorClue{BlueClue})
 	GreenSuit  = NewSuit("Green", []ColorClue{GreenClue})
 	YellowSuit = NewSuit("Yellow", []ColorClue{YellowClue})
@@ -82,13 +82,16 @@ var (
 	PurpleSuit = NewSuit("Purple", []ColorClue{PurpleClue})
 
 	// Basic variants
-	TealSuit        = NewSuit("Teal", []ColorClue{TealClue})
-	BlackSuit       = NewSuit1oE("Black", []ColorClue{BlackClue})
-	RainbowSuit     = NewSuit("Rainbow", allColorClues)
-	PinkSuit        = NewSuit("Pink", []ColorClue{PinkClue})
-	WhiteSuit       = NewSuit("White", noColorClues)
-	BrownSuit       = NewSuit("Brown", []ColorClue{BrownClue})
-	DarkRainbowSuit = NewSuit1oE("Rainbow", allColorClues)
+	TealSuit    = NewSuit("Teal", []ColorClue{TealClue})
+	BlackSuit   = NewSuit1oE("Black", []ColorClue{BlackClue})
+	RainbowSuit = NewSuit("Rainbow", allColorClues)
+	PinkSuit    = NewSuit("Pink", []ColorClue{PinkClue})
+	WhiteSuit   = NewSuit("White", noColorClues)
+	BrownSuit   = NewSuit("Brown", []ColorClue{BrownClue})
+
+	// Black combination variants
+	DarkRainbowSuit = NewSuit1oE("Dark Rainbow", allColorClues)
+	DarkPinkSuit    = NewSuit1oE("Dark Pink", []ColorClue{PinkClue})
 	GraySuit        = NewSuit1oE("Gray", noColorClues)
 	ChocolateSuit   = NewSuit1oE("Chocolate", []ColorClue{BrownClue})
 

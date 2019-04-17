@@ -158,7 +158,21 @@ var (
 			Name:  "Black & Rainbow (5 Suits)",
 			ID:    66,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, BlackSuit, RainbowSuit},
-			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, BlackClue},
+		},
+
+		// Black & Pink
+		Variant{
+			Name:  "Black & Pink (6 Suits)",
+			ID:    118,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BlackSuit, PinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue, PinkClue},
+		},
+		Variant{
+			Name:  "Black & Pink (5 Suits)",
+			ID:    119,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, BlackSuit, PinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, BlackClue, PinkClue},
 		},
 
 		// Black & White
@@ -187,6 +201,26 @@ var (
 			ID:    74,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, BlackSuit, BrownSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, BlackClue, BrownClue},
+		},
+
+		// Rainbow & Pink
+		Variant{
+			Name:  "Rainbow & Pink (6 Suits)",
+			ID:    120,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, RainbowSuit, PinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue},
+		},
+		Variant{
+			Name:  "Rainbow & Pink (5 Suits)",
+			ID:    121,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RainbowSuit, PinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, PinkClue},
+		},
+		Variant{
+			Name:  "Rainbow & Pink (4 Suits)",
+			ID:    122,
+			Suits: []Suit{BlueSuit, GreenSuit, RainbowSuit, PinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, PinkClue},
 		},
 
 		// Rainbow & White
@@ -235,6 +269,58 @@ var (
 			Clues: []ColorClue{BlueClue, BrownClue},
 		},
 
+		// Pink & White
+		Variant{
+			Name:  "Pink & White (6 Suits)",
+			ID:    123,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PinkSuit, WhiteSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue},
+		},
+		Variant{
+			Name:  "Pink & White (5 Suits)",
+			ID:    124,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, PinkSuit, WhiteSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, PinkClue},
+		},
+		Variant{
+			Name:  "Pink & White (4 Suits)",
+			ID:    125,
+			Suits: []Suit{BlueSuit, GreenSuit, PinkSuit, WhiteSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, PinkClue},
+		},
+		Variant{
+			Name:  "Pink & White (3 Suits)",
+			ID:    126,
+			Suits: []Suit{BlueSuit, PinkSuit, WhiteSuit},
+			Clues: []ColorClue{BlueClue, PinkClue},
+		},
+
+		// Pink & Brown
+		Variant{
+			Name:  "Pink & Brown (6 Suits)",
+			ID:    127,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PinkSuit, BrownSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue, BrownClue},
+		},
+		Variant{
+			Name:  "Pink & Brown (5 Suits)",
+			ID:    128,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, PinkSuit, BrownSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, PinkClue, BrownClue},
+		},
+		Variant{
+			Name:  "Pink & Brown (4 Suits)",
+			ID:    129,
+			Suits: []Suit{BlueSuit, GreenSuit, PinkSuit, BrownSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, PinkClue, BrownClue},
+		},
+		Variant{
+			Name:  "Pink & Brown (3 Suits)",
+			ID:    130,
+			Suits: []Suit{BlueSuit, PinkSuit, BrownSuit},
+			Clues: []ColorClue{BlueClue, PinkClue, BrownClue},
+		},
+
 		// White & Brown
 		Variant{
 			Name:  "White & Brown (6 Suits)",
@@ -281,6 +367,18 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue},
 		},
 		Variant{
+			Name:  "Pink & Dark Rainbow (6 Suits)",
+			ID:    131,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PinkSuit, DarkRainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue},
+		},
+		Variant{
+			Name:  "Pink & Dark Rainbow (5 Suits)",
+			ID:    132,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, PinkSuit, DarkRainbowSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, PinkClue},
+		},
+		Variant{
 			Name:  "White & Dark Rainbow (6 Suits)",
 			ID:    83,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit, DarkRainbowSuit},
@@ -303,6 +401,62 @@ var (
 			ID:    86,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, BrownSuit, DarkRainbowSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, BrownClue},
+		},
+
+		// Dark Pink
+		Variant{
+			Name:  "Dark Pink (6 Suits)",
+			ID:    137,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PurpleSuit, DarkPinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PurpleClue, PinkClue},
+		},
+		Variant{
+			Name:  "Dark Pink (5 Suits)",
+			ID:    138,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, DarkPinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue},
+		},
+		Variant{
+			Name:  "Black & Dark Pink (6 Suits)",
+			ID:    139,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BlackSuit, DarkPinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BlackClue, PinkClue},
+		},
+		Variant{
+			Name:  "Rainbow & Dark Pink (6 Suits)",
+			ID:    140,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, RainbowSuit, DarkPinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue},
+		},
+		Variant{
+			Name:  "Rainbow & Dark Pink (5 Suits)",
+			ID:    141,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RainbowSuit, DarkPinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, PinkClue},
+		},
+		Variant{
+			Name:  "White & Dark Pink (6 Suits)",
+			ID:    142,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit, DarkPinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue},
+		},
+		Variant{
+			Name:  "White & Dark Pink (5 Suits)",
+			ID:    143,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, WhiteSuit, DarkPinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, PinkClue},
+		},
+		Variant{
+			Name:  "Brown & Dark Pink (6 Suits)",
+			ID:    144,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, BrownSuit, DarkPinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue, BrownClue},
+		},
+		Variant{
+			Name:  "Brown & Dark Pink (5 Suits)",
+			ID:    145,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, BrownSuit, DarkPinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, PinkClue, BrownClue},
 		},
 
 		// Gray
@@ -335,6 +489,18 @@ var (
 			ID:    68,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RainbowSuit, GraySuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue},
+		},
+		Variant{
+			Name:  "Pink & Gray (6 Suits)",
+			ID:    133,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PinkSuit, GraySuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue},
+		},
+		Variant{
+			Name:  "Pink & Gray (5 Suits)",
+			ID:    134,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, PinkSuit, GraySuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, PinkClue},
 		},
 		Variant{
 			Name:  "Brown & Gray (6 Suits)",
@@ -381,6 +547,18 @@ var (
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, BrownClue},
 		},
 		Variant{
+			Name:  "Pink & Chocolate (6 Suits)",
+			ID:    135,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, PinkSuit, ChocolateSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue, BrownClue},
+		},
+		Variant{
+			Name:  "Pink & Chocolate (5 Suits)",
+			ID:    136,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, PinkSuit, ChocolateSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, PinkClue, BrownClue},
+		},
+		Variant{
 			Name:  "White & Chocolate (6 Suits)",
 			ID:    94,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, WhiteSuit, ChocolateSuit},
@@ -395,6 +573,12 @@ var (
 
 		// Dark Mixes
 		Variant{
+			Name:  "Dark Rainbow & Dark Pink (6 Suits)",
+			ID:    146,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, DarkRainbowSuit, DarkPinkSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue},
+		},
+		Variant{
 			Name:  "Dark Rainbow & Gray (6 Suits)",
 			ID:    62,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, DarkRainbowSuit, GraySuit},
@@ -405,6 +589,18 @@ var (
 			ID:    96,
 			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, DarkRainbowSuit, ChocolateSuit},
 			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, BrownClue},
+		},
+		Variant{
+			Name:  "Dark Pink & Gray (6 Suits)",
+			ID:    147,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, DarkPinkSuit, GraySuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue},
+		},
+		Variant{
+			Name:  "Dark Pink & Chocolate (6 Suits)",
+			ID:    148,
+			Suits: []Suit{BlueSuit, GreenSuit, YellowSuit, RedSuit, DarkPinkSuit, ChocolateSuit},
+			Clues: []ColorClue{BlueClue, GreenClue, YellowClue, RedClue, PinkClue, BrownClue},
 		},
 		Variant{
 			Name:  "Gray & Chocolate (6 Suits)",
