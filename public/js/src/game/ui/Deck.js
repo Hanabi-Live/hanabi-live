@@ -21,7 +21,7 @@ class Deck extends graphics.Group {
             image: globals.cardImages['deck-back'],
         });
         this.add(this.cardBack);
-        this.cardBack.on('dragend.play', this.dragendPlay);
+        this.cardBack.on('dragend', this.dragEnd);
 
         this.numLeftText = new graphics.Text({
             fill: 'white',
@@ -90,7 +90,7 @@ class Deck extends graphics.Group {
         this.numLeftText.setY(this.numLeftText.getY() + nudgeAmount);
     }
 
-    dragendPlay() {
+    dragEnd() {
         const pos = this.getAbsolutePosition();
 
         pos.x += this.getWidth() * this.getScaleX() / 2;

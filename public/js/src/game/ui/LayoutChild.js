@@ -77,10 +77,16 @@ class LayoutChild extends graphics.Group {
         }
 
         this.setDraggable(true);
-        this.on('dragend.play', this.dragendPlay);
+        this.on('dragend', this.dragEnd);
+        this.on('dragstart', () => {
+            card.dragging = true;
+        });
     }
 
-    dragendPlay() {
+    dragEnd() {
+        const card = this.children[0];
+        card.dragging = false;
+
         const pos = this.getAbsolutePosition();
         pos.x += this.getWidth() * this.getScaleX() / 2;
         pos.y += this.getHeight() * this.getScaleY() / 2;
@@ -95,7 +101,6 @@ class LayoutChild extends graphics.Group {
         // Before we play a card,
         // do a check to ensure that it is actually playable to prevent silly mistakes from players
         // (but disable this in speedruns)
-        const card = this.children[0];
         if (
             draggedTo === 'playArea'
             && !globals.speedrun
