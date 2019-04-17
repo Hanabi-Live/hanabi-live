@@ -30,6 +30,9 @@ turn_blind4:
 - Keys: m, >, a, f, q
 - Notes: G, B, D, G, G
 
+turn_surprise:
+- Keys v, n, <, m
+
 finished_success:
 - Keys: m, >, a, f, a, >, m
 - Notes: G, B, D, G, D, B, G

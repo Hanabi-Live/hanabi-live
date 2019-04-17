@@ -195,7 +195,8 @@ module.exports = () => {
     globals.postAnimationLayout = null;
     globals.lastAction = null; // Used when rebuilding the game state
     globals.accidentalClueTimer = Date.now();
-    globals.spectators = [];
     // Used to prevent giving an accidental clue after clicking the "Exit Replay" button
+    globals.surprise = false;
+    globals.spectators = [];
     globals.chatUnread = 0;
 };

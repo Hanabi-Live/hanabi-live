@@ -52,7 +52,7 @@ const set = (order, note, send = true) => {
 
     // Check to see if they wrote a note that implies that they know the exact identity of this card
     if (!note || globals.replay || globals.spectating) {
-        if (card.noteSuit) {
+        if (card.noteSuit !== null || card.noteRank !== null) {
             card.noteSuit = null;
             card.noteRank = null;
             card.setBareImage();
@@ -93,12 +93,12 @@ const set = (order, note, send = true) => {
                 break;
             }
         }
-        if (noteSuit) {
+        if (noteSuit !== null) {
             break;
         }
     }
-    if (!noteSuit) {
-        if (card.noteSuit) {
+    if (noteSuit === null) {
+        if (card.noteSuit !== null) {
             card.noteSuit = null;
             card.noteRank = null;
             card.setBareImage();

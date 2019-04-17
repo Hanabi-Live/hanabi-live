@@ -127,7 +127,13 @@ class HanabiCard extends graphics.Group {
             }
         } else {
             // If we are not in Empathy mode, then show the suit if it is known
-            suitToShow = learnedCard.suit || this.noteSuit || constants.SUIT.UNKNOWN;
+            suitToShow = learnedCard.suit;
+            if (suitToShow === null) {
+                suitToShow = this.noteSuit;
+            }
+            if (suitToShow === null) {
+                suitToShow = constants.SUIT.UNKNOWN;
+            }
         }
 
         // "Card-Unknown" is not created, so use "NoPip-Unknown"
@@ -149,7 +155,13 @@ class HanabiCard extends graphics.Group {
             }
         } else {
             // If we are not in Empathy mode, then show the rank if it is known
-            rankToShow = learnedCard.rank || this.noteRank || 6;
+            rankToShow = learnedCard.rank;
+            if (rankToShow === null) {
+                rankToShow = this.noteRank;
+            }
+            if (rankToShow === null) {
+                rankToShow = 6;
+            }
         }
 
         // Set the name
@@ -468,11 +480,16 @@ class HanabiCard extends graphics.Group {
         learnedCard.rank = rank;
         learnedCard.revealed = true;
 
-        // Redraw the card
-        if (this.noteSuit) {
+        // Detect if the player played a different card than what they thought it was
+        if (this.noteSuit !== null || this.noteRank !== null) {
+            if (this.noteSuit !== suit || this.noteRank !== rank) {
+                globals.surprise = true;
+            }
             this.noteSuit = null;
             this.noteRank = null;
         }
+
+        // Redraw the card
         this.setBareImage();
     }
 

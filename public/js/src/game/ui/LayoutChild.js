@@ -71,7 +71,7 @@ class LayoutChild extends graphics.Group {
             // that are being dragged by the replay leader
             if (!globals.hypothetical || !globals.amSharedReplayLeader) {
                 this.setDraggable(false);
-                this.off('dragend.play');
+                this.off('dragend');
                 return;
             }
         }
@@ -117,7 +117,7 @@ class LayoutChild extends graphics.Group {
 
         // We have to unregister the handler or else it will send multiple actions for one drag
         this.setDraggable(false);
-        this.off('dragend.play');
+        this.off('dragend');
 
         if (draggedTo === null) {
             // The card was dragged to an invalid location; tween it back to the hand

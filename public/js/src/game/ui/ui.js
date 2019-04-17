@@ -156,7 +156,7 @@ const stopAction = () => {
         const ourHand = globals.elements.playerHands[globals.playerUs];
         for (const child of ourHand.children) {
             // This is a LayoutChild
-            child.off('dragend.play');
+            child.off('dragend');
             child.setDraggable(false);
         }
     }
