@@ -39,7 +39,11 @@ const show = (element) => {
 
     const tooltip = $(`#tooltip-${element.tooltipName}`);
     const pos = element.getAbsolutePosition();
-    const tooltipX = element.getWidth() / 2 + pos.x;
+    let width = element.getWidth();
+    if (typeof element.getTextWidth === 'function') {
+        width = element.getTextWidth();
+    }
+    const tooltipX = pos.x + (width / 2);
     tooltip.css('left', tooltipX);
     tooltip.css('top', pos.y);
     tooltip.tooltipster('open');
