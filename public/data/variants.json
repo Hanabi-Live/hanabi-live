@@ -678,54 +678,64 @@
     "Ambiguous (6 Suits)": {
         "id": 8,
         "suits": ["Sky", "Navy", "Lime", "Forest", "Tomato", "Mahogany"],
-        "clueColors": ["Blue", "Green", "Red"]
+        "clueColors": ["Blue", "Green", "Red"],
+        "showSuitNames": true
     },
     "Ambiguous (4 Suits)": {
         "id": 30,
         "suits": ["Sky", "Navy", "Tomato", "Mahogany"],
-        "clueColors": ["Blue", "Red"]
+        "clueColors": ["Blue", "Red"],
+        "showSuitNames": true
     },
     "Ambiguous & White (5 Suits)": {
         "id": 31,
         "suits": ["Sky", "Navy", "Tomato", "Mahogany", "White"],
-        "clueColors": ["Blue", "Red"]
+        "clueColors": ["Blue", "Red"],
+        "showSuitNames": true
     },
     "Ambiguous & Rainbow (5 Suits)": {
         "id": 32,
         "suits": ["Sky", "Navy", "Tomato", "Mahogany", "Rainbow"],
-        "clueColors": ["Blue", "Red"]
+        "clueColors": ["Blue", "Red"],
+        "showSuitNames": true
     },
     "Very Ambiguous (6 Suits)": {
         "id": 9,
         "suits": ["Sky VA", "Berry", "Navy VA", "Tomato VA", "Ruby", "Mahogany VA"],
         "clueColors": ["Blue", "Red"],
+        "showSuitNames": true,
         "spacing": true
     },
 
     "Dual-Color (6 Suits)": {
         "id": 4,
         "suits": ["Green D", "Purple D", "Navy D", "Orange", "Tan", "Mahogany D"],
-        "clueColors": ["Blue", "Yellow", "Red", "Black"]
+        "clueColors": ["Blue", "Yellow", "Red", "Black"],
+        "showSuitNames": true
     },
     "Dual-Color (5 Suits)": {
         "id": 36,
         "suits": ["Teal D", "Lime D", "Orange", "Cardinal", "Indigo", "Mahogany D"],
-        "clueColors": ["Blue", "Yellow", "Red", "Black"]
+        "clueColors": ["Blue", "Yellow", "Red", "Black"],
+        "showSuitNames": true
     },
     "Dual-Color (3 Suits)": {
         "id": 37,
         "suits": ["Green D", "Purple D", "Orange"],
-        "clueColors": ["Blue", "Yellow", "Red"]
+        "clueColors": ["Blue", "Yellow", "Red"],
+        "showSuitNames": true
     },
     "Dual-Color & Rainbow (6 Suits)": {
         "id": 5,
         "suits": ["Teal D", "Lime D", "Orange", "Cardinal", "Indigo", "Mahogany D"],
-        "clueColors": ["Blue", "Yellow", "Red", "Black"]
+        "clueColors": ["Blue", "Yellow", "Red", "Black"],
+        "showSuitNames": true
     },
     "Dual-Color & Rainbow (4 Suits)": {
         "id": 38,
         "suits": ["Green D", "Purple D", "Orange", "Rainbow"],
         "clueColors": ["Blue", "Yellow", "Red"],
+        "showSuitNames": true,
         "spacing": true
     },
 
@@ -794,61 +804,71 @@
         "id": 40,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
         "ranks": [1, 2, 3, 4, 5, 7],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "showSuitNames": true
     },
     "Up or Down (5 Suits)": {
         "id": 24,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
         "ranks": [1, 2, 3, 4, 5, 7],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "showSuitNames": true
     },
     "Up or Down & Rainbow (6 Suits)": {
         "id": 25,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Rainbow"],
         "ranks": [1, 2, 3, 4, 5, 7],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "showSuitNames": true
     },
     "Up or Down & Rainbow (5 Suits)": {
         "id": 43,
         "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow"],
         "ranks": [1, 2, 3, 4, 5, 7],
-        "clueColors": ["Blue", "Green", "Yellow", "Red"]
+        "clueColors": ["Blue", "Green", "Yellow", "Red"],
+        "showSuitNames": true
     },
     "Up or Down & Pink (6 Suits)": {
         "id": 155,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Pink"],
         "ranks": [1, 2, 3, 4, 5, 7],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple", "Pink"]
+        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple", "Pink"],
+        "showSuitNames": true
     },
     "Up or Down & Pink (5 Suits)": {
         "id": 156,
         "suits": ["Blue", "Green", "Yellow", "Red", "Pink"],
         "ranks": [1, 2, 3, 4, 5, 7],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Pink"]
+        "clueColors": ["Blue", "Green", "Yellow", "Red", "Pink"],
+        "showSuitNames": true
     },
     "Up or Down & White (6 Suits)": {
         "id": 41,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "White"],
         "ranks": [1, 2, 3, 4, 5, 7],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "showSuitNames": true
     },
     "Up or Down & White (5 Suits)": {
         "id": 42,
         "suits": ["Blue", "Green", "Yellow", "Red", "White"],
         "ranks": [1, 2, 3, 4, 5, 7],
-        "clueColors": ["Blue", "Green", "Yellow", "Red"]
+        "clueColors": ["Blue", "Green", "Yellow", "Red"],
+        "showSuitNames": true
     },
     "Up or Down & Brown (6 Suits)": {
         "id": 157,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Brown"],
         "ranks": [1, 2, 3, 4, 5, 7],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple", "Brown"]
+        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple", "Brown"],
+        "showSuitNames": true
     },
     "Up or Down & Brown (5 Suits)": {
         "id": 158,
         "suits": ["Blue", "Green", "Yellow", "Red", "Brown"],
         "ranks": [1, 2, 3, 4, 5, 7],
         "clueColors": ["Blue", "Green", "Yellow", "Red", "Brown"],
+        "showSuitNames": true,
         "spacing": true
     },
 
@@ -899,7 +919,8 @@
     "Ambiguous Mix": {
         "id": 20,
         "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Black", "White"],
-        "clueColors": ["Blue", "Red", "Black"]
+        "clueColors": ["Blue", "Red", "Black"],
+        "showSuitNames": true
     },
     "Dual-Color Mix": {
         "id": 7,
