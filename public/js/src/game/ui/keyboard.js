@@ -130,8 +130,14 @@ const keydown = (event) => {
         return;
     }
 
-    // Escape = If in an in-game replay, exit back to the game
-    if (event.key === 'Escape' && !globals.replay) {
+    if (event.key === 'Escape') {
+        if (globals.replay) {
+            // Escape = If in a replay, exit back to the lobby
+            ui.backToLobby();
+            return;
+        }
+
+        // Escape = If in an in-game replay, exit back to the game
         replay.exit();
         return;
     }
