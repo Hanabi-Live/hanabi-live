@@ -103,6 +103,10 @@ commands.clue = (data) => {
         turn: data.turn,
     });
     globals.elements.clueLog.add(entry);
+
+    if (!globals.animateFast) {
+        globals.layers.card.batchDraw();
+    }
 };
 
 commands.discard = (data) => {

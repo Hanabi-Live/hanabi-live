@@ -48,7 +48,7 @@
         "fill": "multi",
         "fillColors": ["#4d88ff", "#4dff4d", "#e9d37c", "#ff1a1a", "#a64dff"]
     },
-    "Light Pink": { "abbreviation": "I", "clueColors": [], "clueRanks": "all", "fill": "ffcce6" },
+    "Light Pink": { "abbreviation": "I", "clueColors": [], "clueRanks": "all", "fill": "#ffcce6" },
 
     "Blue CB": { "name": "Blue", "clueColors": [] },
     "Green CB": { "name": "Green", "clueColors": [] },
