@@ -180,7 +180,11 @@ class HanabiCard extends graphics.Group {
         }
 
         // Show or hide the pips
-        if (globals.lobby.settings.realLifeMode) {
+        if (
+            globals.lobby.settings.realLifeMode
+            || globals.variant.name.startsWith('Cow & Pig')
+            || globals.variant.name.startsWith('Duck')
+        ) {
             this.suitPips.hide();
             this.rankPips.hide();
         } else {
