@@ -4,15 +4,15 @@
 */
 
 // Imports
-const globals = require('../globals');
 const constants = require('../constants');
+const globals = require('../globals');
 
 // Constants
 const {
     CARD_H,
     CARD_W,
     PHASER_DEMO_SCALE,
-    SUIT,
+    SUITS,
 } = constants;
 
 class HanabiCard extends Phaser.GameObjects.Container {
@@ -110,14 +110,14 @@ class HanabiCard extends Phaser.GameObjects.Container {
         const suit = (!this.showOnlyLearned && this.suit);
         const empathyPastSuitUncertain = this.showOnlyLearned && this.possibleSuits.length > 1;
 
-        let suitToShow = suit || learnedCard.suit || SUIT.UNKNOWN;
+        let suitToShow = suit || learnedCard.suit || SUITS.Unknown;
         if (empathyPastSuitUncertain) {
-            suitToShow = SUIT.UNKNOWN;
+            suitToShow = SUITS.Unknown;
         }
 
         // "Card-Unknown" is not created, so use "NoPip-Unknown"
         let prefix = 'Card';
-        if (suitToShow === SUIT.UNKNOWN) {
+        if (suitToShow === SUITS.Unknown) {
             prefix = 'NoPip';
         }
 

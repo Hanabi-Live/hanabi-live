@@ -5,12 +5,12 @@
 // Imports
 const arrows = require('./arrows');
 const constants = require('../../constants');
-const drawCards = require('./drawCards');
 const globals = require('./globals');
 const graphics = require('./graphics');
 const HanabiCardClick = require('./HanabiCardClick');
 const HanabiCardClickSpeedrun = require('./HanabiCardClickSpeedrun');
 const notes = require('./notes');
+const drawPips = require('./drawPip');
 
 exports.image = function image() {
     // Create the "bare" card image, which is the main card grahpic
@@ -83,8 +83,8 @@ exports.pips = function pips() {
             x: Math.floor(offsetBase * Math.cos(offsetTrig) + constants.CARD_W * 0.25),
             y: Math.floor(offsetBase * Math.sin(offsetTrig) + constants.CARD_W * 0.3),
         };
-        let fill = suit.fillColors.hexCode;
-        if (suit === constants.SUIT.RAINBOW || suit === constants.SUIT.DARK_RAINBOW) {
+        let { fill } = suit;
+        if (suit.fill === 'multi') {
             fill = undefined;
         }
 
@@ -97,7 +97,7 @@ exports.pips = function pips() {
             stroke: 'black',
             strokeWidth: 5,
             sceneFunc: (ctx) => {
-                drawCards.drawSuitShape(suit, i)(ctx);
+                drawPips(suit, i)(ctx);
                 ctx.closePath();
                 ctx.fillStrokeShape(suitPip);
             },
@@ -105,13 +105,13 @@ exports.pips = function pips() {
         });
 
         // Gradient numbers are magic
-        if (suit === constants.SUIT.RAINBOW || suit === constants.SUIT.DARK_RAINBOW) {
+        if (suit.fill === 'multi') {
             suitPip.fillRadialGradientColorStops([
-                0.3, suit.fillColors[0].hexCode,
-                0.425, suit.fillColors[1].hexCode,
-                0.65, suit.fillColors[2].hexCode,
-                0.875, suit.fillColors[3].hexCode,
-                1, suit.fillColors[4].hexCode,
+                0.3, suit.fillColors[0],
+                0.425, suit.fillColors[1],
+                0.65, suit.fillColors[2],
+                0.875, suit.fillColors[3],
+                1, suit.fillColors[4],
             ]);
             suitPip.fillRadialGradientStartPoint({
                 x: 75,
@@ -285,6 +285,9 @@ exports.empathy = function empathy() {
     const setEmpathyOnHand = (enabled) => {
         globals.activeHover = enabled ? this : null;
         const hand = this.parent.parent;
+        if (!hand || hand.children.length === 0) {
+            return;
+        }
         for (const layoutChild of hand.children) {
             const card = layoutChild.children[0];
             card.empathy = enabled;
@@ -406,8 +409,7 @@ const scaleCardImage = (context, name, width, height, am) => {
     let src = globals.cardImages[name];
 
     if (!src) {
-        console.error(`The image "${name}" was not generated.`);
-        return;
+        throw new Error(`The image "${name}" was not generated.`);
     }
 
     const dw = Math.sqrt(am.m[0] * am.m[0] + am.m[1] * am.m[1]) * width;

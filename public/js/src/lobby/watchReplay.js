@@ -29,8 +29,7 @@ const replaySourceChange = () => {
         $('#replay-id-row').hide();
         $('#replay-json-row').show();
     } else {
-        console.error('Invalid value for "replay-source".');
-        return;
+        throw new Error('Invalid value for "replay-source".');
     }
 
     // Redraw the tooltip so that the new elements will fit better
@@ -46,8 +45,7 @@ const submit = () => {
     } else if (sourceID === 'replay-source-json') {
         source = 'json';
     } else {
-        console.error('Invalid value for "replay-source".');
-        return;
+        throw new Error('Invalid value for "replay-source".');
     }
     localStorage.setItem('watchReplaySource', source);
 
@@ -100,8 +98,7 @@ const submit = () => {
     } else if (visibilityID === 'replay-visibility-shared') {
         visibility = 'shared';
     } else {
-        console.error('Invalid value for "replay-visibility".');
-        return;
+        throw new Error('Invalid value for "replay-visibility".');
     }
     localStorage.setItem('watchReplayVisibility', visibility);
 

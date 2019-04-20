@@ -1,0 +1,12 @@
+{
+    "Blue": { "fill": "#0044cc" },
+    "Green": { "fill": "#00cc00" },
+    "Yellow": { "fill": "#ccaa22" },
+    "Red": { "fill": "#aa0000" },
+    "Purple": { "fill": "#6600cc" },
+
+    "Teal": { "fill": "#00cccc" },
+    "Black": { "abbreviation": "K", "fill": "#111111" },
+    "Pink": { "abbreviation": "I", "fill": "#ff69b4" },
+    "Brown": { "abbreviation": "N", "fill": "#654321" }
+}

@@ -25,6 +25,7 @@ class HanabiCard extends graphics.Group {
         };
         super(config);
 
+        // Mark the object type (used by arrows to determine how to point to the object)
         this.type = 'HanabiCard';
 
         // Most class variables are defined below in the "refresh()" function
@@ -122,7 +123,7 @@ class HanabiCard extends graphics.Group {
             if (this.possibleSuits.length === 1 && this.isClued()) {
                 [suitToShow] = this.possibleSuits;
             } else {
-                suitToShow = constants.SUIT.UNKNOWN;
+                suitToShow = constants.SUITS.Unknown;
             }
         } else {
             // If we are not in Empathy mode, then show the suit if it is known
@@ -131,13 +132,13 @@ class HanabiCard extends graphics.Group {
                 suitToShow = this.noteSuit;
             }
             if (suitToShow === null) {
-                suitToShow = constants.SUIT.UNKNOWN;
+                suitToShow = constants.SUITS.Unknown;
             }
         }
 
         // "Card-Unknown" is not created, so use "NoPip-Unknown"
         let prefix = 'Card';
-        if (suitToShow === constants.SUIT.UNKNOWN) {
+        if (suitToShow === constants.SUITS.Unknown) {
             prefix = 'NoPip';
         }
 
@@ -171,7 +172,7 @@ class HanabiCard extends graphics.Group {
                 globals.lobby.settings.realLifeMode
                 || globals.variant.name.startsWith('Cow & Pig')
                 || globals.variant.name.startsWith('Duck')
-            ) && (suitToShow === constants.SUIT.UNKNOWN || rankToShow === 6)
+            ) && (suitToShow === constants.SUITS.Unknown || rankToShow === 6)
         ) {
             this.bareName = 'deck-back';
         } else {
@@ -183,7 +184,7 @@ class HanabiCard extends graphics.Group {
             this.suitPips.hide();
             this.rankPips.hide();
         } else {
-            this.suitPips.setVisible(suitToShow === constants.SUIT.UNKNOWN);
+            this.suitPips.setVisible(suitToShow === constants.SUITS.Unknown);
             this.rankPips.setVisible(rankToShow === 6);
         }
 
@@ -284,21 +285,11 @@ class HanabiCard extends graphics.Group {
                     this.possibleRanks,
                     rank => (rank === clueRank || rank === 5) === positive,
                 );
-            } else if (
-                (
-                    this.possibleSuits.includes(constants.SUIT.BROWN)
-                    || this.possibleSuits.includes(constants.SUIT.CHOCOLATE)
-                ) && !positive
-            ) {
-                // Brown & chocolate suits are not touched by any rank clues,
+            } else if (this.possibleSuits.some(suit => suit.clueRanks === 'none') && !positive) {
+                // Some suits are not touched by any ranks,
                 // so if this is a negative rank clue, we cannot remove any rank pips from the card
-            } else if (
-                (
-                    this.possibleSuits.includes(constants.SUIT.PINK)
-                    || this.possibleSuits.includes(constants.SUIT.DARK_PINK)
-                ) && positive
-            ) {
-                // Pink cards are touched by all ranks,
+            } else if (this.possibleSuits.some(suit => suit.clueRanks === 'all') && positive) {
+                // Some cards are touched by all ranks,
                 // so if this is a positive rank clue, we cannot remove any rank pips from the card
             } else {
                 ranksRemoved = filterInPlace(
@@ -307,35 +298,36 @@ class HanabiCard extends graphics.Group {
                 );
             }
 
-            // Pink & dark pink are touched by all rank clues
-            // Brown & chocolate suits are not touched by any rank clues
+            // Some suits are touched by all rank clues
+            // Some suits are not touched by any rank clues
             // So we may be able to remove a suit pip
             if (positive) {
+                suitsRemoved = filterInPlace(
+                    this.possibleSuits,
+                    suit => suit.clueRanks !== 'none',
+                );
+
+                // Also handle the special case where two positive rank clues
+                // should "fill in" a multi-rank card
                 if (this.positiveRankClues.length >= 2) {
                     suitsRemoved = filterInPlace(
                         this.possibleSuits,
-                        suit => suit === constants.SUIT.PINK || constants.SUIT.DARK_PINK,
-                    );
-                } else {
-                    suitsRemoved = filterInPlace(
-                        this.possibleSuits,
-                        suit => suit !== constants.SUIT.BROWN && suit !== constants.SUIT.CHOCOLATE,
+                        suit => suit.clueRanks === 'all',
                     );
                 }
             } else {
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
-                    suit => suit !== constants.SUIT.PINK && suit !== constants.SUIT.DARK_PINK,
+                    suit => suit.clueRanks !== 'all',
                 );
             }
         } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+            // Remove all possibilities that do not include this color
             const clueColor = clue.value;
             suitsRemoved = filterInPlace(
                 this.possibleSuits,
                 suit => suit.clueColors.includes(clueColor) === positive,
             );
-        } else {
-            console.error('Clue type invalid.');
         }
 
         // Remove rank pips, if any
@@ -371,12 +363,7 @@ class HanabiCard extends graphics.Group {
                 this.removePossibility(suit, rank, true);
             }
 
-            if (
-                suit === constants.SUIT.PINK
-                || suit === constants.SUIT.DARK_PINK
-                || suit === constants.SUIT.BROWN
-                || suit === constants.SUIT.CHOCOLATE
-            ) {
+            if (suit.clueRanks !== 'normal') {
                 // Mark to retroactively remove rank pips when we return from this function
                 this.specialRankSuitRemoved = true;
             }
@@ -695,7 +682,7 @@ class HanabiCard extends graphics.Group {
     // (taking into account the stack direction)
     upOrDownIsDead() {
         // Make a map that shows if all of some particular rank in this suit has been discarded
-        const ranks = [1, 2, 3, 4, 5, constants.START_CARD_RANK];
+        const ranks = globals.variant.ranks.slice();
         const allDiscarded = new Map();
         for (const rank of ranks) {
             const num = getSpecificCardNum(this.suit, rank);

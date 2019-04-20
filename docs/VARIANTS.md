@@ -79,6 +79,18 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * No rank clues "touch" the brown suit.
 * There is only one of each chocolate card in the deck, which means that every chocolate card is "critical".
 
+### Light Rainbow
+
+* One of the suits is replaced with a light rainbow suit.
+* All color clues will "touch" the light rainbow suit.
+* No rank clues will "touch" the light rainbow suit.
+
+### Light Pink
+
+* One of the suits is replaced with a light pink suit.
+* All rank clues will "touch" the light pink suit.
+* No color clues will "touch" the light pink suit.
+
 ### Color Blind
 
 * Color clues touch no suits. (Empty color clues are always allowed.)
@@ -86,6 +98,10 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### Number Blind
 
 * Rank clues touch no suits. (Empty rank clues are always allowed.)
+
+### Totally Blind
+
+* Color clues and rank clues touch no suits. (Empty clues are always allowed.)
 
 ### Color Mute
 
@@ -129,7 +145,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 ### Cow & Pig
 
-* When players give a clue, they point at the cards clued, but say "moo" if it a color clue and "oink" if it is a number clue.
+* When players give a clue, they point at the cards clued, but say "moo" if it a color clue and "oink" if it is a rank clue.
 
 ### Duck
 

@@ -26,7 +26,7 @@ $(document).ready(() => {
     for (const category of Object.keys(emoteCategories)) {
         for (const emote of emoteCategories[category]) {
             if (emoteMap[emote]) {
-                console.error('Duplicate emote found:', emote);
+                throw new Error('Duplicate emote found:', emote);
             } else {
                 emoteMap[emote] = true;
             }

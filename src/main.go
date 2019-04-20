@@ -44,11 +44,13 @@ func main() {
 	if _, err := os.Stat(projectPath); os.IsNotExist(err) {
 		log.Fatal("The project path of \"" + projectPath + "\" does not exist. " +
 			"Check to see if your GOPATH environment variable is set properly.")
+		return
 	}
 
 	// Load the ".env" file which contains environment variables with secret values
 	if err := godotenv.Load(path.Join(projectPath, ".env")); err != nil {
 		log.Fatal("Failed to load .env file:", err)
+		return
 	}
 
 	// If we are running in a development environment, change some constants
@@ -59,12 +61,15 @@ func main() {
 	// Initialize the database model
 	if v, err := models.Init(); err != nil {
 		log.Fatal("Failed to open the database:", err)
+		return
 	} else {
 		db = v
 	}
 	defer db.Close()
 
 	// Initialize the variants
+	colorsInit()
+	suitsInit()
 	variantsInit()
 
 	// Initialize "Detrimental Character Assignments"

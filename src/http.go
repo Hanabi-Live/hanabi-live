@@ -131,6 +131,7 @@ func httpInit() {
 			// Nothing before the colon implies 0.0.0.0
 			if err := http.ListenAndServe(":80", HTTPServeMux); err != nil {
 				log.Fatal("http.ListenAndServe failed to start on 80.")
+				return
 			}
 			log.Fatal("http.ListenAndServe ended for port 80.")
 		}()
@@ -146,6 +147,7 @@ func httpInit() {
 			httpRouter,
 		); err != nil {
 			log.Fatal("http.ListenAndServeTLS failed:", err)
+			return
 		}
 		log.Fatal("http.ListenAndServeTLS ended prematurely.")
 	} else {
@@ -155,6 +157,7 @@ func httpInit() {
 			httpRouter,
 		); err != nil {
 			log.Fatal("http.ListenAndServe failed:", err)
+			return
 		}
 		log.Fatal("http.ListenAndServe ended prematurely.")
 	}

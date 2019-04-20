@@ -4,12 +4,11 @@
 
 // Imports
 const convert = require('./convert');
-// const constants = require('../constants');
 const globals = require('../globals');
 const HanabiCard = require('./HanabiCard');
 const Hand = require('./Hand');
-const PlayArea = require('./PlayArea');
 const phaserGlobals = require('./phaserGlobals');
+const PlayArea = require('./PlayArea');
 
 // Variables
 // let cursor;

@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"math/rand"
+	"path"
 	"strconv"
 
 	"github.com/Zamiell/hanabi-live/src/models"
@@ -10,53 +13,65 @@ import (
 const debugCharacter = "Insistent"
 
 type Character struct {
-	Name string
+	Name string `json:"name"`
 	// Similar to variants, each character must have a unique numerical ID (for the database)
-	ID          int
-	Description string
-	Emoji       string
-	Not2P       bool
+	ID          int    `json:"id"`
+	Description string `json:"description"`
+	Emoji       string `json:"emoji"`
+	Not2P       bool   `json:"not2P"`
 }
 
 var (
-	characters   map[string]Character
-	charactersID map[int]string
+	characters     map[string]Character
+	characterNames []string
+	charactersID   map[int]string
 )
 
 func characterInit() {
-	// Validate that all of the names are unique
+	// Import the JSON file
+	filePath := path.Join(projectPath, "public", "data", "characters.json")
+	var contents []byte
+	if v, err := ioutil.ReadFile(filePath); err != nil {
+		log.Fatal("Failed to read the \""+filePath+"\" file:", err)
+		return
+	} else {
+		contents = v
+	}
+	characters = make(map[string]Character)
+	if err := json.Unmarshal(contents, &characters); err != nil {
+		log.Fatal("Failed to convert the characters file to JSON:", err)
+		return
+	}
+
 	uniqueNameMap := make(map[string]bool)
-	for _, character := range characterDefinitions {
-		if _, ok := uniqueNameMap[character.Name]; ok {
-			log.Fatal("There are two character with the name of \"" + character.Name + "\".")
+	uniqueIDMap := make(map[int]bool)
+	characterNames = make([]string, 0)
+	charactersID = make(map[int]string)
+	for name, character := range characters {
+		// Validate that all of the names are unique
+		if _, ok := uniqueNameMap[name]; ok {
+			log.Fatal("There are two characters with the name of \"" + name + "\".")
 			return
 		}
-		uniqueNameMap[character.Name] = true
-	}
+		uniqueNameMap[name] = true
 
-	// Validate that all of the ID's are unique
-	for _, character := range characterDefinitions {
-		for _, character2 := range characterDefinitions {
-			if character.Name == character2.Name {
-				continue
-			}
-			if character.ID == character2.ID {
-				log.Fatal("Character \"" + character.Name + "\" and \"" + character2.Name + "\" " +
-					"have the same ID (" + strconv.Itoa(character.ID) + ").")
-				return
-			}
+		// Validate that all of the ID's are unique
+		if _, ok := uniqueIDMap[character.ID]; ok {
+			log.Fatal("There are two characters with the ID of " +
+				"\"" + strconv.Itoa(character.ID) + "\".")
+			return
 		}
-	}
+		uniqueIDMap[character.ID] = true
 
-	// Put all of the characters into a map with their name as an index
-	characters = make(map[string]Character)
-	for _, character := range characterDefinitions {
-		characters[character.Name] = character
-	}
+		// Copy the name of the character inside the object for later use
+		character.Name = name
 
-	// Also populate a reverse mapping of ID to name
-	charactersID = make(map[int]string)
-	for _, character := range characterDefinitions {
+		// Create an array with every character name
+		// (so that later we have the ability to get a random character)
+		characterNames = append(characterNames, name)
+
+		// Create a reverse mapping of ID to name
+		// (so that we can easily find the associated character from a database entry)
 		charactersID[character.ID] = character.Name
 	}
 }
@@ -89,8 +104,8 @@ func characterGenerate(g *Game) {
 	for i, p := range g.Players {
 		for {
 			// Get a random character assignment
-			randomIndex := rand.Intn(len(characterDefinitions))
-			p.Character = characterDefinitions[randomIndex].Name
+			randomIndex := rand.Intn(len(characterNames))
+			p.Character = characterNames[randomIndex]
 
 			// Check to see if any other players have this assignment already
 			alreadyAssigned := false
@@ -128,7 +143,7 @@ func characterGenerate(g *Game) {
 
 		if p.Character == "Fuming" {
 			// A random number from 0 to the number of colors in this variant
-			p.CharacterMetadata = rand.Intn(len(variants[g.Options.Variant].Clues))
+			p.CharacterMetadata = rand.Intn(len(variants[g.Options.Variant].ClueColors))
 		} else if p.Character == "Dumbfounded" {
 			// A random number from 1 to 5
 			p.CharacterMetadata = rand.Intn(4) + 1
@@ -383,7 +398,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 			return true
 		}
 		if d.Clue.Type != clueTypeRank {
-			s.Warning("You are " + p.Character + ", so you must give a number clue first.")
+			s.Warning("You are " + p.Character + ", so you must give a rank clue first.")
 			return true
 		}
 
@@ -391,7 +406,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		p.CharacterMetadata == -1 {
 
 		if d.Clue.Type != clueTypeRank {
-			s.Warning("You are " + p.Character + ", so you must give a number clue first.")
+			s.Warning("You are " + p.Character + ", so you must give a rank clue first.")
 			return true
 		}
 

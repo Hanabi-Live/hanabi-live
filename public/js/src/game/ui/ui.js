@@ -5,7 +5,6 @@
 // Imports
 const arrows = require('./arrows');
 const constants = require('../../constants');
-const convert = require('./convert');
 const globals = require('./globals');
 const hypothetical = require('./hypothetical');
 const notes = require('./notes');
@@ -57,86 +56,6 @@ exports.handleAction = (data) => {
             globals.elements.deck.moveToTop();
         }
     }
-
-    const showClueMatch = (target, clue) => {
-        arrows.hideAll();
-
-        let match = false;
-        const hand = globals.elements.playerHands[target].children;
-        for (let i = 0; i < hand.length; i++) {
-            const child = globals.elements.playerHands[target].children[i];
-            const card = child.children[0];
-
-            let touched = false;
-            if (clue.type === constants.CLUE_TYPE.RANK) {
-                if (card.suit === constants.SUIT.PINK || card.suit === constants.SUIT.DARK_PINK) {
-                    touched = true;
-                } else if (
-                    card.suit === constants.SUIT.BROWN
-                    || card.suit === constants.SUIT.CHOCOLATE
-                ) {
-                    touched = false;
-                } else if (
-                    clue.value === card.rank
-                    || (globals.variant.name.startsWith('Multi-Fives') && card.rank === 5)
-                ) {
-                    touched = true;
-                }
-            } else if (clue.type === constants.CLUE_TYPE.COLOR) {
-                const clueColor = clue.value;
-                if (
-                    card.suit === constants.SUIT.RAINBOW
-                    || card.suit === constants.SUIT.DARK_RAINBOW
-                    || card.suit.clueColors.includes(clueColor)
-                ) {
-                    touched = true;
-                }
-            }
-
-            if (touched) {
-                match = true;
-                arrows.set(i, card, null, clue);
-            }
-        }
-
-        return match;
-    };
-
-    const checkClueLegal = () => {
-        const target = globals.elements.clueTargetButtonGroup.getPressed();
-        const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
-
-        if (!target || !clueButton) {
-            globals.elements.giveClueButton.setEnabled(false);
-            return;
-        }
-
-        const who = target.targetIndex;
-        const match = showClueMatch(who, clueButton.clue);
-
-        // By default, only enable the "Give Clue" button if the clue "touched"
-        // one or more cards in the hand
-        const enabled = match
-            // Make an exception if they have the optional setting for "Empty Clues" turned on
-            || globals.emptyClues
-            // Make an exception for the "Color Blind" variants (color clues touch no cards)
-            // and "Number Blind" variants (number clues touch no cards)
-            || (globals.variant.name.startsWith('Color Blind')
-                && clueButton.clue.type === constants.CLUE_TYPE.COLOR)
-            || (globals.variant.name.startsWith('Number Blind')
-                && clueButton.clue.type === constants.CLUE_TYPE.RANK)
-            // Make an exception for certain characters
-            || (globals.characterAssignments[globals.playerUs] === 'Blind Spot'
-                && who === (globals.playerUs + 1) % globals.playerNames.length)
-            || (globals.characterAssignments[globals.playerUs] === 'Oblivious'
-                && who === (globals.playerUs - 1 + globals.playerNames.length)
-                % globals.playerNames.length);
-
-        globals.elements.giveClueButton.setEnabled(enabled);
-    };
-
-    globals.elements.clueTargetButtonGroup.on('change', checkClueLegal);
-    globals.elements.clueTypeButtonGroup.on('change', checkClueLegal);
 };
 
 const stopAction = () => {
@@ -145,10 +64,7 @@ const stopAction = () => {
     globals.elements.premoveCancelButton.hide();
     globals.elements.noDiscardLabel.hide();
     globals.elements.noDoubleDiscardLabel.hide();
-
     arrows.hideAll();
-    globals.elements.clueTargetButtonGroup.off('change');
-    globals.elements.clueTypeButtonGroup.off('change');
 
     // Make all of the cards in our hand not draggable
     // (but we need to keep them draggable if the pre-play setting is enabled)
@@ -166,35 +82,6 @@ const stopAction = () => {
 };
 exports.stopAction = stopAction;
 
-exports.giveClue = () => {
-    const target = globals.elements.clueTargetButtonGroup.getPressed();
-    const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
-    if (
-        !globals.ourTurn // We can only give clues on our turn
-        || globals.clues === 0 // We can only give a clue if there is one available
-        || !target // We might have not selected a clue recipient
-        || !clueButton // We might have not selected a type of clue
-        // We might be trying to give an invalid clue (e.g. an Empty Clue)
-        || !globals.elements.giveClueButton.enabled
-        // Prevent the user from accidentally giving a clue in certain situations
-        || (Date.now() - globals.accidentalClueTimer < 1000)
-    ) {
-        return;
-    }
-
-    arrows.hideAll();
-
-    // Send the message to the server
-    this.endTurn({
-        type: 'action',
-        data: {
-            type: constants.ACT.CLUE,
-            target: target.targetIndex,
-            clue: convert.clueToMsgClue(clueButton.clue, globals.variant),
-        },
-    });
-};
-
 exports.endTurn = (action) => {
     if (globals.hypothetical) {
         hypothetical.send(action);
@@ -203,7 +90,6 @@ exports.endTurn = (action) => {
     }
 
     if (globals.ourTurn) {
-        globals.ourTurn = false;
         globals.lobby.conn.send('action', action.data);
         stopAction();
     } else {
@@ -221,8 +107,6 @@ exports.endTurn = (action) => {
         globals.elements.currentPlayerArea.hide();
         globals.layers.UI.batchDraw();
     }
-
-    globals.savedAction = null;
 };
 
 exports.recordStrike = (data) => {
@@ -276,7 +160,7 @@ exports.handleNotify = (data) => {
     if (Object.prototype.hasOwnProperty.call(notify, type)) {
         notify[type](data);
     } else {
-        console.error(`A WebSocket notify function for the "${type}" command is not defined.`);
+        throw new Error(`A WebSocket notify function for the "${type}" command is not defined.`);
     }
 };
 

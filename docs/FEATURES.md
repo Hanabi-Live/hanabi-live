@@ -153,7 +153,7 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
   * Left-clicking on a card in your hand will play it.
   * Right-clicking on a card in your hand hand will discard it.
   * Left-clicking on a card in your teammate's hand will give it a color clue.
-  * Right-clicking on a card in your teammate's hand will give it a number clue.
+  * Right-clicking on a card in your teammate's hand will give it a rank clue.
   * Empathy can still be used by Ctrl + Left-clicking.
 * Speedrunning games will not count towards your statistics.
 * If this mode is enabled, then the "Timed" option will be disabled.
@@ -250,7 +250,7 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
   * Discard a card: `d` or `-` (will prompt an alert for the slot number)
   * Clue:
     * `Tab` to select a player
-    * `1`, `2`, `3`, `4`, `5` for a number clue
+    * `1`, `2`, `3`, `4`, `5` for a rank clue
     * Or `q`, `w`, `e`, `r`, `t` for a color clue
     * Then `Ctrl + Enter` to submit
 * In a replay:

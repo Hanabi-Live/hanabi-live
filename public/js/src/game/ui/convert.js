@@ -1,5 +1,6 @@
 /*
-    These are helper functions that convert objects
+    These are helper functions that convert objects to the integers that the server expects
+    and vice versa
 */
 
 // Imports
@@ -43,13 +44,4 @@ exports.msgClueToClue = (msgClue, variant) => {
 
 exports.msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit] || null;
 
-exports.suitToMsgSuit = (suit, variant) => {
-    for (let i = 0; i < variant.suits.length; i++) {
-        const suit2 = variant.suits[i];
-        if (suit2.name === suit.name) {
-            return i;
-        }
-    }
-
-    return -1;
-};
+exports.suitToMsgSuit = (suit, variant) => variant.suits.indexOf(suit);

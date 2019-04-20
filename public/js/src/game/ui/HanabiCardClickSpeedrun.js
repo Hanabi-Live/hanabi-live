@@ -122,7 +122,7 @@ const clickRight = (card, event) => {
         return;
     }
 
-    // Right-clicking on cards in other people's hands is a number clue action
+    // Right-clicking on cards in other people's hands is a rank clue action
     if (
         card.holder !== globals.playerUs
         && globals.clues !== 0

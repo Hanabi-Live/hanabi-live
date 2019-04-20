@@ -3,15 +3,13 @@
 */
 
 // Imports
+const clues = require('./clues');
 const constants = require('../../constants');
 const globals = require('./globals');
 const misc = require('../../misc');
 const notes = require('./notes');
 const replay = require('./replay');
 const ui = require('./ui');
-
-// Constants
-const { ACT } = constants;
 
 // Variables
 const hotkeyMap = {};
@@ -28,7 +26,7 @@ exports.init = () => {
         globals.elements.clueTargetButtonGroup.selectNextTarget();
     };
 
-    // Add "1", "2", "3", "4", and "5" (for number clues)
+    // Add "1", "2", "3", "4", and "5" (for rank clues)
     for (let i = 0; i < globals.elements.rankClueButtons.length; i++) {
         // The button for "1" is at array index 0, etc.
         hotkeyMap.clue[i + 1] = click(globals.elements.rankClueButtons[i]);
@@ -81,8 +79,7 @@ const keydown = (event) => {
     if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
         // Ctrl + Enter = Give a clue / click on the "Give Clue" button
         if (event.key === 'Enter') {
-            // The "giveClue()" function has validation inside of it
-            ui.giveClue();
+            clues.give(); // This function has validation inside of it
             return;
         }
 
@@ -242,15 +239,14 @@ const action = (intendedPlay = true) => {
 
     const data = {};
     if (cardOrder === 'deck') {
-        data.type = ACT.DECKPLAY;
+        data.type = constants.ACT.DECKPLAY;
     } else {
-        data.type = intendedPlay ? ACT.PLAY : ACT.DISCARD;
+        data.type = intendedPlay ? constants.ACT.PLAY : constants.ACT.DISCARD;
         data.target = cardOrder;
     }
 
     globals.lobby.conn.send('action', data);
     ui.stopAction();
-    globals.savedAction = null;
 };
 
 // Keyboard actions for playing and discarding cards

@@ -15,12 +15,12 @@
         {
             "clue": {
                 /*
-                    0 is a number clue
+                    0 is a rank clue
                     1 is a color clue
                 */
                 "type": 1,
                 /*
-                    If a number clue, value is equal to the rank
+                    If a rank clue, value is equal to the number
                     If a color clue, value is equal to:
                     - 0 if blue
                     - 1 if green

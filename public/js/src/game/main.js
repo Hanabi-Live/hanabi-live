@@ -9,8 +9,8 @@ exports.tooltips = require('./tooltips');
 
 // Imports
 const globals = require('../globals');
-const misc = require('../misc');
 const HanabiUI = require('./ui/HanabiUI');
+const misc = require('../misc');
 
 $(document).ready(() => {
     // Disable the right-click context menu while in a game

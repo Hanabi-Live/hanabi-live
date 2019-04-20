@@ -56,10 +56,12 @@ func httpScores(c *gin.Context) {
 	numGames := 0
 	totalMaxScores := 0
 	variantStats := make([]VariantStats, 0)
-	for i, variant := range variantDefinitions {
+	for i, name := range variantsList {
+		variant := variants[name]
+
 		var stats models.Stats
 		if v, err := db.UserStats.Get(user.ID, variant.ID); err != nil {
-			log.Error("Failed to get the stats for player \""+user.Username+"\" for variant \""+variant.Name+"\":", err)
+			log.Error("Failed to get the stats for player \""+user.Username+"\" for variant \""+name+"\":", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		} else {
@@ -79,7 +81,7 @@ func httpScores(c *gin.Context) {
 
 		updatedStats := VariantStats{
 			ID:            i,
-			Name:          variant.Name,
+			Name:          name,
 			NumGames:      stats.NumPlayed,
 			MaxScore:      maxScoreForThisVariant,
 			BestScores:    stats.BestScores,
@@ -94,7 +96,7 @@ func httpScores(c *gin.Context) {
 		Name:           user.Username,
 		NumGames:       numGames,
 		NumMaxScores:   totalMaxScores,
-		TotalMaxScores: len(variantDefinitions) * 5, // For 2 to 6 players
+		TotalMaxScores: len(variantsList) * 5, // For 2 to 6 players
 		VariantStats:   variantStats,
 	}
 

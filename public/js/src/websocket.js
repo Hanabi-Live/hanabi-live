@@ -291,6 +291,13 @@ const initCommands = () => {
     globals.conn.on('warning', (data) => {
         console.warn(data.warning);
         modals.warningShow(data.warning);
+        if (
+            globals.currentScreen === 'game'
+            && globals.ui !== null
+            && globals.ui.globals.ourTurn
+        ) {
+            globals.ui.reshowClueUIAfterWarning();
+        }
     });
 
     globals.conn.on('error', (data) => {

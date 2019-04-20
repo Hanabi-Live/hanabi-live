@@ -53,11 +53,13 @@ func discordInit() {
 	var timeAsString string
 	if v, err := db.DiscordMetadata.Get("last_at_here"); err != nil {
 		log.Fatal("Failed to retrieve the \"last_at_here\" value from the database:", err)
+		return
 	} else {
 		timeAsString = v
 	}
 	if v, err := time.Parse(time.RFC3339, timeAsString); err != nil {
 		log.Fatal("Failed to parse the \"last_at_here\" value from the database:", err)
+		return
 	} else {
 		discordLastAtHere = v
 	}

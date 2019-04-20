@@ -59,6 +59,10 @@ class HanabiUI {
         globals.stage.destroy();
         // window.removeEventListener('resize', resizeCanvas, false);
     }
+
+    reshowClueUIAfterWarning() { // eslint-disable-line class-methods-use-this
+        ui.handleAction(globals.savedAction);
+    }
 }
 
 // Initialize and size the stage depending on the window size

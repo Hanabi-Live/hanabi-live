@@ -93,7 +93,7 @@ const set = (i, element, giver, clue) => {
                 arrow.text.setText(clue.value.toString());
                 arrow.text.show();
             } else if (clue.type === constants.CLUE_TYPE.COLOR) {
-                arrow.circle.setFill(clue.value.hexCode);
+                arrow.circle.setFill(clue.value.fill);
                 arrow.text.hide();
             }
         }

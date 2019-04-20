@@ -120,8 +120,7 @@ const makeReplayButton = (id, visibility) => {
     } else if (visibility === 'shared') {
         text = '<i class="fas fa-users lobby-button-icon"></i>';
     } else {
-        console.error('The "makeReplayButton()" function was provided an invalid visibility argument.');
-        return '';
+        throw new Error('The "makeReplayButton()" function was provided an invalid visibility argument.');
     }
     button.html(text);
     button.addClass('history-table');

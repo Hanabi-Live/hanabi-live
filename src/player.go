@@ -51,11 +51,12 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	if len(cardsTouched) == 0 &&
 		// Make an exception if they have the optional setting for "Empty Clues" turned on
 		!g.Options.EmptyClues &&
-		// Make an exception for the "Color Blind" variants (color clues touch no cards)
-		// and "Number Blind" variants (rank clues touch no cards)
-		(d.Clue.Type != clueTypeColor ||
-			!strings.HasPrefix(g.Options.Variant, "Color Blind") ||
-			!strings.HasPrefix(g.Options.Variant, "Number Blind")) &&
+		// Make an exception for the "Color Blind" variants (color clues touch no cards),
+		// "Number Blind" variants (rank clues touch no cards),
+		// and "Totally Blind" variants (all clues touch no cards)
+		(!strings.HasPrefix(g.Options.Variant, "Color Blind") || d.Clue.Type != clueTypeColor) &&
+		(!strings.HasPrefix(g.Options.Variant, "Number Blind") || d.Clue.Type != clueTypeRank) &&
+		!strings.HasPrefix(g.Options.Variant, "Totally Blind") &&
 		// Make an exception for certain characters
 		!characterEmptyClueAllowed(d, g, p) {
 
@@ -103,7 +104,7 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 	if d.Clue.Type == clueTypeRank {
 		text += strconv.Itoa(d.Clue.Value)
 	} else if d.Clue.Type == clueTypeColor {
-		text += variants[g.Options.Variant].Clues[d.Clue.Value].Name
+		text += variants[g.Options.Variant].ClueColors[d.Clue.Value]
 	}
 	if len(cardsTouched) != 1 {
 		text += "s"

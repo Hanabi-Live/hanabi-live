@@ -120,7 +120,7 @@ func commandGameStart(s *Session, d *CommandData) {
 			} else {
 				amountToAdd = 2
 			}
-			if variants[g.Options.Variant].Suits[suit].IsOneOfEach {
+			if variants[g.Options.Variant].Suits[suit].OneOfEach {
 				amountToAdd = 1
 			}
 

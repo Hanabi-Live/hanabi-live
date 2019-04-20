@@ -4,15 +4,15 @@
 
 // Imports
 const constants = require('../../constants');
+const drawPip = require('./drawPip');
 const globals = require('./globals');
 
 // Constants
 const {
-    CARD_AREA,
     CARD_H,
     CARD_W,
-    COLOR,
-    SUIT,
+    COLORS,
+    SUITS,
 } = constants;
 const xrad = CARD_W * 0.08;
 const yrad = CARD_H * 0.08;
@@ -21,7 +21,7 @@ const yrad = CARD_H * 0.08;
 // "globals.cardImages" object to be used later
 exports.drawAll = () => {
     // The "unknown" suit has semi-blank gray cards, representing unknown cards
-    const suits = globals.variant.suits.concat(SUIT.UNKNOWN);
+    const suits = globals.variant.suits.concat(SUITS.Unknown);
     for (let i = 0; i < suits.length; i++) {
         const suit = suits[i];
 
@@ -43,7 +43,7 @@ exports.drawAll = () => {
             drawCardBase(ctx, suit, rank);
 
             ctx.shadowBlur = 10;
-            ctx.fillStyle = suit.style(ctx, CARD_AREA.NUMBER);
+            ctx.fillStyle = getSuitStyle(suit, ctx, 'number');
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 2;
             ctx.lineJoin = 'round';
@@ -82,12 +82,11 @@ exports.drawAll = () => {
                 ctx.restore();
             }
 
-            ctx.fillStyle = suit.style(ctx, CARD_AREA.SYMBOL);
-
+            ctx.fillStyle = getSuitStyle(suit, ctx, 'symbol');
             ctx.lineWidth = 5;
 
-            // Make the special corners on cards for the mixed variant
-            if (suit.clueColors !== null && suit.clueColors.length === 2) {
+            // Make the special corners on the cards for dual-color suits
+            if (suit.clueColors.length === 2) {
                 drawMixedCardHelper(ctx, suit.clueColors);
             }
 
@@ -96,16 +95,16 @@ exports.drawAll = () => {
             // - cards of unknown rank
             // Entirely unknown cards (e.g. "NoPip-Unknown-6")
             // have a custom image defined separately
-            if (rank > 0 && (rank < 6 || suit !== SUIT.UNKNOWN)) {
+            if (rank > 0 && (rank < 6 || suit !== SUITS.Unknown)) {
                 globals.cardImages[`NoPip-${suit.name}-${rank}`] = cloneCanvas(cvs);
             }
 
-            if (suit !== SUIT.UNKNOWN) {
+            if (suit !== SUITS.Unknown) {
                 drawSuitPips(ctx, rank, suit, i);
             }
 
             // "Card-Unknown" images would be identical to "NoPip-Unknown" images
-            if (suit !== SUIT.UNKNOWN) {
+            if (suit !== SUITS.Unknown) {
                 globals.cardImages[`Card-${suit.name}-${rank}`] = cvs;
             }
         }
@@ -125,7 +124,7 @@ const cloneCanvas = (oldCanvas) => {
 };
 
 const drawSuitPips = (ctx, rank, suit, i) => {
-    const pathFunc = drawSuitShape(suit, i);
+    const pathFunc = drawPip(suit, i);
     const scale = 0.4;
 
     // The middle for cards 2 or 4
@@ -229,7 +228,7 @@ const makeDeckBack = () => {
         y -= 1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.3); // eslint-disable-line
         ctx.translate(x, y);
 
-        drawSuitShape(suit, i)(ctx);
+        drawPip(suit, i)(ctx);
         drawShape(ctx);
     }
     ctx.save();
@@ -238,10 +237,10 @@ const makeDeckBack = () => {
 
 const drawCardBase = (ctx, suit, rank) => {
     // Draw the background
-    ctx.fillStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
-    ctx.strokeStyle = suit.style(ctx, CARD_AREA.BACKGROUND);
-    if (ctx.fillStyle === COLOR.WHITE.hexCode) {
-        ctx.strokeStyle = COLOR.BLACK.hexCode;
+    ctx.fillStyle = getSuitStyle(suit, ctx, 'background');
+    ctx.strokeStyle = getSuitStyle(suit, ctx, 'background');
+    if (ctx.fillStyle === SUITS.White.fill) {
+        ctx.strokeStyle = COLORS.Black.fill;
     }
 
     backPath(ctx, 4);
@@ -302,40 +301,40 @@ const drawMixedCardHelper = (ctx, clueColors) => {
     ctx.beginPath();
     ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
     ctx.lineTo(CARD_W - borderSize - triangleSize, borderSize); // Move left
-    ctx.lineTo(CARD_W - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
     // Move down and right diagonally
+    ctx.lineTo(CARD_W - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
     ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
-    ctx.fillStyle = clueColor1.hexCode;
+    ctx.fillStyle = clueColor1.fill;
     drawShape(ctx);
 
     // Draw the second half of the top-right triangle
     ctx.beginPath();
     ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
     ctx.lineTo(CARD_W - borderSize, borderSize + triangleSize); // Move down
-    ctx.lineTo(CARD_W - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
     // Move up and left diagonally
+    ctx.lineTo(CARD_W - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
     ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
-    ctx.fillStyle = clueColor2.hexCode;
+    ctx.fillStyle = clueColor2.fill;
     drawShape(ctx);
 
     // Draw the first half of the bottom-left triangle
     ctx.beginPath();
     ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
     ctx.lineTo(borderSize, CARD_H - borderSize - triangleSize); // Move up
-    ctx.lineTo(borderSize + (triangleSize / 2), CARD_H - borderSize - (triangleSize / 2));
     // Move right and down diagonally
+    ctx.lineTo(borderSize + (triangleSize / 2), CARD_H - borderSize - (triangleSize / 2));
     ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
-    ctx.fillStyle = clueColor1.hexCode;
+    ctx.fillStyle = clueColor1.fill;
     drawShape(ctx);
 
     // Draw the second half of the bottom-left triangle
     ctx.beginPath();
     ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
     ctx.lineTo(borderSize + triangleSize, CARD_H - borderSize); // Move right
-    ctx.lineTo(borderSize + (triangleSize / 2), CARD_H - borderSize - (triangleSize / 2));
     // Move left and up diagonally
+    ctx.lineTo(borderSize + (triangleSize / 2), CARD_H - borderSize - (triangleSize / 2));
     ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
-    ctx.fillStyle = clueColor2.hexCode;
+    ctx.fillStyle = clueColor2.fill;
     drawShape(ctx);
 
     ctx.restore();
@@ -347,11 +346,9 @@ const makeUnknownCardImage = () => {
     cvs.height = CARD_H;
 
     const ctx = cvs.getContext('2d');
-
     drawCardTexture(ctx);
 
     ctx.fillStyle = 'black';
-
     backPath(ctx, 4);
 
     ctx.save();
@@ -400,116 +397,41 @@ const drawCardTexture = (ctx) => {
     ctx.restore();
 };
 
-const shapeFunctions = [
-    // Diamond
-    (ctx) => {
-        const w = 70;
-        const h = 80;
-
-        // Expected bounding box requires these offsets
-        const offsetX = 75 - w;
-        const offsetY = 100 - h;
-        const points = [
-            [1, 0],
-            [2, 1],
-            [1, 2],
-            [0, 1],
-        ].map(point => [point[0] * w + offsetX, point[1] * h + offsetY]);
-        const curveX = 1.46;
-        const curveY = 0.6;
-        const interps = [
-            [0, 0],
-            [0, 1],
-            [1, 1],
-            [1, 0],
-        ].map(v => [
-            [curveX, 2 - curveX][v[0]] * w + offsetX,
-            [curveY, 2 - curveY][v[1]] * h + offsetY,
-        ]);
-
-        ctx.beginPath();
-        ctx.moveTo(...points[0]);
-        ctx.quadraticCurveTo(...interps[0], ...points[1]);
-        ctx.quadraticCurveTo(...interps[1], ...points[2]);
-        ctx.quadraticCurveTo(...interps[2], ...points[3]);
-        ctx.quadraticCurveTo(...interps[3], ...points[0]);
-    },
-
-    // Club
-    (ctx) => {
-        ctx.beginPath();
-        ctx.moveTo(50, 180);
-        ctx.lineTo(100, 180);
-        ctx.quadraticCurveTo(80, 140, 75, 120);
-        ctx.arc(110, 110, 35, 2.6779, 4.712, true);
-        ctx.arc(75, 50, 35, 1, 2.1416, true);
-        ctx.arc(40, 110, 35, 4.712, 0.4636, true);
-        ctx.quadraticCurveTo(70, 140, 50, 180);
-    },
-
-    // Star
-    (ctx) => {
-        ctx.translate(75, 100);
-        ctx.beginPath();
-        ctx.moveTo(0, -75);
-        for (let i = 0; i < 5; i++) {
-            ctx.rotate(Math.PI / 5);
-            ctx.lineTo(0, -30);
-            ctx.rotate(Math.PI / 5);
-            ctx.lineTo(0, -75);
-        }
-    },
-
-    // Heart
-    (ctx) => {
-        ctx.beginPath();
-        ctx.moveTo(75, 65);
-        ctx.bezierCurveTo(75, 57, 70, 45, 50, 45);
-        ctx.bezierCurveTo(20, 45, 20, 82, 20, 82);
-        ctx.bezierCurveTo(20, 100, 40, 122, 75, 155);
-        ctx.bezierCurveTo(110, 122, 130, 100, 130, 82);
-        ctx.bezierCurveTo(130, 82, 130, 45, 100, 45);
-        ctx.bezierCurveTo(85, 45, 75, 57, 75, 65);
-    },
-
-    // Crescent
-    (ctx) => {
-        ctx.beginPath();
-        ctx.arc(75, 100, 75, 3, 4.3, true);
-        ctx.arc(48, 83, 52, 5, 2.5, false);
-    },
-
-    // Spade
-    (ctx) => {
-        ctx.beginPath();
-        ctx.beginPath();
-        ctx.moveTo(50, 180);
-        ctx.lineTo(100, 180);
-        ctx.quadraticCurveTo(80, 140, 75, 120);
-        ctx.arc(110, 110, 35, 2.6779, 5.712, true);
-        ctx.lineTo(75, 0);
-        ctx.arc(40, 110, 35, 3.712, 0.4636, true);
-        ctx.quadraticCurveTo(70, 140, 50, 180);
-    },
-
-    // Rainbow
-    (ctx) => {
-        ctx.beginPath();
-        ctx.moveTo(0, 140);
-        ctx.arc(75, 140, 75, Math.PI, 0, false);
-        ctx.lineTo(125, 140);
-        ctx.arc(75, 140, 25, 0, Math.PI, true);
-        ctx.lineTo(0, 140);
-    },
-];
-
-const drawSuitShape = (suit, i) => {
-    // Suit shapes go in order from left to right, with the exception of rainbow suits,
-    // which are always given a rainbow symbol
-    if (suit === SUIT.RAINBOW || suit === SUIT.DARK_RAINBOW) {
-        // The final shape function in the array is the rainbow
-        i = shapeFunctions.length - 1;
+const getSuitStyle = (suit, ctx, cardArea) => {
+    // Nearly all suits have a solid fill
+    if (suit.fill !== 'multi') {
+        return suit.fill;
     }
-    return shapeFunctions[i];
+
+    // Rainbow suits use a gradient fill, but the specific type of gradient will depend on the
+    // specific element of the card that we are filling in
+    if (cardArea === 'number') {
+        return evenLinearGradient(ctx, suit.fillColors, [0, 14, 0, 110]);
+    }
+    if (cardArea === 'symbol') {
+        return evenRadialGradient(ctx, suit.fillColors, [75, 150, 25, 75, 150, 75]);
+    }
+    if (cardArea === 'background') {
+        return evenLinearGradient(ctx, suit.fillColors, [0, 0, 0, constants.CARD_H]);
+    }
+
+    return null;
 };
-exports.drawSuitShape = drawSuitShape;
+
+// Generates a vertical gradient that is evenly distributed between its component colors
+const evenLinearGradient = (ctx, colors, args) => {
+    const grad = ctx.createLinearGradient(...args);
+    for (let i = 0; i < colors.length; ++i) {
+        grad.addColorStop(i / (colors.length - 1), colors[i]);
+    }
+    return grad;
+};
+
+// Generates a radial gradient that is evenly distributed between its component colors
+const evenRadialGradient = (ctx, colors, args) => {
+    const grad = ctx.createRadialGradient(...args);
+    for (let i = 0; i < colors.length; ++i) {
+        grad.addColorStop(i / (colors.length - 1), colors[i]);
+    }
+    return grad;
+};

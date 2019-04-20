@@ -240,7 +240,7 @@ func replayJSON(s *Session, d *CommandData) {
 	}
 
 	// Validate the variant
-	var variant Variant
+	var variant *Variant
 	if v, ok := variants[d.GameJSON.Variant]; !ok {
 		s.Warning("That is not a valid variant.")
 		return
@@ -251,7 +251,7 @@ func replayJSON(s *Session, d *CommandData) {
 	// Validate that the deck contains the right amount of cards
 	totalCards := 0
 	for _, suit := range variant.Suits {
-		if suit.IsOneOfEach {
+		if suit.OneOfEach {
 			totalCards += 5
 		} else {
 			totalCards += 10

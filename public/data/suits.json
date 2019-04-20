@@ -1,0 +1,85 @@
+{
+    "Unknown": { "clueColors": [], "fill": "#cccccc" },
+
+    "Blue": {},
+    "Green": {},
+    "Yellow": {},
+    "Red": {},
+    "Purple": {},
+
+    "Teal": {},
+    "Black": { "oneOfEach": true },
+    "Rainbow": {
+        "abbreviation": "M",
+        "clueColors": ["all"],
+        "fill": "multi",
+        "fillColors": ["#0044cc", "#00cc00", "#ccaa22", "#aa0000", "#6600cc"]
+    },
+    "Pink": { "clueRanks": "all" },
+    "White": { "clueColors": [], "fill": "#d9d9d9" },
+    "Brown": { "clueRanks": "none" },
+
+    "Dark Rainbow": {
+        "abbreviation": "M",
+        "clueColors": ["all"],
+        "fill": "multi",
+        "fillColors": ["#000555", "#005505", "#555500", "#5f0000", "#550055"],
+        "oneOfEach": true
+    },
+    "Dark Pink": {
+        "abbreviation": "I",
+        "clueColors": ["Pink"],
+        "clueRanks": "all",
+        "fill": "#800040",
+        "oneOfEach": true
+    },
+    "Gray": { "abbreviation": "A", "clueColors": [], "fill": "#555555", "oneOfEach": true },
+    "Chocolate": {
+        "clueColors": ["Brown"],
+        "clueRanks": "none",
+        "fill": "#4d2800",
+        "oneOfEach": true
+    },
+
+    "Light Rainbow": {
+        "abbreviation": "M",
+        "clueColors": ["all"],
+        "clueRanks": "none",
+        "fill": "multi",
+        "fillColors": ["#4d88ff", "#4dff4d", "#e9d37c", "#ff1a1a", "#a64dff"]
+    },
+    "Light Pink": { "abbreviation": "I", "clueColors": [], "clueRanks": "all", "fill": "ffcce6" },
+
+    "Blue CB": { "name": "Blue", "clueColors": [] },
+    "Green CB": { "name": "Green", "clueColors": [] },
+    "Yellow CB": { "name": "Yellow", "clueColors": [] },
+    "Red CB": { "name": "Red", "clueColors": [] },
+    "Purple CB": { "name": "Purple", "clueColors": [] },
+    "Teal CB": { "name": "Teal", "clueColors": [] },
+
+    "Sky": { "clueColors": ["Blue"], "fill": "#1a66ff" },
+    "Navy": { "clueColors": ["Blue"], "fill": "#002b80" },
+    "Lime": { "clueColors": ["Green"], "fill": "#1aff1a"},
+    "Forest": { "clueColors": ["Green"], "fill": "#008000" },
+    "Tomato": { "clueColors": ["Red"], "fill": "#e60000" },
+    "Mahogany": { "clueColors": ["Red"], "fill": "#660000" },
+
+    "Sky VA": { "clueColors": ["Blue"], "fill": "#4d88ff", "name": "Sky" },
+    "Berry": { "clueColors": ["Blue"] },
+    "Navy VA": { "clueColors": ["Blue"], "fill": "#001a4d", "name": "Navy" },
+    "Tomato VA": { "clueColors": ["Red"], "name": "Tomato", "fill": "#ff1a1a" },
+    "Ruby": { "clueColors": ["Red"] },
+    "Mahogany VA": { "clueColors": ["Red"], "name": "Mahogany", "fill": "#330000" },
+
+    "Green D": { "name": "Green", "clueColors": ["Blue", "Yellow"] },
+    "Purple D": { "name": "Purple", "clueColors": ["Blue", "Red"] },
+    "Navy D": { "name": "Navy", "clueColors": ["Blue", "Black"], "fill": "#000066" },
+    "Orange": { "clueColors": ["Yellow", "Red"], "fill": "#ff8800 "},
+    "Tan": { "clueColors": ["Yellow", "Black"], "fill": "#999900" },
+    "Mahogany D": { "name": "Mahogany", "clueColors": ["Red", "Black"], "fill": "#660016" },
+
+    "Teal D": { "name": "Teal", "clueColors": ["Blue", "Green"] },
+    "Lime D": { "name": "Lime", "clueColors": ["Green", "Yellow"], "fill": "#80c000" },
+    "Cardinal": { "clueColors": ["Red", "Purple"], "fill": "#810735" },
+    "Indigo": { "clueColors": ["Purple", "Blue"], "fill": "#1a0082" }
+}

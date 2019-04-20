@@ -21,7 +21,7 @@ type Card struct {
 }
 
 func (c *Card) Name(g *Game) string {
-	name := variants[g.Options.Variant].Suits[c.Suit].Name
+	name := variants[g.Options.Variant].Suits[c.Suit].Name // The name of the suit that this card is
 	name += " "
 	if c.Rank == startCardRank {
 		name += "START"

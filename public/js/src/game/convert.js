@@ -1,10 +1,11 @@
 /*
-    These are helper functions that convert objects
+    These are helper functions that convert objects to the integers that the server expects
+    and vice versa
 */
 
 // Imports
-const constants = require('../constants');
 const Clue = require('./Clue');
+const constants = require('../constants');
 
 // Convert a clue to the format used by the server
 // On the client, the color is a rich object
@@ -41,4 +42,6 @@ exports.msgClueToClue = (msgClue, variant) => {
     return new Clue(clueType, clueValue);
 };
 
-exports.msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit];
+exports.msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit] || null;
+
+exports.suitToMsgSuit = (suit, variant) => variant.suits.indexOf(suit);

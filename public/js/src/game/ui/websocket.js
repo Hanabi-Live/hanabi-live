@@ -60,7 +60,6 @@ commands.action = (data) => {
             globals.queuedAction = null;
             globals.preCluedCard = null;
             ui.stopAction();
-            globals.savedAction = null;
         }, 250);
     }
 };

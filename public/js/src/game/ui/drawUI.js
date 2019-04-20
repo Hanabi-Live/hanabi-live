@@ -6,6 +6,7 @@
 const arrows = require('./arrows');
 const Button = require('./Button');
 const ButtonGroup = require('./ButtonGroup');
+const clues = require('./clues');
 const Deck = require('./Deck');
 const CardLayout = require('./CardLayout');
 const Clue = require('./Clue');
@@ -344,11 +345,9 @@ const drawPlayStacksAndDiscardStacks = () => {
             let text = suit.name;
             if (
                 globals.lobby.settings.showColorblindUI
-                && suit.clueColors.length > 1
-                && suit !== constants.SUIT.RAINBOW
-                && suit !== constants.SUIT.DARK_RAINBOW
+                && suit.clueColors.length === 2
             ) {
-                const colorList = suit.clueColors.map(c => c.abbreviation).join('/');
+                const colorList = suit.clueColors.map(color => color.abbreviation).join('/');
                 text += ` [${colorList}]`;
             }
             if (globals.variant.name.startsWith('Up or Down')) {
@@ -1471,7 +1470,7 @@ const drawClueArea = () => {
             y: 0.027 * winH,
             width: buttonW * winW,
             height: buttonH * winH,
-            color: color.hexCode,
+            color: color.fill,
             text: color.abbreviation,
             clue: new Clue(constants.CLUE_TYPE.COLOR, color),
         });
@@ -1483,29 +1482,29 @@ const drawClueArea = () => {
 
     // Rank buttons / number buttons
     globals.elements.rankClueButtons = [];
-    let numRanks = 5;
-    if (globals.variant.name.startsWith('Number Mute')) {
-        numRanks = 0;
-    } else if (globals.variant.name.startsWith('Multi-Fives')) {
-        numRanks = 4;
-    }
+    const numRanks = globals.variant.clueRanks.length;
     let totalRankWidth = buttonW * numRanks;
     totalRankWidth += buttonSpacing * (numRanks - 1);
     const rankX = (clueAreaValues.w * 0.5) - (totalRankWidth * 0.5);
-    for (let i = 0; i < numRanks; i++) {
+    for (const rank of globals.variant.clueRanks) {
+        const i = rank - 1;
         const button = new NumberButton({
             x: (rankX + i * (buttonW + buttonSpacing)) * winW,
             y: 0.1 * winH,
             width: buttonW * winW,
             height: buttonH * winH,
-            number: i + 1,
-            clue: new Clue(constants.CLUE_TYPE.RANK, i + 1),
+            number: rank,
+            clue: new Clue(constants.CLUE_TYPE.RANK, rank),
         });
 
         globals.elements.rankClueButtons.push(button);
         globals.elements.clueArea.add(button);
         globals.elements.clueTypeButtonGroup.add(button);
     }
+
+    // Set button functionality
+    globals.elements.clueTargetButtonGroup.on('change', clues.checkLegal);
+    globals.elements.clueTypeButtonGroup.on('change', clues.checkLegal);
 
     // The "Give Clue" button
     const giveClueW = 0.236;
@@ -1519,7 +1518,7 @@ const drawClueArea = () => {
     });
     globals.elements.giveClueButton.setEnabled(false);
     globals.elements.clueArea.add(globals.elements.giveClueButton);
-    globals.elements.giveClueButton.on('click tap', ui.giveClue);
+    globals.elements.giveClueButton.on('click tap', clues.give);
 
     globals.elements.clueArea.hide();
     globals.layers.UI.add(globals.elements.clueArea);

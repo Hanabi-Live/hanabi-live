@@ -3,8 +3,8 @@
 	"data" example:
 	{
 		clue: { // Not present if the type is 1 or 2
-			type: 0, // 0 is a number clue, 1 is a color clue
-			value: 1, // If a number clue, corresponds to the number
+			type: 0, // 0 is a rank clue, 1 is a color clue
+			value: 1, // If a rank clue, corresponds to the number
 			// If a color clue:
 			// 0 is blue
 			// 1 is green
@@ -135,25 +135,26 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
-		// Validate that number clues are valid
-		if d.Clue.Type == clueTypeRank &&
-			(d.Clue.Value < 1 || d.Clue.Value > 5) {
-
-			s.Warning("That is an invalid number clue.")
-			return
+		// Validate that rank clues are valid
+		if d.Clue.Type == clueTypeRank {
+			valid := false
+			for _, rank := range variants[g.Options.Variant].ClueRanks {
+				if rank == d.Clue.Value {
+					valid = true
+					break
+				}
+			}
+			if !valid {
+				s.Warning("That is an invalid rank clue.")
+				return
+			}
 		}
 
 		// Validate that the color clues are valid
 		if d.Clue.Type == clueTypeColor &&
-			(d.Clue.Value < 0 || d.Clue.Value > len(variants[g.Options.Variant].Clues)-1) {
+			(d.Clue.Value < 0 || d.Clue.Value > len(variants[g.Options.Variant].ClueColors)-1) {
 
 			s.Warning("That is an invalid color clue.")
-			return
-		}
-
-		// Validate variant-specific cluing restrictions
-		if !variantIsClueLegal(g.Options.Variant, d.Clue) {
-			s.Warning("That is an invalid clue for this variant.")
 			return
 		}
 
