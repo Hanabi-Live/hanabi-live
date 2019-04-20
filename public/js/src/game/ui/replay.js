@@ -50,7 +50,7 @@ const exit = () => {
     globals.inReplay = false;
     globals.elements.replayArea.hide();
 
-    if (globals.savedAction) {
+    if (globals.ourTurn) {
         ui.handleAction(globals.savedAction);
     }
     globals.elements.currentPlayerArea.setVisible(!globals.elements.clueArea.getVisible());
