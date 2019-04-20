@@ -277,25 +277,10 @@ exports.note = function note() {
     });
 };
 
+// In a game, click on a teammate's hand to it show as it would to that teammate
+// (or show your own hand as it should appear without any notes on it)
+// (or, in a replay, show the hand as it appeared at that moment in time)
 exports.empathy = function empathy() {
-    // In a game, click on a teammate's hand to it show as it would to that teammate
-    // (or show your own hand as it should appear without any notes on it)
-    // (or, in a replay, show the hand as it appeared at that moment in time)
-    // Pips visibility state is tracked so it can be restored for your own hand during a game
-    const setEmpathyOnHand = (enabled) => {
-        globals.activeHover = enabled ? this : null;
-        const hand = this.parent.parent;
-        if (!hand || hand.children.length === 0) {
-            return;
-        }
-        for (const layoutChild of hand.children) {
-            const card = layoutChild.children[0];
-            card.empathy = enabled;
-            card.setBareImage();
-        }
-        globals.layers.card.batchDraw();
-    };
-
     this.on('mousedown', (event) => {
         if (
             event.evt.which !== 1 // Only enable Empathy for left-clicks
@@ -315,6 +300,7 @@ exports.empathy = function empathy() {
             return;
         }
 
+        globals.activeHover = this;
         setEmpathyOnHand(true);
     });
 
@@ -323,8 +309,24 @@ exports.empathy = function empathy() {
             return;
         }
 
+        globals.activeHover = null;
         setEmpathyOnHand(false);
     });
+
+    const setEmpathyOnHand = (enabled) => {
+        const hand = this.parent.parent;
+        if (!hand || hand.children.length === 0 || hand.empathy === enabled) {
+            return;
+        }
+
+        hand.empathy = enabled;
+        for (const layoutChild of hand.children) {
+            const card = layoutChild.children[0];
+            card.empathy = enabled;
+            card.setBareImage();
+        }
+        globals.layers.card.batchDraw();
+    };
 };
 
 exports.click = function click() {

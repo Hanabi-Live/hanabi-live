@@ -207,29 +207,37 @@ class HanabiCard extends graphics.Group {
             && this.numPositiveClues === 0
             && !this.isPlayed
             && !this.isDiscarded
+            && !this.empathy
             && !this.needsToBePlayed()
         ) {
             newOpacity = constants.CARD_FADE;
         }
 
-        if (oldOpacity !== newOpacity) {
-            if (this.opacityTween) {
-                this.opacityTween.destroy();
-            }
-            if (globals.animateFast || this.numPositiveClues > 0 || !this.getLayer()) {
-                this.setOpacity(newOpacity);
-            } else if (this.tweening) {
-                // Wait until the card is finished tweening before we animate the fade
-                setTimeout(() => {
-                    this.setFade();
-                }, 20);
-            } else {
-                this.opacityTween = new graphics.Tween({
-                    node: this,
-                    opacity: newOpacity,
-                    duration: 0.5,
-                }).play();
-            }
+        if (oldOpacity === newOpacity) {
+            return;
+        }
+
+        if (this.opacityTween) {
+            this.opacityTween.destroy();
+        }
+        if (
+            globals.animateFast
+            || this.numPositiveClues > 0
+            || this.empathy
+            || !this.getLayer()
+        ) {
+            this.setOpacity(newOpacity);
+        } else if (this.tweening) {
+            // Wait until the card is finished tweening before we animate the fade
+            setTimeout(() => {
+                this.setFade();
+            }, 20);
+        } else {
+            this.opacityTween = new graphics.Tween({
+                node: this,
+                opacity: newOpacity,
+                duration: 0.5,
+            }).play();
         }
     }
 

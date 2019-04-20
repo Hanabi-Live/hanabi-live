@@ -16,6 +16,7 @@ class CardLayout extends graphics.Group {
         this.align = config.align || 'left';
         this.reverse = config.reverse || false;
         this.rotation = config.rotation;
+        this.empathy = false;
 
         // Debug rectangle (uncomment to show the size of the hand)
         /*
