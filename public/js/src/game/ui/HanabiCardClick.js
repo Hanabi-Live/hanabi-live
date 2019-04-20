@@ -5,6 +5,7 @@
 // Imports
 const arrows = require('./arrows');
 const constants = require('../../constants');
+const convert = require('./convert');
 const globals = require('./globals');
 const notes = require('./notes');
 const replay = require('./replay');
@@ -50,10 +51,11 @@ const clickLeft = (card, event) => {
 };
 
 const clickRight = (card, event) => {
-    // Ctrl + shift + alt + right-click is a card morph
+    // Alt + right-click is a card morph (in a replay / shared replay)
     if (
-        event.ctrlKey
-        && event.shiftKey
+        globals.replay
+        && !event.ctrlKey
+        && !event.shiftKey
         && event.altKey
         && !event.metaKey
     ) {
@@ -177,29 +179,32 @@ const clickMorph = (order) => {
         return;
     }
 
-    const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "11", "65")');
+    const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3")');
     if (card === null || card.length !== 2) {
         return;
     }
     const suitLetter = card[0];
-    let suit;
-    if (suitLetter === 'b' || suitLetter === '1') {
-        suit = 0;
-    } else if (suitLetter === 'g' || suitLetter === '2') {
-        suit = 1;
-    } else if (suitLetter === 'y' || suitLetter === '3') {
-        suit = 2;
-    } else if (suitLetter === 'r' || suitLetter === '4') {
-        suit = 3;
-    } else if (suitLetter === 'p' || suitLetter === '5') {
-        suit = 4;
-    } else if (suitLetter === 'k' || suitLetter === 'm' || suitLetter === '6') {
-        suit = 5;
-    } else {
+    let suit = null;
+    for (const variantSuit of globals.variant.suits) {
+        console.log(variantSuit.abbreviation);
+        if (suitLetter.toLowerCase() === variantSuit.abbreviation.toLowerCase()) {
+            suit = variantSuit;
+        }
+    }
+    if (suit === null) {
+        let msg = `I don't know what suit corresponds to the letter "${suitLetter}".\n`;
+        const abbreviations = globals.variant.suits.map(
+            variantSuit => variantSuit.abbreviation.toLowerCase(),
+        );
+        msg += `The available acronyms are: ${abbreviations}`;
+        alert(msg);
         return;
     }
+    suit = convert.suitToMsgSuit(suit, globals.variant);
+
     const rank = parseInt(card[1], 10);
-    if (Number.isNaN(rank)) {
+    if (Number.isNaN(rank) || rank < 0 || rank > 7) {
+        alert(`The rank of "${card[1]}" is not valid.`);
         return;
     }
 
