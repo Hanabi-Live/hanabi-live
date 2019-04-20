@@ -96,6 +96,7 @@ func commandPause(s *Session, d *CommandData) {
 	if d.Value == "pause" {
 		g.Paused = true
 		g.PauseTime = time.Now()
+		g.PauseCount++
 		g.PausePlayer = i
 	} else if d.Value == "unpause" {
 		g.Paused = false
@@ -110,7 +111,7 @@ func commandPause(s *Session, d *CommandData) {
 
 		// Restart the function that will check to see if the current player has run out of time
 		// (since the existing function will return and do nothing if the game is paused)
-		go g.CheckTimer(g.Turn, g.Players[g.ActivePlayer])
+		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayer])
 	}
 
 	g.NotifyPause()

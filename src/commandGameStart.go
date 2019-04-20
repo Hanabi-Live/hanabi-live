@@ -320,7 +320,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Start the timer
 	g.TurnBeginTime = time.Now()
 	if g.Options.Timed {
-		go g.CheckTimer(0, g.Players[g.ActivePlayer])
+		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayer])
 	}
 }
 

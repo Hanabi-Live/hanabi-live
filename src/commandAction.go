@@ -377,7 +377,7 @@ func commandAction(s *Session, d *CommandData) {
 	if g.Options.Timed {
 		// Start the function that will check to see if the current player has run out of time
 		// (since it just got to be their turn)
-		go g.CheckTimer(g.Turn, np)
+		go g.CheckTimer(g.Turn, g.PauseCount, np)
 
 		// If the player queued a pause command, then pause the game
 		if np.RequestedPause {

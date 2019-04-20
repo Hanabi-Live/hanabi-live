@@ -59,6 +59,7 @@ type Game struct {
 	ChatRead    map[int]int        // A map of which users have read which messages
 	Paused      bool               // Only applicable to timed games
 	PauseTime   time.Time          // Only applicable to timed games
+	PauseCount  int                // Only applicable to timed games
 	PausePlayer int                // The index of the player who paused
 
 	Hypothetical bool // Whether or not we are in a post-game hypothetical
@@ -188,7 +189,7 @@ func (g *Game) GetSpecificCardNum(suit int, rank int) (int, int) {
 */
 
 // CheckTimer is meant to be called in a new goroutine
-func (g *Game) CheckTimer(turn int, p *Player) {
+func (g *Game) CheckTimer(turn int, pauseCount int, p *Player) {
 	// Sleep until the active player runs out of time
 	time.Sleep(p.Time)
 	commandMutex.Lock()
@@ -204,8 +205,13 @@ func (g *Game) CheckTimer(turn int, p *Player) {
 		return
 	}
 
-	// Check to see if the game is paused
+	// Check to see if the game is currently paused
 	if g.Paused {
+		return
+	}
+
+	// Check to see if the game was paused while we were sleeping
+	if pauseCount != g.PauseCount {
 		return
 	}
 
