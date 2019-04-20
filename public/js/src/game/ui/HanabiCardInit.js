@@ -166,6 +166,11 @@ exports.pips = function pips() {
     for (const rank of globals.variant.ranks) {
         const x = Math.floor(constants.CARD_W * (rank * 0.19 - 0.14));
         const y = 0;
+        let opacity = 1;
+        if (rank === constants.START_CARD_RANK) {
+            // We don't want to show the rank pip that represents a "START" card
+            opacity = 0;
+        }
         const rankPip = new graphics.Rect({
             x,
             y,
@@ -174,12 +179,18 @@ exports.pips = function pips() {
             fill: 'black',
             stroke: 'black',
             cornerRadius: 0.02 * constants.CARD_H,
+            opacity,
             listening: false,
         });
         this.rankPips.add(rankPip);
         this.rankPipsMap.set(rank, rankPip);
 
         // Also create the X that will show when a certain rank can be ruled out
+        opacity = 0.8;
+        if (rank === constants.START_CARD_RANK) {
+            // We don't want to show the rank pip that represents a "START" card
+            opacity = 0;
+        }
         const rankPipX = new graphics.Shape({
             x,
             y,
