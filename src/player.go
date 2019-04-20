@@ -122,10 +122,12 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 
 		text = p.Name + " "
 		if strings.HasPrefix(g.Options.Variant, "Cow & Pig") {
+			// We want color clues to correspond to the first animal since color buttons are above
+			// number buttons, even though rank comes first in the enum
 			if d.Clue.Type == clueTypeRank {
-				text += "moos"
-			} else if d.Clue.Type == clueTypeColor {
 				text += "oinks"
+			} else if d.Clue.Type == clueTypeColor {
+				text += "moos"
 			}
 		} else if strings.HasPrefix(g.Options.Variant, "Duck") {
 			text += "quacks"

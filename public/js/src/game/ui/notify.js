@@ -81,10 +81,12 @@ commands.clue = (data) => {
         clueName = clue.value.name;
     }
     if (globals.variant.name.startsWith('Cow & Pig')) {
+        // We want color clues to correspond to the first animal since color buttons are above
+        // number buttons, even though rank comes first in the enum
         if (data.clue.type === constants.CLUE_TYPE.RANK) {
-            clueName = 'Moo';
-        } else if (data.clue.type === constants.CLUE_TYPE.COLOR) {
             clueName = 'Oink';
+        } else if (data.clue.type === constants.CLUE_TYPE.COLOR) {
+            clueName = 'Moo';
         }
     } else if (globals.variant.name.startsWith('Duck')) {
         clueName = 'Quack';
