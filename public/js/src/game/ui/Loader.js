@@ -18,6 +18,7 @@ class Loader {
             'replay-forward-full',
             'replay-forward-full-disabled',
             'skull',
+            'sparkle',
             'trashcan',
             'x',
         ];

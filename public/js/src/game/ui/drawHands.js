@@ -371,7 +371,7 @@ module.exports = () => {
                 ]);
             }
 
-            globals.layers.background.add(rect);
+            globals.layers.UI.add(rect);
         }
 
         let playerNamePos = namePos;
@@ -384,7 +384,7 @@ module.exports = () => {
             width: playerNamePos[numPlayers][j].w * winW,
             height: playerNamePos[numPlayers][j].h * winH,
             name: globals.playerNames[i],
-            playerNum: i,
+            playerIndex: i,
         });
         globals.layers.UI.add(globals.elements.nameFrames[i]);
 

@@ -222,7 +222,7 @@ commands.text = (data) => {
     globals.elements.fullActionLog.addMessage(data.text);
     if (!globals.animateFast) {
         globals.layers.UI.batchDraw();
-        globals.layers.overtop.batchDraw();
+        globals.layers.UI2.batchDraw();
     }
 };
 

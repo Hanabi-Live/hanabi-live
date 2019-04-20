@@ -46,6 +46,7 @@ class HanabiCard extends graphics.Group {
         this.initNote();
         this.initEmpathy();
         this.initClick();
+        this.initSparkles();
     }
 
     isClued() {
@@ -267,6 +268,10 @@ class HanabiCard extends graphics.Group {
 
     initPossibilities() {
         return HanabiCardInit.possibilities.call(this);
+    }
+
+    initSparkles() {
+        return HanabiCardInit.sparkles.call(this);
     }
 
     // This card was touched by a positive or negative clue,

@@ -80,12 +80,10 @@ module.exports = () => {
     globals.ImageLoader = null;
     globals.stage = null;
     globals.layers = {
-        background: null,
         UI: null,
         timer: null,
         card: null,
         UI2: null, // We need some UI elements to be on top of cards
-        overtop: null, // A layer drawn overtop everything else
     };
     globals.elements = {
         // The main screen

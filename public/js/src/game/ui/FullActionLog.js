@@ -100,7 +100,7 @@ class FullActionLog extends graphics.Group {
         this.show();
 
         globals.elements.stageFade.show();
-        globals.layers.overtop.batchDraw();
+        globals.layers.UI2.batchDraw();
 
         globals.elements.stageFade.on('click tap', () => {
             globals.elements.stageFade.off('click tap');
@@ -111,7 +111,7 @@ class FullActionLog extends graphics.Group {
             this.logNumbers.show();
             this.hide();
             globals.elements.stageFade.hide();
-            globals.layers.overtop.batchDraw();
+            globals.layers.UI2.batchDraw();
         });
     }
 

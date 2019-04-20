@@ -1,5 +1,5 @@
 /*
-    Modals (boxes that hover overtop the UI)
+    Modals (boxes that hover on top of the UI)
 */
 
 // Imports

@@ -109,12 +109,10 @@ const initLayers = () => {
     // Define the layers
     // (they are added to the stage later on at the end of this function)
     const layers = [
-        'background',
         'UI',
         'timer',
         'card',
         'UI2', // We need some UI elements to be on top of cards
-        'overtop', // A layer drawn overtop everything else
     ];
     for (const layer of layers) {
         globals.layers[layer] = new graphics.Layer({
@@ -136,7 +134,7 @@ const drawBackground = () => {
         height: winH,
         image: globals.ImageLoader.get('background'),
     });
-    globals.layers.background.add(background);
+    globals.layers.UI.add(background);
 
     // The dark overlay that appears when you click the action log is clicked,
     // when a player's name is clicked, when the game is paused, etc.
@@ -150,7 +148,7 @@ const drawBackground = () => {
         visible: false,
         listening: true,
     });
-    globals.layers.overtop.add(globals.elements.stageFade);
+    globals.layers.UI2.add(globals.elements.stageFade);
 };
 
 const initReusableObjects = () => {
@@ -215,13 +213,13 @@ const drawActionLog = () => {
     actionLogRect.on('click tap', () => {
         globals.elements.fullActionLog.show();
         globals.elements.stageFade.show();
-        globals.layers.overtop.batchDraw();
+        globals.layers.UI2.batchDraw();
 
         globals.elements.stageFade.on('click tap', () => {
             globals.elements.stageFade.off('click tap');
             globals.elements.fullActionLog.hide();
             globals.elements.stageFade.hide();
-            globals.layers.overtop.batchDraw();
+            globals.layers.UI2.batchDraw();
         });
     });
 
@@ -252,7 +250,7 @@ const drawActionLog = () => {
 
     // The full action log (that appears when you click on the action log)
     globals.elements.fullActionLog = new FullActionLog();
-    globals.layers.overtop.add(globals.elements.fullActionLog);
+    globals.layers.UI2.add(globals.elements.fullActionLog);
 };
 
 const drawPlayStacksAndDiscardStacks = () => {
@@ -312,7 +310,7 @@ const drawPlayStacksAndDiscardStacks = () => {
             image: globals.cardImages[`Card-${suit.name}-0`],
             listening: true,
         });
-        globals.layers.background.add(playStackBack);
+        globals.layers.UI.add(playStackBack);
 
         playStackBack.type = 'PlayStackBack';
         playStackBack.on('click', (event) => {
@@ -553,7 +551,7 @@ const drawDeck = () => {
         cornerRadius: 0.006 * winW,
         listening: true,
     });
-    globals.layers.background.add(deckRect);
+    globals.layers.UI.add(deckRect);
 
     // Near the top of the deck, draw the database ID for the respective game
     // (in an ongoing game, this will not show)
@@ -992,7 +990,7 @@ const drawClueLog = () => {
         opacity: 0.2,
         cornerRadius: 0.01 * winW,
     });
-    globals.layers.background.add(clueLogRect);
+    globals.layers.UI.add(clueLogRect);
 
     const spacing = 0.01;
     globals.elements.clueLog = new ClueLog({
@@ -1015,7 +1013,7 @@ const drawStatistics = () => {
         opacity: 0.2,
         cornerRadius: 0.01 * winW,
     });
-    globals.layers.background.add(statsRect);
+    globals.layers.UI.add(statsRect);
 
     const paceTextLabel = basicTextLabel.clone({
         text: 'Pace',
@@ -1153,7 +1151,7 @@ const drawDiscardArea = () => {
         opacity: 0.2,
         cornerRadius: 0.01 * winW,
     });
-    globals.layers.background.add(discardAreaRect);
+    globals.layers.UI.add(discardAreaRect);
 
     // The trash can icon over the discard pile
     const trashcan = new graphics.Image({
@@ -1164,7 +1162,7 @@ const drawDiscardArea = () => {
         opacity: 0.2,
         image: globals.ImageLoader.get('trashcan'),
     });
-    globals.layers.background.add(trashcan);
+    globals.layers.UI.add(trashcan);
 
     // This is the invisible rectangle that players drag cards to in order to discard them
     globals.elements.discardArea = new graphics.Rect({
@@ -1293,7 +1291,7 @@ const drawArrows = () => {
 
     for (let i = 0; i < 5; i++) {
         const arrow = new Arrow();
-        globals.layers.card.add(arrow);
+        globals.layers.UI2.add(arrow);
         globals.elements.arrows.push(arrow);
     }
 };
@@ -1566,7 +1564,7 @@ const drawPauseArea = () => {
         y: 0.25 * winH,
         visible: false,
     });
-    globals.layers.overtop.add(globals.elements.pauseArea);
+    globals.layers.UI2.add(globals.elements.pauseArea);
 
     const pauseRect = new graphics.Rect({
         width: pauseAreaValues.w * winW,

@@ -5,12 +5,13 @@
 // Imports
 const arrows = require('./arrows');
 const constants = require('../../constants');
+const drawPips = require('./drawPip');
 const globals = require('./globals');
 const graphics = require('./graphics');
 const HanabiCardClick = require('./HanabiCardClick');
 const HanabiCardClickSpeedrun = require('./HanabiCardClickSpeedrun');
 const notes = require('./notes');
-const drawPips = require('./drawPip');
+// const Sparkle = require('./Sparkle');
 
 exports.image = function image() {
     // Create the "bare" card image, which is the main card grahpic
@@ -414,13 +415,22 @@ exports.possibilities = function possibilities() {
     }
 };
 
+exports.sparkles = function sparkles() {
+    /*
+    const spark = new Sparkle({
+        x: -50,
+        y: -50,
+    });
+    this.add(spark);
+    */
+};
+
 /*
     Misc. functions
 */
 
-const scaleCardImage = (context, name, width, height, am) => {
+const scaleCardImage = (ctx, name, width, height, am) => {
     let src = globals.cardImages[name];
-
     if (!src) {
         throw new Error(`The image "${name}" was not generated.`);
     }
@@ -461,7 +471,7 @@ const scaleCardImage = (context, name, width, height, am) => {
         steps += 1;
     }
 
-    context.drawImage(src, 0, 0, width, height);
+    ctx.drawImage(src, 0, 0, width, height);
 };
 
 const drawX = (ctx, shape, x, y, size, width) => {
