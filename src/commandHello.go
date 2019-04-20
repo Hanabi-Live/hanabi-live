@@ -38,6 +38,14 @@ func commandHello(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that they are either playing or spectating the game
+	i := g.GetPlayerIndex(s.UserID())
+	j := g.GetSpectatorIndex(s.UserID())
+	if i == -1 && j == -1 {
+		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ".")
+		return
+	}
+
 	/*
 		Hello
 	*/
@@ -68,6 +76,21 @@ func commandHello(s *Session, d *CommandData) {
 	}
 	// If this is a replay of a game they were not in (or if they are spectating),
 	// the above if statement will never be reached, and they will be in seat 0
+
+	// Account for if a spectator is shadowing a specific player
+	if j != -1 && g.Spectators[j].Shadowing {
+		seat = g.Spectators[j].PlayerIndex
+	}
+
+	id := g.DatabaseID
+	if id == 0 {
+		id = g.ID
+	}
+
+	pauseQueued := g.Players[seat].RequestedPause
+	if i == -1 {
+		pauseQueued = false
+	}
 
 	// Give them an "init" message
 	type InitMessage struct {
@@ -100,6 +123,7 @@ func commandHello(s *Session, d *CommandData) {
 		PausePlayer string `json:"pausePlayer"`
 		PauseQueued bool   `json:"pauseQueued"`
 	}
+
 	s.Emit("init", &InitMessage{
 		// Game settings
 		Names:        names,
@@ -108,7 +132,7 @@ func commandHello(s *Session, d *CommandData) {
 		Spectating:   s.Status() == statusSpectating,
 		Replay:       s.Status() == statusReplay || s.Status() == statusSharedReplay,
 		SharedReplay: s.Status() == statusSharedReplay,
-		ID:           g.DatabaseID,
+		ID:           id,
 
 		// Optional settings
 		Timed:                g.Options.Timed,
@@ -128,6 +152,6 @@ func commandHello(s *Session, d *CommandData) {
 		// Other features
 		Paused:      g.Paused,
 		PausePlayer: g.Players[g.PausePlayer].Name,
-		PauseQueued: g.Players[seat].RequestedPause,
+		PauseQueued: pauseQueued,
 	})
 }

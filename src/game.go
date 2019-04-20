@@ -110,11 +110,6 @@ func (g *Game) GetPlayerIndex(id int) int {
 }
 
 func (g *Game) GetSpectatorIndex(id int) int {
-	// If this function is called for a replay, the game will be nil, so account for this
-	if g == nil {
-		return -1
-	}
-
 	for i, sp := range g.Spectators {
 		if sp.ID == id {
 			return i

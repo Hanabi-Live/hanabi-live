@@ -37,6 +37,7 @@ func commandReady(s *Session, d *CommandData) {
 	*/
 
 	i := g.GetPlayerIndex(s.UserID())
+	j := g.GetSpectatorIndex(s.UserID())
 
 	notes := make([]models.PlayerNote, 0)
 	for _, p := range g.Players {
@@ -50,10 +51,17 @@ func commandReady(s *Session, d *CommandData) {
 
 	// Check to see if we need to remove some card information
 	var scrubbedActions []interface{}
-	if !g.Replay && i > -1 {
-		// The person requesting the game state is one of the active players,
+	if !g.Replay && (i > -1 || (j > -1 && g.Spectators[j].Shadowing)) {
+		// The person requesting the game state is one of the active players
+		// (or a spectator shadowing one of the active players),
 		// so we need to hide some information
-		p := g.Players[i]
+		var p *Player
+		if i > -1 {
+			p = g.Players[i]
+		} else {
+			p = g.Players[g.Spectators[j].PlayerIndex]
+		}
+
 		for _, a := range g.Actions {
 			drawAction, ok := a.(ActionDraw)
 			if ok && drawAction.Type == "draw" {

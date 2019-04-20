@@ -34,6 +34,9 @@ type CommandData struct {
 	Note  string `json:"note"`
 	Order int    `json:"order"`
 
+	// gameSpectate
+	Player string `json:"player"` // Optional
+
 	// replayCreate
 	Source     string   `json:"source"`
 	GameJSON   GameJSON `json:"gameJSON"`

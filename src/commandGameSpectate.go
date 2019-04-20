@@ -7,6 +7,8 @@
 	"data" example:
 	{
 		gameID: 15103,
+		player: "Zamiel", // Optional
+		// If the player is specified, they will spectate from that player's perspective
 	}
 */
 
@@ -51,6 +53,27 @@ func commandGameSpectate(s *Session, d *CommandData) {
 		}
 	}
 
+	// Validate the player name
+	// (if provided, they want to spectate from a specific player's perspective)
+	playerIndex := -1
+	if d.Player != "" {
+		if g.Replay {
+			s.Warning("You cannot provide a player index to a replay.")
+			return
+		}
+
+		for i, p := range g.Players {
+			if p.Name == d.Player {
+				playerIndex = i
+				break
+			}
+		}
+		if playerIndex == -1 {
+			s.Warning("That is an invalid player name.")
+			return
+		}
+	}
+
 	/*
 		Spectate / Join Solo Replay / Join Shared Replay
 	*/
@@ -63,9 +86,11 @@ func commandGameSpectate(s *Session, d *CommandData) {
 
 	// Add them to the spectators object
 	sp := &Spectator{
-		ID:      s.UserID(),
-		Name:    s.Username(),
-		Session: s,
+		ID:          s.UserID(),
+		Name:        s.Username(),
+		Session:     s,
+		Shadowing:   playerIndex != -1,
+		PlayerIndex: playerIndex,
 	}
 	g.Spectators = append(g.Spectators, sp)
 	notifyAllTable(g)    // Update the spectator list for the row in the lobby

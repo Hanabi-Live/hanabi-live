@@ -3,11 +3,15 @@ const constants = require('../../constants');
 const globals = require('./globals');
 const graphics = require('./graphics');
 const tooltips = require('./tooltips');
+const ui = require('./ui');
 
 class NameFrame extends graphics.Group {
     constructor(config) {
         config.listening = true;
         super(config);
+
+        // Class variables
+        this.playerIndex = config.playerIndex;
 
         this.name = new graphics.Text({
             x: config.width / 2,
@@ -34,14 +38,27 @@ class NameFrame extends graphics.Group {
         }
         this.name.setOffsetX(w / 2);
 
-        // Left-click on the name frame to see a log of only their actions
-        // Right-click on the name frame to pass the replay leader to them
         this.name.on('click tap', function click(event) {
             const username = this.getText();
             if (event.evt.which === 1) { // Left-click
+                // Left-click on the name frame to see a log of only their actions
                 globals.elements.fullActionLog.showPlayerActions(username);
             } else if (event.evt.which === 3) { // Right-click
-                giveLeader(username);
+                if (!globals.replay && globals.spectating) {
+                    // As a spectator,
+                    // right-click on the name frame to spectate the game from their perspective
+                    setTimeout(() => {
+                        globals.lobby.conn.send('gameSpectate', {
+                            gameID: globals.id,
+                            player: username,
+                        });
+                    }, 20);
+                    ui.backToLobby();
+                } else if (globals.sharedReplay) {
+                    // In a shared replay,
+                    // right-click on the name frame to pass the replay leader to them
+                    giveLeader(username);
+                }
             }
         });
         this.add(this.name);
@@ -97,7 +114,7 @@ class NameFrame extends graphics.Group {
         // Draw the tooltips on the player names that show the time
         // (we don't use the "tooltip.init()" function because we need the extra condition in the
         // "mousemove" and "mouseout" event)
-        this.tooltipName = `player-${config.playerNum}`;
+        this.tooltipName = `player-${this.playerIndex}`;
         this.on('mousemove', function mouseMove() {
             globals.activeHover = this;
 
