@@ -110,8 +110,9 @@ const initLayers = () => {
     // (they are added to the stage later on at the end of this function)
     const layers = [
         'UI',
-        'timer',
+        'timer', // The timer gets its own layer since it is being constantly updated
         'card',
+        'sparkles', // Sparkles get their own layer since they are constantly animating
         'UI2', // We need some UI elements to be on top of cards
     ];
     for (const layer of layers) {

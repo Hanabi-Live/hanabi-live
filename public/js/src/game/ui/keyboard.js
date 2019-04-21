@@ -84,7 +84,11 @@ const keydown = (event) => {
         }
 
         // Ctrl + c = Copy the current game ID
-        if (event.key === 'c' && globals.id !== 0) {
+        if (
+            event.key === 'c'
+            && globals.replay
+            && !($('#game-chat-modal').is(':visible'))
+        ) {
             misc.copyStringToClipboard(globals.id);
             return;
         }
