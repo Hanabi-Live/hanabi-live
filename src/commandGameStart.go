@@ -113,7 +113,7 @@ func commandGameStart(s *Session, d *CommandData) {
 		// This is a preset deal from a file, so just set the seed equal to the file name
 		g.Seed = g.Options.SetDeal
 		preset = true // Later on, we need to skip shuffling the deck
-		if !g.SetPresetDeck(s) {
+		if g.SetPresetDeck(s) {
 			return
 		}
 	} else {
@@ -248,7 +248,9 @@ func commandGameStart(s *Session, d *CommandData) {
 	// If we are replaying an existing game up to a certain point,
 	// start emulating all of the actions
 	if g.Options.SetReplay != 0 {
-		g.EmulateGameplayFromDatabaseActions(s)
+		if g.EmulateGameplayFromDatabaseActions(s) {
+			return
+		}
 	}
 
 	// Send a "gameStart" message to everyone in the game
@@ -291,7 +293,7 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 	if v, err := ioutil.ReadFile(filePath); err != nil {
 		log.Error("Failed to read \""+filePath+"\":", err)
 		s.Error("Failed to create the game. Please contact an administrator.")
-		return false
+		return true
 	} else {
 		lines = strings.Split(string(v), "\n")
 	}
@@ -302,7 +304,7 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 			if v, err := strconv.Atoi(line); err != nil {
 				log.Error("Failed to parse the first line (that signifies which player will go first):", line)
 				s.Error("Failed to create the game. Please contact an administrator.")
-				return false
+				return true
 			} else {
 				// Player 1 would be equal to the player at index 0
 				g.ActivePlayer = v - 1
@@ -320,7 +322,7 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 		if match2 == nil {
 			log.Error("Failed to parse line "+strconv.Itoa(i+1)+":", line)
 			s.Error("Failed to start the game. Please contact an administrator.")
-			return false
+			return true
 		}
 
 		// Change the suit of all of the cards in the deck
@@ -341,7 +343,7 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 		} else {
 			log.Error("Failed to parse the suit on line "+strconv.Itoa(i+1)+":", suit)
 			s.Error("Failed to create the game. Please contact an administrator.")
-			return false
+			return true
 		}
 		g.Deck[i-1].Suit = newSuit // The first line is the number of players, so we have to subtract one
 
@@ -351,14 +353,14 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 		if v, err := strconv.Atoi(rank); err != nil {
 			log.Error("Failed to parse the rank on line "+strconv.Itoa(i+1)+":", rank)
 			s.Error("Failed to create the game. Please contact an administrator.")
-			return false
+			return true
 		} else {
 			newRank = v
 		}
 		g.Deck[i-1].Rank = newRank // The first line is the number of players, so we have to subtract one
 	}
 
-	return true
+	return false
 }
 
 func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
@@ -374,7 +376,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 		log.Error("Failed to get the actions from the database for game "+
 			strconv.Itoa(g.Options.SetReplay)+":", err)
 		s.Error("Failed to initialize the game. Please contact an administrator.")
-		return false
+		return true
 	} else {
 		actionStrings = v
 	}
@@ -385,7 +387,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
 			log.Error("Failed to unmarshal an action while emulating gameplay from the database:", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")
-			return false
+			return true
 		}
 
 		// Emulate the various actions
@@ -395,7 +397,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			if err := json.Unmarshal([]byte(actionString), &actionClue); err != nil {
 				log.Error("Failed to unmarshal a clue action:", err)
 				s.Error("Failed to initialize the game. Please contact an administrator.")
-				return false
+				return true
 			}
 
 			// Emulate the clue action
@@ -411,7 +413,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			if err := json.Unmarshal([]byte(actionString), &actionPlay); err != nil {
 				log.Error("Failed to unmarshal a play action:", err)
 				s.Error("Failed to initialize the game. Please contact an administrator.")
-				return false
+				return true
 			}
 
 			// Emulate the play action
@@ -426,7 +428,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			if err := json.Unmarshal([]byte(actionString), &actionDiscard); err != nil {
 				log.Error("Failed to unmarshal a discard action:", err)
 				s.Error("Failed to initialize the game. Please contact an administrator.")
-				return false
+				return true
 			}
 
 			// Emulate the discard action
@@ -441,7 +443,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			if err := json.Unmarshal([]byte(actionString), &actionTurn); err != nil {
 				log.Error("Failed to unmarshal a turn action:", err)
 				s.Error("Failed to initialize the game. Please contact an administrator.")
-				return false
+				return true
 			}
 
 			// Stop if we have reached the intended turn
@@ -452,7 +454,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 					p.InitTime(g)
 				}
 
-				return true
+				return false
 			}
 		}
 	}
@@ -460,5 +462,5 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 	log.Error("Failed to find the intended turn before reaching the end of game " +
 		strconv.Itoa(g.Options.SetReplay) + ".")
 	s.Error("Failed to initialize the game. Please contact an administrator.")
-	return false
+	return true
 }
