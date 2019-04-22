@@ -92,10 +92,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Start the idle timeout
 	go g.CheckIdle()
 
-	// Create the deck
-	// (it will have 60 cards if playing no variant,
-	// 65 cards if playing a one of each variant,
-	// and 70 cards when playing the other variants)
+	// Create the deck (the amount of cards will depend on the variant)
 	suits := make([]int, 0)
 	for i := 0; i < len(variants[g.Options.Variant].Suits); i++ {
 		suits = append(suits, i) // For a normal game, the suits will be equal to {0, 1, 2, 3, 4}
