@@ -107,7 +107,9 @@ const initLayers = () => {
     }
 
     // Define the layers
-    // (they are added to the stage later on at the end of this function)
+    // They are added to the stage later on at the end of this function
+    // We don't want to add too many layers; the Konva documentation states that 3-5 is max:
+    // https://konvajs.org/docs/performance/Layer_Management.html
     const layers = [
         'UI',
         'timer', // The timer gets its own layer since it is being constantly updated

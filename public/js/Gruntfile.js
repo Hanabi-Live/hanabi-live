@@ -9,6 +9,11 @@ module.exports = (grunt) => {
             dist: {
                 src: 'src/main.js',
                 dest: 'main.browserified.js',
+                options: {
+                    browserifyOptions: {
+                        debug: true,
+                    },
+                },
             },
 
             dev: {

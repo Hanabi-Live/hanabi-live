@@ -85,7 +85,7 @@ CREATE TABLE games (
     name                   NVARCHAR(50)  NOT NULL,
     num_players            TINYINT       NOT NULL,
     owner                  INT           NOT NULL,
-    variant                INT           NOT NULL, /* Equal to the variant ID (found in "variants.go") */
+    variant                INT           NOT NULL, /* Equal to the variant ID (found in "variants.json") */
     timed                  BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
     time_base              INT           NOT NULL, /* in seconds */
     time_per_turn          INT           NOT NULL, /* in seconds */
@@ -93,7 +93,7 @@ CREATE TABLE games (
     deck_plays             BOOLEAN       NOT NULL,
     empty_clues            BOOLEAN       NOT NULL,
     character_assignments  BOOLEAN       NOT NULL,
-    seed                   VARCHAR(50)   NOT NULL, /* like "p2v0s1" */
+    seed                   VARCHAR(50)   NOT NULL, /* e.g. "p2v0s1" */
     score                  INT           NOT NULL,
     num_turns              INT           NOT NULL,
     end_condition          INT           NOT NULL, /* 0 - in progress, 1 - normal, 2 - strikeout, 3 - timeout, 4 - abandoned */
