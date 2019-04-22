@@ -362,7 +362,6 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		DatetimeLastAction: time.Now(),
 		DatetimeStarted:    time.Now(),
 		NoDatabase:         true,
-		Deck:               make([]*Card, 0),
 		Stacks:             make([]int, len(variants[d.GameJSON.Variant].Suits)),
 		StackDirections:    make([]int, len(variants[d.GameJSON.Variant].Suits)),
 		ActivePlayer:       d.GameJSON.FirstPlayer,
@@ -376,6 +375,7 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 	}
 
 	// Convert the JSON deck to a normal deck
+	g.Deck = make([]*Card, 0)
 	for i, c := range d.GameJSON.Deck {
 		g.Deck = append(g.Deck, &Card{
 			Suit:  c.Suit,

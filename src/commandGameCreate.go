@@ -261,7 +261,6 @@ func commandGameCreate(s *Session, d *CommandData) {
 		Clues:              maxClues,
 		DatetimeCreated:    time.Now(),
 		DatetimeLastAction: time.Now(),
-		Deck:               make([]*Card, 0),
 		Stacks:             make([]int, len(variants[d.Variant].Suits)),
 		StackDirections:    make([]int, len(variants[d.Variant].Suits)),
 		MaxScore:           len(variants[d.Variant].Suits) * 5,

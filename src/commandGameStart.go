@@ -92,45 +92,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	// Start the idle timeout
 	go g.CheckIdle()
 
-	// Create the deck (the amount of cards will depend on the variant)
-	suits := make([]int, 0)
-	for i := 0; i < len(variants[g.Options.Variant].Suits); i++ {
-		suits = append(suits, i) // For a normal game, the suits will be equal to {0, 1, 2, 3, 4}
-	}
-	for _, suit := range suits {
-		ranks := []int{1, 2, 3, 4, 5}
-		if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-			ranks = append(ranks, startCardRank) // This is defined in the "variantUpOrDown.go" file
-		}
-		for _, rank := range ranks {
-			// In a normal suit of Hanabi, there are three 1's, two 2's, two 3's, two 4's, and one five
-			var amountToAdd int
-			if rank == 1 {
-				amountToAdd = 3
-				if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-					amountToAdd = 1
-				}
-			} else if rank == 5 {
-				amountToAdd = 1
-			} else if rank == startCardRank { // The "START" card
-				amountToAdd = 1
-			} else {
-				amountToAdd = 2
-			}
-			if variants[g.Options.Variant].Suits[suit].OneOfEach {
-				amountToAdd = 1
-			}
-
-			for i := 0; i < amountToAdd; i++ {
-				// Add the card to the deck
-				g.Deck = append(g.Deck, &Card{
-					Suit: suit,
-					Rank: rank,
-					// We can't set the order here because the deck will be shuffled later
-				})
-			}
-		}
-	}
+	g.InitDeck()
 
 	// Handle setting the seed
 	preset := false
