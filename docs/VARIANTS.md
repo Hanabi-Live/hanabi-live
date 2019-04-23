@@ -128,6 +128,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * Fives are "touched" by all rank clues.
 * Players cannot clue rank 5.
 
+### Prism-Ones
+
+* Ones are "touched" by all color clues.
+* Players cannot clue rank 1.
+
 ### Clue Starved
 
 * Each discard only generates 0.5 clues. (The team still starts with 8 clues.)
@@ -220,10 +225,12 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Rainbow & Pink (6 Suits)
   * Rainbow & Pink (5 Suits)
   * Rainbow & Pink (4 Suits)
+  * Rainbow & Pink (3 Suits)
 * Rainbow & White
   * Rainbow & White (6 Suits)
   * Rainbow & White (5 Suits)
   * Rainbow & White (4 Suits)
+  * Rainbow & White (3 Suits)
 * Rainbow & Brown
   * Rainbow & Brown (6 Suits)
   * Rainbow & Brown (5 Suits)
@@ -285,9 +292,22 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * White & Chocolate (6 Suits)
   * White & Chocolate (5 Suits)
 * Dark Mixes
+  * Dark Rainbow & Dark Pink (6 Suits)
   * Dark Rainbow & Gray (6 Suits)
   * Dark Rainbow & Chocolate (6 Suits)
+  * Dark Pink & Gray (6 Suits)
+  * Dark Pink & Chocolate (6 Suits)
   * Gray & Chocolate (6 Suits)
+* Light Rainbow
+  * Light Rainbow (6 Suits)
+  * Light Rainbow (5 Suits)
+  * Light Rainbow (4 Suits)
+  * Light Rainbow (3 Suits)
+* Light Pink
+  * Light Pink (6 Suits)
+  * Light Pink (5 Suits)
+  * Light Pink (4 Suits)
+  * Light Pink (3 Suits)
 * Color Blind
   * Color Blind (6 Suits)
   * Color Blind (5 Suits)
@@ -298,6 +318,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Number Blind (5 Suits)
   * Number Blind (4 Suits)
   * Number Blind (3 Suits)
+* Totally Blind
+  * Totally Blind (6 Suits)
+  * Totally Blind (5 Suits)
+  * Totally Blind (4 Suits)
+  * Totally Blind (3 Suits)
 * Color Mute
   * Color Mute (6 Suits)
   * Color Mute (5 Suits)
@@ -329,6 +354,15 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Multi-Fives & Rainbow (5 Suits)
   * Multi-Fives & Rainbow (4 Suits)
   * Multi-Fives & Rainbow (3 Suits)
+* Prism-Ones
+  * Prism-Ones (6 Suits)
+  * Prism-Ones (5 Suits)
+  * Prism-Ones (4 Suits)
+  * Prism-Ones (3 Suits)
+  * Prism-Ones & Pink (6 Suits)
+  * Prism-Ones & Pink (5 Suits)
+  * Prism-Ones & Pink (4 Suits)
+  * Prism-Ones & Pink (3 Suits)
 * Clue Starved
   * Clue Starved (6 Suits)
   * Clue Starved (5 Suits)
@@ -336,11 +370,14 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * Up or Down
   * Up or Down (6 Suits)
   * Up or Down (5 Suits)
-  * Up or Down & White (6 Suits)
-  * Up or Down & White (5 Suits)
   * Up or Down & Rainbow (6 Suits)
   * Up or Down & Rainbow (5 Suits)
-  * Up or Down & White & Rainbow (6 Suits)
+  * Up or Down & Pink (6 Suits)
+  * Up or Down & Pink (5 Suits)
+  * Up or Down & White (6 Suits)
+  * Up or Down & White (5 Suits)
+  * Up or Down & Brown (6 Suits)
+  * Up or Down & Brown (5 Suits)
 * Cow & Pig
   * Cow & Pig (6 Suits)
   * Cow & Pig (5 Suits)
@@ -352,5 +389,6 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Duck (4 Suits)
   * Duck (3 Suits)
 * Mixed
-  * African American
-  * Wild & Crazy
+  * Ambiguous Mix
+  * Dual-Color Mix
+  * Gay Pride

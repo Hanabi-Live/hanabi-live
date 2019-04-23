@@ -5,6 +5,7 @@
 const colors = require('../../data/colors');
 const suits = require('../../data/suits');
 const variants = require('../../data/variants');
+const characters = require('../../data/characters');
 
 // Define the defeault qualities of a card
 exports.CARD_W = 286;
@@ -257,6 +258,27 @@ const initVariants = () => {
 };
 initVariants();
 exports.VARIANTS = variants;
+
+const initCharacters = () => {
+    for (const characterName of Object.keys(characters)) {
+        const character = characters[characterName];
+
+        // Copy the name to the object
+        character.name = characterName;
+
+        // Validate that there is a description
+        if (!Object.hasOwnProperty.call(character, 'description')) {
+            throw new Error(`The "${characterName}" character does not have a description.`);
+        }
+
+        // Validate that there is an emoji
+        if (!Object.hasOwnProperty.call(character, 'emoji')) {
+            throw new Error(`The "${characterName}" character does not have an emoji.`);
+        }
+    }
+};
+initCharacters();
+exports.CHARACTERS = characters;
 
 // Also make the constants available from the JavaScript console (for debugging purposes)
 window.constants = exports;
