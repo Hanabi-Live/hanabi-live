@@ -163,11 +163,32 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
-		// The "GiveClue()" method will return false if the clue touches 0 cards in the hand
-		if !p.GiveClue(d, g) {
+		// Validate that the clue touches at least one card
+		p2 := g.Players[d.Target] // The target of the clue
+		touchedAtLeastOneCard := false
+		for _, c := range p2.Hand {
+			if variantIsCardTouched(g.Options.Variant, d.Clue, c) {
+				touchedAtLeastOneCard = true
+				break
+			}
+		}
+		if !touchedAtLeastOneCard &&
+			// Make an exception if they have the optional setting for "Empty Clues" turned on
+			!g.Options.EmptyClues &&
+			// Make an exception for the "Color Blind" variants (color clues touch no cards),
+			// "Number Blind" variants (rank clues touch no cards),
+			// and "Totally Blind" variants (all clues touch no cards)
+			(!strings.HasPrefix(g.Options.Variant, "Color Blind") || d.Clue.Type != clueTypeColor) &&
+			(!strings.HasPrefix(g.Options.Variant, "Number Blind") || d.Clue.Type != clueTypeRank) &&
+			!strings.HasPrefix(g.Options.Variant, "Totally Blind") &&
+			// Make an exception for certain characters
+			!characterEmptyClueAllowed(d, g, p) {
+
 			s.Warning("You cannot give a clue that touches 0 cards in the hand.")
 			return
 		}
+
+		p.GiveClue(d, g)
 
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0

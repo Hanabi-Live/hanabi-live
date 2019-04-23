@@ -43,25 +43,9 @@ func (p *Player) InitTime(g *Game) {
 */
 
 // GiveClue returns false if the clue is illegal
-func (p *Player) GiveClue(d *CommandData, g *Game) bool {
+func (p *Player) GiveClue(d *CommandData, g *Game) {
 	p2 := g.Players[d.Target] // The target of the clue
 	cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
-
-	// By default, do not allow clues that "touch" no cards in the hand
-	if len(cardsTouched) == 0 &&
-		// Make an exception if they have the optional setting for "Empty Clues" turned on
-		!g.Options.EmptyClues &&
-		// Make an exception for the "Color Blind" variants (color clues touch no cards),
-		// "Number Blind" variants (rank clues touch no cards),
-		// and "Totally Blind" variants (all clues touch no cards)
-		(!strings.HasPrefix(g.Options.Variant, "Color Blind") || d.Clue.Type != clueTypeColor) &&
-		(!strings.HasPrefix(g.Options.Variant, "Number Blind") || d.Clue.Type != clueTypeRank) &&
-		!strings.HasPrefix(g.Options.Variant, "Totally Blind") &&
-		// Make an exception for certain characters
-		!characterEmptyClueAllowed(d, g, p) {
-
-		return false
-	}
 
 	// Mark that the cards have been touched
 	for _, order := range cardsTouched {
@@ -153,8 +137,6 @@ func (p *Player) GiveClue(d *CommandData, g *Game) bool {
 
 	// Do post-clue tasks
 	characterPostClue(d, g, p)
-
-	return true
 }
 
 func (p *Player) RemoveCard(target int, g *Game) *Card {
