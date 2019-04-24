@@ -168,6 +168,10 @@ const keydown = (event) => {
         replay.forward();
         return;
     }
+    if (event.key === 'ArrowUp') {
+        replay.exit();
+        return;
+    }
     if (event.key === 'ArrowDown') {
         replay.exit();
         return;
