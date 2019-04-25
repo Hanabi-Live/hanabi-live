@@ -91,6 +91,7 @@ func commandGameSpectate(s *Session, d *CommandData) {
 		Session:     s,
 		Shadowing:   playerIndex != -1,
 		PlayerIndex: playerIndex,
+		Notes:       make([]string, len(g.Deck)),
 	}
 	g.Spectators = append(g.Spectators, sp)
 	notifyAllTable(g)    // Update the spectator list for the row in the lobby

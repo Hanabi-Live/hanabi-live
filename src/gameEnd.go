@@ -409,6 +409,7 @@ func (g *Game) ConvertToSharedReplay() {
 			ID:      p.ID,
 			Name:    p.Name,
 			Session: p.Session,
+			Notes:   make([]string, len(g.Deck)),
 		}
 		g.Spectators = append(g.Spectators, sp)
 		log.Info("Converted " + p.Name + " to a spectator.")

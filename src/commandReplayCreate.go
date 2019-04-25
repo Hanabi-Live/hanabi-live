@@ -330,16 +330,16 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		keys["status"] = statusPlaying
 
 		player := &Player{
-			ID:      i,
-			Name:    name,
-			Index:   i,
-			Present: true,
-			Notes:   d.GameJSON.Notes[i],
+			ID:    i,
+			Name:  name,
+			Index: i,
 			Session: &Session{
 				&melody.Session{
 					Keys: keys,
 				},
 			},
+			Present: true,
+			Notes:   d.GameJSON.Notes[i],
 		}
 		players = append(players, player)
 	}

@@ -32,12 +32,18 @@ func commandReady(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that they are either a player or a spectator
+	i := g.GetPlayerIndex(s.UserID())
+	j := g.GetSpectatorIndex(s.UserID())
+	if i == -1 && j == -1 {
+		s.Warning("You are not a player or a spectator of game " + strconv.Itoa(gameID) + ", " +
+			"so you cannot ready up for it.")
+		return
+	}
+
 	/*
 		Ready
 	*/
-
-	i := g.GetPlayerIndex(s.UserID())
-	j := g.GetSpectatorIndex(s.UserID())
 
 	notes := make([]models.PlayerNote, 0)
 	for _, p := range g.Players {
@@ -45,6 +51,15 @@ func commandReady(s *Session, d *CommandData) {
 			ID:    p.ID,
 			Name:  p.Name,
 			Notes: p.Notes,
+		}
+		notes = append(notes, note)
+	}
+	if j > -1 {
+		sp := g.Spectators[j]
+		note := models.PlayerNote{
+			ID:    sp.ID,
+			Name:  sp.Name,
+			Notes: sp.Notes,
 		}
 		notes = append(notes, note)
 	}
@@ -104,11 +119,8 @@ func commandReady(s *Session, d *CommandData) {
 			s.NotifySound(g, i)
 		}
 
-		if i == -1 {
-			// They are a spectator, so send them the notes from all players
-			s.NotifyAllNotes(notes)
-		} else {
-			// Send them a list of only their notes
+		if i > -1 {
+			// They are a player, so send them a list of only their notes
 			type NotesMessage struct {
 				Notes []string `json:"notes"`
 			}
@@ -121,6 +133,9 @@ func commandReady(s *Session, d *CommandData) {
 			p := g.Players[i]
 			p.Present = true
 			g.NotifyConnected()
+		} else if j > -1 {
+			// They are a spectator, so send them the notes from all players
+			s.NotifyAllNotes(notes)
 		}
 	}
 

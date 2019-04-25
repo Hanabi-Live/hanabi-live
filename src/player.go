@@ -15,6 +15,7 @@ type Player struct {
 	ID      int // This is equal to the database ID for the user
 	Name    string
 	Index   int
+	Session *Session
 	Present bool
 	Stats   models.Stats
 
@@ -25,8 +26,6 @@ type Player struct {
 	Character          string
 	CharacterMetadata  int
 	CharacterMetadata2 int
-
-	Session *Session
 }
 
 func (p *Player) InitTime(g *Game) {

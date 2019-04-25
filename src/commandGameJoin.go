@@ -84,14 +84,14 @@ func commandGameJoin(s *Session, d *CommandData) {
 	p := &Player{
 		ID:   s.UserID(),
 		Name: s.Username(),
-		// (we set the index in the "commandGameStart()" function
+		// We set the index in the "commandGameStart()" function
+		Session: s,
 		Present: true,
 		Stats:   stats,
 		// Time will get initialized below
 		// Notes will get initialized after the deck is created in "commandGameStart.go"
 		CharacterMetadata:  -1,
 		CharacterMetadata2: -1,
-		Session:            s,
 	}
 	p.InitTime(g)
 	g.Players = append(g.Players, p)
