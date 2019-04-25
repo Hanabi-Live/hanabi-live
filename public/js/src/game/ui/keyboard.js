@@ -169,11 +169,19 @@ const keydown = (event) => {
         return;
     }
     if (event.key === 'ArrowUp') {
-        replay.exit();
+        if (globals.sharedReplay) {
+            replay.toggleSharedTurns();
+        } else if (!globals.replay) {
+            replay.exit();
+        }
         return;
     }
     if (event.key === 'ArrowDown') {
-        replay.exit();
+        if (globals.sharedReplay) {
+            replay.toggleSharedTurns();
+        } else if (!globals.replay) {
+            replay.exit();
+        }
         return;
     }
     if (event.key === '[') {
