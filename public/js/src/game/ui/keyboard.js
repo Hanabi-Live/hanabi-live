@@ -135,6 +135,12 @@ const keydown = (event) => {
     }
 
     if (event.key === 'Escape') {
+        // Escape = If the chat is open, close it
+        if ($('#game-chat-modal').is(':visible')) {
+            globals.game.chat.hide();
+            return;
+        }
+
         if (globals.replay) {
             // Escape = If in a replay, exit back to the lobby
             ui.backToLobby();
