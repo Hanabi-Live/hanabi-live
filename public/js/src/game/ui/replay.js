@@ -14,6 +14,9 @@ const ui = require('./ui');
 */
 
 const enter = () => {
+    if (globals.replayMax === 0) {
+        return;
+    }
     if (globals.inReplay) {
         return;
     }
@@ -283,8 +286,19 @@ exports.barDrag = function barDrag(pos) {
 };
 
 const positionReplayShuttle = (shuttle, tween, turn, fast) => {
+    let max = globals.replayMax;
     const w = shuttle.getParent().getWidth() - shuttle.getWidth();
-    const x = turn * w / globals.replayMax;
+
+    // During initialization, the turn will be -1 and the maximum number of replay turns will be 0
+    // Account for this and provide sane defaults
+    if (turn === -1) {
+        turn = 0;
+    }
+    if (max === 0) {
+        max = 1;
+    }
+
+    const x = turn * w / max;
     if (globals.animateFast || fast) {
         shuttle.setX(x);
     } else {
