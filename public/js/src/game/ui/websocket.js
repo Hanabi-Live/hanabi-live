@@ -382,6 +382,12 @@ commands.replayIndicator = (data) => {
         return;
     }
 
+    if (!globals.useSharedTurns) {
+        // We are not currently using the shared turns,
+        // so the arrow won't apply to what we are looking at
+        return;
+    }
+
     if (data.order >= 0) { // A card
         // Ensure that the card exists as a sanity-check
         // (the server does not validate the order that the leader sends)
