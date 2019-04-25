@@ -300,7 +300,7 @@ exports.empathy = function empathy() {
             // (unless we are in a speedrun,
             // because then Empathy is mapped to Ctrl + left click)
             || (event.evt.ctrlKey && !globals.speedrun)
-            || (!event.evt.ctrlKey && globals.speedrun && !globals.replay)
+            || (!event.evt.ctrlKey && globals.speedrun && !globals.replay && !globals.spectating)
             || event.evt.shiftKey
             || event.evt.altKey
             || event.evt.metaKey
