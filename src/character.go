@@ -690,6 +690,13 @@ func characterCheckSoftlock(g *Game, p *Player) {
 
 		g.Strikes = 3
 	}
+
+	text := p.Name + " was left with 0 clues!"
+	g.Actions = append(g.Actions, ActionText{
+		Type: "text",
+		Text: text,
+	})
+	g.NotifyAction()
 }
 
 func characterEmptyClueAllowed(d *CommandData, g *Game, p *Player) bool {

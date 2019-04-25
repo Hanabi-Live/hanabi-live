@@ -445,10 +445,10 @@ func (p *Player) GetCardIndex(order int) int {
 }
 
 func (p *Player) GetCardSlot(order int) int {
+	// Slot 1 is the newest (left-most) card, which is at index 4 (in a 3 player game)
 	for i, c := range p.Hand {
 		if c.Order == order {
 			return len(p.Hand) - i
-			// e.g. slot 1 is the newest (left-most) card, which is index 5 (in a 3 player game)
 		}
 	}
 

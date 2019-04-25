@@ -131,7 +131,6 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### Prism-Ones
 
 * Ones are "touched" by all color clues.
-* Players cannot clue rank 1.
 
 ### Clue Starved
 
