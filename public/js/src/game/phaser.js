@@ -114,14 +114,13 @@ function create() {
             card.setInteractive();
             this.input.setDraggable(card);
             this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-                const rot = gameObject.parentContainer.rotation;
-                gameObject.x = dragX * Math.cos(rot) + dragY * Math.sin(rot);
-                gameObject.y = dragY * Math.cos(rot) - dragX * Math.sin(rot);
+                gameObject.x = dragX;
+                gameObject.y = dragY;
             });
             // ghetto drag and drop
             this.input.on('dragend', (pointer, gameObject) => {
-                console.log(gameObject.x);
-                console.log(gameObject.y);
+                //console.log(gameObject.x);
+                //console.log(gameObject.y);
                 if (
                     // dragX > this.sys.canvas.width / 3
                     // && dragX < 2 * this.sys.canvas.width / 3
