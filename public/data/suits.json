@@ -50,12 +50,12 @@
     },
     "Light Pink": { "abbreviation": "I", "clueColors": [], "clueRanks": "all", "fill": "#ffcce6" },
 
-    "Blue CB": { "name": "Blue", "clueColors": [] },
-    "Green CB": { "name": "Green", "clueColors": [] },
-    "Yellow CB": { "name": "Yellow", "clueColors": [] },
-    "Red CB": { "name": "Red", "clueColors": [] },
-    "Purple CB": { "name": "Purple", "clueColors": [] },
-    "Teal CB": { "name": "Teal", "clueColors": [] },
+    "Blue B": { "name": "Blue", "clueColors": [] },
+    "Green B": { "name": "Green", "clueColors": [] },
+    "Yellow B": { "name": "Yellow", "clueColors": [] },
+    "Red B": { "name": "Red", "clueColors": [] },
+    "Purple B": { "name": "Purple", "clueColors": [] },
+    "Teal B": { "name": "Teal", "clueColors": [] },
 
     "Sky": { "clueColors": ["Blue"], "fill": "#1a66ff" },
     "Navy": { "clueColors": ["Blue"], "fill": "#002b80" },

@@ -202,28 +202,38 @@ const initVariants = () => {
         }
         variant.suits = suitList;
 
-        // Validate the ranks (the ranks of the cards that each suit will have)
-        if (!Object.hasOwnProperty.call(variant, 'ranks')) {
-            // By default, assume ranks 1 through 5
-            variant.ranks = [1, 2, 3, 4, 5];
+        // Derive the ranks (the ranks that the cards of each suit will be)
+        // By default, assume ranks 1 through 5
+        variant.ranks = [1, 2, 3, 4, 5];
+        if (variantName.startsWith('Up or Down')) {
+            // The "Up or Down" variants have START cards
+            variant.ranks.push(exports.START_CARD_RANK);
         }
 
-        // Validate the clue colors (the colors available to clue in this variant)
-        if (!Object.hasOwnProperty.call(variant, 'clueColors')) {
-            throw new Error(`The "${variantName}" variant does not have clue colors.`);
-        }
-
-        // Convert color strings to objects
-        const colorList = [];
-        for (const color of variant.clueColors) {
-            if (Object.hasOwnProperty.call(colors, color)) {
-                colorList.push(colors[color]);
-            } else {
-                const msg = `The color "${color}" in the variant "${variantName}" does not exist.`;
-                throw new Error(msg);
+        // Validate or derive the clue colors (the colors available to clue in this variant)
+        if (Object.hasOwnProperty.call(variant, 'clueColors')) {
+            // The clue colors were specified in the JSON, so convert color strings to objects
+            const colorList = [];
+            for (const color of variant.clueColors) {
+                if (Object.hasOwnProperty.call(colors, color)) {
+                    colorList.push(colors[color]);
+                } else {
+                    const msg = `The color "${color}" in the variant "${variantName}" does not exist.`;
+                    throw new Error(msg);
+                }
+            }
+            variant.clueColors = colorList;
+        } else {
+            // The clue colors were not specified in the JSON, so derive them from the suits
+            variant.clueColors = [];
+            for (const suit of variant.suits) {
+                for (const color of suit.clueColors) {
+                    if (!variant.clueColors.includes(color)) {
+                        variant.clueColors.push(color);
+                    }
+                }
             }
         }
-        variant.clueColors = colorList;
 
         // Derive the clue ranks (the ranks available to clue in this variant)
         if (variantName.startsWith('Number Mute')) {

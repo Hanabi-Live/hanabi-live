@@ -99,16 +99,13 @@ type GameChatMessage struct {
 func (g *Game) InitDeck() {
 	// Create the deck (the amount of cards will depend on the variant)
 	g.Deck = make([]*Card, 0)
-	suits := make([]int, 0)
-	for i := 0; i < len(variants[g.Options.Variant].Suits); i++ {
-		suits = append(suits, i) // For a normal game, the suits will be equal to {0, 1, 2, 3, 4}
-	}
-	for _, suit := range suits {
-		ranks := []int{1, 2, 3, 4, 5}
-		if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-			ranks = append(ranks, startCardRank) // This is defined in the "variantUpOrDown.go" file
-		}
-		for _, rank := range ranks {
+
+	// Suits are represented as a slice of integers from 0 to the number of suits - 1
+	// (e.g. {0, 1, 2, 3, 4} for a "No Variant" game)
+	for suit := range variants[g.Options.Variant].Suits {
+		// Ranks are represented as a slice of integers
+		// (e.g. {1, 2, 3, 4, 5} for a "No Variant" game)
+		for _, rank := range variants[g.Options.Variant].Ranks {
 			// In a normal suit of Hanabi, there are three 1's, two 2's, two 3's, two 4's, and one five
 			var amountToAdd int
 			if rank == 1 {
@@ -118,7 +115,7 @@ func (g *Game) InitDeck() {
 				}
 			} else if rank == 5 {
 				amountToAdd = 1
-			} else if rank == startCardRank { // The "START" card
+			} else if rank == startCardRank {
 				amountToAdd = 1
 			} else {
 				amountToAdd = 2

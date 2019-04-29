@@ -122,16 +122,16 @@ func suitsInit() {
 type JSONVariant struct {
 	ID         int      `json:"id"`
 	Suits      []string `json:"suits"`
-	Ranks      []int    `json:"ranks"`
 	ClueColors []string `json:"clueColors"`
 }
 
 type Variant struct {
 	Name string
-	ID   int
 	// Each variant must have a unique numerical ID for seed generation purposes
 	// (and for the database)
+	ID         int
 	Suits      []*Suit
+	Ranks      []int
 	ClueColors []string
 	ClueRanks  []int
 }
@@ -183,17 +183,34 @@ func variantsInit() {
 			variantSuits = append(variantSuits, suits[suitName])
 		}
 
-		// Validate the ranks (the ranks of the cards that each suit will have)
-		if len(variant.Ranks) == 0 {
-			// By default, assume ranks 1 through 5
-			variant.Ranks = []int{1, 2, 3, 4, 5}
+		// Derive the card ranks (the ranks that the cards of each suit will be)
+		// By default, assume ranks 1 through 5
+		variantRanks := []int{1, 2, 3, 4, 5}
+		if strings.HasPrefix(name, "Up or Down") {
+			// The "Up or Down" variants have START cards
+			// ("startCardRank" is defined in the "variantUpOrDown.go" file)
+			variantRanks = append(variantRanks, startCardRank)
 		}
 
-		// Validate the clue colors (the colors available to clue in this variant)
-		for _, colorName := range variant.ClueColors {
-			if _, ok := colors[colorName]; !ok {
-				log.Fatal("The variant of \"" + name + "\" has a clue color of " +
-					"\"" + colorName + "\", but that color does not exist.")
+		// Validate or derive the clue colors (the colors available to clue in this variant)
+		clueColors := make([]string, 0)
+		if len(variant.ClueColors) > 0 {
+			// The clue colors were specified in the JSON, so validate that they map to colors
+			for _, colorName := range variant.ClueColors {
+				if _, ok := colors[colorName]; !ok {
+					log.Fatal("The variant of \"" + name + "\" has a clue color of " +
+						"\"" + colorName + "\", but that color does not exist.")
+				}
+			}
+			clueColors = variant.ClueColors
+		} else {
+			// The clue colors were not specified in the JSON, so derive them from the suits
+			for _, suit := range variantSuits {
+				for _, color := range suit.ClueColors {
+					if !stringInSlice(color, clueColors) {
+						clueColors = append(clueColors, color)
+					}
+				}
 			}
 		}
 
@@ -212,7 +229,8 @@ func variantsInit() {
 			Name:       name,
 			ID:         variant.ID,
 			Suits:      variantSuits,
-			ClueColors: variant.ClueColors,
+			Ranks:      variantRanks,
+			ClueColors: clueColors,
 			ClueRanks:  clueRanks,
 		}
 
