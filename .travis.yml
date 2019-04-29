@@ -7,7 +7,8 @@ matrix:
   include:
     - language: go
       go:
-        - master
+        # This will automatically choose the latest released Go version
+        - 1.x
       before_script:
         # Install the Go linter
         # (v1.13.1 is the latest as of April 2019)
