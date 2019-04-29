@@ -260,22 +260,22 @@
     "Pink & Brown (6 Suits)": {
         "id": 127,
         "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Brown"],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Brown"]
+        "clueColors": ["Blue", "Green", "Yellow", "Red", "Pink", "Brown"]
     },
     "Pink & Brown (5 Suits)": {
         "id": 128,
         "suits": ["Blue", "Green", "Yellow", "Pink", "Brown"],
-        "clueColors": ["Blue", "Green", "Yellow", "Brown"]
+        "clueColors": ["Blue", "Green", "Yellow", "Pink", "Brown"]
     },
     "Pink & Brown (4 Suits)": {
         "id": 129,
         "suits": ["Blue", "Green", "Pink", "Brown"],
-        "clueColors": ["Blue", "Green", "Brown"]
+        "clueColors": ["Blue", "Green", "Pink", "Brown"]
     },
     "Pink & Brown (3 Suits)": {
         "id": 130,
         "suits": ["Blue", "Pink", "Brown"],
-        "clueColors": ["Blue", "Brown"],
+        "clueColors": ["Blue", "Pink", "Brown"],
         "spacing": true
     },
 
