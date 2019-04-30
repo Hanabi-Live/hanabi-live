@@ -15,11 +15,11 @@ exports.checkLegal = () => {
     }
 
     const who = target.targetIndex;
-    const match = showClueMatch(who, clueButton.clue);
+    const touchedAtLeastOneCard = showClueMatch(who, clueButton.clue);
 
     // By default, only enable the "Give Clue" button if the clue "touched"
     // one or more cards in the hand
-    const enabled = match
+    const enabled = touchedAtLeastOneCard
         // Make an exception if they have the optional setting for "Empty Clues" turned on
         || globals.emptyClues
         // Make an exception for the "Color Blind" variants (color clues touch no cards),
@@ -43,18 +43,18 @@ exports.checkLegal = () => {
 const showClueMatch = (target, clue) => {
     arrows.hideAll();
 
-    let match = false;
+    let touchedAtLeastOneCard = false;
     const hand = globals.elements.playerHands[target].children;
     for (let i = 0; i < hand.length; i++) {
         const child = globals.elements.playerHands[target].children[i];
         const card = child.children[0];
         if (variantIsCardTouched(clue, card)) {
-            match = true;
+            touchedAtLeastOneCard = true;
             arrows.set(i, card, null, clue);
         }
     }
 
-    return match;
+    return touchedAtLeastOneCard;
 };
 
 // This mirrors the function in "variants.go"
@@ -70,7 +70,10 @@ const variantIsCardTouched = (clue, card) => {
         if (card.suit.clueRanks === 'none') {
             return false;
         }
-        if (globals.variant.name.startsWith('Number Blind')) {
+        if (
+            globals.variant.name.startsWith('Number Blind')
+            || globals.variant.name.startsWith('Number Mute')
+        ) {
             return false;
         }
         if (globals.variant.name.startsWith('Multi-Fives') && card.rank === 5) {
@@ -80,7 +83,10 @@ const variantIsCardTouched = (clue, card) => {
     }
 
     if (clue.type === constants.CLUE_TYPE.COLOR) {
-        if (globals.variant.name.startsWith('Color Blind')) {
+        if (
+            globals.variant.name.startsWith('Color Blind')
+            || globals.variant.name.startsWith('Color Mute')
+        ) {
             return false;
         }
         if (globals.variant.name.startsWith('Prism-Ones') && card.rank === 1) {
