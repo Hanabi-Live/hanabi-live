@@ -72,6 +72,8 @@ class HanabiCard extends graphics.Group {
         this.specialRankSuitRemoved = false;
         this.positiveRankClues = [];
         this.negativeRankClues = [];
+        this.positiveColorClues = [];
+        this.negativeColorClues = [];
         // We have to add one to the turn drawn because
         // the "draw" command comes before the "turn" command
         // However, if it was part of the initial deal, then it will correctly be set as turn 0
@@ -282,12 +284,18 @@ class HanabiCard extends graphics.Group {
             return;
         }
 
-        // If this is a rank clue, record it on the card for later
+        // Record unique clues that touch the card for later
         if (clue.type === constants.CLUE_TYPE.RANK) {
             if (positive && !this.positiveRankClues.includes(clue.value)) {
                 this.positiveRankClues.push(clue.value);
             } else if (!positive && !this.negativeRankClues.includes(clue.value)) {
                 this.negativeRankClues.push(clue.value);
+            }
+        } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+            if (positive && !this.positiveColorClues.includes(clue.value)) {
+                this.positiveColorClues.push(clue.value);
+            } else if (!positive && !this.negativeColorClues.includes(clue.value)) {
+                this.negativeColorClues.push(clue.value);
             }
         }
 
@@ -341,18 +349,39 @@ class HanabiCard extends graphics.Group {
             }
         } else if (clue.type === constants.CLUE_TYPE.COLOR) {
             const clueColor = clue.value;
-            if (globals.variant.name.startsWith('Prism-Ones')) {
-                // In "Prism-Ones" variants, the 1 of every suit is touched by all rank clues
-                suitsRemoved = filterInPlace(
-                    this.possibleRanks,
-                    rank => (rank === clueColor || rank === 1) === positive,
-                );
+            if (
+                globals.variant.name.startsWith('Prism-Ones')
+                && this.possibleRanks.includes(1)
+                && positive
+            ) {
+                // In "Prism-Ones" variants, 1's are touched by all colors,
+                // so if this is a positive color clue,
+                // we cannot remove any color pips from the card
             } else {
                 // Remove all possibilities that do not include this color
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
                     suit => suit.clueColors.includes(clueColor) === positive,
                 );
+            }
+
+            // In "Prism-Ones" variants, 1's are touched by all colors
+            if (globals.variant.name.startsWith('Prism-Ones')) {
+                if (positive) {
+                    if (this.positiveColorClues.length >= 2) {
+                        // Two positive color clues should "fill in" a 1
+                        ranksRemoved = filterInPlace(
+                            this.possibleRanks,
+                            rank => rank === 1,
+                        );
+                    }
+                } else {
+                    // Negative color means that the card cannot be a 1
+                    ranksRemoved = filterInPlace(
+                        this.possibleRanks,
+                        rank => rank !== 1,
+                    );
+                }
             }
         }
 
