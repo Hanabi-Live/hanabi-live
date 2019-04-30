@@ -59,7 +59,7 @@ const showClueMatch = (target, clue) => {
 
 // This mirrors the function in "variants.go"
 const variantIsCardTouched = (clue, card) => {
-    if (globals.variant.name.startsWith('Totally Mute')) {
+    if (globals.variant.name.startsWith('Totally Blind')) {
         return false;
     }
 

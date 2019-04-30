@@ -255,7 +255,7 @@ func variantsInit() {
 // For example, a yellow clue will not touch a green card in a normal game,
 // but it will the "Dual-Color" variant
 func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
-	if strings.HasPrefix(variant, "Totally Mute") {
+	if strings.HasPrefix(variant, "Totally Blind") {
 		return false
 	}
 
