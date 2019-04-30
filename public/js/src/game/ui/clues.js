@@ -48,32 +48,48 @@ const showClueMatch = (target, clue) => {
     for (let i = 0; i < hand.length; i++) {
         const child = globals.elements.playerHands[target].children[i];
         const card = child.children[0];
-
-        let touched = false;
-        if (clue.type === constants.CLUE_TYPE.RANK) {
-            if (card.suit.clueRanks === 'all') {
-                touched = true;
-            } else if (card.suit.clueRanks === 'none') {
-                touched = false;
-            } else if (
-                clue.value === card.rank
-                || (globals.variant.name.startsWith('Multi-Fives') && card.rank === 5)
-            ) {
-                touched = true;
-            }
-        } else if (clue.type === constants.CLUE_TYPE.COLOR) {
-            if (card.suit.clueColors.includes(clue.value)) {
-                touched = true;
-            }
-        }
-
-        if (touched) {
+        if (variantIsCardTouched(clue, card)) {
             match = true;
             arrows.set(i, card, null, clue);
         }
     }
 
     return match;
+};
+
+// This mirrors the function in "variants.go"
+const variantIsCardTouched = (clue, card) => {
+    if (globals.variant.name.startsWith('Totally Mute')) {
+        return false;
+    }
+
+    if (clue.type === constants.CLUE_TYPE.RANK) {
+        if (card.suit.clueRanks === 'all') {
+            return true;
+        }
+        if (card.suit.clueRanks === 'none') {
+            return false;
+        }
+        if (globals.variant.name.startsWith('Number Blind')) {
+            return false;
+        }
+        if (globals.variant.name.startsWith('Multi-Fives') && card.rank === 5) {
+            return true;
+        }
+        return clue.value === card.rank;
+    }
+
+    if (clue.type === constants.CLUE_TYPE.COLOR) {
+        if (globals.variant.name.startsWith('Color Blind')) {
+            return false;
+        }
+        if (globals.variant.name.startsWith('Prism-Ones') && card.rank === 1) {
+            return true;
+        }
+        return card.suit.clueColors.includes(clue.value);
+    }
+
+    return false;
 };
 
 exports.give = () => {

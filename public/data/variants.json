@@ -649,6 +649,42 @@
         "spacing": true
     },
 
+    "Prism-Ones (6 Suits)": {
+        "id": 168,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+    },
+    "Prism-Ones (5 Suits)": {
+        "id": 169,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+    },
+    "Prism-Ones (4 Suits)": {
+        "id": 170,
+        "suits": ["Blue", "Green", "Yellow", "Red"]
+    },
+    "Prism-Ones (3 Suits)": {
+        "id": 171,
+        "suits": ["Blue", "Green", "Yellow"],
+        "spacing": true
+    },
+
+    "Prism-Ones & Pink (6 Suits)": {
+        "id": 172,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Pink"]
+    },
+    "Prism-Ones & Pink (5 Suits)": {
+        "id": 173,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Pink"]
+    },
+    "Prism-Ones & Pink (4 Suits)": {
+        "id": 174,
+        "suits": ["Blue", "Green", "Yellow", "Pink"]
+    },
+    "Prism-Ones & Pink (3 Suits)": {
+        "id": 175,
+        "suits": ["Blue", "Green", "Pink"],
+        "spacing": true
+    },
+
     "Clue Starved (6 Suits)": {
         "id": 51,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
@@ -762,6 +798,6 @@
     },
     "Gay Pride": {
         "id": 159,
-        "suits": ["Pink", "Brown", "Black", "Rainbow", "White"]
+        "suits": ["Black", "Rainbow", "Pink", "White", "Brown"]
     }
 }

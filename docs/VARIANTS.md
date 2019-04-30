@@ -156,25 +156,34 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * This variant was invented by Jack Gurev's group.
 * When players give a clue, they point at the cards clued, but say "quack" instead of a color or number.
 
-### African American
+### Ambiguous Mix
 
 * This is a mix of several variants. The suits are as follows:
   1. Tomato (red)
   2. Mahogany (red)
-  3. White (colorless)
-  4. Sky (blue)
-  3. Navy (blue)
-  6. Black (one of each)
+  3. Sky (blue)
+  4. Navy (blue)
+  5. Black (one of each)
+  6. White (colorless)
 
-### Wild & Crazy
+### Dual-Color Mix
 
 * This is a mix of several variants. The suits are as follows:
   1. Green (blue / yellow)
   2. Purple (blue / red)
   3. Orange (yellow / red)
-  4. White (colorless)
+  4. Black (one of each)
   5. Rainbow (all colors)
-  6. Black (one of each)
+  6. White (colorless)
+
+### Gay Pride
+
+* This is a mix of several variants. The suits are as follows:
+  1. Black (one of each) 
+  2. Rainbow (all colors)
+  3. Pink (all ranks)
+  4. White (colorless)
+  5. Brown (rankless)
 
 <br />
 

@@ -269,8 +269,8 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		if strings.HasPrefix(variant, "Number Blind") {
 			return false
 		}
-		if strings.HasPrefix(variant, "Multi-Fives") {
-			return card.Rank == clue.Value || card.Rank == 5
+		if strings.HasPrefix(variant, "Multi-Fives") && card.Rank == 5 {
+			return true
 		}
 		return card.Rank == clue.Value
 	}
@@ -278,6 +278,9 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 	if clue.Type == clueTypeColor {
 		if strings.HasPrefix(variant, "Color Blind") {
 			return false
+		}
+		if strings.HasPrefix(variant, "Prism-Ones") && card.Rank == 1 {
+			return true
 		}
 		color := variants[variant].ClueColors[clue.Value]
 		colors := variants[variant].Suits[card.Suit].ClueColors

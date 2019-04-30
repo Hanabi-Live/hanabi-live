@@ -309,6 +309,7 @@ class HanabiCard extends graphics.Group {
                 // Some cards are touched by all ranks,
                 // so if this is a positive rank clue, we cannot remove any rank pips from the card
             } else {
+                // Remove all possibilities that do not include this rank
                 ranksRemoved = filterInPlace(
                     this.possibleRanks,
                     rank => (rank === clueRank) === positive,
@@ -339,12 +340,20 @@ class HanabiCard extends graphics.Group {
                 );
             }
         } else if (clue.type === constants.CLUE_TYPE.COLOR) {
-            // Remove all possibilities that do not include this color
             const clueColor = clue.value;
-            suitsRemoved = filterInPlace(
-                this.possibleSuits,
-                suit => suit.clueColors.includes(clueColor) === positive,
-            );
+            if (globals.variant.name.startsWith('Prism-Ones')) {
+                // In "Prism-Ones" variants, the 1 of every suit is touched by all rank clues
+                suitsRemoved = filterInPlace(
+                    this.possibleRanks,
+                    rank => (rank === clueColor || rank === 1) === positive,
+                );
+            } else {
+                // Remove all possibilities that do not include this color
+                suitsRemoved = filterInPlace(
+                    this.possibleSuits,
+                    suit => suit.clueColors.includes(clueColor) === positive,
+                );
+            }
         }
 
         // Remove rank pips, if any
