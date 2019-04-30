@@ -7,6 +7,7 @@ module.exports = () => {
     // Objects sent upon UI initialization
     globals.lobby = null;
     globals.game = null;
+    globals.loading = true;
 
     // Game settings
     // (sent in the "init" message)

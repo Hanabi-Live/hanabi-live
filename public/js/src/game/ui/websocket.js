@@ -75,6 +75,7 @@ commands.advanced = () => {
 
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
+    globals.loading = false;
 };
 
 // This is sent by the server to force the client to go back to the lobby
@@ -376,6 +377,11 @@ commands.pause = (data) => {
 
 // This is used in shared replays to highlight a specific card (or UI element)
 commands.replayIndicator = (data) => {
+    if (globals.loading) {
+        // We have not loaded everything yet, so don't bother with shared replay features
+        return;
+    }
+
     if (globals.amSharedReplayLeader) {
         // We don't have to draw any indicator arrows;
         // we already drew it after sending the "replayAction" message
@@ -449,6 +455,11 @@ commands.replayLeader = (data) => {
 
 // This is used in shared replays to make hypothetical game states
 commands.replayMorph = (data) => {
+    if (globals.loading) {
+        // We have not loaded everything yet, so don't bother with shared replay features
+        return;
+    }
+
     commands.reveal({
         order: data.order,
         rank: data.rank,
@@ -458,11 +469,21 @@ commands.replayMorph = (data) => {
 
 // This is used in shared replays to make fun sounds
 commands.replaySound = (data) => {
+    if (globals.loading) {
+        // We have not loaded everything yet, so don't bother with shared replay features
+        return;
+    }
+
     globals.game.sounds.play(data.sound);
 };
 
 // This is used in shared replays to change the turn
 commands.replayTurn = (data) => {
+    if (globals.loading) {
+        // We have not loaded everything yet, so don't bother with shared replay features
+        return;
+    }
+
     if (
         // If we are the replay leader, then we don't have to do anything
         globals.amSharedReplayLeader
