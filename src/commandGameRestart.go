@@ -84,7 +84,7 @@ func commandGameRestart(s *Session, d *CommandData) {
 	}
 
 	// The shared replay should now be deleted, since all of the players have left
-	// Now, emulate the players creating and joining and starting a new game
+	// Now, emulate the game owner creating a new game
 	commandGameCreate(s, &CommandData{
 		Name:                 getName(), // Generate a random name for the new game
 		Variant:              g.Options.Variant,
@@ -100,7 +100,15 @@ func commandGameRestart(s *Session, d *CommandData) {
 	// We increment the newGameID after creating a game,
 	// so assume that the ID of the last game created is equal to the "newGameID" minus 1
 	ID := newGameID - 1
+	g2 := games[ID]
 
+	// Copy over the chat from the previous game, if any
+	g2.Chat = g.Chat
+	for k, v := range g.ChatRead {
+		g2.ChatRead[k] = v
+	}
+
+	// Emulate the other players joining the game
 	for _, s2 := range playerSessions {
 		if s2.UserID() == s.UserID() {
 			// The creator of the game does not need to join
@@ -110,6 +118,8 @@ func commandGameRestart(s *Session, d *CommandData) {
 			ID: ID,
 		})
 	}
+
+	// Emulate the game owner clicking on the "Start Game" button
 	commandGameStart(s, nil)
 
 	// Automatically join any other spectators that were watching
