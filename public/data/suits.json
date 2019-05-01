@@ -11,7 +11,7 @@
     "Black": { "oneOfEach": true },
     "Rainbow": {
         "abbreviation": "M",
-        "clueColors": ["all"],
+        "allClueColors": true,
         "fill": "multi",
         "fillColors": ["#0044cc", "#00cc00", "#ccaa22", "#aa0000", "#6600cc"]
     },
@@ -21,7 +21,7 @@
 
     "Dark Rainbow": {
         "abbreviation": "M",
-        "clueColors": ["all"],
+        "allClueColors": true,
         "fill": "multi",
         "fillColors": ["#000555", "#005505", "#555500", "#5f0000", "#550055"],
         "oneOfEach": true
@@ -43,7 +43,7 @@
 
     "Light Rainbow": {
         "abbreviation": "M",
-        "clueColors": ["all"],
+        "allClueColors": true,
         "clueRanks": "none",
         "fill": "multi",
         "fillColors": ["#4d88ff", "#4dff4d", "#e9d37c", "#ff1a1a", "#a64dff"]

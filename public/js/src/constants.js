@@ -114,12 +114,10 @@ const initSuits = () => {
         }
 
         // Validate the clue colors (the colors that touch this suit)
-        if (Object.hasOwnProperty.call(suit, 'clueColors')) {
+        if (suit.allClueColors) {
             // Handle suits that are touched by all color clues
-            if (suit.clueColors.length > 0 && suit.clueColors[0] === 'all') {
-                suit.clueColors = Object.keys(colors);
-            }
-
+            suit.clueColors = Object.keys(colors);
+        } else if (Object.hasOwnProperty.call(suit, 'clueColors')) {
             // Convert strings to objects
             const colorList = [];
             for (const color of suit.clueColors) {
@@ -227,10 +225,12 @@ const initVariants = () => {
             // The clue colors were not specified in the JSON, so derive them from the suits
             variant.clueColors = [];
             for (const suit of variant.suits) {
+                if (suit.allClueColors) {
+                    // If a suit is touched by all colors, then we don't want to add
+                    // every single clue color to the variant clue list
+                    continue;
+                }
                 for (const color of suit.clueColors) {
-                    if (color === 'all') {
-                        continue;
-                    }
                     if (!variant.clueColors.includes(color)) {
                         variant.clueColors.push(color);
                     }

@@ -50,10 +50,11 @@ func colorsInit() {
 }
 
 type Suit struct {
-	Name       string
-	ClueColors []string `json:"clueColors"`
-	ClueRanks  string   `json:"clueRanks"`
-	OneOfEach  bool     `json:"oneOfEach"`
+	Name          string
+	ClueColors    []string `json:"clueColors"`
+	AllClueColors bool     `json:"allClueColors"`
+	ClueRanks     string   `json:"clueRanks"`
+	OneOfEach     bool     `json:"oneOfEach"`
 }
 
 func suitsInit() {
@@ -93,23 +94,23 @@ func suitsInit() {
 		}
 
 		// Validate the clue colors (the colors that touch this suit)
-		if len(suit.ClueColors) == 0 {
+		if suit.AllClueColors {
+			// Handle suits that are touched by all color clues (2/2)
+			suit.ClueColors = allClueColors
+		} else if len(suit.ClueColors) > 1 {
+			for _, colorName := range suit.ClueColors {
+				if _, ok := colors[colorName]; !ok {
+					log.Fatal("The suit of \"" + name + "\" has a clue color of \"" + colorName + "\", " +
+						"but that color does not exist.")
+				}
+			}
+		} else {
+			// By default, use the color of the same name
 			if _, ok := colors[name]; ok {
-				// By default, use the color of the same name
 				suit.ClueColors = []string{name}
 			}
 			// If the color of the same name does not exist,
 			// this must be a suit that is touched by no color clues
-		}
-		if len(suit.ClueColors) > 0 && suit.ClueColors[0] == "all" {
-			// Handle suits that are touched by all color clues (2/2)
-			suit.ClueColors = allClueColors
-		}
-		for _, colorName := range suit.ClueColors {
-			if _, ok := colors[colorName]; !ok {
-				log.Fatal("The suit of \"" + name + "\" has a clue color of \"" + colorName + "\", " +
-					"but that color does not exist.")
-			}
 		}
 
 		// Validate the clue ranks (the ranks that touch the suits)
@@ -206,10 +207,12 @@ func variantsInit() {
 		} else {
 			// The clue colors were not specified in the JSON, so derive them from the suits
 			for _, suit := range variantSuits {
+				if suit.AllClueColors {
+					// If a suit is touched by all colors, then we don't want to add
+					// every single clue color to the variant clue list
+					continue
+				}
 				for _, color := range suit.ClueColors {
-					if color == "all" {
-						continue
-					}
 					if !stringInSlice(color, clueColors) {
 						clueColors = append(clueColors, color)
 					}
