@@ -58,7 +58,7 @@ Connection.prototype = {
             }
             this.callbacks[command](obj);
         } else if (this.debug) {
-            console.error('Recieved WebSocket message with no callback:', command, JSON.parse(data[1]));
+            console.error('Received WebSocket message with no callback:', command, JSON.parse(data[1]));
         }
     },
     onOpen: function onOpen(evt) {

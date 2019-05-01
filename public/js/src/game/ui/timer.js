@@ -6,27 +6,11 @@
 // Imports
 const globals = require('./globals');
 
-// Variables
-let timerID;
-let playerTimes;
-let activeIndex;
-let lastTimerUpdateTimeMS;
-
-exports.init = () => {
-    timerID = null;
-    playerTimes = null;
-    activeIndex = null;
-    lastTimerUpdateTimeMS = null;
-};
-
 // Has the following data:
 /*
     {
         // A list of the times for each player
-        times: [
-            100,
-            200,
-        ],
+        times: [100, 200],
         // The index of the active player
         active: 0,
     }
@@ -43,16 +27,16 @@ exports.update = (data) => {
     }
 
     // Record the data
-    playerTimes = data.times;
-    activeIndex = data.active;
+    globals.playerTimes = data.times;
+    globals.activeIndex = data.active;
 
     // Mark the time that we updated the local player times
-    lastTimerUpdateTimeMS = new Date().getTime();
+    globals.lastTimerUpdateTimeMS = new Date().getTime();
 
     // Update onscreen time displays
     if (!globals.spectating) {
         // The visibilty of the first timer does not change during a game
-        let time = playerTimes[globals.playerUs];
+        let time = globals.playerTimes[globals.playerUs];
         if (!globals.timed) {
             // Invert it to show how much time each player is taking
             time *= -1;
@@ -60,43 +44,43 @@ exports.update = (data) => {
         globals.elements.timer1.setTimerText(millisecondsToTimeDisplay(time));
     }
 
-    const ourTurn = activeIndex === globals.playerUs && !globals.spectating;
+    const ourTurn = globals.activeIndex === globals.playerUs && !globals.spectating;
     if (!ourTurn) {
         // Update the UI with the value of the timer for the active player
-        let time = playerTimes[activeIndex];
+        let time = globals.playerTimes[globals.activeIndex];
         if (!globals.timed) {
             // Invert it to show how much time each player is taking
             time *= -1;
         }
         globals.elements.timer2.setTimerText(millisecondsToTimeDisplay(time));
-        globals.elements.timer2.setLabelText(globals.playerNames[activeIndex]);
+        globals.elements.timer2.setLabelText(globals.playerNames[globals.activeIndex]);
     }
 
-    globals.elements.timer2.setVisible(!ourTurn && activeIndex !== -1);
+    globals.elements.timer2.setVisible(!ourTurn && globals.activeIndex !== -1);
     globals.layers.timer.batchDraw();
 
     // Update the timer tooltips for each player
-    for (let i = 0; i < playerTimes.length; i++) {
+    for (let i = 0; i < globals.playerTimes.length; i++) {
         setTickingDownTimeTooltip(i);
     }
 
     // The server will send an active value of -1 when the game is over
-    if (activeIndex === -1) {
+    if (globals.activeIndex === -1) {
         return;
     }
 
     // Start the local timer for the active player
     const activeTimer = (ourTurn ? globals.elements.timer1 : globals.elements.timer2);
-    timerID = window.setInterval(() => {
+    globals.timerID = window.setInterval(() => {
         setTickingDownTime(activeTimer);
-        setTickingDownTimeTooltip(activeIndex);
+        setTickingDownTimeTooltip(globals.activeIndex);
     }, 1000);
 };
 
 const stop = () => {
-    if (timerID !== null) {
-        window.clearInterval(timerID);
-        timerID = null;
+    if (globals.timerID !== null) {
+        window.clearInterval(globals.timerID);
+        globals.timerID = null;
     }
 };
 exports.stop = stop;
@@ -104,21 +88,21 @@ exports.stop = stop;
 function setTickingDownTime(timer) {
     // Compute elapsed time since last timer update
     const now = new Date().getTime();
-    const timeElapsed = now - lastTimerUpdateTimeMS;
-    lastTimerUpdateTimeMS = now;
+    const timeElapsed = now - globals.lastTimerUpdateTimeMS;
+    globals.lastTimerUpdateTimeMS = now;
     if (timeElapsed < 0) {
         return;
     }
 
     // Update the time in local array to approximate server times
-    playerTimes[activeIndex] -= timeElapsed;
-    if (globals.timed && playerTimes[activeIndex] < 0) {
+    globals.playerTimes[globals.activeIndex] -= timeElapsed;
+    if (globals.timed && globals.playerTimes[globals.activeIndex] < 0) {
         // Don't let the timer go into negative values, or else it will mess up the display
         // (but in non-timed games, we want this to happen)
-        playerTimes[activeIndex] = 0;
+        globals.playerTimes[globals.activeIndex] = 0;
     }
 
-    let millisecondsLeft = playerTimes[activeIndex];
+    let millisecondsLeft = globals.playerTimes[globals.activeIndex];
     if (!globals.timed) {
         // Invert it to show how much time each player is taking
         millisecondsLeft *= -1;
@@ -148,7 +132,7 @@ function setTickingDownTime(timer) {
 }
 
 function setTickingDownTimeTooltip(i) {
-    let time = playerTimes[i];
+    let time = globals.playerTimes[i];
     if (!globals.timed) {
         // Invert it to show how much time each player is taking
         time *= -1;

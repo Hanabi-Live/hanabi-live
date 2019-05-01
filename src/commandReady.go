@@ -7,8 +7,6 @@ package main
 
 import (
 	"strconv"
-
-	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 func commandReady(s *Session, d *CommandData) {
@@ -44,25 +42,6 @@ func commandReady(s *Session, d *CommandData) {
 	/*
 		Ready
 	*/
-
-	notes := make([]models.PlayerNote, 0)
-	for _, p := range g.Players {
-		note := models.PlayerNote{
-			ID:    p.ID,
-			Name:  p.Name,
-			Notes: p.Notes,
-		}
-		notes = append(notes, note)
-	}
-	if j > -1 {
-		sp := g.Spectators[j]
-		note := models.PlayerNote{
-			ID:    sp.ID,
-			Name:  sp.Name,
-			Notes: sp.Notes,
-		}
-		notes = append(notes, note)
-	}
 
 	// Check to see if we need to remove some card information
 	var scrubbedActions []interface{}
@@ -105,8 +84,8 @@ func commandReady(s *Session, d *CommandData) {
 
 	// Check if the game is still in progress
 	if g.Replay {
-		// Since the game is over, send them the notes from everyone in the game
-		s.NotifyAllNotes(notes)
+		// Since the game is over, send them the notes from all the players & spectators
+		s.NotifyNoteList(g)
 	} else {
 		// Send them the current connection status of the players
 		s.NotifyConnected(g)
@@ -120,22 +99,25 @@ func commandReady(s *Session, d *CommandData) {
 		}
 
 		if i > -1 {
-			// They are a player, so send them a list of only their notes
-			type NotesMessage struct {
+			// They are a player
+			p := g.Players[i]
+
+			// Send them a list of only their notes
+			type NoteListPlayerMessage struct {
 				Notes []string `json:"notes"`
 			}
-			s.Emit("notes", &NotesMessage{
-				Notes: notes[i].Notes,
+			s.Emit("noteListPlayer", &NoteListPlayerMessage{
+				Notes: p.Notes,
 			})
 
 			// Set their "present" variable back to true,
 			// which will turn their name from red to black
-			p := g.Players[i]
 			p.Present = true
 			g.NotifyConnected()
 		} else if j > -1 {
-			// They are a spectator, so send them the notes from all players
-			s.NotifyAllNotes(notes)
+			// They are a spectator
+			// Send them the notes from all the players & spectators
+			s.NotifyNoteList(g)
 		}
 	}
 

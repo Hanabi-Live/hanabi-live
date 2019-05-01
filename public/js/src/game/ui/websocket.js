@@ -231,80 +231,95 @@ commands.init = (data) => {
 };
 
 /*
-    Recieved by the client when spectating a game
+    Received by the client when spectating a game
     Has the following data:
     {
         order: 16,
-        note: '<strong>Zamiel:</strong> note1<br /><strong>Duneaught:</strong> note2<br />',
+        notes: [
+            {
+                name: 'Zamiel',
+                note: 'b1',
+            },
+            {
+                name: 'Sankala',
+                note: 'r1',
+            },
+        ]
     }
 */
 commands.note = (data) => {
-    // Set the note
-    // (which is the combined notes from all of the players, formatted by the server)
-    notes.set(data.order, data.notes, false);
-
-    // Draw (or hide) the note indicator
-    const card = globals.deck[data.order];
-    if (!card) {
+    // If we are not spectating and we got this message, something has gone wrong
+    if (!globals.spectating) {
         return;
     }
 
-    // Show or hide the note indicator
-    if (data.notes.length > 0) {
-        card.noteGiven.show();
-        if (!card.noteGiven.rotated) {
-            card.noteGiven.rotate(15);
-            card.noteGiven.rotated = true;
-        }
-    } else {
-        card.noteGiven.hide();
-    }
+    // Store the combined notes for this card
+    globals.allNotes[data.order] = data.notes;
 
-    globals.layers.card.batchDraw();
+    // Set the note indicator
+    notes.setCardIndicator(data.order);
 };
 
 /*
-    Recieved by the client when:
-    - joining a replay (will get all notes)
-    - joining a shared replay (will get all notes)
-    - joining an existing game as a spectator (will get all notes)
-    - reconnecting an existing game as a player (will only get your own notes)
+    Received by the client when:
+    - joining a replay
+    - joining a shared replay
+    - joining an existing game as a spectator
+    (it gives the notes of all the players & spectators)
 
     Has the following data:
     {
         notes: [
-            "",
-            "",
-            "<strong>Zamiel:</strong> b3<br /><strong>Sankala:</strong> f<br />",
+            {
+                id: 1,
+                name: 'Zamiel',
+                notes: ['', '', 'b1', ...],
+            },
+            {
+                id: 2,
+                name: 'Sankala',
+                notes: ['', 'r1', '', ...],
+            },
         ],
     }
 */
-commands.notes = (data) => {
-    for (let order = 0; order < data.notes.length; order++) {
-        const note = data.notes[order];
-
-        // Set the note
-        notes.set(order, note, false);
-
-        // The following code is mosly copied from the "command.note()" function
-        // Draw (or hide) the note indicator
-        const card = globals.deck[order];
-        if (!card) {
-            continue;
+commands.noteList = (data) => {
+    // Data comes from the server as an array of player & spectator notes
+    // We want to convert this to an array of objects for each card
+    for (const noteList of data.notes) {
+        // If we are a spectator, copy our notes from the combined list
+        if (globals.spectating && noteList.name === globals.lobby.username) {
+            globals.ourNotes = noteList.notes;
         }
-        if (note !== null && note !== '') {
-            card.note = note;
-        }
-        if (note !== null && note !== '') {
-            card.noteGiven.show();
-            if (globals.spectating && !card.noteGiven.rotated) {
-                card.noteGiven.rotate(15);
-                card.noteGiven.rotated = true;
-            }
+
+        for (let i = 0; i < noteList.notes.length; i++) {
+            const note = noteList.notes[i];
+            globals.allNotes[i].push({
+                name: noteList.name,
+                note,
+            });
         }
     }
 
-    globals.layers.card.batchDraw();
+    // Show the note indicator for currently-visible cards
+    notes.setAllCardIndicators();
+};
+
+/*
+    Received by the client when reconnecting to an existing game as a player
+    (it only gives the notes of the specific player)
+
+    Has the following data:
+    {
+        notes: ["", "", "b1", ...],
+    }
+*/
+commands.noteListPlayer = (data) => {
+    // Store our notes
+    globals.ourNotes = data.notes;
+
+    // Show the note indicator for currently-visible cards
+    notes.setAllCardIndicators();
 };
 
 // Used when the game state changes
@@ -548,10 +563,10 @@ commands.spectators = (data) => {
     // Remember the current list of spectators
     globals.spectators = data.names;
 
-    const shouldShowLabel = data.names.length > 0;
-    globals.elements.spectatorsLabel.setVisible(shouldShowLabel);
-    globals.elements.spectatorsNumLabel.setVisible(shouldShowLabel);
-    if (shouldShowLabel) {
+    const visible = data.names.length > 0;
+    globals.elements.spectatorsLabel.setVisible(visible);
+    globals.elements.spectatorsNumLabel.setVisible(visible);
+    if (visible) {
         globals.elements.spectatorsNumLabel.setText(data.names.length);
 
         // Build the string that shows all the names

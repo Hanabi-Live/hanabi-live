@@ -15,7 +15,6 @@ const HanabiCard = require('./HanabiCard');
 const LayoutChild = require('./LayoutChild');
 const Loader = require('./Loader');
 const keyboard = require('./keyboard');
-const notes = require('./notes');
 const stats = require('./stats');
 const timer = require('./timer');
 const ui = require('./ui');
@@ -27,13 +26,10 @@ class HanabiUI {
         // (or else they will retain their old values)
         globalsInit();
         this.globals = globals; // Also expose the globals to functions in the "game" directory
-        // (the keyboard functions can only be initialized once the clue buttons are drawn)
-        notes.init();
-        timer.init();
 
         // Store references to the parent objects for later use
         globals.lobby = lobby; // This is the "globals.js" in the root of the "src" directory
-        // It we name it "lobby" here to distinguish it from the UI globals;
+        // We name it "lobby" here to distinguish it from the UI globals;
         // after more refactoring, we will eventually merge these objects to make it less confusing
         globals.game = game; // This is the "game.js" in the root of the "game" directory
         // We should also combine this with the UI object in the future
@@ -43,6 +39,10 @@ class HanabiUI {
         globals.ImageLoader = new Loader(finishedLoadingImages);
         showLoadingScreen();
     }
+
+    /*
+        The following methods are called from various parent functions
+    */
 
     updateChatLabel() { // eslint-disable-line class-methods-use-this
         let text = '💬';
@@ -206,20 +206,26 @@ const initCardsMap = () => {
 const initCards = () => {
     globals.deckSize = stats.getTotalCardsInTheDeck();
     for (let order = 0; order < globals.deckSize; order++) {
-        // First, created the "learned" card
+        // Created the "learned" card object
+        // (this must be done before creating the HanabiCard object)
         globals.learnedCards.push({
             suit: null,
             rank: null,
             revealed: false,
         });
 
-        // Second, create the HanabiCard object
+        // Create the notes for this card
+        // (this must be done before creating the HanabiCard object)
+        globals.ourNotes.push('');
+        globals.allNotes.push([]);
+
+        // Create the HanabiCard object
         const card = new HanabiCard({
             order,
         });
         globals.deck.push(card);
 
-        // Third, create the LayoutChild that will be the parent of the card
+        // Create the LayoutChild that will be the parent of the card
         const child = new LayoutChild();
         child.add(card);
     }

@@ -262,23 +262,36 @@ func (g *Game) NotifySpectators() {
 }
 
 func (g *Game) NotifySpectatorsNote(order int) {
-	// Make an array that contains the notes for just this card
-	notes := ""
+	// Make an array that contains the combined notes for all the players & spectators
+	// (for a specific card)
+	type Note struct {
+		Name string `json:"name"`
+		Note string `json:"note"`
+	}
+	notes := make([]Note, 0)
 	for _, p := range g.Players {
-		notes += noteFormat(p.Name, p.Notes[order])
+		notes = append(notes, Note{
+			Name: p.Name,
+			Note: p.Notes[order],
+		})
+	}
+	for _, sp := range g.Spectators {
+		notes = append(notes, Note{
+			Name: sp.Name,
+			Note: sp.Notes[order],
+		})
 	}
 
 	type NoteMessage struct {
-		Order int    `json:"order"` // The order of the card in the deck that these notes correspond to
-		Notes string `json:"notes"` // The combined notes for all the players, formatted by the server
+		// The order of the card in the deck that these notes correspond to
+		Order int    `json:"order"`
+		Notes []Note `json:"notes"`
 	}
-	data := &NoteMessage{
-		Order: order,
-		Notes: notes,
-	}
-
 	for _, sp := range g.Spectators {
-		sp.Session.Emit("note", data)
+		sp.Session.Emit("note", &NoteMessage{
+			Order: order,
+			Notes: notes,
+		})
 	}
 }
 

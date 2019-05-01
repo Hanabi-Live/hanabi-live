@@ -368,17 +368,6 @@ func (g *Game) ConvertToSharedReplay() {
 	g.EndTurn = g.Turn
 	g.Progress = 100
 
-	// Get the notes from all of the players
-	notes := make([]models.PlayerNote, 0)
-	for _, p := range g.Players {
-		note := models.PlayerNote{
-			ID:    p.ID,
-			Name:  p.Name,
-			Notes: p.Notes,
-		}
-		notes = append(notes, note)
-	}
-
 	// Turn the players into spectators
 	ownerOffline := false
 	for _, p := range g.Players {
@@ -423,9 +412,23 @@ func (g *Game) ConvertToSharedReplay() {
 
 	// If the owner of the game is not present, then make someone else the shared replay leader
 	if ownerOffline {
-		// Default to making the first spectator the shared replay leader
-		g.Owner = g.Spectators[0].ID
-		log.Info("Set the new leader to be:", g.Spectators[0].Name)
+		g.Owner = -1
+
+		// Default to making the first player the leader,
+		// or the second player if the first is away, etc.
+		for _, p := range g.Players {
+			if p.Present {
+				g.Owner = p.ID
+				log.Info("Set the new leader to be:", p.Name)
+				break
+			}
+		}
+
+		if g.Owner != -1 {
+			// All of the players are away, so make the first spectator the leader
+			g.Owner = g.Spectators[0].ID
+			log.Info("All players are offline; set the new leader to be:", g.Spectators[0].Name)
+		}
 	}
 
 	// In a shared replay, we don't want any of the player names to be red,
@@ -445,8 +448,8 @@ func (g *Game) ConvertToSharedReplay() {
 		// Activate the Replay Leader label
 		sp.Session.NotifyReplayLeader(g)
 
-		// Send them the notes from all players
-		sp.Session.NotifyAllNotes(notes)
+		// Send them the notes from all the players & spectators
+		sp.Session.NotifyNoteList(g)
 
 		// Send them the database ID
 		type IDMessage struct {

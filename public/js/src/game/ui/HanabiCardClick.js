@@ -86,7 +86,7 @@ const clickRight = (card, event) => {
         && !globals.replay
         && !globals.spectating
     ) {
-        card.setNote(notes.vars.lastNote);
+        card.setNote(globals.lastNote);
         return;
     }
 
@@ -152,7 +152,6 @@ const clickRight = (card, event) => {
         && !event.altKey
         && !event.metaKey
         && !globals.replay
-        && !globals.spectating
     ) {
         notes.openEditTooltip(card);
     }

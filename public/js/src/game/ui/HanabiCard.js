@@ -25,7 +25,7 @@ class HanabiCard extends graphics.Group {
         };
         super(config);
 
-        // Mark the object type (used by arrows to determine how to point to the object)
+        // Mark the object type for use elsewhere in the code
         this.type = 'HanabiCard';
 
         // Most class variables are defined below in the "refresh()" function
@@ -624,7 +624,9 @@ class HanabiCard extends graphics.Group {
     setNote(note) {
         notes.set(this.order, note);
         notes.update(this);
-        notes.show(this);
+        if (note !== '') {
+            notes.show(this);
+        }
     }
 
     getSlotNum() {

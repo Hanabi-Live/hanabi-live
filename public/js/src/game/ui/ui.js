@@ -7,7 +7,6 @@ const arrows = require('./arrows');
 const constants = require('../../constants');
 const globals = require('./globals');
 const hypothetical = require('./hypothetical');
-const notes = require('./notes');
 const notify = require('./notify');
 const timer = require('./timer');
 
@@ -146,8 +145,8 @@ exports.recordStrike = (data) => {
 exports.handleNotify = (data) => {
     // If a user is editing a note and an action in the game happens,
     // mark to make the tooltip go away as soon as they are finished editing the note
-    if (notes.vars.editing !== null) {
-        notes.vars.actionOccured = true;
+    if (globals.editingNote !== null) {
+        globals.actionOccured = true;
     }
 
     // Automatically close any tooltips once an action in the game happens

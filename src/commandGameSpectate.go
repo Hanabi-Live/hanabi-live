@@ -3,6 +3,7 @@
 	(the client will send a "hello" message after getting "gameStart")
 	Sent on behalf of a user when they create a solo replay
 	Sent on behalf of a user when they create a shared replay
+	Sent on behalf of a user when they reconnect after having been in a shared replay
 
 	"data" example:
 	{

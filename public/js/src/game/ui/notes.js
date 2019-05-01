@@ -5,53 +5,61 @@
 // Imports
 const globals = require('./globals');
 
-// Variables
-let notes; // An array containing all of the player's notes, indexed by card order
-// Some variables must be in an object so that they are passed as a reference between files
-const vars = {};
-exports.vars = vars;
+// Get the contents of the note tooltip
+const get = (order, our) => {
+    // If we are a player in an ongoing game, return our note
+    // (we don't have to check to see if the element exists because
+    // all notes are initialized to an empty string)
+    if (our || (!globals.replay && !globals.spectating)) {
+        return globals.ourNotes[order];
+    }
 
-exports.init = () => {
-    notes = [];
-
-    // Used to keep track of which card the user is editing;
-    // users can only update one note at a time to prevent bugs
-    // Equal to the card order number or null
-    vars.editing = null;
-    // Equal to true if something happened when the note box happens to be open
-    vars.actionOccured = false;
-    vars.lastNote = ''; // Equal to the last note entered
+    // Build a string that shows the combined notes from the players & spectators
+    let content = '';
+    for (const noteObject of globals.allNotes[order]) {
+        if (noteObject.note.length > 0) {
+            content += `<strong>${noteObject.name}:</strong> ${noteObject.note}<br />`;
+        }
+    }
+    if (content.length !== 0) {
+        content = content.substr(0, content.length - 6); // Trim the trailing "<br />"
+    }
+    return content;
 };
 
-const get = (order) => {
-    const note = notes[order];
-    if (typeof note === 'undefined') {
-        return null;
+// A note has been updated, so:
+// 1) update the stored note in memory
+// 2) send the new note to the server
+// 3) check for new note identities
+const set = (order, note) => {
+    const oldNote = globals.ourNotes[order];
+    globals.ourNotes[order] = note;
+    if (globals.spectating) {
+        for (const noteObject of globals.allNotes[order]) {
+            if (noteObject.name === globals.lobby.username) {
+                noteObject.note = note;
+            }
+        }
     }
-    return note;
-};
-exports.get = get;
-
-const set = (order, note, send = true) => {
-    const card = globals.deck[order];
-
-    if (note === '') {
-        note = undefined;
-    }
-    const oldNote = notes[order];
-    notes[order] = note;
-    vars.lastNote = note;
+    globals.lastNote = note;
 
     // Send the note to the server
-    if (send && !globals.replay && !globals.spectating) {
+    if (!globals.replay && note !== oldNote) {
         globals.lobby.conn.send('note', {
             order,
             note,
         });
     }
 
-    // Check to see if they wrote a note that implies that they know the exact identity of this card
-    if (!note || globals.replay || globals.spectating) {
+    // The note identity feature does not apply to spectators and replays
+    if (globals.spectating || globals.replay) {
+        return;
+    }
+
+    // If the card previously had a note identity and we deleted the note,
+    // then we need to remove the identity and re-draw the card
+    const card = globals.deck[order];
+    if (!note) {
         if (card.noteSuit !== null || card.noteRank !== null) {
             card.noteSuit = null;
             card.noteRank = null;
@@ -60,7 +68,9 @@ const set = (order, note, send = true) => {
         }
         return;
     }
-    // Only examine the new text that they added
+
+    // Check to see if we wrote a note that implies that we know the exact identity of this card
+    // Only examine the new text that we added
     const getDiff = (string, diffBy) => string.split(diffBy).join('');
     let diff = getDiff(note, oldNote);
     // Remove all pipes (which are a conventional way to append new information to a note)
@@ -122,6 +132,27 @@ const set = (order, note, send = true) => {
 };
 exports.set = set;
 
+const update = (card) => {
+    // Update the tooltip
+    const tooltip = $(`#tooltip-${card.tooltipName}`);
+    const tooltipInstance = tooltip.tooltipster('instance');
+    const note = get(card.order, false);
+    tooltipInstance.content(note);
+    if (note.length === 0) {
+        tooltip.tooltipster('close');
+    }
+
+    // Update the card indicator
+    const visibleOld = card.noteGiven.getVisible();
+    const visibleNew = note.length > 0;
+    card.noteGiven.setVisible(visibleNew);
+    if (visibleOld !== visibleNew) {
+        globals.layers.card.batchDraw();
+    }
+};
+exports.update = update;
+
+// Open the tooltip for this card
 const show = (card) => {
     const tooltip = $(`#tooltip-${card.tooltipName}`);
     const tooltipInstance = tooltip.tooltipster('instance');
@@ -156,31 +187,28 @@ const show = (card) => {
     // Update the tooltip and open it
     tooltip.css('left', posX);
     tooltip.css('top', posY);
-    const note = get(card.order) || '';
+    const note = get(card.order, false);
     tooltipInstance.content(note);
     tooltip.tooltipster('open');
 };
 exports.show = show;
 
 exports.openEditTooltip = (card) => {
-    // Don't edit any notes in shared replays
-    if (globals.sharedReplay) {
+    // Don't edit any notes in replays
+    if (globals.replay) {
         return;
     }
 
     // Close any existing note tooltips
-    if (vars.editing !== null) {
-        const tooltip = $(`#tooltip-card-${vars.editing}`);
+    if (globals.editingNote !== null) {
+        const tooltip = $(`#tooltip-card-${globals.editingNote}`);
         tooltip.tooltipster('close');
     }
 
     show(card);
 
-    vars.editing = card.order;
-    let note = get(card.order);
-    if (note === null) {
-        note = '';
-    }
+    globals.editingNote = card.order;
+    const note = get(card.order, true);
     const tooltip = $(`#tooltip-${card.tooltipName}`);
     const tooltipInstance = tooltip.tooltipster('instance');
     tooltipInstance.content(`<input id="tooltip-${card.tooltipName}-input" type="text" value="${note}"/>`);
@@ -191,27 +219,26 @@ exports.openEditTooltip = (card) => {
             return;
         }
 
-        vars.editing = null;
+        globals.editingNote = null;
 
+        let newNote;
         if (keyEvent.key === 'Escape') {
-            note = get(card.order);
-            if (note === null) {
-                note = '';
-            }
+            // Use the existing note, if any
+            newNote = get(card.order, true);
         } else if (keyEvent.key === 'Enter') {
-            note = $(`#tooltip-${card.tooltipName}-input`).val();
+            newNote = $(`#tooltip-${card.tooltipName}-input`).val();
 
             // Strip any HTML elements
             // (to be thorough, the server will also perform this validation)
-            note = stripHTMLtags(note);
+            newNote = stripHTMLtags(newNote);
 
-            set(card.order, note);
+            set(card.order, newNote);
+        }
 
-            // Check to see if an event happened while we were editing this note
-            if (vars.actionOccured) {
-                vars.actionOccured = false;
-                tooltip.tooltipster('close');
-            }
+        // Check to see if an event happened while we were editing this note
+        if (globals.actionOccured) {
+            globals.actionOccured = false;
+            tooltip.tooltipster('close');
         }
 
         update(card);
@@ -226,25 +253,40 @@ exports.openEditTooltip = (card) => {
     $(`#tooltip-${card.tooltipName}-input`).focus();
 };
 
-const update = (card) => {
-    // Update the tooltip
-    const tooltip = $(`#tooltip-${card.tooltipName}`);
-    const tooltipInstance = tooltip.tooltipster('instance');
-    const note = get(card.order) || '';
-    tooltipInstance.content(note);
-    if (note.length === 0) {
-        tooltip.tooltipster('close');
-    }
-
-    // Update the card indicator
-    const visibleOld = card.noteGiven.getVisible();
-    const visibleNew = note.length > 0;
-    card.noteGiven.setVisible(visibleNew);
-    if (visibleOld !== visibleNew) {
-        globals.layers.card.batchDraw();
+// We just got a list of a bunch of notes, so show the note indicator for currently-visible cards
+exports.setAllCardIndicators = () => {
+    for (let order = 0; order <= globals.indexOfLastDrawnCard; order++) {
+        setCardIndicator(order);
     }
 };
-exports.update = update;
+
+const setCardIndicator = (order) => {
+    const visible = shouldShowIndicator(order);
+    const card = globals.deck[order];
+    card.noteGiven.setVisible(visible);
+
+    if (visible && globals.spectating && !card.noteGiven.rotated) {
+        card.noteGiven.rotate(15);
+        card.noteGiven.rotated = true;
+    }
+
+    globals.layers.card.batchDraw();
+};
+exports.setCardIndicator = setCardIndicator;
+
+const shouldShowIndicator = (order) => {
+    if (globals.replay || globals.spectating) {
+        for (const noteObject of globals.allNotes[order]) {
+            if (noteObject.note.length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return globals.ourNotes[order] !== '';
+};
+exports.shouldShowIndicator = shouldShowIndicator;
 
 /*
     Misc. functions

@@ -104,7 +104,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
 	}
 
 	// Get the notes from the database
-	var notes []models.PlayerNote
+	var notes []models.NoteList
 	if v, err := db.Games.GetNotes(d.ID); err != nil {
 		log.Error("Failed to get the notes from the database "+
 			"for game "+strconv.Itoa(d.ID)+":", err)
@@ -266,9 +266,11 @@ func replayJSON(s *Session, d *CommandData) {
 	}
 
 	// Validate the notes
-	if len(d.GameJSON.Notes) < 2 || len(d.GameJSON.Notes) > 6 {
-		s.Warning("The number of note arrays must be between 2 and 6.")
-		return
+	if len(d.GameJSON.Notes) > 0 {
+		if len(d.GameJSON.Notes) < 2 || len(d.GameJSON.Notes) > 6 {
+			s.Warning("The number of note arrays must be between 2 and 6.")
+			return
+		}
 	}
 
 	// Validate the amount of players

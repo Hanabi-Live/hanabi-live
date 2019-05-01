@@ -422,14 +422,14 @@ func (*Games) GetPlayers(databaseID int) ([]*Player, error) {
 	return players, nil
 }
 
-type PlayerNote struct {
-	ID    int
-	Name  string
-	Notes []string
+type NoteList struct {
+	ID    int      `json:"id"`
+	Name  string   `json:"name"`
+	Notes []string `json:"notes"`
 }
 
 // GetNotes is used in the "ready" command
-func (*Games) GetNotes(databaseID int) ([]PlayerNote, error) {
+func (*Games) GetNotes(databaseID int) ([]NoteList, error) {
 	var rows *sql.Rows
 	if v, err := db.Query(`
 		SELECT
@@ -448,12 +448,12 @@ func (*Games) GetNotes(databaseID int) ([]PlayerNote, error) {
 	}
 	defer rows.Close()
 
-	notes := make([]PlayerNote, 0)
+	notes := make([]NoteList, 0)
 	for rows.Next() {
-		// Each "note" here is actually a JSON array of all of a player's notes for that game
-		var note PlayerNote
+		// "noteList.Notes" will be an array of all of a player's notes for the game
+		var noteList NoteList
 		var notesJSON string
-		if err := rows.Scan(&note.ID, &note.Name, &notesJSON); err != nil {
+		if err := rows.Scan(&noteList.ID, &noteList.Name, &notesJSON); err != nil {
 			return nil, err
 		}
 
@@ -465,11 +465,11 @@ func (*Games) GetNotes(databaseID int) ([]PlayerNote, error) {
 		}
 
 		// Convert it from JSON to a slice
-		if err := json.Unmarshal([]byte(notesJSON), &note.Notes); err != nil {
+		if err := json.Unmarshal([]byte(notesJSON), &noteList.Notes); err != nil {
 			return nil, err
 		}
 
-		notes = append(notes, note)
+		notes = append(notes, noteList)
 	}
 
 	return notes, nil

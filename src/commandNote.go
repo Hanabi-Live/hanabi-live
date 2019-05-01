@@ -59,13 +59,13 @@ func commandNote(s *Session, d *CommandData) {
 		// Update the array that contains all of their notes
 		p.Notes[d.Order] = d.Note
 
-		// Let all of the spectators know that there is a new note
-		g.NotifySpectatorsNote(d.Order)
-
 	} else if j > -1 {
 		sp := g.Spectators[j]
 
 		// Update the array that contains all of their notes
 		sp.Notes[d.Order] = d.Note
 	}
+
+	// Let all of the spectators know that there is a new note
+	g.NotifySpectatorsNote(d.Order)
 }

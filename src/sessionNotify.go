@@ -318,30 +318,31 @@ func (s *Session) NotifyReplayLeader(g *Game) {
 	})
 }
 
-func (s *Session) NotifyAllNotes(playerNotes []models.PlayerNote) {
-	// Compile all of the notes together
-	combinedNotes := make([]string, 0)
-	for _, playerNote := range playerNotes {
-		for i, note := range playerNote.Notes {
-			line := noteFormat(playerNote.Name, note)
-			if len(combinedNotes) == i {
-				combinedNotes = append(combinedNotes, line)
-			} else {
-				combinedNotes[i] += line
-			}
-		}
+// NotifyNoteList sends them all of the notes from the players & spectators
+// (there will be no spectator notes if this is a replay spawned from the database)
+func (s *Session) NotifyNoteList(g *Game) {
+	// Get the notes from all the players & spectators
+	notes := make([]models.NoteList, 0)
+	for _, p := range g.Players {
+		notes = append(notes, models.NoteList{
+			ID:    p.ID,
+			Name:  p.Name,
+			Notes: p.Notes,
+		})
 	}
-
-	// Chop off all of the trailing newlines
-	for i := range combinedNotes {
-		combinedNotes[i] = strings.TrimSuffix(combinedNotes[i], "\n")
+	for _, sp := range g.Spectators {
+		notes = append(notes, models.NoteList{
+			ID:    sp.ID,
+			Name:  sp.Name,
+			Notes: sp.Notes,
+		})
 	}
 
 	// Send it
-	type NotesMessage struct {
-		Notes []string `json:"notes"`
+	type NoteListMessage struct {
+		Notes []models.NoteList `json:"notes"`
 	}
-	s.Emit("notes", &NotesMessage{
-		Notes: combinedNotes,
+	s.Emit("noteList", &NoteListMessage{
+		Notes: notes,
 	})
 }

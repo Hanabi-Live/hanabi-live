@@ -236,19 +236,17 @@ exports.note = function note() {
             y: 0,
         },
         shadowOpacity: 0.9,
-        visible: false,
+        visible: notes.shouldShowIndicator(this.order),
         listening: false,
     });
     this.noteGiven.setScale({
         x: -1,
         y: -1,
     });
+    // We might rotate the note indicator later on in order to
+    // indicate to spectators that the note was updated
     this.noteGiven.rotated = false;
-    // (we might rotate it later to indicate to spectators that the note was updated)
     this.add(this.noteGiven);
-    if (notes.get(this.order)) {
-        this.noteGiven.show();
-    }
 
     // If the user mouses over the card, show a tooltip that contains the note
     // (we don't use the "tooltip.init()" function because we need the extra conditions in the
@@ -261,7 +259,7 @@ exports.note = function note() {
         }
 
         // Don't open any more note tooltips if the user is currently editing a note
-        if (notes.vars.editing !== null) {
+        if (globals.editingNote !== null) {
             return;
         }
 
@@ -273,14 +271,14 @@ exports.note = function note() {
         }
 
         globals.activeHover = this;
-        notes.show(this); // We supply the card as the argument
+        notes.show(this);
     });
 
     this.on('mouseout', function cardMouseOut() {
         globals.activeHover = null;
 
         // Don't close the tooltip if we are currently editing a note
-        if (notes.vars.editing !== null) {
+        if (globals.editingNote !== null) {
             return;
         }
 
@@ -290,7 +288,7 @@ exports.note = function note() {
 };
 
 // In a game, click on a teammate's hand to it show as it would to that teammate
-// (or show your own hand as it should appear without any notes on it)
+// (or show your own hand as it should appear without any identity notes on it)
 // (or, in a replay, show the hand as it appeared at that moment in time)
 exports.empathy = function empathy() {
     this.on('mousedown', (event) => {

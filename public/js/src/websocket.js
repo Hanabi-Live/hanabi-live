@@ -28,7 +28,7 @@ exports.set = () => {
     console.log('Connecting to websocket URL:', websocketURL);
     const debug = window.location.pathname.includes('/dev');
     globals.conn = new golem.Connection(websocketURL, debug);
-    // This will automatically use the cookie that we recieved earlier from the POST
+    // This will automatically use the cookie that we received earlier from the POST
     // If the second argument is true, debugging is turned on
 
     // Define event handlers

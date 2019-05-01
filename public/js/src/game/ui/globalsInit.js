@@ -10,7 +10,7 @@ module.exports = () => {
     globals.loading = true;
 
     // Game settings
-    // (sent in the "init" message)
+    // (sent in the "init" message in "websocket.js")
     globals.playerNames = [];
     globals.variant = null;
     globals.playerUs = -1;
@@ -53,29 +53,6 @@ module.exports = () => {
     globals.cardsGotten = 0;
     globals.cluesSpentPlusStrikes = 0;
     globals.stackDirections = [0, 0, 0, 0, 0];
-
-    // Replay variables
-    globals.inReplay = false; // Whether or not the replay controls are currently showing
-    globals.replayLog = []; // Contains all of the "notify" messages for the game
-    globals.replayPos = 0; // The current index of the "globals.replayLog" array
-    globals.replayTurn = 0; // The current game turn
-    globals.replayMax = 0; // The maximum turn recorded so fast
-    // Used to keep track of when the game ends (before the "gameOver" command has arrived)
-    globals.gameOver = false;
-    globals.finalReplayPos = 0;
-    globals.finalReplayTurn = 0;
-    // In replays, we can show information about a card that was not known at the time,
-    // but is known now; these are cards we have "learned"
-    globals.learnedCards = [];
-
-    // Shared replay variables
-    globals.sharedReplayLeader = ''; // Equal to the username of the leader
-    globals.amSharedReplayLeader = false;
-    globals.sharedReplayTurn = -1;
-    globals.useSharedTurns = true;
-    globals.sharedReplayLoading = true; // This is used to not animate cards when loading in
-    globals.hypothetical = false; // Whether or not we are in a hypothetical
-    globals.hypoActions = []; // An array of the actions in the current hypothetical
 
     // UI elements
     globals.ImageLoader = null;
@@ -177,6 +154,48 @@ module.exports = () => {
     globals.activeHover = null; // The element that the mouse cursor is currently over
     globals.cardImages = {};
     globals.scaledCardImages = {};
+
+    // Replay feature
+    globals.inReplay = false; // Whether or not the replay controls are currently showing
+    globals.replayLog = []; // Contains all of the "notify" messages for the game
+    globals.replayPos = 0; // The current index of the "globals.replayLog" array
+    globals.replayTurn = 0; // The current game turn
+    globals.replayMax = 0; // The maximum turn recorded so fast
+    // Used to keep track of when the game ends (before the "gameOver" command has arrived)
+    globals.gameOver = false;
+    globals.finalReplayPos = 0;
+    globals.finalReplayTurn = 0;
+    // In replays, we can show information about a card that was not known at the time,
+    // but is known now; these are cards we have "learned"
+    globals.learnedCards = [];
+
+    // Shared replay feature
+    globals.sharedReplayLeader = ''; // Equal to the username of the leader
+    globals.amSharedReplayLeader = false;
+    globals.sharedReplayTurn = -1;
+    globals.useSharedTurns = true;
+    globals.sharedReplayLoading = true; // This is used to not animate cards when loading in
+    globals.hypothetical = false; // Whether or not we are in a hypothetical
+    globals.hypoActions = []; // An array of the actions in the current hypothetical
+
+    // Notes feature
+    globals.ourNotes = []; // An array containing strings, indexed by card order
+    // An array containing objects, indexed by card order;
+    // It represents the notes of every player & spectator
+    globals.allNotes = [];
+    // Used to keep track of which card the user is editing;
+    // users can only update one note at a time to prevent bugs
+    // Equal to the card order number or null
+    globals.editingNote = null;
+    // Equal to true if something happened when the note box happens to be open
+    globals.actionOccured = false;
+    globals.lastNote = ''; // Equal to the last note entered
+
+    // Timer feature
+    globals.timerID = null;
+    globals.playerTimes = null;
+    globals.activeIndex = null;
+    globals.lastTimerUpdateTimeMS = null;
 
     // Pre-move feature
     globals.queuedAction = null;

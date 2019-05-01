@@ -7,7 +7,6 @@ const clues = require('./clues');
 const constants = require('../../constants');
 const globals = require('./globals');
 const misc = require('../../misc');
-const notes = require('./notes');
 const replay = require('./replay');
 const ui = require('./ui');
 
@@ -66,7 +65,7 @@ const keydown = (event) => {
     }
 
     // Disable keyboard hotkeys if we are editing a note
-    if (notes.vars.editing !== null) {
+    if (globals.editingNote !== null) {
         return;
     }
 
@@ -156,10 +155,10 @@ const keydown = (event) => {
     if (
         event.key === 'Delete'
         && globals.activeHover !== null
-        && typeof globals.activeHover.order === 'number'
+        && globals.activeHover.type === 'HanabiCard'
     ) {
-        notes.set(globals.activeHover.order, '');
-        notes.update(globals.activeHover);
+        const card = globals.activeHover;
+        card.setNote('');
         return;
     }
 
