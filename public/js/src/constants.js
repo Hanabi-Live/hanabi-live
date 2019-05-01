@@ -116,7 +116,7 @@ const initSuits = () => {
         // Validate the clue colors (the colors that touch this suit)
         if (suit.allClueColors) {
             // Handle suits that are touched by all color clues
-            suit.clueColors = Object.keys(colors);
+            suit.clueColors = Object.values(colors);
         } else if (Object.hasOwnProperty.call(suit, 'clueColors')) {
             // Convert strings to objects
             const colorList = [];
