@@ -17,6 +17,7 @@ type ProfileData struct {
 	NumMaxScores   int
 	TotalMaxScores int
 	TimePlayed     string
+	TimeRaced      string
 	VariantStats   []VariantStats
 }
 type VariantStats struct {
@@ -56,6 +57,7 @@ func httpScores(c *gin.Context) {
 	// Get the stats for this player
 	numGames := 0
 	timePlayed := ""
+	timeRaced := ""
 	totalMaxScores := 0
 	variantStats := make([]VariantStats, 0)
 	for i, name := range variantsList {
@@ -72,7 +74,16 @@ func httpScores(c *gin.Context) {
 
 		if i == 0 {
 			numGames = stats.NumPlayedAll
-			timePlayed = stats.TimePlayed
+			if stats.TimePlayed.Valid {
+				timePlayed = stats.TimePlayed.String
+			} else {
+				timePlayed = "00:00:00"
+			}
+			if stats.TimeRaced.Valid {
+				timeRaced = stats.TimeRaced.String
+			} else {
+				timeRaced = "00:00:00"
+			}
 		}
 
 		maxScoreForThisVariant := 5 * len(variant.Suits)
@@ -101,6 +112,7 @@ func httpScores(c *gin.Context) {
 		NumMaxScores:   totalMaxScores,
 		TotalMaxScores: len(variantsList) * 5, // For 2 to 6 players
 		TimePlayed:     timePlayed,
+		TimeRaced:      timeRaced,
 		VariantStats:   variantStats,
 	}
 

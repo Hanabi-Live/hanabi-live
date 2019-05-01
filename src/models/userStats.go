@@ -10,12 +10,13 @@ type UserStats struct{}
 
 // These are the stats for a user playing a specific variant + the total count of their games
 type Stats struct {
-	NumPlayedAll  int          `json:"numPlayedAll"`
-	TimePlayed    string       `json:"timePlayed"`
-	NumPlayed     int          `json:"numPlayed"`
-	BestScores    []*BestScore `json:"bestScores"`
-	AverageScore  float64      `json:"averageScore"`
-	StrikeoutRate float64      `json:"strikeoutRate"`
+	NumPlayedAll  int            `json:"numPlayedAll"`
+	TimePlayed    sql.NullString `json:"timePlayed"`
+	TimeRaced     sql.NullString `json:"timeRaced"`
+	NumPlayed     int            `json:"numPlayed"`
+	BestScores    []*BestScore   `json:"bestScores"`
+	AverageScore  float64        `json:"averageScore"`
+	StrikeoutRate float64        `json:"strikeoutRate"`
 }
 type BestScore struct {
 	NumPlayers int `json:"numPlayers"`
@@ -83,7 +84,7 @@ func (*UserStats) Get(userID int, variant int) (Stats, error) {
 		return stats, err
 	}
 
-	// Lastly, get the total amount of time spent in-game (not including speedrun games)
+	// Get the total amount of time spent in-game for non-speedruns
 	if err := db.QueryRow(`
 		SELECT SEC_TO_TIME(SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished))) as total_playtime
 		FROM games, game_participants
@@ -91,6 +92,17 @@ func (*UserStats) Get(userID int, variant int) (Stats, error) {
 			AND user_id = ?
 			AND games.speedrun = 0
 	`, userID).Scan(&stats.TimePlayed); err != nil {
+		return stats, err
+	}
+
+	// Get the total amount of time spent in-game for speedruns
+	if err := db.QueryRow(`
+		SELECT SEC_TO_TIME(SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished))) as total_playtime
+		FROM games, game_participants
+		WHERE game_id = games.id
+			AND user_id = ?
+			AND games.speedrun = 1
+	`, userID).Scan(&stats.TimeRaced); err != nil {
 		return stats, err
 	}
 
