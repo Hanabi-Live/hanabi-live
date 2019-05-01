@@ -207,6 +207,9 @@ func variantsInit() {
 			// The clue colors were not specified in the JSON, so derive them from the suits
 			for _, suit := range variantSuits {
 				for _, color := range suit.ClueColors {
+					if color == "all" {
+						continue
+					}
 					if !stringInSlice(color, clueColors) {
 						clueColors = append(clueColors, color)
 					}

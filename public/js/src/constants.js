@@ -228,6 +228,9 @@ const initVariants = () => {
             variant.clueColors = [];
             for (const suit of variant.suits) {
                 for (const color of suit.clueColors) {
+                    if (color === 'all') {
+                        continue;
+                    }
                     if (!variant.clueColors.includes(color)) {
                         variant.clueColors.push(color);
                     }
