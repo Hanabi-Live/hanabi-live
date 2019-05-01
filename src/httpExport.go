@@ -172,8 +172,8 @@ func httpExport(c *gin.Context) {
 
 	// Convert the notes
 	notes := make([][]string, 0)
-	for _, n := range dbNotes {
-		notes = append(notes, n.Notes)
+	for _, noteList := range dbNotes {
+		notes = append(notes, noteList.Notes)
 	}
 
 	// Get the options from the database

@@ -265,17 +265,21 @@ func replayJSON(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate the notes
-	if len(d.GameJSON.Notes) > 0 {
-		if len(d.GameJSON.Notes) < 2 || len(d.GameJSON.Notes) > 6 {
-			s.Warning("The number of note arrays must be between 2 and 6.")
-			return
-		}
-	}
-
 	// Validate the amount of players
 	if len(d.GameJSON.Players) < 2 || len(d.GameJSON.Players) > 6 {
 		s.Warning("The number of players must be between 2 and 6.")
+		return
+	}
+
+	// Validate the notes
+	if len(d.GameJSON.Notes) == 0 {
+		// They did not provide any notes, so create a blank note array
+		d.GameJSON.Notes = make([][]string, len(d.GameJSON.Players))
+		for i := 0; i < len(d.GameJSON.Players); i++ {
+			d.GameJSON.Notes[i] = make([]string, totalCards)
+		}
+	} else if len(d.GameJSON.Notes) != len(d.GameJSON.Players) {
+		s.Warning("The number of note arrays must match the number of players.")
 		return
 	}
 
