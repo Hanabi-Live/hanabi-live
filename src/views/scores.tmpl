@@ -2,8 +2,8 @@
 <ul>
     <li>Total games played: {{.NumGames}}</li>
     <li>Total max scores: {{.NumMaxScores}} / {{.TotalMaxScores}}</li>
-    <li>Total time spent playing (in non-speedruns): {{.TimePlayed}}</li>
-    <li>Total time spent playing (in speedruns): {{.TimeRaced}}</li>
+    {{if .TimePlayed}}<li>Total time spent playing (in non-speedruns): {{.TimePlayed}}</li>{{end}}
+    {{if .TimeRaced}}<li>Total time spent playing (in speedruns): {{.TimeRaced}}</li>{{end}}
 </ul>
 
 <table>

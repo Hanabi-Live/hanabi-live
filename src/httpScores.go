@@ -74,16 +74,8 @@ func httpScores(c *gin.Context) {
 
 		if i == 0 {
 			numGames = stats.NumPlayedAll
-			if stats.TimePlayed.Valid {
-				timePlayed = stats.TimePlayed.String
-			} else {
-				timePlayed = "00:00:00"
-			}
-			if stats.TimeRaced.Valid {
-				timeRaced = stats.TimeRaced.String
-			} else {
-				timeRaced = "00:00:00"
-			}
+			timePlayed = stats.TimePlayed
+			timeRaced = stats.TimeRaced
 		}
 
 		maxScoreForThisVariant := 5 * len(variant.Suits)
