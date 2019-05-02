@@ -4,21 +4,19 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"math"
-	"time"
 )
 
 type UserStats struct{}
 
 // These are the stats for a user playing a specific variant + the total count of their games
 type Stats struct {
-	NumPlayedAll  int          `json:"numPlayedAll"`
-	TimePlayed    string       `json:"timePlayed"`
-	TimeRaced     string       `json:"timeRaced"`
-	NumPlayed     int          `json:"numPlayed"`
-	BestScores    []*BestScore `json:"bestScores"`
-	AverageScore  float64      `json:"averageScore"`
-	StrikeoutRate float64      `json:"strikeoutRate"`
+	NumPlayedAll  int            `json:"numPlayedAll"`
+	TimePlayed    sql.NullString `json:"timePlayed"`
+	TimeRaced     sql.NullString `json:"timeRaced"`
+	NumPlayed     int            `json:"numPlayed"`
+	BestScores    []*BestScore   `json:"bestScores"`
+	AverageScore  float64        `json:"averageScore"`
+	StrikeoutRate float64        `json:"strikeoutRate"`
 }
 type BestScore struct {
 	NumPlayers int `json:"numPlayers"`
@@ -87,37 +85,25 @@ func (*UserStats) Get(userID int, variant int) (Stats, error) {
 	}
 
 	// Get the total amount of time spent in-game for non-speedruns
-	var timePlayed sql.NullString
 	if err := db.QueryRow(`
 		SELECT SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) as total_playtime
 		FROM games, game_participants
 		WHERE game_id = games.id
 			AND user_id = ?
 			AND games.speedrun = 0
-	`, userID).Scan(&timePlayed); err != nil {
+	`, userID).Scan(&stats.TimePlayed); err != nil {
 		return stats, err
-	}
-	if v, err := getGametimeString(timePlayed); err != nil {
-		return stats, err
-	} else {
-		stats.TimePlayed = v
 	}
 
 	// Get the total amount of time spent in-game for speedruns
-	var timeRaced sql.NullString
 	if err := db.QueryRow(`
 		SELECT SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) as total_playtime
 		FROM games, game_participants
 		WHERE game_id = games.id
 			AND user_id = ?
 			AND games.speedrun = 1
-	`, userID).Scan(&timeRaced); err != nil {
+	`, userID).Scan(&stats.TimeRaced); err != nil {
 		return stats, err
-	}
-	if v, err := getGametimeString(timeRaced); err != nil {
-		return stats, err
-	} else {
-		stats.TimeRaced = v
 	}
 
 	return stats, nil
@@ -373,63 +359,4 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	}
 
 	return nil
-}
-
-func getGametimeString(timeString sql.NullString) (string, error) {
-	if timeString.Valid {
-		playtime, err := time.ParseDuration(timeString.String + "s")
-		//if the user has played for less than 1 minute, display seconds only
-		if playtime.Minutes() < 1 {
-			seconds := math.Round(playtime.Seconds())
-			msg := fmt.Sprintf("%.0f second", seconds)
-			if int(seconds) != 1 {
-				msg += "s"
-			}
-			return msg, nil
-		}
-		//if they played for less than an hour, display minutes only
-		if playtime.Hours() < 1 {
-			minutes := math.Round(playtime.Minutes())
-			msg := fmt.Sprintf("%.0f minute", minutes)
-			if int(minutes) != 1 {
-				msg += "s"
-			}
-			return msg, nil
-		}
-
-		//convert Duration variable into months, hours and minutes
-		minutes := int(playtime.Minutes())
-		hours := int(playtime.Hours())
-		minutes -= hours * 60
-
-		months := float64(hours) * 0.00136895463 //1 month = 30.4368499 days
-		hours -= int(months / 0.00136895463)
-
-		hourStr := "hour"
-		if hours != 1 {
-			hourStr += "s"
-		}
-
-		minStr := "minute"
-		if minutes != 1 {
-			minStr += "s"
-		}
-
-		var msg string
-		//if the user has played over a month of hanabi, display number of months
-		if months >= 1 {
-			monthStr := "month"
-			if int(months) != 1 {
-				monthStr += "s"
-			}
-			msg = "%.1fh (%.0f %s, %d %s and %d %s)"
-			msg = fmt.Sprintf(msg, playtime.Hours(), months, monthStr, hours, hourStr, minutes, minStr)
-		} else {
-			msg = "%.1fh (%d %s and %d %s)"
-			msg = fmt.Sprintf(msg, playtime.Hours(), hours, hourStr, minutes, minStr)
-		}
-
-		return msg, err
-	}
-	return "", nil
 }
