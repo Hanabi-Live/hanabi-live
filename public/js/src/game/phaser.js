@@ -113,31 +113,30 @@ function create() {
             this.add.existing(card);
             card.setInteractive();
             this.input.setDraggable(card);
-            this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-                const rot = gameObject.parentContainer.rotation;
-                gameObject.x = dragX * Math.cos(rot) + dragY * Math.sin(rot);
-                gameObject.y = dragY * Math.cos(rot) - dragX * Math.sin(rot);
-            });
-            // ghetto drag and drop
-            this.input.on('dragend', (pointer, gameObject) => {
-                console.log(gameObject.x);
-                console.log(gameObject.y);
-                if (
-                    // dragX > this.sys.canvas.width / 3
-                    // && dragX < 2 * this.sys.canvas.width / 3
-                    // && dragY > this.sys.canvas.height / 3
-                    // && dragY < 2 * this.sys.canvas.height / 3
-                    gameObject.y < -1 * this.sys.canvas.height / 3
-                    && gameObject.y > -2 * this.sys.canvas.height / 3
-                ) {
-                    gameObject.parentContainer.mutate(null, gameObject);
-                    phaserGlobals.playArea.addToPlayStacks(gameObject);
-                }
-            });
             hand.mutate(card, null);
             order += 1;
         }
     }
+    this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+        gameObject.x = dragX;
+        gameObject.y = dragY;
+    });
+    this.input.on('dragend', (pointer, gameObject, dropped) => {
+        if (!dropped) {
+            this.tweens.add({
+                targets: gameObject,
+                props: {
+                    x: { value: gameObject.input.dragStartX, duration: 500 },
+                    y: { value: gameObject.input.dragStartY, duration: 500 },
+                },
+            });
+        }
+    });
+    this.input.on('drop', (pointer, gameObject, dropZone) => {
+        gameObject.parentContainer.mutate(null, gameObject);
+        gameObject.input.enabled = false;
+        dropZone.zoneContainer.addCards(gameObject);
+    });
     phaserGlobals.playArea = new PlayArea(this, {
         x: this.sys.canvas.width / 2,
         y: this.sys.canvas.height / 2,
