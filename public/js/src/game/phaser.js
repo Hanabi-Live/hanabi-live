@@ -113,27 +113,30 @@ function create() {
             this.add.existing(card);
             card.setInteractive();
             this.input.setDraggable(card);
-            this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-                gameObject.x = dragX;
-                gameObject.y = dragY;
-            });
-            this.input.on('dragend', (pointer, gameObject) => {
-                this.tweens.add({
-                    targets: gameObject,
-                    props: {
-                        x: { value: gameObject.input.dragStartX, duration: 500 },
-                        y: { value: gameObject.input.dragStartY, duration: 500 },
-                    },
-                });
-            });
-            this.input.on('drop', (pointer, gameObject, dropZone) => {
-                gameObject.parentContainer.mutate(null, gameObject);
-                dropZone.zoneContainer.addCards(gameObject);
-            });
             hand.mutate(card, null);
             order += 1;
         }
     }
+    this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+        gameObject.x = dragX;
+        gameObject.y = dragY;
+    });
+    this.input.on('dragend', (pointer, gameObject, dropped) => {
+        if (!dropped) {
+            this.tweens.add({
+                targets: gameObject,
+                props: {
+                    x: { value: gameObject.input.dragStartX, duration: 500 },
+                    y: { value: gameObject.input.dragStartY, duration: 500 },
+                },
+            });
+        }
+    });
+    this.input.on('drop', (pointer, gameObject, dropZone) => {
+        gameObject.parentContainer.mutate(null, gameObject);
+        gameObject.input.enabled = false;
+        dropZone.zoneContainer.addCards(gameObject);
+    });
     phaserGlobals.playArea = new PlayArea(this, {
         x: this.sys.canvas.width / 2,
         y: this.sys.canvas.height / 2,

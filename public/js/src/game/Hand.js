@@ -17,6 +17,16 @@ class Hand extends Phaser.GameObjects.Container {
     mutate(cardsIn, cardsOut) {
         if (cardsOut != null) {
             this.remove(cardsOut);
+            if (!Array.isArray(cardsOut)) { cardsOut = [cardsOut]; }
+            cardsOut.forEach((card) => {
+                const sinRot = Math.sin(-this.rotation);
+                const cosRot = Math.cos(-this.rotation);
+                const { x, y } = card;
+                card.x = (x * cosRot) + (y * sinRot);
+                card.y = (y * cosRot) - (x * sinRot);
+                card.x += this.x;
+                card.y += this.y;
+            });
         }
         if (cardsIn != null) {
             // Adds any number of cards at the front of the container, i.e. the left side of the

@@ -40,7 +40,17 @@ class PlayArea extends Phaser.GameObjects.Container {
     addCards(cards) {
         // Cards are rendered in the order of the container, so cards at the end of the container
         // will be the front of the scene
+        if (!Array.isArray(cards)) { cards = [cards]; }
         this.add(cards);
+        cards.forEach((card) => {
+            card.x -= this.x;
+            card.y -= this.y;
+            const sinRot = Math.sin(this.rotation);
+            const cosRot = Math.cos(this.rotation);
+            const { x, y } = card;
+            card.x = (x * cosRot) + (y * sinRot);
+            card.y = (y * cosRot) - (x * sinRot);
+        });
         this.addCardTweensToScene(cards);
     }
 
