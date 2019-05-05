@@ -3,8 +3,10 @@ const HanabiCard = require('./HanabiCard');
 
 // Constants
 const {
+    CARD_H,
     CARD_W,
     PHASER_DEMO_SCALE,
+    PLAY_AREA_PADDING,
 } = constants;
 
 // Phaser devs warned against using too many levels of nested containers, so I didn't design
@@ -16,25 +18,35 @@ class PlayArea extends Phaser.GameObjects.Container {
         this.x = config.x;
         this.y = config.y;
         this.suits = config.suits;
+        this.zone = new Phaser.GameObjects.Zone(
+            scene,
+            config.x,
+            config.y,
+            CARD_W * PHASER_DEMO_SCALE * PLAY_AREA_PADDING * config.suits.length,
+            CARD_H,
+        );
+        this.zone.zoneContainer = this;
+        this.zone.setRectangleDropZone(
+            CARD_W * PHASER_DEMO_SCALE * PLAY_AREA_PADDING * config.suits.length,
+            CARD_H,
+        );
         const cardsToAdd = this.suits.map(suit => new HanabiCard(scene, {
             suit,
             rank: 0,
         }));
-        this.addToPlayStacks(cardsToAdd);
+        this.addCards(cardsToAdd);
     }
 
-    addToPlayStacks(cards) {
+    addCards(cards) {
         // Cards are rendered in the order of the container, so cards at the end of the container
         // will be the front of the scene
-        console.log(cards);
         this.add(cards);
         this.addCardTweensToScene(cards);
     }
 
     addCardTweensToScene(cards) {
         if (!Array.isArray(cards)) { cards = [cards]; }
-        const padding = 1.15;
-        const horizSpacing = CARD_W * PHASER_DEMO_SCALE * padding;
+        const horizSpacing = CARD_W * PHASER_DEMO_SCALE * PLAY_AREA_PADDING;
         const nSuits = this.suits.length;
 
         for (const card of cards) {
@@ -42,7 +54,6 @@ class PlayArea extends Phaser.GameObjects.Container {
             // eslint pls, this is way more readable than if I threw in a bunch of parens
             /* eslint-disable no-mixed-operators, space-infix-ops */
             const x = (suitIdx + 1/2 - nSuits/2) * horizSpacing;
-            console.log(x);
             this.scene.tweens.add({
                 targets: card,
                 x,

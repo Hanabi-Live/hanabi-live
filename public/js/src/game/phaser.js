@@ -117,21 +117,18 @@ function create() {
                 gameObject.x = dragX;
                 gameObject.y = dragY;
             });
-            // ghetto drag and drop
             this.input.on('dragend', (pointer, gameObject) => {
-                //console.log(gameObject.x);
-                //console.log(gameObject.y);
-                if (
-                    // dragX > this.sys.canvas.width / 3
-                    // && dragX < 2 * this.sys.canvas.width / 3
-                    // && dragY > this.sys.canvas.height / 3
-                    // && dragY < 2 * this.sys.canvas.height / 3
-                    gameObject.y < -1 * this.sys.canvas.height / 3
-                    && gameObject.y > -2 * this.sys.canvas.height / 3
-                ) {
-                    gameObject.parentContainer.mutate(null, gameObject);
-                    phaserGlobals.playArea.addToPlayStacks(gameObject);
-                }
+                this.tweens.add({
+                    targets: gameObject,
+                    props: {
+                        x: { value: gameObject.input.dragStartX, duration: 500 },
+                        y: { value: gameObject.input.dragStartY, duration: 500 },
+                    },
+                });
+            });
+            this.input.on('drop', (pointer, gameObject, dropZone) => {
+                gameObject.parentContainer.mutate(null, gameObject);
+                dropZone.zoneContainer.addCards(gameObject);
             });
             hand.mutate(card, null);
             order += 1;
