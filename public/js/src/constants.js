@@ -10,9 +10,11 @@ const characters = require('../../data/characters');
 // Define the defeault qualities of a card
 exports.CARD_W = 286;
 exports.CARD_H = 406;
+exports.PLAY_AREA_PADDING = 1.15;
+exports.HAND_PADDING = 1.05;
 // This is a temporary scale only to be used with phaser until dynamic scaling is implemented
 exports.PHASER_DEMO_SCALE = 0.35;
-exports.PLAY_AREA_PADDING = 1.15;
+
 exports.CARD_FADE = 0.6;
 
 // Other miscellaneous constants

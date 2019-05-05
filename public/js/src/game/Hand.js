@@ -1,10 +1,14 @@
 const constants = require('../constants');
+const utils = require('./utils');
 
 // Constants
 const {
     CARD_W,
     PHASER_DEMO_SCALE,
+    HAND_PADDING,
 } = constants;
+
+const HORIZ_SPACING = CARD_W * PHASER_DEMO_SCALE * HAND_PADDING;
 
 class Hand extends Phaser.GameObjects.Container {
     constructor(scene, config) {
@@ -17,16 +21,8 @@ class Hand extends Phaser.GameObjects.Container {
     mutate(cardsIn, cardsOut) {
         if (cardsOut != null) {
             this.remove(cardsOut);
-            if (!Array.isArray(cardsOut)) { cardsOut = [cardsOut]; }
-            cardsOut.forEach((card) => {
-                const sinRot = Math.sin(-this.rotation);
-                const cosRot = Math.cos(-this.rotation);
-                const { x, y } = card;
-                card.x = (x * cosRot) + (y * sinRot);
-                card.y = (y * cosRot) - (x * sinRot);
-                card.x += this.x;
-                card.y += this.y;
-            });
+            cardsOut = utils.makeArray(cardsOut);
+            cardsOut.forEach(card => utils.transformToExitContainer(card, this));
         }
         if (cardsIn != null) {
             // Adds any number of cards at the front of the container, i.e. the left side of the
@@ -39,13 +35,10 @@ class Hand extends Phaser.GameObjects.Container {
     addCardTweensToScene() {
         const cards = this.list;
         const handSize = cards.length;
-        const padding = 1.05;
-        const horizSpacing = CARD_W * PHASER_DEMO_SCALE * padding;
 
         for (let i = 0; i < handSize; i++) {
-            // eslint pls, this is way more readable than if I threw in a bunch of parens
-            /* eslint-disable no-mixed-operators, space-infix-ops */
-            const x = (i + 1/2 - handSize/2) * horizSpacing;
+            /* eslint-disable space-infix-ops */
+            const x = (i + 1/2 - handSize/2) * HORIZ_SPACING;
             this.scene.tweens.add({
                 targets: cards[i],
                 props: {
