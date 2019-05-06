@@ -1,1 +1,3 @@
+# NPM modules are not typically included in a repository
 node_modules
+/package-lock.json
