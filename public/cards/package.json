@@ -1,0 +1,23 @@
+{
+  "name": "hanabi-live-client-cards",
+  "version": "0.0.1",
+  "description": "The card generator for the Hanabi Live JavaScript client",
+  "devDependencies": {
+    "canvas": "^2.4.1",
+    "eslint": "^5.3.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "fabric": "^2.7.0",
+    "jsdom": "^15.0.0",
+    "xmldom": "^0.1.27",
+    "xmlserializer": "^0.6.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zamiell/hanabi-live.git"
+  },
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "lint": "eslint \"src/**/*.js\""
+  }
+}
