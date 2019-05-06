@@ -114,6 +114,7 @@ func httpInit() {
 	httpRouter.GET("/export", httpExport)
 	httpRouter.GET("/export/:game", httpExport)
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
+	httpRouter.StaticFile("/favicon.ico", "./public/img/favicon.png")
 
 	if useTLS {
 		// We want all HTTP requests to be redirected to HTTPS
