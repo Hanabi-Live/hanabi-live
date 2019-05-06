@@ -295,4 +295,6 @@ initCharacters();
 exports.CHARACTERS = characters;
 
 // Also make the constants available from the JavaScript console (for debugging purposes)
-window.constants = exports;
+if (typeof window !== 'undefined') {
+    window.constants = exports;
+}
