@@ -69,10 +69,9 @@ func gracefulWait() {
 func countActiveGames() int {
 	numGames := 0
 	for _, g := range games {
-		if !g.Running {
-			continue
-		}
-		if g.Replay {
+		if !g.Running || // Pre-game tables that have not started yet
+			g.Replay { // Solo replays and shared replays
+
 			continue
 		}
 		numGames++
