@@ -264,9 +264,33 @@ const drawSuitPips = (ctx, rank, suit, colorblind) => {
     }
 };
 
+const makeUnknownCardImage = (canvasType) => {
+    const [cvs, ctx] = initCanvas(canvasType);
+
+    drawCardTexture(ctx);
+    ctx.fillStyle = 'black';
+    cardBorderPath(ctx, 4);
+
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.fill();
+    ctx.globalAlpha = 0.7;
+    ctx.lineWidth = 8;
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = '#444444';
+    ctx.lineWidth = 8;
+    ctx.lineJoin = 'round';
+
+    ctx.translate(CARD_W / 2, CARD_H / 2);
+
+    return [cvs, ctx];
+};
+
 const makeDeckBack = (variant, canvasType) => {
     const [cvs, ctx] = makeUnknownCardImage(canvasType);
-    const sf = 0.4; // scale factor
+    const sf = 0.4; // Scale factor
 
     const nSuits = variant.suits.length;
     ctx.scale(sf, sf);
@@ -275,8 +299,8 @@ const makeDeckBack = (variant, canvasType) => {
 
         // Transform polar to cartesian coordinates
         // The magic number added to the offset is needed to center things properly
-        const x = - 1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.25); // eslint-disable-line
-        const y = - 1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.3); // eslint-disable-line
+        const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.25); // eslint-disable-line
+        const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.3); // eslint-disable-line
         ctx.translate(x, y);
 
         drawPip(suit.pip)(ctx);
@@ -393,30 +417,6 @@ const drawMixedCardHelper = (ctx, clueColors) => {
     drawShape(ctx);
 
     ctx.restore();
-};
-
-const makeUnknownCardImage = (canvasType) => {
-    const [cvs, ctx] = initCanvas(canvasType);
-
-    drawCardTexture(ctx);
-    ctx.fillStyle = 'black';
-    cardBorderPath(ctx, 4);
-
-    ctx.save();
-    ctx.globalAlpha = 0.5;
-    ctx.fill();
-    ctx.globalAlpha = 0.7;
-    ctx.lineWidth = 8;
-    ctx.stroke();
-    ctx.restore();
-
-    ctx.fillStyle = '#444444';
-    ctx.lineWidth = 8;
-    ctx.lineJoin = 'round';
-
-    ctx.translate(CARD_W / 2, CARD_H / 2);
-
-    return [cvs, ctx];
 };
 
 // Draw texture lines on card

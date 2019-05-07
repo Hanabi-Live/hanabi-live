@@ -8,6 +8,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0",
     "jsdom": "^15.0.0",
+    "watchify": "^3.11.1",
     "xmldom": "^0.1.27",
     "xmlserializer": "^0.6.1"
   },

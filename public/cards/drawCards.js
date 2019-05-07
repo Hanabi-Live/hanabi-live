@@ -1,5 +1,7 @@
 /*
     The Hanabi card grahpics are various HTML5 canvas drawings
+    This file has various changes from the other "drawCards.js" as workarounds
+    to avoid canvas2svg crashing
 */
 
 // Imports
@@ -264,34 +266,52 @@ const drawSuitPips = (ctx, rank, suit, colorblind) => {
     }
 };
 
-const makeDeckBack = (variant, canvasType) => {
-    const [cvs, ctx] = makeUnknownCardImage(canvasType);
+const makeUnknownCardImage = (canvasType) => {
+    const [cvs, ctx] = initCanvas(canvasType);
 
-    const nSuits = variant.suits.length;
-    for (let i = 0; i < variant.suits.length; i++) {
-        const suit = variant.suits[i];
+    drawCardTexture(ctx);
+    drawCardBase(ctx, constants.SUITS.Unknown, true)
 
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.scale(0.4, 0.4);
+    ctx.fillStyle = 'black';
+    cardBorderPath(ctx, 4);
 
-        let x = Math.floor(CARD_W * 1.25);
-        let y = Math.floor(CARD_H * 1.25);
+    ctx.globalAlpha = 0.5;
+    ctx.fill();
 
-        // Transform polar to cartesian coordinates
-        // The magic number added to the offset is needed to center things properly
-        x -= 1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.25); // eslint-disable-line
-        y -= 1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.3); // eslint-disable-line
-        ctx.translate(x, y);
-
-        drawPip(suit.pip)(ctx);
-        drawShape(ctx);
-    }
-    ctx.save();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#444444';
+    ctx.lineWidth = 8;
+    ctx.lineJoin = 'round';
+    ctx.translate(CARD_W / 2, CARD_H / 2);
 
     return [cvs, ctx];
 };
 
-const drawCardBase = (ctx, suit) => {
+const makeDeckBack = (variant, canvasType) => {
+    const [cvs, ctx] = makeUnknownCardImage(canvasType);
+    const sf = 0.4; // Scale factor
+
+    const nSuits = variant.suits.length;
+    ctx.scale(sf, sf);
+    for (let i = 0; i < variant.suits.length; i++) {
+        const suit = variant.suits[i];
+
+        // Transform polar to cartesian coordinates
+        // The magic number added to the offset is needed to center things properly
+        const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.25); // eslint-disable-line
+        const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.3); // eslint-disable-line
+        ctx.translate(x, y);
+
+        drawPip(suit.pip)(ctx);
+        drawShape(ctx);
+        ctx.translate(-x, -y);
+    }
+    ctx.scale(1 / sf, 1 / sf);
+
+    return [cvs, ctx];
+};
+
+const drawCardBase = (ctx, suit, black) => {
     // Draw the border (1/2; we need a white border first to clip)
     cardBorderPath(ctx);
     ctx.fillStyle = 'white';
@@ -301,7 +321,7 @@ const drawCardBase = (ctx, suit) => {
     // Draw the border (2/2; this is the colored border)
     ctx.fillStyle = getSuitStyle(suit, ctx, 'background');
     ctx.strokeStyle = getSuitStyle(suit, ctx, 'background');
-    if (ctx.fillStyle === SUITS.White.fill) {
+    if (ctx.fillStyle === SUITS.White.fill || black) {
         ctx.strokeStyle = COLORS.Black.fill;
     }
     cardBorderPath(ctx);
@@ -394,28 +414,6 @@ const drawMixedCardHelper = (ctx, clueColors) => {
     drawShape(ctx);
 
     ctx.restore();
-};
-
-const makeUnknownCardImage = (canvasType) => {
-    const [cvs, ctx] = initCanvas(canvasType);
-
-    drawCardTexture(ctx);
-    ctx.fillStyle = 'black';
-    cardBorderPath(ctx);
-
-    ctx.globalAlpha = 0.5;
-    ctx.fill();
-    ctx.globalAlpha = 0.7;
-    ctx.lineWidth = 8;
-    ctx.stroke();
-
-    ctx.fillStyle = '#444444';
-    ctx.lineJoin = 'round';
-    ctx.globalAlpha = 1;
-
-    ctx.translate(CARD_W / 2, CARD_H / 2);
-
-    return [cvs, ctx];
 };
 
 // Draw texture lines on card
