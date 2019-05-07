@@ -6,11 +6,8 @@ const utils = require('./utils');
 const {
     CARD_H,
     CARD_W,
-    PHASER_DEMO_SCALE,
     PLAY_AREA_PADDING,
 } = constants;
-
-const HORIZ_SPACING = CARD_W * PHASER_DEMO_SCALE * PLAY_AREA_PADDING;
 
 // Phaser devs warned against using too many levels of nested containers, so I didn't design
 // containers for play stacks. This means we lose the ability to independently position them, but
@@ -21,21 +18,25 @@ class PlayArea extends Phaser.GameObjects.Container {
         this.x = config.x;
         this.y = config.y;
         this.suits = config.suits;
+        this.scale = config.scale;
+        this.horizSpacing = CARD_W * config.scale * PLAY_AREA_PADDING;
+
         this.zone = new Phaser.GameObjects.Zone(
             scene,
             config.x,
             config.y,
-            HORIZ_SPACING * config.suits.length,
-            CARD_H * PHASER_DEMO_SCALE,
+            this.horizSpacing * config.suits.length,
+            CARD_H * config.scale,
         );
         this.zone.zoneContainer = this;
         this.zone.setRectangleDropZone(
-            HORIZ_SPACING * config.suits.length,
-            CARD_H * PHASER_DEMO_SCALE,
+            this.horizSpacing * config.suits.length,
+            CARD_H * config.scale,
         );
         const cardsToAdd = this.suits.map(suit => new HanabiCard(scene, {
             suit,
             rank: 0,
+            scale: config.scale,
         }));
         this.addCards(cardsToAdd);
     }
@@ -57,7 +58,7 @@ class PlayArea extends Phaser.GameObjects.Container {
             const suitIdx = this.suits.findIndex(suit => suit === card.suit);
             // eslint pls, this is way more readable than if I threw in a bunch of parens
             /* eslint-disable no-mixed-operators, space-infix-ops */
-            const x = (suitIdx + 1/2 - nSuits/2) * HORIZ_SPACING;
+            const x = (suitIdx + 1/2 - nSuits/2) * this.horizSpacing;
             this.scene.tweens.add({
                 targets: card,
                 x,

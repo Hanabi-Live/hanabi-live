@@ -4,11 +4,8 @@ const utils = require('./utils');
 // Constants
 const {
     CARD_W,
-    PHASER_DEMO_SCALE,
     HAND_PADDING,
 } = constants;
-
-const HORIZ_SPACING = CARD_W * PHASER_DEMO_SCALE * HAND_PADDING;
 
 class Hand extends Phaser.GameObjects.Container {
     constructor(scene, config) {
@@ -16,6 +13,7 @@ class Hand extends Phaser.GameObjects.Container {
         this.x = config.x;
         this.y = config.y;
         this.rotation = config.rot;
+        this.scale = config.scale;
     }
 
     mutate(cardsIn, cardsOut) {
@@ -35,10 +33,12 @@ class Hand extends Phaser.GameObjects.Container {
     addCardTweensToScene() {
         const cards = this.list;
         const handSize = cards.length;
+        const horizSpacing = CARD_W * this.scale * HAND_PADDING;
+
 
         for (let i = 0; i < handSize; i++) {
             /* eslint-disable space-infix-ops */
-            const x = (i + 1/2 - handSize/2) * HORIZ_SPACING;
+            const x = (i + 1/2 - handSize/2) * horizSpacing;
             this.scene.tweens.add({
                 targets: cards[i],
                 props: {

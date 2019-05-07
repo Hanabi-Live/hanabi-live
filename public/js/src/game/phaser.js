@@ -3,6 +3,7 @@
 */
 
 // Imports
+const constants = require('../constants');
 const convert = require('./convert');
 const globals = require('../globals');
 const HanabiCard = require('./HanabiCard');
@@ -10,6 +11,10 @@ const Hand = require('./Hand');
 const phaserGlobals = require('./phaserGlobals');
 const PlayArea = require('./PlayArea');
 
+const {
+    HAND_BASE_SCALE,
+    PLAY_AREA_BASE_SCALE,
+} = constants;
 // Variables
 // let cursor;
 
@@ -50,6 +55,8 @@ function preload() {
 }
 
 function create() {
+    // Not sure if setting this is good
+    this.cameras.roundPixels = true;
     // Set the background
     console.log(this.cameras);
     const background = this.add.sprite(
@@ -57,7 +64,10 @@ function create() {
         this.canvas.height / 2,
         'background',
     );
+    // canvas width and height are expanded to browser window then shrunk minimally
+    // to achieve 16:9 aspect ratio, via getGameSize
     background.setDisplaySize(this.sys.canvas.width, this.sys.canvas.height);
+    setGlobalScale(this.sys.canvas.height);
 
     // Convert all of the card canvases to textures
     for (const key in globals.ui.cardImages) {
@@ -78,6 +88,7 @@ function create() {
         x: handLayout.x * this.sys.canvas.width,
         y: handLayout.y * this.sys.canvas.height,
         rot: handLayout.rot,
+        scale: HAND_BASE_SCALE * phaserGlobals.scale,
     }));
     phaserGlobals.hands = handLayoutsAbsolute.map(handLayout => new Hand(this, handLayout));
     const { hands } = phaserGlobals;
@@ -105,6 +116,7 @@ function create() {
                 suit,
                 rank,
                 order,
+                scale: hand.scale,
                 suits: globals.init.variant.suits.slice(),
                 ranks: globals.init.variant.ranks.slice(),
                 holder: 0,
@@ -141,6 +153,7 @@ function create() {
         x: this.sys.canvas.width / 2,
         y: this.sys.canvas.height / 2,
         suits: globals.init.variant.suits.slice(),
+        scale: PLAY_AREA_BASE_SCALE * phaserGlobals.scale,
     });
     this.add.existing(phaserGlobals.playArea);
     // cursors = this.input.keyboard.createCursorKeys();
@@ -191,4 +204,10 @@ function update() {
     // const hands = phaserGlobals.hands;
     // if (cursors.right.isDown) {
     // }
+}
+
+function setGlobalScale(height) {
+    // 1920x1080 is the reference resolution of the global scale constants
+    phaserGlobals.scale = height / 1080;
+    console.log(phaserGlobals.scale);
 }
