@@ -6,7 +6,7 @@
 const constants = require('../constants');
 const drawCards = require('./ui/drawCards');
 const globals = require('../globals');
-const phaser = require('./phaser');
+const phaser = require('../client_v2/phaser');
 const websocket = require('./ui/websocket');
 
 exports.init = () => {

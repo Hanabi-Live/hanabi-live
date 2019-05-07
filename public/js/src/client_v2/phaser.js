@@ -4,7 +4,7 @@
 
 // Imports
 const constants = require('../constants');
-const convert = require('./convert');
+const convert = require('../game/convert');
 const globals = require('../globals');
 const HanabiCard = require('./HanabiCard');
 const Hand = require('./Hand');
