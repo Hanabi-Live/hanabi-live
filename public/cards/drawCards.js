@@ -269,7 +269,7 @@ const makeDeckBack = (variant, canvasType) => {
     for (let i = 0; i < variant.suits.length; i++) {
         const suit = variant.suits[i];
 
-        ctx.resetTransform();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(0.4, 0.4);
 
         let x = Math.floor(CARD_W * 1.25);

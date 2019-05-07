@@ -1192,14 +1192,6 @@
     };
 
     /**
-     * Shadows
-     */
-
-    ctx.prototype.shadowColor = function (color) {
-        // TODO
-    };
-
-    /**
      * Not yet implemented
      */
     ctx.prototype.drawFocusRing = function () {};

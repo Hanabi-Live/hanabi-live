@@ -6,7 +6,7 @@ const constants = require('../js/src/constants');
 // Configuration
 const suitName = 'Blue';
 const rank = 5;
-const cardName = `Index-${suitName}-${rank}`;
+const cardName = 'deck-back'; // `Index-${suitName}-${rank}`;
 const variant = constants.VARIANTS['No Variant'];
 const colorblind = false;
 
