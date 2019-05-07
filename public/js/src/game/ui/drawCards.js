@@ -42,6 +42,11 @@ exports.drawAll = () => {
 
             drawCardBase(ctx, suit, rank);
 
+            // Make the special corners on the cards for dual-color suits
+            if (suit.clueColors.length === 2) {
+                drawMixedCardHelper(ctx, suit.clueColors);
+            }
+
             ctx.shadowBlur = 10;
             ctx.fillStyle = getSuitStyle(suit, ctx, 'number');
             ctx.strokeStyle = 'black';
@@ -71,7 +76,7 @@ exports.drawAll = () => {
                 // Draw index on top left
                 drawCardIndex(ctx, textYPos, indexLabel);
 
-                // 'Index' cards are used to draw cards of learned but not yet known rank
+                // "Index" cards are used to draw cards of learned but not yet known rank
                 globals.cardImages[`Index-${suit.name}-${rank}`] = cloneCanvas(cvs);
 
                 // Draw index on bottom right
@@ -84,11 +89,6 @@ exports.drawAll = () => {
 
             ctx.fillStyle = getSuitStyle(suit, ctx, 'symbol');
             ctx.lineWidth = 5;
-
-            // Make the special corners on the cards for dual-color suits
-            if (suit.clueColors.length === 2) {
-                drawMixedCardHelper(ctx, suit.clueColors);
-            }
 
             // 'NoPip' cards are used for
             // - cards of known rank before suit learned
