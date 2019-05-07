@@ -45,27 +45,27 @@ const shapeFunctions = {
 
     star: (ctx) => {
         // From: https://stackoverflow.com/questions/25837158/how-to-draw-a-star-by-using-canvas-html5
-        var rot = Math.PI / 2 * 3;
-        var cx = 75;
-        var cy = 100;
-        var outerRadius = 75;
-        var innerRadius = 30;
-        var step = Math.PI / 5;
+        let rot = Math.PI / 2 * 3;
+        const cx = 75;
+        const cy = 100;
+        const outerRadius = 75;
+        const innerRadius = 30;
+        const step = Math.PI / 5;
 
         ctx.beginPath();
-        ctx.moveTo(cx,cy - outerRadius)
-        for (let i = 0; i < 5; i++){
-            x = cx + Math.cos(rot) * outerRadius;
-            y = cy + Math.sin(rot) * outerRadius;
-            ctx.lineTo(x,y)
-            rot += step
+        ctx.moveTo(cx, cy - outerRadius);
+        for (let i = 0; i < 5; i++) {
+            let x = cx + Math.cos(rot) * outerRadius;
+            let y = cy + Math.sin(rot) * outerRadius;
+            ctx.lineTo(x, y);
+            rot += step;
 
             x = cx + Math.cos(rot) * innerRadius;
             y = cy + Math.sin(rot) * innerRadius;
-            ctx.lineTo(x,y)
-            rot += step
+            ctx.lineTo(x, y);
+            rot += step;
         }
-        ctx.lineTo(cx,cy - outerRadius);
+        ctx.lineTo(cx, cy - outerRadius);
         ctx.closePath();
     },
 
@@ -136,7 +136,5 @@ const shapeFunctions = {
     },
 };
 
-module.exports = (shape) => {
-    // Each suit has a shape defined in the "suits.json" file (as the "pip" property)
-    return shapeFunctions[shape];
-};
+// Each suit has a shape defined in the "suits.json" file (as the "pip" property)
+module.exports = shape => shapeFunctions[shape];

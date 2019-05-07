@@ -278,6 +278,7 @@ const initVariants = () => {
 initVariants();
 exports.VARIANTS = variants;
 
+/*
 // Generate a report on the stack positions for each suit (in all variants)
 const suitReport = () => {
     const suitPositionMap = new Map();
@@ -287,7 +288,7 @@ const suitReport = () => {
     for (const variant of Object.values(variants)) {
         for (let i = 0; i < variant.suits.length; i++) {
             const suit = variant.suits[i];
-            const positions = suitPositionMap.get(suit)
+            const positions = suitPositionMap.get(suit);
             positions[i] += 1;
             suitPositionMap.set(suit, positions);
         }
@@ -311,7 +312,8 @@ const suitReport = () => {
     // Suits that need a unique pip: Pink, White, Brown
     // Orange is in slot 3 in 5 suits and in slot 4 in 1 suit
 };
-// suitReport();
+suitReport();
+*/
 
 const initCharacters = () => {
     for (const characterName of Object.keys(characters)) {

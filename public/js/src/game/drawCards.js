@@ -91,7 +91,7 @@ exports.drawAll = () => {
             ctx.fillStyle = getSuitStyle(suit, ctx, 'symbol');
             ctx.lineWidth = 5;
 
-            // 'NoPip' cards are used for
+            // "NoPip" cards are used for
             // - cards of known rank before suit learned
             // - cards of unknown rank
             // Entirely unknown cards (e.g. "NoPip-Unknown-6")

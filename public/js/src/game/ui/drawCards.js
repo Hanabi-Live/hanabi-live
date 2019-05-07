@@ -73,13 +73,13 @@ exports.drawAll = () => {
 
                 ctx.font = `bold ${fontSize}pt Arial`;
 
-                // Draw index on top left
+                // Draw the rank on the top left
                 drawCardIndex(ctx, textYPos, indexLabel);
 
                 // "Index" cards are used to draw cards of learned but not yet known rank
                 globals.cardImages[`Index-${suit.name}-${rank}`] = cloneCanvas(cvs);
 
-                // Draw index on bottom right
+                // Draw the rank on the bottom right
                 ctx.save();
                 ctx.translate(CARD_W, CARD_H);
                 ctx.rotate(Math.PI);
@@ -90,7 +90,7 @@ exports.drawAll = () => {
             ctx.fillStyle = getSuitStyle(suit, ctx, 'symbol');
             ctx.lineWidth = 5;
 
-            // 'NoPip' cards are used for
+            // "NoPip" cards are used for
             // - cards of known rank before suit learned
             // - cards of unknown rank
             // Entirely unknown cards (e.g. "NoPip-Unknown-6")
