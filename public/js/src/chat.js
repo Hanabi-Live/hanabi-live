@@ -4,8 +4,8 @@
 
 // Imports
 const globals = require('./globals');
-const emojis = require('../lib/emojis');
-const emoteCategories = require('../lib/emotes');
+const emojis = require('../../data/emojis');
+const emoteCategories = require('../../data/emotes');
 
 // Variables
 let chatLineNum = 1;

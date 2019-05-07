@@ -1,39 +1,31 @@
-// Constants
-const suitName = 'Unknown';
-// const suitName = 'Blue';
-const rank = 5;
+// This script will draw a comparison between a SVG card and a canvas card
 
-// Draw the SVG card
-const drawCards = require('./drawCards');
-drawCards.drawAll();
-
-$(document).ready(() => {
-    const cardName = `${suitName.replace(/ /g,'')}-${rank}`;
-    const svg = drawCards.cardImages[cardName].getSerializedSvg();
-    $('body').append(svg);
-    // console.log(svg);
-});
-
-// Draw the canvas (old) card
-const globals = require('../js/src/game/ui/globals');
+// Imports
 const constants = require('../js/src/constants');
-// globals.variant = constants.VARIANTS['No Variant'];
-globals.variant = constants.VARIANTS['Dual-Color (6 Suits)'];
-globals.cardImages = {};
-globals.lobby = {};
-globals.lobby.settings = {};
-globals.lobby.settings.showColorblindUI = false;
+
+// Configuration
+const suitName = 'Blue';
+const rank = 5;
+const cardName = `Index-${suitName}-${rank}`;
+const variant = constants.VARIANTS['No Variant'];
+const colorblind = false;
+
+// Get the card images for both types
+const drawCardsSVG = require('./drawCards');
+const cardImagesSVG = drawCardsSVG.drawAll(variant, colorblind, 'SVG');
 const drawCardsCanvas = require('../js/src/game/ui/drawCards');
+const cardImagesCanvas = drawCardsCanvas.drawAll(variant, colorblind, 'normal');
 
-drawCardsCanvas.drawAll();
+// Draw one image from both types to the screen
 $(document).ready(() => {
-    const svg = globals.cardImages[`Index-Purple-${rank}`];
-    $('body').append(' &nbsp; ');
+    // Draw the SVG card (left side)
+    const svg = cardImagesSVG[cardName];
     $('body').append(svg);
-});
 
-/*
-// Draw the SVG card (node)
-const drawCards = require('./drawCards_server');
-drawCards.drawAll();
-*/
+    // Put some spacing in between the cards
+    $('body').append(' &nbsp; ');
+
+    // Draw the canvas card (right side)
+    const ctx = cardImagesCanvas[cardName];
+    $('body').append(ctx);
+});

@@ -54,6 +54,7 @@ commands.init = (data) => {
     globals.ui.cardImages = drawCards.drawAll(
         globals.init.variant,
         globals.settings.showColorblindUI,
+        'normal',
     );
 
     // Draw the user interface
