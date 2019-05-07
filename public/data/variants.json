@@ -581,34 +581,34 @@
     },
     "Very Ambiguous (6 Suits)": {
         "id": 9,
-        "suits": ["Sky VA", "Berry", "Navy VA", "Tomato VA", "Ruby", "Mahogany VA"],
+        "suits": ["Sky VA", "Berry VA", "Navy VA", "Tomato VA", "Ruby VA", "Mahogany VA"],
         "showSuitNames": true,
         "spacing": true
     },
 
     "Dual-Color (6 Suits)": {
         "id": 4,
-        "suits": ["Green D", "Purple D", "Navy D", "Orange", "Tan", "Mahogany D"],
+        "suits": ["Green D", "Purple D", "Navy D", "Orange D", "Tan D", "Mahogany D"],
         "showSuitNames": true
     },
     "Dual-Color (5 Suits)": {
         "id": 36,
-        "suits": ["Teal D", "Lime D", "Orange", "Cardinal", "Indigo", "Mahogany D"],
+        "suits": ["Teal D", "Lime D", "Orange D2", "Cardinal D", "Indigo D"],
         "showSuitNames": true
     },
     "Dual-Color (3 Suits)": {
         "id": 37,
-        "suits": ["Green D", "Purple D", "Orange"],
+        "suits": ["Green D", "Purple D", "Orange D2"],
         "showSuitNames": true
     },
     "Dual-Color & Rainbow (6 Suits)": {
         "id": 5,
-        "suits": ["Teal D", "Lime D", "Orange", "Cardinal", "Indigo", "Mahogany D"],
+        "suits": ["Teal D", "Lime D", "Orange D2", "Cardinal D", "Indigo D", "Rainbow"],
         "showSuitNames": true
     },
     "Dual-Color & Rainbow (4 Suits)": {
         "id": 38,
-        "suits": ["Green D", "Purple D", "Orange", "Rainbow"],
+        "suits": ["Green D", "Purple D", "Orange D2", "Rainbow"],
         "showSuitNames": true,
         "spacing": true
     },
@@ -789,12 +789,12 @@
 
     "Ambiguous Mix": {
         "id": 20,
-        "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Black", "White"],
+        "suits": ["Sky", "Navy", "Tomato", "Mahogany", "Black", "White"],
         "showSuitNames": true
     },
     "Dual-Color Mix": {
         "id": 7,
-        "suits": ["Green D", "Purple D", "Orange", "Black", "Rainbow", "White"]
+        "suits": ["Green D", "Purple D", "Orange D2", "Black", "Rainbow", "White"]
     },
     "Gay Pride": {
         "id": 159,

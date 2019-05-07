@@ -3,6 +3,7 @@
 */
 
 // Imports
+const fs = require('fs');
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const C2S = require('./lib/canvas2svg_node');
@@ -17,8 +18,6 @@ const {
     COLORS,
     SUITS,
 } = constants;
-const xrad = CARD_W * 0.08;
-const yrad = CARD_H * 0.08;
 
 // The "drawAll()" function draws all of the cards as a canvas
 // and uses the Canvas2SVG library to export them to SVG files in the /public/img directory
@@ -34,26 +33,22 @@ exports.drawAll = () => {
             // Rank 6 is a card of unknown rank
             // Rank 7 is a "START" card (in the "Up or Down" variants)
             for (let rank = 0; rank <= 7; rank++) {
-                let cardName = `${suit.name}-${rank}`;
+                let cardName = `${suit.name.toLowerCase()}-${rank}`;
                 if (colorblind) {
                     cardName += '-colorblind';
                 }
                 console.log(`Drawing card: ${cardName}`);
 
-                /*
                 const { document } = (new JSDOM('')).window;
                 const ctx = new C2S({
                     document,
                     width: CARD_W,
                     height: CARD_H,
                 });
-                */
 
-                /*
                 if (rank > 0) {
                     drawCardTexture(ctx);
                 }
-                */
 
                 drawCardBase(ctx, suit, rank);
 
@@ -84,7 +79,7 @@ exports.drawAll = () => {
                     ctx.font = `bold ${fontSize}pt Arial`;
 
                     // Draw index on top left
-                    // drawCardIndex(ctx, textYPos, indexLabel);
+                    drawCardIndex(ctx, textYPos, indexLabel);
 
                     // 'Index' cards are used to draw cards of learned but not yet known rank
                     // globals.cardImages[`Index-${suit.name}-${rank}`] = cloneCanvas(cvs);
@@ -110,7 +105,7 @@ exports.drawAll = () => {
                 // - cards of unknown rank
                 // Entirely unknown cards (e.g. "NoPip-Unknown-6")
                 // have a custom image defined separately
-                if (rank > 0 && (rank < 6 || suit !== SUITS.Unknown)) {
+                if (rank >= 1 && (rank <= 5 || suit !== SUITS.Unknown)) {
                     // globals.cardImages[`NoPip-${suit.name}-${rank}`] = cloneCanvas(cvs);
                 }
 
@@ -123,10 +118,14 @@ exports.drawAll = () => {
                     // globals.cardImages[`Card-${suit.name}-${rank}`] = cvs;
                 }
 
-                // console.log(ctx.getSerializedSvg());
-
-                if (rank === 1) {
-                    return;
+                const SVGContents = ctx.getSerializedSvg();
+                const filePath = `../img/cards/${cardName}.svg`;
+ 
+                try {
+                  fs.writeFileSync(filePath, SVGContents, 'utf8');
+                } catch (err) {
+                  console.error(`Failed to write the SVG file "${filePath}:"`, err);
+                  return;
                 }
             }
         }
@@ -161,7 +160,7 @@ const drawSuitPips = (ctx, rank, suit, i, colorblind) => {
     }
 
     // Top and bottom for cards 2, 3, 4, 5
-    if (rank > 1 && rank <= 5) {
+    if (rank >= 2 && rank <= 5) {
         const symbolYPos = colorblind ? 85 : 120;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -268,13 +267,13 @@ const drawCardBase = (ctx, suit, rank) => {
     }
 
     // Draw a rectangle with four rounded corners
-    backPath(ctx, 4);
+    drawCardBorder(ctx);
 
     // Draw the borders and the color fill
     ctx.globalAlpha = 0.3;
     ctx.fill();
     ctx.globalAlpha = 0.7;
-    ctx.lineWidth = 8;
+    ctx.lineWidth = 16;
 
     // The borders should be more opaque for the stack base
     if (rank === 0) {
@@ -286,17 +285,21 @@ const drawCardBase = (ctx, suit, rank) => {
     ctx.lineWidth = 1;
 };
 
-const backPath = (ctx, p) => {
+const drawCardBorder = (ctx) => {
+    const xrad = CARD_W * 0.08;
+    const yrad = CARD_H * 0.08;
+    const radius = 50;
     ctx.beginPath();
-    ctx.moveTo(p, yrad + p);
-    ctx.lineTo(p, CARD_H - yrad - p);
-    ctx.quadraticCurveTo(0, CARD_H, xrad + p, CARD_H - p);
-    ctx.lineTo(CARD_W - xrad - p, CARD_H - p);
-    ctx.quadraticCurveTo(CARD_W, CARD_H, CARD_W - p, CARD_H - yrad - p);
-    ctx.lineTo(CARD_W - p, yrad + p);
-    ctx.quadraticCurveTo(CARD_W, 0, CARD_W - xrad - p, p);
-    ctx.lineTo(xrad + p, p);
-    ctx.quadraticCurveTo(0, 0, p, yrad + p);
+    ctx.moveTo(0, yrad); // Top-left corner
+    ctx.lineTo(0, CARD_H - yrad); // Bottom-left corner
+    ctx.quadraticCurveTo(0, CARD_H, xrad, CARD_H);
+    ctx.lineTo(CARD_W - xrad, CARD_H); // Bottom-right corner
+    ctx.quadraticCurveTo(CARD_W, CARD_H, CARD_W, CARD_H - yrad);
+    ctx.lineTo(CARD_W, yrad); // Top-right corner
+    ctx.quadraticCurveTo(CARD_W, 0, CARD_W - xrad, 0);
+    ctx.lineTo(xrad, 0); // Top-left corner
+    ctx.quadraticCurveTo(0, 0, 0, yrad);
+    ctx.closePath();
 };
 
 const drawShape = (ctx) => {
@@ -376,7 +379,7 @@ const makeUnknownCardImage = () => {
     drawCardTexture(ctx);
 
     ctx.fillStyle = 'black';
-    backPath(ctx, 4);
+    drawCardBorder(ctx);
 
     ctx.save();
     ctx.globalAlpha = 0.5;
@@ -398,12 +401,11 @@ const makeUnknownCardImage = () => {
 
 // Draw texture lines on card
 const drawCardTexture = (ctx) => {
-    backPath(ctx, 4, xrad, yrad);
+    drawCardBorder(ctx);
 
     ctx.fillStyle = 'white';
     ctx.fill();
 
-    ctx.save();
     ctx.clip();
     ctx.globalAlpha = 0.2;
     ctx.strokeStyle = 'black';
@@ -422,7 +424,8 @@ const drawCardTexture = (ctx) => {
         ctx.stroke();
     }
 
-    ctx.restore();
+   ctx.globalAlpha = 1;
+   ctx.strokeStyle = '#000000';
 };
 
 const getSuitStyle = (suit, ctx, cardArea) => {

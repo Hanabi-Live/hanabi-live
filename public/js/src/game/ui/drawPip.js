@@ -1,6 +1,5 @@
-const shapeFunctions = [
-    // Diamond
-    (ctx) => {
+const shapeFunctions = {
+    diamond: (ctx) => {
         const w = 70;
         const h = 80;
 
@@ -33,8 +32,7 @@ const shapeFunctions = [
         ctx.quadraticCurveTo(...interps[3], ...points[0]);
     },
 
-    // Club
-    (ctx) => {
+    club: (ctx) => {
         ctx.beginPath();
         ctx.moveTo(50, 180);
         ctx.lineTo(100, 180);
@@ -45,21 +43,33 @@ const shapeFunctions = [
         ctx.quadraticCurveTo(70, 140, 50, 180);
     },
 
-    // Star
-    (ctx) => {
-        ctx.translate(75, 100);
+    star: (ctx) => {
+        // From: https://stackoverflow.com/questions/25837158/how-to-draw-a-star-by-using-canvas-html5
+        var rot = Math.PI / 2 * 3;
+        var cx = 75;
+        var cy = 100;
+        var outerRadius = 75;
+        var innerRadius = 30;
+        var step = Math.PI / 5;
+
         ctx.beginPath();
-        ctx.moveTo(0, -75);
-        for (let i = 0; i < 5; i++) {
-            ctx.rotate(Math.PI / 5);
-            ctx.lineTo(0, -30);
-            ctx.rotate(Math.PI / 5);
-            ctx.lineTo(0, -75);
+        ctx.moveTo(cx,cy - outerRadius)
+        for (let i = 0; i < 5; i++){
+            x = cx + Math.cos(rot) * outerRadius;
+            y = cy + Math.sin(rot) * outerRadius;
+            ctx.lineTo(x,y)
+            rot += step
+
+            x = cx + Math.cos(rot) * innerRadius;
+            y = cy + Math.sin(rot) * innerRadius;
+            ctx.lineTo(x,y)
+            rot += step
         }
+        ctx.lineTo(cx,cy - outerRadius);
+        ctx.closePath();
     },
 
-    // Heart
-    (ctx) => {
+    heart: (ctx) => {
         ctx.beginPath();
         ctx.moveTo(75, 65);
         ctx.bezierCurveTo(75, 57, 70, 45, 50, 45);
@@ -70,16 +80,13 @@ const shapeFunctions = [
         ctx.bezierCurveTo(85, 45, 75, 57, 75, 65);
     },
 
-    // Crescent
-    (ctx) => {
+    crescent: (ctx) => {
         ctx.beginPath();
         ctx.arc(75, 100, 75, 3, 4.3, true);
         ctx.arc(48, 83, 52, 5, 2.5, false);
     },
 
-    // Spade
-    (ctx) => {
-        ctx.beginPath();
+    spade: (ctx) => {
         ctx.beginPath();
         ctx.moveTo(50, 180);
         ctx.lineTo(100, 180);
@@ -90,8 +97,36 @@ const shapeFunctions = [
         ctx.quadraticCurveTo(70, 140, 50, 180);
     },
 
-    // Rainbow
-    (ctx) => {
+    circle: (ctx) => {
+        ctx.beginPath();
+        ctx.arc(75, 100, 75, 0, 2 * Math.PI);
+    },
+
+    infinity: (ctx) => {
+        const text = '∞';
+        ctx.font = '175px Verdana';
+        const x = -10;
+        const y = 155;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        ctx.fillText(text, x, y);
+        ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+        ctx.strokeText(text, x, y);
+        ctx.beginPath(); // This is needed to prevent canvas2svg from crashing
+    },
+
+    null_symbol: (ctx) => {
+        const text = '∅';
+        ctx.font = '250px Verdana';
+        const x = -15;
+        const y = 170;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        ctx.fillText(text, x, y);
+        ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+        ctx.strokeText(text, x, y);
+        ctx.beginPath(); // This is needed to prevent canvas2svg from crashing
+    },
+
+    rainbow: (ctx) => {
         ctx.beginPath();
         ctx.moveTo(0, 140);
         ctx.arc(75, 140, 75, Math.PI, 0, false);
@@ -99,14 +134,9 @@ const shapeFunctions = [
         ctx.arc(75, 140, 25, 0, Math.PI, true);
         ctx.lineTo(0, 140);
     },
-];
+};
 
-module.exports = (suit, i) => {
-    // Suit shapes go in order from left to right, with the exception of rainbow suits,
-    // which are always given a rainbow symbol
-    if (suit.fill === 'multi') {
-        // The final shape function in the array is the rainbow
-        i = shapeFunctions.length - 1;
-    }
-    return shapeFunctions[i];
+module.exports = (shape) => {
+    // Each suit has a shape defined in the "suits.json" file (as the "pip" property)
+    return shapeFunctions[shape];
 };

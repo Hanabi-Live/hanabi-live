@@ -123,8 +123,8 @@ const cloneCanvas = (oldCanvas) => {
     return newCanvas;
 };
 
-const drawSuitPips = (ctx, rank, suit, i) => {
-    const pathFunc = drawPip(suit, i);
+const drawSuitPips = (ctx, rank, suit) => {
+    const pathFunc = drawPip(suit.pip);
     const scale = 0.4;
 
     // The middle for cards 2 or 4
@@ -228,7 +228,7 @@ const makeDeckBack = () => {
         y -= 1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.3); // eslint-disable-line
         ctx.translate(x, y);
 
-        drawPip(suit, i)(ctx);
+        drawPip(suit.pip)(ctx);
         drawShape(ctx);
     }
     ctx.save();
@@ -370,7 +370,7 @@ const makeUnknownCardImage = () => {
 
 // Draw texture lines on card
 const drawCardTexture = (ctx) => {
-    backPath(ctx, 4, xrad, yrad);
+    backPath(ctx, 4);
 
     ctx.fillStyle = 'white';
     ctx.fill();

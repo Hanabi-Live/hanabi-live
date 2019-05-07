@@ -167,6 +167,11 @@ const initSuits = () => {
             // By default, the suit is not one of each (e.g. every card is critical)
             suit.oneOfEach = false;
         }
+
+        // Validate that there is a "pip" property
+        if (!Object.hasOwnProperty.call(suit, 'pip') && suitName !== 'Unknown') {
+            throw new Error(`Failed to find the pip for the "${suitName}" suit. `);
+        }
     }
 };
 initSuits();
@@ -272,6 +277,41 @@ const initVariants = () => {
 };
 initVariants();
 exports.VARIANTS = variants;
+
+// Generate a report on the stack positions for each suit (in all variants)
+const suitReport = () => {
+    const suitPositionMap = new Map();
+    for (const suit of Object.values(suits)) {
+        suitPositionMap.set(suit, [0, 0, 0, 0, 0, 0]); // There are 6 total stack positions
+    }
+    for (const variant of Object.values(variants)) {
+        for (let i = 0; i < variant.suits.length; i++) {
+            const suit = variant.suits[i];
+            const positions = suitPositionMap.get(suit)
+            positions[i] += 1;
+            suitPositionMap.set(suit, positions);
+        }
+    }
+    for (const [suit, positions] of suitPositionMap) {
+        let numEntriesNotZero = 0;
+        for (const position of positions) {
+            if (position !== 0) {
+                numEntriesNotZero += 1;
+            }
+        }
+        if (
+            numEntriesNotZero > 1
+            && suit.fill !== 'multi' // Ignore Rainbow suits since they have a unique pip
+            && suit.name !== 'Black' // Ignore the Black suit since it has a unique pip
+        ) {
+            console.log(`Suit ${suit.name} is in different positions:`, positions);
+        }
+    }
+
+    // Suits that need a unique pip: Pink, White, Brown
+    // Orange is in slot 3 in 5 suits and in slot 4 in 1 suit
+};
+// suitReport();
 
 const initCharacters = () => {
     for (const characterName of Object.keys(characters)) {

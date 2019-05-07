@@ -63,8 +63,8 @@ exports.pips = function pips() {
     this.add(this.suitPips);
 
     const { suits } = globals.variant;
-    this.suitPipsMap = new Map();
-    this.suitPipsXMap = new Map();
+    this.suitPipsMap = new Map(); // Keys are suit objects
+    this.suitPipsXMap = new Map(); // Keys are suit objects
     for (let i = 0; i < suits.length; i++) {
         const suit = suits[i];
 
