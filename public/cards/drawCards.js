@@ -130,6 +130,7 @@ exports.drawAll = (variant, colorblind, canvasType, imports = null) => {
 const initCanvas = (canvasType) => {
     let cvs;
     let ctx;
+
     if (canvasType === 'normal') {
         cvs = document.createElement('canvas');
         cvs.width = CARD_W;
@@ -145,6 +146,7 @@ const initCanvas = (canvasType) => {
             height: CARD_H,
         });
     }
+
     return [cvs, ctx];
 };
 
