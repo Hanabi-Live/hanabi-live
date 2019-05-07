@@ -264,27 +264,24 @@ const drawSuitPips = (ctx, rank, suit, colorblind) => {
 
 const makeDeckBack = (variant, canvasType) => {
     const [cvs, ctx] = makeUnknownCardImage(canvasType);
+    const sf = 0.4; // scale factor
 
     const nSuits = variant.suits.length;
+    ctx.scale(sf, sf);
     for (let i = 0; i < variant.suits.length; i++) {
         const suit = variant.suits[i];
 
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.scale(0.4, 0.4);
-
-        let x = Math.floor(CARD_W * 1.25);
-        let y = Math.floor(CARD_H * 1.25);
-
         // Transform polar to cartesian coordinates
         // The magic number added to the offset is needed to center things properly
-        x -= 1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.25); // eslint-disable-line
-        y -= 1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.3); // eslint-disable-line
+        const x = - 1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.25); // eslint-disable-line
+        const y = - 1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.3); // eslint-disable-line
         ctx.translate(x, y);
 
         drawPip(suit.pip)(ctx);
         drawShape(ctx);
+        ctx.translate(-x, -y);
     }
-    ctx.save();
+    ctx.scale(1 / sf, 1 / sf);
 
     return [cvs, ctx];
 };
