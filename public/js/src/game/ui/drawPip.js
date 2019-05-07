@@ -55,14 +55,14 @@ const shapeFunctions = {
         ctx.beginPath();
         ctx.moveTo(cx, cy - outerRadius);
         for (let i = 0; i < 5; i++) {
-            let x = cx + Math.cos(rot) * outerRadius;
-            let y = cy + Math.sin(rot) * outerRadius;
-            ctx.lineTo(x, y);
+            const x1 = cx + Math.cos(rot) * outerRadius;
+            const y1 = cy + Math.sin(rot) * outerRadius;
+            ctx.lineTo(x1, y1);
             rot += step;
 
-            x = cx + Math.cos(rot) * innerRadius;
-            y = cy + Math.sin(rot) * innerRadius;
-            ctx.lineTo(x, y);
+            const x2 = cx + Math.cos(rot) * innerRadius;
+            const y2 = cy + Math.sin(rot) * innerRadius;
+            ctx.lineTo(x2, y2);
             rot += step;
         }
         ctx.lineTo(cx, cy - outerRadius);

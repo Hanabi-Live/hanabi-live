@@ -4,7 +4,7 @@
 
 // Imports
 const constants = require('../constants');
-const drawCards = require('./drawCards');
+const drawCards = require('./ui/drawCards');
 const globals = require('../globals');
 const phaser = require('./phaser');
 const websocket = require('./ui/websocket');
@@ -46,19 +46,24 @@ commands.init = (data) => {
     // Also initalize the "ui" object, which contains various graphical objects
     globals.ui = {
         cards: [],
-        cardImages: {},
-        scaledCardImages: {},
     };
 
-    // Build images for every card (with respect to the variant that we are playing)
-    drawCards.drawAll();
+    // Build images for every card
+    // (with respect to the variant that we are playing
+    // and whether or not we have the colorblind feature enabled)
+    globals.ui.cardImages = drawCards.drawAll(
+        globals.init.variant,
+        globals.settings.showColorblindUI,
+    );
 
     // Draw the user interface
     phaser.init();
 
     // Keyboard hotkeys can only be initialized once the clue buttons are drawn
+    // TODO
     // keyboard.init();
 
     // Tell the server that we are finished loading
+    // TODO
     // globals.lobby.conn.send('ready');
 };

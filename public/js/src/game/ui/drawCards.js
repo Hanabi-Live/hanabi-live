@@ -5,7 +5,6 @@
 // Imports
 const constants = require('../../constants');
 const drawPip = require('./drawPip');
-const globals = require('./globals');
 
 // Constants
 const {
@@ -14,14 +13,14 @@ const {
     COLORS,
     SUITS,
 } = constants;
-const xrad = CARD_W * 0.08;
-const yrad = CARD_H * 0.08;
 
-// The "drawAll()" function draws all of the cards and then stores them in the
-// "globals.cardImages" object to be used later
-exports.drawAll = () => {
+// The "drawAll()" function returns an object containing all of the drawn cards images
+// (on individual canvases)
+exports.drawAll = (variant, colorblind) => {
+    const cardImages = {};
+
     // The "unknown" suit has semi-blank gray cards, representing unknown cards
-    const suits = globals.variant.suits.concat(SUITS.Unknown);
+    const suits = variant.suits.concat(SUITS.Unknown);
     for (let i = 0; i < suits.length; i++) {
         const suit = suits[i];
 
@@ -40,12 +39,12 @@ exports.drawAll = () => {
                 drawCardTexture(ctx);
             }
 
-            drawCardBase(ctx, suit, rank);
-
             // Make the special corners on the cards for dual-color suits
             if (suit.clueColors.length === 2) {
                 drawMixedCardHelper(ctx, suit.clueColors);
             }
+
+            drawCardBase(ctx, suit, rank);
 
             ctx.shadowBlur = 10;
             ctx.fillStyle = getSuitStyle(suit, ctx, 'number');
@@ -55,35 +54,34 @@ exports.drawAll = () => {
 
             if (rank !== 0 && rank !== 6) {
                 let textYPos;
-                let indexLabel;
-                let rankString = rank.toString();
+                let rankLabel = rank.toString();
                 if (rank === constants.START_CARD_RANK) {
-                    rankString = 'S';
+                    rankLabel = 'S';
                 }
                 let fontSize;
-                if (globals.lobby.settings.showColorblindUI) {
+                if (colorblind) {
+                    rankLabel = suit.abbreviation + rankLabel;
                     fontSize = 68;
                     textYPos = 83;
-                    indexLabel = suit.abbreviation + rankString;
                 } else {
                     fontSize = 96;
                     textYPos = 110;
-                    indexLabel = rankString;
                 }
 
                 ctx.font = `bold ${fontSize}pt Arial`;
 
                 // Draw the rank on the top left
-                drawCardIndex(ctx, textYPos, indexLabel);
+                drawText(ctx, textYPos, rankLabel);
 
                 // "Index" cards are used to draw cards of learned but not yet known rank
-                globals.cardImages[`Index-${suit.name}-${rank}`] = cloneCanvas(cvs);
+                // (e.g. for in-game replays)
+                cardImages[`Index-${suit.name}-${rank}`] = cloneCanvas(cvs);
 
                 // Draw the rank on the bottom right
                 ctx.save();
                 ctx.translate(CARD_W, CARD_H);
                 ctx.rotate(Math.PI);
-                drawCardIndex(ctx, textYPos, indexLabel);
+                drawText(ctx, textYPos, rankLabel);
                 ctx.restore();
             }
 
@@ -96,22 +94,24 @@ exports.drawAll = () => {
             // Entirely unknown cards (e.g. "NoPip-Unknown-6")
             // have a custom image defined separately
             if (rank > 0 && (rank < 6 || suit !== SUITS.Unknown)) {
-                globals.cardImages[`NoPip-${suit.name}-${rank}`] = cloneCanvas(cvs);
+                cardImages[`NoPip-${suit.name}-${rank}`] = cloneCanvas(cvs);
             }
 
             if (suit !== SUITS.Unknown) {
-                drawSuitPips(ctx, rank, suit);
+                drawSuitPips(ctx, rank, suit, colorblind);
             }
 
             // "Card-Unknown" images would be identical to "NoPip-Unknown" images
             if (suit !== SUITS.Unknown) {
-                globals.cardImages[`Card-${suit.name}-${rank}`] = cvs;
+                cardImages[`Card-${suit.name}-${rank}`] = cvs;
             }
         }
     }
 
-    globals.cardImages['NoPip-Unknown-6'] = makeUnknownCardImage();
-    globals.cardImages['deck-back'] = makeDeckBack();
+    cardImages['NoPip-Unknown-6'] = makeUnknownCardImage();
+    cardImages['deck-back'] = makeDeckBack(variant);
+
+    return cardImages;
 };
 
 const cloneCanvas = (oldCanvas) => {
@@ -123,7 +123,7 @@ const cloneCanvas = (oldCanvas) => {
     return newCanvas;
 };
 
-const drawSuitPips = (ctx, rank, suit) => {
+const drawSuitPips = (ctx, rank, suit, colorblind) => {
     const pathFunc = drawPip(suit.pip);
     const scale = 0.4;
 
@@ -140,7 +140,7 @@ const drawSuitPips = (ctx, rank, suit) => {
 
     // Top and bottom for cards 2, 3, 4, 5
     if (rank > 1 && rank <= 5) {
-        const symbolYPos = globals.lobby.settings.showColorblindUI ? 85 : 120;
+        const symbolYPos = colorblind ? 85 : 120;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(0, -symbolYPos);
@@ -198,7 +198,7 @@ const drawSuitPips = (ctx, rank, suit) => {
     // Unknown rank, so draw large faint suit
     if (rank === 6) {
         ctx.save();
-        ctx.globalAlpha = globals.lobby.settings.showColorblindUI ? 0.4 : 0.1;
+        ctx.globalAlpha = colorblind ? 0.4 : 0.1;
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 3, scale * 3);
         ctx.translate(-75, -100);
@@ -208,13 +208,13 @@ const drawSuitPips = (ctx, rank, suit) => {
     }
 };
 
-const makeDeckBack = () => {
+const makeDeckBack = (variant) => {
     const cvs = makeUnknownCardImage();
     const ctx = cvs.getContext('2d');
 
-    const nSuits = globals.variant.suits.length;
-    for (let i = 0; i < globals.variant.suits.length; i++) {
-        const suit = globals.variant.suits[i];
+    const nSuits = variant.suits.length;
+    for (let i = 0; i < variant.suits.length; i++) {
+        const suit = variant.suits[i];
 
         ctx.resetTransform();
         ctx.scale(0.4, 0.4);
@@ -261,6 +261,9 @@ const drawCardBase = (ctx, suit, rank) => {
 };
 
 const backPath = (ctx, p) => {
+    // p is short for padding
+    const xrad = CARD_W * 0.08;
+    const yrad = CARD_H * 0.08;
     ctx.beginPath();
     ctx.moveTo(p, yrad + p);
     ctx.lineTo(p, CARD_H - yrad - p);
@@ -280,7 +283,7 @@ const drawShape = (ctx) => {
     ctx.stroke();
 };
 
-const drawCardIndex = (ctx, textYPos, indexLabel) => {
+const drawText = (ctx, textYPos, indexLabel) => {
     ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
     ctx.fillText(indexLabel, 19, textYPos);
     ctx.shadowColor = 'rgba(0, 0, 0, 0)';
