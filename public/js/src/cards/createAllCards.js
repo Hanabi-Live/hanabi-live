@@ -4,12 +4,14 @@
 
 // Imports
 const fs = require('fs');
+const jsdom = require('jsdom');
+const C2SNode = require('../../lib/canvas2svg_node');
 const constants = require('../constants');
 const drawCardsSVG = require('./drawCards');
 
 const nodeImports = {
-    jsdom: require('jsdom'), // eslint-disable-line global-require
-    C2SNode: require('../../lib/canvas2svg_node'), // eslint-disable-line global-require
+    jsdom,
+    C2SNode,
 };
 
 const allCardImages = {};
