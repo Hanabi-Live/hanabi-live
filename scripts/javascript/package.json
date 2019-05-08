@@ -9,8 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "canvas2svg": "^1.0.16",
-    "jsdom": "^15.0.0",
     "prompt": "^1.0.0"
   }
 }
