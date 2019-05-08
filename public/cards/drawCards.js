@@ -1,7 +1,7 @@
 /*
     The Hanabi card grahpics are various HTML5 canvas drawings
     This file has various changes from the other "drawCards.js" as workarounds
-    to avoid canvas2svg crashing
+    to prevent canvas2svg from crashing
 */
 
 // Imports
