@@ -4,13 +4,13 @@
 
 // Imports
 const fs = require('fs');
-const constants = require('../js/src/constants');
+const constants = require('../constants');
+const drawCardsSVG = require('./drawCards');
 
 const nodeImports = {
-    jsdom: require('jsdom'),
-    C2SNode: require('./lib/canvas2svg_node'),
+    jsdom: require('jsdom'), // eslint-disable-line global-require
+    C2SNode: require('./lib/canvas2svg_node'), // eslint-disable-line global-require
 };
-const drawCardsSVG = require('./drawCards');
 
 const allCardImages = {};
 const numVariants = Object.keys(constants.VARIANTS).length;
@@ -44,7 +44,6 @@ for (const colorblind of [false, true]) {
             if (colorblind) {
                 modifiedKey += '-Colorblind';
             }
-            console.log('modifiedKey:', modifiedKey);
             if (!Object.hasOwnProperty.call(allCardImages, modifiedKey)) {
                 allCardImages[modifiedKey] = cardImagesSVG[key];
             }
@@ -57,12 +56,11 @@ for (const colorblind of [false, true]) {
 console.log('Finished created all card images.');
 
 for (const key of Object.keys(allCardImages)) {
-    const filePath = `../img/cards/${key}.svg`;
+    const filePath = `../../../img/cards/${key}.svg`;
     try {
         fs.writeFileSync(filePath, allCardImages[key], 'utf8');
     } catch (err) {
-        console.error(`Failed to write the SVG file "${filePath}:"`, err);
-        return;
+        throw new Error(`Failed to write the SVG file "${filePath}:"`, err);
     }
     console.log('Wrote file:', filePath);
 }

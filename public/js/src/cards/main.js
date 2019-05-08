@@ -1,7 +1,7 @@
 // This script will draw a comparison between a SVG card and a canvas card
 
 // Imports
-const constants = require('../js/src/constants');
+const constants = require('../constants');
 
 // Configuration
 const suitName = 'Blue';
@@ -11,16 +11,17 @@ const variant = constants.VARIANTS['No Variant'];
 const colorblind = false;
 
 // Get the card images for both types
-const drawCardsSVG = require('./drawCards');
-const cardImagesSVG = drawCardsSVG.drawAll(variant, colorblind, 'SVG');
-const drawCardsCanvas = require('../js/src/game/ui/drawCards');
+// const drawCardsSVG = require('./drawCards');
+const drawCardsCanvas = require('../game/ui/drawCards');
+
+// const cardImagesSVG = drawCardsSVG.drawAll(variant, colorblind, 'SVG');
 const cardImagesCanvas = drawCardsCanvas.drawAll(variant, colorblind, 'normal');
 
 // Draw one image from both types to the screen
 $(document).ready(() => {
     // Draw the SVG card (left side)
-    const svg = cardImagesSVG[cardName];
-    const svg1 = $($.parseHTML(`<img src='../img/cards/${cardName}.svg'>`));
+    // const svg = cardImagesSVG[cardName];
+    const svg1 = $($.parseHTML(`<img src='../../../img/cards/${cardName}.svg'>`));
     svg1.attr('id', 'svg1');
     $('body').append(svg1);
 

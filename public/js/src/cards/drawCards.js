@@ -5,9 +5,9 @@
 */
 
 // Imports
-const C2S = require('../js/lib/canvas2svg');
-const constants = require('../js/src/constants');
-const drawPip = require('../js/src/game/ui/drawPip');
+const C2S = require('../../lib/canvas2svg');
+const constants = require('../constants');
+const drawPip = require('../game/ui/drawPip');
 
 let nodeImports = {};
 
@@ -270,7 +270,7 @@ const makeUnknownCardImage = (canvasType) => {
     const [cvs, ctx] = initCanvas(canvasType);
 
     drawCardTexture(ctx);
-    drawCardBase(ctx, constants.SUITS.Unknown, true)
+    drawCardBase(ctx, constants.SUITS.Unknown, true);
 
     ctx.fillStyle = 'black';
     cardBorderPath(ctx, 4);
@@ -337,7 +337,6 @@ const cardBorderPath = (ctx) => {
     const xrad = CARD_W * 0.08;
     const yrad = CARD_W * 0.08;
     // (we want them to both have the same value so that the curve has a 45 degree angle)
-    const radius = 50;
     ctx.beginPath();
     ctx.moveTo(0, yrad); // Top-left corner
     ctx.lineTo(0, CARD_H - yrad); // Bottom-left corner
