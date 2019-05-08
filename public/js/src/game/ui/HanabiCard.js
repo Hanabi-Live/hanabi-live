@@ -227,6 +227,8 @@ class HanabiCard extends graphics.Group {
             globals.animateFast
             || this.numPositiveClues > 0
             || this.empathy
+            || this.isPlayed
+            || this.isDiscarded
             || !this.getLayer()
         ) {
             this.setOpacity(newOpacity);
