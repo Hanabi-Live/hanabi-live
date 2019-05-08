@@ -115,4 +115,12 @@ func commandPause(s *Session, d *CommandData) {
 	}
 
 	g.NotifyPause()
+
+	// Also send a chat message about it
+	msg := s.Username() + " "
+	if g.Paused {
+		msg += "un"
+	}
+	msg += "paused the game."
+	chatServerPregameSend(msg, g.ID)
 }
