@@ -17,6 +17,9 @@ hanabi-live
 # VS Code stuff
 .vscode
 
+# MacOS artifacts
+.DS_Store
+
 # --------------------------
 # GitHub .gitignore Template
 # --------------------------
