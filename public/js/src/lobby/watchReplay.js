@@ -23,11 +23,19 @@ $(document).ready(() => {
 
 const replaySourceChange = () => {
     if ($('#replay-source-id').prop('checked')) {
-        $('#replay-id-row').show();
         $('#replay-json-row').hide();
+        $('#replay-id-row').show();
+        setTimeout(() => {
+            $('#replay-id').select(); // Automatically highlight the ID field
+            // (this has to be in a timeout in order to work properly)
+        }, 0);
     } else if ($('#replay-source-json').prop('checked')) {
         $('#replay-id-row').hide();
         $('#replay-json-row').show();
+        setTimeout(() => {
+            $('#replay-json').select(); // Automatically highlight the JSON field
+            // (this has to be in a timeout in order to work properly)
+        }, 0);
     } else {
         throw new Error('Invalid value for "replay-source".');
     }
