@@ -385,7 +385,10 @@ exports.click = function click() {
 };
 
 exports.possibilities = function possibilities() {
-    if (globals.lobby.settings.realLifeMode) {
+    if (
+        globals.lobby.settings.realLifeMode
+        || globals.speedrun
+    ) {
         return;
     }
 

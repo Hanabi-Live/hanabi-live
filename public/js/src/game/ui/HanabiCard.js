@@ -398,8 +398,10 @@ class HanabiCard extends graphics.Group {
             this.rankPipsXMap.get(rank).hide();
 
             // Remove any card possibilities for this rank
-            for (const suit of globals.variant.suits) {
-                this.removePossibility(suit, rank, true);
+            if (!globals.lobby.settings.realLifeMode && !globals.speedrun) {
+                for (const suit of globals.variant.suits) {
+                    this.removePossibility(suit, rank, true);
+                }
             }
         }
         if (this.possibleRanks.length === 1) {
@@ -420,8 +422,10 @@ class HanabiCard extends graphics.Group {
             this.suitPipsXMap.get(suit).hide();
 
             // Remove any card possibilities for this suit
-            for (const rank of globals.variant.ranks) {
-                this.removePossibility(suit, rank, true);
+            if (!globals.lobby.settings.realLifeMode && !globals.speedrun) {
+                for (const rank of globals.variant.ranks) {
+                    this.removePossibility(suit, rank, true);
+                }
             }
 
             if (suit.clueRanks !== 'normal') {
@@ -442,7 +446,12 @@ class HanabiCard extends graphics.Group {
 
         // Handle if this is the first time that the card is fully revealed to the holder
         const isFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
-        if (isFullyKnown && !wasFullyKnown) {
+        if (
+            isFullyKnown
+            && !wasFullyKnown
+            && !globals.lobby.settings.realLifeMode
+            && !globals.speedrun
+        ) {
             this.updatePossibilitiesOnOtherCards(this.suit, this.rank);
         }
     }
@@ -516,7 +525,11 @@ class HanabiCard extends graphics.Group {
 
         // If the card was already fully-clued,
         // we already updated the possibilities for it on other cards
-        if (this.possibleSuits.length > 1 || this.possibleRanks.length > 1) {
+        if (
+            (this.possibleSuits.length > 1 || this.possibleRanks.length > 1)
+            && !globals.lobby.settings.realLifeMode
+            && !globals.speedrun
+        ) {
             this.updatePossibilitiesOnOtherCards(suit, rank);
         }
 
@@ -820,10 +833,6 @@ class HanabiCard extends graphics.Group {
     }
 
     removePossibility(suit, rank, all) {
-        if (globals.lobby.settings.realLifeMode) {
-            return;
-        }
-
         // Every card has a possibility map that maps card identities to count
         const mapIndex = `${suit.name}${rank}`;
         let cardsLeft = this.possibleCards.get(mapIndex);

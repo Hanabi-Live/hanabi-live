@@ -204,7 +204,11 @@ commands.draw = (data) => {
 
     // If this card is known,
     // then remove it from the card possibilities for the players who see this card
-    if (suit && rank) {
+    if (
+        suit && rank
+        && !globals.lobby.settings.realLifeMode
+        && !globals.speedrun
+    ) {
         for (let i = 0; i < globals.elements.playerHands.length; i++) {
             if (i === holder) {
                 // We can't update the player who drew this card,

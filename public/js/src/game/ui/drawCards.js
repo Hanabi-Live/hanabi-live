@@ -355,16 +355,16 @@ const cardBorderPath = (ctx, p) => {
 };
 
 const drawShape = (ctx) => {
-    // ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
     ctx.fill();
-    // ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
     ctx.stroke();
 };
 
 const drawText = (ctx, textYPos, indexLabel) => {
-    // ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
     ctx.fillText(indexLabel, 19, textYPos);
-    // ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
     ctx.strokeText(indexLabel, 19, textYPos);
 };
 
