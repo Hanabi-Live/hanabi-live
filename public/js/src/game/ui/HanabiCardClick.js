@@ -25,6 +25,8 @@ module.exports = function click(event) {
 
     if (event.evt.which === 1) { // Left-click
         clickLeft(this, event.evt);
+    } else if (event.evt.which === 2) { // Middle-click
+        clickMiddle(this, event.evt);
     } else if (event.evt.which === 3) { // Right-click
         clickRight(this, event.evt);
     }
@@ -52,6 +54,18 @@ const clickLeft = (card, event) => {
     } else if (card.isDiscarded) {
         // Clicking on discarded cards goes to the turn immediately before they were discarded
         goToTurnAndIndicateCard(card.turnDiscarded, card.order);
+    }
+};
+
+const clickMiddle = (card, event) => {
+    // No actions in this function use modifiers
+    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
+        return;
+    }
+
+    // Middle clicking on cards goes to the turn it was first clued
+    if (card.turnClued !== null) {
+        goToTurn(card.turnClued);
     }
 };
 

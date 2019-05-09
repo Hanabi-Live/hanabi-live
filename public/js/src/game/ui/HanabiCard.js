@@ -69,11 +69,12 @@ class HanabiCard extends graphics.Group {
         this.empathy = false;
         this.doMisplayAnimation = false;
         this.numPositiveClues = 0;
-        this.specialRankSuitRemoved = false;
         this.positiveRankClues = [];
         this.negativeRankClues = [];
         this.positiveColorClues = [];
         this.negativeColorClues = [];
+        this.specialRankSuitRemoved = false;
+        this.turnClued = null;
         // We have to add one to the turn drawn because
         // the "draw" command comes before the "turn" command
         // However, if it was part of the initial deal, then it will correctly be set as turn 0
@@ -289,6 +290,12 @@ class HanabiCard extends graphics.Group {
         const wasFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
         if (wasFullyKnown) {
             return;
+        }
+
+        // Mark the turn that this card was first clued
+        if (this.turnClued === null) {
+            // We add one because the "clue" action comes before the "turn" action
+            this.turnClued = globals.turn + 1;
         }
 
         // Record unique clues that touch the card for later
