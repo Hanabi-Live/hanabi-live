@@ -209,6 +209,7 @@ class HanabiCard extends graphics.Group {
         let newOpacity = 1;
         if (
             !globals.lobby.settings.realLifeMode
+            && !globals.speedrun
             && this.suit !== null
             && this.rank !== null
             && this.numPositiveClues === 0

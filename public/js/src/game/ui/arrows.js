@@ -202,6 +202,14 @@ exports.send = send;
 
 // This toggles the "highlight" arrow on a particular element
 const toggle = (element) => {
+    // If the card is currently tweening, delay showing the arrow until the tween is finished
+    if (element.type === 'HanabiCard' && element.tweening) {
+        setTimeout(() => {
+            toggle(element);
+        }, 20);
+        return;
+    }
+
     const arrow = globals.elements.arrows[0];
     const show = (
         arrow.pointingTo !== element

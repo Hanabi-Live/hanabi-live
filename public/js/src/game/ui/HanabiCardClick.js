@@ -40,6 +40,11 @@ const clickLeft = (card, event) => {
 
     if (event.altKey) {
         // Alt + clicking a card goes to the turn it was drawn
+        // (we want to go to the turn before it is drawn, tween the card being drawn,
+        // and then indicate the card)
+        const turnBeforeDrawn = card.turnDrawn === 0 ? 0 : card.turnDrawn - 1;
+        goToTurn(turnBeforeDrawn, true);
+        goToTurn(card.turnDrawn, false);
         goToTurnAndIndicateCard(card.turnDrawn, card.order);
     } else if (card.isPlayed) {
         // Clicking on played cards goes to the turn immediately before they were played
@@ -157,13 +162,17 @@ const clickRight = (card, event) => {
     }
 };
 
-const goToTurnAndIndicateCard = (turn, order) => {
+const goToTurn = (turn, fast) => {
     if (globals.replay) {
         replay.checkDisableSharedTurns();
     } else {
         replay.enter();
     }
-    replay.goto(turn, true);
+    replay.goto(turn, fast);
+};
+
+const goToTurnAndIndicateCard = (turn, order) => {
+    goToTurn(turn, true);
 
     // We indicate the card to make it easier to find
     arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown
