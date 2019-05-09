@@ -11,7 +11,6 @@ const globals = require('../globals');
 const {
     CARD_H,
     CARD_W,
-    PHASER_DEMO_SCALE,
     SUITS,
 } = constants;
 
@@ -22,7 +21,12 @@ class HanabiCard extends Phaser.GameObjects.Container {
 
         this.x = config.x || 0;
         this.y = config.y || 0;
-        this.setSize(CARD_W * PHASER_DEMO_SCALE, CARD_H * PHASER_DEMO_SCALE);
+        if (!config.scale) config.scale = 1;
+        this.scale = config.scale;
+        this.setSize(
+            CARD_W * config.scale,
+            CARD_H * config.scale,
+        );
 
         // Card variables
         this.order = config.order;
@@ -61,7 +65,7 @@ class HanabiCard extends Phaser.GameObjects.Container {
             0,
             this.imageName,
         );
-        image.setScale(PHASER_DEMO_SCALE);
+        image.setScale(this.scale);
         return image;
     }
 

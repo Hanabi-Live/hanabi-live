@@ -1,11 +1,11 @@
 const constants = require('../constants');
 const HanabiCard = require('./HanabiCard');
+const utils = require('./utils');
 
 // Constants
 const {
     CARD_H,
     CARD_W,
-    PHASER_DEMO_SCALE,
     PLAY_AREA_PADDING,
 } = constants;
 
@@ -18,21 +18,25 @@ class PlayArea extends Phaser.GameObjects.Container {
         this.x = config.x;
         this.y = config.y;
         this.suits = config.suits;
+        this.scale = config.scale;
+        this.horizSpacing = CARD_W * config.scale * PLAY_AREA_PADDING;
+
         this.zone = new Phaser.GameObjects.Zone(
             scene,
             config.x,
             config.y,
-            CARD_W * PHASER_DEMO_SCALE * PLAY_AREA_PADDING * config.suits.length,
-            CARD_H,
+            this.horizSpacing * config.suits.length,
+            CARD_H * config.scale,
         );
         this.zone.zoneContainer = this;
         this.zone.setRectangleDropZone(
-            CARD_W * PHASER_DEMO_SCALE * PLAY_AREA_PADDING * config.suits.length,
-            CARD_H,
+            this.horizSpacing * config.suits.length,
+            CARD_H * config.scale,
         );
         const cardsToAdd = this.suits.map(suit => new HanabiCard(scene, {
             suit,
             rank: 0,
+            scale: config.scale,
         }));
         this.addCards(cardsToAdd);
     }
@@ -40,30 +44,21 @@ class PlayArea extends Phaser.GameObjects.Container {
     addCards(cards) {
         // Cards are rendered in the order of the container, so cards at the end of the container
         // will be the front of the scene
-        if (!Array.isArray(cards)) { cards = [cards]; }
+        cards = utils.makeArray(cards);
         this.add(cards);
-        cards.forEach((card) => {
-            card.x -= this.x;
-            card.y -= this.y;
-            const sinRot = Math.sin(this.rotation);
-            const cosRot = Math.cos(this.rotation);
-            const { x, y } = card;
-            card.x = (x * cosRot) + (y * sinRot);
-            card.y = (y * cosRot) - (x * sinRot);
-        });
-        this.addCardTweensToScene(cards);
+        cards.forEach(card => utils.transformToEnterContainer(card, this));
+        this._addCardTweensToScene(cards);
     }
 
-    addCardTweensToScene(cards) {
-        if (!Array.isArray(cards)) { cards = [cards]; }
-        const horizSpacing = CARD_W * PHASER_DEMO_SCALE * PLAY_AREA_PADDING;
+    _addCardTweensToScene(cards) {
+        cards = utils.makeArray(cards);
         const nSuits = this.suits.length;
 
         for (const card of cards) {
             const suitIdx = this.suits.findIndex(suit => suit === card.suit);
             // eslint pls, this is way more readable than if I threw in a bunch of parens
             /* eslint-disable no-mixed-operators, space-infix-ops */
-            const x = (suitIdx + 1/2 - nSuits/2) * horizSpacing;
+            const x = (suitIdx + 1/2 - nSuits/2) * this.horizSpacing;
             this.scene.tweens.add({
                 targets: card,
                 x,
