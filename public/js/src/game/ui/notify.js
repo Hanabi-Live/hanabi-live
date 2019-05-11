@@ -38,9 +38,7 @@ commands.clue = (data) => {
 
         arrows.set(i, card, data.giver, clue);
 
-        if (!globals.lobby.settings.realLifeMode) {
-            card.cluedBorder.show();
-        }
+        card.cluedBorder.show();
         if (
             !globals.lobby.settings.realLifeMode
             && !globals.variant.name.startsWith('Cow & Pig')
