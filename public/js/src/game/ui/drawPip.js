@@ -122,9 +122,9 @@ const shapeFunctions = {
 
     null_symbol: (ctx) => {
         const text = '∅';
-        ctx.font = '250px Verdana';
-        const x = -15;
-        const y = 170;
+        ctx.font = '210px Verdana';
+        const x = 10;
+        const y = 165;
         ctx.fillStyle = constants.SUITS.Brown.fill;
         ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
         ctx.fillText(text, x, y);
