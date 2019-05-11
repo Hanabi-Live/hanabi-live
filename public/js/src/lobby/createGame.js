@@ -7,62 +7,65 @@ const constants = require('../constants');
 const globals = require('../globals');
 const misc = require('../misc');
 
-$(document).ready(() => {
-    // Populate the variant dropdown in the "Create Game" tooltip
-    for (const variantName of Object.keys(constants.VARIANTS)) {
-        const option = new Option(variantName, variantName);
-        $('#createTableVariant').append($(option));
+exports.init = () => {
+    $(document).ready(() => {
+        // Populate the variant dropdown in the "Create Game" tooltip
+        for (const variantName of Object.keys(constants.VARIANTS)) {
+            const option = new Option(variantName, variantName);
+            $('#createTableVariant').append($(option));
 
-        if (constants.VARIANTS[variantName].spacing) {
-            const spacing = new Option('─────────────────────────', null);
-            spacing.disabled = true;
-            $('#createTableVariant').append($(spacing));
-        }
-    }
-
-    // Make the extra time fields appear and disappear depending on whether the checkbox is checked
-    $('#createTableTimed').change(() => {
-        if ($('#createTableTimed').prop('checked')) {
-            $('#create-game-timed-label').removeClass('col-3');
-            $('#create-game-timed-label').addClass('col-2');
-            $('#create-game-timed-option-1').show();
-            $('#create-game-timed-option-2').show();
-            $('#create-game-timed-option-3').show();
-            $('#create-game-timed-option-4').show();
-        } else {
-            $('#create-game-timed-label').addClass('col-3');
-            $('#create-game-timed-label').removeClass('col-2');
-            $('#create-game-timed-option-1').hide();
-            $('#create-game-timed-option-2').hide();
-            $('#create-game-timed-option-3').hide();
-            $('#create-game-timed-option-4').hide();
+            if (constants.VARIANTS[variantName].spacing) {
+                const spacing = new Option('─────────────────────────', null);
+                spacing.disabled = true;
+                $('#createTableVariant').append($(spacing));
+            }
         }
 
-        // Redraw the tooltip so that the new elements will fit better
-        $('#nav-buttons-games-create-game').tooltipster('reposition');
+        // Make the extra time fields appear and disappear depending on whether the checkbox is
+        // checked
+        $('#createTableTimed').change(() => {
+            if ($('#createTableTimed').prop('checked')) {
+                $('#create-game-timed-label').removeClass('col-3');
+                $('#create-game-timed-label').addClass('col-2');
+                $('#create-game-timed-option-1').show();
+                $('#create-game-timed-option-2').show();
+                $('#create-game-timed-option-3').show();
+                $('#create-game-timed-option-4').show();
+            } else {
+                $('#create-game-timed-label').addClass('col-3');
+                $('#create-game-timed-label').removeClass('col-2');
+                $('#create-game-timed-option-1').hide();
+                $('#create-game-timed-option-2').hide();
+                $('#create-game-timed-option-3').hide();
+                $('#create-game-timed-option-4').hide();
+            }
+
+            // Redraw the tooltip so that the new elements will fit better
+            $('#nav-buttons-games-create-game').tooltipster('reposition');
+        });
+        $('#createTableSpeedrun').change(() => {
+            if ($('#createTableSpeedrun').prop('checked')) {
+                $('#create-game-timed-row').hide();
+                $('#create-game-timed-row-spacing').hide();
+            } else {
+                $('#create-game-timed-row').show();
+                $('#create-game-timed-row-spacing').show();
+            }
+
+            // Redraw the tooltip so that the new elements will fit better
+            $('#nav-buttons-games-create-game').tooltipster('reposition');
+        });
+
+        $('#create-game-tooltip').on('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                $('#create-game-submit').click();
+            }
+        });
+
+        $('#create-game-submit').on('click', submit);
     });
-    $('#createTableSpeedrun').change(() => {
-        if ($('#createTableSpeedrun').prop('checked')) {
-            $('#create-game-timed-row').hide();
-            $('#create-game-timed-row-spacing').hide();
-        } else {
-            $('#create-game-timed-row').show();
-            $('#create-game-timed-row-spacing').show();
-        }
-
-        // Redraw the tooltip so that the new elements will fit better
-        $('#nav-buttons-games-create-game').tooltipster('reposition');
-    });
-
-    $('#create-game-tooltip').on('keypress', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            $('#create-game-submit').click();
-        }
-    });
-
-    $('#create-game-submit').on('click', submit);
-});
+};
 
 const submit = () => {
     // We need to mutate some values before sending them to the server
