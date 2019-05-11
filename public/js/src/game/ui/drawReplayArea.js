@@ -133,7 +133,15 @@ module.exports = () => {
             height: replayButtonValues.h * winH,
             image: 'replay-back',
         });
-        globals.elements.replayBackButton.on('click tap', replay.back);
+        globals.elements.replayBackButton.on('click tap', () => {
+            // Prevent accidental double clicks
+            if (Date.now() - globals.UIClickTime < 50) {
+                return;
+            }
+            globals.UIClickTime = Date.now();
+
+            replay.back();
+        });
         globals.elements.replayArea.add(globals.elements.replayBackButton);
 
         // Go forward one turn (the second right-most button)
@@ -145,7 +153,15 @@ module.exports = () => {
             height: replayButtonValues.h * winH,
             image: 'replay-forward',
         });
-        globals.elements.replayForwardButton.on('click tap', replay.forward);
+        globals.elements.replayForwardButton.on('click tap', () => {
+            // Prevent accidental double clicks
+            if (Date.now() - globals.UIClickTime < 50) {
+                return;
+            }
+            globals.UIClickTime = Date.now();
+
+            replay.forward();
+        });
         globals.elements.replayArea.add(globals.elements.replayForwardButton);
 
         // Go forward to the end (the right-most button)
