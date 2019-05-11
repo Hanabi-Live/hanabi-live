@@ -200,7 +200,9 @@ class HanabiCard extends graphics.Group {
             this.rankPips.setVisible(rankToShow === 6);
         }
 
-        this.setFade();
+        if (!globals.lobby.settings.realLifeMode && !globals.speedrun) {
+            this.setFade();
+        }
     }
 
     // Fade this card if it is useless, fully revealed, and still in a player's hand
@@ -209,9 +211,7 @@ class HanabiCard extends graphics.Group {
 
         let newOpacity = 1;
         if (
-            !globals.lobby.settings.realLifeMode
-            && !globals.speedrun
-            && this.suit !== null
+            this.suit !== null
             && this.rank !== null
             && this.numPositiveClues === 0
             && !this.isPlayed

@@ -135,10 +135,10 @@ exports.ready = () => {
     }
 
     // Focus the "Name" box
-    // (we have to wait 1 millisecond or it won't work due to the nature of the tooltip)
+    // (this has to be in a callback in order to work)
     setTimeout(() => {
         $('#createTableName').focus();
-    }, 1);
+    }, 0);
 
     // Fill in the rest of form with the settings that we used last time
     // (which is stored on the server)
