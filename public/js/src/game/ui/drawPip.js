@@ -1,3 +1,6 @@
+// Imports
+const constants = require('../../constants');
+
 const shapeFunctions = {
     diamond: (ctx) => {
         const w = 70;
@@ -107,9 +110,12 @@ const shapeFunctions = {
         ctx.font = '175px Verdana';
         const x = -10;
         const y = 155;
+        ctx.fillStyle = constants.SUITS.Pink.fill;
         ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
         ctx.fillText(text, x, y);
+        ctx.fillStyle = 'black';
         ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+        ctx.lineWidth = 5;
         ctx.strokeText(text, x, y);
         ctx.beginPath(); // This is needed to prevent canvas2svg from crashing
     },
@@ -119,9 +125,12 @@ const shapeFunctions = {
         ctx.font = '250px Verdana';
         const x = -15;
         const y = 170;
+        ctx.fillStyle = constants.SUITS.Brown.fill;
         ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
         ctx.fillText(text, x, y);
+        ctx.fillStyle = 'black';
         ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+        ctx.lineWidth = 5;
         ctx.strokeText(text, x, y);
         ctx.beginPath(); // This is needed to prevent canvas2svg from crashing
     },
