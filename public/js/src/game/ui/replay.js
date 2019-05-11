@@ -241,7 +241,7 @@ exports.forwardRound = () => {
 exports.exitButton = () => {
     // Mark the time that the user clicked the "Exit Replay" button
     // (so that we can avoid an accidental "Give Clue" double-click)
-    globals.accidentalClueTimer = Date.now();
+    globals.UIClickTime = Date.now();
 
     exit();
 };

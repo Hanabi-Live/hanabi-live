@@ -212,7 +212,7 @@ module.exports = () => {
     // A function called after an action from the server moves cards
     globals.postAnimationLayout = null;
     globals.lastAction = null; // Used when rebuilding the game state
-    globals.accidentalClueTimer = Date.now();
+    globals.UIClickTime = Date.now(); // Used to prevent accidental double clicks
     // Used to prevent giving an accidental clue after clicking the "Exit Replay" button
     globals.surprise = false;
     globals.spectators = [];
