@@ -65,7 +65,7 @@ commands.allowedActions = (data) => {
 };
 
 // This is sent to the client upon game initialization (in the "commandReady.go" file)
-commands.advanced = () => {
+commands.initUIIfInReplay = () => {
     globals.animateFast = false;
 
     // Initialize solo replays to the first turn (otherwise, nothing will be drawn)

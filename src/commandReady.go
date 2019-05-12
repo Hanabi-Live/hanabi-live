@@ -78,9 +78,9 @@ func commandReady(s *Session, d *CommandData) {
 		s.NotifyAllowedActions(g)
 	}
 
-	// Send an "advanced" message
-	// (if this is not sent during a replay, the UI will look uninitialized)
-	s.Emit("advanced", nil)
+	// Send a message which triggers the client to draw the UI
+        // This only matters if in replay
+	s.Emit("initUIIfInReplay", nil)
 
 	// Check if the game is still in progress
 	if g.Replay {
