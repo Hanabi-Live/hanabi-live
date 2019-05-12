@@ -44,7 +44,7 @@ func websocketConnect(ms *melody.Session) {
 		}
 
 		// The connection is now closed, but the disconnect event will be fired in another goroutine
-		// Thus, we need to manually call the function now to ensure that the user is removed from existing games and so forth
+		// Thus, we need to manually call the function now to ensure that the user is removed from existing tables and so forth
 		websocketDisconnect2(s2)
 	}
 
@@ -52,13 +52,13 @@ func websocketConnect(ms *melody.Session) {
 	sessions[s.UserID()] = s
 	log.Info("User \""+s.Username()+"\" connected;", len(sessions), "user(s) now connected.")
 
-	// Get their total number of games played
-	var totalGames int
+	// Get their total number of tables played
+	var totalTables int
 	if v, err := db.Games.GetUserNumGames(s.UserID()); err != nil {
-		log.Error("Failed to get the number of games played for user \""+s.Username()+"\":", err)
+		log.Error("Failed to get the number of tables played for user \""+s.Username()+"\":", err)
 		return
 	} else {
-		totalGames = v
+		totalTables = v
 	}
 
 	// Get their settings from the database
@@ -97,23 +97,23 @@ func websocketConnect(ms *melody.Session) {
 	}
 
 	// They have successfully logged in, so send the initial message to the client
-	type HelloMessage struct {
+	type LoginMessage struct {
 		Username      string          `json:"username"`
-		TotalGames    int             `json:"totalGames"`
+		TotalTables    int             `json:"totalTables"`
 		FirstTimeUser bool            `json:"firstTimeUser"`
 		Settings      models.Settings `json:"settings"`
 		Version       int             `json:"version"`
 		ShuttingDown  bool            `json:"shuttingDown"`
 	}
-	s.Emit("hello", &HelloMessage{
+	s.Emit("login", &LoginMessage{
 		// We have to send the username back to the client because they may
 		// have logged in with the wrong case, and the client needs to know
 		// their exact username or various bugs will creep up
 		Username: s.Username(),
 
-		// We also send the total amount of games that they have played
+		// We also send the total amount of tables that they have played
 		// (to be shown in the nav bar on the history page)
-		TotalGames: totalGames,
+		TotalTables: totalTables,
 
 		// First time users get a quick tutorial
 		FirstTimeUser: s.FirstTimeUser(),
@@ -156,8 +156,8 @@ func websocketConnect(ms *melody.Session) {
 		s.NotifyUser(s2)
 	}
 
-	// Send the user's game history
-	// (only the last 10 games to prevent wasted bandwidth)
+	// Send the user's table history
+	// (only the last 10 tables to prevent wasted bandwidth)
 	var history []*models.GameHistory
 	if v, err := db.Games.GetUserHistory(s.UserID(), 0, 10, false); err != nil {
 		log.Error("Failed to get the history for user \""+s.Username()+"\":", err)
@@ -166,22 +166,22 @@ func websocketConnect(ms *melody.Session) {
 		history = v
 	}
 	history = historyFillVariants(history)
-	s.NotifyGameHistory(history, false)
+	s.NotifyTableHistory(history, false)
 
 	// Send a "table" message for every current table
-	for _, g := range games {
-		if g.Visible {
-			s.NotifyTable(g)
+	for _, t := range tables {
+		if t.Visible {
+			s.NotifyTable(t)
 		}
 	}
 
-	// First, check to see if this user was in any existing games
-	for _, g := range games {
-		if g.Replay {
+	// First, check to see if this user was in any existing tables
+	for _, t := range tables {
+		if t.Game.Replay {
 			continue
 		}
 
-		for _, p := range g.Players {
+		for _, p := range t.GameSpec.Players {
 			if p.Name != s.Username() {
 				continue
 			}
@@ -189,32 +189,32 @@ func websocketConnect(ms *melody.Session) {
 			// Update the player object with the new socket
 			p.Session = s
 
-			// Add the player back to the game
-			log.Info(g.GetName() + "Automatically reattending player \"" + s.Username() + "\".")
+			// Add the player back to the table
+			log.Info(t.GetName() + "Automatically reattending player \"" + s.Username() + "\".")
 			commandGameReattend(s, &CommandData{
-				ID: g.ID,
+				TableID: t.ID,
 			})
-			// (this function does not care what their current game and/or status is)
+			// (this function does not care what their current table and/or status is)
 
-			// If the user happens to be in both a game and a replay, then ignore the replay
+			// If the user happens to be in both a table and a replay, then ignore the replay
 			return
 		}
 	}
 
 	// Second, check to see if this user was in any existing shared replays
-	for _, g := range games {
-		if !g.Replay {
+	for _, t := range tables {
+		if !t.Game.Replay {
 			continue
 		}
 
-		for id := range g.DisconSpectators {
+		for id := range t.DisconSpectators {
 			if id == s.UserID() {
-				delete(g.DisconSpectators, s.UserID())
+				delete(t.DisconSpectators, s.UserID())
 
 				// Add the player back to the shared replay
-				log.Info(g.GetName() + "Automatically respectating player \"" + s.Username() + "\".")
-				commandGameSpectate(s, &CommandData{ // This function does not care what their current game and/or status is
-					ID: g.ID,
+				log.Info(t.GetName() + "Automatically respectating player \"" + s.Username() + "\".")
+				commandTableSpectate(s, &CommandData{ // This function does not care what their current table and/or status is
+					TableID: t.ID,
 				})
 
 				// We can return here because the player can only be in one shared replay at a time

@@ -1,5 +1,5 @@
 /*
-	Sent when the user clicks on the "Lobby" button while they are in the middle of a game
+	Sent when the user clicks on the "Lobby" button while they are in the middle of a table
 	"data" is empty
 */
 
@@ -12,68 +12,68 @@ import (
 func commandGameUnattend(s *Session, d *CommandData) {
 	// Set their status
 	s.Set("status", statusLobby)
-	gameID := s.CurrentGame()
-	s.Set("currentGame", -1)
+	tableID := s.CurrentTable()
+	s.Set("currentTable", -1)
 	notifyAllUser(s)
 
-	// Validate that the game exists
-	if gameID == -1 {
+	// Validate that the table exists
+	if tableID == -1 {
 		// The user may be returning from a replay that was ended due to idleness,
 		// or perhaps they lagged and sent two gameUnattend messages,
 		// with this one being the second one
 		log.Info("User \"" + s.Username() + "\" tried to unattend, " +
-			"but their game ID was set to -1.")
+			"but their table ID was set to -1.")
 		return
 	}
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Error("Game " + strconv.Itoa(gameID) + " does not exist, so you cannot unattend it.")
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Error("Table " + strconv.Itoa(tableID) + " does not exist, so you cannot unattend it.")
 		return
 	} else {
-		g = v
+		t = v
 	}
 
-	// Validate that they are either playing or spectating the game
-	i := g.GetPlayerIndex(s.UserID())
-	j := g.GetSpectatorIndex(s.UserID())
+	// Validate that they are either playing or spectating the table
+	i := t.GameSpec.GetPlayerIndex(s.UserID())
+	j := t.GetSpectatorIndex(s.UserID())
 	if i == -1 && j == -1 {
-		s.Warning("You are not playing or spectating game " + strconv.Itoa(g.ID) + ".")
+		s.Warning("You are not playing or spectating table " + strconv.Itoa(t.ID) + ".")
 		return
 	}
-	if g.Replay && j == -1 {
-		s.Warning("You are not spectating replay " + strconv.Itoa(g.ID) + ".")
+	if t.Game.Replay && j == -1 {
+		s.Warning("You are not spectating replay " + strconv.Itoa(t.ID) + ".")
 		return
 	}
 
-	if !g.Replay && i != -1 {
-		commandGameUnattendPlayer(s, g, i)
+	if !t.Game.Replay && i != -1 {
+		commandGameUnattendPlayer(s, t, i)
 	} else {
-		commandGameUnattendSpectator(g, j)
+		commandGameUnattendSpectator(t, j)
 	}
 }
 
-func commandGameUnattendPlayer(s *Session, g *Game, i int) {
+func commandGameUnattendPlayer(s *Session, t *Table, i int) {
 	// Set their "present" variable to false, which will turn their name red
-	// (or set them to "AWAY" if the game has not started yet)
-	p := g.Players[i]
+	// (or set them to "AWAY" if the table has not started yet)
+	p := t.GameSpec.Players[i]
 	p.Present = false
 
-	if g.Running {
-		g.NotifyConnected()
+	if t.Game.Running {
+		t.NotifyConnected()
 	} else {
-		g.NotifyPlayerChange()
+		t.NotifyPlayerChange()
 	}
 
-	// They got sent a "tableGone" message earlier (if the game started),
+	// They got sent a "tableGone" message earlier (if the table started),
 	// so send them a new table message
-	s.NotifyTable(g)
+	s.NotifyTable(t)
 }
 
-func commandGameUnattendSpectator(g *Game, j int) {
-	// If this is an ongoing game, create a list of any notes that they wrote
+func commandGameUnattendSpectator(t *Table, j int) {
+	// If this is an ongoing table, create a list of any notes that they wrote
 	cardOrderList := make([]int, 0)
-	if !g.Replay {
-		sp := g.Spectators[j]
+	if !t.Game.Replay {
+		sp := t.Spectators[j]
 		for i, note := range sp.Notes {
 			if note != "" {
 				cardOrderList = append(cardOrderList, i)
@@ -82,24 +82,24 @@ func commandGameUnattendSpectator(g *Game, j int) {
 	}
 
 	// Remove them from the spectators slice
-	g.Spectators = append(g.Spectators[:j], g.Spectators[j+1:]...)
-	notifyAllTable(g)    // Update the spectator list for the row in the lobby
-	g.NotifySpectators() // Update the in-game spectator list
+	t.Spectators = append(t.Spectators[:j], t.Spectators[j+1:]...)
+	notifyAllTable(t)    // Update the spectator list for the row in the lobby
+	t.NotifySpectators() // Update the in-table spectator list
 
-	if g.Replay {
-		if len(g.Spectators) == 0 {
+	if t.Game.Replay {
+		if len(t.Spectators) == 0 {
 			// This was the last person to leave the replay, so delete it
-			log.Info("Ended replay #" + strconv.Itoa(g.ID) + " because everyone left.")
-			delete(games, g.ID)
+			log.Info("Ended replay #" + strconv.Itoa(t.ID) + " because everyone left.")
+			delete(tables, t.ID)
 
 			// Notify everyone that the table was deleted
-			notifyAllTableGone(g)
+			notifyAllTableGone(t)
 		}
 	} else if len(cardOrderList) > 0 {
-		// Since this is a spectator leaving an ongoing game, all of their notes will be deleted
+		// Since this is a spectator leaving an ongoing table, all of their notes will be deleted
 		// Send the other spectators a message about the new list of notes, if any
 		for _, order := range cardOrderList {
-			g.NotifySpectatorsNote(order)
+			t.NotifySpectatorsNote(order)
 		}
 	}
 }

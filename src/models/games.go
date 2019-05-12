@@ -117,13 +117,13 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 	return id, nil
 }
 
-func (*Games) Exists(databaseID int) (bool, error) {
+func (*Games) Exists(gameID int) (bool, error) {
 	var id int
 	if err := db.QueryRow(`
 		SELECT id
 		FROM games
 		WHERE id = ?
-	`, databaseID).Scan(&id); err == sql.ErrNoRows {
+	`, gameID).Scan(&id); err == sql.ErrNoRows {
 		return false, nil
 	} else if err != nil {
 		return false, err

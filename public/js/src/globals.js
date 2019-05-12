@@ -14,7 +14,7 @@ const globals = {
 
     conn: null, // The websocket connection (set in "websocket.js")
 
-    // Contains the settings for the "Settings" tooltip and the "Create Game" tooltip
+    // Contains the settings for the "Settings" tooltip and the "Create Table" tooltip
     settings: {}, // Set upon login
 
     userList: {}, // Set upon login

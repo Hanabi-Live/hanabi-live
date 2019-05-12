@@ -31,28 +31,28 @@ func websocketDisconnect2(s *Session) {
 	// (we do this first so that we don't bother sending them any more notifications)
 	delete(sessions, s.UserID())
 
-	// Look for the disconnecting player in all the games
-	for _, g := range games {
+	// Look for the disconnecting player in all the tables
+	for _, t := range tables {
 		// They could be one of the players (1/2)
-		if !g.Replay && g.GetPlayerIndex(s.UserID()) != -1 {
-			if g.Running {
-				log.Info(g.GetName() + "Unattending player \"" + s.Username() + "\" since they disconnected.")
-				s.Set("currentGame", g.ID)
+		if !t.Game.Replay && t.GameSpec.GetPlayerIndex(s.UserID()) != -1 {
+			if t.Game.Running {
+				log.Info(t.GetName() + "Unattending player \"" + s.Username() + "\" since they disconnected.")
+				s.Set("currentTable", t.ID)
 				s.Set("status", statusPlaying)
 				commandGameUnattend(s, nil)
 			} else {
-				log.Info(g.GetName() + "Ejecting player \"" + s.Username() + "\" from an unstarted game since they disconnected.")
-				s.Set("currentGame", g.ID)
+				log.Info(t.GetName() + "Ejecting player \"" + s.Username() + "\" from an unstarted table since they disconnected.")
+				s.Set("currentTable", t.ID)
 				s.Set("status", statusPregame)
-				commandGameLeave(s, nil)
+				commandTableLeave(s, nil)
 			}
 		}
 
 		// They could be one of the spectators (2/2)
-		if g.GetSpectatorIndex(s.UserID()) != -1 {
-			log.Info(g.GetName() + "Ejecting spectator \"" + s.Username() + "\" since they disconnected.")
-			g.DisconSpectators[s.UserID()] = true
-			s.Set("currentGame", g.ID)
+		if t.GetSpectatorIndex(s.UserID()) != -1 {
+			log.Info(t.GetName() + "Ejecting spectator \"" + s.Username() + "\" since they disconnected.")
+			t.DisconSpectators[s.UserID()] = true
+			s.Set("currentTable", t.ID)
 			s.Set("status", statusSpectating)
 			commandGameUnattend(s, nil)
 		}

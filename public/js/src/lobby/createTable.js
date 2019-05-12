@@ -1,5 +1,5 @@
 /*
-    The "Create Game" nav button
+    The "Create Table" nav button
 */
 
 // Imports
@@ -9,7 +9,7 @@ const misc = require('../misc');
 
 exports.init = () => {
     $(document).ready(() => {
-        // Populate the variant dropdown in the "Create Game" tooltip
+        // Populate the variant dropdown in the "Create Table" tooltip
         for (const variantName of Object.keys(constants.VARIANTS)) {
             const option = new Option(variantName, variantName);
             $('#createTableVariant').append($(option));
@@ -25,45 +25,45 @@ exports.init = () => {
         // checked
         $('#createTableTimed').change(() => {
             if ($('#createTableTimed').prop('checked')) {
-                $('#create-game-timed-label').removeClass('col-3');
-                $('#create-game-timed-label').addClass('col-2');
-                $('#create-game-timed-option-1').show();
-                $('#create-game-timed-option-2').show();
-                $('#create-game-timed-option-3').show();
-                $('#create-game-timed-option-4').show();
+                $('#create-table-timed-label').removeClass('col-3');
+                $('#create-table-timed-label').addClass('col-2');
+                $('#create-table-timed-option-1').show();
+                $('#create-table-timed-option-2').show();
+                $('#create-table-timed-option-3').show();
+                $('#create-table-timed-option-4').show();
             } else {
-                $('#create-game-timed-label').addClass('col-3');
-                $('#create-game-timed-label').removeClass('col-2');
-                $('#create-game-timed-option-1').hide();
-                $('#create-game-timed-option-2').hide();
-                $('#create-game-timed-option-3').hide();
-                $('#create-game-timed-option-4').hide();
+                $('#create-table-timed-label').addClass('col-3');
+                $('#create-table-timed-label').removeClass('col-2');
+                $('#create-table-timed-option-1').hide();
+                $('#create-table-timed-option-2').hide();
+                $('#create-table-timed-option-3').hide();
+                $('#create-table-timed-option-4').hide();
             }
 
             // Redraw the tooltip so that the new elements will fit better
-            $('#nav-buttons-games-create-game').tooltipster('reposition');
+            $('#nav-buttons-tables-create-table').tooltipster('reposition');
         });
         $('#createTableSpeedrun').change(() => {
             if ($('#createTableSpeedrun').prop('checked')) {
-                $('#create-game-timed-row').hide();
-                $('#create-game-timed-row-spacing').hide();
+                $('#create-table-timed-row').hide();
+                $('#create-table-timed-row-spacing').hide();
             } else {
-                $('#create-game-timed-row').show();
-                $('#create-game-timed-row-spacing').show();
+                $('#create-table-timed-row').show();
+                $('#create-table-timed-row-spacing').show();
             }
 
             // Redraw the tooltip so that the new elements will fit better
-            $('#nav-buttons-games-create-game').tooltipster('reposition');
+            $('#nav-buttons-tables-create-table').tooltipster('reposition');
         });
 
-        $('#create-game-tooltip').on('keypress', (event) => {
+        $('#create-table-tooltip').on('keypress', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                $('#create-game-submit').click();
+                $('#create-table-submit').click();
             }
         });
 
-        $('#create-game-submit').on('click', submit);
+        $('#create-table-submit').on('click', submit);
     });
 };
 
@@ -74,15 +74,15 @@ const submit = () => {
     const timePerTurnSeconds = getTextbox('createTableTimePerTurnSeconds');
     const timePerTurn = parseInt(timePerTurnSeconds, 10); // The server expects this in seconds
 
-    // All "Create Game" settings are stored on the server with the exception of passwords;
+    // All "Create Table" settings are stored on the server with the exception of passwords;
     // passwords are stored locally as cookies
     let password = $('#createTablePassword').val();
     localStorage.setItem('createTablePassword', password);
     if (password !== '') {
-        password = hex_sha256(`Hanabi game password ${password}`);
+        password = hex_sha256(`Hanabi table password ${password}`);
     }
 
-    globals.conn.send('gameCreate', {
+    globals.conn.send('tableCreate', {
         name: $('#createTableName').val(), // We don't bother to store the table name
         variant: getTextbox('createTableVariant'),
         timed: getCheckbox('createTableTimed'),
@@ -124,12 +124,12 @@ const checkChanged = (setting, value) => {
     }
 };
 
-// This function is executed every time the "Create Game" button is clicked
+// This function is executed every time the "Create Table" button is clicked
 // (after the tooltip is added to the DOM)
 exports.ready = () => {
     // Fill in the "Name" box
     if (globals.username.startsWith('test')) {
-        $('#createTableName').val('test game');
+        $('#createTableName').val('test table');
     } else {
         $('#createTableName').val(globals.randomName);
 

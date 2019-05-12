@@ -14,9 +14,9 @@ $(document).keydown((event) => {
     // We also account for MacOS special characters that are inserted when
     // you hold down the option key
     if (event.altKey && (event.key === 'c' || event.key === 'ç')) { // Alt + c
-        // Click the "Create Game" button
+        // Click the "Create Table" button
         if (globals.currentScreen === 'lobby') {
-            $('#nav-buttons-games-create-game').click();
+            $('#nav-buttons-games-create-table').click();
         }
     } else if (event.altKey && (event.key === 'h' || event.key === '˙')) { // Alt + h
         // Click the "Show History" button

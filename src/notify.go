@@ -16,18 +16,18 @@ func notifyAllUserLeft(s *Session) {
 	}
 }
 
-func notifyAllTable(g *Game) {
-	if g.Visible {
+func notifyAllTable(t *Table) {
+	if t.Visible {
 		for _, s := range sessions {
-			s.NotifyTable(g)
+			s.NotifyTable(t)
 		}
 	}
 }
 
-func notifyAllTableGone(g *Game) {
-	if g.Visible {
+func notifyAllTableGone(t *Table) {
+	if t.Visible {
 		for _, s := range sessions {
-			s.NotifyTableGone(g)
+			s.NotifyTableGone(t)
 		}
 	}
 }

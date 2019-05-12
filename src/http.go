@@ -97,11 +97,11 @@ func httpInit() {
 	// Path handlers (for the website)
 	httpRouter.GET("/", httpMain)
 	httpRouter.GET("/replay", httpMain)
-	httpRouter.GET("/replay/:gameID", httpMain)
+	httpRouter.GET("/replay/:tableID", httpMain)
 	// (JavaScript will detect the difference by using "window.location.path")
 	httpRouter.GET("/dev", httpDev) // The same as "/" but uses unbundled JavaScript/CSS
 	httpRouter.GET("/dev/replay", httpDev)
-	httpRouter.GET("/dev/replay/:gameID", httpDev)
+	httpRouter.GET("/dev/replay/:tableID", httpDev)
 	httpRouter.GET("/dev2", httpDev) // Used for testing Phaser
 	// (JavaScript will detect the difference by using "window.location.path")
 	httpRouter.GET("/scores", httpScores)
@@ -112,7 +112,7 @@ func httpInit() {
 	httpRouter.GET("/missing-scores/:player", httpScores)
 	httpRouter.GET("/videos", httpVideos)
 	httpRouter.GET("/export", httpExport)
-	httpRouter.GET("/export/:game", httpExport)
+	httpRouter.GET("/export/:table", httpExport)
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
 	httpRouter.StaticFile("/favicon.ico", "./public/img/favicon.png")
 
@@ -210,7 +210,7 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 			strings.HasSuffix(err.Error(), "write: connection timed out") {
 
 			// Some errors are common and expected
-			// (e.g. the user presses the "Stop" button while the template is executing)
+			// (e.t. the user presses the "Stop" button while the template is executing)
 			log.Info("Ordinary error when executing the template: " + err.Error())
 		} else {
 			log.Error("Failed to execute the template: " + err.Error())

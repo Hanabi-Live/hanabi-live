@@ -4,7 +4,7 @@
 	{
 		msg: 'hi',
 		room: 'lobby',
-		// Room can also be "game"
+		// Room can also be "table"
 	}
 */
 
@@ -56,7 +56,7 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	// Validate the room
-	if d.Room != "lobby" && d.Room != "game" {
+	if d.Room != "lobby" && d.Room != "table" {
 		s.Warning("That is not a valid room.")
 		return
 	}
@@ -83,9 +83,9 @@ func commandChat(s *Session, d *CommandData) {
 	text += d.Msg
 	log.Info(text)
 
-	// Handle in-game chat in a different function; the rest of this function will be for lobby chat
-	if d.Room == "game" {
-		commandChatGame(s, d)
+	// Handle in-table chat in a different function; the rest of this function will be for lobby chat
+	if d.Room == "table" {
+		commandChatTable(s, d)
 		return
 	}
 
@@ -140,38 +140,38 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	// Check for commands
-	chatCommand(s, d, nil) // We pass nil as the third argument because there is no associated game
+	chatCommand(s, d, nil) // We pass nil as the third argument because there is no associated table
 }
 
-func commandChatGame(s *Session, d *CommandData) {
-	// If this is a server-generated message, it will have an explicit game ID set
-	gameID := d.GameID
-	if gameID == 0 && s != nil {
-		// Otherwise, retrieve the ID of the game that the user is currently playing
-		gameID = s.CurrentGame()
-	} else if gameID == 0 {
-		log.Error("The \"commandChatGame\" function was called with a game ID of 0.")
+func commandChatTable(s *Session, d *CommandData) {
+	// If this is a server-generated message, it will have an explicit table ID set
+	tableID := d.TableID
+	if tableID == 0 && s != nil {
+		// Otherwise, retrieve the ID of the table that the user is currently playing
+		tableID = s.CurrentTable()
+	} else if tableID == 0 {
+		log.Error("The \"commandChatTable\" function was called with a table ID of 0.")
 		return
 	}
 
-	// Validate that the user is in a game
-	if gameID == -1 {
-		s.Warning("You cannot send game chat if you are not in a game.")
+	// Validate that the user is in a table
+	if tableID == -1 {
+		s.Warning("You cannot send table chat if you are not in a table.")
 		return
 	}
 
-	// Get the corresponding game
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Get the corresponding table
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
 
-	// Validate that this player is in the game or spectating
-	if !d.Server && g.GetPlayerIndex(s.UserID()) == -1 && g.GetSpectatorIndex(s.UserID()) == -1 {
-		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ", so you cannot send chat to it.")
+	// Validate that this player is in the table or spectating
+	if !d.Server && t.GameSpec.GetPlayerIndex(s.UserID()) == -1 && t.GetSpectatorIndex(s.UserID()) == -1 {
+		s.Warning("You are not playing or spectating table " + strconv.Itoa(tableID) + ", so you cannot send chat to it.")
 		return
 	}
 
@@ -180,28 +180,28 @@ func commandChatGame(s *Session, d *CommandData) {
 	if !d.Server && s != nil {
 		userID = s.UserID()
 	}
-	chatMsg := &GameChatMessage{
+	chatMsg := &TableChatMessage{
 		UserID:   userID,
 		Username: d.Username, // This was prepared above in the "commandChat()" function
 		Msg:      d.Msg,
 		Datetime: time.Now(),
 	}
-	g.Chat = append(g.Chat, chatMsg)
+	t.Chat = append(t.Chat, chatMsg)
 
 	// Send it to all of the players and spectators
-	if !g.Replay {
-		for _, p := range g.Players {
+	if !t.Game.Replay {
+		for _, p := range t.GameSpec.Players {
 			if p.Present {
 				p.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
-				g.ChatRead[p.ID] = len(g.Chat)
+				t.ChatRead[p.ID] = len(t.Chat)
 			}
 		}
 	}
-	for _, sp := range g.Spectators {
+	for _, sp := range t.Spectators {
 		sp.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
-		g.ChatRead[sp.ID] = len(g.Chat)
+		t.ChatRead[sp.ID] = len(t.Chat)
 	}
 
 	// Check for commands
-	chatCommand(s, d, g)
+	chatCommand(s, d, t)
 }

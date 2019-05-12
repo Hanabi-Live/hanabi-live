@@ -4,36 +4,36 @@ import (
 	"strconv"
 )
 
-func chatPregameS(s *Session, d *CommandData, g *Game) {
-	automaticStart(s, g, len(g.Players)+1)
+func chatPregameS(s *Session, d *CommandData, t *Table) {
+	automaticStart(s, t, len(t.GameSpec.Players)+1)
 }
 
-func chatPregameS3(s *Session, d *CommandData, g *Game) {
-	automaticStart(s, g, 3)
+func chatPregameS3(s *Session, d *CommandData, t *Table) {
+	automaticStart(s, t, 3)
 }
 
-func chatPregameS4(s *Session, d *CommandData, g *Game) {
-	automaticStart(s, g, 4)
+func chatPregameS4(s *Session, d *CommandData, t *Table) {
+	automaticStart(s, t, 4)
 }
 
-func chatPregameS5(s *Session, d *CommandData, g *Game) {
-	automaticStart(s, g, 5)
+func chatPregameS5(s *Session, d *CommandData, t *Table) {
+	automaticStart(s, t, 5)
 }
 
-func chatPregameS6(s *Session, d *CommandData, g *Game) {
-	automaticStart(s, g, 6)
+func chatPregameS6(s *Session, d *CommandData, t *Table) {
+	automaticStart(s, t, 6)
 }
 
-func automaticStart(s *Session, g *Game, numPlayers int) {
-	if len(g.Players) == numPlayers {
+func automaticStart(s *Session, t *Table, numPlayers int) {
+	if len(t.GameSpec.Players) == numPlayers {
 		commandGameStart(s, nil)
 	} else {
-		g.AutomaticStart = numPlayers
-		chatServerPregameSend("The game will start as soon as "+strconv.Itoa(numPlayers)+" players have joined.", g.ID)
+		t.AutomaticStart = numPlayers
+		chatServerPregameSend("The table will start as soon as "+strconv.Itoa(numPlayers)+" players have joined.", t.ID)
 	}
 }
 
-func chatPregameDiscord(s *Session, d *CommandData, g *Game) {
+func chatPregameDiscord(s *Session, d *CommandData, t *Table) {
 	msg := "Join the Hanabi Discord server: https://discord.gg/FADvkJp"
-	chatServerPregameSend(msg, g.ID)
+	chatServerPregameSend(msg, t.ID)
 }

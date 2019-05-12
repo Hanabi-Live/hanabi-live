@@ -84,14 +84,14 @@ func (s *Session) FirstTimeUser() bool {
 	}
 }
 
-func (s *Session) CurrentGame() int {
+func (s *Session) CurrentTable() int {
 	if s == nil {
-		log.Error("The \"CurrentGame\" method was called for a nil session.")
+		log.Error("The \"CurrentTable\" method was called for a nil session.")
 		return -1
 	}
 
-	if v, exists := s.Get("currentGame"); !exists {
-		log.Error("Failed to get \"currentGame\" from a session.")
+	if v, exists := s.Get("currentTable"); !exists {
+		log.Error("Failed to get \"currentTable\" from a session.")
 		return -1
 	} else {
 		return v.(int)
@@ -173,15 +173,15 @@ func (s *Session) Error(message string) {
 	})
 }
 
-func (s *Session) GetJoinedGame() *Game {
-	for _, g := range games {
-		if g.Replay {
+func (s *Session) GetJoinedTable() *Table {
+	for _, t := range tables {
+		if t.Game.Replay {
 			continue
 		}
 
-		for _, p := range g.Players {
+		for _, p := range t.GameSpec.Players {
 			if p.Name == s.Username() {
-				return g
+				return t
 			}
 		}
 	}

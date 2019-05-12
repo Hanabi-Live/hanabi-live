@@ -52,11 +52,11 @@ exports.init = () => {
     });
 };
 
-exports.passwordShow = (gameID) => {
+exports.passwordShow = (tableID) => {
     $('#lobby').fadeTo(globals.fadeTime, 0.25);
     misc.closeAllTooltips();
 
-    $('#password-modal-id').val(gameID);
+    $('#password-modal-id').val(tableID);
     $('#password-modal').fadeIn(globals.fadeTime);
     $('#password-modal-password').focus();
 };
@@ -64,11 +64,11 @@ exports.passwordShow = (gameID) => {
 const passwordSubmit = () => {
     $('#password-modal').fadeOut(globals.fadeTime);
     $('#lobby').fadeTo(globals.fadeTime, 1);
-    const gameID = parseInt($('#password-modal-id').val(), 10); // The server expects this as a number
+    const tableID = parseInt($('#password-modal-id').val(), 10); // The server expects this as a number
     const passwordPlaintext = $('#password-modal-password').val();
     const password = hex_sha256(`Hanabi game password ${passwordPlaintext}`);
-    globals.conn.send('gameJoin', {
-        gameID,
+    globals.conn.send('tableJoin', {
+        tableID,
         password,
     });
 };

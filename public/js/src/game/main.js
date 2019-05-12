@@ -36,7 +36,7 @@ exports.show = () => {
         globals.ui = new HanabiUI(globals, exports); // eslint-disable-line new-cap
         globals.chatUnread = 0;
     }
-    globals.conn.send('hello');
+    globals.conn.send('gameConnect');
 };
 
 exports.hide = () => {

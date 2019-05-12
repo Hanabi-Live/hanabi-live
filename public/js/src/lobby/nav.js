@@ -14,9 +14,9 @@ exports.init = () => {
         // Initialize all of the navigation tooltips using Tooltipster
         initTooltips();
 
-        // The "Create Game" button
-        $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', lobby.createGame.ready);
-        // (the logic for this tooltip is handled in the "createGame.js" file)
+        // The "Create Table" button
+        $('#nav-buttons-games-create-table').tooltipster('option', 'functionReady', lobby.createTable.ready);
+        // (the logic for this tooltip is handled in the "createTable.js" file)
 
         // The "Show History" button
         $('#nav-buttons-games-history').on('click', () => {
@@ -57,7 +57,7 @@ exports.init = () => {
 
         // The "Leave Game" button
         $('#nav-buttons-pregame-leave').on('click', () => {
-            globals.conn.send('gameLeave');
+            globals.conn.send('tableLeave');
         });
 
         // The "Return to Lobby" button (from the "History" screen)
@@ -74,7 +74,7 @@ exports.init = () => {
 
 const initTooltips = () => {
     const tooltips = [
-        'create-game',
+        'create-table',
         'replay',
         'resources',
         'settings',
@@ -86,7 +86,7 @@ const initTooltips = () => {
         interactive: true,
         delay: 0,
         /*
-            The "create-game" tooltip is too large for very small resolutions and will wrap off the
+            The "create-table" tooltip is too large for very small resolutions and will wrap off the
             screen. We can use a Tooltipster plugin to automatically create a scroll bar for it.
             https://github.com/louisameline/tooltipster-scrollableTip
         */

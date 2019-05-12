@@ -38,7 +38,7 @@ func httpHistory(c *gin.Context) {
 		return
 	}
 
-	// Get the player's entire game history
+	// Get the player's entire table history
 	var history []*models.GameHistory
 	if v, err := db.Games.GetUserHistory(user.ID, 0, 0, true); err != nil {
 		log.Error("Failed to get the history for player \""+user.Username+"\":", err)
@@ -51,23 +51,23 @@ func httpHistory(c *gin.Context) {
 	/*
 		text := ""
 		text += "+-------------------+\n"
-		text += "| Full Game History |\n"
+		text += "| Full Table History |\n"
 		text += "+-------------------+\n"
 		text += "\n"
 
 		if len(history) == 0 {
-			text += "(no games played)\n"
+			text += "(no tables played)\n"
 		}
 
-		for _, g := range history {
-			text += "Game #" + strconv.Itoa(g.ID) + "\n"
-			text += "- " + strconv.Itoa(g.NumPlayers) + " players\n"
-			text += "- Score: " + strconv.Itoa(g.Score) + "\n"
-			text += "- Variant: " + g.Variant + "\n"
-			text += "- Date: " + g.DatetimeFinished.Format("Mon Jan 02 15:04:05 MST 2006") + "\n"
+		for _, t := range history {
+			text += "Table #" + strconv.Itoa(t.ID) + "\n"
+			text += "- " + strconv.Itoa(t.NumPlayers) + " players\n"
+			text += "- Score: " + strconv.Itoa(t.Game.Score) + "\n"
+			text += "- Variant: " + t.Variant + "\n"
+			text += "- Date: " + t.Game.DatetimeFinished.Format("Mon Jan 02 15:04:05 MST 2006") + "\n"
 			// Same as the Linux date command
-			text += "- Other players: " + g.OtherPlayerNames + "\n"
-			text += "- Other scores: " + strconv.Itoa(g.NumSimilar) + "\n"
+			text += "- Other players: " + t.OtherPlayerNames + "\n"
+			text += "- Other scores: " + strconv.Itoa(t.NumSimilar) + "\n"
 			text += "\n"
 		}
 	*/

@@ -33,16 +33,16 @@ func graceful(s *Session, d *CommandData) {
 }
 
 func graceful2() {
-	numGames := countActiveGames()
+	numTables := countActiveTables()
 	log.Info("Initiating a graceful server restart " +
-		"(with " + strconv.Itoa(numGames) + " active games).")
-	if numGames == 0 {
+		"(with " + strconv.Itoa(numTables) + " active tables).")
+	if numTables == 0 {
 		restart2()
 	} else {
 		shuttingDown = true
 		go gracefulWait()
-		chatServerSend("The server will restart when all ongoing games have finished. " +
-			"New game creation has been disabled.")
+		chatServerSend("The server will restart when all ongoing tables have finished. " +
+			"New table creation has been disabled.")
 	}
 }
 
@@ -53,7 +53,7 @@ func gracefulWait() {
 			break
 		}
 
-		if countActiveGames() == 0 {
+		if countActiveTables() == 0 {
 			// Wait 10 seconds so that the players are not immediately booted upon finishing
 			time.Sleep(time.Second * 10)
 
@@ -66,18 +66,18 @@ func gracefulWait() {
 	}
 }
 
-func countActiveGames() int {
-	numGames := 0
-	for _, g := range games {
-		if !g.Running || // Pre-game tables that have not started yet
-			g.Replay { // Solo replays and shared replays
+func countActiveTables() int {
+	numTables := 0
+	for _, t := range tables {
+		if !t.Game.Running || // Pre-game tables that have not started yet
+			t.Game.Replay { // Solo replays and shared replays
 
 			continue
 		}
-		numGames++
+		numTables++
 	}
 
-	return numGames
+	return numTables
 }
 
 func ungraceful(s *Session, d *CommandData) {
@@ -86,7 +86,7 @@ func ungraceful(s *Session, d *CommandData) {
 	}
 
 	shuttingDown = false
-	chatServerSend("Server restart has been canceled. New game creation has been enabled.")
+	chatServerSend("Server restart has been canceled. New table creation has been enabled.")
 }
 
 /*

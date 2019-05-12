@@ -76,32 +76,34 @@ func characterInit() {
 	}
 }
 
-func characterGenerate(g *Game) {
-	if !g.Options.CharacterAssignments {
+func characterGenerate(t *Table) {
+        opt := t.GameSpec.Options
+        players := t.GameSpec.Players
+	if !opt.CharacterAssignments {
 		return
 	}
 
-	// If this is a "!replay" game, use the character selections from the database instead of
+	// If this is a "!replay" table, use the character selections from the database instead of
 	// generating new random ones
-	if g.Options.SetReplay != 0 {
+	if opt.SetReplay != 0 {
 		// Get the players from the database
 		var dbPlayers []*models.Player
-		if v, err := db.Games.GetPlayers(g.Options.SetReplay); err != nil {
-			log.Error("Failed to get the players from the database for game "+strconv.Itoa(g.Options.SetReplay)+":", err)
+		if v, err := db.Games.GetPlayers(opt.SetReplay); err != nil {
+			log.Error("Failed to get the players from the database for table "+strconv.Itoa(opt.SetReplay)+":", err)
 			return
 		} else {
 			dbPlayers = v
 		}
 
 		for i, p := range dbPlayers {
-			g.Players[i].Character = charactersID[p.CharacterAssignment]
-			g.Players[i].CharacterMetadata = p.CharacterMetadata
+			players[i].Character = charactersID[p.CharacterAssignment]
+			players[i].CharacterMetadata = p.CharacterMetadata
 		}
 		return
 	}
 
 	// We don't have to seed the PRNG, since that was done just a moment ago when the deck was shuffled
-	for i, p := range g.Players {
+	for i, p := range players {
 		for {
 			// Get a random character assignment
 			randomIndex := rand.Intn(len(characterNames))
@@ -109,7 +111,7 @@ func characterGenerate(g *Game) {
 
 			// Check to see if any other players have this assignment already
 			alreadyAssigned := false
-			for j, p2 := range g.Players {
+			for j, p2 := range players {
 				if i == j {
 					break
 				}
@@ -123,8 +125,8 @@ func characterGenerate(g *Game) {
 				continue
 			}
 
-			// Check to see if this character is restricted from 2-player games
-			if characters[p.Character].Not2P && len(g.Players) == 2 {
+			// Check to see if this character is restricted from 2-player tables
+			if characters[p.Character].Not2P && len(players) == 2 {
 				continue
 			}
 
@@ -143,13 +145,13 @@ func characterGenerate(g *Game) {
 
 		if p.Character == "Fuming" {
 			// A random number from 0 to the number of colors in this variant
-			p.CharacterMetadata = rand.Intn(len(variants[g.Options.Variant].ClueColors))
+			p.CharacterMetadata = rand.Intn(len(variants[opt.Variant].ClueColors))
 		} else if p.Character == "Dumbfounded" {
 			// A random number from 1 to 5
 			p.CharacterMetadata = rand.Intn(4) + 1
 		} else if p.Character == "Inept" {
 			// A random number from 0 to the number of suits in this variant
-			p.CharacterMetadata = rand.Intn(len(g.Stacks))
+			p.CharacterMetadata = rand.Intn(len(t.Game.Stacks))
 		} else if p.Character == "Awkward" {
 			// A random number from 1 to 5
 			p.CharacterMetadata = rand.Intn(4) + 1
@@ -157,8 +159,8 @@ func characterGenerate(g *Game) {
 	}
 }
 
-func characterValidateAction(s *Session, d *CommandData, g *Game, p *Player) bool {
-	if !g.Options.CharacterAssignments {
+func characterValidateAction(s *Session, d *CommandData, t *Table, p *Player) bool {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return false
 	}
 
@@ -201,8 +203,8 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *Player) boo
 	return false
 }
 
-func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Player) bool {
-	if !g.Options.CharacterAssignments {
+func characterValidateSecondAction(s *Session, d *CommandData, t *Table, p *Player) bool {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return false
 	}
 
@@ -258,13 +260,15 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Playe
 }
 
 // characterCheckClue returns true if the clue cannot be given
-func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
-	if !g.Options.CharacterAssignments {
+func characterCheckClue(s *Session, d *CommandData, t *Table, p *Player) bool {
+        g := t.Game
+        gs := t.GameSpec
+	if !t.GameSpec.Options.CharacterAssignments {
 		return false
 	}
 
 	// Get the target of the clue
-	p2 := g.Players[d.Target]
+	p2 := gs.Players[d.Target]
 
 	if p.Character == "Fuming" &&
 		d.Clue.Type == clueTypeColor &&
@@ -281,7 +285,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		return true
 
 	} else if p.Character == "Inept" {
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, t)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Suit == p.CharacterMetadata {
@@ -291,7 +295,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		}
 
 	} else if p.Character == "Awkward" {
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, t)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Rank == p.CharacterMetadata {
@@ -303,13 +307,13 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		}
 
 	} else if p.Character == "Conservative" &&
-		len(p2.FindCardsTouchedByClue(d.Clue, g)) != 1 {
+		len(p2.FindCardsTouchedByClue(d.Clue, t)) != 1 {
 
 		s.Warning("You are " + p.Character + ", so you can only give clues that touch a single card.")
 		return true
 
 	} else if p.Character == "Greedy" &&
-		len(p2.FindCardsTouchedByClue(d.Clue, g)) < 2 {
+		len(p2.FindCardsTouchedByClue(d.Clue, t)) < 2 {
 
 		s.Warning("You are " + p.Character + ", so you can only give clues that touch 2+ cards.")
 		return true
@@ -325,7 +329,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 
 	} else if p.Character == "Spiteful" {
 		leftIndex := p.Index + 1
-		if leftIndex == len(g.Players) {
+		if leftIndex == len(t.GameSpec.Players) {
 			leftIndex = 0
 		}
 		if d.Target == leftIndex {
@@ -336,7 +340,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 	} else if p.Character == "Insolent" {
 		rightIndex := p.Index - 1
 		if rightIndex == -1 {
-			rightIndex = len(g.Players) - 1
+			rightIndex = len(t.GameSpec.Players) - 1
 		}
 		if d.Target == rightIndex {
 			s.Warning("You are " + p.Character + ", so you cannot clue the player to your right.")
@@ -344,14 +348,14 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		}
 
 	} else if p.Character == "Miser" &&
-		g.Clues < 4 {
+		t.Game.Clues < 4 {
 
 		s.Warning("You are " + p.Character + ", so you cannot give a clue unless there are 4 or more clues available.")
 		return true
 
 	} else if p.Character == "Compulsive" &&
-		!p2.IsFirstCardTouchedByClue(d.Clue, g) &&
-		!p2.IsLastCardTouchedByClue(d.Clue, g) {
+		!p2.IsFirstCardTouchedByClue(d.Clue, t) &&
+		!p2.IsLastCardTouchedByClue(d.Clue, t) {
 
 		text := "You are " + p.Character + ", so you can only give a clue if it touches either the "
 		text += "newest or oldest card in a hand."
@@ -374,10 +378,10 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 			return true
 		}
 
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, t)
 		touchedInsistentCards := false
 		for _, order := range cardsTouched {
-			c := g.Deck[order]
+			c := t.Game.Deck[order]
 			if c.InsistentTouched {
 				touchedInsistentCards = true
 				break
@@ -414,7 +418,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 			Type:  clueTypeColor,
 			Value: d.Clue.Value - 1,
 		}
-		cardsTouched := p2.FindCardsTouchedByClue(clue, g)
+		cardsTouched := p2.FindCardsTouchedByClue(clue, t)
 		if len(cardsTouched) == 0 {
 			s.Warning("You are " + p.Character + ", so both versions of the clue must touch at least 1 card in the hand.")
 			return true
@@ -440,8 +444,8 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 }
 
 // characterCheckPlay returns true if the card cannot be played
-func characterCheckPlay(s *Session, d *CommandData, g *Game, p *Player) bool {
-	if !g.Options.CharacterAssignments {
+func characterCheckPlay(s *Session, d *CommandData, t *Table, p *Player) bool {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return false
 	}
 
@@ -456,15 +460,15 @@ func characterCheckPlay(s *Session, d *CommandData, g *Game, p *Player) bool {
 }
 
 // characterCheckMisplay returns true if the card should misplay
-func characterCheckMisplay(g *Game, p *Player, c *Card) bool {
-	if !g.Options.CharacterAssignments {
+func characterCheckMisplay(t *Table, p *Player, c *Card) bool {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return false
 	}
 
 	if p.Character == "Follower" {
 		// Look through the stacks to see if two cards of this rank have already been played
 		numPlayedOfThisRank := 0
-		for _, s := range g.Stacks {
+		for _, s := range t.Game.Stacks {
 			if s >= c.Rank {
 				numPlayedOfThisRank++
 			}
@@ -478,25 +482,26 @@ func characterCheckMisplay(g *Game, p *Player, c *Card) bool {
 }
 
 // characterCheckDiscard returns true if the player cannot currently discard
-func characterCheckDiscard(s *Session, g *Game, p *Player) bool {
-	if !g.Options.CharacterAssignments {
+func characterCheckDiscard(s *Session, t *Table, p *Player) bool {
+        clues := t.Game.Clues
+	if !t.GameSpec.Options.CharacterAssignments {
 		return false
 	}
 
 	if p.Character == "Anxious" &&
-		g.Clues%2 == 0 { // Even amount of clues
+		clues%2 == 0 { // Even amount of clues
 
 		s.Warning("You are " + p.Character + ", so you cannot discard when there is an even number of clues available.")
 		return true
 
 	} else if p.Character == "Traumatized" &&
-		g.Clues%2 == 1 { // Odd amount of clues
+		clues%2 == 1 { // Odd amount of clues
 
 		s.Warning("You are " + p.Character + ", so you cannot discard when there is an odd number of clues available.")
 		return true
 
 	} else if p.Character == "Wasteful" &&
-		g.Clues >= 2 {
+		clues >= 2 {
 
 		s.Warning("You are " + p.Character + ", so you cannot discard if there are 2 or more clues available.")
 		return true
@@ -505,21 +510,21 @@ func characterCheckDiscard(s *Session, g *Game, p *Player) bool {
 	return false
 }
 
-func characterPostClue(d *CommandData, g *Game, p *Player) {
-	if !g.Options.CharacterAssignments {
+func characterPostClue(d *CommandData, t *Table, p *Player) {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return
 	}
 
 	// Get the target of the clue
-	p2 := g.Players[d.Target]
+	p2 := t.GameSpec.Players[d.Target]
 
 	if p.Character == "Mood Swings" {
 		p.CharacterMetadata = d.Clue.Type
 	} else if p.Character == "Insistent" {
 		// Mark that the cards that they clued must be continue to be clued
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, t)
 		for _, order := range cardsTouched {
-			c := g.Deck[order]
+			c := t.Game.Deck[order]
 			c.InsistentTouched = true
 		}
 	}
@@ -529,15 +534,15 @@ func characterPostClue(d *CommandData, g *Game, p *Player) {
 		p2.CharacterMetadata = 0
 
 	} else if p2.Character == "Impulsive" &&
-		p2.IsFirstCardTouchedByClue(d.Clue, g) {
+		p2.IsFirstCardTouchedByClue(d.Clue, t) {
 
 		// Store that they had their slot 1 card clued
 		p2.CharacterMetadata = 0
 	}
 }
 
-func characterPostRemove(g *Game, p *Player, c *Card) {
-	if !g.Options.CharacterAssignments {
+func characterPostRemove(t *Table, p *Player, c *Card) {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return
 	}
 
@@ -553,7 +558,7 @@ func characterPostRemove(g *Game, p *Player, c *Card) {
 
 	// Find the "Insistent" player and reset their state so that
 	// they are not forced to give a clue on their subsequent turn
-	for _, p2 := range g.Players {
+	for _, p2 := range t.GameSpec.Players {
 		if characters[p2.Character].Name == "Insistent" {
 			p2.CharacterMetadata = -1
 			break // Only one player should be Insistent
@@ -561,8 +566,8 @@ func characterPostRemove(g *Game, p *Player, c *Card) {
 	}
 }
 
-func characterPostAction(d *CommandData, g *Game, p *Player) {
-	if !g.Options.CharacterAssignments {
+func characterPostAction(d *CommandData, t *Table, p *Player) {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return
 	}
 
@@ -578,11 +583,11 @@ func characterPostAction(d *CommandData, g *Game, p *Player) {
 			p.CharacterMetadata = -1
 		}
 	} else if p.Character == "Contrarian" {
-		g.TurnsInverted = !g.TurnsInverted
+		t.Game.TurnsInverted = !t.Game.TurnsInverted
 	}
 
 	// Store the last action that was performed
-	for _, p2 := range g.Players {
+	for _, p2 := range t.GameSpec.Players {
 		name2 := characters[p2.Character].Name
 		if name2 == "Stubborn" {
 			p2.CharacterMetadata = d.Type
@@ -590,8 +595,8 @@ func characterPostAction(d *CommandData, g *Game, p *Player) {
 	}
 }
 
-func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
-	if !g.Options.CharacterAssignments {
+func characterTakingSecondTurn(d *CommandData, t *Table, p *Player) bool {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return false
 	}
 
@@ -616,7 +621,7 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 		if p.CharacterMetadata == -1 {
 			p.CharacterMetadata = d.Target
 			p.CharacterMetadata2 = d.Clue.Value - 1
-			g.Clues++ // The second clue given should not cost a clue
+			t.Game.Clues++ // The second clue given should not cost a clue
 			return true
 		}
 		p.CharacterMetadata = -1
@@ -629,7 +634,7 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 		// After discarding, discards again if there are 4 clues or less
 		// "p.CharacterMetadata" represents the state, which alternates between -1 and 0
 		if p.CharacterMetadata == -1 &&
-			g.Clues <= 4 {
+			t.Game.Clues <= 4 {
 
 			p.CharacterMetadata = 0
 			return true
@@ -643,45 +648,46 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 	return false
 }
 
-func characterShuffle(g *Game, p *Player) {
-	if !g.Options.CharacterAssignments {
+func characterShuffle(t *Table, p *Player) {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return
 	}
 
 	if p.Character == "Forgetful" {
-		p.ShuffleHand(g)
+		p.ShuffleHand(t)
 	}
 }
 
-func characterHideCard(a *ActionDraw, g *Game, p *Player) bool {
-	if !g.Options.CharacterAssignments {
+func characterHideCard(a *ActionDraw, t *Table, p *Player) bool {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return false
 	}
 
-	if p.Character == "Blind Spot" && a.Who == p.GetLeftPlayer(g) {
+	if p.Character == "Blind Spot" && a.Who == p.GetLeftPlayer(t) {
 		return true
-	} else if p.Character == "Oblivious" && a.Who == p.GetRightPlayer(g) {
+	} else if p.Character == "Oblivious" && a.Who == p.GetRightPlayer(t) {
 		return true
 	}
 
 	return false
 }
 
-func characterAdjustEndTurn(g *Game) {
-	if !g.Options.CharacterAssignments {
+func characterAdjustEndTurn(t *Table) {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return
 	}
 
 	// Check to see if anyone is playing as a character that will adjust the final go-around of the table
-	for _, p := range g.Players {
+	for _, p := range t.GameSpec.Players {
 		if p.Character == "Contrarian" {
-			g.EndTurn = g.Turn + 2
+			t.Game.EndTurn = t.Game.Turn + 2
 		}
 	}
 }
 
-func characterCheckSoftlock(g *Game, p *Player) {
-	if !g.Options.CharacterAssignments {
+func characterCheckSoftlock(t *Table, p *Player) {
+        g := t.Game
+	if !t.GameSpec.Options.CharacterAssignments {
 		return
 	}
 
@@ -696,17 +702,17 @@ func characterCheckSoftlock(g *Game, p *Player) {
 		Type: "text",
 		Text: text,
 	})
-	g.NotifyAction()
+	t.NotifyAction()
 }
 
-func characterEmptyClueAllowed(d *CommandData, g *Game, p *Player) bool {
-	if !g.Options.CharacterAssignments {
+func characterEmptyClueAllowed(d *CommandData, t *Table, p *Player) bool {
+	if !t.GameSpec.Options.CharacterAssignments {
 		return false
 	}
 
-	if p.Character == "Blind Spot" && d.Target == p.GetLeftPlayer(g) {
+	if p.Character == "Blind Spot" && d.Target == p.GetLeftPlayer(t) {
 		return true
-	} else if p.Character == "Oblivious" && d.Target == p.GetRightPlayer(g) {
+	} else if p.Character == "Oblivious" && d.Target == p.GetRightPlayer(t) {
 		return true
 	}
 

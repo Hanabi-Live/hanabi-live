@@ -1,9 +1,9 @@
 /*
-	Sent when the user pauses or unpauses the game
+	Sent when the user pauses or unpauses the table
 	"data" example:
 	{
 		value: 'pause', // Can also be 'unpause', 'pause-queue', 'pause-unqueue'
-		// ('pause-queue' will automatically pause the game when it gets to their turn)
+		// ('pause-queue' will automatically pause the table when it gets to their turn)
 	}
 */
 
@@ -19,50 +19,50 @@ func commandPause(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the game exists
-	gameID := s.CurrentGame()
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := s.CurrentTable()
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
 
-	// Validate that the game has started
-	if !g.Running {
-		s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
+	// Validate that the table has started
+	if !t.Game.Running {
+		s.Warning("Table " + strconv.Itoa(tableID) + " has not started yet.")
 		return
 	}
 
-	// Validate that they are in the game
-	i := g.GetPlayerIndex(s.UserID())
+	// Validate that they are in the table
+	i := t.GameSpec.GetPlayerIndex(s.UserID())
 	if i == -1 {
-		s.Warning("You are in not game " + strconv.Itoa(gameID) + ", so you cannot send a note.")
+		s.Warning("You are in not table " + strconv.Itoa(tableID) + ", so you cannot send a note.")
 		return
 	}
-	p := g.Players[i]
+	p := t.GameSpec.Players[i]
 
-	// Validate that it is a timed game
-	if !g.Options.Timed {
-		s.Warning("This is not a timed game, so you cannot pause / unpause.")
+	// Validate that it is a timed table
+	if !t.GameSpec.Options.Timed {
+		s.Warning("This is not a timed table, so you cannot pause / unpause.")
 		return
 	}
 
 	// If a player requests a queued pause on their turn, turn it into a normal pause
-	if d.Value == "pause-queue" && g.ActivePlayer == i {
+	if d.Value == "pause-queue" && t.Game.ActivePlayer == i {
 		d.Value = "pause"
 	}
 
 	// Validate the value
 	if d.Value == "pause" {
-		if g.Paused {
-			s.Warning("The game is already paused.")
+		if t.Game.Paused {
+			s.Warning("The table is already paused.")
 			return
 		}
 	} else if d.Value == "unpause" {
-		if !g.Paused {
-			s.Warning("The game is not paused, so you cannot unpause.")
+		if !t.Game.Paused {
+			s.Warning("The table is not paused, so you cannot unpause.")
 			return
 		}
 	} else if d.Value == "pause-queue" {
@@ -94,33 +94,33 @@ func commandPause(s *Session, d *CommandData) {
 	}
 
 	if d.Value == "pause" {
-		g.Paused = true
-		g.PauseTime = time.Now()
-		g.PauseCount++
-		g.PausePlayer = i
+		t.Game.Paused = true
+		t.Game.PauseTime = time.Now()
+		t.Game.PauseCount++
+		t.Game.PausePlayer = i
 	} else if d.Value == "unpause" {
-		g.Paused = false
+		t.Game.Paused = false
 
 		// Add the time elapsed during the pause to the time recorded when the turn began
 		// (because we use this as a differential to calculate how much time the player took when
 		// they end their turn)
-		g.TurnBeginTime = g.TurnBeginTime.Add(time.Since(g.PauseTime))
+		t.Game.TurnBeginTime = t.Game.TurnBeginTime.Add(time.Since(t.Game.PauseTime))
 
 		// Send everyone new clock values
-		g.NotifyTime()
+		t.NotifyTime()
 
 		// Restart the function that will check to see if the current player has run out of time
-		// (since the existing function will return and do nothing if the game is paused)
-		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayer])
+		// (since the existing function will return and do nothing if the table is paused)
+		go t.CheckTimer(t.Game.Turn, t.Game.PauseCount, t.GameSpec.Players[t.Game.ActivePlayer])
 	}
 
-	g.NotifyPause()
+	t.NotifyPause()
 
 	// Also send a chat message about it
 	msg := s.Username() + " "
-	if g.Paused {
+	if t.Game.Paused {
 		msg += "un"
 	}
-	msg += "paused the game."
-	chatServerPregameSend(msg, g.ID)
+	msg += "paused the table."
+	chatServerPregameSend(msg, t.ID)
 }

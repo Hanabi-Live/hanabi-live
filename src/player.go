@@ -28,49 +28,49 @@ type Player struct {
 	CharacterMetadata2 int
 }
 
-func (p *Player) InitTime(g *Game) {
-	// In non-timed games, start each player with 0 "time left"
+func (p *Player) InitTime(t *Table) {
+	// In non-timed tables, start each player with 0 "time left"
 	// It will decrement into negative numbers to show how much time they are taking
 	p.Time = time.Duration(0)
-	if g.Options.Timed {
-		p.Time = time.Duration(g.Options.BaseTime) * time.Second
+	if t.GameSpec.Options.Timed {
+		p.Time = time.Duration(t.GameSpec.Options.BaseTime) * time.Second
 	}
 }
 
 /*
-	Main functions, relating to in-game actions
+	Main functions, relating to in-table actions
 */
 
 // GiveClue returns false if the clue is illegal
-func (p *Player) GiveClue(d *CommandData, g *Game) {
-	p2 := g.Players[d.Target] // The target of the clue
-	cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
+func (p *Player) GiveClue(d *CommandData, t *Table) {
+	p2 := t.GameSpec.Players[d.Target] // The target of the clue
+	cardsTouched := p2.FindCardsTouchedByClue(d.Clue, t)
 
 	// Mark that the cards have been touched
 	for _, order := range cardsTouched {
-		c := g.Deck[order]
+		c := t.Game.Deck[order]
 		c.Touched = true
 	}
 
 	// Keep track that someone clued (i.e. doing 1 clue costs 1 "Clue Token")
-	g.Clues--
-	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
+	t.Game.Clues--
+	if strings.HasPrefix(t.GameSpec.Options.Variant, "Clue Starved") {
 		// In the "Clue Starved" variants, you only get 0.5 clues per discard
 		// This is represented on the server by having each clue take two clues
 		// On the client, clues are shown to the user to be divided by two
-		g.Clues--
+		t.Game.Clues--
 	}
 
 	// Send the "notify" message about the clue
-	g.Actions = append(g.Actions, ActionClue{
+	t.Game.Actions = append(t.Game.Actions, ActionClue{
 		Type:   "clue",
 		Clue:   d.Clue,
 		Giver:  p.Index,
 		List:   cardsTouched,
 		Target: d.Target,
-		Turn:   g.Turn,
+		Turn:   t.Game.Turn,
 	})
-	g.NotifyAction()
+	t.NotifyAction()
 
 	// Send the "message" message about the clue
 	text := p.Name + " tells " + p2.Name + " about "
@@ -87,14 +87,14 @@ func (p *Player) GiveClue(d *CommandData, g *Game) {
 	if d.Clue.Type == clueTypeRank {
 		text += strconv.Itoa(d.Clue.Value)
 	} else if d.Clue.Type == clueTypeColor {
-		text += variants[g.Options.Variant].ClueColors[d.Clue.Value]
+		text += variants[t.GameSpec.Options.Variant].ClueColors[d.Clue.Value]
 	}
 	if len(cardsTouched) != 1 {
 		text += "s"
 	}
 
-	if strings.HasPrefix(g.Options.Variant, "Cow & Pig") ||
-		strings.HasPrefix(g.Options.Variant, "Duck") {
+	if strings.HasPrefix(t.GameSpec.Options.Variant, "Cow & Pig") ||
+		strings.HasPrefix(t.GameSpec.Options.Variant, "Duck") {
 
 		// Create a list of slot numbers that correspond to the cards touched
 		slots := make([]string, 0)
@@ -104,7 +104,7 @@ func (p *Player) GiveClue(d *CommandData, g *Game) {
 		sort.Strings(slots)
 
 		text = p.Name + " "
-		if strings.HasPrefix(g.Options.Variant, "Cow & Pig") {
+		if strings.HasPrefix(t.GameSpec.Options.Variant, "Cow & Pig") {
 			// We want color clues to correspond to the first animal since color buttons are above
 			// number buttons, even though rank comes first in the enum
 			if d.Clue.Type == clueTypeRank {
@@ -112,7 +112,7 @@ func (p *Player) GiveClue(d *CommandData, g *Game) {
 			} else if d.Clue.Type == clueTypeColor {
 				text += "moos"
 			}
-		} else if strings.HasPrefix(g.Options.Variant, "Duck") {
+		} else if strings.HasPrefix(t.GameSpec.Options.Variant, "Duck") {
 			text += "quacks"
 		}
 		text += " at " + p2.Name + "'"
@@ -122,97 +122,97 @@ func (p *Player) GiveClue(d *CommandData, g *Game) {
 		text += " slot " + strings.Join(slots, "/")
 
 		// Also play a custom sound effect
-		if strings.HasPrefix(g.Options.Variant, "Duck") {
-			g.Sound = "quack"
+		if strings.HasPrefix(t.GameSpec.Options.Variant, "Duck") {
+			t.Game.Sound = "quack"
 		}
 	}
 
-	g.Actions = append(g.Actions, ActionText{
+	t.Game.Actions = append(t.Game.Actions, ActionText{
 		Type: "text",
 		Text: text,
 	})
-	g.NotifyAction()
-	log.Info(g.GetName() + text)
+	t.NotifyAction()
+	log.Info(t.GetName() + text)
 
 	// Do post-clue tasks
-	characterPostClue(d, g, p)
+	characterPostClue(d, t, p)
 }
 
-func (p *Player) RemoveCard(target int, g *Game) *Card {
+func (p *Player) RemoveCard(target int, t *Table) *Card {
 	// Get the target card
 	i := p.GetCardIndex(target)
 	c := p.Hand[i]
 
 	// Mark what the "slot" number is
-	// e.g. slot 1 is the newest (left-most) card, which is index 5 (in a 3 player game)
+	// e.t. slot 1 is the newest (left-most) card, which is index 5 (in a 3 player table)
 	c.Slot = p.GetCardSlot(target)
 
 	// Remove it from the hand
 	p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
 
-	characterPostRemove(g, p, c)
+	characterPostRemove(t, p, c)
 
 	return c
 }
 
 // PlayCard returns true if it is a "double discard" situation
 // (which can only occur if the card fails to play)
-func (p *Player) PlayCard(g *Game, c *Card) bool {
+func (p *Player) PlayCard(t *Table, c *Card) bool {
 	// Find out if this successfully plays
 	var failed bool
-	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+	if strings.HasPrefix(t.GameSpec.Options.Variant, "Up or Down") {
 		// In the "Up or Down" variants, cards do not play in order
-		failed = variantUpOrDownPlay(g, c)
+		failed = variantUpOrDownPlay(t.Game, c)
 	} else {
-		failed = c.Rank != g.Stacks[c.Suit]+1
+		failed = c.Rank != t.Game.Stacks[c.Suit]+1
 	}
 
 	// Handle "Detrimental Character Assignment" restrictions
-	if characterCheckMisplay(g, p, c) { // (this returns true if it should misplay)
+	if characterCheckMisplay(t, p, c) { // (this returns true if it should misplay)
 		failed = true
 	}
 
 	// Handle if the card does not play
 	if failed {
 		c.Failed = true
-		g.Strikes++
+		t.Game.Strikes++
 
 		// Mark that the blind-play streak has ended
-		g.BlindPlays = 0
+		t.Game.BlindPlays = 0
 
 		// Increase the misplay streak
-		g.Misplays++
-		if g.Misplays > 2 {
+		t.Game.Misplays++
+		if t.Game.Misplays > 2 {
 			// There is no sound effect for more than 2 misplays in a row
-			g.Misplays = 2
+			t.Game.Misplays = 2
 		}
-		g.Sound = "fail" + strconv.Itoa(g.Misplays)
+		t.Game.Sound = "fail" + strconv.Itoa(t.Game.Misplays)
 
 		// Send the "notify" message about the strike
-		g.Actions = append(g.Actions, ActionStrike{
+		t.Game.Actions = append(t.Game.Actions, ActionStrike{
 			Type:  "strike",
-			Num:   g.Strikes,
-			Turn:  g.Turn,
+			Num:   t.Game.Strikes,
+			Turn:  t.Game.Turn,
 			Order: c.Order,
 		})
-		g.NotifyAction()
+		t.NotifyAction()
 
-		return p.DiscardCard(g, c)
+		return p.DiscardCard(t, c)
 	}
 
 	// Handle successful card plays
 	c.Played = true
-	g.Score++
-	g.Stacks[c.Suit] = c.Rank
+	t.Game.Score++
+	t.Game.Stacks[c.Suit] = c.Rank
 	if c.Rank == 0 {
-		g.Stacks[c.Suit] = -1 // A rank 0 card is the "START" card
+		t.Game.Stacks[c.Suit] = -1 // A rank 0 card is the "START" card
 	}
 
 	// Mark that the misplay streak has ended
-	g.Misplays = 0
+	t.Game.Misplays = 0
 
 	// Send the "notify" message about the play
-	g.Actions = append(g.Actions, ActionPlay{
+	t.Game.Actions = append(t.Game.Actions, ActionPlay{
 		Type: "play",
 		Which: Which{
 			Index: p.Index,
@@ -221,10 +221,10 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 			Order: c.Order,
 		},
 	})
-	g.NotifyAction()
+	t.NotifyAction()
 
 	// Send the "message" about the play
-	text := p.Name + " plays " + c.Name(g) + " from "
+	text := p.Name + " plays " + c.Name(t) + " from "
 	if c.Slot == -1 {
 		text += "the deck"
 	} else {
@@ -232,57 +232,57 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 	}
 	if c.Touched {
 		// Mark that the blind-play streak has ended
-		g.BlindPlays = 0
+		t.Game.BlindPlays = 0
 	} else {
 		text += " (blind)"
-		g.BlindPlays++
-		if g.BlindPlays > 4 {
+		t.Game.BlindPlays++
+		if t.Game.BlindPlays > 4 {
 			// There is no sound effect for more than 4 blind plays in a row
-			g.BlindPlays = 4
+			t.Game.BlindPlays = 4
 		}
-		g.Sound = "blind" + strconv.Itoa(g.BlindPlays)
+		t.Game.Sound = "blind" + strconv.Itoa(t.Game.BlindPlays)
 	}
-	g.Actions = append(g.Actions, ActionText{
+	t.Game.Actions = append(t.Game.Actions, ActionText{
 		Type: "text",
 		Text: text,
 	})
-	g.NotifyAction()
-	log.Info(g.GetName() + text)
+	t.NotifyAction()
+	log.Info(t.GetName() + text)
 
 	// Give the team a clue if the final card of the suit was played
 	// (this will always be a 5 unless it is a custom variant)
 	extraClue := c.Rank == 5
 
 	// Handle custom variants that do not play in order from 1 to 5
-	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		extraClue = (c.Rank == 5 || c.Rank == 1) && g.StackDirections[c.Suit] == stackDirectionFinished
+	if strings.HasPrefix(t.GameSpec.Options.Variant, "Up or Down") {
+		extraClue = (c.Rank == 5 || c.Rank == 1) && t.Game.StackDirections[c.Suit] == stackDirectionFinished
 	}
 
 	if extraClue {
-		g.Clues++
+		t.Game.Clues++
 
 		// The extra clue is wasted if the team is at the maximum amount of clues already
 		clueLimit := maxClues
-		if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
+		if strings.HasPrefix(t.GameSpec.Options.Variant, "Clue Starved") {
 			clueLimit *= 2
 		}
-		if g.Clues > clueLimit {
-			g.Clues = clueLimit
+		if t.Game.Clues > clueLimit {
+			t.Game.Clues = clueLimit
 		}
 	}
 
 	// Update the progress
-	progress := float64(g.Score) / float64(g.MaxScore) * 100 // In percent
-	g.Progress = int(math.Round(progress))                   // Round it to the nearest integer
+	progress := float64(t.Game.Score) / float64(t.Game.MaxScore) * 100 // In percent
+	t.Game.Progress = int(math.Round(progress))                   // Round it to the nearest integer
 
 	// In some variants, playing a card has the potential to reduce the maximum score
-	newMaxScore := g.GetMaxScore()
-	if newMaxScore < g.MaxScore {
-		// Decrease the maximum score possible for this game
-		g.MaxScore = newMaxScore
+	newMaxScore := t.Game.GetMaxScore()
+	if newMaxScore < t.Game.MaxScore {
+		// Decrease the maximum score possible for this table
+		t.Game.MaxScore = newMaxScore
 
 		// Play a sad sound
-		g.Sound = "sad"
+		t.Game.Sound = "sad"
 	}
 
 	// This is not a "double discard" situation, since the card successfully played
@@ -290,11 +290,11 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 }
 
 // DiscardCard returns true if it is a "double discard" situation
-func (p *Player) DiscardCard(g *Game, c *Card) bool {
+func (p *Player) DiscardCard(t *Table, c *Card) bool {
 	// Mark that the card is discarded
 	c.Discarded = true
 
-	g.Actions = append(g.Actions, ActionDiscard{
+	t.Game.Actions = append(t.Game.Actions, ActionDiscard{
 		Type:   "discard",
 		Failed: c.Failed,
 		Which: Which{
@@ -304,7 +304,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 			Order: c.Order,
 		},
 	})
-	g.NotifyAction()
+	t.NotifyAction()
 
 	text := p.Name + " "
 	if c.Failed {
@@ -312,7 +312,7 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 	} else {
 		text += "discards"
 	}
-	text += " " + c.Name(g) + " from "
+	text += " " + c.Name(t) + " from "
 	if c.Slot == -1 {
 		text += "the deck"
 	} else {
@@ -325,75 +325,75 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 		text += " (blind)"
 	}
 
-	g.Actions = append(g.Actions, ActionText{
+	t.Game.Actions = append(t.Game.Actions, ActionText{
 		Type: "text",
 		Text: text,
 	})
-	g.NotifyAction()
-	log.Info(g.GetName() + text)
+	t.NotifyAction()
+	log.Info(t.GetName() + text)
 
 	// This could have been a discard (or misplay) or a card needed to get the maximum score
-	newMaxScore := g.GetMaxScore()
-	if newMaxScore < g.MaxScore {
-		// Decrease the maximum score possible for this game
-		g.MaxScore = newMaxScore
+	newMaxScore := t.Game.GetMaxScore()
+	if newMaxScore < t.Game.MaxScore {
+		// Decrease the maximum score possible for this table
+		t.Game.MaxScore = newMaxScore
 
 		// Play a sad sound
 		// (don't play the custom sound on a misplay,
 		// since the misplay sound will already indicate that an error has occurred)
 		if !c.Failed {
-			g.Sound = "sad"
+			t.Game.Sound = "sad"
 		}
 	}
 
 	// This could be a double discard situation if there is only one other copy of this card
 	// and it needs to be played
-	total, discarded := g.GetSpecificCardNum(c.Suit, c.Rank)
-	doubleDiscard := total == discarded+1 && c.NeedsToBePlayed(g)
+	total, discarded := t.Game.GetSpecificCardNum(c.Suit, c.Rank)
+	doubleDiscard := total == discarded+1 && c.NeedsToBePlayed(t)
 
 	// Return whether or not this is a "double discard" situation
 	return doubleDiscard
 }
 
-func (p *Player) DrawCard(g *Game) {
+func (p *Player) DrawCard(t *Table) {
 	// Don't draw any more cards if the deck is empty
-	if g.DeckIndex >= len(g.Deck) {
+	if t.Game.DeckIndex >= len(t.Game.Deck) {
 		return
 	}
 
 	// Put it in the player's hand
-	c := g.Deck[g.DeckIndex]
-	g.DeckIndex++
+	c := t.Game.Deck[t.Game.DeckIndex]
+	t.Game.DeckIndex++
 	p.Hand = append(p.Hand, c)
 
-	g.Actions = append(g.Actions, ActionDraw{
+	t.Game.Actions = append(t.Game.Actions, ActionDraw{
 		Type:  "draw",
 		Who:   p.Index,
 		Rank:  c.Rank,
 		Suit:  c.Suit,
 		Order: c.Order,
 	})
-	if g.Running {
-		g.NotifyAction()
+	if t.Game.Running {
+		t.NotifyAction()
 	}
 
 	// Check to see if that was the last card drawn
-	if g.DeckIndex >= len(g.Deck) {
-		// Mark the turn upon which the game will end
-		g.EndTurn = g.Turn + len(g.Players) + 1
-		characterAdjustEndTurn(g)
-		log.Info(g.GetName() + "Marking to end the game on turn: " + strconv.Itoa(g.EndTurn))
+	if t.Game.DeckIndex >= len(t.Game.Deck) {
+		// Mark the turn upon which the table will end
+		t.Game.EndTurn = t.Game.Turn + len(t.GameSpec.Players) + 1
+		characterAdjustEndTurn(t)
+		log.Info(t.GetName() + "Marking to end the table on turn: " + strconv.Itoa(t.Game.EndTurn))
 	}
 }
 
-func (p *Player) PlayDeck(g *Game) {
+func (p *Player) PlayDeck(t *Table) {
 	// Make the player draw the final card in the deck
-	p.DrawCard(g)
+	p.DrawCard(t)
 
 	// Play the card freshly drawn
-	c := p.RemoveCard(len(g.Deck)-1, g) // The final card
+	c := p.RemoveCard(len(t.Game.Deck)-1, t) // The final card
 	c.Slot = -1
-	p.PlayCard(g, c)
+	p.PlayCard(t, c)
 }
 
 /*
@@ -402,10 +402,10 @@ func (p *Player) PlayDeck(g *Game) {
 
 // FindCardsTouchedByClue returns a slice of card orders
 // (in this context, "orders" are the card positions in the deck, not in the hand)
-func (p *Player) FindCardsTouchedByClue(clue Clue, g *Game) []int {
+func (p *Player) FindCardsTouchedByClue(clue Clue, t *Table) []int {
 	list := make([]int, 0)
 	for _, c := range p.Hand {
-		if variantIsCardTouched(g.Options.Variant, clue, c) {
+		if variantIsCardTouched(t.GameSpec.Options.Variant, clue, c) {
 			list = append(list, c.Order)
 		}
 	}
@@ -413,14 +413,14 @@ func (p *Player) FindCardsTouchedByClue(clue Clue, g *Game) []int {
 	return list
 }
 
-func (p *Player) IsFirstCardTouchedByClue(clue Clue, g *Game) bool {
+func (p *Player) IsFirstCardTouchedByClue(clue Clue, t *Table) bool {
 	card := p.Hand[len(p.Hand)-1]
-	return variantIsCardTouched(g.Options.Variant, clue, card)
+	return variantIsCardTouched(t.GameSpec.Options.Variant, clue, card)
 }
 
-func (p *Player) IsLastCardTouchedByClue(clue Clue, g *Game) bool {
+func (p *Player) IsLastCardTouchedByClue(clue Clue, t *Table) bool {
 	card := p.Hand[0]
-	return variantIsCardTouched(g.Options.Variant, clue, card)
+	return variantIsCardTouched(t.GameSpec.Options.Variant, clue, card)
 }
 
 func (p *Player) InHand(order int) bool {
@@ -444,7 +444,7 @@ func (p *Player) GetCardIndex(order int) int {
 }
 
 func (p *Player) GetCardSlot(order int) int {
-	// Slot 1 is the newest (left-most) card, which is at index 4 (in a 3 player game)
+	// Slot 1 is the newest (left-most) card, which is at index 4 (in a 3 player table)
 	for i, c := range p.Hand {
 		if c.Order == order {
 			return len(p.Hand) - i
@@ -455,18 +455,18 @@ func (p *Player) GetCardSlot(order int) int {
 }
 
 // GetLeftPlayer returns the index of the player that is sitting to this player's left
-func (p *Player) GetLeftPlayer(g *Game) int {
-	return (p.Index + 1) % len(g.Players)
+func (p *Player) GetLeftPlayer(t *Table) int {
+	return (p.Index + 1) % len(t.GameSpec.Players)
 }
 
 // GetRightPlayer returns the index of the player that is sitting to this player's right
-func (p *Player) GetRightPlayer(g *Game) int {
+func (p *Player) GetRightPlayer(t *Table) int {
 	// In Golang, "%" will give the remainder and not the modulus,
 	// so we need to ensure that the result is not negative or we will get a "index out of range" error below
-	return (p.Index - 1 + len(g.Players)) % len(g.Players)
+	return (p.Index - 1 + len(t.GameSpec.Players)) % len(t.GameSpec.Players)
 }
 
-func (p *Player) ShuffleHand(g *Game) {
+func (p *Player) ShuffleHand(t *Table) {
 	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
 	rand.Seed(time.Now().UTC().UnixNano())
 	for i := range p.Hand {
@@ -489,10 +489,10 @@ func (p *Player) ShuffleHand(g *Game) {
 	}
 
 	// Notify everyone about the shuffling
-	g.Actions = append(g.Actions, ActionReorder{
+	t.Game.Actions = append(t.Game.Actions, ActionReorder{
 		Type:      "reorder",
 		Target:    p.Index,
 		HandOrder: handOrder,
 	})
-	g.NotifyAction()
+	t.NotifyAction()
 }

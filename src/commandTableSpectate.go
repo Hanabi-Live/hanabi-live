@@ -7,7 +7,7 @@
 
 	"data" example:
 	{
-		gameID: 15103,
+		tableID: 15103,
 		player: "Zamiel", // Optional
 		// If the player is specified, they will spectate from that player's perspective
 	}
@@ -19,35 +19,35 @@ import (
 	"strconv"
 )
 
-func commandGameSpectate(s *Session, d *CommandData) {
+func commandTableSpectate(s *Session, d *CommandData) {
 	/*
 		Validation
 	*/
 
-	// Validate that the game exists
-	gameID := d.ID
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := d.TableID
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
 
-	// Validate that the game has started
-	if !g.Running {
-		s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
+	// Validate that the table has started
+	if !t.Game.Running {
+		s.Warning("Table " + strconv.Itoa(tableID) + " has not started yet.")
 		return
 	}
 
-	// Validate that they are not already spectating a game
-	for _, g2 := range games {
+	// Validate that they are not already spectating a table
+	for _, g2 := range tables {
 		for _, sp := range g2.Spectators {
 			if sp.ID == s.UserID() {
-				if g2.ID == g.ID {
-					s.Warning("You are already spectating this game.")
+				if g2.ID == t.ID {
+					s.Warning("You are already spectating this table.")
 				} else {
-					s.Warning("You are already spectating another game.")
+					s.Warning("You are already spectating another table.")
 				}
 				return
 			}
@@ -58,12 +58,12 @@ func commandGameSpectate(s *Session, d *CommandData) {
 	// (if provided, they want to spectate from a specific player's perspective)
 	playerIndex := -1
 	if d.Player != "" {
-		if g.Replay {
+		if t.Game.Replay {
 			s.Warning("You cannot provide a player index to a replay.")
 			return
 		}
 
-		for i, p := range g.Players {
+		for i, p := range t.GameSpec.Players {
 			if p.Name == d.Player {
 				playerIndex = i
 				break
@@ -79,10 +79,10 @@ func commandGameSpectate(s *Session, d *CommandData) {
 		Spectate / Join Solo Replay / Join Shared Replay
 	*/
 
-	if g.Replay {
-		log.Info(g.GetName() + "User \"" + s.Username() + "\" joined.")
+	if t.Game.Replay {
+		log.Info(t.GetName() + "User \"" + s.Username() + "\" joined.")
 	} else {
-		log.Info(g.GetName() + "User \"" + s.Username() + "\" spectated.")
+		log.Info(t.GetName() + "User \"" + s.Username() + "\" spectated.")
 	}
 
 	// Add them to the spectators object
@@ -92,17 +92,17 @@ func commandGameSpectate(s *Session, d *CommandData) {
 		Session:     s,
 		Shadowing:   playerIndex != -1,
 		PlayerIndex: playerIndex,
-		Notes:       make([]string, len(g.Deck)),
+		Notes:       make([]string, len(t.Game.Deck)),
 	}
-	g.Spectators = append(g.Spectators, sp)
-	notifyAllTable(g)    // Update the spectator list for the row in the lobby
-	g.NotifySpectators() // Update the in-game spectator list
+	t.Spectators = append(t.Spectators, sp)
+	notifyAllTable(t)    // Update the spectator list for the row in the lobby
+	t.NotifySpectators() // Update the in-table spectator list
 
 	// Set their status
-	s.Set("currentGame", g.ID)
+	s.Set("currentTable", t.ID)
 	status := statusSpectating
-	if g.Replay {
-		if g.Visible {
+	if t.Game.Replay {
+		if t.Visible {
 			status = statusSharedReplay
 		} else {
 			status = statusReplay
@@ -112,5 +112,5 @@ func commandGameSpectate(s *Session, d *CommandData) {
 	notifyAllUser(s)
 
 	// Send them a "gameStart" message
-	s.NotifyGameStart()
+	s.NotifyTableStart()
 }

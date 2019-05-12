@@ -1,6 +1,6 @@
 /*
-	Sent when the user is in a shared replay of a speedrun game
-	and wants to start a new game with the same settings as the current game
+	Sent when the user is in a shared replay of a speedrun table
+	and wants to start a new table with the same settings as the current table
 	"data" is empty
 */
 
@@ -15,55 +15,55 @@ func commandGameRestart(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the game exists
-	gameID := s.CurrentGame()
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := s.CurrentTable()
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
 
 	// Validate that this is a shared replay
-	if !g.Replay || !g.Visible {
-		s.Warning("Game " + strconv.Itoa(gameID) + " is not a shared replay, so you cannot send a restart action.")
+	if !t.Game.Replay || !t.Visible {
+		s.Warning("Table " + strconv.Itoa(tableID) + " is not a shared replay, so you cannot send a restart action.")
 		return
 	}
 
 	// Validate that this person is leading the shared replay
-	if s.UserID() != g.Owner {
-		s.Warning("You cannot restart a game unless you are the leader.")
+	if s.UserID() != t.Owner {
+		s.Warning("You cannot restart a table unless you are the leader.")
 		return
 	}
 
 	// Validate that there are at least two people in the shared replay
-	if len(g.Spectators) < 2 {
-		s.Warning("You cannot restart a game unless there are at least two people in it.")
+	if len(t.Spectators) < 2 {
+		s.Warning("You cannot restart a table unless there are at least two people in it.")
 		return
 	}
 
-	// Validate that all of the players who played the game are currently spectating
+	// Validate that all of the players who played the table are currently spectating
 	// the shared replay
 	playerSessions := make([]*Session, 0)
 	spectatorSessions := make([]*Session, 0)
-	for _, sp := range g.Spectators {
-		playedInOriginalGame := false
-		for _, p := range g.Players {
+	for _, sp := range t.Spectators {
+		playedInOriginalTable := false
+		for _, p := range t.GameSpec.Players {
 			if p.Name == sp.Name {
-				playedInOriginalGame = true
+				playedInOriginalTable = true
 				break
 			}
 		}
-		if playedInOriginalGame {
+		if playedInOriginalTable {
 			playerSessions = append(playerSessions, sp.Session)
 		} else {
 			spectatorSessions = append(spectatorSessions, sp.Session)
 		}
 	}
-	if len(playerSessions) != len(g.Players) {
-		s.Warning("Not all of the players from the original game are in the shared replay, " +
-			"so you cannot restart the game.")
+	if len(playerSessions) != len(t.GameSpec.Players) {
+		s.Warning("Not all of the players from the original table are in the shared replay, " +
+			"so you cannot restart the table.")
 		return
 	}
 
@@ -72,9 +72,9 @@ func commandGameRestart(s *Session, d *CommandData) {
 	*/
 
 	// Force the client of all of the spectators to go back to the lobby
-	g.NotifyBoot()
+	t.NotifyBoot()
 
-	// On the server side, all of the spectators will still be in the game,
+	// On the server side, all of the spectators will still be in the table,
 	// so manually disconnect everybody
 	for _, s2 := range playerSessions {
 		commandGameUnattend(s2, nil)
@@ -84,48 +84,48 @@ func commandGameRestart(s *Session, d *CommandData) {
 	}
 
 	// The shared replay should now be deleted, since all of the players have left
-	// Now, emulate the game owner creating a new game
-	commandGameCreate(s, &CommandData{
-		Name:                 getName(), // Generate a random name for the new game
-		Variant:              g.Options.Variant,
-		Timed:                g.Options.Timed,
-		BaseTime:             g.Options.BaseTime,
-		TimePerTurn:          g.Options.TimePerTurn,
-		Speedrun:             g.Options.Speedrun,
-		DeckPlays:            g.Options.DeckPlays,
-		EmptyClues:           g.Options.EmptyClues,
-		CharacterAssignments: g.Options.CharacterAssignments,
+	// Now, emulate the table owner creating a new table
+	commandTableCreate(s, &CommandData{
+		Name:                 getName(), // Generate a random name for the new table
+		Variant:              t.GameSpec.Options.Variant,
+		Timed:                t.GameSpec.Options.Timed,
+		BaseTime:             t.GameSpec.Options.BaseTime,
+		TimePerTurn:          t.GameSpec.Options.TimePerTurn,
+		Speedrun:             t.GameSpec.Options.Speedrun,
+		DeckPlays:            t.GameSpec.Options.DeckPlays,
+		EmptyClues:           t.GameSpec.Options.EmptyClues,
+		CharacterAssignments: t.GameSpec.Options.CharacterAssignments,
 	})
 
-	// We increment the newGameID after creating a game,
-	// so assume that the ID of the last game created is equal to the "newGameID" minus 1
-	ID := newGameID - 1
-	g2 := games[ID]
+	// We increment the newTableID after creating a table,
+	// so assume that the ID of the last table created is equal to the "newTableID" minus 1
+	prevTableID := newTableID - 1
+	g2 := tables[prevTableID]
 
-	// Copy over the chat from the previous game, if any
-	g2.Chat = g.Chat
-	for k, v := range g.ChatRead {
+	// Copy over the chat from the previous table, if any
+	g2.Chat = t.Chat
+	for k, v := range t.ChatRead {
 		g2.ChatRead[k] = v
 	}
 
-	// Emulate the other players joining the game
+	// Emulate the other players joining the table
 	for _, s2 := range playerSessions {
 		if s2.UserID() == s.UserID() {
-			// The creator of the game does not need to join
+			// The creator of the table does not need to join
 			continue
 		}
-		commandGameJoin(s2, &CommandData{
-			ID: ID,
+		commandTableJoin(s2, &CommandData{
+			TableID: prevTableID,
 		})
 	}
 
-	// Emulate the game owner clicking on the "Start Game" button
+	// Emulate the table owner clicking on the "Start Table" button
 	commandGameStart(s, nil)
 
 	// Automatically join any other spectators that were watching
 	for _, s2 := range spectatorSessions {
-		commandGameSpectate(s2, &CommandData{
-			ID: ID,
+		commandTableSpectate(s2, &CommandData{
+			TableID: prevTableID,
 		})
 	}
 }

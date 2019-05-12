@@ -2,7 +2,8 @@ package main
 
 type CommandData struct {
 	// various
-	ID int `json:"gameID"`
+	TableID int `json:"tableID"`
+	GameID int `json:"gameID"`
 
 	// setting
 	Value string `json:"value"`
@@ -11,7 +12,7 @@ type CommandData struct {
 	Msg  string `json:"msg"`
 	Room string `json:"room"`
 
-	// gameCreate
+	// tableCreate
 	Name                 string `json:"name"`
 	Password             string `json:"password"`
 	Variant              string `json:"variant"`
@@ -34,7 +35,7 @@ type CommandData struct {
 	Note  string `json:"note"`
 	Order int    `json:"order"`
 
-	// gameSpectate
+	// tableSpectate
 	Player string `json:"player"` // Optional
 
 	// replayCreate
@@ -70,7 +71,6 @@ type CommandData struct {
 	DiscordID            string   // Used when echoing a message from Discord to the lobby
 	DiscordDiscriminator string   // Used when echoing a message from Discord to the lobby
 	Args                 []string // Used to pass chat command arguments to a chat command handler
-	GameID               int      // Used to pass the game ID to a chat command handler
 }
 type Clue struct {
 	Type  int `json:"type"`
@@ -85,14 +85,11 @@ var (
 // Define all of the WebSocket commands
 func commandInit() {
 	// Lobby commands
-	commandMap["gameCreate"] = commandGameCreate
-	commandMap["gameJoin"] = commandGameJoin
-	commandMap["gameLeave"] = commandGameLeave
-	commandMap["gameUnattend"] = commandGameUnattend
-	commandMap["gameReattend"] = commandGameReattend
-	commandMap["gameAbandon"] = commandGameAbandon
-	commandMap["gameSpectate"] = commandGameSpectate
-	commandMap["gameRestart"] = commandGameRestart
+	commandMap["tableCreate"] = commandTableCreate
+	commandMap["tableJoin"] = commandTableJoin
+	commandMap["tableLeave"] = commandTableLeave
+	commandMap["tableSpectate"] = commandTableSpectate
+
 	commandMap["setting"] = commandSetting
 	commandMap["chat"] = commandChat
 	commandMap["chatRead"] = commandChatRead
@@ -104,8 +101,13 @@ func commandInit() {
 	commandMap["replayCreate"] = commandReplayCreate
 
 	// Game commands
-	commandMap["hello"] = commandHello
-	commandMap["ready"] = commandReady
+	commandMap["gameConnect"] = commandHello
+	commandMap["gameUnattend"] = commandGameUnattend
+	commandMap["gameReattend"] = commandGameReattend
+	commandMap["gameAbandon"] = commandGameAbandon
+	commandMap["gameRestart"] = commandGameRestart
+
+	commandMap["loadedUI"] = commandActions
 	commandMap["action"] = commandAction
 	commandMap["note"] = commandNote
 	commandMap["pause"] = commandPause
