@@ -15,8 +15,8 @@ const ui = require('./ui');
 // Define a command handler map
 const commands = {};
 
-commands.action = (data) => {
-    globals.lastAction = data;
+commands.allowedActions = (data) => {
+    globals.prevAllowedActions = data;
     ui.handleAction(data);
 
     if (globals.animateFast) {

@@ -180,8 +180,8 @@ func (s *Session) NotifyConnected(g *Game) {
 
 // NotifyAction will send someone an "action" message
 // This is sent at the beginning of their turn and lists the allowed actions on this turn
-func (s *Session) NotifyAction(g *Game) {
-	type ActionMessage struct {
+func (s *Session) NotifyAllowedActions(g *Game) {
+	type AllowedActionsMessage struct {
 		CanClue          bool `json:"canClue"`
 		CanDiscard       bool `json:"canDiscard"`
 		CanBlindPlayDeck bool `json:"canBlindPlayDeck"`
@@ -190,7 +190,7 @@ func (s *Session) NotifyAction(g *Game) {
 	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
 		canClue = g.Clues >= 2
 	}
-	s.Emit("action", &ActionMessage{
+	s.Emit("allowedActions", &AllowedActionsMessage{
 		CanClue:          canClue,
 		CanDiscard:       g.Clues != maxClues,
 		CanBlindPlayDeck: g.Options.DeckPlays && g.DeckIndex == len(g.Deck)-1,

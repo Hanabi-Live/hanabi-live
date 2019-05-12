@@ -381,8 +381,8 @@ func commandAction(s *Session, d *CommandData) {
 		return
 	}
 
-	// Send the "action" message to the next player
-	np.Session.NotifyAction(g)
+	// Send the "allowed actions" message to the next player
+	np.Session.NotifyAllowedActions(g)
 
 	// Send every user connected an update about this table
 	// (this is sort of wasteful but is necessary for users to see if it is
