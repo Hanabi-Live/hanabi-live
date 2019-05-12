@@ -7,15 +7,17 @@ const constants = require('../constants');
 const globals = require('../globals');
 const lobby = require('./main');
 
-$(document).ready(() => {
-    $('#lobby-history-show-more').on('click', () => {
-        globals.historyClicked = true;
-        globals.conn.send('historyGet', {
-            offset: Object.keys(globals.historyList).length,
-            amount: 10,
+exports.init = () => {
+    $(document).ready(() => {
+        $('#lobby-history-show-more').on('click', () => {
+            globals.historyClicked = true;
+            globals.conn.send('historyGet', {
+                offset: Object.keys(globals.historyList).length,
+                amount: 10,
+            });
         });
     });
-});
+};
 
 exports.show = () => {
     globals.currentScreen = 'history';

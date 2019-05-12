@@ -5,14 +5,16 @@
 // Imports
 const globals = require('../globals');
 
-$(document).ready(() => {
-    initDraggableDiv(document.getElementById('game-chat-modal'));
-    initResizableDiv('.resizable');
+exports.init = () => {
+    $(document).ready(() => {
+        initDraggableDiv(document.getElementById('game-chat-modal'));
+        initResizableDiv('.resizable');
 
-    $('#game-chat-modal-header-close').click(() => {
-        hide();
+        $('#game-chat-modal-header-close').click(() => {
+            hide();
+        });
     });
-});
+};
 
 exports.toggle = () => {
     const modal = $('#game-chat-modal');

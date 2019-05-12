@@ -5,9 +5,11 @@
 // Imports
 const globals = require('../globals');
 
-$(document).ready(() => {
-    preload();
-});
+exports.init = () => {
+    $(document).ready(() => {
+        preload();
+    });
+};
 
 exports.play = (file) => {
     const path = `/public/sounds/${file}.mp3`;

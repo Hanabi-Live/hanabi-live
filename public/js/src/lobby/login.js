@@ -7,43 +7,45 @@ const globals = require('../globals');
 const lobby = require('./main');
 const websocket = require('../websocket');
 
-$(document).ready(() => {
-    $('#login-button').click(() => {
-        $('#login-form').submit();
-    });
-    $('#login-form').on('keypress', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
+exports.init = () => {
+    $(document).ready(() => {
+        $('#login-button').click(() => {
             $('#login-form').submit();
+        });
+        $('#login-form').on('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                $('#login-form').submit();
+            }
+        });
+        $('#login-form').submit(submit);
+
+        // Make the tooltip for the Discord icon at the bottom of the screen
+        let discordContent = 'Discord is a voice and text chat application that you can run in a ';
+        discordContent += 'browser.<br />If the server is down, you can probably find out why in the ';
+        discordContent += 'Hanabi server / chat room.';
+        $('#title-discord').tooltipster({
+            theme: 'tooltipster-shadow',
+            delay: 0,
+            content: discordContent,
+            contentAsHTML: true,
+        });
+
+        // Check to see if we have accepted the Firefox warning
+        // (cookies are strings, so we cannot check for equality)
+        if (globals.browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
+            $('#sign-in').hide();
+            $('#firefox-warning').show();
         }
-    });
-    $('#login-form').submit(submit);
+        $('#firefox-warning-button').click(() => {
+            localStorage.setItem('acceptedFirefoxWarning', 'true');
+            $('#firefox-warning').hide();
+            $('#sign-in').show();
+        });
 
-    // Make the tooltip for the Discord icon at the bottom of the screen
-    let discordContent = 'Discord is a voice and text chat application that you can run in a ';
-    discordContent += 'browser.<br />If the server is down, you can probably find out why in the ';
-    discordContent += 'Hanabi server / chat room.';
-    $('#title-discord').tooltipster({
-        theme: 'tooltipster-shadow',
-        delay: 0,
-        content: discordContent,
-        contentAsHTML: true,
+        automaticLogin();
     });
-
-    // Check to see if we have accepted the Firefox warning
-    // (cookies are strings, so we cannot check for equality)
-    if (globals.browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
-        $('#sign-in').hide();
-        $('#firefox-warning').show();
-    }
-    $('#firefox-warning-button').click(() => {
-        localStorage.setItem('acceptedFirefoxWarning', 'true');
-        $('#firefox-warning').hide();
-        $('#sign-in').show();
-    });
-
-    automaticLogin();
-});
+};
 
 const submit = (event) => {
     // By default, the form will reload the page, so stop this from happening

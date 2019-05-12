@@ -6,20 +6,22 @@
 const globals = require('../globals');
 const misc = require('../misc');
 
-$(document).ready(() => {
-    // Make the text box appear and disappear depending on which source is selected
-    $('#replay-source-id').change(replaySourceChange);
-    $('#replay-source-json').change(replaySourceChange);
+exports.init = () => {
+    $(document).ready(() => {
+        // Make the text box appear and disappear depending on which source is selected
+        $('#replay-source-id').change(replaySourceChange);
+        $('#replay-source-json').change(replaySourceChange);
 
-    $('#replay-tooltip').on('keypress', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            $('#replay-submit').click();
-        }
+        $('#replay-tooltip').on('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                $('#replay-submit').click();
+            }
+        });
+
+        $('#replay-submit').on('click', submit);
     });
-
-    $('#replay-submit').on('click', submit);
-});
+};
 
 const replaySourceChange = () => {
     if ($('#replay-source-id').prop('checked')) {
