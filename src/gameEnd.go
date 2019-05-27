@@ -181,7 +181,7 @@ func (t *Table) End() {
 			Variant:          opt.Variant,
 			OtherPlayerNames: otherPlayerNames,
 		})
-		p.Session.NotifyTableHistory(h, true)
+		p.Session.NotifyGameHistory(h, true)
 		// The second argument tells the client to increment the total number of tables played
 	}
 
@@ -467,5 +467,5 @@ func (t *Table) ConvertToSharedReplay() {
 	}
 
 	notifyAllTable(t)    // Update the spectator list for the row in the lobby
-	t.NotifySpectators() // Update the in-table spectator list
+	t.NotifySpectators() // Update the game view spectator list
 }

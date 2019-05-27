@@ -1,6 +1,6 @@
 /*
-	Sends table actions to a user once their UI has been initialized
-	"data" is empty
+	Sends game actions to a user once their UI has been initialized.
+	"data" is empty.
 */
 
 package main
@@ -24,7 +24,7 @@ func commandActions(s *Session, d *CommandData) {
 		t = v
 	}
 
-	// Validate that the table has started
+	// Validate that the game has started
 	if !t.Game.Running {
 		s.Warning("Table " + strconv.Itoa(tableID) + " has not started yet.")
 		return
@@ -46,7 +46,7 @@ func commandActions(s *Session, d *CommandData) {
 	// Check to see if we need to remove some card information
 	var scrubbedActions []interface{}
 	if !t.Game.Replay && (i > -1 || (j > -1 && t.Spectators[j].Shadowing)) {
-		// The person requesting the table state is one of the active players
+		// The person requesting the game state is one of the active players
 		// (or a spectator shadowing one of the active players),
 		// so we need to hide some information
 		var p *Player
@@ -65,12 +65,12 @@ func commandActions(s *Session, d *CommandData) {
 			scrubbedActions = append(scrubbedActions, a)
 		}
 	} else {
-		// The person requesting the table state is not an active player,
+		// The person requesting the game state is not an active player,
 		// so we don't need to hide any information
 		scrubbedActions = t.Game.Actions
 	}
 
-	// Send a "notify" message for every action of the table
+	// Send a "notify" message for every action of the game
 	s.Emit("actions", &scrubbedActions)
 
 	// If it is their turn, send an "action" message
@@ -82,9 +82,9 @@ func commandActions(s *Session, d *CommandData) {
         // This only matters if in replay
 	s.Emit("initUIIfInReplay", nil)
 
-	// Check if the table is still in progress
+	// Check if the game is still in progress
 	if t.Game.Replay {
-		// Since the table is over, send them the notes from all the players & spectators
+		// Since the game is over, send them the notes from all the players & spectators
 		s.NotifyNoteList(t)
 	} else {
 		// Send them the current connection status of the players
@@ -93,7 +93,7 @@ func commandActions(s *Session, d *CommandData) {
 		// Send them the current time for all player's clocks
 		s.NotifyTime(t)
 
-		// If this is the first turn, send them a sound so that they know the table started
+		// If this is the first turn, send them a sound so that they know the game started
 		if t.Game.Turn == 0 {
 			s.NotifySound(t, i)
 		}

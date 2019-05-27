@@ -174,7 +174,7 @@ func (t *Table) NotifyTurn() {
 	t.NotifyAction()
 }
 
-// NotifyAction sends the people in the table an update about the new action
+// NotifyAction sends everyone at the table an update about the new action
 // This is only called in situations where the table has started
 func (t *Table) NotifyAction() {
         g := t.Game
@@ -183,18 +183,18 @@ func (t *Table) NotifyAction() {
 		return
 	}
 
-	// Get the last action of the table
+	// Get the last action of the game
 	a := g.Actions[len(t.Game.Actions)-1]
 
 	for _, p := range t.GameSpec.Players {
 		if p.Present {
-			p.Session.NotifyTableAction(a, t, p)
+			p.Session.NotifyGameAction(a, t, p)
 		}
 	}
 
 	// Also send the spectators an update
 	for _, sp := range t.Spectators {
-		sp.Session.NotifyTableAction(a, t, nil)
+		sp.Session.NotifyGameAction(a, t, nil)
 	}
 }
 

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	// When sending the in-table chat history,
+	// When sending the table chat history,
 	// only send the last X messages to prevent clients from becoming overloaded
 	// (in case someone maliciously spams a lot of messages)
 	chatLimit = 1000
@@ -260,7 +260,7 @@ func chatSendPastFromDatabase(s *Session, room string, count int) {
 	}
 	s.Emit("chatList", &ChatListMessage{
 		List:   msgs,
-		Unread: 0, // This is only used for in-table chat
+		Unread: 0, // This is only used for table chat
 	})
 }
 

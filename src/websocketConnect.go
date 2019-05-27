@@ -166,7 +166,7 @@ func websocketConnect(ms *melody.Session) {
 		history = v
 	}
 	history = historyFillVariants(history)
-	s.NotifyTableHistory(history, false)
+	s.NotifyGameHistory(history, false)
 
 	// Send a "table" message for every current table
 	for _, t := range tables {

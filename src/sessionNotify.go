@@ -120,9 +120,9 @@ func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, 
 	s.Emit("chat", chatMakeMessage(msg, who, discord, server, datetime, room))
 }
 
-// NotifyTableHistory will send a user a subset of their past tables
-func (s *Session) NotifyTableHistory(h []*models.GameHistory, incrementNumTables bool) {
-	type TableHistoryMessage struct {
+// Sends a user a subset of their past tables
+func (s *Session) NotifyGameHistory(h []*models.GameHistory, incrementNumGames bool) {
+	type GameHistoryMessage struct {
 		ID                int       `json:"id"`
 		NumPlayers        int       `json:"numPlayers"`
 		NumSimilar        int       `json:"numSimilar"`
@@ -130,11 +130,11 @@ func (s *Session) NotifyTableHistory(h []*models.GameHistory, incrementNumTables
 		Score             int       `json:"score"`
 		DatetimeFinished  time.Time `json:"datetime"`
 		Variant           string    `json:"variant"`
-		IncrementNumTables bool      `json:"incrementNumTables"`
+		IncrementNumGames bool      `json:"incrementNumTables"`
 	}
-	m := make([]*TableHistoryMessage, 0)
+	m := make([]*GameHistoryMessage, 0)
 	for _, g := range h {
-		m = append(m, &TableHistoryMessage{
+		m = append(m, &GameHistoryMessage{
 			ID:                g.ID,
 			NumPlayers:        g.NumPlayers,
 			NumSimilar:        g.NumSimilar,
@@ -142,7 +142,7 @@ func (s *Session) NotifyTableHistory(h []*models.GameHistory, incrementNumTables
 			Score:             g.Score,
 			DatetimeFinished:  g.DatetimeFinished,
 			Variant:           g.Variant,
-			IncrementNumTables: incrementNumTables,
+			IncrementNumGames: incrementNumGames,
 		})
 	}
 	s.Emit("gameHistory", &m)
@@ -158,7 +158,7 @@ func (s *Session) NotifyTableStart() {
 }
 
 /*
-	In-table notify functions
+	Game notify functions
 */
 
 // NotifyConnected will send someone a list corresponding to which players are connected
@@ -198,7 +198,7 @@ func (s *Session) NotifyAllowedActions(t *Table) {
 	})
 }
 
-func (s *Session) NotifyTableAction(a interface{}, t *Table, p *Player) {
+func (s *Session) NotifyGameAction(a interface{}, t *Table, p *Player) {
 	// Check to see if we need to remove some card information
 	drawAction, ok := a.(ActionDraw)
 	if ok && drawAction.Type == "draw" {

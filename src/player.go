@@ -38,7 +38,7 @@ func (p *Player) InitTime(t *Table) {
 }
 
 /*
-	Main functions, relating to in-table actions
+	Main functions, relating to game actions
 */
 
 // GiveClue returns false if the clue is illegal
@@ -144,7 +144,7 @@ func (p *Player) RemoveCard(target int, t *Table) *Card {
 	c := p.Hand[i]
 
 	// Mark what the "slot" number is
-	// e.t. slot 1 is the newest (left-most) card, which is index 5 (in a 3 player table)
+	// e.g. slot 1 is the newest (left-most) card, which is index 5 (in a 3 player table)
 	c.Slot = p.GetCardSlot(target)
 
 	// Remove it from the hand

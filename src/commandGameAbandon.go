@@ -24,7 +24,7 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		t = v
 	}
 
-	// Validate that they are in the table
+	// Validate that they are in the game
 	i := t.GameSpec.GetPlayerIndex(s.UserID())
 	if i == -1 {
 		s.Warning("You are in not table " + strconv.Itoa(tableID) + ", so you cannot abandon it.")
@@ -55,7 +55,7 @@ func commandGameAbandon(s *Session, d *CommandData) {
 
 	// Add a text message for the termination
 	// and put it on its own turn so that it is separate from the final times
-	text := s.Username() + " terminated the table!"
+	text := s.Username() + " terminated the game!"
 	t.Game.Actions = append(t.Game.Actions, ActionText{
 		Type: "text",
 		Text: text,
@@ -64,7 +64,7 @@ func commandGameAbandon(s *Session, d *CommandData) {
 	t.Game.Turn++
 	t.NotifyTurn()
 
-	// Play a sound to indicate that the table was terminated
+	// Play a sound to indicate that the game was terminated
 	t.Game.Sound = "finished_fail"
 	t.NotifySound()
 

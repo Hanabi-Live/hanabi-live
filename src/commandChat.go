@@ -83,7 +83,7 @@ func commandChat(s *Session, d *CommandData) {
 	text += d.Msg
 	log.Info(text)
 
-	// Handle in-table chat in a different function; the rest of this function will be for lobby chat
+	// Handle table chat in a different function; the rest of this function will be for lobby chat
 	if d.Room == "table" {
 		commandChatTable(s, d)
 		return
@@ -156,7 +156,7 @@ func commandChatTable(s *Session, d *CommandData) {
 
 	// Validate that the user is in a table
 	if tableID == -1 {
-		s.Warning("You cannot send table chat if you are not in a table.")
+		s.Warning("You cannot send table chat if you are not at a table.")
 		return
 	}
 
@@ -171,7 +171,7 @@ func commandChatTable(s *Session, d *CommandData) {
 
 	// Validate that this player is in the table or spectating
 	if !d.Server && t.GameSpec.GetPlayerIndex(s.UserID()) == -1 && t.GetSpectatorIndex(s.UserID()) == -1 {
-		s.Warning("You are not playing or spectating table " + strconv.Itoa(tableID) + ", so you cannot send chat to it.")
+		s.Warning("You are not at table " + strconv.Itoa(tableID) + ", so you cannot send chat to it.")
 		return
 	}
 

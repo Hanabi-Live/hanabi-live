@@ -56,7 +56,7 @@ func commandGameStart(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate extra things for "!replay" tables
+	// Validate extra things for "!replay" games
 	if t.GameSpec.Options.SetReplay != 0 {
 		// Validate that the right amount of players is in the table
 		if numPlayers, err := db.Games.GetNumPlayers(t.GameSpec.Options.SetReplay); err != nil {

@@ -28,7 +28,7 @@ type Game struct {
 	Strikes         int
 	// Different actions will have different fields
 	// Thus, Actions is a slice of different action types
-	// Furthermore, we don'g want this to be a pointer of interfaces because
+	// Furthermore, we don't want this to be a pointer of interfaces because
 	// this simplifies action scrubbing
 	Actions       []interface{}
 	Sound         string
@@ -84,7 +84,7 @@ func (g *Game) InitDeck() {
 				g.Deck = append(g.Deck, &Card{
 					Suit: suit,
 					Rank: rank,
-					// We can'g set the order here because the deck will be shuffled later
+					// We can't set the order here because the deck will be shuffled later
 				})
 			}
 		}
