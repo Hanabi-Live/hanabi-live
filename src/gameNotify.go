@@ -269,7 +269,6 @@ func (t *Table) NotifySpectators() {
 }
 
 func (t *Table) NotifySpectatorsNote(order int) {
-        spectators := &t.Spectators
 	// Make an array that contains the combined notes for all the players & spectators
 	// (for a specific card)
 	type Note struct {
@@ -283,7 +282,7 @@ func (t *Table) NotifySpectatorsNote(order int) {
 			Note: p.Notes[order],
 		})
 	}
-	for _, sp := range *spectators {
+	for _, sp := range t.Spectators {
 		notes = append(notes, Note{
 			Name: sp.Name,
 			Note: sp.Notes[order],
@@ -295,7 +294,7 @@ func (t *Table) NotifySpectatorsNote(order int) {
 		Order int    `json:"order"`
 		Notes []Note `json:"notes"`
 	}
-	for _, sp := range *spectators {
+	for _, sp := range t.Spectators {
 		sp.Session.Emit("note", &NoteMessage{
 			Order: order,
 			Notes: notes,
