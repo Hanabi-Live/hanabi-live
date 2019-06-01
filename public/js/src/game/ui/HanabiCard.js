@@ -292,8 +292,8 @@ class HanabiCard extends graphics.Group {
             return;
         }
 
-        // Mark the turn that this card was first clued
-        if (this.turnClued === null) {
+        // Mark the turn that this card was first positively clued
+        if (this.turnClued === null && positive === 1) {
             // We add one because the "clue" action comes before the "turn" action
             this.turnClued = globals.turn + 1;
         }
