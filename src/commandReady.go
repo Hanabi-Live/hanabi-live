@@ -75,7 +75,7 @@ func commandReady(s *Session, d *CommandData) {
 
 	// If it is their turn, send an "action" message
 	if !g.Replay && g.ActivePlayer == i {
-		s.NotifyAllowedActions(g)
+		s.NotifyAction(g)
 	}
 
 	// Send an "advanced" message
