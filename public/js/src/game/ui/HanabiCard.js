@@ -199,14 +199,14 @@ class HanabiCard extends graphics.Group {
             this.suitPips.setVisible(suitToShow === constants.SUITS.Unknown);
             this.rankPips.setVisible(rankToShow === 6);
         }
-
-        if (!globals.lobby.settings.realLifeMode && !globals.speedrun) {
-            this.setFade();
-        }
     }
 
     // Fade this card if it is useless, fully revealed, and still in a player's hand
     setFade() {
+        if (globals.lobby.settings.realLifeMode || globals.speedrun) {
+            return;
+        }
+
         const oldOpacity = this.getOpacity();
 
         let newOpacity = 1;
