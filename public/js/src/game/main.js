@@ -17,10 +17,6 @@ exports.init = () => {
         // Disable the right-click context menu while in a game
         $('body').on('contextmenu', '#game', () => false);
     });
-
-    exports.chat.init();
-    exports.sounds.init();
-    exports.tooltips.init();
 };
 
 exports.show = () => {

@@ -10,18 +10,5 @@ exports.nav = require('./nav');
 exports.pregame = require('./pregame');
 exports.settings = require('./settings');
 exports.tables = require('./tables');
+require('./tutorial');
 exports.users = require('./users');
-
-const tutorial = require('./tutorial');
-const watchReplay = require('./watchReplay');
-
-// Initialize jQuery elements related to the lobby
-exports.init = () => {
-    exports.createGame.init();
-    exports.history.init();
-    exports.login.init();
-    exports.nav.init();
-
-    tutorial.init();
-    watchReplay.init();
-};

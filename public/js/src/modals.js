@@ -16,6 +16,7 @@ const modals = [
 ];
 
 exports.init = () => {
+    // Initialize the modals
     $(document).ready(() => {
         // All modals
         for (const modal of modals) {

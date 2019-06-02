@@ -4,18 +4,11 @@
 
 // Browserify is used to have Node.js-style imports
 // (allowing the client code to be split up into multiple files)
-const chat = require('./chat');
-const game = require('./game/main');
-const lobby = require('./lobby/main');
-const misc = require('./misc');
+require('./game/main');
+require('./lobby/main');
 const modals = require('./modals');
 
-// Initialize jQuery elements
-chat.init();
-game.init();
-lobby.init();
 modals.init();
-misc.setOffscreenFilter();
 
 // For debugging graphics
 /*

@@ -9,68 +9,66 @@ const misc = require('../misc');
 const modals = require('../modals');
 const watchReplay = require('./watchReplay');
 
-exports.init = () => {
-    $(document).ready(() => {
-        // Initialize all of the navigation tooltips using Tooltipster
-        initTooltips();
+$(document).ready(() => {
+    // Initialize all of the navigation tooltips using Tooltipster
+    initTooltips();
 
-        // The "Create Game" button
-        $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', lobby.createGame.ready);
-        // (the logic for this tooltip is handled in the "createGame.js" file)
+    // The "Create Game" button
+    $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', lobby.createGame.ready);
+    // (the logic for this tooltip is handled in the "createGame.js" file)
 
-        // The "Show History" button
-        $('#nav-buttons-games-history').on('click', () => {
-            lobby.history.show();
-        });
-
-        // The "Watch Specific Replay" button
-        $('#nav-buttons-games-replay').tooltipster('option', 'functionReady', watchReplay.ready);
-        // (the logic for this tooltip is handled in the "watchReplay.js" file)
-
-        // The "Help" button
-        // (this is just a simple link)
-
-        // The "Resources" button
-        // (initialized in the "initTooltips()" function)
-
-        // The "Settings" button
-        // (initialized in the "initTooltips()" function)
-
-        // The "Sign Out" button
-        $('#nav-buttons-games-sign-out').on('click', () => {
-            signOut();
-        });
-
-        // The "Start Game" button
-        $('#nav-buttons-pregame-start').on('click', () => {
-            if ($('#nav-buttons-pregame-start').hasClass('disabled')) {
-                return;
-            }
-            globals.conn.send('gameStart');
-        });
-
-        // The "Return to Lobby" button (from the "Pregame" screen)
-        $('#nav-buttons-pregame-unattend').on('click', () => {
-            lobby.pregame.hide();
-            globals.conn.send('gameUnattend');
-        });
-
-        // The "Leave Game" button
-        $('#nav-buttons-pregame-leave').on('click', () => {
-            globals.conn.send('gameLeave');
-        });
-
-        // The "Return to Lobby" button (from the "History" screen)
-        $('#nav-buttons-history-return').on('click', () => {
-            lobby.history.hide();
-        });
-
-        // The "Return to History" button (from the "History Details" screen)
-        $('#nav-buttons-history-details-return').on('click', () => {
-            lobby.history.hideDetails();
-        });
+    // The "Show History" button
+    $('#nav-buttons-games-history').on('click', () => {
+        lobby.history.show();
     });
-};
+
+    // The "Watch Specific Replay" button
+    $('#nav-buttons-games-replay').tooltipster('option', 'functionReady', watchReplay.ready);
+    // (the logic for this tooltip is handled in the "watchReplay.js" file)
+
+    // The "Help" button
+    // (this is just a simple link)
+
+    // The "Resources" button
+    // (initialized in the "initTooltips()" function)
+
+    // The "Settings" button
+    // (initialized in the "initTooltips()" function)
+
+    // The "Sign Out" button
+    $('#nav-buttons-games-sign-out').on('click', () => {
+        signOut();
+    });
+
+    // The "Start Game" button
+    $('#nav-buttons-pregame-start').on('click', () => {
+        if ($('#nav-buttons-pregame-start').hasClass('disabled')) {
+            return;
+        }
+        globals.conn.send('gameStart');
+    });
+
+    // The "Return to Lobby" button (from the "Pregame" screen)
+    $('#nav-buttons-pregame-unattend').on('click', () => {
+        lobby.pregame.hide();
+        globals.conn.send('gameUnattend');
+    });
+
+    // The "Leave Game" button
+    $('#nav-buttons-pregame-leave').on('click', () => {
+        globals.conn.send('gameLeave');
+    });
+
+    // The "Return to Lobby" button (from the "History" screen)
+    $('#nav-buttons-history-return').on('click', () => {
+        lobby.history.hide();
+    });
+
+    // The "Return to History" button (from the "History Details" screen)
+    $('#nav-buttons-history-details-return').on('click', () => {
+        lobby.history.hideDetails();
+    });
+});
 
 const initTooltips = () => {
     const tooltips = [
