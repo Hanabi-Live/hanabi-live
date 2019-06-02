@@ -156,13 +156,14 @@ func getGametimeString(timeString sql.NullString) (string, error) {
 		return msg, nil
 	}
 
-	// Convert Duration variable into months, hours and minutes
+	// Convert Duration variable into hours and minutes
 	minutes := int(playtime.Minutes())
 	hours := int(playtime.Hours())
 	minutes -= hours * 60
 
-	months := float64(hours) * 0.00136895463 // 1 month = 30.4368499 days
-	hours -= int(months / 0.00136895463)
+	// Convert hours into months and hours
+	months := float64(hours) * 0.00136895463
+	hours -= int(math.RoundToEven(months) / 0.00136895463)
 
 	hourStr := "hour"
 	if hours != 1 {
