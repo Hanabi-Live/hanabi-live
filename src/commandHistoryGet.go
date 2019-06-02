@@ -24,7 +24,7 @@ func commandHistoryGet(s *Session, d *CommandData) {
 		return
 	}
 
-	// Send the user's entire game history
+	// Send the user's entire table history
 	var history []*models.GameHistory
 	if v, err := db.Games.GetUserHistory(s.UserID(), d.Offset, d.Amount, false); err != nil {
 		log.Error("Failed to get the history for user \""+s.Username()+"\":", err)
@@ -33,5 +33,5 @@ func commandHistoryGet(s *Session, d *CommandData) {
 		history = v
 	}
 	history = historyFillVariants(history)
-	s.NotifyGameHistory(history, false)
+	s.NotifyTableHistory(history, false)
 }

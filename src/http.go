@@ -210,7 +210,7 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 			strings.HasSuffix(err.Error(), "write: connection timed out") {
 
 			// Some errors are common and expected
-			// (e.g. the user presses the "Stop" button while the template is executing)
+			// (e.t. the user presses the "Stop" button while the template is executing)
 			log.Info("Ordinary error when executing the template: " + err.Error())
 		} else {
 			log.Error("Failed to execute the template: " + err.Error())

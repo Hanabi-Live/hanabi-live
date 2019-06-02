@@ -1,5 +1,5 @@
 /*
-	Sent when the user performs an in-game action
+	Sent when the user performs an in-table action
 	"data" example:
 	{
 		clue: { // Not present if the type is 1 or 2
@@ -15,7 +15,7 @@
 		},
 		target: 1,
 		// Either the player index of the recipient of the clue, or the card ID
-		// (e.g. the first card of the deck drawn is card #1, etc.)
+		// (e.t. the first card of the deck drawn is card #1, etc.)
 		type: 0,
 		// 0 is a clue
 		// 1 is a play
@@ -49,9 +49,9 @@ func commandAction(s *Session, d *CommandData) {
 		t = v
 	}
 
-	// Validate that the game has started
+	// Validate that the table has started
 	if !t.Game.Running {
-		s.Warning("Table " + strconv.Itoa(tableID) + " has not started a game yet.")
+		s.Warning("Table " + strconv.Itoa(tableID) + " has not started yet.")
 		return
 	}
 
@@ -70,13 +70,13 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Validate that it is not a replay
 	if t.Game.Replay {
-		s.Warning("You cannot perform a game action in a shared replay.")
+		s.Warning("You cannot perform a table action in a shared replay.")
 		return
 	}
 
 	// Validate that the table is not paused
 	if t.Game.Paused {
-		s.Warning("You cannot perform a game action when the table is paused.")
+		s.Warning("You cannot perform a table action when the table is paused.")
 		return
 	}
 
@@ -248,7 +248,7 @@ func commandAction(s *Session, d *CommandData) {
 		t.Game.Misplays = 0
 
 	} else if d.Type == actionTypeDeckPlay {
-		// Validate that deck play is enabled in the game options
+		// Validate that the table type allows deck plays
 		if !t.GameSpec.Options.DeckPlays {
 			s.Warning("Deck plays are disabled for this table.")
 			return
@@ -295,14 +295,14 @@ func commandAction(s *Session, d *CommandData) {
 	t.NotifyStatus(doubleDiscard)
 
 	// Adjust the timer for the player that just took their turn
-	// (if the game is over now due to a player running out of time, we don't
+	// (if the table is over now due to a player running out of time, we don't
 	// need to adjust the timer because we already set it to 0 in the
 	// "checkTimer" function)
 	if d.Type != actionTypeTimeLimitReached {
 		p.Time -= time.Since(t.Game.TurnBeginTime)
-		// (in untimed games, "Time" will decrement into negative numbers to show how much time they are taking)
+		// (in non-timed tables, "Time" will decrement into negative numbers to show how much time they are taking)
 
-		// In timed games, a player gains additional time after performing an action
+		// In timed tables, a player gains additional time after performing an action
 		if t.GameSpec.Options.Timed {
 			p.Time += time.Duration(t.GameSpec.Options.TimePerTurn) * time.Second
 		}
@@ -339,7 +339,7 @@ func commandAction(s *Session, d *CommandData) {
 	// (we will set the strikes to 3 if there is a softlock)
 	characterCheckSoftlock(t, np)
 
-	// Check for game end states
+	// Check for end table states
 	if t.Game.CheckEnd() {
 		var text string
 		if t.Game.EndCondition > endConditionNormal {
@@ -356,7 +356,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Send the new turn
-	// This must be below the end-game text (e.g. "Players lose!"),
+	// This must be below the end-table text (e.t. "Players lose!"),
 	// so that it is combined with the final action
 	t.NotifyTurn()
 
@@ -386,7 +386,7 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Send every user connected an update about this table
 	// (this is sort of wasteful but is necessary for users to see if it is
-	// their turn from the lobby and also to see the progress of other games)
+	// their turn from the lobby and also to see the progress of other tables)
 	if !t.NoDatabase {
 		// Don't send table updates if we are in the process of emulating JSON actions
 		notifyAllTable(t)
@@ -400,7 +400,7 @@ func commandAction(s *Session, d *CommandData) {
 		// (since it just got to be their turn)
 		go t.CheckTimer(t.Game.Turn, t.Game.PauseCount, np)
 
-		// If the player queued a pause command, then pause the game
+		// If the player queued a pause command, then pause the table
 		if np.RequestedPause {
 			np.RequestedPause = false
 			np.Session.Set("currentTable", t.ID)

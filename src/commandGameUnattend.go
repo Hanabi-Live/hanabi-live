@@ -84,7 +84,7 @@ func commandGameUnattendSpectator(t *Table, j int) {
 	// Remove them from the spectators slice
 	t.Spectators = append(t.Spectators[:j], t.Spectators[j+1:]...)
 	notifyAllTable(t)    // Update the spectator list for the row in the lobby
-	t.NotifySpectators() // Update the game view spectator list
+	t.NotifySpectators() // Update the in-table spectator list
 
 	if t.Game.Replay {
 		if len(t.Spectators) == 0 {

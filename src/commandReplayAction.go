@@ -90,8 +90,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		}
 	} else if d.Type == replayActionTypeLeaderTransfer {
 		// A leader transfer
-		// Validate that the person that they are passing off the leader
-                // to is actually at the table
+		// Validate that the person that they are passing off the leader to actually exists in the table
 		newLeaderID := -1
 		for _, sp := range t.Spectators {
 			if sp.Name == d.Name {

@@ -83,7 +83,7 @@ func characterGenerate(t *Table) {
 		return
 	}
 
-	// If this is a "!replay" game, use the character selections from the database instead of
+	// If this is a "!replay" table, use the character selections from the database instead of
 	// generating new random ones
 	if opt.SetReplay != 0 {
 		// Get the players from the database

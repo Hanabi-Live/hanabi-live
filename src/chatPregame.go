@@ -29,7 +29,7 @@ func automaticStart(s *Session, t *Table, numPlayers int) {
 		commandGameStart(s, nil)
 	} else {
 		t.AutomaticStart = numPlayers
-		chatServerPregameSend("The game will start as soon as "+strconv.Itoa(numPlayers)+" players have joined.", t.ID)
+		chatServerPregameSend("The table will start as soon as "+strconv.Itoa(numPlayers)+" players have joined.", t.ID)
 	}
 }
 

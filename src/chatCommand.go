@@ -10,7 +10,7 @@ func chatHelp(s *Session, d *CommandData) {
 		msg += "```\n"
 		msg += "Command               Description\n"
 		msg += "----------------------------------------------------------------------------\n"
-		msg += "/here                 Ping members of the Discord server to get a game going\n"
+		msg += "/here                 Ping members of the Discord server to get a table going\n"
 		msg += "/last                 See how long it has been since the last ping\n"
 		msg += "/next                 Put yourself on the waiting list\n"
 		msg += "/unnext               Take yourself off the waiting list\n"

@@ -1,5 +1,5 @@
 /*
-	Sent when the user opens the table chat
+	Sent when the user opens the in-table chat
 	"data" is empty
 */
 
@@ -37,7 +37,7 @@ func commandChatRead(s *Session, d *CommandData) {
 	}
 
 	/*
-		Mark that they have read all of the table chat
+		Mark that they have read all of the in-table chat
 	*/
 
 	t.ChatRead[s.UserID()] = len(t.Chat)

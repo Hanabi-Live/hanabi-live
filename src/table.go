@@ -24,7 +24,7 @@ type Table struct {
 	AutomaticStart     int  // See "chatPregame.go"
 	NoDatabase         bool // Set to true for tables created from arbitrary JSON
 
-	Chat        []*TableChatMessage // All of the table chat history
+	Chat        []*TableChatMessage // All of the in-table chat history
 	ChatRead    map[int]int        // A map of which users have read which messages
 
         Game               *Game
