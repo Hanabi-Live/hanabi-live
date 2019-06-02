@@ -2,7 +2,7 @@
 	Sent when the user clicks on the "Compare Scores" button
 	"data" example:
 	{
-		tableID: 15103,
+		gameID: 15103,
 	}
 */
 
@@ -16,11 +16,11 @@ import (
 )
 
 func commandHistoryDetails(s *Session, d *CommandData) {
-	gameID := d.GameID
+	gameID := d.ID
 	var deals []models.GameHistory
 	if v, err := db.Games.GetAllDeals(s.UserID(), gameID); err != nil {
-		log.Error("Failed to get the deals from the database for table "+strconv.Itoa(gameID)+":", err)
-		s.Error("Failed to get the deals for table " + strconv.Itoa(gameID) + ". Please contact an administrator.")
+		log.Error("Failed to get the deals from the database for game "+strconv.Itoa(gameID)+":", err)
+		s.Error("Failed to get the deals for game " + strconv.Itoa(gameID) + ". Please contact an administrator.")
 		return
 	} else {
 		deals = v

@@ -13,7 +13,7 @@ import (
 	space, then the JSON of the data.
 
 	Example:
-		tableJoin {"tableID":1}
+		gameJoin {"gameID":1}
 		action {"target":1,"type":2}
 */
 

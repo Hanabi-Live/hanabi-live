@@ -86,7 +86,7 @@ exports.set = () => {
 
 // This is all of the normal commands/messages that we expect to receive from the server
 const initCommands = () => {
-    globals.conn.on('login', (data) => {
+    globals.conn.on('hello', (data) => {
         // Store variables relating to our user account on the server
         globals.username = data.username; // We might have logged-in with a different stylization
         globals.totalGames = data.totalGames;
@@ -155,7 +155,7 @@ const initCommands = () => {
         lobby.users.draw();
     });
 
-    globals.conn.on('tableLobbyInfo', (data) => {
+    globals.conn.on('table', (data) => {
         // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
         data.baseTime *= 1000;
         data.timePerTurn *= 1000;
@@ -205,19 +205,19 @@ const initCommands = () => {
         }
     });
 
-    globals.conn.on('tableJoin', () => {
-        // We joined a new table, so transition between screens
+    globals.conn.on('joined', () => {
+        // We joined a new game, so transition between screens
         lobby.tables.draw();
         lobby.pregame.show();
     });
 
-    globals.conn.on('tableLeave', () => {
+    globals.conn.on('left', () => {
         // We left a table, so transition between screens
         lobby.tables.draw();
         lobby.pregame.hide();
     });
 
-    globals.conn.on('tableGame', (data) => {
+    globals.conn.on('game', (data) => {
         globals.game = data;
 
         // The baseTime and timePerTurn come in seconds, so convert them to milliseconds

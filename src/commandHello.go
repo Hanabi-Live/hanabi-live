@@ -1,9 +1,9 @@
 /*
 	Sent when the user:
-	- is in a table that is starting
-	- joins a table that has already started
+	- is in a game that is starting
+	- joins a game that has already started
 	- starts a solo replay
-	- starts spectating a table
+	- starts spectating a game
 
 	This is sent before the UI is initialized; the client will send a "ready"
 	message later to get more data
@@ -22,27 +22,27 @@ func commandHello(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the table exists
-	tableID := s.CurrentTable()
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Error("Table " + strconv.Itoa(tableID) + " does not exist.")
+	// Validate that the game exists
+	gameID := s.CurrentGame()
+	var g *Game
+	if v, ok := games[gameID]; !ok {
+		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
-		t = v
+		g = v
 	}
 
-	// Validate that the table has started
-	if !t.Game.Running {
-		s.Warning("Table " + strconv.Itoa(tableID) + " has not started yet.")
+	// Validate that the game has started
+	if !g.Running {
+		s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
 		return
 	}
 
-	// Validate that they are either playing or spectating the table
-	i := t.GameSpec.GetPlayerIndex(s.UserID())
-	j := t.GetSpectatorIndex(s.UserID())
+	// Validate that they are either playing or spectating the game
+	i := g.GetPlayerIndex(s.UserID())
+	j := g.GetSpectatorIndex(s.UserID())
 	if i == -1 && j == -1 {
-		s.Warning("You are not playing or spectating table " + strconv.Itoa(tableID) + ".")
+		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ".")
 		return
 	}
 
@@ -50,17 +50,17 @@ func commandHello(s *Session, d *CommandData) {
 		Hello
 	*/
 
-	// Create a list of names of the users in this table
+	// Create a list of names of the users in this game
 	names := make([]string, 0)
-	for _, p := range t.GameSpec.Players {
+	for _, p := range g.Players {
 		names = append(names, p.Name)
 	}
 
 	// Create a list of the "Detrimental Character Assignments", if enabled
 	characterAssignments := make([]string, 0)
 	characterMetadata := make([]int, 0)
-	if t.GameSpec.Options.CharacterAssignments {
-		for _, p := range t.GameSpec.Players {
+	if g.Options.CharacterAssignments {
+		for _, p := range g.Players {
 			characterAssignments = append(characterAssignments, p.Character)
 			characterMetadata = append(characterMetadata, p.CharacterMetadata)
 		}
@@ -68,33 +68,33 @@ func commandHello(s *Session, d *CommandData) {
 
 	// Find out what seat number (index) this user is sitting in
 	seat := 0 // By default, assume a seat of 0
-	for i, p := range t.GameSpec.Players {
+	for i, p := range g.Players {
 		if p.ID == s.UserID() {
 			seat = i
 			break
 		}
 	}
-	// If this is a replay of a table they were not in (or if they are spectating),
+	// If this is a replay of a game they were not in (or if they are spectating),
 	// the above if statement will never be reached, and they will be in seat 0
 
 	// Account for if a spectator is shadowing a specific player
-	if j != -1 && t.Spectators[j].Shadowing {
-		seat = t.Spectators[j].PlayerIndex
+	if j != -1 && g.Spectators[j].Shadowing {
+		seat = g.Spectators[j].PlayerIndex
 	}
 
-	id := t.Game.ID
+	id := g.DatabaseID
 	if id == 0 {
-		id = t.ID
+		id = g.ID
 	}
 
-	pauseQueued := t.GameSpec.Players[seat].RequestedPause
+	pauseQueued := g.Players[seat].RequestedPause
 	if i == -1 {
 		pauseQueued = false
 	}
 
 	// Give them an "init" message
 	type InitMessage struct {
-		// Table settings
+		// Game settings
 		Names        []string `json:"names"`
 		Variant      string   `json:"variant"`
 		Seat         int      `json:"seat"`
@@ -125,9 +125,9 @@ func commandHello(s *Session, d *CommandData) {
 	}
 
 	s.Emit("init", &InitMessage{
-		// Table settings
+		// Game settings
 		Names:        names,
-		Variant:      t.GameSpec.Options.Variant,
+		Variant:      g.Options.Variant,
 		Seat:         seat,
 		Spectating:   s.Status() == statusSpectating,
 		Replay:       s.Status() == statusReplay || s.Status() == statusSharedReplay,
@@ -135,23 +135,23 @@ func commandHello(s *Session, d *CommandData) {
 		ID:           id,
 
 		// Optional settings
-		Timed:                t.GameSpec.Options.Timed,
-		BaseTime:             t.GameSpec.Options.BaseTime,
-		TimePerTurn:          t.GameSpec.Options.TimePerTurn,
-		Speedrun:             t.GameSpec.Options.Speedrun,
-		DeckPlays:            t.GameSpec.Options.DeckPlays,
-		EmptyClues:           t.GameSpec.Options.EmptyClues,
+		Timed:                g.Options.Timed,
+		BaseTime:             g.Options.BaseTime,
+		TimePerTurn:          g.Options.TimePerTurn,
+		Speedrun:             g.Options.Speedrun,
+		DeckPlays:            g.Options.DeckPlays,
+		EmptyClues:           g.Options.EmptyClues,
 		CharacterAssignments: characterAssignments,
 		CharacterMetadata:    characterMetadata,
-		Correspondence:       t.GameSpec.Options.Correspondence,
+		Correspondence:       g.Options.Correspondence,
 
 		// Hypothetical settings
-		Hypothetical: t.Game.Hypothetical,
-		HypoActions:  t.Game.HypoActions,
+		Hypothetical: g.Hypothetical,
+		HypoActions:  g.HypoActions,
 
 		// Other features
-		Paused:      t.Game.Paused,
-		PausePlayer: t.GameSpec.Players[t.Game.PausePlayer].Name,
+		Paused:      g.Paused,
+		PausePlayer: g.Players[g.PausePlayer].Name,
 		PauseQueued: pauseQueued,
 	})
 }

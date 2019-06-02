@@ -363,7 +363,7 @@ commands.notify = (data) => {
     }
 };
 
-commands.actions = (dataList) => {
+commands.notifyList = (dataList) => {
     for (const data of dataList) {
         commands.notify(data);
 

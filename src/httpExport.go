@@ -14,24 +14,24 @@ func httpExport(c *gin.Context) {
 	w := c.Writer
 
 	// Parse the player name from the URL
-	tableIDString := c.Param("table")
-	if tableIDString == "" {
-		http.Error(w, "Error: You must specify a database table ID.", http.StatusNotFound)
+	gameIDString := c.Param("game")
+	if gameIDString == "" {
+		http.Error(w, "Error: You must specify a database game ID.", http.StatusNotFound)
 		return
 	}
 
 	// Validate that it is a number
-	var tableID int
-	if v, err := strconv.Atoi(tableIDString); err != nil {
-		http.Error(w, "Error: That is not a valid database table ID.", http.StatusBadRequest)
+	var gameID int
+	if v, err := strconv.Atoi(gameIDString); err != nil {
+		http.Error(w, "Error: That is not a valid database game ID.", http.StatusBadRequest)
 		return
 	} else {
-		tableID = v
+		gameID = v
 	}
 
-	// Check to see if the table exists in the database
-	if exists, err := db.Games.Exists(tableID); err != nil {
-		log.Error("Failed to check to see if table "+strconv.Itoa(tableID)+" exists:", err)
+	// Check to see if the game exists in the database
+	if exists, err := db.Games.Exists(gameID); err != nil {
+		log.Error("Failed to check to see if game "+strconv.Itoa(gameID)+" exists:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else if !exists {
@@ -41,9 +41,9 @@ func httpExport(c *gin.Context) {
 
 	// Get the actions from the database
 	var actionStrings []string
-	if v, err := db.GameActions.GetAll(tableID); err != nil {
+	if v, err := db.GameActions.GetAll(gameID); err != nil {
 		log.Error("Failed to get the actions from the database "+
-			"for table "+strconv.Itoa(tableID)+":", err)
+			"for game "+strconv.Itoa(gameID)+":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -58,7 +58,7 @@ func httpExport(c *gin.Context) {
 		// Convert it from JSON
 		var action map[string]interface{}
 		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
-			log.Error("Failed to unmarshal an action while exporting a table:", err)
+			log.Error("Failed to unmarshal an action while exporting a game:", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -137,7 +137,7 @@ func httpExport(c *gin.Context) {
 		}
 	}
 	if len(deck) == 0 {
-		text := "Error: You cannot export older tables without the \"deckOrder\" action in it."
+		text := "Error: You cannot export older games without the \"deckOrder\" action in it."
 		log.Info(text)
 		http.Error(w, text, http.StatusBadRequest)
 		return
@@ -145,9 +145,9 @@ func httpExport(c *gin.Context) {
 
 	// Get the notes from the database
 	var dbNotes []models.NoteList
-	if v, err := db.Games.GetNotes(tableID); err != nil {
+	if v, err := db.Games.GetNotes(gameID); err != nil {
 		log.Error("Failed to get the notes from the database "+
-			"for table "+strconv.Itoa(tableID)+":", err)
+			"for game "+strconv.Itoa(gameID)+":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -156,8 +156,8 @@ func httpExport(c *gin.Context) {
 
 	// Get the players from the database
 	var dbPlayers []*models.Player
-	if v, err := db.Games.GetPlayers(tableID); err != nil {
-		log.Error("Failed to get the players from the database for table "+strconv.Itoa(tableID)+":", err)
+	if v, err := db.Games.GetPlayers(gameID); err != nil {
+		log.Error("Failed to get the players from the database for game "+strconv.Itoa(gameID)+":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -178,16 +178,16 @@ func httpExport(c *gin.Context) {
 
 	// Get the options from the database
 	var options models.Options
-	if v, err := db.Games.GetOptions(tableID); err != nil {
-		log.Error("Failed to get the options from the database for table "+strconv.Itoa(tableID)+":", err)
+	if v, err := db.Games.GetOptions(gameID); err != nil {
+		log.Error("Failed to get the options from the database for game "+strconv.Itoa(gameID)+":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
 		options = v
 	}
 
-	// Start to create a JSON table
-	t := &GameJSON{
+	// Start to create a JSON game
+	g := &GameJSON{
 		Actions:     actions,
 		Deck:        deck,
 		FirstPlayer: firstPlayer,
@@ -196,5 +196,5 @@ func httpExport(c *gin.Context) {
 		Variant:     variantsID[options.Variant],
 	}
 
-	c.JSON(http.StatusOK, t)
+	c.JSON(http.StatusOK, g)
 }

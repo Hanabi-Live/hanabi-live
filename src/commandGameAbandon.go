@@ -14,25 +14,25 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the table exists
-	tableID := s.CurrentTable()
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	// Validate that the game exists
+	gameID := s.CurrentGame()
+	var g *Game
+	if v, ok := games[gameID]; !ok {
+		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
-		t = v
+		g = v
 	}
 
-	// Validate that they are in the table
-	i := t.GameSpec.GetPlayerIndex(s.UserID())
+	// Validate that they are in the game
+	i := g.GetPlayerIndex(s.UserID())
 	if i == -1 {
-		s.Warning("You are in not table " + strconv.Itoa(tableID) + ", so you cannot abandon it.")
+		s.Warning("You are in not game " + strconv.Itoa(gameID) + ", so you cannot abandon it.")
 		return
 	}
 
 	// Validate that it is not a replay
-	if t.Game.Replay {
+	if g.Replay {
 		s.Warning("You can not abandon a replay.")
 		return
 	}
@@ -41,33 +41,33 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		Abandon
 	*/
 
-	if !t.Game.Running {
-		// Just make them leave the table instead
-		s.Set("currentTable", t.ID)
+	if !g.Running {
+		// Just make them leave the game instead
+		s.Set("currentGame", g.ID)
 		s.Set("status", statusPregame)
-		commandTableLeave(s, d)
+		commandGameLeave(s, d)
 		return
 	}
 
 	// We want to set the end condition before advancing the turn to ensure that
 	// no active player will show
-	t.Game.EndCondition = endConditionAbandoned
+	g.EndCondition = endConditionAbandoned
 
 	// Add a text message for the termination
 	// and put it on its own turn so that it is separate from the final times
-	text := s.Username() + " terminated the table!"
-	t.Game.Actions = append(t.Game.Actions, ActionText{
+	text := s.Username() + " terminated the game!"
+	g.Actions = append(g.Actions, ActionText{
 		Type: "text",
 		Text: text,
 	})
-	t.NotifyAction()
-	t.Game.Turn++
-	t.NotifyTurn()
+	g.NotifyAction()
+	g.Turn++
+	g.NotifyTurn()
 
-	// Play a sound to indicate that the table was terminated
-	t.Game.Sound = "finished_fail"
-	t.NotifySound()
+	// Play a sound to indicate that the game was terminated
+	g.Sound = "finished_fail"
+	g.NotifySound()
 
-	// End the table and write it to the database
-	t.End()
+	// End the game and write it to the database
+	g.End()
 }

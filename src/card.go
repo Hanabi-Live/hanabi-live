@@ -20,8 +20,8 @@ type Card struct {
 	InsistentTouched bool // Used by the "Insistent" character
 }
 
-func (c *Card) Name(t *Table) string {
-	name := variants[t.GameSpec.Options.Variant].Suits[c.Suit].Name // The name of the suit that this card is
+func (c *Card) Name(g *Game) string {
+	name := variants[g.Options.Variant].Suits[c.Suit].Name // The name of the suit that this card is
 	name += " "
 	if c.Rank == startCardRank {
 		name += "START"
@@ -33,9 +33,9 @@ func (c *Card) Name(t *Table) string {
 
 // NeedsToBePlayed returns true if the card is not yet played
 // and is still needed to be played in order to get the maximum score
-func (c *Card) NeedsToBePlayed(t *Table) bool {
+func (c *Card) NeedsToBePlayed(g *Game) bool {
 	// First, check to see if a copy of this card has already been played
-	for _, c2 := range t.Game.Deck {
+	for _, c2 := range g.Deck {
 		if c2.Suit == c.Suit &&
 			c2.Rank == c.Rank &&
 			c2.Played {
@@ -45,14 +45,14 @@ func (c *Card) NeedsToBePlayed(t *Table) bool {
 	}
 
 	// Determining if the card needs to be played in the "Up or Down" variants is more complicated
-	if strings.HasPrefix(t.GameSpec.Options.Variant, "Up or Down") {
-		return variantUpOrDownNeedsToBePlayed(t.Game, c)
+	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+		return variantUpOrDownNeedsToBePlayed(g, c)
 	}
 
 	// Second, check to see if it is still possible to play this card
 	// (the preceding cards in the suit might have already been discarded)
 	for i := 1; i < c.Rank; i++ {
-		total, discarded := t.Game.GetSpecificCardNum(c.Suit, i)
+		total, discarded := g.GetSpecificCardNum(c.Suit, i)
 		if total == discarded {
 			// The suit is "dead", so this card does not need to be played anymore
 			return false

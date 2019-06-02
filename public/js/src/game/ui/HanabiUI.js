@@ -177,7 +177,7 @@ const finishedLoadingImages = () => {
     ui.setPause();
 
     // Tell the server that we are finished loading
-    globals.lobby.conn.send('loadedUI');
+    globals.lobby.conn.send('ready');
 };
 
 const initCardsMap = () => {

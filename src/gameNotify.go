@@ -11,47 +11,43 @@ import (
 */
 
 // NotifyPlayerChange sends the people in the pre-game an update about the new amount of players
-// This is only called in situations where the table has not started yet
-func (t *Table) NotifyPlayerChange() {
-        g := t.Game
-        gs := t.GameSpec
-        players := gs.Players
+// This is only called in situations where the game has not started yet
+func (g *Game) NotifyPlayerChange() {
 	if g.Running {
-		log.Error("The \"NotifyPlayerChange()\" function was called on a table that has already started.")
+		log.Error("The \"NotifyPlayerChange()\" function was called on a game that has already started.")
 		return
 	}
 
-	for _, p := range players {
+	for _, p := range g.Players {
 		if !p.Present {
 			continue
 		}
 
-		// First, make the array that contains information about all of the players in the table
-		type TablePlayerMessage struct {
+		// First, make the array that contains information about all of the players in the game
+		type GamePlayerMessage struct {
 			Index   int          `json:"index"`
 			Name    string       `json:"name"`
 			You     bool         `json:"you"`
 			Present bool         `json:"present"`
 			Stats   models.Stats `json:"stats"`
 		}
-		tablePlayers := make([]*TablePlayerMessage, 0)
-		for j, p2 := range players {
-			tablePlayer := &TablePlayerMessage{
+		gamePlayers := make([]*GamePlayerMessage, 0)
+		for j, p2 := range g.Players {
+			gamePlayer := &GamePlayerMessage{
 				Index:   j,
 				Name:    p2.Name,
 				You:     p.ID == p2.ID,
 				Present: p2.Present,
 				Stats:   p2.Stats,
 			}
-			tablePlayers = append(tablePlayers, tablePlayer)
+			gamePlayers = append(gamePlayers, gamePlayer)
 		}
 
-		// Second, send the information about the table and game specification
-                // (visible in-pre-game and in-game), along with the information about the players 
-		type TableGameMessage struct {
+		// Second, send information about the game and the players in one big message
+		type GameMessage struct {
 			Name                 string               `json:"name"`
 			Running              bool                 `json:"running"`
-			Players              []*TablePlayerMessage `json:"players"`
+			Players              []*GamePlayerMessage `json:"players"`
 			Variant              string               `json:"variant"`
 			Timed                bool                 `json:"timed"`
 			BaseTime             int                  `json:"baseTime"`
@@ -63,34 +59,34 @@ func (t *Table) NotifyPlayerChange() {
 			Correspondence       bool                 `json:"correspondence"`
 			Password             bool                 `json:"password"`
 		}
-		p.Session.Emit("tableGame", &TableGameMessage{
-			Name:                 t.Name,
-			Running:              t.Game.Running,
-			Players:              tablePlayers,
-			Variant:              t.GameSpec.Options.Variant,
-			Timed:                t.GameSpec.Options.Timed,
-			BaseTime:             t.GameSpec.Options.BaseTime,
-			TimePerTurn:          t.GameSpec.Options.TimePerTurn,
-			Speedrun:             t.GameSpec.Options.Speedrun,
-			DeckPlays:            t.GameSpec.Options.DeckPlays,
-			EmptyClues:           t.GameSpec.Options.EmptyClues,
-			CharacterAssignments: t.GameSpec.Options.CharacterAssignments,
-			Correspondence:       t.GameSpec.Options.Correspondence,
-			Password:             t.Password != "",
+		p.Session.Emit("game", &GameMessage{
+			Name:                 g.Name,
+			Running:              g.Running,
+			Players:              gamePlayers,
+			Variant:              g.Options.Variant,
+			Timed:                g.Options.Timed,
+			BaseTime:             g.Options.BaseTime,
+			TimePerTurn:          g.Options.TimePerTurn,
+			Speedrun:             g.Options.Speedrun,
+			DeckPlays:            g.Options.DeckPlays,
+			EmptyClues:           g.Options.EmptyClues,
+			CharacterAssignments: g.Options.CharacterAssignments,
+			Correspondence:       g.Options.Correspondence,
+			Password:             g.Password != "",
 		})
 	}
 }
 
-// NotifyTableReady disables or enables the "Start Table" button on the client
-// This is only called in situations where the table has not started yet
-func (t *Table) NotifyTableReady() {
-	if t.Game.Running {
-		log.Error("The \"NotifyTableReady()\" function was called on a table that has already started.")
+// NotifyTableReady disables or enables the "Start Game" button on the client
+// This is only called in situations where the game has not started yet
+func (g *Game) NotifyTableReady() {
+	if g.Running {
+		log.Error("The \"NotifyTableReady()\" function was called on a game that has already started.")
 		return
 	}
 
-	for _, p := range t.GameSpec.Players {
-		if p.ID != t.Owner {
+	for _, p := range g.Players {
+		if p.ID != g.Owner {
 			continue
 		}
 
@@ -102,38 +98,37 @@ func (t *Table) NotifyTableReady() {
 			Ready bool `json:"ready"`
 		}
 		p.Session.Emit("tableReady", &TableReadyMessage{
-			Ready: len(t.GameSpec.Players) >= 2,
+			Ready: len(g.Players) >= 2,
 		})
 		break
 	}
 }
 
-// NotifyConnected will send "connected" messages to everyone in a table
+// NotifyConnected will send "connected" messages to everyone in a game
 // (because someone just connected or disconnected)
-// This is only called in situations where the table has started
+// This is only called in situations where the game has started
 // This is never called in replays
-func (t *Table) NotifyConnected() {
-	if !t.Game.Running {
-		log.Error("The \"NotifyConnected()\" function was called on a table that has not started yet.")
+func (g *Game) NotifyConnected() {
+	if !g.Running {
+		log.Error("The \"NotifyConnected()\" function was called on a game that has not started yet.")
 		return
 	}
 
-	for _, p := range t.GameSpec.Players {
+	for _, p := range g.Players {
 		if p.Present {
-			p.Session.NotifyConnected(t)
+			p.Session.NotifyConnected(g)
 		}
 	}
 
 	// Also send the spectators an update
-	for _, sp := range t.Spectators {
-		sp.Session.NotifyConnected(t)
+	for _, sp := range g.Spectators {
+		sp.Session.NotifyConnected(g)
 	}
 }
 
 // NotifyStatus appends a new "status" action and alerts everyone
-// This is only called in situations where the table has started
-func (t *Table) NotifyStatus(doubleDiscard bool) {
-        g := t.Game
+// This is only called in situations where the game has started
+func (g *Game) NotifyStatus(doubleDiscard bool) {
 	g.Actions = append(g.Actions, ActionStatus{
 		Type:          "status",
 		Clues:         g.Clues,
@@ -141,10 +136,10 @@ func (t *Table) NotifyStatus(doubleDiscard bool) {
 		MaxScore:      g.MaxScore,
 		DoubleDiscard: doubleDiscard,
 	})
-	t.NotifyAction()
+	g.NotifyAction()
 
 	// If we are playing an "Up or Down" variant, we also need to send the stack directions
-	if strings.HasPrefix(t.GameSpec.Options.Variant, "Up or Down") {
+	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
 		// Since StackDirections is a slice, it will be stored as a pointer
 		// (unlike the primitive values that we used for the ActionStatus message above)
 		// So, make a copy to preserve the stack directions for this exact moment in time
@@ -154,14 +149,13 @@ func (t *Table) NotifyStatus(doubleDiscard bool) {
 			Type:       "stackDirections",
 			Directions: stackDirections,
 		})
-		t.NotifyAction()
+		g.NotifyAction()
 	}
 }
 
 // NotifyTurn appends a new "turn" action and alerts everyone
-// This is only called in situations where the table has started
-func (t *Table) NotifyTurn() {
-        g := t.Game
+// This is only called in situations where the game has started
+func (g *Game) NotifyTurn() {
 	who := g.ActivePlayer
 	if g.EndCondition > endConditionInProgress {
 		who = -1
@@ -171,105 +165,103 @@ func (t *Table) NotifyTurn() {
 		Num:  g.Turn,
 		Who:  who,
 	})
-	t.NotifyAction()
+	g.NotifyAction()
 }
 
-// NotifyAction sends the people in the table an update about the new action
-// This is only called in situations where the table has started
-func (t *Table) NotifyAction() {
-        g := t.Game
+// NotifyAction sends the people in the game an update about the new action
+// This is only called in situations where the game has started
+func (g *Game) NotifyAction() {
 	if !g.Running {
-		log.Error("The \"NotifyAction()\" function was called on a table that has not started yet.")
+		log.Error("The \"NotifyAction()\" function was called on a game that has not started yet.")
 		return
 	}
 
-	// Get the last action of the table
-	a := g.Actions[len(t.Game.Actions)-1]
+	// Get the last action of the game
+	a := g.Actions[len(g.Actions)-1]
 
-	for _, p := range t.GameSpec.Players {
+	for _, p := range g.Players {
 		if p.Present {
-			p.Session.NotifyTableAction(a, t, p)
+			p.Session.NotifyGameAction(a, g, p)
 		}
 	}
 
 	// Also send the spectators an update
-	for _, sp := range t.Spectators {
-		sp.Session.NotifyTableAction(a, t, nil)
+	for _, sp := range g.Spectators {
+		sp.Session.NotifyGameAction(a, g, nil)
 	}
 }
 
-// NotifySound sends a sound notification to everyone in the table
+// NotifySound sends a sound notification to everyone in the game
 // (signifying that an action just occurred)
-func (t *Table) NotifySound() {
-	for i, p := range t.GameSpec.Players {
+func (g *Game) NotifySound() {
+	for i, p := range g.Players {
 		if p.Present {
-			p.Session.NotifySound(t, i)
+			p.Session.NotifySound(g, i)
 		}
 	}
 
-	for _, sp := range t.Spectators {
-		sp.Session.NotifySound(t, -1)
+	for _, sp := range g.Spectators {
+		sp.Session.NotifySound(g, -1)
 	}
 }
 
-func (t *Table) NotifyTableOver() {
-	for _, p := range t.GameSpec.Players {
+func (g *Game) NotifyGameOver() {
+	for _, p := range g.Players {
 		if p.Present {
 			p.Session.Emit("gameOver", nil)
 		}
 	}
 
-	for _, sp := range t.Spectators {
+	for _, sp := range g.Spectators {
 		sp.Session.Emit("gameOver", nil)
 	}
 }
 
-func (t *Table) NotifyTime() {
-	for _, p := range t.GameSpec.Players {
+func (g *Game) NotifyTime() {
+	for _, p := range g.Players {
 		if p.Present {
-			p.Session.NotifyTime(t)
+			p.Session.NotifyTime(g)
 		}
 	}
 
-	for _, sp := range t.Spectators {
-		sp.Session.NotifyTime(t)
+	for _, sp := range g.Spectators {
+		sp.Session.NotifyTime(g)
 	}
 }
 
-func (t *Table) NotifyPause() {
-	for _, p := range t.GameSpec.Players {
+func (g *Game) NotifyPause() {
+	for _, p := range g.Players {
 		if p.Present {
-			p.Session.NotifyPause(t)
+			p.Session.NotifyPause(g)
 		}
 	}
 
-	for _, sp := range t.Spectators {
-		sp.Session.NotifyPause(t)
+	for _, sp := range g.Spectators {
+		sp.Session.NotifyPause(g)
 	}
 }
 
-func (t *Table) NotifySpectators() {
-	if !t.Visible {
+func (g *Game) NotifySpectators() {
+	if !g.Visible {
 		return
 	}
 
 	// If this is a replay, then all of the players are also spectators,
 	// so we do not want to send them a duplicate message
-	if !t.Game.Replay {
-		for _, p := range t.GameSpec.Players {
+	if !g.Replay {
+		for _, p := range g.Players {
 			if p.Present {
-				p.Session.NotifySpectators(t)
+				p.Session.NotifySpectators(g)
 			}
 		}
 	}
 
-	for _, sp := range t.Spectators {
-		sp.Session.NotifySpectators(t)
+	for _, sp := range g.Spectators {
+		sp.Session.NotifySpectators(g)
 	}
 }
 
-func (t *Table) NotifySpectatorsNote(order int) {
-        spectators := &t.Spectators
+func (g *Game) NotifySpectatorsNote(order int) {
 	// Make an array that contains the combined notes for all the players & spectators
 	// (for a specific card)
 	type Note struct {
@@ -277,13 +269,13 @@ func (t *Table) NotifySpectatorsNote(order int) {
 		Note string `json:"note"`
 	}
 	notes := make([]Note, 0)
-	for _, p := range t.GameSpec.Players {
+	for _, p := range g.Players {
 		notes = append(notes, Note{
 			Name: p.Name,
 			Note: p.Notes[order],
 		})
 	}
-	for _, sp := range *spectators {
+	for _, sp := range g.Spectators {
 		notes = append(notes, Note{
 			Name: sp.Name,
 			Note: sp.Notes[order],
@@ -295,7 +287,7 @@ func (t *Table) NotifySpectatorsNote(order int) {
 		Order int    `json:"order"`
 		Notes []Note `json:"notes"`
 	}
-	for _, sp := range *spectators {
+	for _, sp := range g.Spectators {
 		sp.Session.Emit("note", &NoteMessage{
 			Order: order,
 			Notes: notes,
@@ -303,17 +295,17 @@ func (t *Table) NotifySpectatorsNote(order int) {
 	}
 }
 
-// Boot the people in the table and/or shared replay back to the lobby screen
-func (t *Table) NotifyBoot() {
-	if !t.Game.Replay {
-		for _, p := range t.GameSpec.Players {
+// Boot the people in the game and/or shared replay back to the lobby screen
+func (g *Game) NotifyBoot() {
+	if !g.Replay {
+		for _, p := range g.Players {
 			if p.Present {
 				p.Session.Emit("boot", nil)
 			}
 		}
 	}
 
-	for _, sp := range t.Spectators {
+	for _, sp := range g.Spectators {
 		sp.Session.Emit("boot", nil)
 	}
 }

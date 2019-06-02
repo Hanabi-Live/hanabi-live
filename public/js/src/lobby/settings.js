@@ -12,7 +12,7 @@ exports.init = () => {
     for (const setting of Object.keys(globals.settings)) {
         const value = globals.settings[setting];
         if (setting.startsWith('createTable')) {
-            // Settings for the "Create Table" nav button are handled when the user clicks on it
+            // Settings for the "Create Game" nav button are handled when the user clicks on it
             continue;
         } else {
             $(`#${setting}`).attr('checked', value);

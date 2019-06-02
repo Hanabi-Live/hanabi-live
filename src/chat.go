@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	// When sending the in-table chat history,
+	// When sending the in-game chat history,
 	// only send the last X messages to prevent clients from becoming overloaded
 	// (in case someone maliciously spams a lot of messages)
 	chatLimit = 1000
@@ -166,11 +166,11 @@ func chatServerSend(msg string) {
 
 // chatServerPregameSend is a helper function to give feedback to a user after they type a command
 // (for the pre-game chat)
-func chatServerPregameSend(msg string, tableID int) {
+func chatServerPregameSend(msg string, gameID int) {
 	commandChat(nil, &CommandData{
 		Msg:    msg,
-		Room:   "table",
-		TableID: tableID,
+		Room:   "game",
+		GameID: gameID,
 		Server: true,
 	})
 }
@@ -260,24 +260,24 @@ func chatSendPastFromDatabase(s *Session, room string, count int) {
 	}
 	s.Emit("chatList", &ChatListMessage{
 		List:   msgs,
-		Unread: 0, // This is only used for in-table chat
+		Unread: 0, // This is only used for in-game chat
 	})
 }
 
-func chatSendPastFromTable(s *Session, t *Table) {
+func chatSendPastFromGame(s *Session, g *Game) {
 	chatList := make([]*ChatMessage, 0)
 	i := 0
-	if len(t.Chat) > chatLimit {
-		i = len(t.Chat) - chatLimit
+	if len(g.Chat) > chatLimit {
+		i = len(g.Chat) - chatLimit
 	}
-	for ; i < len(t.Chat); i++ {
-		// We have to convert the *TableChatMessage to a *ChatMessage
-		gcm := t.Chat[i]
-		cm := chatMakeMessage(gcm.Msg, gcm.Username, false, gcm.Server, gcm.Datetime, "table")
+	for ; i < len(g.Chat); i++ {
+		// We have to convert the *GameChatMessage to a *ChatMessage
+		gcm := g.Chat[i]
+		cm := chatMakeMessage(gcm.Msg, gcm.Username, false, gcm.Server, gcm.Datetime, "game")
 		chatList = append(chatList, cm)
 	}
 	s.Emit("chatList", &ChatListMessage{
 		List:   chatList,
-		Unread: len(t.Chat) - t.ChatRead[s.UserID()],
+		Unread: len(g.Chat) - g.ChatRead[s.UserID()],
 	})
 }

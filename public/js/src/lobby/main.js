@@ -2,7 +2,7 @@
     The lobby is composed of all of the UI elements that don't have to do with the game itself
 */
 
-exports.createTable = require('./createTable');
+exports.createGame = require('./createGame');
 exports.history = require('./history');
 exports.keyboard = require('./keyboard');
 exports.login = require('./login');
@@ -17,7 +17,7 @@ const watchReplay = require('./watchReplay');
 
 // Initialize jQuery elements related to the lobby
 exports.init = () => {
-    exports.createTable.init();
+    exports.createGame.init();
     exports.history.init();
     exports.login.init();
     exports.nav.init();

@@ -15,12 +15,12 @@ var (
 	projectPath = path.Join(os.Getenv("GOPATH"), "src", "github.com", "Zamiell", "hanabi-live")
 	log         *logging.Logger
 	db          *models.Models
-	tables       = make(map[int]*Table) // Defined in "table.go"
+	games       = make(map[int]*Game) // Defined in "game.go"
 	// For storing all of the random words (used for random table names)
 	wordList = make([]string, 0)
-	// For storing the players who are waiting for the next table to start
+	// For storing the players who are waiting for the next game to start
 	waitingList = make([]*models.Waiter, 0)
-	// If true, the server will restart after all tables are finished
+	// If true, the server will restart after all games are finished
 	shuttingDown = false
 )
 
@@ -55,7 +55,7 @@ func main() {
 
 	// If we are running in a development environment, change some constants
 	if os.Getenv("DOMAIN") == "localhost" {
-		idleTableTimeout = idleTableTimeoutDev
+		idleGameTimeout = idleGameTimeoutDev
 	}
 
 	// Initialize the database model

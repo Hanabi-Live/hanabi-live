@@ -18,12 +18,12 @@ func debug(s *Session, d *CommandData) {
 func debug2() {
 	log.Debug("---------------------------------------------------------------")
 
-	// Print out all of the current tables
-	if len(tables) == 0 {
-		log.Debug("[no current tables]")
+	// Print out all of the current games
+	if len(games) == 0 {
+		log.Debug("[no current games]")
 	}
-	for i, t := range tables { // This is a map[int]*Table
-		log.Debug(strconv.Itoa(i) + " - " + t.Name)
+	for i, g := range games { // This is a map[int]*Game
+		log.Debug(strconv.Itoa(i) + " - " + g.Name)
 		log.Debug("\n")
 
 		// Print out all of the fields
@@ -37,7 +37,7 @@ func debug2() {
 			"Spectators",
 			"DisconSpectators",
 		}
-		s := reflect.ValueOf(t).Elem()
+		s := reflect.ValueOf(g).Elem()
 		maxChars := 0
 		for i := 0; i < s.NumField(); i++ {
 			fieldName := s.Type().Field(i).Name
@@ -70,7 +70,7 @@ func debug2() {
 
 		// Manually enumerate the slices and maps
 		log.Debug("    Options:")
-		s2 := reflect.ValueOf(t.GameSpec.Options).Elem()
+		s2 := reflect.ValueOf(g.Options).Elem()
 		maxChars2 := 0
 		for i := 0; i < s2.NumField(); i++ {
 			fieldName := s2.Type().Field(i).Name
@@ -96,43 +96,43 @@ func debug2() {
 		log.Debug("\n")
 
 		log.Debug("    Players:")
-		for j, p := range t.GameSpec.Players { // This is a []*Player
+		for j, p := range g.Players { // This is a []*Player
 			log.Debug("        " + strconv.Itoa(j) + " - " +
 				"User ID: " + strconv.Itoa(p.ID) + ", " +
 				"Username: " + p.Name + ", " +
 				"Present: " + strconv.FormatBool(p.Present))
 		}
-		if len(t.GameSpec.Players) == 0 {
+		if len(g.Players) == 0 {
 			log.Debug("        [no players]")
 		}
 		log.Debug("\n")
 
 		log.Debug("    Spectators:")
-		for j, sp := range t.Spectators { // This is a []*Session
+		for j, sp := range g.Spectators { // This is a []*Session
 			log.Debug("        " + strconv.Itoa(j) + " - " +
 				"User ID: " + strconv.Itoa(sp.ID) + ", " +
 				"Username: " + sp.Name)
 		}
-		if len(t.Spectators) == 0 {
+		if len(g.Spectators) == 0 {
 			log.Debug("        [no spectators]")
 		}
 		log.Debug("\n")
 
 		log.Debug("    DisconSpectators:")
-		for k, v := range t.DisconSpectators { // This is a map[int]*bool
+		for k, v := range g.DisconSpectators { // This is a map[int]*bool
 			log.Debug("        User ID: " + strconv.Itoa(k) + " - " + strconv.FormatBool(v))
 		}
-		if len(t.DisconSpectators) == 0 {
+		if len(g.DisconSpectators) == 0 {
 			log.Debug("        [no disconnected spectators]")
 		}
 		log.Debug("\n")
 
 		log.Debug("    Chat:")
-		for j, m := range t.Chat { // This is a []*TableChatMessage
+		for j, m := range g.Chat { // This is a []*GameChatMessage
 			log.Debug("        " + strconv.Itoa(j) + " - " +
 				"[" + strconv.Itoa(m.UserID) + "] <" + m.Username + "> " + m.Msg)
 		}
-		if len(t.Chat) == 0 {
+		if len(g.Chat) == 0 {
 			log.Debug("        [no chat]")
 		}
 		log.Debug("\n")
@@ -149,7 +149,7 @@ func debug2() {
 		log.Debug("    User ID: " + strconv.Itoa(i) + ", " +
 			"Username: " + s2.Username() + ", " +
 			"Status: " + strconv.Itoa(s2.Status()) + ", " +
-			"Current table: " + strconv.Itoa(s2.CurrentTable()))
+			"Current game: " + strconv.Itoa(s2.CurrentGame()))
 	}
 	log.Debug("---------------------------------------------------------------")
 

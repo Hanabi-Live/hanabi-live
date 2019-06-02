@@ -1,5 +1,5 @@
 /*
-	Sent when the user makes a new table
+	Sent when the user makes a new game
 	"data" is empty
 */
 

@@ -1,5 +1,5 @@
 /*
-	Sent when the user opens the in-table chat
+	Sent when the user opens the in-game chat
 	"data" is empty
 */
 
@@ -14,31 +14,31 @@ func commandChatRead(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the table exists
-	tableID := s.CurrentTable()
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	// Validate that the game exists
+	gameID := s.CurrentGame()
+	var g *Game
+	if v, ok := games[gameID]; !ok {
+		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
 		return
 	} else {
-		t = v
+		g = v
 	}
 
-	// Validate that the table has started
-	if !t.Game.Running {
-		s.Warning("Table " + strconv.Itoa(tableID) + " has not started yet.")
+	// Validate that the game has started
+	if !g.Running {
+		s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
 		return
 	}
 
-	// Validate that they are in the table or are a spectator
-	if t.GameSpec.GetPlayerIndex(s.UserID()) == -1 && t.GetSpectatorIndex(s.UserID()) == -1 {
-		s.Warning("You are not playing or spectating table " + strconv.Itoa(tableID) + ", so you cannot acknowledge its chat.")
+	// Validate that they are in the game or are a spectator
+	if g.GetPlayerIndex(s.UserID()) == -1 && g.GetSpectatorIndex(s.UserID()) == -1 {
+		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ", so you cannot acknowledge its chat.")
 		return
 	}
 
 	/*
-		Mark that they have read all of the in-table chat
+		Mark that they have read all of the in-game chat
 	*/
 
-	t.ChatRead[s.UserID()] = len(t.Chat)
+	g.ChatRead[s.UserID()] = len(g.Chat)
 }

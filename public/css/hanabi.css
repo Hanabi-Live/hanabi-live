@@ -406,53 +406,53 @@ table td {
 }
 
 /*
-    Create Table Tooltip
+    Create Game Tooltip
 */
 
-#create-table-tooltip-title {
+#create-game-tooltip-title {
     width: 11em;
 }
 
-#create-table-tooltip > div {
+#create-game-tooltip > div {
     /* Alpha sets this to -2em, so we have to reset it */
     margin-left: 0em;
     text-align: left;
 }
 
-#create-table-tooltip > div > div {
+#create-game-tooltip > div > div {
     padding-left: 0;
 }
 
-.create-table-icon {
+.create-game-icon {
     display: inline-block;
     width: 2em;
     text-align: center;
 }
 
-.create-table-info-icon {
+.create-game-info-icon {
     position: relative;
     top: 0.35em;
 }
 
-.create-table-text-label {
+.create-game-text-label {
     /* Annoyingly, the text does not line up with the checkbox */
     position: relative;
     top: 0.25em;
 }
 
-#create-table-timed-label {
+#create-game-timed-label {
     /* We need to move the "Timed" label even more */
     position: relative;
     top: 0.75em;
 }
 
-#create-table-timed-container {
+#create-game-timed-container {
     /* We need to move this down so that it is centered with the input elements */
     position: relative;
     top: 0.5em;
 }
 
-#create-table-submit {
+#create-game-submit {
     font-size: 1em;
 }
 

@@ -103,7 +103,7 @@ func waitingListList(s *Session, d *CommandData) {
 	chatServerSend(msg)
 }
 
-func waitingListAlert(t *Table, creator string) {
+func waitingListAlert(g *Game, creator string) {
 	waitingListPurgeOld()
 	if len(waitingList) == 0 {
 		return
@@ -131,11 +131,11 @@ func waitingListAlert(t *Table, creator string) {
 	waitingList = make([]*models.Waiter, 0)
 
 	// Alert all of the people on the waiting list
-	alert := creator + " created a table. (" + t.GameSpec.Options.Variant + ")\n" + mentionList
+	alert := creator + " created a table. (" + g.Options.Variant + ")\n" + mentionList
 	chatServerSend(alert)
 
 	// Also, copy the people who were pinged to the pre-game chat for reference
-	chatServerPregameSend("Alerted players: "+usernameList, t.ID)
+	chatServerPregameSend("Alerted players: "+usernameList, g.ID)
 }
 
 /*
