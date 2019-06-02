@@ -323,15 +323,15 @@
         "spacing": true
     },
 
-    "Grey (6 Suits)": {
+    "Gray (6 Suits)": {
         "id": 59,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Gray"]
     },
-    "Grey (5 Suits)": {
+    "Gray (5 Suits)": {
         "id": 58,
         "suits": ["Blue", "Green", "Yellow", "Red", "Gray"]
     },
-    "Black & Grey (6 Suits)": {
+    "Black & Gray (6 Suits)": {
         "id": 60,
         "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Gray"]
     },
