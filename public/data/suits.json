@@ -101,18 +101,8 @@
         "fill": "#000066",
         "pip": "star"
     },
-    "Orange D": {
-        "name": "Orange",
-        "clueColors": ["Yellow", "Red"],
-        "fill": "#ff8800",
-        "pip": "heart"
-    },
-    "Tan D": {
-        "name": "Tan",
-        "clueColors": ["Yellow", "Black"],
-        "fill": "#999900",
-        "pip": "crescent"
-    },
+    "Orange D": { "clueColors": ["Yellow", "Red"], "fill": "#ff8800", "pip": "heart" },
+    "Tan D": { "clueColors": ["Yellow", "Black"], "fill": "#999900", "pip": "crescent" },
     "Mahogany D": {
         "name": "Mahogany",
         "clueColors": ["Red", "Black"],
@@ -121,28 +111,8 @@
     },
 
     "Teal D": { "name": "Teal", "clueColors": ["Blue", "Green"], "pip": "diamond" },
-    "Lime D": {
-        "name": "Lime",
-        "clueColors": ["Green", "Yellow"],
-        "fill": "#80c000",
-        "pip": "club"
-    },
-    "Orange D2": {
-        "name": "Orange",
-        "clueColors": ["Yellow", "Red"],
-        "fill": "#ff8800",
-        "pip": "star"
-    },
-    "Cardinal D": {
-        "name": "Cardinal",
-        "clueColors": ["Red", "Purple"],
-        "fill": "#810735",
-        "pip": "heart"
-    },
-    "Indigo D": {
-        "name": "Indigo",
-        "clueColors": ["Purple", "Blue"],
-        "fill": "#1a0082",
-        "pip": "crescent"
-    }
+    "Lime D": { "name": "Lime", "clueColors": ["Green", "Yellow"], "fill": "#80c000", "pip": "club" },
+    "Orange D2": { "clueColors": ["Yellow", "Red"], "fill": "#ff8800", "pip": "star" },
+    "Cardinal D": { "clueColors": ["Red", "Purple"], "fill": "#810735", "pip": "heart" },
+    "Indigo D": { "clueColors": ["Purple", "Blue"], "fill": "#1a0082", "pip": "crescent" }
 }
