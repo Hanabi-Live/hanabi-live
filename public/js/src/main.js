@@ -6,9 +6,7 @@
 // (allowing the client code to be split up into multiple files)
 require('./game/main');
 require('./lobby/main');
-const modals = require('./modals');
-
-modals.init();
+require('./modals');
 
 // For debugging graphics
 /*

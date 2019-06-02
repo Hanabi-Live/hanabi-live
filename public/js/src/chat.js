@@ -10,31 +10,29 @@ const emoteCategories = require('../../data/emotes');
 // Variables
 let chatLineNum = 1;
 
-exports.init = () => {
-    $(document).ready(() => {
-        const inputs = [
-            'lobby-chat-input',
-            'lobby-chat-pregame-input',
-            'game-chat-input',
-        ];
-        for (const input of inputs) {
-            const room = input === 'lobby-chat-input' ? 'lobby' : 'game';
-            $(`#${input}`).on('keypress', keypress(room));
-        }
+$(document).ready(() => {
+    const inputs = [
+        'lobby-chat-input',
+        'lobby-chat-pregame-input',
+        'game-chat-input',
+    ];
+    for (const input of inputs) {
+        const room = input === 'lobby-chat-input' ? 'lobby' : 'game';
+        $(`#${input}`).on('keypress', keypress(room));
+    }
 
-        // Ensure that there are no overlapping emotes
-        const emoteMap = {};
-        for (const category of Object.keys(emoteCategories)) {
-            for (const emote of emoteCategories[category]) {
-                if (emoteMap[emote]) {
-                    throw new Error('Duplicate emote found:', emote);
-                } else {
-                    emoteMap[emote] = true;
-                }
+    // Ensure that there are no overlapping emotes
+    const emoteMap = {};
+    for (const category of Object.keys(emoteCategories)) {
+        for (const emote of emoteCategories[category]) {
+            if (emoteMap[emote]) {
+                throw new Error('Duplicate emote found:', emote);
+            } else {
+                emoteMap[emote] = true;
             }
         }
-    });
-};
+    }
+});
 
 const keypress = room => function keypressFunction(event) {
     // Check for emoji substitution

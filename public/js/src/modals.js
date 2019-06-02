@@ -15,43 +15,41 @@ const modals = [
     // "warning" and "error" are intentionally omitted, as they are handled separately
 ];
 
-exports.init = () => {
-    // Initialize the modals
-    $(document).ready(() => {
-        // All modals
-        for (const modal of modals) {
-            $(`#${modal}-modal-cancel`).click(closeAll);
+// Initialize the modals
+$(document).ready(() => {
+    // All modals
+    for (const modal of modals) {
+        $(`#${modal}-modal-cancel`).click(closeAll);
+    }
+
+    // Password
+    $('#password-modal-password').on('keypress', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            $('#password-modal-submit').click();
         }
-
-        // Password
-        $('#password-modal-password').on('keypress', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                $('#password-modal-submit').click();
-            }
-        });
-        $('#password-modal-submit').click(passwordSubmit);
-
-        // Warning
-        $('#warning-modal-button').click(() => {
-            $('#warning-modal').fadeOut(globals.fadeTime);
-            if ($('#lobby').is(':visible')) {
-                $('#lobby').fadeTo(globals.fadeTime, 1);
-            }
-            if ($('#game').is(':visible')) {
-                $('#game').fadeTo(globals.fadeTime, 1);
-            }
-        });
-
-        // Error
-        $('#error-modal-button').click(() => {
-            window.location.reload();
-        });
-        $('#error-modal-signout').click(() => {
-            nav.signOut();
-        });
     });
-};
+    $('#password-modal-submit').click(passwordSubmit);
+
+    // Warning
+    $('#warning-modal-button').click(() => {
+        $('#warning-modal').fadeOut(globals.fadeTime);
+        if ($('#lobby').is(':visible')) {
+            $('#lobby').fadeTo(globals.fadeTime, 1);
+        }
+        if ($('#game').is(':visible')) {
+            $('#game').fadeTo(globals.fadeTime, 1);
+        }
+    });
+
+    // Error
+    $('#error-modal-button').click(() => {
+        window.location.reload();
+    });
+    $('#error-modal-signout').click(() => {
+        nav.signOut();
+    });
+});
 
 exports.passwordShow = (gameID) => {
     $('#lobby').fadeTo(globals.fadeTime, 0.25);

@@ -12,12 +12,10 @@ const globals = require('../globals');
 const HanabiUI = require('./ui/HanabiUI');
 const misc = require('../misc');
 
-exports.init = () => {
-    $(document).ready(() => {
-        // Disable the right-click context menu while in a game
-        $('body').on('contextmenu', '#game', () => false);
-    });
-};
+$(document).ready(() => {
+    // Disable the right-click context menu while in a game
+    $('body').on('contextmenu', '#game', () => false);
+});
 
 exports.show = () => {
     globals.currentScreen = 'game';
