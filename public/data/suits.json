@@ -46,7 +46,7 @@
     "Chocolate": {
         "clueColors": ["Brown"],
         "clueRanks": "none",
-        "fill": "#271a0c",
+        "fill": "#4d2800",
         "oneOfEach": true,
         "pip": "null_symbol"
     },
