@@ -462,7 +462,7 @@ func (p *Player) GetLeftPlayer(g *Game) int {
 // GetRightPlayer returns the index of the player that is sitting to this player's right
 func (p *Player) GetRightPlayer(g *Game) int {
 	// In Golang, "%" will give the remainder and not the modulus,
-	// so we need to ensure that the result is not negative or we will get a "index out of range" error below
+	// so we need to ensure that the result is not negative or we will get a "index out of range" error
 	return (p.Index - 1 + len(g.Players)) % len(g.Players)
 }
 
