@@ -226,6 +226,8 @@ class HanabiCard extends graphics.Group {
             return;
         }
 
+        // Comment out the tween until all of the bugs can be sorted out
+        /*
         if (this.opacityTween) {
             this.opacityTween.destroy();
         }
@@ -250,6 +252,9 @@ class HanabiCard extends graphics.Group {
                 duration: 0.5,
             }).play();
         }
+        */
+
+        this.setOpacity(newOpacity);
     }
 
     initImage() {

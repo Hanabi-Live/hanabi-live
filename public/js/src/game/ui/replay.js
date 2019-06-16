@@ -129,6 +129,7 @@ const goto = (target, fast) => {
     }
 
     globals.animateFast = false;
+    ui.checkFadeInAllHands();
     globals.elements.actionLog.refreshText();
     globals.elements.fullActionLog.refreshText();
     globals.layers.card.batchDraw();

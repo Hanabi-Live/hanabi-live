@@ -73,6 +73,7 @@ commands.advanced = () => {
         replay.goto(0, true);
     }
 
+    ui.checkFadeInAllHands();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
     globals.loading = false;

@@ -164,11 +164,13 @@ exports.handleNotify = (data) => {
 };
 
 exports.checkFadeInAllHands = () => {
-    for (const cardLayout of globals.elements.playerHands) {
-        for (const layoutChild of cardLayout.children) {
-            const card = layoutChild.children[0];
-            card.setFade();
-        }
+    if (globals.animateFast) {
+        return;
+    }
+
+    for (let i = 0; i < globals.indexOfLastDrawnCard; i++) {
+        const card = globals.deck[i];
+        card.setFade();
     }
 };
 
