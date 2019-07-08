@@ -171,7 +171,7 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 
 * By default, it is not possible to give an "empty" clue, which is a clue that touches 0 cards.
 * Each game has the option to allow empty clues.
-* More information on the history of empty clues can be found in the [Hyphen-ated conventions repository](https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Empty_Clues.md#history).
+* More information on the history of empty clues can be found in the [Hyphen-ated conventions repository](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Empty_Clues.md#history).
 
 #### Detrimental Character Assignments
 
