@@ -157,7 +157,7 @@ const finishedLoadingImages = () => {
     // and whether or not we have the colorblind feature enabled)
     globals.cardImages = drawCards.drawAll(
         globals.variant,
-        globals.lobby.showColorblindUI,
+        globals.lobby.settings.showColorblindUI,
         'normal',
     );
 
