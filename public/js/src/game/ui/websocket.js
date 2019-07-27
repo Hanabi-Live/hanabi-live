@@ -289,7 +289,7 @@ commands.noteList = (data) => {
     // We want to convert this to an array of objects for each card
     for (const noteList of data.notes) {
         // If we are a spectator, copy our notes from the combined list
-        if (globals.spectating && noteList.name === globals.lobby.username) {
+        if (globals.spectating && !globals.replay && noteList.name === globals.lobby.username) {
             globals.ourNotes = noteList.notes;
         }
 

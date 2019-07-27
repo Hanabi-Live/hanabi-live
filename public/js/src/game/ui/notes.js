@@ -265,7 +265,7 @@ const setCardIndicator = (order) => {
     const card = globals.deck[order];
     card.noteGiven.setVisible(visible);
 
-    if (visible && globals.spectating && !card.noteGiven.rotated) {
+    if (visible && globals.spectating && !globals.replay && !card.noteGiven.rotated) {
         card.noteGiven.rotate(15);
         card.noteGiven.rotated = true;
     }

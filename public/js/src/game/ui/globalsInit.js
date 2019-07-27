@@ -46,7 +46,7 @@ module.exports = () => {
     globals.ourTurn = false;
     globals.endTurn = null; // Set when the final card is drawn
     globals.deckSize = 0; // Set in the "initCards()" function
-    globals.indexOfLastDrawnCard = 0;
+    globals.indexOfLastDrawnCard = 0; // Set in the "initCards()" function
     globals.score = 0;
     globals.maxScore = 0;
     globals.clues = 0;
