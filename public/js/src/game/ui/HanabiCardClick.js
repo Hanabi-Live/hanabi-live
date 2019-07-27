@@ -76,6 +76,7 @@ const clickMiddle = (card, event) => {
         }
     }
 };
+
 const clickRight = (card, event) => {
     // Alt + right-click is a card morph (in a replay / shared replay)
     if (
