@@ -84,6 +84,8 @@ List of Features
 * Using this feature, players can go back in time to see the exact game state at a specific turn.
 * There are some helpful shortcuts for going to a specific turn:
   * You can Alt + click on a card to go to the turn it was drawn.
+  * You can Alt + middle-click on a card to go to the turn it was first positively clued.
+  * You can middle-click on a card go to the previous turn it was positively clued.
   * You can click on a card in the play stacks to go to the turn before the card was played.
   * You can click on a card in the discard pile to go to the turn before the card was discarded.
   * You can click on an entry in the clue log to go to the turn when the clue was given.

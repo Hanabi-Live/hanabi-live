@@ -74,7 +74,7 @@ class HanabiCard extends graphics.Group {
         this.positiveColorClues = [];
         this.negativeColorClues = [];
         this.specialRankSuitRemoved = false;
-        this.turnClued = null;
+        this.turnsClued = [];
         // We have to add one to the turn drawn because
         // the "draw" command comes before the "turn" command
         // However, if it was part of the initial deal, then it will correctly be set as turn 0
@@ -296,11 +296,10 @@ class HanabiCard extends graphics.Group {
         if (wasFullyKnown) {
             return;
         }
-
-        // Mark the turn that this card was first positively clued
-        if (this.turnClued === null && positive === true) {
+        // Mark all turns that this card is positively clued
+        if (positive === true) {
             // We add one because the "clue" action comes before the "turn" action
-            this.turnClued = globals.turn + 1;
+            this.turnsClued.push(globals.turn + 1);
         }
 
         // Record unique clues that touch the card for later
