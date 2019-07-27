@@ -58,14 +58,24 @@ const clickLeft = (card, event) => {
 };
 
 const clickMiddle = (card, event) => {
-    // No actions in this function use modifiers
-    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
+    // No actions in this function use modifiers other than alt
+    if (event.ctrlKey || event.shiftKey || event.metaKey) {
         return;
     }
 
-    // Middle clicking on cards goes to the turn it was first clued
-    if (card.turnClued !== null) {
-        goToTurn(card.turnClued);
+    // Middle clicking on cards goes to a turn it was clued
+    if (card.turnsClued.length !== 0 && card.turnsClued[0] !== globals.turn) {
+        // Alt-middle clicking goes to turn it was first clued
+        if (event.altKey) {
+            goToTurn(card.turnsClued[0]);
+            // No modifier goes to turn it was last clued
+        } else {
+            let turnToGoTo = card.turnsClued.pop();
+            while (turnToGoTo > globals.turn - 1) {
+                turnToGoTo = card.turnsClued.pop();
+            }
+            goToTurn(turnToGoTo);
+        }
     }
 };
 
