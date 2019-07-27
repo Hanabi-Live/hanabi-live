@@ -64,21 +64,18 @@ const clickMiddle = (card, event) => {
     }
 
     // Middle clicking on cards goes to a turn it was clued
-    if (card.turnsClued.length !== 0 && card.turnsClued[0] !== globals.turn) {
-        // Alt-middle clicking goes to turn it was first clued
+    // Alt-middle clicking goes to turn it was first clued
+    // No modifier goes to turn it was last clued
+    if (card.turnsClued.length > 0) {
         if (event.altKey) {
             goToTurn(card.turnsClued[0]);
-            // No modifier goes to turn it was last clued
+        } else if (card.turnsClued.length >= 2 && card.turnsClued[card.turnsClued.length - 1] === globals.turn) {
+            goToTurn(card.turnsClued[card.turnsClued.length - 2]);
         } else {
-            let turnToGoTo = card.turnsClued.pop();
-            while (turnToGoTo > globals.turn - 1) {
-                turnToGoTo = card.turnsClued.pop();
-            }
-            goToTurn(turnToGoTo);
+            goToTurn(card.turnsClued[card.turnsClued.length - 1]);
         }
     }
 };
-
 const clickRight = (card, event) => {
     // Alt + right-click is a card morph (in a replay / shared replay)
     if (
