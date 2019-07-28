@@ -22,7 +22,7 @@ Note that these steps require **an elevated (administrator) command-shell**.
 * Configure MariaDB:
   * `mysql -u root`
     * `DELETE FROM mysql.user WHERE User='';` <br />
-    (this delete the anonymous user that is installed by default)
+    (this deletes the anonymous user that is installed by default)
     * `DROP DATABASE IF EXISTS test;` <br />
     (this deletes the test database that is installed by default)
     * `CREATE DATABASE hanabi;`
