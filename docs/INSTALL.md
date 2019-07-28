@@ -51,11 +51,11 @@ Note that these steps require **an elevated (administrator) command-shell**.
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * Test the Golang linter:
-  * On the left pane, navigate to and open "src\action.go".
+  * On the left pane, navigate to and open "src\main.go".
   * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
   * Add a new line of "asdf" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
 * Test the JavaScript linter:
-  * On the left pane, navigate to and open "public\js\lobby.js".
+  * On the left pane, navigate to and open "public\js\src\main.js".
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 * If needed, compile and run the server locally:
   * `cd src`
