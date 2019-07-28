@@ -64,16 +64,19 @@ const clickMiddle = (card, event) => {
     }
 
     // Middle clicking on cards goes to a turn it was clued
-    // Alt-middle clicking goes to turn it was first clued
-    // No modifier goes to turn it was last clued
-    if (card.turnsClued.length > 0) {
-        if (event.altKey) {
-            goToTurn(card.turnsClued[0]);
-        } else if (card.turnsClued.length >= 2 && card.turnsClued[card.turnsClued.length - 1] === globals.turn) {
-            goToTurn(card.turnsClued[card.turnsClued.length - 2]);
-        } else {
-            goToTurn(card.turnsClued[card.turnsClued.length - 1]);
-        }
+    // Alt + middle clicking goes to turn it was first clued
+    if (card.turnsClued.length === 0) {
+        return;
+    }
+    if (event.altKey) {
+        goToTurn(card.turnsClued[0]);
+    } else if (
+        card.turnsClued.length >= 2
+        && card.turnsClued[card.turnsClued.length - 1] === globals.turn
+    ) {
+        goToTurn(card.turnsClued[card.turnsClued.length - 2]);
+    } else {
+        goToTurn(card.turnsClued[card.turnsClued.length - 1]);
     }
 };
 
