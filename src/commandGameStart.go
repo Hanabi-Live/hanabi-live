@@ -350,7 +350,7 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 
 		// Change the rank of all of the cards in the deck
 		rank := match2[2]
-		newRank := -1
+		var newRank int
 		if v, err := strconv.Atoi(rank); err != nil {
 			log.Error("Failed to parse the rank on line "+strconv.Itoa(i+1)+":", rank)
 			s.Error("Failed to create the game. Please contact an administrator.")
