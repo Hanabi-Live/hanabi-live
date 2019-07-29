@@ -425,21 +425,21 @@
         "spacing": true
     },
 
-    "Light Rainbow (6 Suits)": {
+    "Muddy Rainbow (6 Suits)": {
         "id": 160,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Light Rainbow"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Muddy Rainbow"]
     },
-    "Light Rainbow (5 Suits)": {
+    "Muddy Rainbow (5 Suits)": {
         "id": 161,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Light Rainbow"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Muddy Rainbow"]
     },
-    "Light Rainbow (4 Suits)": {
+    "Muddy Rainbow (4 Suits)": {
         "id": 162,
-        "suits": ["Blue", "Green", "Yellow", "Light Rainbow"]
+        "suits": ["Blue", "Green", "Yellow", "Muddy Rainbow"]
     },
-    "Light Rainbow (3 Suits)": {
+    "Muddy Rainbow (3 Suits)": {
         "id": 163,
-        "suits": ["Blue", "Green", "Light Rainbow"],
+        "suits": ["Blue", "Green", "Muddy Rainbow"],
         "spacing": true
     },
 

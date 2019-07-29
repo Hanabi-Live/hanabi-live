@@ -79,11 +79,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * No rank clues "touch" the brown suit.
 * There is only one of each chocolate card in the deck, which means that every chocolate card is "critical".
 
-### Light Rainbow
+### Muddy Rainbow
 
-* One of the suits is replaced with a light rainbow suit.
-* All color clues will "touch" the light rainbow suit.
-* No rank clues will "touch" the light rainbow suit.
+* One of the suits is replaced with a muddy rainbow suit.
+* All color clues will "touch" the muddy rainbow suit.
+* No rank clues will "touch" the muddy rainbow suit.
 
 ### Light Pink
 
@@ -306,11 +306,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Dark Pink & Gray (6 Suits)
   * Dark Pink & Chocolate (6 Suits)
   * Gray & Chocolate (6 Suits)
-* Light Rainbow
-  * Light Rainbow (6 Suits)
-  * Light Rainbow (5 Suits)
-  * Light Rainbow (4 Suits)
-  * Light Rainbow (3 Suits)
+* Muddy Rainbow
+  * Muddy Rainbow (6 Suits)
+  * Muddy Rainbow (5 Suits)
+  * Muddy Rainbow (4 Suits)
+  * Muddy Rainbow (3 Suits)
 * Light Pink
   * Light Pink (6 Suits)
   * Light Pink (5 Suits)
