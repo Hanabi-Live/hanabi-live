@@ -8,6 +8,10 @@ func chatPregameS(s *Session, d *CommandData, g *Game) {
 	automaticStart(s, g, len(g.Players)+1)
 }
 
+func chatPregameS2(s *Session, d *CommandData, g *Game) {
+	automaticStart(s, g, 2)
+}
+
 func chatPregameS3(s *Session, d *CommandData, g *Game) {
 	automaticStart(s, g, 3)
 }

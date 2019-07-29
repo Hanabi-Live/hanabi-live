@@ -62,6 +62,7 @@ func chatCommandInit() {
 
 	// Pre-game commands
 	chatPregameCommandMap["s"] = chatPregameS
+	chatPregameCommandMap["s2"] = chatPregameS2
 	chatPregameCommandMap["s3"] = chatPregameS3
 	chatPregameCommandMap["s4"] = chatPregameS4
 	chatPregameCommandMap["s5"] = chatPregameS5
