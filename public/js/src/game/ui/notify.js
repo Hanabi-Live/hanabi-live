@@ -180,6 +180,7 @@ commands.draw = (data) => {
         card.suitPips.setVisible(false);
         card.rankPips.setVisible(false);
     }
+    card.setFade();
 
     // Each card is contained within a LayoutChild
     // Position the LayoutChild over the deck
