@@ -17,7 +17,7 @@ exports.handleAction = (data) => {
         return;
     }
 
-    if (data.canClue) {
+    if (data !== null && data.canClue) {
         // Reset and show the clue UI
         if (globals.playerNames.length === 2) {
             // In 2-player games,
