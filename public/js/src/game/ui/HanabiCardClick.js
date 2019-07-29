@@ -33,7 +33,8 @@ module.exports = function click(event) {
 };
 
 const clickLeft = (card, event) => {
-    // The "Empathy" feature is handled above, so we don't have to worry about it here
+    // The "Empathy" feature is handled in the "HanabiCardInit.js" file,
+    // so we don't have to worry about it here
 
     // No actions in this function use modifiers other than Alt
     if (event.ctrlKey || event.shiftKey || event.metaKey) {

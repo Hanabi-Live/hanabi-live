@@ -334,6 +334,7 @@ exports.empathy = function empathy() {
             const card = layoutChild.children[0];
             card.empathy = enabled;
             card.setBareImage();
+            card.setFade();
         }
         globals.layers.card.batchDraw();
     };
