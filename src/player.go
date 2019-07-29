@@ -281,8 +281,10 @@ func (p *Player) PlayCard(g *Game, c *Card) bool {
 		// Decrease the maximum score possible for this game
 		g.MaxScore = newMaxScore
 
-		// Play a sad sound
-		g.Sound = "sad"
+		// Only play the sad sound if we are not in the final round
+		if g.EndTurn == -1 {
+			g.Sound = "sad"
+		}
 	}
 
 	// This is not a "double discard" situation, since the card successfully played
@@ -338,10 +340,8 @@ func (p *Player) DiscardCard(g *Game, c *Card) bool {
 		// Decrease the maximum score possible for this game
 		g.MaxScore = newMaxScore
 
-		// Play a sad sound
-		// (don't play the custom sound on a misplay,
-		// since the misplay sound will already indicate that an error has occurred)
-		if !c.Failed {
+		// Only play the sad sound if we are not in the final round and this was not a misplay
+		if g.EndTurn == -1 && !c.Failed {
 			g.Sound = "sad"
 		}
 	}

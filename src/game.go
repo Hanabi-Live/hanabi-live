@@ -52,7 +52,7 @@ type Game struct {
 	Sound         string
 	TurnBeginTime time.Time
 	// Set when the final card is drawn to determine when the game should end
-	EndTurn     int
+	EndTurn     int                // Initialized to -1; set when the final card is drawn
 	BlindPlays  int                // The number of consecutive blind plays
 	Misplays    int                // The number of consecutive misplays
 	Chat        []*GameChatMessage // All of the in-game chat history

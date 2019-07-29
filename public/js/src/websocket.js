@@ -192,7 +192,7 @@ const initCommands = () => {
                 globals.conn.send('chatRead');
             } else {
                 // The chat window was not open; by default, keep it closed
-                // Instead, change the "Chat" button to say "Chat (1)"
+                // Change the "Chat" button to say "Chat (1)"
                 // (or e.g. "Chat (3)", if they have multiple unread messages)
                 globals.chatUnread += 1;
                 globals.ui.updateChatLabel();
