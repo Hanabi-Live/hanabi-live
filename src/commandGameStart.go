@@ -327,7 +327,7 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 
 		// Change the suit of all of the cards in the deck
 		suit := match2[1]
-		newSuit := -1
+		var newSuit int
 		if suit == "b" {
 			newSuit = 0
 		} else if suit == "g" {
@@ -345,7 +345,8 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 			s.Error("Failed to create the game. Please contact an administrator.")
 			return true
 		}
-		g.Deck[i-1].Suit = newSuit // The first line is the number of players, so we have to subtract one
+		g.Deck[i-1].Suit = newSuit
+		// (the first line is the number of players, so we have to subtract one)
 
 		// Change the rank of all of the cards in the deck
 		rank := match2[2]
