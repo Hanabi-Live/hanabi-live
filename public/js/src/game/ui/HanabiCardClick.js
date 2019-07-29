@@ -9,6 +9,7 @@ const convert = require('./convert');
 const globals = require('./globals');
 const notes = require('./notes');
 const replay = require('./replay');
+const websocket = require('./websocket');
 
 module.exports = function click(event) {
     // Disable all click events if the card is tweening
@@ -220,7 +221,6 @@ const clickMorph = (order) => {
     const suitLetter = card[0];
     let suit = null;
     for (const variantSuit of globals.variant.suits) {
-        console.log(variantSuit.abbreviation);
         if (suitLetter.toLowerCase() === variantSuit.abbreviation.toLowerCase()) {
             suit = variantSuit;
         }
@@ -242,10 +242,19 @@ const clickMorph = (order) => {
         return;
     }
 
-    // Tell the server that we are doing a hypothetical
-    if (globals.amSharedReplayLeader) {
-        globals.lobby.conn.send('replayAction', {
-            type: constants.REPLAY_ACTION_TYPE.MORPH,
+    if (globals.sharedReplay) {
+        // Tell the server that we are doing a hypothetical
+        if (globals.amSharedReplayLeader) {
+            globals.lobby.conn.send('replayAction', {
+                type: constants.REPLAY_ACTION_TYPE.MORPH,
+                order,
+                suit,
+                rank,
+            });
+        }
+    } else {
+        // This is a non-shared replay, so locally morph the card
+        websocket.replayMorph({
             order,
             suit,
             rank,

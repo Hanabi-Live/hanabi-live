@@ -478,8 +478,8 @@ commands.replayMorph = (data) => {
 
     commands.reveal({
         order: data.order,
-        rank: data.rank,
         suit: data.suit,
+        rank: data.rank,
     });
 };
 
