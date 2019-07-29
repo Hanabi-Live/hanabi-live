@@ -622,9 +622,9 @@ class HanabiCard extends graphics.Group {
     }
 
     animateToPlayStacks() {
-        // We add a LayoutChild to a CardStack
+        // We add a LayoutChild to a PlayStack
         const playStack = globals.elements.playStacks.get(this.suit);
-        playStack.add(this.parent);
+        playStack.add(this.parent); // The act of adding it will automatically tween the card
 
         // We also want to move this stack to the top so that
         // cards do not tween behind the other play stacks when travelling to this stack
