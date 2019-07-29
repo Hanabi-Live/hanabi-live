@@ -120,6 +120,7 @@ commands.discard = (data) => {
 
     card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();
+    card.setFade(); // Unfade the card if it is faded
 
     if (data.failed && !globals.animateFast && !globals.speedrun) {
         // If this card was misplayed,
