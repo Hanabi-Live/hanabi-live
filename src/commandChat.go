@@ -193,13 +193,11 @@ func commandChatGame(s *Session, d *CommandData) {
 		for _, p := range g.Players {
 			if p.Present {
 				p.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
-				g.ChatRead[p.ID] = len(g.Chat)
 			}
 		}
 	}
 	for _, sp := range g.Spectators {
 		sp.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
-		g.ChatRead[sp.ID] = len(g.Chat)
 	}
 
 	// Check for commands

@@ -65,11 +65,8 @@ func commandGameJoin(s *Session, d *CommandData) {
 		Join
 	*/
 
-	log.Info(
-		g.GetName() +
-			"User \"" + s.Username() + "\" joined. " +
-			"(There are now " + strconv.Itoa(len(g.Players)+1) + " players.)",
-	)
+	log.Info(g.GetName() + "User \"" + s.Username() + "\" joined. " +
+		"(There are now " + strconv.Itoa(len(g.Players)+1) + " players.)")
 
 	// Get the stats for this player
 	var stats models.Stats
@@ -114,6 +111,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 
 	// Send them the chat history for this game
 	chatSendPastFromGame(s, g)
+	g.ChatRead[p.ID] = 0
 
 	// Send the table owner whether or not the "Start Game" button should be grayed out
 	g.NotifyTableReady()

@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -200,9 +199,6 @@ func discordGetNickname(discordID string) string {
 	}
 
 	// Get their custom nickname for the Discord server, if any
-	log.Debug("Searching for Discord ID: " + discordID + ", " +
-		"len(guild.Members) = " + strconv.Itoa(len(guild.Members)) + ", " +
-		"guild.MemberCount = " + strconv.Itoa(guild.MemberCount))
 	for _, member := range guild.Members {
 		if member.User.ID != discordID {
 			continue

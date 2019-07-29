@@ -71,6 +71,17 @@ func commandGameRestart(s *Session, d *CommandData) {
 		Restart
 	*/
 
+	// Add a message to the chat that it was restarted
+	chatServerPregameSend("The game has been restarted.", g.ID)
+
+	// If a user has read all of the chat thus far,
+	// mark that they have also read the "restarted" message, since it is superfluous
+	for k, v := range g.ChatRead {
+		if v == len(g.Chat)-1 {
+			g.ChatRead[k] = len(g.Chat)
+		}
+	}
+
 	// Force the client of all of the spectators to go back to the lobby
 	g.NotifyBoot()
 
@@ -103,10 +114,8 @@ func commandGameRestart(s *Session, d *CommandData) {
 	g2 := games[ID]
 
 	// Copy over the chat from the previous game, if any
-	g2.Chat = g.Chat
-	for k, v := range g.ChatRead {
-		g2.ChatRead[k] = v
-	}
+	g2.Chat = make([]*GameChatMessage, len(g.Chat))
+	copy(g2.Chat, g.Chat)
 
 	// Emulate the other players joining the game
 	for _, s2 := range playerSessions {
@@ -117,6 +126,12 @@ func commandGameRestart(s *Session, d *CommandData) {
 		commandGameJoin(s2, &CommandData{
 			ID: ID,
 		})
+	}
+
+	// For each player, re-copy the markers for which chat messages that they have read
+	// (this has to be done after the players join the game)
+	for k, v := range g.ChatRead {
+		g2.ChatRead[k] = v
 	}
 
 	// Emulate the game owner clicking on the "Start Game" button

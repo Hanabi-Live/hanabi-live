@@ -171,17 +171,29 @@ const initCommands = () => {
 
     globals.conn.on('chat', (data) => {
         chat.add(data, false); // The second argument is "fast"
-        if (
-            data.room === 'game'
-            && globals.ui !== null
-            && !$('#game-chat-modal').is(':visible')
-        ) {
-            if (globals.ui.globals.spectating && !globals.ui.globals.sharedReplay) {
-                // Pop up the chat window every time for spectators
+
+        if (data.room !== 'game') {
+            return;
+        }
+        if (globals.currentScreen === 'pregame') {
+            // Notify the server that we have read the chat message that was just received
+            globals.conn.send('chatRead');
+        } else if (globals.currentScreen === 'game' && globals.ui !== null) {
+            if ($('#game-chat-modal').is(':visible')) {
+                // Notify the server that we have read the chat message that was just received
+                globals.conn.send('chatRead');
+            } else if (
+                globals.ui.globals.spectating
+                && !globals.ui.globals.sharedReplay
+                && !$('#game-chat-modal').is(':visible')
+            ) {
+                // The chat window was not open; pop open the chat window every time for spectators
                 game.chat.toggle();
+                globals.conn.send('chatRead');
             } else {
-                // Do not pop up the chat window by default;
-                // instead, change the "Chat" button to say "Chat (1)"
+                // The chat window was not open; by default, keep it closed
+                // Instead, change the "Chat" button to say "Chat (1)"
+                // (or e.g. "Chat (3)", if they have multiple unread messages)
                 globals.chatUnread += 1;
                 globals.ui.updateChatLabel();
             }

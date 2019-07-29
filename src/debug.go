@@ -95,7 +95,7 @@ func debug2() {
 		}
 		log.Debug("\n")
 
-		log.Debug("    Players:")
+		log.Debug("    Players (" + strconv.Itoa(len(g.Players)) + "):")
 		for j, p := range g.Players { // This is a []*Player
 			log.Debug("        " + strconv.Itoa(j) + " - " +
 				"User ID: " + strconv.Itoa(p.ID) + ", " +
@@ -107,7 +107,7 @@ func debug2() {
 		}
 		log.Debug("\n")
 
-		log.Debug("    Spectators:")
+		log.Debug("    Spectators (" + strconv.Itoa(len(g.Spectators)) + "):")
 		for j, sp := range g.Spectators { // This is a []*Session
 			log.Debug("        " + strconv.Itoa(j) + " - " +
 				"User ID: " + strconv.Itoa(sp.ID) + ", " +
@@ -118,7 +118,7 @@ func debug2() {
 		}
 		log.Debug("\n")
 
-		log.Debug("    DisconSpectators:")
+		log.Debug("    DisconSpectators (" + strconv.Itoa(len(g.DisconSpectators)) + "):")
 		for k, v := range g.DisconSpectators { // This is a map[int]*bool
 			log.Debug("        User ID: " + strconv.Itoa(k) + " - " + strconv.FormatBool(v))
 		}
@@ -127,7 +127,7 @@ func debug2() {
 		}
 		log.Debug("\n")
 
-		log.Debug("    Chat:")
+		log.Debug("    Chat (" + strconv.Itoa(len(g.Chat)) + "):")
 		for j, m := range g.Chat { // This is a []*GameChatMessage
 			log.Debug("        " + strconv.Itoa(j) + " - " +
 				"[" + strconv.Itoa(m.UserID) + "] <" + m.Username + "> " + m.Msg)

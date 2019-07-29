@@ -28,7 +28,7 @@ const globals = {
 
     game: {}, // Equal to the data from the "game" command
 
-    currentScreen: 'login',
+    currentScreen: 'login', // Can be "login", "lobby", "pregame", "game"
     errorOccured: false,
 
     // Legacy UI variables

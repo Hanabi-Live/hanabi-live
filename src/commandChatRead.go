@@ -24,12 +24,6 @@ func commandChatRead(s *Session, d *CommandData) {
 		g = v
 	}
 
-	// Validate that the game has started
-	if !g.Running {
-		s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
-		return
-	}
-
 	// Validate that they are in the game or are a spectator
 	if g.GetPlayerIndex(s.UserID()) == -1 && g.GetSpectatorIndex(s.UserID()) == -1 {
 		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ", so you cannot acknowledge its chat.")
