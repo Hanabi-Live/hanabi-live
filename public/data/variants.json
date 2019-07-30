@@ -99,6 +99,24 @@
         "spacing": true
     },
 
+    "Omni (6 Suits)": {
+        "id": 176,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Omni"]
+    },
+    "Omni (5 Suits)": {
+        "id": 177,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Omni"]
+    },
+    "Omni (4 Suits)": {
+        "id": 178,
+        "suits": ["Blue", "Green", "Yellow", "Omni"]
+    },
+    "Omni (3 Suits)": {
+        "id": 179,
+        "suits": ["Blue", "Green", "Omni"],
+        "spacing": true
+    },
+
     "Black & Rainbow (6 Suits)": {
         "id": 65,
         "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Rainbow"]

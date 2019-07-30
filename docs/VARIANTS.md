@@ -55,6 +55,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * One of the suits is replaced with a brown suit.
 * No rank clues "touch" the brown suit.
 
+### Omni
+
+* One of the suits is replaced with an omni suit.
+* All color clues and all rank clues "touch" the omni suit.
+
 ### Dark Rainbow (Black + Rainbow)
 
 * One of the suits is replaced with a dark rainbow suit.
@@ -76,8 +81,16 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### Chocolate (Black + Brown)
 
 * One of the suits is replaced with a chocolate suit.
-* No rank clues "touch" the brown suit.
+* No rank clues "touch" the chocolate suit.
 * There is only one of each chocolate card in the deck, which means that every chocolate card is "critical".
+
+<!--
+### Dark Omni (Black + Omni)
+
+* One of the suits is replaced with a dark omni suit.
+* All color clues and all rank clues "touch" the dark omni suit.
+* There is only one of each dark omni card in the deck, which means that every dark omni card is "critical".
+-->
 
 ### Muddy Rainbow
 
@@ -217,6 +230,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Brown (5 Suits)
   * Brown (4 Suits)
   * Brown (3 Suits)
+* Omni
+  * Omni (6 Suits)
+  * Omni (5 Suits)
+  * Omni (4 Suits)
+  * Omni (3 Suits)
 * Black & Rainbow
   * Black & Rainbow (6 Suits)
   * Black & Rainbow (5 Suits)
@@ -229,6 +247,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * Black & Brown
   * Black & Brown (6 Suits)
   * Black & Brown (5 Suits)
+<!--
+* Black & Omni
+  * Black & Omni (6 Suits)
+  * Black & Omni (5 Suits)
+-->
 * Rainbow & Pink
   * Rainbow & Pink (6 Suits)
   * Rainbow & Pink (5 Suits)
@@ -299,6 +322,20 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Pink & Chocolate (5 Suits)
   * White & Chocolate (6 Suits)
   * White & Chocolate (5 Suits)
+<!--
+* Dark Omni
+  * Dark Omni (6 Suits)
+  * Dark Omni (5 Suits)
+  * Black & Dark Omni (6 Suits)
+  * Rainbow & Dark Omni (6 Suits)
+  * Rainbow & Dark Omni (5 Suits)
+  * Pink & Dark Omni (6 Suits)
+  * Pink & Dark Omni (5 Suits)
+  * White & Dark Omni (6 Suits)
+  * White & Dark Omni (5 Suits)
+  * Brown & Dark Omni (6 Suits)
+  * Brown & Dark Omni (5 Suits)
+-->
 * Dark Mixes
   * Dark Rainbow & Dark Pink (6 Suits)
   * Dark Rainbow & Gray (6 Suits)

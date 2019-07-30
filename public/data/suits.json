@@ -19,6 +19,13 @@
     "Pink": { "clueRanks": "all", "pip": "infinity" },
     "White": { "clueColors": [], "fill": "#d9d9d9", "pip": "circle" },
     "Brown": { "clueRanks": "none", "pip": "null_symbol" },
+    "Omni": {
+        "allClueColors": true,
+        "clueRanks": "all",
+        "fill": "multi",
+        "fillColors": ["#000000", "#0044cc", "#00cc00", "#ccaa22", "#aa0000", "#6600cc", "#000000"],
+        "pip": "infinity"
+    },
 
     "Dark Rainbow": {
         "abbreviation": "M",
