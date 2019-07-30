@@ -125,6 +125,7 @@ function setTickingDownTime(timer) {
         && millisecondsLeft <= 10000
         && timeElapsed > 900
         && timeElapsed < 1100
+        && !globals.paused
         && !globals.lobby.errorOccured
     ) {
         globals.game.sounds.play('tone');
