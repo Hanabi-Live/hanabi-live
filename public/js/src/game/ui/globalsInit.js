@@ -38,7 +38,6 @@ module.exports = () => {
     globals.deck = []; // Contains HanabiCard objects in the order that they are dealt
     // Keys are e.g. "Blue1", values are the count of how many are left
     globals.cardsMap = new Map();
-    globals.deckOrder = null; // Sent when the game ends
 
     // Game state variables (reset when rewinding in a replay)
     globals.turn = 0;
@@ -217,4 +216,26 @@ module.exports = () => {
     globals.surprise = false;
     globals.spectators = [];
     globals.chatUnread = 0;
+
+    // State information
+    globals.state = { // The current state
+        log: [], // An array of action log messages
+        deck: [], // An array of simple card objects
+        deckSize: 0,
+        score: 0,
+        maxScore: 0,
+        clueTokens: 8,
+        doubleDiscard: false,
+        strikes: 0,
+        pace: 0,
+        currentPlayerIndex: 0,
+        hands: [], // An array of integer arrays
+        playStacks: [], // An array of integer arrays
+        discardStacks: [], // An array of integer arrays
+        clues: [], // An array of simple clue objects
+    };
+    globals.states = []; // The state for each turn
+    // We also keep track of the strikes outside of the state object so that we can show a faded X
+    globals.strikes = [];
+    globals.deckOrder = null; // Sent when the game ends
 };

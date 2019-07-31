@@ -224,16 +224,6 @@ commands.draw = (data) => {
     }
 };
 
-// A new line of text has appeared in the action log
-commands.text = (data) => {
-    globals.elements.actionLog.setMultiText(data.text);
-    globals.elements.fullActionLog.addMessage(data.text);
-    if (!globals.animateFast) {
-        globals.layers.UI.batchDraw();
-        globals.layers.UI2.batchDraw();
-    }
-};
-
 commands.play = (data) => {
     // Local variables
     const card = globals.deck[data.which.order];
@@ -380,6 +370,16 @@ commands.strike = (data) => {
 
     // Record the turn that the strike happened and the card that was misplayed
     ui.recordStrike(data);
+};
+
+// A new line of text has appeared in the action log
+commands.text = (data) => {
+    globals.elements.actionLog.setMultiText(data.text);
+    globals.elements.fullActionLog.addMessage(data.text);
+    if (!globals.animateFast) {
+        globals.layers.UI.batchDraw();
+        globals.layers.UI2.batchDraw();
+    }
 };
 
 commands.turn = (data) => {

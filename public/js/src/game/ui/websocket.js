@@ -9,6 +9,8 @@ const globals = require('./globals');
 const hypothetical = require('./hypothetical');
 const notes = require('./notes');
 const replay = require('./replay');
+const state = require('./state');
+const stats = require('./stats');
 const timer = require('./timer');
 const ui = require('./ui');
 
@@ -325,6 +327,12 @@ commands.noteListPlayer = (data) => {
 
 // Used when the game state changes
 commands.notify = (data) => {
+    // Update the state table
+    // TODO: eventually, everything will be drawn from the state table
+    if (Object.prototype.hasOwnProperty.call(state, data.type)) {
+        state[data.type](data);
+    }
+
     // We need to save this game state change for the purposes of the in-game replay
     globals.replayLog.push(data);
 
@@ -342,9 +350,6 @@ commands.notify = (data) => {
         if (!globals.replay && globals.replayMax > 0) {
             globals.elements.replayButton.setEnabled(true);
         }
-    } else if (data.type === 'deckOrder') {
-        // At the end of a game, the server sends a list that reveals what the entire deck is
-        globals.deckOrder = data.deck;
     }
 
     // Now that it is recorded, change the actual drawn game state
@@ -365,6 +370,18 @@ commands.notify = (data) => {
 };
 
 commands.notifyList = (dataList) => {
+    // Initialize the state table
+    globals.state.deckSize = stats.getTotalCardsInTheDeck();
+    globals.state.maxScore = globals.variant.maxScore;
+    for (let i = 0; i < globals.playerNames.length; i++) {
+        globals.state.hands.push([]);
+    }
+    for (let i = 0; i < globals.variant.suits.length; i++) {
+        globals.state.playStacks.push([]);
+        globals.state.discardStacks.push([]);
+    }
+
+    // Play through all of the turns
     for (const data of dataList) {
         commands.notify(data);
 
@@ -372,13 +389,11 @@ commands.notifyList = (dataList) => {
         // (since we might be in a replay that is starting on the first turn,
         // the respective notify functions will not be reached until
         // we actually progress to that turn of the replay)
+        // TODO: Remove this block when the UI is drawn from the state table
         if (data.type === 'strike') {
             // Record the turns that the strikes happen
             // (or else clicking on the strike squares won't work on a freshly initialized replay)
             ui.recordStrike(data);
-        } else if (data.type === 'deckOrder') {
-            // Record the deck order so that hypotheticals will work properly
-            globals.deckOrder = data.deck;
         }
     }
 };
