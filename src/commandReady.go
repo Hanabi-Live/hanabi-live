@@ -78,10 +78,6 @@ func commandReady(s *Session, d *CommandData) {
 		s.NotifyAction(g)
 	}
 
-	// Send an "advanced" message
-	// (if this is not sent during a replay, the UI will look uninitialized)
-	s.Emit("advanced", nil)
-
 	// Check if the game is still in progress
 	if g.Replay {
 		// Since the game is over, send them the notes from all the players & spectators

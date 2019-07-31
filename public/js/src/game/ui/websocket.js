@@ -66,21 +66,6 @@ commands.action = (data) => {
     }
 };
 
-// This is sent to the client upon game initialization (in the "commandReady.go" file)
-commands.advanced = () => {
-    globals.animateFast = false;
-
-    // Initialize solo replays to the first turn (otherwise, nothing will be drawn)
-    if (globals.replay && !globals.sharedReplay) {
-        replay.goto(0, true);
-    }
-
-    ui.checkFadeInAllHands();
-    globals.layers.card.batchDraw();
-    globals.layers.UI.batchDraw();
-    globals.loading = false;
-};
-
 // This is sent by the server to force the client to go back to the lobby
 commands.boot = () => {
     timer.stop();
@@ -396,6 +381,19 @@ commands.notifyList = (dataList) => {
             ui.recordStrike(data);
         }
     }
+
+    // The game is now initialized
+    globals.animateFast = false;
+
+    // Initialize solo replays to the first turn (otherwise, nothing will be drawn)
+    if (globals.replay && !globals.sharedReplay) {
+        replay.goto(0, true);
+    }
+
+    ui.checkFadeInAllHands();
+    globals.layers.card.batchDraw();
+    globals.layers.UI.batchDraw();
+    globals.loading = false;
 };
 
 commands.pause = (data) => {
