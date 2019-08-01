@@ -68,6 +68,8 @@ func chatCommandInit() {
 	chatPregameCommandMap["s5"] = chatPregameS5
 	chatPregameCommandMap["s6"] = chatPregameS6
 	chatPregameCommandMap["discord"] = chatPregameDiscord
+	chatPregameCommandMap["pause"] = chatPause
+	chatPregameCommandMap["unpause"] = chatUnpause
 }
 
 func chatCommand(s *Session, d *CommandData, g *Game) {

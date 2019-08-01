@@ -62,9 +62,9 @@ type CommandData struct {
 	ColNum  int    `json:"colno"`
 
 	// Used internally
-	Username             string
-	Discord              bool
-	Server               bool
+	Username             string   // Used to mark the username of a chat message
+	Discord              bool     // Used to mark if a chat message origined from Discord
+	Server               bool     // Used to mark if the server generated the chat message
 	Spam                 bool     // True if it should go to the "bot" channel
 	OnlyDiscord          bool     // True if this is a chat message that should only go to Discord
 	DiscordID            string   // Used when echoing a message from Discord to the lobby
@@ -72,6 +72,7 @@ type CommandData struct {
 	Args                 []string // Used to pass chat command arguments to a chat command handler
 	GameID               int      // Used to pass the game ID to a chat command handler
 }
+
 type Clue struct {
 	Type  int `json:"type"`
 	Value int `json:"value"`

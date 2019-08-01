@@ -38,7 +38,7 @@ func commandPause(s *Session, d *CommandData) {
 	// Validate that they are in the game
 	i := g.GetPlayerIndex(s.UserID())
 	if i == -1 {
-		s.Warning("You are in not game " + strconv.Itoa(gameID) + ", so you cannot send a note.")
+		s.Warning("You are in not game " + strconv.Itoa(gameID) + ", so you cannot pause / unpause.")
 		return
 	}
 	p := g.Players[i]
@@ -118,7 +118,7 @@ func commandPause(s *Session, d *CommandData) {
 
 	// Also send a chat message about it
 	msg := s.Username() + " "
-	if g.Paused {
+	if !g.Paused {
 		msg += "un"
 	}
 	msg += "paused the game."

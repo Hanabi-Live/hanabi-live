@@ -108,7 +108,7 @@ func websocketConnect(ms *melody.Session) {
 	s.Emit("hello", &HelloMessage{
 		// We have to send the username back to the client because they may
 		// have logged in with the wrong case, and the client needs to know
-		// their exact username or various bugs will creep up
+		// their exact username or various bugs will occur
 		Username: s.Username(),
 
 		// We also send the total amount of games that they have played
