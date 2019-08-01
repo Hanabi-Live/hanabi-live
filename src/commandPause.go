@@ -122,5 +122,5 @@ func commandPause(s *Session, d *CommandData) {
 		msg += "un"
 	}
 	msg += "paused the game."
-	chatServerPregameSend(msg, g.ID)
+	chatServerGameSend(msg, g.ID)
 }

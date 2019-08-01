@@ -72,7 +72,7 @@ func commandGameRestart(s *Session, d *CommandData) {
 	*/
 
 	// Add a message to the chat that it was restarted
-	chatServerPregameSend("The game has been restarted.", g.ID)
+	chatServerGameSend("The game has been restarted.", g.ID)
 
 	// If a user has read all of the chat thus far,
 	// mark that they have also read the "restarted" message, since it is superfluous

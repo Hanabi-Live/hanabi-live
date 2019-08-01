@@ -135,7 +135,7 @@ func waitingListAlert(g *Game, creator string) {
 	chatServerSend(alert)
 
 	// Also, copy the people who were pinged to the pre-game chat for reference
-	chatServerPregameSend("Alerted players: "+usernameList, g.ID)
+	chatServerGameSend("Alerted players: "+usernameList, g.ID)
 }
 
 /*

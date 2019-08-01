@@ -164,9 +164,9 @@ func chatServerSend(msg string) {
 	})
 }
 
-// chatServerPregameSend is a helper function to give feedback to a user after they type a command
-// (for the pre-game chat)
-func chatServerPregameSend(msg string, gameID int) {
+// chatServerGameSend is a helper function to give feedback to a user after they type a command
+// (for the game chat)
+func chatServerGameSend(msg string, gameID int) {
 	commandChat(nil, &CommandData{
 		Msg:    msg,
 		Room:   "game",

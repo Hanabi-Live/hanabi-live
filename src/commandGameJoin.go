@@ -122,7 +122,7 @@ func commandGameJoin(s *Session, d *CommandData) {
 		for _, p := range g.Players {
 			if p.ID == g.Owner {
 				if !p.Present {
-					chatServerPregameSend("Aborting automatic game start since "+
+					chatServerGameSend("Aborting automatic game start since "+
 						"the table creator is away.", g.ID)
 					return
 				}

@@ -36,8 +36,8 @@ func chatHelp(s *Session, d *CommandData) {
 
 var (
 	// Used to store all of the functions that handle each command
-	chatCommandMap        = make(map[string]func(*Session, *CommandData))
-	chatPregameCommandMap = make(map[string]func(*Session, *CommandData, *Game))
+	chatCommandMap     = make(map[string]func(*Session, *CommandData))
+	chatGameCommandMap = make(map[string]func(*Session, *CommandData, *Game))
 )
 
 func chatCommandInit() {
@@ -61,15 +61,15 @@ func chatCommandInit() {
 	chatCommandMap["debug"] = debug
 
 	// Pre-game commands
-	chatPregameCommandMap["s"] = chatPregameS
-	chatPregameCommandMap["s2"] = chatPregameS2
-	chatPregameCommandMap["s3"] = chatPregameS3
-	chatPregameCommandMap["s4"] = chatPregameS4
-	chatPregameCommandMap["s5"] = chatPregameS5
-	chatPregameCommandMap["s6"] = chatPregameS6
-	chatPregameCommandMap["discord"] = chatPregameDiscord
-	chatPregameCommandMap["pause"] = chatPause
-	chatPregameCommandMap["unpause"] = chatUnpause
+	chatGameCommandMap["s"] = chatGameS
+	chatGameCommandMap["s2"] = chatGameS2
+	chatGameCommandMap["s3"] = chatGameS3
+	chatGameCommandMap["s4"] = chatGameS4
+	chatGameCommandMap["s5"] = chatGameS5
+	chatGameCommandMap["s6"] = chatGameS6
+	chatGameCommandMap["discord"] = chatGameDiscord
+	chatGameCommandMap["pause"] = chatGamePause
+	chatGameCommandMap["unpause"] = chatGameUnpause
 }
 
 func chatCommand(s *Session, d *CommandData, g *Game) {
@@ -95,11 +95,11 @@ func chatCommand(s *Session, d *CommandData, g *Game) {
 		}
 		chatCommandMap[command](s, d)
 	} else {
-		// This is a pre-game chat message
-		if _, ok := chatPregameCommandMap[command]; !ok {
-			chatServerPregameSend("That is not a valid pre-game command.", g.ID)
+		// This is a game chat message
+		if _, ok := chatGameCommandMap[command]; !ok {
+			chatServerGameSend("That is not a valid game command.", g.ID)
 			return
 		}
-		chatPregameCommandMap[command](s, d, g)
+		chatGameCommandMap[command](s, d, g)
 	}
 }
