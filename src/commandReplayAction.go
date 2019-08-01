@@ -109,7 +109,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		// Tell everyone about the new leader
 		// (which will enable the replay controls for the leader)
 		for _, sp := range g.Spectators {
-			sp.Session.NotifyReplayLeader(g)
+			sp.Session.NotifyReplayLeader(g, true)
 		}
 	} else if d.Type == replayActionTypeMorph {
 		// A "hypothetical" card morph

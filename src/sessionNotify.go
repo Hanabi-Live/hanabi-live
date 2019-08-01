@@ -277,7 +277,7 @@ func (s *Session) NotifySpectators(g *Game) {
 	})
 }
 
-func (s *Session) NotifyReplayLeader(g *Game) {
+func (s *Session) NotifyReplayLeader(g *Game, playAnimation bool) {
 	// Get the username of the game owner
 	// (the "Owner" field is used to store the leader of the shared replay)
 	name := ""
@@ -311,10 +311,12 @@ func (s *Session) NotifyReplayLeader(g *Game) {
 
 	// Send it
 	type ReplayLeaderMessage struct {
-		Name string `json:"name"`
+		Name          string `json:"name"`
+		PlayAnimation bool   `json:"playAnimation"`
 	}
 	s.Emit("replayLeader", &ReplayLeaderMessage{
-		Name: name,
+		Name:          name,
+		PlayAnimation: playAnimation,
 	})
 }
 

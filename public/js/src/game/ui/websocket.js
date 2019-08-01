@@ -461,7 +461,12 @@ commands.replayLeader = (data) => {
     // Update the UI and play an animation to indicate there is a new replay leader
     globals.elements.sharedReplayLeaderLabel.show();
     globals.elements.sharedReplayLeaderCircle.setVisible(globals.amSharedReplayLeader);
-    globals.elements.sharedReplayLeaderLabelPulse.play();
+    if (data.playAnimation) {
+        // We only want the animation to play when the leader changes
+        // The server will set "playAnimation" to false when a player is first loading into a game
+        // (or when a game ends)
+        globals.elements.sharedReplayLeaderLabelPulse.play();
+    }
     globals.elements.toggleSharedTurnButton.show();
     if (globals.amSharedReplayLeader) {
         globals.elements.toggleSharedTurnButton.setLeft();

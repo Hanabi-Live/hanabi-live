@@ -446,7 +446,7 @@ func (g *Game) ConvertToSharedReplay() {
 		notifyAllUser(sp.Session)
 
 		// Activate the Replay Leader label
-		sp.Session.NotifyReplayLeader(g)
+		sp.Session.NotifyReplayLeader(g, false)
 
 		// Send them the notes from all the players & spectators
 		sp.Session.NotifyNoteList(g)

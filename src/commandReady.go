@@ -127,7 +127,7 @@ func commandReady(s *Session, d *CommandData) {
 
 	if g.Replay && g.Visible {
 		// Enable the replay controls for the leader of the review
-		s.NotifyReplayLeader(g)
+		s.NotifyReplayLeader(g, false)
 
 		// Send them to the current turn that everyone else is at
 		type ReplayTurnMessage struct {
