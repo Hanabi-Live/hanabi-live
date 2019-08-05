@@ -136,8 +136,9 @@ func getGametimeString(timeString sql.NullString) (string, error) {
 		return "", nil
 	}
 
-	playtime, err := time.ParseDuration(timeString.String + "s")
-	// Display seconds only for users that played less than a minute
+	playtime, err := time.ParseDuration(timeString.String + "s") // The s is for seconds
+
+	// Display only seconds for users that have played less than a minute
 	if playtime.Minutes() < 1 {
 		seconds := math.Round(playtime.Seconds())
 		msg := fmt.Sprintf("%.0f second", seconds)
@@ -146,7 +147,8 @@ func getGametimeString(timeString sql.NullString) (string, error) {
 		}
 		return msg, nil
 	}
-	// Display minutes only for users that played less than an hour
+
+	// Display only minutes for users that played less than an hour
 	if playtime.Hours() < 1 {
 		minutes := math.Round(playtime.Minutes())
 		msg := fmt.Sprintf("%.0f minute", minutes)
@@ -156,37 +158,39 @@ func getGametimeString(timeString sql.NullString) (string, error) {
 		return msg, nil
 	}
 
-	// Convert Duration variable into hours and minutes
-	minutes := int(playtime.Minutes())
+	// Convert the duration into days, hours, and minutes
 	hours := int(playtime.Hours())
+	minutes := int(playtime.Minutes())
 	minutes -= hours * 60
+	days := 0
+	for hours > 24 {
+		days++
+		hours -= 24
+	}
 
-	// Convert hours into months and hours
-	months := float64(hours) * 0.00136895463
-	hours -= int(math.RoundToEven(months) / 0.00136895463)
+	daysStr := "day"
+	if days != 1 {
+		daysStr += "s"
+	}
 
-	hourStr := "hour"
+	hoursStr := "hour"
 	if hours != 1 {
-		hourStr += "s"
+		hoursStr += "s"
 	}
 
-	minStr := "minute"
+	minutesStr := "minute"
 	if minutes != 1 {
-		minStr += "s"
+		minutesStr += "s"
 	}
 
+	// Display days only for users that played over a day
 	var msg string
-	// Display months only for users that played over a month
-	if months >= 1 {
-		monthStr := "month"
-		if int(months) != 1 {
-			monthStr += "s"
-		}
-		msg = "%.1fh (%.0f %s, %d %s and %d %s)"
-		msg = fmt.Sprintf(msg, playtime.Hours(), months, monthStr, hours, hourStr, minutes, minStr)
+	if days >= 1 {
+		msg = "%d %s, %d %s, and %d %s"
+		msg = fmt.Sprintf(msg, days, daysStr, hours, hoursStr, minutes, minutesStr)
 	} else {
-		msg = "%.1fh (%d %s and %d %s)"
-		msg = fmt.Sprintf(msg, playtime.Hours(), hours, hourStr, minutes, minStr)
+		msg = "%d %s and %d %s"
+		msg = fmt.Sprintf(msg, hours, hoursStr, minutes, minutesStr)
 	}
 
 	return msg, err

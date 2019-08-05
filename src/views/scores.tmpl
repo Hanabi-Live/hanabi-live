@@ -1,9 +1,31 @@
 {{define "profile"}}
 <ul>
-    <li>Total games played: {{.NumGames}}</li>
-    <li>Total max scores: {{.NumMaxScores}} / {{.TotalMaxScores}}</li>
-    {{if .TimePlayed}}<li>Total time spent playing (in non-speedruns): {{.TimePlayed}}</li>{{end}}
-    {{if .TimeRaced}}<li>Total time spent playing (in speedruns): {{.TimeRaced}}</li>{{end}}
+    <style>
+        .stat-description {
+            display: inline-block;
+            width: 19em;
+        }
+    </style>
+    <li>
+        <span class="stat-description">Total games played:</span>
+        {{.NumGames}}
+    </li>
+    <li>
+        <span class="stat-description">Total max scores:</span>
+        {{.NumMaxScores}} / {{.TotalMaxScores}}
+    </li>
+    {{if .TimePlayed}}
+        <li>
+            <span class="stat-description">Total time spent playing (in non-speedruns):</span>
+            {{.TimePlayed}}
+        </li>
+    {{end}}
+    {{if .TimeRaced}}
+        <li>
+            <span class="stat-description">Total time spent playing (in speedruns):</span>
+            {{.TimeRaced}}
+        </li>
+    {{end}}
 </ul>
 
 <table>

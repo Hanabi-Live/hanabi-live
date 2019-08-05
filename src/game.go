@@ -7,8 +7,8 @@ import (
 )
 
 type Game struct {
-	// This corresponds to the database ID of the game;
-	// this is 0 if we are in an ongoing game that has not been written to the database yet
+	// This corresponds to the database ID of the game
+	// or 0 if an ongoing game that has not been written to the database yet
 	ID int
 
 	// This is a reference to the parent object; every game must have a parent Table object
