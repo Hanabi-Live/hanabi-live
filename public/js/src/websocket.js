@@ -217,7 +217,9 @@ const initCommands = () => {
         }
     });
 
-    globals.conn.on('joined', () => {
+    globals.conn.on('joined', (data) => {
+        globals.tableID = data.tableID;
+
         // We joined a new game, so transition between screens
         lobby.tables.draw();
         lobby.pregame.show();
@@ -247,7 +249,7 @@ const initCommands = () => {
         }
     });
 
-    globals.conn.on('gameStart', (data) => {
+    globals.conn.on('tableStart', (data) => {
         if (!data.replay) {
             lobby.pregame.hide();
         }

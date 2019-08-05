@@ -104,8 +104,8 @@ exports.draw = () => {
 };
 
 const tableSpectateButton = table => () => {
-    globals.conn.send('gameSpectate', {
-        gameID: table.id,
+    globals.conn.send('tableSpectate', {
+        tableID: table.id,
     });
     lobby.tables.draw();
 };
@@ -116,15 +116,15 @@ const tableJoinButton = table => () => {
         return;
     }
 
-    globals.conn.send('gameJoin', {
-        gameID: table.id,
+    globals.conn.send('tableJoin', {
+        tableID: table.id,
     });
     lobby.tables.draw();
 };
 
 const tableReattendButton = table => () => {
-    globals.conn.send('gameReattend', {
-        gameID: table.id,
+    globals.conn.send('tableReattend', {
+        tableID: table.id,
     });
     lobby.tables.draw();
 };

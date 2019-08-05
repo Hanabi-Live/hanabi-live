@@ -19,32 +19,33 @@ func commandPause(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the game exists
-	gameID := s.CurrentGame()
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := s.CurrentTable()
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
+	g := t.Game
 
 	// Validate that the game has started
-	if !g.Running {
-		s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
+	if !t.Running {
+		s.Warning("The game for table " + strconv.Itoa(tableID) + " has not started yet.")
 		return
 	}
 
 	// Validate that they are in the game
-	i := g.GetPlayerIndex(s.UserID())
+	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
-		s.Warning("You are in not game " + strconv.Itoa(gameID) + ", so you cannot pause / unpause.")
+		s.Warning("You are not at table " + strconv.Itoa(tableID) + ", so you cannot pause / unpause.")
 		return
 	}
 	p := g.Players[i]
 
 	// Validate that it is a timed game
-	if !g.Options.Timed {
+	if !t.Options.Timed {
 		s.Warning("This is not a timed game, so you cannot pause / unpause.")
 		return
 	}
@@ -104,17 +105,17 @@ func commandPause(s *Session, d *CommandData) {
 		// Add the time elapsed during the pause to the time recorded when the turn began
 		// (because we use this as a differential to calculate how much time the player took when
 		// they end their turn)
-		g.TurnBeginTime = g.TurnBeginTime.Add(time.Since(g.PauseTime))
+		g.DatetimeTurnBegin = g.DatetimeTurnBegin.Add(time.Since(g.PauseTime))
 
 		// Send everyone new clock values
-		g.NotifyTime()
+		t.NotifyTime()
 
 		// Restart the function that will check to see if the current player has run out of time
 		// (since the existing function will return and do nothing if the game is paused)
 		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayer])
 	}
 
-	g.NotifyPause()
+	t.NotifyPause()
 
 	// Also send a chat message about it
 	msg := s.Username() + " "
@@ -122,5 +123,5 @@ func commandPause(s *Session, d *CommandData) {
 		msg += "un"
 	}
 	msg += "paused the game."
-	chatServerGameSend(msg, g.ID)
+	chatServerSend(msg, "table"+strconv.Itoa(t.ID))
 }

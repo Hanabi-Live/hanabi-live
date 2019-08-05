@@ -184,7 +184,7 @@ exports.backToLobby = () => {
     // Stop any timer-related callbacks
     timer.stop();
 
-    globals.lobby.conn.send('gameUnattend');
+    globals.lobby.conn.send('tableUnattend');
     globals.game.hide();
 };
 

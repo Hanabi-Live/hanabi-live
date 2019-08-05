@@ -17,7 +17,7 @@ $(document).ready(() => {
         'game-chat-input',
     ];
     for (const input of inputs) {
-        const room = input === 'lobby-chat-input' ? 'lobby' : 'game';
+        const room = input === 'lobby-chat-input' ? 'lobby' : 'table';
         $(`#${input}`).on('keypress', keypress(room));
     }
 
@@ -61,6 +61,10 @@ const keypress = room => function keypressFunction(event) {
         // Clear the chat box
         const msg = input.val();
         input.val('');
+
+        if (room === 'table') {
+            room = `table${globals.tableID}`;
+        }
 
         globals.conn.send('chat', {
             msg,

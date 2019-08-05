@@ -442,7 +442,7 @@ const drawBottomLeftButtons = () => {
     });
     globals.layers.UI.add(restartButton);
     restartButton.on('click tap', () => {
-        globals.lobby.conn.send('gameRestart');
+        globals.lobby.conn.send('tableRestart');
     });
     restartButton.tooltipName = 'restart';
     restartButton.tooltipContent = 'Automatically go into a new game with the current members of the shared replay (using the same game settings as this one).';
@@ -526,7 +526,7 @@ const drawBottomLeftButtons = () => {
     });
     globals.layers.UI.add(killButton);
     killButton.on('click tap', () => {
-        globals.lobby.conn.send('gameAbandon');
+        globals.lobby.conn.send('tableAbandon');
     });
     killButton.tooltipName = 'kill';
     killButton.tooltipContent = 'Terminate the game, ending it immediately.';
@@ -559,7 +559,7 @@ const drawDeck = () => {
     // Near the top of the deck, draw the database ID for the respective game
     // (in an ongoing game, this will not show)
     globals.elements.gameIDLabel = new FitText({
-        text: `ID: ${globals.id}`,
+        text: `ID: ${globals.databaseID}`,
         x: deckValues.x * winW,
         y: (deckValues.y + 0.01) * winH,
         width: deckValues.w * winW,
@@ -574,7 +574,7 @@ const drawDeck = () => {
             y: 0,
         },
         shadowOpacity: 0.9,
-        visible: globals.replay && globals.id !== 0,
+        visible: globals.replay && globals.databaseID !== 0,
     });
     globals.layers.UI2.add(globals.elements.gameIDLabel);
 

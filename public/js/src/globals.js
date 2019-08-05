@@ -29,6 +29,7 @@ const globals = {
     game: {}, // Equal to the data from the "game" command
 
     currentScreen: 'login', // Can be "login", "lobby", "pregame", "game"
+    tableID: -1, // Equal to the table we are joined to or -1 if no table
     errorOccured: false,
 
     // Legacy UI variables

@@ -2,7 +2,8 @@ package main
 
 type CommandData struct {
 	// various
-	ID int `json:"gameID"`
+	TableID int `json:"tableID"`
+	GameID  int `json:"gameID"`
 
 	// setting
 	Value string `json:"value"`
@@ -11,7 +12,7 @@ type CommandData struct {
 	Msg  string `json:"msg"`
 	Room string `json:"room"`
 
-	// gameCreate
+	// tableCreate
 	Name                 string `json:"name"`
 	Password             string `json:"password"`
 	Variant              string `json:"variant"`
@@ -22,7 +23,6 @@ type CommandData struct {
 	DeckPlays            bool   `json:"deckPlays"`
 	EmptyClues           bool   `json:"emptyClues"`
 	CharacterAssignments bool   `json:"characterAssignments"`
-	Correspondence       bool   `json:"correspondence"`
 	AlertWaiters         bool   `json:"alertWaiters"`
 
 	// action
@@ -34,7 +34,7 @@ type CommandData struct {
 	Note  string `json:"note"`
 	Order int    `json:"order"`
 
-	// gameSpectate
+	// tableSpectate
 	Player string `json:"player"` // Optional
 
 	// replayCreate
@@ -62,6 +62,7 @@ type CommandData struct {
 	ColNum  int    `json:"colno"`
 
 	// Used internally
+	// (validation for all of these field must be explicitly defined in "websocketMessage.go")
 	Username             string   // Used to mark the username of a chat message
 	Discord              bool     // Used to mark if a chat message origined from Discord
 	Server               bool     // Used to mark if the server generated the chat message
@@ -70,7 +71,6 @@ type CommandData struct {
 	DiscordID            string   // Used when echoing a message from Discord to the lobby
 	DiscordDiscriminator string   // Used when echoing a message from Discord to the lobby
 	Args                 []string // Used to pass chat command arguments to a chat command handler
-	GameID               int      // Used to pass the game ID to a chat command handler
 }
 
 type Clue struct {
@@ -85,15 +85,18 @@ var (
 
 // Define all of the WebSocket commands
 func commandInit() {
-	// Lobby commands
-	commandMap["gameCreate"] = commandGameCreate
-	commandMap["gameJoin"] = commandGameJoin
-	commandMap["gameLeave"] = commandGameLeave
-	commandMap["gameUnattend"] = commandGameUnattend
-	commandMap["gameReattend"] = commandGameReattend
-	commandMap["gameAbandon"] = commandGameAbandon
-	commandMap["gameSpectate"] = commandGameSpectate
-	commandMap["gameRestart"] = commandGameRestart
+	// Table commands
+	commandMap["tableCreate"] = commandTableCreate
+	commandMap["tableJoin"] = commandTableJoin
+	commandMap["tableLeave"] = commandTableLeave
+	commandMap["tableUnattend"] = commandTableUnattend
+	commandMap["tableReattend"] = commandTableReattend
+	commandMap["tableStart"] = commandTableStart
+	commandMap["tableAbandon"] = commandTableAbandon
+	commandMap["tableSpectate"] = commandTableSpectate
+	commandMap["tableRestart"] = commandTableRestart
+
+	// Other lobby commands
 	commandMap["setting"] = commandSetting
 	commandMap["chat"] = commandChat
 	commandMap["chatRead"] = commandChatRead
@@ -101,7 +104,6 @@ func commandInit() {
 	commandMap["historyDetails"] = commandHistoryDetails
 	commandMap["historyGetAll"] = commandHistoryGetAll
 	commandMap["historyGet"] = commandHistoryGet
-	commandMap["gameStart"] = commandGameStart
 	commandMap["replayCreate"] = commandReplayCreate
 
 	// Game commands
@@ -112,6 +114,6 @@ func commandInit() {
 	commandMap["pause"] = commandPause
 	commandMap["replayAction"] = commandReplayAction
 
-	// Misc commands
+	// Miscellaneous commands
 	commandMap["clientError"] = commandClientError
 }

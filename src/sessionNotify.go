@@ -37,20 +37,22 @@ func (s *Session) NotifyUserLeft(u *Session) {
 }
 
 // NotifyTable will notify a user about a new game or a change in an existing game
-func (s *Session) NotifyTable(g *Game) {
-	i := g.GetPlayerIndex(s.UserID())
+func (s *Session) NotifyTable(t *Table) {
+	g := t.Game
+
+	i := t.GetPlayerIndexFromID(s.UserID())
 	joined := false
 	if i != -1 {
 		joined = true
 	}
 
-	numPlayers := len(g.Players)
-	if g.Replay {
-		numPlayers = len(g.Spectators)
+	numPlayers := len(t.Players)
+	if t.Replay {
+		numPlayers = len(t.Spectators)
 	}
 
 	playerNames := make([]string, 0)
-	for _, p := range g.Players {
+	for _, p := range t.Players {
 		playerNames = append(playerNames, p.Name)
 	}
 	players := strings.Join(playerNames, ", ")
@@ -59,7 +61,7 @@ func (s *Session) NotifyTable(g *Game) {
 	}
 
 	spectatorNames := make([]string, 0)
-	for _, sp := range g.Spectators {
+	for _, sp := range t.Spectators {
 		spectatorNames = append(spectatorNames, sp.Name)
 	}
 	spectators := strings.Join(spectatorNames, ", ")
@@ -85,33 +87,37 @@ func (s *Session) NotifyTable(g *Game) {
 		Players      string `json:"players"`
 		Spectators   string `json:"spectators"`
 	}
+	ourTurn := false
+	if t.Running {
+		ourTurn = joined && g.ActivePlayer == i
+	}
 	s.Emit("table", &TableMessage{
-		ID:           g.ID,
-		Name:         g.Name,
-		Password:     len(g.Password) > 0,
+		ID:           t.ID,
+		Name:         t.Name,
+		Password:     len(t.Password) > 0,
 		Joined:       joined,
 		NumPlayers:   numPlayers,
-		Owned:        s.UserID() == g.Owner,
-		Running:      g.Running,
-		Variant:      g.Options.Variant,
-		Timed:        g.Options.Timed,
-		BaseTime:     g.Options.BaseTime,
-		TimePerTurn:  g.Options.TimePerTurn,
-		OurTurn:      joined && g.Running && g.ActivePlayer == i,
-		SharedReplay: g.Replay,
-		Progress:     g.Progress,
+		Owned:        s.UserID() == t.Owner,
+		Running:      t.Running,
+		Variant:      t.Options.Variant,
+		Timed:        t.Options.Timed,
+		BaseTime:     t.Options.BaseTime,
+		TimePerTurn:  t.Options.TimePerTurn,
+		OurTurn:      ourTurn,
+		SharedReplay: t.Replay,
+		Progress:     t.Progress,
 		Players:      players,
 		Spectators:   spectators,
 	})
 }
 
 // NotifyTableGone will notify someone about a game that ended
-func (s *Session) NotifyTableGone(g *Game) {
+func (s *Session) NotifyTableGone(t *Table) {
 	type TableGoneMessage struct {
 		ID int `json:"id"`
 	}
 	s.Emit("tableGone", &TableGoneMessage{
-		ID: g.ID,
+		ID: t.ID,
 	})
 }
 
@@ -147,11 +153,11 @@ func (s *Session) NotifyGameHistory(h []*models.GameHistory, incrementNumGames b
 	s.Emit("gameHistory", &m)
 }
 
-func (s *Session) NotifyGameStart() {
-	type GameStartMessage struct {
+func (s *Session) NotifyTableStart() {
+	type TableStartMessage struct {
 		Replay bool `json:"replay"`
 	}
-	s.Emit("gameStart", &GameStartMessage{
+	s.Emit("tableStart", &TableStartMessage{
 		Replay: s.Status() == statusReplay || s.Status() == statusSharedReplay,
 	})
 }
@@ -162,10 +168,10 @@ func (s *Session) NotifyGameStart() {
 
 // NotifyConnected will send someone a list corresponding to which players are connected
 // On the client, this changes the player name-tags different colors
-func (s *Session) NotifyConnected(g *Game) {
+func (s *Session) NotifyConnected(t *Table) {
 	// Make the list
 	list := make([]bool, 0)
-	for _, p := range g.Players {
+	for _, p := range t.Players {
 		list = append(list, p.Present)
 	}
 
@@ -180,35 +186,39 @@ func (s *Session) NotifyConnected(g *Game) {
 
 // NotifyAction will send someone an "action" message
 // This is sent at the beginning of their turn and lists the allowed actions on this turn
-func (s *Session) NotifyAction(g *Game) {
+func (s *Session) NotifyAction(t *Table) {
+	g := t.Game
+
 	type ActionMessage struct {
 		CanClue          bool `json:"canClue"`
 		CanDiscard       bool `json:"canDiscard"`
 		CanBlindPlayDeck bool `json:"canBlindPlayDeck"`
 	}
-	canClue := g.Clues >= 1
+	canClue := g.ClueTokens >= 1
 	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
-		canClue = g.Clues >= 2
+		canClue = g.ClueTokens >= 2
 	}
 	s.Emit("action", &ActionMessage{
 		CanClue:          canClue,
-		CanDiscard:       g.Clues != maxClues,
-		CanBlindPlayDeck: g.Options.DeckPlays && g.DeckIndex == len(g.Deck)-1,
+		CanDiscard:       g.ClueTokens != maxClueNum,
+		CanBlindPlayDeck: t.Options.DeckPlays && g.DeckIndex == len(g.Deck)-1,
 	})
 }
 
-func (s *Session) NotifyGameAction(a interface{}, g *Game, p *Player) {
+func (s *Session) NotifyGameAction(a interface{}, t *Table, p *GamePlayer) {
 	// Check to see if we need to remove some card information
 	drawAction, ok := a.(ActionDraw)
 	if ok && drawAction.Type == "draw" {
-		drawAction.Scrub(g, p)
+		drawAction.Scrub(t, p)
 		a = drawAction
 	}
 
 	s.Emit("notify", a)
 }
 
-func (s *Session) NotifySound(g *Game, i int) {
+func (s *Session) NotifySound(t *Table, i int) {
+	g := t.Game
+
 	// Prepare the sound message
 	sound := "turn_other"
 	if g.Sound != "" {
@@ -225,14 +235,16 @@ func (s *Session) NotifySound(g *Game, i int) {
 	s.Emit("sound", data)
 }
 
-func (s *Session) NotifyTime(g *Game) {
+func (s *Session) NotifyTime(t *Table) {
+	g := t.Game
+
 	// Create the clock message
 	times := make([]int64, 0)
 	for i, p := range g.Players {
 		// We could be sending the message in the middle of someone's turn, so account for this
 		timeLeft := p.Time
 		if g.ActivePlayer == i {
-			elapsedTime := time.Since(g.TurnBeginTime)
+			elapsedTime := time.Since(g.DatetimeTurnBegin)
 			timeLeft -= elapsedTime
 		}
 
@@ -251,21 +263,23 @@ func (s *Session) NotifyTime(g *Game) {
 	})
 }
 
-func (s *Session) NotifyPause(g *Game) {
+func (s *Session) NotifyPause(t *Table) {
+	g := t.Game
+
 	type PauseMessage struct {
 		Paused      bool   `json:"paused"`
 		PausePlayer string `json:"pausePlayer"`
 	}
 	s.Emit("pause", &PauseMessage{
 		Paused:      g.Paused,
-		PausePlayer: g.Players[g.PausePlayer].Name,
+		PausePlayer: t.Players[g.PausePlayer].Name,
 	})
 }
 
-func (s *Session) NotifySpectators(g *Game) {
+func (s *Session) NotifySpectators(t *Table) {
 	// Build an array with the names of all of the spectators
 	names := make([]string, 0)
-	for _, sp := range g.Spectators {
+	for _, sp := range t.Spectators {
 		names = append(names, sp.Name)
 	}
 
@@ -277,12 +291,12 @@ func (s *Session) NotifySpectators(g *Game) {
 	})
 }
 
-func (s *Session) NotifyReplayLeader(g *Game, playAnimation bool) {
+func (s *Session) NotifyReplayLeader(t *Table, playAnimation bool) {
 	// Get the username of the game owner
 	// (the "Owner" field is used to store the leader of the shared replay)
 	name := ""
-	for _, sp := range g.Spectators {
-		if sp.ID == g.Owner {
+	for _, sp := range t.Spectators {
+		if sp.ID == t.Owner {
 			name = sp.Name
 			break
 		}
@@ -290,8 +304,8 @@ func (s *Session) NotifyReplayLeader(g *Game, playAnimation bool) {
 
 	if name == "" {
 		// The leader is not currently present, so try getting their username from the players object
-		for _, p := range g.Players {
-			if p.ID == g.Owner {
+		for _, p := range t.Players {
+			if p.ID == t.Owner {
 				name = p.Name
 				break
 			}
@@ -301,8 +315,9 @@ func (s *Session) NotifyReplayLeader(g *Game, playAnimation bool) {
 	if name == "" {
 		// The leader is not currently present and was not a member of the original game,
 		// so we need to look up their username from the database
-		if v, err := db.Users.GetUsername(g.Owner); err != nil {
-			log.Error("Failed to get the username for user "+strconv.Itoa(g.Owner)+" who is the owner of game:", g.ID)
+		if v, err := db.Users.GetUsername(t.Owner); err != nil {
+			log.Error("Failed to get the username for user "+strconv.Itoa(t.Owner)+
+				" who is the owner of table:", t.ID)
 			return
 		} else {
 			name = v
@@ -322,17 +337,19 @@ func (s *Session) NotifyReplayLeader(g *Game, playAnimation bool) {
 
 // NotifyNoteList sends them all of the notes from the players & spectators
 // (there will be no spectator notes if this is a replay spawned from the database)
-func (s *Session) NotifyNoteList(g *Game) {
+func (s *Session) NotifyNoteList(t *Table) {
+	g := t.Game
+
 	// Get the notes from all the players & spectators
 	notes := make([]models.NoteList, 0)
 	for _, p := range g.Players {
 		notes = append(notes, models.NoteList{
-			ID:    p.ID,
+			ID:    t.Players[p.Index].ID,
 			Name:  p.Name,
 			Notes: p.Notes,
 		})
 	}
-	for _, sp := range g.Spectators {
+	for _, sp := range t.Spectators {
 		notes = append(notes, models.NoteList{
 			ID:    sp.ID,
 			Name:  sp.Name,

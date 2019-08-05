@@ -77,14 +77,16 @@ type CardSimple struct { // Used by "ActionDeckOrder"
 
 // Scrub removes some information from an action so that we do not reveal
 // to the client anything about the cards that they are drawing
-func (a *ActionDraw) Scrub(g *Game, p *Player) {
+func (a *ActionDraw) Scrub(t *Table, p *GamePlayer) {
+	g := t.Game
+
 	// The player will be nil if this is an action that is going to a spectator
 	if p == nil {
 		return
 	}
 
 	// Don't scrub in replays
-	if g.Replay {
+	if t.Replay {
 		return
 	}
 

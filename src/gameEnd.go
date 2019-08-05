@@ -10,14 +10,16 @@ import (
 )
 
 func (g *Game) End() {
-	g.DatetimeFinished = time.Now()
+	t := g.Table
+
+	t.DatetimeFinished = time.Now()
 	if g.EndCondition > endConditionNormal {
 		g.Score = 0
 	}
-	log.Info(g.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
+	log.Info(t.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
 	// There will be no times associated with a JSON game, so don't bother with the rest of the code
-	if g.NoDatabase {
+	if g.Options.JSONGame {
 		return
 	}
 
@@ -35,19 +37,19 @@ func (g *Game) End() {
 			Type: "text",
 			Text: text,
 		})
-		g.NotifyAction()
-		log.Info(g.GetName() + text)
+		t.NotifyAction()
+		log.Info(t.GetName() + text)
 	}
 
 	// Send a text message showing how much time the game took in total
-	totalTime := g.DatetimeFinished.Sub(g.DatetimeStarted)
+	totalTime := t.DatetimeFinished.Sub(t.DatetimeStarted)
 	text := "The total game duration was: " + durationToString(totalTime)
 	g.Actions = append(g.Actions, ActionText{
 		Type: "text",
 		Text: text,
 	})
-	g.NotifyAction()
-	log.Info(g.GetName() + text)
+	t.NotifyAction()
+	log.Info(t.GetName() + text)
 
 	// In speedruns, send a text message to show how close to the record they got
 	if g.Options.Speedrun &&
@@ -72,7 +74,7 @@ func (g *Game) End() {
 			fastestTimes[g.Options.Variant][len(g.Players)] = seconds
 
 			g.Sound = "new_record"
-			g.NotifySound()
+			t.NotifySound()
 
 			diff := fastestTime - seconds
 			text = "You beat the best time by " + strconv.Itoa(diff) + " seconds!"
@@ -80,8 +82,8 @@ func (g *Game) End() {
 				Type: "text",
 				Text: text,
 			})
-			g.NotifyAction()
-			log.Info(g.GetName() + text)
+			t.NotifyAction()
+			log.Info(t.GetName() + text)
 
 			text = "Congratulations on a new world record!"
 		}
@@ -91,14 +93,14 @@ func (g *Game) End() {
 				Type: "text",
 				Text: text,
 			})
-			g.NotifyAction()
-			log.Info(g.GetName() + text)
+			t.NotifyAction()
+			log.Info(t.GetName() + text)
 		}
 	}
 
 	// Advance a turn so that the finishing times are separated from the final action of the game
 	g.Turn++
-	g.NotifyTurn()
+	t.NotifyTurn()
 
 	// Append a final action with a listing of every card in the deck
 	// (so that the client will have it for hypotheticals)
@@ -113,37 +115,40 @@ func (g *Game) End() {
 		Type: "deckOrder",
 		Deck: deck,
 	})
-	g.NotifyAction()
+	t.NotifyAction()
 
 	// Notify everyone that the game is over
-	g.NotifyGameOver()
+	t.NotifyGameOver()
 
 	// Send "reveal" messages to each player about the missing cards in their hand
-	for _, p := range g.Players {
-		for _, c := range p.Hand {
-			type RevealMessage struct {
-				Suit  int `json:"suit"`
-				Rank  int `json:"rank"`
-				Order int `json:"order"` // The ID of the card (based on its order in the deck)
+	for _, gp := range g.Players {
+		p := t.Players[gp.Index]
+		if p.Present {
+			for _, c := range gp.Hand {
+				type RevealMessage struct {
+					Suit  int `json:"suit"`
+					Rank  int `json:"rank"`
+					Order int `json:"order"` // The ID of the card (based on its order in the deck)
+				}
+				p.Session.Emit("reveal", &RevealMessage{
+					Suit:  c.Suit,
+					Rank:  c.Rank,
+					Order: c.Order,
+				})
 			}
-			p.Session.Emit("reveal", &RevealMessage{
-				Suit:  c.Suit,
-				Rank:  c.Rank,
-				Order: c.Order,
-			})
 		}
 	}
 
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)
-	notifyAllTableGone(g)
+	notifyAllTableGone(t)
 
 	// Reset the player's current game and status
 	// (this is needed in case the game ends due to idleness;
 	// they will be manually set to having a "Shared Replay" status later
 	// after the game is converted)
-	for _, p := range g.Players {
-		p.Session.Set("currentGame", -1)
+	for _, p := range t.Players {
+		p.Session.Set("currentTable", -1)
 		p.Session.Set("status", statusLobby)
 		notifyAllUser(p.Session)
 	}
@@ -161,9 +166,9 @@ func (g *Game) End() {
 	} else {
 		numSimilar = v
 	}
-	for _, p := range g.Players {
+	for _, p := range t.Players {
 		var otherPlayerNames string
-		for _, p2 := range g.Players {
+		for _, p2 := range t.Players {
 			if p2.Name != p.Name {
 				otherPlayerNames += p2.Name + ", "
 			}
@@ -172,11 +177,11 @@ func (g *Game) End() {
 
 		h := make([]*models.GameHistory, 0)
 		h = append(h, &models.GameHistory{
-			ID:               g.DatabaseID,
+			ID:               g.ID, // Recorded in the "WriteDatabase()" function above
 			NumPlayers:       len(g.Players),
 			NumSimilar:       numSimilar,
 			Score:            g.Score,
-			DatetimeFinished: g.DatetimeFinished,
+			DatetimeFinished: t.DatetimeFinished,
 			Variant:          g.Options.Variant,
 			OtherPlayerNames: otherPlayerNames,
 		})
@@ -189,14 +194,16 @@ func (g *Game) End() {
 
 	// All games are automatically converted to shared replays after they finish
 	// (unless all the players are in the lobby / disconnected, or if the game ended to idleness)
-	g.ConvertToSharedReplay()
+	t.ConvertToSharedReplay()
 }
 
 func (g *Game) WriteDatabase() error {
+	t := g.Table
+
 	row := models.GameRow{
-		Name:                 g.Name,
+		Name:                 t.Name,
 		NumPlayers:           len(g.Players),
-		Owner:                g.Owner,
+		Owner:                t.Owner,
 		Variant:              variants[g.Options.Variant].ID,
 		Timed:                g.Options.Timed,
 		TimeBase:             g.Options.BaseTime,
@@ -209,25 +216,26 @@ func (g *Game) WriteDatabase() error {
 		Score:                g.Score,
 		NumTurns:             g.Turn,
 		EndCondition:         g.EndCondition,
-		DatetimeCreated:      g.DatetimeCreated,
-		DatetimeStarted:      g.DatetimeStarted,
-		DatetimeFinished:     g.DatetimeFinished,
+		DatetimeCreated:      t.DatetimeCreated,
+		DatetimeStarted:      t.DatetimeStarted,
+		DatetimeFinished:     t.DatetimeFinished,
 	}
 	if v, err := db.Games.Insert(row); err != nil {
 		log.Error("Failed to insert the game row:", err)
 		return err
 	} else {
-		g.DatabaseID = v
+		g.ID = v
 	}
 
 	// Next, we have to insert rows for each of the participants
-	for _, p := range g.Players {
+	for _, gp := range g.Players {
+		p := t.Players[gp.Index]
 		if err := db.GameParticipants.Insert(
 			p.ID,
-			g.DatabaseID,
-			p.Notes,
-			characters[p.Character].ID,
-			p.CharacterMetadata,
+			g.ID,
+			gp.Notes,
+			characters[gp.Character].ID,
+			gp.CharacterMetadata,
 		); err != nil {
 			log.Error("Failed to insert the game participant row:", err)
 			return err
@@ -244,15 +252,15 @@ func (g *Game) WriteDatabase() error {
 			aString = string(v)
 		}
 
-		if err := db.GameActions.Insert(g.DatabaseID, aString); err != nil {
+		if err := db.GameActions.Insert(g.ID, aString); err != nil {
 			log.Error("Failed to insert the action row:", err)
 			return err
 		}
 	}
 
 	// Next, we have to insert rows for each of the chat messages
-	room := "game" + strconv.Itoa(g.DatabaseID)
-	for _, chatMsg := range g.Chat {
+	for _, chatMsg := range t.Chat {
+		room := "table" + strconv.Itoa(t.ID)
 		if err := db.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, room); err != nil {
 			log.Error("Failed to insert a chat message into the database:", err)
 			return err
@@ -260,7 +268,7 @@ func (g *Game) WriteDatabase() error {
 	}
 
 	// Update the stats for each player
-	for _, p := range g.Players {
+	for _, p := range t.Players {
 		// Get their current best scores
 		var stats models.Stats
 		if v, err := db.UserStats.Get(p.ID, variants[g.Options.Variant].ID); err != nil {
@@ -306,8 +314,10 @@ func (g *Game) WriteDatabase() error {
 }
 
 func (g *Game) AnnounceGameResult() {
+	t := g.Table
+
 	// Don't announce the results of test games
-	if g.Name == "test game" {
+	if t.Name == "test game" {
 		return
 	}
 
@@ -343,7 +353,7 @@ func (g *Game) AnnounceGameResult() {
 			msg += bibleThump + " "
 		}
 	}
-	msg += "(id: " + strconv.Itoa(g.DatabaseID) + ", seed: " + g.Seed + ")"
+	msg += "(id: " + strconv.Itoa(g.ID) + ", seed: " + g.Seed + ")"
 
 	commandChat(nil, &CommandData{
 		Server: true,
@@ -357,25 +367,25 @@ func (g *Game) AnnounceGameResult() {
 	})
 }
 
-func (g *Game) ConvertToSharedReplay() {
-	if g.Options.Correspondence {
-		g.Visible = true
-	}
-	g.Replay = true
-	g.Name = "Shared replay for game #" + strconv.Itoa(g.DatabaseID)
-	// Update the "EndTurn" variable
-	// (since we incremented the final turn above in an artificial way)
+func (t *Table) ConvertToSharedReplay() {
+	g := t.Game
+
+	t.Replay = true
+	t.Name = "Shared replay for game #" + strconv.Itoa(g.ID)
+	// Update the "EndTurn" field (since we incremented the final turn above in an artificial way)
 	g.EndTurn = g.Turn
-	g.Progress = 100
+	// Initialize the shared replay on the 2nd to last turn (since the end times are not important)
+	g.Turn--
+	t.Progress = 100
 
 	// Turn the players into spectators
 	ownerOffline := false
-	for _, p := range g.Players {
+	for _, p := range t.Players {
 		// Skip offline players and players in the lobby;
 		// if they re-login, then they will just stay in the lobby
 		if !p.Present {
 			log.Info("Skipped converting " + p.Name + " to a spectator since they are not present.")
-			if p.ID == g.Owner && p.Session.IsClosed() {
+			if p.ID == t.Owner && p.Session.IsClosed() {
 				// We don't want to pass the replay leader away if they are still in the lobby
 				// (as opposed to being offline)
 				ownerOffline = true
@@ -400,66 +410,66 @@ func (g *Game) ConvertToSharedReplay() {
 			Session: p.Session,
 			Notes:   make([]string, len(g.Deck)),
 		}
-		g.Spectators = append(g.Spectators, sp)
+		t.Spectators = append(t.Spectators, sp)
 		log.Info("Converted " + p.Name + " to a spectator.")
 	}
 
 	// End the shared replay if no-one is left
-	if len(g.Spectators) == 0 {
-		delete(games, g.ID)
+	if len(t.Spectators) == 0 {
+		delete(tables, t.ID)
 		return
 	}
 
 	// If the owner of the game is not present, then make someone else the shared replay leader
 	if ownerOffline {
-		g.Owner = -1
+		t.Owner = -1
 
 		// Default to making the first player the leader,
 		// or the second player if the first is away, etc.
-		for _, p := range g.Players {
+		for _, p := range t.Players {
 			if p.Present {
-				g.Owner = p.ID
+				t.Owner = p.ID
 				log.Info("Set the new leader to be:", p.Name)
 				break
 			}
 		}
 
-		if g.Owner != -1 {
+		if t.Owner != -1 {
 			// All of the players are away, so make the first spectator the leader
-			g.Owner = g.Spectators[0].ID
-			log.Info("All players are offline; set the new leader to be:", g.Spectators[0].Name)
+			t.Owner = t.Spectators[0].ID
+			log.Info("All players are offline; set the new leader to be:", t.Spectators[0].Name)
 		}
 	}
 
 	// In a shared replay, we don't want any of the player names to be red,
 	// because it does not matter if they are present or not
 	// So manually make everyone present and then send out an update
-	for _, p := range g.Players {
+	for _, p := range t.Players {
 		p.Present = true
 	}
-	g.NotifyConnected()
+	t.NotifyConnected()
 
-	for _, sp := range g.Spectators {
+	for _, sp := range t.Spectators {
 		// Reset everyone's status (both players and spectators are now spectators)
-		sp.Session.Set("currentGame", g.ID)
+		sp.Session.Set("currentTable", t.ID)
 		sp.Session.Set("status", statusSharedReplay)
 		notifyAllUser(sp.Session)
 
 		// Activate the Replay Leader label
-		sp.Session.NotifyReplayLeader(g, false)
+		sp.Session.NotifyReplayLeader(t, false)
 
 		// Send them the notes from all the players & spectators
-		sp.Session.NotifyNoteList(g)
+		sp.Session.NotifyNoteList(t)
 
 		// Send them the database ID
 		type IDMessage struct {
 			ID int `json:"id"`
 		}
-		sp.Session.Emit("id", &IDMessage{
-			ID: g.DatabaseID,
+		sp.Session.Emit("databaseID", &IDMessage{
+			ID: g.ID,
 		})
 	}
 
-	notifyAllTable(g)    // Update the spectator list for the row in the lobby
-	g.NotifySpectators() // Update the in-game spectator list
+	notifyAllTable(t)    // Update the spectator list for the row in the lobby
+	t.NotifySpectators() // Update the in-game spectator list
 }

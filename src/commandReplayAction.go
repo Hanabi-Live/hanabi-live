@@ -21,24 +21,26 @@ func commandReplayAction(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the game exists
-	gameID := s.CurrentGame()
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := s.CurrentTable()
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
+	g := t.Game
 
 	// Validate that this is a shared replay
-	if !g.Replay || !g.Visible {
-		s.Warning("Game " + strconv.Itoa(gameID) + " is not a shared replay, so you cannot send a shared replay action.")
+	if !t.Replay || !t.Visible {
+		s.Warning("Table " + strconv.Itoa(tableID) + " is not a shared replay, " +
+			"so you cannot send a shared replay action.")
 		return
 	}
 
 	// Validate that this person is leading the review
-	if s.UserID() != g.Owner {
+	if s.UserID() != t.Owner {
 		s.Warning("You cannot send a shared replay action unless you are the leader.")
 		return
 	}
@@ -48,13 +50,13 @@ func commandReplayAction(s *Session, d *CommandData) {
 	*/
 
 	// Start the idle timeout
-	go g.CheckIdle()
+	go t.CheckIdle()
 
 	// Send the message to everyone else
 	if d.Type == replayActionTypeTurn {
 		// A turn change
 		g.Turn = d.Turn
-		for _, sp := range g.Spectators {
+		for _, sp := range t.Spectators {
 			type ReplayTurnMessage struct {
 				Turn int `json:"turn"`
 			}
@@ -65,22 +67,22 @@ func commandReplayAction(s *Session, d *CommandData) {
 
 		// Update the progress
 		progress := float64(g.Turn) / float64(g.EndTurn) * 100 // In percent
-		g.Progress = int(math.Round(progress))                 // Round it to the nearest integer
-		if g.Progress > 100 {
+		t.Progress = int(math.Round(progress))                 // Round it to the nearest integer
+		if t.Progress > 100 {
 			// It is possible to go past the last turn,
 			// since an extra turn is appended to the end of every game with timing information
-			g.Progress = 100
-		} else if g.Progress < 0 {
+			t.Progress = 100
+		} else if t.Progress < 0 {
 			// This can happen if the maximum turn is 0
-			g.Progress = 0
+			t.Progress = 0
 		}
 
 		// Send every user connected an update about this table
 		// (this is sort of wasteful but is necessary for users to see the progress of the replay from the lobby)
-		notifyAllTable(g)
+		notifyAllTable(t)
 	} else if d.Type == replayActionTypeArrow {
 		// A card arrow indication
-		for _, sp := range g.Spectators {
+		for _, sp := range t.Spectators {
 			type ReplayIndicatorMessage struct {
 				Order int `json:"order"`
 			}
@@ -92,7 +94,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		// A leader transfer
 		// Validate that the person that they are passing off the leader to actually exists in the game
 		newLeaderID := -1
-		for _, sp := range g.Spectators {
+		for _, sp := range t.Spectators {
 			if sp.Name == d.Name {
 				newLeaderID = sp.ID
 				break
@@ -104,16 +106,16 @@ func commandReplayAction(s *Session, d *CommandData) {
 		}
 
 		// Mark them as the new replay leader
-		g.Owner = newLeaderID
+		t.Owner = newLeaderID
 
 		// Tell everyone about the new leader
 		// (which will enable the replay controls for the leader)
-		for _, sp := range g.Spectators {
-			sp.Session.NotifyReplayLeader(g, true)
+		for _, sp := range t.Spectators {
+			sp.Session.NotifyReplayLeader(t, true)
 		}
 	} else if d.Type == replayActionTypeMorph {
 		// A "hypothetical" card morph
-		for _, sp := range g.Spectators {
+		for _, sp := range t.Spectators {
 			type ReplayMorphMessage struct {
 				Order int `json:"order"`
 				Suit  int `json:"suit"`
@@ -127,7 +129,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		}
 	} else if d.Type == replayActionTypeSound {
 		// A sound effect
-		for _, sp := range g.Spectators {
+		for _, sp := range t.Spectators {
 			type ReplaySoundMessage struct {
 				Sound string `json:"sound"`
 			}
@@ -143,7 +145,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 
 		// Start a hypothetical line
 		g.Hypothetical = true
-		for _, sp := range g.Spectators {
+		for _, sp := range t.Spectators {
 			sp.Session.Emit("hypoStart", nil)
 		}
 	} else if d.Type == replayActionTypeHypoEnd {
@@ -155,7 +157,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		// End a hypothetical line
 		g.Hypothetical = false
 		g.HypoActions = make([]string, 0)
-		for _, sp := range g.Spectators {
+		for _, sp := range t.Spectators {
 			sp.Session.Emit("hypoEnd", nil)
 		}
 	} else if d.Type == replayActionTypeHypoAction {
@@ -174,7 +176,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 
 		// Perform a move in the hypothetical
 		g.HypoActions = append(g.HypoActions, d.ActionJSON)
-		for _, sp := range g.Spectators {
+		for _, sp := range t.Spectators {
 			sp.Session.Emit("hypoAction", d.ActionJSON)
 		}
 	} else {

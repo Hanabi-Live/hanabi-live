@@ -1,7 +1,6 @@
 package main
 
 import (
-	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -23,115 +22,7 @@ var (
 )
 
 /*
-	Chat command functions
-*/
-
-func chatHere(s *Session, d *CommandData) {
-	// Check to see if enough time has passed from the last @here
-	msg := ""
-	if time.Since(discordLastAtHere) < discordAtHereTimeout {
-		timeCanPingAgain := discordLastAtHere.Add(discordAtHereTimeout)
-		minutesLeft := int(math.Ceil(time.Until(timeCanPingAgain).Minutes()))
-		msg += "In order to prevent spam, "
-		msg += "you need to wait another " + strconv.Itoa(minutesLeft) + " minutes "
-		msg += "before you can send out another mass ping."
-	} else {
-		// If the command was sent from the lobby, "d.Username" will be blank
-		if d.Username == "" && s != nil {
-			d.Username = s.Username()
-		}
-		msg += d.Username + " wants to play. Anyone "
-		test := false
-		if len(d.Args) > 0 && d.Args[0] == "test" {
-			test = true
-			msg += "here? (This is just a test.)"
-		} else {
-			msg += "@here?"
-		}
-		if len(d.Args) > 0 && d.Args[0] != "" && d.Args[0] != "test" {
-			msg += " " + strings.Join(d.Args, " ")
-		}
-
-		// Record the time of the "@here" ping so that we can enforce the time limit
-		if !test {
-			discordLastAtHere = time.Now()
-			if err := db.DiscordMetadata.Put("last_at_here", discordLastAtHere.Format(time.RFC3339)); err != nil {
-				log.Error("Failed to update the database for the last @here:", err)
-				return
-			}
-		}
-	}
-	if len(waitingList) > 0 {
-		msg += "\n" + waitingListGetNum() + ":\n"
-		for _, waiter := range waitingList {
-			msg += waiter.DiscordMention + ", "
-		}
-		msg = strings.TrimSuffix(msg, ", ")
-	}
-	chatServerSend(msg)
-}
-
-func chatLast(s *Session, d *CommandData) {
-	// Get the time elapsed since the last @here
-	elapsedMinutes := int(math.Ceil(time.Since(discordLastAtHere).Minutes()))
-	msg := "It has been " + strconv.Itoa(elapsedMinutes) + " minutes since the last mass ping."
-	chatServerSend(msg)
-}
-
-func chatDiscord(s *Session, d *CommandData) {
-	msg := "Join the Hanabi Discord server: https://discord.gg/FADvkJp"
-	chatServerSend(msg)
-}
-
-func chatRandom(s *Session, d *CommandData) {
-	errorMsg := "That is not a correct usage of the /random command."
-
-	// We expect something like "/random 2" or "/random 1 2"
-	if len(d.Args) != 1 && len(d.Args) != 2 {
-		chatServerSend(errorMsg)
-		return
-	}
-
-	// Ensure that both arguments are numbers
-	var arg1, arg2 int
-	if v, err := strconv.Atoi(d.Args[0]); err != nil {
-		chatServerSend(errorMsg)
-		return
-	} else {
-		arg1 = v
-	}
-	if len(d.Args) == 2 {
-		if v, err := strconv.Atoi(d.Args[1]); err != nil {
-			chatServerSend(errorMsg)
-			return
-		} else {
-			arg2 = v
-		}
-	}
-
-	// Assign min and max, depending on how many arguments were passed
-	var min, max int
-	if len(d.Args) == 1 {
-		min = 1
-		max = arg1
-	} else if len(d.Args) == 2 {
-		min = arg1
-		max = arg2
-	}
-
-	// Do a sanity check
-	if max-min <= 0 {
-		chatServerSend(errorMsg)
-		return
-	}
-
-	randNum := getRandom(min, max)
-	msg := "Random number between " + strconv.Itoa(min) + " and " + strconv.Itoa(max) + ": " + strconv.Itoa(randNum)
-	chatServerSend(msg)
-}
-
-/*
-	Subroutines
+	Chat-related subroutines
 */
 
 type ChatMessage struct {
@@ -141,6 +32,22 @@ type ChatMessage struct {
 	Server   bool      `json:"server"`
 	Datetime time.Time `json:"datetime"`
 	Room     string    `json:"room"`
+}
+
+func isAdmin(s *Session, d *CommandData) bool {
+	// Validate that this message was not sent from Discord
+	if d.Discord {
+		chatServerSend("You can not issue that command from Discord.", d.Room)
+		return false
+	}
+
+	// Validate that they are an administrator
+	if !s.Admin() {
+		chatServerSend("You can only perform that command if you are an administrator.", d.Room)
+		return false
+	}
+
+	return true
 }
 
 func chatMakeMessage(msg string, who string, discord bool, server bool, datetime time.Time, room string) *ChatMessage {
@@ -155,22 +62,10 @@ func chatMakeMessage(msg string, who string, discord bool, server bool, datetime
 }
 
 // chatServerSend is a helper function to give feedback to a user after they type a command
-// (for the lobby / Discord)
-func chatServerSend(msg string) {
+func chatServerSend(msg string, room string) {
 	commandChat(nil, &CommandData{
 		Msg:    msg,
-		Room:   "lobby",
-		Server: true,
-	})
-}
-
-// chatServerGameSend is a helper function to give feedback to a user after they type a command
-// (for the game chat)
-func chatServerGameSend(msg string, gameID int) {
-	commandChat(nil, &CommandData{
-		Msg:    msg,
-		Room:   "game",
-		GameID: gameID,
+		Room:   room,
 		Server: true,
 	})
 }
@@ -259,25 +154,25 @@ func chatSendPastFromDatabase(s *Session, room string, count int) {
 		msgs = append(msgs, msg)
 	}
 	s.Emit("chatList", &ChatListMessage{
-		List:   msgs,
-		Unread: 0, // This is only used for in-game chat
+		List: msgs,
 	})
 }
 
-func chatSendPastFromGame(s *Session, g *Game) {
+func chatSendPastFromTable(s *Session, t *Table) {
 	chatList := make([]*ChatMessage, 0)
 	i := 0
-	if len(g.Chat) > chatLimit {
-		i = len(g.Chat) - chatLimit
+	if len(t.Chat) > chatLimit {
+		i = len(t.Chat) - chatLimit
 	}
-	for ; i < len(g.Chat); i++ {
+	for ; i < len(t.Chat); i++ {
 		// We have to convert the *GameChatMessage to a *ChatMessage
-		gcm := g.Chat[i]
-		cm := chatMakeMessage(gcm.Msg, gcm.Username, false, gcm.Server, gcm.Datetime, "game")
+		gcm := t.Chat[i]
+		room := "table" + strconv.Itoa(t.ID)
+		cm := chatMakeMessage(gcm.Msg, gcm.Username, false, gcm.Server, gcm.Datetime, room)
 		chatList = append(chatList, cm)
 	}
 	s.Emit("chatList", &ChatListMessage{
 		List:   chatList,
-		Unread: len(g.Chat) - g.ChatRead[s.UserID()],
+		Unread: len(t.Chat) - t.ChatRead[s.UserID()],
 	})
 }

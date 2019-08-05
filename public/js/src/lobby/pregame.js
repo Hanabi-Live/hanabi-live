@@ -150,18 +150,6 @@ exports.draw = () => {
         `;
     }
 
-    if (globals.game.correspondence) {
-        html += '<li><i id="lobby-pregame-options-correspondence" class="fas fa-envelope" ';
-        html += 'data-tooltip-content="#pregame-tooltip-correspondence"></i></li>';
-        html += `
-            <div class="hidden">
-                <div id="pregame-tooltip-correspondence" class="lobby-pregame-tooltip-icon">
-                    The <b>Correspondence</b> option is enabled.
-                </div>
-            </div>
-        `;
-    }
-
     if (globals.game.password) {
         html += '<li><i id="lobby-pregame-options-password" class="fas fa-lock" ';
         html += 'data-tooltip-content="#pregame-tooltip-password"></i></li>';
@@ -186,7 +174,6 @@ exports.draw = () => {
     $('#lobby-pregame-options-deck-plays').tooltipster(tooltipsterOptions);
     $('#lobby-pregame-options-empty-clues').tooltipster(tooltipsterOptions);
     $('#lobby-pregame-options-characters').tooltipster(tooltipsterOptions);
-    $('#lobby-pregame-options-correspondence').tooltipster(tooltipsterOptions);
     $('#lobby-pregame-options-password').tooltipster(tooltipsterOptions);
 
     // Draw the player boxes

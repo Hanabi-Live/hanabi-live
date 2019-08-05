@@ -7,37 +7,28 @@ import (
 	"strings"
 )
 
-func debug(s *Session, d *CommandData) {
-	if !isAdmin(s, d) {
-		return
-	}
-
-	debug2()
-}
-
-func debug2() {
+func debug() {
 	log.Debug("---------------------------------------------------------------")
 
-	// Print out all of the current games
-	if len(games) == 0 {
-		log.Debug("[no current games]")
+	// Print out all of the current tables
+	if len(tables) == 0 {
+		log.Debug("[no current tables]")
 	}
-	for i, g := range games { // This is a map[int]*Game
-		log.Debug(strconv.Itoa(i) + " - " + g.Name)
+	for i, t := range tables { // This is a map[int]*Table
+		log.Debug(strconv.Itoa(i) + " - " + t.Name)
 		log.Debug("\n")
 
 		// Print out all of the fields
 		// From: https://stackoverflow.com/questions/24512112/how-to-print-struct-variables-in-console
 		log.Debug("    All fields:")
 		fieldsToIgnore := []string{
-			"Actions",
-			"Deck",
-			"Options",
 			"Players",
 			"Spectators",
 			"DisconSpectators",
+
+			"Options",
 		}
-		s := reflect.ValueOf(g).Elem()
+		s := reflect.ValueOf(t).Elem()
 		maxChars := 0
 		for i := 0; i < s.NumField(); i++ {
 			fieldName := s.Type().Field(i).Name
@@ -70,7 +61,7 @@ func debug2() {
 
 		// Manually enumerate the slices and maps
 		log.Debug("    Options:")
-		s2 := reflect.ValueOf(g.Options).Elem()
+		s2 := reflect.ValueOf(t.Options).Elem()
 		maxChars2 := 0
 		for i := 0; i < s2.NumField(); i++ {
 			fieldName := s2.Type().Field(i).Name
@@ -95,44 +86,44 @@ func debug2() {
 		}
 		log.Debug("\n")
 
-		log.Debug("    Players (" + strconv.Itoa(len(g.Players)) + "):")
-		for j, p := range g.Players { // This is a []*Player
+		log.Debug("    Players (" + strconv.Itoa(len(t.Players)) + "):")
+		for j, p := range t.Players { // This is a []*Player
 			log.Debug("        " + strconv.Itoa(j) + " - " +
 				"User ID: " + strconv.Itoa(p.ID) + ", " +
 				"Username: " + p.Name + ", " +
 				"Present: " + strconv.FormatBool(p.Present))
 		}
-		if len(g.Players) == 0 {
+		if len(t.Players) == 0 {
 			log.Debug("        [no players]")
 		}
 		log.Debug("\n")
 
-		log.Debug("    Spectators (" + strconv.Itoa(len(g.Spectators)) + "):")
-		for j, sp := range g.Spectators { // This is a []*Session
+		log.Debug("    Spectators (" + strconv.Itoa(len(t.Spectators)) + "):")
+		for j, sp := range t.Spectators { // This is a []*Session
 			log.Debug("        " + strconv.Itoa(j) + " - " +
 				"User ID: " + strconv.Itoa(sp.ID) + ", " +
 				"Username: " + sp.Name)
 		}
-		if len(g.Spectators) == 0 {
+		if len(t.Spectators) == 0 {
 			log.Debug("        [no spectators]")
 		}
 		log.Debug("\n")
 
-		log.Debug("    DisconSpectators (" + strconv.Itoa(len(g.DisconSpectators)) + "):")
-		for k, v := range g.DisconSpectators { // This is a map[int]*bool
+		log.Debug("    DisconSpectators (" + strconv.Itoa(len(t.DisconSpectators)) + "):")
+		for k, v := range t.DisconSpectators { // This is a map[int]*bool
 			log.Debug("        User ID: " + strconv.Itoa(k) + " - " + strconv.FormatBool(v))
 		}
-		if len(g.DisconSpectators) == 0 {
+		if len(t.DisconSpectators) == 0 {
 			log.Debug("        [no disconnected spectators]")
 		}
 		log.Debug("\n")
 
-		log.Debug("    Chat (" + strconv.Itoa(len(g.Chat)) + "):")
-		for j, m := range g.Chat { // This is a []*GameChatMessage
+		log.Debug("    Chat (" + strconv.Itoa(len(t.Chat)) + "):")
+		for j, m := range t.Chat { // This is a []*GameChatMessage
 			log.Debug("        " + strconv.Itoa(j) + " - " +
 				"[" + strconv.Itoa(m.UserID) + "] <" + m.Username + "> " + m.Msg)
 		}
-		if len(g.Chat) == 0 {
+		if len(t.Chat) == 0 {
 			log.Debug("        [no chat]")
 		}
 		log.Debug("\n")
@@ -149,7 +140,7 @@ func debug2() {
 		log.Debug("    User ID: " + strconv.Itoa(i) + ", " +
 			"Username: " + s2.Username() + ", " +
 			"Status: " + strconv.Itoa(s2.Status()) + ", " +
-			"Current game: " + strconv.Itoa(s2.CurrentGame()))
+			"Current table: " + strconv.Itoa(s2.CurrentTable()))
 	}
 	log.Debug("---------------------------------------------------------------")
 

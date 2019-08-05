@@ -45,18 +45,19 @@ $(document).ready(() => {
         if ($('#nav-buttons-pregame-start').hasClass('disabled')) {
             return;
         }
-        globals.conn.send('gameStart');
+        globals.conn.send('tableStart');
     });
 
     // The "Return to Lobby" button (from the "Pregame" screen)
     $('#nav-buttons-pregame-unattend').on('click', () => {
         lobby.pregame.hide();
-        globals.conn.send('gameUnattend');
+        globals.conn.send('tableUnattend');
+        globals.tableID = -1;
     });
 
     // The "Leave Game" button
     $('#nav-buttons-pregame-leave').on('click', () => {
-        globals.conn.send('gameLeave');
+        globals.conn.send('tableLeave');
     });
 
     // The "Return to Lobby" button (from the "History" screen)

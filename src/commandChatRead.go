@@ -14,19 +14,20 @@ func commandChatRead(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the game exists
-	gameID := s.CurrentGame()
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := s.CurrentTable()
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
 
 	// Validate that they are in the game or are a spectator
-	if g.GetPlayerIndex(s.UserID()) == -1 && g.GetSpectatorIndex(s.UserID()) == -1 {
-		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ", so you cannot acknowledge its chat.")
+	if t.GetPlayerIndexFromID(s.UserID()) == -1 && t.GetSpectatorIndexFromID(s.UserID()) == -1 {
+		s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
+			"so you cannot acknowledge its chat.")
 		return
 	}
 
@@ -34,5 +35,5 @@ func commandChatRead(s *Session, d *CommandData) {
 		Mark that they have read all of the in-game chat
 	*/
 
-	g.ChatRead[s.UserID()] = len(g.Chat)
+	t.ChatRead[s.UserID()] = len(t.Chat)
 }

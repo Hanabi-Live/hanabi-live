@@ -47,7 +47,6 @@ CREATE TABLE user_settings (
     create_table_deck_plays             BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_empty_clues            BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_character_assignments  BOOLEAN      NOT NULL  DEFAULT 0,
-    create_table_correspondence         BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_alert_waiters          BOOLEAN      NOT NULL  DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     /* If the user is deleted, automatically delete all of the rows */
@@ -168,7 +167,7 @@ CREATE TABLE chat_log (
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
     user_id        INT             NOT NULL, /* 0 is a Discord message */
     discord_name   NVARCHAR(150)   NULL, /* only used if it is a Discord message */
-    room           NVARCHAR(50)    NOT NULL, /* either "lobby" or "game-####" */
+    room           NVARCHAR(50)    NOT NULL, /* either "lobby" or "table####" */
     message        NVARCHAR(1000)  NOT NULL,
     datetime_sent  TIMESTAMP       NOT NULL  DEFAULT NOW()
 );

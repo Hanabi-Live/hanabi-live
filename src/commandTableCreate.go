@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 const (
@@ -15,14 +14,14 @@ const (
 )
 
 var (
-	newGameID     = 1 // Start at 1 and increment for every game created
+	newTableID    = 1 // Start at 1 and increment for every game created
 	seedRegExp    = regexp.MustCompile(`^!seed (.+)$`)
 	replayRegExp1 = regexp.MustCompile(`^!replay (\d+)$`)
 	replayRegExp2 = regexp.MustCompile(`^!replay (\d+) (\d+)$`)
 	dealRegExp    = regexp.MustCompile(`^!deal (.+)$`)
 )
 
-func commandGameCreate(s *Session, d *CommandData) {
+func commandTableCreate(s *Session, d *CommandData) {
 	/*
 		Validate
 	*/
@@ -34,9 +33,9 @@ func commandGameCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that the player is not joined to another game
-	if g2 := s.GetJoinedGame(); g2 != nil {
-		s.Warning("You cannot join more than one game at a time. " +
+	// Validate that the player is not joined to another table
+	if t2 := s.GetJoinedTable(); t2 != nil {
+		s.Warning("You cannot join more than one table at a time. " +
 			"Terminate your old game before joining a new one.")
 		return
 	}
@@ -212,13 +211,13 @@ func commandGameCreate(s *Session, d *CommandData) {
 		}
 	}
 
-	// Blank out the time controls if this is not a timed game
+	// Validate that there can be no time controls if this is not a timed game
 	if !d.Timed {
 		d.BaseTime = 0
 		d.TimePerTurn = 0
 	}
 
-	// A speedrun cannot be timed
+	// Validate that a speedrun cannot be timed
 	if d.Speedrun {
 		d.Timed = false
 		d.BaseTime = 0
@@ -229,69 +228,37 @@ func commandGameCreate(s *Session, d *CommandData) {
 		Create
 	*/
 
-	// Get a new game ID
-	gameID := newGameID
-	newGameID++
+	t := NewTable(d.Name, s.UserID())
+	t.Options = &Options{
+		Variant:              d.Variant,
+		Timed:                d.Timed,
+		BaseTime:             d.BaseTime,
+		TimePerTurn:          d.TimePerTurn,
+		Speedrun:             d.Speedrun,
+		DeckPlays:            d.DeckPlays,
+		EmptyClues:           d.EmptyClues,
+		CharacterAssignments: d.CharacterAssignments,
 
-	// Create the game object
-	g := &Game{
-		ID:       gameID,
-		Name:     d.Name,
-		Owner:    s.UserID(),
-		Visible:  true,
-		Password: d.Password,
-		Options: &Options{
-			Variant:              d.Variant,
-			Timed:                d.Timed,
-			BaseTime:             d.BaseTime,
-			TimePerTurn:          d.TimePerTurn,
-			Speedrun:             d.Speedrun,
-			DeckPlays:            d.DeckPlays,
-			EmptyClues:           d.EmptyClues,
-			CharacterAssignments: d.CharacterAssignments,
-			Correspondence:       d.Correspondence,
-			SetSeed:              setSeed,
-			SetReplay:            setReplay,
-			SetReplayTurn:        setReplayTurn,
-			SetDeal:              setDeal,
-		},
-		Players:            make([]*Player, 0),
-		Spectators:         make([]*Spectator, 0),
-		DisconSpectators:   make(map[int]bool),
-		Clues:              maxClues,
-		DatetimeCreated:    time.Now(),
-		DatetimeLastAction: time.Now(),
-		Stacks:             make([]int, len(variants[d.Variant].Suits)),
-		StackDirections:    make([]int, len(variants[d.Variant].Suits)),
-		MaxScore:           len(variants[d.Variant].Suits) * 5,
-		Actions:            make([]interface{}, 0),
-		EndTurn:            -1,
-		Chat:               make([]*GameChatMessage, 0),
-		ChatRead:           make(map[int]int),
-		HypoActions:        make([]string, 0),
+		SetSeed:       setSeed,
+		SetReplay:     setReplay,
+		SetReplayTurn: setReplayTurn,
+		SetDeal:       setDeal,
 	}
-	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
-		// In this variant, having 1 clue available is represented with a value of 2
-		// We want the players to start with the normal amount of clues,
-		// so we have to double the starting amount
-		g.Clues *= 2
-	}
-	log.Info(g.GetName() + "User \"" + s.Username() + "\" created a game.")
-
-	// Add it to the map
-	games[g.ID] = g
-
-	// Let everyone know about the new table
-	notifyAllTable(g)
+	tables[t.ID] = t // Add it to the map
+	log.Info(t.GetName() + "User \"" + s.Username() + "\" created a table.")
+	// (a "table" message will be sent in the "commandTableJoin" function below)
 
 	// Join the user to the new table
-	d.ID = gameID
-	commandGameJoin(s, d)
+	d.TableID = t.ID
+	commandTableJoin(s, d)
 
 	// Alert the people on the waiting list, if any
-	if d.AlertWaiters && g.Password == "" && !strings.HasPrefix(g.Name, "test") {
-		// Even if they check the "Alert people" checkbox,
-		// we don't want to alert on password-protected games or test games
-		waitingListAlert(g, s.Username())
+	// (even if they check the "Alert people" checkbox,
+	// we don't want to alert on password-protected games or test games)
+	if d.AlertWaiters &&
+		t.Password == "" &&
+		!strings.HasPrefix(t.Name, "test") {
+
+		waitingListAlert(t, s.Username())
 	}
 }

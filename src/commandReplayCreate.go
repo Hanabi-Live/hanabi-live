@@ -1,7 +1,7 @@
 /*
 	Sent when the user clicks on the "Watch Replay", "Share Replay",
 	or "Watch Specific Replay" button
-	(the client will send a "hello" message after getting "gameStart")
+	(the client will send a "hello" message after getting "tableStart")
 
 	"data" example:
 	{
@@ -25,6 +25,12 @@ import (
 )
 
 func commandReplayCreate(s *Session, d *CommandData) {
+	// Validate that there are no inappropriate fields
+	if d.Password != "" {
+		s.Warning("You cannot create a replay with an invalid field.")
+		return
+	}
+
 	// Validate the visibility
 	if d.Visibility != "solo" && d.Visibility != "shared" {
 		s.Warning("That is not a valid replay visibility.")
@@ -42,98 +48,116 @@ func commandReplayCreate(s *Session, d *CommandData) {
 }
 
 func replayID(s *Session, d *CommandData) {
-	// Check to see if the game exists in the database
-	if exists, err := db.Games.Exists(d.ID); err != nil {
-		log.Error("Failed to check to see if game "+strconv.Itoa(d.ID)+" exists:", err)
-		s.Error("Failed to initialize the game. Please contact an administrator.")
-		return
-	} else if !exists {
-		s.Warning("Game #" + strconv.Itoa(d.ID) + " does not exist in the database.")
+	// Create a table
+	name := strings.Title(d.Visibility) + " replay for game #" + strconv.Itoa(d.GameID)
+	t := NewTable(name, s.UserID())
+	t.Visible = d.Visibility == "shared"
+	t.Running = true
+	t.Replay = true
+
+	// Convert the game data from the database into a Game object
+	if !convertDatabaseGametoGame(s, d, t) {
 		return
 	}
 
-	// Convert the game data from the database into a normal game object
-	g, success := convertDatabaseGametoGame(s, d)
-	if !success {
-		return
-	}
-	games[g.ID] = g
-	log.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " replay: #" + strconv.Itoa(d.ID))
-	// (a "table" message will be sent when the user joins)
+	tables[t.ID] = t
+	log.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " replay: " +
+		"#" + strconv.Itoa(d.GameID))
+	// (a "table" message will be sent in the "commandTableSpectate" function below)
 
 	// Join the user to the new replay
-	d.ID = g.ID
-	commandGameSpectate(s, d)
+	d.TableID = t.ID
+	commandTableSpectate(s, d)
 
 	// Start the idle timeout
-	go g.CheckIdle()
+	go t.CheckIdle()
 }
 
-func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
-	// Get a new game ID
-	gameID := newGameID
-	newGameID++
-
-	// Define a standard naming scheme for shared replays
-	name := strings.Title(d.Visibility) + " replay for game #" + strconv.Itoa(d.ID)
-
-	// Figure out whether this game should be invisible
-	visible := false
-	if d.Visibility == "shared" {
-		visible = true
+func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
+	// Check to see if the game exists in the database
+	if exists, err := db.Games.Exists(d.GameID); err != nil {
+		log.Error("Failed to check to see if game "+strconv.Itoa(d.GameID)+" exists:", err)
+		s.Error("Failed to initialize the game. Please contact an administrator.")
+		return false
+	} else if !exists {
+		s.Warning("Game #" + strconv.Itoa(d.GameID) + " does not exist in the database.")
+		return false
 	}
 
 	// Get the options from the database
 	var options models.Options
-	if v, err := db.Games.GetOptions(d.ID); err != nil {
-		log.Error("Failed to get the options from the database for game "+strconv.Itoa(d.ID)+":", err)
+	if v, err := db.Games.GetOptions(d.GameID); err != nil {
+		log.Error("Failed to get the options from the database for game "+strconv.Itoa(d.GameID)+":", err)
 		s.Error("Failed to initialize the game. Please contact an administrator.")
-		return nil, false
+		return false
 	} else {
 		options = v
 	}
 
+	// Store them on the table
+	t.Options = &Options{
+		Variant:              variantsID[options.Variant],
+		Timed:                options.Timed,
+		BaseTime:             options.BaseTime,
+		TimePerTurn:          options.TimePerTurn,
+		Speedrun:             options.Speedrun,
+		DeckPlays:            options.DeckPlays,
+		EmptyClues:           options.EmptyClues,
+		CharacterAssignments: options.CharacterAssignments,
+	}
+
 	// Get the players from the database
 	var dbPlayers []*models.Player
-	if v, err := db.Games.GetPlayers(d.ID); err != nil {
-		log.Error("Failed to get the players from the database for game "+strconv.Itoa(d.ID)+":", err)
+	if v, err := db.Games.GetPlayers(d.GameID); err != nil {
+		log.Error("Failed to get the players from the database for game "+strconv.Itoa(d.GameID)+":", err)
 		s.Error("Failed to initialize the game. Please contact an administrator.")
-		return nil, false
+		return false
 	} else {
 		dbPlayers = v
 	}
 
 	// Get the notes from the database
 	var notes []models.NoteList
-	if v, err := db.Games.GetNotes(d.ID); err != nil {
+	if v, err := db.Games.GetNotes(d.GameID); err != nil {
 		log.Error("Failed to get the notes from the database "+
-			"for game "+strconv.Itoa(d.ID)+":", err)
+			"for game "+strconv.Itoa(d.GameID)+":", err)
 		s.Error("Failed to initialize the game. Please contact an administrator.")
-		return nil, false
+		return false
 	} else {
 		notes = v
 	}
 
-	// Convert the database player objects to normal player objects
-	players := make([]*Player, 0)
-	for i, p := range dbPlayers {
+	// Convert the database player objects to Player objects
+	for _, dbp := range dbPlayers {
 		player := &Player{
-			ID:                p.ID,
-			Name:              p.Name,
-			Notes:             notes[i].Notes,
-			Character:         charactersID[p.CharacterAssignment],
-			CharacterMetadata: p.CharacterMetadata,
+			ID:   dbp.ID,
+			Name: dbp.Name,
 		}
-		players = append(players, player)
+		t.Players = append(t.Players, player)
+	}
+
+	// Convert the database player objects to GamePlayer objects
+	gamePlayers := make([]*GamePlayer, 0)
+	for i, dbp := range dbPlayers {
+		gamePlayer := &GamePlayer{
+			Name:  dbp.Name,
+			Index: i,
+
+			Hand:              make([]*Card, 0),
+			Notes:             notes[i].Notes,
+			Character:         charactersID[dbp.CharacterAssignment],
+			CharacterMetadata: dbp.CharacterMetadata,
+		}
+		gamePlayers = append(gamePlayers, gamePlayer)
 	}
 
 	// Get the actions from the database
 	var actionStrings []string
-	if v, err := db.GameActions.GetAll(d.ID); err != nil {
+	if v, err := db.GameActions.GetAll(d.GameID); err != nil {
 		log.Error("Failed to get the actions from the database "+
-			"for game "+strconv.Itoa(d.ID)+":", err)
+			"for game "+strconv.Itoa(d.GameID)+":", err)
 		s.Error("Failed to initialize the game. Please contact an administrator.")
-		return nil, false
+		return false
 	} else {
 		actionStrings = v
 	}
@@ -146,54 +170,29 @@ func convertDatabaseGametoGame(s *Session, d *CommandData) (*Game, bool) {
 		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
 			log.Error("Failed to unmarshal an action:", err)
 			s.Error("Failed to initialize the game. Please contact an administrator.")
-			return nil, false
+			return false
 		}
 		actions = append(actions, action)
 	}
 
 	// Get the number of turns from the database
 	var numTurns int
-	if v, err := db.Games.GetNumTurns(d.ID); err != nil {
-		log.Error("Failed to get the number of turns from the database for game "+strconv.Itoa(d.ID)+":", err)
+	if v, err := db.Games.GetNumTurns(d.GameID); err != nil {
+		log.Error("Failed to get the number of turns from the database for game "+strconv.Itoa(d.GameID)+":", err)
 		s.Error("Failed to initialize the game. Please contact an administrator.")
-		return nil, false
+		return false
 	} else {
 		numTurns = v
 	}
 
 	// Create the game object
-	g := &Game{
-		ID:         gameID,
-		DatabaseID: d.ID,
-		Name:       name,
-		Owner:      s.UserID(),
-		Visible:    visible,
-		Options: &Options{
-			Variant:              variantsID[options.Variant],
-			Timed:                options.Timed,
-			BaseTime:             options.BaseTime,
-			TimePerTurn:          options.TimePerTurn,
-			Speedrun:             options.Speedrun,
-			DeckPlays:            options.DeckPlays,
-			EmptyClues:           options.EmptyClues,
-			CharacterAssignments: options.CharacterAssignments,
-		},
-		Players:            players,
-		Spectators:         make([]*Spectator, 0),
-		DisconSpectators:   make(map[int]bool),
-		Running:            true,
-		Replay:             true,
-		DatetimeCreated:    time.Now(),
-		DatetimeLastAction: time.Now(),
-		DatetimeStarted:    time.Now(),
-		Actions:            actions,
-		EndTurn:            numTurns,
-		Chat:               make([]*GameChatMessage, 0),
-		ChatRead:           make(map[int]int),
-		HypoActions:        make([]string, 0),
-	}
+	g := NewGame(t)
+	g.ID = d.GameID
+	g.Players = gamePlayers
+	g.Actions = actions
+	g.EndTurn = numTurns
 
-	return g, true
+	return true
 }
 
 type GameJSON struct {
@@ -283,45 +282,47 @@ func replayJSON(s *Session, d *CommandData) {
 		return
 	}
 
-	// Convert the JSON game to a normal game object
-	g := convertJSONGametoGame(s, d)
-	games[g.ID] = g
-	log.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " JSON replay: #" + strconv.Itoa(g.ID))
-	// (a "table" message will be sent when the user joins)
+	// Create a table
+	name := strings.Title(d.Visibility) + " replay for " + s.Username() + "'s JSON game"
+	t := NewTable(name, s.UserID())
+	t.Visible = d.Visibility == "shared"
+	t.Running = true
+
+	// Convert the JSON game to a Game object
+	convertJSONGametoGame(s, d, t)
+	g := t.Game
+
+	tables[t.ID] = t
+	log.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " JSON replay")
+	// (a "table" message will be sent in the "commandTableSpectate" function below)
 
 	// Send messages from fake players to emulate the gameplay that occurred in the JSON actions
-	emulateJSONActions(g, d)
+	emulateJSONActions(t, d)
 
 	// Do a mini-version of the steps in the "g.End()" function
-	g.Replay = true
-	g.Turn = 0 // We want to start viewing the replay at the beginning, not the end
+	t.Replay = true
 	g.EndTurn = g.Turn
-	g.Progress = 100
+	g.Turn = 0 // We want to start viewing the replay at the beginning, not the end
+	t.Progress = 0
 
-	// Join the user to the new shared replay
-	d.ID = g.ID
-	commandGameSpectate(s, d)
+	// Join the user to the new replay
+	d.TableID = t.ID
+	commandTableSpectate(s, d)
 
 	// Start the idle timeout
-	go g.CheckIdle()
+	go t.CheckIdle()
 }
 
-func convertJSONGametoGame(s *Session, d *CommandData) *Game {
-	// Get a new game ID
-	gameID := newGameID
-	newGameID++
+func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
+	// Store the options on the table
+	t.Options = &Options{
+		Variant:    d.GameJSON.Variant,
+		EmptyClues: true, // Always enable empty clues in case it is used in the JSON
 
-	// Define a standard naming scheme for shared replays
-	name := strings.Title(d.Visibility) + " replay for JSON game #" + strconv.Itoa(gameID)
-
-	// Figure out whether this game should be invisible
-	visible := false
-	if d.Visibility == "shared" {
-		visible = true
+		JSONGame: true, // // We need to mark that the game should not be written to the database
 	}
 
-	// Convert the JSON player objects to a normal player objects
-	players := make([]*Player, 0)
+	// Convert the JSON player objects to Player objects
 	for i, name := range d.GameJSON.Players {
 		// Prepare the player session that will be used for emulation
 		keys := make(map[string]interface{})
@@ -332,56 +333,42 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		keys["username"] = name
 		keys["admin"] = false
 		keys["firstTimeUser"] = false
-		keys["currentGame"] = gameID
+		keys["currentTable"] = t.ID
 		keys["status"] = statusPlaying
 
 		player := &Player{
-			ID:    i,
-			Name:  name,
-			Index: i,
+			ID:   i,
+			Name: name,
 			Session: &Session{
 				&melody.Session{
 					Keys: keys,
 				},
 			},
 			Present: true,
-			Notes:   d.GameJSON.Notes[i],
 		}
-		players = append(players, player)
+		t.Players = append(t.Players, player)
+	}
+
+	// Convert the JSON player objects to GamePlayer objects
+	gamePlayers := make([]*GamePlayer, 0)
+	for i, name := range d.GameJSON.Players {
+		gamePlayer := &GamePlayer{
+			Name:  name,
+			Index: i,
+
+			Hand:  make([]*Card, 0),
+			Time:  time.Duration(0),
+			Notes: d.GameJSON.Notes[i],
+		}
+		gamePlayers = append(gamePlayers, gamePlayer)
 	}
 
 	// Create the game object
-	g := &Game{
-		ID:      gameID,
-		Name:    name,
-		Owner:   s.UserID(),
-		Visible: visible,
-		Options: &Options{
-			Variant:    d.GameJSON.Variant,
-			EmptyClues: true, // Always enable empty clues in case it is used in the JSON
-		},
-		Players:            players,
-		Spectators:         make([]*Spectator, 0),
-		DisconSpectators:   make(map[int]bool),
-		Running:            true,
-		DatetimeCreated:    time.Now(),
-		DatetimeLastAction: time.Now(),
-		DatetimeStarted:    time.Now(),
-		NoDatabase:         true,
-		Stacks:             make([]int, len(variants[d.GameJSON.Variant].Suits)),
-		StackDirections:    make([]int, len(variants[d.GameJSON.Variant].Suits)),
-		ActivePlayer:       d.GameJSON.FirstPlayer,
-		Clues:              maxClues,
-		MaxScore:           len(variants[d.GameJSON.Variant].Suits) * 5,
-		Actions:            make([]interface{}, 0),
-		EndTurn:            -1,
-		Chat:               make([]*GameChatMessage, 0),
-		ChatRead:           make(map[int]int),
-		HypoActions:        make([]string, 0),
-	}
+	g := NewGame(t)
+	g.Players = gamePlayers
+	g.ActivePlayer = d.GameJSON.FirstPlayer
 
 	// Convert the JSON deck to a normal deck
-	g.Deck = make([]*Card, 0)
 	for i, c := range d.GameJSON.Deck {
 		g.Deck = append(g.Deck, &Card{
 			Suit:  c.Suit,
@@ -392,7 +379,7 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 	}
 
 	/*
-		The following code is mostly copied from the "commandGameStart()" function
+		The following code is mostly copied from the "commandTableStart()" function
 	*/
 
 	// Deal the cards
@@ -404,7 +391,7 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 	}
 
 	// Record the initial status of the game
-	g.NotifyStatus(false) // The argument is "doubleDiscard"
+	t.NotifyStatus(false) // The argument is "doubleDiscard"
 
 	// Show who goes first
 	// (this must be sent before the "turn" message
@@ -414,18 +401,18 @@ func convertJSONGametoGame(s *Session, d *CommandData) *Game {
 		Type: "text",
 		Text: text,
 	})
-	log.Info(g.GetName() + text)
+	log.Info(t.GetName() + text)
 
 	// Record a message about the first turn
-	g.NotifyTurn()
-
-	return g
+	t.NotifyTurn()
 }
 
-func emulateJSONActions(g *Game, d *CommandData) {
+func emulateJSONActions(t *Table, d *CommandData) {
+	g := t.Game
+
 	// Emulate the JSON actions to normal action objects
 	for _, action := range d.GameJSON.Actions {
-		p := g.Players[g.ActivePlayer]
+		p := t.Players[g.ActivePlayer]
 		if action.Type == actionTypeClue {
 			commandAction(p.Session, &CommandData{
 				Type:   actionTypeClue,

@@ -1,6 +1,6 @@
 /*
 	Sent when the owner of a table clicks on the "Start Game" button
-	(the client will send a "hello" message after getting "gameStart")
+	(the client will send a "hello" message after getting "tableStart")
 
 	"data" is empty
 */
@@ -10,12 +10,9 @@ package main
 import (
 	"encoding/json"
 	"hash/crc64"
-	"io/ioutil"
 	"math/rand"
-	"path"
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -23,57 +20,57 @@ var (
 	cardRegExp = regexp.MustCompile(`^(\w)(\d)$`)
 )
 
-func commandGameStart(s *Session, d *CommandData) {
+func commandTableStart(s *Session, d *CommandData) {
 	/*
 		Validation
 	*/
 
-	// Validate that the game exists
-	gameID := s.CurrentGame()
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := s.CurrentTable()
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
 
-	// Validate that the game has at least 2 players
-	if len(g.Players) < 2 {
+	// Validate that this is the owner of the table
+	if s.UserID() != t.Owner {
+		s.Warning("Only the owner of a table can start the game.")
+		return
+	}
+
+	// Validate that the table has at least 2 players
+	if len(t.Players) < 2 {
 		s.Warning("You need at least 2 players before you can start a game.")
 		return
 	}
 
 	// Validate that the game is not started yet
-	if g.Running {
-		s.Warning("That game has already started, so you cannot start it.")
-		return
-	}
-
-	// Validate that this is the owner of the game
-	if g.Owner != s.UserID() {
-		s.Warning("Only the owner of a game can start it.")
+	if t.Running {
+		s.Warning("The game has already started, so you cannot start it.")
 		return
 	}
 
 	// Validate extra things for "!replay" games
-	if g.Options.SetReplay != 0 {
+	if t.Options.SetReplay != 0 {
 		// Validate that the right amount of players is in the game
-		if numPlayers, err := db.Games.GetNumPlayers(g.Options.SetReplay); err != nil {
+		if numPlayers, err := db.Games.GetNumPlayers(t.Options.SetReplay); err != nil {
 			log.Error("Failed to get the number of players in game "+
-				strconv.Itoa(g.Options.SetReplay)+":", err)
+				strconv.Itoa(t.Options.SetReplay)+":", err)
 			s.Error("Failed to create the game. Please contact an administrator.")
 			return
-		} else if len(g.Players) != numPlayers {
-			s.Warning("You currently have " + strconv.Itoa(len(g.Players)) + " players but game " +
-				strconv.Itoa(g.Options.SetReplay) + " needs " + strconv.Itoa(numPlayers) + " players.")
+		} else if len(t.Players) != numPlayers {
+			s.Warning("You currently have " + strconv.Itoa(len(t.Players)) + " players but game " +
+				strconv.Itoa(t.Options.SetReplay) + " needs " + strconv.Itoa(numPlayers) + " players.")
 			return
 		}
 
 		// Validate that everyone is present
 		// (this only applies to "!replay" because
 		// we need to emulate player actions using their session)
-		for _, p := range g.Players {
+		for _, p := range t.Players {
 			if !p.Present {
 				s.Warning("Everyone must be present before you can start this game.")
 				return
@@ -85,33 +82,34 @@ func commandGameStart(s *Session, d *CommandData) {
 		Start
 	*/
 
-	log.Info(g.GetName() + "Starting the game.")
-	g.Running = true
-	g.DatetimeStarted = time.Now()
+	log.Info(t.GetName() + "Starting the game.")
+
+	// Create the game object
+	g := NewGame(t)
 
 	// Start the idle timeout
-	go g.CheckIdle()
+	go t.CheckIdle()
 
 	g.InitDeck()
 
 	// Handle setting the seed
 	preset := false
-	seedPrefix := "p" + strconv.Itoa(len(g.Players)) + "v" + strconv.Itoa(variants[g.Options.Variant].ID) + "s"
-	if g.Options.SetSeed != "" {
+	seedPrefix := "p" + strconv.Itoa(len(t.Players)) + "v" + strconv.Itoa(variants[t.Options.Variant].ID) + "s"
+	if t.Options.SetSeed != "" {
 		// This is a game with a preset seed
-		g.Seed = seedPrefix + g.Options.SetSeed
-	} else if g.Options.SetReplay != 0 {
+		g.Seed = seedPrefix + t.Options.SetSeed
+	} else if t.Options.SetReplay != 0 {
 		// This is a replay of an existing game
-		if v, err := db.Games.GetSeed(g.Options.SetReplay); err != nil {
-			log.Error("Failed to get the seed for game \""+strconv.Itoa(g.Options.SetReplay)+"\":", err)
+		if v, err := db.Games.GetSeed(t.Options.SetReplay); err != nil {
+			log.Error("Failed to get the seed for game \""+strconv.Itoa(t.Options.SetReplay)+"\":", err)
 			s.Error("Failed to create the game. Please contact an administrator.")
 			return
 		} else {
 			g.Seed = v
 		}
-	} else if g.Options.SetDeal != "" {
+	} else if t.Options.SetDeal != "" {
 		// This is a preset deal from a file, so just set the seed equal to the file name
-		g.Seed = g.Options.SetDeal
+		g.Seed = t.Options.SetDeal
 		preset = true // Later on, we need to skip shuffling the deck
 		if g.SetPresetDeck(s) {
 			return
@@ -120,7 +118,7 @@ func commandGameStart(s *Session, d *CommandData) {
 		// This is a normal game with a random seed / a random deck
 		// Get a list of all the seeds that these players have played before
 		seedMap := make(map[string]bool)
-		for _, p := range g.Players {
+		for _, p := range t.Players {
 			var seeds []string
 			if v, err := db.Games.GetPlayerSeeds(p.ID); err != nil {
 				log.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
@@ -146,7 +144,7 @@ func commandGameStart(s *Session, d *CommandData) {
 			}
 		}
 	}
-	log.Info(g.GetName()+"Using seed:", g.Seed)
+	log.Info(t.GetName()+"Using seed:", g.Seed)
 
 	// Seed the random number generator with the game seed
 	// We use the CRC64 hash function to convert the string to an uint64
@@ -179,30 +177,35 @@ func commandGameStart(s *Session, d *CommandData) {
 	}
 	log.Info("--------------------------------------------------")
 
-	// Initialize all of the player's notes based on the number of cards in the deck
-	for _, p := range g.Players {
-		p.Notes = make([]string, len(g.Deck))
-	}
-
 	// Get a random player to start first (based on the game seed)
 	// (but skip doing this if we are playing a preset deal from a file,
 	// since the player that goes first is specified on the file line of the file)
 	if !preset {
-		g.ActivePlayer = rand.Intn(len(g.Players))
+		g.ActivePlayer = rand.Intn(len(t.Players))
 	}
 
 	// Shuffle the order of the players
 	// (otherwise, the seat order would always correspond to the order that
 	// the players joined the game in)
 	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
-	for i := range g.Players {
+	for i := range t.Players {
 		j := rand.Intn(i + 1)
-		g.Players[i], g.Players[j] = g.Players[j], g.Players[i]
+		t.Players[i], t.Players[j] = t.Players[j], t.Players[i]
 	}
 
-	// Set the player indexes
-	for i, p := range g.Players {
-		p.Index = i
+	// Initialize the GamePlayer objects
+	for i, p := range t.Players {
+		gp := &GamePlayer{
+			Name:  p.Name,
+			Index: i,
+
+			Hand:               make([]*Card, 0),
+			Notes:              make([]string, len(g.Deck)),
+			CharacterMetadata:  -1,
+			CharacterMetadata2: -1,
+		}
+		gp.InitTime(t.Options)
+		g.Players = append(g.Players, gp)
 	}
 
 	// Decide the random character assignments
@@ -213,7 +216,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	// This is so that we don't send them unnecessary messages during the game initialization
 	// (we will set them back to present once they send the "ready" message)
 	listOfAwayPlayers := make([]int, 0)
-	for _, p := range g.Players {
+	for _, p := range t.Players {
 		if p.Present {
 			p.Present = false
 		} else {
@@ -230,7 +233,7 @@ func commandGameStart(s *Session, d *CommandData) {
 	}
 
 	// Record the initial status of the game
-	g.NotifyStatus(false) // The argument is "doubleDiscard"
+	t.NotifyStatus(false) // The argument is "doubleDiscard"
 
 	// Show who goes first
 	// (this must be sent before the "turn" message
@@ -240,142 +243,61 @@ func commandGameStart(s *Session, d *CommandData) {
 		Type: "text",
 		Text: text,
 	})
-	log.Info(g.GetName() + text)
+	log.Info(t.GetName() + text)
 
 	// Record a message about the first turn
-	g.NotifyTurn()
+	t.NotifyTurn()
+
+	// Now that all of the initial game actions have been performed, mark that the game has started
+	t.Running = true
+	t.DatetimeStarted = time.Now()
 
 	// If we are replaying an existing game up to a certain point,
 	// start emulating all of the actions
-	if g.Options.SetReplay != 0 {
-		if g.EmulateGameplayFromDatabaseActions(s) {
+	if t.Options.SetReplay != 0 {
+		if emulateGameplayFromDatabaseActions(t, s) {
 			return
 		}
 	}
 
-	// Send a "gameStart" message to everyone in the game
-	for _, p := range g.Players {
+	// Send a "tableStart" message to everyone in the game
+	for _, p := range t.Players {
 		// If a player is back in the lobby, then don't automatically force them into the game
 		if !intInSlice(p.ID, listOfAwayPlayers) {
-			p.Session.NotifyGameStart()
+			p.Session.NotifyTableStart()
 		}
-	}
-
-	// Now that the game has started, make sure that correspondence games are hidden in the lobby
-	if g.Options.Correspondence {
-		notifyAllTableGone(g)
-		g.Visible = false
-		// (this has to be set after the "notifyAllTableGone()" function is finished)
 	}
 
 	// Let everyone know that the game has started, which will turn the
 	// "Join Game" button into "Spectate"
-	notifyAllTable(g)
+	notifyAllTable(t)
 
 	// Set the status for all of the users in the game
-	for _, p := range g.Players {
+	for _, p := range t.Players {
 		p.Session.Set("status", statusPlaying)
 		notifyAllUser(p.Session)
 	}
 
 	// Start the timer
-	g.TurnBeginTime = time.Now()
-	if g.Options.Timed {
+	if t.Options.Timed {
 		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayer])
 	}
 }
 
-func (g *Game) SetPresetDeck(s *Session) bool {
-	filePath := path.Join(projectPath, "specific-deals", g.Seed+".txt")
-	log.Info("Using a preset deal of:", filePath)
+func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
+	g := t.Game
 
-	var lines []string
-	if v, err := ioutil.ReadFile(filePath); err != nil {
-		log.Error("Failed to read \""+filePath+"\":", err)
-		s.Error("Failed to create the game. Please contact an administrator.")
-		return true
-	} else {
-		lines = strings.Split(string(v), "\n")
-	}
-
-	for i, line := range lines {
-		// The first line is a number that signifies which player will go first
-		if i == 0 {
-			if v, err := strconv.Atoi(line); err != nil {
-				log.Error("Failed to parse the first line (that signifies which player will go first):", line)
-				s.Error("Failed to create the game. Please contact an administrator.")
-				return true
-			} else {
-				// Player 1 would be equal to the player at index 0
-				g.ActivePlayer = v - 1
-			}
-			continue
-		}
-
-		// Ignore empty lines (the last line of the file might be empty)
-		if line == "" {
-			continue
-		}
-
-		// Parse the line for the suit and the rank
-		match2 := cardRegExp.FindStringSubmatch(line)
-		if match2 == nil {
-			log.Error("Failed to parse line "+strconv.Itoa(i+1)+":", line)
-			s.Error("Failed to start the game. Please contact an administrator.")
-			return true
-		}
-
-		// Change the suit of all of the cards in the deck
-		suit := match2[1]
-		var newSuit int
-		if suit == "b" {
-			newSuit = 0
-		} else if suit == "g" {
-			newSuit = 1
-		} else if suit == "y" {
-			newSuit = 2
-		} else if suit == "r" {
-			newSuit = 3
-		} else if suit == "p" {
-			newSuit = 4
-		} else if suit == "m" {
-			newSuit = 5
-		} else {
-			log.Error("Failed to parse the suit on line "+strconv.Itoa(i+1)+":", suit)
-			s.Error("Failed to create the game. Please contact an administrator.")
-			return true
-		}
-		g.Deck[i-1].Suit = newSuit
-		// (the first line is the number of players, so we have to subtract one)
-
-		// Change the rank of all of the cards in the deck
-		rank := match2[2]
-		var newRank int
-		if v, err := strconv.Atoi(rank); err != nil {
-			log.Error("Failed to parse the rank on line "+strconv.Itoa(i+1)+":", rank)
-			s.Error("Failed to create the game. Please contact an administrator.")
-			return true
-		} else {
-			newRank = v
-		}
-		g.Deck[i-1].Rank = newRank // The first line is the number of players, so we have to subtract one
-	}
-
-	return false
-}
-
-func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 	// Ensure that the correct session values are set for all of the players
 	// (before we start sending messages on their behalf)
-	for _, p := range g.Players {
-		p.Session.Set("currentGame", g.ID)
+	for _, p := range t.Players {
+		p.Session.Set("currentTable", t.ID)
 		p.Session.Set("status", statusPlaying)
 	}
 
 	var actionStrings []string
-	if v, err := db.GameActions.GetAll(g.Options.SetReplay); err != nil {
+	if v, err := db.GameActions.GetAll(t.Options.SetReplay); err != nil {
 		log.Error("Failed to get the actions from the database for game "+
-			strconv.Itoa(g.Options.SetReplay)+":", err)
+			strconv.Itoa(t.Options.SetReplay)+":", err)
 		s.Error("Failed to initialize the game. Please contact an administrator.")
 		return true
 	} else {
@@ -402,7 +324,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			}
 
 			// Emulate the clue action
-			commandAction(g.Players[actionClue.Giver].Session, &CommandData{
+			commandAction(t.Players[actionClue.Giver].Session, &CommandData{
 				Type:   actionTypeClue,
 				Target: actionClue.Target,
 				Clue:   actionClue.Clue,
@@ -418,7 +340,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			}
 
 			// Emulate the play action
-			commandAction(g.Players[actionPlay.Which.Index].Session, &CommandData{
+			commandAction(t.Players[actionPlay.Which.Index].Session, &CommandData{
 				Type:   actionTypePlay,
 				Target: actionPlay.Which.Order,
 			})
@@ -433,7 +355,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			}
 
 			// Emulate the discard action
-			commandAction(g.Players[actionDiscard.Which.Index].Session, &CommandData{
+			commandAction(t.Players[actionDiscard.Which.Index].Session, &CommandData{
 				Type:   actionTypeDiscard,
 				Target: actionDiscard.Which.Order,
 			})
@@ -448,11 +370,11 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 			}
 
 			// Stop if we have reached the intended turn
-			if actionTurn.Num == g.Options.SetReplayTurn {
+			if actionTurn.Num == t.Options.SetReplayTurn {
 				// We have to reset all of the player's clocks before we proceed
 				// to avoid some bugs relating to taking super-fast turns
 				for _, p := range g.Players {
-					p.InitTime(g)
+					p.InitTime(t.Options)
 				}
 
 				return false
@@ -461,7 +383,7 @@ func (g *Game) EmulateGameplayFromDatabaseActions(s *Session) bool {
 	}
 
 	log.Error("Failed to find the intended turn before reaching the end of game " +
-		strconv.Itoa(g.Options.SetReplay) + ".")
+		strconv.Itoa(t.Options.SetReplay) + ".")
 	s.Error("Failed to initialize the game. Please contact an administrator.")
 	return true
 }

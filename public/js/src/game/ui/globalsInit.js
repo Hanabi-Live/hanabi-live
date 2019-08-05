@@ -11,13 +11,14 @@ module.exports = () => {
 
     // Game settings
     // (sent in the "init" message in "websocket.js")
+    globals.tableID = -1; // Needed for the "shadow" spectating feature
     globals.playerNames = [];
     globals.variant = null;
     globals.playerUs = -1;
     globals.spectating = false;
     globals.replay = false; // True if we are in a solo or shared replay
     globals.sharedReplay = false;
-    globals.id = 0;
+    globals.databaseID = 0;
 
     // Optional game settings
     // (sent in the "init" message in "websocket.js")

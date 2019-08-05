@@ -14,49 +14,49 @@ import (
 	"github.com/Zamiell/hanabi-live/src/models"
 )
 
-func commandGameJoin(s *Session, d *CommandData) {
+func commandTableJoin(s *Session, d *CommandData) {
 	/*
 		Validate
 	*/
 
-	// Validate that the game exists
-	gameID := d.ID
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := d.TableID
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
 
 	// Validate that the player is not already joined to this table
-	i := g.GetPlayerIndex(s.UserID())
+	i := t.GetPlayerIndexFromID(s.UserID())
 	if i != -1 {
-		s.Warning("You have already joined this game.")
+		s.Warning("You have already joined this table.")
 		return
 	}
 
-	// Validate that the player is not joined to another game
-	if g2 := s.GetJoinedGame(); g2 != nil {
-		s.Warning("You cannot join more than one game at a time. " +
+	// Validate that the player is not joined to another table
+	if t2 := s.GetJoinedTable(); t2 != nil {
+		s.Warning("You cannot join more than one table at a time. " +
 			"Terminate your old game before joining a new one.")
 		return
 	}
 
 	// Validate that this table does not already have 6 players
-	if len(g.Players) >= 6 {
-		s.Warning("That game already has 6 players.")
+	if len(t.Players) >= 6 {
+		s.Warning("That table already has 6 players.")
 		return
 	}
 
 	// Validate that the game is not started yet
-	if g.Running {
+	if t.Running {
 		s.Warning("That game has already started, so you cannot join it.")
 		return
 	}
 
 	// Validate that they entered the correct password
-	if g.Password != "" && d.Password != g.Password {
+	if t.Password != "" && d.Password != t.Password {
 		s.Warning("That is not the correct password for this game.")
 		return
 	}
@@ -65,12 +65,12 @@ func commandGameJoin(s *Session, d *CommandData) {
 		Join
 	*/
 
-	log.Info(g.GetName() + "User \"" + s.Username() + "\" joined. " +
-		"(There are now " + strconv.Itoa(len(g.Players)+1) + " players.)")
+	log.Info(t.GetName() + "User \"" + s.Username() + "\" joined. " +
+		"(There are now " + strconv.Itoa(len(t.Players)+1) + " players.)")
 
 	// Get the stats for this player
 	var stats models.Stats
-	if v, err := db.UserStats.Get(s.UserID(), variants[g.Options.Variant].ID); err != nil {
+	if v, err := db.UserStats.Get(s.UserID(), variants[t.Options.Variant].ID); err != nil {
 		log.Error("Failed to get the stats for player \""+s.Username()+"\":", err)
 		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
 		return
@@ -79,55 +79,50 @@ func commandGameJoin(s *Session, d *CommandData) {
 	}
 
 	p := &Player{
-		ID:   s.UserID(),
-		Name: s.Username(),
-		// We set the index in the "commandGameStart()" function
+		ID:      s.UserID(),
+		Name:    s.Username(),
 		Session: s,
 		Present: true,
 		Stats:   stats,
-		// Time will get initialized below
-		// Notes will get initialized after the deck is created in "commandGameStart.go"
-		CharacterMetadata:  -1,
-		CharacterMetadata2: -1,
 	}
-	p.InitTime(g)
-	g.Players = append(g.Players, p)
-	notifyAllTable(g)
-	g.NotifyPlayerChange()
+	t.Players = append(t.Players, p)
+	notifyAllTable(t)
+	t.NotifyPlayerChange()
 
 	// Set their status
-	s.Set("currentGame", gameID)
+	s.Set("currentTable", tableID)
 	s.Set("status", statusPregame)
 	notifyAllUser(s)
 
 	// Send them a "joined" message
 	// (to let them know they successfully joined the table)
 	type JoinedMessage struct {
-		GameID int `json:"gameID"`
+		TableID int `json:"tableID"`
 	}
 	s.Emit("joined", &JoinedMessage{
-		GameID: gameID,
+		TableID: tableID,
 	})
 
 	// Send them the chat history for this game
-	chatSendPastFromGame(s, g)
-	g.ChatRead[p.ID] = 0
+	chatSendPastFromTable(s, t)
+	t.ChatRead[p.ID] = 0
 
 	// Send the table owner whether or not the "Start Game" button should be grayed out
-	g.NotifyTableReady()
+	t.NotifyTableReady()
 
 	// If the user previously requested it, automatically start the game
-	if g.AutomaticStart == len(g.Players) {
+	if t.AutomaticStart == len(t.Players) {
 		// Check to see if the owner is present
-		for _, p := range g.Players {
-			if p.ID == g.Owner {
+		for _, p := range t.Players {
+			if p.ID == t.Owner {
 				if !p.Present {
-					chatServerGameSend("Aborting automatic game start since "+
-						"the table creator is away.", g.ID)
+					room := "table" + strconv.Itoa(t.ID)
+					chatServerSend("Aborting automatic game start since the table creator is away.",
+						room)
 					return
 				}
 
-				commandGameStart(p.Session, nil)
+				commandTableStart(p.Session, nil)
 				return
 			}
 		}

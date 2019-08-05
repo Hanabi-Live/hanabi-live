@@ -16,7 +16,7 @@ import (
 )
 
 func commandHistoryDetails(s *Session, d *CommandData) {
-	gameID := d.ID
+	gameID := d.GameID
 	var deals []models.GameHistory
 	if v, err := db.Games.GetAllDeals(s.UserID(), gameID); err != nil {
 		log.Error("Failed to get the deals from the database for game "+strconv.Itoa(gameID)+":", err)

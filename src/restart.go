@@ -7,16 +7,8 @@ import (
 	"time"
 )
 
-func restart(s *Session, d *CommandData) {
-	if !isAdmin(s, d) {
-		return
-	}
-
+func restart() {
 	log.Info("Initiating a server restart.")
-	restart2()
-}
-
-func restart2() {
 	execute("build_client.sh", projectPath)
 	for _, s := range sessions {
 		s.Error("The server is going down for a scheduled restart. Please wait a few seconds and then refresh the page.")
@@ -24,25 +16,17 @@ func restart2() {
 	execute("restart.sh", projectPath)
 }
 
-func graceful(s *Session, d *CommandData) {
-	if !isAdmin(s, d) {
-		return
-	}
-
-	graceful2()
-}
-
-func graceful2() {
-	numGames := countActiveGames()
+func graceful() {
+	numGames := countActiveTables()
 	log.Info("Initiating a graceful server restart " +
 		"(with " + strconv.Itoa(numGames) + " active games).")
 	if numGames == 0 {
-		restart2()
+		restart()
 	} else {
 		shuttingDown = true
 		go gracefulWait()
-		chatServerSend("The server will restart when all ongoing games have finished. " +
-			"New game creation has been disabled.")
+		chatServerSend("The server will restart when all ongoing games have finished. "+
+			"New game creation has been disabled.", "lobby")
 	}
 }
 
@@ -53,12 +37,12 @@ func gracefulWait() {
 			break
 		}
 
-		if countActiveGames() == 0 {
+		if countActiveTables() == 0 {
 			// Wait 10 seconds so that the players are not immediately booted upon finishing
 			time.Sleep(time.Second * 10)
 
 			log.Info("Restarting now.")
-			restart2()
+			restart()
 			break
 		}
 
@@ -66,47 +50,18 @@ func gracefulWait() {
 	}
 }
 
-func countActiveGames() int {
-	numGames := 0
-	for _, g := range games {
-		if !g.Running || // Pre-game tables that have not started yet
-			g.Replay { // Solo replays and shared replays
+func countActiveTables() int {
+	numTables := 0
+	for _, t := range tables {
+		if !t.Running || // Pre-game tables that have not started yet
+			t.Replay { // Solo replays and shared replays
 
 			continue
 		}
-		numGames++
+		numTables++
 	}
 
-	return numGames
-}
-
-func ungraceful(s *Session, d *CommandData) {
-	if !isAdmin(s, d) {
-		return
-	}
-
-	shuttingDown = false
-	chatServerSend("Server restart has been canceled. New game creation has been enabled.")
-}
-
-/*
-	Subroutines
-*/
-
-func isAdmin(s *Session, d *CommandData) bool {
-	// Validate that this message was sent from the lobby
-	if d.Discord {
-		chatServerSend("You can only perform that command from the lobby.")
-		return false
-	}
-
-	// Validate that they are an administrator
-	if !s.Admin() {
-		chatServerSend("You can only perform that command if you are an administrator.")
-		return false
-	}
-
-	return true
+	return numTables
 }
 
 func execute(script string, cwd string) {

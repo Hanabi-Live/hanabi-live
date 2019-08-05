@@ -22,27 +22,28 @@ func commandHello(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the game exists
-	gameID := s.CurrentGame()
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Error("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := s.CurrentTable()
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
+	g := t.Game
 
 	// Validate that the game has started
-	if !g.Running {
-		s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
+	if !t.Running {
+		s.Warning("The game for table " + strconv.Itoa(tableID) + " has not started yet.")
 		return
 	}
 
 	// Validate that they are either playing or spectating the game
-	i := g.GetPlayerIndex(s.UserID())
-	j := g.GetSpectatorIndex(s.UserID())
+	i := t.GetPlayerIndexFromID(s.UserID())
+	j := t.GetSpectatorIndexFromID(s.UserID())
 	if i == -1 && j == -1 {
-		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ".")
+		s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ".")
 		return
 	}
 
@@ -52,56 +53,48 @@ func commandHello(s *Session, d *CommandData) {
 
 	// Create a list of names of the users in this game
 	names := make([]string, 0)
-	for _, p := range g.Players {
+	for _, p := range t.Players {
 		names = append(names, p.Name)
 	}
 
 	// Create a list of the "Detrimental Character Assignments", if enabled
 	characterAssignments := make([]string, 0)
 	characterMetadata := make([]int, 0)
-	if g.Options.CharacterAssignments {
+	if t.Options.CharacterAssignments {
 		for _, p := range g.Players {
 			characterAssignments = append(characterAssignments, p.Character)
 			characterMetadata = append(characterMetadata, p.CharacterMetadata)
 		}
 	}
 
-	// Find out what seat number (index) this user is sitting in
-	seat := 0 // By default, assume a seat of 0
-	for i, p := range g.Players {
-		if p.ID == s.UserID() {
-			seat = i
-			break
-		}
+	// The seat number is equal to the index of the player in the Players slice
+	seat := i
+	if seat == -1 {
+		// Spectators view the game from the first players perspective
+		seat = 0
 	}
-	// If this is a replay of a game they were not in (or if they are spectating),
-	// the above if statement will never be reached, and they will be in seat 0
 
 	// Account for if a spectator is shadowing a specific player
-	if j != -1 && g.Spectators[j].Shadowing {
-		seat = g.Spectators[j].PlayerIndex
+	if j != -1 && t.Spectators[j].Shadowing {
+		seat = t.Spectators[j].PlayerIndex
 	}
 
-	id := g.DatabaseID
-	if id == 0 {
-		id = g.ID
-	}
-
-	pauseQueued := g.Players[seat].RequestedPause
-	if i == -1 {
-		pauseQueued = false
+	pauseQueued := false
+	if i != -1 {
+		pauseQueued = g.Players[i].RequestedPause
 	}
 
 	// Give them an "init" message
 	type InitMessage struct {
 		// Game settings
+		TableID      int      `json:"tableID"`
 		Names        []string `json:"names"`
 		Variant      string   `json:"variant"`
 		Seat         int      `json:"seat"`
 		Spectating   bool     `json:"spectating"`
 		Replay       bool     `json:"replay"`
 		SharedReplay bool     `json:"sharedReplay"`
-		ID           int      `json:"id"`
+		DatabaseID   int      `json:"databaseID"`
 
 		// Optional settings
 		Timed                bool     `json:"timed"`
@@ -112,7 +105,6 @@ func commandHello(s *Session, d *CommandData) {
 		EmptyClues           bool     `json:"emptyClues"`
 		CharacterAssignments []string `json:"characterAssignments"`
 		CharacterMetadata    []int    `json:"characterMetadata"`
-		Correspondence       bool     `json:"correspondence"`
 
 		// Hypothetical settings
 		Hypothetical bool     `json:"hypothetical"`
@@ -126,24 +118,24 @@ func commandHello(s *Session, d *CommandData) {
 
 	s.Emit("init", &InitMessage{
 		// Game settings
+		TableID:      t.ID,
 		Names:        names,
-		Variant:      g.Options.Variant,
+		Variant:      t.Options.Variant,
 		Seat:         seat,
 		Spectating:   s.Status() == statusSpectating,
 		Replay:       s.Status() == statusReplay || s.Status() == statusSharedReplay,
 		SharedReplay: s.Status() == statusSharedReplay,
-		ID:           id,
+		DatabaseID:   g.ID,
 
 		// Optional settings
-		Timed:                g.Options.Timed,
-		BaseTime:             g.Options.BaseTime,
-		TimePerTurn:          g.Options.TimePerTurn,
-		Speedrun:             g.Options.Speedrun,
-		DeckPlays:            g.Options.DeckPlays,
-		EmptyClues:           g.Options.EmptyClues,
+		Timed:                t.Options.Timed,
+		BaseTime:             t.Options.BaseTime,
+		TimePerTurn:          t.Options.TimePerTurn,
+		Speedrun:             t.Options.Speedrun,
+		DeckPlays:            t.Options.DeckPlays,
+		EmptyClues:           t.Options.EmptyClues,
 		CharacterAssignments: characterAssignments,
 		CharacterMetadata:    characterMetadata,
-		Correspondence:       g.Options.Correspondence,
 
 		// Hypothetical settings
 		Hypothetical: g.Hypothetical,
@@ -151,7 +143,7 @@ func commandHello(s *Session, d *CommandData) {
 
 		// Other features
 		Paused:      g.Paused,
-		PausePlayer: g.Players[g.PausePlayer].Name,
+		PausePlayer: t.Players[g.PausePlayer].Name,
 		PauseQueued: pauseQueued,
 	})
 }

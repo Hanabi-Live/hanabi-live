@@ -183,11 +183,6 @@ class Deck extends graphics.Group {
             content += '&nbsp; Empty Clues</li>';
         }
 
-        if (globals.correspondence) {
-            content += '<li><span class="game-tooltips-icon"><i class="fas fa-envelope"></i></span>';
-            content += '&nbsp; Correspondence</li>';
-        }
-
         if (globals.characterAssignments.length > 0) {
             content += '<li><span class="game-tooltips-icon">';
             content += '<span style="position: relative; right: 0.4em;">🤔</span></span>';

@@ -114,7 +114,7 @@ func httpWS(c *gin.Context) {
 	keys["username"] = username
 	keys["admin"] = admin
 	keys["firstTimeUser"] = firstTimeUser
-	keys["currentGame"] = -1     // By default, the user is not in any games
+	keys["currentTable"] = -1    // By default, the user is not at a table
 	keys["status"] = statusLobby // By default, the user is in the lobby
 
 	// Validation succeeded, so establish the WebSocket connection

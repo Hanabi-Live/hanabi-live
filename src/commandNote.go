@@ -20,27 +20,28 @@ func commandNote(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the game exists
-	gameID := s.CurrentGame()
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := s.CurrentTable()
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
+	g := t.Game
 
 	// Validate that the game has started
-	if !g.Running {
-		s.Warning("Game " + strconv.Itoa(gameID) + " has not started yet.")
+	if !t.Running {
+		s.Warning("The game for table " + strconv.Itoa(tableID) + " has not started yet.")
 		return
 	}
 
 	// Validate that they are in the game
-	i := g.GetPlayerIndex(s.UserID())
-	j := g.GetSpectatorIndex(s.UserID())
+	i := t.GetPlayerIndexFromID(s.UserID())
+	j := t.GetSpectatorIndexFromID(s.UserID())
 	if i == -1 && j == -1 {
-		s.Warning("You are in not game " + strconv.Itoa(gameID) + ", so you cannot send a note.")
+		s.Warning("You are not at table " + strconv.Itoa(tableID) + ", so you cannot send a note.")
 		return
 	}
 
@@ -60,12 +61,12 @@ func commandNote(s *Session, d *CommandData) {
 		p.Notes[d.Order] = d.Note
 
 	} else if j > -1 {
-		sp := g.Spectators[j]
+		sp := t.Spectators[j]
 
 		// Update the array that contains all of their notes
 		sp.Notes[d.Order] = d.Note
 	}
 
 	// Let all of the spectators know that there is a new note
-	g.NotifySpectatorsNote(d.Order)
+	t.NotifySpectatorsNote(d.Order)
 }

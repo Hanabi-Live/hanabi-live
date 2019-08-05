@@ -157,7 +157,7 @@ func characterGenerate(g *Game) {
 	}
 }
 
-func characterValidateAction(s *Session, d *CommandData, g *Game, p *Player) bool {
+func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}
@@ -201,7 +201,7 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *Player) boo
 	return false
 }
 
-func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Player) bool {
+func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}
@@ -258,7 +258,7 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *Playe
 }
 
 // characterCheckClue returns true if the clue cannot be given
-func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
+func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}
@@ -344,7 +344,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 		}
 
 	} else if p.Character == "Miser" &&
-		g.Clues < 4 {
+		g.ClueTokens < 4 {
 
 		s.Warning("You are " + p.Character + ", so you cannot give a clue unless there are 4 or more clues available.")
 		return true
@@ -393,7 +393,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 	} else if p.Character == "Genius" &&
 		p.CharacterMetadata == -1 {
 
-		if g.Clues < 2 {
+		if g.ClueTokens < 2 {
 			s.Warning("You are " + p.Character + ", so there needs to be at least two clues available for you to give a clue.")
 			return true
 		}
@@ -440,7 +440,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *Player) bool {
 }
 
 // characterCheckPlay returns true if the card cannot be played
-func characterCheckPlay(s *Session, d *CommandData, g *Game, p *Player) bool {
+func characterCheckPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}
@@ -456,7 +456,7 @@ func characterCheckPlay(s *Session, d *CommandData, g *Game, p *Player) bool {
 }
 
 // characterCheckMisplay returns true if the card should misplay
-func characterCheckMisplay(g *Game, p *Player, c *Card) bool {
+func characterCheckMisplay(g *Game, p *GamePlayer, c *Card) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}
@@ -478,25 +478,25 @@ func characterCheckMisplay(g *Game, p *Player, c *Card) bool {
 }
 
 // characterCheckDiscard returns true if the player cannot currently discard
-func characterCheckDiscard(s *Session, g *Game, p *Player) bool {
+func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}
 
 	if p.Character == "Anxious" &&
-		g.Clues%2 == 0 { // Even amount of clues
+		g.ClueTokens%2 == 0 { // Even amount of clues
 
 		s.Warning("You are " + p.Character + ", so you cannot discard when there is an even number of clues available.")
 		return true
 
 	} else if p.Character == "Traumatized" &&
-		g.Clues%2 == 1 { // Odd amount of clues
+		g.ClueTokens%2 == 1 { // Odd amount of clues
 
 		s.Warning("You are " + p.Character + ", so you cannot discard when there is an odd number of clues available.")
 		return true
 
 	} else if p.Character == "Wasteful" &&
-		g.Clues >= 2 {
+		g.ClueTokens >= 2 {
 
 		s.Warning("You are " + p.Character + ", so you cannot discard if there are 2 or more clues available.")
 		return true
@@ -505,7 +505,7 @@ func characterCheckDiscard(s *Session, g *Game, p *Player) bool {
 	return false
 }
 
-func characterPostClue(d *CommandData, g *Game, p *Player) {
+func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 	if !g.Options.CharacterAssignments {
 		return
 	}
@@ -536,7 +536,7 @@ func characterPostClue(d *CommandData, g *Game, p *Player) {
 	}
 }
 
-func characterPostRemove(g *Game, p *Player, c *Card) {
+func characterPostRemove(g *Game, p *GamePlayer, c *Card) {
 	if !g.Options.CharacterAssignments {
 		return
 	}
@@ -561,7 +561,7 @@ func characterPostRemove(g *Game, p *Player, c *Card) {
 	}
 }
 
-func characterPostAction(d *CommandData, g *Game, p *Player) {
+func characterPostAction(d *CommandData, g *Game, p *GamePlayer) {
 	if !g.Options.CharacterAssignments {
 		return
 	}
@@ -590,7 +590,7 @@ func characterPostAction(d *CommandData, g *Game, p *Player) {
 	}
 }
 
-func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
+func characterTakingSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}
@@ -616,7 +616,7 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 		if p.CharacterMetadata == -1 {
 			p.CharacterMetadata = d.Target
 			p.CharacterMetadata2 = d.Clue.Value - 1
-			g.Clues++ // The second clue given should not cost a clue
+			g.ClueTokens++ // The second clue given should not cost a clue
 			return true
 		}
 		p.CharacterMetadata = -1
@@ -629,7 +629,7 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 		// After discarding, discards again if there are 4 clues or less
 		// "p.CharacterMetadata" represents the state, which alternates between -1 and 0
 		if p.CharacterMetadata == -1 &&
-			g.Clues <= 4 {
+			g.ClueTokens <= 4 {
 
 			p.CharacterMetadata = 0
 			return true
@@ -643,7 +643,7 @@ func characterTakingSecondTurn(d *CommandData, g *Game, p *Player) bool {
 	return false
 }
 
-func characterShuffle(g *Game, p *Player) {
+func characterShuffle(g *Game, p *GamePlayer) {
 	if !g.Options.CharacterAssignments {
 		return
 	}
@@ -653,7 +653,7 @@ func characterShuffle(g *Game, p *Player) {
 	}
 }
 
-func characterHideCard(a *ActionDraw, g *Game, p *Player) bool {
+func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}
@@ -680,12 +680,14 @@ func characterAdjustEndTurn(g *Game) {
 	}
 }
 
-func characterCheckSoftlock(g *Game, p *Player) {
+func characterCheckSoftlock(g *Game, p *GamePlayer) {
+	t := g.Table
+
 	if !g.Options.CharacterAssignments {
 		return
 	}
 
-	if g.Clues == 0 &&
+	if g.ClueTokens == 0 &&
 		(p.Character == "Vindictive" || p.Character == "Insistent") {
 
 		g.Strikes = 3
@@ -695,11 +697,11 @@ func characterCheckSoftlock(g *Game, p *Player) {
 			Type: "text",
 			Text: text,
 		})
-		g.NotifyAction()
+		t.NotifyAction()
 	}
 }
 
-func characterEmptyClueAllowed(d *CommandData, g *Game, p *Player) bool {
+func characterEmptyClueAllowed(d *CommandData, g *Game, p *GamePlayer) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}

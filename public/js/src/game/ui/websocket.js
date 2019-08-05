@@ -164,9 +164,9 @@ commands.hypoStart = () => {
     hypothetical.toggle();
 };
 
-commands.id = (data) => {
-    globals.id = data.id;
-    globals.elements.gameIDLabel.setText(`ID: ${globals.id}`);
+commands.databaseID = (data) => {
+    globals.databaseID = data.id;
+    globals.elements.gameIDLabel.setText(`ID: ${globals.databaseID}`);
     globals.elements.gameIDLabel.show();
 
     // Also move the card count label on the deck downwards
@@ -179,13 +179,14 @@ commands.id = (data) => {
 
 commands.init = (data) => {
     // Game settings
+    globals.tableID = data.tableID; // Equal to the table ID on the server
     globals.playerNames = data.names;
     globals.variant = constants.VARIANTS[data.variant];
     globals.playerUs = data.seat;
     globals.spectating = data.spectating;
     globals.replay = data.replay;
     globals.sharedReplay = data.sharedReplay;
-    globals.id = data.id;
+    globals.databaseID = data.databaseID; // 0 if this is an ongoing game
 
     // Optional settings
     globals.timed = data.timed;
@@ -196,7 +197,6 @@ commands.init = (data) => {
     globals.emptyClues = data.emptyClues;
     globals.characterAssignments = data.characterAssignments;
     globals.characterMetadata = data.characterMetadata;
-    globals.correspondence = data.correspondence;
 
     // Hypothetical settings
     globals.hypothetical = data.hypothetical;

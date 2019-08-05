@@ -88,7 +88,7 @@ const keydown = (event) => {
             && globals.replay
             && !($('#game-chat-modal').is(':visible'))
         ) {
-            misc.copyStringToClipboard(globals.id);
+            misc.copyStringToClipboard(globals.databaseID);
             return;
         }
     }

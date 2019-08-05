@@ -63,14 +63,13 @@ const (
 
 var (
 	// The amount of time that a game is inactive before it is killed by the server
-	idleGameTimeout               = time.Minute * 30
-	idleGameTimeoutCorrespondence = time.Hour * 24
-	idleGameTimeoutDev            = time.Hour * 24 * 7 // 7 days
+	idleGameTimeout    = time.Minute * 30
+	idleGameTimeoutDev = time.Hour * 24 * 7 // 7 days
 )
 
 const (
-	// The maximum amount of clues (and the amount of clues that players start a game with)
-	maxClues = 8
+	// The maximum amount of clues (and the amount of clues that players start the game with)
+	maxClueNum = 8
 
 	// The amount of time that someone can be on the waiting list
 	idleWaitingListTimeout = time.Hour * 8

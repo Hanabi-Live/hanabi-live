@@ -3,14 +3,14 @@
 	"data" example:
 	{
 		msg: 'hi',
-		room: 'lobby',
-		// Room can also be "game"
+		room: 'lobby', // Room can also be "table#", e.g. "table1", "table1234", etc.
 	}
 */
 
 package main
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -20,6 +20,10 @@ import (
 
 const (
 	maxChatLength = 300
+)
+
+var (
+	lobbyRoomRegExp = regexp.MustCompile(`table(\d+)`)
 )
 
 func commandChat(s *Session, d *CommandData) {
@@ -56,7 +60,7 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	// Validate the room
-	if d.Room != "lobby" && d.Room != "game" {
+	if d.Room != "lobby" && !strings.HasPrefix(d.Room, "table") {
 		s.Warning("That is not a valid room.")
 		return
 	}
@@ -84,8 +88,8 @@ func commandChat(s *Session, d *CommandData) {
 	log.Info(text)
 
 	// Handle in-game chat in a different function; the rest of this function will be for lobby chat
-	if d.Room == "game" {
-		commandChatGame(s, d)
+	if strings.HasPrefix(d.Room, "game") {
+		commandChatTable(s, d)
 		return
 	}
 
@@ -143,63 +147,67 @@ func commandChat(s *Session, d *CommandData) {
 	chatCommand(s, d, nil) // We pass nil as the third argument because there is no associated game
 }
 
-func commandChatGame(s *Session, d *CommandData) {
-	// If this is a server-generated message, it will have an explicit game ID set
-	gameID := d.GameID
-	if gameID == 0 && s != nil {
-		// Otherwise, retrieve the ID of the game that the user is currently playing
-		gameID = s.CurrentGame()
-	} else if gameID == 0 {
-		log.Error("The \"commandChatGame\" function was called with a game ID of 0.")
+func commandChatTable(s *Session, d *CommandData) {
+	// Parse the table ID from the room name
+	match := lobbyRoomRegExp.FindStringSubmatch(d.Room)
+	if match == nil {
+		log.Error("Failed to parse the table ID from the room name:", d.Room)
+		s.Error("That is an invalid room name.")
 		return
 	}
-
-	// Validate that the user is in a game
-	if gameID == -1 {
-		s.Warning("You cannot send game chat if you are not in a game.")
-		return
-	}
-
-	// Get the corresponding game
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	var tableID int
+	if v, err := strconv.Atoi(match[1]); err == nil {
+		log.Error("Failed to convert the table ID to a number:", err)
+		s.Error("That is an invalid room name.")
 		return
 	} else {
-		g = v
+		tableID = v
+	}
+
+	// Get the corresponding table
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		return
+	} else {
+		t = v
 	}
 
 	// Validate that this player is in the game or spectating
-	if !d.Server && g.GetPlayerIndex(s.UserID()) == -1 && g.GetSpectatorIndex(s.UserID()) == -1 {
-		s.Warning("You are not playing or spectating game " + strconv.Itoa(gameID) + ", so you cannot send chat to it.")
+	if !d.Server &&
+		t.GetPlayerIndexFromID(s.UserID()) == -1 &&
+		t.GetSpectatorIndexFromID(s.UserID()) == -1 {
+
+		s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
+			"so you cannot send chat to it.")
 		return
 	}
 
-	// Store the chat in memory for later
+	// Store the chat in memory
 	userID := 0
 	if !d.Server && s != nil {
 		userID = s.UserID()
 	}
-	chatMsg := &GameChatMessage{
+	chatMsg := &TableChatMessage{
 		UserID:   userID,
 		Username: d.Username, // This was prepared above in the "commandChat()" function
 		Msg:      d.Msg,
 		Datetime: time.Now(),
 	}
-	g.Chat = append(g.Chat, chatMsg)
+	t.Chat = append(t.Chat, chatMsg)
 
 	// Send it to all of the players and spectators
-	if !g.Replay {
-		for _, p := range g.Players {
+	if !t.Replay {
+		for _, p := range t.Players {
 			if p.Present {
 				p.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
 			}
 		}
 	}
-	for _, sp := range g.Spectators {
+	for _, sp := range t.Spectators {
 		sp.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
 	}
 
 	// Check for commands
-	chatCommand(s, d, g)
+	chatCommand(s, d, t)
 }

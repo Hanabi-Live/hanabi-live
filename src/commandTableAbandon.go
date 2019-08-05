@@ -9,30 +9,31 @@ import (
 	"strconv"
 )
 
-func commandGameAbandon(s *Session, d *CommandData) {
+func commandTableAbandon(s *Session, d *CommandData) {
 	/*
 		Validate
 	*/
 
-	// Validate that the game exists
-	gameID := s.CurrentGame()
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := s.CurrentTable()
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
+	g := t.Game
 
 	// Validate that they are in the game
-	i := g.GetPlayerIndex(s.UserID())
+	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
-		s.Warning("You are in not game " + strconv.Itoa(gameID) + ", so you cannot abandon it.")
+		s.Warning("You are not playing at table " + strconv.Itoa(tableID) + ", so you cannot abandon it.")
 		return
 	}
 
 	// Validate that it is not a replay
-	if g.Replay {
+	if t.Replay {
 		s.Warning("You can not abandon a replay.")
 		return
 	}
@@ -41,11 +42,11 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		Abandon
 	*/
 
-	if !g.Running {
+	if !t.Running {
 		// Just make them leave the game instead
-		s.Set("currentGame", g.ID)
+		s.Set("currentTable", t.ID)
 		s.Set("status", statusPregame)
-		commandGameLeave(s, d)
+		commandTableLeave(s, d)
 		return
 	}
 
@@ -60,13 +61,13 @@ func commandGameAbandon(s *Session, d *CommandData) {
 		Type: "text",
 		Text: text,
 	})
-	g.NotifyAction()
+	t.NotifyAction()
 	g.Turn++
-	g.NotifyTurn()
+	t.NotifyTurn()
 
 	// Play a sound to indicate that the game was terminated
 	g.Sound = "finished_fail"
-	g.NotifySound()
+	t.NotifySound()
 
 	// End the game and write it to the database
 	g.End()

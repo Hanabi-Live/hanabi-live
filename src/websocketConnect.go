@@ -169,19 +169,19 @@ func websocketConnect(ms *melody.Session) {
 	s.NotifyGameHistory(history, false)
 
 	// Send a "table" message for every current table
-	for _, g := range games {
-		if g.Visible {
-			s.NotifyTable(g)
+	for _, t := range tables {
+		if t.Visible {
+			s.NotifyTable(t)
 		}
 	}
 
 	// First, check to see if this user was in any existing games
-	for _, g := range games {
-		if g.Replay {
+	for _, t := range tables {
+		if t.Replay {
 			continue
 		}
 
-		for _, p := range g.Players {
+		for _, p := range t.Players {
 			if p.Name != s.Username() {
 				continue
 			}
@@ -190,9 +190,9 @@ func websocketConnect(ms *melody.Session) {
 			p.Session = s
 
 			// Add the player back to the game
-			log.Info(g.GetName() + "Automatically reattending player \"" + s.Username() + "\".")
-			commandGameReattend(s, &CommandData{
-				ID: g.ID,
+			log.Info(t.GetName() + "Automatically reattending player \"" + s.Username() + "\".")
+			commandTableReattend(s, &CommandData{
+				TableID: t.ID,
 			})
 			// (this function does not care what their current game and/or status is)
 
@@ -202,19 +202,19 @@ func websocketConnect(ms *melody.Session) {
 	}
 
 	// Second, check to see if this user was in any existing shared replays
-	for _, g := range games {
-		if !g.Replay {
+	for _, t := range tables {
+		if !t.Replay {
 			continue
 		}
 
-		for id := range g.DisconSpectators {
+		for id := range t.DisconSpectators {
 			if id == s.UserID() {
-				delete(g.DisconSpectators, s.UserID())
+				delete(t.DisconSpectators, s.UserID())
 
 				// Add the player back to the shared replay
-				log.Info(g.GetName() + "Automatically respectating player \"" + s.Username() + "\".")
-				commandGameSpectate(s, &CommandData{ // This function does not care what their current game and/or status is
-					ID: g.ID,
+				log.Info(t.GetName() + "Automatically respectating player \"" + s.Username() + "\".")
+				commandTableSpectate(s, &CommandData{ // This function does not care what their current game and/or status is
+					TableID: t.ID,
 				})
 
 				// We can return here because the player can only be in one shared replay at a time

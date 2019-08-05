@@ -79,7 +79,7 @@ const submit = () => {
         password = hex_sha256(`Hanabi game password ${password}`);
     }
 
-    globals.conn.send('gameCreate', {
+    globals.conn.send('tableCreate', {
         name: $('#createTableName').val(), // We don't bother to store the table name
         variant: getTextbox('createTableVariant'),
         timed: getCheckbox('createTableTimed'),
@@ -89,7 +89,6 @@ const submit = () => {
         deckPlays: getCheckbox('createTableDeckPlays'),
         emptyClues: getCheckbox('createTableEmptyClues'),
         characterAssignments: getCheckbox('createTableCharacterAssignments'),
-        correspondence: getCheckbox('createTableCorrespondence'),
         password,
         alertWaiters: getCheckbox('createTableAlertWaiters'),
     });

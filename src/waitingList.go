@@ -27,7 +27,8 @@ func waitingListAdd(s *Session, d *CommandData) {
 	if d.DiscordID == "" {
 		d.DiscordID = discordGetID(d.Username)
 		if d.DiscordID == "" {
-			chatServerSend("There is not a Discord account matching your username, so you cannot use this command.")
+			chatServerSend("There is not a Discord account matching your username, "+
+				"so you cannot use this command.", d.Room)
 			return
 		}
 	}
@@ -42,7 +43,7 @@ func waitingListAdd(s *Session, d *CommandData) {
 			waiter.DatetimeExpired = time.Now().Add(idleWaitingListTimeout)
 
 			// Let them know
-			chatServerSend(d.Username + ", you are already on the waiting list.")
+			chatServerSend(d.Username+", you are already on the waiting list.", d.Room)
 			return
 		}
 	}
@@ -56,7 +57,7 @@ func waitingListAdd(s *Session, d *CommandData) {
 	if err := db.DiscordWaiters.Insert(waiter); err != nil {
 		msg := "Failed to insert the waiter into the database: " + err.Error()
 		log.Error(msg)
-		chatServerSend(msg)
+		chatServerSend(msg, d.Room)
 		return
 	}
 	waitingList = append(waitingList, waiter)
@@ -64,7 +65,7 @@ func waitingListAdd(s *Session, d *CommandData) {
 	// Announce it
 	msg := d.Username + ", I will ping you when the next table opens.\n"
 	msg += "(" + waitingListGetNum() + ".)"
-	chatServerSend(msg)
+	chatServerSend(msg, d.Room)
 }
 
 func waitingListRemove(s *Session, d *CommandData) {
@@ -74,7 +75,8 @@ func waitingListRemove(s *Session, d *CommandData) {
 	if d.DiscordID == "" {
 		d.DiscordID = discordGetID(d.Username)
 		if d.DiscordID == "" {
-			chatServerSend("There is not a Discord account matching your username, so you cannot use this command.")
+			chatServerSend("There is not a Discord account matching your username, "+
+				"so you cannot use this command.", d.Room)
 			return
 		}
 	}
@@ -89,21 +91,21 @@ func waitingListRemove(s *Session, d *CommandData) {
 			waitingListRemoveSub(i)
 
 			// Let them know
-			chatServerSend(d.Username + ", you have been removed from the waiting list.")
+			chatServerSend(d.Username+", you have been removed from the waiting list.", d.Room)
 			return
 		}
 	}
 
-	chatServerSend(d.Username + ", you are not on the waiting list.")
+	chatServerSend(d.Username+", you are not on the waiting list.", d.Room)
 }
 
 func waitingListList(s *Session, d *CommandData) {
 	waitingListPurgeOld()
 	msg := waitingListGet()
-	chatServerSend(msg)
+	chatServerSend(msg, d.Room)
 }
 
-func waitingListAlert(g *Game, creator string) {
+func waitingListAlert(t *Table, creator string) {
 	waitingListPurgeOld()
 	if len(waitingList) == 0 {
 		return
@@ -125,17 +127,17 @@ func waitingListAlert(g *Game, creator string) {
 	if err := db.DiscordWaiters.DeleteAll(); err != nil {
 		msg := "Failed to delete the waiters in the database: " + err.Error()
 		log.Error(msg)
-		chatServerSend(msg)
+		chatServerSend(msg, "lobby")
 		return
 	}
 	waitingList = make([]*models.Waiter, 0)
 
 	// Alert all of the people on the waiting list
-	alert := creator + " created a table. (" + g.Options.Variant + ")\n" + mentionList
-	chatServerSend(alert)
+	msg := creator + " created a table. (" + t.Options.Variant + ")\n" + mentionList
+	chatServerSend(msg, "lobby")
 
 	// Also, copy the people who were pinged to the pre-game chat for reference
-	chatServerGameSend("Alerted players: "+usernameList, g.ID)
+	chatServerSend("Alerted players: "+usernameList, "table"+strconv.Itoa(t.ID))
 }
 
 /*
@@ -147,7 +149,7 @@ func waitingListRemoveSub(i int) {
 	if err := db.DiscordWaiters.Delete(waitingList[i].Username); err != nil {
 		msg := "Failed to delete \"" + waitingList[i].Username + "\" from the database: " + err.Error()
 		log.Error(msg)
-		chatServerSend(msg)
+		chatServerSend(msg, "lobby")
 		return
 	}
 

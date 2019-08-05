@@ -10,35 +10,36 @@ import (
 	"strconv"
 )
 
-func commandGameRestart(s *Session, d *CommandData) {
+func commandTableRestart(s *Session, d *CommandData) {
 	/*
 		Validate
 	*/
 
-	// Validate that the game exists
-	gameID := s.CurrentGame()
-	var g *Game
-	if v, ok := games[gameID]; !ok {
-		s.Warning("Game " + strconv.Itoa(gameID) + " does not exist.")
+	// Validate that the table exists
+	tableID := s.CurrentTable()
+	var t *Table
+	if v, ok := tables[tableID]; !ok {
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
 		return
 	} else {
-		g = v
+		t = v
 	}
 
 	// Validate that this is a shared replay
-	if !g.Replay || !g.Visible {
-		s.Warning("Game " + strconv.Itoa(gameID) + " is not a shared replay, so you cannot send a restart action.")
+	if !t.Replay || !t.Visible {
+		s.Warning("Table " + strconv.Itoa(tableID) + " is not a shared replay, " +
+			"so you cannot send a restart action.")
 		return
 	}
 
 	// Validate that this person is leading the shared replay
-	if s.UserID() != g.Owner {
+	if s.UserID() != t.Owner {
 		s.Warning("You cannot restart a game unless you are the leader.")
 		return
 	}
 
 	// Validate that there are at least two people in the shared replay
-	if len(g.Spectators) < 2 {
+	if len(t.Spectators) < 2 {
 		s.Warning("You cannot restart a game unless there are at least two people in it.")
 		return
 	}
@@ -47,9 +48,9 @@ func commandGameRestart(s *Session, d *CommandData) {
 	// the shared replay
 	playerSessions := make([]*Session, 0)
 	spectatorSessions := make([]*Session, 0)
-	for _, sp := range g.Spectators {
+	for _, sp := range t.Spectators {
 		playedInOriginalGame := false
-		for _, p := range g.Players {
+		for _, p := range t.Players {
 			if p.Name == sp.Name {
 				playedInOriginalGame = true
 				break
@@ -61,7 +62,7 @@ func commandGameRestart(s *Session, d *CommandData) {
 			spectatorSessions = append(spectatorSessions, sp.Session)
 		}
 	}
-	if len(playerSessions) != len(g.Players) {
+	if len(playerSessions) != len(t.Players) {
 		s.Warning("Not all of the players from the original game are in the shared replay, " +
 			"so you cannot restart the game.")
 		return
@@ -72,50 +73,49 @@ func commandGameRestart(s *Session, d *CommandData) {
 	*/
 
 	// Add a message to the chat that it was restarted
-	chatServerGameSend("The game has been restarted.", g.ID)
+	chatServerSend("The game has been restarted.", "table"+strconv.Itoa(t.ID))
 
 	// If a user has read all of the chat thus far,
 	// mark that they have also read the "restarted" message, since it is superfluous
-	for k, v := range g.ChatRead {
-		if v == len(g.Chat)-1 {
-			g.ChatRead[k] = len(g.Chat)
+	for k, v := range t.ChatRead {
+		if v == len(t.Chat)-1 {
+			t.ChatRead[k] = len(t.Chat)
 		}
 	}
 
 	// Force the client of all of the spectators to go back to the lobby
-	g.NotifyBoot()
+	t.NotifyBoot()
 
 	// On the server side, all of the spectators will still be in the game,
 	// so manually disconnect everybody
 	for _, s2 := range playerSessions {
-		commandGameUnattend(s2, nil)
+		commandTableUnattend(s2, nil)
 	}
 	for _, s2 := range spectatorSessions {
-		commandGameUnattend(s2, nil)
+		commandTableUnattend(s2, nil)
 	}
 
 	// The shared replay should now be deleted, since all of the players have left
 	// Now, emulate the game owner creating a new game
-	commandGameCreate(s, &CommandData{
+	commandTableCreate(s, &CommandData{
 		Name:                 getName(), // Generate a random name for the new game
-		Variant:              g.Options.Variant,
-		Timed:                g.Options.Timed,
-		BaseTime:             g.Options.BaseTime,
-		TimePerTurn:          g.Options.TimePerTurn,
-		Speedrun:             g.Options.Speedrun,
-		DeckPlays:            g.Options.DeckPlays,
-		EmptyClues:           g.Options.EmptyClues,
-		CharacterAssignments: g.Options.CharacterAssignments,
+		Variant:              t.Options.Variant,
+		Timed:                t.Options.Timed,
+		BaseTime:             t.Options.BaseTime,
+		TimePerTurn:          t.Options.TimePerTurn,
+		Speedrun:             t.Options.Speedrun,
+		DeckPlays:            t.Options.DeckPlays,
+		EmptyClues:           t.Options.EmptyClues,
+		CharacterAssignments: t.Options.CharacterAssignments,
 	})
 
-	// We increment the newGameID after creating a game,
-	// so assume that the ID of the last game created is equal to the "newGameID" minus 1
-	ID := newGameID - 1
-	g2 := games[ID]
+	// We increment the newTableID after creating a game,
+	// so assume that the ID of the last game created is equal to the "newTableID" minus 1
+	t2 := tables[newTableID-1]
 
 	// Copy over the chat from the previous game, if any
-	g2.Chat = make([]*GameChatMessage, len(g.Chat))
-	copy(g2.Chat, g.Chat)
+	t2.Chat = make([]*TableChatMessage, len(t.Chat))
+	copy(t2.Chat, t.Chat)
 
 	// Emulate the other players joining the game
 	for _, s2 := range playerSessions {
@@ -123,24 +123,24 @@ func commandGameRestart(s *Session, d *CommandData) {
 			// The creator of the game does not need to join
 			continue
 		}
-		commandGameJoin(s2, &CommandData{
-			ID: ID,
+		commandTableJoin(s2, &CommandData{
+			TableID: t2.ID,
 		})
 	}
 
 	// For each player, re-copy the markers for which chat messages that they have read
 	// (this has to be done after the players join the game)
-	for k, v := range g.ChatRead {
-		g2.ChatRead[k] = v
+	for k, v := range t.ChatRead {
+		t2.ChatRead[k] = v
 	}
 
 	// Emulate the game owner clicking on the "Start Game" button
-	commandGameStart(s, nil)
+	commandTableStart(s, nil)
 
 	// Automatically join any other spectators that were watching
 	for _, s2 := range spectatorSessions {
-		commandGameSpectate(s2, &CommandData{
-			ID: ID,
+		commandTableSpectate(s2, &CommandData{
+			TableID: t2.ID,
 		})
 	}
 }

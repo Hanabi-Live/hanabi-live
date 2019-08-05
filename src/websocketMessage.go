@@ -13,7 +13,7 @@ import (
 	space, then the JSON of the data.
 
 	Example:
-		gameJoin {"gameID":1}
+		tableJoin {"gameID":1}
 		action {"target":1,"type":2}
 */
 
@@ -48,6 +48,21 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	if err := json.Unmarshal(jsonData, &d); err != nil {
 		log.Error("User \"" + s.Username() + "\" sent an command of " +
 			"\"" + command + "\" with invalid data: " + string(jsonData))
+		return
+	}
+
+	// Validate that the user is not trying to use any internal-only fields
+	if d.Username != "" ||
+		d.Discord ||
+		d.Server ||
+		d.Spam ||
+		d.OnlyDiscord ||
+		d.DiscordID != "" ||
+		d.DiscordDiscriminator != "" ||
+		d.Args != nil {
+
+		log.Error("User \"" + s.Username() + "\" sent an command with " +
+			"data in an internal only field.")
 		return
 	}
 
