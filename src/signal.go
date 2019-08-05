@@ -22,10 +22,10 @@ func signalInit() {
 			signal := <-signalChannel
 			if signal == syscall.SIGUSR1 {
 				// Gracefully restart
-				graceful2()
+				graceful()
 			} else if signal == syscall.SIGUSR2 {
 				// Debug
-				debug2()
+				debug()
 			}
 		}
 	}()
