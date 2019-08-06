@@ -205,11 +205,11 @@ func (s *Session) NotifyAction(t *Table) {
 	})
 }
 
-func (s *Session) NotifyGameAction(a interface{}, t *Table, p *GamePlayer) {
+func (s *Session) NotifyGameAction(a interface{}, t *Table) {
 	// Check to see if we need to remove some card information
 	drawAction, ok := a.(ActionDraw)
 	if ok && drawAction.Type == "draw" {
-		drawAction.Scrub(t, p)
+		drawAction.Scrub(t, s.UserID())
 		a = drawAction
 	}
 

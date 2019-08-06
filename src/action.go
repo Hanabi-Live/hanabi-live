@@ -77,20 +77,32 @@ type CardSimple struct { // Used by "ActionDeckOrder"
 
 // Scrub removes some information from an action so that we do not reveal
 // to the client anything about the cards that they are drawing
-func (a *ActionDraw) Scrub(t *Table, p *GamePlayer) {
+func (a *ActionDraw) Scrub(t *Table, userID int) {
 	g := t.Game
-
-	// The player will be nil if this is an action that is going to a spectator
-	if p == nil {
-		return
-	}
 
 	// Don't scrub in replays
 	if t.Replay {
 		return
 	}
 
-	if a.Who == p.Index || characterHideCard(a, g, p) {
+	// Find their player index
+	var p *GamePlayer
+	i := t.GetPlayerIndexFromID(userID)
+	j := t.GetSpectatorIndexFromID(userID)
+	if i > -1 {
+		// The person requesting the draw action is one of the active players
+		p = g.Players[i]
+	} else if j > -1 && t.Spectators[j].Shadowing {
+		// The person requesting the draw action is shadowing one of the active players
+		p = g.Players[t.Spectators[j].PlayerIndex]
+	} else {
+		return
+	}
+
+	if a.Who == p.Index || // They are drawing the card
+		// They are playing a special character that should not be able to see the card
+		characterHideCard(a, g, p) {
+
 		a.Rank = -1
 		a.Suit = -1
 	}

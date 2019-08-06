@@ -46,28 +46,18 @@ func commandReady(s *Session, d *CommandData) {
 
 	// Check to see if we need to remove some card information
 	var scrubbedActions []interface{}
-	if !t.Replay && (i > -1 || (j > -1 && t.Spectators[j].Shadowing)) {
-		// The person requesting the game state is one of the active players
-		// (or a spectator shadowing one of the active players),
-		// so we need to hide some information
-		var p *GamePlayer
-		if i > -1 {
-			p = g.Players[i]
-		} else {
-			p = g.Players[t.Spectators[j].PlayerIndex]
-		}
-
+	if !t.Replay {
 		for _, a := range g.Actions {
 			drawAction, ok := a.(ActionDraw)
 			if ok && drawAction.Type == "draw" {
-				drawAction.Scrub(t, p)
+				drawAction.Scrub(t, s.UserID())
 				a = drawAction
 			}
 			scrubbedActions = append(scrubbedActions, a)
 		}
 	} else {
-		// The person requesting the game state is not an active player,
-		// so we don't need to hide any information
+		// The person requesting the game state is not an active player
+		// (and not a spectator shadowing a player), so we do not need to hide any information
 		scrubbedActions = g.Actions
 	}
 
