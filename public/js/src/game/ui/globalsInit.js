@@ -11,7 +11,6 @@ module.exports = () => {
 
     // Game settings
     // (sent in the "init" message in "websocket.js")
-    globals.tableID = -1; // Needed for the "shadow" spectating feature
     globals.playerNames = [];
     globals.variant = null;
     globals.playerUs = -1;

@@ -49,7 +49,7 @@ class NameFrame extends graphics.Group {
                     // right-click on the name frame to spectate the game from their perspective
                     setTimeout(() => {
                         globals.lobby.conn.send('tableSpectate', {
-                            tableID: globals.tableID,
+                            tableID: globals.lobby.tableID,
                             player: username,
                         });
                     }, 20);

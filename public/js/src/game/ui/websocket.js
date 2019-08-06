@@ -179,7 +179,7 @@ commands.databaseID = (data) => {
 
 commands.init = (data) => {
     // Game settings
-    globals.tableID = data.tableID; // Equal to the table ID on the server
+    globals.lobby.tableID = data.tableID; // Equal to the table ID on the server
     globals.playerNames = data.names;
     globals.variant = constants.VARIANTS[data.variant];
     globals.playerUs = data.seat;
