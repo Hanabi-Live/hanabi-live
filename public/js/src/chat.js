@@ -83,6 +83,11 @@ exports.add = (data, fast) => {
         chat = $('#game-chat-text');
     }
 
+    // Linkify any links
+    data.msg = linkifyHtml(data.msg, {
+        target: '_blank',
+    });
+
     // Convert emotes to images
     data.msg = fillDiscordEmotes(data.msg);
     data.msg = fillLocalEmotes(data.msg);
@@ -120,6 +125,13 @@ exports.add = (data, fast) => {
     chat.append(line);
     $(`#chat-line-${chatLineNum}`).fadeIn(globals.fadeTime);
     chatLineNum += 1;
+
+    // Linkify any links in the chat message
+    /*
+    $(`#chat-line-${chatLineNum}`).linkify({
+        target: '_blank',
+    });
+    */
 
     // Automatically scroll down
     if (autoScroll) {

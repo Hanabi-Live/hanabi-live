@@ -56,5 +56,6 @@ module.exports = {
         Konva: true,
         Phaser: true,
         hex_sha256: true,
+        linkifyHtml: true,
     },
 };
