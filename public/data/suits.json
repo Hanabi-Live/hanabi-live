@@ -75,12 +75,26 @@
         "pip": "infinity"
      },
 
-    "Blue B": { "name": "Blue", "clueColors": [], "pip": "diamond" },
-    "Green B": { "name": "Green", "clueColors": [], "pip": "club" },
-    "Yellow B": { "name": "Yellow", "clueColors": [], "pip": "star" },
-    "Red B": { "name": "Red", "clueColors": [], "pip": "heart" },
-    "Purple B": { "name": "Purple", "clueColors": [], "pip": "crescent" },
-    "Teal B": { "name": "Teal", "clueColors": [], "pip": "spade" },
+    "Blue CB": { "clueColors": [], "name": "Blue", "pip": "diamond" },
+    "Green CB": { "clueColors": [], "name": "Green", "pip": "club" },
+    "Yellow CB": { "clueColors": [], "name": "Yellow", "pip": "star" },
+    "Red CB": { "clueColors": [], "name": "Red", "pip": "heart" },
+    "Purple CB": { "clueColors": [], "name": "Purple", "pip": "crescent" },
+    "Teal CB": { "clueColors": [], "name": "Teal", "pip": "spade" },
+
+    "Blue NB": { "clueColors": ["Blue"], "clueRanks": "none", "name": "Blue", "pip": "diamond" },
+    "Green NB": { "clueColors": ["Green"], "clueRanks": "none", "name": "Green", "pip": "club" },
+    "Yellow NB": { "clueColors": ["Yellow"], "clueRanks": "none", "name": "Yellow", "pip": "star" },
+    "Red NB": { "clueColors": ["Red"], "clueRanks": "none", "name": "Red", "pip": "heart" },
+    "Purple NB": { "clueColors": ["Purple"], "clueRanks": "none", "name": "Purple", "pip": "crescent" },
+    "Teal NB": { "clueColors": ["Teal"], "clueRanks": "none", "name": "Teal", "pip": "spade" },
+
+    "Blue TB": { "clueColors": [], "clueRanks": "none", "name": "Blue", "pip": "diamond" },
+    "Green TB": { "clueColors": [], "clueRanks": "none", "name": "Green", "pip": "club" },
+    "Yellow TB": { "clueColors": [], "clueRanks": "none", "name": "Yellow", "pip": "star" },
+    "Red TB": { "clueColors": [], "clueRanks": "none", "name": "Red", "pip": "heart" },
+    "Purple TB": { "clueColors": [], "clueRanks": "none", "name": "Purple", "pip": "crescent" },
+    "Teal TB": { "clueColors": [], "clueRanks": "none", "name": "Teal", "pip": "spade" },
 
     "Sky": { "clueColors": ["Blue"], "fill": "#1a66ff", "pip": "diamond" },
     "Navy": { "clueColors": ["Blue"], "fill": "#002b80", "pip": "club" },
@@ -96,61 +110,61 @@
     "Ruby VA": { "clueColors": ["Red"], "name": "Ruby", "pip": "crescent" },
     "Mahogany VA": {
         "clueColors": ["Red"],
-        "name": "Mahogany",
         "fill": "#330000",
+        "name": "Mahogany",
         "pip": "spade"
     },
 
-    "Green D": { "name": "Green", "clueColors": ["Blue", "Yellow"], "pip": "diamond" },
-    "Purple D": { "name": "Purple", "clueColors": ["Blue", "Red"], "pip": "club" },
+    "Green D": { "clueColors": ["Blue", "Yellow"], "name": "Green", "pip": "diamond" },
+    "Purple D": { "clueColors": ["Blue", "Red"], "name": "Purple", "pip": "club" },
     "Navy D": {
-        "name": "Navy",
         "clueColors": ["Blue", "Black"],
         "fill": "#000066",
+        "name": "Navy",
         "pip": "star"
     },
     "Orange D": {
-        "name": "Orange",
         "clueColors": ["Yellow", "Red"],
         "fill": "#ff8800",
+        "name": "Orange",
         "pip": "heart"
     },
     "Tan D": {
-        "name": "Tan",
         "clueColors": ["Yellow", "Black"],
         "fill": "#999900",
+        "name": "Tan",
         "pip": "crescent"
     },
     "Mahogany D": {
-        "name": "Mahogany",
         "clueColors": ["Red", "Black"],
         "fill": "#660016",
+        "name": "Mahogany",
         "pip": "spade"
     },
 
-    "Teal D": { "name": "Teal", "clueColors": ["Blue", "Green"], "pip": "diamond" },
+    "Teal D": { "clueColors": ["Blue", "Green"], "name": "Teal", "pip": "diamond" },
     "Lime D": {
-        "name": "Lime",
         "clueColors": ["Green", "Yellow"],
         "fill": "#80c000",
+        "name": "Lime",
         "pip": "club"
     },
     "Orange D2": {
-        "name": "Orange",
         "clueColors": ["Yellow", "Red"],
         "fill": "#ff8800",
+        "name": "Orange",
         "pip": "star"
     },
     "Cardinal D": {
-        "name": "Cardinal",
         "clueColors": ["Red", "Purple"],
         "fill": "#810735",
+        "name": "Cardinal",
         "pip": "heart"
     },
     "Indigo D": {
-        "name": "Indigo",
         "clueColors": ["Purple", "Blue"],
         "fill": "#1a0082",
+        "name": "Indigo",
         "pip": "crescent"
     }
 }
