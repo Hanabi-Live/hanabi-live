@@ -526,7 +526,6 @@ class HanabiCard extends graphics.Group {
                     // All the cards of this rank are seen, so put an X over the rank pip
                     const x = this.rankPipsXMap.get(rank);
                     x.setVisible(true);
-                    console.log('The rank of', rank, 'is not possible for card', this.order, '.');
                 }
             }
         }

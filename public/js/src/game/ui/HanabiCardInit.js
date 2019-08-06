@@ -386,10 +386,7 @@ exports.click = function click() {
 };
 
 exports.possibilities = function possibilities() {
-    if (
-        globals.lobby.settings.realLifeMode
-        || globals.speedrun
-    ) {
+    if (globals.lobby.settings.realLifeMode || globals.speedrun) {
         return;
     }
 
@@ -397,18 +394,17 @@ exports.possibilities = function possibilities() {
     for (let i = 0; i < globals.indexOfLastDrawnCard; i++) {
         const card = globals.deck[i];
 
-        // Don't do anything if this is one of our cards
+        // Don't do anything if this is one of our unknown cards
         if (card.suit === null || card.rank === null) {
             continue;
         }
 
-        // If the card is still in the player's hand,
-        // then we can't remove it from the list of possibilities,
-        // because they don't know what it is yet
+        // If the card is still in the player's hand and it is not fully "filled in" with clues,
+        // then we cannot remove it from the list of possibilities
+        // (because they do not know what it is yet)
         if (
             card.holder === this.holder
-            && card.possibleSuits.length !== 1
-            && card.possibleRanks.length !== 1
+            && (card.possibleSuits.length > 1 || card.possibleRanks.length > 1)
         ) {
             continue;
         }
