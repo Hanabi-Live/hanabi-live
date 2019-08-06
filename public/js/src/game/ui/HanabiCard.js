@@ -103,6 +103,7 @@ class HanabiCard extends graphics.Group {
         if (this.rankPipsMap) {
             for (const [, rankPip] of this.rankPipsMap) {
                 rankPip.show();
+                rankPip.hidePositiveClue();
             }
         }
         if (this.rankPipsXMap) {
@@ -363,6 +364,13 @@ class HanabiCard extends graphics.Group {
                         this.possibleSuits,
                         suit => suit.clueRanks === 'all',
                     );
+                }
+
+                // If the rank of the card is not known yet,
+                // change the rank pip that corresponds with this number to signify a positive clue
+                const pip = this.rankPipsMap.get(clueRank);
+                if (pip.getVisible()) {
+                    pip.showPositiveClue();
                 }
             } else {
                 suitsRemoved = filterInPlace(

@@ -175,16 +175,25 @@ exports.pips = function pips() {
         const rankPip = new graphics.Rect({
             x,
             y,
-            width: Math.floor(constants.CARD_W * 0.15),
-            height: Math.floor(constants.CARD_H * 0.10),
+            width: Math.floor(constants.CARD_H * 0.1),
+            height: Math.floor(constants.CARD_H * 0.1),
             fill: 'black',
             stroke: 'black',
+            strokeWidth: 4,
             cornerRadius: 0.02 * constants.CARD_H,
             opacity,
             listening: false,
         });
         this.rankPips.add(rankPip);
         this.rankPipsMap.set(rank, rankPip);
+
+        rankPip.showPositiveClue = () => {
+            rankPip.setFill('#ffdf00'); // Yellow
+            // (the same color as the "clued" border around a card)
+        };
+        rankPip.hidePositiveClue = () => {
+            rankPip.setFill('black');
+        };
 
         // Also create the X that will show when a certain rank can be ruled out
         opacity = 0.8;
