@@ -199,10 +199,17 @@ exports.openEditTooltip = (card) => {
         return;
     }
 
-    // Close any existing note tooltips
     if (globals.editingNote !== null) {
+        // Close any existing note tooltips
         const tooltip = $(`#tooltip-card-${globals.editingNote}`);
         tooltip.tooltipster('close');
+
+        // If we are right clicking the card that we were already editing,
+        // then just close the existing tooltip and don't do anything else
+        if (card.order === globals.editingNote) {
+            globals.editingNote = null;
+            return;
+        }
     }
 
     show(card);
