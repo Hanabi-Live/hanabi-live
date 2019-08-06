@@ -342,6 +342,7 @@ class HanabiCard extends graphics.Group {
                 );
             }
 
+
             // Some suits are touched by all rank clues
             // Some suits are not touched by any rank clues
             // So we may be able to remove a suit pip
@@ -352,8 +353,12 @@ class HanabiCard extends graphics.Group {
                 );
 
                 // Also handle the special case where two positive rank clues
-                // should "fill in" a multi-rank card
-                if (this.positiveRankClues.length >= 2) {
+                // should "fill in" a card of a multi-rank suit
+                // (there are no such suits in Multi-Fives variants)
+                if (
+                    this.positiveRankClues.length >= 2
+                    && !globals.variant.name.startsWith('Multi-Fives')
+                ) {
                     suitsRemoved = filterInPlace(
                         this.possibleSuits,
                         suit => suit.clueRanks === 'all',
