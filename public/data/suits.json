@@ -26,6 +26,7 @@
         "fillColors": ["#000000", "#0044cc", "#00cc00", "#ccaa22", "#aa0000", "#6600cc", "#000000"],
         "pip": "infinity"
     },
+    "Null": { "clueColors": [], "clueRanks": "none", "fill": "#ffffff", "pip": "null_symbol" },
 
     "Dark Rainbow": {
         "abbreviation": "M",

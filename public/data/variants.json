@@ -117,6 +117,16 @@
         "spacing": true
     },
 
+    "Null (6 Suits)": {
+        "id": 180,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Null"]
+    },
+    "Null (5 Suits)": {
+        "id": 181,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Null"],
+        "spacing": true
+    },
+
     "Black & Rainbow (6 Suits)": {
         "id": 65,
         "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Rainbow"]
