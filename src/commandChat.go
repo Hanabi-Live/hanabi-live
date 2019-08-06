@@ -108,13 +108,8 @@ func commandChat(s *Session, d *CommandData) {
 		}
 	}
 
-	// Convert Discord mentions from number to username
-	d.Msg = chatFillMentions(d.Msg)
-
-	// Convert Discord channel names from number to username
-	log.Debug("MSG BEFORE FILL:", d.Msg)
-	d.Msg = chatFillChannels(d.Msg)
-	log.Debug("MSG AFTER FILL:", d.Msg)
+	d.Msg = chatFillMentions(d.Msg) // Convert Discord mentions from number to username
+	d.Msg = chatFillChannels(d.Msg) // Convert Discord channel names from number to username
 
 	// Lobby messages go to everyone
 	if !d.OnlyDiscord {
@@ -151,17 +146,17 @@ func commandChat(s *Session, d *CommandData) {
 }
 
 func commandChatTable(s *Session, d *CommandData) {
-	// Parse the table ID from the room name
+	// Parse the table ID from the room
 	match := lobbyRoomRegExp.FindStringSubmatch(d.Room)
 	if match == nil {
-		log.Error("Failed to parse the table ID from the room name:", d.Room)
-		s.Error("That is an invalid room name.")
+		log.Error("Failed to parse the table ID from the room:", d.Room)
+		s.Error("That is an invalid room.")
 		return
 	}
 	var tableID int
-	if v, err := strconv.Atoi(match[1]); err == nil {
+	if v, err := strconv.Atoi(match[1]); err != nil {
 		log.Error("Failed to convert the table ID to a number:", err)
-		s.Error("That is an invalid room name.")
+		s.Error("That is an invalid room.")
 		return
 	} else {
 		tableID = v
