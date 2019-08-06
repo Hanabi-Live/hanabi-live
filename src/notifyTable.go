@@ -194,7 +194,8 @@ func (t *Table) NotifyAction() {
 	g := t.Game
 
 	if !t.Running {
-		log.Error("The \"NotifyAction()\" function was called on a game that has not started yet.")
+		// We might be doing the initial actions;
+		// don't send any messages to players if this is the case
 		return
 	}
 

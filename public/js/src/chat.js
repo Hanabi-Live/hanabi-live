@@ -126,13 +126,6 @@ exports.add = (data, fast) => {
     $(`#chat-line-${chatLineNum}`).fadeIn(globals.fadeTime);
     chatLineNum += 1;
 
-    // Linkify any links in the chat message
-    /*
-    $(`#chat-line-${chatLineNum}`).linkify({
-        target: '_blank',
-    });
-    */
-
     // Automatically scroll down
     if (autoScroll) {
         chat.animate({

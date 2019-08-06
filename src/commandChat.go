@@ -88,7 +88,7 @@ func commandChat(s *Session, d *CommandData) {
 	log.Info(text)
 
 	// Handle in-game chat in a different function; the rest of this function will be for lobby chat
-	if strings.HasPrefix(d.Room, "game") {
+	if strings.HasPrefix(d.Room, "table") {
 		commandChatTable(s, d)
 		return
 	}
@@ -112,7 +112,9 @@ func commandChat(s *Session, d *CommandData) {
 	d.Msg = chatFillMentions(d.Msg)
 
 	// Convert Discord channel names from number to username
+	log.Debug("MSG BEFORE FILL:", d.Msg)
 	d.Msg = chatFillChannels(d.Msg)
+	log.Debug("MSG AFTER FILL:", d.Msg)
 
 	// Lobby messages go to everyone
 	if !d.OnlyDiscord {
@@ -139,12 +141,13 @@ func commandChat(s *Session, d *CommandData) {
 		}
 
 		// We use "rawMsg" instead of "d.Msg" because we want to send the unsanitized message
-		// The bluemonday library is intended for HTML rendering, and Discord can handle any special characters
+		// The bluemonday library is intended for HTML rendering,
+		// and Discord can handle any special characters
 		discordSend(to, d.Username, rawMsg)
 	}
 
 	// Check for commands
-	chatCommand(s, d, nil) // We pass nil as the third argument because there is no associated game
+	chatCommand(s, d, nil) // We pass nil as the third argument because there is no associated table
 }
 
 func commandChatTable(s *Session, d *CommandData) {
