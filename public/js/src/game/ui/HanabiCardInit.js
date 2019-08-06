@@ -202,9 +202,9 @@ exports.pips = function pips() {
             visible: false,
             sceneFunc: (ctx, shape) => {
                 const width = 20;
-                const xx = Math.floor(constants.CARD_W * 0.04);
-                const xy = Math.floor(constants.CARD_H * 0.05);
-                drawX(ctx, shape, xx, xy, 12, width);
+                const xx = Math.floor(constants.CARD_W * 0.035);
+                const xy = Math.floor(constants.CARD_H * 0.047);
+                drawX(ctx, shape, xx, xy, 10, width);
             },
             listening: false,
         });
