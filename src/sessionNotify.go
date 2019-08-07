@@ -349,12 +349,14 @@ func (s *Session) NotifyNoteList(t *Table) {
 			Notes: p.Notes,
 		})
 	}
-	for _, sp := range t.Spectators {
-		notes = append(notes, models.NoteList{
-			ID:    sp.ID,
-			Name:  sp.Name,
-			Notes: sp.Notes,
-		})
+	if !t.Replay {
+		for _, sp := range t.Spectators {
+			notes = append(notes, models.NoteList{
+				ID:    sp.ID,
+				Name:  sp.Name,
+				Notes: sp.Notes,
+			})
+		}
 	}
 
 	// Send it

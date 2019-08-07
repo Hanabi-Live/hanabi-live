@@ -235,8 +235,6 @@ const initCards = () => {
         const child = new LayoutChild();
         child.add(card);
     }
-
-    globals.indexOfLastDrawnCard = globals.playerNames.length * stats.getNumCardsPerHand() - 1;
 };
 
 module.exports = HanabiUI;

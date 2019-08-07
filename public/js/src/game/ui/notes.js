@@ -262,8 +262,11 @@ exports.openEditTooltip = (card) => {
 
 // We just got a list of a bunch of notes, so show the note indicator for currently-visible cards
 exports.setAllCardIndicators = () => {
-    for (let order = 0; order <= globals.indexOfLastDrawnCard; order++) {
-        setCardIndicator(order);
+    // We just iterate through the whole deck instead of using the index of the last drawn card
+    // to avoid race conditions where we can get the "noteList"
+    // before the "notifyList" is finished processing
+    for (const card of globals.deck) {
+        setCardIndicator(card.order);
     }
 };
 

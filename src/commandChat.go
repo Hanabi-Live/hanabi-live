@@ -206,9 +206,6 @@ func commandChatTable(s *Session, d *CommandData) {
 		sp.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
 	}
 
-	// If they are sending a message, assume that they have read all of the in-game chat
-	t.ChatRead[s.UserID()] = len(t.Chat)
-
 	// Check for commands
 	chatCommand(s, d, t)
 }
