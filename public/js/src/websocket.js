@@ -172,7 +172,7 @@ const initCommands = () => {
     globals.conn.on('chat', (data) => {
         chat.add(data, false); // The second argument is "fast"
 
-        if (data.room !== 'game') {
+        if (!data.room.startsWith('table')) {
             return;
         }
         if (globals.currentScreen === 'pregame') {

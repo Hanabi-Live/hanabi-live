@@ -1,5 +1,6 @@
 /*
-	Sent when the user opens the in-game chat
+	Sent when the user opens the in-game chat or
+	when they receive a chat message when the in-game chat is already open
 	"data" is empty
 */
 

@@ -87,6 +87,7 @@ func commandHello(s *Session, d *CommandData) {
 	// Give them an "init" message
 	type InitMessage struct {
 		// Game settings
+		TableID      int      `json:"tableID"`
 		Names        []string `json:"names"`
 		Variant      string   `json:"variant"`
 		Seat         int      `json:"seat"`
@@ -117,6 +118,7 @@ func commandHello(s *Session, d *CommandData) {
 
 	s.Emit("init", &InitMessage{
 		// Game settings
+		TableID:      t.ID, // The client needs to know the table ID for chat to work properly
 		Names:        names,
 		Variant:      t.Options.Variant,
 		Seat:         seat,
