@@ -14,35 +14,32 @@ turn_other:
 - Keys: v, m
 - Notes: D, G
 
-turn_blind:
+turn_surprise:
+- Keys v, n, <, m
+- Notes: D, F, A, G
+
+blind1:
 - Keys: m, >, a
 - Notes: G, B, D
 
-turn_blind2:
+blind2:
 - Keys: m, >, a, f
 - Notes: G, B, D, G
 
-turn_blind3:
+blind3:
 - Keys: m, >, a, f, h
 - Notes: G, B, D, G, B
 
-turn_blind4:
+blind4:
 - Keys: m, >, a, f, q
 - Notes: G, B, D, G, G
 
-turn_surprise:
-- Keys v, n, <, m
-
-finished_success:
-- Keys: m, >, a, f, a, >, m
-- Notes: G, B, D, G, D, B, G
-
-turn_fail:
+fail:
 - Keys: a, /
 - Notes: G, F#
 - (set tuning --> key --> none)
 
-turn_fail2:
+fail2:
 - Keys: a, /, "."
 - Notes: G, F#, F
 - (set tuning --> key --> none)
@@ -52,9 +49,17 @@ finished_failure:
 - Notes: a, /, ".", ",", m
 - (set tuning --> key --> none)
 
+finished_perfect:
+- Keys: m, >, a, f, a, >, m
+- Notes: G, B, D, G, D, B, G
+
+finished_success:
+- Keys: m, <, >, <, m
+- Notes: G, A, B, A, G
+
 sad:
-- Keys: G, C, B, A#
-- Notes: a, v, c, x
-- (set tuning --> key --> none)
+- Keys: C, B, A#, A
+- Notes: v, c, x, z
+  (set tuning --> key --> none)
 
 The sounds are reduced in Audacity by -12.0 db before exporting to MP3.

@@ -1,0 +1,5 @@
+Open "piano.flp" in FL Studio 20.
+
+- All samples recorded at 110 BPM.
+- Finish Success recorded at 140 BPM.
+- Finish Perfect recorded at 90 BPM.
