@@ -272,11 +272,17 @@ commands.note = (data) => {
     }
 */
 commands.noteList = (data) => {
+    // Reset any existing notes
+    // (we could be getting a fresh copy of all notes after an ongoing game has ended)
+    for (let i = 0; i < globals.allNotes.length; i++) {
+        globals.allNotes[i] = [];
+    }
+
     // Data comes from the server as an array of player & spectator notes
     // We want to convert this to an array of objects for each card
     for (const noteList of data.notes) {
         // If we are a spectator, copy our notes from the combined list
-        if (globals.spectating && !globals.replay && noteList.name === globals.lobby.username) {
+        if (!globals.replay && globals.spectating && noteList.name === globals.lobby.username) {
             globals.ourNotes = noteList.notes;
         }
 
