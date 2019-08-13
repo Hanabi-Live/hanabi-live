@@ -60,6 +60,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * One of the suits is replaced with an omni suit.
 * All color clues and all rank clues "touch" the omni suit.
 
+### Null
+
+* One of the suits is replaced with a null suit.
+* No clues "touch" the null suit.
+
 ### Dark Rainbow (Black + Rainbow)
 
 * One of the suits is replaced with a dark rainbow suit.
