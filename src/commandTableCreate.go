@@ -229,6 +229,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	*/
 
 	t := NewTable(d.Name, s.UserID())
+	t.Password = d.Password
 	t.Options = &Options{
 		Variant:              d.Variant,
 		Timed:                d.Timed,

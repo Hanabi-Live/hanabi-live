@@ -65,6 +65,8 @@ const keypress = room => function keypressFunction(event) {
         if (room === 'table') {
             room = `table${globals.tableID}`;
         }
+        console.log('Table ID is:', globals.tableID);
+        console.log('Room is:', room);
 
         globals.conn.send('chat', {
             msg,
