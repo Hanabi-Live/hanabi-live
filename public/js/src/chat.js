@@ -62,11 +62,12 @@ const keypress = room => function keypressFunction(event) {
         const msg = input.val();
         input.val('');
 
-        if (room === 'table') {
+        console.log('Room1 is:', room);
+        if (room.startsWith('table')) {
             room = `table${globals.tableID}`;
         }
         console.log('Table ID is:', globals.tableID);
-        console.log('Room is:', room);
+        console.log('Room2 is:', room);
 
         globals.conn.send('chat', {
             msg,
