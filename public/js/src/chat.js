@@ -11,15 +11,9 @@ const emoteCategories = require('../../data/emotes');
 let chatLineNum = 1;
 
 $(document).ready(() => {
-    const inputs = [
-        'lobby-chat-input',
-        'lobby-chat-pregame-input',
-        'game-chat-input',
-    ];
-    for (const input of inputs) {
-        const room = input === 'lobby-chat-input' ? 'lobby' : 'table';
-        $(`#${input}`).on('keypress', keypress(room));
-    }
+    $('#lobby-chat-input').on('keypress', keypress('lobby'));
+    $('#lobby-chat-pregame-input').on('keypress', keypress('table'));
+    $('#game-chat-input').on('keypress', keypress('table'));
 
     // Ensure that there are no overlapping emotes
     const emoteMap = {};
@@ -62,12 +56,11 @@ const keypress = room => function keypressFunction(event) {
         const msg = input.val();
         input.val('');
 
-        console.log('Room1 is:', room);
+        // Use "startsWith" instead of "===" to work around an unknown bug where
+        // the room can already have the table number appended (e.g. "table123")
         if (room.startsWith('table')) {
             room = `table${globals.tableID}`;
         }
-        console.log('Table ID is:', globals.tableID);
-        console.log('Room2 is:', room);
 
         globals.conn.send('chat', {
             msg,
