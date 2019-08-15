@@ -18,6 +18,12 @@ module.exports = {
         // The browser JavaScript makes use of tasteful alerts
         'no-alert': ['off'],
 
+        // Array destructuring can result in non-intuitive code
+        'prefer-destructuring': ['warn', {
+            'array': false,
+            'object': true,
+        }],
+
         // We need this for debugging
         'no-console': ['off'],
 

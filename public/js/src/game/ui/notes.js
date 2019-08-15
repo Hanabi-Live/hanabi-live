@@ -70,33 +70,35 @@ const set = (order, note) => {
     }
 
     // Check to see if we wrote a note that implies that we know the exact identity of this card
-    // Only examine the new text that we added
-    const getDiff = (string, diffBy) => string.split(diffBy).join('');
-    let diff = getDiff(note, oldNote);
-    // Remove all pipes (which are a conventional way to append new information to a note)
-    diff = diff.replace(/\|+/g, '');
-    diff = diff.trim(); // Remove all leading and trailing whitespace
+    // Only examine the text to the right of the rightmost pipe
+    // (pipes are a conventional way to append new information to a note
+    if (note.includes('|')) {
+        const match = note.match(/.*\|(.+)/);
+        note = match[1];
+    }
+    note = note.trim(); // Removing all leading and trailing whitespace
+
     let noteSuit = null;
     let noteRank = null;
     for (const suit of globals.variant.suits) {
         for (const rank of globals.variant.ranks) {
             if (
-                diff === `${suit.abbreviation.toLowerCase()}${rank}` // e.g. b1
-                || diff === `${suit.abbreviation.toUpperCase()}${rank}` // e.g. B1
-                || diff === `${suit.name}${rank}` // e.g. Blue1
-                || diff === `${suit.name} ${rank}` // e.g. Blue 1
-                || diff === `${suit.name.toLowerCase()}${rank}` // e.g. blue1
-                || diff === `${suit.name.toLowerCase()} ${rank}` // e.g. blue 1
-                || diff === `${suit.name.toUpperCase()}${rank}` // e.g. BLUE1
-                || diff === `${suit.name.toUpperCase()} ${rank}` // e.g. BLUE 1
-                || diff === `${rank}${suit.abbreviation.toLowerCase()}` // e.g. 1b
-                || diff === `${rank}${suit.abbreviation.toUpperCase()}` // e.g. 1B
-                || diff === `${rank}${suit.name}` // e.g. 1Blue
-                || diff === `${rank} ${suit.name}` // e.g. 1 Blue
-                || diff === `${rank}${suit.name.toLowerCase()}` // e.g. 1blue
-                || diff === `${rank} ${suit.name.toLowerCase()}` // e.g. 1 blue
-                || diff === `${rank}${suit.name.toUpperCase()}` // e.g. 1BLUE
-                || diff === `${rank} ${suit.name.toUpperCase()}` // e.g. 1 BLUE
+                note === `${suit.abbreviation.toLowerCase()}${rank}` // e.g. b1
+                || note === `${suit.abbreviation.toUpperCase()}${rank}` // e.g. B1
+                || note === `${suit.name}${rank}` // e.g. Blue1
+                || note === `${suit.name} ${rank}` // e.g. Blue 1
+                || note === `${suit.name.toLowerCase()}${rank}` // e.g. blue1
+                || note === `${suit.name.toLowerCase()} ${rank}` // e.g. blue 1
+                || note === `${suit.name.toUpperCase()}${rank}` // e.g. BLUE1
+                || note === `${suit.name.toUpperCase()} ${rank}` // e.g. BLUE 1
+                || note === `${rank}${suit.abbreviation.toLowerCase()}` // e.g. 1b
+                || note === `${rank}${suit.abbreviation.toUpperCase()}` // e.g. 1B
+                || note === `${rank}${suit.name}` // e.g. 1Blue
+                || note === `${rank} ${suit.name}` // e.g. 1 Blue
+                || note === `${rank}${suit.name.toLowerCase()}` // e.g. 1blue
+                || note === `${rank} ${suit.name.toLowerCase()}` // e.g. 1 blue
+                || note === `${rank}${suit.name.toUpperCase()}` // e.g. 1BLUE
+                || note === `${rank} ${suit.name.toUpperCase()}` // e.g. 1 BLUE
             ) {
                 noteSuit = suit;
                 noteRank = rank;

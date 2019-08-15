@@ -128,7 +128,7 @@ const initCommands = () => {
             let gameID = null;
             const match = window.location.pathname.match(/\/replay\/(\d+)$/);
             if (match) {
-                [, gameID] = match;
+                gameID = match[1];
             } else if (window.location.pathname === '/dev2') {
                 gameID = '51'; // The first game in the Hanabi Live database
             }
