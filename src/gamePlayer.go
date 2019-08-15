@@ -317,6 +317,7 @@ func (p *GamePlayer) DiscardCard(g *Game, c *Card) bool {
 	}
 	if !c.Failed && c.Touched {
 		text += " (clued)"
+		g.Sound = "turn_discard_clued"
 	}
 	if c.Failed && c.Slot != -1 && !c.Touched {
 		text += " (blind)"
