@@ -147,9 +147,9 @@ func commandTableStart(s *Session, d *CommandData) {
 	log.Info(t.GetName()+"Using seed:", g.Seed)
 
 	// Seed the random number generator with the game seed
-	// We use the CRC64 hash function to convert the string to an uint64
-	// (seeding with negative numbers will not work)
-	// https://www.socketloop.com/references/golang-hash-crc64-checksum-and-maketable-functions-example
+	// Golang's "rand.Seed()" function takes an int64, so we need to convert a string to an int64
+	// We use the CRC64 hash function to do this
+	// Also note that seeding with negative numbers will not work
 	crc64Table := crc64.MakeTable(crc64.ECMA)
 	intSeed := crc64.Checksum([]byte(g.Seed), crc64Table)
 	rand.Seed(int64(intSeed))
