@@ -119,8 +119,8 @@ func httpInit() {
 	if useTLS {
 		// We want all HTTP requests to be redirected to HTTPS
 		// (but make an exception for Let's Encrypt)
-		// The Gin router is using the default serve mux, so we need to create a
-		// new fresh one for the HTTP handler
+		// The Gin router is using the default serve mux,
+		// so we need to create a new fresh one for the HTTP handler
 		HTTPServeMux := http.NewServeMux()
 		HTTPServeMux.Handle("/.well-known/acme-challenge/", http.FileServer(http.FileSystem(http.Dir("../letsencrypt"))))
 		HTTPServeMux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
