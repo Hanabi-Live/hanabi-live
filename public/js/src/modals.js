@@ -15,8 +15,8 @@ const modals = [
     // "warning" and "error" are intentionally omitted, as they are handled separately
 ];
 
-// Initialize the modals
-$(document).ready(() => {
+// Initialize various element behavior within the modals
+exports.init = () => {
     // All modals
     for (const modal of modals) {
         $(`#${modal}-modal-cancel`).click(closeAll);
@@ -49,7 +49,7 @@ $(document).ready(() => {
     $('#error-modal-signout').click(() => {
         nav.signOut();
     });
-});
+};
 
 exports.passwordShow = (tableID) => {
     $('#lobby').fadeTo(globals.fadeTime, 0.25);

@@ -7,7 +7,7 @@ const constants = require('../constants');
 const globals = require('../globals');
 const misc = require('../misc');
 
-$(document).ready(() => {
+exports.init = () => {
     // Populate the variant dropdown in the "Create Game" tooltip
     for (const variantName of Object.keys(constants.VARIANTS)) {
         const option = new Option(variantName, variantName);
@@ -62,7 +62,7 @@ $(document).ready(() => {
     });
 
     $('#create-game-submit').on('click', submit);
-});
+};
 
 const submit = () => {
     // We need to mutate some values before sending them to the server

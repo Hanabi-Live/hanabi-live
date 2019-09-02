@@ -6,7 +6,7 @@
 const globals = require('../globals');
 const login = require('./login');
 
-$(document).ready(() => {
+exports.init = () => {
     $('#tutorial-yes').on('click', () => {
         $('#tutorial-1').fadeOut(globals.fadeTime, () => {
             $('#tutorial-2').fadeIn(globals.fadeTime);
@@ -102,4 +102,4 @@ $(document).ready(() => {
             login.hide(false);
         });
     });
-});
+};

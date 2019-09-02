@@ -60,7 +60,7 @@ func commandSetting(s *Session, d *CommandData) {
 		if v, err := strconv.Atoi(d.Value); err != nil {
 			s.Warning("The setting of \"" + d.Name + "\" must be an integer.")
 			return
-		} else if v <= 0 || v > 604800 { // 1 week in seconds
+		} else if v < 0 || v > 604800 { // 1 week in seconds
 			s.Warning("The setting of \"" + d.Name + "\" is too large.")
 			return
 		}

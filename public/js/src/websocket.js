@@ -102,8 +102,9 @@ const initCommands = () => {
             globals.settings[value] = globals.settings[value].toString();
         }
 
+        // Update various elements of the UI to reflect our settings
         $('#nav-buttons-history-total-games').html(globals.totalGames);
-        settings.init();
+        settings.setSettingsTooltip();
         lobby.login.hide(data.firstTimeUser);
 
         if (!data.firstTimeUser) {

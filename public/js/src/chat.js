@@ -10,7 +10,7 @@ const emoteCategories = require('../../data/emotes');
 // Variables
 let chatLineNum = 1;
 
-$(document).ready(() => {
+exports.init = () => {
     $('#lobby-chat-input').on('keypress', keypress('lobby'));
     $('#lobby-chat-pregame-input').on('keypress', keypress('table'));
     $('#game-chat-input').on('keypress', keypress('table'));
@@ -26,7 +26,7 @@ $(document).ready(() => {
             }
         }
     }
-});
+};
 
 const keypress = room => function keypressFunction(event) {
     // Check for emoji substitution

@@ -10,5 +10,6 @@ exports.nav = require('./nav');
 exports.pregame = require('./pregame');
 exports.settings = require('./settings');
 exports.tables = require('./tables');
-require('./tutorial');
+exports.tutorial = require('./tutorial');
 exports.users = require('./users');
+exports.watchReplay = require('./watchReplay');

@@ -2,7 +2,7 @@
     A collection of miscellaneous functions
 */
 
-$(document).ready(() => {
+exports.init = () => {
     // Detect if an element is off screen
     // e.g. if ($('#asdf').is(':offscreen'))
     jQuery.expr.filters.offscreen = (el) => {
@@ -14,7 +14,7 @@ $(document).ready(() => {
         // We modify the top/left by 1 and the bottom/right by 5
         // to prevent scroll bars from appearing
     };
-});
+};
 
 exports.timerFormatter = (milliseconds) => {
     if (!milliseconds) {

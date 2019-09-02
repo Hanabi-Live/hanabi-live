@@ -9,7 +9,7 @@ const misc = require('../misc');
 const modals = require('../modals');
 const watchReplay = require('./watchReplay');
 
-$(document).ready(() => {
+exports.init = () => {
     // Initialize all of the navigation tooltips using Tooltipster
     initTooltips();
 
@@ -69,7 +69,7 @@ $(document).ready(() => {
     $('#nav-buttons-history-details-return').on('click', () => {
         lobby.history.hideDetails();
     });
-});
+};
 
 const initTooltips = () => {
     const tooltips = [

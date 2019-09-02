@@ -7,7 +7,7 @@ const globals = require('../globals');
 const lobby = require('./main');
 const websocket = require('../websocket');
 
-$(document).ready(() => {
+exports.init = () => {
     $('#login-button').click(() => {
         $('#login-form').submit();
     });
@@ -41,9 +41,7 @@ $(document).ready(() => {
         $('#firefox-warning').hide();
         $('#sign-in').show();
     });
-
-    automaticLogin();
-});
+};
 
 const submit = (event) => {
     // By default, the form will reload the page, so stop this from happening
@@ -125,7 +123,7 @@ const getAjaxError = (jqXHR) => {
     return jqXHR.responseText;
 };
 
-const automaticLogin = () => {
+exports.automaticLogin = () => {
     // Don't automatically login if they are on Firefox and have not confirmed the warning dialog
     // (cookies are strings, so we cannot check for equality)
     if (globals.browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {

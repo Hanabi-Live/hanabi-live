@@ -486,6 +486,34 @@ table td {
 }
 
 /*
+    Settings
+*/
+
+.horizontal {
+    margin: 0;
+    padding: 0;
+}
+
+.horizontal > li {
+    height: 2.25em;
+    line-height: 2.25em;
+    vertical-align: center;
+    list-style-type: none;
+    float: left;
+    margin-right: 1em;
+}
+
+#settings-volume-slider {
+    position: relative;
+    bottom: 0.25em;
+    width: 12.5em;
+    height: 0.25em;
+    background: #ddd;
+    border: none;
+    border-radius: 3px;
+}
+
+/*
     Modals
 */
 

@@ -15,6 +15,7 @@ type Settings struct {
 	ShowTimerInUntimed              bool    `json:"showTimerInUntimed"`
 	ReverseHands                    bool    `json:"reverseHands"`
 	RealLifeMode                    bool    `json:"realLifeMode"`
+	Volume                          int     `json:"volume"`
 	SpeedrunPreplay                 bool    `json:"speedrunPreplay"`
 	CreateTableVariant              string  `json:"createTableVariant"`
 	CreateTableTimed                bool    `json:"createTableTimed"`
@@ -32,6 +33,7 @@ var (
 	defaultSettings = Settings{
 		SendTurnSound:                 true,
 		SendTimerSound:                true,
+		Volume:                        50,
 		CreateTableVariant:            "No Variant",
 		CreateTableBaseTimeMinutes:    2,
 		CreateTableTimePerTurnSeconds: 20,
@@ -51,6 +53,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 			show_timer_in_untimed,
 			reverse_hands,
 			real_life_mode,
+			volume,
 			speedrun_preplay,
 			create_table_variant,
 			create_table_timed,
@@ -72,6 +75,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.ShowTimerInUntimed,
 		&settings.ReverseHands,
 		&settings.RealLifeMode,
+		&settings.Volume,
 		&settings.SpeedrunPreplay,
 		&settings.CreateTableVariant,
 		&settings.CreateTableTimed,

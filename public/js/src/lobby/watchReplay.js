@@ -6,7 +6,7 @@
 const globals = require('../globals');
 const misc = require('../misc');
 
-$(document).ready(() => {
+exports.init = () => {
     // Make the text box appear and disappear depending on which source is selected
     $('#replay-source-id').change(replaySourceChange);
     $('#replay-source-json').change(replaySourceChange);
@@ -19,7 +19,7 @@ $(document).ready(() => {
     });
 
     $('#replay-submit').on('click', submit);
-});
+};
 
 const replaySourceChange = () => {
     if ($('#replay-source-id').prop('checked')) {
