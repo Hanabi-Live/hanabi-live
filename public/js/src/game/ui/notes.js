@@ -55,31 +55,17 @@ const set = (order, note) => {
 };
 exports.set = set;
 
+// Check to see if we wrote a note that implies that we know the identity of this card
+// and morph the card if so
 const morph = (order, note) => {
     // The note identity feature does not apply to spectators and replays
     if (globals.spectating || globals.replay) {
         return;
     }
 
-    // If the card previously had a note identity and we deleted the note,
-    // then we need to remove the identity and re-draw the card
+    // Local variables
     const card = globals.deck[order];
-    if (!note) {
-        if (card.noteSuit !== null || card.noteRank !== null) {
-            card.noteSuit = null;
-            card.noteRank = null;
-            card.setBareImage();
-            globals.layers.card.batchDraw();
-        }
-        if (card.knownTrash) {
-            card.knownTrash = false;
-            card.setBareImage();
-            globals.layers.card.batchDraw();
-        }
-        return;
-    }
 
-    // Check to see if we wrote a note that implies that we know the exact identity of this card
     // Only examine the text to the right of the rightmost pipe
     // (pipes are a conventional way to append new information to a note
     if (note.includes('|')) {
@@ -89,17 +75,14 @@ const morph = (order, note) => {
     note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
     note = note.trim(); // Removing all leading and trailing whitespace
 
-    if (note === 'kt' || note === 'trash') {
-        card.knownTrash = true;
-        card.setBareImage();
-        globals.layers.card.batchDraw();
-        return;
-    }
-
     let noteSuit = null;
     let noteRank = null;
-    for (const suit of globals.variant.suits) {
-        for (const rank of globals.variant.ranks) {
+    for (const rank of globals.variant.ranks) {
+        if (note === rank.toString()) {
+            noteRank = rank;
+            break;
+        }
+        for (const suit of globals.variant.suits) {
             if (
                 note === `${suit.abbreviation.toLowerCase()}${rank}` // e.g. "b1" or "B1"
                 || note === `${suit.name.toLowerCase()}${rank}` // e.g. "blue1" or "Blue1" or "BLUE1"
@@ -113,30 +96,42 @@ const morph = (order, note) => {
                 break;
             }
         }
-        if (noteSuit !== null) {
+        if (noteSuit !== null || noteRank !== null) {
             break;
         }
     }
-    if (noteSuit === null) {
-        if (card.noteSuit !== null) {
-            card.noteSuit = null;
-            card.noteRank = null;
-            card.setBareImage();
-            globals.layers.card.batchDraw();
-        }
-        return;
-    }
 
     // Validate that the note does not contain an impossibility
-    const mapIndex = `${noteSuit.name}${noteRank}`;
-    if (card.possibleCards.get(mapIndex) === 0) {
-        window.alert(`That card cannot possibly be a ${noteSuit.name.toLowerCase()} ${noteRank}.`);
-        return;
+    if (noteRank !== null && noteSuit === null) {
+        // Only the rank was specified
+        // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
+        let rankPossible = false;
+        for (const suit of globals.variant.suits) {
+            const count = card.possibleCards.get(`${suit.name}${noteRank}`);
+            if (count > 0) {
+                rankPossible = true;
+                break;
+            }
+        }
+        if (!rankPossible) {
+            window.alert(`That card cannot possibly be a ${noteSuit.name.toLowerCase()} ${noteRank}.`);
+            return;
+        }
+    }
+    if (noteRank !== null && noteSuit !== null) {
+        // Both the suit and the rank were specified
+        const mapIndex = `${noteSuit.name}${noteRank}`;
+        if (card.possibleCards.get(mapIndex) === 0) {
+            window.alert(`That card cannot possibly be a ${noteSuit.name.toLowerCase()} ${noteRank}.`);
+            return;
+        }
     }
 
     // Set the bare image of the card to match the note
+    // (or clear the bare image if the note was deleted/changed)
     card.noteSuit = noteSuit;
     card.noteRank = noteRank;
+    card.knownTrash = (note === 'kt' || note === 'trash');
     card.setBareImage();
     globals.layers.card.batchDraw();
 };
