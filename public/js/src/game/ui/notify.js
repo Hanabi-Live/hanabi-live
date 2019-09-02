@@ -47,6 +47,7 @@ commands.clue = (data) => {
             card.applyClue(clue, true);
             card.checkSpecialRankSuitRemoved();
             card.setBareImage();
+            card.setFade(); // Unfade the card if it is faded
         }
     }
 
@@ -181,7 +182,7 @@ commands.draw = (data) => {
         card.suitPips.setVisible(false);
         card.rankPips.setVisible(false);
     }
-    card.setFade();
+    card.setFade(); // Fade the card if it is already played
 
     // Each card is contained within a LayoutChild
     // Position the LayoutChild over the deck
