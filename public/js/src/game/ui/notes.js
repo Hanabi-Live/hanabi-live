@@ -86,6 +86,7 @@ const morph = (order, note) => {
         const match = note.match(/.*\|(.+)/);
         note = match[1];
     }
+    note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
     note = note.trim(); // Removing all leading and trailing whitespace
 
     if (note === 'kt' || note === 'trash') {
@@ -100,22 +101,12 @@ const morph = (order, note) => {
     for (const suit of globals.variant.suits) {
         for (const rank of globals.variant.ranks) {
             if (
-                note === `${suit.abbreviation.toLowerCase()}${rank}` // e.g. b1
-                || note === `${suit.abbreviation.toUpperCase()}${rank}` // e.g. B1
-                || note === `${suit.name}${rank}` // e.g. Blue1
-                || note === `${suit.name} ${rank}` // e.g. Blue 1
-                || note === `${suit.name.toLowerCase()}${rank}` // e.g. blue1
-                || note === `${suit.name.toLowerCase()} ${rank}` // e.g. blue 1
-                || note === `${suit.name.toUpperCase()}${rank}` // e.g. BLUE1
-                || note === `${suit.name.toUpperCase()} ${rank}` // e.g. BLUE 1
-                || note === `${rank}${suit.abbreviation.toLowerCase()}` // e.g. 1b
-                || note === `${rank}${suit.abbreviation.toUpperCase()}` // e.g. 1B
-                || note === `${rank}${suit.name}` // e.g. 1Blue
-                || note === `${rank} ${suit.name}` // e.g. 1 Blue
-                || note === `${rank}${suit.name.toLowerCase()}` // e.g. 1blue
-                || note === `${rank} ${suit.name.toLowerCase()}` // e.g. 1 blue
-                || note === `${rank}${suit.name.toUpperCase()}` // e.g. 1BLUE
-                || note === `${rank} ${suit.name.toUpperCase()}` // e.g. 1 BLUE
+                note === `${suit.abbreviation.toLowerCase()}${rank}` // e.g. "b1" or "B1"
+                || note === `${suit.name.toLowerCase()}${rank}` // e.g. "blue1" or "Blue1" or "BLUE1"
+                || note === `${suit.name.toLowerCase()} ${rank}` // e.g. "blue 1" or "Blue 1" or "BLUE 1"
+                || note === `${rank}${suit.abbreviation.toLowerCase()}` // e.g. "1b" or "1B"
+                || note === `${rank}${suit.name.toLowerCase()}` // e.g. "1blue" or "1Blue" or "1BLUE"
+                || note === `${rank} ${suit.name.toLowerCase()}` // e.g. "1 blue" or "1 Blue" or "1 BLUE"
             ) {
                 noteSuit = suit;
                 noteRank = rank;
