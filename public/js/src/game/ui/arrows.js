@@ -18,7 +18,7 @@ const hideAll = () => {
         }
     }
     if (!globals.animateFast && changed) {
-        globals.layers.UI2.batchDraw();
+        globals.layers.arrow.batchDraw();
     }
 };
 exports.hideAll = hideAll;
@@ -109,7 +109,7 @@ const set = (i, element, giver, clue) => {
         animate(arrow, element, rot, giver, globals.turn);
     }
     if (!globals.animateFast) {
-        globals.layers.UI2.batchDraw();
+        globals.layers.arrow.batchDraw();
     }
 };
 exports.set = set;

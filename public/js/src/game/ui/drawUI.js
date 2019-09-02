@@ -114,7 +114,8 @@ const initLayers = () => {
         'UI',
         'timer', // The timer gets its own layer since it is being constantly updated
         'card',
-        'sparkles', // Sparkles get their own layer since they are constantly animating
+        'sparkle', // Sparkles get their own layer since they are constantly animating
+        'arrow',
         'UI2', // We need some UI elements to be on top of cards
     ];
     for (const layer of layers) {
@@ -576,7 +577,9 @@ const drawDeck = () => {
         shadowOpacity: 0.9,
         visible: globals.replay && globals.databaseID !== 0,
     });
-    globals.layers.UI2.add(globals.elements.gameIDLabel);
+    // We draw the label on the arrow layer because it is on top of the card but
+    // not on top of the black second layer
+    globals.layers.arrow.add(globals.elements.gameIDLabel);
 
     globals.elements.deck = new Deck({
         x: deckValues.x * winW,
@@ -1294,7 +1297,7 @@ const drawArrows = () => {
 
     for (let i = 0; i < 5; i++) {
         const arrow = new Arrow();
-        globals.layers.UI2.add(arrow);
+        globals.layers.arrow.add(arrow);
         globals.elements.arrows.push(arrow);
     }
 };

@@ -134,6 +134,7 @@ const goto = (target, fast) => {
     globals.elements.fullActionLog.refreshText();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
+    globals.layers.arrow.batchDraw();
     globals.layers.UI2.batchDraw();
 };
 exports.goto = goto;

@@ -60,6 +60,8 @@ module.exports = () => {
         UI: null,
         timer: null,
         card: null,
+        sparkle: null,
+        arrow: null,
         UI2: null, // We need some UI elements to be on top of cards
     };
     globals.elements = {
