@@ -51,6 +51,11 @@ const set = (order, note) => {
         });
     }
 
+    morph(order, note);
+};
+exports.set = set;
+
+const morph = (order, note) => {
     // The note identity feature does not apply to spectators and replays
     if (globals.spectating || globals.replay) {
         return;
@@ -132,7 +137,7 @@ const set = (order, note) => {
     card.setBareImage();
     globals.layers.card.batchDraw();
 };
-exports.set = set;
+exports.morph = morph;
 
 const update = (card) => {
     // Update the tooltip
@@ -264,7 +269,7 @@ exports.openEditTooltip = (card) => {
 
 // We just got a list of a bunch of notes, so show the note indicator for currently-visible cards
 exports.setAllCardIndicators = () => {
-    // We just iterate through the whole deck instead of using the index of the last drawn card
+    // We iterate through the whole deck instead of using the index of the last drawn card
     // to avoid race conditions where we can get the "noteList"
     // before the "notifyList" is finished processing
     for (const card of globals.deck) {

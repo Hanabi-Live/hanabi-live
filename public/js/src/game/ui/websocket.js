@@ -314,6 +314,13 @@ commands.noteListPlayer = (data) => {
 
     // Show the note indicator for currently-visible cards
     notes.setAllCardIndicators();
+
+    // If we have specific card notes on any cards in our hand, morph those cards
+    const ourHand = globals.elements.playerHands[globals.playerUs];
+    for (const layoutChild of ourHand.children) {
+        const card = layoutChild.children[0];
+        notes.morph(card.order, globals.ourNotes[card.order]);
+    }
 };
 
 // Used when the game state changes
