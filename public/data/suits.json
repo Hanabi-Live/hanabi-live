@@ -64,7 +64,7 @@
         "allClueColors": true,
         "clueRanks": "none",
         "fill": "multi",
-        "fillColors": ["#4d88ff", "#4dff4d", "#e9d37c", "#ff1a1a", "#a64dff"],
+        "fillColors": ["#654321", "#00cc00", "#ccaa22", "#aa0000", "#654321"],
         "pip": "rainbow"
     },
     "Light Pink": {
