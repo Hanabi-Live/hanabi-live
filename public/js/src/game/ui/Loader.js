@@ -20,6 +20,7 @@ class Loader {
             'skull',
             'sparkle',
             'trashcan',
+            'trashcan2',
             'x',
         ];
         this.filemap = {};

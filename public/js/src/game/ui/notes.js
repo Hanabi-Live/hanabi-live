@@ -71,6 +71,11 @@ const morph = (order, note) => {
             card.setBareImage();
             globals.layers.card.batchDraw();
         }
+        if (card.knownTrash) {
+            card.knownTrash = false;
+            card.setBareImage();
+            globals.layers.card.batchDraw();
+        }
         return;
     }
 
@@ -82,6 +87,13 @@ const morph = (order, note) => {
         note = match[1];
     }
     note = note.trim(); // Removing all leading and trailing whitespace
+
+    if (note === 'kt' || note === 'trash') {
+        card.knownTrash = true;
+        card.setBareImage();
+        globals.layers.card.batchDraw();
+        return;
+    }
 
     let noteSuit = null;
     let noteRank = null;

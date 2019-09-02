@@ -84,6 +84,7 @@ class HanabiCard extends graphics.Group {
         this.isPlayed = false;
         this.turnPlayed = null;
         this.isMisplayed = false;
+        this.knownTrash = false;
 
         this.setListening(true);
         this.hideClues();
@@ -176,7 +177,9 @@ class HanabiCard extends graphics.Group {
         // Set the name
         // (but in Real-Life mode or Cow & Pig / Duck variants,
         // always show the vanilla card back if the card is not fully revealed)
-        if (
+        if (this.knownTrash && !this.empathy) {
+            this.bareName = 'known-trash';
+        } else if (
             (
                 globals.lobby.settings.realLifeMode
                 || globals.variant.name.startsWith('Cow & Pig')
@@ -190,7 +193,8 @@ class HanabiCard extends graphics.Group {
 
         // Show or hide the pips
         if (
-            globals.lobby.settings.realLifeMode
+            (this.knownTrash && !this.empathy)
+            || globals.lobby.settings.realLifeMode
             || globals.variant.name.startsWith('Cow & Pig')
             || globals.variant.name.startsWith('Duck')
         ) {

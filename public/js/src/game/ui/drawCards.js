@@ -6,6 +6,7 @@
 const C2S = require('../../../lib/canvas2svg');
 const constants = require('../../constants');
 const drawPip = require('./drawPip');
+const globals = require('./globals');
 
 let nodeImports = {};
 
@@ -114,13 +115,18 @@ exports.drawAll = (variant, colorblind, canvasType, imports = null) => {
     }
 
     {
-        const [cvs, ctx] = makeUnknownCardImage(canvasType);
+        const [cvs, ctx] = makeUnknownCard(canvasType);
         const cardImagesIndex = 'NoPip-Unknown-6';
         cardImages[cardImagesIndex] = saveCanvas(cvs, ctx, canvasType);
     }
     {
         const [cvs, ctx] = makeDeckBack(variant, canvasType);
         const cardImagesIndex = 'deck-back';
+        cardImages[cardImagesIndex] = saveCanvas(cvs, ctx, canvasType);
+    }
+    {
+        const [cvs, ctx] = makeKnownTrash(canvasType);
+        const cardImagesIndex = 'known-trash';
         cardImages[cardImagesIndex] = saveCanvas(cvs, ctx, canvasType);
     }
 
@@ -264,7 +270,7 @@ const drawSuitPips = (ctx, rank, suit, colorblind) => {
     }
 };
 
-const makeUnknownCardImage = (canvasType) => {
+const makeUnknownCard = (canvasType) => {
     const [cvs, ctx] = initCanvas(canvasType);
 
     drawCardTexture(ctx);
@@ -289,7 +295,7 @@ const makeUnknownCardImage = (canvasType) => {
 };
 
 const makeDeckBack = (variant, canvasType) => {
-    const [cvs, ctx] = makeUnknownCardImage(canvasType);
+    const [cvs, ctx] = makeUnknownCard(canvasType);
     const sf = 0.4; // Scale factor
 
     const nSuits = variant.suits.length;
@@ -308,6 +314,34 @@ const makeDeckBack = (variant, canvasType) => {
         ctx.translate(-x, -y);
     }
     ctx.scale(1 / sf, 1 / sf);
+
+    return [cvs, ctx];
+};
+
+const makeKnownTrash = (canvasType) => {
+    // Copied from the "makeUnknownCard()" function
+    const [cvs, ctx] = initCanvas(canvasType);
+
+    drawCardTexture(ctx);
+    ctx.fillStyle = 'black';
+    cardBorderPath(ctx, 4);
+
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.fill();
+    ctx.globalAlpha = 0.7;
+    ctx.lineWidth = 8;
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = '#444444';
+    ctx.lineWidth = 8;
+    ctx.lineJoin = 'round';
+
+    ctx.translate(CARD_W / 2, CARD_H / 2);
+
+    // Draw the trash can image on top of the card
+    ctx.drawImage(globals.ImageLoader.get('trashcan2'), -103, -120);
 
     return [cvs, ctx];
 };
