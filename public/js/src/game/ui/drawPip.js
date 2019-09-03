@@ -1,3 +1,11 @@
+const textShapes = [
+    'flower',
+    'number_sign',
+    'tensor_symbol',
+    'infinity',
+    'null_symbol',
+];
+
 const shapeFunctions = {
     diamond: (ctx) => {
         const w = 70;
@@ -90,6 +98,13 @@ const shapeFunctions = {
         ctx.closePath();
     },
 
+    flower: (ctx) => {
+        ctx.text = '✿';
+        ctx.font = '190px Verdana';
+        ctx.textX = -10;
+        ctx.textY = 155;
+    },
+
     spade: (ctx) => {
         ctx.beginPath();
         ctx.moveTo(50, 180);
@@ -102,10 +117,24 @@ const shapeFunctions = {
         ctx.closePath();
     },
 
+    number_sign: (ctx) => {
+        ctx.text = '#';
+        ctx.font = '190px Verdana';
+        ctx.textX = -3;
+        ctx.textY = 170;
+    },
+
     circle: (ctx) => {
         ctx.beginPath();
         ctx.arc(75, 100, 75, 0, 2 * Math.PI);
         ctx.closePath();
+    },
+
+    tensor_symbol: (ctx) => {
+        ctx.text = '⊗';
+        ctx.font = '170px Verdana';
+        ctx.textX = -9;
+        ctx.textY = 150;
     },
 
     infinity: (ctx) => {
@@ -140,7 +169,7 @@ module.exports = (ctx, suit, shadow, deckBack) => {
     shapeFunctions[suit.pip](ctx);
 
     // Some pips are canvas line drawings and some pips are text characters
-    const text = suit.pip === 'infinity' || suit.pip === 'null_symbol';
+    const isTextShape = textShapes.includes(suit.pip);
 
     // Determine the fill
     if (deckBack) {
@@ -158,7 +187,7 @@ module.exports = (ctx, suit, shadow, deckBack) => {
     if (shadow) {
         ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
     }
-    if (text) {
+    if (isTextShape) {
         ctx.fillText(ctx.text, ctx.textX, ctx.textY);
     } else {
         ctx.fill();
@@ -169,7 +198,7 @@ module.exports = (ctx, suit, shadow, deckBack) => {
     if (shadow) {
         ctx.shadowColor = 'rgba(0, 0, 0, 0)';
     }
-    if (text) {
+    if (isTextShape) {
         ctx.strokeText(ctx.text, ctx.textX, ctx.textY);
     } else {
         ctx.stroke();
