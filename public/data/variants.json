@@ -175,6 +175,26 @@
         "spacing": true
     },
 
+    "Black & Omni (6 Suits)": {
+        "id": 186,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Omni"]
+    },
+    "Black & Omni (5 Suits)": {
+        "id": 187,
+        "suits": ["Blue", "Green", "Yellow", "Black", "Omni"],
+        "spacing": true
+    },
+
+    "Black & Null (6 Suits)": {
+        "id": 188,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Null"]
+    },
+    "Black & Null (5 Suits)": {
+        "id": 189,
+        "suits": ["Blue", "Green", "Yellow", "Black", "Null"],
+        "spacing": true
+    },
+
     "Rainbow & Pink (6 Suits)": {
         "id": 120,
         "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Pink"]
@@ -229,6 +249,42 @@
         "spacing": true
     },
 
+    "Rainbow & Omni (6 Suits)": {
+        "id": 190,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Omni"]
+    },
+    "Rainbow & Omni (5 Suits)": {
+        "id": 191,
+        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Omni"]
+    },
+    "Rainbow & Omni (4 Suits)": {
+        "id": 192,
+        "suits": ["Blue", "Green", "Rainbow", "Omni"]
+    },
+    "Rainbow & Omni (3 Suits)": {
+        "id": 193,
+        "suits": ["Blue", "Rainbow", "Omni"],
+        "spacing": true
+    },
+
+    "Rainbow & Null (6 Suits)": {
+        "id": 194,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Null"]
+    },
+    "Rainbow & Null (5 Suits)": {
+        "id": 195,
+        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Null"]
+    },
+    "Rainbow & Null (4 Suits)": {
+        "id": 196,
+        "suits": ["Blue", "Green", "Rainbow", "Null"]
+    },
+    "Rainbow & Null (3 Suits)": {
+        "id": 197,
+        "suits": ["Blue", "Rainbow", "Null"],
+        "spacing": true
+    },
+
     "Pink & White (6 Suits)": {
         "id": 123,
         "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "White"]
@@ -265,6 +321,42 @@
         "spacing": true
     },
 
+    "Pink & Omni (6 Suits)": {
+        "id": 198,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Omni"]
+    },
+    "Pink & Omni (5 Suits)": {
+        "id": 199,
+        "suits": ["Blue", "Green", "Yellow", "Pink", "Omni"]
+    },
+    "Pink & Omni (4 Suits)": {
+        "id": 200,
+        "suits": ["Blue", "Green", "Pink", "Omni"]
+    },
+    "Pink & Omni (3 Suits)": {
+        "id": 201,
+        "suits": ["Blue", "Pink", "Omni"],
+        "spacing": true
+    },
+
+    "Pink & Null (6 Suits)": {
+        "id": 202,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Null"]
+    },
+    "Pink & Null (5 Suits)": {
+        "id": 203,
+        "suits": ["Blue", "Green", "Yellow", "Pink", "Null"]
+    },
+    "Pink & Null (4 Suits)": {
+        "id": 204,
+        "suits": ["Blue", "Green", "Pink", "Null"]
+    },
+    "Pink & Null (3 Suits)": {
+        "id": 205,
+        "suits": ["Blue", "Pink", "Null"],
+        "spacing": true
+    },
+
     "White & Brown (6 Suits)": {
         "id": 79,
         "suits": ["Blue", "Green", "Yellow", "Red", "White", "Brown"]
@@ -280,6 +372,96 @@
     "White & Brown (3 Suits)": {
         "id": 82,
         "suits": ["Blue", "White", "Brown"],
+        "spacing": true
+    },
+
+    "White & Omni (6 Suits)": {
+        "id": 206,
+        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Omni"]
+    },
+    "White & Omni (5 Suits)": {
+        "id": 207,
+        "suits": ["Blue", "Green", "Yellow", "White", "Omni"]
+    },
+    "White & Omni (4 Suits)": {
+        "id": 208,
+        "suits": ["Blue", "Green", "White", "Omni"]
+    },
+    "White & Omni (3 Suits)": {
+        "id": 209,
+        "suits": ["Blue", "White", "Omni"],
+        "spacing": true
+    },
+
+    "White & Null (6 Suits)": {
+        "id": 210,
+        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Null"]
+    },
+    "White & Null (5 Suits)": {
+        "id": 211,
+        "suits": ["Blue", "Green", "Yellow", "White", "Null"]
+    },
+    "White & Null (4 Suits)": {
+        "id": 212,
+        "suits": ["Blue", "Green", "White", "Null"]
+    },
+    "White & Null (3 Suits)": {
+        "id": 213,
+        "suits": ["Blue", "White", "Null"],
+        "spacing": true
+    },
+
+    "Brown & Omni (6 Suits)": {
+        "id": 214,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Brown", "Omni"]
+    },
+    "Brown & Omni (5 Suits)": {
+        "id": 215,
+        "suits": ["Blue", "Green", "Yellow", "Brown", "Omni"]
+    },
+    "Brown & Omni (4 Suits)": {
+        "id": 216,
+        "suits": ["Blue", "Green", "Brown", "Omni"]
+    },
+    "Brown & Omni (3 Suits)": {
+        "id": 217,
+        "suits": ["Blue", "Brown", "Omni"],
+        "spacing": true
+    },
+
+    "Brown & Null (6 Suits)": {
+        "id": 218,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Brown", "Null"]
+    },
+    "Brown & Null (5 Suits)": {
+        "id": 219,
+        "suits": ["Blue", "Green", "Yellow", "Brown", "Null"]
+    },
+    "Brown & Null (4 Suits)": {
+        "id": 220,
+        "suits": ["Blue", "Green", "Brown", "Null"]
+    },
+    "Brown & Null (3 Suits)": {
+        "id": 221,
+        "suits": ["Blue", "Brown", "Null"],
+        "spacing": true
+    },
+
+    "Omni & Null (6 Suits)": {
+        "id": 222,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Null"]
+    },
+    "Omni & Null (5 Suits)": {
+        "id": 223,
+        "suits": ["Blue", "Green", "Yellow", "Omni", "Null"]
+    },
+    "Omni & Null (4 Suits)": {
+        "id": 224,
+        "suits": ["Blue", "Green", "Omni", "Null"]
+    },
+    "Omni & Null (3 Suits)": {
+        "id": 225,
+        "suits": ["Blue", "Omni", "Null"],
         "spacing": true
     },
 
@@ -317,7 +499,23 @@
     },
     "Brown & Dark Rainbow (5 Suits)": {
         "id": 86,
-        "suits": ["Blue", "Green", "Yellow", "Brown", "Dark Rainbow"],
+        "suits": ["Blue", "Green", "Yellow", "Brown", "Dark Rainbow"]
+    },
+    "Omni & Dark Rainbow (6 Suits)": {
+        "id": 226,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Dark Rainbow"]
+    },
+    "Omni & Dark Rainbow (5 Suits)": {
+        "id": 227,
+        "suits": ["Blue", "Green", "Yellow", "Omni", "Dark Rainbow"]
+    },
+    "Null & Dark Rainbow (6 Suits)": {
+        "id": 228,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Null", "Dark Rainbow"]
+    },
+    "Null & Dark Rainbow (5 Suits)": {
+        "id": 229,
+        "suits": ["Blue", "Green", "Yellow", "Null", "Dark Rainbow"],
         "spacing": true
     },
 
@@ -355,7 +553,23 @@
     },
     "Brown & Dark Pink (5 Suits)": {
         "id": 145,
-        "suits": ["Blue", "Green", "Yellow", "Brown", "Dark Pink"],
+        "suits": ["Blue", "Green", "Yellow", "Brown", "Dark Pink"]
+    },
+    "Omni & Dark Pink (6 Suits)": {
+        "id": 230,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Dark Pink"]
+    },
+    "Omni & Dark Pink (5 Suits)": {
+        "id": 231,
+        "suits": ["Blue", "Green", "Yellow", "Omni", "Dark Pink"]
+    },
+    "Null & Dark Pink (6 Suits)": {
+        "id": 232,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Null", "Dark Pink"]
+    },
+    "Null & Dark Pink (5 Suits)": {
+        "id": 233,
+        "suits": ["Blue", "Green", "Yellow", "Null", "Dark Pink"],
         "spacing": true
     },
 
@@ -393,7 +607,23 @@
     },
     "Brown & Gray (5 Suits)": {
         "id": 88,
-        "suits": ["Blue", "Green", "Yellow", "Brown", "Gray"],
+        "suits": ["Blue", "Green", "Yellow", "Brown", "Gray"]
+    },
+    "Omni & Gray (6 Suits)": {
+        "id": 234,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Gray"]
+    },
+    "Omni & Gray (5 Suits)": {
+        "id": 235,
+        "suits": ["Blue", "Green", "Yellow", "Omni", "Gray"]
+    },
+    "Null & Gray (6 Suits)": {
+        "id": 236,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Null", "Gray"]
+    },
+    "Null & Gray (5 Suits)": {
+        "id": 237,
+        "suits": ["Blue", "Green", "Yellow", "Null", "Gray"],
         "spacing": true
     },
 
@@ -431,7 +661,131 @@
     },
     "White & Chocolate (5 Suits)": {
         "id": 95,
-        "suits": ["Blue", "Green", "Yellow", "White", "Chocolate"],
+        "suits": ["Blue", "Green", "Yellow", "White", "Chocolate"]
+    },
+    "Omni & Chocolate (6 Suits)": {
+        "id": 238,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Chocolate"]
+    },
+    "Omni & Chocolate (5 Suits)": {
+        "id": 239,
+        "suits": ["Blue", "Green", "Yellow", "Omni", "Chocolate"]
+    },
+    "Null & Chocolate (6 Suits)": {
+        "id": 240,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Null", "Chocolate"]
+    },
+    "Null & Chocolate (5 Suits)": {
+        "id": 241,
+        "suits": ["Blue", "Green", "Yellow", "Null", "Chocolate"],
+        "spacing": true
+    },
+
+    "Dark Omni (6 Suits)": {
+        "id": 242,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Dark Omni"]
+    },
+    "Dark Omni (5 Suits)": {
+        "id": 243,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Omni"]
+    },
+    "Black & Dark Omni (6 Suits)": {
+        "id": 244,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Dark Omni"]
+    },
+    "Rainbow & Dark Omni (6 Suits)": {
+        "id": 245,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Dark Omni"]
+    },
+    "Rainbow & Dark Omni (5 Suits)": {
+        "id": 246,
+        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Dark Omni"]
+    },
+    "Pink & Dark Omni (6 Suits)": {
+        "id": 247,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Dark Omni"]
+    },
+    "Pink & Dark Omni (5 Suits)": {
+        "id": 248,
+        "suits": ["Blue", "Green", "Yellow", "Pink", "Dark Omni"]
+    },
+    "White & Dark Omni (6 Suits)": {
+        "id": 249,
+        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Dark Omni"]
+    },
+    "White & Dark Omni (5 Suits)": {
+        "id": 250,
+        "suits": ["Blue", "Green", "Yellow", "White", "Dark Omni"]
+    },
+    "Brown & Dark Omni (6 Suits)": {
+        "id": 251,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Brown", "Dark Omni"]
+    },
+    "Brown & Dark Omni (5 Suits)": {
+        "id": 252,
+        "suits": ["Blue", "Green", "Yellow", "Brown", "Dark Omni"]
+    },
+    "Null & Dark Omni (6 Suits)": {
+        "id": 253,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Null", "Dark Omni"]
+    },
+    "Null & Dark Omni (5 Suits)": {
+        "id": 254,
+        "suits": ["Blue", "Green", "Yellow", "Null", "Dark Omni"],
+        "spacing": true
+    },
+
+    "Dark Null (6 Suits)": {
+        "id": 255,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Dark Null"]
+    },
+    "Dark Null (5 Suits)": {
+        "id": 256,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Null"]
+    },
+    "Black & Dark Null (6 Suits)": {
+        "id": 257,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Dark Null"]
+    },
+    "Rainbow & Dark Null (6 Suits)": {
+        "id": 258,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Dark Null"]
+    },
+    "Rainbow & Dark Null (5 Suits)": {
+        "id": 259,
+        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Dark Null"]
+    },
+    "Pink & Dark Null (6 Suits)": {
+        "id": 260,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Dark Null"]
+    },
+    "Pink & Dark Null (5 Suits)": {
+        "id": 261,
+        "suits": ["Blue", "Green", "Yellow", "Pink", "Dark Null"]
+    },
+    "White & Dark Null (6 Suits)": {
+        "id": 262,
+        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Dark Null"]
+    },
+    "White & Dark Null (5 Suits)": {
+        "id": 263,
+        "suits": ["Blue", "Green", "Yellow", "White", "Dark Null"]
+    },
+    "Brown & Dark Null (6 Suits)": {
+        "id": 264,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Brown", "Dark Null"]
+    },
+    "Brown & Dark Null (5 Suits)": {
+        "id": 265,
+        "suits": ["Blue", "Green", "Yellow", "Brown", "Dark Null"]
+    },
+    "Omni & Dark Null (6 Suits)": {
+        "id": 266,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Dark Null"]
+    },
+    "Omni & Dark Null (5 Suits)": {
+        "id": 267,
+        "suits": ["Blue", "Green", "Yellow", "Omni", "Dark Null"],
         "spacing": true
     },
 
@@ -447,6 +801,14 @@
         "id": 96,
         "suits": ["Blue", "Green", "Yellow", "Red", "Dark Rainbow", "Chocolate"]
     },
+    "Dark Rainbow & Dark Omni (6 Suits)": {
+        "id": 268,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Rainbow", "Dark Omni"]
+    },
+    "Dark Rainbow & Dark Null (6 Suits)": {
+        "id": 269,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Rainbow", "Dark Null"]
+    },
     "Dark Pink & Gray (6 Suits)": {
         "id": 147,
         "suits": ["Blue", "Green", "Yellow", "Red", "Dark Pink", "Gray"]
@@ -455,9 +817,42 @@
         "id": 148,
         "suits": ["Blue", "Green", "Yellow", "Red", "Dark Pink", "Chocolate"]
     },
+    "Dark Pink & Dark Omni (6 Suits)": {
+        "id": 270,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Pink", "Dark Omni"]
+    },
+    "Dark Pink & Dark Null (6 Suits)": {
+        "id": 271,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Pink", "Dark Null"]
+    },
     "Gray & Chocolate (6 Suits)": {
         "id": 97,
         "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Chocolate"],
+        "spacing": true
+    },
+    "Gray & Dark Omni (6 Suits)": {
+        "id": 272,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Dark Omni"],
+        "spacing": true
+    },
+    "Gray & Dark Null (6 Suits)": {
+        "id": 273,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Dark Null"],
+        "spacing": true
+    },
+    "Chocolate & Dark Omni (6 Suits)": {
+        "id": 274,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Chocolate", "Dark Omni"],
+        "spacing": true
+    },
+    "Chocolate & Dark Null (6 Suits)": {
+        "id": 275,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Chocolate", "Dark Null"],
+        "spacing": true
+    },
+    "Dark Omni & Dark Null (6 Suits)": {
+        "id": 276,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Omni", "Dark Null"],
         "spacing": true
     },
 
