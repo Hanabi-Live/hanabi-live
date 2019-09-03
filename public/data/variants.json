@@ -123,7 +123,15 @@
     },
     "Null (5 Suits)": {
         "id": 181,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Null"],
+        "suits": ["Blue", "Green", "Yellow", "Red", "Null"]
+    },
+    "Null (4 Suits)": {
+        "id": 182,
+        "suits": ["Blue", "Green", "Yellow", "Null"]
+    },
+    "Null (3 Suits)": {
+        "id": 183,
+        "suits": ["Blue", "Green", "Null"],
         "spacing": true
     },
 
