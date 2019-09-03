@@ -23,10 +23,11 @@ class Deck extends graphics.Group {
         this.add(this.cardBack);
         this.cardBack.on('dragend', this.dragEnd);
 
+        // The text that shows the number of cards remaining in the deck
         this.numLeftText = new graphics.Text({
             fill: 'white',
-            stroke: 'black',
-            strokeWidth: 1,
+            stroke: '#222222',
+            strokeWidth: 3,
             align: 'center',
             x: 0,
             y: 0.3 * this.getHeight(),
