@@ -108,6 +108,12 @@ commands.clue = (data) => {
     }
 };
 
+commands.deckOrder = () => {
+    // If we are exiting a hypothetical, we might re-receive a deckOrder command
+    // If this is the case, we don't need to do anything,
+    // as the order should already be stored in the global variables
+};
+
 commands.discard = (data) => {
     // Local variables
     const card = globals.deck[data.which.order];

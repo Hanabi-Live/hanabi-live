@@ -66,7 +66,7 @@
         "oneOfEach": true,
         "pip": "infinity"
     },
-    "Dark Null": { "clueColors": [], "clueRanks": "none", "fill": "#b3b3b3", "oneOfEach": true, "pip": "null_symbol" },
+    "Dark Null": { "clueColors": [], "clueRanks": "none", "fill": "#a6a6a6", "oneOfEach": true, "pip": "null_symbol" },
 
     "Muddy Rainbow": {
         "abbreviation": "M",
@@ -137,5 +137,5 @@
     "Orchid AD": { "clueColors": ["Blue", "Red"], "fill": "#8c1aff", "name": "Orchid", "pip": "star" },
     "Violet AD": { "clueColors": ["Blue", "Red"], "fill": "#400080", "name": "Violet", "pip": "heart" },
     "Tangelo AD": { "clueColors": ["Yellow", "Red"], "fill": "#ffac4d", "name": "Tangelo", "pip": "crescent" },
-    "Vermilion AD": { "clueColors": ["Yellow", "Red"], "fill": "#b35f00", "name": "Vermilion", "pip": "flower" }
+    "Peach AD": { "clueColors": ["Yellow", "Red"], "fill": "#b35f00", "name": "Peach", "pip": "flower" }
 }

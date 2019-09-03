@@ -1,6 +1,5 @@
 // Imports
 const Button = require('./Button');
-const FitText = require('./FitText');
 const globals = require('./globals');
 const graphics = require('./graphics');
 const hypothetical = require('./hypothetical');
@@ -231,52 +230,17 @@ module.exports = () => {
         h: bottomLeftReplayButtonValues.h,
     };
 
-    // The "Enter Hypothetical" / "Exit Hypothetical" button
-    globals.elements.toggleHypoButton = new ToggleButton({
+    // The "Enter Hypothetical" button
+    globals.elements.enterHypoButton = new ToggleButton({
         x: bottomRightReplayButtonValues.x * winW,
         y: bottomRightReplayButtonValues.y * winH,
         width: bottomRightReplayButtonValues.w * winW,
         height: bottomRightReplayButtonValues.h * winH,
         text: 'Enter Hypothetical',
-        text2: 'Exit Hypothetical',
-        initialState: globals.hypothetical,
-        visible: globals.replay && globals.amSharedReplayLeader,
+        visible: globals.replay && globals.amSharedReplayLeader && !globals.hypothetical,
     });
-    globals.elements.toggleHypoButton.on('click tap', hypothetical.toggle);
-    globals.elements.replayArea.add(globals.elements.toggleHypoButton);
-
-    // The "Hypothetical" circle that shows whether or not we are currently in a hypothetical
-    globals.elements.hypoCircle = new graphics.Group({
-        x: bottomRightReplayButtonValues.x * winW,
-        y: bottomRightReplayButtonValues.y * winH,
-        visible: globals.hypothetical && !globals.amSharedReplayLeader,
-    });
-    globals.elements.replayArea.add(globals.elements.hypoCircle);
-
-    const circle = new graphics.Ellipse({
-        x: 0.085 * winW,
-        y: 0.03 * winH,
-        radiusX: 0.08 * winW,
-        radiusY: 0.03 * winH,
-        fill: 'black',
-        opacity: 0.5,
-        stroke: 'black',
-        strokeWidth: 4,
-    });
-    globals.elements.hypoCircle.add(circle);
-
-    const text = new FitText({
-        name: 'text',
-        x: 0.027 * winW,
-        y: 0.016 * winH,
-        width: bottomRightReplayButtonValues.w * 0.65 * winW,
-        fontSize: 0.5 * winH,
-        fontFamily: 'Verdana',
-        fill: 'yellow',
-        align: 'center',
-        text: 'Hypothetical',
-    });
-    globals.elements.hypoCircle.add(text);
+    globals.elements.enterHypoButton.on('click tap', hypothetical.enter);
+    globals.elements.replayArea.add(globals.elements.enterHypoButton);
 
     // Add the replay area to the UI
     globals.elements.replayArea.hide();

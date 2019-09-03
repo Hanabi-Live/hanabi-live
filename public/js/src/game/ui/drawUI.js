@@ -88,6 +88,7 @@ module.exports = () => {
     drawCurrentPlayerArea(clueAreaValues);
     drawPreplayArea();
     drawReplayArea();
+    drawHypotheticalArea();
     drawPauseArea();
     drawExtraAnimations();
 
@@ -1562,6 +1563,43 @@ const drawPreplayArea = () => {
 
         globals.queuedAction = null;
     });
+};
+
+const drawHypotheticalArea = () => {
+    /*
+    // The "Hypothetical" circle that shows whether or not we are currently in a hypothetical
+    globals.elements.hypoCircle = new graphics.Group({
+        x: bottomRightReplayButtonValues.x * winW,
+        y: bottomRightReplayButtonValues.y * winH,
+        visible: globals.hypothetical && !globals.amSharedReplayLeader,
+    });
+    globals.elements.replayArea.add(globals.elements.hypoCircle);
+
+    const circle = new graphics.Ellipse({
+        x: 0.088 * winW,
+        y: 0.03 * winH,
+        radiusX: 0.08 * winW,
+        radiusY: 0.03 * winH,
+        fill: 'black',
+        opacity: 0.5,
+        stroke: 'black',
+        strokeWidth: 4,
+    });
+    globals.elements.hypoCircle.add(circle);
+
+    const text = new FitText({
+        name: 'text',
+        x: 0.027 * winW,
+        y: 0.016 * winH,
+        width: bottomRightReplayButtonValues.w * 0.65 * winW,
+        fontSize: 0.5 * winH,
+        fontFamily: 'Verdana',
+        fill: 'yellow',
+        align: 'center',
+        text: 'Hypothetical',
+    });
+    globals.elements.hypoCircle.add(text);
+    */
 };
 
 const drawPauseArea = () => {

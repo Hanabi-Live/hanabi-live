@@ -150,19 +150,15 @@ commands.hypoAction = (data) => {
 };
 
 commands.hypoEnd = () => {
-    if (globals.amSharedReplayLeader) {
-        return;
+    if (!globals.amSharedReplayLeader) {
+        hypothetical.end();
     }
-
-    hypothetical.toggle();
 };
 
 commands.hypoStart = () => {
-    if (globals.amSharedReplayLeader) {
-        return;
+    if (!globals.amSharedReplayLeader) {
+        hypothetical.start();
     }
-
-    hypothetical.toggle();
 };
 
 commands.databaseID = (data) => {
@@ -202,6 +198,9 @@ commands.init = (data) => {
     // Hypothetical settings
     globals.hypothetical = data.hypothetical;
     globals.hypoActions = data.hypoActions;
+    for (let i = 0; i < globals.hypoActions.length; i++) {
+        globals.hypoActions[i] = JSON.parse(globals.hypoActions[i]);
+    }
 
     // Other features
     globals.paused = data.paused;
@@ -472,6 +471,7 @@ commands.replayLeader = (data) => {
 
     // Update the UI and play an animation to indicate there is a new replay leader
     globals.elements.sharedReplayLeaderLabel.show();
+    // (the crown might be invisible if we just finished an ongoing game)
     globals.elements.sharedReplayLeaderCircle.setVisible(globals.amSharedReplayLeader);
     if (data.playAnimation) {
         // We only want the animation to play when the leader changes
@@ -479,14 +479,24 @@ commands.replayLeader = (data) => {
         // (or when a game ends)
         globals.elements.sharedReplayLeaderLabelPulse.play();
     }
+
+    // Arrange the center buttons in a certain way depending on
+    // whether we are the shared replay leader
     globals.elements.toggleSharedTurnButton.show();
+    // (the button might be invisible if we just finished an ongoing game)
     if (globals.amSharedReplayLeader) {
         globals.elements.toggleSharedTurnButton.setLeft();
     } else {
         globals.elements.toggleSharedTurnButton.setCenter();
     }
-    globals.elements.toggleHypoButton.setVisible(globals.amSharedReplayLeader);
-    globals.elements.hypoCircle.setVisible(globals.hypothetical && !globals.amSharedReplayLeader);
+    globals.elements.enterHypoButton.setVisible(globals.amSharedReplayLeader);
+
+    // Hide the replay area if we are in a hypothetical
+    if (globals.hypothetical) {
+        globals.elements.replayArea.setVisible(false);
+        globals.elements.hypoCircle.setVisible(!globals.amSharedReplayLeader);
+    }
+
     globals.elements.restartButton.setVisible(globals.amSharedReplayLeader);
     globals.layers.UI.batchDraw();
 
@@ -564,6 +574,13 @@ commands.replayTurn = (data) => {
         // Even though we are not using the shared turns,
         // we need to update the slider to show where the replay leader changed the turn to
         globals.layers.UI.batchDraw();
+    }
+
+    // Also replay hypothetical actions
+    if (globals.hypothetical && globals.useSharedTurns) {
+        for (const action of globals.hypoActions) {
+            ui.handleNotify(action);
+        }
     }
 };
 

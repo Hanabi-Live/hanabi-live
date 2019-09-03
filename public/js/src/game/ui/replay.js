@@ -83,10 +83,7 @@ const goto = (target, fast) => {
         return;
     }
 
-    let rewind = false;
-    if (target < globals.replayTurn) {
-        rewind = true;
-    }
+    const rewind = target < globals.replayTurn;
 
     if (
         globals.sharedReplay

@@ -7,33 +7,54 @@
 const constants = require('../../constants');
 const convert = require('./convert');
 const globals = require('./globals');
+const replay = require('./replay');
 
-exports.toggle = () => {
-    globals.hypothetical = !globals.hypothetical;
+exports.enter = () => {
+    if (globals.hypothetical) {
+        return;
+    }
 
     if (globals.amSharedReplayLeader) {
-        setAllCardsDraggable();
-        let type;
-        if (globals.hypothetical) {
-            type = constants.REPLAY_ACTION_TYPE.HYPO_START;
-        } else {
-            type = constants.REPLAY_ACTION_TYPE.HYPO_END;
-            globals.hypoActions = [];
-        }
         globals.lobby.conn.send('replayAction', {
-            type,
+            type: constants.REPLAY_ACTION_TYPE.HYPO_START,
         });
+
+        setActivePlayerCardsDraggable();
     } else {
-        globals.elements.hypoCircle.setVisible(globals.hypothetical);
+        globals.elements.replayArea.setVisible(false);
+        globals.elements.hypoCircle.setVisible(true);
         globals.layers.UI.batchDraw();
     }
 };
 
-const setAllCardsDraggable = () => {
-    for (const hand of globals.elements.playerHands) {
-        for (const layoutChild of hand.children) {
-            layoutChild.checkSetDraggable();
-        }
+exports.exit = () => {
+    if (!globals.hypothetical) {
+        return;
+    }
+
+    if (globals.amSharedReplayLeader) {
+        globals.lobby.conn.send('replayAction', {
+            type: constants.REPLAY_ACTION_TYPE.HYPO_END,
+        });
+    } else {
+        globals.elements.hypoCircle.setVisible(false);
+        globals.elements.replayArea.setVisible(true);
+        globals.layers.UI.batchDraw();
+    }
+
+    globals.hypoActions = [];
+
+    // The "replay.goto()" function will do nothing if we are already at the target turn,
+    // so set the current replay turn to the end of the game to force it to draw/compute the
+    // game from the beginning
+    globals.replayTurn = globals.replayMax;
+    replay.goto(globals.sharedReplayTurn, true);
+};
+
+const setActivePlayerCardsDraggable = () => {
+    const hand = globals.elements.playerHands[globals.currentPlayerIndex];
+    for (const layoutChild of hand.children) {
+        layoutChild.checkSetDraggable();
     }
 };
 
@@ -92,14 +113,17 @@ exports.send = (action) => {
         });
 
         // Draw
-        const nextCard = globals.deckOrder[globals.deck.length];
-        hypoAction({
-            type: 'draw',
-            order: globals.deck.length,
-            rank: nextCard.rank,
-            suit: nextCard.suit,
-            who: globals.currentPlayerIndex,
-        });
+        const nextCardOrder = globals.indexOfLastDrawnCard + 1;
+        const nextCard = globals.deckOrder[nextCardOrder];
+        if (nextCard) { // All the cards might have already been drawn
+            hypoAction({
+                type: 'draw',
+                order: nextCardOrder,
+                rank: nextCard.rank,
+                suit: nextCard.suit,
+                who: globals.currentPlayerIndex,
+            });
+        }
     }
 
     // Status

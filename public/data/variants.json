@@ -1237,7 +1237,7 @@
     },
     "Ambiguous & Dual-Color": {
         "id": 184,
-        "suits": ["Lime AD", "Forest AD", "Orchid AD", "Violet AD", "Tangelo AD", "Vermilion AD"],
+        "suits": ["Lime AD", "Forest AD", "Orchid AD", "Violet AD", "Tangelo AD", "Peach AD"],
         "showSuitNames": true
     }
 }

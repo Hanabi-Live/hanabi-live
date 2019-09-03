@@ -66,8 +66,9 @@ const stopAction = () => {
     arrows.hideAll();
 
     // Make all of the cards in our hand not draggable
-    // (but we need to keep them draggable if the pre-play setting is enabled)
-    if (!globals.lobby.settings.speedrunPreplay) {
+    // (but we need to keep them draggable if the pre-play setting is enabled
+    // or if we are in a hypothetical)
+    if (!globals.lobby.settings.speedrunPreplay && !globals.hypothetical) {
         const ourHand = globals.elements.playerHands[globals.playerUs];
         for (const child of ourHand.children) {
             // This is a LayoutChild

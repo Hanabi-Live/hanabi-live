@@ -130,7 +130,7 @@ module.exports = () => {
         replayForwardFullButton: null,
         replayExitButton: null,
         toggleSharedTurnButton: null,
-        toggleHypoButton: null,
+        enterHypoButton: null,
         hypoCircle: null,
 
         // Other screens
