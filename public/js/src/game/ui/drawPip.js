@@ -33,6 +33,7 @@ const shapeFunctions = {
         ctx.quadraticCurveTo(...interps[1], ...points[2]);
         ctx.quadraticCurveTo(...interps[2], ...points[3]);
         ctx.quadraticCurveTo(...interps[3], ...points[0]);
+        ctx.closePath();
     },
 
     club: (ctx) => {
@@ -44,6 +45,7 @@ const shapeFunctions = {
         ctx.arc(75, 50, 35, 1, 2.1416, true);
         ctx.arc(40, 110, 35, 4.712, 0.4636, true);
         ctx.quadraticCurveTo(70, 140, 50, 180);
+        ctx.closePath();
     },
 
     star: (ctx) => {
@@ -81,12 +83,14 @@ const shapeFunctions = {
         ctx.bezierCurveTo(110, 122, 130, 100, 130, 82);
         ctx.bezierCurveTo(130, 82, 130, 45, 100, 45);
         ctx.bezierCurveTo(85, 45, 75, 57, 75, 65);
+        ctx.closePath();
     },
 
     crescent: (ctx) => {
         ctx.beginPath();
         ctx.arc(75, 100, 75, 3, 4.3, true);
         ctx.arc(48, 83, 52, 5, 2.5, false);
+        ctx.closePath();
     },
 
     spade: (ctx) => {
@@ -98,11 +102,13 @@ const shapeFunctions = {
         ctx.lineTo(75, 0);
         ctx.arc(40, 110, 35, 3.712, 0.4636, true);
         ctx.quadraticCurveTo(70, 140, 50, 180);
+        ctx.closePath();
     },
 
     circle: (ctx) => {
         ctx.beginPath();
         ctx.arc(75, 100, 75, 0, 2 * Math.PI);
+        ctx.closePath();
     },
 
     infinity: (ctx) => {
@@ -142,8 +148,41 @@ const shapeFunctions = {
         ctx.lineTo(125, 140);
         ctx.arc(75, 140, 25, 0, Math.PI, true);
         ctx.lineTo(0, 140);
+        ctx.closePath();
     },
 };
 
 // Each suit has a shape defined in the "suits.json" file (as the "pip" property)
 module.exports = shape => shapeFunctions[shape];
+
+/*
+module.exports = (ctx, shape, fill, shadow) => {
+    // Draw the respective shape on the canvas
+    // (or, for text pips, define the type of text)
+    shapeFunctions[shape](ctx);
+
+    // Some pips are canvas line drawings and some pips are text characters
+    const text = shape === 'infinity' || shape === 'null_symbol';
+
+    ctx.fillStyle = fill;
+    if (shadow) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+    }
+    if (text) {
+        ctx.fillText(ctx.text, ctx.textX, ctx.textY);
+    } else {
+        ctx.fill();
+    }
+
+    ctx.lineWidth = 5;
+    if (shadow) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+    }
+    if (text) {
+        ctx.fillStyle = 'black';
+        ctx.strokeText(ctx.text, ctx.textX, ctx.textY);
+    } else {
+        ctx.stroke();
+    }
+};
+*/

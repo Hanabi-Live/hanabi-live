@@ -8,14 +8,14 @@ const suitName = 'Blue';
 const rank = 5;
 const cardName = `Card-${suitName}-${rank}`;
 const variant = constants.VARIANTS['No Variant'];
-const colorblind = false;
+const colorblindUI = false;
 
 // Get the card images for both types
 // const drawCardsSVG = require('./drawCards');
 const drawCardsCanvas = require('../game/ui/drawCards');
 
-// const cardImagesSVG = drawCardsSVG.drawAll(variant, colorblind, 'SVG');
-const cardImagesCanvas = drawCardsCanvas.drawAll(variant, colorblind, 'normal');
+// const cardImagesSVG = drawCardsSVG.drawAll(variant, colorblindUI, 'SVG');
+const cardImagesCanvas = drawCardsCanvas.drawAll(variant, colorblindUI, 'normal');
 
 // Draw one image from both types to the screen
 $(document).ready(() => {

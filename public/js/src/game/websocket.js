@@ -50,7 +50,7 @@ commands.init = (data) => {
 
     // Build images for every card
     // (with respect to the variant that we are playing
-    // and whether or not we have the colorblind feature enabled)
+    // and whether or not we have the colorblind UI feature enabled)
     globals.ui.cardImages = drawCards.drawAll(
         globals.init.variant,
         globals.settings.showColorblindUI,

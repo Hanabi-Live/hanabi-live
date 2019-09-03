@@ -51,7 +51,8 @@ exports.border = function border() {
 };
 
 exports.pips = function pips() {
-    // Initialize the suit pips, which are colored shapes
+    // Initialize the suit pips (colored shapes) on the back of the card,
+    // which will be removed one by one as the card gains negative information
     this.suitPips = new graphics.Group({
         x: 0,
         y: 0,

@@ -20,7 +20,7 @@ const {
 
 // The "drawAll()" function returns an object containing all of the drawn cards images
 // (on individual canvases)
-exports.drawAll = (variant, colorblind, canvasType, imports = null) => {
+exports.drawAll = (variant, colorblindUI, canvasType, imports = null) => {
     nodeImports = imports;
     const cardImages = {};
 
@@ -63,7 +63,7 @@ exports.drawAll = (variant, colorblind, canvasType, imports = null) => {
                     rankLabel = 'S';
                 }
                 let fontSize;
-                if (colorblind) {
+                if (colorblindUI) {
                     rankLabel = suit.abbreviation + rankLabel;
                     fontSize = 68;
                     textYPos = 83;
@@ -103,7 +103,7 @@ exports.drawAll = (variant, colorblind, canvasType, imports = null) => {
             }
 
             if (suit !== SUITS.Unknown) {
-                drawSuitPips(ctx, rank, suit, colorblind);
+                drawSuitPips(ctx, rank, suit, colorblindUI);
             }
 
             // "Card-Unknown" images would be identical to "NoPip-Unknown" images
@@ -185,11 +185,11 @@ const saveCanvas = (cvs, ctx, canvasType) => {
     return null;
 };
 
-const drawSuitPips = (ctx, rank, suit, colorblind) => {
+const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
     const pathFunc = drawPip(suit.pip);
     const scale = 0.4;
 
-    // The middle for cards 2 or 4
+    // The middle for cards 1 and 3
     if (rank === 1 || rank === 3) {
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -201,8 +201,8 @@ const drawSuitPips = (ctx, rank, suit, colorblind) => {
     }
 
     // Top and bottom for cards 2, 3, 4, 5
-    if (rank > 1 && rank <= 5) {
-        const symbolYPos = colorblind ? 85 : 120;
+    if (rank >= 2 && rank <= 5) {
+        const symbolYPos = colorblindUI ? 85 : 120;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(0, -symbolYPos);
@@ -260,7 +260,7 @@ const drawSuitPips = (ctx, rank, suit, colorblind) => {
     // Unknown rank, so draw large faint suit
     if (rank === 6) {
         ctx.save();
-        ctx.globalAlpha = colorblind ? 0.4 : 0.1;
+        ctx.globalAlpha = colorblindUI ? 0.4 : 0.1;
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 3, scale * 3);
         ctx.translate(-75, -100);

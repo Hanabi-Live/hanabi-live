@@ -154,7 +154,7 @@ const showLoadingScreen = () => {
 const finishedLoadingImages = () => {
     // Build images for every card
     // (with respect to the variant that we are playing
-    // and whether or not we have the colorblind feature enabled)
+    // and whether or not we have the colorblind UI feature enabled)
     globals.cardImages = drawCards.drawAll(
         globals.variant,
         globals.lobby.settings.showColorblindUI,

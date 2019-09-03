@@ -21,7 +21,7 @@ const {
 
 // The "drawAll()" function returns an object containing all of the drawn cards images
 // (on individual canvases)
-exports.drawAll = (variant, colorblind, canvasType, imports = null) => {
+exports.drawAll = (variant, colorblindUI, canvasType, imports = null) => {
     nodeImports = imports;
     const cardImages = {};
 
@@ -64,7 +64,7 @@ exports.drawAll = (variant, colorblind, canvasType, imports = null) => {
                     rankLabel = 'S';
                 }
                 let fontSize;
-                if (colorblind) {
+                if (colorblindUI) {
                     rankLabel = suit.abbreviation + rankLabel;
                     fontSize = 68;
                     textYPos = 83;
@@ -104,7 +104,7 @@ exports.drawAll = (variant, colorblind, canvasType, imports = null) => {
             }
 
             if (suit !== SUITS.Unknown) {
-                drawSuitPips(ctx, rank, suit, colorblind);
+                drawSuitPips(ctx, rank, suit, colorblindUI);
             }
 
             // "Card-Unknown" images would be identical to "NoPip-Unknown" images

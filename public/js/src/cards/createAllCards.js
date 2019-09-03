@@ -16,19 +16,19 @@ const nodeImports = {
 
 const allCardImages = {};
 const numVariants = Object.keys(constants.VARIANTS).length;
-for (const colorblind of [false, true]) {
+for (const colorblindUI of [false, true]) {
     let i = 1;
     for (const variant of Object.values(constants.VARIANTS)) {
         let msg = `Getting variant: ${variant.name}`;
-        if (colorblind) {
-            msg += ' (colorblind)';
+        if (colorblindUI) {
+            msg += ' (colorblindUI)';
         }
         msg += ` - ${i} / ${numVariants}`;
         console.log(msg);
         let needSuitsFromThisVariant = false;
         for (const suit of variant.suits) {
             let key = `Card-${suit.name}-0`;
-            if (colorblind) {
+            if (colorblindUI) {
                 key += '-Colorblind';
             }
             if (!Object.hasOwnProperty.call(allCardImages, key)) {
@@ -40,10 +40,10 @@ for (const colorblind of [false, true]) {
             console.log('Skipping.');
             continue;
         }
-        const cardImagesSVG = drawCardsSVG.drawAll(variant, colorblind, 'SVGNode', nodeImports);
+        const cardImagesSVG = drawCardsSVG.drawAll(variant, colorblindUI, 'SVGNode', nodeImports);
         for (const key of Object.keys(cardImagesSVG)) {
             let modifiedKey = key;
-            if (colorblind) {
+            if (colorblindUI) {
                 modifiedKey += '-Colorblind';
             }
             if (!Object.hasOwnProperty.call(allCardImages, modifiedKey)) {
