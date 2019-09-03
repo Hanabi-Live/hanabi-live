@@ -823,6 +823,14 @@
         "spacing": true
     },
 
+    "Special Mix (5 Suit)": {
+        "id": 159,
+        "suits": ["Black", "Rainbow", "Pink", "White", "Brown"]
+    },
+    "Special Mix (6 Suit)": {
+        "id": 185,
+        "suits": ["Black", "Rainbow", "Pink", "White", "Brown", "Null"]
+    },
     "Ambiguous Mix": {
         "id": 20,
         "suits": ["Sky", "Navy", "Tomato", "Mahogany", "Black", "White"],
@@ -832,8 +840,9 @@
         "id": 7,
         "suits": ["Green D", "Purple D", "Orange D2", "Black", "Rainbow", "White"]
     },
-    "Gay Pride": {
-        "id": 159,
-        "suits": ["Black", "Rainbow", "Pink", "White", "Brown"]
+    "Ambiguous & Dual-Color": {
+        "id": 184,
+        "suits": ["Lime AD", "Forest AD", "Orchid AD", "Violet AD", "Tangelo AD", "Vermilion AD"],
+        "showSuitNames": true
     }
 }
