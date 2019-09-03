@@ -46,6 +46,7 @@ class HanabiCard extends graphics.Group {
         this.initNote();
         this.initEmpathy();
         this.initClick();
+        this.initFixme();
         this.initSparkles();
     }
 
@@ -85,6 +86,7 @@ class HanabiCard extends graphics.Group {
         this.turnPlayed = null;
         this.isMisplayed = false;
         this.knownTrash = false;
+        this.needsFix = false;
 
         this.setListening(true);
         this.hideClues();
@@ -204,6 +206,9 @@ class HanabiCard extends graphics.Group {
             this.suitPips.setVisible(suitToShow === constants.SUITS.Unknown);
             this.rankPips.setVisible(rankToShow === 6);
         }
+
+        // Show or hide the "fixme" image
+        this.fixme.setVisible(this.needsFix && !this.empathy);
     }
 
     // Fade this card if it is useless, fully revealed, and still in a player's hand
@@ -288,6 +293,10 @@ class HanabiCard extends graphics.Group {
 
     initPossibilities() {
         return HanabiCardInit.possibilities.call(this);
+    }
+
+    initFixme() {
+        return HanabiCardInit.fixme.call(this);
     }
 
     initSparkles() {

@@ -22,6 +22,7 @@ class Loader {
             'trashcan',
             'trashcan2',
             'x',
+            'wrench',
         ];
         this.filemap = {};
         for (const file of files) {

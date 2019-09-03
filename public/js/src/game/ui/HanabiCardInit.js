@@ -422,6 +422,17 @@ exports.possibilities = function possibilities() {
     }
 };
 
+exports.fixme = function sparkles() {
+    this.fixme = new graphics.Image({
+        x: 0.1 * constants.CARD_W,
+        y: 0.33 * constants.CARD_H,
+        width: 0.8 * constants.CARD_W,
+        image: globals.ImageLoader.get('wrench'),
+        visible: false,
+    });
+    this.add(this.fixme);
+};
+
 exports.sparkles = function sparkles() {
     /*
     const spark = new Sparkle({

@@ -131,7 +131,8 @@ const morph = (order, note) => {
     // (or clear the bare image if the note was deleted/changed)
     card.noteSuit = noteSuit;
     card.noteRank = noteRank;
-    card.knownTrash = (note === 'kt' || note === 'trash');
+    card.knownTrash = note === 'kt' || note === 'trash';
+    card.needsFix = note === 'fixme';
     card.setBareImage();
     globals.layers.card.batchDraw();
 };
