@@ -1,6 +1,3 @@
-// Imports
-const constants = require('../../constants');
-
 const shapeFunctions = {
     diamond: (ctx) => {
         const w = 70;
@@ -112,33 +109,17 @@ const shapeFunctions = {
     },
 
     infinity: (ctx) => {
-        const text = '∞';
+        ctx.text = '∞';
         ctx.font = '175px Verdana';
-        const x = -10;
-        const y = 155;
-        ctx.fillStyle = constants.SUITS.Pink.fill;
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-        ctx.fillText(text, x, y);
-        ctx.fillStyle = 'black';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-        ctx.lineWidth = 5;
-        ctx.strokeText(text, x, y);
-        ctx.beginPath(); // This is needed to prevent canvas2svg from crashing
+        ctx.textX = -10;
+        ctx.textY = 155;
     },
 
     null_symbol: (ctx) => {
-        const text = '∅';
+        ctx.text = '∅';
         ctx.font = '210px Verdana';
-        const x = 10;
-        const y = 165;
-        ctx.fillStyle = constants.SUITS.Brown.fill;
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-        ctx.fillText(text, x, y);
-        ctx.fillStyle = 'black';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0)';
-        ctx.lineWidth = 5;
-        ctx.strokeText(text, x, y);
-        ctx.beginPath(); // This is needed to prevent canvas2svg from crashing
+        ctx.textX = 10;
+        ctx.textY = 165;
     },
 
     rainbow: (ctx) => {
@@ -152,19 +133,28 @@ const shapeFunctions = {
     },
 };
 
-// Each suit has a shape defined in the "suits.json" file (as the "pip" property)
-module.exports = shape => shapeFunctions[shape];
-
-/*
-module.exports = (ctx, shape, fill, shadow) => {
+module.exports = (ctx, suit, shadow, deckBack) => {
+    // Each suit has a shape defined in the "suits.json" file (as the "pip" property)
     // Draw the respective shape on the canvas
     // (or, for text pips, define the type of text)
-    shapeFunctions[shape](ctx);
+    shapeFunctions[suit.pip](ctx);
 
     // Some pips are canvas line drawings and some pips are text characters
-    const text = shape === 'infinity' || shape === 'null_symbol';
+    const text = suit.pip === 'infinity' || suit.pip === 'null_symbol';
 
-    ctx.fillStyle = fill;
+    // Determine the fill
+    if (deckBack) {
+        // Pips on the back of the deck should be gray
+        ctx.fillStyle = '#444444';
+    } else if (suit.fill === 'multi') {
+        // Rainbow and omni cards have a gradient fill
+        ctx.fillStyle = evenRadialGradient(ctx, suit.fillColors, [75, 150, 25, 75, 150, 75]);
+    } else {
+        // All other suits have a solid fill
+        ctx.fillStyle = suit.fill;
+    }
+
+    // Fill in the shape
     if (shadow) {
         ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
     }
@@ -174,15 +164,23 @@ module.exports = (ctx, shape, fill, shadow) => {
         ctx.fill();
     }
 
-    ctx.lineWidth = 5;
+    // Draw a black border around the shape
+    ctx.lineWidth = deckBack ? 8 : 5;
     if (shadow) {
         ctx.shadowColor = 'rgba(0, 0, 0, 0)';
     }
     if (text) {
-        ctx.fillStyle = 'black';
         ctx.strokeText(ctx.text, ctx.textX, ctx.textY);
     } else {
         ctx.stroke();
     }
 };
-*/
+
+// Generates a radial gradient that is evenly distributed between its component colors
+const evenRadialGradient = (ctx, colors, args) => {
+    const grad = ctx.createRadialGradient(...args);
+    for (let i = 0; i < colors.length; ++i) {
+        grad.addColorStop(i / (colors.length - 1), colors[i]);
+    }
+    return grad;
+};

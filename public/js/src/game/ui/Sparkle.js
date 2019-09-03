@@ -5,17 +5,6 @@ const graphics = require('./graphics');
 class Sparkle extends graphics.Image {
     constructor(config) {
         config.image = globals.ImageLoader.get('sparkle');
-
-        /*
-        sceneFunc: (ctx) => {
-            drawPips(suit, i)(ctx);
-            ctx.closePath();
-            ctx.fillStrokeShape(suitPip);
-        },
-        */
-
-        config.listening = false;
-
         super(config);
     }
 

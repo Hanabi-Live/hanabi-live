@@ -5,7 +5,7 @@
 // Imports
 const arrows = require('./arrows');
 const constants = require('../../constants');
-const drawPips = require('./drawPip');
+const drawPip = require('./drawPip');
 const globals = require('./globals');
 const graphics = require('./graphics');
 const HanabiCardClick = require('./HanabiCardClick');
@@ -99,8 +99,7 @@ exports.pips = function pips() {
             stroke: 'black',
             strokeWidth: 5,
             sceneFunc: (ctx) => {
-                drawPips(suit.pip)(ctx);
-                ctx.fillStrokeShape(suitPip);
+                drawPip(ctx, suit, false, false);
             },
             listening: false,
         });

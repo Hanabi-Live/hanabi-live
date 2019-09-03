@@ -89,9 +89,6 @@ exports.drawAll = (variant, colorblindUI, canvasType, imports = null) => {
                 ctx.restore();
             }
 
-            ctx.fillStyle = getSuitStyle(suit, ctx, 'symbol');
-            ctx.lineWidth = 5;
-
             // "NoPip" cards are used for
             // - cards of known rank before suit learned
             // - cards of unknown rank
@@ -186,7 +183,6 @@ const saveCanvas = (cvs, ctx, canvasType) => {
 };
 
 const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
-    const pathFunc = drawPip(suit.pip);
     const scale = 0.4;
 
     // The middle for cards 1 and 3
@@ -195,8 +191,7 @@ const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale, scale);
         ctx.translate(-75, -100);
-        pathFunc(ctx);
-        drawShape(ctx);
+        drawPip(ctx, suit, true, false);
         ctx.restore();
     }
 
@@ -208,8 +203,7 @@ const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
         ctx.translate(0, -symbolYPos);
         ctx.scale(scale, scale);
         ctx.translate(-75, -100);
-        pathFunc(ctx);
-        drawShape(ctx);
+        drawPip(ctx, suit, true, false);
         ctx.restore();
 
         ctx.save();
@@ -218,8 +212,7 @@ const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
         ctx.scale(scale, scale);
         ctx.rotate(Math.PI);
         ctx.translate(-75, -100);
-        pathFunc(ctx);
-        drawShape(ctx);
+        drawPip(ctx, suit, true, false);
         ctx.restore();
     }
 
@@ -230,8 +223,7 @@ const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
         ctx.translate(-90, 0);
         ctx.scale(scale, scale);
         ctx.translate(-75, -100);
-        pathFunc(ctx);
-        drawShape(ctx);
+        drawPip(ctx, suit, true, false);
         ctx.restore();
 
         ctx.save();
@@ -240,8 +232,7 @@ const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
         ctx.scale(scale, scale);
         ctx.rotate(Math.PI);
         ctx.translate(-75, -100);
-        pathFunc(ctx);
-        drawShape(ctx);
+        drawPip(ctx, suit, true, false);
         ctx.restore();
     }
 
@@ -252,8 +243,7 @@ const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 3 / 2, scale * 3 / 2);
         ctx.translate(-75, -100);
-        pathFunc(ctx);
-        drawShape(ctx);
+        drawPip(ctx, suit, true, false);
         ctx.restore();
     }
 
@@ -264,8 +254,7 @@ const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 3, scale * 3);
         ctx.translate(-75, -100);
-        pathFunc(ctx);
-        drawShape(ctx);
+        drawPip(ctx, suit, true, false);
         ctx.restore();
     }
 };
@@ -309,8 +298,7 @@ const makeDeckBack = (variant, canvasType) => {
         const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.3); // eslint-disable-line
         ctx.translate(x, y);
 
-        drawPip(suit.pip)(ctx);
-        drawShape(ctx);
+        drawPip(ctx, suit, true, true);
         ctx.translate(-x, -y);
     }
     ctx.scale(1 / sf, 1 / sf);
@@ -495,9 +483,6 @@ const getSuitStyle = (suit, ctx, cardArea) => {
     if (cardArea === 'number') {
         return evenLinearGradient(ctx, suit.fillColors, [0, 14, 0, 110]);
     }
-    if (cardArea === 'symbol') {
-        return evenRadialGradient(ctx, suit.fillColors, [75, 150, 25, 75, 150, 75]);
-    }
     if (cardArea === 'background') {
         return evenLinearGradient(ctx, suit.fillColors, [0, 0, 0, constants.CARD_H]);
     }
@@ -508,15 +493,6 @@ const getSuitStyle = (suit, ctx, cardArea) => {
 // Generates a vertical gradient that is evenly distributed between its component colors
 const evenLinearGradient = (ctx, colors, args) => {
     const grad = ctx.createLinearGradient(...args);
-    for (let i = 0; i < colors.length; ++i) {
-        grad.addColorStop(i / (colors.length - 1), colors[i]);
-    }
-    return grad;
-};
-
-// Generates a radial gradient that is evenly distributed between its component colors
-const evenRadialGradient = (ctx, colors, args) => {
-    const grad = ctx.createRadialGradient(...args);
     for (let i = 0; i < colors.length; ++i) {
         grad.addColorStop(i / (colors.length - 1), colors[i]);
     }
