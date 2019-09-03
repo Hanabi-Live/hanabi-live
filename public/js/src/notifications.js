@@ -21,7 +21,7 @@ exports.send = (msg, tag) => {
         return;
     }
 
-    new Notification(`Hanabi: ${msg}`, { /* eslint-disable-line no-new */
+    new Notification(`Hanabi Live: ${msg}`, { /* eslint-disable-line no-new */
         tag,
     });
 };

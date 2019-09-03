@@ -8,6 +8,7 @@ const constants = require('../../constants');
 const globals = require('./globals');
 const hypothetical = require('./hypothetical');
 const notes = require('./notes');
+const notifications = require('../../notifications');
 const replay = require('./replay');
 const state = require('./state');
 const stats = require('./stats');
@@ -26,7 +27,7 @@ commands.action = (data) => {
     }
 
     if (globals.lobby.settings.sendTurnNotify) {
-        globals.lobby.sendNotify('It\'s your turn', 'turn');
+        notifications.send('It is your turn.', 'turn');
     }
 
     // Handle pre-playing / pre-discarding / pre-cluing
