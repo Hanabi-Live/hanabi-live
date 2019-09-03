@@ -31,6 +31,7 @@ exports.init = () => {
         'leader',
         'lobby-big',
         'lobby-small',
+        'time-taken',
         'pace',
         'replay',
         'restart',
@@ -42,12 +43,15 @@ exports.init = () => {
         $(`#tooltip-${tooltip}`).tooltipster(tooltipOptions);
     }
 
+    // The "time-taken" tooltip should have centered text
+    const newThemes = tooltipThemes.slice();
+    newThemes.push('align-center');
+    $('#tooltip-time-taken').tooltipster('instance').option('theme', newThemes);
+
     // Dynamically create the player tooltips
     for (let i = 0; i < maxPlayers; i++) {
         $('#game-tooltips').append(`<div id="tooltip-player-${i}"></div>`);
         $(`#tooltip-player-${i}`).tooltipster(tooltipOptions);
-        const newThemes = tooltipThemes.slice();
-        newThemes.push('align-center');
         $(`#tooltip-player-${i}`).tooltipster('instance').option('theme', newThemes);
 
         $('#game-tooltips').append(`<div id="tooltip-character-assignment-${i}"></div>`);

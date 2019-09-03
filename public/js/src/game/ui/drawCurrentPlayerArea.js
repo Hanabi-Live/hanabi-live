@@ -190,8 +190,7 @@ module.exports = (clueAreaValues) => {
     });
     globals.elements.currentPlayerArrow.add(arrowMain);
 
-    // Set the "Current Player" area up for this specific turn,
-    // which will always be either 2 or 3 lines long
+    // Set the "Current Player" area up for this specific turn
     globals.elements.currentPlayerArea.update = function update(currentPlayerIndex) {
         this.setVisible(
             // Don't show it if we are in a solo/shared replay

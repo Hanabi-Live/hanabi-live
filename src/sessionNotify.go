@@ -252,14 +252,17 @@ func (s *Session) NotifyTime(t *Table) {
 		milliseconds := int64(timeLeft / time.Millisecond)
 		times = append(times, milliseconds)
 	}
+	timeTaken := int64(time.Since(g.DatetimeTurnBegin) / time.Millisecond)
 
 	type ClockMessage struct {
-		Times  []int64 `json:"times"`
-		Active int     `json:"active"`
+		Times     []int64 `json:"times"`
+		Active    int     `json:"active"`
+		TimeTaken int64   `json:"timeTaken"`
 	}
 	s.Emit("clock", &ClockMessage{
-		Times:  times,
-		Active: g.ActivePlayer,
+		Times:     times,
+		Active:    g.ActivePlayer,
+		TimeTaken: timeTaken,
 	})
 }
 

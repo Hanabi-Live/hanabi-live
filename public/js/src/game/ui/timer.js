@@ -6,29 +6,37 @@
 // Imports
 const globals = require('./globals');
 
-// Has the following data:
+// This function handles the "clock" WebSocket command
+// It is sent at the beginning of every turn
+// to update the client about how much time each player has left
+// It has the following data:
 /*
     {
         // A list of the times for each player
         times: [100, 200],
         // The index of the active player
         active: 0,
+        // The amount of time that has elasped since the turn began
+        timeTaken: 500,
     }
 */
 exports.update = (data) => {
     stop();
 
     // We don't need to update the timers if they are not showing
-    if (
-        globals.elements.timer1 === null
-        || globals.elements.timer2 === null
-    ) {
+    if (globals.elements.timer1 === null || globals.elements.timer2 === null) {
         return;
     }
 
     // Record the data
     globals.playerTimes = data.times;
     globals.activeIndex = data.active;
+    globals.timeTaken = data.timeTaken;
+
+    // Keep track of what the active player's time was when they started their turn
+    if (globals.timed) {
+        globals.startingTurnTime = globals.playerTimes[globals.activeIndex];
+    }
 
     // Mark the time that we updated the local player times
     globals.lastTimerUpdateTimeMS = new Date().getTime();
@@ -63,6 +71,7 @@ exports.update = (data) => {
     for (let i = 0; i < globals.playerTimes.length; i++) {
         setTickingDownTimeTooltip(i);
     }
+    setTickingDownTimeCPTooltip();
 
     // The server will send an active value of -1 when the game is over
     if (globals.activeIndex === -1) {
@@ -74,6 +83,7 @@ exports.update = (data) => {
     globals.timerID = window.setInterval(() => {
         setTickingDownTime(activeTimer);
         setTickingDownTimeTooltip(globals.activeIndex);
+        setTickingDownTimeCPTooltip();
     }, 1000);
 };
 
@@ -86,7 +96,7 @@ const stop = () => {
 exports.stop = stop;
 
 function setTickingDownTime(timer) {
-    // Compute elapsed time since last timer update
+    // Calculate the elapsed time since the last timer update
     const now = new Date().getTime();
     const timeElapsed = now - globals.lastTimerUpdateTimeMS;
     globals.lastTimerUpdateTimeMS = now;
@@ -133,6 +143,7 @@ function setTickingDownTime(timer) {
 }
 
 function setTickingDownTimeTooltip(i) {
+    // Update the tooltip that appears when you hover over a player's name
     let time = globals.playerTimes[i];
     if (!globals.timed) {
         // Invert it to show how much time each player is taking
@@ -149,6 +160,28 @@ function setTickingDownTimeTooltip(i) {
     content += millisecondsToTimeDisplay(time);
     content += '</strong>';
     $(`#tooltip-player-${i}`).tooltipster('instance').content(content);
+}
+
+function setTickingDownTimeCPTooltip() {
+    // This tooltip is disabled in non-timed games
+    if (!globals.timed) {
+        return;
+    }
+
+    // Update the tooltip that appears when you hover over the current player's timer
+    let time = globals.startingTurnTime - globals.playerTimes[globals.activeIndex];
+
+    // We add the amount of time that passed since the beginning of the turn
+    // (as reported by the server in the "clock" message)
+    // This is necessary since the client will not know how much time has elapsed in the situation
+    // where they refresh the page in the middle of an ongoing turn
+    // "globals.timeTaken" will be 0 if the client was connected when the turn began
+    time += globals.timeTaken;
+
+    let content = 'Time taken on this turn:<br /><strong>';
+    content += millisecondsToTimeDisplay(time);
+    content += '</strong>';
+    $('#tooltip-time-taken').tooltipster('instance').content(content);
 }
 
 /*

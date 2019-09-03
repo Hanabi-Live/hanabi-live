@@ -1397,10 +1397,15 @@ const drawTimers = () => {
         labelFontSize: 0.02 * winH,
         cornerRadius: timerValues.cornerRadius * winH,
         spaceH: timerValues.spaceH * winH,
-        label: 'Current Player',
         visible: false,
+        listening: true,
     });
     globals.layers.timer.add(globals.elements.timer2);
+    if (globals.timed) {
+        globals.elements.timer2.tooltipName = 'time-taken';
+        // (the content will be updated in the "setTickingDownTimeCPTooltip()" function)
+        tooltips.init(globals.elements.timer2, true, false);
+    }
 };
 
 const drawClueArea = () => {

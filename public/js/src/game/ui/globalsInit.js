@@ -56,14 +56,7 @@ module.exports = () => {
     // UI elements
     globals.ImageLoader = null;
     globals.stage = null;
-    globals.layers = {
-        UI: null,
-        timer: null,
-        card: null,
-        sparkle: null,
-        arrow: null,
-        UI2: null, // We need some UI elements to be on top of cards
-    };
+    globals.layers = {}; // Defined in the "initLayers()" function
     globals.elements = {
         // The main screen
         stageFade: null,
@@ -195,7 +188,11 @@ module.exports = () => {
     // Timer feature
     globals.timerID = null;
     globals.playerTimes = null;
+    // "activeIndex" must be tracked separately from the "currentPlayerIndex" because
+    // the current player may change in an in-game replay
     globals.activeIndex = null;
+    globals.timeTaken = null;
+    globals.startingTurnTime = null;
     globals.lastTimerUpdateTimeMS = null;
 
     // Pre-move feature
