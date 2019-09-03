@@ -61,10 +61,8 @@ commands.init = (data) => {
     phaser.init();
 
     // Keyboard hotkeys can only be initialized once the clue buttons are drawn
-    // TODO
     // keyboard.init();
 
     // Tell the server that we are finished loading
-    // TODO
     // globals.lobby.conn.send('ready');
 };

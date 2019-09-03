@@ -8,11 +8,11 @@ import (
 
 type Game struct {
 	// This corresponds to the database ID of the game
-	// or 0 if an ongoing game that has not been written to the database yet
+	// or 0 if it is an ongoing game that has not been written to the database yet
 	ID int
 
 	// This is a reference to the parent object; every game must have a parent Table object
-	Table *Table // TODO Evaluate to see if this is still needed post-refactor
+	Table *Table
 	// This is a reference to the Options field of the Table object (for convenience purposes)
 	Options *Options
 

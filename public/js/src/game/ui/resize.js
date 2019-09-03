@@ -75,7 +75,7 @@ const redraw = () => {
         }
 
         // Setup the timers
-        // (TODO fix this to "timer.update()" and test)
+        // (fix this to "timer.update()" and test)
         // self.handleClock.call(self, self.activeClockIndex);
     }
 

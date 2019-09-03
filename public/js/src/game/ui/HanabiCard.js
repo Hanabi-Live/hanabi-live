@@ -172,10 +172,6 @@ class HanabiCard extends graphics.Group {
             }
         }
 
-        // Use the "Index" cards (with only the top left index rank showing)
-        // for cards that are known in the future but unknown now
-        // TODO
-
         // Set the name
         // (but in Real-Life mode or Cow & Pig / Duck variants,
         // always show the vanilla card back if the card is not fully revealed)

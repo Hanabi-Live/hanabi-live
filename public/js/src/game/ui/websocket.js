@@ -326,7 +326,6 @@ commands.noteListPlayer = (data) => {
 // Used when the game state changes
 commands.notify = (data) => {
     // Update the state table
-    // TODO: eventually, everything will be drawn from the state table
     if (Object.prototype.hasOwnProperty.call(state, data.type)) {
         state[data.type](data);
     }
@@ -387,7 +386,6 @@ commands.notifyList = (dataList) => {
         // (since we might be in a replay that is starting on the first turn,
         // the respective notify functions will not be reached until
         // we actually progress to that turn of the replay)
-        // TODO: Remove this block when the UI is drawn from the state table
         if (data.type === 'strike') {
             // Record the turns that the strikes happen
             // (or else clicking on the strike squares won't work on a freshly initialized replay)

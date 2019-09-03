@@ -100,7 +100,6 @@ exports.pips = function pips() {
             strokeWidth: 5,
             sceneFunc: (ctx) => {
                 drawPips(suit.pip)(ctx);
-                ctx.closePath();
                 ctx.fillStrokeShape(suitPip);
             },
             listening: false,
