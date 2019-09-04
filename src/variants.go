@@ -178,10 +178,15 @@ func variantsInit() {
 			log.Fatal("The variant of \"" + name + "\" does not have at least one suit.")
 		}
 
-		// Convert suit strings to objects
+		// Validate that all of the suits exist and convert suit strings to objects
 		variantSuits := make([]*Suit, 0)
 		for _, suitName := range variant.Suits {
-			variantSuits = append(variantSuits, suits[suitName])
+			if suit, ok := suits[suitName]; !ok {
+				log.Fatal("The suit of \"" + suitName + "\" " +
+					"in variant \"" + name + "\" does not exist.")
+			} else {
+				variantSuits = append(variantSuits, suit)
+			}
 		}
 
 		// Derive the card ranks (the ranks that the cards of each suit will be)
