@@ -59,6 +59,7 @@
         "pip": "null_symbol"
     },
     "Dark Omni": {
+        "abbreviation": "O",
         "allClueColors": true,
         "clueRanks": "all",
         "fill": "multi",
@@ -66,7 +67,14 @@
         "oneOfEach": true,
         "pip": "infinity"
     },
-    "Dark Null": { "clueColors": [], "clueRanks": "none", "fill": "#a6a6a6", "oneOfEach": true, "pip": "null_symbol" },
+    "Dark Null": {
+        "abbreviation": "N",
+        "clueColors": [],
+        "clueRanks": "none",
+        "fill": "#a6a6a6",
+        "oneOfEach": true,
+        "pip": "null_symbol"
+    },
 
     "Muddy Rainbow": {
         "abbreviation": "M",
