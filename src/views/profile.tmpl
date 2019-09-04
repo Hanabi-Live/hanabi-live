@@ -76,7 +76,19 @@
         });
 
         // Initialize the table sorting
-        $("table").tablesorter();
+        $('table').tablesorter();
+
+        // Initialize the "Filter by # of Players" dropdown
+        $('#filter-by-players').change(() => {
+            const numPlayersSelected = $('#filter-by-players').val();
+            for (let i = 2; i <= 6; i++) {
+                if (numPlayersSelected === i.toString() || numPlayersSelected === 'all') {
+                    $(`.missing-scores-row-${i}`).show();
+                } else {
+                    $(`.missing-scores-row-${i}`).hide();
+                }
+            }
+        });
     });
 </script>
 {{end}}

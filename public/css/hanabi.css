@@ -495,12 +495,15 @@ table td {
 }
 
 .horizontal > li {
-    height: 2.25em;
-    line-height: 2.25em;
     vertical-align: center;
     list-style-type: none;
     float: left;
     margin-right: 1em;
+}
+
+#settings-volume > li {
+    height: 2.25em;
+    line-height: 2.25em;
 }
 
 #settings-volume-slider {
@@ -648,6 +651,11 @@ table td {
 /*
     Profile
 */
+
+#filter-players > li {
+    height: 3em;
+    line-height: 3em;
+}
 
 .score-modifier {
     font-size: 0.75em;

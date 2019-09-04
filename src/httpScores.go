@@ -13,15 +13,17 @@ import (
 )
 
 type ProfileData struct {
-	Title          string
-	Header         bool
-	Name           string
-	NumGames       int
-	NumMaxScores   int
-	TotalMaxScores int
-	TimePlayed     string
-	TimeRaced      string
-	VariantStats   []VariantStats
+	Title                 string
+	Header                bool
+	Name                  string
+	NumGames              int
+	NumMaxScores          int
+	TotalMaxScores        int
+	NumMaxScoresPerType   []int
+	TotalMaxScoresPerType int
+	TimePlayed            string
+	TimeRaced             string
+	VariantStats          []VariantStats
 }
 type VariantStats struct {
 	ID            int
@@ -61,8 +63,9 @@ func httpScores(c *gin.Context) {
 	numGames := 0
 	timePlayed := ""
 	timeRaced := ""
-	totalMaxScores := 0
-	variantStats := make([]VariantStats, 0)
+	numMaxScores := 0
+	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
+	variantStatsList := make([]VariantStats, 0)
 	for i, name := range variantsList {
 		variant := variants[name]
 
@@ -94,13 +97,14 @@ func httpScores(c *gin.Context) {
 		}
 
 		maxScoreForThisVariant := 5 * len(variant.Suits)
-		for _, bestScore := range stats.BestScores {
+		for i, bestScore := range stats.BestScores {
 			if bestScore.Score == maxScoreForThisVariant {
-				totalMaxScores++
+				numMaxScores++
+				numMaxScoresPerType[i]++
 			}
 		}
 
-		updatedStats := VariantStats{
+		variantStats := VariantStats{
 			ID:            i,
 			Name:          name,
 			NumGames:      stats.NumPlayed,
@@ -109,18 +113,20 @@ func httpScores(c *gin.Context) {
 			AverageScore:  int((math.Round(stats.AverageScore))),
 			StrikeoutRate: int(math.Round(stats.StrikeoutRate * 100)),
 		}
-		variantStats = append(variantStats, updatedStats)
+		variantStatsList = append(variantStatsList, variantStats)
 	}
 
 	data := ProfileData{
-		Title:          "Scores",
-		Name:           user.Username,
-		NumGames:       numGames,
-		NumMaxScores:   totalMaxScores,
-		TotalMaxScores: len(variantsList) * 5, // For 2 to 6 players
-		TimePlayed:     timePlayed,
-		TimeRaced:      timeRaced,
-		VariantStats:   variantStats,
+		Title:                 "Scores",
+		Name:                  user.Username,
+		NumGames:              numGames,
+		NumMaxScores:          numMaxScores,
+		TotalMaxScores:        len(variantsList) * 5, // For 2 to 6 players
+		NumMaxScoresPerType:   numMaxScoresPerType,
+		TotalMaxScoresPerType: len(variantsList),
+		TimePlayed:            timePlayed,
+		TimeRaced:             timeRaced,
+		VariantStats:          variantStatsList,
 	}
 
 	if strings.HasPrefix(c.Request.URL.Path, "/missing-scores/") {
