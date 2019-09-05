@@ -69,8 +69,21 @@ const keydown = (event) => {
         return;
     }
 
-    // Disable keyboard hotkeys if we are typing in the in-game chat
-    if ($('#game-chat-input').is(':focus')) {
+    if (event.key === 'Escape') {
+        // Escape = If the chat is open, close it
+        if ($('#game-chat-modal').is(':visible')) {
+            globals.game.chat.hide();
+            return;
+        }
+
+        if (globals.replay) {
+            // Escape = If in a replay, exit back to the lobby
+            ui.backToLobby();
+            return;
+        }
+
+        // Escape = If in an in-game replay, exit back to the game
+        replay.exit();
         return;
     }
 
@@ -128,26 +141,15 @@ const keydown = (event) => {
         }
     }
 
-    // The rest of the hotkeys should not occur if a modifier key is pressed
-    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
-        return;
-    }
-
-    if (event.key === 'Escape') {
-        // Escape = If the chat is open, close it
-        if ($('#game-chat-modal').is(':visible')) {
-            globals.game.chat.hide();
-            return;
-        }
-
-        if (globals.replay) {
-            // Escape = If in a replay, exit back to the lobby
-            ui.backToLobby();
-            return;
-        }
-
-        // Escape = If in an in-game replay, exit back to the game
-        replay.exit();
+    // The rest of the hotkeys should be disabled if we are typing in the in-game chat
+    // or if a modifier key is pressed
+    if (
+        $('#game-chat-input').is(':focus')
+        || event.ctrlKey
+        || event.shiftKey
+        || event.altKey
+        || event.metaKey
+    ) {
         return;
     }
 
