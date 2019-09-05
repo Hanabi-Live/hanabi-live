@@ -223,7 +223,7 @@ module.exports = (clueAreaValues) => {
             } else if (globals.elements.playerHands[currentPlayerIndex].isLocked()) {
                 specialText = '(locked; may not be able to discard)';
                 text3.setFill('yellow');
-            } else if (globals.elements.noDoubleDiscardLabel.getVisible()) {
+            } else if (globals.elements.noDoubleDiscardBorder.getVisible()) {
                 specialText = '(potentially in a "Double Discard" situation)';
                 text3.setFill('yellow');
             }

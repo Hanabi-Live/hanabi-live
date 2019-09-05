@@ -317,21 +317,22 @@ commands.status = (data) => {
     // Update the number of clues in the bottom-right hand corner of the screen
     globals.elements.cluesNumberLabel.setText(globals.clues.toString());
     globals.elements.cluesNumberLabel.setFill(globals.clues === 0 ? 'red' : constants.LABEL_COLOR);
+    globals.elements.noClueBorder.setVisible(globals.clues === 0);
 
     if (!globals.lobby.settings.realLifeMode) {
         if (globals.clues === 8) {
             // Show the red border around the discard pile
             // (to reinforce the fact that being at 8 clues is a special situation)
-            globals.elements.noDiscardLabel.show();
-            globals.elements.noDoubleDiscardLabel.hide();
+            globals.elements.noDiscardBorder.show();
+            globals.elements.noDoubleDiscardBorder.hide();
         } else if (data.doubleDiscard) {
             // Show a yellow border around the discard pile
             // (to reinforce that this is a "Double Discard" situation)
-            globals.elements.noDiscardLabel.hide();
-            globals.elements.noDoubleDiscardLabel.show();
+            globals.elements.noDiscardBorder.hide();
+            globals.elements.noDoubleDiscardBorder.show();
         } else {
-            globals.elements.noDiscardLabel.hide();
-            globals.elements.noDoubleDiscardLabel.hide();
+            globals.elements.noDiscardBorder.hide();
+            globals.elements.noDoubleDiscardBorder.hide();
         }
     }
 

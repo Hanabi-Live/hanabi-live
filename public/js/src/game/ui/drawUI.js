@@ -651,6 +651,19 @@ const drawScoreArea = () => {
     });
     globals.layers.UI.add(globals.elements.scoreArea);
 
+    // The red border that surrounds the score area when the team is at 0 clues
+    globals.elements.noClueBorder = new graphics.Rect({
+        x: scoreAreaValues.x * winW,
+        y: scoreAreaValues.y * winH,
+        width: scoreAreaValues.w * winW,
+        height: scoreAreaValues.h * winH,
+        stroke: '#df1c2d',
+        strokeWidth: 0.003 * winW,
+        cornerRadius: 0.01 * winW,
+        visible: false,
+    });
+    globals.layers.UI.add(globals.elements.noClueBorder);
+
     // The faded rectangle around the score area
     const scoreAreaRect = new graphics.Rect({
         x: 0,
@@ -1122,7 +1135,7 @@ const drawStatistics = () => {
 
 const drawDiscardArea = () => {
     // The red border that surrounds the discard pile when the team is at 8 clues
-    globals.elements.noDiscardLabel = new graphics.Rect({
+    globals.elements.noDiscardBorder = new graphics.Rect({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.19 * winW,
@@ -1132,10 +1145,10 @@ const drawDiscardArea = () => {
         cornerRadius: 0.01 * winW,
         visible: false,
     });
-    globals.layers.UI.add(globals.elements.noDiscardLabel);
+    globals.layers.UI.add(globals.elements.noDiscardBorder);
 
     // The yellow border that surrounds the discard pile when it is a "Double Discard" situation
-    globals.elements.noDoubleDiscardLabel = new graphics.Rect({
+    globals.elements.noDoubleDiscardBorder = new graphics.Rect({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.19 * winW,
@@ -1146,7 +1159,7 @@ const drawDiscardArea = () => {
         opacity: 0.75,
         visible: false,
     });
-    globals.layers.UI.add(globals.elements.noDoubleDiscardLabel);
+    globals.layers.UI.add(globals.elements.noDoubleDiscardBorder);
 
     // The faded rectangle around the trash can
     const discardAreaRect = new graphics.Rect({

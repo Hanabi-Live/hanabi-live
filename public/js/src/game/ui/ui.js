@@ -61,8 +61,8 @@ const stopAction = () => {
     globals.elements.clueArea.hide();
     globals.elements.currentPlayerArea.hide();
     globals.elements.premoveCancelButton.hide();
-    globals.elements.noDiscardLabel.hide();
-    globals.elements.noDoubleDiscardLabel.hide();
+    globals.elements.noDiscardBorder.hide();
+    globals.elements.noDoubleDiscardBorder.hide();
     arrows.hideAll();
 
     // Make all of the cards in our hand not draggable
