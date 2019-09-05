@@ -871,7 +871,11 @@ class HanabiCard extends graphics.Group {
         for (let i = 0; i < globals.variant.suits.length; i++) {
             const suit = globals.variant.suits[i];
             const playStack = globals.elements.playStacks.get(suit);
-            const lastCardPlayed = playStack.children[playStack.children.length - 1].children[0];
+            console.log(playStack.children);
+            let rankPlayed = 0;
+            if (playStack.children.length > 0) {
+                rankPlayed = playStack.children[playStack.children.length - 1].children[0].rank;
+            }
             if (globals.stackDirections[i] === constants.STACK_DIRECTION.UNDECIDED) {
                 if (playStack.children.length === 0) {
                     // The "START" card has not been played
@@ -899,14 +903,14 @@ class HanabiCard extends graphics.Group {
                     }
                 }
             } else if (globals.stackDirections[i] === constants.STACK_DIRECTION.UP) {
-                const nextRankNeeded = lastCardPlayed.rank + 1;
+                const nextRankNeeded = rankPlayed + 1;
                 const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
                 if (count > 0) {
                     potentiallyPlayable = true;
                     break;
                 }
             } else if (globals.stackDirections[i] === constants.STACK_DIRECTION.DOWN) {
-                const nextRankNeeded = lastCardPlayed.rank - 1;
+                const nextRankNeeded = rankPlayed - 1;
                 const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
                 if (count > 0) {
                     potentiallyPlayable = true;
