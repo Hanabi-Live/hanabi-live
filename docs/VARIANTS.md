@@ -65,37 +65,10 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * One of the suits is replaced with a null suit.
 * No clues "touch" the null suit.
 
-### Dark Rainbow (Black + Rainbow)
+### Dark Rainbow / Dark Pink / Gray / Chocolate / Dark Omni / Dark Null
 
-* One of the suits is replaced with a dark rainbow suit.
-* All color clues will "touch" the dark rainbow suit.
-* There is only one of each dark rainbow card in the deck, which means that every dark rainbow card is "critical".
-
-### Dark Pink (Black + Pink)
-
-* One of the suits is replaced with a dark pink suit.
-* All rank clues will "touch" the dark pink suit.
-* There is only one of each dark pink card in the deck, which means that every dark pink card is "critical".
-
-### Gray (Black + White)
-
-* One of the suits is replaced with a gray suit.
-* No color clues "touch" the gray suit. (It is a colorless suit.)
-* There is only one of each gray card in the deck, which means that every gray card is "critical".
-
-### Chocolate (Black + Brown)
-
-* One of the suits is replaced with a chocolate suit.
-* No rank clues "touch" the chocolate suit.
-* There is only one of each chocolate card in the deck, which means that every chocolate card is "critical".
-
-<!--
-### Dark Omni (Black + Omni)
-
-* One of the suits is replaced with a dark omni suit.
-* All color clues and all rank clues "touch" the dark omni suit.
-* There is only one of each dark omni card in the deck, which means that every dark omni card is "critical".
--->
+* One of the suits is replaced with a "dark" version of a special suit. (Grey is the "dark" version of white and chocolate is the "dark" version of brown.)
+* There is only one of each dark card in the deck, which means that every dark card is "critical".
 
 ### Muddy Rainbow
 
@@ -174,6 +147,25 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * This variant was invented by Jack Gurev's group.
 * When players give a clue, they point at the cards clued, but say "quack" instead of a color or number.
 
+### Special Mix (5 Suits)
+
+* This is a mix of several variants. The suits are as follows:
+  1. Black (one of each)
+  2. Rainbow (all colors)
+  3. Pink (all ranks)
+  4. White (colorless)
+  5. Brown (rankless)
+
+### Special Mix (6 Suits)
+
+* This is a mix of several variants. The suits are as follows:
+  1. Black (one of each)
+  2. Rainbow (all colors)
+  3. Pink (all ranks)
+  4. White (colorless)
+  5. Brown (rankless)
+  6. Null (clueless)
+
 ### Ambiguous Mix
 
 * This is a mix of several variants. The suits are as follows:
@@ -194,14 +186,15 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   5. Rainbow (all colors)
   6. White (colorless)
 
-### Gay Pride
+### Ambiguous & Dual-Color
 
 * This is a mix of several variants. The suits are as follows:
-  1. Black (one of each) 
-  2. Rainbow (all colors)
-  3. Pink (all ranks)
-  4. White (colorless)
-  5. Brown (rankless)
+  1. Lime (blue / yellow)
+  2. Forest (blue / yellow)
+  3. Orchid (blue / red)
+  4. Violet (blue / red)
+  5. Tangelo (yellow / red)
+  6. Peach (yellow / red)
 
 <br />
 
@@ -240,6 +233,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Omni (5 Suits)
   * Omni (4 Suits)
   * Omni (3 Suits)
+* Null
+  * Null (6 Suits)
+  * Null (5 Suits)
+  * Null (4 Suits)
+  * Null (3 Suits)
 * Black & Rainbow
   * Black & Rainbow (6 Suits)
   * Black & Rainbow (5 Suits)
@@ -252,11 +250,12 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * Black & Brown
   * Black & Brown (6 Suits)
   * Black & Brown (5 Suits)
-<!--
 * Black & Omni
   * Black & Omni (6 Suits)
   * Black & Omni (5 Suits)
--->
+* Black & Null
+  * Black & Null (6 Suits)
+  * Black & Null (5 Suits)
 * Rainbow & Pink
   * Rainbow & Pink (6 Suits)
   * Rainbow & Pink (5 Suits)
@@ -272,6 +271,16 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Rainbow & Brown (5 Suits)
   * Rainbow & Brown (4 Suits)
   * Rainbow & Brown (3 Suits)
+* Rainbow & Omni
+  * Rainbow & Omni (6 Suits)
+  * Rainbow & Omni (5 Suits)
+  * Rainbow & Omni (4 Suits)
+  * Rainbow & Omni (3 Suits)
+* Rainbow & Null
+  * Rainbow & Null (6 Suits)
+  * Rainbow & Null (5 Suits)
+  * Rainbow & Null (4 Suits)
+  * Rainbow & Null (3 Suits)
 * Pink & White
   * Pink & White (6 Suits)
   * Pink & White (5 Suits)
@@ -282,11 +291,46 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Pink & Brown (5 Suits)
   * Pink & Brown (4 Suits)
   * Pink & Brown (3 Suits)
+* Pink & Omni
+  * Pink & Omni (6 Suits)
+  * Pink & Omni (5 Suits)
+  * Pink & Omni (4 Suits)
+  * Pink & Omni (3 Suits)
+* Pink & Null
+  * Pink & Null (6 Suits)
+  * Pink & Null (5 Suits)
+  * Pink & Null (4 Suits)
+  * Pink & Null (3 Suits)
 * White & Brown
   * White & Brown (6 Suits)
   * White & Brown (5 Suits)
   * White & Brown (4 Suits)
   * White & Brown (3 Suits)
+* White & Omni
+  * White & Omni (6 Suits)
+  * White & Omni (5 Suits)
+  * White & Omni (4 Suits)
+  * White & Omni (3 Suits)
+* White & Null
+  * White & Null (6 Suits)
+  * White & Null (5 Suits)
+  * White & Null (4 Suits)
+  * White & Null (3 Suits)
+* Brown & Omni
+  * Brown & Omni (6 Suits)
+  * Brown & Omni (5 Suits)
+  * Brown & Omni (4 Suits)
+  * Brown & Omni (3 Suits)
+* Brown & Null
+  * Brown & Null (6 Suits)
+  * Brown & Null (5 Suits)
+  * Brown & Null (4 Suits)
+  * Brown & Null (3 Suits)
+* Omni & Null
+  * Omni & Null (6 Suits)
+  * Omni & Null (5 Suits)
+  * Omni & Null (4 Suits)
+  * Omni & Null (3 Suits)
 * Dark Rainbow
   * Dark Rainbow (6 Suits)
   * Dark Rainbow (5 Suits)
@@ -297,6 +341,10 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * White & Dark Rainbow (5 Suits)
   * Brown & Dark Rainbow (6 Suits)
   * Brown & Dark Rainbow (5 Suits)
+  * Omni & Dark Rainbow (6 Suits)
+  * Omni & Dark Rainbow (5 Suits)
+  * Null & Dark Rainbow (6 Suits)
+  * Null & Dark Rainbow (5 Suits)
 * Dark Pink
   * Dark Pink (6 Suits)
   * Dark Pink (5 Suits)
@@ -307,6 +355,10 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * White & Dark Pink (5 Suits)
   * Brown & Dark Pink (6 Suits)
   * Brown & Dark Pink (5 Suits)
+  * Omni & Dark Pink (6 Suits)
+  * Omni & Dark Pink (5 Suits)
+  * Null & Dark Pink (6 Suits)
+  * Null & Dark Pink (5 Suits)
 * Gray
   * Gray (6 Suits)
   * Gray (5 Suits)
@@ -317,6 +369,10 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Pink & Gray (5 Suits)
   * Brown & Gray (6 Suits)
   * Brown & Gray (5 Suits)
+  * Omni & Gray (6 Suits)
+  * Omni & Gray (5 Suits)
+  * Null & Gray (6 Suits)
+  * Null & Gray (5 Suits)
 * Chocolate
   * Chocolate (6 Suits)
   * Chocolate (5 Suits)
@@ -327,7 +383,10 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Pink & Chocolate (5 Suits)
   * White & Chocolate (6 Suits)
   * White & Chocolate (5 Suits)
-<!--
+  * Omni & Chocolate (6 Suits)
+  * Omni & Chocolate (5 Suits)
+  * Null & Chocolate (6 Suits)
+  * Null & Chocolate (5 Suits)
 * Dark Omni
   * Dark Omni (6 Suits)
   * Dark Omni (5 Suits)
@@ -340,14 +399,38 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * White & Dark Omni (5 Suits)
   * Brown & Dark Omni (6 Suits)
   * Brown & Dark Omni (5 Suits)
--->
+  * Null & Dark Omni (6 Suits)
+  * Null & Dark Omni (5 Suits)
+* Dark Null
+  * Dark Null (6 Suits)
+  * Dark Null (5 Suits)
+  * Black & Dark Null (6 Suits)
+  * Rainbow & Dark Null (6 Suits)
+  * Rainbow & Dark Null (5 Suits)
+  * Pink & Dark Null (6 Suits)
+  * Pink & Dark Null (5 Suits)
+  * White & Dark Null (6 Suits)
+  * White & Dark Null (5 Suits)
+  * Brown & Dark Null (6 Suits)
+  * Brown & Dark Null (5 Suits)
+  * Omni & Dark Null (6 Suits)
+  * Omni & Dark Null (5 Suits)
 * Dark Mixes
   * Dark Rainbow & Dark Pink (6 Suits)
   * Dark Rainbow & Gray (6 Suits)
   * Dark Rainbow & Chocolate (6 Suits)
+  * Dark Rainbow & Dark Omni (6 Suits)
+  * Dark Rainbow & Dark Null (6 Suits)
   * Dark Pink & Gray (6 Suits)
   * Dark Pink & Chocolate (6 Suits)
+  * Dark Pink & Dark Omni (6 Suits)
+  * Dark Pink & Dark Null (6 Suits)
   * Gray & Chocolate (6 Suits)
+  * Gray & Dark Omni (6 Suits)
+  * Gray & Dark Null (6 Suits)
+  * Chocolate & Dark Omni (6 Suits)
+  * Chocolate & Dark Null (6 Suits)
+  * Dark Omni & Dark Null (6 Suits)
 * Muddy Rainbow
   * Muddy Rainbow (6 Suits)
   * Muddy Rainbow (5 Suits)
@@ -428,6 +511,8 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Up or Down & White (5 Suits)
   * Up or Down & Brown (6 Suits)
   * Up or Down & Brown (5 Suits)
+  * Up or Down & Omni (6 Suits)
+  * Up or Down & Omni (5 Suits)
 * Cow & Pig
   * Cow & Pig (6 Suits)
   * Cow & Pig (5 Suits)
@@ -439,6 +524,8 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Duck (4 Suits)
   * Duck (3 Suits)
 * Mixed
+  * Special Mix (5 Suits)
+  * Special Mix (6 Suits)
   * Ambiguous Mix
   * Dual-Color Mix
-  * Gay Pride
+  * Ambiguous & Dual-Color
