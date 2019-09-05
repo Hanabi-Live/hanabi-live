@@ -230,6 +230,7 @@ module.exports = () => {
         currentPlayerIndex: 0,
         hands: [], // An array of integer arrays
         playStacks: [], // An array of integer arrays
+        playStacksDirections: [], // An array of integers
         discardStacks: [], // An array of integer arrays
         clues: [], // An array of simple clue objects
     };

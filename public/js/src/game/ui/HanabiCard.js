@@ -847,9 +847,9 @@ class HanabiCard extends graphics.Group {
     }
 
     isPotentiallyPlayable() {
-        // Don't bother calculating this for Up or Down variants
+        // Calculating this in an Up or Down variant is more complicated
         if (globals.variant.name.startsWith('Up or Down')) {
-            return true;
+            return this.upOrDownIsPotentiallyPlayable();
         }
 
         let potentiallyPlayable = false;
@@ -860,6 +860,61 @@ class HanabiCard extends graphics.Group {
             if (count > 0) {
                 potentiallyPlayable = true;
                 break;
+            }
+        }
+
+        return potentiallyPlayable;
+    }
+
+    upOrDownIsPotentiallyPlayable() {
+        let potentiallyPlayable = false;
+        for (let i = 0; i < globals.variant.suits.length; i++) {
+            const suit = globals.variant.suits[i];
+            const playStack = globals.elements.playStacks.get(suit);
+            const lastCardPlayed = playStack.children[playStack.children.length - 1].children[0];
+            if (globals.stackDirections[i] === constants.STACK_DIRECTION.UNDECIDED) {
+                if (playStack.children.length === 0) {
+                    // The "START" card has not been played
+                    for (const rank of [0, 1, 5]) {
+                        const count = this.possibleCards.get(`${suit.name}${rank}`);
+                        if (count > 0) {
+                            potentiallyPlayable = true;
+                            break;
+                        }
+                    }
+                    if (potentiallyPlayable) {
+                        break;
+                    }
+                } else {
+                    // The "START" card has been played
+                    for (const rank of [2, 4]) {
+                        const count = this.possibleCards.get(`${suit.name}${rank}`);
+                        if (count > 0) {
+                            potentiallyPlayable = true;
+                            break;
+                        }
+                    }
+                    if (potentiallyPlayable) {
+                        break;
+                    }
+                }
+            } else if (globals.stackDirections[i] === constants.STACK_DIRECTION.UP) {
+                const nextRankNeeded = lastCardPlayed.rank + 1;
+                const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
+                if (count > 0) {
+                    potentiallyPlayable = true;
+                    break;
+                }
+            } else if (globals.stackDirections[i] === constants.STACK_DIRECTION.DOWN) {
+                const nextRankNeeded = lastCardPlayed.rank - 1;
+                const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
+                if (count > 0) {
+                    potentiallyPlayable = true;
+                    break;
+                }
+            } else if (globals.stackDirections[i] === constants.STACK_DIRECTION.FINISHED) {
+                // Nothing can play on this stack because it is finished
+                continue;
             }
         }
 
