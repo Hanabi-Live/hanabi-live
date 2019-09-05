@@ -100,12 +100,18 @@ const clickRight = (card, event) => {
     // (we want it to work no matter what modifiers are being pressed,
     // in case someone is pushing their push-to-talk hotkey while highlighting cards)
     if (
-        globals.sharedReplay
+        globals.replay
+        && globals.sharedReplay
         && globals.amSharedReplayLeader
         && globals.useSharedTurns
     ) {
         arrows.send(card.order, card);
         return;
+    }
+
+    // Right-click in a solo replay just displays what card order (in the deck) that it is
+    if (globals.replay && !globals.sharedReplay) {
+        console.log(`This card's order is: ${card.order}`);
     }
 
     // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered

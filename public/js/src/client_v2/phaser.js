@@ -58,7 +58,6 @@ function create() {
     // Not sure if setting this is good
     this.cameras.roundPixels = true;
     // Set the background
-    console.log(this.cameras);
     const background = this.add.sprite(
         this.canvas.width / 2,
         this.canvas.height / 2,
@@ -209,5 +208,4 @@ function update() {
 function setGlobalScale(height) {
     // 1920x1080 is the reference resolution of the global scale constants
     phaserGlobals.scale = height / 1080;
-    console.log(phaserGlobals.scale);
 }
