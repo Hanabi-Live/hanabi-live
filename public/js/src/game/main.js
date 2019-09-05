@@ -40,7 +40,16 @@ exports.hide = () => {
     globals.ui = null;
 
     $('#game').hide(); // We can't fade this out as it will overlap
-    $('#page-wrapper').fadeIn(globals.fadeTime);
+    $('#page-wrapper').fadeIn(globals.fadeTime, () => {
+        // Also account that we could be going back to the history screen
+        // or the history details screen
+        // (if we entered a solo replay from the history screen / history details screen)
+        if ($('#lobby-history').is(':visible')) {
+            globals.currentScreen = 'history';
+        } else if ($('#lobby-history-details').is(':visible')) {
+            globals.currentScreen = 'historyDetails';
+        }
+    });
 
     // Make sure that there are not any game-related modals showing
     $('#game-chat-modal').hide();
