@@ -69,6 +69,7 @@ module.exports = (clueAreaValues) => {
         fontSize: 0.08 * winH,
         text: '',
         align: 'center',
+        fill: '#ffffcc',
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -79,14 +80,7 @@ module.exports = (clueAreaValues) => {
     });
     globals.elements.currentPlayerArea.add(globals.elements.currentPlayerText2);
     globals.elements.currentPlayerText2.setPlayer = function set(currentPlayerIndex, threeLines) {
-        if (globals.ourTurn && !globals.spectating) {
-            this.setText('You');
-            this.setFill('yellow');
-        } else {
-            const text = globals.playerNames[currentPlayerIndex] || 'Undefined';
-            this.setText(text);
-            this.setFill('#ffffcc');
-        }
+        this.setText(globals.playerNames[currentPlayerIndex] || 'Undefined');
         let maxSize = (currentPlayerAreaValues.h / 3) * winH;
         if (threeLines) {
             maxSize = (currentPlayerAreaValues.h / 4) * winH;

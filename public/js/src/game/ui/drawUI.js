@@ -85,6 +85,7 @@ module.exports = () => {
     drawArrows();
     drawTimers();
     drawClueArea();
+    drawClueAreaDisabled();
     drawCurrentPlayerArea(clueAreaValues);
     drawPreplayArea();
     drawReplayArea();
@@ -1428,6 +1429,7 @@ const drawClueArea = () => {
         x: playAreaValues.x,
         y: playAreaValues.y + playAreaValues.h + 0.005,
         w: playAreaValues.w,
+        h: 0.23,
     };
     if (globals.variant.showSuitNames) {
         clueAreaValues.y += 0.03;
@@ -1545,6 +1547,71 @@ const drawClueArea = () => {
 
     globals.elements.clueArea.hide();
     globals.layers.UI.add(globals.elements.clueArea);
+};
+
+const drawClueAreaDisabled = () => {
+    // We fade the clue area and draw a rectangle on top of it when there are no clues available
+    globals.elements.clueAreaDisabled = new graphics.Group({
+        x: clueAreaValues.x * winW,
+        y: clueAreaValues.y * winH,
+        width: clueAreaValues.w * winW,
+    });
+
+    // A transparent rectangle to stop clicks
+    const rect = new graphics.Rect({
+        width: clueAreaValues.w * winW,
+        height: clueAreaValues.h * winH,
+        listening: true, // It must listen or it won't stop clicks
+    });
+    globals.elements.clueAreaDisabled.add(rect);
+
+    const spacing = {
+        x: 0.075,
+        y: 0.03,
+    };
+    const lineColor = '#1a1a1a';
+
+    // The line from top-left to bottom-right
+    const line1 = new graphics.Line({
+        points: [
+            spacing.x * winW,
+            spacing.y * winH,
+            (clueAreaValues.w - spacing.x) * winW,
+            (clueAreaValues.h - spacing.y) * winH,
+        ],
+        stroke: lineColor,
+        strokeWidth: 5,
+    });
+    globals.elements.clueAreaDisabled.add(line1);
+
+    // The line from bottom-left to top-right
+    const line2 = new graphics.Line({
+        points: [
+            spacing.x * winW,
+            (clueAreaValues.h - spacing.y) * winH,
+            (clueAreaValues.w - spacing.x) * winW,
+            spacing.y * winH,
+        ],
+        stroke: lineColor,
+        strokeWidth: 5,
+    });
+    globals.elements.clueAreaDisabled.add(line2);
+
+    // The "No clues available" text
+    const noCluesText = new FitText({
+        y: clueAreaValues.h * 0.4 * winH,
+        width: clueAreaValues.w * winW,
+        fontSize: 0.07 * winH,
+        fontFamily: 'Verdana',
+        align: 'center',
+        text: 'No clues',
+        fill: constants.LABEL_COLOR,
+        stroke: 'black',
+    });
+    globals.elements.clueAreaDisabled.add(noCluesText);
+
+    globals.elements.clueAreaDisabled.hide();
+    globals.layers.UI.add(globals.elements.clueAreaDisabled);
 };
 
 const drawPreplayArea = () => {

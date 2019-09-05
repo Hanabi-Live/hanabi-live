@@ -17,7 +17,7 @@ exports.handleAction = (data) => {
         return;
     }
 
-    if (data !== null && data.canClue) {
+    if (data !== null) {
         // Reset and show the clue UI
         if (globals.playerNames.length === 2) {
             // In 2-player games,
@@ -28,8 +28,16 @@ exports.handleAction = (data) => {
         globals.elements.clueTypeButtonGroup.clearPressed();
         globals.elements.clueArea.show();
         globals.elements.currentPlayerArea.hide();
+
+        // Fade the clue UI if there is not a clue available
+        if (data.canClue) {
+            globals.elements.clueArea.setOpacity(1);
+            globals.elements.clueAreaDisabled.hide();
+        } else {
+            globals.elements.clueArea.setOpacity(0.2);
+            globals.elements.clueAreaDisabled.show();
+        }
     }
-    globals.layers.UI.batchDraw();
 
     // Set our hand to being draggable
     if (
@@ -55,10 +63,13 @@ exports.handleAction = (data) => {
             globals.elements.deck.moveToTop();
         }
     }
+
+    globals.layers.UI.batchDraw();
 };
 
 const stopAction = () => {
     globals.elements.clueArea.hide();
+    globals.elements.clueAreaDisabled.hide();
     globals.elements.currentPlayerArea.hide();
     globals.elements.premoveCancelButton.hide();
     globals.elements.noDiscardBorder.hide();

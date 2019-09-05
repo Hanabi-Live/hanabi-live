@@ -1178,6 +1178,26 @@
     "Up or Down & Brown (5 Suits)": {
         "id": 158,
         "suits": ["Blue", "Green", "Yellow", "Red", "Brown"],
+        "showSuitNames": true
+    },
+    "Up or Down & Omni (6 Suits)": {
+        "id": 277,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Omni"],
+        "showSuitNames": true
+    },
+    "Up or Down & Omni (5 Suits)": {
+        "id": 278,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Omni"],
+        "showSuitNames": true
+    },
+    "Up or Down & Null (6 Suits)": {
+        "id": 279,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Null"],
+        "showSuitNames": true
+    },
+    "Up or Down & Null (5 Suits)": {
+        "id": 280,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Null"],
         "showSuitNames": true,
         "spacing": true
     },
