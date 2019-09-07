@@ -8,6 +8,7 @@ const constants = require('../../constants');
 const globals = require('./globals');
 const hypothetical = require('./hypothetical');
 const notify = require('./notify');
+const replay = require('./replay');
 const timer = require('./timer');
 
 exports.handleAction = (data) => {
@@ -101,6 +102,7 @@ exports.endTurn = (action) => {
     }
 
     if (globals.ourTurn) {
+        replay.exit(); // Close the in-game replay if we preplayed a card in the replay
         globals.lobby.conn.send('action', action.data);
         stopAction();
     } else {

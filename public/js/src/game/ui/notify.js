@@ -395,13 +395,6 @@ commands.turn = (data) => {
     globals.turn = data.num;
     globals.currentPlayerIndex = data.who;
 
-    // Keep track of whether or not it is our turn (speedrun)
-    globals.ourTurn = (globals.currentPlayerIndex === globals.playerUs);
-    if (!globals.ourTurn) {
-        // Adding this here to avoid bugs with pre-moves
-        globals.elements.clueArea.hide();
-    }
-
     // Bold the name frame of the current player to indicate that it is their turn
     for (let i = 0; i < globals.playerNames.length; i++) {
         globals.elements.nameFrames[i].setActive(globals.currentPlayerIndex === i);
