@@ -585,31 +585,32 @@ table td {
     /* The modal is automatically positioned in the "chat.js" file */
     background-color: black;
     border-radius: 10px; /* This has to match the border-radius below */
-}
-
-#game-chat-modal > div {
-    width: 100%;
-    height: 100%;
-}
-
-#game-chat-modal > div > section {
-    width: 100%;
-    height: calc(100% - 1.75em);
-    /* We have to move it further down because of the header */
-    padding: 1em;
-    margin: 0;
+    border: 3px solid black;
 }
 
 #game-chat-modal-header {
-    cursor: move;
+    height: 1.25em;
     text-align: right;
 }
 
 #game-chat-modal-header-close {
     cursor: pointer;
     color: white;
-    padding: 0.5em;
-    margin-right: 0.25em;
+    margin-right: 0.3em;
+    padding: 0.25em; /* We want some padding so that the activation range is bigger */
+    position: relative;
+    bottom: 0.3em;
+}
+
+#game-chat-modal-white {
+    width: calc(100% - 0.3em);
+    height: calc(100% - 1.25em - 0.3em);
+    /* We have to move it further down because of the header */
+    padding: 1em;
+    margin: 0;
+    position: relative;
+    top: 0.05em;
+    left: 0.15em;
 }
 
 /* From: https://codepen.io/ZeroX-DG/pen/vjdoYe */
@@ -619,33 +620,6 @@ table td {
     border: 3px solid black;
     border-radius: 10px; /* This has to match the border-radius above */
     box-sizing: border-box;
-}
-
-.resizable .resizers .resizer{
-    width: 10px;
-    height: 10px;
-    position: absolute;
-}
-
-.resizable .resizers .resizer.top-left {
-    left: -5px;
-    top: -5px;
-    cursor: nwse-resize;
-}
-.resizable .resizers .resizer.top-right {
-    right: -5px;
-    top: -5px;
-    cursor: nesw-resize;
-}
-.resizable .resizers .resizer.bottom-left {
-    left: -5px;
-    bottom: -5px;
-    cursor: nesw-resize;
-}
-.resizable .resizers .resizer.bottom-right {
-    right: -5px;
-    bottom: -5px;
-    cursor: nwse-resize;
 }
 
 /*

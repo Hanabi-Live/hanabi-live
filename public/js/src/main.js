@@ -7,7 +7,6 @@
 const chat = require('./chat');
 const lobby = require('./lobby/main');
 const game = require('./game/main');
-const misc = require('./misc');
 const modals = require('./modals');
 
 $(document).ready(() => {
@@ -25,7 +24,6 @@ $(document).ready(() => {
     game.chat.init();
     game.sounds.init();
     game.tooltips.init();
-    misc.init();
     modals.init();
 
     // For debugging graphics

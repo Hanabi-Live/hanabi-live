@@ -42,6 +42,7 @@ module.exports = (grunt) => {
                     'lib/sha256.min.js',
                     'lib/linkify.min.js',
                     'lib/linkify-html.min.js',
+                    'lib/interact.min.js',
                     'main.browserified.js',
                 ],
                 dest: 'main.bundled.js',

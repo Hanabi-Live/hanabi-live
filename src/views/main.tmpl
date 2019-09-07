@@ -932,24 +932,16 @@
 </div>
 
 <!-- Game chat modal -->
-<div id="game-chat-modal" class="hidden resizable">
-    <div class="resizers">
-        <div class="resizer top-left"></div>
-        <div class="resizer top-right"></div>
-        <div class="resizer bottom-left"></div>
-        <div class="resizer bottom-right"></div>
-
-        <!-- The content has to also be inside the "resizers" div in order to work properly -->
-        <div id="game-chat-modal-header">
-            <a id="game-chat-modal-header-close">
-                <i class="fas fa-times fa-xs"></i>
-            </a>
-        </div>
-        <section class="box">
-            <div id="game-chat-text" class="lobby-chat-text-box"></div>
-            <input id="game-chat-input" type="text" placeholder="Chat" autocomplete="off" />
-        </section>
+<div id="game-chat-modal" class="hidden draggable">
+    <div id="game-chat-modal-header">
+        <a id="game-chat-modal-header-close">
+            <i class="fas fa-times fa-xs"></i>
+        </a>
     </div>
+    <section id="game-chat-modal-white" class="box">
+        <div id="game-chat-text" class="lobby-chat-text-box"></div>
+        <input id="game-chat-input" type="text" placeholder="Chat" autocomplete="off" />
+    </section>
 </div>
 
 <!-- Warning modal -->
@@ -991,6 +983,7 @@
     <script type="text/javascript" src="/public/js/lib/sha256.min.js"></script>
     <script type="text/javascript" src="/public/js/lib/linkify.min.js"></script>
     <script type="text/javascript" src="/public/js/lib/linkify-html.min.js"></script>
+    <script type="text/javascript" src="/public/js/lib/interact.min.js"></script>
     <script type="text/javascript" src="/public/js/main.browserified.dev.js"></script>
 {{else}}
     <!-- All of the JavaScript is bundled into one file -->

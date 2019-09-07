@@ -874,7 +874,8 @@ class HanabiCard extends graphics.Group {
             console.log(playStack.children);
             let rankPlayed = 0;
             if (playStack.children.length > 0) {
-                rankPlayed = playStack.children[playStack.children.length - 1].children[0].rank;
+                const cardOnTop = playStack.children[playStack.children.length - 1].children[0];
+                rankPlayed = cardOnTop.rank;
             }
             if (globals.stackDirections[i] === constants.STACK_DIRECTION.UNDECIDED) {
                 if (playStack.children.length === 0) {

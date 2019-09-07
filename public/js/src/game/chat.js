@@ -6,8 +6,100 @@
 const globals = require('../globals');
 
 exports.init = () => {
-    initDraggableDiv(document.getElementById('game-chat-modal'));
-    initResizableDiv('.resizable');
+    // Detect if an element is off screen
+    // From: https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen
+    jQuery.expr.filters.offscreen = (el) => {
+        const rect = el.getBoundingClientRect();
+        return (
+            rect.top < 0 // Above the top
+            || rect.bottom > window.innerHeight // Below the bottom
+            || rect.left < 0 // Left of the left edge
+            || rect.right > window.innerWidth // Right of the right edge
+        );
+    };
+
+    // Make the chat modal draggable (using the InteractJS library)
+    interact('.draggable')
+        .draggable({
+            allowFrom: '#game-chat-modal-header',
+
+            // Keep the modal within the bounds of the page
+            // (the parent is the <body> element)
+            modifiers: [
+                interact.modifiers.restrictRect({
+                    restriction: 'parent',
+                }),
+            ],
+
+            // Define the drag behavior
+            onmove: (event) => {
+                // Get the new position based on the delta between the event and the old position
+                // (which is conveniently stored in the "data-x" and "data-y" attributes)
+                const x = (parseFloat(event.target.getAttribute('data-x')) || 0) + event.dx;
+                const y = (parseFloat(event.target.getAttribute('data-y')) || 0) + event.dy;
+
+                // Move it
+                const element = $(`#${event.target.id}`);
+                moveElement(element, x, y);
+            },
+        })
+
+        .resizable({
+            // resize from all edges and corners
+            edges: {
+                // We don't want it to be resizable from the top since
+                // it interferes with the area dedicated to moving the div
+                left: true,
+                right: true,
+                bottom: true,
+            },
+
+            ignoreFrom: '#game-chat-modal-header',
+
+            modifiers: [
+                // Keep the modal within the bounds of the page
+                // (the parent is the <body> element)
+                interact.modifiers.restrictEdges({
+                    outer: 'parent',
+                }),
+
+                // Define a minimum size for the modal
+                interact.modifiers.restrictSize({
+                    min: {
+                        width: 200,
+                        height: 200,
+                    },
+                }),
+            ],
+        })
+
+        .on('resizemove', (event) => {
+            // Get the new position based on the delta between the event and the old position
+            // (which is conveniently stored in the "data-x" and "data-y" attributes)
+            let x = (parseFloat(event.target.getAttribute('data-x')) || 0);
+            let y = (parseFloat(event.target.getAttribute('data-y')) || 0);
+
+            // Translate when resizing from top or left edges
+            x += event.deltaRect.left;
+            y += event.deltaRect.top;
+
+            // Move it
+            const element = $(`#${event.target.id}`);
+            moveElement(element, x, y);
+
+            // Resize it
+            event.target.style.width = `${event.rect.width}px`;
+            event.target.style.height = `${event.rect.height}px`;
+        })
+
+        .on('dragend resizeend', (event) => {
+            // The modal was moved or resized;
+            // store the window dimensions in a cookie so that it will persist between refreshes
+            localStorage.setItem('chatWindowWidth', event.target.style.width);
+            localStorage.setItem('chatWindowHeight', event.target.style.height);
+            localStorage.setItem('chatWindowX', $(`#${event.target.id}`).attr('data-x'));
+            localStorage.setItem('chatWindowY', $(`#${event.target.id}`).attr('data-y'));
+        });
 
     $('#game-chat-modal-header-close').click(() => {
         hide();
@@ -35,35 +127,44 @@ const show = () => {
         globals.ui.updateChatLabel(); // Reset the "Chat" UI button back to normal
     }
 
-    // If there is a stored size / position for the chat box, set that
-    let putChatInDefaultPosition = true;
+    // Set the modal to the default position
+    modal.css('width', '20%');
+    modal.css('height', '50%');
+    modal.css('top', '1%');
+    modal.css('left', '79%');
+
+    // If there is a stored size + position for the chat box, set that
+    let resetPosition = true;
     const width = localStorage.getItem('chatWindowWidth');
     const height = localStorage.getItem('chatWindowHeight');
-    const top = localStorage.getItem('chatWindowTop');
-    const left = localStorage.getItem('chatWindowLeft');
+    const x = localStorage.getItem('chatWindowX');
+    const y = localStorage.getItem('chatWindowY');
     if (
         width !== null && width !== ''
         && height !== null && height !== ''
-        && top !== null && top !== ''
-        && left !== null && left !== ''
+        && x !== null && x !== ''
+        && y !== null && y !== ''
     ) {
-        putChatInDefaultPosition = false;
+        resetPosition = false;
         modal.css('width', width);
         modal.css('height', height);
-        modal.css('top', top);
-        modal.css('left', left);
+        moveElement(modal, x, y);
+
+        // Just in case,
+        // reset the size and position if the stored location puts the chat box offscreen
+        // (this is possible if the window size has changed since the last time)
+        if (modal.is(':offscreen')) {
+            resetPosition = true;
+        }
     }
 
-    // Just in case, reset the size and position if the stored location puts the chat box offscreen
-    if (modal.is(':offscreen')) {
-        putChatInDefaultPosition = true;
-    }
-
-    if (putChatInDefaultPosition) {
+    if (resetPosition) {
         modal.css('width', '20%');
         modal.css('height', '50%');
-        modal.css('top', '1%');
-        modal.css('left', '79%');
+        modal.css('webkitTransform', 'translate(0px, 0px)');
+        modal.css('transform', 'translate(0px, 0px)');
+        modal.attr('data-x', 0);
+        modal.attr('data-y', 0);
     }
 
     // Scroll to the bottom of the chat
@@ -79,163 +180,14 @@ const hide = () => {
 };
 exports.hide = hide;
 
-/*
-    Make draggable div
-    https://www.w3schools.com/howto/howto_js_draggable.asp
-*/
+// Subroutine to move an element (using the "transform" CSS property)
+function moveElement(element, x, y) {
+    // Update the element's style
+    const transform = `translate(${x}px, ${y}px)`;
+    element.css('webkitTransform', transform);
+    element.css('transform', transform);
 
-function initDraggableDiv(element) {
-    let pos1 = 0;
-    let pos2 = 0;
-    let pos3 = 0;
-    let pos4 = 0;
-    if (document.getElementById(`${element.id}-header`)) {
-        // If present, the header is where you move the div from
-        document.getElementById(`${element.id}-header`).onmousedown = dragMouseDown;
-    } else {
-        // Otherwise, move the div from anywhere inside the div
-        element.onmousedown = dragMouseDown;
-    }
-
-    function dragMouseDown(e) {
-        e = e || window.event;
-        e.preventDefault();
-
-        // Get the mouse cursor position at startup
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-
-        // Call a function whenever the cursor moves
-        document.onmousemove = elementDrag;
-    }
-
-    function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
-
-        // Calculate the new cursor position
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-
-        // Record the current position
-        const oldTop = element.style.top;
-        const oldLeft = element.style.left;
-
-        // Set the element's new position
-        element.style.top = `${element.offsetTop - pos2}px`;
-        element.style.left = `${element.offsetLeft - pos1}px`;
-
-        // Move if back if it is offscreen
-        if ($('#game-chat-modal').is(':offscreen')) {
-            element.style.top = oldTop;
-            element.style.left = oldLeft;
-        }
-    }
-
-    function closeDragElement() {
-        // Stop moving when mouse button is released
-        document.onmouseup = null;
-        document.onmousemove = null;
-
-        // Store the size and location of the div
-        localStorage.setItem('chatWindowWidth', element.style.width);
-        localStorage.setItem('chatWindowHeight', element.style.height);
-        localStorage.setItem('chatWindowTop', element.style.top);
-        localStorage.setItem('chatWindowLeft', element.style.left);
-    }
+    // Keep the dragged position in the "data-x" & "data-y" attributes
+    element.attr('data-x', x);
+    element.attr('data-y', y);
 }
-
-/*
-    Make resizable div by Hung Nguyen
-    https://codepen.io/ZeroX-DG/pen/vjdoYe
-*/
-
-/* eslint-disable */
-function initResizableDiv(div) {
-    const element = document.querySelector(div);
-    const resizers = document.querySelectorAll(`${div} .resizer`);
-    const minimumSize = 20;
-    let originalWidth = 0;
-    let originalHeight = 0;
-    let originalX = 0;
-    let originalY = 0;
-    let originalMouseX = 0;
-    let originalMouseY = 0;
-    for (let i = 0; i < resizers.length; i++) {
-        const currentResizer = resizers[i];
-        currentResizer.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            originalWidth = parseFloat(getComputedStyle(element, null)
-                .getPropertyValue('width')
-                .replace('px', ''));
-            originalHeight = parseFloat(getComputedStyle(element, null)
-                .getPropertyValue('height')
-                .replace('px', ''));
-            const rect = element.getBoundingClientRect();
-            originalX = rect.left;
-            originalY = rect.top;
-            originalMouseX = e.pageX;
-            originalMouseY = e.pageY;
-            window.addEventListener('mousemove', resize);
-            window.addEventListener('mouseup', stopResize);
-        });
-
-        function resize(e) {
-            if (currentResizer.classList.contains('bottom-right')) {
-                const width = originalWidth + (e.pageX - originalMouseX);
-                const height = originalHeight + (e.pageY - originalMouseY);
-                if (width > minimumSize) {
-                    element.style.width = `${width}px`;
-                }
-                if (height > minimumSize) {
-                    element.style.height = `${height}px`;
-                }
-            } else if (currentResizer.classList.contains('bottom-left')) {
-                const height = originalHeight + (e.pageY - originalMouseY);
-                const width = originalWidth - (e.pageX - originalMouseX);
-                if (height > minimumSize) {
-                    element.style.height = `${height}px`;
-                }
-                if (width > minimumSize) {
-                    element.style.width = `${width}px`;
-                    element.style.left = `${originalX + (e.pageX - originalMouseX)}px`;
-                }
-            } else if (currentResizer.classList.contains('top-right')) {
-                const width = originalWidth + (e.pageX - originalMouseX);
-                const height = originalHeight - (e.pageY - originalMouseY);
-                if (width > minimumSize) {
-                    element.style.width = `${width}px`;
-                }
-                if (height > minimumSize) {
-                    element.style.height = `${height}px`;
-                    element.style.top = `${originalY + (e.pageY - originalMouseY)}px`;
-                }
-            } else {
-                const width = originalWidth - (e.pageX - originalMouseX);
-                const height = originalHeight - (e.pageY - originalMouseY);
-                if (width > minimumSize) {
-                    element.style.width = `${width}px`;
-                    element.style.left = `${originalX + (e.pageX - originalMouseX)}px`;
-                }
-                if (height > minimumSize) {
-                    element.style.height = `${height}px`;
-                    element.style.top = `${originalY + (e.pageY - originalMouseY)}px`;
-                }
-            }
-        }
-
-        function stopResize() {
-            window.removeEventListener('mousemove', resize);
-
-            // Store the size and location of the div
-            localStorage.setItem('chatWindowWidth', element.style.width);
-            localStorage.setItem('chatWindowHeight', element.style.height);
-            localStorage.setItem('chatWindowTop', element.style.top);
-            localStorage.setItem('chatWindowLeft', element.style.left);
-        }
-    }
-}
-/* eslint-enable */

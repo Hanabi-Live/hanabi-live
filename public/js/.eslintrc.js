@@ -63,5 +63,6 @@ module.exports = {
         Phaser: true,
         hex_sha256: true,
         linkifyHtml: true,
+        interact: true,
     },
 };
