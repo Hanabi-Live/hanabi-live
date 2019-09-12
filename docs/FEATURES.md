@@ -13,9 +13,8 @@ List of Features
   * For everyone else, the game will now appear in the list of games. To join it, they need to click on the arrow symbol (in the "Action" column).
   * Then, the creator of the table needs to click on the "Start Game" button on the top navigation bar.
 * Once inside a game, the UI elements are as follows:
-  * The play stacks are in the center of the screen (one for each suit).
-  * Around the play stacks, the players are evenly distributed. (This is similar to how players would be if they were sitting at a table in real life.)
-  * The "newest" side of a player's hand is indicated by a white glow.
+  * The play stacks are on the left (one for each suit).
+  * The player hands are on the right. Drawn cards are added to the left side of the hand.
   * You can tell whose turn it is by looking to see if a player's name is bolded.
   * In the top-right-hand corner is a clue log that will track every clue given over the course of the game.
   * In the middle-right is some statistics about how well the game is going.
@@ -23,7 +22,7 @@ List of Features
   * In the bottom-right-hand corner is the discard pile.
   * To the left of the discard pile is the turn count, score, clue count, and strike count.
 * To perform an action:
-  * Play a card by clicking and dragging it to the center stacks.
+  * Play a card by clicking and dragging it to the play stacks.
   * Discard a card by clicking and dragging it to the discard pile.
   * Give a clue by:
     * Click on the button corresponding to the clue recipient.
