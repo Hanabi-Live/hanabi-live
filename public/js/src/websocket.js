@@ -220,7 +220,6 @@ const initCommands = () => {
 
     globals.conn.on('joined', (data) => {
         globals.tableID = data.tableID;
-        console.log('Set table ID (joined):', globals.tableID);
 
         // We joined a new game, so transition between screens
         lobby.tables.draw();
