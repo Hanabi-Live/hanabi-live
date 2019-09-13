@@ -9,7 +9,7 @@ import (
 )
 
 // We want to be able to control the server from the command-line
-// without actually having to send chat messages to the lobby
+// without having to send chat messages to the lobby
 func signalInit() {
 	signalChannel := make(chan os.Signal, 1)
 
@@ -24,6 +24,9 @@ func signalInit() {
 				// Gracefully restart
 				graceful()
 			} else if signal == syscall.SIGUSR2 {
+				// Shutdown
+				shutdown()
+			} else if signal == syscall.SIGUSR3 {
 				// Debug
 				debug()
 			}
