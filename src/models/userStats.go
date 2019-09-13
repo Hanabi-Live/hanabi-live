@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"sort"
+	"strconv"
 )
 
 type UserStats struct{}
@@ -273,13 +275,25 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 		rows = v
 	}
 
-	// Go through each user
+	var userIDs []int
 	for rows.Next() {
 		var userID int
 		if err := rows.Scan(&userID); err != nil {
 			return err
 		}
+		userIDs = append(userIDs, userID)
+	}
 
+	// Sort the user IDs (ascending)
+	sort.Slice(userIDs, func(i, j int) bool {
+		return userIDs[i] < userIDs[j]
+	})
+	fmt.Println("Total users:", len(userIDs))
+	fmt.Println("(From user " + strconv.Itoa(userIDs[0]) + " " +
+		"to user " + strconv.Itoa(userIDs[len(userIDs)-1]) + ".)")
+
+	// Go through each user
+	for _, userID := range userIDs {
 		fmt.Println("Updating user:", userID)
 		for variant := 0; variant <= highestVariantID; variant++ {
 			// Check to see if this user has played any games of this variant
