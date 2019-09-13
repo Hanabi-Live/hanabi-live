@@ -37,8 +37,6 @@ func NewUserStatsRow() UserStatsRow {
 func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 	stats := NewUserStatsRow()
 
-	// Second, get the stats for this variant
-	// If this variant has never been played, all the values will default to 0
 	if err := db.QueryRow(`
 		SELECT
 			num_games,
@@ -56,7 +54,8 @@ func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 			num_strikeouts
 		FROM user_stats
 		WHERE user_id = ?
-	`, userID).Scan(
+			AND variant = ?
+	`, userID, variant).Scan(
 		&stats.NumGames,
 		&stats.BestScores[0].Score, // 2-player
 		&stats.BestScores[0].Modifier,
