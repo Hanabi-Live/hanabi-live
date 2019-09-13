@@ -333,15 +333,15 @@ const drawPlayStacksAndDiscardStacks = () => {
         globals.elements.playStacks.set(suit, playStack);
         globals.layers.card.add(playStack);
 
-        const thisSuitDiscardStack = new CardLayout({
+        const discardStack = new CardLayout({
             x: 0.81 * winW,
             y: (0.61 + discardStackSpacing * i) * winH,
             width: 0.17 * winW,
             height: 0.17 * winH,
             player: -1,
         });
-        globals.elements.discardStacks.set(suit, thisSuitDiscardStack);
-        globals.layers.card.add(thisSuitDiscardStack);
+        globals.elements.discardStacks.set(suit, discardStack);
+        globals.layers.card.add(discardStack);
 
         // Draw the suit name next to each suit
         // (a text description of the suit)
@@ -755,6 +755,23 @@ const drawScoreArea = () => {
     cluesNumberLabel.on('click', (event) => {
         arrows.click(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
     });
+
+    // Add an animation to signify that discarding at 8 clues is illegal
+    globals.elements.cluesNumberLabelPulse = new graphics.Tween({
+        node: cluesNumberLabel,
+        fontSize: 0.04 * winH,
+        fill: '#df1c2d',
+        offsetX: 0.001 * winH,
+        offsetY: 0.01 * winH,
+        duration: 0.5,
+        easing: graphics.Easings.EaseInOut,
+        onFinish: () => {
+            if (globals.elements.cluesNumberLabelPulse) {
+                globals.elements.cluesNumberLabelPulse.reverse();
+            }
+        },
+    });
+    globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
 
     // Draw the 3 strike (bomb) black squares / X's
     function strikeClick() {

@@ -232,34 +232,6 @@ class HanabiCard extends graphics.Group {
             return;
         }
 
-        // Comment out the tween until all of the bugs can be sorted out
-        /*
-        if (this.opacityTween) {
-            this.opacityTween.destroy();
-        }
-        if (
-            globals.animateFast
-            || this.numPositiveClues > 0
-            || this.empathy
-            || this.isPlayed
-            || this.isDiscarded
-            || !this.getLayer()
-        ) {
-            this.setOpacity(newOpacity);
-        } else if (this.tweening) {
-            // Wait until the card is finished tweening before we animate the fade
-            setTimeout(() => {
-                this.setFade();
-            }, 20);
-        } else {
-            this.opacityTween = new graphics.Tween({
-                node: this,
-                opacity: newOpacity,
-                duration: 0.5,
-            }).play();
-        }
-        */
-
         this.setOpacity(newOpacity);
     }
 

@@ -7,6 +7,7 @@
 const constants = require('../../constants');
 const globals = require('./globals');
 const graphics = require('./graphics');
+const sounds = require('../sounds');
 const ui = require('./ui');
 
 class LayoutChild extends graphics.Group {
@@ -90,8 +91,13 @@ class LayoutChild extends graphics.Group {
         let draggedTo = null;
         if (globals.elements.playArea.isOver(pos)) {
             draggedTo = 'playArea';
-        } else if (globals.elements.discardArea.isOver(pos) && globals.clues !== 8) {
-            draggedTo = 'discardArea';
+        } else if (globals.elements.discardArea.isOver(pos)) {
+            if (globals.clues === 8) {
+                sounds.play('error');
+                globals.elements.cluesNumberLabelPulse.play();
+            } else {
+                draggedTo = 'discardArea';
+            }
         }
 
         // Before we play a card,
