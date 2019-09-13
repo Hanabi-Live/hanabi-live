@@ -17,19 +17,21 @@ func signalInit() {
 	// (these are meant to be used for application-specific purposes)
 	signal.Notify(signalChannel, syscall.SIGUSR1, syscall.SIGUSR2)
 
-	go func() {
-		for {
-			signal := <-signalChannel
-			if signal == syscall.SIGUSR1 {
-				// Gracefully restart
-				graceful()
-			} else if signal == syscall.SIGUSR2 {
-				// Shutdown
-				shutdown()
-			} else if signal == syscall.SIGUSR3 {
-				// Debug
-				debug()
-			}
+	go signalListen()
+}
+
+func signalListen() {
+	for {
+		signal := <-signalChannel
+		if signal == syscall.SIGUSR1 {
+			// Gracefully restart
+			graceful(true)
+		} else if signal == syscall.SIGUSR2 {
+			// Shutdown
+			graceful(false)
+		} else if signal == syscall.SIGUSR3 {
+			// Debug
+			debug()
 		}
-	}()
+	}
 }

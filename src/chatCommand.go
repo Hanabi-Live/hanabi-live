@@ -38,7 +38,8 @@ func chatCommandInit() {
 	// Admin-only commands (from the lobby only)
 	chatCommandMap["restart"] = chatRestart
 	chatCommandMap["graceful"] = chatGraceful
-	chatCommandMap["ungraceful"] = chatUngraceful
+	chatCommandMap["shutdown"] = chatShutdown
+	chatCommandMap["cancel"] = chatCancel
 	chatCommandMap["debug"] = chatDebug
 }
 

@@ -7,30 +7,55 @@ import (
 	"time"
 )
 
-func restart() {
-	log.Info("Initiating a server restart.")
-	execute("build_client.sh", projectPath)
-	for _, s := range sessions {
-		s.Error("The server is going down for a scheduled restart. Please wait a few seconds and then refresh the page.")
+func shutdown(restart bool) {
+	var verb string
+	if restart {
+		verb = "restart"
+	} else {
+		verb = "shutdown"
 	}
-	execute("restart.sh", projectPath)
+	log.Info("Initiating a server " + verb + ".")
+
+	for _, s := range sessions {
+		if restart {
+			s.Error("The server is going down for a scheduled restart. " +
+				"Please wait a few seconds and then refresh the page.")
+		} else {
+			s.Error("The server is going down for scheduled maintenance. The server might be " +
+				"down for a while; please see the Discord server for more specific updates.")
+		}
+	}
+
+	if restart {
+		execute("build_client.sh", projectPath)
+		execute("restart.sh", projectPath)
+	} else {
+		execute("stop.sh", projectPath)
+	}
 }
 
-func graceful() {
+func graceful(restart bool) {
+	var verb string
+	if restart {
+		verb = "restart"
+	} else {
+		verb = "shutdown"
+	}
+
 	numGames := countActiveTables()
-	log.Info("Initiating a graceful server restart " +
+	log.Info("Initiating a graceful server " + verb + " " +
 		"(with " + strconv.Itoa(numGames) + " active games).")
 	if numGames == 0 {
-		restart()
+		shutdown(restart)
 	} else {
 		shuttingDown = true
-		go gracefulWait()
-		chatServerSend("The server will restart when all ongoing games have finished. "+
+		go gracefulWait(restart)
+		chatServerSend("The server will "+verb+" when all ongoing games have finished. "+
 			"New game creation has been disabled.", "lobby")
 	}
 }
 
-func gracefulWait() {
+func gracefulWait(restart bool) {
 	for {
 		if !shuttingDown {
 			log.Info("The shutdown was aborted.")
@@ -41,8 +66,12 @@ func gracefulWait() {
 			// Wait 10 seconds so that the players are not immediately booted upon finishing
 			time.Sleep(time.Second * 10)
 
-			log.Info("Restarting now.")
-			restart()
+			if restart {
+				log.Info("Restarting now.")
+			} else {
+				log.Info("Shutting down now.")
+			}
+			shutdown(restart)
 			break
 		}
 

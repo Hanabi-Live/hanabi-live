@@ -118,7 +118,7 @@ func chatRestart(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	restart()
+	shutdown(true)
 }
 
 // /graceful
@@ -133,11 +133,26 @@ func chatGraceful(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	graceful()
+	graceful(true)
 }
 
-// /ungraceful
-func chatUngraceful(s *Session, d *CommandData, t *Table) {
+// /shutdown
+func chatShutdown(s *Session, d *CommandData, t *Table) {
+	// Validate the channel
+	if d.Room != "lobby" {
+		chatServerSend("You can only perform this command in the lobby.", d.Room)
+		return
+	}
+
+	if !isAdmin(s, d) {
+		return
+	}
+
+	graceful(false)
+}
+
+// /cancel
+func chatCancel(s *Session, d *CommandData, t *Table) {
 	// Validate the channel
 	if d.Room != "lobby" {
 		chatServerSend("You can only perform this command in the lobby.", d.Room)
