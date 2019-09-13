@@ -151,6 +151,23 @@ func chatShutdown(s *Session, d *CommandData, t *Table) {
 	graceful(false)
 }
 
+// /maintenance
+func chatMaintenance(s *Session, d *CommandData, t *Table) {
+	// Validate the channel
+	if d.Room != "lobby" {
+		chatServerSend("You can only perform this command in the lobby.", d.Room)
+		return
+	}
+
+	if !isAdmin(s, d) {
+		return
+	}
+
+	shuttingDown = true
+	chatServerSend("The server is entering maintenance mode. "+
+		"New game creation has been disabled.", "lobby")
+}
+
 // /cancel
 func chatCancel(s *Session, d *CommandData, t *Table) {
 	// Validate the channel

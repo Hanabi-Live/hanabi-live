@@ -39,6 +39,7 @@ func chatCommandInit() {
 	chatCommandMap["restart"] = chatRestart
 	chatCommandMap["graceful"] = chatGraceful
 	chatCommandMap["shutdown"] = chatShutdown
+	chatCommandMap["maintenance"] = chatMaintenance
 	chatCommandMap["cancel"] = chatCancel
 	chatCommandMap["debug"] = chatDebug
 }
