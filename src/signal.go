@@ -16,7 +16,8 @@ func signalInit() {
 
 	// Catch some user defined signals
 	// (these are meant to be used for application-specific purposes)
-	signal.Notify(signalChannel, syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGUSR3)
+	// Note that there is no user defined signal 3 and beyond
+	signal.Notify(signalChannel, syscall.SIGUSR1, syscall.SIGUSR2)
 
 	for {
 		signal := <-signalChannel
@@ -24,9 +25,6 @@ func signalInit() {
 			// Gracefully restart
 			graceful(true)
 		} else if signal == syscall.SIGUSR2 {
-			// Shutdown
-			graceful(false)
-		} else if signal == syscall.SIGUSR3 {
 			// Debug
 			debug()
 		}
