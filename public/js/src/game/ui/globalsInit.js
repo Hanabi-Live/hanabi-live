@@ -61,8 +61,10 @@ module.exports = () => {
         // The main screen
         stageFade: null,
         playArea: null,
+        playStackBases: [],
         playStacks: new Map(), // Keys are Suits, values are CardStacks
         suitLabelTexts: [],
+        hole: null,
         discardArea: null,
         discardStacks: new Map(), // Keys are Suits, values are CardStacks
         playerHands: [], // Contains CardLayouts

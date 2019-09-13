@@ -1238,6 +1238,24 @@
         "spacing": true
     },
 
+    "Throw It in a Hole (6 Suits)": {
+        "id": 279,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+    },
+    "Throw It in a Hole (5 Suits)": {
+        "id": 280,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+    },
+    "Throw It in a Hole (4 Suits)": {
+        "id": 281,
+        "suits": ["Blue", "Green", "Yellow", "Red"]
+    },
+    "Throw It in a Hole (3 Suits)": {
+        "id": 282,
+        "suits": ["Blue", "Green", "Yellow"],
+        "spacing": true
+    },
+
     "Special Mix (5 Suit)": {
         "id": 159,
         "suits": ["Black", "Rainbow", "Pink", "White", "Brown"]

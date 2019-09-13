@@ -115,6 +115,12 @@ commands.deckOrder = () => {
 };
 
 commands.discard = (data) => {
+    // In "Throw It in a Hole" variants, convert misplays to real plays
+    if (globals.variant.name.startsWith('Throw It in a Hole') && data.failed && !globals.replay) {
+        commands.play(data);
+        return;
+    }
+
     // Local variables
     const card = globals.deck[data.which.order];
 
@@ -129,7 +135,7 @@ commands.discard = (data) => {
     card.removeFromParent();
     card.setFade(); // Unfade the card if it is faded
 
-    if (data.failed && !globals.animateFast && !globals.speedrun) {
+    if (card.isMisplayed && !globals.animateFast && !globals.speedrun) {
         // If this card was misplayed,
         // it will automatically tween to the discard pile after reaching the play stacks
         card.doMisplayAnimation = true;
@@ -357,6 +363,10 @@ commands.status = (data) => {
 };
 
 commands.strike = (data) => {
+    if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
+        return;
+    }
+
     // Local variables
     const i = data.num - 1;
     const strike = globals.elements.strikes[i];

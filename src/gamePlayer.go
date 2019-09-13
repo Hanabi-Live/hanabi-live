@@ -112,7 +112,7 @@ func (p *GamePlayer) GiveClue(d *CommandData, g *Game) {
 		}
 		text += " slot " + strings.Join(slots, "/")
 
-		// Also play a custom sound effect
+		// Some variants have custom sound effects
 		if strings.HasPrefix(g.Options.Variant, "Duck") {
 			g.Sound = "quack"
 		}
@@ -170,16 +170,31 @@ func (p *GamePlayer) PlayCard(g *Game, c *Card) bool {
 		c.Failed = true
 		g.Strikes++
 
-		// Mark that the blind-play streak has ended
-		g.BlindPlays = 0
+		if strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") {
+			// Pretend like this card successfully played
+			if c.Touched {
+				// Mark that the blind-play streak has ended
+				g.BlindPlays = 0
+			} else {
+				g.BlindPlays++
+				if g.BlindPlays > 4 {
+					// There is no sound effect for more than 4 blind plays in a row
+					g.BlindPlays = 4
+				}
+				g.Sound = "blind" + strconv.Itoa(g.BlindPlays)
+			}
+		} else {
+			// Mark that the blind-play streak has ended
+			g.BlindPlays = 0
 
-		// Increase the misplay streak
-		g.Misplays++
-		if g.Misplays > 2 {
-			// There is no sound effect for more than 2 misplays in a row
-			g.Misplays = 2
+			// Increase the misplay streak
+			g.Misplays++
+			if g.Misplays > 2 {
+				// There is no sound effect for more than 2 misplays in a row
+				g.Misplays = 2
+			}
+			g.Sound = "fail" + strconv.Itoa(g.Misplays)
 		}
-		g.Sound = "fail" + strconv.Itoa(g.Misplays)
 
 		// Send the "notify" message about the strike
 		g.Actions = append(g.Actions, ActionStrike{
@@ -217,7 +232,13 @@ func (p *GamePlayer) PlayCard(g *Game, c *Card) bool {
 	t.NotifyAction()
 
 	// Send the "message" about the play
-	text := p.Name + " plays " + c.Name(g) + " from "
+	text := p.Name + " plays "
+	if strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") {
+		text += "a card"
+	} else {
+		text += c.Name(g)
+	}
+	text += " from "
 	if c.Slot == -1 {
 		text += "the deck"
 	} else {
@@ -305,11 +326,21 @@ func (p *GamePlayer) DiscardCard(g *Game, c *Card) bool {
 
 	text := p.Name + " "
 	if c.Failed {
-		text += "fails to play"
+		if strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") {
+			text += "plays"
+		} else {
+			text += "fails to play"
+		}
 	} else {
 		text += "discards"
 	}
-	text += " " + c.Name(g) + " from "
+	text += " "
+	if strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") && c.Failed {
+		text += "a card"
+	} else {
+		text += c.Name(g)
+	}
+	text += " from "
 	if c.Slot == -1 {
 		text += "the deck"
 	} else {

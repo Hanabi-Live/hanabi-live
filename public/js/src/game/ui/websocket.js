@@ -137,6 +137,15 @@ commands.gameOver = () => {
     globals.elements.lobbyButtonSmall.hide();
     globals.elements.lobbyButtonBig.show();
 
+    // Turn off the "Throw It in a Hole" UI
+    globals.elements.hole.hide();
+    for (const playStackBase of globals.elements.playStackBases) {
+        playStackBase.resetX();
+    }
+    for (const [, playStack] of globals.elements.playStacks) {
+        playStack.resetX();
+    }
+
     globals.layers.UI.batchDraw();
 };
 

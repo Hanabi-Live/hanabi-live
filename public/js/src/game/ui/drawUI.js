@@ -60,23 +60,21 @@ module.exports = () => {
     // We can reuse some UI elements
     initReusableObjects();
 
-    // The middle of the screen
+    // The top-left
     drawActionLog();
     drawPlayStacksAndDiscardStacks();
-
-    // Hands are distributed throughout the screen
-    drawHands();
 
     // The bottom-left
     drawBottomLeftButtons();
     drawDeck();
-
-    // The bottom-right
     drawScoreArea();
     drawSpectators();
     drawSharedReplay();
 
-    // The right-hand column
+    // The middle column
+    drawHands();
+
+    // The right column
     drawClueLog();
     drawStatistics();
     drawDiscardArea();
@@ -269,7 +267,7 @@ const drawPlayStacksAndDiscardStacks = () => {
         cardHeight = 0.151;
         yOffset = 0.019;
         discardStackSpacing = 0.04;
-    } else { // 4 or 5 stacks
+    } else { // 3, 4, or 5 stacks
         cardWidth = 0.075;
         cardHeight = 0.189;
         yOffset = 0;
@@ -286,8 +284,16 @@ const drawPlayStacksAndDiscardStacks = () => {
     if (!globals.lobby.settings.showKeldonUI) {
         playStackValues.x = actionLogValues.x;
         playStackValues.y = actionLogValues.y + actionLogValues.h + 0.02;
-        playStackValues.spacing = 0.006;
+        if (globals.variant.suits.length > 4) {
+            playStackValues.spacing = actionLogValues.w;
+            playStackValues.spacing -= cardWidth * globals.variant.suits.length;
+            playStackValues.spacing /= globals.variant.suits.length - 1;
+        } else {
+            playStackValues.spacing = 0.006;
+        }
     }
+    playStackValues.w = cardWidth * globals.variant.suits.length;
+    playStackValues.w += playStackValues.spacing * (globals.variant.suits.length - 1);
 
     // Variants with less than 5 stacks will be left-aligned instead of centered
     // unless we manually adjust them
@@ -306,9 +312,13 @@ const drawPlayStacksAndDiscardStacks = () => {
 
     for (let i = 0; i < globals.variant.suits.length; i++) {
         const suit = globals.variant.suits[i];
-        const playStackX = playStackValues.x + (cardWidth + playStackValues.spacing) * i;
+        const normalX = playStackValues.x + (cardWidth + playStackValues.spacing) * i;
+        let playStackX = normalX;
+        if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
+            playStackX = playStackValues.x + (playStackValues.w / 2) - (cardWidth / 2);
+        }
 
-        const playStackBack = new graphics.Image({
+        const playStackBase = new graphics.Image({
             x: playStackX * winW,
             y: playStackValues.y * winH,
             width: cardWidth * winW,
@@ -316,12 +326,16 @@ const drawPlayStacksAndDiscardStacks = () => {
             image: globals.cardImages[`Card-${suit.name}-0`],
             listening: true,
         });
-        globals.layers.UI.add(playStackBack);
+        playStackBase.resetX = () => { // eslint-disable-line no-loop-func
+            playStackBase.setX(normalX * winW);
+        };
+        globals.elements.playStackBases.push(playStackBase);
+        globals.layers.UI.add(playStackBase);
 
-        playStackBack.type = 'PlayStackBack';
-        playStackBack.on('click', (event) => {
+        playStackBase.type = 'PlayStackBase';
+        playStackBase.on('click', (event) => {
             // The first stack is -1, the second stack is -2, and so forth
-            arrows.click(event, -i, playStackBack);
+            arrows.click(event, -i, playStackBase);
         });
 
         const playStack = new PlayStack({
@@ -330,6 +344,9 @@ const drawPlayStacksAndDiscardStacks = () => {
             width: cardWidth * winW,
             height: cardHeight * winH,
         });
+        playStack.resetX = () => { // eslint-disable-line no-loop-func
+            playStack.setX(normalX * winW);
+        };
         globals.elements.playStacks.set(suit, playStack);
         globals.layers.card.add(playStack);
 
@@ -397,6 +414,18 @@ const drawPlayStacksAndDiscardStacks = () => {
         && pos.x <= globals.elements.playArea.getX() + globals.elements.playArea.getWidth()
         && pos.y <= globals.elements.playArea.getY() + globals.elements.playArea.getHeight()
     );
+
+    // Make the "hole" for "Throw It in a Hole" variants
+    globals.elements.hole = new graphics.Rect({
+        x: playAreaValues.x * winW,
+        y: playAreaValues.y * winH,
+        width: playAreaValues.w * winW,
+        height: playAreaValues.h * winH,
+        fill: '#0d0d0d',
+        cornerRadius: 0.1 * winH,
+        visible: globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay,
+    });
+    globals.layers.UI2.add(globals.elements.hole);
 };
 
 const drawBottomLeftButtons = () => {
@@ -824,7 +853,7 @@ const drawScoreArea = () => {
         strike.tween = null;
         strike.setFaded = function setFaded() {
             if (this.getOpacity() === 0) {
-                this.setOpacity(this.turn === null ? 0 : 0.15);
+                this.setOpacity(this.turn === null ? 0 : 0.125);
             }
         };
 

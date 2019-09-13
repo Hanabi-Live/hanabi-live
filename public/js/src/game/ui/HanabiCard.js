@@ -529,6 +529,15 @@ class HanabiCard extends graphics.Group {
         // Local variables
         suit = convert.msgSuitToSuit(suit, globals.variant);
 
+        // Set the true suit/rank on the card
+        this.suit = suit;
+        this.rank = rank;
+
+        // Played & discarded cards are not revealed in the "Throw It in a Hole" variant
+        if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
+            return;
+        }
+
         // If the card was already fully-clued,
         // we already updated the possibilities for it on other cards
         if (
@@ -538,10 +547,6 @@ class HanabiCard extends graphics.Group {
         ) {
             this.updatePossibilitiesOnOtherCards(suit, rank);
         }
-
-        // Set the true suit/rank on the card
-        this.suit = suit;
-        this.rank = rank;
 
         // Keep track of what this card is
         const learnedCard = globals.learnedCards[this.order];

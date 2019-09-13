@@ -126,7 +126,7 @@ const getPos = (element, rot) => {
         const rotRadians = (rot / 180) * Math.PI;
         pos.x -= Math.sin(rotRadians) * distance;
         pos.y += Math.cos(rotRadians) * distance;
-    } else if (element.type === 'PlayStackBack' || element === globals.elements.deck) {
+    } else if (element.type === 'PlayStackBase' || element === globals.elements.deck) {
         pos.x += element.getWidth() / 2;
         pos.y += element.getHeight() / 3.5;
     } else if (element === globals.elements.cluesNumberLabel) {
