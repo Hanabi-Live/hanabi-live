@@ -104,7 +104,7 @@ func main() {
 	}
 
 	// Initialize catching Unix signals
-	signalInit()
+	go signalInit()
 
 	// Start the Discord bot (in "discord.go")
 	discordInit()
