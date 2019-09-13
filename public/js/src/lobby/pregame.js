@@ -207,10 +207,17 @@ exports.draw = () => {
 
         // Calculate some stats
         const variantStats = player.stats.variant;
-        const averageScore = Math.round(variantStats.averageScore * 10) / 10;
+        let averageScore = Math.round(variantStats.averageScore * 10) / 10;
         // (round it to 1 decimal place)
-        let strikeoutRate = variantStats.numStrikeouts / variantStats.numGames * 100;
-        strikeoutRate = Math.round(strikeoutRate * 10) / 10; // (round it to 1 decimal places)
+        if (averageScore === 0) {
+            averageScore = '-';
+        }
+        let strikeoutRate = '-';
+        if (variantStats.numGames > 0) {
+            strikeoutRate = variantStats.numStrikeouts / variantStats.numGames * 100;
+            strikeoutRate = Math.round(strikeoutRate * 10) / 10; // (round it to 1 decimal places)
+            strikeoutRate += '%';
+        }
 
         html += `
             <div class="row">
@@ -242,7 +249,7 @@ exports.draw = () => {
                     Strikeout rate:
                 </div>
                 <div class="col-2 align-right padding0">
-                    ${strikeoutRate}%
+                    ${strikeoutRate}
                 </div>
             </div>
         `;
