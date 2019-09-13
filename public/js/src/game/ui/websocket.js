@@ -404,6 +404,14 @@ commands.notifyList = (dataList) => {
         replay.goto(0, true);
     }
 
+    // Check to see if we are loading a replay to a specific turn
+    // (specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
+    const match = window.location.pathname.match(/\/replay\/\d+\/(\d+)/);
+    if (match) {
+        const turn = parseInt(match[1], 10) - 1;
+        replay.goto(turn, true);
+    }
+
     ui.checkFadeInAllHands();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();

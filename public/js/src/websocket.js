@@ -127,7 +127,7 @@ const initCommands = () => {
 
             // Automatically go into a replay if surfing to "/replay/123"
             let gameID = null;
-            const match = window.location.pathname.match(/\/replay\/(\d+)$/);
+            const match = window.location.pathname.match(/\/replay\/(\d+)/);
             if (match) {
                 gameID = match[1];
             } else if (window.location.pathname === '/dev2') {
