@@ -1,7 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"math"
 	"math/rand"
 	"regexp"
 	"strings"
@@ -68,4 +70,75 @@ func toSnakeCase(str string) string {
 	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
+}
+
+func getGametimeString(timeString sql.NullString) (string, error) {
+	if !timeString.Valid {
+		return "", nil
+	}
+
+	// The s is for seconds
+	var playtime time.Duration
+	if v, err := time.ParseDuration(timeString.String + "s"); err != nil {
+		return "", err
+	} else {
+		playtime = v
+	}
+
+	// Display only seconds for users that have played less than a minute
+	if playtime.Minutes() < 1 {
+		seconds := math.Round(playtime.Seconds())
+		msg := fmt.Sprintf("%.0f second", seconds)
+		if int(seconds) != 1 {
+			msg += "s"
+		}
+		return msg, nil
+	}
+
+	// Display only minutes for users that played less than an hour
+	if playtime.Hours() < 1 {
+		minutes := math.Round(playtime.Minutes())
+		msg := fmt.Sprintf("%.0f minute", minutes)
+		if int(minutes) != 1 {
+			msg += "s"
+		}
+		return msg, nil
+	}
+
+	// Convert the duration into days, hours, and minutes
+	hours := int(playtime.Hours())
+	minutes := int(playtime.Minutes())
+	minutes -= hours * 60
+	days := 0
+	for hours > 24 {
+		days++
+		hours -= 24
+	}
+
+	daysStr := "day"
+	if days != 1 {
+		daysStr += "s"
+	}
+
+	hoursStr := "hour"
+	if hours != 1 {
+		hoursStr += "s"
+	}
+
+	minutesStr := "minute"
+	if minutes != 1 {
+		minutesStr += "s"
+	}
+
+	// Display days only for users that played over a day
+	var msg string
+	if days >= 1 {
+		msg = "%d %s, %d %s, and %d %s"
+		msg = fmt.Sprintf(msg, days, daysStr, hours, hoursStr, minutes, minutesStr)
+	} else {
+		msg = "%d %s and %d %s"
+		msg = fmt.Sprintf(msg, hours, hoursStr, minutes, minutesStr)
+	}
+
+	return msg, nil
 }

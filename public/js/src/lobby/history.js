@@ -82,24 +82,24 @@ exports.draw = () => {
         // Column 4 - Variant
         $('<td>').html(gameData.variant).appendTo(row);
 
-        // Column 5 - Time Completed
+        // Column 5 - Other Players
+        $('<td>').html(gameData.otherPlayerNames).appendTo(row);
+
+        // Column 6 - Date Completed
         const timeCompleted = dateTimeFormatter.format(new Date(gameData.datetime));
         $('<td>').html(timeCompleted).appendTo(row);
 
-        // Column 6 - Watch Replay
+        // Column 7 - Watch Replay
         const watchReplayButton = makeReplayButton(ids[i], 'solo');
         $('<td>').html(watchReplayButton).appendTo(row);
 
-        // Column 7 - Share Replay
+        // Column 8 - Share Replay
         const shareReplayButton = makeReplayButton(ids[i], 'shared');
         $('<td>').html(shareReplayButton).appendTo(row);
 
-        // Column 8 - Other Scores
+        // Column 9 - Other Scores
         const otherScoresButton = makeHistoryDetailsButton(ids[i], gameData.numSimilar);
         $('<td>').html(otherScoresButton).appendTo(row);
-
-        // Column 9 - Other Players
-        $('<td>').html(gameData.otherPlayerNames).appendTo(row);
 
         row.appendTo(tbody);
     }
@@ -221,27 +221,27 @@ exports.drawDetails = () => {
         }
         $('<td>').html(score).appendTo(row);
 
-        // Column 3 - Time Completed
+        // Column 3 - Players
+        let otherPlayers = gameData.otherPlayerNames;
+        if (gameData.you) {
+            otherPlayers = `<strong>${globals.username}, ${otherPlayers}</strong>`;
+        }
+        $('<td>').html(otherPlayers).appendTo(row);
+
+        // Column 4 - Date Completed
         let dateTime = dateTimeFormatter.format(new Date(gameData.datetime));
         if (gameData.you) {
             dateTime = `<strong>${dateTime}</strong>`;
         }
         $('<td>').html(dateTime).appendTo(row);
 
-        // Column 4 - Watch Replay
+        // Column 5 - Watch Replay
         const watchReplayButton = makeReplayButton(gameData.id, 'solo');
         $('<td>').html(watchReplayButton).appendTo(row);
 
-        // Column 5 - Share Replay
+        // Column 6 - Share Replay
         const shareReplayButton = makeReplayButton(gameData.id, 'shared');
         $('<td>').html(shareReplayButton).appendTo(row);
-
-        // Column 6 - Other Players
-        let otherPlayers = gameData.otherPlayerNames;
-        if (gameData.you) {
-            otherPlayers = `<strong>${globals.username}, ${otherPlayers}</strong>`;
-        }
-        $('<td>').html(otherPlayers).appendTo(row);
 
         row.appendTo(tbody);
     }

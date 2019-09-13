@@ -11,3 +11,11 @@ func httpMain(c *gin.Context) {
 	}
 	httpServeTemplate(w, data, "main")
 }
+
+func httpDev(c *gin.Context) {
+	w := c.Writer
+	data := TemplateData{
+		Title: "Dev",
+	}
+	httpServeTemplate(w, data, "main")
+}

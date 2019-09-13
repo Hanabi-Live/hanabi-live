@@ -98,18 +98,20 @@ func httpInit() {
 	httpRouter.GET("/", httpMain)
 	httpRouter.GET("/replay", httpMain)
 	httpRouter.GET("/replay/:gameID", httpMain)
-	// (JavaScript will detect the difference by using "window.location.path")
 	httpRouter.GET("/dev", httpDev) // The same as "/" but uses unbundled JavaScript/CSS
 	httpRouter.GET("/dev/replay", httpDev)
 	httpRouter.GET("/dev/replay/:gameID", httpDev)
 	httpRouter.GET("/dev2", httpDev) // Used for testing Phaser
-	// (JavaScript will detect the difference by using "window.location.path")
+	// (JavaScript will detect the difference between "/dev" and "/dev2"
+	// by using "window.location.path")
 	httpRouter.GET("/scores", httpScores)
 	httpRouter.GET("/scores/:player", httpScores)
 	httpRouter.GET("/history", httpHistory)
 	httpRouter.GET("/history/:player", httpHistory)
 	httpRouter.GET("/missing-scores", httpScores)
 	httpRouter.GET("/missing-scores/:player", httpScores)
+	httpRouter.GET("/stats", httpStats)
+	httpRouter.GET("/variant/:id", httpVariant)
 	httpRouter.GET("/videos", httpVideos)
 	httpRouter.GET("/export", httpExport)
 	httpRouter.GET("/export/:game", httpExport)

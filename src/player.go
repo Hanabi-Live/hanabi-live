@@ -11,5 +11,9 @@ type Player struct {
 	Name    string
 	Session *Session
 	Present bool
-	Stats   models.Stats
+	Stats   Stats
+}
+type Stats struct {
+	NumGames int                 `json:"numGames"`
+	Variant  models.UserStatsRow `json:"variant"`
 }

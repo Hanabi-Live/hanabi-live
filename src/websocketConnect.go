@@ -54,7 +54,7 @@ func websocketConnect(ms *melody.Session) {
 
 	// Get their total number of games played
 	var totalGames int
-	if v, err := db.Games.GetUserNumGames(s.UserID()); err != nil {
+	if v, err := db.Games.GetUserNumGames(s.UserID(), true); err != nil {
 		log.Error("Failed to get the number of games played for user \""+s.Username()+"\":", err)
 		return
 	} else {

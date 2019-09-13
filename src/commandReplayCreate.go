@@ -94,6 +94,13 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 		options = v
 	}
 
+	// Validate that the variant exists
+	if _, ok := variantsID[options.Variant]; !ok {
+		log.Error("Failed to find a definition for variant " + strconv.Itoa(options.Variant) + ".")
+		s.Error("Failed to initialize the game. Please contact an administrator.")
+		return false
+	}
+
 	// Store them on the table
 	t.Options = &Options{
 		Variant:              variantsID[options.Variant],

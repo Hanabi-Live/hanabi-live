@@ -34,7 +34,7 @@ func httpHistory(c *gin.Context) {
 	} else if exists {
 		user = v
 	} else {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		http.Error(w, "Error: That player does not exist in the database.", http.StatusNotFound)
 		return
 	}
 

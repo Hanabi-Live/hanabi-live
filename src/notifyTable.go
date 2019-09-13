@@ -2,8 +2,6 @@ package main
 
 import (
 	"strings"
-
-	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 /*
@@ -25,11 +23,11 @@ func (t *Table) NotifyPlayerChange() {
 
 		// First, make the array that contains information about all of the players in the game
 		type GamePlayerMessage struct {
-			Index   int          `json:"index"`
-			Name    string       `json:"name"`
-			You     bool         `json:"you"`
-			Present bool         `json:"present"`
-			Stats   models.Stats `json:"stats"`
+			Index   int    `json:"index"`
+			Name    string `json:"name"`
+			You     bool   `json:"you"`
+			Present bool   `json:"present"`
+			Stats   Stats  `json:"stats"`
 		}
 		gamePlayers := make([]*GamePlayerMessage, 0)
 		for j, p2 := range t.Players {

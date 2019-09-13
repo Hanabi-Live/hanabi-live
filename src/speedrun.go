@@ -19,12 +19,12 @@ var (
 func speedrunInit() {
 	for _, variant := range officialSpeedrunVariants {
 		fastestTimes[variant] = make([]int, 6)
-		perfectScore := 5 * len(variants[variant].Suits) // Assuming 5 points per stack
+		maxScore := 5 * len(variants[variant].Suits) // Assuming 5 points per stack
 		for numPlayers := 2; numPlayers <= 5; numPlayers++ {
 			if v, err := db.Games.GetFastestTime(
 				variants[variant].ID,
 				numPlayers,
-				perfectScore,
+				maxScore,
 			); err == sql.ErrNoRows {
 				fastestTimes[variant][numPlayers] = 60 * 60 // Default to 1 hour
 			} else if err != nil {

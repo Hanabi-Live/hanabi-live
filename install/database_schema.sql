@@ -2,8 +2,6 @@
     Setting up the database is accomplished in the "install_database_schema.sh" script
 */
 
-USE hanabi;
-
 /*
     We have to disable foreign key checks so that we can drop the tables;
     this will only disable it for the current session
@@ -54,13 +52,13 @@ CREATE TABLE user_settings (
 );
 CREATE INDEX user_settings_index_user_id ON user_settings (user_id);
 
-DROP TABLE IF EXISTS user_stats;
+DROP TABLE IF EXISTS user_stats; /* Stats are per variant */
 CREATE TABLE user_stats (
     id               INT  NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
     user_id          INT    NOT NULL,
     variant          INT    NOT NULL, /* Equal to the variant ID (found in "variants.go") */
-    num_played       INT    NOT NULL  DEFAULT 0,
+    num_games        INT    NOT NULL  DEFAULT 0,
     best_score2      INT    NOT NULL  DEFAULT 0, /* Their best score for 2-player games on this variant */
     best_score2_mod  INT    NOT NULL  DEFAULT 0, /* This stores if they used additional options to make the game easier */
     best_score3      INT    NOT NULL  DEFAULT 0,
@@ -72,7 +70,7 @@ CREATE TABLE user_stats (
     best_score6      INT    NOT NULL  DEFAULT 0,
     best_score6_mod  INT    NOT NULL  DEFAULT 0,
     average_score    FLOAT  NOT NULL  DEFAULT 0,
-    strikeout_rate   FLOAT  NOT NULL  DEFAULT 0,
+    num_strikeouts   FLOAT  NOT NULL  DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     /* If the user is deleted, automatically delete all of the rows */
 );
@@ -80,7 +78,7 @@ CREATE INDEX user_stats_index_user_id ON user_stats (user_id);
 
 DROP TABLE IF EXISTS games;
 CREATE TABLE games (
-    id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    id                     INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
     name                   NVARCHAR(50)  NOT NULL,
     num_players            TINYINT       NOT NULL,
@@ -108,7 +106,7 @@ CREATE INDEX games_index_seed ON games (seed);
 
 DROP TABLE IF EXISTS game_participants;
 CREATE TABLE game_participants (
-    id       INT              NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    id                    INT              NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
     user_id               INT              NOT NULL,
     game_id               INT              NOT NULL,
@@ -161,6 +159,23 @@ CREATE TABLE game_plays ( /* This include both playing a card and discarding a c
     /* If the game is deleted, automatically delete all of the rows */
 );
 CREATE INDEX game_plays_index_game_id ON game_plays (game_id);
+
+DROP TABLE IF EXISTS variant_stats;
+CREATE TABLE variant_stats (
+    id                  INT    NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    /* PRIMARY KEY automatically creates a UNIQUE constraint */
+    variant             INT    NOT NULL, /* Equal to the variant ID (found in "variants.go") */
+    num_games           INT    NOT NULL  DEFAULT 0,
+    best_score2         INT    NOT NULL  DEFAULT 0, /* The overall best score for a 2-player games on this variant */
+    best_score3         INT    NOT NULL  DEFAULT 0,
+    best_score4         INT    NOT NULL  DEFAULT 0,
+    best_score5         INT    NOT NULL  DEFAULT 0,
+    best_score6         INT    NOT NULL  DEFAULT 0,
+    num_max_scores      INT    NOT NULL  DEFAULT 0,
+    average_score       FLOAT  NOT NULL  DEFAULT 0,
+    num_strikeouts      INT    NOT NULL  DEFAULT 0
+);
+CREATE INDEX variant_stats_index_variant ON variant_stats (variant);
 
 DROP TABLE IF EXISTS chat_log;
 CREATE TABLE chat_log (

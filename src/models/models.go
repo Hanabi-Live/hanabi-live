@@ -27,6 +27,7 @@ type Models struct {
 	Users
 	UserSettings
 	UserStats
+	VariantStats
 }
 
 // Init opens a database connection based on the credentials in the ".env" file

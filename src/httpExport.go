@@ -35,7 +35,7 @@ func httpExport(c *gin.Context) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else if !exists {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		http.Error(w, "Error: That game does not exist in the database.", http.StatusNotFound)
 		return
 	}
 

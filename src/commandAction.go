@@ -314,8 +314,6 @@ func commandAction(s *Session, d *CommandData) {
 	// If a player has just taken their final turn,
 	// mark all of the cards in their hand as not able to be played
 	if g.EndTurn != -1 && g.EndTurn != g.Turn+len(g.Players)+1 {
-		log.Info(t.GetName() + "Player \"" + p.Name + "\" just took their final turn; " +
-			"marking the rest of the cards in their hand as not playable.")
 		for _, c := range p.Hand {
 			c.CannotBePlayed = true
 		}
@@ -365,7 +363,7 @@ func commandAction(s *Session, d *CommandData) {
 	if g.EndCondition == endConditionInProgress {
 		log.Info(t.GetName() + " It is now " + np.Name + "'s turn.")
 	} else if g.EndCondition == endConditionNormal {
-		if g.Score == g.GetPerfectScore() {
+		if g.Score == variants[g.Options.Variant].MaxScore {
 			g.Sound = "finished_perfect"
 		} else {
 			// The players did got get a perfect score, but they did not strike out either

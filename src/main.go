@@ -1,5 +1,7 @@
 package main // In Go, executable commands must always use package main
 
+// This file contains the entry point for the Hanabi server software
+
 import (
 	"io/ioutil"
 	"os"
@@ -67,6 +69,22 @@ func main() {
 	}
 	defer db.Close()
 
+	// Validate that the database exists
+	if err := db.DiscordMetadata.TestDatabase(); err != nil {
+		if strings.Contains(err.Error(), "Unknown database") {
+			dbName := os.Getenv("DB_NAME")
+			log.Fatal("The \"" + dbName + "\" database does not exist. " +
+				"Please follow the instructions located in the \"docs/INSTALL.md\" file " +
+				"in order to set up the database.")
+			return
+		}
+
+		log.Error("Failed to run the database test query:", err)
+		log.Fatal("Try re-running the \"install/install_database_schema.sh\" script " +
+			"in order to re-initialize the database.")
+		return
+	}
+
 	// Initialize the variants
 	colorsInit()
 	suitsInit()
@@ -94,8 +112,7 @@ func main() {
 	// Get the people on the waiting list from the database
 	waitingListInit()
 
-	// Initialize a WebSocket router using the Melody framework
-	// (in "websocket.go")
+	// Initialize a WebSocket router using the Melody framework (in "websocket.go")
 	websocketInit()
 
 	// Initialize chat commands

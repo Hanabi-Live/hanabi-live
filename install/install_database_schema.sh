@@ -7,4 +7,4 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Import the database username and password
 source "$DIR/../.env"
 
-mysql -u"$DB_USER" -p"$DB_PASS" < "$DIR/database_schema.sql"
+mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$DIR/database_schema.sql"

@@ -69,7 +69,7 @@ func (g *Game) End() {
 				text = "You were slower than the world record by " +
 					strconv.Itoa(diff) + " seconds."
 			}
-		} else if seconds < fastestTime && g.Score == g.GetPerfectScore() {
+		} else if seconds < fastestTime && g.Score == variants[g.Options.Variant].MaxScore {
 			// Update the new fastest time
 			fastestTimes[g.Options.Variant][len(g.Players)] = seconds
 
@@ -267,10 +267,10 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 
-	// Update the stats for each player
+	// Update the variant-specific stats for each player
 	for _, p := range t.Players {
 		// Get their current best scores
-		var stats models.Stats
+		var stats models.UserStatsRow
 		if v, err := db.UserStats.Get(p.ID, variants[g.Options.Variant].ID); err != nil {
 			log.Error("Failed to get the stats for user "+p.Name+":", err)
 			return err
@@ -309,7 +309,39 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 
-	log.Info("Finished database actions for the end of the game.")
+	// Get the current stats for this variant
+	var stats models.VariantStatsRow
+	if v, err := db.VariantStats.Get(variants[g.Options.Variant].ID); err != nil {
+		log.Error("Failed to get the stats for variant "+
+			strconv.Itoa(variants[g.Options.Variant].ID)+":", err)
+		return err
+	} else {
+		stats = v
+	}
+
+	// If the game was played with no modifiers, update the stats
+	if !g.Options.DeckPlays && !g.Options.EmptyClues {
+		// 2-player is at index 0, 3-player is at index 1, etc.
+		bestScore := stats.BestScores[len(g.Players)-2]
+		if g.Score > bestScore.Score {
+			bestScore.Score = g.Score
+		}
+	}
+
+	// Write the updated stats to the database
+	// (even if the game was played with modifiers,
+	// we still need to update the number of games played)
+	if err := db.VariantStats.Update(
+		variants[g.Options.Variant].ID,
+		variants[g.Options.Variant].MaxScore,
+		stats,
+	); err != nil {
+		log.Error("Failed to update the stats for variant "+
+			strconv.Itoa(variants[g.Options.Variant].ID)+":", err)
+		return err
+	}
+
+	log.Info("Finished database actions for game " + strconv.Itoa(t.ID) + ".")
 	return nil
 }
 
@@ -347,7 +379,7 @@ func (g *Game) AnnounceGameResult() {
 		msg += ". "
 	} else {
 		msg += " with a score of " + strconv.Itoa(g.Score) + ". "
-		if g.Score == g.GetPerfectScore() {
+		if g.Score == variants[g.Options.Variant].MaxScore {
 			msg += pogChamp + " "
 		} else if g.Score == 0 {
 			msg += bibleThump + " "

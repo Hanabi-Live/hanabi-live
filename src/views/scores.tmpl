@@ -1,37 +1,31 @@
 {{define "profile"}}
 <ul>
-    <style>
-        .stat-description {
-            display: inline-block;
-            width: 19em;
-        }
-    </style>
     <li>
-        <span class="stat-description">Total games played:</span>
+        <span class="stat-description">Total games played (in non-speedruns):</span>
         {{.NumGames}}
+    </li>
+    <li>
+        <span class="stat-description">Total time spent playing (in non-speedruns):</span>
+        {{if .TimePlayed}}{{.TimePlayed}}{{else}}-{{end}}
+    </li>
+    <li>
+        <span class="stat-description">Total games played (in speedruns):</span>
+        {{.NumGamesSpeedrun}}
+    </li>
+    <li>
+        <span class="stat-description">Total time spent playing (in speedruns):</span>
+        {{if .TimePlayedSpeedrun}}{{.TimePlayedSpeedrun}}{{else}}-{{end}}
     </li>
     <li>
         <span class="stat-description">Total max scores:</span>
         {{.NumMaxScores}} / {{.TotalMaxScores}}
     </li>
-    {{if .TimePlayed}}
-        <li>
-            <span class="stat-description">Total time spent playing (in non-speedruns):</span>
-            {{.TimePlayed}}
-        </li>
-    {{end}}
-    {{if .TimeRaced}}
-        <li>
-            <span class="stat-description">Total time spent playing (in speedruns):</span>
-            {{.TimeRaced}}
-        </li>
-    {{end}}
 </ul>
 
+{{if gt .NumGames 0}}
 <table>
     <thead>
         <tr>
-            <th>ID</th>
             <th>Variant</th>
             <th>Total Games</th>
             <th>2-Player Best Score</th>
@@ -45,9 +39,9 @@
     </thead>
     <tbody>
         {{range $index, $results := .VariantStats}}
+            {{if gt .NumGames 0}}
             <tr>
-                <td>{{.ID}}</td>
-                <td>{{.Name}}</td>
+                <td><a href="/variant/{{.ID}}">{{.Name}}</a></td>
                 <td>{{.NumGames}}</td>
                 {{range $index2, $results2 := .BestScores}}
                     <td>
@@ -67,10 +61,13 @@
                         {{end}}
                     </td>
                 {{end}}
-                <td>{{.AverageScore}}</td>
-                <td>{{.StrikeoutRate}}</td>
+                <td>{{if ne .AverageScore "0"}}{{.AverageScore}}{{else}}-{{end}}</td>
+                <td>{{.StrikeoutRate}}{{if ne .StrikeoutRate "-"}}%{{end}}</td>
             </tr>
+            {{- end -}}
         {{- end -}}
     </tbody>
 </table>
+{{end}}
+
 {{end}}

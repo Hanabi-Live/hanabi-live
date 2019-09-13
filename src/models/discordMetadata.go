@@ -35,3 +35,13 @@ func (*DiscordMetadata) Put(name string, value string) error {
 	_, err := stmt.Exec(value, name)
 	return err
 }
+
+func (*DiscordMetadata) TestDatabase() error {
+	var id string
+	err := db.QueryRow(`
+		SELECT id
+		FROM discord_metadata
+		LIMIT 1
+	`).Scan(&id)
+	return err
+}

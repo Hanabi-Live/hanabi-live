@@ -1191,12 +1191,12 @@
         "showSuitNames": true
     },
     "Up or Down & Null (6 Suits)": {
-        "id": 279,
+        "id": 61,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Null"],
         "showSuitNames": true
     },
     "Up or Down & Null (5 Suits)": {
-        "id": 280,
+        "id": 44,
         "suits": ["Blue", "Green", "Yellow", "Red", "Null"],
         "showSuitNames": true,
         "spacing": true

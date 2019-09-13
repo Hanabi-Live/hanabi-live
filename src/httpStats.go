@@ -9,10 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ProfileData struct {
+type StatsData struct {
 	Title  string
 	Header bool
-	Name   string
 
 	NumGames              int
 	TimePlayed            string
@@ -20,77 +19,58 @@ type ProfileData struct {
 	TimePlayedSpeedrun    string
 	NumMaxScores          int
 	TotalMaxScores        int
-	NumMaxScoresPerType   []int // Used on the "Missing Scores" page
+	NumMaxScoresPerType   []int
 	TotalMaxScoresPerType int
 
-	VariantStats []UserVariantStats
+	Variants []VariantStats
 }
 
-type UserVariantStats struct {
+type VariantStats struct {
 	ID            int
 	Name          string
 	NumGames      int
-	MaxScore      int
 	BestScores    []*models.BestScore
+	NumMaxScores  int
+	MaxScoreRate  string
 	AverageScore  string
 	NumStrikeouts int
 	StrikeoutRate string
 }
 
-func httpScores(c *gin.Context) {
+func httpStats(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	// Parse the player name from the URL
-	player := c.Param("player")
-	if player == "" {
-		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
-		return
-	}
-
-	// Check if the player exists
-	var user models.User
-	if exists, v, err := db.Users.Get(player); err != nil {
-		log.Error("Failed to check to see if player \""+player+"\" exists:", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	} else if exists {
-		user = v
-	} else {
-		http.Error(w, "Error: That player does not exist in the database.", http.StatusNotFound)
-		return
-	}
-
-	// Get basic stats for this player
-	var profileStats models.Stats
-	if v, err := db.Games.GetProfileStats(user.ID); err != nil {
-		log.Error("Failed to get the profile stats player "+"\""+user.Username+"\":", err)
+	// Get some global statistics
+	var globalStats models.Stats
+	if v, err := db.Games.GetGlobalStats(); err != nil {
+		log.Error("Failed to get the global stats:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
-		profileStats = v
+		globalStats = v
 	}
 	var timePlayed string
-	if v, err := getGametimeString(profileStats.TimePlayed); err != nil {
-		log.Error("Failed to parse the playtime string for player \""+user.Username+"\":", err)
+	if v, err := getGametimeString(globalStats.TimePlayed); err != nil {
+		log.Error("Failed to parse the playtime string:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
 		timePlayed = v
 	}
 	var timePlayedSpeedrun string
-	if v, err := getGametimeString(profileStats.TimePlayedSpeedrun); err != nil {
-		log.Error("Failed to parse the speedrun playtime string for player \""+user.Username+"\":", err)
+	if v, err := getGametimeString(globalStats.TimePlayedSpeedrun); err != nil {
+		log.Error("Failed to parse the speedrun playtime string:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
 		timePlayedSpeedrun = v
 	}
 
-	// Get all of the variant-specific stats for this player
-	var statsMap map[int]models.UserStatsRow
-	if v, err := db.UserStats.GetAll(user.ID); err != nil {
-		log.Error("Failed to get all of the variant-specific stats for player \""+user.Username+"\":", err)
+	// Get the stats for all variants
+	var statsMap map[int]models.VariantStatsRow
+	if v, err := db.VariantStats.GetAll(variantsID); err != nil {
+		log.Error("Failed to get the stats for all the variants:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -101,18 +81,17 @@ func httpScores(c *gin.Context) {
 	// filling in any non-played variants with 0 values
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
-	variantStatsList := make([]UserVariantStats, 0)
+	variantStatsList := make([]VariantStats, 0)
 	for _, name := range variantsList {
 		variant := variants[name]
 		maxScore := 5 * len(variant.Suits)
-		variantStats := UserVariantStats{
-			ID:       variant.ID,
-			Name:     name,
-			MaxScore: maxScore,
+		variantStats := VariantStats{
+			ID:   variant.ID,
+			Name: name,
 		}
 
 		if stats, ok := statsMap[variant.ID]; ok {
-			// They have played at least one game in this particular variant
+			// Someone has played at least one game in this particular variant
 			for j, bestScore := range stats.BestScores {
 				if bestScore.Score == maxScore {
 					numMaxScores++
@@ -122,6 +101,7 @@ func httpScores(c *gin.Context) {
 
 			variantStats.NumGames = stats.NumGames
 			variantStats.BestScores = stats.BestScores
+			variantStats.NumMaxScores = stats.NumMaxScores
 			variantStats.NumStrikeouts = stats.NumStrikeouts
 
 			// Round the average score to 1 decimal place
@@ -132,18 +112,20 @@ func httpScores(c *gin.Context) {
 
 			if stats.NumGames > 0 {
 				strikeoutRate := float64(stats.NumStrikeouts) / float64(stats.NumGames) * 100
+				maxScoreRate := float64(stats.NumMaxScores) / float64(stats.NumGames) * 100
 
-				// Round the strikeout rate to 1 decimal place
+				// Round them to 1 decimal place
 				variantStats.StrikeoutRate = fmt.Sprintf("%.1f", strikeoutRate)
+				variantStats.MaxScoreRate = fmt.Sprintf("%.1f", maxScoreRate)
 
 				// If it ends in ".0", remove the unnecessary digits
 				variantStats.StrikeoutRate = strings.TrimSuffix(variantStats.StrikeoutRate, ".0")
+				variantStats.MaxScoreRate = strings.TrimSuffix(variantStats.MaxScoreRate, ".0")
 			}
 		} else {
-			// They have not played any games in this particular variant,
+			// There have been no games played in this particular variant,
 			// so initialize the best scores object with zero values
-
-			// The following is copied from the "NewUserStatsRow()" function
+			// The following is copied from the "NewVariantStatsRow()" function
 			variantStats.BestScores = make([]*models.BestScore, 5) // From 2 to 6 players
 			for i := range variantStats.BestScores {
 				// This will not work if written as "for i, bestScore :="
@@ -158,26 +140,20 @@ func httpScores(c *gin.Context) {
 		variantStatsList = append(variantStatsList, variantStats)
 	}
 
-	data := ProfileData{
-		Title: "Scores",
-		Name:  user.Username,
+	data := StatsData{
+		Title: "Stats",
 
-		NumGames:              profileStats.NumGames,
+		NumGames:              globalStats.NumGames,
 		TimePlayed:            timePlayed,
-		NumGamesSpeedrun:      profileStats.NumGamesSpeedrun,
+		NumGamesSpeedrun:      globalStats.NumGamesSpeedrun,
 		TimePlayedSpeedrun:    timePlayedSpeedrun,
 		NumMaxScores:          numMaxScores,
 		TotalMaxScores:        len(variantsList) * 5, // For 2 to 6 players
 		NumMaxScoresPerType:   numMaxScoresPerType,
 		TotalMaxScoresPerType: len(variantsList),
 
-		VariantStats: variantStatsList,
+		Variants: variantStatsList,
 	}
 
-	if strings.HasPrefix(c.Request.URL.Path, "/missing-scores/") {
-		data.Title = "Missing Scores"
-		httpServeTemplate(w, data, "profile", "missingScores")
-	} else {
-		httpServeTemplate(w, data, "profile", "scores")
-	}
+	httpServeTemplate(w, data, "stats")
 }

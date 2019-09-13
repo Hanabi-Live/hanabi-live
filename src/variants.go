@@ -135,6 +135,7 @@ type Variant struct {
 	Ranks      []int
 	ClueColors []string
 	ClueRanks  []int
+	MaxScore   int
 }
 
 func variantsInit() {
@@ -243,6 +244,7 @@ func variantsInit() {
 			Ranks:      variantRanks,
 			ClueColors: clueColors,
 			ClueRanks:  clueRanks,
+			MaxScore:   len(variantSuits) * 5, // Assuming that there are 5 points per stack
 		}
 
 		// Create a reverse mapping of ID to name

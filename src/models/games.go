@@ -138,11 +138,11 @@ type GameHistory struct {
 	Score            int
 	VariantNum       int
 	Variant          string
+	OtherPlayerNames string
+	You              bool
 	DatetimeFinished time.Time
 	Seed             string
 	NumSimilar       int
-	OtherPlayerNames string
-	You              bool
 }
 
 func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*GameHistory, error) {
@@ -168,7 +168,7 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 				ORDER BY game_participants.id
 			) AS otherPlayerNames
 		FROM games
-			JOIN game_participants ON game_participants.game_id = games.id
+			JOIN game_participants ON games.id = game_participants.game_id
 		WHERE game_participants.user_id = ?
 		ORDER BY games.id DESC
 	`
@@ -205,20 +205,69 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 	return games, nil
 }
 
-func (*Games) GetUserNumGames(userID int) (int, error) {
-	var count int
-	if err := db.QueryRow(`
-		SELECT COUNT(id)
-		FROM game_participants
-		WHERE user_id = ?
-	`, userID).Scan(&count); err != nil {
-		return 0, err
+func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error) {
+	var rows *sql.Rows
+	if v, err := db.Query(`
+		SELECT
+			id AS id_original,
+			num_players,
+			score,
+			variant,
+			(
+				SELECT GROUP_CONCAT(users.username SEPARATOR ', ')
+				FROM game_participants
+					JOIN users ON users.id = game_participants.user_id
+				WHERE game_participants.game_id = id_original
+				ORDER BY game_participants.id
+			) AS playerNames,
+			datetime_finished
+		FROM games
+		WHERE variant = ?
+		ORDER BY games.id DESC
+		LIMIT ?
+	`, variant, amount); err != nil {
+		return nil, err
+	} else {
+		rows = v
+	}
+	defer rows.Close()
+
+	games := make([]*GameHistory, 0)
+	for rows.Next() {
+		var game GameHistory
+		if err := rows.Scan(
+			&game.ID,
+			&game.NumPlayers,
+			&game.Score,
+			&game.VariantNum,
+			&game.OtherPlayerNames,
+			&game.DatetimeFinished,
+		); err != nil {
+			return nil, err
+		}
+		games = append(games, &game)
 	}
 
+	return games, nil
+}
+
+func (*Games) GetUserNumGames(userID int, includeSpeedrun bool) (int, error) {
+	SQLString := `
+		SELECT COUNT(games.id)
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE game_participants.user_id = ?
+	`
+	if !includeSpeedrun {
+		SQLString += "AND games.speedrun = 0"
+	}
+	var count int
+	if err := db.QueryRow(SQLString, userID).Scan(&count); err != nil {
+		return 0, err
+	}
 	return count, nil
 }
 
-// GetNumSimilar is used in the "endGame" function
 func (*Games) GetNumSimilar(seed string) (int, error) {
 	var count int
 	if err := db.QueryRow(`
@@ -383,7 +432,6 @@ type Player struct {
 	CharacterMetadata   int
 }
 
-// GetPlayers is used in the "hello" and the "commandSharedReplayCreate" commands
 func (*Games) GetPlayers(databaseID int) ([]*Player, error) {
 	var rows *sql.Rows
 	if v, err := db.Query(`
@@ -428,7 +476,6 @@ type NoteList struct {
 	Notes []string `json:"notes"`
 }
 
-// GetNotes is used in the "ready" command
 func (*Games) GetNotes(databaseID int) ([]NoteList, error) {
 	var rows *sql.Rows
 	if v, err := db.Query(`
@@ -437,7 +484,7 @@ func (*Games) GetNotes(databaseID int) ([]NoteList, error) {
 			users.username AS name,
 			game_participants.notes AS notes
 		FROM games
-			JOIN game_participants ON game_participants.game_id = games.id
+			JOIN game_participants ON games.id = game_participants.game_id
 			JOIN users ON users.id = game_participants.user_id
 		WHERE games.id = ?
 		ORDER BY game_participants.id
@@ -475,7 +522,7 @@ func (*Games) GetNotes(databaseID int) ([]NoteList, error) {
 	return notes, nil
 }
 
-func (*Games) GetFastestTime(variant int, numPlayers int, perfectScore int) (int, error) {
+func (*Games) GetFastestTime(variant int, numPlayers int, maxScore int) (int, error) {
 	var seconds int
 	err := db.QueryRow(`
 		SELECT TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished) AS datetime_elapsed
@@ -485,6 +532,107 @@ func (*Games) GetFastestTime(variant int, numPlayers int, perfectScore int) (int
 			AND score = ?
 		ORDER BY datetime_elapsed
 		LIMIT 1
-	`, variant, numPlayers, perfectScore).Scan(&seconds)
+	`, variant, numPlayers, maxScore).Scan(&seconds)
 	return seconds, err
+}
+
+type Stats struct {
+	NumGames           int
+	TimePlayed         sql.NullString
+	NumGamesSpeedrun   int
+	TimePlayedSpeedrun sql.NullString
+}
+
+func (*Games) GetProfileStats(userID int) (Stats, error) {
+	var stats Stats
+
+	// Get stats for non-speedruns
+	if err := db.QueryRow(`
+		SELECT
+			COUNT(games.id) AS num_games,
+			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE user_id = ?
+			AND games.speedrun = 0
+	`, userID).Scan(&stats.NumGames, &stats.TimePlayed); err != nil {
+		return stats, err
+	}
+
+	// Get stats for speedruns
+	if err := db.QueryRow(`
+		SELECT
+			COUNT(games.id) AS num_games,
+			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played_speedrun
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE user_id = ?
+			AND games.speedrun = 1
+	`, userID).Scan(&stats.NumGamesSpeedrun, &stats.TimePlayedSpeedrun); err != nil {
+		return stats, err
+	}
+
+	return stats, nil
+}
+
+func (*Games) GetGlobalStats() (Stats, error) {
+	var stats Stats
+
+	// Get stats for non-speedruns
+	if err := db.QueryRow(`
+		SELECT
+			COUNT(games.id) AS num_games,
+			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE games.speedrun = 0
+	`).Scan(&stats.NumGames, &stats.TimePlayed); err != nil {
+		return stats, err
+	}
+
+	// Get stats for speedruns
+	if err := db.QueryRow(`
+		SELECT
+			COUNT(games.id) AS num_games,
+			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE games.speedrun = 1
+	`).Scan(&stats.NumGamesSpeedrun, &stats.TimePlayedSpeedrun); err != nil {
+		return stats, err
+	}
+
+	return stats, nil
+}
+
+func (*Games) GetVariantStats(variant int) (Stats, error) {
+	var stats Stats
+
+	// Get stats for non-speedruns
+	if err := db.QueryRow(`
+		SELECT
+			COUNT(games.id) AS num_games,
+			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE games.variant = ?
+			AND games.speedrun = 0
+	`, variant).Scan(&stats.NumGames, &stats.TimePlayed); err != nil {
+		return stats, err
+	}
+
+	// Get stats for speedruns
+	if err := db.QueryRow(`
+		SELECT
+			COUNT(games.id) AS num_games,
+			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE games.variant = ?
+			AND games.speedrun = 1
+	`, variant).Scan(&stats.NumGamesSpeedrun, &stats.TimePlayedSpeedrun); err != nil {
+		return stats, err
+	}
+
+	return stats, nil
 }

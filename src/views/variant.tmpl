@@ -1,0 +1,109 @@
+{{define "content"}}
+<style>
+    th:hover {
+        background-color: rgb(220, 220, 220);
+        cursor: pointer;
+    }
+</style>
+
+<div id="page-wrapper">
+
+    <!-- Header -->
+    <header id="header">
+        <h1>Hanabi Live</h1>
+        <nav id="nav"></nav>
+    </header>
+
+    <!-- Main -->
+    <section id="main" class="container max">
+        <header>
+            <h2><img src="/public/img/logos/5.png" height="200"></h2>
+        </header>
+        <div class="row uniform 100%">
+            <div class="col-12">
+                <section class="box">
+                    <h2 class="align-center">Global Statistics for <i>{{.Name}}</i></h2>
+
+                    {{if eq .NumGames 0}}
+                    <p>No-one has played a game on this variant yet.</p>
+                    {{else}}
+                    <ul>
+                        <li>
+                            <span class="stat-description">Total games played (in non-speedruns):</span>
+                            {{.NumGames}}
+                        </li>
+                        <li>
+                            <span class="stat-description">Total time spent playing (in non-speedruns):</span>
+                            {{if .TimePlayed}}{{.TimePlayed}}{{else}}-{{end}}
+                        </li>
+                        <li>
+                            <span class="stat-description">Total games played (in speedruns):</span>
+                            {{.NumGamesSpeedrun}}
+                        </li>
+                        <li>
+                            <span class="stat-description">Total time spent playing (in speedruns):</span>
+                            {{if .TimePlayedSpeedrun}}{{.TimePlayedSpeedrun}}{{else}}-{{end}}
+                        </li>
+                        <li>
+                            <span class="stat-description">2-player best score:</span>
+                            {{index .BestScores 0}} / {{.MaxScore}}
+                        </li>
+                        <li>
+                            <span class="stat-description">3-player best score:</span>
+                            {{index .BestScores 1}} / {{.MaxScore}}
+                        </li>
+                        <li>
+                            <span class="stat-description">4-player best score:</span>
+                            {{index .BestScores 2}} / {{.MaxScore}}
+                        </li>
+                        <li>
+                            <span class="stat-description">5-player best score:</span>
+                            {{index .BestScores 3}} / {{.MaxScore}}
+                        </li>
+                        <li>
+                            <span class="stat-description">6-player best score:</span>
+                            {{index .BestScores 4}} / {{.MaxScore}}
+                        </li>
+                        <li>
+                            <span class="stat-description">Total perfect scores:</span>
+                            {{.NumMaxScores}} / {{.NumGames}} &nbsp;({{.MaxScoreRate}}%)
+                        </li>
+                        <li>
+                            <span class="stat-description">Total strikeouts:</span>
+                            {{.NumStrikeouts}} / {{.NumGames}} &nbsp;({{.StrikeoutRate}}%)
+                        </li>
+                    </ul>
+
+                    <br />
+                    <h2 class="align-center">Recent Games of <i>{{.Name}}</i></h2>
+                    <br />
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Game ID</th>
+                                <th># of Players</th>
+                                <th>Score</th>
+                                <th>Players</th>
+                                <th>Date Completed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range $index, $results := .RecentGames}}
+                                <tr>
+                                    <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
+                                    <td>{{.NumPlayers}}</td>
+                                    <td>{{.Score}}</td>
+                                    <td>{{.OtherPlayerNames}}</td>
+                                    <td>{{.DatetimeFinished}}</td>
+                                </tr>
+                            {{- end -}}
+                        </tbody>
+                    </table>
+                    {{end}}
+                </section>
+            </div>
+        </div>
+    </section>
+</div>
+{{end}}

@@ -68,14 +68,25 @@ func commandTableJoin(s *Session, d *CommandData) {
 	log.Info(t.GetName() + "User \"" + s.Username() + "\" joined. " +
 		"(There are now " + strconv.Itoa(len(t.Players)+1) + " players.)")
 
-	// Get the stats for this player
-	var stats models.Stats
-	if v, err := db.UserStats.Get(s.UserID(), variants[t.Options.Variant].ID); err != nil {
-		log.Error("Failed to get the stats for player \""+s.Username()+"\":", err)
+	// Get the total number of non-speedrun games that this player has played
+	var numGames int
+	if v, err := db.Games.GetUserNumGames(s.UserID(), false); err != nil {
+		log.Error("Failed to get the number of non-speedrun games for player \""+s.Username()+"\":", err)
 		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
 		return
 	} else {
-		stats = v
+		numGames = v
+	}
+
+	// Get the variant-specific stats for this player
+	var variantStats models.UserStatsRow
+	if v, err := db.UserStats.Get(s.UserID(), variants[t.Options.Variant].ID); err != nil {
+		log.Error("Failed to get the stats for player \""+s.Username()+"\" "+
+			"for variant "+strconv.Itoa(variants[t.Options.Variant].ID)+":", err)
+		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
+		return
+	} else {
+		variantStats = v
 	}
 
 	p := &Player{
@@ -83,7 +94,10 @@ func commandTableJoin(s *Session, d *CommandData) {
 		Name:    s.Username(),
 		Session: s,
 		Present: true,
-		Stats:   stats,
+		Stats: Stats{
+			NumGames: numGames,
+			Variant:  variantStats,
+		},
 	}
 	t.Players = append(t.Players, p)
 	notifyAllTable(t)

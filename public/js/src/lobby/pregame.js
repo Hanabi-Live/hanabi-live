@@ -206,13 +206,11 @@ exports.draw = () => {
         }
 
         // Calculate some stats
-        const averageScore = Math.round(player.stats.averageScore * 100) / 100;
-        // (round it to 2 decimal places)
-        let strikeoutRate = player.stats.strikeoutRate * 100;
-        // (turn it into a percent)
-        strikeoutRate = Math.round(strikeoutRate * 100) / 100;
-        // (round it to 2 decimal places)
-        const maxScore = 5 * constants.VARIANTS[globals.game.variant].suits.length;
+        const variantStats = player.stats.variant;
+        const averageScore = Math.round(variantStats.averageScore * 10) / 10;
+        // (round it to 1 decimal place)
+        let strikeoutRate = variantStats.numStrikeouts / variantStats.numGames * 100;
+        strikeoutRate = Math.round(strikeoutRate * 10) / 10; // (round it to 1 decimal places)
 
         html += `
             <div class="row">
@@ -220,7 +218,7 @@ exports.draw = () => {
                     Total games:
                 </div>
                 <div class="col-2 align-right padding0">
-                    ${player.stats.numPlayedAll}
+                    ${player.stats.numGames}
                 </div>
             </div>
             <div class="row">
@@ -228,7 +226,7 @@ exports.draw = () => {
                     ...of this variant:
                 </div>
                 <div class="col-2 align-right padding0">
-                    ${player.stats.numPlayed}
+                    ${variantStats.numGames}
                 </div>
             </div>
             <div class="row">
@@ -255,7 +253,7 @@ exports.draw = () => {
                         ${numPlayers}-player best score:
                     </div>
                     <div class="col-2 align-right padding0">
-                        ${player.stats.bestScores[numPlayers - 2].score}
+                        ${variantStats.bestScores[numPlayers - 2].score}
                     </div>
                 </div>
             `;
@@ -272,10 +270,11 @@ exports.draw = () => {
             <div class="hidden">
                 <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
         `;
+        const maxScore = 5 * constants.VARIANTS[globals.game.variant].suits.length;
         for (let j = 2; j <= 6; j++) {
             html += '<div class="row">';
             html += `<div class="col-6">${j}-player:</div>`;
-            const bestScoreObject = player.stats.bestScores[j - 2];
+            const bestScoreObject = variantStats.bestScores[j - 2];
             const bestScore = bestScoreObject.score;
             const bestScoreMod = bestScoreObject.modifier;
             html += '<div class="col-6">';
