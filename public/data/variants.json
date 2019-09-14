@@ -827,28 +827,23 @@
     },
     "Gray & Chocolate (6 Suits)": {
         "id": 97,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Chocolate"],
-        "spacing": true
+        "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Chocolate"]
     },
     "Gray & Dark Omni (6 Suits)": {
         "id": 272,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Dark Omni"],
-        "spacing": true
+        "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Dark Omni"]
     },
     "Gray & Dark Null (6 Suits)": {
         "id": 273,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Dark Null"],
-        "spacing": true
+        "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Dark Null"]
     },
     "Chocolate & Dark Omni (6 Suits)": {
         "id": 274,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Chocolate", "Dark Omni"],
-        "spacing": true
+        "suits": ["Blue", "Green", "Yellow", "Red", "Chocolate", "Dark Omni"]
     },
     "Chocolate & Dark Null (6 Suits)": {
         "id": 275,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Chocolate", "Dark Null"],
-        "spacing": true
+        "suits": ["Blue", "Green", "Yellow", "Red", "Chocolate", "Dark Null"]
     },
     "Dark Omni & Dark Null (6 Suits)": {
         "id": 276,
