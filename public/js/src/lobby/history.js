@@ -85,9 +85,9 @@ exports.draw = () => {
         // Column 5 - Other Players
         $('<td>').html(gameData.otherPlayerNames).appendTo(row);
 
-        // Column 6 - Date Completed
-        const timeCompleted = dateTimeFormatter.format(new Date(gameData.datetime));
-        $('<td>').html(timeCompleted).appendTo(row);
+        // Column 6 - Date Played
+        const datePlayed = dateTimeFormatter.format(new Date(gameData.datetime));
+        $('<td>').html(datePlayed).appendTo(row);
 
         // Column 7 - Watch Replay
         const watchReplayButton = makeReplayButton(ids[i], 'solo');
@@ -228,12 +228,12 @@ exports.drawDetails = () => {
         }
         $('<td>').html(otherPlayers).appendTo(row);
 
-        // Column 4 - Date Completed
-        let dateTime = dateTimeFormatter.format(new Date(gameData.datetime));
+        // Column 4 - Date Played
+        let datePlayed = dateTimeFormatter.format(new Date(gameData.datetime));
         if (gameData.you) {
-            dateTime = `<strong>${dateTime}</strong>`;
+            datePlayed = `<strong>${datePlayed}</strong>`;
         }
-        $('<td>').html(dateTime).appendTo(row);
+        $('<td>').html(datePlayed).appendTo(row);
 
         // Column 5 - Watch Replay
         const watchReplayButton = makeReplayButton(gameData.id, 'solo');

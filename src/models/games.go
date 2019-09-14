@@ -546,29 +546,42 @@ type Stats struct {
 func (*Games) GetProfileStats(userID int) (Stats, error) {
 	var stats Stats
 
-	// Get stats for non-speedruns
 	if err := db.QueryRow(`
 		SELECT
-			COUNT(games.id) AS num_games,
-			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE user_id = ?
-			AND games.speedrun = 0
-	`, userID).Scan(&stats.NumGames, &stats.TimePlayed); err != nil {
-		return stats, err
-	}
-
-	// Get stats for speedruns
-	if err := db.QueryRow(`
-		SELECT
-			COUNT(games.id) AS num_games,
-			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played_speedrun
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE user_id = ?
-			AND games.speedrun = 1
-	`, userID).Scan(&stats.NumGamesSpeedrun, &stats.TimePlayedSpeedrun); err != nil {
+			(
+				SELECT COUNT(games.id)
+				FROM games
+					JOIN game_participants ON games.id = game_participants.game_id
+				WHERE game_participants.user_id = ?
+					AND games.speedrun = 0
+			) AS num_games,
+			(
+				SELECT SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished))
+				FROM games
+					JOIN game_participants ON games.id = game_participants.game_id
+				WHERE game_participants.user_id = ?
+					AND games.speedrun = 0
+			) AS timed_played,
+			(
+				SELECT COUNT(games.id)
+				FROM games
+					JOIN game_participants ON games.id = game_participants.game_id
+				WHERE game_participants.user_id = ?
+					AND games.speedrun = 1
+			) AS num_games_speedrun,
+			(
+				SELECT SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished))
+				FROM games
+					JOIN game_participants ON games.id = game_participants.game_id
+				WHERE game_participants.user_id = ?
+					AND games.speedrun = 1
+			) AS time_played_speedrun
+	`, userID, userID, userID, userID).Scan(
+		&stats.NumGames,
+		&stats.TimePlayed,
+		&stats.NumGamesSpeedrun,
+		&stats.TimePlayedSpeedrun,
+	); err != nil {
 		return stats, err
 	}
 
@@ -578,27 +591,36 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 func (*Games) GetGlobalStats() (Stats, error) {
 	var stats Stats
 
-	// Get stats for non-speedruns
 	if err := db.QueryRow(`
 		SELECT
-			COUNT(games.id) AS num_games,
-			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE games.speedrun = 0
-	`).Scan(&stats.NumGames, &stats.TimePlayed); err != nil {
-		return stats, err
-	}
-
-	// Get stats for speedruns
-	if err := db.QueryRow(`
-		SELECT
-			COUNT(games.id) AS num_games,
-			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE games.speedrun = 1
-	`).Scan(&stats.NumGamesSpeedrun, &stats.TimePlayedSpeedrun); err != nil {
+			(
+				SELECT COUNT(id)
+				FROM games
+				WHERE games.speedrun = 0
+			) AS num_games,
+			(
+				SELECT SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished))
+				FROM games
+					JOIN game_participants ON games.id = game_participants.game_id
+				WHERE games.speedrun = 0
+			) AS timed_played,
+			(
+				SELECT COUNT(id)
+				FROM games
+				WHERE games.speedrun = 1
+			) AS num_games_speedrun,
+			(
+				SELECT SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished))
+				FROM games
+					JOIN game_participants ON games.id = game_participants.game_id
+				WHERE games.speedrun = 1
+			) AS time_played_speedrun
+	`).Scan(
+		&stats.NumGames,
+		&stats.TimePlayed,
+		&stats.NumGamesSpeedrun,
+		&stats.TimePlayedSpeedrun,
+	); err != nil {
 		return stats, err
 	}
 
@@ -608,29 +630,40 @@ func (*Games) GetGlobalStats() (Stats, error) {
 func (*Games) GetVariantStats(variant int) (Stats, error) {
 	var stats Stats
 
-	// Get stats for non-speedruns
 	if err := db.QueryRow(`
 		SELECT
-			COUNT(games.id) AS num_games,
-			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE games.variant = ?
-			AND games.speedrun = 0
-	`, variant).Scan(&stats.NumGames, &stats.TimePlayed); err != nil {
-		return stats, err
-	}
-
-	// Get stats for speedruns
-	if err := db.QueryRow(`
-		SELECT
-			COUNT(games.id) AS num_games,
-			SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished)) AS time_played
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE games.variant = ?
-			AND games.speedrun = 1
-	`, variant).Scan(&stats.NumGamesSpeedrun, &stats.TimePlayedSpeedrun); err != nil {
+			(
+				SELECT COUNT(id)
+				FROM games
+				WHERE variant = ?
+					AND games.speedrun = 0
+			) AS num_games,
+			(
+				SELECT SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished))
+				FROM games
+					JOIN game_participants ON games.id = game_participants.game_id
+				WHERE variant = ?
+					AND games.speedrun = 0
+			) AS timed_played,
+			(
+				SELECT COUNT(id)
+				FROM games
+				WHERE variant = ?
+					AND games.speedrun = 1
+			) AS num_games_speedrun,
+			(
+				SELECT SUM(TIMESTAMPDIFF(SECOND, datetime_started, datetime_finished))
+				FROM games
+					JOIN game_participants ON games.id = game_participants.game_id
+				WHERE variant = ?
+					AND games.speedrun = 1
+			) AS time_played_speedrun
+	`, variant, variant, variant, variant).Scan(
+		&stats.NumGames,
+		&stats.TimePlayed,
+		&stats.NumGamesSpeedrun,
+		&stats.TimePlayedSpeedrun,
+	); err != nil {
 		return stats, err
 	}
 
