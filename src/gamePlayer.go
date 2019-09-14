@@ -9,8 +9,9 @@ import (
 	"time"
 )
 
-// We separate the player object into two different objects
-// This is the object that represents the game state related aspects of the player
+// GamePlayer is the object that represents the game state related aspects of the player
+// (we separate the player object into two different objects;
+// one for the table and one for the game)
 type GamePlayer struct {
 	// Some entries are copied from the Player object for convenience
 	Name  string
@@ -273,7 +274,10 @@ func (p *GamePlayer) PlayCard(g *Game, c *Card) bool {
 	}
 
 	if extraClue {
-		g.ClueTokens++
+		// Some variants do not grant an extra clue when successfully playing a 5
+		if !strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") {
+			g.ClueTokens++
+		}
 
 		// The extra clue is wasted if the team is at the maximum amount of clues already
 		clueLimit := maxClueNum

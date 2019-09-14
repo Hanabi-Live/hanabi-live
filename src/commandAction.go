@@ -196,7 +196,6 @@ func commandAction(s *Session, d *CommandData) {
 
 		// Mark that the misplay streak has ended
 		g.Misplays = 0
-
 	} else if d.Type == actionTypePlay {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
@@ -212,7 +211,6 @@ func commandAction(s *Session, d *CommandData) {
 		c := p.RemoveCard(d.Target, g)
 		doubleDiscard = p.PlayCard(g, c)
 		p.DrawCard(g)
-
 	} else if d.Type == actionTypeDiscard {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
@@ -247,7 +245,6 @@ func commandAction(s *Session, d *CommandData) {
 
 		// Mark that the misplay streak has ended
 		g.Misplays = 0
-
 	} else if d.Type == actionTypeDeckPlay {
 		// Validate that the game type allows deck plays
 		if !t.Options.DeckPlays {
@@ -263,7 +260,6 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		p.PlayDeck(g)
-
 	} else if d.Type == actionTypeTimeLimitReached {
 		// This is a special action type sent by the server to itself when a player runs out of time
 		g.Strikes = 3
@@ -273,7 +269,6 @@ func commandAction(s *Session, d *CommandData) {
 			Text: p.Name + " ran out of time!",
 		})
 		t.NotifyAction()
-
 	} else if d.Type == actionTypeIdleLimitReached {
 		// This is a special action type sent by the server to itself when the game has been idle for too long
 		g.Strikes = 3
@@ -283,7 +278,6 @@ func commandAction(s *Session, d *CommandData) {
 			Text: "Players were idle for too long.",
 		})
 		t.NotifyAction()
-
 	} else {
 		s.Warning("That is not a valid action type.")
 		return

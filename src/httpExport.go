@@ -74,7 +74,6 @@ func httpExport(c *gin.Context) {
 			}
 
 			firstPlayer = actionTurn.Who
-
 		} else if action["type"] == "clue" {
 			// Unmarshal the specific action type
 			var actionClue ActionClue
@@ -89,7 +88,6 @@ func httpExport(c *gin.Context) {
 				Target: actionClue.Target,
 				Type:   actionTypeClue,
 			})
-
 		} else if action["type"] == "play" {
 			// Unmarshal the specific action type
 			var actionPlay ActionPlay
@@ -103,7 +101,6 @@ func httpExport(c *gin.Context) {
 				Target: actionPlay.Which.Order,
 				Type:   actionTypePlay,
 			})
-
 		} else if action["type"] == "discard" {
 			// Unmarshal the specific action type
 			var actionDiscard ActionDiscard

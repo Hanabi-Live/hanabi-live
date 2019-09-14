@@ -12,6 +12,7 @@ const HanabiCardClick = require('./HanabiCardClick');
 const HanabiCardClickSpeedrun = require('./HanabiCardClickSpeedrun');
 const notes = require('./notes');
 // const Sparkle = require('./Sparkle');
+const ui = require('./ui');
 
 exports.image = function image() {
     // Create the "bare" card image, which is the main card grahpic
@@ -394,7 +395,7 @@ exports.click = function click() {
 };
 
 exports.possibilities = function possibilities() {
-    if (globals.lobby.settings.realLifeMode || globals.speedrun) {
+    if (!ui.usePossibilities()) {
         return;
     }
 

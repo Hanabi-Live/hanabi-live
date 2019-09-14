@@ -240,3 +240,10 @@ exports.setPause = () => {
         globals.elements.pauseArea.getLayer().batchDraw();
     }
 };
+
+// The "card possibilities" feature is turned off in some situations
+exports.usePossibilities = () => (
+    !globals.lobby.settings.realLifeMode
+    && !globals.speedrun
+    && !globals.variant.name.startsWith('Throw It in a Hole')
+);

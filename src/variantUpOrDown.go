@@ -39,7 +39,6 @@ func variantUpOrDownPlay(g *Game, c *Card) bool {
 				}
 				// If the "START" card was played, we want to keep the stack direction undecided
 			}
-
 		} else if g.Stacks[c.Suit] == startCardRank {
 			// The "START" card has been played on the stack
 			failed = c.Rank != 2 && c.Rank != 4
@@ -53,7 +52,6 @@ func variantUpOrDownPlay(g *Game, c *Card) bool {
 				}
 			}
 		}
-
 	} else if g.StackDirections[c.Suit] == stackDirectionUp {
 		failed = c.Rank != g.Stacks[c.Suit]+1
 
@@ -61,7 +59,6 @@ func variantUpOrDownPlay(g *Game, c *Card) bool {
 		if !failed && c.Rank == 5 {
 			g.StackDirections[c.Suit] = stackDirectionFinished
 		}
-
 	} else if g.StackDirections[c.Suit] == stackDirectionDown {
 		failed = c.Rank != g.Stacks[c.Suit]-1
 
@@ -69,7 +66,6 @@ func variantUpOrDownPlay(g *Game, c *Card) bool {
 		if !failed && c.Rank == 1 {
 			g.StackDirections[c.Suit] = stackDirectionFinished
 		}
-
 	} else if g.StackDirections[c.Suit] == stackDirectionFinished {
 		// Once a stack is finished, any card that is played will fail to play
 		failed = true

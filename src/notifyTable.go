@@ -299,7 +299,7 @@ func (t *Table) NotifySpectatorsNote(order int) {
 	}
 }
 
-// Boot the people in a game or shared replay back to the lobby screen
+// NotifyBoot boots the people in a game or shared replay back to the lobby screen
 func (t *Table) NotifyBoot() {
 	if !t.Replay {
 		for _, p := range t.Players {

@@ -116,7 +116,7 @@ commands.deckOrder = () => {
 
 commands.discard = (data) => {
     // In "Throw It in a Hole" variants, convert misplays to real plays
-    if (globals.variant.name.startsWith('Throw It in a Hole') && data.failed && !globals.replay) {
+    if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay && data.failed) {
         commands.play(data);
         return;
     }
@@ -217,11 +217,7 @@ commands.draw = (data) => {
 
     // If this card is known,
     // then remove it from the card possibilities for the players who see this card
-    if (
-        suit && rank
-        && !globals.lobby.settings.realLifeMode
-        && !globals.speedrun
-    ) {
+    if (suit && rank && ui.usePossibilities()) {
         for (let i = 0; i < globals.elements.playerHands.length; i++) {
             if (i === holder) {
                 // We can't update the player who drew this card,
@@ -322,10 +318,11 @@ commands.status = (data) => {
 
     // Update the number of clues in the bottom-right hand corner of the screen
     globals.elements.cluesNumberLabel.setText(globals.clues.toString());
-    globals.elements.cluesNumberLabel.setFill(globals.clues === 0 ? 'red' : constants.LABEL_COLOR);
-    globals.elements.noClueBorder.setVisible(globals.clues === 0);
 
     if (!globals.lobby.settings.realLifeMode) {
+        globals.elements.cluesNumberLabel.setFill(globals.clues === 0 ? 'red' : constants.LABEL_COLOR);
+        globals.elements.noClueBorder.setVisible(globals.clues === 0);
+
         if (globals.clues === 8) {
             // Show the red border around the discard pile
             // (to reinforce the fact that being at 8 clues is a special situation)
@@ -345,6 +342,9 @@ commands.status = (data) => {
     // Update the score (in the bottom-right-hand corner)
     const scoreLabel = globals.elements.scoreNumberLabel;
     scoreLabel.setText(globals.score.toString());
+    if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
+        scoreLabel.setText('?');
+    }
 
     // Reposition the maximum score
     const maxScoreLabel = globals.elements.maxScoreNumberLabel;

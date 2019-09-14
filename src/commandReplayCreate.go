@@ -382,7 +382,6 @@ func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
 			Rank:  c.Rank,
 			Order: i,
 		})
-
 	}
 
 	/*

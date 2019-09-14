@@ -1,6 +1,8 @@
 linters:
   enable-all: true
   disable:
+    # We use many long functions
+    - funlen
     # We use many globals in the code base
     - gochecknoglobals
     # goconst complains about some common strings
@@ -15,9 +17,14 @@ linters:
     - maligned 
     # We use some unused parameters for command function uniformity
     - unparam
+    # This linter is bugged with multi-line if statements
+    # https://github.com/ultraware/whitespace/issues/1
+    - whitespace
 
 issues:
+  # We want to use golint but we don't care about some of the things that it complains about
   exclude:
-    # We want to use golint but we don't care about some of the things that it complains about
+    # We have many exported functions without comments
     - "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment or be unexported"
+    # We block-scope variables in many places, making it impossible to outdent
     - "if block ends with a return statement, so drop this else and outdent its block"

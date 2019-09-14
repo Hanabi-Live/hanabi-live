@@ -329,7 +329,6 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 				Target: actionClue.Target,
 				Clue:   actionClue.Clue,
 			})
-
 		} else if action["type"] == "play" {
 			// Unmarshal the specific action type
 			var actionPlay ActionPlay
@@ -344,7 +343,6 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 				Type:   actionTypePlay,
 				Target: actionPlay.Which.Order,
 			})
-
 		} else if action["type"] == "discard" {
 			// Unmarshal the specific action type
 			var actionDiscard ActionDiscard
@@ -359,7 +357,6 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 				Type:   actionTypeDiscard,
 				Target: actionDiscard.Which.Order,
 			})
-
 		} else if action["type"] == "turn" {
 			// Unmarshal the specific action type
 			var actionTurn ActionTurn

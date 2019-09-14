@@ -758,6 +758,7 @@ const drawScoreArea = () => {
         x: (labelX + labelSpacing) * winW,
         y: 0.05 * winH,
         fontSize: 0.017 * winH,
+        visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
     });
     globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel);
 

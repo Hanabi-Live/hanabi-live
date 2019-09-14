@@ -59,7 +59,6 @@ func commandNote(s *Session, d *CommandData) {
 
 		// Update the array that contains all of their notes
 		p.Notes[d.Order] = d.Note
-
 	} else if j > -1 {
 		sp := t.Spectators[j]
 

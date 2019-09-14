@@ -75,7 +75,6 @@ func commandTableCreate(s *Session, d *CommandData) {
 				return
 			}
 			setSeed = match[1]
-
 		} else if strings.HasPrefix(d.Name, "!replay") {
 			// !replay - Replay a specific game up to a specific turn
 			match1 := replayRegExp1.FindStringSubmatch(d.Name)
@@ -160,7 +159,6 @@ func commandTableCreate(s *Session, d *CommandData) {
 				d.EmptyClues = v.EmptyClues
 				d.CharacterAssignments = v.CharacterAssignments
 			}
-
 		} else if strings.HasPrefix(d.Name, "!deal") {
 			// !deal - Play a specific deal read from a text file
 			match := dealRegExp.FindStringSubmatch(d.Name)
@@ -177,7 +175,6 @@ func commandTableCreate(s *Session, d *CommandData) {
 				return
 			}
 			// (we won't bother parsing the file until the game is actually started)
-
 		} else {
 			s.Warning("You cannot start a game with an exclamation mark unless " +
 				"you are trying to use a specific game creation command.")

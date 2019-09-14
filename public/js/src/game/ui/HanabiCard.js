@@ -11,6 +11,7 @@ const globals = require('./globals');
 const graphics = require('./graphics');
 const HanabiCardInit = require('./HanabiCardInit');
 const notes = require('./notes');
+const ui = require('./ui');
 
 class HanabiCard extends graphics.Group {
     constructor(config) {
@@ -209,7 +210,11 @@ class HanabiCard extends graphics.Group {
 
     // Fade this card if it is useless, fully revealed, and still in a player's hand
     setFade() {
-        if (globals.lobby.settings.realLifeMode || globals.speedrun) {
+        if (
+            globals.lobby.settings.realLifeMode
+            || globals.speedrun
+            || globals.variant.name.startsWith('Throw It in a Hole')
+        ) {
             return;
         }
 
@@ -404,7 +409,7 @@ class HanabiCard extends graphics.Group {
             this.rankPipsXMap.get(rank).hide();
 
             // Remove any card possibilities for this rank
-            if (!globals.lobby.settings.realLifeMode && !globals.speedrun) {
+            if (ui.usePossibilities()) {
                 for (const suit of globals.variant.suits) {
                     this.removePossibility(suit, rank, true);
                 }
@@ -428,7 +433,7 @@ class HanabiCard extends graphics.Group {
             this.suitPipsXMap.get(suit).hide();
 
             // Remove any card possibilities for this suit
-            if (!globals.lobby.settings.realLifeMode && !globals.speedrun) {
+            if (ui.usePossibilities()) {
                 for (const rank of globals.variant.ranks) {
                     this.removePossibility(suit, rank, true);
                 }
@@ -452,12 +457,7 @@ class HanabiCard extends graphics.Group {
 
         // Handle if this is the first time that the card is fully revealed to the holder
         const isFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
-        if (
-            isFullyKnown
-            && !wasFullyKnown
-            && !globals.lobby.settings.realLifeMode
-            && !globals.speedrun
-        ) {
+        if (isFullyKnown && !wasFullyKnown) {
             this.updatePossibilitiesOnOtherCards(this.suit, this.rank);
         }
     }
@@ -533,18 +533,18 @@ class HanabiCard extends graphics.Group {
         this.suit = suit;
         this.rank = rank;
 
-        // Played & discarded cards are not revealed in the "Throw It in a Hole" variant
-        if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
+        // Played cards are not revealed in the "Throw It in a Hole" variant
+        if (
+            globals.variant.name.startsWith('Throw It in a Hole')
+            && this.isPlayed
+            && !globals.replay
+        ) {
             return;
         }
 
         // If the card was already fully-clued,
         // we already updated the possibilities for it on other cards
-        if (
-            (this.possibleSuits.length > 1 || this.possibleRanks.length > 1)
-            && !globals.lobby.settings.realLifeMode
-            && !globals.speedrun
-        ) {
+        if (this.possibleSuits.length > 1 || this.possibleRanks.length > 1) {
             this.updatePossibilitiesOnOtherCards(suit, rank);
         }
 
@@ -571,6 +571,10 @@ class HanabiCard extends graphics.Group {
     }
 
     updatePossibilitiesOnOtherCards(suit, rank) {
+        if (!ui.usePossibilities()) {
+            return;
+        }
+
         // Update the possibilities for the player
         // who just discovered the true identity of this card
         // (either through playing it, discarding it, or getting a clue that fully revealed it)

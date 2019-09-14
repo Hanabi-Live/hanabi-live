@@ -138,12 +138,16 @@ commands.gameOver = () => {
     globals.elements.lobbyButtonBig.show();
 
     // Turn off the "Throw It in a Hole" UI
-    globals.elements.hole.hide();
-    for (const playStackBase of globals.elements.playStackBases) {
-        playStackBase.resetX();
-    }
-    for (const [, playStack] of globals.elements.playStacks) {
-        playStack.resetX();
+    if (globals.variant.name.startsWith('Throw It in a Hole')) {
+        globals.elements.hole.hide();
+        for (const playStackBase of globals.elements.playStackBases) {
+            playStackBase.resetX();
+        }
+        for (const [, playStack] of globals.elements.playStacks) {
+            playStack.resetX();
+        }
+        globals.elements.scoreNumberLabel.setText(globals.score.toString());
+        globals.elements.maxScoreNumberLabel.show();
     }
 
     globals.layers.UI.batchDraw();
