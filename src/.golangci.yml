@@ -19,7 +19,9 @@ linters:
     - unparam
     # This linter is bugged with multi-line if statements
     # https://github.com/ultraware/whitespace/issues/1
-    - whitespace
+    # (uncomment this when golangci-lint is updated to v18.1; v18.0 does not include whitespace)
+    # (delete this when the bug is fixed)
+    #- whitespace
 
 issues:
   # We want to use golint but we don't care about some of the things that it complains about

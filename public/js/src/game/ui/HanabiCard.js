@@ -536,8 +536,8 @@ class HanabiCard extends graphics.Group {
         // Played cards are not revealed in the "Throw It in a Hole" variant
         if (
             globals.variant.name.startsWith('Throw It in a Hole')
-            && this.isPlayed
             && !globals.replay
+            && this.isPlayed
         ) {
             return;
         }
