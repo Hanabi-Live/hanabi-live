@@ -454,6 +454,42 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Light Pink (5 Suits)
   * Light Pink (4 Suits)
   * Light Pink (3 Suits)
+* Ambiguous
+  * Ambiguous (6 Suits)
+  * Ambiguous (4 Suits)
+  * Ambiguous & White (5 Suits)
+  * Ambiguous & Rainbow (5 Suits)
+  * Very Ambiguous (6 Suits)
+* Dual-Color
+  * Dual-Color (6 Suits)
+  * Dual-Color (5 Suits)
+  * Dual-Color (3 Suits)
+  * Dual-Color & Rainbow (6 Suits)
+  * Dual-Color & Rainbow (4 Suits)
+* Mixed
+  * Special Mix (5 Suits)
+  * Special Mix (6 Suits)
+  * Ambiguous Mix
+  * Dual-Color Mix
+  * Ambiguous & Dual-Color
+* Multi-Fives
+  * Multi-Fives (6 Suits)
+  * Multi-Fives (5 Suits)
+  * Multi-Fives (4 Suits)
+  * Multi-Fives (3 Suits)
+  * Multi-Fives & Rainbow (6 Suits)
+  * Multi-Fives & Rainbow (5 Suits)
+  * Multi-Fives & Rainbow (4 Suits)
+  * Multi-Fives & Rainbow (3 Suits)
+* Prism-Ones
+  * Prism-Ones (6 Suits)
+  * Prism-Ones (5 Suits)
+  * Prism-Ones (4 Suits)
+  * Prism-Ones (3 Suits)
+  * Prism-Ones & Pink (6 Suits)
+  * Prism-Ones & Pink (5 Suits)
+  * Prism-Ones & Pink (4 Suits)
+  * Prism-Ones & Pink (3 Suits)
 * Color Blind
   * Color Blind (6 Suits)
   * Color Blind (5 Suits)
@@ -479,36 +515,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Number Mute (5 Suits)
   * Number Mute (4 Suits)
   * Number Mute (3 Suits)
-* Ambiguous
-  * Ambiguous (6 Suits)
-  * Ambiguous (4 Suits)
-  * Ambiguous & White (5 Suits)
-  * Ambiguous & Rainbow (5 Suits)
-  * Very Ambiguous (6 Suits)
-* Dual-Color
-  * Dual-Color (6 Suits)
-  * Dual-Color (5 Suits)
-  * Dual-Color (3 Suits)
-  * Dual-Color & Rainbow (6 Suits)
-  * Dual-Color & Rainbow (4 Suits)
-* Multi-Fives
-  * Multi-Fives (6 Suits)
-  * Multi-Fives (5 Suits)
-  * Multi-Fives (4 Suits)
-  * Multi-Fives (3 Suits)
-  * Multi-Fives & Rainbow (6 Suits)
-  * Multi-Fives & Rainbow (5 Suits)
-  * Multi-Fives & Rainbow (4 Suits)
-  * Multi-Fives & Rainbow (3 Suits)
-* Prism-Ones
-  * Prism-Ones (6 Suits)
-  * Prism-Ones (5 Suits)
-  * Prism-Ones (4 Suits)
-  * Prism-Ones (3 Suits)
-  * Prism-Ones & Pink (6 Suits)
-  * Prism-Ones & Pink (5 Suits)
-  * Prism-Ones & Pink (4 Suits)
-  * Prism-Ones & Pink (3 Suits)
+* Alternating Clues
+  * Alternating Clues (6 Suits)
+  * Alternating Clues (5 Suits)
+  * Alternating Clues (4 Suits)
+  * Alternating Clues (3 Suits)
 * Clue Starved
   * Clue Starved (6 Suits)
   * Clue Starved (5 Suits)
@@ -543,14 +554,3 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Throw It in a Hole (5 Suits)
   * Throw It in a Hole (4 Suits)
   * Throw It in a Hole (3 Suits)
-* Alternating Clues
-  * Alternating Clues (6 Suits)
-  * Alternating Clues (5 Suits)
-  * Alternating Clues (4 Suits)
-  * Alternating Clues (3 Suits)
-* Mixed
-  * Special Mix (5 Suits)
-  * Special Mix (6 Suits)
-  * Ambiguous Mix
-  * Dual-Color Mix
-  * Ambiguous & Dual-Color

@@ -887,6 +887,155 @@
         "spacing": true
     },
 
+    "Ambiguous (6 Suits)": {
+        "id": 8,
+        "suits": ["Sky", "Navy", "Lime", "Forest", "Tomato", "Mahogany"],
+        "showSuitNames": true
+    },
+    "Ambiguous (4 Suits)": {
+        "id": 30,
+        "suits": ["Sky", "Navy", "Tomato", "Mahogany"],
+        "showSuitNames": true
+    },
+    "Ambiguous & White (5 Suits)": {
+        "id": 31,
+        "suits": ["Sky", "Navy", "Tomato", "Mahogany", "White"],
+        "showSuitNames": true
+    },
+    "Ambiguous & Rainbow (5 Suits)": {
+        "id": 32,
+        "suits": ["Sky", "Navy", "Tomato", "Mahogany", "Rainbow"],
+        "showSuitNames": true
+    },
+    "Very Ambiguous (6 Suits)": {
+        "id": 9,
+        "suits": ["Sky VA", "Berry VA", "Navy VA", "Tomato VA", "Ruby VA", "Mahogany VA"],
+        "showSuitNames": true,
+        "spacing": true
+    },
+
+    "Dual-Color (6 Suits)": {
+        "id": 4,
+        "suits": ["Green D", "Purple D", "Navy D", "Orange D", "Tan D", "Mahogany D"],
+        "showSuitNames": true
+    },
+    "Dual-Color (5 Suits)": {
+        "id": 36,
+        "suits": ["Teal D", "Lime D", "Orange D2", "Cardinal D", "Indigo D"],
+        "showSuitNames": true
+    },
+    "Dual-Color (3 Suits)": {
+        "id": 37,
+        "suits": ["Green D", "Purple D", "Orange D2"],
+        "showSuitNames": true
+    },
+    "Dual-Color & Rainbow (6 Suits)": {
+        "id": 5,
+        "suits": ["Teal D", "Lime D", "Orange D2", "Cardinal D", "Indigo D", "Rainbow"],
+        "showSuitNames": true
+    },
+    "Dual-Color & Rainbow (4 Suits)": {
+        "id": 38,
+        "suits": ["Green D", "Purple D", "Orange D2", "Rainbow"],
+        "showSuitNames": true,
+        "spacing": true
+    },
+
+    "Special Mix (5 Suit)": {
+        "id": 159,
+        "suits": ["Black", "Rainbow", "Pink", "White", "Brown"]
+    },
+    "Special Mix (6 Suit)": {
+        "id": 185,
+        "suits": ["Black", "Rainbow", "Pink", "White", "Brown", "Null"]
+    },
+    "Ambiguous Mix": {
+        "id": 20,
+        "suits": ["Sky", "Navy", "Tomato", "Mahogany", "Black", "White"],
+        "showSuitNames": true
+    },
+    "Dual-Color Mix": {
+        "id": 7,
+        "suits": ["Green D", "Purple D", "Orange D2", "Black", "Rainbow", "White"]
+    },
+    "Ambiguous & Dual-Color": {
+        "id": 184,
+        "suits": ["Lime AD", "Forest AD", "Orchid AD", "Violet AD", "Tangelo AD", "Peach AD"],
+        "showSuitNames": true
+    },
+
+    "Multi-Fives (6 Suits)": {
+        "id": 45,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+    },
+    "Multi-Fives (5 Suits)": {
+        "id": 46,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+    },
+    "Multi-Fives (4 Suits)": {
+        "id": 49,
+        "suits": ["Blue", "Green", "Yellow", "Red"]
+    },
+    "Multi-Fives (3 Suits)": {
+        "id": 50,
+        "suits": ["Blue", "Green", "Yellow"],
+        "spacing": true
+    },
+
+    "Multi-Fives & Rainbow (6 Suits)": {
+        "id": 39,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Rainbow"]
+    },
+    "Multi-Fives & Rainbow (5 Suits)": {
+        "id": 14,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow"]
+    },
+    "Multi-Fives & Rainbow (4 Suits)": {
+        "id": 47,
+        "suits": ["Blue", "Green", "Yellow", "Rainbow"]
+    },
+    "Multi-Fives & Rainbow (3 Suits)": {
+        "id": 48,
+        "suits": ["Blue", "Green", "Rainbow"],
+        "spacing": true
+    },
+
+    "Prism-Ones (6 Suits)": {
+        "id": 168,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+    },
+    "Prism-Ones (5 Suits)": {
+        "id": 169,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+    },
+    "Prism-Ones (4 Suits)": {
+        "id": 170,
+        "suits": ["Blue", "Green", "Yellow", "Red"]
+    },
+    "Prism-Ones (3 Suits)": {
+        "id": 171,
+        "suits": ["Blue", "Green", "Yellow"],
+        "spacing": true
+    },
+
+    "Prism-Ones & Pink (6 Suits)": {
+        "id": 172,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Pink"]
+    },
+    "Prism-Ones & Pink (5 Suits)": {
+        "id": 173,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Pink"]
+    },
+    "Prism-Ones & Pink (4 Suits)": {
+        "id": 174,
+        "suits": ["Blue", "Green", "Yellow", "Pink"]
+    },
+    "Prism-Ones & Pink (3 Suits)": {
+        "id": 175,
+        "suits": ["Blue", "Green", "Pink"],
+        "spacing": true
+    },
+
     "Color Blind (6 Suits)": {
         "id": 10,
         "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB", "Purple CB", "Teal CB"],
@@ -985,129 +1134,21 @@
         "spacing": true
     },
 
-    "Ambiguous (6 Suits)": {
-        "id": 8,
-        "suits": ["Sky", "Navy", "Lime", "Forest", "Tomato", "Mahogany"],
-        "showSuitNames": true
-    },
-    "Ambiguous (4 Suits)": {
-        "id": 30,
-        "suits": ["Sky", "Navy", "Tomato", "Mahogany"],
-        "showSuitNames": true
-    },
-    "Ambiguous & White (5 Suits)": {
-        "id": 31,
-        "suits": ["Sky", "Navy", "Tomato", "Mahogany", "White"],
-        "showSuitNames": true
-    },
-    "Ambiguous & Rainbow (5 Suits)": {
-        "id": 32,
-        "suits": ["Sky", "Navy", "Tomato", "Mahogany", "Rainbow"],
-        "showSuitNames": true
-    },
-    "Very Ambiguous (6 Suits)": {
-        "id": 9,
-        "suits": ["Sky VA", "Berry VA", "Navy VA", "Tomato VA", "Ruby VA", "Mahogany VA"],
-        "showSuitNames": true,
-        "spacing": true
-    },
-
-    "Dual-Color (6 Suits)": {
-        "id": 4,
-        "suits": ["Green D", "Purple D", "Navy D", "Orange D", "Tan D", "Mahogany D"],
-        "showSuitNames": true
-    },
-    "Dual-Color (5 Suits)": {
-        "id": 36,
-        "suits": ["Teal D", "Lime D", "Orange D2", "Cardinal D", "Indigo D"],
-        "showSuitNames": true
-    },
-    "Dual-Color (3 Suits)": {
-        "id": 37,
-        "suits": ["Green D", "Purple D", "Orange D2"],
-        "showSuitNames": true
-    },
-    "Dual-Color & Rainbow (6 Suits)": {
-        "id": 5,
-        "suits": ["Teal D", "Lime D", "Orange D2", "Cardinal D", "Indigo D", "Rainbow"],
-        "showSuitNames": true
-    },
-    "Dual-Color & Rainbow (4 Suits)": {
-        "id": 38,
-        "suits": ["Green D", "Purple D", "Orange D2", "Rainbow"],
-        "showSuitNames": true,
-        "spacing": true
-    },
-
-    "Multi-Fives (6 Suits)": {
-        "id": 45,
+    "Alternating Clues (6 Suits)": {
+        "id": 283,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
     },
-    "Multi-Fives (5 Suits)": {
-        "id": 46,
+    "Alternating Clues (5 Suits)": {
+        "id": 284,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
     },
-    "Multi-Fives (4 Suits)": {
-        "id": 49,
+    "Alternating Clues (4 Suits)": {
+        "id": 285,
         "suits": ["Blue", "Green", "Yellow", "Red"]
     },
-    "Multi-Fives (3 Suits)": {
-        "id": 50,
+    "Alternating Clues (3 Suits)": {
+        "id": 286,
         "suits": ["Blue", "Green", "Yellow"],
-        "spacing": true
-    },
-
-    "Multi-Fives & Rainbow (6 Suits)": {
-        "id": 39,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Rainbow"]
-    },
-    "Multi-Fives & Rainbow (5 Suits)": {
-        "id": 14,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow"]
-    },
-    "Multi-Fives & Rainbow (4 Suits)": {
-        "id": 47,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow"]
-    },
-    "Multi-Fives & Rainbow (3 Suits)": {
-        "id": 48,
-        "suits": ["Blue", "Green", "Rainbow"],
-        "spacing": true
-    },
-
-    "Prism-Ones (6 Suits)": {
-        "id": 168,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
-    },
-    "Prism-Ones (5 Suits)": {
-        "id": 169,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
-    },
-    "Prism-Ones (4 Suits)": {
-        "id": 170,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
-    },
-    "Prism-Ones (3 Suits)": {
-        "id": 171,
-        "suits": ["Blue", "Green", "Yellow"],
-        "spacing": true
-    },
-
-    "Prism-Ones & Pink (6 Suits)": {
-        "id": 172,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Pink"]
-    },
-    "Prism-Ones & Pink (5 Suits)": {
-        "id": 173,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink"]
-    },
-    "Prism-Ones & Pink (4 Suits)": {
-        "id": 174,
-        "suits": ["Blue", "Green", "Yellow", "Pink"]
-    },
-    "Prism-Ones & Pink (3 Suits)": {
-        "id": 175,
-        "suits": ["Blue", "Green", "Pink"],
         "spacing": true
     },
 
@@ -1249,46 +1290,5 @@
         "id": 282,
         "suits": ["Blue", "Green", "Yellow"],
         "spacing": true
-    },
-
-    "Alternating Clues (6 Suits)": {
-        "id": 283,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
-    },
-    "Alternating Clues (5 Suits)": {
-        "id": 284,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
-    },
-    "Alternating Clues (4 Suits)": {
-        "id": 285,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
-    },
-    "Alternating Clues (3 Suits)": {
-        "id": 286,
-        "suits": ["Blue", "Green", "Yellow"],
-        "spacing": true
-    },
-
-    "Special Mix (5 Suit)": {
-        "id": 159,
-        "suits": ["Black", "Rainbow", "Pink", "White", "Brown"]
-    },
-    "Special Mix (6 Suit)": {
-        "id": 185,
-        "suits": ["Black", "Rainbow", "Pink", "White", "Brown", "Null"]
-    },
-    "Ambiguous Mix": {
-        "id": 20,
-        "suits": ["Sky", "Navy", "Tomato", "Mahogany", "Black", "White"],
-        "showSuitNames": true
-    },
-    "Dual-Color Mix": {
-        "id": 7,
-        "suits": ["Green D", "Purple D", "Orange D2", "Black", "Rainbow", "White"]
-    },
-    "Ambiguous & Dual-Color": {
-        "id": 184,
-        "suits": ["Lime AD", "Forest AD", "Orchid AD", "Violet AD", "Tangelo AD", "Peach AD"],
-        "showSuitNames": true
     }
 }
