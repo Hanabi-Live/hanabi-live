@@ -101,22 +101,20 @@ func (p *GamePlayer) GiveClue(d *CommandData, g *Game) {
 			// number buttons, even though rank comes first in the enum
 			if d.Clue.Type == clueTypeRank {
 				text += "oinks"
+				g.Sound = "oink"
 			} else if d.Clue.Type == clueTypeColor {
 				text += "moos"
+				g.Sound = "moo"
 			}
 		} else if strings.HasPrefix(g.Options.Variant, "Duck") {
 			text += "quacks"
+			g.Sound = "quack"
 		}
 		text += " at " + p2.Name + "'"
 		if !strings.HasSuffix(p2.Name, "s") {
 			text += "s"
 		}
 		text += " slot " + strings.Join(slots, "/")
-
-		// Some variants have custom sound effects
-		if strings.HasPrefix(g.Options.Variant, "Duck") {
-			g.Sound = "quack"
-		}
 	}
 
 	g.Actions = append(g.Actions, ActionText{

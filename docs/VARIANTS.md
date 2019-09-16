@@ -520,6 +520,8 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Up or Down & Brown (5 Suits)
   * Up or Down & Omni (6 Suits)
   * Up or Down & Omni (5 Suits)
+  * Up or Down & Null (6 Suits)
+  * Up or Down & Null (5 Suits)
 * Cow & Pig
   * Cow & Pig (6 Suits)
   * Cow & Pig (5 Suits)
@@ -530,6 +532,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Duck (5 Suits)
   * Duck (4 Suits)
   * Duck (3 Suits)
+* Throw It in a Hole
+  * Throw It in a Hole (6 Suits)
+  * Throw It in a Hole (5 Suits)
+  * Throw It in a Hole (4 Suits)
+  * Throw It in a Hole (3 Suits)
 * Mixed
   * Special Mix (5 Suits)
   * Special Mix (6 Suits)
