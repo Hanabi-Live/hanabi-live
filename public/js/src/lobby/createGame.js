@@ -9,16 +9,22 @@ const misc = require('../misc');
 
 exports.init = () => {
     // Populate the variant dropdown in the "Create Game" tooltip
+    const line = '─────────────────────────';
     for (const variantName of Object.keys(constants.VARIANTS)) {
         const option = new Option(variantName, variantName);
-        $('#createTableVariant').append($(option));
+        $('#create-table-variant-list').append($(option));
 
         if (constants.VARIANTS[variantName].spacing) {
-            const spacing = new Option('─────────────────────────', null);
-            spacing.disabled = true;
-            $('#createTableVariant').append($(spacing));
+            const spacing = new Option(line, line);
+            $('#create-table-variant-list').append($(spacing));
         }
     }
+    $('#createTableVariant').on('input', () => {
+        const text = $('#createTableVariant').val();
+        if (text === line) {
+            $('#createTableVariant').val('');
+        }
+    });
 
     // Make the extra time fields appear and disappear depending on whether the checkbox is checked
     $('#createTableTimed').change(() => {

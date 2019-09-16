@@ -11,8 +11,11 @@ const emoteCategories = require('../../data/emotes');
 let chatLineNum = 1;
 
 exports.init = () => {
+    $('#lobby-chat-input').on('input', input);
     $('#lobby-chat-input').on('keypress', keypress('lobby'));
+    $('#lobby-chat-pregame-input').on('input', input);
     $('#lobby-chat-pregame-input').on('keypress', keypress('table'));
+    $('#game-chat-input').on('input', input);
     $('#game-chat-input').on('keypress', keypress('table'));
 
     // Ensure that there are no overlapping emotes
@@ -28,45 +31,48 @@ exports.init = () => {
     }
 };
 
-const keypress = room => function keypressFunction(event) {
+const input = function input(event) {
     // Check for emoji substitution
     // e.g. :100: --> 💯
-    const input = $(this);
-    const text = input.val() + event.key;
+    const text = $(this).val();
     const matches = text.match(/:[^\s]+:/g); // "[^\s]" is a non-whitespace character
     if (matches) {
         for (let match of matches) {
             match = match.slice(1, -1); // Strip off the colons
             const emoji = emojis[match];
             if (emoji) {
-                input.val(text.replace(`:${match}:`, emoji));
+                $(this).val(text.replace(`:${match}:`, emoji));
                 event.preventDefault();
                 return;
             }
         }
     }
+};
 
+const keypress = room => function keypressFunction(event) {
     // Check for submission
-    if (event.key === 'Enter') {
-        if (!input.val()) {
-            return;
-        }
-
-        // Clear the chat box
-        const msg = input.val();
-        input.val('');
-
-        // Use "startsWith" instead of "===" to work around an unknown bug where
-        // the room can already have the table number appended (e.g. "table123")
-        if (room.startsWith('table')) {
-            room = `table${globals.tableID}`;
-        }
-
-        globals.conn.send('chat', {
-            msg,
-            room,
-        });
+    if (event.key !== 'Enter') {
+        return;
     }
+
+    const msg = $(this).val();
+    if (!msg) {
+        return;
+    }
+
+    // Clear the chat box
+    $(this).val('');
+
+    // Use "startsWith" instead of "===" to work around an unknown bug where
+    // the room can already have the table number appended (e.g. "table123")
+    if (room.startsWith('table')) {
+        room = `table${globals.tableID}`;
+    }
+
+    globals.conn.send('chat', {
+        msg,
+        room,
+    });
 };
 
 exports.add = (data, fast) => {
