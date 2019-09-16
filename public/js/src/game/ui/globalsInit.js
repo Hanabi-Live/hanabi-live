@@ -52,6 +52,7 @@ module.exports = () => {
     globals.cardsGotten = 0;
     globals.cluesSpentPlusStrikes = 0;
     globals.stackDirections = [0, 0, 0, 0, 0];
+    globals.clueTypeLastGiven = null;
 
     // UI elements
     globals.ImageLoader = null;

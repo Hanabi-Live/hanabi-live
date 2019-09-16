@@ -363,6 +363,22 @@ commands.notify = (data) => {
         if (!globals.replay && globals.replayMax > 0) {
             globals.elements.replayButton.setEnabled(true);
         }
+    } else if (data.type === 'clue' && globals.variant.name.startsWith('Alternating Clues')) {
+        if (data.clue.type === constants.CLUE_TYPE.RANK) {
+            for (const button of globals.elements.suitClueButtons) {
+                button.show();
+            }
+            for (const button of globals.elements.rankClueButtons) {
+                button.hide();
+            }
+        } else if (data.clue.type === constants.CLUE_TYPE.COLOR) {
+            for (const button of globals.elements.suitClueButtons) {
+                button.hide();
+            }
+            for (const button of globals.elements.rankClueButtons) {
+                button.show();
+            }
+        }
     }
 
     // Now that it is recorded, change the actual drawn game state

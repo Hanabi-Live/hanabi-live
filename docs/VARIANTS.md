@@ -154,6 +154,12 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * The score of the game is not revealed until the game is over.
 * Players do not get a clue back for successfully playing a 5.
 
+### Alternating Clues
+
+* This variant was invented by Jake Stiles.
+* The first clue of the game has no restrictions. After that, each successive clue must be the opposite type as the one prior.
+* For example, if the first clue of the game is a color clue, then the second clue must be a number clue, the third clue must be a color clue, and so forth.
+
 ### Special Mix (5 Suits)
 
 * This is a mix of several variants. The suits are as follows:
@@ -537,6 +543,11 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Throw It in a Hole (5 Suits)
   * Throw It in a Hole (4 Suits)
   * Throw It in a Hole (3 Suits)
+* Alternating Clues
+  * Alternating Clues (6 Suits)
+  * Alternating Clues (5 Suits)
+  * Alternating Clues (4 Suits)
+  * Alternating Clues (3 Suits)
 * Mixed
   * Special Mix (5 Suits)
   * Special Mix (6 Suits)

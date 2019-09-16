@@ -52,6 +52,7 @@ func (p *GamePlayer) GiveClue(d *CommandData, g *Game) {
 		// On the client, clues are shown to the user to be divided by two
 		g.ClueTokens--
 	}
+	g.LastClueTypeGiven = d.Clue.Type
 
 	// Send the "notify" message about the clue
 	g.Actions = append(g.Actions, ActionClue{

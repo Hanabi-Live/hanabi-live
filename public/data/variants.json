@@ -1251,6 +1251,24 @@
         "spacing": true
     },
 
+    "Alternating Clues (6 Suits)": {
+        "id": 283,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+    },
+    "Alternating Clues (5 Suits)": {
+        "id": 284,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+    },
+    "Alternating Clues (4 Suits)": {
+        "id": 285,
+        "suits": ["Blue", "Green", "Yellow", "Red"]
+    },
+    "Alternating Clues (3 Suits)": {
+        "id": 286,
+        "suits": ["Blue", "Green", "Yellow"],
+        "spacing": true
+    },
+
     "Special Mix (5 Suit)": {
         "id": 159,
         "suits": ["Black", "Rainbow", "Pink", "White", "Brown"]

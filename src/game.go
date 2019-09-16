@@ -34,6 +34,7 @@ type Game struct {
 	Score             int
 	MaxScore          int
 	Strikes           int
+	LastClueTypeGiven int
 	// Different actions will have different fields
 	// Thus, Actions is a slice of different action types
 	// Furthermore, we don't want this to be a pointer of interfaces because
@@ -74,6 +75,7 @@ func NewGame(t *Table) *Game {
 		DatetimeTurnBegin: time.Now(),
 		ClueTokens:        maxClueNum,
 		MaxScore:          len(variants[t.Options.Variant].Suits) * 5,
+		LastClueTypeGiven: -1,
 		Actions:           make([]interface{}, 0),
 		EndTurn:           -1,
 

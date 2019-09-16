@@ -159,6 +159,14 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
+		// Validate special variant restrictions
+		if strings.HasPrefix(g.Options.Variant, "Alternating Clues") &&
+			d.Clue.Type == g.LastClueTypeGiven {
+
+			s.Warning("You cannot give two clues of the same time in a row in this variant.")
+			return
+		}
+
 		// Validate "Detrimental Character Assignment" restrictions
 		if characterCheckClue(s, d, g, p) {
 			return
