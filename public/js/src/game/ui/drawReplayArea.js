@@ -12,9 +12,9 @@ module.exports = () => {
     const winH = globals.stage.getHeight();
 
     const replayAreaValues = {
-        x: 0.15,
+        x: 0.16,
         y: 0.51,
-        w: 0.5,
+        w: 0.481,
     };
     if (!globals.lobby.settings.showKeldonUI) {
         replayAreaValues.x = 0.01;
@@ -30,15 +30,19 @@ module.exports = () => {
     });
 
     // The thin black rectangle that the replay slider slides on
-    const replayBar = new graphics.Rect({
-        x: 0,
-        y: 0.0425 * winH,
+    const replayBarValues = {
+        y: 0.0425,
+        h: 0.01,
+    };
+    globals.elements.replayBar = new graphics.Rect({
+        x: 0 * winW,
+        y: replayBarValues.y * winH,
         width: replayAreaValues.w * winW,
-        height: 0.01 * winH,
+        height: replayBarValues.h * winH,
         fill: 'black',
         cornerRadius: 0.005 * winH,
     });
-    globals.elements.replayArea.add(replayBar);
+    globals.elements.replayArea.add(globals.elements.replayBar);
 
     // An invisible rectangle over the visible black rectangle above
     // (which is slightly bigger so that it is easier to click on)
@@ -54,21 +58,22 @@ module.exports = () => {
     globals.elements.replayArea.add(replayBarClickRect);
 
     const shuttleValues = {
-        x: 0,
-        y: 0.0325,
         w: 0.03,
         h: 0.03,
         cornerRadius: 0.01,
         stroke: 3,
+        scale: 0.75,
     };
 
     // The shared (white) replay shuttle
-    // (we want it to be below the normal replay shuttle, so we define it first)
+    // (we want it to be behind the normal replay shuttle, so we define it first)
     globals.elements.replayShuttleShared = new graphics.Rect({
-        x: shuttleValues.x,
-        y: shuttleValues.y * winH,
         width: shuttleValues.w * winW,
         height: shuttleValues.h * winH,
+        offset: {
+            x: shuttleValues.w / 2 * winW,
+            y: shuttleValues.h / 2 * winW,
+        },
         cornerRadius: shuttleValues.cornerRadius * winW,
         fill: '#d1d1d1', // Gray
         stroke: shuttleValues.stroke,
@@ -83,20 +88,20 @@ module.exports = () => {
 
     // This is the normal (blue) replay shuttle
     globals.elements.replayShuttle = new graphics.Rect({
-        x: shuttleValues.x,
-        y: shuttleValues.y * winH,
         width: shuttleValues.w * winW,
         height: shuttleValues.h * winH,
-        fill: '#0000cc', // Blue
+        offset: {
+            x: shuttleValues.w / 2 * winW,
+            y: shuttleValues.h / 2 * winW,
+        },
         cornerRadius: shuttleValues.cornerRadius * winW,
+        fill: '#0000cc', // Blue
         draggable: true,
         dragBoundFunc: replay.barDrag,
         stroke: shuttleValues.stroke,
         listening: true,
     });
     globals.elements.replayArea.add(globals.elements.replayShuttle);
-
-    replay.adjustShuttles();
 
     const replayButtonValues = {
         x: 0.05,
@@ -245,4 +250,5 @@ module.exports = () => {
     // Add the replay area to the UI
     globals.elements.replayArea.hide();
     globals.layers.UI.add(globals.elements.replayArea);
+    replay.adjustShuttles(true);
 };

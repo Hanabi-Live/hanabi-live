@@ -353,7 +353,7 @@ commands.notify = (data) => {
         // We need to update the replay slider, based on the new amount of turns
         globals.replayMax = data.num;
         if (globals.inReplay) {
-            replay.adjustShuttles();
+            replay.adjustShuttles(false);
             globals.elements.replayForwardButton.setEnabled(true);
             globals.elements.replayForwardFullButton.setEnabled(true);
             globals.layers.UI.batchDraw();
@@ -591,7 +591,7 @@ commands.replayTurn = (data) => {
 
     const oldTurn = globals.sharedReplayTurn;
     globals.sharedReplayTurn = data.turn;
-    replay.adjustShuttles();
+    replay.adjustShuttles(false);
     if (globals.useSharedTurns) {
         const animateFast = globals.sharedReplayLoading
             || Math.abs(globals.sharedReplayTurn - oldTurn) > 2;

@@ -96,7 +96,7 @@ const goto = (target, fast) => {
     globals.replayTurn = target;
 
     setVisibleButtons();
-    adjustShuttles();
+    adjustShuttles(false);
     if (fast) {
         globals.animateFast = true;
     }
@@ -261,7 +261,7 @@ exports.barClick = function barClick(event) {
 };
 
 exports.barDrag = function barDrag(pos) {
-    const min = this.getParent().getAbsolutePosition().x;
+    const min = this.getParent().getAbsolutePosition().x + (this.getWidth() * 0.5);
     const w = this.getParent().getWidth() - this.getWidth();
     let shuttleX = pos.x - min;
     const shuttleY = this.getAbsolutePosition().y;
@@ -284,9 +284,8 @@ exports.barDrag = function barDrag(pos) {
     };
 };
 
-const positionReplayShuttle = (shuttle, tween, turn, fast) => {
+const positionReplayShuttle = (shuttle, turn, smaller, fast) => {
     let max = globals.replayMax;
-    const w = shuttle.getParent().getWidth() - shuttle.getWidth();
 
     // During initialization, the turn will be -1 and the maximum number of replay turns will be 0
     // Account for this and provide sane defaults
@@ -297,15 +296,28 @@ const positionReplayShuttle = (shuttle, tween, turn, fast) => {
         max = 1;
     }
 
-    const x = turn * w / max;
-    if (globals.animateFast || fast) {
+    const winH = globals.stage.getHeight();
+    const sliderW = shuttle.getParent().getWidth() - shuttle.getWidth();
+    const x = sliderW / max * turn + (shuttle.getWidth() * 0.5);
+    let y = globals.elements.replayBar.getY() + (shuttle.getHeight() * 0.55);
+    if (smaller) {
+        y -= 0.003 * winH;
+    }
+    const scale = smaller ? 0.7 : 1;
+    if (fast) {
         shuttle.setX(x);
+        shuttle.setY(y);
+        shuttle.setScaleX(scale);
+        shuttle.setScaleY(scale);
     } else {
-        if (tween) {
-            tween.destroy();
+        if (shuttle.tween) {
+            shuttle.tween.destroy();
         }
-        tween = new graphics.Tween({
+        shuttle.tween = new graphics.Tween({
             x,
+            y,
+            scaleX: scale,
+            scaleY: scale,
             node: shuttle,
             duration: 0.25,
             easing: graphics.Easings.EaseOut,
@@ -315,47 +327,23 @@ const positionReplayShuttle = (shuttle, tween, turn, fast) => {
 
 const adjustShuttles = (fast) => {
     const shuttle = globals.elements.replayShuttle;
-    const shuttleTween = globals.elements.replayShuttleTween;
     const shuttleShared = globals.elements.replayShuttleShared;
-    const shuttleSharedTween = globals.elements.replayShuttleSharedTween;
 
     // If the shuttles are overlapping, then make the normal shuttle a little bit smaller
     let smaller = false;
     if (!globals.useSharedTurns && globals.replayTurn === globals.sharedReplayTurn) {
         smaller = true;
     }
-    let size = 0.03;
-    if (smaller) {
-        size = 0.022;
-    }
-    const winW = globals.stage.getWidth();
-    const winH = globals.stage.getHeight();
-    shuttle.setWidth(size * winW);
-    shuttle.setHeight(size * winH);
-
-    // If it is smaller, we need to nudge it down a bit in order to center it
-    let y = 0.0325 * winH;
-    if (smaller) {
-        const diffY = shuttleShared.getHeight() - shuttle.getHeight();
-        y += diffY / 2;
-    }
-    shuttle.setY(y);
 
     // Adjust the shuttles along the X axis based on the current turn
     // If it is smaller, we need to nudge it to the right a bit in order to center it
-    positionReplayShuttle(shuttleShared, shuttleSharedTween, globals.sharedReplayTurn, fast);
-    if (smaller) {
-        const diffX = shuttleShared.getWidth() - shuttle.getWidth();
-        const adjustment = diffX / 2;
-        shuttle.setX(shuttleShared.getX() + adjustment);
-    } else {
-        positionReplayShuttle(shuttle, shuttleTween, globals.replayTurn, fast);
-    }
+    positionReplayShuttle(shuttleShared, globals.sharedReplayTurn, false, fast);
+    positionReplayShuttle(shuttle, globals.replayTurn, smaller, fast);
 };
 exports.adjustShuttles = adjustShuttles;
 
 /*
-    Right-clicking the deck
+    Right-clicking the turn count
 */
 
 exports.promptTurn = () => {
@@ -364,8 +352,8 @@ exports.promptTurn = () => {
         return;
     }
     turn -= 1;
-    // We need to decrement the turn because
-    // the turn shown to the user is always one greater than the real turn
+    // (we need to decrement the turn because the turn shown to the user is always one greater than
+    // the real turn)
 
     if (globals.replay) {
         checkDisableSharedTurns();
@@ -393,7 +381,7 @@ exports.toggleSharedTurns = () => {
     // We need to adjust the shuttles in the case where
     // the normal shuttle is underneath the shared replay shuttle
     // and we need to make it bigger/smaller
-    adjustShuttles();
+    adjustShuttles(false);
 };
 
 // Navigating as a follower in a shared replay disables replay actions
@@ -420,5 +408,5 @@ const shareCurrentTurn = (target) => {
         turn: target,
     });
     globals.sharedReplayTurn = target;
-    adjustShuttles();
+    adjustShuttles(false);
 };
