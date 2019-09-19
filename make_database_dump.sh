@@ -13,8 +13,11 @@ source "$DIR/.env"
 
 # Back up the database and gzip it
 mkdir -p "$BACKUPS_DIR"
+echo Dumping the database...
 mysqldump -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" > "$BACKUPS_DIR/$FILENAME"
+echo Zipping the backup...
 gzip "$BACKUPS_DIR/$FILENAME"
+echo Complete.
 
 # Delete old backups if the hard drive is getting full
 AMOUNT_FULL=$(df "$DIR" | tail -1 | awk '{print $5}' | rev | cut -c 2- | rev)
