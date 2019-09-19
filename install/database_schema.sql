@@ -81,7 +81,7 @@ CREATE TABLE games (
     id                     INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
     name                   NVARCHAR(50)  NOT NULL,
-    num_players            TINYINT(3)    NOT NULL,
+    num_players            TINYINT       NOT NULL,
     owner                  INT           NOT NULL,
     variant                INT           NOT NULL, /* Equal to the variant ID (found in "variants.json") */
     timed                  BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
