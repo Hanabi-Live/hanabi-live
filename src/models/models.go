@@ -22,6 +22,7 @@ type Models struct {
 	DiscordMetadata
 	DiscordWaiters
 	GameActions
+	GameActions2
 	GameParticipants
 	Games
 	Users
