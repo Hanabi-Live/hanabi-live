@@ -82,26 +82,6 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * All rank clues will "touch" the light pink suit.
 * No color clues will "touch" the light pink suit.
 
-### Color Blind
-
-* Color clues touch no suits. (Empty color clues are always allowed.)
-
-### Number Blind
-
-* Rank clues touch no suits. (Empty rank clues are always allowed.)
-
-### Totally Blind
-
-* Color clues and rank clues touch no suits. (Empty clues are always allowed.)
-
-### Color Mute
-
-* Color clues cannot be given.
-
-### Number Mute
-
-* Rank clues cannot be given.
-
 ### Ambiguous
 
 * Two suits share a color. There is no way to disambiguate between them with color clues.
@@ -122,43 +102,6 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 ### Prism-Ones
 
 * Ones are "touched" by all color clues.
-
-### Clue Starved
-
-* Each discard only generates 0.5 clues. (The team still starts with 8 clues.)
-
-### Up or Down
-
-* This variant was invented by [Sean McCarthy on the BoardGameGeek forums](https://boardgamegeek.com/article/30863162).
-* Two 1's are removed from each suit.
-* One "START" card is added to each suit.
-* When a stack is empty, you can play either a 1, a 5, or a START card on it.
-* When a stack has a START card on it, you can play either a 2 or a 4 on it.
-* If a stack was started with a 1 (or a START + 2), then it works as a normal stack.
-* If a stack was started with a 5 (or a START + 4), then it must be completed in reverse.
-* A clue token is given when a stack is completed, regardless of whether it is a normal stack or a reversed stack.
-
-### Cow & Pig
-
-* When players give a clue, they point at the cards clued, but say "moo" if it a color clue and "oink" if it is a rank clue.
-
-### Duck
-
-* This variant was invented by Jack Gurev's group.
-* When players give a clue, they point at the cards clued, but say "quack" instead of a color or number.
-
-### Throw It in a Hole
-
-* This variant was invented by Jack Gurev's group.
-* When players play a card, they do not flip it over like normal but instead place it face down in the center of the table.
-* The score of the game is not revealed until the game is over.
-* Players do not get a clue back for successfully playing a 5.
-
-### Alternating Clues
-
-* This variant was invented by Jake Stiles.
-* The first clue of the game has no restrictions. After that, each successive clue must be the opposite type as the one prior.
-* For example, if the first clue of the game is a color clue, then the second clue must be a number clue, the third clue must be a color clue, and so forth.
 
 ### Special Mix (5 Suits)
 
@@ -199,7 +142,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   5. Rainbow (all colors)
   6. White (colorless)
 
-### Ambiguous & Dual-Color
+### Ambiguous & Dual-Color Mix
 
 * This is a mix of several variants. The suits are as follows:
   1. Lime (blue / yellow)
@@ -208,6 +151,63 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   4. Violet (blue / red)
   5. Tangelo (yellow / red)
   6. Peach (yellow / red)
+
+### Color Blind
+
+* Color clues touch no suits. (Empty color clues are always allowed.)
+
+### Number Blind
+
+* Rank clues touch no suits. (Empty rank clues are always allowed.)
+
+### Totally Blind
+
+* Color clues and rank clues touch no suits. (Empty clues are always allowed.)
+
+### Color Mute
+
+* Color clues cannot be given.
+
+### Number Mute
+
+* Rank clues cannot be given.
+
+### Alternating Clues
+
+* This variant was invented by Jake Stiles.
+* The first clue of the game has no restrictions. After that, each successive clue must be the opposite type as the one prior.
+* For example, if the first clue of the game is a color clue, then the second clue must be a number clue, the third clue must be a color clue, and so forth.
+
+### Clue Starved
+
+* Each discard only generates 0.5 clues. (The team still starts with 8 clues.)
+
+### Up or Down
+
+* This variant was invented by [Sean McCarthy on the BoardGameGeek forums](https://boardgamegeek.com/article/30863162).
+* Two 1's are removed from each suit.
+* One "START" card is added to each suit.
+* When a stack is empty, you can play either a 1, a 5, or a START card on it.
+* When a stack has a START card on it, you can play either a 2 or a 4 on it.
+* If a stack was started with a 1 (or a START + 2), then it works as a normal stack.
+* If a stack was started with a 5 (or a START + 4), then it must be completed in reverse.
+* A clue token is given when a stack is completed, regardless of whether it is a normal stack or a reversed stack.
+
+### Cow & Pig
+
+* When players give a clue, they point at the cards clued, but say "moo" if it a color clue and "oink" if it is a rank clue.
+
+### Duck
+
+* This variant was invented by Jack Gurev's group.
+* When players give a clue, they point at the cards clued, but say "quack" instead of a color or number.
+
+### Throw It in a Hole
+
+* This variant was invented by Jack Gurev's group.
+* When players play a card, they do not flip it over like normal but instead place it face down in the center of the table.
+* The score of the game is not revealed until the game is over.
+* Players do not get a clue back for successfully playing a 5.
 
 <br />
 
