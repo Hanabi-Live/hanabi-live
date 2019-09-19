@@ -139,27 +139,13 @@ CREATE TABLE game_actions2 (
     game_id    INT         NOT NULL,
     type       TINYINT(2)  NOT NULL, /* 0 - clue, 1 - play, 2 - discard */
     target     TINYINT     NOT NULL, /* The index of the player that received the clue or the card that was played/discarded */
-    giver      TINYINT(3)  NOT NULL, /* The index of the player that performed the clue */
+    clue_giver TINYINT(3)  NOT NULL, /* The index of the player that performed the clue */
     clue_type  TINYINT(1)  NOT NULL, /* 0 - number, 1 - color */
-    value      TINYINT(2)  NOT NULL, /* 1 if 1, 2 if 2, etc., or 1 if blue, 2 if etc. */
+    clue_value TINYINT(2)  NOT NULL, /* 1 if 1, 2 if 2, etc., or 1 if blue, 2 if etc. */
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the rows */
 );
-CREATE INDEX game_clues_index_game_id ON game_clues (game_id);
-
-/* Eventually this table will replace the "game_actions" table */
-DROP TABLE IF EXISTS game_plays_discards;
-CREATE TABLE game_plays ( /* This include both playing a card and discarding a card */
-    id         INT      NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
-    /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    game_id    INT      NOT NULL,
-    play       BOOLEAN  NOT NULL, /* TRUE - play, FALSE - discard */
-    player     TINYINT  NOT NULL, /* The index of the player that did the action */
-    card       TINYINT  NOT NULL, /* The order of the card that was played/discarded or -1 if a deck-play */
-    FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
-    /* If the game is deleted, automatically delete all of the rows */
-);
-CREATE INDEX game_plays_index_game_id ON game_plays (game_id);
+CREATE INDEX game_actions2_index_game_id ON game_actions2 (game_id);
 
 DROP TABLE IF EXISTS variant_stats;
 CREATE TABLE variant_stats (
