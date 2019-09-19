@@ -134,14 +134,14 @@ CREATE INDEX game_actions_index_game_id ON game_actions (game_id);
 /* Eventually this table will replace the "game_actions" table */
 DROP TABLE IF EXISTS game_actions2;
 CREATE TABLE game_actions2 (
-    id         INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    id         INT      NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    game_id    INT         NOT NULL,
-    type       TINYINT(2)  NOT NULL, /* 0 - clue, 1 - play, 2 - discard */
-    target     TINYINT     NOT NULL, /* The index of the player that received the clue or the card that was played/discarded */
-    clue_giver TINYINT(3)  NOT NULL, /* The index of the player that performed the clue */
-    clue_type  TINYINT(1)  NOT NULL, /* 0 - number, 1 - color */
-    clue_value TINYINT(2)  NOT NULL, /* 1 if 1, 2 if 2, etc., or 1 if blue, 2 if etc. */
+    game_id    INT      NOT NULL,
+    type       TINYINT  NOT NULL, /* 0 - clue, 1 - play, 2 - discard */
+    target     TINYINT  NOT NULL, /* The index of the player that received the clue or the card that was played/discarded */
+    clue_giver TINYINT  NOT NULL, /* The index of the player that performed the clue */
+    clue_type  TINYINT  NOT NULL, /* 0 - number, 1 - color */
+    clue_value TINYINT  NOT NULL, /* 1 if 1, 2 if 2, etc., or 1 if blue, 2 if etc. */
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the rows */
 );
