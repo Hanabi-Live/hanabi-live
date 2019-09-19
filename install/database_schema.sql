@@ -81,7 +81,7 @@ CREATE TABLE games (
     id                     INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
     name                   NVARCHAR(50)  NOT NULL,
-    num_players            TINYINT       NOT NULL,
+    num_players            TINYINT(3)    NOT NULL,
     owner                  INT           NOT NULL,
     variant                INT           NOT NULL, /* Equal to the variant ID (found in "variants.json") */
     timed                  BOOLEAN       NOT NULL, /* 0 - not timed, 1 - timed */
@@ -132,15 +132,16 @@ CREATE TABLE game_actions (
 CREATE INDEX game_actions_index_game_id ON game_actions (game_id);
 
 /* Eventually this table will replace the "game_actions" table */
-DROP TABLE IF EXISTS game_clues;
-CREATE TABLE game_clues (
-    id       INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+DROP TABLE IF EXISTS game_actions2;
+CREATE TABLE game_actions2 (
+    id         INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    game_id  INT      NOT NULL,
-    giver    TINYINT  NOT NULL, /* The index of the player that performed the clue */
-    target   TINYINT  NOT NULL, /* The index of the player that received the clue */
-    type     TINYINT  NOT NULL, /* 0 - number, 1 - color */
-    value    TINYINT  NOT NULL, /* 1 if 1, 2 if 2, etc., or 1 if blue, 2 if etc. */
+    game_id    INT         NOT NULL,
+    type       TINYINT(2)  NOT NULL, /* 0 - clue, 1 - play, 2 - discard */
+    target     TINYINT     NOT NULL, /* The index of the player that received the clue or the card that was played/discarded */
+    giver      TINYINT(3)  NOT NULL, /* The index of the player that performed the clue */
+    clue_type  TINYINT(1)  NOT NULL, /* 0 - number, 1 - color */
+    value      TINYINT(2)  NOT NULL, /* 1 if 1, 2 if 2, etc., or 1 if blue, 2 if etc. */
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the rows */
 );
