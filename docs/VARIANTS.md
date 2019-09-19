@@ -208,6 +208,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * When players play a card, they do not flip it over like normal but instead place it face down in the center of the table.
 * The score of the game is not revealed until the game is over.
 * Players do not get a clue back for successfully playing a 5.
+* The game will automatically end if 3 strikes are accumulated.
 
 <br />
 
