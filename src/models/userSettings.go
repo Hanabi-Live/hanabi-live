@@ -99,7 +99,7 @@ func (*UserSettings) Set(userID int, name string, value string) error {
 	// First, find out if they have customized any settings yet
 	var count int
 	if err := db.QueryRow(`
-		SELECT COUNT(id)
+		SELECT COUNT(user_id)
 		FROM user_settings
 		WHERE user_id = ?
 	`, userID).Scan(&count); err != nil {

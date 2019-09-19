@@ -42,7 +42,7 @@ cursor.close()
 
 for user in users:
     cursor = cnx.cursor()
-    query = ('SELECT COUNT(id) FROM game_participants WHERE user_id = %s')
+    query = ('SELECT COUNT(game_id) FROM game_participants WHERE user_id = %s')
     cursor.execute(query, (user[0],))
     for (count) in cursor:
         num_games = count[0]

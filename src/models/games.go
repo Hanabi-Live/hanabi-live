@@ -165,7 +165,7 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 					JOIN users ON users.id = game_participants.user_id
 				WHERE game_participants.game_id = id_original
 					AND game_participants.user_id != ?
-				ORDER BY game_participants.id
+				ORDER BY game_participants.game_id
 			) AS otherPlayerNames
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
@@ -218,7 +218,7 @@ func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error)
 				FROM game_participants
 					JOIN users ON users.id = game_participants.user_id
 				WHERE game_participants.game_id = id_original
-				ORDER BY game_participants.id
+				ORDER BY game_participants.game_id
 			) AS playerNames,
 			datetime_finished
 		FROM games
@@ -294,10 +294,10 @@ func (*Games) GetAllDeals(userID int, databaseID int) ([]GameHistory, error) {
 					JOIN users ON users.id = game_participants.user_id
 				WHERE game_participants.game_id = id_original
 					AND game_participants.user_id != ?
-				ORDER BY game_participants.id
+				ORDER BY game_participants.game_id
 			) AS otherPlayerNames,
 			(
-				SELECT COUNT(game_participants.id)
+				SELECT COUNT(game_participants.game_id)
 				FROM game_participants
 				WHERE user_id = ?
 					AND game_id = games.id
@@ -397,7 +397,7 @@ func (*Games) GetOptions(databaseID int) (Options, error) {
 func (*Games) GetNumPlayers(databaseID int) (int, error) {
 	var numPlayers int
 	err := db.QueryRow(`
-		SELECT COUNT(game_participants.id)
+		SELECT COUNT(game_participants.game_id)
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 		WHERE games.id = ?
@@ -444,8 +444,7 @@ func (*Games) GetPlayers(databaseID int) ([]*Player, error) {
 			JOIN game_participants ON games.id = game_participants.game_id
 			JOIN users ON game_participants.user_id = users.id
 		WHERE games.id = ?
-			AND datetime_finished IS NOT NULL
-		ORDER BY game_participants.id
+		ORDER BY game_participants.game_id
 	`, databaseID); err != nil {
 		return nil, err
 	} else {
@@ -487,7 +486,7 @@ func (*Games) GetNotes(databaseID int) ([]NoteList, error) {
 			JOIN game_participants ON games.id = game_participants.game_id
 			JOIN users ON users.id = game_participants.user_id
 		WHERE games.id = ?
-		ORDER BY game_participants.id
+		ORDER BY game_participants.game_id
 	`, databaseID); err != nil {
 		return nil, err
 	} else {

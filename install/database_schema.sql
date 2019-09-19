@@ -25,9 +25,8 @@ CREATE INDEX users_index_username ON users (username);
 /* Any default settings must also be applied to the "userSettings.go" file */
 DROP TABLE IF EXISTS user_settings;
 CREATE TABLE user_settings (
-    id                                  INT          NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    user_id                             INT          NOT NULL  PRIMARY KEY,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    user_id                             INT          NOT NULL,
     send_turn_notify                    BOOLEAN      NOT NULL  DEFAULT 0,
     send_turn_sound                     BOOLEAN      NOT NULL  DEFAULT 1,
     send_timer_sound                    BOOLEAN      NOT NULL  DEFAULT 1,
@@ -50,14 +49,12 @@ CREATE TABLE user_settings (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     /* If the user is deleted, automatically delete all of the rows */
 );
-CREATE INDEX user_settings_index_user_id ON user_settings (user_id);
 
 DROP TABLE IF EXISTS user_stats; /* Stats are per variant */
 CREATE TABLE user_stats (
-    id               INT  NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
-    /* PRIMARY KEY automatically creates a UNIQUE constraint */
     user_id          INT    NOT NULL,
-    variant          INT    NOT NULL, /* Equal to the variant ID (found in "variants.go") */
+    variant          INT    NOT NULL,
+    /* PRIMARY KEY automatically creates a UNIQUE constraint */
     num_games        INT    NOT NULL  DEFAULT 0,
     best_score2      INT    NOT NULL  DEFAULT 0, /* Their best score for 2-player games on this variant */
     best_score2_mod  INT    NOT NULL  DEFAULT 0, /* This stores if they used additional options to make the game easier */
@@ -71,10 +68,10 @@ CREATE TABLE user_stats (
     best_score6_mod  INT    NOT NULL  DEFAULT 0,
     average_score    FLOAT  NOT NULL  DEFAULT 0,
     num_strikeouts   FLOAT  NOT NULL  DEFAULT 0,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     /* If the user is deleted, automatically delete all of the rows */
+    PRIMARY KEY (user_id, variant) 
 );
-CREATE INDEX user_stats_index_user_id ON user_stats (user_id);
 
 DROP TABLE IF EXISTS games;
 CREATE TABLE games (
@@ -106,19 +103,17 @@ CREATE INDEX games_index_seed ON games (seed);
 
 DROP TABLE IF EXISTS game_participants;
 CREATE TABLE game_participants (
-    id                    INT              NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
-    /* PRIMARY KEY automatically creates a UNIQUE constraint */
     user_id               INT              NOT NULL,
     game_id               INT              NOT NULL,
+    /* PRIMARY KEY automatically creates a UNIQUE constraint */
     notes                 NVARCHAR(10000)  NOT NULL,
     character_assignment  INT              NOT NULL,
     character_metadata    INT              NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
+    FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
     /* If the game is deleted, automatically delete all of the rows */
+    PRIMARY KEY (user_id, game_id)
 );
-CREATE INDEX game_participants_index_user_id ON game_participants (user_id);
-CREATE INDEX game_participants_index_game_id ON game_participants (game_id);
 
 DROP TABLE IF EXISTS game_actions;
 CREATE TABLE game_actions (
@@ -134,24 +129,23 @@ CREATE INDEX game_actions_index_game_id ON game_actions (game_id);
 /* Eventually this table will replace the "game_actions" table */
 DROP TABLE IF EXISTS game_actions2;
 CREATE TABLE game_actions2 (
-    id         INT      NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
-    /* PRIMARY KEY automatically creates a UNIQUE constraint */
     game_id    INT      NOT NULL,
+    turn       TINYINT  NOT NULL,
+    /* PRIMARY KEY automatically creates a UNIQUE constraint */
     type       TINYINT  NOT NULL, /* 0 - clue, 1 - play, 2 - discard */
     target     TINYINT  NOT NULL, /* The index of the player that received the clue or the card that was played/discarded */
     clue_giver TINYINT  NOT NULL, /* The index of the player that performed the clue */
     clue_type  TINYINT  NOT NULL, /* 0 - number, 1 - color */
     clue_value TINYINT  NOT NULL, /* 1 if 1, 2 if 2, etc., or 1 if blue, 2 if etc. */
-    FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
+    FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
     /* If the game is deleted, automatically delete all of the rows */
+    PRIMARY KEY (game_id, turn)
 );
-CREATE INDEX game_actions2_index_game_id ON game_actions2 (game_id);
 
 DROP TABLE IF EXISTS variant_stats;
 CREATE TABLE variant_stats (
-    id                  INT    NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    variant             INT    NOT NULL  PRIMARY KEY, /* Equal to the variant ID (found in "variants.go") */
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    variant             INT    NOT NULL, /* Equal to the variant ID (found in "variants.go") */
     num_games           INT    NOT NULL  DEFAULT 0,
     best_score2         INT    NOT NULL  DEFAULT 0, /* The overall best score for a 2-player games on this variant */
     best_score3         INT    NOT NULL  DEFAULT 0,
@@ -162,7 +156,6 @@ CREATE TABLE variant_stats (
     average_score       FLOAT  NOT NULL  DEFAULT 0,
     num_strikeouts      INT    NOT NULL  DEFAULT 0
 );
-CREATE INDEX variant_stats_index_variant ON variant_stats (variant);
 
 DROP TABLE IF EXISTS chat_log;
 CREATE TABLE chat_log (

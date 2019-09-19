@@ -149,7 +149,7 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 	// If they don't, then we need to insert a new row
 	var numRows int
 	if err := db.QueryRow(`
-		SELECT COUNT(id)
+		SELECT COUNT(user_id)
 		FROM user_stats
 		WHERE user_id = ?
 			AND variant = ?
@@ -298,7 +298,7 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 			// Check to see if this user has played any games of this variant
 			var numRows int
 			if err := db.QueryRow(`
-				SELECT COUNT(game_participants.id)
+				SELECT COUNT(game_participants.game_id)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = ?

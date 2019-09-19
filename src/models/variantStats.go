@@ -120,7 +120,7 @@ func (*VariantStats) Update(variant int, maxScore int, stats VariantStatsRow) er
 	// If not, we need to insert a new one
 	var numRows int
 	if err := db.QueryRow(`
-		SELECT COUNT(id)
+		SELECT COUNT(variant)
 		FROM variant_stats
 		WHERE variant = ?
 	`, variant).Scan(&numRows); err != nil {
