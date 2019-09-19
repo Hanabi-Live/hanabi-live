@@ -147,14 +147,14 @@ CREATE TABLE game_clues (
 CREATE INDEX game_clues_index_game_id ON game_clues (game_id);
 
 /* Eventually this table will replace the "game_actions" table */
-DROP TABLE IF EXISTS game_plays;
+DROP TABLE IF EXISTS game_plays_discards;
 CREATE TABLE game_plays ( /* This include both playing a card and discarding a card */
     id         INT      NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
     game_id    INT      NOT NULL,
-    play_type  TINYINT  NOT NULL, /* 0 - play, 2 - discard, 3 - misplay */
+    play       BOOLEAN  NOT NULL, /* TRUE - play, FALSE - discard */
     player     TINYINT  NOT NULL, /* The index of the player that did the action */
-    card       TINYINT  NOT NULL, /* The order of the card that was played/discarded or -1 if a deck-play*/
+    card       TINYINT  NOT NULL, /* The order of the card that was played/discarded or -1 if a deck-play */
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
     /* If the game is deleted, automatically delete all of the rows */
 );
