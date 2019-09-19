@@ -1088,7 +1088,6 @@ const drawStatistics = () => {
         x: 0.825 * winW,
         y: 0.54 * winH,
         fontSize: 0.02 * winH,
-        visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
         listening: true,
     });
     globals.layers.UI.add(paceTextLabel);
@@ -1106,7 +1105,6 @@ const drawStatistics = () => {
         x: 0.9 * winW,
         y: 0.54 * winH,
         fontSize: 0.02 * winH,
-        visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
         listening: true,
     });
     globals.layers.UI.add(paceNumberLabel);
@@ -1124,7 +1122,6 @@ const drawStatistics = () => {
         x: 0.825 * winW,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
-        visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
         listening: true,
     });
     globals.layers.UI.add(efficiencyTextLabel);
@@ -1150,7 +1147,6 @@ const drawStatistics = () => {
         x: 0.9 * winW,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
-        visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
         listening: true,
     });
     globals.layers.UI.add(efficiencyNumberLabel);
@@ -1172,7 +1168,6 @@ const drawStatistics = () => {
         // "Easy" variants use the default color (off-white)
         // "Hard" variants use pink
         fill: (minEfficiency < 1.25 ? constants.LABEL_COLOR : '#ffb2b2'),
-        visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
         listening: true,
     });
     globals.layers.UI.add(efficiencyNumberLabelMinNeeded);
