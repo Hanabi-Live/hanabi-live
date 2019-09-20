@@ -42,7 +42,7 @@
         "clueRanks": "all",
         "fill": "#800040",
         "oneOfEach": true,
-        "pip": "infinity"
+        "pip": "number_sign"
     },
     "Gray": {
         "abbreviation": "A",
@@ -56,7 +56,7 @@
         "clueRanks": "none",
         "fill": "#271a0c",
         "oneOfEach": true,
-        "pip": "null_symbol"
+        "pip": "tensor_symbol"
     },
     "Dark Omni": {
         "abbreviation": "O",
@@ -89,7 +89,7 @@
         "clueColors": [],
         "clueRanks": "all",
         "fill": "#ffcce6",
-        "pip": "infinity"
+        "pip": "number_sign"
      },
 
     "Blue CB": { "clueColors": [], "name": "Blue", "pip": "diamond" },
