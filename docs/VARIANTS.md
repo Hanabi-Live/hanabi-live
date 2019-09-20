@@ -461,6 +461,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Ambiguous & White (5 Suits)
   * Ambiguous & Rainbow (5 Suits)
   * Very Ambiguous (6 Suits)
+  * Very Ambiguous (3 Suits)
 * Dual-Color
   * Dual-Color (6 Suits)
   * Dual-Color (5 Suits)

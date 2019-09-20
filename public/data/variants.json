@@ -910,6 +910,11 @@
     "Very Ambiguous (6 Suits)": {
         "id": 9,
         "suits": ["Sky VA", "Berry VA", "Navy VA", "Tomato VA", "Ruby VA", "Mahogany VA"],
+        "showSuitNames": true
+    },
+    "Very Ambiguous (3 Suits)": {
+        "id": 287,
+        "suits": ["Sky VA", "Berry VA", "Navy VA"],
         "showSuitNames": true,
         "spacing": true
     },
