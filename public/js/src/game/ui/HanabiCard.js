@@ -554,18 +554,6 @@ class HanabiCard extends graphics.Group {
         learnedCard.rank = rank;
         learnedCard.revealed = true;
 
-        // Detect if we played a different card than what we thought it was
-        if (this.noteSuit !== null || this.noteRank !== null) {
-            if (
-                this.holder === globals.playerUs
-                && (this.noteSuit !== suit || this.noteRank !== rank)
-            ) {
-                globals.surprise = true;
-            }
-            this.noteSuit = null;
-            this.noteRank = null;
-        }
-
         // Redraw the card
         this.setBareImage();
     }

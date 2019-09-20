@@ -219,13 +219,25 @@ func (s *Session) NotifyGameAction(a interface{}, t *Table) {
 func (s *Session) NotifySound(t *Table, i int) {
 	g := t.Game
 
-	// Prepare the sound message
-	sound := "turn_other"
+	// Prepare the sound message, depending on if it is their turn
+	var sound string
 	if g.Sound != "" {
 		sound = g.Sound
 	} else if i == g.ActivePlayer {
 		sound = "turn_us"
+	} else {
+		sound = "turn_other"
 	}
+
+	// Also check to see if this player is "surprised"
+	if i > -1 {
+		p := g.Players[i]
+		if p.Surprised {
+			p.Surprised = false
+			sound = "turn_surprise"
+		}
+	}
+
 	type SoundMessage struct {
 		File string `json:"file"`
 	}

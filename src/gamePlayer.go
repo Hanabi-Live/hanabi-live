@@ -25,6 +25,7 @@ type GamePlayer struct {
 	Character          string
 	CharacterMetadata  int
 	CharacterMetadata2 int
+	Surprised          bool
 }
 
 /*
@@ -150,6 +151,11 @@ func (p *GamePlayer) RemoveCard(target int, g *Game) *Card {
 // (which can only occur if the card fails to play)
 func (p *GamePlayer) PlayCard(g *Game, c *Card) bool {
 	t := g.Table
+
+	// Check to see if revealing this card would surprise the player
+	// (we want to have it at the beginning of the function so that the fail sound will overwrite
+	// the surprise sound)
+	p.CheckSurprise(g, c)
 
 	// Find out if this successfully plays
 	var failed bool
@@ -364,6 +370,11 @@ func (p *GamePlayer) DiscardCard(g *Game, c *Card) bool {
 	t.NotifyAction()
 	log.Info(t.GetName() + text)
 
+	// Check to see if revealing this card would surprise the player
+	// (we want to have it in the middle of the function so that it will
+	// overwrite the clued card sound but not overwrite the sad sound)
+	p.CheckSurprise(g, c)
+
 	// This could have been a discard (or misplay) or a card needed to get the maximum score
 	newMaxScore := g.GetMaxScore()
 	if newMaxScore < g.MaxScore {
@@ -503,9 +514,55 @@ func (p *GamePlayer) GetLeftPlayer(g *Game) int {
 
 // GetRightPlayer returns the index of the player that is sitting to this player's right
 func (p *GamePlayer) GetRightPlayer(g *Game) int {
-	// In Golang, "%" will give the remainder and not the modulus,
-	// so we need to ensure that the result is not negative or we will get a "index out of range" error
+	// In Golang, "%" will give the remainder and not the modulus, so we need to ensure that the
+	// result is not negative or we will get a "index out of range" error
 	return (p.Index - 1 + len(g.Players)) % len(g.Players)
+}
+
+// CheckSurprise checks to see if a player has a "wrong" note on a card that
+// they just played or discarded
+func (p *GamePlayer) CheckSurprise(g *Game, c *Card) {
+	note := p.Notes[c.Order]
+	if note == "" {
+		return
+	}
+
+	var noteSuit *Suit
+	noteRank := -1
+	for _, rank := range variants[g.Options.Variant].ClueRanks {
+		rankStr := strconv.Itoa(rank)
+		if note == rankStr {
+			noteRank = rank
+			break
+		}
+
+		// This code mirrors the "morph()" client-side function
+		for _, suit := range variants[g.Options.Variant].Suits {
+			suitAbbrev := strings.ToLower(suit.Abbreviation)
+			suitName := strings.ToLower(suit.Name)
+			if note == suitAbbrev+rankStr || // e.g. "b1" or "B1"
+				note == suitName+rankStr || // e.g. "blue1" or "Blue1" or "BLUE1"
+				note == suitName+" "+rankStr || // e.g. "blue 1" or "Blue 1" or "BLUE 1"
+				note == rankStr+suitAbbrev || // e.g. "1b" or "1B"
+				note == rankStr+suitName || // e.g. "1blue" or "1Blue" or "1BLUE"
+				note == rankStr+" "+suitName { // e.g. "1 blue" or "1 Blue" or "1 BLUE"
+
+				noteSuit = suit
+				noteRank = rank
+				break
+			}
+		}
+		if noteSuit != nil || noteRank != -1 {
+			break
+		}
+	}
+
+	// Convert the suit int to a Suit pointer
+	suit := variants[g.Options.Variant].Suits[c.Suit]
+
+	if noteSuit != suit || noteRank != c.Rank {
+		p.Surprised = true
+	}
 }
 
 func (p *GamePlayer) ShuffleHand(g *Game) {

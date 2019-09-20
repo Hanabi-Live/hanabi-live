@@ -288,13 +288,7 @@ const initCommands = () => {
     });
 
     globals.conn.on('sound', (data) => {
-        if (globals.settings.sendTurnSound && globals.currentScreen === 'game') {
-            if (globals.ui.globals.surprise) {
-                globals.ui.globals.surprise = false;
-                if (data.file === 'turn_other') {
-                    data.file = 'turn_surprise';
-                }
-            }
+        if (globals.currentScreen === 'game' && globals.settings.sendTurnSound) {
             game.sounds.play(data.file);
         }
     });

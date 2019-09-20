@@ -215,8 +215,6 @@ module.exports = () => {
     globals.postAnimationLayout = null;
     globals.lastAction = null; // Used when rebuilding the game state
     globals.UIClickTime = Date.now(); // Used to prevent accidental double clicks
-    // Used to prevent giving an accidental clue after clicking the "Exit Replay" button
-    globals.surprise = false;
     globals.spectators = [];
     globals.chatUnread = 0;
 

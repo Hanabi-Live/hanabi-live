@@ -55,6 +55,7 @@ type Suit struct {
 	AllClueColors bool     `json:"allClueColors"`
 	ClueRanks     string   `json:"clueRanks"`
 	OneOfEach     bool     `json:"oneOfEach"`
+	Abbreviation  string   `json:"abbreviation"`
 }
 
 func suitsInit() {
