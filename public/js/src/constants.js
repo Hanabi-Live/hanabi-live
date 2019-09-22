@@ -112,7 +112,7 @@ const initSuits = () => {
                 // By default, use the abbreviation of the color with the same name
                 suit.abbreviation = colors[suit.name].abbreviation;
             } else {
-                // Assume that it is the first letter of the color
+                // Assume that it is the first letter of the suit
                 suit.abbreviation = suit.name.charAt(0);
             }
         }

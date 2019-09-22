@@ -3,6 +3,7 @@ package main
 import (
 	"math"
 	"math/rand"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -27,6 +28,10 @@ type GamePlayer struct {
 	CharacterMetadata2 int
 	Surprised          bool
 }
+
+var (
+	noteRegExp = regexp.MustCompile(`.*\|(.+)`)
+)
 
 /*
 	Main functions, relating to in-game actions
@@ -521,22 +526,33 @@ func (p *GamePlayer) GetRightPlayer(g *Game) int {
 
 // CheckSurprise checks to see if a player has a "wrong" note on a card that
 // they just played or discarded
+// This code mirrors the "morph()" client-side function
 func (p *GamePlayer) CheckSurprise(g *Game, c *Card) {
 	note := p.Notes[c.Order]
 	if note == "" {
 		return
 	}
 
+	// Only examine the text to the right of the rightmost pipe
+	// (pipes are a conventional way to append new information to a note
+	if strings.Contains(note, "|") {
+		match := noteRegExp.FindStringSubmatch(note)
+		if match != nil {
+			note = match[1]
+		}
+	}
+	note = strings.ToLower(note)   // Make all letters lowercase to simply the matching logic below
+	note = strings.TrimSpace(note) // Removing all leading and trailing whitespace
+
 	var noteSuit *Suit
 	noteRank := -1
-	for _, rank := range variants[g.Options.Variant].ClueRanks {
+	for _, rank := range []int{1, 2, 3, 4, 5} {
 		rankStr := strconv.Itoa(rank)
 		if note == rankStr {
 			noteRank = rank
 			break
 		}
 
-		// This code mirrors the "morph()" client-side function
 		for _, suit := range variants[g.Options.Variant].Suits {
 			suitAbbrev := strings.ToLower(suit.Abbreviation)
 			suitName := strings.ToLower(suit.Name)
@@ -557,11 +573,21 @@ func (p *GamePlayer) CheckSurprise(g *Game, c *Card) {
 		}
 	}
 
-	// Convert the suit int to a Suit pointer
-	suit := variants[g.Options.Variant].Suits[c.Suit]
+	// Only the rank was specified
+	if noteSuit == nil && noteRank != -1 {
+		if noteRank != c.Rank {
+			p.Surprised = true
+			return
+		}
+	}
 
-	if noteSuit != suit || noteRank != c.Rank {
-		p.Surprised = true
+	// The suit and the rank were specified
+	if noteSuit != nil && noteRank != -1 {
+		suit := variants[g.Options.Variant].Suits[c.Suit] // Convert the suit int to a Suit pointer
+		if noteSuit.Name != suit.Name || noteRank != c.Rank {
+			p.Surprised = true
+			return
+		}
 	}
 }
 

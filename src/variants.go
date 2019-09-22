@@ -11,12 +11,17 @@ import (
 )
 
 var (
-	colors       map[string]bool
+	colors       map[string]*Color
 	suits        map[string]*Suit
 	variants     map[string]*Variant
 	variantsID   map[int]string
 	variantsList []string
 )
+
+type Color struct {
+	Name         string
+	Abbreviation string
+}
 
 func colorsInit() {
 	// Import the JSON file
@@ -28,15 +33,13 @@ func colorsInit() {
 	} else {
 		contents = v
 	}
-	var rawColors map[string]interface{}
-	if err := json.Unmarshal(contents, &rawColors); err != nil {
+	if err := json.Unmarshal(contents, &colors); err != nil {
 		log.Fatal("Failed to convert the colors file to JSON:", err)
 		return
 	}
 
 	uniqueNameMap := make(map[string]bool)
-	colors = make(map[string]bool)
-	for name := range rawColors {
+	for name, color := range colors {
 		// Validate that all of the names are unique
 		if _, ok := uniqueNameMap[name]; ok {
 			log.Fatal("There are two colors with the name of \"" + name + "\".")
@@ -44,8 +47,11 @@ func colorsInit() {
 		}
 		uniqueNameMap[name] = true
 
-		// Copy the colors into the color map
-		colors[name] = true
+		// Validate that there is an abbreviation
+		if color.Abbreviation == "" {
+			// Assume that it is the first letter of the color
+			color.Abbreviation = string([]rune(name)[0])
+		}
 	}
 }
 
@@ -117,6 +123,25 @@ func suitsInit() {
 		// Validate the clue ranks (the ranks that touch the suits)
 		if suit.ClueRanks != "" && suit.ClueRanks != "none" && suit.ClueRanks != "all" {
 			log.Fatal("The suit of \"" + name + "\" has an invalid value for \"clueRanks\".")
+		}
+
+		// Validate that there is an abbreviation
+		if name != "Unknown" {
+			// By default, use the abbreviation of the color with the same name
+			if suit.Abbreviation == "" {
+				if len(suit.ClueColors) > 0 {
+					if color, ok := colors[suit.ClueColors[0]]; ok {
+						if color.Abbreviation != "" {
+							suit.Abbreviation = color.Abbreviation
+						}
+					}
+				}
+			}
+
+			// Otherwise, assume that it is the first letter of the suit
+			if suit.Abbreviation == "" {
+				suit.Abbreviation = string([]rune(name)[0])
+			}
 		}
 	}
 }
