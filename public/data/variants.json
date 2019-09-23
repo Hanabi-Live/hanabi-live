@@ -929,7 +929,7 @@
         "showSuitNames": true
     },
     "Extremely Ambiguous (4 Suits)": {
-        "id": 290,
+        "id": 282,
         "suits": ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA"],
         "showSuitNames": true
     },
@@ -1304,11 +1304,7 @@
     },
     "Throw It in a Hole (4 Suits)": {
         "id": 281,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
-    },
-    "Throw It in a Hole (3 Suits)": {
-        "id": 282,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Blue", "Green", "Yellow", "Red"],
         "spacing": true
     }
 }
