@@ -127,6 +127,13 @@
     "Ruby VA": { "clueColors": ["Red"], "name": "Ruby", "pip": "crescent" },
     "Mahogany VA": { "clueColors": ["Red"], "fill": "#330000", "name": "Mahogany", "pip": "flower" },
 
+    "Ice EA": { "clueColors": ["Blue"], "fill": "#e6eeff", "name": "Ice", "pip": "diamond" },
+    "Sapphire EA": { "clueColors": ["Blue"], "fill": "#99bbff", "name": "Sapphire", "pip": "club" },
+    "Sky EA": { "clueColors": ["Blue"], "fill": "#3377ff", "name": "Sky", "pip": "star" },
+    "Berry EA": { "clueColors": ["Blue"], "name": "Berry", "pip": "heart" },
+    "Navy EA": { "clueColors": ["Blue"], "fill": "#002266", "name": "Navy", "pip": "crescent" },
+    "Ocean EA": { "clueColors": ["Blue"], "fill": "#00091a", "name": "Ocean", "pip": "flower" },
+
     "Green D": { "clueColors": ["Blue", "Yellow"], "name": "Green", "pip": "diamond" },
     "Purple D": { "clueColors": ["Blue", "Red"], "name": "Purple", "pip": "club" },
     "Navy D": { "clueColors": ["Blue", "Black"], "fill": "#000066", "name": "Navy", "pip": "star" },

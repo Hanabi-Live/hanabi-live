@@ -918,6 +918,21 @@
         "showSuitNames": true,
         "spacing": true
     },
+    "Extremely Ambiguous (6 Suits)": {
+        "id": 288,
+        "suits": ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA", "Navy EA", "Ocean EA"],
+        "showSuitNames": true
+    },
+    "Extremely Ambiguous (5 Suits)": {
+        "id": 289,
+        "suits": ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA", "Navy EA"],
+        "showSuitNames": true
+    },
+    "Extremely Ambiguous (4 Suits)": {
+        "id": 290,
+        "suits": ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA"],
+        "showSuitNames": true
+    },
 
     "Dual-Color (6 Suits)": {
         "id": 4,
