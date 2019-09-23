@@ -37,6 +37,7 @@ CREATE TABLE user_settings (
     real_life_mode                      BOOLEAN      NOT NULL  DEFAULT 0,
     volume                              INT          NOT NULL  DEFAULT 50,
     speedrun_preplay                    BOOLEAN      NOT NULL  DEFAULT 0,
+    speedrun_mode                       BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_variant                VARCHAR(50)  NOT NULL  DEFAULT "No Variant",
     create_table_timed                  BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_base_time_minutes      FLOAT        NOT NULL  DEFAULT 2,

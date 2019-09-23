@@ -9,14 +9,23 @@ const notes = require('./notes');
 const ui = require('./ui');
 
 module.exports = function clickSpeedrun(event) {
+    // Speedrunning overrides the normal card clicking behavior
+    // (but don't use the speedrunning behavior if we are in a
+    // solo replay / shared replay / spectating)
     if (
-        // Speedrunning overrides the normal card clicking behavior
-        // (but don't use the speedrunning behavior if
-        // we are in a solo replay / shared replay / spectating)
-        (!globals.speedrun || globals.replay || globals.spectating)
-        // Disable all click events if the card is tweening from the deck to the hand
-        // (the second condition looks to see if it is the first card in the hand)
-        || (this.tweening && this.parent.index === this.parent.parent.children.length - 1)
+        (!globals.speedrun && !globals.lobby.settings.speedrunMode)
+        || globals.replay
+        || globals.spectating
+    ) {
+        return;
+    }
+
+    if (
+        // Unlike the "click()" function, we do not want to disable all clicks if the card is
+        // tweening because we want to be able to click on cards as they are sliding down
+        // However, we do not want to allow clicking on the first card in the hand
+        // (as it is sliding in from the deck)
+        (this.tweening && this.parent.index === this.parent.parent.children.length - 1)
         || this.isPlayed // Do nothing if we accidentally clicked on a played card
         || this.isDiscarded // Do nothing if we accidentally clicked on a discarded card
     ) {

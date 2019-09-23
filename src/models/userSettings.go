@@ -17,6 +17,7 @@ type Settings struct {
 	RealLifeMode                    bool    `json:"realLifeMode"`
 	Volume                          int     `json:"volume"`
 	SpeedrunPreplay                 bool    `json:"speedrunPreplay"`
+	SpeedrunMode                    bool    `json:"speedrunMode"`
 	CreateTableVariant              string  `json:"createTableVariant"`
 	CreateTableTimed                bool    `json:"createTableTimed"`
 	CreateTableBaseTimeMinutes      float64 `json:"createTableBaseTimeMinutes"`
@@ -55,6 +56,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 			real_life_mode,
 			volume,
 			speedrun_preplay,
+			speedrun_mode,
 			create_table_variant,
 			create_table_timed,
 			create_table_base_time_minutes,
@@ -77,6 +79,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.RealLifeMode,
 		&settings.Volume,
 		&settings.SpeedrunPreplay,
+		&settings.SpeedrunMode,
 		&settings.CreateTableVariant,
 		&settings.CreateTableTimed,
 		&settings.CreateTableBaseTimeMinutes,

@@ -12,15 +12,19 @@ const replay = require('./replay');
 const websocket = require('./websocket');
 
 module.exports = function click(event) {
-    // Disable all click events if the card is tweening
-    if (this.tweening) {
+    // Speedrunning overrides the normal card clicking behavior
+    // (but don't use the speedrunning behavior if we are in a
+    // solo replay / shared replay / spectating)
+    if (
+        (globals.speedrun || globals.lobby.settings.speedrunMode)
+        && !globals.replay
+        && !globals.spectating
+    ) {
         return;
     }
 
-    // Speedrunning overrides the normal card clicking behavior
-    // (but don't use the speedrunning behavior if
-    // we are in a solo replay / shared replay / spectating)
-    if (globals.speedrun && !globals.replay && !globals.spectating) {
+    // Disable all click events if the card is tweening
+    if (this.tweening) {
         return;
     }
 

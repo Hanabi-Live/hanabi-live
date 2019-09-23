@@ -306,8 +306,13 @@ exports.empathy = function empathy() {
             // Disable Empathy if a modifier key is pressed
             // (unless we are in a speedrun,
             // because then Empathy is mapped to Ctrl + left click)
-            || (event.evt.ctrlKey && !globals.speedrun)
-            || (!event.evt.ctrlKey && globals.speedrun && !globals.replay && !globals.spectating)
+            || (event.evt.ctrlKey && !globals.speedrun && !globals.lobby.settings.speedrunMode)
+            || (
+                !event.evt.ctrlKey
+                && (globals.speedrun || globals.lobby.settings.speedrunMode)
+                && !globals.replay
+                && !globals.spectating
+            )
             || event.evt.shiftKey
             || event.evt.altKey
             || event.evt.metaKey
