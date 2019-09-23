@@ -10,6 +10,7 @@ type GameParticipants struct{}
 func (*GameParticipants) Insert(
 	userID int,
 	gameID int,
+	seat int,
 	notes []string,
 	characterAssignment int,
 	characterMetadata int,
@@ -23,8 +24,22 @@ func (*GameParticipants) Insert(
 
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`
-		INSERT INTO game_participants (user_id, game_id, notes, character_assignment, character_metadata)
-		VALUES (?, ?, ?, ?, ?)
+		INSERT INTO game_participants (
+			user_id,
+			game_id,
+			seat,
+			notes,
+			character_assignment,
+			character_metadata
+		)
+		VALUES (
+			?,
+			?,
+			?,
+			?,
+			?,
+			?
+		)
 	`); err != nil {
 		return err
 	} else {
@@ -32,6 +47,13 @@ func (*GameParticipants) Insert(
 	}
 	defer stmt.Close()
 
-	_, err := stmt.Exec(userID, gameID, notesString, characterAssignment, characterMetadata)
+	_, err := stmt.Exec(
+		userID,
+		gameID,
+		seat,
+		notesString,
+		characterAssignment,
+		characterMetadata,
+	)
 	return err
 }

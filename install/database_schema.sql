@@ -106,7 +106,7 @@ DROP TABLE IF EXISTS game_participants;
 CREATE TABLE game_participants (
     user_id               INT              NOT NULL,
     game_id               INT              NOT NULL,
-    /* PRIMARY KEY automatically creates a UNIQUE constraint */
+    seat                  TINYINT          NOT NULL,
     notes                 NVARCHAR(10000)  NOT NULL,
     character_assignment  INT              NOT NULL,
     character_metadata    INT              NOT NULL,

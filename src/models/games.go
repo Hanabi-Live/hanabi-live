@@ -444,7 +444,7 @@ func (*Games) GetPlayers(databaseID int) ([]*Player, error) {
 			JOIN game_participants ON games.id = game_participants.game_id
 			JOIN users ON game_participants.user_id = users.id
 		WHERE games.id = ?
-		ORDER BY game_participants.game_id
+		ORDER BY game_participants.seat
 	`, databaseID); err != nil {
 		return nil, err
 	} else {

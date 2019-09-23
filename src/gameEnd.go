@@ -233,6 +233,7 @@ func (g *Game) WriteDatabase() error {
 		if err := db.GameParticipants.Insert(
 			p.ID,
 			g.ID,
+			gp.Index,
 			gp.Notes,
 			characters[gp.Character].ID,
 			gp.CharacterMetadata,
