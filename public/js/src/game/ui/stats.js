@@ -99,19 +99,28 @@ exports.getMinEfficiency = () => {
         https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
     */
     const minEfficiencyNumerator = 5 * globals.variant.suits.length;
+    let numSuits = globals.variant.suits.length;
+    if (globals.variant.name.startsWith('Throw It in a Hole')) {
+        // Players do not gain a clue after playing a 5 in this variant
+        numSuits = 0;
+    }
     let unusableClues = 1;
     if (numPlayers >= 5) {
         unusableClues = 2;
+    }
+    if (globals.variant.name.startsWith('Throw It in a Hole')) {
+        // Players do not gain a clue after playing a 5 in this variant
+        unusableClues = 0;
     }
     let discardsPerClue = 1;
     if (globals.variant.name.startsWith('Clue Starved')) {
         discardsPerClue = 2;
     }
     const minEfficiencyDenominator = 8 + Math.floor(
-        (startingPace + globals.variant.suits.length - unusableClues) / discardsPerClue,
+        (startingPace + numSuits - unusableClues) / discardsPerClue,
     );
     const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);
-    // Round it to 2 decimal places
+    // (round it to 2 decimal places)
 
     return minEfficiency;
 };
