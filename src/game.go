@@ -24,6 +24,7 @@ type Game struct {
 	Seed              string
 	Deck              []*Card
 	DeckIndex         int
+	PossibleCards     map[string]int
 	Stacks            []int
 	StackDirections   []int // The values for this are listed in "constants.go"
 	Turn              int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
@@ -70,6 +71,7 @@ func NewGame(t *Table) *Game {
 
 		Players:           make([]*GamePlayer, 0),
 		Deck:              make([]*Card, 0),
+		PossibleCards:     make(map[string]int),
 		Stacks:            make([]int, len(variants[t.Options.Variant].Suits)),
 		StackDirections:   make([]int, len(variants[t.Options.Variant].Suits)),
 		DatetimeTurnBegin: time.Now(),

@@ -377,11 +377,9 @@ func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
 
 	// Convert the JSON deck to a normal deck
 	for i, c := range d.GameJSON.Deck {
-		g.Deck = append(g.Deck, &Card{
-			Suit:  c.Suit,
-			Rank:  c.Rank,
-			Order: i,
-		})
+		c2 := NewCard(g, c.Suit, c.Rank)
+		c2.Order = i
+		g.Deck = append(g.Deck, c2)
 	}
 
 	/*

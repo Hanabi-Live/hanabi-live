@@ -41,15 +41,6 @@ var (
 func (p *GamePlayer) GiveClue(d *CommandData, g *Game) {
 	t := g.Table
 
-	p2 := g.Players[d.Target] // The target of the clue
-	cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
-
-	// Mark that the cards have been touched
-	for _, order := range cardsTouched {
-		c := g.Deck[order]
-		c.Touched = true
-	}
-
 	// Keep track that someone clued (i.e. doing 1 clue costs 1 "Clue Token")
 	g.ClueTokens--
 	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
@@ -59,6 +50,53 @@ func (p *GamePlayer) GiveClue(d *CommandData, g *Game) {
 		g.ClueTokens--
 	}
 	g.LastClueTypeGiven = d.Clue.Type
+
+	// Apply the positive and negative clues to the cards in the hand
+	p2 := g.Players[d.Target] // The target of the clue
+	cardsTouched := make([]int, 0)
+	for _, c := range p2.Hand {
+		positive := false
+		if variantIsCardTouched(g.Options.Variant, d.Clue, c) {
+			c.Touched = true
+			cardsTouched = append(cardsTouched, c.Order)
+			positive = true
+		}
+		c.Clues = append(c.Clues, &CardClue{
+			Type:     d.Clue.Type,
+			Value:    d.Clue.Value,
+			Positive: positive,
+		})
+
+		if d.Clue.Type == clueTypeRank {
+			clueRank := d.Clue.Value
+			for i := len(c.PossibleRanks) - 1; i >= 0; i-- {
+				rank := c.PossibleRanks[i]
+				if !(rank == clueRank == positive) {
+					c.PossibleRanks = append(c.PossibleRanks[:i], c.PossibleRanks[i+1:]...)
+
+					for _, suit := range variants[g.Options.Variant].Suits {
+						c.RemovePossibility(suit, rank, true)
+					}
+				}
+			}
+		} else if d.Clue.Type == clueTypeColor {
+			clueSuit := variants[g.Options.Variant].Suits[d.Clue.Value]
+			for i := len(c.PossibleSuits) - 1; i >= 0; i-- {
+				suit := c.PossibleSuits[i]
+				if !(suit == clueSuit == positive) {
+					c.PossibleSuits = append(c.PossibleSuits[:i], c.PossibleSuits[i+1:]...)
+
+					for _, rank := range variants[g.Options.Variant].Ranks {
+						c.RemovePossibility(suit, rank, true)
+					}
+				}
+			}
+		}
+
+		if len(c.PossibleSuits) == 1 && len(c.PossibleRanks) == 1 {
+			c.Revealed = true
+		}
+	}
 
 	// Send the "notify" message about the clue
 	g.Actions = append(g.Actions, ActionClue{

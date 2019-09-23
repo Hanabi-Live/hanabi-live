@@ -124,6 +124,10 @@ func suitsInit() {
 		if suit.ClueRanks != "" && suit.ClueRanks != "none" && suit.ClueRanks != "all" {
 			log.Fatal("The suit of \"" + name + "\" has an invalid value for \"clueRanks\".")
 		}
+		if suit.ClueRanks == "" {
+			// Assume that the ranks work normally (e.g. a rank 1 clue touches a blue 1)
+			suit.ClueRanks = "normal"
+		}
 
 		// Validate that there is an abbreviation
 		if name != "Unknown" {

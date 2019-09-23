@@ -329,7 +329,6 @@ class HanabiCard extends graphics.Group {
                 );
             }
 
-
             // Some suits are touched by all rank clues
             // Some suits are not touched by any rank clues
             // So we may be able to remove a suit pip

@@ -229,7 +229,7 @@ func (s *Session) NotifySound(t *Table, i int) {
 		sound = "turn_other"
 	}
 
-	// Also check to see if this player is "surprised"
+	// Also check to see if this player is "surprised" from playing/discarding a card
 	if i > -1 {
 		p := g.Players[i]
 		if p.Surprised {

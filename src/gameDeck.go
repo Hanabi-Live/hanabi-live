@@ -10,11 +10,16 @@ import (
 func (g *Game) InitDeck() {
 	// Suits are represented as a slice of integers from 0 to the number of suits - 1
 	// (e.g. {0, 1, 2, 3, 4} for a "No Variant" game)
-	for suit := range variants[g.Options.Variant].Suits {
+	for suitInt, suitObject := range variants[g.Options.Variant].Suits {
 		// Ranks are represented as a slice of integers
 		// (e.g. {1, 2, 3, 4, 5} for a "No Variant" game)
 		for _, rank := range variants[g.Options.Variant].Ranks {
-			// In a normal suit of Hanabi, there are three 1's, two 2's, two 3's, two 4's, and one five
+			// In a normal suit of Hanabi, there are:
+			// - three 1's
+			// - two 2's
+			// - two 3's
+			// - two 4's
+			// - one five
 			var amountToAdd int
 			if rank == 1 {
 				amountToAdd = 3
@@ -28,18 +33,25 @@ func (g *Game) InitDeck() {
 			} else {
 				amountToAdd = 2
 			}
-			if variants[g.Options.Variant].Suits[suit].OneOfEach {
+			if suitObject.OneOfEach {
 				amountToAdd = 1
 			}
 
 			for i := 0; i < amountToAdd; i++ {
 				// Add the card to the deck
-				g.Deck = append(g.Deck, &Card{
-					Suit: suit,
-					Rank: rank,
-					// We can't set the order here because the deck will be shuffled later
-				})
+				g.Deck = append(g.Deck, NewCard(g, suitInt, rank))
+
+				// Add the possibility
+				mapIndex := suitObject.Name + strconv.Itoa(rank)
+				g.PossibleCards[mapIndex]++
 			}
+		}
+	}
+
+	// Copy all of the possibilities into every card
+	for _, c := range g.Deck {
+		for k, v := range g.PossibleCards {
+			c.PossibleCards[k] = v
 		}
 	}
 }
