@@ -566,6 +566,11 @@ func (p *GamePlayer) GetRightPlayer(g *Game) int {
 // they just played or discarded
 // This code mirrors the "morph()" client-side function
 func (p *GamePlayer) CheckSurprise(g *Game, c *Card) {
+	// Disable the surprise sound in certain variants
+	if strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") {
+		return
+	}
+
 	note := p.Notes[c.Order]
 	if note == "" {
 		return
