@@ -90,6 +90,10 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 * Three suits share a color. There is no way to disambiguate between them with color clues.
 
+### Extremely Ambiguous
+
+* Four, five, or six suits share a color. There is no way to disambiguate between them with color clues.
+
 ### Dual-Color
 
 * Each suit is touched by two separate colors.
@@ -462,6 +466,9 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Ambiguous & Rainbow (5 Suits)
   * Very Ambiguous (6 Suits)
   * Very Ambiguous (3 Suits)
+  * Extremely Ambiguous (6 Suits)
+  * Extremely Ambiguous (5 Suits)
+  * Extremely Ambiguous (4 Suits)
 * Dual-Color
   * Dual-Color (6 Suits)
   * Dual-Color (5 Suits)
