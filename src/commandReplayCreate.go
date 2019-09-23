@@ -77,7 +77,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	// Check to see if the game exists in the database
 	if exists, err := db.Games.Exists(d.GameID); err != nil {
 		log.Error("Failed to check to see if game "+strconv.Itoa(d.GameID)+" exists:", err)
-		s.Error("Failed to initialize the game. Please contact an administrator.")
+		s.Error(initFail)
 		return false
 	} else if !exists {
 		s.Warning("Game #" + strconv.Itoa(d.GameID) + " does not exist in the database.")
@@ -88,7 +88,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	var options models.Options
 	if v, err := db.Games.GetOptions(d.GameID); err != nil {
 		log.Error("Failed to get the options from the database for game "+strconv.Itoa(d.GameID)+":", err)
-		s.Error("Failed to initialize the game. Please contact an administrator.")
+		s.Error(initFail)
 		return false
 	} else {
 		options = v
@@ -97,7 +97,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	// Validate that the variant exists
 	if _, ok := variantsID[options.Variant]; !ok {
 		log.Error("Failed to find a definition for variant " + strconv.Itoa(options.Variant) + ".")
-		s.Error("Failed to initialize the game. Please contact an administrator.")
+		s.Error(initFail)
 		return false
 	}
 
@@ -117,7 +117,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	var dbPlayers []*models.Player
 	if v, err := db.Games.GetPlayers(d.GameID); err != nil {
 		log.Error("Failed to get the players from the database for game "+strconv.Itoa(d.GameID)+":", err)
-		s.Error("Failed to initialize the game. Please contact an administrator.")
+		s.Error(initFail)
 		return false
 	} else {
 		dbPlayers = v
@@ -128,7 +128,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	if v, err := db.Games.GetNotes(d.GameID); err != nil {
 		log.Error("Failed to get the notes from the database "+
 			"for game "+strconv.Itoa(d.GameID)+":", err)
-		s.Error("Failed to initialize the game. Please contact an administrator.")
+		s.Error(initFail)
 		return false
 	} else {
 		notes = v
@@ -163,7 +163,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	if v, err := db.GameActions.GetAll(d.GameID); err != nil {
 		log.Error("Failed to get the actions from the database "+
 			"for game "+strconv.Itoa(d.GameID)+":", err)
-		s.Error("Failed to initialize the game. Please contact an administrator.")
+		s.Error(initFail)
 		return false
 	} else {
 		actionStrings = v
@@ -176,7 +176,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 		var action interface{}
 		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
 			log.Error("Failed to unmarshal an action:", err)
-			s.Error("Failed to initialize the game. Please contact an administrator.")
+			s.Error(initFail)
 			return false
 		}
 		actions = append(actions, action)
@@ -186,7 +186,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	var numTurns int
 	if v, err := db.Games.GetNumTurns(d.GameID); err != nil {
 		log.Error("Failed to get the number of turns from the database for game "+strconv.Itoa(d.GameID)+":", err)
-		s.Error("Failed to initialize the game. Please contact an administrator.")
+		s.Error(initFail)
 		return false
 	} else {
 		numTurns = v

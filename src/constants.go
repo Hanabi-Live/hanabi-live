@@ -77,6 +77,9 @@ const (
 	// The amount of time in between allowed @here Discord alerts
 	discordAtHereTimeout = time.Hour * 2
 
+	// Common error messages
+	initFail = "Failed to initialize the game. Please contact an administrator."
+
 	// Discord emotes
 	pogChamp   = "<:PogChamp:254683883033853954>"
 	bibleThump = "<:BibleThump:254683882601840641>"

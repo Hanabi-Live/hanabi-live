@@ -298,7 +298,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 	if v, err := db.GameActions.GetAll(t.Options.SetReplay); err != nil {
 		log.Error("Failed to get the actions from the database for game "+
 			strconv.Itoa(t.Options.SetReplay)+":", err)
-		s.Error("Failed to initialize the game. Please contact an administrator.")
+		s.Error(initFail)
 		return true
 	} else {
 		actionStrings = v
@@ -309,7 +309,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 		var action map[string]interface{}
 		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
 			log.Error("Failed to unmarshal an action while emulating gameplay from the database:", err)
-			s.Error("Failed to initialize the game. Please contact an administrator.")
+			s.Error(initFail)
 			return true
 		}
 
@@ -319,7 +319,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 			var actionClue ActionClue
 			if err := json.Unmarshal([]byte(actionString), &actionClue); err != nil {
 				log.Error("Failed to unmarshal a clue action:", err)
-				s.Error("Failed to initialize the game. Please contact an administrator.")
+				s.Error(initFail)
 				return true
 			}
 
@@ -334,7 +334,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 			var actionPlay ActionPlay
 			if err := json.Unmarshal([]byte(actionString), &actionPlay); err != nil {
 				log.Error("Failed to unmarshal a play action:", err)
-				s.Error("Failed to initialize the game. Please contact an administrator.")
+				s.Error(initFail)
 				return true
 			}
 
@@ -348,7 +348,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 			var actionDiscard ActionDiscard
 			if err := json.Unmarshal([]byte(actionString), &actionDiscard); err != nil {
 				log.Error("Failed to unmarshal a discard action:", err)
-				s.Error("Failed to initialize the game. Please contact an administrator.")
+				s.Error(initFail)
 				return true
 			}
 
@@ -362,7 +362,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 			var actionTurn ActionTurn
 			if err := json.Unmarshal([]byte(actionString), &actionTurn); err != nil {
 				log.Error("Failed to unmarshal a turn action:", err)
-				s.Error("Failed to initialize the game. Please contact an administrator.")
+				s.Error(initFail)
 				return true
 			}
 
@@ -381,6 +381,6 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 
 	log.Error("Failed to find the intended turn before reaching the end of game " +
 		strconv.Itoa(t.Options.SetReplay) + ".")
-	s.Error("Failed to initialize the game. Please contact an administrator.")
+	s.Error(initFail)
 	return true
 }
