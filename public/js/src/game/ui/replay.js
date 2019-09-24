@@ -261,8 +261,8 @@ exports.barClick = function barClick(event) {
 };
 
 exports.barDrag = function barDrag(pos) {
-    const min = this.getParent().getAbsolutePosition().x + (this.getWidth() * 0.5);
-    const w = this.getParent().getWidth() - this.getWidth();
+    const min = globals.elements.replayBar.getAbsolutePosition().x + (this.getWidth() * 0.5);
+    const w = globals.elements.replayBar.getWidth() - this.getWidth();
     let shuttleX = pos.x - min;
     const shuttleY = this.getAbsolutePosition().y;
     if (shuttleX < 0) {
@@ -297,8 +297,8 @@ const positionReplayShuttle = (shuttle, turn, smaller, fast) => {
     }
 
     const winH = globals.stage.getHeight();
-    const sliderW = shuttle.getParent().getWidth() - shuttle.getWidth();
-    const x = sliderW / max * turn + (shuttle.getWidth() * 0.5);
+    const sliderW = globals.elements.replayBar.getWidth() - shuttle.getWidth();
+    const x = globals.elements.replayBar.getX() + (sliderW / max * turn) + (shuttle.getWidth() / 2);
     let y = globals.elements.replayBar.getY() + (shuttle.getHeight() * 0.55);
     if (smaller) {
         y -= 0.003 * winH;

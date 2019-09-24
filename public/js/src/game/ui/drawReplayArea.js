@@ -12,9 +12,9 @@ module.exports = () => {
     const winH = globals.stage.getHeight();
 
     const replayAreaValues = {
-        x: 0.16,
+        x: 0.15,
         y: 0.51,
-        w: 0.481,
+        w: 0.5,
     };
     if (!globals.lobby.settings.showKeldonUI) {
         replayAreaValues.x = 0.01;
@@ -31,13 +31,15 @@ module.exports = () => {
 
     // The thin black rectangle that the replay slider slides on
     const replayBarValues = {
+        x: globals.lobby.settings.showKeldonUI ? 0.01 : 0,
         y: 0.0425,
+        w: globals.lobby.settings.showKeldonUI ? 0.481 : replayAreaValues.w,
         h: 0.01,
     };
     globals.elements.replayBar = new graphics.Rect({
-        x: 0 * winW,
+        x: replayBarValues.x * winW,
         y: replayBarValues.y * winH,
-        width: replayAreaValues.w * winW,
+        width: replayBarValues.w * winW,
         height: replayBarValues.h * winH,
         fill: 'black',
         cornerRadius: 0.005 * winH,
@@ -47,9 +49,9 @@ module.exports = () => {
     // An invisible rectangle over the visible black rectangle above
     // (which is slightly bigger so that it is easier to click on)
     const replayBarClickRect = new graphics.Rect({
-        x: 0,
+        x: replayBarValues.x * winW,
         y: 0,
-        width: replayAreaValues.w * winW,
+        width: replayBarValues.w * winW,
         height: 0.05 * winH,
         opacity: 0,
         listening: true,
