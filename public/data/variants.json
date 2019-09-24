@@ -887,6 +887,26 @@
         "spacing": true
     },
 
+    "Cocoa Rainbow (6 Suits)": {
+        "id": 290,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Cocoa Rainbow"]
+    },
+    "Cocoa Rainbow (5 Suits)": {
+        "id": 291,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Cocoa Rainbow"],
+        "spacing": true
+    },
+
+    "Chiaroscuro Pink (6 Suits)": {
+        "id": 292,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Chiaroscuro Pink"]
+    },
+    "Chiaroscuro Pink (5 Suits)": {
+        "id": 293,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Chiaroscuro Pink"],
+        "spacing": true
+    },
+
     "Ambiguous (6 Suits)": {
         "id": 8,
         "suits": ["Sky", "Navy", "Lime", "Forest", "Tomato", "Mahogany"],

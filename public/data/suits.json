@@ -91,6 +91,23 @@
         "fill": "#ffcce6",
         "pip": "number_sign"
      },
+     "Cocoa Rainbow": {
+        "abbreviation": "M",
+        "allClueColors": true,
+        "clueRanks": "none",
+        "fill": "multi",
+        "fillColors": ["#654321", "#00cc00", "#ccaa22", "#aa0000", "#654321"],
+        "oneOfEach": true,
+        "pip": "rainbow"
+    },
+    "Chiaroscuro Pink": {
+        "abbreviation": "I",
+        "clueColors": [],
+        "clueRanks": "all",
+        "fill": "#ffcce6",
+        "oneOfEach": true,
+        "pip": "number_sign"
+     },
 
     "Blue CB": { "clueColors": [], "name": "Blue", "pip": "diamond" },
     "Green CB": { "clueColors": [], "name": "Green", "pip": "club" },

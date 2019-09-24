@@ -82,6 +82,20 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 * All rank clues will "touch" the light pink suit.
 * No color clues will "touch" the light pink suit.
 
+### Cocoa Rainbow
+
+* One of the suits is replaced with a cocoa rainbow suit.
+* All color clues will "touch" the cocoa rainbow suit.
+* No rank clues will "touch" the cocoa rainbow suit.
+* There is only one of each cocoa rainbow card in the deck, which means that every cocoa rainbow card is "critical".
+
+### Chiaroscuro Pink
+
+* One of the suits is replaced with a chiaroscuro pink suit.
+* All rank clues will "touch" the chiaroscuro pink suit.
+* No color clues will "touch" the chiaroscuro pink suit.
+* There is only one of each chiaroscuro pink card in the deck, which means that every chiaroscuro pink card is "critical".
+
 ### Ambiguous
 
 * Two suits share a color. There is no way to disambiguate between them with color clues.
