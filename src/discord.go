@@ -261,5 +261,5 @@ func discordGetID(username string) string {
 		}
 	}
 
-	return "[not found]"
+	return ""
 }
