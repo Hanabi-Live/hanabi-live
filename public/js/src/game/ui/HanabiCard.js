@@ -540,6 +540,7 @@ class HanabiCard extends graphics.Group {
         }
     }
 
+    // This card was either played or discarded (or revealed at the end of the game)
     reveal(suit, rank) {
         // Local variables
         suit = convert.msgSuitToSuit(suit, globals.variant);
@@ -593,7 +594,10 @@ class HanabiCard extends graphics.Group {
 
         // If this is an unknown card that we played,
         // we also need to update the possibilities for the other hands
-        if (this.suit === null || this.rank === null) {
+        if (
+            this.holder === globals.playerUs
+            && (this.possibleSuits.length > 1 || this.possibleRanks.length > 1)
+        ) {
             for (let i = 0; i < globals.elements.playerHands.length; i++) {
                 if (i === this.holder) {
                     // We already updated our own hand above
