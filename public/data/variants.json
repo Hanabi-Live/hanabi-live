@@ -935,8 +935,7 @@
     "Very Ambiguous (3 Suits)": {
         "id": 287,
         "suits": ["Sky VA", "Berry VA", "Navy VA"],
-        "showSuitNames": true,
-        "spacing": true
+        "showSuitNames": true
     },
     "Extremely Ambiguous (6 Suits)": {
         "id": 288,
@@ -951,7 +950,8 @@
     "Extremely Ambiguous (4 Suits)": {
         "id": 282,
         "suits": ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA"],
-        "showSuitNames": true
+        "showSuitNames": true,
+        "spacing": true
     },
 
     "Dual-Color (6 Suits)": {
