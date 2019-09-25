@@ -333,10 +333,11 @@ func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
 	for i, name := range d.GameJSON.Players {
 		// Prepare the player session that will be used for emulation
 		keys := make(map[string]interface{})
-		keys["ID"] = -1 // We set it to -1 since it does not matter
-		// This can be any arbitrary unique number,
-		// but we will set it to the same value as the player index for simplicity
-		keys["userID"] = i
+		// The IDs can be any arbitrary unique number,
+		// but we set the IDs to the negative index number
+		// so that they will not overlap with any valid user IDs
+		keys["ID"] = -i
+		keys["userID"] = -i
 		keys["username"] = name
 		keys["admin"] = false
 		keys["firstTimeUser"] = false
@@ -344,7 +345,7 @@ func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
 		keys["status"] = statusPlaying
 
 		player := &Player{
-			ID:   i,
+			ID:   -i,
 			Name: name,
 			Session: &Session{
 				&melody.Session{
