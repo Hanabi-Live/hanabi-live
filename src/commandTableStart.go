@@ -199,8 +199,9 @@ func commandTableStart(s *Session, d *CommandData) {
 			Name:  p.Name,
 			Index: i,
 
-			Hand:               make([]*Card, 0),
-			Notes:              make([]string, len(g.Deck)),
+			Hand: make([]*Card, 0),
+			// There are notes for every card in the deck + the stack bases for each suit
+			Notes:              make([]string, len(g.Deck)+len(variants[t.Options.Variant].Suits)),
 			CharacterMetadata:  -1,
 			CharacterMetadata2: -1,
 		}

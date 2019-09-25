@@ -24,6 +24,7 @@ class HanabiCard extends graphics.Group {
             x: constants.CARD_W / 2,
             y: constants.CARD_H / 2,
         };
+        config.listening = true;
         super(config);
 
         // Mark the object type for use elsewhere in the code
@@ -89,8 +90,8 @@ class HanabiCard extends graphics.Group {
         this.knownTrash = false;
         this.needsFix = false;
 
-        this.setListening(true);
         this.hideClues();
+        this.setListening(true);
 
         // Reset all of the pips to their default state
         // (but don't show any pips in Real-Life mode)
@@ -137,6 +138,11 @@ class HanabiCard extends graphics.Group {
         } else {
             // If we are not in Empathy mode, then show the suit if it is known
             suitToShow = learnedCard.suit;
+            if (this.rank === 0 && this.noteSuit !== null && !globals.replay) {
+                // The card note suit has precedence over the "real" suit,
+                // but only for the stack bases (and not in replays)
+                suitToShow = this.noteSuit;
+            }
             if (suitToShow === null) {
                 suitToShow = this.noteSuit;
             }
@@ -165,6 +171,11 @@ class HanabiCard extends graphics.Group {
         } else {
             // If we are not in Empathy mode, then show the rank if it is known
             rankToShow = learnedCard.rank;
+            if (this.rank === 0 && this.noteRank !== null && !globals.replay) {
+                // The card note rank has precedence over the "real" rank,
+                // but only for the stack bases (and not in replays)
+                rankToShow = this.noteRank;
+            }
             if (rankToShow === null) {
                 rankToShow = this.noteRank;
             }
@@ -633,12 +644,20 @@ class HanabiCard extends graphics.Group {
 
     animateToPlayStacks() {
         // We add a LayoutChild to a PlayStack
-        const playStack = globals.elements.playStacks.get(this.suit);
-        playStack.add(this.parent); // The act of adding it will automatically tween the card
+        if (globals.variant.name.startsWith('Throw It in a Hole')) {
+            const hole = globals.elements.playStacks.get('hole');
+            hole.add(this.parent); // The act of adding it will automatically tween the card
 
-        // We also want to move this stack to the top so that
-        // cards do not tween behind the other play stacks when travelling to this stack
-        playStack.moveToTop();
+            // We do not want this card to interfere with writing notes on the stack bases
+            this.setListening(false);
+        } else {
+            const playStack = globals.elements.playStacks.get(this.suit);
+            playStack.add(this.parent); // The act of adding it will automatically tween the card
+
+            // We also want to move this stack to the top so that
+            // cards do not tween behind the other play stacks when travelling to this stack
+            playStack.moveToTop();
+        }
     }
 
     animateToDiscardPile() {
@@ -769,8 +788,8 @@ class HanabiCard extends graphics.Group {
         } else if (this.rank === constants.START_CARD_RANK) {
             // START cards do not need to be played if there are any cards played on the stack
             const playStack = globals.elements.playStacks.get(this.suit);
-            const lastPlayedCard = playStack.getLastPlayedCard();
-            if (lastPlayedCard !== -1) {
+            const lastPlayedRank = playStack.getLastPlayedRank();
+            if (lastPlayedRank !== 0) {
                 return false;
             }
         }
@@ -824,8 +843,9 @@ class HanabiCard extends graphics.Group {
         // If the "START" card is played on the stack,
         // then this card will be dead if all of the 2's and all of the 4's have been discarded
         // (this situation also applies to 3's when no cards have been played on the stack)
-        const lastPlayedCard = globals.elements.playStacks.get(this.suit).getLastPlayedCard();
-        if (lastPlayedCard === constants.START_CARD_RANK || this.rank === 3) {
+        const playStack = globals.elements.playStacks.get(this.suit);
+        const lastPlayedRank = playStack.getLastPlayedRank();
+        if (lastPlayedRank === constants.START_CARD_RANK || this.rank === 3) {
             if (allDiscarded.get(2) && allDiscarded.get(4)) {
                 return true;
             }
@@ -842,8 +862,9 @@ class HanabiCard extends graphics.Group {
 
         let potentiallyPlayable = false;
         for (const suit of globals.variant.suits) {
-            const numCardsPlayed = globals.elements.playStacks.get(suit).children.length;
-            const nextRankNeeded = numCardsPlayed + 1;
+            const playStack = globals.elements.playStacks.get(suit);
+            const lastPlayedRank = playStack.getLastPlayedRank();
+            const nextRankNeeded = lastPlayedRank + 1;
             const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
             if (count > 0) {
                 potentiallyPlayable = true;
@@ -859,14 +880,10 @@ class HanabiCard extends graphics.Group {
         for (let i = 0; i < globals.variant.suits.length; i++) {
             const suit = globals.variant.suits[i];
             const playStack = globals.elements.playStacks.get(suit);
-            console.log(playStack.children);
-            let rankPlayed = 0;
-            if (playStack.children.length > 0) {
-                const cardOnTop = playStack.children[playStack.children.length - 1].children[0];
-                rankPlayed = cardOnTop.rank;
-            }
+            const lastPlayedRank = playStack.getLastPlayedRank();
+
             if (globals.stackDirections[i] === constants.STACK_DIRECTION.UNDECIDED) {
-                if (playStack.children.length === 0) {
+                if (lastPlayedRank === 0) {
                     // The "START" card has not been played
                     for (const rank of [0, 1, 5]) {
                         const count = this.possibleCards.get(`${suit.name}${rank}`);
@@ -878,7 +895,7 @@ class HanabiCard extends graphics.Group {
                     if (potentiallyPlayable) {
                         break;
                     }
-                } else {
+                } else if (lastPlayedRank === constants.START_CARD_RANK) {
                     // The "START" card has been played
                     for (const rank of [2, 4]) {
                         const count = this.possibleCards.get(`${suit.name}${rank}`);
@@ -892,14 +909,14 @@ class HanabiCard extends graphics.Group {
                     }
                 }
             } else if (globals.stackDirections[i] === constants.STACK_DIRECTION.UP) {
-                const nextRankNeeded = rankPlayed + 1;
+                const nextRankNeeded = lastPlayedRank + 1;
                 const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
                 if (count > 0) {
                     potentiallyPlayable = true;
                     break;
                 }
             } else if (globals.stackDirections[i] === constants.STACK_DIRECTION.DOWN) {
-                const nextRankNeeded = rankPlayed - 1;
+                const nextRankNeeded = lastPlayedRank - 1;
                 const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
                 if (count > 0) {
                     potentiallyPlayable = true;

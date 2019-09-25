@@ -64,7 +64,10 @@ const morph = (order, note) => {
     }
 
     // Local variables
-    const card = globals.deck[order];
+    let card = globals.deck[order];
+    if (!card) {
+        card = globals.stackBases[order - globals.deck.length];
+    }
 
     // Only examine the text to the right of the rightmost pipe
     // (pipes are a conventional way to append new information to a note
@@ -274,11 +277,17 @@ exports.setAllCardIndicators = () => {
     for (const card of globals.deck) {
         setCardIndicator(card.order);
     }
+    for (const stackBase of globals.stackBases) {
+        setCardIndicator(stackBase.order);
+    }
 };
 
 const setCardIndicator = (order) => {
     const visible = shouldShowIndicator(order);
-    const card = globals.deck[order];
+    let card = globals.deck[order];
+    if (!card) {
+        card = globals.stackBases[order - globals.deck.length];
+    }
     card.noteGiven.setVisible(visible);
 
     if (visible && globals.spectating && !globals.replay && !card.noteGiven.rotated) {

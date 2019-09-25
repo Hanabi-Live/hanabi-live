@@ -202,7 +202,8 @@ commands.draw = (data) => {
     const child = card.parent;
     // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
     // and the user rewinds to the beginning of the replay
-    card.parent.setVisible(true);
+    child.setVisible(true);
+    child.setOpacity(1); // Cards can be faded in certain variants
     const pos = globals.elements.deck.cardBack.getAbsolutePosition();
     child.setAbsolutePosition(pos);
     child.setRotation(-globals.elements.playerHands[holder].getRotation());

@@ -139,13 +139,6 @@ commands.gameOver = () => {
 
     // Turn off the "Throw It in a Hole" UI
     if (globals.variant.name.startsWith('Throw It in a Hole')) {
-        globals.elements.hole.hide();
-        for (const playStackBase of globals.elements.playStackBases) {
-            playStackBase.resetX();
-        }
-        for (const [, playStack] of globals.elements.playStacks) {
-            playStack.resetX();
-        }
         globals.elements.scoreNumberLabel.setText(globals.score.toString());
         globals.elements.maxScoreNumberLabel.show();
     }
@@ -333,6 +326,11 @@ commands.noteListPlayer = (data) => {
     for (const layoutChild of ourHand.children) {
         const card = layoutChild.children[0];
         notes.morph(card.order, globals.ourNotes[card.order]);
+    }
+
+    // If we have specific card notes on the stack bases, morph those cards
+    for (const stackBase of globals.stackBases) {
+        notes.morph(stackBase.order, globals.ourNotes[stackBase.order]);
     }
 };
 

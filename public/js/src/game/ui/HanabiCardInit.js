@@ -320,6 +320,7 @@ exports.empathy = function empathy() {
             || this.isPlayed // Clicking on a played card goes to the turn that it was played
             // Clicking on a discarded card goes to the turn that it was discarded
             || this.isDiscarded
+            || this.order > globals.deck.length - 1 // Disable empathy for the stack bases
         ) {
             return;
         }
@@ -338,6 +339,11 @@ exports.empathy = function empathy() {
     });
 
     const setEmpathyOnHand = (enabled) => {
+        // Disable Empathy for the stack bases
+        if (this.order > globals.deck.length - 1) {
+            return;
+        }
+
         const hand = this.parent.parent;
         if (!hand || hand.children.length === 0 || hand.empathy === enabled) {
             return;

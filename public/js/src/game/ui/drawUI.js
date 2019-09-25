@@ -20,6 +20,8 @@ const FitText = require('./FitText');
 const FullActionLog = require('./FullActionLog');
 const globals = require('./globals');
 const graphics = require('./graphics');
+const HanabiCard = require('./HanabiCard');
+const LayoutChild = require('./LayoutChild');
 const MultiFitText = require('./MultiFitText');
 const NumberButton = require('./NumberButton');
 const PlayStack = require('./PlayStack');
@@ -312,44 +314,34 @@ const drawPlayStacksAndDiscardStacks = () => {
 
     for (let i = 0; i < globals.variant.suits.length; i++) {
         const suit = globals.variant.suits[i];
-        const normalX = playStackValues.x + (cardWidth + playStackValues.spacing) * i;
-        let playStackX = normalX;
-        if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
-            playStackX = playStackValues.x + (playStackValues.w / 2) - (cardWidth / 2);
-        }
 
-        const playStackBase = new graphics.Image({
-            x: playStackX * winW,
-            y: playStackValues.y * winH,
-            width: cardWidth * winW,
-            height: cardHeight * winH,
-            image: globals.cardImages[`Card-${suit.name}-0`],
-            listening: true,
-        });
-        playStackBase.resetX = () => { // eslint-disable-line no-loop-func
-            playStackBase.setX(normalX * winW);
-        };
-        globals.elements.playStackBases.push(playStackBase);
-        globals.layers.UI.add(playStackBase);
-
-        playStackBase.type = 'PlayStackBase';
-        playStackBase.on('click', (event) => {
-            // The first stack is -1, the second stack is -2, and so forth
-            arrows.click(event, -i, playStackBase);
-        });
-
+        // Make the play stack for this suit
+        const playStackX = playStackValues.x + (cardWidth + playStackValues.spacing) * i;
         const playStack = new PlayStack({
             x: playStackX * winW,
             y: playStackValues.y * winH,
             width: cardWidth * winW,
             height: cardHeight * winH,
         });
-        playStack.resetX = () => { // eslint-disable-line no-loop-func
-            playStack.setX(normalX * winW);
-        };
         globals.elements.playStacks.set(suit, playStack);
         globals.layers.card.add(playStack);
 
+        // Add the stack base to the play stack
+        const stackBase = new HanabiCard({
+            // Stack bases use card orders after the final card in the deck
+            order: stats.getTotalCardsInTheDeck() + i,
+        });
+        globals.stackBases.push(stackBase);
+        stackBase.refresh();
+        stackBase.suit = suit;
+        stackBase.rank = 0;
+
+        // Create the LayoutChild that will be the parent of the stack base
+        const child = new LayoutChild();
+        child.add(stackBase);
+        playStack.add(child);
+
+        // Make the discard stack for this rank
         const discardStack = new CardLayout({
             x: 0.81 * winW,
             y: (0.61 + discardStackSpacing * i) * winH,
@@ -391,6 +383,20 @@ const drawPlayStacksAndDiscardStacks = () => {
         }
     }
 
+    // Make the invisible "hole" play stack for "Throw It in a Hole" variants
+    // (centered in the middle of the rest of the stacks)
+    if (globals.variant.name.startsWith('Throw It in a Hole')) {
+        const playStackX = playStackValues.x + (playStackValues.w / 2) - (cardWidth / 2);
+        const playStack = new PlayStack({
+            x: playStackX * winW,
+            y: playStackValues.y * winH,
+            width: cardWidth * winW,
+            height: cardHeight * winH,
+        });
+        globals.elements.playStacks.set('hole', playStack);
+        globals.layers.card.add(playStack);
+    }
+
     // This is the invisible rectangle that players drag cards to in order to play them
     // Make it a little big bigger than the stacks
     const overlap = 0.03;
@@ -414,18 +420,6 @@ const drawPlayStacksAndDiscardStacks = () => {
         && pos.x <= globals.elements.playArea.getX() + globals.elements.playArea.getWidth()
         && pos.y <= globals.elements.playArea.getY() + globals.elements.playArea.getHeight()
     );
-
-    // Make the "hole" for "Throw It in a Hole" variants
-    globals.elements.hole = new graphics.Rect({
-        x: playAreaValues.x * winW,
-        y: playAreaValues.y * winH,
-        width: playAreaValues.w * winW,
-        height: playAreaValues.h * winH,
-        fill: '#0d0d0d',
-        cornerRadius: 0.1 * winH,
-        visible: globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay,
-    });
-    globals.layers.UI2.add(globals.elements.hole);
 };
 
 const drawBottomLeftButtons = () => {

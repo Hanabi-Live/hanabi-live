@@ -40,6 +40,11 @@ class PlayStack extends graphics.Group {
         for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i]; // This is a LayoutChild
             const scale = lh / node.getHeight();
+            const opacity = (
+                globals.variant.name.startsWith('Throw It in a Hole')
+                && !globals.replay
+                && node.children[0].rank !== 0 // We want the stack bases to be visible
+            ) ? 0 : 1;
 
             if (globals.animateFast) {
                 node.setX(0);
@@ -47,6 +52,7 @@ class PlayStack extends graphics.Group {
                 node.setScaleX(scale);
                 node.setScaleY(scale);
                 node.setRotation(0);
+                node.setOpacity(opacity);
                 hideUnder();
             } else {
                 // Animate the card leaving the hand to the play stacks
@@ -61,6 +67,7 @@ class PlayStack extends graphics.Group {
                     scaleX: scale,
                     scaleY: scale,
                     rotation: 0,
+                    opacity,
                     easing: graphics.Easings.EaseOut,
                     onFinish: () => {
                         if (!node || !card || !card.parent) {
@@ -83,10 +90,8 @@ class PlayStack extends graphics.Group {
         }
     }
 
-    getLastPlayedCard() {
-        if (this.children.length === 0) {
-            return -1;
-        }
+    getLastPlayedRank() {
+        // The PlayStack will always have at least 1 element in it (the "stack base" card)
         const topLayoutChild = this.children[this.children.length - 1];
         const topCard = topLayoutChild.children[0];
         return topCard.rank;

@@ -212,7 +212,7 @@ const initCardsMap = () => {
 const initCards = () => {
     globals.deckSize = stats.getTotalCardsInTheDeck();
     for (let order = 0; order < globals.deckSize; order++) {
-        // Created the "learned" card object
+        // Create the "learned" card object
         // (this must be done before creating the HanabiCard object)
         globals.learnedCards.push({
             suit: null,
@@ -234,6 +234,18 @@ const initCards = () => {
         // Create the LayoutChild that will be the parent of the card
         const child = new LayoutChild();
         child.add(card);
+    }
+
+    // Also create objects for the stack bases
+    for (const suit of globals.variant.suits) {
+        globals.learnedCards.push({
+            suit,
+            rank: 0,
+            revealed: true,
+        });
+
+        globals.ourNotes.push('');
+        globals.allNotes.push([]);
     }
 };
 

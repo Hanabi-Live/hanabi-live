@@ -60,7 +60,9 @@ exports.init = () => {
     }
 
     // Dynamically create the card note tooltips
-    for (let i = 0; i < maxCardsInADeck; i++) { // Matches card.order
+    for (let i = 0; i < maxCardsInADeck + 6; i++) {
+        // The number in the id matches the order of the card in the deck
+        // We add 6 because we also need note tooltips for the stack bases
         $('#game-tooltips').append(`<div id="tooltip-card-${i}"></div>`);
         $(`#tooltip-card-${i}`).tooltipster(tooltipOptions);
     }

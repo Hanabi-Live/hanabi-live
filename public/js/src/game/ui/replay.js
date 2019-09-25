@@ -172,8 +172,17 @@ const reset = () => {
         globals.elements.playerHands[i].removeChildren();
     }
     for (const suit of suits) {
-        globals.elements.playStacks.get(suit).removeChildren();
-        globals.elements.discardStacks.get(suit).removeChildren();
+        // Remove all of the cards from the play stacks (except for the stack base)
+        const playStack = globals.elements.playStacks.get(suit);
+        for (const child of playStack.children) {
+            if (child.children[0].rank !== 0) {
+                child.remove();
+            }
+        }
+
+        // Remove all of the cards from the discard stacks
+        const discardStack = globals.elements.discardStacks.get(suit);
+        discardStack.removeChildren();
     }
     for (const strike of globals.elements.strikes) {
         if (strike.tween) {
@@ -183,6 +192,9 @@ const reset = () => {
         strike.setFaded();
     }
     for (const card of globals.deck) {
+        if (card.parent.tween) {
+            card.parent.tween.destroy();
+        }
         card.holder = null;
         card.suit = null;
         card.rank = null;

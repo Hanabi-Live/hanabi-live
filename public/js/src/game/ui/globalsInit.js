@@ -36,6 +36,7 @@ module.exports = () => {
 
     // Game constants (set upon first initialization)
     globals.deck = []; // Contains HanabiCard objects in the order that they are dealt
+    globals.stackBases = []; // Contains HanabiCard objects for each stack base
     // Keys are e.g. "Blue1", values are the count of how many are left
     globals.cardsMap = new Map();
 
@@ -62,10 +63,8 @@ module.exports = () => {
         // The main screen
         stageFade: null,
         playArea: null,
-        playStackBases: [],
         playStacks: new Map(), // Keys are Suits, values are CardStacks
         suitLabelTexts: [],
-        hole: null,
         discardArea: null,
         discardStacks: new Map(), // Keys are Suits, values are CardStacks
         playerHands: [], // Contains CardLayouts
