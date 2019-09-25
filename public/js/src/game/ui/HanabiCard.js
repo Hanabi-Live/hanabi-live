@@ -616,6 +616,8 @@ class HanabiCard extends graphics.Group {
         if (
             this.holder === globals.playerUs
             && (this.possibleSuits.length > 1 || this.possibleRanks.length > 1)
+            && !globals.replay
+            && !globals.spectating
         ) {
             for (let i = 0; i < globals.elements.playerHands.length; i++) {
                 if (i === this.holder) {
