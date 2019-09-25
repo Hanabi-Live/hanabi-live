@@ -76,6 +76,7 @@ module.exports = () => {
         lobbyButtonBig: null,
         killButton: null,
         restartButton: null,
+        endHypotheticalButton: null,
         deck: null,
         gameIDLabel: null,
         deckTurnsRemainingLabel1: null,

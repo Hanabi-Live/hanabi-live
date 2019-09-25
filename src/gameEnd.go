@@ -18,6 +18,21 @@ func (g *Game) End() {
 	}
 	log.Info(t.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
+	// Append a final action with a listing of every card in the deck
+	// (so that the client will have it for hypotheticals)
+	deck := make([]CardSimple, 0)
+	for _, c := range g.Deck {
+		deck = append(deck, CardSimple{
+			Suit: c.Suit,
+			Rank: c.Rank,
+		})
+	}
+	g.Actions = append(g.Actions, ActionDeckOrder{
+		Type: "deckOrder",
+		Deck: deck,
+	})
+	t.NotifyAction()
+
 	// There will be no times associated with a JSON game, so don't bother with the rest of the code
 	if g.Options.JSONGame {
 		return
@@ -101,21 +116,6 @@ func (g *Game) End() {
 	// Advance a turn so that the finishing times are separated from the final action of the game
 	g.Turn++
 	t.NotifyTurn()
-
-	// Append a final action with a listing of every card in the deck
-	// (so that the client will have it for hypotheticals)
-	deck := make([]CardSimple, 0)
-	for _, c := range g.Deck {
-		deck = append(deck, CardSimple{
-			Suit: c.Suit,
-			Rank: c.Rank,
-		})
-	}
-	g.Actions = append(g.Actions, ActionDeckOrder{
-		Type: "deckOrder",
-		Deck: deck,
-	})
-	t.NotifyAction()
 
 	// Notify everyone that the game is over
 	t.NotifyGameOver()

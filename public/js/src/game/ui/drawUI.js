@@ -21,6 +21,7 @@ const FullActionLog = require('./FullActionLog');
 const globals = require('./globals');
 const graphics = require('./graphics');
 const HanabiCard = require('./HanabiCard');
+const hypothetical = require('./hypothetical');
 const LayoutChild = require('./LayoutChild');
 const MultiFitText = require('./MultiFitText');
 const NumberButton = require('./NumberButton');
@@ -464,7 +465,7 @@ const drawBottomLeftButtons = () => {
         width: bottomLeftButtonValues.w * winW,
         height: bottomLeftButtonValues.h * winH,
         text: 'Restart',
-        visible: globals.replay && globals.sharedReplay,
+        visible: false,
     });
     globals.layers.UI.add(restartButton);
     restartButton.on('click tap', () => {
@@ -474,6 +475,21 @@ const drawBottomLeftButtons = () => {
     restartButton.tooltipContent = 'Automatically go into a new game with the current members of the shared replay (using the same game settings as this one).';
     tooltips.init(restartButton, true, false);
     globals.elements.restartButton = restartButton;
+
+    // The "End Hypothetical" button
+    const endHypotheticalButton = new Button({
+        x: bottomLeftButtonValues.x * winW,
+        y: bottomLeftButtonValues.y * winH,
+        width: bottomLeftButtonValues.w * winW,
+        height: bottomLeftButtonValues.h * winH,
+        text: 'End Hypo',
+        visible: false,
+    });
+    globals.layers.UI.add(endHypotheticalButton);
+    endHypotheticalButton.on('click tap', () => {
+        hypothetical.end();
+    });
+    globals.elements.endHypotheticalButton = endHypotheticalButton;
 
     // The chat button
     const chatButton = new Button({
@@ -1687,20 +1703,19 @@ const drawPreplayArea = () => {
 };
 
 const drawHypotheticalArea = () => {
-    /*
     // The "Hypothetical" circle that shows whether or not we are currently in a hypothetical
     globals.elements.hypoCircle = new graphics.Group({
-        x: bottomRightReplayButtonValues.x * winW,
-        y: bottomRightReplayButtonValues.y * winH,
-        visible: globals.hypothetical && !globals.amSharedReplayLeader,
+        x: clueAreaValues.x * winW,
+        y: clueAreaValues.y * winH,
+        visible: false,
     });
-    globals.elements.replayArea.add(globals.elements.hypoCircle);
+    globals.layers.UI.add(globals.elements.hypoCircle);
 
     const circle = new graphics.Ellipse({
-        x: 0.088 * winW,
-        y: 0.03 * winH,
-        radiusX: 0.08 * winW,
-        radiusY: 0.03 * winH,
+        x: (clueAreaValues.w * 0.5) * winW,
+        y: 0.105 * winH,
+        radiusX: clueAreaValues.w * 0.4 * winW,
+        radiusY: 0.05 * winH,
         fill: 'black',
         opacity: 0.5,
         stroke: 'black',
@@ -1708,19 +1723,22 @@ const drawHypotheticalArea = () => {
     });
     globals.elements.hypoCircle.add(circle);
 
+    const hypoValues = {
+        y: 0.075,
+        w: clueAreaValues.w * 0.6,
+    };
     const text = new FitText({
         name: 'text',
-        x: 0.027 * winW,
-        y: 0.016 * winH,
-        width: bottomRightReplayButtonValues.w * 0.65 * winW,
+        x: ((clueAreaValues.w * 0.5) - (hypoValues.w * 0.5)) * winW,
+        y: 0.075 * winH,
+        width: hypoValues.w * winW,
         fontSize: 0.5 * winH,
         fontFamily: 'Verdana',
-        fill: 'yellow',
+        fill: constants.LABEL_COLOR,
         align: 'center',
         text: 'Hypothetical',
     });
     globals.elements.hypoCircle.add(text);
-    */
 };
 
 const drawPauseArea = () => {

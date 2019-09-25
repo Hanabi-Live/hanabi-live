@@ -1,5 +1,7 @@
 /*
     Functions for building a state table for every turn
+    (state tables are currently unused but eventually the client will eventually be rewritten to
+    handle state transitions)
 */
 
 // Imports

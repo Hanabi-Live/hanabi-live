@@ -238,7 +238,7 @@ module.exports = () => {
     };
 
     // The "Enter Hypothetical" button
-    globals.elements.enterHypoButton = new ToggleButton({
+    globals.elements.enterHypoButton = new Button({
         x: bottomRightReplayButtonValues.x * winW,
         y: bottomRightReplayButtonValues.y * winH,
         width: bottomRightReplayButtonValues.w * winW,
@@ -246,7 +246,7 @@ module.exports = () => {
         text: 'Enter Hypothetical',
         visible: globals.replay && globals.amSharedReplayLeader && !globals.hypothetical,
     });
-    globals.elements.enterHypoButton.on('click tap', hypothetical.enter);
+    globals.elements.enterHypoButton.on('click tap', hypothetical.start);
     globals.elements.replayArea.add(globals.elements.enterHypoButton);
 
     // Add the replay area to the UI

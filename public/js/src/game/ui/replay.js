@@ -14,7 +14,12 @@ const ui = require('./ui');
 */
 
 const enter = () => {
+    if (globals.hypothetical) {
+        // Don't allow replay navigation while in a hypothetical
+        return;
+    }
     if (globals.replayMax === 0) {
+        // No actions have been taken yet, so we cannot enter a replay
         return;
     }
     if (globals.inReplay) {
@@ -181,10 +186,8 @@ const reset = () => {
         const suit = globals.variant.suits[i];
         const playStack = globals.elements.playStacks.get(suit);
         playStack.add(globals.stackBases[i].parent);
-
-        // There is a race condition where the stack base might not be visible after a rewind
-        // Ensure that it is visible
         globals.stackBases[i].parent.setVisible(true);
+        // (the stack base might have been hidden if there was a card on top of it)
     }
 
     // Remove all of the cards from the discard stacks

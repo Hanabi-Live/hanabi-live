@@ -9,38 +9,52 @@ const convert = require('./convert');
 const globals = require('./globals');
 const replay = require('./replay');
 
-exports.enter = () => {
+exports.start = () => {
     if (globals.hypothetical) {
         return;
     }
+    globals.hypothetical = true;
 
+    // Bring us to the shared replay turn, if not already there
+    if (!globals.useSharedTurns) {
+        replay.toggleSharedTurns();
+    }
+
+    // Adjust the UI, depending on whether or not we are the replay leader
+    globals.elements.replayArea.setVisible(false);
     if (globals.amSharedReplayLeader) {
         globals.lobby.conn.send('replayAction', {
             type: constants.REPLAY_ACTION_TYPE.HYPO_START,
         });
 
+        globals.elements.restartButton.setVisible(false);
+        globals.elements.endHypotheticalButton.setVisible(true);
         setActivePlayerCardsDraggable();
     } else {
-        globals.elements.replayArea.setVisible(false);
         globals.elements.hypoCircle.setVisible(true);
-        globals.layers.UI.batchDraw();
     }
+    globals.layers.UI.batchDraw();
 };
 
-exports.exit = () => {
+exports.end = () => {
     if (!globals.hypothetical) {
         return;
     }
+    globals.hypothetical = false;
 
+    // Adjust the UI, depending on whether or not we are the replay leader
+    globals.elements.replayArea.setVisible(true);
     if (globals.amSharedReplayLeader) {
         globals.lobby.conn.send('replayAction', {
             type: constants.REPLAY_ACTION_TYPE.HYPO_END,
         });
+
+        globals.elements.restartButton.setVisible(true);
+        globals.elements.endHypotheticalButton.setVisible(false);
     } else {
         globals.elements.hypoCircle.setVisible(false);
-        globals.elements.replayArea.setVisible(true);
-        globals.layers.UI.batchDraw();
     }
+    globals.layers.UI.batchDraw();
 
     globals.hypoActions = [];
 

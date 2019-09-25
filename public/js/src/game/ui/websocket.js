@@ -532,13 +532,20 @@ commands.replayLeader = (data) => {
     }
     globals.elements.enterHypoButton.setVisible(globals.amSharedReplayLeader);
 
+    // Enable/disable the restart button
+    globals.elements.restartButton.setVisible(globals.amSharedReplayLeader);
+
     // Hide the replay area if we are in a hypothetical
     if (globals.hypothetical) {
         globals.elements.replayArea.setVisible(false);
-        globals.elements.hypoCircle.setVisible(!globals.amSharedReplayLeader);
+        if (globals.amSharedReplayLeader) {
+            globals.elements.restartButton.setVisible(false);
+            globals.elements.endHypotheticalButton.setVisible(true);
+        } else {
+            globals.elements.hypoCircle.setVisible(true);
+        }
     }
 
-    globals.elements.restartButton.setVisible(globals.amSharedReplayLeader);
     globals.layers.UI.batchDraw();
 
     // Update the tooltip
