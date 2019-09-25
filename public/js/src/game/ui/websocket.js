@@ -475,7 +475,10 @@ commands.replayIndicator = (data) => {
     if (data.order >= 0) { // A card
         // Ensure that the card exists as a sanity-check
         // (the server does not validate the order that the leader sends)
-        const card = globals.deck[data.order];
+        let card = globals.deck[data.order];
+        if (!card) {
+            card = globals.stackBases[data.order - globals.deck.legnth];
+        }
         if (!card) {
             return;
         }

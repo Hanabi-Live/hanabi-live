@@ -4,10 +4,16 @@
 */
 
 // Imports
+const constants = require('../../constants');
 const globals = require('./globals');
 const graphics = require('./graphics');
 
 class PlayStack extends graphics.Group {
+    constructor(config) {
+        super(config);
+        this.rotation = 0;
+    }
+
     add(child) {
         const pos = child.getAbsolutePosition();
         graphics.Group.prototype.add.call(this, child);
@@ -43,7 +49,8 @@ class PlayStack extends graphics.Group {
             const opacity = (
                 globals.variant.name.startsWith('Throw It in a Hole')
                 && !globals.replay
-                && node.children[0].rank !== 0 // We want the stack bases to be visible
+                // We want the stack bases to always be visible
+                && node.children[0].rank !== constants.STACK_BASE_RANK
             ) ? 0 : 1;
 
             if (globals.animateFast) {

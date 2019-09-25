@@ -240,7 +240,7 @@ const initCards = () => {
     for (const suit of globals.variant.suits) {
         globals.learnedCards.push({
             suit,
-            rank: 0,
+            rank: constants.STACK_BASE_RANK,
             revealed: true,
         });
 

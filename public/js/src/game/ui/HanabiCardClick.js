@@ -41,6 +41,11 @@ const clickLeft = (card, event) => {
     // The "Empathy" feature is handled in the "HanabiCardInit.js" file,
     // so we don't have to worry about it here
 
+    // Disable this for the stack base
+    if (card.rank === constants.STACK_BASE_RANK) {
+        return;
+    }
+
     // No actions in this function use modifiers other than Alt
     if (event.ctrlKey || event.shiftKey || event.metaKey) {
         return;
@@ -64,6 +69,11 @@ const clickLeft = (card, event) => {
 };
 
 const clickMiddle = (card, event) => {
+    // Disable this for the stack base
+    if (card.rank === constants.STACK_BASE_RANK) {
+        return;
+    }
+
     // No actions in this function use modifiers other than alt
     if (event.ctrlKey || event.shiftKey || event.metaKey) {
         return;

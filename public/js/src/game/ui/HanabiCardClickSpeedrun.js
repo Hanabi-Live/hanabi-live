@@ -11,11 +11,12 @@ const ui = require('./ui');
 module.exports = function clickSpeedrun(event) {
     // Speedrunning overrides the normal card clicking behavior
     // (but don't use the speedrunning behavior if we are in a
-    // solo replay / shared replay / spectating)
+    // solo replay / shared replay / spectating / clicking on the stack base)
     if (
         (!globals.speedrun && !globals.lobby.settings.speedrunMode)
         || globals.replay
         || globals.spectating
+        || this.rank === constants.STACK_BASE_RANK
     ) {
         return;
     }

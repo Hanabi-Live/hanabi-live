@@ -90,8 +90,8 @@ class HanabiCard extends graphics.Group {
         this.knownTrash = false;
         this.needsFix = false;
 
+        this.setListening(true); // Some variants disable listening on cards
         this.hideClues();
-        this.setListening(true);
 
         // Reset all of the pips to their default state
         // (but don't show any pips in Real-Life mode)
@@ -138,7 +138,11 @@ class HanabiCard extends graphics.Group {
         } else {
             // If we are not in Empathy mode, then show the suit if it is known
             suitToShow = learnedCard.suit;
-            if (this.rank === 0 && this.noteSuit !== null && !globals.replay) {
+            if (
+                this.rank === constants.STACK_BASE_RANK
+                && this.noteSuit !== null
+                && !globals.replay
+            ) {
                 // The card note suit has precedence over the "real" suit,
                 // but only for the stack bases (and not in replays)
                 suitToShow = this.noteSuit;
@@ -171,7 +175,11 @@ class HanabiCard extends graphics.Group {
         } else {
             // If we are not in Empathy mode, then show the rank if it is known
             rankToShow = learnedCard.rank;
-            if (this.rank === 0 && this.noteRank !== null && !globals.replay) {
+            if (
+                this.rank === constants.STACK_BASE_RANK
+                && this.noteRank !== null
+                && !globals.replay
+            ) {
                 // The card note rank has precedence over the "real" rank,
                 // but only for the stack bases (and not in replays)
                 rankToShow = this.noteRank;
@@ -644,7 +652,7 @@ class HanabiCard extends graphics.Group {
 
     animateToPlayStacks() {
         // We add a LayoutChild to a PlayStack
-        if (globals.variant.name.startsWith('Throw It in a Hole')) {
+        if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
             const hole = globals.elements.playStacks.get('hole');
             hole.add(this.parent); // The act of adding it will automatically tween the card
 
@@ -789,7 +797,7 @@ class HanabiCard extends graphics.Group {
             // START cards do not need to be played if there are any cards played on the stack
             const playStack = globals.elements.playStacks.get(this.suit);
             const lastPlayedRank = playStack.getLastPlayedRank();
-            if (lastPlayedRank !== 0) {
+            if (lastPlayedRank !== constants.STACK_BASE_RANK) {
                 return false;
             }
         }
@@ -863,7 +871,10 @@ class HanabiCard extends graphics.Group {
         let potentiallyPlayable = false;
         for (const suit of globals.variant.suits) {
             const playStack = globals.elements.playStacks.get(suit);
-            const lastPlayedRank = playStack.getLastPlayedRank();
+            let lastPlayedRank = playStack.getLastPlayedRank();
+            if (lastPlayedRank === constants.STACK_BASE_RANK) {
+                lastPlayedRank = 0;
+            }
             const nextRankNeeded = lastPlayedRank + 1;
             const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
             if (count > 0) {
@@ -883,7 +894,7 @@ class HanabiCard extends graphics.Group {
             const lastPlayedRank = playStack.getLastPlayedRank();
 
             if (globals.stackDirections[i] === constants.STACK_DIRECTION.UNDECIDED) {
-                if (lastPlayedRank === 0) {
+                if (lastPlayedRank === constants.STACK_BASE_RANK) {
                     // The "START" card has not been played
                     for (const rank of [0, 1, 5]) {
                         const count = this.possibleCards.get(`${suit.name}${rank}`);

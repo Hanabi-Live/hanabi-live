@@ -102,10 +102,11 @@ class LayoutChild extends graphics.Group {
 
         // Before we play a card,
         // do a check to ensure that it is actually playable to prevent silly mistakes from players
-        // (but disable this in speedruns)
+        // (but disable this in speedruns and certain variants)
         if (
             draggedTo === 'playArea'
             && !globals.speedrun
+            && !globals.variant.name.startsWith('Throw It in a Hole')
             && globals.ourTurn // Don't use warnings for preplays
             && !card.isPotentiallyPlayable()
         ) {

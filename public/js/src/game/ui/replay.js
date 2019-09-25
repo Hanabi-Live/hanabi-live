@@ -167,23 +167,29 @@ const reset = () => {
     globals.elements.deck.setCount(globals.deckSize);
     globals.elements.clueLog.clear();
 
-    const { suits } = globals.variant;
     for (let i = 0; i < globals.elements.playerHands.length; i++) {
         globals.elements.playerHands[i].removeChildren();
     }
-    for (const suit of suits) {
-        // Remove all of the cards from the play stacks (except for the stack base)
-        const playStack = globals.elements.playStacks.get(suit);
-        for (const child of playStack.children) {
-            if (child.children[0].rank !== 0) {
-                child.remove();
-            }
-        }
 
-        // Remove all of the cards from the discard stacks
-        const discardStack = globals.elements.discardStacks.get(suit);
+    // Remove all of the cards from the play stacks
+    for (const [, playStack] of globals.elements.playStacks) {
+        playStack.removeChildren();
+    }
+
+    // Readd the stack base to the play stacks
+    // (if we instead have logic in the above block to skip removing the stack base,
+    // then buggy behavior occurs where the stack bases will sometimes disappear)
+    for (let i = 0; i < globals.variant.suits.length; i++) {
+        const suit = globals.variant.suits[i];
+        const playStack = globals.elements.playStacks.get(suit);
+        playStack.add(globals.stackBases[i].parent);
+    }
+
+    // Remove all of the cards from the discard stacks
+    for (const [, discardStack] of globals.elements.discardStacks) {
         discardStack.removeChildren();
     }
+
     for (const strike of globals.elements.strikes) {
         if (strike.tween) {
             strike.tween.destroy();

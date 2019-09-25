@@ -38,7 +38,7 @@ const set = (i, element, giver, clue) => {
         && !element.isDiscarded
     ) {
         if (element.parent && element.parent.parent) {
-            rot = element.parent.parent.rotation;
+            rot = element.parent.parent.rotation || 0;
         }
         if (
             (!globals.lobby.settings.showKeldonUI && element.holder === globals.playerUs)
@@ -126,9 +126,6 @@ const getPos = (element, rot) => {
         const rotRadians = (rot / 180) * Math.PI;
         pos.x -= Math.sin(rotRadians) * distance;
         pos.y += Math.cos(rotRadians) * distance;
-    } else if (element.type === 'PlayStackBase' || element === globals.elements.deck) {
-        pos.x += element.getWidth() / 2;
-        pos.y += element.getHeight() / 3.5;
     } else if (element === globals.elements.cluesNumberLabel) {
         pos.x += element.getWidth() * 0.15;
     } else {

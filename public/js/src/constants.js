@@ -49,17 +49,11 @@ exports.REPLAY_ACTION_TYPE = {
     HYPO_ACTION: 7,
 };
 exports.REPLAY_ARROW_ORDER = {
-    STACK1: -1,
-    STACK2: -2,
-    STACK3: -3,
-    STACK4: -4,
-    STACK5: -5,
-    STACK6: -6,
-    DECK: -7,
-    CLUES: -8,
-    PACE: -9,
-    EFFICIENCY: -10,
-    MIN_EFFICIENCY: -11,
+    DECK: -1,
+    CLUES: -2,
+    PACE: -3,
+    EFFICIENCY: -4,
+    MIN_EFFICIENCY: -5,
 };
 exports.STACK_DIRECTION = { // Used in the "Up or Down" variants
     UNDECIDED: 0,
@@ -67,6 +61,8 @@ exports.STACK_DIRECTION = { // Used in the "Up or Down" variants
     DOWN: 2,
     FINISHED: 3,
 };
+exports.STACK_BASE_RANK = 0;
+exports.UNKNOWN_CARD_RANK = 6;
 exports.START_CARD_RANK = 7;
 
 // Validate the colors from the JSON file, filling in some values if necessary

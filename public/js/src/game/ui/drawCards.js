@@ -56,7 +56,7 @@ exports.drawAll = (variant, colorblindUI, canvasType, imports = null) => {
             ctx.lineWidth = 2;
             ctx.lineJoin = 'round';
 
-            if (rank !== 0 && rank !== 6) {
+            if (rank !== constants.STACK_BASE_RANK && rank !== constants.UNKNOWN_CARD_RANK) {
                 let textYPos;
                 let rankLabel = rank.toString();
                 if (rank === constants.START_CARD_RANK) {
@@ -94,7 +94,7 @@ exports.drawAll = (variant, colorblindUI, canvasType, imports = null) => {
             // - cards of unknown rank
             // Entirely unknown cards (e.g. "NoPip-Unknown-6")
             // have a custom image defined separately
-            if (rank > 0 && (rank < 6 || suit !== SUITS.Unknown)) {
+            if (rank >= 1 && (rank <= 5 || suit !== SUITS.Unknown)) {
                 const cardImagesIndex = `NoPip-${suit.name}-${rank}`;
                 cardImages[cardImagesIndex] = cloneCanvas(cvs, ctx, canvasType);
             }
@@ -113,7 +113,7 @@ exports.drawAll = (variant, colorblindUI, canvasType, imports = null) => {
 
     {
         const [cvs, ctx] = makeUnknownCard(canvasType);
-        const cardImagesIndex = 'NoPip-Unknown-6';
+        const cardImagesIndex = `NoPip-Unknown-${constants.UNKNOWN_CARD_RANK}`;
         cardImages[cardImagesIndex] = saveCanvas(cvs, ctx, canvasType);
     }
     {
