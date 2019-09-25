@@ -160,11 +160,10 @@ commands.draw = (data) => {
     const { order } = data;
     // Suit and rank come from the server as -1 if the card is unknown
     // (e.g. being drawn to the current player's hand)
-    // We want to convert this to just being undefined
-    let suit = data.suit === -1 ? null : data.suit;
-    const rank = data.rank === -1 ? null : data.rank;
+    // We want to convert this to just being null
     // Suit comes from the server as an integer, so we also need to convert it to a Suit object
-    suit = convert.msgSuitToSuit(data.suit, globals.variant);
+    const suit = data.suit === -1 ? null : convert.msgSuitToSuit(data.suit, globals.variant);
+    const rank = data.rank === -1 ? null : data.rank;
     const holder = data.who;
 
     // Remove one card from the deck
