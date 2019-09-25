@@ -38,11 +38,16 @@ const set = (i, element, giver, clue) => {
         && !element.isDiscarded
     ) {
         if (element.parent && element.parent.parent) {
-            rot = element.parent.parent.rotation || 0;
+            rot = element.parent.parent.rotation;
         }
         if (
-            (!globals.lobby.settings.showKeldonUI && element.holder === globals.playerUs)
-            || (globals.lobby.settings.showKeldonUI && element.holder !== globals.playerUs)
+            (
+                !globals.lobby.settings.showKeldonUI
+                && element.holder === globals.playerUs
+            ) || (
+                globals.lobby.settings.showKeldonUI
+                && (element.holder !== globals.playerUs && element.holder !== null)
+            )
         ) {
             // In BGA mode, invert the arrows on our hand
             // (so that it doesn't get cut off by the top of the screen)
