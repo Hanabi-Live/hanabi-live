@@ -46,14 +46,15 @@ class PlayStack extends graphics.Group {
         for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i]; // This is a LayoutChild
             const scale = lh / node.getHeight();
+            const stackBase = node.children[0].rank === constants.STACK_BASE_RANK;
             const opacity = (
                 globals.variant.name.startsWith('Throw It in a Hole')
                 && !globals.replay
                 // We want the stack bases to always be visible
-                && node.children[0].rank !== constants.STACK_BASE_RANK
+                && !stackBase
             ) ? 0 : 1;
 
-            if (globals.animateFast) {
+            if (globals.animateFast || stackBase) {
                 node.setX(0);
                 node.setY(0);
                 node.setScaleX(scale);
