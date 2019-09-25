@@ -177,12 +177,14 @@ const reset = () => {
     }
 
     // Readd the stack base to the play stacks
-    // (if we instead have logic in the above block to skip removing the stack base,
-    // then buggy behavior occurs where the stack bases will sometimes disappear)
     for (let i = 0; i < globals.variant.suits.length; i++) {
         const suit = globals.variant.suits[i];
         const playStack = globals.elements.playStacks.get(suit);
         playStack.add(globals.stackBases[i].parent);
+
+        // There is a race condition where the stack base might not be visible after a rewind
+        // Ensure that it is visible
+        globals.stackBases[i].parent.setVisible(true);
     }
 
     // Remove all of the cards from the discard stacks
