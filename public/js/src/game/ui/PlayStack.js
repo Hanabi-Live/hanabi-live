@@ -24,25 +24,6 @@ class PlayStack extends graphics.Group {
     doLayout() {
         const lh = this.getHeight();
 
-        const hideUnder = () => {
-            const n = this.children.length;
-            for (let i = 0; i < n; i++) {
-                const node = this.children[i]; // This is a LayoutChild
-                if (!node.tween) {
-                    continue;
-                }
-                if (node.tween !== null) {
-                    return;
-                }
-            }
-            for (let i = 0; i < n - 1; i++) {
-                this.children[i].hide();
-            }
-            if (n > 0) {
-                this.children[n - 1].show();
-            }
-        };
-
         for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i]; // This is a LayoutChild
             const scale = lh / node.getHeight();
@@ -61,7 +42,7 @@ class PlayStack extends graphics.Group {
                 node.setScaleY(scale);
                 node.setRotation(0);
                 node.setOpacity(opacity);
-                hideUnder();
+                this.hideUnder();
             } else {
                 // Animate the card leaving the hand to the play stacks
                 // (tweening from the hand to the discard pile is handled in "CardLayout.js")
@@ -90,11 +71,36 @@ class PlayStack extends graphics.Group {
                         } else {
                             card.tweening = false;
                             node.checkSetDraggable();
-                            hideUnder();
+                            this.hideUnder();
                         }
                     },
                 }).play();
             }
+        }
+    }
+
+    hideUnder() {
+        const n = this.children.length;
+        if (n <= 2) {
+            // If we are tweening the first card on to the stack base,
+            // we don't need to hide anything
+            return;
+        }
+
+        for (let i = 0; i < n; i++) {
+            const node = this.children[i]; // This is a LayoutChild
+            if (!node.tween) {
+                continue;
+            }
+            if (node.tween !== null) {
+                return;
+            }
+        }
+        for (let i = 0; i < n - 1; i++) {
+            this.children[i].hide();
+        }
+        if (n > 0) {
+            this.children[n - 1].show();
         }
     }
 
