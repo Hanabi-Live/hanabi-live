@@ -118,8 +118,8 @@ const clickRight = (card, event) => {
         && !event.altKey
         && !event.metaKey
     ) {
-        // Prevent discarding while at 8 clues
-        if (globals.clues === 8) {
+        // Prevent discarding while at the maximum amount of clues
+        if (globals.clues === constants.MAX_CLUE_NUM) {
             return;
         }
         ui.endTurn({

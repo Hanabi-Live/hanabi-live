@@ -153,14 +153,13 @@ const setVisibleButtons = () => {
 
 const reset = () => {
     // Reset some game state variables
-    // "globals.turn" is set in every "turn" command,
-    // but there are "notify" messages that occur before the first "turn" command
     globals.turn = 0;
     // "globals.currentPlayerIndex" is set in every "turn" command
     globals.deckSize = stats.getTotalCardsInTheDeck();
     // "globals.indexOfLastDrawnCard" is set in every "draw" command
-    // "globals.score", "globals.maxScore", and "globals.clues"
-    // are set in every "status" command
+    globals.score = 0;
+    globals.maxScore = globals.variant.maxScore;
+    globals.clues = constants.MAX_CLUE_NUM;
     globals.cardsGotten = 0;
     globals.cluesSpentPlusStrikes = 0;
     globals.stackDirections = [0, 0, 0, 0, 0];

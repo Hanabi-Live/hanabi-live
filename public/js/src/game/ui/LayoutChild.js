@@ -92,7 +92,7 @@ class LayoutChild extends graphics.Group {
         if (globals.elements.playArea.isOver(pos)) {
             draggedTo = 'playArea';
         } else if (globals.elements.discardArea.isOver(pos)) {
-            if (globals.clues === 8) {
+            if (globals.clues === constants.MAX_CLUE_NUM) {
                 sounds.play('error');
                 globals.elements.cluesNumberLabelPulse.play();
             } else {

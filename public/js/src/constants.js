@@ -7,6 +7,8 @@ const suits = require('../../data/suits');
 const variants = require('../../data/variants');
 const characters = require('../../data/characters');
 
+exports.MAX_CLUE_NUM = 8;
+
 // Define the defeault qualities of a card
 exports.CARD_W = 286;
 exports.CARD_H = 406;

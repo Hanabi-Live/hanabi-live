@@ -324,9 +324,9 @@ commands.status = (data) => {
         globals.elements.cluesNumberLabel.setFill(globals.clues === 0 ? 'red' : constants.LABEL_COLOR);
         globals.elements.noClueBorder.setVisible(globals.clues === 0);
 
-        if (globals.clues === 8) {
+        if (globals.clues === constants.MAX_CLUE_NUM) {
             // Show the red border around the discard pile
-            // (to reinforce the fact that being at 8 clues is a special situation)
+            // (to reinforce that the current player cannot discard)
             globals.elements.noDiscardBorder.show();
             globals.elements.noDoubleDiscardBorder.hide();
         } else if (data.doubleDiscard) {

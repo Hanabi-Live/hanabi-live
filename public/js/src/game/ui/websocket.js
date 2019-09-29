@@ -52,8 +52,11 @@ commands.action = (data) => {
             }
         }
 
-        // Prevent discarding if the team is now at 8 clues
-        if (globals.queuedAction.data.type === constants.ACT.DISCARD && globals.clues === 8) {
+        // Prevent discarding if the team is at the maximum amount of clues
+        if (
+            globals.queuedAction.data.type === constants.ACT.DISCARD
+            && globals.clues === constants.MAX_CLUE_NUM
+        ) {
             return;
         }
 

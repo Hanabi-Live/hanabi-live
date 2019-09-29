@@ -116,7 +116,7 @@ exports.getMinEfficiency = () => {
     if (globals.variant.name.startsWith('Clue Starved')) {
         discardsPerClue = 2;
     }
-    const minEfficiencyDenominator = 8 + Math.floor(
+    const minEfficiencyDenominator = constants.MAX_CLUE_NUM + Math.floor(
         (startingPace + numSuits - unusableClues) / discardsPerClue,
     );
     const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);

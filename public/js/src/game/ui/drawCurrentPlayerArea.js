@@ -211,8 +211,8 @@ module.exports = (clueAreaValues) => {
             if (globals.clues === 0) {
                 specialText = '(cannot clue; 0 clues left)';
                 text3.setFill('red');
-            } else if (globals.clues === 8) {
-                specialText = '(cannot discard; at 8 clues)';
+            } else if (globals.clues === constants.MAX_CLUE_NUM) {
+                specialText = `(cannot discard; at ${constants.MAX_CLUE_NUM} clues)`;
                 text3.setFill('red');
             } else if (globals.elements.playerHands[currentPlayerIndex].isLocked()) {
                 specialText = '(locked; may not be able to discard)';
