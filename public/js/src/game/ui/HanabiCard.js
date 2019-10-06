@@ -58,6 +58,7 @@ class HanabiCard extends graphics.Group {
 
     hideClues() {
         this.cluedBorder.hide();
+        this.noteBorder.hide();
     }
 
     // Erase all of the data on the card to make it like it was freshly drawn

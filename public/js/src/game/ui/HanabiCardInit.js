@@ -49,6 +49,20 @@ exports.border = function border() {
         listening: false,
     });
     this.add(this.cluedBorder);
+
+    // The card will also get a border if it is not clued but has a particular note on it
+    this.noteBorder = new graphics.Rect({
+        x: 3,
+        y: 3,
+        width: constants.CARD_W - 6,
+        height: constants.CARD_H - 6,
+        cornerRadius: 6,
+        strokeWidth: 16,
+        stroke: '#ffe6b3', // Light yellow
+        visible: false,
+        listening: false,
+    });
+    this.add(this.noteBorder);
 };
 
 exports.pips = function pips() {

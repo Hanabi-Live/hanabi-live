@@ -150,8 +150,8 @@ commands.discard = (data) => {
 
     if (card.isClued()) {
         stats.updateEfficiency(-1);
-        card.hideClues(); // This must be after the efficiency update
     }
+    card.hideClues(); // This must be after the efficiency update
 };
 
 // A player just drew a card from the deck
@@ -251,11 +251,10 @@ commands.play = (data) => {
     // The fact that this card was played could make some other cards useless
     ui.checkFadeInAllHands();
 
-    if (card.isClued()) {
-        card.hideClues();
-    } else {
+    if (!card.isClued()) {
         stats.updateEfficiency(1);
     }
+    card.hideClues(); // This must be after the efficiency update
 };
 
 commands.reorder = (data) => {

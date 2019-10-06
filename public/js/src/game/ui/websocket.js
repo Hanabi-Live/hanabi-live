@@ -324,16 +324,16 @@ commands.noteListPlayer = (data) => {
     // Show the note indicator for currently-visible cards
     notes.setAllCardIndicators();
 
-    // If we have specific card notes on any cards in our hand, morph those cards
+    // Check for special notes on our hand
     const ourHand = globals.elements.playerHands[globals.playerUs];
     for (const layoutChild of ourHand.children) {
         const card = layoutChild.children[0];
-        notes.morph(card.order, globals.ourNotes[card.order]);
+        notes.checkSpecialNote(card);
     }
 
-    // If we have specific card notes on the stack bases, morph those cards
+    // Check for special notes on the stack bases
     for (const stackBase of globals.stackBases) {
-        notes.morph(stackBase.order, globals.ourNotes[stackBase.order]);
+        notes.checkSpecialNote(stackBase);
     }
 };
 

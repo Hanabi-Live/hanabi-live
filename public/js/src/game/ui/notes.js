@@ -51,26 +51,24 @@ const set = (order, note) => {
         });
     }
 
-    morph(order, note);
-};
-exports.set = set;
-
-// Check to see if we wrote a note that implies that we know the identity of this card
-// and morph the card if so
-const morph = (order, note) => {
-    // The note identity feature does not apply to spectators and replays
-    if (globals.spectating || globals.replay) {
-        return;
-    }
-
     // Local variables
     let card = globals.deck[order];
     if (!card) {
         card = globals.stackBases[order - globals.deck.length];
     }
+    checkSpecialNote(card);
+};
+exports.set = set;
+
+const checkSpecialNote = (card) => {
+    // The note identity features do not apply to spectators and replays
+    if (globals.spectating || globals.replay) {
+        return;
+    }
 
     // Only examine the text to the right of the rightmost pipe
     // (pipes are a conventional way to append new information to a note
+    let note = globals.ourNotes[card.order];
     if (note.includes('|')) {
         const match = note.match(/.*\|(.+)/);
         note = match[1];
@@ -78,6 +76,17 @@ const morph = (order, note) => {
     note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
     note = note.trim(); // Removing all leading and trailing whitespace
 
+    // Feature 1 - Morph the card if it has an "exact" card note
+    morph(card, note);
+
+    // Feature 2 - Give the card a special border if it is chop moved
+    card.noteBorder.setVisible(!card.cluedBorder.getVisible() && note.includes('cm'));
+};
+exports.checkSpecialNote = checkSpecialNote;
+
+// Check to see if we wrote a note that implies that we know the identity of this card
+// and morph the card if so
+const morph = (card, note) => {
     let noteSuit = null;
     let noteRank = null;
     for (const rank of globals.variant.ranks) {
