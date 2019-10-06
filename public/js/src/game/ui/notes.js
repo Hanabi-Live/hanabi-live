@@ -87,6 +87,11 @@ exports.checkSpecialNote = checkSpecialNote;
 // Check to see if we wrote a note that implies that we know the identity of this card
 // and morph the card if so
 const morph = (card, note) => {
+    // Only morph cards in our own hand
+    if (card.holder !== globals.playerUs) {
+        return;
+    }
+
     let noteSuit = null;
     let noteRank = null;
     for (const rank of globals.variant.ranks) {
