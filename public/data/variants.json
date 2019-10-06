@@ -1001,7 +1001,8 @@
     "Ambiguous & Dual-Color": {
         "id": 184,
         "suits": ["Lime AD", "Forest AD", "Orchid AD", "Violet AD", "Tangelo AD", "Peach AD"],
-        "showSuitNames": true
+        "showSuitNames": true,
+        "spacing": true
     },
 
     "Multi-Fives (6 Suits)": {
@@ -1324,7 +1325,6 @@
     },
     "Throw It in a Hole (4 Suits)": {
         "id": 281,
-        "suits": ["Blue", "Green", "Yellow", "Red"],
-        "spacing": true
+        "suits": ["Blue", "Green", "Yellow", "Red"]
     }
 }
