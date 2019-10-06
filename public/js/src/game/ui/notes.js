@@ -87,11 +87,6 @@ exports.checkSpecialNote = checkSpecialNote;
 // Check to see if we wrote a note that implies that we know the identity of this card
 // and morph the card if so
 const morph = (card, note) => {
-    // Only morph cards in our own hand
-    if (card.holder !== globals.playerUs) {
-        return;
-    }
-
     let noteSuit = null;
     let noteRank = null;
     for (const rank of globals.variant.ranks) {
@@ -130,7 +125,7 @@ const morph = (card, note) => {
                 break;
             }
         }
-        if (!rankPossible) {
+        if (!rankPossible && card.holder === globals.playerUs) {
             window.alert(`That card cannot possibly be a ${noteSuit.name.toLowerCase()} ${noteRank}.`);
             return;
         }
@@ -138,7 +133,7 @@ const morph = (card, note) => {
     if (noteRank !== null && noteSuit !== null) {
         // Both the suit and the rank were specified
         const mapIndex = `${noteSuit.name}${noteRank}`;
-        if (card.possibleCards.get(mapIndex) === 0) {
+        if (card.possibleCards.get(mapIndex) === 0 && card.holder === globals.playerUs) {
             window.alert(`That card cannot possibly be a ${noteSuit.name.toLowerCase()} ${noteRank}.`);
             return;
         }
