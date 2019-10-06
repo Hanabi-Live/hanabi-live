@@ -981,11 +981,11 @@
         "spacing": true
     },
 
-    "Special Mix (5 Suit)": {
+    "Special Mix (5 Suits)": {
         "id": 159,
         "suits": ["Black", "Rainbow", "Pink", "White", "Brown"]
     },
-    "Special Mix (6 Suit)": {
+    "Special Mix (6 Suits)": {
         "id": 185,
         "suits": ["Black", "Rainbow", "Pink", "White", "Brown", "Null"]
     },
