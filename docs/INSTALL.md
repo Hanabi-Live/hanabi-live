@@ -33,8 +33,11 @@ Note that these steps require **an elevated (administrator) command-shell**.
 * Clone the repository:
   * `mkdir %GOPATH%\src\github.com\Zamiell`
   * `cd %GOPATH%\src\github.com\Zamiell`
-  * `git clone git@github.com:Zamiell/hanabi-live.git` <br />
-  (or clone a fork, if you are doing development work)
+  * If you have an SSH key and have the public key attached to your GitHub profile, then use the following command to clone with SSH:
+    * `git clone git@github.com:Zamiell/hanabi-live.git`
+  * If you do not have an SSH key, then use the following command to clone with HTTPS:
+    * `git clone https://github.com/Zamiell/hanabi-live.git`
+  * Or, if you are doing development work, then clone your forked version of the repository.
   * `cd hanabi-live`
 * Change from the Windows Command Prompt to Git Bash and install some dependencies:
   * `"%PROGRAMFILES%\Git\bin\sh.exe"`
