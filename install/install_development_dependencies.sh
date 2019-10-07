@@ -38,3 +38,5 @@ go get -u -v "github.com/golangci/golangci-lint/cmd/golangci-lint"
 # Install the JavaScript linter
 cd "$DIR/../public/js"
 npx install-peerdeps --dev eslint-config-airbnb-base
+
+echo "Successfully installed development dependencies."
