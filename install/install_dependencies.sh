@@ -22,3 +22,5 @@ npm install
 
 # Build the client code
 "$DIR/../build_client.sh"
+
+echo "Successfully installed dependencies."
