@@ -21,7 +21,7 @@
     "type": "git",
     "url": "https://github.com/Zamiell/hanabi-live.git"
   },
-  "license": "AGPL-3.0-only",
+  "license": "GPL-3.0",
   "scripts": {
     "browserify": "browserify src/main.js > main.bundled.js",
     "lint": "eslint \"src/**/*.js\""
