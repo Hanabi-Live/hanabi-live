@@ -7,4 +7,4 @@
 
 ## List of Characters
 
-As the list of characters are in flux, please look at the [constants.js file](https://github.com/Zamiell/hanabi-live/blob/master/public/js/src/constants.js) for the full listing. (Ctrl + F for "Characters".)
+* See the [characters.json file](https://github.com/Zamiell/hanabi-live/blob/master/public/data/characters.json).
