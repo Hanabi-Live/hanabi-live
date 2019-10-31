@@ -34,6 +34,15 @@ matrix:
         # Run Browerify and the Google Closure Compiler
         - ../../build_client.sh
 
+after_success:
+  - wget https://raw.githubusercontent.com/Zamiell/hanabi-live/master/travis_webhook.sh
+  - chmod +x travis_webhook.sh
+  - ./travis_webhook.sh success $WEBHOOK_URL
+after_failure:
+  - wget https://raw.githubusercontent.com/Zamiell/hanabi-live/master/travis_webhook.sh
+  - chmod +x travis_webhook.sh
+  - ./travis_webhook.sh failure $WEBHOOK_URL
+
 notifications:
   email:
     on_success: never
