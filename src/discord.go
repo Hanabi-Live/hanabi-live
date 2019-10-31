@@ -132,6 +132,9 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	// Check for Discord-only commands in all Discord channels
+	discordCheckCommand(m)
+
 	// Only replicate messages from the listed channels
 	if !stringInSlice(m.ChannelID, discordListenChannels) {
 		return
@@ -262,4 +265,29 @@ func discordGetID(username string) string {
 	}
 
 	return ""
+}
+
+func discordCheckCommand(m *discordgo.MessageCreate) {
+	// This logic is replicated from the "chatCommand()" function
+	args := strings.Split(m.Content, " ")
+	command := args[0]
+	args = args[1:] // This will be an empty slice if there is nothing after the command
+	// (we need to pass the arguments through to the command handler)
+
+	// Commands will start with a "/", so we can ignore everything else
+	if !strings.HasPrefix(command, "/") {
+		return
+	}
+	command = strings.TrimPrefix(command, "/")
+	command = strings.ToLower(command) // Commands are case-insensitive
+
+	if command == "link" {
+		if len(args) != 2 {
+			discordSend(m.ChannelID, "", "The format of the /link command is: /link [game ID] [turn number]")
+		}
+		discordSend(m.ChannelID, "", "https://hanabi.live/replay/"+args[0]+"/"+args[1])
+	}
+
+	// Don't display an error message on an invalid command because normal commands are parsed
+	// later on when they are replicated to the lobby in the "chatCommand()" function
 }
