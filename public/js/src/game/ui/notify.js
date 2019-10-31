@@ -39,6 +39,7 @@ commands.clue = (data) => {
 
         arrows.set(i, card, data.giver, clue);
 
+        card.noteBorder.hide();
         card.cluedBorder.show();
         if (
             !globals.lobby.settings.realLifeMode
@@ -135,6 +136,7 @@ commands.discard = (data) => {
     card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();
     card.setFade(); // Unfade the card if it is faded
+    card.removeBorders();
 
     if (card.isMisplayed && !globals.animateFast && !globals.speedrun) {
         // If this card was misplayed,
@@ -151,7 +153,6 @@ commands.discard = (data) => {
     if (card.isClued()) {
         stats.updateEfficiency(-1);
     }
-    card.hideClues(); // This must be after the efficiency update
 };
 
 // A player just drew a card from the deck
@@ -246,6 +247,7 @@ commands.play = (data) => {
 
     card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();
+    card.removeBorders();
     card.animateToPlayStacks();
 
     // The fact that this card was played could make some other cards useless
@@ -254,7 +256,6 @@ commands.play = (data) => {
     if (!card.isClued()) {
         stats.updateEfficiency(1);
     }
-    card.hideClues(); // This must be after the efficiency update
 };
 
 commands.reorder = (data) => {

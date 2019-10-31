@@ -97,7 +97,7 @@ class HanabiCard extends Phaser.GameObjects.Container {
         return globals.elements.playerHands.indexOf(this.parent.parent) !== -1;
     }
 
-    hideClues() {
+    removeBorders() {
         this.cluedBorder.hide();
     }
 

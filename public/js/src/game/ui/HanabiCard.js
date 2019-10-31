@@ -40,6 +40,9 @@ class HanabiCard extends graphics.Group {
         // The name of the card image corresponding to the player-wrriten note on the card
         this.noteSuit = null;
         this.noteRank = null;
+        this.noteKnownTrash = false;
+        this.noteNeedsFix = false;
+        this.noteChopMoved = false;
 
         // Initialize various elements/features of the card
         this.initImage();
@@ -56,7 +59,7 @@ class HanabiCard extends graphics.Group {
         return this.numPositiveClues > 0;
     }
 
-    hideClues() {
+    removeBorders() {
         this.cluedBorder.hide();
         this.noteBorder.hide();
     }
@@ -88,11 +91,14 @@ class HanabiCard extends graphics.Group {
         this.isPlayed = false;
         this.turnPlayed = null;
         this.isMisplayed = false;
-        this.knownTrash = false;
-        this.needsFix = false;
 
         this.setListening(true); // Some variants disable listening on cards
-        this.hideClues();
+
+        this.removeBorders();
+        if (this.noteChopMoved) {
+            // If it has a "chop move" note on it, we want to keep the chop move border turned on
+            this.noteBorder.show();
+        }
 
         // Reset all of the pips to their default state
         // (but don't show any pips in Real-Life mode)
@@ -196,7 +202,7 @@ class HanabiCard extends graphics.Group {
         // Set the name
         // (but in Real-Life mode or Cow & Pig / Duck variants,
         // always show the vanilla card back if the card is not fully revealed)
-        if (this.knownTrash && !this.empathy && !this.isPlayed && !this.isDiscarded) {
+        if (this.noteKnownTrash && !this.empathy && !this.isPlayed && !this.isDiscarded) {
             this.bareName = 'known-trash';
         } else if (
             (
@@ -225,7 +231,7 @@ class HanabiCard extends graphics.Group {
         }
 
         // Show or hide the "fixme" image
-        this.fixme.setVisible(this.needsFix && !this.empathy);
+        this.fixme.setVisible(this.noteNeedsFix && !this.empathy);
     }
 
     // Fade this card if it is useless, fully revealed, and still in a player's hand

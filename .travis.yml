@@ -34,6 +34,7 @@ matrix:
         # Run Browerify and the Google Closure Compiler
         - ../../build_client.sh
 
+# Send the results for both language tests to the #website-development channel in the Hanabi Discord server
 after_success:
   - wget https://raw.githubusercontent.com/Zamiell/hanabi-live/master/travis_webhook.sh
   - chmod +x travis_webhook.sh

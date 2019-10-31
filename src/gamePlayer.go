@@ -585,7 +585,7 @@ func (p *GamePlayer) CheckSurprise(g *Game, c *Card) {
 		}
 	}
 	note = strings.ToLower(note)   // Make all letters lowercase to simply the matching logic below
-	note = strings.TrimSpace(note) // Removing all leading and trailing whitespace
+	note = strings.TrimSpace(note) // Remove all leading and trailing whitespace
 
 	var noteSuit *Suit
 	noteRank := -1

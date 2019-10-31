@@ -66,35 +66,65 @@ const checkSpecialNote = (card) => {
         return;
     }
 
+    let note = globals.ourNotes[card.order];
+    note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
+    note = note.trim(); // Remove all leading and trailing whitespace
+    const fullNote = note;
+
     // Only examine the text to the right of the rightmost pipe
     // (pipes are a conventional way to append new information to a note
-    let note = globals.ourNotes[card.order];
     if (note.includes('|')) {
         const match = note.match(/.*\|(.+)/);
         note = match[1];
+        note = note.trim(); // Remove all leading and trailing whitespace
     }
-    note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
-    note = note.trim(); // Removing all leading and trailing whitespace
+
+    checkNote(card, note, fullNote);
+    checkNoteImpossibility(card);
 
     // Feature 1 - Morph the card if it has an "exact" card note
-    morph(card, note);
+    // (or clear the bare image if the note was deleted/changed)
+    card.setBareImage();
 
     // Feature 2 - Give the card a special border if it is chop moved
-    card.noteBorder.setVisible(!card.cluedBorder.getVisible() && note.includes('cm'));
+    card.noteBorder.setVisible(!card.cluedBorder.getVisible() && card.noteChopMoved);
+
+    globals.layers.card.batchDraw();
 };
 exports.checkSpecialNote = checkSpecialNote;
 
-// Check to see if we wrote a note that implies that we know the identity of this card
-// and morph the card if so
-const morph = (card, note) => {
-    let noteSuit = null;
-    let noteRank = null;
+const checkNote = (card, note, fullNote) => {
+    // First, check to see if this card should be marked with certain properties
+    card.noteKnownTrash = (
+        note === 'kt'
+        || fullNote.includes('[kt]')
+        || note === 'trash'
+        || fullNote.includes('[trash]')
+    );
+    card.noteNeedsFix = (
+        note === 'fixme'
+        || fullNote.includes('[fixme]')
+    );
+    card.noteChopMoved = (
+        note === 'cm'
+        || fullNote.includes('[cm]')
+    );
+
+    // Second, check the contents of the note right of the right-most pipe
+    card.noteSuit = null;
+    card.noteRank = null;
     for (const rank of globals.variant.ranks) {
         if (note === rank.toString()) {
-            noteRank = rank;
-            break;
+            card.noteSuit = null;
+            card.noteRank = rank;
+            return;
         }
         for (const suit of globals.variant.suits) {
+            if (note === suit.abbreviation.toLowerCase()) {
+                card.noteSuit = suit;
+                card.noteRank = null;
+                return;
+            }
             if (
                 note === `${suit.abbreviation.toLowerCase()}${rank}` // e.g. "b1" or "B1"
                 || note === `${suit.name.toLowerCase()}${rank}` // e.g. "blue1" or "Blue1" or "BLUE1"
@@ -103,52 +133,89 @@ const morph = (card, note) => {
                 || note === `${rank}${suit.name.toLowerCase()}` // e.g. "1blue" or "1Blue" or "1BLUE"
                 || note === `${rank} ${suit.name.toLowerCase()}` // e.g. "1 blue" or "1 Blue" or "1 BLUE"
             ) {
-                noteSuit = suit;
-                noteRank = rank;
-                break;
+                card.noteSuit = suit;
+                card.noteRank = rank;
+                return;
             }
-        }
-        if (noteSuit !== null || noteRank !== null) {
-            break;
         }
     }
 
+    // Third, check the contents of the full note
+    // (players can use square brackets to force a note identity)
+    for (const rank of globals.variant.ranks) {
+        if (fullNote.includes(`[${rank}]`)) {
+            card.noteSuit = null;
+            card.noteRank = rank;
+            return;
+        }
+        for (const suit of globals.variant.suits) {
+            if (fullNote.includes(`[${suit.abbreviation.toLowerCase()}]`)) {
+                card.noteSuit = suit;
+                card.noteRank = null;
+                return;
+            }
+            if (
+                fullNote.includes(`[${suit.abbreviation.toLowerCase()}${rank}]`) // e.g. "b1" or "B1"
+                || fullNote.includes(`[${suit.name.toLowerCase()}${rank}]`) // e.g. "blue1" or "Blue1" or "BLUE1"
+                || fullNote.includes(`[${suit.name.toLowerCase()} ${rank}]`) // e.g. "blue 1" or "Blue 1" or "BLUE 1"
+                || fullNote.includes(`[${rank}${suit.abbreviation.toLowerCase()}]`) // e.g. "1b" or "1B"
+                || fullNote.includes(`[${rank}${suit.name.toLowerCase()}]`) // e.g. "1blue" or "1Blue" or "1BLUE"
+                || fullNote.includes(`[${rank} ${suit.name.toLowerCase()}]`) // e.g. "1 blue" or "1 Blue" or "1 BLUE"
+            ) {
+                card.noteSuit = suit;
+                card.noteRank = rank;
+                return;
+            }
+        }
+    }
+};
+
+const checkNoteImpossibility = (card) => {
     // Validate that the note does not contain an impossibility
-    if (noteRank !== null && noteSuit === null) {
+    if (card.noteSuit !== null && card.noteRank === null) {
+        // Only the suit was specified
+        // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
+        let suitPossible = false;
+        for (const rank of card.possibleRanks) {
+            const count = card.possibleCards.get(`${card.noteSuit.name}${rank}`);
+            if (count > 0) {
+                suitPossible = true;
+                break;
+            }
+        }
+        if (!suitPossible && card.holder === globals.playerUs) {
+            window.alert(`That card cannot possibly be ${card.noteSuit.name.toLowerCase()}.`);
+            card.noteSuit = null;
+            return;
+        }
+    }
+    if (card.noteSuit === null && card.noteRank !== null) {
         // Only the rank was specified
         // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
         let rankPossible = false;
-        for (const suit of globals.variant.suits) {
-            const count = card.possibleCards.get(`${suit.name}${noteRank}`);
+        for (const suit of card.possibleSuits) {
+            const count = card.possibleCards.get(`${suit.name}${card.noteRank}`);
             if (count > 0) {
                 rankPossible = true;
                 break;
             }
         }
         if (!rankPossible && card.holder === globals.playerUs) {
-            window.alert(`That card cannot possibly be a ${noteSuit.name.toLowerCase()} ${noteRank}.`);
+            window.alert(`That card cannot possibly be a ${card.noteRank}.`);
+            card.noteRank = null;
             return;
         }
     }
-    if (noteRank !== null && noteSuit !== null) {
+    if (card.noteSuit !== null && card.noteRank !== null) {
         // Both the suit and the rank were specified
-        const mapIndex = `${noteSuit.name}${noteRank}`;
+        const mapIndex = `${card.noteSuit.name}${card.noteRank}`;
         if (card.possibleCards.get(mapIndex) === 0 && card.holder === globals.playerUs) {
-            window.alert(`That card cannot possibly be a ${noteSuit.name.toLowerCase()} ${noteRank}.`);
-            return;
+            window.alert(`That card cannot possibly be a ${card.noteSuit.name.toLowerCase()} ${card.noteRank}.`);
+            card.noteSuit = null;
+            card.noteRank = null;
         }
     }
-
-    // Set the bare image of the card to match the note
-    // (or clear the bare image if the note was deleted/changed)
-    card.noteSuit = noteSuit;
-    card.noteRank = noteRank;
-    card.knownTrash = note === 'kt' || note === 'trash';
-    card.needsFix = note === 'fixme';
-    card.setBareImage();
-    globals.layers.card.batchDraw();
 };
-exports.morph = morph;
 
 const update = (card) => {
     // Update the tooltip
