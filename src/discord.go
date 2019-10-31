@@ -285,7 +285,9 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		if len(args) != 2 {
 			discordSend(m.ChannelID, "", "The format of the /link command is: /link [game ID] [turn number]")
 		}
-		discordSend(m.ChannelID, "", "https://hanabi.live/replay/"+args[0]+"/"+args[1])
+
+		// We enclose the link in "<>" to prevent Discord from generating a link preview
+		discordSend(m.ChannelID, "", "<https://hanabi.live/replay/"+args[0]+"/"+args[1]+">")
 	}
 
 	// Don't display an error message on an invalid command because normal commands are parsed
