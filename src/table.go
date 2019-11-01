@@ -28,8 +28,9 @@ type Table struct {
 	AutomaticStart int // See "chatTable.go"
 	Progress       int // Displayed as a percentage on the main lobby screen
 
-	DatetimeCreated time.Time
-	DatetimeStarted time.Time
+	DatetimeCreated      time.Time
+	DatetimePlannedStart time.Time
+	DatetimeStarted      time.Time
 	// This is updated any time a player interacts with the game / replay
 	// (used to determine when a game is idle)
 	DatetimeLastAction time.Time

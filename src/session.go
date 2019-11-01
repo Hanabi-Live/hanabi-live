@@ -14,14 +14,14 @@ type Session struct {
 	Functions to return session values
 */
 
-func (s *Session) ID() int {
+func (s *Session) SessionID() int {
 	if s == nil {
-		log.Error("The \"ID\" method was called for a nil session.")
+		log.Error("The \"SessionID\" method was called for a nil session.")
 		return -1
 	}
 
-	if v, exists := s.Get("ID"); !exists {
-		log.Error("Failed to get \"ID\" from a session.")
+	if v, exists := s.Get("sessionID"); !exists {
+		log.Error("Failed to get \"SessionID\" from a session.")
 		return -1
 	} else {
 		return v.(int)

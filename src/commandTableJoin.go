@@ -10,6 +10,7 @@ package main
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
 )
@@ -123,6 +124,13 @@ func commandTableJoin(s *Session, d *CommandData) {
 
 	// Send the table owner whether or not the "Start Game" button should be grayed out
 	t.NotifyTableReady()
+
+	// If there is an automatic start countdown, cancel it
+	if !t.DatetimePlannedStart.IsZero() {
+		t.DatetimePlannedStart = time.Time{} // Assign a zero value
+		room := "table" + strconv.Itoa(t.ID)
+		chatServerSend("Automatic game start has been canceled.", room)
+	}
 
 	// If the user previously requested it, automatically start the game
 	if t.AutomaticStart == len(t.Players) {

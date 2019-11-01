@@ -22,7 +22,7 @@ func websocketDisconnect2(s *Session) {
 	if s2, ok := sessions[s.UserID()]; !ok {
 		log.Info("User \"" + s.Username() + "\" disconnected, but their session was already deleted.")
 		return
-	} else if s2.ID() != s.ID() {
+	} else if s2.SessionID() != s.SessionID() {
 		log.Info("The orphaned session for user \"" + s.Username() + "\" successfully disconnected.")
 		return
 	}

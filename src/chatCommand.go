@@ -32,6 +32,7 @@ func chatCommandInit() {
 	chatCommandMap["s4"] = chatS4
 	chatCommandMap["s5"] = chatS5
 	chatCommandMap["s6"] = chatS6
+	chatCommandMap["startin"] = chatStartIn
 	chatCommandMap["pause"] = chatPause
 	chatCommandMap["unpause"] = chatUnpause
 
