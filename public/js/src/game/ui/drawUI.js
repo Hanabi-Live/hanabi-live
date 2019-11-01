@@ -549,14 +549,6 @@ const drawBottomLeftButtons = () => {
     tooltips.init(lobbyButtonBig, true, false);
     globals.elements.lobbyButtonBig = lobbyButtonBig;
 
-    function lobbyButtonClick() {
-        // Unregister the click handler to ensure that the user does not double-click
-        // and go to the lobby twice
-        this.off('click tap');
-
-        ui.backToLobby();
-    }
-
     // The kill button (which terminates the current game)
     const killButton = new Button({
         x: (bottomLeftButtonValues.x + (bottomLeftButtonValues.w / 2) + shortButtonSpacing) * winW,
@@ -1799,8 +1791,8 @@ const drawPauseArea = () => {
     });
     globals.elements.pauseArea.add(globals.elements.pauseText);
 
-    const button1W = pauseAreaValues.w * 0.55;
-    const button2W = pauseAreaValues.w * 0.15;
+    const button1W = pauseAreaValues.w * 0.40;
+    const button2W = pauseAreaValues.w * 0.125;
     const buttonH = 0.33;
     const spacing = pauseAreaValues.w * 0.1;
 
@@ -1819,7 +1811,7 @@ const drawPauseArea = () => {
     globals.elements.pauseArea.add(globals.elements.pauseButton);
 
     const chatButton = new Button({
-        x: (pauseAreaValues.w - button2W - spacing) * winW,
+        x: (pauseAreaValues.w - button2W * 2 - spacing * 2) * winW,
         y: buttonH * winH,
         width: button2W * winW,
         height: 0.1 * winH,
@@ -1829,6 +1821,16 @@ const drawPauseArea = () => {
     chatButton.on('click tap', () => {
         globals.game.chat.toggle();
     });
+
+    const lobbyButton = new Button({
+        x: (pauseAreaValues.w - button2W - spacing * 1.5) * winW,
+        y: buttonH * winH,
+        width: button2W * winW,
+        height: 0.1 * winH,
+        image: 'home',
+    });
+    globals.elements.pauseArea.add(lobbyButton);
+    lobbyButton.on('click tap', lobbyButtonClick);
 };
 
 const drawExtraAnimations = () => {
@@ -1878,3 +1880,12 @@ const drawExtraAnimations = () => {
         },
     });
 };
+
+// Subroutines
+function lobbyButtonClick() {
+    // Unregister the click handler to ensure that the user does not double-click
+    // and go to the lobby twice
+    this.off('click tap');
+
+    ui.backToLobby();
+}
