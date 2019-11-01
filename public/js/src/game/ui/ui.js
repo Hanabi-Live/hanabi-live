@@ -226,6 +226,7 @@ exports.setPause = () => {
 
         globals.elements.pauseArea.show();
         globals.elements.pauseText.setText(`by: ${globals.pausePlayer}`);
+        globals.elements.pauseButton.setVisible(!globals.spectating);
         globals.elements.pauseArea.getLayer().batchDraw();
     } else {
         globals.elements.stageFade.setOpacity(0.3);

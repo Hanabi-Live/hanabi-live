@@ -1804,19 +1804,19 @@ const drawPauseArea = () => {
     const buttonH = 0.33;
     const spacing = pauseAreaValues.w * 0.1;
 
-    const pauseButton = new Button({
+    globals.elements.pauseButton = new Button({
         x: spacing * winW,
         y: buttonH * winH,
         width: button1W * winW,
         height: 0.1 * winH,
         text: 'Unpause',
     });
-    pauseButton.on('click tap', () => {
+    globals.elements.pauseButton.on('click tap', () => {
         globals.lobby.conn.send('pause', {
             value: 'unpause',
         });
     });
-    globals.elements.pauseArea.add(pauseButton);
+    globals.elements.pauseArea.add(globals.elements.pauseButton);
 
     const chatButton = new Button({
         x: (pauseAreaValues.w - button2W - spacing) * winW,

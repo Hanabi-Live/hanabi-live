@@ -137,6 +137,11 @@ module.exports = () => {
         enterHypoButton: null,
         hypoCircle: null,
 
+        // The pause screen
+        pauseArea: null,
+        pauseText: null,
+        pauseButton: null,
+
         // Other screens
         fullActionLog: null,
 
