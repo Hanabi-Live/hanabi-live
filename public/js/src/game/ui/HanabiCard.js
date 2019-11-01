@@ -95,7 +95,7 @@ class HanabiCard extends graphics.Group {
         this.setListening(true); // Some variants disable listening on cards
 
         this.removeBorders();
-        if (this.noteChopMoved) {
+        if (this.noteChopMoved && !globals.replay && !globals.spectating) {
             // If it has a "chop move" note on it, we want to keep the chop move border turned on
             this.noteBorder.show();
         }
@@ -202,7 +202,14 @@ class HanabiCard extends graphics.Group {
         // Set the name
         // (but in Real-Life mode or Cow & Pig / Duck variants,
         // always show the vanilla card back if the card is not fully revealed)
-        if (this.noteKnownTrash && !this.empathy && !this.isPlayed && !this.isDiscarded) {
+        if (
+            this.noteKnownTrash
+            && !this.empathy
+            && !this.isPlayed
+            && !this.isDiscarded
+            && !globals.replay
+            && !globals.spectating
+        ) {
             this.bareName = 'known-trash';
         } else if (
             (
@@ -231,7 +238,12 @@ class HanabiCard extends graphics.Group {
         }
 
         // Show or hide the "fixme" image
-        this.fixme.setVisible(this.noteNeedsFix && !this.empathy);
+        this.fixme.setVisible((
+            this.noteNeedsFix
+            && !this.empathy
+            && !globals.replay
+            && !globals.spectating
+        ));
     }
 
     // Fade this card if it is useless, fully revealed, and still in a player's hand

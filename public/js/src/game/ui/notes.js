@@ -51,7 +51,11 @@ const set = (order, note) => {
         });
     }
 
-    // Local variables
+    // The note identity features do not apply to spectators and replays
+    if (globals.spectating || globals.replay) {
+        return;
+    }
+
     let card = globals.deck[order];
     if (!card) {
         card = globals.stackBases[order - globals.deck.length];
@@ -61,11 +65,6 @@ const set = (order, note) => {
 exports.set = set;
 
 const checkSpecialNote = (card) => {
-    // The note identity features do not apply to spectators and replays
-    if (globals.spectating || globals.replay) {
-        return;
-    }
-
     let note = globals.ourNotes[card.order];
     note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
     note = note.trim(); // Remove all leading and trailing whitespace
@@ -79,7 +78,7 @@ const checkSpecialNote = (card) => {
         note = note.trim(); // Remove all leading and trailing whitespace
     }
 
-    checkNote(card, note, fullNote);
+    checkNoteIdentity(card, note, fullNote);
     checkNoteImpossibility(card);
 
     // Feature 1 - Morph the card if it has an "exact" card note
@@ -87,13 +86,18 @@ const checkSpecialNote = (card) => {
     card.setBareImage();
 
     // Feature 2 - Give the card a special border if it is chop moved
-    card.noteBorder.setVisible(!card.cluedBorder.getVisible() && card.noteChopMoved);
+    card.noteBorder.setVisible((
+        card.noteChopMoved
+        && !card.cluedBorder.getVisible()
+        && !globals.replay
+        && !globals.spectating
+    ));
 
     globals.layers.card.batchDraw();
 };
 exports.checkSpecialNote = checkSpecialNote;
 
-const checkNote = (card, note, fullNote) => {
+const checkNoteIdentity = (card, note, fullNote) => {
     // First, check to see if this card should be marked with certain properties
     card.noteKnownTrash = (
         note === 'kt'
