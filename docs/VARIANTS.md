@@ -112,14 +112,14 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 * Each suit is touched by two separate colors.
 
+### Prism-Ones
+
+* Ones are "touched" by all color clues.
+
 ### Multi-Fives
 
 * Fives are "touched" by all rank clues.
 * Players cannot clue rank 5.
-
-### Prism-Ones
-
-* Ones are "touched" by all color clues.
 
 ### Special Mix (5 Suits)
 
@@ -473,6 +473,12 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Light Pink (5 Suits)
   * Light Pink (4 Suits)
   * Light Pink (3 Suits)
+* Cocoa Rainbow
+  * Cocoa Rainbow (6 Suits)
+  * Cocoa Rainbow (5 Suits)
+* Chiaroscuro Pink
+  * Chiaroscuro Pink (6 Suits)
+  * Chiaroscuro Pink (5 Suits)
 * Ambiguous
   * Ambiguous (6 Suits)
   * Ambiguous (4 Suits)
@@ -495,15 +501,6 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Ambiguous Mix
   * Dual-Color Mix
   * Ambiguous & Dual-Color
-* Multi-Fives
-  * Multi-Fives (6 Suits)
-  * Multi-Fives (5 Suits)
-  * Multi-Fives (4 Suits)
-  * Multi-Fives (3 Suits)
-  * Multi-Fives & Rainbow (6 Suits)
-  * Multi-Fives & Rainbow (5 Suits)
-  * Multi-Fives & Rainbow (4 Suits)
-  * Multi-Fives & Rainbow (3 Suits)
 * Prism-Ones
   * Prism-Ones (6 Suits)
   * Prism-Ones (5 Suits)
@@ -513,6 +510,20 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
   * Prism-Ones & Pink (5 Suits)
   * Prism-Ones & Pink (4 Suits)
   * Prism-Ones & Pink (3 Suits)
+* Multi-Fives
+  * Multi-Fives (6 Suits)
+  * Multi-Fives (5 Suits)
+  * Multi-Fives (4 Suits)
+  * Multi-Fives (3 Suits)
+  * Multi-Fives & Rainbow (6 Suits)
+  * Multi-Fives & Rainbow (5 Suits)
+  * Multi-Fives & Rainbow (4 Suits)
+  * Multi-Fives & Rainbow (3 Suits)
+* Prism-Ones & Multi-Fives
+  * Prism-Ones & Multi-Fives (6 Suits)
+  * Prism-Ones & Multi-Fives (5 Suits)
+  * Prism-Ones & Multi-Fives (4 Suits)
+  * Prism-Ones & Multi-Fives (3 Suits)
 * Color Blind
   * Color Blind (6 Suits)
   * Color Blind (5 Suits)

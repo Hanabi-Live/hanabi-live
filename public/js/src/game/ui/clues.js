@@ -76,7 +76,7 @@ const variantIsCardTouched = (clue, card) => {
         ) {
             return false;
         }
-        if (globals.variant.name.startsWith('Multi-Fives') && card.rank === 5) {
+        if (globals.variant.name.includes('Multi-Fives') && card.rank === 5) {
             return true;
         }
         return clue.value === card.rank;
@@ -89,7 +89,7 @@ const variantIsCardTouched = (clue, card) => {
         ) {
             return false;
         }
-        if (globals.variant.name.startsWith('Prism-Ones') && card.rank === 1) {
+        if (globals.variant.name.includes('Prism-Ones') && card.rank === 1) {
             return true;
         }
         return card.suit.clueColors.includes(clue.value);

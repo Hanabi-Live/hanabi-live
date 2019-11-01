@@ -347,7 +347,7 @@ class HanabiCard extends graphics.Group {
         let suitsRemoved = [];
         if (clue.type === constants.CLUE_TYPE.RANK) {
             const clueRank = clue.value;
-            if (globals.variant.name.startsWith('Multi-Fives')) {
+            if (globals.variant.name.includes('Multi-Fives')) {
                 // In "Multi-Fives" variants, the 5 of every suit is touched by all rank clues
                 ranksRemoved = filterInPlace(
                     this.possibleRanks,
@@ -381,7 +381,7 @@ class HanabiCard extends graphics.Group {
                 // (there are no such suits in Multi-Fives variants)
                 if (
                     this.positiveRankClues.length >= 2
-                    && !globals.variant.name.startsWith('Multi-Fives')
+                    && !globals.variant.name.includes('Multi-Fives')
                 ) {
                     suitsRemoved = filterInPlace(
                         this.possibleSuits,
@@ -398,7 +398,7 @@ class HanabiCard extends graphics.Group {
                         if (rank === clueRank) {
                             continue;
                         }
-                        if (globals.variant.name.startsWith('Multi-Fives') && rank === 5) {
+                        if (globals.variant.name.includes('Multi-Fives') && rank === 5) {
                             continue;
                         }
                         this.removePossibility(suit, rank, true);
@@ -420,7 +420,7 @@ class HanabiCard extends graphics.Group {
         } else if (clue.type === constants.CLUE_TYPE.COLOR) {
             const clueColor = clue.value;
             if (
-                globals.variant.name.startsWith('Prism-Ones')
+                globals.variant.name.includes('Prism-Ones')
                 && this.possibleRanks.includes(1)
                 && positive
             ) {
@@ -436,7 +436,7 @@ class HanabiCard extends graphics.Group {
             }
 
             // In "Prism-Ones" variants, 1's are touched by all colors
-            if (globals.variant.name.startsWith('Prism-Ones')) {
+            if (globals.variant.name.includes('Prism-Ones')) {
                 if (positive) {
                     if (this.positiveColorClues.length >= 2) {
                         // Two positive color clues should "fill in" a 1

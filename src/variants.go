@@ -260,7 +260,7 @@ func variantsInit() {
 		var clueRanks []int
 		if strings.HasPrefix(name, "Number Mute") {
 			clueRanks = make([]int, 0)
-		} else if strings.HasPrefix(name, "Multi-Fives") {
+		} else if strings.Contains(name, "Multi-Fives") {
 			clueRanks = []int{1, 2, 3, 4}
 		} else {
 			clueRanks = []int{1, 2, 3, 4, 5}
@@ -322,7 +322,7 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		if strings.HasPrefix(variant, "Color Blind") || strings.HasPrefix(variant, "Color Mute") {
 			return false
 		}
-		if strings.HasPrefix(variant, "Prism-Ones") && card.Rank == 1 {
+		if strings.Contains(variant, "Prism-Ones") && card.Rank == 1 {
 			return true
 		}
 		color := variants[variant].ClueColors[clue.Value]

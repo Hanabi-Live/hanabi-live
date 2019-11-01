@@ -248,7 +248,7 @@ const initVariants = () => {
         // Derive the clue ranks (the ranks available to clue in this variant)
         if (variantName.startsWith('Number Mute')) {
             variant.clueRanks = [];
-        } else if (variantName.startsWith('Multi-Fives')) {
+        } else if (variantName.includes('Multi-Fives')) {
             variant.clueRanks = [1, 2, 3, 4];
         } else {
             // By default, assume that we can clue ranks 1 through 5
