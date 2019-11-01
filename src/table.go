@@ -15,21 +15,22 @@ type Table struct {
 	// so that we can automatically put them back into the shared replay
 	DisconSpectators map[int]bool
 
-	// This is the user ID of the person who started the game
+	// This is the user ID of the person who started the table
 	// or the current leader of the shared replay
 	Owner   int
-	Visible bool // Whether or not this game is shown to other users
-	// This is a salted SHA512 hash sent by the client,
-	// but it can technically be any string at all
-	Password       string
+	Visible bool // Whether or not this table is shown to other users
+	// This is a salted SHA512 hash sent by the client, but technically it can be any string at all
+	Password string
+	// Whether or not the table was created with the "Alert people" checkbox checked
+	AlertWaiters   bool
 	Running        bool
 	Replay         bool
 	AutomaticStart int // See "chatTable.go"
-	Progress       int
+	Progress       int // Displayed as a percentage on the main lobby screen
 
 	DatetimeCreated time.Time
 	DatetimeStarted time.Time
-	// This is updated anytime a player attempts to interact with the game / replay
+	// This is updated any time a player interacts with the game / replay
 	// (used to determine when a game is idle)
 	DatetimeLastAction time.Time
 	DatetimeFinished   time.Time

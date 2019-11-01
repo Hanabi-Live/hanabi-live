@@ -8,6 +8,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 )
 
 func commandTableRestart(s *Session, d *CommandData) {
@@ -68,6 +69,19 @@ func commandTableRestart(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that there is currently no-one on the waiting list
+	waitingListPurgeOld()
+	if t.AlertWaiters &&
+		t.Password == "" &&
+		t.Name != "test" &&
+		!strings.HasPrefix(t.Name, "test ") &&
+		len(waitingList) > 0 {
+
+		s.Warning("There are one or more players on the waiting list, " +
+			"so you should create a new table and let them join.")
+		return
+	}
+
 	/*
 		Restart
 	*/
@@ -107,6 +121,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 		DeckPlays:            t.Options.DeckPlays,
 		EmptyClues:           t.Options.EmptyClues,
 		CharacterAssignments: t.Options.CharacterAssignments,
+		AlertWaiters:         t.AlertWaiters,
 	})
 
 	// We increment the newTableID after creating a game,

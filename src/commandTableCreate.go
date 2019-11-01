@@ -227,6 +227,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 	t := NewTable(d.Name, s.UserID())
 	t.Password = d.Password
+	t.AlertWaiters = d.AlertWaiters
 	t.Options = &Options{
 		Variant:              d.Variant,
 		Timed:                d.Timed,
@@ -253,9 +254,10 @@ func commandTableCreate(s *Session, d *CommandData) {
 	// Alert the people on the waiting list, if any
 	// (even if they check the "Alert people" checkbox,
 	// we don't want to alert on password-protected games or test games)
-	if d.AlertWaiters &&
+	if t.AlertWaiters &&
 		t.Password == "" &&
-		!strings.HasPrefix(t.Name, "test") {
+		t.Name != "test" &&
+		!strings.HasPrefix(t.Name, "test ") {
 
 		waitingListAlert(t, s.Username())
 	}
