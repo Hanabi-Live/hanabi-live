@@ -351,19 +351,19 @@ class HanabiCard extends graphics.Group {
                 // In "Multi-Fives" variants, the 5 of every suit is touched by all rank clues
                 ranksRemoved = filterInPlace(
                     this.possibleRanks,
-                    rank => (rank === clueRank || rank === 5) === positive,
+                    (rank) => (rank === clueRank || rank === 5) === positive,
                 );
-            } else if (this.possibleSuits.some(suit => suit.clueRanks === 'none') && !positive) {
+            } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'none') && !positive) {
                 // Some suits are not touched by any ranks,
                 // so if this is a negative rank clue, we cannot remove any rank pips from the card
-            } else if (this.possibleSuits.some(suit => suit.clueRanks === 'all') && positive) {
+            } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'all') && positive) {
                 // Some cards are touched by all ranks,
                 // so if this is a positive rank clue, we cannot remove any rank pips from the card
             } else {
                 // Remove all possibilities that do not include this rank
                 ranksRemoved = filterInPlace(
                     this.possibleRanks,
-                    rank => (rank === clueRank) === positive,
+                    (rank) => (rank === clueRank) === positive,
                 );
             }
 
@@ -373,7 +373,7 @@ class HanabiCard extends graphics.Group {
             if (positive) {
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
-                    suit => suit.clueRanks !== 'none',
+                    (suit) => suit.clueRanks !== 'none',
                 );
 
                 // Also handle the special case where two positive rank clues
@@ -385,7 +385,7 @@ class HanabiCard extends graphics.Group {
                 ) {
                     suitsRemoved = filterInPlace(
                         this.possibleSuits,
-                        suit => suit.clueRanks === 'all',
+                        (suit) => suit.clueRanks === 'all',
                     );
                 }
 
@@ -414,7 +414,7 @@ class HanabiCard extends graphics.Group {
             } else {
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
-                    suit => suit.clueRanks !== 'all',
+                    (suit) => suit.clueRanks !== 'all',
                 );
             }
         } else if (clue.type === constants.CLUE_TYPE.COLOR) {
@@ -431,7 +431,7 @@ class HanabiCard extends graphics.Group {
                 // Remove all possibilities that do not include this color
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
-                    suit => suit.clueColors.includes(clueColor) === positive,
+                    (suit) => suit.clueColors.includes(clueColor) === positive,
                 );
             }
 
@@ -442,14 +442,14 @@ class HanabiCard extends graphics.Group {
                         // Two positive color clues should "fill in" a 1
                         ranksRemoved = filterInPlace(
                             this.possibleRanks,
-                            rank => rank === 1,
+                            (rank) => rank === 1,
                         );
                     }
                 } else {
                     // Negative color means that the card cannot be a 1
                     ranksRemoved = filterInPlace(
                         this.possibleRanks,
-                        rank => rank !== 1,
+                        (rank) => rank !== 1,
                     );
                 }
             }

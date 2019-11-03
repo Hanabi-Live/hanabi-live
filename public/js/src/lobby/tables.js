@@ -103,14 +103,14 @@ exports.draw = () => {
     }
 };
 
-const tableSpectateButton = table => () => {
+const tableSpectateButton = (table) => () => {
     globals.conn.send('tableSpectate', {
         tableID: table.id,
     });
     lobby.tables.draw();
 };
 
-const tableJoinButton = table => () => {
+const tableJoinButton = (table) => () => {
     if (table.password) {
         modals.passwordShow(table.id);
         return;
@@ -122,7 +122,7 @@ const tableJoinButton = table => () => {
     lobby.tables.draw();
 };
 
-const tableReattendButton = table => () => {
+const tableReattendButton = (table) => () => {
     globals.conn.send('tableReattend', {
         tableID: table.id,
     });

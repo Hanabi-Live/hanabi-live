@@ -15,6 +15,7 @@ import (
 
 var (
 	projectPath = path.Join(os.Getenv("GOPATH"), "src", "github.com", "Zamiell", "hanabi-live")
+	dataPath    = path.Join(projectPath, "public", "js", "src", "data")
 	log         *logging.Logger
 	db          *models.Models
 	tables      = make(map[int]*Table) // Defined in "table.go"

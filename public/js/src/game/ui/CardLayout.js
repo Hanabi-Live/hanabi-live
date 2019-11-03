@@ -135,7 +135,7 @@ class CardLayout extends graphics.Group {
                 }).play();
             }
 
-            x += (scale * node.getWidth() + dist) * (this.reverse ? -1 : 1);
+            x += ((scale * node.getWidth()) + dist) * (this.reverse ? -1 : 1);
         }
     }
 
@@ -148,8 +148,8 @@ class CardLayout extends graphics.Group {
         // The rotation comes from Konva in radians but we need to convert it to degrees
         const rot = this.rotation / 180 * Math.PI;
 
-        pos.x += w / 2 * Math.cos(rot) - h / 2 * Math.sin(rot);
-        pos.y += w / 2 * Math.sin(rot) + h / 2 * Math.cos(rot);
+        pos.x += (w / 2 * Math.cos(rot)) - (h / 2 * Math.sin(rot));
+        pos.y += (w / 2 * Math.sin(rot)) + (h / 2 * Math.cos(rot));
 
         return pos;
     }

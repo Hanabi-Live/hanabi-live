@@ -18,7 +18,7 @@ exports.clueToMsgClue = (clue, variant) => {
     let msgClueValue;
     if (clueType === constants.CLUE_TYPE.COLOR) {
         const clueColor = clueValue;
-        msgClueValue = variant.clueColors.findIndex(color => color === clueColor);
+        msgClueValue = variant.clueColors.findIndex((color) => color === clueColor);
     } else if (clueType === constants.CLUE_TYPE.RANK) {
         msgClueValue = clueValue;
     }

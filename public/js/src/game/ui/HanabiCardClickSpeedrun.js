@@ -82,7 +82,7 @@ const clickLeft = (card, event) => {
             // If a color clue type button is selected
             && clueButton.clue.type === constants.CLUE_TYPE.COLOR
             // If the selected color clue is actually one of the possibilies for the card
-            && cardColors.findIndex(cardColor => cardColor === clueButton.clue.value) !== -1
+            && cardColors.findIndex((cardColor) => cardColor === clueButton.clue.value) !== -1
         ) {
             // Use the color of the currently selected button
             color = clueButton.clue.value;
@@ -93,7 +93,7 @@ const clickLeft = (card, event) => {
         }
 
         const value = globals.variant.clueColors.findIndex(
-            variantColor => variantColor === color,
+            (variantColor) => variantColor === color,
         );
         ui.endTurn({
             type: 'action',

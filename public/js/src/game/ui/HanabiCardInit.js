@@ -97,8 +97,8 @@ exports.pips = function pips() {
         const offsetBase = constants.CARD_W * 0.7;
         const offsetTrig = ((-i / suits.length) + 0.25) * Math.PI * 2;
         const offset = {
-            x: Math.floor(offsetBase * Math.cos(offsetTrig) + constants.CARD_W * 0.25),
-            y: Math.floor(offsetBase * Math.sin(offsetTrig) + constants.CARD_W * 0.3),
+            x: Math.floor((offsetBase * Math.cos(offsetTrig)) + (constants.CARD_W * 0.25)),
+            y: Math.floor((offsetBase * Math.sin(offsetTrig)) + (constants.CARD_W * 0.3)),
         };
         let { fill } = suit;
         if (suit.fill === 'multi') {
@@ -179,7 +179,7 @@ exports.pips = function pips() {
     this.rankPipsMap = new Map();
     this.rankPipsXMap = new Map();
     for (const rank of globals.variant.ranks) {
-        const x = Math.floor(constants.CARD_W * (rank * 0.19 - 0.14));
+        const x = Math.floor(constants.CARD_W * ((rank * 0.19) - 0.14));
         const y = 0;
         let opacity = 1;
         if (rank === constants.START_CARD_RANK) {
@@ -478,8 +478,8 @@ const scaleCardImage = (ctx, name, width, height, am) => {
         throw new Error(`The image "${name}" was not generated.`);
     }
 
-    const dw = Math.sqrt(am.m[0] * am.m[0] + am.m[1] * am.m[1]) * width;
-    const dh = Math.sqrt(am.m[2] * am.m[2] + am.m[3] * am.m[3]) * height;
+    const dw = Math.sqrt((am.m[0] * am.m[0]) + (am.m[1] * am.m[1])) * width;
+    const dh = Math.sqrt((am.m[2] * am.m[2]) + (am.m[3] * am.m[3])) * height;
 
     if (dw < 1 || dh < 1) {
         return;

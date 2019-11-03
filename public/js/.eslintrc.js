@@ -1,10 +1,12 @@
 module.exports = {
-    // The linter base is the airbnb style guide, located here:
+    // The linter base is the Airbnb style guide, located here:
     // https://github.com/airbnb/javascript
-    extends: 'airbnb-base',
+    // The actual ESLint config is located here:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js
+    extends: 'airbnb-typescript/base',
+    // extends: 'airbnb-base',
 
     env: {
-        es6: true,
         browser: true,
         jquery: true,
     },
@@ -12,32 +14,30 @@ module.exports = {
     // We modify the base for some specific things
     // (listed in alphabetical order)
     rules: {
-        // airbnb uses 2 spaces, but it is harder to read block intendation at a glance
-        'indent': ['warn', 4],
+        // Airbnb uses 2 spaces, but it is harder to read block intendation at a glance
+        '@typescript-eslint/indent': ['warn', 4],
 
         // The browser JavaScript makes use of tasteful alerts
         'no-alert': ['off'],
 
-        // Array destructuring can result in non-intuitive code
-        'prefer-destructuring': ['warn', {
-            'array': false,
-            'object': true,
-        }],
-
         // We need this for debugging
         'no-console': ['off'],
 
-        // Enabling this until 'String.matchAll()' becomes part of JavaScript
-        // https://github.com/airbnb/javascript/issues/1439
+        // We make use of constant while loops where appropriate
         'no-constant-condition': ['off'],
 
         // Proper use of continues can reduce indentation for long blocks of code
         'no-continue': ['off'],
 
-        // We make sure light use of parameter reassigning where appropriate
+        // Airbnb disallows mixing * and /, which is fairly nonsensical
+        'no-mixed-operators': ['error', {
+            allowSamePrecedence: true,
+        }],
+
+        // We make use of parameter reassigning where appropriate
         'no-param-reassign': ['off'],
 
-        // airbnb disallows these because it can lead to errors with minified code;
+        // Airbnb disallows these because it can lead to errors with minified code;
         // we don't have to worry about this in for loops though
         'no-plusplus': ['error', {
             'allowForLoopAfterthoughts': true,
@@ -47,22 +47,32 @@ module.exports = {
         'no-restricted-syntax': ['off', 'ForOfStatement'],
 
         // KineticJS's API has functions that are prefixed with an underscore
+        // (remove this once the code base is transitioned to Phaser)
         'no-underscore-dangle': ['off'],
 
-        // Keldon's original code does this and it would be tricky to refactor
-        'no-use-before-define': ['off'],
+        // This allows code to be structured in a more logical order
+        '@typescript-eslint/no-use-before-define': ['off'],
 
-        // This is recommended here:
+        // Array destructuring can result in non-intuitive code
+        'prefer-destructuring': ['warn', {
+            'array': false,
+            'object': true,
+        }],
+
+        // This allows for cleaner looking code as recommended here:
         // https://blog.javascripting.com/2015/09/07/fine-tuning-airbnbs-eslint-config/
-        // (airbnb doesn't include this by default for some reason)
         'quote-props': ['warn', 'consistent-as-needed'],
     },
 
-    globals: {
-        Konva: true,
-        Phaser: true,
-        hex_sha256: true,
-        linkifyHtml: true,
-        interact: true,
-    },
+    settings: {
+        'import/extensions': ['.js', '.ts'],
+        'import/parsers': {
+            '@typescript-eslint/parser': ['.ts']
+        },
+        'import/resolver': {
+            'node': {
+                'extensions': ['.js', '.ts']
+            }
+        }
+    }
 };

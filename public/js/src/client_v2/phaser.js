@@ -3,6 +3,7 @@
 */
 
 // Imports
+const Phaser = require('phaser');
 const constants = require('../constants');
 const convert = require('../game/convert');
 const globals = require('../globals');
@@ -83,15 +84,15 @@ function create() {
         { x: 0.5, y: 0.1, rot: 0 },
         { x: 0.9, y: 0.5, rot: 78 * (Math.PI / 180) },
     ];
-    const handLayoutsAbsolute = handLayoutsRelative.map(handLayout => ({
+    const handLayoutsAbsolute = handLayoutsRelative.map((handLayout) => ({
         x: handLayout.x * this.sys.canvas.width,
         y: handLayout.y * this.sys.canvas.height,
         rot: handLayout.rot,
         scale: HAND_BASE_SCALE * phaserGlobals.scale,
     }));
-    phaserGlobals.hands = handLayoutsAbsolute.map(handLayout => new Hand(this, handLayout));
+    phaserGlobals.hands = handLayoutsAbsolute.map((handLayout) => new Hand(this, handLayout));
     const { hands } = phaserGlobals;
-    hands.map(hand => this.add.existing(hand));
+    hands.map((hand) => this.add.existing(hand));
 
     let order = 0;
     for (const hand of hands) {

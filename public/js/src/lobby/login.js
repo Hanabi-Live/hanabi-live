@@ -3,6 +3,7 @@
 */
 
 // Imports
+const shajs = require('sha.js');
 const globals = require('../globals');
 const lobby = require('./main');
 const websocket = require('../websocket');
@@ -61,7 +62,8 @@ const submit = (event) => {
 
     // We salt the password with a prefix of "Hanabi password "
     // and then hash it with SHA256 before sending it to the server
-    const password = hex_sha256(`Hanabi password ${passwordPlaintext}`);
+    const stringToHash = `Hanabi password ${passwordPlaintext}`;
+    const password = shajs('sha256').update(stringToHash).digest('hex');
 
     localStorage.setItem('hanabiuser', username);
     localStorage.setItem('hanabipass', password);

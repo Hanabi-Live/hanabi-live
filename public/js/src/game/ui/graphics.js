@@ -3,6 +3,9 @@
     in case we want to change the graphics library that we use
 */
 
+// Imports
+const Konva = require('konva');
+
 exports.Animation = Konva.Animation;
 exports.Arrow = Konva.Arrow;
 exports.Circle = Konva.Circle;

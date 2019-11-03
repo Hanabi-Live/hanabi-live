@@ -10,6 +10,7 @@ const graphics = require('./graphics');
 
 class PlayStack extends graphics.Group {
     constructor(config) {
+        console.log(config);
         super(config);
         this.rotation = 0;
     }

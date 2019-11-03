@@ -397,8 +397,8 @@ module.exports = () => {
             const charIcon = new graphics.Text({
                 width: width2,
                 height: height2,
-                x: playerNamePos[numPlayers][j].x * winW - width2 / 2,
-                y: playerNamePos[numPlayers][j].y * winH - height2 / 2,
+                x: (playerNamePos[numPlayers][j].x * winW) - (width2 / 2),
+                y: (playerNamePos[numPlayers][j].y * winH) - (height2 / 2),
                 fontSize: 0.03 * winH,
                 fontFamily: 'Verdana',
                 align: 'center',

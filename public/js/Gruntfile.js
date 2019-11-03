@@ -6,6 +6,7 @@ module.exports = (grunt) => {
         // (to convert Node-style imports to compatible browser code)
         // https://github.com/browserify/browserify
         'browserify': {
+            /*
             dist: {
                 src: 'src/main.js',
                 dest: 'main.browserified.js',
@@ -15,6 +16,7 @@ module.exports = (grunt) => {
                     },
                 },
             },
+            */
 
             dev: {
                 src: 'src/main.js',

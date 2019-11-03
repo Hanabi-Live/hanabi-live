@@ -1,0 +1,162 @@
+{
+    "Fuming": {
+        "id": 0,
+        "description": "Can only clue numbers and [random color]",
+        "emoji": "🌋"
+    },
+    "Dumbfounded": {
+        "id": 1,
+        "description": "Can only clue colors and [random number]",
+        "emoji": "🤯"
+    },
+    "Inept": {
+        "id": 2,
+        "description": "Cannot give any clues that touch [random color] cards",
+        "emoji": "🤔"
+    },
+    "Awkward": {
+        "id": 3,
+        "description": "Cannot give any clues that touch [random number]s",
+        "emoji": "😬"
+    },
+    "Conservative": {
+        "id": 4,
+        "description": "Can only give clues that touch a single card",
+        "emoji": "🕇"
+    },
+    "Greedy": {
+        "id": 5,
+        "description": "Can only give clues that touch 2+ cards",
+        "emoji": "🤑"
+    },
+    "Picky": {
+        "id": 6,
+        "description": "Can only clue odd numbers or odd colors",
+        "emoji": "🤢"
+    },
+    "Spiteful": {
+        "id": 7,
+        "description": "Cannot clue the player to their left",
+        "emoji": "😈",
+        "not2P": true
+    },
+    "Insolent": {
+        "id": 8,
+        "description": "Cannot clue the player to their right",
+        "emoji": "😏",
+        "not2P": true
+    },
+    "Vindictive": {
+        "id": 9,
+        "description": "Must clue if they received a clue since their last turn",
+        "emoji": "🗡️"
+    },
+    "Miser": {
+        "id": 10,
+        "description": "Can only clue if there are 4 or more clues available",
+        "emoji": "💰"
+    },
+    "Compulsive": {
+        "id": 11,
+        "description": "Can only clue if it touches the newest or oldest card in someone's hand",
+        "emoji": "📺"
+    },
+    "Mood Swings": {
+        "id": 12,
+        "description": "Clues given must alternate between color and number",
+        "emoji": "👧"
+    },
+    "Insistent": {
+        "id": 13,
+        "description": "Must continue to clue cards until one of them is played or discarded",
+        "emoji": "😣"
+    },
+
+    "Vulnerable": {
+        "id": 14,
+        "description": "Cannot receive a number 2 or number 5 clue",
+        "emoji": "🛡️"
+    },
+    "Color-Blind": {
+        "id": 15,
+        "description": "Cannot receive a color clue",
+        "emoji": "👓"
+    },
+
+    "Follower": {
+        "id": 31,
+        "description": "Cannot play a card unless two cards of the same rank have already been played",
+        "emoji": "👁️"
+    },
+    "Impulsive": {
+        "id": 17,
+        "description": "Must play slot 1 if it has been clued",
+        "emoji": "💉"
+    },
+    "Indolent": {
+        "id": 18,
+        "description": "Cannot play a card if they played on the last round",
+        "emoji": "💺"
+    },
+    "Hesitant": {
+        "id": 19,
+        "description": "Cannot play cards from slot 1",
+        "emoji": "👴🏻"
+    },
+
+    "Anxious": {
+        "id": 21,
+        "description": "Cannot discard if there is an even number of clues available (including 0)",
+        "emoji": "😰"
+    },
+    "Traumatized": {
+        "id": 22,
+        "description": "Cannot discard if there is an odd number of clues available",
+        "emoji": "😨"
+    },
+    "Wasteful": {
+        "id": 23,
+        "description": "Cannot discard if there are 2 or more clues available",
+        "emoji": "🗑️"
+    },
+
+    "Genius": {
+        "id": 24,
+        "description": "Must clue both a number and a color (uses 2 clues)",
+        "emoji": "🧠"
+    },
+    "Synesthetic": {
+        "id": 25,
+        "description": "Must clue both a number and a color of the same value (uses 1 clue)",
+        "emoji": "🎨"
+    },
+    "Panicky": {
+        "id": 26,
+        "description": "When discarding, discards twice if 4 clues or less",
+        "emoji": "😳"
+    },
+
+    "Contrarian": {
+        "id": 27,
+        "description": "Play order inverts after taking a turn, 2-turn end game",
+        "emoji": "🙅",
+        "not2P": true
+    },
+    "Stubborn": {
+        "id": 28,
+        "description": "Must perform a different action type than the player that came before them",
+        "emoji": "😠"
+    },
+    "Blind Spot": {
+        "id": 29,
+        "description": "Cannot see the cards of the player to their left",
+        "emoji": "🚗",
+        "not2P": true
+    },
+    "Oblivious": {
+        "id": 30,
+        "description": "Cannot see the cards of the player to their right",
+        "emoji": "🚂",
+        "not2P": true
+    }
+}

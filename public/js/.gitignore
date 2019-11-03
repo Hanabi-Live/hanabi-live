@@ -1,14 +1,13 @@
-# Ignore the version number, which will change automatically with every commit
-version.js
-
 # NPM modules are not typically included in a repository
 node_modules
 /package-lock.json
 
-# We don't need to include the browserified/transpiled/minified JS
-/main.browserified.js
-/main.browserified.dev.js
-/main.browserified.dev.js~
-/main.bundled.js
-/main.transpiled.js
+# We don't need to include the Webpack-bundled JavaScript
 /main.min.js
+/main.min.js.map
+
+# We don't need to include the converted TypeScript --> Javascript files
+dist
+
+# Ignore the version number, which will change automatically with every commit
+version.js

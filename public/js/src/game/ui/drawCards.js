@@ -3,12 +3,9 @@
 */
 
 // Imports
-const C2S = require('../../../lib/canvas2svg');
 const constants = require('../../constants');
 const drawPip = require('./drawPip');
 const globals = require('./globals');
-
-let nodeImports = {};
 
 // Constants
 const {
@@ -20,8 +17,7 @@ const {
 
 // The "drawAll()" function returns an object containing all of the drawn cards images
 // (on individual canvases)
-exports.drawAll = (variant, colorblindUI, canvasType, imports = null) => {
-    nodeImports = imports;
+exports.drawAll = (variant, colorblindUI) => {
     const cardImages = {};
 
     // Add the "unknown" suit to the list of suits for this variant
@@ -36,7 +32,7 @@ exports.drawAll = (variant, colorblindUI, canvasType, imports = null) => {
         // Rank 6 is a card of unknown rank
         // Rank 7 is a "START" card (in the "Up or Down" variants)
         for (let rank = 0; rank <= 7; rank++) {
-            const [cvs, ctx] = initCanvas(canvasType);
+            const [cvs, ctx] = initCanvas();
 
             // We don't need the cross texture pattern on the stack base
             if (rank !== 0) {
@@ -79,7 +75,7 @@ exports.drawAll = (variant, colorblindUI, canvasType, imports = null) => {
 
                 // "Index" cards are used to draw cards of learned but not yet known rank
                 // (e.g. for in-game replays)
-                cardImages[`Index-${suit.name}-${rank}`] = cloneCanvas(cvs, ctx, canvasType);
+                cardImages[`Index-${suit.name}-${rank}`] = cloneCanvas(cvs);
 
                 // Draw the rank on the bottom right
                 ctx.save();
@@ -96,7 +92,7 @@ exports.drawAll = (variant, colorblindUI, canvasType, imports = null) => {
             // have a custom image defined separately
             if (rank >= 1 && (rank <= 5 || suit !== SUITS.Unknown)) {
                 const cardImagesIndex = `NoPip-${suit.name}-${rank}`;
-                cardImages[cardImagesIndex] = cloneCanvas(cvs, ctx, canvasType);
+                cardImages[cardImagesIndex] = cloneCanvas(cvs);
             }
 
             if (suit !== SUITS.Unknown) {
@@ -106,80 +102,34 @@ exports.drawAll = (variant, colorblindUI, canvasType, imports = null) => {
             // "Card-Unknown" images would be identical to "NoPip-Unknown" images
             if (suit !== SUITS.Unknown) {
                 const cardImagesIndex = `Card-${suit.name}-${rank}`;
-                cardImages[cardImagesIndex] = saveCanvas(cvs, ctx, canvasType);
+                cardImages[cardImagesIndex] = cvs;
             }
         }
     }
 
-    {
-        const [cvs, ctx] = makeUnknownCard(canvasType);
-        const cardImagesIndex = `NoPip-Unknown-${constants.UNKNOWN_CARD_RANK}`;
-        cardImages[cardImagesIndex] = saveCanvas(cvs, ctx, canvasType);
-    }
-    {
-        const [cvs, ctx] = makeDeckBack(variant, canvasType);
-        const cardImagesIndex = 'deck-back';
-        cardImages[cardImagesIndex] = saveCanvas(cvs, ctx, canvasType);
-    }
-    {
-        const [cvs, ctx] = makeKnownTrash(canvasType);
-        const cardImagesIndex = 'known-trash';
-        cardImages[cardImagesIndex] = saveCanvas(cvs, ctx, canvasType);
-    }
+    cardImages[`NoPip-Unknown-${constants.UNKNOWN_CARD_RANK}`] = makeUnknownCard();
+    cardImages['deck-back'] = makeDeckBack(variant);
+    cardImages['known-trash'] = makeKnownTrash();
 
     return cardImages;
 };
 
-const initCanvas = (canvasType) => {
-    let cvs;
-    let ctx;
-
-    if (canvasType === 'normal') {
-        cvs = document.createElement('canvas');
-        cvs.width = CARD_W;
-        cvs.height = CARD_H;
-        ctx = cvs.getContext('2d');
-    } else if (canvasType === 'SVG') {
-        ctx = new C2S(CARD_W, CARD_H);
-    } else if (canvasType === 'SVGNode') {
-        const { document } = (new nodeImports.jsdom.JSDOM('')).window;
-        ctx = new nodeImports.C2SNode({
-            document,
-            width: CARD_W,
-            height: CARD_H,
-        });
-    }
+const initCanvas = () => {
+    const cvs = document.createElement('canvas');
+    cvs.width = CARD_W;
+    cvs.height = CARD_H;
+    const ctx = cvs.getContext('2d');
 
     return [cvs, ctx];
 };
 
-const cloneCanvas = (oldCvs, oldCtx, canvasType) => {
-    if (canvasType === 'normal') {
-        const newCvs = document.createElement('canvas');
-        newCvs.width = oldCvs.width;
-        newCvs.height = oldCvs.height;
-        const ctx = newCvs.getContext('2d');
-        ctx.drawImage(oldCvs, 0, 0);
-        return newCvs;
-    }
-
-    if (canvasType.startsWith('SVG')) {
-        return oldCtx.getSerializedSvg();
-    }
-
-    return null;
-};
-
-const saveCanvas = (cvs, ctx, canvasType) => {
-    if (canvasType === 'normal') {
-        return cvs;
-    }
-
-    if (canvasType.startsWith('SVG')) {
-        return ctx.getSerializedSvg();
-    }
-
-    return null;
+const cloneCanvas = (oldCvs) => {
+    const newCvs = document.createElement('canvas');
+    newCvs.width = oldCvs.width;
+    newCvs.height = oldCvs.height;
+    const ctx = newCvs.getContext('2d');
+    ctx.drawImage(oldCvs, 0, 0);
+    return newCvs;
 };
 
 const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
@@ -280,11 +230,12 @@ const makeUnknownCard = (canvasType) => {
 
     ctx.translate(CARD_W / 2, CARD_H / 2);
 
-    return [cvs, ctx];
+    return cvs;
 };
 
 const makeDeckBack = (variant, canvasType) => {
-    const [cvs, ctx] = makeUnknownCard(canvasType);
+    const cvs = makeUnknownCard(canvasType);
+    const ctx = cvs.getContext('2d');
     const sf = 0.4; // Scale factor
 
     const nSuits = variant.suits.length;
@@ -303,7 +254,7 @@ const makeDeckBack = (variant, canvasType) => {
     }
     ctx.scale(1 / sf, 1 / sf);
 
-    return [cvs, ctx];
+    return cvs;
 };
 
 const makeKnownTrash = (canvasType) => {
@@ -333,7 +284,7 @@ const makeKnownTrash = (canvasType) => {
         ctx.drawImage(globals.ImageLoader.get('trashcan2'), -103, -120);
     }
 
-    return [cvs, ctx];
+    return cvs;
 };
 
 const drawCardBase = (ctx, suit, rank) => {
@@ -455,14 +406,14 @@ const drawCardTexture = (ctx) => {
     ctx.globalAlpha = 0.2;
     ctx.strokeStyle = 'black';
 
-    for (let x = 0; x < CARD_W; x += 4 + Math.random() * 4) {
+    for (let x = 0; x < CARD_W; x += 4 + (Math.random() * 4)) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, CARD_H);
         ctx.stroke();
     }
 
-    for (let y = 0; y < CARD_H; y += 4 + Math.random() * 4) {
+    for (let y = 0; y < CARD_H; y += 4 + (Math.random() * 4)) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(CARD_W, y);

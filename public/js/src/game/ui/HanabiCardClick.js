@@ -248,7 +248,7 @@ const clickMorph = (order) => {
     if (suit === null) {
         let msg = `I don't know what suit corresponds to the letter "${suitLetter}".\n`;
         const abbreviations = globals.variant.suits.map(
-            variantSuit => variantSuit.abbreviation.toLowerCase(),
+            (variantSuit) => variantSuit.abbreviation.toLowerCase(),
         );
         msg += `The available acronyms are: ${abbreviations}`;
         alert(msg);

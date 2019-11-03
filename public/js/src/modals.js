@@ -3,6 +3,7 @@
 */
 
 // Imports
+const shajs = require('sha.js');
 const game = require('./game/main');
 const globals = require('./globals');
 const lobby = require('./lobby/main');
@@ -65,7 +66,8 @@ const passwordSubmit = () => {
     $('#lobby').fadeTo(globals.fadeTime, 1);
     const tableID = parseInt($('#password-modal-id').val(), 10); // The server expects this as a number
     const passwordPlaintext = $('#password-modal-password').val();
-    const password = hex_sha256(`Hanabi game password ${passwordPlaintext}`);
+    const stringToHash = `Hanabi game password ${passwordPlaintext}`;
+    const password = shajs('sha256').update(stringToHash).digest('hex');
     globals.conn.send('tableJoin', {
         tableID,
         password,

@@ -44,8 +44,8 @@ class Button extends graphics.Group {
                 text: config.text,
                 listening: false,
             });
-            this.setText = newText => this.textElement.setText(newText);
-            this.setFill = newFill => this.textElement.setFill(newFill);
+            this.setText = (newText) => this.textElement.setText(newText);
+            this.setFill = (newFill) => this.textElement.setFill(newFill);
             this.add(this.textElement);
         } else if (config.image) {
             this.imageElement = new graphics.Image({

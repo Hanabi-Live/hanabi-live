@@ -3,6 +3,7 @@
 */
 
 // Imports
+const shajs = require('sha.js');
 const constants = require('../constants');
 const globals = require('../globals');
 const misc = require('../misc');
@@ -82,7 +83,8 @@ const submit = () => {
     let password = $('#createTablePassword').val();
     localStorage.setItem('createTablePassword', password);
     if (password !== '') {
-        password = hex_sha256(`Hanabi game password ${password}`);
+        const stringToHash = `Hanabi game password ${password}`;
+        password = shajs('sha256').update(stringToHash).digest('hex');
     }
 
     globals.conn.send('tableCreate', {

@@ -1,3 +1,4 @@
+const Phaser = require('phaser');
 const constants = require('../constants');
 const HanabiCard = require('./HanabiCard');
 const utils = require('./utils');
@@ -33,7 +34,7 @@ class PlayArea extends Phaser.GameObjects.Container {
             this.horizSpacing * config.suits.length,
             CARD_H * config.scale,
         );
-        const cardsToAdd = this.suits.map(suit => new HanabiCard(scene, {
+        const cardsToAdd = this.suits.map((suit) => new HanabiCard(scene, {
             suit,
             rank: 0,
             scale: config.scale,
@@ -46,7 +47,7 @@ class PlayArea extends Phaser.GameObjects.Container {
         // will be the front of the scene
         cards = utils.makeArray(cards);
         this.add(cards);
-        cards.forEach(card => utils.transformToEnterContainer(card, this));
+        cards.forEach((card) => utils.transformToEnterContainer(card, this));
         this._addCardTweensToScene(cards);
     }
 
@@ -55,7 +56,7 @@ class PlayArea extends Phaser.GameObjects.Container {
         const nSuits = this.suits.length;
 
         for (const card of cards) {
-            const suitIdx = this.suits.findIndex(suit => suit === card.suit);
+            const suitIdx = this.suits.findIndex((suit) => suit === card.suit);
             // eslint pls, this is way more readable than if I threw in a bunch of parens
             /* eslint-disable no-mixed-operators, space-infix-ops */
             const x = (suitIdx + 1/2 - nSuits/2) * this.horizSpacing;

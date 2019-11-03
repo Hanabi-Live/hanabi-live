@@ -4,6 +4,7 @@
 */
 
 // Imports
+const Phaser = require('phaser');
 const constants = require('../constants');
 const globals = require('../globals');
 

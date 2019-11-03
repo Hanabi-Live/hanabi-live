@@ -2,6 +2,10 @@
     In-game tooltips (for notes, etc.)
 */
 
+// From: https://github.com/iamceege/tooltipster/issues/721
+require('tooltipster');
+require('../../lib/tooltipster-scrollableTip.min');
+
 // Constants
 const maxPlayers = 6;
 const maxCardsInADeck = 60;

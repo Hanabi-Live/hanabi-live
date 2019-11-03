@@ -3,9 +3,10 @@
 */
 
 // Imports
+const linkifyHtml = require('linkifyjs/html');
 const globals = require('./globals');
-const emojis = require('../../data/emojis');
-const emoteCategories = require('../../data/emotes');
+const emojis = require('./data/emojis');
+const emoteCategories = require('./data/emotes');
 
 // Variables
 let chatLineNum = 1;
@@ -49,7 +50,7 @@ const input = function input(event) {
     }
 };
 
-const keypress = room => function keypressFunction(event) {
+const keypress = (room) => function keypressFunction(event) {
     // Check for submission
     if (event.key !== 'Enter') {
         return;

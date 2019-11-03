@@ -23,7 +23,7 @@ class ClueLog extends graphics.Group {
         for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i];
             node.setY(y);
-            y += node.getHeight() + 0.001 * globals.stage.getHeight();
+            y += node.getHeight() + (0.001 * globals.stage.getHeight());
         }
     }
 

@@ -133,7 +133,7 @@ module.exports = (clueAreaValues) => {
         x: (arrowValues.x + (arrowValues.w / 2)) * winW,
         y: (currentPlayerAreaValues.h / 2) * winH,
         offset: {
-            x: (arrowValues.x + (arrowValues.w / 2) * winW),
+            x: (arrowValues.x + (arrowValues.w / 2)) * winW,
             y: (currentPlayerAreaValues.h / 2) * winH,
         },
     });

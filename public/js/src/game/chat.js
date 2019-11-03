@@ -3,6 +3,7 @@
 */
 
 // Imports
+const interact = require('interactjs');
 const globals = require('../globals');
 
 exports.init = () => {

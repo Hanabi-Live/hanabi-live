@@ -158,7 +158,6 @@ const finishedLoadingImages = () => {
     globals.cardImages = drawCards.drawAll(
         globals.variant,
         globals.lobby.settings.showColorblindUI,
-        'normal',
     );
 
     // Construct a list of all of the cards in the deck

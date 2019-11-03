@@ -44,7 +44,7 @@ exports.draw = () => {
     tbody.html('');
 
     // JavaScript keys come as strings, so we need to convert them to integers
-    const ids = Object.keys(globals.historyList).map(i => parseInt(i, 10));
+    const ids = Object.keys(globals.historyList).map((i) => parseInt(i, 10));
 
     // Handle if the user has no history
     if (ids.length === 0) {
@@ -191,9 +191,9 @@ exports.drawDetails = () => {
 
     // The game played by the user will also include its variant
     const variant = globals.historyDetailList
-        .filter(g => g.id in globals.historyList)
-        .map(g => globals.historyList[g.id].variant)
-        .map(v => constants.VARIANTS[v])[0];
+        .filter((g) => g.id in globals.historyList)
+        .map((g) => globals.historyList[g.id].variant)
+        .map((v) => constants.VARIANTS[v])[0];
 
     // The game played by the user might not have been sent by the server yet
     if (variant === undefined) {

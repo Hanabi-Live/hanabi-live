@@ -317,7 +317,7 @@ const drawPlayStacksAndDiscardStacks = () => {
         const suit = globals.variant.suits[i];
 
         // Make the play stack for this suit
-        const playStackX = playStackValues.x + (cardWidth + playStackValues.spacing) * i;
+        const playStackX = playStackValues.x + ((cardWidth + playStackValues.spacing) * i);
         const playStack = new PlayStack({
             x: playStackX * winW,
             y: playStackValues.y * winH,
@@ -345,7 +345,7 @@ const drawPlayStacksAndDiscardStacks = () => {
         // Make the discard stack for this rank
         const discardStack = new CardLayout({
             x: 0.81 * winW,
-            y: (0.61 + discardStackSpacing * i) * winH,
+            y: (0.61 + (discardStackSpacing * i)) * winH,
             width: 0.17 * winW,
             height: 0.17 * winH,
             player: -1,
@@ -361,7 +361,7 @@ const drawPlayStacksAndDiscardStacks = () => {
                 globals.lobby.settings.showColorblindUI
                 && suit.clueColors.length === 2
             ) {
-                const colorList = suit.clueColors.map(color => color.abbreviation).join('/');
+                const colorList = suit.clueColors.map((color) => color.abbreviation).join('/');
                 text += ` [${colorList}]`;
             }
             if (globals.variant.name.startsWith('Up or Down')) {
@@ -369,7 +369,7 @@ const drawPlayStacksAndDiscardStacks = () => {
             }
 
             const suitLabelText = new FitText({
-                x: (playStackValues.x - 0.01 + (cardWidth + playStackValues.spacing) * i) * winW,
+                x: (playStackValues.x - 0.01 + ((cardWidth + playStackValues.spacing) * i)) * winW,
                 y: (playStackValues.y + 0.155) * winH,
                 width: 0.08 * winW,
                 height: 0.051 * winH,
@@ -412,10 +412,10 @@ const drawPlayStacksAndDiscardStacks = () => {
     globals.elements.playArea = new graphics.Rect({
         x: (playAreaValues.x - overlap) * winW,
         y: (playAreaValues.y - overlap) * winH,
-        width: (playAreaValues.w + overlap * 2) * winW,
-        height: (playAreaValues.h + overlap * 2) * winH,
+        width: (playAreaValues.w + (overlap * 2)) * winW,
+        height: (playAreaValues.h + (overlap * 2)) * winH,
     });
-    globals.elements.playArea.isOver = pos => (
+    globals.elements.playArea.isOver = (pos) => (
         pos.x >= globals.elements.playArea.getX()
         && pos.y >= globals.elements.playArea.getY()
         && pos.x <= globals.elements.playArea.getX() + globals.elements.playArea.getWidth()
@@ -831,7 +831,7 @@ const drawScoreArea = () => {
     for (let i = 0; i < 3; i++) {
         // Draw the background square
         const strikeSquare = new graphics.Rect({
-            x: (0.01 + 0.04 * i) * winW,
+            x: (0.01 + (0.04 * i)) * winW,
             y: 0.115 * winH,
             width: 0.03 * winW,
             height: 0.053 * winH,
@@ -844,7 +844,7 @@ const drawScoreArea = () => {
 
         // Draw the red X that indicates the strike
         const strike = new graphics.Image({
-            x: (0.015 + 0.04 * i) * winW,
+            x: (0.015 + (0.04 * i)) * winW,
             y: 0.125 * winH,
             width: 0.02 * winW,
             height: 0.036 * winH,
@@ -1066,8 +1066,8 @@ const drawClueLog = () => {
     globals.elements.clueLog = new ClueLog({
         x: (clueLogValues.x + spacing) * winW,
         y: (clueLogValues.y + spacing) * winH,
-        width: (clueLogValues.w - spacing * 2) * winW,
-        height: (clueLogValues.h - spacing * 2) * winH,
+        width: (clueLogValues.w - (spacing * 2)) * winW,
+        height: (clueLogValues.h - (spacing * 2)) * winH,
     });
     globals.layers.UI.add(globals.elements.clueLog);
 };
@@ -1241,7 +1241,7 @@ const drawDiscardArea = () => {
         width: 0.2 * winW,
         height: 0.4 * winH,
     });
-    globals.elements.discardArea.isOver = pos => (
+    globals.elements.discardArea.isOver = (pos) => (
         pos.x >= globals.elements.discardArea.getX()
         && pos.y >= globals.elements.discardArea.getY()
         && pos.x <= globals.elements.discardArea.getX() + globals.elements.discardArea.getWidth()
@@ -1540,7 +1540,7 @@ const drawClueArea = () => {
     for (let i = 0; i < globals.variant.clueColors.length; i++) {
         const color = globals.variant.clueColors[i];
         const button = new ColorButton({
-            x: (colorX + i * (buttonW + buttonSpacing)) * winW,
+            x: (colorX + (i * (buttonW + buttonSpacing))) * winW,
             y: 0.027 * winH,
             width: buttonW * winW,
             height: buttonH * winH,
@@ -1563,7 +1563,7 @@ const drawClueArea = () => {
     for (const rank of globals.variant.clueRanks) {
         const i = rank - 1;
         const button = new NumberButton({
-            x: (rankX + i * (buttonW + buttonSpacing)) * winW,
+            x: (rankX + (i * (buttonW + buttonSpacing))) * winW,
             y: 0.1 * winH,
             width: buttonW * winW,
             height: buttonH * winH,
@@ -1811,7 +1811,7 @@ const drawPauseArea = () => {
     globals.elements.pauseArea.add(globals.elements.pauseButton);
 
     const chatButton = new Button({
-        x: (pauseAreaValues.w - button2W * 2 - spacing * 2) * winW,
+        x: (pauseAreaValues.w - (button2W * 2) - (spacing * 2)) * winW,
         y: buttonH * winH,
         width: button2W * winW,
         height: 0.1 * winH,
@@ -1823,7 +1823,7 @@ const drawPauseArea = () => {
     });
 
     const lobbyButton = new Button({
-        x: (pauseAreaValues.w - button2W - spacing * 1.5) * winW,
+        x: (pauseAreaValues.w - button2W - (spacing * 1.5)) * winW,
         y: buttonH * winH,
         width: button2W * winW,
         height: 0.1 * winH,

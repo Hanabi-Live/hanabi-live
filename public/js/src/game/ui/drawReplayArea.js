@@ -202,7 +202,7 @@ module.exports = () => {
     const bottomLeftReplayButtonValues = {
         x: replayButtonValues.x - extra,
         y: bottomButtonValues.y,
-        w: replayButtonValues.w * 2 + replayButtonValues.spacing + extra,
+        w: (replayButtonValues.w * 2) + replayButtonValues.spacing + extra,
         h: 0.06,
     };
 

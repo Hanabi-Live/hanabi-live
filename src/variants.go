@@ -25,7 +25,7 @@ type Color struct {
 
 func colorsInit() {
 	// Import the JSON file
-	filePath := path.Join(projectPath, "public", "data", "colors.json")
+	filePath := path.Join(dataPath, "colors.json")
 	var contents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
 		log.Fatal("Failed to read the \""+filePath+"\" file:", err)
@@ -66,7 +66,7 @@ type Suit struct {
 
 func suitsInit() {
 	// Import the JSON file
-	filePath := path.Join(projectPath, "public", "data", "suits.json")
+	filePath := path.Join(dataPath, "suits.json")
 	var contents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
 		log.Fatal("Failed to read the \""+filePath+"\" file:", err)
@@ -170,7 +170,7 @@ type Variant struct {
 
 func variantsInit() {
 	// Import the JSON file
-	filePath := path.Join(projectPath, "public", "data", "variants.json")
+	filePath := path.Join(dataPath, "variants.json")
 	var contents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
 		log.Fatal("Failed to read the \""+filePath+"\" file:", err)

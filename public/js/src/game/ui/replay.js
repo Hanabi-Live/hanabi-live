@@ -275,7 +275,7 @@ exports.barClick = function barClick(event) {
     const rectX = event.evt.x - this.getAbsolutePosition().x;
     const w = this.getWidth();
     const step = w / globals.replayMax;
-    const newTurn = Math.floor((rectX + step / 2) / step);
+    const newTurn = Math.floor((rectX + (step / 2)) / step);
     if (newTurn !== globals.replayTurn) {
         checkDisableSharedTurns();
         goto(newTurn, true);
@@ -294,7 +294,7 @@ exports.barDrag = function barDrag(pos) {
         shuttleX = w;
     }
     const step = w / globals.replayMax;
-    const newTurn = Math.floor((shuttleX + step / 2) / step);
+    const newTurn = Math.floor((shuttleX + (step / 2)) / step);
     if (newTurn !== globals.replayTurn) {
         checkDisableSharedTurns();
         goto(newTurn, true);

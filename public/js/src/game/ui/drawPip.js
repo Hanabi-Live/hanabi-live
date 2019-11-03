@@ -19,7 +19,7 @@ const shapeFunctions = {
             [2, 1],
             [1, 2],
             [0, 1],
-        ].map(point => [point[0] * w + offsetX, point[1] * h + offsetY]);
+        ].map((point) => [(point[0] * w) + offsetX, (point[1] * h) + offsetY]);
         const curveX = 1.46;
         const curveY = 0.6;
         const interps = [
@@ -27,9 +27,9 @@ const shapeFunctions = {
             [0, 1],
             [1, 1],
             [1, 0],
-        ].map(v => [
-            [curveX, 2 - curveX][v[0]] * w + offsetX,
-            [curveY, 2 - curveY][v[1]] * h + offsetY,
+        ].map((v) => [
+            ([curveX, 2 - curveX][v[0]] * w) + offsetX,
+            ([curveY, 2 - curveY][v[1]] * h) + offsetY,
         ]);
 
         ctx.beginPath();
@@ -65,13 +65,13 @@ const shapeFunctions = {
         ctx.beginPath();
         ctx.moveTo(cx, cy - outerRadius);
         for (let i = 0; i < 5; i++) {
-            const x1 = cx + Math.cos(rot) * outerRadius;
-            const y1 = cy + Math.sin(rot) * outerRadius;
+            const x1 = cx + (Math.cos(rot) * outerRadius);
+            const y1 = cy + (Math.sin(rot) * outerRadius);
             ctx.lineTo(x1, y1);
             rot += step;
 
-            const x2 = cx + Math.cos(rot) * innerRadius;
-            const y2 = cy + Math.sin(rot) * innerRadius;
+            const x2 = cx + (Math.cos(rot) * innerRadius);
+            const y2 = cy + (Math.sin(rot) * innerRadius);
             ctx.lineTo(x2, y2);
             rot += step;
         }

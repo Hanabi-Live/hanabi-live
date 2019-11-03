@@ -305,6 +305,6 @@ const promptOwnHandOrder = (actionString) => {
     return playerCards[maxSlotIndex - numResponse].children[0].order;
 };
 
-const click = elem => () => {
+const click = (elem) => () => {
     elem.dispatchEvent(new MouseEvent('click'));
 };

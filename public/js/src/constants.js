@@ -2,10 +2,10 @@
     Suit definitions, variant definitions, character definitions, and so forth
 */
 
-const colors = require('../../data/colors');
-const suits = require('../../data/suits');
-const variants = require('../../data/variants');
-const characters = require('../../data/characters');
+const colors = require('./data/colors');
+const suits = require('./data/suits');
+const variants = require('./data/variants');
+const characters = require('./data/characters');
 
 exports.MAX_CLUE_NUM = 8;
 
@@ -273,7 +273,7 @@ const initVariants = () => {
         // Variants with dual-color suits need to adjust the positions of elements in the corner
         // of the card (e.g. the note indicator) because it will overlap with the triangle that
         // shows the color composition of the suit
-        variant.offsetCornerElements = variant.suits.some(suit => suit.clueColors.length > 1);
+        variant.offsetCornerElements = variant.suits.some((suit) => suit.clueColors.length > 1);
     }
 };
 initVariants();

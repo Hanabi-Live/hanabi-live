@@ -71,7 +71,7 @@ class NameFrame extends graphics.Group {
                 0,
                 0,
                 config.height / 2,
-                config.width / 2 - w / 2,
+                (config.width / 2) - (w / 2),
                 config.height / 2,
             ],
             stroke: constants.LABEL_COLOR,
@@ -90,7 +90,7 @@ class NameFrame extends graphics.Group {
 
         this.rightline = new graphics.Line({
             points: [
-                config.width / 2 + w / 2,
+                (config.width / 2) + (w / 2),
                 config.height / 2,
                 config.width,
                 config.height / 2,
