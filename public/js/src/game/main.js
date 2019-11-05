@@ -2,22 +2,19 @@
     The Hanabi game UI
 */
 
-exports.chat = require('./chat');
-exports.websocket = require('./websocket');
-exports.sounds = require('./sounds');
-exports.tooltips = require('./tooltips');
-
 // Imports
-const globals = require('../globals');
-const HanabiUI = require('./ui/HanabiUI');
-const misc = require('../misc');
+import * as chat from './chat';
+import globals from '../globals';
+import HanabiUI from './ui/HanabiUI';
+import * as misc from '../misc';
+import * as sounds from './sounds';
 
-exports.init = () => {
+export const init = () => {
     // Disable the right-click context menu while in a game
     $('body').on('contextmenu', '#game', () => false);
 };
 
-exports.show = () => {
+export const show = () => {
     globals.currentScreen = 'game';
     $('#page-wrapper').hide(); // We can't fade this out as it will overlap
     $('#game-chat-text').html(''); // Clear the in-game chat box of any previous content
@@ -27,13 +24,13 @@ exports.show = () => {
         // TODO we can initialize the stage and some graphics here
     } else {
         $('#game').fadeIn(globals.fadeTime);
-        globals.ui = new HanabiUI(globals, exports); // eslint-disable-line new-cap
+        globals.ui = new HanabiUI(globals, gameExports);
         globals.chatUnread = 0;
     }
     globals.conn.send('hello');
 };
 
-exports.hide = () => {
+export const hide = () => {
     globals.currentScreen = 'lobby';
 
     globals.ui.destroy();
@@ -58,6 +55,14 @@ exports.hide = () => {
     misc.closeAllTooltips();
 
     // Scroll to the bottom of the chat
-    const chat = document.getElementById('lobby-chat-text');
-    chat.scrollTop = chat.scrollHeight;
+    const chatElement = document.getElementById('lobby-chat-text');
+    chatElement.scrollTop = chatElement.scrollHeight;
+};
+
+// These are references to some functions and submodules that need to be interacted with
+// in the UI code (e.g. hiding the UI, playing a sound)
+const gameExports = {
+    hide,
+    chat,
+    sounds,
 };

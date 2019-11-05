@@ -1,12 +1,12 @@
 // Imports
-const Button = require('./Button');
-const globals = require('./globals');
-const graphics = require('./graphics');
-const hypothetical = require('./hypothetical');
-const replay = require('./replay');
-const ToggleButton = require('./ToggleButton');
+import Button from './Button';
+import globals from './globals';
+import * as graphics from './graphics';
+import * as hypothetical from './hypothetical';
+import * as replay from './replay';
+import ToggleButton from './ToggleButton';
 
-module.exports = () => {
+export default () => {
     // Constants
     const winW = globals.stage.getWidth();
     const winH = globals.stage.getHeight();

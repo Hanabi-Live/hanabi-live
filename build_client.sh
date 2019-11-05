@@ -36,6 +36,6 @@ if ! command -v npx > /dev/null; then
     export PATH=$NPM_BIN_DIR:$PATH
 fi
 
-# Run the Grunt runner to prepare the JavaScript and the CSS
 cd "$DIR/public/js"
-npx grunt
+npx webpack # Pack the JavaScript into one file
+npx grunt # Pack the CSS into one file

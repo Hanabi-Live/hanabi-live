@@ -3,10 +3,10 @@
 */
 
 // Imports
-const globals = require('./globals');
-const graphics = require('./graphics');
+import globals from './globals';
+import * as graphics from './graphics';
 
-class ClueLog extends graphics.Group {
+export default class ClueLog extends graphics.Group {
     add(child) {
         graphics.Group.prototype.add.call(this, child);
         this.truncateExcessClueEntries();
@@ -49,5 +49,3 @@ class ClueLog extends graphics.Group {
         }
     }
 }
-
-module.exports = ClueLog;

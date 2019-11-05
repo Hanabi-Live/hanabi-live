@@ -4,16 +4,16 @@
 */
 
 // Imports
-const Clue = require('./Clue');
-const constants = require('../../constants');
-const convert = require('./convert');
-const globals = require('./globals');
-const graphics = require('./graphics');
-const HanabiCardInit = require('./HanabiCardInit');
-const notes = require('./notes');
-const ui = require('./ui');
+import Clue from './Clue';
+import * as constants from '../../constants';
+import * as convert from './convert';
+import globals from './globals';
+import * as graphics from './graphics';
+import * as HanabiCardInit from './HanabiCardInit';
+import * as notes from './notes';
+import possibilitiesCheck from './possibilitiesCheck';
 
-class HanabiCard extends graphics.Group {
+export default class HanabiCard extends graphics.Group {
     constructor(config) {
         // Cards should start off with a constant width and height
         config.width = constants.CARD_W;
@@ -462,7 +462,7 @@ class HanabiCard extends graphics.Group {
             this.rankPipsXMap.get(rank).hide();
 
             // Remove any card possibilities for this rank
-            if (ui.usePossibilities()) {
+            if (possibilitiesCheck()) {
                 for (const suit of globals.variant.suits) {
                     this.removePossibility(suit, rank, true);
                 }
@@ -486,7 +486,7 @@ class HanabiCard extends graphics.Group {
             this.suitPipsXMap.get(suit).hide();
 
             // Remove any card possibilities for this suit
-            if (ui.usePossibilities()) {
+            if (possibilitiesCheck()) {
                 for (const rank of globals.variant.ranks) {
                     this.removePossibility(suit, rank, true);
                 }
@@ -613,7 +613,7 @@ class HanabiCard extends graphics.Group {
     }
 
     updatePossibilitiesOnOtherCards(suit, rank) {
-        if (!ui.usePossibilities()) {
+        if (!possibilitiesCheck()) {
             return;
         }
 
@@ -990,8 +990,6 @@ class HanabiCard extends graphics.Group {
         }
     }
 }
-
-module.exports = HanabiCard;
 
 /*
     Misc. functions

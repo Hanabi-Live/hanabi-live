@@ -3,17 +3,19 @@
 */
 
 // Imports
-const constants = require('../../constants');
-const globals = require('./globals');
-const graphics = require('./graphics');
-const stats = require('./stats');
-const ui = require('./ui');
+import * as action from './action';
+import * as constants from '../../constants';
+import fadeCheck from './fadeCheck';
+import globals from './globals';
+import * as graphics from './graphics';
+import notify from './notify';
+import * as stats from './stats';
 
 /*
     Main replay functions
 */
 
-const enter = () => {
+export const enter = () => {
     if (globals.hypothetical) {
         // Don't allow replay navigation while in a hypothetical
         return;
@@ -39,7 +41,7 @@ const enter = () => {
     }
 
     // Hide the UI elements that overlap with the replay area
-    ui.stopAction();
+    action.stop();
 
     // Next, show the replay area and initialize some UI elements
     globals.elements.replayArea.show();
@@ -47,9 +49,8 @@ const enter = () => {
     setVisibleButtons();
     globals.layers.UI.batchDraw();
 };
-exports.enter = enter;
 
-const exit = () => {
+export const exit = () => {
     if (!globals.inReplay) {
         return;
     }
@@ -59,7 +60,7 @@ const exit = () => {
     globals.elements.replayArea.hide();
 
     if (globals.ourTurn) {
-        ui.handleAction(globals.savedAction);
+        action.handle(globals.savedAction);
     }
     globals.elements.currentPlayerArea.setVisible(!globals.elements.clueArea.getVisible());
     if (globals.queuedAction !== null) {
@@ -74,9 +75,8 @@ const exit = () => {
     globals.layers.UI.batchDraw();
     globals.layers.card.batchDraw();
 };
-exports.exit = exit;
 
-const goto = (target, fast) => {
+export const goto = (target, fast) => {
     // Validate function arguments
     if (target < 0) {
         target = 0;
@@ -121,8 +121,8 @@ const goto = (target, fast) => {
             break;
         }
 
-        // Rebuild all notifies; this will correctly position cards and text
-        ui.handleNotify(msg);
+        // Re-process all notify messages; this will correctly position cards and text
+        notify(msg);
 
         // Stop if you're at the current turn
         if (msg.type === 'turn' && msg.num === globals.replayTurn) {
@@ -130,8 +130,8 @@ const goto = (target, fast) => {
         }
     }
 
+    fadeCheck();
     globals.animateFast = false;
-    ui.checkFadeInAllHands();
     globals.elements.actionLog.refreshText();
     globals.elements.fullActionLog.refreshText();
     globals.layers.card.batchDraw();
@@ -139,7 +139,6 @@ const goto = (target, fast) => {
     globals.layers.arrow.batchDraw();
     globals.layers.UI2.batchDraw();
 };
-exports.goto = goto;
 
 const setVisibleButtons = () => {
     // If we are on the first turn, disable the rewind replay buttons
@@ -220,22 +219,22 @@ const reset = () => {
     The 4 replay button functions
 */
 
-exports.backFull = () => {
+export const backFull = () => {
     checkDisableSharedTurns();
     goto(0, true);
 };
 
-exports.back = () => {
+export const back = () => {
     checkDisableSharedTurns();
     goto(globals.replayTurn - 1, true);
 };
 
-exports.forward = () => {
+export const forward = () => {
     checkDisableSharedTurns();
     goto(globals.replayTurn + 1);
 };
 
-exports.forwardFull = () => {
+export const forwardFull = () => {
     checkDisableSharedTurns();
     goto(globals.replayMax, true);
 };
@@ -244,12 +243,12 @@ exports.forwardFull = () => {
     Extra replay functions
 */
 
-exports.backRound = () => {
+export const backRound = () => {
     checkDisableSharedTurns();
     goto(globals.replayTurn - globals.playerNames.length, true);
 };
 
-exports.forwardRound = () => {
+export const forwardRound = () => {
     checkDisableSharedTurns();
     goto(globals.replayTurn + globals.playerNames.length);
 };
@@ -259,7 +258,7 @@ exports.forwardRound = () => {
     The "Exit Replay" button
 */
 
-exports.exitButton = () => {
+export const exitButton = () => {
     // Mark the time that the user clicked the "Exit Replay" button
     // (so that we can avoid an accidental "Give Clue" double-click)
     globals.UIClickTime = Date.now();
@@ -271,7 +270,7 @@ exports.exitButton = () => {
     The replay shuttle
 */
 
-exports.barClick = function barClick(event) {
+export function barClick(event) {
     const rectX = event.evt.x - this.getAbsolutePosition().x;
     const w = this.getWidth();
     const step = w / globals.replayMax;
@@ -280,9 +279,9 @@ exports.barClick = function barClick(event) {
         checkDisableSharedTurns();
         goto(newTurn, true);
     }
-};
+}
 
-exports.barDrag = function barDrag(pos) {
+export function barDrag(pos) {
     const min = globals.elements.replayBar.getAbsolutePosition().x + (this.getWidth() * 0.5);
     const w = globals.elements.replayBar.getWidth() - this.getWidth();
     let shuttleX = pos.x - min;
@@ -304,7 +303,7 @@ exports.barDrag = function barDrag(pos) {
         x: min + shuttleX,
         y: shuttleY,
     };
-};
+}
 
 const positionReplayShuttle = (shuttle, turn, smaller, fast) => {
     let max = globals.replayMax;
@@ -347,7 +346,7 @@ const positionReplayShuttle = (shuttle, turn, smaller, fast) => {
     }
 };
 
-const adjustShuttles = (fast) => {
+export const adjustShuttles = (fast) => {
     const shuttle = globals.elements.replayShuttle;
     const shuttleShared = globals.elements.replayShuttleShared;
 
@@ -362,13 +361,12 @@ const adjustShuttles = (fast) => {
     positionReplayShuttle(shuttleShared, globals.sharedReplayTurn, false, fast);
     positionReplayShuttle(shuttle, globals.replayTurn, smaller, fast);
 };
-exports.adjustShuttles = adjustShuttles;
 
 /*
     Right-clicking the turn count
 */
 
-exports.promptTurn = () => {
+export const promptTurn = () => {
     let turn = window.prompt('Which turn do you want to go to?');
     if (turn === null || Number.isNaN(parseInt(turn, 10))) {
         return;
@@ -389,7 +387,7 @@ exports.promptTurn = () => {
     The "Toggle Shared Turns" button
 */
 
-exports.toggleSharedTurns = () => {
+export const toggleSharedTurns = () => {
     globals.useSharedTurns = !globals.useSharedTurns;
     globals.elements.replayShuttleShared.setVisible(!globals.useSharedTurns);
     if (globals.useSharedTurns) {
@@ -407,7 +405,7 @@ exports.toggleSharedTurns = () => {
 };
 
 // Navigating as a follower in a shared replay disables replay actions
-const checkDisableSharedTurns = () => {
+export const checkDisableSharedTurns = () => {
     if (
         globals.replay
         && globals.sharedReplay
@@ -418,7 +416,6 @@ const checkDisableSharedTurns = () => {
         globals.elements.toggleSharedTurnButton.dispatchEvent(new MouseEvent('click'));
     }
 };
-exports.checkDisableSharedTurns = checkDisableSharedTurns;
 
 const shareCurrentTurn = (target) => {
     if (globals.sharedReplayTurn === target) {
@@ -431,4 +428,13 @@ const shareCurrentTurn = (target) => {
     });
     globals.sharedReplayTurn = target;
     adjustShuttles(false);
+};
+
+export const clueLogClickHandler = (turn) => {
+    if (globals.replay) {
+        checkDisableSharedTurns();
+    } else {
+        enter();
+    }
+    goto(turn + 1, true);
 };

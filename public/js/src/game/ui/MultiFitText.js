@@ -1,9 +1,9 @@
 // Imports
-const FitText = require('./FitText');
-const globals = require('./globals');
-const graphics = require('./graphics');
+import FitText from './FitText';
+import globals from './globals';
+import * as graphics from './graphics';
 
-class MultiFitText extends graphics.Group {
+export default class MultiFitText extends graphics.Group {
     constructor(config) {
         super(config);
 
@@ -52,5 +52,3 @@ class MultiFitText extends graphics.Group {
         }
     }
 }
-
-module.exports = MultiFitText;

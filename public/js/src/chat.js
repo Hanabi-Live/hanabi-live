@@ -3,15 +3,15 @@
 */
 
 // Imports
-const linkifyHtml = require('linkifyjs/html');
-const globals = require('./globals');
-const emojis = require('./data/emojis');
-const emoteCategories = require('./data/emotes');
+import linkifyHtml from 'linkifyjs/html';
+import globals from './globals';
+import emojis from './data/emojis';
+import emoteCategories from './data/emotes';
 
 // Variables
 let chatLineNum = 1;
 
-exports.init = () => {
+export const init = () => {
     $('#lobby-chat-input').on('input', input);
     $('#lobby-chat-input').on('keypress', keypress('lobby'));
     $('#lobby-chat-pregame-input').on('input', input);
@@ -76,7 +76,7 @@ const keypress = (room) => function keypressFunction(event) {
     });
 };
 
-exports.add = (data, fast) => {
+export const add = (data, fast) => {
     let chat;
     if (data.room === 'lobby') {
         chat = $('#lobby-chat-text');

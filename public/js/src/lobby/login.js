@@ -3,12 +3,12 @@
 */
 
 // Imports
-const shajs = require('sha.js');
-const globals = require('../globals');
-const lobby = require('./main');
-const websocket = require('../websocket');
+import shajs from 'sha.js';
+import globals from '../globals';
+import * as loginMisc from './loginMisc';
+import websocketInit from '../websocketInit';
 
-exports.init = () => {
+export const init = () => {
     $('#login-button').click(() => {
         $('#login-form').submit();
     });
@@ -52,11 +52,11 @@ const submit = (event) => {
     const passwordPlaintext = $('#login-password').val();
 
     if (!username) {
-        formError('You must provide a username.');
+        loginMisc.formError('You must provide a username.');
         return;
     }
     if (!passwordPlaintext) {
-        formError('You must provide a password.');
+        loginMisc.formError('You must provide a password.');
         return;
     }
 
@@ -72,16 +72,6 @@ const submit = (event) => {
     globals.password = password;
 
     send();
-};
-
-const formError = (msg) => {
-    // For some reason this has to be invoked asycnronously in order to work properly
-    setTimeout(() => {
-        $('#login-ajax').hide();
-        $('#login-button').removeClass('disabled');
-        $('#login-alert').html(msg);
-        $('#login-alert').fadeIn(globals.fadeTime);
-    }, 0);
 };
 
 const send = () => {
@@ -108,10 +98,10 @@ const send = () => {
 
     request.done(() => {
         // We successfully got a cookie; attempt to establish a WebSocket connection
-        websocket.set();
+        websocketInit();
     });
     request.fail((jqXHR) => {
-        formError(`Login failed: ${getAjaxError(jqXHR)}`);
+        loginMisc.formError(`Login failed: ${getAjaxError(jqXHR)}`);
     });
 };
 
@@ -125,7 +115,7 @@ const getAjaxError = (jqXHR) => {
     return jqXHR.responseText;
 };
 
-exports.automaticLogin = () => {
+export const automaticLogin = () => {
     // Don't automatically login if they are on Firefox and have not confirmed the warning dialog
     // (cookies are strings, so we cannot check for equality)
     if (globals.browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
@@ -145,40 +135,4 @@ exports.automaticLogin = () => {
     }
     console.log('Automatically logging in from cookie credentials.');
     send();
-};
-
-exports.hide = (firstTimeUser) => {
-    // Hide the login screen
-    $('#login').hide();
-
-    if (firstTimeUser) {
-        $('#tutorial').fadeIn(globals.fadeTime);
-        return;
-    }
-    $('#tutorial').hide();
-
-    /*
-        Disable scroll bars
-        Even with height and width 100%,
-        the scroll bar can pop up when going back from a game to the lobby
-        It also can show up in-game if a tooltip animates off of the edge of the screen
-        So we can set "overflow" to explicitly prevent this from occuring
-        We don't want to set this in "hanabi.css" because
-        there should be scrolling enabled on the login screen
-        We need to scroll to the top of the screen before disabling the scroll bars
-        or else the lobby can become misaligned when logging in from a scroll-down state
-    */
-    window.scrollTo(0, 0);
-    $('body').css('overflow', 'hidden');
-
-    // Show the lobby
-    globals.currentScreen = 'lobby';
-    $('#lobby').show();
-    $('#lobby-history').hide();
-    // We can't hide this element by default in "index.html" or else the "No game history" text
-    // will not be centered
-    lobby.nav.show('games');
-    lobby.users.draw();
-    lobby.tables.draw();
-    $('#lobby-chat-input').focus();
 };

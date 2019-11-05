@@ -3,17 +3,17 @@
 */
 
 // Imports
-const clues = require('./clues');
-const constants = require('../../constants');
-const globals = require('./globals');
-const misc = require('../../misc');
-const replay = require('./replay');
-const ui = require('./ui');
+import * as clues from './clues';
+import * as constants from '../../constants';
+import globals from './globals';
+import * as misc from '../../misc';
+import * as replay from './replay';
+import * as ui from './ui';
 
 // Variables
 const hotkeyMap = {};
 
-exports.init = () => {
+export const init = () => {
     /*
         Build a mapping of hotkeys to functions
     */
@@ -52,7 +52,7 @@ exports.init = () => {
     $(document).keydown(keydown);
 };
 
-exports.destroy = () => {
+export const destroy = () => {
     $(document).unbind('keydown', keydown);
 };
 
@@ -279,7 +279,7 @@ const action = (intendedPlay = true) => {
     }
 
     globals.lobby.conn.send('action', data);
-    ui.stopAction();
+    action.stop();
 };
 
 // Keyboard actions for playing and discarding cards

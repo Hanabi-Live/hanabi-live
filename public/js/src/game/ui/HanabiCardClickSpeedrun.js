@@ -3,12 +3,12 @@
 */
 
 // Imports
-const constants = require('../../constants');
-const globals = require('./globals');
-const notes = require('./notes');
-const ui = require('./ui');
+import * as constants from '../../constants';
+import globals from './globals';
+import * as notes from './notes';
+import * as ui from './ui';
 
-module.exports = function clickSpeedrun(event) {
+export default function HanabiCardClickSpeedrun(event) {
     // Speedrunning overrides the normal card clicking behavior
     // (but don't use the speedrunning behavior if we are in a
     // solo replay / shared replay / spectating / clicking on the stack base)
@@ -38,7 +38,7 @@ module.exports = function clickSpeedrun(event) {
     } else if (event.evt.which === 3) { // Right-click
         clickRight(this, event.evt);
     }
-};
+}
 
 const clickLeft = (card, event) => {
     // Left-clicking on cards in our own hand is a play action

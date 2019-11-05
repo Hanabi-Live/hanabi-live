@@ -1,9 +1,9 @@
 // Imports
-const globals = require('./globals');
-const graphics = require('./graphics');
-const MultiFitText = require('./MultiFitText');
+import globals from './globals';
+import * as graphics from './graphics';
+import MultiFitText from './MultiFitText';
 
-class FullActionLog extends graphics.Group {
+export default class FullActionLog extends graphics.Group {
     constructor(config) {
         const baseConfig = {
             x: 0.2 * globals.stage.getWidth(),
@@ -133,5 +133,3 @@ class FullActionLog extends graphics.Group {
         }
     }
 }
-
-module.exports = FullActionLog;

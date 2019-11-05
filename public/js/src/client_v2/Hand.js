@@ -1,7 +1,7 @@
 // Imports
-const Phaser = require('phaser');
-const constants = require('../constants');
-const utils = require('./utils');
+import Phaser from 'phaser';
+import * as constants from '../constants';
+import * as utils from './utils';
 
 // Constants
 const {
@@ -9,7 +9,7 @@ const {
     HAND_PADDING,
 } = constants;
 
-class Hand extends Phaser.GameObjects.Container {
+export default class Hand extends Phaser.GameObjects.Container {
     constructor(scene, config) {
         super(scene);
         this.x = config.x;
@@ -49,5 +49,3 @@ class Hand extends Phaser.GameObjects.Container {
         }
     }
 }
-
-module.exports = Hand;

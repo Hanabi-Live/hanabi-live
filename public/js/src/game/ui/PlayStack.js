@@ -4,13 +4,12 @@
 */
 
 // Imports
-const constants = require('../../constants');
-const globals = require('./globals');
-const graphics = require('./graphics');
+import * as constants from '../../constants';
+import globals from './globals';
+import * as graphics from './graphics';
 
-class PlayStack extends graphics.Group {
+export default class PlayStack extends graphics.Group {
     constructor(config) {
-        console.log(config);
         super(config);
         this.rotation = 0;
     }
@@ -112,5 +111,3 @@ class PlayStack extends graphics.Group {
         return topCard.rank;
     }
 }
-
-module.exports = PlayStack;

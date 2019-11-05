@@ -3,10 +3,10 @@
 */
 
 // Imports
-const constants = require('../../constants');
-const globals = require('./globals');
+import * as constants from '../../constants';
+import globals from './globals';
 
-exports.updatePace = () => {
+export const updatePace = () => {
     const adjustedScorePlusDeck = globals.score + globals.deckSize - globals.maxScore;
 
     // Formula derived by Libster;
@@ -55,7 +55,7 @@ exports.updatePace = () => {
     }
 };
 
-exports.updateEfficiency = (cardsGottenDelta) => {
+export const updateEfficiency = (cardsGottenDelta) => {
     globals.cardsGotten += cardsGottenDelta;
     const efficiency = (globals.cardsGotten / globals.cluesSpentPlusStrikes).toFixed(2);
     // Round it to 2 decimal places
@@ -74,7 +74,7 @@ exports.updateEfficiency = (cardsGottenDelta) => {
 };
 
 
-exports.getMinEfficiency = () => {
+export const getMinEfficiency = () => {
     /*
         Calculate the minimum amount of efficiency needed in order to win this variant
         First, calculate the starting pace with the following formula:
@@ -125,7 +125,7 @@ exports.getMinEfficiency = () => {
     return minEfficiency;
 };
 
-const getNumCardsPerHand = () => {
+export const getNumCardsPerHand = () => {
     const numPlayers = globals.playerNames.length;
     if (numPlayers === 2 || numPlayers === 3) {
         return 5;
@@ -140,9 +140,8 @@ const getNumCardsPerHand = () => {
     // Default to 3 cards for non-standard player numbers
     return 3;
 };
-exports.getNumCardsPerHand = getNumCardsPerHand;
 
-const getTotalCardsInTheDeck = () => {
+export const getTotalCardsInTheDeck = () => {
     let totalCardsInTheDeck = 0;
     for (const suit of globals.variant.suits) {
         totalCardsInTheDeck += 10;
@@ -155,4 +154,3 @@ const getTotalCardsInTheDeck = () => {
 
     return totalCardsInTheDeck;
 };
-exports.getTotalCardsInTheDeck = getTotalCardsInTheDeck;

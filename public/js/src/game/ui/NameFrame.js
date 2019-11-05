@@ -1,11 +1,11 @@
 // Imports
-const constants = require('../../constants');
-const globals = require('./globals');
-const graphics = require('./graphics');
-const tooltips = require('./tooltips');
-const ui = require('./ui');
+import * as constants from '../../constants';
+import globals from './globals';
+import * as graphics from './graphics';
+import * as tooltips from './tooltips';
+import * as ui from './ui';
 
-class NameFrame extends graphics.Group {
+export default class NameFrame extends graphics.Group {
     constructor(config) {
         config.listening = true;
         super(config);
@@ -157,8 +157,6 @@ class NameFrame extends graphics.Group {
         this.name.setFill(color);
     }
 }
-
-module.exports = NameFrame;
 
 /*
     Misc. functions

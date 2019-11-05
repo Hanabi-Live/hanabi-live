@@ -3,7 +3,7 @@
 */
 
 // Imports
-const globals = require('./globals');
+import globals from './globals';
 
 // Get the contents of the note tooltip
 const get = (order, our) => {
@@ -31,7 +31,7 @@ const get = (order, our) => {
 // 1) update the stored note in memory
 // 2) send the new note to the server
 // 3) check for new note identities
-const set = (order, note) => {
+export const set = (order, note) => {
     const oldNote = globals.ourNotes[order];
     globals.ourNotes[order] = note;
     if (globals.spectating) {
@@ -62,9 +62,8 @@ const set = (order, note) => {
     }
     checkSpecialNote(card);
 };
-exports.set = set;
 
-const checkSpecialNote = (card) => {
+export const checkSpecialNote = (card) => {
     let note = globals.ourNotes[card.order];
     note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
     note = note.trim(); // Remove all leading and trailing whitespace
@@ -95,7 +94,6 @@ const checkSpecialNote = (card) => {
 
     globals.layers.card.batchDraw();
 };
-exports.checkSpecialNote = checkSpecialNote;
 
 const checkNoteIdentity = (card, note, fullNote) => {
     // First, check to see if this card should be marked with certain properties
@@ -221,7 +219,7 @@ const checkNoteImpossibility = (card) => {
     }
 };
 
-const update = (card) => {
+export const update = (card) => {
     // Update the tooltip
     const tooltip = $(`#tooltip-${card.tooltipName}`);
     const tooltipInstance = tooltip.tooltipster('instance');
@@ -239,10 +237,9 @@ const update = (card) => {
         globals.layers.card.batchDraw();
     }
 };
-exports.update = update;
 
 // Open the tooltip for this card
-const show = (card) => {
+export const show = (card) => {
     const tooltip = $(`#tooltip-${card.tooltipName}`);
     const tooltipInstance = tooltip.tooltipster('instance');
 
@@ -280,9 +277,8 @@ const show = (card) => {
     tooltipInstance.content(note);
     tooltip.tooltipster('open');
 };
-exports.show = show;
 
-exports.openEditTooltip = (card) => {
+export const openEditTooltip = (card) => {
     // Don't edit any notes in replays
     if (globals.replay) {
         return;
@@ -350,7 +346,7 @@ exports.openEditTooltip = (card) => {
 };
 
 // We just got a list of a bunch of notes, so show the note indicator for currently-visible cards
-exports.setAllCardIndicators = () => {
+export const setAllCardIndicators = () => {
     // We iterate through the whole deck instead of using the index of the last drawn card
     // to avoid race conditions where we can get the "noteList"
     // before the "notifyList" is finished processing
@@ -362,7 +358,7 @@ exports.setAllCardIndicators = () => {
     }
 };
 
-const setCardIndicator = (order) => {
+export const setCardIndicator = (order) => {
     const visible = shouldShowIndicator(order);
     let card = globals.deck[order];
     if (!card) {
@@ -377,9 +373,8 @@ const setCardIndicator = (order) => {
 
     globals.layers.card.batchDraw();
 };
-exports.setCardIndicator = setCardIndicator;
 
-const shouldShowIndicator = (order) => {
+export const shouldShowIndicator = (order) => {
     if (globals.replay || globals.spectating) {
         for (const noteObject of globals.allNotes[order]) {
             if (noteObject.note.length > 0) {
@@ -391,7 +386,6 @@ const shouldShowIndicator = (order) => {
 
     return globals.ourNotes[order] !== '';
 };
-exports.shouldShowIndicator = shouldShowIndicator;
 
 /*
     Misc. functions

@@ -1,11 +1,11 @@
 // Imports
-const arrows = require('./arrows');
-const constants = require('../../constants');
-const convert = require('./convert');
-const globals = require('./globals');
-const ui = require('./ui');
+import * as arrows from './arrows';
+import * as constants from '../../constants';
+import * as convert from './convert';
+import globals from './globals';
+import * as ui from './ui';
 
-exports.checkLegal = () => {
+export const checkLegal = () => {
     const target = globals.elements.clueTargetButtonGroup.getPressed();
     const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
 
@@ -98,7 +98,7 @@ const variantIsCardTouched = (clue, card) => {
     return false;
 };
 
-exports.give = () => {
+export const give = () => {
     const target = globals.elements.clueTargetButtonGroup.getPressed();
     const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
     if (

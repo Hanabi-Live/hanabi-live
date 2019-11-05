@@ -2,7 +2,7 @@
     The site has the ability to send (optional) notifications
 */
 
-exports.test = () => {
+export const test = () => {
     if (!('Notification' in window)) {
         return;
     }
@@ -13,7 +13,7 @@ exports.test = () => {
     Notification.requestPermission();
 };
 
-exports.send = (msg, tag) => {
+export const send = (msg, tag) => {
     if (!('Notification' in window)) {
         return;
     }

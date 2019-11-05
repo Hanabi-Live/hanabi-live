@@ -5,21 +5,22 @@
 */
 
 // Imports
-const constants = require('../../constants');
-const drawCards = require('./drawCards');
-const drawUI = require('./drawUI');
-const globals = require('./globals');
-const globalsInit = require('./globalsInit');
-const graphics = require('./graphics');
-const HanabiCard = require('./HanabiCard');
-const LayoutChild = require('./LayoutChild');
-const Loader = require('./Loader');
-const keyboard = require('./keyboard');
-const stats = require('./stats');
-const timer = require('./timer');
-const ui = require('./ui');
+import * as action from './action';
+import * as constants from '../../constants';
+import drawCards from './drawCards';
+import drawUI from './drawUI';
+import globals from './globals';
+import globalsInit from './globalsInit';
+import * as graphics from './graphics';
+import HanabiCard from './HanabiCard';
+import LayoutChild from './LayoutChild';
+import Loader from './Loader';
+import * as keyboard from './keyboard';
+import * as stats from './stats';
+import * as timer from './timer';
+import * as ui from './ui';
 
-class HanabiUI {
+export default class HanabiUI {
     constructor(lobby, game) {
         // Since the "HanabiUI" object is being reinstantiated,
         // we need to explicitly reinitialize all varaibles
@@ -61,7 +62,7 @@ class HanabiUI {
     }
 
     reshowClueUIAfterWarning() { // eslint-disable-line class-methods-use-this
-        ui.handleAction(globals.savedAction);
+        action.handle(globals.savedAction);
     }
 }
 
@@ -155,10 +156,7 @@ const finishedLoadingImages = () => {
     // Build images for every card
     // (with respect to the variant that we are playing
     // and whether or not we have the colorblind UI feature enabled)
-    globals.cardImages = drawCards.drawAll(
-        globals.variant,
-        globals.lobby.settings.showColorblindUI,
-    );
+    globals.cardImages = drawCards(globals.variant, globals.lobby.settings.showColorblindUI);
 
     // Construct a list of all of the cards in the deck
     initCardsMap();
@@ -247,5 +245,3 @@ const initCards = () => {
         globals.allNotes.push([]);
     }
 };
-
-module.exports = HanabiUI;

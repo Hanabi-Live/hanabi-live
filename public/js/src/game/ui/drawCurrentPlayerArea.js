@@ -1,10 +1,10 @@
 // Imports
-const constants = require('../../constants');
-const FitText = require('./FitText');
-const globals = require('./globals');
-const graphics = require('./graphics');
+import * as constants from '../../constants';
+import FitText from './FitText';
+import globals from './globals';
+import * as graphics from './graphics';
 
-module.exports = (clueAreaValues) => {
+export default (clueAreaValues) => {
     // Constants
     const winW = globals.stage.getWidth();
     const winH = globals.stage.getHeight();

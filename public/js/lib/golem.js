@@ -15,12 +15,13 @@
 */
 
 const separator = ' ';
+
 const DefaultJSONProtocol = {
     unpack: (data) => {
         const name = data.split(separator)[0];
         return [name, data.substring(name.length + 1, data.length)];
     },
-    unmarshal: data => JSON.parse(data),
+    unmarshal: (data) => JSON.parse(data),
     marshalAndPack: (name, data) => name + separator + JSON.stringify(data),
 };
 
@@ -33,6 +34,7 @@ const Connection = function Connection(addr, debug) {
     this.ws.onmessage = this.onMessage.bind(this);
     this.ws.onerror = this.onError.bind(this);
 };
+
 Connection.prototype = {
     constructor: Connection,
     protocol: DefaultJSONProtocol,
@@ -73,7 +75,7 @@ Connection.prototype = {
         this.ws.send(this.protocol.marshalAndPack(name, data));
     },
 
-    // Added extra handlers beyond what the vanilla Golem code provides
+    // These are extra handlers beyond what the vanilla Golem code provides
     onError: function onError(evt) {
         if (this.callbacks.socketError) {
             this.callbacks.socketError(evt);
@@ -83,4 +85,5 @@ Connection.prototype = {
         this.ws.close();
     },
 };
-exports.Connection = Connection;
+
+export default Connection;

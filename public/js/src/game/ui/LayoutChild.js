@@ -4,13 +4,13 @@
 */
 
 // Imports
-const constants = require('../../constants');
-const globals = require('./globals');
-const graphics = require('./graphics');
-const sounds = require('../sounds');
-const ui = require('./ui');
+import * as constants from '../../constants';
+import globals from './globals';
+import * as graphics from './graphics';
+import * as sounds from '../sounds';
+import * as ui from './ui';
 
-class LayoutChild extends graphics.Group {
+export default class LayoutChild extends graphics.Group {
     constructor() {
         super();
 
@@ -137,5 +137,3 @@ class LayoutChild extends graphics.Group {
         });
     }
 }
-
-module.exports = LayoutChild;

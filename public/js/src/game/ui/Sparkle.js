@@ -1,8 +1,8 @@
 // Imports
-const globals = require('./globals');
-const graphics = require('./graphics');
+import globals from './globals';
+import * as graphics from './graphics';
 
-class Sparkle extends graphics.Image {
+export default class Sparkle extends graphics.Image {
     constructor(config) {
         config.image = globals.ImageLoader.get('sparkle');
         super(config);
@@ -39,5 +39,3 @@ class Sparkle extends graphics.Image {
     }
     */
 }
-
-module.exports = Sparkle;

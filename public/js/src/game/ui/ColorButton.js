@@ -1,8 +1,8 @@
 // Imports
-const globals = require('./globals');
-const graphics = require('./graphics');
+import globals from './globals';
+import * as graphics from './graphics';
 
-class ColorButton extends graphics.Group {
+export default class ColorButton extends graphics.Group {
     constructor(config) {
         config.listening = true;
         super(config);
@@ -91,5 +91,3 @@ class ColorButton extends graphics.Group {
         }
     }
 }
-
-module.exports = ColorButton;

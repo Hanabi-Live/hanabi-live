@@ -2,45 +2,45 @@
     Suit definitions, variant definitions, character definitions, and so forth
 */
 
-const colors = require('./data/colors');
-const suits = require('./data/suits');
-const variants = require('./data/variants');
-const characters = require('./data/characters');
+import colors from './data/colors';
+import suits from './data/suits';
+import variants from './data/variants';
+import characters from './data/characters';
 
-exports.MAX_CLUE_NUM = 8;
+export const MAX_CLUE_NUM = 8;
 
 // Define the defeault qualities of a card
-exports.CARD_W = 286;
-exports.CARD_H = 406;
-exports.PLAY_AREA_PADDING = 1.15;
-exports.HAND_PADDING = 1.05;
-exports.HAND_BASE_SCALE = 0.40;
-exports.PLAY_AREA_BASE_SCALE = 0.40;
+export const CARD_W = 286;
+export const CARD_H = 406;
+export const PLAY_AREA_PADDING = 1.15;
+export const HAND_PADDING = 1.05;
+export const HAND_BASE_SCALE = 0.40;
 // This is a temporary scale only to be used with phaser until dynamic scaling is implemented
+export const PLAY_AREA_BASE_SCALE = 0.40;
 
-exports.CARD_FADE = 0.6;
+export const CARD_FADE = 0.6;
 
 // Other miscellaneous constants
-exports.LABEL_COLOR = '#d8d5ef'; // Off-white
-exports.TOOLTIP_DELAY = 500; // In milliseconds
-exports.ARROW_COLOR = {
+export const LABEL_COLOR = '#d8d5ef'; // Off-white
+export const TOOLTIP_DELAY = 500; // In milliseconds
+export const ARROW_COLOR = {
     DEFAULT: '#ffffff', // White
     RETOUCHED: '#737373', // Dark gray
     HIGHLIGHT: '#ffdf00', // Yellow
 };
 
 // These constants much match their server-side counterparts
-exports.ACT = {
+export const ACT = {
     CLUE: 0,
     PLAY: 1,
     DISCARD: 2,
     DECKPLAY: 3,
 };
-exports.CLUE_TYPE = {
+export const CLUE_TYPE = {
     RANK: 0,
     COLOR: 1,
 };
-exports.REPLAY_ACTION_TYPE = {
+export const REPLAY_ACTION_TYPE = {
     TURN: 0,
     ARROW: 1,
     LEADER_TRANSFER: 2,
@@ -50,22 +50,22 @@ exports.REPLAY_ACTION_TYPE = {
     HYPO_END: 6,
     HYPO_ACTION: 7,
 };
-exports.REPLAY_ARROW_ORDER = {
+export const REPLAY_ARROW_ORDER = {
     DECK: -1,
     CLUES: -2,
     PACE: -3,
     EFFICIENCY: -4,
     MIN_EFFICIENCY: -5,
 };
-exports.STACK_DIRECTION = { // Used in the "Up or Down" variants
+export const STACK_DIRECTION = { // Used in the "Up or Down" variants
     UNDECIDED: 0,
     UP: 1,
     DOWN: 2,
     FINISHED: 3,
 };
-exports.STACK_BASE_RANK = 0;
-exports.UNKNOWN_CARD_RANK = 6;
-exports.START_CARD_RANK = 7;
+export const STACK_BASE_RANK = 0;
+export const UNKNOWN_CARD_RANK = 6;
+export const START_CARD_RANK = 7;
 
 // Validate the colors from the JSON file, filling in some values if necessary
 const initColors = () => {
@@ -88,7 +88,7 @@ const initColors = () => {
     }
 };
 initColors();
-exports.COLORS = colors;
+export const COLORS = colors;
 
 // Validate the suits from the JSON file, filling in some values if necessary
 const initSuits = () => {
@@ -176,7 +176,7 @@ const initSuits = () => {
     }
 };
 initSuits();
-exports.SUITS = suits;
+export const SUITS = suits;
 
 const initVariants = () => {
     for (const variantName of Object.keys(variants)) {
@@ -212,7 +212,7 @@ const initVariants = () => {
         variant.ranks = [1, 2, 3, 4, 5];
         if (variantName.startsWith('Up or Down')) {
             // The "Up or Down" variants have START cards
-            variant.ranks.push(exports.START_CARD_RANK);
+            variant.ranks.push(START_CARD_RANK);
         }
 
         // Validate or derive the clue colors (the colors available to clue in this variant)
@@ -277,7 +277,7 @@ const initVariants = () => {
     }
 };
 initVariants();
-exports.VARIANTS = variants;
+export const VARIANTS = variants;
 
 const initCharacters = () => {
     for (const characterName of Object.keys(characters)) {
@@ -298,9 +298,4 @@ const initCharacters = () => {
     }
 };
 initCharacters();
-exports.CHARACTERS = characters;
-
-// Also make the constants available from the JavaScript console (for debugging purposes)
-if (typeof window !== 'undefined') {
-    window.constants = exports;
-}
+export const CHARACTERS = characters;

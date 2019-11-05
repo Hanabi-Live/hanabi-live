@@ -1,8 +1,8 @@
 // Imports
-const Button = require('./Button');
+import Button from './Button';
 
 // A simple two-state button with text for each state
-class ToggleButton extends Button {
+export default class ToggleButton extends Button {
     constructor(config) {
         super(config);
 
@@ -27,5 +27,3 @@ class ToggleButton extends Button {
         }
     }
 }
-
-module.exports = ToggleButton;

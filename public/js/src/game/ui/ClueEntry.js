@@ -4,12 +4,11 @@
 */
 
 // Imports
-const FitText = require('./FitText');
-const globals = require('./globals');
-const graphics = require('./graphics');
-const replay = require('./replay');
+import FitText from './FitText';
+import globals from './globals';
+import * as graphics from './graphics';
 
-class ClueEntry extends graphics.Group {
+export default class ClueEntry extends graphics.Group {
     constructor(config) {
         super(config);
 
@@ -102,12 +101,7 @@ class ClueEntry extends graphics.Group {
 
         // Click an entry in the clue log to go to that turn in the replay
         this.background.on('click', () => {
-            if (globals.replay) {
-                replay.checkDisableSharedTurns();
-            } else {
-                replay.enter();
-            }
-            replay.goto(this.turn + 1, true);
+            globals.functions.clueLogClickHandler(this.turn);
         });
     }
 
@@ -133,5 +127,3 @@ class ClueEntry extends graphics.Group {
         }
     }
 }
-
-module.exports = ClueEntry;

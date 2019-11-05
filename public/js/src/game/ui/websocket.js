@@ -3,24 +3,29 @@
 */
 
 // Imports
-const arrows = require('./arrows');
-const constants = require('../../constants');
-const globals = require('./globals');
-const hypothetical = require('./hypothetical');
-const notes = require('./notes');
-const notifications = require('../../notifications');
-const replay = require('./replay');
-const state = require('./state');
-const stats = require('./stats');
-const timer = require('./timer');
-const ui = require('./ui');
+import * as action from './action';
+import * as arrows from './arrows';
+import * as constants from '../../constants';
+import fadeCheck from './fadeCheck';
+import globals from './globals';
+import * as hypothetical from './hypothetical';
+import * as notes from './notes';
+import * as notifications from '../../notifications';
+import notify from './notify';
+import * as replay from './replay';
+import state from './state';
+import strikeRecord from './strikeRecord';
+import * as stats from './stats';
+import * as timer from './timer';
+import * as ui from './ui';
 
 // Define a command handler map
 const commands = {};
+export default commands;
 
 commands.action = (data) => {
     globals.lastAction = data;
-    ui.handleAction(data);
+    action.handle(data);
 
     if (globals.animateFast) {
         return;
@@ -65,7 +70,7 @@ commands.action = (data) => {
             globals.lobby.conn.send(globals.queuedAction.type, globals.queuedAction.data);
             globals.queuedAction = null;
             globals.preCluedCard = null;
-            ui.stopAction();
+            action.stop();
         }, 100);
     }
 };
@@ -150,12 +155,12 @@ commands.gameOver = () => {
 };
 
 commands.hypoAction = (data) => {
-    const notify = JSON.parse(data);
+    const notifyMessage = JSON.parse(data);
 
     // We need to save this game state change for the purposes of the in-game hypothetical
-    globals.hypoActions.push(notify);
+    globals.hypoActions.push(notifyMessage);
 
-    ui.handleNotify(notify);
+    notify(notifyMessage);
 };
 
 commands.hypoEnd = () => {
@@ -387,7 +392,7 @@ commands.notify = (data) => {
         !globals.inReplay // Unless we are in an in-game replay
         && !globals.gameOver // Unless it is the miscellaneous data sent at the end of a game
     ) {
-        ui.handleNotify(data);
+        notify(data);
     }
 
     // If the game is over,
@@ -422,7 +427,7 @@ commands.notifyList = (dataList) => {
         if (data.type === 'strike') {
             // Record the turns that the strikes happen
             // (or else clicking on the strike squares won't work on a freshly initialized replay)
-            ui.recordStrike(data);
+            strikeRecord(data);
         }
     }
 
@@ -442,7 +447,7 @@ commands.notifyList = (dataList) => {
         replay.goto(turn, true);
     }
 
-    ui.checkFadeInAllHands();
+    fadeCheck();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
     globals.loading = false;
@@ -629,8 +634,8 @@ commands.replayTurn = (data) => {
 
     // Also replay hypothetical actions
     if (globals.hypothetical && globals.useSharedTurns) {
-        for (const action of globals.hypoActions) {
-            ui.handleNotify(action);
+        for (const actionMessage of globals.hypoActions) {
+            notify(actionMessage);
         }
     }
 };
@@ -694,5 +699,3 @@ commands.spectators = (data) => {
 
     globals.layers.UI.batchDraw();
 };
-
-module.exports = commands;

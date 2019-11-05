@@ -4,9 +4,9 @@
 */
 
 // Imports
-const Phaser = require('phaser');
-const constants = require('../constants');
-const globals = require('../globals');
+import Phaser from 'phaser';
+import * as constants from '../constants';
+import globals from '../globals';
 
 // Constants
 const {
@@ -15,7 +15,7 @@ const {
     SUITS,
 } = constants;
 
-class HanabiCard extends Phaser.GameObjects.Container {
+export default class HanabiCard extends Phaser.GameObjects.Container {
     constructor(scene, config) {
         // Initialize the Phaser container
         super(scene);
@@ -138,5 +138,3 @@ class HanabiCard extends Phaser.GameObjects.Container {
         this.imageName = name;
     }
 }
-
-module.exports = HanabiCard;

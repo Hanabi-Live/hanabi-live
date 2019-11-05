@@ -3,14 +3,40 @@
 */
 
 // Imports
-const arrows = require('./arrows');
-const ClueEntry = require('./ClueEntry');
-const constants = require('../../constants');
-const convert = require('./convert');
-const globals = require('./globals');
-const graphics = require('./graphics');
-const stats = require('./stats');
-const ui = require('./ui');
+import * as arrows from './arrows';
+import ClueEntry from './ClueEntry';
+import * as constants from '../../constants';
+import * as convert from './convert';
+import fadeCheck from './fadeCheck';
+import globals from './globals';
+import * as graphics from './graphics';
+import possibilitiesCheck from './possibilitiesCheck';
+import * as stats from './stats';
+import strikeRecord from './strikeRecord';
+
+// The server has sent us a new game action
+// (either during an ongoing game or as part of a big list of notifies sent upon loading a new
+// game/replay)
+export default (data) => {
+    // If a user is editing a note and an action in the game happens,
+    // mark to make the tooltip go away as soon as they are finished editing the note
+    if (globals.editingNote !== null) {
+        globals.actionOccured = true;
+    }
+
+    // Automatically close any tooltips once an action in the game happens
+    if (globals.activeHover !== null) {
+        globals.activeHover.dispatchEvent(new MouseEvent('mouseout'));
+        globals.activeHover = null;
+    }
+
+    const { type } = data;
+    if (Object.prototype.hasOwnProperty.call(commands, type)) {
+        commands[type](data);
+    } else {
+        throw new Error(`A WebSocket notify function for the "${type}" command is not defined.`);
+    }
+};
 
 // Define a command handler map
 const commands = {};
@@ -148,7 +174,7 @@ commands.discard = (data) => {
     }
 
     // The fact that this card was discarded could make some other cards useless
-    ui.checkFadeInAllHands();
+    fadeCheck();
 
     if (card.isClued()) {
         stats.updateEfficiency(-1);
@@ -219,7 +245,7 @@ commands.draw = (data) => {
 
     // If this card is known,
     // then remove it from the card possibilities for the players who see this card
-    if (suit && rank && ui.usePossibilities()) {
+    if (suit && rank && possibilitiesCheck()) {
         for (let i = 0; i < globals.elements.playerHands.length; i++) {
             if (i === holder) {
                 // We can't update the player who drew this card,
@@ -251,7 +277,7 @@ commands.play = (data) => {
     card.animateToPlayStacks();
 
     // The fact that this card was played could make some other cards useless
-    ui.checkFadeInAllHands();
+    fadeCheck();
 
     if (!card.isClued()) {
         stats.updateEfficiency(1);
@@ -388,7 +414,7 @@ commands.strike = (data) => {
     }
 
     // Record the turn that the strike happened and the card that was misplayed
-    ui.recordStrike(data);
+    strikeRecord(data);
 };
 
 // A new line of text has appeared in the action log
@@ -437,5 +463,3 @@ commands.turn = (data) => {
         globals.layers.UI.batchDraw();
     }
 };
-
-module.exports = commands;

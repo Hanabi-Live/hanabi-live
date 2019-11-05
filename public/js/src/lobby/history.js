@@ -3,11 +3,11 @@
 */
 
 // Imports
-const constants = require('../constants');
-const globals = require('../globals');
-const lobby = require('./main');
+import * as constants from '../constants';
+import globals from '../globals';
+import * as nav from './nav';
 
-exports.init = () => {
+export const init = () => {
     $('#lobby-history-show-more').on('click', () => {
         globals.historyClicked = true;
         globals.conn.send('historyGet', {
@@ -17,27 +17,27 @@ exports.init = () => {
     });
 };
 
-exports.show = () => {
+export const show = () => {
     globals.currentScreen = 'history';
     $('#lobby-history').show();
     $('#lobby-top-half').hide();
     $('#lobby-separator').hide();
     $('#lobby-bottom-half').hide();
-    lobby.nav.show('history');
-    lobby.history.draw();
+    nav.show('history');
+    draw();
 };
 
-exports.hide = () => {
+export const hide = () => {
     globals.currentScreen = 'lobby';
     $('#lobby-history').hide();
     $('#lobby-history-details').hide();
     $('#lobby-top-half').show();
     $('#lobby-separator').show();
     $('#lobby-bottom-half').show();
-    lobby.nav.show('games');
+    nav.show('games');
 };
 
-exports.draw = () => {
+export const draw = () => {
     const tbody = $('#lobby-history-table-tbody');
 
     // Clear all of the existing rows
@@ -134,7 +134,7 @@ const makeReplayButton = (id, visibility) => {
             visibility,
         });
         if (visibility === 'shared') {
-            lobby.history.hide();
+            hide();
         }
     });
 
@@ -153,32 +153,32 @@ const makeHistoryDetailsButton = (id, gameCount) => {
         globals.conn.send('historyDetails', {
             gameID: id,
         });
-        lobby.history.showDetails();
+        showDetails();
     });
 
     return button;
 };
 
-exports.showDetails = () => {
+export const showDetails = () => {
     globals.currentScreen = 'historyDetails';
     $('#lobby-history').hide();
     $('#lobby-history-details').show();
-    lobby.nav.show('history-details');
+    nav.show('history-details');
 
     // The server will send us messages to populate this array momentarily
     globals.historyDetailList = [];
 };
 
-exports.hideDetails = () => {
+export const hideDetails = () => {
     globals.currentScreen = 'history';
     $('#lobby-history').show();
     $('#lobby-history-details').hide();
-    lobby.nav.show('history');
+    nav.show('history');
 };
 
 // This function is called once for each new history element received from the server
 // The last message is not marked, so each iteration redraws all historyDetailList items
-exports.drawDetails = () => {
+export const drawDetails = () => {
     const tbody = $('#lobby-history-details-table-tbody');
 
     if (!globals.historyDetailList.length) {

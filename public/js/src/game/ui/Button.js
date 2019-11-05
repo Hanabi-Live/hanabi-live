@@ -1,9 +1,9 @@
 // Imports
-const FitText = require('./FitText');
-const globals = require('./globals');
-const graphics = require('./graphics');
+import FitText from './FitText';
+import globals from './globals';
+import * as graphics from './graphics';
 
-class Button extends graphics.Group {
+export default class Button extends graphics.Group {
     constructor(config) {
         config.listening = true;
         super(config);
@@ -119,5 +119,3 @@ class Button extends graphics.Group {
         }
     }
 }
-
-module.exports = Button;

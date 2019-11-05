@@ -5,10 +5,11 @@
 */
 
 // Imports
-const globals = require('./globals');
+import globals from './globals';
 
 // Define a command handler map
 const commands = {};
+export default commands;
 
 // A player just gave a clue
 // {clue: {type: 0, value: 1}, giver: 1, list: [11], target: 2, turn: 0, type: "clue"}
@@ -125,5 +126,3 @@ commands.turn = (data) => {
     // Make a copy of the current state and store it in the state table
     globals.states[data.num] = JSON.parse(JSON.stringify(globals.state));
 };
-
-module.exports = commands;

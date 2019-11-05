@@ -6,19 +6,19 @@
 // Imports
 const Konva = require('konva');
 
-exports.Animation = Konva.Animation;
-exports.Arrow = Konva.Arrow;
-exports.Circle = Konva.Circle;
-exports.Easings = Konva.Easings;
-exports.Ellipse = Konva.Ellipse;
-exports.Group = Konva.Group;
-exports.Image = Konva.Image;
-exports.Layer = Konva.Layer;
-exports.Line = Konva.Line;
-exports.Node = Konva.Node;
-exports.Rect = Konva.Rect;
-exports.Shape = Konva.Shape;
-exports.Stage = Konva.Stage;
-exports.Text = Konva.Text;
-exports.Tween = Konva.Tween;
-exports.Util = Konva.Util;
+export const { Animation } = Konva;
+export const { Arrow } = Konva;
+export const { Circle } = Konva;
+export const { Easings } = Konva;
+export const { Ellipse } = Konva;
+export const { Group } = Konva;
+export const { Image } = Konva;
+export const { Layer } = Konva;
+export const { Line } = Konva;
+export const { Node } = Konva;
+export const { Rect } = Konva;
+export const { Shape } = Konva;
+export const { Stage } = Konva;
+export const { Text } = Konva;
+export const { Tween } = Konva;
+export const { Util } = Konva;

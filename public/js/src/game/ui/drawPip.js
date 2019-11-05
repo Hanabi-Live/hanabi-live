@@ -162,7 +162,7 @@ const shapeFunctions = {
     },
 };
 
-module.exports = (ctx, suit, shadow, deckBack) => {
+export default (ctx, suit, shadow, deckBack) => {
     // Each suit has a shape defined in the "suits.json" file (as the "pip" property)
     // Draw the respective shape on the canvas
     // (or, for text pips, define the type of text)

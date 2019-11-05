@@ -3,15 +3,15 @@
 */
 
 // Imports
-const arrows = require('./arrows');
-const constants = require('../../constants');
-const convert = require('./convert');
-const globals = require('./globals');
-const notes = require('./notes');
-const replay = require('./replay');
-const websocket = require('./websocket');
+import * as arrows from './arrows';
+import * as constants from '../../constants';
+import * as convert from './convert';
+import globals from './globals';
+import * as notes from './notes';
+import * as replay from './replay';
+import websocket from './websocket';
 
-module.exports = function click(event) {
+export default function HanabiCardClick(event) {
     // Speedrunning overrides the normal card clicking behavior
     // (but don't use the speedrunning behavior if we are in a
     // solo replay / shared replay / spectating)
@@ -35,7 +35,7 @@ module.exports = function click(event) {
     } else if (event.evt.which === 3) { // Right-click
         clickRight(this, event.evt);
     }
-};
+}
 
 const clickLeft = (card, event) => {
     // The "Empathy" feature is handled in the "HanabiCardInit.js" file,

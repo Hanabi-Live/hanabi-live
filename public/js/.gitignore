@@ -2,7 +2,7 @@
 node_modules
 /package-lock.json
 
-# We don't need to include the Webpack-bundled JavaScript
+# We don't need to include the bundled JavaScript
 /main.min.js
 /main.min.js.map
 

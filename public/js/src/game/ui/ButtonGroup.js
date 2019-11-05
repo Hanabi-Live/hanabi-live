@@ -1,7 +1,7 @@
 // Imports
-const graphics = require('./graphics');
+import * as graphics from './graphics';
 
-class ButtonGroup extends graphics.Node {
+export default class ButtonGroup extends graphics.Node {
     constructor(config) {
         super(config);
 
@@ -45,5 +45,3 @@ class ButtonGroup extends graphics.Node {
         }
     }
 }
-
-module.exports = ButtonGroup;

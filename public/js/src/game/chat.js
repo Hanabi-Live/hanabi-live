@@ -3,10 +3,10 @@
 */
 
 // Imports
-const interact = require('interactjs');
-const globals = require('../globals');
+import interact from 'interactjs';
+import globals from '../globals';
 
-exports.init = () => {
+export const init = () => {
     // Detect if an element is off screen
     // From: https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen
     jQuery.expr.filters.offscreen = (el) => {
@@ -107,7 +107,7 @@ exports.init = () => {
     });
 };
 
-exports.toggle = () => {
+export const toggle = () => {
     const modal = $('#game-chat-modal');
     if (modal.is(':visible')) {
         hide();
@@ -116,7 +116,7 @@ exports.toggle = () => {
     }
 };
 
-const show = () => {
+export const show = () => {
     const modal = $('#game-chat-modal');
     modal.fadeIn(globals.fadeTime);
 
@@ -174,12 +174,10 @@ const show = () => {
 
     $('#game-chat-input').focus();
 };
-exports.show = show;
 
-const hide = () => {
+export const hide = () => {
     $('#game-chat-modal').fadeOut(globals.fadeTime);
 };
-exports.hide = hide;
 
 // Subroutine to move an element (using the "transform" CSS property)
 function moveElement(element, x, y) {

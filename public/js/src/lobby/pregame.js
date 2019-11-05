@@ -3,10 +3,10 @@
 */
 
 // Imports
-const constants = require('../constants');
-const globals = require('../globals');
-const lobby = require('./main');
-const misc = require('../misc');
+import * as constants from '../constants';
+import globals from '../globals';
+import * as misc from '../misc';
+import * as nav from './nav';
 
 // Constants
 const tooltipsterOptions = {
@@ -19,7 +19,7 @@ const tooltipsterOptions = {
     ],
 };
 
-exports.show = () => {
+export const show = () => {
     globals.currentScreen = 'pregame';
 
     // Replace the list of current games with a list of the current players
@@ -46,13 +46,13 @@ exports.show = () => {
     $('#lobby-chat-pregame-input').focus();
 
     // Adjust the top navigation bar
-    lobby.nav.show('pregame');
+    nav.show('pregame');
     $('#nav-buttons-pregame-start').addClass('disabled');
     // (the server will send us a "tableReady" message momentarily if
     // we need to enable the "Start Game" button)
 };
 
-exports.hide = () => {
+export const hide = () => {
     globals.currentScreen = 'lobby';
 
     // Replace the list of current players with a list of the current games
@@ -65,10 +65,10 @@ exports.hide = () => {
     $('#lobby-chat-pregame-container').hide();
 
     // Adjust the navigation bar
-    lobby.nav.show('games');
+    nav.show('games');
 };
 
-exports.draw = () => {
+export const draw = () => {
     // Update the "Start Game" button
     $('#nav-buttons-game-start').addClass('disabled');
 

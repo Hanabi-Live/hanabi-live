@@ -1,7 +1,7 @@
 // Imports
-const graphics = require('./graphics');
+import * as graphics from './graphics';
 
-class NumberButton extends graphics.Group {
+export default class NumberButton extends graphics.Group {
     constructor(config) {
         config.listening = true;
         super(config);
@@ -75,5 +75,3 @@ class NumberButton extends graphics.Group {
         }
     }
 }
-
-module.exports = NumberButton;

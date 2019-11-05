@@ -1,14 +1,13 @@
-
 // Imports
-const CardLayout = require('./CardLayout');
-const constants = require('../../constants');
-const globals = require('./globals');
-const graphics = require('./graphics');
-const NameFrame = require('./NameFrame');
-const stats = require('./stats');
-const tooltips = require('./tooltips');
+import CardLayout from './CardLayout';
+import * as constants from '../../constants';
+import globals from './globals';
+import * as graphics from './graphics';
+import NameFrame from './NameFrame';
+import * as stats from './stats';
+import * as tooltips from './tooltips';
 
-module.exports = () => {
+export default () => {
     // Constants
     const winW = globals.stage.getWidth();
     const winH = globals.stage.getHeight();

@@ -3,12 +3,12 @@
 */
 
 // Imports
-const shajs = require('sha.js');
-const constants = require('../constants');
-const globals = require('../globals');
-const misc = require('../misc');
+import shajs from 'sha.js';
+import * as constants from '../constants';
+import globals from '../globals';
+import * as misc from '../misc';
 
-exports.init = () => {
+export const init = () => {
     // Populate the variant dropdown in the "Create Game" tooltip
     const line = '─────────────────────────';
     for (const variantName of Object.keys(constants.VARIANTS)) {
@@ -130,7 +130,7 @@ const checkChanged = (setting, value) => {
 
 // This function is executed every time the "Create Game" button is clicked
 // (after the tooltip is added to the DOM)
-exports.ready = () => {
+export const ready = () => {
     // Fill in the "Name" box
     if (globals.username.startsWith('test')) {
         $('#createTableName').val('test game');

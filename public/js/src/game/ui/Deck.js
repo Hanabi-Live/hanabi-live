@@ -1,14 +1,14 @@
 // Imports
-const arrows = require('./arrows');
-const constants = require('../../constants');
-const globals = require('./globals');
-const graphics = require('./graphics');
-const LayoutChild = require('./LayoutChild');
-const misc = require('../../misc');
-const tooltips = require('./tooltips');
-const ui = require('./ui');
+import * as action from './action';
+import * as arrows from './arrows';
+import * as constants from '../../constants';
+import globals from './globals';
+import * as graphics from './graphics';
+import LayoutChild from './LayoutChild';
+import * as misc from '../../misc';
+import * as tooltips from './tooltips';
 
-class Deck extends graphics.Group {
+export default class Deck extends graphics.Group {
     constructor(config) {
         config.listening = true;
         super(config);
@@ -112,7 +112,7 @@ class Deck extends graphics.Group {
                 type: constants.ACT.DECKPLAY,
             });
 
-            ui.stopAction();
+            action.stop();
         } else {
             // The deck was dragged to an invalid location, so animate the card back to where it was
             new graphics.Tween({
@@ -197,5 +197,3 @@ class Deck extends graphics.Group {
         this.tooltipContent = content;
     }
 }
-
-module.exports = Deck;

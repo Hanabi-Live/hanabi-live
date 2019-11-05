@@ -3,10 +3,10 @@
 */
 
 // Imports
-const globals = require('../globals');
-const misc = require('../misc');
+import globals from '../globals';
+import * as misc from '../misc';
 
-exports.init = () => {
+export const init = () => {
     // Make the text box appear and disappear depending on which source is selected
     $('#replay-source-id').change(replaySourceChange);
     $('#replay-source-json').change(replaySourceChange);
@@ -129,7 +129,7 @@ const submit = () => {
 
 // This function is executed every time the "Watch Specific Replay" button is clicked
 // (after the tooltip is added to the DOM)
-exports.ready = () => {
+export const ready = () => {
     // Set the "Source" radio button
     const source = localStorage.getItem('watchReplaySource');
     let sourceBox;

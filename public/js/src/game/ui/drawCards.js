@@ -3,9 +3,9 @@
 */
 
 // Imports
-const constants = require('../../constants');
-const drawPip = require('./drawPip');
-const globals = require('./globals');
+import * as constants from '../../constants';
+import drawPip from './drawPip';
+import globals from './globals';
 
 // Constants
 const {
@@ -15,9 +15,8 @@ const {
     SUITS,
 } = constants;
 
-// The "drawAll()" function returns an object containing all of the drawn cards images
-// (on individual canvases)
-exports.drawAll = (variant, colorblindUI) => {
+// This function returns an object containing all of the drawn cards images (on individual canvases)
+export default (variant, colorblindUI) => {
     const cardImages = {};
 
     // Add the "unknown" suit to the list of suits for this variant

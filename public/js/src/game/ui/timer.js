@@ -4,7 +4,7 @@
 */
 
 // Imports
-const globals = require('./globals');
+import globals from './globals';
 
 // This function handles the "clock" WebSocket command
 // It is sent at the beginning of every turn
@@ -20,7 +20,7 @@ const globals = require('./globals');
         timeTaken: 500,
     }
 */
-exports.update = (data) => {
+export const update = (data) => {
     stop();
 
     // We don't need to update the timers if they are not showing
@@ -87,13 +87,12 @@ exports.update = (data) => {
     }, 1000);
 };
 
-const stop = () => {
+export const stop = () => {
     if (globals.timerID !== null) {
         window.clearInterval(globals.timerID);
         globals.timerID = null;
     }
 };
-exports.stop = stop;
 
 function setTickingDownTime(timer) {
     // Calculate the elapsed time since the last timer update

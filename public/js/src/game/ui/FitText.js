@@ -1,7 +1,7 @@
 // Imports
-const graphics = require('./graphics');
+import * as graphics from './graphics';
 
-class FitText extends graphics.Text {
+export default class FitText extends graphics.Text {
     constructor(config) {
         super(config);
 
@@ -35,5 +35,3 @@ class FitText extends graphics.Text {
         this.needsResize = true;
     }
 }
-
-module.exports = FitText;

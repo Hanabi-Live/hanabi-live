@@ -1,4 +1,4 @@
-class Loader {
+export default class Loader {
     constructor(finishedCallback) {
         this.finishedCallback = finishedCallback;
 
@@ -77,5 +77,3 @@ class Loader {
         return this.map[name];
     }
 }
-
-module.exports = Loader;

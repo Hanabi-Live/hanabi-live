@@ -1,8 +1,8 @@
 // Imports
-const constants = require('../../constants');
-const globals = require('./globals');
+import * as constants from '../../constants';
+import globals from './globals';
 
-exports.init = (element, delayed, customContent) => {
+export const init = (element, delayed, customContent) => {
     element.on('mousemove', function mouseMove() {
         globals.activeHover = this;
         if (!delayed) {
@@ -26,7 +26,7 @@ exports.init = (element, delayed, customContent) => {
     $(`#tooltip-${element.tooltipName}`).tooltipster('instance').content(content);
 };
 
-const show = (element) => {
+export const show = (element) => {
     // Don't do anything if we are no longer in the game
     if (globals.lobby.currentScreen !== 'game') {
         return;
@@ -48,4 +48,3 @@ const show = (element) => {
     tooltip.css('top', pos.y);
     tooltip.tooltipster('open');
 };
-exports.show = show;

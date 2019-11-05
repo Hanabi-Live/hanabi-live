@@ -61,7 +61,7 @@ const redraw = () => {
             msg = globals.replayLog[i];
 
             // Rebuild all notifies; this will correctly position cards and text
-            ui.handleNotify(msg);
+            notify(msg);
 
             // Correctly record and handle whose turn it is
             if (msg.type === 'turn') {

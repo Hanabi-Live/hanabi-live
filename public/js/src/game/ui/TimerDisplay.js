@@ -1,9 +1,9 @@
 // Imports
-const constants = require('../../constants');
-const FitText = require('./FitText');
-const graphics = require('./graphics');
+import * as constants from '../../constants';
+import FitText from './FitText';
+import * as graphics from './graphics';
 
-class TimerDisplay extends graphics.Group {
+export default class TimerDisplay extends graphics.Group {
     constructor(config) {
         super(config);
 
@@ -67,5 +67,3 @@ class TimerDisplay extends graphics.Group {
         this.labelText.setText(text);
     }
 }
-
-module.exports = TimerDisplay;

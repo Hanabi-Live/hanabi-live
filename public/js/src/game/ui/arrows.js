@@ -4,11 +4,11 @@
 */
 
 // Imports
-const constants = require('../../constants');
-const globals = require('./globals');
-const graphics = require('./graphics');
+import * as constants from '../../constants';
+import globals from './globals';
+import * as graphics from './graphics';
 
-const hideAll = () => {
+export const hideAll = () => {
     let changed = false;
     for (const arrow of globals.elements.arrows) {
         if (arrow.pointingTo !== null) {
@@ -21,9 +21,8 @@ const hideAll = () => {
         globals.layers.arrow.batchDraw();
     }
 };
-exports.hideAll = hideAll;
 
-const set = (i, element, giver, clue) => {
+export const set = (i, element, giver, clue) => {
     // Show the arrow
     const arrow = globals.elements.arrows[i];
     arrow.pointingTo = element;
@@ -117,7 +116,6 @@ const set = (i, element, giver, clue) => {
         globals.layers.arrow.batchDraw();
     }
 };
-exports.set = set;
 
 const getPos = (element, rot) => {
     // Start by using the absolute position of the element
@@ -180,7 +178,7 @@ const animate = (arrow, card, rot, giver, turn) => {
     }).play();
 };
 
-exports.click = (event, order, element) => {
+export const click = (event, order, element) => {
     if (
         event.evt.which === 3 // Right-click
         && globals.sharedReplay
@@ -191,7 +189,7 @@ exports.click = (event, order, element) => {
     }
 };
 
-const send = (order, element) => {
+export const send = (order, element) => {
     globals.lobby.conn.send('replayAction', {
         type: constants.REPLAY_ACTION_TYPE.ARROW,
         order,
@@ -200,10 +198,9 @@ const send = (order, element) => {
     // Draw the arrow manually so that we don't have to wait for the client to server round-trip
     toggle(element);
 };
-exports.send = send;
 
 // This toggles the "highlight" arrow on a particular element
-const toggle = (element) => {
+export const toggle = (element) => {
     // If the card is currently tweening, delay showing the arrow until the tween is finished
     if (element.type === 'HanabiCard' && element.tweening) {
         setTimeout(() => {
@@ -228,4 +225,3 @@ const toggle = (element) => {
         }
     }
 };
-exports.toggle = toggle;

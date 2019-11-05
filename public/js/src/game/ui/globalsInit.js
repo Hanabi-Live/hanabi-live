@@ -1,9 +1,10 @@
 // Imports
-const globals = require('./globals');
+import globals from './globals';
+import * as replay from './replay';
 
 // We modify the individual properties instead of replacing the entire globals object
 // If we did that, the references in the other files would point to the outdated version
-module.exports = () => {
+export default () => {
     // Objects sent upon UI initialization
     globals.lobby = null;
     globals.game = null;
@@ -245,4 +246,11 @@ module.exports = () => {
     // We also keep track of the strikes outside of the state object so that we can show a faded X
     globals.strikes = [];
     globals.deckOrder = null; // Sent when the game ends
+
+    // We define some functions as globals to avoid cyclical dependencies
+    globals.functions = {
+        clueLogClickHandler: (turn) => {
+            replay.clueLogClickHandler(turn);
+        },
+    };
 };

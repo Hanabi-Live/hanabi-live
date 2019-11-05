@@ -1,7 +1,8 @@
-const Phaser = require('phaser');
-const constants = require('../constants');
-const HanabiCard = require('./HanabiCard');
-const utils = require('./utils');
+// Imports
+import Phaser from 'phaser';
+import * as constants from '../constants';
+import HanabiCard from './HanabiCard';
+import * as utils from './utils';
 
 // Constants
 const {
@@ -13,7 +14,7 @@ const {
 // Phaser devs warned against using too many levels of nested containers, so I didn't design
 // containers for play stacks. This means we lose the ability to independently position them, but
 // that's probably not something we will want to do.
-class PlayArea extends Phaser.GameObjects.Container {
+export default class PlayArea extends Phaser.GameObjects.Container {
     constructor(scene, config) {
         super(scene);
         this.x = config.x;
@@ -69,5 +70,3 @@ class PlayArea extends Phaser.GameObjects.Container {
         }
     }
 }
-
-module.exports = PlayArea;

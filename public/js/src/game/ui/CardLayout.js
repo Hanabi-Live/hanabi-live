@@ -4,10 +4,10 @@
 */
 
 // Imports
-const globals = require('./globals');
-const graphics = require('./graphics');
+import globals from './globals';
+import * as graphics from './graphics';
 
-class CardLayout extends graphics.Group {
+export default class CardLayout extends graphics.Group {
     constructor(config) {
         config.listening = config.player !== -1; // Discard piles do not need to be listening
         super(config);
@@ -164,5 +164,3 @@ class CardLayout extends graphics.Group {
         return true;
     }
 }
-
-module.exports = CardLayout;

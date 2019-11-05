@@ -4,12 +4,12 @@
 */
 
 // Imports
-const constants = require('../../constants');
-const convert = require('./convert');
-const globals = require('./globals');
-const replay = require('./replay');
+import * as constants from '../../constants';
+import * as convert from './convert';
+import globals from './globals';
+import * as replay from './replay';
 
-exports.start = () => {
+export const start = () => {
     if (globals.hypothetical) {
         return;
     }
@@ -36,7 +36,7 @@ exports.start = () => {
     globals.layers.UI.batchDraw();
 };
 
-exports.end = () => {
+export const end = () => {
     if (!globals.hypothetical) {
         return;
     }
@@ -72,7 +72,7 @@ const setActivePlayerCardsDraggable = () => {
     }
 };
 
-exports.send = (action) => {
+export const send = (action) => {
     let type = '';
     if (action.data.type === constants.ACT.CLUE) {
         type = 'clue';

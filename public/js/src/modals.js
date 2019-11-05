@@ -3,12 +3,11 @@
 */
 
 // Imports
-const shajs = require('sha.js');
-const game = require('./game/main');
-const globals = require('./globals');
-const lobby = require('./lobby/main');
-const misc = require('./misc');
-const nav = require('./lobby/nav');
+import shajs from 'sha.js';
+import * as gameChat from './game/chat';
+import globals from './globals';
+import * as misc from './misc';
+import * as lobbyNav from './lobby/nav';
 
 // The list of all of the modals
 const modals = [
@@ -17,7 +16,7 @@ const modals = [
 ];
 
 // Initialize various element behavior within the modals
-exports.init = () => {
+export const init = () => {
     // All modals
     for (const modal of modals) {
         $(`#${modal}-modal-cancel`).click(closeAll);
@@ -48,11 +47,11 @@ exports.init = () => {
         window.location.reload();
     });
     $('#error-modal-signout').click(() => {
-        nav.signOut();
+        lobbyNav.signOut();
     });
 };
 
-exports.passwordShow = (tableID) => {
+export const passwordShow = (tableID) => {
     $('#lobby').fadeTo(globals.fadeTime, 0.25);
     misc.closeAllTooltips();
 
@@ -74,7 +73,7 @@ const passwordSubmit = () => {
     });
 };
 
-exports.warningShow = (msg) => {
+export const warningShow = (msg) => {
     if ($('#lobby').is(':visible')) {
         $('#lobby').fadeTo(globals.fadeTime, 0.25);
     }
@@ -82,13 +81,13 @@ exports.warningShow = (msg) => {
         $('#game').fadeTo(globals.fadeTime, 0.25);
     }
     misc.closeAllTooltips();
-    game.chat.hide();
+    gameChat.hide();
 
     $('#warning-modal-description').html(msg);
     $('#warning-modal').fadeIn(globals.fadeTime);
 };
 
-exports.errorShow = (msg) => {
+export const errorShow = (msg) => {
     // Do nothing if we are already showing the error modal
     if (globals.errorOccured) {
         return;
@@ -102,10 +101,10 @@ exports.errorShow = (msg) => {
         $('#game').fadeTo(globals.fadeTime, 0.1);
     }
     misc.closeAllTooltips();
-    game.chat.hide();
+    gameChat.hide();
 
     // Clear out the top navigation buttons
-    lobby.nav.show('nothing');
+    lobbyNav.show('nothing');
 
     $('#error-modal-description').html(msg);
     $('#error-modal').fadeIn(globals.fadeTime);
@@ -118,10 +117,9 @@ exports.errorShow = (msg) => {
     }
 };
 
-const closeAll = () => {
+export const closeAll = () => {
     for (const modal of modals) {
         $(`#${modal}-modal`).fadeOut(globals.fadeTime);
     }
     $('#lobby').fadeTo(globals.fadeTime, 1);
 };
-exports.closeAll = closeAll;

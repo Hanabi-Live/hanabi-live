@@ -15,7 +15,6 @@
     <meta name="description" content="A place to play Hanabi online, a cooperative card game of logic and reasoning.">
     <meta name="keywords" content="hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning">
     {{if eq .Title "Dev"}}
-        <!-- This matches what is in "css.py" -->
         <link rel="stylesheet" type="text/css" href="/public/css/lib/fontawesome.min.css" />
         <link rel="stylesheet" type="text/css" href="/public/css/lib/solid.min.css" />
         <link rel="stylesheet" type="text/css" href="/public/css/lib/tooltipster.bundle.min.css" />
@@ -23,7 +22,7 @@
         <link rel="stylesheet" type="text/css" href="/public/css/lib/alpha.css" />
         <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
     {{else}}
-        <!-- All of the CSS is bundled into one file -->
+        <!-- All of the CSS is bundled into one file with Grunt -->
         <link rel="stylesheet" type="text/css" href="/public/css/main.min.css" />
     {{end}}
     {{if .Header}}{{template "header" .}}{{end}}

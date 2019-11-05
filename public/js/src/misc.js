@@ -2,7 +2,7 @@
     A collection of miscellaneous functions
 */
 
-exports.timerFormatter = (milliseconds) => {
+export const timerFormatter = (milliseconds) => {
     if (!milliseconds) {
         milliseconds = 0;
     }
@@ -15,7 +15,7 @@ exports.timerFormatter = (milliseconds) => {
 };
 
 // From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
-exports.closeAllTooltips = () => {
+export const closeAllTooltips = () => {
     const instances = $.tooltipster.instances();
     $.each(instances, (i, instance) => {
         if (instance.status().open) {
@@ -25,7 +25,7 @@ exports.closeAllTooltips = () => {
 };
 
 // From: https://techoverflow.net/2018/03/30/copying-strings-to-the-clipboard-using-pure-javascript/
-exports.copyStringToClipboard = (str) => {
+export const copyStringToClipboard = (str) => {
     // Create new element
     const el = document.createElement('textarea');
     // Set value (string to be copied)

@@ -3,18 +3,17 @@
 */
 
 // Imports
-const arrows = require('./arrows');
-const constants = require('../../constants');
-const drawPip = require('./drawPip');
-const globals = require('./globals');
-const graphics = require('./graphics');
-const HanabiCardClick = require('./HanabiCardClick');
-const HanabiCardClickSpeedrun = require('./HanabiCardClickSpeedrun');
-const notes = require('./notes');
-// const Sparkle = require('./Sparkle');
-const ui = require('./ui');
+import * as arrows from './arrows';
+import * as constants from '../../constants';
+import drawPip from './drawPip';
+import globals from './globals';
+import * as graphics from './graphics';
+import HanabiCardClick from './HanabiCardClick';
+import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
+import * as notes from './notes';
+import possibilitiesCheck from './possibilitiesCheck';
 
-exports.image = function image() {
+export function image() {
     // Create the "bare" card image, which is the main card grahpic
     // If the card is not revealed, it will just be a gray rectangle
     // The pips and other elements of a card are drawn on top of the bare image
@@ -33,9 +32,9 @@ exports.image = function image() {
         );
     });
     this.add(this.bare);
-};
+}
 
-exports.border = function border() {
+export function border() {
     // The card will get a border when it becomes clued
     this.cluedBorder = new graphics.Rect({
         x: 3,
@@ -63,9 +62,9 @@ exports.border = function border() {
         listening: false,
     });
     this.add(this.noteBorder);
-};
+}
 
-exports.pips = function pips() {
+export function pips() {
     // Initialize the suit pips (colored shapes) on the back of the card,
     // which will be removed one by one as the card gains negative information
     this.suitPips = new graphics.Group({
@@ -234,9 +233,9 @@ exports.pips = function pips() {
         this.rankPips.add(rankPipX);
         this.rankPipsXMap.set(rank, rankPipX);
     }
-};
+}
 
-exports.note = function note() {
+export function note() {
     // Define the note indicator image
     const noteX = 0.78;
     const noteY = 0.03;
@@ -308,12 +307,12 @@ exports.note = function note() {
         const tooltip = $(`#tooltip-${this.tooltipName}`);
         tooltip.tooltipster('close');
     });
-};
+}
 
 // In a game, click on a teammate's hand to it show as it would to that teammate
 // (or show your own hand as it should appear without any identity notes on it)
 // (or, in a replay, show the hand as it appeared at that moment in time)
-exports.empathy = function empathy() {
+export function empathy() {
     this.on('mousedown', (event) => {
         if (
             event.evt.which !== 1 // Only enable Empathy for left-clicks
@@ -372,9 +371,9 @@ exports.empathy = function empathy() {
         }
         globals.layers.card.batchDraw();
     };
-};
+}
 
-exports.click = function click() {
+export function click() {
     // Define the clue log mouse handlers
     this.on('mousemove tap', () => {
         globals.elements.clueLog.showMatches(this);
@@ -417,10 +416,10 @@ exports.click = function click() {
         // (otherwise, the card can appear under the play stacks / discard stacks)
         hand.moveToTop();
     });
-};
+}
 
-exports.possibilities = function possibilities() {
-    if (!ui.usePossibilities()) {
+export function possibilities() {
+    if (!possibilitiesCheck()) {
         return;
     }
 
@@ -445,9 +444,9 @@ exports.possibilities = function possibilities() {
 
         this.removePossibility(card.suit, card.rank, false);
     }
-};
+}
 
-exports.fixme = function sparkles() {
+export function fixme() {
     this.fixme = new graphics.Image({
         x: 0.1 * constants.CARD_W,
         y: 0.33 * constants.CARD_H,
@@ -456,9 +455,9 @@ exports.fixme = function sparkles() {
         visible: false,
     });
     this.add(this.fixme);
-};
+}
 
-exports.sparkles = function sparkles() {
+export function sparkles() {
     /*
     const spark = new Sparkle({
         x: -50,
@@ -466,7 +465,7 @@ exports.sparkles = function sparkles() {
     });
     this.add(spark);
     */
-};
+}
 
 /*
     Misc. functions

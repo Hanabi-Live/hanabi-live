@@ -3,9 +3,9 @@
 */
 
 // Imports
-const globals = require('../globals');
+import globals from '../globals';
 
-exports.init = () => {
+export const init = () => {
     // Preload some sounds
     if (!globals.settings.sendTurnSound) {
         return;
@@ -32,7 +32,7 @@ exports.init = () => {
     }
 };
 
-exports.play = (file) => {
+export const play = (file) => {
     const path = `/public/sounds/${file}.mp3`;
     const audio = new Audio(path);
     // HTML5 audio volume is a range between 0.0 to 1.0,

@@ -31,7 +31,7 @@ matrix:
       script:
         # Run the JavaScript linter
         - npm run-script lint
-        # Run Browerify and the Google Closure Compiler
+        # Run Webpack
         - ../../build_client.sh
 
 # Send the results for both language tests to the #website-development channel in the Hanabi Discord server

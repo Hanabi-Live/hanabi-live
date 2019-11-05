@@ -3,35 +3,35 @@
 */
 
 // Imports
-const arrows = require('./arrows');
-const Button = require('./Button');
-const ButtonGroup = require('./ButtonGroup');
-const clues = require('./clues');
-const Deck = require('./Deck');
-const CardLayout = require('./CardLayout');
-const Clue = require('./Clue');
-const ClueLog = require('./ClueLog');
-const ColorButton = require('./ColorButton');
-const constants = require('../../constants');
-const drawHands = require('./drawHands');
-const drawReplayArea = require('./drawReplayArea');
-const drawCurrentPlayerArea = require('./drawCurrentPlayerArea');
-const FitText = require('./FitText');
-const FullActionLog = require('./FullActionLog');
-const globals = require('./globals');
-const graphics = require('./graphics');
-const HanabiCard = require('./HanabiCard');
-const hypothetical = require('./hypothetical');
-const LayoutChild = require('./LayoutChild');
-const MultiFitText = require('./MultiFitText');
-const NumberButton = require('./NumberButton');
-const PlayStack = require('./PlayStack');
-const replay = require('./replay');
-const stats = require('./stats');
-const timer = require('./timer');
-const TimerDisplay = require('./TimerDisplay');
-const tooltips = require('./tooltips');
-const ui = require('./ui');
+import * as arrows from './arrows';
+import Button from './Button';
+import ButtonGroup from './ButtonGroup';
+import * as clues from './clues';
+import Deck from './Deck';
+import CardLayout from './CardLayout';
+import Clue from './Clue';
+import ClueLog from './ClueLog';
+import ColorButton from './ColorButton';
+import * as constants from '../../constants';
+import drawHands from './drawHands';
+import drawReplayArea from './drawReplayArea';
+import drawCurrentPlayerArea from './drawCurrentPlayerArea';
+import FitText from './FitText';
+import FullActionLog from './FullActionLog';
+import globals from './globals';
+import * as graphics from './graphics';
+import HanabiCard from './HanabiCard';
+import * as hypothetical from './hypothetical';
+import LayoutChild from './LayoutChild';
+import MultiFitText from './MultiFitText';
+import NumberButton from './NumberButton';
+import PlayStack from './PlayStack';
+import * as replay from './replay';
+import * as stats from './stats';
+import * as timer from './timer';
+import TimerDisplay from './TimerDisplay';
+import * as tooltips from './tooltips';
+import * as ui from './ui';
 
 // Variables
 let winW;
@@ -50,7 +50,7 @@ let clueAreaValues;
 let clueLogValues;
 let spectatorsLabelValues;
 
-module.exports = () => {
+export default () => {
     // Constants
     winW = globals.stage.getWidth();
     winH = globals.stage.getHeight();

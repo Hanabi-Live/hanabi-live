@@ -1,21 +1,19 @@
+const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
     // The entry file to bundle
-    entry: './dist/src/main.js',
+    entry: path.join(__dirname, 'src', 'main.js'),
 
     // Where to put the bundled file
     output: {
-        path: __dirname, // By default, Webpack will output the file to the "dist" subdirectory
+        path: __dirname, // By default, Webpack will output the file to a "dist" subdirectory
         filename: 'main.min.js',
     },
 
-    // Uncomment this if necessary to see .ts files
-    /*
     resolve: {
         extensions: ['.js', '.ts', '.json'],
     },
-    */
 
     // Loaders are transformations that are applied on the source code of a module
     // https://webpack.js.org/concepts/loaders/

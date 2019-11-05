@@ -3,10 +3,10 @@
 */
 
 // Imports
-const globals = require('../globals');
-const notifications = require('../notifications');
+import globals from '../globals';
+import * as notifications from '../notifications';
 
-exports.init = () => {
+export const init = () => {
     $('#settings-volume-slider').change(function settingsVolumeSliderChange() {
         const volume = $(this).val();
         $('#settings-volume-slider-value').html(`${volume}%`);
@@ -23,7 +23,7 @@ exports.init = () => {
     });
 };
 
-exports.setSettingsTooltip = () => {
+export const setSettingsTooltip = () => {
     // The server has delivered to us a list of all of our settings
     // Check the checkboxes for the settings that we have enabled (and adjust the volume slider)
     for (const setting of Object.keys(globals.settings)) {
