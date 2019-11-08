@@ -2,8 +2,6 @@
 
 Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of games. In order to keep the game fresh, the server allows you to create games using the variants mentioned in the [rules that come with the game](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants) as well as many other non-official custom variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options).
 
-<br />
-
 ## Summary of Variants
 
 10 cards per suit:
