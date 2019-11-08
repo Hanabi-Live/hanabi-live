@@ -8,7 +8,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 10 cards per suit:
 
-|   Touched by   | No color clues | Own color clue | All color clues |
+|   *Touched by*   | No color clues | Own color clue | All color clues |
 |:--------------:|:--------------:|:--------------:|:---------------:|
 | **No rank clues**  |      Null      |      Brown     |  Muddy Rainbow  |
 | **Own rank clue**  |      White     |   No Variant   |     Rainbow     |
@@ -16,7 +16,7 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 One of each:
 
-|   Touched by   |  No color clues  | Own color clue | All color clues |
+|   *Touched by*   |  No color clues  | Own color clue | All color clues |
 |:--------------:|:----------------:|:--------------:|:---------------:|
 | **No rank clues**  |                  |    Chocolate   |  Cocoa Rainbow  |
 | **Own rank clue**  |       Gray       |      Black     |   Dark Rainbow  |
