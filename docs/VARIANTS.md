@@ -16,9 +16,9 @@ One of each:
 
 |    *Touched by*    |  No color clues  | Own color clue | All color clues |
 |:------------------:|:----------------:|:--------------:|:---------------:|
-| **No rank clues**  |                  |    Chocolate   |  Cocoa Rainbow  |
+| **No rank clues**  |     Dark Null    |    Chocolate   |  Cocoa Rainbow  |
 | **Own rank clue**  |       Gray       |      Black     |   Dark Rainbow  |
-| **All rank clues** | Chiaroscuro Pink |    Dark Pink   |                 |
+| **All rank clues** | Chiaroscuro Pink |    Dark Pink   |    Dark Omni    |
 
 Special:
 
