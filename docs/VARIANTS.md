@@ -4,6 +4,39 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 <br />
 
+## Summary
+
+10 cards per suit:
+
+|   Touched by   | No color clues | Own color clue | All color clues |
+|:--------------:|:--------------:|:--------------:|:---------------:|
+| No rank clues  |      Null      |      Brown     |  Muddy Rainbow  |
+| Own rank clue  |      White     |  Normal suits  |     Rainbow     |
+| All rank clues |   Light Pink   |      Pink      |       Omni      |
+
+One of each:
+
+|   Touched by   |  No color clues  | Own color clue | All color clues |
+|:--------------:|:----------------:|:--------------:|:---------------:|
+| No rank clues  |                  |    Chocolate   |  Cocoa Rainbow  |
+| Own rank clue  |       Gray       |      Black     |   Dark Rainbow  |
+| All rank clues | Chiaroscuro Pink |    Dark Pink   |                 |
+
+Special:
+
+|     Touched by    |        Variant        |
+|:-----------------:|:---------------------:|
+|      No clues     |     Totally Blind     |
+|   No color clues  |      Color Blind      |
+|    No rank clue   |      Number Blind     |
+| Suits share color |       Ambiguous       |
+| Colors share suit |       Dual color      |
+|  All color clues  |   Prism 1s (1s only)  |
+|   All rank clues  | Multi-Fives (5s only) |
+
+Other variants, see below:
+* Mixes, Mute, Alternating Clues, Clue Starved, Up or Down, Cow & Pig, Duck, Throw It in a Hole.
+
 ### No Variant
 
 * This is the "base" game, with 5 suits. Unlike some real-life versions of the game, Hanabi Live uses the following five suit colors:
