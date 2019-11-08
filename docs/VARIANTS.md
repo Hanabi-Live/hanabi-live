@@ -2,7 +2,42 @@
 
 Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of games. In order to keep the game fresh, the server allows you to create games using the variants mentioned in the [rules that come with the game](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants) as well as many other non-official custom variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options).
 
-<br />
+## Summary of Variants
+
+10 cards per suit:
+
+|    *Touched by*    | No color clues | Own color clue | All color clues |
+|:------------------:|:--------------:|:--------------:|:---------------:|
+| **No rank clues**  |      Null      |      Brown     |  Muddy Rainbow  |
+| **Own rank clue**  |      White     |   No Variant   |     Rainbow     |
+| **All rank clues** |   Light Pink   |      Pink      |       Omni      |
+
+One of each:
+
+|    *Touched by*    |  No color clues  | Own color clue | All color clues |
+|:------------------:|:----------------:|:--------------:|:---------------:|
+| **No rank clues**  |     Dark Null    |    Chocolate   |  Cocoa Rainbow  |
+| **Own rank clue**  |       Gray       |      Black     |   Dark Rainbow  |
+| **All rank clues** | Chiaroscuro Pink |    Dark Pink   |    Dark Omni    |
+
+Special:
+
+|     Touched by    |        Variant        |
+|:-----------------:|:---------------------:|
+|      No clues     |     Totally Blind     |
+|   No color clues  |      Color Blind      |
+|    No rank clue   |      Number Blind     |
+| Suits share color |       Ambiguous       |
+| Colors share suit |       Dual color      |
+|  All color clues  |   Prism 1s (1s only)  |
+|   All rank clues  | Multi-Fives (5s only) |
+
+Other variants: (more information below)
+* Restriction on clues: Mute, Alternating Clues, Clue Starved <!-- Clue Starved is a restriction on the amount of clues, the others are restrictions on the type of clues -->
+* Restriction on open information: Cow & Pig, Duck, Throw It in a Hole
+* Change legal plays: Up or Down
+
+## Detailed Rules per Variant
 
 ### No Variant
 
