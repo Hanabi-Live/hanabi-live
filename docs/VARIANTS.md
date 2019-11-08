@@ -4,14 +4,14 @@ Hanabi Live is programmed by Hanabi enthusiasts who have played thousands of gam
 
 <br />
 
-## Summary
+## Summary of Variants
 
 10 cards per suit:
 
 |   Touched by   | No color clues | Own color clue | All color clues |
 |:--------------:|:--------------:|:--------------:|:---------------:|
 | No rank clues  |      Null      |      Brown     |  Muddy Rainbow  |
-| Own rank clue  |      White     |  Normal suits  |     Rainbow     |
+| Own rank clue  |      White     |   No Variant   |     Rainbow     |
 | All rank clues |   Light Pink   |      Pink      |       Omni      |
 
 One of each:
@@ -36,6 +36,8 @@ Special:
 
 Other variants, see below:
 * Mixes, Mute, Alternating Clues, Clue Starved, Up or Down, Cow & Pig, Duck, Throw It in a Hole.
+
+## Detailed Rules per Variant
 
 ### No Variant
 
