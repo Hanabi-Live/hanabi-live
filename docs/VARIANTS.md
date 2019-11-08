@@ -32,8 +32,10 @@ Special:
 |  All color clues  |   Prism 1s (1s only)  |
 |   All rank clues  | Multi-Fives (5s only) |
 
-Other variants, see below:
-* Mixes, Mute, Alternating Clues, Clue Starved, Up or Down, Cow & Pig, Duck, Throw It in a Hole.
+Other variants: (more information below)
+* Restriction on clues: Mute, Alternating Clues, Clue Starved <!-- Clue Starved is a restriction on the amount of clues, the others are restrictions on the type of clues -->
+* Restriction on open information: Cow & Pig, Duck, Throw It in a Hole
+* Change legal plays: Up or Down
 
 ## Detailed Rules per Variant
 
