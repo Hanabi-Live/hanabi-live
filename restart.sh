@@ -6,7 +6,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Get the name of the repository
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
-REPO="$(basename $REPO)"
+REPO="$(basename $DIR)"
 
 # For non-interactive shells, $HOME must be specified or it will result in a cache error when compiling the Go code
 export HOME=/root
