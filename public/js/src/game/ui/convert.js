@@ -5,7 +5,7 @@
 
 // Imports
 import Clue from './Clue';
-import * as constants from '../../constants';
+import { CLUE_TYPE } from '../../constants';
 
 // Convert a clue to the format used by the server
 // On the client, the color is a rich object
@@ -16,10 +16,10 @@ export const clueToMsgClue = (clue, variant) => {
         value: clueValue,
     } = clue;
     let msgClueValue;
-    if (clueType === constants.CLUE_TYPE.COLOR) {
+    if (clueType === CLUE_TYPE.COLOR) {
         const clueColor = clueValue;
         msgClueValue = variant.clueColors.findIndex((color) => color === clueColor);
-    } else if (clueType === constants.CLUE_TYPE.RANK) {
+    } else if (clueType === CLUE_TYPE.RANK) {
         msgClueValue = clueValue;
     }
     return {
@@ -34,9 +34,9 @@ export const msgClueToClue = (msgClue, variant) => {
         value: msgClueValue,
     } = msgClue;
     let clueValue;
-    if (clueType === constants.CLUE_TYPE.COLOR) {
+    if (clueType === CLUE_TYPE.COLOR) {
         clueValue = variant.clueColors[msgClueValue];
-    } else if (clueType === constants.CLUE_TYPE.RANK) {
+    } else if (clueType === CLUE_TYPE.RANK) {
         clueValue = msgClueValue;
     }
     return new Clue(clueType, clueValue);

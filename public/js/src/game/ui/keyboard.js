@@ -4,9 +4,9 @@
 
 // Imports
 import * as clues from './clues';
-import * as constants from '../../constants';
+import { ACT, REPLAY_ACTION_TYPE } from '../../constants';
 import globals from './globals';
-import * as misc from '../../misc';
+import { copyStringToClipboard } from '../../misc';
 import * as replay from './replay';
 import * as ui from './ui';
 
@@ -101,7 +101,7 @@ const keydown = (event) => {
             && globals.replay
             && !($('#game-chat-modal').is(':visible'))
         ) {
-            misc.copyStringToClipboard(globals.databaseID);
+            copyStringToClipboard(globals.databaseID);
             return;
         }
     }
@@ -242,7 +242,7 @@ const sharedReplaySendSound = (sound) => {
 
     // Send it
     globals.lobby.conn.send('replayAction', {
-        type: constants.REPLAY_ACTION_TYPE.SOUND,
+        type: REPLAY_ACTION_TYPE.SOUND,
         sound,
     });
 };
@@ -272,9 +272,9 @@ const action = (intendedPlay = true) => {
 
     const data = {};
     if (cardOrder === 'deck') {
-        data.type = constants.ACT.DECKPLAY;
+        data.type = ACT.DECKPLAY;
     } else {
-        data.type = intendedPlay ? constants.ACT.PLAY : constants.ACT.DISCARD;
+        data.type = intendedPlay ? ACT.PLAY : ACT.DISCARD;
         data.target = cardOrder;
     }
 

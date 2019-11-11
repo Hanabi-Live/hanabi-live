@@ -3,7 +3,7 @@
 */
 
 // Imports
-import * as constants from '../constants';
+import { VARIANTS } from '../constants';
 import drawCards from './ui/drawCards';
 import globals from '../globals';
 import phaserInit from '../client_v2/phaserInit';
@@ -41,7 +41,7 @@ commands.init = (data) => {
 
     // The variant is an integer on the server side, but an object on the client side,
     // so convert it accordingly
-    globals.init.variant = constants.VARIANTS[data.variant];
+    globals.init.variant = VARIANTS[data.variant];
 
     // Also initalize the "ui" object, which contains various graphical objects
     globals.ui = {

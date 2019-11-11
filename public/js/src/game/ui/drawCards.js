@@ -3,17 +3,17 @@
 */
 
 // Imports
-import * as constants from '../../constants';
-import drawPip from './drawPip';
-import globals from './globals';
-
-// Constants
-const {
+import {
     CARD_H,
     CARD_W,
     COLORS,
+    STACK_BASE_RANK,
+    START_CARD_RANK,
     SUITS,
-} = constants;
+    UNKNOWN_CARD_RANK,
+} from '../../constants';
+import drawPip from './drawPip';
+import globals from './globals';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
 export default (variant, colorblindUI) => {
@@ -51,10 +51,10 @@ export default (variant, colorblindUI) => {
             ctx.lineWidth = 2;
             ctx.lineJoin = 'round';
 
-            if (rank !== constants.STACK_BASE_RANK && rank !== constants.UNKNOWN_CARD_RANK) {
+            if (rank !== STACK_BASE_RANK && rank !== UNKNOWN_CARD_RANK) {
                 let textYPos;
                 let rankLabel = rank.toString();
-                if (rank === constants.START_CARD_RANK) {
+                if (rank === START_CARD_RANK) {
                     rankLabel = 'S';
                 }
                 let fontSize;
@@ -106,7 +106,7 @@ export default (variant, colorblindUI) => {
         }
     }
 
-    cardImages[`NoPip-Unknown-${constants.UNKNOWN_CARD_RANK}`] = makeUnknownCard();
+    cardImages[`NoPip-Unknown-${UNKNOWN_CARD_RANK}`] = makeUnknownCard();
     cardImages['deck-back'] = makeDeckBack(variant);
     cardImages['known-trash'] = makeKnownTrash();
 
@@ -434,7 +434,7 @@ const getSuitStyle = (suit, ctx, cardArea) => {
         return evenLinearGradient(ctx, suit.fillColors, [0, 14, 0, 110]);
     }
     if (cardArea === 'background') {
-        return evenLinearGradient(ctx, suit.fillColors, [0, 0, 0, constants.CARD_H]);
+        return evenLinearGradient(ctx, suit.fillColors, [0, 0, 0, CARD_H]);
     }
 
     return null;

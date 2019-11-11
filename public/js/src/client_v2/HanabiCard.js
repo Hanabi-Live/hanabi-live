@@ -5,15 +5,8 @@
 
 // Imports
 import Phaser from 'phaser';
-import * as constants from '../constants';
+import { CARD_H, CARD_W, SUITS } from '../constants';
 import globals from '../globals';
-
-// Constants
-const {
-    CARD_H,
-    CARD_W,
-    SUITS,
-} = constants;
 
 export default class HanabiCard extends Phaser.GameObjects.Container {
     constructor(scene, config) {

@@ -1,7 +1,7 @@
 // Imports
+import Konva from 'konva';
 import Button from './Button';
 import globals from './globals';
-import * as graphics from './graphics';
 import * as hypothetical from './hypothetical';
 import * as replay from './replay';
 import ToggleButton from './ToggleButton';
@@ -22,7 +22,7 @@ export default () => {
         replayAreaValues.w = 0.4;
     }
 
-    globals.elements.replayArea = new graphics.Group({
+    globals.elements.replayArea = new Konva.Group({
         x: replayAreaValues.x * winW,
         y: replayAreaValues.y * winH,
         width: replayAreaValues.w * winW,
@@ -36,7 +36,7 @@ export default () => {
         w: globals.lobby.settings.showKeldonUI ? 0.481 : replayAreaValues.w,
         h: 0.01,
     };
-    globals.elements.replayBar = new graphics.Rect({
+    globals.elements.replayBar = new Konva.Rect({
         x: replayBarValues.x * winW,
         y: replayBarValues.y * winH,
         width: replayBarValues.w * winW,
@@ -48,7 +48,7 @@ export default () => {
 
     // An invisible rectangle over the visible black rectangle above
     // (which is slightly bigger so that it is easier to click on)
-    const replayBarClickRect = new graphics.Rect({
+    const replayBarClickRect = new Konva.Rect({
         x: replayBarValues.x * winW,
         y: 0,
         width: replayBarValues.w * winW,
@@ -69,7 +69,7 @@ export default () => {
 
     // The shared (white) replay shuttle
     // (we want it to be behind the normal replay shuttle, so we define it first)
-    globals.elements.replayShuttleShared = new graphics.Rect({
+    globals.elements.replayShuttleShared = new Konva.Rect({
         width: shuttleValues.w * winW,
         height: shuttleValues.h * winH,
         offset: {
@@ -89,7 +89,7 @@ export default () => {
     globals.elements.replayArea.add(globals.elements.replayShuttleShared);
 
     // This is the normal (blue) replay shuttle
-    globals.elements.replayShuttle = new graphics.Rect({
+    globals.elements.replayShuttle = new Konva.Rect({
         width: shuttleValues.w * winW,
         height: shuttleValues.h * winH,
         offset: {

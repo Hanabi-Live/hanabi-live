@@ -4,8 +4,8 @@
 */
 
 // Imports
-import * as constants from '../../constants';
-import * as convert from './convert';
+import { ACT, REPLAY_ACTION_TYPE } from '../../constants';
+import { suitToMsgSuit } from './convert';
 import globals from './globals';
 import * as replay from './replay';
 
@@ -24,7 +24,7 @@ export const start = () => {
     globals.elements.replayArea.setVisible(false);
     if (globals.amSharedReplayLeader) {
         globals.lobby.conn.send('replayAction', {
-            type: constants.REPLAY_ACTION_TYPE.HYPO_START,
+            type: REPLAY_ACTION_TYPE.HYPO_START,
         });
 
         globals.elements.restartButton.setVisible(false);
@@ -46,7 +46,7 @@ export const end = () => {
     globals.elements.replayArea.setVisible(true);
     if (globals.amSharedReplayLeader) {
         globals.lobby.conn.send('replayAction', {
-            type: constants.REPLAY_ACTION_TYPE.HYPO_END,
+            type: REPLAY_ACTION_TYPE.HYPO_END,
         });
 
         globals.elements.restartButton.setVisible(true);
@@ -74,13 +74,13 @@ const setActivePlayerCardsDraggable = () => {
 
 export const send = (action) => {
     let type = '';
-    if (action.data.type === constants.ACT.CLUE) {
+    if (action.data.type === ACT.CLUE) {
         type = 'clue';
-    } else if (action.data.type === constants.ACT.PLAY) {
+    } else if (action.data.type === ACT.PLAY) {
         type = 'play';
-    } else if (action.data.type === constants.ACT.DISCARD) {
+    } else if (action.data.type === ACT.DISCARD) {
         type = 'discard';
-    } else if (action.data.type === constants.ACT.DECKPLAY) {
+    } else if (action.data.type === ACT.DECKPLAY) {
         type = 'play';
     }
 
@@ -113,7 +113,7 @@ export const send = (action) => {
                 index: globals.currentPlayerIndex,
                 order: action.data.target,
                 rank: card.rank,
-                suit: convert.suitToMsgSuit(card.suit, globals.variant),
+                suit: suitToMsgSuit(card.suit, globals.variant),
             },
         });
         globals.score += 1;
@@ -164,7 +164,7 @@ export const send = (action) => {
 
 const hypoAction = (action) => {
     globals.lobby.conn.send('replayAction', {
-        type: constants.REPLAY_ACTION_TYPE.HYPO_ACTION,
+        type: REPLAY_ACTION_TYPE.HYPO_ACTION,
         actionJSON: JSON.stringify(action),
     });
 };

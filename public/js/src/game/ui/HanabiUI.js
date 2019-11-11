@@ -5,13 +5,13 @@
 */
 
 // Imports
+import Konva from 'konva';
 import * as action from './action';
-import * as constants from '../../constants';
+import { LABEL_COLOR, STACK_BASE_RANK } from '../../constants';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals from './globals';
 import globalsInit from './globalsInit';
-import * as graphics from './graphics';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import Loader from './Loader';
@@ -68,7 +68,7 @@ export default class HanabiUI {
 
 // Initialize and size the stage depending on the window size
 const initStage = () => {
-    globals.stage = new graphics.Stage({
+    globals.stage = new Konva.Stage({
         container: 'game',
     });
 
@@ -111,10 +111,10 @@ const showLoadingScreen = () => {
     const winW = globals.stage.getWidth();
     const winH = globals.stage.getHeight();
 
-    const loadingLayer = new graphics.Layer();
+    const loadingLayer = new Konva.Layer();
 
-    const loadingLabel = new graphics.Text({
-        fill: constants.LABEL_COLOR,
+    const loadingLabel = new Konva.Text({
+        fill: LABEL_COLOR,
         stroke: '#747278',
         strokeWidth: 1,
         text: 'Loading...',
@@ -129,8 +129,8 @@ const showLoadingScreen = () => {
     });
     loadingLayer.add(loadingLabel);
 
-    const progresslabel = new graphics.Text({
-        fill: constants.LABEL_COLOR,
+    const progresslabel = new Konva.Text({
+        fill: LABEL_COLOR,
         stroke: '#747278',
         strokeWidth: 1,
         text: '0 / 0',
@@ -237,7 +237,7 @@ const initCards = () => {
     for (const suit of globals.variant.suits) {
         globals.learnedCards.push({
             suit,
-            rank: constants.STACK_BASE_RANK,
+            rank: STACK_BASE_RANK,
             revealed: true,
         });
 

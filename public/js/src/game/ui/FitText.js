@@ -1,7 +1,7 @@
 // Imports
-import * as graphics from './graphics';
+import Konva from 'konva';
 
-export default class FitText extends graphics.Text {
+export default class FitText extends Konva.Text {
     constructor(config) {
         super(config);
 
@@ -13,7 +13,7 @@ export default class FitText extends graphics.Text {
             if (this.needsResize) {
                 this.resize();
             }
-            graphics.Text.prototype._sceneFunc.call(this, context);
+            Konva.Text.prototype._sceneFunc.call(this, context);
         });
     }
 
@@ -21,7 +21,7 @@ export default class FitText extends graphics.Text {
         this.setFontSize(this.origFontSize);
 
         while (
-            this._getTextSize(this.getText()).width > this.getWidth()
+            this.measureSize(this.getText()).width > this.getWidth()
             && this.getFontSize() > 5
         ) {
             this.setFontSize(this.getFontSize() * 0.9);
@@ -31,7 +31,7 @@ export default class FitText extends graphics.Text {
     }
 
     setText(text) {
-        graphics.Text.prototype.setText.call(this, text);
+        Konva.Text.prototype.setText.call(this, text);
         this.needsResize = true;
     }
 }

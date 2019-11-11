@@ -4,10 +4,10 @@
 */
 
 // Imports
+import Konva from 'konva';
 import globals from './globals';
-import * as graphics from './graphics';
 
-export default class CardLayout extends graphics.Group {
+export default class CardLayout extends Konva.Group {
     constructor(config) {
         config.listening = config.player !== -1; // Discard piles do not need to be listening
         super(config);
@@ -15,12 +15,12 @@ export default class CardLayout extends graphics.Group {
         // Class variables
         this.align = config.align || 'left';
         this.reverse = config.reverse || false;
-        this.rotation = config.rotation;
+        this.origRotation = config.rotation;
         this.empathy = false;
 
         // Debug rectangle (uncomment to show the size of the hand)
         /*
-        const debugRect = new graphics.Rect({
+        const debugRect = new Konva.Rect({
             x: config.x,
             y: config.y,
             width: config.width,
@@ -34,13 +34,13 @@ export default class CardLayout extends graphics.Group {
 
     add(child) {
         const pos = child.getAbsolutePosition();
-        graphics.Group.prototype.add.call(this, child);
+        Konva.Group.prototype.add.call(this, child);
         child.setAbsolutePosition(pos);
         this.doLayout();
     }
 
     _setChildrenIndices() {
-        graphics.Group.prototype._setChildrenIndices.call(this);
+        Konva.Group.prototype._setChildrenIndices.call(this);
         this.doLayout();
     }
 
@@ -112,7 +112,7 @@ export default class CardLayout extends graphics.Group {
                     card.doMisplayAnimation = false;
                     node.setRotation(360);
                 }
-                node.tween = new graphics.Tween({
+                node.tween = new Konva.Tween({
                     node,
                     duration: 0.5,
                     x: newX,
@@ -120,7 +120,7 @@ export default class CardLayout extends graphics.Group {
                     scaleX: scale,
                     scaleY: scale,
                     rotation: 0,
-                    easing: graphics.Easings.EaseOut,
+                    easing: Konva.Easings.EaseOut,
                     onFinish: () => {
                         if (!card || !node) {
                             return;
@@ -146,7 +146,7 @@ export default class CardLayout extends graphics.Group {
         const h = this.getHeight();
 
         // The rotation comes from Konva in radians but we need to convert it to degrees
-        const rot = this.rotation / 180 * Math.PI;
+        const rot = this.origRotation / 180 * Math.PI;
 
         pos.x += (w / 2 * Math.cos(rot)) - (h / 2 * Math.sin(rot));
         pos.y += (w / 2 * Math.sin(rot)) + (h / 2 * Math.cos(rot));

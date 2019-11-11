@@ -2,10 +2,10 @@
     Suit definitions, variant definitions, character definitions, and so forth
 */
 
-import colors from './data/colors';
-import suits from './data/suits';
-import variants from './data/variants';
-import characters from './data/characters';
+import colors from './data/colors.json';
+import suits from './data/suits.json';
+import variants from './data/variants.json';
+import characters from './data/characters.json';
 
 export const MAX_CLUE_NUM = 8;
 

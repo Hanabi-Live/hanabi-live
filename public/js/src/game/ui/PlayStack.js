@@ -4,19 +4,14 @@
 */
 
 // Imports
-import * as constants from '../../constants';
+import Konva from 'konva';
+import { STACK_BASE_RANK } from '../../constants';
 import globals from './globals';
-import * as graphics from './graphics';
 
-export default class PlayStack extends graphics.Group {
-    constructor(config) {
-        super(config);
-        this.rotation = 0;
-    }
-
+export default class PlayStack extends Konva.Group {
     add(child) {
         const pos = child.getAbsolutePosition();
-        graphics.Group.prototype.add.call(this, child);
+        Konva.Group.prototype.add.call(this, child);
         child.setAbsolutePosition(pos);
         this.doLayout();
     }
@@ -27,7 +22,7 @@ export default class PlayStack extends graphics.Group {
         for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i]; // This is a LayoutChild
             const scale = lh / node.getHeight();
-            const stackBase = node.children[0].rank === constants.STACK_BASE_RANK;
+            const stackBase = node.children[0].rank === STACK_BASE_RANK;
             const opacity = (
                 globals.variant.name.startsWith('Throw It in a Hole')
                 && !globals.replay
@@ -48,7 +43,7 @@ export default class PlayStack extends graphics.Group {
                 // (tweening from the hand to the discard pile is handled in "CardLayout.js")
                 const card = node.children[0];
                 card.tweening = true;
-                node.tween = new graphics.Tween({
+                node.tween = new Konva.Tween({
                     node,
                     duration: 0.8,
                     x: 0,
@@ -57,7 +52,7 @@ export default class PlayStack extends graphics.Group {
                     scaleY: scale,
                     rotation: 0,
                     opacity,
-                    easing: graphics.Easings.EaseOut,
+                    easing: Konva.Easings.EaseOut,
                     onFinish: () => {
                         if (!node || !card || !card.parent) {
                             return;

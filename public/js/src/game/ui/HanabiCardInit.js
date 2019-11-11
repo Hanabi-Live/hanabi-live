@@ -3,11 +3,11 @@
 */
 
 // Imports
+import Konva from 'konva';
 import * as arrows from './arrows';
-import * as constants from '../../constants';
+import { CARD_H, CARD_W, START_CARD_RANK } from '../../constants';
 import drawPip from './drawPip';
 import globals from './globals';
-import * as graphics from './graphics';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
 import * as notes from './notes';
@@ -17,9 +17,9 @@ export function image() {
     // Create the "bare" card image, which is the main card grahpic
     // If the card is not revealed, it will just be a gray rectangle
     // The pips and other elements of a card are drawn on top of the bare image
-    this.bare = new graphics.Image({
-        width: constants.CARD_W,
-        height: constants.CARD_H,
+    this.bare = new Konva.Image({
+        width: CARD_W,
+        height: CARD_H,
     });
     const self = this;
     this.bare.setSceneFunc(function setSceneFunc(context) {
@@ -36,11 +36,11 @@ export function image() {
 
 export function border() {
     // The card will get a border when it becomes clued
-    this.cluedBorder = new graphics.Rect({
+    this.cluedBorder = new Konva.Rect({
         x: 3,
         y: 3,
-        width: constants.CARD_W - 6,
-        height: constants.CARD_H - 6,
+        width: CARD_W - 6,
+        height: CARD_H - 6,
         cornerRadius: 6,
         strokeWidth: 16,
         stroke: '#ffdf00', // Yellow
@@ -50,11 +50,11 @@ export function border() {
     this.add(this.cluedBorder);
 
     // The card will also get a border if it is not clued but has a particular note on it
-    this.noteBorder = new graphics.Rect({
+    this.noteBorder = new Konva.Rect({
         x: 3,
         y: 3,
-        width: constants.CARD_W - 6,
-        height: constants.CARD_H - 6,
+        width: CARD_W - 6,
+        height: CARD_H - 6,
         cornerRadius: 6,
         strokeWidth: 16,
         stroke: '#ffe6b3', // Light yellow
@@ -67,11 +67,11 @@ export function border() {
 export function pips() {
     // Initialize the suit pips (colored shapes) on the back of the card,
     // which will be removed one by one as the card gains negative information
-    this.suitPips = new graphics.Group({
+    this.suitPips = new Konva.Group({
         x: 0,
         y: 0,
-        width: Math.floor(constants.CARD_W),
-        height: Math.floor(constants.CARD_H),
+        width: Math.floor(CARD_W),
+        height: Math.floor(CARD_H),
         visible: false,
         listening: false,
     });
@@ -84,8 +84,8 @@ export function pips() {
         const suit = suits[i];
 
         // Set the pip at the middle of the card
-        const x = Math.floor(constants.CARD_W * 0.5);
-        const y = Math.floor(constants.CARD_H * 0.5);
+        const x = Math.floor(CARD_W * 0.5);
+        const y = Math.floor(CARD_H * 0.5);
         const scale = { // Scale numbers are magic
             x: 0.4,
             y: 0.4,
@@ -93,18 +93,18 @@ export function pips() {
         // Transform polar to Cartesian coordinates
         // The magic number added to the offset is needed to center things properly
         // We don't know why it's needed; perhaps something to do with the shape functions
-        const offsetBase = constants.CARD_W * 0.7;
+        const offsetBase = CARD_W * 0.7;
         const offsetTrig = ((-i / suits.length) + 0.25) * Math.PI * 2;
         const offset = {
-            x: Math.floor((offsetBase * Math.cos(offsetTrig)) + (constants.CARD_W * 0.25)),
-            y: Math.floor((offsetBase * Math.sin(offsetTrig)) + (constants.CARD_W * 0.3)),
+            x: Math.floor((offsetBase * Math.cos(offsetTrig)) + (CARD_W * 0.25)),
+            y: Math.floor((offsetBase * Math.sin(offsetTrig)) + (CARD_W * 0.3)),
         };
         let { fill } = suit;
         if (suit.fill === 'multi') {
             fill = undefined;
         }
 
-        const suitPip = new graphics.Shape({
+        const suitPip = new Konva.Shape({
             x,
             y,
             scale,
@@ -136,14 +136,14 @@ export function pips() {
                 y: 140,
             });
             suitPip.fillRadialGradientStartRadius(0);
-            suitPip.fillRadialGradientEndRadius(Math.floor(constants.CARD_W * 0.25));
+            suitPip.fillRadialGradientEndRadius(Math.floor(CARD_W * 0.25));
         }
-        suitPip.rotation(0);
+        suitPip.setRotation(0);
         this.suitPips.add(suitPip);
         this.suitPipsMap.set(suit, suitPip);
 
         // Also create the X that will show when a certain suit can be ruled out
-        const suitPipX = new graphics.Shape({
+        const suitPipX = new Konva.Shape({
             x,
             y,
             scale,
@@ -154,8 +154,8 @@ export function pips() {
             visible: false,
             sceneFunc: (ctx, shape) => {
                 const width = 50;
-                const xx = Math.floor((constants.CARD_W * 0.25) - (width * 0.45));
-                const xy = Math.floor((constants.CARD_H * 0.25) - (width * 0.05));
+                const xx = Math.floor((CARD_W * 0.25) - (width * 0.45));
+                const xy = Math.floor((CARD_H * 0.25) - (width * 0.05));
                 drawX(ctx, shape, xx, xy, 50, width);
             },
             listening: false,
@@ -165,11 +165,11 @@ export function pips() {
     }
 
     // Initialize the rank pips, which are black squares along the bottom of the card
-    this.rankPips = new graphics.Group({
+    this.rankPips = new Konva.Group({
         x: 0,
-        y: Math.floor(constants.CARD_H * 0.85),
-        width: constants.CARD_W,
-        height: Math.floor(constants.CARD_H * 0.15),
+        y: Math.floor(CARD_H * 0.85),
+        width: CARD_W,
+        height: Math.floor(CARD_H * 0.15),
         visible: false,
         listening: false,
     });
@@ -178,22 +178,22 @@ export function pips() {
     this.rankPipsMap = new Map();
     this.rankPipsXMap = new Map();
     for (const rank of globals.variant.ranks) {
-        const x = Math.floor(constants.CARD_W * ((rank * 0.19) - 0.14));
+        const x = Math.floor(CARD_W * ((rank * 0.19) - 0.14));
         const y = 0;
         let opacity = 1;
-        if (rank === constants.START_CARD_RANK) {
+        if (rank === START_CARD_RANK) {
             // We don't want to show the rank pip that represents a "START" card
             opacity = 0;
         }
-        const rankPip = new graphics.Rect({
+        const rankPip = new Konva.Rect({
             x,
             y,
-            width: Math.floor(constants.CARD_H * 0.1),
-            height: Math.floor(constants.CARD_H * 0.1),
+            width: Math.floor(CARD_H * 0.1),
+            height: Math.floor(CARD_H * 0.1),
             fill: 'black',
             stroke: 'black',
             strokeWidth: 4,
-            cornerRadius: 0.02 * constants.CARD_H,
+            cornerRadius: 0.02 * CARD_H,
             opacity,
             listening: false,
         });
@@ -210,11 +210,11 @@ export function pips() {
 
         // Also create the X that will show when a certain rank can be ruled out
         opacity = 0.8;
-        if (rank === constants.START_CARD_RANK) {
+        if (rank === START_CARD_RANK) {
             // We don't want to show the rank pip that represents a "START" card
             opacity = 0;
         }
-        const rankPipX = new graphics.Shape({
+        const rankPipX = new Konva.Shape({
             x,
             y,
             fill: '#e6e6e6',
@@ -224,8 +224,8 @@ export function pips() {
             visible: false,
             sceneFunc: (ctx, shape) => {
                 const width = 20;
-                const xx = Math.floor(constants.CARD_W * 0.035);
-                const xy = Math.floor(constants.CARD_H * 0.047);
+                const xx = Math.floor(CARD_W * 0.035);
+                const xy = Math.floor(CARD_H * 0.047);
                 drawX(ctx, shape, xx, xy, 10, width);
             },
             listening: false,
@@ -239,13 +239,13 @@ export function note() {
     // Define the note indicator image
     const noteX = 0.78;
     const noteY = 0.03;
-    const size = 0.2 * constants.CARD_W;
-    this.noteGiven = new graphics.Image({
-        x: noteX * constants.CARD_W,
+    const size = 0.2 * CARD_W;
+    this.noteGiven = new Konva.Image({
+        x: noteX * CARD_W,
         // If the cards have triangles on the corners that show the color composition,
         // the images will overlap
         // Thus, we move it downwards if this is the case
-        y: (globals.variant.offsetCornerElements ? noteY + 0.1 : noteY) * constants.CARD_H,
+        y: (globals.variant.offsetCornerElements ? noteY + 0.1 : noteY) * CARD_H,
         align: 'center',
         image: globals.ImageLoader.get('note'),
         width: size,
@@ -447,10 +447,10 @@ export function possibilities() {
 }
 
 export function fixme() {
-    this.fixme = new graphics.Image({
-        x: 0.1 * constants.CARD_W,
-        y: 0.33 * constants.CARD_H,
-        width: 0.8 * constants.CARD_W,
+    this.fixme = new Konva.Image({
+        x: 0.1 * CARD_W,
+        y: 0.33 * CARD_H,
+        width: 0.8 * CARD_W,
         image: globals.ImageLoader.get('wrench'),
         visible: false,
     });

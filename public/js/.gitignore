@@ -4,7 +4,7 @@ node_modules
 
 # We don't need to include the bundled JavaScript
 /main.min.js
-/main.min.js.map
+/main.min.js.*.map
 
 # We don't need to include the converted TypeScript --> Javascript files
 dist

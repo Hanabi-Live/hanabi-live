@@ -3,6 +3,7 @@
 */
 
 // Imports
+import Konva from 'konva';
 import * as arrows from './arrows';
 import Button from './Button';
 import ButtonGroup from './ButtonGroup';
@@ -12,14 +13,20 @@ import CardLayout from './CardLayout';
 import Clue from './Clue';
 import ClueLog from './ClueLog';
 import ColorButton from './ColorButton';
-import * as constants from '../../constants';
+import {
+    ACT,
+    CLUE_TYPE,
+    LABEL_COLOR,
+    REPLAY_ACTION_TYPE,
+    REPLAY_ARROW_ORDER,
+    STACK_BASE_RANK,
+} from '../../constants';
 import drawHands from './drawHands';
 import drawReplayArea from './drawReplayArea';
 import drawCurrentPlayerArea from './drawCurrentPlayerArea';
 import FitText from './FitText';
 import FullActionLog from './FullActionLog';
 import globals from './globals';
-import * as graphics from './graphics';
 import HanabiCard from './HanabiCard';
 import * as hypothetical from './hypothetical';
 import LayoutChild from './LayoutChild';
@@ -98,8 +105,8 @@ export default () => {
         globals.elements.replayArea.show();
     }
 
-    for (const layer of Object.values(globals.layers)) {
-        globals.stage.add(layer);
+    for (const key of Object.keys(globals.layers)) {
+        globals.stage.add(globals.layers[key]);
     }
 };
 
@@ -122,7 +129,7 @@ const initLayers = () => {
         'UI2', // We need some UI elements to be on top of cards
     ];
     for (const layer of layers) {
-        globals.layers[layer] = new graphics.Layer({
+        globals.layers[layer] = new Konva.Layer({
             // Disable "listening" for every layer/element by default to increase performance
             // https://konvajs.org/docs/performance/Listening_False.html
             // This means that we have to explicitly set "listening: true" for every element that
@@ -134,7 +141,7 @@ const initLayers = () => {
 
 const drawBackground = () => {
     // Draw a green background behind everything
-    const background = new graphics.Image({
+    const background = new Konva.Image({
         x: 0,
         y: 0,
         width: winW,
@@ -145,7 +152,7 @@ const drawBackground = () => {
 
     // The dark overlay that appears when you click the action log is clicked,
     // when a player's name is clicked, when the game is paused, etc.
-    globals.elements.stageFade = new graphics.Rect({
+    globals.elements.stageFade = new Konva.Rect({
         x: 0,
         y: 0,
         width: winW,
@@ -160,7 +167,7 @@ const drawBackground = () => {
 
 const initReusableObjects = () => {
     // Create some default objects
-    basicTextLabel = new graphics.Text({
+    basicTextLabel = new Konva.Text({
         x: 0.01 * winW,
         y: 0.01 * winH,
         width: 0.11 * winW,
@@ -169,7 +176,7 @@ const initReusableObjects = () => {
         fontFamily: 'Verdana',
         align: 'left',
         text: 'Placeholder text',
-        fill: constants.LABEL_COLOR,
+        fill: LABEL_COLOR,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -199,14 +206,14 @@ const drawActionLog = () => {
     }
     actionLogValues.w = 0.4;
 
-    const actionLogGroup = new graphics.Group({
+    const actionLogGroup = new Konva.Group({
         x: actionLogValues.x * winW,
         y: actionLogValues.y * winH,
     });
     globals.layers.UI.add(actionLogGroup);
 
     // The faded rectangle around the action log
-    const actionLogRect = new graphics.Rect({
+    const actionLogRect = new Konva.Rect({
         x: 0,
         y: 0,
         width: actionLogValues.w * winW,
@@ -239,7 +246,7 @@ const drawActionLog = () => {
         align: 'center',
         fontSize: 0.028 * winH,
         fontFamily: 'Verdana',
-        fill: constants.LABEL_COLOR,
+        fill: LABEL_COLOR,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -335,7 +342,7 @@ const drawPlayStacksAndDiscardStacks = () => {
         globals.stackBases.push(stackBase);
         stackBase.refresh();
         stackBase.suit = suit;
-        stackBase.rank = constants.STACK_BASE_RANK;
+        stackBase.rank = STACK_BASE_RANK;
 
         // Create the LayoutChild that will be the parent of the stack base
         const child = new LayoutChild();
@@ -377,7 +384,7 @@ const drawPlayStacksAndDiscardStacks = () => {
                 fontFamily: 'Verdana',
                 align: 'center',
                 text,
-                fill: constants.LABEL_COLOR,
+                fill: LABEL_COLOR,
             });
             globals.layers.UI.add(suitLabelText);
             globals.elements.suitLabelTexts.push(suitLabelText);
@@ -409,7 +416,7 @@ const drawPlayStacksAndDiscardStacks = () => {
         w,
         h: cardHeight,
     };
-    globals.elements.playArea = new graphics.Rect({
+    globals.elements.playArea = new Konva.Rect({
         x: (playAreaValues.x - overlap) * winW,
         y: (playAreaValues.y - overlap) * winH,
         width: (playAreaValues.w + (overlap * 2)) * winW,
@@ -578,7 +585,7 @@ const drawDeck = () => {
 
     // This is the faded rectangle that is hidden until all of the deck has been depleted
     // (this has to be separate from the Deck object since it exists on a separate layer)
-    const deckRect = new graphics.Rect({
+    const deckRect = new Konva.Rect({
         x: deckValues.x * winW,
         y: deckValues.y * winH,
         width: deckValues.w * winW,
@@ -652,7 +659,7 @@ const drawDeck = () => {
 
     // This is a yellow border around the deck that will appear when only one card is left
     // (if the game option was enabled)
-    globals.elements.deckPlayAvailableLabel = new graphics.Rect({
+    globals.elements.deckPlayAvailableLabel = new Konva.Rect({
         x: deckValues.x * winW,
         y: deckValues.y * winH,
         width: deckValues.w * winW,
@@ -677,14 +684,14 @@ const drawScoreArea = () => {
         scoreAreaValues.x = deckValues.x + deckValues.w + 0.01;
         scoreAreaValues.y = 0.81;
     }
-    globals.elements.scoreArea = new graphics.Group({
+    globals.elements.scoreArea = new Konva.Group({
         x: scoreAreaValues.x * winW,
         y: scoreAreaValues.y * winH,
     });
     globals.layers.UI.add(globals.elements.scoreArea);
 
     // The red border that surrounds the score area when the team is at 0 clues
-    globals.elements.noClueBorder = new graphics.Rect({
+    globals.elements.noClueBorder = new Konva.Rect({
         x: scoreAreaValues.x * winW,
         y: scoreAreaValues.y * winH,
         width: scoreAreaValues.w * winW,
@@ -697,7 +704,7 @@ const drawScoreArea = () => {
     globals.layers.UI.add(globals.elements.noClueBorder);
 
     // The faded rectangle around the score area
-    const scoreAreaRect = new graphics.Rect({
+    const scoreAreaRect = new Konva.Rect({
         x: 0,
         y: 0,
         width: scoreAreaValues.w * winW,
@@ -782,21 +789,21 @@ const drawScoreArea = () => {
     globals.elements.cluesNumberLabel = cluesNumberLabel;
 
     cluesTextLabel.on('click', (event) => {
-        arrows.click(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
+        arrows.click(event, REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
     });
     cluesNumberLabel.on('click', (event) => {
-        arrows.click(event, constants.REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
+        arrows.click(event, REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
     });
 
     // Add an animation to signify that discarding at 8 clues is illegal
-    globals.elements.cluesNumberLabelPulse = new graphics.Tween({
+    globals.elements.cluesNumberLabelPulse = new Konva.Tween({
         node: cluesNumberLabel,
         fontSize: 0.04 * winH,
         fill: '#df1c2d',
         offsetX: 0.001 * winH,
         offsetY: 0.01 * winH,
         duration: 0.5,
-        easing: graphics.Easings.EaseInOut,
+        easing: Konva.Easings.EaseInOut,
         onFinish: () => {
             if (globals.elements.cluesNumberLabelPulse) {
                 globals.elements.cluesNumberLabelPulse.reverse();
@@ -830,7 +837,7 @@ const drawScoreArea = () => {
     }
     for (let i = 0; i < 3; i++) {
         // Draw the background square
-        const strikeSquare = new graphics.Rect({
+        const strikeSquare = new Konva.Rect({
             x: (0.01 + (0.04 * i)) * winW,
             y: 0.115 * winH,
             width: 0.03 * winW,
@@ -843,7 +850,7 @@ const drawScoreArea = () => {
         globals.elements.scoreArea.add(strikeSquare);
 
         // Draw the red X that indicates the strike
-        const strike = new graphics.Image({
+        const strike = new Konva.Image({
             x: (0.015 + (0.04 * i)) * winW,
             y: 0.125 * winH,
             width: 0.02 * winW,
@@ -894,7 +901,7 @@ const drawSpectators = () => {
         spectatorsLabelValues.x = scoreAreaValues.x + scoreAreaValues.w + 0.01;
     }
     const imageSize = 0.02;
-    const spectatorsLabel = new graphics.Image({
+    const spectatorsLabel = new Konva.Image({
         x: (spectatorsLabelValues.x + 0.005) * winW,
         y: spectatorsLabelValues.y * winH,
         width: imageSize * winW,
@@ -918,7 +925,7 @@ const drawSpectators = () => {
     tooltips.init(spectatorsLabel, false, true);
     globals.elements.spectatorsLabel = spectatorsLabel;
 
-    globals.elements.spectatorsNumLabel = new graphics.Text({
+    globals.elements.spectatorsNumLabel = new Konva.Text({
         x: spectatorsLabelValues.x * winW,
         y: (spectatorsLabelValues.y + 0.04) * winH,
         width: 0.03 * winW,
@@ -927,7 +934,7 @@ const drawSpectators = () => {
         fontFamily: 'Verdana',
         align: 'center',
         text: '0',
-        fill: constants.LABEL_COLOR,
+        fill: LABEL_COLOR,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -949,7 +956,7 @@ const drawSharedReplay = () => {
 
     // A circle around the crown indicates that we are the current replay leader
     // (we want the icon to be on top of this so that it does not interfere with mouse events)
-    globals.elements.sharedReplayLeaderCircle = new graphics.Circle({
+    globals.elements.sharedReplayLeaderCircle = new Konva.Circle({
         x: (sharedReplayLeaderLabelValues.x + 0.015) * winW,
         y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
         radius: 0.028 * winH,
@@ -961,7 +968,7 @@ const drawSharedReplay = () => {
 
     // The crown
     const size = 0.025 * winW;
-    const sharedReplayLeaderLabel = new graphics.Image({
+    const sharedReplayLeaderLabel = new Konva.Image({
         x: (sharedReplayLeaderLabelValues.x + 0.0025) * winW,
         y: (sharedReplayLeaderLabelValues.y - 0.007) * winH,
         width: size,
@@ -981,14 +988,14 @@ const drawSharedReplay = () => {
     globals.elements.sharedReplayLeaderLabel = sharedReplayLeaderLabel;
 
     // Add an animation to alert everyone when shared replay leadership has been transfered
-    globals.elements.sharedReplayLeaderLabelPulse = new graphics.Tween({
+    globals.elements.sharedReplayLeaderLabelPulse = new Konva.Tween({
         node: sharedReplayLeaderLabel,
         width: size * 2,
         height: size * 2,
         offsetX: 0.025 * winH,
         offsetY: 0.025 * winH,
         duration: 0.5,
-        easing: graphics.Easings.EaseInOut,
+        easing: Konva.Easings.EaseInOut,
         onFinish: () => {
             if (globals.elements.sharedReplayLeaderLabelPulse) {
                 globals.elements.sharedReplayLeaderLabelPulse.reverse();
@@ -1038,7 +1045,7 @@ const drawSharedReplay = () => {
         }
 
         globals.lobby.conn.send('replayAction', {
-            type: constants.REPLAY_ACTION_TYPE.LEADER_TRANSFER,
+            type: REPLAY_ACTION_TYPE.LEADER_TRANSFER,
             name: target,
         });
     });
@@ -1051,7 +1058,7 @@ const drawClueLog = () => {
         w: 0.19,
         h: 0.51,
     };
-    const clueLogRect = new graphics.Rect({
+    const clueLogRect = new Konva.Rect({
         x: clueLogValues.x * winW,
         y: clueLogValues.y * winH,
         width: clueLogValues.w * winW,
@@ -1074,7 +1081,7 @@ const drawClueLog = () => {
 
 // Statistics are shown on the right-hand side of the screen (at the bottom of the clue log)
 const drawStatistics = () => {
-    const statsRect = new graphics.Rect({
+    const statsRect = new Konva.Rect({
         x: clueLogValues.x * winW,
         y: 0.53 * winH,
         width: clueLogValues.w * winW,
@@ -1113,10 +1120,10 @@ const drawStatistics = () => {
     globals.elements.paceNumberLabel = paceNumberLabel;
 
     paceTextLabel.on('click', (event) => {
-        arrows.click(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
+        arrows.click(event, REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
     });
     paceNumberLabel.on('click', (event) => {
-        arrows.click(event, constants.REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
+        arrows.click(event, REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
     });
 
     const efficiencyTextLabel = basicTextLabel.clone({
@@ -1155,10 +1162,10 @@ const drawStatistics = () => {
     globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
 
     efficiencyTextLabel.on('click', (event) => {
-        arrows.click(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
+        arrows.click(event, REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
     });
     efficiencyNumberLabel.on('click', (event) => {
-        arrows.click(event, constants.REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
+        arrows.click(event, REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
     });
 
     const minEfficiency = stats.getMinEfficiency();
@@ -1169,14 +1176,14 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
         // "Easy" variants use the default color (off-white)
         // "Hard" variants use pink
-        fill: (minEfficiency < 1.25 ? constants.LABEL_COLOR : '#ffb2b2'),
+        fill: (minEfficiency < 1.25 ? LABEL_COLOR : '#ffb2b2'),
         listening: true,
     });
     globals.layers.UI.add(efficiencyNumberLabelMinNeeded);
     efficiencyNumberLabelMinNeeded.on('click', (event) => {
         arrows.click(
             event,
-            constants.REPLAY_ARROW_ORDER.MIN_EFFICIENCY,
+            REPLAY_ARROW_ORDER.MIN_EFFICIENCY,
             efficiencyNumberLabelMinNeeded,
         );
     });
@@ -1185,7 +1192,7 @@ const drawStatistics = () => {
 
 const drawDiscardArea = () => {
     // The red border that surrounds the discard pile when the team is at 8 clues
-    globals.elements.noDiscardBorder = new graphics.Rect({
+    globals.elements.noDiscardBorder = new Konva.Rect({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.19 * winW,
@@ -1198,7 +1205,7 @@ const drawDiscardArea = () => {
     globals.layers.UI.add(globals.elements.noDiscardBorder);
 
     // The yellow border that surrounds the discard pile when it is a "Double Discard" situation
-    globals.elements.noDoubleDiscardBorder = new graphics.Rect({
+    globals.elements.noDoubleDiscardBorder = new Konva.Rect({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.19 * winW,
@@ -1212,7 +1219,7 @@ const drawDiscardArea = () => {
     globals.layers.UI.add(globals.elements.noDoubleDiscardBorder);
 
     // The faded rectangle around the trash can
-    const discardAreaRect = new graphics.Rect({
+    const discardAreaRect = new Konva.Rect({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.19 * winW,
@@ -1224,7 +1231,7 @@ const drawDiscardArea = () => {
     globals.layers.UI.add(discardAreaRect);
 
     // The trash can icon over the discard pile
-    const trashcan = new graphics.Image({
+    const trashcan = new Konva.Image({
         x: 0.82 * winW,
         y: 0.62 * winH,
         width: 0.15 * winW,
@@ -1235,7 +1242,7 @@ const drawDiscardArea = () => {
     globals.layers.UI.add(trashcan);
 
     // This is the invisible rectangle that players drag cards to in order to discard them
-    globals.elements.discardArea = new graphics.Rect({
+    globals.elements.discardArea = new Konva.Rect({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.2 * winW,
@@ -1252,7 +1259,7 @@ const drawDiscardArea = () => {
 const drawArrows = () => {
     // These are arrows used to show which cards that are touched by a clue
     // (and for pointing to various things in a shared replay)
-    class Arrow extends graphics.Group {
+    class Arrow extends Konva.Group {
         constructor() {
             const x = 0.1 * winW;
             const y = 0.1 * winH;
@@ -1274,7 +1281,7 @@ const drawArrows = () => {
 
             // We want there to be a black outline around the arrow,
             // so we draw a second arrow that is slightly bigger than the first
-            const border = new graphics.Arrow({
+            const border = new Konva.Arrow({
                 points: [
                     x,
                     0,
@@ -1293,7 +1300,7 @@ const drawArrows = () => {
 
             // The border arrow will be missing a bottom edge,
             // so draw that manually at the bottom of the arrow
-            const edge = new graphics.Line({
+            const edge = new Konva.Line({
                 points: [
                     x - pointerLength,
                     0,
@@ -1307,7 +1314,7 @@ const drawArrows = () => {
             this.add(edge);
 
             // The main (inside) arrow is exported so that we can change the color later
-            this.base = new graphics.Arrow({
+            this.base = new Konva.Arrow({
                 points: [
                     x,
                     0,
@@ -1323,7 +1330,7 @@ const drawArrows = () => {
             this.add(this.base);
 
             // A circle will appear on the body of the arrow to indicate the type of clue given
-            this.circle = new graphics.Circle({
+            this.circle = new Konva.Circle({
                 x,
                 y: y * 0.3,
                 radius: pointerLength * 2.25,
@@ -1336,7 +1343,7 @@ const drawArrows = () => {
             this.add(this.circle);
 
             // The circle will have text inside of it to indicate the number of the clue given
-            this.text = new graphics.Text({
+            this.text = new Konva.Text({
                 x,
                 y: y * 0.3,
                 offset: {
@@ -1396,7 +1403,7 @@ const drawTimers = () => {
 
     // A circle around the timer indicates that we have queued a pause
     // (we want the timer to be on top of this so that it does not interfere with mouse events)
-    globals.elements.timer1Circle = new graphics.Ellipse({
+    globals.elements.timer1Circle = new Konva.Ellipse({
         x: (timerValues.x1 + 0.04) * winW,
         y: (timerValues.y1 + 0.035) * winH,
         radiusX: 0.05 * winW,
@@ -1487,7 +1494,7 @@ const drawClueArea = () => {
     if (!globals.lobby.settings.showKeldonUI) {
         clueAreaValues.y += 0.02;
     }
-    globals.elements.clueArea = new graphics.Group({
+    globals.elements.clueArea = new Konva.Group({
         x: clueAreaValues.x * winW,
         y: clueAreaValues.y * winH,
         width: clueAreaValues.w * winW,
@@ -1546,7 +1553,7 @@ const drawClueArea = () => {
             height: buttonH * winH,
             color: color.fill,
             text: color.abbreviation,
-            clue: new Clue(constants.CLUE_TYPE.COLOR, color),
+            clue: new Clue(CLUE_TYPE.COLOR, color),
         });
 
         globals.elements.clueArea.add(button);
@@ -1568,7 +1575,7 @@ const drawClueArea = () => {
             width: buttonW * winW,
             height: buttonH * winH,
             number: rank,
-            clue: new Clue(constants.CLUE_TYPE.RANK, rank),
+            clue: new Clue(CLUE_TYPE.RANK, rank),
         });
 
         globals.elements.rankClueButtons.push(button);
@@ -1600,14 +1607,14 @@ const drawClueArea = () => {
 
 const drawClueAreaDisabled = () => {
     // We fade the clue area and draw a rectangle on top of it when there are no clues available
-    globals.elements.clueAreaDisabled = new graphics.Group({
+    globals.elements.clueAreaDisabled = new Konva.Group({
         x: clueAreaValues.x * winW,
         y: clueAreaValues.y * winH,
         width: clueAreaValues.w * winW,
     });
 
     // A transparent rectangle to stop clicks
-    const rect = new graphics.Rect({
+    const rect = new Konva.Rect({
         width: clueAreaValues.w * winW,
         height: clueAreaValues.h * winH,
         listening: true, // It must listen or it won't stop clicks
@@ -1621,7 +1628,7 @@ const drawClueAreaDisabled = () => {
     const lineColor = '#1a1a1a';
 
     // The line from top-left to bottom-right
-    const line1 = new graphics.Line({
+    const line1 = new Konva.Line({
         points: [
             spacing.x * winW,
             spacing.y * winH,
@@ -1634,7 +1641,7 @@ const drawClueAreaDisabled = () => {
     globals.elements.clueAreaDisabled.add(line1);
 
     // The line from bottom-left to top-right
-    const line2 = new graphics.Line({
+    const line2 = new Konva.Line({
         points: [
             spacing.x * winW,
             (clueAreaValues.h - spacing.y) * winH,
@@ -1654,7 +1661,7 @@ const drawClueAreaDisabled = () => {
         fontFamily: 'Verdana',
         align: 'center',
         text: 'No clues',
-        fill: constants.LABEL_COLOR,
+        fill: LABEL_COLOR,
         stroke: 'black',
     });
     globals.elements.clueAreaDisabled.add(noCluesText);
@@ -1684,8 +1691,8 @@ const drawPreplayArea = () => {
 
         // If we dragged a card, we have to put the card back in the hand
         if (
-            globals.queuedAction.data.type === constants.ACT.PLAY
-            || globals.queuedAction.data.type === constants.ACT.DISCARD
+            globals.queuedAction.data.type === ACT.PLAY
+            || globals.queuedAction.data.type === ACT.DISCARD
         ) {
             globals.elements.playerHands[globals.playerUs].doLayout();
         }
@@ -1696,14 +1703,14 @@ const drawPreplayArea = () => {
 
 const drawHypotheticalArea = () => {
     // The "Hypothetical" circle that shows whether or not we are currently in a hypothetical
-    globals.elements.hypoCircle = new graphics.Group({
+    globals.elements.hypoCircle = new Konva.Group({
         x: clueAreaValues.x * winW,
         y: clueAreaValues.y * winH,
         visible: false,
     });
     globals.layers.UI.add(globals.elements.hypoCircle);
 
-    const circle = new graphics.Ellipse({
+    const circle = new Konva.Ellipse({
         x: (clueAreaValues.w * 0.5) * winW,
         y: 0.105 * winH,
         radiusX: clueAreaValues.w * 0.4 * winW,
@@ -1726,7 +1733,7 @@ const drawHypotheticalArea = () => {
         width: hypoValues.w * winW,
         fontSize: 0.5 * winH,
         fontFamily: 'Verdana',
-        fill: constants.LABEL_COLOR,
+        fill: LABEL_COLOR,
         align: 'center',
         text: 'Hypothetical',
     });
@@ -1739,14 +1746,14 @@ const drawPauseArea = () => {
         h: 0.5,
     };
 
-    globals.elements.pauseArea = new graphics.Group({
+    globals.elements.pauseArea = new Konva.Group({
         x: 0.25 * winW,
         y: 0.25 * winH,
         visible: false,
     });
     globals.layers.UI2.add(globals.elements.pauseArea);
 
-    const pauseRect = new graphics.Rect({
+    const pauseRect = new Konva.Rect({
         width: pauseAreaValues.w * winW,
         height: pauseAreaValues.h * winH,
         fill: '#b3b3b3',
@@ -1755,7 +1762,7 @@ const drawPauseArea = () => {
     });
     globals.elements.pauseArea.add(pauseRect);
 
-    const pauseTitle = new graphics.Text({
+    const pauseTitle = new Konva.Text({
         y: 0.1 * winH,
         width: pauseAreaValues.w * winW,
         fontFamily: 'Verdana',
@@ -1773,7 +1780,7 @@ const drawPauseArea = () => {
     });
     globals.elements.pauseArea.add(pauseTitle);
 
-    globals.elements.pauseText = new graphics.Text({
+    globals.elements.pauseText = new Konva.Text({
         y: 0.21 * winH,
         width: pauseAreaValues.w * winW,
         fontFamily: 'Verdana',
@@ -1840,7 +1847,7 @@ const drawExtraAnimations = () => {
     const y = (playAreaValues.y + (playAreaValues.h / 2) - 0.05);
     const size = 0.1;
 
-    globals.elements.sharedReplayForward = new graphics.Image({
+    globals.elements.sharedReplayForward = new Konva.Image({
         x: x * winW,
         y: y * winH,
         width: size * winW,
@@ -1849,7 +1856,7 @@ const drawExtraAnimations = () => {
         opacity: 0,
     });
     globals.layers.UI2.add(globals.elements.sharedReplayForward);
-    globals.elements.sharedReplayForwardTween = new graphics.Tween({
+    globals.elements.sharedReplayForwardTween = new Konva.Tween({
         node: globals.elements.sharedReplayForward,
         duration: 0.5,
         opacity: 1,
@@ -1860,7 +1867,7 @@ const drawExtraAnimations = () => {
         },
     });
 
-    globals.elements.sharedReplayBackward = new graphics.Image({
+    globals.elements.sharedReplayBackward = new Konva.Image({
         x: x * winW,
         y: y * winH,
         width: size * winW,
@@ -1869,7 +1876,7 @@ const drawExtraAnimations = () => {
         opacity: 0,
     });
     globals.layers.UI2.add(globals.elements.sharedReplayBackward);
-    globals.elements.sharedReplayBackwardTween = new graphics.Tween({
+    globals.elements.sharedReplayBackwardTween = new Konva.Tween({
         node: globals.elements.sharedReplayBackward,
         duration: 0.5,
         opacity: 1,

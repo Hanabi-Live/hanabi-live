@@ -3,7 +3,7 @@
 */
 
 // Imports
-import * as constants from '../../constants';
+import { LABEL_COLOR, MAX_CLUE_NUM } from '../../constants';
 import globals from './globals';
 
 export const updatePace = () => {
@@ -29,7 +29,7 @@ export const updatePace = () => {
     const label = globals.elements.paceNumberLabel;
     if (globals.deckSize === 0) {
         label.setText('-');
-        label.setFill(constants.LABEL_COLOR);
+        label.setFill(LABEL_COLOR);
     } else {
         let paceText = endGameThreshold1.toString();
         if (endGameThreshold1 > 0) {
@@ -50,7 +50,7 @@ export const updatePace = () => {
             label.setFill('#efef1d'); // Yellow
         } else {
             // We are not even close to the "End-Game", so give it the default color
-            label.setFill(constants.LABEL_COLOR);
+            label.setFill(LABEL_COLOR);
         }
     }
 };
@@ -67,12 +67,11 @@ export const updateEfficiency = (cardsGottenDelta) => {
         effNumLabel.setText('- / ');
     } else {
         effNumLabel.setText(`${efficiency} / `);
-        effNumLabel.setWidth(effNumLabel._getTextSize(effNumLabel.getText()).width);
+        effNumLabel.setWidth(effNumLabel.measureSize(effNumLabel.getText()).width);
     }
-    const x = effNumLabel.getX() + effNumLabel._getTextSize(effNumLabel.getText()).width;
+    const x = effNumLabel.getX() + effNumLabel.measureSize(effNumLabel.getText()).width;
     globals.elements.efficiencyNumberLabelMinNeeded.setX(x);
 };
-
 
 export const getMinEfficiency = () => {
     /*
@@ -116,7 +115,7 @@ export const getMinEfficiency = () => {
     if (globals.variant.name.startsWith('Clue Starved')) {
         discardsPerClue = 2;
     }
-    const minEfficiencyDenominator = constants.MAX_CLUE_NUM + Math.floor(
+    const minEfficiencyDenominator = MAX_CLUE_NUM + Math.floor(
         (startingPace + numSuits - unusableClues) / discardsPerClue,
     );
     const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);

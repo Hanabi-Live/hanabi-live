@@ -4,13 +4,13 @@
 */
 
 // Imports
-import * as constants from '../../constants';
+import Konva from 'konva';
+import { ACT, MAX_CLUE_NUM } from '../../constants';
 import globals from './globals';
-import * as graphics from './graphics';
 import * as sounds from '../sounds';
 import * as ui from './ui';
 
-export default class LayoutChild extends graphics.Group {
+export default class LayoutChild extends Konva.Group {
     constructor() {
         super();
 
@@ -19,7 +19,7 @@ export default class LayoutChild extends graphics.Group {
     }
 
     add(child) {
-        graphics.Group.prototype.add.call(this, child);
+        Konva.Group.prototype.add.call(this, child);
         this.setWidth(child.getWidth());
         this.setHeight(child.getHeight());
 
@@ -92,7 +92,7 @@ export default class LayoutChild extends graphics.Group {
         if (globals.elements.playArea.isOver(pos)) {
             draggedTo = 'playArea';
         } else if (globals.elements.discardArea.isOver(pos)) {
-            if (globals.clues === constants.MAX_CLUE_NUM) {
+            if (globals.clues === MAX_CLUE_NUM) {
                 sounds.play('error');
                 globals.elements.cluesNumberLabelPulse.play();
             } else {
@@ -131,7 +131,7 @@ export default class LayoutChild extends graphics.Group {
         ui.endTurn({
             type: 'action',
             data: {
-                type: (draggedTo === 'playArea' ? constants.ACT.PLAY : constants.ACT.DISCARD),
+                type: (draggedTo === 'playArea' ? ACT.PLAY : ACT.DISCARD),
                 target: this.children[0].order,
             },
         });

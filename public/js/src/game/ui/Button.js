@@ -1,9 +1,9 @@
 // Imports
+import Konva from 'konva';
 import FitText from './FitText';
 import globals from './globals';
-import * as graphics from './graphics';
 
-export default class Button extends graphics.Group {
+export default class Button extends Konva.Group {
     constructor(config) {
         config.listening = true;
         super(config);
@@ -16,7 +16,7 @@ export default class Button extends graphics.Group {
         const w = this.getWidth();
         const h = this.getHeight();
 
-        this.background = new graphics.Rect({
+        this.background = new Konva.Rect({
             name: 'background',
             x: 0,
             y: 0,
@@ -48,7 +48,7 @@ export default class Button extends graphics.Group {
             this.setFill = (newFill) => this.textElement.setFill(newFill);
             this.add(this.textElement);
         } else if (config.image) {
-            this.imageElement = new graphics.Image({
+            this.imageElement = new Konva.Image({
                 name: 'image',
                 x: 0.2 * w,
                 y: 0.2 * h,

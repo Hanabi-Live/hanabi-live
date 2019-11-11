@@ -1,11 +1,11 @@
 // Imports
-import * as constants from '../../constants';
+import Konva from 'konva';
+import { LABEL_COLOR, REPLAY_ACTION_TYPE } from '../../constants';
 import globals from './globals';
-import * as graphics from './graphics';
 import * as tooltips from './tooltips';
 import * as ui from './ui';
 
-export default class NameFrame extends graphics.Group {
+export default class NameFrame extends Konva.Group {
     constructor(config) {
         config.listening = true;
         super(config);
@@ -13,7 +13,7 @@ export default class NameFrame extends graphics.Group {
         // Class variables
         this.playerIndex = config.playerIndex;
 
-        this.name = new graphics.Text({
+        this.name = new Konva.Text({
             x: config.width / 2,
             y: 0,
             height: config.height,
@@ -21,7 +21,7 @@ export default class NameFrame extends graphics.Group {
             fontFamily: 'Verdana',
             fontSize: config.height,
             text: config.name,
-            fill: constants.LABEL_COLOR,
+            fill: LABEL_COLOR,
             shadowColor: 'black',
             shadowBlur: 5,
             shadowOffset: {
@@ -65,7 +65,7 @@ export default class NameFrame extends graphics.Group {
 
         w *= 1.4;
 
-        this.leftline = new graphics.Line({
+        this.leftline = new Konva.Line({
             points: [
                 0,
                 0,
@@ -74,7 +74,7 @@ export default class NameFrame extends graphics.Group {
                 (config.width / 2) - (w / 2),
                 config.height / 2,
             ],
-            stroke: constants.LABEL_COLOR,
+            stroke: LABEL_COLOR,
             strokeWidth: 1,
             lineJoin: 'round',
             shadowColor: 'black',
@@ -88,7 +88,7 @@ export default class NameFrame extends graphics.Group {
         });
         this.add(this.leftline);
 
-        this.rightline = new graphics.Line({
+        this.rightline = new Konva.Line({
             points: [
                 (config.width / 2) + (w / 2),
                 config.height / 2,
@@ -97,7 +97,7 @@ export default class NameFrame extends graphics.Group {
                 config.width,
                 0,
             ],
-            stroke: constants.LABEL_COLOR,
+            stroke: LABEL_COLOR,
             strokeWidth: 1,
             lineJoin: 'round',
             shadowColor: 'black',
@@ -150,7 +150,7 @@ export default class NameFrame extends graphics.Group {
     }
 
     setConnected(connected) {
-        const color = connected ? constants.LABEL_COLOR : '#e8233d'; // Red for disconnected players
+        const color = connected ? LABEL_COLOR : '#e8233d'; // Red for disconnected players
 
         this.leftline.setStroke(color);
         this.rightline.setStroke(color);
@@ -180,7 +180,7 @@ const giveLeader = (username) => {
     }
 
     globals.lobby.conn.send('replayAction', {
-        type: constants.REPLAY_ACTION_TYPE.LEADER_TRANSFER,
+        type: REPLAY_ACTION_TYPE.LEADER_TRANSFER,
         name: username,
     });
 };

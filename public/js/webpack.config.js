@@ -9,6 +9,9 @@ module.exports = {
     output: {
         path: __dirname, // By default, Webpack will output the file to a "dist" subdirectory
         filename: 'main.min.js',
+        // Chrome caches source maps and will not update them even after a hard-refresh
+        // Work around this by putting the epoch timestamp in the source map filename
+        sourceMapFilename: `main.min.js.${new Date().getTime()}.map`,
     },
 
     resolve: {
@@ -50,4 +53,7 @@ module.exports = {
     // Enable source maps for debugging purposes
     // (this will show the line number of the real file in the browser JavaScript console)
     devtool: 'source-map',
+
+    // Watch for changes in the source files and update the bundle if so
+    watch: true,
 };

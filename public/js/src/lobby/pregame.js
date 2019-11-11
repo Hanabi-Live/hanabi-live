@@ -3,9 +3,9 @@
 */
 
 // Imports
-import * as constants from '../constants';
+import { VARIANTS } from '../constants';
 import globals from '../globals';
-import * as misc from '../misc';
+import { timerFormatter } from '../misc';
 import * as nav from './nav';
 
 // Constants
@@ -87,9 +87,9 @@ export const draw = () => {
     if (globals.game.timed) {
         html += '<li><i id="lobby-pregame-options-timer" class="fas fa-clock" ';
         html += 'data-tooltip-content="#pregame-tooltip-timer"></i>&nbsp; (';
-        html += misc.timerFormatter(globals.game.baseTime);
+        html += timerFormatter(globals.game.baseTime);
         html += ' + ';
-        html += misc.timerFormatter(globals.game.timePerTurn);
+        html += timerFormatter(globals.game.timePerTurn);
         html += ')</li>';
         html += `
             <div class="hidden">
@@ -277,7 +277,7 @@ export const draw = () => {
             <div class="hidden">
                 <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
         `;
-        const maxScore = 5 * constants.VARIANTS[globals.game.variant].suits.length;
+        const maxScore = 5 * VARIANTS[globals.game.variant].suits.length;
         for (let j = 2; j <= 6; j++) {
             html += '<div class="row">';
             html += `<div class="col-6">${j}-player:</div>`;

@@ -3,18 +3,19 @@
 */
 
 // Imports
+import Konva from 'konva';
 import globals from './globals';
-import * as graphics from './graphics';
 
-export default class ClueLog extends graphics.Group {
+
+export default class ClueLog extends Konva.Group {
     add(child) {
-        graphics.Group.prototype.add.call(this, child);
+        Konva.Group.prototype.add.call(this, child);
         this.truncateExcessClueEntries();
         this.doLayout();
     }
 
     _setChildrenIndices() {
-        graphics.Group.prototype._setChildrenIndices.call(this);
+        Konva.Group.prototype._setChildrenIndices.call(this);
         this.doLayout();
     }
 

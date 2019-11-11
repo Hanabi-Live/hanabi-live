@@ -1,13 +1,13 @@
 // Imports
-import * as constants from '../../constants';
+import Konva from 'konva';
+import { LABEL_COLOR } from '../../constants';
 import FitText from './FitText';
-import * as graphics from './graphics';
 
-export default class TimerDisplay extends graphics.Group {
+export default class TimerDisplay extends Konva.Group {
     constructor(config) {
         super(config);
 
-        const rectangle = new graphics.Rect({
+        const rectangle = new Konva.Rect({
             x: 0,
             y: 0,
             width: config.width,
@@ -27,7 +27,7 @@ export default class TimerDisplay extends graphics.Group {
             fontFamily: 'Verdana',
             align: 'center',
             text: '??:??',
-            fill: constants.LABEL_COLOR,
+            fill: LABEL_COLOR,
             shadowColor: 'black',
             shadowBlur: 10,
             shadowOffset: {
@@ -47,7 +47,7 @@ export default class TimerDisplay extends graphics.Group {
             fontFamily: 'Verdana',
             align: 'center',
             text: config.label,
-            fill: constants.LABEL_COLOR,
+            fill: LABEL_COLOR,
             shadowColor: 'black',
             shadowBlur: 10,
             shadowOffset: {

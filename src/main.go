@@ -52,7 +52,7 @@ func main() {
 
 	// Load the ".env" file which contains environment variables with secret values
 	if err := godotenv.Load(path.Join(projectPath, ".env")); err != nil {
-		log.Fatal("Failed to load .env file:", err)
+		log.Fatal("Failed to load the \".env\" file:", err)
 		return
 	}
 

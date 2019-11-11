@@ -30,7 +30,7 @@ const redraw = () => {
 
     // Remove drawn elements to prep for a redraw
     globals.stage.destroy();
-    globals.stage = new graphics.Stage({
+    globals.stage = new Konva.Stage({
         container: 'game',
     });
 

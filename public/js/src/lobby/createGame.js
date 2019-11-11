@@ -4,18 +4,18 @@
 
 // Imports
 import shajs from 'sha.js';
-import * as constants from '../constants';
+import { VARIANTS } from '../constants';
 import globals from '../globals';
-import * as misc from '../misc';
+import { closeAllTooltips } from '../misc';
 
 export const init = () => {
     // Populate the variant dropdown in the "Create Game" tooltip
     const line = '─────────────────────────';
-    for (const variantName of Object.keys(constants.VARIANTS)) {
+    for (const variantName of Object.keys(VARIANTS)) {
         const option = new Option(variantName, variantName);
         $('#create-table-variant-list').append($(option));
 
-        if (constants.VARIANTS[variantName].spacing) {
+        if (VARIANTS[variantName].spacing) {
             const spacing = new Option(line, line);
             $('#create-table-variant-list').append($(spacing));
         }
@@ -101,7 +101,7 @@ const submit = () => {
         alertWaiters: getCheckbox('createTableAlertWaiters'),
     });
 
-    misc.closeAllTooltips();
+    closeAllTooltips();
 };
 
 const getCheckbox = (setting) => {

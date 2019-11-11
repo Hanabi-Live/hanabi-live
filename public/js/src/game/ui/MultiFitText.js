@@ -1,9 +1,9 @@
 // Imports
+import Konva from 'konva';
 import FitText from './FitText';
 import globals from './globals';
-import * as graphics from './graphics';
 
-export default class MultiFitText extends graphics.Group {
+export default class MultiFitText extends Konva.Group {
     constructor(config) {
         super(config);
 
@@ -17,7 +17,7 @@ export default class MultiFitText extends graphics.Group {
             newConfig.y = i * newConfig.height;
 
             const childText = new FitText(newConfig);
-            graphics.Group.prototype.add.call(this, childText);
+            Konva.Group.prototype.add.call(this, childText);
         }
     }
 

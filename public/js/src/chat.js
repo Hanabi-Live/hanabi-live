@@ -5,8 +5,8 @@
 // Imports
 import linkifyHtml from 'linkifyjs/html';
 import globals from './globals';
-import emojis from './data/emojis';
-import emoteCategories from './data/emotes';
+import emojis from './data/emojis.json';
+import emoteCategories from './data/emotes.json';
 
 // Variables
 let chatLineNum = 1;

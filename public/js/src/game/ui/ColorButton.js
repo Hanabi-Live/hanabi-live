@@ -1,8 +1,8 @@
 // Imports
+import Konva from 'konva';
 import globals from './globals';
-import * as graphics from './graphics';
 
-export default class ColorButton extends graphics.Group {
+export default class ColorButton extends Konva.Group {
     constructor(config) {
         config.listening = true;
         super(config);
@@ -15,7 +15,7 @@ export default class ColorButton extends graphics.Group {
         const w = this.getWidth();
         const h = this.getHeight();
 
-        this.background = new graphics.Rect({
+        this.background = new Konva.Rect({
             name: 'background',
             x: 0,
             y: 0,
@@ -27,7 +27,7 @@ export default class ColorButton extends graphics.Group {
         });
         this.add(this.background);
 
-        const color = new graphics.Rect({
+        const color = new Konva.Rect({
             x: 0.1 * w,
             y: 0.1 * h,
             width: 0.8 * w,
@@ -39,7 +39,7 @@ export default class ColorButton extends graphics.Group {
         });
         this.add(color);
 
-        const text = new graphics.Text({
+        const text = new Konva.Text({
             x: 0,
             y: 0.2 * h,
             width: w,

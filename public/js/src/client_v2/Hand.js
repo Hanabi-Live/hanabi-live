@@ -1,13 +1,7 @@
 // Imports
 import Phaser from 'phaser';
-import * as constants from '../constants';
-import * as utils from './utils';
-
-// Constants
-const {
-    CARD_W,
-    HAND_PADDING,
-} = constants;
+import { CARD_W, HAND_PADDING } from '../constants';
+import { makeArray, transformToExitContainer } from './utils';
 
 export default class Hand extends Phaser.GameObjects.Container {
     constructor(scene, config) {
@@ -21,8 +15,8 @@ export default class Hand extends Phaser.GameObjects.Container {
     mutate(cardsIn, cardsOut) {
         if (cardsOut != null) {
             this.remove(cardsOut);
-            cardsOut = utils.makeArray(cardsOut);
-            cardsOut.forEach((card) => utils.transformToExitContainer(card, this));
+            cardsOut = makeArray(cardsOut);
+            cardsOut.forEach((card) => transformToExitContainer(card, this));
         }
         if (cardsIn != null) {
             // Adds any number of cards at the front of the container, i.e. the left side of the

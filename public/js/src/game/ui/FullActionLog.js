@@ -1,9 +1,9 @@
 // Imports
+import Konva from 'konva';
 import globals from './globals';
-import * as graphics from './graphics';
 import MultiFitText from './MultiFitText';
 
-export default class FullActionLog extends graphics.Group {
+export default class FullActionLog extends Konva.Group {
     constructor(config) {
         const baseConfig = {
             x: 0.2 * globals.stage.getWidth(),
@@ -19,7 +19,7 @@ export default class FullActionLog extends graphics.Group {
         $.extend(baseConfig, config);
         super(baseConfig);
 
-        const rect = new graphics.Rect({
+        const rect = new Konva.Rect({
             x: 0,
             y: 0,
             width: 0.4 * globals.stage.getWidth(),
@@ -28,7 +28,7 @@ export default class FullActionLog extends graphics.Group {
             opacity: 0.9,
             cornerRadius: 0.01 * globals.stage.getWidth(),
         });
-        graphics.Group.prototype.add.call(this, rect);
+        Konva.Group.prototype.add.call(this, rect);
 
         const textOptions = {
             fontSize: 0.025 * globals.stage.getHeight(),
@@ -42,7 +42,7 @@ export default class FullActionLog extends graphics.Group {
         };
 
         this.logText = new MultiFitText(textOptions);
-        graphics.Group.prototype.add.call(this, this.logText);
+        Konva.Group.prototype.add.call(this, this.logText);
 
         const numbersOptions = {
             fontSize: 0.025 * globals.stage.getHeight(),
@@ -55,18 +55,18 @@ export default class FullActionLog extends graphics.Group {
             maxLines: 38,
         };
         this.logNumbers = new MultiFitText(numbersOptions);
-        graphics.Group.prototype.add.call(this, this.logNumbers);
+        Konva.Group.prototype.add.call(this, this.logNumbers);
 
         this.playerLogs = [];
         this.playerLogNumbers = [];
         for (let i = 0; i < globals.playerNames.length; i++) {
             this.playerLogs[i] = new MultiFitText(textOptions);
             this.playerLogs[i].hide();
-            graphics.Group.prototype.add.call(this, this.playerLogs[i]);
+            Konva.Group.prototype.add.call(this, this.playerLogs[i]);
 
             this.playerLogNumbers[i] = new MultiFitText(numbersOptions);
             this.playerLogNumbers[i].hide();
-            graphics.Group.prototype.add.call(this, this.playerLogNumbers[i]);
+            Konva.Group.prototype.add.call(this, this.playerLogNumbers[i]);
         }
     }
 

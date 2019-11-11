@@ -1,15 +1,8 @@
 // Imports
 import Phaser from 'phaser';
-import * as constants from '../constants';
+import { CARD_H, CARD_W, PLAY_AREA_PADDING } from '../constants';
 import HanabiCard from './HanabiCard';
 import * as utils from './utils';
-
-// Constants
-const {
-    CARD_H,
-    CARD_W,
-    PLAY_AREA_PADDING,
-} = constants;
 
 // Phaser devs warned against using too many levels of nested containers, so I didn't design
 // containers for play stacks. This means we lose the ability to independently position them, but

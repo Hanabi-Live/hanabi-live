@@ -4,18 +4,14 @@
 
 // Imports
 import Phaser from 'phaser';
-import * as constants from '../constants';
-import * as convert from '../game/convert';
+import { HAND_BASE_SCALE, PLAY_AREA_BASE_SCALE } from '../constants';
+import { msgSuitToSuit as convertMsgSuitToSuit } from '../game/convert';
 import globals from '../globals';
 import HanabiCard from './HanabiCard';
 import Hand from './Hand';
 import phaserGlobals from './phaserGlobals';
 import PlayArea from './PlayArea';
 
-const {
-    HAND_BASE_SCALE,
-    PLAY_AREA_BASE_SCALE,
-} = constants;
 // Variables
 // let cursor;
 
@@ -105,7 +101,7 @@ function create() {
                 suitNum = 3;
             }
 
-            const suit = convert.msgSuitToSuit(suitNum, globals.init.variant);
+            const suit = convertMsgSuitToSuit(suitNum, globals.init.variant);
             if (!globals.state.learnedCards[order]) {
                 globals.state.learnedCards[order] = {
                     possibleSuits: globals.init.variant.suits.slice(),

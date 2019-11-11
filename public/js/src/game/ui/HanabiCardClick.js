@@ -4,8 +4,8 @@
 
 // Imports
 import * as arrows from './arrows';
-import * as constants from '../../constants';
-import * as convert from './convert';
+import { REPLAY_ACTION_TYPE, STACK_BASE_RANK } from '../../constants';
+import { suitToMsgSuit } from './convert';
 import globals from './globals';
 import * as notes from './notes';
 import * as replay from './replay';
@@ -42,7 +42,7 @@ const clickLeft = (card, event) => {
     // so we don't have to worry about it here
 
     // Disable this for the stack base
-    if (card.rank === constants.STACK_BASE_RANK) {
+    if (card.rank === STACK_BASE_RANK) {
         return;
     }
 
@@ -70,7 +70,7 @@ const clickLeft = (card, event) => {
 
 const clickMiddle = (card, event) => {
     // Disable this for the stack base
-    if (card.rank === constants.STACK_BASE_RANK) {
+    if (card.rank === STACK_BASE_RANK) {
         return;
     }
 
@@ -254,7 +254,7 @@ const clickMorph = (order) => {
         alert(msg);
         return;
     }
-    suit = convert.suitToMsgSuit(suit, globals.variant);
+    suit = suitToMsgSuit(suit, globals.variant);
 
     const rank = parseInt(card[1], 10);
     if (Number.isNaN(rank) || rank < 0 || rank > 7) {
@@ -266,7 +266,7 @@ const clickMorph = (order) => {
         // Tell the server that we are doing a hypothetical
         if (globals.amSharedReplayLeader) {
             globals.lobby.conn.send('replayAction', {
-                type: constants.REPLAY_ACTION_TYPE.MORPH,
+                type: REPLAY_ACTION_TYPE.MORPH,
                 order,
                 suit,
                 rank,

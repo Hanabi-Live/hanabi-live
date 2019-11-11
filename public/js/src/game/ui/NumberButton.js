@@ -1,7 +1,6 @@
-// Imports
-import * as graphics from './graphics';
+import Konva from 'konva';
 
-export default class NumberButton extends graphics.Group {
+export default class NumberButton extends Konva.Group {
     constructor(config) {
         config.listening = true;
         super(config);
@@ -14,7 +13,7 @@ export default class NumberButton extends graphics.Group {
         const w = this.getWidth();
         const h = this.getHeight();
 
-        this.background = new graphics.Rect({
+        this.background = new Konva.Rect({
             name: 'background',
             x: 0,
             y: 0,
@@ -26,7 +25,7 @@ export default class NumberButton extends graphics.Group {
         });
         this.add(this.background);
 
-        const text = new graphics.Text({
+        const text = new Konva.Text({
             x: 0,
             y: 0.275 * h, // 0.25 is too high for some reason
             width: w,

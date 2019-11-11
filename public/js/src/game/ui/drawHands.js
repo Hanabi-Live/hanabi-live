@@ -1,8 +1,8 @@
 // Imports
+import Konva from 'konva';
 import CardLayout from './CardLayout';
-import * as constants from '../../constants';
+import { CHARACTERS } from '../../constants';
 import globals from './globals';
-import * as graphics from './graphics';
 import NameFrame from './NameFrame';
 import * as stats from './stats';
 import * as tooltips from './tooltips';
@@ -337,7 +337,7 @@ export default () => {
         // Draw the faded shade that shows where the "new" side of the hand is
         // (but don't bother drawing it in BGA mode since all the hands face the same way)
         if (globals.lobby.settings.showKeldonUI) {
-            rect = new graphics.Rect({
+            rect = new Konva.Rect({
                 x: shadePos[numPlayers][j].x * winW,
                 y: shadePos[numPlayers][j].y * winH,
                 width: shadePos[numPlayers][j].w * winW,
@@ -389,11 +389,11 @@ export default () => {
 
         // Draw the "Detrimental Character Assignments" icon and tooltip
         if (globals.characterAssignments.length > 0) {
-            const character = constants.CHARACTERS[globals.characterAssignments[i]];
+            const character = CHARACTERS[globals.characterAssignments[i]];
 
             const width2 = 0.03 * winW;
             const height2 = 0.03 * winH;
-            const charIcon = new graphics.Text({
+            const charIcon = new Konva.Text({
                 width: width2,
                 height: height2,
                 x: (playerNamePos[numPlayers][j].x * winW) - (width2 / 2),

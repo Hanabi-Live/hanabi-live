@@ -1,7 +1,7 @@
 // Imports
-import * as graphics from './graphics';
+import Konva from 'konva';
 
-export default class ButtonGroup extends graphics.Node {
+export default class ButtonGroup extends Konva.Node {
     constructor(config) {
         super(config);
 

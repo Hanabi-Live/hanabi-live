@@ -3,7 +3,7 @@ import * as createGame from './createGame';
 import globals from '../globals';
 import * as history from './history';
 import * as modals from '../modals';
-import * as misc from '../misc';
+import { closeAllTooltips } from '../misc';
 import * as nav from './nav';
 import * as pregame from './pregame';
 import * as watchReplay from './watchReplay';
@@ -119,7 +119,7 @@ const initTooltips = () => {
     $(document).keydown((event) => {
         if (event.key === 'Escape') {
             event.preventDefault();
-            misc.closeAllTooltips();
+            closeAllTooltips();
             modals.closeAll();
         }
     });

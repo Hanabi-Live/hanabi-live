@@ -1,19 +1,19 @@
 // Imports
+import Konva from 'konva';
 import * as action from './action';
 import * as arrows from './arrows';
-import * as constants from '../../constants';
+import { ACT, REPLAY_ARROW_ORDER, TOOLTIP_DELAY } from '../../constants';
 import globals from './globals';
-import * as graphics from './graphics';
 import LayoutChild from './LayoutChild';
-import * as misc from '../../misc';
+import { timerFormatter } from '../../misc';
 import * as tooltips from './tooltips';
 
-export default class Deck extends graphics.Group {
+export default class Deck extends Konva.Group {
     constructor(config) {
         config.listening = true;
         super(config);
 
-        this.cardBack = new graphics.Image({
+        this.cardBack = new Konva.Image({
             x: 0,
             y: 0,
             width: this.getWidth(),
@@ -24,7 +24,7 @@ export default class Deck extends graphics.Group {
         this.cardBack.on('dragend', this.dragEnd);
 
         // The text that shows the number of cards remaining in the deck
-        this.numLeftText = new graphics.Text({
+        this.numLeftText = new Konva.Text({
             fill: 'white',
             stroke: '#222222',
             strokeWidth: 3,
@@ -42,14 +42,14 @@ export default class Deck extends graphics.Group {
         this.add(this.numLeftText);
 
         this.on('click', (event) => {
-            arrows.click(event, constants.REPLAY_ARROW_ORDER.DECK, this);
+            arrows.click(event, REPLAY_ARROW_ORDER.DECK, this);
         });
 
         this.initTooltip();
     }
 
     add(child) {
-        graphics.Group.prototype.add.call(this, child);
+        Konva.Group.prototype.add.call(this, child);
 
         if (!(child instanceof LayoutChild)) {
             return;
@@ -109,18 +109,18 @@ export default class Deck extends graphics.Group {
             globals.elements.deckPlayAvailableLabel.hide();
 
             globals.lobby.conn.send('action', {
-                type: constants.ACT.DECKPLAY,
+                type: ACT.DECKPLAY,
             });
 
             action.stop();
         } else {
             // The deck was dragged to an invalid location, so animate the card back to where it was
-            new graphics.Tween({
+            new Konva.Tween({
                 node: this,
                 duration: 0.5,
                 x: 0,
                 y: 0,
-                easing: graphics.Easings.EaseOut,
+                easing: Konva.Easings.EaseOut,
                 onFinish: () => {
                     if (globals.layers.UI) {
                         globals.layers.UI.batchDraw();
@@ -145,7 +145,7 @@ export default class Deck extends graphics.Group {
             globals.activeHover = this;
             setTimeout(() => {
                 tooltips.show(this);
-            }, constants.TOOLTIP_DELAY);
+            }, TOOLTIP_DELAY);
         });
         this.on('mouseout', () => {
             globals.activeHover = null;
@@ -162,9 +162,9 @@ export default class Deck extends graphics.Group {
         if (globals.timed) {
             content += '<li><span class="game-tooltips-icon"><i class="fas fa-clock"></i></span>';
             content += '&nbsp; Timed: ';
-            content += misc.timerFormatter(globals.baseTime * 1000);
+            content += timerFormatter(globals.baseTime * 1000);
             content += ' + ';
-            content += misc.timerFormatter(globals.timePerTurn * 1000);
+            content += timerFormatter(globals.timePerTurn * 1000);
             content += '</li>';
         }
 

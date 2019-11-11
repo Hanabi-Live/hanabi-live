@@ -5,7 +5,13 @@
 // Imports
 import * as action from './action';
 import * as arrows from './arrows';
-import * as constants from '../../constants';
+import {
+    ACT,
+    CLUE_TYPE,
+    MAX_CLUE_NUM,
+    REPLAY_ARROW_ORDER,
+    VARIANTS,
+} from '../../constants';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
@@ -41,7 +47,7 @@ commands.action = (data) => {
         globals.elements.premoveCancelButton.hide();
         globals.layers.UI.batchDraw();
 
-        if (globals.queuedAction.data.type === constants.ACT.CLUE) {
+        if (globals.queuedAction.data.type === ACT.CLUE) {
             // Prevent pre-cluing if the team is now at 0 clues
             if (globals.clues === 0) {
                 return;
@@ -50,7 +56,7 @@ commands.action = (data) => {
             // Prevent pre-cluing if the card is no longer in the hand
             const card = globals.deck[globals.preCluedCard];
             if (
-                globals.queuedAction.data.type === constants.ACT.CLUE
+                globals.queuedAction.data.type === ACT.CLUE
                 && (card.isPlayed || card.isDiscarded)
             ) {
                 return;
@@ -59,8 +65,8 @@ commands.action = (data) => {
 
         // Prevent discarding if the team is at the maximum amount of clues
         if (
-            globals.queuedAction.data.type === constants.ACT.DISCARD
-            && globals.clues === constants.MAX_CLUE_NUM
+            globals.queuedAction.data.type === ACT.DISCARD
+            && globals.clues === MAX_CLUE_NUM
         ) {
             return;
         }
@@ -192,7 +198,7 @@ commands.init = (data) => {
     // Game settings
     globals.lobby.tableID = data.tableID; // Equal to the table ID on the server
     globals.playerNames = data.names;
-    globals.variant = constants.VARIANTS[data.variant];
+    globals.variant = VARIANTS[data.variant];
     globals.playerUs = data.seat; // 0 if a spectator or a replay of a game that we were not in
     globals.spectating = data.spectating;
     globals.replay = data.replay;
@@ -370,14 +376,14 @@ commands.notify = (data) => {
             globals.elements.replayButton.setEnabled(true);
         }
     } else if (data.type === 'clue' && globals.variant.name.startsWith('Alternating Clues')) {
-        if (data.clue.type === constants.CLUE_TYPE.RANK) {
+        if (data.clue.type === CLUE_TYPE.RANK) {
             for (const button of globals.elements.suitClueButtons) {
                 button.show();
             }
             for (const button of globals.elements.rankClueButtons) {
                 button.hide();
             }
-        } else if (data.clue.type === constants.CLUE_TYPE.COLOR) {
+        } else if (data.clue.type === CLUE_TYPE.COLOR) {
             for (const button of globals.elements.suitClueButtons) {
                 button.hide();
             }
@@ -494,15 +500,15 @@ commands.replayIndicator = (data) => {
         arrows.toggle(card);
     } else { // Some other UI element
         let element;
-        if (data.order === constants.REPLAY_ARROW_ORDER.DECK) {
+        if (data.order === REPLAY_ARROW_ORDER.DECK) {
             element = globals.elements.deck;
-        } else if (data.order === constants.REPLAY_ARROW_ORDER.CLUES) {
+        } else if (data.order === REPLAY_ARROW_ORDER.CLUES) {
             element = globals.elements.cluesNumberLabel;
-        } else if (data.order === constants.REPLAY_ARROW_ORDER.PACE) {
+        } else if (data.order === REPLAY_ARROW_ORDER.PACE) {
             element = globals.elements.paceNumberLabel;
-        } else if (data.order === constants.REPLAY_ARROW_ORDER.EFFICIENCY) {
+        } else if (data.order === REPLAY_ARROW_ORDER.EFFICIENCY) {
             element = globals.elements.efficiencyNumberLabel;
-        } else if (data.order === constants.REPLAY_ARROW_ORDER.MIN_EFFICIENCY) {
+        } else if (data.order === REPLAY_ARROW_ORDER.MIN_EFFICIENCY) {
             element = globals.elements.efficiencyNumberLabelMinNeeded;
         } else {
             return;

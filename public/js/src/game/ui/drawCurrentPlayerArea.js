@@ -1,8 +1,8 @@
 // Imports
-import * as constants from '../../constants';
+import Konva from 'konva';
+import { LABEL_COLOR, MAX_CLUE_NUM } from '../../constants';
 import FitText from './FitText';
 import globals from './globals';
-import * as graphics from './graphics';
 
 export default (clueAreaValues) => {
     // Constants
@@ -18,7 +18,7 @@ export default (clueAreaValues) => {
         h: 0.15,
         spacing: 0.006,
     };
-    globals.elements.currentPlayerArea = new graphics.Group({
+    globals.elements.currentPlayerArea = new Konva.Group({
         x: currentPlayerAreaValues.x * winW,
         y: currentPlayerAreaValues.y * winH,
         height: currentPlayerAreaValues.h * winH,
@@ -28,7 +28,7 @@ export default (clueAreaValues) => {
 
     let currentPlayerBox1Width = (currentPlayerAreaValues.w * 0.75);
     currentPlayerBox1Width -= currentPlayerAreaValues.spacing;
-    globals.elements.currentPlayerRect1 = new graphics.Rect({
+    globals.elements.currentPlayerRect1 = new Konva.Rect({
         width: currentPlayerBox1Width * winW,
         height: currentPlayerAreaValues.h * winH,
         cornerRadius: 0.01 * winW,
@@ -51,7 +51,7 @@ export default (clueAreaValues) => {
         fontSize: 0.08 * winH,
         text: 'Current player:',
         align: 'center',
-        fill: constants.LABEL_COLOR,
+        fill: LABEL_COLOR,
         shadowColor: 'black',
         shadowBlur: 10,
         shadowOffset: {
@@ -87,7 +87,7 @@ export default (clueAreaValues) => {
         }
         this.setWidth(textValues.w * winW);
         this.resize();
-        while (this._getTextSize(this.getText()).height > maxSize) {
+        while (this.measureSize(this.getText()).height > maxSize) {
             this.setWidth(this.getWidth() * 0.9);
             this.resize();
         }
@@ -119,7 +119,7 @@ export default (clueAreaValues) => {
         h: currentPlayerAreaValues.h,
         spacing: 0.01,
     };
-    const rect2 = new graphics.Rect({
+    const rect2 = new Konva.Rect({
         x: arrowValues.x * winW,
         width: arrowValues.w * winW,
         height: currentPlayerAreaValues.h * winH,
@@ -129,7 +129,7 @@ export default (clueAreaValues) => {
     });
     globals.elements.currentPlayerArea.add(rect2);
 
-    globals.elements.currentPlayerArrow = new graphics.Group({
+    globals.elements.currentPlayerArrow = new Konva.Group({
         x: (arrowValues.x + (arrowValues.w / 2)) * winW,
         y: (currentPlayerAreaValues.h / 2) * winH,
         offset: {
@@ -139,7 +139,7 @@ export default (clueAreaValues) => {
     });
     globals.elements.currentPlayerArea.add(globals.elements.currentPlayerArrow);
 
-    const arrowBorder = new graphics.Arrow({
+    const arrowBorder = new Konva.Arrow({
         points: [
             arrowValues.spacing * winW,
             (arrowValues.h / 2) * winH,
@@ -156,7 +156,7 @@ export default (clueAreaValues) => {
     });
     globals.elements.currentPlayerArrow.add(arrowBorder);
 
-    const arrowBorderEdge = new graphics.Line({
+    const arrowBorderEdge = new Konva.Line({
         points: [
             (arrowValues.spacing) * winW,
             ((arrowValues.h / 2) - 0.005) * winH,
@@ -169,7 +169,7 @@ export default (clueAreaValues) => {
     });
     globals.elements.currentPlayerArrow.add(arrowBorderEdge);
 
-    const arrowMain = new graphics.Arrow({
+    const arrowMain = new Konva.Arrow({
         points: [
             arrowValues.spacing * winW,
             (arrowValues.h / 2) * winH,
@@ -178,8 +178,8 @@ export default (clueAreaValues) => {
         ],
         pointerLength: 10,
         pointerWidth: 10,
-        fill: constants.LABEL_COLOR,
-        stroke: constants.LABEL_COLOR,
+        fill: LABEL_COLOR,
+        stroke: LABEL_COLOR,
         strokeWidth: 5,
     });
     globals.elements.currentPlayerArrow.add(arrowMain);
@@ -211,8 +211,8 @@ export default (clueAreaValues) => {
             if (globals.clues === 0) {
                 specialText = '(cannot clue; 0 clues left)';
                 text3.setFill('red');
-            } else if (globals.clues === constants.MAX_CLUE_NUM) {
-                specialText = `(cannot discard; at ${constants.MAX_CLUE_NUM} clues)`;
+            } else if (globals.clues === MAX_CLUE_NUM) {
+                specialText = `(cannot discard; at ${MAX_CLUE_NUM} clues)`;
                 text3.setFill('red');
             } else if (globals.elements.playerHands[currentPlayerIndex].isLocked()) {
                 specialText = '(locked; may not be able to discard)';
@@ -223,11 +223,11 @@ export default (clueAreaValues) => {
             }
         }
         const totalH = this.getHeight();
-        const text1H = text1._getTextSize(text1.getText()).height;
+        const text1H = text1.measureSize(text1.getText()).height;
         if (specialText === '') {
             // 2 lines
             text2.setPlayer(currentPlayerIndex, false);
-            const text2H = text2._getTextSize(text2.getText()).height;
+            const text2H = text2.measureSize(text2.getText()).height;
             const spacing = 0.03 * globals.stage.getHeight();
             text1.setY((totalH / 2) - (text1H / 2) - spacing);
             text2.setY((totalH / 2) - (text2H / 2) + spacing);
@@ -235,7 +235,7 @@ export default (clueAreaValues) => {
         } else {
             // 3 lines
             text2.setPlayer(currentPlayerIndex, true);
-            const text2H = text2._getTextSize(text2.getText()).height;
+            const text2H = text2.measureSize(text2.getText()).height;
             const spacing = 0.04 * globals.stage.getHeight();
             text1.setY((totalH / 2) - (text1H / 2) - spacing);
             text2.setY((totalH / 2) - (text2H / 2) + (spacing * 0.25));
@@ -269,11 +269,11 @@ export default (clueAreaValues) => {
                 rotation += 360;
             }
 
-            globals.elements.currentPlayerArrowTween = new graphics.Tween({
+            globals.elements.currentPlayerArrowTween = new Konva.Tween({
                 node: globals.elements.currentPlayerArrow,
                 duration: 0.75,
                 rotation,
-                easing: graphics.Easings.EaseInOut,
+                easing: Konva.Easings.EaseInOut,
                 onFinish: () => {
                     if (globals.elements.currentPlayerArrow) {
                         globals.elements.currentPlayerArrow.setRotation(unmodifiedRotation);

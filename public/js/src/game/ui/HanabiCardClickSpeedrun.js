@@ -3,7 +3,12 @@
 */
 
 // Imports
-import * as constants from '../../constants';
+import {
+    ACT,
+    CLUE_TYPE,
+    MAX_CLUE_NUM,
+    STACK_BASE_RANK,
+} from '../../constants';
 import globals from './globals';
 import * as notes from './notes';
 import * as ui from './ui';
@@ -16,7 +21,7 @@ export default function HanabiCardClickSpeedrun(event) {
         (!globals.speedrun && !globals.lobby.settings.speedrunMode)
         || globals.replay
         || globals.spectating
-        || this.rank === constants.STACK_BASE_RANK
+        || this.rank === STACK_BASE_RANK
     ) {
         return;
     }
@@ -52,7 +57,7 @@ const clickLeft = (card, event) => {
         ui.endTurn({
             type: 'action',
             data: {
-                type: constants.ACT.PLAY,
+                type: ACT.PLAY,
                 target: card.order,
             },
         });
@@ -80,7 +85,7 @@ const clickLeft = (card, event) => {
             // If a clue type button is selected
             clueButton
             // If a color clue type button is selected
-            && clueButton.clue.type === constants.CLUE_TYPE.COLOR
+            && clueButton.clue.type === CLUE_TYPE.COLOR
             // If the selected color clue is actually one of the possibilies for the card
             && cardColors.findIndex((cardColor) => cardColor === clueButton.clue.value) !== -1
         ) {
@@ -98,10 +103,10 @@ const clickLeft = (card, event) => {
         ui.endTurn({
             type: 'action',
             data: {
-                type: constants.ACT.CLUE,
+                type: ACT.CLUE,
                 target: card.holder,
                 clue: {
-                    type: constants.CLUE_TYPE.COLOR,
+                    type: CLUE_TYPE.COLOR,
                     value,
                 },
             },
@@ -119,13 +124,13 @@ const clickRight = (card, event) => {
         && !event.metaKey
     ) {
         // Prevent discarding while at the maximum amount of clues
-        if (globals.clues === constants.MAX_CLUE_NUM) {
+        if (globals.clues === MAX_CLUE_NUM) {
             return;
         }
         ui.endTurn({
             type: 'action',
             data: {
-                type: constants.ACT.DISCARD,
+                type: ACT.DISCARD,
                 target: card.order,
             },
         });
@@ -145,10 +150,10 @@ const clickRight = (card, event) => {
         ui.endTurn({
             type: 'action',
             data: {
-                type: constants.ACT.CLUE,
+                type: ACT.CLUE,
                 target: card.holder,
                 clue: {
-                    type: constants.CLUE_TYPE.RANK,
+                    type: CLUE_TYPE.RANK,
                     value: card.rank,
                 },
             },

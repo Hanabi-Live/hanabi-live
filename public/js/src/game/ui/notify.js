@@ -3,13 +3,19 @@
 */
 
 // Imports
+import Konva from 'konva';
 import * as arrows from './arrows';
 import ClueEntry from './ClueEntry';
-import * as constants from '../../constants';
-import * as convert from './convert';
+import {
+    CARD_W,
+    CLUE_TYPE,
+    LABEL_COLOR,
+    MAX_CLUE_NUM,
+    STACK_DIRECTION,
+} from '../../constants';
+import { msgClueToClue, msgSuitToSuit } from './convert';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
-import * as graphics from './graphics';
 import possibilitiesCheck from './possibilitiesCheck';
 import * as stats from './stats';
 import strikeRecord from './strikeRecord';
@@ -43,7 +49,7 @@ const commands = {};
 
 commands.clue = (data) => {
     // The clue comes from the server as an integer, so convert it to an object
-    const clue = convert.msgClueToClue(data.clue, globals.variant);
+    const clue = msgClueToClue(data.clue, globals.variant);
     globals.clueTypeLastGiven = clue.type;
 
     // Clear all visible arrows when a new move occurs
@@ -102,17 +108,17 @@ commands.clue = (data) => {
 
     // Add an entry to the clue log
     let clueName;
-    if (data.clue.type === constants.CLUE_TYPE.RANK) {
+    if (data.clue.type === CLUE_TYPE.RANK) {
         clueName = clue.value.toString();
-    } else if (data.clue.type === constants.CLUE_TYPE.COLOR) {
+    } else if (data.clue.type === CLUE_TYPE.COLOR) {
         clueName = clue.value.name;
     }
     if (globals.variant.name.startsWith('Cow & Pig')) {
         // We want color clues to correspond to the first animal since color buttons are above
         // number buttons, even though rank comes first in the enum
-        if (data.clue.type === constants.CLUE_TYPE.RANK) {
+        if (data.clue.type === CLUE_TYPE.RANK) {
             clueName = 'Oink';
-        } else if (data.clue.type === constants.CLUE_TYPE.COLOR) {
+        } else if (data.clue.type === CLUE_TYPE.COLOR) {
             clueName = 'Moo';
         }
     } else if (globals.variant.name.startsWith('Duck')) {
@@ -189,7 +195,7 @@ commands.draw = (data) => {
     // (e.g. being drawn to the current player's hand)
     // We want to convert this to just being null
     // Suit comes from the server as an integer, so we also need to convert it to a Suit object
-    const suit = data.suit === -1 ? null : convert.msgSuitToSuit(data.suit, globals.variant);
+    const suit = data.suit === -1 ? null : msgSuitToSuit(data.suit, globals.variant);
     const rank = data.rank === -1 ? null : data.rank;
     const holder = data.who;
 
@@ -233,7 +239,7 @@ commands.draw = (data) => {
     const pos = globals.elements.deck.cardBack.getAbsolutePosition();
     child.setAbsolutePosition(pos);
     child.setRotation(-globals.elements.playerHands[holder].getRotation());
-    const scale = globals.elements.deck.cardBack.getWidth() / constants.CARD_W;
+    const scale = globals.elements.deck.cardBack.getWidth() / CARD_W;
     child.setScale({
         x: scale,
         y: scale,
@@ -313,13 +319,13 @@ commands.stackDirections = (data) => {
         for (let i = 0; i < globals.stackDirections.length; i++) {
             const direction = globals.stackDirections[i];
             let text;
-            if (direction === constants.STACK_DIRECTION.UNDECIDED) {
+            if (direction === STACK_DIRECTION.UNDECIDED) {
                 text = '';
-            } else if (direction === constants.STACK_DIRECTION.UP) {
+            } else if (direction === STACK_DIRECTION.UP) {
                 text = 'Up';
-            } else if (direction === constants.STACK_DIRECTION.DOWN) {
+            } else if (direction === STACK_DIRECTION.DOWN) {
                 text = 'Down';
-            } else if (direction === constants.STACK_DIRECTION.FINISHED) {
+            } else if (direction === STACK_DIRECTION.FINISHED) {
                 text = 'Finished';
             } else {
                 text = 'Unknown';
@@ -347,10 +353,10 @@ commands.status = (data) => {
     globals.elements.cluesNumberLabel.setText(globals.clues.toString());
 
     if (!globals.lobby.settings.realLifeMode) {
-        globals.elements.cluesNumberLabel.setFill(globals.clues === 0 ? 'red' : constants.LABEL_COLOR);
+        globals.elements.cluesNumberLabel.setFill(globals.clues === 0 ? 'red' : LABEL_COLOR);
         globals.elements.noClueBorder.setVisible(globals.clues === 0);
 
-        if (globals.clues === constants.MAX_CLUE_NUM) {
+        if (globals.clues === MAX_CLUE_NUM) {
             // Show the red border around the discard pile
             // (to reinforce that the current player cannot discard)
             globals.elements.noDiscardBorder.show();
@@ -376,8 +382,8 @@ commands.status = (data) => {
     // Reposition the maximum score
     const maxScoreLabel = globals.elements.maxScoreNumberLabel;
     maxScoreLabel.setText(` / ${globals.maxScore}`);
-    maxScoreLabel.setWidth(maxScoreLabel._getTextSize(maxScoreLabel.getText()).width);
-    const x = scoreLabel.getX() + scoreLabel._getTextSize(scoreLabel.getText()).width;
+    maxScoreLabel.setWidth(maxScoreLabel.measureSize(maxScoreLabel.getText()).width);
+    const x = scoreLabel.getX() + scoreLabel.measureSize(scoreLabel.getText()).width;
     maxScoreLabel.setX(x);
 
     // Update the stats on the middle-left-hand side of the screen
@@ -406,7 +412,7 @@ commands.strike = (data) => {
     if (globals.animateFast) {
         strike.setOpacity(1);
     } else {
-        strike.tween = new graphics.Tween({
+        strike.tween = new Konva.Tween({
             node: strike,
             opacity: 1,
             duration: 1,

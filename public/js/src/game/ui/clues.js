@@ -1,7 +1,7 @@
 // Imports
 import * as arrows from './arrows';
-import * as constants from '../../constants';
-import * as convert from './convert';
+import { ACT, CLUE_TYPE } from '../../constants';
+import { clueToMsgClue } from './convert';
 import globals from './globals';
 import * as ui from './ui';
 
@@ -26,9 +26,9 @@ export const checkLegal = () => {
         // "Number Blind" variants (rank clues touch no cards),
         // and "Totally Blind" variants (all clues touch no cards)
         || (globals.variant.name.startsWith('Color Blind')
-            && clueButton.clue.type === constants.CLUE_TYPE.COLOR)
+            && clueButton.clue.type === CLUE_TYPE.COLOR)
         || (globals.variant.name.startsWith('Number Blind')
-            && clueButton.clue.type === constants.CLUE_TYPE.RANK)
+            && clueButton.clue.type === CLUE_TYPE.RANK)
         || globals.variant.name.startsWith('Totally Blind')
         // Make an exception for certain characters
         || (globals.characterAssignments[globals.playerUs] === 'Blind Spot'
@@ -63,7 +63,7 @@ const variantIsCardTouched = (clue, card) => {
         return false;
     }
 
-    if (clue.type === constants.CLUE_TYPE.RANK) {
+    if (clue.type === CLUE_TYPE.RANK) {
         if (card.suit.clueRanks === 'all') {
             return true;
         }
@@ -82,7 +82,7 @@ const variantIsCardTouched = (clue, card) => {
         return clue.value === card.rank;
     }
 
-    if (clue.type === constants.CLUE_TYPE.COLOR) {
+    if (clue.type === CLUE_TYPE.COLOR) {
         if (
             globals.variant.name.startsWith('Color Blind')
             || globals.variant.name.startsWith('Color Mute')
@@ -118,9 +118,9 @@ export const give = () => {
     ui.endTurn({
         type: 'action',
         data: {
-            type: constants.ACT.CLUE,
+            type: ACT.CLUE,
             target: target.targetIndex,
-            clue: convert.clueToMsgClue(clueButton.clue, globals.variant),
+            clue: clueToMsgClue(clueButton.clue, globals.variant),
         },
     });
 };

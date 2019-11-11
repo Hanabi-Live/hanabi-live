@@ -4,9 +4,9 @@
 */
 
 // Imports
-import * as constants from '../../constants';
+import Konva from 'konva';
+import { ARROW_COLOR, CLUE_TYPE, REPLAY_ACTION_TYPE } from '../../constants';
 import globals from './globals';
-import * as graphics from './graphics';
 
 export const hideAll = () => {
     let changed = false;
@@ -37,7 +37,7 @@ export const set = (i, element, giver, clue) => {
         && !element.isDiscarded
     ) {
         if (element.parent && element.parent.parent) {
-            rot = element.parent.parent.rotation;
+            rot = element.parent.parent.origRotation;
         }
         if (
             (
@@ -62,7 +62,7 @@ export const set = (i, element, giver, clue) => {
     // Set the arrow features
     if (clue === null) {
         // This is a highlight arrow
-        const color = constants.ARROW_COLOR.HIGHLIGHT;
+        const color = ARROW_COLOR.HIGHLIGHT;
         arrow.base.setStroke(color);
         arrow.base.setFill(color);
 
@@ -74,10 +74,10 @@ export const set = (i, element, giver, clue) => {
         let color;
         if (element.numPositiveClues >= 2) {
             // Cards that are re-clued use a different color
-            color = constants.ARROW_COLOR.RETOUCHED;
+            color = ARROW_COLOR.RETOUCHED;
         } else {
             // Freshly touched cards use the default color
-            color = constants.ARROW_COLOR.DEFAULT;
+            color = ARROW_COLOR.DEFAULT;
         }
         arrow.base.setStroke(color);
         arrow.base.setFill(color);
@@ -92,11 +92,11 @@ export const set = (i, element, giver, clue) => {
             arrow.circle.hide();
         } else {
             arrow.circle.show();
-            if (clue.type === constants.CLUE_TYPE.RANK) {
+            if (clue.type === CLUE_TYPE.RANK) {
                 arrow.circle.setFill('black');
                 arrow.text.setText(clue.value.toString());
                 arrow.text.show();
-            } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+            } else if (clue.type === CLUE_TYPE.COLOR) {
                 arrow.circle.setFill(clue.value.fill);
                 arrow.text.hide();
             }
@@ -169,12 +169,12 @@ const animate = (arrow, card, rot, giver, turn) => {
     // (this must be done after the card is finished tweening)
     const pos = getPos(card, rot);
 
-    new graphics.Tween({
+    new Konva.Tween({
         node: arrow,
         duration: 0.5,
         x: pos.x,
         y: pos.y,
-        easing: graphics.Easings.EaseOut,
+        easing: Konva.Easings.EaseOut,
     }).play();
 };
 
@@ -191,7 +191,7 @@ export const click = (event, order, element) => {
 
 export const send = (order, element) => {
     globals.lobby.conn.send('replayAction', {
-        type: constants.REPLAY_ACTION_TYPE.ARROW,
+        type: REPLAY_ACTION_TYPE.ARROW,
         order,
     });
 
@@ -212,7 +212,7 @@ export const toggle = (element) => {
     const arrow = globals.elements.arrows[0];
     const show = (
         arrow.pointingTo !== element
-        || arrow.base.getFill() !== constants.ARROW_COLOR.HIGHLIGHT
+        || arrow.base.getFill() !== ARROW_COLOR.HIGHLIGHT
     );
     hideAll();
     if (show) {

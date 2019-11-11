@@ -3,11 +3,11 @@
 */
 
 // Imports
+import Konva from 'konva';
 import * as action from './action';
-import * as constants from '../../constants';
+import { MAX_CLUE_NUM, REPLAY_ACTION_TYPE } from '../../constants';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
-import * as graphics from './graphics';
 import notify from './notify';
 import * as stats from './stats';
 
@@ -158,7 +158,7 @@ const reset = () => {
     // "globals.indexOfLastDrawnCard" is set in every "draw" command
     globals.score = 0;
     globals.maxScore = globals.variant.maxScore;
-    globals.clues = constants.MAX_CLUE_NUM;
+    globals.clues = MAX_CLUE_NUM;
     globals.cardsGotten = 0;
     globals.cluesSpentPlusStrikes = 0;
     globals.stackDirections = [0, 0, 0, 0, 0];
@@ -334,14 +334,14 @@ const positionReplayShuttle = (shuttle, turn, smaller, fast) => {
         if (shuttle.tween) {
             shuttle.tween.destroy();
         }
-        shuttle.tween = new graphics.Tween({
+        shuttle.tween = new Konva.Tween({
             x,
             y,
             scaleX: scale,
             scaleY: scale,
             node: shuttle,
             duration: 0.25,
-            easing: graphics.Easings.EaseOut,
+            easing: Konva.Easings.EaseOut,
         }).play();
     }
 };
@@ -423,7 +423,7 @@ const shareCurrentTurn = (target) => {
     }
 
     globals.lobby.conn.send('replayAction', {
-        type: constants.REPLAY_ACTION_TYPE.TURN,
+        type: REPLAY_ACTION_TYPE.TURN,
         turn: target,
     });
     globals.sharedReplayTurn = target;

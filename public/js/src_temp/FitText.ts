@@ -23,7 +23,7 @@ class FitText extends Konva.Text {
         this.setFontSize(this.origFontSize);
 
         while (
-            this._getTextSize(this.getText()).width > this.getWidth()
+            this.measureSize(this.getText()).width > this.getWidth()
             && this.getFontSize() > 5
         ) {
             this.setFontSize(this.getFontSize() * 0.9);

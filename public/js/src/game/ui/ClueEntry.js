@@ -4,11 +4,11 @@
 */
 
 // Imports
+import Konva from 'konva';
 import FitText from './FitText';
 import globals from './globals';
-import * as graphics from './graphics';
 
-export default class ClueEntry extends graphics.Group {
+export default class ClueEntry extends Konva.Group {
     constructor(config) {
         super(config);
 
@@ -19,7 +19,7 @@ export default class ClueEntry extends graphics.Group {
         this.negativeList = config.negativeList;
         this.turn = config.turn;
 
-        this.background = new graphics.Rect({
+        this.background = new Konva.Rect({
             x: 0,
             y: 0,
             width: w,
@@ -54,7 +54,7 @@ export default class ClueEntry extends graphics.Group {
         });
         this.add(target);
 
-        const name = new graphics.Text({
+        const name = new Konva.Text({
             x: 0.75 * w,
             y: 0,
             width: 0.2 * w,
@@ -67,7 +67,7 @@ export default class ClueEntry extends graphics.Group {
         });
         this.add(name);
 
-        this.negativeMarker = new graphics.Text({
+        this.negativeMarker = new Konva.Text({
             x: 0.88 * w,
             y: 0,
             width: 0.2 * w,

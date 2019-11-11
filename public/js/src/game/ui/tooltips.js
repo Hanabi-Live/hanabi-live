@@ -1,5 +1,5 @@
 // Imports
-import * as constants from '../../constants';
+import { TOOLTIP_DELAY } from '../../constants';
 import globals from './globals';
 
 export const init = (element, delayed, customContent) => {
@@ -10,7 +10,7 @@ export const init = (element, delayed, customContent) => {
         } else {
             setTimeout(() => {
                 show(this);
-            }, constants.TOOLTIP_DELAY);
+            }, TOOLTIP_DELAY);
         }
     });
     element.on('mouseout', () => {

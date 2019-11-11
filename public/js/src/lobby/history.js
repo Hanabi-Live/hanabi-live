@@ -3,7 +3,7 @@
 */
 
 // Imports
-import * as constants from '../constants';
+import { VARIANTS } from '../constants';
 import globals from '../globals';
 import * as nav from './nav';
 
@@ -66,7 +66,7 @@ export const draw = () => {
     // Add all of the history
     for (let i = 0; i < ids.length; i++) {
         const gameData = globals.historyList[ids[i]];
-        const { maxScore } = constants.VARIANTS[gameData.variant];
+        const { maxScore } = VARIANTS[gameData.variant];
 
         const row = $('<tr>');
 
@@ -193,7 +193,7 @@ export const drawDetails = () => {
     const variant = globals.historyDetailList
         .filter((g) => g.id in globals.historyList)
         .map((g) => globals.historyList[g.id].variant)
-        .map((v) => constants.VARIANTS[v])[0];
+        .map((v) => VARIANTS[v])[0];
 
     // The game played by the user might not have been sent by the server yet
     if (variant === undefined) {

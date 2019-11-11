@@ -1,8 +1,8 @@
 // Imports
+import Konva from 'konva';
 import globals from './globals';
-import * as graphics from './graphics';
 
-export default class Sparkle extends graphics.Image {
+export default class Sparkle extends Konva.Image {
     constructor(config) {
         config.image = globals.ImageLoader.get('sparkle');
         super(config);

@@ -7,31 +7,31 @@
     "url": "https://github.com/Zamiell/hanabi-live.git"
   },
   "license": "GPL-3.0",
-  "sideEffects": true,
   "scripts": {
     "browserify": "browserify src/main.js > main.bundled.js",
     "lint": "eslint \"src/**/*.js\""
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.6.1",
-    "@typescript-eslint/parser": "^2.6.0",
+    "@typescript-eslint/parser": "^2.6.1",
     "eslint": "^6.1.0",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-config-airbnb-typescript": "^6.0.0",
+    "eslint-config-airbnb-typescript": "^6.1.0",
     "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
     "grunt": "^1.0.4",
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-cssmin": "^3.0.0",
     "ts-loader": "^6.2.1",
-    "typescript": "^3.6.4",
+    "typescript": "^3.7.2",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
     "interactjs": "^1.6.3",
     "jquery": "^3.4.1",
-    "konva": "^2.4.2",
+    "konva": "^4.0.17",
     "linkifyjs": "^2.1.8",
     "phaser": "^3.20.1",
     "sha.js": "^2.4.11",

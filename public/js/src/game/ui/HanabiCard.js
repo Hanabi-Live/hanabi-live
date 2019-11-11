@@ -4,25 +4,34 @@
 */
 
 // Imports
+import Konva from 'konva';
 import Clue from './Clue';
-import * as constants from '../../constants';
-import * as convert from './convert';
+import {
+    CARD_FADE,
+    CARD_H,
+    CARD_W,
+    CLUE_TYPE,
+    STACK_BASE_RANK,
+    STACK_DIRECTION,
+    START_CARD_RANK,
+    SUITS,
+} from '../../constants';
+import { msgSuitToSuit, suitToMsgSuit } from './convert';
 import globals from './globals';
-import * as graphics from './graphics';
 import * as HanabiCardInit from './HanabiCardInit';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
 
-export default class HanabiCard extends graphics.Group {
+export default class HanabiCard extends Konva.Group {
     constructor(config) {
         // Cards should start off with a constant width and height
-        config.width = constants.CARD_W;
-        config.height = constants.CARD_H;
-        config.x = constants.CARD_W / 2;
-        config.y = constants.CARD_H / 2;
+        config.width = CARD_W;
+        config.height = CARD_H;
+        config.x = CARD_W / 2;
+        config.y = CARD_H / 2;
         config.offset = {
-            x: constants.CARD_W / 2,
-            y: constants.CARD_H / 2,
+            x: CARD_W / 2,
+            y: CARD_H / 2,
         };
         config.listening = true;
         super(config);
@@ -140,13 +149,13 @@ export default class HanabiCard extends graphics.Group {
             if (this.possibleSuits.length === 1 && this.isClued()) {
                 [suitToShow] = this.possibleSuits;
             } else {
-                suitToShow = constants.SUITS.Unknown;
+                suitToShow = SUITS.Unknown;
             }
         } else {
             // If we are not in Empathy mode, then show the suit if it is known
             suitToShow = learnedCard.suit;
             if (
-                this.rank === constants.STACK_BASE_RANK
+                this.rank === STACK_BASE_RANK
                 && this.noteSuit !== null
                 && !globals.replay
             ) {
@@ -158,13 +167,13 @@ export default class HanabiCard extends graphics.Group {
                 suitToShow = this.noteSuit;
             }
             if (suitToShow === null) {
-                suitToShow = constants.SUITS.Unknown;
+                suitToShow = SUITS.Unknown;
             }
         }
 
         // "Card-Unknown" is not created, so use "NoPip-Unknown"
         let prefix = 'Card';
-        if (suitToShow === constants.SUITS.Unknown) {
+        if (suitToShow === SUITS.Unknown) {
             prefix = 'NoPip';
         }
 
@@ -183,7 +192,7 @@ export default class HanabiCard extends graphics.Group {
             // If we are not in Empathy mode, then show the rank if it is known
             rankToShow = learnedCard.rank;
             if (
-                this.rank === constants.STACK_BASE_RANK
+                this.rank === STACK_BASE_RANK
                 && this.noteRank !== null
                 && !globals.replay
             ) {
@@ -216,7 +225,7 @@ export default class HanabiCard extends graphics.Group {
                 globals.lobby.settings.realLifeMode
                 || globals.variant.name.startsWith('Cow & Pig')
                 || globals.variant.name.startsWith('Duck')
-            ) && (suitToShow === constants.SUITS.Unknown || rankToShow === 6)
+            ) && (suitToShow === SUITS.Unknown || rankToShow === 6)
         ) {
             this.bareName = 'deck-back';
         } else {
@@ -233,7 +242,7 @@ export default class HanabiCard extends graphics.Group {
             this.suitPips.hide();
             this.rankPips.hide();
         } else {
-            this.suitPips.setVisible(suitToShow === constants.SUITS.Unknown);
+            this.suitPips.setVisible(suitToShow === SUITS.Unknown);
             this.rankPips.setVisible(rankToShow === 6);
         }
 
@@ -268,7 +277,7 @@ export default class HanabiCard extends graphics.Group {
             && !this.empathy
             && !this.needsToBePlayed()
         ) {
-            newOpacity = constants.CARD_FADE;
+            newOpacity = CARD_FADE;
         }
 
         if (oldOpacity === newOpacity) {
@@ -328,13 +337,13 @@ export default class HanabiCard extends graphics.Group {
         }
 
         // Record unique clues that touch the card for later
-        if (clue.type === constants.CLUE_TYPE.RANK) {
+        if (clue.type === CLUE_TYPE.RANK) {
             if (positive && !this.positiveRankClues.includes(clue.value)) {
                 this.positiveRankClues.push(clue.value);
             } else if (!positive && !this.negativeRankClues.includes(clue.value)) {
                 this.negativeRankClues.push(clue.value);
             }
-        } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+        } else if (clue.type === CLUE_TYPE.COLOR) {
             if (positive && !this.positiveColorClues.includes(clue.value)) {
                 this.positiveColorClues.push(clue.value);
             } else if (!positive && !this.negativeColorClues.includes(clue.value)) {
@@ -345,7 +354,7 @@ export default class HanabiCard extends graphics.Group {
         // Find out if we can remove some rank pips or suit pips from this clue
         let ranksRemoved = [];
         let suitsRemoved = [];
-        if (clue.type === constants.CLUE_TYPE.RANK) {
+        if (clue.type === CLUE_TYPE.RANK) {
             const clueRank = clue.value;
             if (globals.variant.name.includes('Multi-Fives')) {
                 // In "Multi-Fives" variants, the 5 of every suit is touched by all rank clues
@@ -417,7 +426,7 @@ export default class HanabiCard extends graphics.Group {
                     (suit) => suit.clueRanks !== 'all',
                 );
             }
-        } else if (clue.type === constants.CLUE_TYPE.COLOR) {
+        } else if (clue.type === CLUE_TYPE.COLOR) {
             const clueColor = clue.value;
             if (
                 globals.variant.name.includes('Prism-Ones')
@@ -527,10 +536,10 @@ export default class HanabiCard extends graphics.Group {
         this.positiveRankClues = [];
         this.negativeRankClues = [];
         for (const rank of positiveRankClues) {
-            this.applyClue(new Clue(constants.CLUE_TYPE.RANK, rank), true);
+            this.applyClue(new Clue(CLUE_TYPE.RANK, rank), true);
         }
         for (const rank of negativeRankClues) {
-            this.applyClue(new Clue(constants.CLUE_TYPE.RANK, rank), false);
+            this.applyClue(new Clue(CLUE_TYPE.RANK, rank), false);
         }
     }
 
@@ -581,7 +590,7 @@ export default class HanabiCard extends graphics.Group {
     // This card was either played or discarded (or revealed at the end of the game)
     reveal(suit, rank) {
         // Local variables
-        suit = convert.msgSuitToSuit(suit, globals.variant);
+        suit = msgSuitToSuit(suit, globals.variant);
 
         // Set the true suit/rank on the card
         this.suit = suit;
@@ -788,8 +797,8 @@ export default class HanabiCard extends graphics.Group {
     // (before getting here, we already checked to see if the card has already been played)
     upOrDownNeedsToBePlayed() {
         // First, check to see if the stack is already finished
-        const suit = convert.suitToMsgSuit(this.suit, globals.variant);
-        if (globals.stackDirections[suit] === constants.STACK_DIRECTION.FINISHED) {
+        const suit = suitToMsgSuit(this.suit, globals.variant);
+        if (globals.stackDirections[suit] === STACK_DIRECTION.FINISHED) {
             return false;
         }
 
@@ -806,19 +815,19 @@ export default class HanabiCard extends graphics.Group {
 
         if (this.rank === 1) {
             // 1's do not need to be played if the stack is going up
-            if (globals.stackDirections[suit] === constants.STACK_DIRECTION.UP) {
+            if (globals.stackDirections[suit] === STACK_DIRECTION.UP) {
                 return false;
             }
         } else if (this.rank === 5) {
             // 5's do not need to be played if the stack is going down
-            if (globals.stackDirections[suit] === constants.STACK_DIRECTION.DOWN) {
+            if (globals.stackDirections[suit] === STACK_DIRECTION.DOWN) {
                 return false;
             }
-        } else if (this.rank === constants.START_CARD_RANK) {
+        } else if (this.rank === START_CARD_RANK) {
             // START cards do not need to be played if there are any cards played on the stack
             const playStack = globals.elements.playStacks.get(this.suit);
             const lastPlayedRank = playStack.getLastPlayedRank();
-            if (lastPlayedRank !== constants.STACK_BASE_RANK) {
+            if (lastPlayedRank !== STACK_BASE_RANK) {
                 return false;
             }
         }
@@ -839,8 +848,8 @@ export default class HanabiCard extends graphics.Group {
         }
 
         // Start by handling the easy cases of up and down
-        const suit = convert.suitToMsgSuit(this.suit, globals.variant);
-        if (globals.stackDirections[suit] === constants.STACK_DIRECTION.UP) {
+        const suit = suitToMsgSuit(this.suit, globals.variant);
+        if (globals.stackDirections[suit] === STACK_DIRECTION.UP) {
             for (let rank = 2; rank < this.rank; rank++) {
                 if (allDiscarded.get(rank)) {
                     return true;
@@ -848,7 +857,7 @@ export default class HanabiCard extends graphics.Group {
             }
             return false;
         }
-        if (globals.stackDirections[suit] === constants.STACK_DIRECTION.DOWN) {
+        if (globals.stackDirections[suit] === STACK_DIRECTION.DOWN) {
             for (let rank = 4; rank > this.rank; rank--) {
                 if (allDiscarded.get(rank)) {
                     return true;
@@ -864,7 +873,7 @@ export default class HanabiCard extends graphics.Group {
         if (
             allDiscarded.get(1)
             && allDiscarded.get(5)
-            && allDiscarded.get(constants.START_CARD_RANK)
+            && allDiscarded.get(START_CARD_RANK)
         ) {
             return true;
         }
@@ -874,7 +883,7 @@ export default class HanabiCard extends graphics.Group {
         // (this situation also applies to 3's when no cards have been played on the stack)
         const playStack = globals.elements.playStacks.get(this.suit);
         const lastPlayedRank = playStack.getLastPlayedRank();
-        if (lastPlayedRank === constants.START_CARD_RANK || this.rank === 3) {
+        if (lastPlayedRank === START_CARD_RANK || this.rank === 3) {
             if (allDiscarded.get(2) && allDiscarded.get(4)) {
                 return true;
             }
@@ -893,7 +902,7 @@ export default class HanabiCard extends graphics.Group {
         for (const suit of globals.variant.suits) {
             const playStack = globals.elements.playStacks.get(suit);
             let lastPlayedRank = playStack.getLastPlayedRank();
-            if (lastPlayedRank === constants.STACK_BASE_RANK) {
+            if (lastPlayedRank === STACK_BASE_RANK) {
                 lastPlayedRank = 0;
             }
             const nextRankNeeded = lastPlayedRank + 1;
@@ -914,8 +923,8 @@ export default class HanabiCard extends graphics.Group {
             const playStack = globals.elements.playStacks.get(suit);
             const lastPlayedRank = playStack.getLastPlayedRank();
 
-            if (globals.stackDirections[i] === constants.STACK_DIRECTION.UNDECIDED) {
-                if (lastPlayedRank === constants.STACK_BASE_RANK) {
+            if (globals.stackDirections[i] === STACK_DIRECTION.UNDECIDED) {
+                if (lastPlayedRank === STACK_BASE_RANK) {
                     // The "START" card has not been played
                     for (const rank of [0, 1, 5]) {
                         const count = this.possibleCards.get(`${suit.name}${rank}`);
@@ -927,7 +936,7 @@ export default class HanabiCard extends graphics.Group {
                     if (potentiallyPlayable) {
                         break;
                     }
-                } else if (lastPlayedRank === constants.START_CARD_RANK) {
+                } else if (lastPlayedRank === START_CARD_RANK) {
                     // The "START" card has been played
                     for (const rank of [2, 4]) {
                         const count = this.possibleCards.get(`${suit.name}${rank}`);
@@ -940,21 +949,21 @@ export default class HanabiCard extends graphics.Group {
                         break;
                     }
                 }
-            } else if (globals.stackDirections[i] === constants.STACK_DIRECTION.UP) {
+            } else if (globals.stackDirections[i] === STACK_DIRECTION.UP) {
                 const nextRankNeeded = lastPlayedRank + 1;
                 const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
                 if (count > 0) {
                     potentiallyPlayable = true;
                     break;
                 }
-            } else if (globals.stackDirections[i] === constants.STACK_DIRECTION.DOWN) {
+            } else if (globals.stackDirections[i] === STACK_DIRECTION.DOWN) {
                 const nextRankNeeded = lastPlayedRank - 1;
                 const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
                 if (count > 0) {
                     potentiallyPlayable = true;
                     break;
                 }
-            } else if (globals.stackDirections[i] === constants.STACK_DIRECTION.FINISHED) {
+            } else if (globals.stackDirections[i] === STACK_DIRECTION.FINISHED) {
                 // Nothing can play on this stack because it is finished
                 continue;
             }
@@ -1021,7 +1030,7 @@ const getSpecificCardNum = (suit, rank) => {
         }
     } else if (rank === 5) {
         total = 1;
-    } else if (rank === constants.START_CARD_RANK) {
+    } else if (rank === START_CARD_RANK) {
         total = 1;
     } else {
         total = 2;
