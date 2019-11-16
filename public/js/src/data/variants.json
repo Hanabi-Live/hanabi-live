@@ -1043,37 +1043,45 @@
 
     "Multi-Fives (6 Suits)": {
         "id": 45,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives (5 Suits)": {
         "id": 46,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives (4 Suits)": {
         "id": 49,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives (3 Suits)": {
         "id": 50,
         "suits": ["Blue", "Green", "Yellow"],
+        "clueRanks": [1, 2, 3, 4],
         "spacing": true
     },
 
     "Multi-Fives & Rainbow (6 Suits)": {
         "id": 39,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Rainbow"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Rainbow"],
+        "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives & Rainbow (5 Suits)": {
         "id": 14,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow"],
+        "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives & Rainbow (4 Suits)": {
         "id": 47,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow"]
+        "suits": ["Blue", "Green", "Yellow", "Rainbow"],
+        "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives & Rainbow (3 Suits)": {
         "id": 48,
         "suits": ["Blue", "Green", "Rainbow"],
+        "clueRanks": [1, 2, 3, 4],
         "spacing": true
     },
 
@@ -1177,19 +1185,23 @@
 
     "Number Mute (6 Suits)": {
         "id": 114,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "clueRanks": []
     },
     "Number Mute (5 Suits)": {
         "id": 115,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "clueRanks": []
     },
     "Number Mute (4 Suits)": {
         "id": 116,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "clueRanks": []
     },
     "Number Mute (3 Suits)": {
         "id": 117,
         "suits": ["Blue", "Green", "Yellow"],
+        "clueRanks": [],
         "spacing": true
     },
 

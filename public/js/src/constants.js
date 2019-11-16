@@ -245,12 +245,8 @@ const initVariants = () => {
             }
         }
 
-        // Derive the clue ranks (the ranks available to clue in this variant)
-        if (variantName.startsWith('Number Mute')) {
-            variant.clueRanks = [];
-        } else if (variantName.includes('Multi-Fives')) {
-            variant.clueRanks = [1, 2, 3, 4];
-        } else {
+        // Validate or derive the clue ranks (the ranks available to clue in this variant)
+        if (!Object.hasOwnProperty.call(variant, 'clueRanks')) {
             // By default, assume that we can clue ranks 1 through 5
             variant.clueRanks = [1, 2, 3, 4, 5];
         }
