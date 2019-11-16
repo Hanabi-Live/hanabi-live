@@ -33,6 +33,8 @@ Special:
 | Colors share suit | Dual color            |
 | All color clues   | Prism 1s (1s only)    |
 | All rank clues    | Multi-Fives (5s only) |
+| All  clues        | Omni-1s (1s only)     |
+| No clues          | Null-Fives (5s only)  |
 
 <br />
 
@@ -154,6 +156,14 @@ Special:
 
 * Fives are "touched" by all rank clues.
 * Players cannot clue rank 5.
+
+### Omni-Ones
+
+* Ones are "touched" by all clues.
+
+### Null-Fives
+
+* Fives are "touched" by no clues.
 
 ### Special Mix (5 Suits)
 
@@ -558,6 +568,21 @@ Special:
   * Prism-Ones & Multi-Fives (5 Suits)
   * Prism-Ones & Multi-Fives (4 Suits)
   * Prism-Ones & Multi-Fives (3 Suits)
+* Omni-Ones
+  * Omni-Ones (6 Suits)
+  * Omni-Ones (5 Suits)
+  * Omni-Ones (4 Suits)
+  * Omni-Ones (3 Suits)
+* Null-Fives
+  * Null-Fives (6 Suits)
+  * Null-Fives (5 Suits)
+  * Null-Fives (4 Suits)
+  * Null-Fives (3 Suits)
+* Omni-Ones & Null-Fives
+  * Omni-Ones & Null-Fives (6 Suits)
+  * Omni-Ones & Null-Fives (5 Suits)
+  * Omni-Ones & Null-Fives (4 Suits)
+  * Omni-Ones & Null-Fives (3 Suits)
 * Color Blind
   * Color Blind (6 Suits)
   * Color Blind (5 Suits)
