@@ -315,6 +315,12 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		if strings.HasPrefix(variant, "Multi-Fives") && card.Rank == 5 {
 			return true
 		}
+		if strings.HasPrefix(variant, "Omni-Ones") && card.Rank == 1 {
+			return true
+		}
+		if strings.HasPrefix(variant, "Null-Fives") && card.Rank == 5 {
+			return false
+		}
 		return card.Rank == clue.Value
 	}
 
@@ -324,6 +330,12 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		}
 		if strings.Contains(variant, "Prism-Ones") && card.Rank == 1 {
 			return true
+		}
+		if strings.HasPrefix(variant, "Omni-Ones") && card.Rank == 1 {
+			return true
+		}
+		if strings.HasPrefix(variant, "Null-Fives") && card.Rank == 5 {
+			return false
 		}
 		color := variants[variant].ClueColors[clue.Value]
 		colors := variants[variant].Suits[card.Suit].ClueColors
