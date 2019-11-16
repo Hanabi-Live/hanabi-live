@@ -362,6 +362,12 @@ export default class HanabiCard extends Konva.Group {
                     this.possibleRanks,
                     (rank) => (rank === clueRank || rank === 5) === positive,
                 );
+            } else if (globals.variant.name.includes('Omni-Ones')) {
+                // In "Omni-Ones" variants, the 1 of every suit is touched by all rank clues
+                ranksRemoved = filterInPlace(
+                    this.possibleRanks,
+                    (rank) => (rank === clueRank || rank === 1) === positive,
+                );
             } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'none') && !positive) {
                 // Some suits are not touched by any ranks,
                 // so if this is a negative rank clue, we cannot remove any rank pips from the card
@@ -397,7 +403,19 @@ export default class HanabiCard extends Konva.Group {
                         (suit) => suit.clueRanks === 'all',
                     );
                 }
-
+                
+                // Also handle the special case where two positive rank clues
+                // should "fill in" the rank as a one in the Omni-Ones variants)
+                if (
+                    this.positiveRankClues.length >= 2
+                    && !globals.variant.name.includes('Omni-Ones')
+                ) {
+                    suitsRemoved = filterInPlace(
+                        this.possibleSuits,
+                        (suit) => suit.clueRanks === 'all',
+                    );
+                }
+                
                 // Remove all the possibilities for cards that are definately not this rank
                 for (const suit of globals.variant.suits) {
                     if (suit.clueRanks === 'all') {
@@ -408,6 +426,9 @@ export default class HanabiCard extends Konva.Group {
                             continue;
                         }
                         if (globals.variant.name.includes('Multi-Fives') && rank === 5) {
+                            continue;
+                        }
+                        if (globals.variant.name.includes('Omni-Ones') && rank === 1) {
                             continue;
                         }
                         this.removePossibility(suit, rank, true);
@@ -436,6 +457,27 @@ export default class HanabiCard extends Konva.Group {
                 // In "Prism-Ones" variants, 1's are touched by all colors,
                 // so if this is a positive color clue,
                 // we cannot remove any color pips from the card
+            } else if {
+                globals.variant.name.includes('Omni-Ones')
+                && this.possibleRanks.includes(1)
+                && positive
+            ) {
+                // In "Omni-Ones" variants, 1's are touched by all clues,
+                // so if this is a positive color clue,
+                // we cannot remove any color pips from the card
+            } else if {
+                globals.variant.name.includes('Null-Fives')
+                && this.possibleRanks.includes(5)
+                && positive
+            ) {
+                // In "Null-Fives" variants, 5's are touched by no clues,
+                // so if this is a positive color clue,
+                // we cannot remove any color pips from the card
+                // but we can determine the card is not a 5
+                ranksRemoved = filterInPlace(
+                    this.possibleRanks,
+                    (rank) => (rank === 5) === positive,
+                );
             } else {
                 // Remove all possibilities that do not include this color
                 suitsRemoved = filterInPlace(
@@ -444,8 +486,8 @@ export default class HanabiCard extends Konva.Group {
                 );
             }
 
-            // In "Prism-Ones" variants, 1's are touched by all colors
-            if (globals.variant.name.includes('Prism-Ones')) {
+            // In "Prism-Ones" and "Omni-Ones" variants, 1's are touched by all colors
+            if (globals.variant.name.includes('Prism-Ones') || globals.variant.name.includes('Omni-Ones')) {
                 if (positive) {
                     if (this.positiveColorClues.length >= 2) {
                         // Two positive color clues should "fill in" a 1
@@ -462,6 +504,7 @@ export default class HanabiCard extends Konva.Group {
                     );
                 }
             }
+                
         }
 
         // Remove rank pips, if any
