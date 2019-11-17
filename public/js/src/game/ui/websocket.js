@@ -335,10 +335,9 @@ commands.noteListPlayer = (data) => {
     // Show the note indicator for currently-visible cards
     notes.setAllCardIndicators();
 
-    // Check for special notes on our hand
-    const ourHand = globals.elements.playerHands[globals.playerUs];
-    for (const layoutChild of ourHand.children) {
-        const card = layoutChild.children[0];
+    // Check for special notes
+    for (let i = 0; i < globals.indexOfLastDrawnCard; i++) {
+        const card = globals.deck[i];
         notes.checkSpecialNote(card);
     }
 
