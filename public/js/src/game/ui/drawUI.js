@@ -72,7 +72,7 @@ export default () => {
 
     // The top-left
     drawActionLog();
-    drawPlayStacksAndDiscardStacks();
+    drawPlayStacks();
 
     // The bottom-left
     drawBottomLeftButtons();
@@ -88,6 +88,7 @@ export default () => {
     drawClueLog();
     drawStatistics();
     drawDiscardArea();
+    drawDiscardStacks();
 
     // Conditional elements
     drawArrows();
@@ -267,21 +268,18 @@ const drawActionLog = () => {
     globals.layers.UI2.add(globals.elements.fullActionLog);
 };
 
-const drawPlayStacksAndDiscardStacks = () => {
+const drawPlayStacks = () => {
     // Local variables
-    let discardStackSpacing;
     let yOffset;
 
     if (globals.variant.suits.length === 6 || globals.variant.showSuitNames) {
         cardWidth = 0.06;
         cardHeight = 0.151;
         yOffset = 0.019;
-        discardStackSpacing = 0.04;
     } else { // 3, 4, or 5 stacks
         cardWidth = 0.075;
         cardHeight = 0.189;
         yOffset = 0;
-        discardStackSpacing = 0.05;
     }
     const playStackValues = {
         x: 0.183,
@@ -348,17 +346,6 @@ const drawPlayStacksAndDiscardStacks = () => {
         const child = new LayoutChild();
         child.add(stackBase);
         playStack.add(child);
-
-        // Make the discard stack for this rank
-        const discardStack = new CardLayout({
-            x: 0.81 * winW,
-            y: (0.61 + (discardStackSpacing * i)) * winH,
-            width: 0.17 * winW,
-            height: 0.17 * winH,
-            player: -1,
-        });
-        globals.elements.discardStacks.set(suit, discardStack);
-        globals.layers.card.add(discardStack);
 
         // Draw the suit name next to each suit
         // (a text description of the suit)
@@ -428,6 +415,31 @@ const drawPlayStacksAndDiscardStacks = () => {
         && pos.x <= globals.elements.playArea.getX() + globals.elements.playArea.getWidth()
         && pos.y <= globals.elements.playArea.getY() + globals.elements.playArea.getHeight()
     );
+};
+
+const drawDiscardStacks = () => {
+    // Local variables
+    let discardStackSpacing;
+    if (globals.variant.suits.length === 6) {
+        discardStackSpacing = 0.04;
+    } else { // 3, 4, or 5 stacks
+        discardStackSpacing = 0.05;
+    }
+
+    for (let i = 0; i < globals.variant.suits.length; i++) {
+        const suit = globals.variant.suits[i];
+
+        // Make the discard stack for this suit
+        const discardStack = new CardLayout({
+            x: 0.81 * winW,
+            y: (0.61 + (discardStackSpacing * i)) * winH,
+            width: 0.17 * winW,
+            height: 0.17 * winH,
+            player: -1,
+        });
+        globals.elements.discardStacks.set(suit, discardStack);
+        globals.layers.card.add(discardStack);
+    }
 };
 
 const drawBottomLeftButtons = () => {
