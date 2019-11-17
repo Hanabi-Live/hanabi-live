@@ -307,7 +307,11 @@ const drawPlayStacks = () => {
     // unless we manually adjust them
     if (
         (globals.variant.suits.length === 4 && !globals.variant.showSuitNames)
-        || (globals.variant.suits.length === 5 && globals.variant.showSuitNames)
+        || (
+            globals.variant.suits.length === 5
+            && globals.variant.showSuitNames
+            && globals.lobby.settings.showKeldonUI
+        )
     ) {
         playStackValues.x += (cardWidth + playStackValues.spacing) / 2;
     } else if (globals.variant.suits.length === 4 && globals.variant.showSuitNames) {
