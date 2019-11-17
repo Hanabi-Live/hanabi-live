@@ -441,7 +441,8 @@ func (t *Table) ConvertToSharedReplay() {
 			ID:      p.ID,
 			Name:    p.Name,
 			Session: p.Session,
-			Notes:   make([]string, len(g.Deck)),
+			// There are notes for every card in the deck + the stack bases for each suit
+			Notes: make([]string, len(g.Deck)+len(variants[t.Options.Variant].Suits)),
 		}
 		t.Spectators = append(t.Spectators, sp)
 		log.Info("Converted " + p.Name + " to a spectator.")
