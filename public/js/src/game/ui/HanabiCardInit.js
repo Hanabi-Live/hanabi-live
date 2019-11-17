@@ -57,7 +57,7 @@ export function border() {
         height: CARD_H - 6,
         cornerRadius: 6,
         strokeWidth: 16,
-        stroke: '#ffe6b3', // Light yellow
+        stroke: '#fffce6', // White with a yellow tint
         visible: false,
         listening: false,
     });
