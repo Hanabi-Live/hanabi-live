@@ -87,8 +87,7 @@ export const set = (i, element, giver, clue) => {
             globals.variant.name.startsWith('Cow & Pig')
             || globals.variant.name.startsWith('Duck')
         ) {
-            // Don't show the circle in Cow & Pig / Duck variants,
-            // since the clue types are supposed to be hidden
+            // Don't show the circle in variants where the clue types are supposed to be hidden
             arrow.circle.hide();
         } else {
             arrow.circle.show();
