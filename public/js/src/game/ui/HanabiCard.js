@@ -52,6 +52,7 @@ export default class HanabiCard extends Konva.Group {
         this.noteKnownTrash = false;
         this.noteNeedsFix = false;
         this.noteChopMoved = false;
+        this.noteFinessed = false;
         this.noteBlank = false;
 
         // Initialize various elements/features of the card
@@ -108,6 +109,10 @@ export default class HanabiCard extends Konva.Group {
         if (this.noteChopMoved && !globals.replay && !globals.spectating) {
             // If it has a "chop move" note on it, we want to keep the chop move border turned on
             this.noteBorder.show();
+        }
+        if (this.noteChopMoved && !globals.replay && !globals.spectating) {
+            // If it has a "finessed" note on it, we want to keep the finesse border turned on
+            this.finesseBorder.show();
         }
 
         // Reset all of the pips to their default state

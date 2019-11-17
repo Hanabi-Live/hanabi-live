@@ -92,6 +92,14 @@ export const checkSpecialNote = (card) => {
         && !globals.spectating
     ));
 
+    // Feature 3 - Give the card a special border if it is finessed
+    card.finesseBorder.setVisible((
+        card.noteFinessed
+        && !card.cluedBorder.getVisible()
+        && !globals.replay
+        && !globals.spectating
+    ));
+
     globals.layers.card.batchDraw();
 };
 
@@ -112,6 +120,10 @@ const checkNoteIdentity = (card, note, fullNote) => {
     card.noteChopMoved = (
         note === 'cm'
         || fullNote.includes('[cm]')
+    );
+    card.noteFinessed = (
+        note === 'f'
+        || fullNote.includes('[f]')
     );
     card.noteBlank = (
         note === 'blank'

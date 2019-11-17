@@ -49,7 +49,10 @@ export function border() {
     });
     this.add(this.cluedBorder);
 
-    // The card will also get a border if it is not clued but has a particular note on it
+    /*
+        The card will also get a border if it is not clued but has a particular note on it
+    */
+
     this.noteBorder = new Konva.Rect({
         x: 3,
         y: 3,
@@ -62,6 +65,19 @@ export function border() {
         listening: false,
     });
     this.add(this.noteBorder);
+
+    this.finesseBorder = new Konva.Rect({
+        x: 3,
+        y: 3,
+        width: CARD_W - 6,
+        height: CARD_H - 6,
+        cornerRadius: 6,
+        strokeWidth: 16,
+        stroke: 'aqua',
+        visible: false,
+        listening: false,
+    });
+    this.add(this.finesseBorder);
 }
 
 export function pips() {
