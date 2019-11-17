@@ -23,7 +23,11 @@ module.exports = {
     module: {
         rules: [
             // All files with a ".ts" extension will be handled by "ts-loader"
-            { test: /\.ts$/, use: 'ts-loader' },
+            {
+                test: /\.ts$/,
+                include: path.join(__dirname, 'src'),
+                loader: 'ts-loader',
+            },
         ],
     },
 
