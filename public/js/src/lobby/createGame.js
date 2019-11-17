@@ -111,7 +111,7 @@ const getCheckbox = (setting) => {
 };
 
 const getTextbox = (setting) => {
-    const value = $(`#${setting}`).val();
+    const value = $(`#${setting}`).val().trim(); // Trim leading and trailing whitespace
     checkChanged(setting, value);
     return value;
 };
