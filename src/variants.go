@@ -307,7 +307,7 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		if variants[variant].Suits[card.Suit].ClueRanks == "none" {
 			return false
 		}
-		if strings.HasPrefix(variant, "Number Blind") || strings.HasPrefix(variant, "Number Mute") {
+		if strings.HasPrefix(variant, "Number Blind") {
 			return false
 		}
 		if strings.HasPrefix(variant, "Multi-Fives") && card.Rank == 5 {
