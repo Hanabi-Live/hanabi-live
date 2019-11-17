@@ -154,6 +154,7 @@ type JSONVariant struct {
 	ID         int      `json:"id"`
 	Suits      []string `json:"suits"`
 	ClueColors []string `json:"clueColors"`
+	ClueRanks  []int    `json:"clueRanks"`
 }
 
 type Variant struct {
@@ -256,13 +257,10 @@ func variantsInit() {
 			}
 		}
 
-		// Derive the clue ranks (the ranks available to clue in this variant)
-		var clueRanks []int
-		if strings.HasPrefix(name, "Number Mute") {
-			clueRanks = make([]int, 0)
-		} else if strings.Contains(name, "Multi-Fives") {
-			clueRanks = []int{1, 2, 3, 4}
-		} else {
+		// Validate or derive the clue ranks (the ranks available to clue in this variant)
+		clueRanks := variant.ClueRanks
+		if len(clueRanks) == 0 {
+			// By default, assume that we can clue ranks 1 through 5
 			clueRanks = []int{1, 2, 3, 4, 5}
 		}
 
