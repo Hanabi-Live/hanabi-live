@@ -113,6 +113,10 @@ const checkNoteIdentity = (card, note, fullNote) => {
         note === 'cm'
         || fullNote.includes('[cm]')
     );
+    card.noteBlank = (
+        note === 'blank'
+        || fullNote.includes('[blank]')
+    );
 
     // Second, check the contents of the note right of the right-most pipe
     card.noteSuit = null;

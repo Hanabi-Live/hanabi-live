@@ -52,6 +52,7 @@ export default class HanabiCard extends Konva.Group {
         this.noteKnownTrash = false;
         this.noteNeedsFix = false;
         this.noteChopMoved = false;
+        this.noteBlank = false;
 
         // Initialize various elements/features of the card
         this.initImage();
@@ -220,6 +221,15 @@ export default class HanabiCard extends Konva.Group {
             && !globals.spectating
         ) {
             this.bareName = 'known-trash';
+        } else if (
+            this.noteBlank
+            && !this.empathy
+            && !this.isPlayed
+            && !this.isDiscarded
+            && !globals.replay
+            && !globals.spectating
+        ) {
+            this.bareName = 'deck-back';
         } else if (
             (
                 globals.lobby.settings.realLifeMode
