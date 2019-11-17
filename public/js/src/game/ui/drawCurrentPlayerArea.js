@@ -79,8 +79,11 @@ export default (clueAreaValues) => {
         shadowOpacity: 0.9,
     });
     globals.elements.currentPlayerArea.add(globals.elements.currentPlayerText2);
-    globals.elements.currentPlayerText2.setPlayer = function set(currentPlayerIndex, threeLines) {
-        this.setText(globals.playerNames[currentPlayerIndex] || 'Undefined');
+    globals.elements.currentPlayerText2.setPlayer = function setPlayer(
+        currentPlayerIndex,
+        threeLines,
+    ) {
+        this.fitText(globals.playerNames[currentPlayerIndex] || 'Undefined');
         let maxSize = (currentPlayerAreaValues.h / 3) * winH;
         if (threeLines) {
             maxSize = (currentPlayerAreaValues.h / 4) * winH;

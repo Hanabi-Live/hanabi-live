@@ -3,26 +3,18 @@
         "outDir": "./dist",
         "target": "es2018",
         "newLine": "lf",
-        "allowJs": true,
         "resolveJsonModule": true,
         "moduleResolution": "Node",
         "removeComments": true,
 
+        "strict": true,
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
-        "noImplicitAny": true,
         "noImplicitReturns": true,
-        "noImplicitThis": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "strictBindCallApply": true,
-        "strictFunctionTypes": true,
-        "strictPropertyInitialization": true,
-        "strictNullChecks": true,
     },
     "include": [
         "./src/**/*.ts",
-        "./src/**/*.js",
-        "./src/**/*.json"
     ]
 }

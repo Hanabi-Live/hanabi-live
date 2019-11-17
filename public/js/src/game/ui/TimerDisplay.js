@@ -60,10 +60,10 @@ export default class TimerDisplay extends Konva.Group {
     }
 
     setTimerText(text) {
-        this.timerText.setText(text);
+        this.timerText.fitText(text);
     }
 
     setLabelText(text) {
-        this.labelText.setText(text);
+        this.labelText.fitText(text);
     }
 }

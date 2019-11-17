@@ -44,7 +44,7 @@ export default class Button extends Konva.Group {
                 text: config.text,
                 listening: false,
             });
-            this.setText = (newText) => this.textElement.setText(newText);
+            this.setText = (newText) => this.textElement.fitText(newText);
             this.setFill = (newFill) => this.textElement.setFill(newFill);
             this.add(this.textElement);
         } else if (config.image) {

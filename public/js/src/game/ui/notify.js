@@ -330,7 +330,7 @@ commands.stackDirections = (data) => {
             } else {
                 text = 'Unknown';
             }
-            globals.elements.suitLabelTexts[i].setText(text);
+            globals.elements.suitLabelTexts[i].fitText(text);
             if (!globals.animateFast) {
                 globals.layers.UI.batchDraw();
             }

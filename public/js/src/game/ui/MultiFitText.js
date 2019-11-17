@@ -17,7 +17,7 @@ export default class MultiFitText extends Konva.Group {
             newConfig.y = i * newConfig.height;
 
             const childText = new FitText(newConfig);
-            Konva.Group.prototype.add.call(this, childText);
+            this.add(childText);
         }
     }
 
@@ -41,14 +41,14 @@ export default class MultiFitText extends Konva.Group {
             if (!msg) {
                 msg = '';
             }
-            this.children[i].setText(msg);
+            this.children[i].fitText(msg);
         }
     }
 
     reset() {
         this.smallHistory = [];
         for (let i = 0; i < this.children.length; i++) {
-            this.children[i].setText('');
+            this.children[i].fitText('');
         }
     }
 }

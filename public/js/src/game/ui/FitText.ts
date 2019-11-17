@@ -2,14 +2,17 @@
 import Konva from 'konva';
 
 export default class FitText extends Konva.Text {
-    constructor(config) {
+    origFontSize: number;
+    needsResize: boolean;
+
+    constructor(config: Konva.TextConfig) {
         super(config);
 
         // Class variables
-        this.origFontSize = this.getFontSize();
+        this.origFontSize = this.fontSize();
         this.needsResize = true;
 
-        this.setSceneFunc(function setSceneFunc(context) {
+        this.sceneFunc(function sceneFunc(this: FitText, context: object) {
             if (this.needsResize) {
                 this.resize();
             }
@@ -18,20 +21,20 @@ export default class FitText extends Konva.Text {
     }
 
     resize() {
-        this.setFontSize(this.origFontSize);
+        this.fontSize(this.origFontSize);
 
         while (
-            this.measureSize(this.getText()).width > this.getWidth()
-            && this.getFontSize() > 5
+            this.measureSize(this.text()).width > this.width()
+            && this.fontSize() > 5
         ) {
-            this.setFontSize(this.getFontSize() * 0.9);
+            this.fontSize(this.fontSize() * 0.9);
         }
 
         this.needsResize = false;
     }
 
-    setText(text) {
-        Konva.Text.prototype.setText.call(this, text);
+    fitText(text: string) {
+        super.text(text);
         this.needsResize = true;
     }
 }

@@ -13,7 +13,7 @@ export default class NameFrame extends Konva.Group {
         // Class variables
         this.playerIndex = config.playerIndex;
 
-        this.name = new Konva.Text({
+        this.playerName = new Konva.Text({
             x: config.width / 2,
             y: 0,
             height: config.height,
@@ -31,14 +31,14 @@ export default class NameFrame extends Konva.Group {
             shadowOpacity: 0.9,
         });
 
-        let w = this.name.getWidth();
-        while (w > 0.65 * config.width && this.name.getFontSize() > 5) {
-            this.name.setFontSize(this.name.getFontSize() * 0.9);
-            w = this.name.getWidth();
+        let w = this.playerName.getWidth();
+        while (w > 0.65 * config.width && this.playerName.getFontSize() > 5) {
+            this.playerName.setFontSize(this.playerName.getFontSize() * 0.9);
+            w = this.playerName.getWidth();
         }
-        this.name.setOffsetX(w / 2);
+        this.playerName.setOffsetX(w / 2);
 
-        this.name.on('click tap', function click(event) {
+        this.playerName.on('click tap', function click(event) {
             const username = this.getText();
             if (event.evt.which === 1) { // Left-click
                 // Left-click on the name frame to see a log of only their actions
@@ -61,7 +61,7 @@ export default class NameFrame extends Konva.Group {
                 }
             }
         });
-        this.add(this.name);
+        this.add(this.playerName);
 
         w *= 1.4;
 
@@ -142,11 +142,11 @@ export default class NameFrame extends Konva.Group {
         this.leftline.setStrokeWidth(active ? 3 : 1);
         this.rightline.setStrokeWidth(active ? 3 : 1);
 
-        this.name.setShadowOpacity(active ? 0.6 : 0);
+        this.playerName.setShadowOpacity(active ? 0.6 : 0);
         this.leftline.setShadowOpacity(active ? 0.6 : 0);
         this.rightline.setShadowOpacity(active ? 0.6 : 0);
 
-        this.name.setFontStyle(active ? 'bold' : 'normal');
+        this.playerName.setFontStyle(active ? 'bold' : 'normal');
     }
 
     setConnected(connected) {
@@ -154,7 +154,7 @@ export default class NameFrame extends Konva.Group {
 
         this.leftline.setStroke(color);
         this.rightline.setStroke(color);
-        this.name.setFill(color);
+        this.playerName.setFill(color);
     }
 }
 
