@@ -70,10 +70,7 @@ const variantIsCardTouched = (clue, card) => {
         if (card.suit.clueRanks === 'none') {
             return false;
         }
-        if (
-            globals.variant.name.startsWith('Number Blind')
-            || globals.variant.name.startsWith('Number Mute')
-        ) {
+        if (globals.variant.name.startsWith('Number Blind')) {
             return false;
         }
         if (globals.variant.name.includes('Multi-Fives') && card.rank === 5) {
@@ -83,10 +80,7 @@ const variantIsCardTouched = (clue, card) => {
     }
 
     if (clue.type === CLUE_TYPE.COLOR) {
-        if (
-            globals.variant.name.startsWith('Color Blind')
-            || globals.variant.name.startsWith('Color Mute')
-        ) {
+        if (globals.variant.name.startsWith('Color Blind')) {
             return false;
         }
         if (globals.variant.name.includes('Prism-Ones') && card.rank === 1) {

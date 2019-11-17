@@ -151,10 +151,12 @@ func suitsInit() {
 }
 
 type JSONVariant struct {
-	ID         int      `json:"id"`
-	Suits      []string `json:"suits"`
-	ClueColors []string `json:"clueColors"`
-	ClueRanks  []int    `json:"clueRanks"`
+	ID    int      `json:"id"`
+	Suits []string `json:"suits"`
+	// ClueColors and ClueRanks are optional elements
+	// Thus, they must be pointers so that we can tell if the values were specified or not
+	ClueColors *[]string `json:"clueColors"`
+	ClueRanks  *[]int    `json:"clueRanks"`
 }
 
 type Variant struct {
@@ -231,37 +233,39 @@ func variantsInit() {
 		}
 
 		// Validate or derive the clue colors (the colors available to clue in this variant)
-		clueColors := make([]string, 0)
-		if len(variant.ClueColors) > 0 {
-			// The clue colors were specified in the JSON, so validate that they map to colors
-			for _, colorName := range variant.ClueColors {
-				if _, ok := colors[colorName]; !ok {
-					log.Fatal("The variant of \"" + name + "\" has a clue color of " +
-						"\"" + colorName + "\", but that color does not exist.")
-				}
-			}
-			clueColors = variant.ClueColors
-		} else {
+		clueColors := variant.ClueColors
+		if clueColors == nil {
 			// The clue colors were not specified in the JSON, so derive them from the suits
+			derivedClueColors := make([]string, 0)
 			for _, suit := range variantSuits {
 				if suit.AllClueColors {
-					// If a suit is touched by all colors, then we don't want to add
-					// every single clue color to the variant clue list
+					// If a suit is touched by all colors,
+					// then we don't want to add every single clue color to the variant clue list
 					continue
 				}
 				for _, color := range suit.ClueColors {
-					if !stringInSlice(color, clueColors) {
-						clueColors = append(clueColors, color)
+					if !stringInSlice(color, derivedClueColors) {
+						derivedClueColors = append(derivedClueColors, color)
 					}
+				}
+			}
+			clueColors = &derivedClueColors
+		} else {
+			// The clue colors were specified in the JSON, so validate that they map to colors
+			for _, colorName := range *variant.ClueColors {
+				if _, ok := colors[colorName]; !ok {
+					log.Fatal("The variant of \"" + name + "\" has a clue color of " +
+						"\"" + colorName + "\", but that color does not exist.")
 				}
 			}
 		}
 
 		// Validate or derive the clue ranks (the ranks available to clue in this variant)
 		clueRanks := variant.ClueRanks
-		if len(clueRanks) == 0 {
-			// By default, assume that we can clue ranks 1 through 5
-			clueRanks = []int{1, 2, 3, 4, 5}
+		if clueRanks == nil {
+			// The clue ranks were not specified in the JSON,
+			// so just assume that we can clue ranks 1 through 5
+			clueRanks = &[]int{1, 2, 3, 4, 5}
 		}
 
 		// Convert the JSON variant into a variant object and store it in the map
@@ -270,8 +274,8 @@ func variantsInit() {
 			ID:         variant.ID,
 			Suits:      variantSuits,
 			Ranks:      variantRanks,
-			ClueColors: clueColors,
-			ClueRanks:  clueRanks,
+			ClueColors: *clueColors,
+			ClueRanks:  *clueRanks,
 			MaxScore:   len(variantSuits) * 5, // Assuming that there are 5 points per stack
 		}
 

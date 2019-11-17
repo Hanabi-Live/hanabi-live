@@ -1167,19 +1167,23 @@
 
     "Color Mute (6 Suits)": {
         "id": 110,
-        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB", "Purple CB", "Teal CB"]
+        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB", "Purple CB", "Teal CB"],
+        "clueColors": []
     },
     "Color Mute (5 Suits)": {
         "id": 111,
-        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB", "Purple CB"]
+        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB", "Purple CB"],
+        "clueColors": []
     },
     "Color Mute (4 Suits)": {
         "id": 112,
-        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB"]
+        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB"],
+        "clueColors": []
     },
     "Color Mute (3 Suits)": {
         "id": 113,
         "suits": ["Blue CB", "Green CB", "Yellow CB"],
+        "clueColors": [],
         "spacing": true
     },
 
