@@ -102,6 +102,8 @@ const checkNoteIdentity = (card, note, fullNote) => {
         || fullNote.includes('[kt]')
         || note === 'trash'
         || fullNote.includes('[trash]')
+        || note === 'stale'
+        || fullNote.includes('[stale]')
     );
     card.noteNeedsFix = (
         note === 'fixme'
