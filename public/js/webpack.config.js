@@ -16,13 +16,14 @@ module.exports = {
 
     resolve: {
         extensions: ['.js', '.ts', '.json'],
+        symlinks: false, // Performance optimization
     },
 
     // Loaders are transformations that are applied on the source code of a module
     // https://webpack.js.org/concepts/loaders/
     module: {
         rules: [
-            // All files with a ".ts" extension will be handled by "ts-loader"
+            // All files with a ".ts" extension (TypeScript files) will be handled by "ts-loader"
             {
                 test: /\.ts$/,
                 include: path.join(__dirname, 'src'),
@@ -56,7 +57,7 @@ module.exports = {
 
     // Enable source maps for debugging purposes
     // (this will show the line number of the real file in the browser JavaScript console)
-    devtool: 'source-map',
+    // devtool: 'source-map', // (commented out for performance reasons)
 
     // Watch for changes in the source files and update the bundle if so
     watch: true,
