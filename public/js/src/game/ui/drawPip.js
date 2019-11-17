@@ -177,7 +177,12 @@ export default (ctx, suit, shadow, deckBack) => {
         ctx.fillStyle = '#444444';
     } else if (suit.fill === 'multi') {
         // Rainbow and omni cards have a gradient fill
-        ctx.fillStyle = evenRadialGradient(ctx, suit.fillColors, [75, 150, 25, 75, 150, 75]);
+        // Generate a radial gradient that is evenly distributed between its component colors
+        const gradient = ctx.createRadialGradient(75, 150, 25, 75, 150, 75);
+        for (let i = 0; i < suit.fillColors.length; ++i) {
+            gradient.addColorStop(i / (suit.fillColors.length - 1), suit.fillColors[i]);
+        }
+        ctx.fillStyle = gradient;
     } else {
         // All other suits have a solid fill
         ctx.fillStyle = suit.fill;
@@ -203,13 +208,4 @@ export default (ctx, suit, shadow, deckBack) => {
     } else {
         ctx.stroke();
     }
-};
-
-// Generates a radial gradient that is evenly distributed between its component colors
-const evenRadialGradient = (ctx, colors, args) => {
-    const grad = ctx.createRadialGradient(...args);
-    for (let i = 0; i < colors.length; ++i) {
-        grad.addColorStop(i / (colors.length - 1), colors[i]);
-    }
-    return grad;
 };
