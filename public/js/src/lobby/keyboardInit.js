@@ -38,7 +38,7 @@ export default () => {
         } else if (event.altKey && (event.key === 's' || event.key === 'ß')) { // Alt + s
             // Click on the "Start Game" button
             if (globals.currentScreen === 'pregame') {
-                $('#nav-buttons-game-start').click();
+                $('#nav-buttons-pregame-start').click();
             }
         } else if (event.altKey && (event.key === 'l' || event.key === '¬')) { // Alt + l
             // Click on the "Leave Game" button
