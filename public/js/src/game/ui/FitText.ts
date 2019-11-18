@@ -8,7 +8,7 @@ export default class FitText extends Konva.Text {
     constructor(config: Konva.TextConfig) {
         super(config);
 
-        //Class variables
+        // Class variables
         this.origFontSize = this.fontSize();
         this.needsResize = true;
 
