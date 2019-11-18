@@ -2,7 +2,7 @@
     A collection of miscellaneous functions
 */
 
-export const timerFormatter = (milliseconds) => {
+export const timerFormatter = (milliseconds: number) => {
     if (!milliseconds) {
         milliseconds = 0;
     }
@@ -14,10 +14,13 @@ export const timerFormatter = (milliseconds) => {
     return `${minutes}:${secondsFormatted}`;
 };
 
+// TODO: Move this to main.ts
+declare const $: any;
+
 // From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
 export const closeAllTooltips = () => {
     const instances = $.tooltipster.instances();
-    $.each(instances, (i, instance) => {
+    $.each(instances, (_: number, instance: any) => {
         if (instance.status().open) {
             instance.close();
         }
@@ -25,19 +28,12 @@ export const closeAllTooltips = () => {
 };
 
 // From: https://techoverflow.net/2018/03/30/copying-strings-to-the-clipboard-using-pure-javascript/
-export const copyStringToClipboard = (str) => {
-    // Create new element
-    const el = document.createElement('textarea');
-    // Set value (string to be copied)
-    el.value = str;
-    // Set non-editable to avoid focus and move outside of view
-    el.setAttribute('readonly', '');
-    el.style = { position: 'absolute', left: '-9999px' };
+export const copyStringToClipboard = (str: string) => {
+    const el = document.createElement('textarea'); // Create new element
+    el.value = str; // Set the value (the string to be copied)
+    el.setAttribute('readonly', ''); // Set non-editable to avoid focus
     document.body.appendChild(el);
-    // Select text inside element
-    el.select();
-    // Copy text to clipboard
-    document.execCommand('copy');
-    // Remove temporary element
-    document.body.removeChild(el);
+    el.select(); // Select text inside element
+    document.execCommand('copy'); // Copy text to clipboard
+    document.body.removeChild(el); // Remove temporary element
 };
