@@ -157,8 +157,7 @@ for (const [suitName, suitJSON] of Object.entries(suitsJSON)) {
     // Validate the "allClueColors" property (for suits that are clued by every color)
     // If it is not specified, assume that it is false
     if (Object.hasOwnProperty.call(suitJSON, 'allClueColors') && suitJSON.allClueColors !== true) {
-        const msg = `The "allClueColors" property for the suit "${suitName}" must be set to true.`;
-        throw new Error(msg);
+        throw new Error(`The "allClueColors" property for the suit "${suitName}" must be set to true.`);
     }
     const allClueColors: boolean = suitJSON.allClueColors || false;
 
@@ -184,8 +183,7 @@ for (const [suitName, suitJSON] of Object.entries(suitsJSON)) {
             if (colorObject) {
                 clueColors.push(colorObject);
             } else {
-                const msg = `The color "${colorString}" in the suit "${suitName}" does not exist.`;
-                throw new Error(msg);
+                throw new Error(`The color "${colorString}" in the suit "${suitName}" does not exist.`);
             }
         }
     } else {
@@ -238,8 +236,7 @@ for (const [suitName, suitJSON] of Object.entries(suitsJSON)) {
     // Validate the "oneOfEach" property
     // If it is not specified, the suit is not one of each (e.g. every card is not critical)
     if (Object.hasOwnProperty.call(suitJSON, 'oneOfEach') && suitJSON.oneOfEach !== true) {
-        const msg = `The "oneOfEach" property for the suit "${suitName}" must be set to true.`;
-        throw new Error(msg);
+        throw new Error(`The "oneOfEach" property for the suit "${suitName}" must be set to true.`);
     }
     const oneOfEach: boolean = suitJSON.oneOfEach || false;
 
@@ -272,6 +269,8 @@ interface Variant {
     readonly ranks: Array<number>,
     readonly clueColors: Array<Color>,
     readonly clueRanks: Array<number>,
+    readonly colorCluesTouchNothing: boolean,
+    readonly rankCluesTouchNothing: boolean,
     readonly showSuitNames: boolean,
     readonly spacing: boolean,
     readonly maxScore: number,
@@ -309,16 +308,14 @@ for (const [variantName, variantJSON] of Object.entries(variantsJSON)) {
     const suits: Array<Suit> = [];
     for (const suitString of variantJSON.suits) {
         if (typeof suitString !== 'string') {
-            const msg = `One of the suits for the variant "${name}" was not specified as a string.`;
-            throw new Error(msg);
+            throw new Error(`One of the suits for the variant "${name}" was not specified as a string.`);
         }
 
         const suitObject = SUITS.get(suitString);
         if (suitObject) {
             suits.push(suitObject);
         } else {
-            const msg = `The suit "${suitString}" in the variant "${name}" does not exist.`;
-            throw new Error(msg);
+            throw new Error(`The suit "${suitString}" in the variant "${name}" does not exist.`);
         }
     }
 
@@ -334,8 +331,7 @@ for (const [variantName, variantJSON] of Object.entries(variantsJSON)) {
     const clueColors: Array<Color> = [];
     if (Object.hasOwnProperty.call(variantJSON, 'clueColors')) {
         if (!Array.isArray(variantJSON.clueColors)) {
-            const msg = `The clue colors for the variant "${name}" were not specified as an array.`;
-            throw new Error(msg);
+            throw new Error(`The clue colors for the variant "${name}" were not specified as an array.`);
         }
 
         // The clue colors are specified as an array of strings
@@ -349,8 +345,7 @@ for (const [variantName, variantJSON] of Object.entries(variantsJSON)) {
             if (colorObject) {
                 clueColors.push(colorObject);
             } else {
-                const msg = `The color "${colorString}" in the variant "${name}" does not exist.`;
-                throw new Error(msg);
+                throw new Error(`The color "${colorString}" in the variant "${name}" does not exist.`);
             }
         }
     } else {
@@ -373,14 +368,33 @@ for (const [variantName, variantJSON] of Object.entries(variantsJSON)) {
     // If it is not specified, assume that players can clue ranks 1 through 5
     const clueRanks: Array<number> = variantJSON.clueRanks || [1, 2, 3, 4, 5];
 
+    // Validate the "colorCluesTouchNothing" property
+    // If it is not specified, assume false (e.g. cluing colors in this variant works normally)
+    if (
+        Object.hasOwnProperty.call(variantJSON, 'colorCluesTouchNothing')
+        && variantJSON.colorCluesTouchNothing !== true
+    ) {
+        throw new Error(`The "colorCluesTouchNothing" property for the variant "${variantName}" must be set to true.`);
+    }
+    const colorCluesTouchNothing: boolean = variantJSON.colorCluesTouchNothing || false;
+
+    // Validate the "rankCluesTouchNothing" property
+    // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
+    if (
+        Object.hasOwnProperty.call(variantJSON, 'rankCluesTouchNothing')
+        && variantJSON.rankCluesTouchNothing !== true
+    ) {
+        throw new Error(`The "rankCluesTouchNothing" property for the variant "${variantName}" must be set to true.`);
+    }
+    const rankCluesTouchNothing: boolean = variantJSON.rankCluesTouchNothing || false;
+
     // Validate the "showSuitNames" property
     // If it is not specified, assume that we are not showing the suit names
     if (
         Object.hasOwnProperty.call(variantJSON, 'showSuitNames')
         && variantJSON.showSuitNames !== true
     ) {
-        const msg = `The "showSuitNames" property for the variant "${variantName}" must be set to true.`;
-        throw new Error(msg);
+        throw new Error(`The "showSuitNames" property for the variant "${variantName}" must be set to true.`);
     }
     const showSuitNames: boolean = variantJSON.showSuitNames || false;
 
@@ -390,8 +404,7 @@ for (const [variantName, variantJSON] of Object.entries(variantsJSON)) {
         Object.hasOwnProperty.call(variantJSON, 'spacing')
         && variantJSON.spacing !== true
     ) {
-        const msg = `The "spacing" property for the variant "${variantName}" must be set to true.`;
-        throw new Error(msg);
+        throw new Error(`The "spacing" property for the variant "${variantName}" must be set to true.`);
     }
     const spacing: boolean = variantJSON.spacing || false;
 
@@ -411,6 +424,8 @@ for (const [variantName, variantJSON] of Object.entries(variantsJSON)) {
         ranks,
         clueColors,
         clueRanks,
+        colorCluesTouchNothing,
+        rankCluesTouchNothing,
         showSuitNames,
         spacing,
         maxScore,

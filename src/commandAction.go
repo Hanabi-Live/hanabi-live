@@ -184,12 +184,10 @@ func commandAction(s *Session, d *CommandData) {
 		if !touchedAtLeastOneCard &&
 			// Make an exception if they have the optional setting for "Empty Clues" turned on
 			!t.Options.EmptyClues &&
-			// Make an exception for the "Color Blind" variants (color clues touch no cards),
-			// "Number Blind" variants (rank clues touch no cards),
-			// and "Totally Blind" variants (all clues touch no cards)
-			(!strings.HasPrefix(t.Options.Variant, "Color Blind") || d.Clue.Type != clueTypeColor) &&
-			(!strings.HasPrefix(t.Options.Variant, "Number Blind") || d.Clue.Type != clueTypeRank) &&
-			!strings.HasPrefix(t.Options.Variant, "Totally Blind") &&
+			// Make an exception for variants where color clues are always allowed
+			(!variants[t.Options.Variant].ColorCluesTouchNothing || d.Clue.Type != clueTypeColor) &&
+			// Make an exception for variants where rank clues are always allowed
+			(!variants[t.Options.Variant].RankCluesTouchNothing || d.Clue.Type != clueTypeRank) &&
 			// Make an exception for certain characters
 			!characterEmptyClueAllowed(d, g, p) {
 

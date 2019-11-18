@@ -1105,84 +1105,92 @@
 
     "Color Blind (6 Suits)": {
         "id": 10,
-        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB", "Purple CB", "Teal CB"],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "colorCluesTouchNothing": true
     },
     "Color Blind (5 Suits)": {
         "id": 33,
-        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB", "Purple CB"],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "colorCluesTouchNothing": true
     },
     "Color Blind (4 Suits)": {
         "id": 34,
-        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB"],
-        "clueColors": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "colorCluesTouchNothing": true
     },
     "Color Blind (3 Suits)": {
         "id": 35,
-        "suits": ["Blue CB", "Green CB", "Yellow CB"],
-        "clueColors": ["Blue", "Green", "Yellow"],
+        "suits": ["Blue", "Green", "Yellow"],
+        "colorCluesTouchNothing": true,
         "spacing": true
     },
 
     "Number Blind (6 Suits)": {
         "id": 102,
-        "suits": ["Blue NB", "Green NB", "Yellow NB", "Red NB", "Purple NB", "Teal NB"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "rankCluesTouchNothing": true
     },
     "Number Blind (5 Suits)": {
         "id": 103,
-        "suits": ["Blue NB", "Green NB", "Yellow NB", "Red NB", "Purple NB"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "rankCluesTouchNothing": true
     },
     "Number Blind (4 Suits)": {
         "id": 104,
-        "suits": ["Blue NB", "Green NB", "Yellow NB", "Red NB"]
+        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "rankCluesTouchNothing": true
     },
     "Number Blind (3 Suits)": {
         "id": 105,
-        "suits": ["Blue NB", "Green NB", "Yellow NB"],
+        "suits": ["Blue", "Green", "Yellow"],
+        "rankCluesTouchNothing": true,
         "spacing": true
     },
 
     "Totally Blind (6 Suits)": {
         "id": 151,
-        "suits": ["Blue TB", "Green TB", "Yellow TB", "Red TB", "Purple TB", "Teal TB"],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "colorCluesTouchNothing": true,
+        "rankCluesTouchNothing": true
     },
     "Totally Blind (5 Suits)": {
         "id": 152,
-        "suits": ["Blue TB", "Green TB", "Yellow TB", "Red TB", "Purple TB"],
-        "clueColors": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "colorCluesTouchNothing": true,
+        "rankCluesTouchNothing": true
     },
     "Totally Blind (4 Suits)": {
         "id": 153,
-        "suits": ["Blue TB", "Green TB", "Yellow TB", "Red TB"],
-        "clueColors": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "colorCluesTouchNothing": true,
+        "rankCluesTouchNothing": true
     },
     "Totally Blind (3 Suits)": {
         "id": 154,
-        "suits": ["Blue TB", "Green TB", "Yellow TB"],
-        "clueColors": ["Blue", "Green", "Yellow"],
+        "suits": ["Blue", "Green", "Yellow"],
+        "colorCluesTouchNothing": true,
+        "rankCluesTouchNothing": true,
         "spacing": true
     },
 
     "Color Mute (6 Suits)": {
         "id": 110,
-        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB", "Purple CB", "Teal CB"],
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
         "clueColors": []
     },
     "Color Mute (5 Suits)": {
         "id": 111,
-        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB", "Purple CB"],
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
         "clueColors": []
     },
     "Color Mute (4 Suits)": {
         "id": 112,
-        "suits": ["Blue CB", "Green CB", "Yellow CB", "Red CB"],
+        "suits": ["Blue", "Green", "Yellow", "Red"],
         "clueColors": []
     },
     "Color Mute (3 Suits)": {
         "id": 113,
-        "suits": ["Blue CB", "Green CB", "Yellow CB"],
+        "suits": ["Blue", "Green", "Yellow"],
         "clueColors": [],
         "spacing": true
     },

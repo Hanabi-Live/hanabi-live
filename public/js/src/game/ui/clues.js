@@ -22,14 +22,10 @@ export const checkLegal = () => {
     const enabled = touchedAtLeastOneCard
         // Make an exception if they have the optional setting for "Empty Clues" turned on
         || globals.emptyClues
-        // Make an exception for the "Color Blind" variants (color clues touch no cards),
-        // "Number Blind" variants (rank clues touch no cards),
-        // and "Totally Blind" variants (all clues touch no cards)
-        || (globals.variant.name.startsWith('Color Blind')
-            && clueButton.clue.type === CLUE_TYPE.COLOR)
-        || (globals.variant.name.startsWith('Number Blind')
-            && clueButton.clue.type === CLUE_TYPE.RANK)
-        || globals.variant.name.startsWith('Totally Blind')
+        // Make an exception for variants where color clues are always allowed
+        || (globals.variant.colorCluesTouchNothing && clueButton.clue.type === CLUE_TYPE.COLOR)
+        // Make an exception for variants where number clues are always allowed
+        || (globals.variant.rankCluesTouchNothing && clueButton.clue.type === CLUE_TYPE.RANK)
         // Make an exception for certain characters
         || (globals.characterAssignments[globals.playerUs] === 'Blind Spot'
             && who === (globals.playerUs + 1) % globals.playerNames.length)
@@ -59,10 +55,6 @@ const showClueMatch = (target, clue) => {
 
 // This mirrors the function in "variants.go"
 const variantIsCardTouched = (clue, card) => {
-    if (globals.variant.name.startsWith('Totally Blind')) {
-        return false;
-    }
-
     if (clue.type === CLUE_TYPE.RANK) {
         if (card.suit.clueRanks === 'all') {
             return true;
@@ -70,7 +62,7 @@ const variantIsCardTouched = (clue, card) => {
         if (card.suit.clueRanks === 'none') {
             return false;
         }
-        if (globals.variant.name.startsWith('Number Blind')) {
+        if (globals.variant.rankCluesTouchNothing) {
             return false;
         }
         if (globals.variant.name.includes('Multi-Fives') && card.rank === 5) {
@@ -80,7 +72,7 @@ const variantIsCardTouched = (clue, card) => {
     }
 
     if (clue.type === CLUE_TYPE.COLOR) {
-        if (globals.variant.name.startsWith('Color Blind')) {
+        if (globals.variant.colorCluesTouchNothing) {
             return false;
         }
         if (globals.variant.name.includes('Prism-Ones') && card.rank === 1) {

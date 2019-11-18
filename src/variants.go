@@ -155,20 +155,24 @@ type JSONVariant struct {
 	Suits []string `json:"suits"`
 	// ClueColors and ClueRanks are optional elements
 	// Thus, they must be pointers so that we can tell if the values were specified or not
-	ClueColors *[]string `json:"clueColors"`
-	ClueRanks  *[]int    `json:"clueRanks"`
+	ClueColors             *[]string `json:"clueColors"`
+	ClueRanks              *[]int    `json:"clueRanks"`
+	ColorCluesTouchNothing bool
+	RankCluesTouchNothing  bool
 }
 
 type Variant struct {
 	Name string
 	// Each variant must have a unique numerical ID for seed generation purposes
 	// (and for the database)
-	ID         int
-	Suits      []*Suit
-	Ranks      []int
-	ClueColors []string
-	ClueRanks  []int
-	MaxScore   int
+	ID                     int
+	Suits                  []*Suit
+	Ranks                  []int
+	ClueColors             []string
+	ClueRanks              []int
+	ColorCluesTouchNothing bool
+	RankCluesTouchNothing  bool
+	MaxScore               int
 }
 
 func variantsInit() {
@@ -270,13 +274,15 @@ func variantsInit() {
 
 		// Convert the JSON variant into a variant object and store it in the map
 		variants[name] = &Variant{
-			Name:       name,
-			ID:         variant.ID,
-			Suits:      variantSuits,
-			Ranks:      variantRanks,
-			ClueColors: *clueColors,
-			ClueRanks:  *clueRanks,
-			MaxScore:   len(variantSuits) * 5, // Assuming that there are 5 points per stack
+			Name:                   name,
+			ID:                     variant.ID,
+			Suits:                  variantSuits,
+			Ranks:                  variantRanks,
+			ClueColors:             *clueColors,
+			ClueRanks:              *clueRanks,
+			ColorCluesTouchNothing: variant.ColorCluesTouchNothing,
+			RankCluesTouchNothing:  variant.RankCluesTouchNothing,
+			MaxScore:               len(variantSuits) * 5, // Assuming that there are 5 points per stack
 		}
 
 		// Create a reverse mapping of ID to name
@@ -300,10 +306,6 @@ func variantsInit() {
 // For example, a yellow clue will not touch a green card in a normal game,
 // but it will the "Dual-Color" variant
 func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
-	if strings.HasPrefix(variant, "Totally Blind") {
-		return false
-	}
-
 	if clue.Type == clueTypeRank {
 		if variants[variant].Suits[card.Suit].ClueRanks == "all" {
 			return true
@@ -311,7 +313,7 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		if variants[variant].Suits[card.Suit].ClueRanks == "none" {
 			return false
 		}
-		if strings.HasPrefix(variant, "Number Blind") {
+		if variants[variant].RankCluesTouchNothing {
 			return false
 		}
 		if strings.HasPrefix(variant, "Multi-Fives") && card.Rank == 5 {
@@ -321,7 +323,7 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 	}
 
 	if clue.Type == clueTypeColor {
-		if strings.HasPrefix(variant, "Color Blind") || strings.HasPrefix(variant, "Color Mute") {
+		if variants[variant].ColorCluesTouchNothing {
 			return false
 		}
 		if strings.Contains(variant, "Prism-Ones") && card.Rank == 1 {
