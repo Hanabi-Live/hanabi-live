@@ -32,6 +32,12 @@ module.exports = {
         // Airbnb uses 2 spaces, but it is harder to read block intendation at a glance
         '@typescript-eslint/indent': ['warn', 4],
 
+        // Airbnb has "exceptAfterSingleLine" turned off by default
+        // A list of single-line variable declarations at the top of a class is common in TypeScript
+        'lines-between-class-members': ['error', 'always', {
+            exceptAfterSingleLine: true,
+        }],
+
         // The browser JavaScript makes use of tasteful alerts
         'no-alert': ['off'],
 

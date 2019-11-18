@@ -6,7 +6,7 @@
 import * as action from './action';
 import * as arrows from './arrows';
 import {
-    ACT,
+    ACTION,
     CLUE_TYPE,
     MAX_CLUE_NUM,
     REPLAY_ARROW_ORDER,
@@ -47,7 +47,7 @@ commands.action = (data) => {
         globals.elements.premoveCancelButton.hide();
         globals.layers.UI.batchDraw();
 
-        if (globals.queuedAction.data.type === ACT.CLUE) {
+        if (globals.queuedAction.data.type === ACTION.CLUE) {
             // Prevent pre-cluing if the team is now at 0 clues
             if (globals.clues === 0) {
                 return;
@@ -56,7 +56,7 @@ commands.action = (data) => {
             // Prevent pre-cluing if the card is no longer in the hand
             const card = globals.deck[globals.preCluedCard];
             if (
-                globals.queuedAction.data.type === ACT.CLUE
+                globals.queuedAction.data.type === ACTION.CLUE
                 && (card.isPlayed || card.isDiscarded)
             ) {
                 return;
@@ -65,7 +65,7 @@ commands.action = (data) => {
 
         // Prevent discarding if the team is at the maximum amount of clues
         if (
-            globals.queuedAction.data.type === ACT.DISCARD
+            globals.queuedAction.data.type === ACTION.DISCARD
             && globals.clues === MAX_CLUE_NUM
         ) {
             return;

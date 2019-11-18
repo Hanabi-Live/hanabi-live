@@ -4,7 +4,7 @@
 
 // Imports
 import {
-    ACT,
+    ACTION,
     CLUE_TYPE,
     MAX_CLUE_NUM,
     STACK_BASE_RANK,
@@ -57,7 +57,7 @@ const clickLeft = (card, event) => {
         ui.endTurn({
             type: 'action',
             data: {
-                type: ACT.PLAY,
+                type: ACTION.PLAY,
                 target: card.order,
             },
         });
@@ -103,7 +103,7 @@ const clickLeft = (card, event) => {
         ui.endTurn({
             type: 'action',
             data: {
-                type: ACT.CLUE,
+                type: ACTION.CLUE,
                 target: card.holder,
                 clue: {
                     type: CLUE_TYPE.COLOR,
@@ -130,7 +130,7 @@ const clickRight = (card, event) => {
         ui.endTurn({
             type: 'action',
             data: {
-                type: ACT.DISCARD,
+                type: ACTION.DISCARD,
                 target: card.order,
             },
         });
@@ -150,7 +150,7 @@ const clickRight = (card, event) => {
         ui.endTurn({
             type: 'action',
             data: {
-                type: ACT.CLUE,
+                type: ACTION.CLUE,
                 target: card.holder,
                 clue: {
                     type: CLUE_TYPE.RANK,

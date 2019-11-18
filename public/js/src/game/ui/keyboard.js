@@ -4,7 +4,7 @@
 
 // Imports
 import * as clues from './clues';
-import { ACT, REPLAY_ACTION_TYPE } from '../../constants';
+import { ACTION, REPLAY_ACTION_TYPE } from '../../constants';
 import globals from './globals';
 import { copyStringToClipboard } from '../../misc';
 import * as replay from './replay';
@@ -272,9 +272,9 @@ const action = (intendedPlay = true) => {
 
     const data = {};
     if (cardOrder === 'deck') {
-        data.type = ACT.DECKPLAY;
+        data.type = ACTION.DECKPLAY;
     } else {
-        data.type = intendedPlay ? ACT.PLAY : ACT.DISCARD;
+        data.type = intendedPlay ? ACTION.PLAY : ACTION.DISCARD;
         data.target = cardOrder;
     }
 

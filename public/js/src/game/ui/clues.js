@@ -1,6 +1,6 @@
 // Imports
 import * as arrows from './arrows';
-import { ACT, CLUE_TYPE } from '../../constants';
+import { ACTION, CLUE_TYPE } from '../../constants';
 import { clueToMsgClue } from './convert';
 import globals from './globals';
 import * as ui from './ui';
@@ -104,7 +104,7 @@ export const give = () => {
     ui.endTurn({
         type: 'action',
         data: {
-            type: ACT.CLUE,
+            type: ACTION.CLUE,
             target: target.targetIndex,
             clue: clueToMsgClue(clueButton.clue, globals.variant),
         },

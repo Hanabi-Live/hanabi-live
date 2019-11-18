@@ -4,7 +4,7 @@
 
 // Imports
 import * as action from './action';
-import { ACT } from '../../constants';
+import { ACTION } from '../../constants';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as replay from './replay';
@@ -24,11 +24,11 @@ export const endTurn = (actionObject) => {
     } else {
         globals.queuedAction = actionObject;
         let text = 'Cancel Pre-';
-        if (globals.queuedAction.data.type === ACT.CLUE) {
+        if (globals.queuedAction.data.type === ACTION.CLUE) {
             text += 'Clue';
-        } else if (globals.queuedAction.data.type === ACT.PLAY) {
+        } else if (globals.queuedAction.data.type === ACTION.PLAY) {
             text += 'Play';
-        } else if (globals.queuedAction.data.type === ACT.DISCARD) {
+        } else if (globals.queuedAction.data.type === ACTION.DISCARD) {
             text += 'Discard';
         }
         globals.elements.premoveCancelButton.setText(text);

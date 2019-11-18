@@ -2,7 +2,7 @@
 import Konva from 'konva';
 import * as action from './action';
 import * as arrows from './arrows';
-import { ACT, REPLAY_ARROW_ORDER, TOOLTIP_DELAY } from '../../constants';
+import { ACTION, REPLAY_ARROW_ORDER, TOOLTIP_DELAY } from '../../constants';
 import globals from './globals';
 import LayoutChild from './LayoutChild';
 import { timerFormatter } from '../../misc';
@@ -109,7 +109,7 @@ export default class Deck extends Konva.Group {
             globals.elements.deckPlayAvailableLabel.hide();
 
             globals.lobby.conn.send('action', {
-                type: ACT.DECKPLAY,
+                type: ACTION.DECKPLAY,
             });
 
             action.stop();

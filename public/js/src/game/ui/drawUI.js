@@ -14,7 +14,7 @@ import Clue from './Clue';
 import ClueLog from './ClueLog';
 import ColorButton from './ColorButton';
 import {
-    ACT,
+    ACTION,
     CLUE_TYPE,
     LABEL_COLOR,
     REPLAY_ACTION_TYPE,
@@ -1707,8 +1707,8 @@ const drawPreplayArea = () => {
 
         // If we dragged a card, we have to put the card back in the hand
         if (
-            globals.queuedAction.data.type === ACT.PLAY
-            || globals.queuedAction.data.type === ACT.DISCARD
+            globals.queuedAction.data.type === ACTION.PLAY
+            || globals.queuedAction.data.type === ACTION.DISCARD
         ) {
             globals.elements.playerHands[globals.playerUs].doLayout();
         }

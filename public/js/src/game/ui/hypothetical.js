@@ -4,7 +4,7 @@
 */
 
 // Imports
-import { ACT, REPLAY_ACTION_TYPE } from '../../constants';
+import { ACTION, REPLAY_ACTION_TYPE } from '../../constants';
 import { suitToMsgSuit } from './convert';
 import globals from './globals';
 import * as replay from './replay';
@@ -74,13 +74,13 @@ const setActivePlayerCardsDraggable = () => {
 
 export const send = (action) => {
     let type = '';
-    if (action.data.type === ACT.CLUE) {
+    if (action.data.type === ACTION.CLUE) {
         type = 'clue';
-    } else if (action.data.type === ACT.PLAY) {
+    } else if (action.data.type === ACTION.PLAY) {
         type = 'play';
-    } else if (action.data.type === ACT.DISCARD) {
+    } else if (action.data.type === ACTION.DISCARD) {
         type = 'discard';
-    } else if (action.data.type === ACT.DECKPLAY) {
+    } else if (action.data.type === ACTION.DECKPLAY) {
         type = 'play';
     }
 
