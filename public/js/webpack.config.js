@@ -58,7 +58,4 @@ module.exports = {
     // Enable source maps for debugging purposes
     // (this will show the line number of the real file in the browser JavaScript console)
     devtool: 'source-map',
-
-    // Watch for changes in the source files and update the bundle if so
-    watch: true,
 };
