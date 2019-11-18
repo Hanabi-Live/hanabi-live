@@ -4,6 +4,7 @@
 
 // Imports
 import shajs from 'sha.js';
+import { FADE_TIME } from './constants';
 import * as gameChat from './game/chat';
 import globals from './globals';
 import { closeAllTooltips } from './misc';
@@ -33,12 +34,12 @@ export const init = () => {
 
     // Warning
     $('#warning-modal-button').click(() => {
-        $('#warning-modal').fadeOut(globals.fadeTime);
+        $('#warning-modal').fadeOut(FADE_TIME);
         if ($('#lobby').is(':visible')) {
-            $('#lobby').fadeTo(globals.fadeTime, 1);
+            $('#lobby').fadeTo(FADE_TIME, 1);
         }
         if ($('#game').is(':visible')) {
-            $('#game').fadeTo(globals.fadeTime, 1);
+            $('#game').fadeTo(FADE_TIME, 1);
         }
     });
 
@@ -52,17 +53,17 @@ export const init = () => {
 };
 
 export const passwordShow = (tableID) => {
-    $('#lobby').fadeTo(globals.fadeTime, 0.25);
+    $('#lobby').fadeTo(FADE_TIME, 0.25);
     closeAllTooltips();
 
     $('#password-modal-id').val(tableID);
-    $('#password-modal').fadeIn(globals.fadeTime);
+    $('#password-modal').fadeIn(FADE_TIME);
     $('#password-modal-password').focus();
 };
 
 const passwordSubmit = () => {
-    $('#password-modal').fadeOut(globals.fadeTime);
-    $('#lobby').fadeTo(globals.fadeTime, 1);
+    $('#password-modal').fadeOut(FADE_TIME);
+    $('#lobby').fadeTo(FADE_TIME, 1);
     const tableID = parseInt($('#password-modal-id').val(), 10); // The server expects this as a number
     const passwordPlaintext = $('#password-modal-password').val();
     const stringToHash = `Hanabi game password ${passwordPlaintext}`;
@@ -75,16 +76,16 @@ const passwordSubmit = () => {
 
 export const warningShow = (msg) => {
     if ($('#lobby').is(':visible')) {
-        $('#lobby').fadeTo(globals.fadeTime, 0.25);
+        $('#lobby').fadeTo(FADE_TIME, 0.25);
     }
     if ($('#game').is(':visible')) {
-        $('#game').fadeTo(globals.fadeTime, 0.25);
+        $('#game').fadeTo(FADE_TIME, 0.25);
     }
     closeAllTooltips();
     gameChat.hide();
 
     $('#warning-modal-description').html(msg);
-    $('#warning-modal').fadeIn(globals.fadeTime);
+    $('#warning-modal').fadeIn(FADE_TIME);
 };
 
 export const errorShow = (msg) => {
@@ -95,10 +96,10 @@ export const errorShow = (msg) => {
     globals.errorOccured = true;
 
     if ($('#lobby').is(':visible')) {
-        $('#lobby').fadeTo(globals.fadeTime, 0.1);
+        $('#lobby').fadeTo(FADE_TIME, 0.1);
     }
     if ($('#game').is(':visible')) {
-        $('#game').fadeTo(globals.fadeTime, 0.1);
+        $('#game').fadeTo(FADE_TIME, 0.1);
     }
     closeAllTooltips();
     gameChat.hide();
@@ -107,7 +108,7 @@ export const errorShow = (msg) => {
     lobbyNav.show('nothing');
 
     $('#error-modal-description').html(msg);
-    $('#error-modal').fadeIn(globals.fadeTime);
+    $('#error-modal').fadeIn(FADE_TIME);
 
     // Show the "Sign Out" button if this is a specific type of error message
     if (msg.startsWith('You have logged on from somewhere else')) {
@@ -119,7 +120,7 @@ export const errorShow = (msg) => {
 
 export const closeAll = () => {
     for (const modal of modals) {
-        $(`#${modal}-modal`).fadeOut(globals.fadeTime);
+        $(`#${modal}-modal`).fadeOut(FADE_TIME);
     }
-    $('#lobby').fadeTo(globals.fadeTime, 1);
+    $('#lobby').fadeTo(FADE_TIME, 1);
 };

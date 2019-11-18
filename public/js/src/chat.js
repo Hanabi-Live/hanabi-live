@@ -4,6 +4,7 @@
 
 // Imports
 import linkifyHtml from 'linkifyjs/html';
+import { FADE_TIME } from './constants';
 import globals from './globals';
 import emojis from './data/emojis.json';
 import emoteCategories from './data/emotes.json';
@@ -126,7 +127,7 @@ export const add = (data, fast) => {
 
     // Add the new line and fade it in
     chat.append(line);
-    $(`#chat-line-${chatLineNum}`).fadeIn(globals.fadeTime);
+    $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME);
     chatLineNum += 1;
 
     // Automatically scroll down

@@ -4,6 +4,7 @@
 */
 
 // Imports
+import { FADE_TIME } from '../constants';
 import globals from '../globals';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
@@ -14,7 +15,7 @@ export const hide = (firstTimeUser) => {
     $('#login').hide();
 
     if (firstTimeUser) {
-        $('#tutorial').fadeIn(globals.fadeTime);
+        $('#tutorial').fadeIn(FADE_TIME);
         return;
     }
     $('#tutorial').hide();
@@ -51,6 +52,6 @@ export const formError = (msg) => {
         $('#login-ajax').hide();
         $('#login-button').removeClass('disabled');
         $('#login-alert').html(msg);
-        $('#login-alert').fadeIn(globals.fadeTime);
+        $('#login-alert').fadeIn(FADE_TIME);
     }, 0);
 };

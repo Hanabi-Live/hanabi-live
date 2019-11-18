@@ -4,6 +4,7 @@
 
 // Imports
 import * as chat from './chat';
+import { FADE_TIME } from '../constants';
 import globals from '../globals';
 import HanabiUI from './ui/HanabiUI';
 import { closeAllTooltips } from '../misc';
@@ -23,7 +24,7 @@ export const show = () => {
         // Do nothing and initialize later when we get the "init" message
         // TODO we can initialize the stage and some graphics here
     } else {
-        $('#game').fadeIn(globals.fadeTime);
+        $('#game').fadeIn(FADE_TIME);
         globals.ui = new HanabiUI(globals, gameExports);
         globals.chatUnread = 0;
     }
@@ -37,7 +38,7 @@ export const hide = () => {
     globals.ui = null;
 
     $('#game').hide(); // We can't fade this out as it will overlap
-    $('#page-wrapper').fadeIn(globals.fadeTime, () => {
+    $('#page-wrapper').fadeIn(FADE_TIME, () => {
         // Also account that we could be going back to the history screen
         // or the history details screen
         // (if we entered a solo replay from the history screen / history details screen)

@@ -1,5 +1,6 @@
 // Imports
 import * as createGame from './createGame';
+import { FADE_TIME } from '../constants';
 import globals from '../globals';
 import * as history from './history';
 import * as modals from '../modals';
@@ -92,7 +93,7 @@ const initTooltips = () => {
             'scrollableTip', // Make it scrollable
         ],
         functionBefore: () => {
-            $('#lobby').fadeTo(globals.fadeTime, 0.4);
+            $('#lobby').fadeTo(FADE_TIME, 0.4);
         },
     };
 
@@ -111,7 +112,7 @@ const initTooltips = () => {
             }
         }
         if (tooltipsOpen <= 1) {
-            $('#lobby').fadeTo(globals.fadeTime, 1);
+            $('#lobby').fadeTo(FADE_TIME, 1);
         }
     };
 

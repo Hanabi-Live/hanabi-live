@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	versionRegExp = regexp.MustCompile(`module.exports = (.+);`)
+	versionRegExp = regexp.MustCompile(`const v = (.+);`)
 )
 
 func websocketConnect(ms *melody.Session) {
@@ -71,7 +71,7 @@ func websocketConnect(ms *melody.Session) {
 	}
 
 	// Get the version number of the client (which is the number of commits in the repository)
-	versionPath := path.Join(projectPath, "public", "js", "src", "version.js")
+	versionPath := path.Join(projectPath, "public", "js", "src", "version.ts")
 	var versionContents string
 	if v, err := ioutil.ReadFile(versionPath); err != nil {
 		log.Error("Failed to read the \""+versionPath+"\" file "+

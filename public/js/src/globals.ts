@@ -1,11 +1,47 @@
-// Configuration
-const fadeTime = 350;
-// The "version.js" file is filled in dynamically by the "build_client.sh" script
-const version = require('./version'); // eslint-disable-line import/no-unresolved
+// Imports
+import version from './version';
+// (the "version.ts" file is filled in dynamically by the "build_client.sh" script)
+
+interface Globals {
+    version: number,
+    browserIsFirefox: boolean,
+
+    username: string | null,
+    password: string | null,
+
+    conn: any | null,
+
+    settings: Object,
+
+    userList: Object,
+    tableList: Object,
+    historyList: Object,
+    historyDetailList: Array<any>,
+    historyClicked: boolean,
+    totalGames: number,
+    randomName: string,
+
+    game: Object,
+
+    currentScreen: string,
+    tableID: number,
+    errorOccured: boolean,
+
+    ui: Object | null,
+    chatUnread: number,
+
+    phaser: Object | null,
+    init: Object | null,
+    state: State,
+}
+
+interface State {
+    turn: number,
+    learnedCards: Array<any>,
+}
 
 // Exported global variables
-const globals = {
-    fadeTime,
+const globals: Globals = {
     version,
     browserIsFirefox: navigator.userAgent.toLowerCase().indexOf('firefox') > -1,
 
@@ -48,8 +84,11 @@ const globals = {
 };
 export default globals;
 
-// Also make it available to the window so that we can access global variables
-// from the JavaScript console (for debugging purposes)
+// Also make the globals available to the window
+// (so that we can access them from the JavaScript console for debugging purposes)
+declare global {
+    interface Window { globals2: any; }
+}
 if (typeof window !== 'undefined') {
     window.globals2 = globals;
 }

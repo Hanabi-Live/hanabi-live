@@ -25,6 +25,7 @@ export const ARROW_COLOR = {
     RETOUCHED: '#737373', // Dark gray
     HIGHLIGHT: '#ffdf00', // Yellow
 };
+export const FADE_TIME = 350; // In milliseconds
 
 // These constants much match their server-side counterparts
 export const ACTION = {

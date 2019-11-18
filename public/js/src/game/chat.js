@@ -4,6 +4,7 @@
 
 // Imports
 import interact from 'interactjs';
+import { FADE_TIME } from '../constants';
 import globals from '../globals';
 
 export const init = () => {
@@ -118,7 +119,7 @@ export const toggle = () => {
 
 export const show = () => {
     const modal = $('#game-chat-modal');
-    modal.fadeIn(globals.fadeTime);
+    modal.fadeIn(FADE_TIME);
 
     // Check to see if there are any uncurrently unread chat messages
     if (globals.chatUnread !== 0) {
@@ -176,7 +177,7 @@ export const show = () => {
 };
 
 export const hide = () => {
-    $('#game-chat-modal').fadeOut(globals.fadeTime);
+    $('#game-chat-modal').fadeOut(FADE_TIME);
 };
 
 // Subroutine to move an element (using the "transform" CSS property)
