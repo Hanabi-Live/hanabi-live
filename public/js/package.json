@@ -9,15 +9,15 @@
   "license": "GPL-3.0",
   "scripts": {
     "browserify": "browserify src/main.js > main.bundled.js",
-    "lint": "eslint \"src/**/*.js\""
+    "lint": "eslint src/** --ext .js,.ts"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^2.6.1",
+    "@typescript-eslint/eslint-plugin": "^2.7.0",
     "@typescript-eslint/parser": "^2.6.1",
     "eslint": "^6.1.0",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-config-airbnb-typescript": "^6.1.0",
+    "eslint-config-airbnb-typescript": "^6.3.0",
     "eslint-plugin-import": "^2.18.2",
     "grunt": "^1.0.4",
     "grunt-contrib-concat": "^1.0.1",

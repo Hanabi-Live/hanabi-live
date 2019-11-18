@@ -4,14 +4,29 @@ module.exports = {
     // The actual ESLint config is located here:
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js
     extends: 'airbnb-typescript/base',
-    // extends: 'airbnb-base',
 
     env: {
         browser: true,
         jquery: true,
     },
 
-    // We modify the base for some specific things
+    // We need to specify some additional settings in order to make the linter work with TypeScript
+    // From: https://medium.com/@myylow/how-to-keep-the-airbnb-eslint-config-when-moving-to-typescript-1abb26adb5c6
+    parser: '@typescript-eslint/parser',
+    plugins: [ '@typescript-eslint' ],
+    settings: {
+        'import/extensions': ['.js', '.ts'],
+        'import/parsers': {
+            '@typescript-eslint/parser': ['.ts']
+        },
+        'import/resolver': {
+            'node': {
+                'extensions': ['.js', '.ts']
+            }
+        }
+    },
+
+    // We modify the linting rules from the base for some specific things
     // (listed in alphabetical order)
     rules: {
         // Airbnb uses 2 spaces, but it is harder to read block intendation at a glance
@@ -54,25 +69,12 @@ module.exports = {
         '@typescript-eslint/no-use-before-define': ['off'],
 
         // Array destructuring can result in non-intuitive code
-        'prefer-destructuring': ['warn', {
-            'array': false,
-            'object': true,
-        }],
+        // Object destructuring is disgustingly verbose in TypeScript
+        // e.g. "const foo: string = bar.foo;" vs "const { foo }: { foo: string } = bar;"
+        'prefer-destructuring': ['off'],
 
         // This allows for cleaner looking code as recommended here:
         // https://blog.javascripting.com/2015/09/07/fine-tuning-airbnbs-eslint-config/
         'quote-props': ['warn', 'consistent-as-needed'],
     },
-
-    settings: {
-        'import/extensions': ['.js', '.ts'],
-        'import/parsers': {
-            '@typescript-eslint/parser': ['.ts']
-        },
-        'import/resolver': {
-            'node': {
-                'extensions': ['.js', '.ts']
-            }
-        }
-    }
 };

@@ -1,20 +1,24 @@
 {
-    "editor.fontSize": 16,
-
-    // We want to see spaces and tabs
-    "editor.renderWhitespace": "all",
-
-    // This matches the Airbnb JavaScript style guide
-    "editor.rulers": [100],
-
-    // IntelliSense tab completion is off by default
-    "editor.tabCompletion": "on",
-
+    "editor.fontSize": 17,
+    "editor.renderWhitespace": "all", // We want to see spaces and tabs
+    "editor.rulers": [100], // This matches the Airbnb JavaScript style guide
+    "editor.tabCompletion": "on", // IntelliSense tab completion is off by default
     "editor.wordWrap": "on",
+
+    // This is needed for VSCode to see ESLint errors on TypeScript files
+    "eslint.validate": [
+        "javascript",
+        { "language": "typescript", "autoFix": true },
+    ],
+
+    // Disable the confirmation box when deleting a file
     "explorer.confirmDelete": false,
-    
+
     // Linux line endings are commonly used as a programming standard
     "files.eol": "\n",
+
+    // VSCode recommends goimports over goreturns
+    "go.formatTool": "goimports",
 
     // The default Golang linter is golint, which is only concerned with coding style
     // GolangCI-Lint does a suite of different checks
@@ -25,14 +29,6 @@
         "--fast"
     ],
 
-    // This is needed to stop VSCode from recommending ES6 conversions
-    // https://stackoverflow.com/questions/49447955/what-is-this-mark
-    "javascript.suggestionActions.enabled": false,
-
-    // Disable the "Gutter" decorations along the left side next to the line numbers
-    // that show the Git history of the curernt code block
-    "scm.diffDecorations": "none",
-
     // Disable the annoying release notes popup everytime that VSCode updates itself
     "update.showReleaseNotes": false,
 
@@ -40,5 +36,5 @@
     "window.title": "${activeEditorLong}${separator}${rootName}",
 
     // Don't show the VSCode welcome screen
-    "workbench.startupEditor": "newUntitledFile"
+    "workbench.startupEditor": "newUntitledFile",
 }
