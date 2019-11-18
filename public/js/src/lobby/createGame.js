@@ -1,3 +1,4 @@
+
 /*
     The "Create Game" nav button
 */
@@ -11,11 +12,11 @@ import { closeAllTooltips } from '../misc';
 export const init = () => {
     // Populate the variant dropdown in the "Create Game" tooltip
     const line = '─────────────────────────';
-    for (const variantName of Object.keys(VARIANTS)) {
+    for (const [variantName, variant] of VARIANTS) {
         const option = new Option(variantName, variantName);
         $('#create-table-variant-list').append($(option));
 
-        if (VARIANTS[variantName].spacing) {
+        if (variant.spacing) {
             const spacing = new Option(line, line);
             $('#create-table-variant-list').append($(spacing));
         }

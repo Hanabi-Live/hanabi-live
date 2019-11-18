@@ -4,6 +4,7 @@
         "target": "es2018",
         "newLine": "lf",
         "resolveJsonModule": true,
+        "esModuleInterop": true,
         "moduleResolution": "Node",
         "removeComments": true,
 

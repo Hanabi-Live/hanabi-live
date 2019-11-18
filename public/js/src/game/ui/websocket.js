@@ -198,7 +198,7 @@ commands.init = (data) => {
     // Game settings
     globals.lobby.tableID = data.tableID; // Equal to the table ID on the server
     globals.playerNames = data.names;
-    globals.variant = VARIANTS[data.variant];
+    globals.variant = VARIANTS.get(data.variant);
     globals.playerUs = data.seat; // 0 if a spectator or a replay of a game that we were not in
     globals.spectating = data.spectating;
     globals.replay = data.replay;

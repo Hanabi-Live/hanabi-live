@@ -277,7 +277,7 @@ export const draw = () => {
             <div class="hidden">
                 <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
         `;
-        const maxScore = 5 * VARIANTS[globals.game.variant].suits.length;
+        const { maxScore } = VARIANTS.get(globals.game.variant);
         for (let j = 2; j <= 6; j++) {
             html += '<div class="row">';
             html += `<div class="col-6">${j}-player:</div>`;

@@ -20,8 +20,8 @@ export default (variant, colorblindUI) => {
     const cardImages = {};
 
     // Add the "unknown" suit to the list of suits for this variant
-    // The uknown suit has semi-blank gray cards, representing unknown cards
-    const suits = variant.suits.concat(SUITS.Unknown);
+    // The unknown suit has semi-blank gray cards, representing unknown cards
+    const suits = variant.suits.concat(SUITS.get('Unknown'));
 
     for (let i = 0; i < suits.length; i++) {
         const suit = suits[i];
@@ -89,17 +89,17 @@ export default (variant, colorblindUI) => {
             // - cards of unknown rank
             // Entirely unknown cards (e.g. "NoPip-Unknown-6")
             // have a custom image defined separately
-            if (rank >= 1 && (rank <= 5 || suit !== SUITS.Unknown)) {
+            if (rank >= 1 && (rank <= 5 || suit.name !== 'Unknown')) {
                 const cardImagesIndex = `NoPip-${suit.name}-${rank}`;
                 cardImages[cardImagesIndex] = cloneCanvas(cvs);
             }
 
-            if (suit !== SUITS.Unknown) {
+            if (suit.name !== 'Unknown') {
                 drawSuitPips(ctx, rank, suit, colorblindUI);
             }
 
             // "Card-Unknown" images would be identical to "NoPip-Unknown" images
-            if (suit !== SUITS.Unknown) {
+            if (suit.name !== 'Unknown') {
                 const cardImagesIndex = `Card-${suit.name}-${rank}`;
                 cardImages[cardImagesIndex] = cvs;
             }
@@ -290,8 +290,8 @@ const drawCardBase = (ctx, suit, rank) => {
     // Draw the background
     ctx.fillStyle = getSuitStyle(suit, ctx, 'background');
     ctx.strokeStyle = getSuitStyle(suit, ctx, 'background');
-    if (ctx.fillStyle === SUITS.White.fill) {
-        ctx.strokeStyle = COLORS.Black.fill;
+    if (ctx.fillStyle === SUITS.get('White').fill) {
+        ctx.strokeStyle = COLORS.get('Black').fill;
     }
 
     cardBorderPath(ctx, 4);

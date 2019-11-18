@@ -41,7 +41,7 @@ commands.init = (data) => {
 
     // The variant is an integer on the server side, but an object on the client side,
     // so convert it accordingly
-    globals.init.variant = VARIANTS[data.variant];
+    globals.init.variant = VARIANTS.get(data.variant);
 
     // Also initalize the "ui" object, which contains various graphical objects
     globals.ui = {

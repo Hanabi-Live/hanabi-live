@@ -155,7 +155,7 @@ export default class HanabiCard extends Konva.Group {
             if (this.possibleSuits.length === 1 && this.isClued()) {
                 [suitToShow] = this.possibleSuits;
             } else {
-                suitToShow = SUITS.Unknown;
+                suitToShow = SUITS.get('Unknown');
             }
         } else {
             // If we are not in Empathy mode, then show the suit if it is known
@@ -173,13 +173,13 @@ export default class HanabiCard extends Konva.Group {
                 suitToShow = this.noteSuit;
             }
             if (suitToShow === null) {
-                suitToShow = SUITS.Unknown;
+                suitToShow = SUITS.get('Unknown');
             }
         }
 
         // "Card-Unknown" is not created, so use "NoPip-Unknown"
         let prefix = 'Card';
-        if (suitToShow === SUITS.Unknown) {
+        if (suitToShow.name === 'Unknown') {
             prefix = 'NoPip';
         }
 
@@ -240,7 +240,7 @@ export default class HanabiCard extends Konva.Group {
                 globals.lobby.settings.realLifeMode
                 || globals.variant.name.startsWith('Cow & Pig')
                 || globals.variant.name.startsWith('Duck')
-            ) && (suitToShow === SUITS.Unknown || rankToShow === 6)
+            ) && (suitToShow.name === 'Unknown' || rankToShow === 6)
         ) {
             this.bareName = 'deck-back';
         } else {
@@ -257,7 +257,7 @@ export default class HanabiCard extends Konva.Group {
             this.suitPips.hide();
             this.rankPips.hide();
         } else {
-            this.suitPips.setVisible(suitToShow === SUITS.Unknown);
+            this.suitPips.setVisible(suitToShow.name === 'Unknown');
             this.rankPips.setVisible(rankToShow === 6);
         }
 

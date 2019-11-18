@@ -79,7 +79,7 @@ const clickLeft = (card, event) => {
         // A card may be cluable by more than one color,
         // so we need to figure out which color to use
         const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
-        const cardColors = card.suit.clueColors;
+        const { clueColors } = card.suit;
         let color;
         if (
             // If a clue type button is selected
@@ -87,14 +87,14 @@ const clickLeft = (card, event) => {
             // If a color clue type button is selected
             && clueButton.clue.type === CLUE_TYPE.COLOR
             // If the selected color clue is actually one of the possibilies for the card
-            && cardColors.findIndex((cardColor) => cardColor === clueButton.clue.value) !== -1
+            && clueColors.findIndex((cardColor) => cardColor === clueButton.clue.value) !== -1
         ) {
             // Use the color of the currently selected button
             color = clueButton.clue.value;
         } else {
             // Otherwise, just use the first possible color
             // e.g. for rainbow cards, use blue
-            [color] = cardColors;
+            color = clueColors[0];
         }
 
         const value = globals.variant.clueColors.findIndex(

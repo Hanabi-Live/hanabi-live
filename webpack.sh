@@ -5,4 +5,4 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 cd "$DIR/public/js"
-"$DIR/public/js/node_modules/.bin/webpack"
+npx webpack-dev-server
