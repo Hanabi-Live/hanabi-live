@@ -9,7 +9,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Set the version number in the "version.ts" file
 # (which is equal to the number of commits in the git repository)
 VERSION=$(git rev-list --count HEAD)
-printf "const v = $VERSION;\nexport default v;\n" > "$DIR/public/js/src/version.ts"
+echo "$VERSION" > "$DIR/public/js/src/data/version.json"
 
 # If we need to, add the NPM directory to the path
 # (the Golang process will execute this script on a graceful shutdown
