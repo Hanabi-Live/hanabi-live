@@ -34,16 +34,6 @@ matrix:
         # Run Webpack
         - ../../build_client.sh
 
-# Send the results for both language tests to the #website-development channel in the Hanabi Discord server
-after_success:
-  - wget https://raw.githubusercontent.com/Zamiell/hanabi-live/master/travis_webhook.sh
-  - chmod +x travis_webhook.sh
-  - ./travis_webhook.sh success $WEBHOOK_URL
-after_failure:
-  - wget https://raw.githubusercontent.com/Zamiell/hanabi-live/master/travis_webhook.sh
-  - chmod +x travis_webhook.sh
-  - ./travis_webhook.sh failure $WEBHOOK_URL
-
 notifications:
   email:
     on_success: never
