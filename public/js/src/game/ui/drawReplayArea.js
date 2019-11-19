@@ -63,7 +63,7 @@ export default () => {
         w: 0.03,
         h: 0.03,
         cornerRadius: 0.01,
-        stroke: 3,
+        stroke: 'black',
         scale: 0.75,
     };
 
