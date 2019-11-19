@@ -60,7 +60,7 @@ export const exit = () => {
     globals.elements.replayArea.hide();
 
     if (globals.ourTurn) {
-        action.handle(globals.savedAction);
+        action.handle();
     }
     globals.elements.currentPlayerArea.setVisible(!globals.elements.clueArea.getVisible());
     if (globals.queuedAction !== null) {

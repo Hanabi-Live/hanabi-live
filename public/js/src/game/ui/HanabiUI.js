@@ -62,7 +62,7 @@ export default class HanabiUI {
     }
 
     reshowClueUIAfterWarning() { // eslint-disable-line class-methods-use-this
-        action.handle(globals.savedAction);
+        action.handle();
     }
 }
 

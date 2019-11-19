@@ -53,6 +53,19 @@ export default class LayoutChild extends Konva.Group {
             // we can get here without the card being defined
             return;
         }
+
+        // First, handle the special case of a hypothetical
+        if (globals.hypothetical) {
+            if (globals.amSharedReplayLeader && globals.currentPlayerIndex === card.holder) {
+                this.setDraggable(true);
+                this.on('dragend', this.dragEnd);
+            } else {
+                this.setDraggable(false);
+                this.off('dragend');
+            }
+            return;
+        }
+
         if (
             // If it is not our turn, then the card does not need to be draggable yet
             // (unless we have the "Enable pre-playing cards" feature enabled)
@@ -68,13 +81,9 @@ export default class LayoutChild extends Konva.Group {
             // (this function will be called again upon the completion of the animation)
             || card.tweening
         ) {
-            // Make an exception for cards in a hypothetical
-            // that are being dragged by the replay leader
-            if (!globals.hypothetical || !globals.amSharedReplayLeader) {
-                this.setDraggable(false);
-                this.off('dragend');
-                return;
-            }
+            this.setDraggable(false);
+            this.off('dragend');
+            return;
         }
 
         this.setDraggable(true);

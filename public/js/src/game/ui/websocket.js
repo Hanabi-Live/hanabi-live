@@ -5,23 +5,16 @@
 // Imports
 import * as action from './action';
 import * as arrows from './arrows';
-import {
-    ACTION,
-    CLUE_TYPE,
-    MAX_CLUE_NUM,
-    REPLAY_ARROW_ORDER,
-    VARIANTS,
-} from '../../constants';
+import { CLUE_TYPE, REPLAY_ARROW_ORDER, VARIANTS } from '../../constants';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
-import * as notifications from '../../notifications';
 import notify from './notify';
 import * as replay from './replay';
 import state from './state';
-import strikeRecord from './strikeRecord';
 import * as stats from './stats';
+import strikeRecord from './strikeRecord';
 import * as timer from './timer';
 import * as ui from './ui';
 
@@ -29,56 +22,17 @@ import * as ui from './ui';
 const commands = {};
 export default commands;
 
+/*
+    Received by the client when it is our turn
+    Data is as follows:
+    {
+        canClue: true,
+        canDiscard: true,
+        canBlindPlayDeck: false,
+    }
+*/
 commands.action = (data) => {
-    globals.lastAction = data;
-    action.handle(data);
-
-    if (globals.animateFast) {
-        return;
-    }
-
-    if (globals.lobby.settings.sendTurnNotify) {
-        notifications.send('It is your turn.', 'turn');
-    }
-
-    // Handle pre-playing / pre-discarding / pre-cluing
-    if (globals.queuedAction !== null) {
-        // Get rid of the pre-move button, since it is now our turn
-        globals.elements.premoveCancelButton.hide();
-        globals.layers.UI.batchDraw();
-
-        if (globals.queuedAction.data.type === ACTION.CLUE) {
-            // Prevent pre-cluing if the team is now at 0 clues
-            if (globals.clues === 0) {
-                return;
-            }
-
-            // Prevent pre-cluing if the card is no longer in the hand
-            const card = globals.deck[globals.preCluedCard];
-            if (
-                globals.queuedAction.data.type === ACTION.CLUE
-                && (card.isPlayed || card.isDiscarded)
-            ) {
-                return;
-            }
-        }
-
-        // Prevent discarding if the team is at the maximum amount of clues
-        if (
-            globals.queuedAction.data.type === ACTION.DISCARD
-            && globals.clues === MAX_CLUE_NUM
-        ) {
-            return;
-        }
-
-        // We don't want to send the queued action right away, or else it introduces bugs
-        setTimeout(() => {
-            globals.lobby.conn.send(globals.queuedAction.type, globals.queuedAction.data);
-            globals.queuedAction = null;
-            globals.preCluedCard = null;
-            action.stop();
-        }, 100);
-    }
+    action.startTurn(data);
 };
 
 // This is sent by the server to force the client to go back to the lobby
@@ -167,6 +121,10 @@ commands.hypoAction = (data) => {
     globals.hypoActions.push(notifyMessage);
 
     notify(notifyMessage);
+
+    if (notifyMessage.type === 'turn') {
+        hypothetical.beginTurn();
+    }
 };
 
 commands.hypoEnd = () => {

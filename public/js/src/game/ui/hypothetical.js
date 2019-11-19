@@ -5,9 +5,10 @@
 
 // Imports
 import { ACTION, REPLAY_ACTION_TYPE } from '../../constants';
-import { suitToMsgSuit } from './convert';
 import globals from './globals';
+import * as action from './action';
 import * as replay from './replay';
+import { suitToMsgSuit } from './convert';
 
 export const start = () => {
     if (globals.hypothetical) {
@@ -29,10 +30,12 @@ export const start = () => {
 
         globals.elements.restartButton.setVisible(false);
         globals.elements.endHypotheticalButton.setVisible(true);
-        setActivePlayerCardsDraggable();
     } else {
         globals.elements.hypoCircle.setVisible(true);
     }
+
+    beginTurn();
+
     globals.layers.UI.batchDraw();
 };
 
@@ -51,6 +54,10 @@ export const end = () => {
 
         globals.elements.restartButton.setVisible(true);
         globals.elements.endHypotheticalButton.setVisible(false);
+
+        // Furthermore, disable dragging and get rid of the clue UI
+        disableDragOnAllHands();
+        // action.stop();
     } else {
         globals.elements.hypoCircle.setVisible(false);
     }
@@ -65,28 +72,44 @@ export const end = () => {
     replay.goto(globals.sharedReplayTurn, true);
 };
 
-const setActivePlayerCardsDraggable = () => {
+export const beginTurn = () => {
+    if (!globals.amSharedReplayLeader) {
+        return;
+    }
+
+    // Bring up the clue UI
+    // TODO get rid of the action data
+    action.handle({
+        canClue: true,
+        canDiscard: true,
+        canBlindPlayDeck: false,
+    });
+
+    disableDragOnAllHands();
+
+    // Set the current player's hand to be draggable
     const hand = globals.elements.playerHands[globals.currentPlayerIndex];
     for (const layoutChild of hand.children) {
-        layoutChild.checkSetDraggable();
+        layoutChild.setDraggable(true);
+        layoutChild.on('dragend', layoutChild.dragEnd);
     }
 };
 
-export const send = (action) => {
+export const send = (hypoAction) => {
     let type = '';
-    if (action.data.type === ACTION.CLUE) {
+    if (hypoAction.data.type === ACTION.CLUE) {
         type = 'clue';
-    } else if (action.data.type === ACTION.PLAY) {
+    } else if (hypoAction.data.type === ACTION.PLAY) {
         type = 'play';
-    } else if (action.data.type === ACTION.DISCARD) {
+    } else if (hypoAction.data.type === ACTION.DISCARD) {
         type = 'discard';
-    } else if (action.data.type === ACTION.DECKPLAY) {
+    } else if (hypoAction.data.type === ACTION.DECKPLAY) {
         type = 'play';
     }
 
     if (type === 'clue') {
         // Clue
-        hypoAction({
+        sendHypoAction({
             type,
             clue: null,
             giver: globals.currentPlayerIndex,
@@ -98,20 +121,20 @@ export const send = (action) => {
 
         // Text
         let text = `${globals.playerNames[globals.currentPlayerIndex]} tells `;
-        text += `${globals.playerNames[action.target]} about ?`;
-        hypoAction({
+        text += `${globals.playerNames[hypoAction.target]} about ?`;
+        sendHypoAction({
             type: 'text',
             text,
         });
     } else if (type === 'play' || type === 'discard') {
-        const card = globals.deck[action.data.target];
+        const card = globals.deck[hypoAction.data.target];
 
         // Play / Discard
-        hypoAction({
+        sendHypoAction({
             type,
             which: {
                 index: globals.currentPlayerIndex,
-                order: action.data.target,
+                order: hypoAction.data.target,
                 rank: card.rank,
                 suit: suitToMsgSuit(card.suit, globals.variant),
             },
@@ -121,7 +144,7 @@ export const send = (action) => {
         // Text
         let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
         text += `${card.suit.name} ${card.rank} from slot #${card.getSlotNum()}`;
-        hypoAction({
+        sendHypoAction({
             type: 'text',
             text,
         });
@@ -130,7 +153,7 @@ export const send = (action) => {
         const nextCardOrder = globals.indexOfLastDrawnCard + 1;
         const nextCard = globals.deckOrder[nextCardOrder];
         if (nextCard) { // All the cards might have already been drawn
-            hypoAction({
+            sendHypoAction({
                 type: 'draw',
                 order: nextCardOrder,
                 rank: nextCard.rank,
@@ -141,7 +164,7 @@ export const send = (action) => {
     }
 
     // Status
-    hypoAction({
+    sendHypoAction({
         type: 'status',
         clues: globals.clues,
         doubleDiscard: false,
@@ -155,16 +178,25 @@ export const send = (action) => {
     if (globals.currentPlayerIndex === globals.playerNames.length) {
         globals.currentPlayerIndex = 0;
     }
-    hypoAction({
+    sendHypoAction({
         type: 'turn',
         num: globals.turn,
         who: globals.currentPlayerIndex,
     });
 };
 
-const hypoAction = (action) => {
+const sendHypoAction = (hypoAction) => {
     globals.lobby.conn.send('replayAction', {
         type: REPLAY_ACTION_TYPE.HYPO_ACTION,
-        actionJSON: JSON.stringify(action),
+        actionJSON: JSON.stringify(hypoAction),
     });
+};
+
+const disableDragOnAllHands = () => {
+    for (const hand of globals.elements.playerHands) {
+        for (const layoutChild of hand.children) {
+            layoutChild.setDraggable(false);
+            layoutChild.off('dragend');
+        }
+    }
 };

@@ -4,7 +4,7 @@
 
 // Imports
 import * as clues from './clues';
-import { ACTION, REPLAY_ACTION_TYPE } from '../../constants';
+import { ACTION, REPLAY_ACTION_TYPE, MAX_CLUE_NUM } from '../../constants';
 import globals from './globals';
 import { copyStringToClipboard } from '../../misc';
 import * as replay from './replay';
@@ -213,16 +213,19 @@ const keydown = (event) => {
     }
 
     // Check for other keyboard hotkeys
-    let hotkeyFunction;
-    if (globals.savedAction !== null) { // We can take an action
-        if (globals.savedAction.canClue) {
-            hotkeyFunction = hotkeyMap.clue[event.key];
-        }
-        if (globals.savedAction.canDiscard) {
-            hotkeyFunction = hotkeyFunction || hotkeyMap.discard[event.key];
-        }
-        hotkeyFunction = hotkeyFunction || hotkeyMap.play[event.key];
+    if (globals.inReplay || globals.currentPlayerIndex !== globals.playerUs) {
+        return;
     }
+
+    let hotkeyFunction;
+    console.log(hotkeyFunction);
+    if (globals.clues >= 1) {
+        hotkeyFunction = hotkeyMap.clue[event.key];
+    }
+    if (globals.clues < MAX_CLUE_NUM) {
+        hotkeyFunction = hotkeyFunction || hotkeyMap.discard[event.key];
+    }
+    hotkeyFunction = hotkeyFunction || hotkeyMap.play[event.key];
     if (hotkeyFunction !== undefined) {
         event.preventDefault();
         hotkeyFunction();

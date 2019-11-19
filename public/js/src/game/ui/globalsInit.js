@@ -46,7 +46,7 @@ export default () => {
     globals.currentPlayerIndex = 0;
     globals.ourTurn = false;
     globals.endTurn = null; // Set when the final card is drawn
-    globals.deckSize = 0; // Set in the "initCards()" function
+    globals.deckSize = 0; // Decremented as cards are drawn; set in the "initCards()" function
     globals.indexOfLastDrawnCard = 0; // Set in the "initCards()" function
     globals.score = 0;
     globals.maxScore = 0;
@@ -216,7 +216,6 @@ export default () => {
 
     // Miscellaneous
     globals.animateFast = true;
-    globals.savedAction = null; // Used to save new actions when in an in-game replay
     // A function called after an action from the server moves cards
     globals.postAnimationLayout = null;
     globals.lastAction = null; // Used when rebuilding the game state
