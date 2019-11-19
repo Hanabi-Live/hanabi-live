@@ -10,4 +10,4 @@ node_modules
 dist
 
 # Ignore the version number, which will change automatically with every commit
-version.js
+version.ts
