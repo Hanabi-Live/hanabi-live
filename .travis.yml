@@ -25,9 +25,12 @@ matrix:
       node_js:
         - node
       before_script:
-        # Install the JavaScript linter
+        # Install the JavaScript tooling (TypeScript, Webpack, etc.)
         - cd public/js
         - npm install
+
+        # Set up the "version.json" file
+        - echo 1 > public/js/src/data/version.json
       script:
         # Run the JavaScript linter
         - npm run-script lint

@@ -16,9 +16,11 @@ import (
 var (
 	projectPath = path.Join(os.Getenv("GOPATH"), "src", "github.com", "Zamiell", "hanabi-live")
 	dataPath    = path.Join(projectPath, "public", "js", "src", "data")
-	log         *logging.Logger
-	db          *models.Models
-	tables      = make(map[int]*Table) // Defined in "table.go"
+	versionPath = path.Join(dataPath, "version.json")
+
+	log    *logging.Logger
+	db     *models.Models
+	tables = make(map[int]*Table) // Defined in "table.go"
 	// For storing all of the random words (used for random table names)
 	wordList = make([]string, 0)
 	// For storing the players who are waiting for the next game to start
@@ -50,8 +52,32 @@ func main() {
 		return
 	}
 
+	// Check to see if the data path exists
+	if _, err := os.Stat(dataPath); os.IsNotExist(err) {
+		log.Fatal("The data path of \"" + dataPath + "\" does not exist. " +
+			"This directory should always exist; please try recloning the repository.")
+		return
+	}
+
+	// Check to see if the version file exists
+	if _, err := os.Stat(versionPath); os.IsNotExist(err) {
+		log.Fatal("The \"" + versionPath + "\" file does not exist. " +
+			"Did you run the \"install_dependencies.sh\" script before running the server? " +
+			"This file should automatically be created when building the client.")
+		return
+	}
+
+	// Check to see if the ".env" file exists
+	envPath := path.Join(projectPath, ".env")
+	if _, err := os.Stat(envPath); os.IsNotExist(err) {
+		log.Fatal("The \"" + envPath + "\" file does not exist. " +
+			"Did you run the \"install_dependencies.sh\" script before running the server? " +
+			"This file should automatically be created when running this script.")
+		return
+	}
+
 	// Load the ".env" file which contains environment variables with secret values
-	if err := godotenv.Load(path.Join(projectPath, ".env")); err != nil {
+	if err := godotenv.Load(envPath); err != nil {
 		log.Fatal("Failed to load the \".env\" file:", err)
 		return
 	}
