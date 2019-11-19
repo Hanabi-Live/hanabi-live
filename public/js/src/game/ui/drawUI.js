@@ -339,7 +339,7 @@ const drawPlayStacks = () => {
         // Add the stack base to the play stack
         const stackBase = new HanabiCard({
             // Stack bases use card orders after the final card in the deck
-            order: stats.getTotalCardsInTheDeck() + i,
+            order: stats.getTotalCardsInTheDeck(globals.variant) + i,
         });
         globals.stackBases.push(stackBase);
         stackBase.refresh();

@@ -5,5 +5,6 @@ import globals from './globals';
 export default () => (
     !globals.lobby.settings.realLifeMode
     && !globals.speedrun
+    && !globals.hypothetical
     && !globals.variant.name.startsWith('Throw It in a Hole')
 );

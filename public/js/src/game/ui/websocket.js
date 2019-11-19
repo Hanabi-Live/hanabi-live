@@ -411,7 +411,7 @@ commands.notify = (data) => {
 
 commands.notifyList = (dataList) => {
     // Initialize the state table
-    globals.state.deckSize = stats.getTotalCardsInTheDeck();
+    globals.state.deckSize = stats.getTotalCardsInTheDeck(globals.variant);
     globals.state.maxScore = globals.variant.maxScore;
     for (let i = 0; i < globals.playerNames.length; i++) {
         globals.state.hands.push([]);
@@ -657,7 +657,11 @@ commands.replayTurn = (data) => {
     }
 */
 commands.reveal = (data) => {
-    const card = globals.deck[data.order];
+    let card = globals.deck[data.order];
+    if (!card) {
+        card = globals.stackBases[data.order - globals.deck.length];
+    }
+
     card.reveal(data.suit, data.rank);
     globals.layers.card.batchDraw();
 };

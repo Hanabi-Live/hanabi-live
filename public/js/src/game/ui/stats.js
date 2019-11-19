@@ -83,7 +83,7 @@ export const getMinEfficiency = () => {
         https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
     */
 
-    const totalCardsInTheDeck = getTotalCardsInTheDeck();
+    const totalCardsInTheDeck = getTotalCardsInTheDeck(globals.variant);
     const numPlayers = globals.playerNames.length;
     const cardsInHand = getNumCardsPerHand();
     let startingPace = totalCardsInTheDeck;
@@ -140,13 +140,13 @@ export const getNumCardsPerHand = () => {
     return 3;
 };
 
-export const getTotalCardsInTheDeck = () => {
+export const getTotalCardsInTheDeck = (variant) => {
     let totalCardsInTheDeck = 0;
-    for (const suit of globals.variant.suits) {
+    for (const suit of variant.suits) {
         totalCardsInTheDeck += 10;
         if (suit.oneOfEach) {
             totalCardsInTheDeck -= 5;
-        } else if (globals.variant.name.startsWith('Up or Down')) {
+        } else if (variant.name.startsWith('Up or Down')) {
             totalCardsInTheDeck -= 1;
         }
     }

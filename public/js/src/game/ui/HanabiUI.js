@@ -207,7 +207,7 @@ const initCardsMap = () => {
 };
 
 const initCards = () => {
-    globals.deckSize = stats.getTotalCardsInTheDeck();
+    globals.deckSize = stats.getTotalCardsInTheDeck(globals.variant);
     for (let order = 0; order < globals.deckSize; order++) {
         // Create the "learned" card object
         // (this must be done before creating the HanabiCard object)

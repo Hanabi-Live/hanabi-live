@@ -154,7 +154,7 @@ const reset = () => {
     // Reset some game state variables
     globals.turn = 0;
     // "globals.currentPlayerIndex" is set in every "turn" command
-    globals.deckSize = stats.getTotalCardsInTheDeck();
+    globals.deckSize = stats.getTotalCardsInTheDeck(globals.variant);
     // "globals.indexOfLastDrawnCard" is set in every "draw" command
     globals.score = 0;
     globals.maxScore = globals.variant.maxScore;
