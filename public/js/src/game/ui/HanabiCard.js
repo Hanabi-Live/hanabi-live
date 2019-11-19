@@ -73,6 +73,7 @@ export default class HanabiCard extends Konva.Group {
     removeBorders() {
         this.cluedBorder.hide();
         this.noteBorder.hide();
+        this.finesseBorder.hide();
     }
 
     // Erase all of the data on the card to make it like it was freshly drawn
@@ -106,13 +107,15 @@ export default class HanabiCard extends Konva.Group {
         this.setListening(true); // Some variants disable listening on cards
 
         this.removeBorders();
-        if (this.noteChopMoved && !globals.replay && !globals.spectating) {
+        if (!globals.replay && !globals.spectating) {
             // If it has a "chop move" note on it, we want to keep the chop move border turned on
-            this.noteBorder.show();
-        }
-        if (this.noteChopMoved && !globals.replay && !globals.spectating) {
+            if (this.noteChopMoved) {
+                this.noteBorder.show();
+            }
             // If it has a "finessed" note on it, we want to keep the finesse border turned on
-            this.finesseBorder.show();
+            if (this.noteFinessed) {
+                this.finesseBorder.show();
+            }
         }
 
         // Reset all of the pips to their default state
