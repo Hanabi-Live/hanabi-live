@@ -41,4 +41,3 @@ echo "Packing the JavaScript..."
 npx webpack # Pack the JavaScript into one file
 echo "Packing the CSS..."
 npx grunt # Pack the CSS into one file
-echo "Done!"

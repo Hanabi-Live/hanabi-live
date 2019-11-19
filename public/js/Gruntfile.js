@@ -1,9 +1,9 @@
 module.exports = (grunt) => {
     grunt.initConfig({
-        'pkg': grunt.file.readJSON('package.json'),
+        pkg: grunt.file.readJSON('package.json'),
 
         // Concatenate all of the CSS files together into the "main.css" file
-        'concat': {
+        concat: {
             css: {
                 src: [
                     '../css/lib/fontawesome.min.css',
@@ -18,7 +18,7 @@ module.exports = (grunt) => {
         },
 
         // Minify the CSS
-        'cssmin': {
+        cssmin: {
             options: {
                 // clean-css only does level 1 optimizations by default
                 // https://github.com/jakubpawlowicz/clean-css#optimization-levels

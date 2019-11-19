@@ -28,14 +28,13 @@ matrix:
         # Install the JavaScript tooling (TypeScript, Webpack, etc.)
         - cd public/js
         - npm install
-
-        # Set up the "version.json" file
-        - echo 1 > public/js/src/data/version.json
       script:
-        # Run the JavaScript linter
-        - npm run-script lint
         # Run Webpack
+        # (which compiles the TypeScript to JavaScript and packs everything into one file)
+        # (we want to do this before linting so that the "version.json" file is created)
         - ../../build_client.sh
+        # Run ESLint (the JavaScript linter)
+        - npm run-script lint
 
 notifications:
   email:
