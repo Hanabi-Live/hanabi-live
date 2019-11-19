@@ -382,7 +382,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Send the "action" message to the next player
-	nps.NotifyAction(t)
+	nps.NotifyAction()
 
 	// Send every user connected an update about this table
 	// (this is sort of wasteful but is necessary for users to see if it is

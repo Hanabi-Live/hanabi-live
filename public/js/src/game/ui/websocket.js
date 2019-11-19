@@ -22,17 +22,10 @@ import * as ui from './ui';
 const commands = {};
 export default commands;
 
-/*
-    Received by the client when it is our turn
-    Data is as follows:
-    {
-        canClue: true,
-        canDiscard: true,
-        canBlindPlayDeck: false,
-    }
-*/
-commands.action = (data) => {
-    action.startTurn(data);
+// Received by the client when it is our turn
+// Data is empty
+commands.action = () => {
+    action.startTurn();
 };
 
 // This is sent by the server to force the client to go back to the lobby

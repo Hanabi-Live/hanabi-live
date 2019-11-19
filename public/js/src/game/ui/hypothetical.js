@@ -78,12 +78,7 @@ export const beginTurn = () => {
     }
 
     // Bring up the clue UI
-    // TODO get rid of the action data
-    action.handle({
-        canClue: true,
-        canDiscard: true,
-        canBlindPlayDeck: false,
-    });
+    action.handle();
 
     disableDragOnAllHands();
 

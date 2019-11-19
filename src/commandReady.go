@@ -66,7 +66,7 @@ func commandReady(s *Session, d *CommandData) {
 
 	// If it is their turn, send an "action" message
 	if !t.Replay && g.ActivePlayer == i {
-		s.NotifyAction(t)
+		s.NotifyAction()
 	}
 
 	// Check if the game is still in progress

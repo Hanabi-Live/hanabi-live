@@ -4,9 +4,8 @@ import * as arrows from './arrows';
 import globals from './globals';
 import * as notifications from '../../notifications';
 
-export const startTurn = (data) => {
-    globals.lastAction = data;
-    handle(data);
+export const startTurn = () => {
+    handle();
 
     if (globals.animateFast) {
         return;
