@@ -243,7 +243,7 @@ export default (clueAreaValues) => {
             text1.setY((totalH / 2) - (text1H / 2) - spacing);
             text2.setY((totalH / 2) - (text2H / 2) + (spacing * 0.25));
             text3.setY((totalH / 2) - (text1H / 2) + (spacing * 1.5));
-            text3.setText(specialText);
+            text3.fitText(specialText);
             text3.show();
         }
 
