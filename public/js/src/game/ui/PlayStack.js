@@ -1,5 +1,5 @@
 /*
-    CardStack is an object that represents a play stack
+    PlayStack represents the stack in the middle of the table for each suit
     It is composed of LayoutChild objects
 */
 
@@ -19,8 +19,7 @@ export default class PlayStack extends Konva.Group {
     doLayout() {
         const lh = this.getHeight();
 
-        for (let i = 0; i < this.children.length; i++) {
-            const node = this.children[i]; // This is a LayoutChild
+        for (const node of this.children) { // node is a LayoutChild
             const scale = lh / node.getHeight();
             const stackBase = node.children[0].rank === STACK_BASE_RANK;
             const opacity = (
@@ -30,7 +29,7 @@ export default class PlayStack extends Konva.Group {
                 && !stackBase
             ) ? 0 : 1;
 
-            if (globals.animateFast || stackBase) {
+            if (globals.animateFast) {
                 node.setX(0);
                 node.setY(0);
                 node.setScaleX(scale);
@@ -76,9 +75,9 @@ export default class PlayStack extends Konva.Group {
 
     hideUnder() {
         const n = this.children.length;
-        if (n <= 2) {
-            // If we are tweening the first card on to the stack base,
-            // we don't need to hide anything
+
+        // If the play stack only has the stack base on it, then we do not need to hide anything
+        if (n === 1) {
             return;
         }
 

@@ -1,6 +1,6 @@
 /*
     This is the parent of a HanabiCard
-    It has a CardLayout or CardStack parent
+    It has a CardLayout or PlayStack parent
 */
 
 // Imports
