@@ -5,7 +5,12 @@
 
 // Imports
 import Konva from 'konva';
-import { ARROW_COLOR, CLUE_TYPE, REPLAY_ACTION_TYPE } from '../../constants';
+import {
+    ARROW_COLOR,
+    CLUE_TYPE,
+    REPLAY_ACTION_TYPE,
+    STACK_BASE_RANK,
+} from '../../constants';
 import globals from './globals';
 
 export const hideAll = () => {
@@ -35,6 +40,7 @@ export const set = (i, element, giver, clue) => {
         element.type === 'HanabiCard'
         && !element.isPlayed
         && !element.isDiscarded
+        && element.rank !== STACK_BASE_RANK
     ) {
         if (element.parent && element.parent.parent) {
             rot = element.parent.parent.origRotation;
@@ -134,6 +140,10 @@ const getPos = (element, rot) => {
         pos.x += element.getWidth() / 3;
     }
 
+    if (Number.isNaN(pos.x) || Number.isNaN(pos.y)) {
+        throw new Error('Failed to get the position for the element when drawing an arrow.');
+    }
+
     return pos;
 };
 
@@ -204,7 +214,7 @@ export const toggle = (element) => {
     if (element.type === 'HanabiCard' && element.tweening) {
         setTimeout(() => {
             toggle(element);
-        }, 20);
+        }, 5);
         return;
     }
 

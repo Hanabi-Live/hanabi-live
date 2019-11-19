@@ -34,7 +34,7 @@ module.exports = {
 
     // Webpack will display a warning unless we specify the mode
     // Production mode minifies the resulting JavaScript
-    mode: 'production',
+    mode: process.platform === 'win32' || process.platform === 'darwin' ? 'development' : 'production',
 
     plugins: [
         // ProvidePlugin automatically load modules instead of
