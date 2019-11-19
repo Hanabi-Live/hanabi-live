@@ -9,16 +9,12 @@ package main
 import (
 	"io/ioutil"
 	"path"
-	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Zamiell/hanabi-live/src/models"
 	melody "gopkg.in/olahol/melody.v1"
-)
-
-var (
-	versionRegExp = regexp.MustCompile(`const v = (.+);`)
 )
 
 func websocketConnect(ms *melody.Session) {
@@ -72,25 +68,19 @@ func websocketConnect(ms *melody.Session) {
 
 	// Get the version number of the client (which is the number of commits in the repository)
 	versionPath := path.Join(projectPath, "public", "js", "src", "version.ts")
-	var versionContents string
+	var versionString string
 	if v, err := ioutil.ReadFile(versionPath); err != nil {
 		log.Error("Failed to read the \""+versionPath+"\" file "+
 			"when getting the version for user \""+s.Username()+"\":", err)
 		return
 	} else {
-		versionContents = string(v)
+		versionString = string(v)
+		versionString = strings.TrimSpace(versionString)
 	}
-	match := versionRegExp.FindStringSubmatch(versionContents)
-	if match == nil {
-		log.Error("Failed to parse the \"" + versionPath + "\" file " +
-			"when getting the version for user \"" + s.Username() + "\".")
-		return
-	}
-	versionString := match[1]
 	var version int
 	if v, err := strconv.Atoi(versionString); err != nil {
 		log.Error("Failed to convert \""+versionString+"\" "+
-			"(the output of the \"get_build_number.sh\" script) to a number:", err)
+			"(the contents of the \"version.json\" file) to a number:", err)
 		return
 	} else {
 		version = v

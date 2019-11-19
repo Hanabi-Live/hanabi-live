@@ -1,6 +1,6 @@
 // Imports
-import version from './version';
-// (the "version.ts" file is filled in dynamically by the "build_client.sh" script)
+import version from './data/version.json';
+// (the "version.json" file is filled in dynamically by the "build_client.sh" script)
 
 interface Globals {
     version: number,

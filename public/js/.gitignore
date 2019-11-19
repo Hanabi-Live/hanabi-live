@@ -1,13 +1,12 @@
 # NPM modules are not typically included in a repository
-node_modules
+/node_modules
 /package-lock.json
 
 # We don't need to include the bundled JavaScript
 /main.min.js
-/main.min.js.*.map
 
 # We don't need to include the converted TypeScript --> Javascript files
-dist
+/dist
 
 # Ignore the version number, which will change automatically with every commit
-version.ts
+/src/data/version.json
