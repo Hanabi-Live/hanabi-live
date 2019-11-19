@@ -38,7 +38,7 @@ module.exports = {
 
     plugins: [
         // ProvidePlugin automatically load modules instead of
-        // having to import or require them everywhere
+        // having to import them everywhere
         // https://webpack.js.org/plugins/provide-plugin/
         new webpack.ProvidePlugin({
             $: 'jquery',

@@ -674,7 +674,7 @@ const drawDeck = () => {
     globals.layers.UI.add(globals.elements.deckTurnsRemainingLabel2);
 
     // This is a yellow border around the deck that will appear when only one card is left
-    // (if the game option was enabled)
+    // (if the "Bottom-Deck Blind-Plays" game option is enabled)
     globals.elements.deckPlayAvailableLabel = new Konva.Rect({
         x: deckValues.x * winW,
         y: deckValues.y * winH,

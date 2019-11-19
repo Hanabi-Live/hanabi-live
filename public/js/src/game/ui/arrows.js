@@ -136,6 +136,9 @@ const getPos = (element, rot) => {
         pos.y += Math.cos(rotRadians) * distance;
     } else if (element === globals.elements.cluesNumberLabel) {
         pos.x += element.getWidth() * 0.15;
+    } else if (element === globals.elements.deck) {
+        pos.x += element.getWidth() * 0.5;
+        pos.y += element.getHeight() * 0.1;
     } else {
         pos.x += element.getWidth() / 3;
     }
