@@ -8,6 +8,7 @@ import { ACTION, CLUE_TYPE, REPLAY_ACTION_TYPE } from '../../constants';
 import { getTouchedCardsFromClue } from './clues';
 import globals from './globals';
 import * as action from './action';
+import notify from './notify';
 import * as replay from './replay';
 import { suitToMsgSuit } from './convert';
 
@@ -222,5 +223,30 @@ const disableDragOnAllHands = () => {
             layoutChild.setDraggable(false);
             layoutChild.off('dragend');
         }
+    }
+};
+
+export const backOneTurn = () => {
+    if (globals.hypoActions.length === 0) {
+        return;
+    }
+
+    // Starting from the end,
+    // remove hypothetical actions until we get to the 2nd to last "turn" action
+    while (true) {
+        globals.hypoActions.pop();
+        const lastNotify = globals.hypoActions[globals.hypoActions.length - 1];
+        if (lastNotify.type === 'turn') {
+            break;
+        }
+    }
+
+    // Reset to the turn where the hypothetical started
+    globals.replayTurn = globals.replayMax;
+    replay.goto(globals.sharedReplayTurn, true);
+
+    // Replay all of the hypothetical actions
+    for (const actionMessage of globals.hypoActions) {
+        notify(actionMessage);
     }
 };

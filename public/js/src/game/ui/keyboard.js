@@ -6,6 +6,7 @@
 import * as clues from './clues';
 import { ACTION, REPLAY_ACTION_TYPE, MAX_CLUE_NUM } from '../../constants';
 import globals from './globals';
+import * as hypothetical from './hypothetical';
 import { copyStringToClipboard } from '../../misc';
 import * as replay from './replay';
 import * as ui from './ui';
@@ -165,51 +166,50 @@ const keydown = (event) => {
     }
 
     // Replay hotkeys
-    if (event.key === 'ArrowLeft') {
-        replay.enter();
-        replay.back();
-        return;
-    }
-    if (event.key === 'ArrowRight') {
-        replay.enter();
-        replay.forward();
-        return;
-    }
-    if (event.key === 'ArrowUp') {
-        if (globals.sharedReplay) {
-            replay.toggleSharedTurns();
-        } else if (!globals.replay) {
-            replay.exit();
+    if (globals.hypothetical) {
+        if (event.key === 'ArrowLeft') {
+            hypothetical.backOneTurn();
+            return;
         }
-        return;
-    }
-    if (event.key === 'ArrowDown') {
-        if (globals.sharedReplay) {
-            replay.toggleSharedTurns();
-        } else if (!globals.replay) {
-            replay.exit();
+    } else {
+        if (event.key === 'ArrowLeft') {
+            replay.enter();
+            replay.back();
+            return;
         }
-        return;
-    }
-    if (event.key === '[') {
-        replay.enter();
-        replay.backRound();
-        return;
-    }
-    if (event.key === ']') {
-        replay.enter();
-        replay.forwardRound();
-        return;
-    }
-    if (event.key === 'Home') {
-        replay.enter();
-        replay.backFull();
-        return;
-    }
-    if (event.key === 'End') {
-        replay.enter();
-        replay.forwardFull();
-        return;
+        if (event.key === 'ArrowRight') {
+            replay.enter();
+            replay.forward();
+            return;
+        }
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+            if (globals.sharedReplay) {
+                replay.toggleSharedTurns();
+            } else if (!globals.replay) {
+                replay.exit();
+            }
+            return;
+        }
+        if (event.key === '[') {
+            replay.enter();
+            replay.backRound();
+            return;
+        }
+        if (event.key === ']') {
+            replay.enter();
+            replay.forwardRound();
+            return;
+        }
+        if (event.key === 'Home') {
+            replay.enter();
+            replay.backFull();
+            return;
+        }
+        if (event.key === 'End') {
+            replay.enter();
+            replay.forwardFull();
+            return;
+        }
     }
 
     // Check for other keyboard hotkeys
@@ -218,7 +218,6 @@ const keydown = (event) => {
     }
 
     let hotkeyFunction;
-    console.log(hotkeyFunction);
     if (globals.clues >= 1) {
         hotkeyFunction = hotkeyMap.clue[event.key];
     }
