@@ -8,7 +8,7 @@ import Konva from 'konva';
 import { ACTION, MAX_CLUE_NUM } from '../../constants';
 import globals from './globals';
 import * as sounds from '../sounds';
-import * as ui from './ui';
+import * as turn from './turn';
 
 export default class LayoutChild extends Konva.Group {
     constructor() {
@@ -137,7 +137,7 @@ export default class LayoutChild extends Konva.Group {
             return;
         }
 
-        ui.endTurn({
+        turn.end({
             type: 'action',
             data: {
                 type: (draggedTo === 'playArea' ? ACTION.PLAY : ACTION.DISCARD),

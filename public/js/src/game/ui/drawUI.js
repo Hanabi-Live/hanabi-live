@@ -43,7 +43,6 @@ import * as ui from './ui';
 // Variables
 let winW;
 let winH;
-let numPlayers;
 let basicTextLabel;
 let basicNumberLabel;
 let actionLogValues;
@@ -61,7 +60,6 @@ export default () => {
     // Constants
     winW = globals.stage.getWidth();
     winH = globals.stage.getHeight();
-    numPlayers = globals.playerNames.length;
 
     // Create the various Konva layers upon which all graphic elements reside
     initLayers();
@@ -1517,28 +1515,60 @@ const drawClueArea = () => {
     });
 
     // Player buttons
-    globals.elements.clueTargetButtonGroup = new ButtonGroup();
     const playerButtonW = 0.08;
     const playerButtonSpacing = 0.0075;
-    const totalPlayerButtons = numPlayers - 1;
-    let totalPlayerWidth = playerButtonW * totalPlayerButtons;
-    totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
-    let playerX = (clueAreaValues.w * 0.5) - (totalPlayerWidth * 0.5);
-    for (let i = 0; i < numPlayers - 1; i++) {
-        const j = (globals.playerUs + i + 1) % numPlayers;
-        const button = new Button({
-            x: playerX * winW,
-            y: 0,
-            width: playerButtonW * winW,
-            height: 0.025 * winH,
-            text: globals.playerNames[j],
-        });
-        button.targetIndex = j;
-        globals.elements.clueArea.add(button);
-        globals.elements.clueTargetButtonGroup.add(button);
-        playerX += playerButtonW + playerButtonSpacing;
+    const numPlayers = globals.playerNames.length;
+
+    // This is the normal button group, which does not include us
+    globals.elements.clueTargetButtonGroup = new ButtonGroup();
+    {
+        const totalPlayerButtons = numPlayers - 1;
+        let totalPlayerWidth = playerButtonW * totalPlayerButtons;
+        totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
+        let playerX = (clueAreaValues.w * 0.5) - (totalPlayerWidth * 0.5);
+        for (let i = 0; i < totalPlayerButtons; i++) {
+            const j = (globals.playerUs + i + 1) % numPlayers;
+            const button = new Button({
+                x: playerX * winW,
+                y: 0,
+                width: playerButtonW * winW,
+                height: 0.025 * winH,
+                text: globals.playerNames[j],
+            });
+            button.targetIndex = j;
+            globals.elements.clueTargetButtonGroup.add(button);
+            globals.elements.clueTargetButtonGroup.addList(button);
+            playerX += playerButtonW + playerButtonSpacing;
+        }
     }
-    globals.elements.clueTargetButtonGroup.selectNextTarget = function selectNextTarget() {
+    globals.elements.clueArea.add(globals.elements.clueTargetButtonGroup);
+
+    // This button group includes us, which is used for hypotheticals
+    globals.elements.clueTargetButtonGroup2 = new ButtonGroup();
+    {
+        const totalPlayerButtons = numPlayers;
+        let totalPlayerWidth = playerButtonW * totalPlayerButtons;
+        totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
+        let playerX = (clueAreaValues.w * 0.5) - (totalPlayerWidth * 0.5);
+        for (let i = 0; i < totalPlayerButtons; i++) {
+            const j = (globals.playerUs + i + 1) % numPlayers;
+            const button = new Button({
+                x: playerX * winW,
+                y: 0,
+                width: playerButtonW * winW,
+                height: 0.025 * winH,
+                text: globals.playerNames[j],
+            });
+            button.targetIndex = j;
+            globals.elements.clueTargetButtonGroup2.add(button);
+            globals.elements.clueTargetButtonGroup2.addList(button);
+            playerX += playerButtonW + playerButtonSpacing;
+        }
+    }
+    globals.elements.clueArea.add(globals.elements.clueTargetButtonGroup2);
+    globals.elements.clueTargetButtonGroup2.hide();
+
+    const selectNextTarget = function selectNextTarget() {
         let newSelectionIndex = 0;
         for (let i = 0; i < this.list.length; i++) {
             if (this.list[i].pressed) {
@@ -1548,6 +1578,8 @@ const drawClueArea = () => {
         }
         this.list[newSelectionIndex].dispatchEvent(new MouseEvent('click'));
     };
+
+    globals.elements.clueTargetButtonGroup.selectNextTarget = selectNextTarget;
 
     // Clue type buttons
     globals.elements.clueTypeButtonGroup = new ButtonGroup();
@@ -1574,7 +1606,7 @@ const drawClueArea = () => {
 
         globals.elements.clueArea.add(button);
         globals.elements.suitClueButtons.push(button);
-        globals.elements.clueTypeButtonGroup.add(button);
+        globals.elements.clueTypeButtonGroup.addList(button);
     }
 
     // Rank buttons / number buttons
@@ -1596,11 +1628,12 @@ const drawClueArea = () => {
 
         globals.elements.rankClueButtons.push(button);
         globals.elements.clueArea.add(button);
-        globals.elements.clueTypeButtonGroup.add(button);
+        globals.elements.clueTypeButtonGroup.addList(button);
     }
 
     // Set button functionality
     globals.elements.clueTargetButtonGroup.on('change', clues.checkLegal);
+    globals.elements.clueTargetButtonGroup2.on('change', clues.checkLegal);
     globals.elements.clueTypeButtonGroup.on('change', clues.checkLegal);
 
     // The "Give Clue" button

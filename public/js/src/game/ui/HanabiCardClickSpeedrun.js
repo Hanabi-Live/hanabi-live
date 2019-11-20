@@ -11,7 +11,7 @@ import {
 } from '../../constants';
 import globals from './globals';
 import * as notes from './notes';
-import * as ui from './ui';
+import * as turn from './turn';
 
 export default function HanabiCardClickSpeedrun(event) {
     // Speedrunning overrides the normal card clicking behavior
@@ -54,7 +54,7 @@ const clickLeft = (card, event) => {
         && !event.altKey
         && !event.metaKey
     ) {
-        ui.endTurn({
+        turn.end({
             type: 'action',
             data: {
                 type: ACTION.PLAY,
@@ -100,7 +100,7 @@ const clickLeft = (card, event) => {
         const value = globals.variant.clueColors.findIndex(
             (variantColor) => variantColor === color,
         );
-        ui.endTurn({
+        turn.end({
             type: 'action',
             data: {
                 type: ACTION.CLUE,
@@ -127,7 +127,7 @@ const clickRight = (card, event) => {
         if (globals.clues === MAX_CLUE_NUM) {
             return;
         }
-        ui.endTurn({
+        turn.end({
             type: 'action',
             data: {
                 type: ACTION.DISCARD,
@@ -147,7 +147,7 @@ const clickRight = (card, event) => {
         && !event.metaKey
     ) {
         globals.preCluedCard = card.order;
-        ui.endTurn({
+        turn.end({
             type: 'action',
             data: {
                 type: ACTION.CLUE,

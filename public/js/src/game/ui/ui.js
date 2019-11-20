@@ -3,40 +3,8 @@
 */
 
 // Imports
-import * as action from './action';
-import { ACTION } from '../../constants';
 import globals from './globals';
-import * as hypothetical from './hypothetical';
-import * as replay from './replay';
 import * as timer from './timer';
-
-export const endTurn = (actionObject) => {
-    if (globals.hypothetical) {
-        hypothetical.send(actionObject);
-        action.stop();
-        return;
-    }
-
-    if (globals.ourTurn) {
-        replay.exit(); // Close the in-game replay if we preplayed a card in the replay
-        globals.lobby.conn.send('action', actionObject.data);
-        action.stop();
-    } else {
-        globals.queuedAction = actionObject;
-        let text = 'Cancel Pre-';
-        if (globals.queuedAction.data.type === ACTION.CLUE) {
-            text += 'Clue';
-        } else if (globals.queuedAction.data.type === ACTION.PLAY) {
-            text += 'Play';
-        } else if (globals.queuedAction.data.type === ACTION.DISCARD) {
-            text += 'Discard';
-        }
-        globals.elements.premoveCancelButton.setText(text);
-        globals.elements.premoveCancelButton.show();
-        globals.elements.currentPlayerArea.hide();
-        globals.layers.UI.batchDraw();
-    }
-};
 
 export const backToLobby = () => {
     // Hide the tooltip, if showing

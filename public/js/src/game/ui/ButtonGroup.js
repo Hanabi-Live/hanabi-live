@@ -1,7 +1,7 @@
 // Imports
 import Konva from 'konva';
 
-export default class ButtonGroup extends Konva.Node {
+export default class ButtonGroup extends Konva.Group {
     constructor(config) {
         super(config);
 
@@ -9,7 +9,7 @@ export default class ButtonGroup extends Konva.Node {
         this.list = [];
     }
 
-    add(button) {
+    addList(button) {
         const self = this;
 
         this.list.push(button);

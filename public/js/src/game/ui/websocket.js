@@ -3,7 +3,6 @@
 */
 
 // Imports
-import * as action from './action';
 import * as arrows from './arrows';
 import { CLUE_TYPE, REPLAY_ARROW_ORDER, VARIANTS } from '../../constants';
 import fadeCheck from './fadeCheck';
@@ -16,6 +15,7 @@ import state from './state';
 import * as stats from './stats';
 import strikeRecord from './strikeRecord';
 import * as timer from './timer';
+import * as turn from './turn';
 import * as ui from './ui';
 
 // Define a command handler map
@@ -25,7 +25,7 @@ export default commands;
 // Received by the client when it is our turn
 // Data is empty
 commands.action = () => {
-    action.startTurn();
+    turn.begin();
 };
 
 // This is sent by the server to force the client to go back to the lobby
@@ -399,8 +399,8 @@ commands.notifyList = (dataList) => {
     // (specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
     const match = window.location.pathname.match(/\/replay\/\d+\/(\d+)/);
     if (match) {
-        const turn = parseInt(match[1], 10) - 1;
-        replay.goto(turn, true);
+        const turnNum = parseInt(match[1], 10) - 1;
+        replay.goto(turnNum, true);
     }
 
     fadeCheck();
