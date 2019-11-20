@@ -42,11 +42,10 @@ export const REPLAY_ACTION_TYPE = {
     TURN: 0,
     ARROW: 1,
     LEADER_TRANSFER: 2,
-    MORPH: 3,
-    SOUND: 4,
-    HYPO_START: 5,
-    HYPO_END: 6,
-    HYPO_ACTION: 7,
+    SOUND: 3,
+    HYPO_START: 4,
+    HYPO_END: 5,
+    HYPO_ACTION: 6,
 };
 export const REPLAY_ARROW_ORDER = {
     DECK: -1,

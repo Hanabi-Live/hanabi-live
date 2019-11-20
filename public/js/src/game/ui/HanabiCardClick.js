@@ -4,12 +4,12 @@
 
 // Imports
 import * as arrows from './arrows';
-import { REPLAY_ACTION_TYPE, STACK_BASE_RANK } from '../../constants';
-import { suitToMsgSuit } from './convert';
 import globals from './globals';
+import * as hypothetical from './hypothetical';
 import * as notes from './notes';
 import * as replay from './replay';
-import websocket from './websocket';
+import { STACK_BASE_RANK } from '../../constants';
+import { suitToMsgSuit } from './convert';
 
 export default function HanabiCardClick(event) {
     // Speedrunning overrides the normal card clicking behavior
@@ -97,9 +97,13 @@ const clickMiddle = (card, event) => {
 };
 
 const clickRight = (card, event) => {
-    // Alt + right-click is a card morph (in a replay / shared replay)
+    // Alt + right-click is a card morph (in a hypothetical)
     if (
         globals.replay
+        && globals.sharedReplay
+        && globals.amSharedReplayLeader
+        && globals.useSharedTurns
+        && globals.hypothetical
         && !event.ctrlKey
         && !event.shiftKey
         && event.altKey
@@ -229,13 +233,12 @@ const goToTurnAndIndicateCard = (turn, order) => {
 
 // Morphing cards allows for creation of hypothetical situations
 const clickMorph = (order) => {
-    // Only allow this feature in replays
-    if (!globals.replay) {
+    const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3")');
+    if (card === null) {
         return;
     }
-
-    const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3")');
-    if (card === null || card.length !== 2) {
+    if (card.length !== 2) {
+        alert('You entered an invalid card.');
         return;
     }
     const suitLetter = card[0];
@@ -262,22 +265,11 @@ const clickMorph = (order) => {
         return;
     }
 
-    if (globals.sharedReplay) {
-        // Tell the server that we are doing a hypothetical
-        if (globals.amSharedReplayLeader) {
-            globals.lobby.conn.send('replayAction', {
-                type: REPLAY_ACTION_TYPE.MORPH,
-                order,
-                suit,
-                rank,
-            });
-        }
-    } else {
-        // This is a non-shared replay, so locally morph the card
-        websocket.replayMorph({
-            order,
-            suit,
-            rank,
-        });
-    }
+    // Tell the server that we are doing a hypothetical
+    hypothetical.sendHypoAction({
+        type: 'reveal',
+        order,
+        suit,
+        rank,
+    });
 };

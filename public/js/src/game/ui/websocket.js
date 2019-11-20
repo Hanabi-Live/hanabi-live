@@ -521,20 +521,6 @@ commands.replayLeader = (data) => {
     $('#tooltip-leader').tooltipster('instance').content(content);
 };
 
-// This is used in shared replays to make hypothetical game states
-commands.replayMorph = (data) => {
-    if (globals.loading) {
-        // We have not loaded everything yet, so don't bother with shared replay features
-        return;
-    }
-
-    commands.reveal({
-        order: data.order,
-        suit: data.suit,
-        rank: data.rank,
-    });
-};
-
 // This is used in shared replays to make fun sounds
 commands.replaySound = (data) => {
     if (globals.loading) {

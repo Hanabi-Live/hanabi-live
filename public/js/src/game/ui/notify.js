@@ -433,6 +433,18 @@ commands.text = (data) => {
     }
 };
 
+commands.reveal = (data) => {
+    // This is the reveal for hypotheticals
+    // The code here is copied from the "websocket.js" file
+    let card = globals.deck[data.order];
+    if (!card) {
+        card = globals.stackBases[data.order - globals.deck.length];
+    }
+
+    card.reveal(data.suit, data.rank);
+    globals.layers.card.batchDraw();
+};
+
 commands.turn = (data) => {
     // Store the current turn in memory
     globals.turn = data.num;

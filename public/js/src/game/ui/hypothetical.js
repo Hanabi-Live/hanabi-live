@@ -209,7 +209,7 @@ export const send = (hypoAction) => {
     });
 };
 
-const sendHypoAction = (hypoAction) => {
+export const sendHypoAction = (hypoAction) => {
     globals.lobby.conn.send('replayAction', {
         type: REPLAY_ACTION_TYPE.HYPO_ACTION,
         actionJSON: JSON.stringify(hypoAction),

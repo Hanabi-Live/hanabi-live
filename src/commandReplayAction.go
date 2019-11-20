@@ -113,20 +113,6 @@ func commandReplayAction(s *Session, d *CommandData) {
 		for _, sp := range t.Spectators {
 			sp.Session.NotifyReplayLeader(t, true)
 		}
-	} else if d.Type == replayActionTypeMorph {
-		// A "hypothetical" card morph
-		for _, sp := range t.Spectators {
-			type ReplayMorphMessage struct {
-				Order int `json:"order"`
-				Suit  int `json:"suit"`
-				Rank  int `json:"rank"`
-			}
-			sp.Session.Emit("replayMorph", &ReplayMorphMessage{
-				Order: d.Order,
-				Suit:  d.Suit,
-				Rank:  d.Rank,
-			})
-		}
 	} else if d.Type == replayActionTypeSound {
 		// A sound effect
 		for _, sp := range t.Spectators {

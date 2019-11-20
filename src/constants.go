@@ -54,7 +54,6 @@ const (
 	replayActionTypeTurn  = iota // Changing the shared turn
 	replayActionTypeArrow        // Highlighting a card with an indicator arrow
 	replayActionTypeLeaderTransfer
-	replayActionTypeMorph      // Morphing a card to be something else for the purpose of a hypothetical
 	replayActionTypeSound      // Play one of the arbitrary sound effects included on the server
 	replayActionTypeHypoStart  // Start a hypothetical line
 	replayActionTypeHypoEnd    // End a hypothetical line
