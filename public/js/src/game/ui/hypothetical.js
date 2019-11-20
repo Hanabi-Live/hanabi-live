@@ -140,7 +140,7 @@ export const send = (hypoAction) => {
         if (hypoAction.data.clue.type === CLUE_TYPE.RANK) {
             text += hypoAction.data.clue.value;
         } else if (hypoAction.data.clue.type === CLUE_TYPE.COLOR) {
-            text += globals.variant.clueColors[hypoAction.data.clue.value];
+            text += globals.variant.clueColors[hypoAction.data.clue.value].name;
         }
         if (list.length !== 1) {
             text += 's';

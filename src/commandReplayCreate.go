@@ -306,6 +306,12 @@ func replayJSON(s *Session, d *CommandData) {
 	// Send messages from fake players to emulate the gameplay that occurred in the JSON actions
 	emulateJSONActions(t, d)
 
+	// If the game was abandoned or did not finish, then the deck order will not be appended yet
+	// (which is normally done in the "Game.End()" function)
+	if g.EndCondition == endConditionInProgress {
+		g.End() // This will only append the deck order and then return early
+	}
+
 	// Do a mini-version of the steps in the "g.End()" function
 	t.Replay = true
 	g.EndTurn = g.Turn
