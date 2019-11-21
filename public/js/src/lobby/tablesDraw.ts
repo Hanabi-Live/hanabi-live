@@ -73,7 +73,7 @@ const tablesDraw = () => {
         $('<td>').html(status).appendTo(row);
 
         // Column 6 - Action
-        const button = $('<button>').attr('type', 'button').addClass('button small margin0');
+        const button: any = $('<button>').attr('type', 'button').addClass('button small margin0');
         if (table.sharedReplay || (!table.joined && table.running)) {
             button.html('<i class="fas fa-eye lobby-button-icon"></i>');
             button.attr('id', `spectate-${table.id}`);
@@ -103,14 +103,14 @@ const tablesDraw = () => {
 };
 export default tablesDraw;
 
-const tableSpectateButton = (table) => () => {
+const tableSpectateButton = (table: any) => () => { // TODO convert to Table object
     globals.conn.send('tableSpectate', {
         tableID: table.id,
     });
     tablesDraw();
 };
 
-const tableJoinButton = (table) => () => {
+const tableJoinButton = (table: any) => () => { // TODO convert to Table object
     if (table.password) {
         modals.passwordShow(table.id);
         return;
@@ -122,7 +122,7 @@ const tableJoinButton = (table) => () => {
     tablesDraw();
 };
 
-const tableReattendButton = (table) => () => {
+const tableReattendButton = (table: any) => () => { // TODO convert to Table object
     globals.conn.send('tableReattend', {
         tableID: table.id,
     });
