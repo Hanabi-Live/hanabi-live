@@ -13,7 +13,7 @@ export const test = () => {
     Notification.requestPermission();
 };
 
-export const send = (msg, tag) => {
+export const send = (msg: string, tag: any) => {
     if (!('Notification' in window)) {
         return;
     }
