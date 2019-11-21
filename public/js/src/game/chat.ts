@@ -16,7 +16,7 @@ export const init = () => {
             // Keep the modal within the bounds of the page
             // (the parent is the <body> element)
             modifiers: [
-                interact.modifiers.restrictRect({
+                interact.modifiers!.restrictRect({
                     restriction: 'parent',
                 }),
             ],
@@ -49,12 +49,12 @@ export const init = () => {
             modifiers: [
                 // Keep the modal within the bounds of the page
                 // (the parent is the <body> element)
-                interact.modifiers.restrictEdges({
+                interact.modifiers!.restrictEdges({
                     outer: 'parent',
                 }),
 
                 // Define a minimum size for the modal
-                interact.modifiers.restrictSize({
+                interact.modifiers!.restrictSize({
                     min: {
                         width: 200,
                         height: 200,
@@ -87,8 +87,13 @@ export const init = () => {
             // store the window dimensions in a cookie so that it will persist between refreshes
             localStorage.setItem('chatWindowWidth', event.target.style.width);
             localStorage.setItem('chatWindowHeight', event.target.style.height);
-            localStorage.setItem('chatWindowX', $(`#${event.target.id}`).attr('data-x'));
-            localStorage.setItem('chatWindowY', $(`#${event.target.id}`).attr('data-y'));
+            const chatElement = $(`#${event.target.id}`);
+            if (chatElement) {
+                localStorage.setItem('chatWindowX', chatElement.attr('data-x') || '0');
+                localStorage.setItem('chatWindowY', chatElement.attr('data-y') || '0');
+            } else {
+                throw new Error(`Failed to get the "${event.target.id}" element.`);
+            }
         });
 
     $('#game-chat-modal-header-close').click(() => {
@@ -113,8 +118,20 @@ export const show = () => {
     if (globals.chatUnread !== 0) {
         // If the user is opening the chat, then we assume that all of the chat messages are read
         globals.chatUnread = 0;
-        globals.conn.send('chatRead'); // We need to notify the server that we have read everything
-        globals.ui.updateChatLabel(); // Reset the "Chat" UI button back to normal
+
+        // We need to notify the server that we have read everything
+        if (globals.conn) {
+            globals.conn.send('chatRead');
+        } else {
+            throw new Error('The "globals.conn" object is not initialized.');
+        }
+
+        // Reset the "Chat" UI button back to normal
+        if (globals.ui) {
+            globals.ui.updateChatLabel();
+        } else {
+            throw new Error('The "globals.ui" object is not initialized.');
+        }
     }
 
     // Set the modal to the default position
@@ -138,7 +155,7 @@ export const show = () => {
         resetPosition = false;
         modal.css('width', width);
         modal.css('height', height);
-        moveElement(modal, x, y);
+        moveElement(modal, parseInt(x, 10), parseInt(y, 10));
 
         // Just in case,
         // reset the size and position if the stored location puts the chat box offscreen
@@ -159,7 +176,11 @@ export const show = () => {
 
     // Scroll to the bottom of the chat
     const chat = document.getElementById('game-chat-text');
-    chat.scrollTop = chat.scrollHeight;
+    if (chat) {
+        chat.scrollTop = chat.scrollHeight;
+    } else {
+        throw new Error('Failed to get the "game-chat-text" element.');
+    }
 
     $('#game-chat-input').focus();
 };
@@ -169,7 +190,7 @@ export const hide = () => {
 };
 
 // Subroutine to move an element (using the "transform" CSS property)
-function moveElement(element, x, y) {
+function moveElement(element: JQuery, x: number, y: number) {
     // Update the element's style
     const transform = `translate(${x}px, ${y}px)`;
     element.css('webkitTransform', transform);

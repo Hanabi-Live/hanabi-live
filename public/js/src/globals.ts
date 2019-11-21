@@ -3,7 +3,6 @@
 */
 
 // Imports
-import Connection from './Connection';
 import version from './data/version.json';
 // (the "version.json" file is filled in dynamically by the "build_client.sh" script)
 
@@ -14,7 +13,8 @@ class Globals {
     username: string = '';
     password: string = '';
 
-    conn: Connection | null = null; // The websocket connection (set in "websocket.js")
+    conn: any = null; // The websocket connection (set in "websocket.js")
+    // (this must be an "any" type because we attach arbitrary method to the object)
 
     // Contains the settings for the "Settings" tooltip and the "Create Game" tooltip
     settings: object = {}; // Set upon login // TODO convert to Settings object
@@ -38,7 +38,7 @@ class Globals {
 
     // Legacy UI variables
     // TODO convert to a HanabiUI object
-    ui: object | null = null; // This contains the HanabiUI object (legacy)
+    ui: any | null = null; // This contains the HanabiUI object (legacy)
     // Used to keep track of how many in-game chat messages are currently unread
     chatUnread: number = 0;
 
