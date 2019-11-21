@@ -17,7 +17,7 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
         // Validate the ID
         const id: number = variantJSON.id;
         if (id < 0) {
-            throw new Error(`The "${name}" variant does not have an ID.`);
+            throw new Error(`The "${name}" variant has an invalid ID.`);
         }
 
         // Validate the suits

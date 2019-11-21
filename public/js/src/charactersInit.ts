@@ -12,6 +12,12 @@ export default () => {
             throw new Error('There is a character with an empty name in the "characters.json" file.');
         }
 
+        // Validate the ID
+        const id: number = characterJSON.id;
+        if (id < 0) {
+            throw new Error(`The "${name}" character has an invalid ID.`);
+        }
+
         // Validate the description
         const description: string = characterJSON.description || '';
         if (description === '') {
@@ -23,6 +29,15 @@ export default () => {
         if (emoji === '') {
             throw new Error(`The "${characterName}" character does not have an emoji.`);
         }
+
+        // Add it to the map
+        const character: Character = {
+            name,
+            id,
+            description,
+            emoji,
+        };
+        CHARACTERS.set(characterName, character);
     }
 
     return CHARACTERS;

@@ -389,7 +389,7 @@ export default () => {
 
         // Draw the "Detrimental Character Assignments" icon and tooltip
         if (globals.characterAssignments.length > 0) {
-            const character = CHARACTERS[globals.characterAssignments[i]];
+            const character = CHARACTERS.get(globals.characterAssignments[i]);
 
             const width2 = 0.03 * winW;
             const height2 = 0.03 * winH;
