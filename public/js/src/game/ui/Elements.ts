@@ -74,7 +74,8 @@ export default class Elements {
     replayForwardButton: any = null; // TODO set to Button
     replayForwardFullButton: any = null; // TODO set to Button
     replayExitButton: any = null; // TODO set to Button
-    toggleSharedTurnButton: any = null; // TODO set to ToggleButton
+    pauseSharedTurnsButton: any = null; // TODO set to Button
+    useSharedTurnsButton: any = null; // TODO set to Button
     enterHypoButton: any = null; // TODO set to Button
     hypoCircle: Konva.Group | null = null;
 

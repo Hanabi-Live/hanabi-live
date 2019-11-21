@@ -487,12 +487,14 @@ commands.replayLeader = (data) => {
 
     // Arrange the center buttons in a certain way depending on
     // whether we are the shared replay leader
-    globals.elements.toggleSharedTurnButton.show();
-    // (the button might be invisible if we just finished an ongoing game)
+    globals.elements.pauseSharedTurnsButton.setVisible(globals.useSharedTurns);
+    globals.elements.useSharedTurnsButton.setVisible(!globals.useSharedTurns);
     if (globals.amSharedReplayLeader) {
-        globals.elements.toggleSharedTurnButton.setLeft();
+        globals.elements.pauseSharedTurnsButton.setLeft();
+        globals.elements.useSharedTurnsButton.setLeft();
     } else {
-        globals.elements.toggleSharedTurnButton.setCenter();
+        globals.elements.pauseSharedTurnsButton.setCenter();
+        globals.elements.useSharedTurnsButton.setCenter();
     }
     globals.elements.enterHypoButton.setVisible(globals.amSharedReplayLeader);
 

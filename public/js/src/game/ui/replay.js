@@ -389,7 +389,11 @@ export const promptTurn = () => {
 
 export const toggleSharedTurns = () => {
     globals.useSharedTurns = !globals.useSharedTurns;
+
+    globals.elements.pauseSharedTurnsButton.setVisible(globals.useSharedTurns);
+    globals.elements.useSharedTurnsButton.setVisible(!globals.useSharedTurns);
     globals.elements.replayShuttleShared.setVisible(!globals.useSharedTurns);
+
     if (globals.useSharedTurns) {
         if (globals.amSharedReplayLeader) {
             shareCurrentTurn(globals.replayTurn);
@@ -413,7 +417,7 @@ export const checkDisableSharedTurns = () => {
         && globals.useSharedTurns
     ) {
         // Replay actions are currently enabled, so disable them
-        globals.elements.toggleSharedTurnButton.dispatchEvent(new MouseEvent('click'));
+        toggleSharedTurns();
     }
 };
 
