@@ -21,13 +21,13 @@ export const init = () => {
     $('#game-chat-input').on('keypress', keypress('table'));
 
     // Ensure that there are no overlapping emotes
-    const emoteMap = {};
-    for (const category of Object.keys(emoteCategories)) {
-        for (const emote of emoteCategories[category]) {
-            if (emoteMap[emote]) {
-                throw new Error('Duplicate emote found:', emote);
+    const emoteMap = new Map();
+    for (const category of Object.values(emoteCategories)) {
+        for (const emote of category) {
+            if (emoteMap.has(emote)) {
+                throw new Error(`Duplicate emote found: ${emote}`);
             } else {
-                emoteMap[emote] = true;
+                emoteMap.set(emote, true);
             }
         }
     }
