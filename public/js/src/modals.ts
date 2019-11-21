@@ -52,7 +52,7 @@ export const init = () => {
     });
 };
 
-export const passwordShow = (tableID) => {
+export const passwordShow = (tableID: number) => {
     $('#lobby').fadeTo(FADE_TIME, 0.25);
     closeAllTooltips();
 
@@ -64,7 +64,11 @@ export const passwordShow = (tableID) => {
 const passwordSubmit = () => {
     $('#password-modal').fadeOut(FADE_TIME);
     $('#lobby').fadeTo(FADE_TIME, 1);
-    const tableID = parseInt($('#password-modal-id').val(), 10); // The server expects this as a number
+    const tableIDString = $('#password-modal-id').val();
+    if (typeof tableIDString !== 'string') {
+        throw new Error('The "password-modal-id" element does not have a string value.');
+    }
+    const tableID = parseInt(tableIDString, 10); // The server expects this as a number
     const passwordPlaintext = $('#password-modal-password').val();
     const stringToHash = `Hanabi game password ${passwordPlaintext}`;
     const password = shajs('sha256').update(stringToHash).digest('hex');
@@ -74,7 +78,7 @@ const passwordSubmit = () => {
     });
 };
 
-export const warningShow = (msg) => {
+export const warningShow = (msg: string) => {
     if ($('#lobby').is(':visible')) {
         $('#lobby').fadeTo(FADE_TIME, 0.25);
     }
@@ -88,7 +92,7 @@ export const warningShow = (msg) => {
     $('#warning-modal').fadeIn(FADE_TIME);
 };
 
-export const errorShow = (msg) => {
+export const errorShow = (msg: string) => {
     // Do nothing if we are already showing the error modal
     if (globals.errorOccured) {
         return;
