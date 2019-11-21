@@ -8,18 +8,6 @@ import { FADE_TIME } from '../constants';
 import globals from '../globals';
 
 export const init = () => {
-    // Detect if an element is off screen
-    // From: https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen
-    jQuery.expr.filters.offscreen = (el) => {
-        const rect = el.getBoundingClientRect();
-        return (
-            rect.top < 0 // Above the top
-            || rect.bottom > window.innerHeight // Below the bottom
-            || rect.left < 0 // Left of the left edge
-            || rect.right > window.innerWidth // Right of the right edge
-        );
-    };
-
     // Make the chat modal draggable (using the InteractJS library)
     interact('.draggable')
         .draggable({

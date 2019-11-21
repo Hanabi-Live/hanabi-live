@@ -41,7 +41,7 @@ module.exports = {
         // https://webpack.js.org/plugins/provide-plugin/
         new webpack.ProvidePlugin({
             $: 'jquery',
-            jQuery: 'jquery',
+            jQuery: 'jquery', // TODO see if we can remove this
         }),
     ],
 

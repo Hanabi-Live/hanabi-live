@@ -240,7 +240,9 @@ export default globals;
 // Also make it available to the window so that we can access global variables
 // from the JavaScript console (for debugging purposes)
 declare global {
-    interface Window { globals: any; }
+    interface Window {
+        globals: Globals;
+    }
 }
 if (typeof window !== 'undefined') {
     window.globals = globals;

@@ -9,7 +9,7 @@ import * as gameChat from './game/chat';
 import * as gameMain from './game/main';
 import * as gameSounds from './game/sounds';
 import gameWebsocketInit from './game/websocketInit';
-import Golem from '../lib/golem';
+import Connection from './Connection';
 import globals from './globals';
 import * as lobbyHistory from './lobby/history';
 import * as lobbyLoginMisc from './lobby/loginMisc';
@@ -34,7 +34,7 @@ export default () => {
     websocketURL += '/ws';
     console.log('Connecting to websocket URL:', websocketURL);
     const debug = window.location.pathname.includes('/dev');
-    globals.conn = new Golem(websocketURL, debug);
+    globals.conn = new Connection(websocketURL, debug);
     // This will automatically use the cookie that we received earlier from the POST
     // If the second argument is true, debugging is turned on
 
@@ -48,7 +48,8 @@ export default () => {
         modals.errorShow('Disconnected from the server. Either your Internet hiccuped or the server restarted.');
     });
     globals.conn.on('socketError', (event) => {
-        // "socketError" is defined in "golem.js" as mapping to the WebSocket "onerror" event
+        // "socketError" is defined in the Connection object as mapping to
+        // the WebSocket "onerror" event
         console.error('WebSocket error:', event);
 
         if ($('#loginbox').is(':visible')) {

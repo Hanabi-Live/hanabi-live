@@ -3,94 +3,71 @@
 */
 
 // Imports
+import Connection from './Connection';
 import version from './data/version.json';
 // (the "version.json" file is filled in dynamically by the "build_client.sh" script)
 
-interface Globals {
-    version: number,
-    browserIsFirefox: boolean,
+class Globals {
+    version: number = version;
+    browserIsFirefox: boolean = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
-    username: string | null,
-    password: string | null,
+    username: string = '';
+    password: string = '';
 
-    conn: any | null,
+    conn: Connection | null = null; // The websocket connection (set in "websocket.js")
 
-    settings: Object,
+    // Contains the settings for the "Settings" tooltip and the "Create Game" tooltip
+    settings: object = {}; // Set upon login // TODO convert to Settings object
 
-    userList: Object,
-    tableList: Object,
-    historyList: Object,
-    historyDetailList: Array<any>,
-    historyClicked: boolean,
-    totalGames: number,
-    randomName: string,
+    userList: object = {}; // Set upon login // TODO convert to UserList object
+    tableList: object = {}; // Set upon login // TODO convert to TableList object
+    historyList: object = {}; // Set upon login // TODO convert to HistoryList object
+    // TODO convert to Array<HistoryDetail>
+    historyDetailList: Array<any> = []; // Set upon clicking the "History Details" button
+    // Used to keep track of whether the user clicked on the "Show More History" button
+    historyClicked: boolean = false;
+    totalGames: number = 0; // Set upon login
+    randomName: string = ''; // Set upon login
 
-    game: Object,
+    game: object = {}; // Equal to the data from the "game" command // TODO convert to a Game object
 
-    currentScreen: string,
-    tableID: number,
-    errorOccured: boolean,
+    // Can be "login", "lobby", "pregame", "game", "history", and "historyDetails"
+    currentScreen: string = 'login';
+    tableID: number = -1; // Equal to the table we are joined to or -1 if no table
+    errorOccured: boolean = false;
 
-    ui: Object | null,
-    chatUnread: number,
+    // Legacy UI variables
+    // TODO convert to a HanabiUI object
+    ui: object | null = null; // This contains the HanabiUI object (legacy)
+    // Used to keep track of how many in-game chat messages are currently unread
+    chatUnread: number = 0;
 
-    phaser: Object | null,
-    init: Object | null,
-    state: State,
+    // Phaser UI variables
+    phaser: object | null = null; // TODO convert to a PhaserUI object
+    // TODO convert to an Init object
+    init: object | null = null; // Equal to the data from the "init" command
+    // ui: null, // The various graphics objects used, initialized in the "commands.init()" function
+    state: State = { // Variables relating to the current game state
+        turn: 0,
+        learnedCards: [],
+    };
 }
 
+// TODO replace with State from State.ts
 interface State {
     turn: number,
     learnedCards: Array<any>,
 }
 
-const globals: Globals = {
-    version,
-    browserIsFirefox: navigator.userAgent.toLowerCase().indexOf('firefox') > -1,
-
-    username: null,
-    password: null,
-
-    conn: null, // The websocket connection (set in "websocket.js")
-
-    // Contains the settings for the "Settings" tooltip and the "Create Game" tooltip
-    settings: {}, // Set upon login
-
-    userList: {}, // Set upon login
-    tableList: {}, // Set upon login
-    historyList: {}, // Set upon login
-    historyDetailList: [], // Set upon clicking the "History Details" button
-    historyClicked: false,
-    // Used to keep track of whether the user clicked on the "Show More History" button
-    totalGames: 0, // Set upon login
-    randomName: '', // Set upon login
-
-    game: {}, // Equal to the data from the "game" command
-
-    // Can be "login", "lobby", "pregame", "game", "history", and "historyDetails"
-    currentScreen: 'login',
-    tableID: -1, // Equal to the table we are joined to or -1 if no table
-    errorOccured: false,
-
-    // Legacy UI variables
-    ui: null, // This contains the HanabiUI object (legacy)
-    chatUnread: 0, // Used to keep track of how many in-game chat messages are currently unread
-
-    // Phaser UI variables
-    phaser: null,
-    init: null, // Equal to the data from the "init" command
-    // ui: null, // The various graphics objects used, initialized in the "commands.init()" function
-    state: { // Variables relating to the current game state
-        turn: 0,
-        learnedCards: [],
-    },
-};
+const globals = new Globals();
 export default globals;
 
 // Also make the globals available to the window
 // (so that we can access them from the JavaScript console for debugging purposes)
 declare global {
-    interface Window { globals2: any; }
+    interface Window {
+        globals2: Globals;
+    }
 }
 if (typeof window !== 'undefined') {
     window.globals2 = globals;
