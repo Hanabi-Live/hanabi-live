@@ -7,7 +7,7 @@ import * as replay from './replay';
 
 export const end = (actionObject) => {
     if (globals.hypothetical) {
-        globals.functions.hypotheticalSendHandler(actionObject);
+        globals.functions.hypotheticalSend(actionObject);
         return;
     }
 

@@ -11,7 +11,7 @@ import { LABEL_COLOR, STACK_BASE_RANK } from '../../constants';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals from './globals';
-import globalsInit from './globalsInit';
+import globalsFunctionsInit from './globalsFunctionsInit';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import Loader from './Loader';
@@ -23,10 +23,15 @@ import * as ui from './ui';
 export default class HanabiUI {
     constructor(lobby, game) {
         // Since the "HanabiUI" object is being reinstantiated,
-        // we need to explicitly reinitialize all varaibles
+        // we need to explicitly reinitialize all globals varaibles
         // (or else they will retain their old values)
-        globalsInit();
-        this.globals = globals; // Also expose the globals to functions in the "game" directory
+        globals.reset();
+
+        // Set up some functions to avoid cyclical depedencies
+        globalsFunctionsInit();
+
+        // Expose the globals to functions in the "game" directory
+        this.globals = globals;
 
         // Store references to the parent objects for later use
         globals.lobby = lobby; // This is the "globals.js" in the root of the "src" directory

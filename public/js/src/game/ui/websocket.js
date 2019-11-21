@@ -11,7 +11,7 @@ import * as hypothetical from './hypothetical';
 import * as notes from './notes';
 import notify from './notify';
 import * as replay from './replay';
-import state from './state';
+import stateChange from './stateChange';
 import * as stats from './stats';
 import strikeRecord from './strikeRecord';
 import * as timer from './timer';
@@ -301,8 +301,8 @@ commands.noteListPlayer = (data) => {
 // Used when the game state changes
 commands.notify = (data) => {
     // Update the state table
-    if (Object.prototype.hasOwnProperty.call(state, data.type)) {
-        state[data.type](data);
+    if (Object.prototype.hasOwnProperty.call(stateChange, data.type)) {
+        stateChange[data.type](data);
     }
 
     // We need to save this game state change for the purposes of the in-game replay
@@ -327,14 +327,14 @@ commands.notify = (data) => {
         }
     } else if (data.type === 'clue' && globals.variant.name.startsWith('Alternating Clues')) {
         if (data.clue.type === CLUE_TYPE.RANK) {
-            for (const button of globals.elements.suitClueButtons) {
+            for (const button of globals.elements.colorClueButtons) {
                 button.show();
             }
             for (const button of globals.elements.rankClueButtons) {
                 button.hide();
             }
         } else if (data.clue.type === CLUE_TYPE.COLOR) {
-            for (const button of globals.elements.suitClueButtons) {
+            for (const button of globals.elements.colorClueButtons) {
                 button.hide();
             }
             for (const button of globals.elements.rankClueButtons) {

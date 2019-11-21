@@ -1,3 +1,7 @@
+/*
+    These are exported global variables to be shared between all of the TypeScript code
+*/
+
 // Imports
 import version from './data/version.json';
 // (the "version.json" file is filled in dynamically by the "build_client.sh" script)
@@ -40,7 +44,6 @@ interface State {
     learnedCards: Array<any>,
 }
 
-// Exported global variables
 const globals: Globals = {
     version,
     browserIsFirefox: navigator.userAgent.toLowerCase().indexOf('firefox') > -1,

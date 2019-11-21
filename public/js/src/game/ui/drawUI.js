@@ -4,6 +4,7 @@
 
 // Imports
 import Konva from 'konva';
+import Arrow from './Arrow';
 import * as arrows from './arrows';
 import Button from './Button';
 import ButtonGroup from './ButtonGroup';
@@ -1271,117 +1272,8 @@ const drawDiscardArea = () => {
 };
 
 const drawArrows = () => {
-    // These are arrows used to show which cards that are touched by a clue
-    // (and for pointing to various things in a shared replay)
-    class Arrow extends Konva.Group {
-        constructor() {
-            const x = 0.1 * winW;
-            const y = 0.1 * winH;
-            super({
-                x,
-                y,
-                offset: {
-                    x,
-                    y,
-                },
-                visible: false,
-            });
-
-            // Class variables
-            this.pointingTo = null;
-            this.tween = null;
-
-            const pointerLength = 0.006 * winW;
-
-            // We want there to be a black outline around the arrow,
-            // so we draw a second arrow that is slightly bigger than the first
-            const border = new Konva.Arrow({
-                points: [
-                    x,
-                    0,
-                    x,
-                    y * 0.8,
-                ],
-                pointerLength,
-                pointerWidth: pointerLength,
-                fill: 'black',
-                stroke: 'black',
-                strokeWidth: pointerLength * 2,
-                shadowBlur: pointerLength * 4,
-                shadowOpacity: 1,
-            });
-            this.add(border);
-
-            // The border arrow will be missing a bottom edge,
-            // so draw that manually at the bottom of the arrow
-            const edge = new Konva.Line({
-                points: [
-                    x - pointerLength,
-                    0,
-                    x + pointerLength,
-                    0,
-                ],
-                fill: 'black',
-                stroke: 'black',
-                strokeWidth: pointerLength * 0.75,
-            });
-            this.add(edge);
-
-            // The main (inside) arrow is exported so that we can change the color later
-            this.base = new Konva.Arrow({
-                points: [
-                    x,
-                    0,
-                    x,
-                    y * 0.8,
-                ],
-                pointerLength,
-                pointerWidth: pointerLength,
-                fill: 'white',
-                stroke: 'white',
-                strokeWidth: pointerLength * 1.25,
-            });
-            this.add(this.base);
-
-            // A circle will appear on the body of the arrow to indicate the type of clue given
-            this.circle = new Konva.Circle({
-                x,
-                y: y * 0.3,
-                radius: pointerLength * 2.25,
-                fill: 'black',
-                stroke: 'white',
-                strokeWidth: pointerLength * 0.25,
-                visible: false,
-                listening: false,
-            });
-            this.add(this.circle);
-
-            // The circle will have text inside of it to indicate the number of the clue given
-            this.text = new Konva.Text({
-                x,
-                y: y * 0.3,
-                offset: {
-                    x: this.circle.getWidth() / 2,
-                    y: this.circle.getHeight() / 2,
-                },
-                width: this.circle.getWidth(),
-                // For some reason the text is offset if we place it exactly in the middle of the
-                // circle, so nudge it downwards
-                height: this.circle.getHeight() * 1.09,
-                fontSize: y * 0.38,
-                fontFamily: 'Verdana',
-                fill: 'white',
-                align: 'center',
-                verticalAlign: 'middle',
-                visible: false,
-                listening: false,
-            });
-            this.add(this.text);
-        }
-    }
-
     for (let i = 0; i < 5; i++) {
-        const arrow = new Arrow();
+        const arrow = new Arrow(winW, winH);
         globals.layers.arrow.add(arrow);
         globals.elements.arrows.push(arrow);
     }
@@ -1588,7 +1480,7 @@ const drawClueArea = () => {
     const buttonSpacing = 0.009;
 
     // Color buttons
-    globals.elements.suitClueButtons = [];
+    globals.elements.colorClueButtons = [];
     let totalColorWidth = buttonW * globals.variant.clueColors.length;
     totalColorWidth += buttonSpacing * (globals.variant.clueColors.length - 1);
     const colorX = (clueAreaValues.w * 0.5) - (totalColorWidth * 0.5);
@@ -1605,7 +1497,7 @@ const drawClueArea = () => {
         });
 
         globals.elements.clueArea.add(button);
-        globals.elements.suitClueButtons.push(button);
+        globals.elements.colorClueButtons.push(button);
         globals.elements.clueTypeButtonGroup.addList(button);
     }
 

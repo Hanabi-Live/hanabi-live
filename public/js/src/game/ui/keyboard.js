@@ -36,8 +36,8 @@ export const init = () => {
     // (we use qwert since they are conveniently next to 12345,
     // and also because the clue colors can change between different variants)
     const clueKeyRow = ['q', 'w', 'e', 'r', 't', 'y'];
-    for (let i = 0; i < globals.elements.suitClueButtons.length && i < clueKeyRow.length; i++) {
-        hotkeyMap.clue[clueKeyRow[i]] = click(globals.elements.suitClueButtons[i]);
+    for (let i = 0; i < globals.elements.colorClueButtons.length && i < clueKeyRow.length; i++) {
+        hotkeyMap.clue[clueKeyRow[i]] = click(globals.elements.colorClueButtons[i]);
     }
 
     hotkeyMap.play = {

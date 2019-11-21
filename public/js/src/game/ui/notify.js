@@ -50,7 +50,6 @@ const commands = {};
 commands.clue = (data) => {
     // The clue comes from the server as an integer, so convert it to an object
     const clue = msgClueToClue(data.clue, globals.variant);
-    globals.clueTypeLastGiven = clue.type;
 
     // Clear all visible arrows when a new move occurs
     arrows.hideAll();

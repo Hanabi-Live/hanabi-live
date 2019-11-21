@@ -34,7 +34,7 @@ commands.clue = (data) => {
 };
 
 // The game is over and the server gave us a list of every card in the deck
-// {deck: [{suit: 0, rank 1}, {suit: 2, rank: 2}, ...], type: "deckOrder", }
+// {deck: [{suit: 0, rank: 1}, {suit: 2, rank: 2}, ...], type: "deckOrder", }
 commands.deckOrder = (data) => {
     globals.deckOrder = data.deck;
 };
