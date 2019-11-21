@@ -10,7 +10,7 @@ import * as nav from './nav';
 import tablesDraw from './tablesDraw';
 import usersDraw from './usersDraw';
 
-export const hide = (firstTimeUser) => {
+export const hide = (firstTimeUser: boolean) => {
     // Hide the login screen
     $('#login').hide();
 
@@ -46,7 +46,7 @@ export const hide = (firstTimeUser) => {
     $('#lobby-chat-input').focus();
 };
 
-export const formError = (msg) => {
+export const formError = (msg: string) => {
     // For some reason this has to be invoked asycnronously in order to work properly
     setTimeout(() => {
         $('#login-ajax').hide();
