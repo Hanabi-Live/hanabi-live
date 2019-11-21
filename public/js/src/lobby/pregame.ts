@@ -9,7 +9,7 @@ import { timerFormatter } from '../misc';
 import * as nav from './nav';
 
 // Constants
-const tooltipsterOptions = {
+const tooltipsterOptions: JQueryTooltipster.ITooltipsterOptions = {
     animation: 'grow',
     contentAsHTML: true,
     delay: 0,
@@ -38,9 +38,17 @@ export const show = () => {
     // (even if the lobby chat is already at the bottom, it will change size and cause it to not
     // be scrolled all the way down)
     const chat1 = document.getElementById('lobby-chat-text');
-    chat1.scrollTop = chat1.scrollHeight;
+    if (chat1) {
+        chat1.scrollTop = chat1.scrollHeight;
+    } else {
+        throw new Error('Failed to get the "lobby-chat-text" element.');
+    }
     const chat2 = document.getElementById('lobby-chat-pregame-text');
-    chat2.scrollTop = chat2.scrollHeight;
+    if (chat2) {
+        chat2.scrollTop = chat2.scrollHeight;
+    } else {
+        throw new Error('Failed to get the "lobby-chat-pregame-text" element.');
+    }
 
     // Focus the pregame chat
     $('#lobby-chat-pregame-input').focus();
@@ -207,16 +215,21 @@ export const draw = () => {
 
         // Calculate some stats
         const variantStats = player.stats.variant;
-        let averageScore = Math.round(variantStats.averageScore * 10) / 10;
+        const averageScore = Math.round(variantStats.averageScore * 10) / 10;
         // (round it to 1 decimal place)
+        let averageScoreString;
         if (averageScore === 0) {
-            averageScore = '-';
+            averageScoreString = '-';
+        } else {
+            averageScoreString = averageScore.toString();
         }
-        let strikeoutRate = '-';
+        let strikeoutRateString;
         if (variantStats.numGames > 0) {
-            strikeoutRate = variantStats.numStrikeouts / variantStats.numGames * 100;
+            let strikeoutRate = variantStats.numStrikeouts / variantStats.numGames * 100;
             strikeoutRate = Math.round(strikeoutRate * 10) / 10; // (round it to 1 decimal places)
-            strikeoutRate += '%';
+            strikeoutRateString = `${strikeoutRate}%`;
+        } else {
+            strikeoutRateString = '-';
         }
 
         html += `
@@ -241,7 +254,7 @@ export const draw = () => {
                     Average score:
                 </div>
                 <div class="col-2 align-right padding0">
-                    ${averageScore}
+                    ${averageScoreString}
                 </div>
             </div>
             <div class="row">
@@ -249,7 +262,7 @@ export const draw = () => {
                     Strikeout rate:
                 </div>
                 <div class="col-2 align-right padding0">
-                    ${strikeoutRate}
+                    ${strikeoutRateString}
                 </div>
             </div>
         `;
@@ -277,7 +290,11 @@ export const draw = () => {
             <div class="hidden">
                 <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
         `;
-        const { maxScore } = VARIANTS.get(globals.game.variant);
+        const variant = VARIANTS.get(globals.game.variant);
+        if (!variant) {
+            throw new Error(`Failed to get the "${globals.game.variant}" variant.`);
+        }
+        const { maxScore } = variant;
         for (let j = 2; j <= 6; j++) {
             html += '<div class="row">';
             html += `<div class="col-6">${j}-player:</div>`;

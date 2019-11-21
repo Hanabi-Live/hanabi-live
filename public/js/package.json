@@ -31,6 +31,7 @@
   "dependencies": {
     "@types/jquery": "^3.3.31",
     "@types/sha.js": "^2.4.0",
+    "@types/tooltipster": "0.0.29",
     "interactjs": "^1.6.3",
     "jquery": "^3.4.1",
     "konva": "^3.4.1",

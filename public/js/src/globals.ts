@@ -29,7 +29,7 @@ class Globals {
     totalGames: number = 0; // Set upon login
     randomName: string = ''; // Set upon login
 
-    game: object = {}; // Equal to the data from the "game" command // TODO convert to a Game object
+    game: any = {}; // Equal to the data from the "game" command // TODO convert to a Game object
 
     // Can be "login", "lobby", "pregame", "game", "history", and "historyDetails"
     currentScreen: string = 'login';
