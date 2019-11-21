@@ -2,7 +2,7 @@
     The navigation bar at the top of the lobby
 */
 
-export const show = (target) => {
+export const show = (target: string) => {
     const navTypes = [
         'games',
         'pregame',
