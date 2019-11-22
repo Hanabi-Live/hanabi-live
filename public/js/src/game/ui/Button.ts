@@ -4,17 +4,21 @@ import FitText from './FitText';
 import globals from './globals';
 
 export default class Button extends Konva.Group {
-    constructor(config) {
-        config.listening = true;
-        super(config);
+    enabled: boolean = true;
+    pressed: boolean = false;
 
-        // Class variables
-        this.enabled = true;
-        this.pressed = false;
+    background: Konva.Rect;
+    textElement: FitText | null = null;
+    imageElement: Konva.Image | null = null;
+    imageName: string = '';
+
+    constructor(config: Konva.ContainerConfig) {
+        super(config);
+        this.listening(true);
 
         // Local variables
-        const w = this.getWidth();
-        const h = this.getHeight();
+        const w = this.width();
+        const h = this.height();
 
         this.background = new Konva.Rect({
             name: 'background',
@@ -44,8 +48,6 @@ export default class Button extends Konva.Group {
                 text: config.text,
                 listening: false,
             });
-            this.setText = (newText) => this.textElement.fitText(newText);
-            this.setFill = (newFill) => this.textElement.setFill(newFill);
             this.add(this.textElement);
         } else if (config.image) {
             this.imageElement = new Konva.Image({
@@ -62,7 +64,7 @@ export default class Button extends Konva.Group {
         }
 
         const resetButton = () => {
-            this.background.setFill('black');
+            this.background.fill('black');
             const layer = this.getLayer();
             if (layer) {
                 layer.batchDraw();
@@ -72,7 +74,7 @@ export default class Button extends Konva.Group {
             this.background.off('mouseout');
         };
         this.background.on('mousedown', () => {
-            this.background.setFill('#888888');
+            this.background.fill('#888888');
             const layer = this.getLayer();
             if (layer) {
                 layer.batchDraw();
@@ -87,22 +89,22 @@ export default class Button extends Konva.Group {
         });
     }
 
-    setEnabled(enabled) {
+    setEnabled(enabled: boolean) {
         if (enabled === this.enabled) {
             return;
         }
         this.enabled = enabled;
 
-        if (this.textElement !== null) {
-            this.textElement.setFill(enabled ? 'white' : '#444444');
+        if (this.textElement) {
+            this.textElement.fill(enabled ? 'white' : '#444444');
         }
 
-        if (this.imageElement !== null) {
+        if (this.imageElement) {
             const imageName = (enabled ? this.imageName : `${this.imageName}-disabled`);
-            this.imageElement.setImage(globals.ImageLoader.get(imageName));
+            this.imageElement.image(globals.ImageLoader.get(imageName));
         }
 
-        this.background.setListening(enabled);
+        this.background.listening(enabled);
 
         const layer = this.getLayer();
         if (layer) {
@@ -110,12 +112,24 @@ export default class Button extends Konva.Group {
         }
     }
 
-    setPressed(pressed) {
+    setPressed(pressed: boolean) {
         this.pressed = pressed;
-        this.background.setFill(pressed ? '#cccccc' : 'black');
+        this.background.fill(pressed ? '#cccccc' : 'black');
         const layer = this.getLayer();
         if (layer) {
             layer.batchDraw();
+        }
+    }
+
+    setText(newText: string) {
+        if (this.textElement) {
+            this.textElement.fitText(newText);
+        }
+    }
+
+    setFill(newFill: string) {
+        if (this.textElement) {
+            this.textElement.fill(newFill);
         }
     }
 }
