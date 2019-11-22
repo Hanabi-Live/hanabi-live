@@ -4,7 +4,14 @@ import Konva from 'konva';
 // These are arrows used to show which cards that are touched by a clue
 // (and for pointing to various things in a shared replay)
 export default class Arrow extends Konva.Group {
-    constructor(winW, winH) {
+    pointingTo: any;
+    tween: Konva.Tween | null;
+
+    base: Konva.Arrow;
+    circle: Konva.Circle;
+    text: Konva.Text;
+
+    constructor(winW: number, winH: number) {
         const x = 0.1 * winW;
         const y = 0.1 * winH;
         super({
@@ -18,6 +25,7 @@ export default class Arrow extends Konva.Group {
         });
 
         // Class variables
+        // (we can't initialize these above due to "super()" not being on the first line)
         this.pointingTo = null;
         this.tween = null;
 
