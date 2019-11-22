@@ -22,7 +22,7 @@ export const init = () => {
             ],
 
             // Define the drag behavior
-            onmove: (event) => {
+            onmove: (event: any) => {
                 // Get the new position based on the delta between the event and the old position
                 // (which is conveniently stored in the "data-x" and "data-y" attributes)
                 const x = (parseFloat(event.target.getAttribute('data-x')) || 0) + event.dx;
@@ -63,7 +63,7 @@ export const init = () => {
             ],
         })
 
-        .on('resizemove', (event) => {
+        .on('resizemove', (event: any) => {
             // Get the new position based on the delta between the event and the old position
             // (which is conveniently stored in the "data-x" and "data-y" attributes)
             let x = (parseFloat(event.target.getAttribute('data-x')) || 0);
@@ -82,7 +82,7 @@ export const init = () => {
             event.target.style.height = `${event.rect.height}px`;
         })
 
-        .on('dragend resizeend', (event) => {
+        .on('dragend resizeend', (event: any) => {
             // The modal was moved or resized;
             // store the window dimensions in a cookie so that it will persist between refreshes
             localStorage.setItem('chatWindowWidth', event.target.style.width);
