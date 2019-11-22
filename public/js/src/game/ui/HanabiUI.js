@@ -42,7 +42,6 @@ export default class HanabiUI {
 
         // Initialize the stage and show the loading screen
         initStage();
-        globals.ImageLoader = new Loader(finishedLoadingImages);
         showLoadingScreen();
     }
 
@@ -150,14 +149,16 @@ const showLoadingScreen = () => {
     });
     loadingLayer.add(progresslabel);
 
-    globals.ImageLoader.progressCallback = (done, total) => {
+    globals.stage.add(loadingLayer);
+
+    const loadingProgressCallback = (done, total) => {
         progresslabel.setText(`${done}/${total}`);
         loadingLayer.batchDraw();
     };
-    globals.stage.add(loadingLayer);
+    globals.ImageLoader = new Loader(loadingProgressCallback, loadingFinishedCallback);
 };
 
-const finishedLoadingImages = () => {
+const loadingFinishedCallback = () => {
     // Build images for every card
     // (with respect to the variant that we are playing
     // and whether or not we have the colorblind UI feature enabled)

@@ -1,8 +1,15 @@
 export default class Loader {
-    constructor(finishedCallback) {
+    filePathMap: Map<string, string> = new Map();
+    numLoaded: number = 0;
+    imageMap: Map<string, HTMLElement> = new Map();
+    progressCallback: any = null;
+    finishedCallback: any = null;
+
+    constructor(progressCallback: any, finishedCallback: any) {
+        this.progressCallback = progressCallback;
         this.finishedCallback = finishedCallback;
 
-        const files = [
+        const fileIDs = [
             'crown',
             'eyes',
             'home',
@@ -24,56 +31,41 @@ export default class Loader {
             'x',
             'wrench',
         ];
-        this.filemap = {};
-        for (const file of files) {
-            this.filemap[file] = `/public/img/${file}.png`;
+        for (const fileID of fileIDs) {
+            this.filePathMap.set(fileID, `/public/img/${fileID}.png`);
         }
-
-        this.filemap.background = '/public/img/background.jpg';
-    }
-
-    addImage(name, ext) {
-        this.filemap[name] = `/public/img/${name}.${ext}`;
-    }
-
-    addAlias(name, alias, ext) {
-        this.filemap[name] = `/public/img/${alias}.${ext}`;
+        this.filePathMap.set('background', '/public/img/background.jpg');
     }
 
     start() {
-        const total = Object.keys(this.filemap).length;
-
-        this.map = {};
         this.numLoaded = 0;
 
-        for (const name of Object.keys(this.filemap)) {
+        for (const [fileID, filePath] of this.filePathMap) {
             const img = new Image();
-
-            this.map[name] = img;
-
             img.onload = () => {
                 this.numLoaded += 1;
 
-                this.progress(this.numLoaded, total);
+                this.progress();
 
-                if (this.numLoaded === total) {
+                if (this.numLoaded === this.filePathMap.size) {
                     this.finishedCallback();
                 }
             };
+            img.src = filePath;
 
-            img.src = this.filemap[name];
+            this.imageMap.set(fileID, img);
         }
 
-        this.progress(0, total);
+        this.progress();
     }
 
-    progress(done, total) {
+    progress() {
         if (this.progressCallback) {
-            this.progressCallback(done, total);
+            this.progressCallback(this.numLoaded, this.filePathMap.size);
         }
     }
 
-    get(name) {
-        return this.map[name];
+    get(name: string) {
+        return this.imageMap.get(name);
     }
 }

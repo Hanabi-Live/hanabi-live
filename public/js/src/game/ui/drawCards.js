@@ -279,9 +279,7 @@ const makeKnownTrash = (canvasType) => {
     ctx.translate(CARD_W / 2, CARD_H / 2);
 
     // Draw the trash can image on top of the card
-    if (globals.ImageLoader) {
-        ctx.drawImage(globals.ImageLoader.get('trashcan2'), -103, -120);
-    }
+    ctx.drawImage(globals.ImageLoader.get('trashcan2'), -103, -120);
 
     return cvs;
 };
