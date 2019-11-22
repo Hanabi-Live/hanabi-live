@@ -12,7 +12,7 @@ export default class FitText extends Konva.Text {
         this.origFontSize = this.fontSize();
         this.needsResize = true;
 
-        this.sceneFunc(function sceneFunc(this: FitText, context: object) {
+        this.sceneFunc(function sceneFunc(this: FitText, context: any) {
             if (this.needsResize) {
                 this.resize();
             }

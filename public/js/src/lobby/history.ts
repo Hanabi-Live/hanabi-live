@@ -66,7 +66,11 @@ export const draw = () => {
     // Add all of the history
     for (let i = 0; i < ids.length; i++) {
         const gameData = globals.historyList[ids[i]];
-        const { maxScore } = VARIANTS.get(gameData.variant);
+        const variant = VARIANTS.get(gameData.variant);
+        if (!variant) {
+            throw new Error(`Failed to get the "${gameData.variant}" variant.`);
+        }
+        const { maxScore } = variant;
 
         const row = $('<tr>');
 
@@ -91,15 +95,15 @@ export const draw = () => {
 
         // Column 7 - Watch Replay
         const watchReplayButton = makeReplayButton(ids[i], 'solo');
-        $('<td>').html(watchReplayButton).appendTo(row);
+        $('<td>').html((watchReplayButton as any)).appendTo(row);
 
         // Column 8 - Share Replay
         const shareReplayButton = makeReplayButton(ids[i], 'shared');
-        $('<td>').html(shareReplayButton).appendTo(row);
+        $('<td>').html((shareReplayButton as any)).appendTo(row);
 
         // Column 9 - Other Scores
         const otherScoresButton = makeHistoryDetailsButton(ids[i], gameData.numSimilar);
-        $('<td>').html(otherScoresButton).appendTo(row);
+        $('<td>').html((otherScoresButton as any)).appendTo(row);
 
         row.appendTo(tbody);
     }
@@ -112,7 +116,7 @@ export const draw = () => {
     }
 };
 
-const makeReplayButton = (id, visibility) => {
+const makeReplayButton = (id: number, visibility: string) => {
     const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
     let text;
     if (visibility === 'solo') {
@@ -141,7 +145,7 @@ const makeReplayButton = (id, visibility) => {
     return button;
 };
 
-const makeHistoryDetailsButton = (id, gameCount) => {
+const makeHistoryDetailsButton = (id: number, gameCount: number) => {
     const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
     button.html(`<i class="fas fa-chart-bar lobby-button-icon"></i>&nbsp; ${gameCount - 1}`);
     if (gameCount - 1 === 0) {
@@ -237,11 +241,11 @@ export const drawDetails = () => {
 
         // Column 5 - Watch Replay
         const watchReplayButton = makeReplayButton(gameData.id, 'solo');
-        $('<td>').html(watchReplayButton).appendTo(row);
+        $('<td>').html((watchReplayButton as any)).appendTo(row);
 
         // Column 6 - Share Replay
         const shareReplayButton = makeReplayButton(gameData.id, 'shared');
-        $('<td>').html(shareReplayButton).appendTo(row);
+        $('<td>').html((shareReplayButton as any)).appendTo(row);
 
         row.appendTo(tbody);
     }

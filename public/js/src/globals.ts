@@ -17,11 +17,11 @@ class Globals {
     // (this must be an "any" type because we attach arbitrary method to the object)
 
     // Contains the settings for the "Settings" tooltip and the "Create Game" tooltip
-    settings: object = {}; // Set upon login // TODO convert to Settings object
+    settings: any = {}; // Set upon login // TODO convert to Settings object
 
-    userList: object = {}; // Set upon login // TODO convert to UserList object
-    tableList: object = {}; // Set upon login // TODO convert to TableList object
-    historyList: object = {}; // Set upon login // TODO convert to HistoryList object
+    userList: Map<number, User> = new Map();
+    tableList: Map<number, Table> = new Map();
+    historyList: any = {}; // Set upon login // TODO convert to HistoryList object
     // TODO convert to Array<HistoryDetail>
     historyDetailList: Array<any> = []; // Set upon clicking the "History Details" button
     // Used to keep track of whether the user clicked on the "Show More History" button
@@ -43,9 +43,9 @@ class Globals {
     chatUnread: number = 0;
 
     // Phaser UI variables
-    phaser: object | null = null; // TODO convert to a PhaserUI object
+    phaser: any | null = null; // TODO convert to a PhaserUI object
     // TODO convert to an Init object
-    init: object | null = null; // Equal to the data from the "init" command
+    init: any | null = null; // Equal to the data from the "init" command
     // ui: null, // The various graphics objects used, initialized in the "commands.init()" function
     state: State = { // Variables relating to the current game state
         turn: 0,

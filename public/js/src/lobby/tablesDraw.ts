@@ -13,7 +13,7 @@ const tablesDraw = () => {
     // Clear all of the existing rows
     tbody.html('');
 
-    if (Object.keys(globals.tableList).length === 0) {
+    if (globals.tableList.size === 0) {
         $('#lobby-games-no').show();
         $('#lobby-games').addClass('align-center-v');
         $('#lobby-games-table-container').hide();
@@ -24,7 +24,7 @@ const tablesDraw = () => {
     $('#lobby-games-table-container').show();
 
     // Add all of the games
-    for (const table of Object.values(globals.tableList)) {
+    for (const [, table] of globals.tableList) {
         // Set the background color of the row, depending on what kind of game it is
         let htmlClass;
         if (table.sharedReplay) {
@@ -40,7 +40,7 @@ const tablesDraw = () => {
         $('<td>').html(table.name).appendTo(row);
 
         // Column 2 - # of Players
-        $('<td>').html(table.numPlayers).appendTo(row);
+        $('<td>').html(table.numPlayers.toString()).appendTo(row);
 
         // Column 3 - Variant
         $('<td>').html(table.variant).appendTo(row);
@@ -73,7 +73,7 @@ const tablesDraw = () => {
         $('<td>').html(status).appendTo(row);
 
         // Column 6 - Action
-        const button: any = $('<button>').attr('type', 'button').addClass('button small margin0');
+        const button = $('<button>').attr('type', 'button').addClass('button small margin0');
         if (table.sharedReplay || (!table.joined && table.running)) {
             button.html('<i class="fas fa-eye lobby-button-icon"></i>');
             button.attr('id', `spectate-${table.id}`);
@@ -90,7 +90,7 @@ const tablesDraw = () => {
             button.attr('id', `resume-${table.id}`);
             button.on('click', tableReattendButton(table));
         }
-        $('<td>').html(button).appendTo(row);
+        $('<td>').html((button as any)).appendTo(row);
 
         // Column 7 - Players
         $('<td>').html(table.players).appendTo(row);
@@ -103,14 +103,14 @@ const tablesDraw = () => {
 };
 export default tablesDraw;
 
-const tableSpectateButton = (table: any) => () => { // TODO convert to Table object
+const tableSpectateButton = (table: Table) => () => {
     globals.conn.send('tableSpectate', {
         tableID: table.id,
     });
     tablesDraw();
 };
 
-const tableJoinButton = (table: any) => () => { // TODO convert to Table object
+const tableJoinButton = (table: Table) => () => {
     if (table.password) {
         modals.passwordShow(table.id);
         return;
@@ -122,7 +122,7 @@ const tableJoinButton = (table: any) => () => { // TODO convert to Table object
     tablesDraw();
 };
 
-const tableReattendButton = (table: any) => () => { // TODO convert to Table object
+const tableReattendButton = (table: Table) => () => {
     globals.conn.send('tableReattend', {
         tableID: table.id,
     });

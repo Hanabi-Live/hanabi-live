@@ -5,7 +5,7 @@
 // Imports
 import Phaser from 'phaser';
 import { HAND_BASE_SCALE, PLAY_AREA_BASE_SCALE } from '../constants';
-import { msgSuitToSuit as convertMsgSuitToSuit } from '../game/convert';
+import { msgSuitToSuit as convertMsgSuitToSuit } from '../game/ui/convert';
 import globals from '../globals';
 import HanabiCard from './HanabiCard';
 import Hand from './Hand';

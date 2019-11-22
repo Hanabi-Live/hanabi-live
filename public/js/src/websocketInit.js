@@ -154,27 +154,72 @@ const initCommands = () => {
         }
     });
 
+    /*
+        Received by the client when a user connect or has a new status
+        Has the following data:
+        {
+            id: 6,
+            name: 'Zamiel',
+            status 'Lobby',
+        }
+    */
     globals.conn.on('user', (data) => {
-        globals.userList[data.id] = data;
+        globals.userList.set(data.id, data);
         lobbyUsersDraw();
     });
 
+    /*
+        Received by the client when a user disconnects
+        Has the following data:
+        {
+            id: 6,
+        }
+    */
     globals.conn.on('userLeft', (data) => {
-        delete globals.userList[data.id];
+        globals.userList.delete(data.id);
         lobbyUsersDraw();
     });
 
+    /*
+        Received by the client when a table is created or modified
+        Has the following data:
+        {
+            id: 6,
+            name: 'test table',
+            password: false,
+            joined: false,
+            numPlayers: 1,
+            owned: false,
+            running: false,
+            variant: 'No Variant',
+            timed: false,
+            baseTime: 0,
+            timePerTurn: 0,
+            ourTurn: false,
+            sharedReplay: false,
+            progress: 0,
+            players: 'Zamiel, DuneAught',
+            spectators: 'Libster',
+        }
+    */
     globals.conn.on('table', (data) => {
         // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
         data.baseTime *= 1000;
         data.timePerTurn *= 1000;
 
-        globals.tableList[data.id] = data;
+        globals.tableList.set(data.id, data);
         lobbyTablesDraw();
     });
 
+    /*
+        Received by the client when a table no longer has any members present
+        Has the following data:
+        {
+            id: 6,
+        }
+    */
     globals.conn.on('tableGone', (data) => {
-        delete globals.tableList[data.id];
+        globals.tableList.delete(data.id);
         lobbyTablesDraw();
     });
 
