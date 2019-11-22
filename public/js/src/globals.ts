@@ -17,7 +17,7 @@ class Globals {
     // (this must be an "any" type because we attach arbitrary method to the object)
 
     // Contains the settings for the "Settings" tooltip and the "Create Game" tooltip
-    settings: any = {}; // Set upon login // TODO convert to Settings object
+    settings: Map<string, boolean | number | string> = new Map(); // Set upon login
 
     userList: Map<number, User> = new Map();
     tableList: Map<number, Table> = new Map();

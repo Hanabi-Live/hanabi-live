@@ -111,7 +111,7 @@ func websocketConnect(ms *melody.Session) {
 		Settings: settings,
 
 		// We send the latest client version number to throw a warning
-		// if a user is running old JavaScript old
+		// if a user is running old JavaScript code
 		Version: version,
 
 		// Also let the user know if the server is currently performing a graceful shutdown

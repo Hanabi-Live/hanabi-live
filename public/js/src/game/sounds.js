@@ -7,7 +7,7 @@ import globals from '../globals';
 
 export const init = () => {
     // Preload some sounds
-    if (!globals.settings.sendTurnSound || globals.settings.volume === 0) {
+    if (globals.settings.get('sendTurnSound') === false || globals.settings.get('volume') === 0) {
         return;
     }
 
@@ -37,7 +37,7 @@ export const play = (file) => {
     const audio = new Audio(path);
     // HTML5 audio volume is a range between 0.0 to 1.0,
     // but volume is stored in the settings as an integer from 0 to 100
-    audio.volume = globals.settings.volume / 100;
+    audio.volume = globals.settings.get('volume') / 100;
     const playPromise = audio.play();
     if (playPromise !== undefined) {
         playPromise.then(() => {

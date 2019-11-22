@@ -11,6 +11,7 @@ import emojis from './data/emojis.json';
 import emoteCategories from './data/emotes.json';
 
 // Variables
+const emojiMap = new Map();
 let chatLineNum = 1;
 
 export const init = () => {
@@ -32,6 +33,11 @@ export const init = () => {
             }
         }
     }
+
+    // Convert the emoji JSON to a map for easy reference
+    for (const [emojiName, emoji] of Object.entries(emojis)) {
+        emojiMap.set(emojiName, emoji);
+    }
 };
 
 const input = function input(this: HTMLElement, event: JQuery.Event) {
@@ -50,11 +56,10 @@ const input = function input(this: HTMLElement, event: JQuery.Event) {
         for (const match of matches) {
             const emojiName = match.slice(1, -1); // Strip off the colons
 
-            // TypeScript complains about dynamically accessing a JSON object
-            // https://stackoverflow.com/questions/59000529/why-isnt-the-typescript-compiler-smart-enough-to-avoid-implicit-any-errors-fr?noredirect=1#comment104251741_59000529
-            const emoji = (emojis as { [key: string]: string })[emojiName];
-            if (emoji) {
-                $(this).val(text.replace(`:${match}:`, emoji));
+            const emoji = emojiMap.get(emojiName);
+            if (typeof emoji !== 'undefined') {
+                const newText = text.replace(match, emoji);
+                element.val(newText);
                 event.preventDefault();
                 return;
             }

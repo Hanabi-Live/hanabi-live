@@ -94,19 +94,24 @@ export default () => {
 // This is all of the normal commands/messages that we expect to receive from the server
 const initCommands = () => {
     globals.conn.on('hello', (data) => {
-        // Store variables relating to our user account on the server
+        // Store variables relating to our user account
         globals.username = data.username; // We might have logged-in with a different stylization
         globals.totalGames = data.totalGames;
-        globals.settings = data.settings;
 
-        // Some settings are stored on the server as numbers,
-        // but we need them as strings because they will exist in an input field
-        const valuesToConvertToStrings = [
-            'createTableBaseTimeMinutes',
-            'createTableTimePerTurnSeconds',
-        ];
-        for (const value of valuesToConvertToStrings) {
-            globals.settings[value] = globals.settings[value].toString();
+        // Convert the settings object to a Map
+        for (const [setting, value] of Object.entries(data.settings)) {
+            // Some settings are stored on the server as numbers,
+            // but we need them as strings because they will exist in an input field
+            const settingsToConvertToStrings = [
+                'createTableBaseTimeMinutes',
+                'createTableTimePerTurnSeconds',
+            ];
+            let newValue = value;
+            if (setting in settingsToConvertToStrings) {
+                newValue = value.toString();
+            }
+
+            globals.settings.set(setting, newValue);
         }
 
         // Update various elements of the UI to reflect our settings

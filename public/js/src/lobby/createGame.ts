@@ -135,11 +135,11 @@ const getTextbox = (setting: string) => {
     return value;
 };
 
-const checkChanged = (setting: string, value: string | boolean) => {
+const checkChanged = (setting: string, value: boolean | string) => {
     // If we are creating a new kind of table than the last one one,
     // update our local variables and then send the new setting to the server
-    if (value !== globals.settings[setting]) {
-        globals.settings[setting] = value;
+    if (value !== globals.settings.get(setting)) {
+        globals.settings.set(setting, value);
         globals.conn.send('setting', {
             name: setting,
             value: value.toString(), // The server expects all settings as strings
@@ -168,8 +168,7 @@ export const ready = () => {
 
     // Fill in the rest of form with the settings that we used last time
     // (which is stored on the server)
-    for (const key of Object.keys(globals.settings)) {
-        const value = globals.settings[key];
+    for (const [key, value] of globals.settings) {
         const element = $(`#${key}`);
         if (typeof value === 'boolean') {
             // Checkboxes
