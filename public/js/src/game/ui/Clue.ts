@@ -1,5 +1,8 @@
 export default class Clue {
-    constructor(type, value) {
+    type: number;
+    value: number;
+
+    constructor(type: number, value: number) {
         this.type = type;
         this.value = value;
     }

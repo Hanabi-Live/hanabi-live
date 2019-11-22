@@ -38,8 +38,6 @@ export default class Loader {
     }
 
     start() {
-        this.numLoaded = 0;
-
         for (const [fileID, filePath] of this.filePathMap) {
             const img = new Image();
             img.onload = () => {
