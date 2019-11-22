@@ -1,15 +1,18 @@
 // Imports
 import Konva from 'konva';
+import Button from './Button';
 
 export default class ButtonGroup extends Konva.Group {
-    constructor(config) {
+    list: Array<Button> = [];
+
+    constructor(config: Konva.ContainerConfig) {
         super(config);
 
         // Class variables
         this.list = [];
     }
 
-    addList(button) {
+    addList(button: Button) {
         const self = this;
 
         this.list.push(button);
@@ -23,14 +26,14 @@ export default class ButtonGroup extends Konva.Group {
                 }
             }
 
-            self.fire('change');
+            self.fire('change', null);
         });
     }
 
     getPressed() {
-        for (let i = 0; i < this.list.length; i++) {
-            if (this.list[i].pressed) {
-                return this.list[i];
+        for (const button of this.list) {
+            if (button.pressed) {
+                return button;
             }
         }
 

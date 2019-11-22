@@ -38,10 +38,11 @@ export default class FullActionLog extends Konva.Group {
             y: 0.01 * globals.stage.getHeight(),
             width: 0.35 * globals.stage.getWidth(),
             height: 0.94 * globals.stage.getHeight(),
-            maxLines: 38,
         };
 
-        this.logText = new MultiFitText(textOptions);
+        const maxLines = 38;
+
+        this.logText = new MultiFitText(textOptions, maxLines);
         Konva.Group.prototype.add.call(this, this.logText);
 
         const numbersOptions = {
@@ -52,19 +53,19 @@ export default class FullActionLog extends Konva.Group {
             y: 0.01 * globals.stage.getHeight(),
             width: 0.03 * globals.stage.getWidth(),
             height: 0.94 * globals.stage.getHeight(),
-            maxLines: 38,
         };
-        this.logNumbers = new MultiFitText(numbersOptions);
+
+        this.logNumbers = new MultiFitText(numbersOptions, maxLines);
         Konva.Group.prototype.add.call(this, this.logNumbers);
 
         this.playerLogs = [];
         this.playerLogNumbers = [];
         for (let i = 0; i < globals.playerNames.length; i++) {
-            this.playerLogs[i] = new MultiFitText(textOptions);
+            this.playerLogs[i] = new MultiFitText(textOptions, maxLines);
             this.playerLogs[i].hide();
             Konva.Group.prototype.add.call(this, this.playerLogs[i]);
 
-            this.playerLogNumbers[i] = new MultiFitText(numbersOptions);
+            this.playerLogNumbers[i] = new MultiFitText(numbersOptions, maxLines);
             this.playerLogNumbers[i].hide();
             Konva.Group.prototype.add.call(this, this.playerLogNumbers[i]);
         }

@@ -258,8 +258,7 @@ const drawActionLog = () => {
         y: 0.003 * winH,
         width: (actionLogValues.w - 0.02) * winW,
         height: (actionLogValues.h - 0.003) * winH,
-        maxLines,
-    });
+    }, maxLines);
     actionLogGroup.add(globals.elements.actionLog);
 
     // The full action log (that appears when you click on the action log)
@@ -1475,6 +1474,7 @@ const drawClueArea = () => {
 
     // Clue type buttons
     globals.elements.clueTypeButtonGroup = new ButtonGroup();
+
     const buttonW = 0.04;
     const buttonH = 0.071;
     const buttonSpacing = 0.009;
@@ -1496,9 +1496,9 @@ const drawClueArea = () => {
             clue: new Clue(CLUE_TYPE.COLOR, color),
         });
 
-        globals.elements.clueArea.add(button);
-        globals.elements.colorClueButtons.push(button);
+        globals.elements.clueTypeButtonGroup.add(button);
         globals.elements.clueTypeButtonGroup.addList(button);
+        globals.elements.colorClueButtons.push(button);
     }
 
     // Rank buttons / number buttons
@@ -1518,15 +1518,17 @@ const drawClueArea = () => {
             clue: new Clue(CLUE_TYPE.RANK, rank),
         });
 
-        globals.elements.rankClueButtons.push(button);
-        globals.elements.clueArea.add(button);
+        globals.elements.clueTypeButtonGroup.add(button);
         globals.elements.clueTypeButtonGroup.addList(button);
+        globals.elements.rankClueButtons.push(button);
     }
 
     // Set button functionality
     globals.elements.clueTargetButtonGroup.on('change', clues.checkLegal);
     globals.elements.clueTargetButtonGroup2.on('change', clues.checkLegal);
     globals.elements.clueTypeButtonGroup.on('change', clues.checkLegal);
+
+    globals.elements.clueArea.add(globals.elements.clueTypeButtonGroup);
 
     // The "Give Clue" button
     const giveClueW = 0.236;

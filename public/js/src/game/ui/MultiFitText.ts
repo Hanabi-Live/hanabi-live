@@ -4,11 +4,18 @@ import FitText from './FitText';
 import globals from './globals';
 
 export default class MultiFitText extends Konva.Group {
-    constructor(config) {
+    maxLines: number;
+    smallHistory: Array<any> = [];
+
+    constructor(config: Konva.ContainerConfig, maxLines: number) {
         super(config);
 
-        this.maxLines = config.maxLines;
-        this.smallHistory = [];
+        if (typeof config.height === 'undefined') {
+            throw new Error('The "height" property is not defined on a new MultiFitText.');
+        }
+
+        this.maxLines = maxLines;
+
         for (let i = 0; i < this.maxLines; i++) {
             const newConfig = $.extend({}, config);
 
@@ -21,7 +28,7 @@ export default class MultiFitText extends Konva.Group {
         }
     }
 
-    setMultiText(text) {
+    setMultiText(text: string) {
         if (this.smallHistory.length >= this.maxLines) {
             this.smallHistory.shift();
         }
@@ -41,14 +48,14 @@ export default class MultiFitText extends Konva.Group {
             if (!msg) {
                 msg = '';
             }
-            this.children[i].fitText(msg);
+            (this.children[i] as any).fitText(msg);
         }
     }
 
     reset() {
         this.smallHistory = [];
         for (let i = 0; i < this.children.length; i++) {
-            this.children[i].fitText('');
+            (this.children[i] as any).fitText('');
         }
     }
 }
