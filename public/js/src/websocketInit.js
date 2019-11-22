@@ -20,7 +20,7 @@ import lobbyUsersDraw from './lobby/usersDraw';
 import * as modals from './modals';
 
 export default () => {
-    // Connect to the WebSocket server
+    // Prepare the URL of the WebSocket server
     let websocketURL = 'ws';
     if (window.location.protocol === 'https:') {
         websocketURL += 's';
@@ -32,11 +32,12 @@ export default () => {
         websocketURL += window.location.port;
     }
     websocketURL += '/ws';
-    console.log('Connecting to websocket URL:', websocketURL);
-    const debug = window.location.pathname.includes('/dev');
-    globals.conn = new Connection(websocketURL, debug);
+
+    // Connect to the WebSocket server
     // This will automatically use the cookie that we received earlier from the POST
     // If the second argument is true, debugging is turned on
+    console.log('Connecting to websocket URL:', websocketURL);
+    globals.conn = new Connection(websocketURL, true);
 
     // Define event handlers
     globals.conn.on('open', () => {
@@ -65,16 +66,14 @@ export default () => {
         if (typeof data === 'undefined') {
             data = {};
         }
-        if (window.location.pathname.includes('/dev')) {
-            console.log(`%cSent ${command}:`, 'color: green;');
-            console.log(data);
-        }
+        console.log(`%cSent ${command}:`, 'color: green;');
+        console.log(data);
         globals.conn.emit(command, data);
     };
 
     // Send any client errors to the server for tracking purposes
     window.onerror = (message, url, lineno, colno) => {
-        // We don't want to report errors if someone is doing local development
+        // We don't want to report errors during local development
         if (window.location.hostname === 'localhost') {
             return;
         }
@@ -223,6 +222,19 @@ const initCommands = () => {
         lobbyTablesDraw();
     });
 
+
+    /*
+        Received by the client when a new chat message arrives
+        Has the following data:
+        {
+            msg: 'poop',
+            who: 'Zamiel',
+            discord: false,
+            server: false,
+            datetime: 123456789,
+            room: 'lobby',
+        }
+    */
     globals.conn.on('chat', (data) => {
         chat.add(data, false); // The second argument is "fast"
 

@@ -4,6 +4,7 @@
 
 // Imports
 import linkifyHtml from 'linkifyjs/html';
+import ChatMessage from './ChatMessage';
 import { FADE_TIME } from './constants';
 import globals from './globals';
 import emojis from './data/emojis.json';
@@ -33,15 +34,25 @@ export const init = () => {
     }
 };
 
-const input = function input(event) {
+const input = function input(this: HTMLElement, event: JQuery.Event) {
     // Check for emoji substitution
     // e.g. :100: --> 💯
-    const text = $(this).val();
+    const element = $(this);
+    if (!element) {
+        throw new Error('Failed to get the element for the input function.');
+    }
+    const text = element.val();
+    if (typeof text !== 'string') {
+        throw new Error('The value of the element in the input function is not a string.');
+    }
     const matches = text.match(/:[^\s]+:/g); // "[^\s]" is a non-whitespace character
     if (matches) {
-        for (let match of matches) {
-            match = match.slice(1, -1); // Strip off the colons
-            const emoji = emojis[match];
+        for (const match of matches) {
+            const emojiName = match.slice(1, -1); // Strip off the colons
+
+            // TypeScript complains about dynamically accessing a JSON object
+            // https://stackoverflow.com/questions/59000529/why-isnt-the-typescript-compiler-smart-enough-to-avoid-implicit-any-errors-fr?noredirect=1#comment104251741_59000529
+            const emoji = (emojis as { [key: string]: string })[emojiName];
             if (emoji) {
                 $(this).val(text.replace(`:${match}:`, emoji));
                 event.preventDefault();
@@ -51,19 +62,26 @@ const input = function input(event) {
     }
 };
 
-const keypress = (room) => function keypressFunction(event) {
+const keypress = (room: string) => function keypressFunction(
+    this: HTMLElement,
+    event: JQuery.Event,
+) {
     // Check for submission
     if (event.key !== 'Enter') {
         return;
     }
 
-    const msg = $(this).val();
+    const element = $(this);
+    if (!element) {
+        throw new Error('Failed to get the element for the keypress function.');
+    }
+    const msg = element.val();
     if (!msg) {
         return;
     }
 
     // Clear the chat box
-    $(this).val('');
+    element.val('');
 
     // Use "startsWith" instead of "===" to work around an unknown bug where
     // the room can already have the table number appended (e.g. "table123")
@@ -77,7 +95,7 @@ const keypress = (room) => function keypressFunction(event) {
     });
 };
 
-export const add = (data, fast) => {
+export const add = (data: ChatMessage, fast: boolean) => {
     let chat;
     if (data.room === 'lobby') {
         chat = $('#lobby-chat-text');
@@ -85,6 +103,9 @@ export const add = (data, fast) => {
         chat = $('#lobby-chat-pregame-text');
     } else {
         chat = $('#game-chat-text');
+    }
+    if (!chat) {
+        throw new Error('Failed to get the chat element in the "chat.add()" function.');
     }
 
     // Linkify any links
@@ -121,7 +142,9 @@ export const add = (data, fast) => {
     // https://stackoverflow.com/questions/6271237/detecting-when-user-scrolls-to-bottom-of-div-with-jquery
     // If we are already scrolled to the bottom, then it is ok to automatically scroll
     let autoScroll = false;
-    if (chat.scrollTop() + Math.ceil(chat.innerHeight()) >= chat[0].scrollHeight) {
+    const topPositionOfScrollBar = chat.scrollTop() || 0;
+    const innerHeight = chat.innerHeight() || 0;
+    if (topPositionOfScrollBar + Math.ceil(innerHeight) >= chat[0].scrollHeight) {
         autoScroll = true;
     }
 
@@ -140,7 +163,7 @@ export const add = (data, fast) => {
 
 // Discord emotes are in the form of:
 // <:PogChamp:254683883033853954>
-const fillDiscordEmotes = (message) => {
+const fillDiscordEmotes = (message: string) => {
     let filledMessed = message;
     while (true) {
         const match = filledMessed.match(/&lt;:(.+?):(\d+?)&gt;/);
@@ -153,12 +176,12 @@ const fillDiscordEmotes = (message) => {
     return filledMessed;
 };
 
-const fillLocalEmotes = (message) => {
+const fillLocalEmotes = (message: string) => {
     let filledMessed = message;
 
     // Search through the text for each emote
-    for (const category of Object.keys(emoteCategories)) {
-        for (const emote of emoteCategories[category]) {
+    for (const [category, emotes] of Object.entries(emoteCategories)) {
+        for (const emote of emotes) {
             // We don't want to replace the emote if it is followed by a quote,
             // because we don't want to replace Discord emoptes
             const index = message.indexOf(emote);
