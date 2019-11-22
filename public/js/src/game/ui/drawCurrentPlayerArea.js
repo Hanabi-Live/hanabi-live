@@ -210,7 +210,7 @@ export default (clueAreaValues) => {
         const text2 = globals.elements.currentPlayerText2;
         const text3 = globals.elements.currentPlayerText3;
         let specialText = '';
-        if (!globals.lobby.settings.realLifeMode) {
+        if (!globals.lobby.settings.get('realLifeMode')) {
             if (globals.clues === 0) {
                 specialText = '(cannot clue; 0 clues left)';
                 text3.setFill('red');

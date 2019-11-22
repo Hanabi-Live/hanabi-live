@@ -73,7 +73,7 @@ commands.clue = (data) => {
         card.noteBorder.hide();
         card.cluedBorder.show();
         if (
-            !globals.lobby.settings.realLifeMode
+            !globals.lobby.settings.get('realLifeMode')
             && !globals.variant.name.startsWith('Cow & Pig')
             && !globals.variant.name.startsWith('Duck')
         ) {
@@ -94,7 +94,7 @@ commands.clue = (data) => {
         if (data.list.indexOf(order) < 0) {
             negativeList.push(order);
             if (
-                !globals.lobby.settings.realLifeMode
+                !globals.lobby.settings.get('realLifeMode')
                 && !globals.variant.name.startsWith('Cow & Pig')
                 && !globals.variant.name.startsWith('Duck')
             ) {
@@ -351,7 +351,7 @@ commands.status = (data) => {
     // Update the number of clues in the bottom-right hand corner of the screen
     globals.elements.cluesNumberLabel.setText(globals.clues.toString());
 
-    if (!globals.lobby.settings.realLifeMode) {
+    if (!globals.lobby.settings.get('realLifeMode')) {
         globals.elements.cluesNumberLabel.setFill(globals.clues === 0 ? 'red' : LABEL_COLOR);
         globals.elements.noClueBorder.setVisible(globals.clues === 0);
 

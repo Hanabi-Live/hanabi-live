@@ -47,10 +47,10 @@ export const set = (i, element, giver, clue) => {
         }
         if (
             (
-                !globals.lobby.settings.showKeldonUI
+                !globals.lobby.settings.get('showKeldonUI')
                 && element.holder === globals.playerUs
             ) || (
-                globals.lobby.settings.showKeldonUI
+                globals.lobby.settings.get('showKeldonUI')
                 && (element.holder !== globals.playerUs && element.holder !== null)
             )
         ) {

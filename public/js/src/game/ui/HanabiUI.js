@@ -162,7 +162,7 @@ const loadingFinishedCallback = () => {
     // Build images for every card
     // (with respect to the variant that we are playing
     // and whether or not we have the colorblind UI feature enabled)
-    globals.cardImages = drawCards(globals.variant, globals.lobby.settings.showColorblindUI);
+    globals.cardImages = drawCards(globals.variant, globals.lobby.settings.get('showColorblindUI'));
 
     // Construct a list of all of the cards in the deck
     initCardsMap();

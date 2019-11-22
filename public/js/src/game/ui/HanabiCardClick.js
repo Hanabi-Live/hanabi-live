@@ -16,7 +16,7 @@ export default function HanabiCardClick(event) {
     // (but don't use the speedrunning behavior if we are in a
     // solo replay / shared replay / spectating)
     if (
-        (globals.speedrun || globals.lobby.settings.speedrunMode)
+        (globals.speedrun || globals.lobby.settings.get('speedrunMode'))
         && !globals.replay
         && !globals.spectating
     ) {
@@ -195,7 +195,7 @@ const clickRight = (card, event) => {
         && !event.shiftKey
         && !event.altKey
         && !event.metaKey
-        && globals.sharedReplay === false
+        && !globals.sharedReplay
     ) {
         arrows.toggle(card);
         return;

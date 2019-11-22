@@ -51,7 +51,7 @@ export default class ColorButton extends Konva.Group {
             strokeWidth: 1,
             align: 'center',
             text: config.text,
-            visible: globals.lobby.settings.showColorblindUI,
+            visible: globals.lobby.settings.get('showColorblindUI'),
             listening: false,
         });
         this.add(text);

@@ -39,7 +39,7 @@ export const begin = () => {
         return;
     }
 
-    if (globals.lobby.settings.sendTurnNotify) {
+    if (globals.lobby.settings.get('sendTurnNotify')) {
         notifications.send('It is your turn.', 'turn');
     }
 

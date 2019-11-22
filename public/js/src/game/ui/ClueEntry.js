@@ -120,7 +120,7 @@ export default class ClueEntry extends Konva.Group {
             if (globals.deck[this.negativeList[i]] === target) {
                 this.background.setOpacity(0.4);
                 this.background.setFill('#ff7777');
-                if (globals.lobby.settings.showColorblindUI) {
+                if (globals.lobby.settings.get('showColorblindUI')) {
                     this.negativeMarker.show();
                 }
             }
