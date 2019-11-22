@@ -4,75 +4,79 @@ import globals from './globals';
 import MultiFitText from './MultiFitText';
 
 export default class FullActionLog extends Konva.Group {
-    constructor(config) {
-        const baseConfig = {
-            x: 0.2 * globals.stage.getWidth(),
-            y: 0.02 * globals.stage.getHeight(),
-            width: 0.4 * globals.stage.getWidth(),
-            height: 0.96 * globals.stage.getHeight(),
+    logText: MultiFitText;
+    logNumbers: MultiFitText;
+    playerLogs: Array<MultiFitText> = [];
+    playerLogNumbers: Array<MultiFitText> = [];
+
+    constructor(winW: number, winH: number) {
+        super({
+            x: 0.2 * winW,
+            y: 0.02 * winH,
+            width: 0.4 * winW,
+            height: 0.96 * winH,
             clipX: 0,
             clipY: 0,
-            clipWidth: 0.4 * globals.stage.getWidth(),
-            clipHeight: 0.96 * globals.stage.getHeight(),
+            clipWidth: 0.4 * winW,
+            clipHeight: 0.96 * winH,
             visible: false,
-        };
-        $.extend(baseConfig, config);
-        super(baseConfig);
+        });
 
+        // The black background
         const rect = new Konva.Rect({
             x: 0,
             y: 0,
-            width: 0.4 * globals.stage.getWidth(),
-            height: 0.96 * globals.stage.getHeight(),
+            width: 0.4 * winW,
+            height: 0.96 * winH,
             fill: 'black',
             opacity: 0.9,
-            cornerRadius: 0.01 * globals.stage.getWidth(),
+            cornerRadius: 0.01 * winW,
         });
         Konva.Group.prototype.add.call(this, rect);
 
-        const textOptions = {
-            fontSize: 0.025 * globals.stage.getHeight(),
-            fontFamily: 'Verdana',
-            fill: 'white',
-            x: 0.04 * globals.stage.getWidth(),
-            y: 0.01 * globals.stage.getHeight(),
-            width: 0.35 * globals.stage.getWidth(),
-            height: 0.94 * globals.stage.getHeight(),
-        };
-
         const maxLines = 38;
 
+        // The text for each action
+        const textOptions = {
+            fontSize: 0.025 * winH,
+            fontFamily: 'Verdana',
+            fill: 'white',
+            x: 0.04 * winW,
+            y: 0.01 * winH,
+            width: 0.35 * winW,
+            height: 0.94 * winH,
+        };
         this.logText = new MultiFitText(textOptions, maxLines);
-        Konva.Group.prototype.add.call(this, this.logText);
+        this.add((this.logText as any));
 
+        // The turn numbers for each action
         const numbersOptions = {
-            fontSize: 0.025 * globals.stage.getHeight(),
+            fontSize: 0.025 * winH,
             fontFamily: 'Verdana',
             fill: '#d3d3d3', // Light gray
-            x: 0.01 * globals.stage.getWidth(),
-            y: 0.01 * globals.stage.getHeight(),
-            width: 0.03 * globals.stage.getWidth(),
-            height: 0.94 * globals.stage.getHeight(),
+            x: 0.01 * winW,
+            y: 0.01 * winH,
+            width: 0.03 * winW,
+            height: 0.94 * winH,
         };
-
         this.logNumbers = new MultiFitText(numbersOptions, maxLines);
-        Konva.Group.prototype.add.call(this, this.logNumbers);
+        this.add((this.logNumbers as any));
 
-        this.playerLogs = [];
-        this.playerLogNumbers = [];
         for (let i = 0; i < globals.playerNames.length; i++) {
-            this.playerLogs[i] = new MultiFitText(textOptions, maxLines);
-            this.playerLogs[i].hide();
-            Konva.Group.prototype.add.call(this, this.playerLogs[i]);
+            const playerLog = new MultiFitText(textOptions, maxLines);
+            playerLog.hide();
+            this.playerLogs.push(playerLog);
+            this.add((playerLog as any));
 
-            this.playerLogNumbers[i] = new MultiFitText(numbersOptions, maxLines);
-            this.playerLogNumbers[i].hide();
-            Konva.Group.prototype.add.call(this, this.playerLogNumbers[i]);
+            const playerLogNumber = new MultiFitText(numbersOptions, maxLines);
+            playerLogNumber.hide();
+            this.playerLogNumbers.push(playerLogNumber);
+            this.add((playerLogNumber as any));
         }
     }
 
-    addMessage(msg) {
-        const appendLine = (log, numbers, line) => {
+    addMessage(msg: string) {
+        const appendLine = (log: MultiFitText, numbers: MultiFitText, line: string) => {
             log.setMultiText(line);
             numbers.setMultiText((globals.turn + 1).toString());
         };
@@ -86,12 +90,15 @@ export default class FullActionLog extends Konva.Group {
         }
     }
 
-    showPlayerActions(playerName) {
-        let playerIndex;
+    showPlayerActions(playerName: string) {
+        let playerIndex = -1;
         for (let i = 0; i < globals.playerNames.length; i++) {
             if (globals.playerNames[i] === playerName) {
                 playerIndex = i;
             }
+        }
+        if (playerIndex === -1) {
+            throw new Error(`Failed to find player "${playerName}" in the player names.`);
         }
         this.logText.hide();
         this.logNumbers.hide();
@@ -100,10 +107,16 @@ export default class FullActionLog extends Konva.Group {
 
         this.show();
 
+        if (!globals.elements.stageFade) {
+            throw new Error('The "stageFade" element was not initialized.');
+        }
         globals.elements.stageFade.show();
         globals.layers.UI2.batchDraw();
 
         globals.elements.stageFade.on('click tap', () => {
+            if (!globals.elements.stageFade) {
+                throw new Error('The "stageFade" element was not initialized.');
+            }
             globals.elements.stageFade.off('click tap');
             this.playerLogs[playerIndex].hide();
             this.playerLogNumbers[playerIndex].hide();

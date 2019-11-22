@@ -262,7 +262,7 @@ const drawActionLog = () => {
     actionLogGroup.add(globals.elements.actionLog);
 
     // The full action log (that appears when you click on the action log)
-    globals.elements.fullActionLog = new FullActionLog();
+    globals.elements.fullActionLog = new FullActionLog(winW, winH);
     globals.layers.UI2.add(globals.elements.fullActionLog);
 };
 
