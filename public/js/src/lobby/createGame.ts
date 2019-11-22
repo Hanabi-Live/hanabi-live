@@ -74,7 +74,7 @@ export const init = () => {
 
 const submit = () => {
     // We need to mutate some values before sending them to the server
-    const baseTimeMinutes = getTextbox('createTableBaseTimeMinutes');
+    const baseTimeMinutes = parseInt(getTextbox('createTableBaseTimeMinutes'), 10);
     const baseTime = Math.round(baseTimeMinutes * 60); // The server expects this in seconds
     const timePerTurnSeconds = getTextbox('createTableTimePerTurnSeconds');
     const timePerTurn = parseInt(timePerTurnSeconds, 10); // The server expects this in seconds
@@ -82,6 +82,9 @@ const submit = () => {
     // All "Create Game" settings are stored on the server with the exception of passwords;
     // passwords are stored locally as cookies
     let password = $('#createTablePassword').val();
+    if (typeof password !== 'string') {
+        throw new Error('The value of the "createTablePassword" element was not a string.');
+    }
     localStorage.setItem('createTablePassword', password);
     if (password !== '') {
         const stringToHash = `Hanabi game password ${password}`;
@@ -105,19 +108,34 @@ const submit = () => {
     closeAllTooltips();
 };
 
-const getCheckbox = (setting) => {
-    const value = document.getElementById(setting).checked;
+const getCheckbox = (setting: string) => {
+    const element = document.getElementById(setting) as HTMLInputElement | null;
+    if (!element) {
+        throw new Error(`Failed to get the element of "${setting}".`);
+    }
+    const value = element.checked;
     checkChanged(setting, value);
     return value;
 };
 
-const getTextbox = (setting) => {
-    const value = $(`#${setting}`).val().trim(); // Trim leading and trailing whitespace
+const getTextbox = (setting: string) => {
+    const element = $(`#${setting}`);
+    if (!element) {
+        throw new Error(`Failed to get the element of "${setting}".`);
+    }
+    let value = element.val();
+    if (!value) {
+        throw new Error(`Failed to get the value of element "${setting}".`);
+    }
+    if (typeof value !== 'string') {
+        throw new Error(`The value of element "${setting}" is not a string.`);
+    }
+    value = value.trim(); // Trim leading and trailing whitespace
     checkChanged(setting, value);
     return value;
 };
 
-const checkChanged = (setting, value) => {
+const checkChanged = (setting: string, value: string | boolean) => {
     // If we are creating a new kind of table than the last one one,
     // update our local variables and then send the new setting to the server
     if (value !== globals.settings[setting]) {
@@ -166,5 +184,7 @@ export const ready = () => {
     // Fill in the "Password" box
     // (this is not stored on the server so we have to retrieve the last password from a cookie)
     const password = localStorage.getItem('createTablePassword');
-    $('#createTablePassword').val(password);
+    if (password) {
+        $('#createTablePassword').val(password);
+    }
 };
