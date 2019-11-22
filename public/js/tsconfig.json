@@ -1,21 +1,24 @@
 {
+    // https://www.typescriptlang.org/docs/handbook/compiler-options.html
     "compilerOptions": {
         "outDir": "./dist",
-        "target": "es2018",
+        "target": "ES2018",
         "newLine": "lf",
-        "resolveJsonModule": true,
-        "esModuleInterop": true,
         "moduleResolution": "Node",
         "removeComments": true,
 
+        // These options are necessary in order to import JSON files via ES6-style import statements
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+
+        // We want the compiler to be as strict as possible to catch all the things
         "strict": true,
-        "forceConsistentCasingInFileNames": true,
-        "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
     },
+
     "include": [
         "./src/**/*.ts",
-    ]
+    ],
 }

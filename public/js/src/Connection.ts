@@ -39,7 +39,7 @@ export default class Connection {
                 console.log(obj);
             }
             this.callbacks[command](obj);
-        } else if (this.debug) {
+        } else {
             console.error('Received WebSocket message with no callback:', command, JSON.parse(data[1]));
         }
     }
