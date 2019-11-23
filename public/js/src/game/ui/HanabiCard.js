@@ -349,7 +349,7 @@ export default class HanabiCard extends Konva.Group {
             return;
         }
         // Mark all turns that this card is positively clued
-        if (positive === true) {
+        if (positive) {
             // We add one because the "clue" action comes before the "turn" action
             this.turnsClued.push(globals.turn + 1);
         }

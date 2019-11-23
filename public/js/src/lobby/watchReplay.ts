@@ -60,7 +60,7 @@ const submit = () => {
     // Error
     $('#replay-error-row').hide();
     $('#replay-error-row-spacing').hide();
-    const error = (text) => {
+    const error = (text: string) => {
         $('#replay-error-row').show();
         $('#replay-error-row-spacing').show();
         $('#replay-error-row-text').text(text);
@@ -70,23 +70,29 @@ const submit = () => {
     };
 
     // ID
-    let gameID = $('#replay-id').val();
+    const gameIDString = $('#replay-id').val();
+    if (typeof gameIDString !== 'string') {
+        throw new Error('The value of the "replay-id" element is not a string.');
+    }
+    let gameID;
     if (source === 'id') {
-        try {
-            gameID = JSON.parse(gameID);
-        } catch (err) {
+        gameID = parseInt(gameIDString, 10);
+        if (Number.isNaN(gameID)) {
+            error('Error: The database ID must be a number.');
+            return;
+        }
+        if (gameID < 1) {
             error('Error: The database ID must be a positive number.');
             return;
         }
-        if (typeof gameID !== 'number' || gameID < 0) {
-            error('Error: The database ID must be a positive number.');
-            return;
-        }
-        localStorage.setItem('watchReplayID', gameID);
+        localStorage.setItem('watchReplayID', gameIDString);
     }
 
     // JSON
     const gameJSONString = $('#replay-json').val();
+    if (typeof gameJSONString !== 'string') {
+        throw new Error('The value of the "replay-json" element is not a string.');
+    }
     let gameJSON;
     if (source === 'json') {
         try {
@@ -145,11 +151,17 @@ export const ready = () => {
     $(sourceBox).change();
 
     // Set the "ID" field
-    const gameID = localStorage.getItem('watchReplayID');
+    let gameID = localStorage.getItem('watchReplayID');
+    if (typeof gameID !== 'string') {
+        gameID = '';
+    }
     $('#replay-id').val(gameID);
 
     // Set the "JSON" field
-    const json = localStorage.getItem('watchReplayJSON');
+    let json = localStorage.getItem('watchReplayJSON');
+    if (typeof json !== 'string') {
+        json = '';
+    }
     $('#replay-json').val(json);
 
     // Hide the error row
