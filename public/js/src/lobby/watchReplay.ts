@@ -101,6 +101,10 @@ const submit = () => {
             error('Error: That is not a valid JSON object.');
             return;
         }
+        if (typeof gameJSON !== 'object') {
+            error('Error: That is not a valid JSON object.');
+            return;
+        }
         localStorage.setItem('watchReplayJSON', gameJSONString);
     }
 
