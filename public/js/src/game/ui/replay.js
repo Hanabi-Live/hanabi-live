@@ -183,7 +183,7 @@ const reset = () => {
     for (let i = 0; i < globals.variant.suits.length; i++) {
         const suit = globals.variant.suits[i];
         const playStack = globals.elements.playStacks.get(suit);
-        playStack.add(globals.stackBases[i].parent);
+        playStack.addCard(globals.stackBases[i].parent);
         globals.stackBases[i].parent.setVisible(true);
         // (the stack base might have been hidden if there was a card on top of it)
     }

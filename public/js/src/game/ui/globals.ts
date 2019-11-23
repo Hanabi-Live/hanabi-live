@@ -9,6 +9,7 @@ import Elements from './Elements';
 import State from './State';
 import Strike from './Strike';
 import Variant from '../../Variant';
+import { VARIANTS } from '../../constants';
 
 class Globals {
     // Objects sent upon UI initialization
@@ -19,7 +20,7 @@ class Globals {
     // Game settings
     // (sent in the "init" message in "websocket.js")
     playerNames: Array<string> = [];
-    variant: Variant | null = null;
+    variant: Variant = VARIANTS.get('No Variant')!;
     playerUs: number = -1;
     spectating: boolean = false;
     replay: boolean = false;
@@ -153,7 +154,7 @@ class Globals {
         this.game = null;
         this.loading = false;
         this.playerNames = [];
-        this.variant = null;
+        this.variant = VARIANTS.get('No Variant')!;
         this.playerUs = -1;
         this.spectating = false;
         this.replay = false;

@@ -347,7 +347,7 @@ const drawPlayStacks = () => {
         // Create the LayoutChild that will be the parent of the stack base
         const child = new LayoutChild();
         child.add(stackBase);
-        playStack.add(child);
+        playStack.addCard(child);
 
         // Draw the suit name next to each suit
         // (a text description of the suit)

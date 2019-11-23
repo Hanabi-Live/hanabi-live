@@ -9,17 +9,17 @@ import { STACK_BASE_RANK } from '../../constants';
 import globals from './globals';
 
 export default class PlayStack extends Konva.Group {
-    add(child) {
+    addCard(child: any) { // TODO change to HanabiCard
         const pos = child.getAbsolutePosition();
-        Konva.Group.prototype.add.call(this, child);
+        this.add(child);
         child.setAbsolutePosition(pos);
         this.doLayout();
     }
 
     doLayout() {
-        const lh = this.getHeight();
+        const lh = this.height();
 
-        for (const node of this.children) { // node is a LayoutChild
+        for (const node of this.children.toArray()) { // node is a LayoutChild
             const scale = lh / node.getHeight();
             const stackBase = node.children[0].rank === STACK_BASE_RANK;
             const opacity = ( // Hide cards in "Throw It in a Hole" variants
@@ -81,7 +81,7 @@ export default class PlayStack extends Konva.Group {
         }
 
         for (let i = 0; i < n; i++) {
-            const node = this.children[i]; // This is a LayoutChild
+            const node: any = this.children[i]; // This is a LayoutChild // TODO set to LayoutChild
             if (!node.tween) {
                 continue;
             }
