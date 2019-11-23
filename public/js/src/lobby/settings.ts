@@ -12,14 +12,16 @@ export const init = () => {
         if (!element) {
             throw new Error('Failed to get the "settings-volume-slider" element.');
         }
-        const volume = element.val();
-        if (typeof volume !== 'string') {
+        const volumeString = element.val();
+        if (typeof volumeString !== 'string') {
             throw new Error('The value of the "settings-volume-slider" element is not a string.');
         }
+        const volume = parseInt(volumeString, 10);
+        globals.settings.set('volume', volume);
         $('#settings-volume-slider-value').html(`${volume}%`);
         globals.conn.send('setting', {
             name: 'volume',
-            value: volume, // The server expects all settings as strings
+            value: volumeString, // The server expects all settings as strings
         });
     });
 

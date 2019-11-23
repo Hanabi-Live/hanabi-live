@@ -42,14 +42,8 @@ export const play = (file: string) => {
         volume = 50;
     }
     audio.volume = volume / 100;
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-        playPromise.then(() => {
-            // Audio playback was successful; do nothing
-        }).catch(() => {
-            // Audio playback failed
-            // This is most likely due to the user not having interacted with the page yet
-            // https://stackoverflow.com/questions/52807874/how-to-make-audio-play-on-body-onload
-        });
-    }
+    audio.play();
+    // If audio playback fails,
+    // it is most likely due to the user not having interacted with the page yet
+    // https://stackoverflow.com/questions/52807874/how-to-make-audio-play-on-body-onload
 };
