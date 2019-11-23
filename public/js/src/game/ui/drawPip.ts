@@ -1,3 +1,4 @@
+import CanvasRenderingContext2DExtra from './CanvasRenderingContext2DExtra';
 import Suit from '../../Suit';
 
 const textShapes = [
@@ -7,12 +8,6 @@ const textShapes = [
     'infinity',
     'null_symbol',
 ];
-
-interface CanvasRenderingContext2DExtra extends CanvasRenderingContext2D {
-    text: string,
-    textX: number,
-    textY: number,
-}
 
 const shapeFunctions: Map<string, (ctx: CanvasRenderingContext2DExtra) => void> = new Map();
 

@@ -8,14 +8,19 @@ import Konva from 'konva';
 import globals from './globals';
 
 export default class CardLayout extends Konva.Group {
-    constructor(config) {
+    align: string;
+    reverse: boolean;
+    origRotation: number;
+    empathy: boolean;
+
+    constructor(config: Konva.ContainerConfig) {
         config.listening = config.player !== -1; // Discard piles do not need to be listening
         super(config);
 
         // Class variables
         this.align = config.align || 'left';
         this.reverse = config.reverse || false;
-        this.origRotation = config.rotation;
+        this.origRotation = config.rotation || 0;
         this.empathy = false;
 
         // Debug rectangle (uncomment to show the size of the hand)
@@ -32,9 +37,9 @@ export default class CardLayout extends Konva.Group {
         */
     }
 
-    add(child) {
+    addCard(child: any) { // TODO set to HanabiCard
         const pos = child.getAbsolutePosition();
-        Konva.Group.prototype.add.call(this, child);
+        this.add(child);
         child.setAbsolutePosition(pos);
         this.doLayout();
     }
@@ -49,19 +54,19 @@ export default class CardLayout extends Konva.Group {
         let dist = 0;
         let x = 0;
 
-        const lw = this.getWidth();
-        const lh = this.getHeight();
+        const lw = this.width();
+        const lh = this.height();
 
         const n = this.children.length;
         for (let i = 0; i < n; i++) {
             const node = this.children[i]; // This is a LayoutChild
 
-            if (!node.getHeight()) {
+            if (!node.height()) {
                 continue;
             }
 
-            const scale = lh / node.getHeight();
-            uw += scale * node.getWidth();
+            const scale = lh / node.height();
+            uw += scale * node.width();
         }
 
         if (n > 1) {
@@ -81,25 +86,25 @@ export default class CardLayout extends Konva.Group {
 
         const storedPostAnimationLayout = globals.postAnimationLayout;
         for (let i = 0; i < n; i++) {
-            const node = this.children[i]; // This is a LayoutChild
+            const node: any = this.children[i]; // This is a LayoutChild // TODO set to LayoutChild
 
-            if (!node.getHeight()) {
+            if (!node.height()) {
                 continue;
             }
 
-            const scale = lh / node.getHeight();
+            const scale = lh / node.height();
 
             if (node.tween) {
                 node.tween.destroy();
             }
 
-            const newX = x - (this.reverse ? scale * node.getWidth() : 0);
+            const newX = x - (this.reverse ? scale * node.width() : 0);
             if (globals.animateFast) {
-                node.setX(newX);
-                node.setY(0);
-                node.setScaleX(scale);
-                node.setScaleY(scale);
-                node.setRotation(0);
+                node.x(newX);
+                node.y(0);
+                node.scaleX(scale);
+                node.scaleY(scale);
+                node.rotation(0);
                 node.checkSetDraggable();
             } else {
                 // Animate the card going from the deck to the hand
@@ -142,8 +147,8 @@ export default class CardLayout extends Konva.Group {
     getAbsoluteCenterPos() {
         const pos = this.getAbsolutePosition(); // The top-left-hand corner
 
-        const w = this.getWidth();
-        const h = this.getHeight();
+        const w = this.width();
+        const h = this.height();
 
         // The rotation comes from Konva in radians but we need to convert it to degrees
         const rot = this.origRotation / 180 * Math.PI;
@@ -155,7 +160,7 @@ export default class CardLayout extends Konva.Group {
     }
 
     isLocked() {
-        for (const layoutChild of this.children) {
+        for (const layoutChild of this.children.toArray()) {
             const card = layoutChild.children[0];
             if (!card.isClued()) {
                 return false;

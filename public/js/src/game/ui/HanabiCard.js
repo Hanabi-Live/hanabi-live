@@ -719,7 +719,7 @@ export default class HanabiCard extends Konva.Group {
     animateToDiscardPile() {
         // We add a LayoutChild to a CardLayout
         const discardStack = globals.elements.discardStacks.get(this.suit);
-        discardStack.add(this.parent);
+        discardStack.addCard(this.parent);
 
         // We need to bring the discarded card to the top so that when it tweens to the discard
         // pile, it will fly on top of the play stacks and other player's hands
