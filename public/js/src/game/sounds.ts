@@ -32,12 +32,16 @@ export const init = () => {
     }
 };
 
-export const play = (file) => {
+export const play = (file: string) => {
     const path = `/public/sounds/${file}.mp3`;
     const audio = new Audio(path);
     // HTML5 audio volume is a range between 0.0 to 1.0,
     // but volume is stored in the settings as an integer from 0 to 100
-    audio.volume = globals.settings.get('volume') / 100;
+    let volume = globals.settings.get('volume');
+    if (typeof volume !== 'number') {
+        volume = 50;
+    }
+    audio.volume = volume / 100;
     const playPromise = audio.play();
     if (playPromise !== undefined) {
         playPromise.then(() => {

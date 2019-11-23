@@ -358,7 +358,7 @@ const initCommands = () => {
     });
 
     globals.conn.on('sound', (data) => {
-        if (globals.currentScreen === 'game' && globals.settings.sendTurnSound) {
+        if (globals.currentScreen === 'game' && globals.settings.get('sendTurnSound')) {
             gameSounds.play(data.file);
         }
     });
