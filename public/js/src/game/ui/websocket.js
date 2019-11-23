@@ -553,11 +553,19 @@ commands.replayTurn = (data) => {
     globals.sharedReplayTurn = data.turn;
     replay.adjustShuttles(false);
     if (globals.useSharedTurns) {
-        const animateFast = globals.sharedReplayLoading
-            || Math.abs(globals.sharedReplayTurn - oldTurn) > 2;
+        const animateFast = (
+            // First loading into a shared replay should always be fast
+            globals.sharedReplayLoading
+            // Rewinding should always be fast
+            || globals.sharedReplayTurn < oldTurn
+            // Going into the future by 2 or more turns should always be fast
+            || globals.sharedReplayTurn - oldTurn > 2
+        );
         replay.goto(globals.sharedReplayTurn, animateFast);
 
-        if (!globals.sharedReplayLoading) {
+        if (globals.sharedReplayLoading) {
+            globals.sharedReplayLoading = false;
+        } else {
             // Play an animation to indicate the direction that the leader has taken us in
             if (oldTurn > globals.sharedReplayTurn && oldTurn !== -1) {
                 globals.elements.sharedReplayBackwardTween.play();
@@ -566,10 +574,6 @@ commands.replayTurn = (data) => {
             }
             globals.layers.UI.batchDraw();
         }
-
-        if (globals.sharedReplayLoading) {
-            globals.sharedReplayLoading = false;
-        }
     } else {
         // Even though we are not using the shared turns,
         // we need to update the slider to show where the replay leader changed the turn to
@@ -577,11 +581,13 @@ commands.replayTurn = (data) => {
     }
 
     // Also replay hypothetical actions
+    /*
     if (globals.hypothetical && globals.useSharedTurns) {
         for (const actionMessage of globals.hypoActions) {
             notify(actionMessage);
         }
     }
+    */
 };
 
 /*
