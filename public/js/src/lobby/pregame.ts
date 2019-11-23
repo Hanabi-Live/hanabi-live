@@ -9,7 +9,7 @@ import { timerFormatter } from '../misc';
 import * as nav from './nav';
 
 // Constants
-const tooltipsterOptions: JQueryTooltipster.ITooltipsterOptions = {
+const tooltipOptions: JQueryTooltipster.ITooltipsterOptions = {
     animation: 'grow',
     contentAsHTML: true,
     delay: 0,
@@ -177,12 +177,12 @@ export const draw = () => {
 
     // Initialize the tooltips, if any
     // (this has to be done after adding the HTML to the page)
-    $('#lobby-pregame-options-timer').tooltipster(tooltipsterOptions);
-    $('#lobby-pregame-options-speedrun').tooltipster(tooltipsterOptions);
-    $('#lobby-pregame-options-deck-plays').tooltipster(tooltipsterOptions);
-    $('#lobby-pregame-options-empty-clues').tooltipster(tooltipsterOptions);
-    $('#lobby-pregame-options-characters').tooltipster(tooltipsterOptions);
-    $('#lobby-pregame-options-password').tooltipster(tooltipsterOptions);
+    $('#lobby-pregame-options-timer').tooltipster(tooltipOptions);
+    $('#lobby-pregame-options-speedrun').tooltipster(tooltipOptions);
+    $('#lobby-pregame-options-deck-plays').tooltipster(tooltipOptions);
+    $('#lobby-pregame-options-empty-clues').tooltipster(tooltipOptions);
+    $('#lobby-pregame-options-characters').tooltipster(tooltipOptions);
+    $('#lobby-pregame-options-password').tooltipster(tooltipOptions);
 
     // Draw the player boxes
     const numPlayers = globals.game.players.length;
@@ -327,6 +327,6 @@ export const draw = () => {
         div.html(html);
 
         // Initialize the tooltip
-        $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster(tooltipsterOptions);
+        $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster(tooltipOptions);
     }
 };

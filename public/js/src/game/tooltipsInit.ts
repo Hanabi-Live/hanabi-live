@@ -11,7 +11,7 @@ export default () => {
         'tooltipster-shadow',
         'tooltipster-shadow-big',
     ];
-    const tooltipOptions = {
+    const tooltipOptions: JQueryTooltipster.ITooltipsterOptions = {
         animation: 'grow',
         contentAsHTML: true,
         delay: 0,
