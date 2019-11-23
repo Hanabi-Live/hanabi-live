@@ -38,7 +38,7 @@ export default function HanabiCardClick(event) {
 }
 
 const clickLeft = (card, event) => {
-    // The "Empathy" feature is handled in the "HanabiCardInit.js" file,
+    // The "Empathy" feature is handled in the "HanabiCardInit.ts" file,
     // so we don't have to worry about it here
 
     // Disable this for the stack base

@@ -38,7 +38,8 @@ export default class PlayStack extends Konva.Group {
                 this.hideUnder();
             } else {
                 // Animate the card leaving the hand to the play stacks
-                // (tweening from the hand to the discard pile is handled in "CardLayout.js")
+                // (tweening from the hand to the discard pile is handled in
+                // the "CardLayout" object)
                 const card = node.children[0];
                 card.tweening = true;
                 node.tween = new Konva.Tween({

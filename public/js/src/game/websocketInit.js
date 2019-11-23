@@ -14,7 +14,7 @@ export default () => {
     if (window.location.pathname === '/dev2') {
         commandsToUse = commands; // The new client, defined below
     } else {
-        commandsToUse = websocket; // The old client, defined in the "ui/websocket.js" file
+        commandsToUse = websocket; // The old client, defined in the "ui/websocket.ts" file
     }
 
     for (const command of Object.keys(commandsToUse)) {

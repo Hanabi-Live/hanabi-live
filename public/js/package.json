@@ -8,7 +8,6 @@
   },
   "license": "GPL-3.0",
   "scripts": {
-    "browserify": "browserify src/main.js > main.bundled.js",
     "lint": "eslint \"src/**/*.js\" \"src/**/*.ts\""
   },
   "devDependencies": {

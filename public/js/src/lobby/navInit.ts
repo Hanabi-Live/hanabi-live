@@ -15,7 +15,7 @@ export default () => {
 
     // The "Create Game" button
     $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', createGame.ready);
-    // (the logic for this tooltip is handled in the "createGame.js" file)
+    // (the logic for this tooltip is handled in the "createGame.ts" file)
 
     // The "Show History" button
     $('#nav-buttons-games-history').on('click', () => {
@@ -24,7 +24,7 @@ export default () => {
 
     // The "Watch Specific Replay" button
     $('#nav-buttons-games-replay').tooltipster('option', 'functionReady', watchReplay.ready);
-    // (the logic for this tooltip is handled in the "watchReplay.js" file)
+    // (the logic for this tooltip is handled in the "watchReplay.ts" file)
 
     // The "Help" button
     // (this is just a simple link)

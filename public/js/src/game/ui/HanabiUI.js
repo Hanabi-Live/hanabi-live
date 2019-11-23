@@ -34,10 +34,10 @@ export default class HanabiUI {
         this.globals = globals;
 
         // Store references to the parent objects for later use
-        globals.lobby = lobby; // This is the "globals.js" in the root of the "src" directory
+        globals.lobby = lobby; // This is the "Globals" object in the root of the "src" directory
         // We name it "lobby" here to distinguish it from the UI globals;
         // after more refactoring, we will eventually merge these objects to make it less confusing
-        globals.game = game; // This is the "game.js" in the root of the "game" directory
+        globals.game = game; // This is the "gameExports" from the "/src/game/main.ts" file
         // We should also combine this with the UI object in the future
 
         // Initialize the stage and show the loading screen

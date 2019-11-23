@@ -13,8 +13,8 @@ class Globals {
     username: string = '';
     password: string = '';
 
-    conn: any = null; // The websocket connection (set in "websocket.js")
-    // (this must be an "any" type because we attach arbitrary method to the object)
+    conn: any = null; // The WebSocket connection (set in "websocket.ts")
+    // (this must be an "any" type because we attach arbitrary methods to the object)
 
     // Contains the settings for the "Settings" tooltip and the "Create Game" tooltip
     settings: Map<string, boolean | number | string> = new Map(); // Set upon login

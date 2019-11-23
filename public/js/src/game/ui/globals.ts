@@ -18,7 +18,7 @@ class Globals {
     loading: boolean = false;
 
     // Game settings
-    // (sent in the "init" message in "websocket.js")
+    // (sent in the "init" message)
     playerNames: Array<string> = [];
     variant: Variant = VARIANTS.get('No Variant')!;
     playerUs: number = -1;
@@ -28,7 +28,7 @@ class Globals {
     databaseID: number = 0;
 
     // Optional game settings
-    // (sent in the "init" message in "websocket.js")
+    // (sent in the "init" message)
     timed: boolean = false;
     baseTime: number = 0;
     timePerTurn: number = 0;
