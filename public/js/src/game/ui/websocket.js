@@ -120,6 +120,10 @@ commands.hypoAction = (data) => {
     }
 };
 
+commands.hypoBack = () => {
+    hypothetical.backOneTurn();
+};
+
 commands.hypoEnd = () => {
     if (!globals.amSharedReplayLeader) {
         hypothetical.end();
@@ -579,15 +583,6 @@ commands.replayTurn = (data) => {
         // we need to update the slider to show where the replay leader changed the turn to
         globals.layers.UI.batchDraw();
     }
-
-    // Also replay hypothetical actions
-    /*
-    if (globals.hypothetical && globals.useSharedTurns) {
-        for (const actionMessage of globals.hypoActions) {
-            notify(actionMessage);
-        }
-    }
-    */
 };
 
 /*

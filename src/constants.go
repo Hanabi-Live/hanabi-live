@@ -58,6 +58,7 @@ const (
 	replayActionTypeHypoStart  // Start a hypothetical line
 	replayActionTypeHypoEnd    // End a hypothetical line
 	replayActionTypeHypoAction // Perform a move in the hypothetical
+	replayActionTypeHypoBack   // Go back one turn in the hypothetical
 )
 
 var (

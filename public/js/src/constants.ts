@@ -46,6 +46,7 @@ export const REPLAY_ACTION_TYPE = {
     HYPO_START: 4,
     HYPO_END: 5,
     HYPO_ACTION: 6,
+    HYPO_BACK: 7,
 };
 export const REPLAY_ARROW_ORDER = {
     DECK: -1,

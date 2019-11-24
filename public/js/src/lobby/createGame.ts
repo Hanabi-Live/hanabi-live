@@ -74,7 +74,7 @@ export const init = () => {
 
 const submit = () => {
     // We need to mutate some values before sending them to the server
-    const baseTimeMinutes = parseInt(getTextbox('createTableBaseTimeMinutes'), 10);
+    const baseTimeMinutes = parseFloat(getTextbox('createTableBaseTimeMinutes'));
     const baseTime = Math.round(baseTimeMinutes * 60); // The server expects this in seconds
     const timePerTurnSeconds = getTextbox('createTableTimePerTurnSeconds');
     const timePerTurn = parseInt(timePerTurnSeconds, 10); // The server expects this in seconds

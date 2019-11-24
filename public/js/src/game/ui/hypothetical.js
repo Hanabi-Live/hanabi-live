@@ -226,6 +226,16 @@ const disableDragOnAllHands = () => {
     }
 };
 
+export const sendBackOneTurn = () => {
+    if (!globals.amSharedReplayLeader) {
+        return;
+    }
+
+    globals.lobby.conn.send('replayAction', {
+        type: REPLAY_ACTION_TYPE.HYPO_BACK,
+    });
+};
+
 export const backOneTurn = () => {
     if (globals.hypoActions.length === 0) {
         return;

@@ -168,7 +168,7 @@ const keydown = (event) => {
     // Replay hotkeys
     if (globals.hypothetical) {
         if (event.key === 'ArrowLeft') {
-            hypothetical.backOneTurn();
+            hypothetical.sendBackOneTurn();
             return;
         }
     } else {
