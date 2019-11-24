@@ -6,7 +6,6 @@
 import Konva from 'konva';
 import globals from './globals';
 
-
 export default class ClueLog extends Konva.Group {
     add(child) {
         Konva.Group.prototype.add.call(this, child);

@@ -9,12 +9,25 @@ import FitText from './FitText';
 import globals from './globals';
 
 export default class ClueEntry extends Konva.Group {
-    constructor(config) {
+    list: Array<number>;
+    negativeList: Array<number>;
+    turn: number;
+
+    background: Konva.Rect;
+    negativeMarker: Konva.Text;
+
+    constructor(config: Konva.ContainerConfig) {
         super(config);
 
         // Object variables
         const w = config.width;
+        if (typeof w === 'undefined') {
+            throw new Error('ClueEntry was not provided with a "w" value.');
+        }
         const h = config.height;
+        if (typeof h === 'undefined') {
+            throw new Error('ClueEntry was not provided with a "h" value.');
+        }
         this.list = config.list;
         this.negativeList = config.negativeList;
         this.turn = config.turn;
@@ -105,7 +118,7 @@ export default class ClueEntry extends Konva.Group {
         });
     }
 
-    showMatch(target) {
+    showMatch(target: any) { // TODO Change to HanabiCard | null
         this.background.opacity(0.1);
         this.background.fill('white');
         this.negativeMarker.hide();
