@@ -5,12 +5,14 @@
 
 // Imports
 import Konva from 'konva';
+import Arrow from './Arrow';
 import {
     ARROW_COLOR,
     CLUE_TYPE,
     REPLAY_ACTION_TYPE,
     STACK_BASE_RANK,
 } from '../../constants';
+import Clue from './Clue';
 import globals from './globals';
 
 export const hideAll = () => {
@@ -27,7 +29,7 @@ export const hideAll = () => {
     }
 };
 
-export const set = (i, element, giver, clue) => {
+export const set = (i: number, element: any, giver: number | null, clue: Clue | null) => {
     // Show the arrow
     const arrow = globals.elements.arrows[i];
     arrow.pointingTo = element;
@@ -102,6 +104,9 @@ export const set = (i, element, giver, clue) => {
                 arrow.text.text(clue.value.toString());
                 arrow.text.show();
             } else if (clue.type === CLUE_TYPE.COLOR) {
+                if (typeof clue.value === 'number') {
+                    throw new Error('The clue value was a number for a color clue.');
+                }
                 arrow.circle.fill(clue.value.fill);
                 arrow.text.hide();
             }
@@ -122,13 +127,16 @@ export const set = (i, element, giver, clue) => {
     }
 };
 
-const getPos = (element, rot) => {
+const getPos = (element: any, rot: number) => {
     // Start by using the absolute position of the element
     const pos = element.absolutePosition();
 
     if (element.type === 'HanabiCard') {
         // If we set the arrow at the absolute position of a card, it will point to the exact center
         // Instead, back it off a little bit (accounting for the rotation of the hand)
+        if (globals.stage === null) {
+            throw new Error('The stage was null in the "arrows.getPos()" function.');
+        }
         const winH = globals.stage.height();
         const distance = -0.075 * winH;
         const rotRadians = (rot / 180) * Math.PI;
@@ -151,7 +159,8 @@ const getPos = (element, rot) => {
 };
 
 // Animate the arrow to fly from the player who gave the clue to the card
-const animate = (arrow, card, rot, giver, turn) => {
+// TODO set any to HanabiCard
+const animate = (arrow: Arrow, card: any, rot: number, giver: number, turn: number) => {
     // Don't bother doing the animation if it is delayed by more than one turn
     if (globals.turn > turn + 1) {
         return;
@@ -175,7 +184,7 @@ const animate = (arrow, card, rot, giver, turn) => {
 
     // Start the arrow at the center position of the clue giver's hand
     const centerPos = globals.elements.playerHands[giver].getAbsoluteCenterPos();
-    arrow.absolutePosition(centerPos);
+    arrow.setAbsolutePosition(centerPos);
 
     // Calculate the position of the final arrow destination
     // (this must be done after the card is finished tweening)
@@ -190,7 +199,7 @@ const animate = (arrow, card, rot, giver, turn) => {
     }).play();
 };
 
-export const click = (event, order, element) => {
+export const click = (event: any, order: number, element: any) => {
     if (
         event.evt.which === 3 // Right-click
         && globals.sharedReplay
@@ -201,7 +210,7 @@ export const click = (event, order, element) => {
     }
 };
 
-export const send = (order, element) => {
+export const send = (order: number, element: any) => {
     globals.lobby.conn.send('replayAction', {
         type: REPLAY_ACTION_TYPE.ARROW,
         order,
@@ -212,7 +221,7 @@ export const send = (order, element) => {
 };
 
 // This toggles the "highlight" arrow on a particular element
-export const toggle = (element) => {
+export const toggle = (element: any) => {
     // If the card is currently tweening, delay showing the arrow until the tween is finished
     if (element.type === 'HanabiCard' && element.tweening) {
         setTimeout(() => {
