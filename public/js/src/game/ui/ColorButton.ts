@@ -1,14 +1,18 @@
 // Imports
 import Konva from 'konva';
 import globals from './globals';
+import Clue from './Clue';
 
 export default class ColorButton extends Konva.Group {
-    constructor(config) {
-        config.listening = true;
-        super(config);
+    pressed: boolean = false;
+    clue: Clue;
 
-        // Object variables
-        this.pressed = false;
+    background: Konva.Rect;
+
+    constructor(config: Konva.ContainerConfig) {
+        super(config);
+        this.listening(true);
+
         this.clue = config.clue;
 
         // Local variables
@@ -82,7 +86,7 @@ export default class ColorButton extends Konva.Group {
         });
     }
 
-    setPressed(pressed) {
+    setPressed(pressed: boolean) {
         this.pressed = pressed;
         this.background.fill(pressed ? '#cccccc' : 'black');
         const layer = this.getLayer();
