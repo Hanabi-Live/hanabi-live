@@ -1,5 +1,8 @@
+
 // Imports
 import Konva from 'konva';
+import StrikeSquare from './StrikeSquare';
+import StrikeX from './StrikeX';
 import Suit from '../../Suit';
 
 export default class Elements {
@@ -39,8 +42,8 @@ export default class Elements {
     scoreNumberLabel: Konva.Text | null = null;
     cluesNumberLabel: Konva.Text | null = null;
     cluesNumberLabelPulse: Konva.Tween | null = null;
-    strikes: Array<Konva.Image> = [];
-    strikeSquares: Array<Konva.Rect> = [];
+    strikeXs: Array<StrikeX> = [];
+    strikeSquares: Array<StrikeSquare> = [];
     spectatorsLabel: Konva.Image | null = null;
     spectatorsNumLabel: Konva.Text | null = null;
     sharedReplayLeaderLabel: Konva.Image | null = null;

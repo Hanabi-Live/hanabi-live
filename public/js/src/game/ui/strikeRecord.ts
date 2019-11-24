@@ -1,9 +1,10 @@
 // Imports
+import ActionStrike from './ActionStrike';
 import globals from './globals';
 
-export default (data) => {
+export default (data: ActionStrike) => {
     const i = data.num - 1;
-    const strike = globals.elements.strikes[i];
+    const strikeX = globals.elements.strikeXs[i];
     const strikeSquare = globals.elements.strikeSquares[i];
 
     // We want to record the turn before the strike actually happened
@@ -17,7 +18,7 @@ export default (data) => {
             turn = null;
         }
     }
-    strike.turn = turn;
+    strikeX.turn = turn;
     strikeSquare.turn = turn;
 
     // We also want to record the card that misplayed so that we can highlight it with an arrow
@@ -28,9 +29,9 @@ export default (data) => {
         // Games prior to 2019 will not have the card number integrated into the strike
         order = null;
     }
-    strike.order = order;
+    strikeX.order = order;
     strikeSquare.order = order;
 
     // Show an indication that the strike is clickable
-    strike.setFaded();
+    strikeX.setFaded();
 };

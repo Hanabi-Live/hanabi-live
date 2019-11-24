@@ -394,6 +394,15 @@ commands.status = (data) => {
     }
 };
 
+/*
+    Data is as follows:
+    {
+        type: 'strike',
+        num: 1,
+        order: 4, // The order of the card that was misplayed
+        turn: 2,
+    }
+*/
 commands.strike = (data) => {
     if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
         return;
@@ -401,7 +410,7 @@ commands.strike = (data) => {
 
     // Local variables
     const i = data.num - 1;
-    const strike = globals.elements.strikes[i];
+    const strikeX = globals.elements.strikeXs[i];
 
     // Update the stats
     globals.cluesSpentPlusStrikes += 1;
@@ -409,10 +418,10 @@ commands.strike = (data) => {
 
     // Animate the strike square fading in
     if (globals.animateFast) {
-        strike.opacity(1);
+        strikeX.opacity(1);
     } else {
-        strike.tween = new Konva.Tween({
-            node: strike,
+        strikeX.tween = new Konva.Tween({
+            node: strikeX,
             opacity: 1,
             duration: 1,
         }).play();

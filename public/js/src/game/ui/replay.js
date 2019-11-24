@@ -193,12 +193,12 @@ const reset = () => {
         discardStack.removeChildren();
     }
 
-    for (const strike of globals.elements.strikes) {
-        if (strike.tween) {
-            strike.tween.destroy();
+    for (const strikeX of globals.elements.strikeXs) {
+        if (strikeX.tween) {
+            strikeX.tween.destroy();
         }
-        strike.setOpacity(0);
-        strike.setFaded();
+        strikeX.setOpacity(0);
+        strikeX.setFaded();
     }
     for (const card of globals.deck) {
         if (card.parent.tween) {

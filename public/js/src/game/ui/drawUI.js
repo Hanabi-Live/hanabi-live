@@ -36,6 +36,7 @@ import NumberButton from './NumberButton';
 import PlayStack from './PlayStack';
 import * as replay from './replay';
 import * as stats from './stats';
+import StrikeX from './StrikeX';
 import * as timer from './timer';
 import TimerDisplay from './TimerDisplay';
 import * as tooltips from './tooltips';
@@ -864,7 +865,7 @@ const drawScoreArea = () => {
         globals.elements.scoreArea.add(strikeSquare);
 
         // Draw the red X that indicates the strike
-        const strike = new Konva.Image({
+        const strikeX = new StrikeX({
             x: (0.015 + (0.04 * i)) * winW,
             y: 0.125 * winH,
             width: 0.02 * winW,
@@ -873,33 +874,27 @@ const drawScoreArea = () => {
             opacity: 0,
             listening: true,
         });
-        globals.elements.scoreArea.add(strike);
-        strike.tween = null;
-        strike.setFaded = function setFaded() {
-            if (this.opacity() === 0) {
-                this.opacity(this.turn === null ? 0 : 0.125);
-            }
-        };
+        globals.elements.scoreArea.add(strikeX);
 
         // Handle the tooltips
         strikeSquare.tooltipName = 'strikes';
-        strike.tooltipName = strikeSquare.tooltipName;
+        strikeX.tooltipName = strikeSquare.tooltipName;
         strikeSquare.tooltipContent = 'This shows how many strikes (bombs) the team currently has.';
-        strike.tooltipContent = strikeSquare.tooltipContent;
+        strikeX.tooltipContent = strikeSquare.tooltipContent;
         tooltips.init(strikeSquare, true, false);
-        tooltips.init(strike, true, false);
+        tooltips.init(strikeX, true, false);
 
         // Click on the strike to go to the turn that the strike happened, if any
         // (and highlight the card that misplayed)
         strikeSquare.turn = null;
-        strike.turn = null;
+        strikeX.turn = null;
         strikeSquare.order = null;
-        strike.order = null;
+        strikeX.order = null;
         strikeSquare.on('click', strikeClick);
-        strike.on('click', strikeClick);
+        strikeX.on('click', strikeClick);
 
         globals.elements.strikeSquares[i] = strikeSquare;
-        globals.elements.strikes[i] = strike;
+        globals.elements.strikeXs[i] = strikeX;
     }
 };
 

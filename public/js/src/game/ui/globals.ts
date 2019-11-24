@@ -7,7 +7,6 @@
 import Konva from 'konva';
 import Elements from './Elements';
 import State from './State';
-import Strike from './Strike';
 import Variant from '../../Variant';
 import { VARIANTS } from '../../constants';
 
@@ -139,7 +138,7 @@ class Globals {
     state: State = new State(); // The current state
     states: Array<State> = []; // The state for each turn
     // We also keep track of the strikes outside of the state object so that we can show a faded X
-    strikes: Array<Strike> = [];
+    strikes: Array<StateStrike> = [];
     deckOrder: Array<any> = []; // Sent when the game ends // TODO change to Array<SimpleCard>
 
     // We define some functions as globals to avoid cyclical dependencies
@@ -237,6 +236,11 @@ class Globals {
 
 const globals = new Globals();
 export default globals;
+
+interface StateStrike {
+    order: number;
+    turn: number;
+}
 
 // Also make it available to the window so that we can access global variables
 // from the JavaScript console (for debugging purposes)
