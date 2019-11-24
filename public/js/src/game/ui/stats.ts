@@ -5,6 +5,7 @@
 // Imports
 import { LABEL_COLOR, MAX_CLUE_NUM } from '../../constants';
 import globals from './globals';
+import Variant from '../../Variant';
 
 export const updatePace = () => {
     const adjustedScorePlusDeck = globals.score + globals.deckSize - globals.maxScore;
@@ -27,9 +28,12 @@ export const updatePace = () => {
     // (part of the efficiency statistics on the right-hand side of the screen)
     // If there are no cards left in the deck, pace is meaningless
     const label = globals.elements.paceNumberLabel;
+    if (!label) {
+        throw new Error('paceNumberLabel is not initialized.');
+    }
     if (globals.deckSize === 0) {
-        label.setText('-');
-        label.setFill(LABEL_COLOR);
+        label.text('-');
+        label.fill(LABEL_COLOR);
     } else {
         let paceText = endGameThreshold1.toString();
         if (endGameThreshold1 > 0) {
@@ -41,36 +45,44 @@ export const updatePace = () => {
         // (approximately)
         if (endGameThreshold1 <= 0) {
             // No more discards can occur in order to get a maximum score
-            label.setFill('#df1c2d'); // Red
+            label.fill('#df1c2d'); // Red
         } else if (endGameThreshold2 < 0) {
             // It would probably be risky to discard
-            label.setFill('#ef8c1d'); // Orange
+            label.fill('#ef8c1d'); // Orange
         } else if (endGameThreshold3 < 0) {
             // It might be risky to discard
-            label.setFill('#efef1d'); // Yellow
+            label.fill('#efef1d'); // Yellow
         } else {
             // We are not even close to the "End-Game", so give it the default color
-            label.setFill(LABEL_COLOR);
+            label.fill(LABEL_COLOR);
         }
     }
 };
 
-export const updateEfficiency = (cardsGottenDelta) => {
+export const updateEfficiency = (cardsGottenDelta: number) => {
     globals.cardsGotten += cardsGottenDelta;
     const efficiency = (globals.cardsGotten / globals.cluesSpentPlusStrikes).toFixed(2);
     // Round it to 2 decimal places
 
     // Update the labels on the right-hand side of the screen
-    const effNumLabel = globals.elements.efficiencyNumberLabel;
+    const effLabel = globals.elements.efficiencyNumberLabel;
+    if (!effLabel) {
+        throw new Error('efficiencyNumberLabel is not initialized.');
+    }
     if (globals.cluesSpentPlusStrikes === 0) {
         // First, handle the case in which 0 clues have been given
-        effNumLabel.setText('- / ');
+        effLabel.text('- / ');
     } else {
-        effNumLabel.setText(`${efficiency} / `);
-        effNumLabel.setWidth(effNumLabel.measureSize(effNumLabel.getText()).width);
+        effLabel.text(`${efficiency} / `);
+        effLabel.width(effLabel.measureSize(effLabel.text()).width);
     }
-    const x = effNumLabel.getX() + effNumLabel.measureSize(effNumLabel.getText()).width;
-    globals.elements.efficiencyNumberLabelMinNeeded.setX(x);
+
+    const effMinLabel = globals.elements.efficiencyNumberLabelMinNeeded;
+    if (!effMinLabel) {
+        throw new Error('efficiencyNumberLabelMinNeeded is not initialized.');
+    }
+    const x = effLabel.x() + effLabel.measureSize(effLabel.text()).width;
+    effMinLabel.x(x);
 };
 
 export const getMinEfficiency = () => {
@@ -140,7 +152,7 @@ export const getNumCardsPerHand = () => {
     return 3;
 };
 
-export const getTotalCardsInTheDeck = (variant) => {
+export const getTotalCardsInTheDeck = (variant: Variant) => {
     let totalCardsInTheDeck = 0;
     for (const suit of variant.suits) {
         totalCardsInTheDeck += 10;
