@@ -85,14 +85,14 @@ export default class ClueEntry extends Konva.Group {
         this.background.on('mouseover', () => {
             globals.elements.clueLog.showMatches(null);
 
-            this.background.setOpacity(0.4);
+            this.background.opacity(0.4);
             const layer = this.getLayer();
             if (layer) {
                 layer.batchDraw();
             }
         });
         this.background.on('mouseout', () => {
-            this.background.setOpacity(0.1);
+            this.background.opacity(0.1);
             const layer = this.getLayer();
             if (layer) {
                 layer.batchDraw();
@@ -106,20 +106,20 @@ export default class ClueEntry extends Konva.Group {
     }
 
     showMatch(target) {
-        this.background.setOpacity(0.1);
-        this.background.setFill('white');
+        this.background.opacity(0.1);
+        this.background.fill('white');
         this.negativeMarker.hide();
 
         for (let i = 0; i < this.list.length; i++) {
             if (globals.deck[this.list[i]] === target) {
-                this.background.setOpacity(0.4);
+                this.background.opacity(0.4);
             }
         }
 
         for (let i = 0; i < this.negativeList.length; i++) {
             if (globals.deck[this.negativeList[i]] === target) {
-                this.background.setOpacity(0.4);
-                this.background.setFill('#ff7777');
+                this.background.opacity(0.4);
+                this.background.fill('#ff7777');
                 if (globals.lobby.settings.get('showColorblindUI')) {
                     this.negativeMarker.show();
                 }

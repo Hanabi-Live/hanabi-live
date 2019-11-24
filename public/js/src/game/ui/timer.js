@@ -64,7 +64,7 @@ export const update = (data) => {
         globals.elements.timer2.setLabelText(globals.playerNames[globals.activeIndex]);
     }
 
-    globals.elements.timer2.setVisible(!ourTurn && globals.activeIndex !== -1);
+    globals.elements.timer2.visible(!ourTurn && globals.activeIndex !== -1);
     globals.layers.timer.batchDraw();
 
     // Update the timer tooltips for each player

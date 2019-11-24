@@ -59,8 +59,8 @@ let spectatorsLabelValues;
 
 export default () => {
     // Constants
-    winW = globals.stage.getWidth();
-    winH = globals.stage.getHeight();
+    winW = globals.stage.width();
+    winH = globals.stage.height();
 
     // Create the various Konva layers upon which all graphic elements reside
     initLayers();
@@ -81,7 +81,7 @@ export default () => {
     drawSharedReplay();
 
     // The middle column
-    drawHands();
+    drawHands(winW, winH);
 
     // The right column
     drawClueLog();
@@ -94,9 +94,9 @@ export default () => {
     drawTimers();
     drawClueArea();
     drawClueAreaDisabled();
-    drawCurrentPlayerArea(clueAreaValues);
+    drawCurrentPlayerArea(winW, winH, clueAreaValues);
     drawPreplayArea();
-    drawReplayArea();
+    drawReplayArea(winW, winH);
     drawHypotheticalArea();
     drawPauseArea();
     drawExtraAnimations();
@@ -186,8 +186,8 @@ const initReusableObjects = () => {
         shadowOpacity: 0.9,
     });
     basicNumberLabel = basicTextLabel.clone();
-    basicNumberLabel.setText('0');
-    basicNumberLabel.setWidth(0.03 * winW);
+    basicNumberLabel.text('0');
+    basicNumberLabel.width(0.03 * winW);
 };
 
 const drawActionLog = () => {
@@ -412,10 +412,10 @@ const drawPlayStacks = () => {
         height: (playAreaValues.h + (overlap * 2)) * winH,
     });
     globals.elements.playArea.isOver = (pos) => (
-        pos.x >= globals.elements.playArea.getX()
-        && pos.y >= globals.elements.playArea.getY()
-        && pos.x <= globals.elements.playArea.getX() + globals.elements.playArea.getWidth()
-        && pos.y <= globals.elements.playArea.getY() + globals.elements.playArea.getHeight()
+        pos.x >= globals.elements.playArea.x()
+        && pos.y >= globals.elements.playArea.y()
+        && pos.x <= globals.elements.playArea.x() + globals.elements.playArea.width()
+        && pos.y <= globals.elements.playArea.y() + globals.elements.playArea.height()
     );
 };
 
@@ -876,8 +876,8 @@ const drawScoreArea = () => {
         globals.elements.scoreArea.add(strike);
         strike.tween = null;
         strike.setFaded = function setFaded() {
-            if (this.getOpacity() === 0) {
-                this.setOpacity(this.turn === null ? 0 : 0.125);
+            if (this.opacity() === 0) {
+                this.opacity(this.turn === null ? 0 : 0.125);
             }
         };
 
@@ -1263,10 +1263,10 @@ const drawDiscardArea = () => {
         height: 0.4 * winH,
     });
     globals.elements.discardArea.isOver = (pos) => (
-        pos.x >= globals.elements.discardArea.getX()
-        && pos.y >= globals.elements.discardArea.getY()
-        && pos.x <= globals.elements.discardArea.getX() + globals.elements.discardArea.getWidth()
-        && pos.y <= globals.elements.discardArea.getY() + globals.elements.discardArea.getHeight()
+        pos.x >= globals.elements.discardArea.x()
+        && pos.y >= globals.elements.discardArea.y()
+        && pos.x <= globals.elements.discardArea.x() + globals.elements.discardArea.width()
+        && pos.y <= globals.elements.discardArea.y() + globals.elements.discardArea.height()
     );
 };
 
@@ -1356,7 +1356,7 @@ const drawTimers = () => {
             value,
         });
 
-        const wasVisible = globals.elements.timer1Circle.getVisible();
+        const wasVisible = globals.elements.timer1Circle.visible();
         if (wasVisible !== globals.pauseQueued) {
             globals.elements.timer1Circle.setVisible(globals.pauseQueued);
             globals.layers.UI.batchDraw();

@@ -121,15 +121,19 @@ export default class Button extends Konva.Group {
         }
     }
 
-    setText(newText: string) {
+    text(newText: string) {
         if (this.textElement) {
             this.textElement.fitText(newText);
+        } else {
+            throw new Error('The "text()" method was called on a non-text Button.');
         }
     }
 
-    setFill(newFill: string) {
+    fill(newFill: string) {
         if (this.textElement) {
             this.textElement.fill(newFill);
+        } else {
+            throw new Error('The "fill()" method was called on a non-text Button.');
         }
     }
 }

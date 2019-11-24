@@ -20,14 +20,14 @@ export default class LayoutChild extends Konva.Group {
 
     add(child) {
         Konva.Group.prototype.add.call(this, child);
-        this.setWidth(child.getWidth());
-        this.setHeight(child.getHeight());
+        this.width(child.width());
+        this.height(child.height());
 
         child.on('widthChange', (event) => {
             if (event.oldVal === event.newVal) {
                 return;
             }
-            this.setWidth(event.newVal);
+            this.width(event.newVal);
             if (this.parent) {
                 this.parent.doLayout();
             }
@@ -37,7 +37,7 @@ export default class LayoutChild extends Konva.Group {
             if (event.oldVal === event.newVal) {
                 return;
             }
-            this.setHeight(event.newVal);
+            this.height(event.newVal);
             if (this.parent) {
                 this.parent.doLayout();
             }
@@ -57,10 +57,10 @@ export default class LayoutChild extends Konva.Group {
         // First, handle the special case of a hypothetical
         if (globals.hypothetical) {
             if (globals.amSharedReplayLeader && globals.currentPlayerIndex === card.holder) {
-                this.setDraggable(true);
+                this.draggable(true);
                 this.on('dragend', this.dragEnd);
             } else {
-                this.setDraggable(false);
+                this.draggable(false);
                 this.off('dragend');
             }
             return;
@@ -81,21 +81,21 @@ export default class LayoutChild extends Konva.Group {
             // (this function will be called again upon the completion of the animation)
             || card.tweening
         ) {
-            this.setDraggable(false);
+            this.draggable(false);
             this.off('dragend');
             return;
         }
 
-        this.setDraggable(true);
+        this.draggable(true);
         this.on('dragend', this.dragEnd);
     }
 
     dragEnd() {
         const card = this.children[0];
 
-        const pos = this.getAbsolutePosition();
-        pos.x += this.getWidth() * this.getScaleX() / 2;
-        pos.y += this.getHeight() * this.getScaleY() / 2;
+        const pos = this.absolutePosition();
+        pos.x += this.width() * this.scaleX() / 2;
+        pos.y += this.height() * this.scaleY() / 2;
 
         let draggedTo = null;
         if (globals.elements.playArea.isOver(pos)) {
@@ -128,7 +128,7 @@ export default class LayoutChild extends Konva.Group {
         }
 
         // We have to unregister the handler or else it will send multiple actions for one drag
-        this.setDraggable(false);
+        this.draggable(false);
         this.off('dragend');
 
         if (draggedTo === null) {

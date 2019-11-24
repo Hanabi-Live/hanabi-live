@@ -25,7 +25,7 @@ export const end = (actionObject) => {
         } else if (globals.queuedAction.data.type === ACTION.DISCARD) {
             text += 'Discard';
         }
-        globals.elements.premoveCancelButton.setText(text);
+        globals.elements.premoveCancelButton.text(text);
         globals.elements.premoveCancelButton.show();
         globals.elements.currentPlayerArea.hide();
         globals.layers.UI.batchDraw();

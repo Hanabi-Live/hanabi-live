@@ -4,7 +4,10 @@ import { LABEL_COLOR } from '../../constants';
 import FitText from './FitText';
 
 export default class TimerDisplay extends Konva.Group {
-    constructor(config) {
+    timerText: FitText;
+    labelText: FitText;
+
+    constructor(config: Konva.ContainerConfig) {
         super(config);
 
         const rectangle = new Konva.Rect({
@@ -59,11 +62,11 @@ export default class TimerDisplay extends Konva.Group {
         this.add(this.labelText);
     }
 
-    setTimerText(text) {
+    setTimerText(text: string) {
         this.timerText.fitText(text);
     }
 
-    setLabelText(text) {
+    setLabelText(text: string) {
         this.labelText.fitText(text);
     }
 }

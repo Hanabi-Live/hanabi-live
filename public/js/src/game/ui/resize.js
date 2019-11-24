@@ -37,8 +37,8 @@ const redraw = () => {
     // Reset stage to new window size
     sizeStage(globals.stage);
 
-    winW = globals.stage.getWidth();
-    winH = globals.stage.getHeight();
+    winW = globals.stage.width();
+    winH = globals.stage.height();
 
     // Rebuild UI elements and cards to new scaling
     self.drawCards();

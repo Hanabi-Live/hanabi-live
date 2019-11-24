@@ -38,8 +38,8 @@ export const show = (element) => {
     }
 
     const tooltip = $(`#tooltip-${element.tooltipName}`);
-    const pos = element.getAbsolutePosition();
-    let width = element.getWidth();
+    const pos = element.absolutePosition();
+    let width = element.width();
     if (typeof element.getTextWidth === 'function') {
         width = element.getTextWidth();
     }

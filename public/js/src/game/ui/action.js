@@ -21,10 +21,10 @@ export const handle = (data) => {
 
         // Fade the clue UI if there is not a clue available
         if (globals.clues >= 1) {
-            globals.elements.clueArea.setOpacity(1);
+            globals.elements.clueArea.opacity(1);
             globals.elements.clueAreaDisabled.hide();
         } else {
-            globals.elements.clueArea.setOpacity(0.2);
+            globals.elements.clueArea.opacity(0.2);
             globals.elements.clueAreaDisabled.show();
         }
     }
@@ -47,8 +47,8 @@ export const handle = (data) => {
     }
 
     if (globals.deckPlays) {
-        globals.elements.deck.cardBack.setDraggable(globals.deckSize === 1);
-        globals.elements.deckPlayAvailableLabel.setVisible(globals.deckSize === 1);
+        globals.elements.deck.cardBack.draggable(globals.deckSize === 1);
+        globals.elements.deckPlayAvailableLabel.visible(globals.deckSize === 1);
 
         // Ensure the deck is above other cards and UI elements
         if (globals.deckSize === 1) {
@@ -75,10 +75,10 @@ export const stop = () => {
         for (const child of ourHand.children) {
             // This is a LayoutChild
             child.off('dragend');
-            child.setDraggable(false);
+            child.draggable(false);
         }
     }
 
-    globals.elements.deck.cardBack.setDraggable(false);
+    globals.elements.deck.cardBack.draggable(false);
     globals.elements.deckPlayAvailableLabel.hide();
 };

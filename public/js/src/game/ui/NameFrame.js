@@ -31,15 +31,15 @@ export default class NameFrame extends Konva.Group {
             shadowOpacity: 0.9,
         });
 
-        let w = this.playerName.getWidth();
-        while (w > 0.65 * config.width && this.playerName.getFontSize() > 5) {
-            this.playerName.setFontSize(this.playerName.getFontSize() * 0.9);
-            w = this.playerName.getWidth();
+        let w = this.playerName.width();
+        while (w > 0.65 * config.width && this.playerName.fontSize() > 5) {
+            this.playerName.fontSize(this.playerName.fontSize() * 0.9);
+            w = this.playerName.width();
         }
-        this.playerName.setOffsetX(w / 2);
+        this.playerName.offsetX(w / 2);
 
         this.playerName.on('click tap', function click(event) {
-            const username = this.getText();
+            const username = this.text();
             if (event.evt.which === 1) { // Left-click
                 // Left-click on the name frame to see a log of only their actions
                 globals.elements.fullActionLog.showPlayerActions(username);
@@ -139,22 +139,22 @@ export default class NameFrame extends Konva.Group {
     }
 
     setActive(active) {
-        this.leftline.setStrokeWidth(active ? 3 : 1);
-        this.rightline.setStrokeWidth(active ? 3 : 1);
+        this.leftline.strokeWidth(active ? 3 : 1);
+        this.rightline.strokeWidth(active ? 3 : 1);
 
-        this.playerName.setShadowOpacity(active ? 0.6 : 0);
-        this.leftline.setShadowOpacity(active ? 0.6 : 0);
-        this.rightline.setShadowOpacity(active ? 0.6 : 0);
+        this.playerName.shadowOpacity(active ? 0.6 : 0);
+        this.leftline.shadowOpacity(active ? 0.6 : 0);
+        this.rightline.shadowOpacity(active ? 0.6 : 0);
 
-        this.playerName.setFontStyle(active ? 'bold' : 'normal');
+        this.playerName.fontStyle(active ? 'bold' : 'normal');
     }
 
     setConnected(connected) {
         const color = connected ? LABEL_COLOR : '#e8233d'; // Red for disconnected players
 
-        this.leftline.setStroke(color);
-        this.rightline.setStroke(color);
-        this.playerName.setFill(color);
+        this.leftline.stroke(color);
+        this.rightline.stroke(color);
+        this.playerName.fill(color);
     }
 }
 

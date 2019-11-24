@@ -16,8 +16,8 @@ export default class Deck extends Konva.Group {
         this.cardBack = new Konva.Image({
             x: 0,
             y: 0,
-            width: this.getWidth(),
-            height: this.getHeight(),
+            width: this.width(),
+            height: this.height(),
             image: globals.cardImages['deck-back'],
         });
         this.add(this.cardBack);
@@ -30,10 +30,10 @@ export default class Deck extends Konva.Group {
             strokeWidth: 3,
             align: 'center',
             x: 0,
-            y: 0.3 * this.getHeight(),
-            width: this.getWidth(),
-            height: 0.4 * this.getHeight(),
-            fontSize: 0.4 * this.getHeight(),
+            y: 0.3 * this.height(),
+            width: this.width(),
+            height: 0.4 * this.height(),
+            fontSize: 0.4 * this.height(),
             fontFamily: 'Verdana',
             fontStyle: 'bold',
             text: globals.deckSize.toString(),
@@ -59,43 +59,43 @@ export default class Deck extends Konva.Group {
     }
 
     doLayout() {
-        this.cardBack.setPosition({
+        this.cardBack.position({
             x: 0,
             y: 0,
         });
     }
 
     setCount(count) {
-        this.numLeftText.setText(count.toString());
+        this.numLeftText.text(count.toString());
 
         // When there are no cards left in the deck, remove the card-back
         // and show a label that indicates how many turns are left before the game ends
-        this.cardBack.setVisible(count > 0);
+        this.cardBack.visible(count > 0);
         let h = 0.3;
         if (count === 0) {
             h = 0.15;
         }
-        this.numLeftText.setY(h * this.getHeight());
-        globals.elements.deckTurnsRemainingLabel1.setVisible(count === 0);
-        globals.elements.deckTurnsRemainingLabel2.setVisible(count === 0);
+        this.numLeftText.y(h * this.height());
+        globals.elements.deckTurnsRemainingLabel1.visible(count === 0);
+        globals.elements.deckTurnsRemainingLabel2.visible(count === 0);
 
         // If the game ID is showing,
         // we want to center the deck count between it and the other labels
-        if (count === 0 && globals.elements.gameIDLabel.getVisible()) {
+        if (count === 0 && globals.elements.gameIDLabel.visible()) {
             this.nudgeCountDownwards();
         }
     }
 
     nudgeCountDownwards() {
-        const nudgeAmount = 0.07 * this.getHeight();
-        this.numLeftText.setY(this.numLeftText.getY() + nudgeAmount);
+        const nudgeAmount = 0.07 * this.height();
+        this.numLeftText.y(this.numLeftText.y() + nudgeAmount);
     }
 
     dragEnd() {
-        const pos = this.getAbsolutePosition();
+        const pos = this.absolutePosition();
 
-        pos.x += this.getWidth() * this.getScaleX() / 2;
-        pos.y += this.getHeight() * this.getScaleY() / 2;
+        pos.x += this.width() * this.scaleX() / 2;
+        pos.y += this.height() * this.scaleY() / 2;
 
         if (globals.elements.playArea.isOver(pos)) {
             // We need to remove the card from the screen once the animation is finished
@@ -105,7 +105,7 @@ export default class Deck extends Konva.Group {
                 globals.postAnimationLayout = null;
             };
 
-            this.setDraggable(false);
+            this.draggable(false);
             globals.elements.deckPlayAvailableLabel.hide();
 
             globals.lobby.conn.send('action', {
@@ -138,7 +138,7 @@ export default class Deck extends Konva.Group {
         this.tooltipName = 'deck';
         this.on('mousemove', function mouseMove() {
             // Don't do anything if we might be dragging the deck
-            if (globals.elements.deckPlayAvailableLabel.getVisible()) {
+            if (globals.elements.deckPlayAvailableLabel.visible()) {
                 return;
             }
 

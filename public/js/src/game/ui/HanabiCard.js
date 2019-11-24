@@ -104,7 +104,7 @@ export default class HanabiCard extends Konva.Group {
         this.turnPlayed = null;
         this.isMisplayed = false;
 
-        this.setListening(true); // Some variants disable listening on cards
+        this.listening(true); // Some variants disable listening on cards
 
         this.removeBorders();
         if (!globals.replay && !globals.spectating) {
@@ -260,12 +260,12 @@ export default class HanabiCard extends Konva.Group {
             this.suitPips.hide();
             this.rankPips.hide();
         } else {
-            this.suitPips.setVisible(suitToShow.name === 'Unknown');
-            this.rankPips.setVisible(rankToShow === 6);
+            this.suitPips.visible(suitToShow.name === 'Unknown');
+            this.rankPips.visible(rankToShow === 6);
         }
 
         // Show or hide the "fixme" image
-        this.fixme.setVisible((
+        this.fixme.visible((
             this.noteNeedsFix
             && !this.empathy
             && !globals.replay
@@ -283,7 +283,7 @@ export default class HanabiCard extends Konva.Group {
             return;
         }
 
-        const oldOpacity = this.getOpacity();
+        const oldOpacity = this.opacity();
 
         let newOpacity = 1;
         if (
@@ -302,7 +302,7 @@ export default class HanabiCard extends Konva.Group {
             return;
         }
 
-        this.setOpacity(newOpacity);
+        this.opacity(newOpacity);
     }
 
     initImage() {
@@ -435,7 +435,7 @@ export default class HanabiCard extends Konva.Group {
                 // If the rank of the card is not known yet,
                 // change the rank pip that corresponds with this number to signify a positive clue
                 const pip = this.rankPipsMap.get(clueRank);
-                if (pip.getVisible()) {
+                if (pip.visible()) {
                     pip.showPositiveClue();
                 }
             } else {
@@ -575,10 +575,10 @@ export default class HanabiCard extends Konva.Group {
         if (!suitPossible) {
             // Do nothing if the normal pip is already hidden
             const pip = this.suitPipsMap.get(suit);
-            if (pip.getVisible()) {
+            if (pip.visible()) {
                 // All the cards of this suit are seen, so put an X over the suit pip
                 const x = this.suitPipsXMap.get(suit);
-                x.setVisible(true);
+                x.visible(true);
             }
         }
 
@@ -596,10 +596,10 @@ export default class HanabiCard extends Konva.Group {
             if (rank >= 1 && rank <= 5) {
                 // Do nothing if the normal pip is already hidden
                 const pip = this.rankPipsMap.get(rank);
-                if (pip.getVisible()) {
+                if (pip.visible()) {
                     // All the cards of this rank are seen, so put an X over the rank pip
                     const x = this.rankPipsXMap.get(rank);
-                    x.setVisible(true);
+                    x.visible(true);
                 }
             }
         }
@@ -689,10 +689,10 @@ export default class HanabiCard extends Konva.Group {
             // it can cause a card to be orphaned
             return;
         }
-        const pos = layoutChild.getAbsolutePosition();
-        layoutChild.setRotation(layoutChild.parent.getRotation());
+        const pos = layoutChild.absolutePosition();
+        layoutChild.rotation(layoutChild.parent.rotation());
         layoutChild.remove();
-        layoutChild.setAbsolutePosition(pos);
+        layoutChild.absolutePosition(pos);
 
         // Mark that no player is now holding this card
         this.holder = null;
@@ -706,7 +706,7 @@ export default class HanabiCard extends Konva.Group {
             hole.addCard(this.parent);
 
             // We do not want this card to interfere with writing notes on the stack bases
-            this.setListening(false);
+            this.listening(false);
         } else {
             // The act of adding it will automatically tween the card
             const playStack = globals.elements.playStacks.get(this.suit);

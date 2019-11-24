@@ -10,9 +10,9 @@ import globals from './globals';
 
 export default class PlayStack extends Konva.Group {
     addCard(child: any) { // TODO change to HanabiCard
-        const pos = child.getAbsolutePosition();
+        const pos = child.absolutePosition();
         this.add(child);
-        child.setAbsolutePosition(pos);
+        child.absolutePosition(pos);
         this.doLayout();
     }
 
@@ -20,7 +20,7 @@ export default class PlayStack extends Konva.Group {
         const lh = this.height();
 
         for (const node of this.children.toArray()) { // node is a LayoutChild
-            const scale = lh / node.getHeight();
+            const scale = lh / node.height();
             const stackBase = node.children[0].rank === STACK_BASE_RANK;
             const opacity = ( // Hide cards in "Throw It in a Hole" variants
                 globals.variant.name.startsWith('Throw It in a Hole')
@@ -29,12 +29,12 @@ export default class PlayStack extends Konva.Group {
             ) ? 0 : 1;
 
             if (globals.animateFast) {
-                node.setX(0);
-                node.setY(0);
-                node.setScaleX(scale);
-                node.setScaleY(scale);
-                node.setRotation(0);
-                node.setOpacity(opacity);
+                node.x(0);
+                node.y(0);
+                node.scaleX(scale);
+                node.scaleY(scale);
+                node.rotation(0);
+                node.opacity(opacity);
                 this.hideUnder();
             } else {
                 // Animate the card leaving the hand to the play stacks

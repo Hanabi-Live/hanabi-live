@@ -24,7 +24,7 @@ export const start = () => {
     }
 
     // Adjust the UI, depending on whether or not we are the replay leader
-    globals.elements.replayArea.setVisible(false);
+    globals.elements.replayArea.visible(false);
     globals.elements.clueTargetButtonGroup.hide();
     globals.elements.clueTargetButtonGroup2.show();
 
@@ -33,10 +33,10 @@ export const start = () => {
             type: REPLAY_ACTION_TYPE.HYPO_START,
         });
 
-        globals.elements.restartButton.setVisible(false);
-        globals.elements.endHypotheticalButton.setVisible(true);
+        globals.elements.restartButton.visible(false);
+        globals.elements.endHypotheticalButton.visible(true);
     } else {
-        globals.elements.hypoCircle.setVisible(true);
+        globals.elements.hypoCircle.visible(true);
     }
 
     beginTurn();
@@ -51,20 +51,20 @@ export const end = () => {
     globals.hypothetical = false;
 
     // Adjust the UI, depending on whether or not we are the replay leader
-    globals.elements.replayArea.setVisible(true);
+    globals.elements.replayArea.show();
     if (globals.amSharedReplayLeader) {
         globals.lobby.conn.send('replayAction', {
             type: REPLAY_ACTION_TYPE.HYPO_END,
         });
 
-        globals.elements.restartButton.setVisible(true);
-        globals.elements.endHypotheticalButton.setVisible(false);
+        globals.elements.restartButton.show();
+        globals.elements.endHypotheticalButton.hide();
 
         // Furthermore, disable dragging and get rid of the clue UI
         disableDragOnAllHands();
         action.stop();
     } else {
-        globals.elements.hypoCircle.setVisible(false);
+        globals.elements.hypoCircle.hide();
     }
     globals.layers.UI.batchDraw();
 
@@ -95,7 +95,7 @@ export const beginTurn = () => {
     // Set the current player's hand to be draggable
     const hand = globals.elements.playerHands[globals.currentPlayerIndex];
     for (const layoutChild of hand.children) {
-        layoutChild.setDraggable(true);
+        layoutChild.draggable(true);
         layoutChild.on('dragend', layoutChild.dragEnd);
     }
 };
@@ -220,7 +220,7 @@ export const sendHypoAction = (hypoAction) => {
 const disableDragOnAllHands = () => {
     for (const hand of globals.elements.playerHands) {
         for (const layoutChild of hand.children) {
-            layoutChild.setDraggable(false);
+            layoutChild.draggable(false);
             layoutChild.off('dragend');
         }
     }

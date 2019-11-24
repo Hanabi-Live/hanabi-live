@@ -22,12 +22,12 @@ export function image() {
         height: CARD_H,
     });
     const self = this;
-    this.bare.setSceneFunc(function setSceneFunc(context) {
+    this.bare.sceneFunc(function setSceneFunc(context) {
         scaleCardImage(
             context,
             self.bareName,
-            this.getWidth(),
-            this.getHeight(),
+            this.width(),
+            this.height(),
             this.getAbsoluteTransform(),
         );
     });
@@ -154,7 +154,7 @@ export function pips() {
             suitPip.fillRadialGradientStartRadius(0);
             suitPip.fillRadialGradientEndRadius(Math.floor(CARD_W * 0.25));
         }
-        suitPip.setRotation(0);
+        suitPip.rotation(0);
         this.suitPips.add(suitPip);
         this.suitPipsMap.set(suit, suitPip);
 
@@ -217,11 +217,11 @@ export function pips() {
         this.rankPipsMap.set(rank, rankPip);
 
         rankPip.showPositiveClue = () => {
-            rankPip.setFill('#ffdf00'); // Yellow
+            rankPip.fill('#ffdf00'); // Yellow
             // (the same color as the "clued" border around a card)
         };
         rankPip.hidePositiveClue = () => {
-            rankPip.setFill('black');
+            rankPip.fill('black');
         };
 
         // Also create the X that will show when a certain rank can be ruled out
@@ -277,7 +277,7 @@ export function note() {
         visible: notes.shouldShowIndicator(this.order),
         listening: false,
     });
-    this.noteGiven.setScale({
+    this.noteGiven.scale({
         x: -1,
         y: -1,
     });
@@ -406,7 +406,7 @@ export function click() {
     this.on('mousedown', (event) => {
         if (
             event.evt.which !== 1 // Dragging uses left click
-            || !this.parent.getDraggable()
+            || !this.parent.draggable()
         ) {
             return;
         }

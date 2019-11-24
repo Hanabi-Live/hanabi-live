@@ -4,11 +4,7 @@ import { LABEL_COLOR, MAX_CLUE_NUM } from '../../constants';
 import FitText from './FitText';
 import globals from './globals';
 
-export default (clueAreaValues) => {
-    // Constants
-    const winW = globals.stage.getWidth();
-    const winH = globals.stage.getHeight();
-
+export default (winW, winH, clueAreaValues) => {
     // The "Current player: [player name]" box
     const currentPlayerAreaWidth = 0.3; // This is big enough to fit in between the two timers
     const currentPlayerAreaValues = {
@@ -88,13 +84,13 @@ export default (clueAreaValues) => {
         if (threeLines) {
             maxSize = (currentPlayerAreaValues.h / 4) * winH;
         }
-        this.setWidth(textValues.w * winW);
+        this.width(textValues.w * winW);
         this.resize();
-        while (this.measureSize(this.getText()).height > maxSize) {
-            this.setWidth(this.getWidth() * 0.9);
+        while (this.measureSize(this.text()).height > maxSize) {
+            this.width(this.width() * 0.9);
             this.resize();
         }
-        this.setX((globals.elements.currentPlayerRect1.getWidth() / 2) - (this.getWidth() / 2));
+        this.x((globals.elements.currentPlayerRect1.width() / 2) - (this.width() / 2));
     };
 
     globals.elements.currentPlayerText3 = new FitText({
@@ -189,14 +185,14 @@ export default (clueAreaValues) => {
 
     // Set the "Current Player" area up for this specific turn
     globals.elements.currentPlayerArea.update = function update(currentPlayerIndex) {
-        this.setVisible(
+        this.visible(
             // Don't show it if we are in a solo/shared replay
             // or if we happen to have the in-game replay open
             !globals.inReplay
             // Don't show it if the clue UI is there
             && (!globals.ourTurn || globals.clues === 0)
             // Don't show it if the premove button is there
-            && !globals.elements.premoveCancelButton.getVisible()
+            && !globals.elements.premoveCancelButton.visible()
             && currentPlayerIndex !== -1, // Don't show it if this is the end of the game
         );
 
@@ -213,43 +209,43 @@ export default (clueAreaValues) => {
         if (!globals.lobby.settings.get('realLifeMode')) {
             if (globals.clues === 0) {
                 specialText = '(cannot clue; 0 clues left)';
-                text3.setFill('red');
+                text3.fill('red');
             } else if (globals.clues === MAX_CLUE_NUM) {
                 specialText = `(cannot discard; at ${MAX_CLUE_NUM} clues)`;
-                text3.setFill('red');
+                text3.fill('red');
             } else if (globals.elements.playerHands[currentPlayerIndex].isLocked()) {
                 specialText = '(locked; may not be able to discard)';
-                text3.setFill('yellow');
-            } else if (globals.elements.noDoubleDiscardBorder.getVisible()) {
+                text3.fill('yellow');
+            } else if (globals.elements.noDoubleDiscardBorder.visible()) {
                 specialText = '(potentially in a "Double Discard" situation)';
-                text3.setFill('yellow');
+                text3.fill('yellow');
             }
         }
-        const totalH = this.getHeight();
-        const text1H = text1.measureSize(text1.getText()).height;
+        const totalH = this.height();
+        const text1H = text1.measureSize(text1.text()).height;
         if (specialText === '') {
             // 2 lines
             text2.setPlayer(currentPlayerIndex, false);
-            const text2H = text2.measureSize(text2.getText()).height;
-            const spacing = 0.03 * globals.stage.getHeight();
-            text1.setY((totalH / 2) - (text1H / 2) - spacing);
-            text2.setY((totalH / 2) - (text2H / 2) + spacing);
+            const text2H = text2.measureSize(text2.text()).height;
+            const spacing = 0.03 * globals.stage.height();
+            text1.y((totalH / 2) - (text1H / 2) - spacing);
+            text2.y((totalH / 2) - (text2H / 2) + spacing);
             text3.hide();
         } else {
             // 3 lines
             text2.setPlayer(currentPlayerIndex, true);
-            const text2H = text2.measureSize(text2.getText()).height;
-            const spacing = 0.04 * globals.stage.getHeight();
-            text1.setY((totalH / 2) - (text1H / 2) - spacing);
-            text2.setY((totalH / 2) - (text2H / 2) + (spacing * 0.25));
-            text3.setY((totalH / 2) - (text1H / 2) + (spacing * 1.5));
+            const text2H = text2.measureSize(text2.text()).height;
+            const spacing = 0.04 * globals.stage.height();
+            text1.y((totalH / 2) - (text1H / 2) - spacing);
+            text2.y((totalH / 2) - (text2H / 2) + (spacing * 0.25));
+            text3.y((totalH / 2) - (text1H / 2) + (spacing * 1.5));
             text3.fitText(specialText);
             text3.show();
         }
 
         // Make the arrow point to the current player
         const centerPos = globals.elements.playerHands[currentPlayerIndex].getAbsoluteCenterPos();
-        const thisPos = globals.elements.currentPlayerArrow.getAbsolutePosition();
+        const thisPos = globals.elements.currentPlayerArrow.absolutePosition();
         const x = centerPos.x - thisPos.x;
         const y = centerPos.y - thisPos.y;
         const radians = Math.atan(y / x);
@@ -259,14 +255,14 @@ export default (clueAreaValues) => {
         }
 
         if (globals.animateFast) {
-            globals.elements.currentPlayerArrow.setRotation(rotation);
+            globals.elements.currentPlayerArrow.rotation(rotation);
         } else {
             if (globals.elements.currentPlayerArrowTween) {
                 globals.elements.currentPlayerArrowTween.destroy();
             }
 
             // We want the arrow to always be moving clockwise
-            const oldRotation = globals.elements.currentPlayerArrow.getRotation();
+            const oldRotation = globals.elements.currentPlayerArrow.rotation();
             const unmodifiedRotation = rotation;
             if (oldRotation > rotation) {
                 rotation += 360;
@@ -279,7 +275,7 @@ export default (clueAreaValues) => {
                 easing: Konva.Easings.EaseInOut,
                 onFinish: () => {
                     if (globals.elements.currentPlayerArrow) {
-                        globals.elements.currentPlayerArrow.setRotation(unmodifiedRotation);
+                        globals.elements.currentPlayerArrow.rotation(unmodifiedRotation);
                     }
                 },
             }).play();

@@ -100,7 +100,7 @@ commands.gameOver = () => {
 
     // Turn off the "Throw It in a Hole" UI
     if (globals.variant.name.startsWith('Throw It in a Hole')) {
-        globals.elements.scoreNumberLabel.setText(globals.score.toString());
+        globals.elements.scoreNumberLabel.text(globals.score.toString());
         globals.elements.maxScoreNumberLabel.show();
     }
 
@@ -138,7 +138,7 @@ commands.hypoStart = () => {
 
 commands.databaseID = (data) => {
     globals.databaseID = data.id;
-    globals.elements.gameIDLabel.setText(`ID: ${globals.databaseID}`);
+    globals.elements.gameIDLabel.text(`ID: ${globals.databaseID}`);
     globals.elements.gameIDLabel.show();
 
     // Also move the card count label on the deck downwards
@@ -481,7 +481,7 @@ commands.replayLeader = (data) => {
     // Update the UI and play an animation to indicate there is a new replay leader
     globals.elements.sharedReplayLeaderLabel.show();
     // (the crown might be invisible if we just finished an ongoing game)
-    globals.elements.sharedReplayLeaderCircle.setVisible(globals.amSharedReplayLeader);
+    globals.elements.sharedReplayLeaderCircle.visible(globals.amSharedReplayLeader);
     if (data.playAnimation) {
         // We only want the animation to play when the leader changes
         // The server will set "playAnimation" to false when a player is first loading into a game
@@ -491,8 +491,8 @@ commands.replayLeader = (data) => {
 
     // Arrange the center buttons in a certain way depending on
     // whether we are the shared replay leader
-    globals.elements.pauseSharedTurnsButton.setVisible(globals.useSharedTurns);
-    globals.elements.useSharedTurnsButton.setVisible(!globals.useSharedTurns);
+    globals.elements.pauseSharedTurnsButton.visible(globals.useSharedTurns);
+    globals.elements.useSharedTurnsButton.visible(!globals.useSharedTurns);
     if (globals.amSharedReplayLeader) {
         globals.elements.pauseSharedTurnsButton.setLeft();
         globals.elements.useSharedTurnsButton.setLeft();
@@ -500,19 +500,19 @@ commands.replayLeader = (data) => {
         globals.elements.pauseSharedTurnsButton.setCenter();
         globals.elements.useSharedTurnsButton.setCenter();
     }
-    globals.elements.enterHypoButton.setVisible(globals.amSharedReplayLeader);
+    globals.elements.enterHypoButton.visible(globals.amSharedReplayLeader);
 
     // Enable/disable the restart button
-    globals.elements.restartButton.setVisible(globals.amSharedReplayLeader);
+    globals.elements.restartButton.visible(globals.amSharedReplayLeader);
 
     // Hide the replay area if we are in a hypothetical
     if (globals.hypothetical) {
-        globals.elements.replayArea.setVisible(false);
+        globals.elements.replayArea.visible(false);
         if (globals.amSharedReplayLeader) {
-            globals.elements.restartButton.setVisible(false);
-            globals.elements.endHypotheticalButton.setVisible(true);
+            globals.elements.restartButton.visible(false);
+            globals.elements.endHypotheticalButton.visible(true);
         } else {
-            globals.elements.hypoCircle.setVisible(true);
+            globals.elements.hypoCircle.visible(true);
         }
     }
 
@@ -617,10 +617,10 @@ commands.spectators = (data) => {
     globals.spectators = data.names;
 
     const visible = data.names.length > 0;
-    globals.elements.spectatorsLabel.setVisible(visible);
-    globals.elements.spectatorsNumLabel.setVisible(visible);
+    globals.elements.spectatorsLabel.visible(visible);
+    globals.elements.spectatorsNumLabel.visible(visible);
     if (visible) {
-        globals.elements.spectatorsNumLabel.setText(data.names.length);
+        globals.elements.spectatorsNumLabel.text(data.names.length);
 
         // Build the string that shows all the names
         const nameEntries = data.names.map((name) => `<li>${name}</li>`).join('');

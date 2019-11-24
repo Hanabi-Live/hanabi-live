@@ -99,13 +99,13 @@ export default class Arrow extends Konva.Group {
             x,
             y: y * 0.3,
             offset: {
-                x: this.circle.getWidth() / 2,
-                y: this.circle.getHeight() / 2,
+                x: this.circle.width() / 2,
+                y: this.circle.height() / 2,
             },
-            width: this.circle.getWidth(),
+            width: this.circle.width(),
             // For some reason the text is offset if we place it exactly in the middle of the
             // circle, so nudge it downwards
-            height: this.circle.getHeight() * 1.09,
+            height: this.circle.height() * 1.09,
             fontSize: y * 0.38,
             fontFamily: 'Verdana',
             fill: 'white',

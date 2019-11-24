@@ -85,17 +85,17 @@ export const checkSpecialNote = (card) => {
     card.setBareImage();
 
     // Feature 2 - Give the card a special border if it is chop moved
-    card.noteBorder.setVisible((
+    card.noteBorder.visible((
         card.noteChopMoved
-        && !card.cluedBorder.getVisible()
+        && !card.cluedBorder.visible()
         && !globals.replay
         && !globals.spectating
     ));
 
     // Feature 3 - Give the card a special border if it is finessed
-    card.finesseBorder.setVisible((
+    card.finesseBorder.visible((
         card.noteFinessed
-        && !card.cluedBorder.getVisible()
+        && !card.cluedBorder.visible()
         && !globals.replay
         && !globals.spectating
     ));
@@ -250,9 +250,9 @@ export const update = (card) => {
     }
 
     // Update the card indicator
-    const visibleOld = card.noteGiven.getVisible();
+    const visibleOld = card.noteGiven.visible();
     const visibleNew = note.length > 0;
-    card.noteGiven.setVisible(visibleNew);
+    card.noteGiven.visible(visibleNew);
     if (visibleOld !== visibleNew) {
         globals.layers.card.batchDraw();
     }
@@ -269,15 +269,15 @@ export const show = (card) => {
     }
 
     // We want the tooltip to appear above the card by default
-    const pos = card.getAbsolutePosition();
+    const pos = card.absolutePosition();
     let posX = pos.x;
-    let posY = pos.y - (card.getHeight() * card.parent.scale().y / 2);
+    let posY = pos.y - (card.height() * card.parent.scale().y / 2);
     tooltipInstance.option('side', 'top');
 
     // Flip the tooltip if it is too close to the top of the screen
     if (posY < 200) {
         // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout
-        posY = pos.y + (card.getHeight() * card.parent.scale().y / 2);
+        posY = pos.y + (card.height() * card.parent.scale().y / 2);
         tooltipInstance.option('side', 'bottom');
     }
 
@@ -285,7 +285,7 @@ export const show = (card) => {
     // so move it over to the right a little bit
     for (const arrow of globals.elements.arrows) {
         if (arrow.pointingTo === card.order) {
-            posX = pos.x + ((card.getWidth() * card.parent.scale().x / 2) / 2.5);
+            posX = pos.x + ((card.width() * card.parent.scale().x / 2) / 2.5);
             break;
         }
     }
@@ -384,7 +384,7 @@ export const setCardIndicator = (order) => {
     if (!card) {
         card = globals.stackBases[order - globals.deck.length];
     }
-    card.noteGiven.setVisible(visible);
+    card.noteGiven.visible(visible);
 
     if (visible && globals.spectating && !globals.replay && !card.noteGiven.rotated) {
         card.noteGiven.rotate(15);

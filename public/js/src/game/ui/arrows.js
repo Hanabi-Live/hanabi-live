@@ -19,7 +19,7 @@ export const hideAll = () => {
         if (arrow.pointingTo !== null) {
             changed = true;
             arrow.pointingTo = null;
-            arrow.setVisible(false);
+            arrow.visible(false);
         }
     }
     if (!globals.animateFast && changed) {
@@ -60,17 +60,17 @@ export const set = (i, element, giver, clue) => {
             rot += 180;
         }
     }
-    arrow.setRotation(rot);
+    arrow.rotation(rot);
 
     // We want the text to always be right-side up (e.g. have a rotaiton of 0)
-    arrow.text.setRotation(360 - rot);
+    arrow.text.rotation(360 - rot);
 
     // Set the arrow features
     if (clue === null) {
         // This is a highlight arrow
         const color = ARROW_COLOR.HIGHLIGHT;
-        arrow.base.setStroke(color);
-        arrow.base.setFill(color);
+        arrow.base.stroke(color);
+        arrow.base.fill(color);
 
         // Don't draw the circle
         arrow.circle.hide();
@@ -85,8 +85,8 @@ export const set = (i, element, giver, clue) => {
             // Freshly touched cards use the default color
             color = ARROW_COLOR.DEFAULT;
         }
-        arrow.base.setStroke(color);
-        arrow.base.setFill(color);
+        arrow.base.stroke(color);
+        arrow.base.fill(color);
 
         // Clue arrows have a circle that shows the type of clue given
         if (
@@ -98,11 +98,11 @@ export const set = (i, element, giver, clue) => {
         } else {
             arrow.circle.show();
             if (clue.type === CLUE_TYPE.RANK) {
-                arrow.circle.setFill('black');
-                arrow.text.setText(clue.value.toString());
+                arrow.circle.fill('black');
+                arrow.text.text(clue.value.toString());
                 arrow.text.show();
             } else if (clue.type === CLUE_TYPE.COLOR) {
-                arrow.circle.setFill(clue.value.fill);
+                arrow.circle.fill(clue.value.fill);
                 arrow.text.hide();
             }
         }
@@ -113,7 +113,7 @@ export const set = (i, element, giver, clue) => {
     }
     if (globals.animateFast || giver === null) {
         const pos = getPos(element, rot);
-        arrow.setAbsolutePosition(pos);
+        arrow.absolutePosition(pos);
     } else {
         animate(arrow, element, rot, giver, globals.turn);
     }
@@ -124,23 +124,23 @@ export const set = (i, element, giver, clue) => {
 
 const getPos = (element, rot) => {
     // Start by using the absolute position of the element
-    const pos = element.getAbsolutePosition();
+    const pos = element.absolutePosition();
 
     if (element.type === 'HanabiCard') {
         // If we set the arrow at the absolute position of a card, it will point to the exact center
         // Instead, back it off a little bit (accounting for the rotation of the hand)
-        const winH = globals.stage.getHeight();
+        const winH = globals.stage.height();
         const distance = -0.075 * winH;
         const rotRadians = (rot / 180) * Math.PI;
         pos.x -= Math.sin(rotRadians) * distance;
         pos.y += Math.cos(rotRadians) * distance;
     } else if (element === globals.elements.cluesNumberLabel) {
-        pos.x += element.getWidth() * 0.15;
+        pos.x += element.width() * 0.15;
     } else if (element === globals.elements.deck) {
-        pos.x += element.getWidth() * 0.5;
-        pos.y += element.getHeight() * 0.1;
+        pos.x += element.width() * 0.5;
+        pos.y += element.height() * 0.1;
     } else {
-        pos.x += element.getWidth() / 3;
+        pos.x += element.width() / 3;
     }
 
     if (Number.isNaN(pos.x) || Number.isNaN(pos.y)) {
@@ -175,7 +175,7 @@ const animate = (arrow, card, rot, giver, turn) => {
 
     // Start the arrow at the center position of the clue giver's hand
     const centerPos = globals.elements.playerHands[giver].getAbsoluteCenterPos();
-    arrow.setAbsolutePosition(centerPos);
+    arrow.absolutePosition(centerPos);
 
     // Calculate the position of the final arrow destination
     // (this must be done after the card is finished tweening)
@@ -224,7 +224,7 @@ export const toggle = (element) => {
     const arrow = globals.elements.arrows[0];
     const show = (
         arrow.pointingTo !== element
-        || arrow.base.getFill() !== ARROW_COLOR.HIGHLIGHT
+        || arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT
     );
     hideAll();
     if (show) {

@@ -125,8 +125,8 @@ commands.clue = (data) => {
     }
 
     const entry = new ClueEntry({
-        width: globals.elements.clueLog.getWidth(),
-        height: 0.017 * globals.stage.getHeight(),
+        width: globals.elements.clueLog.width(),
+        height: 0.017 * globals.stage.height(),
         giver: globals.playerNames[data.giver],
         target: globals.playerNames[data.target],
         clueName,
@@ -223,8 +223,8 @@ commands.draw = (data) => {
     card.refresh();
     if (suit && rank) {
         // Hide the pips if we have full knowledge of the suit / rank
-        card.suitPips.setVisible(false);
-        card.rankPips.setVisible(false);
+        card.suitPips.visible(false);
+        card.rankPips.visible(false);
     }
     card.setFade(); // Fade the card if it is already played
 
@@ -233,13 +233,13 @@ commands.draw = (data) => {
     const child = card.parent;
     // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
     // and the user rewinds to the beginning of the replay
-    child.setVisible(true);
-    child.setOpacity(1); // Cards can be faded in certain variants
-    const pos = globals.elements.deck.cardBack.getAbsolutePosition();
-    child.setAbsolutePosition(pos);
-    child.setRotation(-globals.elements.playerHands[holder].getRotation());
-    const scale = globals.elements.deck.cardBack.getWidth() / CARD_W;
-    child.setScale({
+    child.visible(true);
+    child.opacity(1); // Cards can be faded in certain variants
+    const pos = globals.elements.deck.cardBack.absolutePosition();
+    child.absolutePosition(pos);
+    child.rotation(-globals.elements.playerHands[holder].rotation());
+    const scale = globals.elements.deck.cardBack.width() / CARD_W;
+    child.scale({
         x: scale,
         y: scale,
     });
@@ -349,11 +349,11 @@ commands.status = (data) => {
     globals.maxScore = data.maxScore;
 
     // Update the number of clues in the bottom-right hand corner of the screen
-    globals.elements.cluesNumberLabel.setText(globals.clues.toString());
+    globals.elements.cluesNumberLabel.text(globals.clues.toString());
 
     if (!globals.lobby.settings.get('realLifeMode')) {
-        globals.elements.cluesNumberLabel.setFill(globals.clues === 0 ? 'red' : LABEL_COLOR);
-        globals.elements.noClueBorder.setVisible(globals.clues === 0);
+        globals.elements.cluesNumberLabel.fill(globals.clues === 0 ? 'red' : LABEL_COLOR);
+        globals.elements.noClueBorder.visible(globals.clues === 0);
 
         if (globals.clues === MAX_CLUE_NUM) {
             // Show the red border around the discard pile
@@ -373,17 +373,17 @@ commands.status = (data) => {
 
     // Update the score (in the bottom-right-hand corner)
     const scoreLabel = globals.elements.scoreNumberLabel;
-    scoreLabel.setText(globals.score.toString());
+    scoreLabel.text(globals.score.toString());
     if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
-        scoreLabel.setText('?');
+        scoreLabel.text('?');
     }
 
     // Reposition the maximum score
     const maxScoreLabel = globals.elements.maxScoreNumberLabel;
-    maxScoreLabel.setText(` / ${globals.maxScore}`);
-    maxScoreLabel.setWidth(maxScoreLabel.measureSize(maxScoreLabel.getText()).width);
-    const x = scoreLabel.getX() + scoreLabel.measureSize(scoreLabel.getText()).width;
-    maxScoreLabel.setX(x);
+    maxScoreLabel.text(` / ${globals.maxScore}`);
+    maxScoreLabel.width(maxScoreLabel.measureSize(maxScoreLabel.text()).width);
+    const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width;
+    maxScoreLabel.x(x);
 
     // Update the stats on the middle-left-hand side of the screen
     stats.updatePace();
@@ -409,7 +409,7 @@ commands.strike = (data) => {
 
     // Animate the strike square fading in
     if (globals.animateFast) {
-        strike.setOpacity(1);
+        strike.opacity(1);
     } else {
         strike.tween = new Konva.Tween({
             node: strike,
@@ -455,7 +455,7 @@ commands.turn = (data) => {
     }
 
     // Update the turn count in the score area
-    globals.elements.turnNumberLabel.setText(`${globals.turn + 1}`);
+    globals.elements.turnNumberLabel.text(`${globals.turn + 1}`);
 
     // Update the current player in the middle of the screen
     globals.elements.currentPlayerArea.update(globals.currentPlayerIndex);
@@ -473,7 +473,7 @@ commands.turn = (data) => {
             numTurnsLeft += 1;
         }
 
-        globals.elements.deckTurnsRemainingLabel2.setText(`left: ${numTurnsLeft}`);
+        globals.elements.deckTurnsRemainingLabel2.text(`left: ${numTurnsLeft}`);
     }
 
     if (!globals.animateFast) {

@@ -7,10 +7,8 @@ import NameFrame from './NameFrame';
 import * as stats from './stats';
 import * as tooltips from './tooltips';
 
-export default () => {
+export default (winW, winH) => {
     // Constants
-    const winW = globals.stage.getWidth();
-    const winH = globals.stage.getHeight();
     const numPlayers = globals.playerNames.length;
 
     // Local variables
@@ -362,7 +360,7 @@ export default () => {
             });
 
             if (isHandReversed(j)) {
-                rect.setFillLinearGradientColorStops([
+                rect.fillLinearGradientColorStops([
                     1,
                     'rgba(0,0,0,0)',
                     0.1,

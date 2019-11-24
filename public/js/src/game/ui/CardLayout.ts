@@ -38,9 +38,9 @@ export default class CardLayout extends Konva.Group {
     }
 
     addCard(child: any) { // TODO set to HanabiCard
-        const pos = child.getAbsolutePosition();
+        const pos = child.absolutePosition();
         this.add(child);
-        child.setAbsolutePosition(pos);
+        child.absolutePosition(pos);
         this.doLayout();
     }
 
@@ -115,7 +115,7 @@ export default class CardLayout extends Konva.Group {
                 if (card.doMisplayAnimation) {
                     // If this card just misplayed, do a special animation
                     card.doMisplayAnimation = false;
-                    node.setRotation(360);
+                    node.rotation(360);
                 }
                 node.tween = new Konva.Tween({
                     node,
@@ -140,7 +140,7 @@ export default class CardLayout extends Konva.Group {
                 }).play();
             }
 
-            x += ((scale * node.getWidth()) + dist) * (this.reverse ? -1 : 1);
+            x += ((scale * node.width()) + dist) * (this.reverse ? -1 : 1);
         }
     }
 

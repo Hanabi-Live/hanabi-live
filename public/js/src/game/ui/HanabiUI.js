@@ -54,7 +54,7 @@ export default class HanabiUI {
         if (globals.lobby.chatUnread > 0) {
             text += ` (${globals.lobby.chatUnread})`;
         }
-        globals.elements.chatButton.setText(text);
+        globals.elements.chatButton.text(text);
         globals.layers.UI.batchDraw();
     }
 
@@ -107,13 +107,13 @@ const initStage = () => {
     if (ch > 0.98 * wh) {
         ch = wh;
     }
-    globals.stage.setWidth(cw);
-    globals.stage.setHeight(ch);
+    globals.stage.width(cw);
+    globals.stage.height(ch);
 };
 
 const showLoadingScreen = () => {
-    const winW = globals.stage.getWidth();
-    const winH = globals.stage.getHeight();
+    const winW = globals.stage.width();
+    const winH = globals.stage.height();
 
     const loadingLayer = new Konva.Layer();
 
@@ -152,7 +152,7 @@ const showLoadingScreen = () => {
     globals.stage.add(loadingLayer);
 
     const loadingProgressCallback = (done, total) => {
-        progresslabel.setText(`${done}/${total}`);
+        progresslabel.text(`${done}/${total}`);
         loadingLayer.batchDraw();
     };
     globals.ImageLoader = new Loader(loadingProgressCallback, loadingFinishedCallback);

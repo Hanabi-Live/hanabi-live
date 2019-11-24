@@ -39,7 +39,7 @@ export const updatePace = () => {
         if (endGameThreshold1 > 0) {
             paceText = `+${endGameThreshold1}`;
         }
-        label.setText(paceText);
+        label.text(paceText);
 
         // Color the pace label depending on how "risky" it would be to discard
         // (approximately)

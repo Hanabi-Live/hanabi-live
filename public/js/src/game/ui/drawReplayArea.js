@@ -5,11 +5,7 @@ import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as replay from './replay';
 
-export default () => {
-    // Constants
-    const winW = globals.stage.getWidth();
-    const winH = globals.stage.getHeight();
-
+export default (winW, winH) => {
     const replayAreaValues = {
         x: 0.15,
         y: 0.51,
@@ -232,12 +228,12 @@ export default () => {
     const totalWidth = (replayButtonValues.w * 4) + (replayButtonValues.spacing * 3);
     function setCenter() {
         const x = replayButtonValues.x + ((totalWidth - bottomLeftReplayButtonValues.w) / 2);
-        this.setX(x * winW);
-        this.setY(bottomLeftReplayButtonValues.y * winH);
+        this.x(x * winW);
+        this.y(bottomLeftReplayButtonValues.y * winH);
     }
     function setLeft() {
-        this.setX(bottomLeftReplayButtonValues.x * winW);
-        this.setY(bottomLeftReplayButtonValues.y * winH);
+        this.x(bottomLeftReplayButtonValues.x * winW);
+        this.y(bottomLeftReplayButtonValues.y * winH);
     }
     globals.elements.pauseSharedTurnsButton.setCenter = setCenter;
     globals.elements.pauseSharedTurnsButton.setLeft = setLeft;

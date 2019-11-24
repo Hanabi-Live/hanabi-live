@@ -62,7 +62,7 @@ export const exit = () => {
     if (globals.ourTurn) {
         action.handle();
     }
-    globals.elements.currentPlayerArea.setVisible(!globals.elements.clueArea.getVisible());
+    globals.elements.currentPlayerArea.setVisible(!globals.elements.clueArea.visible());
     if (globals.queuedAction !== null) {
         globals.elements.currentPlayerArea.hide();
         globals.elements.premoveCancelButton.show();
@@ -271,8 +271,8 @@ export const exitButton = () => {
 */
 
 export function barClick(event) {
-    const rectX = event.evt.x - this.getAbsolutePosition().x;
-    const w = this.getWidth();
+    const rectX = event.evt.x - this.absolutePosition().x;
+    const w = this.width();
     const step = w / globals.replayMax;
     const newTurn = Math.floor((rectX + (step / 2)) / step);
     if (newTurn !== globals.replayTurn) {
@@ -282,10 +282,10 @@ export function barClick(event) {
 }
 
 export function barDrag(pos) {
-    const min = globals.elements.replayBar.getAbsolutePosition().x + (this.getWidth() * 0.5);
-    const w = globals.elements.replayBar.getWidth() - this.getWidth();
+    const min = globals.elements.replayBar.absolutePosition().x + (this.width() * 0.5);
+    const w = globals.elements.replayBar.width() - this.width();
     let shuttleX = pos.x - min;
-    const shuttleY = this.getAbsolutePosition().y;
+    const shuttleY = this.absolutePosition().y;
     if (shuttleX < 0) {
         shuttleX = 0;
     }
@@ -317,19 +317,19 @@ const positionReplayShuttle = (shuttle, turn, smaller, fast) => {
         max = 1;
     }
 
-    const winH = globals.stage.getHeight();
-    const sliderW = globals.elements.replayBar.getWidth() - shuttle.getWidth();
-    const x = globals.elements.replayBar.getX() + (sliderW / max * turn) + (shuttle.getWidth() / 2);
-    let y = globals.elements.replayBar.getY() + (shuttle.getHeight() * 0.55);
+    const winH = globals.stage.height();
+    const sliderW = globals.elements.replayBar.width() - shuttle.width();
+    const x = globals.elements.replayBar.x() + (sliderW / max * turn) + (shuttle.width() / 2);
+    let y = globals.elements.replayBar.y() + (shuttle.height() * 0.55);
     if (smaller) {
         y -= 0.003 * winH;
     }
     const scale = smaller ? 0.7 : 1;
     if (fast) {
-        shuttle.setX(x);
-        shuttle.setY(y);
-        shuttle.setScaleX(scale);
-        shuttle.setScaleY(scale);
+        shuttle.x(x);
+        shuttle.y(y);
+        shuttle.scaleX(scale);
+        shuttle.scaleY(scale);
     } else {
         if (shuttle.tween) {
             shuttle.tween.destroy();
