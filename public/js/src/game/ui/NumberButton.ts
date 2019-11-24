@@ -1,17 +1,21 @@
 import Konva from 'konva';
+import Clue from './Clue';
 
 export default class NumberButton extends Konva.Group {
-    constructor(config) {
-        config.listening = true;
+    pressed: boolean = false;
+    clue: Clue;
+    background: Konva.Rect;
+
+    constructor(config: Konva.ContainerConfig) {
         super(config);
+        this.listening(true);
 
         // Class variables
-        this.pressed = false;
         this.clue = config.clue;
 
         // Local variables
-        const w = this.getWidth();
-        const h = this.getHeight();
+        const w = this.width();
+        const h = this.height();
 
         this.background = new Konva.Rect({
             name: 'background',
@@ -40,7 +44,7 @@ export default class NumberButton extends Konva.Group {
         this.add(text);
 
         const resetButton = () => {
-            this.background.setFill('black');
+            this.background.fill('black');
             const layer = this.getLayer();
             if (layer) {
                 layer.batchDraw();
@@ -50,7 +54,7 @@ export default class NumberButton extends Konva.Group {
             this.background.off('mouseout');
         };
         this.background.on('mousedown', () => {
-            this.background.setFill('#888888');
+            this.background.fill('#888888');
             const layer = this.getLayer();
             if (layer) {
                 layer.batchDraw();
@@ -65,9 +69,9 @@ export default class NumberButton extends Konva.Group {
         });
     }
 
-    setPressed(pressed) {
+    setPressed(pressed: boolean) {
         this.pressed = pressed;
-        this.background.setFill(pressed ? '#cccccc' : 'black');
+        this.background.fill(pressed ? '#cccccc' : 'black');
         const layer = this.getLayer();
         if (layer) {
             layer.batchDraw();
