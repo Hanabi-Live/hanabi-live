@@ -4,7 +4,14 @@ import { LABEL_COLOR, MAX_CLUE_NUM } from '../../constants';
 import FitText from './FitText';
 import globals from './globals';
 
-export default (winW, winH, clueAreaValues) => {
+interface AreaValues {
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+}
+
+export default (winW: number, winH: number, clueAreaValues: AreaValues) => {
     // The "Current player: [player name]" box
     const currentPlayerAreaWidth = 0.3; // This is big enough to fit in between the two timers
     const currentPlayerAreaValues = {
@@ -36,6 +43,8 @@ export default (winW, winH, clueAreaValues) => {
     const textValues = {
         w: currentPlayerBox1Width - (currentPlayerAreaValues.spacing * 4),
         w2: currentPlayerBox1Width - (currentPlayerAreaValues.spacing * 2),
+        x: 0,
+        x2: 0,
     };
     textValues.x = (currentPlayerBox1Width / 2) - (textValues.w / 2);
     textValues.x2 = (currentPlayerBox1Width / 2) - (textValues.w2 / 2);
@@ -76,8 +85,8 @@ export default (winW, winH, clueAreaValues) => {
     });
     globals.elements.currentPlayerArea.add(globals.elements.currentPlayerText2);
     globals.elements.currentPlayerText2.setPlayer = function setPlayer(
-        currentPlayerIndex,
-        threeLines,
+        currentPlayerIndex: number,
+        threeLines: boolean,
     ) {
         this.fitText(globals.playerNames[currentPlayerIndex] || 'Undefined');
         let maxSize = (currentPlayerAreaValues.h / 3) * winH;
@@ -90,7 +99,7 @@ export default (winW, winH, clueAreaValues) => {
             this.width(this.width() * 0.9);
             this.resize();
         }
-        this.x((globals.elements.currentPlayerRect1.width() / 2) - (this.width() / 2));
+        this.x((globals.elements.currentPlayerRect1!.width() / 2) - (this.width() / 2));
     };
 
     globals.elements.currentPlayerText3 = new FitText({
@@ -184,7 +193,7 @@ export default (winW, winH, clueAreaValues) => {
     globals.elements.currentPlayerArrow.add(arrowMain);
 
     // Set the "Current Player" area up for this specific turn
-    globals.elements.currentPlayerArea.update = function update(currentPlayerIndex) {
+    globals.elements.currentPlayerArea.update = function update(currentPlayerIndex: number) {
         this.visible(
             // Don't show it if we are in a solo/shared replay
             // or if we happen to have the in-game replay open
@@ -192,7 +201,7 @@ export default (winW, winH, clueAreaValues) => {
             // Don't show it if the clue UI is there
             && (!globals.ourTurn || globals.clues === 0)
             // Don't show it if the premove button is there
-            && !globals.elements.premoveCancelButton.visible()
+            && !globals.elements.premoveCancelButton!.visible()
             && currentPlayerIndex !== -1, // Don't show it if this is the end of the game
         );
 
@@ -216,7 +225,7 @@ export default (winW, winH, clueAreaValues) => {
             } else if (globals.elements.playerHands[currentPlayerIndex].isLocked()) {
                 specialText = '(locked; may not be able to discard)';
                 text3.fill('yellow');
-            } else if (globals.elements.noDoubleDiscardBorder.visible()) {
+            } else if (globals.elements.noDoubleDiscardBorder!.visible()) {
                 specialText = '(potentially in a "Double Discard" situation)';
                 text3.fill('yellow');
             }
@@ -227,7 +236,7 @@ export default (winW, winH, clueAreaValues) => {
             // 2 lines
             text2.setPlayer(currentPlayerIndex, false);
             const text2H = text2.measureSize(text2.text()).height;
-            const spacing = 0.03 * globals.stage.height();
+            const spacing = 0.03 * globals.stage!.height();
             text1.y((totalH / 2) - (text1H / 2) - spacing);
             text2.y((totalH / 2) - (text2H / 2) + spacing);
             text3.hide();
@@ -235,7 +244,7 @@ export default (winW, winH, clueAreaValues) => {
             // 3 lines
             text2.setPlayer(currentPlayerIndex, true);
             const text2H = text2.measureSize(text2.text()).height;
-            const spacing = 0.04 * globals.stage.height();
+            const spacing = 0.04 * globals.stage!.height();
             text1.y((totalH / 2) - (text1H / 2) - spacing);
             text2.y((totalH / 2) - (text2H / 2) + (spacing * 0.25));
             text3.y((totalH / 2) - (text1H / 2) + (spacing * 1.5));
@@ -245,7 +254,7 @@ export default (winW, winH, clueAreaValues) => {
 
         // Make the arrow point to the current player
         const centerPos = globals.elements.playerHands[currentPlayerIndex].getAbsoluteCenterPos();
-        const thisPos = globals.elements.currentPlayerArrow.absolutePosition();
+        const thisPos = globals.elements.currentPlayerArrow!.getAbsolutePosition();
         const x = centerPos.x - thisPos.x;
         const y = centerPos.y - thisPos.y;
         const radians = Math.atan(y / x);
@@ -255,14 +264,14 @@ export default (winW, winH, clueAreaValues) => {
         }
 
         if (globals.animateFast) {
-            globals.elements.currentPlayerArrow.rotation(rotation);
+            globals.elements.currentPlayerArrow!.rotation(rotation);
         } else {
             if (globals.elements.currentPlayerArrowTween) {
                 globals.elements.currentPlayerArrowTween.destroy();
             }
 
             // We want the arrow to always be moving clockwise
-            const oldRotation = globals.elements.currentPlayerArrow.rotation();
+            const oldRotation = globals.elements.currentPlayerArrow!.rotation();
             const unmodifiedRotation = rotation;
             if (oldRotation > rotation) {
                 rotation += 360;
