@@ -4,7 +4,7 @@ import { CARD_W, HAND_PADDING } from '../constants';
 import { makeArray, transformToExitContainer } from './utils';
 
 export default class Hand extends Phaser.GameObjects.Container {
-    constructor(scene, config) {
+    constructor(scene: any, config: any) {
         super(scene);
         this.x = config.x;
         this.y = config.y;
@@ -12,11 +12,11 @@ export default class Hand extends Phaser.GameObjects.Container {
         this.scale = config.scale;
     }
 
-    mutate(cardsIn, cardsOut) {
+    mutate(cardsIn: any, cardsOut: any) {
         if (cardsOut != null) {
             this.remove(cardsOut);
             cardsOut = makeArray(cardsOut);
-            cardsOut.forEach((card) => transformToExitContainer(card, this));
+            cardsOut.forEach((card: any) => transformToExitContainer(card, this));
         }
         if (cardsIn != null) {
             // Adds any number of cards at the front of the container, i.e. the left side of the
