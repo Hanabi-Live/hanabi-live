@@ -134,7 +134,7 @@ commands.clue = (data) => {
         negativeList,
         turn: data.turn,
     });
-    globals.elements.clueLog.add(entry);
+    globals.elements.clueLog.addClue(entry);
 
     if (!globals.animateFast) {
         globals.layers.card.batchDraw();

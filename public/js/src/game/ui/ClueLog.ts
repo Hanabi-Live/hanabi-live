@@ -7,8 +7,8 @@ import Konva from 'konva';
 import globals from './globals';
 
 export default class ClueLog extends Konva.Group {
-    add(child) {
-        Konva.Group.prototype.add.call(this, child);
+    addClue(child: Konva.Group) {
+        this.add(child);
         this.truncateExcessClueEntries();
         this.doLayout();
     }
@@ -23,7 +23,7 @@ export default class ClueLog extends Konva.Group {
         for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i];
             node.y(y);
-            y += node.height() + (0.001 * globals.stage.height());
+            y += node.height() + (0.001 * globals.stage!.height());
         }
     }
 
@@ -37,9 +37,9 @@ export default class ClueLog extends Konva.Group {
         }
     }
 
-    showMatches(target) {
-        for (let i = 0; i < this.children.length; i++) {
-            this.children[i].showMatch(target);
+    showMatches(target: any) { // TODO change to HanabiCard
+        for (const child of this.children.toArray()) {
+            child.showMatch(target);
         }
     }
 
