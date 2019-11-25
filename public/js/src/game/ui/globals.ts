@@ -34,7 +34,7 @@ class Globals {
     speedrun: boolean = false;
     deckPlays: boolean = false;
     emptyClues: boolean = false;
-    characterAssignments: Array<number> = [];
+    characterAssignments: Array<string> = [];
     characterMetadata: Array<number> = [];
 
     // Game constants (set upon first initialization)
