@@ -6,7 +6,7 @@
 import globals from './globals';
 
 // Get the contents of the note tooltip
-const get = (order, our) => {
+const get = (order: number, our: boolean) => {
     // If we are a player in an ongoing game, return our note
     // (we don't have to check to see if the element exists because
     // all notes are initialized to an empty string)
@@ -31,7 +31,7 @@ const get = (order, our) => {
 // 1) update the stored note in memory
 // 2) send the new note to the server
 // 3) check for new note identities
-export const set = (order, note) => {
+export const set = (order: number, note: string) => {
     const oldNote = globals.ourNotes[order];
     globals.ourNotes[order] = note;
     if (globals.spectating) {
@@ -63,7 +63,7 @@ export const set = (order, note) => {
     checkSpecialNote(card);
 };
 
-export const checkSpecialNote = (card) => {
+export const checkSpecialNote = (card: any) => { // TODO set to HanabiCard
     let note = globals.ourNotes[card.order];
     note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
     note = note.trim(); // Remove all leading and trailing whitespace
@@ -103,7 +103,7 @@ export const checkSpecialNote = (card) => {
     globals.layers.card.batchDraw();
 };
 
-const checkNoteIdentity = (card, note, fullNote) => {
+const checkNoteIdentity = (card: any, note: string, fullNote: string) => { // TODO set to HanabiCard
     // First, check to see if this card should be marked with certain properties
     card.noteKnownTrash = (
         note === 'kt'
@@ -192,7 +192,7 @@ const checkNoteIdentity = (card, note, fullNote) => {
     }
 };
 
-const checkNoteImpossibility = (card) => {
+const checkNoteImpossibility = (card: any) => { // TODO set to HanabiCard
     // Validate that the note does not contain an impossibility
     if (card.noteSuit !== null && card.noteRank === null) {
         // Only the suit was specified
@@ -239,7 +239,7 @@ const checkNoteImpossibility = (card) => {
     }
 };
 
-export const update = (card) => {
+export const update = (card: any) => { // TODO set to HanabiCard
     // Update the tooltip
     const tooltip = $(`#tooltip-${card.tooltipName}`);
     const tooltipInstance = tooltip.tooltipster('instance');
@@ -259,7 +259,7 @@ export const update = (card) => {
 };
 
 // Open the tooltip for this card
-export const show = (card) => {
+export const show = (card: any) => { // TODO set to HanabiCard
     const tooltip = $(`#tooltip-${card.tooltipName}`);
     const tooltipInstance = tooltip.tooltipster('instance');
 
@@ -298,7 +298,7 @@ export const show = (card) => {
     tooltip.tooltipster('open');
 };
 
-export const openEditTooltip = (card) => {
+export const openEditTooltip = (card: any) => { // TODO set to HanabiCard
     // Don't edit any notes in replays
     if (globals.replay) {
         return;
@@ -338,7 +338,15 @@ export const openEditTooltip = (card) => {
             // Use the existing note, if any
             newNote = get(card.order, true);
         } else if (keyEvent.key === 'Enter') {
-            newNote = $(`#tooltip-${card.tooltipName}-input`).val();
+            // Get the value of the input box
+            const element = $(`#tooltip-${card.tooltipName}-input`);
+            if (!element) {
+                throw new Error('Failed to get the element for the keydown function.');
+            }
+            newNote = element.val();
+            if (typeof newNote !== 'string') {
+                throw new Error(`The value of the "#tooltip-${card.tooltipName}-input" element was not a string.`);
+            }
 
             // Strip any HTML elements
             // (to be thorough, the server will also perform this validation)
@@ -378,7 +386,7 @@ export const setAllCardIndicators = () => {
     }
 };
 
-export const setCardIndicator = (order) => {
+export const setCardIndicator = (order: number) => {
     const visible = shouldShowIndicator(order);
     let card = globals.deck[order];
     if (!card) {
@@ -394,7 +402,7 @@ export const setCardIndicator = (order) => {
     globals.layers.card.batchDraw();
 };
 
-export const shouldShowIndicator = (order) => {
+export const shouldShowIndicator = (order: number) => {
     if (globals.replay || globals.spectating) {
         for (const noteObject of globals.allNotes[order]) {
             if (noteObject.note.length > 0) {
@@ -411,7 +419,7 @@ export const shouldShowIndicator = (order) => {
     Misc. functions
 */
 
-const stripHTMLtags = (input) => {
+const stripHTMLtags = (input: string) => {
     const doc = new DOMParser().parseFromString(input, 'text/html');
     return doc.body.textContent || '';
 };
