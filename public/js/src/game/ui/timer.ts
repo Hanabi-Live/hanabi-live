@@ -5,6 +5,13 @@
 
 // Imports
 import globals from './globals';
+import TimerDisplay from './TimerDisplay';
+
+interface ClockData {
+    times: Array<number>,
+    active: number,
+    timeTaken: number,
+}
 
 // This function handles the "clock" WebSocket command
 // It is sent at the beginning of every turn
@@ -20,7 +27,7 @@ import globals from './globals';
         timeTaken: 500,
     }
 */
-export const update = (data) => {
+export const update = (data: ClockData) => {
     stop();
 
     // We don't need to update the timers if they are not showing
@@ -94,7 +101,7 @@ export const stop = () => {
     }
 };
 
-function setTickingDownTime(timer) {
+function setTickingDownTime(timer: TimerDisplay) {
     // Calculate the elapsed time since the last timer update
     const now = new Date().getTime();
     const timeElapsed = now - globals.lastTimerUpdateTimeMS;
@@ -141,7 +148,7 @@ function setTickingDownTime(timer) {
     }
 }
 
-function setTickingDownTimeTooltip(i) {
+function setTickingDownTimeTooltip(i: number) {
     // Update the tooltip that appears when you hover over a player's name
     let time = globals.playerTimes[i];
     if (!globals.timed) {
@@ -187,11 +194,11 @@ function setTickingDownTimeCPTooltip() {
     Misc. functions
 */
 
-const millisecondsToTimeDisplay = (milliseconds) => {
+const millisecondsToTimeDisplay = (milliseconds: number) => {
     const seconds = Math.ceil(milliseconds / 1000);
     return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
 };
-const pad2 = (num) => {
+const pad2 = (num: number) => {
     if (num < 10) {
         return `0${num}`;
     }
