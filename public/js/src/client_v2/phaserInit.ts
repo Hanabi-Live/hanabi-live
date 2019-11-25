@@ -29,7 +29,7 @@ export default () => {
     });
 };
 
-function preload() {
+function preload(this: any) {
     const files = [
         'replay',
         'replay-disabled',
@@ -51,7 +51,7 @@ function preload() {
     this.canvas = this.sys.game.canvas;
 }
 
-function create() {
+function create(this: any) {
     // Not sure if setting this is good
     this.cameras.roundPixels = true;
     // Set the background
@@ -88,7 +88,7 @@ function create() {
     }));
     phaserGlobals.hands = handLayoutsAbsolute.map((handLayout) => new Hand(this, handLayout));
     const { hands } = phaserGlobals;
-    hands.map((hand) => this.add.existing(hand));
+    hands.map((hand: any) => this.add.existing(hand));
 
     let order = 0;
     for (const hand of hands) {
@@ -125,11 +125,11 @@ function create() {
             order += 1;
         }
     }
-    this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+    this.input.on('drag', (_: any, gameObject: any, dragX: number, dragY: number) => {
         gameObject.x = dragX;
         gameObject.y = dragY;
     });
-    this.input.on('dragend', (pointer, gameObject, dropped) => {
+    this.input.on('dragend', (_: any, gameObject: any, dropped: boolean) => {
         if (!dropped) {
             this.tweens.add({
                 targets: gameObject,
@@ -140,7 +140,7 @@ function create() {
             });
         }
     });
-    this.input.on('drop', (pointer, gameObject, dropZone) => {
+    this.input.on('drop', (_: any, gameObject: any, dropZone: any) => {
         gameObject.parentContainer.mutate(null, gameObject);
         gameObject.input.enabled = false;
         dropZone.zoneContainer.addCards(gameObject);
@@ -202,7 +202,7 @@ function update() {
     // }
 }
 
-function setGlobalScale(height) {
+function setGlobalScale(height: number) {
     // 1920x1080 is the reference resolution of the global scale constants
     phaserGlobals.scale = height / 1080;
 }
