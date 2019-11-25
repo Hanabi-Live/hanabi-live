@@ -478,6 +478,7 @@ export function sparkles() {
     const spark = new Sparkle({
         x: -50,
         y: -50,
+        image: globals.ImageLoader.get('sparkle');
     });
     this.add(spark);
     */

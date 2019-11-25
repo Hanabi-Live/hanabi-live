@@ -1,13 +1,7 @@
 // Imports
 import Konva from 'konva';
-import globals from './globals';
 
 export default class Sparkle extends Konva.Image {
-    constructor(config) {
-        config.image = globals.ImageLoader.get('sparkle');
-        super(config);
-    }
-
     /*
     draw(ctx) {
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
