@@ -2,13 +2,18 @@
 import Phaser from 'phaser';
 import { CARD_H, CARD_W, PLAY_AREA_PADDING } from '../constants';
 import HanabiCard from './HanabiCard';
+import Suit from '../Suit';
 import * as utils from './utils';
 
 // Phaser devs warned against using too many levels of nested containers, so I didn't design
 // containers for play stacks. This means we lose the ability to independently position them, but
 // that's probably not something we will want to do.
 export default class PlayArea extends Phaser.GameObjects.Container {
-    constructor(scene, config) {
+    suits: any;
+    horizSpacing: number;
+    zone: any;
+
+    constructor(scene: any, config: any) {
         super(scene);
         this.x = config.x;
         this.y = config.y;
@@ -28,7 +33,7 @@ export default class PlayArea extends Phaser.GameObjects.Container {
             this.horizSpacing * config.suits.length,
             CARD_H * config.scale,
         );
-        const cardsToAdd = this.suits.map((suit) => new HanabiCard(scene, {
+        const cardsToAdd = this.suits.map((suit: Suit) => new HanabiCard(scene, {
             suit,
             rank: 0,
             scale: config.scale,
@@ -36,24 +41,22 @@ export default class PlayArea extends Phaser.GameObjects.Container {
         this.addCards(cardsToAdd);
     }
 
-    addCards(cards) {
+    addCards(cards: any) {
         // Cards are rendered in the order of the container, so cards at the end of the container
         // will be the front of the scene
         cards = utils.makeArray(cards);
         this.add(cards);
-        cards.forEach((card) => utils.transformToEnterContainer(card, this));
+        cards.forEach((card: any) => utils.transformToEnterContainer(card, this));
         this._addCardTweensToScene(cards);
     }
 
-    _addCardTweensToScene(cards) {
+    _addCardTweensToScene(cards: any) {
         cards = utils.makeArray(cards);
         const nSuits = this.suits.length;
 
         for (const card of cards) {
-            const suitIdx = this.suits.findIndex((suit) => suit === card.suit);
-            // eslint pls, this is way more readable than if I threw in a bunch of parens
-            /* eslint-disable no-mixed-operators, space-infix-ops */
-            const x = (suitIdx + 1/2 - nSuits/2) * this.horizSpacing;
+            const suitIdx = this.suits.findIndex((suit: Suit) => suit === card.suit);
+            const x = (suitIdx + (1 / 2) - (nSuits / 2)) * this.horizSpacing;
             this.scene.tweens.add({
                 targets: card,
                 x,
