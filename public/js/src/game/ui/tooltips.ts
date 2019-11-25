@@ -2,8 +2,8 @@
 import { TOOLTIP_DELAY } from '../../constants';
 import globals from './globals';
 
-export const init = (element, delayed, customContent) => {
-    element.on('mousemove', function mouseMove() {
+export const init = (element: any, delayed: boolean, customContent: boolean) => {
+    element.on('mousemove', function mouseMove(this: any) {
         globals.activeHover = this;
         if (!delayed) {
             show(this);
@@ -26,7 +26,7 @@ export const init = (element, delayed, customContent) => {
     $(`#tooltip-${element.tooltipName}`).tooltipster('instance').content(content);
 };
 
-export const show = (element) => {
+export const show = (element: any) => {
     // Don't do anything if we are no longer in the game
     if (globals.lobby.currentScreen !== 'game') {
         return;
