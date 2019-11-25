@@ -12,16 +12,23 @@ import {
     SUITS,
     UNKNOWN_CARD_RANK,
 } from '../../constants';
+import Color from '../../Color';
 import drawPip from './drawPip';
 import globals from './globals';
+import Suit from '../../Suit';
+import Variant from '../../Variant';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
-export default (variant, colorblindUI) => {
-    const cardImages = {};
+export default (variant: Variant, colorblindUI: boolean) => {
+    const cardImages = new Map();
 
     // Add the "unknown" suit to the list of suits for this variant
     // The unknown suit has semi-blank gray cards, representing unknown cards
-    const suits = variant.suits.concat(SUITS.get('Unknown'));
+    const unknownSuit = SUITS.get('Unknown');
+    if (typeof unknownSuit === 'undefined') {
+        throw new Error('Failed to get the "Unknown" variant in the "drawCards()" function.');
+    }
+    const suits = variant.suits.concat(unknownSuit);
 
     for (let i = 0; i < suits.length; i++) {
         const suit = suits[i];
@@ -31,7 +38,11 @@ export default (variant, colorblindUI) => {
         // Rank 6 is a card of unknown rank
         // Rank 7 is a "START" card (in the "Up or Down" variants)
         for (let rank = 0; rank <= 7; rank++) {
-            const [cvs, ctx] = initCanvas();
+            const cvs = initCanvas();
+            const ctx = cvs.getContext('2d');
+            if (ctx === null) {
+                throw new Error('Failed to get the context for a new canvas element.');
+            }
 
             // We don't need the cross texture pattern on the stack base
             if (rank !== 0) {
@@ -74,7 +85,8 @@ export default (variant, colorblindUI) => {
 
                 // "Index" cards are used to draw cards of learned but not yet known rank
                 // (e.g. for in-game replays)
-                cardImages[`Index-${suit.name}-${rank}`] = cloneCanvas(cvs);
+                const cardImagesIndex = `Index-${suit.name}-${rank}`;
+                cardImages.set(cardImagesIndex, cloneCanvas(cvs));
 
                 // Draw the rank on the bottom right
                 ctx.save();
@@ -91,7 +103,7 @@ export default (variant, colorblindUI) => {
             // have a custom image defined separately
             if (rank >= 1 && (rank <= 5 || suit.name !== 'Unknown')) {
                 const cardImagesIndex = `NoPip-${suit.name}-${rank}`;
-                cardImages[cardImagesIndex] = cloneCanvas(cvs);
+                cardImages.set(cardImagesIndex, cloneCanvas(cvs));
             }
 
             if (suit.name !== 'Unknown') {
@@ -101,14 +113,14 @@ export default (variant, colorblindUI) => {
             // "Card-Unknown" images would be identical to "NoPip-Unknown" images
             if (suit.name !== 'Unknown') {
                 const cardImagesIndex = `Card-${suit.name}-${rank}`;
-                cardImages[cardImagesIndex] = cvs;
+                cardImages.set(cardImagesIndex, cvs);
             }
         }
     }
 
-    cardImages[`NoPip-Unknown-${UNKNOWN_CARD_RANK}`] = makeUnknownCard();
-    cardImages['deck-back'] = makeDeckBack(variant);
-    cardImages['known-trash'] = makeKnownTrash();
+    cardImages.set(`NoPip-Unknown-${UNKNOWN_CARD_RANK}`, makeUnknownCard());
+    cardImages.set('deck-back', makeDeckBack(variant));
+    cardImages.set('known-trash', makeKnownTrash());
 
     return cardImages;
 };
@@ -117,21 +129,27 @@ const initCanvas = () => {
     const cvs = document.createElement('canvas');
     cvs.width = CARD_W;
     cvs.height = CARD_H;
-    const ctx = cvs.getContext('2d');
-
-    return [cvs, ctx];
+    return cvs;
 };
 
-const cloneCanvas = (oldCvs) => {
+const cloneCanvas = (oldCvs: HTMLCanvasElement) => {
     const newCvs = document.createElement('canvas');
     newCvs.width = oldCvs.width;
     newCvs.height = oldCvs.height;
     const ctx = newCvs.getContext('2d');
+    if (ctx === null) {
+        throw new Error('Failed to get the context for a new canvas element.');
+    }
     ctx.drawImage(oldCvs, 0, 0);
     return newCvs;
 };
 
-const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
+const drawSuitPips = (
+    ctx: CanvasRenderingContext2D,
+    rank: number,
+    suit: Suit,
+    colorblindUI: boolean,
+) => {
     const scale = 0.4;
 
     // The middle for cards 1 and 3
@@ -140,7 +158,7 @@ const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale, scale);
         ctx.translate(-75, -100);
-        drawPip(ctx, suit, true, false);
+        drawPip(<CanvasRenderingContext2D>ctx, suit, true, false);
         ctx.restore();
     }
 
@@ -208,8 +226,12 @@ const drawSuitPips = (ctx, rank, suit, colorblindUI) => {
     }
 };
 
-const makeUnknownCard = (canvasType) => {
-    const [cvs, ctx] = initCanvas(canvasType);
+const makeUnknownCard = () => {
+    const cvs = initCanvas();
+    const ctx = cvs.getContext('2d');
+    if (ctx === null) {
+        throw new Error('Failed to get the context for a new canvas element.');
+    }
 
     drawCardTexture(ctx);
     ctx.fillStyle = 'black';
@@ -232,11 +254,14 @@ const makeUnknownCard = (canvasType) => {
     return cvs;
 };
 
-const makeDeckBack = (variant, canvasType) => {
-    const cvs = makeUnknownCard(canvasType);
+const makeDeckBack = (variant: Variant) => {
+    const cvs = makeUnknownCard();
     const ctx = cvs.getContext('2d');
-    const sf = 0.4; // Scale factor
+    if (ctx === null) {
+        throw new Error('Failed to get the context for a new canvas element.');
+    }
 
+    const sf = 0.4; // Scale factor
     const nSuits = variant.suits.length;
     ctx.scale(sf, sf);
     for (let i = 0; i < variant.suits.length; i++) {
@@ -256,27 +281,12 @@ const makeDeckBack = (variant, canvasType) => {
     return cvs;
 };
 
-const makeKnownTrash = (canvasType) => {
-    // Copied from the "makeUnknownCard()" function
-    const [cvs, ctx] = initCanvas(canvasType);
-
-    drawCardTexture(ctx);
-    ctx.fillStyle = 'black';
-    cardBorderPath(ctx, 4);
-
-    ctx.save();
-    ctx.globalAlpha = 0.5;
-    ctx.fill();
-    ctx.globalAlpha = 0.7;
-    ctx.lineWidth = 8;
-    ctx.stroke();
-    ctx.restore();
-
-    ctx.fillStyle = '#444444';
-    ctx.lineWidth = 8;
-    ctx.lineJoin = 'round';
-
-    ctx.translate(CARD_W / 2, CARD_H / 2);
+const makeKnownTrash = () => {
+    const cvs = makeUnknownCard();
+    const ctx = cvs.getContext('2d');
+    if (ctx === null) {
+        throw new Error('Failed to get the context for a new canvas element.');
+    }
 
     // Draw the trash can image on top of the card
     ctx.drawImage(globals.ImageLoader.get('trashcan2'), -103, -120);
@@ -284,12 +294,20 @@ const makeKnownTrash = (canvasType) => {
     return cvs;
 };
 
-const drawCardBase = (ctx, suit, rank) => {
+const drawCardBase = (ctx: CanvasRenderingContext2D, suit: Suit, rank: number) => {
     // Draw the background
     ctx.fillStyle = getSuitStyle(suit, ctx, 'background');
     ctx.strokeStyle = getSuitStyle(suit, ctx, 'background');
-    if (ctx.fillStyle === SUITS.get('White').fill) {
-        ctx.strokeStyle = COLORS.get('Black').fill;
+    const whiteSuit = SUITS.get('White');
+    if (typeof whiteSuit === 'undefined') {
+        throw new Error('Failed to get the white suit in the "drawCardBase()" function.');
+    }
+    if (ctx.fillStyle === whiteSuit.fill) {
+        const blackColor = COLORS.get('Black');
+        if (typeof blackColor === 'undefined') {
+            throw new Error('Failed to get the black color in the "drawCardBase()" function.');
+        }
+        ctx.strokeStyle = blackColor.fill;
     }
 
     cardBorderPath(ctx, 4);
@@ -309,38 +327,37 @@ const drawCardBase = (ctx, suit, rank) => {
     ctx.restore();
 };
 
-const cardBorderPath = (ctx, p) => {
-    // p is short for padding
+const cardBorderPath = (ctx: CanvasRenderingContext2D, padding: number) => {
     const xrad = CARD_W * 0.08;
     const yrad = CARD_W * 0.08;
     // (we want them to both have the same value so that the curve has a 45 degree angle)
     ctx.beginPath();
-    ctx.moveTo(p, yrad + p); // Top-left corner
-    ctx.lineTo(p, CARD_H - yrad - p); // Bottom-left corner
-    ctx.quadraticCurveTo(0, CARD_H, xrad + p, CARD_H - p);
-    ctx.lineTo(CARD_W - xrad - p, CARD_H - p); // Bottom-right corner
-    ctx.quadraticCurveTo(CARD_W, CARD_H, CARD_W - p, CARD_H - yrad - p);
-    ctx.lineTo(CARD_W - p, yrad + p); // Top-right corner
-    ctx.quadraticCurveTo(CARD_W, 0, CARD_W - xrad - p, p);
-    ctx.lineTo(xrad + p, p); // Top-left corner
-    ctx.quadraticCurveTo(0, 0, p, yrad + p);
+    ctx.moveTo(padding, yrad + padding); // Top-left corner
+    ctx.lineTo(padding, CARD_H - yrad - padding); // Bottom-left corner
+    ctx.quadraticCurveTo(0, CARD_H, xrad + padding, CARD_H - padding);
+    ctx.lineTo(CARD_W - xrad - padding, CARD_H - padding); // Bottom-right corner
+    ctx.quadraticCurveTo(CARD_W, CARD_H, CARD_W - padding, CARD_H - yrad - padding);
+    ctx.lineTo(CARD_W - padding, yrad + padding); // Top-right corner
+    ctx.quadraticCurveTo(CARD_W, 0, CARD_W - xrad - padding, padding);
+    ctx.lineTo(xrad + padding, padding); // Top-left corner
+    ctx.quadraticCurveTo(0, 0, padding, yrad + padding);
 };
 
-const drawShape = (ctx) => {
+const drawShape = (ctx: CanvasRenderingContext2D) => {
     ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
     ctx.fill();
     ctx.shadowColor = 'rgba(0, 0, 0, 0)';
     ctx.stroke();
 };
 
-const drawText = (ctx, textYPos, indexLabel) => {
+const drawText = (ctx: CanvasRenderingContext2D, textYPos: number, indexLabel: string) => {
     ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
     ctx.fillText(indexLabel, 19, textYPos);
     ctx.shadowColor = 'rgba(0, 0, 0, 0)';
     ctx.strokeText(indexLabel, 19, textYPos);
 };
 
-const drawMixedCardHelper = (ctx, clueColors) => {
+const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Array<Color>) => {
     const [clueColor1, clueColor2] = clueColors;
 
     ctx.save();
@@ -392,7 +409,7 @@ const drawMixedCardHelper = (ctx, clueColors) => {
 };
 
 // Draw texture lines on card
-const drawCardTexture = (ctx) => {
+const drawCardTexture = (ctx: CanvasRenderingContext2D) => {
     cardBorderPath(ctx, 4);
 
     ctx.fillStyle = 'white';
@@ -420,7 +437,7 @@ const drawCardTexture = (ctx) => {
     ctx.restore();
 };
 
-const getSuitStyle = (suit, ctx, cardArea) => {
+const getSuitStyle = (suit: Suit, ctx: CanvasRenderingContext2D, cardArea: string) => {
     // Nearly all suits have a solid fill
     if (suit.fill !== 'multi') {
         return suit.fill;
@@ -434,13 +451,16 @@ const getSuitStyle = (suit, ctx, cardArea) => {
     if (cardArea === 'background') {
         return evenLinearGradient(ctx, suit.fillColors, [0, 0, 0, CARD_H]);
     }
-
-    return null;
+    throw new Error(`The card area of "${cardArea}" is unknown in the "getSuitStyle()" function.`);
 };
 
 // Generates a vertical gradient that is evenly distributed between its component colors
-const evenLinearGradient = (ctx, colors, args) => {
-    const grad = ctx.createLinearGradient(...args);
+const evenLinearGradient = (
+    ctx: CanvasRenderingContext2D,
+    colors: Array<string>,
+    args: Array<number>,
+) => {
+    const grad = ctx.createLinearGradient(args[0], args[1], args[2], args[3]);
     for (let i = 0; i < colors.length; ++i) {
         grad.addColorStop(i / (colors.length - 1), colors[i]);
     }

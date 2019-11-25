@@ -1,15 +1,6 @@
-import CanvasRenderingContext2DExtra from './CanvasRenderingContext2DExtra';
 import Suit from '../../Suit';
 
-const textShapes = [
-    'flower',
-    'number_sign',
-    'tensor_symbol',
-    'infinity',
-    'null_symbol',
-];
-
-const shapeFunctions: Map<string, (ctx: CanvasRenderingContext2DExtra) => void> = new Map();
+const shapeFunctions: Map<string, (ctx: CanvasRenderingContext2D) => Array<any>> = new Map();
 
 shapeFunctions.set('diamond', (ctx: CanvasRenderingContext2D) => {
     const w = 70;
@@ -43,6 +34,8 @@ shapeFunctions.set('diamond', (ctx: CanvasRenderingContext2D) => {
     ctx.quadraticCurveTo(interps[2][0], interps[2][1], points[3][0], points[3][1]);
     ctx.quadraticCurveTo(interps[3][0], interps[3][1], points[0][0], points[0][1]);
     ctx.closePath();
+
+    return [];
 });
 
 shapeFunctions.set('club', (ctx: CanvasRenderingContext2D) => {
@@ -55,6 +48,8 @@ shapeFunctions.set('club', (ctx: CanvasRenderingContext2D) => {
     ctx.arc(40, 110, 35, 4.712, 0.4636, true);
     ctx.quadraticCurveTo(70, 140, 50, 180);
     ctx.closePath();
+
+    return [];
 });
 
 shapeFunctions.set('star', (ctx: CanvasRenderingContext2D) => {
@@ -81,6 +76,8 @@ shapeFunctions.set('star', (ctx: CanvasRenderingContext2D) => {
     }
     ctx.lineTo(cx, cy - outerRadius);
     ctx.closePath();
+
+    return [];
 });
 
 shapeFunctions.set('heart', (ctx: CanvasRenderingContext2D) => {
@@ -93,6 +90,8 @@ shapeFunctions.set('heart', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(130, 82, 130, 45, 100, 45);
     ctx.bezierCurveTo(85, 45, 75, 57, 75, 65);
     ctx.closePath();
+
+    return [];
 });
 
 shapeFunctions.set('crescent', (ctx: CanvasRenderingContext2D) => {
@@ -100,13 +99,13 @@ shapeFunctions.set('crescent', (ctx: CanvasRenderingContext2D) => {
     ctx.arc(75, 100, 75, 3, 4.3, true);
     ctx.arc(48, 83, 52, 5, 2.5, false);
     ctx.closePath();
+
+    return [];
 });
 
-shapeFunctions.set('flower', (ctx: CanvasRenderingContext2DExtra) => {
-    ctx.text = '✿';
+shapeFunctions.set('flower', (ctx: CanvasRenderingContext2D) => {
     ctx.font = '190px Verdana';
-    ctx.textX = -10;
-    ctx.textY = 155;
+    return ['✿', -10, 155];
 });
 
 shapeFunctions.set('spade', (ctx: CanvasRenderingContext2D) => {
@@ -119,40 +118,36 @@ shapeFunctions.set('spade', (ctx: CanvasRenderingContext2D) => {
     ctx.arc(40, 110, 35, 3.712, 0.4636, true);
     ctx.quadraticCurveTo(70, 140, 50, 180);
     ctx.closePath();
+
+    return [];
 });
 
-shapeFunctions.set('number_sign', (ctx: CanvasRenderingContext2DExtra) => {
-    ctx.text = '#';
+shapeFunctions.set('number_sign', (ctx: CanvasRenderingContext2D) => {
     ctx.font = '190px Verdana';
-    ctx.textX = -3;
-    ctx.textY = 170;
+    return ['#', -3, 170];
 });
 
 shapeFunctions.set('circle', (ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
     ctx.arc(75, 100, 75, 0, 2 * Math.PI);
     ctx.closePath();
+
+    return [];
 });
 
-shapeFunctions.set('tensor_symbol', (ctx: CanvasRenderingContext2DExtra) => {
-    ctx.text = '⊗';
+shapeFunctions.set('tensor_symbol', (ctx: CanvasRenderingContext2D) => {
     ctx.font = '170px Verdana';
-    ctx.textX = -9;
-    ctx.textY = 150;
+    return ['⊗', -9, 150];
 });
 
-shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2DExtra) => {
-    ctx.text = '∞';
+shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D) => {
     ctx.font = '175px Verdana';
-    ctx.textX = -10;
-    ctx.textY = 155;
+    return ['∞', -10, 155];
 });
 
-shapeFunctions.set('null_symbol', (ctx: CanvasRenderingContext2DExtra) => {
-    ctx.text = '∅';
+shapeFunctions.set('null_symbol', (ctx: CanvasRenderingContext2D) => {
     ctx.font = '210px Verdana';
-    ctx.textX = 10;
-    ctx.textY = 165;
+    return ['∅', 10, 165];
 });
 
 shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D) => {
@@ -163,10 +158,12 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D) => {
     ctx.arc(75, 140, 25, 0, Math.PI, true);
     ctx.lineTo(0, 140);
     ctx.closePath();
+
+    return [];
 });
 
 export default (
-    ctx: CanvasRenderingContext2DExtra,
+    ctx: CanvasRenderingContext2D,
     suit: Suit,
     shadow: boolean,
     deckBack: boolean,
@@ -179,10 +176,7 @@ export default (
 
     // Draw the respective shape on the canvas
     // (or, for text pips, define the type of text)
-    shapeFunction(ctx);
-
-    // Some pips are canvas line drawings and some pips are text characters
-    const isTextShape = textShapes.includes(suit.pip);
+    const textValues = shapeFunction(ctx);
 
     // Determine the fill
     if (deckBack) {
@@ -205,8 +199,8 @@ export default (
     if (shadow) {
         ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
     }
-    if (isTextShape) {
-        ctx.fillText(ctx.text, ctx.textX, ctx.textY);
+    if (textValues.length > 0) {
+        ctx.fillText(textValues[0], textValues[1], textValues[2]);
     } else {
         ctx.fill();
     }
@@ -216,8 +210,8 @@ export default (
     if (shadow) {
         ctx.shadowColor = 'rgba(0, 0, 0, 0)';
     }
-    if (isTextShape) {
-        ctx.strokeText(ctx.text, ctx.textX, ctx.textY);
+    if (textValues.length > 0) {
+        ctx.strokeText(textValues[0], textValues[1], textValues[2]);
     } else {
         ctx.stroke();
     }
