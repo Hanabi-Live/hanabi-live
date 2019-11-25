@@ -5,12 +5,14 @@
 
 // Imports
 import Clue from './Clue';
+import Suit from '../../Suit';
+import Variant from '../../Variant';
 import { CLUE_TYPE } from '../../constants';
 
 // Convert a clue to the format used by the server
 // On the client, the color is a rich object
 // On the server, the color is a simple integer mapping
-export const clueToMsgClue = (clue, variant) => {
+export const clueToMsgClue = (clue: Clue, variant: Variant) => {
     const {
         type: clueType,
         value: clueValue,
@@ -28,7 +30,12 @@ export const clueToMsgClue = (clue, variant) => {
     };
 };
 
-export const msgClueToClue = (msgClue, variant) => {
+interface MsgClue {
+    type: number,
+    value: number,
+}
+
+export const msgClueToClue = (msgClue: MsgClue, variant: Variant) => {
     const {
         type: clueType,
         value: msgClueValue,
@@ -38,10 +45,12 @@ export const msgClueToClue = (msgClue, variant) => {
         clueValue = variant.clueColors[msgClueValue];
     } else if (clueType === CLUE_TYPE.RANK) {
         clueValue = msgClueValue;
+    } else {
+        throw new Error('Unknown clue type.');
     }
     return new Clue(clueType, clueValue);
 };
 
-export const msgSuitToSuit = (msgSuit, variant) => variant.suits[msgSuit] || null;
+export const msgSuitToSuit = (msgSuit: number, variant: Variant) => variant.suits[msgSuit] || null;
 
-export const suitToMsgSuit = (suit, variant) => variant.suits.indexOf(suit);
+export const suitToMsgSuit = (suit: Suit, variant: Variant) => variant.suits.indexOf(suit);
