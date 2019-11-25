@@ -12,6 +12,6 @@ export default class State {
     hands: Array<Array<number>> = [];
     playStacks: Array<Array<number>> = [];
     playStacksDirections: Array<number> = [];
-    discardStacks: Array<number> = [];
+    discardStacks: Array<Array<number>> = [];
     clues: Array<any> = []; // TODO set to simple clue objects
 }

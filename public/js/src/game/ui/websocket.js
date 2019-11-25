@@ -305,8 +305,9 @@ commands.noteListPlayer = (data) => {
 // Used when the game state changes
 commands.notify = (data) => {
     // Update the state table
-    if (Object.prototype.hasOwnProperty.call(stateChange, data.type)) {
-        stateChange[data.type](data);
+    const stateChangeFunction = stateChange.get(data.type);
+    if (stateChangeFunction !== 'undefined') {
+        stateChangeFunction(data);
     }
 
     // We need to save this game state change for the purposes of the in-game replay

@@ -5,6 +5,7 @@
 
 // Imports
 import Clue from './Clue';
+import MsgClue from './MsgClue';
 import Suit from '../../Suit';
 import Variant from '../../Variant';
 import { CLUE_TYPE } from '../../constants';
@@ -13,42 +14,30 @@ import { CLUE_TYPE } from '../../constants';
 // On the client, the color is a rich object
 // On the server, the color is a simple integer mapping
 export const clueToMsgClue = (clue: Clue, variant: Variant) => {
-    const {
-        type: clueType,
-        value: clueValue,
-    } = clue;
     let msgClueValue;
-    if (clueType === CLUE_TYPE.COLOR) {
-        const clueColor = clueValue;
-        msgClueValue = variant.clueColors.findIndex((color) => color === clueColor);
-    } else if (clueType === CLUE_TYPE.RANK) {
-        msgClueValue = clueValue;
+    if (clue.type === CLUE_TYPE.COLOR) {
+        msgClueValue = variant.clueColors.findIndex((color) => color === clue.value);
+    } else if (clue.type === CLUE_TYPE.RANK) {
+        if (typeof clue.value !== 'number') {
+            throw new Error('The value of a rank clue is not a number.');
+        }
+        msgClueValue = clue.value;
+    } else {
+        throw new Error('Unknown clue type given to the "clueToMsgClue()" function.');
     }
-    return {
-        type: clueType,
-        value: msgClueValue,
-    };
+    return new MsgClue(clue.type, msgClueValue);
 };
 
-interface MsgClue {
-    type: number,
-    value: number,
-}
-
 export const msgClueToClue = (msgClue: MsgClue, variant: Variant) => {
-    const {
-        type: clueType,
-        value: msgClueValue,
-    } = msgClue;
     let clueValue;
-    if (clueType === CLUE_TYPE.COLOR) {
-        clueValue = variant.clueColors[msgClueValue];
-    } else if (clueType === CLUE_TYPE.RANK) {
-        clueValue = msgClueValue;
+    if (msgClue.type === CLUE_TYPE.COLOR) {
+        clueValue = variant.clueColors[msgClue.value]; // This is a Color object
+    } else if (msgClue.type === CLUE_TYPE.RANK) {
+        clueValue = msgClue.value;
     } else {
-        throw new Error('Unknown clue type.');
+        throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
     }
-    return new Clue(clueType, clueValue);
+    return new Clue(msgClue.type, clueValue);
 };
 
 export const msgSuitToSuit = (msgSuit: number, variant: Variant) => variant.suits[msgSuit] || null;

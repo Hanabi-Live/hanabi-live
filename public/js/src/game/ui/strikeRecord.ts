@@ -1,5 +1,5 @@
 // Imports
-import ActionStrike from './ActionStrike';
+import { ActionStrike } from './actions';
 import globals from './globals';
 
 export default (data: ActionStrike) => {
