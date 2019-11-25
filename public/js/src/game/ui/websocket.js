@@ -589,12 +589,9 @@ commands.replayTurn = (data) => {
 /*
     Has the following data:
     {
-        type: 'reveal',
-        which: {
-            order: 5,
-            rank: 2,
-            suit: 1,
-        },
+        suit: 1,
+        rank: 2,
+        order: 5,
     }
 */
 commands.reveal = (data) => {

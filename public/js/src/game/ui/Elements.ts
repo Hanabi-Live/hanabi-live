@@ -41,6 +41,7 @@ export default class Elements {
     scoreArea: Konva.Group | null = null;
     turnNumberLabel: Konva.Text | null = null;
     scoreNumberLabel: Konva.Text | null = null;
+    maxScoreNumberLabel: Konva.Text | null = null;
     cluesNumberLabel: Konva.Text | null = null;
     cluesNumberLabelPulse: Konva.Tween | null = null;
     strikeXs: Array<StrikeX> = [];
@@ -61,7 +62,7 @@ export default class Elements {
     clueAreaDisabled: Konva.Group | null = null;
 
     // The current turn UI
-    currentPlayerArea: Konva.Group | null = null;
+    currentPlayerArea: any = null; // TODO set to Konva.Group | null
     currentPlayerRect1: Konva.Rect | null = null;
     currentPlayerText1: any = null; // TODO set to FitText
     currentPlayerText2: any = null; // TODO set to FitText

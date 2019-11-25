@@ -4,6 +4,18 @@
 
 // Imports
 import Konva from 'konva';
+import {
+    ActionClue,
+    ActionDiscard,
+    ActionDraw,
+    ActionPlay,
+    ActionReorder,
+    ActionStackDirections,
+    ActionStatus,
+    ActionStrike,
+    ActionText,
+    ActionTurn,
+} from './actions';
 import * as arrows from './arrows';
 import ClueEntry from './ClueEntry';
 import {
@@ -23,7 +35,7 @@ import strikeRecord from './strikeRecord';
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list of notifies sent upon loading a new
 // game/replay)
-export default (data) => {
+export default (data: any) => {
     // If a user is editing a note and an action in the game happens,
     // mark to make the tooltip go away as soon as they are finished editing the note
     if (globals.editingNote !== null) {
@@ -36,18 +48,17 @@ export default (data) => {
         globals.activeHover = null;
     }
 
-    const { type } = data;
-    if (Object.prototype.hasOwnProperty.call(commands, type)) {
-        commands[type](data);
-    } else {
-        throw new Error(`A WebSocket notify function for the "${type}" command is not defined.`);
+    const notifyFunction = notifyFunctions.get(data.type);
+    if (typeof notifyFunction === 'undefined') {
+        throw new Error(`A WebSocket notify function for the "${data.type}" command is not defined.`);
     }
+    notifyFunction(data);
 };
 
 // Define a command handler map
-const commands = {};
+const notifyFunctions = new Map();
 
-commands.clue = (data) => {
+notifyFunctions.set('clue', (data: ActionClue) => {
     // The clue comes from the server as an integer, so convert it to an object
     const clue = msgClueToClue(data.clue, globals.variant);
 
@@ -110,6 +121,9 @@ commands.clue = (data) => {
     if (data.clue.type === CLUE_TYPE.RANK) {
         clueName = clue.value.toString();
     } else if (data.clue.type === CLUE_TYPE.COLOR) {
+        if (typeof clue.value === 'number') {
+            throw new Error('The value of a color clue was a number.');
+        }
         clueName = clue.value.name;
     }
     if (globals.variant.name.startsWith('Cow & Pig')) {
@@ -126,7 +140,7 @@ commands.clue = (data) => {
 
     const entry = new ClueEntry({
         width: globals.elements.clueLog.width(),
-        height: 0.017 * globals.stage.height(),
+        height: 0.017 * globals.stage!.height(),
         giver: globals.playerNames[data.giver],
         target: globals.playerNames[data.target],
         clueName,
@@ -139,18 +153,18 @@ commands.clue = (data) => {
     if (!globals.animateFast) {
         globals.layers.card.batchDraw();
     }
-};
+});
 
-commands.deckOrder = () => {
+notifyFunctions.set('deckOrder', () => {
     // If we are exiting a hypothetical, we might re-receive a deckOrder command
     // If this is the case, we don't need to do anything,
     // as the order should already be stored in the global variables
-};
+});
 
-commands.discard = (data) => {
+notifyFunctions.set('discard', (data: ActionDiscard) => {
     // In "Throw It in a Hole" variants, convert misplays to real plays
     if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay && data.failed) {
-        commands.play(data);
+        notifyFunctions.get('play')(data);
         return;
     }
 
@@ -184,10 +198,10 @@ commands.discard = (data) => {
     if (card.isClued()) {
         stats.updateEfficiency(-1);
     }
-};
+});
 
 // A player just drew a card from the deck
-commands.draw = (data) => {
+notifyFunctions.set('draw', (data: ActionDraw) => {
     // Local variables
     const { order } = data;
     // Suit and rank come from the server as -1 if the card is unknown
@@ -264,9 +278,9 @@ commands.draw = (data) => {
             }
         }
     }
-};
+});
 
-commands.play = (data) => {
+notifyFunctions.set('play', (data: ActionPlay) => {
     // Local variables
     const card = globals.deck[data.which.order];
 
@@ -287,9 +301,9 @@ commands.play = (data) => {
     if (!card.isClued()) {
         stats.updateEfficiency(1);
     }
-};
+});
 
-commands.reorder = (data) => {
+notifyFunctions.set('reorder', (data: ActionReorder) => {
     const hand = globals.elements.playerHands[data.target];
 
     // Get the LayoutChild objects in the hand and put them in the right order in a temporary array
@@ -309,9 +323,9 @@ commands.reorder = (data) => {
         const child = newChildOrder[i];
         hand.addCard(child);
     }
-};
+});
 
-commands.stackDirections = (data) => {
+notifyFunctions.set('stackDirections', (data: ActionStackDirections) => {
     // Update the stack directions (only in "Up or Down" variants)
     globals.stackDirections = data.directions;
     if (globals.variant.name.startsWith('Up or Down')) {
@@ -335,9 +349,9 @@ commands.stackDirections = (data) => {
             }
         }
     }
-};
+});
 
-commands.status = (data) => {
+notifyFunctions.set('status', (data: ActionStatus) => {
     // Update internal state variables
     globals.clues = data.clues;
     if (globals.variant.name.startsWith('Clue Starved')) {
@@ -349,30 +363,33 @@ commands.status = (data) => {
     globals.maxScore = data.maxScore;
 
     // Update the number of clues in the bottom-right hand corner of the screen
-    globals.elements.cluesNumberLabel.text(globals.clues.toString());
+    globals.elements.cluesNumberLabel!.text(globals.clues.toString());
 
     if (!globals.lobby.settings.get('realLifeMode')) {
-        globals.elements.cluesNumberLabel.fill(globals.clues === 0 ? 'red' : LABEL_COLOR);
-        globals.elements.noClueBorder.visible(globals.clues === 0);
+        globals.elements.cluesNumberLabel!.fill(globals.clues === 0 ? 'red' : LABEL_COLOR);
+        globals.elements.noClueBorder!.visible(globals.clues === 0);
 
         if (globals.clues === MAX_CLUE_NUM) {
             // Show the red border around the discard pile
             // (to reinforce that the current player cannot discard)
-            globals.elements.noDiscardBorder.show();
-            globals.elements.noDoubleDiscardBorder.hide();
+            globals.elements.noDiscardBorder!.show();
+            globals.elements.noDoubleDiscardBorder!.hide();
         } else if (data.doubleDiscard) {
             // Show a yellow border around the discard pile
             // (to reinforce that this is a "Double Discard" situation)
-            globals.elements.noDiscardBorder.hide();
-            globals.elements.noDoubleDiscardBorder.show();
+            globals.elements.noDiscardBorder!.hide();
+            globals.elements.noDoubleDiscardBorder!.show();
         } else {
-            globals.elements.noDiscardBorder.hide();
-            globals.elements.noDoubleDiscardBorder.hide();
+            globals.elements.noDiscardBorder!.hide();
+            globals.elements.noDoubleDiscardBorder!.hide();
         }
     }
 
     // Update the score (in the bottom-right-hand corner)
     const scoreLabel = globals.elements.scoreNumberLabel;
+    if (scoreLabel === null) {
+        throw new Error('"globals.elements.scoreNumberLabel" was null.');
+    }
     scoreLabel.text(globals.score.toString());
     if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
         scoreLabel.text('?');
@@ -380,6 +397,9 @@ commands.status = (data) => {
 
     // Reposition the maximum score
     const maxScoreLabel = globals.elements.maxScoreNumberLabel;
+    if (maxScoreLabel === null) {
+        throw new Error('"globals.elements.maxScoreNumberLabel" was null.');
+    }
     maxScoreLabel.text(` / ${globals.maxScore}`);
     maxScoreLabel.width(maxScoreLabel.measureSize(maxScoreLabel.text()).width);
     const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width;
@@ -392,7 +412,7 @@ commands.status = (data) => {
     if (!globals.animateFast) {
         globals.layers.UI.batchDraw();
     }
-};
+});
 
 /*
     Data is as follows:
@@ -403,7 +423,7 @@ commands.status = (data) => {
         turn: 2,
     }
 */
-commands.strike = (data) => {
+notifyFunctions.set('strike', (data: ActionStrike) => {
     if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
         return;
     }
@@ -429,19 +449,25 @@ commands.strike = (data) => {
 
     // Record the turn that the strike happened and the card that was misplayed
     strikeRecord(data);
-};
+});
 
 // A new line of text has appeared in the action log
-commands.text = (data) => {
+notifyFunctions.set('text', (data: ActionText) => {
     globals.elements.actionLog.setMultiText(data.text);
     globals.elements.fullActionLog.addMessage(data.text);
     if (!globals.animateFast) {
         globals.layers.UI.batchDraw();
         globals.layers.UI2.batchDraw();
     }
-};
+});
 
-commands.reveal = (data) => {
+interface RevealMessage {
+    suit: number,
+    rank: number,
+    order: number,
+}
+
+notifyFunctions.set('reveal', (data: RevealMessage) => {
     // This is the reveal for hypotheticals
     // The code here is copied from the "websocket.ts" file
     let card = globals.deck[data.order];
@@ -451,9 +477,9 @@ commands.reveal = (data) => {
 
     card.reveal(data.suit, data.rank);
     globals.layers.card.batchDraw();
-};
+});
 
-commands.turn = (data) => {
+notifyFunctions.set('turn', (data: ActionTurn) => {
     // Store the current turn in memory
     globals.turn = data.num;
     globals.currentPlayerIndex = data.who;
@@ -464,10 +490,10 @@ commands.turn = (data) => {
     }
 
     // Update the turn count in the score area
-    globals.elements.turnNumberLabel.text(`${globals.turn + 1}`);
+    globals.elements.turnNumberLabel!.text(`${globals.turn + 1}`);
 
     // Update the current player in the middle of the screen
-    globals.elements.currentPlayerArea.update(globals.currentPlayerIndex);
+    globals.elements.currentPlayerArea!.update(globals.currentPlayerIndex);
 
     // If there are no cards left in the deck, update the "Turns left: #" label
     if (globals.deckSize === 0) {
@@ -482,10 +508,10 @@ commands.turn = (data) => {
             numTurnsLeft += 1;
         }
 
-        globals.elements.deckTurnsRemainingLabel2.text(`left: ${numTurnsLeft}`);
+        globals.elements.deckTurnsRemainingLabel2!.text(`left: ${numTurnsLeft}`);
     }
 
     if (!globals.animateFast) {
         globals.layers.UI.batchDraw();
     }
-};
+});
