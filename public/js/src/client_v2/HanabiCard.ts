@@ -9,7 +9,24 @@ import { CARD_H, CARD_W, SUITS } from '../constants';
 import globals from '../globals';
 
 export default class HanabiCard extends Phaser.GameObjects.Container {
-    constructor(scene, config) {
+    order: number;
+    holder: number;
+    suit: number | undefined;
+    rank: number | undefined;
+    possibleSuits: Array<number>;
+    possibleRanks: Array<number>;
+    tweening: boolean = false;
+    imageName: string | undefined = undefined;
+    showOnlyLearned: boolean = false;
+    numPositiveClues = 0;
+    isDiscarded: boolean = false;
+    turnDiscarded: number | null = null;
+    isPlayed: boolean = false;
+    turnDrawn: number;
+    turnPlayed: number | null = null;
+    bare: any;
+
+    constructor(scene: any, config: any) {
         // Initialize the Phaser container
         super(scene);
 
@@ -32,15 +49,7 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
         // knowledge of the true suit and rank
         this.possibleSuits = config.suits;
         this.possibleRanks = config.ranks;
-        this.tweening = false;
-        this.imageName = undefined;
-        this.showOnlyLearned = false;
-        this.numPositiveClues = 0;
         this.turnDrawn = globals.state.turn;
-        this.isDiscarded = false;
-        this.turnDiscarded = null;
-        this.isPlayed = false;
-        this.turnPlayed = null;
 
         const image = this.getImage();
         this.add(image);
@@ -53,17 +62,15 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
         this.setCardImageName();
 
         // const image = this.scene.add.image(CARD_W / 2, CARD_H / 2, this.imageName);
-        const image = new Phaser.GameObjects.Image(
-            this.scene,
-            0,
-            0,
-            this.imageName,
-        );
+        if (typeof this.imageName === 'undefined') {
+            throw new Error('"this.imageName" is undefined in the "getImage()" function.');
+        }
+        const image = new Phaser.GameObjects.Image(this.scene, 0, 0, this.imageName);
         image.setScale(this.scale);
         return image;
     }
 
-    doRotations(inverted) {
+    doRotations(inverted: boolean) {
         this.setRotation(inverted ? 180 : 0);
         this.bare.setRotation(inverted ? 180 : 0);
         this.bare.setX(inverted ? CARD_W : 0);
@@ -86,15 +93,6 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
         return this.numPositiveClues > 0;
     }
 
-    isInPlayerHand() {
-        // TODO BROKEN
-        return globals.elements.playerHands.indexOf(this.parent.parent) !== -1;
-    }
-
-    removeBorders() {
-        this.cluedBorder.hide();
-    }
-
     /*
         Major card methods
     */
@@ -108,14 +106,14 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
         const suit = (!this.showOnlyLearned && this.suit);
         const empathyPastSuitUncertain = this.showOnlyLearned && this.possibleSuits.length > 1;
 
-        let suitToShow = suit || learnedCard.suit || SUITS.Unknown;
+        let suitToShow = suit || learnedCard.suit || SUITS.get('Unknown');
         if (empathyPastSuitUncertain) {
-            suitToShow = SUITS.Unknown;
+            suitToShow = SUITS.get('Unknown');
         }
 
         // "Card-Unknown" is not created, so use "NoPip-Unknown"
         let prefix = 'Card';
-        if (suitToShow === SUITS.Unknown) {
+        if (suitToShow === SUITS.get('Unknown')) {
             prefix = 'NoPip';
         }
 
