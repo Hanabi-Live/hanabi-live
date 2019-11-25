@@ -1,7 +1,7 @@
 export default class Loader {
     filePathMap: Map<string, string> = new Map();
     numLoaded: number = 0;
-    imageMap: Map<string, HTMLElement> = new Map();
+    imageMap: Map<string, HTMLImageElement> = new Map();
     progressCallback: any = null;
     finishedCallback: any = null;
 

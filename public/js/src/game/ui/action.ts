@@ -2,12 +2,12 @@
 import * as arrows from './arrows';
 import globals from './globals';
 
-export const handle = (data) => {
+export const handle = () => {
     if (globals.inReplay && !globals.hypothetical) {
         return;
     }
 
-    if (data !== null) {
+    if (globals.ourTurn && !globals.spectating) {
         // Reset and show the clue UI
         if (globals.elements.clueTargetButtonGroup.list.length === 1) {
             // In 2-player games,
@@ -16,16 +16,16 @@ export const handle = (data) => {
             globals.elements.clueTargetButtonGroup.list[0].setPressed(true);
         }
         globals.elements.clueTypeButtonGroup.clearPressed();
-        globals.elements.clueArea.show();
-        globals.elements.currentPlayerArea.hide();
+        globals.elements.clueArea!.show();
+        globals.elements.currentPlayerArea!.hide();
 
         // Fade the clue UI if there is not a clue available
         if (globals.clues >= 1) {
-            globals.elements.clueArea.opacity(1);
-            globals.elements.clueAreaDisabled.hide();
+            globals.elements.clueArea!.opacity(1);
+            globals.elements.clueAreaDisabled!.hide();
         } else {
-            globals.elements.clueArea.opacity(0.2);
-            globals.elements.clueAreaDisabled.show();
+            globals.elements.clueArea!.opacity(0.2);
+            globals.elements.clueAreaDisabled!.show();
         }
     }
 
@@ -48,7 +48,7 @@ export const handle = (data) => {
 
     if (globals.deckPlays) {
         globals.elements.deck.cardBack.draggable(globals.deckSize === 1);
-        globals.elements.deckPlayAvailableLabel.visible(globals.deckSize === 1);
+        globals.elements.deckPlayAvailableLabel!.visible(globals.deckSize === 1);
 
         // Ensure the deck is above other cards and UI elements
         if (globals.deckSize === 1) {
@@ -60,12 +60,12 @@ export const handle = (data) => {
 };
 
 export const stop = () => {
-    globals.elements.clueArea.hide();
-    globals.elements.clueAreaDisabled.hide();
-    globals.elements.currentPlayerArea.hide();
-    globals.elements.premoveCancelButton.hide();
-    globals.elements.noDiscardBorder.hide();
-    globals.elements.noDoubleDiscardBorder.hide();
+    globals.elements.clueArea!.hide();
+    globals.elements.clueAreaDisabled!.hide();
+    globals.elements.currentPlayerArea!.hide();
+    globals.elements.premoveCancelButton!.hide();
+    globals.elements.noDiscardBorder!.hide();
+    globals.elements.noDoubleDiscardBorder!.hide();
     arrows.hideAll();
 
     // Make all of the cards in our hand not draggable
@@ -80,5 +80,5 @@ export const stop = () => {
     }
 
     globals.elements.deck.cardBack.draggable(false);
-    globals.elements.deckPlayAvailableLabel.hide();
+    globals.elements.deckPlayAvailableLabel!.hide();
 };

@@ -454,14 +454,19 @@ const drawBottomLeftButtons = () => {
     };
 
     // The toggle in-game replay button
-    const replayButton = new Button({
-        x: bottomLeftButtonValues.x * winW,
-        y: bottomLeftButtonValues.y * winH,
-        width: bottomLeftButtonValues.w * winW,
-        height: bottomLeftButtonValues.h * winH,
-        image: 'replay',
-        visible: !globals.replay,
-    });
+    const replayButton = new Button(
+        {
+            x: bottomLeftButtonValues.x * winW,
+            y: bottomLeftButtonValues.y * winH,
+            width: bottomLeftButtonValues.w * winW,
+            height: bottomLeftButtonValues.h * winH,
+            visible: !globals.replay,
+        },
+        [
+            globals.ImageLoader.get('replay'),
+            globals.ImageLoader.get('replay-disabled'),
+        ],
+    );
     replayButton.on('click tap', () => {
         if (!replayButton.enabled) {
             return;
@@ -488,7 +493,7 @@ const drawBottomLeftButtons = () => {
         height: bottomLeftButtonValues.h * winH,
         text: 'Restart',
         visible: false,
-    });
+    }, []);
     globals.layers.UI.add(restartButton);
     restartButton.on('click tap', () => {
         globals.lobby.conn.send('tableRestart');
@@ -506,7 +511,7 @@ const drawBottomLeftButtons = () => {
         height: bottomLeftButtonValues.h * winH,
         text: 'End Hypo',
         visible: false,
-    });
+    }, []);
     globals.layers.UI.add(endHypotheticalButton);
     endHypotheticalButton.on('click tap', () => {
         hypothetical.end();
@@ -521,7 +526,7 @@ const drawBottomLeftButtons = () => {
         height: bottomLeftButtonValues.h * winH,
         text: '💬',
         visible: !globals.replay || globals.sharedReplay,
-    });
+    }, []);
     globals.layers.UI.add(chatButton);
     chatButton.on('click tap', () => {
         globals.game.chat.toggle();
@@ -546,9 +551,8 @@ const drawBottomLeftButtons = () => {
         y: lobbyButtonValues.y * winH,
         width: ((bottomLeftButtonValues.w / 2) - shortButtonSpacing) * winW,
         height: lobbyButtonValues.h * winH,
-        image: 'home',
         visible: !globals.replay && !globals.spectating,
-    });
+    }, [globals.ImageLoader.get('home')]);
     globals.layers.UI.add(lobbyButtonSmall);
     lobbyButtonSmall.on('click tap', lobbyButtonClick);
     lobbyButtonSmall.tooltipName = 'lobby-small';
@@ -563,7 +567,7 @@ const drawBottomLeftButtons = () => {
         height: lobbyButtonValues.h * winH,
         text: 'Lobby',
         visible: globals.replay || globals.spectating,
-    });
+    }, []);
     globals.layers.UI.add(lobbyButtonBig);
     lobbyButtonBig.on('click tap', lobbyButtonClick);
     lobbyButtonBig.tooltipName = 'lobby-big';
@@ -577,9 +581,8 @@ const drawBottomLeftButtons = () => {
         y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h) + 0.02) * winH,
         width: ((bottomLeftButtonValues.w / 2) - shortButtonSpacing) * winW,
         height: bottomLeftButtonValues.h * winH,
-        image: 'skull',
         visible: !globals.replay && !globals.spectating,
-    });
+    }, [globals.ImageLoader.get('skull')]);
     globals.layers.UI.add(killButton);
     killButton.on('click tap', () => {
         globals.lobby.conn.send('tableAbandon');
@@ -1420,7 +1423,7 @@ const drawClueArea = () => {
                 width: playerButtonW * winW,
                 height: 0.025 * winH,
                 text: globals.playerNames[j],
-            });
+            }, []);
             button.targetIndex = j;
             globals.elements.clueTargetButtonGroup.add(button);
             globals.elements.clueTargetButtonGroup.addList(button);
@@ -1444,7 +1447,7 @@ const drawClueArea = () => {
                 width: playerButtonW * winW,
                 height: 0.025 * winH,
                 text: globals.playerNames[j],
-            });
+            }, []);
             button.targetIndex = j;
             globals.elements.clueTargetButtonGroup2.add(button);
             globals.elements.clueTargetButtonGroup2.addList(button);
@@ -1534,7 +1537,7 @@ const drawClueArea = () => {
         width: giveClueW * winW,
         height: 0.051 * winH,
         text: 'Give Clue',
-    });
+    }, []);
     globals.elements.giveClueButton.setEnabled(false);
     globals.elements.clueArea.add(globals.elements.giveClueButton);
     globals.elements.giveClueButton.on('click tap', clues.give);
@@ -1620,7 +1623,7 @@ const drawPreplayArea = () => {
         height: h * winH,
         text: 'Cancel Pre-Move',
         visible: false,
-    });
+    }, []);
     globals.layers.UI.add(globals.elements.premoveCancelButton);
     globals.elements.premoveCancelButton.on('click tap', () => {
         globals.elements.premoveCancelButton.hide();
@@ -1747,7 +1750,7 @@ const drawPauseArea = () => {
         width: button1W * winW,
         height: 0.1 * winH,
         text: 'Unpause',
-    });
+    }, []);
     globals.elements.pauseButton.on('click tap', () => {
         globals.lobby.conn.send('pause', {
             value: 'unpause',
@@ -1761,7 +1764,7 @@ const drawPauseArea = () => {
         width: button2W * winW,
         height: 0.1 * winH,
         text: '💬',
-    });
+    }, []);
     globals.elements.pauseArea.add(chatButton);
     chatButton.on('click tap', () => {
         globals.game.chat.toggle();
@@ -1772,8 +1775,7 @@ const drawPauseArea = () => {
         y: buttonH * winH,
         width: button2W * winW,
         height: 0.1 * winH,
-        image: 'home',
-    });
+    }, [globals.ImageLoader.get('home')]);
     globals.elements.pauseArea.add(lobbyButton);
     lobbyButton.on('click tap', lobbyButtonClick);
 };

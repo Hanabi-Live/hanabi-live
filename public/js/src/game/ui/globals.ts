@@ -62,8 +62,8 @@ class Globals {
     layers: any = {}; // TODO convert to Map
     elements: Elements = new Elements();
     activeHover: any = null; // The element that the mouse cursor is currently over
-    cardImages: any = null; // TODO convert to Map
-    scaledCardImages: any = null; // TODO convert to Map
+    cardImages: Map<string, HTMLCanvasElement> = new Map(); // TODO convert to Map
+    scaledCardImages: Map<string, Array<HTMLCanvasElement>> = new Map(); // TODO convert to Map
 
     // Replay feature
     inReplay: boolean = false; // Whether or not the replay controls are currently showing
@@ -187,8 +187,8 @@ class Globals {
         this.layers = {};
         this.elements = new Elements();
         this.activeHover = null;
-        this.cardImages = {};
-        this.scaledCardImages = {};
+        this.cardImages = new Map();
+        this.scaledCardImages = new Map();
         this.inReplay = false;
         this.replayLog = [];
         this.replayPos = 0;

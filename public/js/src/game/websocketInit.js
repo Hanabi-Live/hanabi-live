@@ -51,7 +51,10 @@ commands.init = (data) => {
     // Build images for every card
     // (with respect to the variant that we are playing
     // and whether or not we have the colorblind UI feature enabled)
-    globals.ui.cardImages = drawCards(globals.init.variant, globals.settings.get('showColorblindUI'));
+    globals.ui.cardImages = drawCards(
+        globals.init.variant,
+        globals.settings.get('showColorblindUI'),
+    );
 
     // Draw the user interface
     phaserInit();

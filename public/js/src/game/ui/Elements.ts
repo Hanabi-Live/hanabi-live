@@ -1,6 +1,7 @@
 
 // Imports
 import Konva from 'konva';
+import Button from './Button';
 import StrikeSquare from './StrikeSquare';
 import StrikeX from './StrikeX';
 import Suit from '../../Suit';
@@ -57,6 +58,7 @@ export default class Elements {
     rankClueButtons: any = null; // TODO set to NumberButton
     colorClueButtons: any = null; // TODO set to ColorButton
     giveClueButton: any = null; // TODO set to Button
+    clueAreaDisabled: Konva.Group | null = null;
 
     // The current turn UI
     currentPlayerArea: Konva.Group | null = null;
@@ -90,10 +92,11 @@ export default class Elements {
     // Other screens
     fullActionLog: any = null; // TODO set to FullActionLog
 
-    // Other optional elements
+    // Other conditional elements
     arrows: Array<any> = []; // TODO set to Array<Arrow>
     timer1: any = null; // TODO set to TimerDisplay
     timer2: any = null; // TODO set to TimerDisplay
+    premoveCancelButton: Button | null = null;
     sharedReplayForward: Konva.Image | null = null;
     sharedReplayForwardTween: Konva.Tween | null = null;
     sharedReplayBackward: Konva.Image | null = null;

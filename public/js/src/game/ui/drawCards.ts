@@ -20,7 +20,7 @@ import Variant from '../../Variant';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
 export default (variant: Variant, colorblindUI: boolean) => {
-    const cardImages = new Map();
+    const cardImages: Map<string, HTMLCanvasElement> = new Map();
 
     // Add the "unknown" suit to the list of suits for this variant
     // The unknown suit has semi-blank gray cards, representing unknown cards
@@ -158,7 +158,7 @@ const drawSuitPips = (
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale, scale);
         ctx.translate(-75, -100);
-        drawPip(<CanvasRenderingContext2D>ctx, suit, true, false);
+        drawPip(ctx, suit, true, false);
         ctx.restore();
     }
 

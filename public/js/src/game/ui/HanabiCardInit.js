@@ -488,8 +488,8 @@ export function sparkles() {
 */
 
 const scaleCardImage = (ctx, name, width, height, am) => {
-    let src = globals.cardImages[name];
-    if (!src) {
+    let src = globals.cardImages.get(name);
+    if (typeof src === 'undefined') {
         throw new Error(`The image "${name}" was not generated.`);
     }
 
@@ -504,28 +504,32 @@ const scaleCardImage = (ctx, name, width, height, am) => {
     let sh = height;
     let steps = 0;
 
-    if (!globals.scaledCardImages[name]) {
-        globals.scaledCardImages[name] = [];
+    let scaledCardImages = globals.scaledCardImages.get(name);
+    if (typeof scaledCardImages === 'undefined') {
+        scaledCardImages = [];
+        globals.scaledCardImages.set(name, scaledCardImages);
     }
 
     // This code was written by Keldon;
     // scaling the card down in steps of half in each dimension presumably improves the scaling
     while (dw < sw / 2) {
-        let scaleCanvas = globals.scaledCardImages[name][steps];
+        let scaledCardImage = scaledCardImages[steps];
+
         sw = Math.floor(sw / 2);
         sh = Math.floor(sh / 2);
 
-        if (!scaleCanvas) {
-            scaleCanvas = document.createElement('canvas');
-            scaleCanvas.width = sw;
-            scaleCanvas.height = sh;
+        if (!scaledCardImage) {
+            scaledCardImage = document.createElement('canvas');
+            scaledCardImage.width = sw;
+            scaledCardImage.height = sh;
 
-            const scaleContext = scaleCanvas.getContext('2d');
+            const scaleContext = scaledCardImage.getContext('2d');
             scaleContext.drawImage(src, 0, 0, sw, sh);
-            globals.scaledCardImages[name][steps] = scaleCanvas;
+
+            scaledCardImages[steps] = scaledCardImage;
         }
 
-        src = scaleCanvas;
+        src = scaledCardImage;
         steps += 1;
     }
 

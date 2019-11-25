@@ -1,7 +1,6 @@
 // Imports
 import Konva from 'konva';
 import FitText from './FitText';
-import globals from './globals';
 
 export default class Button extends Konva.Group {
     enabled: boolean = true;
@@ -10,9 +9,9 @@ export default class Button extends Konva.Group {
     background: Konva.Rect;
     textElement: FitText | null = null;
     imageElement: Konva.Image | null = null;
-    imageName: string = '';
+    imageDisabledElement: Konva.Image | null = null;
 
-    constructor(config: Konva.ContainerConfig) {
+    constructor(config: Konva.ContainerConfig, images: Array<HTMLImageElement>) {
         super(config);
         this.listening(true);
 
@@ -21,7 +20,6 @@ export default class Button extends Konva.Group {
         const h = this.height();
 
         this.background = new Konva.Rect({
-            name: 'background',
             x: 0,
             y: 0,
             width: w,
@@ -36,7 +34,6 @@ export default class Button extends Konva.Group {
         this.imageElement = null;
         if (config.text) {
             this.textElement = new FitText({
-                name: 'text',
                 x: 0,
                 y: 0.275 * h,
                 width: w,
@@ -49,18 +46,29 @@ export default class Button extends Konva.Group {
                 listening: false,
             });
             this.add(this.textElement);
-        } else if (config.image) {
+        } else if (images.length > 0) {
             this.imageElement = new Konva.Image({
-                name: 'image',
                 x: 0.2 * w,
                 y: 0.2 * h,
                 width: 0.6 * w,
                 height: 0.6 * h,
-                image: globals.ImageLoader.get(config.image),
+                image: images[0],
                 listening: false,
             });
             this.add(this.imageElement);
-            this.imageName = config.image; // Store this for later in case we disable the button
+
+            if (images.length >= 2) {
+                this.imageDisabledElement = new Konva.Image({
+                    x: 0.2 * w,
+                    y: 0.2 * h,
+                    width: 0.6 * w,
+                    height: 0.6 * h,
+                    image: images[1],
+                    listening: false,
+                    visible: false,
+                });
+                this.add(this.imageDisabledElement);
+            }
         }
 
         const resetButton = () => {
@@ -99,9 +107,9 @@ export default class Button extends Konva.Group {
             this.textElement.fill(enabled ? 'white' : '#444444');
         }
 
-        if (this.imageElement) {
-            const imageName = (enabled ? this.imageName : `${this.imageName}-disabled`);
-            this.imageElement.image(globals.ImageLoader.get(imageName));
+        if (this.imageElement && this.imageDisabledElement) {
+            this.imageElement.visible(enabled);
+            this.imageDisabledElement.visible(!enabled);
         }
 
         this.background.listening(enabled);

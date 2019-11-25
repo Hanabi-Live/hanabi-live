@@ -115,25 +115,35 @@ export default (winW, winH) => {
         let { x } = replayButtonValues;
 
         // Go back to the beginning (the left-most button)
-        globals.elements.replayBackFullButton = new Button({
-            x: x * winW,
-            y: 0.07 * winH,
-            width: replayButtonValues.w * winW,
-            height: replayButtonValues.h * winH,
-            image: 'replay-back-full',
-        });
+        globals.elements.replayBackFullButton = new Button(
+            {
+                x: x * winW,
+                y: 0.07 * winH,
+                width: replayButtonValues.w * winW,
+                height: replayButtonValues.h * winH,
+            },
+            [
+                globals.ImageLoader.get('replay-back-full'),
+                globals.ImageLoader.get('replay-back-full-disabled'),
+            ],
+        );
         globals.elements.replayBackFullButton.on('click tap', replay.backFull);
         globals.elements.replayArea.add(globals.elements.replayBackFullButton);
 
         // Go back one turn (the second left-most button)
         x += replayButtonValues.w + replayButtonValues.spacing;
-        globals.elements.replayBackButton = new Button({
-            x: x * winW,
-            y: 0.07 * winH,
-            width: replayButtonValues.w * winW,
-            height: replayButtonValues.h * winH,
-            image: 'replay-back',
-        });
+        globals.elements.replayBackButton = new Button(
+            {
+                x: x * winW,
+                y: 0.07 * winH,
+                width: replayButtonValues.w * winW,
+                height: replayButtonValues.h * winH,
+            },
+            [
+                globals.ImageLoader.get('replay-back'),
+                globals.ImageLoader.get('replay-back-disabled'),
+            ],
+        );
         globals.elements.replayBackButton.on('click tap', () => {
             // Prevent accidental double clicks
             if (Date.now() - globals.UIClickTime < 50) {
@@ -147,13 +157,18 @@ export default (winW, winH) => {
 
         // Go forward one turn (the second right-most button)
         x += replayButtonValues.w + replayButtonValues.spacing;
-        globals.elements.replayForwardButton = new Button({
-            x: x * winW,
-            y: 0.07 * winH,
-            width: replayButtonValues.w * winW,
-            height: replayButtonValues.h * winH,
-            image: 'replay-forward',
-        });
+        globals.elements.replayForwardButton = new Button(
+            {
+                x: x * winW,
+                y: 0.07 * winH,
+                width: replayButtonValues.w * winW,
+                height: replayButtonValues.h * winH,
+            },
+            [
+                globals.ImageLoader.get('replay-forward'),
+                globals.ImageLoader.get('replay-forward-disabled'),
+            ],
+        );
         globals.elements.replayForwardButton.on('click tap', () => {
             // Prevent accidental double clicks
             if (Date.now() - globals.UIClickTime < 50) {
@@ -167,13 +182,18 @@ export default (winW, winH) => {
 
         // Go forward to the end (the right-most button)
         x += replayButtonValues.w + replayButtonValues.spacing;
-        globals.elements.replayForwardFullButton = new Button({
-            x: x * winW,
-            y: 0.07 * winH,
-            width: replayButtonValues.w * winW,
-            height: replayButtonValues.h * winH,
-            image: 'replay-forward-full',
-        });
+        globals.elements.replayForwardFullButton = new Button(
+            {
+                x: x * winW,
+                y: 0.07 * winH,
+                width: replayButtonValues.w * winW,
+                height: replayButtonValues.h * winH,
+            },
+            [
+                globals.ImageLoader.get('replay-forward-full'),
+                globals.ImageLoader.get('replay-forward-full-disabled'),
+            ],
+        );
         globals.elements.replayForwardFullButton.on('click tap', replay.forwardFull);
         globals.elements.replayArea.add(globals.elements.replayForwardFullButton);
     }
@@ -189,7 +209,7 @@ export default (winW, winH) => {
         height: replayButtonValues.w * winH,
         text: 'Exit Replay',
         visible: !globals.replay,
-    });
+    }, []);
     globals.elements.replayExitButton.on('click tap', replay.exitButton);
     globals.elements.replayArea.add(globals.elements.replayExitButton);
 
@@ -208,7 +228,7 @@ export default (winW, winH) => {
         height: bottomLeftReplayButtonValues.h * winH,
         text: 'Pause Shared Turns',
         visible: false,
-    });
+    }, []);
     globals.elements.pauseSharedTurnsButton.on('click tap', replay.toggleSharedTurns);
     globals.elements.replayArea.add(globals.elements.pauseSharedTurnsButton);
 
@@ -219,7 +239,7 @@ export default (winW, winH) => {
         height: bottomLeftReplayButtonValues.h * winH,
         text: 'Use Shared Turns',
         visible: false,
-    });
+    }, []);
     globals.elements.useSharedTurnsButton.on('click tap', replay.toggleSharedTurns);
     globals.elements.replayArea.add(globals.elements.useSharedTurnsButton);
 
@@ -255,7 +275,7 @@ export default (winW, winH) => {
         height: bottomRightReplayButtonValues.h * winH,
         text: 'Enter Hypothetical',
         visible: globals.replay && globals.amSharedReplayLeader && !globals.hypothetical,
-    });
+    }, []);
     globals.elements.enterHypoButton.on('click tap', hypothetical.start);
     globals.elements.replayArea.add(globals.elements.enterHypoButton);
 
