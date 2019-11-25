@@ -94,6 +94,7 @@ export default class Elements {
 
     // Other conditional elements
     arrows: Array<any> = []; // TODO set to Array<Arrow>
+    timer1Circle: Konva.Ellipse | null = null;
     timer1: any = null; // TODO set to TimerDisplay
     timer2: any = null; // TODO set to TimerDisplay
     premoveCancelButton: Button | null = null;
