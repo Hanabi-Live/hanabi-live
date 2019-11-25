@@ -6,12 +6,27 @@ import * as tooltips from './tooltips';
 import * as ui from './ui';
 
 export default class NameFrame extends Konva.Group {
-    constructor(config) {
-        config.listening = true;
+    playerIndex: number;
+    tooltipName: string;
+
+    playerName: Konva.Text;
+    leftLine: Konva.Line;
+    rightLine: Konva.Line;
+
+    constructor(config: Konva.ContainerConfig) {
         super(config);
+        this.listening(true);
+
+        if (typeof config.width === 'undefined') {
+            throw new Error('A NameFrame was initialized without a width.');
+        }
+        if (typeof config.height === 'undefined') {
+            throw new Error('A NameFrame was initialized without a height.');
+        }
 
         // Class variables
         this.playerIndex = config.playerIndex;
+        this.tooltipName = `player-${this.playerIndex}`;
 
         this.playerName = new Konva.Text({
             x: config.width / 2,
@@ -65,7 +80,7 @@ export default class NameFrame extends Konva.Group {
 
         w *= 1.4;
 
-        this.leftline = new Konva.Line({
+        this.leftLine = new Konva.Line({
             points: [
                 0,
                 0,
@@ -86,9 +101,9 @@ export default class NameFrame extends Konva.Group {
             shadowOpacity: 0,
             listening: false,
         });
-        this.add(this.leftline);
+        this.add(this.leftLine);
 
-        this.rightline = new Konva.Line({
+        this.rightLine = new Konva.Line({
             points: [
                 (config.width / 2) + (w / 2),
                 config.height / 2,
@@ -109,12 +124,11 @@ export default class NameFrame extends Konva.Group {
             shadowOpacity: 0,
             listening: false,
         });
-        this.add(this.rightline);
+        this.add(this.rightLine);
 
         // Draw the tooltips on the player names that show the time
         // (we don't use the "tooltip.init()" function because we need the extra condition in the
         // "mousemove" and "mouseout" event)
-        this.tooltipName = `player-${this.playerIndex}`;
         this.on('mousemove', function mouseMove() {
             globals.activeHover = this;
 
@@ -138,22 +152,22 @@ export default class NameFrame extends Konva.Group {
         });
     }
 
-    setActive(active) {
-        this.leftline.strokeWidth(active ? 3 : 1);
-        this.rightline.strokeWidth(active ? 3 : 1);
+    setActive(active: boolean) {
+        this.leftLine.strokeWidth(active ? 3 : 1);
+        this.rightLine.strokeWidth(active ? 3 : 1);
 
         this.playerName.shadowOpacity(active ? 0.6 : 0);
-        this.leftline.shadowOpacity(active ? 0.6 : 0);
-        this.rightline.shadowOpacity(active ? 0.6 : 0);
+        this.leftLine.shadowOpacity(active ? 0.6 : 0);
+        this.rightLine.shadowOpacity(active ? 0.6 : 0);
 
         this.playerName.fontStyle(active ? 'bold' : 'normal');
     }
 
-    setConnected(connected) {
+    setConnected(connected: boolean) {
         const color = connected ? LABEL_COLOR : '#e8233d'; // Red for disconnected players
 
-        this.leftline.stroke(color);
-        this.rightline.stroke(color);
+        this.leftLine.stroke(color);
+        this.rightLine.stroke(color);
         this.playerName.fill(color);
     }
 }
@@ -163,7 +177,7 @@ export default class NameFrame extends Konva.Group {
 */
 
 // Transfer leadership of the shared replay to another player
-const giveLeader = (username) => {
+const giveLeader = (username: string) => {
     // Only proceed if we are in a shared replay
     if (!globals.sharedReplay) {
         return;
