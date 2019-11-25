@@ -1,11 +1,11 @@
-export function makeArray(obj) {
+export function makeArray(obj: any) {
     if (!Array.isArray(obj)) {
         return [obj];
     }
     return obj;
 }
 
-export function transformToExitContainer(obj, cont) {
+export function transformToExitContainer(obj: any, cont: any) {
     const sinRot = Math.sin(-cont.rotation);
     const cosRot = Math.cos(-cont.rotation);
     const { x, y } = obj;
@@ -15,7 +15,7 @@ export function transformToExitContainer(obj, cont) {
     obj.y += cont.y;
 }
 
-export function transformToEnterContainer(obj, cont) {
+export function transformToEnterContainer(obj: any, cont: any) {
     obj.x -= cont.x;
     obj.y -= cont.y;
     const sinRot = Math.sin(cont.rotation);
