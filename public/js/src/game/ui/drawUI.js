@@ -9,6 +9,7 @@ import * as arrows from './arrows';
 import Button from './Button';
 import ButtonGroup from './ButtonGroup';
 import * as clues from './clues';
+import CurrentPlayerArea from './CurrentPlayerArea';
 import Deck from './Deck';
 import CardLayout from './CardLayout';
 import Clue from './Clue';
@@ -24,7 +25,6 @@ import {
 } from '../../constants';
 import drawHands from './drawHands';
 import drawReplayArea from './drawReplayArea';
-import drawCurrentPlayerArea from './drawCurrentPlayerArea';
 import FitText from './FitText';
 import FullActionLog from './FullActionLog';
 import globals from './globals';
@@ -95,7 +95,7 @@ export default () => {
     drawTimers();
     drawClueArea();
     drawClueAreaDisabled();
-    drawCurrentPlayerArea(winW, winH, clueAreaValues);
+    drawCurrentPlayerArea();
     drawPreplayArea();
     drawReplayArea(winW, winH);
     drawHypotheticalArea();
@@ -1609,6 +1609,23 @@ const drawClueAreaDisabled = () => {
 
     globals.elements.clueAreaDisabled.hide();
     globals.layers.UI.add(globals.elements.clueAreaDisabled);
+};
+
+const drawCurrentPlayerArea = () => {
+    // The "Current player: [player name]" box
+    const currentPlayerAreaWidth = 0.3; // This is big enough to fit in between the two timers
+    const currentPlayerAreaValues = {
+        x: clueAreaValues.x + (clueAreaValues.w / 2) - (currentPlayerAreaWidth / 2),
+        y: clueAreaValues.y + 0.015,
+        w: currentPlayerAreaWidth,
+        h: 0.15,
+        spacing: 0.006,
+    };
+    globals.elements.currentPlayerArea = new CurrentPlayerArea(currentPlayerAreaValues, winW, winH);
+    if (globals.replay) {
+        globals.elements.currentPlayerArea.hide();
+    }
+    globals.layers.UI.add(globals.elements.currentPlayerArea);
 };
 
 const drawPreplayArea = () => {

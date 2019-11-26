@@ -31,6 +31,7 @@ import globals from './globals';
 import possibilitiesCheck from './possibilitiesCheck';
 import * as stats from './stats';
 import strikeRecord from './strikeRecord';
+import updateCurrentPlayerArea from './updateCurrentPlayerArea';
 
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list of notifies sent upon loading a new
@@ -493,7 +494,7 @@ notifyFunctions.set('turn', (data: ActionTurn) => {
     globals.elements.turnNumberLabel!.text(`${globals.turn + 1}`);
 
     // Update the current player in the middle of the screen
-    globals.elements.currentPlayerArea!.update(globals.currentPlayerIndex);
+    updateCurrentPlayerArea();
 
     // If there are no cards left in the deck, update the "Turns left: #" label
     if (globals.deckSize === 0) {

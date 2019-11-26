@@ -2,6 +2,7 @@
 // Imports
 import Konva from 'konva';
 import Button from './Button';
+import CurrentPlayerArea from './CurrentPlayerArea';
 import StrikeSquare from './StrikeSquare';
 import StrikeX from './StrikeX';
 import Suit from '../../Suit';
@@ -62,13 +63,7 @@ export default class Elements {
     clueAreaDisabled: Konva.Group | null = null;
 
     // The current turn UI
-    currentPlayerArea: any = null; // TODO set to Konva.Group | null
-    currentPlayerRect1: Konva.Rect | null = null;
-    currentPlayerText1: any = null; // TODO set to FitText
-    currentPlayerText2: any = null; // TODO set to FitText
-    currentPlayerText3: any = null; // TODO set to FitText
-    currentPlayerArrow: Konva.Group | null = null;
-    currentPlayerArrowTween: Konva.Tween | null = null;
+    currentPlayerArea: CurrentPlayerArea | null = null;
 
     // The replay screen
     replayArea: Konva.Group | null = null;
