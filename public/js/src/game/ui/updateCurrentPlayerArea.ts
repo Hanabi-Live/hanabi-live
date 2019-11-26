@@ -5,10 +5,7 @@ import globals from './globals';
 
 // Set the "Current Player" area up for this specific turn
 export default () => {
-    const currentPlayerArea = globals.elements.currentPlayerArea;
-    if (currentPlayerArea === null) {
-        throw new Error('The current player area element was null.');
-    }
+    const currentPlayerArea = globals.elements.currentPlayerArea!;
     const winW = globals.stage!.width();
     const winH = globals.stage!.height();
 

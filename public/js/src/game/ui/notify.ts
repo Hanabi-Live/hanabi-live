@@ -387,20 +387,14 @@ notifyFunctions.set('status', (data: ActionStatus) => {
     }
 
     // Update the score (in the bottom-right-hand corner)
-    const scoreLabel = globals.elements.scoreNumberLabel;
-    if (scoreLabel === null) {
-        throw new Error('"globals.elements.scoreNumberLabel" was null.');
-    }
+    const scoreLabel = globals.elements.scoreNumberLabel!;
     scoreLabel.text(globals.score.toString());
     if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
         scoreLabel.text('?');
     }
 
     // Reposition the maximum score
-    const maxScoreLabel = globals.elements.maxScoreNumberLabel;
-    if (maxScoreLabel === null) {
-        throw new Error('"globals.elements.maxScoreNumberLabel" was null.');
-    }
+    const maxScoreLabel = globals.elements.maxScoreNumberLabel!;
     maxScoreLabel.text(` / ${globals.maxScore}`);
     maxScoreLabel.width(maxScoreLabel.measureSize(maxScoreLabel.text()).width);
     const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width;
