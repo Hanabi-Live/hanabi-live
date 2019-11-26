@@ -18,9 +18,7 @@ type StatsData struct {
 	NumGamesSpeedrun      int
 	TimePlayedSpeedrun    string
 	NumMaxScores          int
-	TotalMaxScores        int
 	NumMaxScoresPerType   []int
-	TotalMaxScoresPerType int
 
 	Variants []VariantStats
 }
@@ -148,9 +146,7 @@ func httpStats(c *gin.Context) {
 		NumGamesSpeedrun:      globalStats.NumGamesSpeedrun,
 		TimePlayedSpeedrun:    timePlayedSpeedrun,
 		NumMaxScores:          numMaxScores,
-		TotalMaxScores:        len(variantsList) * 5, // For 2 to 6 players
 		NumMaxScoresPerType:   numMaxScoresPerType,
-		TotalMaxScoresPerType: len(variantsList),
 
 		Variants: variantStatsList,
 	}
