@@ -1,6 +1,10 @@
 // Imports
 import MsgClue from './MsgClue';
 
+export interface Action {
+    type: number,
+}
+
 export interface ActionDraw {
     type: string,
     who: number,

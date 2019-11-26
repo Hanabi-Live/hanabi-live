@@ -1649,8 +1649,8 @@ const drawPreplayArea = () => {
 
         // If we dragged a card, we have to put the card back in the hand
         if (
-            globals.queuedAction.data.type === ACTION.PLAY
-            || globals.queuedAction.data.type === ACTION.DISCARD
+            globals.queuedAction.type === ACTION.PLAY
+            || globals.queuedAction.type === ACTION.DISCARD
         ) {
             globals.elements.playerHands[globals.playerUs].doLayout();
         }

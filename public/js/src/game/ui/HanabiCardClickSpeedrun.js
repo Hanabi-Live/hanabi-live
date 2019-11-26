@@ -55,11 +55,8 @@ const clickLeft = (card, event) => {
         && !event.metaKey
     ) {
         turn.end({
-            type: 'action',
-            data: {
-                type: ACTION.PLAY,
-                target: card.order,
-            },
+            type: ACTION.PLAY,
+            target: card.order,
         });
         return;
     }
@@ -101,14 +98,11 @@ const clickLeft = (card, event) => {
             (variantColor) => variantColor === color,
         );
         turn.end({
-            type: 'action',
-            data: {
-                type: ACTION.CLUE,
-                target: card.holder,
-                clue: {
-                    type: CLUE_TYPE.COLOR,
-                    value,
-                },
+            type: ACTION.CLUE,
+            target: card.holder,
+            clue: {
+                type: CLUE_TYPE.COLOR,
+                value,
             },
         });
     }
@@ -128,11 +122,8 @@ const clickRight = (card, event) => {
             return;
         }
         turn.end({
-            type: 'action',
-            data: {
-                type: ACTION.DISCARD,
-                target: card.order,
-            },
+            type: ACTION.DISCARD,
+            target: card.order,
         });
         return;
     }
@@ -148,14 +139,11 @@ const clickRight = (card, event) => {
     ) {
         globals.preCluedCard = card.order;
         turn.end({
-            type: 'action',
-            data: {
-                type: ACTION.CLUE,
-                target: card.holder,
-                clue: {
-                    type: CLUE_TYPE.RANK,
-                    value: card.rank,
-                },
+            type: ACTION.CLUE,
+            target: card.holder,
+            clue: {
+                type: CLUE_TYPE.RANK,
+                value: card.rank,
             },
         });
         return;

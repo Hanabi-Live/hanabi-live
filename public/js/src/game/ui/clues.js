@@ -135,11 +135,8 @@ export const give = () => {
 
     // Send the message to the server
     turn.end({
-        type: 'action',
-        data: {
-            type: ACTION.CLUE,
-            target: target.targetIndex,
-            clue: clueToMsgClue(clueButton.clue, globals.variant),
-        },
+        type: ACTION.CLUE,
+        target: target.targetIndex,
+        clue: clueToMsgClue(clueButton.clue, globals.variant),
     });
 };

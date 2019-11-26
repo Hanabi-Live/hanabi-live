@@ -5,6 +5,7 @@
 
 // Imports
 import Konva from 'konva';
+import { Action } from './actions';
 import Elements from './Elements';
 import State from './State';
 import Variant from '../../Variant';
@@ -115,8 +116,8 @@ class Globals {
     lastTimerUpdateTimeMS: number = 0;
 
     // Pre-move feature
-    queuedAction: any = null; // TODO change to an action object
-    preCluedCard: number = 0;
+    queuedAction: Action | null = null;
+    preCluedCard: number | null = null;
 
     // Pause feature
     paused: boolean = false; // Whether or not the game is currently paused

@@ -102,32 +102,32 @@ export const beginTurn = () => {
 
 export const send = (hypoAction) => {
     let type = '';
-    if (hypoAction.data.type === ACTION.CLUE) {
+    if (hypoAction.type === ACTION.CLUE) {
         type = 'clue';
-    } else if (hypoAction.data.type === ACTION.PLAY) {
+    } else if (hypoAction.type === ACTION.PLAY) {
         type = 'play';
-    } else if (hypoAction.data.type === ACTION.DISCARD) {
+    } else if (hypoAction.type === ACTION.DISCARD) {
         type = 'discard';
-    } else if (hypoAction.data.type === ACTION.DECKPLAY) {
+    } else if (hypoAction.type === ACTION.DECKPLAY) {
         type = 'play';
     }
 
     if (type === 'clue') {
         // Clue
-        const list = getTouchedCardsFromClue(hypoAction.data.target, hypoAction.data.clue);
+        const list = getTouchedCardsFromClue(hypoAction.target, hypoAction.clue);
         sendHypoAction({
             type,
-            clue: hypoAction.data.clue,
+            clue: hypoAction.clue,
             giver: globals.currentPlayerIndex,
             list,
-            target: hypoAction.data.target,
+            target: hypoAction.target,
             turn: globals.turn,
         });
         globals.clues -= 1;
 
         // Text
         let text = `${globals.playerNames[globals.currentPlayerIndex]} tells `;
-        text += `${globals.playerNames[hypoAction.data.target]} about `;
+        text += `${globals.playerNames[hypoAction.target]} about `;
         const words = [
             'zero',
             'one',
@@ -138,10 +138,10 @@ export const send = (hypoAction) => {
         ];
         text += `${words[list.length]} `;
 
-        if (hypoAction.data.clue.type === CLUE_TYPE.RANK) {
-            text += hypoAction.data.clue.value;
-        } else if (hypoAction.data.clue.type === CLUE_TYPE.COLOR) {
-            text += globals.variant.clueColors[hypoAction.data.clue.value].name;
+        if (hypoAction.clue.type === CLUE_TYPE.RANK) {
+            text += hypoAction.clue.value;
+        } else if (hypoAction.clue.type === CLUE_TYPE.COLOR) {
+            text += globals.variant.clueColors[hypoAction.clue.value].name;
         }
         if (list.length !== 1) {
             text += 's';
@@ -152,14 +152,14 @@ export const send = (hypoAction) => {
             text,
         });
     } else if (type === 'play' || type === 'discard') {
-        const card = globals.deck[hypoAction.data.target];
+        const card = globals.deck[hypoAction.target];
 
         // Play / Discard
         sendHypoAction({
             type,
             which: {
                 index: globals.currentPlayerIndex,
-                order: hypoAction.data.target,
+                order: hypoAction.target,
                 rank: card.rank,
                 suit: suitToMsgSuit(card.suit, globals.variant),
             },
