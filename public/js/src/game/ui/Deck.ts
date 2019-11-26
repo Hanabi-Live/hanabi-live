@@ -4,21 +4,25 @@ import * as action from './action';
 import * as arrows from './arrows';
 import { ACTION, REPLAY_ARROW_ORDER, TOOLTIP_DELAY } from '../../constants';
 import globals from './globals';
-import LayoutChild from './LayoutChild';
 import { timerFormatter } from '../../misc';
 import * as tooltips from './tooltips';
 
 export default class Deck extends Konva.Group {
-    constructor(config) {
-        config.listening = true;
+    cardBack: Konva.Image;
+    numLeftText: Konva.Text;
+    tooltipName: string = 'deck';
+    tooltipContent: string = '';
+
+    constructor(config: Konva.ContainerConfig) {
         super(config);
+        this.listening(true);
 
         this.cardBack = new Konva.Image({
             x: 0,
             y: 0,
             width: this.width(),
             height: this.height(),
-            image: globals.cardImages.get('deck-back'),
+            image: globals.cardImages.get('deck-back')!,
         });
         this.add(this.cardBack);
         this.cardBack.on('dragend', this.dragEnd);
@@ -48,16 +52,6 @@ export default class Deck extends Konva.Group {
         this.initTooltip();
     }
 
-    add(child) {
-        Konva.Group.prototype.add.call(this, child);
-
-        if (!(child instanceof LayoutChild)) {
-            return;
-        }
-
-        child.remove();
-    }
-
     doLayout() {
         this.cardBack.position({
             x: 0,
@@ -65,7 +59,7 @@ export default class Deck extends Konva.Group {
         });
     }
 
-    setCount(count) {
+    setCount(count: number) {
         this.numLeftText.text(count.toString());
 
         // When there are no cards left in the deck, remove the card-back
@@ -76,12 +70,12 @@ export default class Deck extends Konva.Group {
             h = 0.15;
         }
         this.numLeftText.y(h * this.height());
-        globals.elements.deckTurnsRemainingLabel1.visible(count === 0);
-        globals.elements.deckTurnsRemainingLabel2.visible(count === 0);
+        globals.elements.deckTurnsRemainingLabel1!.visible(count === 0);
+        globals.elements.deckTurnsRemainingLabel2!.visible(count === 0);
 
         // If the game ID is showing,
         // we want to center the deck count between it and the other labels
-        if (count === 0 && globals.elements.gameIDLabel.visible()) {
+        if (count === 0 && globals.elements.gameIDLabel!.visible()) {
             this.nudgeCountDownwards();
         }
     }
@@ -92,21 +86,21 @@ export default class Deck extends Konva.Group {
     }
 
     dragEnd() {
-        const pos = this.absolutePosition();
+        const pos = this.getAbsolutePosition();
 
         pos.x += this.width() * this.scaleX() / 2;
         pos.y += this.height() * this.scaleY() / 2;
 
-        if (globals.elements.playArea.isOver(pos)) {
+        if (globals.elements.playArea!.isOver(pos)) {
             // We need to remove the card from the screen once the animation is finished
             // (otherwise, the card will be stuck in the in-game replay)
             globals.postAnimationLayout = () => {
-                this.parent.doLayout();
+                (this.parent as any).doLayout(); // TODO set to ???
                 globals.postAnimationLayout = null;
             };
 
             this.draggable(false);
-            globals.elements.deckPlayAvailableLabel.hide();
+            globals.elements.deckPlayAvailableLabel!.hide();
 
             globals.lobby.conn.send('action', {
                 type: ACTION.DECKPLAY,
@@ -135,10 +129,9 @@ export default class Deck extends Konva.Group {
         // If the user hovers over the deck, show a tooltip that shows extra game options, if any
         // (we don't use the "tooltip.init()" function because we need the extra condition in the
         // "mousemove" event)
-        this.tooltipName = 'deck';
         this.on('mousemove', function mouseMove() {
             // Don't do anything if we might be dragging the deck
-            if (globals.elements.deckPlayAvailableLabel.visible()) {
+            if (globals.elements.deckPlayAvailableLabel!.visible()) {
                 return;
             }
 

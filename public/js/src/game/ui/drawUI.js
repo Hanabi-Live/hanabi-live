@@ -434,7 +434,7 @@ const drawDiscardStacks = () => {
             y: (0.61 + (discardStackSpacing * i)) * winH,
             width: 0.17 * winW,
             height: 0.17 * winH,
-            player: -1,
+            listening: false,
         });
         globals.elements.discardStacks.set(suit, discardStack);
         globals.layers.card.add(discardStack);

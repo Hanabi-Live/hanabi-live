@@ -14,7 +14,6 @@ export default class CardLayout extends Konva.Group {
     empathy: boolean;
 
     constructor(config: Konva.ContainerConfig) {
-        config.listening = config.player !== -1; // Discard piles do not need to be listening
         super(config);
 
         // Class variables

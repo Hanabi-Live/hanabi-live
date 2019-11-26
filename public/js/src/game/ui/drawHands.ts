@@ -334,7 +334,7 @@ export default (winW: number, winH: number) => {
             rotation: playerHandPos[numPlayers][j].rot,
             align: 'center',
             reverse: isHandReversed(j),
-            player: i,
+            listening: true,
         });
         globals.layers.card.add(globals.elements.playerHands[i]);
 

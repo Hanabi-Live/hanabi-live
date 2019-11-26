@@ -33,8 +33,8 @@ export default class HanabiCard extends Konva.Group {
             x: CARD_W / 2,
             y: CARD_H / 2,
         };
-        config.listening = true;
         super(config);
+        this.listening(true);
 
         // Mark the object type for use elsewhere in the code
         this.type = 'HanabiCard';
