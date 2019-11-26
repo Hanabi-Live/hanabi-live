@@ -38,7 +38,7 @@ Note that these steps require **an elevated (administrator) command-shell**.
   * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
     * `git clone https://github.com/Zamiell/hanabi-live.git`
   * Or, if you are doing development work, then clone your forked version of the repository. For example:
-    * `git clone https://github.com/Florrat/hanabi-live.git`
+    * `git clone https://github.com/[Your_Username]/hanabi-live.git`
 * Enter the cloned repository:
     * `cd hanabi-live`
 * Change from the Windows Command Prompt to Git Bash and install some dependencies:
