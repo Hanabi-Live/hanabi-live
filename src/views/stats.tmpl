@@ -43,27 +43,27 @@
                         </li>
                         <li>
                             <span class="stat-description">Total max scores achieved:</span>
-                            {{.NumMaxScores}}
+                            {{.NumMaxScores}} / {{.TotalMaxScores}}
                         </li>
                         <li>
                             <span class="stat-description">Total 2-player max scores achieved:</span>
-                            {{index .NumMaxScoresPerType 0}} / {{.NumMaxScores}}
+                            {{index .NumMaxScoresPerType 0}} / {{.TotalMaxScoresPerType}}
                         </li>
                         <li>
                             <span class="stat-description">Total 3-player max scores achieved:</span>
-                            {{index .NumMaxScoresPerType 1}} / {{.NumMaxScores}}
+                            {{index .NumMaxScoresPerType 1}} / {{.TotalMaxScoresPerType}}
                         </li>
                         <li>
                             <span class="stat-description">Total 4-player max scores achieved:</span>
-                            {{index .NumMaxScoresPerType 2}} / {{.NumMaxScores}}
+                            {{index .NumMaxScoresPerType 2}} / {{.TotalMaxScoresPerType}}
                         </li>
                         <li>
                             <span class="stat-description">Total 5-player max scores achieved:</span>
-                            {{index .NumMaxScoresPerType 3}} / {{.NumMaxScores}}
+                            {{index .NumMaxScoresPerType 3}} / {{.TotalMaxScoresPerType}}
                         </li>
                         <li>
                             <span class="stat-description">Total 6-player max scores achieved:</span>
-                            {{index .NumMaxScoresPerType 4}} / {{.NumMaxScores}}
+                            {{index .NumMaxScoresPerType 4}} / {{.TotalMaxScoresPerType}}
                         </li>
                     </ul>
 

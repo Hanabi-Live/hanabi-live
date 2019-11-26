@@ -19,7 +19,9 @@ type ProfileData struct {
 	NumGamesSpeedrun      int
 	TimePlayedSpeedrun    string
 	NumMaxScores          int
+	TotalMaxScores        int
 	NumMaxScoresPerType   []int // Used on the "Missing Scores" page
+	TotalMaxScoresPerType int
 
 	VariantStats []UserVariantStats
 }
@@ -165,7 +167,9 @@ func httpScores(c *gin.Context) {
 		NumGamesSpeedrun:      profileStats.NumGamesSpeedrun,
 		TimePlayedSpeedrun:    timePlayedSpeedrun,
 		NumMaxScores:          numMaxScores,
+		TotalMaxScores:        len(variantsList) * 5, // For 2 to 6 players
 		NumMaxScoresPerType:   numMaxScoresPerType,
+		TotalMaxScoresPerType: len(variantsList),
 
 		VariantStats: variantStatsList,
 	}
