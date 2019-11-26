@@ -64,6 +64,7 @@ export default class Elements {
     // The clue UI
     clueArea: Konva.Group | null = null;
     clueTargetButtonGroup: ButtonGroup | null = null;
+    clueTargetButtonGroup2: ButtonGroup | null = null;
     clueTypeButtonGroup: ButtonGroup | null = null;
     rankClueButtons: Array<RankButton> = [];
     colorClueButtons: Array<ColorButton> = [];

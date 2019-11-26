@@ -1,9 +1,14 @@
 // Imports
 import * as arrows from './arrows';
 import { ACTION, CLUE_TYPE } from '../../constants';
+import Clue from './Clue';
 import { clueToMsgClue, msgClueToClue } from './convert';
+import ColorButton from './ColorButton';
 import globals from './globals';
+import MsgClue from './MsgClue';
+import PlayerButton from './PlayerButton';
 import * as turn from './turn';
+import RankButton from './RankButton';
 
 export const checkLegal = () => {
     let clueTargetButtonGroup;
@@ -12,21 +17,22 @@ export const checkLegal = () => {
     } else {
         clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
     }
-    const target = clueTargetButtonGroup.getPressed();
-    const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
+    const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
+    const { clueTypeButtonGroup } = globals.elements;
+    const clueButton = clueTypeButtonGroup!.getPressed() as ColorButton | RankButton;
 
     if (
         !target // They have not selected a target player
         || !clueButton // They have not selected a clue type
     ) {
-        globals.elements.giveClueButton.setEnabled(false);
+        globals.elements.giveClueButton!.setEnabled(false);
         return;
     }
 
-    const who = target.targetIndex;
+    const who = (target as PlayerButton).targetIndex;
     if (who === globals.currentPlayerIndex) {
         // They are in a hypothetical and trying to give a clue to the current player
-        globals.elements.giveClueButton.setEnabled(false);
+        globals.elements.giveClueButton!.setEnabled(false);
         return;
     }
 
@@ -48,10 +54,10 @@ export const checkLegal = () => {
             && who === (globals.playerUs - 1 + globals.playerNames.length)
             % globals.playerNames.length);
 
-    globals.elements.giveClueButton.setEnabled(enabled);
+    globals.elements.giveClueButton!.setEnabled(enabled);
 };
 
-const showClueMatch = (target, clue) => {
+const showClueMatch = (target: number, clue: Clue) => {
     arrows.hideAll();
 
     let touchedAtLeastOneCard = false;
@@ -68,7 +74,7 @@ const showClueMatch = (target, clue) => {
     return touchedAtLeastOneCard;
 };
 
-export const getTouchedCardsFromClue = (target, clue) => {
+export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
     const cardsTouched = []; // An array of the card orders
     for (const child of globals.elements.playerHands[target].children) {
         const card = child.children[0];
@@ -81,7 +87,7 @@ export const getTouchedCardsFromClue = (target, clue) => {
 };
 
 // This mirrors the function in "variants.go"
-const variantIsCardTouched = (clue, card) => {
+const variantIsCardTouched = (clue: Clue, card: any) => { // TODO change to HanabiCard
     if (clue.type === CLUE_TYPE.RANK) {
         if (card.suit.clueRanks === 'all') {
             return true;
@@ -118,15 +124,16 @@ export const give = () => {
     } else {
         clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
     }
-    const target = clueTargetButtonGroup.getPressed();
-    const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
+    const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
+    const { clueTypeButtonGroup } = globals.elements;
+    const clueButton = clueTypeButtonGroup!.getPressed() as ColorButton | RankButton;
     if (
         (!globals.ourTurn && !globals.hypothetical) // We can only give clues on our turn
         || globals.clues === 0 // We can only give a clue if there is one available
         || !target // We might have not selected a clue recipient
         || !clueButton // We might have not selected a type of clue
         // We might be trying to give an invalid clue (e.g. an Empty Clue)
-        || !globals.elements.giveClueButton.enabled
+        || !globals.elements.giveClueButton!.enabled
         // Prevent the user from accidentally giving a clue
         || (Date.now() - globals.UIClickTime < 1000)
     ) {

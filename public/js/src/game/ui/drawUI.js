@@ -33,6 +33,7 @@ import HanabiCard from './HanabiCard';
 import * as hypothetical from './hypothetical';
 import LayoutChild from './LayoutChild';
 import MultiFitText from './MultiFitText';
+import PlayerButton from './PlayerButton';
 import PlayStack from './PlayStack';
 import RankButton from './RankButton';
 import * as replay from './replay';
@@ -1406,14 +1407,13 @@ const drawClueArea = () => {
         let playerX = (clueAreaValues.w * 0.5) - (totalPlayerWidth * 0.5);
         for (let i = 0; i < totalPlayerButtons; i++) {
             const j = (globals.playerUs + i + 1) % numPlayers;
-            const button = new Button({
+            const button = new PlayerButton({
                 x: playerX * winW,
                 y: 0,
                 width: playerButtonW * winW,
                 height: 0.025 * winH,
                 text: globals.playerNames[j],
-            }, []);
-            button.targetIndex = j;
+            }, j);
             globals.elements.clueTargetButtonGroup.add(button);
             globals.elements.clueTargetButtonGroup.addList(button);
             playerX += playerButtonW + playerButtonSpacing;

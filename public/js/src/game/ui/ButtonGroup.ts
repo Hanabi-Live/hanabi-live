@@ -1,9 +1,11 @@
 // Imports
 import Konva from 'konva';
-import Button from './Button';
+import PlayerButton from './PlayerButton';
+import ColorButton from './ColorButton';
+import RankButton from './RankButton';
 
 export default class ButtonGroup extends Konva.Group {
-    list: Array<Button> = [];
+    list: Array<PlayerButton | ColorButton | RankButton> = [];
 
     constructor(config: Konva.ContainerConfig) {
         super(config);
@@ -12,12 +14,12 @@ export default class ButtonGroup extends Konva.Group {
         this.list = [];
     }
 
-    addList(button: Button) {
+    addList(button: any) {
         const self = this;
 
         this.list.push(button);
 
-        button.on('click tap', function buttonClick() {
+        button.on('click tap', function buttonClick(this: any) {
             this.setPressed(true);
 
             for (let i = 0; i < self.list.length; i++) {
