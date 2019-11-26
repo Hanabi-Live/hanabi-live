@@ -11,43 +11,31 @@ import * as sounds from '../sounds';
 import * as turn from './turn';
 
 export default class LayoutChild extends Konva.Group {
-    constructor() {
-        super();
+    tween: Konva.Tween | null = null;
 
-        // Class variables
-        this.tween = null;
-    }
-
-    add(child) {
-        Konva.Group.prototype.add.call(this, child);
+    addChild(child: any) { // TODO change to HanabiCard
+        this.add(child);
         this.width(child.width());
         this.height(child.height());
 
-        child.on('widthChange', (event) => {
+        const change = (event: any) => {
             if (event.oldVal === event.newVal) {
                 return;
             }
             this.width(event.newVal);
             if (this.parent) {
-                this.parent.doLayout();
+                (this.parent as any).doLayout(); // TODO change to "CardLayout | PlayStack"
             }
-        });
+        };
 
-        child.on('heightChange', (event) => {
-            if (event.oldVal === event.newVal) {
-                return;
-            }
-            this.height(event.newVal);
-            if (this.parent) {
-                this.parent.doLayout();
-            }
-        });
+        child.on('widthChange', change);
+        child.on('heightChange', change);
     }
 
     // The card sliding animation is finished, so make the card draggable
     checkSetDraggable() {
         // Cards should only be draggable in specific circumstances
-        const card = this.children[0];
+        const card: any = this.children[0]; // TODO change to HanabiCard
         if (!card) {
             // Rarely, if the game is restarted when a tween is happening,
             // we can get here without the card being defined
@@ -91,19 +79,19 @@ export default class LayoutChild extends Konva.Group {
     }
 
     dragEnd() {
-        const card = this.children[0];
+        const card: any = this.children[0]; // TODO change to HanabiCard
 
-        const pos = this.absolutePosition();
+        const pos = this.getAbsolutePosition();
         pos.x += this.width() * this.scaleX() / 2;
         pos.y += this.height() * this.scaleY() / 2;
 
         let draggedTo = null;
-        if (globals.elements.playArea.isOver(pos)) {
+        if (globals.elements.playArea!.isOver(pos)) {
             draggedTo = 'playArea';
-        } else if (globals.elements.discardArea.isOver(pos)) {
+        } else if (globals.elements.discardArea!.isOver(pos)) {
             if (globals.clues === MAX_CLUE_NUM) {
                 sounds.play('error');
-                globals.elements.cluesNumberLabelPulse.play();
+                globals.elements.cluesNumberLabelPulse!.play();
             } else {
                 draggedTo = 'discardArea';
             }
@@ -133,13 +121,14 @@ export default class LayoutChild extends Konva.Group {
 
         if (draggedTo === null) {
             // The card was dragged to an invalid location; tween it back to the hand
-            this.parent.doLayout(); // The parent is a CardLayout
+            (this.parent as any).doLayout(); // The parent is a CardLayout
+            // TODO change to "CardLayout | PlayStack"
             return;
         }
 
         turn.end({
             type: (draggedTo === 'playArea' ? ACTION.PLAY : ACTION.DISCARD),
-            target: this.children[0].order,
+            target: card.order,
         });
     }
 }

@@ -3,6 +3,7 @@ import MsgClue from './MsgClue';
 
 export interface Action {
     type: number,
+    target: number,
 }
 
 export interface ActionDraw {

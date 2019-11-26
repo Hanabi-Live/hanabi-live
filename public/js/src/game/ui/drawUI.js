@@ -8,6 +8,7 @@ import Arrow from './Arrow';
 import * as arrows from './arrows';
 import Button from './Button';
 import ButtonGroup from './ButtonGroup';
+import ClickArea from './ClickArea';
 import * as clues from './clues';
 import CurrentPlayerArea from './CurrentPlayerArea';
 import Deck from './Deck';
@@ -406,18 +407,12 @@ const drawPlayStacks = () => {
         w,
         h: cardHeight,
     };
-    globals.elements.playArea = new Konva.Rect({
+    globals.elements.playArea = new ClickArea({
         x: (playAreaValues.x - overlap) * winW,
         y: (playAreaValues.y - overlap) * winH,
         width: (playAreaValues.w + (overlap * 2)) * winW,
         height: (playAreaValues.h + (overlap * 2)) * winH,
     });
-    globals.elements.playArea.isOver = (pos) => (
-        pos.x >= globals.elements.playArea.x()
-        && pos.y >= globals.elements.playArea.y()
-        && pos.x <= globals.elements.playArea.x() + globals.elements.playArea.width()
-        && pos.y <= globals.elements.playArea.y() + globals.elements.playArea.height()
-    );
 };
 
 const drawDiscardStacks = () => {
@@ -1254,18 +1249,12 @@ const drawDiscardArea = () => {
     globals.layers.UI.add(trashcan);
 
     // This is the invisible rectangle that players drag cards to in order to discard them
-    globals.elements.discardArea = new Konva.Rect({
+    globals.elements.discardArea = new ClickArea({
         x: 0.8 * winW,
         y: 0.6 * winH,
         width: 0.2 * winW,
         height: 0.4 * winH,
     });
-    globals.elements.discardArea.isOver = (pos) => (
-        pos.x >= globals.elements.discardArea.x()
-        && pos.y >= globals.elements.discardArea.y()
-        && pos.x <= globals.elements.discardArea.x() + globals.elements.discardArea.width()
-        && pos.y <= globals.elements.discardArea.y() + globals.elements.discardArea.height()
-    );
 };
 
 const drawArrows = () => {

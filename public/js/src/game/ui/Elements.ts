@@ -4,6 +4,7 @@ import Konva from 'konva';
 import Arrow from './Arrow';
 import Button from './Button';
 import ButtonGroup from './ButtonGroup';
+import ClickArea from './ClickArea';
 import ColorButton from './ColorButton';
 import CurrentPlayerArea from './CurrentPlayerArea';
 import FitText from './FitText';
@@ -17,10 +18,10 @@ import TimerDisplay from './TimerDisplay';
 export default class Elements {
     // The main screen
     stageFade: Konva.Rect | null = null;
-    playArea: Konva.Rect | null = null;
+    playArea: ClickArea | null = null;
     playStacks: Map<Suit, any> = new Map(); // TODO set to PlayStack
     suitLabelTexts: Array<FitText> = [];
-    discardArea: Konva.Rect | null = null;
+    discardArea: ClickArea | null = null;
     discardStacks: Map<Suit, any> = new Map(); // TODO set to CardLayout
     playerHands: Array<any> = []; // TODO set to CardLayout
     nameFrames: Array<any> = []; // TODO set to NameFrame
