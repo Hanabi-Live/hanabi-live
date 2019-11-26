@@ -1,7 +1,7 @@
 import Konva from 'konva';
 import Clue from './Clue';
 
-export default class NumberButton extends Konva.Group {
+export default class RankButton extends Konva.Group {
     pressed: boolean = false;
     clue: Clue;
     background: Konva.Rect;

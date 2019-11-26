@@ -32,8 +32,8 @@ import HanabiCard from './HanabiCard';
 import * as hypothetical from './hypothetical';
 import LayoutChild from './LayoutChild';
 import MultiFitText from './MultiFitText';
-import NumberButton from './NumberButton';
 import PlayStack from './PlayStack';
+import RankButton from './RankButton';
 import * as replay from './replay';
 import * as stats from './stats';
 import StrikeX from './StrikeX';
@@ -1492,7 +1492,7 @@ const drawClueArea = () => {
             color: color.fill,
             text: color.abbreviation,
             clue: new Clue(CLUE_TYPE.COLOR, color),
-        });
+        }, globals.lobby.settings.get('showColorblindUI'));
 
         globals.elements.clueTypeButtonGroup.add(button);
         globals.elements.clueTypeButtonGroup.addList(button);
@@ -1507,7 +1507,7 @@ const drawClueArea = () => {
     const rankX = (clueAreaValues.w * 0.5) - (totalRankWidth * 0.5);
     for (const rank of globals.variant.clueRanks) {
         const i = rank - 1;
-        const button = new NumberButton({
+        const button = new RankButton({
             x: (rankX + (i * (buttonW + buttonSpacing))) * winW,
             y: 0.1 * winH,
             width: buttonW * winW,

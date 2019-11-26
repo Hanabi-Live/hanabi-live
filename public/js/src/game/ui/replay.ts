@@ -9,6 +9,7 @@ import { MAX_CLUE_NUM, REPLAY_ACTION_TYPE } from '../../constants';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
 import notify from './notify';
+import Shuttle from './Shuttle';
 import * as stats from './stats';
 
 /*
@@ -44,7 +45,7 @@ export const enter = () => {
     action.stop();
 
     // Next, show the replay area and initialize some UI elements
-    globals.elements.replayArea.show();
+    globals.elements.replayArea!.show();
     adjustShuttles(true); // We want it to immediately snap to the end
     setVisibleButtons();
     globals.layers.UI.batchDraw();
@@ -57,15 +58,15 @@ export const exit = () => {
 
     goto(globals.replayMax, true);
     globals.inReplay = false;
-    globals.elements.replayArea.hide();
+    globals.elements.replayArea!.hide();
 
     if (globals.ourTurn) {
         action.handle();
     }
-    globals.elements.currentPlayerArea.setVisible(!globals.elements.clueArea.visible());
+    globals.elements.currentPlayerArea!.visible(!globals.elements.clueArea!.visible());
     if (globals.queuedAction !== null) {
-        globals.elements.currentPlayerArea.hide();
-        globals.elements.premoveCancelButton.show();
+        globals.elements.currentPlayerArea!.hide();
+        globals.elements.premoveCancelButton!.show();
     }
 
     for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
@@ -76,7 +77,7 @@ export const exit = () => {
     globals.layers.card.batchDraw();
 };
 
-export const goto = (target, fast) => {
+export const goto = (target: number, fast: boolean) => {
     // Validate function arguments
     if (target < 0) {
         target = 0;
@@ -142,12 +143,12 @@ export const goto = (target, fast) => {
 
 const setVisibleButtons = () => {
     // If we are on the first turn, disable the rewind replay buttons
-    globals.elements.replayBackFullButton.setEnabled(globals.replayTurn !== 0);
-    globals.elements.replayBackButton.setEnabled(globals.replayTurn !== 0);
+    globals.elements.replayBackFullButton!.setEnabled(globals.replayTurn !== 0);
+    globals.elements.replayBackButton!.setEnabled(globals.replayTurn !== 0);
 
     // If we are on the last turn, disable the forward replay buttons
-    globals.elements.replayForwardButton.setEnabled(globals.replayTurn !== globals.replayMax);
-    globals.elements.replayForwardFullButton.setEnabled(globals.replayTurn !== globals.replayMax);
+    globals.elements.replayForwardButton!.setEnabled(globals.replayTurn !== globals.replayMax);
+    globals.elements.replayForwardFullButton!.setEnabled(globals.replayTurn !== globals.replayMax);
 };
 
 const reset = () => {
@@ -197,7 +198,7 @@ const reset = () => {
         if (strikeX.tween) {
             strikeX.tween.destroy();
         }
-        strikeX.setOpacity(0);
+        strikeX.opacity(0);
         strikeX.setFaded();
     }
     for (const card of globals.deck) {
@@ -231,7 +232,7 @@ export const back = () => {
 
 export const forward = () => {
     checkDisableSharedTurns();
-    goto(globals.replayTurn + 1);
+    goto(globals.replayTurn + 1, false);
 };
 
 export const forwardFull = () => {
@@ -250,7 +251,7 @@ export const backRound = () => {
 
 export const forwardRound = () => {
     checkDisableSharedTurns();
-    goto(globals.replayTurn + globals.playerNames.length);
+    goto(globals.replayTurn + globals.playerNames.length, false);
 };
 
 
@@ -270,8 +271,8 @@ export const exitButton = () => {
     The replay shuttle
 */
 
-export function barClick(event) {
-    const rectX = event.evt.x - this.absolutePosition().x;
+export function barClick(this: Konva.Rect, event: Konva.KonvaPointerEvent) {
+    const rectX = event.evt.x - this.getAbsolutePosition().x;
     const w = this.width();
     const step = w / globals.replayMax;
     const newTurn = Math.floor((rectX + (step / 2)) / step);
@@ -281,11 +282,11 @@ export function barClick(event) {
     }
 }
 
-export function barDrag(pos) {
-    const min = globals.elements.replayBar.absolutePosition().x + (this.width() * 0.5);
-    const w = globals.elements.replayBar.width() - this.width();
+export function barDrag(this: Konva.Rect, pos: Konva.Vector2d) {
+    const min = globals.elements.replayBar!.getAbsolutePosition().x + (this.width() * 0.5);
+    const w = globals.elements.replayBar!.width() - this.width();
     let shuttleX = pos.x - min;
-    const shuttleY = this.absolutePosition().y;
+    const shuttleY = this.getAbsolutePosition().y;
     if (shuttleX < 0) {
         shuttleX = 0;
     }
@@ -305,7 +306,12 @@ export function barDrag(pos) {
     };
 }
 
-const positionReplayShuttle = (shuttle, turn, smaller, fast) => {
+const positionReplayShuttle = (
+    shuttle: Shuttle,
+    turn: number,
+    smaller: boolean,
+    fast: boolean,
+) => {
     let max = globals.replayMax;
 
     // During initialization, the turn will be -1 and the maximum number of replay turns will be 0
@@ -317,10 +323,10 @@ const positionReplayShuttle = (shuttle, turn, smaller, fast) => {
         max = 1;
     }
 
-    const winH = globals.stage.height();
-    const sliderW = globals.elements.replayBar.width() - shuttle.width();
-    const x = globals.elements.replayBar.x() + (sliderW / max * turn) + (shuttle.width() / 2);
-    let y = globals.elements.replayBar.y() + (shuttle.height() * 0.55);
+    const winH = globals.stage!.height();
+    const sliderW = globals.elements.replayBar!.width() - shuttle.width();
+    const x = globals.elements.replayBar!.x() + (sliderW / max * turn) + (shuttle.width() / 2);
+    let y = globals.elements.replayBar!.y() + (shuttle.height() * 0.55);
     if (smaller) {
         y -= 0.003 * winH;
     }
@@ -346,10 +352,7 @@ const positionReplayShuttle = (shuttle, turn, smaller, fast) => {
     }
 };
 
-export const adjustShuttles = (fast) => {
-    const shuttle = globals.elements.replayShuttle;
-    const shuttleShared = globals.elements.replayShuttleShared;
-
+export const adjustShuttles = (fast: boolean) => {
     // If the shuttles are overlapping, then make the normal shuttle a little bit smaller
     let smaller = false;
     if (!globals.useSharedTurns && globals.replayTurn === globals.sharedReplayTurn) {
@@ -358,8 +361,18 @@ export const adjustShuttles = (fast) => {
 
     // Adjust the shuttles along the X axis based on the current turn
     // If it is smaller, we need to nudge it to the right a bit in order to center it
-    positionReplayShuttle(shuttleShared, globals.sharedReplayTurn, false, fast);
-    positionReplayShuttle(shuttle, globals.replayTurn, smaller, fast);
+    positionReplayShuttle(
+        globals.elements.replayShuttleShared!,
+        globals.sharedReplayTurn,
+        false,
+        fast,
+    );
+    positionReplayShuttle(
+        globals.elements.replayShuttle!,
+        globals.replayTurn,
+        smaller,
+        fast,
+    );
 };
 
 /*
@@ -367,18 +380,23 @@ export const adjustShuttles = (fast) => {
 */
 
 export const promptTurn = () => {
-    let turn = window.prompt('Which turn do you want to go to?');
-    if (turn === null || Number.isNaN(parseInt(turn, 10))) {
+    const turnString = window.prompt('Which turn do you want to go to?');
+    if (turnString === null) {
         return;
     }
+    let turn = parseInt(turnString, 10);
+    if (Number.isNaN(turn)) {
+        return;
+    }
+
+    // We need to decrement the turn because
+    // the turn shown to the user is always one greater than the real turn
     turn -= 1;
-    // (we need to decrement the turn because the turn shown to the user is always one greater than
-    // the real turn)
 
     if (globals.replay) {
         checkDisableSharedTurns();
     } else {
-        enter(true);
+        enter();
     }
     goto(turn, true);
 };
@@ -390,9 +408,9 @@ export const promptTurn = () => {
 export const toggleSharedTurns = () => {
     globals.useSharedTurns = !globals.useSharedTurns;
 
-    globals.elements.pauseSharedTurnsButton.setVisible(globals.useSharedTurns);
-    globals.elements.useSharedTurnsButton.setVisible(!globals.useSharedTurns);
-    globals.elements.replayShuttleShared.setVisible(!globals.useSharedTurns);
+    globals.elements.pauseSharedTurnsButton!.visible(globals.useSharedTurns);
+    globals.elements.useSharedTurnsButton!.visible(!globals.useSharedTurns);
+    globals.elements.replayShuttleShared!.visible(!globals.useSharedTurns);
 
     if (globals.useSharedTurns) {
         if (globals.amSharedReplayLeader) {
@@ -421,20 +439,20 @@ export const checkDisableSharedTurns = () => {
     }
 };
 
-const shareCurrentTurn = (target) => {
-    if (globals.sharedReplayTurn === target) {
+const shareCurrentTurn = (turn: number) => {
+    if (globals.sharedReplayTurn === turn) {
         return;
     }
 
     globals.lobby.conn.send('replayAction', {
         type: REPLAY_ACTION_TYPE.TURN,
-        turn: target,
+        turn,
     });
-    globals.sharedReplayTurn = target;
+    globals.sharedReplayTurn = turn;
     adjustShuttles(false);
 };
 
-export const clueLogClickHandler = (turn) => {
+export const clueLogClickHandler = (turn: number) => {
     if (globals.replay) {
         checkDisableSharedTurns();
     } else {

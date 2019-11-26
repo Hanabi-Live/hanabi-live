@@ -1,6 +1,5 @@
 // Imports
 import Konva from 'konva';
-import globals from './globals';
 import Clue from './Clue';
 
 export default class ColorButton extends Konva.Group {
@@ -9,7 +8,7 @@ export default class ColorButton extends Konva.Group {
 
     background: Konva.Rect;
 
-    constructor(config: Konva.ContainerConfig) {
+    constructor(config: Konva.ContainerConfig, showColorblindUI: boolean) {
         super(config);
         this.listening(true);
 
@@ -55,7 +54,7 @@ export default class ColorButton extends Konva.Group {
             strokeWidth: 1,
             align: 'center',
             text: config.text,
-            visible: globals.lobby.settings.get('showColorblindUI'),
+            visible: showColorblindUI,
             listening: false,
         });
         this.add(text);

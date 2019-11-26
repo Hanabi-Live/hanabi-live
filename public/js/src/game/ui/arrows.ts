@@ -118,7 +118,7 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
     }
     if (globals.animateFast || giver === null) {
         const pos = getPos(element, rot);
-        arrow.absolutePosition(pos);
+        arrow.getAbsolutePosition(pos);
     } else {
         animate(arrow, element, rot, giver, globals.turn);
     }

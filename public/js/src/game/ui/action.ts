@@ -9,13 +9,13 @@ export const handle = () => {
 
     if (globals.ourTurn && !globals.spectating) {
         // Reset and show the clue UI
-        if (globals.elements.clueTargetButtonGroup.list.length === 1) {
+        if (globals.elements.clueTargetButtonGroup!.list.length === 1) {
             // In 2-player games,
             // default the clue recipient button to the only other player available
             // Otherwise, leave the last player selected
-            globals.elements.clueTargetButtonGroup.list[0].setPressed(true);
+            globals.elements.clueTargetButtonGroup!.list[0].setPressed(true);
         }
-        globals.elements.clueTypeButtonGroup.clearPressed();
+        globals.elements.clueTypeButtonGroup!.clearPressed();
         globals.elements.clueArea!.show();
         globals.elements.currentPlayerArea!.hide();
 
