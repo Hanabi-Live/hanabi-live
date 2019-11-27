@@ -3,6 +3,7 @@
 */
 
 // Imports
+import Konva from 'konva';
 import * as arrows from './arrows';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
@@ -11,9 +12,10 @@ import * as replay from './replay';
 import { STACK_BASE_RANK } from '../../constants';
 import { suitToMsgSuit } from './convert';
 
-export default function HanabiCardClick(event) {
+// TODO change any to HanabiCard
+export default function HanabiCardClick(this: any, event: Konva.KonvaPointerEvent) {
     // Speedrunning overrides the normal card clicking behavior
-    // (but don't use the speedrunning behavior if we are in a
+    // (but do not use the speedrunning behavior if we are in a
     // solo replay / shared replay / spectating)
     if (
         (globals.speedrun || globals.lobby.settings.get('speedrunMode'))
@@ -37,7 +39,7 @@ export default function HanabiCardClick(event) {
     }
 }
 
-const clickLeft = (card, event) => {
+const clickLeft = (card: any, event: PointerEvent) => { // TODO change to HanabiCard
     // The "Empathy" feature is handled in the "HanabiCardInit.ts" file,
     // so we don't have to worry about it here
 
@@ -68,35 +70,25 @@ const clickLeft = (card, event) => {
     }
 };
 
-const clickMiddle = (card, event) => {
+const clickMiddle = (card: any, event: PointerEvent) => { // TODO change to HanabiCard
     // Disable this for the stack base
     if (card.rank === STACK_BASE_RANK) {
         return;
     }
 
-    // No actions in this function use modifiers other than alt
-    if (event.ctrlKey || event.shiftKey || event.metaKey) {
+    // No actions in this function use modifiers
+    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
         return;
     }
 
-    // Middle clicking on cards goes to a turn it was clued
-    // Alt + middle clicking goes to turn it was first clued
+    // Middle clicking on a card goes to a turn it was first clued
     if (card.turnsClued.length === 0) {
         return;
     }
-    if (event.altKey) {
-        goToTurn(card.turnsClued[0]);
-    } else if (
-        card.turnsClued.length >= 2
-        && card.turnsClued[card.turnsClued.length - 1] === globals.turn
-    ) {
-        goToTurn(card.turnsClued[card.turnsClued.length - 2]);
-    } else {
-        goToTurn(card.turnsClued[card.turnsClued.length - 1]);
-    }
+    goToTurn(card.turnsClued[0], true);
 };
 
-const clickRight = (card, event) => {
+const clickRight = (card: any, event: PointerEvent) => { // TODO change to HanabiCard
     // Alt + right-click is a card morph (in a hypothetical)
     if (
         globals.replay
@@ -213,7 +205,7 @@ const clickRight = (card, event) => {
     }
 };
 
-const goToTurn = (turn, fast) => {
+const goToTurn = (turn: number, fast: boolean) => {
     if (globals.replay) {
         replay.checkDisableSharedTurns();
     } else {
@@ -222,7 +214,7 @@ const goToTurn = (turn, fast) => {
     replay.goto(turn, fast);
 };
 
-const goToTurnAndIndicateCard = (turn, order) => {
+const goToTurnAndIndicateCard = (turn: number, order: number) => {
     goToTurn(turn, true);
 
     // We indicate the card to make it easier to find
@@ -232,7 +224,7 @@ const goToTurnAndIndicateCard = (turn, order) => {
 
 
 // Morphing cards allows for creation of hypothetical situations
-const clickMorph = (order) => {
+const clickMorph = (order: number) => {
     const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3")');
     if (card === null) {
         return;
