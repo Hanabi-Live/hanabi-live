@@ -3,17 +3,21 @@
 */
 
 // Imports
+import Konva from 'konva';
 import {
     ACTION,
     CLUE_TYPE,
     MAX_CLUE_NUM,
     STACK_BASE_RANK,
 } from '../../constants';
+import Color from '../../Color';
+import ColorButton from './ColorButton';
 import globals from './globals';
 import * as notes from './notes';
 import * as turn from './turn';
 
-export default function HanabiCardClickSpeedrun(event) {
+// TODO change any to HanabiCard
+export default function HanabiCardClickSpeedrun(this: any, event: Konva.KonvaPointerEvent) {
     // Speedrunning overrides the normal card clicking behavior
     // (but don't use the speedrunning behavior if we are in a
     // solo replay / shared replay / spectating / clicking on the stack base)
@@ -45,7 +49,7 @@ export default function HanabiCardClickSpeedrun(event) {
     }
 }
 
-const clickLeft = (card, event) => {
+const clickLeft = (card: any, event: PointerEvent) => { // TODO change to HanabiCard
     // Left-clicking on cards in our own hand is a play action
     if (
         card.holder === globals.playerUs
@@ -75,19 +79,22 @@ const clickLeft = (card, event) => {
 
         // A card may be cluable by more than one color,
         // so we need to figure out which color to use
-        const clueButton = globals.elements.clueTypeButtonGroup.getPressed();
+        const clueButton = globals.elements.clueTypeButtonGroup!.getPressed() as ColorButton;
         const { clueColors } = card.suit;
-        let color;
+        const clueColorIndex = clueColors.findIndex(
+            (cardColor: Color) => cardColor === clueButton.clue.value,
+        );
+        let color: Color;
         if (
             // If a clue type button is selected
             clueButton
             // If a color clue type button is selected
             && clueButton.clue.type === CLUE_TYPE.COLOR
             // If the selected color clue is actually one of the possibilies for the card
-            && clueColors.findIndex((cardColor) => cardColor === clueButton.clue.value) !== -1
+            && clueColorIndex !== -1
         ) {
             // Use the color of the currently selected button
-            color = clueButton.clue.value;
+            color = clueButton.clue.value as Color;
         } else {
             // Otherwise, just use the first possible color
             // e.g. for rainbow cards, use blue
@@ -108,7 +115,7 @@ const clickLeft = (card, event) => {
     }
 };
 
-const clickRight = (card, event) => {
+const clickRight = (card: any, event: PointerEvent) => { // TODO change to HanabiCard
     // Right-clicking on cards in our own hand is a discard action
     if (
         card.holder === globals.playerUs
