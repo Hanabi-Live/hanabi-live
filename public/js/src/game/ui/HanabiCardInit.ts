@@ -12,29 +12,30 @@ import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
+import RankPip from './RankPip';
 
-export function image() {
+export function image(this: any) { // TODO change to HanabiCard
     // Create the "bare" card image, which is the main card grahpic
     // If the card is not revealed, it will just be a gray rectangle
     // The pips and other elements of a card are drawn on top of the bare image
     this.bare = new Konva.Image({
         width: CARD_W,
         height: CARD_H,
+        image: null as any,
     });
-    const self = this;
-    this.bare.sceneFunc(function setSceneFunc(context) {
+    this.bare.sceneFunc((context: CanvasRenderingContext2D) => {
         scaleCardImage(
             context,
-            self.bareName,
-            this.width(),
-            this.height(),
-            this.getAbsoluteTransform(),
+            this.bareName,
+            this.bare.width(),
+            this.bare.height(),
+            this.bare.getAbsoluteTransform(),
         );
     });
     this.add(this.bare);
 }
 
-export function border() {
+export function border(this: any) { // TODO change to HanabiCard
     // The card will get a border when it becomes clued
     this.cluedBorder = new Konva.Rect({
         x: 3,
@@ -80,7 +81,7 @@ export function border() {
     this.add(this.finesseBorder);
 }
 
-export function pips() {
+export function pips(this: any) { // TODO change to HanabiCard
     // Initialize the suit pips (colored shapes) on the back of the card,
     // which will be removed one by one as the card gains negative information
     this.suitPips = new Konva.Group({
@@ -117,7 +118,7 @@ export function pips() {
         };
         let { fill } = suit;
         if (suit.fill === 'multi') {
-            fill = undefined;
+            fill = '';
         }
 
         const suitPip = new Konva.Shape({
@@ -128,7 +129,7 @@ export function pips() {
             fill,
             stroke: 'black',
             strokeWidth: 5,
-            sceneFunc: (ctx) => {
+            sceneFunc: (ctx: any) => { // Konva.Context does not exist for some reason
                 drawPip(ctx, suit, false, false);
             },
             listening: false,
@@ -201,7 +202,7 @@ export function pips() {
             // We don't want to show the rank pip that represents a "START" card
             opacity = 0;
         }
-        const rankPip = new Konva.Rect({
+        const rankPip = new RankPip({
             x,
             y,
             width: Math.floor(CARD_H * 0.1),
@@ -215,14 +216,6 @@ export function pips() {
         });
         this.rankPips.add(rankPip);
         this.rankPipsMap.set(rank, rankPip);
-
-        rankPip.showPositiveClue = () => {
-            rankPip.fill('#ffdf00'); // Yellow
-            // (the same color as the "clued" border around a card)
-        };
-        rankPip.hidePositiveClue = () => {
-            rankPip.fill('black');
-        };
 
         // Also create the X that will show when a certain rank can be ruled out
         opacity = 0.8;
@@ -251,7 +244,7 @@ export function pips() {
     }
 }
 
-export function note() {
+export function note(this: any) { // TODO change to HanabiCard
     // Define the note indicator image
     const noteX = 0.78;
     const noteY = 0.03;
@@ -290,7 +283,7 @@ export function note() {
     // (we don't use the "tooltip.init()" function because we need the extra conditions in the
     // "mousemove" event)
     this.tooltipName = `card-${this.order}`;
-    this.on('mousemove', function cardMouseMove() {
+    this.on('mousemove', function cardMouseMove(this: any) { // TODO set to HanabiCard
         // Don't do anything if there is not a note on this card
         if (!this.noteGiven.visible()) {
             return;
@@ -312,7 +305,7 @@ export function note() {
         notes.show(this);
     });
 
-    this.on('mouseout', function cardMouseOut() {
+    this.on('mouseout', function cardMouseOut(this: any) { // TODO set to HanabiCard
         globals.activeHover = null;
 
         // Don't close the tooltip if we are currently editing a note
@@ -328,8 +321,8 @@ export function note() {
 // In a game, click on a teammate's hand to it show as it would to that teammate
 // (or show your own hand as it should appear without any identity notes on it)
 // (or, in a replay, show the hand as it appeared at that moment in time)
-export function empathy() {
-    this.on('mousedown', (event) => {
+export function empathy(this: any) { // TODO change to HanabiCard
+    this.on('mousedown', (event: Konva.KonvaPointerEvent) => {
         if (
             event.evt.which !== 1 // Only enable Empathy for left-clicks
             // Disable Empathy if a modifier key is pressed
@@ -358,7 +351,8 @@ export function empathy() {
         setEmpathyOnHand(true);
     });
 
-    this.on('mouseup mouseout', (event) => {
+    // Konva.PointerEvent does not have a "type" property for some reason
+    this.on('mouseup mouseout', (event: any) => {
         if (event.type === 'mouseup' && event.evt.which !== 1) { // Left-click
             return;
         }
@@ -367,7 +361,7 @@ export function empathy() {
         setEmpathyOnHand(false);
     });
 
-    const setEmpathyOnHand = (enabled) => {
+    const setEmpathyOnHand = (enabled: boolean) => {
         // Disable Empathy for the stack bases
         if (this.order > globals.deck.length - 1) {
             return;
@@ -389,7 +383,7 @@ export function empathy() {
     };
 }
 
-export function click() {
+export function click(this: any) { // TODO change to HanabiCard
     // Define the clue log mouse handlers
     this.on('mousemove tap', () => {
         globals.elements.clueLog.showMatches(this);
@@ -403,7 +397,7 @@ export function click() {
     // Define the other mouse handlers
     this.on('click tap', HanabiCardClick);
     this.on('mousedown', HanabiCardClickSpeedrun);
-    this.on('mousedown', (event) => {
+    this.on('mousedown', (event: Konva.KonvaPointerEvent) => {
         if (
             event.evt.which !== 1 // Dragging uses left click
             || !this.parent.draggable()
@@ -434,7 +428,7 @@ export function click() {
     });
 }
 
-export function possibilities() {
+export function possibilities(this: any) { // TODO change to HanabiCard
     if (!possibilitiesCheck()) {
         return;
     }
@@ -462,7 +456,7 @@ export function possibilities() {
     }
 }
 
-export function fixme() {
+export function fixme(this: any) { // TODO change to HanabiCard
     this.fixme = new Konva.Image({
         x: 0.1 * CARD_W,
         y: 0.33 * CARD_H,
@@ -473,7 +467,7 @@ export function fixme() {
     this.add(this.fixme);
 }
 
-export function sparkles() {
+export function sparkles(this: any) { // TODO change to HanabiCard
     /*
     const spark = new Sparkle({
         x: -50,
@@ -488,14 +482,20 @@ export function sparkles() {
     Misc. functions
 */
 
-const scaleCardImage = (ctx, name, width, height, am) => {
+const scaleCardImage = (
+    ctx: CanvasRenderingContext2D,
+    name: string,
+    width: number,
+    height: number,
+    tf: any, // Konva.Transform does not exist for some reason
+) => {
     let src = globals.cardImages.get(name);
     if (typeof src === 'undefined') {
         throw new Error(`The image "${name}" was not generated.`);
     }
 
-    const dw = Math.sqrt((am.m[0] * am.m[0]) + (am.m[1] * am.m[1])) * width;
-    const dh = Math.sqrt((am.m[2] * am.m[2]) + (am.m[3] * am.m[3])) * height;
+    const dw = Math.sqrt((tf.m[0] * tf.m[0]) + (tf.m[1] * tf.m[1])) * width;
+    const dh = Math.sqrt((tf.m[2] * tf.m[2]) + (tf.m[3] * tf.m[3])) * height;
 
     if (dw < 1 || dh < 1) {
         return;
@@ -525,6 +525,9 @@ const scaleCardImage = (ctx, name, width, height, am) => {
             scaledCardImage.height = sh;
 
             const scaleContext = scaledCardImage.getContext('2d');
+            if (scaleContext === null) {
+                throw new Error('Failed to get the context for a new scaled card image.');
+            }
             scaleContext.drawImage(src, 0, 0, sw, sh);
 
             scaledCardImages[steps] = scaledCardImage;
@@ -537,7 +540,14 @@ const scaleCardImage = (ctx, name, width, height, am) => {
     ctx.drawImage(src, 0, 0, width, height);
 };
 
-const drawX = (ctx, shape, x, y, size, width) => {
+const drawX = (
+    ctx: any, // Konva.Context does not exist for some reason
+    shape: any,
+    x: number,
+    y: number,
+    size: number,
+    width: number,
+) => {
     // Start at the top left corner and draw an X
     ctx.beginPath();
     x -= size;
