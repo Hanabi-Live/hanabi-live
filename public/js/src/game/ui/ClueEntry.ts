@@ -7,6 +7,7 @@
 import Konva from 'konva';
 import FitText from './FitText';
 import globals from './globals';
+import * as replay from './replay';
 
 export default class ClueEntry extends Konva.Group {
     list: Array<number>;
@@ -114,7 +115,7 @@ export default class ClueEntry extends Konva.Group {
 
         // Click an entry in the clue log to go to that turn in the replay
         this.background.on('click', () => {
-            globals.functions.clueLogClickHandler(this.turn);
+            replay.clueLogClickHandler(this.turn);
         });
     }
 

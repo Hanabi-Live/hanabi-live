@@ -32,6 +32,11 @@ module.exports = {
         // Airbnb uses 2 spaces, but it is harder to read block intendation at a glance
         '@typescript-eslint/indent': ['warn', 4],
 
+        // The Hanabi codebase uses cyclical depedencies because
+        // various objects are attached to the global variables object,
+        // but methods of these objects also reference/change global variables
+        'import/no-cycle': ['off'],
+
         // Airbnb has "exceptAfterSingleLine" turned off by default
         // A list of single-line variable declarations at the top of a class is common in TypeScript
         'lines-between-class-members': ['error', 'always', {

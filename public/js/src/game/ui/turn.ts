@@ -3,12 +3,14 @@ import * as action from './action';
 import { Action } from './actions';
 import { ACTION, MAX_CLUE_NUM } from '../../constants';
 import globals from './globals';
+import * as hypothetical from './hypothetical';
 import * as notifications from '../../notifications';
 import * as replay from './replay';
 
 export const end = (actionObject: Action) => {
     if (globals.hypothetical) {
-        globals.functions.hypotheticalSend(actionObject);
+        hypothetical.send(actionObject);
+        action.stop();
         return;
     }
 

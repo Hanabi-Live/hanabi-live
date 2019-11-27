@@ -11,7 +11,6 @@ import { LABEL_COLOR, STACK_BASE_RANK } from '../../constants';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals from './globals';
-import globalsFunctionsInit from './globalsFunctionsInit';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import Loader from './Loader';
@@ -26,9 +25,6 @@ export default class HanabiUI {
         // we need to explicitly reinitialize all globals varaibles
         // (or else they will retain their old values)
         globals.reset();
-
-        // Set up some functions to avoid cyclical depedencies
-        globalsFunctionsInit();
 
         // Expose the globals to functions in the "game" directory
         this.globals = globals;

@@ -142,9 +142,6 @@ class Globals {
     strikes: Array<StateStrike> = [];
     deckOrder: Array<any> = []; // Sent when the game ends // TODO change to Array<SimpleCard>
 
-    // We define some functions as globals to avoid cyclical dependencies
-    functions: any = null;
-
     // We provide a method to reset every class variable to its initial value
     // This is called when the user goes into a new game
     // We cannot just create a new instantiation of the class,
@@ -238,6 +235,7 @@ class Globals {
 const globals = new Globals();
 export default globals;
 
+// TODO move this somewhere, probably to a separate file
 interface StateStrike {
     order: number;
     turn: number;
