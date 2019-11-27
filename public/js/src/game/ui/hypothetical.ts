@@ -4,6 +4,7 @@
 */
 
 // Imports
+import { Action } from './actions';
 import { ACTION, CLUE_TYPE, REPLAY_ACTION_TYPE } from '../../constants';
 import { getTouchedCardsFromClue } from './clues';
 import globals from './globals';
@@ -24,19 +25,19 @@ export const start = () => {
     }
 
     // Adjust the UI, depending on whether or not we are the replay leader
-    globals.elements.replayArea.visible(false);
-    globals.elements.clueTargetButtonGroup.hide();
-    globals.elements.clueTargetButtonGroup2.show();
+    globals.elements.replayArea!.visible(false);
+    globals.elements.clueTargetButtonGroup!.hide();
+    globals.elements.clueTargetButtonGroup2!.show();
 
     if (globals.amSharedReplayLeader) {
         globals.lobby.conn.send('replayAction', {
             type: REPLAY_ACTION_TYPE.HYPO_START,
         });
 
-        globals.elements.restartButton.visible(false);
-        globals.elements.endHypotheticalButton.visible(true);
+        globals.elements.restartButton!.visible(false);
+        globals.elements.endHypotheticalButton!.visible(true);
     } else {
-        globals.elements.hypoCircle.visible(true);
+        globals.elements.hypoCircle!.visible(true);
     }
 
     beginTurn();
@@ -51,20 +52,20 @@ export const end = () => {
     globals.hypothetical = false;
 
     // Adjust the UI, depending on whether or not we are the replay leader
-    globals.elements.replayArea.show();
+    globals.elements.replayArea!.show();
     if (globals.amSharedReplayLeader) {
         globals.lobby.conn.send('replayAction', {
             type: REPLAY_ACTION_TYPE.HYPO_END,
         });
 
-        globals.elements.restartButton.show();
-        globals.elements.endHypotheticalButton.hide();
+        globals.elements.restartButton!.show();
+        globals.elements.endHypotheticalButton!.hide();
 
         // Furthermore, disable dragging and get rid of the clue UI
         disableDragOnAllHands();
         action.stop();
     } else {
-        globals.elements.hypoCircle.hide();
+        globals.elements.hypoCircle!.hide();
     }
     globals.layers.UI.batchDraw();
 
@@ -83,7 +84,7 @@ export const beginTurn = () => {
     }
 
     // Enabled or disable the clue target buttons, depending on whose turn it is
-    for (const button of globals.elements.clueTargetButtonGroup2.children) {
+    for (const button of globals.elements.clueTargetButtonGroup2!.children.toArray()) {
         button.setEnabled(button.targetIndex !== globals.currentPlayerIndex);
     }
 
@@ -100,7 +101,7 @@ export const beginTurn = () => {
     }
 };
 
-export const send = (hypoAction) => {
+export const send = (hypoAction: Action) => {
     let type = '';
     if (hypoAction.type === ACTION.CLUE) {
         type = 'clue';
@@ -114,7 +115,7 @@ export const send = (hypoAction) => {
 
     if (type === 'clue') {
         // Clue
-        const list = getTouchedCardsFromClue(hypoAction.target, hypoAction.clue);
+        const list = getTouchedCardsFromClue(hypoAction.target, hypoAction.clue!);
         sendHypoAction({
             type,
             clue: hypoAction.clue,
@@ -138,10 +139,10 @@ export const send = (hypoAction) => {
         ];
         text += `${words[list.length]} `;
 
-        if (hypoAction.clue.type === CLUE_TYPE.RANK) {
-            text += hypoAction.clue.value;
-        } else if (hypoAction.clue.type === CLUE_TYPE.COLOR) {
-            text += globals.variant.clueColors[hypoAction.clue.value].name;
+        if (hypoAction.clue!.type === CLUE_TYPE.RANK) {
+            text += hypoAction.clue!.value;
+        } else if (hypoAction.clue!.type === CLUE_TYPE.COLOR) {
+            text += globals.variant.clueColors[hypoAction.clue!.value].name;
         }
         if (list.length !== 1) {
             text += 's';
@@ -210,7 +211,7 @@ export const send = (hypoAction) => {
     });
 };
 
-export const sendHypoAction = (hypoAction) => {
+export const sendHypoAction = (hypoAction: any) => {
     globals.lobby.conn.send('replayAction', {
         type: REPLAY_ACTION_TYPE.HYPO_ACTION,
         actionJSON: JSON.stringify(hypoAction),

@@ -1446,19 +1446,6 @@ const drawClueArea = () => {
     globals.elements.clueArea.add(globals.elements.clueTargetButtonGroup2);
     globals.elements.clueTargetButtonGroup2.hide();
 
-    const selectNextTarget = function selectNextTarget() {
-        let newSelectionIndex = 0;
-        for (let i = 0; i < this.list.length; i++) {
-            if (this.list[i].pressed) {
-                newSelectionIndex = (i + 1) % this.list.length;
-                break;
-            }
-        }
-        this.list[newSelectionIndex].dispatchEvent(new MouseEvent('click'));
-    };
-
-    globals.elements.clueTargetButtonGroup.selectNextTarget = selectNextTarget;
-
     // Clue type buttons
     globals.elements.clueTypeButtonGroup = new ButtonGroup();
 

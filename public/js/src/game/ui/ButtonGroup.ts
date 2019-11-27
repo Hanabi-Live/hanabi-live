@@ -49,4 +49,15 @@ export default class ButtonGroup extends Konva.Group {
             }
         }
     }
+
+    selectNextTarget() {
+        let newSelectionIndex = 0;
+        for (let i = 0; i < this.list.length; i++) {
+            if (this.list[i].pressed) {
+                newSelectionIndex = (i + 1) % this.list.length;
+                break;
+            }
+        }
+        this.list[newSelectionIndex].dispatchEvent(new MouseEvent('click'));
+    }
 }

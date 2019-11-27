@@ -3,8 +3,10 @@
 */
 
 // Imports
-import * as clues from './clues';
+import * as action from './action';
+import { Action } from './actions';
 import { ACTION, REPLAY_ACTION_TYPE, MAX_CLUE_NUM } from '../../constants';
+import * as clues from './clues';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import { copyStringToClipboard } from '../../misc';
@@ -12,24 +14,28 @@ import * as replay from './replay';
 import * as ui from './ui';
 
 // Variables
-const hotkeyMap = {};
+const hotkeyClueMap = new Map();
+const hotkeyPlayMap = new Map();
+const hotkeyDiscardMap = new Map();
 
 export const init = () => {
     /*
         Build a mapping of hotkeys to functions
     */
 
-    hotkeyMap.clue = {};
+    hotkeyClueMap.clear();
+    hotkeyPlayMap.clear();
+    hotkeyDiscardMap.clear();
 
     // Add "Tab" for player selection
-    hotkeyMap.clue.Tab = () => {
-        globals.elements.clueTargetButtonGroup.selectNextTarget();
-    };
+    hotkeyClueMap.set('Tab', () => {
+        globals.elements.clueTargetButtonGroup!.selectNextTarget();
+    });
 
     // Add "1", "2", "3", "4", and "5" (for rank clues)
     for (let i = 0; i < globals.elements.rankClueButtons.length; i++) {
         // The button for "1" is at array index 0, etc.
-        hotkeyMap.clue[i + 1] = click(globals.elements.rankClueButtons[i]);
+        hotkeyClueMap.set(`${i + 1}`, click(globals.elements.rankClueButtons[i]));
     }
 
     // Add "q", "w", "e", "r", "t", and "y" (for color clues)
@@ -37,17 +43,13 @@ export const init = () => {
     // and also because the clue colors can change between different variants)
     const clueKeyRow = ['q', 'w', 'e', 'r', 't', 'y'];
     for (let i = 0; i < globals.elements.colorClueButtons.length && i < clueKeyRow.length; i++) {
-        hotkeyMap.clue[clueKeyRow[i]] = click(globals.elements.colorClueButtons[i]);
+        hotkeyClueMap.set(clueKeyRow[i], click(globals.elements.colorClueButtons[i]));
     }
 
-    hotkeyMap.play = {
-        'a': play, // The main play hotkey
-        '+': play, // For numpad users
-    };
-    hotkeyMap.discard = {
-        'd': discard, // The main discard hotkey
-        '-': discard, // For numpad users
-    };
+    hotkeyPlayMap.set('a', play); // The main play hotkey
+    hotkeyPlayMap.set('+', play); // For numpad users
+    hotkeyDiscardMap.set('d', discard); // The main discard hotkey
+    hotkeyDiscardMap.set('-', discard); // For numpad users
 
     // Enable all of the keyboard hotkeys
     $(document).keydown(keydown);
@@ -57,7 +59,7 @@ export const destroy = () => {
     $(document).unbind('keydown', keydown);
 };
 
-const keydown = (event) => {
+const keydown = (event: JQuery.KeyDownEvent) => {
     // Disable hotkeys if we not currently in a game
     // (this should not be possible, as the handler gets unregistered upon going back to the lobby,
     // but double check just in case)
@@ -102,7 +104,7 @@ const keydown = (event) => {
             && globals.replay
             && !($('#game-chat-modal').is(':visible'))
         ) {
-            copyStringToClipboard(globals.databaseID);
+            copyStringToClipboard(globals.databaseID.toString());
             return;
         }
     }
@@ -219,19 +221,19 @@ const keydown = (event) => {
 
     let hotkeyFunction;
     if (globals.clues >= 1) {
-        hotkeyFunction = hotkeyMap.clue[event.key];
+        hotkeyFunction = hotkeyClueMap.get(event.key);
     }
     if (globals.clues < MAX_CLUE_NUM) {
-        hotkeyFunction = hotkeyFunction || hotkeyMap.discard[event.key];
+        hotkeyFunction = hotkeyFunction || hotkeyDiscardMap.get(event.key);
     }
-    hotkeyFunction = hotkeyFunction || hotkeyMap.play[event.key];
+    hotkeyFunction = hotkeyFunction || hotkeyPlayMap.get(event.key);
     if (hotkeyFunction !== undefined) {
         event.preventDefault();
         hotkeyFunction();
     }
 };
 
-const sharedReplaySendSound = (sound) => {
+const sharedReplaySendSound = (sound: string) => {
     // Only enable sound effects in a shared replay
     if (!globals.replay || !globals.sharedReplay) {
         return;
@@ -254,47 +256,49 @@ const sharedReplaySendSound = (sound) => {
 */
 
 const play = () => {
-    action(true);
+    performAction(true);
 };
 const discard = () => {
-    action(false);
+    performAction(false);
 };
 
 // If intendedPlay is true, it plays a card
 // If intendedPlay is false, it discards a card
-const action = (intendedPlay = true) => {
+const performAction = (intendedPlay = true) => {
     const cardOrder = promptOwnHandOrder(intendedPlay ? 'play' : 'discard');
 
     if (cardOrder === null) {
         return;
     }
-    if (cardOrder === 'deck' && !(intendedPlay && globals.savedAction.canBlindPlayDeck)) {
+    if (cardOrder === 'deck' && !intendedPlay) {
         return;
     }
 
-    const data = {};
+    const actionObject = {} as Action;
     if (cardOrder === 'deck') {
-        data.type = ACTION.DECKPLAY;
+        actionObject.type = ACTION.DECKPLAY;
     } else {
-        data.type = intendedPlay ? ACTION.PLAY : ACTION.DISCARD;
-        data.target = cardOrder;
+        actionObject.type = intendedPlay ? ACTION.PLAY : ACTION.DISCARD;
+        actionObject.target = cardOrder;
     }
 
-    globals.lobby.conn.send('action', data);
+    globals.lobby.conn.send('action', actionObject);
     action.stop();
 };
 
 // Keyboard actions for playing and discarding cards
-const promptOwnHandOrder = (actionString) => {
+const promptOwnHandOrder = (actionString: string) => {
     const playerCards = globals.elements.playerHands[globals.playerUs].children;
     const maxSlotIndex = playerCards.length;
     const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${actionString}.`;
     const response = window.prompt(msg);
 
+    if (response === null || response === '') {
+        return null;
+    }
     if (/^deck$/i.test(response)) {
         return 'deck';
     }
-
     if (!/^\d+$/.test(response)) {
         return null;
     }
@@ -307,6 +311,6 @@ const promptOwnHandOrder = (actionString) => {
     return playerCards[maxSlotIndex - numResponse].children[0].order;
 };
 
-const click = (elem) => () => {
-    elem.dispatchEvent(new MouseEvent('click'));
+const click = (element: any) => () => {
+    element.dispatchEvent(new MouseEvent('click'));
 };
