@@ -52,7 +52,7 @@ export default (winW: number, winH: number) => {
         opacity: 0,
         listening: true,
     });
-    replayBarClickRect.on('click', (replay.barClick as any)); // TODO set to ???
+    replayBarClickRect.on('click', replay.barClick as any); // TODO set to ???
     globals.elements.replayArea.add(replayBarClickRect);
 
     const shuttleValues = {

@@ -95,15 +95,15 @@ export const draw = () => {
 
         // Column 7 - Watch Replay
         const watchReplayButton = makeReplayButton(ids[i], 'solo');
-        $('<td>').html((watchReplayButton as any)).appendTo(row);
+        $('<td>').html(watchReplayButton as any).appendTo(row);
 
         // Column 8 - Share Replay
         const shareReplayButton = makeReplayButton(ids[i], 'shared');
-        $('<td>').html((shareReplayButton as any)).appendTo(row);
+        $('<td>').html(shareReplayButton as any).appendTo(row);
 
         // Column 9 - Other Scores
         const otherScoresButton = makeHistoryDetailsButton(ids[i], gameData.numSimilar);
-        $('<td>').html((otherScoresButton as any)).appendTo(row);
+        $('<td>').html(otherScoresButton as any).appendTo(row);
 
         row.appendTo(tbody);
     }
@@ -241,11 +241,11 @@ export const drawDetails = () => {
 
         // Column 5 - Watch Replay
         const watchReplayButton = makeReplayButton(gameData.id, 'solo');
-        $('<td>').html((watchReplayButton as any)).appendTo(row);
+        $('<td>').html(watchReplayButton as any).appendTo(row);
 
         // Column 6 - Share Replay
         const shareReplayButton = makeReplayButton(gameData.id, 'shared');
-        $('<td>').html((shareReplayButton as any)).appendTo(row);
+        $('<td>').html(shareReplayButton as any).appendTo(row);
 
         row.appendTo(tbody);
     }

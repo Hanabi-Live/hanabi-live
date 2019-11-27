@@ -47,7 +47,7 @@ export default class FullActionLog extends Konva.Group {
             height: 0.94 * winH,
         };
         this.logText = new MultiFitText(textOptions, maxLines);
-        this.add((this.logText as any));
+        this.add(this.logText as any);
 
         // The turn numbers for each action
         const numbersOptions = {
@@ -60,18 +60,18 @@ export default class FullActionLog extends Konva.Group {
             height: 0.94 * winH,
         };
         this.logNumbers = new MultiFitText(numbersOptions, maxLines);
-        this.add((this.logNumbers as any));
+        this.add(this.logNumbers as any);
 
         for (let i = 0; i < globals.playerNames.length; i++) {
             const playerLog = new MultiFitText(textOptions, maxLines);
             playerLog.hide();
             this.playerLogs.push(playerLog);
-            this.add((playerLog as any));
+            this.add(playerLog as any);
 
             const playerLogNumber = new MultiFitText(numbersOptions, maxLines);
             playerLogNumber.hide();
             this.playerLogNumbers.push(playerLogNumber);
-            this.add((playerLogNumber as any));
+            this.add(playerLogNumber as any);
         }
     }
 
