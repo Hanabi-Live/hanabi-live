@@ -703,14 +703,14 @@ export default class HanabiCard extends Konva.Group {
         if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
             // The act of adding it will automatically tween the card
             const hole = globals.elements.playStacks.get('hole');
-            hole.addCard(this.parent);
+            hole.addChild(this.parent);
 
             // We do not want this card to interfere with writing notes on the stack bases
             this.listening(false);
         } else {
             // The act of adding it will automatically tween the card
             const playStack = globals.elements.playStacks.get(this.suit);
-            playStack.addCard(this.parent);
+            playStack.addChild(this.parent);
 
             // We also want to move this stack to the top so that
             // cards do not tween behind the other play stacks when travelling to this stack
@@ -721,7 +721,7 @@ export default class HanabiCard extends Konva.Group {
     animateToDiscardPile() {
         // We add a LayoutChild to a CardLayout
         const discardStack = globals.elements.discardStacks.get(this.suit);
-        discardStack.addCard(this.parent);
+        discardStack.addChild(this.parent);
 
         // We need to bring the discarded card to the top so that when it tweens to the discard
         // pile, it will fly on top of the play stacks and other player's hands

@@ -236,7 +236,7 @@ const initCards = () => {
 
         // Create the LayoutChild that will be the parent of the card
         const child = new LayoutChild();
-        child.add(card);
+        child.addCard(card);
     }
 
     // Also create objects for the stack bases

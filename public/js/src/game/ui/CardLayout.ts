@@ -6,6 +6,7 @@
 // Imports
 import Konva from 'konva';
 import globals from './globals';
+import LayoutChild from './LayoutChild';
 
 export default class CardLayout extends Konva.Group {
     align: string;
@@ -36,10 +37,10 @@ export default class CardLayout extends Konva.Group {
         */
     }
 
-    addCard(child: any) { // TODO set to HanabiCard
-        const pos = child.absolutePosition();
-        this.add(child);
-        child.absolutePosition(pos);
+    addChild(child: LayoutChild) {
+        const pos = child.getAbsolutePosition();
+        this.add(child as any);
+        child.getAbsolutePosition(pos);
         this.doLayout();
     }
 

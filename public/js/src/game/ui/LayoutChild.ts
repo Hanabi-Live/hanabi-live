@@ -13,7 +13,7 @@ import * as turn from './turn';
 export default class LayoutChild extends Konva.Group {
     tween: Konva.Tween | null = null;
 
-    addChild(child: any) { // TODO change to HanabiCard
+    addCard(child: any) { // TODO change to HanabiCard
         this.add(child);
         this.width(child.width());
         this.height(child.height());

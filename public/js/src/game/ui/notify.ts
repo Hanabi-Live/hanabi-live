@@ -260,7 +260,7 @@ notifyFunctions.set('draw', (data: ActionDraw) => {
     });
 
     // Add it to the player's hand (which will automatically tween the card)
-    globals.elements.playerHands[holder].addCard(child);
+    globals.elements.playerHands[holder].addChild(child);
     globals.elements.playerHands[holder].moveToTop();
 
     // If this card is known,
@@ -322,7 +322,7 @@ notifyFunctions.set('reorder', (data: ActionReorder) => {
     // Put them back into the hand in the new order
     for (let i = 0; i < handSize; i++) {
         const child = newChildOrder[i];
-        hand.addCard(child);
+        hand.addChild(child);
     }
 });
 

@@ -5,14 +5,15 @@
 
 // Imports
 import Konva from 'konva';
-import { STACK_BASE_RANK } from '../../constants';
 import globals from './globals';
+import LayoutChild from './LayoutChild';
+import { STACK_BASE_RANK } from '../../constants';
 
 export default class PlayStack extends Konva.Group {
-    addCard(child: any) { // TODO change to HanabiCard
-        const pos = child.absolutePosition();
-        this.add(child);
-        child.absolutePosition(pos);
+    addChild(child: LayoutChild) {
+        const pos = child.getAbsolutePosition();
+        this.add(child as any);
+        child.getAbsolutePosition(pos);
         this.doLayout();
     }
 
