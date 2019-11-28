@@ -222,7 +222,6 @@ const goToTurnAndIndicateCard = (turn: number, order: number) => {
     arrows.toggle(globals.deck[order]);
 };
 
-
 // Morphing cards allows for creation of hypothetical situations
 const clickMorph = (order: number) => {
     const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3")');

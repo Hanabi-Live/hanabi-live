@@ -31,7 +31,6 @@ export default class Hand extends Phaser.GameObjects.Container {
         const handSize = cards.length;
         const horizSpacing = CARD_W * this.scale * HAND_PADDING;
 
-
         for (let i = 0; i < handSize; i++) {
             const x = (i + 0.5 - (handSize / 2)) * horizSpacing;
             this.scene.tweens.add({

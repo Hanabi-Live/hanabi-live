@@ -1,4 +1,3 @@
-
 /*
     The "Create Game" nav button
 */

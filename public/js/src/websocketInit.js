@@ -227,7 +227,6 @@ const initCommands = () => {
         lobbyTablesDraw();
     });
 
-
     /*
         Received by the client when a new chat message arrives
         Has the following data:
