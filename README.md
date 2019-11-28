@@ -6,12 +6,11 @@
 ## Description
 
 * This is the source code for [Hanabi Live](http://hanabi.live/), which is a website that allows people to play the card game [Hanabi](https://boardgamegeek.com/boardgame/98778/hanabi) online.
-* The client is programmed in [TypeScript](https://www.typescriptlang.org/). A lot of the code was originally taken from [Keldon's Hanabi webpage](http://keldon.net/hanabi/). (The site no longer works.)
-* The server is programmed in [Go](https://golang.org/).
-* It uses a [MariaDB](https://mariadb.org/) database to store information about the users and games.
-* The server-side code is in the `src` subdirectory.
-* All database logic is in the `src/models` subdirectory.
-* The client-side JavaScript is located in `public/js`.
+* The client is programmed in [TypeScript](https://www.typescriptlang.org/). It is located in the `public/js` directory.
+  * A lot of the code was originally taken from [Keldon's Hanabi webpage](http://keldon.net/hanabi/). (The site no longer works.)
+* The server is programmed in [Go](https://golang.org/). It is located in the `src` subdirectory.
+  * It uses a [MariaDB](https://mariadb.org/) database to store information about the users and games.
+  * Database logic is in the `src/models` subdirectory.
 
 <br />
 
