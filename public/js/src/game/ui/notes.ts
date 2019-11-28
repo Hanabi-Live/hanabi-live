@@ -370,7 +370,10 @@ export const openEditTooltip = (card: any) => { // TODO set to HanabiCard
     });
 
     // Automatically focus the new text input box
-    $(`#tooltip-${card.tooltipName}-input`).focus();
+    // (this will not work properly unless we put it in a callback)
+    setTimeout(() => {
+        $(`#tooltip-${card.tooltipName}-input`).focus();
+    }, 1);
 };
 
 // We just got a list of a bunch of notes, so show the note indicator for currently-visible cards
