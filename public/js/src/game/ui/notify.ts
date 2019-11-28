@@ -140,7 +140,7 @@ notifyFunctions.set('clue', (data: ActionClue) => {
     }
 
     const entry = new ClueEntry({
-        width: globals.elements.clueLog.width(),
+        width: globals.elements.clueLog!.width(),
         height: 0.017 * globals.stage!.height(),
         giver: globals.playerNames[data.giver],
         target: globals.playerNames[data.target],
@@ -149,7 +149,7 @@ notifyFunctions.set('clue', (data: ActionClue) => {
         negativeList,
         turn: data.turn,
     });
-    globals.elements.clueLog.addClue(entry);
+    globals.elements.clueLog!.addClue(entry);
 
     if (!globals.animateFast) {
         globals.layers.card.batchDraw();
@@ -216,7 +216,7 @@ notifyFunctions.set('draw', (data: ActionDraw) => {
     // Remove one card from the deck
     globals.deckSize -= 1;
     globals.indexOfLastDrawnCard = order;
-    globals.elements.deck.setCount(globals.deckSize);
+    globals.elements.deck!.setCount(globals.deckSize);
 
     // Keep track of which cards we have learned for the purposes of
     // showing the true card face in the in-game replay
@@ -250,10 +250,10 @@ notifyFunctions.set('draw', (data: ActionDraw) => {
     // and the user rewinds to the beginning of the replay
     child.visible(true);
     child.opacity(1); // Cards can be faded in certain variants
-    const pos = globals.elements.deck.cardBack.absolutePosition();
-    child.absolutePosition(pos);
+    const pos = globals.elements.deck!.cardBack.getAbsolutePosition();
+    child.setAbsolutePosition(pos);
     child.rotation(-globals.elements.playerHands[holder].rotation());
-    const scale = globals.elements.deck.cardBack.width() / CARD_W;
+    const scale = globals.elements.deck!.cardBack.width() / CARD_W;
     child.scale({
         x: scale,
         y: scale,
@@ -273,7 +273,7 @@ notifyFunctions.set('draw', (data: ActionDraw) => {
                 continue;
             }
             const hand = globals.elements.playerHands[i];
-            for (const layoutChild of hand.children) {
+            for (const layoutChild of hand.children.toArray()) {
                 const handCard = layoutChild.children[0];
                 handCard.removePossibility(suit, rank, false);
             }
@@ -448,8 +448,8 @@ notifyFunctions.set('strike', (data: ActionStrike) => {
 
 // A new line of text has appeared in the action log
 notifyFunctions.set('text', (data: ActionText) => {
-    globals.elements.actionLog.setMultiText(data.text);
-    globals.elements.fullActionLog.addMessage(data.text);
+    globals.elements.actionLog!.setMultiText(data.text);
+    globals.elements.fullActionLog!.addMessage(data.text);
     if (!globals.animateFast) {
         globals.layers.UI.batchDraw();
         globals.layers.UI2.batchDraw();

@@ -97,7 +97,7 @@ export default class ClueEntry extends Konva.Group {
 
         // Add a mouseover highlighting effect
         this.background.on('mouseover', () => {
-            globals.elements.clueLog.showMatches(null);
+            globals.elements.clueLog!.showMatches(null);
 
             this.background.opacity(0.4);
             const layer = this.getLayer();

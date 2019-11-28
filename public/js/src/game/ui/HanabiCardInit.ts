@@ -23,9 +23,9 @@ export function image(this: any) { // TODO change to HanabiCard
         height: CARD_H,
         image: null as any,
     });
-    this.bare.sceneFunc((context: CanvasRenderingContext2D) => {
+    this.bare.sceneFunc((ctx: CanvasRenderingContext2D) => {
         scaleCardImage(
-            context,
+            ctx,
             this.bareName,
             this.bare.width(),
             this.bare.height(),
@@ -386,11 +386,11 @@ export function empathy(this: any) { // TODO change to HanabiCard
 export function click(this: any) { // TODO change to HanabiCard
     // Define the clue log mouse handlers
     this.on('mousemove tap', () => {
-        globals.elements.clueLog.showMatches(this);
+        globals.elements.clueLog!.showMatches(this);
         globals.layers.UI.batchDraw();
     });
     this.on('mouseout', () => {
-        globals.elements.clueLog.showMatches(null);
+        globals.elements.clueLog!.showMatches(null);
         globals.layers.UI.batchDraw();
     });
 

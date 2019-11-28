@@ -13,7 +13,7 @@ export default class PlayStack extends Konva.Group {
     addChild(child: LayoutChild) {
         const pos = child.getAbsolutePosition();
         this.add(child as any);
-        child.getAbsolutePosition(pos);
+        child.setAbsolutePosition(pos);
         this.doLayout();
     }
 

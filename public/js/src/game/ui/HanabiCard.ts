@@ -16,64 +16,95 @@ import {
     START_CARD_RANK,
     SUITS,
 } from '../../constants';
-import { msgSuitToSuit, suitToMsgSuit } from './convert';
+import Color from '../../Color';
 import globals from './globals';
 import * as HanabiCardInit from './HanabiCardInit';
+import { msgSuitToSuit, suitToMsgSuit } from './convert';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
+import RankPip from './RankPip';
+import Suit from '../../Suit';
 
 export default class HanabiCard extends Konva.Group {
-    constructor(config) {
-        // Cards should start off with a constant width and height
-        config.width = CARD_W;
-        config.height = CARD_H;
-        config.x = CARD_W / 2;
-        config.y = CARD_H / 2;
-        config.offset = {
-            x: CARD_W / 2,
-            y: CARD_H / 2,
-        };
+    // Mark the object type for use elsewhere in the code
+    type: string = 'HanabiCard';
+    bareName: string = '';
+    order: number;
+    // The index of the player that holds this card (or null if played/discarded)
+    holder: number | null = null;
+    suit: Suit | null = null;
+    rank: number | null = null;
+    // The suit corresponding to the note written on the card, if any
+    noteSuit: Suit | null = null;
+    // The rank corresponding to the note written on the card, if any
+    noteRank: number | null = null;
+    noteKnownTrash: boolean = false;
+    noteNeedsFix: boolean = false;
+    noteChopMoved: boolean = false;
+    noteFinessed: boolean = false;
+    noteBlank: boolean = false;
+
+    // The following are the variables that are refreshed
+    possibleSuits: Array<Suit> = [];
+    possibleRanks: Array<number> = [];
+    possibleCards: Map<string, any> = new Map(); // TODO change to PossibleCard
+    tweening: boolean = false;
+    empathy: boolean = false;
+    doMisplayAnimation: boolean = false;
+    numPositiveClues: number = 0;
+    positiveColorClues: Array<Color> = [];
+    negativeColorClues: Array<Color> = [];
+    positiveRankClues: Array<number> = [];
+    negativeRankClues: Array<number> = [];
+    specialRankSuitRemoved: boolean = false;
+    turnsClued: Array<number> = [];
+    turnDrawn: number = -1;
+    isDiscarded: boolean = false;
+    turnDiscarded: number = -1;
+    isPlayed: boolean = false;
+    turnPlayed: number = -1;
+    isMisplayed: boolean = false;
+
+    cluedBorder: Konva.Rect | null = null;
+    noteBorder: Konva.Rect | null = null;
+    finesseBorder: Konva.Rect | null = null;
+
+    suitPips: Konva.Group | null = null;
+    suitPipsMap: Map<Suit, Konva.Shape> = new Map();
+    suitPipsXMap: Map<Suit, Konva.Shape> = new Map();
+    rankPips: Konva.Group | null = null;
+    rankPipsMap: Map<number, RankPip> = new Map();
+    rankPipsXMap: Map<number, Konva.Shape> = new Map();
+
+    fixme: Konva.Image | null = null;
+
+    constructor(config: Konva.ContainerConfig) {
         super(config);
         this.listening(true);
 
-        // Mark the object type for use elsewhere in the code
-        this.type = 'HanabiCard';
+        // Cards should start off with a constant width and height
+        this.width(CARD_W);
+        this.height(CARD_H);
+        this.x(CARD_W / 2);
+        this.y(CARD_H / 2);
+        this.offset({
+            x: CARD_W / 2,
+            y: CARD_H / 2,
+        });
 
         // Most class variables are defined below in the "refresh()" function
         // Order is defined upon first initialization
         this.order = config.order;
-        // The index of the player that holds this card (or null if played/discarded)
-        this.holder = null;
-        this.suit = null;
-        this.rank = null;
-        // The name of the card image corresponding to the player-wrriten note on the card
-        this.noteSuit = null;
-        this.noteRank = null;
-        this.noteKnownTrash = false;
-        this.noteNeedsFix = false;
-        this.noteChopMoved = false;
-        this.noteFinessed = false;
-        this.noteBlank = false;
 
         // Initialize various elements/features of the card
-        this.initImage();
-        this.initBorder();
+        HanabiCardInit.image.call(this);
+        HanabiCardInit.border.call(this);
         this.initPips();
         this.initNote();
         this.initEmpathy();
         this.initClick();
         this.initFixme();
         this.initSparkles();
-    }
-
-    isClued() {
-        return this.numPositiveClues > 0;
-    }
-
-    removeBorders() {
-        this.cluedBorder.hide();
-        this.noteBorder.hide();
-        this.finesseBorder.hide();
     }
 
     // Erase all of the data on the card to make it like it was freshly drawn
@@ -88,10 +119,10 @@ export default class HanabiCard extends Konva.Group {
         this.empathy = false;
         this.doMisplayAnimation = false;
         this.numPositiveClues = 0;
-        this.positiveRankClues = [];
-        this.negativeRankClues = [];
         this.positiveColorClues = [];
         this.negativeColorClues = [];
+        this.positiveRankClues = [];
+        this.negativeRankClues = [];
         this.specialRankSuitRemoved = false;
         this.turnsClued = [];
         // We have to add one to the turn drawn because
@@ -99,9 +130,9 @@ export default class HanabiCard extends Konva.Group {
         // However, if it was part of the initial deal, then it will correctly be set as turn 0
         this.turnDrawn = globals.turn === 0 ? 0 : globals.turn + 1;
         this.isDiscarded = false;
-        this.turnDiscarded = null;
+        this.turnDiscarded = -1;
         this.isPlayed = false;
-        this.turnPlayed = null;
+        this.turnPlayed = -1;
         this.isMisplayed = false;
 
         this.listening(true); // Some variants disable listening on cards
@@ -110,11 +141,11 @@ export default class HanabiCard extends Konva.Group {
         if (!globals.replay && !globals.spectating) {
             // If it has a "chop move" note on it, we want to keep the chop move border turned on
             if (this.noteChopMoved) {
-                this.noteBorder.show();
+                this.noteBorder!.show();
             }
             // If it has a "finessed" note on it, we want to keep the finesse border turned on
             if (this.noteFinessed) {
-                this.finesseBorder.show();
+                this.finesseBorder!.show();
             }
         }
 
@@ -144,6 +175,16 @@ export default class HanabiCard extends Konva.Group {
 
         this.initPossibilities();
         this.setBareImage();
+    }
+
+    isClued() {
+        return this.numPositiveClues > 0;
+    }
+
+    removeBorders() {
+        this.cluedBorder!.hide();
+        this.noteBorder!.hide();
+        this.finesseBorder!.hide();
     }
 
     setBareImage() {
@@ -257,15 +298,15 @@ export default class HanabiCard extends Konva.Group {
             || globals.variant.name.startsWith('Cow & Pig')
             || globals.variant.name.startsWith('Duck')
         ) {
-            this.suitPips.hide();
-            this.rankPips.hide();
+            this.suitPips!.hide();
+            this.rankPips!.hide();
         } else {
-            this.suitPips.visible(suitToShow.name === 'Unknown');
-            this.rankPips.visible(rankToShow === 6);
+            this.suitPips!.visible(suitToShow.name === 'Unknown');
+            this.rankPips!.visible(rankToShow === 6);
         }
 
         // Show or hide the "fixme" image
-        this.fixme.visible((
+        this.fixme!.visible((
             this.noteNeedsFix
             && !this.empathy
             && !globals.replay
@@ -305,14 +346,6 @@ export default class HanabiCard extends Konva.Group {
         this.opacity(newOpacity);
     }
 
-    initImage() {
-        return HanabiCardInit.image.call(this);
-    }
-
-    initBorder() {
-        return HanabiCardInit.border.call(this);
-    }
-
     initPips() {
         return HanabiCardInit.pips.call(this);
     }
@@ -343,7 +376,7 @@ export default class HanabiCard extends Konva.Group {
 
     // This card was touched by a positive or negative clue,
     // so remove pips and possibilities from the card
-    applyClue(clue, positive) {
+    applyClue(clue: Clue, positive: boolean) {
         const wasFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
         if (wasFullyKnown) {
             return;
@@ -356,16 +389,16 @@ export default class HanabiCard extends Konva.Group {
 
         // Record unique clues that touch the card for later
         if (clue.type === CLUE_TYPE.RANK) {
-            if (positive && !this.positiveRankClues.includes(clue.value)) {
-                this.positiveRankClues.push(clue.value);
-            } else if (!positive && !this.negativeRankClues.includes(clue.value)) {
-                this.negativeRankClues.push(clue.value);
+            if (positive && !this.positiveRankClues.includes(clue.value as number)) {
+                this.positiveRankClues.push(clue.value as number);
+            } else if (!positive && !this.negativeRankClues.includes(clue.value as number)) {
+                this.negativeRankClues.push(clue.value as number);
             }
         } else if (clue.type === CLUE_TYPE.COLOR) {
-            if (positive && !this.positiveColorClues.includes(clue.value)) {
-                this.positiveColorClues.push(clue.value);
-            } else if (!positive && !this.negativeColorClues.includes(clue.value)) {
-                this.negativeColorClues.push(clue.value);
+            if (positive && !this.positiveColorClues.includes(clue.value as Color)) {
+                this.positiveColorClues.push(clue.value as Color);
+            } else if (!positive && !this.negativeColorClues.includes(clue.value as Color)) {
+                this.negativeColorClues.push(clue.value as Color);
             }
         }
 
@@ -373,12 +406,12 @@ export default class HanabiCard extends Konva.Group {
         let ranksRemoved = [];
         let suitsRemoved = [];
         if (clue.type === CLUE_TYPE.RANK) {
-            const clueRank = clue.value;
+            const clueRank = clue.value as number;
             if (globals.variant.name.includes('Multi-Fives')) {
                 // In "Multi-Fives" variants, the 5 of every suit is touched by all rank clues
                 ranksRemoved = filterInPlace(
                     this.possibleRanks,
-                    (rank) => (rank === clueRank || rank === 5) === positive,
+                    (rank: number) => (rank === clueRank || rank === 5) === positive,
                 );
             } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'none') && !positive) {
                 // Some suits are not touched by any ranks,
@@ -390,7 +423,7 @@ export default class HanabiCard extends Konva.Group {
                 // Remove all possibilities that do not include this rank
                 ranksRemoved = filterInPlace(
                     this.possibleRanks,
-                    (rank) => (rank === clueRank) === positive,
+                    (rank: number) => (rank === clueRank) === positive,
                 );
             }
 
@@ -400,7 +433,7 @@ export default class HanabiCard extends Konva.Group {
             if (positive) {
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
-                    (suit) => suit.clueRanks !== 'none',
+                    (suit: Suit) => suit.clueRanks !== 'none',
                 );
 
                 // Also handle the special case where two positive rank clues
@@ -412,7 +445,7 @@ export default class HanabiCard extends Konva.Group {
                 ) {
                     suitsRemoved = filterInPlace(
                         this.possibleSuits,
-                        (suit) => suit.clueRanks === 'all',
+                        (suit: Suit) => suit.clueRanks === 'all',
                     );
                 }
 
@@ -434,18 +467,18 @@ export default class HanabiCard extends Konva.Group {
 
                 // If the rank of the card is not known yet,
                 // change the rank pip that corresponds with this number to signify a positive clue
-                const pip = this.rankPipsMap.get(clueRank);
+                const pip = this.rankPipsMap.get(clueRank)!;
                 if (pip.visible()) {
                     pip.showPositiveClue();
                 }
             } else {
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
-                    (suit) => suit.clueRanks !== 'all',
+                    (suit: Suit) => suit.clueRanks !== 'all',
                 );
             }
         } else if (clue.type === CLUE_TYPE.COLOR) {
-            const clueColor = clue.value;
+            const clueColor = clue.value as Color;
             if (
                 globals.variant.name.includes('Prism-Ones')
                 && this.possibleRanks.includes(1)
@@ -458,7 +491,7 @@ export default class HanabiCard extends Konva.Group {
                 // Remove all possibilities that do not include this color
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
-                    (suit) => suit.clueColors.includes(clueColor) === positive,
+                    (suit: Suit) => suit.clueColors.includes(clueColor) === positive,
                 );
             }
 
@@ -469,14 +502,14 @@ export default class HanabiCard extends Konva.Group {
                         // Two positive color clues should "fill in" a 1
                         ranksRemoved = filterInPlace(
                             this.possibleRanks,
-                            (rank) => rank === 1,
+                            (rank: number) => rank === 1,
                         );
                     }
                 } else {
                     // Negative color means that the card cannot be a 1
                     ranksRemoved = filterInPlace(
                         this.possibleRanks,
-                        (rank) => rank !== 1,
+                        (rank: number) => rank !== 1,
                     );
                 }
             }
@@ -485,8 +518,8 @@ export default class HanabiCard extends Konva.Group {
         // Remove rank pips, if any
         for (const rank of ranksRemoved) {
             // Hide the rank pips
-            this.rankPipsMap.get(rank).hide();
-            this.rankPipsXMap.get(rank).hide();
+            this.rankPipsMap.get(rank)!.hide();
+            this.rankPipsXMap.get(rank)!.hide();
 
             // Remove any card possibilities for this rank
             if (possibilitiesCheck()) {
@@ -501,16 +534,16 @@ export default class HanabiCard extends Konva.Group {
             // Don't record the rank or hide the pips if the card is unclued
             if (this.holder === null || this.isClued()) {
                 globals.learnedCards[this.order].rank = this.rank;
-                this.rankPipsMap.get(this.rank).hide();
-                this.rankPips.hide();
+                this.rankPipsMap.get(this.rank)!.hide();
+                this.rankPips!.hide();
             }
         }
 
         // Remove suit pips, if any
         for (const suit of suitsRemoved) {
             // Hide the suit pips
-            this.suitPipsMap.get(suit).hide();
-            this.suitPipsXMap.get(suit).hide();
+            this.suitPipsMap.get(suit)!.hide();
+            this.suitPipsXMap.get(suit)!.hide();
 
             // Remove any card possibilities for this suit
             if (possibilitiesCheck()) {
@@ -530,15 +563,15 @@ export default class HanabiCard extends Konva.Group {
             // Don't record the suit or hide the pips if the card is unclued
             if (this.holder === null || this.isClued()) {
                 globals.learnedCards[this.order].suit = this.suit;
-                this.suitPipsMap.get(this.suit).hide();
-                this.suitPips.hide();
+                this.suitPipsMap.get(this.suit)!.hide();
+                this.suitPips!.hide();
             }
         }
 
         // Handle if this is the first time that the card is fully revealed to the holder
         const isFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
         if (isFullyKnown && !wasFullyKnown) {
-            this.updatePossibilitiesOnOtherCards(this.suit, this.rank);
+            this.updatePossibilitiesOnOtherCards(this.suit!, this.rank!);
         }
     }
 
@@ -562,7 +595,7 @@ export default class HanabiCard extends Konva.Group {
     }
 
     // Check to see if we can put an X over this suit pip or this rank pip
-    checkPipPossibilities(suit, rank) {
+    checkPipPossibilities(suit: Suit, rank: number) {
         // First, check to see if there are any possibilities remaining for this suit
         let suitPossible = false;
         for (const rank2 of globals.variant.ranks) {
@@ -574,11 +607,10 @@ export default class HanabiCard extends Konva.Group {
         }
         if (!suitPossible) {
             // Do nothing if the normal pip is already hidden
-            const pip = this.suitPipsMap.get(suit);
+            const pip = this.suitPipsMap.get(suit)!;
             if (pip.visible()) {
                 // All the cards of this suit are seen, so put an X over the suit pip
-                const x = this.suitPipsXMap.get(suit);
-                x.visible(true);
+                this.suitPipsXMap.get(suit)!.visible(true);
             }
         }
 
@@ -595,20 +627,19 @@ export default class HanabiCard extends Konva.Group {
             // There is no rank pip for "START" cards
             if (rank >= 1 && rank <= 5) {
                 // Do nothing if the normal pip is already hidden
-                const pip = this.rankPipsMap.get(rank);
+                const pip = this.rankPipsMap.get(rank)!;
                 if (pip.visible()) {
                     // All the cards of this rank are seen, so put an X over the rank pip
-                    const x = this.rankPipsXMap.get(rank);
-                    x.visible(true);
+                    this.rankPipsXMap.get(rank)!.visible(true);
                 }
             }
         }
     }
 
     // This card was either played or discarded (or revealed at the end of the game)
-    reveal(suit, rank) {
+    reveal(msgSuit: number, rank: number) {
         // Local variables
-        suit = msgSuitToSuit(suit, globals.variant);
+        const suit = msgSuitToSuit(msgSuit, globals.variant);
 
         // Set the true suit/rank on the card
         this.suit = suit;
@@ -639,7 +670,7 @@ export default class HanabiCard extends Konva.Group {
         this.setBareImage();
     }
 
-    updatePossibilitiesOnOtherCards(suit, rank) {
+    updatePossibilitiesOnOtherCards(suit: Suit, rank: number) {
         if (!possibilitiesCheck()) {
             return;
         }
@@ -647,8 +678,11 @@ export default class HanabiCard extends Konva.Group {
         // Update the possibilities for the player
         // who just discovered the true identity of this card
         // (either through playing it, discarding it, or getting a clue that fully revealed it)
+        if (this.holder === null) {
+            throw new Error('The holder of this card\'s hand is null in the "updatePossibilitiesOnOtherCards()" function.');
+        }
         const playerHand = globals.elements.playerHands[this.holder];
-        for (const layoutChild of playerHand.children) {
+        for (const layoutChild of playerHand.children.toArray()) {
             const card = layoutChild.children[0];
             if (card.order === this.order) {
                 // There is no need to update the card that was just revealed
@@ -672,7 +706,7 @@ export default class HanabiCard extends Konva.Group {
                 }
 
                 const playerHand2 = globals.elements.playerHands[i];
-                for (const layoutChild of playerHand2.children) {
+                for (const layoutChild of playerHand2.children.toArray()) {
                     const card = layoutChild.children[0];
                     card.removePossibility(suit, rank, false);
                 }
@@ -684,15 +718,15 @@ export default class HanabiCard extends Konva.Group {
         // Remove the card from the player's hand in preparation of adding it to either
         // the play stacks or the discard pile
         const layoutChild = this.parent;
-        if (!layoutChild.parent) {
+        if (!layoutChild || !layoutChild.parent) {
             // If a tween is destroyed in the middle of animation,
             // it can cause a card to be orphaned
             return;
         }
-        const pos = layoutChild.absolutePosition();
+        const pos = layoutChild.getAbsolutePosition();
         layoutChild.rotation(layoutChild.parent.rotation());
         layoutChild.remove();
-        layoutChild.absolutePosition(pos);
+        layoutChild.setAbsolutePosition(pos);
 
         // Mark that no player is now holding this card
         this.holder = null;
@@ -702,15 +736,15 @@ export default class HanabiCard extends Konva.Group {
         // We add a LayoutChild to a PlayStack
         if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
             // The act of adding it will automatically tween the card
-            const hole = globals.elements.playStacks.get('hole');
-            hole.addChild(this.parent);
+            const hole = globals.elements.playStacks.get('hole')!;
+            hole.addChild(this.parent as any);
 
             // We do not want this card to interfere with writing notes on the stack bases
             this.listening(false);
         } else {
             // The act of adding it will automatically tween the card
-            const playStack = globals.elements.playStacks.get(this.suit);
-            playStack.addChild(this.parent);
+            const playStack = globals.elements.playStacks.get(this.suit!)!;
+            playStack.addChild(this.parent as any);
 
             // We also want to move this stack to the top so that
             // cards do not tween behind the other play stacks when travelling to this stack
@@ -720,8 +754,8 @@ export default class HanabiCard extends Konva.Group {
 
     animateToDiscardPile() {
         // We add a LayoutChild to a CardLayout
-        const discardStack = globals.elements.discardStacks.get(this.suit);
-        discardStack.addChild(this.parent);
+        const discardStack = globals.elements.discardStacks.get(this.suit!)!;
+        discardStack.addChild(this.parent as any);
 
         // We need to bring the discarded card to the top so that when it tweens to the discard
         // pile, it will fly on top of the play stacks and other player's hands
@@ -739,7 +773,7 @@ export default class HanabiCard extends Konva.Group {
         }
     }
 
-    setNote(note) {
+    setNote(note: string) {
         notes.set(this.order, note);
         notes.update(this);
         if (note !== '') {
@@ -748,6 +782,10 @@ export default class HanabiCard extends Konva.Group {
     }
 
     getSlotNum() {
+        if (!this.parent || !this.parent.parent) {
+            return -1;
+        }
+
         const numCardsInHand = this.parent.parent.children.length;
         for (let i = 0; i < numCardsInHand; i++) {
             const layoutChild = this.parent.parent.children[i];
@@ -800,8 +838,8 @@ export default class HanabiCard extends Konva.Group {
 
         // Second, check to see if it is still possible to play this card
         // (the preceding cards in the suit might have already been discarded)
-        for (let i = 1; i < this.rank; i++) {
-            const num = getSpecificCardNum(this.suit, i);
+        for (let i = 1; i < this.rank!; i++) {
+            const num = getSpecificCardNum(this.suit!, i);
             if (num.total === num.discarded) {
                 // The suit is "dead", so this card does not need to be played anymore
                 return false;
@@ -817,7 +855,7 @@ export default class HanabiCard extends Konva.Group {
     // (before getting here, we already checked to see if the card has already been played)
     upOrDownNeedsToBePlayed() {
         // First, check to see if the stack is already finished
-        const suit = suitToMsgSuit(this.suit, globals.variant);
+        const suit = suitToMsgSuit(this.suit!, globals.variant);
         if (globals.stackDirections[suit] === STACK_DIRECTION.FINISHED) {
             return false;
         }
@@ -845,7 +883,7 @@ export default class HanabiCard extends Konva.Group {
             }
         } else if (this.rank === START_CARD_RANK) {
             // START cards do not need to be played if there are any cards played on the stack
-            const playStack = globals.elements.playStacks.get(this.suit);
+            const playStack = globals.elements.playStacks.get(this.suit!)!;
             const lastPlayedRank = playStack.getLastPlayedRank();
             if (lastPlayedRank !== STACK_BASE_RANK) {
                 return false;
@@ -863,14 +901,14 @@ export default class HanabiCard extends Konva.Group {
         const ranks = globals.variant.ranks.slice();
         const allDiscarded = new Map();
         for (const rank of ranks) {
-            const num = getSpecificCardNum(this.suit, rank);
+            const num = getSpecificCardNum(this.suit!, rank);
             allDiscarded.set(rank, num.total === num.discarded);
         }
 
         // Start by handling the easy cases of up and down
-        const suit = suitToMsgSuit(this.suit, globals.variant);
+        const suit = suitToMsgSuit(this.suit!, globals.variant);
         if (globals.stackDirections[suit] === STACK_DIRECTION.UP) {
-            for (let rank = 2; rank < this.rank; rank++) {
+            for (let rank = 2; rank < this.rank!; rank++) {
                 if (allDiscarded.get(rank)) {
                     return true;
                 }
@@ -878,7 +916,7 @@ export default class HanabiCard extends Konva.Group {
             return false;
         }
         if (globals.stackDirections[suit] === STACK_DIRECTION.DOWN) {
-            for (let rank = 4; rank > this.rank; rank--) {
+            for (let rank = 4; rank > this.rank!; rank--) {
                 if (allDiscarded.get(rank)) {
                     return true;
                 }
@@ -901,7 +939,7 @@ export default class HanabiCard extends Konva.Group {
         // If the "START" card is played on the stack,
         // then this card will be dead if all of the 2's and all of the 4's have been discarded
         // (this situation also applies to 3's when no cards have been played on the stack)
-        const playStack = globals.elements.playStacks.get(this.suit);
+        const playStack = globals.elements.playStacks.get(this.suit!)!;
         const lastPlayedRank = playStack.getLastPlayedRank();
         if (lastPlayedRank === START_CARD_RANK || this.rank === 3) {
             if (allDiscarded.get(2) && allDiscarded.get(4)) {
@@ -920,7 +958,7 @@ export default class HanabiCard extends Konva.Group {
 
         let potentiallyPlayable = false;
         for (const suit of globals.variant.suits) {
-            const playStack = globals.elements.playStacks.get(suit);
+            const playStack = globals.elements.playStacks.get(suit)!;
             let lastPlayedRank = playStack.getLastPlayedRank();
             if (lastPlayedRank === STACK_BASE_RANK) {
                 lastPlayedRank = 0;
@@ -940,7 +978,7 @@ export default class HanabiCard extends Konva.Group {
         let potentiallyPlayable = false;
         for (let i = 0; i < globals.variant.suits.length; i++) {
             const suit = globals.variant.suits[i];
-            const playStack = globals.elements.playStacks.get(suit);
+            const playStack = globals.elements.playStacks.get(suit)!;
             const lastPlayedRank = playStack.getLastPlayedRank();
 
             if (globals.stackDirections[i] === STACK_DIRECTION.UNDECIDED) {
@@ -992,7 +1030,7 @@ export default class HanabiCard extends Konva.Group {
         return potentiallyPlayable;
     }
 
-    removePossibility(suit, rank, all) {
+    removePossibility(suit: Suit, rank: number, all: boolean) {
         // Every card has a possibility map that maps card identities to count
         const mapIndex = `${suit.name}${rank}`;
         let cardsLeft = this.possibleCards.get(mapIndex);
@@ -1024,11 +1062,11 @@ export default class HanabiCard extends Konva.Group {
     Misc. functions
 */
 
-const filterInPlace = (values, predicate) => {
+const filterInPlace = (values: Array<any>, predicate: (value: any) => boolean) => {
     const removed = [];
     let i = values.length - 1;
     while (i >= 0) {
-        if (!predicate(values[i], i)) {
+        if (!predicate(values[i])) {
             removed.unshift(values.splice(i, 1)[0]);
         }
         i -= 1;
@@ -1040,7 +1078,7 @@ const filterInPlace = (values, predicate) => {
 // as well as how many of those that have been already discarded
 // (this DOES NOT mirror the server function in "game.go",
 // because the client does not have the full deck)
-const getSpecificCardNum = (suit, rank) => {
+const getSpecificCardNum = (suit: Suit, rank: number) => {
     // First, find out how many of this card should be in the deck, based on the rules of the game
     let total = 0;
     if (rank === 1) {

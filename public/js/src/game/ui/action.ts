@@ -41,18 +41,18 @@ export const handle = () => {
         && !globals.hypothetical
     ) {
         const ourHand = globals.elements.playerHands[globals.playerUs];
-        for (const layoutChild of ourHand.children) {
+        for (const layoutChild of ourHand.children.toArray()) {
             layoutChild.checkSetDraggable();
         }
     }
 
     if (globals.deckPlays) {
-        globals.elements.deck.cardBack.draggable(globals.deckSize === 1);
+        globals.elements.deck!.cardBack.draggable(globals.deckSize === 1);
         globals.elements.deckPlayAvailableLabel!.visible(globals.deckSize === 1);
 
         // Ensure the deck is above other cards and UI elements
         if (globals.deckSize === 1) {
-            globals.elements.deck.moveToTop();
+            globals.elements.deck!.moveToTop();
         }
     }
 
@@ -72,13 +72,13 @@ export const stop = () => {
     // (but we need to keep them draggable if the pre-play setting is enabled)
     if (!globals.lobby.settings.get('speedrunPreplay')) {
         const ourHand = globals.elements.playerHands[globals.playerUs];
-        for (const child of ourHand.children) {
+        for (const child of ourHand.children.toArray()) {
             // This is a LayoutChild
             child.off('dragend');
             child.draggable(false);
         }
     }
 
-    globals.elements.deck.cardBack.draggable(false);
+    globals.elements.deck!.cardBack.draggable(false);
     globals.elements.deckPlayAvailableLabel!.hide();
 };

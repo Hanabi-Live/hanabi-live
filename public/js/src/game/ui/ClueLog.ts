@@ -4,11 +4,12 @@
 
 // Imports
 import Konva from 'konva';
+import ClueEntry from './ClueEntry';
 import globals from './globals';
 
 export default class ClueLog extends Konva.Group {
-    addClue(child: Konva.Group) {
-        this.add(child);
+    addClue(clue: ClueEntry) {
+        this.add(clue as any);
         this.truncateExcessClueEntries();
         this.doLayout();
     }

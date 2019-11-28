@@ -60,6 +60,11 @@ module.exports = {
             allowSamePrecedence: true,
         }],
 
+        // The Airbnb configuration allows 2 empty lines in a row, which is unneeded
+        // Additionally, the Airbnb configuration is bugged and
+        // allows a line at the beginning of the file
+        'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 0 }],
+
         // We make use of parameter reassigning where appropriate
         'no-param-reassign': ['off'],
 

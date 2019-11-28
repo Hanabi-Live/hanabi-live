@@ -133,8 +133,8 @@ export const goto = (target: number, fast: boolean) => {
 
     fadeCheck();
     globals.animateFast = false;
-    globals.elements.actionLog.refreshText();
-    globals.elements.fullActionLog.refreshText();
+    globals.elements.actionLog!.refreshText();
+    globals.elements.fullActionLog!.refreshText();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
     globals.layers.arrow.batchDraw();
@@ -166,10 +166,10 @@ const reset = () => {
 
     // Reset various UI elements
     globals.postAnimationLayout = null;
-    globals.elements.actionLog.reset();
-    globals.elements.fullActionLog.reset();
-    globals.elements.deck.setCount(globals.deckSize);
-    globals.elements.clueLog.clear();
+    globals.elements.actionLog!.reset();
+    globals.elements.fullActionLog!.reset();
+    globals.elements.deck!.setCount(globals.deckSize);
+    globals.elements.clueLog!.clear();
 
     for (let i = 0; i < globals.elements.playerHands.length; i++) {
         globals.elements.playerHands[i].removeChildren();
@@ -183,7 +183,7 @@ const reset = () => {
     // Readd the stack base to the play stacks
     for (let i = 0; i < globals.variant.suits.length; i++) {
         const suit = globals.variant.suits[i];
-        const playStack = globals.elements.playStacks.get(suit);
+        const playStack = globals.elements.playStacks.get(suit)!;
         const stackBaseLayoutChild = globals.stackBases[i].parent;
         playStack.addChild(stackBaseLayoutChild);
         stackBaseLayoutChild.setVisible(true);
@@ -254,7 +254,6 @@ export const forwardRound = () => {
     checkDisableSharedTurns();
     goto(globals.replayTurn + globals.playerNames.length, false);
 };
-
 
 /*
     The "Exit Replay" button

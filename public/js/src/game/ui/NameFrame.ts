@@ -57,7 +57,7 @@ export default class NameFrame extends Konva.Group {
             const username = this.text();
             if (event.evt.which === 1) { // Left-click
                 // Left-click on the name frame to see a log of only their actions
-                globals.elements.fullActionLog.showPlayerActions(username);
+                globals.elements.fullActionLog!.showPlayerActions(username);
             } else if (event.evt.which === 3) { // Right-click
                 if (!globals.replay && globals.spectating) {
                     // As a spectator,
