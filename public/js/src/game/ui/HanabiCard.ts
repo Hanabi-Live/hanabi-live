@@ -99,12 +99,12 @@ export default class HanabiCard extends Konva.Group {
         // Initialize various elements/features of the card
         HanabiCardInit.image.call(this);
         HanabiCardInit.border.call(this);
-        this.initPips();
-        this.initNote();
-        this.initEmpathy();
-        this.initClick();
-        this.initFixme();
-        this.initSparkles();
+        HanabiCardInit.pips.call(this);
+        HanabiCardInit.note.call(this);
+        HanabiCardInit.empathy.call(this);
+        HanabiCardInit.click.call(this);
+        HanabiCardInit.fixme.call(this);
+        HanabiCardInit.sparkles.call(this);
     }
 
     // Erase all of the data on the card to make it like it was freshly drawn
@@ -173,7 +173,7 @@ export default class HanabiCard extends Konva.Group {
             }
         }
 
-        this.initPossibilities();
+        HanabiCardInit.possibilities.call(this);
         this.setBareImage();
     }
 
@@ -344,34 +344,6 @@ export default class HanabiCard extends Konva.Group {
         }
 
         this.opacity(newOpacity);
-    }
-
-    initPips() {
-        return HanabiCardInit.pips.call(this);
-    }
-
-    initNote() {
-        return HanabiCardInit.note.call(this);
-    }
-
-    initEmpathy() {
-        return HanabiCardInit.empathy.call(this);
-    }
-
-    initClick() {
-        return HanabiCardInit.click.call(this);
-    }
-
-    initPossibilities() {
-        return HanabiCardInit.possibilities.call(this);
-    }
-
-    initFixme() {
-        return HanabiCardInit.fixme.call(this);
-    }
-
-    initSparkles() {
-        return HanabiCardInit.sparkles.call(this);
     }
 
     // This card was touched by a positive or negative clue,
