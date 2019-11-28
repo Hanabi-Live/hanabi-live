@@ -10,7 +10,7 @@ import * as action from './action';
 import { LABEL_COLOR, STACK_BASE_RANK } from '../../constants';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
-import globals from './globals';
+import globals, { Globals } from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import Loader from './Loader';
@@ -20,7 +20,9 @@ import * as timer from './timer';
 import * as ui from './ui';
 
 export default class HanabiUI {
-    constructor(lobby, game) {
+    globals: Globals;
+
+    constructor(lobby: any, game: any) {
         // Since the "HanabiUI" object is being reinstantiated,
         // we need to explicitly reinitialize all globals varaibles
         // (or else they will retain their old values)
@@ -50,14 +52,14 @@ export default class HanabiUI {
         if (globals.lobby.chatUnread > 0) {
             text += ` (${globals.lobby.chatUnread})`;
         }
-        globals.elements.chatButton.text(text);
+        globals.elements.chatButton!.text(text);
         globals.layers.UI.batchDraw();
     }
 
     destroy() { // eslint-disable-line class-methods-use-this
         keyboard.destroy();
         timer.stop();
-        globals.stage.destroy();
+        globals.stage!.destroy();
         // window.removeEventListener('resize', resizeCanvas, false);
     }
 
@@ -108,8 +110,8 @@ const initStage = () => {
 };
 
 const showLoadingScreen = () => {
-    const winW = globals.stage.width();
-    const winH = globals.stage.height();
+    const winW = globals.stage!.width();
+    const winH = globals.stage!.height();
 
     const loadingLayer = new Konva.Layer();
 
@@ -145,9 +147,9 @@ const showLoadingScreen = () => {
     });
     loadingLayer.add(progresslabel);
 
-    globals.stage.add(loadingLayer);
+    globals.stage!.add(loadingLayer);
 
-    const loadingProgressCallback = (done, total) => {
+    const loadingProgressCallback = (done: number, total: number) => {
         progresslabel.text(`${done}/${total}`);
         loadingLayer.batchDraw();
     };

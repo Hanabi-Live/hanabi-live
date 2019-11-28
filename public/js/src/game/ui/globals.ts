@@ -12,7 +12,7 @@ import State from './State';
 import Variant from '../../Variant';
 import { VARIANTS } from '../../constants';
 
-class Globals {
+export class Globals {
     // Objects sent upon UI initialization
     lobby: any = null;
     game: any = null;
