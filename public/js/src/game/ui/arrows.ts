@@ -13,6 +13,7 @@ import {
     STACK_BASE_RANK,
 } from '../../constants';
 import Clue from './Clue';
+import HanabiCard from './HanabiCard';
 import globals from './globals';
 
 export const hideAll = () => {
@@ -156,8 +157,7 @@ const getPos = (element: any, rot: number) => {
 };
 
 // Animate the arrow to fly from the player who gave the clue to the card
-// TODO set any to HanabiCard
-const animate = (arrow: Arrow, card: any, rot: number, giver: number, turn: number) => {
+const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, turn: number) => {
     // Don't bother doing the animation if it is delayed by more than one turn
     if (globals.turn > turn + 1) {
         return;
@@ -165,7 +165,7 @@ const animate = (arrow: Arrow, card: any, rot: number, giver: number, turn: numb
 
     // Don't bother doing the animation if the card is no longer part of a hand
     // (which can happen rarely when jumping quickly through a replay)
-    if (!card.parent.parent) {
+    if (!card.parent || !card.parent.parent) {
         return;
     }
 

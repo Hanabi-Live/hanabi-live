@@ -7,6 +7,9 @@ export default class TimerDisplay extends Konva.Group {
     timerText: FitText;
     labelText: FitText;
 
+    tooltipName: string = '';
+    tooltipContent: string = '';
+
     constructor(config: Konva.ContainerConfig) {
         super(config);
 

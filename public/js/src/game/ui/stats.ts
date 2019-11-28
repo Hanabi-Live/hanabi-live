@@ -130,8 +130,10 @@ export const getMinEfficiency = () => {
     const minEfficiencyDenominator = MAX_CLUE_NUM + Math.floor(
         (startingPace + numSuits - unusableClues) / discardsPerClue,
     );
-    const minEfficiency = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);
+    const minEfficiencyString = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);
     // (round it to 2 decimal places)
+
+    const minEfficiency = parseFloat(minEfficiencyString);
 
     return minEfficiency;
 };

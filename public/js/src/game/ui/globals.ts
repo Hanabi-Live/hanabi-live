@@ -7,6 +7,7 @@
 import Konva from 'konva';
 import { Action } from './actions';
 import Elements from './Elements';
+import HanabiCard from './HanabiCard';
 import State from './State';
 import Variant from '../../Variant';
 import { VARIANTS } from '../../constants';
@@ -39,8 +40,8 @@ class Globals {
     characterMetadata: Array<number> = [];
 
     // Game constants (set upon first initialization)
-    deck: Array<any> = []; // TODO set to Array<HanabiCard>
-    stackBases: Array<any> = []; // TODO set to Array<HanabiCard>
+    deck: Array<HanabiCard> = [];
+    stackBases: Array<HanabiCard> = [];
     cardsMap: Map<string, number> = new Map();
 
     // Game state variables (reset when rewinding in a replay)

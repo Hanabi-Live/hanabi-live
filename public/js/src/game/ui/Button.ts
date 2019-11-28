@@ -11,6 +11,9 @@ export default class Button extends Konva.Group {
     imageElement: Konva.Image | null = null;
     imageDisabledElement: Konva.Image | null = null;
 
+    tooltipName: string = '';
+    tooltipContent: string = '';
+
     constructor(config: Konva.ContainerConfig, images: Array<HTMLImageElement>) {
         super(config);
         this.listening(true);
