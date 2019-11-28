@@ -7,6 +7,7 @@
 import Konva from 'konva';
 import FitText from './FitText';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 import * as replay from './replay';
 
 export default class ClueEntry extends Konva.Group {
@@ -119,7 +120,7 @@ export default class ClueEntry extends Konva.Group {
         });
     }
 
-    showMatch(target: any) { // TODO Change to HanabiCard | null
+    showMatch(target: HanabiCard | null) {
         this.background.opacity(0.1);
         this.background.fill('white');
         this.negativeMarker.hide();

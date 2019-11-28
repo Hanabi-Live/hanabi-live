@@ -3,8 +3,10 @@ import * as arrows from './arrows';
 import { ACTION, CLUE_TYPE } from '../../constants';
 import Clue from './Clue';
 import { clueToMsgClue, msgClueToClue } from './convert';
+import Color from '../../Color';
 import ColorButton from './ColorButton';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 import MsgClue from './MsgClue';
 import PlayerButton from './PlayerButton';
 import * as turn from './turn';
@@ -88,12 +90,12 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
 };
 
 // This mirrors the function in "variants.go"
-const variantIsCardTouched = (clue: Clue, card: any) => { // TODO change to HanabiCard
+const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
     if (clue.type === CLUE_TYPE.RANK) {
-        if (card.suit.clueRanks === 'all') {
+        if (card.suit!.clueRanks === 'all') {
             return true;
         }
-        if (card.suit.clueRanks === 'none') {
+        if (card.suit!.clueRanks === 'none') {
             return false;
         }
         if (globals.variant.rankCluesTouchNothing) {
@@ -112,7 +114,7 @@ const variantIsCardTouched = (clue: Clue, card: any) => { // TODO change to Hana
         if (globals.variant.name.includes('Prism-Ones') && card.rank === 1) {
             return true;
         }
-        return card.suit.clueColors.includes(clue.value);
+        return card.suit!.clueColors.includes(clue.value as Color);
     }
 
     return false;

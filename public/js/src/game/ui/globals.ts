@@ -7,7 +7,11 @@
 import Konva from 'konva';
 import { Action } from './actions';
 import Elements from './Elements';
+import LearnedCard from './LearnedCard';
+import Loader from './Loader';
 import HanabiCard from './HanabiCard';
+import SpectatorNote from './SpectatorNote';
+import SimpleCard from './SimpleCard';
 import State from './State';
 import Variant from '../../Variant';
 import { VARIANTS } from '../../constants';
@@ -59,17 +63,16 @@ export class Globals {
     stackDirections: Array<number> = [];
 
     // UI elements
-    ImageLoader: any = null; // TODO set to Loader
+    ImageLoader: Loader | null = null;
     stage: Konva.Stage | null = null;
-    layers: any = {}; // TODO convert to Map
+    layers: Map<string, Konva.Layer> = new Map();
     elements: Elements = new Elements();
     activeHover: any = null; // The element that the mouse cursor is currently over
-    cardImages: Map<string, HTMLCanvasElement> = new Map(); // TODO convert to Map
-    scaledCardImages: Map<string, Array<HTMLCanvasElement>> = new Map(); // TODO convert to Map
+    cardImages: Map<string, HTMLCanvasElement> = new Map();
+    scaledCardImages: Map<string, Array<HTMLCanvasElement>> = new Map();
 
     // Replay feature
     inReplay: boolean = false; // Whether or not the replay controls are currently showing
-    // TODO make new object for "replayLog"
     replayLog: Array<any> = []; // Contains all of the "notify" messages for the game
     replayPos: number = 0; // The current index of the "globals.replayLog" array
     replayTurn: number = 0; // The current game turn
@@ -80,7 +83,7 @@ export class Globals {
     finalReplayTurn: number = 0;
     // In replays, we can show information about a card that was not known at the time,
     // but is known now; these are cards we have "learned"
-    learnedCards: Array<any> = []; // TODO make a LearnedCard interface
+    learnedCards: Array<LearnedCard> = [];
 
     // Shared replay feature
     sharedReplayLeader: string = ''; // Equal to the username of the leader
@@ -89,15 +92,13 @@ export class Globals {
     useSharedTurns: boolean = false;
     sharedReplayLoading: boolean = false; // This is used to not animate cards when loading in
     hypothetical: boolean = false; // Whether or not we are in a hypothetical
-    // TODO convert to HypoActions object
     hypoActions: Array<any> = []; // An array of the actions in the current hypothetical
 
     // Notes feature
-    // TODO create Note object
-    ourNotes: Array<any> = []; // An array containing strings, indexed by card order
+    ourNotes: Array<string> = []; // An array containing strings, indexed by card order
     // An array containing objects, indexed by card order;
     // It represents the notes of every player & spectator
-    allNotes: Array<any> = []; // TODO create Note object
+    allNotes: Array<Array<SpectatorNote>> = [];
     // Used to keep track of which card the user is editing;
     // users can only update one note at a time to prevent bugs
     // Equal to the card order number or null
@@ -107,7 +108,7 @@ export class Globals {
     lastNote: string = ''; // Equal to the last note entered
 
     // Timer feature
-    timerID: any = null; // TODO convert to a proper function signature
+    timerID: any = null;
     playerTimes: Array<number> = [];
     // "activeIndex" must be tracked separately from the "currentPlayerIndex" because
     // the current player may change in an in-game replay
@@ -128,12 +129,9 @@ export class Globals {
     // Miscellaneous
     animateFast: boolean = true;
     // A function called after an action from the server moves cards
-    // TODO convert to proper function signature
-    postAnimationLayout: any = null;
-    // TODO convert to an action object
-    lastAction: any = null; // Used when rebuilding the game state
+    postAnimationLayout: (() => void) | null = null;
     UIClickTime: number = 0; // Used to prevent accidental double clicks
-    spectators: Array<any> = []; // TODO convert to Spectator object
+    spectators: Array<string> = [];
     chatUnread: number = 0;
 
     // State information
@@ -141,7 +139,7 @@ export class Globals {
     states: Array<State> = []; // The state for each turn
     // We also keep track of the strikes outside of the state object so that we can show a faded X
     strikes: Array<StateStrike> = [];
-    deckOrder: Array<any> = []; // Sent when the game ends // TODO change to Array<SimpleCard>
+    deckOrder: Array<SimpleCard> = []; // Sent when the game ends
 
     // We provide a method to reset every class variable to its initial value
     // This is called when the user goes into a new game
@@ -183,7 +181,7 @@ export class Globals {
         this.stackDirections = [];
         this.ImageLoader = null;
         this.stage = null;
-        this.layers = {};
+        this.layers = new Map();
         this.elements = new Elements();
         this.activeHover = null;
         this.cardImages = new Map();
@@ -222,7 +220,6 @@ export class Globals {
         this.pauseQueued = false;
         this.animateFast = true;
         this.postAnimationLayout = null;
-        this.lastAction = null;
         this.UIClickTime = 0;
         this.spectators = [];
         this.chatUnread = 0;

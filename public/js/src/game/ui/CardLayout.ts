@@ -7,6 +7,7 @@
 import Konva from 'konva';
 import globals from './globals';
 import LayoutChild from './LayoutChild';
+import HanabiCard from './HanabiCard';
 
 export default class CardLayout extends Konva.Group {
     align: string;
@@ -86,7 +87,7 @@ export default class CardLayout extends Konva.Group {
 
         const storedPostAnimationLayout = globals.postAnimationLayout;
         for (let i = 0; i < n; i++) {
-            const node: any = this.children[i]; // This is a LayoutChild // TODO set to LayoutChild
+            const node = this.children[i] as unknown as LayoutChild;
 
             if (!node.height()) {
                 continue;
@@ -110,7 +111,7 @@ export default class CardLayout extends Konva.Group {
                 // Animate the card going from the deck to the hand
                 // (or from the hand to the discard pile)
                 // and animate the rest of the cards sliding over
-                const card = node.children[0];
+                const card = node.children[0] as unknown as HanabiCard;
                 card.tweening = true;
                 if (card.doMisplayAnimation) {
                     // If this card just misplayed, do a special animation

@@ -289,7 +289,7 @@ const makeKnownTrash = () => {
     }
 
     // Draw the trash can image on top of the card
-    ctx.drawImage(globals.ImageLoader.get('trashcan2'), -103, -120);
+    ctx.drawImage(globals.ImageLoader!.get('trashcan2')!, -103, -120);
 
     return cvs;
 };

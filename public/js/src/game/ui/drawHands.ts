@@ -336,7 +336,7 @@ export default (winW: number, winH: number) => {
             reverse: isHandReversed(j),
             listening: true,
         });
-        globals.layers.card.add(globals.elements.playerHands[i]);
+        globals.layers.get('card')!.add(globals.elements.playerHands[i] as any);
 
         // Draw the faded shade that shows where the "new" side of the hand is
         // (but don't bother drawing it in BGA mode since all the hands face the same way)
@@ -374,7 +374,7 @@ export default (winW: number, winH: number) => {
                 ]);
             }
 
-            globals.layers.UI.add(rect);
+            globals.layers.get('UI')!.add(rect);
         }
 
         let playerNamePos = namePos;
@@ -389,7 +389,7 @@ export default (winW: number, winH: number) => {
             name: globals.playerNames[i],
             playerIndex: i,
         });
-        globals.layers.UI.add(globals.elements.nameFrames[i]);
+        globals.layers.get('UI')!.add(globals.elements.nameFrames[i] as any);
 
         // Draw the "Detrimental Character Assignments" icon and tooltip
         if (globals.characterAssignments.length > 0) {
@@ -419,7 +419,7 @@ export default (winW: number, winH: number) => {
                 shadowOpacity: 0.9,
                 listening: true,
             });
-            globals.layers.UI.add(charIcon);
+            globals.layers.get('UI')!.add(charIcon);
 
             charIcon.tooltipName = `character-assignment-${i}`;
             const metadata = globals.characterMetadata[i];

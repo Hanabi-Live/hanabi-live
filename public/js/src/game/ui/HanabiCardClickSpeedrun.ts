@@ -3,7 +3,6 @@
 */
 
 // Imports
-import Konva from 'konva';
 import {
     ACTION,
     CLUE_TYPE,
@@ -13,11 +12,11 @@ import {
 import Color from '../../Color';
 import ColorButton from './ColorButton';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 import * as notes from './notes';
 import * as turn from './turn';
 
-// TODO change any to HanabiCard
-export default function HanabiCardClickSpeedrun(this: any, event: Konva.KonvaPointerEvent) {
+export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
     // Speedrunning overrides the normal card clicking behavior
     // (but don't use the speedrunning behavior if we are in a
     // solo replay / shared replay / spectating / clicking on the stack base)
@@ -27,6 +26,10 @@ export default function HanabiCardClickSpeedrun(this: any, event: Konva.KonvaPoi
         || globals.spectating
         || this.rank === STACK_BASE_RANK
     ) {
+        return;
+    }
+
+    if (!this.parent || !this.parent.parent) {
         return;
     }
 

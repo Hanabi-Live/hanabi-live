@@ -6,15 +6,18 @@
 import Konva from 'konva';
 import * as arrows from './arrows';
 import { CARD_H, CARD_W, START_CARD_RANK } from '../../constants';
+import CardLayout from './CardLayout';
 import drawPip from './drawPip';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
+import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
 import RankPip from './RankPip';
 
-export function image(this: any) { // TODO change to HanabiCard
+export function image(this: HanabiCard) {
     // Create the "bare" card image, which is the main card grahpic
     // If the card is not revealed, it will just be a gray rectangle
     // The pips and other elements of a card are drawn on top of the bare image
@@ -23,19 +26,19 @@ export function image(this: any) { // TODO change to HanabiCard
         height: CARD_H,
         image: null as any,
     });
-    this.bare.sceneFunc((ctx: CanvasRenderingContext2D) => {
+    (this.bare as any).sceneFunc((ctx: CanvasRenderingContext2D) => {
         scaleCardImage(
             ctx,
             this.bareName,
-            this.bare.width(),
-            this.bare.height(),
-            this.bare.getAbsoluteTransform(),
+            this.bare!.width(),
+            this.bare!.height(),
+            this.bare!.getAbsoluteTransform(),
         );
     });
     this.add(this.bare);
 }
 
-export function border(this: any) { // TODO change to HanabiCard
+export function border(this: HanabiCard) {
     // The card will get a border when it becomes clued
     this.cluedBorder = new Konva.Rect({
         x: 3,
@@ -81,7 +84,7 @@ export function border(this: any) { // TODO change to HanabiCard
     this.add(this.finesseBorder);
 }
 
-export function pips(this: any) { // TODO change to HanabiCard
+export function pips(this: HanabiCard) {
     // Initialize the suit pips (colored shapes) on the back of the card,
     // which will be removed one by one as the card gains negative information
     this.suitPips = new Konva.Group({
@@ -244,19 +247,19 @@ export function pips(this: any) { // TODO change to HanabiCard
     }
 }
 
-export function note(this: any) { // TODO change to HanabiCard
+export function note(this: HanabiCard) {
     // Define the note indicator image
     const noteX = 0.78;
     const noteY = 0.03;
     const size = 0.2 * CARD_W;
-    this.noteGiven = new Konva.Image({
+    this.noteIndicator = new NoteIndicator({
         x: noteX * CARD_W,
         // If the cards have triangles on the corners that show the color composition,
         // the images will overlap
         // Thus, we move it downwards if this is the case
         y: (globals.variant.offsetCornerElements ? noteY + 0.1 : noteY) * CARD_H,
         align: 'center',
-        image: globals.ImageLoader.get('note'),
+        image: globals.ImageLoader!.get('note')!,
         width: size,
         height: size,
         rotation: 180,
@@ -270,22 +273,19 @@ export function note(this: any) { // TODO change to HanabiCard
         visible: notes.shouldShowIndicator(this.order),
         listening: false,
     });
-    this.noteGiven.scale({
+    this.noteIndicator.scale({
         x: -1,
         y: -1,
     });
-    // We might rotate the note indicator later on in order to
-    // indicate to spectators that the note was updated
-    this.noteGiven.rotated = false;
-    this.add(this.noteGiven);
+    this.add(this.noteIndicator);
 
     // If the user mouses over the card, show a tooltip that contains the note
     // (we don't use the "tooltip.init()" function because we need the extra conditions in the
     // "mousemove" event)
     this.tooltipName = `card-${this.order}`;
-    this.on('mousemove', function cardMouseMove(this: any) { // TODO set to HanabiCard
+    this.on('mousemove', function cardMouseMove(this: HanabiCard) {
         // Don't do anything if there is not a note on this card
-        if (!this.noteGiven.visible()) {
+        if (!this.noteIndicator!.visible()) {
             return;
         }
 
@@ -295,17 +295,17 @@ export function note(this: any) { // TODO change to HanabiCard
         }
 
         // If we are spectating and there is an new note, mark it as seen
-        if (this.noteGiven.rotated) {
-            this.noteGiven.rotated = false;
-            this.noteGiven.rotate(-15);
-            globals.layers.card.batchDraw();
+        if (this.noteIndicator!.rotated) {
+            this.noteIndicator!.rotated = false;
+            this.noteIndicator!.rotate(-15);
+            globals.layers.get('card')!.batchDraw();
         }
 
         globals.activeHover = this;
         notes.show(this);
     });
 
-    this.on('mouseout', function cardMouseOut(this: any) { // TODO set to HanabiCard
+    this.on('mouseout', function cardMouseOut(this: HanabiCard) {
         globals.activeHover = null;
 
         // Don't close the tooltip if we are currently editing a note
@@ -321,8 +321,8 @@ export function note(this: any) { // TODO change to HanabiCard
 // In a game, click on a teammate's hand to it show as it would to that teammate
 // (or show your own hand as it should appear without any identity notes on it)
 // (or, in a replay, show the hand as it appeared at that moment in time)
-export function empathy(this: any) { // TODO change to HanabiCard
-    this.on('mousedown', (event: Konva.KonvaPointerEvent) => {
+export function empathy(this: HanabiCard) {
+    this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
         if (
             event.evt.which !== 1 // Only enable Empathy for left-clicks
             // Disable Empathy if a modifier key is pressed
@@ -367,48 +367,55 @@ export function empathy(this: any) { // TODO change to HanabiCard
             return;
         }
 
-        const hand = this.parent.parent;
+        if (!this.parent || !this.parent.parent) {
+            return;
+        }
+        const hand = this.parent.parent as unknown as CardLayout;
         if (!hand || hand.children.length === 0 || hand.empathy === enabled) {
             return;
         }
 
         hand.empathy = enabled;
-        for (const layoutChild of hand.children) {
+        for (const layoutChild of hand.children.toArray()) {
             const card = layoutChild.children[0];
             card.empathy = enabled;
             card.setBareImage();
             card.setFade();
         }
-        globals.layers.card.batchDraw();
+        globals.layers.get('card')!.batchDraw();
     };
 }
 
-export function click(this: any) { // TODO change to HanabiCard
+export function click(this: HanabiCard) {
     // Define the clue log mouse handlers
     this.on('mousemove tap', () => {
         globals.elements.clueLog!.showMatches(this);
-        globals.layers.UI.batchDraw();
+        globals.layers.get('UI')!.batchDraw();
     });
     this.on('mouseout', () => {
         globals.elements.clueLog!.showMatches(null);
-        globals.layers.UI.batchDraw();
+        globals.layers.get('UI')!.batchDraw();
     });
 
     // Define the other mouse handlers
     this.on('click tap', HanabiCardClick);
     this.on('mousedown', HanabiCardClickSpeedrun);
-    this.on('mousedown', (event: Konva.KonvaPointerEvent) => {
+    this.on('mousedown', (event: any) => {
         if (
             event.evt.which !== 1 // Dragging uses left click
+            || !this.parent
             || !this.parent.draggable()
         ) {
             return;
         }
 
-        // Hide any visible arrows on the rest of a hand when the card beings to be dragged
+        // Hide any visible arrows on the rest of a hand when the card begins to be dragged
+        if (!this.parent || !this.parent.parent) {
+            return;
+        }
         const hand = this.parent.parent;
         let hidden = false;
-        for (const layoutChild of hand.children) {
+        for (const layoutChild of hand.children.toArray()) {
             const card = layoutChild.children[0];
             for (const arrow of globals.elements.arrows) {
                 if (arrow.pointingTo === card) {
@@ -428,7 +435,7 @@ export function click(this: any) { // TODO change to HanabiCard
     });
 }
 
-export function possibilities(this: any) { // TODO change to HanabiCard
+export function possibilities(this: HanabiCard) {
     if (!possibilitiesCheck()) {
         return;
     }
@@ -456,18 +463,18 @@ export function possibilities(this: any) { // TODO change to HanabiCard
     }
 }
 
-export function fixme(this: any) { // TODO change to HanabiCard
+export function fixme(this: HanabiCard) {
     this.fixme = new Konva.Image({
         x: 0.1 * CARD_W,
         y: 0.33 * CARD_H,
         width: 0.8 * CARD_W,
-        image: globals.ImageLoader.get('wrench'),
+        image: globals.ImageLoader!.get('wrench')!,
         visible: false,
     });
     this.add(this.fixme);
 }
 
-export function sparkles(this: any) { // TODO change to HanabiCard
+export function sparkles(this: HanabiCard) {
     /*
     const spark = new Sparkle({
         x: -50,

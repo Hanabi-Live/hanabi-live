@@ -11,6 +11,7 @@ import globals from './globals';
 import notify from './notify';
 import Shuttle from './Shuttle';
 import * as stats from './stats';
+import LayoutChild from './LayoutChild';
 
 /*
     Main replay functions
@@ -48,7 +49,7 @@ export const enter = () => {
     globals.elements.replayArea!.show();
     adjustShuttles(true); // We want it to immediately snap to the end
     setVisibleButtons();
-    globals.layers.UI.batchDraw();
+    globals.layers.get('UI')!.batchDraw();
 };
 
 export const exit = () => {
@@ -73,8 +74,8 @@ export const exit = () => {
         globals.deck[i].setBareImage();
     }
 
-    globals.layers.UI.batchDraw();
-    globals.layers.card.batchDraw();
+    globals.layers.get('UI')!.batchDraw();
+    globals.layers.get('card')!.batchDraw();
 };
 
 export const goto = (target: number, fast: boolean) => {
@@ -135,10 +136,10 @@ export const goto = (target: number, fast: boolean) => {
     globals.animateFast = false;
     globals.elements.actionLog!.refreshText();
     globals.elements.fullActionLog!.refreshText();
-    globals.layers.card.batchDraw();
-    globals.layers.UI.batchDraw();
-    globals.layers.arrow.batchDraw();
-    globals.layers.UI2.batchDraw();
+    globals.layers.get('card')!.batchDraw();
+    globals.layers.get('UI')!.batchDraw();
+    globals.layers.get('arrow')!.batchDraw();
+    globals.layers.get('UI2')!.batchDraw();
 };
 
 const setVisibleButtons = () => {
@@ -184,9 +185,9 @@ const reset = () => {
     for (let i = 0; i < globals.variant.suits.length; i++) {
         const suit = globals.variant.suits[i];
         const playStack = globals.elements.playStacks.get(suit)!;
-        const stackBaseLayoutChild = globals.stackBases[i].parent;
-        playStack.addChild(stackBaseLayoutChild);
-        stackBaseLayoutChild.setVisible(true);
+        const stackBaseLayoutChild = globals.stackBases[i].parent!;
+        playStack.addChild(stackBaseLayoutChild as any);
+        stackBaseLayoutChild.visible(true);
         // (the stack base might have been hidden if there was a card on top of it)
     }
 
@@ -203,8 +204,12 @@ const reset = () => {
         strikeX.setFaded();
     }
     for (const card of globals.deck) {
-        if (card.parent.tween) {
-            card.parent.tween.destroy();
+        const child = card.parent as unknown as LayoutChild;
+        if (!child) {
+            return;
+        }
+        if (child.tween) {
+            child.tween.destroy();
         }
         card.holder = null;
         card.suit = null;

@@ -6,6 +6,7 @@
 import Konva from 'konva';
 import ClueEntry from './ClueEntry';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 
 export default class ClueLog extends Konva.Group {
     addClue(clue: ClueEntry) {
@@ -38,7 +39,7 @@ export default class ClueLog extends Konva.Group {
         }
     }
 
-    showMatches(target: any) { // TODO change to HanabiCard
+    showMatches(target: HanabiCard | null) {
         for (const child of this.children.toArray()) {
             child.showMatch(target);
         }

@@ -42,7 +42,7 @@ export const start = () => {
 
     beginTurn();
 
-    globals.layers.UI.batchDraw();
+    globals.layers.get('UI')!.batchDraw();
 };
 
 export const end = () => {
@@ -67,7 +67,7 @@ export const end = () => {
     } else {
         globals.elements.hypoCircle!.hide();
     }
-    globals.layers.UI.batchDraw();
+    globals.layers.get('UI')!.batchDraw();
 
     globals.hypoActions = [];
 
@@ -162,14 +162,14 @@ export const send = (hypoAction: Action) => {
                 index: globals.currentPlayerIndex,
                 order: hypoAction.target,
                 rank: card.rank,
-                suit: suitToMsgSuit(card.suit, globals.variant),
+                suit: suitToMsgSuit(card.suit!, globals.variant),
             },
         });
         globals.score += 1;
 
         // Text
         let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
-        text += `${card.suit.name} ${card.rank} from slot #${card.getSlotNum()}`;
+        text += `${card.suit!.name} ${card.rank} from slot #${card.getSlotNum()}`;
         sendHypoAction({
             type: 'text',
             text,

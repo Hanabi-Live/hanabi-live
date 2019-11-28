@@ -4,6 +4,7 @@
 
 // Imports
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 
 // Get the contents of the note tooltip
 const get = (order: number, our: boolean) => {
@@ -72,8 +73,8 @@ export const checkSpecialNote = (card: any) => { // TODO set to HanabiCard
     // Only examine the text to the right of the rightmost pipe
     // (pipes are a conventional way to append new information to a note
     if (note.includes('|')) {
-        const match = note.match(/.*\|(.+)/);
-        note = match[1];
+        const match = note.match(/.*\|(.*)/);
+        note = match![1];
         note = note.trim(); // Remove all leading and trailing whitespace
     }
 
@@ -100,7 +101,7 @@ export const checkSpecialNote = (card: any) => { // TODO set to HanabiCard
         && !globals.spectating
     ));
 
-    globals.layers.card.batchDraw();
+    globals.layers.get('card')!.batchDraw();
 };
 
 const checkNoteIdentity = (card: any, note: string, fullNote: string) => { // TODO set to HanabiCard
@@ -239,7 +240,7 @@ const checkNoteImpossibility = (card: any) => { // TODO set to HanabiCard
     }
 };
 
-export const update = (card: any) => { // TODO set to HanabiCard
+export const update = (card: HanabiCard) => {
     // Update the tooltip
     const tooltip = $(`#tooltip-${card.tooltipName}`);
     const tooltipInstance = tooltip.tooltipster('instance');
@@ -250,11 +251,11 @@ export const update = (card: any) => { // TODO set to HanabiCard
     }
 
     // Update the card indicator
-    const visibleOld = card.noteGiven.visible();
+    const visibleOld = card.noteIndicator!.visible();
     const visibleNew = note.length > 0;
-    card.noteGiven.visible(visibleNew);
+    card.noteIndicator!.visible(visibleNew);
     if (visibleOld !== visibleNew) {
-        globals.layers.card.batchDraw();
+        globals.layers.get('card')!.batchDraw();
     }
 };
 
@@ -395,14 +396,14 @@ export const setCardIndicator = (order: number) => {
     if (!card) {
         card = globals.stackBases[order - globals.deck.length];
     }
-    card.noteGiven.visible(visible);
+    card.noteIndicator!.visible(visible);
 
-    if (visible && globals.spectating && !globals.replay && !card.noteGiven.rotated) {
-        card.noteGiven.rotate(15);
-        card.noteGiven.rotated = true;
+    if (visible && globals.spectating && !globals.replay && !card.noteIndicator!.rotated) {
+        card.noteIndicator!.rotate(15);
+        card.noteIndicator!.rotated = true;
     }
 
-    globals.layers.card.batchDraw();
+    globals.layers.get('card')!.batchDraw();
 };
 
 export const shouldShowIndicator = (order: number) => {

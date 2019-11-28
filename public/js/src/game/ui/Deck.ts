@@ -95,6 +95,7 @@ export default class Deck extends Konva.Group {
             // We need to remove the card from the screen once the animation is finished
             // (otherwise, the card will be stuck in the in-game replay)
             globals.postAnimationLayout = () => {
+                console.log('XXXXXXXXXXXX', this);
                 (this.parent as any).doLayout(); // TODO set to ???
                 globals.postAnimationLayout = null;
             };
@@ -116,8 +117,9 @@ export default class Deck extends Konva.Group {
                 y: 0,
                 easing: Konva.Easings.EaseOut,
                 onFinish: () => {
-                    if (globals.layers.UI) {
-                        globals.layers.UI.batchDraw();
+                    const layer = globals.layers.get('UI');
+                    if (typeof layer !== 'undefined') {
+                        layer.batchDraw();
                     }
                 },
             }).play();

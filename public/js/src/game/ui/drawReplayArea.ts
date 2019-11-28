@@ -52,7 +52,7 @@ export default (winW: number, winH: number) => {
         opacity: 0,
         listening: true,
     });
-    replayBarClickRect.on('click', replay.barClick as any); // TODO set to ???
+    replayBarClickRect.on('click', replay.barClick as any);
     globals.elements.replayArea.add(replayBarClickRect);
 
     const shuttleValues = {
@@ -124,11 +124,11 @@ export default (winW: number, winH: number) => {
                 height: replayButtonValues.h * winH,
             },
             [
-                globals.ImageLoader.get('replay-back-full'),
-                globals.ImageLoader.get('replay-back-full-disabled'),
+                globals.ImageLoader!.get('replay-back-full')!,
+                globals.ImageLoader!.get('replay-back-full-disabled')!,
             ],
         );
-        globals.elements.replayBackFullButton.on('click tap', replay.backFull);
+        globals.elements.replayBackFullButton!.on('click tap', replay.backFull);
         globals.elements.replayArea.add(globals.elements.replayBackFullButton as any);
 
         // Go back one turn (the second left-most button)
@@ -141,8 +141,8 @@ export default (winW: number, winH: number) => {
                 height: replayButtonValues.h * winH,
             },
             [
-                globals.ImageLoader.get('replay-back'),
-                globals.ImageLoader.get('replay-back-disabled'),
+                globals.ImageLoader!.get('replay-back')!,
+                globals.ImageLoader!.get('replay-back-disabled')!,
             ],
         );
         globals.elements.replayBackButton.on('click tap', () => {
@@ -166,8 +166,8 @@ export default (winW: number, winH: number) => {
                 height: replayButtonValues.h * winH,
             },
             [
-                globals.ImageLoader.get('replay-forward'),
-                globals.ImageLoader.get('replay-forward-disabled'),
+                globals.ImageLoader!.get('replay-forward')!,
+                globals.ImageLoader!.get('replay-forward-disabled')!,
             ],
         );
         globals.elements.replayForwardButton.on('click tap', () => {
@@ -191,8 +191,8 @@ export default (winW: number, winH: number) => {
                 height: replayButtonValues.h * winH,
             },
             [
-                globals.ImageLoader.get('replay-forward-full'),
-                globals.ImageLoader.get('replay-forward-full-disabled'),
+                globals.ImageLoader!.get('replay-forward-full')!,
+                globals.ImageLoader!.get('replay-forward-full-disabled')!,
             ],
         );
         globals.elements.replayForwardFullButton.on('click tap', replay.forwardFull);
@@ -282,6 +282,6 @@ export default (winW: number, winH: number) => {
 
     // Add the replay area to the UI
     globals.elements.replayArea.hide();
-    globals.layers.UI.add(globals.elements.replayArea);
+    globals.layers.get('UI')!.add(globals.elements.replayArea);
     replay.adjustShuttles(true);
 };

@@ -20,6 +20,7 @@ import Color from '../../Color';
 import globals from './globals';
 import * as HanabiCardInit from './HanabiCardInit';
 import { msgSuitToSuit, suitToMsgSuit } from './convert';
+import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
 import RankPip from './RankPip';
@@ -47,7 +48,7 @@ export default class HanabiCard extends Konva.Group {
     // The following are the variables that are refreshed
     possibleSuits: Array<Suit> = [];
     possibleRanks: Array<number> = [];
-    possibleCards: Map<string, any> = new Map(); // TODO change to PossibleCard
+    possibleCards: Map<string, number> = new Map();
     tweening: boolean = false;
     empathy: boolean = false;
     doMisplayAnimation: boolean = false;
@@ -65,17 +66,18 @@ export default class HanabiCard extends Konva.Group {
     turnPlayed: number = -1;
     isMisplayed: boolean = false;
 
+    bare: Konva.Image | null = null;
     cluedBorder: Konva.Rect | null = null;
     noteBorder: Konva.Rect | null = null;
     finesseBorder: Konva.Rect | null = null;
-
     suitPips: Konva.Group | null = null;
     suitPipsMap: Map<Suit, Konva.Shape> = new Map();
     suitPipsXMap: Map<Suit, Konva.Shape> = new Map();
     rankPips: Konva.Group | null = null;
     rankPipsMap: Map<number, RankPip> = new Map();
     rankPipsXMap: Map<number, Konva.Shape> = new Map();
-
+    noteIndicator: NoteIndicator | null = null;
+    tooltipName: string = '';
     fixme: Konva.Image | null = null;
 
     constructor(config: Konva.ContainerConfig) {
@@ -223,7 +225,7 @@ export default class HanabiCard extends Konva.Group {
 
         // "Card-Unknown" is not created, so use "NoPip-Unknown"
         let prefix = 'Card';
-        if (suitToShow.name === 'Unknown') {
+        if (suitToShow!.name === 'Unknown') {
             prefix = 'NoPip';
         }
 
@@ -284,11 +286,11 @@ export default class HanabiCard extends Konva.Group {
                 globals.lobby.settings.get('realLifeMode')
                 || globals.variant.name.startsWith('Cow & Pig')
                 || globals.variant.name.startsWith('Duck')
-            ) && (suitToShow.name === 'Unknown' || rankToShow === 6)
+            ) && (suitToShow!.name === 'Unknown' || rankToShow === 6)
         ) {
             this.bareName = 'deck-back';
         } else {
-            this.bareName = `${prefix}-${suitToShow.name}-${rankToShow}`;
+            this.bareName = `${prefix}-${suitToShow!.name}-${rankToShow}`;
         }
 
         // Show or hide the pips
@@ -301,7 +303,7 @@ export default class HanabiCard extends Konva.Group {
             this.suitPips!.hide();
             this.rankPips!.hide();
         } else {
-            this.suitPips!.visible(suitToShow.name === 'Unknown');
+            this.suitPips!.visible(suitToShow!.name === 'Unknown');
             this.rankPips!.visible(rankToShow === 6);
         }
 
@@ -572,6 +574,9 @@ export default class HanabiCard extends Konva.Group {
         let suitPossible = false;
         for (const rank2 of globals.variant.ranks) {
             const count = this.possibleCards.get(`${suit.name}${rank2}`);
+            if (typeof count === 'undefined') {
+                throw new Error(`Failed to get an entry for ${suit.name}${rank2} from the "possibleCards" map for card ${this.order}.`);
+            }
             if (count > 0) {
                 suitPossible = true;
                 break;
@@ -590,6 +595,9 @@ export default class HanabiCard extends Konva.Group {
         let rankPossible = false;
         for (const suit2 of globals.variant.suits) {
             const count = this.possibleCards.get(`${suit2.name}${rank}`);
+            if (typeof count === 'undefined') {
+                throw new Error(`Failed to get an entry for ${suit2.name}${rank} from the "possibleCards" map for card ${this.order}.`);
+            }
             if (count > 0) {
                 rankPossible = true;
                 break;
@@ -937,6 +945,9 @@ export default class HanabiCard extends Konva.Group {
             }
             const nextRankNeeded = lastPlayedRank + 1;
             const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
+            if (typeof count === 'undefined') {
+                throw new Error(`Failed to get an entry for ${suit.name}${nextRankNeeded} from the "possibleCards" map for card ${this.order}.`);
+            }
             if (count > 0) {
                 potentiallyPlayable = true;
                 break;
@@ -958,6 +969,9 @@ export default class HanabiCard extends Konva.Group {
                     // The "START" card has not been played
                     for (const rank of [0, 1, 5]) {
                         const count = this.possibleCards.get(`${suit.name}${rank}`);
+                        if (typeof count === 'undefined') {
+                            throw new Error(`Failed to get an entry for ${suit.name}${rank} from the "possibleCards" map for card ${this.order}.`);
+                        }
                         if (count > 0) {
                             potentiallyPlayable = true;
                             break;
@@ -970,6 +984,9 @@ export default class HanabiCard extends Konva.Group {
                     // The "START" card has been played
                     for (const rank of [2, 4]) {
                         const count = this.possibleCards.get(`${suit.name}${rank}`);
+                        if (typeof count === 'undefined') {
+                            throw new Error(`Failed to get an entry for ${suit.name}${rank} from the "possibleCards" map for card ${this.order}.`);
+                        }
                         if (count > 0) {
                             potentiallyPlayable = true;
                             break;
@@ -982,6 +999,9 @@ export default class HanabiCard extends Konva.Group {
             } else if (globals.stackDirections[i] === STACK_DIRECTION.UP) {
                 const nextRankNeeded = lastPlayedRank + 1;
                 const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
+                if (typeof count === 'undefined') {
+                    throw new Error(`Failed to get an entry for ${suit.name}${nextRankNeeded} from the "possibleCards" map for card ${this.order}.`);
+                }
                 if (count > 0) {
                     potentiallyPlayable = true;
                     break;
@@ -989,6 +1009,9 @@ export default class HanabiCard extends Konva.Group {
             } else if (globals.stackDirections[i] === STACK_DIRECTION.DOWN) {
                 const nextRankNeeded = lastPlayedRank - 1;
                 const count = this.possibleCards.get(`${suit.name}${nextRankNeeded}`);
+                if (typeof count === 'undefined') {
+                    throw new Error(`Failed to get an entry for ${suit.name}${nextRankNeeded} from the "possibleCards" map for card ${this.order}.`);
+                }
                 if (count > 0) {
                     potentiallyPlayable = true;
                     break;
@@ -1006,6 +1029,9 @@ export default class HanabiCard extends Konva.Group {
         // Every card has a possibility map that maps card identities to count
         const mapIndex = `${suit.name}${rank}`;
         let cardsLeft = this.possibleCards.get(mapIndex);
+        if (typeof cardsLeft === 'undefined') {
+            throw new Error(`Failed to get an entry for ${mapIndex} from the "possibleCards" map for card ${this.order}.`);
+        }
         if (cardsLeft > 0) {
             // Remove one or all possibilities for this card,
             // (depending on whether the card was clued
@@ -1025,7 +1051,7 @@ export default class HanabiCard extends Konva.Group {
             this.noteSuit = null;
             this.noteRank = null;
             this.setBareImage();
-            globals.layers.card.batchDraw();
+            globals.layers.get('card')!.batchDraw();
         }
     }
 }

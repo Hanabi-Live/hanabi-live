@@ -32,6 +32,7 @@ import possibilitiesCheck from './possibilitiesCheck';
 import * as stats from './stats';
 import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
+import LayoutChild from './LayoutChild';
 
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list of notifies sent upon loading a new
@@ -83,7 +84,7 @@ notifyFunctions.set('clue', (data: ActionClue) => {
         arrows.set(i, card, data.giver, clue);
 
         card.hideBorders();
-        card.cluedBorder.show();
+        card.cluedBorder!.show();
         if (
             !globals.lobby.settings.get('realLifeMode')
             && !globals.variant.name.startsWith('Cow & Pig')
@@ -152,7 +153,7 @@ notifyFunctions.set('clue', (data: ActionClue) => {
     globals.elements.clueLog!.addClue(entry);
 
     if (!globals.animateFast) {
-        globals.layers.card.batchDraw();
+        globals.layers.get('card')!.batchDraw();
     }
 });
 
@@ -238,23 +239,23 @@ notifyFunctions.set('draw', (data: ActionDraw) => {
     card.refresh();
     if (suit && rank) {
         // Hide the pips if we have full knowledge of the suit / rank
-        card.suitPips.visible(false);
-        card.rankPips.visible(false);
+        card.suitPips!.visible(false);
+        card.rankPips!.visible(false);
     }
     card.setFade(); // Fade the card if it is already played
 
     // Each card is contained within a LayoutChild
     // Position the LayoutChild over the deck
-    const child = card.parent;
+    const child = card.parent as unknown as LayoutChild;
     // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
     // and the user rewinds to the beginning of the replay
-    child.visible(true);
-    child.opacity(1); // Cards can be faded in certain variants
+    child!.visible(true);
+    child!.opacity(1); // Cards can be faded in certain variants
     const pos = globals.elements.deck!.cardBack.getAbsolutePosition();
-    child.setAbsolutePosition(pos);
-    child.rotation(-globals.elements.playerHands[holder].rotation());
+    child!.setAbsolutePosition(pos);
+    child!.rotation(-globals.elements.playerHands[holder].rotation());
     const scale = globals.elements.deck!.cardBack.width() / CARD_W;
-    child.scale({
+    child!.scale({
         x: scale,
         y: scale,
     });
@@ -312,7 +313,7 @@ notifyFunctions.set('reorder', (data: ActionReorder) => {
     const handSize = hand.children.length;
     for (let i = 0; i < handSize; i++) {
         const order = data.handOrder[i];
-        const child = globals.deck[order].parent;
+        const child = globals.deck[order].parent! as unknown as LayoutChild;
         newChildOrder.push(child);
 
         // Take them out of the hand itself
@@ -346,7 +347,7 @@ notifyFunctions.set('stackDirections', (data: ActionStackDirections) => {
             }
             globals.elements.suitLabelTexts[i].fitText(text);
             if (!globals.animateFast) {
-                globals.layers.UI.batchDraw();
+                globals.layers.get('UI')!.batchDraw();
             }
         }
     }
@@ -405,7 +406,7 @@ notifyFunctions.set('status', (data: ActionStatus) => {
     stats.updateEfficiency(0);
 
     if (!globals.animateFast) {
-        globals.layers.UI.batchDraw();
+        globals.layers.get('UI')!.batchDraw();
     }
 });
 
@@ -451,8 +452,8 @@ notifyFunctions.set('text', (data: ActionText) => {
     globals.elements.actionLog!.setMultiText(data.text);
     globals.elements.fullActionLog!.addMessage(data.text);
     if (!globals.animateFast) {
-        globals.layers.UI.batchDraw();
-        globals.layers.UI2.batchDraw();
+        globals.layers.get('UI')!.batchDraw();
+        globals.layers.get('UI2')!.batchDraw();
     }
 });
 
@@ -471,7 +472,7 @@ notifyFunctions.set('reveal', (data: RevealMessage) => {
     }
 
     card.reveal(data.suit, data.rank);
-    globals.layers.card.batchDraw();
+    globals.layers.get('card')!.batchDraw();
 });
 
 notifyFunctions.set('turn', (data: ActionTurn) => {
@@ -507,6 +508,6 @@ notifyFunctions.set('turn', (data: ActionTurn) => {
     }
 
     if (!globals.animateFast) {
-        globals.layers.UI.batchDraw();
+        globals.layers.get('UI')!.batchDraw();
     }
 });

@@ -44,7 +44,7 @@ commands.connected = (data) => {
     for (let i = 0; i < data.list.length; i++) {
         globals.elements.nameFrames[i].setConnected(data.list[i]);
     }
-    globals.layers.UI.batchDraw();
+    globals.layers.get('UI').batchDraw();
 };
 
 // The game just finished
@@ -61,7 +61,7 @@ commands.gameOver = () => {
         globals.elements.timer2.hide();
     }
     timer.stop();
-    globals.layers.timer.batchDraw();
+    globals.layers.get('timer').batchDraw();
 
     // Transform this game into a shared replay
     globals.replay = true;
@@ -104,7 +104,7 @@ commands.gameOver = () => {
         globals.elements.maxScoreNumberLabel.show();
     }
 
-    globals.layers.UI.batchDraw();
+    globals.layers.get('UI').batchDraw();
 };
 
 commands.hypoAction = (data) => {
@@ -146,7 +146,7 @@ commands.databaseID = (data) => {
         globals.elements.deck.nudgeCountDownwards();
     }
 
-    globals.layers.UI2.batchDraw();
+    globals.layers.get('UI2').batchDraw();
 };
 
 commands.init = (data) => {
@@ -323,7 +323,7 @@ commands.notify = (data) => {
             replay.adjustShuttles(false);
             globals.elements.replayForwardButton.setEnabled(true);
             globals.elements.replayForwardFullButton.setEnabled(true);
-            globals.layers.UI.batchDraw();
+            globals.layers.get('UI').batchDraw();
         }
 
         // On the second turn and beyond, ensure that the "In-Game Replay" button is enabled
@@ -409,8 +409,8 @@ commands.notifyList = (dataList) => {
     }
 
     fadeCheck();
-    globals.layers.card.batchDraw();
-    globals.layers.UI.batchDraw();
+    globals.layers.get('card').batchDraw();
+    globals.layers.get('UI').batchDraw();
     globals.loading = false;
 };
 
@@ -517,7 +517,7 @@ commands.replayLeader = (data) => {
         }
     }
 
-    globals.layers.UI.batchDraw();
+    globals.layers.get('UI').batchDraw();
 
     // Update the tooltip
     let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
@@ -577,12 +577,12 @@ commands.replayTurn = (data) => {
             } else if (oldTurn < globals.sharedReplayTurn && oldTurn !== -1) {
                 globals.elements.sharedReplayForwardTween.play();
             }
-            globals.layers.UI.batchDraw();
+            globals.layers.get('UI').batchDraw();
         }
     } else {
         // Even though we are not using the shared turns,
         // we need to update the slider to show where the replay leader changed the turn to
-        globals.layers.UI.batchDraw();
+        globals.layers.get('UI').batchDraw();
     }
 };
 
@@ -601,7 +601,7 @@ commands.reveal = (data) => {
     }
 
     card.reveal(data.suit, data.rank);
-    globals.layers.card.batchDraw();
+    globals.layers.get('card').batchDraw();
 };
 
 // This is used to update the names of the people currently spectating the game
@@ -644,5 +644,5 @@ commands.spectators = (data) => {
         $('#tooltip-leader').tooltipster('instance').content(content);
     }
 
-    globals.layers.UI.batchDraw();
+    globals.layers.get('UI').batchDraw();
 };

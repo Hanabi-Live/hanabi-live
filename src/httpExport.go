@@ -52,7 +52,7 @@ func httpExport(c *gin.Context) {
 
 	// Convert the actions
 	actions := make([]ActionJSON, 0)
-	deck := make([]CardSimple, 0)
+	deck := make([]SimpleCard, 0)
 	firstPlayer := -1
 	for _, actionString := range actionStrings {
 		// Convert it from JSON

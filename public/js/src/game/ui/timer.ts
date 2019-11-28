@@ -72,7 +72,7 @@ export const update = (data: ClockData) => {
     }
 
     globals.elements.timer2.visible(!ourTurn && globals.activeIndex !== -1);
-    globals.layers.timer.batchDraw();
+    globals.layers.get('timer')!.batchDraw();
 
     // Update the timer tooltips for each player
     for (let i = 0; i < globals.playerTimes.length; i++) {

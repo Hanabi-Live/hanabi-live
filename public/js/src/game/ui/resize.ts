@@ -71,7 +71,7 @@ const redraw = () => {
 
         // If it's your turn, setup the clue area
         if (whoseTurn === globals.playerUs && !globals.spectating) {
-            ui.handleAction(globals.lastAction);
+            ui.handleAction();
         }
 
         // Setup the timers

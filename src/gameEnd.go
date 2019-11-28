@@ -20,9 +20,9 @@ func (g *Game) End() {
 
 	// Append a final action with a listing of every card in the deck
 	// (so that the client will have it for hypotheticals)
-	deck := make([]CardSimple, 0)
+	deck := make([]SimpleCard, 0)
 	for _, c := range g.Deck {
-		deck = append(deck, CardSimple{
+		deck = append(deck, SimpleCard{
 			Suit: c.Suit,
 			Rank: c.Rank,
 		})

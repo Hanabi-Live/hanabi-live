@@ -74,7 +74,7 @@ export interface ActionStrike {
 
 export interface ActionDeckOrder {
     type: string,
-    deck: Array<CardSimple>,
+    deck: Array<SimpleCard>,
 }
 
 interface Which {
@@ -84,7 +84,7 @@ interface Which {
     order: number,
 }
 
-interface CardSimple {
+interface SimpleCard {
     suit: number,
     rank: number,
 }

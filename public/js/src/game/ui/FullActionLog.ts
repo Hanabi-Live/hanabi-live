@@ -111,7 +111,7 @@ export default class FullActionLog extends Konva.Group {
             throw new Error('The "stageFade" element was not initialized.');
         }
         globals.elements.stageFade.show();
-        globals.layers.UI2.batchDraw();
+        globals.layers.get('UI2')!.batchDraw();
 
         globals.elements.stageFade.on('click tap', () => {
             if (!globals.elements.stageFade) {
@@ -125,7 +125,7 @@ export default class FullActionLog extends Konva.Group {
             this.logNumbers.show();
             this.hide();
             globals.elements.stageFade.hide();
-            globals.layers.UI2.batchDraw();
+            globals.layers.get('UI2')!.batchDraw();
         });
     }
 

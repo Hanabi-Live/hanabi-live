@@ -3,17 +3,16 @@
 */
 
 // Imports
-import Konva from 'konva';
 import * as arrows from './arrows';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
 import * as replay from './replay';
 import { STACK_BASE_RANK } from '../../constants';
 import { suitToMsgSuit } from './convert';
 
-// TODO change any to HanabiCard
-export default function HanabiCardClick(this: any, event: Konva.KonvaPointerEvent) {
+export default function HanabiCardClick(this: HanabiCard, event: any) {
     // Speedrunning overrides the normal card clicking behavior
     // (but do not use the speedrunning behavior if we are in a
     // solo replay / shared replay / spectating)

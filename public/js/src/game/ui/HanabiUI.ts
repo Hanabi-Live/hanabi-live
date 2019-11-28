@@ -53,7 +53,7 @@ export default class HanabiUI {
             text += ` (${globals.lobby.chatUnread})`;
         }
         globals.elements.chatButton!.text(text);
-        globals.layers.UI.batchDraw();
+        globals.layers.get('UI')!.batchDraw();
     }
 
     destroy() { // eslint-disable-line class-methods-use-this

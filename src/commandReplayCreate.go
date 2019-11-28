@@ -204,7 +204,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 
 type GameJSON struct {
 	Actions     []ActionJSON `json:"actions"`
-	Deck        []CardSimple `json:"deck"`
+	Deck        []SimpleCard `json:"deck"`
 	FirstPlayer int          `json:"firstPlayer"`
 	Notes       [][]string   `json:"notes"`
 	Players     []string     `json:"players"`
