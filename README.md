@@ -22,7 +22,7 @@ Find teammates to play games with at [the Hanabi Discord server](https://discord
 
 ## List of Variants
 
-Hanabi Live implements [many different kinds of special variants](https://github.com/Zamiell/hanabi-live/tree/master/docs/VARIANTS.md), in which the rules are changed to make the game more difficult.
+Hanabi Live implements [many special variants](https://github.com/Zamiell/hanabi-live/tree/master/docs/VARIANTS.md), in which the rules are changed to make the game more difficult.
 
 <br />
 
