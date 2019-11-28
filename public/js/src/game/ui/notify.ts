@@ -82,7 +82,7 @@ notifyFunctions.set('clue', (data: ActionClue) => {
 
         arrows.set(i, card, data.giver, clue);
 
-        card.noteBorder.hide();
+        card.hideBorders();
         card.cluedBorder.show();
         if (
             !globals.lobby.settings.get('realLifeMode')
@@ -182,7 +182,7 @@ notifyFunctions.set('discard', (data: ActionDiscard) => {
     card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();
     card.setFade(); // Unfade the card if it is faded
-    card.removeBorders();
+    card.hideBorders();
 
     if (card.isMisplayed && !globals.animateFast && !globals.speedrun) {
         // If this card was misplayed,
@@ -293,7 +293,7 @@ notifyFunctions.set('play', (data: ActionPlay) => {
 
     card.reveal(data.which.suit, data.which.rank);
     card.removeFromParent();
-    card.removeBorders();
+    card.hideBorders();
     card.animateToPlayStacks();
 
     // The fact that this card was played could make some other cards useless

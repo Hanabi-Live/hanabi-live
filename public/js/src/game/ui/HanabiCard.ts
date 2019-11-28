@@ -137,7 +137,7 @@ export default class HanabiCard extends Konva.Group {
 
         this.listening(true); // Some variants disable listening on cards
 
-        this.removeBorders();
+        this.hideBorders();
         if (!globals.replay && !globals.spectating) {
             // If it has a "chop move" note on it, we want to keep the chop move border turned on
             if (this.noteChopMoved) {
@@ -181,7 +181,7 @@ export default class HanabiCard extends Konva.Group {
         return this.numPositiveClues > 0;
     }
 
-    removeBorders() {
+    hideBorders() {
         this.cluedBorder!.hide();
         this.noteBorder!.hide();
         this.finesseBorder!.hide();
