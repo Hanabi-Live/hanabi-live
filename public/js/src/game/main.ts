@@ -57,6 +57,9 @@ export const hide = () => {
 
     // Scroll to the bottom of the chat
     const chatElement = document.getElementById('lobby-chat-text');
+    if (chatElement === null) {
+        throw new Error('Failed to get the "lobby-chat-text" element.');
+    }
     chatElement.scrollTop = chatElement.scrollHeight;
 };
 
