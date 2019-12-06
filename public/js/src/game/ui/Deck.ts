@@ -95,8 +95,7 @@ export default class Deck extends Konva.Group {
             // We need to remove the card from the screen once the animation is finished
             // (otherwise, the card will be stuck in the in-game replay)
             globals.postAnimationLayout = () => {
-                console.log('XXXXXXXXXXXX', this);
-                (this.parent as any).doLayout(); // TODO set to ???
+                (this.parent as unknown as Deck).doLayout();
                 globals.postAnimationLayout = null;
             };
 
