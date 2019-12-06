@@ -87,7 +87,8 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	// Get the options from the database
 	var options models.Options
 	if v, err := db.Games.GetOptions(d.GameID); err != nil {
-		log.Error("Failed to get the options from the database for game "+strconv.Itoa(d.GameID)+":", err)
+		log.Error("Failed to get the options from the database for game "+
+			strconv.Itoa(d.GameID)+":", err)
 		s.Error(initFail)
 		return false
 	} else {
@@ -96,7 +97,8 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 
 	// Validate that the variant exists
 	if _, ok := variantsID[options.Variant]; !ok {
-		log.Error("Failed to find a definition for variant " + strconv.Itoa(options.Variant) + ".")
+		log.Error("Failed to find a definition for variant " +
+			strconv.Itoa(options.Variant) + ".")
 		s.Error(initFail)
 		return false
 	}
@@ -116,7 +118,8 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	// Get the players from the database
 	var dbPlayers []*models.Player
 	if v, err := db.Games.GetPlayers(d.GameID); err != nil {
-		log.Error("Failed to get the players from the database for game "+strconv.Itoa(d.GameID)+":", err)
+		log.Error("Failed to get the players from the database for game "+
+			strconv.Itoa(d.GameID)+":", err)
 		s.Error(initFail)
 		return false
 	} else {
@@ -185,7 +188,8 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	// Get the number of turns from the database
 	var numTurns int
 	if v, err := db.Games.GetNumTurns(d.GameID); err != nil {
-		log.Error("Failed to get the number of turns from the database for game "+strconv.Itoa(d.GameID)+":", err)
+		log.Error("Failed to get the number of turns from the database for game "+
+			strconv.Itoa(d.GameID)+":", err)
 		s.Error(initFail)
 		return false
 	} else {
@@ -203,17 +207,24 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 }
 
 type GameJSON struct {
+	ID          int          `json:"id"` // Optional element purely used for game exports
 	Actions     []ActionJSON `json:"actions"`
 	Deck        []SimpleCard `json:"deck"`
 	FirstPlayer int          `json:"firstPlayer"`
 	Notes       [][]string   `json:"notes"`
 	Players     []string     `json:"players"`
-	Variant     string       `json:"variant"`
+	// Options is an optional element
+	// Thus, it must be a pointer so that we can tell if the value was specified or not
+	Options *OptionsJSON `json:"options"`
 }
 type ActionJSON struct {
 	Clue   Clue `json:"clue"`
 	Target int  `json:"target"`
 	Type   int  `json:"type"`
+}
+type OptionsJSON struct {
+	Variant    *string `json:"variant"`
+	EmptyClues *bool   `json:"emptyClues"`
 }
 
 func replayJSON(s *Session, d *CommandData) {
@@ -227,27 +238,42 @@ func replayJSON(s *Session, d *CommandData) {
 	for i, action := range d.GameJSON.Actions {
 		if action.Type == actionTypeClue {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
-				s.Warning("Action " + strconv.Itoa(i) + " is a clue with an invalid target: " + strconv.Itoa(action.Target))
+				s.Warning("Action " + strconv.Itoa(i) + " is a clue with an invalid target: " +
+					strconv.Itoa(action.Target))
 				return
 			}
 			if action.Clue.Type < 0 || action.Clue.Type > 1 {
-				s.Warning("Action " + strconv.Itoa(i) + " is a clue with an clue type: " + strconv.Itoa(action.Clue.Type))
+				s.Warning("Action " + strconv.Itoa(i) + " is a clue with an clue type: " +
+					strconv.Itoa(action.Clue.Type))
 				return
 			}
 		} else if action.Type == actionTypePlay || action.Type == actionTypeDiscard {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Deck)-1 {
-				s.Warning("Action " + strconv.Itoa(i) + " is a play or discard with an invalid target.")
+				s.Warning("Action " + strconv.Itoa(i) +
+					" is a play or discard with an invalid target.")
 				return
 			}
 		} else {
-			s.Warning("Action " + strconv.Itoa(i) + " has an invalid type: " + strconv.Itoa(action.Type))
+			s.Warning("Action " + strconv.Itoa(i) + " has an invalid type: " +
+				strconv.Itoa(action.Type))
 			return
 		}
 	}
 
-	// Validate the variant
+	// All options are optinal; specify defaults if they were not specified
+	if d.GameJSON.Options == nil {
+		d.GameJSON.Options = &OptionsJSON{}
+	}
+	if d.GameJSON.Options.Variant == nil {
+		*d.GameJSON.Options.Variant = "No Variant"
+	}
+	if d.GameJSON.Options.EmptyClues == nil {
+		*d.GameJSON.Options.EmptyClues = false
+	}
+
+	// Validate that the specified variant exists
 	var variant *Variant
-	if v, ok := variants[d.GameJSON.Variant]; !ok {
+	if v, ok := variants[*d.GameJSON.Options.Variant]; !ok {
 		s.Warning("That is not a valid variant.")
 		return
 	} else {
@@ -329,8 +355,8 @@ func replayJSON(s *Session, d *CommandData) {
 func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
 	// Store the options on the table
 	t.Options = &Options{
-		Variant:    d.GameJSON.Variant,
-		EmptyClues: true, // Always enable empty clues in case it is used in the JSON
+		Variant:    *d.GameJSON.Options.Variant,
+		EmptyClues: *d.GameJSON.Options.EmptyClues,
 
 		JSONGame: true, // // We need to mark that the game should not be written to the database
 	}

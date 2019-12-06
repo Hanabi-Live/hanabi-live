@@ -182,15 +182,23 @@ func httpExport(c *gin.Context) {
 	} else {
 		options = v
 	}
+	variant := variantsID[options.Variant]
+	variantAddress := &variant
+	emptyClues := options.EmptyClues
+	emptyCluesAddress := &emptyClues
 
 	// Start to create a JSON game
 	g := &GameJSON{
+		ID:          gameID,
 		Actions:     actions,
 		Deck:        deck,
 		FirstPlayer: firstPlayer,
 		Notes:       notes,
 		Players:     players,
-		Variant:     variantsID[options.Variant],
+		Options: &OptionsJSON{
+			Variant:    variantAddress,
+			EmptyClues: emptyCluesAddress,
+		},
 	}
 
 	c.JSON(http.StatusOK, g)
