@@ -11,6 +11,7 @@ import * as hypothetical from './hypothetical';
 import * as notes from './notes';
 import notify from './notify';
 import * as replay from './replay';
+import SpectatorNote from './SpectatorNote';
 import stateChange from './stateChange';
 import * as stats from './stats';
 import strikeRecord from './strikeRecord';
@@ -19,36 +20,42 @@ import * as turn from './turn';
 import * as ui from './ui';
 
 // Define a command handler map
-const commands = {};
+const commands = new Map();
 export default commands;
 
-// Received by the client when it is our turn
-// Data is empty
-commands.action = () => {
+// Received when it is our turn
+commands.set('action', () => {
     turn.begin();
-};
+});
 
-// This is sent by the server to force the client to go back to the lobby
-commands.boot = () => {
+// Received when the server wants to force the client to go back to the lobby
+commands.set('boot', () => {
     timer.stop();
     globals.game.hide();
-};
+});
 
-// Update the clocks to show how much time people are taking
+// Updates the clocks to show how much time people are taking
 // or how much time people have left
-commands.clock = (data) => {
+interface ClockData {
+    times: Array<number>,
+    active: number,
+    timeTaken: number,
+}
+commands.set('clock', (data: ClockData) => {
     timer.update(data);
-};
+});
 
-commands.connected = (data) => {
+interface ConnectedData {
+    list: Array<boolean>,
+}
+commands.set('connected', (data: ConnectedData) => {
     for (let i = 0; i < data.list.length; i++) {
         globals.elements.nameFrames[i].setConnected(data.list[i]);
     }
-    globals.layers.get('UI').batchDraw();
-};
+    globals.layers.get('UI')!.batchDraw();
+});
 
-// The game just finished
-commands.gameOver = () => {
+commands.set('gameOver', () => {
     // If any tooltips are open, close them
     if (globals.activeHover !== null) {
         globals.activeHover.off('mousemove');
@@ -58,10 +65,10 @@ commands.gameOver = () => {
     // If the timers are showing, hide them
     if (globals.elements.timer1) {
         globals.elements.timer1.hide();
-        globals.elements.timer2.hide();
+        globals.elements.timer2!.hide();
     }
     timer.stop();
-    globals.layers.get('timer').batchDraw();
+    globals.layers.get('timer')!.batchDraw();
 
     // Transform this game into a shared replay
     globals.replay = true;
@@ -90,24 +97,24 @@ commands.gameOver = () => {
     replay.goto(globals.finalReplayTurn, true);
 
     // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
-    globals.elements.replayExitButton.hide();
+    globals.elements.replayExitButton!.hide();
 
     // Hide/show some buttons in the bottom-left-hand corner
-    globals.elements.replayButton.hide();
-    globals.elements.killButton.hide();
-    globals.elements.lobbyButtonSmall.hide();
-    globals.elements.lobbyButtonBig.show();
+    globals.elements.replayButton!.hide();
+    globals.elements.killButton!.hide();
+    globals.elements.lobbyButtonSmall!.hide();
+    globals.elements.lobbyButtonBig!.show();
 
     // Turn off the "Throw It in a Hole" UI
     if (globals.variant.name.startsWith('Throw It in a Hole')) {
-        globals.elements.scoreNumberLabel.text(globals.score.toString());
-        globals.elements.maxScoreNumberLabel.show();
+        globals.elements.scoreNumberLabel!.text(globals.score.toString());
+        globals.elements.maxScoreNumberLabel!.show();
     }
 
-    globals.layers.get('UI').batchDraw();
-};
+    globals.layers.get('UI')!.batchDraw();
+});
 
-commands.hypoAction = (data) => {
+commands.set('hypoAction', (data: string) => {
     const notifyMessage = JSON.parse(data);
 
     // We need to save this game state change for the purposes of the in-game hypothetical
@@ -118,42 +125,80 @@ commands.hypoAction = (data) => {
     if (notifyMessage.type === 'turn') {
         hypothetical.beginTurn();
     }
-};
+});
 
-commands.hypoBack = () => {
+commands.set('hypoBack', () => {
     hypothetical.backOneTurn();
-};
+});
 
-commands.hypoEnd = () => {
+commands.set('hypoEnd', () => {
     if (!globals.amSharedReplayLeader) {
         hypothetical.end();
     }
-};
+});
 
-commands.hypoStart = () => {
+commands.set('hypoStart', () => {
     if (!globals.amSharedReplayLeader) {
         hypothetical.start();
     }
-};
+});
 
-commands.databaseID = (data) => {
+interface DatabaseIDData {
+    id: number,
+}
+commands.set('databaseID', (data: DatabaseIDData) => {
     globals.databaseID = data.id;
-    globals.elements.gameIDLabel.text(`ID: ${globals.databaseID}`);
-    globals.elements.gameIDLabel.show();
+    globals.elements.gameIDLabel!.text(`ID: ${globals.databaseID}`);
+    globals.elements.gameIDLabel!.show();
 
     // Also move the card count label on the deck downwards
     if (globals.deckSize === 0) {
-        globals.elements.deck.nudgeCountDownwards();
+        globals.elements.deck!.nudgeCountDownwards();
     }
 
-    globals.layers.get('UI2').batchDraw();
-};
+    globals.layers.get('UI2')!.batchDraw();
+});
 
-commands.init = (data) => {
+interface InitData {
+    // Game settings
+    tableID: number,
+    names: Array<string>,
+    variant: string,
+    seat: number,
+    spectating: boolean,
+    replay: boolean,
+    sharedReplay: boolean,
+    databaseID: number,
+
+    // Optional settings
+    timed: boolean,
+    baseTime: number,
+    timePerTurn: number,
+    speedrun: boolean,
+    deckPlays: boolean,
+    emptyClues: boolean,
+    characterAssignments: Array<string>,
+    characterMetadata: Array<number>,
+
+    // Hypothetical settings
+    hypothetical: boolean,
+    hypoActions: Array<string>,
+
+    // Other features
+    paused: boolean,
+    pausePlayer: string,
+    pauseQueued: boolean,
+}
+commands.set('init', (data: InitData) => {
     // Game settings
     globals.lobby.tableID = data.tableID; // Equal to the table ID on the server
     globals.playerNames = data.names;
-    globals.variant = VARIANTS.get(data.variant);
+    const variant = VARIANTS.get(data.variant);
+    if (typeof variant === 'undefined') {
+        throw new Error(`The "init" command was sent with an invalid variant name of "${data.variant}".`);
+    } else {
+        globals.variant = variant;
+    }
     globals.playerUs = data.seat; // 0 if a spectator or a replay of a game that we were not in
     globals.spectating = data.spectating;
     globals.replay = data.replay;
@@ -189,28 +234,16 @@ commands.init = (data) => {
     }
 
     // Begin to load all of the card images
-    globals.ImageLoader.start();
+    globals.ImageLoader!.start();
     // (more initialization logic is found in the "finishedLoadingImages()" function)
-};
+});
 
-/*
-    Received by the client when spectating a game
-    Has the following data:
-    {
-        order: 16,
-        notes: [
-            {
-                name: 'Zamiel',
-                note: 'b1',
-            },
-            {
-                name: 'Sankala',
-                note: 'r1',
-            },
-        ]
-    }
-*/
-commands.note = (data) => {
+// Received when spectating a game
+interface NoteData {
+    order: number,
+    notes: Array<SpectatorNote>,
+}
+commands.set('note', (data: NoteData) => {
     // If we are not spectating and we got this message, something has gone wrong
     if (!globals.spectating) {
         return;
@@ -221,32 +254,24 @@ commands.note = (data) => {
 
     // Set the note indicator
     notes.setCardIndicator(data.order);
-};
+});
 
 /*
-    Received by the client when:
+    Received when:
     - joining a replay
     - joining a shared replay
     - joining an existing game as a spectator
     (it gives the notes of all the players & spectators)
-
-    Has the following data:
-    {
-        notes: [
-            {
-                id: 1,
-                name: 'Zamiel',
-                notes: ['', '', 'b1', ...],
-            },
-            {
-                id: 2,
-                name: 'Sankala',
-                notes: ['', 'r1', '', ...],
-            },
-        ],
-    }
 */
-commands.noteList = (data) => {
+interface NoteListData {
+    notes: Array<NoteList>,
+}
+interface NoteList {
+    id: number,
+    name: string,
+    notes: Array<string>,
+}
+commands.set('noteList', (data: NoteListData) => {
     // Reset any existing notes
     // (we could be getting a fresh copy of all notes after an ongoing game has ended)
     for (let i = 0; i < globals.allNotes.length; i++) {
@@ -272,18 +297,16 @@ commands.noteList = (data) => {
 
     // Show the note indicator for currently-visible cards
     notes.setAllCardIndicators();
-};
+});
 
 /*
-    Received by the client when reconnecting to an existing game as a player
-    (it only gives the notes of the specific player)
-
-    Has the following data:
-    {
-        notes: ["", "", "b1", ...],
-    }
+    Received when reconnecting to an existing game as a player
+    (it only gets the notes of one specific player)
 */
-commands.noteListPlayer = (data) => {
+interface NoteListPlayerData {
+    notes: Array<string>,
+}
+commands.set('noteListPlayer', (data: NoteListPlayerData) => {
     // Store our notes
     globals.ourNotes = data.notes;
 
@@ -300,10 +323,10 @@ commands.noteListPlayer = (data) => {
     for (const stackBase of globals.stackBases) {
         notes.checkSpecialNote(stackBase);
     }
-};
+});
 
 // Used when the game state changes
-commands.notify = (data) => {
+commands.set('notify', (data: any) => {
     // Update the state table
     const stateChangeFunction = stateChange.get(data.type);
     if (stateChangeFunction !== 'undefined') {
@@ -321,14 +344,14 @@ commands.notify = (data) => {
         globals.replayMax = data.num;
         if (globals.inReplay) {
             replay.adjustShuttles(false);
-            globals.elements.replayForwardButton.setEnabled(true);
-            globals.elements.replayForwardFullButton.setEnabled(true);
-            globals.layers.get('UI').batchDraw();
+            globals.elements.replayForwardButton!.setEnabled(true);
+            globals.elements.replayForwardFullButton!.setEnabled(true);
+            globals.layers.get('UI')!.batchDraw();
         }
 
         // On the second turn and beyond, ensure that the "In-Game Replay" button is enabled
         if (!globals.replay && globals.replayMax > 0) {
-            globals.elements.replayButton.setEnabled(true);
+            globals.elements.replayButton!.setEnabled(true);
         }
     } else if (data.type === 'clue' && globals.variant.name.startsWith('Alternating Clues')) {
         if (data.clue.type === CLUE_TYPE.RANK) {
@@ -363,9 +386,9 @@ commands.notify = (data) => {
         globals.finalReplayPos = globals.replayLog.length;
         globals.finalReplayTurn = data.num;
     }
-};
+});
 
-commands.notifyList = (dataList) => {
+commands.set('notifyList', (dataList: Array<any>) => {
     // Initialize the state table
     globals.state.deckSize = stats.getTotalCardsInTheDeck(globals.variant);
     globals.state.maxScore = globals.variant.maxScore;
@@ -379,7 +402,7 @@ commands.notifyList = (dataList) => {
 
     // Play through all of the turns
     for (const data of dataList) {
-        commands.notify(data);
+        commands.get('notify')(data);
 
         // Some specific messages contain global state information that we need to record
         // (since we might be in a replay that is starting on the first turn,
@@ -409,21 +432,28 @@ commands.notifyList = (dataList) => {
     }
 
     fadeCheck();
-    globals.layers.get('card').batchDraw();
-    globals.layers.get('UI').batchDraw();
+    globals.layers.get('card')!.batchDraw();
+    globals.layers.get('UI')!.batchDraw();
     globals.loading = false;
-};
+});
 
-commands.pause = (data) => {
+interface PauseData {
+    paused: boolean,
+    pausePlayer: string,
+}
+commands.set('pause', (data: PauseData) => {
     globals.paused = data.paused;
     globals.pausePlayer = data.pausePlayer;
 
     // Pause or unpause the UI accordingly
     ui.setPause();
-};
+});
 
 // This is used in shared replays to highlight a specific card (or UI element)
-commands.replayIndicator = (data) => {
+interface ReplayIndicatorData {
+    order: number,
+}
+commands.set('replayIndicator', (data: ReplayIndicatorData) => {
     if (globals.loading) {
         // We have not loaded everything yet, so don't bother with shared replay features
         return;
@@ -446,7 +476,7 @@ commands.replayIndicator = (data) => {
         // (the server does not validate the order that the leader sends)
         let card = globals.deck[data.order];
         if (!card) {
-            card = globals.stackBases[data.order - globals.deck.legnth];
+            card = globals.stackBases[data.order - globals.deck.length];
         }
         if (!card) {
             return;
@@ -471,53 +501,57 @@ commands.replayIndicator = (data) => {
 
         arrows.toggle(element);
     }
-};
+});
 
 // This is used in shared replays to specify who the leader is
-commands.replayLeader = (data) => {
+interface ReplayLeaderData {
+    name: string,
+    playAnimation: boolean,
+}
+commands.set('replayLeader', (data: ReplayLeaderData) => {
     // Store who the shared replay leader is
     globals.sharedReplayLeader = data.name;
     globals.amSharedReplayLeader = globals.sharedReplayLeader === globals.lobby.username;
 
     // Update the UI and play an animation to indicate there is a new replay leader
-    globals.elements.sharedReplayLeaderLabel.show();
+    globals.elements.sharedReplayLeaderLabel!.show();
     // (the crown might be invisible if we just finished an ongoing game)
-    globals.elements.sharedReplayLeaderCircle.visible(globals.amSharedReplayLeader);
+    globals.elements.sharedReplayLeaderCircle!.visible(globals.amSharedReplayLeader);
     if (data.playAnimation) {
         // We only want the animation to play when the leader changes
         // The server will set "playAnimation" to false when a player is first loading into a game
         // (or when a game ends)
-        globals.elements.sharedReplayLeaderLabelPulse.play();
+        globals.elements.sharedReplayLeaderLabelPulse!.play();
     }
 
     // Arrange the center buttons in a certain way depending on
     // whether we are the shared replay leader
-    globals.elements.pauseSharedTurnsButton.visible(globals.useSharedTurns);
-    globals.elements.useSharedTurnsButton.visible(!globals.useSharedTurns);
+    globals.elements.pauseSharedTurnsButton!.visible(globals.useSharedTurns);
+    globals.elements.useSharedTurnsButton!.visible(!globals.useSharedTurns);
     if (globals.amSharedReplayLeader) {
-        globals.elements.pauseSharedTurnsButton.setLeft();
-        globals.elements.useSharedTurnsButton.setLeft();
+        (globals.elements.pauseSharedTurnsButton as any).setLeft();
+        (globals.elements.useSharedTurnsButton as any).setLeft();
     } else {
-        globals.elements.pauseSharedTurnsButton.setCenter();
-        globals.elements.useSharedTurnsButton.setCenter();
+        (globals.elements.pauseSharedTurnsButton as any).setCenter();
+        (globals.elements.useSharedTurnsButton as any).setCenter();
     }
-    globals.elements.enterHypoButton.visible(globals.amSharedReplayLeader);
+    globals.elements.enterHypoButton!.visible(globals.amSharedReplayLeader);
 
     // Enable/disable the restart button
-    globals.elements.restartButton.visible(globals.amSharedReplayLeader);
+    globals.elements.restartButton!.visible(globals.amSharedReplayLeader);
 
     // Hide the replay area if we are in a hypothetical
     if (globals.hypothetical) {
-        globals.elements.replayArea.visible(false);
+        globals.elements.replayArea!.visible(false);
         if (globals.amSharedReplayLeader) {
-            globals.elements.restartButton.visible(false);
-            globals.elements.endHypotheticalButton.visible(true);
+            globals.elements.restartButton!.visible(false);
+            globals.elements.endHypotheticalButton!.visible(true);
         } else {
-            globals.elements.hypoCircle.visible(true);
+            globals.elements.hypoCircle!.visible(true);
         }
     }
 
-    globals.layers.get('UI').batchDraw();
+    globals.layers.get('UI')!.batchDraw();
 
     // Update the tooltip
     let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
@@ -526,20 +560,26 @@ commands.replayLeader = (data) => {
         content += ' (away)';
     }
     $('#tooltip-leader').tooltipster('instance').content(content);
-};
+});
 
 // This is used in shared replays to make fun sounds
-commands.replaySound = (data) => {
+interface ReplaySoundData {
+    sound: string,
+}
+commands.set('replaySound', (data: ReplaySoundData) => {
     if (globals.loading) {
         // We have not loaded everything yet, so don't bother with shared replay features
         return;
     }
 
     globals.game.sounds.play(data.sound);
-};
+});
 
 // This is used in shared replays to change the turn
-commands.replayTurn = (data) => {
+interface ReplayTurnData {
+    turn: number,
+}
+commands.set('replayTurn', (data: ReplayTurnData) => {
     if (globals.loading) {
         // We have not loaded everything yet, so don't bother with shared replay features
         return;
@@ -573,39 +613,39 @@ commands.replayTurn = (data) => {
         } else {
             // Play an animation to indicate the direction that the leader has taken us in
             if (oldTurn > globals.sharedReplayTurn && oldTurn !== -1) {
-                globals.elements.sharedReplayBackwardTween.play();
+                globals.elements.sharedReplayBackwardTween!.play();
             } else if (oldTurn < globals.sharedReplayTurn && oldTurn !== -1) {
-                globals.elements.sharedReplayForwardTween.play();
+                globals.elements.sharedReplayForwardTween!.play();
             }
-            globals.layers.get('UI').batchDraw();
+            globals.layers.get('UI')!.batchDraw();
         }
     } else {
         // Even though we are not using the shared turns,
         // we need to update the slider to show where the replay leader changed the turn to
-        globals.layers.get('UI').batchDraw();
+        globals.layers.get('UI')!.batchDraw();
     }
-};
+});
 
-/*
-    Has the following data:
-    {
-        suit: 1,
-        rank: 2,
-        order: 5,
-    }
-*/
-commands.reveal = (data) => {
+interface RevealData {
+    suit: number,
+    rank: number,
+    order: number,
+}
+commands.set('reveal', (data: RevealData) => {
     let card = globals.deck[data.order];
     if (!card) {
         card = globals.stackBases[data.order - globals.deck.length];
     }
 
     card.reveal(data.suit, data.rank);
-    globals.layers.get('card').batchDraw();
-};
+    globals.layers.get('card')!.batchDraw();
+});
 
 // This is used to update the names of the people currently spectating the game
-commands.spectators = (data) => {
+interface SpectatorsData {
+    names: Array<string>,
+}
+commands.set('spectators', (data: SpectatorsData) => {
     if (!globals.elements.spectatorsLabel) {
         // Sometimes we can get here without the spectators label being initiated yet
         return;
@@ -616,9 +656,9 @@ commands.spectators = (data) => {
 
     const visible = data.names.length > 0;
     globals.elements.spectatorsLabel.visible(visible);
-    globals.elements.spectatorsNumLabel.visible(visible);
+    globals.elements.spectatorsNumLabel!.visible(visible);
     if (visible) {
-        globals.elements.spectatorsNumLabel.text(data.names.length);
+        globals.elements.spectatorsNumLabel!.text(data.names.length.toString());
 
         // Build the string that shows all the names
         const nameEntries = data.names.map((name) => `<li>${name}</li>`).join('');
@@ -644,5 +684,5 @@ commands.spectators = (data) => {
         $('#tooltip-leader').tooltipster('instance').content(content);
     }
 
-    globals.layers.get('UI').batchDraw();
-};
+    globals.layers.get('UI')!.batchDraw();
+});

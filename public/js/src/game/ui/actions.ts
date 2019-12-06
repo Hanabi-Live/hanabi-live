@@ -1,6 +1,7 @@
 // Imports
 import MsgClue from './MsgClue';
 
+// Action is a message sent to the server that represents the in-game action that we just took
 export interface Action {
     type: number,
     target: number,

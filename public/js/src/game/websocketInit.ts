@@ -10,20 +10,20 @@ import phaserInit from '../client_v2/phaserInit';
 import websocket from './ui/websocket';
 
 export default () => {
-    let commandsToUse;
+    let commandsToUse: Map<string, (data: any) => void>;
     if (window.location.pathname === '/dev2') {
         commandsToUse = commands; // The new client, defined below
     } else {
         commandsToUse = websocket; // The old client, defined in the "ui/websocket.ts" file
     }
 
-    for (const command of Object.keys(commandsToUse)) {
-        globals.conn.on(command, (data) => {
+    for (const [commandName, commandFunction] of commandsToUse) {
+        globals.conn.on(commandName, (data: any) => {
             if (globals.currentScreen !== 'game') {
                 return;
             }
 
-            commandsToUse[command](data);
+            commandFunction(data);
         });
     }
 };
@@ -33,9 +33,9 @@ export default () => {
 */
 
 // Define a command handler map
-const commands = {};
+const commands = new Map();
 
-commands.init = (data) => {
+commands.set('init', (data: any) => {
     // Record all of the settings for this game
     globals.init = data;
 
@@ -48,13 +48,17 @@ commands.init = (data) => {
         cards: [],
     };
 
+    // Find out whether "colorblind mode" is enabled
+    const showColorblindUISetting = globals.settings.get('showColorblindUI');
+    let showColorblindUI = false;
+    if (typeof showColorblindUISetting === 'boolean') {
+        showColorblindUI = showColorblindUISetting;
+    }
+
     // Build images for every card
     // (with respect to the variant that we are playing
     // and whether or not we have the colorblind UI feature enabled)
-    globals.ui.cardImages = drawCards(
-        globals.init.variant,
-        globals.settings.get('showColorblindUI'),
-    );
+    globals.ui.cardImages = drawCards(globals.init.variant, showColorblindUI);
 
     // Draw the user interface
     phaserInit();
@@ -64,4 +68,4 @@ commands.init = (data) => {
 
     // Tell the server that we are finished loading
     // globals.lobby.conn.send('ready');
-};
+});
