@@ -3,52 +3,15 @@
 */
 {
     /*
-        An array that contains all of the actions that the players performed in the game
-        Valid actions types are:
-        - 0 if a clue
-        - 1 if a play
-        - 2 if a discard
-        An example of each action is listed below
+        An array that contains the names of the players
+        The 0th player will go first unless a non-zero value is specified for "firstPlayer" above
     */
-    "actions": [
-        // A "clue" action (type 0)
-        {
-            "clue": {
-                /*
-                    0 is a rank clue
-                    1 is a color clue
-                */
-                "type": 1,
-                /*
-                    If a rank clue, value is equal to the number
-                    If a color clue, value is equal to:
-                    - 0 if blue
-                    - 1 if green
-                    - 2 if yellow
-                    - 3 if red
-                    - 4 if purple
-                    - 5 if black
-                */
-                "value": 3
-            },
-            // The ID of the player receiving the clue
-            "target": 1,
-            "type": 0
-        },
-        // A "play" action (type 1)
-        {
-            // The index of the card that is being played
-            // (e.g. index 0 corresponds to the 1st card dealt, etc.)
-            "target": 4,
-            "type": 1
-        },
-        // A "discard" action (type 2)
-        {
-            // The index of the card that is being discarded
-            // (e.g. index 0 corresponds to the 1st card dealt, etc.)
-            "target": 11,
-            "type": 2
-        }
+    "players": [
+        "Robot1",
+        "Robot2",
+        "Robot3",
+        "Robot4",
+        "Robot5"
     ],
 
     /*
@@ -251,29 +214,52 @@
     "firstPlayer": 0,
 
     /*
-        An array that contains the notes of the players
-        Players can write arbitrary notes on individual cards
-        The 0th array corresponds to the 0th player listed below
-        The 0th note corresponds to the card at index 0 in the deck
+        An array that contains all of the actions that the players performed in the game
+        Valid actions types are:
+        - 0 if a clue
+        - 1 if a play
+        - 2 if a discard
+        An example of each action is listed below
     */
-    "notes": [
-        ["f", "cm"],
-        ["f2", "cm2"],
-        [],
-        [],
-        []
-    ],
-
-    /*
-        An array that contains the names of the players
-        The 0th player will go first unless a non-zero value is specified for "firstPlayer" above
-    */
-    "players": [
-        "Robot1",
-        "Robot2",
-        "Robot3",
-        "Robot4",
-        "Robot5"
+    "actions": [
+        // A "clue" action (type 0)
+        {
+            "clue": {
+                /*
+                    0 is a rank clue
+                    1 is a color clue
+                */
+                "type": 1,
+                /*
+                    If a rank clue, value is equal to the number
+                    If a color clue, value is equal to:
+                    - 0 if blue
+                    - 1 if green
+                    - 2 if yellow
+                    - 3 if red
+                    - 4 if purple
+                    - 5 if black
+                */
+                "value": 3
+            },
+            // The ID of the player receiving the clue
+            "target": 1,
+            "type": 0
+        },
+        // A "play" action (type 1)
+        {
+            // The index of the card that is being played
+            // (e.g. index 0 corresponds to the 1st card dealt, etc.)
+            "target": 4,
+            "type": 1
+        },
+        // A "discard" action (type 2)
+        {
+            // The index of the card that is being discarded
+            // (e.g. index 0 corresponds to the 1st card dealt, etc.)
+            "target": 11,
+            "type": 2
+        }
     ],
 
     /*
@@ -295,5 +281,20 @@
             If this value is not specified, false will be assumed
         */
         "emptyClues": false
-    }
+    },
+
+    /*
+        An array that contains the notes of the players
+        Players can write arbitrary notes on individual cards
+        The 0th array corresponds to the 0th player listed below
+        The 0th note corresponds to the card at index 0 in the deck
+        This field is entirely optional
+    */
+    "notes": [
+        ["f", "cm"],
+        ["f2", "cm2"],
+        [],
+        [],
+        []
+    ]
 }
