@@ -7,10 +7,16 @@ The following instructions will set up the server development environment as wel
 
 Note that these steps require **an elevated (administrator) command-shell**.
 
-* Install [Chocolatey](https://chocolatey.org/):
-  * `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
+* Install package manager
+  * \[WINDOWS\] Install [Chocolatey](https://chocolatey.org/):
+    * `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
+  * \[MAC\] Install Homebrew (https://brew.sh/)
+    * `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
 * Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), [Java](https://www.java.com/en/), [Visual Studio Code](https://code.visualstudio.com/), and [Wget](https://eternallybored.org/misc/wget/):
-  * `choco install git golang mariadb nodejs jre8 vscode wget -y`
+  * \[WINDOWS\] `choco install git golang mariadb nodejs jre8 vscode wget -y`
+  * \[MAC\] `brew install git golang mariadb node`
+    * `brew cask install visual-studio-code`
+    * [Enable launching VS Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line)
 * Configure Git:
   * `refreshenv`
   * `git config --global user.name "Your_Username"`
@@ -20,19 +26,25 @@ Note that these steps require **an elevated (administrator) command-shell**.
   * `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
 * Configure MariaDB:
-  * `mysql -u root`
-    * `DELETE FROM mysql.user WHERE User='';` <br />
-    (this deletes the anonymous user that is installed by default)
-    * `DROP DATABASE IF EXISTS test;` <br />
-    (this deletes the test database that is installed by default)
-    * `CREATE DATABASE hanabi;`
-    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
-    * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
-    * `FLUSH PRIVILEGES;`
-    * `exit`
+  * Start server
+    * \[WINDOWS\] `mysql -u root`
+    * \[MAC\] `mysql.server start` `mysql -uroot`
+  * `DELETE FROM mysql.user WHERE User='';` <br />
+  (this deletes the anonymous user that is installed by default)
+  * `DROP DATABASE IF EXISTS test;` <br />
+  (this deletes the test database that is installed by default)
+  * `CREATE DATABASE hanabi;`
+  * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
+  * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
+  * `FLUSH PRIVILEGES;`
+  * `exit`
 * Clone the repository:
-  * `mkdir %GOPATH%\src\github.com\Zamiell`
-  * `cd %GOPATH%\src\github.com\Zamiell`
+  * [WINDOWS]
+    * `mkdir %GOPATH%\src\github.com\Zamiell`
+    * `cd %GOPATH%\src\github.com\Zamiell`
+  * [MAC]
+    * `mkdir $GOPATH/src/github.com/Zamiell`
+    * `cd $GOPATH/src/github.com/Zamiell`
   * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
     * `git clone git@github.com:Zamiell/hanabi-live.git`
   * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
@@ -41,18 +53,19 @@ Note that these steps require **an elevated (administrator) command-shell**.
     * `git clone https://github.com/[Your_Username]/hanabi-live.git`
 * Enter the cloned repository:
     * `cd hanabi-live`
-* Change from the Windows Command Prompt to Git Bash and install some dependencies:
-  * `"%PROGRAMFILES%\Git\bin\sh.exe"`
+* \[WINDOWS\] Change from the Windows Command Prompt to Git Bash
+  *  `"%PROGRAMFILES%\Git\bin\sh.exe"`
+* Install some dependencies:
   * `./install/install_dependencies.sh`
   * `./install/install_development_dependencies.sh`
   * `./install/install_database_schema.sh`
-  * `exit`
+  * \[WINDOWS\] `exit`
 * Set the domain URL (optional):
   * `notepad .env` <br />
   (if you plan to surf to "http://localhost", then don't change anything)
-* Import a solid set of starting VSCode user settings:
-  * `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"` <br />
-  (feel free to tweak this file to your liking)
+* Import a solid set of starting VSCode user settings: (feel free to tweak this file to your liking)
+  * \[WINDOWS\] `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"` <br />
+  * \[MAC\] `cp install/settings.json /Users/<username>/Library/Application\ Support/Code/User`
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * Test the Golang linter:
@@ -64,8 +77,9 @@ Note that these steps require **an elevated (administrator) command-shell**.
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 * If needed, compile and run the server locally:
   * `cd src`
-  * `go install && "%GOPATH%\bin\src.exe"`
-  * A Windows Firewall dialog may pop up; allow the connection.
+  * \[WINDOWS\] `go install && "%GOPATH%\bin\src.exe"`
+    * A Windows Firewall dialog may pop up; allow the connection.
+  * \[MAC\] `go install && $GOPATH/bin/src`
   * Open a browser and surf to: http://localhost
 
 <br />
