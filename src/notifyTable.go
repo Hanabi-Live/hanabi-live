@@ -44,7 +44,6 @@ func (t *Table) NotifyPlayerChange() {
 		// Second, send information about the game and the players in one big message
 		type GameMessage struct {
 			Name                 string               `json:"name"`
-			Running              bool                 `json:"running"`
 			Players              []*GamePlayerMessage `json:"players"`
 			Variant              string               `json:"variant"`
 			Timed                bool                 `json:"timed"`
@@ -58,7 +57,6 @@ func (t *Table) NotifyPlayerChange() {
 		}
 		p.Session.Emit("game", &GameMessage{
 			Name:                 t.Name,
-			Running:              t.Running,
 			Players:              gamePlayers,
 			Variant:              t.Options.Variant,
 			Timed:                t.Options.Timed,

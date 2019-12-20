@@ -126,7 +126,7 @@ func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, 
 }
 
 // NotifyGameHistory will send a user a subset of their past games
-func (s *Session) NotifyGameHistory(h []*models.GameHistory, incrementNumGames bool) {
+func (s *Session) NotifyGameHistory(historyListDatabase []*models.GameHistory, incrementNumGames bool) {
 	type GameHistoryMessage struct {
 		ID                int       `json:"id"`
 		NumPlayers        int       `json:"numPlayers"`
@@ -137,9 +137,9 @@ func (s *Session) NotifyGameHistory(h []*models.GameHistory, incrementNumGames b
 		Variant           string    `json:"variant"`
 		IncrementNumGames bool      `json:"incrementNumGames"`
 	}
-	m := make([]*GameHistoryMessage, 0)
-	for _, g := range h {
-		m = append(m, &GameHistoryMessage{
+	historyList := make([]*GameHistoryMessage, 0)
+	for _, g := range historyListDatabase {
+		historyList = append(historyList, &GameHistoryMessage{
 			ID:                g.ID,
 			NumPlayers:        g.NumPlayers,
 			NumSimilar:        g.NumSimilar,
@@ -150,7 +150,7 @@ func (s *Session) NotifyGameHistory(h []*models.GameHistory, incrementNumGames b
 			IncrementNumGames: incrementNumGames,
 		})
 	}
-	s.Emit("gameHistory", &m)
+	s.Emit("gameHistory", &historyList)
 }
 
 func (s *Session) NotifyTableStart() {

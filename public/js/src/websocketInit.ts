@@ -5,11 +5,15 @@
 
 // Imports
 import * as chat from './chat';
+import ChatMessage from './ChatMessage';
+import Connection from './Connection';
 import * as gameChat from './game/chat';
+import GameHistory from './lobby/GameHistory';
 import * as gameMain from './game/main';
 import * as gameSounds from './game/sounds';
 import gameWebsocketInit from './game/websocketInit';
-import Connection from './Connection';
+import HistoryDetail from './lobby/HistoryDetail';
+import Game from './lobby/Game';
 import globals from './globals';
 import * as lobbyHistory from './lobby/history';
 import * as lobbyLoginMisc from './lobby/loginMisc';
@@ -48,7 +52,7 @@ export default () => {
         console.log('WebSocket connection disconnected / closed.');
         modals.errorShow('Disconnected from the server. Either your Internet hiccuped or the server restarted.');
     });
-    globals.conn.on('socketError', (event) => {
+    globals.conn.on('socketError', (event: Event) => {
         // "socketError" is defined in the Connection object as mapping to
         // the WebSocket "onerror" event
         console.error('WebSocket error:', event);
@@ -62,7 +66,7 @@ export default () => {
     // "initCommands()" function
     initCommands();
 
-    globals.conn.send = (command, data) => {
+    globals.conn.send = (command: string, data: any) => {
         if (typeof data === 'undefined') {
             data = {};
         }
@@ -93,7 +97,15 @@ export default () => {
 
 // This is all of the normal commands/messages that we expect to receive from the server
 const initCommands = () => {
-    globals.conn.on('hello', (data) => {
+    interface HelloData {
+        username: string,
+        totalGames: number,
+        firstTimeUser: boolean,
+        settings: any,
+        version: number,
+        shuttingDown: boolean,
+    }
+    globals.conn.on('hello', (data: HelloData) => {
         // Store variables relating to our user account
         globals.username = data.username; // We might have logged-in with a different stylization
         globals.totalGames = data.totalGames;
@@ -107,15 +119,23 @@ const initCommands = () => {
                 'createTableTimePerTurnSeconds',
             ];
             let newValue = value;
-            if (setting in settingsToConvertToStrings) {
-                newValue = value.toString();
+            if (typeof newValue === 'number' && setting in settingsToConvertToStrings) {
+                newValue = newValue.toString();
+            }
+
+            if (
+                typeof newValue !== 'string'
+                && typeof newValue !== 'number'
+                && typeof newValue !== 'boolean'
+            ) {
+                throw new Error(`The settings of "${newValue}" was an unknown type.`);
             }
 
             globals.settings.set(setting, newValue);
         }
 
         // Update various elements of the UI to reflect our settings
-        $('#nav-buttons-history-total-games').html(globals.totalGames);
+        $('#nav-buttons-history-total-games').html(globals.totalGames.toString());
         lobbySettings.setSettingsTooltip();
         lobbyLoginMisc.hide(data.firstTimeUser);
 
@@ -138,16 +158,17 @@ const initCommands = () => {
             }
 
             // Automatically go into a replay if surfing to "/replay/123"
-            let gameID = null;
+            let gameIDString = '';
             const match = window.location.pathname.match(/\/replay\/(\d+)/);
             if (match) {
-                gameID = match[1];
+                gameIDString = match[1];
             } else if (window.location.pathname === '/dev2') {
-                gameID = '51'; // The first game in the Hanabi Live database
+                gameIDString = '51'; // The first game in the Hanabi Live database
             }
-            if (gameID !== null) {
+            if (gameIDString !== '') {
                 setTimeout(() => {
-                    gameID = parseInt(gameID, 10); // The server expects this as an integer
+                    // The server expects the game ID as an integer
+                    const gameID = parseInt(gameIDString, 10);
                     globals.conn.send('replayCreate', {
                         gameID,
                         source: 'id',
@@ -158,55 +179,23 @@ const initCommands = () => {
         }
     });
 
-    /*
-        Received by the client when a user connect or has a new status
-        Has the following data:
-        {
-            id: 6,
-            name: 'Zamiel',
-            status 'Lobby',
-        }
-    */
-    globals.conn.on('user', (data) => {
+    // Received by the client when a user connect or has a new status
+    globals.conn.on('user', (data: User) => {
         globals.userList.set(data.id, data);
         lobbyUsersDraw();
     });
 
-    /*
-        Received by the client when a user disconnects
-        Has the following data:
-        {
-            id: 6,
-        }
-    */
-    globals.conn.on('userLeft', (data) => {
+    // Received by the client when a user disconnects
+    interface UserLeftData {
+        id: number,
+    }
+    globals.conn.on('userLeft', (data: UserLeftData) => {
         globals.userList.delete(data.id);
         lobbyUsersDraw();
     });
 
-    /*
-        Received by the client when a table is created or modified
-        Has the following data:
-        {
-            id: 6,
-            name: 'test table',
-            password: false,
-            joined: false,
-            numPlayers: 1,
-            owned: false,
-            running: false,
-            variant: 'No Variant',
-            timed: false,
-            baseTime: 0,
-            timePerTurn: 0,
-            ourTurn: false,
-            sharedReplay: false,
-            progress: 0,
-            players: 'Zamiel, DuneAught',
-            spectators: 'Libster',
-        }
-    */
-    globals.conn.on('table', (data) => {
+    // Received by the client when a table is created or modified
+    globals.conn.on('table', (data: Table) => {
         // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
         data.baseTime *= 1000;
         data.timePerTurn *= 1000;
@@ -215,31 +204,17 @@ const initCommands = () => {
         lobbyTablesDraw();
     });
 
-    /*
-        Received by the client when a table no longer has any members present
-        Has the following data:
-        {
-            id: 6,
-        }
-    */
-    globals.conn.on('tableGone', (data) => {
+    // Received by the client when a table no longer has any members present
+    interface TableGoneData {
+        id: number,
+    }
+    globals.conn.on('tableGone', (data: TableGoneData) => {
         globals.tableList.delete(data.id);
         lobbyTablesDraw();
     });
 
-    /*
-        Received by the client when a new chat message arrives
-        Has the following data:
-        {
-            msg: 'poop',
-            who: 'Zamiel',
-            discord: false,
-            server: false,
-            datetime: 123456789,
-            room: 'lobby',
-        }
-    */
-    globals.conn.on('chat', (data) => {
+    // Received by the client when a new chat message arrives
+    globals.conn.on('chat', (data: ChatMessage) => {
         chat.add(data, false); // The second argument is "fast"
 
         if (!data.room.startsWith('table')) {
@@ -273,7 +248,11 @@ const initCommands = () => {
     // The "chatList" command is sent upon initial connection
     // to give the client a list of past lobby chat messages
     // It is also sent upon connecting to a game to give a list of past in-game chat messages
-    globals.conn.on('chatList', (data) => {
+    interface ChatListData {
+        list: Array<ChatMessage>,
+        unread: number,
+    }
+    globals.conn.on('chatList', (data: ChatListData) => {
         for (const line of data.list) {
             chat.add(line, true); // The second argument is "fast"
         }
@@ -287,7 +266,10 @@ const initCommands = () => {
         }
     });
 
-    globals.conn.on('joined', (data) => {
+    interface JoinedData {
+        tableID: number,
+    }
+    globals.conn.on('joined', (data: JoinedData) => {
         globals.tableID = data.tableID;
 
         // We joined a new game, so transition between screens
@@ -301,7 +283,7 @@ const initCommands = () => {
         lobbyPregame.hide();
     });
 
-    globals.conn.on('game', (data) => {
+    globals.conn.on('game', (data: Game) => {
         globals.game = data;
 
         // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
@@ -311,7 +293,10 @@ const initCommands = () => {
         lobbyPregame.draw();
     });
 
-    globals.conn.on('tableReady', (data) => {
+    interface TableReadyData {
+        ready: boolean,
+    }
+    globals.conn.on('tableReady', (data: TableReadyData) => {
         if (data.ready) {
             $('#nav-buttons-pregame-start').removeClass('disabled');
         } else {
@@ -319,14 +304,17 @@ const initCommands = () => {
         }
     });
 
-    globals.conn.on('tableStart', (data) => {
+    interface TableStartData {
+        replay: boolean,
+    }
+    globals.conn.on('tableStart', (data: TableStartData) => {
         if (!data.replay) {
             lobbyPregame.hide();
         }
-        gameMain.show(data.replay);
+        gameMain.show();
     });
 
-    globals.conn.on('gameHistory', (dataArray) => {
+    globals.conn.on('gameHistory', (dataArray: Array<GameHistory>) => {
         // data will be an array of all of the games that we have previously played
         for (const data of dataArray) {
             globals.historyList[data.id] = data;
@@ -344,29 +332,38 @@ const initCommands = () => {
         }
 
         const shownGames = Object.keys(globals.historyList).length;
-        $('#nav-buttons-history-shown-games').html(shownGames);
-        $('#nav-buttons-history-total-games').html(globals.totalGames);
+        $('#nav-buttons-history-shown-games').html(shownGames.toString());
+        $('#nav-buttons-history-total-games').html(globals.totalGames.toString());
         if (shownGames === globals.totalGames) {
             $('#lobby-history-show-more').hide();
         }
     });
 
-    globals.conn.on('historyDetail', (data) => {
+    globals.conn.on('historyDetail', (data: HistoryDetail) => {
         globals.historyDetailList.push(data);
         lobbyHistory.drawDetails();
     });
 
-    globals.conn.on('sound', (data) => {
+    interface SoundData {
+        file: string,
+    }
+    globals.conn.on('sound', (data: SoundData) => {
         if (globals.currentScreen === 'game' && globals.settings.get('sendTurnSound')) {
             gameSounds.play(data.file);
         }
     });
 
-    globals.conn.on('name', (data) => {
+    interface NameData {
+        name: string,
+    }
+    globals.conn.on('name', (data: NameData) => {
         globals.randomName = data.name;
     });
 
-    globals.conn.on('warning', (data) => {
+    interface WarningData {
+        warning: string,
+    }
+    globals.conn.on('warning', (data: WarningData) => {
         console.warn(data.warning);
         modals.warningShow(data.warning);
         if (
@@ -378,7 +375,10 @@ const initCommands = () => {
         }
     });
 
-    globals.conn.on('error', (data) => {
+    interface ErrorData {
+        error: string,
+    }
+    globals.conn.on('error', (data: ErrorData) => {
         console.error(data.error);
         modals.errorShow(data.error);
 

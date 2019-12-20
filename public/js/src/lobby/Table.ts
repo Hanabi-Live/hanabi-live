@@ -6,13 +6,13 @@ interface Table {
     numPlayers: number,
     owned: boolean,
     running: boolean,
-    variant: string,
+    variant: string, // e.g. "No Variant"
     timed: boolean,
     baseTime: number,
     timePerTurn: number,
     ourTurn: boolean,
     sharedReplay: boolean,
     progress: number,
-    players: string,
+    players: string, // e.g. "Zamiel, DuneAught"
     spectators: string,
 }

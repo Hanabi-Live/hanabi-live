@@ -1,3 +1,12 @@
+// TOOD
+/*
+- put lobby only websocket functinos in lobby/websocket.ts
+- change globals.historyList to a map
+- search for all todo and replace with object
+- finish replacing websocket
+- search for all "as any"
+*/
+
 /*
     The main entry point for the Hanabi client code
 */
