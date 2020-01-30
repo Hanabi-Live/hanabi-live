@@ -155,6 +155,10 @@ Special:
 * Fives are "touched" by all rank clues.
 * Players cannot clue rank 5.
 
+### Null-Fives
+
+* Fives are "touched" by no clues.
+
 ### Special Mix (5 Suits)
 
 * This is a mix of several variants. The suits are as follows:
