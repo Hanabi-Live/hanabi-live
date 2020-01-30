@@ -104,6 +104,9 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
         if (globals.variant.name.includes('Multi-Fives') && card.rank === 5) {
             return true;
         }
+        if (globals.variant.name.includes('Null-Fives') && card.rank === 5) {
+            return false;
+        }
         return clue.value === card.rank;
     }
 
@@ -113,6 +116,9 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
         }
         if (globals.variant.name.includes('Prism-Ones') && card.rank === 1) {
             return true;
+        }
+        if (globals.variant.name.includes('Null-Fives') && card.rank === 5) {
+            return false;
         }
         return card.suit!.clueColors.includes(clue.value as Color);
     }
