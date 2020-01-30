@@ -486,6 +486,17 @@ export default class HanabiCard extends Konva.Group {
                         (rank: number) => rank !== 1,
                     );
                 }
+                
+            // In "Null-Fives" variants, 5's are touched by no clues
+            if (globals.variant.name.includes('Null-Fives')) {
+                if (positive) {
+                    // Positive color means that the card cannot be a 5
+                    ranksRemoved = filterInPlace(
+                        this.possibleRanks,
+                        (rank: number) => rank !== 5,
+                    );
+                }
+                
             }
         }
 
