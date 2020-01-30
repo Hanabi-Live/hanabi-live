@@ -1104,19 +1104,23 @@
     },
     "Null-Fives (6 Suits)": {
         "id": 298,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "clueRanks": [1, 2, 3, 4]
     },
     "Null-Fives (5 Suits)": {
         "id": 299,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "clueRanks": [1, 2, 3, 4]
     },
     "Null-Fives (4 Suits)": {
         "id": 300,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "clueRanks": [1, 2, 3, 4]
     },
     "Null-Fives (3 Suits)": {
         "id": 301,
         "suits": ["Blue", "Green", "Yellow"],
+        "clueRanks": [1, 2, 3, 4],
         "spacing": true
     },
     "Color Blind (6 Suits)": {
