@@ -33,6 +33,7 @@ Special:
 | Colors share suit | Dual color            |
 | All color clues   | Prism 1s (1s only)    |
 | All rank clues    | Multi-Fives (5s only) |
+| No clues          | Null-Fives (5s only)  |
 
 <br />
 
@@ -158,6 +159,7 @@ Special:
 ### Null-Fives
 
 * Fives are "touched" by no clues.
+* Players cannot clue rank 5.
 
 ### Special Mix (5 Suits)
 
