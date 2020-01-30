@@ -1102,7 +1102,23 @@
         "suits": ["Blue", "Green", "Yellow"],
         "spacing": true
     },
-
+    "Null-Fives (6 Suits)": {
+        "id": 298,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+    },
+    "Null-Fives (5 Suits)": {
+        "id": 299,
+        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+    },
+    "Null-Fives (4 Suits)": {
+        "id": 300,
+        "suits": ["Blue", "Green", "Yellow", "Red"]
+    },
+    "Null-Fives (3 Suits)": {
+        "id": 301,
+        "suits": ["Blue", "Green", "Yellow"],
+        "spacing": true
+    },
     "Color Blind (6 Suits)": {
         "id": 10,
         "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
