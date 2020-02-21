@@ -149,6 +149,11 @@ function setTickingDownTime(timer: TimerDisplay) {
 }
 
 function setTickingDownTimeTooltip(i: number) {
+    // This tooltip is disabled in speedrun mode
+    if (globals.lobby.settings.get('speedrunMode') || globals.speedrun) {
+        return;
+    }    
+    
     // Update the tooltip that appears when you hover over a player's name
     let time = globals.playerTimes[i];
     if (!globals.timed) {
