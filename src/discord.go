@@ -284,6 +284,7 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	if command == "link" {
 		if len(args) != 2 {
 			discordSend(m.ChannelID, "", "The format of the /link command is: /link [game ID] [turn number]")
+			return
 		}
 
 		// We enclose the link in "<>" to prevent Discord from generating a link preview
