@@ -1159,9 +1159,9 @@ const drawStatistics = () => {
     });
     globals.layers.get('UI')!.add(efficiencyTextLabel);
     efficiencyTextLabel.tooltipName = 'efficiency';
-    let efficiencyContent = 'Efficiency is calculated by: <i>number of clues given /<br />';
+    let efficiencyContent = 'Efficiency is calculated by: <i>(number of cards played<br />';
     efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-    efficiencyContent += '(number of cards played + number of unplayed cards with one or more clues "on" them)</i><br />';
+    efficiencyContent += '+ number of unplayed cards with one or more clues "on" them) / number of clues given</i><br />';
     efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     efficiencyContent += 'The first number is the efficiency of the current game.<br />';
     efficiencyContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
