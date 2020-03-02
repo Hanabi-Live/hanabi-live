@@ -123,7 +123,7 @@ List of Features
   * At pace 0, the only way to win is if every player plays a card in the last round of the game.
 * Efficiency:
   * In Hanabi, you want to be as efficient as possible with the limited number of clues that you have. It is useful to track how well the team is doing with regards to this.
-  * Efficiency is calculated with the following formula: `number of clues given / (number of cards played + number of unplayed cards with one or more clues "on" them)`
+  * Efficiency is calculated with the following formula: `(number of cards played + number of unplayed cards with one or more clues "on" them) / number of clues given`
   * The numerator (first number) shows the efficiency of the current game.
   * The denominator (second number) shows the minimum possible efficiency needed to win with the current number of players and the current variant. (This number is statically calculated at the beginning of the game - it will not adjust if the maximum achievable score lowers.)
   * Note that this measure of efficiency assumes *Good Touch Principle* - that all clued cards will eventually be played. If your team does not play with *Good Touch Principle*, then these numbers won't be useful.
