@@ -176,19 +176,18 @@ const reset = () => {
         globals.elements.playerHands[i].removeChildren();
     }
 
-    // Remove all of the cards from the play stacks
-    for (const [, playStack] of globals.elements.playStacks) {
-        playStack.removeChildren();
-    }
-
-    // Readd the stack base to the play stacks
+    // Remove all of the cards (besides stack bases) from the play stacks
     for (let i = 0; i < globals.variant.suits.length; i++) {
         const suit = globals.variant.suits[i];
         const playStack = globals.elements.playStacks.get(suit)!;
-        const stackBaseLayoutChild = globals.stackBases[i].parent!;
-        playStack.addChild(stackBaseLayoutChild as any);
-        stackBaseLayoutChild.visible(true);
-        // (the stack base might have been hidden if there was a card on top of it)
+        for (const child of playStack.getChildren()) {
+            if (child == globals.stackBases[i].parent) {
+                // (the stack base might have been hidden if there was a card on top of it)
+                child.visible(true);
+            } else {
+                child.remove();
+            }
+        }
     }
 
     // Remove all of the cards from the discard stacks
