@@ -3,10 +3,24 @@ import Color from './Color';
 import Suit from './Suit';
 import suitsJSON from './data/suits.json';
 
+type SuitJSON = {
+    abbreviation?: string,
+    allClueColors?: boolean,
+    clueColors?: string[],
+    clueRanks?: string,
+    fill?: string,
+    fillColors?: string[],
+    name?: string,
+    oneOfEach?: boolean,
+    pip?: string,
+};
+
+type SuitEntryIterable = Iterable<[string, SuitJSON]>;
+
 export default (COLORS: Map<string, Color>) => {
     const SUITS: Map<string, Suit> = new Map();
 
-    for (const [suitName, suitJSON] of Object.entries(suitsJSON)) {
+    for (const [suitName, suitJSON] of Object.entries(suitsJSON) as SuitEntryIterable) {
         // Validate the name
         // If it is not specified, assume that it is the same as the key
         // (the name can be sometimes different from the key because

@@ -4,10 +4,24 @@ import Suit from './Suit';
 import Variant from './Variant';
 import variantsJSON from './data/variants.json';
 
+type VariantJSON = {
+    id: number,
+    suits: string[],
+
+    clueColors?: string[],
+    clueRanks?: number[],
+    colorCluesTouchNothing?: boolean,
+    rankCluesTouchNothing?: boolean,
+    showSuitNames?: boolean,
+    spacing?: boolean,
+};
+
+type VariantEntryIterable = Iterable<[string, VariantJSON]>;
+
 export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD_RANK: number) => {
     const VARIANTS: Map<string, Variant> = new Map();
 
-    for (const [variantName, variantJSON] of Object.entries(variantsJSON)) {
+    for (const [variantName, variantJSON] of Object.entries(variantsJSON) as VariantEntryIterable) {
         // Validate the name
         const name: string = variantName;
         if (name === '') {

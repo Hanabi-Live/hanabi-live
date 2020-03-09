@@ -317,7 +317,7 @@ const initCommands = () => {
     globals.conn.on('gameHistory', (dataArray: Array<GameHistory>) => {
         // data will be an array of all of the games that we have previously played
         for (const data of dataArray) {
-            globals.historyList[data.id] = data;
+            globals.historyList.set(data.id, data);
 
             if (data.incrementNumGames) {
                 globals.totalGames += 1;

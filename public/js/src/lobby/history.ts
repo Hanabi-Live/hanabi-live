@@ -7,11 +7,13 @@ import { VARIANTS } from '../constants';
 import globals from '../globals';
 import * as nav from './nav';
 
+import GameHistory from './GameHistory';
+
 export const init = () => {
     $('#lobby-history-show-more').on('click', () => {
         globals.historyClicked = true;
         globals.conn.send('historyGet', {
-            offset: Object.keys(globals.historyList).length,
+            offset: globals.historyList.size,
             amount: 10,
         });
     });
@@ -43,11 +45,10 @@ export const draw = () => {
     // Clear all of the existing rows
     tbody.html('');
 
-    // JavaScript keys come as strings, so we need to convert them to integers
-    const ids = Object.keys(globals.historyList).map((i) => parseInt(i, 10));
+    const sortedHistory = Array.from(globals.historyList.entries());
 
     // Handle if the user has no history
-    if (ids.length === 0) {
+    if (sortedHistory.length === 0) {
         $('#lobby-history-no').show();
         $('#lobby-history').addClass('align-center-v');
         $('#lobby-history-table-container').hide();
@@ -57,17 +58,13 @@ export const draw = () => {
     $('#lobby-history').removeClass('align-center-v');
     $('#lobby-history-table-container').show();
 
-    // Sort the game IDs in reverse order (so that the most recent ones are near the top)
-    // By default, JavaScript will sort them in alphabetical order,
-    // so we must specify an ascending sort
-    ids.sort((a, b) => a - b);
-    ids.reverse();
+    // Sort by reverse game IDs order (so that the most recent ones are near the top)
+    sortedHistory.sort(([a], [b]) => b - a);
 
     // Add all of the history
-    for (let i = 0; i < ids.length; i++) {
-        const gameData = globals.historyList[ids[i]];
+    for (const [id, gameData] of sortedHistory) {
         const variant = VARIANTS.get(gameData.variant);
-        if (!variant) {
+        if (variant === undefined) {
             throw new Error(`Failed to get the "${gameData.variant}" variant.`);
         }
         const { maxScore } = variant;
@@ -75,10 +72,10 @@ export const draw = () => {
         const row = $('<tr>');
 
         // Column 1 - Game ID
-        $('<td>').html(`#${ids[i]}`).appendTo(row);
+        $('<td>').html(`#${id}`).appendTo(row);
 
         // Column 2 - # of Players
-        $('<td>').html(gameData.numPlayers).appendTo(row);
+        $('<td>').html(`${gameData.numPlayers}`).appendTo(row);
 
         // Column 3 - Score
         $('<td>').html(`${gameData.score}/${maxScore}`).appendTo(row);
@@ -94,15 +91,15 @@ export const draw = () => {
         $('<td>').html(datePlayed).appendTo(row);
 
         // Column 7 - Watch Replay
-        const watchReplayButton = makeReplayButton(ids[i], 'solo');
+        const watchReplayButton = makeReplayButton(id, 'solo');
         $('<td>').html(watchReplayButton as any).appendTo(row);
 
         // Column 8 - Share Replay
-        const shareReplayButton = makeReplayButton(ids[i], 'shared');
+        const shareReplayButton = makeReplayButton(id, 'shared');
         $('<td>').html(shareReplayButton as any).appendTo(row);
 
         // Column 9 - Other Scores
-        const otherScoresButton = makeHistoryDetailsButton(ids[i], gameData.numSimilar);
+        const otherScoresButton = makeHistoryDetailsButton(id, gameData.numSimilar);
         $('<td>').html(otherScoresButton as any).appendTo(row);
 
         row.appendTo(tbody);
@@ -195,8 +192,8 @@ export const drawDetails = () => {
 
     // The game played by the user will also include its variant
     const variant = globals.historyDetailList
-        .filter((g) => g.id in globals.historyList)
-        .map((g) => globals.historyList[g.id].variant)
+        .filter((g) => globals.historyList.has(g.id))
+        .map((g) => (globals.historyList.get(g.id) as GameHistory).variant)
         .map((v) => VARIANTS.get(v))[0];
 
     // The game played by the user might not have been sent by the server yet

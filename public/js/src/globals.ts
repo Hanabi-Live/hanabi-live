@@ -3,7 +3,7 @@
 */
 
 // Imports
-import GameHistoryData from './lobby/GameHistory';
+import GameHistory from './lobby/GameHistory';
 import version from './data/version.json';
 // (the "version.json" file is filled in dynamically by the "build_client.sh" script)
 
@@ -23,7 +23,7 @@ class Globals {
     userList: Map<number, User> = new Map();
     tableList: Map<number, Table> = new Map();
     historyList: Map<number, GameHistory> = new Map();
-    otherScoresList: Map<number, OtherScores> = new Map();
+    historyDetailList: any[] = [];
     // Used to keep track of whether the user clicked on the "Show More History" button
     historyClicked: boolean = false;
     totalGames: number = 0; // Set upon login
