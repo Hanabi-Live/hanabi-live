@@ -940,6 +940,9 @@ export default class HanabiCard extends Konva.Group {
         for (const suit of globals.variant.suits) {
             const playStack = globals.elements.playStacks.get(suit)!;
             let lastPlayedRank = playStack.getLastPlayedRank();
+            if (lastPlayedRank === 5) {
+                continue;
+            }
             if (lastPlayedRank === STACK_BASE_RANK) {
                 lastPlayedRank = 0;
             }
