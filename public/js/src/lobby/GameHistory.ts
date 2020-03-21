@@ -7,4 +7,5 @@ export default interface GameHistory {
     datetime: number,
     variant: string,
     incrementNumGames: boolean,
+    you: boolean,
 }

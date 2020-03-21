@@ -44,8 +44,8 @@ export const hide = () => {
         // (if we entered a solo replay from the history screen / history details screen)
         if ($('#lobby-history').is(':visible')) {
             globals.currentScreen = 'history';
-        } else if ($('#lobby-history-details').is(':visible')) {
-            globals.currentScreen = 'historyDetails';
+        } else if ($('#lobby-history-other-scores').is(':visible')) {
+            globals.currentScreen = 'historyOtherScores';
         }
     });
 

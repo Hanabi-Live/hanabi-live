@@ -11,7 +11,7 @@ export const init = () => {
     $('#lobby-history-show-more').on('click', () => {
         globals.historyClicked = true;
         globals.conn.send('historyGet', {
-            offset: Object.keys(globals.historyList).length,
+            offset: Object.keys(globals.history).length,
             amount: 10,
         });
     });
@@ -30,7 +30,7 @@ export const show = () => {
 export const hide = () => {
     globals.currentScreen = 'lobby';
     $('#lobby-history').hide();
-    $('#lobby-history-details').hide();
+    $('#lobby-history-other-scores').hide();
     $('#lobby-top-half').show();
     $('#lobby-separator').show();
     $('#lobby-bottom-half').show();
@@ -44,7 +44,7 @@ export const draw = () => {
     tbody.html('');
 
     // JavaScript keys come as strings, so we need to convert them to integers
-    const ids = Object.keys(globals.historyList).map((i) => parseInt(i, 10));
+    const ids = Object.keys(globals.history).map((i) => parseInt(i, 10));
 
     // Handle if the user has no history
     if (ids.length === 0) {
@@ -65,7 +65,7 @@ export const draw = () => {
 
     // Add all of the history
     for (let i = 0; i < ids.length; i++) {
-        const gameData = globals.historyList[ids[i]];
+        const gameData = globals.history[ids[i]];
         const variant = VARIANTS.get(gameData.variant);
         if (!variant) {
             throw new Error(`Failed to get the "${gameData.variant}" variant.`);
@@ -78,7 +78,7 @@ export const draw = () => {
         $('<td>').html(`#${ids[i]}`).appendTo(row);
 
         // Column 2 - # of Players
-        $('<td>').html(gameData.numPlayers).appendTo(row);
+        $('<td>').html(gameData.numPlayers.toString()).appendTo(row);
 
         // Column 3 - Score
         $('<td>').html(`${gameData.score}/${maxScore}`).appendTo(row);
@@ -102,7 +102,7 @@ export const draw = () => {
         $('<td>').html(shareReplayButton as any).appendTo(row);
 
         // Column 9 - Other Scores
-        const otherScoresButton = makeHistoryDetailsButton(ids[i], gameData.numSimilar);
+        const otherScoresButton = makeOtherScoresButton(ids[i], gameData.numSimilar);
         $('<td>').html(otherScoresButton as any).appendTo(row);
 
         row.appendTo(tbody);
@@ -145,47 +145,47 @@ const makeReplayButton = (id: number, visibility: string) => {
     return button;
 };
 
-const makeHistoryDetailsButton = (id: number, gameCount: number) => {
+const makeOtherScoresButton = (id: number, gameCount: number) => {
     const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
     button.html(`<i class="fas fa-chart-bar lobby-button-icon"></i>&nbsp; ${gameCount - 1}`);
     if (gameCount - 1 === 0) {
         button.addClass('disabled');
     }
-    button.attr('id', `history-details-${id}`);
+    button.attr('id', `history-other-scores-${id}`);
 
     button.on('click', () => {
-        globals.conn.send('historyDetails', {
+        globals.conn.send('historyGetDeals', {
             gameID: id,
         });
-        showDetails();
+        showOtherScores();
     });
 
     return button;
 };
 
-export const showDetails = () => {
-    globals.currentScreen = 'historyDetails';
+export const showOtherScores = () => {
+    globals.currentScreen = 'historyOtherScores';
     $('#lobby-history').hide();
-    $('#lobby-history-details').show();
-    nav.show('history-details');
+    $('#lobby-history-other-scores').show();
+    nav.show('history-other-scores');
 
     // The server will send us messages to populate this array momentarily
-    globals.historyDetailList = [];
+    globals.historyOtherScores = [];
 };
 
-export const hideDetails = () => {
+export const hideOtherScores = () => {
     globals.currentScreen = 'history';
     $('#lobby-history').show();
-    $('#lobby-history-details').hide();
+    $('#lobby-history-other-scores').hide();
     nav.show('history');
 };
 
-// This function is called once for each new history element received from the server
+// This function is called once for each new "historyDeal" element received from the server
 // The last message is not marked, so each iteration redraws all historyDetailList items
-export const drawDetails = () => {
-    const tbody = $('#lobby-history-details-table-tbody');
+export const drawOtherScores = () => {
+    const tbody = $('#lobby-history-other-scores-table-tbody');
 
-    if (!globals.historyDetailList.length) {
+    if (!globals.historyOtherScores.length) {
         tbody.text('Loading...');
         return;
     }
@@ -194,9 +194,9 @@ export const drawDetails = () => {
     tbody.html('');
 
     // The game played by the user will also include its variant
-    const variant = globals.historyDetailList
-        .filter((g) => g.id in globals.historyList)
-        .map((g) => globals.historyList[g.id].variant)
+    const variant = globals.historyOtherScores
+        .filter((g) => g.id in globals.history)
+        .map((g) => globals.history[g.id].variant)
         .map((v) => VARIANTS.get(v))[0];
 
     // The game played by the user might not have been sent by the server yet
@@ -206,9 +206,7 @@ export const drawDetails = () => {
     }
 
     // Add all of the games
-    for (let i = 0; i < globals.historyDetailList.length; i++) {
-        const gameData = globals.historyDetailList[i];
-
+    for (const gameData of globals.historyOtherScores) {
         const row = $('<tr>');
 
         // Column 1 - Game ID

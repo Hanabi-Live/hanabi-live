@@ -7,7 +7,7 @@ export const show = (target: string) => {
         'games',
         'pregame',
         'history',
-        'history-details',
+        'history-other-scores',
     ];
     for (const navType of navTypes) {
         $(`#nav-buttons-${navType}`).hide();

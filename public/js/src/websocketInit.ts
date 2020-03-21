@@ -12,7 +12,6 @@ import GameHistory from './lobby/GameHistory';
 import * as gameMain from './game/main';
 import * as gameSounds from './game/sounds';
 import gameWebsocketInit from './game/websocketInit';
-import HistoryDetail from './lobby/HistoryDetail';
 import Game from './lobby/Game';
 import globals from './globals';
 import * as lobbyHistory from './lobby/history';
@@ -317,7 +316,7 @@ const initCommands = () => {
     globals.conn.on('gameHistory', (dataArray: Array<GameHistory>) => {
         // data will be an array of all of the games that we have previously played
         for (const data of dataArray) {
-            globals.historyList[data.id] = data;
+            globals.history[data.id] = data;
 
             if (data.incrementNumGames) {
                 globals.totalGames += 1;
@@ -331,7 +330,7 @@ const initCommands = () => {
             lobbyHistory.draw();
         }
 
-        const shownGames = Object.keys(globals.historyList).length;
+        const shownGames = Object.keys(globals.history).length;
         $('#nav-buttons-history-shown-games').html(shownGames.toString());
         $('#nav-buttons-history-total-games').html(globals.totalGames.toString());
         if (shownGames === globals.totalGames) {
@@ -339,9 +338,9 @@ const initCommands = () => {
         }
     });
 
-    globals.conn.on('historyDetail', (data: HistoryDetail) => {
-        globals.historyDetailList.push(data);
-        lobbyHistory.drawDetails();
+    globals.conn.on('historyDeal', (data: GameHistory) => {
+        globals.historyOtherScores.push(data);
+        lobbyHistory.drawOtherScores();
     });
 
     interface SoundData {

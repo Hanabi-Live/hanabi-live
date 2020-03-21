@@ -65,8 +65,8 @@ export default () => {
     });
 
     // The "Return to History" button (from the "History Details" screen)
-    $('#nav-buttons-history-details-return').on('click', () => {
-        history.hideDetails();
+    $('#nav-buttons-history-other-scores-return').on('click', () => {
+        history.hideOtherScores();
     });
 };
 

@@ -15,7 +15,7 @@ import (
 	"github.com/Zamiell/hanabi-live/src/models"
 )
 
-func commandHistoryDetails(s *Session, d *CommandData) {
+func commandHistoryGetDeals(s *Session, d *CommandData) {
 	gameID := d.GameID
 	var deals []models.GameHistory
 	if v, err := db.Games.GetAllDeals(s.UserID(), gameID); err != nil {
@@ -27,14 +27,14 @@ func commandHistoryDetails(s *Session, d *CommandData) {
 	}
 
 	for _, deal := range deals {
-		type HistoryDetailMessage struct {
+		type HistoryDealMessage struct {
 			ID               int       `json:"id"`
 			OtherPlayerNames string    `json:"otherPlayerNames"`
 			Score            int       `json:"score"`
 			Datetime         time.Time `json:"datetime"`
 			You              bool      `json:"you"`
 		}
-		s.Emit("historyDetail", &HistoryDetailMessage{
+		s.Emit("historyDeal", &HistoryDealMessage{
 			ID:               deal.ID,
 			OtherPlayerNames: deal.OtherPlayerNames, // The SQL query calculates these
 			Score:            deal.Score,

@@ -3,9 +3,11 @@
 */
 
 // Imports
-import GameHistoryData from './lobby/GameHistory';
+import GameHistory from './lobby/GameHistory';
 import version from './data/version.json';
 // (the "version.json" file is filled in dynamically by the "build_client.sh" script)
+
+type screen = 'login' | 'lobby' | 'pregame' | 'game' | 'history' | 'historyOtherScores';
 
 class Globals {
     version: number = version;
@@ -22,8 +24,8 @@ class Globals {
 
     userList: Map<number, User> = new Map();
     tableList: Map<number, Table> = new Map();
-    historyList: Map<number, GameHistory> = new Map();
-    otherScoresList: Map<number, OtherScores> = new Map();
+    history: Array<GameHistory> = [];
+    historyOtherScores: Array<GameHistory> = [];
     // Used to keep track of whether the user clicked on the "Show More History" button
     historyClicked: boolean = false;
     totalGames: number = 0; // Set upon login
@@ -31,8 +33,7 @@ class Globals {
 
     game: any = {}; // Equal to the data from the "game" command // TODO convert to a Game object
 
-    // Can be "login", "lobby", "pregame", "game", "history", and "historyDetails"
-    currentScreen: string = 'login';
+    currentScreen: screen = 'login'; // See "screen" declaration above
     tableID: number = -1; // Equal to the table we are joined to or -1 if no table
     errorOccured: boolean = false;
 

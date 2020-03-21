@@ -55,8 +55,8 @@ export default () => {
                 $('#nav-buttons-pregame-unattend').click();
             } else if (globals.currentScreen === 'history') {
                 $('#nav-buttons-history-return').click();
-            } else if (globals.currentScreen === 'historyDetails') {
-                $('#nav-buttons-history-details-return').click();
+            } else if (globals.currentScreen === 'historyOtherScores') {
+                $('#nav-buttons-history-other-scores-return').click();
             }
         }
     });
