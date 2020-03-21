@@ -2,10 +2,16 @@
 import Color from './Color';
 import colorsJSON from './data/colors.json';
 
+type ColorJSON = {
+    fill: string,
+    abbreviation?: string,
+};
+type ColorEntryIterable = Iterable<[string, ColorJSON]>;
+
 export default () => {
     const COLORS: Map<string, Color> = new Map();
 
-    for (const [colorName, colorJSON] of Object.entries(colorsJSON)) {
+    for (const [colorName, colorJSON] of Object.entries(colorsJSON) as ColorEntryIterable) {
         // Validate the name
         const name: string = colorName;
         if (name === '') {
