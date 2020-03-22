@@ -1,22 +1,29 @@
-Server Installation + Linter Installation (for Development / Windows)
----------------------------------------------------------------------
+# Hanabi.Live Installation
+
+If you just want to install Hanabi Live without editing the code, skip to [the production installation section](#).
 
 Like many code projects, we use [linters](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For JavaScript (the client-side code), we use [ESLint](https://eslint.org/) and have a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
 
-The following instructions will set up the server development environment as well as the linters. This assumes you are on Windows and will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc. If you are using a different OS/editor, some adjustments will be needed (e.g. using `brew` on MacOS instead of `choco`).
+The following instructions will set up the server as well as the linters. We assume that you will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc. Some adjustments will be needed if you are using a different editor.
 
-Note that these steps require **an elevated (administrator) command-shell**.
+<br />
 
-* Install package manager
-  * \[WINDOWS\] Install [Chocolatey](https://chocolatey.org/):
-    * `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
-  * \[MAC\] Install Homebrew (https://brew.sh/)
-    * `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
-* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), [Java](https://www.java.com/en/), [Visual Studio Code](https://code.visualstudio.com/), and [Wget](https://eternallybored.org/misc/wget/):
-  * \[WINDOWS\] `choco install git golang mariadb nodejs jre8 vscode wget -y`
-  * \[MAC\] `brew install git golang mariadb node`
-    * `brew cask install visual-studio-code`
-    * [Enable launching VS Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line)
+## Table of Contents
+
+1. [Installation for Development (Windows)](#)
+2. [Installation for Development (MacOS)](#)
+3. [Installation for Production (Linux)](#)
+4. [Running the Server](#)
+
+<br />
+
+## Installation for Development (Windows)
+
+* Open a [Command Prompt as an administrator](https://www.howtogeek.com/194041/how-to-open-the-command-prompt-as-administrator-in-windows-8.1/).
+* Install the [Chocolatey](https://chocolatey.org/) package manager:
+  * `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
+* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
+  * `choco install git golang mariadb nodejs vscode -y`
 * Configure Git:
   * `refreshenv`
   * `git config --global user.name "Your_Username"`
@@ -26,9 +33,7 @@ Note that these steps require **an elevated (administrator) command-shell**.
   * `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
 * Configure MariaDB:
-  * Start server
-    * \[WINDOWS\] `mysql -u root`
-    * \[MAC\] `mysql.server start` `mysql -uroot`
+  * `mysql -u root`
   * `DELETE FROM mysql.user WHERE User='';` <br />
   (this deletes the anonymous user that is installed by default)
   * `DROP DATABASE IF EXISTS test;` <br />
@@ -39,12 +44,6 @@ Note that these steps require **an elevated (administrator) command-shell**.
   * `FLUSH PRIVILEGES;`
   * `exit`
 * Clone the repository:
-  * [WINDOWS]
-    * `mkdir %GOPATH%\src\github.com\Zamiell`
-    * `cd %GOPATH%\src\github.com\Zamiell`
-  * [MAC]
-    * `mkdir $GOPATH/src/github.com/Zamiell`
-    * `cd $GOPATH/src/github.com/Zamiell`
   * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
     * `git clone git@github.com:Zamiell/hanabi-live.git`
   * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
@@ -53,19 +52,18 @@ Note that these steps require **an elevated (administrator) command-shell**.
     * `git clone https://github.com/[Your_Username]/hanabi-live.git`
 * Enter the cloned repository:
     * `cd hanabi-live`
-* \[WINDOWS\] Change from the Windows Command Prompt to Git Bash
+* Change from the Windows Command Prompt to Git Bash
   *  `"%PROGRAMFILES%\Git\bin\sh.exe"`
 * Install some dependencies:
   * `./install/install_dependencies.sh`
   * `./install/install_development_dependencies.sh`
   * `./install/install_database_schema.sh`
-  * \[WINDOWS\] `exit`
+  * `exit`
 * Set the domain URL (optional):
   * `notepad .env` <br />
-  (if you plan to surf to "http://localhost", then don't change anything)
+  (if you plan to surf to "http://localhost", then do not change anything)
 * Import a solid set of starting VSCode user settings: (feel free to tweak this file to your liking)
-  * \[WINDOWS\] `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"` <br />
-  * \[MAC\] `cp install/settings.json /Users/<username>/Library/Application\ Support/Code/User`
+  * `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"` <br />
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * Test the Golang linter:
@@ -75,21 +73,73 @@ Note that these steps require **an elevated (administrator) command-shell**.
 * Test the JavaScript linter:
   * On the left pane, navigate to and open "public\js\src\main.js".
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
-* If needed, compile and run the server locally:
-  * `cd src`
-  * \[WINDOWS\] `go install && "%GOPATH%\bin\src.exe"`
-    * A Windows Firewall dialog may pop up; allow the connection.
-  * \[MAC\] `go install && $GOPATH/bin/src`
-  * Open a browser and surf to: http://localhost
+* See [Running the Server](#running-the-server).
 
 <br />
 
+## Installation for Development (MacOS)
 
+* Install the [Homebrew](https://brew.sh/) package manager:
+  * `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
+  * `brew install git golang mariadb node`
+  * `brew cask install visual-studio-code`
+* Enable [launching Visual Studio Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
+* Configure Git:
+  * `refreshenv`
+  * `git config --global user.name "Your_Username"`
+  * `git config --global user.email "your@email.com"`
+  * `git config --global core.autocrlf false` <br />
+  (so that Git does not convert LF to CRLF when cloning repositories)
+  * `git config --global pull.rebase true` <br />
+  (so that Git automatically rebases when pulling)
+* Start MariaDB:
+  * `mysql.server start`
+* Configure MariaDB:
+  * `mysql -u root`
+  * `DELETE FROM mysql.user WHERE User='';` <br />
+  (this deletes the anonymous user that is installed by default)
+  * `DROP DATABASE IF EXISTS test;` <br />
+  (this deletes the test database that is installed by default)
+  * `CREATE DATABASE hanabi;`
+  * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
+  * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
+  * `FLUSH PRIVILEGES;`
+  * `exit`
+* Clone the repository:
+  * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
+    * `git clone git@github.com:Zamiell/hanabi-live.git`
+  * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
+    * `git clone https://github.com/Zamiell/hanabi-live.git`
+  * Or, if you are doing development work, then clone your forked version of the repository. For example:
+    * `git clone https://github.com/[Your_Username]/hanabi-live.git`
+* Enter the cloned repository:
+    * `cd hanabi-live`
+* Install some dependencies:
+  * `./install/install_dependencies.sh`
+  * `./install/install_development_dependencies.sh`
+  * `./install/install_database_schema.sh`
+* Set the domain URL (optional):
+  * `open -t .env` <br />
+  (if you plan to surf to "http://localhost", then do not change anything)
+* Import a solid set of starting VSCode user settings: (feel free to tweak this file to your liking)
+  * `cp install/settings.json "/Users/[Your_Username]/Library/Application Support/Code/User/settings.json"`
+* Open VSCode using the cloned repository as the project folder:
+  * `code .`
+* Test the Golang linter:
+  * On the left pane, navigate to and open "src\main.go".
+  * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
+  * Add a new line of "asdf" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
+* Test the JavaScript linter:
+  * On the left pane, navigate to and open "public\js\src\main.js".
+  * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
+* See [Running the Server](#running-the-server).
 
-Server Installation (for Linux)
--------------------------------
+<br />
 
-These instructions assume you are running Ubuntu 18.04.1 LTS.
+## Installation for Production (Linux)
+
+These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments may be needed if you are on a different flavor of Linux.
 
 * Install [Golang](https://golang.org/):
   * `sudo add-apt-repository ppa:longsleep/golang-backports` <br />
@@ -104,53 +154,34 @@ These instructions assume you are running Ubuntu 18.04.1 LTS.
   * `sudo mysql_secure_installation`
     * Follow the prompts.
 * Clone the server:
-  * `mkdir -p "$GOPATH/src/github.com/Zamiell"`
-  * `cd "$GOPATH/src/github.com/Zamiell/"`
   * `git clone https://github.com/Zamiell/hanabi-live.git` <br />
   (or clone a fork, if you are doing development work)
   * `cd hanabi-live`
 * Install the project dependencies:
-  * `./install/install_dependencies`
+  * `./install/install_dependencies.sh`
 * Set up environment variables:
   * `nano .env`
-    * Fill in the values accordingly. The most important one is DOMAIN - **this must match the URL that the user types in!**
+    * Fill in the values accordingly. The most important one is "DOMAIN" - **this must match the URL that the user types in to their browser!**
 * Set up a database user and import the database schema:
   * `sudo mysql -u root -p`
     * `CREATE DATABASE hanabi;`
     * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';` <br />
-    (change the password to something else)
+    (change the username and password to the values that you specified in the ".env" file)
     * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
     * `FLUSH PRIVILEGES;`
   * `./install/install_database_schema.sh`
-* Set up automated database backups:
-  * `crontab -e`
+* See [Running the Server](#running-the-server).
+
+### Set up Automated Database Backups (optional)
+
+* `crontab -e`
 
 ```
 # Every day, backup the "hanabi" database
-0 0 * * * /root/go/src/github.com/Zamiell/hanabi-live/make_database_dump.sh
+0 0 * * * /root/hanabi-live/make_database_dump.sh
 ```
 
-<br />
-
-
-
-Run
----
-
-* The following script will compile and run the server:
-  * `"$GOPATH/src/github.com/Zamiell/hanabi-live/run.sh"`
-  * `sudo` might be necessary to run this command because the server listens on port 80 and/or 443.
-* If you change any of the Go code, then you must restart the server for the changes to take effect.
-* If you change any of the JavaScript or CSS, then you will need to re-run the `build_client.sh` script in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to do a hard cache refresh in the browser.)
-  * Alternatively, if you are actively changing/developing the JavaScript, leave the `watchify.sh` script running and surf to "https://localhost/dev". This way, the code will get automatically Browserified whenever you change a file.
-
-<br />
-
-
-
-
-Install HTTPS (optional)
-------------------------
+### Install HTTPS (optional)
 
 * `sudo apt install letsencrypt -y`
 * `letsencrypt certonly --standalone -d hanabi.live -d www.hanabi.live` <br />
@@ -167,10 +198,7 @@ Install HTTPS (optional)
 
 <br />
 
-
-
-Install as a service (optional)
--------------------------------
+### Install as a service (optional)
 
 * Install Supervisor:
   * `sudo apt install supervisor -y`
@@ -186,3 +214,16 @@ To manage the service:
 * Start it: `supervisorctl start hanabi-live`
 * Stop it: `supervisorctl stop hanabi-live`
 * Restart it: `supervisorctl restart hanabi-live`
+
+<br />
+
+## Running the Server
+
+* The "run.sh" script in the root of the repository will build and run the server.
+  * If you are on Windows, you should run this script from a Git Bash window.
+  * If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443.
+* If you change any of the Golang code, then you must restart the server for the changes to take effect.
+* If you change any of the TypeScript or CSS, then you will need to re-run the `build_client.sh` script in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to perform a hard cache refresh in the browser.)
+  * Alternatively, if you are actively changing or developing the TypeScript, leave the `webpack.sh` script running and surf to "https://localhost/dev". This way, the code will get automatically transpiled whenever you change a file.
+
+<br />
