@@ -381,7 +381,10 @@ export default class HanabiCard extends Konva.Group {
         let suitsRemoved = [];
         if (clue.type === CLUE_TYPE.RANK) {
             const clueRank = clue.value as number;
-            if (globals.variant.name.includes('Multi-Fives')) {
+            if (globals.variant.rankCluesTouchNothing) {
+                // Some variants have rank clues touch no cards
+                // If this is the case, we cannot remove any rank pips from the card
+            } else if (globals.variant.name.includes('Multi-Fives')) {
                 // In "Multi-Fives" variants, the 5 of every suit is touched by all rank clues
                 ranksRemoved = filterInPlace(
                     this.possibleRanks,
@@ -455,7 +458,10 @@ export default class HanabiCard extends Konva.Group {
             }
         } else if (clue.type === CLUE_TYPE.COLOR) {
             const clueColor = clue.value as Color;
-            if (
+            if (globals.variant.colorCluesTouchNothing) {
+                // Some variants have color clues touch no cards
+                // If this is the case, we cannot remove any suit pips from the card
+            } else if (
                 globals.variant.name.includes('Prism-Ones')
                 && this.possibleRanks.includes(1)
                 && positive
