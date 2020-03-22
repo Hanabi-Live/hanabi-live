@@ -66,10 +66,12 @@ The following instructions will set up the server as well as the linters. We ass
   * `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"` <br />
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
+* In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
 * Test the Golang linter:
   * On the left pane, navigate to and open "src\main.go".
-  * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
+  * If you get a popup asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
   * Add a new line of "asdf" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
+  * Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
 * Test the JavaScript linter:
   * On the left pane, navigate to and open "public\js\src\main.ts".
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
@@ -126,10 +128,12 @@ The following instructions will set up the server as well as the linters. We ass
   * `cp install/settings.json "/Users/[Your_Username]/Library/Application Support/Code/User/settings.json"`
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
+* In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
 * Test the Golang linter:
   * On the left pane, navigate to and open "src\main.go".
-  * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
+  * If you get a popup asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
   * Add a new line of "asdf" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
+  * Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
 * Test the JavaScript linter:
   * On the left pane, navigate to and open "public\js\src\main.ts".
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
