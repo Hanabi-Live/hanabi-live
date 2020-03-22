@@ -20,7 +20,11 @@ export default () => {
     }
 
     // Make an alphabetical list of all of the usernames
-    const alphabeticalUsernames = Array.from(usernameMapping.keys()).sort();
+    const alphabeticalUsernames = Array.from(usernameMapping.keys());
+    alphabeticalUsernames.sort(
+        // We want to do a case-insensitive sort, which will not occur by default
+        (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
+    );
 
     // Add all of the users in alphabetical order
     for (const username of alphabeticalUsernames) {
