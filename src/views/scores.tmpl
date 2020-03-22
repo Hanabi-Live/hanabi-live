@@ -1,24 +1,24 @@
 {{define "profile"}}
 <ul>
     <li>
-        <span class="stat-description">Total games played (in non-speedruns):</span>
+        <span class="stat-description">Games played (in non-speedruns):</span>
         {{.NumGames}}
     </li>
     <li>
-        <span class="stat-description">Total time spent playing (in non-speedruns):</span>
+        <span class="stat-description">Time spent playing (in non-speedruns):</span>
         {{if .TimePlayed}}{{.TimePlayed}}{{else}}-{{end}}
     </li>
     <li>
-        <span class="stat-description">Total games played (in speedruns):</span>
+        <span class="stat-description">Games played (in speedruns):</span>
         {{.NumGamesSpeedrun}}
     </li>
     <li>
-        <span class="stat-description">Total time spent playing (in speedruns):</span>
+        <span class="stat-description">Time spent playing (in speedruns):</span>
         {{if .TimePlayedSpeedrun}}{{.TimePlayedSpeedrun}}{{else}}-{{end}}
     </li>
     <li>
         <span class="stat-description">Total max scores:</span>
-        {{.NumMaxScores}} / {{.TotalMaxScores}}
+        {{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)
     </li>
 </ul>
 
