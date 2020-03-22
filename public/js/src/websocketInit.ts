@@ -17,7 +17,7 @@ import * as modals from './modals';
 
 export default () => {
     // Manually redirect silly users that go to "www.hanabi.live" instead of "hanabi.live"
-    if (window.location.hostname !== 'www.hanabi.live') {
+    if (window.location.hostname === 'www.hanabi.live') {
         window.location.replace('https://hanabi.live');
         return;
     }
