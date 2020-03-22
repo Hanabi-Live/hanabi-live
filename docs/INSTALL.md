@@ -24,8 +24,8 @@ The following instructions will set up the server as well as the linters. We ass
   * `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
 * Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
   * `choco install git golang mariadb nodejs vscode -y`
-* Configure Git:
   * `refreshenv`
+* Configure Git:
   * `git config --global user.name "Your_Username"`
   * `git config --global user.email "your@email.com"`
   * `git config --global core.autocrlf false` <br />
