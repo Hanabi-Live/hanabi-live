@@ -5,6 +5,25 @@
         width: 11em;
     }
 </style>
+<table>
+    <th>
+        <td>2-player</td>
+        <td>3-player</td>
+        <td>4-player</td>
+        <td>5-player</td>
+        <td>6-player</td>
+        <td>Total</td>
+    </th>
+    <tr>
+        <td>Max scores achieved</td>
+        <td>{{index .NumMaxScoresPerType 0}}</td>
+        <td>{{index .NumMaxScoresPerType 1}}</td>
+        <td>{{index .NumMaxScoresPerType 2}}</td>
+        <td>{{index .NumMaxScoresPerType 3}}</td>
+        <td>{{index .NumMaxScoresPerType 4}}</td>
+        <td>{{index .NumMaxScoresPerType 5}}</td>
+    </tr>
+</table>
 <ul>
     <li>
         <span class="stat-description">Total max scores:</span>
