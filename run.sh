@@ -6,7 +6,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Get the name of the repository
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
-REPO="$(basename $DIR)"
+REPO="$(basename "$DIR")"
 
 # Use "go build" to create a new binary
 # We explicitly do not use "go run ." because on Windows,
