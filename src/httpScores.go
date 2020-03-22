@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Zamiell/hanabi-live/src/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,7 +30,7 @@ type UserVariantStats struct {
 	Name          string
 	NumGames      int
 	MaxScore      int
-	BestScores    []*models.BestScore
+	BestScores    []*BestScore
 	AverageScore  string
 	NumStrikeouts int
 	StrikeoutRate string
@@ -49,9 +48,9 @@ func httpScores(c *gin.Context) {
 	}
 
 	// Check if the player exists
-	var user models.User
-	if exists, v, err := db.Users.Get(player); err != nil {
-		log.Error("Failed to check to see if player \""+player+"\" exists:", err)
+	var user User
+	if exists, v, err := models.Users.Get(player); err != nil {
+		logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else if exists {
@@ -62,9 +61,9 @@ func httpScores(c *gin.Context) {
 	}
 
 	// Get basic stats for this player
-	var profileStats models.Stats
-	if v, err := db.Games.GetProfileStats(user.ID); err != nil {
-		log.Error("Failed to get the profile stats player "+"\""+user.Username+"\":", err)
+	var profileStats Stats
+	if v, err := models.Games.GetProfileStats(user.ID); err != nil {
+		logger.Error("Failed to get the profile stats player "+"\""+user.Username+"\":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -72,7 +71,7 @@ func httpScores(c *gin.Context) {
 	}
 	var timePlayed string
 	if v, err := getGametimeString(profileStats.TimePlayed); err != nil {
-		log.Error("Failed to parse the playtime string for player \""+user.Username+"\":", err)
+		logger.Error("Failed to parse the playtime string for player \""+user.Username+"\":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -80,7 +79,7 @@ func httpScores(c *gin.Context) {
 	}
 	var timePlayedSpeedrun string
 	if v, err := getGametimeString(profileStats.TimePlayedSpeedrun); err != nil {
-		log.Error("Failed to parse the speedrun playtime string for player \""+user.Username+"\":", err)
+		logger.Error("Failed to parse the speedrun playtime string for player \""+user.Username+"\":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -88,9 +87,9 @@ func httpScores(c *gin.Context) {
 	}
 
 	// Get all of the variant-specific stats for this player
-	var statsMap map[int]models.UserStatsRow
-	if v, err := db.UserStats.GetAll(user.ID); err != nil {
-		log.Error("Failed to get all of the variant-specific stats for player \""+user.Username+"\":", err)
+	var statsMap map[int]UserStatsRow
+	if v, err := models.UserStats.GetAll(user.ID); err != nil {
+		logger.Error("Failed to get all of the variant-specific stats for player \""+user.Username+"\":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -144,10 +143,10 @@ func httpScores(c *gin.Context) {
 			// so initialize the best scores object with zero values
 
 			// The following is copied from the "NewUserStatsRow()" function
-			variantStats.BestScores = make([]*models.BestScore, 5) // From 2 to 6 players
+			variantStats.BestScores = make([]*BestScore, 5) // From 2 to 6 players
 			for i := range variantStats.BestScores {
 				// This will not work if written as "for i, bestScore :="
-				variantStats.BestScores[i] = new(models.BestScore)
+				variantStats.BestScores[i] = new(BestScore)
 				variantStats.BestScores[i].NumPlayers = i + 2
 			}
 

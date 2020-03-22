@@ -29,7 +29,7 @@ func httpWS(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		log.Error("Failed to parse the IP address in the WebSocket function:", err)
+		logger.Error("Failed to parse the IP address in the WebSocket function:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -37,12 +37,12 @@ func httpWS(c *gin.Context) {
 	}
 
 	// Check to see if their IP is banned
-	if userIsBanned, err := db.BannedIPs.Check(ip); err != nil {
-		log.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
+	if userIsBanned, err := models.BannedIPs.Check(ip); err != nil {
+		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else if userIsBanned {
-		log.Info("IP \"" + ip + "\" tried to establish a WebSocket connection, but they are banned.")
+		logger.Info("IP \"" + ip + "\" tried to establish a WebSocket connection, but they are banned.")
 		http.Error(
 			w,
 			"Your IP address has been banned. "+
@@ -56,7 +56,7 @@ func httpWS(c *gin.Context) {
 	session := gsessions.Default(c)
 	var userID int
 	if v := session.Get("userID"); v == nil {
-		log.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed userID check).")
+		logger.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed userID check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	} else {
@@ -64,7 +64,7 @@ func httpWS(c *gin.Context) {
 	}
 	var username string
 	if v := session.Get("username"); v == nil {
-		log.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed username check).")
+		logger.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed username check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	} else {
@@ -72,7 +72,7 @@ func httpWS(c *gin.Context) {
 	}
 	var admin bool
 	if v := session.Get("admin"); v == nil {
-		log.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed admin check).")
+		logger.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed admin check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	} else {
@@ -80,7 +80,7 @@ func httpWS(c *gin.Context) {
 	}
 	var firstTimeUser bool
 	if v := session.Get("firstTimeUser"); v == nil {
-		log.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed firstTimeUser check).")
+		logger.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" (failed firstTimeUser check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	} else {
@@ -88,17 +88,17 @@ func httpWS(c *gin.Context) {
 	}
 
 	// Check for sessions that belong to orphaned accounts
-	if exists, user, err := db.Users.Get(username); err != nil {
-		log.Error("Failed to get user \""+username+"\":", err)
+	if exists, user, err := models.Users.Get(username); err != nil {
+		logger.Error("Failed to get user \""+username+"\":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else if !exists {
-		log.Error("User \"" + username + "\" does not exist in the database; " +
+		logger.Error("User \"" + username + "\" does not exist in the database; " +
 			"they are trying to establish a WebSocket connection with an orphaned account.")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	} else if userID != user.ID {
-		log.Error("User \"" + username + "\" exists in the database, " +
+		logger.Error("User \"" + username + "\" exists in the database, " +
 			"but they are trying to establish a WebSocket connection with an account ID that" +
 			"does not match the ID in the database.")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
@@ -119,7 +119,7 @@ func httpWS(c *gin.Context) {
 
 	// Validation succeeded, so establish the WebSocket connection
 	if err := m.HandleRequestWithKeys(w, r, keys); err != nil {
-		log.Error("Failed to establish the WebSocket connection for user \""+username+"\":", err)
+		logger.Error("Failed to establish the WebSocket connection for user \""+username+"\":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

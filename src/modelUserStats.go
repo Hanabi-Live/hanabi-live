@@ -1,4 +1,4 @@
-package models
+package main
 
 import (
 	"database/sql"
@@ -82,8 +82,7 @@ func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 
 func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 	// Get all of the statistics for this user (for every individual variant)
-	var rows *sql.Rows
-	if v, err := db.Query(`
+	rows, err := db.Query(`
 		SELECT
 			variant,
 			num_games,
@@ -102,11 +101,7 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 		FROM user_stats
 		WHERE user_id = ?
 		ORDER BY variant ASC
-	`, userID); err != nil {
-		return nil, err
-	} else {
-		rows = v
-	}
+	`, userID)
 
 	// Go through the stats for each variant
 	statsMap := make(map[int]UserStatsRow)
@@ -134,6 +129,13 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 		}
 
 		statsMap[variant] = stats
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 
 	return statsMap, nil
@@ -267,12 +269,7 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	}
 
 	// Get all of the users
-	var rows *sql.Rows
-	if v, err := db.Query("SELECT id FROM users"); err != nil {
-		return err
-	} else {
-		rows = v
-	}
+	rows, err := db.Query("SELECT id FROM users")
 
 	var userIDs []int
 	for rows.Next() {
@@ -281,6 +278,13 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 			return err
 		}
 		userIDs = append(userIDs, userID)
+	}
+
+	if rows.Err() != nil {
+		return err
+	}
+	if err := rows.Close(); err != nil {
+		return err
 	}
 
 	// Sort the user IDs (ascending)

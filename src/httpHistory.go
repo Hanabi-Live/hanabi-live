@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 
-	"github.com/Zamiell/hanabi-live/src/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,7 +10,7 @@ type HistoryData struct {
 	Title   string
 	Header  bool
 	Name    string
-	History []*models.GameHistory
+	History []*GameHistory
 }
 
 func httpHistory(c *gin.Context) {
@@ -26,9 +25,9 @@ func httpHistory(c *gin.Context) {
 	}
 
 	// Check if the player exists
-	var user models.User
-	if exists, v, err := db.Users.Get(player); err != nil {
-		log.Error("Failed to check to see if player \""+player+"\" exists:", err)
+	var user User
+	if exists, v, err := models.Users.Get(player); err != nil {
+		logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else if exists {
@@ -39,9 +38,9 @@ func httpHistory(c *gin.Context) {
 	}
 
 	// Get the player's entire game history
-	var history []*models.GameHistory
-	if v, err := db.Games.GetUserHistory(user.ID, 0, 0, true); err != nil {
-		log.Error("Failed to get the history for player \""+user.Username+"\":", err)
+	var history []*GameHistory
+	if v, err := models.Games.GetUserHistory(user.ID, 0, 0, true); err != nil {
+		logger.Error("Failed to get the history for player \""+user.Username+"\":", err)
 		return
 	} else {
 		history = v

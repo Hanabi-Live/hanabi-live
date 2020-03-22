@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Zamiell/hanabi-live/src/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,14 +21,14 @@ type StatsData struct {
 	NumMaxScoresPerType   []int
 	TotalMaxScoresPerType int
 
-	Variants []VariantStats
+	Variants []VariantStatsData
 }
 
-type VariantStats struct {
+type VariantStatsData struct {
 	ID            int
 	Name          string
 	NumGames      int
-	BestScores    []*models.BestScore
+	BestScores    []*BestScore
 	NumMaxScores  int
 	MaxScoreRate  string
 	AverageScore  string
@@ -42,9 +41,9 @@ func httpStats(c *gin.Context) {
 	w := c.Writer
 
 	// Get some global statistics
-	var globalStats models.Stats
-	if v, err := db.Games.GetGlobalStats(); err != nil {
-		log.Error("Failed to get the global stats:", err)
+	var globalStats Stats
+	if v, err := models.Games.GetGlobalStats(); err != nil {
+		logger.Error("Failed to get the global stats:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -52,7 +51,7 @@ func httpStats(c *gin.Context) {
 	}
 	var timePlayed string
 	if v, err := getGametimeString(globalStats.TimePlayed); err != nil {
-		log.Error("Failed to parse the playtime string:", err)
+		logger.Error("Failed to parse the playtime string:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -60,7 +59,7 @@ func httpStats(c *gin.Context) {
 	}
 	var timePlayedSpeedrun string
 	if v, err := getGametimeString(globalStats.TimePlayedSpeedrun); err != nil {
-		log.Error("Failed to parse the speedrun playtime string:", err)
+		logger.Error("Failed to parse the speedrun playtime string:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -68,9 +67,9 @@ func httpStats(c *gin.Context) {
 	}
 
 	// Get the stats for all variants
-	var statsMap map[int]models.VariantStatsRow
-	if v, err := db.VariantStats.GetAll(variantsID); err != nil {
-		log.Error("Failed to get the stats for all the variants:", err)
+	var statsMap map[int]VariantStatsRow
+	if v, err := models.VariantStats.GetAll(variantsID); err != nil {
+		logger.Error("Failed to get the stats for all the variants:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -81,11 +80,11 @@ func httpStats(c *gin.Context) {
 	// filling in any non-played variants with 0 values
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
-	variantStatsList := make([]VariantStats, 0)
+	variantStatsList := make([]VariantStatsData, 0)
 	for _, name := range variantsList {
 		variant := variants[name]
 		maxScore := 5 * len(variant.Suits)
-		variantStats := VariantStats{
+		variantStats := VariantStatsData{
 			ID:   variant.ID,
 			Name: name,
 		}
@@ -126,10 +125,10 @@ func httpStats(c *gin.Context) {
 			// There have been no games played in this particular variant,
 			// so initialize the best scores object with zero values
 			// The following is copied from the "NewVariantStatsRow()" function
-			variantStats.BestScores = make([]*models.BestScore, 5) // From 2 to 6 players
+			variantStats.BestScores = make([]*BestScore, 5) // From 2 to 6 players
 			for i := range variantStats.BestScores {
 				// This will not work if written as "for i, bestScore :="
-				variantStats.BestScores[i] = new(models.BestScore)
+				variantStats.BestScores[i] = new(BestScore)
 				variantStats.BestScores[i].NumPlayers = i + 2
 			}
 

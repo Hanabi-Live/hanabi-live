@@ -28,36 +28,36 @@ func discordInit() {
 	// (they were loaded from the .env file in main.go)
 	discordToken = os.Getenv("DISCORD_TOKEN")
 	if len(discordToken) == 0 {
-		log.Info("The \"DISCORD_TOKEN\" environment variable is blank; aborting Discord initialization.")
+		logger.Info("The \"DISCORD_TOKEN\" environment variable is blank; aborting Discord initialization.")
 		return
 	}
 	discordListenChannelsString := os.Getenv("DISCORD_LISTEN_CHANNEL_IDS")
 	if len(discordListenChannelsString) == 0 {
-		log.Info("The \"DISCORD_LISTEN_CHANNEL_IDS\" environment variable is blank; aborting Discord initialization.")
+		logger.Info("The \"DISCORD_LISTEN_CHANNEL_IDS\" environment variable is blank; aborting Discord initialization.")
 		return
 	}
 	discordListenChannels = strings.Split(discordListenChannelsString, ",")
 	discordLobbyChannel = os.Getenv("DISCORD_LOBBY_CHANNEL_ID")
 	if len(discordLobbyChannel) == 0 {
-		log.Info("The \"DISCORD_LOBBY_CHANNEL_ID\" environment variable is blank; aborting Discord initialization.")
+		logger.Info("The \"DISCORD_LOBBY_CHANNEL_ID\" environment variable is blank; aborting Discord initialization.")
 		return
 	}
 	discordBotChannel = os.Getenv("DISCORD_BOT_CHANNEL_ID")
 	if len(discordBotChannel) == 0 {
-		log.Info("The \"DISCORD_BOT_CHANNEL_ID\" environment variable is blank; aborting Discord initialization.")
+		logger.Info("The \"DISCORD_BOT_CHANNEL_ID\" environment variable is blank; aborting Discord initialization.")
 		return
 	}
 
 	// Get the last time a "@here" ping was sent
 	var timeAsString string
-	if v, err := db.DiscordMetadata.Get("last_at_here"); err != nil {
-		log.Fatal("Failed to retrieve the \"last_at_here\" value from the database:", err)
+	if v, err := models.DiscordMetadata.Get("last_at_here"); err != nil {
+		logger.Fatal("Failed to retrieve the \"last_at_here\" value from the database:", err)
 		return
 	} else {
 		timeAsString = v
 	}
 	if v, err := time.Parse(time.RFC3339, timeAsString); err != nil {
-		log.Fatal("Failed to parse the \"last_at_here\" value from the database:", err)
+		logger.Fatal("Failed to parse the \"last_at_here\" value from the database:", err)
 		return
 	} else {
 		discordLastAtHere = v
@@ -70,7 +70,7 @@ func discordInit() {
 func discordConnect() {
 	// Bot accounts must be prefixed with "Bot"
 	if v, err := discordgo.New("Bot " + discordToken); err != nil {
-		log.Error("Failed to create a Discord session:", err)
+		logger.Error("Failed to create a Discord session:", err)
 		return
 	} else {
 		discord = v
@@ -82,7 +82,7 @@ func discordConnect() {
 
 	// Open the websocket and begin listening
 	if err := discord.Open(); err != nil {
-		log.Error("Failed to open the Discord session:", err)
+		logger.Error("Failed to open the Discord session:", err)
 		return
 	}
 
@@ -106,7 +106,7 @@ func discordRefreshMembers() {
 		// as large servers will only have the first 100 or so cached in "guild.Members" by default
 		// This updates the state in the background
 		if err := discord.RequestGuildMembers(discordGuildID, "", 0); err != nil {
-			log.Error("Failed to request the Discord guild members:", err)
+			logger.Error("Failed to request the Discord guild members:", err)
 		}
 
 		time.Sleep(5 * time.Minute)
@@ -118,7 +118,7 @@ func discordRefreshMembers() {
 */
 
 func discordReady(s *discordgo.Session, event *discordgo.Ready) {
-	log.Info("Discord bot connected with username: " + event.User.Username)
+	logger.Info("Discord bot connected with username: " + event.User.Username)
 	discordBotID = event.User.ID
 
 	// Assume that the first channel ID is the same as the guild/server ID
@@ -143,14 +143,14 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Get the channel
 	var channel *discordgo.Channel
 	if v, err := discord.Channel(m.ChannelID); err != nil {
-		log.Error("Failed to get the Discord channel of \""+m.ChannelID+"\":", err)
+		logger.Error("Failed to get the Discord channel of \""+m.ChannelID+"\":", err)
 		return
 	} else {
 		channel = v
 	}
 
 	// Log the message
-	log.Info("[D#" + channel.Name + "] <" + m.Author.Username + "#" + m.Author.Discriminator + "> " + m.Content)
+	logger.Info("[D#" + channel.Name + "] <" + m.Author.Username + "#" + m.Author.Discriminator + "> " + m.Content)
 
 	// Send everyone the notification
 	commandMutex.Lock()
@@ -183,7 +183,7 @@ func discordSend(to string, username string, msg string) {
 	fullMsg += msg
 
 	if _, err := discord.ChannelMessageSend(to, fullMsg); err != nil {
-		log.Error("Failed to send \""+fullMsg+"\" to Discord:", err)
+		logger.Error("Failed to send \""+fullMsg+"\" to Discord:", err)
 		return
 	}
 }
@@ -195,7 +195,7 @@ func discordGetNickname(discordID string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild
 	if v, err := discord.Guild(guildID); err != nil {
-		log.Error("Failed to get the Discord guild:", err)
+		logger.Error("Failed to get the Discord guild:", err)
 		return "[error]"
 	} else {
 		guild = v
@@ -218,7 +218,7 @@ func discordGetNickname(discordID string) string {
 	// then the above code block may not find the user
 	// Default to getting the user's username directly from the API
 	if user, err := discord.User(discordID); err != nil {
-		log.Error("Failed to get the Discord user of \""+discordID+"\":", err)
+		logger.Error("Failed to get the Discord user of \""+discordID+"\":", err)
 		return "[error]"
 	} else {
 		return user.Username
@@ -229,7 +229,7 @@ func discordGetChannel(discordID string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild
 	if v, err := discord.Guild(discordListenChannels[0]); err != nil {
-		log.Error("Failed to get the Discord guild:", err)
+		logger.Error("Failed to get the Discord guild:", err)
 		return ""
 	} else {
 		guild = v
@@ -250,7 +250,7 @@ func discordGetID(username string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild
 	if v, err := discord.Guild(discordListenChannels[0]); err != nil {
-		log.Error("Failed to get the Discord guild:", err)
+		logger.Error("Failed to get the Discord guild:", err)
 		return ""
 	} else {
 		guild = v

@@ -352,7 +352,7 @@ func commandAction(s *Session, d *CommandData) {
 			Text: text,
 		})
 		t.NotifyAction()
-		log.Info(t.GetName() + " " + text)
+		logger.Info(t.GetName() + " " + text)
 	}
 
 	// Send the new turn
@@ -361,7 +361,7 @@ func commandAction(s *Session, d *CommandData) {
 	t.NotifyTurn()
 
 	if g.EndCondition == endConditionInProgress {
-		log.Info(t.GetName() + " It is now " + np.Name + "'s turn.")
+		logger.Info(t.GetName() + " It is now " + np.Name + "'s turn.")
 	} else if g.EndCondition == endConditionNormal {
 		if g.Score == variants[g.Options.Variant].MaxScore {
 			g.Sound = "finished_perfect"

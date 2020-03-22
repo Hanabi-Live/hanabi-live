@@ -4,8 +4,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 /*
@@ -13,8 +11,8 @@ import (
 */
 
 func waitingListInit() {
-	if v, err := db.DiscordWaiters.GetAll(); err != nil {
-		log.Fatal("Failed to get the Discord waiters from the database:", err)
+	if v, err := models.DiscordWaiters.GetAll(); err != nil {
+		logger.Fatal("Failed to get the Discord waiters from the database:", err)
 	} else {
 		waitingList = v
 	}
@@ -49,14 +47,14 @@ func waitingListAdd(s *Session, d *CommandData) {
 	}
 
 	// Add them to the database and the slice in memory
-	waiter := &models.Waiter{
+	waiter := &Waiter{
 		Username:        d.Username,
 		DiscordMention:  discordMention,
 		DatetimeExpired: time.Now().Add(idleWaitingListTimeout),
 	}
-	if err := db.DiscordWaiters.Insert(waiter); err != nil {
+	if err := models.DiscordWaiters.Insert(waiter); err != nil {
 		msg := "Failed to insert the waiter into the database: " + err.Error()
-		log.Error(msg)
+		logger.Error(msg)
 		chatServerSend(msg, d.Room)
 		return
 	}
@@ -124,13 +122,13 @@ func waitingListAlert(t *Table, creator string) {
 	mentionList = strings.TrimSuffix(mentionList, ", ")
 
 	// Empty the waiting list in the database and in memory
-	if err := db.DiscordWaiters.DeleteAll(); err != nil {
+	if err := models.DiscordWaiters.DeleteAll(); err != nil {
 		msg := "Failed to delete the waiters in the database: " + err.Error()
-		log.Error(msg)
+		logger.Error(msg)
 		chatServerSend(msg, "lobby")
 		return
 	}
-	waitingList = make([]*models.Waiter, 0)
+	waitingList = make([]*Waiter, 0)
 
 	// Alert all of the people on the waiting list
 	msg := creator + " created a table. (" + t.Options.Variant + ")\n" + mentionList
@@ -146,9 +144,9 @@ func waitingListAlert(t *Table, creator string) {
 
 func waitingListRemoveSub(i int) {
 	// Remove them from the the database
-	if err := db.DiscordWaiters.Delete(waitingList[i].Username); err != nil {
+	if err := models.DiscordWaiters.Delete(waitingList[i].Username); err != nil {
 		msg := "Failed to delete \"" + waitingList[i].Username + "\" from the database: " + err.Error()
-		log.Error(msg)
+		logger.Error(msg)
 		chatServerSend(msg, "lobby")
 		return
 	}
@@ -164,7 +162,7 @@ func waitingListPurgeOld() {
 			if time.Now().After(waiter.DatetimeExpired) {
 				deleted = true
 				waitingListRemoveSub(i)
-				log.Info("User \"" + waiter.Username + "\" was purged from the waiting list (due to expiry).")
+				logger.Info("User \"" + waiter.Username + "\" was purged from the waiting list (due to expiry).")
 				break
 			}
 		}

@@ -176,12 +176,11 @@ func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time)
 				return
 			}
 
-			log.Info(t.GetName() + " Automatically starting (from the /startin command).")
+			logger.Info(t.GetName() + " Automatically starting (from the /startin command).")
 			commandTableStart(p.Session, nil)
 			return
 		}
-
 	}
 
-	log.Error("Failed to find the owner of the game when attempting to automatically start it.")
+	logger.Error("Failed to find the owner of the game when attempting to automatically start it.")
 }

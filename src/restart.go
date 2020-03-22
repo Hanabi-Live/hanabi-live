@@ -14,7 +14,7 @@ func shutdown(restart bool) {
 	} else {
 		verb = "shutdown"
 	}
-	log.Info("Initiating a server " + verb + ".")
+	logger.Info("Initiating a server " + verb + ".")
 
 	for _, s := range sessions {
 		if restart {
@@ -43,7 +43,7 @@ func graceful(restart bool) {
 	}
 
 	numGames := countActiveTables()
-	log.Info("Initiating a graceful server " + verb + " " +
+	logger.Info("Initiating a graceful server " + verb + " " +
 		"(with " + strconv.Itoa(numGames) + " active games).")
 	if numGames == 0 {
 		shutdown(restart)
@@ -58,7 +58,7 @@ func graceful(restart bool) {
 func gracefulWait(restart bool) {
 	for {
 		if !shuttingDown {
-			log.Info("The shutdown was aborted.")
+			logger.Info("The shutdown was aborted.")
 			break
 		}
 
@@ -67,9 +67,9 @@ func gracefulWait(restart bool) {
 			time.Sleep(time.Second * 10)
 
 			if restart {
-				log.Info("Restarting now.")
+				logger.Info("Restarting now.")
 			} else {
-				log.Info("Shutting down now.")
+				logger.Info("Shutting down now.")
 			}
 			shutdown(restart)
 			break
@@ -94,15 +94,15 @@ func countActiveTables() int {
 }
 
 func execute(script string, cwd string) {
-	cmd := exec.Command(path.Join(cwd, script))
+	cmd := exec.Command(path.Join(cwd, script)) // nolint:gosec
 	cmd.Dir = cwd
 	if output, err := cmd.CombinedOutput(); err != nil {
-		log.Error("Failed to execute \""+script+"\":", err)
+		logger.Error("Failed to execute \""+script+"\":", err)
 		if string(output) != "" {
-			log.Error("Output is as follows:")
-			log.Error(string(output))
+			logger.Error("Output is as follows:")
+			logger.Error(string(output))
 		}
 	} else {
-		log.Info("\""+script+"\" completed:", string(output))
+		logger.Info("\""+script+"\" completed:", string(output))
 	}
 }

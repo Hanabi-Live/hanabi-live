@@ -20,7 +20,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Zamiell/hanabi-live/src/models"
 	melody "gopkg.in/olahol/melody.v1"
 )
 
@@ -61,7 +60,7 @@ func replayID(s *Session, d *CommandData) {
 	}
 
 	tables[t.ID] = t
-	log.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " replay: " +
+	logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " replay: " +
 		"#" + strconv.Itoa(d.GameID))
 	// (a "table" message will be sent in the "commandTableSpectate" function below)
 
@@ -75,8 +74,8 @@ func replayID(s *Session, d *CommandData) {
 
 func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	// Check to see if the game exists in the database
-	if exists, err := db.Games.Exists(d.GameID); err != nil {
-		log.Error("Failed to check to see if game "+strconv.Itoa(d.GameID)+" exists:", err)
+	if exists, err := models.Games.Exists(d.GameID); err != nil {
+		logger.Error("Failed to check to see if game "+strconv.Itoa(d.GameID)+" exists:", err)
 		s.Error(initFail)
 		return false
 	} else if !exists {
@@ -85,9 +84,9 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	}
 
 	// Get the options from the database
-	var options models.Options
-	if v, err := db.Games.GetOptions(d.GameID); err != nil {
-		log.Error("Failed to get the options from the database for game "+
+	var options DBOptions
+	if v, err := models.Games.GetOptions(d.GameID); err != nil {
+		logger.Error("Failed to get the options from the database for game "+
 			strconv.Itoa(d.GameID)+":", err)
 		s.Error(initFail)
 		return false
@@ -97,7 +96,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 
 	// Validate that the variant exists
 	if _, ok := variantsID[options.Variant]; !ok {
-		log.Error("Failed to find a definition for variant " +
+		logger.Error("Failed to find a definition for variant " +
 			strconv.Itoa(options.Variant) + ".")
 		s.Error(initFail)
 		return false
@@ -116,9 +115,9 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	}
 
 	// Get the players from the database
-	var dbPlayers []*models.Player
-	if v, err := db.Games.GetPlayers(d.GameID); err != nil {
-		log.Error("Failed to get the players from the database for game "+
+	var dbPlayers []*DBPlayer
+	if v, err := models.Games.GetPlayers(d.GameID); err != nil {
+		logger.Error("Failed to get the players from the database for game "+
 			strconv.Itoa(d.GameID)+":", err)
 		s.Error(initFail)
 		return false
@@ -127,9 +126,9 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	}
 
 	// Get the notes from the database
-	var notes []models.NoteList
-	if v, err := db.Games.GetNotes(d.GameID); err != nil {
-		log.Error("Failed to get the notes from the database "+
+	var notes []NoteList
+	if v, err := models.Games.GetNotes(d.GameID); err != nil {
+		logger.Error("Failed to get the notes from the database "+
 			"for game "+strconv.Itoa(d.GameID)+":", err)
 		s.Error(initFail)
 		return false
@@ -163,8 +162,8 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 
 	// Get the actions from the database
 	var actionStrings []string
-	if v, err := db.GameActions.GetAll(d.GameID); err != nil {
-		log.Error("Failed to get the actions from the database "+
+	if v, err := models.GameActions.GetAll(d.GameID); err != nil {
+		logger.Error("Failed to get the actions from the database "+
 			"for game "+strconv.Itoa(d.GameID)+":", err)
 		s.Error(initFail)
 		return false
@@ -178,7 +177,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 		// Convert it from JSON
 		var action interface{}
 		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
-			log.Error("Failed to unmarshal an action:", err)
+			logger.Error("Failed to unmarshal an action:", err)
 			s.Error(initFail)
 			return false
 		}
@@ -187,8 +186,8 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 
 	// Get the number of turns from the database
 	var numTurns int
-	if v, err := db.Games.GetNumTurns(d.GameID); err != nil {
-		log.Error("Failed to get the number of turns from the database for game "+
+	if v, err := models.Games.GetNumTurns(d.GameID); err != nil {
+		logger.Error("Failed to get the number of turns from the database for game "+
 			strconv.Itoa(d.GameID)+":", err)
 		s.Error(initFail)
 		return false
@@ -326,7 +325,7 @@ func replayJSON(s *Session, d *CommandData) {
 	g := t.Game
 
 	tables[t.ID] = t
-	log.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " JSON replay")
+	logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " JSON replay")
 	// (a "table" message will be sent in the "commandTableSpectate" function below)
 
 	// Send messages from fake players to emulate the gameplay that occurred in the JSON actions
@@ -438,7 +437,7 @@ func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
 		Type: "text",
 		Text: text,
 	})
-	log.Info(t.GetName() + text)
+	logger.Info(t.GetName() + text)
 
 	// Record a message about the first turn
 	t.NotifyTurn()

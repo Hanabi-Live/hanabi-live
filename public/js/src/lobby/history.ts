@@ -180,8 +180,6 @@ export const hideOtherScores = () => {
     nav.show('history');
 };
 
-// This function is called once for each new "historyDeal" element received from the server
-// The last message is not marked, so each iteration redraws all historyDetailList items
 export const drawOtherScores = () => {
     const tbody = $('#lobby-history-other-scores-table-tbody');
 

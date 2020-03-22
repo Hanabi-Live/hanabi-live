@@ -5,8 +5,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 func (g *Game) End() {
@@ -16,7 +14,7 @@ func (g *Game) End() {
 	if g.EndCondition > endConditionNormal {
 		g.Score = 0
 	}
-	log.Info(t.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
+	logger.Info(t.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
 	// Append a final action with a listing of every card in the deck
 	// (so that the client will have it for hypotheticals)
@@ -53,7 +51,7 @@ func (g *Game) End() {
 			Text: text,
 		})
 		t.NotifyAction()
-		log.Info(t.GetName() + text)
+		logger.Info(t.GetName() + text)
 	}
 
 	// Send a text message showing how much time the game took in total
@@ -64,7 +62,7 @@ func (g *Game) End() {
 		Text: text,
 	})
 	t.NotifyAction()
-	log.Info(t.GetName() + text)
+	logger.Info(t.GetName() + text)
 
 	// In speedruns, send a text message to show how close to the record they got
 	if g.Options.Speedrun &&
@@ -98,7 +96,7 @@ func (g *Game) End() {
 				Text: text,
 			})
 			t.NotifyAction()
-			log.Info(t.GetName() + text)
+			logger.Info(t.GetName() + text)
 
 			text = "Congratulations on a new world record!"
 		}
@@ -109,7 +107,7 @@ func (g *Game) End() {
 				Text: text,
 			})
 			t.NotifyAction()
-			log.Info(t.GetName() + text)
+			logger.Info(t.GetName() + text)
 		}
 	}
 
@@ -160,8 +158,8 @@ func (g *Game) End() {
 
 	// Send a "gameHistory" message to all the players in the game
 	var numSimilar int
-	if v, err := db.Games.GetNumSimilar(g.Seed); err != nil {
-		log.Error("Failed to get the number of games on seed "+g.Seed+":", err)
+	if v, err := models.Games.GetNumSimilar(g.Seed); err != nil {
+		logger.Error("Failed to get the number of games on seed "+g.Seed+":", err)
 		return
 	} else {
 		numSimilar = v
@@ -175,8 +173,8 @@ func (g *Game) End() {
 		}
 		otherPlayerNames = strings.TrimSuffix(otherPlayerNames, ", ")
 
-		h := make([]*models.GameHistory, 0)
-		h = append(h, &models.GameHistory{
+		h := make([]*GameHistory, 0)
+		h = append(h, &GameHistory{
 			ID:               g.ID, // Recorded in the "WriteDatabase()" function above
 			NumPlayers:       len(g.Players),
 			NumSimilar:       numSimilar,
@@ -200,7 +198,7 @@ func (g *Game) End() {
 func (g *Game) WriteDatabase() error {
 	t := g.Table
 
-	row := models.GameRow{
+	row := GameRow{
 		Name:                 t.Name,
 		NumPlayers:           len(g.Players),
 		Owner:                t.Owner,
@@ -220,8 +218,8 @@ func (g *Game) WriteDatabase() error {
 		DatetimeStarted:      t.DatetimeStarted,
 		DatetimeFinished:     t.DatetimeFinished,
 	}
-	if v, err := db.Games.Insert(row); err != nil {
-		log.Error("Failed to insert the game row:", err)
+	if v, err := models.Games.Insert(row); err != nil {
+		logger.Error("Failed to insert the game row:", err)
 		return err
 	} else {
 		g.ID = v
@@ -230,7 +228,7 @@ func (g *Game) WriteDatabase() error {
 	// Next, we have to insert rows for each of the participants
 	for _, gp := range g.Players {
 		p := t.Players[gp.Index]
-		if err := db.GameParticipants.Insert(
+		if err := models.GameParticipants.Insert(
 			p.ID,
 			g.ID,
 			gp.Index,
@@ -238,7 +236,7 @@ func (g *Game) WriteDatabase() error {
 			characters[gp.Character].ID,
 			gp.CharacterMetadata,
 		); err != nil {
-			log.Error("Failed to insert the game participant row:", err)
+			logger.Error("Failed to insert the game participant row:", err)
 			return err
 		}
 	}
@@ -247,14 +245,14 @@ func (g *Game) WriteDatabase() error {
 	for _, a := range g.Actions {
 		var aString string
 		if v, err := json.Marshal(a); err != nil {
-			log.Error("Failed to convert the action to JSON:", err)
+			logger.Error("Failed to convert the action to JSON:", err)
 			return err
 		} else {
 			aString = string(v)
 		}
 
-		if err := db.GameActions.Insert(g.ID, aString); err != nil {
-			log.Error("Failed to insert the action row:", err)
+		if err := models.GameActions.Insert(g.ID, aString); err != nil {
+			logger.Error("Failed to insert the action row:", err)
 			return err
 		}
 	}
@@ -262,8 +260,8 @@ func (g *Game) WriteDatabase() error {
 	// Next, we have to insert rows for each of the chat messages
 	for _, chatMsg := range t.Chat {
 		room := "table" + strconv.Itoa(t.ID)
-		if err := db.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, room); err != nil {
-			log.Error("Failed to insert a chat message into the database:", err)
+		if err := models.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, room); err != nil {
+			logger.Error("Failed to insert a chat message into the database:", err)
 			return err
 		}
 	}
@@ -271,9 +269,9 @@ func (g *Game) WriteDatabase() error {
 	// Update the variant-specific stats for each player
 	for _, p := range t.Players {
 		// Get their current best scores
-		var stats models.UserStatsRow
-		if v, err := db.UserStats.Get(p.ID, variants[g.Options.Variant].ID); err != nil {
-			log.Error("Failed to get the stats for user "+p.Name+":", err)
+		var stats UserStatsRow
+		if v, err := models.UserStats.Get(p.ID, variants[g.Options.Variant].ID); err != nil {
+			logger.Error("Failed to get the stats for user "+p.Name+":", err)
 			return err
 		} else {
 			stats = v
@@ -304,16 +302,16 @@ func (g *Game) WriteDatabase() error {
 		// Update their stats
 		// (even if they did not get a new best score,
 		// we still want to update their average score and strikeout rate)
-		if err := db.UserStats.Update(p.ID, variants[g.Options.Variant].ID, stats); err != nil {
-			log.Error("Failed to update the stats for user "+p.Name+":", err)
+		if err := models.UserStats.Update(p.ID, variants[g.Options.Variant].ID, stats); err != nil {
+			logger.Error("Failed to update the stats for user "+p.Name+":", err)
 			return err
 		}
 	}
 
 	// Get the current stats for this variant
-	var stats models.VariantStatsRow
-	if v, err := db.VariantStats.Get(variants[g.Options.Variant].ID); err != nil {
-		log.Error("Failed to get the stats for variant "+
+	var stats VariantStatsRow
+	if v, err := models.VariantStats.Get(variants[g.Options.Variant].ID); err != nil {
+		logger.Error("Failed to get the stats for variant "+
 			strconv.Itoa(variants[g.Options.Variant].ID)+":", err)
 		return err
 	} else {
@@ -332,17 +330,17 @@ func (g *Game) WriteDatabase() error {
 	// Write the updated stats to the database
 	// (even if the game was played with modifiers,
 	// we still need to update the number of games played)
-	if err := db.VariantStats.Update(
+	if err := models.VariantStats.Update(
 		variants[g.Options.Variant].ID,
 		variants[g.Options.Variant].MaxScore,
 		stats,
 	); err != nil {
-		log.Error("Failed to update the stats for variant "+
+		logger.Error("Failed to update the stats for variant "+
 			strconv.Itoa(variants[g.Options.Variant].ID)+":", err)
 		return err
 	}
 
-	log.Info("Finished database actions for game " + strconv.Itoa(t.ID) + ".")
+	logger.Info("Finished database actions for game " + strconv.Itoa(t.ID) + ".")
 	return nil
 }
 
@@ -417,12 +415,12 @@ func (t *Table) ConvertToSharedReplay() {
 		// Skip offline players and players in the lobby;
 		// if they re-login, then they will just stay in the lobby
 		if !p.Present {
-			log.Info("Skipped converting " + p.Name + " to a spectator since they are not present.")
+			logger.Info("Skipped converting " + p.Name + " to a spectator since they are not present.")
 			if p.ID == t.Owner && p.Session.IsClosed() {
 				// We don't want to pass the replay leader away if they are still in the lobby
 				// (as opposed to being offline)
 				ownerOffline = true
-				log.Info(p.Name + " was the owner of the game and they are offline; " +
+				logger.Info(p.Name + " was the owner of the game and they are offline; " +
 					"passing the leader to someone else.")
 			}
 			continue
@@ -431,7 +429,7 @@ func (t *Table) ConvertToSharedReplay() {
 		// If this game was ended due to idleness,
 		// skip conversion so that the shared replay gets deleted below
 		if g.EndCondition == endConditionTimeout {
-			log.Info("Skipped converting " + p.Name + " to a spectator " +
+			logger.Info("Skipped converting " + p.Name + " to a spectator " +
 				"since the game ended due to idleness.")
 			continue
 		}
@@ -445,7 +443,7 @@ func (t *Table) ConvertToSharedReplay() {
 			Notes: make([]string, len(g.Deck)+len(variants[t.Options.Variant].Suits)),
 		}
 		t.Spectators = append(t.Spectators, sp)
-		log.Info("Converted " + p.Name + " to a spectator.")
+		logger.Info("Converted " + p.Name + " to a spectator.")
 	}
 
 	// End the shared replay if no-one is left
@@ -463,7 +461,7 @@ func (t *Table) ConvertToSharedReplay() {
 		for _, p := range t.Players {
 			if p.Present {
 				t.Owner = p.ID
-				log.Info("Set the new leader to be:", p.Name)
+				logger.Info("Set the new leader to be:", p.Name)
 				break
 			}
 		}
@@ -471,7 +469,7 @@ func (t *Table) ConvertToSharedReplay() {
 		if t.Owner != -1 {
 			// All of the players are away, so make the first spectator the leader
 			t.Owner = t.Spectators[0].ID
-			log.Info("All players are offline; set the new leader to be:", t.Spectators[0].Name)
+			logger.Info("All players are offline; set the new leader to be:", t.Spectators[0].Name)
 		}
 	}
 

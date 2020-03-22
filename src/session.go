@@ -16,12 +16,12 @@ type Session struct {
 
 func (s *Session) SessionID() int {
 	if s == nil {
-		log.Error("The \"SessionID\" method was called for a nil session.")
+		logger.Error("The \"SessionID\" method was called for a nil session.")
 		return -1
 	}
 
 	if v, exists := s.Get("sessionID"); !exists {
-		log.Error("Failed to get \"SessionID\" from a session.")
+		logger.Error("Failed to get \"SessionID\" from a session.")
 		return -1
 	} else {
 		return v.(int)
@@ -30,12 +30,12 @@ func (s *Session) SessionID() int {
 
 func (s *Session) UserID() int {
 	if s == nil {
-		log.Error("The \"UserID\" method was called for a nil session.")
+		logger.Error("The \"UserID\" method was called for a nil session.")
 		return -1
 	}
 
 	if v, exists := s.Get("userID"); !exists {
-		log.Error("Failed to get \"userID\" from a session.")
+		logger.Error("Failed to get \"userID\" from a session.")
 		return -1
 	} else {
 		return v.(int)
@@ -44,12 +44,12 @@ func (s *Session) UserID() int {
 
 func (s *Session) Username() string {
 	if s == nil {
-		log.Error("The \"Username\" method was called for a nil session.")
+		logger.Error("The \"Username\" method was called for a nil session.")
 		return "Unknown"
 	}
 
 	if v, exists := s.Get("username"); !exists {
-		log.Error("Failed to get \"username\" from a session.")
+		logger.Error("Failed to get \"username\" from a session.")
 		return "Unknown"
 	} else {
 		return v.(string)
@@ -58,12 +58,12 @@ func (s *Session) Username() string {
 
 func (s *Session) Admin() bool {
 	if s == nil {
-		log.Error("The \"Admin\" method was called for a nil session.")
+		logger.Error("The \"Admin\" method was called for a nil session.")
 		return false
 	}
 
 	if v, exists := s.Get("admin"); !exists {
-		log.Error("Failed to get \"admin\" from a session.")
+		logger.Error("Failed to get \"admin\" from a session.")
 		return false
 	} else {
 		return v.(bool)
@@ -72,12 +72,12 @@ func (s *Session) Admin() bool {
 
 func (s *Session) FirstTimeUser() bool {
 	if s == nil {
-		log.Error("The \"FirstTimeUser\" method was called for a nil session.")
+		logger.Error("The \"FirstTimeUser\" method was called for a nil session.")
 		return false
 	}
 
 	if v, exists := s.Get("firstTimeUser"); !exists {
-		log.Error("Failed to get \"firstTimeUser\" from a session.")
+		logger.Error("Failed to get \"firstTimeUser\" from a session.")
 		return false
 	} else {
 		return v.(bool)
@@ -86,12 +86,12 @@ func (s *Session) FirstTimeUser() bool {
 
 func (s *Session) CurrentTable() int {
 	if s == nil {
-		log.Error("The \"CurrentTable\" method was called for a nil session.")
+		logger.Error("The \"CurrentTable\" method was called for a nil session.")
 		return -1
 	}
 
 	if v, exists := s.Get("currentTable"); !exists {
-		log.Error("Failed to get \"currentTable\" from a session.")
+		logger.Error("Failed to get \"currentTable\" from a session.")
 		return -1
 	} else {
 		return v.(int)
@@ -100,12 +100,12 @@ func (s *Session) CurrentTable() int {
 
 func (s *Session) Status() int {
 	if s == nil {
-		log.Error("The \"Status\" method was called for a nil session.")
+		logger.Error("The \"Status\" method was called for a nil session.")
 		return -1
 	}
 
 	if v, exists := s.Get("status"); !exists {
-		log.Error("Failed to get \"status\" from a session.")
+		logger.Error("Failed to get \"status\" from a session.")
 		return -1
 	} else {
 		return v.(int)
@@ -125,7 +125,7 @@ func (s *Session) Emit(command string, d interface{}) {
 	// Convert the data to JSON
 	var ds string
 	if dj, err := json.Marshal(d); err != nil {
-		log.Error("Failed to marshal data when writing to a WebSocket session:", err)
+		logger.Error("Failed to marshal data when writing to a WebSocket session:", err)
 		return
 	} else {
 		ds = string(dj)
@@ -146,7 +146,7 @@ func (s *Session) Warning(message string) {
 		message = "Something went wrong. Please contact an administrator."
 	}
 
-	log.Info("Warning - " + message + " - " + s.Username())
+	logger.Info("Warning - " + message + " - " + s.Username())
 
 	type WarningMessage struct {
 		Warning string `json:"warning"`
@@ -163,7 +163,7 @@ func (s *Session) Error(message string) {
 		message = "Something went wrong. Please contact an administrator."
 	}
 
-	log.Info("Error - " + message + " - " + s.Username())
+	logger.Info("Error - " + message + " - " + s.Username())
 
 	type ErrorMessage struct {
 		Error string `json:"error"`

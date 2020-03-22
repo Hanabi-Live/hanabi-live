@@ -167,7 +167,7 @@ func (p *GamePlayer) GiveClue(d *CommandData, g *Game) {
 		Text: text,
 	})
 	t.NotifyAction()
-	log.Info(t.GetName() + text)
+	logger.Info(t.GetName() + text)
 
 	// Do post-clue tasks
 	characterPostClue(d, g, p)
@@ -310,7 +310,7 @@ func (p *GamePlayer) PlayCard(g *Game, c *Card) bool {
 		Text: text,
 	})
 	t.NotifyAction()
-	log.Info(t.GetName() + text)
+	logger.Info(t.GetName() + text)
 
 	// Give the team a clue if the final card of the suit was played
 	// (this will always be a 5 unless it is a custom variant)
@@ -411,7 +411,7 @@ func (p *GamePlayer) DiscardCard(g *Game, c *Card) bool {
 		Text: text,
 	})
 	t.NotifyAction()
-	log.Info(t.GetName() + text)
+	logger.Info(t.GetName() + text)
 
 	// Check to see if revealing this card would surprise the player
 	// (we want to have it in the middle of the function so that it will
@@ -468,7 +468,7 @@ func (p *GamePlayer) DrawCard(g *Game) {
 		// Mark the turn upon which the game will end
 		g.EndTurn = g.Turn + len(g.Players) + 1
 		characterAdjustEndTurn(g)
-		log.Info(t.GetName() + "Marking to end the game on turn: " + strconv.Itoa(g.EndTurn))
+		logger.Info(t.GetName() + "Marking to end the game on turn: " + strconv.Itoa(g.EndTurn))
 	}
 }
 

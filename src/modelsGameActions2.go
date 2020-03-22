@@ -1,4 +1,4 @@
-package models
+package main
 
 import (
 	"database/sql"
@@ -55,8 +55,7 @@ func (*GameActions2) Insert(databaseID, turn, gameAction GameAction) error {
 }
 
 func (*GameActions2) GetAll(databaseID int) ([]GameAction, error) {
-	var rows *sql.Rows
-	if v, err := db.Query(`
+	rows, err := db.Query(`
 		SELECT
 			type,
 			target,
@@ -66,12 +65,7 @@ func (*GameActions2) GetAll(databaseID int) ([]GameAction, error) {
 		FROM game_actions2
 		WHERE game_id = ?
 		ORDER BY turn
-	`, databaseID); err != nil {
-		return nil, err
-	} else {
-		rows = v
-	}
-	defer rows.Close()
+	`, databaseID)
 
 	// Iterate over all of the actions and add them to a slice
 	actions := make([]GameAction, 0)
@@ -88,6 +82,13 @@ func (*GameActions2) GetAll(databaseID int) ([]GameAction, error) {
 		}
 
 		actions = append(actions, action)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 
 	return actions, nil

@@ -105,7 +105,7 @@ func (t *Table) CheckIdle() {
 		return
 	}
 
-	log.Info(t.GetName() + " Idle timeout has elapsed; ending the game.")
+	logger.Info(t.GetName() + " Idle timeout has elapsed; ending the game.")
 
 	if t.Replay {
 		// If this is a replay,

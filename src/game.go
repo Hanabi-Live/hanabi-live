@@ -131,7 +131,7 @@ func (g *Game) CheckTimer(turn int, pauseCount int, p *GamePlayer) {
 	}
 
 	p.Time = 0
-	log.Info(t.GetName() + "Time ran out for \"" + p.Name + "\".")
+	logger.Info(t.GetName() + "Time ran out for \"" + p.Name + "\".")
 
 	// End the game
 	ps := t.Players[p.Index].Session
@@ -157,7 +157,7 @@ func (g *Game) CheckEnd() bool {
 
 	// Check for 3 strikes
 	if g.Strikes == 3 {
-		log.Info(t.GetName() + "3 strike maximum reached; ending the game.")
+		logger.Info(t.GetName() + "3 strike maximum reached; ending the game.")
 		g.EndCondition = endConditionStrikeout
 		return true
 	}
@@ -165,14 +165,14 @@ func (g *Game) CheckEnd() bool {
 	// Check to see if the final go-around has completed
 	// (which is initiated after the last card is played from the deck)
 	if g.Turn == g.EndTurn {
-		log.Info(t.GetName() + "Final turn reached; ending the game.")
+		logger.Info(t.GetName() + "Final turn reached; ending the game.")
 		g.EndCondition = endConditionNormal
 		return true
 	}
 
 	// Check to see if the maximum score has been reached
 	if g.Score == g.MaxScore {
-		log.Info(t.GetName() + "Maximum score reached; ending the game.")
+		logger.Info(t.GetName() + "Maximum score reached; ending the game.")
 		g.EndCondition = endConditionNormal
 		return true
 	}
@@ -211,7 +211,7 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// If we got this far, nothing can be played
-	log.Info(t.GetName() + "No remaining cards can be played; ending the game.")
+	logger.Info(t.GetName() + "No remaining cards can be played; ending the game.")
 	g.EndCondition = endConditionNormal
 	return true
 }
@@ -232,7 +232,7 @@ func (g *Game) GetHandSize() int {
 		return 3
 	}
 
-	log.Fatal("Failed to get the hand size for " + strconv.Itoa(numPlayers) +
+	logger.Fatal("Failed to get the hand size for " + strconv.Itoa(numPlayers) +
 		" players for game: " + t.Name)
 	return -1
 }

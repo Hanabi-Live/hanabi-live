@@ -6,25 +6,25 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
-	"github.com/Zamiell/hanabi-live/src/models"
 	"github.com/joho/godotenv"
 	logging "github.com/op/go-logging"
 )
 
 var (
-	projectPath = path.Join(os.Getenv("GOPATH"), "src", "github.com", "Zamiell", "hanabi-live")
-	dataPath    = path.Join(projectPath, "public", "js", "src", "data")
-	versionPath = path.Join(dataPath, "version.json")
+	projectPath string
+	dataPath    string
+	versionPath string
 
-	log    *logging.Logger
-	db     *models.Models
+	logger *logging.Logger
+	models *Models
 	tables = make(map[int]*Table) // Defined in "table.go"
 	// For storing all of the random words (used for random table names)
 	wordList = make([]string, 0)
 	// For storing the players who are waiting for the next game to start
-	waitingList = make([]*models.Waiter, 0)
+	waitingList = make([]*Waiter, 0)
 	// If true, the server will restart after all games are finished
 	shuttingDown = false
 )
@@ -32,7 +32,7 @@ var (
 func main() {
 	// Initialize logging
 	// http://godoc.org/github.com/op/go-logging#Formatter
-	log = logging.MustGetLogger("hanabi-live")
+	logger = logging.MustGetLogger("hanabi-live")
 	loggingBackend := logging.NewLogBackend(os.Stdout, "", 0)
 	logFormat := logging.MustStringFormatter( // https://golang.org/pkg/time/#Time.Format
 		`%{time:Mon Jan 02 15:04:05 MST 2006} - %{level:.4s} - %{shortfile} - %{message}`,
@@ -41,27 +41,30 @@ func main() {
 	logging.SetBackend(loggingBackendFormatted)
 
 	// Welcome message
-	log.Info("+-----------------------+")
-	log.Info("| Starting hanabi-live. |")
-	log.Info("+-----------------------+")
+	logger.Info("+-----------------------+")
+	logger.Info("| Starting hanabi-live. |")
+	logger.Info("+-----------------------+")
 
-	// Check to see if the project path exists
-	if _, err := os.Stat(projectPath); os.IsNotExist(err) {
-		log.Fatal("The project path of \"" + projectPath + "\" does not exist. " +
-			"Check to see if your GOPATH environment variable is set properly.")
-		return
+	// Get the project path
+	// https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
+	if v, err := os.Executable(); err != nil {
+		logger.Fatal("Failed to get the path of the currently running executable:", err)
+	} else {
+		projectPath = filepath.Dir(v)
 	}
 
 	// Check to see if the data path exists
+	dataPath = path.Join(projectPath, "public", "js", "src", "data")
 	if _, err := os.Stat(dataPath); os.IsNotExist(err) {
-		log.Fatal("The data path of \"" + dataPath + "\" does not exist. " +
-			"This directory should always exist; please try recloning the repository.")
+		logger.Fatal("The data path of \"" + dataPath + "\" does not exist. " +
+			"This directory should always exist; please try re-cloning the repository.")
 		return
 	}
 
 	// Check to see if the version file exists
+	versionPath = path.Join(dataPath, "version.json")
 	if _, err := os.Stat(versionPath); os.IsNotExist(err) {
-		log.Fatal("The \"" + versionPath + "\" file does not exist. " +
+		logger.Fatal("The \"" + versionPath + "\" file does not exist. " +
 			"Did you run the \"install_dependencies.sh\" script before running the server? " +
 			"This file should automatically be created when building the client.")
 		return
@@ -70,7 +73,7 @@ func main() {
 	// Check to see if the ".env" file exists
 	envPath := path.Join(projectPath, ".env")
 	if _, err := os.Stat(envPath); os.IsNotExist(err) {
-		log.Fatal("The \"" + envPath + "\" file does not exist. " +
+		logger.Fatal("The \"" + envPath + "\" file does not exist. " +
 			"Did you run the \"install_dependencies.sh\" script before running the server? " +
 			"This file should automatically be created when running this script.")
 		return
@@ -78,7 +81,7 @@ func main() {
 
 	// Load the ".env" file which contains environment variables with secret values
 	if err := godotenv.Load(envPath); err != nil {
-		log.Fatal("Failed to load the \".env\" file:", err)
+		logger.Fatal("Failed to load the \".env\" file:", err)
 		return
 	}
 
@@ -88,26 +91,25 @@ func main() {
 	}
 
 	// Initialize the database model
-	if v, err := models.Init(); err != nil {
-		log.Fatal("Failed to open the database:", err)
+	if v, err := modelsInit(); err != nil {
+		logger.Fatal("Failed to open the database:", err)
 		return
 	} else {
-		db = v
+		models = v
 	}
-	defer db.Close()
+	defer models.Close()
 
 	// Validate that the database exists
-	if err := db.DiscordMetadata.TestDatabase(); err != nil {
+	if err := models.DiscordMetadata.TestDatabase(); err != nil {
 		if strings.Contains(err.Error(), "Unknown database") {
-			dbName := os.Getenv("DB_NAME")
-			log.Fatal("The \"" + dbName + "\" database does not exist. " +
+			logger.Fatal("The \"" + dbName + "\" database does not exist. " +
 				"Please follow the instructions located in the \"docs/INSTALL.md\" file " +
 				"in order to set up the database.")
 			return
 		}
 
-		log.Error("Failed to run the database test query:", err)
-		log.Fatal("Try re-running the \"install/install_database_schema.sh\" script " +
+		logger.Error("Failed to run the database test query:", err)
+		logger.Fatal("Try re-running the \"install/install_database_schema.sh\" script " +
 			"in order to re-initialize the database.")
 		return
 	}
@@ -123,7 +125,7 @@ func main() {
 	// Initialize the word list
 	wordListPath := path.Join(projectPath, "src", "assets", "wordList.txt")
 	if v, err := ioutil.ReadFile(wordListPath); err != nil {
-		log.Fatal("Failed to read the \""+wordListPath+"\" file:", err)
+		logger.Fatal("Failed to read the \""+wordListPath+"\" file:", err)
 		return
 	} else {
 		wordListString := string(v)

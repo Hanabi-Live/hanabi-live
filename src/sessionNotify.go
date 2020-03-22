@@ -4,8 +4,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 /*
@@ -126,7 +124,7 @@ func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, 
 }
 
 // NotifyGameHistory will send a user a subset of their past games
-func (s *Session) NotifyGameHistory(historyListDatabase []*models.GameHistory, incrementNumGames bool) {
+func (s *Session) NotifyGameHistory(historyListDatabase []*GameHistory, incrementNumGames bool) {
 	type GameHistoryMessage struct {
 		ID                int       `json:"id"`
 		NumPlayers        int       `json:"numPlayers"`
@@ -315,8 +313,8 @@ func (s *Session) NotifyReplayLeader(t *Table, playAnimation bool) {
 	if name == "" {
 		// The leader is not currently present and was not a member of the original game,
 		// so we need to look up their username from the database
-		if v, err := db.Users.GetUsername(t.Owner); err != nil {
-			log.Error("Failed to get the username for user "+strconv.Itoa(t.Owner)+
+		if v, err := models.Users.GetUsername(t.Owner); err != nil {
+			logger.Error("Failed to get the username for user "+strconv.Itoa(t.Owner)+
 				" who is the owner of table:", t.ID)
 			return
 		} else {
@@ -341,9 +339,9 @@ func (s *Session) NotifyNoteList(t *Table) {
 	g := t.Game
 
 	// Get the notes from all the players & spectators
-	notes := make([]models.NoteList, 0)
+	notes := make([]NoteList, 0)
 	for _, p := range g.Players {
-		notes = append(notes, models.NoteList{
+		notes = append(notes, NoteList{
 			ID:    t.Players[p.Index].ID,
 			Name:  p.Name,
 			Notes: p.Notes,
@@ -351,7 +349,7 @@ func (s *Session) NotifyNoteList(t *Table) {
 	}
 	if !t.Replay {
 		for _, sp := range t.Spectators {
-			notes = append(notes, models.NoteList{
+			notes = append(notes, NoteList{
 				ID:    sp.ID,
 				Name:  sp.Name,
 				Notes: sp.Notes,
@@ -361,7 +359,7 @@ func (s *Session) NotifyNoteList(t *Table) {
 
 	// Send it
 	type NoteListMessage struct {
-		Notes []models.NoteList `json:"notes"`
+		Notes []NoteList `json:"notes"`
 	}
 	s.Emit("noteList", &NoteListMessage{
 		Notes: notes,

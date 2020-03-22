@@ -20,10 +20,10 @@ func websocketDisconnect2(s *Session) {
 	// Check to see if the existing session is different
 	// (this occurs during a reconnect, for example)
 	if s2, ok := sessions[s.UserID()]; !ok {
-		log.Info("User \"" + s.Username() + "\" disconnected, but their session was already deleted.")
+		logger.Info("User \"" + s.Username() + "\" disconnected, but their session was already deleted.")
 		return
 	} else if s2.SessionID() != s.SessionID() {
-		log.Info("The orphaned session for user \"" + s.Username() + "\" successfully disconnected.")
+		logger.Info("The orphaned session for user \"" + s.Username() + "\" successfully disconnected.")
 		return
 	}
 
@@ -36,13 +36,13 @@ func websocketDisconnect2(s *Session) {
 		// They could be one of the players (1/2)
 		if !t.Replay && t.GetPlayerIndexFromID(s.UserID()) != -1 {
 			if t.Running {
-				log.Info(t.GetName() + "Unattending player \"" + s.Username() + "\" " +
+				logger.Info(t.GetName() + "Unattending player \"" + s.Username() + "\" " +
 					"since they disconnected.")
 				s.Set("currentTable", t.ID)
 				s.Set("status", statusPlaying)
 				commandTableUnattend(s, nil)
 			} else {
-				log.Info(t.GetName() + "Ejecting player \"" + s.Username() + "\" " +
+				logger.Info(t.GetName() + "Ejecting player \"" + s.Username() + "\" " +
 					"from an unstarted game since they disconnected.")
 				s.Set("currentTable", t.ID)
 				s.Set("status", statusPregame)
@@ -52,7 +52,7 @@ func websocketDisconnect2(s *Session) {
 
 		// They could be one of the spectators (2/2)
 		if t.GetSpectatorIndexFromID(s.UserID()) != -1 {
-			log.Info(t.GetName() + "Ejecting spectator \"" + s.Username() + "\" " +
+			logger.Info(t.GetName() + "Ejecting spectator \"" + s.Username() + "\" " +
 				"since they disconnected.")
 			t.DisconSpectators[s.UserID()] = true
 			s.Set("currentTable", t.ID)
@@ -65,5 +65,5 @@ func websocketDisconnect2(s *Session) {
 	notifyAllUserLeft(s)
 
 	// Log the disconnection
-	log.Info("User \""+s.Username()+"\" disconnected;", len(sessions), "user(s) now connected.")
+	logger.Info("User \""+s.Username()+"\" disconnected;", len(sessions), "user(s) now connected.")
 }

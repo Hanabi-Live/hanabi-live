@@ -11,8 +11,6 @@ package main
 import (
 	"strconv"
 	"time"
-
-	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 func commandTableJoin(s *Session, d *CommandData) {
@@ -66,13 +64,13 @@ func commandTableJoin(s *Session, d *CommandData) {
 		Join
 	*/
 
-	log.Info(t.GetName() + "User \"" + s.Username() + "\" joined. " +
+	logger.Info(t.GetName() + "User \"" + s.Username() + "\" joined. " +
 		"(There are now " + strconv.Itoa(len(t.Players)+1) + " players.)")
 
 	// Get the total number of non-speedrun games that this player has played
 	var numGames int
-	if v, err := db.Games.GetUserNumGames(s.UserID(), false); err != nil {
-		log.Error("Failed to get the number of non-speedrun games for player \""+s.Username()+"\":", err)
+	if v, err := models.Games.GetUserNumGames(s.UserID(), false); err != nil {
+		logger.Error("Failed to get the number of non-speedrun games for player \""+s.Username()+"\":", err)
 		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
 		return
 	} else {
@@ -80,9 +78,9 @@ func commandTableJoin(s *Session, d *CommandData) {
 	}
 
 	// Get the variant-specific stats for this player
-	var variantStats models.UserStatsRow
-	if v, err := db.UserStats.Get(s.UserID(), variants[t.Options.Variant].ID); err != nil {
-		log.Error("Failed to get the stats for player \""+s.Username()+"\" "+
+	var variantStats UserStatsRow
+	if v, err := models.UserStats.Get(s.UserID(), variants[t.Options.Variant].ID); err != nil {
+		logger.Error("Failed to get the stats for player \""+s.Username()+"\" "+
 			"for variant "+strconv.Itoa(variants[t.Options.Variant].ID)+":", err)
 		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
 		return
@@ -95,7 +93,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 		Name:    s.Username(),
 		Session: s,
 		Present: true,
-		Stats: Stats{
+		Stats: PregameStats{
 			NumGames: numGames,
 			Variant:  variantStats,
 		},
@@ -149,6 +147,6 @@ func commandTableJoin(s *Session, d *CommandData) {
 			}
 		}
 
-		log.Error("Failed to find the owner of the game when attempting to automatically start it.")
+		logger.Error("Failed to find the owner of the game when attempting to automatically start it.")
 	}
 }

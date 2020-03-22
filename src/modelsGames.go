@@ -1,4 +1,4 @@
-package models
+package main
 
 import (
 	"database/sql"
@@ -176,13 +176,7 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 		SQLString += "LIMIT " + strconv.Itoa(offset) + "," + strconv.Itoa(amount)
 	}
 
-	var rows *sql.Rows
-	if v, err := db.Query(SQLString, userID, userID); err != nil {
-		return nil, err
-	} else {
-		rows = v
-	}
-	defer rows.Close()
+	rows, err := db.Query(SQLString, userID, userID)
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
@@ -202,12 +196,18 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 		games = append(games, &game)
 	}
 
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+
 	return games, nil
 }
 
 func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error) {
-	var rows *sql.Rows
-	if v, err := db.Query(`
+	rows, err := db.Query(`
 		SELECT
 			id AS id_original,
 			num_players,
@@ -225,12 +225,7 @@ func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error)
 		WHERE variant = ?
 		ORDER BY games.id DESC
 		LIMIT ?
-	`, variant, amount); err != nil {
-		return nil, err
-	} else {
-		rows = v
-	}
-	defer rows.Close()
+	`, variant, amount)
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
@@ -246,6 +241,13 @@ func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error)
 			return nil, err
 		}
 		games = append(games, &game)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 
 	return games, nil
@@ -281,9 +283,8 @@ func (*Games) GetNumSimilar(seed string) (int, error) {
 	return count, nil
 }
 
-func (*Games) GetAllDeals(userID int, databaseID int) ([]GameHistory, error) {
-	var rows *sql.Rows
-	if v, err := db.Query(`
+func (*Games) GetAllDeals(userID int, databaseID int) ([]*GameHistory, error) {
+	rows, err := db.Query(`
 		SELECT
 			id AS id_original,
 			score,
@@ -305,14 +306,9 @@ func (*Games) GetAllDeals(userID int, databaseID int) ([]GameHistory, error) {
 		FROM games
 		WHERE seed = (SELECT seed FROM games WHERE id = ?)
 		ORDER BY id
-	`, userID, userID, databaseID); err != nil {
-		return nil, err
-	} else {
-		rows = v
-	}
-	defer rows.Close()
+	`, userID, userID, databaseID)
 
-	games := make([]GameHistory, 0)
+	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
 		if err := rows.Scan(
@@ -324,25 +320,26 @@ func (*Games) GetAllDeals(userID int, databaseID int) ([]GameHistory, error) {
 		); err != nil {
 			return nil, err
 		}
-		games = append(games, game)
+		games = append(games, &game)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 
 	return games, nil
 }
 
 func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
-	var rows *sql.Rows
-	if v, err := db.Query(`
+	rows, err := db.Query(`
 		SELECT games.seed AS seed
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 		WHERE game_participants.user_id = ?
-	`, userID); err != nil {
-		return nil, err
-	} else {
-		rows = v
-	}
-	defer rows.Close()
+	`, userID)
 
 	seeds := make([]string, 0)
 	for rows.Next() {
@@ -353,10 +350,17 @@ func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
 		seeds = append(seeds, seed)
 	}
 
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+
 	return seeds, nil
 }
 
-type Options struct {
+type DBOptions struct {
 	Variant              int
 	Timed                bool
 	BaseTime             int
@@ -367,8 +371,8 @@ type Options struct {
 	CharacterAssignments bool
 }
 
-func (*Games) GetOptions(databaseID int) (Options, error) {
-	var options Options
+func (*Games) GetOptions(databaseID int) (DBOptions, error) {
+	var options DBOptions
 	err := db.QueryRow(`
 		SELECT
 			variant,
@@ -425,16 +429,15 @@ func (*Games) GetSeed(databaseID int) (string, error) {
 	return seed, err
 }
 
-type Player struct {
+type DBPlayer struct {
 	ID                  int
 	Name                string
 	CharacterAssignment int
 	CharacterMetadata   int
 }
 
-func (*Games) GetPlayers(databaseID int) ([]*Player, error) {
-	var rows *sql.Rows
-	if v, err := db.Query(`
+func (*Games) GetPlayers(databaseID int) ([]*DBPlayer, error) {
+	rows, err := db.Query(`
 		SELECT
 			users.id AS user_id,
 			users.username AS username,
@@ -445,16 +448,11 @@ func (*Games) GetPlayers(databaseID int) ([]*Player, error) {
 			JOIN users ON game_participants.user_id = users.id
 		WHERE games.id = ?
 		ORDER BY game_participants.seat
-	`, databaseID); err != nil {
-		return nil, err
-	} else {
-		rows = v
-	}
-	defer rows.Close()
+	`, databaseID)
 
-	players := make([]*Player, 0)
+	players := make([]*DBPlayer, 0)
 	for rows.Next() {
-		var player Player
+		var player DBPlayer
 		if err := rows.Scan(
 			&player.ID,
 			&player.Name,
@@ -464,6 +462,13 @@ func (*Games) GetPlayers(databaseID int) ([]*Player, error) {
 			return nil, err
 		}
 		players = append(players, &player)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 
 	return players, nil
@@ -476,8 +481,7 @@ type NoteList struct {
 }
 
 func (*Games) GetNotes(databaseID int) ([]NoteList, error) {
-	var rows *sql.Rows
-	if v, err := db.Query(`
+	rows, err := db.Query(`
 		SELECT
 			users.id AS id,
 			users.username AS name,
@@ -487,12 +491,7 @@ func (*Games) GetNotes(databaseID int) ([]NoteList, error) {
 			JOIN users ON users.id = game_participants.user_id
 		WHERE games.id = ?
 		ORDER BY game_participants.seat
-	`, databaseID); err != nil {
-		return nil, err
-	} else {
-		rows = v
-	}
-	defer rows.Close()
+	`, databaseID)
 
 	notes := make([]NoteList, 0)
 	for rows.Next() {
@@ -516,6 +515,13 @@ func (*Games) GetNotes(databaseID int) ([]NoteList, error) {
 		}
 
 		notes = append(notes, noteList)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 
 	return notes, nil

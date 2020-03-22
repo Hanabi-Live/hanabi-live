@@ -56,8 +56,8 @@ func commandTableStart(s *Session, d *CommandData) {
 	// Validate extra things for "!replay" games
 	if t.Options.SetReplay != 0 {
 		// Validate that the right amount of players is in the game
-		if numPlayers, err := db.Games.GetNumPlayers(t.Options.SetReplay); err != nil {
-			log.Error("Failed to get the number of players in game "+
+		if numPlayers, err := models.Games.GetNumPlayers(t.Options.SetReplay); err != nil {
+			logger.Error("Failed to get the number of players in game "+
 				strconv.Itoa(t.Options.SetReplay)+":", err)
 			s.Error("Failed to create the game. Please contact an administrator.")
 			return
@@ -82,7 +82,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		Start
 	*/
 
-	log.Info(t.GetName() + "Starting the game.")
+	logger.Info(t.GetName() + "Starting the game.")
 
 	// Create the game object
 	g := NewGame(t)
@@ -100,8 +100,8 @@ func commandTableStart(s *Session, d *CommandData) {
 		g.Seed = seedPrefix + t.Options.SetSeed
 	} else if t.Options.SetReplay != 0 {
 		// This is a replay of an existing game
-		if v, err := db.Games.GetSeed(t.Options.SetReplay); err != nil {
-			log.Error("Failed to get the seed for game \""+strconv.Itoa(t.Options.SetReplay)+"\":", err)
+		if v, err := models.Games.GetSeed(t.Options.SetReplay); err != nil {
+			logger.Error("Failed to get the seed for game \""+strconv.Itoa(t.Options.SetReplay)+"\":", err)
 			s.Error("Failed to create the game. Please contact an administrator.")
 			return
 		} else {
@@ -120,8 +120,8 @@ func commandTableStart(s *Session, d *CommandData) {
 		seedMap := make(map[string]bool)
 		for _, p := range t.Players {
 			var seeds []string
-			if v, err := db.Games.GetPlayerSeeds(p.ID); err != nil {
-				log.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
+			if v, err := models.Games.GetPlayerSeeds(p.ID); err != nil {
+				logger.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
 				s.Error("Failed to create the game. Please contact an administrator.")
 				return
 			} else {
@@ -144,7 +144,7 @@ func commandTableStart(s *Session, d *CommandData) {
 			}
 		}
 	}
-	log.Info(t.GetName()+"Using seed:", g.Seed)
+	logger.Info(t.GetName()+"Using seed:", g.Seed)
 
 	// Seed the random number generator with the game seed
 	// Golang's "rand.Seed()" function takes an int64, so we need to convert a string to an int64
@@ -169,13 +169,13 @@ func commandTableStart(s *Session, d *CommandData) {
 	}
 
 	// Log the deal (so that it can be distributed to others if necessary)
-	log.Info("--------------------------------------------------")
-	log.Info("Deal for seed: " + g.Seed + " (from top to bottom)")
-	log.Info("(cards are dealt to a player until their hand fills up before moving on to the next one)")
+	logger.Info("--------------------------------------------------")
+	logger.Info("Deal for seed: " + g.Seed + " (from top to bottom)")
+	logger.Info("(cards are dealt to a player until their hand fills up before moving on to the next one)")
 	for i, c := range g.Deck {
-		log.Info(strconv.Itoa(i+1) + ") " + c.Name(g))
+		logger.Info(strconv.Itoa(i+1) + ") " + c.Name(g))
 	}
-	log.Info("--------------------------------------------------")
+	logger.Info("--------------------------------------------------")
 
 	// Get a random player to start first (based on the game seed)
 	// (but skip doing this if we are playing a preset deal from a file,
@@ -244,7 +244,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		Type: "text",
 		Text: text,
 	})
-	log.Info(t.GetName() + text)
+	logger.Info(t.GetName() + text)
 
 	// Record a message about the first turn
 	t.NotifyTurn()
@@ -296,8 +296,8 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 	}
 
 	var actionStrings []string
-	if v, err := db.GameActions.GetAll(t.Options.SetReplay); err != nil {
-		log.Error("Failed to get the actions from the database for game "+
+	if v, err := models.GameActions.GetAll(t.Options.SetReplay); err != nil {
+		logger.Error("Failed to get the actions from the database for game "+
 			strconv.Itoa(t.Options.SetReplay)+":", err)
 		s.Error(initFail)
 		return true
@@ -309,7 +309,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 		// Convert it from JSON
 		var action map[string]interface{}
 		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
-			log.Error("Failed to unmarshal an action while emulating gameplay from the database:", err)
+			logger.Error("Failed to unmarshal an action while emulating gameplay from the database:", err)
 			s.Error(initFail)
 			return true
 		}
@@ -319,7 +319,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 			// Unmarshal the specific action type
 			var actionClue ActionClue
 			if err := json.Unmarshal([]byte(actionString), &actionClue); err != nil {
-				log.Error("Failed to unmarshal a clue action:", err)
+				logger.Error("Failed to unmarshal a clue action:", err)
 				s.Error(initFail)
 				return true
 			}
@@ -334,7 +334,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 			// Unmarshal the specific action type
 			var actionPlay ActionPlay
 			if err := json.Unmarshal([]byte(actionString), &actionPlay); err != nil {
-				log.Error("Failed to unmarshal a play action:", err)
+				logger.Error("Failed to unmarshal a play action:", err)
 				s.Error(initFail)
 				return true
 			}
@@ -348,7 +348,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 			// Unmarshal the specific action type
 			var actionDiscard ActionDiscard
 			if err := json.Unmarshal([]byte(actionString), &actionDiscard); err != nil {
-				log.Error("Failed to unmarshal a discard action:", err)
+				logger.Error("Failed to unmarshal a discard action:", err)
 				s.Error(initFail)
 				return true
 			}
@@ -362,7 +362,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 			// Unmarshal the specific action type
 			var actionTurn ActionTurn
 			if err := json.Unmarshal([]byte(actionString), &actionTurn); err != nil {
-				log.Error("Failed to unmarshal a turn action:", err)
+				logger.Error("Failed to unmarshal a turn action:", err)
 				s.Error(initFail)
 				return true
 			}
@@ -380,7 +380,7 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 		}
 	}
 
-	log.Error("Failed to find the intended turn before reaching the end of game " +
+	logger.Error("Failed to find the intended turn before reaching the end of game " +
 		strconv.Itoa(t.Options.SetReplay) + ".")
 	s.Error(initFail)
 	return true

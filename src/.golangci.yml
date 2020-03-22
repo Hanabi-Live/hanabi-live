@@ -5,6 +5,8 @@ linters:
     - funlen
     # We use many globals in the code base
     - gochecknoglobals
+    # gocognit complains about having large functions
+    - gocognit
     # goconst complains about some common strings
     - goconst
     # gocritic complains about needing to make case statements
@@ -13,15 +15,14 @@ linters:
     - gocyclo
     # gofmt is not needed because we are running goimports (which is a superset of gofmt)
     - gofmt
+    # gomnd complains about common numbers
+    - gomnd
     # We do not care about making structs take less memory
     - maligned 
     # We use some unused parameters for command function uniformity
     - unparam
-    # This linter is bugged with multi-line if statements
-    # https://github.com/ultraware/whitespace/issues/1
-    # (uncomment this when golangci-lint is updated to v18.1; v18.0 does not include whitespace)
-    # (delete this when the bug is fixed)
-    #- whitespace
+    # WSL requires excessive newlines around if statements
+    - wsl
 
 issues:
   # We want to use golint but we don't care about some of the things that it complains about
@@ -30,3 +31,7 @@ issues:
     - "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment or be unexported"
     # We block-scope variables in many places, making it impossible to outdent
     - "if block ends with a return statement, so drop this else and outdent its block"
+
+linters-settings:
+  whitespace:
+    multi-if: true # Enforces newlines (or comments) after every multi-line if statement

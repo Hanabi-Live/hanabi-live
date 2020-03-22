@@ -21,7 +21,7 @@ func commandTableUnattend(s *Session, d *CommandData) {
 		// The user may be returning from a replay that was ended due to idleness,
 		// or perhaps they lagged and sent two tableUnattend messages,
 		// with this one being the second one
-		log.Info("User \"" + s.Username() + "\" tried to unattend, " +
+		logger.Info("User \"" + s.Username() + "\" tried to unattend, " +
 			"but their table ID was set to -1.")
 		return
 	}
@@ -89,7 +89,7 @@ func commandTableUnattendSpectator(t *Table, j int) {
 	if t.Replay {
 		if len(t.Spectators) == 0 {
 			// This was the last person to leave the replay, so delete it
-			log.Info("Ended replay #" + strconv.Itoa(t.ID) + " because everyone left.")
+			logger.Info("Ended replay #" + strconv.Itoa(t.ID) + " because everyone left.")
 			delete(tables, t.ID)
 
 			// Notify everyone that the table was deleted

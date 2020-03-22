@@ -338,7 +338,7 @@ const initCommands = () => {
         }
     });
 
-    globals.conn.on('historyDeal', (data: GameHistory) => {
+    globals.conn.on('gameHistoryOtherScores', (data: GameHistory) => {
         globals.historyOtherScores.push(data);
         lobbyHistory.drawOtherScores();
     });

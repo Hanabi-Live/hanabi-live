@@ -31,7 +31,7 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	// We use SplitN() with a value of 2 instead of Split() so that if there is a space in the JSON,
 	// the data part of the splice doesn't get messed up
 	if len(result) != 2 {
-		log.Error("User \"" + s.Username() + "\" sent an invalid WebSocket message.")
+		logger.Error("User \"" + s.Username() + "\" sent an invalid WebSocket message.")
 		return
 	}
 	command := result[0]
@@ -39,14 +39,14 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 
 	// Check to see if there is a command handler for this command
 	if _, ok := commandMap[command]; !ok {
-		log.Error("User \"" + s.Username() + "\" sent an invalid command of \"" + command + "\".")
+		logger.Error("User \"" + s.Username() + "\" sent an invalid command of \"" + command + "\".")
 		return
 	}
 
 	// Unmarshal the JSON (this code is taken from Golem)
 	var d *CommandData
 	if err := json.Unmarshal(jsonData, &d); err != nil {
-		log.Error("User \"" + s.Username() + "\" sent an command of " +
+		logger.Error("User \"" + s.Username() + "\" sent an command of " +
 			"\"" + command + "\" with invalid data: " + string(jsonData))
 		return
 	}
@@ -61,12 +61,12 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 		d.DiscordDiscriminator != "" ||
 		d.Args != nil {
 
-		log.Error("User \"" + s.Username() + "\" sent an command with " +
+		logger.Error("User \"" + s.Username() + "\" sent an command with " +
 			"data in an internal only field.")
 		return
 	}
 
 	// Call the command handler for this command
-	log.Info("Command - " + command + " - " + s.Username())
+	logger.Info("Command - " + command + " - " + s.Username())
 	commandMap[command](s, d)
 }

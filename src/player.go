@@ -1,9 +1,5 @@
 package main
 
-import (
-	"github.com/Zamiell/hanabi-live/src/models"
-)
-
 // Player is the object that represents the player before the game has started
 // (we separate the player object into two different objects;
 // one for the table and one for the game)
@@ -12,9 +8,9 @@ type Player struct {
 	Name    string
 	Session *Session
 	Present bool
-	Stats   Stats
+	Stats   PregameStats
 }
-type Stats struct {
-	NumGames int                 `json:"numGames"`
-	Variant  models.UserStatsRow `json:"variant"`
+type PregameStats struct {
+	NumGames int          `json:"numGames"`
+	Variant  UserStatsRow `json:"variant"`
 }

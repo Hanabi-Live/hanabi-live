@@ -39,7 +39,7 @@ func commandTableReattend(s *Session, d *CommandData) {
 		Reattend
 	*/
 
-	log.Info(t.GetName() + "User \"" + s.Username() + "\" reattended.")
+	logger.Info(t.GetName() + "User \"" + s.Username() + "\" reattended.")
 
 	if t.Running {
 		// Make the client switch screens to show the game UI

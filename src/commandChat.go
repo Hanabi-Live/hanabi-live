@@ -33,7 +33,7 @@ func commandChat(s *Session, d *CommandData) {
 		userID = 0
 	} else {
 		if s == nil {
-			log.Error("Failed to send a chat message because the sender's session was nil.")
+			logger.Error("Failed to send a chat message because the sender's session was nil.")
 			return
 		}
 		userID = s.UserID()
@@ -85,7 +85,7 @@ func commandChat(s *Session, d *CommandData) {
 		text += "> "
 	}
 	text += d.Msg
-	log.Info(text)
+	logger.Info(text)
 
 	// Handle in-game chat in a different function; the rest of this function will be for lobby chat
 	if strings.HasPrefix(d.Room, "table") {
@@ -95,14 +95,14 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Add the message to the database
 	if d.Discord {
-		if err := db.ChatLog.InsertDiscord(d.Username, d.Msg, d.Room); err != nil {
-			log.Error("Failed to insert a Discord chat message into the database:", err)
+		if err := models.ChatLog.InsertDiscord(d.Username, d.Msg, d.Room); err != nil {
+			logger.Error("Failed to insert a Discord chat message into the database:", err)
 			s.Error("")
 			return
 		}
 	} else if !d.OnlyDiscord {
-		if err := db.ChatLog.Insert(userID, d.Msg, d.Room); err != nil {
-			log.Error("Failed to insert a chat message into the database:", err)
+		if err := models.ChatLog.Insert(userID, d.Msg, d.Room); err != nil {
+			logger.Error("Failed to insert a chat message into the database:", err)
 			s.Error("")
 			return
 		}
@@ -149,13 +149,13 @@ func commandChatTable(s *Session, d *CommandData) {
 	// Parse the table ID from the room
 	match := lobbyRoomRegExp.FindStringSubmatch(d.Room)
 	if match == nil {
-		log.Error("Failed to parse the table ID from the room:", d.Room)
+		logger.Error("Failed to parse the table ID from the room:", d.Room)
 		s.Error("That is an invalid room.")
 		return
 	}
 	var tableID int
 	if v, err := strconv.Atoi(match[1]); err != nil {
-		log.Error("Failed to convert the table ID to a number:", err)
+		logger.Error("Failed to convert the table ID to a number:", err)
 		s.Error("That is an invalid room.")
 		return
 	} else {

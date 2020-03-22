@@ -5,8 +5,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 const (
@@ -125,9 +123,9 @@ type ChatListMessage struct {
 }
 
 func chatSendPastFromDatabase(s *Session, room string, count int) {
-	var rawMsgs []models.ChatMessage
-	if v, err := db.ChatLog.Get(room, count); err != nil {
-		log.Error("Failed to get the lobby chat history for user \""+s.Username()+"\":", err)
+	var rawMsgs []DBChatMessage
+	if v, err := models.ChatLog.Get(room, count); err != nil {
+		logger.Error("Failed to get the lobby chat history for user \""+s.Username()+"\":", err)
 		return
 	} else {
 		rawMsgs = v

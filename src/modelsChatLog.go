@@ -1,4 +1,4 @@
-package models
+package main
 
 import (
 	"database/sql"
@@ -40,7 +40,7 @@ func (*ChatLog) InsertDiscord(discordName string, message string, room string) e
 	return err
 }
 
-type ChatMessage struct {
+type DBChatMessage struct {
 	Name        string         `json:"name"`
 	DiscordName sql.NullString `json:"discordName"`
 	Message     string         `json:"message"`
@@ -48,7 +48,7 @@ type ChatMessage struct {
 }
 
 // Get the past messages sent in the lobby
-func (*ChatLog) Get(room string, count int) ([]ChatMessage, error) {
+func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 	SQLString := `
 		SELECT
 			IFNULL(users.username, "__server"),
@@ -69,16 +69,11 @@ func (*ChatLog) Get(room string, count int) ([]ChatMessage, error) {
 	}
 
 	var rows *sql.Rows
-	if v, err := db.Query(SQLString, room); err != nil {
-		return nil, err
-	} else {
-		rows = v
-	}
-	defer rows.Close()
+	rows, err := db.Query(SQLString, room)
 
-	chatMessages := make([]ChatMessage, 0)
+	chatMessages := make([]DBChatMessage, 0)
 	for rows.Next() {
-		var message ChatMessage
+		var message DBChatMessage
 		if err := rows.Scan(
 			&message.Name,
 			&message.DiscordName,
@@ -88,6 +83,13 @@ func (*ChatLog) Get(room string, count int) ([]ChatMessage, error) {
 			return nil, err
 		}
 		chatMessages = append(chatMessages, message)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 
 	return chatMessages, nil

@@ -42,7 +42,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 		Leave
 	*/
 
-	log.Info(t.GetName() + "User \"" + s.Username() + "\" left. " +
+	logger.Info(t.GetName() + "User \"" + s.Username() + "\" left. " +
 		"(There are now " + strconv.Itoa(len(t.Players)-1) + " players.)")
 
 	// Remove the player

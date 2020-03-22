@@ -1,4 +1,4 @@
-package models
+package main
 
 import (
 	"database/sql"
@@ -18,21 +18,13 @@ type Waiter struct {
 func (*DiscordWaiters) GetAll() ([]*Waiter, error) {
 	waiters := make([]*Waiter, 0)
 
-	var rows *sql.Rows
-	if v, err := db.Query(`
+	rows, err := db.Query(`
 		SELECT
 			username,
 			discord_mention,
 			datetime_expired
 		FROM discord_waiters
-	`); err == sql.ErrNoRows {
-		return waiters, nil
-	} else if err != nil {
-		return waiters, err
-	} else {
-		rows = v
-	}
-	defer rows.Close()
+	`)
 
 	for rows.Next() {
 		var waiter Waiter
@@ -44,6 +36,16 @@ func (*DiscordWaiters) GetAll() ([]*Waiter, error) {
 			return nil, err
 		}
 		waiters = append(waiters, &waiter)
+	}
+
+	if err == sql.ErrNoRows {
+		return waiters, nil
+	}
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 
 	return waiters, nil

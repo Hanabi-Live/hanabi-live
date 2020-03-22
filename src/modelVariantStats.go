@@ -1,4 +1,4 @@
-package models
+package main
 
 import (
 	"database/sql"
@@ -63,8 +63,7 @@ func (*VariantStats) Get(variant int) (VariantStatsRow, error) {
 }
 
 func (*VariantStats) GetAll(variantsID map[int]string) (map[int]VariantStatsRow, error) {
-	var rows *sql.Rows
-	if v, err := db.Query(`
+	rows, err := db.Query(`
 		SELECT
 			variant,
 			num_games,
@@ -77,11 +76,7 @@ func (*VariantStats) GetAll(variantsID map[int]string) (map[int]VariantStatsRow,
 			average_score,
 			num_strikeouts
 		FROM variant_stats
-	`); err != nil {
-		return nil, err
-	} else {
-		rows = v
-	}
+	`)
 
 	// Go through the stats for each variant
 	statsMap := make(map[int]VariantStatsRow)
@@ -105,6 +100,13 @@ func (*VariantStats) GetAll(variantsID map[int]string) (map[int]VariantStatsRow,
 		}
 
 		statsMap[variant] = stats
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 
 	return statsMap, nil

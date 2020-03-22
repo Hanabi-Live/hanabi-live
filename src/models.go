@@ -1,10 +1,7 @@
-package models
+package main
 
 import (
 	"database/sql"
-	"encoding/json"
-	"errors"
-	"log"
 	"os"
 
 	// This is the documented way to use the driver
@@ -12,10 +9,11 @@ import (
 )
 
 var (
-	db *sql.DB
+	db     *sql.DB
+	dbName string
 )
 
-// Models contains a list of objects representing database tables
+// Models contains a list of interfaces representing database tables
 type Models struct {
 	BannedIPs
 	ChatLog
@@ -31,8 +29,8 @@ type Models struct {
 	VariantStats
 }
 
-// Init opens a database connection based on the credentials in the ".env" file
-func Init() (*Models, error) {
+// modelsInit opens a database connection based on the credentials in the ".env" file
+func modelsInit() (*Models, error) {
 	// Read the database configuration from environment variables
 	// (it was loaded from the .env file in main.go)
 	dbHost := os.Getenv("DB_HOST")
@@ -46,18 +44,23 @@ func Init() (*Models, error) {
 	}
 	dbUser := os.Getenv("DB_USER")
 	if len(dbUser) == 0 {
-		return nil, errors.New("the \"DB_USER\" environment variable is blank")
+		logger.Info("DB_USER not specified; using default value of \"hanabiuser\".")
+		dbUser = "hanabiuser"
 	}
 	dbPass := os.Getenv("DB_PASS")
 	if len(dbPass) == 0 {
-		return nil, errors.New("the \"DB_PASS\" environment variable is blank")
+		logger.Info("DB_PASS not specified; using default value of \"1234567890\".")
+		dbPass = "1234567890"
 	}
-	dbName := os.Getenv("DB_NAME")
+	dbName = os.Getenv("DB_NAME")
 	if len(dbPass) == 0 {
-		return nil, errors.New("the \"DB_NAME\" environment variable is blank")
+		logger.Info("DB_NAME not specified; using default value of \"hanabi\".")
+		dbName = "hanabi"
 	}
 
 	// Initialize the database
+	// We need to set parseTime to true so that we can scan DATETIME fields into time.Time variables
+	// See: https://github.com/go-sql-driver/mysql
 	dsn := dbUser + ":" + dbPass + "@(" + dbHost + ":" + dbPort + ")/" + dbName + "?parseTime=true"
 	if v, err := sql.Open("mysql", dsn); err != nil {
 		return nil, err
@@ -72,16 +75,6 @@ func Init() (*Models, error) {
 // Close exposes the ability to close the underlying database connection
 func (*Models) Close() {
 	if err := db.Close(); err != nil {
-		log.Fatal("Failed to close the database connection:", err)
+		logger.Fatal("Failed to close the database connection:", err)
 	}
-}
-
-/*
-	Miscellaneous functions
-*/
-
-// From: https://stackoverflow.com/questions/22128282/easy-way-to-check-string-is-in-json-format-in-golang
-func isJSON(s string) bool {
-	var js json.RawMessage
-	return json.Unmarshal([]byte(s), &js) == nil
 }

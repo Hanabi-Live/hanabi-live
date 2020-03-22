@@ -38,12 +38,12 @@ func httpInit() {
 	// (they were loaded from the .env file in main.go)
 	domain := os.Getenv("DOMAIN")
 	if len(domain) == 0 {
-		log.Info("The \"DOMAIN\" environment variable is blank; aborting HTTP initialization.")
+		logger.Info("The \"DOMAIN\" environment variable is blank; aborting HTTP initialization.")
 		return
 	}
 	sessionSecret := os.Getenv("SESSION_SECRET")
 	if len(sessionSecret) == 0 {
-		log.Info("The \"SESSION_SECRET\" environment variable is blank; aborting HTTP initialization.")
+		logger.Info("The \"SESSION_SECRET\" environment variable is blank; aborting HTTP initialization.")
 		return
 	}
 	portString := os.Getenv("PORT")
@@ -52,7 +52,7 @@ func httpInit() {
 		port = 80
 	} else {
 		if v, err := strconv.Atoi(portString); err != nil {
-			log.Fatal("Failed to convert the \"PORT\" environment variable to a number.")
+			logger.Fatal("Failed to convert the \"PORT\" environment variable to a number.")
 			return
 		} else {
 			port = v
@@ -136,15 +136,15 @@ func httpInit() {
 		go func() {
 			// Nothing before the colon implies 0.0.0.0
 			if err := http.ListenAndServe(":80", HTTPServeMux); err != nil {
-				log.Fatal("http.ListenAndServe failed to start on 80.")
+				logger.Fatal("http.ListenAndServe failed to start on 80.")
 				return
 			}
-			log.Fatal("http.ListenAndServe ended for port 80.")
+			logger.Fatal("http.ListenAndServe ended for port 80.")
 		}()
 	}
 
 	// Start listening and serving requests (which is blocking)
-	log.Info("Listening on port " + strconv.Itoa(port) + ".")
+	logger.Info("Listening on port " + strconv.Itoa(port) + ".")
 	if useTLS {
 		if err := http.ListenAndServeTLS(
 			":"+strconv.Itoa(port), // Nothing before the colon implies 0.0.0.0
@@ -152,20 +152,20 @@ func httpInit() {
 			tlsKeyFile,
 			httpRouter,
 		); err != nil {
-			log.Fatal("http.ListenAndServeTLS failed:", err)
+			logger.Fatal("http.ListenAndServeTLS failed:", err)
 			return
 		}
-		log.Fatal("http.ListenAndServeTLS ended prematurely.")
+		logger.Fatal("http.ListenAndServeTLS ended prematurely.")
 	} else {
 		// Listen and serve (HTTP)
 		if err := http.ListenAndServe(
 			":"+strconv.Itoa(port), // Nothing before the colon implies 0.0.0.0
 			httpRouter,
 		); err != nil {
-			log.Fatal("http.ListenAndServe failed:", err)
+			logger.Fatal("http.ListenAndServe failed:", err)
 			return
 		}
-		log.Fatal("http.ListenAndServe ended prematurely.")
+		logger.Fatal("http.ListenAndServe ended prematurely.")
 	}
 }
 
@@ -182,7 +182,7 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 
 	// Ensure that the layout file exists
 	if _, err := os.Stat(layoutPath); os.IsNotExist(err) {
-		log.Error("The layout template does not exist.")
+		logger.Error("The layout template does not exist.")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -202,7 +202,7 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 	// Create the template
 	tmpl, err := template.ParseFiles(templateName...)
 	if err != nil {
-		log.Error("Failed to create the template:", err.Error())
+		logger.Error("Failed to create the template:", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -217,9 +217,9 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 
 			// Some errors are common and expected
 			// (e.g. the user presses the "Stop" button while the template is executing)
-			log.Info("Ordinary error when executing the template: " + err.Error())
+			logger.Info("Ordinary error when executing the template: " + err.Error())
 		} else {
-			log.Error("Failed to execute the template: " + err.Error())
+			logger.Error("Failed to execute the template: " + err.Error())
 		}
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}

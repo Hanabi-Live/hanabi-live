@@ -11,35 +11,36 @@ package main
 import (
 	"strconv"
 	"time"
-
-	"github.com/Zamiell/hanabi-live/src/models"
 )
 
 func commandHistoryGetDeals(s *Session, d *CommandData) {
 	gameID := d.GameID
-	var deals []models.GameHistory
-	if v, err := db.Games.GetAllDeals(s.UserID(), gameID); err != nil {
-		log.Error("Failed to get the deals from the database for game "+strconv.Itoa(gameID)+":", err)
+	var historyListDatabase []*GameHistory
+	if v, err := models.Games.GetAllDeals(s.UserID(), gameID); err != nil {
+		logger.Error("Failed to get the deals from the database for game "+strconv.Itoa(gameID)+":", err)
 		s.Error("Failed to get the deals for game " + strconv.Itoa(gameID) + ". Please contact an administrator.")
 		return
 	} else {
-		deals = v
+		historyListDatabase = v
 	}
+	historyListDatabase = historyFillVariants(historyListDatabase)
 
-	for _, deal := range deals {
-		type HistoryDealMessage struct {
-			ID               int       `json:"id"`
-			OtherPlayerNames string    `json:"otherPlayerNames"`
-			Score            int       `json:"score"`
-			Datetime         time.Time `json:"datetime"`
-			You              bool      `json:"you"`
-		}
-		s.Emit("historyDeal", &HistoryDealMessage{
-			ID:               deal.ID,
-			OtherPlayerNames: deal.OtherPlayerNames, // The SQL query calculates these
-			Score:            deal.Score,
-			Datetime:         deal.DatetimeFinished,
-			You:              deal.You,
+	type GameHistoryOtherScoresMessage struct {
+		ID               int       `json:"id"`
+		OtherPlayerNames string    `json:"otherPlayerNames"`
+		Score            int       `json:"score"`
+		Datetime         time.Time `json:"datetime"`
+		You              bool      `json:"you"`
+	}
+	historyList := make([]*GameHistoryOtherScoresMessage, 0)
+	for _, g := range historyListDatabase {
+		historyList = append(historyList, &GameHistoryOtherScoresMessage{
+			ID:               g.ID,
+			OtherPlayerNames: g.OtherPlayerNames, // The SQL query calculates these
+			Score:            g.Score,
+			Datetime:         g.DatetimeFinished,
+			You:              g.You,
 		})
 	}
+	s.Emit("gameHistoryOtherScores", &historyList)
 }

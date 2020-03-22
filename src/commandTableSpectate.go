@@ -81,9 +81,9 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	*/
 
 	if t.Replay {
-		log.Info(t.GetName() + "User \"" + s.Username() + "\" joined the replay.")
+		logger.Info(t.GetName() + "User \"" + s.Username() + "\" joined the replay.")
 	} else {
-		log.Info(t.GetName() + "User \"" + s.Username() + "\" spectated.")
+		logger.Info(t.GetName() + "User \"" + s.Username() + "\" spectated.")
 	}
 
 	// Add them to the spectators object

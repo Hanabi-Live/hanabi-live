@@ -58,11 +58,11 @@ func (g *Game) InitDeck() {
 
 func (g *Game) SetPresetDeck(s *Session) bool {
 	filePath := path.Join(projectPath, "specific-deals", g.Seed+".txt")
-	log.Info("Using a preset deal of:", filePath)
+	logger.Info("Using a preset deal of:", filePath)
 
 	var lines []string
 	if v, err := ioutil.ReadFile(filePath); err != nil {
-		log.Error("Failed to read \""+filePath+"\":", err)
+		logger.Error("Failed to read \""+filePath+"\":", err)
 		s.Error("Failed to create the game. Please contact an administrator.")
 		return true
 	} else {
@@ -73,7 +73,7 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 		// The first line is a number that signifies which player will go first
 		if i == 0 {
 			if v, err := strconv.Atoi(line); err != nil {
-				log.Error("Failed to parse the first line (that signifies which player will go first):", line)
+				logger.Error("Failed to parse the first line (that signifies which player will go first):", line)
 				s.Error("Failed to create the game. Please contact an administrator.")
 				return true
 			} else {
@@ -91,7 +91,7 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 		// Parse the line for the suit and the rank
 		match2 := cardRegExp.FindStringSubmatch(line)
 		if match2 == nil {
-			log.Error("Failed to parse line "+strconv.Itoa(i+1)+":", line)
+			logger.Error("Failed to parse line "+strconv.Itoa(i+1)+":", line)
 			s.Error("Failed to start the game. Please contact an administrator.")
 			return true
 		}
@@ -112,7 +112,7 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 		} else if suit == "m" {
 			newSuit = 5
 		} else {
-			log.Error("Failed to parse the suit on line "+strconv.Itoa(i+1)+":", suit)
+			logger.Error("Failed to parse the suit on line "+strconv.Itoa(i+1)+":", suit)
 			s.Error("Failed to create the game. Please contact an administrator.")
 			return true
 		}
@@ -123,7 +123,7 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 		rank := match2[2]
 		var newRank int
 		if v, err := strconv.Atoi(rank); err != nil {
-			log.Error("Failed to parse the rank on line "+strconv.Itoa(i+1)+":", rank)
+			logger.Error("Failed to parse the rank on line "+strconv.Itoa(i+1)+":", rank)
 			s.Error("Failed to create the game. Please contact an administrator.")
 			return true
 		} else {

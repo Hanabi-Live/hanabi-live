@@ -15,7 +15,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Zamiell/hanabi-live/src/models"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
@@ -33,7 +32,7 @@ func httpLogin(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		log.Error("Failed to parse the IP address in the login function:", err)
+		logger.Error("Failed to parse the IP address in the login function:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -45,12 +44,12 @@ func httpLogin(c *gin.Context) {
 	*/
 
 	// Check to see if their IP is banned
-	if userIsBanned, err := db.BannedIPs.Check(ip); err != nil {
-		log.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
+	if userIsBanned, err := models.BannedIPs.Check(ip); err != nil {
+		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else if userIsBanned {
-		log.Info("IP \"" + ip + "\" tried to log in, but they are banned.")
+		logger.Info("IP \"" + ip + "\" tried to log in, but they are banned.")
 		http.Error(
 			w,
 			"Your IP address has been banned. "+
@@ -64,7 +63,7 @@ func httpLogin(c *gin.Context) {
 	// (which should probably never happen since the cookie lasts 5 seconds)
 	session := gsessions.Default(c)
 	if v := session.Get("userID"); v != nil {
-		log.Info("User from IP \"" + ip + "\" tried to get a session cookie, but they are already logged in.")
+		logger.Info("User from IP \"" + ip + "\" tried to get a session cookie, but they are already logged in.")
 		http.Error(w, "You are already logged in. Please wait 5 seconds, then try again.", http.StatusUnauthorized)
 		return
 	}
@@ -72,20 +71,20 @@ func httpLogin(c *gin.Context) {
 	// Validate that the user sent a username and password
 	username := c.PostForm("username")
 	if username == "" {
-		log.Error("User from IP \"" + ip + "\" tried to log in, but they did not provide the \"username\" parameter.")
+		logger.Error("User from IP \"" + ip + "\" tried to log in, but they did not provide the \"username\" parameter.")
 		http.Error(w, "You must provide the \"username\" parameter to log in.", http.StatusUnauthorized)
 		return
 	}
 	password := c.PostForm("password")
 	if password == "" {
-		log.Error("User from IP \"" + ip + "\" tried to log in, but they did not provide the \"password\" parameter.")
+		logger.Error("User from IP \"" + ip + "\" tried to log in, but they did not provide the \"password\" parameter.")
 		http.Error(w, "You must provide the \"password\" parameter to log in.", http.StatusUnauthorized)
 		return
 	}
 
 	// Validate that the username is not excessively short
 	if len(username) < minUsernameLength {
-		log.Info(
+		logger.Info(
 			"User from IP \"" + ip + "\" " +
 				"tried to log in with a username of \"" + username + "\", " +
 				"but it is shorter than " + strconv.Itoa(minUsernameLength) + " characters.",
@@ -96,7 +95,7 @@ func httpLogin(c *gin.Context) {
 
 	// Validate that the username is not excessively long
 	if len(username) > maxUsernameLength {
-		log.Info(
+		logger.Info(
 			"User from IP \"" + ip + "\" " +
 				"tried to log in with a username of \"" + username + "\", " +
 				"but it is longer than " + strconv.Itoa(maxUsernameLength) + " characters.",
@@ -108,7 +107,7 @@ func httpLogin(c *gin.Context) {
 	// Validate that the username does not have any special characters in it
 	// (other than underscores, hyphens, and periods)
 	if strings.ContainsAny(username, "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?") {
-		log.Info(
+		logger.Info(
 			"User from IP \"" + ip + "\" tried to log in with " +
 				"a username of \"" + username + "\", " +
 				"but it has illegal special characters in it.",
@@ -128,9 +127,9 @@ func httpLogin(c *gin.Context) {
 
 	// Check to see if this username exists in the database
 	var exists bool
-	var user models.User
-	if v1, v2, err := db.Users.Get(username); err != nil {
-		log.Error("Failed to get user \""+username+"\":", err)
+	var user User
+	if v1, v2, err := models.Users.Get(username); err != nil {
+		logger.Error("Failed to get user \""+username+"\":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	} else {
@@ -145,8 +144,8 @@ func httpLogin(c *gin.Context) {
 		}
 	} else {
 		// Create the new user in the database
-		if v, err := db.Users.Insert(username, password); err != nil {
-			log.Error("Failed to insert user \""+username+"\":", err)
+		if v, err := models.Users.Insert(username, password); err != nil {
+			logger.Error("Failed to insert user \""+username+"\":", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		} else {
@@ -155,8 +154,8 @@ func httpLogin(c *gin.Context) {
 	}
 
 	// Update the database with "datetime_last_login" and "last_ip"
-	if err := db.Users.Update(user.ID, ip); err != nil {
-		log.Error("Failed to set the login values for user \""+strconv.Itoa(user.ID)+"\":", err)
+	if err := models.Users.Update(user.ID, ip); err != nil {
+		logger.Error("Failed to set the login values for user \""+strconv.Itoa(user.ID)+"\":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -167,13 +166,13 @@ func httpLogin(c *gin.Context) {
 	session.Set("admin", user.Admin)
 	session.Set("firstTimeUser", !exists)
 	if err := session.Save(); err != nil {
-		log.Error("Failed to write to the login cookie for user \""+user.Username+"\":", err)
+		logger.Error("Failed to write to the login cookie for user \""+user.Username+"\":", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	// Log the login request and give a "200 OK" HTTP code
 	// (returning a code is not actually necessary but Firefox will complain otherwise)
-	log.Info("User \""+user.Username+"\" logged in from:", ip)
+	logger.Info("User \""+user.Username+"\" logged in from:", ip)
 	http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
 }
