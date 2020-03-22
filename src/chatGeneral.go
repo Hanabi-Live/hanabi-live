@@ -20,7 +20,7 @@ func chatHelp(s *Session, d *CommandData, t *Table) {
 		msg += "```\n"
 		msg += "Command               Description\n"
 		msg += "-----------------------------------------------------------------------------\n"
-		msg += "/here                 Ping members of the Discord server to get a game going\n"
+		msg += "/here                 Ping members of the Hyphen-ated group to get a game going\n"
 		msg += "/last                 See how long it has been since the last ping\n"
 		msg += "/next                 Put yourself on the waiting list\n"
 		msg += "/unnext               Take yourself off the waiting list\n"
@@ -33,6 +33,7 @@ func chatHelp(s *Session, d *CommandData, t *Table) {
 		msg += "-----------------------------------------------------------------------------\n"
 		msg += "/s                    Automatically start the game when the next person joins\n"
 		msg += "/s#                   Automatically start the game when it has # players\n"
+		msg += "/startin [minutes]    Automatically start the game in N minutes\n"
 		msg += "/pause                Pause the game (can be done on any turn)\n"
 		msg += "/unpause              Unpause the game\n"
 		msg += "```\n"
@@ -43,6 +44,9 @@ func chatHelp(s *Session, d *CommandData, t *Table) {
 		msg += "----------------------------------------------------------------------------\n"
 		msg += "/restart              Restart the server\n"
 		msg += "/graceful             Gracefully restart the server\n"
+		msg += "/shutdown             Gracefully shutdown the server\n"
+		msg += "/maintenance          Disable new game creation\n"
+		msg += "/cancel               Enable new game creation\n"
 		msg += "/debug                Print out some server-side info\n"
 		msg += "```"
 		discordSend(discordLobbyChannel, "", msg)
@@ -53,7 +57,7 @@ func chatHelp(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-// /discoard
+// /discord
 func chatDiscord(s *Session, d *CommandData, t *Table) {
 	msg := "Join the Hanabi Discord server: https://discord.gg/FADvkJp"
 	chatServerSend(msg, d.Room)
