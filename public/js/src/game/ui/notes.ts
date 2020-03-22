@@ -123,6 +123,14 @@ const checkNoteIdentity = (card: any, note: string, fullNote: string) => { // TO
     card.noteChopMoved = (
         note === 'cm'
         || fullNote.includes('[cm]')
+        || note === '5cm'
+        || fullNote.includes('[5cm]')
+        || note === 'tcm'
+        || fullNote.includes('[tcm]')
+        || note === 'sdcm'
+        || fullNote.includes('[sdcm]')
+        || note === 'sbpcm'
+        || fullNote.includes('[sbpcm]')
     );
     card.noteFinessed = (
         note === 'f'
