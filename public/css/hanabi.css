@@ -74,6 +74,11 @@ a {
     color: blue;
 }
 
+.name-us {
+    text-decoration: underline;
+    color: #8000ff;
+}
+
 /* Make the lobby width be 80% on big resolutions and 100% on smaller resolutions */
 @media screen and (min-width: 1280px) {
     .container.max {
