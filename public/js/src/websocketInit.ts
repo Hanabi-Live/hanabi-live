@@ -23,6 +23,12 @@ import lobbyUsersDraw from './lobby/usersDraw';
 import * as modals from './modals';
 
 export default () => {
+    // Ensure that we are connecting to the right URL
+    const domain = $('#domain').html();
+    if (window.location.hostname !== domain) {
+        modals.errorShow(`You are supposed to connect to Hanabi Live using the URL of: ${domain}`);
+    }
+
     // Prepare the URL of the WebSocket server
     let websocketURL = 'ws';
     if (window.location.protocol === 'https:') {

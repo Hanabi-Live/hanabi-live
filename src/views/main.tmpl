@@ -1010,14 +1010,17 @@
     <img src="/public/img/background.jpg" />
 </div>
 
+<!-- Used to validate that we are connecting to the correct URL -->
+<div id="domain" class="hidden">{{.Domain}}</div>
+
 {{if eq .Title "Dev"}}
-    <!--
-        In development, we use "webpack-dev-server" to serve the JavaScript on a separate port
-        (this is necessary because it provides "hot reloading" and speeds up long compilation times)
-    -->
-    <script type="text/javascript" src="http://localhost:8080/main.min.js"></script>
+<!--
+    In development, we use "webpack-dev-server" to serve the JavaScript on a separate port
+    (this is necessary because it provides "hot reloading" and speeds up long compilation times)
+-->
+<script type="text/javascript" src="http://localhost:8080/main.min.js"></script>
 {{else}}
-    <!-- All of the JavaScript is bundled into one file with Webpack -->
-    <script type="text/javascript" src="/public/js/main.min.js"></script>
+<!-- All of the JavaScript is bundled into one file with Webpack -->
+<script type="text/javascript" src="/public/js/main.min.js"></script>
 {{end}}
 {{end}}

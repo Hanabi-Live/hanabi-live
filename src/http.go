@@ -15,6 +15,7 @@ import (
 
 type TemplateData struct {
 	Title  string // Used to populate the <title> tag
+	Domain string // Used to validate that the user is going to the correct URL
 	Header bool   // Whether or not the template contains extra code in the <head> tag
 	Name   string // Used for the profile
 }
@@ -36,7 +37,7 @@ func httpInit() {
 
 	// Read some configuration values from environment variables
 	// (they were loaded from the .env file in main.go)
-	domain := os.Getenv("DOMAIN")
+	domain = os.Getenv("DOMAIN")
 	if len(domain) == 0 {
 		logger.Info("The \"DOMAIN\" environment variable is blank; aborting HTTP initialization.")
 		return
@@ -73,16 +74,16 @@ func httpInit() {
 	options := gsessions.Options{
 		Path:   "/",
 		Domain: domain,
-		MaxAge: 1, // in seconds
 		// After getting a cookie via "/login", the client will immediately
 		// establish a WebSocket connection via "/ws", so the cookie only needs
 		// to exist for that time frame
-		Secure: true,
+		MaxAge: 1, // in seconds
 		// Only send the cookie over HTTPS:
 		// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
-		HttpOnly: true,
+		Secure: true,
 		// Mitigate XSS attacks:
 		// https://www.owasp.org/index.php/HttpOnly
+		HttpOnly: true,
 	}
 	if !useTLS {
 		options.Secure = false
