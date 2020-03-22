@@ -26,44 +26,48 @@
 
                     <ul>
                         <li>
-                            <span class="stat-description">Total games played (in non-speedruns):</span>
+                            <span class="stat-description">Games played (in non-speedruns):</span>
                             {{.NumGames}}
                         </li>
                         <li>
-                            <span class="stat-description">Total time spent playing (in non-speedruns):</span>
+                            <span class="stat-description">Time spent playing (in non-speedruns):</span>
                             {{if .TimePlayed}}{{.TimePlayed}}{{else}}-{{end}}
                         </li>
                         <li>
-                            <span class="stat-description">Total games played (in speedruns):</span>
+                            <span class="stat-description">Games played (in speedruns):</span>
                             {{.NumGamesSpeedrun}}
                         </li>
                         <li>
-                            <span class="stat-description">Total time spent playing (in speedruns):</span>
+                            <span class="stat-description">Time spent playing (in speedruns):</span>
                             {{if .TimePlayedSpeedrun}}{{.TimePlayedSpeedrun}}{{else}}-{{end}}
                         </li>
                         <li>
+                            <span class="stat-description">Number of variants:</span>
+                            {{.NumVariants}}
+                        </li>
+                        <li>
+                            <span class="stat-description">2-player max scores achieved:</span>
+                            {{index .NumMaxScoresPerType 0}} &nbsp;({{index .PercentageMaxScoresPerType 0}}%)
+                        </li>
+                        <li>
+                            <span class="stat-description">3-player max scores achieved:</span>
+                            {{index .NumMaxScoresPerType 1}} &nbsp;({{index .PercentageMaxScoresPerType 1}}%)
+                        </li>
+                        <li>
+                            <span class="stat-description">4-player max scores achieved:</span>
+                            {{index .NumMaxScoresPerType 2}} &nbsp;({{index .PercentageMaxScoresPerType 2}}%)
+                        </li>
+                        <li>
+                            <span class="stat-description">5-player max scores achieved:</span>
+                            {{index .NumMaxScoresPerType 3}} &nbsp;({{index .PercentageMaxScoresPerType 3}}%)
+                        </li>
+                        <li>
+                            <span class="stat-description">6-player max scores achieved:</span>
+                            {{index .NumMaxScoresPerType 4}} &nbsp;({{index .PercentageMaxScoresPerType 4}}%)
+                        </li>
+                        <li>
                             <span class="stat-description">Total max scores achieved:</span>
-                            {{.NumMaxScores}} / {{.TotalMaxScores}}
-                        </li>
-                        <li>
-                            <span class="stat-description">Total 2-player max scores achieved:</span>
-                            {{index .NumMaxScoresPerType 0}} / {{.TotalMaxScoresPerType}}
-                        </li>
-                        <li>
-                            <span class="stat-description">Total 3-player max scores achieved:</span>
-                            {{index .NumMaxScoresPerType 1}} / {{.TotalMaxScoresPerType}}
-                        </li>
-                        <li>
-                            <span class="stat-description">Total 4-player max scores achieved:</span>
-                            {{index .NumMaxScoresPerType 2}} / {{.TotalMaxScoresPerType}}
-                        </li>
-                        <li>
-                            <span class="stat-description">Total 5-player max scores achieved:</span>
-                            {{index .NumMaxScoresPerType 3}} / {{.TotalMaxScoresPerType}}
-                        </li>
-                        <li>
-                            <span class="stat-description">Total 6-player max scores achieved:</span>
-                            {{index .NumMaxScoresPerType 4}} / {{.TotalMaxScoresPerType}}
+                            {{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)
                         </li>
                     </ul>
 
