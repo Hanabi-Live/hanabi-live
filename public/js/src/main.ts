@@ -49,6 +49,11 @@ import '../lib/tooltipster-scrollableTip.min';
     );
 };
 
+// Manually redirect users that go to "www.hanabi.live" instead of "hanabi.live"
+if (window.location.hostname === 'www.hanabi.live') {
+    window.location.replace('https://hanabi.live');
+}
+
 $(document).ready(() => {
     // Now that the page has loaded, initialize and define the functionality of various UI elements
     // (mostly using jQuery selectors)
