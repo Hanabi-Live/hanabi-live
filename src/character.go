@@ -481,9 +481,8 @@ func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 }
 
 func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
-
 	// Handle card-reordering
-	if g.Options.CardCycle {// If Card Cycling is enabled
+	if g.Options.CardCycle {
 		// Find the chop card
 		chopIndex := p.GetChopIndex()
 
