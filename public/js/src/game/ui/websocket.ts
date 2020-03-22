@@ -55,6 +55,22 @@ commands.set('connected', (data: ConnectedData) => {
     globals.layers.get('UI')!.batchDraw();
 });
 
+interface DatabaseIDData {
+    id: number,
+}
+commands.set('databaseID', (data: DatabaseIDData) => {
+    globals.databaseID = data.id;
+    globals.elements.gameIDLabel!.text(`ID: ${globals.databaseID}`);
+    globals.elements.gameIDLabel!.show();
+
+    // Also move the card count label on the deck downwards
+    if (globals.deckSize === 0) {
+        globals.elements.deck!.nudgeCountDownwards();
+    }
+
+    globals.layers.get('UI2')!.batchDraw();
+});
+
 commands.set('gameOver', () => {
     // If any tooltips are open, close them
     if (globals.activeHover !== null) {
@@ -141,22 +157,6 @@ commands.set('hypoStart', () => {
     if (!globals.amSharedReplayLeader) {
         hypothetical.start();
     }
-});
-
-interface DatabaseIDData {
-    id: number,
-}
-commands.set('databaseID', (data: DatabaseIDData) => {
-    globals.databaseID = data.id;
-    globals.elements.gameIDLabel!.text(`ID: ${globals.databaseID}`);
-    globals.elements.gameIDLabel!.show();
-
-    // Also move the card count label on the deck downwards
-    if (globals.deckSize === 0) {
-        globals.elements.deck!.nudgeCountDownwards();
-    }
-
-    globals.layers.get('UI2')!.batchDraw();
 });
 
 interface InitData {
@@ -685,4 +685,27 @@ commands.set('spectators', (data: SpectatorsData) => {
     }
 
     globals.layers.get('UI')!.batchDraw();
+});
+
+interface SoundData {
+    file: string,
+}
+commands.set('sound', (data: SoundData) => {
+    if (!globals.lobby.settings.get('sendTurnSound')) {
+        return;
+    }
+
+    const path = `/public/sounds/${data.file}.mp3`;
+    const audio = new Audio(path);
+    // HTML5 audio volume is a range between 0.0 to 1.0,
+    // but volume is stored in the settings as an integer from 0 to 100
+    let volume = globals.lobby.settings.get('volume');
+    if (typeof volume !== 'number') {
+        volume = 50;
+    }
+    audio.volume = volume / 100;
+    audio.play();
+    // If audio playback fails,
+    // it is most likely due to the user not having interacted with the page yet
+    // https://stackoverflow.com/questions/52807874/how-to-make-audio-play-on-body-onload
 });

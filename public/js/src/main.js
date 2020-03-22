@@ -1,8 +1,6 @@
-// TOOD
+// TODO
 /*
-- search for "historyDetail" in all files
-- put lobby only websocket functinos in lobby/websocket.ts
-- change globals.historyList to a map
+- put lobby only websocket functions in lobby/websocket.ts
 - search for all todo and replace with object
 - finish replacing websocket
 - search for all "as any"

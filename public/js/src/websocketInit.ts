@@ -8,18 +8,11 @@ import * as chat from './chat';
 import ChatMessage from './ChatMessage';
 import Connection from './Connection';
 import * as gameChat from './game/chat';
-import GameHistory from './lobby/GameHistory';
-import * as gameMain from './game/main';
-import * as gameSounds from './game/sounds';
 import gameWebsocketInit from './game/websocketInit';
-import Game from './lobby/Game';
 import globals from './globals';
-import * as lobbyHistory from './lobby/history';
 import * as lobbyLoginMisc from './lobby/loginMisc';
-import * as lobbyPregame from './lobby/pregame';
 import * as lobbySettings from './lobby/settings';
-import lobbyTablesDraw from './lobby/tablesDraw';
-import lobbyUsersDraw from './lobby/usersDraw';
+import lobbyWebsocketInit from './lobby/websocketInit';
 import * as modals from './modals';
 
 export default () => {
@@ -102,6 +95,7 @@ export default () => {
 
 // This is all of the normal commands/messages that we expect to receive from the server
 const initCommands = () => {
+    // Received by the client upon first connecting
     interface HelloData {
         username: string,
         totalGames: number,
@@ -184,40 +178,6 @@ const initCommands = () => {
         }
     });
 
-    // Received by the client when a user connect or has a new status
-    globals.conn.on('user', (data: User) => {
-        globals.userList.set(data.id, data);
-        lobbyUsersDraw();
-    });
-
-    // Received by the client when a user disconnects
-    interface UserLeftData {
-        id: number,
-    }
-    globals.conn.on('userLeft', (data: UserLeftData) => {
-        globals.userList.delete(data.id);
-        lobbyUsersDraw();
-    });
-
-    // Received by the client when a table is created or modified
-    globals.conn.on('table', (data: Table) => {
-        // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
-        data.baseTime *= 1000;
-        data.timePerTurn *= 1000;
-
-        globals.tableList.set(data.id, data);
-        lobbyTablesDraw();
-    });
-
-    // Received by the client when a table no longer has any members present
-    interface TableGoneData {
-        id: number,
-    }
-    globals.conn.on('tableGone', (data: TableGoneData) => {
-        globals.tableList.delete(data.id);
-        lobbyTablesDraw();
-    });
-
     // Received by the client when a new chat message arrives
     globals.conn.on('chat', (data: ChatMessage) => {
         chat.add(data, false); // The second argument is "fast"
@@ -271,99 +231,6 @@ const initCommands = () => {
         }
     });
 
-    interface JoinedData {
-        tableID: number,
-    }
-    globals.conn.on('joined', (data: JoinedData) => {
-        globals.tableID = data.tableID;
-
-        // We joined a new game, so transition between screens
-        lobbyTablesDraw();
-        lobbyPregame.show();
-    });
-
-    globals.conn.on('left', () => {
-        // We left a table, so transition between screens
-        lobbyTablesDraw();
-        lobbyPregame.hide();
-    });
-
-    globals.conn.on('game', (data: Game) => {
-        globals.game = data;
-
-        // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
-        globals.game.baseTime *= 1000;
-        globals.game.timePerTurn *= 1000;
-
-        lobbyPregame.draw();
-    });
-
-    interface TableReadyData {
-        ready: boolean,
-    }
-    globals.conn.on('tableReady', (data: TableReadyData) => {
-        if (data.ready) {
-            $('#nav-buttons-pregame-start').removeClass('disabled');
-        } else {
-            $('#nav-buttons-pregame-start').addClass('disabled');
-        }
-    });
-
-    interface TableStartData {
-        replay: boolean,
-    }
-    globals.conn.on('tableStart', (data: TableStartData) => {
-        if (!data.replay) {
-            lobbyPregame.hide();
-        }
-        gameMain.show();
-    });
-
-    globals.conn.on('gameHistory', (dataArray: Array<GameHistory>) => {
-        // data will be an array of all of the games that we have previously played
-        for (const data of dataArray) {
-            globals.history[data.id] = data;
-
-            if (data.incrementNumGames) {
-                globals.totalGames += 1;
-            }
-        }
-
-        // The server sent us more games because
-        // we clicked on the "Show More History" button
-        if (globals.showMoreHistoryClicked) {
-            globals.showMoreHistoryClicked = false;
-            lobbyHistory.draw();
-        }
-
-        const shownGames = Object.keys(globals.history).length;
-        $('#nav-buttons-history-shown-games').html(shownGames.toString());
-        $('#nav-buttons-history-total-games').html(globals.totalGames.toString());
-        if (shownGames === globals.totalGames) {
-            $('#lobby-history-show-more').hide();
-        }
-    });
-
-    globals.conn.on('gameHistoryOtherScores', (data: Array<GameHistory>) => {
-        lobbyHistory.drawOtherScores(data);
-    });
-
-    interface SoundData {
-        file: string,
-    }
-    globals.conn.on('sound', (data: SoundData) => {
-        if (globals.currentScreen === 'game' && globals.settings.get('sendTurnSound')) {
-            gameSounds.play(data.file);
-        }
-    });
-
-    interface NameData {
-        name: string,
-    }
-    globals.conn.on('name', (data: NameData) => {
-        globals.randomName = data.name;
-    });
-
     interface WarningData {
         warning: string,
     }
@@ -392,7 +259,10 @@ const initCommands = () => {
         }
     });
 
-    // There are yet more command handlers for events that happen in-game
-    // These will only have an effect if the current screen is equal to "game"
+    // Activate the command handlers for lobby-related commands
+    lobbyWebsocketInit();
+
+    // Activate the command handlers for game-related commands
+    // (these will only have an effect if the current screen is equal to "game")
     gameWebsocketInit();
 };
