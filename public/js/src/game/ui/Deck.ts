@@ -167,6 +167,12 @@ export default class Deck extends Konva.Group {
             content += '&nbsp; Speedrun</li>';
         }
 
+        if (globals.cardCycle) {
+            content += '<li><span class="game-tooltips-icon">';
+            content += '<i class="fas fa-sync-alt" style="position: relative; left: 0.2em;"></i></span>';
+            content += '&nbsp; Card Cycling</li>';
+        }
+
         if (globals.deckPlays) {
             content += '<li><span class="game-tooltips-icon">';
             content += '<i class="fas fa-blind" style="position: relative; left: 0.2em;"></i></span>';

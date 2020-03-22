@@ -175,6 +175,7 @@ interface InitData {
     baseTime: number,
     timePerTurn: number,
     speedrun: boolean,
+    cardCycle: boolean,
     deckPlays: boolean,
     emptyClues: boolean,
     characterAssignments: Array<string>,
@@ -210,6 +211,7 @@ commands.set('init', (data: InitData) => {
     globals.baseTime = data.baseTime;
     globals.timePerTurn = data.timePerTurn;
     globals.speedrun = data.speedrun;
+    globals.cardCycle = data.cardCycle;
     globals.deckPlays = data.deckPlays;
     globals.emptyClues = data.emptyClues;
     globals.characterAssignments = data.characterAssignments;

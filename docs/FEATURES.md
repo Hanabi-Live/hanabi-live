@@ -160,6 +160,12 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 * Speedrunning games will not count towards your statistics.
 * If this mode is enabled, then the "Timed" option will be disabled.
 
+#### Card Cycling
+
+* Each game has the option to enable algorithmical card cycling.
+* If enabled, whenever a player gives a clue, their rightmost unclued card will be moved to slot 1.
+* This might allow for extra finesses or temporarily prevent dangerous discards.
+
 #### Bottom Deck Blind Plays
 
 * Each game has the option to allow a special "house" rule.

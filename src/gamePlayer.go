@@ -486,6 +486,28 @@ func (p *GamePlayer) PlayDeck(g *Game) {
 	Subroutines
 */
 
+
+// GetChopIndex gets the index of the oldest (right-most) unclued card
+// (used for the "Card Cycling" feature)
+func (p *GamePlayer) GetChopIndex() int {
+	chopIndex := -1
+
+	// Go through their hand
+	for i := 0; i < len(p.Hand); i++ {
+		if !p.Hand[i].Touched {
+			chopIndex = i
+			break
+		}
+	}
+	if chopIndex == -1 {
+		// Their hand is filled with clued cards,
+		// so the chop is considered to be their newest (left-most) card
+		chopIndex = len(p.Hand) - 1
+	}
+
+	return chopIndex
+}
+
 func (p *GamePlayer) InitTime(options *Options) {
 	if options.Timed {
 		p.Time = time.Duration(options.BaseTime) * time.Second

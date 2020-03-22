@@ -120,6 +120,19 @@ export const draw = () => {
         `;
     }
 
+    if (globals.game.cardCycle) {
+        html += '<li><i id="lobby-pregame-options-card-cycle" class="fas fa-sync-alt" ';
+        html += 'style="position: relative; left: 0.2em;" ';
+        html += 'data-tooltip-content="#pregame-tooltip-card-cycle"></i></li>';
+        html += `
+            <div class="hidden">
+                <div id="pregame-tooltip-card-cycle" class="lobby-pregame-tooltip-icon">
+                    The <b>Card Cycling</b> option is enabled.
+                </div>
+            </div>
+        `;
+    }
+
     if (globals.game.deckPlays) {
         html += '<li><i id="lobby-pregame-options-deck-plays" class="fas fa-blind" ';
         html += 'style="position: relative; left: 0.2em;" ';
@@ -179,6 +192,7 @@ export const draw = () => {
     // (this has to be done after adding the HTML to the page)
     $('#lobby-pregame-options-timer').tooltipster(tooltipOptions);
     $('#lobby-pregame-options-speedrun').tooltipster(tooltipOptions);
+    $('#lobby-pregame-options-card-cycle').tooltipster(tooltipOptions);
     $('#lobby-pregame-options-deck-plays').tooltipster(tooltipOptions);
     $('#lobby-pregame-options-empty-clues').tooltipster(tooltipOptions);
     $('#lobby-pregame-options-characters').tooltipster(tooltipOptions);
