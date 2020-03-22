@@ -164,7 +164,7 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 
 * Each game has the option to enable algorithmical card cycling.
 * If enabled, whenever a player gives a clue, their oldest unclued card will be moved to their newest slot.
-* This is a way to play Hanabi that is used by Alessandro Iraci's group from the Université Libre de Bruxelles.
+* This is a way to play Hanabi that is used by <a href="https://sites.google.com/view/iraci">Alessandro Iraci's</a> group from the <a href="https://www.sns.it/en">Scuola Normale Superiore di Pisa</a>.
 
 #### Bottom Deck Blind Plays
 
