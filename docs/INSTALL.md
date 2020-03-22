@@ -62,8 +62,9 @@ The following instructions will set up the server as well as the linters. We ass
 * Set the domain URL (optional):
   * `notepad .env` <br />
   (if you plan to surf to "http://localhost", then do not change anything)
-* Import a solid set of starting VSCode user settings: (feel free to tweak this file to your liking)
+* Import a solid set of starting VSCode user settings:
   * `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"` <br />
+  (feel free to tweak this file to your liking; if you do not want to copy over the entire settings file, make sure you at least copy over the relevant lines for linting and whatnot)
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
@@ -124,8 +125,9 @@ The following instructions will set up the server as well as the linters. We ass
 * Set the domain URL (optional):
   * `open -t .env` <br />
   (if you plan to surf to "http://localhost", then do not change anything)
-* Import a solid set of starting VSCode user settings: (feel free to tweak this file to your liking)
-  * `cp install/settings.json "/Users/[Your_Username]/Library/Application Support/Code/User/settings.json"`
+* Import a solid set of starting VSCode user settings:
+  * `cp install/settings.json "/Users/[Your_Username]/Library/Application Support/Code/User/settings.json"` <br />
+  (feel free to tweak this file to your liking; if you do not want to copy over the entire settings file, make sure you at least copy over the relevant lines for linting and whatnot)
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
