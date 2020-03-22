@@ -1,8 +1,8 @@
 # Hanabi.Live Installation
 
-If you just want to install Hanabi Live without editing the code, skip to [the production installation section](#).
+If you just want to install Hanabi Live without editing the code, skip to [the production installation section](#installation-for-production-linux).
 
-Like many code projects, we use [linters](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For JavaScript (the client-side code), we use [ESLint](https://eslint.org/) and have a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
+Like many code projects, we use [linters](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For TypeScript (the client-side code), we use [ESLint](https://eslint.org/) and have a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
 
 The following instructions will set up the server as well as the linters. We assume that you will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc. Some adjustments will be needed if you are using a different editor.
 
@@ -10,10 +10,10 @@ The following instructions will set up the server as well as the linters. We ass
 
 ## Table of Contents
 
-1. [Installation for Development (Windows)](#)
-2. [Installation for Development (MacOS)](#)
-3. [Installation for Production (Linux)](#)
-4. [Running the Server](#)
+1. [Installation for Development (Windows)](#installation-for-development-windows)
+2. [Installation for Development (MacOS)](#installation-for-development-macos)
+3. [Installation for Production (Linux)](#installation-for-production-linux)
+4. [Running the Server](#running-the-server)
 
 <br />
 
@@ -172,7 +172,9 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `./install/install_database_schema.sh`
 * See [Running the Server](#running-the-server).
 
-### Set up Automated Database Backups (optional)
+<br />
+
+#### Set up Automated Database Backups (optional)
 
 * `crontab -e`
 
@@ -181,7 +183,9 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 0 0 * * * /root/hanabi-live/make_database_dump.sh
 ```
 
-### Install HTTPS (optional)
+<br />
+
+#### Install HTTPS (optional)
 
 * `sudo apt install letsencrypt -y`
 * `letsencrypt certonly --standalone -d hanabi.live -d www.hanabi.live` <br />
@@ -198,7 +202,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 
 <br />
 
-### Install as a service (optional)
+#### Install as a service (optional)
 
 * Install Supervisor:
   * `sudo apt install supervisor -y`
