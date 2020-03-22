@@ -424,18 +424,20 @@ export default class HanabiCard extends Konva.Group {
                 }
 
                 // Remove all the possibilities for cards that are definately not this rank
-                for (const suit of globals.variant.suits) {
-                    if (suit.clueRanks === 'all') {
-                        continue;
-                    }
-                    for (const rank of globals.variant.ranks) {
-                        if (rank === clueRank) {
+                if (possibilitiesCheck()) {
+                    for (const suit of globals.variant.suits) {
+                        if (suit.clueRanks === 'all') {
                             continue;
                         }
-                        if (globals.variant.name.includes('Multi-Fives') && rank === 5) {
-                            continue;
+                        for (const rank of globals.variant.ranks) {
+                            if (rank === clueRank) {
+                                continue;
+                            }
+                            if (globals.variant.name.includes('Multi-Fives') && rank === 5) {
+                                continue;
+                            }
+                            this.removePossibility(suit, rank, true);
                         }
-                        this.removePossibility(suit, rank, true);
                     }
                 }
 
