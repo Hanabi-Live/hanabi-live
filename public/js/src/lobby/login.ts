@@ -139,6 +139,7 @@ export const automaticLogin = () => {
     if (password === null || password === '') {
         return;
     }
+    globals.password = password;
 
     console.log('Automatically logging in from cookie credentials.');
     send();
