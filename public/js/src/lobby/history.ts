@@ -148,17 +148,17 @@ const makeReplayButton = (id: number, visibility: string) => {
 const makeOtherScoresButton = (id: number, gameCount: number) => {
     const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
     button.html(`<i class="fas fa-chart-bar lobby-button-icon"></i>&nbsp; ${gameCount - 1}`);
+    button.attr('id', `history-other-scores-${id}`);
     if (gameCount - 1 === 0) {
         button.addClass('disabled');
-    }
-    button.attr('id', `history-other-scores-${id}`);
-
-    button.on('click', () => {
-        globals.conn.send('historyGetDeals', {
-            gameID: id,
+    } else {
+        button.on('click', () => {
+            globals.conn.send('historyGetDeals', {
+                gameID: id,
+            });
+            showOtherScores();
         });
-        showOtherScores();
-    });
+    }
 
     return button;
 };
