@@ -38,6 +38,10 @@ func chatHelp(s *Session, d *CommandData, t *Table) {
 		msg += "/unpause              Unpause the game\n"
 		msg += "```\n"
 
+		msg += "Discord-only commands:\n"
+		msg += "/link [id] [turn]     Link to a specific game and turn\n"
+		msg += "```\n"
+
 		msg += "Admin-only commands (from the lobby only):\n"
 		msg += "```\n"
 		msg += "Command               Description\n"
