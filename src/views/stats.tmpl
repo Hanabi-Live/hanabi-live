@@ -42,12 +42,12 @@
                             {{if .TimePlayedSpeedrun}}{{.TimePlayedSpeedrun}}{{else}}-{{end}}
                         </li>
                         <li>
-                            <span class="stat-description">Number of variants:</span>
-                            {{.NumVariants}}
+                            <span class="stat-description">Total max scores achieved:</span>
+                            {{.NumMaxScores}} / {{.TotalMaxScores}}
                         </li>
                         <li>
                             <span class="stat-description">Total 2-player max scores achieved:</span>
-                            {{index .NumMaxScoresPerType 0}} ()
+                            {{index .NumMaxScoresPerType 0}} / {{.TotalMaxScoresPerType}}
                         </li>
                         <li>
                             <span class="stat-description">Total 3-player max scores achieved:</span>
@@ -64,10 +64,6 @@
                         <li>
                             <span class="stat-description">Total 6-player max scores achieved:</span>
                             {{index .NumMaxScoresPerType 4}} / {{.TotalMaxScoresPerType}}
-                        </li>
-                        <li>
-                            <span class="stat-description">Total max scores achieved:</span>
-                            {{.NumMaxScores}} / {{.TotalMaxScores}}
                         </li>
                     </ul>
 
