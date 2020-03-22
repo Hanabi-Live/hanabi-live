@@ -1,8 +1,6 @@
 // TODO
 /*
-- put lobby only websocket functions in lobby/websocket.ts
 - search for all todo and replace with object
-- finish replacing websocket
 - search for all "as any"
 */
 

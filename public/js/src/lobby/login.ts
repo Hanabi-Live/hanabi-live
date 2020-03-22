@@ -44,17 +44,20 @@ export const init = () => {
     });
 };
 
-const submit = (event) => {
+const submit = (event: any) => {
     // By default, the form will reload the page, so stop this from happening
     event.preventDefault();
 
-    const username = $('#login-username').val();
-    const passwordPlaintext = $('#login-password').val();
-
+    let username = $('#login-username').val();
     if (!username) {
         loginMisc.formError('You must provide a username.');
         return;
     }
+    if (typeof username !== 'string') {
+        username = username.toString();
+    }
+
+    const passwordPlaintext = $('#login-password').val();
     if (!passwordPlaintext) {
         loginMisc.formError('You must provide a password.');
         return;
@@ -105,7 +108,7 @@ const send = () => {
     });
 };
 
-const getAjaxError = (jqXHR) => {
+const getAjaxError = (jqXHR: any) => {
     if (jqXHR.readyState === 0) {
         return 'A network error occured. The server might be down!';
     }
@@ -123,16 +126,20 @@ export const automaticLogin = () => {
     }
 
     // Automatically sign in to the WebSocket server if we have cached credentials
-    globals.username = localStorage.getItem('hanabiuser');
-    globals.password = localStorage.getItem('hanabipass');
-    if (globals.username) {
-        $('#login-username').val(globals.username);
-        $('#login-password').focus();
-    }
-
-    if (!globals.username || !globals.password) {
+    const username = localStorage.getItem('hanabiuser');
+    if (username === null || username === '') {
         return;
     }
+    globals.username = username;
+
+    $('#login-username').val(globals.username);
+    $('#login-password').focus();
+
+    const password = localStorage.getItem('hanabipass');
+    if (password === null || password === '') {
+        return;
+    }
+
     console.log('Automatically logging in from cookie credentials.');
     send();
 };
