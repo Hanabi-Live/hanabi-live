@@ -486,7 +486,6 @@ func (p *GamePlayer) PlayDeck(g *Game) {
 	Subroutines
 */
 
-
 // GetChopIndex gets the index of the oldest (right-most) unclued card
 // (used for the "Card Cycling" feature)
 func (p *GamePlayer) GetChopIndex() int {

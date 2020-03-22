@@ -509,7 +509,7 @@ func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 				Target:    p.Index,
 				HandOrder: handOrder,
 			})
-			
+
 			t := g.Table
 			t.NotifyAction()
 			logger.Info("Reordered the cards for player:", p.Name)
