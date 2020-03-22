@@ -282,15 +282,20 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	command = strings.ToLower(command) // Commands are case-insensitive
 
 	if command == "link" {
-		if len(args) != 2 {
+		// We enclose the link in "<>" to prevent Discord from generating a link preview
+		if len(args) == 0 {
 			discordSend(m.ChannelID, "", "The format of the /link command is: /link [game ID] [turn number]")
+			return
+		} else if len(args) == 1 {
+			// The user did not specify a turn
+			discordSend(m.ChannelID, "", "<https://hanabi.live/replay/"+args[0]+">")
 			return
 		}
 
-		// We enclose the link in "<>" to prevent Discord from generating a link preview
 		discordSend(m.ChannelID, "", "<https://hanabi.live/replay/"+args[0]+"/"+args[1]+">")
+		return
 	}
 
-	// Don't display an error message on an invalid command because normal commands are parsed
+	// Do not display an error message on an invalid command because normal commands are parsed
 	// later on when they are replicated to the lobby in the "chatCommand()" function
 }
