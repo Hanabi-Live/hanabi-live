@@ -13,6 +13,7 @@ backups
 
 # The compiled binary
 hanabi-live
+hanabi-live~
 
 # VS Code stuff
 .vscode
