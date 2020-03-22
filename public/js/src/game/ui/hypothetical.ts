@@ -165,7 +165,15 @@ export const send = (hypoAction: Action) => {
                 suit: suitToMsgSuit(card.suit!, globals.variant),
             },
         });
-        globals.score += 1;
+        if (type === 'play') {
+            globals.score += 1;
+        }
+        if (
+            (type === 'play' && card.rank === 5)
+            || type === 'discard'
+        ) {
+            globals.clues += 1;
+        }
 
         // Text
         let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
