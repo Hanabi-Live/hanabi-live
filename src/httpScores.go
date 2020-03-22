@@ -13,14 +13,15 @@ type ProfileData struct {
 	Header bool
 	Name   string
 
-	NumGames              int
-	TimePlayed            string
-	NumGamesSpeedrun      int
-	TimePlayedSpeedrun    string
-	NumMaxScores          int
-	TotalMaxScores        int
-	NumMaxScoresPerType   []int // Used on the "Missing Scores" page
-	TotalMaxScoresPerType int
+	NumGames                   int
+	TimePlayed                 string
+	NumGamesSpeedrun           int
+	TimePlayedSpeedrun         string
+	NumMaxScores               int
+	TotalMaxScores             int
+	PercentageMaxScores        string
+	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
+	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
 
 	VariantStats []UserVariantStats
 }
@@ -157,18 +158,32 @@ func httpScores(c *gin.Context) {
 		variantStatsList = append(variantStatsList, variantStats)
 	}
 
+	percentageMaxScoresPerType := make([]string, 0)
+	for _, maxScores := range numMaxScoresPerType {
+		percentage := float64(maxScores) / float64(len(variantsList)) * 100
+		percentageString := fmt.Sprintf("%.1f", percentage)
+		percentageString = strings.TrimSuffix(percentageString, ".0")
+		percentageMaxScoresPerType = append(percentageMaxScoresPerType, percentageString)
+	}
+
+	percentageMaxScores := float64(numMaxScores) / float64(len(variantsList)*5) * 100
+	// (we multiply by 5 because there are max scores for 2 to 6 players)
+	percentageMaxScoresString := fmt.Sprintf("%.1f", percentageMaxScores)
+	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")
+
 	data := ProfileData{
 		Title: "Scores",
 		Name:  user.Username,
 
-		NumGames:              profileStats.NumGames,
-		TimePlayed:            timePlayed,
-		NumGamesSpeedrun:      profileStats.NumGamesSpeedrun,
-		TimePlayedSpeedrun:    timePlayedSpeedrun,
-		NumMaxScores:          numMaxScores,
-		TotalMaxScores:        len(variantsList) * 5, // For 2 to 6 players
-		NumMaxScoresPerType:   numMaxScoresPerType,
-		TotalMaxScoresPerType: len(variantsList),
+		NumGames:                   profileStats.NumGames,
+		TimePlayed:                 timePlayed,
+		NumGamesSpeedrun:           profileStats.NumGamesSpeedrun,
+		TimePlayedSpeedrun:         timePlayedSpeedrun,
+		NumMaxScores:               numMaxScores,
+		TotalMaxScores:             len(variantsList) * 5, // For 2 to 6 players
+		PercentageMaxScores:        percentageMaxScoresString,
+		NumMaxScoresPerType:        numMaxScoresPerType,
+		PercentageMaxScoresPerType: percentageMaxScoresPerType,
 
 		VariantStats: variantStatsList,
 	}

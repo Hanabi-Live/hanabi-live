@@ -12,14 +12,15 @@ type StatsData struct {
 	Title  string
 	Header bool
 
-	NumGames              int
-	TimePlayed            string
-	NumGamesSpeedrun      int
-	TimePlayedSpeedrun    string
-	NumMaxScores          int
-	TotalMaxScores        int
-	NumMaxScoresPerType   []int
-	TotalMaxScoresPerType int
+	NumGames                   int
+	TimePlayed                 string
+	NumGamesSpeedrun           int
+	TimePlayedSpeedrun         string
+	NumVariants                int
+	NumMaxScoresPerType        []int
+	PercentageMaxScoresPerType []string
+	NumMaxScores               int
+	PercentageMaxScores        string
 
 	Variants []VariantStatsData
 }
@@ -139,17 +140,31 @@ func httpStats(c *gin.Context) {
 		variantStatsList = append(variantStatsList, variantStats)
 	}
 
+	percentageMaxScoresPerType := make([]string, 0)
+	for _, maxScores := range numMaxScoresPerType {
+		percentage := float64(maxScores) / float64(len(variantsList)) * 100
+		percentageString := fmt.Sprintf("%.1f", percentage)
+		percentageString = strings.TrimSuffix(percentageString, ".0")
+		percentageMaxScoresPerType = append(percentageMaxScoresPerType, percentageString)
+	}
+
+	percentageMaxScores := float64(numMaxScores) / float64(len(variantsList)*5) * 100
+	// (we multiply by 5 because there are max scores for 2 to 6 players)
+	percentageMaxScoresString := fmt.Sprintf("%.1f", percentageMaxScores)
+	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")
+
 	data := StatsData{
 		Title: "Stats",
 
-		NumGames:              globalStats.NumGames,
-		TimePlayed:            timePlayed,
-		NumGamesSpeedrun:      globalStats.NumGamesSpeedrun,
-		TimePlayedSpeedrun:    timePlayedSpeedrun,
-		NumMaxScores:          numMaxScores,
-		TotalMaxScores:        len(variantsList) * 5, // For 2 to 6 players
-		NumMaxScoresPerType:   numMaxScoresPerType,
-		TotalMaxScoresPerType: len(variantsList),
+		NumGames:                   globalStats.NumGames,
+		TimePlayed:                 timePlayed,
+		NumGamesSpeedrun:           globalStats.NumGamesSpeedrun,
+		TimePlayedSpeedrun:         timePlayedSpeedrun,
+		NumVariants:                len(variantsList),
+		NumMaxScoresPerType:        numMaxScoresPerType,
+		PercentageMaxScoresPerType: percentageMaxScoresPerType,
+		NumMaxScores:               numMaxScores,
+		PercentageMaxScores:        percentageMaxScoresString,
 
 		Variants: variantStatsList,
 	}
