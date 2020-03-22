@@ -25,9 +25,7 @@ class Globals {
     userList: Map<number, User> = new Map();
     tableList: Map<number, Table> = new Map();
     history: Array<GameHistory> = [];
-    historyOtherScores: Array<GameHistory> = [];
-    // Used to keep track of whether the user clicked on the "Show More History" button
-    historyClicked: boolean = false;
+    showMoreHistoryClicked: boolean = false;
     totalGames: number = 0; // Set upon login
     randomName: string = ''; // Set upon login
 

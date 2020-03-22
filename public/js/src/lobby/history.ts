@@ -4,12 +4,13 @@
 
 // Imports
 import { VARIANTS } from '../constants';
+import GameHistory from './GameHistory';
 import globals from '../globals';
 import * as nav from './nav';
 
 export const init = () => {
     $('#lobby-history-show-more').on('click', () => {
-        globals.historyClicked = true;
+        globals.showMoreHistoryClicked = true;
         globals.conn.send('historyGet', {
             offset: Object.keys(globals.history).length,
             amount: 10,
@@ -168,9 +169,6 @@ export const showOtherScores = () => {
     $('#lobby-history').hide();
     $('#lobby-history-other-scores').show();
     nav.show('history-other-scores');
-
-    // The server will send us messages to populate this array momentarily
-    globals.historyOtherScores = [];
 };
 
 export const hideOtherScores = () => {
@@ -180,19 +178,14 @@ export const hideOtherScores = () => {
     nav.show('history');
 };
 
-export const drawOtherScores = () => {
+export const drawOtherScores = (data: Array<GameHistory>) => {
     const tbody = $('#lobby-history-other-scores-table-tbody');
-
-    if (!globals.historyOtherScores.length) {
-        tbody.text('Loading...');
-        return;
-    }
 
     // Clear all of the existing rows
     tbody.html('');
 
     // The game played by the user will also include its variant
-    const variant = globals.historyOtherScores
+    const variant = data
         .filter((g) => g.id in globals.history)
         .map((g) => globals.history[g.id].variant)
         .map((v) => VARIANTS.get(v))[0];
@@ -204,7 +197,7 @@ export const drawOtherScores = () => {
     }
 
     // Add all of the games
-    for (const gameData of globals.historyOtherScores) {
+    for (const gameData of data) {
         const row = $('<tr>');
 
         // Column 1 - Game ID

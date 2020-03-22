@@ -331,8 +331,8 @@ const initCommands = () => {
 
         // The server sent us more games because
         // we clicked on the "Show More History" button
-        if (globals.historyClicked) {
-            globals.historyClicked = false;
+        if (globals.showMoreHistoryClicked) {
+            globals.showMoreHistoryClicked = false;
             lobbyHistory.draw();
         }
 
@@ -344,9 +344,8 @@ const initCommands = () => {
         }
     });
 
-    globals.conn.on('gameHistoryOtherScores', (data: GameHistory) => {
-        globals.historyOtherScores.push(data);
-        lobbyHistory.drawOtherScores();
+    globals.conn.on('gameHistoryOtherScores', (data: Array<GameHistory>) => {
+        lobbyHistory.drawOtherScores(data);
     });
 
     interface SoundData {
