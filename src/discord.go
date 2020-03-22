@@ -283,7 +283,7 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	command = strings.TrimPrefix(command, "/")
 	command = strings.ToLower(command) // Commands are case-insensitive
 
-	if command == "link" {
+	if command == "link" || command == "replay" {
 		// We enclose the link in "<>" to prevent Discord from generating a link preview
 		if len(args) == 0 {
 			discordSend(m.ChannelID, "", "The format of the /link command is: /link [game ID] [turn number]")
