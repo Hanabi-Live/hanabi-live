@@ -1194,13 +1194,13 @@ const drawStatistics = () => {
 
     const minEfficiency = stats.getMinEfficiency();
     const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
-        text: minEfficiency.toString(),
+        text: minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
         x: 0.918 * winW,
         y: 0.56 * winH,
         fontSize: 0.02 * winH,
         // "Easy" variants use the default color (off-white)
         // "Hard" variants use pink
-        fill: (minEfficiency < 1.25 ? LABEL_COLOR : '#ffb2b2'),
+        fill: minEfficiency < 1.25 ? LABEL_COLOR : '#ffb2b2',
         listening: true,
     });
     globals.layers.get('UI')!.add(efficiencyNumberLabelMinNeeded);

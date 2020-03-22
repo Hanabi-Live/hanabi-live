@@ -85,7 +85,7 @@ export const updateEfficiency = (cardsGottenDelta: number) => {
     effMinLabel.x(x);
 };
 
-export const getMinEfficiency = () => {
+export const getMinEfficiency = (): number => {
     /*
         Calculate the minimum amount of efficiency needed in order to win this variant
         First, calculate the starting pace with the following formula:
@@ -130,10 +130,7 @@ export const getMinEfficiency = () => {
     const minEfficiencyDenominator = MAX_CLUE_NUM + Math.floor(
         (startingPace + numSuits - unusableClues) / discardsPerClue,
     );
-    const minEfficiencyString = (minEfficiencyNumerator / minEfficiencyDenominator).toFixed(2);
-    // (round it to 2 decimal places)
-
-    const minEfficiency = parseFloat(minEfficiencyString);
+    const minEfficiency = minEfficiencyNumerator / minEfficiencyDenominator;
 
     return minEfficiency;
 };
