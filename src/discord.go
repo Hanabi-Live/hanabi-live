@@ -156,12 +156,14 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
 	commandChat(nil, &CommandData{
-		Username:             discordGetNickname(m.Author.ID),
-		Msg:                  m.Content,
-		Discord:              true,
-		Room:                 "lobby",
-		DiscordID:            m.Author.ID,            // Pass through the ID in case we need it for a custom command
-		DiscordDiscriminator: m.Author.Discriminator, // Pass through the discriminator so we can append it to the username
+		Username: discordGetNickname(m.Author.ID),
+		Msg:      m.Content,
+		Discord:  true,
+		Room:     "lobby",
+		// Pass through the ID in case we need it for a custom command
+		DiscordID: m.Author.ID,
+		// Pass through the discriminator so we can append it to the username
+		DiscordDiscriminator: m.Author.Discriminator,
 	})
 }
 
@@ -286,13 +288,25 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		if len(args) == 0 {
 			discordSend(m.ChannelID, "", "The format of the /link command is: /link [game ID] [turn number]")
 			return
-		} else if len(args) == 1 {
-			// The user did not specify a turn
-			discordSend(m.ChannelID, "", "<https://hanabi.live/replay/"+args[0]+">")
+		}
+
+		id, args := args[0], args[1:]
+		if len(args) == 0 {
+			// They specified an ID but not a turn
+			discordSend(m.ChannelID, "", "<https://hanabi.live/replay/"+id+">")
 			return
 		}
 
-		discordSend(m.ChannelID, "", "<https://hanabi.live/replay/"+args[0]+"/"+args[1]+">")
+		turn, args := args[0], args[1:]
+		if len(args) == 0 {
+			// They specified an ID and a turn
+			discordSend(m.ChannelID, "", "<https://hanabi.live/replay/"+id+"/"+turn+">")
+			return
+		}
+
+		// They specified an ID and a turn and typed a message afterward
+		msg := "<https://hanabi.live/replay/" + id + "/" + turn + "> " + strings.Join(args, "")
+		discordSend(m.ChannelID, "", msg)
 		return
 	}
 
