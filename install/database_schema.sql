@@ -43,6 +43,7 @@ CREATE TABLE user_settings (
     create_table_base_time_minutes      FLOAT        NOT NULL  DEFAULT 2,
     create_table_time_per_turn_seconds  INT          NOT NULL  DEFAULT 20,
     create_table_speedrun               BOOLEAN      NOT NULL  DEFAULT 0,
+    create_table_card_cycle             BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_deck_plays             BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_empty_clues            BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_character_assignments  BOOLEAN      NOT NULL  DEFAULT 0,
@@ -86,6 +87,7 @@ CREATE TABLE games (
     time_base              INT           NOT NULL, /* in seconds */
     time_per_turn          INT           NOT NULL, /* in seconds */
     speedrun               BOOLEAN       NOT NULL,
+    card_cycle             BOOLEAN       NOT NULL,
     deck_plays             BOOLEAN       NOT NULL,
     empty_clues            BOOLEAN       NOT NULL,
     character_assignments  BOOLEAN       NOT NULL,

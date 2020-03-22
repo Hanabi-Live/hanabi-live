@@ -118,6 +118,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 		BaseTime:             t.Options.BaseTime,
 		TimePerTurn:          t.Options.TimePerTurn,
 		Speedrun:             t.Options.Speedrun,
+		CardCycle:            t.Options.CardCycle,
 		DeckPlays:            t.Options.DeckPlays,
 		EmptyClues:           t.Options.EmptyClues,
 		CharacterAssignments: t.Options.CharacterAssignments,

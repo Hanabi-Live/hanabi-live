@@ -207,6 +207,7 @@ func (g *Game) WriteDatabase() error {
 		TimeBase:             g.Options.BaseTime,
 		TimePerTurn:          g.Options.TimePerTurn,
 		Speedrun:             g.Options.Speedrun,
+		CardCycle:            g.Options.CardCycle,
 		DeckPlays:            g.Options.DeckPlays,
 		EmptyClues:           g.Options.EmptyClues,
 		CharacterAssignments: g.Options.CharacterAssignments,

@@ -19,8 +19,9 @@ type GameRow struct {
 	Timed                bool
 	TimeBase             int
 	TimePerTurn          int
-	DeckPlays            bool
 	Speedrun             bool
+	CardCycle            bool
+	DeckPlays            bool
 	EmptyClues           bool
 	CharacterAssignments bool
 	Seed                 string
@@ -44,6 +45,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			time_base,
 			time_per_turn,
 			speedrun,
+			card_cycle,
 			deck_plays,
 			empty_clues,
 			character_assignments,
@@ -55,6 +57,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			datetime_started,
 			datetime_finished
 		) VALUES (
+			?,
 			?,
 			?,
 			?,
@@ -91,6 +94,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 		gameRow.TimeBase,
 		gameRow.TimePerTurn,
 		gameRow.Speedrun,
+		gameRow.CardCycle,
 		gameRow.DeckPlays,
 		gameRow.EmptyClues,
 		gameRow.CharacterAssignments,
@@ -366,6 +370,7 @@ type DBOptions struct {
 	BaseTime             int
 	TimePerTurn          int
 	Speedrun             bool
+	CardCycle            bool
 	DeckPlays            bool
 	EmptyClues           bool
 	CharacterAssignments bool
@@ -380,6 +385,7 @@ func (*Games) GetOptions(databaseID int) (DBOptions, error) {
 			time_base,
 			time_per_turn,
 			speedrun,
+			card_cycle,
 			deck_plays,
 			empty_clues,
 			character_assignments
@@ -391,6 +397,7 @@ func (*Games) GetOptions(databaseID int) (DBOptions, error) {
 		&options.BaseTime,
 		&options.TimePerTurn,
 		&options.Speedrun,
+		&options.CardCycle,
 		&options.DeckPlays,
 		&options.EmptyClues,
 		&options.CharacterAssignments,

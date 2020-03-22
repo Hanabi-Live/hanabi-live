@@ -23,6 +23,7 @@ type Settings struct {
 	CreateTableBaseTimeMinutes      float64 `json:"createTableBaseTimeMinutes"`
 	CreateTableTimePerTurnSeconds   int     `json:"createTableTimePerTurnSeconds"`
 	CreateTableSpeedrun             bool    `json:"createTableSpeedrun"`
+	CreateTableCardCycle            bool    `json:"createTableCardCycle"`
 	CreateTableDeckPlays            bool    `json:"createTableDeckPlays"`
 	CreateTableEmptyClues           bool    `json:"createTableEmptyClues"`
 	CreateTableCharacterAssignments bool    `json:"createTableCharacterAssignments"`
@@ -62,6 +63,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 			create_table_base_time_minutes,
 			create_table_time_per_turn_seconds,
 			create_table_speedrun,
+			create_table_card_cycle,
 			create_table_deck_plays,
 			create_table_empty_clues,
 			create_table_character_assignments,
@@ -85,6 +87,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.CreateTableBaseTimeMinutes,
 		&settings.CreateTableTimePerTurnSeconds,
 		&settings.CreateTableSpeedrun,
+		&settings.CreateTableCardCycle,
 		&settings.CreateTableDeckPlays,
 		&settings.CreateTableEmptyClues,
 		&settings.CreateTableCharacterAssignments,

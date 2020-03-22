@@ -325,6 +325,7 @@ notifyFunctions.set('reorder', (data: ActionReorder) => {
         const child = newChildOrder[i];
         hand.addChild(child);
     }
+    globals.layers.get('card')!.batchDraw();
 });
 
 notifyFunctions.set('stackDirections', (data: ActionStackDirections) => {

@@ -38,6 +38,7 @@ export class Globals {
     baseTime: number = 0;
     timePerTurn: number = 0;
     speedrun: boolean = false;
+    cardCycle: boolean = false;
     deckPlays: boolean = false;
     emptyClues: boolean = false;
     characterAssignments: Array<string> = [];
@@ -160,6 +161,7 @@ export class Globals {
         this.baseTime = 0;
         this.timePerTurn = 0;
         this.speedrun = false;
+        this.cardCycle = false;
         this.deckPlays = false;
         this.emptyClues = false;
         this.characterAssignments = [];

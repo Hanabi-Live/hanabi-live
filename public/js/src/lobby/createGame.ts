@@ -97,6 +97,7 @@ const submit = () => {
         baseTime,
         timePerTurn,
         speedrun: getCheckbox('createTableSpeedrun'),
+        cardCycle: getCheckbox('createTableCardCycle'),
         deckPlays: getCheckbox('createTableDeckPlays'),
         emptyClues: getCheckbox('createTableEmptyClues'),
         characterAssignments: getCheckbox('createTableCharacterAssignments'),
