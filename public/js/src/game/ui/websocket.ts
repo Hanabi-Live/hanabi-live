@@ -329,7 +329,7 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
 commands.set('notify', (data: any) => {
     // Update the state table
     const stateChangeFunction = stateChange.get(data.type);
-    if (stateChangeFunction !== 'undefined') {
+    if (typeof stateChangeFunction !== 'undefined') {
         stateChangeFunction(data);
     }
 
