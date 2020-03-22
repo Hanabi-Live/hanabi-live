@@ -273,7 +273,7 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 ## Discord Integration
 
 * All lobby chat will be replicated to (and from) the [Hanabi Discord server](https://discord.gg/FADvkJp).
-* If you want to try to get some people together for a game, you can use the `/here` command to ping everyone who has joined the Discord server.
+* If you are part of the Hyphen-ated group and want to try to get some people together for a game, you can use the `/here` command to ping the other members.
 * If you want the Discord bot to ping you when the next game starts, use the `/next` command to be put on the waiting list.
 * The full list of commands is found in the [chatCommand.go file](https://github.com/Zamiell/hanabi-live/blob/master/src/chatCommand.go).
 
