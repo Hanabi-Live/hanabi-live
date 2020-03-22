@@ -109,6 +109,8 @@ func httpInit() {
 	// by using "window.location.path")
 	httpRouter.GET("/scores", httpScores)
 	httpRouter.GET("/scores/:player", httpScores)
+	httpRouter.GET("/profile", httpScores) // "/profile" is an alias for "/scores"
+	httpRouter.GET("/profile/:player", httpScores)
 	httpRouter.GET("/history", httpHistory)
 	httpRouter.GET("/history/:player", httpHistory)
 	httpRouter.GET("/missing-scores", httpScores)
