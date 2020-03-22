@@ -3,7 +3,7 @@ const webpack = require('webpack');
 
 module.exports = {
     // The entry file to bundle
-    entry: path.join(__dirname, 'src', 'main.js'),
+    entry: path.join(__dirname, 'src', 'main.ts'),
 
     // Where to put the bundled file
     output: {

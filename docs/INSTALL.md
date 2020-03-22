@@ -71,7 +71,7 @@ The following instructions will set up the server as well as the linters. We ass
   * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
   * Add a new line of "asdf" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
 * Test the JavaScript linter:
-  * On the left pane, navigate to and open "public\js\src\main.js".
+  * On the left pane, navigate to and open "public\js\src\main.ts".
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 * See [Running the Server](#running-the-server).
 
@@ -131,7 +131,7 @@ The following instructions will set up the server as well as the linters. We ass
   * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
   * Add a new line of "asdf" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
 * Test the JavaScript linter:
-  * On the left pane, navigate to and open "public\js\src\main.js".
+  * On the left pane, navigate to and open "public\js\src\main.ts".
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 * See [Running the Server](#running-the-server).
 
