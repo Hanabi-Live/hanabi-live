@@ -1,4 +1,4 @@
-# Hanabi.Live Installation
+# Hanabi Live Installation
 
 If you just want to install Hanabi Live without editing the code, skip to [the production installation section](#installation-for-production-linux).
 
@@ -161,7 +161,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `./install/install_dependencies.sh`
 * Set up environment variables:
   * `nano .env`
-    * Fill in the values accordingly. The most important one is "DOMAIN" - **this must match the URL that the user types in to their browser!**
+    * Fill in the values accordingly. The most important one is "DOMAIN" - this must match the URL that the user types in to their browser.
 * Set up a database user and import the database schema:
   * `sudo mysql -u root -p`
     * `CREATE DATABASE hanabi;`
@@ -197,7 +197,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 
 ```
 # Every day, keep the Let's Encrypt certificate up to date
-0 0 * * * /root/go/src/github.com/Zamiell/hanabi-live/renew_cert.sh
+0 0 * * * /root/hanabi-live/renew_cert.sh
 ```
 
 <br />
@@ -208,8 +208,8 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `sudo apt install supervisor -y`
 * Copy the configuration files:
   * `mkdir -p "/etc/supervisor/conf.d"`
-  * `cp "$GOPATH/src/github.com/Zamiell/hanabi-live/install/supervisor/supervisord.conf" "/etc/supervisor/supervisord.conf"`
-  * `cp "$GOPATH/src/github.com/Zamiell/hanabi-live/install/supervisor/hanabi-live.conf" "/etc/supervisor/conf.d/hanabi-live.conf"`
+  * `cp "/root/hanabi-live/install/supervisor/supervisord.conf" "/etc/supervisor/supervisord.conf"`
+  * `cp "/root/hanabi-live/install/supervisor/hanabi-live.conf" "/etc/supervisor/conf.d/hanabi-live.conf"`
 * Load the new configuration:
   * `supervisorctl reload`
 
@@ -225,6 +225,7 @@ To manage the service:
 
 * The "run.sh" script in the root of the repository will build and run the server.
   * If you are on Windows, you should run this script from a Git Bash window.
+  * If you are on Windows, you might have to accept a Windows Firewall dialog (because a new program is listening on new ports).
   * If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443.
 * If you change any of the Golang code, then you must restart the server for the changes to take effect.
 * If you change any of the TypeScript or CSS, then you will need to re-run the `build_client.sh` script in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to perform a hard cache refresh in the browser.)
