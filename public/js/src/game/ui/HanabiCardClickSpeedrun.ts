@@ -100,7 +100,7 @@ const clickLeft = (card: any, event: PointerEvent) => { // TODO change to Hanabi
         }
 
         // See if this is a valid color for the clicked card
-        const { possibleClueColors } = card.suit;
+        const possibleClueColors = card.suit.clueColors;
         let clueColorIndex = possibleClueColors.findIndex(
             (cardColor: Color) => cardColor === clueColor,
         );
@@ -110,7 +110,7 @@ const clickLeft = (card: any, event: PointerEvent) => { // TODO change to Hanabi
             clueColorIndex = 0;
         }
 
-        const color = clueButton.clue.value;
+        const color = card.suit.clueColors[clueColorIndex];
         const value = globals.variant.clueColors.findIndex(
             (variantColor) => variantColor === color,
         );
