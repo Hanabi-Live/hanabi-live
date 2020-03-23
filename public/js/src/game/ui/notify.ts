@@ -91,7 +91,8 @@ notifyFunctions.set('clue', (data: ActionClue) => {
             && !globals.variant.name.startsWith('Duck')
         ) {
             card.applyClue(clue, true);
-            card.checkSpecialRankSuitRemoved();
+            card.checkReapplyRankClues();
+            card.checkReapplyColorClues();
             card.setBareImage();
             card.setFade(); // Unfade the card if it is faded
         }
@@ -112,7 +113,8 @@ notifyFunctions.set('clue', (data: ActionClue) => {
                 && !globals.variant.name.startsWith('Duck')
             ) {
                 card.applyClue(clue, false);
-                card.checkSpecialRankSuitRemoved();
+                card.checkReapplyRankClues();
+                card.checkReapplyColorClues();
                 card.setBareImage();
             }
         }
