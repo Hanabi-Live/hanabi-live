@@ -27,7 +27,6 @@ DROP TABLE IF EXISTS user_settings;
 CREATE TABLE user_settings (
     user_id                             INT          NOT NULL  PRIMARY KEY,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    send_turn_notify                    BOOLEAN      NOT NULL  DEFAULT 0,
     send_turn_sound                     BOOLEAN      NOT NULL  DEFAULT 1,
     send_timer_sound                    BOOLEAN      NOT NULL  DEFAULT 1,
     show_keldon_UI                      BOOLEAN      NOT NULL  DEFAULT 0,
@@ -38,6 +37,7 @@ CREATE TABLE user_settings (
     volume                              INT          NOT NULL  DEFAULT 50,
     speedrun_preplay                    BOOLEAN      NOT NULL  DEFAULT 0,
     speedrun_mode                       BOOLEAN      NOT NULL  DEFAULT 0,
+    hyphenated_conventions              BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_variant                VARCHAR(50)  NOT NULL  DEFAULT "No Variant",
     create_table_timed                  BOOLEAN      NOT NULL  DEFAULT 0,
     create_table_base_time_minutes      FLOAT        NOT NULL  DEFAULT 2,

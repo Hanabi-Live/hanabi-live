@@ -9,13 +9,42 @@ import (
 
 func debug() {
 	logger.Debug("---------------------------------------------------------------")
+	logger.Debug("Current total tables:", len(tables))
+
+	numUnstarted := 0
+	for _, t := range tables { // This is a map[int]*Table
+		if !t.Running {
+			numUnstarted++
+		}
+	}
+	logger.Debug("Current unstarted tables:", numUnstarted)
+
+	numRunning := 0
+	for _, t := range tables { // This is a map[int]*Table
+		if t.Running && !t.Replay {
+			numRunning++
+		}
+	}
+	logger.Debug("Current ongoing tables:", numRunning)
+
+	numReplays := 0
+	for _, t := range tables { // This is a map[int]*Table
+		if t.Replay {
+			numReplays++
+		}
+	}
+	logger.Debug("Current replays:", numReplays)
+
+	logger.Debug("---------------------------------------------------------------")
+	logger.Debug("Current table list:")
+	logger.Debug("---------------------------------------------------------------")
 
 	// Print out all of the current tables
 	if len(tables) == 0 {
 		logger.Debug("[no current tables]")
 	}
-	for i, t := range tables { // This is a map[int]*Table
-		logger.Debug(strconv.Itoa(i) + " - " + t.Name)
+	for id, t := range tables { // This is a map[int]*Table
+		logger.Debug(strconv.Itoa(id) + " - " + t.Name)
 		logger.Debug("\n")
 
 		// Print out all of the fields
@@ -132,7 +161,7 @@ func debug() {
 	}
 
 	// Print out all of the current users
-	logger.Debug("Current users:")
+	logger.Debug("Current users (" + strconv.Itoa(len(sessions)) + "):")
 	if len(sessions) == 0 {
 		logger.Debug("    [no users]")
 	}
@@ -145,7 +174,7 @@ func debug() {
 	logger.Debug("---------------------------------------------------------------")
 
 	// Print out the waiting list
-	logger.Debug("Waiting list:")
+	logger.Debug("Waiting list (" + strconv.Itoa(len(waitingList)) + "):")
 	if len(waitingList) == 0 {
 		logger.Debug("    [no people on the waiting list]")
 	}

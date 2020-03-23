@@ -92,7 +92,7 @@ export const getMinEfficiency = (): number => {
             total cards in the deck -
             ((number of cards in a player's hand - 1) * number of players) -
             (5 * number of suits)
-        https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
+        https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
     */
 
     const totalCardsInTheDeck = getTotalCardsInTheDeck(globals.variant);
@@ -107,7 +107,7 @@ export const getMinEfficiency = (): number => {
         with the following formula:
             (5 * number of suits) /
             (8 + floor((starting pace + number of suits - unusable clues) / discards per clue))
-        https://github.com/Zamiell/hanabi-conventions/blob/master/other-conventions/Efficiency.md
+        https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
     */
     const minEfficiencyNumerator = 5 * globals.variant.suits.length;
     let numSuits = globals.variant.suits.length;

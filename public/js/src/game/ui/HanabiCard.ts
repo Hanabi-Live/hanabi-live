@@ -57,7 +57,8 @@ export default class HanabiCard extends Konva.Group {
     negativeColorClues: Array<Color> = [];
     positiveRankClues: Array<number> = [];
     negativeRankClues: Array<number> = [];
-    specialRankSuitRemoved: boolean = false;
+    reapplyColorClues: boolean = false;
+    reapplyRankClues: boolean = false;
     turnsClued: Array<number> = [];
     turnDrawn: number = -1;
     isDiscarded: boolean = false;
@@ -125,7 +126,8 @@ export default class HanabiCard extends Konva.Group {
         this.negativeColorClues = [];
         this.positiveRankClues = [];
         this.negativeRankClues = [];
-        this.specialRankSuitRemoved = false;
+        this.reapplyColorClues = false;
+        this.reapplyRankClues = false;
         this.turnsClued = [];
         // We have to add one to the turn drawn because
         // the "draw" command comes before the "turn" command
@@ -381,7 +383,10 @@ export default class HanabiCard extends Konva.Group {
         let suitsRemoved = [];
         if (clue.type === CLUE_TYPE.RANK) {
             const clueRank = clue.value as number;
-            if (globals.variant.name.includes('Multi-Fives')) {
+            if (globals.variant.rankCluesTouchNothing) {
+                // Some variants have rank clues touch no cards
+                // If this is the case, we cannot remove any rank pips from the card
+            } else if (globals.variant.name.includes('Multi-Fives')) {
                 // In "Multi-Fives" variants, the 5 of every suit is touched by all rank clues
                 ranksRemoved = filterInPlace(
                     this.possibleRanks,
@@ -424,18 +429,20 @@ export default class HanabiCard extends Konva.Group {
                 }
 
                 // Remove all the possibilities for cards that are definately not this rank
-                for (const suit of globals.variant.suits) {
-                    if (suit.clueRanks === 'all') {
-                        continue;
-                    }
-                    for (const rank of globals.variant.ranks) {
-                        if (rank === clueRank) {
+                if (possibilitiesCheck()) {
+                    for (const suit of globals.variant.suits) {
+                        if (suit.clueRanks === 'all') {
                             continue;
                         }
-                        if (globals.variant.name.includes('Multi-Fives') && rank === 5) {
-                            continue;
+                        for (const rank of globals.variant.ranks) {
+                            if (rank === clueRank) {
+                                continue;
+                            }
+                            if (globals.variant.name.includes('Multi-Fives') && rank === 5) {
+                                continue;
+                            }
+                            this.removePossibility(suit, rank, true);
                         }
-                        this.removePossibility(suit, rank, true);
                     }
                 }
 
@@ -453,7 +460,10 @@ export default class HanabiCard extends Konva.Group {
             }
         } else if (clue.type === CLUE_TYPE.COLOR) {
             const clueColor = clue.value as Color;
-            if (
+            if (globals.variant.colorCluesTouchNothing) {
+                // Some variants have color clues touch no cards
+                // If this is the case, we cannot remove any suit pips from the card
+            } else if (
                 globals.variant.name.includes('Prism-Ones')
                 && this.possibleRanks.includes(1)
                 && positive
@@ -501,6 +511,11 @@ export default class HanabiCard extends Konva.Group {
                     this.removePossibility(suit, rank, true);
                 }
             }
+
+            if (globals.variant.name.includes('Prism-Ones') && rank === 1) {
+                // Mark to retroactively apply color clues when we return from this function
+                this.reapplyColorClues = true;
+            }
         }
         if (this.possibleRanks.length === 1) {
             [this.rank] = this.possibleRanks;
@@ -527,8 +542,8 @@ export default class HanabiCard extends Konva.Group {
             }
 
             if (suit.clueRanks !== 'normal') {
-                // Mark to retroactively remove rank pips when we return from this function
-                this.specialRankSuitRemoved = true;
+                // Mark to retroactively apply rank clues when we return from this function
+                this.reapplyRankClues = true;
             }
         }
         if (this.possibleSuits.length === 1) {
@@ -549,14 +564,14 @@ export default class HanabiCard extends Konva.Group {
         }
     }
 
-    checkSpecialRankSuitRemoved() {
-        if (!this.specialRankSuitRemoved) {
+    // If a clue just eliminated the possibility of suit that has special rank properties,
+    // we can retroactively remove rank pips from previous rank clues
+    checkReapplyRankClues() {
+        if (!this.reapplyRankClues) {
             return;
         }
 
-        // If a clue just eliminated the possibility of a special rank suit suit,
-        // we can retroactively remove rank pips from previous rank clues
-        this.specialRankSuitRemoved = false;
+        this.reapplyRankClues = false;
         const { positiveRankClues, negativeRankClues } = this;
         this.positiveRankClues = [];
         this.negativeRankClues = [];
@@ -565,6 +580,25 @@ export default class HanabiCard extends Konva.Group {
         }
         for (const rank of negativeRankClues) {
             this.applyClue(new Clue(CLUE_TYPE.RANK, rank), false);
+        }
+    }
+
+    // If a clue just eliminated the possibility of being a "prism" card,
+    // we need to retroactively apply previous color clues
+    checkReapplyColorClues() {
+        if (!this.reapplyColorClues) {
+            return;
+        }
+
+        this.reapplyColorClues = false;
+        const { positiveColorClues, negativeColorClues } = this;
+        this.positiveColorClues = [];
+        this.negativeColorClues = [];
+        for (const color of positiveColorClues) {
+            this.applyClue(new Clue(CLUE_TYPE.COLOR, color), true);
+        }
+        for (const color of negativeColorClues) {
+            this.applyClue(new Clue(CLUE_TYPE.COLOR, color), false);
         }
     }
 
@@ -671,11 +705,12 @@ export default class HanabiCard extends Konva.Group {
             card.removePossibility(suit, rank, false);
         }
 
-        // If this is an unknown card that we played,
-        // we also need to update the possibilities for the other hands
+        // If this is a:
+        // 1) unknown card that we played or
+        // 2) a card that was just fully revealed in our hand via a clue
+        // then we also need to update the possibilities for the other hands
         if (
             this.holder === globals.playerUs
-            && (this.possibleSuits.length > 1 || this.possibleRanks.length > 1)
             && !globals.replay
             && !globals.spectating
         ) {
@@ -970,7 +1005,7 @@ export default class HanabiCard extends Konva.Group {
             if (globals.stackDirections[i] === STACK_DIRECTION.UNDECIDED) {
                 if (lastPlayedRank === STACK_BASE_RANK) {
                     // The "START" card has not been played
-                    for (const rank of [0, 1, 5]) {
+                    for (const rank of [START_CARD_RANK, 1, 5]) {
                         const count = this.possibleCards.get(`${suit.name}${rank}`);
                         if (typeof count === 'undefined') {
                             throw new Error(`Failed to get an entry for ${suit.name}${rank} from the "possibleCards" map for card ${this.order}.`);

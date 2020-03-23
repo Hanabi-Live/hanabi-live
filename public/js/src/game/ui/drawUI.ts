@@ -6,6 +6,7 @@
 import Konva from 'konva';
 import Arrow from './Arrow';
 import * as arrows from './arrows';
+import backToLobby from './backToLobby';
 import Button from './Button';
 import ButtonGroup from './ButtonGroup';
 import ClickArea from './ClickArea';
@@ -42,7 +43,6 @@ import StrikeX from './StrikeX';
 import * as timer from './timer';
 import TimerDisplay from './TimerDisplay';
 import * as tooltips from './tooltips';
-import * as ui from './ui';
 import RectWithTooltip from './RectWithTooltip';
 import StrikeSquare from './StrikeSquare';
 import ImageWithTooltip from './ImageWithTooltip';
@@ -1846,5 +1846,5 @@ function lobbyButtonClick(this: Button) {
     // and go to the lobby twice
     this.off('click tap');
 
-    ui.backToLobby();
+    backToLobby();
 }

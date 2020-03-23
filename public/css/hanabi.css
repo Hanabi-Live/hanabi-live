@@ -307,6 +307,9 @@ table td {
 .lobby-games-table-unstarted {
     background-color: #fffff0 !important;
 }
+.lobby-games-table-unstarted-password {
+    background-color: #ffeaea !important;
+}
 .lobby-games-table-started {
     background-color: #e6ffee !important;
 }

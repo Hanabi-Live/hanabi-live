@@ -10,6 +10,7 @@ import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
 import notify from './notify';
+import pause from './pause';
 import * as replay from './replay';
 import SpectatorNote from './SpectatorNote';
 import stateChange from './stateChange';
@@ -17,7 +18,6 @@ import * as stats from './stats';
 import strikeRecord from './strikeRecord';
 import * as timer from './timer';
 import * as turn from './turn';
-import * as ui from './ui';
 
 // Define a command handler map
 const commands = new Map();
@@ -340,7 +340,7 @@ commands.set('notify', (data: any) => {
 
     if (data.type === 'turn') {
         // Keep track of whether it is our turn or not
-        globals.ourTurn = data.who === globals.playerUs;
+        globals.ourTurn = data.who === globals.playerUs && !globals.spectating;
 
         // We need to update the replay slider, based on the new amount of turns
         globals.replayMax = data.num;
@@ -448,7 +448,7 @@ commands.set('pause', (data: PauseData) => {
     globals.pausePlayer = data.pausePlayer;
 
     // Pause or unpause the UI accordingly
-    ui.setPause();
+    pause();
 });
 
 // This is used in shared replays to highlight a specific card (or UI element)

@@ -7,7 +7,6 @@ import (
 type UserSettings struct{}
 
 type Settings struct {
-	SendTurnNotify                  bool    `json:"sendTurnNotify"`
 	SendTurnSound                   bool    `json:"sendTurnSound"`
 	SendTimerSound                  bool    `json:"sendTimerSound"`
 	ShowKeldonUI                    bool    `json:"showKeldonUI"`
@@ -18,6 +17,7 @@ type Settings struct {
 	Volume                          int     `json:"volume"`
 	SpeedrunPreplay                 bool    `json:"speedrunPreplay"`
 	SpeedrunMode                    bool    `json:"speedrunMode"`
+	HyphenatedConventions           bool    `json:"hyphenatedConventions"`
 	CreateTableVariant              string  `json:"createTableVariant"`
 	CreateTableTimed                bool    `json:"createTableTimed"`
 	CreateTableBaseTimeMinutes      float64 `json:"createTableBaseTimeMinutes"`
@@ -47,7 +47,6 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 
 	if err := db.QueryRow(`
 		SELECT
-			send_turn_notify,
 			send_turn_sound,
 			send_timer_sound,
 			show_keldon_UI,
@@ -58,6 +57,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 			volume,
 			speedrun_preplay,
 			speedrun_mode,
+			hyphenated_conventions,
 			create_table_variant,
 			create_table_timed,
 			create_table_base_time_minutes,
@@ -71,7 +71,6 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		FROM user_settings
 		WHERE user_id = ?
 	`, userID).Scan(
-		&settings.SendTurnNotify,
 		&settings.SendTurnSound,
 		&settings.SendTimerSound,
 		&settings.ShowKeldonUI,
@@ -82,6 +81,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.Volume,
 		&settings.SpeedrunPreplay,
 		&settings.SpeedrunMode,
+		&settings.HyphenatedConventions,
 		&settings.CreateTableVariant,
 		&settings.CreateTableTimed,
 		&settings.CreateTableBaseTimeMinutes,

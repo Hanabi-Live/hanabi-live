@@ -10,6 +10,9 @@
         "javascript",
         { "language": "typescript", "autoFix": true },
     ],
+    "eslint.workingDirectories": [
+        "./public/js",
+    ],
 
     // Disable the confirmation box when deleting a file
     "explorer.confirmDelete": false,
@@ -26,7 +29,7 @@
 
     // This is recommended as per the GolangCI-Lint README file
     "go.lintFlags": [
-        "--fast"
+        "--fast",
     ],
 
     // Disable the annoying release notes popup everytime that VSCode updates itself

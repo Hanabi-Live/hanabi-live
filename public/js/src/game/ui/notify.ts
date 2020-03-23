@@ -91,7 +91,8 @@ notifyFunctions.set('clue', (data: ActionClue) => {
             && !globals.variant.name.startsWith('Duck')
         ) {
             card.applyClue(clue, true);
-            card.checkSpecialRankSuitRemoved();
+            card.checkReapplyRankClues();
+            card.checkReapplyColorClues();
             card.setBareImage();
             card.setFade(); // Unfade the card if it is faded
         }
@@ -112,7 +113,8 @@ notifyFunctions.set('clue', (data: ActionClue) => {
                 && !globals.variant.name.startsWith('Duck')
             ) {
                 card.applyClue(clue, false);
-                card.checkSpecialRankSuitRemoved();
+                card.checkReapplyRankClues();
+                card.checkReapplyColorClues();
                 card.setBareImage();
             }
         }
@@ -376,7 +378,7 @@ notifyFunctions.set('status', (data: ActionStatus) => {
             // (to reinforce that the current player cannot discard)
             globals.elements.noDiscardBorder!.show();
             globals.elements.noDoubleDiscardBorder!.hide();
-        } else if (data.doubleDiscard) {
+        } else if (data.doubleDiscard && globals.lobby.settings.get('hyphenatedConventions')) {
             // Show a yellow border around the discard pile
             // (to reinforce that this is a "Double Discard" situation)
             globals.elements.noDiscardBorder!.hide();

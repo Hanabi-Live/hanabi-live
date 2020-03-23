@@ -9,22 +9,26 @@
 <h3>Current Max Scores:</h3>
 
 <table>
-    <tr>
-        <td>2-player</td>
-        <td>3-player</td>
-        <td>4-player</td>
-        <td>5-player</td>
-        <td>6-player</td>
-        <td>Total</td>
-    </tr>
-    <tr>
-        <td>{{index .NumMaxScoresPerType 0}} &nbsp;({{index .PercentageMaxScoresPerType 0}}%)</td>
-        <td>{{index .NumMaxScoresPerType 1}} &nbsp;({{index .PercentageMaxScoresPerType 1}}%)</td>
-        <td>{{index .NumMaxScoresPerType 2}} &nbsp;({{index .PercentageMaxScoresPerType 2}}%)</td>
-        <td>{{index .NumMaxScoresPerType 3}} &nbsp;({{index .PercentageMaxScoresPerType 3}}%)</td>
-        <td>{{index .NumMaxScoresPerType 4}} &nbsp;({{index .PercentageMaxScoresPerType 4}}%)</td>
-        <td>{{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)</td>
-    </tr>
+    <thead>
+        <tr>
+            <th>2-player</th>
+            <th>3-player</th>
+            <th>4-player</th>
+            <th>5-player</th>
+            <th>6-player</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{index .NumMaxScoresPerType 0}} &nbsp;({{index .PercentageMaxScoresPerType 0}}%)</td>
+            <td>{{index .NumMaxScoresPerType 1}} &nbsp;({{index .PercentageMaxScoresPerType 1}}%)</td>
+            <td>{{index .NumMaxScoresPerType 2}} &nbsp;({{index .PercentageMaxScoresPerType 2}}%)</td>
+            <td>{{index .NumMaxScoresPerType 3}} &nbsp;({{index .PercentageMaxScoresPerType 3}}%)</td>
+            <td>{{index .NumMaxScoresPerType 4}} &nbsp;({{index .PercentageMaxScoresPerType 4}}%)</td>
+            <td>{{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)</td>
+        </tr>
+    </tbody>
 </table>
 
 <ul id="filter-players" class="horizontal">

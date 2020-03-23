@@ -316,7 +316,7 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		if variants[variant].RankCluesTouchNothing {
 			return false
 		}
-		if strings.HasPrefix(variant, "Multi-Fives") && card.Rank == 5 {
+		if strings.Contains(variant, "Multi-Fives") && card.Rank == 5 {
 			return true
 		}
 		return card.Rank == clue.Value

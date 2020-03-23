@@ -9,6 +9,8 @@ import globals from '../globals';
 import HanabiUI from './ui/HanabiUI';
 import { closeAllTooltips } from '../misc';
 import * as sounds from './sounds';
+import tablesDraw from '../lobby/tablesDraw';
+import usersDraw from '../lobby/usersDraw';
 
 export const init = () => {
     // Disable the right-click context menu while in a game
@@ -33,6 +35,8 @@ export const show = () => {
 
 export const hide = () => {
     globals.currentScreen = 'lobby';
+    tablesDraw();
+    usersDraw();
 
     globals.ui.destroy();
     globals.ui = null;
