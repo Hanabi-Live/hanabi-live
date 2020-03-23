@@ -340,7 +340,7 @@ commands.set('notify', (data: any) => {
 
     if (data.type === 'turn') {
         // Keep track of whether it is our turn or not
-        globals.ourTurn = data.who === globals.playerUs;
+        globals.ourTurn = data.who === globals.playerUs && !globals.spectating;
 
         // We need to update the replay slider, based on the new amount of turns
         globals.replayMax = data.num;
