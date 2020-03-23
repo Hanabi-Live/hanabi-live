@@ -253,8 +253,8 @@ Special:
 
 ### Duck
 
-* This variant was invented by Jack Gurev's group.
 * When players give a clue, they point at the cards clued, but say "quack" instead of a color or number.
+* This variant was invented by Jack Gurev's group.
 
 ### Throw It in a Hole
 
