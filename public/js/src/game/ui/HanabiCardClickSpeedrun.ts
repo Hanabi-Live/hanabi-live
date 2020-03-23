@@ -88,31 +88,29 @@ const clickLeft = (card: any, event: PointerEvent) => { // TODO change to Hanabi
         let clueColor: Color;
         if (clueButton === null) {
             // They have not clicked on a clue color button yet,
-            // so assume that they want to use the left-most color
-            clueColor = globals.variant.clueColors[0];
+            // so assume that they want to use the first possible color of the card
+            clueColor = card.suit.clueColors[0];
         } else if (typeof clueButton.clue.value === 'number') {
             // They have clicked on a number clue button,
-            // so assume that they want to use the left-most color
-            clueColor = globals.variant.clueColors[0];
+            // so assume that they want to use the first possible color of the card
+            clueColor = card.suit.clueColors[0];
         } else {
             // They have clicked on a color button, so assume that they want to use that color
             clueColor = clueButton.clue.value;
+
+            // See if this is a valid color for the clicked card
+            const clueColorIndex = card.suit.clueColors.findIndex(
+                (cardColor: Color) => cardColor === clueColor,
+            );
+            if (clueColorIndex === -1) {
+                // It is not possible to clue this color to this card,
+                // so default to using the first valid color
+                clueColor = card.suit.clueColors[0];
+            }
         }
 
-        // See if this is a valid color for the clicked card
-        const possibleClueColors = card.suit.clueColors;
-        let clueColorIndex = possibleClueColors.findIndex(
-            (cardColor: Color) => cardColor === clueColor,
-        );
-        if (clueColorIndex === -1) {
-            // It is not possible to clue this color to this card,
-            // so default to using the first valid color
-            clueColorIndex = 0;
-        }
-
-        const color = card.suit.clueColors[clueColorIndex];
         const value = globals.variant.clueColors.findIndex(
-            (variantColor) => variantColor === color,
+            (variantColor) => variantColor === clueColor,
         );
         turn.end({
             type: ACTION.CLUE,
