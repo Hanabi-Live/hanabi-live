@@ -36,13 +36,13 @@ export const hide = (firstTimeUser: boolean) => {
 
     // Show the lobby
     globals.currentScreen = 'lobby';
+    tablesDraw();
+    usersDraw();
     $('#lobby').show();
     $('#lobby-history').hide();
     // We can't hide this element by default in "index.html" or else the "No game history" text
     // will not be centered
     nav.show('games');
-    usersDraw();
-    tablesDraw();
     $('#lobby-chat-input').focus();
 };
 

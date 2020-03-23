@@ -113,7 +113,6 @@ const tableSpectateButton = (table: Table) => () => {
     globals.conn.send('tableSpectate', {
         tableID: table.id,
     });
-    tablesDraw();
 };
 
 const tableJoinButton = (table: Table) => () => {
@@ -125,12 +124,10 @@ const tableJoinButton = (table: Table) => () => {
     globals.conn.send('tableJoin', {
         tableID: table.id,
     });
-    tablesDraw();
 };
 
 const tableReattendButton = (table: Table) => () => {
     globals.conn.send('tableReattend', {
         tableID: table.id,
     });
-    tablesDraw();
 };

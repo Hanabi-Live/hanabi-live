@@ -30,7 +30,6 @@ commands.set('joined', (data: JoinedData) => {
     globals.tableID = data.tableID;
 
     // We joined a new game, so transition between screens
-    tablesDraw();
     pregame.show();
 });
 
@@ -75,7 +74,6 @@ commands.set('gameHistoryOtherScores', (data: Array<GameHistory>) => {
 
 commands.set('left', () => {
     // We left a table, so transition between screens
-    tablesDraw();
     pregame.hide();
 });
 
@@ -93,7 +91,10 @@ commands.set('table', (data: Table) => {
     data.timePerTurn *= 1000;
 
     globals.tableList.set(data.id, data);
-    tablesDraw();
+
+    if (globals.currentScreen === 'lobby') {
+        tablesDraw();
+    }
 });
 
 // Received by the client when a table no longer has any members present
@@ -102,7 +103,10 @@ interface TableGoneData {
 }
 commands.set('tableGone', (data: TableGoneData) => {
     globals.tableList.delete(data.id);
-    tablesDraw();
+
+    if (globals.currentScreen === 'lobby') {
+        tablesDraw();
+    }
 });
 
 interface TableReadyData {
@@ -129,7 +133,10 @@ commands.set('tableStart', (data: TableStartData) => {
 // Received by the client when a user connect or has a new status
 commands.set('user', (data: User) => {
     globals.userList.set(data.id, data);
-    usersDraw();
+
+    if (globals.currentScreen === 'lobby') {
+        usersDraw();
+    }
 });
 
 // Received by the client when a user disconnects
@@ -138,5 +145,8 @@ interface UserLeftData {
 }
 commands.set('userLeft', (data: UserLeftData) => {
     globals.userList.delete(data.id);
-    usersDraw();
+
+    if (globals.currentScreen === 'lobby') {
+        usersDraw();
+    }
 });
