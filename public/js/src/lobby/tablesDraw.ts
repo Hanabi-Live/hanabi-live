@@ -31,13 +31,19 @@ const tablesDraw = () => {
             htmlClass = 'replay';
         } else if (table.running) {
             htmlClass = 'started';
+        } else if (table.password) {
+            htmlClass = 'unstarted-password';
         } else {
             htmlClass = 'unstarted';
         }
         const row = $(`<tr class="lobby-games-table-${htmlClass}">`);
 
         // Column 1 - Name
-        $('<td>').html(table.name).appendTo(row);
+        let name = table.name;
+        if (table.password) {
+            name = `<i class="fas fa-key fa-sm"></i> &nbsp; ${name}`;
+        }
+        $('<td>').html(name).appendTo(row);
 
         // Column 2 - # of Players
         $('<td>').html(table.numPlayers.toString()).appendTo(row);
