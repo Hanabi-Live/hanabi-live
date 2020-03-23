@@ -51,7 +51,7 @@ Special:
 
 ### Six Suits
 
-* An teal suit is added.
+* A teal suit is added.
 * It works identical to the other suits in that you can clue teal cards with teal clues.
 * (This is the first [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants).)
 
