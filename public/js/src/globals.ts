@@ -22,8 +22,8 @@ class Globals {
     // Contains the settings for the "Settings" tooltip and the "Create Game" tooltip
     settings: Map<string, boolean | number | string> = new Map(); // Set upon login
 
-    userList: Map<number, User> = new Map();
-    tableList: Map<number, Table> = new Map();
+    userList: Map<number, User> = new Map(); // Keys are IDs
+    tableList: Map<number, Table> = new Map(); // Keys are IDs
     history: Array<GameHistory> = [];
     showMoreHistoryClicked: boolean = false;
     totalGames: number = 0; // Set upon login

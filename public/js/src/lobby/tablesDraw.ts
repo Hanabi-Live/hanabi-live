@@ -23,8 +23,36 @@ const tablesDraw = () => {
     $('#lobby-games').removeClass('align-center-v');
     $('#lobby-games-table-container').show();
 
+    // We want the tables to be drawn in a certain order:
+    // 1) Unstarted tables
+    // 2) Unstarted & password-protected tables
+    // 3) Ongoing tables
+    // 4) Shared replays
+    let sortedTableIDs: Array<number> = [];
+    for (let i = 1; i <= 4; i++) {
+        const tableIDsOfThisType: Array<number> = [];
+        for (const [id, table] of globals.tableList) {
+            if (i === 1 && !table.running && !table.password) {
+                tableIDsOfThisType.push(id);
+            } else if (i === 2 && !table.running && table.password) {
+                tableIDsOfThisType.push(id);
+            } else if (i === 3 && table.running && !table.sharedReplay) {
+                tableIDsOfThisType.push(id);
+            } else if (i === 4 && table.sharedReplay) {
+                tableIDsOfThisType.push(id);
+            }
+        }
+        tableIDsOfThisType.sort();
+        sortedTableIDs = sortedTableIDs.concat(tableIDsOfThisType);
+    }
+
     // Add all of the games
-    for (const [, table] of globals.tableList) {
+    for (const id of sortedTableIDs) {
+        const table = globals.tableList.get(id);
+        if (typeof table === 'undefined') {
+            throw new Error(`Failed to get the table for the ID of "${id}".`);
+        }
+
         // Set the background color of the row, depending on what kind of game it is
         let htmlClass;
         if (table.sharedReplay) {
