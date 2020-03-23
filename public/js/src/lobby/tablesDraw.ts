@@ -68,7 +68,7 @@ const tablesDraw = () => {
 
         // Column 1 - Name
         let name = table.name;
-        if (table.password) {
+        if (table.password && !table.running && !table.sharedReplay) {
             name = `<i class="fas fa-key fa-sm"></i> &nbsp; ${name}`;
         }
         $('<td>').html(name).appendTo(row);
