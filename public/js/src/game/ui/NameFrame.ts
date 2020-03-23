@@ -1,9 +1,9 @@
 // Imports
 import Konva from 'konva';
+import backToLobby from './backToLobby';
 import { LABEL_COLOR, REPLAY_ACTION_TYPE } from '../../constants';
 import globals from './globals';
 import * as tooltips from './tooltips';
-import * as ui from './ui';
 
 export default class NameFrame extends Konva.Group {
     playerIndex: number;
@@ -68,7 +68,7 @@ export default class NameFrame extends Konva.Group {
                             player: username,
                         });
                     }, 20);
-                    ui.backToLobby();
+                    backToLobby();
                 } else if (globals.sharedReplay) {
                     // In a shared replay,
                     // right-click on the name frame to pass the replay leader to them

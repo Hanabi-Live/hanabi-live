@@ -12,12 +12,12 @@ import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals, { Globals } from './globals';
 import HanabiCard from './HanabiCard';
+import * as keyboard from './keyboard';
 import LayoutChild from './LayoutChild';
 import Loader from './Loader';
-import * as keyboard from './keyboard';
+import pause from './pause';
 import * as stats from './stats';
 import * as timer from './timer';
-import * as ui from './ui';
 
 export default class HanabiUI {
     globals: Globals;
@@ -175,7 +175,7 @@ const loadingFinishedCallback = () => {
     keyboard.init();
 
     // If the game is paused, darken the background
-    ui.setPause();
+    pause();
 
     // Tell the server that we are finished loading
     globals.lobby.conn.send('ready');

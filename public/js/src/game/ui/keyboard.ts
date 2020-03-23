@@ -6,12 +6,12 @@
 import * as action from './action';
 import { Action } from './actions';
 import { ACTION, REPLAY_ACTION_TYPE, MAX_CLUE_NUM } from '../../constants';
+import backToLobby from './backToLobby';
 import * as clues from './clues';
+import { copyStringToClipboard } from '../../misc';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
-import { copyStringToClipboard } from '../../misc';
 import * as replay from './replay';
-import * as ui from './ui';
 
 // Variables
 const hotkeyClueMap = new Map();
@@ -81,7 +81,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 
         if (globals.replay) {
             // Escape = If in a replay, exit back to the lobby
-            ui.backToLobby();
+            backToLobby();
             return;
         }
 
@@ -135,7 +135,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 
         // Other
         if (event.key === 'l' || event.key === '¬') { // Alt + l
-            ui.backToLobby();
+            backToLobby();
             return;
         }
         if (event.key === 't' || event.key === '†') { // Alt + t
