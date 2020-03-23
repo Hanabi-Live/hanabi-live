@@ -705,11 +705,12 @@ export default class HanabiCard extends Konva.Group {
             card.removePossibility(suit, rank, false);
         }
 
-        // If this is an unknown card that we played,
-        // we also need to update the possibilities for the other hands
+        // If this is a:
+        // 1) unknown card that we played or
+        // 2) a card that was just fully revealed in our hand via a clue
+        // then we also need to update the possibilities for the other hands
         if (
             this.holder === globals.playerUs
-            && (this.possibleSuits.length > 1 || this.possibleRanks.length > 1)
             && !globals.replay
             && !globals.spectating
         ) {
