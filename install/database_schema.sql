@@ -27,7 +27,6 @@ DROP TABLE IF EXISTS user_settings;
 CREATE TABLE user_settings (
     user_id                             INT          NOT NULL  PRIMARY KEY,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
-    send_turn_notify                    BOOLEAN      NOT NULL  DEFAULT 0,
     send_turn_sound                     BOOLEAN      NOT NULL  DEFAULT 1,
     send_timer_sound                    BOOLEAN      NOT NULL  DEFAULT 1,
     show_keldon_UI                      BOOLEAN      NOT NULL  DEFAULT 0,

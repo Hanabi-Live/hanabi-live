@@ -7,7 +7,6 @@ import (
 type UserSettings struct{}
 
 type Settings struct {
-	SendTurnNotify                  bool    `json:"sendTurnNotify"`
 	SendTurnSound                   bool    `json:"sendTurnSound"`
 	SendTimerSound                  bool    `json:"sendTimerSound"`
 	ShowKeldonUI                    bool    `json:"showKeldonUI"`
@@ -48,7 +47,6 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 
 	if err := db.QueryRow(`
 		SELECT
-			send_turn_notify,
 			send_turn_sound,
 			send_timer_sound,
 			show_keldon_UI,
@@ -73,7 +71,6 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		FROM user_settings
 		WHERE user_id = ?
 	`, userID).Scan(
-		&settings.SendTurnNotify,
 		&settings.SendTurnSound,
 		&settings.SendTimerSound,
 		&settings.ShowKeldonUI,
