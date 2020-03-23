@@ -1004,7 +1004,7 @@ export default class HanabiCard extends Konva.Group {
             if (globals.stackDirections[i] === STACK_DIRECTION.UNDECIDED) {
                 if (lastPlayedRank === STACK_BASE_RANK) {
                     // The "START" card has not been played
-                    for (const rank of [0, 1, 5]) {
+                    for (const rank of [START_CARD_RANK, 1, 5]) {
                         const count = this.possibleCards.get(`${suit.name}${rank}`);
                         if (typeof count === 'undefined') {
                             throw new Error(`Failed to get an entry for ${suit.name}${rank} from the "possibleCards" map for card ${this.order}.`);
