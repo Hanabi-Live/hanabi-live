@@ -221,6 +221,14 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 * Players can pre-play or pre-discard by clicking and dragging a card to the respective location and releasing the mouse button. Once done, the card will hover over the location until their turn has arrived, and then the action will be automatically performed.
 * Once a card is pre-played or pre-discarded, it cannot be undone unless they go back to the lobby (or refresh the page).
 
+#### Hyphen-ated Conventions
+
+If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventions">Hyphen-ated group</a>, some additional UI elements are enabled:
+
+* Double discard situation notification
+* Special sound effect for double discard (TODO)
+* Special sound effect for discarding a clued card (TODO)
+
 <br />
 
 ## Sounds

@@ -378,7 +378,7 @@ notifyFunctions.set('status', (data: ActionStatus) => {
             // (to reinforce that the current player cannot discard)
             globals.elements.noDiscardBorder!.show();
             globals.elements.noDoubleDiscardBorder!.hide();
-        } else if (data.doubleDiscard) {
+        } else if (data.doubleDiscard && globals.lobby.settings.get('hyphenatedConventions')) {
             // Show a yellow border around the discard pile
             // (to reinforce that this is a "Double Discard" situation)
             globals.elements.noDiscardBorder!.hide();
