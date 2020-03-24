@@ -152,17 +152,39 @@ const drawSuitPips = (
 ) => {
     const scale = 0.4;
 
-    // The middle for cards 1 and 3
-    if (rank === 1 || rank === 3) {
+    // The middle for cards 1
+    if (rank === 1) {
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
-        ctx.scale(scale, scale);
+        ctx.scale(scale * 1.8, scale * 1.8);
         ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
 
-    // Top and bottom for cards 2, 3, 4, 5
+    // Top and bottom for cards 2
+    if (rank >= 2 && rank <= 5) {
+        const symbolYPos = colorblindUI ? 85 : 120;
+        ctx.save();
+        ctx.translate(CARD_W / 2, CARD_H / 2);
+        ctx.translate(0, -symbolYPos);
+        ctx.scale(scale * 1.4, scale * 1.4);
+        ctx.translate(-75, -100);
+        drawPip(ctx, suit, true, false);
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(CARD_W / 2, CARD_H / 2);
+        ctx.translate(0, symbolYPos);
+        ctx.scale(scale, scale);
+        ctx.rotate(Math.PI);
+        ctx.translate(-75, -100);
+        drawPip(ctx, suit, true, false);
+        ctx.restore();
+    }
+
+
+    // Top and bottom for cards 3, 4, 5
     if (rank >= 2 && rank <= 5) {
         const symbolYPos = colorblindUI ? 85 : 120;
         ctx.save();
@@ -203,12 +225,23 @@ const drawSuitPips = (
         ctx.restore();
     }
 
-    // Size, position, and alpha adjustment for the central icon on stack base and 5
+    // Size, position, and alpha adjustment for the central icon on 3 and 5
     if (rank === 0 || rank === 5) {
         ctx.globalAlpha = 1;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
-        ctx.scale(scale * 3 / 2, scale * 3 / 2);
+        ctx.scale(scale * 1.2, scale * 1.2);
+        ctx.translate(-75, -100);
+        drawPip(ctx, suit, true, false);
+        ctx.restore();
+    }
+
+    // Size, position, and alpha adjustment for the central icon on stack base
+    if (rank === 0 || rank === 5) {
+        ctx.globalAlpha = 1;
+        ctx.save();
+        ctx.translate(CARD_W / 2, CARD_H / 2);
+        ctx.scale(scale * 2.5, scale * 2.5);
         ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
