@@ -1,211 +1,211 @@
 {
     "No Variant": {
         "id": 0,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"]
     },
     "Six Suits": {
         "id": 1,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
     },
     "Four Suits": {
         "id": 15,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Red", "Yellow", "Green", "Blue"]
     },
     "Three Suits": {
         "id": 18,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "spacing": true
     },
 
     "Black (6 Suits)": {
         "id": 2,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Black"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Black"]
     },
     "Black (5 Suits)": {
         "id": 21,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black"],
         "spacing": true
     },
 
     "Rainbow (6 Suits)": {
         "id": 3,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Rainbow"]
     },
     "Rainbow (5 Suits)": {
         "id": 16,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow"]
     },
     "Rainbow (4 Suits)": {
         "id": 17,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow"]
+        "suits": ["Red", "Yellow", "Blue", "Rainbow"]
     },
     "Rainbow (3 Suits)": {
         "id": 19,
-        "suits": ["Blue", "Green", "Rainbow"],
+        "suits": ["Red", "Blue", "Rainbow"],
         "spacing": true
     },
 
     "Pink (6 Suits)": {
         "id": 106,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Pink"]
     },
     "Pink (5 Suits)": {
         "id": 107,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink"]
     },
     "Pink (4 Suits)": {
         "id": 108,
-        "suits": ["Blue", "Green", "Yellow", "Pink"]
+        "suits": ["Red", "Yellow", "Blue", "Pink"]
     },
     "Pink (3 Suits)": {
         "id": 109,
-        "suits": ["Blue", "Green", "Pink"],
+        "suits": ["Red", "Blue", "Pink"],
         "spacing": true
     },
 
     "White (6 Suits)": {
         "id": 13,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "White"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "White"]
     },
     "White (5 Suits)": {
         "id": 22,
-        "suits": ["Blue", "Green", "Yellow", "Red", "White"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "White"]
     },
     "White (4 Suits)": {
         "id": 26,
-        "suits": ["Blue", "Green", "Yellow", "White"]
+        "suits": ["Red", "Yellow", "Blue", "White"]
     },
     "White (3 Suits)": {
         "id": 27,
-        "suits": ["Blue", "Green", "White"],
+        "suits": ["Red", "Blue", "White"],
         "spacing": true
     },
 
     "Brown (6 Suits)": {
         "id": 69,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Brown"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Brown"]
     },
     "Brown (5 Suits)": {
         "id": 70,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Brown"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Brown"]
     },
     "Brown (4 Suits)": {
         "id": 71,
-        "suits": ["Blue", "Green", "Yellow", "Brown"]
+        "suits": ["Red", "Yellow", "Blue", "Brown"]
     },
     "Brown (3 Suits)": {
         "id": 72,
-        "suits": ["Blue", "Green", "Brown"],
+        "suits": ["Red", "Blue", "Brown"],
         "spacing": true
     },
 
     "Omni (6 Suits)": {
         "id": 176,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Omni"]
     },
     "Omni (5 Suits)": {
         "id": 177,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Omni"]
     },
     "Omni (4 Suits)": {
         "id": 178,
-        "suits": ["Blue", "Green", "Yellow", "Omni"]
+        "suits": ["Red", "Yellow", "Blue", "Omni"]
     },
     "Omni (3 Suits)": {
         "id": 179,
-        "suits": ["Blue", "Green", "Omni"],
+        "suits": ["Red", "Blue", "Omni"],
         "spacing": true
     },
 
     "Null (6 Suits)": {
         "id": 180,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Null"]
     },
     "Null (5 Suits)": {
         "id": 181,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Null"]
     },
     "Null (4 Suits)": {
         "id": 182,
-        "suits": ["Blue", "Green", "Yellow", "Null"]
+        "suits": ["Red", "Yellow", "Blue", "Null"]
     },
     "Null (3 Suits)": {
         "id": 183,
-        "suits": ["Blue", "Green", "Null"],
+        "suits": ["Red", "Blue", "Null"],
         "spacing": true
     },
 
     "Black & Rainbow (6 Suits)": {
         "id": 65,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Rainbow"]
     },
     "Black & Rainbow (5 Suits)": {
         "id": 66,
-        "suits": ["Blue", "Green", "Yellow", "Black", "Rainbow"],
+        "suits": ["Red", "Yellow", "Blue", "Black", "Rainbow"],
         "spacing": true
     },
 
     "Black & Pink (6 Suits)": {
         "id": 118,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Pink"]
     },
     "Black & Pink (5 Suits)": {
         "id": 119,
-        "suits": ["Blue", "Green", "Yellow", "Black", "Pink"],
+        "suits": ["Red", "Yellow", "Blue", "Black", "Pink"],
         "spacing": true
     },
 
     "Black & White (6 Suits)": {
         "id": 63,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "White"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "White"]
     },
     "Black & White (5 Suits)": {
         "id": 64,
-        "suits": ["Blue", "Green", "Yellow", "Black", "White"],
+        "suits": ["Red", "Yellow", "Blue", "Black", "White"],
         "spacing": true
     },
 
     "Black & Brown (6 Suits)": {
         "id": 73,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Brown"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Brown"]
     },
     "Black & Brown (5 Suits)": {
         "id": 74,
-        "suits": ["Blue", "Green", "Yellow", "Black", "Brown"],
+        "suits": ["Red", "Yellow", "Blue", "Black", "Brown"],
         "spacing": true
     },
 
     "Black & Omni (6 Suits)": {
         "id": 186,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Omni"]
     },
     "Black & Omni (5 Suits)": {
         "id": 187,
-        "suits": ["Blue", "Green", "Yellow", "Black", "Omni"],
+        "suits": ["Red", "Yellow", "Blue", "Black", "Omni"],
         "spacing": true
     },
 
     "Black & Null (6 Suits)": {
         "id": 188,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Null"]
     },
     "Black & Null (5 Suits)": {
         "id": 189,
-        "suits": ["Blue", "Green", "Yellow", "Black", "Null"],
+        "suits": ["Red", "Yellow", "Blue", "Black", "Null"],
         "spacing": true
     },
 
     "Rainbow & Pink (6 Suits)": {
         "id": 120,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Pink"]
     },
     "Rainbow & Pink (5 Suits)": {
         "id": 121,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Pink"]
+        "suits": ["Red", "Yellow", "Blue", "Rainbow", "Pink"]
     },
     "Rainbow & Pink (4 Suits)": {
         "id": 122,
-        "suits": ["Blue", "Green", "Rainbow", "Pink"]
+        "suits": ["Red", "Blue", "Rainbow", "Pink"]
     },
     "Rainbow & Pink (3 Suits)": {
         "id": 149,
@@ -215,15 +215,15 @@
 
     "Rainbow & White (6 Suits)": {
         "id": 6,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "White"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "White"]
     },
     "Rainbow & White (5 Suits)": {
         "id": 28,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow", "White"]
+        "suits": ["Red", "Yellow", "Blue", "Rainbow", "White"]
     },
     "Rainbow & White (4 Suits)": {
         "id": 29,
-        "suits": ["Blue", "Green", "Rainbow", "White"]
+        "suits": ["Red", "Blue", "Rainbow", "White"]
     },
     "Rainbow & White (3 Suits)": {
         "id": 150,
@@ -233,15 +233,15 @@
 
     "Rainbow & Brown (6 Suits)": {
         "id": 75,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Brown"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Brown"]
     },
     "Rainbow & Brown (5 Suits)": {
         "id": 76,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Brown"]
+        "suits": ["Red", "Yellow", "Blue", "Rainbow", "Brown"]
     },
     "Rainbow & Brown (4 Suits)": {
         "id": 77,
-        "suits": ["Blue", "Green", "Rainbow", "Brown"]
+        "suits": ["Red", "Blue", "Rainbow", "Brown"]
     },
     "Rainbow & Brown (3 Suits)": {
         "id": 78,
@@ -251,15 +251,15 @@
 
     "Rainbow & Omni (6 Suits)": {
         "id": 190,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Omni"]
     },
     "Rainbow & Omni (5 Suits)": {
         "id": 191,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Omni"]
+        "suits": ["Red", "Yellow", "Blue", "Rainbow", "Omni"]
     },
     "Rainbow & Omni (4 Suits)": {
         "id": 192,
-        "suits": ["Blue", "Green", "Rainbow", "Omni"]
+        "suits": ["Red", "Blue", "Rainbow", "Omni"]
     },
     "Rainbow & Omni (3 Suits)": {
         "id": 193,
@@ -269,15 +269,15 @@
 
     "Rainbow & Null (6 Suits)": {
         "id": 194,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Null"]
     },
     "Rainbow & Null (5 Suits)": {
         "id": 195,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Null"]
+        "suits": ["Red", "Yellow", "Blue", "Rainbow", "Null"]
     },
     "Rainbow & Null (4 Suits)": {
         "id": 196,
-        "suits": ["Blue", "Green", "Rainbow", "Null"]
+        "suits": ["Red", "Blue", "Rainbow", "Null"]
     },
     "Rainbow & Null (3 Suits)": {
         "id": 197,
@@ -287,15 +287,15 @@
 
     "Pink & White (6 Suits)": {
         "id": 123,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "White"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink", "White"]
     },
     "Pink & White (5 Suits)": {
         "id": 124,
-        "suits": ["Blue", "Green", "Yellow", "Pink", "White"]
+        "suits": ["Red", "Yellow", "Blue", "Pink", "White"]
     },
     "Pink & White (4 Suits)": {
         "id": 125,
-        "suits": ["Blue", "Green", "Pink", "White"]
+        "suits": ["Red", "Blue", "Pink", "White"]
     },
     "Pink & White (3 Suits)": {
         "id": 126,
@@ -305,15 +305,15 @@
 
     "Pink & Brown (6 Suits)": {
         "id": 127,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Brown"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink", "Brown"]
     },
     "Pink & Brown (5 Suits)": {
         "id": 128,
-        "suits": ["Blue", "Green", "Yellow", "Pink", "Brown"]
+        "suits": ["Red", "Yellow", "Blue", "Pink", "Brown"]
     },
     "Pink & Brown (4 Suits)": {
         "id": 129,
-        "suits": ["Blue", "Green", "Pink", "Brown"]
+        "suits": ["Red", "Blue", "Pink", "Brown"]
     },
     "Pink & Brown (3 Suits)": {
         "id": 130,
@@ -323,15 +323,15 @@
 
     "Pink & Omni (6 Suits)": {
         "id": 198,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink", "Omni"]
     },
     "Pink & Omni (5 Suits)": {
         "id": 199,
-        "suits": ["Blue", "Green", "Yellow", "Pink", "Omni"]
+        "suits": ["Red", "Yellow", "Blue", "Pink", "Omni"]
     },
     "Pink & Omni (4 Suits)": {
         "id": 200,
-        "suits": ["Blue", "Green", "Pink", "Omni"]
+        "suits": ["Red", "Blue", "Pink", "Omni"]
     },
     "Pink & Omni (3 Suits)": {
         "id": 201,
@@ -341,15 +341,15 @@
 
     "Pink & Null (6 Suits)": {
         "id": 202,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink", "Null"]
     },
     "Pink & Null (5 Suits)": {
         "id": 203,
-        "suits": ["Blue", "Green", "Yellow", "Pink", "Null"]
+        "suits": ["Red", "Yellow", "Blue", "Pink", "Null"]
     },
     "Pink & Null (4 Suits)": {
         "id": 204,
-        "suits": ["Blue", "Green", "Pink", "Null"]
+        "suits": ["Red", "Blue", "Pink", "Null"]
     },
     "Pink & Null (3 Suits)": {
         "id": 205,
@@ -359,15 +359,15 @@
 
     "White & Brown (6 Suits)": {
         "id": 79,
-        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Brown"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "White", "Brown"]
     },
     "White & Brown (5 Suits)": {
         "id": 80,
-        "suits": ["Blue", "Green", "Yellow", "White", "Brown"]
+        "suits": ["Red", "Yellow", "Blue", "White", "Brown"]
     },
     "White & Brown (4 Suits)": {
         "id": 81,
-        "suits": ["Blue", "Green", "White", "Brown"]
+        "suits": ["Red", "Blue", "White", "Brown"]
     },
     "White & Brown (3 Suits)": {
         "id": 82,
@@ -377,15 +377,15 @@
 
     "White & Omni (6 Suits)": {
         "id": 206,
-        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "White", "Omni"]
     },
     "White & Omni (5 Suits)": {
         "id": 207,
-        "suits": ["Blue", "Green", "Yellow", "White", "Omni"]
+        "suits": ["Red", "Yellow", "Blue", "White", "Omni"]
     },
     "White & Omni (4 Suits)": {
         "id": 208,
-        "suits": ["Blue", "Green", "White", "Omni"]
+        "suits": ["Red", "Blue", "White", "Omni"]
     },
     "White & Omni (3 Suits)": {
         "id": 209,
@@ -395,15 +395,15 @@
 
     "White & Null (6 Suits)": {
         "id": 210,
-        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "White", "Null"]
     },
     "White & Null (5 Suits)": {
         "id": 211,
-        "suits": ["Blue", "Green", "Yellow", "White", "Null"]
+        "suits": ["Red", "Yellow", "Blue", "White", "Null"]
     },
     "White & Null (4 Suits)": {
         "id": 212,
-        "suits": ["Blue", "Green", "White", "Null"]
+        "suits": ["Red", "Blue", "White", "Null"]
     },
     "White & Null (3 Suits)": {
         "id": 213,
@@ -413,15 +413,15 @@
 
     "Brown & Omni (6 Suits)": {
         "id": 214,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Brown", "Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Brown", "Omni"]
     },
     "Brown & Omni (5 Suits)": {
         "id": 215,
-        "suits": ["Blue", "Green", "Yellow", "Brown", "Omni"]
+        "suits": ["Red", "Yellow", "Blue", "Brown", "Omni"]
     },
     "Brown & Omni (4 Suits)": {
         "id": 216,
-        "suits": ["Blue", "Green", "Brown", "Omni"]
+        "suits": ["Red", "Blue", "Brown", "Omni"]
     },
     "Brown & Omni (3 Suits)": {
         "id": 217,
@@ -431,15 +431,15 @@
 
     "Brown & Null (6 Suits)": {
         "id": 218,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Brown", "Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Brown", "Null"]
     },
     "Brown & Null (5 Suits)": {
         "id": 219,
-        "suits": ["Blue", "Green", "Yellow", "Brown", "Null"]
+        "suits": ["Red", "Yellow", "Blue", "Brown", "Null"]
     },
     "Brown & Null (4 Suits)": {
         "id": 220,
-        "suits": ["Blue", "Green", "Brown", "Null"]
+        "suits": ["Red", "Blue", "Brown", "Null"]
     },
     "Brown & Null (3 Suits)": {
         "id": 221,
@@ -449,15 +449,15 @@
 
     "Omni & Null (6 Suits)": {
         "id": 222,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Omni", "Null"]
     },
     "Omni & Null (5 Suits)": {
         "id": 223,
-        "suits": ["Blue", "Green", "Yellow", "Omni", "Null"]
+        "suits": ["Red", "Yellow", "Blue", "Omni", "Null"]
     },
     "Omni & Null (4 Suits)": {
         "id": 224,
-        "suits": ["Blue", "Green", "Omni", "Null"]
+        "suits": ["Red", "Blue", "Omni", "Null"]
     },
     "Omni & Null (3 Suits)": {
         "id": 225,
@@ -467,443 +467,443 @@
 
     "Dark Rainbow (6 Suits)": {
         "id": 11,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Rainbow"]
     },
     "Dark Rainbow (5 Suits)": {
         "id": 23,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow"]
     },
     "Black & Dark Rainbow (6 Suits)": {
         "id": 12,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Dark Rainbow"]
     },
     "Pink & Dark Rainbow (6 Suits)": {
         "id": 131,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink", "Dark Rainbow"]
     },
     "Pink & Dark Rainbow (5 Suits)": {
         "id": 132,
-        "suits": ["Blue", "Green", "Yellow", "Pink", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Blue", "Pink", "Dark Rainbow"]
     },
     "White & Dark Rainbow (6 Suits)": {
         "id": 83,
-        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "White", "Dark Rainbow"]
     },
     "White & Dark Rainbow (5 Suits)": {
         "id": 84,
-        "suits": ["Blue", "Green", "Yellow", "White", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Blue", "White", "Dark Rainbow"]
     },
     "Brown & Dark Rainbow (6 Suits)": {
         "id": 85,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Brown", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Brown", "Dark Rainbow"]
     },
     "Brown & Dark Rainbow (5 Suits)": {
         "id": 86,
-        "suits": ["Blue", "Green", "Yellow", "Brown", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Blue", "Brown", "Dark Rainbow"]
     },
     "Omni & Dark Rainbow (6 Suits)": {
         "id": 226,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Omni", "Dark Rainbow"]
     },
     "Omni & Dark Rainbow (5 Suits)": {
         "id": 227,
-        "suits": ["Blue", "Green", "Yellow", "Omni", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Blue", "Omni", "Dark Rainbow"]
     },
     "Null & Dark Rainbow (6 Suits)": {
         "id": 228,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Null", "Dark Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Null", "Dark Rainbow"]
     },
     "Null & Dark Rainbow (5 Suits)": {
         "id": 229,
-        "suits": ["Blue", "Green", "Yellow", "Null", "Dark Rainbow"],
+        "suits": ["Red", "Yellow", "Blue", "Null", "Dark Rainbow"],
         "spacing": true
     },
 
     "Dark Pink (6 Suits)": {
         "id": 137,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Pink"]
     },
     "Dark Pink (5 Suits)": {
         "id": 138,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink"]
     },
     "Black & Dark Pink (6 Suits)": {
         "id": 139,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Dark Pink"]
     },
     "Rainbow & Dark Pink (6 Suits)": {
         "id": 140,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Dark Pink"]
     },
     "Rainbow & Dark Pink (5 Suits)": {
         "id": 141,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Blue", "Rainbow", "Dark Pink"]
     },
     "White & Dark Pink (6 Suits)": {
         "id": 142,
-        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "White", "Dark Pink"]
     },
     "White & Dark Pink (5 Suits)": {
         "id": 143,
-        "suits": ["Blue", "Green", "Yellow", "White", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Blue", "White", "Dark Pink"]
     },
     "Brown & Dark Pink (6 Suits)": {
         "id": 144,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Brown", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Brown", "Dark Pink"]
     },
     "Brown & Dark Pink (5 Suits)": {
         "id": 145,
-        "suits": ["Blue", "Green", "Yellow", "Brown", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Blue", "Brown", "Dark Pink"]
     },
     "Omni & Dark Pink (6 Suits)": {
         "id": 230,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Omni", "Dark Pink"]
     },
     "Omni & Dark Pink (5 Suits)": {
         "id": 231,
-        "suits": ["Blue", "Green", "Yellow", "Omni", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Blue", "Omni", "Dark Pink"]
     },
     "Null & Dark Pink (6 Suits)": {
         "id": 232,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Null", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Null", "Dark Pink"]
     },
     "Null & Dark Pink (5 Suits)": {
         "id": 233,
-        "suits": ["Blue", "Green", "Yellow", "Null", "Dark Pink"],
+        "suits": ["Red", "Yellow", "Blue", "Null", "Dark Pink"],
         "spacing": true
     },
 
     "Gray (6 Suits)": {
         "id": 59,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Gray"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray"]
     },
     "Gray (5 Suits)": {
         "id": 58,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Gray"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray"]
     },
     "Black & Gray (6 Suits)": {
         "id": 60,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Gray"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Gray"]
     },
     "Rainbow & Gray (6 Suits)": {
         "id": 67,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Gray"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Gray"]
     },
     "Rainbow & Gray (5 Suits)": {
         "id": 68,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Gray"]
+        "suits": ["Red", "Yellow", "Blue", "Rainbow", "Gray"]
     },
     "Pink & Gray (6 Suits)": {
         "id": 133,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Gray"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink", "Gray"]
     },
     "Pink & Gray (5 Suits)": {
         "id": 134,
-        "suits": ["Blue", "Green", "Yellow", "Pink", "Gray"]
+        "suits": ["Red", "Yellow", "Blue", "Pink", "Gray"]
     },
     "Brown & Gray (6 Suits)": {
         "id": 87,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Brown", "Gray"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Brown", "Gray"]
     },
     "Brown & Gray (5 Suits)": {
         "id": 88,
-        "suits": ["Blue", "Green", "Yellow", "Brown", "Gray"]
+        "suits": ["Red", "Yellow", "Blue", "Brown", "Gray"]
     },
     "Omni & Gray (6 Suits)": {
         "id": 234,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Gray"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Omni", "Gray"]
     },
     "Omni & Gray (5 Suits)": {
         "id": 235,
-        "suits": ["Blue", "Green", "Yellow", "Omni", "Gray"]
+        "suits": ["Red", "Yellow", "Blue", "Omni", "Gray"]
     },
     "Null & Gray (6 Suits)": {
         "id": 236,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Null", "Gray"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Null", "Gray"]
     },
     "Null & Gray (5 Suits)": {
         "id": 237,
-        "suits": ["Blue", "Green", "Yellow", "Null", "Gray"],
+        "suits": ["Red", "Yellow", "Blue", "Null", "Gray"],
         "spacing": true
     },
 
     "Chocolate (6 Suits)": {
         "id": 89,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Chocolate"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chocolate"]
     },
     "Chocolate (5 Suits)": {
         "id": 90,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Chocolate"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Chocolate"]
     },
     "Black & Chocolate (6 Suits)": {
         "id": 91,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Chocolate"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Chocolate"]
     },
     "Rainbow & Chocolate (6 Suits)": {
         "id": 92,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Chocolate"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Chocolate"]
     },
     "Rainbow & Chocolate (5 Suits)": {
         "id": 93,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Chocolate"]
+        "suits": ["Red", "Yellow", "Blue", "Rainbow", "Chocolate"]
     },
     "Pink & Chocolate (6 Suits)": {
         "id": 135,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Chocolate"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink", "Chocolate"]
     },
     "Pink & Chocolate (5 Suits)": {
         "id": 136,
-        "suits": ["Blue", "Green", "Yellow", "Pink", "Chocolate"]
+        "suits": ["Red", "Yellow", "Blue", "Pink", "Chocolate"]
     },
     "White & Chocolate (6 Suits)": {
         "id": 94,
-        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Chocolate"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "White", "Chocolate"]
     },
     "White & Chocolate (5 Suits)": {
         "id": 95,
-        "suits": ["Blue", "Green", "Yellow", "White", "Chocolate"]
+        "suits": ["Red", "Yellow", "Blue", "White", "Chocolate"]
     },
     "Omni & Chocolate (6 Suits)": {
         "id": 238,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Chocolate"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Omni", "Chocolate"]
     },
     "Omni & Chocolate (5 Suits)": {
         "id": 239,
-        "suits": ["Blue", "Green", "Yellow", "Omni", "Chocolate"]
+        "suits": ["Red", "Yellow", "Blue", "Omni", "Chocolate"]
     },
     "Null & Chocolate (6 Suits)": {
         "id": 240,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Null", "Chocolate"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Null", "Chocolate"]
     },
     "Null & Chocolate (5 Suits)": {
         "id": 241,
-        "suits": ["Blue", "Green", "Yellow", "Null", "Chocolate"],
+        "suits": ["Red", "Yellow", "Blue", "Null", "Chocolate"],
         "spacing": true
     },
 
     "Dark Omni (6 Suits)": {
         "id": 242,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Omni"]
     },
     "Dark Omni (5 Suits)": {
         "id": 243,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Omni"]
     },
     "Black & Dark Omni (6 Suits)": {
         "id": 244,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Dark Omni"]
     },
     "Rainbow & Dark Omni (6 Suits)": {
         "id": 245,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Dark Omni"]
     },
     "Rainbow & Dark Omni (5 Suits)": {
         "id": 246,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Blue", "Rainbow", "Dark Omni"]
     },
     "Pink & Dark Omni (6 Suits)": {
         "id": 247,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink", "Dark Omni"]
     },
     "Pink & Dark Omni (5 Suits)": {
         "id": 248,
-        "suits": ["Blue", "Green", "Yellow", "Pink", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Blue", "Pink", "Dark Omni"]
     },
     "White & Dark Omni (6 Suits)": {
         "id": 249,
-        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "White", "Dark Omni"]
     },
     "White & Dark Omni (5 Suits)": {
         "id": 250,
-        "suits": ["Blue", "Green", "Yellow", "White", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Blue", "White", "Dark Omni"]
     },
     "Brown & Dark Omni (6 Suits)": {
         "id": 251,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Brown", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Brown", "Dark Omni"]
     },
     "Brown & Dark Omni (5 Suits)": {
         "id": 252,
-        "suits": ["Blue", "Green", "Yellow", "Brown", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Blue", "Brown", "Dark Omni"]
     },
     "Null & Dark Omni (6 Suits)": {
         "id": 253,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Null", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Null", "Dark Omni"]
     },
     "Null & Dark Omni (5 Suits)": {
         "id": 254,
-        "suits": ["Blue", "Green", "Yellow", "Null", "Dark Omni"],
+        "suits": ["Red", "Yellow", "Blue", "Null", "Dark Omni"],
         "spacing": true
     },
 
     "Dark Null (6 Suits)": {
         "id": 255,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Null"]
     },
     "Dark Null (5 Suits)": {
         "id": 256,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null"]
     },
     "Black & Dark Null (6 Suits)": {
         "id": 257,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Black", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Dark Null"]
     },
     "Rainbow & Dark Null (6 Suits)": {
         "id": 258,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Dark Null"]
     },
     "Rainbow & Dark Null (5 Suits)": {
         "id": 259,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow", "Dark Null"]
+        "suits": ["Red", "Yellow", "Blue", "Rainbow", "Dark Null"]
     },
     "Pink & Dark Null (6 Suits)": {
         "id": 260,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink", "Dark Null"]
     },
     "Pink & Dark Null (5 Suits)": {
         "id": 261,
-        "suits": ["Blue", "Green", "Yellow", "Pink", "Dark Null"]
+        "suits": ["Red", "Yellow", "Blue", "Pink", "Dark Null"]
     },
     "White & Dark Null (6 Suits)": {
         "id": 262,
-        "suits": ["Blue", "Green", "Yellow", "Red", "White", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "White", "Dark Null"]
     },
     "White & Dark Null (5 Suits)": {
         "id": 263,
-        "suits": ["Blue", "Green", "Yellow", "White", "Dark Null"]
+        "suits": ["Red", "Yellow", "Blue", "White", "Dark Null"]
     },
     "Brown & Dark Null (6 Suits)": {
         "id": 264,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Brown", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Brown", "Dark Null"]
     },
     "Brown & Dark Null (5 Suits)": {
         "id": 265,
-        "suits": ["Blue", "Green", "Yellow", "Brown", "Dark Null"]
+        "suits": ["Red", "Yellow", "Blue", "Brown", "Dark Null"]
     },
     "Omni & Dark Null (6 Suits)": {
         "id": 266,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Omni", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Omni", "Dark Null"]
     },
     "Omni & Dark Null (5 Suits)": {
         "id": 267,
-        "suits": ["Blue", "Green", "Yellow", "Omni", "Dark Null"],
+        "suits": ["Red", "Yellow", "Blue", "Omni", "Dark Null"],
         "spacing": true
     },
 
     "Dark Rainbow & Dark Pink (6 Suits)": {
         "id": 146,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Rainbow", "Dark Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow", "Dark Pink"]
     },
     "Dark Rainbow & Gray (6 Suits)": {
         "id": 62,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Rainbow", "Gray"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow", "Gray"]
     },
     "Dark Rainbow & Chocolate (6 Suits)": {
         "id": 96,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Rainbow", "Chocolate"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow", "Chocolate"]
     },
     "Dark Rainbow & Dark Omni (6 Suits)": {
         "id": 268,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Rainbow", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow", "Dark Omni"]
     },
     "Dark Rainbow & Dark Null (6 Suits)": {
         "id": 269,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Rainbow", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow", "Dark Null"]
     },
     "Dark Pink & Gray (6 Suits)": {
         "id": 147,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Pink", "Gray"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink", "Gray"]
     },
     "Dark Pink & Chocolate (6 Suits)": {
         "id": 148,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Pink", "Chocolate"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink", "Chocolate"]
     },
     "Dark Pink & Dark Omni (6 Suits)": {
         "id": 270,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Pink", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink", "Dark Omni"]
     },
     "Dark Pink & Dark Null (6 Suits)": {
         "id": 271,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Pink", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink", "Dark Null"]
     },
     "Gray & Chocolate (6 Suits)": {
         "id": 97,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Chocolate"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray", "Chocolate"]
     },
     "Gray & Dark Omni (6 Suits)": {
         "id": 272,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray", "Dark Omni"]
     },
     "Gray & Dark Null (6 Suits)": {
         "id": 273,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Gray", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray", "Dark Null"]
     },
     "Chocolate & Dark Omni (6 Suits)": {
         "id": 274,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Chocolate", "Dark Omni"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Chocolate", "Dark Omni"]
     },
     "Chocolate & Dark Null (6 Suits)": {
         "id": 275,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Chocolate", "Dark Null"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Chocolate", "Dark Null"]
     },
     "Dark Omni & Dark Null (6 Suits)": {
         "id": 276,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Dark Omni", "Dark Null"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Omni", "Dark Null"],
         "spacing": true
     },
 
     "Muddy Rainbow (6 Suits)": {
         "id": 160,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Muddy Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Muddy Rainbow"]
     },
     "Muddy Rainbow (5 Suits)": {
         "id": 161,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Muddy Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow"]
     },
     "Muddy Rainbow (4 Suits)": {
         "id": 162,
-        "suits": ["Blue", "Green", "Yellow", "Muddy Rainbow"]
+        "suits": ["Red", "Yellow", "Blue", "Muddy Rainbow"]
     },
     "Muddy Rainbow (3 Suits)": {
         "id": 163,
-        "suits": ["Blue", "Green", "Muddy Rainbow"],
+        "suits": ["Red", "Blue", "Muddy Rainbow"],
         "spacing": true
     },
 
     "Light Pink (6 Suits)": {
         "id": 164,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Light Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Light Pink"]
     },
     "Light Pink (5 Suits)": {
         "id": 165,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Light Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Light Pink"]
     },
     "Light Pink (4 Suits)": {
         "id": 166,
-        "suits": ["Blue", "Green", "Yellow", "Light Pink"]
+        "suits": ["Red", "Yellow", "Blue", "Light Pink"]
     },
     "Light Pink (3 Suits)": {
         "id": 167,
-        "suits": ["Blue", "Green", "Light Pink"],
+        "suits": ["Red", "Blue", "Light Pink"],
         "spacing": true
     },
 
     "Cocoa Rainbow (6 Suits)": {
         "id": 290,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Cocoa Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Cocoa Rainbow"]
     },
     "Cocoa Rainbow (5 Suits)": {
         "id": 291,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Cocoa Rainbow"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "spacing": true
     },
 
     "Chiaroscuro Pink (6 Suits)": {
         "id": 292,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"]
     },
     "Chiaroscuro Pink (5 Suits)": {
         "id": 293,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
         "spacing": true
     },
 
@@ -1007,167 +1007,167 @@
 
     "Prism-Ones (6 Suits)": {
         "id": 168,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
     },
     "Prism-Ones (5 Suits)": {
         "id": 169,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"]
     },
     "Prism-Ones (4 Suits)": {
         "id": 170,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Red", "Yellow", "Green", "Blue"]
     },
     "Prism-Ones (3 Suits)": {
         "id": 171,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "spacing": true
     },
 
     "Prism-Ones & Pink (6 Suits)": {
         "id": 172,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Pink"]
     },
     "Prism-Ones & Pink (5 Suits)": {
         "id": 173,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink"]
     },
     "Prism-Ones & Pink (4 Suits)": {
         "id": 174,
-        "suits": ["Blue", "Green", "Yellow", "Pink"]
+        "suits": ["Red", "Yellow", "Blue", "Pink"]
     },
     "Prism-Ones & Pink (3 Suits)": {
         "id": 175,
-        "suits": ["Blue", "Green", "Pink"],
+        "suits": ["Red", "Blue", "Pink"],
         "spacing": true
     },
 
     "Multi-Fives (6 Suits)": {
         "id": 45,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
         "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives (5 Suits)": {
         "id": 46,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
         "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives (4 Suits)": {
         "id": 49,
-        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "suits": ["Red", "Yellow", "Green", "Blue"],
         "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives (3 Suits)": {
         "id": 50,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "clueRanks": [1, 2, 3, 4],
         "spacing": true
     },
 
     "Multi-Fives & Rainbow (6 Suits)": {
         "id": 39,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Rainbow"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Rainbow"],
         "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives & Rainbow (5 Suits)": {
         "id": 14,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow"],
         "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives & Rainbow (4 Suits)": {
         "id": 47,
-        "suits": ["Blue", "Green", "Yellow", "Rainbow"],
+        "suits": ["Red", "Yellow", "Blue", "Rainbow"],
         "clueRanks": [1, 2, 3, 4]
     },
     "Multi-Fives & Rainbow (3 Suits)": {
         "id": 48,
-        "suits": ["Blue", "Green", "Rainbow"],
+        "suits": ["Red", "Blue", "Rainbow"],
         "clueRanks": [1, 2, 3, 4],
         "spacing": true
     },
 
     "Prism-Ones & Multi-Fives (6 Suits)": {
         "id": 294,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
     },
     "Prism-Ones & Multi-Fives (5 Suits)": {
         "id": 295,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"]
     },
     "Prism-Ones & Multi-Fives (4 Suits)": {
         "id": 296,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Red", "Yellow", "Green", "Blue"]
     },
     "Prism-Ones & Multi-Fives (3 Suits)": {
         "id": 297,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "spacing": true
     },
 
     "Color Blind (6 Suits)": {
         "id": 10,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
         "colorCluesTouchNothing": true
     },
     "Color Blind (5 Suits)": {
         "id": 33,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
         "colorCluesTouchNothing": true
     },
     "Color Blind (4 Suits)": {
         "id": 34,
-        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "suits": ["Red", "Yellow", "Green", "Blue"],
         "colorCluesTouchNothing": true
     },
     "Color Blind (3 Suits)": {
         "id": 35,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "colorCluesTouchNothing": true,
         "spacing": true
     },
 
     "Number Blind (6 Suits)": {
         "id": 102,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
         "rankCluesTouchNothing": true
     },
     "Number Blind (5 Suits)": {
         "id": 103,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
         "rankCluesTouchNothing": true
     },
     "Number Blind (4 Suits)": {
         "id": 104,
-        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "suits": ["Red", "Yellow", "Green", "Blue"],
         "rankCluesTouchNothing": true
     },
     "Number Blind (3 Suits)": {
         "id": 105,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "rankCluesTouchNothing": true,
         "spacing": true
     },
 
     "Totally Blind (6 Suits)": {
         "id": 151,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
         "colorCluesTouchNothing": true,
         "rankCluesTouchNothing": true
     },
     "Totally Blind (5 Suits)": {
         "id": 152,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
         "colorCluesTouchNothing": true,
         "rankCluesTouchNothing": true
     },
     "Totally Blind (4 Suits)": {
         "id": 153,
-        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "suits": ["Red", "Yellow", "Green", "Blue"],
         "colorCluesTouchNothing": true,
         "rankCluesTouchNothing": true
     },
     "Totally Blind (3 Suits)": {
         "id": 154,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "colorCluesTouchNothing": true,
         "rankCluesTouchNothing": true,
         "spacing": true
@@ -1175,198 +1175,198 @@
 
     "Color Mute (6 Suits)": {
         "id": 110,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
         "clueColors": []
     },
     "Color Mute (5 Suits)": {
         "id": 111,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
         "clueColors": []
     },
     "Color Mute (4 Suits)": {
         "id": 112,
-        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "suits": ["Red", "Yellow", "Green", "Blue"],
         "clueColors": []
     },
     "Color Mute (3 Suits)": {
         "id": 113,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "clueColors": [],
         "spacing": true
     },
 
     "Number Mute (6 Suits)": {
         "id": 114,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
         "clueRanks": []
     },
     "Number Mute (5 Suits)": {
         "id": 115,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
         "clueRanks": []
     },
     "Number Mute (4 Suits)": {
         "id": 116,
-        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "suits": ["Red", "Yellow", "Green", "Blue"],
         "clueRanks": []
     },
     "Number Mute (3 Suits)": {
         "id": 117,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "clueRanks": [],
         "spacing": true
     },
 
     "Alternating Clues (6 Suits)": {
         "id": 283,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
     },
     "Alternating Clues (5 Suits)": {
         "id": 284,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"]
     },
     "Alternating Clues (4 Suits)": {
         "id": 285,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Red", "Yellow", "Green", "Blue"]
     },
     "Alternating Clues (3 Suits)": {
         "id": 286,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "spacing": true
     },
 
     "Clue Starved (6 Suits)": {
         "id": 51,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
     },
     "Clue Starved (5 Suits)": {
         "id": 52,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"]
     },
     "Clue Starved (4 Suits)": {
         "id": 53,
-        "suits": ["Blue", "Green", "Yellow", "Red"],
+        "suits": ["Red", "Yellow", "Green", "Blue"],
         "spacing": true
     },
 
     "Up or Down (6 Suits)": {
         "id": 40,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
         "showSuitNames": true
     },
     "Up or Down (5 Suits)": {
         "id": 24,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
         "showSuitNames": true
     },
     "Up or Down & Rainbow (6 Suits)": {
         "id": 25,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Rainbow"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Rainbow"],
         "showSuitNames": true
     },
     "Up or Down & Rainbow (5 Suits)": {
         "id": 43,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Rainbow"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow"],
         "showSuitNames": true
     },
     "Up or Down & Pink (6 Suits)": {
         "id": 155,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Pink"],
         "showSuitNames": true
     },
     "Up or Down & Pink (5 Suits)": {
         "id": 156,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Pink"],
         "showSuitNames": true
     },
     "Up or Down & White (6 Suits)": {
         "id": 41,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "White"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "White"],
         "showSuitNames": true
     },
     "Up or Down & White (5 Suits)": {
         "id": 42,
-        "suits": ["Blue", "Green", "Yellow", "Red", "White"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "White"],
         "showSuitNames": true
     },
     "Up or Down & Brown (6 Suits)": {
         "id": 157,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Brown"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Brown"],
         "showSuitNames": true
     },
     "Up or Down & Brown (5 Suits)": {
         "id": 158,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Brown"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Brown"],
         "showSuitNames": true
     },
     "Up or Down & Omni (6 Suits)": {
         "id": 277,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Omni"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Omni"],
         "showSuitNames": true
     },
     "Up or Down & Omni (5 Suits)": {
         "id": 278,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Omni"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Omni"],
         "showSuitNames": true
     },
     "Up or Down & Null (6 Suits)": {
         "id": 61,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Null"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Null"],
         "showSuitNames": true
     },
     "Up or Down & Null (5 Suits)": {
         "id": 44,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Null"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Null"],
         "showSuitNames": true,
         "spacing": true
     },
 
     "Cow & Pig (6 Suits)": {
         "id": 98,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
     },
     "Cow & Pig (5 Suits)": {
         "id": 99,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"]
     },
     "Cow & Pig (4 Suits)": {
         "id": 100,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Red", "Yellow", "Green", "Blue"]
     },
     "Cow & Pig (3 Suits)": {
         "id": 101,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "spacing": true
     },
 
     "Duck (6 Suits)": {
         "id": 54,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
     },
     "Duck (5 Suits)": {
         "id": 55,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"]
     },
     "Duck (4 Suits)": {
         "id": 56,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Red", "Yellow", "Green", "Blue"]
     },
     "Duck (3 Suits)": {
         "id": 57,
-        "suits": ["Blue", "Green", "Yellow"],
+        "suits": ["Red", "Yellow", "Blue"],
         "spacing": true
     },
 
     "Throw It in a Hole (6 Suits)": {
         "id": 279,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple", "Teal"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
     },
     "Throw It in a Hole (5 Suits)": {
         "id": 280,
-        "suits": ["Blue", "Green", "Yellow", "Red", "Purple"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple"]
     },
     "Throw It in a Hole (4 Suits)": {
         "id": 281,
-        "suits": ["Blue", "Green", "Yellow", "Red"]
+        "suits": ["Red", "Yellow", "Green", "Blue"]
     }
 }

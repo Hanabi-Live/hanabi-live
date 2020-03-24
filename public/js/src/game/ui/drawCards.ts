@@ -6,7 +6,6 @@
 import {
     CARD_H,
     CARD_W,
-    COLORS,
     STACK_BASE_RANK,
     START_CARD_RANK,
     SUITS,
@@ -157,28 +156,28 @@ const drawSuitPips = (
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 1.8, scale * 1.8);
-        ctx.translate(-75, -100);
+        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
 
     // Top and bottom for cards 2
     if (rank == 2) {
-        const symbolYPos = colorblindUI ? 85 : 120;
+        const symbolYPos = colorblindUI ? 60 : 90;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(0, -symbolYPos);
         ctx.scale(scale * 1.4, scale * 1.4);
-        ctx.translate(-75, -100);
+        // ctx.translate(-75, -75);
         drawPip(ctx, suit, true, false);
         ctx.restore();
 
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(0, symbolYPos);
-        ctx.scale(scale, scale);
+        ctx.scale(scale * 1.4, scale * 1.4);
         ctx.rotate(Math.PI);
-        ctx.translate(-75, -100);
+        // ctx.translate(-75, -75);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -186,12 +185,12 @@ const drawSuitPips = (
 
     // Top and bottom for cards 3, 4, 5
     if (rank >= 3 && rank <= 5) {
-        const symbolYPos = colorblindUI ? 85 : 120;
+        const symbolYPos = colorblindUI ? 80 : 120;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(0, -symbolYPos);
         ctx.scale(scale, scale);
-        ctx.translate(-75, -100);
+        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
 
@@ -200,7 +199,7 @@ const drawSuitPips = (
         ctx.translate(0, symbolYPos);
         ctx.scale(scale, scale);
         ctx.rotate(Math.PI);
-        ctx.translate(-75, -100);
+        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -211,7 +210,7 @@ const drawSuitPips = (
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(-90, 0);
         ctx.scale(scale, scale);
-        ctx.translate(-75, -100);
+        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
 
@@ -220,7 +219,7 @@ const drawSuitPips = (
         ctx.translate(90, 0);
         ctx.scale(scale, scale);
         ctx.rotate(Math.PI);
-        ctx.translate(-75, -100);
+        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -231,7 +230,7 @@ const drawSuitPips = (
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 1.2, scale * 1.2);
-        ctx.translate(-75, -100);
+        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -242,7 +241,7 @@ const drawSuitPips = (
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 2.5, scale * 2.5);
-        ctx.translate(-75, -100);
+        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -253,7 +252,7 @@ const drawSuitPips = (
         ctx.globalAlpha = colorblindUI ? 0.4 : 0.1;
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 3, scale * 3);
-        ctx.translate(-75, -100);
+        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -301,9 +300,8 @@ const makeDeckBack = (variant: Variant) => {
         const suit = variant.suits[i];
 
         // Transform polar to cartesian coordinates
-        // The magic number added to the offset is needed to center things properly
-        const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.25); // eslint-disable-line
-        const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.3); // eslint-disable-line
+        const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
+        const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
         ctx.translate(x, y);
 
         drawPip(ctx, suit, true, true);
@@ -331,18 +329,6 @@ const drawCardBase = (ctx: CanvasRenderingContext2D, suit: Suit, rank: number) =
     // Draw the background
     ctx.fillStyle = getSuitStyle(suit, ctx, 'background');
     ctx.strokeStyle = getSuitStyle(suit, ctx, 'background');
-    const whiteSuit = SUITS.get('White');
-    if (typeof whiteSuit === 'undefined') {
-        throw new Error('Failed to get the white suit in the "drawCardBase()" function.');
-    }
-    if (ctx.fillStyle === whiteSuit.fill) {
-        const blackColor = COLORS.get('Black');
-        if (typeof blackColor === 'undefined') {
-            throw new Error('Failed to get the black color in the "drawCardBase()" function.');
-        }
-        ctx.strokeStyle = blackColor.fill;
-    }
-
     cardBorderPath(ctx, 4);
 
     ctx.save();

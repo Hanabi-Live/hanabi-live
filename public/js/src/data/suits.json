@@ -1,14 +1,14 @@
 {
     "Unknown": { "abbreviation": "", "clueColors": [], "fill": "#cccccc" },
 
-    "Blue": { "pip": "diamond" },
-    "Green": { "pip": "club" },
-    "Yellow": { "pip": "star" },
-    "Red": { "pip": "heart" },
-    "Purple": { "pip": "crescent" },
+    "Red": { "pip": "hanabi_red" },
+    "Yellow": { "pip": "hanabi_yellow" },
+    "Green": { "pip": "hanabi_green" },
+    "Blue": { "pip": "hanabi_blue" },
+    "Purple": { "pip": "hanabi_white" },
 
-    "Teal": { "pip": "flower" },
-    "Black": { "oneOfEach": true, "pip": "spade" },
+    "Teal": { "pip": "hanabi_alt_white" },
+    "Black": { "oneOfEach": true, "pip": "hanabi_alt_blue" },
     "Rainbow": {
         "abbreviation": "M",
         "allClueColors": true,
@@ -16,9 +16,9 @@
         "fillColors": ["#0044cc", "#00cc00", "#ccaa22", "#aa0000", "#6600cc"],
         "pip": "rainbow"
     },
-    "Pink": { "clueRanks": "all", "pip": "number_sign" },
-    "White": { "clueColors": [], "fill": "#d9d9d9", "pip": "circle" },
-    "Brown": { "clueRanks": "none", "pip": "tensor_symbol" },
+    "Pink": { "clueRanks": "all", "pip": "pink_hashtag" },
+    "White": { "clueColors": [], "fill": "#d9d9d9", "pip": "white_moon" },
+    "Brown": { "clueRanks": "none", "pip": "brown_splat" },
     "Omni": {
         "allClueColors": true,
         "clueRanks": "all",
@@ -26,7 +26,7 @@
         "fillColors": ["#000000", "#0044cc", "#00cc00", "#ccaa22", "#aa0000", "#6600cc", "#000000"],
         "pip": "infinity"
     },
-    "Null": { "abbreviation": "U", "clueColors": [], "clueRanks": "none", "fill": "#ffffff", "pip": "null_symbol" },
+    "Null": { "abbreviation": "U", "clueColors": [], "clueRanks": "none", "fill": "#ffffff", "pip": "empty_set" },
 
     "Dark Rainbow": {
         "abbreviation": "M",
@@ -42,21 +42,21 @@
         "clueRanks": "all",
         "fill": "#800040",
         "oneOfEach": true,
-        "pip": "number_sign"
+        "pip": "pink_hashtag"
     },
     "Gray": {
         "abbreviation": "A",
         "clueColors": [],
         "fill": "#555555",
         "oneOfEach": true,
-        "pip": "circle"
+        "pip": "white_moon"
     },
     "Chocolate": {
         "clueColors": ["Brown"],
         "clueRanks": "none",
         "fill": "#271a0c",
         "oneOfEach": true,
-        "pip": "tensor_symbol"
+        "pip": "brown_splat"
     },
     "Dark Omni": {
         "abbreviation": "O",
@@ -73,7 +73,7 @@
         "clueRanks": "none",
         "fill": "#a6a6a6",
         "oneOfEach": true,
-        "pip": "null_symbol"
+        "pip": "empty_set"
     },
 
     "Muddy Rainbow": {
@@ -89,7 +89,7 @@
         "clueColors": [],
         "clueRanks": "all",
         "fill": "#ffcce6",
-        "pip": "number_sign"
+        "pip": "pink_hashtag"
      },
      "Cocoa Rainbow": {
         "abbreviation": "M",
@@ -106,7 +106,7 @@
         "clueRanks": "all",
         "fill": "#ffcce6",
         "oneOfEach": true,
-        "pip": "number_sign"
+        "pip": "pink_hashtag"
      },
 
     "Sky": { "clueColors": ["Blue"], "fill": "#1a66ff", "pip": "diamond" },
