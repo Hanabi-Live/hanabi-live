@@ -13,7 +13,7 @@
         "abbreviation": "M",
         "allClueColors": true,
         "fill": "multi",
-        "fillColors": ["#0044cc", "#00cc00", "#ccaa22", "#aa0000", "#6600cc"],
+        "fillColors": ["#ff0000", "#ffff00", "#02ec00", "#0037ff", "#6600cc"],
         "pip": "rainbow"
     },
     "Pink": { "clueRanks": "all", "pip": "pink_hashtag" },
@@ -23,7 +23,7 @@
         "allClueColors": true,
         "clueRanks": "all",
         "fill": "multi",
-        "fillColors": ["#000000", "#0044cc", "#00cc00", "#ccaa22", "#aa0000", "#6600cc", "#000000"],
+        "fillColors": ["#000000", "#ff0000", "#ffff00", "#02ec00", "#0037ff", "#6600cc", "#000000"],
         "pip": "infinity"
     },
     "Null": { "abbreviation": "U", "clueColors": [], "clueRanks": "none", "fill": "#ffffff", "pip": "empty_set" },
@@ -81,7 +81,7 @@
         "allClueColors": true,
         "clueRanks": "none",
         "fill": "multi",
-        "fillColors": ["#654321", "#00cc00", "#ccaa22", "#aa0000", "#654321"],
+        "fillColors": ["#654321", "#02ec00", "#ffff00", "#ff0000", "#654321"],
         "pip": "rainbow"
     },
     "Light Pink": {
@@ -96,7 +96,7 @@
         "allClueColors": true,
         "clueRanks": "none",
         "fill": "multi",
-        "fillColors": ["#654321", "#00cc00", "#ccaa22", "#aa0000", "#654321"],
+        "fillColors": ["#654321", "#02ec00", "#ffff00", "#ff0000", "#654321"],
         "oneOfEach": true,
         "pip": "rainbow"
     },
