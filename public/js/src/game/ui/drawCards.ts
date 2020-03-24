@@ -163,7 +163,7 @@ const drawSuitPips = (
     }
 
     // Top and bottom for cards 2
-    if (rank >= 2 && rank <= 5) {
+    if (rank == 2) {
         const symbolYPos = colorblindUI ? 85 : 120;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -185,7 +185,7 @@ const drawSuitPips = (
 
 
     // Top and bottom for cards 3, 4, 5
-    if (rank >= 2 && rank <= 5) {
+    if (rank >= 3 && rank <= 5) {
         const symbolYPos = colorblindUI ? 85 : 120;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -226,7 +226,7 @@ const drawSuitPips = (
     }
 
     // Size, position, and alpha adjustment for the central icon on 3 and 5
-    if (rank === 0 || rank === 5) {
+    if (rank === 3 || rank === 5) {
         ctx.globalAlpha = 1;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -237,7 +237,7 @@ const drawSuitPips = (
     }
 
     // Size, position, and alpha adjustment for the central icon on stack base
-    if (rank === 0 || rank === 5) {
+    if (rank === 0) {
         ctx.globalAlpha = 1;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
