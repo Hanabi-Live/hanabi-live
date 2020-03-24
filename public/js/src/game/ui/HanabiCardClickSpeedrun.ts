@@ -8,6 +8,7 @@ import {
     CLUE_TYPE,
     MAX_CLUE_NUM,
     STACK_BASE_RANK,
+    START_CARD_RANK,
 } from '../../constants';
 import Color from '../../Color';
 import ColorButton from './ColorButton';
@@ -82,30 +83,34 @@ const clickLeft = (card: any, event: PointerEvent) => { // TODO change to Hanabi
 
         // A card may be cluable by more than one color,
         // so we need to figure out which color to use
+        // First, find out if they have a clue color button selected
         const clueButton = globals.elements.clueTypeButtonGroup!.getPressed() as ColorButton;
-        const { clueColors } = card.suit;
-        const clueColorIndex = clueColors.findIndex(
-            (cardColor: Color) => cardColor === clueButton.clue.value,
-        );
-        let color: Color;
-        if (
-            // If a clue type button is selected
-            clueButton
-            // If a color clue type button is selected
-            && clueButton.clue.type === CLUE_TYPE.COLOR
-            // If the selected color clue is actually one of the possibilies for the card
-            && clueColorIndex !== -1
-        ) {
-            // Use the color of the currently selected button
-            color = clueButton.clue.value as Color;
+        let clueColor: Color;
+        if (clueButton === null) {
+            // They have not clicked on a clue color button yet,
+            // so assume that they want to use the first possible color of the card
+            clueColor = card.suit.clueColors[0];
+        } else if (typeof clueButton.clue.value === 'number') {
+            // They have clicked on a number clue button,
+            // so assume that they want to use the first possible color of the card
+            clueColor = card.suit.clueColors[0];
         } else {
-            // Otherwise, just use the first possible color
-            // e.g. for rainbow cards, use blue
-            color = clueColors[0];
+            // They have clicked on a color button, so assume that they want to use that color
+            clueColor = clueButton.clue.value;
+
+            // See if this is a valid color for the clicked card
+            const clueColorIndex = card.suit.clueColors.findIndex(
+                (cardColor: Color) => cardColor === clueColor,
+            );
+            if (clueColorIndex === -1) {
+                // It is not possible to clue this color to this card,
+                // so default to using the first valid color
+                clueColor = card.suit.clueColors[0];
+            }
         }
 
         const value = globals.variant.clueColors.findIndex(
-            (variantColor) => variantColor === color,
+            (variantColor) => variantColor === clueColor,
         );
         turn.end({
             type: ACTION.CLUE,
@@ -148,6 +153,12 @@ const clickRight = (card: any, event: PointerEvent) => { // TODO change to Hanab
         && !event.metaKey
     ) {
         globals.preCluedCard = card.order;
+
+        if (card.rank === START_CARD_RANK) {
+            // It is not possible to clue a Start Card with a rank clue, so just ignore the click
+            return;
+        }
+
         turn.end({
             type: ACTION.CLUE,
             target: card.holder,

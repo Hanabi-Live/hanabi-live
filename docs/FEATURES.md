@@ -213,7 +213,7 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 #### Real-Life Mode
 
 * In real-life mode, cards will no longer be filled in with positive and negative clues.
-* Furthermore, extra UI elements are turned off (8 clue warning, double discard warning, etc.).
+* Furthermore, extra UI elements are turned off (8 clue warning, etc.).
 
 #### Pre-Playing
 
@@ -226,8 +226,8 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventions">Hyphen-ated group</a>, some additional UI elements are enabled:
 
 * Double discard situation notification
-* Special sound effect for double discard (TODO)
-* Special sound effect for discarding a clued card (TODO)
+* Special sound effect when discarding in a double discard situation (TODO)
+* Special sound effect when discarding a clued card (TODO)
 
 <br />
 

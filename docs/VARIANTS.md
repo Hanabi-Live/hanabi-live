@@ -51,7 +51,7 @@ Special:
 
 ### Six Suits
 
-* An teal suit is added.
+* A teal suit is added.
 * It works identical to the other suits in that you can clue teal cards with teal clues.
 * (This is the first [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants).)
 
@@ -228,9 +228,9 @@ Special:
 
 ### Alternating Clues
 
-* This variant was invented by Jake Stiles.
 * The first clue of the game has no restrictions. After that, each successive clue must be the opposite type as the one prior.
 * For example, if the first clue of the game is a color clue, then the second clue must be a number clue, the third clue must be a color clue, and so forth.
+* This variant was invented by Jake Stiles.
 
 ### Clue Starved
 
@@ -238,7 +238,6 @@ Special:
 
 ### Up or Down
 
-* This variant was invented by [Sean McCarthy on the BoardGameGeek forums](https://boardgamegeek.com/article/30863162).
 * Two 1's are removed from each suit.
 * One "START" card is added to each suit.
 * When a stack is empty, you can play either a 1, a 5, or a START card on it.
@@ -246,6 +245,7 @@ Special:
 * If a stack was started with a 1 (or a START + 2), then it works as a normal stack.
 * If a stack was started with a 5 (or a START + 4), then it must be completed in reverse.
 * A clue token is given when a stack is completed, regardless of whether it is a normal stack or a reversed stack.
+* This variant was invented by [Sean McCarthy on the BoardGameGeek forums](https://boardgamegeek.com/article/30863162).
 
 ### Cow & Pig
 
@@ -253,16 +253,16 @@ Special:
 
 ### Duck
 
-* This variant was invented by Jack Gurev's group.
 * When players give a clue, they point at the cards clued, but say "quack" instead of a color or number.
+* This variant was invented by Jack Gurev's group.
 
 ### Throw It in a Hole
 
-* This variant was invented by Jack Gurev's group.
 * When players play a card, they do not flip it over like normal but instead place it face down in the center of the table.
 * The score of the game is not revealed until the game is over.
 * Players do not get a clue back for successfully playing a 5.
 * The game will automatically end if 3 strikes are accumulated.
+* This variant was invented by Jack Gurev's group.
 
 <br />
 
