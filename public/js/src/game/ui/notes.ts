@@ -137,6 +137,8 @@ const checkNoteIdentity = (card: any, note: string, fullNote: string) => { // TO
     card.noteFinessed = (
         note === 'f'
         || fullNote.includes('[f]')
+        || note === 'pf'
+        || fullNote.includes('[pf]')
     );
     card.noteBlank = (
         note === 'blank'
