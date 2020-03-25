@@ -666,7 +666,7 @@ export default class HanabiCard extends Konva.Group {
         }
     }
 
-    // If a clue just eliminated the possibility of suit that has special rank properties,
+    // If a clue just eliminated the possibility of being a special multi-rank card,
     // we can retroactively remove rank pips from previous rank clues
     checkReapplyRankClues() {
         if (!this.reapplyRankClues) {
@@ -685,7 +685,7 @@ export default class HanabiCard extends Konva.Group {
         }
     }
 
-    // If a clue just eliminated the possibility of being a "Rainbow-One" or "Rainbow-Five" card,
+    // If a clue just eliminated the possibility of being a special multi-color card,
     // we need to retroactively apply previous color clues
     checkReapplyColorClues() {
         if (!this.reapplyColorClues) {
