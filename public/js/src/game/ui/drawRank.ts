@@ -230,6 +230,6 @@ export default function drawRank(
     }
     // Draw the respective shape on the canvas
     // (or, for text pips, define the type of text)
-    ctx.translate(60,110);
+    ctx.translate(60, 110);
     shapeFunction(ctx);
 }

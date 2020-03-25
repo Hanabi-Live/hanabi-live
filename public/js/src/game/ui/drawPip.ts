@@ -1,12 +1,12 @@
 import Suit from '../../Suit';
 
 const shapeFunctions: Map<string, (ctx: CanvasRenderingContext2D, colors?: Array<string>)
-    => Array<any>> = new Map();
+=> Array<any>> = new Map();
 const sf = 3; // Scale factor
 
 shapeFunctions.set('hanabi_red', (ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
-    ctx.scale(sf,sf);
+    ctx.scale(sf, sf);
     ctx.translate(-40.903844, -80.253155);
     ctx.moveTo(47.530531, 88.392690);
     ctx.bezierCurveTo(29.757962, 90.070210, 31.193616, 78.987850, 34.277276, 72.111260);
@@ -142,7 +142,7 @@ shapeFunctions.set('hanabi_white', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(308.214450, 360.449210, 306.271230, 346.847800, 304.880800, 333.661900);
     ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
-    ctx.scale(4,4);
+    ctx.scale(4, 4);
 
     return [];
 });
@@ -255,7 +255,7 @@ shapeFunctions.set('white_moon', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(416.929670, 126.511220, 394.181380, 128.772830, 374.943620, 141.085200);
     ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
-    ctx.scale(4,4);
+    ctx.scale(4, 4);
 
     return [];
 });
@@ -333,7 +333,7 @@ shapeFunctions.set('pink_hashtag', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(-13.128058, -21.264055, -11.629970, -22.679328, -9.834935, -22.679328);
     ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
-    ctx.scale(3,3);
+    ctx.scale(3, 3);
 
     return [];
 });
@@ -442,7 +442,7 @@ shapeFunctions.set('brown_splat', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(77.71, 119.91, 75.60, 120.50, 73.55, 120.05);
     ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
-    ctx.scale(3,3);
+    ctx.scale(3, 3);
 
     return [];
 });
@@ -498,7 +498,7 @@ shapeFunctions.set('empty_set', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(-65.257998, 73.968204, -68.839478, 73.889654, -70.961668, 72.098364);
     ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
-    ctx.scale(3.5,3.5);
+    ctx.scale(3.5, 3.5);
 
     return [];
 });
@@ -524,27 +524,26 @@ shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D, colors?: Array<st
     ctx.bezierCurveTo(74.463876, 120.864520, 73.761523, 120.627410, 73.172033, 120.342210);
     ctx.bezierCurveTo(72.711854, 115.080550, 75.752370, 115.504430, 77.638733, 116.418060);
     ctx.bezierCurveTo(77.955104, 120.035450, 76.616822, 120.965250, 75.136667, 120.896220);
-    ctx.transform(1/2.128652, 0.000000, 0.000000, 1/2.476848, 0, 0);
+    ctx.transform(1 / 2.128652, 0.000000, 0.000000, 1 / 2.476848, 0, 0);
     ctx.scale(5 / 6,  5 / 6);
     ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
     if (colors) {
-    // When multiple colors are passed, create a gradient.
-    const gradient = ctx.createLinearGradient(500, 0, 700, 0);
-        for (let i = 0; i < colors.length; ++i) {
-            gradient.addColorStop(i / (colors.length - 1), colors[i]);
+        // When multiple colors are passed, create a gradient.
+        const gradient = ctx.createLinearGradient(500, 0, 700, 0);
+            for (let i = 0; i < colors.length; ++i) {
+                gradient.addColorStop(i / (colors.length - 1), colors[i]);
+            }
+            ctx.fillStyle = gradient;
+            ctx.fill();
         }
-        ctx.fillStyle = gradient;
-        ctx.fill();
-    }
     return [];
 });
 shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<string>) => {
-
     ctx.scale(sf, sf);
     ctx.translate(-122.267240, -111.175040);
 
-// 2511
+    // 2511
     ctx.beginPath();
     ctx.moveTo(120.704500, 112.947540);
     ctx.lineTo(121.467550, 113.309240);
@@ -567,7 +566,7 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     }
     ctx.closePath();
 
-// 2515
+    // 2515
     ctx.beginPath();
     ctx.moveTo(118.989890, 90.936255);
     ctx.bezierCurveTo(119.304210, 91.041735, 119.369090, 91.109475, 119.802410, 91.787675);
@@ -590,7 +589,7 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     }
     ctx.closePath();
 
-// 2517
+    // 2517
     ctx.beginPath();
     ctx.moveTo(109.895010, 106.209430);
     ctx.bezierCurveTo(112.598280, 106.441230, 115.232040, 107.157590, 117.396170, 108.249980);
@@ -615,7 +614,7 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     }
     ctx.closePath();
 
-// 2521
+    // 2521
     ctx.beginPath();
     ctx.moveTo(129.447170, 90.861735);
     ctx.bezierCurveTo(130.388350, 91.250415, 132.526800, 93.071585, 134.783090, 95.405515);
@@ -637,7 +636,7 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     }
     ctx.closePath();
 
-// 2523
+    // 2523
     ctx.beginPath();
     ctx.moveTo(142.647930, 111.570550);
     ctx.bezierCurveTo(142.947360, 112.036360, 142.445890, 113.716330, 141.134210, 116.637040);
@@ -659,7 +658,7 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     }
     ctx.closePath();
 
-// #path823
+    // 823
     ctx.beginPath();
     ctx.moveTo(121.056850, 112.245000);
     ctx.lineTo(120.182830, 111.841470);
@@ -684,8 +683,8 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
         ctx.fill();
     }
     ctx.closePath();
-    
-// 1176
+
+    // 1176
     ctx.beginPath();
     ctx.moveTo(143.094540, 111.199230);
     ctx.bezierCurveTo(142.981220, 111.042580, 142.755960, 110.850660, 142.345530, 110.850660);
@@ -758,18 +757,16 @@ export default (
         ctx.fillStyle = '#444444';
         shapeFunction(ctx);
         ctx.fill();
+    } else if (suit.fill === 'multi') {
+        // Rainbow and omni cards have a multiple color fill
+        // which is passed as an array to the drawing function
+        // The drawing function will handle the filling.
+        shapeFunction(ctx, suit.fillColors);
     } else {
-        if (suit.fill === 'multi') {
-            // Rainbow and omni cards have a multiple color fill
-            // which is passed as an array to the drawing function
-            // The drawing function will handle the filling.
-            shapeFunction(ctx, suit.fillColors);
-        } else {        
-            // All other suits have a solid fill
-            ctx.fillStyle = suit.fill;
-            shapeFunction(ctx);
-            ctx.fill();
-        }
+        // All other suits have a solid fill
+        ctx.fillStyle = suit.fill;
+        shapeFunction(ctx);
+        ctx.fill();
     }
 
     // Draw a black border around the shape
