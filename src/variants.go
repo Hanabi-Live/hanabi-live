@@ -290,6 +290,22 @@ func variantsInit() {
 		variantsID[variant.ID] = name
 	}
 
+	// Validate that there are no skipped ID numbers
+	for i := 0; i < len(JSONVariants); i++ {
+		foundID := false
+		for _, variant := range JSONVariants {
+			if variant.ID == i {
+				foundID = true
+				break
+			}
+		}
+		if !foundID {
+			logger.Fatal("There is no variant with an ID of \"" + strconv.Itoa(i) + "\". " +
+				"(Variant IDs must be sequential.)")
+			return
+		}
+	}
+
 	// We also need an ordered list of the variants
 	var variantsOrdered orderedJson.OrderedObject
 	if err := orderedJson.Unmarshal(contents, &variantsOrdered); err != nil {
@@ -297,8 +313,8 @@ func variantsInit() {
 		return
 	}
 	variantsList = make([]string, 0)
-	for _, oo := range variantsOrdered {
-		variantsList = append(variantsList, oo.Key)
+	for _, orderedObject := range variantsOrdered {
+		variantsList = append(variantsList, orderedObject.Key)
 	}
 }
 
@@ -316,8 +332,21 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		if variants[variant].RankCluesTouchNothing {
 			return false
 		}
-		if strings.Contains(variant, "Multi-Fives") && card.Rank == 5 {
+		if (strings.Contains(variant, "Pink-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "Omni-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "Pink-Fives") && card.Rank == 5) ||
+			(strings.Contains(variant, "Omni-Fives") && card.Rank == 5) {
+
 			return true
+		}
+		if (strings.Contains(variant, "Brown-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "Omni-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "Muddy-Rainbow-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "Brown-Fives") && card.Rank == 5) ||
+			(strings.Contains(variant, "Omni-Fives") && card.Rank == 5) ||
+			(strings.Contains(variant, "Muddy-Rainbow-Fives") && card.Rank == 5) {
+
+			return false
 		}
 		return card.Rank == clue.Value
 	}
@@ -326,8 +355,21 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		if variants[variant].ColorCluesTouchNothing {
 			return false
 		}
-		if strings.Contains(variant, "Prism-Ones") && card.Rank == 1 {
+		if (strings.Contains(variant, "Rainbow-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "Omni-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "Rainbow-Fives") && card.Rank == 5) ||
+			(strings.Contains(variant, "Omni-Fives") && card.Rank == 5) {
+
 			return true
+		}
+		if (strings.Contains(variant, "White-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "Omni-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "Light-Pink-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "White-Fives") && card.Rank == 5) ||
+			(strings.Contains(variant, "Omni-Fives") && card.Rank == 5) ||
+			(strings.Contains(variant, "Light-Pink-Fives") && card.Rank == 5) {
+
+			return false
 		}
 		color := variants[variant].ClueColors[clue.Value]
 		colors := variants[variant].Suits[card.Suit].ClueColors

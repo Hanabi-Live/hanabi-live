@@ -9,7 +9,7 @@ var (
 	fastestTimes             = make(map[string][]int)
 	officialSpeedrunVariants = []string{
 		"No Variant",
-		"Six Suits",
+		"6 Suits",
 		"Black (6 Suits)",
 		"Rainbow (6 Suits)",
 		"Dark Rainbow (6 Suits)",
