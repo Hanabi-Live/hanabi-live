@@ -13,6 +13,7 @@ import {
 } from '../../constants';
 import Color from '../../Color';
 import drawPip from './drawPip';
+import drawRank from './drawRank';
 import globals from './globals';
 import Suit from '../../Suit';
 import Variant from '../../Variant';
@@ -80,7 +81,13 @@ export default (variant: Variant, colorblindUI: boolean) => {
                 ctx.font = `bold ${fontSize}pt Arial`;
 
                 // Draw the rank on the top left
-                drawText(ctx, textYPos, rankLabel);
+                if (colorblindUI) {
+                    drawText(ctx, textYPos, rankLabel);
+                } else {
+		    ctx.save();
+                    drawRank(ctx, rank);
+	            ctx.restore();
+                }
 
                 // "Index" cards are used to draw cards of learned but not yet known rank
                 // (e.g. for in-game replays)
@@ -91,7 +98,11 @@ export default (variant: Variant, colorblindUI: boolean) => {
                 ctx.save();
                 ctx.translate(CARD_W, CARD_H);
                 ctx.rotate(Math.PI);
-                drawText(ctx, textYPos, rankLabel);
+                if (colorblindUI) {
+                    drawText(ctx, textYPos, rankLabel);
+                } else {
+                    drawRank(ctx, rank)
+                }
                 ctx.restore();
             }
 
