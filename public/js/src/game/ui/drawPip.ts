@@ -777,21 +777,23 @@ export default (
         ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
     }
 
-    if (suit.fill === 'multi') {
-        // Rainbow and omni cards have a multiple color fill
-        // which is passed as an array to the drawing function
-        // The drawing function will handle the filling.
-        shapeFunction(ctx, suit.fillColors);
-    } else {
-        if (deckBack) {
-            // Pips on the back of the deck should be gray
-            ctx.fillStyle = '#444444';
-        } else {
-            // All other suits have a solid fill
-            ctx.fillStyle = suit.fill;
-        }
+    if (deckBack) {
+        // Pips on the back of the deck should be gray
+        ctx.fillStyle = '#444444';
         shapeFunction(ctx);
         ctx.fill();
+    } else {
+        if (suit.fill === 'multi') {
+            // Rainbow and omni cards have a multiple color fill
+            // which is passed as an array to the drawing function
+            // The drawing function will handle the filling.
+            shapeFunction(ctx, suit.fillColors);
+        } else {        
+            // All other suits have a solid fill
+            ctx.fillStyle = suit.fill;
+            shapeFunction(ctx);
+            ctx.fill();
+        }
     }
 
     // Draw a black border around the shape
