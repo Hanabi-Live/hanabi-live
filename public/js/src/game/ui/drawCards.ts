@@ -170,7 +170,7 @@ const drawSuitPips = (
 ) => {
     const scale = 0.4;
 
-    // The middle for cards 1
+    // The middle for card 1
     if (rank === 1) {
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -179,7 +179,7 @@ const drawSuitPips = (
         ctx.restore();
     }
 
-    // Top and bottom for cards 2
+    // Top and bottom for card 2
     if (rank === 2) {
         const symbolYPos = colorblindUI ? 60 : 90;
         ctx.save();

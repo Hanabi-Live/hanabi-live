@@ -114,8 +114,8 @@ export function pips(this: HanabiCard) {
         const offsetBase = CARD_W * 0.7;
         const offsetTrig = ((-i / suits.length) + 0.25) * Math.PI * 2;
         const offset = {
-            x: Math.floor((offsetBase * Math.cos(offsetTrig))),
-            y: Math.floor((offsetBase * Math.sin(offsetTrig))),
+            x: Math.floor(offsetBase * Math.cos(offsetTrig)),
+            y: Math.floor(offsetBase * Math.sin(offsetTrig)),
         };
         let { fill } = suit;
         if (suit.fill === 'multi') {
