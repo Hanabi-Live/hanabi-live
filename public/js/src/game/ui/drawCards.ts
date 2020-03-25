@@ -84,7 +84,7 @@ export default (variant: Variant, colorblindUI: boolean) => {
                 if (colorblindUI) {
                     drawText(ctx, textYPos, rankLabel);
                 } else {
-    		        ctx.save();
+                    ctx.save();
                     drawRank(ctx, rank);
                     ctx.restore();
                     ctx.fill();
@@ -104,7 +104,7 @@ export default (variant: Variant, colorblindUI: boolean) => {
                 if (colorblindUI) {
                     drawText(ctx, textYPos, rankLabel);
                 } else {
-                    drawRank(ctx, rank)
+                    drawRank(ctx, rank);
                     ctx.restore();
                     ctx.translate(CARD_W, CARD_H);
                     ctx.rotate(Math.PI);
@@ -180,7 +180,7 @@ const drawSuitPips = (
     }
 
     // Top and bottom for cards 2
-    if (rank == 2) {
+    if (rank === 2) {
         const symbolYPos = colorblindUI ? 60 : 90;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -197,7 +197,6 @@ const drawSuitPips = (
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
-
 
     // Top and bottom for cards 3, 4, 5
     if (rank >= 3 && rank <= 5) {

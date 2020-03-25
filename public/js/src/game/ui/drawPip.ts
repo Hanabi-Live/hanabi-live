@@ -1,10 +1,10 @@
 import Suit from '../../Suit';
 
-const shapeFunctions: Map<string, (ctx: CanvasRenderingContext2D, colors?: Array<string>) => Array<any>> = new Map();
+const shapeFunctions: Map<string, (ctx: CanvasRenderingContext2D, colors?: Array<string>)
+    => Array<any>> = new Map();
 const sf = 3; // Scale factor
 
 shapeFunctions.set('hanabi_red', (ctx: CanvasRenderingContext2D) => {
-
     ctx.beginPath();
     ctx.scale(sf,sf);
     ctx.translate(-40.903844, -80.253155);
@@ -16,14 +16,12 @@ shapeFunctions.set('hanabi_red', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(11.602243, 72.595989, 17.005567, 101.105070, 43.609027, 101.100330);
     ctx.bezierCurveTo(45.321658, 101.100330, 46.646522, 97.604970, 47.530531, 94.261780);
     ctx.bezierCurveTo(70.205570, 87.912670, 64.799917, 59.401233, 38.201088, 59.405974);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 
     return [];
 });
-
 shapeFunctions.set('hanabi_yellow', (ctx: CanvasRenderingContext2D) => {
-
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.translate(-58.029065, -70.265748);
@@ -47,14 +45,12 @@ shapeFunctions.set('hanabi_yellow', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(65.205475, 87.244869, 66.084837, 89.785519, 71.354499, 88.984149);
     ctx.bezierCurveTo(76.622002, 88.180599, 78.326561, 85.962679, 78.618964, 85.278249);
     ctx.bezierCurveTo(78.907030, 84.591659, 79.160440, 83.876899, 78.213916, 83.017049);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 
     return [];
 });
-
 shapeFunctions.set('hanabi_green', (ctx: CanvasRenderingContext2D) => {
-
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.translate(-37.891880, -52.702171);
@@ -83,14 +79,12 @@ shapeFunctions.set('hanabi_green', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(47.214058, 72.535820, 47.638570, 74.719433, 49.728244, 72.812352);
     ctx.bezierCurveTo(52.749542, 70.051852, 55.737819, 67.031506, 58.374671, 61.846624);
     ctx.bezierCurveTo(58.374671, 61.846624, 59.841692, 60.661853, 56.910015, 58.292302);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 
     return [];
 });
-
 shapeFunctions.set('hanabi_blue', (ctx: CanvasRenderingContext2D) => {
-
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.translate(-99.694341, -76.779331);
@@ -109,15 +103,13 @@ shapeFunctions.set('hanabi_blue', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(103.987710, 79.224239, 105.578380, 91.991907, 105.903200, 92.330067);
     ctx.bezierCurveTo(105.903200, 92.330067, 111.792060, 98.539287, 120.546360, 94.541477);
     ctx.bezierCurveTo(120.546360, 94.541477, 116.388350, 89.549157, 115.298220, 63.130560);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 
     return [];
 });
-
 shapeFunctions.set('hanabi_white', (ctx: CanvasRenderingContext2D) => {
-
-    ctx.scale(1/4, 1/4);
+    ctx.scale(0.25, 0.25);
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.translate(-240.369510, -310.428580);
@@ -148,7 +140,7 @@ shapeFunctions.set('hanabi_white', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(296.865020, 387.516350, 306.874310, 383.335860, 309.160920, 381.580540);
     ctx.bezierCurveTo(311.472710, 379.825280, 313.675590, 377.900380, 312.193020, 373.134800);
     ctx.bezierCurveTo(308.214450, 360.449210, 306.271230, 346.847800, 304.880800, 333.661900);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
     ctx.scale(4,4);
 
@@ -156,10 +148,8 @@ shapeFunctions.set('hanabi_white', (ctx: CanvasRenderingContext2D) => {
 });
 
 shapeFunctions.set('hanabi_alt_white', (ctx: CanvasRenderingContext2D) => {
-
     ctx.beginPath();
     ctx.scale(sf, sf);
-
     ctx.translate(-74.155390, -82.208377);
     ctx.transform(-3.299668, 1.133672, -1.200981, -3.114738, 480.922540, 360.609040);
     ctx.transform(0.282222, 0, 0, 0.282222, 74.155397, 112.541770);
@@ -202,14 +192,12 @@ shapeFunctions.set('hanabi_alt_white', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(19.676131, 18.159934, 19.610992, 18.196431, 20.845703, 16.533203);
     ctx.bezierCurveTo(21.754551, 15.308955, 22.300389, 14.739290, 22.884766, 14.408203);
     ctx.bezierCurveTo(23.170303, 14.246451, 23.429261, 14.165214, 23.660156, 14.164062);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 
     return [];
 });
-
 shapeFunctions.set('hanabi_alt_blue', (ctx: CanvasRenderingContext2D) => {
-
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.translate(-110.389020, -72.869975);
@@ -246,15 +234,13 @@ shapeFunctions.set('hanabi_alt_blue', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(116.427160, 89.254553, 116.499620, 90.696633, 115.824690, 91.302373);
     ctx.bezierCurveTo(115.195060, 91.867403, 111.732710, 93.728673, 111.311270, 93.728673);
     ctx.bezierCurveTo(111.171620, 93.728673, 110.847760, 93.145433, 110.591460, 92.432703);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 
     return [];
 });
-
 shapeFunctions.set('white_moon', (ctx: CanvasRenderingContext2D) => {
-
-    ctx.scale(1/4, 1/4);
+    ctx.scale(0.25, 0.25);
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.translate(-414.893820, -203.536190);
@@ -267,16 +253,14 @@ shapeFunctions.set('white_moon', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(377.367610, 190.244110, 384.683480, 157.175020, 409.562190, 141.249940);
     ctx.bezierCurveTo(418.141550, 135.758650, 427.650370, 133.064360, 437.139060, 132.858390);
     ctx.bezierCurveTo(416.929670, 126.511220, 394.181380, 128.772830, 374.943620, 141.085200);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
-    ctx.scale(4, 4);
+    ctx.scale(4,4);
 
     return [];
 });
-
 shapeFunctions.set('pink_hashtag', (ctx: CanvasRenderingContext2D) => {
-
-    ctx.scale(1/3,1/3);
+    ctx.scale(1 / 3, 1 / 3);
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.moveTo(66.660601, 59.539431);
@@ -347,7 +331,7 @@ shapeFunctions.set('pink_hashtag', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(-14.930483, 4.783101, -15.256114, 3.795888, -15.171328, 2.798268);
     ctx.lineTo(-13.285008, -19.420263);
     ctx.bezierCurveTo(-13.128058, -21.264055, -11.629970, -22.679328, -9.834935, -22.679328);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
     ctx.scale(3,3);
 
@@ -355,8 +339,7 @@ shapeFunctions.set('pink_hashtag', (ctx: CanvasRenderingContext2D) => {
 });
 
 shapeFunctions.set('brown_splat', (ctx: CanvasRenderingContext2D) => {
-
-    ctx.scale(1/3,1/3);
+    ctx.scale(1 / 3, 1 / 3);
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.transform(1, 0, 0, -1, -70.956253, 59.151274);
@@ -457,7 +440,7 @@ shapeFunctions.set('brown_splat', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(81.85, 113.43, 81.82, 113.75, 81.62, 114.48);
     ctx.bezierCurveTo(81.16, 116.18, 80.47, 117.34, 79.26, 118.47);
     ctx.bezierCurveTo(77.71, 119.91, 75.60, 120.50, 73.55, 120.05);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
     ctx.scale(3,3);
 
@@ -465,8 +448,7 @@ shapeFunctions.set('brown_splat', (ctx: CanvasRenderingContext2D) => {
 });
 
 shapeFunctions.set('empty_set', (ctx: CanvasRenderingContext2D) => {
-
-    ctx.scale(2/7, 2/7);
+    ctx.scale(2 / 7, 2 / 7);
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.moveTo(18.066960, -33.593032);
@@ -514,15 +496,13 @@ shapeFunctions.set('empty_set', (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(-39.727406, 51.627384, -44.405839, 56.008504, -49.802924, 61.363214);
     ctx.bezierCurveTo(-55.311645, 66.828704, -60.647873, 71.623884, -61.968783, 72.295584);
     ctx.bezierCurveTo(-65.257998, 73.968204, -68.839478, 73.889654, -70.961668, 72.098364);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
     ctx.scale(3.5,3.5);
 
     return [];
 });
-
 shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D, colors?: Array<string>) => {
-
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.scale(1.2, 1.2);
@@ -545,10 +525,9 @@ shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D, colors?: Array<st
     ctx.bezierCurveTo(72.711854, 115.080550, 75.752370, 115.504430, 77.638733, 116.418060);
     ctx.bezierCurveTo(77.955104, 120.035450, 76.616822, 120.965250, 75.136667, 120.896220);
     ctx.transform(1/2.128652, 0.000000, 0.000000, 1/2.476848, 0, 0);
-    ctx.scale(1/1.2, 1/1.2);
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(5 / 6,  5 / 6);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
-
     if (colors) {
     // When multiple colors are passed, create a gradient.
     const gradient = ctx.createLinearGradient(500, 0, 700, 0);
@@ -558,10 +537,8 @@ shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D, colors?: Array<st
         ctx.fillStyle = gradient;
         ctx.fill();
     }
-
     return [];
 });
-
 shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<string>) => {
 
     ctx.scale(sf, sf);
@@ -585,8 +562,8 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     ctx.bezierCurveTo(118.602190, 113.695410, 119.833220, 112.584330, 119.908670, 112.585320);
     ctx.bezierCurveTo(119.925970, 112.585560, 120.285310, 112.748660, 120.704910, 112.947790);
     if (colors) {
-      ctx.fillStyle = colors[1];
-      ctx.fill();
+        ctx.fillStyle = colors[1];
+        ctx.fill();
     }
     ctx.closePath();
 
@@ -608,8 +585,8 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     ctx.bezierCurveTo(110.261110, 93.670755, 114.325170, 91.716045, 116.863790, 91.070105);
     ctx.bezierCurveTo(117.650790, 90.869705, 118.613070, 90.808665, 118.989640, 90.934275);
     if (colors) {
-      ctx.fillStyle = colors[4];
-      ctx.fill();
+        ctx.fillStyle = colors[4];
+        ctx.fill();
     }
     ctx.closePath();
 
@@ -633,12 +610,12 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     ctx.bezierCurveTo(102.855560, 106.882850, 104.280190, 106.522360, 105.763100, 106.320830);
     ctx.bezierCurveTo(106.706170, 106.192410, 108.973620, 106.132430, 109.895770, 106.211460);
     if (colors) {
-      ctx.fillStyle = colors[0];
-      ctx.fill();
+        ctx.fillStyle = colors[0];
+        ctx.fill();
     }
     ctx.closePath();
 
-    //2521
+// 2521
     ctx.beginPath();
     ctx.moveTo(129.447170, 90.861735);
     ctx.bezierCurveTo(130.388350, 91.250415, 132.526800, 93.071585, 134.783090, 95.405515);
@@ -655,8 +632,8 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     ctx.bezierCurveTo(128.713100, 91.440205, 128.739100, 90.948825, 128.836100, 90.824745);
     ctx.bezierCurveTo(128.922800, 90.718545, 129.131720, 90.730545, 129.444420, 90.856545);
     if (colors) {
-      ctx.fillStyle = colors[3];
-      ctx.fill();
+        ctx.fillStyle = colors[3];
+        ctx.fill();
     }
     ctx.closePath();
 
@@ -703,8 +680,8 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     ctx.bezierCurveTo(122.102500, 112.612380, 122.024490, 112.629980, 121.991560, 112.637080);
     ctx.bezierCurveTo(121.956560, 112.644080, 121.564400, 112.480790, 121.057460, 112.246630);
     if (colors) {
-      ctx.fillStyle = "#000000";
-      ctx.fill();
+        ctx.fillStyle = '#000000';
+        ctx.fill();
     }
     ctx.closePath();
     
@@ -754,8 +731,7 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     ctx.bezierCurveTo(137.763210, 125.804050, 142.174240, 116.278160, 143.077430, 113.249640);
     ctx.bezierCurveTo(143.372690, 112.256070, 143.379280, 111.584970, 143.094730, 111.197170);
     ctx.closePath();
-
-    ctx.scale(1/sf, 1/sf);
+    ctx.scale(1 / sf, 1 / sf);
 
     return [];
 });
@@ -766,10 +742,10 @@ export default (
     shadow: boolean,
     deckBack: boolean,
 ) => {
-    // Each suit has a shape defined in the "suits.json" file (as the "pip" property)
+    // Each suit has a shape defined in the 'suits.json' file (as the 'pip' property)
     const shapeFunction = shapeFunctions.get(suit.pip);
     if (!shapeFunction) {
-        throw new Error(`Failed to find the shape function for pip "${suit.pip}".`);
+        throw new Error(`Failed to find the shape function for pip '${suit.pip}'.`);
     }
 
     // Handle the shadow

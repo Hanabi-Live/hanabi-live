@@ -3,7 +3,7 @@ const sf = 1.8; // Scale factor
 
 shapeFunctions.set(1, (ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
-    ctx.scale(sf,sf);
+    ctx.scale(sf, sf);
     ctx.translate(-49.066270, -129.964570);
     ctx.moveTo(49.037052, 114.060040);
     ctx.bezierCurveTo(47.692645, 113.014010, 41.624723, 112.092760, 45.702874, 87.778647);
@@ -22,13 +22,13 @@ shapeFunctions.set(1, (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(39.824691, 120.486240, 41.029286, 119.802170, 42.183953, 119.104390);
     ctx.bezierCurveTo(44.192443, 117.894800, 46.157251, 116.686480, 48.334259, 115.795150);
     ctx.bezierCurveTo(49.139407, 115.466700, 50.059393, 114.855200, 49.037048, 114.060040);
-    ctx.scale(1/sf,1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 });
 
 shapeFunctions.set(2, (ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
-    ctx.scale(sf,sf);
+    ctx.scale(sf, sf);
     ctx.translate(-69.621888, -87.003819);
     ctx.moveTo(79.134002, 66.457149);
     ctx.bezierCurveTo(73.293480, 64.177797, 67.566172, 64.741346, 62.659021, 66.337661);
@@ -46,13 +46,13 @@ shapeFunctions.set(2, (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(74.932550, 78.011157, 76.220660, 76.816131, 76.220660, 76.816131);
     ctx.bezierCurveTo(76.220660, 76.816131, 78.647188, 71.960563, 79.620822, 69.334024);
     ctx.bezierCurveTo(80.590672, 66.707486, 79.134002, 66.457163, 79.134002, 66.457163);
-    ctx.scale(1/sf,1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 });
 
 shapeFunctions.set(3, (ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
-    ctx.scale(sf,sf);
+    ctx.scale(sf, sf);
     ctx.translate(-81.640414, -140.588270);
     ctx.moveTo(88.098524, 108.798910);
     ctx.bezierCurveTo(86.781994, 108.184060, 85.321664, 108.004290, 83.810504, 108.086100);
@@ -81,13 +81,13 @@ shapeFunctions.set(3, (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(85.413404, 127.892150, 84.414224, 127.908450, 83.115054, 127.800450);
     ctx.bezierCurveTo(85.842324, 125.845330, 88.606794, 123.472610, 90.440264, 120.899030);
     ctx.bezierCurveTo(93.074564, 117.201110, 92.620844, 110.907320, 88.098534, 108.797400);
-    ctx.scale(1/sf,1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 });
 
 shapeFunctions.set(4, (ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
-    ctx.scale(sf,sf);
+    ctx.scale(sf, sf);
     ctx.translate(-86.004996, -130.169460);
     ctx.moveTo(93.144414, 103.078080);
     ctx.bezierCurveTo(93.932494, 103.439240, 94.378034, 103.740800, 94.586534, 103.887270);
@@ -117,13 +117,13 @@ shapeFunctions.set(4, (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(95.734574, 115.278700, 96.691444, 115.374300, 96.691444, 115.374300);
     ctx.bezierCurveTo(96.691444, 115.374300, 97.362864, 114.992020, 96.691444, 114.226300);
     ctx.bezierCurveTo(96.280644, 113.755950, 93.791044, 110.964750, 93.144444, 103.078960);
-    ctx.scale(1/sf,1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 });
 
 shapeFunctions.set(5, (ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
-    ctx.scale(sf,sf);
+    ctx.scale(sf, sf);
     ctx.translate(-89.993569, -112.688200);
     ctx.moveTo(94.939252, 82.023243);
     ctx.bezierCurveTo(91.553592, 80.541753, 85.746642, 81.163033, 79.791422, 82.155503);
@@ -151,7 +151,7 @@ shapeFunctions.set(5, (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(59.609799, 113.283790, 102.352610, 98.426363, 95.130382, 98.441073);
     ctx.bezierCurveTo(94.907332, 98.442073, 94.692922, 98.438073, 94.472362, 98.434073);
     ctx.bezierCurveTo(101.356400, 93.063323, 101.602700, 84.941653, 94.939222, 82.026553);
-    ctx.scale(1/sf,1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 });
 
@@ -161,7 +161,7 @@ shapeFunctions.set(6, (ctx: CanvasRenderingContext2D) => {
 
 shapeFunctions.set(7, (ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
-    ctx.scale(sf,sf);
+    ctx.scale(sf, sf);
     ctx.translate(-82.570534, -140.298140);
     ctx.moveTo(69.064246, 130.785450);
     ctx.bezierCurveTo(68.937529, 130.771350, 68.507977, 130.727250, 68.109698, 130.688050);
@@ -211,7 +211,7 @@ shapeFunctions.set(7, (ctx: CanvasRenderingContext2D) => {
     ctx.bezierCurveTo(84.804622, 127.601920, 84.239022, 127.874860, 81.796542, 128.690690);
     ctx.bezierCurveTo(78.801293, 129.691130, 75.982324, 130.347930, 73.343261, 130.660250);
     ctx.bezierCurveTo(72.511406, 130.758650, 69.575512, 130.845460, 69.064250, 130.786190);
-    ctx.scale(1/sf,1/sf);
+    ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
 });
 
@@ -219,19 +219,17 @@ shapeFunctions.set(0, (ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
 });
 
-export default function drawRank (
+export default function drawRank(
     ctx: CanvasRenderingContext2D,
     rank: number,
 ) {
-
     // Each rank has a shape
     const shapeFunction = shapeFunctions.get(rank);
     if (!shapeFunction) {
         throw new Error(`Failed to find the shape function for rank "${rank}".`);
     }
-    
     // Draw the respective shape on the canvas
     // (or, for text pips, define the type of text)
     ctx.translate(60,110);
     shapeFunction(ctx);
-};
+}
