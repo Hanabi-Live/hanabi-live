@@ -525,18 +525,18 @@ shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D, colors?: Array<st
     ctx.bezierCurveTo(72.711854, 115.080550, 75.752370, 115.504430, 77.638733, 116.418060);
     ctx.bezierCurveTo(77.955104, 120.035450, 76.616822, 120.965250, 75.136667, 120.896220);
     ctx.transform(1 / 2.128652, 0.000000, 0.000000, 1 / 2.476848, 0, 0);
-    ctx.scale(5 / 6,  5 / 6);
+    ctx.scale(5 / 6, 5 / 6);
     ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
     if (colors) {
         // When multiple colors are passed, create a gradient.
         const gradient = ctx.createLinearGradient(500, 0, 700, 0);
-            for (let i = 0; i < colors.length; ++i) {
-                gradient.addColorStop(i / (colors.length - 1), colors[i]);
-            }
-            ctx.fillStyle = gradient;
-            ctx.fill();
+        for (let i = 0; i < colors.length; ++i) {
+            gradient.addColorStop(i / (colors.length - 1), colors[i]);
         }
+        ctx.fillStyle = gradient;
+        ctx.fill();
+    }
     return [];
 });
 shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<string>) => {
