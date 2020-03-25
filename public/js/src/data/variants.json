@@ -6131,7 +6131,7 @@
         "showSuitNames": true
     },
     "Clue Starved & Light Pink (5 Suits)": {
-        "id": 1292,
+        "id": 1219,
         "suits": ["Red", "Yellow", "Green", "Blue", "Light Pink"],
         "showSuitNames": true,
         "spacing": true
