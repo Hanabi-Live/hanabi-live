@@ -24,21 +24,24 @@ const tablesDraw = () => {
     $('#lobby-games-table-container').show();
 
     // We want the tables to be drawn in a certain order:
-    // 1) Unstarted tables
-    // 2) Unstarted & password-protected tables
-    // 3) Ongoing tables
-    // 4) Shared replays
+    // 1) Tables you are in
+    // 2) Unstarted tables
+    // 3) Unstarted & password-protected tables
+    // 4) Ongoing tables
+    // 5) Shared replays
     let sortedTableIDs: Array<number> = [];
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 5; i++) {
         const tableIDsOfThisType: Array<number> = [];
         for (const [id, table] of globals.tableList) {
-            if (i === 1 && !table.running && !table.password) {
+            if (i === 1 && table.joined) {
                 tableIDsOfThisType.push(id);
-            } else if (i === 2 && !table.running && table.password) {
+            } else if (i === 2 && !table.running && !table.password && !table.joined) {
                 tableIDsOfThisType.push(id);
-            } else if (i === 3 && table.running && !table.sharedReplay) {
+            } else if (i === 3 && !table.running && table.password && !table.joined) {
                 tableIDsOfThisType.push(id);
-            } else if (i === 4 && table.sharedReplay) {
+            } else if (i === 4 && table.running && !table.sharedReplay && !table.joined) {
+                tableIDsOfThisType.push(id);
+            } else if (i === 5 && table.running && table.sharedReplay && !table.joined) {
                 tableIDsOfThisType.push(id);
             }
         }
@@ -55,7 +58,9 @@ const tablesDraw = () => {
 
         // Set the background color of the row, depending on what kind of game it is
         let htmlClass;
-        if (table.sharedReplay) {
+        if (table.joined) {
+            htmlClass = 'joined';
+        } else if (table.sharedReplay) {
             htmlClass = 'replay';
         } else if (table.running) {
             htmlClass = 'started';

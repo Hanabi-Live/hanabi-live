@@ -304,6 +304,9 @@ table td {
     margin-bottom: 0;
 }
 
+.lobby-games-table-joined {
+    background-color: #f2f2ff !important;
+}
 .lobby-games-table-unstarted {
     background-color: #fffff0 !important;
 }
