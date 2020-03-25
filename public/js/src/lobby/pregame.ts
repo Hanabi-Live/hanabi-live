@@ -5,7 +5,7 @@
 // Imports
 import { VARIANTS } from '../constants';
 import globals from '../globals';
-import { timerFormatter } from '../misc';
+import * as misc from '../misc';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
 import usersDraw from './usersDraw';
@@ -99,9 +99,9 @@ export const draw = () => {
     if (globals.game.timed) {
         html += '<li><i id="lobby-pregame-options-timer" class="fas fa-clock" ';
         html += 'data-tooltip-content="#pregame-tooltip-timer"></i>&nbsp; (';
-        html += timerFormatter(globals.game.baseTime);
+        html += misc.timerFormatter(globals.game.baseTime);
         html += ' + ';
-        html += timerFormatter(globals.game.timePerTurn);
+        html += misc.timerFormatter(globals.game.timePerTurn);
         html += ')</li>';
         html += `
             <div class="hidden">

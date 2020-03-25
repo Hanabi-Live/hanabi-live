@@ -4,7 +4,7 @@
 
 // Imports
 import globals from '../globals';
-import { timerFormatter } from '../misc';
+import * as misc from '../misc';
 import * as modals from '../modals';
 
 const tablesDraw = () => {
@@ -82,7 +82,7 @@ const tablesDraw = () => {
         // Column 4 - Timed
         let timed = 'No';
         if (table.timed) {
-            timed = `${timerFormatter(table.baseTime)} + ${timerFormatter(table.timePerTurn)}`;
+            timed = `${misc.timerFormatter(table.baseTime)} + ${misc.timerFormatter(table.timePerTurn)}`;
         }
         $('<td>').html(timed).appendTo(row);
 

@@ -7,7 +7,7 @@ import * as chat from './chat';
 import { FADE_TIME } from '../constants';
 import globals from '../globals';
 import HanabiUI from './ui/HanabiUI';
-import { closeAllTooltips } from '../misc';
+import * as misc from '../misc';
 import * as sounds from './sounds';
 import tablesDraw from '../lobby/tablesDraw';
 import usersDraw from '../lobby/usersDraw';
@@ -57,7 +57,7 @@ export const hide = () => {
     $('#game-chat-modal').hide();
 
     // Make sure that there are not any game-related tooltips showing
-    closeAllTooltips();
+    misc.closeAllTooltips();
 
     // Scroll to the bottom of the chat
     const chatElement = document.getElementById('lobby-chat-text');
