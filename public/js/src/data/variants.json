@@ -6241,10 +6241,6 @@
         "id": 281,
         "suits": ["Red", "Yellow", "Green", "Blue"]
     },
-    "Throw It in a Hole & Black (6 Suits)": {
-        "id": 1219,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Black"]
-    },
     "Throw It in a Hole & Rainbow (6 Suits)": {
         "id": 1220,
         "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Rainbow"]
