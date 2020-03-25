@@ -551,7 +551,7 @@ shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D, colors?: Array<st
 
     if (colors) {
     // When multiple colors are passed, create a gradient.
-    const gradient = ctx.createLinearGradient(470, 650, 650, 650);
+    const gradient = ctx.createLinearGradient(500, 0, 700, 0);
         for (let i = 0; i < colors.length; ++i) {
             gradient.addColorStop(i / (colors.length - 1), colors[i]);
         }

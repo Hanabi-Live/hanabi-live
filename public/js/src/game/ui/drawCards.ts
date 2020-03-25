@@ -84,9 +84,9 @@ export default (variant: Variant, colorblindUI: boolean) => {
                 if (colorblindUI) {
                     drawText(ctx, textYPos, rankLabel);
                 } else {
-		    ctx.save();
+    		        ctx.save();
                     drawRank(ctx, rank);
-	            ctx.restore();
+	                ctx.restore();
                 }
 
                 // "Index" cards are used to draw cards of learned but not yet known rank
