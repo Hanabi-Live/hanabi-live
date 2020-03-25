@@ -86,8 +86,11 @@ export default (variant: Variant, colorblindUI: boolean) => {
                 } else {
     		        ctx.save();
                     drawRank(ctx, rank);
-	                ctx.restore();
+                    ctx.restore();
+                    ctx.fill();
+                    ctx.stroke();
                 }
+                ctx.restore();
 
                 // "Index" cards are used to draw cards of learned but not yet known rank
                 // (e.g. for in-game replays)
@@ -102,6 +105,11 @@ export default (variant: Variant, colorblindUI: boolean) => {
                     drawText(ctx, textYPos, rankLabel);
                 } else {
                     drawRank(ctx, rank)
+                    ctx.restore();
+                    ctx.translate(CARD_W, CARD_H);
+                    ctx.rotate(Math.PI);
+                    ctx.fill();
+                    ctx.stroke();
                 }
                 ctx.restore();
             }
@@ -303,10 +311,11 @@ const makeDeckBack = (variant: Variant) => {
         // Transform polar to cartesian coordinates
         const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
         const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
-        ctx.translate(x, y);
 
+        ctx.save();
+        ctx.translate(x, y);
         drawPip(ctx, suit, true, true);
-        ctx.translate(-x, -y);
+        ctx.restore();
     }
     ctx.scale(1 / sf, 1 / sf);
 

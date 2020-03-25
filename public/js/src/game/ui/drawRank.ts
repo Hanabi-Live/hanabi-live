@@ -234,6 +234,4 @@ export default function drawRank (
     // (or, for text pips, define the type of text)
     ctx.translate(60,110);
     shapeFunction(ctx);
-    ctx.fill();    
-    ctx.stroke();
 };
