@@ -167,7 +167,6 @@ const drawSuitPips = (
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 1.8, scale * 1.8);
-        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -179,7 +178,6 @@ const drawSuitPips = (
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(0, -symbolYPos);
         ctx.scale(scale * 1.4, scale * 1.4);
-        // ctx.translate(-75, -75);
         drawPip(ctx, suit, true, false);
         ctx.restore();
 
@@ -188,7 +186,6 @@ const drawSuitPips = (
         ctx.translate(0, symbolYPos);
         ctx.scale(scale * 1.4, scale * 1.4);
         ctx.rotate(Math.PI);
-        // ctx.translate(-75, -75);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -201,7 +198,6 @@ const drawSuitPips = (
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(0, -symbolYPos);
         ctx.scale(scale, scale);
-        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
 
@@ -210,7 +206,6 @@ const drawSuitPips = (
         ctx.translate(0, symbolYPos);
         ctx.scale(scale, scale);
         ctx.rotate(Math.PI);
-        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -221,7 +216,6 @@ const drawSuitPips = (
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(-90, 0);
         ctx.scale(scale, scale);
-        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
 
@@ -230,7 +224,6 @@ const drawSuitPips = (
         ctx.translate(90, 0);
         ctx.scale(scale, scale);
         ctx.rotate(Math.PI);
-        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -241,7 +234,6 @@ const drawSuitPips = (
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 1.2, scale * 1.2);
-        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -252,7 +244,6 @@ const drawSuitPips = (
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 2.5, scale * 2.5);
-        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -263,7 +254,6 @@ const drawSuitPips = (
         ctx.globalAlpha = colorblindUI ? 0.4 : 0.1;
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 3, scale * 3);
-        // ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }

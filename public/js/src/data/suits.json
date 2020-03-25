@@ -93,7 +93,7 @@
         "allClueColors": true,
         "clueRanks": "none",
         "fill": "multi",
-        "fillColors": ["#bb4321", "#bb8021", "#808000", "#8080ff", "#500030"],
+        "fillColors": ["#662211", "#664011", "#404000", "#404080", "#280018"],
         "oneOfEach": true,
         "pip": "rainbow"
     },

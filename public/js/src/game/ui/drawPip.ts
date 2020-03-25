@@ -703,7 +703,7 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<str
     ctx.bezierCurveTo(122.102500, 112.612380, 122.024490, 112.629980, 121.991560, 112.637080);
     ctx.bezierCurveTo(121.956560, 112.644080, 121.564400, 112.480790, 121.057460, 112.246630);
     if (colors) {
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = "#000000";
       ctx.fill();
     }
     ctx.closePath();
