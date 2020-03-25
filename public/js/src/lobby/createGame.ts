@@ -4,9 +4,9 @@
 
 // Imports
 import shajs from 'sha.js';
-import { VARIANTS } from '../constants';
 import globals from '../globals';
-import { closeAllTooltips } from '../misc';
+import * as misc from '../misc';
+import { VARIANTS } from '../constants';
 
 export const init = () => {
     // Populate the variant dropdown in the "Create Game" tooltip
@@ -25,6 +25,14 @@ export const init = () => {
         if (text === line) {
             $('#createTableVariant').val('');
         }
+    });
+
+    // Activate the dice button
+    $('#dice').on('click', () => {
+        const variantNames = Array.from(VARIANTS.keys());
+        const randomVariantIndex = misc.getRandomNumber(0, variantNames.length - 1);
+        const randomVariant = variantNames[randomVariantIndex];
+        $('#createTableVariant').val(randomVariant);
     });
 
     // Make the extra time fields appear and disappear depending on whether the checkbox is checked
@@ -72,6 +80,22 @@ export const init = () => {
 };
 
 const submit = () => {
+    // Check to see if the submitted variant is correctly capitalized
+    const variantChosen = $('#createTableVariant').val();
+    if (typeof variantChosen === 'string') {
+        const variantNames = Array.from(VARIANTS.keys());
+        for (const variantName of variantNames) {
+            if (
+                variantName.toLowerCase() === variantChosen.toLowerCase()
+                && variantName !== variantChosen
+            ) {
+                // The capitalization is wrong; correct it for them
+                $('#createTableVariant').val(variantName);
+                break;
+            }
+        }
+    }
+
     // We need to mutate some values before sending them to the server
     const baseTimeMinutes = parseFloat(getTextbox('createTableBaseTimeMinutes'));
     const baseTime = Math.round(baseTimeMinutes * 60); // The server expects this in seconds
@@ -105,7 +129,7 @@ const submit = () => {
         alertWaiters: getCheckbox('createTableAlertWaiters'),
     });
 
-    closeAllTooltips();
+    misc.closeAllTooltips();
 };
 
 const getCheckbox = (setting: string) => {

@@ -1,9 +1,3 @@
-// TODO
-/*
-- search for all todo and replace with object
-- search for all "as any"
-*/
-
 /*
     The main entry point for the Hanabi client code
 */

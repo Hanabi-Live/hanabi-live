@@ -4,7 +4,7 @@
 
 // Imports
 import globals from '../globals';
-import { closeAllTooltips } from '../misc';
+import * as misc from '../misc';
 
 export const init = () => {
     // Make the text box appear and disappear depending on which source is selected
@@ -134,7 +134,7 @@ const submit = () => {
         });
     }
 
-    closeAllTooltips();
+    misc.closeAllTooltips();
 };
 
 // This function is executed every time the "Watch Specific Replay" button is clicked
