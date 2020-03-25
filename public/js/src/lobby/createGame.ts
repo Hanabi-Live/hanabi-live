@@ -80,6 +80,22 @@ export const init = () => {
 };
 
 const submit = () => {
+    // Check to see if the submitted variant is correctly capitalized
+    const variantChosen = $('#createTableVariant').val();
+    if (typeof variantChosen === 'string') {
+        const variantNames = Array.from(VARIANTS.keys());
+        for (const variantName of variantNames) {
+            if (
+                variantName.toLowerCase() === variantChosen.toLowerCase()
+                && variantName !== variantChosen
+            ) {
+                // The capitalization is wrong; correct it for them
+                $('#createTableVariant').val(variantName);
+                break;
+            }
+        }
+    }
+
     // We need to mutate some values before sending them to the server
     const baseTimeMinutes = parseFloat(getTextbox('createTableBaseTimeMinutes'));
     const baseTime = Math.round(baseTimeMinutes * 60); // The server expects this in seconds
