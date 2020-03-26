@@ -479,7 +479,10 @@ const getSuitStyle = (suit: Suit, ctx: CanvasRenderingContext2D, cardArea: strin
         return evenLinearGradient(ctx, suit.fillColors, [0, 14, 0, 110]);
     }
     if (cardArea === 'background') {
-        return evenLinearGradient(ctx, suit.fillColors, [0, 0, 0, CARD_H]);
+        if (suit.name === 'Omni' || suit.name === 'Dark Omni') {
+            return evenLinearGradient(ctx, suit.fillColors, [0, -30, 0, CARD_H + 30]);
+        }
+        return evenLinearGradient(ctx, suit.fillColors, [0, 0, CARD_W, CARD_H]);
     }
     throw new Error(`The card area of "${cardArea}" is unknown in the "getSuitStyle()" function.`);
 };

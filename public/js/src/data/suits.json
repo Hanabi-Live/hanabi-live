@@ -22,7 +22,7 @@
         "allClueColors": true,
         "clueRanks": "all",
         "fill": "multi",
-        "fillColors": ["#ffffff", "#ff0000", "#ffff00", "#02ec00", "#0037ff", "#8000ff", "#ffffff"],
+        "fillColors": ["#ffffff", "#8000ff", "#0037ff", "#02ec00", "#ffff00", "#ff0000", "#ffffff"],
         "pip": "infinity"
     },
     "Null": { "abbreviation": "U", "clueColors": [], "clueRanks": "none", "fill": "#ffffff", "pip": "empty_set" },
@@ -30,7 +30,7 @@
         "abbreviation": "M",
         "allClueColors": true,
         "fill": "multi",
-        "fillColors": ["#bb0000", "#bbbb00", "#00bb00", "#0000bb", "#6000bb"],
+        "fillColors": ["#a00000", "#a0a000", "#00a000", "#0000a0", "#5000a0"],
         "oneOfEach": true,
         "pip": "rainbow"
     },
@@ -61,7 +61,7 @@
         "allClueColors": true,
         "clueRanks": "all",
         "fill": "multi",
-        "fillColors": ["#000000", "#bb0000", "#bbbb00", "#00bb00", "#0000bb", "#6000bb", "#000000"],
+        "fillColors": ["#000000", "#5000a0", "#0000a0", "#00a000", "#a0a000", "#a00000", "#000000"],
         "oneOfEach": true,
         "pip": "infinity"
     },
