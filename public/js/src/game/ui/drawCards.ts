@@ -110,6 +110,8 @@ export default (variant: Variant, colorblindUI: boolean) => {
                     ctx.rotate(Math.PI);
                     ctx.fill();
                     ctx.stroke();
+                    ctx.translate(CARD_W, CARD_H);
+                    ctx.rotate(Math.PI);
                 }
                 ctx.restore();
             }
