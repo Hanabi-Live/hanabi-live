@@ -24,7 +24,7 @@ const tablesDraw = () => {
     $('#lobby-games-table-container').show();
 
     // We want the tables to be drawn in a certain order:
-    // 1) Tables you are in
+    // 1) Tables that you are currently in
     // 2) Unstarted tables
     // 3) Unstarted & password-protected tables
     // 4) Ongoing tables
@@ -33,7 +33,7 @@ const tablesDraw = () => {
     for (let i = 1; i <= 5; i++) {
         const tableIDsOfThisType: Array<number> = [];
         for (const [id, table] of globals.tableList) {
-            if (i === 1 && table.joined) {
+            if (i === 1 && table.joined && !table.sharedReplay) {
                 tableIDsOfThisType.push(id);
             } else if (i === 2 && !table.running && !table.password && !table.joined) {
                 tableIDsOfThisType.push(id);
