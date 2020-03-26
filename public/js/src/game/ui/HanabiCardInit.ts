@@ -555,6 +555,7 @@ const drawX = (
 ) => {
     // Start at the top left corner and draw an X
     ctx.beginPath();
+    ctx.translate(-1.4 * width, -2 * width);
     x -= size;
     y -= size;
     ctx.moveTo(x, y);
