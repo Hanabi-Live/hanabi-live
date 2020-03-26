@@ -472,12 +472,13 @@ table td {
 }
 
 #dice {
+    color: green;
     position: relative;
     left: 0.2em;
 }
 
 #dice:hover {
-    color: green;
+    color: #00cc00;
     cursor: pointer;
 }
 
