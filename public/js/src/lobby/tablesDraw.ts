@@ -41,7 +41,7 @@ const tablesDraw = () => {
                 tableIDsOfThisType.push(id);
             } else if (i === 4 && table.running && !table.sharedReplay && !table.joined) {
                 tableIDsOfThisType.push(id);
-            } else if (i === 5 && table.running && table.sharedReplay && !table.joined) {
+            } else if (i === 5 && table.running && table.sharedReplay) {
                 tableIDsOfThisType.push(id);
             }
         }
