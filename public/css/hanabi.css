@@ -332,7 +332,7 @@ table td {
     border: 1px;
     margin-bottom: 1em;
     padding: 0 0.5em 0 0.5em;
-    height: calc(100% - 3.5em); /* The height of the input box is 3.5em */
+    height: calc(100% - 6em); /* The height of the input box is 3.5em and the hight of the "Lobby Chat" text is 2.5em */
 }
 
 #lobby-chat-pregame-text {
@@ -472,11 +472,32 @@ table td {
 }
 
 #dice {
-    color: black;
+    position: relative;
+    left: 0.2em;
 }
 
 #dice:hover {
     color: green;
+    cursor: pointer;
+}
+
+/* Used in the "Variant" dropdown */
+.ss-single-selected {
+    background-color: #f8f8f8 !important;
+    border-radius: 6px !important;
+    border: solid 1px #e5e5e5 !important;
+    height: 3em !important;
+    text-indent: 0.65em !important;
+    color: #777 !important;
+}
+
+.ss-search > input:focus {
+    border-color: #e89980 !important;
+    box-shadow: 0 0 0 2px #e89980 !important;
+}
+
+.ss-arrow {
+    display: none !important;
 }
 
 /*

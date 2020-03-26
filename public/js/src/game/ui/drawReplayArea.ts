@@ -12,7 +12,7 @@ export default (winW: number, winH: number) => {
         y: 0.51,
         w: 0.5,
     };
-    if (!globals.lobby.settings.get('showKeldonUI')) {
+    if (!globals.lobby.settings.get('keldonMode')) {
         replayAreaValues.x = 0.01;
         replayAreaValues.y = 0.49;
         replayAreaValues.w = 0.4;
@@ -27,9 +27,9 @@ export default (winW: number, winH: number) => {
 
     // The thin black rectangle that the replay slider slides on
     const replayBarValues = {
-        x: globals.lobby.settings.get('showKeldonUI') ? 0.01 : 0,
+        x: globals.lobby.settings.get('keldonMode') ? 0.01 : 0,
         y: 0.0425,
-        w: globals.lobby.settings.get('showKeldonUI') ? 0.481 : replayAreaValues.w,
+        w: globals.lobby.settings.get('keldonMode') ? 0.481 : replayAreaValues.w,
         h: 0.01,
     };
     globals.elements.replayBar = new Konva.Rect({
@@ -108,7 +108,7 @@ export default (winW: number, winH: number) => {
         h: 0.08,
         spacing: 0.02,
     };
-    if (globals.lobby.settings.get('showKeldonUI')) {
+    if (globals.lobby.settings.get('keldonMode')) {
         replayButtonValues.x = 0.1;
     }
 

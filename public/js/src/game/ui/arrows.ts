@@ -50,10 +50,10 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
         }
         if (
             (
-                !globals.lobby.settings.get('showKeldonUI')
+                !globals.lobby.settings.get('keldonMode')
                 && element.holder === globals.playerUs
             ) || (
-                globals.lobby.settings.get('showKeldonUI')
+                globals.lobby.settings.get('keldonMode')
                 && (element.holder !== globals.playerUs && element.holder !== null)
             )
         ) {

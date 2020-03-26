@@ -49,16 +49,16 @@ commands.set('init', (data: any) => {
     };
 
     // Find out whether "colorblind mode" is enabled
-    const showColorblindUISetting = globals.settings.get('showColorblindUI');
-    let showColorblindUI = false;
-    if (typeof showColorblindUISetting === 'boolean') {
-        showColorblindUI = showColorblindUISetting;
+    const colorblindModeSetting = globals.settings.get('colorblindMode');
+    let colorblindMode = false;
+    if (typeof colorblindModeSetting === 'boolean') {
+        colorblindMode = colorblindModeSetting;
     }
 
     // Build images for every card
     // (with respect to the variant that we are playing
     // and whether or not we have the colorblind UI feature enabled)
-    globals.ui.cardImages = drawCards(globals.init.variant, showColorblindUI);
+    globals.ui.cardImages = drawCards(globals.init.variant, colorblindMode);
 
     // Draw the user interface
     phaserInit();

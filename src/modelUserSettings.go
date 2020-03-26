@@ -7,13 +7,14 @@ import (
 type UserSettings struct{}
 
 type Settings struct {
-	SendTurnSound                   bool    `json:"sendTurnSound"`
-	SendTimerSound                  bool    `json:"sendTimerSound"`
-	ShowKeldonUI                    bool    `json:"showKeldonUI"`
-	ShowColorblindUI                bool    `json:"showColorblindUI"`
-	ShowTimerInUntimed              bool    `json:"showTimerInUntimed"`
-	ReverseHands                    bool    `json:"reverseHands"`
+	SoundMove                       bool    `json:"soundMove"`
+	SoundTimer                      bool    `json:"soundTimer"`
+	KeldonMode                      bool    `json:"keldonMode"`
+	ColorblindMode                  bool    `json:"colorblindMode"`
 	RealLifeMode                    bool    `json:"realLifeMode"`
+	ReverseHands                    bool    `json:"reverseHands"`
+	LegibleNumbers                  bool    `json:"legibleNumbers"`
+	ShowTimerInUntimed              bool    `json:"showTimerInUntimed"`
 	Volume                          int     `json:"volume"`
 	SpeedrunPreplay                 bool    `json:"speedrunPreplay"`
 	SpeedrunMode                    bool    `json:"speedrunMode"`
@@ -33,8 +34,8 @@ type Settings struct {
 var (
 	// The database schema must also be configured with any default settings
 	defaultSettings = Settings{
-		SendTurnSound:                 true,
-		SendTimerSound:                true,
+		SoundMove:                     true,
+		SoundTimer:                    true,
 		Volume:                        50,
 		CreateTableVariant:            "No Variant",
 		CreateTableBaseTimeMinutes:    2,
@@ -47,13 +48,14 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 
 	if err := db.QueryRow(`
 		SELECT
-			send_turn_sound,
-			send_timer_sound,
-			show_keldon_UI,
-			show_colorblind_UI,
-			show_timer_in_untimed,
-			reverse_hands,
+			sound_move,
+			sound_timer,
+			keldon_mode,
+			colorblind_mode,
 			real_life_mode,
+			reverse_hands,
+			legible_numbers,
+			show_timer_in_untimed,
 			volume,
 			speedrun_preplay,
 			speedrun_mode,
@@ -71,13 +73,14 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		FROM user_settings
 		WHERE user_id = ?
 	`, userID).Scan(
-		&settings.SendTurnSound,
-		&settings.SendTimerSound,
-		&settings.ShowKeldonUI,
-		&settings.ShowColorblindUI,
-		&settings.ShowTimerInUntimed,
-		&settings.ReverseHands,
+		&settings.SoundMove,
+		&settings.SoundTimer,
+		&settings.KeldonMode,
+		&settings.ColorblindMode,
 		&settings.RealLifeMode,
+		&settings.ReverseHands,
+		&settings.LegibleNumbers,
+		&settings.ShowTimerInUntimed,
 		&settings.Volume,
 		&settings.SpeedrunPreplay,
 		&settings.SpeedrunMode,

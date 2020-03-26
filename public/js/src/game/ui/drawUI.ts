@@ -205,7 +205,7 @@ const initReusableObjects = () => {
 };
 
 const drawActionLog = () => {
-    if (!globals.lobby.settings.get('showKeldonUI')) {
+    if (!globals.lobby.settings.get('keldonMode')) {
         actionLogValues = {
             x: 0.01,
             y: 0.01,
@@ -253,7 +253,7 @@ const drawActionLog = () => {
 
     // The action log
     let maxLines = 8;
-    if (globals.lobby.settings.get('showKeldonUI')) {
+    if (globals.lobby.settings.get('keldonMode')) {
         maxLines = 3;
     }
     globals.elements.actionLog = new MultiFitText({
@@ -302,7 +302,7 @@ const drawPlayStacks = () => {
     if (globals.variant.showSuitNames) {
         playStackValues.y -= 0.018;
     }
-    if (!globals.lobby.settings.get('showKeldonUI')) {
+    if (!globals.lobby.settings.get('keldonMode')) {
         playStackValues.x = actionLogValues.x;
         playStackValues.y = actionLogValues.y + actionLogValues.h! + 0.02;
         if (globals.variant.suits.length > 4) {
@@ -323,7 +323,7 @@ const drawPlayStacks = () => {
         || (
             globals.variant.suits.length === 5
             && globals.variant.showSuitNames
-            && globals.lobby.settings.get('showKeldonUI')
+            && globals.lobby.settings.get('keldonMode')
         )
     ) {
         playStackValues.x += (cardWidth + playStackValues.spacing) / 2;
@@ -369,7 +369,7 @@ const drawPlayStacks = () => {
         if (globals.variant.showSuitNames) {
             let text = suit.name;
             if (
-                globals.lobby.settings.get('showColorblindUI')
+                globals.lobby.settings.get('colorblindMode')
                 && suit.clueColors.length === 2
             ) {
                 const colorList = suit.clueColors.map((color) => color.abbreviation).join('/');
@@ -706,7 +706,7 @@ const drawScoreArea = () => {
         w: 0.13,
         h: 0.18,
     };
-    if (!globals.lobby.settings.get('showKeldonUI')) {
+    if (!globals.lobby.settings.get('keldonMode')) {
         scoreAreaValues.x = deckValues.x + deckValues.w! + 0.01;
         scoreAreaValues.y = 0.81;
     }
@@ -916,7 +916,7 @@ const drawSpectators = () => {
         x: scoreAreaValues.x - 0.037,
         y: scoreAreaValues.y + 0.09,
     };
-    if (!globals.lobby.settings.get('showKeldonUI')) {
+    if (!globals.lobby.settings.get('keldonMode')) {
         // Position it to the bottom-right of the score area
         spectatorsLabelValues.x = scoreAreaValues.x + scoreAreaValues.w! + 0.01;
     }
@@ -1303,7 +1303,7 @@ const drawTimers = () => {
         cornerRadius: 0.05,
         spaceH: 0.01,
     };
-    if (!globals.lobby.settings.get('showKeldonUI')) {
+    if (!globals.lobby.settings.get('keldonMode')) {
         timerValues.x1 = 0.352;
         timerValues.x2 = timerValues.x1;
         timerValues.y1 = 0.77;
@@ -1400,7 +1400,7 @@ const drawClueArea = () => {
         clueAreaValues.y += 0.03;
     }
     // In BGA mode, we can afford to put a bit more spacing to make it look less packed together
-    if (!globals.lobby.settings.get('showKeldonUI')) {
+    if (!globals.lobby.settings.get('keldonMode')) {
         clueAreaValues.y += 0.02;
     }
     globals.elements.clueArea = new Konva.Group({
@@ -1483,7 +1483,7 @@ const drawClueArea = () => {
             color: color.fill,
             text: color.abbreviation,
             clue: new Clue(CLUE_TYPE.COLOR, color),
-        }, globals.lobby.settings.get('showColorblindUI'));
+        }, globals.lobby.settings.get('colorblindMode'));
 
         globals.elements.clueTypeButtonGroup!.add(button as any);
         globals.elements.clueTypeButtonGroup!.addList(button);

@@ -403,6 +403,7 @@
             <!-- The chat for the entire lobby -->
             <div id="lobby-chat-container" class="col-8">
                 <section id="lobby-chat" class="box">
+                    <h3 class="lobby-title">Lobby Chat</h3>
                     <div id="lobby-chat-text" class="lobby-chat-text-box"></div>
                     <input id="lobby-chat-input" type="text" placeholder="Chat" autocomplete="off" />
                 </section>
@@ -518,8 +519,8 @@
                 Variant
             </div>
             <div class="col-6">
-                <input id="createTableVariant" type="text" list="create-table-variant-list" />
-                <datalist id="create-table-variant-list"></datalist>
+                <select id="createTableVariant"></select>
+                <select id="createTableVariant2" class="hidden"></select>
             </div>
             <div class="col-1 input-text align-center">
                 <i id="dice" class="fas fa-dice"></i>
@@ -739,10 +740,10 @@
     <div id="settings-tooltip">
         <h2>Settings</h2>
 
-        <p class="margin1"><strong>Game Notifications</strong></p>
+        <p class="margin1"><strong>Sounds</strong></p>
 
-        <input id="sendTurnSound" type="checkbox">
-        <label for="sendTurnSound">
+        <input id="soundMove" type="checkbox">
+        <label for="soundMove">
             <span class="label-text">
                 Play a sound when a move is made
             </span>
@@ -750,10 +751,10 @@
 
         <br />
 
-        <input id="sendTimerSound" type="checkbox">
-        <label for="sendTimerSound">
+        <input id="soundTimer" type="checkbox">
+        <label for="soundTimer">
             <span class="label-text">
-                Play ticking sounds when timers are below 10 seconds
+                Play a sound when a timer is below 10 seconds
             </span>
         </label>
 
@@ -761,28 +762,28 @@
 
         <p class="margin1"><strong>Appearance</strong></p>
 
-        <input id="showKeldonUI" type="checkbox">
-        <label for="showKeldonUI">
+        <input id="keldonMode" type="checkbox">
+        <label for="keldonMode">
             <span class="label-text">
-                Enable Keldon mode (hands spread around the table)
+                Keldon mode (hands spread around the table)
             </span>
         </label>
 
         <br />
 
-        <input id="showColorblindUI" type="checkbox">
-        <label for="showColorblindUI">
+        <input id="colorblindMode" type="checkbox">
+        <label for="colorblindMode">
             <span class="label-text">
-                Enable colorblind mode
+                Colorblind mode
             </span>
         </label>
 
         <br />
 
-        <input id="showTimerInUntimed" type="checkbox">
-        <label for="showTimerInUntimed">
+        <input id="realLifeMode" type="checkbox">
+        <label for="realLifeMode">
             <span class="label-text">
-                Show turn timers in untimed games
+                Real-life mode (no extra UI elements)
             </span>
         </label>
 
@@ -797,10 +798,19 @@
 
         <br />
 
-        <input id="realLifeMode" type="checkbox">
-        <label for="realLifeMode">
+        <input id="legibleNumbers" type="checkbox">
+        <label for="legibleNumbers">
             <span class="label-text">
-                Real-life mode (no extra UI elements)
+                More legible numbers on cards
+            </span>
+        </label>
+
+        <br />
+
+        <input id="showTimerInUntimed" type="checkbox">
+        <label for="showTimerInUntimed">
+            <span class="label-text">
+                Show turn timers in untimed games
             </span>
         </label>
 

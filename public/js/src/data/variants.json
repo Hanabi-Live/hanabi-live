@@ -237,7 +237,8 @@
     },
     "Black & Muddy Rainbow (5 Suits)": {
         "id": 759,
-        "suits": ["Red", "Yellow", "Green", "Black", "Muddy Rainbow"]
+        "suits": ["Red", "Yellow", "Green", "Black", "Muddy Rainbow"],
+        "spacing": true
     },
 
     "Black & Light Pink (6 Suits)": {
@@ -246,7 +247,8 @@
     },
     "Black & Light Pink (5 Suits)": {
         "id": 781,
-        "suits": ["Red", "Yellow", "Green", "Black", "Light Pink"]
+        "suits": ["Red", "Yellow", "Green", "Black", "Light Pink"],
+        "spacing": true
     },
 
     "Rainbow & Pink (6 Suits)": {
@@ -345,13 +347,11 @@
     },
     "Rainbow & Light Pink (5 Suits)": {
         "id": 783,
-        "suits": ["Red", "Green", "Blue", "Rainbow", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Green", "Blue", "Rainbow", "Light Pink"]
     },
     "Rainbow & Light Pink (4 Suits)": {
         "id": 784,
-        "suits": ["Red", "Blue", "Rainbow", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Blue", "Rainbow", "Light Pink"]
     },
     "Rainbow & Light Pink (3 Suits)": {
         "id": 785,
@@ -437,13 +437,11 @@
     },
     "Pink & Muddy Rainbow (5 Suits)": {
         "id": 761,
-        "suits": ["Red", "Green", "Blue", "Pink", "Muddy Rainbow"],
-        "spacing": true
+        "suits": ["Red", "Green", "Blue", "Pink", "Muddy Rainbow"]
     },
     "Pink & Muddy Rainbow (4 Suits)": {
         "id": 762,
-        "suits": ["Red", "Blue", "Pink", "Muddy Rainbow"],
-        "spacing": true
+        "suits": ["Red", "Blue", "Pink", "Muddy Rainbow"]
     },
     "Pink & Muddy Rainbow (3 Suits)": {
         "id": 763,
@@ -511,13 +509,11 @@
     },
     "White & Muddy Rainbow (5 Suits)": {
         "id": 765,
-        "suits": ["Red", "Green", "Blue", "White", "Muddy Rainbow"],
-        "spacing": true
+        "suits": ["Red", "Green", "Blue", "White", "Muddy Rainbow"]
     },
     "White & Muddy Rainbow (4 Suits)": {
         "id": 766,
-        "suits": ["Red", "Blue", "White", "Muddy Rainbow"],
-        "spacing": true
+        "suits": ["Red", "Blue", "White", "Muddy Rainbow"]
     },
     "White & Muddy Rainbow (3 Suits)": {
         "id": 767,
@@ -531,13 +527,11 @@
     },
     "White & Light Pink (5 Suits)": {
         "id": 787,
-        "suits": ["Red", "Green", "Blue", "White", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Green", "Blue", "White", "Light Pink"]
     },
     "White & Light Pink (4 Suits)": {
         "id": 788,
-        "suits": ["Red", "Blue", "White", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Blue", "White", "Light Pink"]
     },
     "White & Light Pink (3 Suits)": {
         "id": 789,
@@ -587,13 +581,11 @@
     },
     "Brown & Muddy Rainbow (5 Suits)": {
         "id": 769,
-        "suits": ["Red", "Green", "Blue", "Brown", "Muddy Rainbow"],
-        "spacing": true
+        "suits": ["Red", "Green", "Blue", "Brown", "Muddy Rainbow"]
     },
     "Brown & Muddy Rainbow (4 Suits)": {
         "id": 770,
-        "suits": ["Red", "Blue", "Brown", "Muddy Rainbow"],
-        "spacing": true
+        "suits": ["Red", "Blue", "Brown", "Muddy Rainbow"]
     },
     "Brown & Muddy Rainbow (3 Suits)": {
         "id": 771,
@@ -607,13 +599,11 @@
     },
     "Brown & Light Pink (5 Suits)": {
         "id": 791,
-        "suits": ["Red", "Green", "Blue", "Brown", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Green", "Blue", "Brown", "Light Pink"]
     },
     "Brown & Light Pink (4 Suits)": {
         "id": 792,
-        "suits": ["Red", "Blue", "Brown", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Blue", "Brown", "Light Pink"]
     },
     "Brown & Light Pink (3 Suits)": {
         "id": 793,
@@ -645,13 +635,11 @@
     },
     "Omni & Muddy Rainbow (5 Suits)": {
         "id": 773,
-        "suits": ["Red", "Green", "Blue", "Omni", "Muddy Rainbow"],
-        "spacing": true
+        "suits": ["Red", "Green", "Blue", "Omni", "Muddy Rainbow"]
     },
     "Omni & Muddy Rainbow (4 Suits)": {
         "id": 774,
-        "suits": ["Red", "Blue", "Omni", "Muddy Rainbow"],
-        "spacing": true
+        "suits": ["Red", "Blue", "Omni", "Muddy Rainbow"]
     },
     "Omni & Muddy Rainbow (3 Suits)": {
         "id": 775,
@@ -665,13 +653,11 @@
     },
     "Omni & Light Pink (5 Suits)": {
         "id": 795,
-        "suits": ["Red", "Green", "Blue", "Omni", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Green", "Blue", "Omni", "Light Pink"]
     },
     "Omni & Light Pink (4 Suits)": {
         "id": 796,
-        "suits": ["Red", "Blue", "Omni", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Blue", "Omni", "Light Pink"]
     },
     "Omni & Light Pink (3 Suits)": {
         "id": 797,
@@ -685,13 +671,11 @@
     },
     "Null & Muddy Rainbow (5 Suits)": {
         "id": 777,
-        "suits": ["Red", "Green", "Blue", "Null", "Muddy Rainbow"],
-        "spacing": true
+        "suits": ["Red", "Green", "Blue", "Null", "Muddy Rainbow"]
     },
     "Null & Muddy Rainbow (4 Suits)": {
         "id": 778,
-        "suits": ["Red", "Blue", "Null", "Muddy Rainbow"],
-        "spacing": true
+        "suits": ["Red", "Blue", "Null", "Muddy Rainbow"]
     },
     "Null & Muddy Rainbow (3 Suits)": {
         "id": 779,
@@ -705,13 +689,11 @@
     },
     "Null & Light Pink (5 Suits)": {
         "id": 799,
-        "suits": ["Red", "Green", "Blue", "Null", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Green", "Blue", "Null", "Light Pink"]
     },
     "Null & Light Pink (4 Suits)": {
         "id": 800,
-        "suits": ["Red", "Blue", "Null", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Blue", "Null", "Light Pink"]
     },
     "Null & Light Pink (3 Suits)": {
         "id": 801,
@@ -725,13 +707,11 @@
     },
     "Muddy Rainbow & Light Pink (5 Suits)": {
         "id": 803,
-        "suits": ["Red", "Green", "Blue", "Muddy Rainbow", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Green", "Blue", "Muddy Rainbow", "Light Pink"]
     },
     "Muddy Rainbow & Light Pink (4 Suits)": {
         "id": 804,
-        "suits": ["Red", "Blue", "Muddy Rainbow", "Light Pink"],
-        "spacing": true
+        "suits": ["Red", "Blue", "Muddy Rainbow", "Light Pink"]
     },
     "Muddy Rainbow & Light Pink (3 Suits)": {
         "id": 805,

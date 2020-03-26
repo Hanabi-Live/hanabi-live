@@ -300,7 +300,7 @@ export default (winW: number, winH: number) => {
             // (for our hand, the oldest card is the first card, which should be on the right)
             reverse = true;
         }
-        if (!globals.lobby.settings.get('showKeldonUI')) {
+        if (!globals.lobby.settings.get('keldonMode')) {
             // In BGA mode, we need to reverse every hand
             reverse = true;
         }
@@ -322,7 +322,7 @@ export default (winW: number, winH: number) => {
         }
 
         let playerHandPos = handPos;
-        if (!globals.lobby.settings.get('showKeldonUI')) {
+        if (!globals.lobby.settings.get('keldonMode')) {
             playerHandPos = handPosBGA;
         }
 
@@ -340,7 +340,7 @@ export default (winW: number, winH: number) => {
 
         // Draw the faded shade that shows where the "new" side of the hand is
         // (but don't bother drawing it in BGA mode since all the hands face the same way)
-        if (globals.lobby.settings.get('showKeldonUI')) {
+        if (globals.lobby.settings.get('keldonMode')) {
             rect = new Konva.Rect({
                 x: shadePos[numPlayers][j].x * winW,
                 y: shadePos[numPlayers][j].y * winH,
@@ -378,7 +378,7 @@ export default (winW: number, winH: number) => {
         }
 
         let playerNamePos = namePos;
-        if (!globals.lobby.settings.get('showKeldonUI')) {
+        if (!globals.lobby.settings.get('keldonMode')) {
             playerNamePos = namePosBGA;
         }
         globals.elements.nameFrames[i] = new NameFrame({
