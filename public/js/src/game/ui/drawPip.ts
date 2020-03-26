@@ -338,7 +338,7 @@ shapeFunctions.set('pink_hashtag', (ctx: CanvasRenderingContext2D) => {
     return [];
 });
 
-shapeFunctions.set('brown_splat', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('brown_kanji', (ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.transform(1.000000, 0.000000, 0.000000, 1.000000, -9.007581, -241.980300);
@@ -665,10 +665,10 @@ export default (
     shadow: boolean,
     deckBack: boolean,
 ) => {
-    // Each suit has a shape defined in the 'suits.json' file (as the 'pip' property)
+    // Each suit has a shape defined in the "suits.json" file (as the 'pip' property)
     const shapeFunction = shapeFunctions.get(suit.pip);
     if (!shapeFunction) {
-        throw new Error(`Failed to find the shape function for pip '${suit.pip}'.`);
+        throw new Error(`Failed to find the shape function for pip "${suit.pip}".`);
     }
 
     // Handle the shadow
@@ -684,7 +684,7 @@ export default (
     } else if (suit.fill === 'multi') {
         // Rainbow and omni cards have a multiple color fill
         // which is passed as an array to the drawing function
-        // The drawing function will handle the filling.
+        // The drawing function will handle the filling
         shapeFunction(ctx, suit.fillColors);
     } else {
         // All other suits have a solid fill

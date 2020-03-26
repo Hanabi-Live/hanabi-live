@@ -17,7 +17,7 @@
     },
     "Pink": { "clueRanks": "all", "pip": "pink_hashtag" },
     "White": { "clueColors": [], "fill": "#d9d9d9", "pip": "white_moon" },
-    "Brown": { "clueRanks": "none", "pip": "brown_splat" },
+    "Brown": { "clueRanks": "none", "pip": "brown_kanji" },
     "Omni": {
         "allClueColors": true,
         "clueRanks": "all",
@@ -54,7 +54,7 @@
         "clueRanks": "none",
         "fill": "#271a0c",
         "oneOfEach": true,
-        "pip": "brown_splat"
+        "pip": "brown_kanji"
     },
     "Dark Omni": {
         "abbreviation": "O",
