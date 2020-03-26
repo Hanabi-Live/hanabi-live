@@ -19,6 +19,10 @@ export const init = () => {
     // "createTableVariant" is the "fake" element
     // "createTableVariant2" is the Slim Select element
     const createTableVariantClickOrKeydown = () => {
+        const oldVariant = $('#createTableVariant').val();
+        if (typeof oldVariant !== 'string') {
+            throw new Error('The "#createTableVariant" element did not have a string value.');
+        }
         $('#createTableVariant').empty();
         $('#createTableVariant').append($('<option/>', {
             value: null,
@@ -69,10 +73,6 @@ export const init = () => {
             });
 
             // Set the dropdown to be what was already selected in the fake select element
-            const oldVariant = globals.settings.get('createTableVariant');
-            if (typeof oldVariant !== 'string') {
-                throw new Error('The "createTableVariant" value of "globals.settings" is not a string.');
-            }
             variantDropdown.set(oldVariant);
 
             // The user expects the dropdown to be open, so manually open it
