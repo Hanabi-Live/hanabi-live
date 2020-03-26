@@ -58,10 +58,10 @@ const tablesDraw = () => {
 
         // Set the background color of the row, depending on what kind of game it is
         let htmlClass;
-        if (table.joined) {
-            htmlClass = 'joined';
-        } else if (table.sharedReplay) {
+        if (table.sharedReplay) {
             htmlClass = 'replay';
+        } else if (table.joined) {
+            htmlClass = 'joined';
         } else if (table.running) {
             htmlClass = 'started';
         } else if (table.password) {
