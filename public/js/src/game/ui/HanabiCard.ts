@@ -574,8 +574,8 @@ export default class HanabiCard extends Konva.Group {
                 || globals.variant.name.includes('Null-Ones')
                 || globals.variant.name.includes('Light-Pink-Ones')
             ) {
-                if (!positive) {
-                    // Negative color means that the card cannot be a 1
+                if (positive) {
+                    // Positive color means that the card cannot be a 1
                     ranksRemoved = filterInPlace(
                         this.possibleRanks,
                         (rank: number) => rank !== 1,
@@ -586,8 +586,8 @@ export default class HanabiCard extends Konva.Group {
                 || globals.variant.name.includes('Null-Fives')
                 || globals.variant.name.includes('Light-Pink-Fives')
             ) {
-                if (!positive) {
-                    // Negative color means that the card cannot be a 5
+                if (positive) {
+                    // Positive color means that the card cannot be a 5
                     ranksRemoved = filterInPlace(
                         this.possibleRanks,
                         (rank: number) => rank !== 5,
