@@ -41,7 +41,6 @@ module.exports = {
         // https://webpack.js.org/plugins/provide-plugin/
         new webpack.ProvidePlugin({
             $: 'jquery', // The Hanabi codebase and the Tooltipster library uses "$" to invoke jQuery
-            jQuery: 'jquery', // The Chosen library uses "jQuery" to invoke jQuery
         }),
     ],
 
