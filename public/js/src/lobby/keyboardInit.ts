@@ -7,7 +7,18 @@ import globals from '../globals';
 
 export default () => {
     $(document).keydown((event) => {
-        // Lobby hotkeys only use alt, do don't do anything if other modifiers are pressed
+        // On the "Create Game" tooltip, submit the form if enter is pressed
+        if (
+            event.key === 'Enter'
+            && $('#create-game-tooltip-title').is(':visible')
+            && !$('.ss-search').is(':visible') // Make an exception if the variant dropdown is open
+        ) {
+            event.preventDefault();
+            $('#create-game-submit').click();
+        }
+
+        // The rest of the lobby hotkeys only use alt;
+        // do not do anything if other modifiers are pressed
         if (event.ctrlKey || event.shiftKey || event.metaKey) {
             return;
         }

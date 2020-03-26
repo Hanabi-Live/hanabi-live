@@ -18,7 +18,7 @@ export const init = () => {
     // the fake one is clicked
     // "createTableVariant" is the "fake" element
     // "createTableVariant2" is the Slim Select element
-    const createTableVariantClickOrKeypress = () => {
+    const createTableVariantClickOrKeydown = () => {
         $('#createTableVariant').empty();
         $('#createTableVariant').append($('<option/>', {
             value: null,
@@ -71,7 +71,7 @@ export const init = () => {
             // Set the dropdown to be what was already selected in the fake select element
             const oldVariant = globals.settings.get('createTableVariant');
             if (typeof oldVariant !== 'string') {
-                throw new Error('The "createTableVariant" key of "globals.settings" is not a string.');
+                throw new Error('The "createTableVariant" value of "globals.settings" is not a string.');
             }
             variantDropdown.set(oldVariant);
 
@@ -79,8 +79,10 @@ export const init = () => {
             variantDropdown.open();
         }, 0);
     };
-    $('#createTableVariant').click(createTableVariantClickOrKeypress);
-    $('#createTableVariant').keypress(createTableVariantClickOrKeypress);
+    $('#createTableVariant').click(createTableVariantClickOrKeydown);
+    $('#createTableVariant').keydown(createTableVariantClickOrKeydown);
+    // (we catch keydown instead of keypress because arrow keys are only triggered on
+    // keydown and keyup)
 
     // The "dice" button will select a random variant from the list
     $('#dice').on('click', () => {
@@ -241,16 +243,24 @@ export const ready = () => {
         const element = $(`#${key}`);
         if (key === 'createTableVariant') {
             if (typeof value !== 'string') {
-                throw new Error('The "createTableVariant" key of "globals.settings" is not a string.');
+                throw new Error('The "createTableVariant" value of "globals.settings" is not a string.');
             }
 
-            // Fill in the "fake" select box with the last variant
+            // Validate the variant name that we got from the server
+            let variant = value;
+            const variantNames = Array.from(VARIANTS.keys());
+            if (!variantNames.includes(variant)) {
+                variant = 'No Variant';
+                globals.settings.set('createTableVariant', 'No Variant');
+            }
+
+            // Fill in the "fake" select box with the variant
             element.empty();
             element.append($('<option/>', {
-                value,
-                text: value,
+                value: variant,
+                text: variant,
             }));
-            element.val(value);
+            element.val(variant);
         } else if (typeof value === 'boolean') {
             // Checkboxes
             element.prop('checked', value);
