@@ -18,7 +18,7 @@ export const init = () => {
     // the fake one is clicked
     // "createTableVariant" is the "fake" element
     // "createTableVariant2" is the Slim Select element
-    $('#createTableVariant').click(() => {
+    const createTableVariantClickOrKeypress = () => {
         $('#createTableVariant').empty();
         $('#createTableVariant').append($('<option/>', {
             value: null,
@@ -78,7 +78,9 @@ export const init = () => {
             // The user expects the dropdown to be open, so manually open it
             variantDropdown.open();
         }, 0);
-    });
+    };
+    $('#createTableVariant').click(createTableVariantClickOrKeypress);
+    $('#createTableVariant').keypress(createTableVariantClickOrKeypress);
 
     // The "dice" button will select a random variant from the list
     $('#dice').on('click', () => {
