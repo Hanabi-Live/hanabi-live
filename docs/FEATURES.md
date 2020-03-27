@@ -226,8 +226,9 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventions">Hyphen-ated group</a>, some additional UI elements are enabled:
 
 * Double discard situation notification
-* Special sound effect when discarding in a double discard situation (TODO)
-* Special sound effect when discarding a clued card (TODO)
+* Special sound effect when discarding in a double discard situation (not implemented yet)
+* Special sound effect when discarding a clued card (not implemented yet)
+* Special sound effect when playing a 1 out of order (not implemented yet)
 
 <br />
 
