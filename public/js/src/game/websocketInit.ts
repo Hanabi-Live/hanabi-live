@@ -49,16 +49,25 @@ commands.set('init', (data: any) => {
     };
 
     // Find out whether "colorblind mode" is enabled
-    const colorblindModeSetting = globals.settings.get('colorblindMode');
-    let colorblindMode = false;
-    if (typeof colorblindModeSetting === 'boolean') {
-        colorblindMode = colorblindModeSetting;
+    const colorblindMode = globals.settings.get('colorblindMode');
+    if (typeof colorblindMode !== 'boolean') {
+        throw new Error('The "colorblindMode" setting was not a boolean.');
+    }
+
+    // Find out whether "legitble numbers" are enabled
+    const legibleNumbers = globals.settings.get('legibleNumbers');
+    if (typeof legibleNumbers !== 'boolean') {
+        throw new Error('The "legibleNumbers" setting was not a boolean.');
     }
 
     // Build images for every card
     // (with respect to the variant that we are playing
     // and whether or not we have the colorblind UI feature enabled)
-    globals.ui.cardImages = drawCards(globals.init.variant, colorblindMode);
+    globals.ui.cardImages = drawCards(
+        globals.init.variant,
+        colorblindMode,
+        legibleNumbers,
+    );
 
     // Draw the user interface
     phaserInit();

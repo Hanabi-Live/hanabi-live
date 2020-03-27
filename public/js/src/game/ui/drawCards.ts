@@ -19,7 +19,7 @@ import Suit from '../../Suit';
 import Variant from '../../Variant';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
-export default (variant: Variant, colorblindUI: boolean) => {
+export default (variant: Variant, colorblindUI: boolean, legibleNumbers: boolean) => {
     const cardImages: Map<string, HTMLCanvasElement> = new Map();
 
     // Add the "unknown" suit to the list of suits for this variant
@@ -81,7 +81,7 @@ export default (variant: Variant, colorblindUI: boolean) => {
                 ctx.font = `bold ${fontSize}pt Arial`;
 
                 // Draw the rank on the top left
-                if (colorblindUI) {
+                if (colorblindUI || legibleNumbers) {
                     drawText(ctx, textYPos, rankLabel);
                 } else {
                     ctx.save();
@@ -101,7 +101,7 @@ export default (variant: Variant, colorblindUI: boolean) => {
                 ctx.save();
                 ctx.translate(CARD_W, CARD_H);
                 ctx.rotate(Math.PI);
-                if (colorblindUI) {
+                if (colorblindUI || legibleNumbers) {
                     drawText(ctx, textYPos, rankLabel);
                 } else {
                     drawRank(ctx, rank);
