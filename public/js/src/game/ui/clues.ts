@@ -92,15 +92,11 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
 // This mirrors the function in "variants.go"
 const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
     if (clue.type === CLUE_TYPE.RANK) {
-        if (card.suit!.clueRanks === 'all') {
-            return true;
-        }
-        if (card.suit!.clueRanks === 'none') {
-            return false;
-        }
         if (globals.variant.rankCluesTouchNothing) {
             return false;
         }
+
+        // Checking for "Pink-" also checks for "Light-Pink-"
         if (
             (globals.variant.name.includes('Pink-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
@@ -119,6 +115,14 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
         ) {
             return false;
         }
+
+        if (card.suit!.clueRanks === 'all') {
+            return true;
+        }
+        if (card.suit!.clueRanks === 'none') {
+            return false;
+        }
+
         return clue.value === card.rank;
     }
 
@@ -126,6 +130,8 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
         if (globals.variant.colorCluesTouchNothing) {
             return false;
         }
+
+        // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
         if (
             (globals.variant.name.includes('Rainbow-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
@@ -144,6 +150,7 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
         ) {
             return false;
         }
+
         return card.suit!.clueColors.includes(clue.value as Color);
     }
 

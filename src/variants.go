@@ -326,6 +326,8 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 		if variants[variant].RankCluesTouchNothing {
 			return false
 		}
+
+		// Checking for "Pink-" also checks for "Light-Pink-"
 		if (strings.Contains(variant, "Pink-Ones") && card.Rank == 1) ||
 			(strings.Contains(variant, "Omni-Ones") && card.Rank == 1) ||
 			(strings.Contains(variant, "Pink-Fives") && card.Rank == 5) ||
@@ -342,19 +344,23 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 
 			return false
 		}
+
 		if variants[variant].Suits[card.Suit].ClueRanks == "all" {
 			return true
 		}
 		if variants[variant].Suits[card.Suit].ClueRanks == "none" {
 			return false
 		}
-		return card.Rank == clue.Value
+
+		return clue.Value == card.Rank
 	}
 
 	if clue.Type == clueTypeColor {
 		if variants[variant].ColorCluesTouchNothing {
 			return false
 		}
+
+		// Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
 		if (strings.Contains(variant, "Rainbow-Ones") && card.Rank == 1) ||
 			(strings.Contains(variant, "Omni-Ones") && card.Rank == 1) ||
 			(strings.Contains(variant, "Rainbow-Fives") && card.Rank == 5) ||
@@ -371,6 +377,7 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 
 			return false
 		}
+
 		color := variants[variant].ClueColors[clue.Value]
 		colors := variants[variant].Suits[card.Suit].ClueColors
 		return stringInSlice(color, colors)
