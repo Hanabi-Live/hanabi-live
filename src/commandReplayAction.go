@@ -71,20 +71,21 @@ func commandReplayAction(s *Session, d *CommandData) {
 		}
 
 		// Update the progress
-		progress := float64(g.Turn) / float64(g.EndTurn) * 100 // In percent
-		t.Progress = int(math.Round(progress))                 // Round it to the nearest integer
-		if t.Progress > 100 {
+		progressFloat := float64(g.Turn) / float64(g.EndTurn) * 100 // In percent
+		progress := int(math.Round(progressFloat))
+		if progress > 100 {
 			// It is possible to go past the last turn,
 			// since an extra turn is appended to the end of every game with timing information
-			t.Progress = 100
-		} else if t.Progress < 0 {
+			progress = 100
+		} else if progress < 0 {
 			// This can happen if the maximum turn is 0
-			t.Progress = 0
+			progress = 0
 		}
-
-		// Send every user connected an update about this table
-		// (this is sort of wasteful but is necessary for users to see the progress of the replay from the lobby)
-		notifyAllTable(t)
+		oldProgress := t.Progress
+		if progress != oldProgress {
+			t.Progress = progress
+			notifyAllTableProgress(t)
+		}
 	} else if d.Type == replayActionTypeArrow {
 		// A card arrow indication
 		for _, sp := range t.Spectators {

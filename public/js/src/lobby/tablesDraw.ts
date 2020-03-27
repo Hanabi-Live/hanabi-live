@@ -13,7 +13,7 @@ const tablesDraw = () => {
     // Clear all of the existing rows
     tbody.html('');
 
-    if (globals.tableList.size === 0) {
+    if (globals.tableMap.size === 0) {
         $('#lobby-games-no').show();
         $('#lobby-games').addClass('align-center-v');
         $('#lobby-games-table-container').hide();
@@ -32,7 +32,7 @@ const tablesDraw = () => {
     let sortedTableIDs: Array<number> = [];
     for (let i = 1; i <= 5; i++) {
         const tableIDsOfThisType: Array<number> = [];
-        for (const [id, table] of globals.tableList) {
+        for (const [id, table] of globals.tableMap) {
             if (i === 1 && table.joined && !table.sharedReplay) {
                 tableIDsOfThisType.push(id);
             } else if (i === 2 && !table.running && !table.password && !table.joined) {
@@ -52,7 +52,7 @@ const tablesDraw = () => {
     // Add all of the games
     let addedFirstJoinButton = false;
     for (const id of sortedTableIDs) {
-        const table = globals.tableList.get(id);
+        const table = globals.tableMap.get(id);
         if (typeof table === 'undefined') {
             throw new Error(`Failed to get the table for the ID of "${id}".`);
         }
@@ -108,7 +108,7 @@ const tablesDraw = () => {
             status = 'Not Started';
         }
         if (status !== 'Not Started') {
-            status += ` (${table.progress}%)`;
+            status += ` (<span id="status-${table.id}">${table.progress}</span>%)`;
         }
         $('<td>').html(status).appendTo(row);
 

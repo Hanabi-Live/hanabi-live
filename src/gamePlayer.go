@@ -338,8 +338,13 @@ func (p *GamePlayer) PlayCard(g *Game, c *Card) bool {
 	}
 
 	// Update the progress
-	progress := float64(g.Score) / float64(g.MaxScore) * 100 // In percent
-	t.Progress = int(math.Round(progress))                   // Round it to the nearest integer
+	progressFloat := float64(g.Score) / float64(g.MaxScore) * 100 // In percent
+	progress := int(math.Round(progressFloat))
+	oldProgress := t.Progress
+	if progress != oldProgress {
+		t.Progress = progress
+		notifyAllTableProgress(t)
+	}
 
 	// In some variants, playing a card has the potential to reduce the maximum score
 	newMaxScore := g.GetMaxScore()

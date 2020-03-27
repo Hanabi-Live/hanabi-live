@@ -97,8 +97,20 @@ const tableSet = (data: Table) => {
     data.baseTime *= 1000;
     data.timePerTurn *= 1000;
 
-    globals.tableList.set(data.id, data);
+    globals.tableMap.set(data.id, data);
 };
+
+// Received by the client when a table no longer has any members present
+interface TableGoneData {
+    id: number,
+}
+commands.set('tableGone', (data: TableGoneData) => {
+    globals.tableMap.delete(data.id);
+
+    if (globals.currentScreen === 'lobby') {
+        tablesDraw();
+    }
+});
 
 // Received by the client upon initial connection
 commands.set('tableList', (dataList: Array<Table>) => {
@@ -110,15 +122,20 @@ commands.set('tableList', (dataList: Array<Table>) => {
     }
 });
 
-// Received by the client when a table no longer has any members present
-interface TableGoneData {
+interface TableProgressData {
     id: number,
+    progress: number,
 }
-commands.set('tableGone', (data: TableGoneData) => {
-    globals.tableList.delete(data.id);
+
+commands.set('tableProgress', (data: TableProgressData) => {
+    const table = globals.tableMap.get(data.id);
+    if (!table) {
+        return;
+    }
+    table.progress = data.progress;
 
     if (globals.currentScreen === 'lobby') {
-        tablesDraw();
+        $(`#status-${data.id}`).html(data.progress.toString());
     }
 });
 
@@ -152,7 +169,7 @@ commands.set('user', (data: User) => {
 });
 
 const userSet = (data: User) => {
-    globals.userList.set(data.id, data);
+    globals.userMap.set(data.id, data);
 };
 
 commands.set('userList', (dataList: Array<User>) => {
@@ -169,7 +186,7 @@ interface UserLeftData {
     id: number,
 }
 commands.set('userLeft', (data: UserLeftData) => {
-    globals.userList.delete(data.id);
+    globals.userMap.delete(data.id);
 
     if (globals.currentScreen === 'lobby') {
         usersDraw();

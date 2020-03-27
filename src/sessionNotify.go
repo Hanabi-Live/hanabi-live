@@ -120,6 +120,17 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 	}
 }
 
+func (s *Session) NotifyTableProgress(t *Table) {
+	type TableProgressMessage struct {
+		ID       int `json:"id"`
+		Progress int `json:"progress"`
+	}
+	s.Emit("tableProgress", &TableProgressMessage{
+		ID:       t.ID,
+		Progress: t.Progress,
+	})
+}
+
 // NotifyTableGone will notify someone about a game that ended
 func (s *Session) NotifyTableGone(t *Table) {
 	type TableGoneMessage struct {

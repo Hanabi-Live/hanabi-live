@@ -6,7 +6,7 @@
 import globals from '../globals';
 
 export default () => {
-    $('#lobby-users-num').text(globals.userList.size);
+    $('#lobby-users-num').text(globals.userMap.size);
 
     const tbody = $('#lobby-users-table-tbody');
 
@@ -15,7 +15,7 @@ export default () => {
 
     // Make a mapping of user names to IDs
     const usernameMapping: Map<string, number> = new Map();
-    for (const [id, user] of globals.userList) {
+    for (const [id, user] of globals.userMap) {
         usernameMapping.set(user.name, id);
     }
 
@@ -33,7 +33,7 @@ export default () => {
         if (!id) {
             throw new Error(`Failed to get the ID for the username of "${username}".`);
         }
-        const user = globals.userList.get(id);
+        const user = globals.userMap.get(id);
         if (!user) {
             throw new Error(`Failed to get the user for the ID of "${id}".`);
         }
