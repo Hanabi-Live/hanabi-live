@@ -174,6 +174,7 @@ export function pips(this: HanabiCard) {
                 const width = 50;
                 const xx = Math.floor((CARD_W * 0.25) - (width * 0.45));
                 const xy = Math.floor((CARD_H * 0.25) - (width * 0.05));
+                ctx.translate(-1.4 * width, -2 * width);
                 drawX(ctx, shape, xx, xy, 50, width);
             },
             listening: false,
@@ -555,7 +556,6 @@ const drawX = (
 ) => {
     // Start at the top left corner and draw an X
     ctx.beginPath();
-    ctx.translate(-1.4 * width, -2 * width);
     x -= size;
     y -= size;
     ctx.moveTo(x, y);
