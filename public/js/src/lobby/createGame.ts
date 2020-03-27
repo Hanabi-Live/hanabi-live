@@ -55,20 +55,20 @@ export const init = () => {
             const variantDropdown = new SlimSelect({
                 select: '#createTableVariant2',
                 afterClose: () => {
-                    // Write the newly chosen variant back to the fake select element
+                    // Hide & destroy the Slim Select dropdown and
+                    // re-show the fake select element
                     const variantChosen = $('#createTableVariant2').val();
+                    $('#createTableVariant2').hide(0);
+                    variantDropdown.destroy();
+                    $('#createTableVariant2').empty();
+
+                    // Write the newly chosen variant back to the fake select element and show it
                     $('#createTableVariant').empty();
                     $('#createTableVariant').append($('<option/>', {
                         value: variantChosen,
                         text: variantChosen,
                     }));
-
-                    // Hide & destroy the Slim Select dropdown and
-                    // re-show the fake select element
-                    $('#createTableVariant2').hide(0);
                     $('#createTableVariant').show(0);
-                    variantDropdown.destroy();
-                    $('#createTableVariant2').empty();
                 },
             });
 
