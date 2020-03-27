@@ -156,18 +156,11 @@ func waitingListRemoveSub(i int) {
 }
 
 func waitingListPurgeOld() {
-	for {
-		deleted := false
-		for i, waiter := range waitingList {
-			if time.Now().After(waiter.DatetimeExpired) {
-				deleted = true
-				waitingListRemoveSub(i)
-				logger.Info("User \"" + waiter.Username + "\" was purged from the waiting list (due to expiry).")
-				break
-			}
-		}
-		if !deleted {
-			break
+	for i := len(waitingList) - 1; i >= 0; i-- {
+		waiter := waitingList[i]
+		if time.Now().After(waiter.DatetimeExpired) {
+			waitingListRemoveSub(i)
+			logger.Info("User \"" + waiter.Username + "\" was purged from the waiting list (due to expiry).")
 		}
 	}
 }
