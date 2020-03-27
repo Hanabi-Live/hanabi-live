@@ -37,7 +37,7 @@
     "@types/tooltipster": "0.0.29",
     "interactjs": "^1.9.7",
     "jquery": "^3.4.1",
-    "konva": "^4.2.2",
+    "konva": "^3.4.1",
     "linkifyjs": "^2.1.9",
     "phaser": "^3.22.0",
     "sha.js": "^2.4.11",
