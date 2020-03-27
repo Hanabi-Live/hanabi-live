@@ -1221,65 +1221,65 @@
         "spacing": true
     },
 
-    "Chiaroscuro Pink (6 Suits)": {
+    "Gray Pink (6 Suits)": {
         "id": 292,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"]
     },
-    "Chiaroscuro Pink (5 Suits)": {
+    "Gray Pink (5 Suits)": {
         "id": 293,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"]
     },
-    "Black & Chiaroscuro Pink (6 Suits)": {
+    "Black & Gray Pink (6 Suits)": {
         "id": 839,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Gray Pink"]
     },
-    "Rainbow & Chiaroscuro Pink (6 Suits)": {
+    "Rainbow & Gray Pink (6 Suits)": {
         "id": 840,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Gray Pink"]
     },
-    "Rainbow & Chiaroscuro Pink (5 Suits)": {
+    "Rainbow & Gray Pink (5 Suits)": {
         "id": 841,
-        "suits": ["Red", "Green", "Blue", "Rainbow", "Chiaroscuro Pink"]
+        "suits": ["Red", "Green", "Blue", "Rainbow", "Gray Pink"]
     },
-    "White & Chiaroscuro Pink (6 Suits)": {
+    "White & Gray Pink (6 Suits)": {
         "id": 842,
-        "suits": ["Red", "Yellow", "Green", "Blue", "White", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "White", "Gray Pink"]
     },
-    "White & Chiaroscuro Pink (5 Suits)": {
+    "White & Gray Pink (5 Suits)": {
         "id": 843,
-        "suits": ["Red", "Green", "Blue", "White", "Chiaroscuro Pink"]
+        "suits": ["Red", "Green", "Blue", "White", "Gray Pink"]
     },
-    "Brown & Chiaroscuro Pink (6 Suits)": {
+    "Brown & Gray Pink (6 Suits)": {
         "id": 844,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Brown", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Brown", "Gray Pink"]
     },
-    "Brown & Chiaroscuro Pink (5 Suits)": {
+    "Brown & Gray Pink (5 Suits)": {
         "id": 845,
-        "suits": ["Red", "Green", "Blue", "Brown", "Chiaroscuro Pink"]
+        "suits": ["Red", "Green", "Blue", "Brown", "Gray Pink"]
     },
-    "Omni & Chiaroscuro Pink (6 Suits)": {
+    "Omni & Gray Pink (6 Suits)": {
         "id": 846,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Omni", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Omni", "Gray Pink"]
     },
-    "Omni & Chiaroscuro Pink (5 Suits)": {
+    "Omni & Gray Pink (5 Suits)": {
         "id": 847,
-        "suits": ["Red", "Green", "Blue", "Omni", "Chiaroscuro Pink"]
+        "suits": ["Red", "Green", "Blue", "Omni", "Gray Pink"]
     },
-    "Null & Chiaroscuro Pink (6 Suits)": {
+    "Null & Gray Pink (6 Suits)": {
         "id": 848,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Null", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Null", "Gray Pink"]
     },
-    "Null & Chiaroscuro Pink (5 Suits)": {
+    "Null & Gray Pink (5 Suits)": {
         "id": 849,
-        "suits": ["Red", "Green", "Blue", "Null", "Chiaroscuro Pink"]
+        "suits": ["Red", "Green", "Blue", "Null", "Gray Pink"]
     },
-    "Muddy Rainbow & Chiaroscuro Pink (6 Suits)": {
+    "Muddy Rainbow & Gray Pink (6 Suits)": {
         "id": 850,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow", "Gray Pink"]
     },
-    "Muddy Rainbow & Chiaroscuro Pink (5 Suits)": {
+    "Muddy Rainbow & Gray Pink (5 Suits)": {
         "id": 851,
-        "suits": ["Red", "Green", "Blue", "Muddy Rainbow", "Chiaroscuro Pink"],
+        "suits": ["Red", "Green", "Blue", "Muddy Rainbow", "Gray Pink"],
         "spacing": true
     },
 
@@ -1303,9 +1303,9 @@
         "id": 269,
         "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow", "Dark Null"]
     },
-    "Dark Rainbow & Chiaroscuro Pink (6 Suits)": {
+    "Dark Rainbow & Gray Pink (6 Suits)": {
         "id": 852,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow", "Gray Pink"]
     },
     "Dark Pink & Gray (6 Suits)": {
         "id": 147,
@@ -1343,9 +1343,9 @@
         "id": 854,
         "suits": ["Red", "Yellow", "Green", "Blue", "Gray", "Cocoa Rainbow"]
     },
-    "Gray & Chiaroscuro Pink (6 Suits)": {
+    "Gray & Gray Pink (6 Suits)": {
         "id": 855,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Gray", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray", "Gray Pink"]
     },
     "Dark Brown & Dark Omni (6 Suits)": {
         "id": 274,
@@ -1359,9 +1359,9 @@
         "id": 856,
         "suits": ["Red", "Yellow", "Green", "Blue", "Dark Brown", "Cocoa Rainbow"]
     },
-    "Dark Brown & Chiaroscuro Pink (6 Suits)": {
+    "Dark Brown & Gray Pink (6 Suits)": {
         "id": 857,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Brown", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Brown", "Gray Pink"]
     },
     "Dark Omni & Dark Null (6 Suits)": {
         "id": 276,
@@ -1371,21 +1371,21 @@
         "id": 858,
         "suits": ["Red", "Yellow", "Green", "Blue", "Dark Omni", "Cocoa Rainbow"]
     },
-    "Dark Omni & Chiaroscuro Pink (6 Suits)": {
+    "Dark Omni & Gray Pink (6 Suits)": {
         "id": 859,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Omni", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Omni", "Gray Pink"]
     },
     "Dark Null & Cocoa Rainbow (6 Suits)": {
         "id": 860,
         "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null", "Cocoa Rainbow"]
     },
-    "Dark Null & Chiaroscuro Pink (6 Suits)": {
+    "Dark Null & Gray Pink (6 Suits)": {
         "id": 861,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null", "Gray Pink"]
     },
-    "Cocoa Rainbow & Chiaroscuro Pink (6 Suits)": {
+    "Cocoa Rainbow & Gray Pink (6 Suits)": {
         "id": 862,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow", "Gray Pink"],
         "spacing": true
     },
 
@@ -1607,13 +1607,13 @@
         "id": 876,
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"]
     },
-    "Rainbow-Ones & Chiaroscuro Pink (6 Suits)": {
+    "Rainbow-Ones & Gray Pink (6 Suits)": {
         "id": 877,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"]
     },
-    "Rainbow-Ones & Chiaroscuro Pink (5 Suits)": {
+    "Rainbow-Ones & Gray Pink (5 Suits)": {
         "id": 878,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "spacing": true
     },
 
@@ -1885,14 +1885,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Pink-Ones & Chiaroscuro Pink (6 Suits)": {
+    "Pink-Ones & Gray Pink (6 Suits)": {
         "id": 889,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Pink-Ones & Chiaroscuro Pink (5 Suits)": {
+    "Pink-Ones & Gray Pink (5 Suits)": {
         "id": 890,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5],
         "spacing": true
     },
@@ -2115,13 +2115,13 @@
         "id": 900,
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"]
     },
-    "White-Ones & Chiaroscuro Pink (6 Suits)": {
+    "White-Ones & Gray Pink (6 Suits)": {
         "id": 901,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"]
     },
-    "White-Ones & Chiaroscuro Pink (5 Suits)": {
+    "White-Ones & Gray Pink (5 Suits)": {
         "id": 902,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "spacing": true
     },
 
@@ -2393,14 +2393,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Brown-Ones & Chiaroscuro Pink (6 Suits)": {
+    "Brown-Ones & Gray Pink (6 Suits)": {
         "id": 913,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Brown-Ones & Chiaroscuro Pink (5 Suits)": {
+    "Brown-Ones & Gray Pink (5 Suits)": {
         "id": 914,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5],
         "spacing": true
     },
@@ -2673,14 +2673,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Omni-Ones & Chiaroscuro Pink (6 Suits)": {
+    "Omni-Ones & Gray Pink (6 Suits)": {
         "id": 925,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Omni-Ones & Chiaroscuro Pink (5 Suits)": {
+    "Omni-Ones & Gray Pink (5 Suits)": {
         "id": 926,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5],
         "spacing": true
     },
@@ -2953,14 +2953,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Null-Ones & Chiaroscuro Pink (6 Suits)": {
+    "Null-Ones & Gray Pink (6 Suits)": {
         "id": 937,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Null-Ones & Chiaroscuro Pink (5 Suits)": {
+    "Null-Ones & Gray Pink (5 Suits)": {
         "id": 938,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5],
         "spacing": true
     },
@@ -3233,14 +3233,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Muddy-Rainbow-Ones & Chiaroscuro Pink (6 Suits)": {
+    "Muddy-Rainbow-Ones & Gray Pink (6 Suits)": {
         "id": 1061,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Muddy-Rainbow-Ones & Chiaroscuro Pink (5 Suits)": {
+    "Muddy-Rainbow-Ones & Gray Pink (5 Suits)": {
         "id": 1062,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5],
         "spacing": true
     },
@@ -3513,14 +3513,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Light-Pink-Ones & Chiaroscuro Pink (6 Suits)": {
+    "Light-Pink-Ones & Gray Pink (6 Suits)": {
         "id": 1113,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5]
     },
-    "Light-Pink-Ones & Chiaroscuro Pink (5 Suits)": {
+    "Light-Pink-Ones & Gray Pink (5 Suits)": {
         "id": 1114,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [2, 3, 4, 5],
         "spacing": true
     },
@@ -3743,13 +3743,13 @@
         "id": 948,
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"]
     },
-    "Rainbow-Fives & Chiaroscuro Pink (6 Suits)": {
+    "Rainbow-Fives & Gray Pink (6 Suits)": {
         "id": 949,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"]
     },
-    "Rainbow-Fives & Chiaroscuro Pink (5 Suits)": {
+    "Rainbow-Fives & Gray Pink (5 Suits)": {
         "id": 950,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "spacing": true
     },
 
@@ -4021,14 +4021,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Pink-Fives & Chiaroscuro Pink (6 Suits)": {
+    "Pink-Fives & Gray Pink (6 Suits)": {
         "id": 961,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Pink-Fives & Chiaroscuro Pink (5 Suits)": {
+    "Pink-Fives & Gray Pink (5 Suits)": {
         "id": 962,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4],
         "spacing": true
     },
@@ -4251,13 +4251,13 @@
         "id": 972,
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"]
     },
-    "White-Fives & Chiaroscuro Pink (6 Suits)": {
+    "White-Fives & Gray Pink (6 Suits)": {
         "id": 973,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"]
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"]
     },
-    "White-Fives & Chiaroscuro Pink (5 Suits)": {
+    "White-Fives & Gray Pink (5 Suits)": {
         "id": 974,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "spacing": true
     },
 
@@ -4529,14 +4529,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Brown-Fives & Chiaroscuro Pink (6 Suits)": {
+    "Brown-Fives & Gray Pink (6 Suits)": {
         "id": 985,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Brown-Fives & Chiaroscuro Pink (5 Suits)": {
+    "Brown-Fives & Gray Pink (5 Suits)": {
         "id": 986,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4],
         "spacing": true
     },
@@ -4809,14 +4809,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Omni-Fives & Chiaroscuro Pink (6 Suits)": {
+    "Omni-Fives & Gray Pink (6 Suits)": {
         "id": 997,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Omni-Fives & Chiaroscuro Pink (5 Suits)": {
+    "Omni-Fives & Gray Pink (5 Suits)": {
         "id": 998,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4],
         "spacing": true
     },
@@ -5089,14 +5089,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Null-Fives & Chiaroscuro Pink (6 Suits)": {
+    "Null-Fives & Gray Pink (6 Suits)": {
         "id": 1009,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Null-Fives & Chiaroscuro Pink (5 Suits)": {
+    "Null-Fives & Gray Pink (5 Suits)": {
         "id": 1010,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4],
         "spacing": true
     },
@@ -5369,14 +5369,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Muddy-Rainbow-Fives & Chiaroscuro Pink (6 Suits)": {
+    "Muddy-Rainbow-Fives & Gray Pink (6 Suits)": {
         "id": 1165,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Muddy-Rainbow-Fives & Chiaroscuro Pink (5 Suits)": {
+    "Muddy-Rainbow-Fives & Gray Pink (5 Suits)": {
         "id": 1166,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4],
         "spacing": true
     },
@@ -5649,14 +5649,14 @@
         "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Light-Pink-Fives & Chiaroscuro Pink (6 Suits)": {
+    "Light-Pink-Fives & Gray Pink (6 Suits)": {
         "id": 1217,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4]
     },
-    "Light-Pink-Fives & Chiaroscuro Pink (5 Suits)": {
+    "Light-Pink-Fives & Gray Pink (5 Suits)": {
         "id": 1218,
-        "suits": ["Red", "Yellow", "Green", "Blue", "Chiaroscuro Pink"],
+        "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
         "clueRanks": [1, 2, 3, 4],
         "spacing": true
     },
