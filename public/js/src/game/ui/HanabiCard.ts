@@ -386,15 +386,10 @@ export default class HanabiCard extends Konva.Group {
             if (globals.variant.rankCluesTouchNothing) {
                 // Some variants have rank clues touch no cards
                 // If this is the case, we cannot remove any rank pips from the card
-            } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'none') && !positive) {
-                // Some suits are not touched by any ranks,
-                // so if this is a negative rank clue, we cannot remove any rank pips from the card
-            } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'all') && positive) {
-                // Some cards are touched by all ranks,
-                // so if this is a positive rank clue, we cannot remove any rank pips from the card
             } else if (
                 globals.variant.name.includes('Pink-Ones')
                 || globals.variant.name.includes('Omni-Ones')
+                || globals.variant.name.includes('Light-Pink-Ones')
             ) {
                 // In some variants, the 1 of every suit is touched by all rank clues
                 ranksRemoved = filterInPlace(
@@ -404,6 +399,7 @@ export default class HanabiCard extends Konva.Group {
             } else if (
                 globals.variant.name.includes('Pink-Fives')
                 || globals.variant.name.includes('Omni-Fives')
+                || globals.variant.name.includes('Light-Pink-Fives')
             ) {
                 // In some variants, the 5 of every suit is touched by all rank clues
                 ranksRemoved = filterInPlace(
@@ -430,6 +426,12 @@ export default class HanabiCard extends Konva.Group {
                     this.possibleRanks,
                     (rank: number) => (rank === clueRank && rank !== 5) === positive,
                 );
+            } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'none') && !positive) {
+                // Some suits are not touched by any ranks,
+                // so if this is a negative rank clue, we cannot remove any rank pips from the card
+            } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'all') && positive) {
+                // Some cards are touched by all ranks,
+                // so if this is a positive rank clue, we cannot remove any rank pips from the card
             } else {
                 // Remove all possibilities that do not include this rank
                 ranksRemoved = filterInPlace(

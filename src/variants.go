@@ -323,12 +323,6 @@ func variantsInit() {
 // but it will the "Dual-Color" variant
 func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 	if clue.Type == clueTypeRank {
-		if variants[variant].Suits[card.Suit].ClueRanks == "all" {
-			return true
-		}
-		if variants[variant].Suits[card.Suit].ClueRanks == "none" {
-			return false
-		}
 		if variants[variant].RankCluesTouchNothing {
 			return false
 		}
@@ -346,6 +340,12 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 			(strings.Contains(variant, "Null-Fives") && card.Rank == 5) ||
 			(strings.Contains(variant, "Muddy-Rainbow-Fives") && card.Rank == 5) {
 
+			return false
+		}
+		if variants[variant].Suits[card.Suit].ClueRanks == "all" {
+			return true
+		}
+		if variants[variant].Suits[card.Suit].ClueRanks == "none" {
 			return false
 		}
 		return card.Rank == clue.Value
