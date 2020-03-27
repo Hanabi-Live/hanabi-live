@@ -161,7 +161,6 @@ func waitingListPurgeOld() {
 		if time.Now().After(waiter.DatetimeExpired) {
 			waitingListRemoveSub(i)
 			logger.Info("User \"" + waiter.Username + "\" was purged from the waiting list (due to expiry).")
-			break
 		}
 	}
 }
