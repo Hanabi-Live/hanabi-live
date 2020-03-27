@@ -187,7 +187,7 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, tur
     // (this must be done after the card is finished tweening)
     const pos = getPos(card, rot);
 
-    new Konva.Tween({
+    arrow.tween = new Konva.Tween({
         node: arrow,
         duration: 0.5,
         x: pos.x,

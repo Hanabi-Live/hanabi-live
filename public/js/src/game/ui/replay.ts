@@ -181,7 +181,7 @@ const reset = () => {
         playStack.removeChildren();
     }
 
-    // Readd the stack base to the play stacks
+    // Re-add the stack base to the play stacks
     for (let i = 0; i < globals.variant.suits.length; i++) {
         const suit = globals.variant.suits[i];
         const playStack = globals.elements.playStacks.get(suit)!;
@@ -196,6 +196,7 @@ const reset = () => {
         discardStack.removeChildren();
     }
 
+    // Reset the strikes
     for (const strikeX of globals.elements.strikeXs) {
         if (strikeX.tween) {
             strikeX.tween.destroy();
@@ -203,6 +204,8 @@ const reset = () => {
         strikeX.opacity(0);
         strikeX.setFaded();
     }
+
+    // Reset all of the cards in the deck
     for (const card of globals.deck) {
         const child = card.parent as unknown as LayoutChild;
         if (!child) {
@@ -215,7 +218,12 @@ const reset = () => {
         card.suit = null;
         card.rank = null;
     }
+
+    // Reset the arrows
     for (const arrow of globals.elements.arrows) {
+        if (arrow.tween) {
+            arrow.tween.destroy();
+        }
         arrow.hide();
     }
 
