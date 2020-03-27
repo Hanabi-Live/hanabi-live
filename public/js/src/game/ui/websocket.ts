@@ -68,7 +68,7 @@ commands.set('databaseID', (data: DatabaseIDData) => {
         globals.elements.deck!.nudgeCountDownwards();
     }
 
-    globals.layers.get('UI2')!.batchDraw();
+    globals.layers.get('arrow')!.batchDraw();
 });
 
 commands.set('gameOver', () => {

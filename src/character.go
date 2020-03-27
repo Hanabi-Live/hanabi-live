@@ -23,9 +23,9 @@ var (
 	charactersID    map[int]string
 	debugCharacters = []string{
 		"Contrarian",
-		"Insistent",
 		"Genius",
 		"Miser",
+		"Insistent",
 	}
 )
 
