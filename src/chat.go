@@ -59,7 +59,9 @@ func chatMakeMessage(msg string, who string, discord bool, server bool, datetime
 	}
 }
 
-// chatServerSend is a helper function to give feedback to a user after they type a command
+// chatServerSend is a helper function to send a message from the server
+// (e.g. to give feedback to a user after they type a command,
+// to notify that the server is shutting down, etc.)
 func chatServerSend(msg string, room string) {
 	commandChat(nil, &CommandData{
 		Msg:    msg,

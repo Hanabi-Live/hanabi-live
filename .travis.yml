@@ -9,15 +9,20 @@ matrix:
       go:
         # This will automatically choose the latest released Go version
         - 1.x
+      env:
+        # This is needed so that Travis will use the "go.mod" file
+        - GO111MODULE=on
       before_script:
         # Install the Go linter
         # https://github.com/golangci/golangci-lint
+        - echo Installing the Go linter...
         - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.24.0
         # Go to the Go source code
         - cd src
       script:
         # Compile the Go code
-        - go install
+        - echo Compiling the Go code...
+        - go build -v
         # Run the Golang linter
         - ./lint.sh
 

@@ -379,8 +379,8 @@ export default class HanabiCard extends Konva.Group {
         }
 
         // Find out if we can remove some rank pips or suit pips from this clue
-        let ranksRemoved = [];
-        let suitsRemoved = [];
+        let ranksRemoved: Array<number> = [];
+        let suitsRemoved: Array<Suit> = [];
         if (clue.type === CLUE_TYPE.RANK) {
             const clueRank = clue.value as number;
             if (globals.variant.rankCluesTouchNothing) {
@@ -449,7 +449,15 @@ export default class HanabiCard extends Konva.Group {
 
                 // Also handle the special case where two positive rank clues
                 // should "fill in" a card of a multi-rank suit
-                if (this.positiveRankClues.length >= 2) {
+                if (
+                    this.positiveRankClues.length >= 2
+                    && !(globals.variant.name.includes('Pink-Ones') && this.possibleRanks.includes(1))
+                    && !(globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
+                    && !(globals.variant.name.includes('Light-Pink-Ones') && this.possibleRanks.includes(1))
+                    && !(globals.variant.name.includes('Pink-Fives') && this.possibleRanks.includes(5))
+                    && !(globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
+                    && !(globals.variant.name.includes('Light-Pink-Fives') && this.possibleRanks.includes(5))
+                ) {
                     suitsRemoved = filterInPlace(
                         this.possibleSuits,
                         (suit: Suit) => suit.clueRanks === 'all',
@@ -501,8 +509,10 @@ export default class HanabiCard extends Konva.Group {
                 && (
                     (globals.variant.name.includes('Rainbow-Ones') && this.possibleRanks.includes(1))
                     || (globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
+                    || (globals.variant.name.includes('Muddy-Rainbow-Ones') && this.possibleRanks.includes(1))
                     || (globals.variant.name.includes('Rainbow-Fives') && this.possibleRanks.includes(5))
                     || (globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
+                    || (globals.variant.name.includes('Muddy-Rainbow-Fives') && this.possibleRanks.includes(5))
                 )
             ) {
                 // In some variants, 1's or 5's are touched by all colors
@@ -534,6 +544,7 @@ export default class HanabiCard extends Konva.Group {
             if (
                 globals.variant.name.includes('Rainbow-Ones')
                 || globals.variant.name.includes('Omni-Ones')
+                || globals.variant.name.includes('Muddy-Rainbow-Ones')
             ) {
                 if (positive) {
                     if (this.positiveColorClues.length >= 2) {
@@ -553,6 +564,7 @@ export default class HanabiCard extends Konva.Group {
             } else if (
                 globals.variant.name.includes('Rainbow-Fives')
                 || globals.variant.name.includes('Omni-Fives')
+                || globals.variant.name.includes('Muddy-Rainbow-Fives')
             ) {
                 if (positive) {
                     if (this.positiveColorClues.length >= 2) {
@@ -574,8 +586,8 @@ export default class HanabiCard extends Konva.Group {
                 || globals.variant.name.includes('Null-Ones')
                 || globals.variant.name.includes('Light-Pink-Ones')
             ) {
-                if (!positive) {
-                    // Negative color means that the card cannot be a 1
+                if (positive) {
+                    // Positive color means that the card cannot be a 1
                     ranksRemoved = filterInPlace(
                         this.possibleRanks,
                         (rank: number) => rank !== 1,
@@ -586,8 +598,8 @@ export default class HanabiCard extends Konva.Group {
                 || globals.variant.name.includes('Null-Fives')
                 || globals.variant.name.includes('Light-Pink-Fives')
             ) {
-                if (!positive) {
-                    // Negative color means that the card cannot be a 5
+                if (positive) {
+                    // Positive color means that the card cannot be a 5
                     ranksRemoved = filterInPlace(
                         this.possibleRanks,
                         (rank: number) => rank !== 5,
@@ -612,8 +624,10 @@ export default class HanabiCard extends Konva.Group {
             if (
                 (globals.variant.name.includes('Rainbow-Ones') && rank === 1)
                 || (globals.variant.name.includes('Omni-Ones') && rank === 1)
+                || (globals.variant.name.includes('Muddy-Rainbow-Ones') && rank === 1)
                 || (globals.variant.name.includes('Rainbow-Fives') && rank === 5)
                 || (globals.variant.name.includes('Omni-Fives') && rank === 5)
+                || (globals.variant.name.includes('Muddy-Rainbow-Fives') && rank === 5)
             ) {
                 // Mark to retroactively apply color clues when we return from this function
                 this.reapplyColorClues = true;

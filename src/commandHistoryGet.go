@@ -1,5 +1,5 @@
 /*
-	Sent when the user clicks the "Show More History" button.
+	Sent when the user clicks the "Show More History" button
 	"data" example:
 	{
 		offset: 10,

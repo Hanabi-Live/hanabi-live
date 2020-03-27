@@ -133,9 +133,6 @@ func main() {
 		wordList = strings.Split(wordListString, "\n")
 	}
 
-	// Initialize catching Unix signals
-	go signalInit()
-
 	// Start the Discord bot (in "discord.go")
 	discordInit()
 
@@ -150,6 +147,10 @@ func main() {
 
 	// Load the current speedrun records
 	speedrunInit()
+
+	// Initialize an HTTP router that will only listen locally for maintenance-related commands
+	// (the "ListenAndServe" functions located inside here are blocking)
+	go httpLocalhostInit()
 
 	// Initialize an HTTP router using the Gin framework (in "http.go")
 	// (the "ListenAndServe" functions located inside here are blocking)

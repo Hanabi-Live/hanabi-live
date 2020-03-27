@@ -3,36 +3,99 @@
 */
 
 // Imports
+import SlimSelect from 'slim-select';
 import shajs from 'sha.js';
 import globals from '../globals';
 import * as misc from '../misc';
+import variantsJSON from '../data/variants.json';
 import { VARIANTS } from '../constants';
 
 export const init = () => {
-    // Populate the variant dropdown in the "Create Game" tooltip
-    const line = '─────────────────────────';
-    for (const [variantName, variant] of VARIANTS) {
-        const option = new Option(variantName, variantName);
-        $('#create-table-variant-list').append($(option));
-
-        if (variant.spacing) {
-            const spacing = new Option(line, line);
-            $('#create-table-variant-list').append($(spacing));
+    // In the create game tooltip,
+    // the user can select a variant in a dropdown that contains all 1000+ variants
+    // Unfortunately, having so many div elements causes the DOM to lag every time the tooltip is
+    // opened; thus, we show a "fake" variant dropdown by default, and only populate the real one if
+    // the fake one is clicked
+    // "createTableVariant" is the "fake" element
+    // "createTableVariant2" is the Slim Select element
+    const createTableVariantClickOrKeydown = () => {
+        const oldVariant = $('#createTableVariant').val();
+        if (typeof oldVariant !== 'string') {
+            throw new Error('The "#createTableVariant" element did not have a string value.');
         }
-    }
-    $('#createTableVariant').on('input', () => {
-        const text = $('#createTableVariant').val();
-        if (text === line) {
-            $('#createTableVariant').val('');
-        }
-    });
+        $('#createTableVariant').empty();
+        $('#createTableVariant').append($('<option/>', {
+            value: null,
+            text: 'Loading the variants...',
+        }));
+        $('#createTableVariant').blur();
 
-    // Activate the dice button
+        // Put the rest of the code in a callback so that the browser screen will update and show
+        // the "Loading the variants..." text
+        setTimeout(() => {
+            $('#createTableVariant').hide(0);
+            $('#createTableVariant2').show(0);
+
+            // Populate the Slim Select dropdown with the name of every variant
+            const line = '──────────────';
+            for (const [variantName, variantJSON] of Object.entries(variantsJSON) as any) {
+                $('#createTableVariant2').append($('<option/>', {
+                    value: variantName,
+                    text: variantName,
+                }));
+
+                if (variantJSON.spacing) {
+                    const spacing = new Option(line);
+                    spacing.disabled = true;
+                    $('#createTableVariant2').append($(spacing));
+                }
+            }
+
+            // Transform the select element into a Slim Select element
+            const variantDropdown = new SlimSelect({
+                select: '#createTableVariant2',
+                afterClose: () => {
+                    // Write the newly chosen variant back to the fake select element
+                    const variantChosen = $('#createTableVariant2').val();
+                    $('#createTableVariant').empty();
+                    $('#createTableVariant').append($('<option/>', {
+                        value: variantChosen,
+                        text: variantChosen,
+                    }));
+
+                    // Hide & destroy the Slim Select dropdown and
+                    // re-show the fake select element
+                    $('#createTableVariant2').hide(0);
+                    $('#createTableVariant').show(0);
+                    variantDropdown.destroy();
+                    $('#createTableVariant2').empty();
+                },
+            });
+
+            // Set the dropdown to be what was already selected in the fake select element
+            variantDropdown.set(oldVariant);
+
+            // The user expects the dropdown to be open, so manually open it
+            variantDropdown.open();
+        }, 0);
+    };
+    $('#createTableVariant').click(createTableVariantClickOrKeydown);
+    $('#createTableVariant').keydown(createTableVariantClickOrKeydown);
+    // (we catch keydown instead of keypress because arrow keys are only triggered on
+    // keydown and keyup)
+
+    // The "dice" button will select a random variant from the list
     $('#dice').on('click', () => {
         const variantNames = Array.from(VARIANTS.keys());
         const randomVariantIndex = misc.getRandomNumber(0, variantNames.length - 1);
         const randomVariant = variantNames[randomVariantIndex];
-        $('#createTableVariant').val(randomVariant);
+        const element = $('#createTableVariant');
+        element.empty();
+        element.append($('<option/>', {
+            value: randomVariant,
+            text: randomVariant,
+        }));
+        element.val(randomVariant);
     });
 
     // Make the extra time fields appear and disappear depending on whether the checkbox is checked
@@ -80,22 +143,6 @@ export const init = () => {
 };
 
 const submit = () => {
-    // Check to see if the submitted variant is correctly capitalized
-    const variantChosen = $('#createTableVariant').val();
-    if (typeof variantChosen === 'string') {
-        const variantNames = Array.from(VARIANTS.keys());
-        for (const variantName of variantNames) {
-            if (
-                variantName.toLowerCase() === variantChosen.toLowerCase()
-                && variantName !== variantChosen
-            ) {
-                // The capitalization is wrong; correct it for them
-                $('#createTableVariant').val(variantName);
-                break;
-            }
-        }
-    }
-
     // We need to mutate some values before sending them to the server
     const baseTimeMinutes = parseFloat(getTextbox('createTableBaseTimeMinutes'));
     const baseTime = Math.round(baseTimeMinutes * 60); // The server expects this in seconds
@@ -194,12 +241,32 @@ export const ready = () => {
     // (which is stored on the server)
     for (const [key, value] of globals.settings) {
         const element = $(`#${key}`);
-        if (typeof value === 'boolean') {
+        if (key === 'createTableVariant') {
+            if (typeof value !== 'string') {
+                throw new Error('The "createTableVariant" value of "globals.settings" is not a string.');
+            }
+
+            // Validate the variant name that we got from the server
+            let variant = value;
+            const variantNames = Array.from(VARIANTS.keys());
+            if (!variantNames.includes(variant)) {
+                variant = 'No Variant';
+                globals.settings.set('createTableVariant', 'No Variant');
+            }
+
+            // Fill in the "fake" select box with the variant
+            element.empty();
+            element.append($('<option/>', {
+                value: variant,
+                text: variant,
+            }));
+            element.val(variant);
+        } else if (typeof value === 'boolean') {
             // Checkboxes
             element.prop('checked', value);
             element.change();
         } else {
-            // Input fields and select dropdowns
+            // Input fields
             element.val(value);
         }
     }

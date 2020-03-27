@@ -71,6 +71,7 @@ type CommandData struct {
 	OnlyDiscord          bool     // True if this is a chat message that should only go to Discord
 	DiscordID            string   // Used when echoing a message from Discord to the lobby
 	DiscordDiscriminator string   // Used when echoing a message from Discord to the lobby
+	DiscordCommand       bool     // Used when echoing a message from Discord to the lobby
 	Args                 []string // Used to pass chat command arguments to a chat command handler
 }
 
@@ -103,7 +104,6 @@ func commandInit() {
 	commandMap["chatRead"] = commandChatRead
 	commandMap["getName"] = commandGetName
 	commandMap["historyGetDeals"] = commandHistoryGetDeals
-	commandMap["historyGetAll"] = commandHistoryGetAll
 	commandMap["historyGet"] = commandHistoryGet
 	commandMap["replayCreate"] = commandReplayCreate
 

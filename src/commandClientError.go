@@ -1,5 +1,5 @@
 /*
-	Sent when the user gets a JavaScript error.
+	Sent when the user gets a JavaScript error
 	"data" example:
 	{
 		message: 'Uncaught ReferenceError: asdf is not defined',

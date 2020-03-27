@@ -7,7 +7,7 @@ import globals from '../globals';
 
 export const init = () => {
     // Preload some sounds
-    if (!globals.settings.get('sendTurnSound') || globals.settings.get('volume') === 0) {
+    if (!globals.settings.get('soundMove') || globals.settings.get('volume') === 0) {
         return;
     }
 

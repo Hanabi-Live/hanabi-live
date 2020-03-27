@@ -693,7 +693,7 @@ interface SoundData {
     file: string,
 }
 commands.set('sound', (data: SoundData) => {
-    if (!globals.lobby.settings.get('sendTurnSound')) {
+    if (!globals.lobby.settings.get('soundMove')) {
         return;
     }
 

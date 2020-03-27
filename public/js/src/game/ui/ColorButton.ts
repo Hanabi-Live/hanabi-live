@@ -8,7 +8,7 @@ export default class ColorButton extends Konva.Group {
 
     background: Konva.Rect;
 
-    constructor(config: Konva.ContainerConfig, showColorblindUI: boolean) {
+    constructor(config: Konva.ContainerConfig, colorblindMode: boolean) {
         super(config);
         this.listening(true);
 
@@ -54,7 +54,7 @@ export default class ColorButton extends Konva.Group {
             strokeWidth: 1,
             align: 'center',
             text: config.text,
-            visible: showColorblindUI,
+            visible: colorblindMode,
             listening: false,
         });
         this.add(text);

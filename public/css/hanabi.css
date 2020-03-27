@@ -332,12 +332,8 @@ table td {
     border: 1px;
     margin-bottom: 1em;
     padding: 0 0.5em 0 0.5em;
-    height: calc(100% - 3.5em); /* The height of the input box is 3.5em */
-}
-
-#lobby-chat-pregame-text {
-    height: calc(100% - 6.05em);
-    /* We have to move it further down because of the input box and the title */
+    height: calc(100% - 3.5em - 2.5em);
+    /* (the height of the input box is 3.5em and the hight of the "Lobby Chat" text is 2.5em) */
 }
 
 .chat-emote {
@@ -468,15 +464,37 @@ table td {
 }
 
 .question-mark:hover {
-    color: green;
+    color: #6666ff;
 }
 
 #dice {
-    color: black;
+    color: green;
+    position: relative;
+    left: 0.2em;
 }
 
 #dice:hover {
-    color: green;
+    color: #00cc00;
+    cursor: pointer;
+}
+
+/* Used in the "Variant" dropdown */
+.ss-single-selected {
+    background-color: #f8f8f8 !important;
+    border-radius: 6px !important;
+    border: solid 1px #e5e5e5 !important;
+    height: 3em !important;
+    text-indent: 0.65em !important;
+    color: #777 !important;
+}
+
+.ss-search > input:focus {
+    border-color: #e89980 !important;
+    box-shadow: 0 0 0 2px #e89980 !important;
+}
+
+.ss-arrow {
+    display: none !important;
 }
 
 /*
@@ -634,6 +652,14 @@ table td {
     position: relative;
     top: 0.05em;
     left: 0.15em;
+}
+
+#game-chat-text {
+    /*
+        The height of the in-game chat text box is bigger than the lobby text boxes
+        (e.g. ".lobby-chat-text-box") because there is no title to account for
+    */
+    height: calc(100% - 4em);
 }
 
 /* From: https://codepen.io/ZeroX-DG/pen/vjdoYe */

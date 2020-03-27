@@ -17,14 +17,6 @@ func chatCommandInit() {
 	chatCommandMap["discord"] = chatDiscord
 	chatCommandMap["random"] = chatRandom
 
-	// Lobby-only commands
-	chatCommandMap["here"] = chatHere
-	chatCommandMap["last"] = chatLast
-	chatCommandMap["next"] = chatNext
-	chatCommandMap["unnext"] = chatUnnext
-	chatCommandMap["removenext"] = chatUnnext
-	chatCommandMap["list"] = chatList
-
 	// Table-only commands
 	chatCommandMap["s"] = chatS
 	chatCommandMap["s2"] = chatS2
@@ -35,6 +27,15 @@ func chatCommandInit() {
 	chatCommandMap["startin"] = chatStartIn
 	chatCommandMap["pause"] = chatPause
 	chatCommandMap["unpause"] = chatUnpause
+
+	// Discord-only commands
+	chatCommandMap["here"] = chatHere
+	chatCommandMap["last"] = chatLast
+	chatCommandMap["next"] = chatNext
+	chatCommandMap["unnext"] = chatUnnext
+	chatCommandMap["removenext"] = chatUnnext
+	chatCommandMap["list"] = chatList
+	// (there are additional Discord-only commands in "discord.go")
 
 	// Admin-only commands (from the lobby only)
 	chatCommandMap["restart"] = chatRestart
