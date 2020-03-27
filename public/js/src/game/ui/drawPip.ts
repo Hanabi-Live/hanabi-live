@@ -427,9 +427,9 @@ shapeFunctions.set('empty_set', (ctx: CanvasRenderingContext2D) => {
     return [];
 });
 shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D, colors?: Array<string>) => {
+    ctx.scale(1.2, 1.2);
     ctx.beginPath();
     ctx.scale(sf, sf);
-    ctx.scale(1.2, 1.2);
     ctx.translate(-91.082135, -80.110718);
     ctx.transform(2.128652, 0.000000, 0.000000, 2.476848, -78.229708, -213.117530);
     ctx.moveTo(84.443554, 124.560580);
@@ -449,9 +449,9 @@ shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D, colors?: Array<st
     ctx.bezierCurveTo(72.711854, 115.080550, 75.752370, 115.504430, 77.638733, 116.418060);
     ctx.bezierCurveTo(77.955104, 120.035450, 76.616822, 120.965250, 75.136667, 120.896220);
     ctx.transform(1 / 2.128652, 0.000000, 0.000000, 1 / 2.476848, 0, 0);
-    ctx.scale(5 / 6, 5 / 6);
     ctx.scale(1 / sf, 1 / sf);
     ctx.closePath();
+    ctx.scale(5 / 6, 5 / 6);
     if (colors) {
         // When multiple colors are passed, create a gradient.
         const gradient = ctx.createLinearGradient(500, 0, 700, 0);

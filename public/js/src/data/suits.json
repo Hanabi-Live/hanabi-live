@@ -85,7 +85,7 @@
         "abbreviation": "I",
         "clueColors": [],
         "clueRanks": "all",
-        "fill": "#ffcce6",
+        "fill": "#ffbbdd",
         "pip": "pink_hashtag"
      },
      "Cocoa Rainbow": {
@@ -101,7 +101,7 @@
         "abbreviation": "I",
         "clueColors": [],
         "clueRanks": "all",
-        "fill": "#ffcce6",
+        "fill": "#b05080",
         "oneOfEach": true,
         "pip": "pink_hashtag"
      },
