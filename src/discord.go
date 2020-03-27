@@ -271,6 +271,8 @@ func discordGetID(username string) string {
 	return ""
 }
 
+// We need to check for special commands that occur in Discord channels other than #general
+// (because the messages will not flow to the normal "chatCommandMap")
 func discordCheckCommand(m *discordgo.MessageCreate) bool {
 	// This logic is replicated from the "chatCommand()" function
 	args := strings.Split(m.Content, " ")
@@ -286,12 +288,12 @@ func discordCheckCommand(m *discordgo.MessageCreate) bool {
 	command = strings.ToLower(command) // Commands are case-insensitive
 
 	if command == "link" || command == "game" || command == "replay" {
-		// We enclose the link in "<>" to prevent Discord from generating a link preview
 		if len(args) == 0 {
 			discordSend(m.ChannelID, "", "The format of the /link command is: /link [game ID] [turn number]")
 			return true
 		}
 
+		// We enclose the link in "<>" to prevent Discord from generating a link preview
 		id, args := args[0], args[1:]
 		if len(args) == 0 {
 			// They specified an ID but not a turn
