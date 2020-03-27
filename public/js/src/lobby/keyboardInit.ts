@@ -46,6 +46,11 @@ export default () => {
             if (globals.currentScreen === 'lobby') {
                 $('#nav-buttons-games-sign-out').click();
             }
+        } else if (event.altKey && (event.key === 'j' || event.key === '∆')) { // Alt + j
+            // Click on the first "Join" button in the table list
+            if (globals.currentScreen === 'lobby') {
+                $('.lobby-games-first-join-button').click();
+            }
         } else if (event.altKey && (event.key === 's' || event.key === 'ß')) { // Alt + s
             // Click on the "Start Game" button
             if (globals.currentScreen === 'pregame') {

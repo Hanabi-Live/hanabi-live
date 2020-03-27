@@ -50,6 +50,7 @@ const tablesDraw = () => {
     }
 
     // Add all of the games
+    let addedFirstJoinButton = false;
     for (const id of sortedTableIDs) {
         const table = globals.tableList.get(id);
         if (typeof table === 'undefined') {
@@ -124,6 +125,10 @@ const tablesDraw = () => {
                 button.addClass('disabled');
             }
             button.on('click', tableJoinButton(table));
+            if (!addedFirstJoinButton) {
+                addedFirstJoinButton = true;
+                button.addClass('lobby-games-first-join-button');
+            }
         } else {
             button.html('<i class="fas fa-play lobby-button-icon"></i>');
             button.attr('id', `resume-${table.id}`);

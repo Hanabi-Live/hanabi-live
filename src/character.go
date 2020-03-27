@@ -22,10 +22,10 @@ var (
 	characterNames  []string
 	charactersID    map[int]string
 	debugCharacters = []string{
-		"Stubborn",
 		"Contrarian",
 		"Insistent",
-		"Compulsive",
+		"Genius",
+		"Miser",
 	}
 )
 
