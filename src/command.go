@@ -104,7 +104,6 @@ func commandInit() {
 	commandMap["chatRead"] = commandChatRead
 	commandMap["getName"] = commandGetName
 	commandMap["historyGetDeals"] = commandHistoryGetDeals
-	commandMap["historyGetAll"] = commandHistoryGetAll
 	commandMap["historyGet"] = commandHistoryGet
 	commandMap["replayCreate"] = commandReplayCreate
 
