@@ -10,8 +10,10 @@ import { getTouchedCardsFromClue } from './clues';
 import globals from './globals';
 import * as action from './action';
 import notify from './notify';
+import PlayerButton from './PlayerButton';
 import * as replay from './replay';
 import { suitToMsgSuit } from './convert';
+import LayoutChild from './LayoutChild';
 
 export const start = () => {
     if (globals.hypothetical) {
@@ -84,7 +86,9 @@ export const beginTurn = () => {
     }
 
     // Enabled or disable the clue target buttons, depending on whose turn it is
-    for (const button of globals.elements.clueTargetButtonGroup2!.children.toArray()) {
+    const buttonGroup = globals.elements.clueTargetButtonGroup2!;
+    const buttons = buttonGroup.children.toArray() as Array<PlayerButton>;
+    for (const button of buttons) {
         button.setEnabled(button.targetIndex !== globals.currentPlayerIndex);
     }
 
@@ -95,7 +99,7 @@ export const beginTurn = () => {
 
     // Set the current player's hand to be draggable
     const hand = globals.elements.playerHands[globals.currentPlayerIndex];
-    for (const layoutChild of hand.children.toArray()) {
+    for (const layoutChild of hand.children.toArray() as Array<LayoutChild>) {
         layoutChild.draggable(true);
         layoutChild.on('dragend', layoutChild.dragEnd);
     }

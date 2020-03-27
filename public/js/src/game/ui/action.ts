@@ -1,6 +1,7 @@
 // Imports
 import * as arrows from './arrows';
 import globals from './globals';
+import LayoutChild from './LayoutChild';
 
 export const handle = () => {
     if (globals.inReplay && !globals.hypothetical) {
@@ -41,7 +42,7 @@ export const handle = () => {
         && !globals.hypothetical
     ) {
         const ourHand = globals.elements.playerHands[globals.playerUs];
-        for (const layoutChild of ourHand.children.toArray()) {
+        for (const layoutChild of ourHand.children.toArray() as Array<LayoutChild>) {
             layoutChild.checkSetDraggable();
         }
     }

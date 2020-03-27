@@ -6,6 +6,7 @@
 // Imports
 import Konva from 'konva';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import { STACK_BASE_RANK } from '../../constants';
 
@@ -20,9 +21,10 @@ export default class PlayStack extends Konva.Group {
     doLayout() {
         const lh = this.height();
 
-        for (const node of this.children.toArray()) { // node is a LayoutChild
+        for (const node of this.children.toArray() as Array<LayoutChild>) {
             const scale = lh / node.height();
-            const stackBase = node.children[0].rank === STACK_BASE_RANK;
+            const card = node.children[0] as HanabiCard;
+            const stackBase = card.rank === STACK_BASE_RANK;
             const opacity = ( // Hide cards in "Throw It in a Hole" variants
                 globals.variant.name.startsWith('Throw It in a Hole')
                 && !globals.replay // Revert to the normal behavior for replays
@@ -41,7 +43,6 @@ export default class PlayStack extends Konva.Group {
                 // Animate the card leaving the hand to the play stacks
                 // (tweening from the hand to the discard pile is handled in
                 // the "CardLayout" object)
-                const card = node.children[0];
                 card.tweening = true;
                 node.tween = new Konva.Tween({
                     node,

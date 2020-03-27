@@ -13,6 +13,9 @@ module.exports = {
     // We need to specify some additional settings in order to make the linter work with TypeScript
     // From: https://medium.com/@myylow/how-to-keep-the-airbnb-eslint-config-when-moving-to-typescript-1abb26adb5c6
     parser: '@typescript-eslint/parser',
+    parserOptions: {
+        project: './tsconfig.json',
+    },
     plugins: [ '@typescript-eslint' ],
     settings: {
         'import/extensions': ['.js', '.ts'],

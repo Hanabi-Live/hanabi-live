@@ -40,7 +40,7 @@ export default class ClueLog extends Konva.Group {
     }
 
     showMatches(target: HanabiCard | null) {
-        for (const child of this.children.toArray()) {
+        for (const child of this.children.toArray() as Array<ClueEntry>) {
             child.showMatch(target);
         }
     }
