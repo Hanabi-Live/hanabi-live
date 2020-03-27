@@ -86,12 +86,25 @@ commands.set('name', (data: NameData) => {
 
 // Received by the client when a table is created or modified
 commands.set('table', (data: Table) => {
+    tableSet(data);
+    if (globals.currentScreen === 'lobby') {
+        tablesDraw();
+    }
+});
+
+const tableSet = (data: Table) => {
     // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
     data.baseTime *= 1000;
     data.timePerTurn *= 1000;
 
     globals.tableList.set(data.id, data);
+};
 
+// Received by the client upon initial connection
+commands.set('tableList', (dataList: Array<Table>) => {
+    for (const data of dataList) {
+        tableSet(data);
+    }
     if (globals.currentScreen === 'lobby') {
         tablesDraw();
     }
@@ -132,8 +145,20 @@ commands.set('tableStart', (data: TableStartData) => {
 
 // Received by the client when a user connect or has a new status
 commands.set('user', (data: User) => {
-    globals.userList.set(data.id, data);
+    userSet(data);
+    if (globals.currentScreen === 'lobby') {
+        usersDraw();
+    }
+});
 
+const userSet = (data: User) => {
+    globals.userList.set(data.id, data);
+};
+
+commands.set('userList', (dataList: Array<User>) => {
+    for (const data of dataList) {
+        userSet(data);
+    }
     if (globals.currentScreen === 'lobby') {
         usersDraw();
     }

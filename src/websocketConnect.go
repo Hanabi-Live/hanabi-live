@@ -120,6 +120,31 @@ func websocketConnect(ms *melody.Session) {
 	// Send them a random name
 	commandGetName(s, nil)
 
+	// Alert everyone that a new user has logged in
+	// (note that we intentionally send users a message about themselves)
+	notifyAllUser(s)
+
+	// Send a "userList" message
+	// (this is much more performant than sending an individual "user" message for every user)
+	userMessageList := make([]*UserMessage, 0)
+	for _, s2 := range sessions {
+		// Skip sending a message about ourselves since we already sent that above
+		if s2.UserID() != s.UserID() {
+			userMessageList = append(userMessageList, makeUserMessage(s2))
+		}
+	}
+	s.Emit("userList", userMessageList)
+
+	// Send a "tableList" message
+	// (this is much more performant than sending an individual "table" message for every table)
+	tableMessageList := make([]*TableMessage, 0)
+	for _, t := range tables {
+		if t.Visible {
+			tableMessageList = append(tableMessageList, makeTableMessage(s, t))
+		}
+	}
+	s.Emit("tableList", tableMessageList)
+
 	// Send the past 50 chat messages from the lobby
 	chatSendPastFromDatabase(s, "lobby", 50)
 
@@ -128,20 +153,6 @@ func websocketConnect(ms *melody.Session) {
 	msg += "<a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">"
 	msg += "Hanabi Discord chat</a>."
 	s.NotifyChat(msg, "", false, true, time.Now(), "lobby")
-
-	// Alert everyone that a new user has logged in
-	// (note that we send users a message about themselves)
-	notifyAllUser(s)
-
-	// Send a "user" message for every currently connected user
-	for _, s2 := range sessions {
-		// Skip sending a message about ourselves since we already sent that
-		if s2.UserID() == s.UserID() {
-			continue
-		}
-
-		s.NotifyUser(s2)
-	}
 
 	// Send the user's game history
 	// (only the last 10 games to prevent wasted bandwidth)
@@ -154,13 +165,6 @@ func websocketConnect(ms *melody.Session) {
 	}
 	history = historyFillVariants(history)
 	s.NotifyGameHistory(history, false)
-
-	// Send a "table" message for every current table
-	for _, t := range tables {
-		if t.Visible {
-			s.NotifyTable(t)
-		}
-	}
 
 	// First, check to see if this user was in any existing games
 	for _, t := range tables {

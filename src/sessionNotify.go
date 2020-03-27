@@ -12,16 +12,21 @@ import (
 
 // NotifyUser will notify someone about a new user that connected or a change in an existing user
 func (s *Session) NotifyUser(u *Session) {
-	type UserMessage struct {
-		ID     int    `json:"id"`
-		Name   string `json:"name"`
-		Status string `json:"status"`
+	s.Emit("user", makeUserMessage(u))
+}
+
+type UserMessage struct {
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Status string `json:"status"`
+}
+
+func makeUserMessage(s *Session) *UserMessage {
+	return &UserMessage{
+		ID:     s.UserID(),
+		Name:   s.Username(),
+		Status: status[s.Status()], // Status declarations are in the "constants.go" file
 	}
-	s.Emit("user", &UserMessage{
-		ID:     u.UserID(),
-		Name:   u.Username(),
-		Status: status[u.Status()], // Status declarations are in the "constants.go" file
-	})
 }
 
 // NotifyUserLeft will notify someone about a user that disconnected
@@ -36,6 +41,29 @@ func (s *Session) NotifyUserLeft(u *Session) {
 
 // NotifyTable will notify a user about a new game or a change in an existing game
 func (s *Session) NotifyTable(t *Table) {
+	s.Emit("table", makeTableMessage(s, t))
+}
+
+type TableMessage struct {
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	Password     bool   `json:"password"`
+	Joined       bool   `json:"joined"`
+	NumPlayers   int    `json:"numPlayers"`
+	Owned        bool   `json:"owned"`
+	Running      bool   `json:"running"`
+	Variant      string `json:"variant"`
+	Timed        bool   `json:"timed"`
+	BaseTime     int    `json:"baseTime"`
+	TimePerTurn  int    `json:"timePerTurn"`
+	OurTurn      bool   `json:"ourTurn"`
+	SharedReplay bool   `json:"sharedReplay"`
+	Progress     int    `json:"progress"`
+	Players      string `json:"players"`
+	Spectators   string `json:"spectators"`
+}
+
+func makeTableMessage(s *Session, t *Table) *TableMessage {
 	g := t.Game
 
 	i := t.GetPlayerIndexFromID(s.UserID())
@@ -67,29 +95,12 @@ func (s *Session) NotifyTable(t *Table) {
 		spectators = "-"
 	}
 
-	type TableMessage struct {
-		ID           int    `json:"id"`
-		Name         string `json:"name"`
-		Password     bool   `json:"password"`
-		Joined       bool   `json:"joined"`
-		NumPlayers   int    `json:"numPlayers"`
-		Owned        bool   `json:"owned"`
-		Running      bool   `json:"running"`
-		Variant      string `json:"variant"`
-		Timed        bool   `json:"timed"`
-		BaseTime     int    `json:"baseTime"`
-		TimePerTurn  int    `json:"timePerTurn"`
-		OurTurn      bool   `json:"ourTurn"`
-		SharedReplay bool   `json:"sharedReplay"`
-		Progress     int    `json:"progress"`
-		Players      string `json:"players"`
-		Spectators   string `json:"spectators"`
-	}
 	ourTurn := false
 	if t.Running {
 		ourTurn = joined && g.ActivePlayer == i
 	}
-	s.Emit("table", &TableMessage{
+
+	return &TableMessage{
 		ID:           t.ID,
 		Name:         t.Name,
 		Password:     len(t.Password) > 0,
@@ -106,7 +117,7 @@ func (s *Session) NotifyTable(t *Table) {
 		Progress:     t.Progress,
 		Players:      players,
 		Spectators:   spectators,
-	})
+	}
 }
 
 // NotifyTableGone will notify someone about a game that ended
