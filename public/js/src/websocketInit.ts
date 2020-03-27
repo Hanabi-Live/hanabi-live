@@ -150,7 +150,7 @@ const initCommands = () => {
                 let msg = 'You are running an outdated version of the Hanabi client code. ';
                 msg += `(You are on <i>v${globals.version}</i> and the latest is <i>v${data.version}</i>.)<br />`;
                 msg += 'Please perform a hard-refresh to get the latest version.<br />';
-                msg += '(On Windows, the hotkey for this is "Ctrl + F5". ';
+                msg += '(On Windows, the hotkey for this is "Ctrl + Shift + R". ';
                 msg += 'On MacOS, the hotkey for this is "Command + Shift + R".)';
                 modals.warningShow(msg);
                 return;
