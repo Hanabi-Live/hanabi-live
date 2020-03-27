@@ -70,7 +70,7 @@ export default (variant: Variant, colorblindUI: boolean, legibleNumbers: boolean
                 }
                 let fontSize;
                 if (colorblindUI) {
-                    rankLabel = suit.abbreviation + rankLabel;
+                    rankLabel += suit.abbreviation;
                     fontSize = 68;
                     textYPos = 83;
                 } else {
