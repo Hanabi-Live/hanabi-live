@@ -5,6 +5,24 @@ import (
 )
 
 /*
+	Notifications for both before and during a game
+*/
+
+func (t *Table) NotifyChatTyping(name string, typing bool) {
+	for _, p := range t.Players {
+		if p.Present && p.Name != name { // We do not need to alert the person who is typing
+			p.Session.NotifyChatTyping(name, typing)
+		}
+	}
+
+	for _, sp := range t.Spectators {
+		if sp.Name != name { // We do not need to alert the person who is typing
+			sp.Session.NotifyChatTyping(name, typing)
+		}
+	}
+}
+
+/*
 	Notifications before a game has started
 */
 

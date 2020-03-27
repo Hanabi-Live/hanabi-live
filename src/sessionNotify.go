@@ -7,7 +7,7 @@ import (
 )
 
 /*
-	Out-of-game notify functions
+	Lobby notify functions
 */
 
 // NotifyUser will notify someone about a new user that connected or a change in an existing user
@@ -121,6 +121,17 @@ func (s *Session) NotifyTableGone(t *Table) {
 
 func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, datetime time.Time, room string) {
 	s.Emit("chat", chatMakeMessage(msg, who, discord, server, datetime, room))
+}
+
+func (s *Session) NotifyChatTyping(name string, typing bool) {
+	type ChatTypingMessage struct {
+		Name   string `json:"name"`
+		Typing bool   `json:"typing"`
+	}
+	s.Emit("chatTyping", &ChatTypingMessage{
+		Name:   name,
+		Typing: typing,
+	})
 }
 
 // NotifyGameHistory will send a user a subset of their past games

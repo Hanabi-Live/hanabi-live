@@ -210,6 +210,14 @@ const initCommands = () => {
         }
     });
 
+    // Received by the client when a new chat message arrives
+    interface ChatTypingMessage {
+        name: string,
+    }
+    globals.conn.on('chatTyping', (data: ChatTypingMessage) => {
+        console.log(data);
+    });
+
     // The "chatList" command is sent upon initial connection
     // to give the client a list of past lobby chat messages
     // It is also sent upon connecting to a game to give a list of past in-game chat messages

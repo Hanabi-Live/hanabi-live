@@ -175,10 +175,9 @@ func commandChatTable(s *Session, d *CommandData) {
 	}
 
 	// Validate that this player is in the game or spectating
-	if !d.Server &&
-		t.GetPlayerIndexFromID(s.UserID()) == -1 &&
-		t.GetSpectatorIndexFromID(s.UserID()) == -1 {
-
+	i := t.GetPlayerIndexFromID(s.UserID())
+	j := t.GetSpectatorIndexFromID(s.UserID())
+	if !d.Server && i == -1 && j == -1 {
 		s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
 			"so you cannot send chat to it.")
 		return
@@ -211,4 +210,22 @@ func commandChatTable(s *Session, d *CommandData) {
 
 	// Check for commands
 	chatCommand(s, d, t)
+
+	// If this user was typing, set them so that they are not typing
+	if d.Server {
+		return
+	}
+	if i != -1 {
+		// They are a player
+		p := t.Players[i]
+		if p.Typing {
+			p.Typing = false
+		}
+	} else if j != -1 {
+		// They are a spectator
+		sp := t.Spectators[j]
+		if sp.Typing {
+			sp.Typing = false
+		}
+	}
 }
