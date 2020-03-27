@@ -131,7 +131,7 @@ export const draw = () => {
         html += `
             <div class="hidden">
                 <div id="pregame-tooltip-card-cycle" class="lobby-pregame-tooltip-icon">
-                    The <b>Card Cycling</b> option is enabled.
+                    The <strong>Card Cycling</strong> option is enabled.
                 </div>
             </div>
         `;
@@ -144,7 +144,7 @@ export const draw = () => {
         html += `
             <div class="hidden">
                 <div id="pregame-tooltip-deck-plays" class="lobby-pregame-tooltip-icon">
-                    The <b>Bottom-Deck Blind-Plays</b> option is enabled.
+                    The <strong>Bottom-Deck Blind-Plays</strong> option is enabled.
                 </div>
             </div>
         `;
@@ -156,7 +156,7 @@ export const draw = () => {
         html += `
             <div class="hidden">
                 <div id="pregame-tooltip-empty-clues" class="lobby-pregame-tooltip-icon">
-                    The <b>Empty Clues</b> option is enabled.
+                    The <strong>Empty Clues</strong> option is enabled.
                 </div>
             </div>
         `;
@@ -169,7 +169,7 @@ export const draw = () => {
         html += `
             <div class="hidden">
                 <div id="pregame-tooltip-characters" class="lobby-pregame-tooltip-icon">
-                    The <b>Detrimental Characters</b> option is enabled.
+                    The <strong>Detrimental Characters</strong> option is enabled.
                 </div>
             </div>
         `;

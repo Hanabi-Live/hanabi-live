@@ -423,7 +423,7 @@ export default (winW: number, winH: number) => {
 
             charIcon.tooltipName = `character-assignment-${i}`;
             const metadata = globals.characterMetadata[i];
-            let tooltipContent = `<b>${character.name}</b>:<br />${character.description}`;
+            let tooltipContent = `<strong>${character.name}</strong>:<br />${character.description}`;
             if (tooltipContent.includes('[random color]')) {
                 // Replace "[random color]" with the selected color
                 tooltipContent = tooltipContent.replace(
