@@ -102,6 +102,7 @@ func commandInit() {
 	commandMap["setting"] = commandSetting
 	commandMap["chat"] = commandChat
 	commandMap["chatRead"] = commandChatRead
+	commandMap["chatTyping"] = commandChatTyping
 	commandMap["getName"] = commandGetName
 	commandMap["historyGetDeals"] = commandHistoryGetDeals
 	commandMap["historyGet"] = commandHistoryGet
