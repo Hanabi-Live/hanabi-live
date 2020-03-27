@@ -17,7 +17,7 @@ matrix:
         - cd src
       script:
         # Compile the Go code
-        - go build
+        - go build -v
         # Run the Golang linter
         - ./lint.sh
 
