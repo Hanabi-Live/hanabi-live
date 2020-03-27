@@ -18,7 +18,7 @@ type Character struct {
 }
 
 var (
-	characters      map[string]Character
+	characters      map[string]*Character
 	characterNames  []string
 	charactersID    map[int]string
 	debugCharacters = []string{
@@ -39,7 +39,7 @@ func characterInit() {
 	} else {
 		contents = v
 	}
-	characters = make(map[string]Character)
+	characters = make(map[string]*Character)
 	if err := json.Unmarshal(contents, &characters); err != nil {
 		logger.Fatal("Failed to convert the characters file to JSON:", err)
 		return
