@@ -50,8 +50,15 @@ func graceful(restart bool) {
 	} else {
 		shuttingDown = true
 		go gracefulWait(restart)
-		chatServerSend("The server will "+verb+" when all ongoing games have finished. "+
-			"New game creation has been disabled.", "lobby")
+
+		// Notify the lobby and all ongoing tables
+		msg := "The server will " + verb + " when all ongoing games have finished. " +
+			"New game creation has been disabled."
+		chatServerSend(msg, "lobby")
+		for _, t := range tables {
+			room := "table" + strconv.Itoa(t.ID)
+			chatServerSend(msg, room)
+		}
 	}
 }
 
