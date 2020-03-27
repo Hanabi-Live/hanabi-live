@@ -22,7 +22,7 @@ One of each card per suit (e.g. 5 in total):
 | ------------------ | ---------------- | -------------- | --------------- |
 | No rank clues      | Dark Null        | Dark Brown     | Cocoa Rainbow   |
 | Own rank clue      | Gray             | Black          | Dark Rainbow    |
-| All rank clues     | Gray Pink | Dark Pink      | Dark Omni       |
+| All rank clues     | Gray Pink        | Dark Pink      | Dark Omni       |
 
 Special:
 
