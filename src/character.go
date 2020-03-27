@@ -8,8 +8,6 @@ import (
 	"strconv"
 )
 
-const debugCharacter = "Insistent"
-
 type Character struct {
 	Name string `json:"name"`
 	// Similar to variants, each character must have a unique numerical ID (for the database)
@@ -20,9 +18,15 @@ type Character struct {
 }
 
 var (
-	characters     map[string]Character
-	characterNames []string
-	charactersID   map[int]string
+	characters      map[string]Character
+	characterNames  []string
+	charactersID    map[int]string
+	debugCharacters = []string{
+		"Stubborn",
+		"Contrarian",
+		"Insistent",
+		"Compulsive",
+	}
 )
 
 func characterInit() {
@@ -85,7 +89,8 @@ func characterGenerate(g *Game) {
 		// Get the players from the database
 		var dbPlayers []*DBPlayer
 		if v, err := models.Games.GetPlayers(g.Options.SetReplay); err != nil {
-			logger.Error("Failed to get the players from the database for game "+strconv.Itoa(g.Options.SetReplay)+":", err)
+			logger.Error("Failed to get the players from the database for game "+
+				strconv.Itoa(g.Options.SetReplay)+":", err)
 			return
 		} else {
 			dbPlayers = v
@@ -98,45 +103,55 @@ func characterGenerate(g *Game) {
 		return
 	}
 
-	// We don't have to seed the PRNG, since that was done just a moment ago when the deck was shuffled
 	for i, p := range g.Players {
-		for {
-			// Get a random character assignment
-			randomIndex := rand.Intn(len(characterNames))
-			p.Character = characterNames[randomIndex]
-
-			// Check to see if any other players have this assignment already
-			alreadyAssigned := false
-			for j, p2 := range g.Players {
-				if i == j {
-					break
-				}
-
-				if p2.Character == p.Character {
-					alreadyAssigned = true
-					break
-				}
-			}
-			if alreadyAssigned {
-				continue
-			}
-
-			// Check to see if this character is restricted from 2-player games
-			if characters[p.Character].Not2P && len(g.Players) == 2 {
-				continue
-			}
+		if p.Name == "test" ||
+			p.Name == "test2" ||
+			p.Name == "test3" ||
+			p.Name == "test4" ||
+			p.Name == "test5" ||
+			p.Name == "test6" {
 
 			// Hard-code some character assignments for testing purposes
-			if p.Name == "test" {
-				for i, c := range characters {
-					if c.Name == debugCharacter {
-						p.Character = i
+			for characterID, character := range characters {
+				debugCharacterIndex := i
+				if i > len(debugCharacters)-1 {
+					debugCharacterIndex = len(debugCharacters) - 1
+				}
+				if character.Name == debugCharacters[debugCharacterIndex] {
+					p.Character = characterID
+				}
+			}
+		} else {
+			for {
+				// Get a random character assignment
+				// We don't have to seed the PRNG,
+				// since that was done just a moment ago when the deck was shuffled
+				randomIndex := rand.Intn(len(characterNames))
+				p.Character = characterNames[randomIndex]
+
+				// Check to see if any other players have this assignment already
+				alreadyAssigned := false
+				for j, p2 := range g.Players {
+					if i == j {
+						break
+					}
+
+					if p2.Character == p.Character {
+						alreadyAssigned = true
 						break
 					}
 				}
-			}
+				if alreadyAssigned {
+					continue
+				}
 
-			break
+				// Check to see if this character is restricted from 2-player games
+				if characters[p.Character].Not2P && len(g.Players) == 2 {
+					continue
+				}
+
+				break
+			}
 		}
 
 		if p.Character == "Fuming" {
