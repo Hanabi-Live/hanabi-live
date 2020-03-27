@@ -10,6 +10,7 @@ module.exports = (grunt) => {
                     '../css/lib/solid.min.css',
                     '../css/lib/tooltipster.bundle.min.css',
                     '../css/lib/tooltipster-sideTip-shadow.min.css',
+                    '../css/lib/slimselect.min.css',
                     '../css/lib/alpha.css',
                     '../css/hanabi.css',
                 ],
