@@ -14,7 +14,7 @@ const (
 func httpLocalhostInit() {
 	// Create a new Gin HTTP router
 	gin.SetMode(gin.ReleaseMode)
-	httpRouter := gin.Default() // Same as "New()" but with Logger and Recovery middleware attached
+	httpRouter := gin.Default() // Has the "Logger" and "Recovery" middleware attached
 
 	// Path handlers
 	httpRouter.GET("/restart", func(c *gin.Context) {

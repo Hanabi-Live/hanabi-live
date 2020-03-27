@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -26,17 +27,20 @@ const (
 
 var (
 	sessionStore gsessions.Store
+	GATrackingID string
+	// We don't want to use the default http.Client because it has no default timeout set
+	myHTTPClient = &http.Client{
+		Timeout: 10 * time.Second,
+	}
 )
 
 func httpInit() {
 	// Create a new Gin HTTP router
 	gin.SetMode(gin.ReleaseMode) // Comment this out to debug HTTP stuff
-	httpRouter := gin.New()
-	httpRouter.Use(gin.Recovery())
-	//httpRouter.Use(gin.Logger()) // Uncomment this to enable HTTP request logging
+	httpRouter := gin.Default()  // Has the "Logger" and "Recovery" middleware attached
 
 	// Read some configuration values from environment variables
-	// (they were loaded from the .env file in main.go)
+	// (they were loaded from the ".env" file in "main.go")
 	domain = os.Getenv("DOMAIN")
 	if len(domain) == 0 {
 		logger.Info("The \"DOMAIN\" environment variable is blank; aborting HTTP initialization.")
@@ -68,6 +72,7 @@ func httpInit() {
 			port = 443
 		}
 	}
+	GATrackingID := os.Getenv("GA_TRACKING_ID")
 
 	// Create a session store
 	sessionStore = cookie.NewStore([]byte(sessionSecret))
@@ -89,7 +94,12 @@ func httpInit() {
 		options.Secure = false
 	}
 	sessionStore.Options(options)
-	httpRouter.Use(gsessions.Sessions(sessionName, sessionStore))
+	httpRouter.Use(gsessions.Sessions(sessionName, sessionStore)) // Attach the sessions middleware
+
+	// Initialize Google Analytics
+	if len(GATrackingID) > 0 {
+		httpRouter.Use(httpGoogleAnalytics) // Attach the Google Analytics middleware
+	}
 
 	// Path handlers (for the WebSocket server)
 	httpRouter.POST("/login", httpLogin)

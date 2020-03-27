@@ -10,6 +10,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/microcosm-cc/bluemonday v1.0.2
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
+	github.com/satori/go.uuid v1.2.0
 	github.com/virtuald/go-ordered-json v0.0.0-20170621173500-b18e6e673d74
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
