@@ -37,7 +37,7 @@ List of Features
 #### Clue Indication
 
 * The cards last touched by a clue are indicated by arrows. A circle on the arrow shows the type of clue that was given.
-* Yellow borders around a card signify that it has been "touched" by one or more clues.
+* Orange borders around a card signify that it has been "touched" by one or more clues.
 * The game will keep track of the clues that accumulate on your cards, "filling them in" for you.
 * You can left-click on someone else's card to see how it appears to them. (This is referred to as "Empathy".)
 
@@ -65,8 +65,10 @@ List of Features
 * There are also some keyboard shortcuts for making notes:
   * Shift + Right-click --> f
     * "f" is a common abbreviation for "this card is *Finessed*".
+    * This will also draw a special border around the card.
   * Alt + Right-click --> cm
     * "cm" is a common abbreviation for "this card is *Chop Moved*".
+    * This will also draw a special border around the card.
   * Ctrl + Shift + Right-click --> [previously entered note]
     * If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
 
