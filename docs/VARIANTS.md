@@ -22,7 +22,7 @@ One of each card per suit (e.g. 5 in total):
 | ------------------ | ---------------- | -------------- | --------------- |
 | No rank clues      | Dark Null        | Dark Brown     | Cocoa Rainbow   |
 | Own rank clue      | Gray             | Black          | Dark Rainbow    |
-| All rank clues     | Chiaroscuro Pink | Dark Pink      | Dark Omni       |
+| All rank clues     | Gray Pink        | Dark Pink      | Dark Omni       |
 
 Special:
 
@@ -123,12 +123,12 @@ Special:
 * No rank clues will "touch" the cocoa rainbow suit.
 * There is only one of each cocoa rainbow card in the deck, which means that every cocoa rainbow card is "critical".
 
-### Chiaroscuro Pink
+### Gray Pink
 
-* One of the suits is replaced with a chiaroscuro pink suit.
-* All rank clues will "touch" the chiaroscuro pink suit.
-* No color clues will "touch" the chiaroscuro pink suit.
-* There is only one of each chiaroscuro pink card in the deck, which means that every chiaroscuro pink card is "critical".
+* One of the suits is replaced with a gray pink suit.
+* All rank clues will "touch" the gray pink suit.
+* No color clues will "touch" the gray pink suit.
+* There is only one of each gray pink card in the deck, which means that every gray pink card is "critical".
 
 ### Ambiguous
 
@@ -586,28 +586,28 @@ Special:
   * Null & Cocoa Rainbow (5 Suits)
   * Light Pink & Cocoa Rainbow (6 Suits)
   * Light Pink & Cocoa Rainbow (5 Suits)
-* Chiaroscuro Pink
-  * Chiaroscuro Pink (6 Suits)
-  * Chiaroscuro Pink (5 Suits)
-  * Rainbow & Chiaroscuro Pink (6 Suits)
-  * Rainbow & Chiaroscuro Pink (5 Suits)
-  * White & Chiaroscuro Pink (6 Suits)
-  * White & Chiaroscuro Pink (5 Suits)
-  * Brown & Chiaroscuro Pink (6 Suits)
-  * Brown & Chiaroscuro Pink (5 Suits)
-  * Omni & Chiaroscuro Pink (6 Suits)
-  * Omni & Chiaroscuro Pink (5 Suits)
-  * Null & Chiaroscuro Pink (6 Suits)
-  * Null & Chiaroscuro Pink (5 Suits)
-  * Muddy Rainbow & Chiaroscuro Pink (6 Suits)
-  * Muddy Rainbow & Chiaroscuro Pink (5 Suits)
+* Gray Pink
+  * Gray Pink (6 Suits)
+  * Gray Pink (5 Suits)
+  * Rainbow & Gray Pink (6 Suits)
+  * Rainbow & Gray Pink (5 Suits)
+  * White & Gray Pink (6 Suits)
+  * White & Gray Pink (5 Suits)
+  * Brown & Gray Pink (6 Suits)
+  * Brown & Gray Pink (5 Suits)
+  * Omni & Gray Pink (6 Suits)
+  * Omni & Gray Pink (5 Suits)
+  * Null & Gray Pink (6 Suits)
+  * Null & Gray Pink (5 Suits)
+  * Muddy Rainbow & Gray Pink (6 Suits)
+  * Muddy Rainbow & Gray Pink (5 Suits)
 * Dark Mixes
   * Dark Rainbow & Dark Pink (6 Suits)
   * Dark Rainbow & Gray (6 Suits)
   * Dark Rainbow & Dark Brown (6 Suits)
   * Dark Rainbow & Dark Omni (6 Suits)
   * Dark Rainbow & Dark Null (6 Suits)
-  * Dark Rainbow & Chiaroscuro Pink (6 Suits)
+  * Dark Rainbow & Gray Pink (6 Suits)
   * Dark Pink & Gray (6 Suits)
   * Dark Pink & Dark Brown (6 Suits)
   * Dark Pink & Dark Omni (6 Suits)
@@ -617,17 +617,17 @@ Special:
   * Gray & Dark Omni (6 Suits)
   * Gray & Dark Null (6 Suits)
   * Gray & Cocoa Rainbow (6 Suits)
-  * Gray & Chiaroscuro Pink (6 Suits)
+  * Gray & Gray Pink (6 Suits)
   * Dark Brown & Dark Omni (6 Suits)
   * Dark Brown & Dark Null (6 Suits)
   * Dark Brown & Cocoa Rainbow (6 Suits)
-  * Dark Brown & Chiaroscuro Pink (6 Suits)
+  * Dark Brown & Gray Pink (6 Suits)
   * Dark Omni & Dark Null (6 Suits)
   * Dark Omni & Cocoa Rainbow (6 Suits)
-  * Dark Omni & Chiaroscuro Pink (6 Suits)
+  * Dark Omni & Gray Pink (6 Suits)
   * Dark Null & Cocoa Rainbow (6 Suits)
-  * Dark Null & Chiaroscuro Pink (6 Suits)
-  * Cocoa Rainbow & Chiaroscuro Pink (6 Suits)
+  * Dark Null & Gray Pink (6 Suits)
+  * Cocoa Rainbow & Gray Pink (6 Suits)
 * Rainbow-Ones
   * Rainbow-Ones (6 Suits)
   * Rainbow-Ones (5 Suits)
@@ -688,8 +688,8 @@ Special:
   * Rainbow-Ones & Dark Null (5 Suits)
   * Rainbow-Ones & Cocoa Rainbow (6 Suits)
   * Rainbow-Ones & Cocoa Rainbow (5 Suits)
-  * Rainbow-Ones & Chiaroscuro Pink (6 Suits)
-  * Rainbow-Ones & Chiaroscuro Pink (5 Suits)
+  * Rainbow-Ones & Gray Pink (6 Suits)
+  * Rainbow-Ones & Gray Pink (5 Suits)
 * Pink-Ones
   * Pink-Ones (6 Suits)
   * Pink-Ones (5 Suits)
@@ -750,8 +750,8 @@ Special:
   * Pink-Ones & Dark Null (5 Suits)
   * Pink-Ones & Cocoa Rainbow (6 Suits)
   * Pink-Ones & Cocoa Rainbow (5 Suits)
-  * Pink-Ones & Chiaroscuro Pink (6 Suits)
-  * Pink-Ones & Chiaroscuro Pink (5 Suits)
+  * Pink-Ones & Gray Pink (6 Suits)
+  * Pink-Ones & Gray Pink (5 Suits)
 * White-Ones
   * White-Ones (6 Suits)
   * White-Ones (5 Suits)
@@ -812,8 +812,8 @@ Special:
   * White-Ones & Dark Null (5 Suits)
   * White-Ones & Cocoa Rainbow (6 Suits)
   * White-Ones & Cocoa Rainbow (5 Suits)
-  * White-Ones & Chiaroscuro Pink (6 Suits)
-  * White-Ones & Chiaroscuro Pink (5 Suits)
+  * White-Ones & Gray Pink (6 Suits)
+  * White-Ones & Gray Pink (5 Suits)
 * Brown-Ones
   * Brown-Ones (6 Suits)
   * Brown-Ones (5 Suits)
@@ -874,8 +874,8 @@ Special:
   * Brown-Ones & Dark Null (5 Suits)
   * Brown-Ones & Cocoa Rainbow (6 Suits)
   * Brown-Ones & Cocoa Rainbow (5 Suits)
-  * Brown-Ones & Chiaroscuro Pink (6 Suits)
-  * Brown-Ones & Chiaroscuro Pink (5 Suits)
+  * Brown-Ones & Gray Pink (6 Suits)
+  * Brown-Ones & Gray Pink (5 Suits)
 * Omni-Ones
   * Omni-Ones (6 Suits)
   * Omni-Ones (5 Suits)
@@ -936,8 +936,8 @@ Special:
   * Omni-Ones & Dark Null (5 Suits)
   * Omni-Ones & Cocoa Rainbow (6 Suits)
   * Omni-Ones & Cocoa Rainbow (5 Suits)
-  * Omni-Ones & Chiaroscuro Pink (6 Suits)
-  * Omni-Ones & Chiaroscuro Pink (5 Suits)
+  * Omni-Ones & Gray Pink (6 Suits)
+  * Omni-Ones & Gray Pink (5 Suits)
 * Null-Ones
   * Null-Ones (6 Suits)
   * Null-Ones (5 Suits)
@@ -998,8 +998,8 @@ Special:
   * Null-Ones & Dark Null (5 Suits)
   * Null-Ones & Cocoa Rainbow (6 Suits)
   * Null-Ones & Cocoa Rainbow (5 Suits)
-  * Null-Ones & Chiaroscuro Pink (6 Suits)
-  * Null-Ones & Chiaroscuro Pink (5 Suits)
+  * Null-Ones & Gray Pink (6 Suits)
+  * Null-Ones & Gray Pink (5 Suits)
 * Muddy-Rainbow-Ones
   * Muddy-Rainbow-Ones (6 Suits)
   * Muddy-Rainbow-Ones (5 Suits)
@@ -1060,8 +1060,8 @@ Special:
   * Muddy-Rainbow-Ones & Dark Null (5 Suits)
   * Muddy-Rainbow-Ones & Cocoa Rainbow (6 Suits)
   * Muddy-Rainbow-Ones & Cocoa Rainbow (5 Suits)
-  * Muddy-Rainbow-Ones & Chiaroscuro Pink (6 Suits)
-  * Muddy-Rainbow-Ones & Chiaroscuro Pink (5 Suits)
+  * Muddy-Rainbow-Ones & Gray Pink (6 Suits)
+  * Muddy-Rainbow-Ones & Gray Pink (5 Suits)
 * Light-Pink-Ones
   * Light-Pink-Ones (6 Suits)
   * Light-Pink-Ones (5 Suits)
@@ -1122,8 +1122,8 @@ Special:
   * Light-Pink-Ones & Dark Null (5 Suits)
   * Light-Pink-Ones & Cocoa Rainbow (6 Suits)
   * Light-Pink-Ones & Cocoa Rainbow (5 Suits)
-  * Light-Pink-Ones & Chiaroscuro Pink (6 Suits)
-  * Light-Pink-Ones & Chiaroscuro Pink (5 Suits)
+  * Light-Pink-Ones & Gray Pink (6 Suits)
+  * Light-Pink-Ones & Gray Pink (5 Suits)
 * Rainbow-Fives
   * Rainbow-Fives (6 Suits)
   * Rainbow-Fives (5 Suits)
@@ -1184,8 +1184,8 @@ Special:
   * Rainbow-Fives & Dark Null (5 Suits)
   * Rainbow-Fives & Cocoa Rainbow (6 Suits)
   * Rainbow-Fives & Cocoa Rainbow (5 Suits)
-  * Rainbow-Fives & Chiaroscuro Pink (6 Suits)
-  * Rainbow-Fives & Chiaroscuro Pink (5 Suits)
+  * Rainbow-Fives & Gray Pink (6 Suits)
+  * Rainbow-Fives & Gray Pink (5 Suits)
 * Pink-Fives
   * Pink-Fives (6 Suits)
   * Pink-Fives (5 Suits)
@@ -1246,8 +1246,8 @@ Special:
   * Pink-Fives & Dark Null (5 Suits)
   * Pink-Fives & Cocoa Rainbow (6 Suits)
   * Pink-Fives & Cocoa Rainbow (5 Suits)
-  * Pink-Fives & Chiaroscuro Pink (6 Suits)
-  * Pink-Fives & Chiaroscuro Pink (5 Suits)
+  * Pink-Fives & Gray Pink (6 Suits)
+  * Pink-Fives & Gray Pink (5 Suits)
 * White-Fives
   * White-Fives (6 Suits)
   * White-Fives (5 Suits)
@@ -1308,8 +1308,8 @@ Special:
   * White-Fives & Dark Null (5 Suits)
   * White-Fives & Cocoa Rainbow (6 Suits)
   * White-Fives & Cocoa Rainbow (5 Suits)
-  * White-Fives & Chiaroscuro Pink (6 Suits)
-  * White-Fives & Chiaroscuro Pink (5 Suits)
+  * White-Fives & Gray Pink (6 Suits)
+  * White-Fives & Gray Pink (5 Suits)
 * Brown-Fives
   * Brown-Fives (6 Suits)
   * Brown-Fives (5 Suits)
@@ -1370,8 +1370,8 @@ Special:
   * Brown-Fives & Dark Null (5 Suits)
   * Brown-Fives & Cocoa Rainbow (6 Suits)
   * Brown-Fives & Cocoa Rainbow (5 Suits)
-  * Brown-Fives & Chiaroscuro Pink (6 Suits)
-  * Brown-Fives & Chiaroscuro Pink (5 Suits)
+  * Brown-Fives & Gray Pink (6 Suits)
+  * Brown-Fives & Gray Pink (5 Suits)
 * Omni-Fives
   * Omni-Fives (6 Suits)
   * Omni-Fives (5 Suits)
@@ -1432,8 +1432,8 @@ Special:
   * Omni-Fives & Dark Null (5 Suits)
   * Omni-Fives & Cocoa Rainbow (6 Suits)
   * Omni-Fives & Cocoa Rainbow (5 Suits)
-  * Omni-Fives & Chiaroscuro Pink (6 Suits)
-  * Omni-Fives & Chiaroscuro Pink (5 Suits)
+  * Omni-Fives & Gray Pink (6 Suits)
+  * Omni-Fives & Gray Pink (5 Suits)
 * Null-Fives
   * Null-Fives (6 Suits)
   * Null-Fives (5 Suits)
@@ -1494,8 +1494,8 @@ Special:
   * Null-Fives & Dark Null (5 Suits)
   * Null-Fives & Cocoa Rainbow (6 Suits)
   * Null-Fives & Cocoa Rainbow (5 Suits)
-  * Null-Fives & Chiaroscuro Pink (6 Suits)
-  * Null-Fives & Chiaroscuro Pink (5 Suits)
+  * Null-Fives & Gray Pink (6 Suits)
+  * Null-Fives & Gray Pink (5 Suits)
 * Muddy-Rainbow-Fives
   * Muddy-Rainbow-Fives (6 Suits)
   * Muddy-Rainbow-Fives (5 Suits)
@@ -1556,8 +1556,8 @@ Special:
   * Muddy-Rainbow-Fives & Dark Null (5 Suits)
   * Muddy-Rainbow-Fives & Cocoa Rainbow (6 Suits)
   * Muddy-Rainbow-Fives & Cocoa Rainbow (5 Suits)
-  * Muddy-Rainbow-Fives & Chiaroscuro Pink (6 Suits)
-  * Muddy-Rainbow-Fives & Chiaroscuro Pink (5 Suits)
+  * Muddy-Rainbow-Fives & Gray Pink (6 Suits)
+  * Muddy-Rainbow-Fives & Gray Pink (5 Suits)
 * Light-Pink-Fives
   * Light-Pink-Fives (6 Suits)
   * Light-Pink-Fives (5 Suits)
@@ -1618,8 +1618,8 @@ Special:
   * Light-Pink-Fives & Dark Null (5 Suits)
   * Light-Pink-Fives & Cocoa Rainbow (6 Suits)
   * Light-Pink-Fives & Cocoa Rainbow (5 Suits)
-  * Light-Pink-Fives & Chiaroscuro Pink (6 Suits)
-  * Light-Pink-Fives & Chiaroscuro Pink (5 Suits)
+  * Light-Pink-Fives & Gray Pink (6 Suits)
+  * Light-Pink-Fives & Gray Pink (5 Suits)
 * Ambiguous
   * Ambiguous (6 Suits)
   * Ambiguous (4 Suits)

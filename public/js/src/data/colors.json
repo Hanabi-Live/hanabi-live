@@ -1,8 +1,8 @@
 {
-    "Blue": { "fill": "#0044cc" },
-    "Green": { "fill": "#00cc00" },
-    "Yellow": { "fill": "#ccaa22" },
-    "Red": { "fill": "#aa0000" },
+    "Blue": { "fill": "#0037ff" },
+    "Green": { "fill": "#02ec00" },
+    "Yellow": { "fill": "#ffff00" },
+    "Red": { "fill": "#ff0000" },
     "Purple": { "fill": "#6600cc" },
 
     "Teal": { "fill": "#00cccc" },

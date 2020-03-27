@@ -111,13 +111,11 @@ export function pips(this: HanabiCard) {
             y: 0.4,
         };
         // Transform polar to Cartesian coordinates
-        // The magic number added to the offset is needed to center things properly
-        // We don't know why it's needed; perhaps something to do with the shape functions
         const offsetBase = CARD_W * 0.7;
         const offsetTrig = ((-i / suits.length) + 0.25) * Math.PI * 2;
         const offset = {
-            x: Math.floor((offsetBase * Math.cos(offsetTrig)) + (CARD_W * 0.25)),
-            y: Math.floor((offsetBase * Math.sin(offsetTrig)) + (CARD_W * 0.3)),
+            x: Math.floor(offsetBase * Math.cos(offsetTrig)),
+            y: Math.floor(offsetBase * Math.sin(offsetTrig)),
         };
         let { fill } = suit;
         if (suit.fill === 'multi') {
@@ -557,6 +555,7 @@ const drawX = (
 ) => {
     // Start at the top left corner and draw an X
     ctx.beginPath();
+    ctx.translate(-1.4 * width, -2 * width);
     x -= size;
     y -= size;
     ctx.moveTo(x, y);

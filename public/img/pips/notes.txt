@@ -1,0 +1,30 @@
+These are the svg files used to generate the pips.
+
+* Red, Yellow, Green, Blue, Purple, and Rainbow pips are the original suit symbols appearing in the Abacusspiele print of Hanabi, where the White symbol and the white petal in the Rainbow symbol are filled purple instead
+* Number pips are also the original ones appearing in the same print
+* Omni and S pips have been created by user https://github.com/SashaIr using Red and Three symbols as a base
+* Black and Teal pips are the original Blue and White symbols in the Cocktail Games print of Hanabi
+* Pink pip is a modification of https://www.flaticon.com/free-icon/hashtag_1946473 by Freepik
+* Null pip is a modification of https://www.flaticon.com/free-icon/empty-set_262048 by Freepik
+* White pip is a small modification of https://www.goodfreephotos.com/svgfiles/final292-crescent-moon.svg by TaleKids
+* Brown pip is a small modification of http://tecs.g2.xrea.com/hyouki/kana/kana.html
+
+
+In order to get the Canvas path from an svg file, proceed as follows
+* Open the svg file in Inkscape https://inkscape.org/
+* Set the size so that the maximum dimension is 150 px, and set the width of the stroke at 6 mm (Ctrl+Shift+F to open the "Fill and Stroke" menu)
+* Resize the page to content (Ctrl+Shift+D to open the "Document properties" menu)
+* Make sure that the picture has only one path (F2 to select the tool, Ctrl+Shift+Click on all the paths to select, Ctrl+K to combine)
+* Translate the figure to (-75, 75) px (this is required to center the picture later)
+* Export as HTML Canvas (Ctrl+Shift+S, then select "Save as HTML")
+* Open the HTML file with a text editor
+
+Then, proceed as follows, using the other pips in drawPip.ts as reference
+* Check that, on line 8 of the file, the maximum dimension is 42 (150 px correspond to 42 mm). If it is not, you will have to rescale the image accordingly using ctx.scale(42 / max_size, 42 / max_size);
+* On line 14, there should be a ctx.transform(a, b, c, d, x, y) command. Check that the trasformation matrix is (1, 0, 0, 1). Otherwise, you will need to apply the inverse transformation after the code. 
+* Copy-paste that line after ctx.beginPath(); in the drawPip.ts file
+* Copy-paste everything from the first occurrence of ctx.moveTo(x,y); (included) to ctx.fill(); (excluded) in the drawPip.ts file
+* If the transformation matrix was not (1, 0, 0, 1), add a ctx.transform(a', b', c', d', 0, 0); line after the path, where (a', b', c', d') is the inverse matrix of (a, b, c, d)
+* If the maximum dimension was not 42, rescale again using ctx.scale(max_size / 42, max_size / 42); in order to get a properly sized stroke
+
+If the symbol you want to create has a solid fill, you are done. Otherwise, specific modifications will be required (see for example the Omni and Rainbow pips).

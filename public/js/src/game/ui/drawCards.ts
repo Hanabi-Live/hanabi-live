@@ -6,7 +6,6 @@
 import {
     CARD_H,
     CARD_W,
-    COLORS,
     STACK_BASE_RANK,
     START_CARD_RANK,
     SUITS,
@@ -14,6 +13,7 @@ import {
 } from '../../constants';
 import Color from '../../Color';
 import drawPip from './drawPip';
+import drawRank from './drawRank';
 import globals from './globals';
 import Suit from '../../Suit';
 import Variant from '../../Variant';
@@ -81,7 +81,16 @@ export default (variant: Variant, colorblindUI: boolean) => {
                 ctx.font = `bold ${fontSize}pt Arial`;
 
                 // Draw the rank on the top left
-                drawText(ctx, textYPos, rankLabel);
+                if (colorblindUI) {
+                    drawText(ctx, textYPos, rankLabel);
+                } else {
+                    ctx.save();
+                    drawRank(ctx, rank);
+                    ctx.restore();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+                ctx.restore();
 
                 // "Index" cards are used to draw cards of learned but not yet known rank
                 // (e.g. for in-game replays)
@@ -92,7 +101,18 @@ export default (variant: Variant, colorblindUI: boolean) => {
                 ctx.save();
                 ctx.translate(CARD_W, CARD_H);
                 ctx.rotate(Math.PI);
-                drawText(ctx, textYPos, rankLabel);
+                if (colorblindUI) {
+                    drawText(ctx, textYPos, rankLabel);
+                } else {
+                    drawRank(ctx, rank);
+                    ctx.restore();
+                    ctx.translate(CARD_W, CARD_H);
+                    ctx.rotate(Math.PI);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.translate(CARD_W, CARD_H);
+                    ctx.rotate(Math.PI);
+                }
                 ctx.restore();
             }
 
@@ -152,24 +172,41 @@ const drawSuitPips = (
 ) => {
     const scale = 0.4;
 
-    // The middle for cards 1 and 3
-    if (rank === 1 || rank === 3) {
+    // The middle for card 1
+    if (rank === 1) {
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
-        ctx.scale(scale, scale);
-        ctx.translate(-75, -100);
+        ctx.scale(scale * 1.8, scale * 1.8);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
 
-    // Top and bottom for cards 2, 3, 4, 5
-    if (rank >= 2 && rank <= 5) {
-        const symbolYPos = colorblindUI ? 85 : 120;
+    // Top and bottom for card 2
+    if (rank === 2) {
+        const symbolYPos = colorblindUI ? 60 : 90;
+        ctx.save();
+        ctx.translate(CARD_W / 2, CARD_H / 2);
+        ctx.translate(0, -symbolYPos);
+        ctx.scale(scale * 1.4, scale * 1.4);
+        drawPip(ctx, suit, true, false);
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(CARD_W / 2, CARD_H / 2);
+        ctx.translate(0, symbolYPos);
+        ctx.scale(scale * 1.4, scale * 1.4);
+        ctx.rotate(Math.PI);
+        drawPip(ctx, suit, true, false);
+        ctx.restore();
+    }
+
+    // Top and bottom for cards 3, 4, 5
+    if (rank >= 3 && rank <= 5) {
+        const symbolYPos = colorblindUI ? 80 : 120;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(0, -symbolYPos);
         ctx.scale(scale, scale);
-        ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
 
@@ -178,7 +215,6 @@ const drawSuitPips = (
         ctx.translate(0, symbolYPos);
         ctx.scale(scale, scale);
         ctx.rotate(Math.PI);
-        ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -189,7 +225,6 @@ const drawSuitPips = (
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(-90, 0);
         ctx.scale(scale, scale);
-        ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
 
@@ -198,18 +233,26 @@ const drawSuitPips = (
         ctx.translate(90, 0);
         ctx.scale(scale, scale);
         ctx.rotate(Math.PI);
-        ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
 
-    // Size, position, and alpha adjustment for the central icon on stack base and 5
-    if (rank === 0 || rank === 5) {
+    // Size, position, and alpha adjustment for the central icon on 3 and 5
+    if (rank === 3 || rank === 5) {
         ctx.globalAlpha = 1;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
-        ctx.scale(scale * 3 / 2, scale * 3 / 2);
-        ctx.translate(-75, -100);
+        ctx.scale(scale * 1.2, scale * 1.2);
+        drawPip(ctx, suit, true, false);
+        ctx.restore();
+    }
+
+    // Size, position, and alpha adjustment for the central icon on stack base
+    if (rank === 0) {
+        ctx.globalAlpha = 1;
+        ctx.save();
+        ctx.translate(CARD_W / 2, CARD_H / 2);
+        ctx.scale(scale * 2.5, scale * 2.5);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -220,7 +263,6 @@ const drawSuitPips = (
         ctx.globalAlpha = colorblindUI ? 0.4 : 0.1;
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 3, scale * 3);
-        ctx.translate(-75, -100);
         drawPip(ctx, suit, true, false);
         ctx.restore();
     }
@@ -268,13 +310,13 @@ const makeDeckBack = (variant: Variant) => {
         const suit = variant.suits[i];
 
         // Transform polar to cartesian coordinates
-        // The magic number added to the offset is needed to center things properly
-        const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.25); // eslint-disable-line
-        const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2) + CARD_W * 0.3); // eslint-disable-line
-        ctx.translate(x, y);
+        const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
+        const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
 
+        ctx.save();
+        ctx.translate(x, y);
         drawPip(ctx, suit, true, true);
-        ctx.translate(-x, -y);
+        ctx.restore();
     }
     ctx.scale(1 / sf, 1 / sf);
 
@@ -298,18 +340,6 @@ const drawCardBase = (ctx: CanvasRenderingContext2D, suit: Suit, rank: number) =
     // Draw the background
     ctx.fillStyle = getSuitStyle(suit, ctx, 'background');
     ctx.strokeStyle = getSuitStyle(suit, ctx, 'background');
-    const whiteSuit = SUITS.get('White');
-    if (typeof whiteSuit === 'undefined') {
-        throw new Error('Failed to get the white suit in the "drawCardBase()" function.');
-    }
-    if (ctx.fillStyle === whiteSuit.fill) {
-        const blackColor = COLORS.get('Black');
-        if (typeof blackColor === 'undefined') {
-            throw new Error('Failed to get the black color in the "drawCardBase()" function.');
-        }
-        ctx.strokeStyle = blackColor.fill;
-    }
-
     cardBorderPath(ctx, 4);
 
     ctx.save();
@@ -449,7 +479,10 @@ const getSuitStyle = (suit: Suit, ctx: CanvasRenderingContext2D, cardArea: strin
         return evenLinearGradient(ctx, suit.fillColors, [0, 14, 0, 110]);
     }
     if (cardArea === 'background') {
-        return evenLinearGradient(ctx, suit.fillColors, [0, 0, 0, CARD_H]);
+        if (suit.name === 'Omni' || suit.name === 'Dark Omni') {
+            return evenLinearGradient(ctx, suit.fillColors, [0, -30, 0, CARD_H + 30]);
+        }
+        return evenLinearGradient(ctx, suit.fillColors, [0, 0, CARD_W, CARD_H]);
     }
     throw new Error(`The card area of "${cardArea}" is unknown in the "getSuitStyle()" function.`);
 };
