@@ -21,6 +21,7 @@ func chatHelp(s *Session, d *CommandData, t *Table) {
 		msg += "/startin [minutes]    Automatically start the game in N minutes\n"
 		msg += "/pause                Pause the game (can be done on any turn)\n"
 		msg += "/unpause              Unpause the game\n"
+		msg += "/findvariant          Find a random variant that everyone needs the max score in\n"
 		msg += "```\n"
 
 		msg += "Discord commands:\n"

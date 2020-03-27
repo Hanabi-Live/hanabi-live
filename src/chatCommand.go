@@ -27,6 +27,8 @@ func chatCommandInit() {
 	chatCommandMap["startin"] = chatStartIn
 	chatCommandMap["pause"] = chatPause
 	chatCommandMap["unpause"] = chatUnpause
+	chatCommandMap["findvariant"] = chatFindVariant
+	chatCommandMap["randomvariant"] = chatFindVariant
 
 	// Discord-only commands
 	chatCommandMap["here"] = chatHere

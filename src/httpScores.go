@@ -112,7 +112,7 @@ func httpScores(c *gin.Context) {
 		}
 
 		if stats, ok := statsMap[variant.ID]; ok {
-			// They have played at least one game in this particular variant
+			// This player has played at least one game in this particular variant
 			for j, bestScore := range stats.BestScores {
 				if bestScore.Score == maxScore {
 					numMaxScores++
