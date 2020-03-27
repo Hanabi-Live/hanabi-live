@@ -44,7 +44,7 @@ export default class ColorButton extends Konva.Group {
 
         const text = new Konva.Text({
             x: 0,
-            y: 0.2 * h,
+            y: 0.275 * h,
             width: w,
             height: 0.6 * h,
             fontSize: 0.5 * h,
