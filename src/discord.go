@@ -90,9 +90,8 @@ func discordConnect() {
 	go discordRefreshMembers()
 
 	// Announce that the server has started
-	msg := "The server has successfully started at: " + time.Now().Format("Mon Jan 02 15:04:05 MST 2006")
 	commandChat(nil, &CommandData{
-		Msg:    msg,
+		Msg:    "The server has successfully started at: " + getCurrentTimestamp(),
 		Room:   "lobby",
 		Server: true,
 		Spam:   true,

@@ -30,6 +30,12 @@ func shutdown(restart bool) {
 		execute("build_client.sh", projectPath)
 		execute("restart.sh", projectPath)
 	} else {
+		commandChat(nil, &CommandData{
+			Msg:    "The server successfully shut down at: " + getCurrentTimestamp(),
+			Room:   "lobby",
+			Server: true,
+			Spam:   true,
+		})
 		execute("stop.sh", projectPath)
 	}
 }

@@ -47,30 +47,6 @@ func httpHistory(c *gin.Context) {
 	}
 	history = historyFillVariants(history)
 
-	/*
-		text := ""
-		text += "+-------------------+\n"
-		text += "| Full Game History |\n"
-		text += "+-------------------+\n"
-		text += "\n"
-
-		if len(history) == 0 {
-			text += "(no games played)\n"
-		}
-
-		for _, g := range history {
-			text += "Game #" + strconv.Itoa(g.ID) + "\n"
-			text += "- " + strconv.Itoa(g.NumPlayers) + " players\n"
-			text += "- Score: " + strconv.Itoa(g.Score) + "\n"
-			text += "- Variant: " + g.Variant + "\n"
-			text += "- Date: " + g.DatetimeFinished.Format("Mon Jan 02 15:04:05 MST 2006") + "\n"
-			// Same as the Linux date command
-			text += "- Other players: " + g.OtherPlayerNames + "\n"
-			text += "- Other scores: " + strconv.Itoa(g.NumSimilar) + "\n"
-			text += "\n"
-		}
-	*/
-
 	data := HistoryData{
 		Title:   "History",
 		Name:    user.Username,
