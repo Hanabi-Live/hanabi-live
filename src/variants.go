@@ -340,10 +340,10 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 			return true
 		}
 		if (strings.Contains(variant, "Brown-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "Omni-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "Null-Ones") && card.Rank == 1) ||
 			(strings.Contains(variant, "Muddy-Rainbow-Ones") && card.Rank == 1) ||
 			(strings.Contains(variant, "Brown-Fives") && card.Rank == 5) ||
-			(strings.Contains(variant, "Omni-Fives") && card.Rank == 5) ||
+			(strings.Contains(variant, "Null-Fives") && card.Rank == 5) ||
 			(strings.Contains(variant, "Muddy-Rainbow-Fives") && card.Rank == 5) {
 
 			return false
@@ -363,10 +363,10 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 			return true
 		}
 		if (strings.Contains(variant, "White-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "Omni-Ones") && card.Rank == 1) ||
+			(strings.Contains(variant, "Null-Ones") && card.Rank == 1) ||
 			(strings.Contains(variant, "Light-Pink-Ones") && card.Rank == 1) ||
 			(strings.Contains(variant, "White-Fives") && card.Rank == 5) ||
-			(strings.Contains(variant, "Omni-Fives") && card.Rank == 5) ||
+			(strings.Contains(variant, "Null-Fives") && card.Rank == 5) ||
 			(strings.Contains(variant, "Light-Pink-Fives") && card.Rank == 5) {
 
 			return false
