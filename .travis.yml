@@ -10,6 +10,7 @@ matrix:
         # This will automatically choose the latest released Go version
         - 1.x
       env:
+        # This is needed so that Travis will use the "go.mod" file
         - GO111MODULE=on
       before_script:
         # Install the Go linter
