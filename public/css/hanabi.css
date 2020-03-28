@@ -478,8 +478,8 @@ table td {
     cursor: pointer;
 }
 
-/* Used in the "Variant" dropdown */
 .ss-single-selected {
+    /* Used in the "Variant" dropdown; we modify it to match the Alpha style */
     background-color: #f8f8f8 !important;
     border-radius: 6px !important;
     border: solid 1px #e5e5e5 !important;
@@ -489,12 +489,14 @@ table td {
 }
 
 .ss-search > input:focus {
+    /* We want the focus colors to match Alpha */
     border-color: #e89980 !important;
     box-shadow: 0 0 0 2px #e89980 !important;
 }
 
-.ss-arrow {
-    display: none !important;
+.ss-disabled {
+    /* By default it is an ugly "not-allowed" cursor */
+    cursor: auto !important;
 }
 
 /*
