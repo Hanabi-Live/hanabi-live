@@ -70,6 +70,16 @@ func chatServerSend(msg string, room string) {
 	})
 }
 
+// chatServerSendAll is a helper function to broadcast a message to everyone on the server,
+// whether they are in the lobby or in the middle of a game
+func chatServerSendAll(msg string) {
+	chatServerSend(msg, "lobby")
+	for _, t := range tables {
+		room := "table" + strconv.Itoa(t.ID)
+		chatServerSend(msg, room)
+	}
+}
+
 func chatFillMentions(msg string) string {
 	/*
 		Discord mentions are in the form of "<@12345678901234567>"

@@ -19,12 +19,15 @@ func httpLocalhostInit() {
 	// Path handlers
 	httpRouter.GET("/restart", func(c *gin.Context) {
 		graceful(true)
+		c.String(200, "success")
 	})
 	httpRouter.GET("/shutdown", func(c *gin.Context) {
 		graceful(false)
+		c.String(200, "success")
 	})
 	httpRouter.GET("/debug", func(c *gin.Context) {
 		debug()
+		c.String(200, "success")
 	})
 
 	// Listen and serve (HTTP)

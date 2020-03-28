@@ -7,6 +7,7 @@ import SlimSelect from 'slim-select';
 import shajs from 'sha.js';
 import globals from '../globals';
 import * as misc from '../misc';
+import * as modals from '../modals';
 import variantsJSON from '../data/variants.json';
 import { VARIANTS } from '../constants';
 
@@ -319,8 +320,19 @@ const checkChanged = (setting: string, value: boolean | string) => {
 };
 
 // This function is executed when the "Create Game" button is clicked
-// Don't allow the tooltip to open if the button is currently disabled
-export const before = () => !$('#nav-buttons-games-create-game').hasClass('disabled');
+export const before = () => {
+    // Don't allow the tooltip to open if the button is currently disabled
+    if ($('#nav-buttons-games-create-game').hasClass('disabled')) {
+        return false;
+    }
+
+    if (globals.shuttingDown) {
+        modals.warningShow('The server is restarting soon (when all ongoing games have finished). You cannot start any new games for the time being.');
+        return false;
+    }
+
+    return true;
+};
 
 // This function is executed every time the "Create Game" button is clicked
 // (after the tooltip is added to the DOM)
@@ -387,7 +399,7 @@ const readyVariant = (value: any) => {
         dropdown1.show(0);
         dropdown1.val(variant);
         dropdown2.hide(0);
-        $('#dice').hide();
+        $('#dice').hide(0);
     } else {
         // If this is not one of the basic variants,
         // initialize the second dropdown to have 1 element

@@ -184,6 +184,15 @@ func (s *Session) NotifyTableStart() {
 	})
 }
 
+func (s *Session) NotifyShutdown() {
+	type ShutdownMessage struct {
+		ShuttingDown bool `json:"shuttingDown"`
+	}
+	s.Emit("shutdown", &ShutdownMessage{
+		ShuttingDown: shuttingDown,
+	})
+}
+
 /*
 	In-game notify functions
 */

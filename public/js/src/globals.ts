@@ -14,9 +14,10 @@ class Globals {
     version: number = version;
     browserIsFirefox: boolean = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
+    id: number = -1;
     username: string = '';
     password: string = '';
-    id: number = -1;
+    shuttingDown: boolean = false;
 
     conn: any = null; // The WebSocket connection (set in "websocket.ts")
     // (this must be an "any" type because we attach arbitrary methods to the object)

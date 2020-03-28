@@ -62,8 +62,9 @@ func chatMaintenance(s *Session, d *CommandData, t *Table) {
 	}
 
 	shuttingDown = true
-	chatServerSend("The server is entering maintenance mode. "+
-		"New game creation has been disabled.", "lobby")
+	notifyAllShutdown()
+	chatServerSendAll("The server is entering maintenance mode. " +
+		"New game creation has been disabled.")
 }
 
 // /cancel
@@ -80,5 +81,6 @@ func chatCancel(s *Session, d *CommandData, t *Table) {
 	}
 
 	shuttingDown = false
-	chatServerSend("Server restart has been canceled. New game creation has been enabled.", d.Room)
+	notifyAllShutdown()
+	chatServerSendAll("Server restart has been canceled. New game creation has been enabled.")
 }

@@ -107,10 +107,11 @@ const initCommands = () => {
         shuttingDown: boolean,
     }
     globals.conn.on('hello', (data: HelloData) => {
-        // Store variables relating to our user account
+        // Store some variables (mostly relating to our user account)
         globals.id = data.id;
         globals.username = data.username; // We might have logged-in with a different stylization
         globals.totalGames = data.totalGames;
+        globals.shuttingDown = data.shuttingDown;
 
         // Convert the settings object to a Map
         for (const [setting, value] of Object.entries(data.settings)) {
@@ -243,6 +244,13 @@ const initCommands = () => {
         }
     });
 
+    interface ShutdownData {
+        shuttingDown: boolean,
+    }
+    globals.conn.on('shutdown', (data: ShutdownData) => {
+        globals.shuttingDown = data.shuttingDown;
+    });
+
     interface WarningData {
         warning: string,
     }
@@ -252,7 +260,9 @@ const initCommands = () => {
 
         // Re-activate some lobby elements
         $('#nav-buttons-games-create-game').removeClass('disabled');
-        pregame.enableStartGameButton();
+        if (globals.currentScreen === 'pregame') {
+            pregame.enableStartGameButton();
+        }
 
         // Re-activate in-game elements
         if (

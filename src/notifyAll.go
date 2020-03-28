@@ -39,3 +39,9 @@ func notifyAllTableGone(t *Table) {
 		}
 	}
 }
+
+func notifyAllShutdown() {
+	for _, s := range sessions {
+		s.NotifyShutdown()
+	}
+}
