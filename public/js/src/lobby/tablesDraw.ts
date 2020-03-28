@@ -96,12 +96,6 @@ const tablesDraw = () => {
         let status;
         if (table.sharedReplay) {
             status = 'Reviewing';
-        } else if (table.running && table.joined) {
-            if (table.ourTurn) {
-                status = '<strong>Your Turn</strong>';
-            } else {
-                status = 'Waiting';
-            }
         } else if (table.running) {
             status = 'Running';
         } else {

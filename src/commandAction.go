@@ -384,14 +384,6 @@ func commandAction(s *Session, d *CommandData) {
 	// Send the "action" message to the next player
 	nps.NotifyAction()
 
-	// Send every user connected an update about this table
-	// (this is sort of wasteful but is necessary for users to see if it is
-	// their turn from the lobby and also to see the progress of other games)
-	if !t.Options.JSONGame {
-		// Don't send table updates if we are in the process of emulating JSON actions
-		notifyAllTable(t)
-	}
-
 	// Send everyone new clock values
 	t.NotifyTime()
 
