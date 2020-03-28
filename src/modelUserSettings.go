@@ -13,7 +13,7 @@ type Settings struct {
 	ColorblindMode                  bool    `json:"colorblindMode"`
 	RealLifeMode                    bool    `json:"realLifeMode"`
 	ReverseHands                    bool    `json:"reverseHands"`
-	LegibleNumbers                  bool    `json:"legibleNumbers"`
+	StyleNumbers                    bool    `json:"styleNumbers"`
 	ShowTimerInUntimed              bool    `json:"showTimerInUntimed"`
 	Volume                          int     `json:"volume"`
 	SpeedrunPreplay                 bool    `json:"speedrunPreplay"`
@@ -54,7 +54,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 			colorblind_mode,
 			real_life_mode,
 			reverse_hands,
-			legible_numbers,
+			style_numbers,
 			show_timer_in_untimed,
 			volume,
 			speedrun_preplay,
@@ -79,7 +79,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.ColorblindMode,
 		&settings.RealLifeMode,
 		&settings.ReverseHands,
-		&settings.LegibleNumbers,
+		&settings.StyleNumbers,
 		&settings.ShowTimerInUntimed,
 		&settings.Volume,
 		&settings.SpeedrunPreplay,

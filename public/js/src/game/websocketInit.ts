@@ -48,16 +48,16 @@ commands.set('init', (data: any) => {
         cards: [],
     };
 
-    // Find out whether "colorblind mode" is enabled
+    // Find out whether the "colorblind mode" setting is enabled
     const colorblindMode = globals.settings.get('colorblindMode');
     if (typeof colorblindMode !== 'boolean') {
         throw new Error('The "colorblindMode" setting was not a boolean.');
     }
 
-    // Find out whether "legitble numbers" are enabled
-    const legibleNumbers = globals.settings.get('legibleNumbers');
-    if (typeof legibleNumbers !== 'boolean') {
-        throw new Error('The "legibleNumbers" setting was not a boolean.');
+    // Find out whether the "style numbers" setting is enabled
+    const styleNumbers = globals.settings.get('styleNumbers');
+    if (typeof styleNumbers !== 'boolean') {
+        throw new Error('The "styleNumbers" setting was not a boolean.');
     }
 
     // Build images for every card
@@ -66,7 +66,7 @@ commands.set('init', (data: any) => {
     globals.ui.cardImages = drawCards(
         globals.init.variant,
         colorblindMode,
-        legibleNumbers,
+        styleNumbers,
     );
 
     // Draw the user interface

@@ -163,7 +163,7 @@ const loadingFinishedCallback = () => {
     globals.cardImages = drawCards(
         globals.variant,
         globals.lobby.settings.get('colorblindMode'),
-        globals.lobby.settings.get('legibleNumbers'),
+        globals.lobby.settings.get('styleNumbers'),
     );
 
     // Construct a list of all of the cards in the deck

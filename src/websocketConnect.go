@@ -94,7 +94,7 @@ func websocketConnect(ms *melody.Session) {
 		ShuttingDown  bool     `json:"shuttingDown"`
 	}
 	s.Emit("hello", &HelloMessage{
-		// Send the user their correspnoding user ID
+		// Send the user their corresponding user ID
 		ID: s.UserID(),
 
 		// We have to send the username back to the client because they may

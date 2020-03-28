@@ -19,7 +19,7 @@ import Suit from '../../Suit';
 import Variant from '../../Variant';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
-export default (variant: Variant, colorblindUI: boolean, legibleNumbers: boolean) => {
+export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean) => {
     const cardImages: Map<string, HTMLCanvasElement> = new Map();
 
     // Add the "unknown" suit to the list of suits for this variant
@@ -69,7 +69,7 @@ export default (variant: Variant, colorblindUI: boolean, legibleNumbers: boolean
                     rankLabel = 'S';
                 }
                 let fontSize;
-                if (colorblindUI) {
+                if (colorblindMode) {
                     rankLabel += suit.abbreviation;
                     fontSize = 68;
                     textYPos = 83;
@@ -81,14 +81,14 @@ export default (variant: Variant, colorblindUI: boolean, legibleNumbers: boolean
                 ctx.font = `bold ${fontSize}pt Arial`;
 
                 // Draw the rank on the top left
-                if (colorblindUI || legibleNumbers) {
-                    drawText(ctx, textYPos, rankLabel);
-                } else {
+                if (styleNumbers && !colorblindMode) {
                     ctx.save();
                     drawRank(ctx, rank);
                     ctx.restore();
                     ctx.fill();
                     ctx.stroke();
+                } else {
+                    drawText(ctx, textYPos, rankLabel);
                 }
                 ctx.restore();
 
@@ -101,9 +101,7 @@ export default (variant: Variant, colorblindUI: boolean, legibleNumbers: boolean
                 ctx.save();
                 ctx.translate(CARD_W, CARD_H);
                 ctx.rotate(Math.PI);
-                if (colorblindUI || legibleNumbers) {
-                    drawText(ctx, textYPos, rankLabel);
-                } else {
+                if (styleNumbers && !colorblindMode) {
                     drawRank(ctx, rank);
                     ctx.restore();
                     ctx.translate(CARD_W, CARD_H);
@@ -112,6 +110,8 @@ export default (variant: Variant, colorblindUI: boolean, legibleNumbers: boolean
                     ctx.stroke();
                     ctx.translate(CARD_W, CARD_H);
                     ctx.rotate(Math.PI);
+                } else {
+                    drawText(ctx, textYPos, rankLabel);
                 }
                 ctx.restore();
             }
@@ -127,7 +127,7 @@ export default (variant: Variant, colorblindUI: boolean, legibleNumbers: boolean
             }
 
             if (suit.name !== 'Unknown') {
-                drawSuitPips(ctx, rank, suit, colorblindUI);
+                drawSuitPips(ctx, rank, suit, colorblindMode);
             }
 
             // "Card-Unknown" images would be identical to "NoPip-Unknown" images
@@ -168,7 +168,7 @@ const drawSuitPips = (
     ctx: CanvasRenderingContext2D,
     rank: number,
     suit: Suit,
-    colorblindUI: boolean,
+    colorblindMode: boolean,
 ) => {
     const scale = 0.4;
 
@@ -183,7 +183,7 @@ const drawSuitPips = (
 
     // Top and bottom for card 2
     if (rank === 2) {
-        const symbolYPos = colorblindUI ? 60 : 90;
+        const symbolYPos = colorblindMode ? 60 : 90;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(0, -symbolYPos);
@@ -202,7 +202,7 @@ const drawSuitPips = (
 
     // Top and bottom for cards 3, 4, 5
     if (rank >= 3 && rank <= 5) {
-        const symbolYPos = colorblindUI ? 80 : 120;
+        const symbolYPos = colorblindMode ? 80 : 120;
         ctx.save();
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.translate(0, -symbolYPos);
@@ -260,7 +260,7 @@ const drawSuitPips = (
     // Unknown rank, so draw large faint suit
     if (rank === 6) {
         ctx.save();
-        ctx.globalAlpha = colorblindUI ? 0.4 : 0.1;
+        ctx.globalAlpha = colorblindMode ? 0.4 : 0.1;
         ctx.translate(CARD_W / 2, CARD_H / 2);
         ctx.scale(scale * 3, scale * 3);
         drawPip(ctx, suit, true, false);

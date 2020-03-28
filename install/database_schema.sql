@@ -33,7 +33,7 @@ CREATE TABLE user_settings (
     colorblind_mode                     BOOLEAN      NOT NULL  DEFAULT 0,
     real_life_mode                      BOOLEAN      NOT NULL  DEFAULT 0,
     reverse_hands                       BOOLEAN      NOT NULL  DEFAULT 0,
-    legible_numbers                     BOOLEAN      NOT NULL  DEFAULT 0,
+    style_numbers                       BOOLEAN      NOT NULL  DEFAULT 0,
     show_timer_in_untimed               BOOLEAN      NOT NULL  DEFAULT 0,
     volume                              INT          NOT NULL  DEFAULT 50,
     speedrun_preplay                    BOOLEAN      NOT NULL  DEFAULT 0,
