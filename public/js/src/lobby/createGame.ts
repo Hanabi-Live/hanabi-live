@@ -99,7 +99,7 @@ const createTableVariantClickOrKeydown = () => {
     // the "Loading the variants..." text
     setTimeout(() => {
         createTableVariantClickOrKeydown2(oldVariant);
-    }, 0);
+    }, 5);
 };
 
 // Now that we have given a chance for the browser screen to update, start loading the variants
