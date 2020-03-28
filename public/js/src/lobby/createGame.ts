@@ -177,6 +177,7 @@ const submit = () => {
     });
 
     misc.closeAllTooltips();
+    $('#nav-buttons-games-create-game').addClass('disabled');
 };
 
 const getCheckbox = (setting: string) => {
@@ -217,6 +218,10 @@ const checkChanged = (setting: string, value: boolean | string) => {
         });
     }
 };
+
+// This function is executed when the "Create Game" button is clicked
+// Don't allow the tooltip to open if the button is currently disabled
+export const before = () => !$('#nav-buttons-games-create-game').hasClass('disabled');
 
 // This function is executed every time the "Create Game" button is clicked
 // (after the tooltip is added to the DOM)

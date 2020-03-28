@@ -55,6 +55,10 @@ export const show = () => {
     // Focus the pregame chat
     $('#lobby-chat-pregame-input').focus();
 
+    // The "Create Game" button in the nav was disabled after we clicked the "Create" button,
+    // so re-enable it now that we have recieved a message back from the server
+    $('#nav-buttons-games-create-game').removeClass('disabled');
+
     // Adjust the top navigation bar
     nav.show('pregame');
     $('#nav-buttons-pregame-start').addClass('disabled');

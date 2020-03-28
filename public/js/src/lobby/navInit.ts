@@ -14,6 +14,7 @@ export default () => {
     initTooltips();
 
     // The "Create Game" button
+    $('#nav-buttons-games-create-game').tooltipster('option', 'functionBefore', createGame.before);
     $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', createGame.ready);
     // (the logic for this tooltip is handled in the "createGame.ts" file)
 
