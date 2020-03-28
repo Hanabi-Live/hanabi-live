@@ -14,7 +14,7 @@ export const init = () => {
     // Monitor to see if the user activates the variant dropdown
     // (we catch keydown instead of keypress because arrow keys are only triggered on
     // keydown and keyup)
-    $('#createTableVariant').click(createTableVariantClickOrKeydown);
+    $('#createTableVariant').mousedown(createTableVariantClickOrKeydown);
     $('#createTableVariant').keydown(createTableVariantClickOrKeydown);
 
     // The "dice" button will select a random variant from the list
