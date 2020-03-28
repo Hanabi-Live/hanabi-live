@@ -104,6 +104,10 @@ func characterGenerate(g *Game) {
 	}
 
 	for i, p := range g.Players {
+		// Initialize the metadata to -1 (it is 0 by default in order to save database space)
+		p.CharacterMetadata = -1
+		p.CharacterMetadata2 = -1
+
 		if p.Name == "test" ||
 			p.Name == "test2" ||
 			p.Name == "test3" ||

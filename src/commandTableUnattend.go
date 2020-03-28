@@ -83,19 +83,21 @@ func commandTableUnattendSpectator(t *Table, j int) {
 
 	// Remove them from the spectators slice
 	t.Spectators = append(t.Spectators[:j], t.Spectators[j+1:]...)
+
+	if t.Replay && len(t.Spectators) == 0 {
+		// This was the last person to leave the replay, so delete it
+		logger.Info("Ended replay #" + strconv.Itoa(t.ID) + " because everyone left.")
+		delete(tables, t.ID)
+
+		// Notify everyone that the table was deleted
+		notifyAllTableGone(t)
+		return
+	}
+
 	notifyAllTable(t)    // Update the spectator list for the row in the lobby
 	t.NotifySpectators() // Update the in-game spectator list
 
-	if t.Replay {
-		if len(t.Spectators) == 0 {
-			// This was the last person to leave the replay, so delete it
-			logger.Info("Ended replay #" + strconv.Itoa(t.ID) + " because everyone left.")
-			delete(tables, t.ID)
-
-			// Notify everyone that the table was deleted
-			notifyAllTableGone(t)
-		}
-	} else if len(cardOrderList) > 0 {
+	if !t.Replay && len(cardOrderList) > 0 {
 		// Since this is a spectator leaving an ongoing game, all of their notes will be deleted
 		// Send the other spectators a message about the new list of notes, if any
 		for _, order := range cardOrderList {

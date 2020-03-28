@@ -56,7 +56,6 @@ type TableMessage struct {
 	Timed        bool   `json:"timed"`
 	BaseTime     int    `json:"baseTime"`
 	TimePerTurn  int    `json:"timePerTurn"`
-	OurTurn      bool   `json:"ourTurn"`
 	SharedReplay bool   `json:"sharedReplay"`
 	Progress     int    `json:"progress"`
 	Players      string `json:"players"`
@@ -64,8 +63,6 @@ type TableMessage struct {
 }
 
 func makeTableMessage(s *Session, t *Table) *TableMessage {
-	g := t.Game
-
 	i := t.GetPlayerIndexFromID(s.UserID())
 	joined := false
 	if i != -1 {
@@ -95,11 +92,6 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		spectators = "-"
 	}
 
-	ourTurn := false
-	if t.Running {
-		ourTurn = joined && g.ActivePlayer == i
-	}
-
 	return &TableMessage{
 		ID:           t.ID,
 		Name:         t.Name,
@@ -112,7 +104,6 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		Timed:        t.Options.Timed,
 		BaseTime:     t.Options.BaseTime,
 		TimePerTurn:  t.Options.TimePerTurn,
-		OurTurn:      ourTurn,
 		SharedReplay: t.Replay,
 		Progress:     t.Progress,
 		Players:      players,

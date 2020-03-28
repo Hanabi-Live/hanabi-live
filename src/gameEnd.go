@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -229,12 +230,25 @@ func (g *Game) WriteDatabase() error {
 	// Next, we have to insert rows for each of the participants
 	for _, gp := range g.Players {
 		p := t.Players[gp.Index]
+
+		characterID := 0
+		if t.Options.CharacterAssignments {
+			if v, ok := characters[gp.Character]; !ok {
+				logger.Error("Failed to find the ID for character \"" + gp.Character + "\" " +
+					"when ending the game.")
+				return errors.New("the character of " + gp.Character +
+					" does not exist in the characters map")
+			} else {
+				characterID = v.ID
+			}
+		}
+
 		if err := models.GameParticipants.Insert(
 			p.ID,
 			g.ID,
 			gp.Index,
 			gp.Notes,
-			characters[gp.Character].ID,
+			characterID,
 			gp.CharacterMetadata,
 		); err != nil {
 			logger.Error("Failed to insert the game participant row:", err)
