@@ -161,19 +161,6 @@ const createTableVariantClickOrKeydown2 = (oldVariant: string) => {
 };
 
 const submit = () => {
-    // Validate that the user did not click the "Create" button while
-    // the variant search was either loading or empty
-    const variant = $('#createTableVariant').val();
-    if (variant === 'Loading the variants...') {
-        // Default to a "No Variant" game
-        $('#createTableVariant').empty();
-        $('#createTableVariant').append($('<option/>', {
-            value: 'No Variant',
-            text: 'No Variant',
-        }));
-        $('#createTableVariant').val('No Variant');
-    }
-
     // We need to mutate some values before sending them to the server
     const baseTimeMinutes = parseFloat(getTextbox('createTableBaseTimeMinutes'));
     const baseTime = Math.round(baseTimeMinutes * 60); // The server expects this in seconds
@@ -194,7 +181,7 @@ const submit = () => {
 
     globals.conn.send('tableCreate', {
         name: $('#createTableName').val(), // We don't bother to store the table name
-        variant,
+        variant: getTextbox('createTableVariant'),
         timed: getCheckbox('createTableTimed'),
         baseTime,
         timePerTurn,

@@ -246,6 +246,9 @@ const initCommands = () => {
     globals.conn.on('warning', (data: WarningData) => {
         console.warn(data.warning);
         modals.warningShow(data.warning);
+        if ($('#nav-buttons-games-create-game').hasClass('disabled')) {
+            $('#nav-buttons-games-create-game').removeClass('disabled');
+        }
         if (
             globals.currentScreen === 'game'
             && globals.ui !== null
