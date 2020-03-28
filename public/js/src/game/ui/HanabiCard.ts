@@ -547,8 +547,12 @@ export default class HanabiCard extends Konva.Group {
                 || globals.variant.name.includes('Omni-Ones')
             ) {
                 if (positive) {
-                    if (this.positiveColorClues.length >= 2) {
+                    if (
+                        this.positiveColorClues.length >= 2
+                        && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0
+                    ) {
                         // Two positive color clues should "fill in" a 1
+                        // (that cannot be a mult-color suit)
                         ranksRemoved = filterInPlace(
                             this.possibleRanks,
                             (rank: number) => rank === 1,
@@ -567,8 +571,12 @@ export default class HanabiCard extends Konva.Group {
                 || globals.variant.name.includes('Omni-Fives')
             ) {
                 if (positive) {
-                    if (this.positiveColorClues.length >= 2) {
+                    if (
+                        this.positiveColorClues.length >= 2
+                        && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0
+                    ) {
                         // Two positive color clues should "fill in" a 5
+                        // (that cannot be a mult-color suit)
                         ranksRemoved = filterInPlace(
                             this.possibleRanks,
                             (rank: number) => rank === 5,
