@@ -406,6 +406,11 @@ export default class HanabiCard extends Konva.Group {
                     this.possibleRanks,
                     (rank: number) => (rank === clueRank || rank === 5) === positive,
                 );
+            } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'none') && !positive) {
+                // Some suits are not touched by any ranks,
+                // so if this is a negative rank clue, we cannot remove any rank pips from the card
+                // This section must be below the Pink-Ones section,
+                // because e.g. Pink-One Brown cards are touched by rank
             } else if (
                 globals.variant.name.includes('Brown-Ones')
                 || globals.variant.name.includes('Null-Ones')
@@ -426,12 +431,11 @@ export default class HanabiCard extends Konva.Group {
                     this.possibleRanks,
                     (rank: number) => (rank === clueRank && rank !== 5) === positive,
                 );
-            } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'none') && !positive) {
-                // Some suits are not touched by any ranks,
-                // so if this is a negative rank clue, we cannot remove any rank pips from the card
             } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'all') && positive) {
                 // Some cards are touched by all ranks,
                 // so if this is a positive rank clue, we cannot remove any rank pips from the card
+                // This section must be below the Brown-Ones section,
+                // because e.g. Brown-One Pink cards are not touched by rank
             } else {
                 // Remove all possibilities that do not include this rank
                 ranksRemoved = filterInPlace(
