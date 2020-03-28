@@ -62,9 +62,6 @@ func commandTableReattend(s *Session, d *CommandData) {
 		// Send them the chat history for this game
 		// (if the game is running, this is handled in the "commandReady()" function)
 		chatSendPastFromTable(s, t)
-
-		// Send the table owner whether or not the "Start Game" button should be grayed out
-		t.NotifyTableReady()
 	}
 
 	// Set their status

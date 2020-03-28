@@ -169,7 +169,6 @@ const slimSelectInitWithAllVariants = () => {
 };
 
 const slimSelectInitWithOneVariant = (variant: string) => {
-    // This function is executed when the tooltip is closed and removed from the DOM
     dropdown1.hide(0);
     slimSelectDestroy();
     dropdown2.show(0);
@@ -388,6 +387,7 @@ const readyVariant = (value: any) => {
         dropdown1.show(0);
         dropdown1.val(variant);
         dropdown2.hide(0);
+        $('#dice').hide();
     } else {
         // If this is not one of the basic variants,
         // initialize the second dropdown to have 1 element

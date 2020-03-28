@@ -62,8 +62,6 @@ export const show = () => {
     // Adjust the top navigation bar
     nav.show('pregame');
     $('#nav-buttons-pregame-start').addClass('disabled');
-    // (the server will send us a "tableReady" message momentarily if
-    // we need to enable the "Start Game" button)
 };
 
 export const hide = () => {
@@ -85,8 +83,9 @@ export const hide = () => {
 };
 
 export const draw = () => {
-    // Update the "Start Game" button
-    $('#nav-buttons-game-start').addClass('disabled');
+    if (globals.game === null) {
+        throw new Error('Attempted to draw the pre-game screen without having first recieved a "game" message from the server.');
+    }
 
     // Update the information on the left-hand side of the screen
     $('#lobby-pregame-name').text(globals.game.name);
@@ -350,5 +349,24 @@ export const draw = () => {
 
         // Initialize the tooltip
         $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster(tooltipOptions);
+    }
+
+    enableStartGameButton();
+};
+
+export const enableStartGameButton = () => {
+    if (globals.game === null) {
+        return;
+    }
+
+    // Enable or disable the "Start Game" button,
+    // depending on if we are the game owner and enough players have joined
+    $('#nav-buttons-pregame-start').addClass('disabled');
+    if (
+        globals.game.owner === globals.id
+        && globals.game.players.length >= 2
+        && globals.game.players.length <= 6
+    ) {
+        $('#nav-buttons-pregame-start').removeClass('disabled');
     }
 };

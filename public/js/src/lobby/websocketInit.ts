@@ -139,17 +139,6 @@ commands.set('tableProgress', (data: TableProgressData) => {
     }
 });
 
-interface TableReadyData {
-    ready: boolean,
-}
-commands.set('tableReady', (data: TableReadyData) => {
-    if (data.ready) {
-        $('#nav-buttons-pregame-start').removeClass('disabled');
-    } else {
-        $('#nav-buttons-pregame-start').addClass('disabled');
-    }
-});
-
 interface TableStartData {
     replay: boolean,
 }

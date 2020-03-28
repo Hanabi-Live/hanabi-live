@@ -120,9 +120,6 @@ func commandTableJoin(s *Session, d *CommandData) {
 	chatSendPastFromTable(s, t)
 	t.ChatRead[p.ID] = 0
 
-	// Send the table owner whether or not the "Start Game" button should be grayed out
-	t.NotifyTableReady()
-
 	// If there is an automatic start countdown, cancel it
 	if !t.DatetimePlannedStart.IsZero() {
 		t.DatetimePlannedStart = time.Time{} // Assign a zero value

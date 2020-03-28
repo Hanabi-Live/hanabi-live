@@ -3,6 +3,7 @@
 */
 
 // Imports
+import Game from './lobby/Game';
 import GameHistory from './lobby/GameHistory';
 import version from './data/version.json';
 // (the "version.json" file is filled in dynamically by the "build_client.sh" script)
@@ -15,6 +16,7 @@ class Globals {
 
     username: string = '';
     password: string = '';
+    id: number = -1;
 
     conn: any = null; // The WebSocket connection (set in "websocket.ts")
     // (this must be an "any" type because we attach arbitrary methods to the object)
@@ -29,7 +31,7 @@ class Globals {
     totalGames: number = 0; // Set upon login
     randomName: string = ''; // Set upon login
 
-    game: any = {}; // Equal to the data from the "game" command // TODO convert to a Game object
+    game: Game | null = null; // Equal to the data from the "game" command
 
     currentScreen: screen = 'login'; // See "screen" declaration above
     tableID: number = -1; // Equal to the table we are joined to or -1 if no table

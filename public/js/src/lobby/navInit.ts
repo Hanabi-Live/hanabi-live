@@ -46,6 +46,7 @@ export default () => {
     $('#nav-buttons-pregame-start').on('click', () => {
         if (!$('#nav-buttons-pregame-start').hasClass('disabled')) {
             globals.conn.send('tableStart');
+            $('#nav-buttons-pregame-start').addClass('disabled');
         }
     });
 

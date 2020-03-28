@@ -14,6 +14,7 @@ import * as lobbyLoginMisc from './lobby/loginMisc';
 import * as lobbySettings from './lobby/settings';
 import lobbyWebsocketInit from './lobby/websocketInit';
 import * as modals from './modals';
+import * as pregame from './lobby/pregame';
 
 export default () => {
     // Ensure that we are connecting to the right URL
@@ -97,6 +98,7 @@ export default () => {
 const initCommands = () => {
     // Received by the client upon first connecting
     interface HelloData {
+        id: number,
         username: string,
         totalGames: number,
         firstTimeUser: boolean,
@@ -106,6 +108,7 @@ const initCommands = () => {
     }
     globals.conn.on('hello', (data: HelloData) => {
         // Store variables relating to our user account
+        globals.id = data.id;
         globals.username = data.username; // We might have logged-in with a different stylization
         globals.totalGames = data.totalGames;
 
@@ -246,9 +249,12 @@ const initCommands = () => {
     globals.conn.on('warning', (data: WarningData) => {
         console.warn(data.warning);
         modals.warningShow(data.warning);
-        if ($('#nav-buttons-games-create-game').hasClass('disabled')) {
-            $('#nav-buttons-games-create-game').removeClass('disabled');
-        }
+
+        // Re-activate some lobby elements
+        $('#nav-buttons-games-create-game').removeClass('disabled');
+        pregame.enableStartGameButton();
+
+        // Re-activate in-game elements
         if (
             globals.currentScreen === 'game'
             && globals.ui !== null

@@ -30,7 +30,8 @@ func (t *Table) NotifyChatTyping(name string, typing bool) {
 // This is only called in situations where the game has not started yet
 func (t *Table) NotifyPlayerChange() {
 	if t.Running {
-		logger.Error("The \"NotifyPlayerChange()\" function was called on a game that has already started.")
+		logger.Error("The \"NotifyPlayerChange()\" function was called on a game that " +
+			"has already started.")
 		return
 	}
 
@@ -62,6 +63,7 @@ func (t *Table) NotifyPlayerChange() {
 		// Second, send information about the game and the players in one big message
 		type GameMessage struct {
 			Name                 string               `json:"name"`
+			Owner                int                  `json:"owner"`
 			Players              []*GamePlayerMessage `json:"players"`
 			Variant              string               `json:"variant"`
 			Timed                bool                 `json:"timed"`
@@ -76,6 +78,7 @@ func (t *Table) NotifyPlayerChange() {
 		}
 		p.Session.Emit("game", &GameMessage{
 			Name:                 t.Name,
+			Owner:                t.Owner,
 			Players:              gamePlayers,
 			Variant:              t.Options.Variant,
 			Timed:                t.Options.Timed,
@@ -88,33 +91,6 @@ func (t *Table) NotifyPlayerChange() {
 			CharacterAssignments: t.Options.CharacterAssignments,
 			Password:             t.Password != "",
 		})
-	}
-}
-
-// NotifyTableReady disables or enables the "Start Game" button on the client
-// This is only called in situations where the game has not started yet
-func (t *Table) NotifyTableReady() {
-	if t.Running {
-		logger.Error("The \"NotifyTableReady()\" function was called on a game that has already started.")
-		return
-	}
-
-	for _, p := range t.Players {
-		if p.ID != t.Owner {
-			continue
-		}
-
-		if !p.Present {
-			continue
-		}
-
-		type TableReadyMessage struct {
-			Ready bool `json:"ready"`
-		}
-		p.Session.Emit("tableReady", &TableReadyMessage{
-			Ready: len(t.Players) >= 2,
-		})
-		break
 	}
 }
 
