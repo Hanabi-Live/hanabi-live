@@ -1493,8 +1493,8 @@ const drawClueArea = () => {
     let totalRankWidth = buttonW * numRanks;
     totalRankWidth += buttonSpacing * (numRanks - 1);
     const rankX = (clueAreaValues.w! * 0.5) - (totalRankWidth * 0.5);
-    for (const rank of globals.variant.clueRanks) {
-        const i = rank - 1;
+    for (let i = 0; i < globals.variant.clueRanks.length; i++) {
+        const rank = globals.variant.clueRanks[i];
         const button = new RankButton({
             x: (rankX + (i * (buttonW + buttonSpacing))) * winW,
             y: 0.1 * winH,
