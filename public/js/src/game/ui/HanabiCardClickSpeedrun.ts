@@ -53,7 +53,7 @@ export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
     }
 }
 
-const clickLeft = (card: any, event: PointerEvent) => { // TODO change to HanabiCard
+const clickLeft = (card: HanabiCard, event: PointerEvent) => {
     // Left-clicking on cards in our own hand is a play action
     if (
         card.holder === globals.playerUs
@@ -73,6 +73,8 @@ const clickLeft = (card: any, event: PointerEvent) => { // TODO change to Hanabi
     // (but if we are holding Ctrl, then we are using Empathy)
     if (
         card.holder !== globals.playerUs
+        && card.holder !== null
+        && card.suit !== null
         && globals.clues !== 0
         && !event.ctrlKey
         && !event.shiftKey
@@ -123,7 +125,7 @@ const clickLeft = (card: any, event: PointerEvent) => { // TODO change to Hanabi
     }
 };
 
-const clickRight = (card: any, event: PointerEvent) => { // TODO change to HanabiCard
+const clickRight = (card: HanabiCard, event: PointerEvent) => {
     // Right-clicking on cards in our own hand is a discard action
     if (
         card.holder === globals.playerUs
@@ -146,6 +148,10 @@ const clickRight = (card: any, event: PointerEvent) => { // TODO change to Hanab
     // Right-clicking on cards in other people's hands is a rank clue action
     if (
         card.holder !== globals.playerUs
+        && card.holder !== null
+        && card.rank !== null
+        // It is not possible to clue a Start Card with a rank clue
+        && card.rank !== START_CARD_RANK
         && globals.clues !== 0
         && !event.ctrlKey
         && !event.shiftKey
@@ -153,11 +159,6 @@ const clickRight = (card: any, event: PointerEvent) => { // TODO change to Hanab
         && !event.metaKey
     ) {
         globals.preCluedCard = card.order;
-
-        if (card.rank === START_CARD_RANK) {
-            // It is not possible to clue a Start Card with a rank clue, so just ignore the click
-            return;
-        }
 
         turn.end({
             type: ACTION.CLUE,

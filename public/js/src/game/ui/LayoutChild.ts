@@ -6,15 +6,18 @@
 // Imports
 import Konva from 'konva';
 import { ACTION, MAX_CLUE_NUM } from '../../constants';
+import CardLayout from './CardLayout';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
+import PlayStack from './PlayStack';
 import * as sounds from '../sounds';
 import * as turn from './turn';
 
 export default class LayoutChild extends Konva.Group {
     tween: Konva.Tween | null = null;
 
-    addCard(child: any) { // TODO change to HanabiCard
-        this.add(child);
+    addCard(child: HanabiCard) {
+        this.add(child as any);
         this.width(child.width());
         this.height(child.height());
 
@@ -24,7 +27,7 @@ export default class LayoutChild extends Konva.Group {
             }
             this.width(event.newVal);
             if (this.parent) {
-                (this.parent as any).doLayout(); // TODO change to "CardLayout | PlayStack"
+                (this.parent as unknown as CardLayout | PlayStack).doLayout();
             }
         };
 
@@ -35,7 +38,7 @@ export default class LayoutChild extends Konva.Group {
     // The card sliding animation is finished, so make the card draggable
     checkSetDraggable() {
         // Cards should only be draggable in specific circumstances
-        const card: any = this.children[0]; // TODO change to HanabiCard
+        const card: HanabiCard = this.children[0] as any;
         if (!card) {
             // Rarely, if the game is restarted when a tween is happening,
             // we can get here without the card being defined
@@ -79,7 +82,7 @@ export default class LayoutChild extends Konva.Group {
     }
 
     dragEnd() {
-        const card: any = this.children[0]; // TODO change to HanabiCard
+        const card: HanabiCard = this.children[0] as any;
 
         const pos = this.getAbsolutePosition();
         pos.x += this.width() * this.scaleX() / 2;
@@ -121,8 +124,7 @@ export default class LayoutChild extends Konva.Group {
 
         if (draggedTo === null) {
             // The card was dragged to an invalid location; tween it back to the hand
-            (this.parent as any).doLayout(); // The parent is a CardLayout
-            // TODO change to "CardLayout | PlayStack"
+            (this.parent as unknown as CardLayout | PlayStack).doLayout();
             return;
         }
 

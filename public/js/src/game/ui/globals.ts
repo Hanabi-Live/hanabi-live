@@ -104,7 +104,7 @@ export class Globals {
     // Used to keep track of which card the user is editing;
     // users can only update one note at a time to prevent bugs
     // Equal to the card order number or null
-    editingNote = null;
+    editingNote: number | null = null;
     // Equal to true if something happened when the note box happens to be open
     actionOccured: boolean = false;
     lastNote: string = ''; // Equal to the last note entered
@@ -237,6 +237,7 @@ const globals = new Globals();
 export default globals;
 
 // TODO move this somewhere, probably to a separate file
+// Eventually this should be part of the state object
 interface StateStrike {
     order: number;
     turn: number;

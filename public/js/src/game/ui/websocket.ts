@@ -579,7 +579,7 @@ interface ReplayTurnData {
 }
 commands.set('replayTurn', (data: ReplayTurnData) => {
     if (globals.loading) {
-        // We have not loaded everything yet, so don't bother with shared replay features
+        // We have not loaded everything yet, so do not bother with shared replay features
         return;
     }
 
@@ -621,6 +621,15 @@ commands.set('replayTurn', (data: ReplayTurnData) => {
         // Even though we are not using the shared turns,
         // we need to update the slider to show where the replay leader changed the turn to
         globals.layers.get('UI')!.batchDraw();
+    }
+
+    if (globals.hypothetical) {
+        // It is normally impossible to receive a "relpayTurn" message while in a hypothetical
+        // Thus, this must be the initial "replayTurn" message that occurs when the client is first
+        // loading
+        // We need to "catch up" to everyone else and play all of the existing hypothetical actions
+        // that have taken place
+        hypothetical.playThroughPastActions();
     }
 });
 

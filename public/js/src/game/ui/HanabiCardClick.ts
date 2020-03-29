@@ -38,7 +38,7 @@ export default function HanabiCardClick(this: HanabiCard, event: any) {
     }
 }
 
-const clickLeft = (card: any, event: PointerEvent) => { // TODO change to HanabiCard
+const clickLeft = (card: HanabiCard, event: PointerEvent) => {
     // The "Empathy" feature is handled in the "HanabiCardInit.ts" file,
     // so we don't have to worry about it here
 
@@ -69,7 +69,7 @@ const clickLeft = (card: any, event: PointerEvent) => { // TODO change to Hanabi
     }
 };
 
-const clickMiddle = (card: any, event: PointerEvent) => { // TODO change to HanabiCard
+const clickMiddle = (card: HanabiCard, event: PointerEvent) => {
     // Disable this for the stack base
     if (card.rank === STACK_BASE_RANK) {
         return;
@@ -87,7 +87,7 @@ const clickMiddle = (card: any, event: PointerEvent) => { // TODO change to Hana
     goToTurn(card.turnsClued[0], true);
 };
 
-const clickRight = (card: any, event: PointerEvent) => { // TODO change to HanabiCard
+const clickRight = (card: HanabiCard, event: PointerEvent) => {
     // Alt + right-click is a card morph (in a hypothetical)
     if (
         globals.replay

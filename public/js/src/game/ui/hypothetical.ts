@@ -6,6 +6,7 @@
 // Imports
 import { Action } from './actions';
 import { ACTION, CLUE_TYPE, REPLAY_ACTION_TYPE } from '../../constants';
+import fadeCheck from './fadeCheck';
 import { getTouchedCardsFromClue } from './clues';
 import globals from './globals';
 import * as action from './action';
@@ -27,16 +28,17 @@ export const start = () => {
         });
     }
 
-    show();
-};
-
-// Transition the screen to show all of the hypothetical buttons and elements
-export const show = () => {
-    // Bring us to the shared replay turn, if not already there
+    // Bring us to the current shared replay turn, if we are not already there
     if (!globals.useSharedTurns) {
         replay.toggleSharedTurns();
     }
 
+    show();
+    beginTurn();
+};
+
+// Transition the screen to show all of the hypothetical buttons and elements
+export const show = () => {
     globals.elements.replayArea!.visible(false);
     if (globals.playerNames.length !== 2) {
         globals.elements.clueTargetButtonGroup!.hide();
@@ -50,15 +52,29 @@ export const show = () => {
         globals.elements.hypoCircle!.visible(true);
     }
 
+    globals.layers.get('UI')!.batchDraw();
+};
+
+export const playThroughPastActions = () => {
     // If we are joining a hypothetical that is already in progress,
-    // play all of the existing hypothetical actions that have taken place so far
-    for (const actionMessage of globals.hypoActions) {
-        notify(actionMessage);
+    // play all of the existing hypothetical actions that have taken place so far, if any
+    if (globals.hypoActions.length > 0) {
+        // This is a mini-version of what happens in the "replay.goto()" function
+        globals.animateFast = true;
+        for (const actionMessage of globals.hypoActions) {
+            notify(actionMessage);
+        }
+        fadeCheck();
+        globals.animateFast = false;
+        globals.elements.actionLog!.refreshText();
+        globals.elements.fullActionLog!.refreshText();
+        globals.layers.get('card')!.batchDraw();
+        globals.layers.get('UI')!.batchDraw();
+        globals.layers.get('arrow')!.batchDraw();
+        globals.layers.get('UI2')!.batchDraw();
     }
 
     beginTurn();
-
-    globals.layers.get('UI')!.batchDraw();
 };
 
 export const end = () => {

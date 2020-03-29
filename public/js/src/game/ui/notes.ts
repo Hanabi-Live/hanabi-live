@@ -64,7 +64,7 @@ export const set = (order: number, note: string) => {
     checkSpecialNote(card);
 };
 
-export const checkSpecialNote = (card: any) => { // TODO set to HanabiCard
+export const checkSpecialNote = (card: HanabiCard) => {
     let note = globals.ourNotes[card.order];
     note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
     note = note.trim(); // Remove all leading and trailing whitespace
@@ -86,17 +86,17 @@ export const checkSpecialNote = (card: any) => { // TODO set to HanabiCard
     card.setBareImage();
 
     // Feature 2 - Give the card a special border if it is chop moved
-    card.noteBorder.visible((
+    card.noteBorder!.visible((
         card.noteChopMoved
-        && !card.cluedBorder.visible()
+        && !card.cluedBorder!.visible()
         && !globals.replay
         && !globals.spectating
     ));
 
     // Feature 3 - Give the card a special border if it is finessed
-    card.finesseBorder.visible((
+    card.finesseBorder!.visible((
         card.noteFinessed
-        && !card.cluedBorder.visible()
+        && !card.cluedBorder!.visible()
         && !globals.replay
         && !globals.spectating
     ));
@@ -104,7 +104,7 @@ export const checkSpecialNote = (card: any) => { // TODO set to HanabiCard
     globals.layers.get('card')!.batchDraw();
 };
 
-const checkNoteIdentity = (card: any, note: string, fullNote: string) => { // TODO set to HanabiCard
+const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => {
     // First, check to see if this card should be marked with certain properties
     card.noteKnownTrash = (
         note === 'kt'
@@ -205,7 +205,7 @@ const checkNoteIdentity = (card: any, note: string, fullNote: string) => { // TO
     }
 };
 
-const checkNoteImpossibility = (card: any) => { // TODO set to HanabiCard
+const checkNoteImpossibility = (card: HanabiCard) => {
     // Validate that the note does not contain an impossibility
     if (card.noteSuit !== null && card.noteRank === null) {
         // Only the suit was specified
@@ -213,6 +213,9 @@ const checkNoteImpossibility = (card: any) => { // TODO set to HanabiCard
         let suitPossible = false;
         for (const rank of card.possibleRanks) {
             const count = card.possibleCards.get(`${card.noteSuit.name}${rank}`);
+            if (typeof count === 'undefined') {
+                throw new Error(`The card of "${card.noteSuit.name}${rank}" does not exist in the possibleCards map.`);
+            }
             if (count > 0) {
                 suitPossible = true;
                 break;
@@ -230,6 +233,9 @@ const checkNoteImpossibility = (card: any) => { // TODO set to HanabiCard
         let rankPossible = false;
         for (const suit of card.possibleSuits) {
             const count = card.possibleCards.get(`${suit.name}${card.noteRank}`);
+            if (typeof count === 'undefined') {
+                throw new Error(`The card of "${suit.name}${card.noteRank}" does not exist in the possibleCards map.`);
+            }
             if (count > 0) {
                 rankPossible = true;
                 break;
@@ -272,7 +278,7 @@ export const update = (card: HanabiCard) => {
 };
 
 // Open the tooltip for this card
-export const show = (card: any) => { // TODO set to HanabiCard
+export const show = (card: HanabiCard) => {
     const tooltip = $(`#tooltip-${card.tooltipName}`);
     const tooltipInstance = tooltip.tooltipster('instance');
 
@@ -282,15 +288,15 @@ export const show = (card: any) => { // TODO set to HanabiCard
     }
 
     // We want the tooltip to appear above the card by default
-    const pos = card.absolutePosition();
+    const pos = card.getAbsolutePosition();
     let posX = pos.x;
-    let posY = pos.y - (card.height() * card.parent.scale().y / 2);
+    let posY = pos.y - (card.height() * card.parent!.scale().y / 2);
     tooltipInstance.option('side', 'top');
 
     // Flip the tooltip if it is too close to the top of the screen
     if (posY < 200) {
         // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout
-        posY = pos.y + (card.height() * card.parent.scale().y / 2);
+        posY = pos.y + (card.height() * card.parent!.scale().y / 2);
         tooltipInstance.option('side', 'bottom');
     }
 
@@ -298,7 +304,7 @@ export const show = (card: any) => { // TODO set to HanabiCard
     // so move it over to the right a little bit
     for (const arrow of globals.elements.arrows) {
         if (arrow.pointingTo === card.order) {
-            posX = pos.x + ((card.width() * card.parent.scale().x / 2) / 2.5);
+            posX = pos.x + ((card.width() * card.parent!.scale().x / 2) / 2.5);
             break;
         }
     }
@@ -311,7 +317,7 @@ export const show = (card: any) => { // TODO set to HanabiCard
     tooltip.tooltipster('open');
 };
 
-export const openEditTooltip = (card: any) => { // TODO set to HanabiCard
+export const openEditTooltip = (card: HanabiCard) => {
     // Don't edit any notes in replays
     if (globals.replay) {
         return;

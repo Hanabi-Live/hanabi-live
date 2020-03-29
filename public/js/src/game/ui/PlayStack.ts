@@ -84,7 +84,7 @@ export default class PlayStack extends Konva.Group {
         }
 
         for (let i = 0; i < n; i++) {
-            const node: any = this.children[i]; // This is a LayoutChild // TODO set to LayoutChild
+            const node: LayoutChild = this.children[i] as any;
             if (!node.tween) {
                 continue;
             }
