@@ -8,6 +8,18 @@ import globals from './globals';
 import Variant from '../../Variant';
 
 export const updatePace = () => {
+    const label = globals.elements.paceNumberLabel;
+    if (!label) {
+        throw new Error('paceNumberLabel is not initialized.');
+    }
+
+    if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
+        // In "Throw It in a Hole" variants,
+        // pace will leak information that the player is not supposed to know
+        label.text('?');
+        return;
+    }
+
     const adjustedScorePlusDeck = globals.score + globals.deckSize - globals.maxScore;
 
     // Formula derived by Libster;
@@ -27,10 +39,6 @@ export const updatePace = () => {
     // Update the pace
     // (part of the efficiency statistics on the right-hand side of the screen)
     // If there are no cards left in the deck, pace is meaningless
-    const label = globals.elements.paceNumberLabel;
-    if (!label) {
-        throw new Error('paceNumberLabel is not initialized.');
-    }
     if (globals.deckSize === 0) {
         label.text('-');
         label.fill(LABEL_COLOR);
@@ -60,15 +68,23 @@ export const updatePace = () => {
 };
 
 export const updateEfficiency = (cardsGottenDelta: number) => {
+    const effLabel = globals.elements.efficiencyNumberLabel;
+    if (!effLabel) {
+        throw new Error('efficiencyNumberLabel is not initialized.');
+    }
+
+    if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
+        // In "Throw It in a Hole" variants,
+        // efficiency will leak information that the player is not supposed to know
+        effLabel.text('? / ');
+        return;
+    }
+
     globals.cardsGotten += cardsGottenDelta;
     const efficiency = (globals.cardsGotten / globals.cluesSpentPlusStrikes).toFixed(2);
     // Round it to 2 decimal places
 
     // Update the labels on the right-hand side of the screen
-    const effLabel = globals.elements.efficiencyNumberLabel;
-    if (!effLabel) {
-        throw new Error('efficiencyNumberLabel is not initialized.');
-    }
     if (globals.cluesSpentPlusStrikes === 0) {
         // First, handle the case in which 0 clues have been given
         effLabel.text('- / ');
