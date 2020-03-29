@@ -48,16 +48,12 @@ commands.set('init', (data: any) => {
         cards: [],
     };
 
-    // Find out whether the "colorblind mode" setting is enabled
-    const colorblindMode = globals.settings.get('colorblindMode');
-    if (typeof colorblindMode !== 'boolean') {
-        throw new Error('The "colorblindMode" setting was not a boolean.');
-    }
-
-    // Find out whether the "style numbers" setting is enabled
-    const styleNumbers = globals.settings.get('styleNumbers');
-    if (typeof styleNumbers !== 'boolean') {
-        throw new Error('The "styleNumbers" setting was not a boolean.');
+    // Find out whether some settings are enabled
+    let colorblindMode = false;
+    let styleNumbers = false;
+    if (globals.settings !== null) {
+        colorblindMode = globals.settings.colorblindMode;
+        styleNumbers = globals.settings.styleNumbers;
     }
 
     // Build images for every card

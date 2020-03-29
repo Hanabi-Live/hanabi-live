@@ -308,10 +308,12 @@ const getElement = (setting: string) => {
 };
 
 const checkChanged = (setting: string, value: boolean | string) => {
-    // If we are creating a new kind of table than the last one one,
-    // update our local variables and then send the new setting to the server
-    if (value !== globals.settings.get(setting)) {
-        globals.settings.set(setting, value);
+    if (globals.settings === null) {
+        throw new Error('globals.settings is null.');
+    }
+
+    if (value !== globals.settings[setting]) {
+        globals.settings[setting] = value;
         globals.conn.send('setting', {
             name: setting,
             value: value.toString(), // The server expects all settings as strings
@@ -337,6 +339,10 @@ export const before = () => {
 // This function is executed every time the "Create Game" button is clicked
 // (after the tooltip is added to the DOM)
 export const ready = () => {
+    if (globals.settings === null) {
+        throw new Error('globals.settings is null.');
+    }
+
     // Fill in the "Name" box
     if (globals.username.startsWith('test')) {
         $('#createTableName').val('test game');
@@ -355,7 +361,7 @@ export const ready = () => {
 
     // Fill in the rest of form with the settings that we used last time
     // (which is stored on the server)
-    for (const [key, value] of globals.settings) {
+    for (const [key, value] of Object.entries(globals.settings)) {
         const element = $(`#${key}`);
         if (key === 'createTableVariant') {
             // Setting the variant dropdown is a special case;
@@ -380,15 +386,19 @@ export const ready = () => {
 };
 
 const readyVariant = (value: any) => {
+    if (globals.settings === null) {
+        throw new Error('globals.settings is null.');
+    }
+
     // Validate the variant name that we got from the server
     let variant = value;
     if (typeof variant !== 'string') {
         variant = 'No Variant';
-        globals.settings.set('createTableVariant', 'No Variant');
+        globals.settings.createTableVariant = 'No Variant';
     }
     if (!variantNames.includes(variant)) {
         variant = 'No Variant';
-        globals.settings.set('createTableVariant', 'No Variant');
+        globals.settings.createTableVariant = 'No Variant';
     }
 
     // Update the hidden field

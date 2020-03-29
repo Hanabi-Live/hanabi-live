@@ -11,7 +11,7 @@ import * as gameChat from './game/chat';
 import gameWebsocketInit from './game/websocketInit';
 import globals from './globals';
 import * as lobbyLoginMisc from './lobby/loginMisc';
-import * as lobbySettings from './lobby/settings';
+import * as lobbySettingsTooltip from './lobby/settingsTooltip';
 import lobbyWebsocketInit from './lobby/websocketInit';
 import * as modals from './modals';
 import * as pregame from './lobby/pregame';
@@ -111,35 +111,25 @@ const initCommands = () => {
         globals.id = data.id;
         globals.username = data.username; // We might have logged-in with a different stylization
         globals.totalGames = data.totalGames;
+        globals.settings = data.settings;
         globals.shuttingDown = data.shuttingDown;
 
-        // Convert the settings object to a Map
-        for (const [setting, value] of Object.entries(data.settings)) {
-            // Some settings are stored on the server as numbers,
-            // but we need them as strings because they will exist in an input field
-            const settingsToConvertToStrings = [
-                'createTableBaseTimeMinutes',
-                'createTableTimePerTurnSeconds',
-            ];
-            let newValue = value;
-            if (typeof newValue === 'number' && setting in settingsToConvertToStrings) {
-                newValue = newValue.toString();
-            }
-
-            if (
-                typeof newValue !== 'string'
-                && typeof newValue !== 'number'
-                && typeof newValue !== 'boolean'
-            ) {
-                throw new Error(`The settings of "${newValue}" was an unknown type.`);
-            }
-
-            globals.settings.set(setting, newValue);
+        // Some settings are stored on the server as numbers,
+        // but we need them as strings because they will exist in an input field
+        if (globals.settings === null) {
+            throw new Error('globals.settings is null.');
+        }
+        const settingsToConvertToStrings = [
+            'createTableBaseTimeMinutes',
+            'createTableTimePerTurnSeconds',
+        ];
+        for (const setting of settingsToConvertToStrings) {
+            globals.settings[setting] = globals.settings[setting].toString();
         }
 
         // Update various elements of the UI to reflect our settings
         $('#nav-buttons-history-total-games').html(globals.totalGames.toString());
-        lobbySettings.setSettingsTooltip();
+        lobbySettingsTooltip.setSettingsTooltip();
         lobbyLoginMisc.hide(data.firstTimeUser);
 
         if (!data.firstTimeUser) {

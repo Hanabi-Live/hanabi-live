@@ -7,10 +7,10 @@ import globals from '../globals';
 
 export const init = () => {
     // Preload some sounds
-    if (!globals.settings.get('soundMove') || globals.settings.get('volume') === 0) {
-        return;
-    }
-
+    // Ideally, we would check to see if the user has the "soundMove" setting enabled
+    // (or "volume" set above 0) before attempting to preload sounds
+    // However, at this point in the code, the server has not sent us the settings corresponding to
+    // this user account, so just assume that they have sounds enabled
     const soundFiles = [
         'blind1',
         'blind2',
@@ -33,11 +33,15 @@ export const init = () => {
 };
 
 export const play = (file: string) => {
+    if (globals.settings === null) {
+        throw new Error('globals.settings is null.');
+    }
+
     const path = `/public/sounds/${file}.mp3`;
     const audio = new Audio(path);
     // HTML5 audio volume is a range between 0.0 to 1.0,
     // but volume is stored in the settings as an integer from 0 to 100
-    let volume = globals.settings.get('volume');
+    let volume = globals.settings.volume;
     if (typeof volume !== 'number') {
         volume = 50;
     }

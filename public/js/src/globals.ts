@@ -5,6 +5,7 @@
 // Imports
 import Game from './lobby/Game';
 import GameHistory from './lobby/GameHistory';
+import Settings from './lobby/Settings';
 import version from './data/version.json';
 // (the "version.json" file is filled in dynamically by the "build_client.sh" script)
 
@@ -23,7 +24,7 @@ class Globals {
     // (this must be an "any" type because we attach arbitrary methods to the object)
 
     // Contains the settings for the "Settings" tooltip and the "Create Game" tooltip
-    settings: Map<string, boolean | number | string> = new Map(); // Set upon login
+    settings: Settings | null = null; // Set upon login
 
     userMap: Map<number, User> = new Map(); // Keys are IDs
     tableMap: Map<number, Table> = new Map(); // Keys are IDs

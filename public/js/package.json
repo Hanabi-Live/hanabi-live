@@ -8,6 +8,7 @@
   },
   "license": "GPL-3.0",
   "scripts": {
+    "compile": "tsc",
     "lint": "eslint \"src/**/*.ts\""
   },
   "devDependencies": {

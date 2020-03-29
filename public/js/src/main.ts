@@ -13,7 +13,7 @@ import * as lobbyHistory from './lobby/history';
 import * as lobbyLogin from './lobby/login';
 import lobbyKeyboardInit from './lobby/keyboardInit';
 import lobbyNavInit from './lobby/navInit';
-import * as lobbySettings from './lobby/settings';
+import * as lobbySettingsTooltip from './lobby/settingsTooltip';
 import lobbyTutorialInit from './lobby/tutorialInit';
 import * as lobbyWatchReplay from './lobby/watchReplay';
 import * as modals from './modals';
@@ -61,7 +61,7 @@ $(document).ready(() => {
     lobbyLogin.init();
     lobbyKeyboardInit();
     lobbyNavInit();
-    lobbySettings.init();
+    lobbySettingsTooltip.init();
     lobbyTutorialInit();
     lobbyWatchReplay.init();
     modals.init();
