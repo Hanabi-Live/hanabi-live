@@ -158,5 +158,10 @@
         "description": "Cannot see the cards of the player to their right",
         "emoji": "🚂",
         "not2P": true
+    },
+    "Forgetful": {
+        "id": 32,
+        "description": "Hand is shuffled after discarding (but before drawing)",
+        "emoji": "🔀"
     }
 }

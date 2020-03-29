@@ -21,7 +21,7 @@ var (
 	characterNames  []string
 	charactersID    map[int]string
 	debugCharacters = []string{
-		"Synesthetic",
+		"Forgetful",
 		"n/a",
 		"n/a",
 		"n/a",
@@ -648,7 +648,7 @@ func characterShuffle(g *Game, p *GamePlayer) {
 		return
 	}
 
-	if p.Character == "Forgetful" { // 31
+	if p.Character == "Forgetful" { // 32
 		p.ShuffleHand(g)
 	}
 }
