@@ -57,16 +57,19 @@ const submit = (event: any) => {
         username = username.toString();
     }
 
-    const passwordPlaintext = $('#login-password').val();
+    let passwordPlaintext = $('#login-password').val();
     if (!passwordPlaintext) {
         loginMisc.formError('You must provide a password.');
         return;
     }
+    if (typeof passwordPlaintext === 'number') {
+        passwordPlaintext = passwordPlaintext.toString();
+    }
+    if (typeof passwordPlaintext !== 'string') {
+        throw new Error('The password is not a string.');
+    }
 
-    // We salt the password with a prefix of "Hanabi password "
-    // and then hash it with SHA256 before sending it to the server
-    const stringToHash = `Hanabi password ${passwordPlaintext}`;
-    const password = shajs('sha256').update(stringToHash).digest('hex');
+    const password = hashPassword(passwordPlaintext);
 
     localStorage.setItem('hanabiuser', username);
     localStorage.setItem('hanabipass', password);
@@ -75,6 +78,13 @@ const submit = (event: any) => {
     globals.password = password;
 
     send();
+};
+
+const hashPassword = (passwordPlaintext: string) => {
+    // We salt the password with a prefix of "Hanabi password "
+    // and then hash it with SHA256 before sending it to the server
+    const stringToHash = `Hanabi password ${passwordPlaintext}`;
+    return shajs('sha256').update(stringToHash).digest('hex');
 };
 
 const send = () => {
@@ -122,6 +132,31 @@ export const automaticLogin = () => {
     // Don't automatically login if they are on Firefox and have not confirmed the warning dialog
     // (cookies are strings, so we cannot check for equality)
     if (globals.browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
+        return;
+    }
+
+    // Automatically sign in to the WebSocket server if we are using a "/test" URL
+    if (window.location.pathname.includes('/test')) {
+        // Parse the test number from the URL, if any
+        let testNumberString = '';
+        const match = window.location.pathname.match(/\/test\/(\d+)/);
+        if (match) {
+            testNumberString = match[1];
+        }
+        let testNumber = 1;
+        if (testNumberString !== '') {
+            testNumber = parseInt(testNumberString, 10);
+        }
+        if (Number.isNaN(testNumber)) {
+            testNumber = 1;
+        }
+
+        const username = `test${testNumber}`;
+        globals.username = username;
+        globals.password = hashPassword(username);
+
+        console.log(`Automatically logging in as "${username}".`);
+        send();
         return;
     }
 

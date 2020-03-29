@@ -106,18 +106,25 @@ func httpInit() {
 	httpRouter.POST("/login", httpLogin)
 	httpRouter.GET("/ws", httpWS)
 
-	// Path handlers (for the website)
+	// Path handlers (for the main website)
 	httpRouter.GET("/", httpMain)
 	httpRouter.GET("/replay", httpMain)
 	httpRouter.GET("/replay/:gameID", httpMain)
 	httpRouter.GET("/replay/:gameID/:turn", httpMain)
-	httpRouter.GET("/dev", httpDev) // The same as "/" but uses unbundled JavaScript/CSS
+	httpRouter.GET("/test", httpMain)
+	httpRouter.GET("/test/:testNum", httpMain)
+	httpRouter.GET("/dev2", httpMain) // Used for testing Phaser
+
+	// Path handlers (for development)
+	// ("/dev" is the same as "/" but uses unbundled JavaScript/CSS)
+	httpRouter.GET("/dev", httpDev)
 	httpRouter.GET("/dev/replay", httpDev)
 	httpRouter.GET("/dev/replay/:gameID", httpDev)
 	httpRouter.GET("/dev/replay/:gameID/:turn", httpDev)
-	httpRouter.GET("/dev2", httpDev) // Used for testing Phaser
-	// (JavaScript will detect the difference between "/dev" and "/dev2"
-	// by using "window.location.path")
+	httpRouter.GET("/dev/test", httpDev)
+	httpRouter.GET("/dev/test/:testNum", httpDev)
+
+	// Path handlers for other URLs
 	httpRouter.GET("/scores", httpScores)
 	httpRouter.GET("/scores/:player", httpScores)
 	httpRouter.GET("/profile", httpScores) // "/profile" is an alias for "/scores"
@@ -131,6 +138,8 @@ func httpInit() {
 	httpRouter.GET("/videos", httpVideos)
 	httpRouter.GET("/export", httpExport)
 	httpRouter.GET("/export/:game", httpExport)
+
+	// Other
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
 	httpRouter.StaticFile("/favicon.ico", "./public/img/favicon.png")
 

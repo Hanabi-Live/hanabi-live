@@ -61,7 +61,7 @@ The following instructions will set up the server as well as the linters. We ass
   * `exit`
 * Set the domain URL (optional):
   * `notepad .env` <br />
-  (if you plan to surf to "http://localhost", then do not change anything)
+  (if you plan to use a URL of "http://localhost", then do not change anything)
 * Import a solid set of starting VSCode user settings:
   * `copy "install\settings.json" "%APPDATA%\Code\User\settings.json"` <br />
   (feel free to tweak this file to your liking; if you do not want to copy over the entire settings file, make sure you at least copy over the relevant lines for linting and whatnot)
@@ -124,7 +124,7 @@ The following instructions will set up the server as well as the linters. We ass
   * `./install/install_database_schema.sh`
 * Set the domain URL (optional):
   * `open -t .env` <br />
-  (if you plan to surf to "http://localhost", then do not change anything)
+  (if you plan to use a URL of "http://localhost", then do not change anything)
 * Import a solid set of starting VSCode user settings:
   * `cp install/settings.json "/Users/[Your_Username]/Library/Application Support/Code/User/settings.json"` <br />
   (feel free to tweak this file to your liking; if you do not want to copy over the entire settings file, make sure you at least copy over the relevant lines for linting and whatnot)
@@ -235,6 +235,6 @@ To manage the service:
   * If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443.
 * If you change any of the Golang code, then you must restart the server for the changes to take effect.
 * If you change any of the TypeScript or CSS, then you will need to re-run the `build_client.sh` script in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to perform a hard cache refresh in the browser.)
-  * Alternatively, if you are actively changing or developing the TypeScript, leave the `webpack.sh` script running and surf to "https://localhost/dev". This way, the code will get automatically transpiled whenever you change a file.
+  * Alternatively, if you are actively changing or developing the TypeScript, leave the `webpack.sh` script running and go to "https://localhost/dev". This way, the code will get automatically transpiled whenever you change a file.
 
 <br />

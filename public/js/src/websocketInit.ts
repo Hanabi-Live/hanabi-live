@@ -148,7 +148,7 @@ const initCommands = () => {
                 data.version !== globals.version
                 // If the server is gracefully shutting down, then ignore the version check because
                 // the new client code is probably not compiled yet
-                && !data.shuttingDown
+                && !globals.shuttingDown
                 && !window.location.pathname.includes('/dev')
             ) {
                 let msg = 'You are running an outdated version of the Hanabi client code. ';
@@ -161,7 +161,7 @@ const initCommands = () => {
                 return;
             }
 
-            // Automatically go into a replay if surfing to "/replay/123"
+            // Automatically go into a replay if we are using a "/replay/123" URL
             let gameIDString = '';
             const match = window.location.pathname.match(/\/replay\/(\d+)/);
             if (match) {
