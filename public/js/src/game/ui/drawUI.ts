@@ -1407,9 +1407,14 @@ const drawClueArea = () => {
     });
 
     // Player buttons
-    const playerButtonW = 0.08;
-    const playerButtonSpacing = 0.0075;
     const numPlayers = globals.playerNames.length;
+    const playerButtonW = 0.08;
+    const playerButtonH = 0.025;
+    const playerButtonSpacing = 0.0075;
+
+    // If this is a two player game, we can slide the clue UI down by a bit
+    // (since the clue target buttons won't be shown)
+    const playerButtonAdjustment = numPlayers === 2 ? playerButtonH / 2 : 0;
 
     // This is the normal button group, which does not include us
     globals.elements.clueTargetButtonGroup = new ButtonGroup({});
@@ -1424,7 +1429,7 @@ const drawClueArea = () => {
                 x: playerX * winW,
                 y: 0,
                 width: playerButtonW * winW,
-                height: 0.025 * winH,
+                height: playerButtonH * winH,
                 text: globals.playerNames[j],
             }, j);
             globals.elements.clueTargetButtonGroup!.add(button as any);
@@ -1433,6 +1438,11 @@ const drawClueArea = () => {
         }
     }
     globals.elements.clueArea.add(globals.elements.clueTargetButtonGroup as any);
+    if (numPlayers === 2) {
+        // The clue target buttons are pointless if we are playing a 2-player game
+        // (because we only have the ability to clue one player)
+        globals.elements.clueTargetButtonGroup.hide();
+    }
 
     // This button group includes us, which is used for hypotheticals
     globals.elements.clueTargetButtonGroup2 = new ButtonGroup({});
@@ -1447,7 +1457,7 @@ const drawClueArea = () => {
                 x: playerX * winW,
                 y: 0,
                 width: playerButtonW * winW,
-                height: 0.025 * winH,
+                height: playerButtonH * winH,
                 text: globals.playerNames[j],
             }, j);
             globals.elements.clueTargetButtonGroup2!.add(button as any);
@@ -1459,22 +1469,23 @@ const drawClueArea = () => {
     globals.elements.clueTargetButtonGroup2.hide();
 
     // Clue type buttons
-    globals.elements.clueTypeButtonGroup = new ButtonGroup({});
-
     const buttonW = 0.04;
     const buttonH = 0.071;
-    const buttonSpacing = 0.009;
+    const buttonXSpacing = 0.009;
+    const buttonYSpacing = 0.002;
+    globals.elements.clueTypeButtonGroup = new ButtonGroup({});
 
     // Color buttons
     globals.elements.colorClueButtons = [];
     let totalColorWidth = buttonW * globals.variant.clueColors.length;
-    totalColorWidth += buttonSpacing * (globals.variant.clueColors.length - 1);
+    totalColorWidth += buttonXSpacing * (globals.variant.clueColors.length - 1);
     const colorX = (clueAreaValues.w! * 0.5) - (totalColorWidth * 0.5);
+    const colorY = playerButtonH + buttonYSpacing - playerButtonAdjustment;
     for (let i = 0; i < globals.variant.clueColors.length; i++) {
         const color = globals.variant.clueColors[i];
         const button = new ColorButton({
-            x: (colorX + (i * (buttonW + buttonSpacing))) * winW,
-            y: 0.027 * winH,
+            x: (colorX + (i * (buttonW + buttonXSpacing))) * winW,
+            y: colorY * winH,
             width: buttonW * winW,
             height: buttonH * winH,
             color: color.fill,
@@ -1491,13 +1502,14 @@ const drawClueArea = () => {
     globals.elements.rankClueButtons = [];
     const numRanks = globals.variant.clueRanks.length;
     let totalRankWidth = buttonW * numRanks;
-    totalRankWidth += buttonSpacing * (numRanks - 1);
+    totalRankWidth += buttonXSpacing * (numRanks - 1);
     const rankX = (clueAreaValues.w! * 0.5) - (totalRankWidth * 0.5);
+    const rankY = colorY + buttonH + buttonYSpacing;
     for (let i = 0; i < globals.variant.clueRanks.length; i++) {
         const rank = globals.variant.clueRanks[i];
         const button = new RankButton({
-            x: (rankX + (i * (buttonW + buttonSpacing))) * winW,
-            y: 0.1 * winH,
+            x: (rankX + (i * (buttonW + buttonXSpacing))) * winW,
+            y: rankY * winH,
             width: buttonW * winW,
             height: buttonH * winH,
             number: rank,
@@ -1519,9 +1531,10 @@ const drawClueArea = () => {
     // The "Give Clue" button
     const giveClueW = 0.236;
     const giveClueX = (clueAreaValues.w! * 0.5) - (giveClueW * 0.5);
+    const giveClueY = rankY + buttonH + buttonYSpacing;
     globals.elements.giveClueButton = new Button({
         x: giveClueX * winW,
-        y: 0.173 * winH,
+        y: giveClueY * winH,
         width: giveClueW * winW,
         height: 0.051 * winH,
         text: 'Give Clue',

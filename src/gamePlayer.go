@@ -676,6 +676,7 @@ func (p *GamePlayer) CycleHand(g *Game) {
 	if chopIndex == len(p.Hand)-1 {
 		return
 	}
+
 	chopCard := p.Hand[chopIndex]
 
 	// Remove the chop card from their hand
