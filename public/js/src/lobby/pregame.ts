@@ -61,7 +61,7 @@ export const show = () => {
 
     // Adjust the top navigation bar
     nav.show('pregame');
-    $('#nav-buttons-pregame-start').addClass('disabled');
+    enableStartGameButton();
 };
 
 export const hide = () => {
@@ -355,13 +355,14 @@ export const draw = () => {
 };
 
 export const enableStartGameButton = () => {
+    // Enable or disable the "Start Game" button,
+    // depending on if we are the game owner and enough players have joined
+    $('#nav-buttons-pregame-start').addClass('disabled');
+
     if (globals.game === null) {
         return;
     }
 
-    // Enable or disable the "Start Game" button,
-    // depending on if we are the game owner and enough players have joined
-    $('#nav-buttons-pregame-start').addClass('disabled');
     if (
         globals.game.owner === globals.id
         && globals.game.players.length >= 2
