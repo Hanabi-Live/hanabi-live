@@ -103,6 +103,7 @@ func NewGame(t *Table) *Game {
 
 // CheckTimer is meant to be called in a new goroutine
 func (g *Game) CheckTimer(turn int, pauseCount int, p *GamePlayer) {
+	// Local variables
 	t := g.Table
 
 	// Sleep until the active player runs out of time
@@ -143,6 +144,7 @@ func (g *Game) CheckTimer(turn int, pauseCount int, p *GamePlayer) {
 }
 
 func (g *Game) CheckEnd() bool {
+	// Local variables
 	t := g.Table
 
 	// Check to see if one of the players ran out of time
@@ -221,6 +223,7 @@ func (g *Game) CheckEnd() bool {
 */
 
 func (g *Game) GetHandSize() int {
+	// Local variables
 	t := g.Table
 
 	numPlayers := len(g.Players)

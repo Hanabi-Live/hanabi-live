@@ -203,6 +203,12 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	g.Actions = actions
 	g.EndTurn = numTurns
 
+	// Above, when we initialized the players, the game was not created yet
+	// Attach the game pointer to each player
+	for _, p := range g.Players {
+		p.Game = g
+	}
+
 	return true
 }
 
@@ -408,6 +414,12 @@ func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
 	g.Players = gamePlayers
 	g.ActivePlayer = d.GameJSON.FirstPlayer
 
+	// Above, when we initialized the players, the game was not created yet
+	// Attach the game pointer to each player
+	for _, p := range g.Players {
+		p.Game = g
+	}
+
 	// Convert the JSON deck to a normal deck
 	for i, c := range d.GameJSON.Deck {
 		c2 := NewCard(g, c.Suit, c.Rank)
@@ -423,7 +435,7 @@ func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
 	handSize := g.GetHandSize()
 	for _, p := range g.Players {
 		for i := 0; i < handSize; i++ {
-			p.DrawCard(g)
+			p.DrawCard()
 		}
 	}
 

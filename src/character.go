@@ -288,7 +288,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 		s.Warning("You are " + p.Character + ", so you can not give that type of clue.")
 		return true
 	} else if p.Character == "Inept" { // 2
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Suit == p.CharacterMetadata {
@@ -298,7 +298,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 			}
 		}
 	} else if p.Character == "Awkward" { // 3
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Rank == p.CharacterMetadata {
@@ -308,13 +308,13 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 			}
 		}
 	} else if p.Character == "Conservative" && // 4
-		len(p2.FindCardsTouchedByClue(d.Clue, g)) != 1 {
+		len(p2.FindCardsTouchedByClue(d.Clue)) != 1 {
 
 		s.Warning("You are " + p.Character + ", so you can only give clues that touch " +
 			"a single card.")
 		return true
 	} else if p.Character == "Greedy" && // 5
-		len(p2.FindCardsTouchedByClue(d.Clue, g)) < 2 {
+		len(p2.FindCardsTouchedByClue(d.Clue)) < 2 {
 
 		s.Warning("You are " + p.Character + ", so you can only give clues that touch 2+ cards.")
 		return true
@@ -352,8 +352,8 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 			"there are 4 or more clues available.")
 		return true
 	} else if p.Character == "Compulsive" && // 11
-		!p2.IsFirstCardTouchedByClue(d.Clue, g) &&
-		!p2.IsLastCardTouchedByClue(d.Clue, g) {
+		!p2.IsFirstCardTouchedByClue(d.Clue) &&
+		!p2.IsLastCardTouchedByClue(d.Clue) {
 
 		s.Warning("You are " + p.Character + ", so you can only give a clue if it touches either " +
 			"the newest or oldest card in a hand.")
@@ -372,7 +372,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 			return true
 		}
 
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue)
 		touchedInsistentCards := false
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
@@ -411,7 +411,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 				Type:  clueTypeColor,
 				Value: d.Clue.Value - 1,
 			}
-			cardsTouched := p2.FindCardsTouchedByClue(clue, g)
+			cardsTouched := p2.FindCardsTouchedByClue(clue)
 			if len(cardsTouched) == 0 {
 				s.Warning("You are " + p.Character + ", so both versions of the clue must touch " +
 					"at least 1 card in the hand.")
@@ -517,7 +517,7 @@ func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 		p.CharacterMetadata = d.Clue.Type
 	} else if p.Character == "Insistent" { // 13
 		// Mark that the cards that they clued must be continue to be clued
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue, g)
+		cardsTouched := p2.FindCardsTouchedByClue(d.Clue)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			c.InsistentTouched = true
@@ -528,7 +528,7 @@ func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 		// Store that they have had at least one clue given to them on this go-around of the table
 		p2.CharacterMetadata = 0
 	} else if p2.Character == "Impulsive" && // 17
-		p2.IsFirstCardTouchedByClue(d.Clue, g) {
+		p2.IsFirstCardTouchedByClue(d.Clue) {
 
 		// Store that they had their slot 1 card clued
 		p2.CharacterMetadata = 0
@@ -649,7 +649,7 @@ func characterShuffle(g *Game, p *GamePlayer) {
 	}
 
 	if p.Character == "Forgetful" { // 32
-		p.ShuffleHand(g)
+		p.ShuffleHand()
 	}
 }
 
@@ -658,9 +658,9 @@ func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
 		return false
 	}
 
-	if p.Character == "Blind Spot" && a.Who == p.GetLeftPlayer(g) { // 29
+	if p.Character == "Blind Spot" && a.Who == p.GetLeftPlayer() { // 29
 		return true
-	} else if p.Character == "Oblivious" && a.Who == p.GetRightPlayer(g) { // 30
+	} else if p.Character == "Oblivious" && a.Who == p.GetRightPlayer() { // 30
 		return true
 	}
 
@@ -682,6 +682,7 @@ func characterAdjustEndTurn(g *Game) {
 }
 
 func characterCheckSoftlock(g *Game, p *GamePlayer) {
+	// Local variables
 	t := g.Table
 
 	if !g.Options.CharacterAssignments {
@@ -708,9 +709,9 @@ func characterEmptyClueAllowed(d *CommandData, g *Game, p *GamePlayer) bool {
 		return false
 	}
 
-	if p.Character == "Blind Spot" && d.Target == p.GetLeftPlayer(g) { // 29
+	if p.Character == "Blind Spot" && d.Target == p.GetLeftPlayer() { // 29
 		return true
-	} else if p.Character == "Oblivious" && d.Target == p.GetRightPlayer(g) { // 30
+	} else if p.Character == "Oblivious" && d.Target == p.GetRightPlayer() { // 30
 		return true
 	}
 

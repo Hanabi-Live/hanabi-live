@@ -9,6 +9,7 @@ import (
 )
 
 func (g *Game) End() {
+	// Local variables
 	t := g.Table
 
 	t.DatetimeFinished = time.Now()
@@ -364,6 +365,7 @@ func (g *Game) WriteDatabase() error {
 }
 
 func (g *Game) AnnounceGameResult() {
+	// Local variables
 	t := g.Table
 
 	// Don't announce the results of test games

@@ -196,7 +196,7 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
-		p.GiveClue(d, g)
+		p.GiveClue(d)
 
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
@@ -215,9 +215,9 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
-		c := p.RemoveCard(d.Target, g)
-		doubleDiscard = p.PlayCard(g, c)
-		p.DrawCard(g)
+		c := p.RemoveCard(d.Target)
+		doubleDiscard = p.PlayCard(c)
+		p.DrawCard()
 	} else if d.Type == actionTypeDiscard {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
@@ -243,10 +243,10 @@ func commandAction(s *Session, d *CommandData) {
 		}
 
 		g.ClueTokens++
-		c := p.RemoveCard(d.Target, g)
-		doubleDiscard = p.DiscardCard(g, c)
+		c := p.RemoveCard(d.Target)
+		doubleDiscard = p.DiscardCard(c)
 		characterShuffle(g, p)
-		p.DrawCard(g)
+		p.DrawCard()
 
 		// Mark that the blind-play streak has ended
 		g.BlindPlays = 0
@@ -267,7 +267,7 @@ func commandAction(s *Session, d *CommandData) {
 			return
 		}
 
-		p.PlayDeck(g)
+		p.PlayDeck()
 	} else if d.Type == actionTypeTimeLimitReached {
 		// This is a special action type sent by the server to itself when a player runs out of time
 		g.Strikes = 3

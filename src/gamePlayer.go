@@ -17,6 +17,7 @@ type GamePlayer struct {
 	// Some entries are copied from the Player object for convenience
 	Name  string
 	Index int
+	Game  *Game
 
 	// These relate to the game state
 	Hand               []*Card
@@ -38,7 +39,9 @@ var (
 */
 
 // GiveClue returns false if the clue is illegal
-func (p *GamePlayer) GiveClue(d *CommandData, g *Game) {
+func (p *GamePlayer) GiveClue(d *CommandData) {
+	// Local variables
+	g := p.Game
 	t := g.Table
 
 	// Keep track that someone clued (i.e. doing 1 clue costs 1 "Clue Token")
@@ -173,10 +176,13 @@ func (p *GamePlayer) GiveClue(d *CommandData, g *Game) {
 	characterPostClue(d, g, p)
 
 	// Handle the "Card Cycling" feature
-	p.CycleHand(g)
+	p.CycleHand()
 }
 
-func (p *GamePlayer) RemoveCard(target int, g *Game) *Card {
+func (p *GamePlayer) RemoveCard(target int) *Card {
+	// Local variables
+	g := p.Game
+
 	// Get the target card
 	i := p.GetCardIndex(target)
 	c := p.Hand[i]
@@ -195,13 +201,15 @@ func (p *GamePlayer) RemoveCard(target int, g *Game) *Card {
 
 // PlayCard returns true if it is a "double discard" situation
 // (which can only occur if the card fails to play)
-func (p *GamePlayer) PlayCard(g *Game, c *Card) bool {
+func (p *GamePlayer) PlayCard(c *Card) bool {
+	// Local variables
+	g := p.Game
 	t := g.Table
 
 	// Check to see if revealing this card would surprise the player
 	// (we want to have it at the beginning of the function so that the fail sound will overwrite
 	// the surprise sound)
-	p.CheckSurprise(g, c)
+	p.CheckSurprise(c)
 
 	// Find out if this successfully plays
 	var failed bool
@@ -257,7 +265,7 @@ func (p *GamePlayer) PlayCard(g *Game, c *Card) bool {
 		})
 		t.NotifyAction()
 
-		return p.DiscardCard(g, c)
+		return p.DiscardCard(c)
 	}
 
 	// Handle successful card plays
@@ -367,7 +375,9 @@ func (p *GamePlayer) PlayCard(g *Game, c *Card) bool {
 }
 
 // DiscardCard returns true if it is a "double discard" situation
-func (p *GamePlayer) DiscardCard(g *Game, c *Card) bool {
+func (p *GamePlayer) DiscardCard(c *Card) bool {
+	// Local variables
+	g := p.Game
 	t := g.Table
 
 	// Mark that the card is discarded
@@ -425,7 +435,7 @@ func (p *GamePlayer) DiscardCard(g *Game, c *Card) bool {
 	// Check to see if revealing this card would surprise the player
 	// (we want to have it in the middle of the function so that it will
 	// overwrite the clued card sound but not overwrite the sad sound)
-	p.CheckSurprise(g, c)
+	p.CheckSurprise(c)
 
 	// This could have been a discard (or misplay) or a card needed to get the maximum score
 	newMaxScore := g.GetMaxScore()
@@ -448,7 +458,9 @@ func (p *GamePlayer) DiscardCard(g *Game, c *Card) bool {
 	return doubleDiscard
 }
 
-func (p *GamePlayer) DrawCard(g *Game) {
+func (p *GamePlayer) DrawCard() {
+	// Local variables
+	g := p.Game
 	t := g.Table
 
 	// Don't draw any more cards if the deck is empty
@@ -481,14 +493,17 @@ func (p *GamePlayer) DrawCard(g *Game) {
 	}
 }
 
-func (p *GamePlayer) PlayDeck(g *Game) {
+func (p *GamePlayer) PlayDeck() {
+	// Local variables
+	g := p.Game
+
 	// Make the player draw the final card in the deck
-	p.DrawCard(g)
+	p.DrawCard()
 
 	// Play the card freshly drawn
-	c := p.RemoveCard(len(g.Deck)-1, g) // The final card
+	c := p.RemoveCard(len(g.Deck) - 1) // The final card
 	c.Slot = -1
-	p.PlayCard(g, c)
+	p.PlayCard(c)
 }
 
 /*
@@ -528,7 +543,10 @@ func (p *GamePlayer) InitTime(options *Options) {
 
 // FindCardsTouchedByClue returns a slice of card orders
 // (in this context, "orders" are the card positions in the deck, not in the hand)
-func (p *GamePlayer) FindCardsTouchedByClue(clue Clue, g *Game) []int {
+func (p *GamePlayer) FindCardsTouchedByClue(clue Clue) []int {
+	// Local variables
+	g := p.Game
+
 	list := make([]int, 0)
 	for _, c := range p.Hand {
 		if variantIsCardTouched(g.Options.Variant, clue, c) {
@@ -539,12 +557,14 @@ func (p *GamePlayer) FindCardsTouchedByClue(clue Clue, g *Game) []int {
 	return list
 }
 
-func (p *GamePlayer) IsFirstCardTouchedByClue(clue Clue, g *Game) bool {
+func (p *GamePlayer) IsFirstCardTouchedByClue(clue Clue) bool {
+	g := p.Game
 	card := p.Hand[len(p.Hand)-1]
 	return variantIsCardTouched(g.Options.Variant, clue, card)
 }
 
-func (p *GamePlayer) IsLastCardTouchedByClue(clue Clue, g *Game) bool {
+func (p *GamePlayer) IsLastCardTouchedByClue(clue Clue) bool {
+	g := p.Game
 	card := p.Hand[0]
 	return variantIsCardTouched(g.Options.Variant, clue, card)
 }
@@ -581,12 +601,15 @@ func (p *GamePlayer) GetCardSlot(order int) int {
 }
 
 // GetLeftPlayer returns the index of the player that is sitting to this player's left
-func (p *GamePlayer) GetLeftPlayer(g *Game) int {
+func (p *GamePlayer) GetLeftPlayer() int {
+	g := p.Game
 	return (p.Index + 1) % len(g.Players)
 }
 
 // GetRightPlayer returns the index of the player that is sitting to this player's right
-func (p *GamePlayer) GetRightPlayer(g *Game) int {
+func (p *GamePlayer) GetRightPlayer() int {
+	g := p.Game
+
 	// In Golang, "%" will give the remainder and not the modulus, so we need to ensure that the
 	// result is not negative or we will get a "index out of range" error
 	return (p.Index - 1 + len(g.Players)) % len(g.Players)
@@ -595,7 +618,10 @@ func (p *GamePlayer) GetRightPlayer(g *Game) int {
 // CheckSurprise checks to see if a player has a "wrong" note on a card that
 // they just played or discarded
 // This code mirrors the "morph()" client-side function
-func (p *GamePlayer) CheckSurprise(g *Game, c *Card) {
+func (p *GamePlayer) CheckSurprise(c *Card) {
+	// Local variables
+	g := p.Game
+
 	// Disable the surprise sound in certain variants
 	if strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") {
 		return
@@ -664,7 +690,11 @@ func (p *GamePlayer) CheckSurprise(g *Game, c *Card) {
 	}
 }
 
-func (p *GamePlayer) CycleHand(g *Game) {
+func (p *GamePlayer) CycleHand() {
+	// Local variables
+	g := p.Game
+	t := g.Table
+
 	if !g.Options.CardCycle {
 		return
 	}
@@ -698,12 +728,13 @@ func (p *GamePlayer) CycleHand(g *Game) {
 		HandOrder: handOrder,
 	})
 
-	t := g.Table
 	t.NotifyAction()
 	logger.Info("Reordered the cards for player:", p.Name)
 }
 
-func (p *GamePlayer) ShuffleHand(g *Game) {
+func (p *GamePlayer) ShuffleHand() {
+	// Local variables
+	g := p.Game
 	t := g.Table
 
 	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go

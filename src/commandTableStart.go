@@ -202,6 +202,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		gp := &GamePlayer{
 			Name:  p.Name,
 			Index: i,
+			Game:  g,
 
 			Hand: make([]*Card, 0),
 			// There are notes for every card in the deck + the stack bases for each suit
@@ -231,7 +232,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	handSize := g.GetHandSize()
 	for _, p := range g.Players {
 		for i := 0; i < handSize; i++ {
-			p.DrawCard(g)
+			p.DrawCard()
 		}
 	}
 
