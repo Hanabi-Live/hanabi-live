@@ -509,6 +509,10 @@ notifyFunctions.set('turn', (data: ActionTurn) => {
         globals.elements.deckTurnsRemainingLabel2!.text(`left: ${numTurnsLeft}`);
     }
 
+    if (globals.sharedReplay && globals.amSharedReplayLeader) {
+        globals.elements.enterHypoButton!.setEnabled(globals.currentPlayerIndex !== -1);
+    }
+
     if (!globals.animateFast) {
         globals.layers.get('UI')!.batchDraw();
     }

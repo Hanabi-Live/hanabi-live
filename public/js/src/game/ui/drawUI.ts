@@ -501,7 +501,7 @@ const drawBottomLeftButtons = () => {
         height: bottomLeftButtonValues.h! * winH,
         text: 'Restart',
         visible: false,
-    }, []);
+    });
     globals.layers.get('UI')!.add(restartButton as any);
     restartButton.on('click tap', () => {
         globals.lobby.conn.send('tableRestart');
@@ -519,7 +519,7 @@ const drawBottomLeftButtons = () => {
         height: bottomLeftButtonValues.h! * winH,
         text: 'End Hypo',
         visible: false,
-    }, []);
+    });
     globals.layers.get('UI')!.add(endHypotheticalButton as any);
     endHypotheticalButton.on('click tap', () => {
         hypothetical.end();
@@ -534,7 +534,7 @@ const drawBottomLeftButtons = () => {
         height: bottomLeftButtonValues.h! * winH,
         text: '💬',
         visible: !globals.replay || globals.sharedReplay,
-    }, []);
+    });
     globals.layers.get('UI')!.add(chatButton as any);
     chatButton.on('click tap', () => {
         globals.game.chat.toggle();
@@ -575,7 +575,7 @@ const drawBottomLeftButtons = () => {
         height: lobbyButtonValues.h! * winH,
         text: 'Lobby',
         visible: globals.replay || globals.spectating,
-    }, []);
+    });
     globals.layers.get('UI')!.add(lobbyButtonBig as any);
     lobbyButtonBig.on('click tap', lobbyButtonClick);
     lobbyButtonBig.tooltipName = 'lobby-big';
@@ -1525,7 +1525,7 @@ const drawClueArea = () => {
         width: giveClueW * winW,
         height: 0.051 * winH,
         text: 'Give Clue',
-    }, []);
+    });
     globals.elements.giveClueButton.setEnabled(false);
     globals.elements.clueArea.add(globals.elements.giveClueButton as any);
     globals.elements.giveClueButton.on('click tap', clues.give);
@@ -1628,7 +1628,7 @@ const drawPreplayArea = () => {
         height: h * winH,
         text: 'Cancel Pre-Move',
         visible: false,
-    }, []);
+    });
     globals.layers.get('UI')!.add(globals.elements.premoveCancelButton as any);
     globals.elements.premoveCancelButton.on('click tap', () => {
         globals.elements.premoveCancelButton!.hide();
@@ -1759,7 +1759,7 @@ const drawPauseArea = () => {
         width: button1W * winW,
         height: 0.1 * winH,
         text: 'Unpause',
-    }, []);
+    });
     globals.elements.pauseButton.on('click tap', () => {
         globals.lobby.conn.send('pause', {
             value: 'unpause',
@@ -1773,7 +1773,7 @@ const drawPauseArea = () => {
         width: button2W * winW,
         height: 0.1 * winH,
         text: '💬',
-    }, []);
+    });
     globals.elements.pauseArea.add(chatButton as any);
     chatButton.on('click tap', () => {
         globals.game.chat.toggle();

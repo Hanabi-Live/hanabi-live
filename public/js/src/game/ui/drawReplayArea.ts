@@ -210,7 +210,7 @@ export default (winW: number, winH: number) => {
         height: replayButtonValues.w * winH,
         text: 'Exit Replay',
         visible: !globals.replay,
-    }, []);
+    });
     globals.elements.replayExitButton.on('click tap', replay.exitButton);
     globals.elements.replayArea.add(globals.elements.replayExitButton as any);
 
@@ -229,7 +229,7 @@ export default (winW: number, winH: number) => {
         height: bottomLeftReplayButtonValues.h * winH,
         text: 'Pause Shared Turns',
         visible: false,
-    }, []);
+    });
     globals.elements.pauseSharedTurnsButton.on('click tap', replay.toggleSharedTurns);
     globals.elements.replayArea.add(globals.elements.pauseSharedTurnsButton as any);
 
@@ -240,7 +240,7 @@ export default (winW: number, winH: number) => {
         height: bottomLeftReplayButtonValues.h * winH,
         text: 'Use Shared Turns',
         visible: false,
-    }, []);
+    });
     globals.elements.useSharedTurnsButton.on('click tap', replay.toggleSharedTurns);
     globals.elements.replayArea.add(globals.elements.useSharedTurnsButton as any);
 
@@ -276,7 +276,7 @@ export default (winW: number, winH: number) => {
         height: bottomRightReplayButtonValues.h * winH,
         text: 'Enter Hypothetical',
         visible: globals.replay && globals.amSharedReplayLeader && !globals.hypothetical,
-    }, []);
+    });
     globals.elements.enterHypoButton.on('click tap', hypothetical.start);
     globals.elements.replayArea.add(globals.elements.enterHypoButton as any);
 

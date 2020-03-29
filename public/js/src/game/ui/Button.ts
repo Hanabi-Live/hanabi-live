@@ -14,7 +14,7 @@ export default class Button extends Konva.Group {
     tooltipName: string = '';
     tooltipContent: string = '';
 
-    constructor(config: Konva.ContainerConfig, images: Array<HTMLImageElement>) {
+    constructor(config: Konva.ContainerConfig, images?: Array<HTMLImageElement>) {
         super(config);
         this.listening(true);
 
@@ -49,7 +49,7 @@ export default class Button extends Konva.Group {
                 listening: false,
             });
             this.add(this.textElement);
-        } else if (images.length > 0) {
+        } else if (images && images.length > 0) {
             this.imageElement = new Konva.Image({
                 x: 0.2 * w,
                 y: 0.2 * h,
