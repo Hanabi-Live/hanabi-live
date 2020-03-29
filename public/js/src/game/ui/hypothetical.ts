@@ -21,12 +21,22 @@ export const start = () => {
     }
     globals.hypothetical = true;
 
+    if (globals.amSharedReplayLeader) {
+        globals.lobby.conn.send('replayAction', {
+            type: REPLAY_ACTION_TYPE.HYPO_START,
+        });
+    }
+
+    show();
+};
+
+// Transition the screen to show all of the hypothetical buttons and elements
+export const show = () => {
     // Bring us to the shared replay turn, if not already there
     if (!globals.useSharedTurns) {
         replay.toggleSharedTurns();
     }
 
-    // Adjust the UI, depending on whether or not we are the replay leader
     globals.elements.replayArea!.visible(false);
     if (globals.playerNames.length !== 2) {
         globals.elements.clueTargetButtonGroup!.hide();
@@ -34,14 +44,16 @@ export const start = () => {
     }
 
     if (globals.amSharedReplayLeader) {
-        globals.lobby.conn.send('replayAction', {
-            type: REPLAY_ACTION_TYPE.HYPO_START,
-        });
-
         globals.elements.restartButton!.visible(false);
         globals.elements.endHypotheticalButton!.visible(true);
     } else {
         globals.elements.hypoCircle!.visible(true);
+    }
+
+    // If we are joining a hypothetical that is already in progress,
+    // play all of the existing hypothetical actions that have taken place so far
+    for (const actionMessage of globals.hypoActions) {
+        notify(actionMessage);
     }
 
     beginTurn();

@@ -546,13 +546,7 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
 
     // Hide the replay area if we are in a hypothetical
     if (globals.hypothetical) {
-        globals.elements.replayArea!.visible(false);
-        if (globals.amSharedReplayLeader) {
-            globals.elements.restartButton!.visible(false);
-            globals.elements.endHypotheticalButton!.visible(true);
-        } else {
-            globals.elements.hypoCircle!.visible(true);
-        }
+        hypothetical.show();
     }
 
     globals.layers.get('UI')!.batchDraw();
